@@ -1,10 +1,9 @@
-import IHTMLCollection from './IHTMLCollection.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * HTML collection.
  */
-export default class HTMLCollection<T> extends Array implements IHTMLCollection<T> {
+export default class HTMLCollection<T> extends Array implements HTMLCollection<T> {
 	protected [PropertySymbol.namedItems]: { [k: string]: T[] } = {};
 
 	/**
@@ -81,6 +80,7 @@ export default class HTMLCollection<T> extends Array implements IHTMLCollection<
 	 */
 	protected [PropertySymbol.isValidPropertyName](name: string): boolean {
 		return (
+			!!name &&
 			!this.constructor.prototype.hasOwnProperty(name) &&
 			!Array.prototype.hasOwnProperty(name) &&
 			(isNaN(Number(name)) || name.includes('.'))

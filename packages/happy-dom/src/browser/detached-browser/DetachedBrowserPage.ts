@@ -5,7 +5,7 @@ import VirtualConsole from '../../console/VirtualConsole.js';
 import IBrowserPage from '../types/IBrowserPage.js';
 import { Script } from 'vm';
 import IGoToOptions from '../types/IGoToOptions.js';
-import IResponse from '../../fetch/types/IResponse.js';
+import Response from '../../fetch/Response.js';
 import BrowserPageUtility from '../utilities/BrowserPageUtility.js';
 import IReloadOptions from '../types/IReloadOptions.js';
 import DefaultBrowserPageViewport from '../DefaultBrowserPageViewport.js';
@@ -150,7 +150,7 @@ export default class DetachedBrowserPage implements IBrowserPage {
 	 * @param [options] Options.
 	 * @returns Response.
 	 */
-	public goto(url: string, options?: IGoToOptions): Promise<IResponse | null> {
+	public goto(url: string, options?: IGoToOptions): Promise<Response | null> {
 		return this.mainFrame.goto(url, options);
 	}
 
@@ -160,7 +160,7 @@ export default class DetachedBrowserPage implements IBrowserPage {
 	 * @param [options] Options.
 	 * @returns Response.
 	 */
-	public reload(options: IReloadOptions): Promise<IResponse | null> {
+	public reload(options: IReloadOptions): Promise<Response | null> {
 		return this.mainFrame.reload(options);
 	}
 }

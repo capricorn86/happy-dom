@@ -1,14 +1,11 @@
 import Window from '../../src/window/Window.js';
-import IWindow from '../../src/window/IWindow.js';
-import IDocument from '../../src/nodes/document/IDocument.js';
-import IHTMLFormElement from '../../src/nodes/html-form-element/IHTMLFormElement.js';
-import IHTMLInputElement from '../../src/nodes/html-input-element/IHTMLInputElement.js';
+import Document from '../../src/nodes/document/Document.js';
 import File from '../../src/file/File.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('FormData', () => {
-	let window: IWindow;
-	let document: IDocument;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -17,16 +14,20 @@ describe('FormData', () => {
 
 	describe('constructor', () => {
 		it('Supports sending in an HTMLFormElement to the contructor.', () => {
-			const form = <IHTMLFormElement>document.createElement('form');
+			const form = document.createElement('form');
 			const file = new File([Buffer.from('fileContent')], 'file.txt', { type: 'text/plain' });
-			const textInput = <IHTMLInputElement>document.createElement('input');
-			const hiddenInput = <IHTMLInputElement>document.createElement('input');
-			const hiddenInput2 = <IHTMLInputElement>document.createElement('input');
-			const fileInput = <IHTMLInputElement>document.createElement('input');
-			const radioInput1 = <IHTMLInputElement>document.createElement('input');
-			const radioInput2 = <IHTMLInputElement>document.createElement('input');
-			const checkboxInput1 = <IHTMLInputElement>document.createElement('input');
-			const checkboxInput2 = <IHTMLInputElement>document.createElement('input');
+			const textInput = document.createElement('input');
+			const hiddenInput = document.createElement('input');
+			const hiddenInput2 = document.createElement('input');
+			const fileInput = document.createElement('input');
+			const radioInput1 = document.createElement('input');
+			const radioInput2 = document.createElement('input');
+			const checkboxInput1 = document.createElement('input');
+			const checkboxInput2 = document.createElement('input');
+			const button1 = document.createElement('button');
+			const button2 = document.createElement('input');
+			const button3 = document.createElement('button');
+			const button4 = document.createElement('input');
 
 			textInput.type = 'text';
 			textInput.name = 'textInput';
@@ -63,6 +64,18 @@ describe('FormData', () => {
 			checkboxInput2.value = 'checkbox value 2';
 			checkboxInput2.checked = true;
 
+			button1.name = 'button1';
+
+			button2.type = 'submit';
+			button2.name = 'button2';
+
+			button3.name = 'button3';
+			button3.value = 'button3';
+
+			button4.type = 'submit';
+			button4.name = 'button4';
+			button4.value = 'button4';
+
 			form.appendChild(textInput);
 			form.appendChild(hiddenInput);
 			form.appendChild(hiddenInput2);
@@ -71,6 +84,10 @@ describe('FormData', () => {
 			form.appendChild(radioInput2);
 			form.appendChild(checkboxInput1);
 			form.appendChild(checkboxInput2);
+			form.appendChild(button1);
+			form.appendChild(button2);
+			form.appendChild(button3);
+			form.appendChild(button4);
 
 			const formData = new window.FormData(form);
 
@@ -82,6 +99,10 @@ describe('FormData', () => {
 			expect(formData.getAll('hiddenInput')).toEqual(['hidden value 1', 'hidden value 2']);
 			expect(formData.getAll('radioInput')).toEqual(['radio value 2']);
 			expect(formData.getAll('checkboxInput')).toEqual(['checkbox value 2']);
+			expect(formData.get('button1')).toBe(null);
+			expect(formData.get('button2')).toBe(null);
+			expect(formData.get('button3')).toBe('button3');
+			expect(formData.get('button4')).toBe('button4');
 		});
 	});
 

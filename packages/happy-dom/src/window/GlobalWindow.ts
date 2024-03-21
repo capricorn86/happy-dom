@@ -1,4 +1,3 @@
-import IWindow from './IWindow.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import Window from './Window.js';
 import { Buffer } from 'buffer';
@@ -9,7 +8,7 @@ import { Buffer } from 'buffer';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/Window.
  */
-export default class GlobalWindow extends Window implements IWindow {
+export default class GlobalWindow extends Window {
 	// Node.js Globals
 	public Array: typeof Array = globalThis.Array;
 	public ArrayBuffer: typeof ArrayBuffer = globalThis.ArrayBuffer;

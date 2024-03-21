@@ -1,7 +1,7 @@
-import IBrowserWindow from './IBrowserWindow.js';
+import BrowserWindow from './BrowserWindow.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import ErrorEvent from '../event/events/ErrorEvent.js';
-import IElement from '../nodes/element/IElement.js';
+import Element from '../nodes/element/Element.js';
 
 /**
  * Error utility.
@@ -19,7 +19,7 @@ export default class WindowErrorUtility {
 	 * @returns Result.
 	 */
 	public static captureError<T>(
-		elementOrWindow: IBrowserWindow | IElement,
+		elementOrWindow: BrowserWindow | Element,
 		callback: () => T,
 		cleanup?: () => void
 	): T | null {
@@ -52,15 +52,15 @@ export default class WindowErrorUtility {
 	 * @param elementOrWindow Element or Window.
 	 * @param error Error.
 	 */
-	public static dispatchError(elementOrWindow: IBrowserWindow | IElement, error: Error): void {
-		if ((<IBrowserWindow>elementOrWindow).console) {
-			(<IBrowserWindow>elementOrWindow).console.error(error);
+	public static dispatchError(elementOrWindow: BrowserWindow | Element, error: Error): void {
+		if ((<BrowserWindow>elementOrWindow).console) {
+			(<BrowserWindow>elementOrWindow).console.error(error);
 			elementOrWindow.dispatchEvent(new ErrorEvent('error', { message: error.message, error }));
 		} else {
-			(<IElement>elementOrWindow)[PropertySymbol.ownerDocument][
+			(<Element>elementOrWindow)[PropertySymbol.ownerDocument][
 				PropertySymbol.defaultView
 			].console.error(error);
-			(<IElement>elementOrWindow).dispatchEvent(
+			(<Element>elementOrWindow).dispatchEvent(
 				new ErrorEvent('error', { message: error.message, error })
 			);
 		}

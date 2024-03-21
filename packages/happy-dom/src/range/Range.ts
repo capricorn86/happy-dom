@@ -1,8 +1,7 @@
-import INode from '../nodes/node/INode.js';
-import * as PropertySymbol from '../PropertySymbol.js';
 import Node from '../nodes/node/Node.js';
-import IDocument from '../nodes/document/IDocument.js';
-import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment.js';
+import * as PropertySymbol from '../PropertySymbol.js';
+import Document from '../nodes/document/Document.js';
+import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import DOMRect from '../nodes/element/DOMRect.js';
 import RangeHowEnum from './RangeHowEnum.js';
 import DOMException from '../exception/DOMException.js';
@@ -11,12 +10,11 @@ import RangeUtility from './RangeUtility.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import NodeUtility from '../nodes/node/NodeUtility.js';
 import XMLParser from '../xml-parser/XMLParser.js';
-import IComment from '../nodes/comment/IComment.js';
-import IText from '../nodes/text/IText.js';
-import DOMRectListFactory from '../nodes/element/DOMRectListFactory.js';
-import IDOMRectList from '../nodes/element/IDOMRectList.js';
+import Comment from '../nodes/comment/Comment.js';
+import Text from '../nodes/text/Text.js';
+import DOMRectList from '../nodes/element/DOMRectList.js';
 import IRangeBoundaryPoint from './IRangeBoundaryPoint.js';
-import IBrowserWindow from '../window/IBrowserWindow.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * Range.
@@ -38,15 +36,15 @@ export default class Range {
 	public readonly START_TO_START: number = RangeHowEnum.startToStart;
 	public [PropertySymbol.start]: IRangeBoundaryPoint | null = null;
 	public [PropertySymbol.end]: IRangeBoundaryPoint | null = null;
-	#window: IBrowserWindow;
-	public readonly [PropertySymbol.ownerDocument]: IDocument;
+	#window: BrowserWindow;
+	public readonly [PropertySymbol.ownerDocument]: Document;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param window Window.
 	 */
-	constructor(window: IBrowserWindow) {
+	constructor(window: BrowserWindow) {
 		this.#window = window;
 		this[PropertySymbol.ownerDocument] = window.document;
 		this[PropertySymbol.start] = { node: window.document, offset: 0 };
@@ -59,7 +57,7 @@ export default class Range {
 	 * @see https://dom.spec.whatwg.org/#dom-range-startcontainer
 	 * @returns Start container.
 	 */
-	public get startContainer(): INode {
+	public get startContainer(): Node {
 		return this[PropertySymbol.start].node;
 	}
 
@@ -69,7 +67,7 @@ export default class Range {
 	 * @see https://dom.spec.whatwg.org/#dom-range-endcontainer
 	 * @returns End container.
 	 */
-	public get endContainer(): INode {
+	public get endContainer(): Node {
 		return this[PropertySymbol.end].node;
 	}
 
@@ -126,7 +124,7 @@ export default class Range {
 	 * @see https://dom.spec.whatwg.org/#dom-range-commonancestorcontainer
 	 * @returns Node.
 	 */
-	public get commonAncestorContainer(): INode {
+	public get commonAncestorContainer(): Node {
 		let container = this[PropertySymbol.start].node;
 
 		while (container) {
@@ -181,11 +179,11 @@ export default class Range {
 			);
 		}
 
-		const thisPoint: { node: INode; offset: number } = {
+		const thisPoint: { node: Node; offset: number } = {
 			node: null,
 			offset: 0
 		};
-		const sourcePoint: { node: INode; offset: number } = {
+		const sourcePoint: { node: Node; offset: number } = {
 			node: null,
 			offset: 0
 		};
@@ -228,7 +226,7 @@ export default class Range {
 	 * @param offset Offset.
 	 * @returns -1,0, or 1.
 	 */
-	public comparePoint(node: INode, offset): number {
+	public comparePoint(node: Node, offset): number {
 		if (node[PropertySymbol.ownerDocument] !== this[PropertySymbol.ownerDocument]) {
 			throw new DOMException(
 				`The two Ranges are not in the same tree.`,
@@ -265,7 +263,7 @@ export default class Range {
 	 * @see https://dom.spec.whatwg.org/#concept-range-clone
 	 * @returns Document fragment.
 	 */
-	public cloneContents(): IDocumentFragment {
+	public cloneContents(): DocumentFragment {
 		const fragment = this[PropertySymbol.ownerDocument].createDocumentFragment();
 		const startOffset = this.startOffset;
 		const endOffset = this.endOffset;
@@ -281,7 +279,7 @@ export default class Range {
 					NodeTypeEnum.processingInstructionNode ||
 				this[PropertySymbol.start].node[PropertySymbol.nodeType] === NodeTypeEnum.commentNode)
 		) {
-			const clone = (<IText | IComment>this[PropertySymbol.start].node).cloneNode(false);
+			const clone = (<Text | Comment>this[PropertySymbol.start].node).cloneNode(false);
 			clone[PropertySymbol.data] = clone.substringData(startOffset, endOffset - startOffset);
 			fragment.appendChild(clone);
 			return fragment;
@@ -347,7 +345,7 @@ export default class Range {
 					NodeTypeEnum.processingInstructionNode ||
 				firstPartialContainedChild[PropertySymbol.nodeType] === NodeTypeEnum.commentNode)
 		) {
-			const clone = (<IText | IComment>this[PropertySymbol.start].node).cloneNode(false);
+			const clone = (<Text | Comment>this[PropertySymbol.start].node).cloneNode(false);
 			clone[PropertySymbol.data] = clone.substringData(
 				startOffset,
 				NodeUtility.getNodeLength(this[PropertySymbol.start].node) - startOffset
@@ -380,7 +378,7 @@ export default class Range {
 					NodeTypeEnum.processingInstructionNode ||
 				lastPartiallyContainedChild[PropertySymbol.nodeType] === NodeTypeEnum.commentNode)
 		) {
-			const clone = (<IText | IComment>this[PropertySymbol.end].node).cloneNode(false);
+			const clone = (<Text | Comment>this[PropertySymbol.end].node).cloneNode(false);
 			clone[PropertySymbol.data] = clone.substringData(0, endOffset);
 
 			fragment.appendChild(clone);
@@ -425,9 +423,9 @@ export default class Range {
 	 * @param tagString Tag string.
 	 * @returns Document fragment.
 	 */
-	public createContextualFragment(tagString: string): IDocumentFragment {
+	public createContextualFragment(tagString: string): DocumentFragment {
 		// TODO: We only have support for HTML in the parser currently, so it is not necessary to check which context it is
-		return <IDocumentFragment>XMLParser.parse(this[PropertySymbol.ownerDocument], tagString);
+		return <DocumentFragment>XMLParser.parse(this[PropertySymbol.ownerDocument], tagString);
 	}
 
 	/**
@@ -450,7 +448,7 @@ export default class Range {
 					NodeTypeEnum.processingInstructionNode ||
 				this[PropertySymbol.start].node[PropertySymbol.nodeType] === NodeTypeEnum.commentNode)
 		) {
-			(<IText | IComment>this[PropertySymbol.start].node).replaceData(
+			(<Text | Comment>this[PropertySymbol.start].node).replaceData(
 				startOffset,
 				endOffset - startOffset,
 				''
@@ -508,7 +506,7 @@ export default class Range {
 				NodeTypeEnum.processingInstructionNode ||
 			this[PropertySymbol.start].node[PropertySymbol.nodeType] === NodeTypeEnum.commentNode
 		) {
-			(<IText | IComment>this[PropertySymbol.start].node).replaceData(
+			(<Text | Comment>this[PropertySymbol.start].node).replaceData(
 				this.startOffset,
 				NodeUtility.getNodeLength(this[PropertySymbol.start].node) - this.startOffset,
 				''
@@ -526,7 +524,7 @@ export default class Range {
 				NodeTypeEnum.processingInstructionNode ||
 			this[PropertySymbol.end].node[PropertySymbol.nodeType] === NodeTypeEnum.commentNode
 		) {
-			(<IText | IComment>this[PropertySymbol.end].node).replaceData(0, endOffset, '');
+			(<Text | Comment>this[PropertySymbol.end].node).replaceData(0, endOffset, '');
 		}
 
 		this[PropertySymbol.start].node = newNode;
@@ -550,7 +548,7 @@ export default class Range {
 	 * @see https://dom.spec.whatwg.org/#dom-range-extractcontents
 	 * @returns Document fragment.
 	 */
-	public extractContents(): IDocumentFragment {
+	public extractContents(): DocumentFragment {
 		const fragment = this[PropertySymbol.ownerDocument].createDocumentFragment();
 		const startOffset = this.startOffset;
 		const endOffset = this.endOffset;
@@ -566,12 +564,12 @@ export default class Range {
 					NodeTypeEnum.processingInstructionNode ||
 				this[PropertySymbol.start].node[PropertySymbol.nodeType] === NodeTypeEnum.commentNode)
 		) {
-			const clone = <IText | IComment>this[PropertySymbol.start].node.cloneNode(false);
+			const clone = <Text | Comment>this[PropertySymbol.start].node.cloneNode(false);
 			clone[PropertySymbol.data] = clone.substringData(startOffset, endOffset - startOffset);
 
 			fragment.appendChild(clone);
 
-			(<IText | IComment>this[PropertySymbol.start].node).replaceData(
+			(<Text | Comment>this[PropertySymbol.start].node).replaceData(
 				startOffset,
 				endOffset - startOffset,
 				''
@@ -670,7 +668,7 @@ export default class Range {
 					NodeTypeEnum.processingInstructionNode ||
 				firstPartialContainedChild[PropertySymbol.nodeType] === NodeTypeEnum.commentNode)
 		) {
-			const clone = <IText | IComment>this[PropertySymbol.start].node.cloneNode(false);
+			const clone = <Text | Comment>this[PropertySymbol.start].node.cloneNode(false);
 			clone[PropertySymbol.data] = clone.substringData(
 				startOffset,
 				NodeUtility.getNodeLength(this[PropertySymbol.start].node) - startOffset
@@ -678,7 +676,7 @@ export default class Range {
 
 			fragment.appendChild(clone);
 
-			(<IText | IComment>this[PropertySymbol.start].node).replaceData(
+			(<Text | Comment>this[PropertySymbol.start].node).replaceData(
 				startOffset,
 				NodeUtility.getNodeLength(this[PropertySymbol.start].node) - startOffset,
 				''
@@ -708,12 +706,12 @@ export default class Range {
 					NodeTypeEnum.processingInstructionNode ||
 				lastPartiallyContainedChild[PropertySymbol.nodeType] === NodeTypeEnum.commentNode)
 		) {
-			const clone = <IText | IComment>this[PropertySymbol.end].node.cloneNode(false);
+			const clone = <Text | Comment>this[PropertySymbol.end].node.cloneNode(false);
 			clone[PropertySymbol.data] = clone.substringData(0, endOffset);
 
 			fragment.appendChild(clone);
 
-			(<IText | IComment>this[PropertySymbol.end].node).replaceData(0, endOffset, '');
+			(<Text | Comment>this[PropertySymbol.end].node).replaceData(0, endOffset, '');
 		} else if (lastPartiallyContainedChild !== null) {
 			const clone = lastPartiallyContainedChild.cloneNode(false);
 			fragment.appendChild(clone);
@@ -751,9 +749,9 @@ export default class Range {
 	 *
 	 * @returns DOMRect objects.
 	 */
-	public getClientRects(): IDOMRectList<DOMRect> {
+	public getClientRects(): DOMRectList {
 		// TODO: Not full implementation
-		return DOMRectListFactory.create();
+		return new DOMRectList();
 	}
 
 	/**
@@ -764,7 +762,7 @@ export default class Range {
 	 * @param offset Offset.
 	 * @returns "true" if in range.
 	 */
-	public isPointInRange(node: INode, offset = 0): boolean {
+	public isPointInRange(node: Node, offset = 0): boolean {
 		if (node[PropertySymbol.ownerDocument] !== this[PropertySymbol.ownerDocument]) {
 			return false;
 		}
@@ -795,7 +793,7 @@ export default class Range {
 	 * @see https://dom.spec.whatwg.org/#concept-range-insert
 	 * @param newNode New node.
 	 */
-	public insertNode(newNode: INode): void {
+	public insertNode(newNode: Node): void {
 		if (
 			this[PropertySymbol.start].node[PropertySymbol.nodeType] ===
 				NodeTypeEnum.processingInstructionNode ||
@@ -817,7 +815,7 @@ export default class Range {
 			: referenceNode[PropertySymbol.parentNode];
 
 		if (this[PropertySymbol.start].node[PropertySymbol.nodeType] === NodeTypeEnum.textNode) {
-			referenceNode = (<IText>this[PropertySymbol.start].node).splitText(this.startOffset);
+			referenceNode = (<Text>this[PropertySymbol.start].node).splitText(this.startOffset);
 		}
 
 		if (newNode === referenceNode) {
@@ -854,7 +852,7 @@ export default class Range {
 	 * @param node Reference node.
 	 * @returns "true" if it intersects.
 	 */
-	public intersectsNode(node: INode): boolean {
+	public intersectsNode(node: Node): boolean {
 		if (node[PropertySymbol.ownerDocument] !== this[PropertySymbol.ownerDocument]) {
 			return false;
 		}
@@ -885,7 +883,7 @@ export default class Range {
 	 * @see https://dom.spec.whatwg.org/#concept-range-select
 	 * @param node Reference node.
 	 */
-	public selectNode(node: INode): void {
+	public selectNode(node: Node): void {
 		if (!node[PropertySymbol.parentNode]) {
 			throw new DOMException(
 				`The given Node has no parent.`,
@@ -907,7 +905,7 @@ export default class Range {
 	 * @see https://dom.spec.whatwg.org/#dom-range-selectnodecontents
 	 * @param node Reference node.
 	 */
-	public selectNodeContents(node: INode): void {
+	public selectNodeContents(node: Node): void {
 		if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
 			throw new DOMException(
 				"DocumentType Node can't be used as boundary point.",
@@ -928,7 +926,7 @@ export default class Range {
 	 * @param node End node.
 	 * @param offset End offset.
 	 */
-	public setEnd(node: INode, offset = 0): void {
+	public setEnd(node: Node, offset = 0): void {
 		RangeUtility.validateBoundaryPoint({ node, offset });
 
 		const boundaryPoint = { node, offset };
@@ -955,7 +953,7 @@ export default class Range {
 	 * @param node Start node.
 	 * @param offset Start offset.
 	 */
-	public setStart(node: INode, offset = 0): void {
+	public setStart(node: Node, offset = 0): void {
 		RangeUtility.validateBoundaryPoint({ node, offset });
 
 		const boundaryPoint = { node, offset };
@@ -981,7 +979,7 @@ export default class Range {
 	 * @see https://dom.spec.whatwg.org/#dom-range-setendafter
 	 * @param node Reference node.
 	 */
-	public setEndAfter(node: INode): void {
+	public setEndAfter(node: Node): void {
 		if (!node[PropertySymbol.parentNode]) {
 			throw new DOMException(
 				'The given Node has no parent.',
@@ -1000,7 +998,7 @@ export default class Range {
 	 * @see https://dom.spec.whatwg.org/#dom-range-setendbefore
 	 * @param node Reference node.
 	 */
-	public setEndBefore(node: INode): void {
+	public setEndBefore(node: Node): void {
 		if (!node[PropertySymbol.parentNode]) {
 			throw new DOMException(
 				'The given Node has no parent.',
@@ -1019,7 +1017,7 @@ export default class Range {
 	 * @see https://dom.spec.whatwg.org/#dom-range-setstartafter
 	 * @param node Reference node.
 	 */
-	public setStartAfter(node: INode): void {
+	public setStartAfter(node: Node): void {
 		if (!node[PropertySymbol.parentNode]) {
 			throw new DOMException(
 				'The given Node has no parent.',
@@ -1038,7 +1036,7 @@ export default class Range {
 	 * @see https://dom.spec.whatwg.org/#dom-range-setstartbefore
 	 * @param node Reference node.
 	 */
-	public setStartBefore(node: INode): void {
+	public setStartBefore(node: Node): void {
 		if (!node[PropertySymbol.parentNode]) {
 			throw new DOMException(
 				'The given Node has no parent.',
@@ -1057,7 +1055,7 @@ export default class Range {
 	 * @see https://dom.spec.whatwg.org/#dom-range-surroundcontents
 	 * @param newParent New parent.
 	 */
-	public surroundContents(newParent: INode): void {
+	public surroundContents(newParent: Node): void {
 		let node = this.commonAncestorContainer;
 		const endNode = NodeUtility.nextDescendantNode(node);
 		while (node !== endNode) {
@@ -1109,11 +1107,11 @@ export default class Range {
 			this[PropertySymbol.start].node === this[PropertySymbol.end].node &&
 			this[PropertySymbol.start].node[PropertySymbol.nodeType] === NodeTypeEnum.textNode
 		) {
-			return (<IText>this[PropertySymbol.start].node).data.slice(startOffset, endOffset);
+			return (<Text>this[PropertySymbol.start].node).data.slice(startOffset, endOffset);
 		}
 
 		if (this[PropertySymbol.start].node[PropertySymbol.nodeType] === NodeTypeEnum.textNode) {
-			string += (<IText>this[PropertySymbol.start].node).data.slice(startOffset);
+			string += (<Text>this[PropertySymbol.start].node).data.slice(startOffset);
 		}
 
 		const endNode = NodeUtility.nextDescendantNode(this[PropertySymbol.end].node);
@@ -1124,14 +1122,14 @@ export default class Range {
 				currentNode[PropertySymbol.nodeType] === NodeTypeEnum.textNode &&
 				RangeUtility.isContained(currentNode, this)
 			) {
-				string += (<IText>currentNode).data;
+				string += (<Text>currentNode).data;
 			}
 
 			currentNode = NodeUtility.following(currentNode);
 		}
 
 		if (this[PropertySymbol.end].node[PropertySymbol.nodeType] === NodeTypeEnum.textNode) {
-			string += (<IText>this[PropertySymbol.end].node).data.slice(0, endOffset);
+			string += (<Text>this[PropertySymbol.end].node).data.slice(0, endOffset);
 		}
 
 		return string;

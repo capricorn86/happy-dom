@@ -40,8 +40,10 @@ import ClipboardEvent from './event/events/ClipboardEvent.js';
 import CustomEvent from './event/events/CustomEvent.js';
 import ErrorEvent from './event/events/ErrorEvent.js';
 import FocusEvent from './event/events/FocusEvent.js';
+import HashChangeEvent from './event/events/HashChangeEvent.js';
 import InputEvent from './event/events/InputEvent.js';
 import KeyboardEvent from './event/events/KeyboardEvent.js';
+import MediaQueryListEvent from './event/events/MediaQueryListEvent.js';
 import MouseEvent from './event/events/MouseEvent.js';
 import ProgressEvent from './event/events/ProgressEvent.js';
 import SubmitEvent from './event/events/SubmitEvent.js';
@@ -115,7 +117,7 @@ import { Storage, LocalStorage, SessionStorage } from './storage/Storage.js';
 import NodeFilter from './tree-walker/NodeFilter.js';
 import NodeIterator from './tree-walker/NodeIterator.js';
 import TreeWalker from './tree-walker/TreeWalker.js';
-import Location from './url/Location.js';
+import Location from './location/Location.js';
 import URL from './url/URL.js';
 import BrowserWindow from './window/BrowserWindow.js';
 import GlobalWindow from './window/GlobalWindow.js';
@@ -138,127 +140,41 @@ import type IClipboardEventInit from './event/events/IClipboardEventInit.js';
 import type ICustomEventInit from './event/events/ICustomEventInit.js';
 import type IErrorEventInit from './event/events/IErrorEventInit.js';
 import type IFocusEventInit from './event/events/IFocusEventInit.js';
+import type IHashChangeEventInit from './event/events/IHashChangeEventInit.js';
 import type IInputEventInit from './event/events/IInputEventInit.js';
 import type IKeyboardEventInit from './event/events/IKeyboardEventInit.js';
+import type IMediaQueryListInit from './event/events/IMediaQueryListInit.js';
 import type IMouseEventInit from './event/events/IMouseEventInit.js';
 import type IProgressEventInit from './event/events/IProgressEventInit.js';
 import type ISubmitEventInit from './event/events/ISubmitEventInit.js';
 import type ITouchEventInit from './event/events/ITouchEventInit.js';
 import type IWheelEventInit from './event/events/IWheelEventInit.js';
-import type IHeaders from './fetch/types/IHeaders.js';
-import type IRequest from './fetch/types/IRequest.js';
-import type IResponse from './fetch/types/IResponse.js';
-import type IAttr from './nodes/attr/IAttr.js';
-import type IComment from './nodes/comment/IComment.js';
-import type IDocumentFragment from './nodes/document-fragment/IDocumentFragment.js';
-import type IDocumentType from './nodes/document-type/IDocumentType.js';
-import type IDocument from './nodes/document/IDocument.js';
-import type IElement from './nodes/element/IElement.js';
-import type IHTMLCollection from './nodes/element/IHTMLCollection.js';
-import type IHTMLAnchorElement from './nodes/html-anchor-element/IHTMLAnchorElement.js';
-import type IHTMLAudioElement from './nodes/html-audio-element/IHTMLAudioElement.js';
-import type IHTMLBaseElement from './nodes/html-base-element/IHTMLBaseElement.js';
-import type IHTMLButtonElement from './nodes/html-button-element/IHTMLButtonElement.js';
-import type IHTMLDialogElement from './nodes/html-dialog-element/IHTMLDialogElement.js';
-import type IHTMLElement from './nodes/html-element/IHTMLElement.js';
-import type IHTMLFormControlsCollection from './nodes/html-form-element/IHTMLFormControlsCollection.js';
-import type IHTMLFormElement from './nodes/html-form-element/IHTMLFormElement.js';
-import type IHTMLIFrameElement from './nodes/html-iframe-element/IHTMLIFrameElement.js';
-import type IHTMLImageElement from './nodes/html-image-element/IHTMLImageElement.js';
-import type IFileList from './nodes/html-input-element/IFileList.js';
-import type IHTMLInputElement from './nodes/html-input-element/IHTMLInputElement.js';
-import type IHTMLLabelElement from './nodes/html-label-element/IHTMLLabelElement.js';
-import type IHTMLLinkElement from './nodes/html-link-element/IHTMLLinkElement.js';
-import type IHTMLMediaElement from './nodes/html-media-element/IHTMLMediaElement.js';
-import type IHTMLMetaElement from './nodes/html-meta-element/IHTMLMetaElement.js';
-import type IHTMLOptGroupElement from './nodes/html-opt-group-element/IHTMLOptGroupElement.js';
-import type IHTMLOptionElement from './nodes/html-option-element/IHTMLOptionElement.js';
-import type IHTMLSelectElement from './nodes/html-select-element/IHTMLSelectElement.js';
-import type IHTMLSlotElement from './nodes/html-slot-element/IHTMLSlotElement.js';
-import type IHTMLStyleElement from './nodes/html-style-element/IHTMLStyleElement.js';
-import type IHTMLTemplateElement from './nodes/html-template-element/IHTMLTemplateElement.js';
-import type IHTMLTextAreaElement from './nodes/html-text-area-element/IHTMLTextAreaElement.js';
-import type IHTMLVideoElement from './nodes/html-video-element/IHTMLVideoElement.js';
-import type INode from './nodes/node/INode.js';
-import type INodeList from './nodes/node/INodeList.js';
-import type IProcessingInstruction from './nodes/processing-instruction/IProcessingInstruction.js';
-import type IShadowRoot from './nodes/shadow-root/IShadowRoot.js';
-import type ISVGElement from './nodes/svg-element/ISVGElement.js';
-import type ISVGGraphicsElement from './nodes/svg-element/ISVGGraphicsElement.js';
-import type ISVGSVGElement from './nodes/svg-element/ISVGSVGElement.js';
-import type IText from './nodes/text/IText.js';
-import type IBrowserWindow from './window/IBrowserWindow.js';
-import type ICrossOriginBrowserWindow from './window/ICrossOriginBrowserWindow.js';
-import type IWindow from './window/IWindow.js';
 
 export type {
 	IAnimationEventInit,
-	IAttr,
 	IBrowser,
 	IBrowserContext,
 	IBrowserFrame,
 	IBrowserPage,
 	IBrowserSettings,
-	IBrowserWindow,
 	IClipboardEventInit,
-	IComment,
-	ICrossOriginBrowserWindow,
 	ICustomEventInit,
-	IDocument,
-	IDocumentFragment,
-	IDocumentType,
-	IElement,
 	IErrorEventInit,
 	IEventInit,
 	IEventListener,
-	IFileList,
 	IFocusEventInit,
-	IHTMLAnchorElement,
-	IHTMLAudioElement,
-	IHTMLBaseElement,
-	IHTMLButtonElement,
-	IHTMLCollection,
-	IHTMLDialogElement,
-	IHTMLElement,
-	IHTMLFormControlsCollection,
-	IHTMLFormElement,
-	IHTMLIFrameElement,
-	IHTMLImageElement,
-	IHTMLInputElement,
-	IHTMLLabelElement,
-	IHTMLLinkElement,
-	IHTMLMediaElement,
-	IHTMLMetaElement,
-	IHTMLOptGroupElement,
-	IHTMLOptionElement,
-	IHTMLSelectElement,
-	IHTMLSlotElement,
-	IHTMLStyleElement,
-	IHTMLTemplateElement,
-	IHTMLTextAreaElement,
-	IHTMLVideoElement,
-	IHeaders,
+	IHashChangeEventInit,
 	IInputEventInit,
 	IKeyboardEventInit,
+	IMediaQueryListInit,
 	IMouseEventInit,
-	INode,
-	INodeList,
 	IOptionalBrowserSettings,
-	IProcessingInstruction,
 	IProgressEventInit,
-	IRequest,
-	IResponse,
-	ISVGElement,
-	ISVGGraphicsElement,
-	ISVGSVGElement,
-	IShadowRoot,
 	ISubmitEventInit,
-	IText,
 	ITouchEventInit,
 	ITouchInit,
 	IUIEventInit,
-	IWheelEventInit,
-	IWindow
+	IWheelEventInit
 };
 
 export {
@@ -346,7 +262,7 @@ export {
 	HTMLIFrameElement,
 	HTMLImageElement,
 	HTMLInputElement,
-	HTMLElement as HTMLLIElement,
+	HTMLElement as HTMLLElement,
 	HTMLLabelElement,
 	HTMLElement as HTMLLegendElement,
 	HTMLLinkElement,
@@ -388,12 +304,14 @@ export {
 	HTMLElement as HTMLUListElement,
 	HTMLUnknownElement,
 	HTMLVideoElement,
+	HashChangeEvent,
 	Headers,
 	History,
 	Image,
 	InputEvent,
 	KeyboardEvent,
 	Location,
+	MediaQueryListEvent,
 	MouseEvent,
 	MutationObserver,
 	MutationRecord,

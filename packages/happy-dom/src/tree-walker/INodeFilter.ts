@@ -1,5 +1,5 @@
-import INode from '../nodes/node/INode.js';
+import Node from '../nodes/node/Node.js';
 
-type INodeFilter = ((node: INode) => number) | { acceptNode(node: INode): number };
+type INodeFilter = ((node: Node) => number) | { acceptNode(node: Node): number };
 
 export default INodeFilter;

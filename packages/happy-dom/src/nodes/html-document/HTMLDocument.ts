@@ -1,5 +1,5 @@
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
-import IBrowserWindow from '../../window/IBrowserWindow.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 import Document from '../document/Document.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
@@ -14,7 +14,7 @@ export default class HTMLDocument extends Document {
 	 * @param injected.browserFrame Browser frame.
 	 * @param injected.window Window.
 	 */
-	constructor(injected: { browserFrame: IBrowserFrame; window: IBrowserWindow }) {
+	constructor(injected: { browserFrame: IBrowserFrame; window: BrowserWindow }) {
 		super(injected);
 
 		// Default document elements

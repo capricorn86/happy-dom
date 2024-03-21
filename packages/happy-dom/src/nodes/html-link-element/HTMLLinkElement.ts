@@ -1,13 +1,11 @@
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
-import IHTMLLinkElement from './IHTMLLinkElement.js';
 import Event from '../../event/Event.js';
 import ErrorEvent from '../../event/events/ErrorEvent.js';
-import INode from '../../nodes/node/INode.js';
+import Node from '../../nodes/node/Node.js';
 import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
-import IDOMTokenList from '../../dom-token-list/IDOMTokenList.js';
-import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import HTMLLinkElementNamedNodeMap from './HTMLLinkElementNamedNodeMap.js';
 import HTMLLinkElementStyleSheetLoader from './HTMLLinkElementStyleSheetLoader.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
@@ -18,14 +16,14 @@ import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLLinkElement.
  */
-export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkElement {
+export default class HTMLLinkElement extends HTMLElement {
 	// Events
 	public onerror: (event: ErrorEvent) => void = null;
 	public onload: (event: Event) => void = null;
 
 	// Internal properties
-	public override [PropertySymbol.attributes]: INamedNodeMap;
-	public readonly [PropertySymbol.sheet]: CSSStyleSheet = null;
+	public override [PropertySymbol.attributes]: NamedNodeMap;
+	public [PropertySymbol.sheet]: CSSStyleSheet = null;
 	public [PropertySymbol.evaluateCSS] = true;
 	public [PropertySymbol.relList]: DOMTokenList = null;
 	#styleSheetLoader: HTMLLinkElementStyleSheetLoader;
@@ -58,11 +56,11 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 *
 	 * @returns Rel list.
 	 */
-	public get relList(): IDOMTokenList {
+	public get relList(): DOMTokenList {
 		if (!this[PropertySymbol.relList]) {
 			this[PropertySymbol.relList] = new DOMTokenList(this, 'rel');
 		}
-		return <IDOMTokenList>this[PropertySymbol.relList];
+		return <DOMTokenList>this[PropertySymbol.relList];
 	}
 
 	/**
@@ -107,7 +105,16 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	 * @returns Href.
 	 */
 	public get href(): string {
-		return this.getAttribute('href') || '';
+		if (!this.hasAttribute('href')) {
+			return '';
+		}
+
+		try {
+			return new URL(this.getAttribute('href'), this[PropertySymbol.ownerDocument].location.href)
+				.href;
+		} catch (e) {
+			return this.getAttribute('href');
+		}
 	}
 
 	/**
@@ -212,7 +219,7 @@ export default class HTMLLinkElement extends HTMLElement implements IHTMLLinkEle
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
+	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
 		const isConnected = this[PropertySymbol.isConnected];
 		const isParentConnected = parentNode ? parentNode[PropertySymbol.isConnected] : false;
 

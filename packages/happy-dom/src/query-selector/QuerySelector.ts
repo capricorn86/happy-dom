@@ -1,19 +1,19 @@
-import IElement from '../nodes/element/IElement.js';
+import Element from '../nodes/element/Element.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import INodeList from '../nodes/node/INodeList.js';
 import SelectorItem from './SelectorItem.js';
 import NodeList from '../nodes/node/NodeList.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
-import IDocument from '../nodes/document/IDocument.js';
-import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment.js';
+import Document from '../nodes/document/Document.js';
+import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import SelectorParser from './SelectorParser.js';
 import ISelectorMatch from './ISelectorMatch.js';
-import Element from '../nodes/element/Element.js';
+import IHTMLElementTagNameMap from '../config/IHTMLElementTagNameMap.js';
+import ISVGElementTagNameMap from '../config/ISVGElementTagNameMap.js';
 
-type IDocumentPositionAndElement = {
+type DocumentPositionAndElement = {
 	documentPosition: string;
-	element: IElement;
+	element: Element;
 };
 
 /**
@@ -34,18 +34,54 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @returns HTML elements.
 	 */
+	public static querySelectorAll<K extends keyof IHTMLElementTagNameMap>(
+		node: Element | Document | DocumentFragment,
+		selector: K
+	): NodeList<IHTMLElementTagNameMap[K]>;
+
+	/**
+	 * Finds elements based on a query selector.
+	 *
+	 * @param node Node to search in.
+	 * @param selector Selector.
+	 * @returns HTML elements.
+	 */
+	public static querySelectorAll<K extends keyof ISVGElementTagNameMap>(
+		node: Element | Document | DocumentFragment,
+		selector: K
+	): NodeList<ISVGElementTagNameMap[K]>;
+
+	/**
+	 * Finds elements based on a query selector.
+	 *
+	 * @param node Node to search in.
+	 * @param selector Selector.
+	 * @returns HTML elements.
+	 */
 	public static querySelectorAll(
-		node: IElement | IDocument | IDocumentFragment,
+		node: Element | Document | DocumentFragment,
 		selector: string
-	): INodeList<IElement> {
-		if (selector === '') {
+	): NodeList<Element>;
+
+	/**
+	 * Finds elements based on a query selector.
+	 *
+	 * @param node Node to search in.
+	 * @param selector Selector.
+	 * @returns HTML elements.
+	 */
+	public static querySelectorAll(
+		node: Element | Document | DocumentFragment,
+		selector: string
+	): NodeList<Element> {
+		if (<string>selector === '') {
 			throw new Error(
 				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': The provided selector is empty.`
 			);
 		}
 
 		if (selector === null || selector === undefined) {
-			return new NodeList<IElement>();
+			return new NodeList<Element>();
 		}
 
 		if (INVALID_SELECTOR_REGEXP.test(selector)) {
@@ -55,18 +91,18 @@ export default class QuerySelector {
 		}
 
 		const groups = SelectorParser.getSelectorGroups(selector);
-		let matches: IDocumentPositionAndElement[] = [];
+		let matches: DocumentPositionAndElement[] = [];
 
 		for (const items of groups) {
 			matches = matches.concat(
 				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
-					? this.findAll(<IElement>node, [<IElement>node], items)
+					? this.findAll(<Element>node, [<Element>node], items)
 					: this.findAll(null, (<Element>node)[PropertySymbol.children], items)
 			);
 		}
 
-		const nodeList = new NodeList<IElement>();
-		const matchesMap: { [position: string]: IElement } = {};
+		const nodeList = new NodeList<Element>();
+		const matchesMap: { [position: string]: Element } = {};
 
 		for (let i = 0, max = matches.length; i < max; i++) {
 			matchesMap[matches[i].documentPosition] = matches[i].element;
@@ -87,10 +123,46 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @returns HTML element.
 	 */
+	public static querySelector<K extends keyof IHTMLElementTagNameMap>(
+		node: Element | Document | DocumentFragment,
+		selector: K
+	): IHTMLElementTagNameMap[K] | null;
+
+	/**
+	 * Finds an element based on a query selector.
+	 *
+	 * @param node Node to search in.
+	 * @param selector Selector.
+	 * @returns HTML element.
+	 */
+	public static querySelector<K extends keyof ISVGElementTagNameMap>(
+		node: Element | Document | DocumentFragment,
+		selector: K
+	): ISVGElementTagNameMap[K] | null;
+
+	/**
+	 * Finds an element based on a query selector.
+	 *
+	 * @param node Node to search in.
+	 * @param selector Selector.
+	 * @returns HTML element.
+	 */
 	public static querySelector(
-		node: IElement | IDocument | IDocumentFragment,
+		node: Element | Document | DocumentFragment,
 		selector: string
-	): IElement | null {
+	): Element | null;
+
+	/**
+	 * Finds an element based on a query selector.
+	 *
+	 * @param node Node to search in.
+	 * @param selector Selector.
+	 * @returns HTML element.
+	 */
+	public static querySelector(
+		node: Element | Document | DocumentFragment,
+		selector: string
+	): Element | null {
 		if (selector === '') {
 			throw new Error(
 				`Failed to execute 'querySelector' on '${node.constructor.name}': The provided selector is empty.`
@@ -110,7 +182,7 @@ export default class QuerySelector {
 		for (const items of SelectorParser.getSelectorGroups(selector)) {
 			const match =
 				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
-					? this.findFirst(<IElement>node, [<IElement>node], items)
+					? this.findFirst(<Element>node, [<Element>node], items)
 					: this.findFirst(null, (<Element>node)[PropertySymbol.children], items);
 
 			if (match) {
@@ -128,7 +200,7 @@ export default class QuerySelector {
 	 * @param selector Selector to match with.
 	 * @returns Result.
 	 */
-	public static match(element: IElement, selector: string): ISelectorMatch | null {
+	public static match(element: Element, selector: string): ISelectorMatch | null {
 		if (!selector) {
 			return null;
 		}
@@ -166,8 +238,8 @@ export default class QuerySelector {
 	 * @returns Result.
 	 */
 	private static matchSelector(
-		targetElement: IElement,
-		currentElement: IElement,
+		targetElement: Element,
+		currentElement: Element,
 		selectorItems: SelectorItem[],
 		priorityWeight = 0
 	): ISelectorMatch | null {
@@ -239,14 +311,14 @@ export default class QuerySelector {
 	 * @returns Document position and element map.
 	 */
 	private static findAll(
-		rootElement: IElement,
-		children: IElement[],
+		rootElement: Element,
+		children: Element[],
 		selectorItems: SelectorItem[],
 		documentPosition?: string
-	): IDocumentPositionAndElement[] {
+	): DocumentPositionAndElement[] {
 		const selectorItem = selectorItems[0];
 		const nextSelectorItem = selectorItems[1];
-		let matched: IDocumentPositionAndElement[] = [];
+		let matched: DocumentPositionAndElement[] = [];
 
 		for (let i = 0, max = children.length; i < max; i++) {
 			const child = children[i];
@@ -316,10 +388,10 @@ export default class QuerySelector {
 	 * @returns HTML element.
 	 */
 	private static findFirst(
-		rootElement: IElement,
-		children: IElement[],
+		rootElement: Element,
+		children: Element[],
 		selectorItems: SelectorItem[]
-	): IElement {
+	): Element {
 		const selectorItem = selectorItems[0];
 		const nextSelectorItem = selectorItems[1];
 

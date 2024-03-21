@@ -17,6 +17,9 @@ export default interface IBrowserSettings {
 	/** Disables computed style rendering. */
 	disableComputedStyleRendering: boolean;
 
+	/** Handle disabled resource loading as success */
+	handleDisabledFileLoadingAsSuccess: boolean;
+
 	/**
 	 * Disables error capturing.
 	 *

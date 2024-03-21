@@ -1,10 +1,9 @@
-import IHTMLFormControlsCollection from './IHTMLFormControlsCollection.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IHTMLInputElement from '../html-input-element/IHTMLInputElement.js';
-import IHTMLTextAreaElement from '../html-text-area-element/IHTMLTextAreaElement.js';
-import IHTMLSelectElement from '../html-select-element/IHTMLSelectElement.js';
+import HTMLInputElement from '../html-input-element/HTMLInputElement.js';
+import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
+import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
 import RadioNodeList from './RadioNodeList.js';
-import IHTMLButtonElement from '../html-button-element/IHTMLButtonElement.js';
+import HTMLButtonElement from '../html-button-element/HTMLButtonElement.js';
 
 /**
  * HTMLFormControlsCollection.
@@ -12,8 +11,8 @@ import IHTMLButtonElement from '../html-button-element/IHTMLButtonElement.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormControlsCollection
  */
 export default class HTMLFormControlsCollection
-	extends Array<IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement>
-	implements IHTMLFormControlsCollection
+	extends Array<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | HTMLButtonElement>
+	implements HTMLFormControlsCollection
 {
 	public [PropertySymbol.namedItems]: { [k: string]: RadioNodeList } = {};
 
@@ -24,7 +23,7 @@ export default class HTMLFormControlsCollection
 	 */
 	public item(
 		index: number
-	): IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement | null {
+	): HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | HTMLButtonElement | null {
 		return index >= 0 && this[index] ? this[index] : null;
 	}
 
@@ -37,10 +36,10 @@ export default class HTMLFormControlsCollection
 	public namedItem(
 		name: string
 	):
-		| IHTMLInputElement
-		| IHTMLTextAreaElement
-		| IHTMLSelectElement
-		| IHTMLButtonElement
+		| HTMLInputElement
+		| HTMLTextAreaElement
+		| HTMLSelectElement
+		| HTMLButtonElement
 		| RadioNodeList
 		| null {
 		if (this[PropertySymbol.namedItems][name] && this[PropertySymbol.namedItems][name].length) {
@@ -59,7 +58,7 @@ export default class HTMLFormControlsCollection
 	 * @param name Name.
 	 */
 	public [PropertySymbol.appendNamedItem](
-		node: IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement,
+		node: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | HTMLButtonElement,
 		name: string
 	): void {
 		if (name) {
@@ -86,7 +85,7 @@ export default class HTMLFormControlsCollection
 	 * @param name Name.
 	 */
 	public [PropertySymbol.removeNamedItem](
-		node: IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement,
+		node: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | HTMLButtonElement,
 		name: string
 	): void {
 		if (name && this[PropertySymbol.namedItems][name]) {
@@ -118,6 +117,7 @@ export default class HTMLFormControlsCollection
 	 */
 	protected [PropertySymbol.isValidPropertyName](name: string): boolean {
 		return (
+			!!name &&
 			!this.constructor.prototype.hasOwnProperty(name) &&
 			!Array.prototype.hasOwnProperty(name) &&
 			(isNaN(Number(name)) || name.includes('.'))

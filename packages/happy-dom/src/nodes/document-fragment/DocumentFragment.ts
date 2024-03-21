@@ -1,28 +1,27 @@
 import Node from '../node/Node.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IElement from '../element/IElement.js';
+import Element from '../element/Element.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
-import IDocumentFragment from './IDocumentFragment.js';
-import INode from '../node/INode.js';
-import IHTMLCollection from '../element/IHTMLCollection.js';
-import ElementUtility from '../element/ElementUtility.js';
 import HTMLCollection from '../element/HTMLCollection.js';
-import INodeList from '../node/INodeList.js';
+import ElementUtility from '../element/ElementUtility.js';
+import NodeList from '../node/NodeList.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
+import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
+import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 
 /**
  * DocumentFragment.
  */
-export default class DocumentFragment extends Node implements IDocumentFragment {
-	public readonly [PropertySymbol.children]: IHTMLCollection<IElement> = new HTMLCollection();
-	public [PropertySymbol.rootNode]: INode = this;
+export default class DocumentFragment extends Node {
+	public readonly [PropertySymbol.children]: HTMLCollection<Element> = new HTMLCollection();
+	public [PropertySymbol.rootNode]: Node = this;
 	public [PropertySymbol.nodeType] = NodeTypeEnum.documentFragmentNode;
 
 	/**
 	 * Returns the document fragment children.
 	 */
-	public get children(): IHTMLCollection<IElement> {
+	public get children(): HTMLCollection<Element> {
 		return this[PropertySymbol.children];
 	}
 
@@ -40,7 +39,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 *
 	 * @returns Element.
 	 */
-	public get firstElementChild(): IElement {
+	public get firstElementChild(): Element {
 		return this[PropertySymbol.children][0] ?? null;
 	}
 
@@ -49,7 +48,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 *
 	 * @returns Element.
 	 */
-	public get lastElementChild(): IElement {
+	public get lastElementChild(): Element {
 		return this[PropertySymbol.children][this[PropertySymbol.children].length - 1] ?? null;
 	}
 
@@ -90,7 +89,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 *
 	 * @param nodes List of Node or DOMString.
 	 */
-	public append(...nodes: (INode | string)[]): void {
+	public append(...nodes: (Node | string)[]): void {
 		ParentNodeUtility.append(this, ...nodes);
 	}
 
@@ -99,7 +98,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 *
 	 * @param nodes List of Node or DOMString.
 	 */
-	public prepend(...nodes: (INode | string)[]): void {
+	public prepend(...nodes: (Node | string)[]): void {
 		ParentNodeUtility.prepend(this, ...nodes);
 	}
 
@@ -108,7 +107,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 *
 	 * @param nodes List of Node or DOMString.
 	 */
-	public replaceChildren(...nodes: (INode | string)[]): void {
+	public replaceChildren(...nodes: (Node | string)[]): void {
 		ParentNodeUtility.replaceChildren(this, ...nodes);
 	}
 
@@ -118,7 +117,35 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): INodeList<IElement> {
+	public querySelectorAll<K extends keyof IHTMLElementTagNameMap>(
+		selector: K
+	): NodeList<IHTMLElementTagNameMap[K]>;
+
+	/**
+	 * Query CSS selector to find matching elments.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	public querySelectorAll<K extends keyof ISVGElementTagNameMap>(
+		selector: K
+	): NodeList<ISVGElementTagNameMap[K]>;
+
+	/**
+	 * Query CSS selector to find matching elments.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	public querySelectorAll(selector: string): NodeList<Element>;
+
+	/**
+	 * Query CSS selector to find matching elments.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	public querySelectorAll(selector: string): NodeList<Element> {
 		return QuerySelector.querySelectorAll(this, selector);
 	}
 
@@ -128,7 +155,35 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @param selector CSS selector.
 	 * @returns Matching element.
 	 */
-	public querySelector(selector: string): IElement {
+	public querySelector<K extends keyof IHTMLElementTagNameMap>(
+		selector: K
+	): IHTMLElementTagNameMap[K] | null;
+
+	/**
+	 * Query CSS Selector to find a matching element.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching element.
+	 */
+	public querySelector<K extends keyof ISVGElementTagNameMap>(
+		selector: K
+	): ISVGElementTagNameMap[K] | null;
+
+	/**
+	 * Query CSS Selector to find a matching element.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching element.
+	 */
+	public querySelector(selector: string): Element | null;
+
+	/**
+	 * Query CSS Selector to find a matching element.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching element.
+	 */
+	public querySelector(selector: string): Element | null {
 		return QuerySelector.querySelector(this, selector);
 	}
 
@@ -138,7 +193,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @param id ID.
 	 * @returns Matching element.
 	 */
-	public getElementById(id: string): IElement {
+	public getElementById(id: string): Element {
 		return ParentNodeUtility.getElementById(this, id);
 	}
 
@@ -149,24 +204,24 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): IDocumentFragment {
+	public cloneNode(deep = false): DocumentFragment {
 		const clone = <DocumentFragment>super.cloneNode(deep);
 
 		if (deep) {
 			for (const node of clone[PropertySymbol.childNodes]) {
 				if (node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
-					clone[PropertySymbol.children].push(<IElement>node);
+					clone[PropertySymbol.children].push(<Element>node);
 				}
 			}
 		}
 
-		return <IDocumentFragment>clone;
+		return <DocumentFragment>clone;
 	}
 
 	/**
 	 * @override
 	 */
-	public override appendChild(node: INode): INode {
+	public override appendChild(node: Node): Node {
 		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
 		return ElementUtility.appendChild(this, node);
 	}
@@ -174,7 +229,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	/**
 	 * @override
 	 */
-	public override removeChild(node: INode): INode {
+	public override removeChild(node: Node): Node {
 		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
 		return ElementUtility.removeChild(this, node);
 	}
@@ -182,7 +237,7 @@ export default class DocumentFragment extends Node implements IDocumentFragment 
 	/**
 	 * @override
 	 */
-	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
+	public override insertBefore(newNode: Node, referenceNode: Node | null): Node {
 		if (arguments.length < 2) {
 			throw new TypeError(
 				`Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only ${arguments.length} present.`

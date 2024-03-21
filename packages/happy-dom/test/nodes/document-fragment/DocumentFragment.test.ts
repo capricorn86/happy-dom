@@ -1,21 +1,21 @@
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import DocumentFragment from '../../../src/nodes/document-fragment/DocumentFragment.js';
-import IDocumentFragment from '../../../src/nodes/document-fragment/IDocumentFragment.js';
+import DocumentFragment from '../../../src/nodes/document-fragment/DocumentFragment.js';
 import Node from '../../../src/nodes/node/Node.js';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility.js';
 import QuerySelector from '../../../src/query-selector/QuerySelector.js';
 import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
 import Text from '../../../src/nodes/text/Text.js';
-import INodeList from '../../../src/nodes/node/INodeList.js';
-import IElement from '../../../src/nodes/element/IElement.js';
+import NodeList from '../../../src/nodes/node/NodeList.js';
+import Element from '../../../src/nodes/element/Element.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 
 describe('DocumentFragment', () => {
 	let window: Window;
 	let document: Document;
-	let documentFragment: IDocumentFragment;
+	let documentFragment: DocumentFragment;
 
 	beforeEach(() => {
 		window = new Window();
@@ -184,7 +184,7 @@ describe('DocumentFragment', () => {
 			vi.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
 				expect(parentNode).toBe(documentFragment);
 				expect(selector).toBe(expectedSelector);
-				return <INodeList<IElement>>[element];
+				return <NodeList<Element>>[element];
 			});
 
 			expect(Array.from(documentFragment.querySelectorAll(expectedSelector))).toEqual([element]);

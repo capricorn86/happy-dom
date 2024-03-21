@@ -2,8 +2,8 @@ import Event from '../event/Event.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
-import IDocument from '../nodes/document/IDocument.js';
-import INode from '../nodes/node/INode.js';
+import Document from '../nodes/document/Document.js';
+import Node from '../nodes/node/Node.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import NodeUtility from '../nodes/node/NodeUtility.js';
 import Range from '../range/Range.js';
@@ -20,7 +20,7 @@ import SelectionDirectionEnum from './SelectionDirectionEnum.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/Selection.
  */
 export default class Selection {
-	readonly #ownerDocument: IDocument = null;
+	readonly #ownerDocument: Document = null;
 	#range: Range = null;
 	#direction: SelectionDirectionEnum = SelectionDirectionEnum.directionless;
 
@@ -29,7 +29,7 @@ export default class Selection {
 	 *
 	 * @param ownerDocument Owner document.
 	 */
-	constructor(ownerDocument: IDocument) {
+	constructor(ownerDocument: Document) {
 		this.#ownerDocument = ownerDocument;
 	}
 
@@ -75,7 +75,7 @@ export default class Selection {
 	 * @see https://w3c.github.io/selection-api/#dom-selection-anchornode
 	 * @returns Node.
 	 */
-	public get anchorNode(): INode {
+	public get anchorNode(): Node {
 		if (!this.#range) {
 			return null;
 		}
@@ -106,7 +106,7 @@ export default class Selection {
 	 * @alias anchorNode
 	 * @returns Node.
 	 */
-	public get baseNode(): INode {
+	public get baseNode(): Node {
 		return this.anchorNode;
 	}
 
@@ -127,7 +127,7 @@ export default class Selection {
 	 * @see https://w3c.github.io/selection-api/#dom-selection-focusnode
 	 * @returns Node.
 	 */
-	public get focusNode(): INode {
+	public get focusNode(): Node {
 		return this.anchorNode;
 	}
 
@@ -148,7 +148,7 @@ export default class Selection {
 	 * @alias focusNode
 	 * @returns Node.
 	 */
-	public get extentNode(): INode {
+	public get extentNode(): Node {
 		return this.focusNode;
 	}
 
@@ -229,7 +229,7 @@ export default class Selection {
 	 * @param node Node.
 	 * @param offset Offset.
 	 */
-	public collapse(node: INode, offset: number): void {
+	public collapse(node: Node, offset: number): void {
 		if (node === null) {
 			this.removeAllRanges();
 			return;
@@ -268,7 +268,7 @@ export default class Selection {
 	 * @param node Node.
 	 * @param offset Offset.
 	 */
-	public setPosition(node: INode, offset: number): void {
+	public setPosition(node: Node, offset: number): void {
 		this.collapse(node, offset);
 	}
 
@@ -328,7 +328,7 @@ export default class Selection {
 	 * @param [allowPartialContainment] Set to "true" to allow partial containment.
 	 * @returns Always returns "true" for now.
 	 */
-	public containsNode(node: INode, allowPartialContainment = false): boolean {
+	public containsNode(node: Node, allowPartialContainment = false): boolean {
 		if (!this.#range || node[PropertySymbol.ownerDocument] !== this.#ownerDocument) {
 			return false;
 		}
@@ -367,7 +367,7 @@ export default class Selection {
 	 * @param node Node.
 	 * @param offset Offset.
 	 */
-	public extend(node: INode, offset: number): void {
+	public extend(node: Node, offset: number): void {
 		if (node[PropertySymbol.ownerDocument] !== this.#ownerDocument) {
 			return;
 		}
@@ -423,7 +423,7 @@ export default class Selection {
 	 * @see https://w3c.github.io/selection-api/#dom-selection-selectallchildren
 	 * @param node Node.
 	 */
-	public selectAllChildren(node: INode): void {
+	public selectAllChildren(node: Node): void {
 		if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
 			throw new DOMException(
 				"DocumentType Node can't be used as boundary point.",
@@ -456,9 +456,9 @@ export default class Selection {
 	 * @param focusOffset Focus offset.
 	 */
 	public setBaseAndExtent(
-		anchorNode: INode,
+		anchorNode: Node,
 		anchorOffset: number,
-		focusNode: INode,
+		focusNode: Node,
 		focusOffset: number
 	): void {
 		if (

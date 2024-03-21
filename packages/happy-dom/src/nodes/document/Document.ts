@@ -1,6 +1,6 @@
 import Element from '../element/Element.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IBrowserWindow from '../../window/IBrowserWindow.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 import Node from '../node/Node.js';
 import NodeIterator from '../../tree-walker/NodeIterator.js';
 import TreeWalker from '../../tree-walker/TreeWalker.js';
@@ -8,55 +8,54 @@ import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
 import Event from '../../event/Event.js';
 import DOMImplementation from '../../dom-implementation/DOMImplementation.js';
-import HTMLElementLocalNameToClass from '../../config/HTMLElementLocalNameToClass.js';
 import INodeFilter from '../../tree-walker/INodeFilter.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
 import DocumentType from '../document-type/DocumentType.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
-import IDocument from './IDocument.js';
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import DOMException from '../../exception/DOMException.js';
-import IElement from '../element/IElement.js';
-import IHTMLScriptElement from '../html-script-element/IHTMLScriptElement.js';
-import IHTMLElement from '../html-element/IHTMLElement.js';
-import IDocumentType from '../document-type/IDocumentType.js';
-import INode from '../node/INode.js';
-import IComment from '../comment/IComment.js';
-import IText from '../text/IText.js';
-import IDocumentFragment from '../document-fragment/IDocumentFragment.js';
-import INodeList from '../node/INodeList.js';
+import HTMLScriptElement from '../html-script-element/HTMLScriptElement.js';
+import HTMLElement from '../html-element/HTMLElement.js';
+import Comment from '../comment/Comment.js';
+import Text from '../text/Text.js';
 import NodeList from '../node/NodeList.js';
-import IHTMLCollection from '../element/IHTMLCollection.js';
-import IHTMLLinkElement from '../html-link-element/IHTMLLinkElement.js';
-import IHTMLStyleElement from '../html-style-element/IHTMLStyleElement.js';
-import DocumentReadyStateEnum from './DocumentReadyStateEnum.js';
-import Location from '../../url/Location.js';
-import Selection from '../../selection/Selection.js';
-import IShadowRoot from '../shadow-root/IShadowRoot.js';
-import Range from '../../range/Range.js';
-import IHTMLBaseElement from '../html-base-element/IHTMLBaseElement.js';
-import IAttr from '../attr/IAttr.js';
-import IProcessingInstruction from '../processing-instruction/IProcessingInstruction.js';
-import ElementUtility from '../element/ElementUtility.js';
 import HTMLCollection from '../element/HTMLCollection.js';
+import HTMLLinkElement from '../html-link-element/HTMLLinkElement.js';
+import HTMLStyleElement from '../html-style-element/HTMLStyleElement.js';
+import DocumentReadyStateEnum from './DocumentReadyStateEnum.js';
+import Location from '../../location/Location.js';
+import Selection from '../../selection/Selection.js';
+import ShadowRoot from '../shadow-root/ShadowRoot.js';
+import Range from '../../range/Range.js';
+import HTMLBaseElement from '../html-base-element/HTMLBaseElement.js';
+import Attr from '../attr/Attr.js';
+import ProcessingInstruction from '../processing-instruction/ProcessingInstruction.js';
+import ElementUtility from '../element/ElementUtility.js';
 import VisibilityStateEnum from './VisibilityStateEnum.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import CookieStringUtility from '../../cookie/urilities/CookieStringUtility.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import NodeFactory from '../NodeFactory.js';
+import { URL } from 'url';
+import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
+import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
+import SVGElement from '../svg-element/SVGElement.js';
+import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
+import HTMLAnchorElement from '../html-anchor-element/HTMLAnchorElement.js';
+import HTMLElementConfig from '../../config/HTMLElementConfig.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
 /**
  * Document.
  */
-export default class Document extends Node implements IDocument {
+export default class Document extends Node {
 	// Internal properties
-	public [PropertySymbol.children]: IHTMLCollection<IElement> = new HTMLCollection<IElement>();
-	public [PropertySymbol.activeElement]: IHTMLElement = null;
-	public [PropertySymbol.nextActiveElement]: IHTMLElement = null;
-	public [PropertySymbol.currentScript]: IHTMLScriptElement = null;
+	public [PropertySymbol.children]: HTMLCollection<Element> = new HTMLCollection<Element>();
+	public [PropertySymbol.activeElement]: HTMLElement | SVGElement = null;
+	public [PropertySymbol.nextActiveElement]: HTMLElement | SVGElement = null;
+	public [PropertySymbol.currentScript]: HTMLScriptElement = null;
 	public [PropertySymbol.rootNode] = this;
 	// Used as an unique identifier which is updated whenever the DOM gets modified.
 	public [PropertySymbol.cacheID] = 0;
@@ -68,8 +67,8 @@ export default class Document extends Node implements IDocument {
 	public [PropertySymbol.implementation] = new DOMImplementation(this);
 	public [PropertySymbol.readyState] = DocumentReadyStateEnum.interactive;
 	public [PropertySymbol.referrer] = '';
-	public [PropertySymbol.defaultView]: IBrowserWindow | null = null;
-	public [PropertySymbol.ownerWindow]: IBrowserWindow;
+	public [PropertySymbol.defaultView]: BrowserWindow | null = null;
+	public [PropertySymbol.ownerWindow]: BrowserWindow;
 
 	// Private properties
 	#selection: Selection = null;
@@ -193,7 +192,7 @@ export default class Document extends Node implements IDocument {
 	 * @param injected.browserFrame Browser frame.
 	 * @param injected.window Window.
 	 */
-	constructor(injected: { browserFrame: IBrowserFrame; window: IBrowserWindow }) {
+	constructor(injected: { browserFrame: IBrowserFrame; window: BrowserWindow }) {
 		super();
 		this.#browserFrame = injected.browserFrame;
 		this[PropertySymbol.ownerWindow] = injected.window;
@@ -249,14 +248,14 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @returns Default view.
 	 */
-	public get defaultView(): IBrowserWindow | null {
+	public get defaultView(): BrowserWindow | null {
 		return this[PropertySymbol.defaultView];
 	}
 
 	/**
 	 * Returns document children.
 	 */
-	public get children(): IHTMLCollection<IElement> {
+	public get children(): HTMLCollection<Element> {
 		return this[PropertySymbol.children];
 	}
 
@@ -311,15 +310,15 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * Returns a collection of all area elements and a elements in a document with a value for the href attribute.
 	 */
-	public get links(): IHTMLCollection<IHTMLElement> {
-		return <IHTMLCollection<IHTMLElement>>this.querySelectorAll('a[href],area[href]');
+	public get links(): NodeList<HTMLAnchorElement | HTMLElement> {
+		return <NodeList<HTMLElement>>this.querySelectorAll('a[href],area[href]');
 	}
 
 	/**
 	 * Returns a collection of all form elements in a document.
 	 */
-	public get forms(): IHTMLCollection<IHTMLElement> {
-		return <IHTMLCollection<IHTMLElement>>this.querySelectorAll('form');
+	public get forms(): NodeList<HTMLFormElement> {
+		return this.querySelectorAll('form');
 	}
 
 	/**
@@ -336,7 +335,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @returns Element.
 	 */
-	public get firstElementChild(): IElement {
+	public get firstElementChild(): Element {
 		return this[PropertySymbol.children][0] ?? null;
 	}
 
@@ -345,7 +344,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @returns Element.
 	 */
-	public get lastElementChild(): IElement {
+	public get lastElementChild(): Element {
 		return this[PropertySymbol.children][this[PropertySymbol.children].length - 1] ?? null;
 	}
 
@@ -357,7 +356,7 @@ export default class Document extends Node implements IDocument {
 	public get cookie(): string {
 		return CookieStringUtility.cookiesToString(
 			this.#browserFrame.page.context.cookieContainer.getCookies(
-				this[PropertySymbol.ownerWindow].location,
+				new URL(this[PropertySymbol.ownerWindow].location.href),
 				true
 			)
 		);
@@ -370,7 +369,10 @@ export default class Document extends Node implements IDocument {
 	 */
 	public set cookie(cookie: string) {
 		this.#browserFrame.page.context.cookieContainer.addCookies([
-			CookieStringUtility.stringToCookie(this[PropertySymbol.ownerWindow].location, cookie)
+			CookieStringUtility.stringToCookie(
+				new URL(this[PropertySymbol.ownerWindow].location.href),
+				cookie
+			)
 		]);
 	}
 
@@ -388,8 +390,8 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @returns Element.
 	 */
-	public get documentElement(): IHTMLElement {
-		return <IHTMLElement>ParentNodeUtility.getElementByTagName(this, 'html');
+	public get documentElement(): HTMLElement {
+		return <HTMLElement>ParentNodeUtility.getElementByTagName(this, 'html');
 	}
 
 	/**
@@ -397,7 +399,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @returns Document type.
 	 */
-	public get doctype(): IDocumentType {
+	public get doctype(): DocumentType {
 		for (const node of this[PropertySymbol.childNodes]) {
 			if (node instanceof DocumentType) {
 				return node;
@@ -411,8 +413,8 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @returns Element.
 	 */
-	public get body(): IHTMLElement {
-		return <IHTMLElement>ParentNodeUtility.getElementByTagName(this, 'body');
+	public get body(): HTMLElement {
+		return <HTMLElement>ParentNodeUtility.getElementByTagName(this, 'body');
 	}
 
 	/**
@@ -420,8 +422,8 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @returns Element.
 	 */
-	public get head(): IHTMLElement {
-		return <IHTMLElement>ParentNodeUtility.getElementByTagName(this, 'head');
+	public get head(): HTMLElement {
+		return <HTMLElement>ParentNodeUtility.getElementByTagName(this, 'head');
 	}
 
 	/**
@@ -430,7 +432,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns CSS style sheets.
 	 */
 	public get styleSheets(): CSSStyleSheet[] {
-		const styles = <INodeList<IHTMLLinkElement | IHTMLStyleElement>>(
+		const styles = <NodeList<HTMLLinkElement | HTMLStyleElement>>(
 			this.querySelectorAll('link[rel="stylesheet"][href],style')
 		);
 		const styleSheets = [];
@@ -448,7 +450,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @returns Active element.
 	 */
-	public get activeElement(): IHTMLElement {
+	public get activeElement(): HTMLElement | SVGElement {
 		if (
 			this[PropertySymbol.activeElement] &&
 			!this[PropertySymbol.activeElement][PropertySymbol.isConnected]
@@ -460,13 +462,13 @@ export default class Document extends Node implements IDocument {
 			this[PropertySymbol.activeElement] &&
 			this[PropertySymbol.activeElement] instanceof Element
 		) {
-			let rootNode: IShadowRoot | IDocument = <IShadowRoot | IDocument>(
+			let rootNode: ShadowRoot | Document = <ShadowRoot | Document>(
 				this[PropertySymbol.activeElement].getRootNode()
 			);
-			let activeElement: IHTMLElement = this[PropertySymbol.activeElement];
+			let activeElement = this[PropertySymbol.activeElement];
 			while (rootNode !== this) {
-				activeElement = <IHTMLElement>(<IShadowRoot>rootNode).host;
-				rootNode = activeElement ? <IShadowRoot | IDocument>activeElement.getRootNode() : this;
+				activeElement = <HTMLElement | SVGElement>(<ShadowRoot>rootNode).host;
+				rootNode = activeElement ? <ShadowRoot | Document>activeElement.getRootNode() : this;
 			}
 			return activeElement;
 		}
@@ -478,7 +480,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @returns Scrolling element.
 	 */
-	public get scrollingElement(): IHTMLElement {
+	public get scrollingElement(): HTMLElement {
 		return this.documentElement;
 	}
 
@@ -496,8 +498,8 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @returns Scripts.
 	 */
-	public get scripts(): IHTMLCollection<IHTMLScriptElement> {
-		return <IHTMLCollection<IHTMLScriptElement>>this.getElementsByTagName('script');
+	public get scripts(): HTMLCollection<HTMLScriptElement> {
+		return this.getElementsByTagName('script');
 	}
 
 	/**
@@ -507,7 +509,7 @@ export default class Document extends Node implements IDocument {
 	 * @returns Base URI.
 	 */
 	public get baseURI(): string {
-		const element = <IHTMLBaseElement | null>ParentNodeUtility.getElementByTagName(this, 'base');
+		const element = <HTMLBaseElement | null>ParentNodeUtility.getElementByTagName(this, 'base');
 		if (element) {
 			return element.href;
 		}
@@ -563,7 +565,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @returns the currently executing script element.
 	 */
-	public get currentScript(): IHTMLScriptElement {
+	public get currentScript(): HTMLScriptElement {
 		return this[PropertySymbol.currentScript];
 	}
 
@@ -572,7 +574,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @param nodes List of Node or DOMString.
 	 */
-	public append(...nodes: (INode | string)[]): void {
+	public append(...nodes: (Node | string)[]): void {
 		ParentNodeUtility.append(this, ...nodes);
 	}
 
@@ -581,7 +583,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @param nodes List of Node or DOMString.
 	 */
-	public prepend(...nodes: (INode | string)[]): void {
+	public prepend(...nodes: (Node | string)[]): void {
 		ParentNodeUtility.prepend(this, ...nodes);
 	}
 
@@ -590,9 +592,19 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @param nodes List of Node or DOMString.
 	 */
-	public replaceChildren(...nodes: (INode | string)[]): void {
+	public replaceChildren(...nodes: (Node | string)[]): void {
 		ParentNodeUtility.replaceChildren(this, ...nodes);
 	}
+
+	/**
+	 * Query CSS selector to find matching nodes.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	public querySelectorAll<K extends keyof IHTMLElementTagNameMap>(
+		selector: K
+	): NodeList<IHTMLElementTagNameMap[K]>;
 
 	/**
 	 * Query CSS selector to find matching elments.
@@ -600,17 +612,63 @@ export default class Document extends Node implements IDocument {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): INodeList<IElement> {
+	public querySelectorAll<K extends keyof ISVGElementTagNameMap>(
+		selector: K
+	): NodeList<ISVGElementTagNameMap[K]>;
+
+	/**
+	 * Query CSS selector to find matching elments.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	public querySelectorAll(selector: string): NodeList<Element>;
+
+	/**
+	 * Query CSS selector to find matching elments.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	public querySelectorAll(selector: string): NodeList<Element> {
 		return QuerySelector.querySelectorAll(this, selector);
 	}
 
 	/**
-	 * Query CSS Selector to find a matching element.
+	 * Query CSS Selector to find matching node.
 	 *
 	 * @param selector CSS selector.
 	 * @returns Matching element.
 	 */
-	public querySelector(selector: string): IElement {
+	public querySelector<K extends keyof IHTMLElementTagNameMap>(
+		selector: K
+	): IHTMLElementTagNameMap[K] | null;
+
+	/**
+	 * Query CSS Selector to find matching node.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching element.
+	 */
+	public querySelector<K extends keyof ISVGElementTagNameMap>(
+		selector: K
+	): ISVGElementTagNameMap[K] | null;
+
+	/**
+	 * Query CSS Selector to find matching node.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching element.
+	 */
+	public querySelector(selector: string): Element | null;
+
+	/**
+	 * Query CSS Selector to find matching node.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching element.
+	 */
+	public querySelector(selector: string): Element | null {
 		return QuerySelector.querySelector(this, selector);
 	}
 
@@ -620,7 +678,7 @@ export default class Document extends Node implements IDocument {
 	 * @param className Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByClassName(className: string): IHTMLCollection<IElement> {
+	public getElementsByClassName(className: string): HTMLCollection<Element> {
 		return ParentNodeUtility.getElementsByClassName(this, className);
 	}
 
@@ -630,7 +688,35 @@ export default class Document extends Node implements IDocument {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagName(tagName: string): IHTMLCollection<IElement> {
+	public getElementsByTagName<K extends keyof IHTMLElementTagNameMap>(
+		tagName: K
+	): HTMLCollection<IHTMLElementTagNameMap[K]>;
+
+	/**
+	 * Returns an elements by tag name.
+	 *
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagName<K extends keyof ISVGElementTagNameMap>(
+		tagName: K
+	): HTMLCollection<ISVGElementTagNameMap[K]>;
+
+	/**
+	 * Returns an elements by tag name.
+	 *
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagName(tagName: string): HTMLCollection<Element>;
+
+	/**
+	 * Returns an elements by tag name.
+	 *
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagName(tagName: string): HTMLCollection<Element> {
 		return ParentNodeUtility.getElementsByTagName(this, tagName);
 	}
 
@@ -641,7 +727,40 @@ export default class Document extends Node implements IDocument {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<IElement> {
+	public getElementsByTagNameNS<K extends keyof IHTMLElementTagNameMap>(
+		namespaceURI: 'http://www.w3.org/1999/xhtml',
+		tagName: K
+	): HTMLCollection<IHTMLElementTagNameMap[K]>;
+
+	/**
+	 * Returns an elements by tag name and namespace.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagNameNS<K extends keyof ISVGElementTagNameMap>(
+		namespaceURI: 'http://www.w3.org/2000/svg',
+		tagName: K
+	): HTMLCollection<ISVGElementTagNameMap[K]>;
+
+	/**
+	 * Returns an elements by tag name and namespace.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): HTMLCollection<Element>;
+
+	/**
+	 * Returns an elements by tag name and namespace.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param tagName Tag name.
+	 * @returns Matching element.
+	 */
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): HTMLCollection<Element> {
 		return ParentNodeUtility.getElementsByTagNameNS(this, namespaceURI, tagName);
 	}
 
@@ -651,7 +770,7 @@ export default class Document extends Node implements IDocument {
 	 * @param id ID.
 	 * @returns Matching element.
 	 */
-	public getElementById(id: string): IElement {
+	public getElementById(id: string): Element {
 		return <Element>ParentNodeUtility.getElementById(this, id);
 	}
 
@@ -661,17 +780,17 @@ export default class Document extends Node implements IDocument {
 	 * @returns Matching element.
 	 * @param name
 	 */
-	public getElementsByName(name: string): INodeList<IElement> {
+	public getElementsByName(name: string): NodeList<Element> {
 		const getElementsByName = (
-			parentNode: IElement | IDocumentFragment | IDocument,
+			parentNode: Element | DocumentFragment | Document,
 			name: string
-		): INodeList<IElement> => {
-			const matches = new NodeList<IElement>();
+		): NodeList<Element> => {
+			const matches = new NodeList<Element>();
 			for (const child of (<Element | Document>parentNode)[PropertySymbol.children]) {
 				if (child.getAttributeNS(null, 'name') === name) {
 					matches.push(child);
 				}
-				for (const match of getElementsByName(<IElement>child, name)) {
+				for (const match of getElementsByName(<Element>child, name)) {
 					matches.push(match);
 				}
 			}
@@ -687,13 +806,13 @@ export default class Document extends Node implements IDocument {
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): IDocument {
+	public cloneNode(deep = false): Document {
 		const clone = <Document>super.cloneNode(deep);
 
 		if (deep) {
 			for (const node of clone[PropertySymbol.childNodes]) {
 				if (node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
-					clone[PropertySymbol.children].push(<IElement>node);
+					clone[PropertySymbol.children].push(<Element>node);
 				}
 			}
 		}
@@ -704,7 +823,7 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * @override
 	 */
-	public override appendChild(node: INode): INode {
+	public override appendChild(node: Node): Node {
 		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
 		return ElementUtility.appendChild(this, node);
 	}
@@ -712,7 +831,7 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * @override
 	 */
-	public override removeChild(node: INode): INode {
+	public override removeChild(node: Node): Node {
 		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
 		return ElementUtility.removeChild(this, node);
 	}
@@ -720,7 +839,7 @@ export default class Document extends Node implements IDocument {
 	/**
 	 * @override
 	 */
-	public override insertBefore(newNode: INode, referenceNode: INode | null): INode {
+	public override insertBefore(newNode: Node, referenceNode: Node | null): Node {
 		if (arguments.length < 2) {
 			throw new TypeError(
 				`Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only ${arguments.length} present.`
@@ -772,8 +891,8 @@ export default class Document extends Node implements IDocument {
 
 					this.appendChild(documentElement);
 
-					const head = <IElement>ParentNodeUtility.getElementByTagName(this, 'head');
-					let body = <IElement>ParentNodeUtility.getElementByTagName(this, 'body');
+					const head = <Element>ParentNodeUtility.getElementByTagName(this, 'head');
+					let body = <Element>ParentNodeUtility.getElementByTagName(this, 'body');
 
 					if (!body) {
 						body = this.createElement('body');
@@ -833,7 +952,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @returns Document.
 	 */
-	public open(): IDocument {
+	public open(): Document {
 		this[PropertySymbol.isFirstWriteAfterOpen] = true;
 
 		for (const eventType of Object.keys(this[PropertySymbol.listeners])) {
@@ -867,9 +986,75 @@ export default class Document extends Node implements IDocument {
 	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
 	 * @returns Element.
 	 */
-	public createElement(qualifiedName: string, options?: { is?: string }): IElement {
-		return this.createElementNS(NamespaceURI.html, qualifiedName, options);
+	public createElement<K extends keyof IHTMLElementTagNameMap>(
+		qualifiedName: K,
+		options?: { is?: string }
+	): IHTMLElementTagNameMap[K];
+
+	/**
+	 * Creates an element.
+	 *
+	 * @param qualifiedName Tag name.
+	 * @param [options] Options.
+	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
+	 * @returns Element.
+	 */
+	public createElement<K extends keyof ISVGElementTagNameMap>(
+		qualifiedName: K,
+		options?: { is?: string }
+	): ISVGElementTagNameMap[K];
+
+	/**
+	 * Creates an element.
+	 *
+	 * @param qualifiedName Tag name.
+	 * @param [options] Options.
+	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
+	 * @returns Element.
+	 */
+	public createElement(qualifiedName: string, options?: { is?: string }): HTMLElement;
+
+	/**
+	 * Creates an element.
+	 *
+	 * @param qualifiedName Tag name.
+	 * @param [options] Options.
+	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
+	 * @returns Element.
+	 */
+	public createElement(qualifiedName: string, options?: { is?: string }): HTMLElement {
+		return <HTMLElement>this.createElementNS(NamespaceURI.html, qualifiedName, options);
 	}
+
+	/**
+	 * Creates an element with the specified namespace URI and qualified name.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param qualifiedName Tag name.
+	 * @param [options] Options.
+	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
+	 * @returns Element.
+	 */
+	public createElementNS<K extends keyof IHTMLElementTagNameMap>(
+		namespaceURI: 'http://www.w3.org/1999/xhtml',
+		qualifiedName: K,
+		options?: { is?: string }
+	): IHTMLElementTagNameMap[K];
+
+	/**
+	 * Creates an element with the specified namespace URI and qualified name.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param qualifiedName Tag name.
+	 * @param [options] Options.
+	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
+	 * @returns Element.
+	 */
+	public createElementNS<K extends keyof ISVGElementTagNameMap>(
+		namespaceURI: 'http://www.w3.org/2000/svg',
+		qualifiedName: K,
+		options?: { is?: string }
+	): ISVGElementTagNameMap[K];
 
 	/**
 	 * Creates an element with the specified namespace URI and qualified name.
@@ -884,7 +1069,22 @@ export default class Document extends Node implements IDocument {
 		namespaceURI: string,
 		qualifiedName: string,
 		options?: { is?: string }
-	): IElement {
+	): Element;
+
+	/**
+	 * Creates an element with the specified namespace URI and qualified name.
+	 *
+	 * @param namespaceURI Namespace URI.
+	 * @param qualifiedName Tag name.
+	 * @param [options] Options.
+	 * @param [options.is] Tag name of a custom element previously defined via customElements.define().
+	 * @returns Element.
+	 */
+	public createElementNS(
+		namespaceURI: string,
+		qualifiedName: string,
+		options?: { is?: string }
+	): Element {
 		qualifiedName = String(qualifiedName);
 
 		if (!qualifiedName) {
@@ -895,7 +1095,7 @@ export default class Document extends Node implements IDocument {
 
 		// SVG element
 		if (namespaceURI === NamespaceURI.svg) {
-			const element = NodeFactory.createNode<IElement>(
+			const element = NodeFactory.createNode<SVGElement>(
 				this,
 				qualifiedName === 'svg'
 					? this[PropertySymbol.ownerWindow].SVGSVGElement
@@ -905,7 +1105,7 @@ export default class Document extends Node implements IDocument {
 			element[PropertySymbol.localName] = qualifiedName;
 			element[PropertySymbol.namespaceURI] = namespaceURI;
 			element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
-			return element;
+			return <HTMLElement>(<unknown>element);
 		}
 
 		// Custom HTML element
@@ -915,7 +1115,7 @@ export default class Document extends Node implements IDocument {
 			];
 
 		if (customElement) {
-			const element = NodeFactory.createNode<IElement>(this, customElement.elementClass);
+			const element = new customElement.elementClass();
 			element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
 			element[PropertySymbol.localName] = qualifiedName;
 			element[PropertySymbol.namespaceURI] = namespaceURI;
@@ -924,11 +1124,13 @@ export default class Document extends Node implements IDocument {
 		}
 
 		const localName = qualifiedName.toLowerCase();
-		const elementClass = this[PropertySymbol.ownerWindow][HTMLElementLocalNameToClass[localName]];
+		const elementClass = HTMLElementConfig[localName]
+			? this[PropertySymbol.ownerWindow][HTMLElementConfig[localName].className]
+			: null;
 
 		// Known HTML element
 		if (elementClass) {
-			const element = NodeFactory.createNode<IElement>(this, elementClass);
+			const element = NodeFactory.createNode<HTMLElement>(this, elementClass);
 
 			element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
 			element[PropertySymbol.localName] = localName;
@@ -939,7 +1141,7 @@ export default class Document extends Node implements IDocument {
 		}
 
 		// Unknown HTML element
-		const element = NodeFactory.createNode<IElement>(
+		const element = NodeFactory.createNode<Element>(
 			this,
 			// If the tag name contains a hyphen, it is an unknown custom element and we should use HTMLElement.
 			localName.includes('-')
@@ -952,7 +1154,7 @@ export default class Document extends Node implements IDocument {
 		element[PropertySymbol.namespaceURI] = namespaceURI;
 		element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
 
-		return element;
+		return <HTMLElement>element;
 	}
 
 	/* eslint-enable jsdoc/valid-types */
@@ -963,8 +1165,8 @@ export default class Document extends Node implements IDocument {
 	 * @param [data] Text data.
 	 * @returns Text node.
 	 */
-	public createTextNode(data?: string): IText {
-		return NodeFactory.createNode<IText>(this, this[PropertySymbol.ownerWindow].Text, data);
+	public createTextNode(data?: string): Text {
+		return NodeFactory.createNode<Text>(this, this[PropertySymbol.ownerWindow].Text, data);
 	}
 
 	/**
@@ -973,8 +1175,8 @@ export default class Document extends Node implements IDocument {
 	 * @param [data] Text data.
 	 * @returns Text node.
 	 */
-	public createComment(data?: string): IComment {
-		return NodeFactory.createNode<IComment>(this, this[PropertySymbol.ownerWindow].Comment, data);
+	public createComment(data?: string): Comment {
+		return NodeFactory.createNode<Comment>(this, this[PropertySymbol.ownerWindow].Comment, data);
 	}
 
 	/**
@@ -982,7 +1184,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @returns Document fragment.
 	 */
-	public createDocumentFragment(): IDocumentFragment {
+	public createDocumentFragment(): DocumentFragment {
 		return new this[PropertySymbol.ownerWindow].DocumentFragment();
 	}
 
@@ -993,11 +1195,7 @@ export default class Document extends Node implements IDocument {
 	 * @param [whatToShow] What to show.
 	 * @param [filter] Filter.
 	 */
-	public createNodeIterator(
-		root: INode,
-		whatToShow = -1,
-		filter: INodeFilter = null
-	): NodeIterator {
+	public createNodeIterator(root: Node, whatToShow = -1, filter: INodeFilter = null): NodeIterator {
 		return new NodeIterator(root, whatToShow, filter);
 	}
 
@@ -1008,7 +1206,7 @@ export default class Document extends Node implements IDocument {
 	 * @param [whatToShow] What to show.
 	 * @param [filter] Filter.
 	 */
-	public createTreeWalker(root: INode, whatToShow = -1, filter: INodeFilter = null): TreeWalker {
+	public createTreeWalker(root: Node, whatToShow = -1, filter: INodeFilter = null): TreeWalker {
 		return new TreeWalker(root, whatToShow, filter);
 	}
 
@@ -1032,7 +1230,7 @@ export default class Document extends Node implements IDocument {
 	 * @param qualifiedName Name.
 	 * @returns Attribute.
 	 */
-	public createAttribute(qualifiedName: string): IAttr {
+	public createAttribute(qualifiedName: string): Attr {
 		return this.createAttributeNS(null, qualifiedName.toLowerCase());
 	}
 
@@ -1043,11 +1241,11 @@ export default class Document extends Node implements IDocument {
 	 * @param qualifiedName Qualified name.
 	 * @returns Element.
 	 */
-	public createAttributeNS(namespaceURI: string, qualifiedName: string): IAttr {
-		const attribute = NodeFactory.createNode<IAttr>(this, this[PropertySymbol.ownerWindow].Attr);
+	public createAttributeNS(namespaceURI: string, qualifiedName: string): Attr {
+		const attribute = NodeFactory.createNode<Attr>(this, this[PropertySymbol.ownerWindow].Attr);
 		attribute[PropertySymbol.namespaceURI] = namespaceURI;
 		attribute[PropertySymbol.name] = qualifiedName;
-		return <IAttr>attribute;
+		return <Attr>attribute;
 	}
 
 	/**
@@ -1056,7 +1254,7 @@ export default class Document extends Node implements IDocument {
 	 * @param node Node to import.
 	 * @param [deep=false] Set to "true" if the clone should be deep.
 	 */
-	public importNode(node: INode, deep = false): INode {
+	public importNode(node: Node, deep = false): Node {
 		if (!(node instanceof Node)) {
 			throw new DOMException('Parameter 1 was not of type Node.');
 		}
@@ -1080,7 +1278,7 @@ export default class Document extends Node implements IDocument {
 	 * @param node Node to adopt.
 	 * @returns Adopted node.
 	 */
-	public adoptNode(node: INode): INode {
+	public adoptNode(node: Node): Node {
 		if (!(node instanceof Node)) {
 			throw new DOMException('Parameter 1 was not of type Node.');
 		}
@@ -1119,9 +1317,9 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @param target Target.
 	 * @param data Data.
-	 * @returns IProcessingInstruction.
+	 * @returns ProcessingInstruction.
 	 */
-	public createProcessingInstruction(target: string, data: string): IProcessingInstruction {
+	public createProcessingInstruction(target: string, data: string): ProcessingInstruction {
 		if (!target || !PROCESSING_INSTRUCTION_TARGET_REGEXP.test(target)) {
 			throw new DOMException(
 				`Failed to execute 'createProcessingInstruction' on 'Document': The target provided ('${target}') is not a valid name.`
@@ -1132,7 +1330,7 @@ export default class Document extends Node implements IDocument {
 				`Failed to execute 'createProcessingInstruction' on 'Document': The data provided ('?>') contains '?>'`
 			);
 		}
-		const processingInstruction = NodeFactory.createNode<IProcessingInstruction>(
+		const processingInstruction = NodeFactory.createNode<ProcessingInstruction>(
 			this,
 			this[PropertySymbol.ownerWindow].ProcessingInstruction,
 			data
@@ -1146,7 +1344,7 @@ export default class Document extends Node implements IDocument {
 	 *
 	 * @param node Node.
 	 */
-	#importNode(node: INode): void {
+	#importNode(node: Node): void {
 		node[PropertySymbol.ownerDocument] = this;
 
 		for (const child of node[PropertySymbol.childNodes]) {

@@ -2,6 +2,8 @@ import DOMException from '../exception/DOMException.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import HTMLElement from '../nodes/html-element/HTMLElement.js';
 import Node from '../nodes/node/Node.js';
+import BrowserWindow from '../window/BrowserWindow.js';
+import NamespaceURI from '../config/NamespaceURI.js';
 
 /**
  * Custom elements registry.
@@ -12,6 +14,16 @@ export default class CustomElementRegistry {
 	} = {};
 	public [PropertySymbol.registedClass]: Map<typeof HTMLElement, string> = new Map();
 	public [PropertySymbol.callbacks]: { [k: string]: (() => void)[] } = {};
+	#window: BrowserWindow;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param window Window.
+	 */
+	constructor(window: BrowserWindow) {
+		this.#window = window;
+	}
 
 	/**
 	 * Defines a custom element class.
@@ -43,6 +55,31 @@ export default class CustomElementRegistry {
 				"Failed to execute 'define' on 'CustomElementRegistry': this constructor has already been used with this registry"
 			);
 		}
+
+		const tagName = name.toUpperCase();
+
+		elementClass[PropertySymbol.ownerDocument] = this.#window.document;
+
+		Object.defineProperty(elementClass.prototype, 'localName', {
+			configurable: true,
+			get: function () {
+				return this[PropertySymbol.localName] || name;
+			}
+		});
+
+		Object.defineProperty(elementClass.prototype, 'tagName', {
+			configurable: true,
+			get: function () {
+				return this[PropertySymbol.tagName] || tagName;
+			}
+		});
+
+		Object.defineProperty(elementClass.prototype, 'namespaceURI', {
+			configurable: true,
+			get: function () {
+				return this[PropertySymbol.namespaceURI] || NamespaceURI.html;
+			}
+		});
 
 		this[PropertySymbol.registry][name] = {
 			elementClass,
@@ -111,6 +148,18 @@ export default class CustomElementRegistry {
 	 */
 	public getName(elementClass: typeof HTMLElement): string | null {
 		return this[PropertySymbol.registedClass].get(elementClass) || null;
+	}
+
+	/**
+	 * Destroys the registry.
+	 */
+	public [PropertySymbol.destroy](): void {
+		for (const entity of Object.values(this[PropertySymbol.registry])) {
+			entity.elementClass[PropertySymbol.ownerDocument] = null;
+		}
+		this[PropertySymbol.registry] = {};
+		this[PropertySymbol.registedClass] = new Map();
+		this[PropertySymbol.callbacks] = {};
 	}
 
 	/**

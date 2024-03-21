@@ -1,6 +1,5 @@
 import Element from '../nodes/element/Element.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import IDOMTokenList from './IDOMTokenList.js';
 
 const ATTRIBUTE_SPLIT_REGEXP = /[\t\f\n\r ]+/;
 
@@ -10,7 +9,7 @@ const ATTRIBUTE_SPLIT_REGEXP = /[\t\f\n\r ]+/;
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList.
  */
-export default class DOMTokenList implements IDOMTokenList {
+export default class DOMTokenList {
 	#length = 0;
 	#ownerElement: Element;
 	#attributeName: string;

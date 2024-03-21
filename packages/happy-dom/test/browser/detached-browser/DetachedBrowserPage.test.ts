@@ -4,7 +4,7 @@ import Window from '../../../src/window/Window';
 import BrowserWindow from '../../../src/window/BrowserWindow';
 import VirtualConsolePrinter from '../../../src/console/VirtualConsolePrinter';
 import VirtualConsole from '../../../src/console/VirtualConsole';
-import IResponse from '../../../src/fetch/types/IResponse';
+import Response from '../../../src/fetch/types/Response';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import IGoToOptions from '../../../src/browser/types/IGoToOptions';
 import BrowserFrameFactory from '../../../src/browser/utilities/BrowserFrameFactory';
@@ -275,11 +275,11 @@ describe('DetachedBrowserPage', () => {
 			vi.spyOn(page.mainFrame, 'goto').mockImplementation((url, options) => {
 				usedURL = url;
 				usedOptions = <IGoToOptions>options;
-				return Promise.resolve(<IResponse>{ url });
+				return Promise.resolve(<Response>{ url });
 			});
 
 			const response = await page.goto('http://localhost:3000', { timeout: 10000 });
-			expect((<IResponse>response).url).toBe('http://localhost:3000');
+			expect((<Response>response).url).toBe('http://localhost:3000');
 			expect(usedURL).toBe('http://localhost:3000');
 			expect(usedOptions).toEqual({ timeout: 10000 });
 		});

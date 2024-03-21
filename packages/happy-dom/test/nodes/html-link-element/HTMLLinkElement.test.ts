@@ -1,16 +1,15 @@
 import Window from '../../../src/window/Window.js';
-import IWindow from '../../../src/window/IWindow.js';
-import IBrowserWindow from '../../../src/window/IBrowserWindow.js';
-import IDocument from '../../../src/nodes/document/IDocument.js';
-import IHTMLLinkElement from '../../../src/nodes/html-link-element/IHTMLLinkElement.js';
+import BrowserWindow from '../../../src/window/BrowserWindow.js';
+import Document from '../../../src/nodes/document/Document.js';
+import HTMLLinkElement from '../../../src/nodes/html-link-element/HTMLLinkElement.js';
 import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
 import Event from '../../../src/event/Event.js';
 import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 
 describe('HTMLLinkElement', () => {
-	let window: IWindow;
-	let document: IDocument;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -23,7 +22,7 @@ describe('HTMLLinkElement', () => {
 
 	describe('Object.prototype.toString', () => {
 		it('Returns `[object HTMLLinkElement]`', () => {
-			const element = <IHTMLLinkElement>document.createElement('link');
+			const element = document.createElement('link');
 			expect(Object.prototype.toString.call(element)).toBe('[object HTMLLinkElement]');
 		});
 	});
@@ -40,7 +39,7 @@ describe('HTMLLinkElement', () => {
 	]) {
 		describe(`get ${property}()`, () => {
 			it(`Returns the "${property}" attribute.`, () => {
-				const element = <IHTMLLinkElement>document.createElement('link');
+				const element = document.createElement('link');
 				element.setAttribute(property, 'test');
 				expect(element[property]).toBe('test');
 			});
@@ -48,7 +47,7 @@ describe('HTMLLinkElement', () => {
 
 		describe(`set ${property}()`, () => {
 			it(`Sets the attribute "${property}".`, () => {
-				const element = <IHTMLLinkElement>document.createElement('link');
+				const element = document.createElement('link');
 				element[property] = 'test';
 				expect(element.getAttribute(property)).toBe('test');
 			});
@@ -57,7 +56,7 @@ describe('HTMLLinkElement', () => {
 
 	describe('get relList()', () => {
 		it('Returns a DOMTokenList object.', () => {
-			const element = <IHTMLLinkElement>document.createElement('link');
+			const element = document.createElement('link');
 			element.setAttribute('rel', 'value1 value2');
 			expect(element.relList.value).toBe('value1 value2');
 		});
@@ -65,23 +64,30 @@ describe('HTMLLinkElement', () => {
 
 	describe('get href()', () => {
 		it('Returns the "href" attribute.', () => {
-			const element = <IHTMLLinkElement>document.createElement('link');
+			const element = document.createElement('link');
 			element.setAttribute('href', 'test');
 			expect(element.href).toBe('test');
+		});
+
+		it('Returns URL relative to window location.', () => {
+			window.happyDOM.setURL('https://localhost:8080/test/path/');
+			const element = document.createElement('link');
+			element.setAttribute('href', 'test');
+			expect(element.href).toBe('https://localhost:8080/test/path/test');
 		});
 	});
 
 	describe('set href()', () => {
 		it('Sets the attribute "href".', () => {
-			const element = <IHTMLLinkElement>document.createElement('link');
+			const element = document.createElement('link');
 			element.href = 'test';
 			expect(element.getAttribute('href')).toBe('test');
 		});
 
 		it('Loads and evaluates an external CSS file when the attribute "href" and "rel" is set and the element is connected to DOM.', async () => {
-			const element = <IHTMLLinkElement>document.createElement('link');
+			const element = document.createElement('link');
 			const css = 'div { background: red; }';
-			let loadedWindow: IBrowserWindow | null = null;
+			let loadedWindow: BrowserWindow | null = null;
 			let loadedURL: string | null = null;
 			let loadEvent: Event | null = null;
 
@@ -110,7 +116,7 @@ describe('HTMLLinkElement', () => {
 		});
 
 		it('Triggers error event when fetching a CSS file fails during setting the "href" and "rel" attributes.', async () => {
-			const element = <IHTMLLinkElement>document.createElement('link');
+			const element = document.createElement('link');
 			const thrownError = new Error('error');
 			let errorEvent: ErrorEvent | null = null;
 
@@ -134,9 +140,9 @@ describe('HTMLLinkElement', () => {
 		});
 
 		it('Does not load and evaluate external CSS files if the element is not connected to DOM.', () => {
-			const element = <IHTMLLinkElement>document.createElement('link');
+			const element = document.createElement('link');
 			const css = 'div { background: red; }';
-			let loadedWindow: IBrowserWindow | null = null;
+			let loadedWindow: BrowserWindow | null = null;
 			let loadedURL: string | null = null;
 
 			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
@@ -155,10 +161,10 @@ describe('HTMLLinkElement', () => {
 
 	describe('set isConnected()', () => {
 		it('Loads and evaluates an external CSS file when "href" attribute has been set, but does not evaluate text content.', async () => {
-			const element = <IHTMLLinkElement>document.createElement('link');
+			const element = document.createElement('link');
 			const css = 'div { background: red; }';
 			let loadEvent: Event | null = null;
-			let loadedWindow: IBrowserWindow | null = null;
+			let loadedWindow: BrowserWindow | null = null;
 			let loadedURL: string | null = null;
 
 			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
@@ -185,7 +191,7 @@ describe('HTMLLinkElement', () => {
 		});
 
 		it('Triggers error event when fetching a CSS file fails while appending the element to the document.', async () => {
-			const element = <IHTMLLinkElement>document.createElement('link');
+			const element = document.createElement('link');
 			const thrownError = new Error('error');
 			let errorEvent: ErrorEvent | null = null;
 
@@ -208,9 +214,9 @@ describe('HTMLLinkElement', () => {
 		});
 
 		it('Does not load external CSS file when "href" attribute has been set if the element is not connected to DOM.', () => {
-			const element = <IHTMLLinkElement>document.createElement('link');
+			const element = document.createElement('link');
 			const css = 'div { background: red; }';
-			let loadedWindow: IBrowserWindow | null = null;
+			let loadedWindow: BrowserWindow | null = null;
 			let loadedURL: string | null = null;
 
 			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
@@ -233,7 +239,7 @@ describe('HTMLLinkElement', () => {
 			});
 			document = window.document;
 
-			const element = <IHTMLLinkElement>document.createElement('link');
+			const element = document.createElement('link');
 			let errorEvent: ErrorEvent | null = null;
 
 			element.rel = 'stylesheet';
@@ -246,6 +252,25 @@ describe('HTMLLinkElement', () => {
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
 				'Failed to load external stylesheet "https://localhost:8080/test/path/file.css". CSS file loading is disabled.'
 			);
+		});
+
+		it('Triggers a load event when the Happy DOM setting "disableCSSFileLoading" and "handleDisabledFileLoadingAsSuccess" is set to "true".', async () => {
+			window = new Window({
+				settings: { disableCSSFileLoading: true, handleDisabledFileLoadingAsSuccess: true }
+			});
+			document = window.document;
+
+			const element = document.createElement('link');
+			let loadEvent: Event | null = null;
+
+			element.rel = 'stylesheet';
+			element.href = 'https://localhost:8080/test/path/file.css';
+			element.addEventListener('load', (event) => (loadEvent = <Event>event));
+
+			document.body.appendChild(element);
+
+			expect(element.sheet).toBe(null);
+			expect((<Event>(<unknown>loadEvent)).type).toBe('load');
 		});
 	});
 });

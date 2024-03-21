@@ -1,13 +1,17 @@
-import IElement from '../element/IElement.js';
+import HTMLButtonElement from '../html-button-element/HTMLButtonElement.js';
+import HTMLInputElement from '../html-input-element/HTMLInputElement.js';
+import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
+import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
 import NodeList from '../node/NodeList.js';
-import IRadioNodeList from './IRadioNodeList.js';
 
 /**
  * RadioNodeList
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/RadioNodeList
  */
-export default class RadioNodeList extends NodeList<IElement> implements IRadioNodeList {
+export default class RadioNodeList extends NodeList<
+	HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | HTMLButtonElement
+> {
 	/**
 	 * Returns value.
 	 *
@@ -15,8 +19,8 @@ export default class RadioNodeList extends NodeList<IElement> implements IRadioN
 	 */
 	public get value(): string {
 		for (const node of this) {
-			if (node.checked) {
-				return node.value;
+			if ((<HTMLInputElement>node).checked) {
+				return (<HTMLInputElement>node).value;
 			}
 		}
 		return null;

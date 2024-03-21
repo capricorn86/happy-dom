@@ -1,16 +1,15 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
 import CharacterData from '../character-data/CharacterData.js';
-import IText from './IText.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
-import INode from '../node/INode.js';
+import Node from '../node/Node.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 
 /**
  * Text node.
  */
-export default class Text extends CharacterData implements IText {
+export default class Text extends CharacterData {
 	public override [PropertySymbol.nodeType] = NodeTypeEnum.textNode;
 
 	/**
@@ -47,7 +46,7 @@ export default class Text extends CharacterData implements IText {
 	 * @param offset Offset.
 	 * @returns New text node.
 	 */
-	public splitText(offset: number): IText {
+	public splitText(offset: number): Text {
 		const length = this[PropertySymbol.data].length;
 
 		if (offset < 0 || offset > length) {
@@ -59,7 +58,7 @@ export default class Text extends CharacterData implements IText {
 
 		const count = length - offset;
 		const newData = this.substringData(offset, count);
-		const newNode = <IText>this[PropertySymbol.ownerDocument].createTextNode(newData);
+		const newNode = <Text>this[PropertySymbol.ownerDocument].createTextNode(newData);
 
 		if (this[PropertySymbol.parentNode] !== null) {
 			this[PropertySymbol.parentNode].insertBefore(newNode, this.nextSibling);
@@ -86,14 +85,14 @@ export default class Text extends CharacterData implements IText {
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): IText {
+	public cloneNode(deep = false): Text {
 		return <Text>super.cloneNode(deep);
 	}
 
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
+	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
 		const oldTextAreaNode = <HTMLTextAreaElement>this[PropertySymbol.textAreaNode];
 
 		super[PropertySymbol.connectToNode](parentNode);

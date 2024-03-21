@@ -1,23 +1,18 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IHTMLElement from '../html-element/IHTMLElement.js';
-import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
+import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import ValidityState from '../../validity-state/ValidityState.js';
-import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement.js';
+import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import HTMLOptionElement from '../html-option-element/HTMLOptionElement.js';
 import HTMLOptionsCollection from './HTMLOptionsCollection.js';
-import INodeList from '../node/INodeList.js';
-import IHTMLSelectElement from './IHTMLSelectElement.js';
+import NodeList from '../node/NodeList.js';
 import Event from '../../event/Event.js';
-import IHTMLOptionElement from '../html-option-element/IHTMLOptionElement.js';
-import IHTMLOptionsCollection from './IHTMLOptionsCollection.js';
-import INode from '../node/INode.js';
+import Node from '../node/Node.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
-import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
-import IHTMLCollection from '../element/IHTMLCollection.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
-import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import HTMLSelectElementNamedNodeMap from './HTMLSelectElementNamedNodeMap.js';
+import HTMLCollection from '../element/HTMLCollection.js';
 
 /**
  * HTML Select Element.
@@ -25,16 +20,16 @@ import HTMLSelectElementNamedNodeMap from './HTMLSelectElementNamedNodeMap.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLSelectElement.
  */
-export default class HTMLSelectElement extends HTMLElement implements IHTMLSelectElement {
+export default class HTMLSelectElement extends HTMLElement {
 	// Internal properties.
-	public override [PropertySymbol.attributes]: INamedNodeMap = new HTMLSelectElementNamedNodeMap(
+	public override [PropertySymbol.attributes]: NamedNodeMap = new HTMLSelectElementNamedNodeMap(
 		this
 	);
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
-	public [PropertySymbol.selectNode]: INode = this;
+	public [PropertySymbol.selectNode]: Node = this;
 	public [PropertySymbol.length] = 0;
-	public [PropertySymbol.options]: IHTMLOptionsCollection = new HTMLOptionsCollection(this);
+	public [PropertySymbol.options]: HTMLOptionsCollection = new HTMLOptionsCollection(this);
 
 	// Events
 	public onchange: (event: Event) => void | null = null;
@@ -54,7 +49,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 *
 	 * @returns Options.
 	 */
-	public get options(): IHTMLOptionsCollection {
+	public get options(): HTMLOptionsCollection {
 		return this[PropertySymbol.options];
 	}
 
@@ -258,11 +253,26 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	}
 
 	/**
+	 * Returns selected options.
+	 *
+	 * @returns HTMLCollection.
+	 */
+	public get selectedOptions(): HTMLCollection<HTMLOptionElement> {
+		const selectedOptions = new HTMLCollection<HTMLOptionElement>();
+		for (let i = 0, max = this[PropertySymbol.options].length; i < max; i++) {
+			if ((<HTMLOptionElement>this[PropertySymbol.options][i])[PropertySymbol.selectedness]) {
+				selectedOptions.push(<HTMLOptionElement>this[PropertySymbol.options][i]);
+			}
+		}
+		return selectedOptions;
+	}
+
+	/**
 	 * Returns the associated label elements.
 	 *
 	 * @returns Label elements.
 	 */
-	public get labels(): INodeList<IHTMLLabelElement> {
+	public get labels(): NodeList<HTMLLabelElement> {
 		return HTMLLabelElementUtility.getAssociatedLabelElements(this);
 	}
 
@@ -271,8 +281,8 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 *
 	 * @returns Form.
 	 */
-	public get form(): IHTMLFormElement {
-		return <IHTMLFormElement>this[PropertySymbol.formNode];
+	public get form(): HTMLFormElement {
+		return <HTMLFormElement>this[PropertySymbol.formNode];
 	}
 
 	/**
@@ -295,7 +305,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 *
 	 * @param index Index.
 	 */
-	public item(index: number): IHTMLOptionElement {
+	public item(index: number): HTMLOptionElement {
 		return this[PropertySymbol.options].item(index);
 	}
 
@@ -305,7 +315,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @param element HTMLOptionElement to add.
 	 * @param before HTMLOptionElement or index number.
 	 */
-	public add(element: IHTMLOptionElement, before?: number | IHTMLOptionElement): void {
+	public add(element: HTMLOptionElement, before?: number | HTMLOptionElement): void {
 		this[PropertySymbol.options].add(element, before);
 	}
 
@@ -362,8 +372,8 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	 * @see https://html.spec.whatwg.org/multipage/form-elements.html#selectedness-setting-algorithm
 	 * @param [selectedOption] Selected option.
 	 */
-	public [PropertySymbol.updateOptionItems](selectedOption?: IHTMLOptionElement): void {
-		const optionElements = <IHTMLCollection<IHTMLOptionElement>>this.getElementsByTagName('option');
+	public [PropertySymbol.updateOptionItems](selectedOption?: HTMLOptionElement): void {
+		const optionElements = this.getElementsByTagName('option');
 
 		if (optionElements.length < this[PropertySymbol.options].length) {
 			this[PropertySymbol.options].splice(
@@ -404,7 +414,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 				const option = <HTMLOptionElement>optionElements[i];
 
 				let disabled = option.hasAttributeNS(null, 'disabled');
-				const parentNode = <IHTMLElement>option[PropertySymbol.parentNode];
+				const parentNode = <HTMLElement>option[PropertySymbol.parentNode];
 				if (
 					parentNode &&
 					parentNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
@@ -430,7 +440,7 @@ export default class HTMLSelectElement extends HTMLElement implements IHTMLSelec
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
+	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
 		const oldFormNode = <HTMLFormElement>this[PropertySymbol.formNode];
 
 		super[PropertySymbol.connectToNode](parentNode);

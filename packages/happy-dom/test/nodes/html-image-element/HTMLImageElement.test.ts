@@ -19,7 +19,7 @@ describe('HTMLImageElement', () => {
 		});
 	});
 
-	for (const property of ['alt', 'referrerPolicy', 'sizes', 'src', 'srcset', 'useMap']) {
+	for (const property of ['alt', 'referrerPolicy', 'sizes', 'srcset', 'useMap']) {
 		describe(`get ${property}()`, () => {
 			it(`Returns the "${property}" attribute.`, () => {
 				const element = document.createElement('img');
@@ -73,6 +73,29 @@ describe('HTMLImageElement', () => {
 		});
 	}
 
+	describe('get src()', () => {
+		it('Returns the "src" attribute.', () => {
+			const element = document.createElement('img');
+			element.setAttribute('src', 'test');
+			expect(element.src).toBe('test');
+		});
+
+		it('Returns URL relative to window location.', () => {
+			window.happyDOM.setURL('https://localhost:8080/test/path/');
+			const element = document.createElement('img');
+			element.setAttribute('src', 'test');
+			expect(element.src).toBe('https://localhost:8080/test/path/test');
+		});
+	});
+
+	describe('set src()', () => {
+		it('Sets the attribute "src".', () => {
+			const element = document.createElement('img');
+			element.src = 'test';
+			expect(element.getAttribute('src')).toBe('test');
+		});
+	});
+
 	describe('get complete()', () => {
 		it('Returns "false".', () => {
 			const element = <HTMLImageElement>document.createElement('img');
@@ -109,9 +132,35 @@ describe('HTMLImageElement', () => {
 	});
 
 	describe('get loading()', () => {
-		it('Returns "auto".', () => {
+		it('Returns "auto" by default.', () => {
 			const element = <HTMLImageElement>document.createElement('img');
 			expect(element.loading).toBe('auto');
+		});
+
+		it('Returns "eager" if the attribute is set to "eager".', () => {
+			const element = <HTMLImageElement>document.createElement('img');
+			element.setAttribute('loading', 'eager');
+			expect(element.loading).toBe('eager');
+		});
+
+		it('Returns "lazy" if the attribute is set to "lazy".', () => {
+			const element = <HTMLImageElement>document.createElement('img');
+			element.setAttribute('loading', 'lazy');
+			expect(element.loading).toBe('lazy');
+		});
+
+		it('Returns "auto" if value is invalid.', () => {
+			const element = <HTMLImageElement>document.createElement('img');
+			element.setAttribute('loading', 'invalid');
+			expect(element.loading).toBe('auto');
+		});
+	});
+
+	describe('set loading()', () => {
+		it('Sets the "loading" attribute.', () => {
+			const element = <HTMLImageElement>document.createElement('img');
+			element.loading = 'anyValueIsAllowed';
+			expect(element.getAttribute('loading')).toBe('anyValueIsAllowed');
 		});
 	});
 

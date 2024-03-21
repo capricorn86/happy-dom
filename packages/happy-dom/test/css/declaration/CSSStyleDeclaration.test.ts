@@ -1,19 +1,18 @@
 import CSSStyleDeclaration from '../../../src/css/declaration/CSSStyleDeclaration.js';
 import Window from '../../../src/window/Window.js';
-import IWindow from '../../../src/window/IWindow.js';
-import IDocument from '../../../src/nodes/document/IDocument.js';
-import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement.js';
+import Document from '../../../src/nodes/document/Document.js';
+import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('CSSStyleDeclaration', () => {
-	let window: IWindow;
-	let document: IDocument;
-	let element: IHTMLElement;
+	let window: Window;
+	let document: Document;
+	let element: HTMLElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <IHTMLElement>document.createElement('div');
+		element = document.createElement('div');
 	});
 
 	describe(`get {number}()`, () => {

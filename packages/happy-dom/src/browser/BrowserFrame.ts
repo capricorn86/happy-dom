@@ -3,9 +3,8 @@ import * as PropertySymbol from '../PropertySymbol.js';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 import IBrowserFrame from './types/IBrowserFrame.js';
 import BrowserWindow from '../window/BrowserWindow.js';
-import IBrowserWindow from '../window/IBrowserWindow.js';
-import ICrossOriginBrowserWindow from '../window/ICrossOriginBrowserWindow.js';
-import IResponse from '../fetch/types/IResponse.js';
+import CrossOriginBrowserWindow from '../window/CrossOriginBrowserWindow.js';
+import Response from '../fetch/Response.js';
 import IGoToOptions from './types/IGoToOptions.js';
 import { Script } from 'vm';
 import BrowserFrameURL from './utilities/BrowserFrameURL.js';
@@ -14,7 +13,7 @@ import BrowserFrameNavigator from './utilities/BrowserFrameNavigator.js';
 import IReloadOptions from './types/IReloadOptions.js';
 import BrowserFrameExceptionObserver from './utilities/BrowserFrameExceptionObserver.js';
 import BrowserErrorCaptureEnum from './enums/BrowserErrorCaptureEnum.js';
-import IDocument from '../nodes/document/IDocument.js';
+import Document from '../nodes/document/Document.js';
 
 /**
  * Browser frame.
@@ -28,7 +27,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	public [PropertySymbol.exceptionObserver]: BrowserFrameExceptionObserver | null = null;
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
 	public [PropertySymbol.openerFrame]: IBrowserFrame | null = null;
-	public [PropertySymbol.openerWindow]: IBrowserWindow | ICrossOriginBrowserWindow | null = null;
+	public [PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
 	public [PropertySymbol.popup] = false;
 
 	/**
@@ -94,7 +93,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	 *
 	 * @returns Document.
 	 */
-	public get document(): IDocument {
+	public get document(): Document {
 		return this.window?.document ?? null;
 	}
 
@@ -151,8 +150,13 @@ export default class BrowserFrame implements IBrowserFrame {
 	 * @param [options] Options.
 	 * @returns Response.
 	 */
-	public goto(url: string, options?: IGoToOptions): Promise<IResponse | null> {
-		return BrowserFrameNavigator.goto(BrowserWindow, this, url, options);
+	public goto(url: string, options?: IGoToOptions): Promise<Response | null> {
+		return BrowserFrameNavigator.navigate({
+			windowClass: BrowserWindow,
+			frame: this,
+			url: url,
+			goToOptions: options
+		});
 	}
 
 	/**
@@ -161,7 +165,12 @@ export default class BrowserFrame implements IBrowserFrame {
 	 * @param [options] Options.
 	 * @returns Response.
 	 */
-	public reload(options: IReloadOptions): Promise<IResponse | null> {
-		return BrowserFrameNavigator.goto(BrowserWindow, this, this.url, options);
+	public reload(options: IReloadOptions): Promise<Response | null> {
+		return BrowserFrameNavigator.navigate({
+			windowClass: BrowserWindow,
+			frame: this,
+			url: this.url,
+			goToOptions: options
+		});
 	}
 }

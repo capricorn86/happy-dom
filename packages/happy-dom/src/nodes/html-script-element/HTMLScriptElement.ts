@@ -1,10 +1,9 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IHTMLScriptElement from './IHTMLScriptElement.js';
 import Event from '../../event/Event.js';
 import ErrorEvent from '../../event/events/ErrorEvent.js';
-import INode from '../../nodes/node/INode.js';
-import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import Node from '../../nodes/node/Node.js';
+import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import HTMLScriptElementNamedNodeMap from './HTMLScriptElementNamedNodeMap.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
@@ -18,13 +17,13 @@ import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement.
  */
-export default class HTMLScriptElement extends HTMLElement implements IHTMLScriptElement {
+export default class HTMLScriptElement extends HTMLElement {
 	// Events
 	public onerror: (event: ErrorEvent) => void = null;
 	public onload: (event: Event) => void = null;
 
 	// Internal properties
-	public override [PropertySymbol.attributes]: INamedNodeMap;
+	public override [PropertySymbol.attributes]: NamedNodeMap;
 	public [PropertySymbol.evaluateScript] = true;
 
 	// Private properties
@@ -70,13 +69,22 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 * @returns Source.
 	 */
 	public get src(): string {
-		return this.getAttribute('src') || '';
+		if (!this.hasAttribute('src')) {
+			return '';
+		}
+
+		try {
+			return new URL(this.getAttribute('src'), this[PropertySymbol.ownerDocument].location.href)
+				.href;
+		} catch (e) {
+			return this.getAttribute('src');
+		}
 	}
 
 	/**
 	 * Sets source.
 	 *
-	 * @param source Source.
+	 * @param src Source.
 	 */
 	public set src(src: string) {
 		this.setAttribute('src', src);
@@ -187,14 +195,14 @@ export default class HTMLScriptElement extends HTMLElement implements IHTMLScrip
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): IHTMLScriptElement {
-		return <IHTMLScriptElement>super.cloneNode(deep);
+	public cloneNode(deep = false): HTMLScriptElement {
+		return <HTMLScriptElement>super.cloneNode(deep);
 	}
 
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
+	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
 		const isConnected = this[PropertySymbol.isConnected];
 		const isParentConnected = parentNode ? parentNode[PropertySymbol.isConnected] : false;
 		const browserSettings = WindowBrowserSettingsReader.getSettings(

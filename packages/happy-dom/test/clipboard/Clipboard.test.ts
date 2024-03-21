@@ -1,11 +1,10 @@
 import ClipboardItem from '../../src/clipboard/ClipboardItem.js';
 import Blob from '../../src/file/Blob.js';
 import Window from '../../src/window/Window.js';
-import IWindow from '../../src/window/IWindow.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('Clipboard', () => {
-	let window: IWindow;
+	let window: Window;
 
 	beforeEach(() => {
 		window = new Window();
@@ -15,15 +14,37 @@ describe('Clipboard', () => {
 		it('Reads from the clipboard.', async () => {
 			const items = [
 				new ClipboardItem({
-					'text/plain': new Blob(['test'], { type: 'text/plain' })
+					'text/plain': new Blob(['test-a'], { type: 'text/plain' })
 				}),
 				new ClipboardItem({
-					'text/html': new Blob(['<b>test</b>'], { type: 'text/html' })
+					'text/html': new Blob(['<b>test-b</b>'], { type: 'text/html' })
+				}),
+				new ClipboardItem({
+					'text/plain': 'test-c'
+				}),
+				new ClipboardItem({
+					'text/plain': Promise.resolve('test-d')
+				}),
+				new ClipboardItem({
+					'text/plain': Promise.resolve(new Blob(['test-e'], { type: 'text/plain' }))
 				})
 			];
 			await window.navigator.clipboard.write(items);
 			const data = await window.navigator.clipboard.read();
 			expect(data).toEqual(items);
+
+			let text = '';
+
+			for (const item of data) {
+				const data = await item.getType(item.types[0]);
+				if (typeof data === 'string') {
+					text += data;
+				} else {
+					text += await data.text();
+				}
+			}
+
+			expect(text).toBe('test-a<b>test-b</b>test-ctest-dtest-e');
 		});
 
 		it('Throws an error if the permission is denied.', async () => {
@@ -50,15 +71,24 @@ describe('Clipboard', () => {
 		it('Reads text from the clipboard.', async () => {
 			const items = [
 				new ClipboardItem({
-					'text/plain': new Blob(['test'], { type: 'text/plain' })
+					'text/plain': new Blob(['test-a'], { type: 'text/plain' })
 				}),
 				new ClipboardItem({
-					'text/html': new Blob(['<b>test</b>'], { type: 'text/html' })
+					'text/html': new Blob(['<b>test-b</b>'], { type: 'text/html' })
+				}),
+				new ClipboardItem({
+					'text/plain': 'test-c'
+				}),
+				new ClipboardItem({
+					'text/plain': Promise.resolve('test-d')
+				}),
+				new ClipboardItem({
+					'text/plain': Promise.resolve(new Blob(['test-e'], { type: 'text/plain' }))
 				})
 			];
 			await window.navigator.clipboard.write(items);
 			const data = await window.navigator.clipboard.readText();
-			expect(data).toBe('test');
+			expect(data).toBe('test-atest-ctest-dtest-e');
 		});
 
 		it('Throws an error if the permission is denied.', async () => {

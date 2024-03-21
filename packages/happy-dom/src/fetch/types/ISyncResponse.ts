@@ -1,4 +1,4 @@
-import IHeaders from './IHeaders.js';
+import Headers from '../Headers.js';
 
 /**
  * Fetch response.
@@ -11,6 +11,6 @@ export default interface ISyncResponse {
 	ok: boolean;
 	url: string;
 	redirected: boolean;
-	headers: IHeaders;
+	headers: Headers;
 	body: Buffer;
 }

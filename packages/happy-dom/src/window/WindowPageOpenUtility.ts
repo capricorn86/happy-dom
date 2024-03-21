@@ -1,9 +1,9 @@
-import IBrowserWindow from './IBrowserWindow.js';
+import BrowserWindow from './BrowserWindow.js';
 import CrossOriginBrowserWindow from './CrossOriginBrowserWindow.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import FetchCORSUtility from '../fetch/utilities/FetchCORSUtility.js';
-import ICrossOriginBrowserWindow from './ICrossOriginBrowserWindow.js';
 import BrowserFrameURL from '../browser/utilities/BrowserFrameURL.js';
+import { URL } from 'url';
 import * as PropertySymbol from '../PropertySymbol.js';
 
 /**
@@ -26,10 +26,10 @@ export default class WindowPageOpenUtility {
 			target?: string;
 			features?: string;
 		}
-	): IBrowserWindow | ICrossOriginBrowserWindow | null {
+	): BrowserWindow | CrossOriginBrowserWindow | null {
 		const features = this.getWindowFeatures(options?.features || '');
 		const target = options?.target !== undefined ? String(options.target) : null;
-		const originURL = browserFrame.window.location;
+		const originURL = new URL(browserFrame.window.location.href);
 		const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, options.url);
 		const oldWindow = browserFrame.window;
 		let targetFrame: IBrowserFrame;
@@ -54,7 +54,8 @@ export default class WindowPageOpenUtility {
 
 		targetFrame
 			.goto(targetURL.href, {
-				referrer: features.noreferrer ? 'no-referrer' : undefined
+				referrer: features.noreferrer ? undefined : browserFrame.window.location.origin,
+				referrerPolicy: features.noreferrer ? 'no-referrer' : undefined
 			})
 			.catch((error) => targetFrame.page.console.error(error));
 

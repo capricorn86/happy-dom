@@ -1,15 +1,18 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IHTMLFormElement from './IHTMLFormElement.js';
 import Event from '../../event/Event.js';
 import SubmitEvent from '../../event/events/SubmitEvent.js';
 import HTMLFormControlsCollection from './HTMLFormControlsCollection.js';
-import IHTMLFormControlsCollection from './IHTMLFormControlsCollection.js';
-import INode from '../node/INode.js';
-import IHTMLInputElement from '../html-input-element/IHTMLInputElement.js';
-import IHTMLTextAreaElement from '../html-text-area-element/IHTMLTextAreaElement.js';
-import IHTMLSelectElement from '../html-select-element/IHTMLSelectElement.js';
-import IHTMLButtonElement from '../html-button-element/IHTMLButtonElement.js';
+import Node from '../node/Node.js';
+import HTMLInputElement from '../html-input-element/HTMLInputElement.js';
+import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
+import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
+import HTMLButtonElement from '../html-button-element/HTMLButtonElement.js';
+import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
+import BrowserFrameNavigator from '../../browser/utilities/BrowserFrameNavigator.js';
+import FormData from '../../form-data/FormData.js';
+import Element from '../element/Element.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 
 /**
  * HTML Form Element.
@@ -17,23 +20,36 @@ import IHTMLButtonElement from '../html-button-element/IHTMLButtonElement.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement.
  */
-export default class HTMLFormElement extends HTMLElement implements IHTMLFormElement {
+export default class HTMLFormElement extends HTMLElement {
 	// Internal properties.
-	public [PropertySymbol.elements]: IHTMLFormControlsCollection = new HTMLFormControlsCollection();
+	public [PropertySymbol.elements]: HTMLFormControlsCollection = new HTMLFormControlsCollection();
 	public [PropertySymbol.length] = 0;
-	public [PropertySymbol.formNode]: INode = this;
+	public [PropertySymbol.formNode]: Node = this;
 
 	// Events
 	public onformdata: (event: Event) => void | null = null;
 	public onreset: (event: Event) => void | null = null;
 	public onsubmit: (event: Event) => void | null = null;
 
+	// Private properties
+	#browserFrame: IBrowserFrame;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param browserFrame Browser frame.
+	 */
+	constructor(browserFrame: IBrowserFrame) {
+		super();
+		this.#browserFrame = browserFrame;
+	}
+
 	/**
 	 * Returns elements.
 	 *
 	 * @returns Elements.
 	 */
-	public get elements(): IHTMLFormControlsCollection {
+	public get elements(): HTMLFormControlsCollection {
 		return this[PropertySymbol.elements];
 	}
 
@@ -106,7 +122,16 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @returns Action.
 	 */
 	public get action(): string {
-		return this.getAttribute('action') || '';
+		if (!this.hasAttribute('action')) {
+			return this[PropertySymbol.ownerDocument].location.href;
+		}
+
+		try {
+			return new URL(this.getAttribute('action'), this[PropertySymbol.ownerDocument].location.href)
+				.href;
+		} catch (e) {
+			return '';
+		}
 	}
 
 	/**
@@ -214,22 +239,23 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 
 	/**
 	 * Submits form. No submit event is raised. In particular, the form's "submit" event handler is not run.
-	 *
-	 * In Happy DOM this means that nothing happens.
 	 */
-	public submit(): void {}
+	public submit(): void {
+		this.#submit();
+	}
 
 	/**
 	 * Submits form, reports validity and raises submit event.
 	 *
 	 * @param [submitter] Submitter.
 	 */
-	public requestSubmit(submitter?: IHTMLInputElement | IHTMLButtonElement): void {
+	public requestSubmit(submitter?: HTMLInputElement | HTMLButtonElement): void {
 		const noValidate = submitter?.formNoValidate || this.noValidate;
 		if (noValidate || this.checkValidity()) {
 			this.dispatchEvent(
 				new SubmitEvent('submit', { bubbles: true, cancelable: true, submitter: submitter || this })
 			);
+			this.#submit(submitter);
 		}
 	}
 
@@ -248,15 +274,15 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 				element[PropertySymbol.value] = null;
 			} else if (element[PropertySymbol.tagName] === 'SELECT') {
 				let hasSelectedAttribute = false;
-				for (const option of (<IHTMLSelectElement>element).options) {
+				for (const option of (<HTMLSelectElement>element).options) {
 					if (option.hasAttribute('selected')) {
 						hasSelectedAttribute = true;
 						option.selected = true;
 						break;
 					}
 				}
-				if (!hasSelectedAttribute && (<IHTMLSelectElement>element).options.length > 0) {
-					(<IHTMLSelectElement>element).options[0].selected = true;
+				if (!hasSelectedAttribute && (<HTMLSelectElement>element).options.length > 0) {
+					(<HTMLSelectElement>element).options[0].selected = true;
 				}
 			}
 		}
@@ -305,8 +331,8 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): IHTMLFormElement {
-		return <IHTMLFormElement>super.cloneNode(deep);
+	public cloneNode(deep = false): HTMLFormElement {
+		return <HTMLFormElement>super.cloneNode(deep);
 	}
 
 	/**
@@ -316,7 +342,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @param name Name
 	 */
 	public [PropertySymbol.appendFormControlItem](
-		node: IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement,
+		node: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | HTMLButtonElement,
 		name: string
 	): void {
 		const elements = this[PropertySymbol.elements];
@@ -341,7 +367,7 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 * @param name Name.
 	 */
 	public [PropertySymbol.removeFormControlItem](
-		node: IHTMLInputElement | IHTMLTextAreaElement | IHTMLSelectElement | IHTMLButtonElement,
+		node: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | HTMLButtonElement,
 		name: string
 	): void {
 		const elements = this[PropertySymbol.elements];
@@ -375,8 +401,88 @@ export default class HTMLFormElement extends HTMLElement implements IHTMLFormEle
 	 */
 	protected [PropertySymbol.isValidPropertyName](name: string): boolean {
 		return (
-			!this.constructor.prototype.hasOwnProperty(name) &&
+			!!name &&
+			!HTMLFormElement.prototype.hasOwnProperty(name) &&
+			!HTMLElement.prototype.hasOwnProperty(name) &&
+			!Element.prototype.hasOwnProperty(name) &&
+			!Node.prototype.hasOwnProperty(name) &&
 			(isNaN(Number(name)) || name.includes('.'))
 		);
+	}
+
+	/**
+	 * Submits form.
+	 *
+	 * @param [submitter] Submitter.
+	 */
+	#submit(submitter?: HTMLInputElement | HTMLButtonElement): void {
+		const action = submitter?.hasAttribute('formaction')
+			? submitter?.formAction || this.action
+			: this.action;
+
+		if (!action) {
+			// The URL is invalid when the action is empty.
+			// This is what Chrome does when the URL is invalid.
+			this[PropertySymbol.ownerDocument].location.hash = '#blocked';
+			return;
+		}
+
+		const method = submitter?.formMethod || this.method;
+		const formData = new FormData(this);
+		let targetFrame: IBrowserFrame;
+
+		switch (submitter?.formTarget || this.target) {
+			default:
+			case '_self':
+				targetFrame = this.#browserFrame;
+				break;
+			case '_top':
+				targetFrame = this.#browserFrame.page.mainFrame;
+				break;
+			case '_parent':
+				targetFrame = this.#browserFrame.parentFrame ?? this.#browserFrame;
+				break;
+			case '_blank':
+				const newPage = this.#browserFrame.page.context.newPage();
+				targetFrame = newPage.mainFrame;
+				targetFrame[PropertySymbol.openerFrame] = this.#browserFrame;
+				break;
+		}
+
+		if (method === 'get') {
+			const url = new URL(action);
+
+			for (const [key, value] of formData) {
+				if (typeof value === 'string') {
+					url.searchParams.append(key, value);
+				}
+			}
+
+			BrowserFrameNavigator.navigate({
+				windowClass: <typeof BrowserWindow>(
+					this[PropertySymbol.ownerDocument][PropertySymbol.defaultView].constructor
+				),
+				frame: targetFrame,
+				url: url.href,
+				goToOptions: {
+					referrer: this.#browserFrame.page.mainFrame.window.location.origin
+				}
+			});
+
+			return;
+		}
+
+		BrowserFrameNavigator.navigate({
+			windowClass: <typeof BrowserWindow>(
+				this[PropertySymbol.ownerDocument][PropertySymbol.defaultView].constructor
+			),
+			frame: targetFrame,
+			method: method,
+			url: action,
+			formData,
+			goToOptions: {
+				referrer: this.#browserFrame.page.mainFrame.window.location.origin
+			}
+		});
 	}
 }

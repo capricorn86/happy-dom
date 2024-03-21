@@ -1,6 +1,6 @@
 import IBrowserFrame from '../types/IBrowserFrame.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IBrowserWindow from '../../window/IBrowserWindow.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 import IBrowserPage from '../types/IBrowserPage.js';
 /**
  * Browser frame factory.
@@ -49,7 +49,7 @@ export default class BrowserFrameFactory {
 						if (frame.window) {
 							frame.window[PropertySymbol.destroy]();
 							(<IBrowserPage | null>frame.page) = null;
-							(<IBrowserWindow | null>frame.window) = null;
+							(<BrowserWindow | null>frame.window) = null;
 							frame[PropertySymbol.openerFrame] = null;
 							frame[PropertySymbol.openerWindow] = null;
 						}
@@ -63,11 +63,18 @@ export default class BrowserFrameFactory {
 					return frame[PropertySymbol.asyncTaskManager].destroy().then(() => {
 						frame[PropertySymbol.exceptionObserver]?.disconnect();
 						if (frame.window) {
+							const listeners = frame[PropertySymbol.listeners];
+
 							frame.window[PropertySymbol.destroy]();
 							(<IBrowserPage | null>frame.page) = null;
-							(<IBrowserWindow | null>frame.window) = null;
+							(<BrowserWindow | null>frame.window) = null;
+							frame[PropertySymbol.listeners] = null;
 							frame[PropertySymbol.openerFrame] = null;
 							frame[PropertySymbol.openerWindow] = null;
+
+							for (const listener of listeners.navigation) {
+								listener();
+							}
 						}
 						resolve();
 					});

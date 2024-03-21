@@ -3,26 +3,14 @@ import Event from '../../event/Event.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import HTMLElement from '../html-element/HTMLElement.js';
-import IHTMLMediaElement, { IMediaError } from './IHTMLMediaElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
+import TimeRange from './TimeRange.js';
 
-/**
- *
- * This implementation coming from jsdom
- * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/nodes/HTMLMediaElement-impl.js#L7
- *
- */
-function getTimeRangeDummy(): object {
-	return {
-		length: 0,
-		start() {
-			return 0;
-		},
-		end() {
-			return 0;
-		}
-	};
+interface IMediaError {
+	code: number;
+	message: string;
 }
+
 /**
  * HTML Media Element.
  *
@@ -30,7 +18,7 @@ function getTimeRangeDummy(): object {
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement.
  *
  */
-export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaElement {
+export default class HTMLMediaElement extends HTMLElement {
 	// Events
 	public onabort: (event: Event) => void | null = null;
 	public oncanplay: (event: Event) => void | null = null;
@@ -65,7 +53,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	public [PropertySymbol.muted] = false;
 	public [PropertySymbol.defaultMuted] = false;
 	public [PropertySymbol.preservesPitch] = true;
-	public [PropertySymbol.buffered]: object = getTimeRangeDummy();
+	public [PropertySymbol.buffered] = new TimeRange();
 	public [PropertySymbol.duration] = NaN;
 	public [PropertySymbol.error]: IMediaError = null;
 	public [PropertySymbol.ended] = false;
@@ -74,8 +62,8 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	public [PropertySymbol.textTracks]: object[] = [];
 	public [PropertySymbol.videoTracks]: object[] = [];
 	public [PropertySymbol.seeking] = false;
-	public [PropertySymbol.seekable] = getTimeRangeDummy();
-	public [PropertySymbol.played] = getTimeRangeDummy();
+	public [PropertySymbol.seekable] = new TimeRange();
+	public [PropertySymbol.played] = new TimeRange();
 
 	/**
 	 * Returns buffered.
@@ -550,7 +538,7 @@ export default class HTMLMediaElement extends HTMLElement implements IHTMLMediaE
 	 *
 	 * @param deep
 	 */
-	public cloneNode(deep = false): IHTMLMediaElement {
-		return <IHTMLMediaElement>super.cloneNode(deep);
+	public cloneNode(deep = false): HTMLMediaElement {
+		return <HTMLMediaElement>super.cloneNode(deep);
 	}
 }

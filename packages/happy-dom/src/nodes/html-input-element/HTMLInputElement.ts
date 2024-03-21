@@ -7,22 +7,18 @@ import Event from '../../event/Event.js';
 import HTMLInputElementValueSanitizer from './HTMLInputElementValueSanitizer.js';
 import HTMLInputElementSelectionModeEnum from './HTMLInputElementSelectionModeEnum.js';
 import HTMLInputElementSelectionDirectionEnum from './HTMLInputElementSelectionDirectionEnum.js';
-import IHTMLInputElement from './IHTMLInputElement.js';
-import IHTMLFormElement from '../html-form-element/IHTMLFormElement.js';
-import IHTMLElement from '../html-element/IHTMLElement.js';
+import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLInputElementValueStepping from './HTMLInputElementValueStepping.js';
 import FileList from './FileList.js';
-import File from '../../file/File.js';
-import IFileList from './IFileList.js';
-import INode from '../node/INode.js';
-import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
-import INodeList from '../node/INodeList.js';
-import IHTMLLabelElement from '../html-label-element/IHTMLLabelElement.js';
+import Node from '../node/Node.js';
+import NodeList from '../node/NodeList.js';
+import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import HTMLInputElementDateUtility from './HTMLInputElementDateUtility.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
-import INamedNodeMap from '../../named-node-map/INamedNodeMap.js';
+import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import HTMLInputElementNamedNodeMap from './HTMLInputElementNamedNodeMap.js';
+import PointerEvent from '../../event/events/PointerEvent.js';
 import { URL } from 'url';
 
 /**
@@ -34,14 +30,14 @@ import { URL } from 'url';
  * Used as reference for some of the logic (like selection range):
  * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/nodes/nodes/HTMLInputElement-impl.js (MIT licensed).
  */
-export default class HTMLInputElement extends HTMLElement implements IHTMLInputElement {
+export default class HTMLInputElement extends HTMLElement {
 	// Events
 	public oninput: (event: Event) => void | null = null;
 	public oninvalid: (event: Event) => void | null = null;
 	public onselectionchange: (event: Event) => void | null = null;
 
 	// Internal properties
-	public override [PropertySymbol.attributes]: INamedNodeMap = new HTMLInputElementNamedNodeMap(
+	public override [PropertySymbol.attributes]: NamedNodeMap = new HTMLInputElementNamedNodeMap(
 		this
 	);
 	public [PropertySymbol.value] = null;
@@ -51,7 +47,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	public [PropertySymbol.checked]: boolean | null = null;
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
-	public [PropertySymbol.files]: IFileList<File> = new FileList();
+	public [PropertySymbol.files]: FileList = new FileList();
 
 	// Private properties
 	#selectionStart: number = null;
@@ -82,7 +78,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 *
 	 * @returns Files.
 	 */
-	public get files(): IFileList<File> {
+	public get files(): FileList {
 		return this[PropertySymbol.files];
 	}
 
@@ -91,55 +87,131 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 *
 	 * @param files Files.
 	 */
-	public set files(files: IFileList<File>) {
+	public set files(files: FileList) {
 		this[PropertySymbol.files] = files;
 	}
 
 	/**
 	 * Returns form action.
 	 *
-	 * @returns URL.
+	 * @returns Form action.
 	 */
 	public get formAction(): string {
-		return (
-			this.getAttribute('formaction') ||
-			(<IHTMLFormElement>this[PropertySymbol.formNode])?.action ||
-			this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].location.href
-		);
+		if (!this.hasAttribute('formaction')) {
+			return this[PropertySymbol.ownerDocument].location.href;
+		}
+
+		try {
+			return new URL(
+				this.getAttribute('formaction'),
+				this[PropertySymbol.ownerDocument].location.href
+			).href;
+		} catch (e) {
+			return '';
+		}
 	}
 
 	/**
 	 * Sets form action.
 	 *
-	 * @param url URL.
+	 * @param formAction Form action.
 	 */
-	public set formAction(url: string) {
-		try {
-			new URL(url);
-		} catch (error) {
-			return;
-		}
-		this.setAttribute('formaction', url);
+	public set formAction(formAction: string) {
+		this.setAttribute('formaction', formAction);
+	}
+
+	/**
+	 * Returns form enctype.
+	 *
+	 * @returns Form enctype.
+	 */
+	public get formEnctype(): string {
+		return this.getAttribute('formenctype') || '';
+	}
+
+	/**
+	 * Sets form enctype.
+	 *
+	 * @param formEnctype Form enctype.
+	 */
+	public set formEnctype(formEnctype: string) {
+		this.setAttribute('formenctype', formEnctype);
 	}
 
 	/**
 	 * Returns form method.
+	 *
+	 * @returns Form method.
 	 */
 	public get formMethod(): string {
-		return (
-			this.getAttribute('formmethod') ||
-			(<IHTMLFormElement>this[PropertySymbol.formNode])?.method ||
-			''
-		);
+		return this.getAttribute('formmethod') || '';
 	}
 
 	/**
 	 * Sets form method.
 	 *
-	 * @param method Method.
+	 * @param formMethod Form method.
 	 */
-	public set formMethod(method: string) {
-		this.setAttribute('formmethod', method);
+	public set formMethod(formMethod: string) {
+		this.setAttribute('formmethod', formMethod);
+	}
+
+	/**
+	 * Returns no validate.
+	 *
+	 * @returns No validate.
+	 */
+	public get formNoValidate(): boolean {
+		return this.getAttribute('formnovalidate') !== null;
+	}
+
+	/**
+	 * Sets no validate.
+	 *
+	 * @param formNoValidate No validate.
+	 */
+	public set formNoValidate(formNoValidate: boolean) {
+		if (!formNoValidate) {
+			this.removeAttribute('formnovalidate');
+		} else {
+			this.setAttribute('formnovalidate', '');
+		}
+	}
+
+	/**
+	 * Returns form target.
+	 *
+	 * @returns Form target.
+	 */
+	public get formTarget(): string {
+		return this.getAttribute('formtarget') || '';
+	}
+
+	/**
+	 * Sets form target.
+	 *
+	 * @param formTarget Form target.
+	 */
+	public set formTarget(formTarget: string) {
+		this.setAttribute('formtarget', formTarget);
+	}
+
+	/**
+	 * Returns the parent form element.
+	 *
+	 * @returns Form.
+	 */
+	public get form(): HTMLFormElement | null {
+		if (this[PropertySymbol.formNode]) {
+			return <HTMLFormElement>this[PropertySymbol.formNode];
+		}
+		if (!this.isConnected) {
+			return null;
+		}
+		const formID = this.getAttribute('form');
+		return formID
+			? <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(formID)
+			: null;
 	}
 
 	/**
@@ -835,37 +907,6 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	}
 
 	/**
-	 * Returns no validate.
-	 *
-	 * @returns No validate.
-	 */
-	public get formNoValidate(): boolean {
-		return this.getAttribute('formnovalidate') !== null;
-	}
-
-	/**
-	 * Sets no validate.
-	 *
-	 * @param formNoValidate No validate.
-	 */
-	public set formNoValidate(formNoValidate: boolean) {
-		if (!formNoValidate) {
-			this.removeAttribute('formnovalidate');
-		} else {
-			this.setAttribute('formnovalidate', '');
-		}
-	}
-
-	/**
-	 * Returns the parent form element.
-	 *
-	 * @returns Form.
-	 */
-	public get form(): IHTMLFormElement {
-		return <IHTMLFormElement>this[PropertySymbol.formNode];
-	}
-
-	/**
 	 * Returns "true" if it will validate.
 	 *
 	 * @returns "true" if it will validate.
@@ -1054,7 +1095,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 *
 	 * @returns Label elements.
 	 */
-	public get labels(): INodeList<IHTMLLabelElement> {
+	public get labels(): NodeList<HTMLLabelElement> {
 		return HTMLLabelElementUtility.getAssociatedLabelElements(this);
 	}
 
@@ -1243,7 +1284,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): IHTMLInputElement {
+	public cloneNode(deep = false): HTMLInputElement {
 		const clone = <HTMLInputElement>super.cloneNode(deep);
 		clone.formAction = this.formAction;
 		clone.formMethod = this.formMethod;
@@ -1263,7 +1304,12 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	 */
 	public override dispatchEvent(event: Event): boolean {
 		// Do nothing if the input element is disabled and the event is a click event.
-		if (event.type === 'click' && event.eventPhase === EventPhaseEnum.none && this.disabled) {
+		if (
+			event.type === 'click' &&
+			event instanceof PointerEvent &&
+			event.eventPhase === EventPhaseEnum.none &&
+			this.disabled
+		) {
 			return false;
 		}
 
@@ -1274,7 +1320,8 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		if (
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
-			event.type === 'click'
+			event.type === 'click' &&
+			event instanceof PointerEvent
 		) {
 			const inputType = this.type;
 			if (inputType === 'checkbox' || inputType === 'radio') {
@@ -1290,6 +1337,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
 			event.type === 'click' &&
+			event instanceof PointerEvent &&
 			this[PropertySymbol.isConnected]
 		) {
 			const inputType = this.type;
@@ -1298,12 +1346,12 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 					this.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
 					this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
 				} else if (inputType === 'submit') {
-					const form = <IHTMLFormElement>this[PropertySymbol.formNode];
+					const form = this.form;
 					if (form) {
 						form.requestSubmit(this);
 					}
 				} else if (inputType === 'reset' && this[PropertySymbol.isConnected]) {
-					const form = <IHTMLFormElement>this[PropertySymbol.formNode];
+					const form = this.form;
 					if (form) {
 						form.reset();
 					}
@@ -1317,6 +1365,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
 			event.type === 'click' &&
+			event instanceof PointerEvent &&
 			previousCheckedValue !== null
 		) {
 			const inputType = this.type;
@@ -1331,7 +1380,7 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.connectToNode](parentNode: INode = null): void {
+	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
 		const oldFormNode = <HTMLFormElement>this[PropertySymbol.formNode];
 
 		super[PropertySymbol.connectToNode](parentNode);
@@ -1379,8 +1428,8 @@ export default class HTMLInputElement extends HTMLElement implements IHTMLInputE
 		this[PropertySymbol.checked] = checked;
 
 		if (checked && this.type === 'radio' && this.name) {
-			const root = <IHTMLElement>(
-				(<IHTMLFormElement>this[PropertySymbol.formNode] || this.getRootNode())
+			const root = <HTMLElement>(
+				(<HTMLFormElement>this[PropertySymbol.formNode] || this.getRootNode())
 			);
 			const radioButtons = root.querySelectorAll(`input[type="radio"][name="${this.name}"]`);
 

@@ -1,9 +1,8 @@
-import IDocument from '../document/IDocument.js';
-import IHTMLElement from '../html-element/IHTMLElement.js';
-import IHTMLLabelElement from './IHTMLLabelElement.js';
-import INodeList from '../node/INodeList.js';
+import Document from '../document/Document.js';
+import HTMLElement from '../html-element/HTMLElement.js';
+import HTMLLabelElement from './HTMLLabelElement.js';
 import NodeList from '../node/NodeList.js';
-import IShadowRoot from '../shadow-root/IShadowRoot.js';
+import ShadowRoot from '../shadow-root/ShadowRoot.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
@@ -16,20 +15,20 @@ export default class HTMLLabelElementUtility {
 	 * @param element Element to get labels for.
 	 * @returns Label elements.
 	 */
-	public static getAssociatedLabelElements(element: IHTMLElement): INodeList<IHTMLLabelElement> {
+	public static getAssociatedLabelElements(element: HTMLElement): NodeList<HTMLLabelElement> {
 		const id = element.id;
-		let labels: INodeList<IHTMLLabelElement>;
+		let labels: NodeList<HTMLLabelElement>;
 		if (id) {
-			const rootNode = <IDocument | IShadowRoot>element.getRootNode();
-			labels = <INodeList<IHTMLLabelElement>>rootNode.querySelectorAll(`label[for="${id}"]`);
+			const rootNode = <Document | ShadowRoot>element.getRootNode();
+			labels = <NodeList<HTMLLabelElement>>rootNode.querySelectorAll(`label[for="${id}"]`);
 		} else {
-			labels = new NodeList<IHTMLLabelElement>();
+			labels = new NodeList<HTMLLabelElement>();
 		}
 
 		let parent = element[PropertySymbol.parentNode];
 		while (parent) {
 			if (parent['tagName'] === 'LABEL') {
-				labels.push(<IHTMLLabelElement>parent);
+				labels.push(<HTMLLabelElement>parent);
 				break;
 			}
 			parent = parent[PropertySymbol.parentNode];

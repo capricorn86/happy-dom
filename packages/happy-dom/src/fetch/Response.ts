@@ -1,20 +1,17 @@
-import IResponse from './types/IResponse.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import IBlob from '../file/IBlob.js';
+import Blob from '../file/Blob.js';
 import IResponseInit from './types/IResponseInit.js';
 import IResponseBody from './types/IResponseBody.js';
 import Headers from './Headers.js';
-import IHeaders from './types/IHeaders.js';
 import { URLSearchParams } from 'url';
 import URL from '../url/URL.js';
-import Blob from '../file/Blob.js';
 import { ReadableStream } from 'stream/web';
 import FormData from '../form-data/FormData.js';
 import FetchBodyUtility from './utilities/FetchBodyUtility.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
-import IBrowserWindow from '../window/IBrowserWindow.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import ICachedResponse from './cache/response/ICachedResponse.js';
 import { Buffer } from 'buffer';
@@ -29,9 +26,9 @@ const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Response/Response
  */
-export default class Response implements IResponse {
+export default class Response implements Response {
 	// Needs to be injected by sub-class.
-	protected static [PropertySymbol.window]: IBrowserWindow;
+	protected static [PropertySymbol.window]: BrowserWindow;
 
 	// Public properties
 	public readonly body: ReadableStream | null = null;
@@ -43,10 +40,10 @@ export default class Response implements IResponse {
 	public readonly status: number;
 	public readonly statusText: string;
 	public readonly ok: boolean;
-	public readonly headers: IHeaders;
+	public readonly headers: Headers;
 	public [PropertySymbol.cachedResponse]: ICachedResponse | null = null;
-	public readonly [PropertySymbol.buffer]: Buffer | null = null;
-	readonly #window: IBrowserWindow;
+	public [PropertySymbol.buffer]: Buffer | null = null;
+	readonly #window: BrowserWindow;
 	readonly #browserFrame: IBrowserFrame;
 
 	/**
@@ -60,7 +57,7 @@ export default class Response implements IResponse {
 	 * @param [init] Init.
 	 */
 	constructor(
-		injected: { window: IBrowserWindow; browserFrame: IBrowserFrame },
+		injected: { window: BrowserWindow; browserFrame: IBrowserFrame },
 		body?: IResponseBody,
 		init?: IResponseInit
 	) {
@@ -138,7 +135,7 @@ export default class Response implements IResponse {
 	 *
 	 * @returns Blob.
 	 */
-	public async blob(): Promise<IBlob> {
+	public async blob(): Promise<Blob> {
 		const type = this.headers.get('Content-Type') || '';
 		const buffer = await this.arrayBuffer();
 
@@ -267,18 +264,17 @@ export default class Response implements IResponse {
 	 * @returns Clone.
 	 */
 	public clone(): Response {
-		const response = new this.#window.Response(this.body, {
+		const body = FetchBodyUtility.cloneBodyStream(this);
+
+		const response = new this.#window.Response(body, {
 			status: this.status,
 			statusText: this.statusText,
 			headers: this.headers
 		});
 
-		(<number>response.status) = this.status;
-		(<string>response.statusText) = this.statusText;
+		response[PropertySymbol.cachedResponse] = this[PropertySymbol.cachedResponse];
+		response[PropertySymbol.buffer] = this[PropertySymbol.buffer];
 		(<boolean>response.ok) = this.ok;
-		(<Headers>response.headers) = new Headers(this.headers);
-		(<ReadableStream>response.body) = this.body;
-		(<boolean>response.bodyUsed) = this.bodyUsed;
 		(<boolean>response.redirected) = this.redirected;
 		(<string>response.type) = this.type;
 		(<string>response.url) = this.url;

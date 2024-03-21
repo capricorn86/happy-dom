@@ -1,15 +1,14 @@
-import IHTMLElement from '../../src/nodes/html-element/IHTMLElement.js';
+import HTMLElement from '../../src/nodes/html-element/HTMLElement.js';
 import Window from '../../src/window/Window.js';
-import IWindow from '../../src/window/IWindow.js';
-import IDocument from '../../src/nodes/document/IDocument.js';
+import Document from '../../src/nodes/document/Document.js';
 import QuerySelectorHTML from './data/QuerySelectorHTML.js';
 import QuerySelectorNthChildHTML from './data/QuerySelectorNthChildHTML.js';
-import IHTMLInputElement from '../../src/nodes/html-input-element/IHTMLInputElement.js';
+import HTMLInputElement from '../../src/nodes/html-input-element/HTMLInputElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('QuerySelector', () => {
-	let window: IWindow;
-	let document: IDocument;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -155,7 +154,7 @@ describe('QuerySelector', () => {
 		});
 
 		it('Returns a NodeList with the method item().', () => {
-			const container = <IHTMLElement>document.createElement('div');
+			const container = <HTMLElement>document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
 			const elements = container.querySelectorAll('span');
 			expect(elements.item(0) === container.children[0].children[1].children[0]).toBe(true);
@@ -654,6 +653,16 @@ describe('QuerySelector', () => {
 			expect(elements[0] === container.children[0].children[1].children[0]).toBe(true);
 		});
 
+		it('Returns all span elements matching "span:first-of-type:last-of-type".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const elements = container.querySelectorAll('h1:first-of-type:last-of-type');
+
+			expect(elements.length).toBe(2);
+			expect(elements[0] === container.children[0].children[0]).toBe(true);
+			expect(elements[1] === container.children[1].children[0]).toBe(true);
+		});
+
 		it('Returns all span elements matching ":last-of-type".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
@@ -681,18 +690,18 @@ describe('QuerySelector', () => {
 			expect(elements.length).toBe(1);
 			expect(elements[0] === container.children[0].children[0]).toBe(true);
 
-			const input = <IHTMLInputElement>elements[0];
+			const input = <HTMLInputElement>elements[0];
 
 			expect(input.value).toBe('one');
 
-			const twoEl = <IHTMLInputElement>container.querySelector("input[value='two']");
+			const twoEl = <HTMLInputElement>container.querySelector("input[value='two']");
 
 			twoEl.checked = true;
 			elements = container.querySelectorAll('input[name="op"]:checked');
 
 			expect(elements.length).toBe(1);
 			expect(elements[0] === container.children[0].children[1]).toBe(true);
-			expect((<IHTMLInputElement>elements[0]).value).toBe('two');
+			expect((<HTMLInputElement>elements[0]).value).toBe('two');
 		});
 
 		it('Returns all elements matching "span:not([type=hidden])".', () => {
@@ -1226,6 +1235,134 @@ describe('QuerySelector', () => {
 			div.appendChild(child2);
 
 			expect(div.querySelector(':not(:nth-child(1))')).toBe(child2);
+		});
+
+		it('Returns null for selector with CSS pseado element ":before".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			expect(
+				container.querySelector('span.class1') === container.children[0].children[1].children[0]
+			).toBe(true);
+			expect(
+				container.querySelector('span.class1:first-of-type') ===
+					container.children[0].children[1].children[0]
+			).toBe(true);
+			expect(container.querySelector('span.class1:before') === null).toBe(true);
+			expect(container.querySelector('span.class1:first-of-type:before') === null).toBe(true);
+		});
+
+		it('Returns null for selector with CSS pseado element ":after".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			expect(
+				container.querySelector('span.class1') === container.children[0].children[1].children[0]
+			).toBe(true);
+			expect(
+				container.querySelector('span.class1:first-of-type') ===
+					container.children[0].children[1].children[0]
+			).toBe(true);
+			expect(container.querySelector('span.class1:after') === null).toBe(true);
+			expect(container.querySelector('span.class1:first-of-type:after') === null).toBe(true);
+		});
+
+		it('Returns element matching selector with CSS pseudo ":is()"', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			expect(container.querySelector(':is(span[attr1="word1.word2"])')).toBe(
+				container.children[0].children[1].children[2]
+			);
+			expect(container.querySelector(':is(div, span[attr1="word1.word2"])')).toBe(
+				container.children[0]
+			);
+			expect(container.querySelector(':is(span[attr1="val,ue1"], span[attr1="value1"])')).toBe(
+				container.children[0].children[1].children[0]
+			);
+			expect(container.querySelector(':is(div)')).toBe(container.children[0]);
+			expect(container.querySelector(':is(span[attr1="val,ue1"])')).toBe(null);
+		});
+
+		it('Returns element matching selector with CSS pseudo ":where()"', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			expect(container.querySelector(':where(span[attr1="word1.word2"])')).toBe(
+				container.children[0].children[1].children[2]
+			);
+			expect(container.querySelector(':where(div, span[attr1="word1.word2"])')).toBe(
+				container.children[0]
+			);
+			expect(container.querySelector(':where(span[attr1="val,ue1"], span[attr1="value1"])')).toBe(
+				container.children[0].children[1].children[0]
+			);
+			expect(container.querySelector(':where(div)')).toBe(container.children[0]);
+			expect(container.querySelector(':where(span[attr1="val,ue1"])')).toBe(null);
+		});
+	});
+
+	describe('match()', () => {
+		it('Returns true when the element matches the selector', () => {
+			const div = document.createElement('div');
+			div.innerHTML = '<div class="foo"></div>';
+			const element = div.children[0];
+			expect(element.matches('.foo')).toBe(true);
+		});
+
+		it('Returns false when the element does not match the selector', () => {
+			const div = document.createElement('div');
+			div.innerHTML = '<div class="foo"></div>';
+			const element = div.children[0];
+			expect(element.matches('.bar')).toBe(false);
+		});
+
+		it('Returns true for the selector "div.class1 .class2 span"', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const element = container.children[0].children[1].children[0];
+			expect(element.matches('div.class1 .class2 span')).toBe(true);
+			expect(element.matches('div.class1 .class3 span')).toBe(false);
+		});
+
+		it('Returns false for selector with CSS pseado element ":before"', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const element = container.children[0].children[1].children[0];
+			expect(element.matches('span.class1')).toBe(true);
+			expect(element.matches('span.class1:first-of-type')).toBe(true);
+			expect(element.matches('span.class1:before')).toBe(false);
+			expect(element.matches('span.class1:first-of-type:before')).toBe(false);
+		});
+
+		it('Returns false for selector with CSS pseado element ":after"', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const element = container.children[0].children[1].children[0];
+			expect(element.matches('span.class1')).toBe(true);
+			expect(element.matches('span.class1:first-of-type')).toBe(true);
+			expect(element.matches('span.class1:after')).toBe(false);
+			expect(element.matches('span.class1:first-of-type:after')).toBe(false);
+		});
+
+		it('Returns true for selector with CSS pseudo ":is()"', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const element = container.children[0].children[1].children[0];
+			expect(element.matches(':is(span)')).toBe(true);
+			expect(element.matches(':is(div, span)')).toBe(true);
+			expect(element.matches(':is(div, span.class1)')).toBe(true);
+			expect(element.matches(':is(div, span[attr1="value1"])')).toBe(true);
+			expect(element.matches(':is(span[attr1="val,ue1"], span[attr1="value1"])')).toBe(true);
+			expect(element.matches(':is(div)')).toBe(false);
+		});
+
+		it('Returns true for selector with CSS pseudo ":where()"', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const element = container.children[0].children[1].children[0];
+			expect(element.matches(':where(span)')).toBe(true);
+			expect(element.matches(':where(div, span)')).toBe(true);
+			expect(element.matches(':where(div, span.class1)')).toBe(true);
+			expect(element.matches(':where(div, span[attr1="value1"])')).toBe(true);
+			expect(element.matches(':where(span[attr1="val,ue1"], span[attr1="value1"])')).toBe(true);
+			expect(element.matches(':where(div)')).toBe(false);
 		});
 	});
 });

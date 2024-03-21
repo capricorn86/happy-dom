@@ -1,16 +1,16 @@
 import IMutationObserverInit from './IMutationObserverInit.js';
 import MutationObserver from './MutationObserver.js';
 import MutationRecord from './MutationRecord.js';
-import INode from '../nodes/node/INode.js';
-import IBrowserWindow from '../window/IBrowserWindow.js';
+import Node from '../nodes/node/Node.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * Mutation Observer Listener.
  */
 export default class MutationListener {
-	public readonly target: INode;
+	public readonly target: Node;
 	public options: IMutationObserverInit;
-	#window: IBrowserWindow;
+	#window: BrowserWindow;
 	#observer: MutationObserver;
 	#callback: (record: MutationRecord[], observer: MutationObserver) => void;
 	#records: MutationRecord[] = [];
@@ -27,9 +27,9 @@ export default class MutationListener {
 	 * @param init.callback Callback.
 	 */
 	constructor(init: {
-		window: IBrowserWindow;
+		window: BrowserWindow;
 		options: IMutationObserverInit;
-		target: INode;
+		target: Node;
 		observer: MutationObserver;
 		callback: (record: MutationRecord[], observer: MutationObserver) => void;
 	}) {

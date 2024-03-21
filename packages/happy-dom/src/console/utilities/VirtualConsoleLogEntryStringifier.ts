@@ -1,4 +1,4 @@
-import IVirtualConsoleLogEntry from '../types/IVirtualConsoleLogEntry.js';
+import IVirtualConsoleLogEntry from '../IVirtualConsoleLogEntry.js';
 import VirtualConsoleLogTypeEnum from '../enums/VirtualConsoleLogTypeEnum.js';
 
 /**

@@ -1,17 +1,17 @@
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
-import IHTMLMetaElement from '../../../src/nodes/html-meta-element/IHTMLMetaElement.js';
+import HTMLMetaElement from '../../../src/nodes/html-meta-element/HTMLMetaElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLMetaElement', () => {
 	let window: Window;
 	let document: Document;
-	let element: IHTMLMetaElement;
+	let element: HTMLMetaElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <IHTMLMetaElement>document.createElement('meta');
+		element = <HTMLMetaElement>document.createElement('meta');
 	});
 
 	describe('Object.prototype.toString', () => {

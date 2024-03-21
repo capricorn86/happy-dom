@@ -1,11 +1,11 @@
 import CSSStyleDeclaration from '../../src/css/declaration/CSSStyleDeclaration.js';
-import IDocument from '../../src/nodes/document/IDocument.js';
-import IHTMLLinkElement from '../../src/nodes/html-link-element/IHTMLLinkElement.js';
-import IHTMLElement from '../../src/nodes/html-element/IHTMLElement.js';
+import Document from '../../src/nodes/document/Document.js';
+import HTMLLinkElement from '../../src/nodes/html-link-element/HTMLLinkElement.js';
+import HTMLElement from '../../src/nodes/html-element/HTMLElement.js';
 import ResourceFetch from '../../src/fetch/ResourceFetch.js';
-import IHTMLScriptElement from '../../src/nodes/html-script-element/IHTMLScriptElement.js';
-import IWindow from '../../src/window/IWindow.js';
-import IBrowserWindow from '../../src/window/IBrowserWindow.js';
+import HTMLScriptElement from '../../src/nodes/html-script-element/HTMLScriptElement.js';
+import Window from '../../src/window/Window.js';
+import BrowserWindow from '../../src/window/BrowserWindow.js';
 import Navigator from '../../src/navigator/Navigator.js';
 import Headers from '../../src/fetch/Headers.js';
 import Selection from '../../src/selection/Selection.js';
@@ -14,8 +14,6 @@ import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 import CustomElement from '../CustomElement.js';
 import Request from '../../src/fetch/Request.js';
 import Response from '../../src/fetch/Response.js';
-import IRequest from '../../src/fetch/types/IRequest.js';
-import IResponse from '../../src/fetch/types/IResponse.js';
 import Fetch from '../../src/fetch/Fetch.js';
 import MessageEvent from '../../src/event/events/MessageEvent.js';
 import Event from '../../src/event/Event.js';
@@ -24,35 +22,32 @@ import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Permissions from '../../src/permissions/Permissions.js';
 import Clipboard from '../../src/clipboard/Clipboard.js';
 import PackageVersion from '../../src/version.js';
-import IHTMLDialogElement from '../../src/nodes/html-dialog-element/IHTMLDialogElement.js';
+import HTMLDialogElement from '../../src/nodes/html-dialog-element/HTMLDialogElement.js';
 import Browser from '../../src/browser/Browser.js';
-import ICrossOriginBrowserWindow from '../../src/window/ICrossOriginBrowserWindow.js';
 import CrossOriginBrowserWindow from '../../src/window/CrossOriginBrowserWindow.js';
 import BrowserFrameFactory from '../../src/browser/utilities/BrowserFrameFactory.js';
 import IBrowser from '../../src/browser/types/IBrowser.js';
 import IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
 import IBrowserPage from '../../src/browser/types/IBrowserPage.js';
-import BrowserWindow from '../../src/window/BrowserWindow.js';
 import AdoptedStyleSheetCustomElement from '../AdoptedStyleSheetCustomElement.js';
 import CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
+import Location from '../../src/location/Location.js';
+
 import '../types.d.js';
 
-const GET_NAVIGATOR_PLATFORM = (): string => {
-	return (
-		'X11; ' +
-		process.platform.charAt(0).toUpperCase() +
-		process.platform.slice(1) +
-		' ' +
-		process.arch
-	);
-};
+const PLATFORM =
+	'X11; ' +
+	process.platform.charAt(0).toUpperCase() +
+	process.platform.slice(1) +
+	' ' +
+	process.arch;
 
 describe('BrowserWindow', () => {
 	let browser: IBrowser;
 	let browserPage: IBrowserPage;
 	let browserFrame: IBrowserFrame;
-	let window: IBrowserWindow;
-	let document: IDocument;
+	let window: BrowserWindow;
+	let document: Document;
 
 	beforeEach(() => {
 		browser = new Browser();
@@ -161,16 +156,28 @@ describe('BrowserWindow', () => {
 		});
 	});
 
+	describe('get location()', () => {
+		it('Returns an instance of Location', () => {
+			expect(window.location).toBeInstanceOf(Location);
+		});
+	});
+
+	describe('set location()', () => {
+		it('Sets the location.', () => {
+			browser.settings.navigation.disableMainFrameNavigation = true;
+			window.location = 'https://localhost:8080/test/page/';
+			expect(window.location.href).toBe('https://localhost:8080/test/page/');
+		});
+	});
+
 	describe('get navigator()', () => {
 		it('Returns an instance of Navigator with browser data.', () => {
-			const platform = GET_NAVIGATOR_PLATFORM();
-
 			expect(window.navigator instanceof Navigator).toBe(true);
 
 			const referenceValues = {
 				appCodeName: 'Mozilla',
 				appName: 'Netscape',
-				appVersion: `5.0 (${platform}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`,
+				appVersion: `5.0 (${PLATFORM}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`,
 				cookieEnabled: true,
 				credentials: null,
 				doNotTrack: 'unspecified',
@@ -186,13 +193,13 @@ describe('BrowserWindow', () => {
 				onLine: true,
 				permissions: new Permissions(),
 				clipboard: new Clipboard(window),
-				platform,
+				platform: PLATFORM,
 				plugins: {
 					length: 0
 				},
 				product: 'Gecko',
 				productSub: '20100101',
-				userAgent: `Mozilla/5.0 (${platform}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`,
+				userAgent: `Mozilla/5.0 (${PLATFORM}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`,
 				vendor: '',
 				vendorSub: '',
 				webdriver: true
@@ -310,7 +317,7 @@ describe('BrowserWindow', () => {
 
 	describe('getComputedStyle()', () => {
 		it('Handles default properties "display" and "direction".', () => {
-			const element = <IHTMLElement>document.createElement('div');
+			const element = document.createElement('div');
 			const computedStyle = window.getComputedStyle(element);
 
 			expect(computedStyle.display).toBe('');
@@ -322,7 +329,7 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Handles default properties "display" on a dialog element.', () => {
-			const element = <IHTMLDialogElement>document.createElement('dialog');
+			const element = <HTMLDialogElement>document.createElement('dialog');
 			const computedStyle = window.getComputedStyle(element);
 
 			expect(computedStyle.display).toBe('');
@@ -341,7 +348,7 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Returns a CSSStyleDeclaration object with computed styles that are live updated whenever the element styles are changed.', () => {
-			const element = <IHTMLElement>document.createElement('div');
+			const element = document.createElement('div');
 			const computedStyle = window.getComputedStyle(element);
 
 			element.style.color = 'red';
@@ -360,8 +367,8 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Returns a CSSStyleDeclaration object with computed styles from style sheets.', () => {
-			const parent = <IHTMLElement>document.createElement('div');
-			const element = <IHTMLElement>document.createElement('span');
+			const parent = document.createElement('div');
+			const element = document.createElement('span');
 			const computedStyle = window.getComputedStyle(element);
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
@@ -424,7 +431,7 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Returns a CSSStyleDeclaration object with computed styles from style sheets for elements in a HTMLShadowRoot.', () => {
-			const element = <IHTMLElement>document.createElement('span');
+			const element = document.createElement('span');
 			const elementStyle = document.createElement('style');
 			const customElement = <CustomElement>document.createElement('custom-element');
 			const elementComputedStyle = window.getComputedStyle(element);
@@ -440,7 +447,7 @@ describe('BrowserWindow', () => {
 			document.body.appendChild(customElement);
 
 			const customElementComputedStyle = window.getComputedStyle(
-				<IHTMLElement>customElement.shadowRoot?.querySelector('span')
+				<HTMLElement>customElement.shadowRoot?.querySelector('span')
 			);
 
 			// Default value on HTML is "16px Times New Roman"
@@ -454,7 +461,7 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Returns a CSSStyleDeclaration object with computed styles from adopted style sheets for elements in a HTMLShadowRoot.', () => {
-			const element = <IHTMLElement>document.createElement('span');
+			const element = document.createElement('span');
 			const customElement = <CustomElement>(
 				document.createElement('adopted-style-sheet-custom-element')
 			);
@@ -472,7 +479,7 @@ describe('BrowserWindow', () => {
 			document.body.appendChild(customElement);
 
 			const customElementComputedStyle = window.getComputedStyle(
-				<IHTMLElement>customElement.shadowRoot?.querySelector('span')
+				<HTMLElement>customElement.shadowRoot?.querySelector('span')
 			);
 
 			// Default value on HTML is "16px Times New Roman"
@@ -486,8 +493,8 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Returns values defined by a CSS variables.', () => {
-			const parent = <IHTMLElement>document.createElement('div');
-			const element = <IHTMLElement>document.createElement('span');
+			const parent = document.createElement('div');
+			const element = document.createElement('span');
 			const computedStyle = window.getComputedStyle(element);
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
@@ -526,8 +533,8 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Returns values defined by a CSS variables when a fallback is used.', () => {
-			const parent = <IHTMLElement>document.createElement('div');
-			const element = <IHTMLElement>document.createElement('span');
+			const parent = document.createElement('div');
+			const element = document.createElement('span');
 			const computedStyle = window.getComputedStyle(element);
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
@@ -564,9 +571,39 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.color).toBe('');
 		});
 
+		it('Returns values defined by a CSS variables when multiple fallbacks are used', () => {
+			const div = document.createElement('div');
+			const divStyle = document.createElement('style');
+
+			divStyle.innerHTML = `
+				div {
+					color: var(--my-var, var(--my-background, pink));
+
+					--color1: red;
+					--result1: var(--color1, var(--unknown, var(--unknown, green)));
+					--result2: var(--unknown, var(--color1, var(--unknown, green)));
+					--result3: var(--unknown, var(--unknown, var(--color1, green)));
+					
+					--result4: var(--unknown, var(--unknown, var(--unknown, var(--unknown, white))));
+				}
+			`;
+
+			document.body.appendChild(divStyle);
+			document.body.appendChild(div);
+
+			const computedStyle = window.getComputedStyle(div);
+			expect(computedStyle.color).toBe('pink');
+
+			expect(computedStyle.getPropertyValue('--result1')).toBe('red');
+			expect(computedStyle.getPropertyValue('--result2')).toBe('red');
+			expect(computedStyle.getPropertyValue('--result2')).toBe('red');
+
+			expect(computedStyle.getPropertyValue('--result4')).toBe('white');
+		});
+
 		it('Returns a CSSStyleDeclaration object with computed styles containing "rem" and "em" measurement values converted to pixels.', () => {
-			const parent = <IHTMLElement>document.createElement('div');
-			const element = <IHTMLElement>document.createElement('span');
+			const parent = document.createElement('div');
+			const element = document.createElement('span');
 			const computedStyle = window.getComputedStyle(element);
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
@@ -601,8 +638,8 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Returns a CSSStyleDeclaration object with computed styles containing "%" measurement values that have not been converted, as it is not supported yet.', () => {
-			const parent = <IHTMLElement>document.createElement('div');
-			const element = <IHTMLElement>document.createElement('span');
+			const parent = document.createElement('div');
+			const element = document.createElement('span');
 			const computedStyle = window.getComputedStyle(element);
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
@@ -640,8 +677,8 @@ describe('BrowserWindow', () => {
 			browser.settings.disableComputedStyleRendering = true;
 			document = window.document;
 
-			const parent = <IHTMLElement>document.createElement('div');
-			const element = <IHTMLElement>document.createElement('span');
+			const parent = document.createElement('div');
+			const element = document.createElement('span');
 			const computedStyle = window.getComputedStyle(element);
 			const parentStyle = document.createElement('style');
 			const elementStyle = document.createElement('style');
@@ -673,6 +710,32 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.height).toBe('10em');
 		});
 
+		it('Returns a CSSStyleDeclaration object with computed styles from style sheets using :is() and where().', () => {
+			const parent = document.createElement('div');
+			const element = document.createElement('span');
+			const computedStyle = window.getComputedStyle(element);
+			const elementStyle = document.createElement('style');
+
+			elementStyle.innerHTML = `
+                /* Should have 10 priority as :is() will use the tag match as priority */
+				:is(span) {
+					color: green;
+				}
+
+                /* Should have 0 priority as :is() will have 0 in priority */
+				:where(span) {
+					color: red;
+				}
+			`;
+
+			parent.appendChild(elementStyle);
+			parent.appendChild(element);
+
+			document.body.appendChild(parent);
+
+			expect(computedStyle.color).toBe('green');
+		});
+
 		for (const measurement of [
 			{ value: '100vw', result: '1024px' },
 			{ value: '100vh', result: '768px' },
@@ -686,7 +749,7 @@ describe('BrowserWindow', () => {
 			{ value: '1Q', result: '0.945px' }
 		]) {
 			it(`Returns a CSSStyleDeclaration object with computed styles for a "${measurement.value}" measurement value converted to pixels.`, () => {
-				const element = <IHTMLElement>document.createElement('div');
+				const element = document.createElement('div');
 				element.style.width = measurement.value;
 				document.body.appendChild(element);
 				expect(window.getComputedStyle(element).width).toBe(measurement.result);
@@ -1033,25 +1096,25 @@ describe('BrowserWindow', () => {
 	describe('fetch()', () => {
 		it(`Forwards the request to Fetch and calls Fetch.send().`, async () => {
 			const expectedURL = 'https://localhost:8080/path/';
-			const expectedResponse = <IResponse>{};
+			const expectedResponse = <Response>{};
 			const requestInit = {
 				method: 'PUT',
 				headers: {
 					'test-header': 'test-value'
 				}
 			};
-			let request: IRequest | null = null;
+			let request: Request | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				request = <IRequest>this.request;
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				request = <Request>this.request;
 				return Promise.resolve(expectedResponse);
 			});
 
 			const response = await window.fetch(expectedURL, requestInit);
 
 			expect(response).toBe(expectedResponse);
-			expect((<IRequest>(<unknown>request)).url).toBe(expectedURL);
-			expect((<IRequest>(<unknown>request)).headers.get('test-header')).toBe('test-value');
+			expect((<Request>(<unknown>request)).url).toBe(expectedURL);
+			expect((<Request>(<unknown>request)).headers.get('test-header')).toBe('test-value');
 		});
 	});
 
@@ -1146,9 +1209,9 @@ describe('BrowserWindow', () => {
 				const jsURL = 'https://localhost:8080/path/to/file.js';
 				const cssResponse = 'body { background-color: red; }';
 				const jsResponse = 'globalThis.test = "test";';
-				let resourceFetchCSSWindow: IBrowserWindow | null = null;
+				let resourceFetchCSSWindow: BrowserWindow | null = null;
 				let resourceFetchCSSURL: string | null = null;
-				let resourceFetchJSWindow: IBrowserWindow | null = null;
+				let resourceFetchJSWindow: BrowserWindow | null = null;
 				let resourceFetchJSURL: string | null = null;
 				let loadEvent: Event | null = null;
 
@@ -1168,11 +1231,11 @@ describe('BrowserWindow', () => {
 					loadEvent = event;
 				});
 
-				const script = <IHTMLScriptElement>document.createElement('script');
+				const script = <HTMLScriptElement>document.createElement('script');
 				script.async = true;
 				script.src = jsURL;
 
-				const link = <IHTMLLinkElement>document.createElement('link');
+				const link = <HTMLLinkElement>document.createElement('link');
 				link.href = cssURL;
 				link.rel = 'stylesheet';
 
@@ -1203,7 +1266,7 @@ describe('BrowserWindow', () => {
 					errorEvents.push(<ErrorEvent>event);
 				});
 
-				const script = <IHTMLScriptElement>document.createElement('script');
+				const script = <HTMLScriptElement>document.createElement('script');
 				script.innerText = 'throw new Error("Script error");';
 				document.body.appendChild(script);
 
@@ -1370,13 +1433,13 @@ describe('BrowserWindow', () => {
 
 	describe('open()', () => {
 		it('Opens a new window without URL.', () => {
-			const newWindow = <IWindow>window.open();
+			const newWindow = <Window>window.open();
 			expect(newWindow).toBeInstanceOf(BrowserWindow);
 			expect(newWindow.location.href).toBe('about:blank');
 		});
 
 		it('Opens a URL with Javascript.', async () => {
-			const newWindow = <IWindow>window.open(`javascript:document.write('Test');`);
+			const newWindow = <Window>window.open(`javascript:document.write('Test');`);
 			expect(newWindow).toBeInstanceOf(BrowserWindow);
 			expect(newWindow.location.href).toBe('about:blank');
 			await new Promise((resolve) => setTimeout(resolve, 1));
@@ -1384,7 +1447,7 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Dispatches error event when the Javascript code is invalid.', async () => {
-			const newWindow = <IWindow>window.open(`javascript:document.write(test);`);
+			const newWindow = <Window>window.open(`javascript:document.write(test);`);
 			let errorEvent: ErrorEvent | null = null;
 			newWindow.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
 			expect(newWindow).toBeInstanceOf(BrowserWindow);
@@ -1397,21 +1460,21 @@ describe('BrowserWindow', () => {
 
 		it('Opens a new window with URL.', async () => {
 			const html = '<html><body>Test</body></html>';
-			let request: IRequest | null = null;
+			let request: Request | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				request = <IRequest>this.request;
-				return Promise.resolve(<IResponse>{
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				request = <Request>this.request;
+				return Promise.resolve(<Response>{
 					text: () => new Promise((resolve) => setTimeout(() => resolve(html)))
 				});
 			});
 
 			browserFrame.url = 'https://localhost:8080/test/';
 
-			const newWindow = <IWindow>window.open('/path/to/file.html');
+			const newWindow = <Window>window.open('/path/to/file.html');
 			expect(newWindow).toBeInstanceOf(BrowserWindow);
 			expect(newWindow.location.href).toBe('https://localhost:8080/path/to/file.html');
-			expect((<IRequest>(<unknown>request)).url).toBe('https://localhost:8080/path/to/file.html');
+			expect((<Request>(<unknown>request)).url).toBe('https://localhost:8080/path/to/file.html');
 
 			await new Promise((resolve) => {
 				newWindow.addEventListener('load', () => {
@@ -1422,7 +1485,7 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Sets width, height, top and left when popup is set as a feature.', () => {
-			const newWindow = <IWindow>(
+			const newWindow = <Window>(
 				window.open('', '', 'popup=yes,width=100,height=200,top=300,left=400')
 			);
 			expect(newWindow).toBeInstanceOf(BrowserWindow);
@@ -1435,7 +1498,7 @@ describe('BrowserWindow', () => {
 		});
 
 		it(`Doesn't Sets width, height, top and left when popup is set as a feature.`, () => {
-			const newWindow = <IWindow>window.open('', '', 'width=100,height=200,top=300,left=400');
+			const newWindow = <Window>window.open('', '', 'width=100,height=200,top=300,left=400');
 			expect(newWindow).toBeInstanceOf(BrowserWindow);
 			expect(newWindow.innerWidth).toBe(1024);
 			expect(newWindow.innerHeight).toBe(768);
@@ -1446,7 +1509,7 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Sets the target as name on the Window instance.', () => {
-			const newWindow = <IWindow>window.open('', 'test');
+			const newWindow = <Window>window.open('', 'test');
 			expect(newWindow).toBeInstanceOf(BrowserWindow);
 			expect(newWindow.name).toBe('test');
 		});
@@ -1454,14 +1517,14 @@ describe('BrowserWindow', () => {
 		it(`Doesn't set opener if "noopener" has been specified as a feature without an URL.`, () => {
 			const browser = new Browser();
 			const page = browser.newPage();
-			const newWindow = <IWindow>page.mainFrame.window.open('', '', 'noopener');
+			const newWindow = <Window>page.mainFrame.window.open('', '', 'noopener');
 			expect(newWindow).toBe(null);
 			expect(browser.defaultContext.pages[1].mainFrame.window.opener).toBe(null);
 		});
 
 		it(`Doesn't set opener if "noopener" has been specified as a feature when opening an URL.`, () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				return Promise.resolve(<IResponse>{
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>{
 					text: () => Promise.resolve('<html><body>Test</body></html>')
 				});
 			});
@@ -1469,7 +1532,7 @@ describe('BrowserWindow', () => {
 			const browser = new Browser();
 			const page = browser.newPage();
 			page.mainFrame.url = 'https://www.github.com/capricorn86/happy-dom/';
-			const newWindow = <IWindow>page.mainFrame.window.open('/test/', '', 'noopener');
+			const newWindow = <Window>page.mainFrame.window.open('/test/', '', 'noopener');
 			expect(newWindow).toBe(null);
 			expect(browser.defaultContext.pages[1].mainFrame.window.opener).toBe(null);
 		});
@@ -1478,18 +1541,18 @@ describe('BrowserWindow', () => {
 			const browser = new Browser();
 			const page = browser.newPage();
 			const html = '<html><body>Test</body></html>';
-			let request: IRequest | null = null;
+			let request: Request | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				request = <IRequest>this.request;
-				return Promise.resolve(<IResponse>{
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				request = <Request>this.request;
+				return Promise.resolve(<Response>{
 					text: () => new Promise((resolve) => setTimeout(() => resolve(html)))
 				});
 			});
 
 			page.mainFrame.url = 'https://www.github.com/capricorn86/happy-dom/';
 
-			const newWindow = <ICrossOriginBrowserWindow>(
+			const newWindow = <CrossOriginBrowserWindow>(
 				page.mainFrame.window.open('https://developer.mozilla.org/en-US/docs/Web/API/Window/open')
 			);
 
@@ -1500,7 +1563,7 @@ describe('BrowserWindow', () => {
 			expect(browser.defaultContext.pages[1].mainFrame.url).toBe(
 				'https://developer.mozilla.org/en-US/docs/Web/API/Window/open'
 			);
-			expect((<IRequest>(<unknown>request)).url).toBe(
+			expect((<Request>(<unknown>request)).url).toBe(
 				'https://developer.mozilla.org/en-US/docs/Web/API/Window/open'
 			);
 
@@ -1524,11 +1587,11 @@ describe('BrowserWindow', () => {
 			const browser = new Browser();
 			const page = browser.newPage();
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				return Promise.reject(new Error('Test error'));
 			});
 
-			<IWindow>page.mainFrame.window.open('https://www.github.com/');
+			<Window>page.mainFrame.window.open('https://www.github.com/');
 
 			await new Promise((resolve) => setTimeout(resolve, 1));
 
@@ -1550,7 +1613,7 @@ describe('BrowserWindow', () => {
 		});
 
 		it(`Resize a popup window.`, () => {
-			const newWindow = <IWindow>window.open('', '', 'popup');
+			const newWindow = <Window>window.open('', '', 'popup');
 			newWindow.resizeTo(100, 200);
 			expect(newWindow.innerWidth).toBe(100);
 			expect(newWindow.innerHeight).toBe(200);
@@ -1569,12 +1632,44 @@ describe('BrowserWindow', () => {
 		});
 
 		it(`Resize a popup window.`, () => {
-			const newWindow = <IWindow>window.open('', '', 'popup');
+			const newWindow = <Window>window.open('', '', 'popup');
 			newWindow.resizeBy(-100, -200);
 			expect(newWindow.innerWidth).toBe(1024 - 100);
 			expect(newWindow.innerHeight).toBe(768 - 200);
 			expect(newWindow.outerWidth).toBe(1024 - 100);
 			expect(newWindow.outerHeight).toBe(768 - 200);
+		});
+	});
+	describe('Object.getOwnPropertyNames()', () => {
+		it('Returns property names for Vitest.', () => {
+			const expected = [
+				'location',
+				'history',
+				'navigator',
+				'screen',
+				'sessionStorage',
+				'localStorage',
+				'opener',
+				'scrollX',
+				'pageXOffset',
+				'scrollY',
+				'pageYOffset',
+				'CSS',
+				'innerWidth',
+				'innerHeight',
+				'outerWidth',
+				'outerHeight',
+				'devicePixelRatio'
+			];
+			const included: string[] = [];
+			const propertyNames = Object.getOwnPropertyNames(window);
+			for (const name of expected) {
+				if (propertyNames.includes(name)) {
+					included.push(name);
+				}
+			}
+
+			expect(included).toEqual(expected);
 		});
 	});
 });

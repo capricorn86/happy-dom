@@ -1,6 +1,6 @@
 import MimeTypeArray from './MimeTypeArray.js';
 import PluginArray from './PluginArray.js';
-import IBrowserWindow from '../window/IBrowserWindow.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 import Permissions from '../permissions/Permissions.js';
 import Clipboard from '../clipboard/Clipboard.js';
 import WindowBrowserSettingsReader from '../window/WindowBrowserSettingsReader.js';
@@ -16,7 +16,7 @@ import FormData from '../form-data/FormData.js';
  * https://html.spec.whatwg.org/multipage/system-state.html#dom-navigator.
  */
 export default class Navigator {
-	#ownerWindow: IBrowserWindow;
+	#ownerWindow: BrowserWindow;
 	#clipboard: Clipboard;
 	#permissions: Permissions;
 
@@ -25,7 +25,7 @@ export default class Navigator {
 	 *
 	 * @param ownerWindow Owner window.
 	 */
-	constructor(ownerWindow: IBrowserWindow) {
+	constructor(ownerWindow: BrowserWindow) {
 		this.#ownerWindow = ownerWindow;
 		this.#clipboard = new Clipboard(ownerWindow);
 		this.#permissions = new Permissions();

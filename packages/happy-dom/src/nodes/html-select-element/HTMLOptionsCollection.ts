@@ -1,8 +1,7 @@
 import DOMException from '../../exception/DOMException.js';
 import HTMLCollection from '../element/HTMLCollection.js';
-import IHTMLSelectElement from './IHTMLSelectElement.js';
-import IHTMLOptionElement from '../html-option-element/IHTMLOptionElement.js';
-import IHTMLOptionsCollection from './IHTMLOptionsCollection.js';
+import HTMLSelectElement from './HTMLSelectElement.js';
+import HTMLOptionElement from '../html-option-element/HTMLOptionElement.js';
 
 /**
  * HTML Options Collection.
@@ -10,17 +9,14 @@ import IHTMLOptionsCollection from './IHTMLOptionsCollection.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptionsCollection.
  */
-export default class HTMLOptionsCollection
-	extends HTMLCollection<IHTMLOptionElement>
-	implements IHTMLOptionsCollection
-{
-	#selectElement: IHTMLSelectElement;
+export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElement> {
+	#selectElement: HTMLSelectElement;
 
 	/**
 	 *
 	 * @param selectElement
 	 */
-	constructor(selectElement: IHTMLSelectElement) {
+	constructor(selectElement: HTMLSelectElement) {
 		super();
 
 		this.#selectElement = selectElement;
@@ -49,7 +45,7 @@ export default class HTMLOptionsCollection
 	 *
 	 * @param index Index.
 	 */
-	public item(index: number): IHTMLOptionElement {
+	public item(index: number): HTMLOptionElement {
 		return this[index];
 	}
 
@@ -58,7 +54,7 @@ export default class HTMLOptionsCollection
 	 * @param element
 	 * @param before
 	 */
-	public add(element: IHTMLOptionElement, before?: number | IHTMLOptionElement): void {
+	public add(element: HTMLOptionElement, before?: number | HTMLOptionElement): void {
 		if (!before && before !== 0) {
 			this.#selectElement.appendChild(element);
 			return;
@@ -91,7 +87,7 @@ export default class HTMLOptionsCollection
 	 */
 	public remove(index: number): void {
 		if (this[index]) {
-			this.#selectElement.removeChild(<IHTMLOptionElement>this[index]);
+			this.#selectElement.removeChild(<HTMLOptionElement>this[index]);
 		}
 	}
 }

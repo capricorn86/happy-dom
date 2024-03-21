@@ -3,10 +3,9 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
 import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
-import IAttr from '../attr/IAttr.js';
+import Attr from '../attr/Attr.js';
 import Element from './Element.js';
 import HTMLCollection from './HTMLCollection.js';
-import IElement from './IElement.js';
 import MutationListener from '../../mutation-observer/MutationListener.js';
 
 /**
@@ -15,14 +14,14 @@ import MutationListener from '../../mutation-observer/MutationListener.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  */
 export default class ElementNamedNodeMap extends NamedNodeMap {
-	protected [PropertySymbol.ownerElement]: IElement;
+	protected [PropertySymbol.ownerElement]: Element;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param ownerElement Owner element.
 	 */
-	constructor(ownerElement: IElement) {
+	constructor(ownerElement: Element) {
 		super();
 		this[PropertySymbol.ownerElement] = ownerElement;
 	}
@@ -30,27 +29,27 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 	/**
 	 * @override
 	 */
-	public override getNamedItem(name: string): IAttr | null {
+	public override getNamedItem(name: string): Attr | null {
 		return this[PropertySymbol.namedItems][this[PropertySymbol.getAttributeName](name)] || null;
 	}
 
 	/**
 	 * @override
 	 */
-	public override getNamedItemNS(namespace: string, localName: string): IAttr | null {
+	public override getNamedItemNS(namespace: string, localName: string): Attr | null {
 		return super.getNamedItemNS(namespace, this[PropertySymbol.getAttributeName](localName));
 	}
 
 	/**
 	 * @override
 	 */
-	public override setNamedItem(item: IAttr): IAttr | null {
+	public override setNamedItem(item: Attr): Attr | null {
 		if (!item[PropertySymbol.name]) {
 			return null;
 		}
 
 		item[PropertySymbol.name] = this[PropertySymbol.getAttributeName](item[PropertySymbol.name]);
-		(<IElement>item[PropertySymbol.ownerElement]) = this[PropertySymbol.ownerElement];
+		(<Element>item[PropertySymbol.ownerElement]) = this[PropertySymbol.ownerElement];
 
 		const replacedItem = super.setNamedItem(item);
 		const oldValue = replacedItem ? replacedItem[PropertySymbol.value] : null;
@@ -75,14 +74,14 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 				item[PropertySymbol.value] !== oldValue
 			) {
 				if (oldValue) {
-					(<HTMLCollection<IElement>>(
+					(<HTMLCollection<Element>>(
 						(<Element>this[PropertySymbol.ownerElement][PropertySymbol.parentNode])[
 							PropertySymbol.children
 						]
 					))[PropertySymbol.removeNamedItem](this[PropertySymbol.ownerElement], oldValue);
 				}
 				if (item[PropertySymbol.value]) {
-					(<HTMLCollection<IElement>>(
+					(<HTMLCollection<Element>>(
 						(<Element>this[PropertySymbol.ownerElement][PropertySymbol.parentNode])[
 							PropertySymbol.children
 						]
@@ -138,7 +137,7 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.removeNamedItem](name: string): IAttr | null {
+	public override [PropertySymbol.removeNamedItem](name: string): Attr | null {
 		const removedItem = super[PropertySymbol.removeNamedItem](
 			this[PropertySymbol.getAttributeName](name)
 		);
@@ -166,7 +165,7 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 				] &&
 				removedItem[PropertySymbol.value]
 			) {
-				(<HTMLCollection<IElement>>(
+				(<HTMLCollection<Element>>(
 					(<Element>this[PropertySymbol.ownerElement][PropertySymbol.parentNode])[
 						PropertySymbol.children
 					]
@@ -223,7 +222,7 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 	/**
 	 * @override
 	 */
-	public override removeNamedItemNS(namespace: string, localName: string): IAttr | null {
+	public override removeNamedItemNS(namespace: string, localName: string): Attr | null {
 		return super.removeNamedItemNS(namespace, this[PropertySymbol.getAttributeName](localName));
 	}
 

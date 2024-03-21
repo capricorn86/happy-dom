@@ -1,5 +1,4 @@
 import HTMLElement from '../html-element/HTMLElement.js';
-import IHTMLImageElement from './IHTMLImageElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
@@ -8,7 +7,7 @@ import * as PropertySymbol from '../../PropertySymbol.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement.
  */
-export default class HTMLImageElement extends HTMLElement implements IHTMLImageElement {
+export default class HTMLImageElement extends HTMLElement {
 	public [PropertySymbol.tagName] = 'IMG';
 	public [PropertySymbol.complete] = false;
 	public [PropertySymbol.naturalHeight] = 0;
@@ -50,7 +49,17 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @returns Loading.
 	 */
 	public get loading(): string {
-		return this[PropertySymbol.loading];
+		const loading = this.getAttribute('loading');
+		return loading === 'eager' || loading === 'lazy' ? loading : 'auto';
+	}
+
+	/**
+	 * Sets loading.
+	 *
+	 * @param loading Loading.
+	 */
+	public set loading(loading: string) {
+		this.setAttribute('loading', loading);
 	}
 
 	/**
@@ -234,13 +243,22 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @returns Source.
 	 */
 	public get src(): string {
-		return this.getAttribute('src') || '';
+		if (!this.hasAttribute('src')) {
+			return '';
+		}
+
+		try {
+			return new URL(this.getAttribute('src'), this[PropertySymbol.ownerDocument].location.href)
+				.href;
+		} catch (e) {
+			return this.getAttribute('src');
+		}
 	}
 
 	/**
 	 * Sets source.
 	 *
-	 * @param source Source.
+	 * @param src Source.
 	 */
 	public set src(src: string) {
 		this.setAttribute('src', src);
@@ -298,7 +316,7 @@ export default class HTMLImageElement extends HTMLElement implements IHTMLImageE
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): IHTMLImageElement {
-		return <IHTMLImageElement>super.cloneNode(deep);
+	public cloneNode(deep = false): HTMLImageElement {
+		return <HTMLImageElement>super.cloneNode(deep);
 	}
 }

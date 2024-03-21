@@ -3,7 +3,12 @@ import ReactDOM from 'react-dom/client';
 import * as ReactTestingLibrary from '@testing-library/react';
 import ReactTestingLibraryUserEvent from '@testing-library/user-event';
 import { act } from 'react-dom/test-utils';
-import { ReactDivComponent, ReactSelectComponent, ReactInputComponent } from './ReactComponents';
+import {
+	ReactDivComponent,
+	ReactSelectComponent,
+	ReactInputComponent,
+	ReactClipboardComponent
+} from './ReactComponents';
 import * as Select from '@radix-ui/react-select';
 
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
@@ -96,5 +101,13 @@ describe('React', () => {
 		expect(document.body.innerHTML).toBe(
 			'<app><button type="button" role="combobox" aria-controls="radix-:r0:" aria-expanded="false" aria-autocomplete="none" dir="ltr" data-state="closed" data-placeholder=""><span style="pointer-events: none;"></span><span aria-hidden="true">▼</span></button></app>'
 		);
+	});
+
+	it('Can use copy to clipboard hook component', async () => {
+		const { getByRole } = ReactTestingLibrary.render(<ReactClipboardComponent />);
+		expect(document.querySelector('p span').textContent).toBe('Nothing');
+		const button: HTMLButtonElement = getByRole('button') as HTMLButtonElement;
+		await TESTING_LIBRARY_USER.click(button);
+		expect(document.querySelector('p span').textContent).toBe('test');
 	});
 });

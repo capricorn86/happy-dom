@@ -1,10 +1,9 @@
 import * as PropertySymbol from '../PropertySymbol.js';
-import INode from '../nodes/node/INode.js';
 import Node from '../nodes/node/Node.js';
 import IMutationObserverInit from './IMutationObserverInit.js';
 import MutationListener from './MutationListener.js';
 import MutationRecord from './MutationRecord.js';
-import IBrowserWindow from '../window/IBrowserWindow.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * The MutationObserver interface provides the ability to watch for changes being made to the DOM tree.
@@ -14,7 +13,7 @@ import IBrowserWindow from '../window/IBrowserWindow.js';
 export default class MutationObserver {
 	#callback: (records: MutationRecord[], observer: MutationObserver) => void;
 	#listeners: MutationListener[] = [];
-	#window: IBrowserWindow | null = null;
+	#window: BrowserWindow | null = null;
 
 	/**
 	 * Constructor.
@@ -31,7 +30,7 @@ export default class MutationObserver {
 	 * @param target Target.
 	 * @param options Options.
 	 */
-	public observe(target: INode, options: IMutationObserverInit): void {
+	public observe(target: Node, options: IMutationObserverInit): void {
 		if (!target) {
 			throw new TypeError(
 				`Failed to execute 'observe' on 'MutationObserver': The first parameter "target" should be of type "Node".`

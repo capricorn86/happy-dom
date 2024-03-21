@@ -1,22 +1,22 @@
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
-import IHTMLButtonElement from '../../../src/nodes/html-button-element/IHTMLButtonElement.js';
+import HTMLButtonElement from '../../../src/nodes/html-button-element/HTMLButtonElement.js';
 import Event from '../../../src/event/Event.js';
 import SubmitEvent from '../../../src/event/events/SubmitEvent';
-import IHTMLElement from '../../../src/nodes/html-element/IHTMLElement.js';
-import IHTMLFormElement from '../../../src/nodes/html-form-element/IHTMLFormElement.js';
+import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElement.js';
 import ValidityState from '../../../src/validity-state/ValidityState.js';
 import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 
 describe('HTMLButtonElement', () => {
 	let window: Window;
 	let document: Document;
-	let element: IHTMLButtonElement;
+	let element: HTMLButtonElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <IHTMLButtonElement>document.createElement('button');
+		element = <HTMLButtonElement>document.createElement('button');
 	});
 
 	describe('Object.prototype.toString', () => {
@@ -53,14 +53,14 @@ describe('HTMLButtonElement', () => {
 		});
 
 		it(`Sets name as property in parent form elements.`, () => {
-			const form = <IHTMLFormElement>document.createElement('form');
+			const form = <HTMLFormElement>document.createElement('form');
 			form.appendChild(element);
 			element.name = 'button1';
 			expect(form.elements['button1']).toBe(element);
 		});
 
 		it(`Sets name as property in parent element children.`, () => {
-			const div = <IHTMLElement>document.createElement('div');
+			const div = <HTMLElement>document.createElement('div');
 			div.appendChild(element);
 			element.name = 'button1';
 			expect(div.children['button1']).toBe(element);
@@ -134,6 +134,66 @@ describe('HTMLButtonElement', () => {
 		});
 	});
 
+	describe('get formAction()', () => {
+		it('Returns attribute value.', () => {
+			expect(element.formAction).toBe('about:blank');
+
+			element.setAttribute('formaction', '/test/');
+
+			expect(element.formAction).toBe('');
+
+			window.happyDOM.setURL('https://localhost/path/');
+
+			expect(element.formAction).toBe('https://localhost/test/');
+
+			element.setAttribute('formaction', 'https://example.com');
+
+			expect(element.formAction).toBe('https://example.com/');
+		});
+	});
+
+	describe('set formAction()', () => {
+		it('Sets attribute value.', () => {
+			element.formAction = '/test/';
+
+			expect(element.getAttribute('formaction')).toBe('/test/');
+
+			element.formAction = 'https://example.com';
+
+			expect(element.getAttribute('formaction')).toBe('https://example.com');
+		});
+	});
+
+	describe('get formEnctype()', () => {
+		it('Returns attribute value.', () => {
+			expect(element.formEnctype).toBe('');
+			element.setAttribute('formenctype', 'value');
+			expect(element.formEnctype).toBe('value');
+		});
+	});
+
+	describe('set formEnctype()', () => {
+		it('Sets attribute value.', () => {
+			element.formEnctype = 'value';
+			expect(element.getAttribute('formenctype')).toBe('value');
+		});
+	});
+
+	describe('get formMethod()', () => {
+		it('Returns attribute value.', () => {
+			expect(element.formMethod).toBe('');
+			element.setAttribute('formmethod', 'value');
+			expect(element.formMethod).toBe('value');
+		});
+	});
+
+	describe('set formMethod()', () => {
+		it('Sets attribute value.', () => {
+			element.formMethod = 'value';
+			expect(element.getAttribute('formmethod')).toBe('value');
+		});
+	});
+
 	describe('get formNoValidate()', () => {
 		it('Returns "true" if defined.', () => {
 			expect(element.formNoValidate).toBe(false);
@@ -149,13 +209,42 @@ describe('HTMLButtonElement', () => {
 		});
 	});
 
-	describe(`get form()`, () => {
-		it('Returns parent form.', () => {
-			const form = <IHTMLFormElement>document.createElement('form');
-			form.appendChild(element);
-			expect(element.form).toBe(form);
-			form.removeChild(element);
+	describe('get formTarget()', () => {
+		it('Returns attribute value.', () => {
+			expect(element.formTarget).toBe('');
+			element.setAttribute('formtarget', 'value');
+			expect(element.formTarget).toBe('value');
+		});
+	});
+
+	describe('set formTarget()', () => {
+		it('Sets attribute value.', () => {
+			element.formTarget = 'value';
+			expect(element.getAttribute('formtarget')).toBe('value');
+		});
+	});
+
+	describe('get form()', () => {
+		it('Returns null if no parent form element exists.', () => {
 			expect(element.form).toBe(null);
+		});
+
+		it('Returns parent form element.', () => {
+			const form = document.createElement('form');
+			const div = document.createElement('div');
+			div.appendChild(element);
+			form.appendChild(div);
+			expect(element.form).toBe(form);
+		});
+
+		it('Returns form element by id if the form attribute is set.', () => {
+			const form = document.createElement('form');
+			form.id = 'form';
+			document.body.appendChild(form);
+			element.setAttribute('form', 'form');
+			expect(element.form).toBe(null);
+			document.body.appendChild(element);
+			expect(element.form).toBe(form);
 		});
 	});
 
@@ -245,18 +334,43 @@ describe('HTMLButtonElement', () => {
 
 	describe('dispatchEvent()', () => {
 		it('Submits form if type is "submit" and is a "click" event.', () => {
-			const form = <IHTMLFormElement>document.createElement('form');
-			const button = <IHTMLButtonElement>document.createElement('button');
+			const form = <HTMLFormElement>document.createElement('form');
+			const button = <HTMLButtonElement>document.createElement('button');
 
 			let submitTriggeredCount = 0;
 
-			button.type = 'submit';
+			// "submit" is the default type
+			// button.type = 'submit';
 
 			form.appendChild(button);
 
 			document.body.appendChild(form);
 
-			let submitter: IHTMLElement | null = null;
+			let submitter: HTMLElement | null = null;
+			form.addEventListener('submit', (event) => {
+				submitTriggeredCount++;
+				submitter = (<SubmitEvent>event).submitter;
+			});
+
+			button.click();
+
+			expect(submitTriggeredCount).toBe(1);
+			expect(submitter).toBe(button);
+		});
+
+		it('Submits form associated by ID if type is "submit" and is a "click" event.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			const button = <HTMLButtonElement>document.createElement('button');
+
+			let submitTriggeredCount = 0;
+
+			form.id = 'test-form';
+			button.setAttribute('form', 'test-form');
+
+			document.body.appendChild(form);
+			document.body.appendChild(button);
+
+			let submitter: HTMLElement | null = null;
 			form.addEventListener('submit', (event) => {
 				submitTriggeredCount++;
 				submitter = (<SubmitEvent>event).submitter;
@@ -269,8 +383,8 @@ describe('HTMLButtonElement', () => {
 		});
 
 		it('Resets form if type is "reset" and is a "click" event.', () => {
-			const form = <IHTMLFormElement>document.createElement('form');
-			const button = <IHTMLButtonElement>document.createElement('button');
+			const form = <HTMLFormElement>document.createElement('form');
+			const button = <HTMLButtonElement>document.createElement('button');
 
 			let resetTriggeredCount = 0;
 
@@ -279,6 +393,26 @@ describe('HTMLButtonElement', () => {
 			form.appendChild(button);
 
 			document.body.appendChild(form);
+
+			form.addEventListener('reset', () => resetTriggeredCount++);
+
+			button.click();
+
+			expect(resetTriggeredCount).toBe(1);
+		});
+
+		it('Resets form associated by ID if type is "reset" and is a "click" event.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			const button = <HTMLButtonElement>document.createElement('button');
+
+			let resetTriggeredCount = 0;
+
+			form.id = 'test-form';
+			button.type = 'reset';
+			button.setAttribute('form', 'test-form');
+
+			document.body.appendChild(form);
+			document.body.appendChild(button);
 
 			form.addEventListener('reset', () => resetTriggeredCount++);
 

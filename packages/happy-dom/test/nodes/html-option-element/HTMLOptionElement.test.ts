@@ -1,18 +1,18 @@
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
-import IHTMLOptionElement from '../../../src/nodes/html-option-element/IHTMLOptionElement.js';
-import IHTMLSelectElement from '../../../src/nodes/html-select-element/IHTMLSelectElement.js';
+import HTMLOptionElement from '../../../src/nodes/html-option-element/HTMLOptionElement.js';
+import HTMLSelectElement from '../../../src/nodes/html-select-element/HTMLSelectElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLOptionElement', () => {
 	let window: Window;
 	let document: Document;
-	let element: IHTMLOptionElement;
+	let element: HTMLOptionElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <IHTMLOptionElement>document.createElement('option');
+		element = <HTMLOptionElement>document.createElement('option');
 	});
 
 	describe('Object.prototype.toString', () => {
@@ -25,6 +25,12 @@ describe('HTMLOptionElement', () => {
 		it('Returns the attribute "value".', () => {
 			element.setAttribute('value', 'VALUE');
 			expect(element.value).toBe('VALUE');
+		});
+
+		it('Returns the attribute "value" even if the value is empty string.', () => {
+			element.textContent = 'TEXT VALUE';
+			element.setAttribute('value', '');
+			expect(element.value).toBe('');
 		});
 
 		it('Returns the text IDL value if no attribute is present.', () => {
@@ -57,9 +63,9 @@ describe('HTMLOptionElement', () => {
 
 	describe('get selected()', () => {
 		it('Returns the selected state of the option.', () => {
-			const select = <IHTMLSelectElement>document.createElement('select');
-			const option1 = <IHTMLOptionElement>document.createElement('option');
-			const option2 = <IHTMLOptionElement>document.createElement('option');
+			const select = <HTMLSelectElement>document.createElement('select');
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
 
 			expect(option1.selected).toBe(false);
 			expect(option2.selected).toBe(false);
@@ -88,9 +94,9 @@ describe('HTMLOptionElement', () => {
 
 	describe('set selected()', () => {
 		it('Sets the selected state of the option.', () => {
-			const select = <IHTMLSelectElement>document.createElement('select');
-			const option1 = <IHTMLOptionElement>document.createElement('option');
-			const option2 = <IHTMLOptionElement>document.createElement('option');
+			const select = <HTMLSelectElement>document.createElement('select');
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
 
 			expect(option1.selected).toBe(false);
 			expect(option2.selected).toBe(false);

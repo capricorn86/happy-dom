@@ -1,9 +1,9 @@
 import IBrowserFrame from '../types/IBrowserFrame.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import IGoToOptions from '../types/IGoToOptions.js';
-import IResponse from '../../fetch/types/IResponse.js';
+import Response from '../../fetch/Response.js';
 import DocumentReadyStateManager from '../../nodes/document/DocumentReadyStateManager.js';
-import IBrowserWindow from '../../window/IBrowserWindow.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import AbortController from '../../fetch/AbortController.js';
 import BrowserFrameFactory from './BrowserFrameFactory.js';
@@ -11,30 +11,38 @@ import BrowserFrameURL from './BrowserFrameURL.js';
 import BrowserFrameValidator from './BrowserFrameValidator.js';
 import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
 import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
+import FormData from '../../form-data/FormData.js';
 
 /**
  * Browser frame navigation utility.
  */
 export default class BrowserFrameNavigator {
 	/**
-	 * Go to a page.
+	 * Navigates to a page.
 	 *
 	 * @throws Error if the request can't be resolved (because of SSL error or similar). It will not throw if the response is not ok.
-	 * @param windowClass Window class.
-	 * @param frame Frame.
-	 * @param url URL.
-	 * @param [options] Options.
+	 * @param options Options.
+	 * @param options.windowClass Window class.
+	 * @param options.frame Frame.
+	 * @param options.url URL.
+	 * @param [options.formData] Form data.
+	 * @param [options.method] Method.
+	 * @param [options.goToOptions] Go to options.
 	 * @returns Response.
 	 */
-	public static async goto(
+	public static async navigate(options: {
 		windowClass: new (
 			browserFrame: IBrowserFrame,
 			options?: { url?: string; width?: number; height?: number }
-		) => IBrowserWindow,
-		frame: IBrowserFrame,
-		url: string,
-		options?: IGoToOptions
-	): Promise<IResponse | null> {
+		) => BrowserWindow;
+		frame: IBrowserFrame;
+		url: string;
+		goToOptions?: IGoToOptions;
+		method?: string;
+		formData?: FormData;
+	}): Promise<Response | null> {
+		const { windowClass, frame, url, formData, method, goToOptions } = options;
+		const referrer = goToOptions?.referrer || frame.window.location.origin;
 		const targetURL = BrowserFrameURL.getRelativeURL(frame, url);
 
 		if (!frame.window) {
@@ -95,11 +103,11 @@ export default class BrowserFrameNavigator {
 		frame[PropertySymbol.asyncTaskManager].destroy();
 		frame[PropertySymbol.asyncTaskManager] = new AsyncTaskManager();
 
-		(<IBrowserWindow>frame.window) = new windowClass(frame, { url: targetURL.href, width, height });
+		(<BrowserWindow>frame.window) = new windowClass(frame, { url: targetURL.href, width, height });
 		(<number>frame.window.devicePixelRatio) = devicePixelRatio;
 
-		if (options?.referrer) {
-			frame.window.document[PropertySymbol.referrer] = options.referrer;
+		if (referrer) {
+			frame.window.document[PropertySymbol.referrer] = referrer;
 		}
 
 		if (targetURL.protocol === 'about:') {
@@ -113,12 +121,12 @@ export default class BrowserFrameNavigator {
 		readyStateManager.startTask();
 
 		const abortController = new AbortController();
-		let response: IResponse;
+		let response: Response;
 		let responseText: string;
 
 		const timeout = frame.window.setTimeout(
-			() => abortController.abort('Request timed out.'),
-			options?.timeout ?? 30000
+			() => abortController.abort(new Error('Request timed out.')),
+			goToOptions?.timeout ?? 30000
 		);
 		const finalize = (): void => {
 			frame.window.clearTimeout(timeout);
@@ -132,16 +140,18 @@ export default class BrowserFrameNavigator {
 
 		try {
 			response = await frame.window.fetch(targetURL.href, {
-				referrer: options?.referrer,
-				referrerPolicy: options?.referrerPolicy,
+				referrer,
+				referrerPolicy: goToOptions?.referrerPolicy || 'origin',
 				signal: abortController.signal,
-				headers: options?.hard ? { 'Cache-Control': 'no-cache' } : undefined
+				method: method || (formData ? 'POST' : 'GET'),
+				headers: goToOptions?.hard ? { 'Cache-Control': 'no-cache' } : undefined,
+				body: formData
 			});
 
 			// Handles the "X-Frame-Options" header for child frames.
 			if (frame.parentFrame) {
 				const originURL = frame.parentFrame.window.location;
-				const xFrameOptions = response.headers.get('X-Frame-Options')?.toLowerCase();
+				const xFrameOptions = response.headers?.get('X-Frame-Options')?.toLowerCase();
 				const isSameOrigin = originURL.origin === targetURL.origin || targetURL.origin === 'null';
 
 				if (xFrameOptions === 'deny' || (xFrameOptions === 'sameorigin' && !isSameOrigin)) {

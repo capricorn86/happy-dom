@@ -9,29 +9,12 @@ import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import IRequestBody from '../types/IRequestBody.js';
 import IResponseBody from '../types/IResponseBody.js';
 import { Buffer } from 'buffer';
+import Stream from 'stream';
 
 /**
  * Fetch body utility.
  */
 export default class FetchBodyUtility {
-	/**
-	 * Wraps a given value in a browser ReadableStream.
-	 *
-	 * This method creates a ReadableStream and immediately enqueues and closes it
-	 * with the provided value, useful for stream API compatibility.
-	 *
-	 * @param value The value to be wrapped in a ReadableStream.
-	 * @returns ReadableStream
-	 */
-	public static toReadableStream(value): ReadableStream {
-		return new ReadableStream({
-			start(controller) {
-				controller.enqueue(value);
-				controller.close();
-			}
-		});
-	}
-
 	/**
 	 * Parses body and returns stream and type.
 	 *
@@ -115,12 +98,12 @@ export default class FetchBodyUtility {
 	 * It creates a pass through stream and pipes the original stream to it.
 	 *
 	 * @param requestOrResponse Request or Response.
-	 * @param requestOrResponse.body
-	 * @param requestOrResponse.bodyUsed
+	 * @param requestOrResponse.body Body.
+	 * @param requestOrResponse.bodyUsed Body used.
 	 * @returns New stream.
 	 */
 	public static cloneBodyStream(requestOrResponse: {
-		body: ReadableStream;
+		body: ReadableStream | null;
 		bodyUsed: boolean;
 	}): ReadableStream {
 		if (requestOrResponse.bodyUsed) {
@@ -130,7 +113,29 @@ export default class FetchBodyUtility {
 			);
 		}
 
+		if (requestOrResponse.body === null || requestOrResponse.body === undefined) {
+			return null;
+		}
+
+		// If a buffer is set, use it to create a new stream.
+		if (requestOrResponse[PropertySymbol.buffer]) {
+			return this.toReadableStream(requestOrResponse[PropertySymbol.buffer]);
+		}
+
+		// Pipe underlying node stream if it exists.
+		if (requestOrResponse.body[PropertySymbol.nodeStream]) {
+			const stream1 = new Stream.PassThrough();
+			const stream2 = new Stream.PassThrough();
+			requestOrResponse.body[PropertySymbol.nodeStream].pipe(stream1);
+			requestOrResponse.body[PropertySymbol.nodeStream].pipe(stream2);
+			// Sets the body of the cloned request/response to the first pass through stream.
+			requestOrResponse.body = this.nodeToWebStream(stream1);
+			// Returns the clone.
+			return this.nodeToWebStream(stream2);
+		}
+
 		// Uses the tee() method to clone the ReadableStream
+		// This requires the stream to be consumed in parallel which is not the case for the fetch API
 		const [stream1, stream2] = requestOrResponse.body.tee();
 
 		// Sets the body of the cloned request to the first pass through stream.
@@ -197,5 +202,51 @@ export default class FetchBodyUtility {
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
+	}
+	/**
+	 * Wraps a given value in a browser ReadableStream.
+	 *
+	 * This method creates a ReadableStream and immediately enqueues and closes it
+	 * with the provided value, useful for stream API compatibility.
+	 *
+	 * @param value The value to be wrapped in a ReadableStream.
+	 * @returns ReadableStream
+	 */
+	public static toReadableStream(value): ReadableStream {
+		return new ReadableStream({
+			start(controller) {
+				controller.enqueue(value);
+				controller.close();
+			}
+		});
+	}
+
+	/**
+	 * Wraps a Node.js stream into a browser-compatible ReadableStream.
+	 *
+	 * Enables the use of Node.js streams where browser ReadableStreams are required.
+	 * Handles 'data', 'end', and 'error' events from the Node.js stream.
+	 *
+	 * @param nodeStream The Node.js stream to be converted.
+	 * @returns ReadableStream
+	 */
+	public static nodeToWebStream(nodeStream: Stream): ReadableStream {
+		const readableStream = new ReadableStream({
+			start(controller) {
+				nodeStream.on('data', (chunk) => {
+					controller.enqueue(chunk);
+				});
+
+				nodeStream.on('end', () => {
+					controller.close();
+				});
+
+				nodeStream.on('error', (err) => {
+					controller.error(err);
+				});
+			}
+		});
+		readableStream[PropertySymbol.nodeStream] = nodeStream;
+		return readableStream;
 	}
 }

@@ -1,6 +1,5 @@
 import IRequestInit from './types/IRequestInit.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import IResponse from './types/IResponse.js';
 import IRequestInfo from './types/IRequestInfo.js';
 import Headers from './Headers.js';
 import FetchRequestReferrerUtility from './utilities/FetchRequestReferrerUtility.js';
@@ -14,13 +13,12 @@ import { Socket } from 'net';
 import Stream from 'stream';
 import DataURIParser from './data-uri/DataURIParser.js';
 import FetchCORSUtility from './utilities/FetchCORSUtility.js';
-import { ReadableStream } from 'stream/web';
 import Request from './Request.js';
 import Response from './Response.js';
 import Event from '../event/Event.js';
 import AbortSignal from './AbortSignal.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
-import IBrowserWindow from '../window/IBrowserWindow.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 import CachedResponseStateEnum from './cache/response/CachedResponseStateEnum.js';
 import FetchRequestHeaderUtility from './utilities/FetchRequestHeaderUtility.js';
 import FetchRequestValidationUtility from './utilities/FetchRequestValidationUtility.js';
@@ -28,6 +26,7 @@ import FetchResponseRedirectUtility from './utilities/FetchResponseRedirectUtili
 import FetchResponseHeaderUtility from './utilities/FetchResponseHeaderUtility.js';
 import FetchHTTPSCertificate from './certificate/FetchHTTPSCertificate.js';
 import { Buffer } from 'buffer';
+import FetchBodyUtility from './utilities/FetchBodyUtility.js';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -41,7 +40,7 @@ const LAST_CHUNK = Buffer.from('0\r\n\r\n');
  */
 export default class Fetch {
 	private reject: (reason: Error) => void | null = null;
-	private resolve: (value: IResponse | Promise<IResponse>) => void | null = null;
+	private resolve: (value: Response | Promise<Response>) => void | null = null;
 	private listeners = {
 		onSignalAbort: this.onSignalAbort.bind(this)
 	};
@@ -57,7 +56,7 @@ export default class Fetch {
 	private disableCache: boolean;
 	private disableCrossOriginPolicy: boolean;
 	#browserFrame: IBrowserFrame;
-	#window: IBrowserWindow;
+	#window: BrowserWindow;
 
 	/**
 	 * Constructor.
@@ -74,7 +73,7 @@ export default class Fetch {
 	 */
 	constructor(options: {
 		browserFrame: IBrowserFrame;
-		window: IBrowserWindow;
+		window: BrowserWindow;
 		url: IRequestInfo;
 		init?: IRequestInit;
 		redirectCount?: number;
@@ -101,8 +100,8 @@ export default class Fetch {
 	 *
 	 * @returns Response.
 	 */
-	public async send(): Promise<IResponse> {
-		FetchRequestReferrerUtility.prepareRequest(this.#window.location, this.request);
+	public async send(): Promise<Response> {
+		FetchRequestReferrerUtility.prepareRequest(new URL(this.#window.location.href), this.request);
 		FetchRequestValidationUtility.validateSchema(this.request);
 
 		if (this.request.signal.aborted) {
@@ -158,7 +157,7 @@ export default class Fetch {
 	 *
 	 * @returns Response.
 	 */
-	private async getCachedResponse(): Promise<IResponse | null> {
+	private async getCachedResponse(): Promise<Response | null> {
 		if (this.disableCache) {
 			return null;
 		}
@@ -247,7 +246,7 @@ export default class Fetch {
 	private async compliesWithCrossOriginPolicy(): Promise<boolean> {
 		if (
 			this.disableCrossOriginPolicy ||
-			!FetchCORSUtility.isCORS(this.#window.location, this.request[PropertySymbol.url])
+			!FetchCORSUtility.isCORS(this.#window.location.href, this.request[PropertySymbol.url])
 		) {
 			return true;
 		}
@@ -336,7 +335,7 @@ export default class Fetch {
 	 *
 	 * @returns Response.
 	 */
-	private sendRequest(): Promise<IResponse> {
+	private sendRequest(): Promise<Response> {
 		return new Promise((resolve, reject) => {
 			const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask(() =>
 				this.onAsyncTaskManagerAbort()
@@ -346,7 +345,7 @@ export default class Fetch {
 				throw new Error('Fetch already sent.');
 			}
 
-			this.resolve = (response: IResponse | Promise<IResponse>): void => {
+			this.resolve = (response: Response | Promise<Response>): void => {
 				// We can end up here when closing down the browser frame and there is an ongoing request.
 				// Therefore we need to check if browserFrame.page.context is still available.
 				if (
@@ -545,7 +544,10 @@ export default class Fetch {
 			nodeResponse.statusCode === 204 ||
 			nodeResponse.statusCode === 304
 		) {
-			this.response = new this.#window.Response(this.nodeToWebStream(body), responseOptions);
+			this.response = new this.#window.Response(
+				FetchBodyUtility.nodeToWebStream(body),
+				responseOptions
+			);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
@@ -567,7 +569,10 @@ export default class Fetch {
 					// Ignore error as it is forwarded to the response body.
 				}
 			});
-			this.response = new this.#window.Response(this.nodeToWebStream(body), responseOptions);
+			this.response = new this.#window.Response(
+				FetchBodyUtility.nodeToWebStream(body),
+				responseOptions
+			);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
@@ -599,7 +604,10 @@ export default class Fetch {
 					});
 				}
 
-				this.response = new this.#window.Response(this.nodeToWebStream(body), responseOptions);
+				this.response = new this.#window.Response(
+					FetchBodyUtility.nodeToWebStream(body),
+					responseOptions
+				);
 				(<boolean>this.response.redirected) = this.redirectCount > 0;
 				(<string>this.response.url) = this.request.url;
 				this.resolve(this.response);
@@ -607,7 +615,10 @@ export default class Fetch {
 			raw.on('end', () => {
 				// Some old IIS servers return zero-length OK deflate responses, so 'data' is never emitted.
 				if (!this.response) {
-					this.response = new this.#window.Response(this.nodeToWebStream(body), responseOptions);
+					this.response = new this.#window.Response(
+						FetchBodyUtility.nodeToWebStream(body),
+						responseOptions
+					);
 					(<boolean>this.response.redirected) = this.redirectCount > 0;
 					(<string>this.response.url) = this.request.url;
 					this.resolve(this.response);
@@ -623,7 +634,10 @@ export default class Fetch {
 					// Ignore error as it is forwarded to the response body.
 				}
 			});
-			this.response = new this.#window.Response(this.nodeToWebStream(body), responseOptions);
+			this.response = new this.#window.Response(
+				FetchBodyUtility.nodeToWebStream(body),
+				responseOptions
+			);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
 			this.resolve(this.response);
@@ -631,7 +645,10 @@ export default class Fetch {
 		}
 
 		// Otherwise, use response as is
-		this.response = new this.#window.Response(this.nodeToWebStream(body), responseOptions);
+		this.response = new this.#window.Response(
+			FetchBodyUtility.nodeToWebStream(body),
+			responseOptions
+		);
 		(<boolean>this.response.redirected) = this.redirectCount > 0;
 		(<string>this.response.url) = this.request.url;
 		this.resolve(this.response);
@@ -714,7 +731,7 @@ export default class Fetch {
 				if (
 					this.request.credentials === 'omit' ||
 					(this.request.credentials === 'same-origin' &&
-						FetchCORSUtility.isCORS(this.#window.location, locationURL))
+						FetchCORSUtility.isCORS(this.#window.location.href, locationURL))
 				) {
 					headers.delete('authorization');
 					headers.delete('www-authenticate');
@@ -761,7 +778,7 @@ export default class Fetch {
 				this.finalizeRequest();
 				this.reject(
 					new DOMException(
-						`Redirect option '${this.request.redirect}' is not a valid value of RequestRedirect`
+						`Redirect option '${this.request.redirect}' is not a valid value of IRequestRedirect`
 					)
 				);
 				return true;
@@ -781,9 +798,9 @@ export default class Fetch {
 	 *
 	 * @param reason Reason.
 	 */
-	private abort(reason?: string): void {
+	private abort(reason?: Error): void {
 		const error = new DOMException(
-			'The operation was aborted.' + (reason ? ' ' + reason : ''),
+			'The operation was aborted.' + (reason ? ' ' + reason.toString() : ''),
 			DOMExceptionNameEnum.abortError
 		);
 
@@ -805,32 +822,5 @@ export default class Fetch {
 		if (this.reject) {
 			this.reject(error);
 		}
-	}
-
-	/**
-	 * Wraps a Node.js stream into a browser-compatible ReadableStream.
-	 *
-	 * Enables the use of Node.js streams where browser ReadableStreams are required.
-	 * Handles 'data', 'end', and 'error' events from the Node.js stream.
-	 *
-	 * @param nodeStream The Node.js stream to be converted.
-	 * @returns ReadableStream
-	 */
-	private nodeToWebStream(nodeStream: Stream): ReadableStream {
-		return new ReadableStream({
-			start(controller) {
-				nodeStream.on('data', (chunk) => {
-					controller.enqueue(chunk);
-				});
-
-				nodeStream.on('end', () => {
-					controller.close();
-				});
-
-				nodeStream.on('error', (err) => {
-					controller.error(err);
-				});
-			}
-		});
 	}
 }

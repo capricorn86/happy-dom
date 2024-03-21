@@ -9,7 +9,7 @@ import Blob from '../file/Blob.js';
  */
 export default class ClipboardItem {
 	public readonly presentationStyle: 'unspecified' | 'inline' | 'attachment' = 'unspecified';
-	#data: { [mimeType: string]: Blob };
+	#data: { [mimeType: string]: Blob | string | Promise<Blob | string> };
 
 	/**
 	 * Constructor.
@@ -19,14 +19,9 @@ export default class ClipboardItem {
 	 * @param [options.presentationStyle] Presentation style.
 	 */
 	constructor(
-		data: { [mimeType: string]: Blob },
+		data: { [mimeType: string]: Blob | string | Promise<Blob | string> },
 		options?: { presentationStyle?: 'unspecified' | 'inline' | 'attachment' }
 	) {
-		for (const mimeType of Object.keys(data)) {
-			if (mimeType !== data[mimeType].type) {
-				throw new DOMException(`Type ${mimeType} does not match the blob's type`);
-			}
-		}
 		this.#data = data;
 		if (options?.presentationStyle) {
 			this.presentationStyle = options.presentationStyle;
@@ -48,7 +43,7 @@ export default class ClipboardItem {
 	 * @param type Type.
 	 * @returns Data.
 	 */
-	public async getType(type: string): Promise<Blob> {
+	public async getType(type: string): Promise<Blob | string> {
 		if (!this.#data[type]) {
 			throw new DOMException(
 				`Failed to execute 'getType' on 'ClipboardItem': The type '${type}' was not found`

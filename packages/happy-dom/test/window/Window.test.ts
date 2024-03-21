@@ -1,33 +1,29 @@
-import IDocument from '../../src/nodes/document/IDocument.js';
+import Document from '../../src/nodes/document/Document.js';
 import Window from '../../src/window/Window.js';
-import IWindow from '../../src/window/IWindow.js';
 import Headers from '../../src/fetch/Headers.js';
 import CustomElement from '../../test/CustomElement.js';
-import IResponse from '../../src/fetch/types/IResponse.js';
+import Response from '../../src/fetch/Response.js';
 import Fetch from '../../src/fetch/Fetch.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import VirtualConsole from '../../src/console/VirtualConsole.js';
 import VirtualConsolePrinter from '../../src/console/VirtualConsolePrinter.js';
 import PackageVersion from '../../src/version.js';
-import IHTMLIFrameElement from '../../src/nodes/html-iframe-element/IHTMLIFrameElement.js';
+import HTMLIFrameElement from '../../src/nodes/html-iframe-element/HTMLIFrameElement.js';
 import DetachedWindowAPI from '../../src/window/DetachedWindowAPI.js';
 import '../types.d.js';
 import BrowserErrorCaptureEnum from '../../src/browser/enums/BrowserErrorCaptureEnum.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 
-const GET_NAVIGATOR_PLATFORM = (): string => {
-	return (
-		'X11; ' +
-		process.platform.charAt(0).toUpperCase() +
-		process.platform.slice(1) +
-		' ' +
-		process.arch
-	);
-};
+const PLATFORM =
+	'X11; ' +
+	process.platform.charAt(0).toUpperCase() +
+	process.platform.slice(1) +
+	' ' +
+	process.arch;
 
 describe('Window', () => {
-	let window: IWindow;
-	let document: IDocument;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -204,9 +200,7 @@ describe('Window', () => {
 			);
 			expect(windowWithoutOptions.happyDOM?.settings.enableFileSystemHttpRequests).toBe(false);
 			expect(windowWithoutOptions.happyDOM?.settings.navigator.userAgent).toBe(
-				`Mozilla/5.0 (${GET_NAVIGATOR_PLATFORM()}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${
-					PackageVersion.version
-				}`
+				`Mozilla/5.0 (${PLATFORM}) AppleWebKit/537.36 (KHTML, like Gecko) HappyDOM/${PackageVersion.version}`
 			);
 			expect(windowWithoutOptions.happyDOM?.settings.device.prefersColorScheme).toBe('light');
 			expect(windowWithoutOptions.happyDOM?.settings.device.mediaType).toBe('screen');
@@ -232,8 +226,8 @@ describe('Window', () => {
 
 		it('Returns "undefined" when navigating an iframe for security reasons. The page loaded can potentially contain malicious code.', async () => {
 			await new Promise((resolve) => {
-				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-					return Promise.resolve(<IResponse>(<unknown>{
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+					return Promise.resolve(<Response>(<unknown>{
 						text: () => Promise.resolve('<html><body>Test</body></html>'),
 						headers: new Headers()
 					}));
@@ -241,11 +235,11 @@ describe('Window', () => {
 
 				window.happyDOM?.setURL('https://localhost:8080');
 
-				const iframe = <IHTMLIFrameElement>document.createElement('iframe');
+				const iframe = <HTMLIFrameElement>document.createElement('iframe');
 
 				iframe.src = 'https://localhost:8080/test/page/';
 				iframe.addEventListener('load', () => {
-					expect((<IWindow>iframe.contentWindow).happyDOM).toBeUndefined();
+					expect((<Window>iframe.contentWindow).happyDOM).toBeUndefined();
 					resolve(null);
 				});
 
@@ -255,8 +249,8 @@ describe('Window', () => {
 
 		it('Returns "undefined" when opening a new page. The page loaded can potentially contain malicious code.', async () => {
 			await new Promise((resolve) => {
-				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-					return Promise.resolve(<IResponse>(<unknown>{
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+					return Promise.resolve(<Response>(<unknown>{
 						text: () => Promise.resolve('<html><body>Test</body></html>'),
 						headers: new Headers()
 					}));
@@ -264,7 +258,7 @@ describe('Window', () => {
 
 				window.happyDOM?.setURL('https://localhost:8080');
 
-				const newWindow = <IWindow>window.open('https://localhost:8080/test/page/');
+				const newWindow = <Window>window.open('https://localhost:8080/test/page/');
 
 				newWindow.addEventListener('load', () => {
 					expect(newWindow.happyDOM).toBeUndefined();
@@ -276,7 +270,7 @@ describe('Window', () => {
 
 	describe('open()', () => {
 		it(`Doesn't navigate the browser if the target is the main frame of a detached browser.`, () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				throw new Error('This should not be called.');
 			});
 
@@ -293,23 +287,23 @@ describe('Window', () => {
 		});
 
 		it(`Navigates the "_top" frame of a detached browser.`, async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				return Promise.resolve(<IResponse>{
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>{
 					text: () => Promise.resolve('<html><body>Test</body></html>')
 				});
 			});
 
 			window.happyDOM?.setURL('https://localhost:8080');
 
-			const newWindow = <IWindow>window.open('/test/1/', '_blank');
+			const newWindow = <Window>window.open('/test/1/', '_blank');
 
 			expect(newWindow.name).toBe('');
 			newWindow.document.write('<iframe src="https://localhost:8080"></iframe>');
 
-			const iframe = <IHTMLIFrameElement>newWindow.document.querySelector('iframe');
-			expect((<IWindow>iframe.contentWindow).happyDOM).toBeUndefined();
-			const newWindow2 = <IWindow>(
-				(<IWindow>iframe.contentWindow).open('https://localhost:8080/test/2/', '_top')
+			const iframe = <HTMLIFrameElement>newWindow.document.querySelector('iframe');
+			expect((<Window>iframe.contentWindow).happyDOM).toBeUndefined();
+			const newWindow2 = <Window>(
+				(<Window>iframe.contentWindow).open('https://localhost:8080/test/2/', '_top')
 			);
 
 			expect(newWindow2.name).toBe('');
@@ -321,23 +315,23 @@ describe('Window', () => {
 		});
 
 		it(`Navigates the "_parent" frame of a detached browser.`, async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<IResponse> {
-				return Promise.resolve(<IResponse>{
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>{
 					text: () => Promise.resolve('<html><body>Test</body></html>')
 				});
 			});
 
 			window.happyDOM?.setURL('https://localhost:8080');
 
-			const newWindow = <IWindow>window.open('/test/1/', '_blank');
+			const newWindow = <Window>window.open('/test/1/', '_blank');
 
 			expect(newWindow.name).toBe('');
 			newWindow.document.write('<iframe src="https://localhost:8080"></iframe>');
 
-			const iframe = <IHTMLIFrameElement>newWindow.document.querySelector('iframe');
-			expect((<IWindow>iframe.contentWindow).happyDOM).toBeUndefined();
-			const newWindow2 = <IWindow>(
-				(<IWindow>iframe.contentWindow).open('https://localhost:8080/test/2/', '_parent')
+			const iframe = <HTMLIFrameElement>newWindow.document.querySelector('iframe');
+			expect((<Window>iframe.contentWindow).happyDOM).toBeUndefined();
+			const newWindow2 = <Window>(
+				(<Window>iframe.contentWindow).open('https://localhost:8080/test/2/', '_parent')
 			);
 
 			expect(newWindow2.name).toBe('');
@@ -346,6 +340,38 @@ describe('Window', () => {
 			await new Promise((resolve) => setTimeout(resolve, 2));
 
 			expect(newWindow2.document.body.innerHTML).toBe('Test');
+		});
+	});
+	describe('Object.getOwnPropertyNames()', () => {
+		it('Returns property names for Vitest.', () => {
+			const expected = [
+				'location',
+				'history',
+				'navigator',
+				'screen',
+				'sessionStorage',
+				'localStorage',
+				'opener',
+				'scrollX',
+				'pageXOffset',
+				'scrollY',
+				'pageYOffset',
+				'CSS',
+				'innerWidth',
+				'innerHeight',
+				'outerWidth',
+				'outerHeight',
+				'devicePixelRatio'
+			];
+			const included: string[] = [];
+			const propertyNames = Object.getOwnPropertyNames(window);
+			for (const name of expected) {
+				if (propertyNames.includes(name)) {
+					included.push(name);
+				}
+			}
+
+			expect(included).toEqual(expected);
 		});
 	});
 });

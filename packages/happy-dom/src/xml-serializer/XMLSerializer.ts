@@ -1,16 +1,15 @@
 import Element from '../nodes/element/Element.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import Node from '../nodes/node/Node.js';
-import HTMLElementVoid from '../config/HTMLElementVoid.js';
 import DocumentType from '../nodes/document-type/DocumentType.js';
-import INode from '../nodes/node/INode.js';
-import IElement from '../nodes/element/IElement.js';
-import IHTMLTemplateElement from '../nodes/html-template-element/IHTMLTemplateElement.js';
+import HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
-import IProcessingInstruction from '../nodes/processing-instruction/IProcessingInstruction.js';
+import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction.js';
 import * as Entities from 'entities';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
+import HTMLElementConfig from '../config/HTMLElementConfig.js';
+import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigContentModelEnum.js';
 
 /**
  * Utility for converting an element to string.
@@ -46,19 +45,20 @@ export default class XMLSerializer {
 	 * @param root Root element.
 	 * @returns Result.
 	 */
-	public serializeToString(root: INode): string {
+	public serializeToString(root: Node): string {
 		switch (root[PropertySymbol.nodeType]) {
 			case NodeTypeEnum.elementNode:
 				const element = <Element>root;
 				const localName = element[PropertySymbol.localName];
+				const config = HTMLElementConfig[element[PropertySymbol.localName]];
 
-				if (HTMLElementVoid[element[PropertySymbol.tagName]]) {
+				if (config?.contentModel === HTMLElementConfigContentModelEnum.noDescendants) {
 					return `<${localName}${this.getAttributes(element)}>`;
 				}
 
 				const childNodes =
 					localName === 'template'
-						? (<DocumentFragment>(<IHTMLTemplateElement>root).content)[PropertySymbol.childNodes]
+						? (<DocumentFragment>(<HTMLTemplateElement>root).content)[PropertySymbol.childNodes]
 						: (<DocumentFragment>root)[PropertySymbol.childNodes];
 				let innerHTML = '';
 
@@ -90,7 +90,7 @@ export default class XMLSerializer {
 				return `<!--${root.textContent}-->`;
 			case NodeTypeEnum.processingInstructionNode:
 				// TODO: Add support for processing instructions.
-				return `<!--?${(<IProcessingInstruction>root).target} ${root.textContent}?-->`;
+				return `<!--?${(<ProcessingInstruction>root).target} ${root.textContent}?-->`;
 			case NodeTypeEnum.textNode:
 				return this.options.escapeEntities
 					? Entities.escapeText(root.textContent)
@@ -112,7 +112,7 @@ export default class XMLSerializer {
 	 * @param element Element.
 	 * @returns Attributes.
 	 */
-	private getAttributes(element: IElement): string {
+	private getAttributes(element: Element): string {
 		let attributeString = '';
 
 		if (

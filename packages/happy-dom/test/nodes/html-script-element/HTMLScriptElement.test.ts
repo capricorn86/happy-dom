@@ -1,19 +1,18 @@
 import Window from '../../../src/window/Window.js';
-import IHTMLScriptElement from '../../../src/nodes/html-script-element/IHTMLScriptElement.js';
-import IDocument from '../../../src/nodes/document/IDocument.js';
-import IResponse from '../../../src/fetch/types/IResponse.js';
+import HTMLScriptElement from '../../../src/nodes/html-script-element/HTMLScriptElement.js';
+import Document from '../../../src/nodes/document/Document.js';
+import Response from '../../../src/fetch/Response.js';
 import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Event from '../../../src/event/Event.js';
 import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
-import IWindow from '../../../src/window/IWindow.js';
-import IBrowserWindow from '../../../src/window/IBrowserWindow.js';
+import BrowserWindow from '../../../src/window/BrowserWindow.js';
 import Fetch from '../../../src/fetch/Fetch.js';
 import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCaptureEnum.js';
 
 describe('HTMLScriptElement', () => {
-	let window: IWindow;
-	let document: IDocument;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -69,25 +68,32 @@ describe('HTMLScriptElement', () => {
 
 	describe('get src()', () => {
 		it('Returns the "src" attribute.', () => {
-			const element = <IHTMLScriptElement>document.createElement('script');
+			const element = document.createElement('script');
 			element.setAttribute('src', 'test');
 			expect(element.src).toBe('test');
+		});
+
+		it('Returns URL relative to window location.', () => {
+			window.happyDOM.setURL('https://localhost:8080/test/path/');
+			const element = document.createElement('script');
+			element.setAttribute('src', 'test');
+			expect(element.src).toBe('https://localhost:8080/test/path/test');
 		});
 	});
 
 	describe('set src()', () => {
 		it('Sets the attribute "src".', () => {
-			const element = <IHTMLScriptElement>document.createElement('script');
+			const element = document.createElement('script');
 			element.src = 'test';
 			expect(element.getAttribute('src')).toBe('test');
 		});
 
 		it('Loads and evaluates an external script when the attribute "src" is set and the element is connected to DOM.', async () => {
-			const element = <IHTMLScriptElement>document.createElement('script');
+			const element = document.createElement('script');
 
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 				async () =>
-					<IResponse>{
+					<Response>{
 						text: async () => 'globalThis.test = "test";',
 						ok: true,
 						status: 200
@@ -105,11 +111,11 @@ describe('HTMLScriptElement', () => {
 		});
 
 		it('Does not evaluate script if the element is not connected to DOM.', async () => {
-			const element = <IHTMLScriptElement>document.createElement('script');
+			const element = document.createElement('script');
 
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 				async () =>
-					<IResponse>{
+					<Response>{
 						text: async () => 'globalThis.test = "test";',
 						ok: true,
 						status: 200
@@ -127,14 +133,14 @@ describe('HTMLScriptElement', () => {
 
 	describe('get text()', () => {
 		it('Returns the data of text nodes.', () => {
-			const element = <IHTMLScriptElement>document.createElement('script');
+			const element = document.createElement('script');
 			const text = document.createTextNode('test');
 			element.appendChild(text);
 			expect(element.text).toBe('test');
 		});
 
 		it('Replaces all child nodes with a text node.', () => {
-			const element = <IHTMLScriptElement>document.createElement('script');
+			const element = document.createElement('script');
 			const text = document.createTextNode('test');
 			element.appendChild(text);
 			element.text = 'test2';
@@ -144,7 +150,7 @@ describe('HTMLScriptElement', () => {
 
 	describe('set isConnected()', () => {
 		it('Evaluates the text content as code when appended to an element that is connected to the document.', () => {
-			const element = <IHTMLScriptElement>document.createElement('script');
+			const element = document.createElement('script');
 			element.text = 'globalThis.test = "test";globalThis.currentScript = document.currentScript;';
 			document.body.appendChild(element);
 			expect(window['test']).toBe('test');
@@ -152,7 +158,7 @@ describe('HTMLScriptElement', () => {
 		});
 
 		it('Evaluates the text content as code when inserted before an element that is connected to the document.', () => {
-			const element = <IHTMLScriptElement>document.createElement('script');
+			const element = document.createElement('script');
 			const div1 = document.createElement('div');
 			const div2 = document.createElement('div');
 
@@ -174,14 +180,14 @@ describe('HTMLScriptElement', () => {
 
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
 				fetchedURL = this.request.url;
-				return <IResponse>{
+				return <Response>{
 					text: async () =>
 						'globalThis.test = "test";globalThis.currentScript = document.currentScript;',
 					ok: true
 				};
 			});
 
-			const script = <IHTMLScriptElement>window.document.createElement('script');
+			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'https://localhost:8080/path/to/script.js';
 			script.async = true;
 			script.addEventListener('load', (event) => {
@@ -202,7 +208,7 @@ describe('HTMLScriptElement', () => {
 			let errorEvent: ErrorEvent | null = null;
 
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
-				async () => <IResponse>(<unknown>{
+				async () => <Response>(<unknown>{
 						text: () => null,
 						ok: false,
 						status: 404,
@@ -210,7 +216,7 @@ describe('HTMLScriptElement', () => {
 					})
 			);
 
-			const script = <IHTMLScriptElement>window.document.createElement('script');
+			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'https://localhost:8080/path/to/script.js';
 			script.async = true;
 			script.addEventListener('error', (event) => {
@@ -228,7 +234,7 @@ describe('HTMLScriptElement', () => {
 
 		it('Loads external script synchronously with relative URL.', async () => {
 			const window = new Window({ url: 'https://localhost:8080/base/' });
-			let fetchedWindow: IBrowserWindow | null = null;
+			let fetchedWindow: BrowserWindow | null = null;
 			let fetchedURL: string | null = null;
 			let loadEvent: Event | null = null;
 
@@ -238,7 +244,7 @@ describe('HTMLScriptElement', () => {
 				return 'globalThis.test = "test";globalThis.currentScript = document.currentScript;';
 			});
 
-			const script = <IHTMLScriptElement>window.document.createElement('script');
+			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'path/to/script.js';
 			script.addEventListener('load', (event) => {
 				loadEvent = event;
@@ -262,7 +268,7 @@ describe('HTMLScriptElement', () => {
 				throw thrownError;
 			});
 
-			const script = <IHTMLScriptElement>window.document.createElement('script');
+			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'path/to/script.js';
 			script.addEventListener('error', (event) => {
 				errorEvent = <ErrorEvent>event;
@@ -276,7 +282,7 @@ describe('HTMLScriptElement', () => {
 
 		it('Does not evaluate types that are not supported.', () => {
 			const div = document.createElement('div');
-			const element = <IHTMLScriptElement>document.createElement('script');
+			const element = document.createElement('script');
 			element.type = 'application/json';
 			element.textContent = '{"key": "value"}';
 			div.appendChild(element);
@@ -299,7 +305,7 @@ describe('HTMLScriptElement', () => {
 
 		it('Does not evaluate code if the element is not connected to DOM.', () => {
 			const div = document.createElement('div');
-			const element = <IHTMLScriptElement>document.createElement('script');
+			const element = document.createElement('script');
 			element.text = 'window.test = "test";';
 			div.appendChild(element);
 			expect(window['test']).toBe(undefined);
@@ -317,7 +323,7 @@ describe('HTMLScriptElement', () => {
 		});
 
 		it('Loads and evaluates an external script when "src" attribute has been set, but does not evaluate text content.', () => {
-			const element = <IHTMLScriptElement>document.createElement('script');
+			const element = document.createElement('script');
 
 			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(
 				() => 'globalThis.testFetch = "test";'
@@ -333,7 +339,7 @@ describe('HTMLScriptElement', () => {
 		});
 
 		it('Does not load external scripts when "src" attribute has been set if the element is not connected to DOM.', () => {
-			const element = <IHTMLScriptElement>document.createElement('script');
+			const element = document.createElement('script');
 
 			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(
 				() => 'globalThis.testFetch = "test";'
@@ -354,7 +360,7 @@ describe('HTMLScriptElement', () => {
 
 			let errorEvent: ErrorEvent | null = null;
 
-			const script = <IHTMLScriptElement>window.document.createElement('script');
+			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'https://localhost:8080/path/to/script.js';
 			script.async = true;
 			script.addEventListener('error', (event) => {
@@ -368,6 +374,26 @@ describe('HTMLScriptElement', () => {
 			);
 		});
 
+		it('Triggers a load event when attempting to perform an asynchrounous request and the Happy DOM setting "disableJavaScriptFileLoading" and "handleDisabledFileLoadingAsSuccess" is set to "true".', () => {
+			window = new Window({
+				settings: { disableJavaScriptFileLoading: true, handleDisabledFileLoadingAsSuccess: true }
+			});
+			document = window.document;
+
+			let loadEvent: Event | null = null;
+
+			const script = <HTMLScriptElement>window.document.createElement('script');
+			script.src = 'https://localhost:8080/path/to/script.js';
+			script.async = true;
+			script.addEventListener('load', (event) => {
+				loadEvent = <Event>event;
+			});
+
+			document.body.appendChild(script);
+
+			expect((<Event>(<unknown>loadEvent)).type).toBe('load');
+		});
+
 		it('Triggers an error event when attempting to perform a synchrounous request and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true".', () => {
 			window = new Window({
 				settings: { disableJavaScriptFileLoading: true }
@@ -376,7 +402,7 @@ describe('HTMLScriptElement', () => {
 
 			let errorEvent: ErrorEvent | null = null;
 
-			const script = <IHTMLScriptElement>window.document.createElement('script');
+			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'https://localhost:8080/path/to/script.js';
 			script.addEventListener('error', (event) => {
 				errorEvent = <ErrorEvent>event;
@@ -397,7 +423,7 @@ describe('HTMLScriptElement', () => {
 
 			let errorEvent: ErrorEvent | null = null;
 
-			const script = <IHTMLScriptElement>window.document.createElement('script');
+			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'https://localhost:8080/path/to/script.js';
 			script.async = true;
 			script.addEventListener('error', (event) => {
@@ -419,7 +445,7 @@ describe('HTMLScriptElement', () => {
 
 			let errorEvent: ErrorEvent | null = null;
 
-			const script = <IHTMLScriptElement>window.document.createElement('script');
+			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'https://localhost:8080/path/to/script.js';
 			script.addEventListener('error', (event) => {
 				errorEvent = <ErrorEvent>event;
@@ -437,7 +463,7 @@ describe('HTMLScriptElement', () => {
 
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 				async () =>
-					<IResponse>{
+					<Response>{
 						text: async () => 'globalThis.test = /;',
 						ok: true
 					}
@@ -445,7 +471,7 @@ describe('HTMLScriptElement', () => {
 
 			window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
 
-			const script = <IHTMLScriptElement>window.document.createElement('script');
+			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'https://localhost:8080/base/path/to/script/';
 			script.async = true;
 
@@ -472,7 +498,7 @@ describe('HTMLScriptElement', () => {
 
 			window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
 
-			const script = <IHTMLScriptElement>window.document.createElement('script');
+			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'https://localhost:8080/base/path/to/script/';
 
 			document.body.appendChild(script);
@@ -488,7 +514,7 @@ describe('HTMLScriptElement', () => {
 		});
 
 		it('Triggers an error event on Window when appending an element that contains invalid Javascript.', () => {
-			const element = <IHTMLScriptElement>document.createElement('script');
+			const element = document.createElement('script');
 			let errorEvent: ErrorEvent | null = null;
 
 			window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
@@ -513,7 +539,7 @@ describe('HTMLScriptElement', () => {
 			});
 			document = window.document;
 
-			const element = <IHTMLScriptElement>document.createElement('script');
+			const element = document.createElement('script');
 
 			element.text = 'globalThis.test = /;';
 
@@ -528,7 +554,7 @@ describe('HTMLScriptElement', () => {
 			});
 			document = window.document;
 
-			const element = <IHTMLScriptElement>document.createElement('script');
+			const element = document.createElement('script');
 
 			element.text = 'globalThis.test = /;';
 

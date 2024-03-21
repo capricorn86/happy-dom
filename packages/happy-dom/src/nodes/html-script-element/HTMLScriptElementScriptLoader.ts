@@ -5,7 +5,7 @@ import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import ResourceFetch from '../../fetch/ResourceFetch.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import DocumentReadyStateManager from '../document/DocumentReadyStateManager.js';
-import IHTMLScriptElement from './IHTMLScriptElement.js';
+import HTMLScriptElement from './HTMLScriptElement.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
 
@@ -13,7 +13,7 @@ import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum
  * Helper class for getting the URL relative to a Location object.
  */
 export default class HTMLScriptElementScriptLoader {
-	#element: IHTMLScriptElement;
+	#element: HTMLScriptElement;
 	#browserFrame: IBrowserFrame;
 	#loadedScriptURL: string | null = null;
 
@@ -24,7 +24,7 @@ export default class HTMLScriptElementScriptLoader {
 	 * @param options.element Element.
 	 * @param options.browserFrame Browser frame.
 	 */
-	constructor(options: { element: IHTMLScriptElement; browserFrame: IBrowserFrame }) {
+	constructor(options: { element: HTMLScriptElement; browserFrame: IBrowserFrame }) {
 		this.#element = options.element;
 		this.#browserFrame = options.browserFrame;
 	}
@@ -47,11 +47,9 @@ export default class HTMLScriptElementScriptLoader {
 		try {
 			absoluteURL = new URL(
 				url,
-				element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].location
+				element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].location.href
 			).href;
 		} catch (error) {
-			this.#loadedScriptURL = null;
-			element.dispatchEvent(new Event('error'));
 			return;
 		}
 
@@ -63,13 +61,17 @@ export default class HTMLScriptElementScriptLoader {
 			browserSettings.disableJavaScriptFileLoading ||
 			browserSettings.disableJavaScriptEvaluation
 		) {
-			WindowErrorUtility.dispatchError(
-				element,
-				new DOMException(
-					`Failed to load external script "${absoluteURL}". JavaScript file loading is disabled.`,
-					DOMExceptionNameEnum.notSupportedError
-				)
-			);
+			if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+				element.dispatchEvent(new Event('load'));
+			} else {
+				WindowErrorUtility.dispatchError(
+					element,
+					new DOMException(
+						`Failed to load external script "${absoluteURL}". JavaScript file loading is disabled.`,
+						DOMExceptionNameEnum.notSupportedError
+					)
+				);
+			}
 			return;
 		}
 

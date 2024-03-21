@@ -1,10 +1,9 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IShadowRoot from '../shadow-root/IShadowRoot.js';
-import IHTMLSlotElement from './IHTMLSlotElement.js';
-import IText from '../text/IText.js';
-import IElement from '../element/IElement.js';
-import INode from '../node/INode.js';
+import ShadowRoot from '../shadow-root/ShadowRoot.js';
+import Text from '../text/Text.js';
+import Element from '../element/Element.js';
+import Node from '../node/Node.js';
 import Event from '../../event/Event.js';
 
 /**
@@ -13,7 +12,7 @@ import Event from '../../event/Event.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement.
  */
-export default class HTMLSlotElement extends HTMLElement implements IHTMLSlotElement {
+export default class HTMLSlotElement extends HTMLElement {
 	// Events
 	public onslotchange: (event: Event) => void | null = null;
 
@@ -40,7 +39,7 @@ export default class HTMLSlotElement extends HTMLElement implements IHTMLSlotEle
 	 *
 	 * @param _nodes Nodes.
 	 */
-	public assign(..._nodes: Array<IText | IElement>): void {
+	public assign(..._nodes: Array<Text | Element>): void {
 		// TODO: Do nothing for now. We need to find an example of how it is expected to work before it can be implemented.
 	}
 
@@ -51,8 +50,8 @@ export default class HTMLSlotElement extends HTMLElement implements IHTMLSlotEle
 	 * @param [options.flatten] A boolean value indicating whether to return the assigned nodes of any available child <slot> elements (true) or not (false). Defaults to false.
 	 * @returns Nodes.
 	 */
-	public assignedNodes(options?: { flatten?: boolean }): INode[] {
-		const host = (<IShadowRoot>this.getRootNode())?.host;
+	public assignedNodes(options?: { flatten?: boolean }): Node[] {
+		const host = (<ShadowRoot>this.getRootNode())?.host;
 
 		// TODO: Add support for options.flatten. We need to find an example of how it is expected to work before it can be implemented.
 
@@ -76,8 +75,8 @@ export default class HTMLSlotElement extends HTMLElement implements IHTMLSlotEle
 	 * @param [_options.flatten] A boolean value indicating whether to return the assigned elements of any available child <slot> elements (true) or not (false). Defaults to false.
 	 * @returns Nodes.
 	 */
-	public assignedElements(_options?: { flatten?: boolean }): IElement[] {
-		const host = (<IShadowRoot>this.getRootNode())?.host;
+	public assignedElements(_options?: { flatten?: boolean }): Element[] {
+		const host = (<ShadowRoot>this.getRootNode())?.host;
 
 		// TODO: Add support for options.flatten. We need to find an example of how it expected to work before it can be implemented.
 
@@ -109,7 +108,7 @@ export default class HTMLSlotElement extends HTMLElement implements IHTMLSlotEle
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): IHTMLSlotElement {
+	public cloneNode(deep = false): HTMLSlotElement {
 		return <HTMLSlotElement>super.cloneNode(deep);
 	}
 }

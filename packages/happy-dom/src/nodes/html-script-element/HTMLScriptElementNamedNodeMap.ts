@@ -1,4 +1,4 @@
-import IAttr from '../attr/IAttr.js';
+import Attr from '../attr/Attr.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
 import HTMLScriptElement from './HTMLScriptElement.js';
@@ -27,7 +27,7 @@ export default class HTMLScriptElementNamedNodeMap extends HTMLElementNamedNodeM
 	/**
 	 * @override
 	 */
-	public override setNamedItem(item: IAttr): IAttr | null {
+	public override setNamedItem(item: Attr): Attr | null {
 		const replacedItem = super.setNamedItem(item);
 
 		if (

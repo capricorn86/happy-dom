@@ -1,21 +1,20 @@
 import Window from '../../../src/window/Window.js';
-import IWindow from '../../../src/window/IWindow.js';
-import IDocument from '../../../src/nodes/document/IDocument.js';
-import IHTMLInputElement from '../../../src/nodes/html-input-element/IHTMLInputElement.js';
+import Document from '../../../src/nodes/document/Document.js';
+import HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement.js';
 import HTMLInputElementValueSanitizer from '../../../src/nodes/html-input-element/HTMLInputElementValueSanitizer.js';
 import HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLInputElementValueSanitizer', () => {
 	describe('sanitize', () => {
-		let window: IWindow;
-		let document: IDocument;
-		let input: IHTMLInputElement;
+		let window: Window;
+		let document: Document;
+		let input: HTMLInputElement;
 
 		beforeEach(() => {
 			window = new Window();
 			document = window.document;
-			input = <IHTMLInputElement>document.createElement('input');
+			input = <HTMLInputElement>document.createElement('input');
 		});
 
 		type TestCase = {

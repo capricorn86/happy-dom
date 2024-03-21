@@ -1,16 +1,15 @@
-import IDocument from '../nodes/document/IDocument.js';
+import Document from '../nodes/document/Document.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import HTMLElementVoid from '../config/HTMLElementVoid.js';
-import HTMLElementUnnestable from '../config/HTMLElementUnnestable.js';
 import NamespaceURI from '../config/NamespaceURI.js';
 import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement.js';
-import IElement from '../nodes/element/IElement.js';
+import Element from '../nodes/element/Element.js';
 import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement.js';
-import HTMLElementPlainText from '../config/HTMLElementPlainText.js';
-import IDocumentType from '../nodes/document-type/IDocumentType.js';
-import INode from '../nodes/node/INode.js';
-import IDocumentFragment from '../nodes/document-fragment/IDocumentFragment.js';
+import DocumentType from '../nodes/document-type/DocumentType.js';
+import Node from '../nodes/node/Node.js';
+import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
+import HTMLElementConfig from '../config/HTMLElementConfig.js';
 import * as Entities from 'entities';
+import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigContentModelEnum.js';
 
 /**
  * Markup RegExp.
@@ -58,6 +57,8 @@ const DOCUMENT_TYPE_ATTRIBUTE_REGEXP = /"([^"]+)"/gm;
 
 /**
  * XML parser.
+ *
+ * @see https://html.spec.whatwg.org/multipage/indices.html
  */
 export default class XMLParser {
 	/**
@@ -71,18 +72,17 @@ export default class XMLParser {
 	 * @returns Root node.
 	 */
 	public static parse(
-		document: IDocument,
+		document: Document,
 		xml: string,
-		options?: { rootNode?: IElement | IDocumentFragment | IDocument; evaluateScripts?: boolean }
-	): IElement | IDocumentFragment | IDocument {
+		options?: { rootNode?: Element | DocumentFragment | Document; evaluateScripts?: boolean }
+	): Element | DocumentFragment | Document {
 		const root = options && options.rootNode ? options.rootNode : document.createDocumentFragment();
-		const stack: INode[] = [root];
+		const stack: Node[] = [root];
+		const stackTagNames: string[] = [];
 		const markupRegexp = new RegExp(MARKUP_REGEXP, 'gm');
 		const { evaluateScripts = false } = options || {};
-		const unnestableTagNames: string[] = [];
-		let currentNode: INode | null = root;
+		let currentNode: Node | null = root;
 		let match: RegExpExecArray;
-		let plainTextTagName: string | null = null;
 		let readState: MarkupReadStateEnum = MarkupReadStateEnum.startOrEndTag;
 		let startTagIndex = 0;
 		let lastIndex = 0;
@@ -108,19 +108,31 @@ export default class XMLParser {
 							// Start tag.
 							const tagName = match[1].toUpperCase();
 							const localName = tagName === 'SVG' ? 'svg' : match[1];
+							const config = HTMLElementConfig[localName];
 
 							// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
 							// Therefore we need to auto-close the tag, so that it become valid (e.g. "<a></a><a></a>").
-							const unnestableTagNameIndex = unnestableTagNames.indexOf(tagName);
-							if (unnestableTagNameIndex !== -1) {
-								unnestableTagNames.splice(unnestableTagNameIndex, 1);
+							if (
+								config?.contentModel ===
+									HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants &&
+								stackTagNames[stackTagNames.length - 1] === tagName
+							) {
+								stack.pop();
+								stackTagNames.pop();
+								currentNode = stack[stack.length - 1] || root;
+							} else if (
+								config?.contentModel === HTMLElementConfigContentModelEnum.noSelfDescendants &&
+								stackTagNames.includes(tagName)
+							) {
 								while (currentNode !== root) {
-									if ((<IElement>currentNode)[PropertySymbol.tagName].toUpperCase() === tagName) {
+									if ((<Element>currentNode)[PropertySymbol.tagName].toUpperCase() === tagName) {
 										stack.pop();
+										stackTagNames.pop();
 										currentNode = stack[stack.length - 1] || root;
 										break;
 									}
 									stack.pop();
+									stackTagNames.pop();
 									currentNode = stack[stack.length - 1] || root;
 								}
 							}
@@ -130,12 +142,13 @@ export default class XMLParser {
 							const namespaceURI =
 								tagName === 'SVG'
 									? NamespaceURI.svg
-									: (<IElement>currentNode)[PropertySymbol.namespaceURI] || NamespaceURI.html;
+									: (<Element>currentNode)[PropertySymbol.namespaceURI] || NamespaceURI.html;
 							const newElement = document.createElementNS(namespaceURI, localName);
 
 							currentNode.appendChild(newElement);
 							currentNode = newElement;
 							stack.push(currentNode);
+							stackTagNames.push(tagName);
 							readState = MarkupReadStateEnum.insideStartTag;
 							startTagIndex = markupRegexp.lastIndex;
 						} else if (match[2]) {
@@ -143,25 +156,17 @@ export default class XMLParser {
 
 							if (
 								match[2].toUpperCase() ===
-								(<IElement>currentNode)[PropertySymbol.tagName].toUpperCase()
+								(<Element>currentNode)[PropertySymbol.tagName]?.toUpperCase()
 							) {
-								// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
-								// Therefore we need to auto-close the tag, so that it become valid (e.g. "<a></a><a></a>").
-								const unnestableTagNameIndex = unnestableTagNames.indexOf(
-									(<IElement>currentNode)[PropertySymbol.tagName].toUpperCase()
-								);
-								if (unnestableTagNameIndex !== -1) {
-									unnestableTagNames.splice(unnestableTagNameIndex, 1);
-								}
-
 								stack.pop();
+								stackTagNames.pop();
 								currentNode = stack[stack.length - 1] || root;
 							}
 						} else if (
 							match[3] ||
 							match[4] ||
 							(match[6] &&
-								(<IElement>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.html)
+								(<Element>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.html)
 						) {
 							// Comment.
 
@@ -201,8 +206,6 @@ export default class XMLParser {
 					case MarkupReadStateEnum.insideStartTag:
 						// End of start tag
 						if (match[7] || match[8]) {
-							// End of start tag.
-
 							// Attribute name and value.
 
 							const attributeString = xml.substring(startTagIndex, match.index);
@@ -233,12 +236,12 @@ export default class XMLParser {
 
 										// In XML and SVG namespaces, the attribute "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
 										const namespaceURI =
-											(<IElement>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg &&
+											(<Element>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg &&
 											name === 'xmlns'
 												? NamespaceURI.xmlns
 												: null;
 
-										(<IElement>currentNode).setAttributeNS(namespaceURI, name, value);
+										(<Element>currentNode).setAttributeNS(namespaceURI, name, value);
 
 										startTagIndex += attributeMatch[0].length;
 									} else if (
@@ -257,33 +260,27 @@ export default class XMLParser {
 							// We need to check if the attribute string is read completely.
 							// The attribute string can potentially contain "/>" or ">".
 							if (hasAttributeStringEnded) {
+								const config = HTMLElementConfig[(<Element>currentNode)[PropertySymbol.localName]];
+
 								// Checks if the tag is a self closing tag (ends with "/>") or void element.
 								// When it is a self closing tag or void element it should be closed immediately.
 								// Self closing tags are not allowed in the HTML namespace, but the parser should still allow it for void elements.
 								// Self closing tags is supported in the SVG namespace.
 								if (
-									HTMLElementVoid[(<IElement>currentNode)[PropertySymbol.tagName]] ||
+									config?.contentModel === HTMLElementConfigContentModelEnum.noDescendants ||
+									// SVG tag is self closing (<svg/>).
 									(match[7] &&
-										(<IElement>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg)
+										(<Element>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg)
 								) {
 									stack.pop();
+									stackTagNames.pop();
 									currentNode = stack[stack.length - 1] || root;
 									readState = MarkupReadStateEnum.startOrEndTag;
 								} else {
-									// Plain text elements such as <script> and <style> should only contain text.
-									plainTextTagName = HTMLElementPlainText[
-										(<IElement>currentNode)[PropertySymbol.tagName]
-									]
-										? (<IElement>currentNode)[PropertySymbol.tagName]
-										: null;
-
-									readState = !!plainTextTagName
-										? MarkupReadStateEnum.plainTextContent
-										: MarkupReadStateEnum.startOrEndTag;
-
-									if (HTMLElementUnnestable[(<IElement>currentNode)[PropertySymbol.tagName]]) {
-										unnestableTagNames.push((<IElement>currentNode)[PropertySymbol.tagName]);
-									}
+									readState =
+										config?.contentModel === HTMLElementConfigContentModelEnum.rawText
+											? MarkupReadStateEnum.plainTextContent
+											: MarkupReadStateEnum.startOrEndTag;
 								}
 
 								startTagIndex = markupRegexp.lastIndex;
@@ -292,15 +289,17 @@ export default class XMLParser {
 
 						break;
 					case MarkupReadStateEnum.plainTextContent:
-						if (match[2] && match[2].toUpperCase() === plainTextTagName) {
+						const tagName = currentNode[PropertySymbol.tagName];
+
+						if (tagName && match[2] && match[2].toUpperCase() === tagName) {
 							// End of plain text tag.
 
 							// Scripts are not allowed to be executed when they are parsed using innerHTML, outerHTML, replaceWith() etc.
 							// However, they are allowed to be executed when document.write() is used.
 							// See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement
-							if (plainTextTagName === 'SCRIPT') {
+							if (tagName === 'SCRIPT') {
 								(<HTMLScriptElement>currentNode)[PropertySymbol.evaluateScript] = evaluateScripts;
-							} else if (plainTextTagName === 'LINK') {
+							} else if (tagName === 'LINK') {
 								// An assumption that the same rule should be applied for the HTMLLinkElement is made here.
 								(<HTMLLinkElement>currentNode)[PropertySymbol.evaluateCSS] = evaluateScripts;
 							}
@@ -313,8 +312,8 @@ export default class XMLParser {
 							);
 
 							stack.pop();
+							stackTagNames.pop();
 							currentNode = stack[stack.length - 1] || root;
-							plainTextTagName = null;
 							readState = MarkupReadStateEnum.startOrEndTag;
 						}
 
@@ -343,7 +342,7 @@ export default class XMLParser {
 	 * @param value Value.
 	 * @returns Document type node.
 	 */
-	private static getDocumentTypeNode(document: IDocument, value: string): IDocumentType {
+	private static getDocumentTypeNode(document: Document, value: string): DocumentType {
 		if (!value.toUpperCase().startsWith('DOCTYPE')) {
 			return null;
 		}

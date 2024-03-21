@@ -1,22 +1,22 @@
 import Event from '../../event/Event.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IBrowserWindow from '../../window/IBrowserWindow.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
-import ICrossOriginBrowserWindow from '../../window/ICrossOriginBrowserWindow.js';
-import IHTMLIFrameElement from './IHTMLIFrameElement.js';
+import HTMLIFrameElement from './HTMLIFrameElement.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import BrowserFrameURL from '../../browser/utilities/BrowserFrameURL.js';
 import BrowserFrameFactory from '../../browser/utilities/BrowserFrameFactory.js';
+import IRequestReferrerPolicy from '../../fetch/types/IRequestReferrerPolicy.js';
 
 /**
  * HTML Iframe page loader.
  */
 export default class HTMLIFrameElementPageLoader {
-	#element: IHTMLIFrameElement;
-	#contentWindowContainer: { window: IBrowserWindow | ICrossOriginBrowserWindow | null };
+	#element: HTMLIFrameElement;
+	#contentWindowContainer: { window: BrowserWindow | CrossOriginBrowserWindow | null };
 	#browserParentFrame: IBrowserFrame;
 	#browserIFrame: IBrowserFrame;
 
@@ -30,9 +30,9 @@ export default class HTMLIFrameElementPageLoader {
 	 * @param options.contentWindowContainer.window Content window.
 	 */
 	constructor(options: {
-		element: IHTMLIFrameElement;
+		element: HTMLIFrameElement;
 		browserParentFrame: IBrowserFrame;
-		contentWindowContainer: { window: IBrowserWindow | ICrossOriginBrowserWindow | null };
+		contentWindowContainer: { window: BrowserWindow | CrossOriginBrowserWindow | null };
 	}) {
 		this.#element = options.element;
 		this.#contentWindowContainer = options.contentWindowContainer;
@@ -78,13 +78,16 @@ export default class HTMLIFrameElementPageLoader {
 		this.#browserIFrame =
 			this.#browserIFrame ?? BrowserFrameFactory.newChildFrame(this.#browserParentFrame);
 
-		(<IBrowserWindow | ICrossOriginBrowserWindow>(<unknown>this.#browserIFrame.window.top)) =
+		(<BrowserWindow | CrossOriginBrowserWindow>(<unknown>this.#browserIFrame.window.top)) =
 			parentWindow;
-		(<IBrowserWindow | ICrossOriginBrowserWindow>(<unknown>this.#browserIFrame.window.parent)) =
+		(<BrowserWindow | CrossOriginBrowserWindow>(<unknown>this.#browserIFrame.window.parent)) =
 			parentWindow;
 
 		this.#browserIFrame
-			.goto(targetURL.href)
+			.goto(targetURL.href, {
+				referrer: originURL.origin,
+				referrerPolicy: <IRequestReferrerPolicy>this.#element.referrerPolicy
+			})
 			.then(() => this.#element.dispatchEvent(new Event('load')))
 			.catch((error) => WindowErrorUtility.dispatchError(this.#element, error));
 

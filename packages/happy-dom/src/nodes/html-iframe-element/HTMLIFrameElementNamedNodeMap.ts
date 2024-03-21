@@ -1,4 +1,4 @@
-import IAttr from '../attr/IAttr.js';
+import Attr from '../attr/Attr.js';
 import Element from '../element/Element.js';
 import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
 import HTMLIFrameElementPageLoader from './HTMLIFrameElementPageLoader.js';
@@ -26,7 +26,7 @@ export default class HTMLIFrameElementNamedNodeMap extends HTMLElementNamedNodeM
 	/**
 	 * @override
 	 */
-	public override setNamedItem(item: IAttr): IAttr | null {
+	public override setNamedItem(item: Attr): Attr | null {
 		const replacedAttribute = super.setNamedItem(item);
 
 		if (

@@ -1,9 +1,9 @@
 import Window from '../../../src/window/Window.js';
 import BrowserWindow from '../../../src/window/BrowserWindow.js';
-import IWindow from '../../../src/window/IWindow.js';
-import IDocument from '../../../src/nodes/document/IDocument.js';
-import IHTMLIFrameElement from '../../../src/nodes/html-iframe-element/IHTMLIFrameElement.js';
-import IResponse from '../../../src/fetch/types/IResponse.js';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import HTMLIFrameElement from '../../../src/nodes/html-iframe-element/HTMLIFrameElement.js';
+import Response from '../../../src/fetch/Response.js';
 import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import CrossOriginBrowserWindow from '../../../src/window/CrossOriginBrowserWindow.js';
 import MessageEvent from '../../../src/event/events/MessageEvent.js';
@@ -15,14 +15,14 @@ import Headers from '../../../src/fetch/Headers.js';
 import Browser from '../../../src/browser/Browser.js';
 
 describe('HTMLIFrameElement', () => {
-	let window: IWindow;
-	let document: IDocument;
-	let element: IHTMLIFrameElement;
+	let window: Window;
+	let document: Document;
+	let element: HTMLIFrameElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <IHTMLIFrameElement>document.createElement('iframe');
+		element = <HTMLIFrameElement>document.createElement('iframe');
 	});
 
 	afterEach(() => {
@@ -80,7 +80,7 @@ describe('HTMLIFrameElement', () => {
 			const page = browser.newPage();
 			const window = page.mainFrame.window;
 			const document = window.document;
-			const element = <IHTMLIFrameElement>document.createElement('iframe');
+			const element = <HTMLIFrameElement>document.createElement('iframe');
 
 			element.src = 'https://localhost:8080/iframe.html';
 			document.body.appendChild(element);
@@ -95,7 +95,7 @@ describe('HTMLIFrameElement', () => {
 				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
 					return new Promise((resolve) => {
 						setTimeout(() => {
-							resolve(<IResponse>(<unknown>{
+							resolve(<Response>(<unknown>{
 								text: () => Promise.resolve(responseHTML),
 								ok: true,
 								headers: new Headers({ 'x-frame-options': 'deny' })
@@ -124,7 +124,7 @@ describe('HTMLIFrameElement', () => {
 				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
 					return new Promise((resolve) => {
 						setTimeout(() => {
-							resolve(<IResponse>(<unknown>{
+							resolve(<Response>(<unknown>{
 								text: () => Promise.resolve(responseHTML),
 								ok: true,
 								headers: new Headers({ 'x-frame-options': 'sameorigin' })
@@ -155,7 +155,7 @@ describe('HTMLIFrameElement', () => {
 					fetchedURL = <string>url;
 					return new Promise((resolve) => {
 						setTimeout(() => {
-							resolve(<IResponse>(<unknown>{
+							resolve(<Response>(<unknown>{
 								text: () => Promise.resolve(responseHTML),
 								ok: true,
 								headers: new Headers({ 'x-frame-options': 'sameorigin' })
@@ -187,7 +187,7 @@ describe('HTMLIFrameElement', () => {
 
 				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
 					fetchedURL = <string>url;
-					return Promise.resolve(<IResponse>(<unknown>{
+					return Promise.resolve(<Response>(<unknown>{
 						text: () => Promise.resolve(responseHTML),
 						ok: true,
 						headers: new Headers()
@@ -214,7 +214,7 @@ describe('HTMLIFrameElement', () => {
 				const responseHTML = '<html><head></head><body>Test</body></html>';
 
 				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
-					return Promise.resolve(<IResponse>(<unknown>{
+					return Promise.resolve(<Response>(<unknown>{
 						text: () => Promise.resolve(responseHTML),
 						ok: true,
 						headers: new Headers()
@@ -237,13 +237,13 @@ describe('HTMLIFrameElement', () => {
 				const page = browser.newPage();
 				const window = page.mainFrame.window;
 				const document = window.document;
-				const element = <IHTMLIFrameElement>document.createElement('iframe');
+				const element = <HTMLIFrameElement>document.createElement('iframe');
 				const responseHTML = '<html><head></head><body>Test</body></html>';
 
 				page.mainFrame.url = 'https://localhost:8080';
 
 				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
-					return Promise.resolve(<IResponse>(<unknown>{
+					return Promise.resolve(<Response>(<unknown>{
 						text: () => Promise.resolve(responseHTML),
 						ok: true,
 						headers: new Headers()
@@ -266,7 +266,7 @@ describe('HTMLIFrameElement', () => {
 				const page = browser.newPage();
 				const window = page.mainFrame.window;
 				const document = window.document;
-				const element = <IHTMLIFrameElement>document.createElement('iframe');
+				const element = <HTMLIFrameElement>document.createElement('iframe');
 				const iframeOrigin = 'https://other.origin.com';
 				const iframeSrc = iframeOrigin + '/iframe.html';
 				const documentOrigin = 'https://localhost:8080';
@@ -275,11 +275,11 @@ describe('HTMLIFrameElement', () => {
 				page.mainFrame.url = documentOrigin;
 
 				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation(
-					(url: IRequestInfo): Promise<IResponse> => {
+					(url: IRequestInfo): Promise<Response> => {
 						fetchedURL = <string>url;
 						return new Promise((resolve) => {
 							setTimeout(() => {
-								resolve(<IResponse>(<unknown>{
+								resolve(<Response>(<unknown>{
 									text: () => Promise.resolve('<html><head></head><body>Test</body></html>'),
 									ok: true,
 									headers: new Headers()
@@ -330,7 +330,7 @@ describe('HTMLIFrameElement', () => {
 				const error = new Error('Error');
 
 				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation(() => {
-					return Promise.resolve(<IResponse>(<unknown>{
+					return Promise.resolve(<Response>(<unknown>{
 						text: () => Promise.reject(error),
 						ok: true,
 						headers: new Headers()

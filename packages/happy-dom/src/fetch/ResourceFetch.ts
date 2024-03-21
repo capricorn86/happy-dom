@@ -1,5 +1,5 @@
 import DOMException from '../exception/DOMException.js';
-import IBrowserWindow from '../window/IBrowserWindow.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 import URL from '../url/URL.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import Fetch from './Fetch.js';
@@ -9,7 +9,7 @@ import SyncFetch from './SyncFetch.js';
  * Helper class for performing fetch of resources.
  */
 export default class ResourceFetch {
-	private window: IBrowserWindow;
+	private window: BrowserWindow;
 	#browserFrame: IBrowserFrame;
 
 	/**
@@ -19,7 +19,7 @@ export default class ResourceFetch {
 	 * @param options.browserFrame Browser frame.
 	 * @param options.window Window.
 	 */
-	constructor(options: { browserFrame: IBrowserFrame; window: IBrowserWindow }) {
+	constructor(options: { browserFrame: IBrowserFrame; window: BrowserWindow }) {
 		this.#browserFrame = options.browserFrame;
 		this.window = options.window;
 	}

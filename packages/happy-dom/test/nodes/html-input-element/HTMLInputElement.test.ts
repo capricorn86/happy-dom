@@ -1,27 +1,27 @@
 import Window from '../../../src/window/Window.js';
-import IWindow from '../../../src/window/IWindow.js';
-import IDocument from '../../../src/nodes/document/IDocument.js';
-import IHTMLInputElement from '../../../src/nodes/html-input-element/IHTMLInputElement.js';
+import Document from '../../../src/nodes/document/Document.js';
+import HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement.js';
 import DOMException from '../../../src/exception/DOMException.js';
 import File from '../../../src/file/File.js';
 import Event from '../../../src/event/Event.js';
 import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum.js';
 import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum.js';
 import ValidityState from '../../../src/validity-state/ValidityState.js';
-import IHTMLFormElement from '../../../src/nodes/html-form-element/IHTMLFormElement.js';
+import HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElement.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
 import SubmitEvent from '../../../src/event/events/SubmitEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
+import PointerEvent from '../../../src/event/events/PointerEvent.js';
 
 describe('HTMLInputElement', () => {
-	let window: IWindow;
-	let document: IDocument;
-	let element: IHTMLInputElement;
+	let window: Window;
+	let document: Document;
+	let element: HTMLInputElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <IHTMLInputElement>document.createElement('input');
+		element = <HTMLInputElement>document.createElement('input');
 	});
 
 	describe('Object.prototype.toString', () => {
@@ -516,12 +516,116 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
+	describe('get formAction()', () => {
+		it('Returns attribute value.', () => {
+			expect(element.formAction).toBe('about:blank');
+
+			element.setAttribute('formaction', '/test/');
+
+			expect(element.formAction).toBe('');
+
+			window.happyDOM.setURL('https://localhost/path/');
+
+			expect(element.formAction).toBe('https://localhost/test/');
+
+			element.setAttribute('formaction', 'https://example.com');
+
+			expect(element.formAction).toBe('https://example.com/');
+		});
+	});
+
+	describe('set formAction()', () => {
+		it('Sets attribute value.', () => {
+			element.formAction = '/test/';
+
+			expect(element.getAttribute('formaction')).toBe('/test/');
+
+			element.formAction = 'https://example.com';
+
+			expect(element.getAttribute('formaction')).toBe('https://example.com');
+		});
+	});
+
+	describe('get formEnctype()', () => {
+		it('Returns attribute value.', () => {
+			expect(element.formEnctype).toBe('');
+			element.setAttribute('formenctype', 'value');
+			expect(element.formEnctype).toBe('value');
+		});
+	});
+
+	describe('set formEnctype()', () => {
+		it('Sets attribute value.', () => {
+			element.formEnctype = 'value';
+			expect(element.getAttribute('formenctype')).toBe('value');
+		});
+	});
+
+	describe('get formMethod()', () => {
+		it('Returns attribute value.', () => {
+			expect(element.formMethod).toBe('');
+			element.setAttribute('formmethod', 'value');
+			expect(element.formMethod).toBe('value');
+		});
+	});
+
+	describe('set formMethod()', () => {
+		it('Sets attribute value.', () => {
+			element.formMethod = 'value';
+			expect(element.getAttribute('formmethod')).toBe('value');
+		});
+	});
+
+	describe('get formNoValidate()', () => {
+		it('Returns "true" if defined.', () => {
+			expect(element.formNoValidate).toBe(false);
+			element.setAttribute('formnovalidate', '');
+			expect(element.formNoValidate).toBe(true);
+		});
+	});
+
+	describe('set formNoValidate()', () => {
+		it('Sets attribute value.', () => {
+			element.formNoValidate = true;
+			expect(element.getAttribute('formnovalidate')).toBe('');
+		});
+	});
+
+	describe('get formTarget()', () => {
+		it('Returns attribute value.', () => {
+			expect(element.formTarget).toBe('');
+			element.setAttribute('formtarget', 'value');
+			expect(element.formTarget).toBe('value');
+		});
+	});
+
+	describe('set formTarget()', () => {
+		it('Sets attribute value.', () => {
+			element.formTarget = 'value';
+			expect(element.getAttribute('formtarget')).toBe('value');
+		});
+	});
+
 	describe('get form()', () => {
+		it('Returns null if no parent form element exists.', () => {
+			expect(element.form).toBe(null);
+		});
+
 		it('Returns parent form element.', () => {
 			const form = document.createElement('form');
 			const div = document.createElement('div');
 			div.appendChild(element);
 			form.appendChild(div);
+			expect(element.form).toBe(form);
+		});
+
+		it('Returns form element by id if the form attribute is set.', () => {
+			const form = document.createElement('form');
+			form.id = 'form';
+			document.body.appendChild(form);
+			element.setAttribute('form', 'form');
+			expect(element.form).toBe(null);
+			document.body.appendChild(element);
 			expect(element.form).toBe(form);
 		});
 	});
@@ -656,9 +760,9 @@ describe('HTMLInputElement', () => {
 
 		it('Unchecks other radio buttons with the same name in a form.', () => {
 			const form = document.createElement('form');
-			const radio1 = <IHTMLInputElement>document.createElement('input');
-			const radio2 = <IHTMLInputElement>document.createElement('input');
-			const radio3 = <IHTMLInputElement>document.createElement('input');
+			const radio1 = <HTMLInputElement>document.createElement('input');
+			const radio2 = <HTMLInputElement>document.createElement('input');
+			const radio3 = <HTMLInputElement>document.createElement('input');
 
 			radio1.type = 'radio';
 			radio2.type = 'radio';
@@ -686,9 +790,9 @@ describe('HTMLInputElement', () => {
 		});
 
 		it('Unchecks other radio buttons with the same name outside of a form', () => {
-			const radio1 = <IHTMLInputElement>document.createElement('input');
-			const radio2 = <IHTMLInputElement>document.createElement('input');
-			const radio3 = <IHTMLInputElement>document.createElement('input');
+			const radio1 = <HTMLInputElement>document.createElement('input');
+			const radio2 = <HTMLInputElement>document.createElement('input');
+			const radio3 = <HTMLInputElement>document.createElement('input');
 
 			radio1.type = 'radio';
 			radio2.type = 'radio';
@@ -746,21 +850,6 @@ describe('HTMLInputElement', () => {
 			element.size = 60;
 			expect(element.size).toBe(60);
 			expect(element.getAttribute('size')).toBe('60');
-		});
-	});
-
-	describe('get formNoValidate()', () => {
-		it('Returns "true" if defined.', () => {
-			expect(element.formNoValidate).toBe(false);
-			element.setAttribute('formnovalidate', '');
-			expect(element.formNoValidate).toBe(true);
-		});
-	});
-
-	describe('set formNoValidate()', () => {
-		it('Sets attribute value.', () => {
-			element.formNoValidate = true;
-			expect(element.getAttribute('formnovalidate')).toBe('');
 		});
 	});
 
@@ -986,6 +1075,8 @@ describe('HTMLInputElement', () => {
 
 	describe('cloneNode()', () => {
 		it('Clones when type is "checkbox".', () => {
+			window.happyDOM.setURL('https://www.example.com/path/');
+
 			element.type = 'checkbox';
 
 			const clone = element.cloneNode(true);
@@ -1004,6 +1095,8 @@ describe('HTMLInputElement', () => {
 		});
 
 		it('Clones when type is "search".', () => {
+			window.happyDOM.setURL('https://www.example.com/path/');
+
 			element.type = 'search';
 			element.value = 'TEST_VALUE';
 			element.selectionStart = 4;
@@ -1025,6 +1118,8 @@ describe('HTMLInputElement', () => {
 		});
 
 		it('Clones when type is "file".', () => {
+			window.happyDOM.setURL('https://www.example.com/path/');
+
 			element.type = 'file';
 			element.files.push(new File(['test'], 'file.jpg'));
 
@@ -1055,7 +1150,7 @@ describe('HTMLInputElement', () => {
 			element.addEventListener('change', () => (isChangeTriggered = true));
 
 			// "input" and "change" events should only be triggered if connected to DOM
-			element.dispatchEvent(new Event('click'));
+			element.dispatchEvent(new PointerEvent('click'));
 
 			expect(isInputTriggered).toBe(false);
 			expect(isChangeTriggered).toBe(false);
@@ -1063,14 +1158,14 @@ describe('HTMLInputElement', () => {
 
 			document.body.appendChild(element);
 
-			element.dispatchEvent(new Event('click'));
+			element.dispatchEvent(new PointerEvent('click'));
 
 			// "input" and "change" events should now have been triggered as it is connected to DOM
 			expect(isInputTriggered).toBe(true);
 			expect(isChangeTriggered).toBe(true);
 			expect(element.checked).toBe(false);
 
-			element.dispatchEvent(new Event('click'));
+			element.dispatchEvent(new PointerEvent('click'));
 
 			expect(element.checked).toBe(true);
 		});
@@ -1084,7 +1179,7 @@ describe('HTMLInputElement', () => {
 			element.addEventListener('input', () => (isInputTriggered = true));
 			element.addEventListener('change', () => (isChangeTriggered = true));
 
-			element.dispatchEvent(new Event('click'));
+			element.dispatchEvent(new PointerEvent('click'));
 
 			// "input" and "change" events should only be triggered if connected to DOM
 			expect(isInputTriggered).toBe(false);
@@ -1093,14 +1188,14 @@ describe('HTMLInputElement', () => {
 
 			document.body.appendChild(element);
 
-			element.dispatchEvent(new Event('click'));
+			element.dispatchEvent(new PointerEvent('click'));
 
 			// "input" and "change" events should now have been triggered as it is connected to DOM
 			expect(isInputTriggered).toBe(true);
 			expect(isChangeTriggered).toBe(true);
 			expect(element.checked).toBe(true);
 
-			element.dispatchEvent(new Event('click'));
+			element.dispatchEvent(new PointerEvent('click'));
 
 			expect(element.checked).toBe(true);
 		});
@@ -1118,7 +1213,7 @@ describe('HTMLInputElement', () => {
 
 			document.body.appendChild(element);
 
-			element.dispatchEvent(new Event('click'));
+			element.dispatchEvent(new PointerEvent('click'));
 
 			expect(isInputChecked).toBe(true);
 			expect(isChangeChecked).toBe(true);
@@ -1139,7 +1234,7 @@ describe('HTMLInputElement', () => {
 
 			document.body.appendChild(element);
 
-			element.dispatchEvent(new Event('click'));
+			element.dispatchEvent(new PointerEvent('click'));
 
 			expect(isInputChecked).toBe(true);
 			expect(isChangeChecked).toBe(true);
@@ -1159,14 +1254,14 @@ describe('HTMLInputElement', () => {
 
 			document.body.appendChild(element);
 
-			element.dispatchEvent(new Event('click'));
+			element.dispatchEvent(new PointerEvent('click'));
 
 			expect(isClickChecked).toBe(true);
 			expect(element.checked).toBe(false);
 
 			element.checked = true;
 
-			element.dispatchEvent(new Event('click'));
+			element.dispatchEvent(new PointerEvent('click'));
 
 			expect(element.checked).toBe(true);
 		});
@@ -1183,21 +1278,21 @@ describe('HTMLInputElement', () => {
 
 			document.body.appendChild(element);
 
-			element.dispatchEvent(new Event('click'));
+			element.dispatchEvent(new PointerEvent('click'));
 
 			expect(isClickChecked).toBe(true);
 			expect(element.checked).toBe(false);
 
 			element.checked = true;
 
-			element.dispatchEvent(new Event('click'));
+			element.dispatchEvent(new PointerEvent('click'));
 
 			expect(element.checked).toBe(true);
 		});
 
 		it('Submits form if type is "submit" and is a "click" event.', () => {
-			const form = <IHTMLFormElement>document.createElement('form');
-			const button = <IHTMLInputElement>document.createElement('input');
+			const form = <HTMLFormElement>document.createElement('form');
+			const button = <HTMLInputElement>document.createElement('input');
 
 			let submitTriggeredCount = 0;
 
@@ -1207,10 +1302,35 @@ describe('HTMLInputElement', () => {
 
 			document.body.appendChild(form);
 
-			let submitter: IHTMLInputElement | null = null;
+			let submitter: HTMLInputElement | null = null;
 			form.addEventListener('submit', (event) => {
 				submitTriggeredCount++;
-				submitter = <IHTMLInputElement>(<SubmitEvent>event).submitter;
+				submitter = <HTMLInputElement>(<SubmitEvent>event).submitter;
+			});
+
+			button.click();
+
+			expect(submitTriggeredCount).toBe(1);
+			expect(submitter).toBe(button);
+		});
+
+		it('Submits form associated by ID if type is "submit" and is a "click" event.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			const button = <HTMLInputElement>document.createElement('input');
+
+			let submitTriggeredCount = 0;
+
+			form.id = 'test-form';
+			button.type = 'submit';
+			button.setAttribute('form', 'test-form');
+
+			document.body.appendChild(form);
+			document.body.appendChild(button);
+
+			let submitter: HTMLInputElement | null = null;
+			form.addEventListener('submit', (event) => {
+				submitTriggeredCount++;
+				submitter = <HTMLInputElement>(<SubmitEvent>event).submitter;
 			});
 
 			button.click();
@@ -1220,8 +1340,8 @@ describe('HTMLInputElement', () => {
 		});
 
 		it('Resets form if type is "reset" and is a "click" event.', () => {
-			const form = <IHTMLFormElement>document.createElement('form');
-			const button = <IHTMLInputElement>document.createElement('input');
+			const form = <HTMLFormElement>document.createElement('form');
+			const button = <HTMLInputElement>document.createElement('input');
 
 			let resetTriggeredCount = 0;
 
@@ -1230,6 +1350,26 @@ describe('HTMLInputElement', () => {
 			form.appendChild(button);
 
 			document.body.appendChild(form);
+
+			form.addEventListener('reset', () => resetTriggeredCount++);
+
+			button.click();
+
+			expect(resetTriggeredCount).toBe(1);
+		});
+
+		it('Resets form associated by ID if type is "reset" and is a "click" event.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			const button = <HTMLInputElement>document.createElement('input');
+
+			let resetTriggeredCount = 0;
+
+			form.id = 'test-form';
+			button.type = 'reset';
+			button.setAttribute('form', 'test-form');
+
+			document.body.appendChild(form);
+			document.body.appendChild(button);
 
 			form.addEventListener('reset', () => resetTriggeredCount++);
 

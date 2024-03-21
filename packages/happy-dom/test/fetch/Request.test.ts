@@ -1,6 +1,5 @@
-import IWindow from '../../src/window/IWindow.js';
 import Window from '../../src/window/Window.js';
-import IDocument from '../../src/nodes/document/IDocument.js';
+import Document from '../../src/nodes/document/Document.js';
 import Request from '../../src/fetch/Request.js';
 import URL from '../../src/url/URL.js';
 import Headers from '../../src/fetch/Headers.js';
@@ -14,14 +13,14 @@ import Blob from '../../src/file/Blob.js';
 import FormData from '../../src/form-data/FormData.js';
 import MultipartFormDataParser from '../../src/fetch/multipart/MultipartFormDataParser.js';
 import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest';
-import Stream from 'stream';
+import { ReadableStream } from 'stream/web';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 
 const TEST_URL = 'https://example.com/';
 
 describe('Request', () => {
-	let window: IWindow;
-	let document: IDocument;
+	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window();
@@ -115,7 +114,7 @@ describe('Request', () => {
 			const request = new window.Request(otherRequest);
 			const chunks: Buffer[] = [];
 
-			for await (const chunk of <Stream.Readable>request.body) {
+			for await (const chunk of <ReadableStream>request.body) {
 				chunks.push(Buffer.from(chunk));
 			}
 
@@ -126,7 +125,7 @@ describe('Request', () => {
 			const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
 			const chunks: Buffer[] = [];
 
-			for await (const chunk of <Stream.Readable>request.body) {
+			for await (const chunk of <ReadableStream>request.body) {
 				chunks.push(Buffer.from(chunk));
 			}
 
@@ -684,7 +683,10 @@ describe('Request', () => {
 				let isAsyncComplete = false;
 
 				vi.spyOn(MultipartFormDataParser, 'streamToFormData').mockImplementation(
-					(): Promise<FormData> => new Promise((resolve) => setTimeout(() => resolve(formData), 10))
+					(): Promise<{ formData; buffer: Buffer }> =>
+						new Promise((resolve) =>
+							setTimeout(() => resolve({ formData, buffer: Buffer.from([]) }), 10)
+						)
 				);
 
 				window.happyDOM?.waitUntilComplete().then(() => (isAsyncComplete = true));

@@ -1,12 +1,11 @@
 import CharacterData from '../character-data/CharacterData.js';
-import IComment from './IComment.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 
 /**
  * Comment node.
  */
-export default class Comment extends CharacterData implements IComment {
+export default class Comment extends CharacterData {
 	public [PropertySymbol.nodeType] = NodeTypeEnum.commentNode;
 
 	/**
@@ -34,7 +33,7 @@ export default class Comment extends CharacterData implements IComment {
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): IComment {
+	public cloneNode(deep = false): Comment {
 		return <Comment>super.cloneNode(deep);
 	}
 }
