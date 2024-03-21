@@ -530,11 +530,24 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 
 		WindowBrowserSettingsReader.setSettings(this, this.#browserFrame.page.context.browser.settings);
 
+		// Binds getts and setters, so that they will appear as an "own" property when using Object.getOwnPropertyNames().
+		// This is needed for Vitest to work as it relies on Object.getOwnPropertyNames() to get the list of properties.
+		// @see https://github.com/capricorn86/happy-dom/issues/1339
 		// Binds all methods to "this", so that it will use the correct context when called globally.
-		for (const key of Object.getOwnPropertyNames(BrowserWindow.prototype).concat(
-			Object.getOwnPropertyNames(EventTarget.prototype)
-		)) {
-			if (
+		const propertyDescriptors = Object.assign(
+			Object.getOwnPropertyDescriptors(EventTarget.prototype),
+			Object.getOwnPropertyDescriptors(BrowserWindow.prototype)
+		);
+		for (const key of Object.keys(propertyDescriptors)) {
+			const descriptor = propertyDescriptors[key];
+			if (descriptor.get || descriptor.set) {
+				Object.defineProperty(this, key, {
+					configurable: true,
+					enumerable: true,
+					get: descriptor.get?.bind(this),
+					set: descriptor.set?.bind(this)
+				});
+			} else if (
 				key !== 'constructor' &&
 				key[0] !== '_' &&
 				key[0] === key[0].toLowerCase() &&

@@ -73,61 +73,6 @@ export default class GlobalWindow extends Window {
 	public v8debug?: unknown = globalThis.v8debug;
 
 	/**
-	 * Constructor.
-	 *
-	 * @param [options] Options.
-	 * @param [options.width] Window width. Defaults to "1024".
-	 * @param [options.height] Window height. Defaults to "768".
-	 * @param [options.innerWidth] Inner width. Deprecated. Defaults to "1024".
-	 * @param [options.innerHeight] Inner height. Deprecated. Defaults to "768".
-	 * @param [options.url] URL.
-	 * @param [options.console] Console.
-	 * @param [options.settings] Settings.
-	 */
-	constructor(options?: {
-		width?: number;
-		height?: number;
-		/** @deprecated Replaced by the "width" property. */
-		innerWidth?: number;
-		/** @deprecated Replaced by the "height" property. */
-		innerHeight?: number;
-		url?: string;
-		console?: Console;
-		settings?: IOptionalBrowserSettings;
-	}) {
-		super(options);
-
-		/**
-		 * Binds getts and setters, so that they will appear as an "own" property when using Object.getOwnPropertyNames().
-		 *
-		 * This is needed for Vitest to work as it relies on Object.getOwnPropertyNames() to get the list of properties.
-		 *
-		 * @see https://github.com/capricorn86/happy-dom/issues/1339
-		 */
-		for (const windowClass of [GlobalWindow, Window, BrowserWindow]) {
-			const propertyDescriptors = Object.getOwnPropertyDescriptors(
-				Reflect.getPrototypeOf(windowClass.prototype)
-			);
-
-			for (const key of Object.keys(propertyDescriptors)) {
-				const windowPropertyDescriptor = propertyDescriptors[key];
-				if (windowPropertyDescriptor.get || windowPropertyDescriptor.set) {
-					const ownPropertyDescriptor = Object.getOwnPropertyDescriptor(this, key);
-
-					if (!ownPropertyDescriptor) {
-						Object.defineProperty(this, key, {
-							configurable: true,
-							enumerable: windowPropertyDescriptor.enumerable,
-							get: windowPropertyDescriptor.get?.bind(this),
-							set: windowPropertyDescriptor.set?.bind(this)
-						});
-					}
-				}
-			}
-		}
-	}
-
-	/**
 	 * Setup of VM context.
 	 */
 	protected override [PropertySymbol.setupVMContext](): void {
