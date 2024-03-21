@@ -3,15 +3,7 @@
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Storage
  */
-export class Storage {
-	/**
-	 *
-	 */
-	constructor() {
-		if (new.target === Storage) {
-			throw Error('Storage is a base class and cannot be constructed directly.');
-		}
-	}
+export default class Storage {
 	/**
 	 * Returns length.
 	 *
@@ -65,18 +57,9 @@ export class Storage {
 	 * Clears storage.
 	 */
 	public clear(): void {
-		Object.keys(this).forEach((key) => {
+		const keys = Object.keys(this);
+		for (const key of keys) {
 			delete this[key];
-		});
+		}
 	}
 }
-
-/**
- * LocalStorage.
- */
-export class LocalStorage extends Storage {}
-
-/**
- * SessionStorage.
- */
-export class SessionStorage extends Storage {}

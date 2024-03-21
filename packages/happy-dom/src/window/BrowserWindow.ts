@@ -86,7 +86,7 @@ import SubmitEvent from '../event/events/SubmitEvent.js';
 import Screen from '../screen/Screen.js';
 import IResponse from '../fetch/types/IResponse.js';
 import IRequestInit from '../fetch/types/IRequestInit.js';
-import { Storage, LocalStorage, SessionStorage } from '../storage/Storage.js';
+import Storage from '../storage/Storage.js';
 import HTMLCollection from '../nodes/element/HTMLCollection.js';
 import HTMLFormControlsCollection from '../nodes/html-form-element/HTMLFormControlsCollection.js';
 import NodeList from '../nodes/node/NodeList.js';
@@ -523,8 +523,8 @@ export default class BrowserWindow extends EventTarget implements IBrowserWindow
 		this.navigator = new Navigator(this);
 		this.history = new History();
 		this.screen = new Screen();
-		this.sessionStorage = new SessionStorage();
-		this.localStorage = new LocalStorage();
+		this.sessionStorage = new Storage();
+		this.localStorage = new Storage();
 		this.location = new Location(this.#browserFrame, options?.url ?? 'about:blank');
 		this.console = browserFrame.page.console;
 
