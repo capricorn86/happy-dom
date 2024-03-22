@@ -51,6 +51,16 @@ describe('Storage', () => {
 			expect(storage['key2']).toBe('value2');
 			storage['key1'] = 'value3';
 			expect(storage.getItem('key1')).toBe('value3');
+
+			// @ts-expect-error
+			storage.setItem('key1', 1);
+			expect(storage.getItem('key1')).toBe('1');
+			expect(storage['key1']).toBe('1');
+
+			// @ts-expect-error
+			storage.setItem('key1', {});
+			expect(storage.getItem('key1')).toBe('[object Object]');
+			expect(storage['key1']).toBe('[object Object]');
 		});
 	});
 
