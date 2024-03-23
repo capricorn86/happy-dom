@@ -25,8 +25,8 @@ describe('BrowserFrame', () => {
 			const browser = new Browser();
 			const page = browser.defaultContext.newPage();
 			expect(page.mainFrame.childFrames).toEqual([]);
-			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
-			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const frame1 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.createChildFrame(page.mainFrame);
 			expect(page.mainFrame.childFrames).toEqual([frame1, frame2]);
 		});
 	});
@@ -36,8 +36,8 @@ describe('BrowserFrame', () => {
 			const browser = new Browser();
 			const page = browser.defaultContext.newPage();
 			expect(page.mainFrame.parentFrame).toBe(null);
-			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
-			const frame2 = BrowserFrameFactory.newChildFrame(frame1);
+			const frame1 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.createChildFrame(frame1);
 			expect(frame2.parentFrame).toBe(frame1);
 			expect(frame1.parentFrame).toBe(page.mainFrame);
 			expect(page.mainFrame.parentFrame).toBe(null);
@@ -124,8 +124,8 @@ describe('BrowserFrame', () => {
 		it('Waits for all pages to complete.', async () => {
 			const browser = new Browser();
 			const page = browser.newPage();
-			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
-			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const frame1 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.createChildFrame(page.mainFrame);
 			page.mainFrame.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
 			frame1.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
 			frame2.evaluate('setTimeout(() => { globalThis.test = 3; }, 10);');
@@ -175,8 +175,8 @@ describe('BrowserFrame', () => {
 		it('Aborts all ongoing operations.', async () => {
 			const browser = new Browser();
 			const page = browser.newPage();
-			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
-			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const frame1 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.createChildFrame(page.mainFrame);
 			page.mainFrame.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
 			frame1.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
 			frame2.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
@@ -349,7 +349,7 @@ describe('BrowserFrame', () => {
 				}
 			});
 			const page = browser.newPage();
-			const childFrame = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const childFrame = BrowserFrameFactory.createChildFrame(page.mainFrame);
 			const oldWindow = childFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -377,7 +377,7 @@ describe('BrowserFrame', () => {
 				}
 			});
 			const page = browser.newPage();
-			const childFrame = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const childFrame = BrowserFrameFactory.createChildFrame(page.mainFrame);
 			const oldWindow = childFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -617,7 +617,7 @@ describe('BrowserFrame', () => {
 				}
 			});
 			const page = browser.newPage();
-			const childFrame = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const childFrame = BrowserFrameFactory.createChildFrame(page.mainFrame);
 			const oldWindow = childFrame.window;
 
 			await childFrame.goto('http://localhost:9999');
@@ -640,7 +640,7 @@ describe('BrowserFrame', () => {
 				}
 			});
 			const page = browser.newPage();
-			const childFrame = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const childFrame = BrowserFrameFactory.createChildFrame(page.mainFrame);
 			const oldWindow = childFrame.window;
 
 			const response = await childFrame.goto('http://localhost:9999');

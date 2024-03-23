@@ -78,8 +78,8 @@ describe('DetachedBrowserPage', () => {
 			const browser = new DetachedBrowser(BrowserWindow);
 			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.newPage();
-			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
-			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const frame1 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.createChildFrame(page.mainFrame);
 			expect(page.frames).toEqual([page.mainFrame, frame1, frame2]);
 		});
 	});
@@ -131,9 +131,9 @@ describe('DetachedBrowserPage', () => {
 			const browser = new DetachedBrowser(BrowserWindow);
 			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.defaultContext.newPage();
-			const mainFrame = BrowserFrameFactory.newChildFrame(page.mainFrame);
-			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
-			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const mainFrame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const frame1 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.createChildFrame(page.mainFrame);
 
 			await page.close();
 
@@ -154,8 +154,8 @@ describe('DetachedBrowserPage', () => {
 			const browser = new DetachedBrowser(BrowserWindow);
 			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
-			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
-			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const frame1 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.createChildFrame(page.mainFrame);
 			frame1.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
 			frame2.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
 			await page.waitUntilComplete();
@@ -186,8 +186,8 @@ describe('DetachedBrowserPage', () => {
 			const browser = new DetachedBrowser(BrowserWindow);
 			browser.defaultContext.pages[0].mainFrame.window = new Window();
 			const page = browser.newPage();
-			const frame1 = BrowserFrameFactory.newChildFrame(page.mainFrame);
-			const frame2 = BrowserFrameFactory.newChildFrame(page.mainFrame);
+			const frame1 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.createChildFrame(page.mainFrame);
 			frame1.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
 			frame2.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
 			page.abort();

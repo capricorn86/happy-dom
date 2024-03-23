@@ -12,7 +12,7 @@ export default class BrowserFrameFactory {
 	 * @param parentFrame Parent frame.
 	 * @returns Frame.
 	 */
-	public static newChildFrame(parentFrame: IBrowserFrame): IBrowserFrame {
+	public static createChildFrame(parentFrame: IBrowserFrame): IBrowserFrame {
 		const frame = new (<new (page: IBrowserPage) => IBrowserFrame>parentFrame.constructor)(
 			parentFrame.page
 		);

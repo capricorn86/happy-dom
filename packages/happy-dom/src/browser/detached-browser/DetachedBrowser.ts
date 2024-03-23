@@ -38,7 +38,7 @@ export default class DetachedBrowser implements IBrowser {
 	) {
 		this.windowClass = windowClass;
 		this.console = options?.console || null;
-		this.settings = BrowserSettingsFactory.getSettings(options?.settings);
+		this.settings = BrowserSettingsFactory.createSettings(options?.settings);
 		this.contexts = [];
 		this.contexts.push(new DetachedBrowserContext(this));
 	}

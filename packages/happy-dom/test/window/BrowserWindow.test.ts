@@ -286,6 +286,18 @@ describe('BrowserWindow', () => {
 		});
 	});
 
+	describe('get localStorage()', () => {
+		it('Returns the "localStorage" object.', () => {
+			expect(window.localStorage).toBeInstanceOf(window.Storage);
+		});
+	});
+
+	describe('get sessionStorage()', () => {
+		it('Returns the "sessionStorage" object.', () => {
+			expect(window.sessionStorage).toBeInstanceOf(window.Storage);
+		});
+	});
+
 	describe('eval()', () => {
 		it('Respects direct eval.', () => {
 			const result = window.eval(`
@@ -1353,7 +1365,7 @@ describe('BrowserWindow', () => {
 	describe('postMessage()', () => {
 		it('Posts a message.', async () => {
 			await new Promise((resolve) => {
-				const frame = BrowserFrameFactory.newChildFrame(browserFrame);
+				const frame = BrowserFrameFactory.createChildFrame(browserFrame);
 
 				const message = 'test';
 				let triggeredEvent: MessageEvent | null = null;
@@ -1559,7 +1571,10 @@ describe('BrowserWindow', () => {
 			expect(newWindow instanceof CrossOriginBrowserWindow).toBe(true);
 			expect(browser.defaultContext.pages.length).toBe(2);
 			expect(browser.defaultContext.pages[0]).toBe(page);
-			expect(browser.defaultContext.pages[1].mainFrame.window === newWindow).toBe(false);
+			expect(
+				<CrossOriginBrowserWindow>(<unknown>browser.defaultContext.pages[1].mainFrame.window) ===
+					newWindow
+			).toBe(false);
 			expect(browser.defaultContext.pages[1].mainFrame.url).toBe(
 				'https://developer.mozilla.org/en-US/docs/Web/API/Window/open'
 			);

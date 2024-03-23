@@ -2,7 +2,6 @@ import Element from '../element/Element.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import PointerEvent from '../../event/events/PointerEvent.js';
-import Dataset from '../element/Dataset.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import DOMException from '../../exception/DOMException.js';
 import Event from '../../event/Event.js';
@@ -12,6 +11,8 @@ import HTMLElementNamedNodeMap from './HTMLElementNamedNodeMap.js';
 import NodeList from '../node/NodeList.js';
 import Node from '../node/Node.js';
 import HTMLCollection from '../element/HTMLCollection.js';
+import DatasetFactory from '../element/DatasetFactory.js';
+import IDataset from '../element/IDataset.js';
 
 /**
  * HTML Element.
@@ -63,7 +64,7 @@ export default class HTMLElement extends Element {
 	public [PropertySymbol.style]: CSSStyleDeclaration = null;
 
 	// Private properties
-	#dataset: Dataset = null;
+	#dataset: IDataset = null;
 	#customElementDefineCallback: () => void = null;
 
 	/**
@@ -353,8 +354,8 @@ export default class HTMLElement extends Element {
 	 *
 	 * @returns Data set.
 	 */
-	public get dataset(): { [key: string]: string } {
-		return (this.#dataset ??= new Dataset(this)).proxy;
+	public get dataset(): IDataset {
+		return (this.#dataset ??= DatasetFactory.createDataset(this));
 	}
 
 	/**

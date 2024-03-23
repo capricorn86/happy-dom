@@ -1,11 +1,12 @@
 import Storage from '../../src/storage/Storage.js';
+import StorageFactory from '../../src/storage/StorageFactory.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('Storage', () => {
 	let storage: Storage;
 
 	beforeEach(() => {
-		storage = new Storage();
+		storage = StorageFactory.createStorage();
 	});
 
 	describe('get length()', () => {
@@ -39,6 +40,51 @@ describe('Storage', () => {
 			storage['key3'] = 'value3';
 			expect(storage.getItem('key3')).toBe('value3');
 		});
+
+		it('Handles keys already taken by Javascript.', () => {
+			expect(storage.getItem('length')).toBe(null);
+			expect(storage.getItem('key')).toBe(null);
+			expect(storage.getItem('setItem')).toBe(null);
+			expect(storage.getItem('getItem')).toBe(null);
+			expect(storage.getItem('removeItem')).toBe(null);
+			expect(storage.getItem('clear')).toBe(null);
+
+			storage.setItem('length', 'value');
+			storage.setItem('key', 'value');
+			storage.setItem('setItem', 'value');
+			storage.setItem('getItem', 'value');
+			storage.setItem('removeItem', 'value');
+			storage.setItem('clear', 'value');
+
+			expect(storage.getItem('length')).toBe('value');
+			expect(storage.getItem('key')).toBe('value');
+			expect(storage.getItem('setItem')).toBe('value');
+			expect(storage.getItem('getItem')).toBe('value');
+			expect(storage.getItem('removeItem')).toBe('value');
+			expect(storage.getItem('clear')).toBe('value');
+
+			const storage2 = StorageFactory.createStorage();
+
+			// @ts-expect-error
+			storage2.length = 'value';
+			// @ts-expect-error
+			storage2.key = 'value';
+			// @ts-expect-error
+			storage2.setItem = 'value';
+			// @ts-expect-error
+			storage2.getItem = 'value';
+			// @ts-expect-error
+			storage2.removeItem = 'value';
+			// @ts-expect-error
+			storage2.clear = 'value';
+
+			expect(storage2.length).toBe(0);
+			expect(storage2.key).toBeTypeOf('function');
+			expect(storage2.setItem).toBeTypeOf('function');
+			expect(storage2.getItem).toBeTypeOf('function');
+			expect(storage2.removeItem).toBeTypeOf('function');
+			expect(storage2.clear).toBeTypeOf('function');
+		});
 	});
 
 	describe('setItem()', () => {
@@ -61,6 +107,11 @@ describe('Storage', () => {
 			storage.setItem('key1', {});
 			expect(storage.getItem('key1')).toBe('[object Object]');
 			expect(storage['key1']).toBe('[object Object]');
+		});
+
+		it('Handles keys already taken by Javascript.', () => {
+			storage.setItem('key', 'value');
+			expect(storage.getItem('key')).toBe('value');
 		});
 	});
 
