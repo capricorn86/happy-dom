@@ -31,7 +31,7 @@ export default class Storage {
 	 * @param item Item.
 	 */
 	public setItem(name: string, item: string): void {
-		this[name] = item;
+		this[name] = String(item);
 	}
 
 	/**
