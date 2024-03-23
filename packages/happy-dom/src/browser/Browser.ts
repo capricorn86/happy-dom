@@ -24,7 +24,7 @@ export default class Browser implements IBrowser {
 	 */
 	constructor(options?: { settings?: IOptionalBrowserSettings; console?: Console }) {
 		this.console = options?.console || null;
-		this.settings = BrowserSettingsFactory.getSettings(options?.settings);
+		this.settings = BrowserSettingsFactory.createSettings(options?.settings);
 		this.contexts = [new BrowserContext(this)];
 	}
 

@@ -1,16 +1,63 @@
+import * as PropertySymbol from '../PropertySymbol.js';
+
 /**
  * Storage.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Storage
  */
 export default class Storage {
+	public [PropertySymbol.data]: { [key: string]: string } = {};
+
+	/**
+	 *
+	 */
+	constructor() {
+		const descriptors = Object.getOwnPropertyDescriptors(Storage.prototype);
+
+		Object.defineProperty(this, 'length', {
+			enumerable: false,
+			configurable: true,
+			get: descriptors['length'].get.bind(this)
+		});
+
+		Object.defineProperty(this, 'key', {
+			enumerable: false,
+			configurable: true,
+			value: descriptors['key'].value.bind(this)
+		});
+
+		Object.defineProperty(this, 'setItem', {
+			enumerable: false,
+			configurable: true,
+			value: descriptors['setItem'].value.bind(this)
+		});
+
+		Object.defineProperty(this, 'getItem', {
+			enumerable: false,
+			configurable: true,
+			value: descriptors['getItem'].value.bind(this)
+		});
+
+		Object.defineProperty(this, 'removeItem', {
+			enumerable: false,
+			configurable: true,
+			value: descriptors['removeItem'].value.bind(this)
+		});
+
+		Object.defineProperty(this, 'clear', {
+			enumerable: false,
+			configurable: true,
+			value: descriptors['clear'].value.bind(this)
+		});
+	}
+
 	/**
 	 * Returns length.
 	 *
 	 * @returns Length.
 	 */
 	public get length(): number {
-		return Object.keys(this).length;
+		return Object.keys(this[PropertySymbol.data]).length;
 	}
 
 	/**
@@ -19,9 +66,9 @@ export default class Storage {
 	 * @param index Index.
 	 * @returns Name.
 	 */
-	public key(index: number): string {
-		const name = Object.keys(this)[index];
-		return name === undefined ? null : name;
+	public key(index: number): string | null {
+		const name = Object.keys(this[PropertySymbol.data])[index];
+		return name !== undefined ? name : null;
 	}
 
 	/**
@@ -31,7 +78,7 @@ export default class Storage {
 	 * @param item Item.
 	 */
 	public setItem(name: string, item: string): void {
-		this[name] = String(item);
+		this[PropertySymbol.data][name] = String(item);
 	}
 
 	/**
@@ -40,8 +87,8 @@ export default class Storage {
 	 * @param name Name.
 	 * @returns Item.
 	 */
-	public getItem(name: string): string {
-		return this[name] === undefined ? null : this[name];
+	public getItem(name: string): string | null {
+		return this[PropertySymbol.data][name] !== undefined ? this[PropertySymbol.data][name] : null;
 	}
 
 	/**
@@ -50,16 +97,13 @@ export default class Storage {
 	 * @param name Name.
 	 */
 	public removeItem(name: string): void {
-		delete this[name];
+		delete this[PropertySymbol.data][name];
 	}
 
 	/**
 	 * Clears storage.
 	 */
 	public clear(): void {
-		const keys = Object.keys(this);
-		for (const key of keys) {
-			delete this[key];
-		}
+		this[PropertySymbol.data] = {};
 	}
 }

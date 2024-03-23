@@ -86,6 +86,7 @@ import SubmitEvent from '../event/events/SubmitEvent.js';
 import Screen from '../screen/Screen.js';
 import IRequestInit from '../fetch/types/IRequestInit.js';
 import Storage from '../storage/Storage.js';
+import StorageFactory from '../storage/StorageFactory.js';
 import HTMLCollection from '../nodes/element/HTMLCollection.js';
 import HTMLFormControlsCollection from '../nodes/html-form-element/HTMLFormControlsCollection.js';
 import NodeList from '../nodes/node/NodeList.js';
@@ -522,8 +523,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this[PropertySymbol.navigator] = new Navigator(this);
 		this[PropertySymbol.history] = new History();
 		this[PropertySymbol.screen] = new Screen();
-		this[PropertySymbol.sessionStorage] = new Storage();
-		this[PropertySymbol.localStorage] = new Storage();
+		this[PropertySymbol.sessionStorage] = StorageFactory.createStorage();
+		this[PropertySymbol.localStorage] = StorageFactory.createStorage();
 		this[PropertySymbol.location] = new Location(this.#browserFrame, options?.url ?? 'about:blank');
 
 		this.console = browserFrame.page.console;

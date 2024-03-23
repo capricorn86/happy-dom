@@ -76,7 +76,7 @@ export default class HTMLIFrameElementPageLoader {
 		const parentWindow = isSameOrigin ? window : new CrossOriginBrowserWindow(window);
 
 		this.#browserIFrame =
-			this.#browserIFrame ?? BrowserFrameFactory.newChildFrame(this.#browserParentFrame);
+			this.#browserIFrame ?? BrowserFrameFactory.createChildFrame(this.#browserParentFrame);
 
 		(<BrowserWindow | CrossOriginBrowserWindow>(<unknown>this.#browserIFrame.window.top)) =
 			parentWindow;
