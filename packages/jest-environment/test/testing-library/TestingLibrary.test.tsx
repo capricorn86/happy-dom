@@ -68,4 +68,14 @@ describe('TestingLibrary', () => {
 
 		expect(element).toBeInstanceOf(HTMLDialogElement);
 	});
+
+	it('Can use attribute.not.toMatch().', async () => {
+		render(<input type="checkbox" value="test" />);
+
+		const checkbox = screen.getByRole('checkbox');
+		const attribute = checkbox.getAttribute('value');
+
+		expect(attribute).toMatch('test');
+		expect(attribute).not.toMatch('hello');
+	});
 });

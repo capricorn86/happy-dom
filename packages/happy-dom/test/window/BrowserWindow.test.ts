@@ -748,6 +748,38 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.color).toBe('green');
 		});
 
+		it('Ingores invalid selectors in parsed CSS.', () => {
+			const parent = document.createElement('div');
+			const element = document.createElement('span');
+			const computedStyle = window.getComputedStyle(element);
+			const elementStyle = document.createElement('style');
+
+			elementStyle.innerHTML = `
+                span {
+                    color: green;
+                }
+                
+                :not {
+                    color: red;
+                }
+
+                %test {
+                    color: red;
+                }
+
+                span:not {
+                    color: red;
+                }
+			`;
+
+			parent.appendChild(elementStyle);
+			parent.appendChild(element);
+
+			document.body.appendChild(parent);
+
+			expect(computedStyle.color).toBe('green');
+		});
+
 		for (const measurement of [
 			{ value: '100vw', result: '1024px' },
 			{ value: '100vh', result: '768px' },

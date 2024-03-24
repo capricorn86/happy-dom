@@ -18,6 +18,7 @@ export default class SelectorItem {
 	public pseudos: ISelectorPseudo[] | null;
 	public isPseudoElement: boolean;
 	public combinator: SelectorCombinatorEnum;
+	public ignoreErrors: boolean;
 
 	/**
 	 * Constructor.
@@ -30,6 +31,7 @@ export default class SelectorItem {
 	 * @param [options.attributes] Attributes.
 	 * @param [options.pseudos] Pseudos.
 	 * @param [options.isPseudoElement] Is pseudo element.
+	 * @param [options.ignoreErrors] Ignore errors.
 	 */
 	constructor(options?: {
 		tagName?: string;
@@ -39,6 +41,7 @@ export default class SelectorItem {
 		pseudos?: ISelectorPseudo[];
 		isPseudoElement?: boolean;
 		combinator?: SelectorCombinatorEnum;
+		ignoreErrors?: boolean;
 	}) {
 		this.tagName = options?.tagName || null;
 		this.id = options?.id || null;
@@ -47,6 +50,7 @@ export default class SelectorItem {
 		this.pseudos = options?.pseudos || null;
 		this.isPseudoElement = options?.isPseudoElement || false;
 		this.combinator = options?.combinator || SelectorCombinatorEnum.descendant;
+		this.ignoreErrors = options?.ignoreErrors || false;
 	}
 
 	/**
@@ -98,7 +102,7 @@ export default class SelectorItem {
 
 		// Pseudo match
 		if (this.pseudos) {
-			const result = this.matchPsuedo(element);
+			const result = this.matchPseudo(element);
 			if (!result) {
 				return null;
 			}
@@ -114,7 +118,7 @@ export default class SelectorItem {
 	 * @param element Element.
 	 * @returns Result.
 	 */
-	private matchPsuedo(element: Element): ISelectorMatch | null {
+	private matchPseudo(element: Element): ISelectorMatch | null {
 		const parent = <Element>element[PropertySymbol.parentNode];
 		const parentChildren = element[PropertySymbol.parentNode]
 			? (<Element>element[PropertySymbol.parentNode])[PropertySymbol.children]
@@ -135,7 +139,14 @@ export default class SelectorItem {
 				case 'nth-last-child':
 				case 'nth-last-of-type':
 					if (!pseudo.arguments) {
-						throw new DOMException(`The selector "${this.getSelectorString()}" is not valid.`);
+						if (this.ignoreErrors) {
+							return null;
+						}
+						throw new DOMException(
+							`Failed to execute 'matches' on '${
+								element.constructor.name
+							}': '${this.getSelectorString()}' is not a valid selector.`
+						);
 					}
 					break;
 			}
@@ -357,7 +368,7 @@ export default class SelectorItem {
 	 * @returns Selector string.
 	 */
 	private getSelectorString(): string {
-		return `${this.tagName || ''}${this.id ? `#${this.id}` : ''}${
+		return `${this.tagName ? this.tagName.toLowerCase() : ''}${this.id ? `#${this.id}` : ''}${
 			this.classNames ? `.${this.classNames.join('.')}` : ''
 		}${
 			this.attributes
