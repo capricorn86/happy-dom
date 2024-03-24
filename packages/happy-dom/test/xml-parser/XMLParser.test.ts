@@ -16,6 +16,7 @@ const GET_EXPECTED_HTML = (html: string): string =>
 		.replace('<?processing instruction?>', '<!--?processing instruction?-->')
 		.replace('<?processing-instruction>', '<!--?processing-instruction-->')
 		.replace('<!Exclamation mark comment>', '<!--Exclamation mark comment-->')
+		.replace('<!>', '<!---->')
 		.replace('<!DOCTYPE HTML', '<!DOCTYPE html')
 		.replace('<img />', '<img>');
 
