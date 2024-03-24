@@ -45,6 +45,9 @@ export default class Element
 	// ObservedAttributes should only be called once by CustomElementRegistry (see #117)
 	// CustomElementRegistry will therefore populate "[PropertySymbol.observedAttributes]" when CustomElementRegistry.define() is called
 	public static [PropertySymbol.observedAttributes]: string[];
+	public static [PropertySymbol.tagName]: string | null = null;
+	public static [PropertySymbol.localName]: string | null = null;
+	public static [PropertySymbol.namespaceURI]: string | null = null;
 	public static observedAttributes: string[];
 
 	// Events
@@ -89,8 +92,9 @@ export default class Element
 	public [PropertySymbol.isValue]: string | null = null;
 	public [PropertySymbol.computedStyle]: CSSStyleDeclaration | null = null;
 	public [PropertySymbol.nodeType] = NodeTypeEnum.elementNode;
-	public [PropertySymbol.tagName]: string | null = null;
-	public [PropertySymbol.localName]: string | null = null;
+	public [PropertySymbol.tagName]: string | null = this.constructor[PropertySymbol.tagName] || null;
+	public [PropertySymbol.localName]: string | null =
+		this.constructor[PropertySymbol.localName] || null;
 	public [PropertySymbol.prefix]: string | null = null;
 	public [PropertySymbol.shadowRoot]: ShadowRoot | null = null;
 	public [PropertySymbol.scrollHeight] = 0;
@@ -98,7 +102,8 @@ export default class Element
 	public [PropertySymbol.scrollTop] = 0;
 	public [PropertySymbol.scrollLeft] = 0;
 	public [PropertySymbol.attributes]: NamedNodeMap = new ElementNamedNodeMap(this);
-	public [PropertySymbol.namespaceURI]: string | null = null;
+	public [PropertySymbol.namespaceURI]: string | null =
+		this.constructor[PropertySymbol.namespaceURI] || null;
 
 	/**
 	 * Returns tag name.

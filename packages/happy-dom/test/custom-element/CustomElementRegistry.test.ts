@@ -40,12 +40,18 @@ describe('CustomElementRegistry', () => {
 
 		it('Can construct CustomElement instance using "new".', () => {
 			customElements.define('custom-element', CustomElement);
+
 			const customElement = new CustomElement();
+
 			expect(customElement).toBeInstanceOf(CustomElement);
 			expect(customElement.ownerDocument).toBe(document);
 			expect(customElement.localName).toBe('custom-element');
 			expect(customElement.tagName).toBe('CUSTOM-ELEMENT');
 			expect(customElement.namespaceURI).toBe(NamespaceURI.html);
+
+			const container = document.createElement('div');
+			container.appendChild(customElement);
+			expect(container.innerHTML).toBe('<custom-element></custom-element>');
 		});
 
 		it('Throws an error if tag name does not contain "-".', () => {

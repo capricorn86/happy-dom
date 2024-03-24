@@ -59,27 +59,9 @@ export default class CustomElementRegistry {
 		const tagName = name.toUpperCase();
 
 		elementClass[PropertySymbol.ownerDocument] = this.#window.document;
-
-		Object.defineProperty(elementClass.prototype, 'localName', {
-			configurable: true,
-			get: function () {
-				return this[PropertySymbol.localName] || name;
-			}
-		});
-
-		Object.defineProperty(elementClass.prototype, 'tagName', {
-			configurable: true,
-			get: function () {
-				return this[PropertySymbol.tagName] || tagName;
-			}
-		});
-
-		Object.defineProperty(elementClass.prototype, 'namespaceURI', {
-			configurable: true,
-			get: function () {
-				return this[PropertySymbol.namespaceURI] || NamespaceURI.html;
-			}
-		});
+		elementClass[PropertySymbol.tagName] = tagName;
+		elementClass[PropertySymbol.localName] = name;
+		elementClass[PropertySymbol.namespaceURI] = NamespaceURI.html;
 
 		this[PropertySymbol.registry][name] = {
 			elementClass,
