@@ -5,6 +5,7 @@ import QuerySelectorHTML from './data/QuerySelectorHTML.js';
 import QuerySelectorNthChildHTML from './data/QuerySelectorNthChildHTML.js';
 import HTMLInputElement from '../../src/nodes/html-input-element/HTMLInputElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
+import QuerySelector from '../../src/query-selector/QuerySelector.js';
 
 describe('QuerySelector', () => {
 	let window: Window;
@@ -1298,7 +1299,7 @@ describe('QuerySelector', () => {
 		});
 	});
 
-	describe('match()', () => {
+	describe('matches()', () => {
 		it('Returns true when the element matches the selector', () => {
 			const div = document.createElement('div');
 			div.innerHTML = '<div class="foo"></div>';
@@ -1363,6 +1364,32 @@ describe('QuerySelector', () => {
 			expect(element.matches(':where(div, span[attr1="value1"])')).toBe(true);
 			expect(element.matches(':where(span[attr1="val,ue1"], span[attr1="value1"])')).toBe(true);
 			expect(element.matches(':where(div)')).toBe(false);
+		});
+
+		it('Throws an error when providing an invalid selector', () => {
+			const div = document.createElement('div');
+			div.innerHTML = '<div class="foo"></div>';
+			const element = div.children[0];
+			expect(() => element.matches('1')).toThrow(
+				new Error(`Failed to execute 'matches' on 'HTMLElement': '1' is not a valid selector.`)
+			);
+			expect(() => element.matches(':not')).toThrow(
+				new Error(`Failed to execute 'matches' on 'HTMLElement': ':not' is not a valid selector.`)
+			);
+			expect(() => element.matches('div:not')).toThrow(
+				new Error(
+					`Failed to execute 'matches' on 'HTMLElement': 'div:not' is not a valid selector.`
+				)
+			);
+		});
+
+		it('Ignores invalid selectors if option "ignoreErrors" is set to true', () => {
+			const div = document.createElement('div');
+			div.innerHTML = '<div class="foo"></div>';
+			const element = div.children[0];
+			expect(QuerySelector.matches(element, '1', { ignoreErrors: true })).toBe(null);
+			expect(QuerySelector.matches(element, ':not', { ignoreErrors: true })).toBe(null);
+			expect(QuerySelector.matches(element, 'div:not', { ignoreErrors: true })).toBe(null);
 		});
 	});
 });

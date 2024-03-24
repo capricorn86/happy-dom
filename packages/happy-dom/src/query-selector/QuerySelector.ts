@@ -198,9 +198,15 @@ export default class QuerySelector {
 	 *
 	 * @param element Element to match.
 	 * @param selector Selector to match with.
+	 * @param [options] Options.
+	 * @param [options.ignoreErrors] Ignores errors.
 	 * @returns Result.
 	 */
-	public static match(element: Element, selector: string): ISelectorMatch | null {
+	public static matches(
+		element: Element,
+		selector: string,
+		options?: { ignoreErrors?: boolean }
+	): ISelectorMatch | null {
 		if (!selector) {
 			return null;
 		}
@@ -211,14 +217,19 @@ export default class QuerySelector {
 			};
 		}
 
+		const ignoreErrors = options?.ignoreErrors;
+
 		if (INVALID_SELECTOR_REGEXP.test(selector)) {
+			if (ignoreErrors) {
+				return null;
+			}
 			throw new Error(
-				`Failed to execute 'match' on '${element.constructor.name}': '${selector}' is not a valid selector.`
+				`Failed to execute 'matches' on '${element.constructor.name}': '${selector}' is not a valid selector.`
 			);
 		}
 
-		for (const items of SelectorParser.getSelectorGroups(selector)) {
-			const result = this.matchSelector(element, element, items.reverse());
+		for (const items of SelectorParser.getSelectorGroups(selector, options)) {
+			const result = this.matchSelector(element, element, items.reverse(), 0);
 
 			if (result) {
 				return result;

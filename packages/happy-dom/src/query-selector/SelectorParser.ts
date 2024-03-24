@@ -63,38 +63,52 @@ export default class SelectorParser {
 	 * Parses a selector string and returns an instance of SelectorItem.
 	 *
 	 * @param selector Selector.
+	 * @param [options] Options.
+	 * @param [options.ignoreErrors] Ignores errors.
 	 * @returns Selector item.
 	 */
-	public static getSelectorItem(selector: string): SelectorItem {
-		return this.getSelectorGroups(selector)[0][0];
+	public static getSelectorItem(
+		selector: string,
+		options?: { ignoreErrors?: boolean }
+	): SelectorItem {
+		return this.getSelectorGroups(selector, options)[0][0];
 	}
 
 	/**
 	 * Parses a selector string and returns groups with SelectorItem instances.
 	 *
 	 * @param selector Selector.
+	 * @param [options] Options.
+	 * @param [options.ignoreErrors] Ignores errors.
 	 * @returns Selector groups.
 	 */
-	public static getSelectorGroups(selector: string): Array<Array<SelectorItem>> {
+	public static getSelectorGroups(
+		selector: string,
+		options?: { ignoreErrors?: boolean }
+	): Array<Array<SelectorItem>> {
+		const ignoreErrors = options?.ignoreErrors;
 		if (selector === '*') {
-			return [[new SelectorItem({ tagName: '*' })]];
+			return [[new SelectorItem({ tagName: '*', ignoreErrors })]];
 		}
 
 		const simpleMatch = selector.match(SIMPLE_SELECTOR_REGEXP);
 
 		if (simpleMatch) {
 			if (simpleMatch[1]) {
-				return [[new SelectorItem({ tagName: selector.toUpperCase() })]];
+				return [[new SelectorItem({ tagName: selector.toUpperCase(), ignoreErrors })]];
 			} else if (simpleMatch[2]) {
-				return [[new SelectorItem({ classNames: selector.replace('.', '').split('.') })]];
+				return [
+					[new SelectorItem({ classNames: selector.replace('.', '').split('.'), ignoreErrors })]
+				];
 			} else if (simpleMatch[3]) {
-				return [[new SelectorItem({ id: selector.replace('#', '') })]];
+				return [[new SelectorItem({ id: selector.replace('#', ''), ignoreErrors })]];
 			}
 		}
 
 		const regexp = new RegExp(SELECTOR_REGEXP);
 		let currentSelectorItem: SelectorItem = new SelectorItem({
-			combinator: SelectorCombinatorEnum.descendant
+			combinator: SelectorCombinatorEnum.descendant,
+			ignoreErrors
 		});
 		let currentGroup: SelectorItem[] = [currentSelectorItem];
 		const groups: Array<Array<SelectorItem>> = [currentGroup];
@@ -147,34 +161,40 @@ export default class SelectorParser {
 					});
 				} else if (match[13] && match[14]) {
 					currentSelectorItem.pseudos = currentSelectorItem.pseudos || [];
-					currentSelectorItem.pseudos.push(this.getPseudo(match[13], match[14]));
+					currentSelectorItem.pseudos.push(this.getPseudo(match[13], match[14], options));
 				} else if (match[15]) {
 					currentSelectorItem.pseudos = currentSelectorItem.pseudos || [];
-					currentSelectorItem.pseudos.push(this.getPseudo(match[15]));
+					currentSelectorItem.pseudos.push(this.getPseudo(match[15], null, options));
 				} else if (match[16]) {
 					currentSelectorItem.isPseudoElement = true;
 				} else if (match[17]) {
 					switch (match[17].trim()) {
 						case ',':
 							currentSelectorItem = new SelectorItem({
-								combinator: SelectorCombinatorEnum.descendant
+								combinator: SelectorCombinatorEnum.descendant,
+								ignoreErrors
 							});
 							currentGroup = [currentSelectorItem];
 							groups.push(currentGroup);
 							break;
 						case '>':
-							currentSelectorItem = new SelectorItem({ combinator: SelectorCombinatorEnum.child });
+							currentSelectorItem = new SelectorItem({
+								combinator: SelectorCombinatorEnum.child,
+								ignoreErrors
+							});
 							currentGroup.push(currentSelectorItem);
 							break;
 						case '+':
 							currentSelectorItem = new SelectorItem({
-								combinator: SelectorCombinatorEnum.adjacentSibling
+								combinator: SelectorCombinatorEnum.adjacentSibling,
+								ignoreErrors
 							});
 							currentGroup.push(currentSelectorItem);
 							break;
 						case '':
 							currentSelectorItem = new SelectorItem({
-								combinator: SelectorCombinatorEnum.descendant
+								combinator: SelectorCombinatorEnum.descendant,
+								ignoreErrors
 							});
 							currentGroup.push(currentSelectorItem);
 							break;
@@ -186,6 +206,9 @@ export default class SelectorParser {
 		}
 
 		if (!isValid) {
+			if (options?.ignoreErrors) {
+				return [];
+			}
 			throw new DOMException(`Invalid selector: "${selector}"`);
 		}
 
@@ -241,9 +264,15 @@ export default class SelectorParser {
 	 *
 	 * @param name Pseudo name.
 	 * @param args Pseudo arguments.
+	 * @param [options] Options.
+	 * @param [options.ignoreErrors] Ignores errors.
 	 * @returns Pseudo.
 	 */
-	private static getPseudo(name: string, args?: string): ISelectorPseudo {
+	private static getPseudo(
+		name: string,
+		args?: string,
+		options?: { ignoreErrors?: boolean }
+	): ISelectorPseudo {
 		const lowerName = name.toLowerCase();
 
 		if (!args) {
@@ -256,7 +285,9 @@ export default class SelectorParser {
 				const nthOfIndex = args.indexOf(' of ');
 				const nthFunction = nthOfIndex !== -1 ? args.substring(0, nthOfIndex) : args;
 				const selectorItem =
-					nthOfIndex !== -1 ? this.getSelectorItem(args.substring(nthOfIndex + 4).trim()) : null;
+					nthOfIndex !== -1
+						? this.getSelectorItem(args.substring(nthOfIndex + 4).trim(), options)
+						: null;
 				return {
 					name: lowerName,
 					arguments: args,
@@ -275,12 +306,12 @@ export default class SelectorParser {
 				return {
 					name: lowerName,
 					arguments: args,
-					selectorItems: [this.getSelectorItem(args)],
+					selectorItems: [this.getSelectorItem(args, options)],
 					nthFunction: null
 				};
 			case 'is':
 			case 'where':
-				const selectorGroups = this.getSelectorGroups(args);
+				const selectorGroups = this.getSelectorGroups(args, options);
 				const selectorItems = [];
 				for (const group of selectorGroups) {
 					selectorItems.push(group[0]);

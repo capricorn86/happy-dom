@@ -851,7 +851,7 @@ export default class Element
 	 * @returns "true" if matching.
 	 */
 	public matches(selector: string): boolean {
-		return !!QuerySelector.match(this, selector);
+		return !!QuerySelector.matches(this, selector);
 	}
 
 	/**
@@ -865,7 +865,7 @@ export default class Element
 		let parent: Element = this;
 
 		while (parent) {
-			if (QuerySelector.match(parent, selector)) {
+			if (QuerySelector.matches(parent, selector)) {
 				return parent;
 			}
 			parent = parent.parentElement;

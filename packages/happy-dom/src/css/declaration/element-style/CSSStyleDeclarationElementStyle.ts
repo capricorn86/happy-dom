@@ -328,11 +328,13 @@ export default class CSSStyleDeclarationElementStyle {
 						}
 					} else {
 						for (const element of options.elements) {
-							const matchResult = QuerySelector.match(<Element>element.element, selectorText);
-							if (matchResult) {
+							const match = QuerySelector.matches(<Element>element.element, selectorText, {
+								ignoreErrors: true
+							});
+							if (match) {
 								element.cssTexts.push({
 									cssText: (<CSSStyleRule>rule)[PropertySymbol.cssText],
-									priorityWeight: matchResult.priorityWeight
+									priorityWeight: match.priorityWeight
 								});
 							}
 						}
