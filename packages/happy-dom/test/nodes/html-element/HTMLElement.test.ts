@@ -25,8 +25,8 @@ describe('HTMLElement', () => {
 	});
 
 	describe('Object.prototype.toString', () => {
-		it('Returns `[object HTMLElement]`', () => {
-			expect(Object.prototype.toString.call(element)).toBe('[object HTMLElement]');
+		it('Returns `[object HTMLDivElement]`', () => {
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLDivElement]');
 		});
 	});
 

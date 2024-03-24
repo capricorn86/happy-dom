@@ -989,22 +989,22 @@ describe('QuerySelector', () => {
 		it('Throws an error when providing an invalid selector', () => {
 			const div = document.createElement('div');
 			expect(() => div.querySelectorAll('1')).toThrowError(
-				"Failed to execute 'querySelectorAll' on 'HTMLElement': '1' is not a valid selector."
+				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': '1' is not a valid selector."
 			);
 			expect(() => div.querySelectorAll('[1')).toThrowError(
-				"Failed to execute 'querySelectorAll' on 'HTMLElement': '[1' is not a valid selector."
+				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': '[1' is not a valid selector."
 			);
 			expect(() => div.querySelectorAll('.1')).toThrowError(
-				"Failed to execute 'querySelectorAll' on 'HTMLElement': '.1' is not a valid selector."
+				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': '.1' is not a valid selector."
 			);
 			expect(() => div.querySelectorAll('#1')).toThrowError(
-				"Failed to execute 'querySelectorAll' on 'HTMLElement': '#1' is not a valid selector."
+				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': '#1' is not a valid selector."
 			);
 			expect(() => div.querySelectorAll('a.')).toThrowError(
-				"Failed to execute 'querySelectorAll' on 'HTMLElement': 'a.' is not a valid selector."
+				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': 'a.' is not a valid selector."
 			);
 			expect(() => div.querySelectorAll('a#')).toThrowError(
-				"Failed to execute 'querySelectorAll' on 'HTMLElement': 'a#' is not a valid selector."
+				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': 'a#' is not a valid selector."
 			);
 		});
 	});
@@ -1208,22 +1208,22 @@ describe('QuerySelector', () => {
 		it('Throws an error when providing an invalid selector', () => {
 			const div = document.createElement('div');
 			expect(() => div.querySelector('1')).toThrowError(
-				"Failed to execute 'querySelector' on 'HTMLElement': '1' is not a valid selector."
+				"Failed to execute 'querySelector' on 'HTMLDivElement': '1' is not a valid selector."
 			);
 			expect(() => div.querySelector('[1')).toThrowError(
-				"Failed to execute 'querySelector' on 'HTMLElement': '[1' is not a valid selector."
+				"Failed to execute 'querySelector' on 'HTMLDivElement': '[1' is not a valid selector."
 			);
 			expect(() => div.querySelector('.1')).toThrowError(
-				"Failed to execute 'querySelector' on 'HTMLElement': '.1' is not a valid selector."
+				"Failed to execute 'querySelector' on 'HTMLDivElement': '.1' is not a valid selector."
 			);
 			expect(() => div.querySelector('#1')).toThrowError(
-				"Failed to execute 'querySelector' on 'HTMLElement': '#1' is not a valid selector."
+				"Failed to execute 'querySelector' on 'HTMLDivElement': '#1' is not a valid selector."
 			);
 			expect(() => div.querySelector('a.')).toThrowError(
-				"Failed to execute 'querySelector' on 'HTMLElement': 'a.' is not a valid selector."
+				"Failed to execute 'querySelector' on 'HTMLDivElement': 'a.' is not a valid selector."
 			);
 			expect(() => div.querySelector('a#')).toThrowError(
-				"Failed to execute 'querySelector' on 'HTMLElement': 'a#' is not a valid selector."
+				"Failed to execute 'querySelector' on 'HTMLDivElement': 'a#' is not a valid selector."
 			);
 		});
 
@@ -1371,14 +1371,16 @@ describe('QuerySelector', () => {
 			div.innerHTML = '<div class="foo"></div>';
 			const element = div.children[0];
 			expect(() => element.matches('1')).toThrow(
-				new Error(`Failed to execute 'matches' on 'HTMLElement': '1' is not a valid selector.`)
+				new Error(`Failed to execute 'matches' on 'HTMLDivElement': '1' is not a valid selector.`)
 			);
 			expect(() => element.matches(':not')).toThrow(
-				new Error(`Failed to execute 'matches' on 'HTMLElement': ':not' is not a valid selector.`)
+				new Error(
+					`Failed to execute 'matches' on 'HTMLDivElement': ':not' is not a valid selector.`
+				)
 			);
 			expect(() => element.matches('div:not')).toThrow(
 				new Error(
-					`Failed to execute 'matches' on 'HTMLElement': 'div:not' is not a valid selector.`
+					`Failed to execute 'matches' on 'HTMLDivElement': 'div:not' is not a valid selector.`
 				)
 			);
 		});
