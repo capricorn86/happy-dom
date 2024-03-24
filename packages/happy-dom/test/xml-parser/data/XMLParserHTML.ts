@@ -13,6 +13,7 @@ export default `
 				<b>Bold</b>
 				<!-- Comment 2 !-->
 				<span>Span</span>
+                <!>
 			</div>
 			<article class="class1 class2" id="id">
 				<!-- Comment 1 !-->

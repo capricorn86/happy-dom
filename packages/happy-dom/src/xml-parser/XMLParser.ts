@@ -24,7 +24,7 @@ import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigConten
  * Group 8: End of start tag (e.g. ">" in "<div>").
  */
 const MARKUP_REGEXP =
-	/<([a-zA-Z0-9-]+)|<\/([a-zA-Z0-9-]+)\s*>|<!--([^-]+)-->|<!--([^>]+)>|<!([^>]+)>|<\?([^>]+)>|(\/>)|(>)/gm;
+	/<([a-zA-Z0-9-]+)|<\/([a-zA-Z0-9-]+)\s*>|<!--([^-]+)-->|<!--([^>]+)>|<!([^>]*)>|<\?([^>]+)>|(\/>)|(>)/gm;
 
 /**
  * Attribute RegExp.
@@ -95,7 +95,7 @@ export default class XMLParser {
 					case MarkupReadStateEnum.startOrEndTag:
 						if (
 							match.index !== lastIndex &&
-							(match[1] || match[2] || match[3] || match[4] || match[5] || match[6])
+							(match[1] || match[2] || match[3] || match[4] || match[5] !== undefined || match[6])
 						) {
 							// Plain text between tags.
 
@@ -181,9 +181,9 @@ export default class XMLParser {
 							}
 
 							currentNode.appendChild(document.createComment(Entities.decodeHTML(comment)));
-						} else if (match[5]) {
-							// Exclamation mark comment (usually <!DOCTYPE>).
-
+						} else if (match[5] !== undefined) {
+							// Exclamation mark comment.
+							// Document type node or comment.
 							const exclamationComment = Entities.decodeHTML(match[5]);
 							currentNode.appendChild(
 								this.getDocumentTypeNode(document, exclamationComment) ||
