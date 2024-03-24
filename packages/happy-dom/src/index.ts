@@ -1,48 +1,3 @@
-import HTMLUListElement from './nodes/html-u-list-element/HTMLUListElement.js';
-import HTMLTrackElement from './nodes/html-track-element/HTMLTrackElement.js';
-import HTMLTableRowElement from './nodes/html-table-row-element/HTMLTableRowElement.js';
-import HTMLTitleElement from './nodes/html-title-element/HTMLTitleElement.js';
-import HTMLTimeElement from './nodes/html-time-element/HTMLTimeElement.js';
-import HTMLTableSectionElement from './nodes/html-table-section-element/HTMLTableSectionElement.js';
-import HTMLTableCellElement from './nodes/html-table-cell-element/HTMLTableCellElement.js';
-import HTMLTableElement from './nodes/html-table-element/HTMLTableElement.js';
-import HTMLSpanElement from './nodes/html-span-element/HTMLSpanElement.js';
-import HTMLSourceElement from './nodes/html-source-element/HTMLSourceElement.js';
-import HTMLQuoteElement from './nodes/html-quote-element/HTMLQuoteElement.js';
-import HTMLProgressElement from './nodes/html-progress-element/HTMLProgressElement.js';
-import HTMLPreElement from './nodes/html-pre-element/HTMLPreElement.js';
-import HTMLPictureElement from './nodes/html-picture-element/HTMLPictureElement.js';
-import HTMLParamElement from './nodes/html-param-element/HTMLParamElement.js';
-import HTMLParagraphElement from './nodes/html-paragraph-element/HTMLParagraphElement.js';
-import HTMLOutputElement from './nodes/html-output-element/HTMLOutputElement.js';
-import HTMLOListElement from './nodes/html-o-list-element/HTMLOListElement.js';
-import HTMLObjectElement from './nodes/html-object-element/HTMLObjectElement.js';
-import HTMLMeterElement from './nodes/html-meter-element/HTMLMeterElement.js';
-import HTMLMenuElement from './nodes/html-menu-element/HTMLMenuElement.js';
-import HTMLMapElement from './nodes/html-map-element/HTMLMapElement.js';
-import HTMLLIElement from './nodes/html-li-element/HTMLLIElement.js';
-import HTMLLegendElement from './nodes/html-legend-element/HTMLLegendElement.js';
-import HTMLModElement from './nodes/html-mod-element/HTMLModElement.js';
-import HTMLHtmlElement from './nodes/html-html-element/HTMLHtmlElement.js';
-import HTMLHRElement from './nodes/html-hr-element/HTMLHRElement.js';
-import HTMLHeadElement from './nodes/html-head-element/HTMLHeadElement.js';
-import HTMLHeadingElement from './nodes/html-heading-element/HTMLHeadingElement.js';
-import HTMLFieldSetElement from './nodes/html-field-set-element/HTMLFieldSetElement.js';
-import HTMLEmbedElement from './nodes/html-embed-element/HTMLEmbedElement.js';
-import HTMLDListElement from './nodes/html-d-list-element/HTMLDListElement.js';
-import HTMLDivElement from './nodes/html-div-element/HTMLDivElement.js';
-import HTMLDetailsElement from './nodes/html-details-element/HTMLDetailsElement.js';
-import HTMLModElement from './nodes/html-mod-element/HTMLModElement.js';
-import HTMLDataListElement from './nodes/html-data-list-element/HTMLDataListElement.js';
-import HTMLDataElement from './nodes/html-data-element/HTMLDataElement.js';
-import HTMLTableColElement from './nodes/html-table-col-element/HTMLTableColElement.js';
-import HTMLTableColElement from './nodes/html-table-col-element/HTMLTableColElement.js';
-import HTMLTableCaptionElement from './nodes/html-table-caption-element/HTMLTableCaptionElement.js';
-import HTMLCanvasElement from './nodes/html-canvas-element/HTMLCanvasElement.js';
-import HTMLBRElement from './nodes/html-br-element/HTMLBRElement.js';
-import HTMLQuoteElement from './nodes/html-quote-element/HTMLQuoteElement.js';
-import HTMLBodyElement from './nodes/html-body-element/HTMLBodyElement.js';
-import HTMLAreaElement from './nodes/html-area-element/HTMLAreaElement.js';
 import { URLSearchParams } from 'url';
 import Browser from './browser/Browser.js';
 import BrowserContext from './browser/BrowserContext.js';
@@ -105,6 +60,7 @@ import File from './file/File.js';
 import FileReader from './file/FileReader.js';
 import FormData from './form-data/FormData.js';
 import History from './history/History.js';
+import Location from './location/Location.js';
 import MutationObserver from './mutation-observer/MutationObserver.js';
 import MutationRecord from './mutation-observer/MutationRecord.js';
 import Attr from './nodes/attr/Attr.js';
@@ -116,31 +72,73 @@ import DOMRect from './nodes/element/DOMRect.js';
 import Element from './nodes/element/Element.js';
 import HTMLCollection from './nodes/element/HTMLCollection.js';
 import HTMLAnchorElement from './nodes/html-anchor-element/HTMLAnchorElement.js';
+import HTMLAreaElement from './nodes/html-area-element/HTMLAreaElement.js';
 import HTMLAudioElement from './nodes/html-audio-element/HTMLAudioElement.js';
 import HTMLBaseElement from './nodes/html-base-element/HTMLBaseElement.js';
+import HTMLBodyElement from './nodes/html-body-element/HTMLBodyElement.js';
+import HTMLBRElement from './nodes/html-br-element/HTMLBRElement.js';
 import HTMLButtonElement from './nodes/html-button-element/HTMLButtonElement.js';
+import HTMLCanvasElement from './nodes/html-canvas-element/HTMLCanvasElement.js';
+import HTMLDListElement from './nodes/html-d-list-element/HTMLDListElement.js';
+import HTMLDataElement from './nodes/html-data-element/HTMLDataElement.js';
+import HTMLDataListElement from './nodes/html-data-list-element/HTMLDataListElement.js';
+import HTMLDetailsElement from './nodes/html-details-element/HTMLDetailsElement.js';
 import HTMLDialogElement from './nodes/html-dialog-element/HTMLDialogElement.js';
+import HTMLDivElement from './nodes/html-div-element/HTMLDivElement.js';
 import HTMLDocument from './nodes/html-document/HTMLDocument.js';
 import HTMLElement from './nodes/html-element/HTMLElement.js';
+import HTMLEmbedElement from './nodes/html-embed-element/HTMLEmbedElement.js';
+import HTMLFieldSetElement from './nodes/html-field-set-element/HTMLFieldSetElement.js';
 import HTMLFormControlsCollection from './nodes/html-form-element/HTMLFormControlsCollection.js';
 import HTMLFormElement from './nodes/html-form-element/HTMLFormElement.js';
+import HTMLHeadElement from './nodes/html-head-element/HTMLHeadElement.js';
+import HTMLHeadingElement from './nodes/html-heading-element/HTMLHeadingElement.js';
+import HTMLHRElement from './nodes/html-hr-element/HTMLHRElement.js';
+import HTMLHtmlElement from './nodes/html-html-element/HTMLHtmlElement.js';
 import HTMLIFrameElement from './nodes/html-iframe-element/HTMLIFrameElement.js';
 import HTMLImageElement from './nodes/html-image-element/HTMLImageElement.js';
 import Image from './nodes/html-image-element/Image.js';
 import FileList from './nodes/html-input-element/FileList.js';
 import HTMLInputElement from './nodes/html-input-element/HTMLInputElement.js';
 import HTMLLabelElement from './nodes/html-label-element/HTMLLabelElement.js';
+import HTMLLegendElement from './nodes/html-legend-element/HTMLLegendElement.js';
+import HTMLLIElement from './nodes/html-li-element/HTMLLIElement.js';
 import HTMLLinkElement from './nodes/html-link-element/HTMLLinkElement.js';
+import HTMLMapElement from './nodes/html-map-element/HTMLMapElement.js';
 import HTMLMediaElement from './nodes/html-media-element/HTMLMediaElement.js';
+import HTMLMenuElement from './nodes/html-menu-element/HTMLMenuElement.js';
 import HTMLMetaElement from './nodes/html-meta-element/HTMLMetaElement.js';
+import HTMLMeterElement from './nodes/html-meter-element/HTMLMeterElement.js';
+import HTMLModElement from './nodes/html-mod-element/HTMLModElement.js';
+import HTMLOListElement from './nodes/html-o-list-element/HTMLOListElement.js';
+import HTMLObjectElement from './nodes/html-object-element/HTMLObjectElement.js';
 import HTMLOptGroupElement from './nodes/html-opt-group-element/HTMLOptGroupElement.js';
 import HTMLOptionElement from './nodes/html-option-element/HTMLOptionElement.js';
+import HTMLOutputElement from './nodes/html-output-element/HTMLOutputElement.js';
+import HTMLParagraphElement from './nodes/html-paragraph-element/HTMLParagraphElement.js';
+import HTMLParamElement from './nodes/html-param-element/HTMLParamElement.js';
+import HTMLPictureElement from './nodes/html-picture-element/HTMLPictureElement.js';
+import HTMLPreElement from './nodes/html-pre-element/HTMLPreElement.js';
+import HTMLProgressElement from './nodes/html-progress-element/HTMLProgressElement.js';
+import HTMLQuoteElement from './nodes/html-quote-element/HTMLQuoteElement.js';
 import HTMLScriptElement from './nodes/html-script-element/HTMLScriptElement.js';
 import HTMLSelectElement from './nodes/html-select-element/HTMLSelectElement.js';
 import HTMLSlotElement from './nodes/html-slot-element/HTMLSlotElement.js';
+import HTMLSourceElement from './nodes/html-source-element/HTMLSourceElement.js';
+import HTMLSpanElement from './nodes/html-span-element/HTMLSpanElement.js';
 import HTMLStyleElement from './nodes/html-style-element/HTMLStyleElement.js';
+import HTMLTableCaptionElement from './nodes/html-table-caption-element/HTMLTableCaptionElement.js';
+import HTMLTableCellElement from './nodes/html-table-cell-element/HTMLTableCellElement.js';
+import HTMLTableColElement from './nodes/html-table-col-element/HTMLTableColElement.js';
+import HTMLTableElement from './nodes/html-table-element/HTMLTableElement.js';
+import HTMLTableRowElement from './nodes/html-table-row-element/HTMLTableRowElement.js';
+import HTMLTableSectionElement from './nodes/html-table-section-element/HTMLTableSectionElement.js';
 import HTMLTemplateElement from './nodes/html-template-element/HTMLTemplateElement.js';
 import HTMLTextAreaElement from './nodes/html-text-area-element/HTMLTextAreaElement.js';
+import HTMLTimeElement from './nodes/html-time-element/HTMLTimeElement.js';
+import HTMLTitleElement from './nodes/html-title-element/HTMLTitleElement.js';
+import HTMLTrackElement from './nodes/html-track-element/HTMLTrackElement.js';
+import HTMLUListElement from './nodes/html-u-list-element/HTMLUListElement.js';
 import HTMLUnknownElement from './nodes/html-unknown-element/HTMLUnknownElement.js';
 import HTMLVideoElement from './nodes/html-video-element/HTMLVideoElement.js';
 import Node from './nodes/node/Node.js';
@@ -162,7 +160,6 @@ import Storage from './storage/Storage.js';
 import NodeFilter from './tree-walker/NodeFilter.js';
 import NodeIterator from './tree-walker/NodeIterator.js';
 import TreeWalker from './tree-walker/TreeWalker.js';
-import Location from './location/Location.js';
 import URL from './url/URL.js';
 import BrowserWindow from './window/BrowserWindow.js';
 import GlobalWindow from './window/GlobalWindow.js';
@@ -223,48 +220,6 @@ export type {
 };
 
 export {
-	HTMLUListElement,
-	HTMLTrackElement,
-	HTMLTableRowElement,
-	HTMLTitleElement,
-	HTMLTimeElement,
-	HTMLTableSectionElement,
-	HTMLTableCellElement,
-	HTMLTableElement,
-	HTMLSpanElement,
-	HTMLSourceElement,
-	HTMLQuoteElement,
-	HTMLProgressElement,
-	HTMLPreElement,
-	HTMLPictureElement,
-	HTMLParamElement,
-	HTMLParagraphElement,
-	HTMLOutputElement,
-	HTMLOListElement,
-	HTMLObjectElement,
-	HTMLMeterElement,
-	HTMLMenuElement,
-	HTMLMapElement,
-	HTMLLIElement,
-	HTMLLegendElement,
-	HTMLModElement,
-	HTMLHtmlElement,
-	HTMLHRElement,
-	HTMLHeadElement,
-	HTMLHeadingElement,
-	HTMLFieldSetElement,
-	HTMLEmbedElement,
-	HTMLDListElement,
-	HTMLDivElement,
-	HTMLDetailsElement,
-	HTMLDataListElement,
-	HTMLDataElement,
-	HTMLTableColElement,
-	HTMLTableCaptionElement,
-	HTMLCanvasElement,
-	HTMLBRElement,
-	HTMLBodyElement,
-	HTMLAreaElement,
 	AbortController,
 	AbortSignal,
 	AnimationEvent,
@@ -318,30 +273,72 @@ export {
 	FormData,
 	GlobalWindow,
 	HTMLAnchorElement,
+	HTMLAreaElement,
 	HTMLAudioElement,
+	HTMLBRElement,
 	HTMLBaseElement,
+	HTMLBodyElement,
 	HTMLButtonElement,
+	HTMLCanvasElement,
 	HTMLCollection,
+	HTMLDListElement,
+	HTMLDataElement,
+	HTMLDataListElement,
+	HTMLDetailsElement,
 	HTMLDialogElement,
+	HTMLDivElement,
 	HTMLDocument,
 	HTMLElement,
+	HTMLEmbedElement,
+	HTMLFieldSetElement,
 	HTMLFormControlsCollection,
 	HTMLFormElement,
+	HTMLHRElement,
+	HTMLHeadElement,
+	HTMLHeadingElement,
+	HTMLHtmlElement,
 	HTMLIFrameElement,
 	HTMLImageElement,
 	HTMLInputElement,
+	HTMLLIElement,
 	HTMLLabelElement,
+	HTMLLegendElement,
 	HTMLLinkElement,
+	HTMLMapElement,
 	HTMLMediaElement,
+	HTMLMenuElement,
 	HTMLMetaElement,
+	HTMLMeterElement,
+	HTMLModElement,
+	HTMLOListElement,
+	HTMLObjectElement,
 	HTMLOptGroupElement,
 	HTMLOptionElement,
+	HTMLOutputElement,
+	HTMLParagraphElement,
+	HTMLParamElement,
+	HTMLPictureElement,
+	HTMLPreElement,
+	HTMLProgressElement,
+	HTMLQuoteElement,
 	HTMLScriptElement,
 	HTMLSelectElement,
 	HTMLSlotElement,
+	HTMLSourceElement,
+	HTMLSpanElement,
 	HTMLStyleElement,
+	HTMLTableCaptionElement,
+	HTMLTableCellElement,
+	HTMLTableColElement,
+	HTMLTableElement,
+	HTMLTableRowElement,
+	HTMLTableSectionElement,
 	HTMLTemplateElement,
 	HTMLTextAreaElement,
+	HTMLTimeElement,
+	HTMLTitleElement,
+	HTMLTrackElement,
+	HTMLUListElement,
 	HTMLUnknownElement,
 	HTMLVideoElement,
 	HashChangeEvent,
