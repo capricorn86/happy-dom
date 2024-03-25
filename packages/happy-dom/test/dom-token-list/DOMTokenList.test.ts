@@ -155,7 +155,16 @@ describe('DOMTokenList', () => {
 	describe('values()', () => {
 		it('A stringifier property that returns the value of the list as a string.', () => {
 			element.className = 'class1 class2 class3';
+			expect(typeof classList.values()[Symbol.iterator]).toEqual('function');
 			expect(Array.from(classList.values())).toEqual(['class1', 'class2', 'class3']);
+		});
+	});
+
+	describe('Iterator', () => {
+		it('A stringifier property that returns the value of the list as a string.', () => {
+			element.className = 'class1 class2 class3';
+			expect(typeof classList[Symbol.iterator]).toEqual('function');
+			expect(Array.from(classList)).toEqual(['class1', 'class2', 'class3']);
 		});
 	});
 
