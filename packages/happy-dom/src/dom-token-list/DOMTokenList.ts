@@ -52,6 +52,13 @@ export default class DOMTokenList {
 	}
 
 	/**
+	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.
+	 */
+	public [Symbol.iterator](): IterableIterator<string> {
+		return this.#getTokenList().values();
+	}
+
+	/**
 	 * Get ClassName.
 	 *
 	 * @param index Index.
