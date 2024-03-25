@@ -45,6 +45,7 @@ import InputEvent from './event/events/InputEvent.js';
 import KeyboardEvent from './event/events/KeyboardEvent.js';
 import MediaQueryListEvent from './event/events/MediaQueryListEvent.js';
 import MouseEvent from './event/events/MouseEvent.js';
+import PointerEvent from './event/events/PointerEvent.js';
 import ProgressEvent from './event/events/ProgressEvent.js';
 import SubmitEvent from './event/events/SubmitEvent.js';
 import TouchEvent from './event/events/TouchEvent.js';
@@ -357,6 +358,7 @@ export {
 	NodeIterator,
 	PermissionStatus,
 	Permissions,
+	PointerEvent,
 	ProcessingInstruction,
 	ProgressEvent,
 	Range,
