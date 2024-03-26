@@ -1376,6 +1376,12 @@ describe('QuerySelector', () => {
 			expect(() => element.matches(':not')).toThrow(
 				new Error(`Failed to execute 'matches' on 'HTMLElement': ':not' is not a valid selector.`)
 			);
+			expect(() => element.matches(':is')).toThrow(
+				new Error(`Failed to execute 'matches' on 'HTMLElement': ':is' is not a valid selector.`)
+			);
+			expect(() => element.matches(':where')).toThrow(
+				new Error(`Failed to execute 'matches' on 'HTMLElement': ':where' is not a valid selector.`)
+			);
 			expect(() => element.matches('div:not')).toThrow(
 				new Error(
 					`Failed to execute 'matches' on 'HTMLElement': 'div:not' is not a valid selector.`
@@ -1389,6 +1395,8 @@ describe('QuerySelector', () => {
 			const element = div.children[0];
 			expect(QuerySelector.matches(element, '1', { ignoreErrors: true })).toBe(null);
 			expect(QuerySelector.matches(element, ':not', { ignoreErrors: true })).toBe(null);
+			expect(QuerySelector.matches(element, ':is', { ignoreErrors: true })).toBe(null);
+			expect(QuerySelector.matches(element, ':where', { ignoreErrors: true })).toBe(null);
 			expect(QuerySelector.matches(element, 'div:not', { ignoreErrors: true })).toBe(null);
 		});
 	});
