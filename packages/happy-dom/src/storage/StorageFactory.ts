@@ -41,7 +41,25 @@ export default class StorageFactory {
 				return storage[PropertySymbol.data][key] !== undefined;
 			},
 			defineProperty(storage: Storage, key: string, descriptor: PropertyDescriptor): boolean {
-				if (Storage.prototype.hasOwnProperty(key) || descriptor.value === undefined) {
+				if (Storage.prototype.hasOwnProperty(key)) {
+					if (descriptor.get || descriptor.set) {
+						Object.defineProperty(storage, key, {
+							...descriptor,
+							get: descriptor.get ? descriptor.get.bind(storage) : undefined,
+							set: descriptor.set ? descriptor.set.bind(storage) : undefined
+						});
+					} else {
+						Object.defineProperty(storage, key, {
+							...descriptor,
+							value:
+								typeof descriptor.value === 'function'
+									? descriptor.value.bind(storage)
+									: descriptor.value
+						});
+					}
+					return true;
+				}
+				if (descriptor.value === undefined) {
 					return false;
 				}
 				storage[PropertySymbol.data][key] = String(descriptor.value);
