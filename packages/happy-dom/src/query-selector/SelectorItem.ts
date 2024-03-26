@@ -138,6 +138,8 @@ export default class SelectorItem {
 				case 'nth-of-type':
 				case 'nth-last-child':
 				case 'nth-last-of-type':
+				case 'is':
+				case 'where':
 					if (!pseudo.arguments) {
 						if (this.ignoreErrors) {
 							return null;
