@@ -1,14 +1,13 @@
-import { GlobalWindow } from 'happy-dom';
+import { GlobalWindow, PropertySymbol } from 'happy-dom';
 import type { IOptionalBrowserSettings } from 'happy-dom';
 
 const IGNORE_LIST = ['constructor', 'undefined', 'NaN', 'global', 'globalThis'];
-const SELF_REFERRING = ['self', 'top', 'parent', 'window'];
 
 /**
  *
  */
 export default class GlobalRegistrator {
-	private static registered: { [key: string]: PropertyDescriptor } | null = null;
+	private static registered: { [key: string | symbol]: PropertyDescriptor } | null = null;
 
 	/**
 	 * Registers Happy DOM globally.
@@ -47,36 +46,38 @@ export default class GlobalRegistrator {
 				) {
 					this.registered[key] = globalPropertyDescriptor || null;
 
-					if (
-						typeof windowPropertyDescriptor.value === 'function' &&
-						!windowPropertyDescriptor.value.toString().startsWith('class ')
-					) {
-						Object.defineProperty(global, key, {
-							...windowPropertyDescriptor,
-							value: windowPropertyDescriptor.value.bind(global)
-						});
-					} else {
-						Object.defineProperty(global, key, windowPropertyDescriptor);
+					if (windowPropertyDescriptor.value === window) {
+						window[key] = global;
+						windowPropertyDescriptor.value = global;
 					}
+
+					Object.defineProperty(global, key, windowPropertyDescriptor);
 				}
 			}
 		}
 
-		for (const key of SELF_REFERRING) {
+		const propertySymbols = Object.getOwnPropertySymbols(window);
+		for (const key of propertySymbols) {
+			const propertyDescriptor = Object.getOwnPropertyDescriptor(window, key);
 			this.registered[key] = null;
-			global[key] = global;
+			Object.defineProperty(global, key, propertyDescriptor);
 		}
+
+		global.document[PropertySymbol.ownerWindow] = global;
+		global.document[PropertySymbol.defaultView] = global;
 	}
 
 	/**
 	 * Registers Happy DOM globally.
 	 */
-	public static unregister(): void {
+	public static async unregister(): Promise<void> {
 		if (this.registered === null) {
 			throw new Error(
 				'Failed to unregister. Happy DOM has not previously been globally registered.'
 			);
 		}
+
+		const happyDOM = global.happyDOM;
 
 		for (const key of Object.keys(this.registered)) {
 			if (this.registered[key] !== null) {
@@ -87,5 +88,9 @@ export default class GlobalRegistrator {
 		}
 
 		this.registered = null;
+
+		if (happyDOM) {
+			await happyDOM.close();
+		}
 	}
 }

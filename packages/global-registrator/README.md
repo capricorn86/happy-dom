@@ -32,7 +32,7 @@ import { GlobalRegistrator } from '@happy-dom/global-registrator';
 
 GlobalRegistrator.register();
 
-GlobalRegistrator.unregister();
+await GlobalRegistrator.unregister();
 
 // Outputs: "undefined"
 console.log(global.document);
