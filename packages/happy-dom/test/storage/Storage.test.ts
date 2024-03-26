@@ -1,6 +1,6 @@
 import Storage from '../../src/storage/Storage.js';
 import StorageFactory from '../../src/storage/StorageFactory.js';
-import { beforeEach, describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 
 describe('Storage', () => {
 	let storage: Storage;
@@ -138,6 +138,14 @@ describe('Storage', () => {
 			expect(storage.getItem('key2')).toBe(null);
 			expect(storage['key1']).toBe(undefined);
 			expect(storage['key2']).toBe(undefined);
+		});
+	});
+
+	describe('vi.spyOn()', () => {
+		it('Should spy on a method.', () => {
+			const spy = vi.spyOn(storage, 'getItem');
+			storage.getItem('key1');
+			expect(spy).toHaveBeenCalled();
 		});
 	});
 });
