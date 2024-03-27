@@ -748,6 +748,42 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.color).toBe('green');
 		});
 
+		it('Handles variables in style attributes.', () => {
+			const div = document.createElement('div');
+			div.setAttribute('style', '--my-color1: pink;');
+
+			const style = document.createElement('style');
+
+			style.textContent = `
+              div {
+                border-color: var(--my-color1);
+              }
+            `;
+
+			document.head.appendChild(style);
+			document.body.appendChild(div);
+
+			expect(window.getComputedStyle(div).getPropertyValue('border-color')).toBe('pink');
+		});
+
+		it('Handles variables in root of style.', () => {
+			const div = document.createElement('div');
+			const style = document.createElement('style');
+
+			style.textContent = `
+              div {
+                border-color: var(--my-color1);
+              }
+
+              --my-color1: pink;
+            `;
+
+			document.head.appendChild(style);
+			document.body.appendChild(div);
+
+			expect(window.getComputedStyle(div).getPropertyValue('border-color')).toBe('pink');
+		});
+
 		it('Ingores invalid selectors in parsed CSS.', () => {
 			const parent = document.createElement('div');
 			const element = document.createElement('span');
