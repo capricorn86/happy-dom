@@ -1,4 +1,5 @@
 import { URLSearchParams } from 'url';
+import * as PropertySymbol from './PropertySymbol.js';
 import Browser from './browser/Browser.js';
 import BrowserContext from './browser/BrowserContext.js';
 import BrowserFrame from './browser/BrowserFrame.js';
@@ -60,6 +61,7 @@ import File from './file/File.js';
 import FileReader from './file/FileReader.js';
 import FormData from './form-data/FormData.js';
 import History from './history/History.js';
+import Location from './location/Location.js';
 import MutationObserver from './mutation-observer/MutationObserver.js';
 import MutationRecord from './mutation-observer/MutationRecord.js';
 import Attr from './nodes/attr/Attr.js';
@@ -117,9 +119,9 @@ import Storage from './storage/Storage.js';
 import NodeFilter from './tree-walker/NodeFilter.js';
 import NodeIterator from './tree-walker/NodeIterator.js';
 import TreeWalker from './tree-walker/TreeWalker.js';
-import Location from './location/Location.js';
 import URL from './url/URL.js';
 import BrowserWindow from './window/BrowserWindow.js';
+import DetachedWindowAPI from './window/DetachedWindowAPI.js';
 import GlobalWindow from './window/GlobalWindow.js';
 import Window from './window/Window.js';
 import XMLParser from './xml-parser/XMLParser.js';
@@ -216,6 +218,7 @@ export {
 	DetachedBrowserContext,
 	DetachedBrowserFrame,
 	DetachedBrowserPage,
+	DetachedWindowAPI,
 	Document,
 	DocumentFragment,
 	DocumentType,
@@ -322,6 +325,7 @@ export {
 	Permissions,
 	ProcessingInstruction,
 	ProgressEvent,
+	PropertySymbol,
 	Range,
 	Request,
 	ResizeObserver,

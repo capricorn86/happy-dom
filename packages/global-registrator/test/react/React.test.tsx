@@ -41,6 +41,7 @@ async function main(): Promise<void> {
 	function testGetters(): void {
 		const included: string[] = [];
 		const propertyNames = Object.getOwnPropertyNames(global);
+
 		for (const name of GETTERS) {
 			if (propertyNames.includes(name)) {
 				included.push(name);
@@ -122,6 +123,31 @@ async function main(): Promise<void> {
 	testLocationHref();
 
 	/**
+	 * Test CSS.
+	 */
+	function testCSS(): void {
+		const style = document.createElement('style');
+		document.head.appendChild(style);
+		style.innerHTML = `
+            body {
+                background-color: red;
+            }
+
+            @media (min-width: 1000px) {
+                body {
+                    background-color: green;
+                }
+            }
+        `;
+
+		if (globalThis.getComputedStyle(document.body).backgroundColor !== 'green') {
+			throw Error('The CSS was not applied correctly.');
+		}
+	}
+
+	testCSS();
+
+	/**
 	 * Unregisters Happy DOM globally.
 	 */
 	GlobalRegistrator.unregister();
@@ -132,6 +158,7 @@ async function main(): Promise<void> {
 	function testGettersAfterUnregister(): void {
 		const included: string[] = [];
 		const propertyNames = Object.getOwnPropertyNames(global);
+
 		for (const name of GETTERS) {
 			if (propertyNames.includes(name)) {
 				included.push(name);
@@ -140,7 +167,7 @@ async function main(): Promise<void> {
 
 		if (included.length !== 0) {
 			throw Error(
-				'Object.getOwnPropertyNames() did not remove all properties defined as getter. Expected: []. Got: ' +
+				'GlobalObserver.unregister() did not remove all properties defined as getter. Expected: []. Got: ' +
 					included.join(', ') +
 					'.'
 			);

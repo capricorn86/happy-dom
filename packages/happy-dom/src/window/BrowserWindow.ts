@@ -531,34 +531,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 
 		WindowBrowserSettingsReader.setSettings(this, this.#browserFrame.page.context.browser.settings);
 
-		// Binds getts and setters, so that they will appear as an "own" property when using Object.getOwnPropertyNames().
-		// This is needed for Vitest to work as it relies on Object.getOwnPropertyNames() to get the list of properties.
-		// @see https://github.com/capricorn86/happy-dom/issues/1339
-		// Binds all methods to "this", so that it will use the correct context when called globally.
-		const propertyDescriptors = Object.assign(
-			Object.getOwnPropertyDescriptors(EventTarget.prototype),
-			Object.getOwnPropertyDescriptors(BrowserWindow.prototype)
-		);
-		for (const key of Object.keys(propertyDescriptors)) {
-			const descriptor = propertyDescriptors[key];
-			if (descriptor.get || descriptor.set) {
-				Object.defineProperty(this, key, {
-					configurable: true,
-					enumerable: true,
-					get: descriptor.get?.bind(this),
-					set: descriptor.set?.bind(this)
-				});
-			} else if (
-				key !== 'constructor' &&
-				key[0] !== '_' &&
-				key[0] === key[0].toLowerCase() &&
-				typeof this[key] === 'function' &&
-				!this[key].toString().startsWith('class ')
-			) {
-				this[key] = this[key].bind(this);
-			}
-		}
-
 		const window = this;
 		const asyncTaskManager = this.#browserFrame[PropertySymbol.asyncTaskManager];
 
@@ -686,6 +658,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			this.document.dispatchEvent(new Event('readystatechange'));
 			this.document.dispatchEvent(new Event('load', { bubbles: true }));
 		});
+
+		this.#bindToThisScope();
 	}
 
 	/**
@@ -1348,5 +1322,39 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this.document[PropertySymbol.selection] = null;
 
 		WindowBrowserSettingsReader.removeSettings(this);
+	}
+
+	/**
+	 * Binds methods, getters and setters to a scope.
+	 *
+	 * Getters and setters need to be bound to show up in Object.getOwnPropertyNames(), which is something Vitest relies on.
+	 *
+	 * @see https://github.com/capricorn86/happy-dom/issues/1339
+	 */
+	#bindToThisScope(): void {
+		const propertyDescriptors = Object.assign(
+			Object.getOwnPropertyDescriptors(EventTarget.prototype),
+			Object.getOwnPropertyDescriptors(BrowserWindow.prototype)
+		);
+
+		for (const key of Object.keys(propertyDescriptors)) {
+			const descriptor = propertyDescriptors[key];
+			if (descriptor.get || descriptor.set) {
+				Object.defineProperty(this, key, {
+					configurable: true,
+					enumerable: true,
+					get: descriptor.get?.bind(this),
+					set: descriptor.set?.bind(this)
+				});
+			} else if (
+				key !== 'constructor' &&
+				key[0] !== '_' &&
+				key[0] === key[0].toLowerCase() &&
+				typeof this[key] === 'function' &&
+				!this[key].toString().startsWith('class ')
+			) {
+				this[key] = this[key].bind(this);
+			}
+		}
 	}
 }
