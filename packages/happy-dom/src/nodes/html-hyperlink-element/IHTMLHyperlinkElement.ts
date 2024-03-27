@@ -4,7 +4,7 @@
  * Reference:
  * https://html.spec.whatwg.org/multipage/links.html#htmlhyperlinkelementutils.
  */
-export default interface IHTMLHyperlinkElementUtils {
+export default interface IHTMLHyperlinkElement {
 	readonly origin: string;
 	href: string;
 	protocol: string;
