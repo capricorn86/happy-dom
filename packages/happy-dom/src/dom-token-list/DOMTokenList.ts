@@ -42,6 +42,7 @@ export default class DOMTokenList {
 	 */
 	public set value(value: string) {
 		this.#ownerElement.setAttribute(this.#attributeName, value);
+		this[PropertySymbol.updateIndices]();
 	}
 
 	/**

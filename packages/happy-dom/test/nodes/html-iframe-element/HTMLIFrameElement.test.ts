@@ -1,6 +1,5 @@
 import Window from '../../../src/window/Window.js';
 import BrowserWindow from '../../../src/window/BrowserWindow.js';
-import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import HTMLIFrameElement from '../../../src/nodes/html-iframe-element/HTMLIFrameElement.js';
 import Response from '../../../src/fetch/Response.js';
@@ -13,6 +12,7 @@ import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest';
 import IRequestInfo from '../../../src/fetch/types/IRequestInfo.js';
 import Headers from '../../../src/fetch/Headers.js';
 import Browser from '../../../src/browser/Browser.js';
+import DOMTokenList from '../../../src/dom-token-list/DOMTokenList.js';
 
 describe('HTMLIFrameElement', () => {
 	let window: Window;
@@ -39,7 +39,9 @@ describe('HTMLIFrameElement', () => {
 		describe(`get ${property}()`, () => {
 			it(`Returns the "${property}" attribute.`, () => {
 				element.setAttribute(property, 'value');
-				expect(element[property]).toBe('value');
+				if (property !== 'sandbox') {
+					expect(element[property]).toBe('value');
+				}
 			});
 		});
 
@@ -50,6 +52,34 @@ describe('HTMLIFrameElement', () => {
 			});
 		});
 	}
+
+	describe('sandbox()', () => {
+		it('Returns DOMTokenList', () => {
+			expect(element.sandbox).toBeInstanceOf(DOMTokenList);
+			element.sandbox.add('allow-forms', 'allow-scripts');
+			expect(element.sandbox.toString()).toBe('allow-forms allow-scripts');
+		});
+		it('Console error occurs when add an invalid sandbox flag', () => {
+			const errorlog = vi.fn();
+			vi.spyOn(window.console, 'error').mockImplementation(errorlog);
+			element.sandbox.add('allow-form'); // should be allow-forms
+			expect(errorlog).toBeCalledWith(
+				`while parsing the 'sandbox' attribute: 'allow-form' is an invalid sandbox flag.`
+			);
+		});
+		it('Console error occurs when set "sandbox" with an invalid string', () => {
+			const errorlog = vi.fn();
+			vi.spyOn(window.console, 'error').mockImplementation(errorlog);
+			element.sandbox = 'random attrs';
+			expect(element.sandbox.item(0)).toBe('random');
+			expect(element.getAttribute('sandbox')).toBe('random attrs');
+			expect(errorlog).toBeCalledWith(
+				`while parsing the 'sandbox' attribute: 'random', 'attrs' are invalid sandbox flags.`
+			);
+			element.sandbox.value = 'update flags';
+			expect(element.sandbox[1]).toBe('flags');
+		});
+	});
 
 	describe('get contentWindow()', () => {
 		it('Returns content window for "about:blank".', () => {
