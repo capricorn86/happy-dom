@@ -1,6 +1,6 @@
 import ShadowRoot from '../../../nodes/shadow-root/ShadowRoot.js';
 import * as PropertySymbol from '../../../PropertySymbol.js';
-import HTMLElement from '../../../nodes/html-element/HTMLElement.js';
+import Element from '../../../nodes/element/Element.js';
 import Document from '../../../nodes/document/Document.js';
 import HTMLStyleElement from '../../../nodes/html-style-element/HTMLStyleElement.js';
 import NodeList from '../../../nodes/node/NodeList.js';
@@ -23,7 +23,7 @@ const CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+)\)|var\( *(--[^), ]+), *([^), ]+)
 const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
 
 type IStyleAndElement = {
-	element: HTMLElement | ShadowRoot | Document;
+	element: Element | ShadowRoot | Document;
 	cssTexts: Array<{ cssText: string; priorityWeight: number }>;
 };
 
@@ -41,7 +41,7 @@ export default class CSSStyleDeclarationElementStyle {
 		documentCacheID: null
 	};
 
-	private element: HTMLElement;
+	private element: Element;
 	private computed: boolean;
 
 	/**
@@ -50,7 +50,7 @@ export default class CSSStyleDeclarationElementStyle {
 	 * @param element Element.
 	 * @param [computed] Computed.
 	 */
-	constructor(element: HTMLElement, computed = false) {
+	constructor(element: Element, computed = false) {
 		this.element = element;
 		this.computed = computed;
 	}
@@ -89,7 +89,7 @@ export default class CSSStyleDeclarationElementStyle {
 		const documentElements: Array<IStyleAndElement> = [];
 		const parentElements: Array<IStyleAndElement> = [];
 		let styleAndElement: IStyleAndElement = {
-			element: <HTMLElement | ShadowRoot | Document>this.element,
+			element: <Element | ShadowRoot | Document>this.element,
 			cssTexts: []
 		};
 		let shadowRootElements: Array<IStyleAndElement> = [];
@@ -163,7 +163,7 @@ export default class CSSStyleDeclarationElementStyle {
 				);
 
 				styleAndElement = {
-					element: <HTMLElement>shadowRoot.host,
+					element: <Element>shadowRoot.host,
 					cssTexts: []
 				};
 
@@ -189,7 +189,7 @@ export default class CSSStyleDeclarationElementStyle {
 				shadowRootElements = [];
 			} else {
 				styleAndElement = {
-					element: <HTMLElement>styleAndElement.element[PropertySymbol.parentNode],
+					element: <Element>styleAndElement.element[PropertySymbol.parentNode],
 					cssTexts: []
 				};
 			}
@@ -208,35 +208,35 @@ export default class CSSStyleDeclarationElementStyle {
 			let elementCSSText = '';
 			if (
 				CSSStyleDeclarationElementDefaultCSS[
-					(<HTMLElement>parentElement.element)[PropertySymbol.tagName]
+					(<Element>parentElement.element)[PropertySymbol.tagName]
 				]
 			) {
 				if (
 					typeof CSSStyleDeclarationElementDefaultCSS[
-						(<HTMLElement>parentElement.element)[PropertySymbol.tagName]
+						(<Element>parentElement.element)[PropertySymbol.tagName]
 					] === 'string'
 				) {
 					elementCSSText +=
 						CSSStyleDeclarationElementDefaultCSS[
-							(<HTMLElement>parentElement.element)[PropertySymbol.tagName]
+							(<Element>parentElement.element)[PropertySymbol.tagName]
 						];
 				} else {
 					for (const key of Object.keys(
 						CSSStyleDeclarationElementDefaultCSS[
-							(<HTMLElement>parentElement.element)[PropertySymbol.tagName]
+							(<Element>parentElement.element)[PropertySymbol.tagName]
 						]
 					)) {
 						if (key === 'default' || !!parentElement.element[key]) {
 							elementCSSText +=
 								CSSStyleDeclarationElementDefaultCSS[
-									(<HTMLElement>parentElement.element)[PropertySymbol.tagName]
+									(<Element>parentElement.element)[PropertySymbol.tagName]
 								][key];
 						}
 					}
 				}
 				elementCSSText +=
 					CSSStyleDeclarationElementDefaultCSS[
-						(<HTMLElement>parentElement.element)[PropertySymbol.tagName]
+						(<Element>parentElement.element)[PropertySymbol.tagName]
 					];
 			}
 
@@ -244,7 +244,7 @@ export default class CSSStyleDeclarationElementStyle {
 				elementCSSText += cssText.cssText;
 			}
 
-			const elementStyleAttribute = (<HTMLElement>parentElement.element)[PropertySymbol.attributes][
+			const elementStyleAttribute = (<Element>parentElement.element)[PropertySymbol.attributes][
 				'style'
 			];
 
@@ -276,7 +276,7 @@ export default class CSSStyleDeclarationElementStyle {
 									parentFontSize,
 									parentSize: parentFontSize
 								});
-								if ((<HTMLElement>parentElement.element)[PropertySymbol.tagName] === 'HTML') {
+								if ((<Element>parentElement.element)[PropertySymbol.tagName] === 'HTML') {
 									rootFontSize = parsedValue;
 								} else if (parentElement !== targetElement) {
 									parentFontSize = parsedValue;
@@ -348,7 +348,7 @@ export default class CSSStyleDeclarationElementStyle {
 						}
 					} else {
 						for (const element of options.elements) {
-							const match = QuerySelector.matches(<HTMLElement>element.element, selectorText, {
+							const match = QuerySelector.matches(<Element>element.element, selectorText, {
 								ignoreErrors: true
 							});
 							if (match) {
