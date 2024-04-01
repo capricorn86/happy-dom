@@ -750,6 +750,7 @@ describe('BrowserWindow', () => {
 
 		it('Handles variables in style attributes.', () => {
 			const div = document.createElement('div');
+
 			div.setAttribute('style', '--my-color1: pink;');
 
 			const style = document.createElement('style');
@@ -766,16 +767,17 @@ describe('BrowserWindow', () => {
 			expect(window.getComputedStyle(div).getPropertyValue('border-color')).toBe('pink');
 		});
 
-		it('Handles variables in root of style.', () => {
+		it('Handles variables in root pseudo element (:root).', () => {
 			const div = document.createElement('div');
 			const style = document.createElement('style');
 
 			style.textContent = `
+              :root {
+                --my-color1: pink;
+              }
               div {
                 border-color: var(--my-color1);
               }
-
-              --my-color1: pink;
             `;
 
 			document.head.appendChild(style);

@@ -158,3 +158,4 @@ export const navigator = Symbol('navigator');
 export const screen = Symbol('screen');
 export const sessionStorage = Symbol('sessionStorage');
 export const localStorage = Symbol('localStorage');
+export const cssProperties = Symbol('cssProperties');
