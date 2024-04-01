@@ -19,14 +19,6 @@ import CSSMeasurementConverter from '../measurement-converter/CSSMeasurementConv
 import MediaQueryList from '../../../match-media/MediaQueryList.js';
 import WindowBrowserSettingsReader from '../../../window/WindowBrowserSettingsReader.js';
 
-// Groups:
-// Property name   => \s*([^:;]+?)\s*:
-// Property value  => \s*((?:[^(;]*?(?:\([^)]*\))?)*?) <- will match any non ';' char except inside (), nested parentheses are not supported
-// Important ("!important") => \s*(!important)?
-// End of rule  => \s*(?:$|;)
-const SPLIT_RULES_REGEXP =
-	/\s*([^:;]+?)\s*:\s*((?:[^(;]*?(?:\([^)]*\))?)*?)\s*(!important)?\s*(?:$|;)/g;
-
 const CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+)\)|var\( *(--[^), ]+), *([^), ]+)\)/;
 const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
 
