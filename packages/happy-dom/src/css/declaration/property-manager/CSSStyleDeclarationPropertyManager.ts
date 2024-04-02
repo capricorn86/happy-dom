@@ -30,11 +30,12 @@ export default class CSSStyleDeclarationPropertyManager {
 	 */
 	constructor(options?: { cssText?: string }) {
 		if (options?.cssText) {
-			CSSStyleDeclarationCSSParser.parse(options.cssText, (name, value, important) => {
-				if (important || !this.get(name)?.important) {
-					this.set(name, value, important);
+			const { rules } = CSSStyleDeclarationCSSParser.parse(options.cssText);
+			for (const rule of rules) {
+				if (rule.important || !this.get(rule.name)?.important) {
+					this.set(rule.name, rule.value, rule.important);
 				}
-			});
+			}
 		}
 	}
 
