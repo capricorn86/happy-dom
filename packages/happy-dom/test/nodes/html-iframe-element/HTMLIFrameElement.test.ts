@@ -39,6 +39,7 @@ describe('HTMLIFrameElement', () => {
 		describe(`get ${property}()`, () => {
 			it(`Returns the "${property}" attribute.`, () => {
 				element.setAttribute(property, 'value');
+				expect(element[property]).toBe('value');
 			});
 		});
 
