@@ -35,8 +35,6 @@ import IParentNode from '../parent-node/IParentNode.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
-export const afterSetAttribute = Symbol('afterSetAttribute');
-
 /**
  * Element.
  */
@@ -661,14 +659,7 @@ export default class Element
 		const attribute = this[PropertySymbol.ownerDocument].createAttributeNS(null, name);
 		attribute[PropertySymbol.value] = String(value);
 		this.setAttributeNode(attribute);
-		this[afterSetAttribute]?.(name, value);
 	}
-	/**
-	 * Invoked after setAttribute()
-	 * @param _name
-	 * @param _value
-	 */
-	public [afterSetAttribute](_name: string, _value: string): void {}
 
 	/**
 	 * Sets a namespace attribute.

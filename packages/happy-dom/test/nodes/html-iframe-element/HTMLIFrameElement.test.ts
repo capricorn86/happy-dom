@@ -35,13 +35,10 @@ describe('HTMLIFrameElement', () => {
 		});
 	});
 
-	for (const property of ['src', 'allow', 'height', 'width', 'name', 'sandbox', 'srcdoc']) {
+	for (const property of ['src', 'allow', 'height', 'width', 'name', 'srcdoc']) {
 		describe(`get ${property}()`, () => {
 			it(`Returns the "${property}" attribute.`, () => {
 				element.setAttribute(property, 'value');
-				if (property !== 'sandbox') {
-					expect(element[property]).toBe('value');
-				}
 			});
 		});
 
@@ -53,31 +50,78 @@ describe('HTMLIFrameElement', () => {
 		});
 	}
 
-	describe('sandbox()', () => {
+	describe('get sandbox()', () => {
 		it('Returns DOMTokenList', () => {
 			expect(element.sandbox).toBeInstanceOf(DOMTokenList);
 			element.sandbox.add('allow-forms', 'allow-scripts');
 			expect(element.sandbox.toString()).toBe('allow-forms allow-scripts');
 		});
-		it('Console error occurs when add an invalid sandbox flag', () => {
-			const errorlog = vi.fn();
-			vi.spyOn(window.console, 'error').mockImplementation(errorlog);
-			element.sandbox.add('allow-form'); // should be allow-forms
-			expect(errorlog).toBeCalledWith(
-				`while parsing the 'sandbox' attribute: 'allow-form' is an invalid sandbox flag.`
+
+		it('Returns values from attribute', () => {
+			element.setAttribute('sandbox', 'allow-forms allow-scripts');
+			expect(element.sandbox.toString()).toBe('allow-forms allow-scripts');
+		});
+	});
+
+	describe('set sandbox()', () => {
+		it('Sets attribute', () => {
+			element.sandbox = 'allow-forms allow-scripts';
+			expect(element.getAttribute('sandbox')).toBe('allow-forms allow-scripts');
+
+			element.sandbox =
+				'allow-downloads allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-top-navigation allow-top-navigation-by-user-activation allow-top-navigation-to-custom-protocols';
+			expect(element.sandbox.toString()).toBe(
+				'allow-downloads allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-top-navigation allow-top-navigation-by-user-activation allow-top-navigation-to-custom-protocols'
 			);
 		});
-		it('Console error occurs when set "sandbox" with an invalid string', () => {
-			const errorlog = vi.fn();
-			vi.spyOn(window.console, 'error').mockImplementation(errorlog);
-			element.sandbox = 'random attrs';
-			expect(element.sandbox.item(0)).toBe('random');
-			expect(element.getAttribute('sandbox')).toBe('random attrs');
-			expect(errorlog).toBeCalledWith(
-				`while parsing the 'sandbox' attribute: 'random', 'attrs' are invalid sandbox flags.`
+
+		it('Updates the DOMTokenList indicies when setting the sandbox attribute', () => {
+			element.sandbox = 'allow-forms allow-scripts';
+			expect(element.sandbox.length).toBe(2);
+			expect(element.sandbox[0]).toBe('allow-forms');
+			expect(element.sandbox[1]).toBe('allow-scripts');
+
+			element.sandbox = 'allow-scripts allow-forms';
+			expect(element.sandbox.length).toBe(2);
+			expect(element.sandbox[0]).toBe('allow-scripts');
+			expect(element.sandbox[1]).toBe('allow-forms');
+
+			element.sandbox = 'allow-forms';
+			expect(element.sandbox.length).toBe(1);
+			expect(element.sandbox[0]).toBe('allow-forms');
+			expect(element.sandbox[1]).toBe(undefined);
+
+			element.sandbox = '';
+
+			expect(element.sandbox.length).toBe(0);
+			expect(element.sandbox[0]).toBe(undefined);
+
+			element.sandbox = 'allow-forms allow-scripts allow-forms';
+			expect(element.sandbox.length).toBe(2);
+			expect(element.sandbox[0]).toBe('allow-forms');
+			expect(element.sandbox[1]).toBe('allow-scripts');
+
+			element.sandbox = 'allow-forms allow-scripts allow-modals';
+			expect(element.sandbox.length).toBe(3);
+			expect(element.sandbox[0]).toBe('allow-forms');
+			expect(element.sandbox[1]).toBe('allow-scripts');
+			expect(element.sandbox[2]).toBe('allow-modals');
+		});
+
+		it('Console error occurs when add an invalid sandbox flag', () => {
+			element.sandbox = 'invalid';
+			expect(window.happyDOM.virtualConsolePrinter.readAsString()).toBe(
+				`Error while parsing the 'sandbox' attribute: 'invalid' is an invalid sandbox flag.\n`
 			);
-			element.sandbox.value = 'update flags';
-			expect(element.sandbox[1]).toBe('flags');
+			expect(element.sandbox.toString()).toBe('invalid');
+			expect(element.getAttribute('sandbox')).toBe('invalid');
+
+			element.setAttribute('sandbox', 'first-invalid second-invalid');
+			expect(window.happyDOM.virtualConsolePrinter.readAsString()).toBe(
+				`Error while parsing the 'sandbox' attribute: 'first-invalid', 'second-invalid' are invalid sandbox flags.\n`
+			);
+			expect(element.sandbox.toString()).toBe('first-invalid second-invalid');
+			expect(element.getAttribute('sandbox')).toBe('first-invalid second-invalid');
 		});
 	});
 

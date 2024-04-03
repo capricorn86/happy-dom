@@ -10,42 +10,6 @@ import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import HTMLIFrameElementPageLoader from './HTMLIFrameElementPageLoader.js';
 import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
-import { afterSetAttribute } from '../element/Element.js';
-
-const sandboxFlags = [
-	'allow-downloads',
-	'allow-forms',
-	'allow-modals',
-	'allow-orientation-lock',
-	'allow-pointer-lock',
-	'allow-popups',
-	'allow-popups-to-escape-sandbox',
-	'allow-presentation',
-	'allow-same-origin',
-	'allow-scripts',
-	'allow-top-navigation',
-	'allow-top-navigation-by-user-activation',
-	'allow-top-navigation-to-custom-protocols'
-];
-
-function checkSandboxFlags(tokens: DOMTokenList, vconsole: Console): void {
-	const values = tokens.values();
-	const invalidFlags: string[] = [];
-	for (const token of values) {
-		if (!sandboxFlags.includes(token)) {
-			invalidFlags.push(token);
-		}
-	}
-	if (invalidFlags.length > 0) {
-		/* eslint-disable-next-line no-console */
-		vconsole.error(
-			`while parsing the 'sandbox' attribute: ` +
-				(invalidFlags.length === 1
-					? `'${invalidFlags[0]}' is an invalid sandbox flag.`
-					: `${invalidFlags.map((f) => `'${f}'`).join(', ')} are invalid sandbox flags.`)
-		);
-	}
-}
 
 /**
  * HTML Iframe Element.
@@ -60,13 +24,12 @@ export default class HTMLIFrameElement extends HTMLElement {
 
 	// Internal properties
 	public override [PropertySymbol.attributes]: NamedNodeMap;
-	private [PropertySymbol.sandbox]: DOMTokenList = null;
+	public [PropertySymbol.sandbox]: DOMTokenList = null;
 	// Private properties
 	#contentWindowContainer: { window: BrowserWindow | CrossOriginBrowserWindow | null } = {
 		window: null
 	};
 	#pageLoader: HTMLIFrameElementPageLoader;
-	#console: Console;
 
 	/**
 	 * Constructor.
@@ -81,7 +44,6 @@ export default class HTMLIFrameElement extends HTMLElement {
 			browserParentFrame: browserFrame
 		});
 		this[PropertySymbol.attributes] = new HTMLIFrameElementNamedNodeMap(this, this.#pageLoader);
-		this.#console = browserFrame.page.console;
 	}
 
 	/**
@@ -189,10 +151,8 @@ export default class HTMLIFrameElement extends HTMLElement {
 	/**
 	 * Sets sandbox.
 	 */
-	public set sandbox(domString: string) {
-		const tokens = new DOMTokenList(this, 'sandbox');
-		this[PropertySymbol.sandbox] = tokens;
-		tokens.value = domString;
+	public set sandbox(sandbox: string) {
+		this.setAttribute('sandbox', sandbox);
 	}
 
 	/**
@@ -274,16 +234,5 @@ export default class HTMLIFrameElement extends HTMLElement {
 	 */
 	public cloneNode(deep = false): HTMLIFrameElement {
 		return <HTMLIFrameElement>super.cloneNode(deep);
-	}
-
-	/**
-	 * after sandbox attribute have been set
-	 * @override
-	 * @param name
-	 */
-	public [afterSetAttribute](name: string): void {
-		if (name === 'sandbox' && this[PropertySymbol.sandbox] !== null) {
-			checkSandboxFlags(this[PropertySymbol.sandbox], this.#console);
-		}
 	}
 }
