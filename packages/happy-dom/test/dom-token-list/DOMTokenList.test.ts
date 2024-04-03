@@ -85,6 +85,7 @@ describe('DOMTokenList', () => {
 		it('Sets the attribute value.', () => {
 			classList.value = 'class1 class2 class3';
 			expect(element.className).toBe('class1 class2 class3');
+			expect(classList[2]).toBe('class3');
 		});
 	});
 
