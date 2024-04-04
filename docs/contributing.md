@@ -22,7 +22,37 @@ npm run compile
 npm run watch
 ```
 
-### Debugging
+### Test
+
+**Install Bun**
+
+To be able to run all tests in the "./packages/global-registrator" package, you need to install [Bun](https://bun.sh/).
+
+Linux & MacOS
+
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
+
+Windows
+
+```bash
+powershell -c "irm bun.sh/install.ps1 | iex"
+```
+
+**Run tests**
+
+```bash
+npm test
+```
+
+**Watch tests**
+
+```bash
+npm run test:watch
+```
+
+### Debug
 
 1. Go to the package you wish to test in the terminal (e.g. "cd ./packages/happy-dom")
 2. Write "debugger;" at the place you want to place a breakpoint in the code.
@@ -37,20 +67,6 @@ npm run test:debug
 6. A green ball should appear to the left of the menu bar in developer tools.
 7. Click on the green ball.
 8. Click continue to jump to your breakpoint.
-
-### Automated Tests
-
-**Run tests**
-
-```bash
-npm test
-```
-
-**Watch tests**
-
-```bash
-npm run test:watch
-```
 
 # Commit Convention
 

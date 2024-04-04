@@ -50,11 +50,7 @@ async function main(): Promise<void> {
 
 		if (included.length !== GETTERS.length) {
 			throw Error(
-				'Object.getOwnPropertyNames() did not return all properties defined as getter. Expected: ' +
-					GETTERS.join(', ') +
-					'. Got: ' +
-					included.join(', ') +
-					'.'
+				`Object.getOwnPropertyNames() did not return all properties defined as getter. Expected: "${GETTERS.join(', ')}", Got: "${included.join(', ')}".`
 			);
 		}
 	}
@@ -165,11 +161,14 @@ async function main(): Promise<void> {
 			}
 		}
 
-		if (included.length !== 0) {
+		// In Node.js v21 and later, the navigator property is available.
+		if (!included.includes('navigator')) {
+			included.push('navigator');
+		}
+
+		if (included.length !== 1 || included[0] !== 'navigator') {
 			throw Error(
-				'GlobalObserver.unregister() did not remove all properties defined as getter. Expected: []. Got: ' +
-					included.join(', ') +
-					'.'
+				`GlobalObserver.unregister() did not remove all properties defined as getter. Expected: "navigator", Got: "${included.join(', ')}".`
 			);
 		}
 	}

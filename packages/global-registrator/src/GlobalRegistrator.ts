@@ -32,6 +32,7 @@ export default class GlobalRegistrator {
 
 		this.registered = {};
 
+		// Define properties on the global object
 		const propertyDescriptors = Object.getOwnPropertyDescriptors(window);
 
 		for (const key of Object.keys(propertyDescriptors)) {
@@ -40,35 +41,44 @@ export default class GlobalRegistrator {
 				const globalPropertyDescriptor = Object.getOwnPropertyDescriptor(global, key);
 
 				if (
-					!globalPropertyDescriptor ||
-					(windowPropertyDescriptor.value !== undefined &&
-						windowPropertyDescriptor.value !== globalPropertyDescriptor.value)
+					globalPropertyDescriptor?.value === undefined ||
+					globalPropertyDescriptor?.value !== windowPropertyDescriptor.value
 				) {
 					this.registered[key] = globalPropertyDescriptor || null;
 
+					// If the property is the window object, replace it with the global object
 					if (windowPropertyDescriptor.value === window) {
 						window[key] = global;
 						windowPropertyDescriptor.value = global;
 					}
 
-					Object.defineProperty(global, key, windowPropertyDescriptor);
+					Object.defineProperty(global, key, {
+						...windowPropertyDescriptor,
+						configurable: true
+					});
 				}
 			}
 		}
 
+		// Define symbol properties on the global object
 		const propertySymbols = Object.getOwnPropertySymbols(window);
+
 		for (const key of propertySymbols) {
 			const propertyDescriptor = Object.getOwnPropertyDescriptor(window, key);
 			this.registered[key] = null;
-			Object.defineProperty(global, key, propertyDescriptor);
+			Object.defineProperty(global, key, {
+				...propertyDescriptor,
+				configurable: true
+			});
 		}
 
+		// Set owner window on document to global
 		global.document[PropertySymbol.ownerWindow] = global;
 		global.document[PropertySymbol.defaultView] = global;
 	}
 
 	/**
-	 * Registers Happy DOM globally.
+	 * Closes the window and unregisters Happy DOM from being global.
 	 */
 	public static async unregister(): Promise<void> {
 		if (this.registered === null) {
