@@ -304,29 +304,50 @@ export default class Request implements Request {
 	 * @returns FormData.
 	 */
 	public async formData(): Promise<FormData> {
-		if (this.bodyUsed) {
-			throw new DOMException(
-				`Body has already been used for "${this.url}".`,
-				DOMExceptionNameEnum.invalidStateError
-			);
+		const contentType = this[PropertySymbol.contentType];
+		const asyncTaskManager = this.#asyncTaskManager;
+
+		if (/multipart/i.test(contentType)) {
+			if (this.bodyUsed) {
+				throw new DOMException(
+					`Body has already been used for "${this.url}".`,
+					DOMExceptionNameEnum.invalidStateError
+				);
+			}
+
+			(<boolean>this.bodyUsed) = true;
+
+			const taskID = asyncTaskManager.startTask(() => this.signal[PropertySymbol.abort]());
+			let formData: FormData;
+
+			try {
+				const result = await MultipartFormDataParser.streamToFormData(this.body, contentType);
+				formData = result.formData;
+			} catch (error) {
+				asyncTaskManager.endTask(taskID);
+				throw error;
+			}
+
+			asyncTaskManager.endTask(taskID);
+
+			return formData;
 		}
 
-		(<boolean>this.bodyUsed) = true;
+		if (contentType?.startsWith('application/x-www-form-urlencoded')) {
+			const parameters = new URLSearchParams(await this.text());
+			const formData = new FormData();
 
-		const taskID = this.#asyncTaskManager.startTask(() => this.signal[PropertySymbol.abort]());
-		let formData: FormData;
+			for (const [key, value] of parameters) {
+				formData.append(key, value);
+			}
 
-		try {
-			const type = this[PropertySymbol.contentType];
-			formData = (await MultipartFormDataParser.streamToFormData(this.body, type)).formData;
-		} catch (error) {
-			this.#asyncTaskManager.endTask(taskID);
-			throw error;
+			return formData;
 		}
 
-		this.#asyncTaskManager.endTask(taskID);
-
-		return formData;
+		throw new DOMException(
+			`Failed to construct FormData object: The "content-type" header is neither "application/x-www-form-urlencoded" nor "multipart/form-data".`,
+			DOMExceptionNameEnum.invalidStateError
+		);
 	}
 
 	/**

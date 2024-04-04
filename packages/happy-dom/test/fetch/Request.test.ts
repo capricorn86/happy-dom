@@ -15,6 +15,9 @@ import MultipartFormDataParser from '../../src/fetch/multipart/MultipartFormData
 import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest';
 import { ReadableStream } from 'stream/web';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
+import File from '../../src/file/File.js';
+import Path from 'path';
+import FS from 'fs';
 
 const TEST_URL = 'https://example.com/';
 
@@ -666,13 +669,106 @@ describe('Request', () => {
 	});
 
 	describe('formData()', () => {
-		it('Returns FormData', async () => {
+		it('Returns FormData for FormData object (multipart)', async () => {
 			const formData = new FormData();
 			formData.append('some', 'test');
 			const request = new window.Request(TEST_URL, { method: 'POST', body: formData });
-			const requestFormData = await request.formData();
+			const formDataResponse = await request.formData();
 
-			expect(requestFormData).toEqual(formData);
+			expect(formDataResponse).toEqual(formData);
+		});
+
+		it('Returns FormData for URLSearchParams object (application/x-www-form-urlencoded)', async () => {
+			const urlSearchParams = new URLSearchParams();
+			urlSearchParams.append('some', 'test');
+			const request = new window.Request(TEST_URL, { method: 'POST', body: urlSearchParams });
+			const formDataResponse = await request.formData();
+
+			expect(formDataResponse instanceof FormData).toBe(true);
+			expect(formDataResponse.get('some')).toBe('test');
+		});
+
+		it('Returns FormData for "application/x-www-form-urlencoded" content.', async () => {
+			const urlSearchParams = new URLSearchParams();
+
+			urlSearchParams.set('key1', 'value1');
+			urlSearchParams.set('key2', 'value2');
+			urlSearchParams.set('key3', 'value3');
+
+			const request = new window.Request(TEST_URL, { method: 'POST', body: urlSearchParams });
+			const formDataResponse = await request.formData();
+			let size = 0;
+
+			for (const _entry of formDataResponse) {
+				size++;
+			}
+
+			expect(formDataResponse.get('key1')).toBe('value1');
+			expect(formDataResponse.get('key2')).toBe('value2');
+			expect(formDataResponse.get('key3')).toBe('value3');
+			expect(size).toBe(3);
+		});
+
+		it('Returns FormData for multipart text fields.', async () => {
+			const formData = new FormData();
+
+			vi.spyOn(Math, 'random').mockImplementation(() => 0.8);
+
+			formData.set('key1', 'value1');
+			formData.set('key2', 'value2');
+			formData.set('key3', 'value3');
+
+			const request = new window.Request(TEST_URL, { method: 'POST', body: formData });
+			const formDataResponse = await request.formData();
+			let size = 0;
+
+			for (const _entry of formDataResponse) {
+				size++;
+			}
+
+			expect(formDataResponse.get('key1')).toBe('value1');
+			expect(formDataResponse.get('key2')).toBe('value2');
+			expect(formDataResponse.get('key3')).toBe('value3');
+			expect(size).toBe(3);
+		});
+
+		it('Returns FormData for multipart files.', async () => {
+			const formData = new FormData();
+			const imageBuffer = await FS.promises.readFile(
+				Path.join(__dirname, 'data', 'test-image.jpg')
+			);
+
+			vi.spyOn(Math, 'random').mockImplementation(() => 0.8);
+
+			formData.set('key1', 'value1');
+			formData.set('file1', new File([imageBuffer], 'test-image-1.jpg', { type: 'image/jpeg' }));
+			formData.set('key2', 'value2');
+			formData.set('file2', new File([imageBuffer], 'test-image-2.jpg', { type: 'image/jpeg' }));
+
+			const request = new window.Request(TEST_URL, { method: 'POST', body: formData });
+			const formDataResponse = await request.formData();
+			let size = 0;
+
+			for (const _entry of formDataResponse) {
+				size++;
+			}
+
+			expect(formDataResponse.get('key1')).toBe('value1');
+			expect(formDataResponse.get('key2')).toBe('value2');
+			expect(size).toBe(4);
+
+			const file1 = <File>formDataResponse.get('file1');
+			const file2 = <File>formDataResponse.get('file2');
+
+			expect(file1.name).toBe('test-image-1.jpg');
+			expect(file1.type).toBe('image/jpeg');
+			expect(file1.size).toBe(imageBuffer.length);
+			expect(await file1.arrayBuffer()).toEqual(imageBuffer.buffer);
+
+			expect(file2.name).toBe('test-image-2.jpg');
+			expect(file2.type).toBe('image/jpeg');
+			expect(file2.size).toBe(imageBuffer.length);
+			expect(await file2.arrayBuffer()).toEqual(imageBuffer.buffer);
 		});
 
 		it('Supports window.happyDOM?.waitUntilComplete().', async () => {

@@ -1,6 +1,7 @@
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
+import Node from '../node/Node.js';
 
 /**
  * HTML Style Element.
@@ -17,14 +18,7 @@ export default class HTMLStyleElement extends HTMLElement {
 	 * @returns CSS style sheet.
 	 */
 	public get sheet(): CSSStyleSheet {
-		if (!this[PropertySymbol.isConnected]) {
-			return null;
-		}
-		if (!this[PropertySymbol.sheet]) {
-			this[PropertySymbol.sheet] = new CSSStyleSheet();
-		}
-		this[PropertySymbol.sheet].replaceSync(this.textContent);
-		return this[PropertySymbol.sheet];
+		return this[PropertySymbol.sheet] ? this[PropertySymbol.sheet] : null;
 	}
 
 	/**
@@ -82,6 +76,53 @@ export default class HTMLStyleElement extends HTMLElement {
 			this.removeAttribute('disabled');
 		} else {
 			this.setAttribute('disabled', '');
+		}
+	}
+
+	/**
+	 * @override
+	 */
+	public override appendChild(node: Node): Node {
+		const returnValue = super.appendChild(node);
+		if (this[PropertySymbol.sheet]) {
+			this[PropertySymbol.sheet].replaceSync(this.textContent);
+		}
+		return returnValue;
+	}
+
+	/**
+	 * @override
+	 */
+	public override removeChild(node: Node): Node {
+		const returnValue = super.removeChild(node);
+		if (this[PropertySymbol.sheet]) {
+			this[PropertySymbol.sheet].replaceSync(this.textContent);
+		}
+		return returnValue;
+	}
+
+	/**
+	 * @override
+	 */
+	public override insertBefore(newNode: Node, referenceNode: Node | null): Node {
+		const returnValue = super.insertBefore(newNode, referenceNode);
+		if (this[PropertySymbol.sheet]) {
+			this[PropertySymbol.sheet].replaceSync(this.textContent);
+		}
+		return returnValue;
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
+		super[PropertySymbol.connectToNode](parentNode);
+
+		if (parentNode) {
+			this[PropertySymbol.sheet] = new CSSStyleSheet();
+			this[PropertySymbol.sheet].replaceSync(this.textContent);
+		} else {
+			this[PropertySymbol.sheet] = null;
 		}
 	}
 }
