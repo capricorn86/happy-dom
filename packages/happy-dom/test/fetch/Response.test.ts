@@ -321,6 +321,25 @@ describe('Response', () => {
 	});
 
 	describe('formData()', () => {
+		it('Returns FormData for FormData object (multipart)', async () => {
+			const formData = new FormData();
+			formData.append('some', 'test');
+			const response = new window.Response(formData);
+			const formDataResponse = await response.formData();
+
+			expect(formDataResponse).toEqual(formData);
+		});
+
+		it('Returns FormData for URLSearchParams object (application/x-www-form-urlencoded)', async () => {
+			const urlSearchParams = new URLSearchParams();
+			urlSearchParams.append('some', 'test');
+			const response = new window.Response(urlSearchParams);
+			const formDataResponse = await response.formData();
+
+			expect(formDataResponse instanceof FormData).toBe(true);
+			expect(formDataResponse.get('some')).toBe('test');
+		});
+
 		it('Returns FormData for "application/x-www-form-urlencoded" content.', async () => {
 			const urlSearchParams = new URLSearchParams();
 
