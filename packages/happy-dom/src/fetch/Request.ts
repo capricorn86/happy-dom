@@ -304,9 +304,10 @@ export default class Request implements Request {
 	 * @returns FormData.
 	 */
 	public async formData(): Promise<FormData> {
-		const type = this[PropertySymbol.contentType];
+		const contentType = this[PropertySymbol.contentType];
+		const asyncTaskManager = this.#asyncTaskManager;
 
-		if (/multipart/i.test(type)) {
+		if (/multipart/i.test(contentType)) {
 			if (this.bodyUsed) {
 				throw new DOMException(
 					`Body has already been used for "${this.url}".`,
@@ -316,25 +317,24 @@ export default class Request implements Request {
 
 			(<boolean>this.bodyUsed) = true;
 
-			const taskID = this.#asyncTaskManager.startTask(() => this.signal[PropertySymbol.abort]());
+			const taskID = asyncTaskManager.startTask(() => this.signal[PropertySymbol.abort]());
 			let formData: FormData;
 
 			try {
-				const type = this[PropertySymbol.contentType];
-				formData = (await MultipartFormDataParser.streamToFormData(this.body, type)).formData;
+				const result = await MultipartFormDataParser.streamToFormData(this.body, contentType);
+				formData = result.formData;
 			} catch (error) {
-				this.#asyncTaskManager.endTask(taskID);
+				asyncTaskManager.endTask(taskID);
 				throw error;
 			}
 
-			this.#asyncTaskManager.endTask(taskID);
+			asyncTaskManager.endTask(taskID);
 
 			return formData;
 		}
 
-		if (type && type.startsWith('application/x-www-form-urlencoded')) {
+		if (contentType?.startsWith('application/x-www-form-urlencoded')) {
 			const parameters = new URLSearchParams(await this.text());
-
 			const formData = new FormData();
 
 			for (const [key, value] of parameters) {
@@ -345,7 +345,7 @@ export default class Request implements Request {
 		}
 
 		throw new DOMException(
-			`Failed to build FormData object: The "content-type" header is neither "application/x-www-form-urlencoded" nor "multipart/form-data".`,
+			`Failed to construct FormData object: The "content-type" header is neither "application/x-www-form-urlencoded" nor "multipart/form-data".`,
 			DOMExceptionNameEnum.invalidStateError
 		);
 	}
