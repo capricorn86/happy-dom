@@ -1,8 +1,8 @@
 {
-	"extends": "../tsconfig.json",
+	"extends": "../../tsconfig.json",
 	"compilerOptions": {
-		"outDir": "../tmp",
-		"rootDir": "../test",
+		"outDir": "../../tmp",
+		"rootDir": "../../test",
 		"jsx": "react",
         "module": "CommonJS",
 		"moduleResolution": "Node",
@@ -16,6 +16,6 @@
 	"include": [
 		"@types/node",
 		".",
-		"../lib"
+		"../../lib"
 	]
 }
