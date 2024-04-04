@@ -21,6 +21,9 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+
       - name: Cache node modules
         uses: actions/cache@v4
         id: cache-node-modules
@@ -48,12 +51,9 @@ jobs:
           path: .turbo
           key: turbo-master
       
-      - name: Install NPM dependencies
+      - name: Install dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
-
-      - name: Install Bun
-        run: curl -fsSL https://bun.sh/install | bash
   
       - name: Compile package
         run: npm run compile

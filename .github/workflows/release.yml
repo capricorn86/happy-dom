@@ -69,6 +69,9 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+
       - name: Cache node modules
         uses: actions/cache@v4
         id: cache-node-modules
@@ -88,12 +91,9 @@ jobs:
           restore-keys: |
             turbo-master
       
-      - name: Install NPM dependencies
+      - name: Install dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
-
-      - name: Install Bun
-        run: curl -fsSL https://bun.sh/install | bash
 
       - name: Set version
         run: node ./node_modules/.bin/happy-set-workspace-version --version=${{needs.check-next-version.outputs.next_version }}
