@@ -19,7 +19,6 @@ import CSSMeasurementConverter from '../measurement-converter/CSSMeasurementConv
 import MediaQueryList from '../../../match-media/MediaQueryList.js';
 import WindowBrowserSettingsReader from '../../../window/WindowBrowserSettingsReader.js';
 
-const CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+)\)|var\( *(--[^), ]+), *([^), ]+)\)/;
 const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
 
 type IStyleAndElement = {
@@ -366,16 +365,21 @@ export default class CSSStyleDeclarationElementStyle {
 	 * @returns CSS value.
 	 */
 	private parseCSSVariablesInValue(value: string, cssVariables: { [k: string]: string }): string {
+		const SINGLE_CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+)\)/;
+		const CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+), *([^), ]+)\)/;
+
 		let newValue = value;
 		let match;
 
+		if (newValue.match(SINGLE_CSS_VARIABLE_REGEXP)) {
+			// Without fallback value - E.g. var(--my-var)
+			match = newValue.match(SINGLE_CSS_VARIABLE_REGEXP);
+			newValue = newValue.replace(match[0], cssVariables[match[1]] || '');
+		}
+
 		while ((match = newValue.match(CSS_VARIABLE_REGEXP)) !== null) {
 			// Fallback value - E.g. var(--my-var, #FFFFFF)
-			if (match[2] !== undefined) {
-				newValue = newValue.replace(match[0], cssVariables[match[2]] || match[3]);
-			} else {
-				newValue = newValue.replace(match[0], cssVariables[match[1]] || '');
-			}
+			newValue = newValue.replace(match[0], cssVariables[match[1]] || match[2]);
 		}
 
 		return newValue;

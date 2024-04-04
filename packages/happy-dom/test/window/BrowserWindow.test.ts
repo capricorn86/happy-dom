@@ -592,11 +592,15 @@ describe('BrowserWindow', () => {
 					color: var(--my-var, var(--my-background, pink));
 
 					--color1: red;
+					--color2: blue;
 					--result1: var(--color1, var(--unknown, var(--unknown, green)));
 					--result2: var(--unknown, var(--color1, var(--unknown, green)));
 					--result3: var(--unknown, var(--unknown, var(--color1, green)));
 					
 					--result4: var(--unknown, var(--unknown, var(--unknown, var(--unknown, white))));
+
+					--result5: var(--color1, var(--color2));
+					--result6: var(--unknown, blue);
 				}
 			`;
 
@@ -611,6 +615,9 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.getPropertyValue('--result2')).toBe('red');
 
 			expect(computedStyle.getPropertyValue('--result4')).toBe('white');
+
+			expect(computedStyle.getPropertyValue('--result5')).toBe('red');
+			expect(computedStyle.getPropertyValue('--result6')).toBe('blue');
 		});
 
 		it('Returns a CSSStyleDeclaration object with computed styles containing "rem" and "em" measurement values converted to pixels.', () => {
