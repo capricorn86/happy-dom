@@ -304,29 +304,50 @@ export default class Request implements Request {
 	 * @returns FormData.
 	 */
 	public async formData(): Promise<FormData> {
-		if (this.bodyUsed) {
-			throw new DOMException(
-				`Body has already been used for "${this.url}".`,
-				DOMExceptionNameEnum.invalidStateError
-			);
-		}
+		const type = this[PropertySymbol.contentType];
 
-		(<boolean>this.bodyUsed) = true;
+		if (/multipart/i.test(type)) {
+			if (this.bodyUsed) {
+				throw new DOMException(
+					`Body has already been used for "${this.url}".`,
+					DOMExceptionNameEnum.invalidStateError
+				);
+			}
 
-		const taskID = this.#asyncTaskManager.startTask(() => this.signal[PropertySymbol.abort]());
-		let formData: FormData;
+			(<boolean>this.bodyUsed) = true;
 
-		try {
-			const type = this[PropertySymbol.contentType];
-			formData = (await MultipartFormDataParser.streamToFormData(this.body, type)).formData;
-		} catch (error) {
+			const taskID = this.#asyncTaskManager.startTask(() => this.signal[PropertySymbol.abort]());
+			let formData: FormData;
+
+			try {
+				const type = this[PropertySymbol.contentType];
+				formData = (await MultipartFormDataParser.streamToFormData(this.body, type)).formData;
+			} catch (error) {
+				this.#asyncTaskManager.endTask(taskID);
+				throw error;
+			}
+
 			this.#asyncTaskManager.endTask(taskID);
-			throw error;
+
+			return formData;
 		}
 
-		this.#asyncTaskManager.endTask(taskID);
+		if (type && type.startsWith('application/x-www-form-urlencoded')) {
+			const parameters = new URLSearchParams(await this.text());
 
-		return formData;
+			const formData = new FormData();
+
+			for (const [key, value] of parameters) {
+				formData.append(key, value);
+			}
+
+			return formData;
+		}
+
+		throw new DOMException(
+			`Failed to build FormData object: The "content-type" header is neither "application/x-www-form-urlencoded" nor "multipart/form-data".`,
+			DOMExceptionNameEnum.invalidStateError
+		);
 	}
 
 	/**
