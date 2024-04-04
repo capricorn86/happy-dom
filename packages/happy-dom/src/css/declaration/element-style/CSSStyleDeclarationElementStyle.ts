@@ -131,15 +131,23 @@ export default class CSSStyleDeclarationElementStyle {
 					if (sheet) {
 						this.parseCSSRules({
 							elements: documentElements,
+							rootElement:
+								documentElements[0].element[PropertySymbol.tagName] === 'HTML'
+									? documentElements[0]
+									: null,
 							cssRules: sheet.cssRules
 						});
 					}
 				}
 
-				for (const styleSheet of this.element[PropertySymbol.ownerDocument].adoptedStyleSheets) {
+				for (const sheet of this.element[PropertySymbol.ownerDocument].adoptedStyleSheets) {
 					this.parseCSSRules({
 						elements: documentElements,
-						cssRules: styleSheet.cssRules
+						rootElement:
+							documentElements[0].element[PropertySymbol.tagName] === 'HTML'
+								? documentElements[0]
+								: null,
+						cssRules: sheet.cssRules
 					});
 				}
 
@@ -169,10 +177,10 @@ export default class CSSStyleDeclarationElementStyle {
 					}
 				}
 
-				for (const styleSheet of shadowRoot.adoptedStyleSheets) {
+				for (const sheet of shadowRoot.adoptedStyleSheets) {
 					this.parseCSSRules({
 						elements: shadowRootElements,
-						cssRules: styleSheet.cssRules,
+						cssRules: sheet.cssRules,
 						hostElement: styleAndElement
 					});
 				}
@@ -189,7 +197,7 @@ export default class CSSStyleDeclarationElementStyle {
 		// Concatenates all parent element CSS to one string.
 		const targetElement = parentElements[parentElements.length - 1];
 		const propertyManager = new CSSStyleDeclarationPropertyManager();
-		const cssVariables: { [k: string]: string } = {};
+		const cssProperties: { [k: string]: string } = {};
 		let rootFontSize: string | number = 16;
 		let parentFontSize: string | number = 16;
 
@@ -238,24 +246,27 @@ export default class CSSStyleDeclarationElementStyle {
 			const elementStyleAttribute = (<Element>parentElement.element)[PropertySymbol.attributes][
 				'style'
 			];
+
 			if (elementStyleAttribute) {
 				elementCSSText += elementStyleAttribute[PropertySymbol.value];
 			}
 
-			CSSStyleDeclarationCSSParser.parse(elementCSSText, (name, value, important) => {
-				const isCSSVariable = name.startsWith('--');
+			const rulesAndProperties = CSSStyleDeclarationCSSParser.parse(elementCSSText);
+			const rules = rulesAndProperties.rules;
+
+			Object.assign(cssProperties, rulesAndProperties.properties);
+
+			for (const { name, value, important } of rules) {
 				if (
-					isCSSVariable ||
 					CSSStyleDeclarationElementInheritedProperties[name] ||
 					parentElement === targetElement
 				) {
-					const cssValue = this.parseCSSVariablesInValue(value, cssVariables);
-					if (cssValue && (!propertyManager.get(name)?.important || important)) {
-						propertyManager.set(name, cssValue, important);
+					const parsedValue = this.parseCSSVariablesInValue(value.trim(), cssProperties);
 
-						if (isCSSVariable) {
-							cssVariables[name] = cssValue;
-						} else if (name === 'font' || name === 'font-size') {
+					if (parsedValue && (!propertyManager.get(name)?.important || important)) {
+						propertyManager.set(name, parsedValue, important);
+
+						if (name === 'font' || name === 'font-size') {
 							const fontSize = propertyManager.properties['font-size'];
 							if (fontSize !== null) {
 								const parsedValue = this.parseMeasurementsInValue({
@@ -273,7 +284,7 @@ export default class CSSStyleDeclarationElementStyle {
 						}
 					}
 				}
-			});
+			}
 		}
 
 		for (const name of CSSStyleDeclarationElementMeasurementProperties) {
@@ -301,11 +312,13 @@ export default class CSSStyleDeclarationElementStyle {
 	 * @param options Options.
 	 * @param options.elements Elements.
 	 * @param options.cssRules CSS rules.
+	 * @param options.rootElement Root element.
 	 * @param [options.hostElement] Host element.
 	 */
 	private parseCSSRules(options: {
 		cssRules: CSSRule[];
-		elements: Array<IStyleAndElement>;
+		elements: IStyleAndElement[];
+		rootElement?: IStyleAndElement;
 		hostElement?: IStyleAndElement;
 	}): void {
 		if (!options.elements.length) {
@@ -321,6 +334,13 @@ export default class CSSStyleDeclarationElementStyle {
 					if (selectorText.startsWith(':host')) {
 						if (options.hostElement) {
 							options.hostElement.cssTexts.push({
+								cssText: (<CSSStyleRule>rule)[PropertySymbol.cssText],
+								priorityWeight: 0
+							});
+						}
+					} else if (selectorText.startsWith(':root')) {
+						if (options.rootElement) {
+							options.rootElement.cssTexts.push({
 								cssText: (<CSSStyleRule>rule)[PropertySymbol.cssText],
 								priorityWeight: 0
 							});
