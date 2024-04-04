@@ -6,6 +6,24 @@ We are very happy that you would like to contribute. In this guide you will find
 
 ### Install
 
+**Install Bun**
+
+To be able to run all tests in the "./packages/global-registrator" package, you need to install [Bun](https://bun.sh/).
+
+Linux & MacOS
+
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
+
+Windows
+
+```bash
+powershell -c "irm bun.sh/install.ps1 | iex"
+```
+
+**Install dependencies**
+
 ```bash
 npm install
 ```
@@ -23,22 +41,6 @@ npm run watch
 ```
 
 ### Test
-
-**Install Bun**
-
-To be able to run all tests in the "./packages/global-registrator" package, you need to install [Bun](https://bun.sh/).
-
-Linux & MacOS
-
-```bash
-curl -fsSL https://bun.sh/install | bash
-```
-
-Windows
-
-```bash
-powershell -c "irm bun.sh/install.ps1 | iex"
-```
 
 **Run tests**
 
