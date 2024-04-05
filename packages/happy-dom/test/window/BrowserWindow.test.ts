@@ -622,6 +622,54 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.getPropertyValue('--result7')).toBe('blue');
 		});
 
+		it('Returns values defined by a CSS variables when multiple chained variables are used.', () => {
+			const div = document.createElement('div');
+			const divStyle = document.createElement('style');
+
+			divStyle.innerHTML = `
+				div {
+					--my-var1: var(--my-var2);
+					--my-var2: var(--my-var3);
+					--my-var3: var(--my-var4);
+					--my-var4: pink;
+
+
+					--color1: red;
+					--color2: blue;
+					--case1-result1: var(--case1-result2);
+					--case1-result2: var(--case1-result3);
+					--case1-result3: var(--case1-result4);
+					--case1-result4: var(--color1, var(--color2));
+
+					--case2-result1: var(--case2-result2);
+					--case2-result2: var(--case2-result3);
+					--case2-result3: var(--case2-result4);
+					--case2-result4: var(--unknown, var(--color2));
+				}
+			`;
+
+			document.body.appendChild(divStyle);
+			document.body.appendChild(div);
+
+			const computedStyle = window.getComputedStyle(div);
+
+
+			expect(computedStyle.getPropertyValue('--my-var1')).toBe('pink');
+			expect(computedStyle.getPropertyValue('--my-var2')).toBe('pink');
+			expect(computedStyle.getPropertyValue('--my-var3')).toBe('pink');
+			expect(computedStyle.getPropertyValue('--my-var4')).toBe('pink');
+
+			expect(computedStyle.getPropertyValue('--case1-result1')).toBe('red');
+			expect(computedStyle.getPropertyValue('--case1-result2')).toBe('red');
+			expect(computedStyle.getPropertyValue('--case1-result3')).toBe('red');
+			expect(computedStyle.getPropertyValue('--case1-result4')).toBe('red');
+
+			expect(computedStyle.getPropertyValue('--case2-result1')).toBe('blue');
+			expect(computedStyle.getPropertyValue('--case2-result2')).toBe('blue');
+			expect(computedStyle.getPropertyValue('--case2-result3')).toBe('blue');
+			expect(computedStyle.getPropertyValue('--case2-result4')).toBe('blue');
+		});
+
 		it('Returns a CSSStyleDeclaration object with computed styles containing "rem" and "em" measurement values converted to pixels.', () => {
 			const parent = document.createElement('div');
 			const element = document.createElement('span');

@@ -389,11 +389,10 @@ export default class CSSStyleDeclarationElementStyle {
 		const CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+), *([^), ]+)\)/;
 
 		let newValue = value;
-		let match;
+		let match: RegExpMatchArray | null;
 
-		if (newValue.match(SINGLE_CSS_VARIABLE_REGEXP)) {
+		while ((match = newValue.match(SINGLE_CSS_VARIABLE_REGEXP)) != null) {
 			// Without fallback value - E.g. var(--my-var)
-			match = newValue.match(SINGLE_CSS_VARIABLE_REGEXP);
 			newValue = newValue.replace(match[0], cssVariables[match[1]] || '');
 		}
 
