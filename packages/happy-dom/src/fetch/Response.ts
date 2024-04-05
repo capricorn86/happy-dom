@@ -225,37 +225,52 @@ export default class Response implements Response {
 	 */
 	public async formData(): Promise<FormData> {
 		const contentType = this.headers.get('Content-Type');
+		const asyncTaskManager = this.#browserFrame[PropertySymbol.asyncTaskManager];
+
+		if (/multipart/i.test(contentType)) {
+			if (this.bodyUsed) {
+				throw new DOMException(
+					`Body has already been used for "${this.url}".`,
+					DOMExceptionNameEnum.invalidStateError
+				);
+			}
+
+			(<boolean>this.bodyUsed) = true;
+
+			const taskID = asyncTaskManager.startTask();
+			let formData: FormData;
+			let buffer: Buffer;
+
+			try {
+				const result = await MultipartFormDataParser.streamToFormData(this.body, contentType);
+				formData = result.formData;
+				buffer = result.buffer;
+			} catch (error) {
+				asyncTaskManager.endTask(taskID);
+				throw error;
+			}
+
+			this.#storeBodyInCache(buffer);
+			asyncTaskManager.endTask(taskID);
+
+			return formData;
+		}
 
 		if (contentType?.startsWith('application/x-www-form-urlencoded')) {
+			const parameters = new URLSearchParams(await this.text());
 			const formData = new FormData();
-			const text = await this.text();
-			const parameters = new URLSearchParams(text);
 
-			for (const [name, value] of parameters) {
-				formData.append(name, value);
+			for (const [key, value] of parameters) {
+				formData.append(key, value);
 			}
 
 			return formData;
 		}
 
-		const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
-		let formData: FormData;
-		let buffer: Buffer;
-
-		try {
-			const result = await MultipartFormDataParser.streamToFormData(this.body, contentType);
-			formData = result.formData;
-			buffer = result.buffer;
-		} catch (error) {
-			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
-			throw error;
-		}
-
-		this.#storeBodyInCache(buffer);
-
-		this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
-
-		return formData;
+		throw new DOMException(
+			`Failed to build FormData object: The "content-type" header is neither "application/x-www-form-urlencoded" nor "multipart/form-data".`,
+			DOMExceptionNameEnum.invalidStateError
+		);
 	}
 
 	/**
