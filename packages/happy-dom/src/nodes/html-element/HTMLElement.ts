@@ -399,6 +399,28 @@ export default class HTMLElement extends Element {
 	}
 
 	/**
+	 * Returns inert.
+	 *
+	 * @returns Inert.
+	 */
+	public get inert(): boolean {
+		return this.getAttribute('inert') !== null;
+	}
+
+	/**
+	 * Returns inert.
+	 *
+	 * @param inert Inert.
+	 */
+	public set inert(inert: boolean) {
+		if (!inert) {
+			this.removeAttribute('inert');
+		} else {
+			this.setAttribute('inert', '');
+		}
+	}
+
+	/**
 	 * Returns language.
 	 *
 	 * @returns Language.
