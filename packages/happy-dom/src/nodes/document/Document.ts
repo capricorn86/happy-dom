@@ -1166,7 +1166,7 @@ export default class Document extends Node {
 	 * @returns Text node.
 	 */
 	public createTextNode(data?: string): Text {
-		return NodeFactory.createNode<Text>(this, this[PropertySymbol.ownerWindow].Text, data);
+		return NodeFactory.createNode<Text>(this, this[PropertySymbol.ownerWindow].Text, String(data));
 	}
 
 	/**
