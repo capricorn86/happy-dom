@@ -1042,8 +1042,12 @@ describe('Document', () => {
 		});
 
 		it('Creates a text node without content.', () => {
-			const textNode = document.createTextNode();
-			expect(textNode.data).toBe('');
+			// @ts-ignore
+			expect(() => document.createTextNode()).toThrow(
+				new TypeError(
+					`Failed to execute 'createTextNode' on 'Document': 1 argument required, but only 0 present.`
+				)
+			);
 		});
 
 		it('Creates a text node with non string content.', () => {

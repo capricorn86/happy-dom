@@ -1165,7 +1165,12 @@ export default class Document extends Node {
 	 * @param [data] Text data.
 	 * @returns Text node.
 	 */
-	public createTextNode(data?: string): Text {
+	public createTextNode(data: string): Text {
+		if (arguments.length < 1) {
+			throw new TypeError(
+				`Failed to execute 'createTextNode' on 'Document': 1 argument required, but only ${arguments.length} present.`
+			);
+		}
 		return NodeFactory.createNode<Text>(this, this[PropertySymbol.ownerWindow].Text, String(data));
 	}
 
