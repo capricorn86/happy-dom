@@ -1042,8 +1042,23 @@ describe('Document', () => {
 		});
 
 		it('Creates a text node without content.', () => {
-			const textNode = document.createTextNode();
-			expect(textNode.data).toBe('');
+			// @ts-ignore
+			expect(() => document.createTextNode()).toThrow(
+				new TypeError(
+					`Failed to execute 'createTextNode' on 'Document': 1 argument required, but only 0 present.`
+				)
+			);
+		});
+
+		it('Creates a text node with non string content.', () => {
+			const inputs = [1, -1, true, false, null, undefined, {}, []];
+			const outputs = ['1', '-1', 'true', 'false', 'null', 'undefined', '[object Object]', ''];
+
+			for (let i = 0; i < inputs.length; i++) {
+				// @ts-ignore
+				const textNode = document.createTextNode(inputs[i]);
+				expect(textNode.data).toBe(outputs[i]);
+			}
 		});
 	});
 
