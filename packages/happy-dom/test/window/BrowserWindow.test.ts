@@ -653,7 +653,6 @@ describe('BrowserWindow', () => {
 
 			const computedStyle = window.getComputedStyle(div);
 
-
 			expect(computedStyle.getPropertyValue('--my-var1')).toBe('pink');
 			expect(computedStyle.getPropertyValue('--my-var2')).toBe('pink');
 			expect(computedStyle.getPropertyValue('--my-var3')).toBe('pink');
