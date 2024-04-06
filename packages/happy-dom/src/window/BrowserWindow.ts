@@ -1327,7 +1327,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	/**
 	 * Binds methods, getters and setters to a scope.
 	 *
-	 * Getters and setters need to be bound to show up in Object.getOwnPropertyNames(), which is something Vitest relies on.
+	 * Getters and setters need to be bound to show up in Object.getOwnPropertyNames(), which is something Vitest and GlobalRegistrator relies on.
 	 *
 	 * @see https://github.com/capricorn86/happy-dom/issues/1339
 	 */

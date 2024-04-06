@@ -12,11 +12,32 @@ export default class StorageFactory {
 	 * Creates a new storage.
 	 */
 	public static createStorage(): Storage {
+		const boundMethods: { [k: string]: (...arg) => any } = {};
+		const boundGetters: { [k: string]: () => any } = {};
+
 		// Documentation for Proxy:
 		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy
 		return new Proxy(new Storage(), {
-			get(storage: Storage, key: string): string {
+			get(storage: Storage, key: string): string | number | boolean | Function {
 				if (Storage.prototype.hasOwnProperty(key)) {
+					if (boundMethods[key] !== undefined) {
+						return boundMethods[key];
+					}
+					if (boundGetters[key] !== undefined) {
+						return boundGetters[key]();
+					}
+					const descriptor = Object.getOwnPropertyDescriptor(Storage.prototype, key);
+					if (descriptor.value !== undefined) {
+						if (typeof descriptor.value === 'function') {
+							boundMethods[key] = storage[key].bind(storage);
+							return boundMethods[key];
+						}
+						return descriptor.value;
+					}
+					if (descriptor.get) {
+						boundGetters[key] = descriptor.get.bind(storage);
+						return boundGetters[key]();
+					}
 					return storage[key];
 				}
 				return storage[PropertySymbol.data][key];
@@ -30,7 +51,7 @@ export default class StorageFactory {
 			},
 			deleteProperty(storage: Storage, key: string): boolean {
 				if (Storage.prototype.hasOwnProperty(key)) {
-					return false;
+					return true;
 				}
 				return delete storage[PropertySymbol.data][key];
 			},
