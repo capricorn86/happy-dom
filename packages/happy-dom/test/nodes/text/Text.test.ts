@@ -13,6 +13,14 @@ describe('Text', () => {
 		document = window.document;
 	});
 
+	describe('constructor()', () => {
+		it('Creates a new Text node.', () => {
+			const node = new window.Text('test');
+			expect(node).toBeInstanceOf(Text);
+			expect(node.data).toBe('test');
+		});
+	});
+
 	describe('get nodeName()', () => {
 		it('Returns "#text".', () => {
 			const node = document.createTextNode('test');
