@@ -6,8 +6,6 @@ import XMLDocumentImplementation from '../nodes/xml-document/XMLDocument.js';
 import SVGDocumentImplementation from '../nodes/svg-document/SVGDocument.js';
 import Node from '../nodes/node/Node.js';
 import NodeFilter from '../tree-walker/NodeFilter.js';
-import Text from '../nodes/text/Text.js';
-import Comment from '../nodes/comment/Comment.js';
 import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
 import HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement.js';
 import HTMLFormElementImplementation from '../nodes/html-form-element/HTMLFormElement.js';
@@ -142,6 +140,8 @@ import IRequestInfo from '../fetch/types/IRequestInfo.js';
 import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
 import AudioImplementation from '../nodes/html-audio-element/Audio.js';
 import ImageImplementation from '../nodes/html-image-element/Image.js';
+import TextImplementation from '../nodes/text/Text.js';
+import CommentImplementation from '../nodes/comment/Comment.js';
 import DocumentFragmentImplementation from '../nodes/document-fragment/DocumentFragment.js';
 import DOMParserImplementation from '../dom-parser/DOMParser.js';
 import FileReaderImplementation from '../file/FileReader.js';
@@ -176,8 +176,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly SVGSVGElement: typeof SVGSVGElement = SVGSVGElement;
 	public readonly SVGElement: typeof SVGElement = SVGElement;
 	public readonly SVGGraphicsElement: typeof SVGGraphicsElement = SVGGraphicsElement;
-	public readonly Text: typeof Text = Text;
-	public readonly Comment: typeof Comment = Comment;
 	public readonly ShadowRoot: typeof ShadowRoot = ShadowRoot;
 	public readonly ProcessingInstruction: typeof ProcessingInstruction = ProcessingInstruction;
 	public readonly Element: typeof Element = Element;
@@ -187,6 +185,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly HTMLDocument: new () => HTMLDocumentImplementation;
 	public readonly XMLDocument: new () => XMLDocumentImplementation;
 	public readonly SVGDocument: new () => SVGDocumentImplementation;
+	public readonly Text: typeof TextImplementation;
+	public readonly Comment: typeof CommentImplementation;
 
 	// Element classes
 	public readonly HTMLAnchorElement: typeof HTMLAnchorElement = HTMLAnchorElement;
@@ -616,12 +616,16 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		class Audio extends AudioImplementation {}
 		class Image extends ImageImplementation {}
 		class DocumentFragment extends DocumentFragmentImplementation {}
+		class Text extends TextImplementation {}
+		class Comment extends CommentImplementation {}
 
 		/* eslint-enable jsdoc/require-jsdoc */
 
 		this.Response = Response;
 		this.Request = Request;
 		this.Image = Image;
+		this.Text = Text;
+		this.Comment = Comment;
 		this.DocumentFragment = DocumentFragment;
 		this.FileReader = FileReader;
 		this.DOMParser = DOMParser;
@@ -651,6 +655,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this.Audio[PropertySymbol.ownerDocument] = this.document;
 		this.Image[PropertySymbol.ownerDocument] = this.document;
 		this.DocumentFragment[PropertySymbol.ownerDocument] = this.document;
+		this.Text[PropertySymbol.ownerDocument] = this.document;
+		this.Comment[PropertySymbol.ownerDocument] = this.document;
 
 		// Ready state manager
 		this[PropertySymbol.readyStateManager].waitUntilComplete().then(() => {
@@ -1296,6 +1302,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this.Audio[PropertySymbol.ownerDocument] = null;
 		this.Image[PropertySymbol.ownerDocument] = null;
 		this.DocumentFragment[PropertySymbol.ownerDocument] = null;
+		this.Text[PropertySymbol.ownerDocument] = null;
+		this.Comment[PropertySymbol.ownerDocument] = null;
 
 		const mutationObservers = this[PropertySymbol.mutationObservers];
 
