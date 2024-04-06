@@ -15,8 +15,18 @@ export default class StorageFactory {
 		// Documentation for Proxy:
 		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy
 		return new Proxy(new Storage(), {
-			get(storage: Storage, key: string): string {
+			get(storage: Storage, key: string): string | number | boolean | Function {
 				if (Storage.prototype.hasOwnProperty(key)) {
+					const descriptor = Object.getOwnPropertyDescriptor(Storage.prototype, key);
+					if (descriptor.value !== undefined) {
+						if (typeof descriptor.value === 'function') {
+							return storage[key].bind(storage);
+						}
+						return descriptor.value;
+					}
+					if (descriptor.get) {
+						return descriptor.get.call(storage);
+					}
 					return storage[key];
 				}
 				return storage[PropertySymbol.data][key];
@@ -30,7 +40,7 @@ export default class StorageFactory {
 			},
 			deleteProperty(storage: Storage, key: string): boolean {
 				if (Storage.prototype.hasOwnProperty(key)) {
-					return false;
+					return true;
 				}
 				return delete storage[PropertySymbol.data][key];
 			},

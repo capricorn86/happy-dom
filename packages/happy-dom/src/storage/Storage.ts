@@ -9,49 +9,6 @@ export default class Storage {
 	public [PropertySymbol.data]: { [key: string]: string } = {};
 
 	/**
-	 *
-	 */
-	constructor() {
-		const descriptors = Object.getOwnPropertyDescriptors(Storage.prototype);
-
-		Object.defineProperty(this, 'length', {
-			enumerable: false,
-			configurable: true,
-			get: descriptors['length'].get.bind(this)
-		});
-
-		Object.defineProperty(this, 'key', {
-			enumerable: false,
-			configurable: true,
-			value: descriptors['key'].value.bind(this)
-		});
-
-		Object.defineProperty(this, 'setItem', {
-			enumerable: false,
-			configurable: true,
-			value: descriptors['setItem'].value.bind(this)
-		});
-
-		Object.defineProperty(this, 'getItem', {
-			enumerable: false,
-			configurable: true,
-			value: descriptors['getItem'].value.bind(this)
-		});
-
-		Object.defineProperty(this, 'removeItem', {
-			enumerable: false,
-			configurable: true,
-			value: descriptors['removeItem'].value.bind(this)
-		});
-
-		Object.defineProperty(this, 'clear', {
-			enumerable: false,
-			configurable: true,
-			value: descriptors['clear'].value.bind(this)
-		});
-	}
-
-	/**
 	 * Returns length.
 	 *
 	 * @returns Length.

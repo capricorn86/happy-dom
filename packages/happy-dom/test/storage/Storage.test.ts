@@ -147,5 +147,23 @@ describe('Storage', () => {
 			storage.getItem('key1');
 			expect(spy).toHaveBeenCalled();
 		});
+
+		it('Should be able to mock implementation once.', () => {
+			vi.spyOn(storage, 'getItem').mockImplementationOnce(() => 'mocked');
+			expect(storage.getItem('key1')).toBe('mocked');
+			expect(storage.getItem('key1')).toBe(null);
+
+			vi.spyOn(storage, 'setItem').mockImplementationOnce(() => {
+				throw new Error('error');
+			});
+
+			expect(() => storage.setItem('key1', 'value1')).toThrow('error');
+		});
+
+		it('Should be able to spy on prototype methods.', () => {
+			vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => 'mocked');
+
+			expect(storage.getItem('key1')).toBe('mocked');
+		});
 	});
 });
