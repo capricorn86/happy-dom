@@ -161,7 +161,7 @@ describe('Storage', () => {
 		});
 
 		it('Should be able to spy on prototype methods.', () => {
-			Storage.prototype.getItem = vi.fn(() => 'mocked');
+			vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => 'mocked');
 
 			expect(storage.getItem('key1')).toBe('mocked');
 		});
