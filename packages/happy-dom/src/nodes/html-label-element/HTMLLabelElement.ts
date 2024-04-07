@@ -12,6 +12,9 @@ import PointerEvent from '../../event/events/PointerEvent.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLLabelElement.
  */
 export default class HTMLLabelElement extends HTMLElement {
+	// Public properties
+	public cloneNode: (deep?: boolean) => HTMLLabelElement;
+
 	/**
 	 * Returns a string containing the ID of the labeled control. This reflects the "for" attribute.
 	 *
@@ -60,14 +63,10 @@ export default class HTMLLabelElement extends HTMLElement {
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): HTMLLabelElement {
-		return <HTMLLabelElement>super.cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): HTMLLabelElement {
+		return <HTMLLabelElement>super[PropertySymbol.cloneNode](deep);
 	}
 
 	/**

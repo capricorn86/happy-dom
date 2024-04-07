@@ -17,6 +17,7 @@ export default class DocumentFragment extends Node {
 	public readonly [PropertySymbol.children]: HTMLCollection<Element> = new HTMLCollection();
 	public [PropertySymbol.rootNode]: Node = this;
 	public [PropertySymbol.nodeType] = NodeTypeEnum.documentFragmentNode;
+	public cloneNode: (deep?: boolean) => DocumentFragment;
 
 	/**
 	 * Returns the document fragment children.
@@ -198,14 +199,10 @@ export default class DocumentFragment extends Node {
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): DocumentFragment {
-		const clone = <DocumentFragment>super.cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): DocumentFragment {
+		const clone = <DocumentFragment>super[PropertySymbol.cloneNode](deep);
 
 		if (deep) {
 			for (const node of clone[PropertySymbol.childNodes]) {
@@ -221,7 +218,7 @@ export default class DocumentFragment extends Node {
 	/**
 	 * @override
 	 */
-	public override appendChild(node: Node): Node {
+	public override [PropertySymbol.appendChild](node: Node): Node {
 		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
 		return ElementUtility.appendChild(this, node);
 	}
@@ -229,7 +226,7 @@ export default class DocumentFragment extends Node {
 	/**
 	 * @override
 	 */
-	public override removeChild(node: Node): Node {
+	public override [PropertySymbol.removeChild](node: Node): Node {
 		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
 		return ElementUtility.removeChild(this, node);
 	}
@@ -237,13 +234,7 @@ export default class DocumentFragment extends Node {
 	/**
 	 * @override
 	 */
-	public override insertBefore(newNode: Node, referenceNode: Node | null): Node {
-		if (arguments.length < 2) {
-			throw new TypeError(
-				`Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only ${arguments.length} present.`
-			);
-		}
-
+	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
 		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
 		return ElementUtility.insertBefore(this, newNode, referenceNode);
 	}

@@ -18,6 +18,9 @@ import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement.
  */
 export default class HTMLScriptElement extends HTMLElement {
+	// Public properties
+	public cloneNode: (deep?: boolean) => HTMLScriptElement;
+
 	// Events
 	public onerror: (event: ErrorEvent) => void = null;
 	public onload: (event: Event) => void = null;
@@ -189,14 +192,10 @@ export default class HTMLScriptElement extends HTMLElement {
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): HTMLScriptElement {
-		return <HTMLScriptElement>super.cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): HTMLScriptElement {
+		return <HTMLScriptElement>super[PropertySymbol.cloneNode](deep);
 	}
 
 	/**

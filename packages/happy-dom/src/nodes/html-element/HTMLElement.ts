@@ -21,6 +21,9 @@ import IDataset from '../element/IDataset.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement.
  */
 export default class HTMLElement extends Element {
+	// Public properties
+	public cloneNode: (deep?: boolean) => HTMLElement;
+
 	// Events
 	public oncopy: (event: Event) => void | null = null;
 	public oncut: (event: Event) => void | null = null;
@@ -486,8 +489,8 @@ export default class HTMLElement extends Element {
 	/**
 	 * @override
 	 */
-	public cloneNode(deep = false): HTMLElement {
-		const clone = <HTMLElement>super.cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): HTMLElement {
+		const clone = <HTMLElement>super[PropertySymbol.cloneNode](deep);
 
 		clone[PropertySymbol.accessKey] = this[PropertySymbol.accessKey];
 		clone[PropertySymbol.contentEditable] = this[PropertySymbol.contentEditable];

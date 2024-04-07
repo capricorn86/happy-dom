@@ -12,6 +12,9 @@ import XMLParser from '../../xml-parser/XMLParser.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLTemplateElement.
  */
 export default class HTMLTemplateElement extends HTMLElement {
+	// Public properties
+	public cloneNode: (deep?: boolean) => HTMLTemplateElement;
+
 	// Internal properties
 	public [PropertySymbol.content]: DocumentFragment =
 		this[PropertySymbol.ownerDocument].createDocumentFragment();
@@ -80,37 +83,37 @@ export default class HTMLTemplateElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public appendChild(node: Node): Node {
+	public override [PropertySymbol.appendChild](node: Node): Node {
 		return this[PropertySymbol.content].appendChild(node);
 	}
 
 	/**
 	 * @override
 	 */
-	public removeChild(node: Node): Node {
+	public override [PropertySymbol.removeChild](node: Node): Node {
 		return this[PropertySymbol.content].removeChild(node);
 	}
 
 	/**
 	 * @override
 	 */
-	public insertBefore(newNode: Node, referenceNode: Node): Node {
+	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node): Node {
 		return this[PropertySymbol.content].insertBefore(newNode, referenceNode);
 	}
 
 	/**
 	 * @override
 	 */
-	public replaceChild(newChild: Node, oldChild: Node): Node {
+	public override [PropertySymbol.replaceChild](newChild: Node, oldChild: Node): Node {
 		return this[PropertySymbol.content].replaceChild(newChild, oldChild);
 	}
 
 	/**
 	 * @override
 	 */
-	public cloneNode(deep = false): HTMLTemplateElement {
-		const clone = <HTMLTemplateElement>super.cloneNode(deep);
-		clone[PropertySymbol.content] = this[PropertySymbol.content].cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): HTMLTemplateElement {
+		const clone = <HTMLTemplateElement>super[PropertySymbol.cloneNode](deep);
+		clone[PropertySymbol.content] = <DocumentFragment>this[PropertySymbol.content].cloneNode(deep);
 		return clone;
 	}
 }

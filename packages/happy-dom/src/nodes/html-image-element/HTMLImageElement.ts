@@ -15,6 +15,7 @@ export default class HTMLImageElement extends HTMLElement {
 	public [PropertySymbol.loading] = 'auto';
 	public [PropertySymbol.x] = 0;
 	public [PropertySymbol.y] = 0;
+	public cloneNode: (deep?: boolean) => HTMLImageElement;
 
 	/**
 	 * Returns complete.
@@ -310,13 +311,9 @@ export default class HTMLImageElement extends HTMLElement {
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): HTMLImageElement {
-		return <HTMLImageElement>super.cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): HTMLImageElement {
+		return <HTMLImageElement>super[PropertySymbol.cloneNode](deep);
 	}
 }

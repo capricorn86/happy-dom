@@ -422,6 +422,17 @@ describe('Node', () => {
 				Array.from(clone.childNodes.filter((node) => node.nodeType === Node.ELEMENT_NODE))
 			);
 		});
+
+		it('Supports Node.prototype.cloneNode.call(element).', () => {
+			expect(Node.prototype.cloneNode).toBe(HTMLElement.prototype.cloneNode);
+
+			const div = document.createElement('div');
+			const clone = Node.prototype.cloneNode.call(div);
+
+			expect(div.tagName).toBe(clone.tagName);
+			expect(div.localName).toBe(clone.localName);
+			expect(div.namespaceURI).toBe(clone.namespaceURI);
+		});
 	});
 
 	describe('appendChild()', () => {
@@ -479,6 +490,18 @@ describe('Node', () => {
 				);
 			}
 		});
+
+		it('Supports Node.prototype.appendChild.call(element).', () => {
+			expect(Node.prototype.appendChild).toBe(HTMLElement.prototype.appendChild);
+
+			const parent = document.createElement('div');
+			const child = document.createElement('span');
+
+			Node.prototype.appendChild.call(parent, child);
+
+			expect(parent.childNodes.length).toBe(1);
+			expect(parent.childNodes[0]).toBe(child);
+		});
 	});
 
 	describe('removeChild()', () => {
@@ -502,6 +525,18 @@ describe('Node', () => {
 			expect(Array.from(parent.childNodes)).toEqual([]);
 			expect(child.isConnected).toBe(false);
 			expect(removed).toEqual(child);
+		});
+
+		it('Supports Node.prototype.removeChild.call(element).', () => {
+			expect(Node.prototype.removeChild).toBe(HTMLElement.prototype.removeChild);
+
+			const parent = document.createElement('div');
+			const child = document.createElement('span');
+
+			Node.prototype.appendChild.call(parent, child);
+			Node.prototype.removeChild.call(parent, child);
+
+			expect(parent.childNodes.length).toBe(0);
 		});
 	});
 
@@ -575,6 +610,7 @@ describe('Node', () => {
 			parent.appendChild(child1);
 			parent.appendChild(child2);
 
+			// @ts-expect-error
 			expect(() => parent.insertBefore(newNode)).toThrow(
 				"Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only 1 present."
 			);
@@ -590,6 +626,7 @@ describe('Node', () => {
 			parent.appendChild(child1);
 			parent.appendChild(child2);
 			parent.insertBefore(newNode, null);
+			// @ts-expect-error
 			parent.insertBefore(newNode1, undefined);
 
 			expect(parent.childNodes[0]).toBe(child1);
@@ -627,6 +664,21 @@ describe('Node', () => {
 				);
 			}
 		});
+
+		it('Supports Node.prototype.insertBefore.call(element).', () => {
+			expect(Node.prototype.insertBefore).toBe(HTMLElement.prototype.insertBefore);
+
+			const parent = document.createElement('div');
+			const referenceNode = document.createElement('span');
+			const newNode = document.createElement('span');
+
+			Node.prototype.appendChild.call(parent, referenceNode);
+			Node.prototype.insertBefore.call(parent, newNode, referenceNode);
+
+			expect(parent.childNodes.length).toBe(2);
+			expect(parent.childNodes[0]).toBe(newNode);
+			expect(parent.childNodes[1]).toBe(referenceNode);
+		});
 	});
 
 	describe('replaceChild()', () => {
@@ -639,6 +691,27 @@ describe('Node', () => {
 			parent.appendChild(child1);
 			parent.appendChild(child2);
 			parent.replaceChild(newNode, child2);
+
+			expect(newNode.parentNode).toBe(parent);
+			expect(Array.from(parent.childNodes)).toEqual([child1, newNode]);
+			expect(newNode.isConnected).toBe(false);
+
+			document.body.appendChild(parent);
+
+			expect(newNode.isConnected).toBe(true);
+		});
+
+		it('Supports Node.prototype.replaceChild.call(element).', () => {
+			expect(Node.prototype.replaceChild).toBe(HTMLElement.prototype.replaceChild);
+
+			const child1 = document.createElement('span');
+			const child2 = document.createElement('span');
+			const newNode = document.createElement('span');
+			const parent = document.createElement('div');
+
+			parent.appendChild(child1);
+			parent.appendChild(child2);
+			Node.prototype.replaceChild.call(parent, newNode, child2);
 
 			expect(newNode.parentNode).toBe(parent);
 			expect(Array.from(parent.childNodes)).toEqual([child1, newNode]);
