@@ -47,7 +47,20 @@ test('CSS', () => {
         }
     `;
 
-	expect(globalThis.getComputedStyle(document.body).backgroundColor).toBe('green');
+	expect(getComputedStyle(document.body).backgroundColor).toBe('green');
+});
+
+test('Add event listener', () => {
+	const div = document.createElement('div');
+	document.body.appendChild(div);
+
+	document.body.addEventListener('click', () => {
+		div.style.backgroundColor = 'green';
+	});
+
+	div.dispatchEvent(new Event('click', { bubbles: true }));
+
+	expect(getComputedStyle(div).backgroundColor).toBe('green');
 });
 
 test('Window getters', () => {
@@ -64,8 +77,8 @@ test('Window getters', () => {
 });
 
 test('Window location', () => {
-	globalThis.location.href = 'https://example.com/';
-	expect(globalThis.location.href).toBe('https://example.com/');
+	location.href = 'https://example.com/';
+	expect(location.href).toBe('https://example.com/');
 });
 
 test('Window options', () => {
@@ -82,8 +95,8 @@ test('Window options', () => {
 		}
 	});
 
-	expect(globalThis.location.href).toBe('https://example.com/');
-	expect(globalThis.innerWidth).toBe(1920);
-	expect(globalThis.innerHeight).toBe(1080);
-	expect(globalThis.navigator.userAgent).toBe('Custom User Agent');
+	expect(location.href).toBe('https://example.com/');
+	expect(innerWidth).toBe(1920);
+	expect(innerHeight).toBe(1080);
+	expect(navigator.userAgent).toBe('Custom User Agent');
 });
