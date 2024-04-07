@@ -164,3 +164,7 @@ export const appendChild = Symbol('appendChild');
 export const removeChild = Symbol('removeChild');
 export const insertBefore = Symbol('insertBefore');
 export const replaceChild = Symbol('replaceChild');
+export const tracks = Symbol('tracks');
+export const constraints = Symbol('constraints');
+export const capabilities = Symbol('capabilities');
+export const settings = Symbol('settings');
