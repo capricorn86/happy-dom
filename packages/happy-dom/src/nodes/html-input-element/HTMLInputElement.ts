@@ -31,6 +31,9 @@ import { URL } from 'url';
  * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/nodes/nodes/HTMLInputElement-impl.js (MIT licensed).
  */
 export default class HTMLInputElement extends HTMLElement {
+	// Public properties
+	public cloneNode: (deep?: boolean) => HTMLInputElement;
+
 	// Events
 	public oninput: (event: Event) => void | null = null;
 	public oninvalid: (event: Event) => void | null = null;
@@ -1278,14 +1281,10 @@ export default class HTMLInputElement extends HTMLElement {
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): HTMLInputElement {
-		const clone = <HTMLInputElement>super.cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): HTMLInputElement {
+		const clone = <HTMLInputElement>super[PropertySymbol.cloneNode](deep);
 		clone.formAction = this.formAction;
 		clone.formMethod = this.formMethod;
 		clone[PropertySymbol.value] = this[PropertySymbol.value];

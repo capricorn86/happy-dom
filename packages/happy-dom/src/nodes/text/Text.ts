@@ -10,6 +10,7 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
  * Text node.
  */
 export default class Text extends CharacterData {
+	public cloneNode: (deep?: boolean) => Text;
 	public override [PropertySymbol.nodeType] = NodeTypeEnum.textNode;
 
 	/**
@@ -79,14 +80,10 @@ export default class Text extends CharacterData {
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): Text {
-		return <Text>super.cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): Text {
+		return <Text>super[PropertySymbol.cloneNode](deep);
 	}
 
 	/**

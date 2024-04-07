@@ -328,6 +328,63 @@ export default class Node extends EventTarget {
 	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): Node {
+		return this[PropertySymbol.cloneNode](deep);
+	}
+
+	/**
+	 * Append a child node to childNodes.
+	 *
+	 * @param  node Node to append.
+	 * @returns Appended node.
+	 */
+	public appendChild(node: Node): Node {
+		return this[PropertySymbol.appendChild](node);
+	}
+
+	/**
+	 * Remove Child element from childNodes array.
+	 *
+	 * @param node Node to remove.
+	 * @returns Removed node.
+	 */
+	public removeChild(node: Node): Node {
+		return this[PropertySymbol.removeChild](node);
+	}
+
+	/**
+	 * Inserts a node before another.
+	 *
+	 * @param newNode Node to insert.
+	 * @param referenceNode Node to insert before.
+	 * @returns Inserted node.
+	 */
+	public insertBefore(newNode: Node, referenceNode: Node | null): Node {
+		if (arguments.length < 2) {
+			throw new TypeError(
+				`Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only ${arguments.length} present.`
+			);
+		}
+		return this[PropertySymbol.insertBefore](newNode, referenceNode);
+	}
+
+	/**
+	 * Replaces a node with another.
+	 *
+	 * @param newChild New child.
+	 * @param oldChild Old child.
+	 * @returns Replaced node.
+	 */
+	public replaceChild(newChild: Node, oldChild: Node): Node {
+		return this[PropertySymbol.replaceChild](newChild, oldChild);
+	}
+
+	/**
+	 * Clones a node.
+	 *
+	 * @param [deep=false] "true" to clone deep.
+	 * @returns Cloned node.
+	 */
+	public [PropertySymbol.cloneNode](deep = false): Node {
 		const clone = NodeFactory.createNode<Node>(
 			this[PropertySymbol.ownerDocument],
 			<typeof Node>this.constructor
@@ -357,7 +414,7 @@ export default class Node extends EventTarget {
 	 * @param  node Node to append.
 	 * @returns Appended node.
 	 */
-	public appendChild(node: Node): Node {
+	public [PropertySymbol.appendChild](node: Node): Node {
 		return NodeUtility.appendChild(this, node);
 	}
 
@@ -367,7 +424,7 @@ export default class Node extends EventTarget {
 	 * @param node Node to remove.
 	 * @returns Removed node.
 	 */
-	public removeChild(node: Node): Node {
+	public [PropertySymbol.removeChild](node: Node): Node {
 		return NodeUtility.removeChild(this, node);
 	}
 
@@ -378,12 +435,7 @@ export default class Node extends EventTarget {
 	 * @param referenceNode Node to insert before.
 	 * @returns Inserted node.
 	 */
-	public insertBefore(newNode: Node, referenceNode: Node | null): Node {
-		if (arguments.length < 2) {
-			throw new TypeError(
-				`Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only ${arguments.length} present.`
-			);
-		}
+	public [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
 		return NodeUtility.insertBefore(this, newNode, referenceNode);
 	}
 
@@ -394,7 +446,7 @@ export default class Node extends EventTarget {
 	 * @param oldChild Old child.
 	 * @returns Replaced node.
 	 */
-	public replaceChild(newChild: Node, oldChild: Node): Node {
+	public [PropertySymbol.replaceChild](newChild: Node, oldChild: Node): Node {
 		this.insertBefore(newChild, oldChild);
 		this.removeChild(oldChild);
 

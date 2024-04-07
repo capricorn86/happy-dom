@@ -82,8 +82,8 @@ export default class HTMLStyleElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public override appendChild(node: Node): Node {
-		const returnValue = super.appendChild(node);
+	public override [PropertySymbol.appendChild](node: Node): Node {
+		const returnValue = super[PropertySymbol.appendChild](node);
 		if (this[PropertySymbol.sheet]) {
 			this[PropertySymbol.sheet].replaceSync(this.textContent);
 		}
@@ -93,8 +93,8 @@ export default class HTMLStyleElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public override removeChild(node: Node): Node {
-		const returnValue = super.removeChild(node);
+	public override [PropertySymbol.removeChild](node: Node): Node {
+		const returnValue = super[PropertySymbol.removeChild](node);
 		if (this[PropertySymbol.sheet]) {
 			this[PropertySymbol.sheet].replaceSync(this.textContent);
 		}
@@ -104,8 +104,8 @@ export default class HTMLStyleElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public override insertBefore(newNode: Node, referenceNode: Node | null): Node {
-		const returnValue = super.insertBefore(newNode, referenceNode);
+	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
+		const returnValue = super[PropertySymbol.insertBefore](newNode, referenceNode);
 		if (this[PropertySymbol.sheet]) {
 			this[PropertySymbol.sheet].replaceSync(this.textContent);
 		}

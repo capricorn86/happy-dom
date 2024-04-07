@@ -12,6 +12,9 @@ import SVGElement from '../svg-element/SVGElement.js';
  * ShadowRoot.
  */
 export default class ShadowRoot extends DocumentFragment {
+	// Public properties
+	public cloneNode: (deep?: boolean) => ShadowRoot;
+
 	// Events
 	public onslotchange: (event: Event) => void | null = null;
 
@@ -113,14 +116,10 @@ export default class ShadowRoot extends DocumentFragment {
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): ShadowRoot {
-		const clone = <ShadowRoot>super.cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): ShadowRoot {
+		const clone = <ShadowRoot>super[PropertySymbol.cloneNode](deep);
 		clone[PropertySymbol.mode] = this.mode;
 		return clone;
 	}

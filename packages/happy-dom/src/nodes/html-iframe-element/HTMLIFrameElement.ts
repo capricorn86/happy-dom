@@ -18,6 +18,9 @@ import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLIFrameElement.
  */
 export default class HTMLIFrameElement extends HTMLElement {
+	// Public properties
+	public cloneNode: (deep?: boolean) => HTMLIFrameElement;
+
 	// Events
 	public onload: (event: Event) => void | null = null;
 	public onerror: (event: Event) => void | null = null;
@@ -25,6 +28,7 @@ export default class HTMLIFrameElement extends HTMLElement {
 	// Internal properties
 	public override [PropertySymbol.attributes]: NamedNodeMap;
 	public [PropertySymbol.sandbox]: DOMTokenList = null;
+
 	// Private properties
 	#contentWindowContainer: { window: BrowserWindow | CrossOriginBrowserWindow | null } = {
 		window: null
@@ -226,13 +230,9 @@ export default class HTMLIFrameElement extends HTMLElement {
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): HTMLIFrameElement {
-		return <HTMLIFrameElement>super.cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): HTMLIFrameElement {
+		return <HTMLIFrameElement>super[PropertySymbol.cloneNode](deep);
 	}
 }

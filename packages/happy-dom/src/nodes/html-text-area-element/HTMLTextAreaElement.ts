@@ -21,6 +21,8 @@ import HTMLTextAreaElementNamedNodeMap from './HTMLTextAreaElementNamedNodeMap.j
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLTextAreaElement.
  */
 export default class HTMLTextAreaElement extends HTMLElement {
+	// Public properties
+	public cloneNode: (deep?: boolean) => HTMLTextAreaElement;
 	public readonly type = 'textarea';
 
 	// Events
@@ -566,14 +568,10 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): HTMLTextAreaElement {
-		const clone = <HTMLTextAreaElement>super.cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): HTMLTextAreaElement {
+		const clone = <HTMLTextAreaElement>super[PropertySymbol.cloneNode](deep);
 
 		clone[PropertySymbol.value] = this[PropertySymbol.value];
 		clone.#selectionStart = this.#selectionStart;

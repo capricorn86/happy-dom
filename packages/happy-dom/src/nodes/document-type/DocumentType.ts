@@ -10,6 +10,7 @@ export default class DocumentType extends Node {
 	public [PropertySymbol.name] = '';
 	public [PropertySymbol.publicId] = '';
 	public [PropertySymbol.systemId] = '';
+	public cloneNode: (deep?: boolean) => DocumentType;
 
 	/**
 	 * Returns name.
@@ -57,14 +58,10 @@ export default class DocumentType extends Node {
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): DocumentType {
-		const clone = <DocumentType>super.cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): DocumentType {
+		const clone = <DocumentType>super[PropertySymbol.cloneNode](deep);
 		clone[PropertySymbol.name] = this[PropertySymbol.name];
 		clone[PropertySymbol.publicId] = this[PropertySymbol.publicId];
 		clone[PropertySymbol.systemId] = this[PropertySymbol.systemId];

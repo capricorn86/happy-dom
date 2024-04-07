@@ -8,11 +8,15 @@ import SVGTransform from './SVGTransform.js';
 import SVGAnimatedRect from './SVGAnimatedRect.js';
 import Node from '../node/Node.js';
 import Event from '../../event/Event.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * SVGSVGElement.
  */
 export default class SVGSVGElement extends SVGGraphicsElement {
+	// Public properties
+	public cloneNode: (deep?: boolean) => SVGSVGElement;
+
 	// Events
 	public onafterprint: (event: Event) => void | null = null;
 	public onbeforeprint: (event: Event) => void | null = null;
@@ -326,13 +330,9 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): SVGSVGElement {
-		return <SVGSVGElement>super.cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): SVGSVGElement {
+		return <SVGSVGElement>super[PropertySymbol.cloneNode](deep);
 	}
 }

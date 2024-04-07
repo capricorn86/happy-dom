@@ -13,6 +13,9 @@ import Event from '../../event/Event.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement.
  */
 export default class HTMLSlotElement extends HTMLElement {
+	// Public properties
+	public cloneNode: (deep?: boolean) => HTMLSlotElement;
+
 	// Events
 	public onslotchange: (event: Event) => void | null = null;
 
@@ -102,13 +105,9 @@ export default class HTMLSlotElement extends HTMLElement {
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): HTMLSlotElement {
-		return <HTMLSlotElement>super.cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): HTMLSlotElement {
+		return <HTMLSlotElement>super[PropertySymbol.cloneNode](deep);
 	}
 }
