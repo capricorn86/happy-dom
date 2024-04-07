@@ -361,6 +361,24 @@ describe('HTMLElement', () => {
 		});
 	});
 
+	describe('get inert()', () => {
+		it('Returns the attribute "inert".', () => {
+			const div = <HTMLElement>document.createElement('div');
+			div.setAttribute('inert', '');
+			expect(div.inert).toBe(true);
+		});
+	});
+
+	describe('set inert()', () => {
+		it('Sets the attribute "inert".', () => {
+			const div = <HTMLElement>document.createElement('div');
+			div.inert = true;
+			expect(div.getAttribute('inert')).toBe('');
+			div.inert = false;
+			expect(div.getAttribute('inert')).toBe(null);
+		});
+	});
+
 	for (const property of ['lang', 'title']) {
 		describe(`get ${property}`, () => {
 			it(`Returns the attribute "${property}".`, () => {

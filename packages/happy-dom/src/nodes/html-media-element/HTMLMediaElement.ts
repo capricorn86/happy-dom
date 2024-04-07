@@ -19,6 +19,9 @@ interface IMediaError {
  *
  */
 export default class HTMLMediaElement extends HTMLElement {
+	// Public properties
+	public cloneNode: (deep?: boolean) => HTMLMediaElement;
+
 	// Events
 	public onabort: (event: Event) => void | null = null;
 	public oncanplay: (event: Event) => void | null = null;
@@ -528,17 +531,9 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
-	/**
-	 *
-	 * @param deep
-	 */
-	public cloneNode(deep = false): HTMLMediaElement {
-		return <HTMLMediaElement>super.cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): HTMLMediaElement {
+		return <HTMLMediaElement>super[PropertySymbol.cloneNode](deep);
 	}
 }

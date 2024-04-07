@@ -21,6 +21,9 @@ import BrowserWindow from '../../window/BrowserWindow.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement.
  */
 export default class HTMLFormElement extends HTMLElement {
+	// Public properties
+	public cloneNode: (deep?: boolean) => HTMLFormElement;
+
 	// Internal properties.
 	public [PropertySymbol.elements]: HTMLFormControlsCollection = new HTMLFormControlsCollection();
 	public [PropertySymbol.length] = 0;
@@ -325,14 +328,10 @@ export default class HTMLFormElement extends HTMLElement {
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): HTMLFormElement {
-		return <HTMLFormElement>super.cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): HTMLFormElement {
+		return <HTMLFormElement>super[PropertySymbol.cloneNode](deep);
 	}
 
 	/**

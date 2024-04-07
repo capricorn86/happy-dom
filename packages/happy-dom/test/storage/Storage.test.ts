@@ -1,6 +1,6 @@
 import Storage from '../../src/storage/Storage.js';
 import StorageFactory from '../../src/storage/StorageFactory.js';
-import { beforeEach, describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 
 describe('Storage', () => {
 	let storage: Storage;
@@ -138,6 +138,32 @@ describe('Storage', () => {
 			expect(storage.getItem('key2')).toBe(null);
 			expect(storage['key1']).toBe(undefined);
 			expect(storage['key2']).toBe(undefined);
+		});
+	});
+
+	describe('vi.spyOn()', () => {
+		it('Should spy on a method.', () => {
+			const spy = vi.spyOn(storage, 'getItem');
+			storage.getItem('key1');
+			expect(spy).toHaveBeenCalled();
+		});
+
+		it('Should be able to mock implementation once.', () => {
+			vi.spyOn(storage, 'getItem').mockImplementationOnce(() => 'mocked');
+			expect(storage.getItem('key1')).toBe('mocked');
+			expect(storage.getItem('key1')).toBe(null);
+
+			vi.spyOn(storage, 'setItem').mockImplementationOnce(() => {
+				throw new Error('error');
+			});
+
+			expect(() => storage.setItem('key1', 'value1')).toThrow('error');
+		});
+
+		it('Should be able to spy on prototype methods.', () => {
+			vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => 'mocked');
+
+			expect(storage.getItem('key1')).toBe('mocked');
 		});
 	});
 });

@@ -41,6 +41,7 @@ async function main(): Promise<void> {
 	function testGetters(): void {
 		const included: string[] = [];
 		const propertyNames = Object.getOwnPropertyNames(global);
+
 		for (const name of GETTERS) {
 			if (propertyNames.includes(name)) {
 				included.push(name);
@@ -49,11 +50,7 @@ async function main(): Promise<void> {
 
 		if (included.length !== GETTERS.length) {
 			throw Error(
-				'Object.getOwnPropertyNames() did not return all properties defined as getter. Expected: ' +
-					GETTERS.join(', ') +
-					'. Got: ' +
-					included.join(', ') +
-					'.'
+				`Object.getOwnPropertyNames() did not return all properties defined as getter. Expected: "${GETTERS.join(', ')}", Got: "${included.join(', ')}".`
 			);
 		}
 	}
@@ -122,6 +119,31 @@ async function main(): Promise<void> {
 	testLocationHref();
 
 	/**
+	 * Test CSS.
+	 */
+	function testCSS(): void {
+		const style = document.createElement('style');
+		document.head.appendChild(style);
+		style.innerHTML = `
+            body {
+                background-color: red;
+            }
+
+            @media (min-width: 1000px) {
+                body {
+                    background-color: green;
+                }
+            }
+        `;
+
+		if (globalThis.getComputedStyle(document.body).backgroundColor !== 'green') {
+			throw Error('The CSS was not applied correctly.');
+		}
+	}
+
+	testCSS();
+
+	/**
 	 * Unregisters Happy DOM globally.
 	 */
 	GlobalRegistrator.unregister();
@@ -132,17 +154,21 @@ async function main(): Promise<void> {
 	function testGettersAfterUnregister(): void {
 		const included: string[] = [];
 		const propertyNames = Object.getOwnPropertyNames(global);
+
 		for (const name of GETTERS) {
 			if (propertyNames.includes(name)) {
 				included.push(name);
 			}
 		}
 
-		if (included.length !== 0) {
+		// In Node.js v21 and later, the navigator property is available.
+		if (!included.includes('navigator')) {
+			included.push('navigator');
+		}
+
+		if (included.length !== 1 || included[0] !== 'navigator') {
 			throw Error(
-				'Object.getOwnPropertyNames() did not remove all properties defined as getter. Expected: []. Got: ' +
-					included.join(', ') +
-					'.'
+				`GlobalObserver.unregister() did not remove all properties defined as getter. Expected: "navigator", Got: "${included.join(', ')}".`
 			);
 		}
 	}

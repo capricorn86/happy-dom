@@ -49,6 +49,7 @@ export default class Element
 	public static [PropertySymbol.localName]: string | null = null;
 	public static [PropertySymbol.namespaceURI]: string | null = null;
 	public static observedAttributes: string[];
+	public cloneNode: (deep?: boolean) => Element;
 
 	// Events
 	public oncancel: (event: Event) => void | null = null;
@@ -464,14 +465,10 @@ export default class Element
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): Element {
-		const clone = <Element>super.cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): Element {
+		const clone = <Element>super[PropertySymbol.cloneNode](deep);
 
 		clone[PropertySymbol.tagName] = this[PropertySymbol.tagName];
 		clone[PropertySymbol.localName] = this[PropertySymbol.localName];
@@ -504,7 +501,7 @@ export default class Element
 	/**
 	 * @override
 	 */
-	public override appendChild(node: Node): Node {
+	public override [PropertySymbol.appendChild](node: Node): Node {
 		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
 		return ElementUtility.appendChild(this, node);
 	}
@@ -512,7 +509,7 @@ export default class Element
 	/**
 	 * @override
 	 */
-	public override removeChild(node: Node): Node {
+	public override [PropertySymbol.removeChild](node: Node): Node {
 		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
 		return ElementUtility.removeChild(this, node);
 	}
@@ -520,13 +517,7 @@ export default class Element
 	/**
 	 * @override
 	 */
-	public override insertBefore(newNode: Node, referenceNode: Node | null): Node {
-		if (arguments.length < 2) {
-			throw new TypeError(
-				`Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only ${arguments.length} present.`
-			);
-		}
-
+	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
 		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
 		return ElementUtility.insertBefore(this, newNode, referenceNode);
 	}

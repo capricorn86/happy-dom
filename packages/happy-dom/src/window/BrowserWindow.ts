@@ -78,7 +78,7 @@ import Plugin from '../navigator/Plugin.js';
 import PluginArray from '../navigator/PluginArray.js';
 import Attr from '../nodes/attr/Attr.js';
 import CharacterData from '../nodes/character-data/CharacterData.js';
-import Comment from '../nodes/comment/Comment.js';
+import CommentImplementation from '../nodes/comment/Comment.js';
 import DocumentFragmentImplementation from '../nodes/document-fragment/DocumentFragment.js';
 import DocumentType from '../nodes/document-type/DocumentType.js';
 import DocumentImplementation from '../nodes/document/Document.js';
@@ -167,7 +167,7 @@ import SVGDocumentImplementation from '../nodes/svg-document/SVGDocument.js';
 import SVGElement from '../nodes/svg-element/SVGElement.js';
 import SVGGraphicsElement from '../nodes/svg-element/SVGGraphicsElement.js';
 import SVGSVGElement from '../nodes/svg-element/SVGSVGElement.js';
-import Text from '../nodes/text/Text.js';
+import TextImplementation from '../nodes/text/Text.js';
 import XMLDocumentImplementation from '../nodes/xml-document/XMLDocument.js';
 import PermissionStatus from '../permissions/PermissionStatus.js';
 import Permissions from '../permissions/Permissions.js';
@@ -217,8 +217,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly SVGSVGElement: typeof SVGSVGElement = SVGSVGElement;
 	public readonly SVGElement: typeof SVGElement = SVGElement;
 	public readonly SVGGraphicsElement: typeof SVGGraphicsElement = SVGGraphicsElement;
-	public readonly Text: typeof Text = Text;
-	public readonly Comment: typeof Comment = Comment;
 	public readonly ShadowRoot: typeof ShadowRoot = ShadowRoot;
 	public readonly ProcessingInstruction: typeof ProcessingInstruction = ProcessingInstruction;
 	public readonly Element: typeof Element = Element;
@@ -228,6 +226,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly HTMLDocument: new () => HTMLDocumentImplementation;
 	public readonly XMLDocument: new () => XMLDocumentImplementation;
 	public readonly SVGDocument: new () => SVGDocumentImplementation;
+	public readonly Text: typeof TextImplementation;
+	public readonly Comment: typeof CommentImplementation;
 
 	// Element classes
 	public readonly HTMLAnchorElement: typeof HTMLAnchorElement = HTMLAnchorElement;
@@ -565,34 +565,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 
 		WindowBrowserSettingsReader.setSettings(this, this.#browserFrame.page.context.browser.settings);
 
-		// Binds getts and setters, so that they will appear as an "own" property when using Object.getOwnPropertyNames().
-		// This is needed for Vitest to work as it relies on Object.getOwnPropertyNames() to get the list of properties.
-		// @see https://github.com/capricorn86/happy-dom/issues/1339
-		// Binds all methods to "this", so that it will use the correct context when called globally.
-		const propertyDescriptors = Object.assign(
-			Object.getOwnPropertyDescriptors(EventTarget.prototype),
-			Object.getOwnPropertyDescriptors(BrowserWindow.prototype)
-		);
-		for (const key of Object.keys(propertyDescriptors)) {
-			const descriptor = propertyDescriptors[key];
-			if (descriptor.get || descriptor.set) {
-				Object.defineProperty(this, key, {
-					configurable: true,
-					enumerable: true,
-					get: descriptor.get?.bind(this),
-					set: descriptor.set?.bind(this)
-				});
-			} else if (
-				key !== 'constructor' &&
-				key[0] !== '_' &&
-				key[0] === key[0].toLowerCase() &&
-				typeof this[key] === 'function' &&
-				!this[key].toString().startsWith('class ')
-			) {
-				this[key] = this[key].bind(this);
-			}
-		}
-
 		const window = this;
 		const asyncTaskManager = this.#browserFrame[PropertySymbol.asyncTaskManager];
 
@@ -678,12 +650,16 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		class Audio extends AudioImplementation {}
 		class Image extends ImageImplementation {}
 		class DocumentFragment extends DocumentFragmentImplementation {}
+		class Text extends TextImplementation {}
+		class Comment extends CommentImplementation {}
 
 		/* eslint-enable jsdoc/require-jsdoc */
 
 		this.Response = Response;
 		this.Request = Request;
 		this.Image = Image;
+		this.Text = Text;
+		this.Comment = Comment;
 		this.DocumentFragment = DocumentFragment;
 		this.FileReader = FileReader;
 		this.DOMParser = DOMParser;
@@ -713,6 +689,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this.Audio[PropertySymbol.ownerDocument] = this.document;
 		this.Image[PropertySymbol.ownerDocument] = this.document;
 		this.DocumentFragment[PropertySymbol.ownerDocument] = this.document;
+		this.Text[PropertySymbol.ownerDocument] = this.document;
+		this.Comment[PropertySymbol.ownerDocument] = this.document;
 
 		// Ready state manager
 		this[PropertySymbol.readyStateManager].waitUntilComplete().then(() => {
@@ -720,6 +698,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			this.document.dispatchEvent(new Event('readystatechange'));
 			this.document.dispatchEvent(new Event('load', { bubbles: true }));
 		});
+
+		this.#bindToThisScope();
 	}
 
 	/**
@@ -1356,6 +1336,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this.Audio[PropertySymbol.ownerDocument] = null;
 		this.Image[PropertySymbol.ownerDocument] = null;
 		this.DocumentFragment[PropertySymbol.ownerDocument] = null;
+		this.Text[PropertySymbol.ownerDocument] = null;
+		this.Comment[PropertySymbol.ownerDocument] = null;
 
 		const mutationObservers = this[PropertySymbol.mutationObservers];
 
@@ -1382,5 +1364,39 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this.document[PropertySymbol.selection] = null;
 
 		WindowBrowserSettingsReader.removeSettings(this);
+	}
+
+	/**
+	 * Binds methods, getters and setters to a scope.
+	 *
+	 * Getters and setters need to be bound to show up in Object.getOwnPropertyNames(), which is something Vitest and GlobalRegistrator relies on.
+	 *
+	 * @see https://github.com/capricorn86/happy-dom/issues/1339
+	 */
+	#bindToThisScope(): void {
+		const propertyDescriptors = Object.assign(
+			Object.getOwnPropertyDescriptors(EventTarget.prototype),
+			Object.getOwnPropertyDescriptors(BrowserWindow.prototype)
+		);
+
+		for (const key of Object.keys(propertyDescriptors)) {
+			const descriptor = propertyDescriptors[key];
+			if (descriptor.get || descriptor.set) {
+				Object.defineProperty(this, key, {
+					configurable: true,
+					enumerable: true,
+					get: descriptor.get?.bind(this),
+					set: descriptor.set?.bind(this)
+				});
+			} else if (
+				key !== 'constructor' &&
+				key[0] !== '_' &&
+				key[0] === key[0].toLowerCase() &&
+				typeof this[key] === 'function' &&
+				!this[key].toString().startsWith('class ')
+			) {
+				this[key] = this[key].bind(this);
+			}
+		}
 	}
 }

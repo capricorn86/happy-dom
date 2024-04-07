@@ -7,6 +7,7 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
  */
 export default class Comment extends CharacterData {
 	public [PropertySymbol.nodeType] = NodeTypeEnum.commentNode;
+	public cloneNode: (deep?: boolean) => Comment;
 
 	/**
 	 * Node name.
@@ -27,13 +28,9 @@ export default class Comment extends CharacterData {
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): Comment {
-		return <Comment>super.cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): Comment {
+		return <Comment>super[PropertySymbol.cloneNode](deep);
 	}
 }

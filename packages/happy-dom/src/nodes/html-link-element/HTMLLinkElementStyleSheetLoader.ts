@@ -38,6 +38,7 @@ export default class HTMLLinkElementStyleSheetLoader {
 	public async loadStyleSheet(url: string | null, rel: string | null): Promise<void> {
 		const element = this.#element;
 		const browserSettings = this.#browserFrame.page.context.browser.settings;
+		const window = element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow];
 
 		if (
 			!url ||
@@ -50,10 +51,7 @@ export default class HTMLLinkElementStyleSheetLoader {
 
 		let absoluteURL: string;
 		try {
-			absoluteURL = new URL(
-				url,
-				element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].location.href
-			).href;
+			absoluteURL = new URL(url, window.location.href).href;
 		} catch (error) {
 			return;
 		}
@@ -79,10 +77,10 @@ export default class HTMLLinkElementStyleSheetLoader {
 
 		const resourceFetch = new ResourceFetch({
 			browserFrame: this.#browserFrame,
-			window: element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow]
+			window: window
 		});
 		const readyStateManager = (<{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }>(
-			(<unknown>element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow])
+			(<unknown>window)
 		))[PropertySymbol.readyStateManager];
 
 		this.#loadedStyleSheetURL = absoluteURL;

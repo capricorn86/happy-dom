@@ -146,4 +146,16 @@ describe('JavaScript', () => {
 		removeEventListener('click', eventListener);
 		clearTimeout(setTimeout(eventListener));
 	});
+
+	it('Should be able to spy on Window.localStorage methods.', () => {
+		jest.spyOn(Storage.prototype, 'getItem').mockImplementationOnce(() => 'mocked');
+		expect(localStorage.getItem('key1')).toBe('mocked');
+		expect(localStorage.getItem('key1')).toBe(null);
+
+		jest.spyOn(Storage.prototype, 'setItem').mockImplementationOnce(() => {
+			throw new Error('error');
+		});
+
+		expect(() => Storage.prototype.setItem('key1', 'value1')).toThrow('error');
+	});
 });

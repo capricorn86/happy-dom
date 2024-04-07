@@ -20,6 +20,7 @@ export default abstract class CharacterData
 	implements IChildNode, INonDocumentTypeChildNode
 {
 	public [PropertySymbol.data] = '';
+	public cloneNode: (deep?: boolean) => CharacterData;
 
 	/**
 	 * Constructor.
@@ -220,14 +221,10 @@ export default abstract class CharacterData
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): CharacterData {
-		const clone = <CharacterData>super.cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): CharacterData {
+		const clone = <CharacterData>super[PropertySymbol.cloneNode](deep);
 		clone[PropertySymbol.data] = this[PropertySymbol.data];
 		return clone;
 	}

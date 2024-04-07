@@ -9,6 +9,7 @@ import HTMLIFrameElementNamedNodeMap from './HTMLIFrameElementNamedNodeMap.js';
 import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import HTMLIFrameElementPageLoader from './HTMLIFrameElementPageLoader.js';
+import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
 
 /**
  * HTML Iframe Element.
@@ -17,12 +18,16 @@ import HTMLIFrameElementPageLoader from './HTMLIFrameElementPageLoader.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLIFrameElement.
  */
 export default class HTMLIFrameElement extends HTMLElement {
+	// Public properties
+	public cloneNode: (deep?: boolean) => HTMLIFrameElement;
+
 	// Events
 	public onload: (event: Event) => void | null = null;
 	public onerror: (event: Event) => void | null = null;
 
 	// Internal properties
 	public override [PropertySymbol.attributes]: NamedNodeMap;
+	public [PropertySymbol.sandbox]: DOMTokenList = null;
 
 	// Private properties
 	#contentWindowContainer: { window: BrowserWindow | CrossOriginBrowserWindow | null } = {
@@ -140,14 +145,15 @@ export default class HTMLIFrameElement extends HTMLElement {
 	 *
 	 * @returns Sandbox.
 	 */
-	public get sandbox(): string {
-		return this.getAttribute('sandbox') || '';
+	public get sandbox(): DOMTokenList {
+		if (!this[PropertySymbol.sandbox]) {
+			this[PropertySymbol.sandbox] = new DOMTokenList(this, 'sandbox');
+		}
+		return <DOMTokenList>this[PropertySymbol.sandbox];
 	}
 
 	/**
 	 * Sets sandbox.
-	 *
-	 * @param sandbox Sandbox.
 	 */
 	public set sandbox(sandbox: string) {
 		this.setAttribute('sandbox', sandbox);
@@ -163,7 +169,7 @@ export default class HTMLIFrameElement extends HTMLElement {
 	}
 
 	/**
-	 * Sets sandbox.
+	 * Sets srcdoc.
 	 *
 	 * @param srcdoc Srcdoc.
 	 */
@@ -224,13 +230,9 @@ export default class HTMLIFrameElement extends HTMLElement {
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): HTMLIFrameElement {
-		return <HTMLIFrameElement>super.cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): HTMLIFrameElement {
+		return <HTMLIFrameElement>super[PropertySymbol.cloneNode](deep);
 	}
 }

@@ -69,6 +69,7 @@ export default class Document extends Node {
 	public [PropertySymbol.referrer] = '';
 	public [PropertySymbol.defaultView]: BrowserWindow | null = null;
 	public [PropertySymbol.ownerWindow]: BrowserWindow;
+	public cloneNode: (deep?: boolean) => Document;
 
 	// Private properties
 	#selection: Selection = null;
@@ -800,14 +801,10 @@ export default class Document extends Node {
 	}
 
 	/**
-	 * Clones a node.
-	 *
 	 * @override
-	 * @param [deep=false] "true" to clone deep.
-	 * @returns Cloned node.
 	 */
-	public cloneNode(deep = false): Document {
-		const clone = <Document>super.cloneNode(deep);
+	public override [PropertySymbol.cloneNode](deep = false): Document {
+		const clone = <Document>super[PropertySymbol.cloneNode](deep);
 
 		if (deep) {
 			for (const node of clone[PropertySymbol.childNodes]) {
@@ -823,7 +820,7 @@ export default class Document extends Node {
 	/**
 	 * @override
 	 */
-	public override appendChild(node: Node): Node {
+	public override [PropertySymbol.appendChild](node: Node): Node {
 		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
 		return ElementUtility.appendChild(this, node);
 	}
@@ -831,7 +828,7 @@ export default class Document extends Node {
 	/**
 	 * @override
 	 */
-	public override removeChild(node: Node): Node {
+	public override [PropertySymbol.removeChild](node: Node): Node {
 		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
 		return ElementUtility.removeChild(this, node);
 	}
@@ -839,13 +836,7 @@ export default class Document extends Node {
 	/**
 	 * @override
 	 */
-	public override insertBefore(newNode: Node, referenceNode: Node | null): Node {
-		if (arguments.length < 2) {
-			throw new TypeError(
-				`Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only ${arguments.length} present.`
-			);
-		}
-
+	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
 		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
 		return ElementUtility.insertBefore(this, newNode, referenceNode);
 	}
@@ -1165,8 +1156,13 @@ export default class Document extends Node {
 	 * @param [data] Text data.
 	 * @returns Text node.
 	 */
-	public createTextNode(data?: string): Text {
-		return NodeFactory.createNode<Text>(this, this[PropertySymbol.ownerWindow].Text, data);
+	public createTextNode(data: string): Text {
+		if (arguments.length < 1) {
+			throw new TypeError(
+				`Failed to execute 'createTextNode' on 'Document': 1 argument required, but only ${arguments.length} present.`
+			);
+		}
+		return NodeFactory.createNode<Text>(this, this[PropertySymbol.ownerWindow].Text, String(data));
 	}
 
 	/**
