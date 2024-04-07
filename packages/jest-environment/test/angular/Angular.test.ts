@@ -3,7 +3,7 @@ import { enableProdMode } from '@angular/core';
 import 'zone.js';
 import AngularModule from './AngularModule';
 
-describe('React', () => {
+describe('Angular', () => {
 	let appElement: Element;
 
 	beforeEach(() => {
