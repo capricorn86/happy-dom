@@ -7,8 +7,8 @@ import ImageBitmap from './ImageBitmap.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas/OffscreenCanvas
  */
 export default class OffscreenCanvas {
-	public width: number;
-	public height: number;
+	public readonly width: number;
+	public readonly height: number;
 
 	/**
 	 * Constructor.
@@ -43,8 +43,8 @@ export default class OffscreenCanvas {
 	 * @param [_options.quality] Quality.
 	 * @returns Blob.
 	 */
-	public convertToBlob(_options?: { type?: string; quality?: any }): Promise<Blob> {
-		return Promise.resolve(new Blob([]));
+	public async convertToBlob(_options?: { type?: string; quality?: any }): Promise<Blob> {
+		return new Blob([]);
 	}
 
 	/**

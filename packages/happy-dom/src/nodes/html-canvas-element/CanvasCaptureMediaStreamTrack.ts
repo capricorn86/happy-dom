@@ -10,13 +10,15 @@ export default class CanvasCaptureMediaStreamTrack extends MediaStreamTrack {
 	public canvas: HTMLCanvasElement;
 
 	/**
+	 * Constructor.
 	 *
-	 * @param canvas
-	 * @param frameRate
+	 * @param options Options.
+	 * @param options.kind 'audio' or 'video'.
+	 * @param options.canvas Canvas.
 	 */
-	constructor(canvas: HTMLCanvasElement) {
-		super();
-		this.canvas = canvas;
+	constructor(options: { kind: 'audio' | 'video'; canvas: HTMLCanvasElement }) {
+		super(options);
+		this.canvas = options.canvas;
 	}
 
 	/**
@@ -31,7 +33,7 @@ export default class CanvasCaptureMediaStreamTrack extends MediaStreamTrack {
 	 *
 	 * @returns Clone.
 	 */
-	public clone(): MediaStreamTrack {
+	public clone(): CanvasCaptureMediaStreamTrack {
 		const clone = <CanvasCaptureMediaStreamTrack>super.clone();
 		clone.canvas = this.canvas;
 		return clone;

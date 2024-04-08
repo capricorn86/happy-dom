@@ -6,6 +6,8 @@ import Blob from '../../file/Blob.js';
 import OffscreenCanvas from './OffscreenCanvas.js';
 import Event from '../../event/Event.js';
 
+const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+ab12C3+1aBCdEf==';
+
 /**
  * HTMLCanvasElement
  *
@@ -60,15 +62,29 @@ export default class HTMLCanvasElement extends HTMLElement {
 	/**
 	 * Returns capture stream.
 	 *
-	 * @param [_frameRate] Frame rate.
+	 * @param [frameRate] Frame rate.
 	 * @returns Capture stream.
 	 */
-	public captureStream(_frameRate?: number): MediaStream {
+	public captureStream(frameRate?: number): MediaStream {
 		const stream = new MediaStream();
-		stream.addTrack(new CanvasCaptureMediaStreamTrack(this));
-		stream[PropertySymbol.capabilities].aspectRatio.max = this.width;
-		stream[PropertySymbol.capabilities].height.max = this.height;
-		stream[PropertySymbol.capabilities].width.max = this.width;
+		const track = new CanvasCaptureMediaStreamTrack({
+			kind: 'video',
+			canvas: this
+		});
+
+		track[PropertySymbol.capabilities].deviceId = DEVICE_ID;
+		track[PropertySymbol.capabilities].aspectRatio.max = this.width;
+		track[PropertySymbol.capabilities].height.max = this.height;
+		track[PropertySymbol.capabilities].width.max = this.width;
+		track[PropertySymbol.settings].deviceId = DEVICE_ID;
+
+		if (frameRate !== undefined) {
+			track[PropertySymbol.capabilities].frameRate.max = frameRate;
+			track[PropertySymbol.settings].frameRate = frameRate;
+		}
+
+		stream.addTrack(track);
+
 		return stream;
 	}
 

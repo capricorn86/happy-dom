@@ -1,5 +1,7 @@
 /**
+ * Image Bitmap.
  *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap
  */
 export default class ImageBitmap {
 	public height: number;

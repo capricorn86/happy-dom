@@ -1379,10 +1379,12 @@ describe('QuerySelector', () => {
 				)
 			);
 			expect(() => element.matches(':is')).toThrow(
-				new Error(`Failed to execute 'matches' on 'HTMLElement': ':is' is not a valid selector.`)
+				new Error(`Failed to execute 'matches' on 'HTMLDivElement': ':is' is not a valid selector.`)
 			);
 			expect(() => element.matches(':where')).toThrow(
-				new Error(`Failed to execute 'matches' on 'HTMLElement': ':where' is not a valid selector.`)
+				new Error(
+					`Failed to execute 'matches' on 'HTMLDivElement': ':where' is not a valid selector.`
+				)
 			);
 			expect(() => element.matches('div:not')).toThrow(
 				new Error(

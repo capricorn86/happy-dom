@@ -4,14 +4,12 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import Crypto from 'crypto';
 import IMediaTrackCapabilities from './IMediaTrackCapabilities.js';
 import IMediaTrackSettings from './IMediaTrackSettings.js';
-
-const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+ab12C3+1aBCdEf==';
 const CAPABILITIES: IMediaTrackCapabilities = {
 	aspectRatio: {
 		max: 300,
 		min: 0.006666666666666667
 	},
-	deviceId: DEVICE_ID,
+	deviceId: '',
 	facingMode: [],
 	frameRate: {
 		max: 60,
@@ -28,7 +26,7 @@ const CAPABILITIES: IMediaTrackCapabilities = {
 	}
 };
 const SETTINGS: IMediaTrackSettings = {
-	deviceId: DEVICE_ID,
+	deviceId: '',
 	frameRate: 60,
 	resizeMode: 'none'
 };
@@ -48,11 +46,11 @@ export default class MediaStreamTrack extends EventTarget {
 		| 'detail'
 		| 'text' = '';
 	public enabled = true;
-	public id: string = Crypto.randomUUID();
-	public kind: 'audio' | 'video' = 'video';
-	public label: string = DEVICE_ID;
+	public readonly id: string = Crypto.randomUUID();
+	public readonly kind: 'audio' | 'video' = 'video';
 	public muted = false;
 	public readyState: 'live' | 'ended' = 'live';
+	public label: string = '';
 	public [PropertySymbol.constraints]: object = {};
 	public [PropertySymbol.capabilities]: IMediaTrackCapabilities = JSON.parse(
 		JSON.stringify(CAPABILITIES)
@@ -65,22 +63,24 @@ export default class MediaStreamTrack extends EventTarget {
 	public onunmute: (event: Event) => void | null = null;
 
 	/**
+	 * Constructor.
+	 *
+	 * @param options Options.
+	 * @param options.kind 'audio' or 'video'.
+	 */
+	constructor(options: { kind: 'audio' | 'video' }) {
+		super();
+		this.kind = options.kind;
+	}
+
+	/**
 	 * Applies constraints.
 	 *
 	 * @param _constraints Constraints.
 	 * @param constraints
 	 */
 	public async applyConstraints(constraints: object): Promise<void> {
-		Object.apply(this[PropertySymbol.constraints], constraints);
-	}
-
-	/**
-	 * Returns capabilities.
-	 *
-	 * @returns Capabilities.
-	 */
-	public getCapabilities(): IMediaTrackCapabilities {
-		return this[PropertySymbol.capabilities];
+		this.#mergeObjects(this[PropertySymbol.constraints], constraints);
 	}
 
 	/**
@@ -90,6 +90,15 @@ export default class MediaStreamTrack extends EventTarget {
 	 */
 	public getConstraints(): object {
 		return this[PropertySymbol.constraints];
+	}
+
+	/**
+	 * Returns capabilities.
+	 *
+	 * @returns Capabilities.
+	 */
+	public getCapabilities(): IMediaTrackCapabilities {
+		return this[PropertySymbol.capabilities];
 	}
 
 	/**
@@ -107,11 +116,12 @@ export default class MediaStreamTrack extends EventTarget {
 	 * @returns Clone.
 	 */
 	public clone(): MediaStreamTrack {
-		const clone = new (<typeof MediaStreamTrack>this.constructor)();
+		const clone = new (<typeof MediaStreamTrack>this.constructor)({ kind: this.kind });
+		clone[PropertySymbol.constraints] = this[PropertySymbol.constraints];
+		clone[PropertySymbol.capabilities] = this[PropertySymbol.capabilities];
+		clone[PropertySymbol.settings] = this[PropertySymbol.settings];
 		clone.contentHint = this.contentHint;
 		clone.enabled = this.enabled;
-		clone.id = this.id;
-		clone.kind = this.kind;
 		clone.label = this.label;
 		clone.muted = this.muted;
 		clone.readyState = this.readyState;
@@ -123,5 +133,24 @@ export default class MediaStreamTrack extends EventTarget {
 	 */
 	public stop(): void {
 		this.readyState = 'ended';
+	}
+
+	/**
+	 * Merges two objects.
+	 *
+	 * @param source Target.
+	 * @param target Source.
+	 */
+	#mergeObjects(source: object, target: object): void {
+		for (const key in target) {
+			if (target[key] !== null && typeof target[key] === 'object' && !Array.isArray(target[key])) {
+				if (typeof source[key] !== 'object') {
+					source[key] = {};
+				}
+				this.#mergeObjects(source[key], target[key]);
+			} else {
+				source[key] = target[key];
+			}
+		}
 	}
 }
