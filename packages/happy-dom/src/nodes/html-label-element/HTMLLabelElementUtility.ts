@@ -19,7 +19,9 @@ export default class HTMLLabelElementUtility {
 		const id = element.id;
 		let labels: NodeList<HTMLLabelElement>;
 		if (id) {
-			const rootNode = <Document | ShadowRoot>element.getRootNode();
+			const rootNode =
+				<Document | ShadowRoot>element[PropertySymbol.rootNode] ||
+				element[PropertySymbol.ownerDocument];
 			labels = <NodeList<HTMLLabelElement>>rootNode.querySelectorAll(`label[for="${id}"]`);
 		} else {
 			labels = new NodeList<HTMLLabelElement>();

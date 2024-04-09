@@ -20,6 +20,9 @@ import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import HTMLInputElementNamedNodeMap from './HTMLInputElementNamedNodeMap.js';
 import PointerEvent from '../../event/events/PointerEvent.js';
 import { URL } from 'url';
+import HTMLDataListElement from '../html-data-list-element/HTMLDataListElement.js';
+import Document from '../document/Document.js';
+import ShadowRoot from '../shadow-root/ShadowRoot.js';
 
 /**
  * HTML Input Element.
@@ -1100,6 +1103,21 @@ export default class HTMLInputElement extends HTMLElement {
 	 */
 	public get labels(): NodeList<HTMLLabelElement> {
 		return HTMLLabelElementUtility.getAssociatedLabelElements(this);
+	}
+
+	/**
+	 * Returns associated datalist element.
+	 *
+	 * @returns Data list element.
+	 */
+	public get list(): HTMLDataListElement | null {
+		const id = this.getAttribute('list');
+		if (!id) {
+			return null;
+		}
+		const rootNode =
+			<Document | ShadowRoot>this[PropertySymbol.rootNode] || this[PropertySymbol.ownerDocument];
+		return <HTMLDataListElement | null>rootNode.querySelector(`datalist#${id}`);
 	}
 
 	/**

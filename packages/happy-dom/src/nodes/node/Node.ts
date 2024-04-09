@@ -59,6 +59,7 @@ export default class Node extends EventTarget {
 	public [PropertySymbol.nodeType]: NodeTypeEnum;
 	public [PropertySymbol.rootNode]: Node = null;
 	public [PropertySymbol.formNode]: Node = null;
+	public [PropertySymbol.dataListNode]: Node = null;
 	public [PropertySymbol.selectNode]: Node = null;
 	public [PropertySymbol.textAreaNode]: Node = null;
 	public [PropertySymbol.observers]: MutationListener[] = [];
@@ -514,6 +515,7 @@ export default class Node extends EventTarget {
 	public [PropertySymbol.connectToNode](parentNode: Node = null): void {
 		const isConnected = !!parentNode && parentNode[PropertySymbol.isConnected];
 		const formNode = (<Node>this)[PropertySymbol.formNode];
+		const dataListNode = (<Node>this)[PropertySymbol.dataListNode];
 		const selectNode = (<Node>this)[PropertySymbol.selectNode];
 		const textAreaNode = (<Node>this)[PropertySymbol.textAreaNode];
 
@@ -525,6 +527,12 @@ export default class Node extends EventTarget {
 			if (this['tagName'] !== 'FORM') {
 				(<Node>this)[PropertySymbol.formNode] = parentNode
 					? (<Node>parentNode)[PropertySymbol.formNode]
+					: null;
+			}
+
+			if (this['tagName'] !== 'DATALIST') {
+				(<Node>this)[PropertySymbol.dataListNode] = parentNode
+					? (<Node>parentNode)[PropertySymbol.dataListNode]
 					: null;
 			}
 
@@ -567,6 +575,7 @@ export default class Node extends EventTarget {
 			}
 		} else if (
 			formNode !== this[PropertySymbol.formNode] ||
+			dataListNode !== this[PropertySymbol.dataListNode] ||
 			selectNode !== this[PropertySymbol.selectNode] ||
 			textAreaNode !== this[PropertySymbol.textAreaNode]
 		) {

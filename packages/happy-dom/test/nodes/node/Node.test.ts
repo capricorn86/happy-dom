@@ -374,6 +374,11 @@ describe('Node', () => {
 		it('Returns Document when called on Document', () => {
 			expect(document.getRootNode() === document).toBe(true);
 		});
+
+		it('Returns self when element is not connected to DOM', () => {
+			const element = document.createElement('div');
+			expect(element.getRootNode() === element).toBe(true);
+		});
 	});
 
 	describe('cloneNode()', () => {

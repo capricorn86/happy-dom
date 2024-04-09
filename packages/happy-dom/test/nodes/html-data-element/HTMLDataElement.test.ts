@@ -19,4 +19,19 @@ describe('HTMLDataElement', () => {
 			expect(element instanceof HTMLDataElement).toBe(true);
 		});
 	});
+
+	describe('get value()', () => {
+		it('Should return value', () => {
+			expect(element.value).toBe('');
+			element.setAttribute('value', 'test');
+			expect(element.value).toBe('test');
+		});
+	});
+
+	describe('set value()', () => {
+		it('Should set value', () => {
+			element.value = 'test';
+			expect(element.getAttribute('value')).toBe('test');
+		});
+	});
 });

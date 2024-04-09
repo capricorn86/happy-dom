@@ -1,6 +1,7 @@
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
-import { beforeEach, afterEach, describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect } from 'vitest';
+import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 
 describe('HTMLCollection', () => {
 	let window: Window;
@@ -76,10 +77,10 @@ describe('HTMLCollection', () => {
 		it('Supports attributes only consisting of numbers.', () => {
 			const div = document.createElement('div');
 			div.innerHTML = `<div name="container1" class="container1"></div><div name="container2" class="container2"></div><div name="0" class="container3"></div><div name="1" class="container4"></div>`;
-			const container1 = div.querySelector('.container1');
-			const container2 = div.querySelector('.container2');
-			const container3 = div.querySelector('.container3');
-			const container4 = div.querySelector('.container4');
+			const container1 = <HTMLElement>div.querySelector('.container1');
+			const container2 = <HTMLElement>div.querySelector('.container2');
+			const container3 = <HTMLElement>div.querySelector('.container3');
+			const container4 = <HTMLElement>div.querySelector('.container4');
 
 			expect(div.children.length).toBe(4);
 			expect(div.children[0] === container1).toBe(true);
@@ -118,9 +119,9 @@ describe('HTMLCollection', () => {
 		it('Supports attributes that has the same name as properties and methods of the HTMLCollection class.', () => {
 			const div = document.createElement('div');
 			div.innerHTML = `<div name="length" class="container1"></div><div name="namedItem" class="container2"></div><div name="push" class="container3"></div>`;
-			const container1 = div.querySelector('.container1');
-			const container2 = div.querySelector('.container2');
-			const container3 = div.querySelector('.container3');
+			const container1 = <HTMLElement>div.querySelector('.container1');
+			const container2 = <HTMLElement>div.querySelector('.container2');
+			const container3 = <HTMLElement>div.querySelector('.container3');
 
 			expect(div.children.length).toBe(3);
 			expect(div.children[0] === container1).toBe(true);

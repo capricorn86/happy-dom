@@ -1297,6 +1297,23 @@ describe('QuerySelector', () => {
 			expect(container.querySelector(':where(div)')).toBe(container.children[0]);
 			expect(container.querySelector(':where(span[attr1="val,ue1"])')).toBe(null);
 		});
+
+		it('Returns element matching selector "datalist#id"', () => {
+			const div = document.createElement('div');
+			const datalist = document.createElement('datalist');
+			const span = document.createElement('span');
+
+			datalist.id = 'datalist_id';
+			span.id = 'span_id';
+
+			div.appendChild(datalist);
+			div.appendChild(span);
+
+			expect(div.querySelector('datalist#span_id') === null).toBe(true);
+			expect(div.querySelector('datalist#datalist_id') === datalist).toBe(true);
+			expect(div.querySelector('span#datalist_id') === null).toBe(true);
+			expect(div.querySelector('span#span_id') === span).toBe(true);
+		});
 	});
 
 	describe('matches()', () => {

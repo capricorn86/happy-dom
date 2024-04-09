@@ -168,3 +168,4 @@ export const tracks = Symbol('tracks');
 export const constraints = Symbol('constraints');
 export const capabilities = Symbol('capabilities');
 export const settings = Symbol('settings');
+export const dataListNode = Symbol('dataListNode');

@@ -1,5 +1,6 @@
 import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
+import HTMLDataListElement from '../html-data-list-element/HTMLDataListElement.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
@@ -127,15 +128,39 @@ export default class HTMLOptionElement extends HTMLElement {
 	 */
 	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
 		const oldSelectNode = <HTMLSelectElement>this[PropertySymbol.selectNode];
+		const oldDataListNode = <HTMLDataListElement>this[PropertySymbol.dataListNode];
 
 		super[PropertySymbol.connectToNode](parentNode);
 
-		if (oldSelectNode !== this[PropertySymbol.selectNode]) {
+		const selectNode = <HTMLSelectElement>this[PropertySymbol.selectNode];
+
+		if (oldSelectNode !== selectNode) {
 			if (oldSelectNode) {
 				oldSelectNode[PropertySymbol.updateOptionItems]();
 			}
-			if (this[PropertySymbol.selectNode]) {
-				(<HTMLSelectElement>this[PropertySymbol.selectNode])[PropertySymbol.updateOptionItems]();
+			if (selectNode) {
+				selectNode[PropertySymbol.updateOptionItems]();
+			}
+		}
+
+		const dataListNode = <HTMLDataListElement>this[PropertySymbol.dataListNode];
+
+		if (oldDataListNode !== dataListNode) {
+			const name = this.getAttribute('name');
+			const id = this.id;
+			if (oldDataListNode) {
+				const index = oldDataListNode[PropertySymbol.options].indexOf(this);
+				if (index !== -1) {
+					oldDataListNode[PropertySymbol.options].splice(index, 1);
+				}
+
+				oldDataListNode[PropertySymbol.options][PropertySymbol.removeNamedItem](this, name);
+				oldDataListNode[PropertySymbol.options][PropertySymbol.removeNamedItem](this, id);
+			}
+			if (dataListNode) {
+				dataListNode[PropertySymbol.options].push(this);
+				dataListNode[PropertySymbol.options][PropertySymbol.appendNamedItem](this, name);
+				dataListNode[PropertySymbol.options][PropertySymbol.appendNamedItem](this, id);
 			}
 		}
 	}

@@ -54,7 +54,7 @@ export default class HTMLSlotElement extends HTMLElement {
 	 * @returns Nodes.
 	 */
 	public assignedNodes(options?: { flatten?: boolean }): Node[] {
-		const host = (<ShadowRoot>this.getRootNode())?.host;
+		const host = (<ShadowRoot>this[PropertySymbol.rootNode])?.host;
 
 		// TODO: Add support for options.flatten. We need to find an example of how it is expected to work before it can be implemented.
 

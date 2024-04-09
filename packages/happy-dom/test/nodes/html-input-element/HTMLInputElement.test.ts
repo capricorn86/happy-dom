@@ -630,6 +630,51 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
+	describe('get list()', () => {
+		it('Returns null if the attribute "list" is not set.', () => {
+			expect(element.list).toBe(null);
+		});
+
+		it('Returns null if no associated list element matches the attribuge "list".', () => {
+			element.setAttribute('list', 'datalist');
+			expect(element.list).toBe(null);
+		});
+
+		it('Returns the associated datalist element.', () => {
+			const datalist = document.createElement('datalist');
+			datalist.id = 'list_id';
+			document.body.appendChild(datalist);
+			element.setAttribute('list', 'list_id');
+			expect(element.list).toBe(datalist);
+		});
+
+		it('Finds datalist inside a shadowroot.', () => {
+			/* eslint-disable-next-line jsdoc/require-jsdoc */
+			class MyComponent extends window.HTMLElement {
+				/* eslint-disable-next-line jsdoc/require-jsdoc */
+				constructor() {
+					super();
+					this.attachShadow({ mode: 'open' });
+					if (this.shadowRoot) {
+						this.shadowRoot.innerHTML = `
+                            <datalist id="list_id">
+                                <option value="1">
+                                <option value="2">
+                            </datalist>
+                            <input list="list_id">
+                        `;
+					}
+				}
+			}
+			window.customElements.define('my-component', MyComponent);
+			const component = document.createElement('my-component');
+			document.body.appendChild(component);
+			const input = component.shadowRoot?.querySelector('input');
+			const list = component.shadowRoot?.querySelector('datalist');
+			expect(input?.list === list).toBe(true);
+		});
+	});
+
 	describe('set selectionEnd()', () => {
 		it('Sets the value to the length of the property "value" if it is out of range.', () => {
 			element.setAttribute('value', 'TEST_VALUE');
