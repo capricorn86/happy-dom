@@ -14,4 +14,8 @@ export default interface IGoToOptions extends IReloadOptions {
 	 * Referrer policy.
 	 */
 	referrerPolicy?: IRequestReferrerPolicy;
+	/**
+	 * If `srcdoc` is set, it can be used to replace the data obtained by fetch.
+	 */
+	substituteData?: string;
 }

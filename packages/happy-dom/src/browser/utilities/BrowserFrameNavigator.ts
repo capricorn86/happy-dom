@@ -99,18 +99,21 @@ export default class BrowserFrameNavigator {
 		}
 
 		(<IBrowserFrame[]>frame.childFrames) = [];
+		const parentWindow = frame.window.parent;
 		frame.window[PropertySymbol.destroy]();
 		frame[PropertySymbol.asyncTaskManager].destroy();
 		frame[PropertySymbol.asyncTaskManager] = new AsyncTaskManager();
 
 		(<BrowserWindow>frame.window) = new windowClass(frame, { url: targetURL.href, width, height });
+		(<BrowserWindow>(<unknown>frame.window.top)) = parentWindow;
+		(<BrowserWindow>(<unknown>frame.window.parent)) = parentWindow;
 		(<number>frame.window.devicePixelRatio) = devicePixelRatio;
 
 		if (referrer) {
 			frame.window.document[PropertySymbol.referrer] = referrer;
 		}
 
-		if (targetURL.protocol === 'about:') {
+		if (targetURL.protocol === 'about:' && goToOptions?.substituteData === void 0) {
 			return null;
 		}
 
@@ -138,37 +141,45 @@ export default class BrowserFrameNavigator {
 			}
 		};
 
-		try {
-			response = await frame.window.fetch(targetURL.href, {
-				referrer,
-				referrerPolicy: goToOptions?.referrerPolicy || 'origin',
-				signal: abortController.signal,
-				method: method || (formData ? 'POST' : 'GET'),
-				headers: goToOptions?.hard ? { 'Cache-Control': 'no-cache' } : undefined,
-				body: formData
+		if (goToOptions?.substituteData !== void 0) {
+			responseText = goToOptions.substituteData;
+			response = new frame.window.Response(goToOptions.substituteData, {
+				headers: { 'Content-Type': 'text/html' }
 			});
+		} else {
+			try {
+				response = await frame.window.fetch(targetURL.href, {
+					referrer,
+					referrerPolicy: goToOptions?.referrerPolicy || 'origin',
+					signal: abortController.signal,
+					method: method || (formData ? 'POST' : 'GET'),
+					headers: goToOptions?.hard ? { 'Cache-Control': 'no-cache' } : undefined,
+					body: formData
+				});
 
-			// Handles the "X-Frame-Options" header for child frames.
-			if (frame.parentFrame) {
-				const originURL = frame.parentFrame.window.location;
-				const xFrameOptions = response.headers?.get('X-Frame-Options')?.toLowerCase();
-				const isSameOrigin = originURL.origin === targetURL.origin || targetURL.origin === 'null';
+				// Handles the "X-Frame-Options" header for child frames.
+				if (frame.parentFrame) {
+					const originURL = frame.parentFrame.window.location;
+					const xFrameOptions = response.headers?.get('X-Frame-Options')?.toLowerCase();
+					const isSameOrigin = originURL.origin === targetURL.origin || targetURL.origin === 'null';
 
-				if (xFrameOptions === 'deny' || (xFrameOptions === 'sameorigin' && !isSameOrigin)) {
-					throw new Error(
-						`Refused to display '${url}' in a frame because it set 'X-Frame-Options' to '${xFrameOptions}'.`
-					);
+					if (xFrameOptions === 'deny' || (xFrameOptions === 'sameorigin' && !isSameOrigin)) {
+						throw new Error(
+							`Refused to display '${url}' in a frame because it set 'X-Frame-Options' to '${xFrameOptions}'.`
+						);
+					}
 				}
+
+				responseText = await response.text();
+			} catch (error) {
+				finalize();
+				throw error;
 			}
-
-			responseText = await response.text();
-		} catch (error) {
-			finalize();
-			throw error;
-		}
-
-		if (!response.ok) {
-			frame.page.console.error(`GET ${targetURL.href} ${response.status} (${response.statusText})`);
+			if (!response.ok) {
+				frame.page.console.error(
+					`GET ${targetURL.href} ${response.status} (${response.statusText})`
+				);
+			}
 		}
 
 		// Fixes issue where evaluating the response can throw an error.
