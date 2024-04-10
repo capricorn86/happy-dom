@@ -35,7 +35,7 @@ describe('HTMLIFrameElement', () => {
 		});
 	});
 
-	for (const property of ['src', 'allow', 'height', 'width', 'name', 'srcdoc']) {
+	for (const property of ['allow', 'height', 'width', 'name', 'srcdoc']) {
 		describe(`get ${property}()`, () => {
 			it(`Returns the "${property}" attribute.`, () => {
 				element.setAttribute(property, 'value');
@@ -50,6 +50,26 @@ describe('HTMLIFrameElement', () => {
 			});
 		});
 	}
+
+	describe('get src()', () => {
+		it('Returns the "src" attribute.', () => {
+			element.setAttribute('src', 'test');
+			expect(element.src).toBe('test');
+		});
+
+		it('Returns URL relative to window location.', () => {
+			window.happyDOM.setURL('https://localhost:8080/test/path/');
+			element.setAttribute('src', 'test');
+			expect(element.src).toBe('https://localhost:8080/test/path/test');
+		});
+	});
+
+	describe('set src()', () => {
+		it('Sets the attribute "src".', () => {
+			element.src = 'test';
+			expect(element.getAttribute('src')).toBe('test');
+		});
+	});
 
 	describe('get sandbox()', () => {
 		it('Returns DOMTokenList', () => {

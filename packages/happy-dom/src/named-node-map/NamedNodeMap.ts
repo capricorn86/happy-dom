@@ -86,7 +86,7 @@ export default class NamedNodeMap {
 	 * @returns Replaced item.
 	 */
 	public setNamedItem(item: Attr): Attr | null {
-		return this[PropertySymbol.setNamedItemWithoutConsequences](item);
+		return this[PropertySymbol.setNamedItem](item);
 	}
 
 	/**
@@ -97,7 +97,7 @@ export default class NamedNodeMap {
 	 * @returns Replaced item.
 	 */
 	public setNamedItemNS(item: Attr): Attr | null {
-		return this.setNamedItem(item);
+		return this[PropertySymbol.setNamedItem](item);
 	}
 
 	/**
@@ -134,7 +134,19 @@ export default class NamedNodeMap {
 	}
 
 	/**
-	 * Sets named item without calling listeners for certain attributes.
+	 * Sets named item.
+	 *
+	 * This method may be overridden by subclasses to act on attribute changes.
+	 *
+	 * @param item Item.
+	 * @returns Replaced item.
+	 */
+	public [PropertySymbol.setNamedItem](item: Attr): Attr | null {
+		return this[PropertySymbol.setNamedItemWithoutConsequences](item);
+	}
+
+	/**
+	 * Sets named item without potential overrides done in [PropertySymbol.setNamedItem]().
 	 *
 	 * @param item Item.
 	 * @returns Replaced item.
@@ -163,6 +175,8 @@ export default class NamedNodeMap {
 
 	/**
 	 * Removes an item without throwing if it doesn't exist.
+	 *
+	 * This method may be overridden by subclasses to act on attribute changes.
 	 *
 	 * @param name Name of item.
 	 * @returns Removed item, or null if it didn't exist.

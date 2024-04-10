@@ -43,7 +43,7 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 	/**
 	 * @override
 	 */
-	public override setNamedItem(item: Attr): Attr | null {
+	public override [PropertySymbol.setNamedItem](item: Attr): Attr | null {
 		if (!item[PropertySymbol.name]) {
 			return null;
 		}
@@ -51,7 +51,7 @@ export default class ElementNamedNodeMap extends NamedNodeMap {
 		item[PropertySymbol.name] = this[PropertySymbol.getAttributeName](item[PropertySymbol.name]);
 		(<Element>item[PropertySymbol.ownerElement]) = this[PropertySymbol.ownerElement];
 
-		const replacedItem = super.setNamedItem(item);
+		const replacedItem = super[PropertySymbol.setNamedItem](item);
 		const oldValue = replacedItem ? replacedItem[PropertySymbol.value] : null;
 
 		if (this[PropertySymbol.ownerElement][PropertySymbol.isConnected]) {

@@ -43,8 +43,8 @@ export default class HTMLIFrameElementNamedNodeMap extends HTMLElementNamedNodeM
 	/**
 	 * @override
 	 */
-	public override setNamedItem(item: Attr): Attr | null {
-		const replacedAttribute = super.setNamedItem(item);
+	public override [PropertySymbol.setNamedItem](item: Attr): Attr | null {
+		const replacedAttribute = super[PropertySymbol.setNamedItem](item);
 
 		if (
 			item[PropertySymbol.name] === 'src' &&

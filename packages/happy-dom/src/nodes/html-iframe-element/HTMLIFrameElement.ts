@@ -56,7 +56,16 @@ export default class HTMLIFrameElement extends HTMLElement {
 	 * @returns Source.
 	 */
 	public get src(): string {
-		return this.getAttribute('src') || '';
+		if (!this.hasAttribute('src')) {
+			return '';
+		}
+
+		try {
+			return new URL(this.getAttribute('src'), this[PropertySymbol.ownerDocument].location.href)
+				.href;
+		} catch (e) {
+			return this.getAttribute('src');
+		}
 	}
 
 	/**

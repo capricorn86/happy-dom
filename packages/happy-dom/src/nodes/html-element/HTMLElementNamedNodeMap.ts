@@ -14,8 +14,8 @@ export default class HTMLElementNamedNodeMap extends ElementNamedNodeMap {
 	/**
 	 * @override
 	 */
-	public override setNamedItem(item: Attr): Attr | null {
-		const replacedItem = super.setNamedItem(item);
+	public override [PropertySymbol.setNamedItem](item: Attr): Attr | null {
+		const replacedItem = super[PropertySymbol.setNamedItem](item);
 
 		if (
 			item[PropertySymbol.name] === 'style' &&

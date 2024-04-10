@@ -15,8 +15,8 @@ export default class HTMLOptionElementNamedNodeMap extends HTMLElementNamedNodeM
 	/**
 	 * @override
 	 */
-	public override setNamedItem(item: Attr): Attr | null {
-		const replacedItem = super.setNamedItem(item);
+	public override [PropertySymbol.setNamedItem](item: Attr): Attr | null {
+		const replacedItem = super[PropertySymbol.setNamedItem](item);
 
 		if (
 			!this[PropertySymbol.ownerElement][PropertySymbol.dirtyness] &&
