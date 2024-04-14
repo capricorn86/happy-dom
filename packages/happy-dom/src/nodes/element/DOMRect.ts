@@ -26,5 +26,22 @@ export default class DOMRect {
 		this.y = y || 0;
 		this.width = width || 0;
 		this.height = height || 0;
+		this.top = this.y;
+		this.right = this.x + this.width;
+		this.bottom = this.y + this.height;
+		this.left = this.x;
+	}
+	static fromRect(rectangle: {
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+	} = {
+		x: 0,
+		y: 0,
+		width: 0,
+		height: 0
+	}) {
+		return new DOMRect(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
 	}
 }

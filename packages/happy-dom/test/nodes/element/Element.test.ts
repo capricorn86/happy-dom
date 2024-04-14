@@ -1550,6 +1550,31 @@ describe('Element', () => {
 		});
 	});
 
+	describe('creates a new DOMRect object', () => {
+		it('with the correct values.', () => {
+			const domRect = new DOMRect(1, 2, 3, 4);
+			expect(domRect.x).toBe(1);
+			expect(domRect.y).toBe(2);
+			expect(domRect.width).toBe(3);
+			expect(domRect.height).toBe(4);
+			expect(domRect.top).toBe(2);
+			expect(domRect.right).toBe(4);
+			expect(domRect.bottom).toBe(6);
+			expect(domRect.left).toBe(1);
+		});
+		it('with the correct values when using the fromRect method.', () => {
+			const domRect = DOMRect.fromRect({ x: 1, y: 2, width: 3, height: 4 });
+			expect(domRect.x).toBe(1);
+			expect(domRect.y).toBe(2);
+			expect(domRect.width).toBe(3);
+			expect(domRect.height).toBe(4);
+			expect(domRect.top).toBe(2);
+			expect(domRect.right).toBe(4);
+			expect(domRect.bottom).toBe(6);
+			expect(domRect.left).toBe(1);
+		});
+	})
+
 	describe('cloneNode()', () => {
 		it('Clones the properties of the element when cloned.', () => {
 			const child = document.createElement('div');
