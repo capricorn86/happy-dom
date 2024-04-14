@@ -1573,7 +1573,7 @@ describe('Element', () => {
 			expect(domRect.bottom).toBe(6);
 			expect(domRect.left).toBe(1);
 		});
-	})
+	});
 
 	describe('cloneNode()', () => {
 		it('Clones the properties of the element when cloned.', () => {
