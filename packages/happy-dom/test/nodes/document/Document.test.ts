@@ -606,9 +606,13 @@ describe('Document', () => {
 		});
 		it('Throws an error if the command is not passed.', () => {
 			// @ts-ignore - Intentionally testing without parameters.
-			expect(() => document.queryCommandSupported()).toThrowError(new TypeError('Failed to execute \'queryCommandSupported\' on \'Document\': 1 argument required, but only 0 present.'));
+			expect(() => document.queryCommandSupported()).toThrowError(
+				new TypeError(
+					"Failed to execute 'queryCommandSupported' on 'Document': 1 argument required, but only 0 present."
+				)
+			);
 		});
-	})
+	});
 
 	describe('getElementsByClassName()', () => {
 		it('Returns an elements by class name.', () => {
