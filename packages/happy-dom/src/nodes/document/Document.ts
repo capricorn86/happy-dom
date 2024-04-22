@@ -672,6 +672,18 @@ export default class Document extends Node {
 	public querySelector(selector: string): Element | null {
 		return QuerySelector.querySelector(this, selector);
 	}
+	/**
+     * Returns true if the command is supported.
+     * @deprecated
+     * @param command Command.
+     * @returns True if the command is supported, false otherwise.
+     */
+    public queryCommandSupported(command: string): boolean {
+		if (!command) {
+			throw new TypeError('Failed to execute \'queryCommandSupported\' on \'Document\': 1 argument required, but only 0 present.');
+		}
+		return true
+	}
 
 	/**
 	 * Returns an elements by class name.
