@@ -679,7 +679,7 @@ export default class Document extends Node {
 	 * @returns True if the command is supported, false otherwise.
 	 */
 	public queryCommandSupported(command: string): boolean {
-		if (!command) {
+		if (!arguments.length) {
 			throw new TypeError(
 				"Failed to execute 'queryCommandSupported' on 'Document': 1 argument required, but only 0 present."
 			);
