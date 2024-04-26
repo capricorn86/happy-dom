@@ -1572,6 +1572,16 @@ describe('Element', () => {
 			expect(domRect.right).toBe(4);
 			expect(domRect.bottom).toBe(6);
 			expect(domRect.left).toBe(1);
+
+			const newDomRect = DOMRect.fromRect({ x: 1 });
+			expect(newDomRect.x).toBe(1);
+			expect(newDomRect.y).toBe(0);
+			expect(newDomRect.width).toBe(0);
+			expect(newDomRect.height).toBe(0);
+			expect(newDomRect.top).toBe(0);
+			expect(newDomRect.right).toBe(1);
+			expect(newDomRect.bottom).toBe(0);
+			expect(newDomRect.left).toBe(1);
 		});
 	});
 
