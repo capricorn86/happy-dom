@@ -675,10 +675,10 @@ export default class Document extends Node {
 	/**
 	 * Returns true if the command is supported.
 	 * @deprecated
-	 * @param command Command.
+	 * @param _ Command. 
 	 * @returns True if the command is supported, false otherwise.
 	 */
-	public queryCommandSupported(command: string): boolean {
+	public queryCommandSupported(_: string): boolean {
 		if (!arguments.length) {
 			throw new TypeError(
 				"Failed to execute 'queryCommandSupported' on 'Document': 1 argument required, but only 0 present."
