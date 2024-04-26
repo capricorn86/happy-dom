@@ -675,7 +675,7 @@ export default class Document extends Node {
 	/**
 	 * Returns true if the command is supported.
 	 * @deprecated
-	 * @param _ Command. 
+	 * @param _ Command.
 	 * @returns True if the command is supported, false otherwise.
 	 */
 	public queryCommandSupported(_: string): boolean {
