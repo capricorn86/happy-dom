@@ -1336,6 +1336,17 @@ export default class Document extends Node {
 	}
 
 	/**
+	 * Get element at a given point.
+	 *
+	 * @param _x horizontal coordinate
+	 * @param _y vertical coordinate
+	 * @returns Always returns null since Happy DOM does not render elements.
+	 */
+	public elementFromPoint(_x: number, _y: number): Element | null {
+		return null;
+	}
+
+	/**
 	 * Imports a node.
 	 *
 	 * @param node Node.

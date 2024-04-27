@@ -1392,4 +1392,11 @@ describe('Document', () => {
 			expect(document.currentScript).toBe(null);
 		});
 	});
+
+	describe('elementFromPoint', () => {
+		it('Returns null.', () => {
+			const element = document.elementFromPoint(0, 0);
+			expect(element).toBe(null);
+		});
+	});
 });
