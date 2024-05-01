@@ -141,6 +141,51 @@ describe('Storage', () => {
 		});
 	});
 
+	describe('Object.keys()', () => {
+		it(`Returns an array of storage's own enumerable string-keyed property names.`, () => {
+			storage.setItem('key1', 'value1');
+			storage.setItem('key2', 'value2');
+
+			expect(storage.length).toBe(2);
+			expect(storage.getItem('key1')).toBe('value1');
+			expect(storage.getItem('key2')).toBe('value2');
+			expect(storage['key1']).toBe('value1');
+			expect(storage['key2']).toBe('value2');
+			expect(Object.keys(storage)).toEqual(['key1', 'key2']);
+		});
+	});
+
+	describe('Object.values()', () => {
+		it(`Returns an array of storage's own enumerable string-keyed property values.`, () => {
+			storage.setItem('key1', 'value1');
+			storage.setItem('key2', 'value2');
+
+			expect(storage.length).toBe(2);
+			expect(storage.getItem('key1')).toBe('value1');
+			expect(storage.getItem('key2')).toBe('value2');
+			expect(storage['key1']).toBe('value1');
+			expect(storage['key2']).toBe('value2');
+			expect(Object.values(storage)).toEqual(['value1', 'value2']);
+		});
+	});
+
+	describe('Object.entries()', () => {
+		it(`Returns an array of storage's own enumerable string-keyed property key-value pairs.`, () => {
+			storage.setItem('key1', 'value1');
+			storage.setItem('key2', 'value2');
+
+			expect(storage.length).toBe(2);
+			expect(storage.getItem('key1')).toBe('value1');
+			expect(storage.getItem('key2')).toBe('value2');
+			expect(storage['key1']).toBe('value1');
+			expect(storage['key2']).toBe('value2');
+			expect(Object.entries(storage)).toEqual([
+				['key1', 'value1'],
+				['key2', 'value2']
+			]);
+		});
+	});
+
 	describe('vi.spyOn()', () => {
 		it('Should spy on a method.', () => {
 			const spy = vi.spyOn(storage, 'getItem');
