@@ -1,6 +1,6 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import HTMLCollection from '../element/HTMLCollection.js';
+import HTMLCollection from '../element/HTMLCollection2.js';
 import HTMLOptionElement from '../html-option-element/HTMLOptionElement.js';
 import Node from '../node/Node.js';
 

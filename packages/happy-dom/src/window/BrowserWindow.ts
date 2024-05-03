@@ -70,7 +70,7 @@ import Location from '../location/Location.js';
 import MediaQueryList from '../match-media/MediaQueryList.js';
 import MutationObserver from '../mutation-observer/MutationObserver.js';
 import MutationRecord from '../mutation-observer/MutationRecord.js';
-import NamedNodeMap from '../named-node-map/NamedNodeMap.js';
+import NamedNodeMap from '../nodes/element/NamedNodeMap.js';
 import MimeType from '../navigator/MimeType.js';
 import MimeTypeArray from '../navigator/MimeTypeArray.js';
 import Navigator from '../navigator/Navigator.js';
@@ -86,7 +86,7 @@ import DocumentReadyStateEnum from '../nodes/document/DocumentReadyStateEnum.js'
 import DocumentReadyStateManager from '../nodes/document/DocumentReadyStateManager.js';
 import DOMRect from '../nodes/element/DOMRect.js';
 import Element from '../nodes/element/Element.js';
-import HTMLCollection from '../nodes/element/HTMLCollection.js';
+import HTMLCollection from '../nodes/element/HTMLCollection2.js';
 import HTMLAnchorElement from '../nodes/html-anchor-element/HTMLAnchorElement.js';
 import HTMLAreaElement from '../nodes/html-area-element/HTMLAreaElement.js';
 import AudioImplementation from '../nodes/html-audio-element/Audio.js';

@@ -3,7 +3,7 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import Document from '../document/Document.js';
 import Element from '../element/Element.js';
-import HTMLCollection from '../element/HTMLCollection.js';
+import HTMLCollection from '../element/HTMLCollection2.js';
 import Node from '../node/Node.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
 
@@ -67,8 +67,12 @@ export default class ParentNodeUtility {
 		parentNode: Element | Document | DocumentFragment,
 		...nodes: (string | Node)[]
 	): void {
-		for (const node of (<DocumentFragment>parentNode)[PropertySymbol.childNodes].slice()) {
-			parentNode.removeChild(node);
+		const childNodes = (<DocumentFragment>parentNode)[PropertySymbol.childNodes][
+			PropertySymbol.items
+		];
+
+		while (childNodes.length) {
+			parentNode.removeChild(childNodes[0]);
 		}
 
 		this.append(parentNode, ...nodes);
@@ -85,15 +89,20 @@ export default class ParentNodeUtility {
 		parentNode: Element | DocumentFragment | Document,
 		className: string
 	): HTMLCollection<Element> {
-		let matches = new HTMLCollection<Element>();
+		const matches = new HTMLCollection<Element>();
 
-		for (const child of (<DocumentFragment>parentNode)[PropertySymbol.children]) {
+		for (const child of (<DocumentFragment>parentNode)[PropertySymbol.children][
+			PropertySymbol.items
+		]) {
 			if (child.className.split(' ').includes(className)) {
-				matches.push(child);
+				matches[PropertySymbol.addItem](child);
 			}
-			matches = <HTMLCollection<Element>>(
-				matches.concat(this.getElementsByClassName(<Element>child, className))
-			);
+
+			for (const subChild of this.getElementsByClassName(<Element>child, className)[
+				PropertySymbol.items
+			]) {
+				matches[PropertySymbol.addItem](subChild);
+			}
 		}
 
 		return matches;
@@ -114,7 +123,9 @@ export default class ParentNodeUtility {
 		const includeAll = tagName === '*';
 		let matches = new HTMLCollection<Element>();
 
-		for (const child of (<DocumentFragment>parentNode)[PropertySymbol.children]) {
+		for (const child of (<DocumentFragment>parentNode)[PropertySymbol.children][
+			PropertySymbol.items
+		]) {
 			if (includeAll || child[PropertySymbol.tagName].toUpperCase() === upperTagName) {
 				matches.push(child);
 			}
@@ -196,7 +207,7 @@ export default class ParentNodeUtility {
 	public static getElementById(
 		parentNode: Element | DocumentFragment | Document,
 		id: string
-	): Element {
+	): Element | null {
 		id = String(id);
 		for (const child of (<DocumentFragment>parentNode)[PropertySymbol.children]) {
 			if (child.id === id) {

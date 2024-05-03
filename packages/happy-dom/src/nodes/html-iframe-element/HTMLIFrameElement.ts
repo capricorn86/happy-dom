@@ -3,13 +3,32 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import BrowserWindow from '../../window/BrowserWindow.js';
 import Document from '../document/Document.js';
 import HTMLElement from '../html-element/HTMLElement.js';
-import Node from '../node/Node.js';
-import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
-import HTMLIFrameElementNamedNodeMap from './HTMLIFrameElementNamedNodeMap.js';
 import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
-import HTMLIFrameElementPageLoader from './HTMLIFrameElementPageLoader.js';
 import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
+import Attr from '../attr/Attr.js';
+import BrowserFrameFactory from '../../browser/utilities/BrowserFrameFactory.js';
+import BrowserFrameURL from '../../browser/utilities/BrowserFrameURL.js';
+import WindowErrorUtility from '../../window/WindowErrorUtility.js';
+import DOMException from '../../exception/DOMException.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import IRequestReferrerPolicy from '../../fetch/types/IRequestReferrerPolicy.js';
+
+const SANDBOX_FLAGS = [
+	'allow-downloads',
+	'allow-forms',
+	'allow-modals',
+	'allow-orientation-lock',
+	'allow-pointer-lock',
+	'allow-popups',
+	'allow-popups-to-escape-sandbox',
+	'allow-presentation',
+	'allow-same-origin',
+	'allow-scripts',
+	'allow-top-navigation',
+	'allow-top-navigation-by-user-activation',
+	'allow-top-navigation-to-custom-protocols'
+];
 
 /**
  * HTML Iframe Element.
@@ -26,14 +45,14 @@ export default class HTMLIFrameElement extends HTMLElement {
 	public onerror: (event: Event) => void | null = null;
 
 	// Internal properties
-	public override [PropertySymbol.attributes]: NamedNodeMap;
 	public [PropertySymbol.sandbox]: DOMTokenList = null;
 
 	// Private properties
 	#contentWindowContainer: { window: BrowserWindow | CrossOriginBrowserWindow | null } = {
 		window: null
 	};
-	#pageLoader: HTMLIFrameElementPageLoader;
+	#browserFrame: IBrowserFrame;
+	#browserChildFrame: IBrowserFrame;
 
 	/**
 	 * Constructor.
@@ -42,12 +61,16 @@ export default class HTMLIFrameElement extends HTMLElement {
 	 */
 	constructor(browserFrame: IBrowserFrame) {
 		super();
-		this.#pageLoader = new HTMLIFrameElementPageLoader({
-			element: this,
-			contentWindowContainer: this.#contentWindowContainer,
-			browserParentFrame: browserFrame
-		});
-		this[PropertySymbol.attributes] = new HTMLIFrameElementNamedNodeMap(this, this.#pageLoader);
+		this.#browserFrame = browserFrame;
+
+		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
+			'set',
+			this.#onSetAttribute.bind(this)
+		);
+		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
+			'remove',
+			this.#onRemoveAttribute.bind(this)
+		);
 	}
 
 	/**
@@ -223,19 +246,18 @@ export default class HTMLIFrameElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
-		const isConnected = this[PropertySymbol.isConnected];
-		const isParentConnected = parentNode ? parentNode[PropertySymbol.isConnected] : false;
+	public override [PropertySymbol.connectedToDocument](): void {
+		super[PropertySymbol.connectedToDocument]();
+		this.#loadPage();
+	}
 
-		super[PropertySymbol.connectToNode](parentNode);
-
-		if (isConnected !== isParentConnected) {
-			if (isParentConnected) {
-				this.#pageLoader.loadPage();
-			} else {
-				this.#pageLoader.unloadPage();
-			}
-		}
+	/**
+	 * Called when disconnected from document.
+	 * @param e
+	 */
+	public [PropertySymbol.disconnectedFromDocument](): void {
+		super[PropertySymbol.disconnectedFromDocument]();
+		this.#unloadPage();
 	}
 
 	/**
@@ -243,5 +265,138 @@ export default class HTMLIFrameElement extends HTMLElement {
 	 */
 	public override [PropertySymbol.cloneNode](deep = false): HTMLIFrameElement {
 		return <HTMLIFrameElement>super[PropertySymbol.cloneNode](deep);
+	}
+
+	/**
+	 * Triggered when an attribute is set.
+	 *
+	 * @param attribute Attribute.
+	 * @param replacedAttribute Replaced attribute.
+	 */
+	#onSetAttribute(attribute: Attr, replacedAttribute: Attr | null): void {
+		if (
+			attribute[PropertySymbol.name] === 'src' &&
+			attribute[PropertySymbol.value] &&
+			attribute[PropertySymbol.value] !== replacedAttribute?.[PropertySymbol.value]
+		) {
+			this.#loadPage();
+		}
+
+		if (attribute[PropertySymbol.name] === 'sandbox') {
+			if (!this[PropertySymbol.sandbox]) {
+				this[PropertySymbol.sandbox] = new DOMTokenList(this, 'sandbox');
+			} else {
+				this[PropertySymbol.sandbox][PropertySymbol.updateIndices]();
+			}
+
+			this.#validateSandboxFlags();
+		}
+	}
+
+	/**
+	 * Triggered when an attribute is removed.
+	 */
+	#onRemoveAttribute(): void {
+		this.#unloadPage();
+	}
+
+	/**
+	 *
+	 * @param tokens
+	 * @param vconsole
+	 */
+	#validateSandboxFlags(): void {
+		const window = this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow];
+		const values = this[PropertySymbol.sandbox].values();
+		const invalidFlags: string[] = [];
+
+		for (const token of values) {
+			if (!SANDBOX_FLAGS.includes(token)) {
+				invalidFlags.push(token);
+			}
+		}
+
+		if (invalidFlags.length === 1) {
+			window.console.error(
+				`Error while parsing the 'sandbox' attribute: '${invalidFlags[0]}' is an invalid sandbox flag.`
+			);
+		} else if (invalidFlags.length > 1) {
+			window.console.error(
+				`Error while parsing the 'sandbox' attribute: '${invalidFlags.join(
+					`', '`
+				)}' are invalid sandbox flags.`
+			);
+		}
+	}
+
+	/**
+	 * Loads an iframe page.
+	 */
+	#loadPage(): void {
+		if (!this[PropertySymbol.isConnected]) {
+			if (this.#browserChildFrame) {
+				BrowserFrameFactory.destroyFrame(this.#browserChildFrame);
+				this.#browserChildFrame = null;
+			}
+			this.#contentWindowContainer.window = null;
+			return;
+		}
+
+		const window = this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow];
+		const originURL = this.#browserFrame.window.location;
+		const targetURL = BrowserFrameURL.getRelativeURL(this.#browserFrame, this.src);
+
+		if (
+			this.#browserChildFrame &&
+			this.#browserChildFrame.window.location.href === targetURL.href
+		) {
+			return;
+		}
+
+		if (this.#browserFrame.page.context.browser.settings.disableIframePageLoading) {
+			WindowErrorUtility.dispatchError(
+				this,
+				new DOMException(
+					`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`,
+					DOMExceptionNameEnum.notSupportedError
+				)
+			);
+			return;
+		}
+
+		// Iframes has a special rule for CORS and doesn't allow access between frames when the origin is different.
+		const isSameOrigin = originURL.origin === targetURL.origin || targetURL.origin === 'null';
+		const parentWindow = isSameOrigin ? window : new CrossOriginBrowserWindow(window);
+
+		this.#browserChildFrame =
+			this.#browserChildFrame ?? BrowserFrameFactory.createChildFrame(this.#browserFrame);
+
+		(<BrowserWindow | CrossOriginBrowserWindow>(<unknown>this.#browserChildFrame.window.top)) =
+			parentWindow;
+		(<BrowserWindow | CrossOriginBrowserWindow>(<unknown>this.#browserChildFrame.window.parent)) =
+			parentWindow;
+
+		this.#browserChildFrame
+			.goto(targetURL.href, {
+				referrer: originURL.origin,
+				referrerPolicy: <IRequestReferrerPolicy>this.referrerPolicy
+			})
+			.then(() => this.dispatchEvent(new Event('load')))
+			.catch((error) => WindowErrorUtility.dispatchError(this, error));
+
+		this.#contentWindowContainer.window = isSameOrigin
+			? this.#browserChildFrame.window
+			: new CrossOriginBrowserWindow(this.#browserChildFrame.window, window);
+	}
+
+	/**
+	 * Unloads an iframe page.
+	 */
+	#unloadPage(): void {
+		if (this.#browserChildFrame) {
+			BrowserFrameFactory.destroyFrame(this.#browserChildFrame);
+			this.#browserChildFrame = null;
+		}
+		this.#contentWindowContainer.window = null;
 	}
 }

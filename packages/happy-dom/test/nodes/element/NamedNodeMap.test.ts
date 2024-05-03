@@ -1,10 +1,10 @@
-import Window from '../../src/window/Window.js';
-import Document from '../../src/nodes/document/Document.js';
-import Element from '../../src/nodes/element/Element.js';
-import NamedNodeMap from '../../src/named-node-map/NamedNodeMap.js';
-import Attr from '../../src/nodes/attr/Attr.js';
-import DOMException from '../../src/exception/DOMException.js';
-import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import Element from '../../../src/nodes/element/Element.js';
+import NamedNodeMap from '../../../src/nodes/element/NamedNodeMap.js';
+import Attr from '../../../src/nodes/attr/Attr.js';
+import DOMException from '../../../src/exception/DOMException.js';
+import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('NamedNodeMap', () => {

@@ -1,4 +1,4 @@
-import HTMLCollection from '../element/HTMLCollection.js';
+import HTMLCollection from '../element/HTMLCollection2.js';
 import Element from '../element/Element.js';
 import Node from '../node/Node.js';
 import NodeList from '../node/NodeList.js';

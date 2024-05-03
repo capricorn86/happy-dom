@@ -85,22 +85,4 @@ export default class Text extends CharacterData {
 	public override [PropertySymbol.cloneNode](deep = false): Text {
 		return <Text>super[PropertySymbol.cloneNode](deep);
 	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
-		const oldTextAreaNode = <HTMLTextAreaElement>this[PropertySymbol.textAreaNode];
-
-		super[PropertySymbol.connectToNode](parentNode);
-
-		if (oldTextAreaNode !== this[PropertySymbol.textAreaNode]) {
-			if (oldTextAreaNode) {
-				oldTextAreaNode[PropertySymbol.resetSelection]();
-			}
-			if (this[PropertySymbol.textAreaNode]) {
-				(<HTMLTextAreaElement>this[PropertySymbol.textAreaNode])[PropertySymbol.resetSelection]();
-			}
-		}
-	}
 }

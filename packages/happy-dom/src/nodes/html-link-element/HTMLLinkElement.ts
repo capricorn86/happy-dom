@@ -5,10 +5,13 @@ import Event from '../../event/Event.js';
 import ErrorEvent from '../../event/events/ErrorEvent.js';
 import Node from '../../nodes/node/Node.js';
 import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
-import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
-import HTMLLinkElementNamedNodeMap from './HTMLLinkElementNamedNodeMap.js';
-import HTMLLinkElementStyleSheetLoader from './HTMLLinkElementStyleSheetLoader.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
+import Attr from '../attr/Attr.js';
+import WindowErrorUtility from '../../window/WindowErrorUtility.js';
+import DOMException from '../../exception/DOMException.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import ResourceFetch from '../../fetch/ResourceFetch.js';
+import DocumentReadyStateManager from '../document/DocumentReadyStateManager.js';
 
 /**
  * HTML Link Element.
@@ -22,11 +25,11 @@ export default class HTMLLinkElement extends HTMLElement {
 	public onload: (event: Event) => void = null;
 
 	// Internal properties
-	public override [PropertySymbol.attributes]: NamedNodeMap;
 	public [PropertySymbol.sheet]: CSSStyleSheet = null;
 	public [PropertySymbol.evaluateCSS] = true;
 	public [PropertySymbol.relList]: DOMTokenList = null;
-	#styleSheetLoader: HTMLLinkElementStyleSheetLoader;
+	#loadedStyleSheetURL: string | null = null;
+	#browserFrame: IBrowserFrame;
 
 	/**
 	 * Constructor.
@@ -36,12 +39,15 @@ export default class HTMLLinkElement extends HTMLElement {
 	constructor(browserFrame: IBrowserFrame) {
 		super();
 
-		this.#styleSheetLoader = new HTMLLinkElementStyleSheetLoader({
-			element: this,
-			browserFrame
-		});
-
-		this[PropertySymbol.attributes] = new HTMLLinkElementNamedNodeMap(this, this.#styleSheetLoader);
+		this.#browserFrame = browserFrame;
+		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
+			'set',
+			this.#onSetAttribute.bind(this)
+		);
+		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
+			'remove',
+			this.#onRemoveAttribute.bind(this)
+		);
 	}
 
 	/**
@@ -219,18 +225,111 @@ export default class HTMLLinkElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
-		const isConnected = this[PropertySymbol.isConnected];
-		const isParentConnected = parentNode ? parentNode[PropertySymbol.isConnected] : false;
+	public override [PropertySymbol.connectedToDocument](): void {
+		super[PropertySymbol.connectedToDocument]();
+		if (this[PropertySymbol.evaluateCSS]) {
+			this.#loadStyleSheet(this.getAttribute('href'), this.getAttribute('rel'));
+		}
+	}
 
-		super[PropertySymbol.connectToNode](parentNode);
+	/**
+	 * Triggered when an attribute is set.
+	 *
+	 * @param item Item
+	 */
+	#onSetAttribute(item: Attr): void {
+		if (item[PropertySymbol.name] === 'rel' && this[PropertySymbol.relList]) {
+			this[PropertySymbol.relList][PropertySymbol.updateIndices]();
+		}
 
-		if (
-			isParentConnected &&
-			isConnected !== isParentConnected &&
-			this[PropertySymbol.evaluateCSS]
-		) {
-			this.#styleSheetLoader.loadStyleSheet(this.getAttribute('href'), this.getAttribute('rel'));
+		if (item[PropertySymbol.name] === 'rel') {
+			this.#loadStyleSheet(this.getAttribute('href'), item[PropertySymbol.value]);
+		} else if (item[PropertySymbol.name] === 'href') {
+			this.#loadStyleSheet(item[PropertySymbol.value], this.getAttribute('rel'));
+		}
+	}
+
+	/**
+	 * Triggered when an attribute is removed.
+	 *
+	 * @param removedItem Removed item.
+	 */
+	#onRemoveAttribute(removedItem: Attr): void {
+		if (removedItem[PropertySymbol.name] === 'rel' && this[PropertySymbol.relList]) {
+			this[PropertySymbol.relList][PropertySymbol.updateIndices]();
+		}
+	}
+
+	/**
+	 * Returns a URL relative to the given Location object.
+	 *
+	 * @param url URL.
+	 * @param rel Rel.
+	 */
+	async #loadStyleSheet(url: string | null, rel: string | null): Promise<void> {
+		const browserSettings = this.#browserFrame.page.context.browser.settings;
+		const window = this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow];
+
+		if (!url || !rel || rel.toLowerCase() !== 'stylesheet' || !this[PropertySymbol.isConnected]) {
+			return;
+		}
+
+		let absoluteURL: string;
+		try {
+			absoluteURL = new URL(url, window.location.href).href;
+		} catch (error) {
+			return;
+		}
+
+		if (this.#loadedStyleSheetURL === absoluteURL) {
+			return;
+		}
+
+		if (browserSettings.disableCSSFileLoading) {
+			if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+				this.dispatchEvent(new Event('load'));
+			} else {
+				WindowErrorUtility.dispatchError(
+					this,
+					new DOMException(
+						`Failed to load external stylesheet "${absoluteURL}". CSS file loading is disabled.`,
+						DOMExceptionNameEnum.notSupportedError
+					)
+				);
+			}
+			return;
+		}
+
+		const resourceFetch = new ResourceFetch({
+			browserFrame: this.#browserFrame,
+			window: window
+		});
+		const readyStateManager = (<{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }>(
+			(<unknown>window)
+		))[PropertySymbol.readyStateManager];
+
+		this.#loadedStyleSheetURL = absoluteURL;
+
+		readyStateManager.startTask();
+
+		let code: string | null = null;
+		let error: Error | null = null;
+
+		try {
+			code = await resourceFetch.fetch(absoluteURL);
+		} catch (e) {
+			error = e;
+		}
+
+		readyStateManager.endTask();
+
+		if (error) {
+			WindowErrorUtility.dispatchError(this, error);
+		} else {
+			const styleSheet = new CSSStyleSheet();
+			styleSheet.replaceSync(code);
+			this[PropertySymbol.sheet] = styleSheet;
+			this.dispatchEvent(new Event('load'));
 		}
 	}
 }

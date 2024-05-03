@@ -5,14 +5,15 @@ import ValidityState from '../../validity-state/ValidityState.js';
 import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import HTMLOptionElement from '../html-option-element/HTMLOptionElement.js';
 import HTMLOptionsCollection from './HTMLOptionsCollection.js';
-import NodeList from '../node/NodeList.js';
 import Event from '../../event/Event.js';
 import Node from '../node/Node.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
-import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
-import HTMLSelectElementNamedNodeMap from './HTMLSelectElementNamedNodeMap.js';
 import HTMLCollection from '../element/HTMLCollection.js';
+import Document from '../document/Document.js';
+import IHTMLCollection from '../element/IHTMLCollection.js';
+import Element from '../element/Element.js';
+import NodeList from '../node/INodeList.js';
 
 /**
  * HTML Select Element.
@@ -22,18 +23,57 @@ import HTMLCollection from '../element/HTMLCollection.js';
  */
 export default class HTMLSelectElement extends HTMLElement {
 	// Internal properties.
-	public override [PropertySymbol.attributes]: NamedNodeMap = new HTMLSelectElementNamedNodeMap(
-		this
-	);
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
 	public [PropertySymbol.selectNode]: Node = this;
 	public [PropertySymbol.length] = 0;
 	public [PropertySymbol.options]: HTMLOptionsCollection = new HTMLOptionsCollection(this);
+	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
+	public [PropertySymbol.selectedOptions]: IHTMLCollection<HTMLOptionElement> =
+		new HTMLCollection<HTMLOptionElement>(
+			(element: Element) =>
+				element[PropertySymbol.tagName] === 'OPTION' && element[PropertySymbol.selectedness]
+		);
 
 	// Events
 	public onchange: (event: Event) => void | null = null;
 	public oninput: (event: Event) => void | null = null;
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+
+		// Child nodes listeners
+		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener]('add', (item: Node) => {
+			(<HTMLOptionElement>item)[PropertySymbol.selectNode] = this;
+			this[PropertySymbol.options][PropertySymbol.addItem](<HTMLOptionElement>item);
+			this[PropertySymbol.selectedOptions][PropertySymbol.addItem](<HTMLOptionElement>item);
+		});
+		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener](
+			'insert',
+			(newItem: Node, referenceItem: Node | null) => {
+				(<HTMLOptionElement>newItem)[PropertySymbol.selectNode] = this;
+				this[PropertySymbol.options][PropertySymbol.insertItem](
+					<HTMLOptionElement>newItem,
+					<HTMLOptionElement>referenceItem
+				);
+				this[PropertySymbol.selectedOptions][PropertySymbol.insertItem](
+					<HTMLOptionElement>newItem,
+					<HTMLOptionElement>referenceItem
+				);
+			}
+		);
+		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener](
+			'remove',
+			(item: Node) => {
+				(<HTMLOptionElement>item)[PropertySymbol.selectNode] = null;
+				this[PropertySymbol.options][PropertySymbol.removeItem](<HTMLOptionElement>item);
+				this[PropertySymbol.selectedOptions][PropertySymbol.removeItem](<HTMLOptionElement>item);
+			}
+		);
+	}
 
 	/**
 	 * Returns length.
@@ -225,12 +265,7 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @returns Value.
 	 */
 	public get selectedIndex(): number {
-		for (let i = 0, max = this[PropertySymbol.options].length; i < max; i++) {
-			if ((<HTMLOptionElement>this[PropertySymbol.options][i])[PropertySymbol.selectedness]) {
-				return i;
-			}
-		}
-		return -1;
+		return this[PropertySymbol.options].selectedIndex;
 	}
 
 	/**
@@ -239,17 +274,7 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @param selectedIndex Selected index.
 	 */
 	public set selectedIndex(selectedIndex: number) {
-		if (typeof selectedIndex === 'number' && !isNaN(selectedIndex)) {
-			for (let i = 0, max = this[PropertySymbol.options].length; i < max; i++) {
-				(<HTMLOptionElement>this[PropertySymbol.options][i])[PropertySymbol.selectedness] = false;
-			}
-
-			const selectedOption = <HTMLOptionElement>this[PropertySymbol.options][selectedIndex];
-			if (selectedOption) {
-				selectedOption[PropertySymbol.selectedness] = true;
-				selectedOption[PropertySymbol.dirtyness] = true;
-			}
-		}
+		this[PropertySymbol.options].selectedIndex = selectedIndex;
 	}
 
 	/**
@@ -257,14 +282,8 @@ export default class HTMLSelectElement extends HTMLElement {
 	 *
 	 * @returns HTMLCollection.
 	 */
-	public get selectedOptions(): HTMLCollection<HTMLOptionElement> {
-		const selectedOptions = new HTMLCollection<HTMLOptionElement>();
-		for (let i = 0, max = this[PropertySymbol.options].length; i < max; i++) {
-			if ((<HTMLOptionElement>this[PropertySymbol.options][i])[PropertySymbol.selectedness]) {
-				selectedOptions.push(<HTMLOptionElement>this[PropertySymbol.options][i]);
-			}
-		}
-		return selectedOptions;
+	public get selectedOptions(): IHTMLCollection<HTMLOptionElement> {
+		return this[PropertySymbol.selectedOptions];
 	}
 
 	/**
@@ -282,6 +301,17 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @returns Form.
 	 */
 	public get form(): HTMLFormElement {
+		const formID = this.getAttribute('form');
+
+		if (formID !== null) {
+			if (!this[PropertySymbol.isConnected]) {
+				return null;
+			}
+			return formID
+				? <HTMLFormElement>(<Document>this[PropertySymbol.rootNode]).getElementById(formID)
+				: null;
+		}
+
 		return <HTMLFormElement>this[PropertySymbol.formNode];
 	}
 
@@ -433,32 +463,6 @@ export default class HTMLSelectElement extends HTMLElement {
 			for (let i = 0, max = optionElements.length; i < max; i++) {
 				(<HTMLOptionElement>optionElements[i])[PropertySymbol.selectedness] =
 					i === selected.length - 1;
-			}
-		}
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
-		const oldFormNode = <HTMLFormElement>this[PropertySymbol.formNode];
-
-		super[PropertySymbol.connectToNode](parentNode);
-
-		if (oldFormNode !== this[PropertySymbol.formNode]) {
-			if (oldFormNode) {
-				oldFormNode[PropertySymbol.removeFormControlItem](this, this.name);
-				oldFormNode[PropertySymbol.removeFormControlItem](this, this.id);
-			}
-			if (this[PropertySymbol.formNode]) {
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
-					this,
-					this.name
-				);
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
-					this,
-					this.id
-				);
 			}
 		}
 	}

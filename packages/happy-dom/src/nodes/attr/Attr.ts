@@ -9,6 +9,9 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
  * Reference: https://developer.mozilla.org/en-US/docs/Web/API/Attr.
  */
 export default class Attr extends Node implements Attr {
+	// Public properties
+	public cloneNode: (deep?: boolean) => Attr;
+
 	public [PropertySymbol.nodeType] = NodeTypeEnum.attributeNode;
 	public [PropertySymbol.namespaceURI]: string | null = null;
 	public [PropertySymbol.name]: string | null = null;

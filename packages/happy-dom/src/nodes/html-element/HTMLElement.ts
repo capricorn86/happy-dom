@@ -6,13 +6,13 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import DOMException from '../../exception/DOMException.js';
 import Event from '../../event/Event.js';
 import HTMLElementUtility from './HTMLElementUtility.js';
-import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
-import HTMLElementNamedNodeMap from './HTMLElementNamedNodeMap.js';
 import NodeList from '../node/NodeList.js';
 import Node from '../node/Node.js';
-import HTMLCollection from '../element/HTMLCollection.js';
+import HTMLCollection from '../element/HTMLCollection2.js';
 import DatasetFactory from '../element/DatasetFactory.js';
 import IDataset from '../element/IDataset.js';
+import Attr from '../attr/Attr.js';
+import NamedNodeMap from '../element/NamedNodeMap.js';
 
 /**
  * HTML Element.
@@ -52,7 +52,6 @@ export default class HTMLElement extends Element {
 	public ontransitionstart: (event: Event) => void | null = null;
 
 	// Internal properties
-	public override [PropertySymbol.attributes]: NamedNodeMap = new HTMLElementNamedNodeMap(this);
 	public [PropertySymbol.accessKey] = '';
 	public [PropertySymbol.contentEditable] = 'inherit';
 	public [PropertySymbol.isContentEditable] = false;
@@ -69,6 +68,21 @@ export default class HTMLElement extends Element {
 	// Private properties
 	#dataset: IDataset = null;
 	#customElementDefineCallback: () => void = null;
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
+			'set',
+			this.#onSetAttribute.bind(this)
+		);
+		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
+			'remove',
+			this.#onRemoveAttribute.bind(this)
+		);
+	}
 
 	/**
 	 * Returns access key.
@@ -275,17 +289,20 @@ export default class HTMLElement extends Element {
 	 * @param innerText Inner text.
 	 */
 	public set innerText(text: string) {
-		for (const child of this[PropertySymbol.childNodes].slice()) {
-			this.removeChild(child);
+		const childNodes = this[PropertySymbol.childNodes][PropertySymbol.items];
+
+		while (childNodes.length) {
+			this.removeChild(childNodes[0]);
 		}
 
 		const texts = text.split(/[\n\r]/);
+		const ownerDocument = this[PropertySymbol.ownerDocument];
 
 		for (let i = 0, max = texts.length; i < max; i++) {
 			if (i !== 0) {
-				this.appendChild(this[PropertySymbol.ownerDocument].createElement('br'));
+				this.appendChild(ownerDocument.createElement('br'));
 			}
-			this.appendChild(this[PropertySymbol.ownerDocument].createTextNode(texts[i]));
+			this.appendChild(ownerDocument.createTextNode(texts[i]));
 		}
 	}
 
@@ -506,10 +523,10 @@ export default class HTMLElement extends Element {
 	/**
 	 * Connects this element to another element.
 	 *
+	 * @override
 	 * @see https://html.spec.whatwg.org/multipage/dom.html#htmlelement
-	 * @param parentNode Parent node.
 	 */
-	public [PropertySymbol.connectToNode](parentNode: Node = null): void {
+	public [PropertySymbol.connectedToDocument](): void {
 		const localName = this[PropertySymbol.localName];
 
 		// This element can potentially be a custom element that has not been defined yet
@@ -526,7 +543,7 @@ export default class HTMLElement extends Element {
 					PropertySymbol.callbacks
 				];
 
-			if (parentNode && !this.#customElementDefineCallback) {
+			if (!this.#customElementDefineCallback) {
 				const callback = (): void => {
 					if (this[PropertySymbol.parentNode]) {
 						const newElement = <HTMLElement>(
@@ -553,46 +570,38 @@ export default class HTMLElement extends Element {
 
 						(<NodeList<Node>>this[PropertySymbol.childNodes]) = new NodeList();
 						(<HTMLCollection<Element>>this[PropertySymbol.children]) = new HTMLCollection();
+						this[PropertySymbol.childNodes][PropertySymbol.attachHTMLCollection](
+							this[PropertySymbol.children]
+						);
 						this[PropertySymbol.rootNode] = null;
 						this[PropertySymbol.formNode] = null;
 						this[PropertySymbol.selectNode] = null;
 						this[PropertySymbol.textAreaNode] = null;
 						this[PropertySymbol.observers] = [];
 						this[PropertySymbol.isValue] = null;
-						(<HTMLElementNamedNodeMap>this[PropertySymbol.attributes]) =
-							new HTMLElementNamedNodeMap(this);
+						(<NamedNodeMap>this[PropertySymbol.attributes]) = new NamedNodeMap(this);
 
-						for (
-							let i = 0,
-								max = (<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.childNodes]
-									.length;
-							i < max;
-							i++
-						) {
-							if (
-								(<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.childNodes][i] ===
-								this
-							) {
-								(<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.childNodes][i] =
-									newElement;
+						const childNodes = (<HTMLElement>this[PropertySymbol.parentNode])[
+							PropertySymbol.childNodes
+						]?.[PropertySymbol.items];
+						const childNodesItems = childNodes[PropertySymbol.items];
+						for (let i = 0, max = childNodesItems.length; i < max; i++) {
+							if (<HTMLElement>childNodesItems[i] === this) {
+								(<HTMLElement>childNodes[i]) = newElement;
+								(<HTMLElement>childNodesItems[i]) = newElement;
 								break;
 							}
 						}
 
-						if ((<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.children]) {
-							for (
-								let i = 0,
-									max = (<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.children]
-										.length;
-								i < max;
-								i++
-							) {
-								if (
-									(<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.children][i] ===
-									this
-								) {
-									(<HTMLElement>this[PropertySymbol.parentNode])[PropertySymbol.children][i] =
-										newElement;
+						const children = (<HTMLElement>this[PropertySymbol.parentNode])[
+							PropertySymbol.children
+						];
+						if (children) {
+							const childrenItems = children[PropertySymbol.items];
+							for (let i = 0, max = childrenItems.length; i < max; i++) {
+								if (childrenItems[i] === this) {
+									children[i] = newElement;
+									childrenItems[i] = newElement;
 									break;
 								}
 							}
@@ -602,13 +611,40 @@ export default class HTMLElement extends Element {
 							newElement.connectedCallback();
 						}
 
-						this[PropertySymbol.connectToNode](null);
+						this[PropertySymbol.connectedToDocument](null);
 					}
 				};
 				callbacks[localName] = callbacks[localName] || [];
 				callbacks[localName].push(callback);
 				this.#customElementDefineCallback = callback;
-			} else if (!parentNode && callbacks[localName] && this.#customElementDefineCallback) {
+			}
+		}
+
+		super[PropertySymbol.connectedToDocument]();
+	}
+
+	/**
+	 * Called when disconnected from document.
+	 * @param e
+	 */
+	public [PropertySymbol.disconnectedFromDocument](): void {
+		const localName = this[PropertySymbol.localName];
+
+		// This element can potentially be a custom element that has not been defined yet
+		// Therefore we need to register a callback for when it is defined in CustomElementRegistry and replace it with the registered element (see #404)
+		if (
+			this.constructor === HTMLElement &&
+			localName.includes('-') &&
+			this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].customElements[
+				PropertySymbol.callbacks
+			]
+		) {
+			const callbacks =
+				this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].customElements[
+					PropertySymbol.callbacks
+				];
+
+			if (callbacks[localName] && this.#customElementDefineCallback) {
 				const index = callbacks[localName].indexOf(this.#customElementDefineCallback);
 				if (index !== -1) {
 					callbacks[localName].splice(index, 1);
@@ -620,6 +656,28 @@ export default class HTMLElement extends Element {
 			}
 		}
 
-		super[PropertySymbol.connectToNode](parentNode);
+		super[PropertySymbol.disconnectedFromDocument]();
+	}
+
+	/**
+	 * Triggered when an attribute is set.
+	 *
+	 * @param item Item.
+	 */
+	#onSetAttribute(item: Attr): void {
+		if (item[PropertySymbol.name] === 'style' && this[PropertySymbol.style]) {
+			this[PropertySymbol.style].cssText = item[PropertySymbol.value];
+		}
+	}
+
+	/**
+	 * Triggered when an attribute is removed.
+	 *
+	 * @param removedItem Removed item.
+	 */
+	#onRemoveAttribute(removedItem: Attr): void {
+		if (removedItem && removedItem[PropertySymbol.name] === 'style' && this[PropertySymbol.style]) {
+			this[PropertySymbol.style].cssText = '';
+		}
 	}
 }

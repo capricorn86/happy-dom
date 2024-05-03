@@ -20,7 +20,7 @@ import HTMLElement from '../html-element/HTMLElement.js';
 import Comment from '../comment/Comment.js';
 import Text from '../text/Text.js';
 import NodeList from '../node/NodeList.js';
-import HTMLCollection from '../element/HTMLCollection.js';
+import HTMLCollection from '../element/HTMLCollection2.js';
 import HTMLLinkElement from '../html-link-element/HTMLLinkElement.js';
 import HTMLStyleElement from '../html-style-element/HTMLStyleElement.js';
 import DocumentReadyStateEnum from './DocumentReadyStateEnum.js';
@@ -31,7 +31,6 @@ import Range from '../../range/Range.js';
 import HTMLBaseElement from '../html-base-element/HTMLBaseElement.js';
 import Attr from '../attr/Attr.js';
 import ProcessingInstruction from '../processing-instruction/ProcessingInstruction.js';
-import ElementUtility from '../element/ElementUtility.js';
 import VisibilityStateEnum from './VisibilityStateEnum.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import CookieStringUtility from '../../cookie/urilities/CookieStringUtility.js';
@@ -197,6 +196,9 @@ export default class Document extends Node {
 		super();
 		this.#browserFrame = injected.browserFrame;
 		this[PropertySymbol.ownerWindow] = injected.window;
+		this[PropertySymbol.childNodes][PropertySymbol.attachHTMLCollection](
+			this[PropertySymbol.children]
+		);
 	}
 
 	/**
@@ -328,7 +330,7 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public get childElementCount(): number {
-		return this[PropertySymbol.children].length;
+		return this[PropertySymbol.children][PropertySymbol.items].length;
 	}
 
 	/**
@@ -337,7 +339,7 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public get firstElementChild(): Element {
-		return this[PropertySymbol.children][0] ?? null;
+		return this[PropertySymbol.children][PropertySymbol.items][0] ?? null;
 	}
 
 	/**
@@ -346,7 +348,8 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public get lastElementChild(): Element {
-		return this[PropertySymbol.children][this[PropertySymbol.children].length - 1] ?? null;
+		const children = this[PropertySymbol.children][PropertySymbol.items];
+		return children[children.length - 1] ?? null;
 	}
 
 	/**
@@ -401,7 +404,7 @@ export default class Document extends Node {
 	 * @returns Document type.
 	 */
 	public get doctype(): DocumentType {
-		for (const node of this[PropertySymbol.childNodes]) {
+		for (const node of this[PropertySymbol.childNodes][PropertySymbol.items]) {
 			if (node instanceof DocumentType) {
 				return node;
 			}
@@ -771,7 +774,7 @@ export default class Document extends Node {
 	 * @param id ID.
 	 * @returns Matching element.
 	 */
-	public getElementById(id: string): Element {
+	public getElementById(id: string): Element | null {
 		return <Element>ParentNodeUtility.getElementById(this, id);
 	}
 
@@ -787,58 +790,19 @@ export default class Document extends Node {
 			name: string
 		): NodeList<Element> => {
 			const matches = new NodeList<Element>();
-			for (const child of (<Element | Document>parentNode)[PropertySymbol.children]) {
+			for (const child of (<Element | Document>parentNode)[PropertySymbol.children][
+				PropertySymbol.items
+			]) {
 				if (child.getAttributeNS(null, 'name') === name) {
-					matches.push(child);
+					matches[PropertySymbol.addItem](child);
 				}
 				for (const match of getElementsByName(<Element>child, name)) {
-					matches.push(match);
+					matches[PropertySymbol.addItem](match);
 				}
 			}
 			return matches;
 		};
 		return getElementsByName(this, name);
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.cloneNode](deep = false): Document {
-		const clone = <Document>super[PropertySymbol.cloneNode](deep);
-
-		if (deep) {
-			for (const node of clone[PropertySymbol.childNodes]) {
-				if (node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
-					clone[PropertySymbol.children].push(<Element>node);
-				}
-			}
-		}
-
-		return clone;
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.appendChild](node: Node): Node {
-		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
-		return ElementUtility.appendChild(this, node);
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.removeChild](node: Node): Node {
-		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
-		return ElementUtility.removeChild(this, node);
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
-		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
-		return ElementUtility.insertBefore(this, newNode, referenceNode);
 	}
 
 	/**
@@ -862,7 +826,7 @@ export default class Document extends Node {
 			let documentElement = null;
 			let documentTypeNode = null;
 
-			for (const node of root[PropertySymbol.childNodes]) {
+			for (const node of root[PropertySymbol.childNodes][PropertySymbol.items]) {
 				if (node['tagName'] === 'HTML') {
 					documentElement = node;
 				} else if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
@@ -897,8 +861,9 @@ export default class Document extends Node {
 					const rootBody = <Element>ParentNodeUtility.getElementByTagName(root, 'body');
 					const body = ParentNodeUtility.getElementByTagName(this, 'body');
 					if (rootBody && body) {
-						for (const child of rootBody[PropertySymbol.childNodes].slice()) {
-							body.appendChild(child);
+						const childNodes = rootBody[PropertySymbol.childNodes][PropertySymbol.items];
+						while (childNodes.length) {
+							body.appendChild(childNodes[0]);
 						}
 					}
 				}
@@ -906,7 +871,9 @@ export default class Document extends Node {
 				// Remaining nodes outside the <html> element are added to the <body> element.
 				const body = ParentNodeUtility.getElementByTagName(this, 'body');
 				if (body) {
-					for (const child of root[PropertySymbol.childNodes].slice()) {
+					const childNodes = root[PropertySymbol.childNodes][PropertySymbol.items];
+					while (childNodes.length) {
+						const child = childNodes[0];
 						if (
 							child['tagName'] !== 'HTML' &&
 							child[PropertySymbol.nodeType] !== NodeTypeEnum.documentTypeNode
@@ -919,9 +886,10 @@ export default class Document extends Node {
 				const documentElement = this.createElement('html');
 				const bodyElement = this.createElement('body');
 				const headElement = this.createElement('head');
+				const childNodes = root[PropertySymbol.childNodes][PropertySymbol.items];
 
-				for (const child of root[PropertySymbol.childNodes].slice()) {
-					bodyElement.appendChild(child);
+				while (childNodes.length) {
+					bodyElement.appendChild(childNodes[0]);
 				}
 
 				documentElement.appendChild(headElement);
@@ -932,8 +900,11 @@ export default class Document extends Node {
 		} else {
 			const bodyNode = ParentNodeUtility.getElementByTagName(root, 'body');
 			const body = ParentNodeUtility.getElementByTagName(this, 'body');
-			for (const child of (<Element>(bodyNode || root))[PropertySymbol.childNodes].slice()) {
-				body.appendChild(child);
+			const childNodes = (<Element>(bodyNode || root))[PropertySymbol.childNodes][
+				PropertySymbol.items
+			];
+			while (childNodes.length) {
+				body.appendChild(childNodes[0]);
 			}
 		}
 	}
@@ -955,7 +926,7 @@ export default class Document extends Node {
 			}
 		}
 
-		for (const child of this[PropertySymbol.childNodes].slice()) {
+		for (const child of this[PropertySymbol.childNodes][PropertySymbol.items]) {
 			this.removeChild(child);
 		}
 
@@ -1343,7 +1314,7 @@ export default class Document extends Node {
 	#importNode(node: Node): void {
 		node[PropertySymbol.ownerDocument] = this;
 
-		for (const child of node[PropertySymbol.childNodes]) {
+		for (const child of node[PropertySymbol.childNodes][PropertySymbol.items]) {
 			this.#importNode(child);
 		}
 	}

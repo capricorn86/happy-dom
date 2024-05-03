@@ -39,9 +39,9 @@ export default class ChildNodeUtility {
 			if (typeof node === 'string') {
 				const newChildNodes = (<DocumentFragment>(
 					XMLParser.parse(<Document>childNode[PropertySymbol.ownerDocument], node)
-				))[PropertySymbol.childNodes].slice();
-				for (const newChildNode of newChildNodes) {
-					parent.insertBefore(newChildNode, childNode);
+				))[PropertySymbol.childNodes][PropertySymbol.items];
+				while (newChildNodes.length) {
+					parent.insertBefore(newChildNodes[0], childNode);
 				}
 			} else {
 				parent.insertBefore(node, childNode);
@@ -68,9 +68,9 @@ export default class ChildNodeUtility {
 			if (typeof node === 'string') {
 				const newChildNodes = (<DocumentFragment>(
 					XMLParser.parse(<Document>childNode[PropertySymbol.ownerDocument], node)
-				))[PropertySymbol.childNodes].slice();
-				for (const newChildNode of newChildNodes) {
-					parent.insertBefore(newChildNode, childNode);
+				))[PropertySymbol.childNodes][PropertySymbol.items];
+				while (newChildNodes.length) {
+					parent.insertBefore(newChildNodes[0], childNode);
 				}
 			} else {
 				parent.insertBefore(node, childNode);
@@ -97,12 +97,12 @@ export default class ChildNodeUtility {
 			if (typeof node === 'string') {
 				const newChildNodes = (<DocumentFragment>(
 					XMLParser.parse(<Document>childNode[PropertySymbol.ownerDocument], node)
-				))[PropertySymbol.childNodes].slice();
-				for (const newChildNode of newChildNodes) {
+				))[PropertySymbol.childNodes][PropertySymbol.items];
+				while (newChildNodes.length) {
 					if (!nextSibling) {
-						parent.appendChild(newChildNode);
+						parent.appendChild(newChildNodes[0]);
 					} else {
-						parent.insertBefore(newChildNode, nextSibling);
+						parent.insertBefore(newChildNodes[0], nextSibling);
 					}
 				}
 			} else if (!nextSibling) {

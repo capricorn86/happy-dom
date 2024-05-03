@@ -1,13 +1,12 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import HTMLHyperlinkElementNamedNodeMap from '../html-hyperlink-element/HTMLHyperlinkElementNamedNodeMap.js';
 import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
 import HTMLHyperlinkElementUtility from '../html-hyperlink-element/HTMLHyperlinkElementUtility.js';
-import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import IHTMLHyperlinkElement from '../html-hyperlink-element/IHTMLHyperlinkElement.js';
 import PointerEvent from '../../event/events/PointerEvent.js';
 import Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
+import Attr from '../attr/Attr.js';
 
 /**
  * HTMLAreaElement
@@ -15,11 +14,23 @@ import EventPhaseEnum from '../../event/EventPhaseEnum.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLAreaElement
  */
 export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperlinkElement {
-	public override [PropertySymbol.attributes]: NamedNodeMap = new HTMLHyperlinkElementNamedNodeMap(
-		this
-	);
 	public [PropertySymbol.relList]: DOMTokenList = null;
 	#htmlHyperlinkElementUtility = new HTMLHyperlinkElementUtility(this);
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
+			'set',
+			this.#onSetAttribute.bind(this)
+		);
+		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
+			'remove',
+			this.#onRemoveAttribute.bind(this)
+		);
+	}
 
 	/**
 	 * Returns alt.
@@ -399,5 +410,26 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 		}
 
 		return returnValue;
+	}
+
+	/**
+	 * Triggered when an attribute is set.
+	 * @param item
+	 */
+	#onSetAttribute(item: Attr): void {
+		if (item[PropertySymbol.name] === 'rel' && this[PropertySymbol.relList]) {
+			this[PropertySymbol.relList][PropertySymbol.updateIndices]();
+		}
+	}
+
+	/**
+	 * Triggered when an attribute is removed.
+	 * @param name
+	 * @param removedItem
+	 */
+	#onRemoveAttribute(removedItem: Attr): void {
+		if (removedItem[PropertySymbol.name] === 'rel' && this[PropertySymbol.relList]) {
+			this[PropertySymbol.relList][PropertySymbol.updateIndices]();
+		}
 	}
 }

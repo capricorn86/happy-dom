@@ -89,7 +89,7 @@ export default class HTMLSlotElement extends HTMLElement {
 			if (name) {
 				const assignedElements = [];
 
-				for (const child of (<HTMLElement>host)[PropertySymbol.children]) {
+				for (const child of (<HTMLElement>host)[PropertySymbol.children][PropertySymbol.items]) {
 					if (child.slot === name) {
 						assignedElements.push(child);
 					}
@@ -98,7 +98,7 @@ export default class HTMLSlotElement extends HTMLElement {
 				return assignedElements;
 			}
 
-			return (<HTMLElement>host)[PropertySymbol.children].slice();
+			return (<HTMLElement>host)[PropertySymbol.children][PropertySymbol.items].slice();
 		}
 
 		return [];

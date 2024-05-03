@@ -6,7 +6,7 @@ import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import DOMException from '../../exception/DOMException.js';
 import CSSStyleDeclarationElementStyle from './element-style/CSSStyleDeclarationElementStyle.js';
 import CSSStyleDeclarationPropertyManager from './property-manager/CSSStyleDeclarationPropertyManager.js';
-import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
+import NamedNodeMap from '../../nodes/element/NamedNodeMap.js';
 
 /**
  * CSS Style Declaration.
@@ -83,10 +83,10 @@ export default abstract class AbstractCSSStyleDeclaration {
 
 			if (!styleAttribute) {
 				styleAttribute = this.#ownerElement[PropertySymbol.ownerDocument].createAttribute('style');
-				// We use "[PropertySymbol.setNamedItemWithoutConsequences]" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
-				(<NamedNodeMap>this.#ownerElement[PropertySymbol.attributes])[
-					PropertySymbol.setNamedItemWithoutConsequences
-				](styleAttribute);
+				(<NamedNodeMap>this.#ownerElement[PropertySymbol.attributes])[PropertySymbol.setNamedItem](
+					styleAttribute,
+					true
+				);
 			}
 
 			if (this.#ownerElement[PropertySymbol.isConnected]) {
@@ -141,10 +141,10 @@ export default abstract class AbstractCSSStyleDeclaration {
 			if (!styleAttribute) {
 				styleAttribute = this.#ownerElement[PropertySymbol.ownerDocument].createAttribute('style');
 
-				// We use "[PropertySymbol.setNamedItemWithoutConsequences]" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
-				(<NamedNodeMap>this.#ownerElement[PropertySymbol.attributes])[
-					PropertySymbol.setNamedItemWithoutConsequences
-				](styleAttribute);
+				(<NamedNodeMap>this.#ownerElement[PropertySymbol.attributes])[PropertySymbol.setNamedItem](
+					styleAttribute,
+					true
+				);
 			}
 
 			if (this.#ownerElement[PropertySymbol.isConnected]) {
@@ -188,10 +188,9 @@ export default abstract class AbstractCSSStyleDeclaration {
 				(<Attr>this.#ownerElement[PropertySymbol.attributes]['style'])[PropertySymbol.value] =
 					newCSSText;
 			} else {
-				// We use "[PropertySymbol.removeNamedItemWithoutConsequences]" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
 				(<NamedNodeMap>this.#ownerElement[PropertySymbol.attributes])[
-					PropertySymbol.removeNamedItemWithoutConsequences
-				]('style');
+					PropertySymbol.removeNamedItem
+				]('style', true);
 			}
 		} else {
 			this.#style.remove(name);

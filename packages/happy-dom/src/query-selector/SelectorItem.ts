@@ -236,7 +236,9 @@ export default class SelectorItem {
 					? { priorityWeight: 10 }
 					: null;
 			case 'empty':
-				return !(<Element>element)[PropertySymbol.children].length ? { priorityWeight: 10 } : null;
+				return !(<Element>element)[PropertySymbol.children][PropertySymbol.items].length
+					? { priorityWeight: 10 }
+					: null;
 			case 'root':
 				return element[PropertySymbol.tagName] === 'HTML' ? { priorityWeight: 10 } : null;
 			case 'not':

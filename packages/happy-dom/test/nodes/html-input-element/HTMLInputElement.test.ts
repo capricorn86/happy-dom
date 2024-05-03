@@ -619,7 +619,7 @@ describe('HTMLInputElement', () => {
 			expect(element.form).toBe(form);
 		});
 
-		it('Returns form element by id if the form attribute is set.', () => {
+		it('Returns form element by id if the form attribute is set when connecting node to DOM.', () => {
 			const form = document.createElement('form');
 			form.id = 'form';
 			document.body.appendChild(form);
@@ -627,6 +627,17 @@ describe('HTMLInputElement', () => {
 			expect(element.form).toBe(null);
 			document.body.appendChild(element);
 			expect(element.form).toBe(form);
+			expect(form.elements.includes(element)).toBe(true);
+		});
+
+		it('Returns form element by id if the form attribute is set when element is connected to DOM.', () => {
+			const form = document.createElement('form');
+			form.id = 'form';
+			document.body.appendChild(form);
+			document.body.appendChild(element);
+			element.setAttribute('form', 'form');
+			expect(element.form).toBe(form);
+			expect(form.elements.includes(element)).toBe(true);
 		});
 	});
 

@@ -333,6 +333,7 @@ export default class QuerySelector {
 
 		for (let i = 0, max = children.length; i < max; i++) {
 			const child = children[i];
+			const childrenOfChild = (<Element>child)[PropertySymbol.children][PropertySymbol.items];
 			const position = (documentPosition ? documentPosition + '>' : '') + String.fromCharCode(i);
 
 			if (selectorItem.match(child)) {
@@ -360,29 +361,16 @@ export default class QuerySelector {
 						case SelectorCombinatorEnum.descendant:
 						case SelectorCombinatorEnum.child:
 							matched = matched.concat(
-								this.findAll(
-									rootElement,
-									(<Element>child)[PropertySymbol.children],
-									selectorItems.slice(1),
-									position
-								)
+								this.findAll(rootElement, childrenOfChild, selectorItems.slice(1), position)
 							);
 							break;
 					}
 				}
 			}
 
-			if (
-				selectorItem.combinator === SelectorCombinatorEnum.descendant &&
-				(<Element>child)[PropertySymbol.children].length
-			) {
+			if (selectorItem.combinator === SelectorCombinatorEnum.descendant && childrenOfChild.length) {
 				matched = matched.concat(
-					this.findAll(
-						rootElement,
-						(<Element>child)[PropertySymbol.children],
-						selectorItems,
-						position
-					)
+					this.findAll(rootElement, childrenOfChild, selectorItems, position)
 				);
 			}
 		}
@@ -407,6 +395,8 @@ export default class QuerySelector {
 		const nextSelectorItem = selectorItems[1];
 
 		for (const child of children) {
+			const childrenOfChild = (<Element>child)[PropertySymbol.children][PropertySymbol.items];
+
 			if (selectorItem.match(child)) {
 				if (!nextSelectorItem) {
 					if (rootElement !== child) {
@@ -428,11 +418,7 @@ export default class QuerySelector {
 							break;
 						case SelectorCombinatorEnum.descendant:
 						case SelectorCombinatorEnum.child:
-							const match = this.findFirst(
-								rootElement,
-								(<Element>child)[PropertySymbol.children],
-								selectorItems.slice(1)
-							);
+							const match = this.findFirst(rootElement, childrenOfChild, selectorItems.slice(1));
 							if (match) {
 								return match;
 							}
@@ -441,15 +427,8 @@ export default class QuerySelector {
 				}
 			}
 
-			if (
-				selectorItem.combinator === SelectorCombinatorEnum.descendant &&
-				(<Element>child)[PropertySymbol.children].length
-			) {
-				const match = this.findFirst(
-					rootElement,
-					(<Element>child)[PropertySymbol.children],
-					selectorItems
-				);
+			if (selectorItem.combinator === SelectorCombinatorEnum.descendant && childrenOfChild.length) {
+				const match = this.findFirst(rootElement, childrenOfChild, selectorItems);
 
 				if (match) {
 					return match;

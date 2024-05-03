@@ -16,13 +16,13 @@ import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import HTMLInputElementDateUtility from './HTMLInputElementDateUtility.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
-import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
-import HTMLInputElementNamedNodeMap from './HTMLInputElementNamedNodeMap.js';
 import PointerEvent from '../../event/events/PointerEvent.js';
 import { URL } from 'url';
 import HTMLDataListElement from '../html-data-list-element/HTMLDataListElement.js';
 import Document from '../document/Document.js';
 import ShadowRoot from '../shadow-root/ShadowRoot.js';
+import HTMLFieldSetElement from '../html-field-set-element/HTMLFieldSetElement.js';
+import Attr from '../attr/Attr.js';
 
 /**
  * HTML Input Element.
@@ -42,10 +42,6 @@ export default class HTMLInputElement extends HTMLElement {
 	public oninvalid: (event: Event) => void | null = null;
 	public onselectionchange: (event: Event) => void | null = null;
 
-	// Internal properties
-	public override [PropertySymbol.attributes]: NamedNodeMap = new HTMLInputElementNamedNodeMap(
-		this
-	);
 	public [PropertySymbol.value] = null;
 	public [PropertySymbol.height] = 0;
 	public [PropertySymbol.width] = 0;
@@ -54,12 +50,28 @@ export default class HTMLInputElement extends HTMLElement {
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
 	public [PropertySymbol.files]: FileList = new FileList();
+	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
 
 	// Private properties
 	#selectionStart: number = null;
 	#selectionEnd: number = null;
 	#selectionDirection: HTMLInputElementSelectionDirectionEnum =
 		HTMLInputElementSelectionDirectionEnum.none;
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
+			'set',
+			this.#onSetAttribute.bind(this)
+		);
+		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
+			'remove',
+			this.#onRemoveAttribute.bind(this)
+		);
+	}
 
 	/**
 	 * Returns default checked.
@@ -207,17 +219,19 @@ export default class HTMLInputElement extends HTMLElement {
 	 *
 	 * @returns Form.
 	 */
-	public get form(): HTMLFormElement | null {
-		if (this[PropertySymbol.formNode]) {
-			return <HTMLFormElement>this[PropertySymbol.formNode];
-		}
-		if (!this.isConnected) {
-			return null;
-		}
+	public get form(): HTMLFormElement {
 		const formID = this.getAttribute('form');
-		return formID
-			? <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(formID)
-			: null;
+
+		if (formID !== null) {
+			if (!this[PropertySymbol.isConnected]) {
+				return null;
+			}
+			return formID
+				? <HTMLFormElement>(<Document>this[PropertySymbol.rootNode]).getElementById(formID)
+				: null;
+		}
+
+		return <HTMLFormElement>this[PropertySymbol.formNode];
 	}
 
 	/**
@@ -1392,32 +1406,6 @@ export default class HTMLInputElement extends HTMLElement {
 		}
 
 		return returnValue;
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
-		const oldFormNode = <HTMLFormElement>this[PropertySymbol.formNode];
-
-		super[PropertySymbol.connectToNode](parentNode);
-
-		if (oldFormNode !== this[PropertySymbol.formNode]) {
-			if (oldFormNode) {
-				oldFormNode[PropertySymbol.removeFormControlItem](this, this.name);
-				oldFormNode[PropertySymbol.removeFormControlItem](this, this.id);
-			}
-			if (this[PropertySymbol.formNode]) {
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
-					this,
-					this.name
-				);
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
-					this,
-					this.id
-				);
-			}
-		}
 	}
 
 	/**

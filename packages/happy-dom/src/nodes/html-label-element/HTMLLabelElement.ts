@@ -4,6 +4,8 @@ import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import PointerEvent from '../../event/events/PointerEvent.js';
+import HTMLInputElement from '../html-input-element/HTMLInputElement.js';
+import Document from '../document/Document.js';
 
 /**
  * HTML Label Element.
@@ -42,13 +44,31 @@ export default class HTMLLabelElement extends HTMLElement {
 	 *
 	 * @returns Control element.
 	 */
-	public get control(): HTMLElement {
-		const htmlFor = this.htmlFor;
-		if (htmlFor) {
-			const control = <HTMLElement>this[PropertySymbol.ownerDocument].getElementById(htmlFor);
-			return control !== this ? control : null;
+	public get control(): HTMLElement | null {
+		const htmlFor = this.getAttribute('for');
+		if (htmlFor !== null) {
+			if (!htmlFor || !this[PropertySymbol.isConnected]) {
+				return null;
+			}
+			const control = <HTMLElement | null>(
+				(<Document>this[PropertySymbol.rootNode]).getElementById(htmlFor)
+			);
+			switch (control.tagName) {
+				case 'input':
+					return (<HTMLInputElement>control).type !== 'hidden' ? control : null;
+				case 'button':
+				case 'meter':
+				case 'output':
+				case 'progress':
+				case 'select':
+				case 'textarea':
+				case 'textarea':
+					return control;
+				default:
+					return null;
+			}
 		}
-		return <HTMLElement>(
+		return <HTMLElement | null>(
 			this.querySelector('button,input:not([type="hidden"]),meter,output,progress,select,textarea')
 		);
 	}
@@ -58,8 +78,8 @@ export default class HTMLLabelElement extends HTMLElement {
 	 *
 	 * @returns Form.
 	 */
-	public get form(): HTMLFormElement {
-		return <HTMLFormElement>this[PropertySymbol.formNode];
+	public get form(): HTMLFormElement | null {
+		return (<HTMLInputElement>this.control)?.form || null;
 	}
 
 	/**

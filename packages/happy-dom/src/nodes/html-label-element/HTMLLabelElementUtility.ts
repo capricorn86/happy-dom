@@ -18,7 +18,7 @@ export default class HTMLLabelElementUtility {
 	public static getAssociatedLabelElements(element: HTMLElement): NodeList<HTMLLabelElement> {
 		const id = element.id;
 		let labels: NodeList<HTMLLabelElement>;
-		if (id) {
+		if (id && element[PropertySymbol.isConnected]) {
 			const rootNode =
 				<Document | ShadowRoot>element[PropertySymbol.rootNode] ||
 				element[PropertySymbol.ownerDocument];

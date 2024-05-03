@@ -115,14 +115,19 @@ export default class HTMLStyleElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
-		super[PropertySymbol.connectToNode](parentNode);
-
-		if (parentNode) {
+	public override [PropertySymbol.connectedToDocument](parentNode: Node): void {
+		super[PropertySymbol.connectedToDocument](parentNode);
+		if (this[PropertySymbol.isConnected]) {
 			this[PropertySymbol.sheet] = new CSSStyleSheet();
 			this[PropertySymbol.sheet].replaceSync(this.textContent);
-		} else {
-			this[PropertySymbol.sheet] = null;
 		}
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.disconnectedFromDocument](parentNode: Node): void {
+		super[PropertySymbol.disconnectedFromDocument](parentNode);
+		this[PropertySymbol.sheet] = null;
 	}
 }
