@@ -171,6 +171,13 @@ export default class ElementUtility {
 						parentNodeChildren.splice(index, 1);
 					}
 				}
+				const parentChildNodes = (<Element>ancestorNode)[PropertySymbol.childNodes];
+				if (parentChildNodes) {
+					const index = parentChildNodes.indexOf(newNode);
+					if (index !== -1) {
+						parentChildNodes.splice(index, 1);
+					}
+				}
 			}
 
 			const ancestorNodeChildren = <HTMLCollection<HTMLElement>>(
