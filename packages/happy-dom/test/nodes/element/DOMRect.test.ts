@@ -6,6 +6,39 @@ describe('DOMRect', () => {
 		vi.restoreAllMocks();
 	});
 
+	describe('constructor()', () => {
+		it('Sets properties.', () => {
+			const rect = new DOMRect(1, 2, 3, 4);
+			expect(rect.x).toBe(1);
+			expect(rect.y).toBe(2);
+			expect(rect.width).toBe(3);
+			expect(rect.height).toBe(4);
+
+			const rect2 = new DOMRect(null, null, null, 4);
+			expect(rect2.x).toBe(0);
+			expect(rect2.y).toBe(0);
+			expect(rect2.width).toBe(0);
+			expect(rect2.height).toBe(4);
+
+			const rect3 = new DOMRect();
+			expect(rect3.x).toBe(0);
+			expect(rect3.y).toBe(0);
+			expect(rect3.width).toBe(0);
+			expect(rect3.height).toBe(0);
+
+			const rect4 = new DOMRect(
+				<number>(<unknown>'nan'),
+				<number>(<unknown>'nan'),
+				<number>(<unknown>'nan'),
+				<number>(<unknown>'nan')
+			);
+			expect(isNaN(rect4.x)).toBe(true);
+			expect(isNaN(rect4.y)).toBe(true);
+			expect(isNaN(rect4.width)).toBe(true);
+			expect(isNaN(rect4.height)).toBe(true);
+		});
+	});
+
 	describe('set x()', () => {
 		it('Sets rect x property.', () => {
 			const rect = new DOMRect(1, 2, 3, 4);

@@ -1,3 +1,5 @@
+import * as PropertySymbol from '../../PropertySymbol.js';
+
 /* eslint-disable jsdoc/require-jsdoc */
 
 /**
@@ -6,10 +8,10 @@
  * @see https://drafts.fxtf.org/geometry/#DOMRect
  */
 export default class DOMRectReadOnly implements IDOMRectInit {
-	protected _x: number = 0;
-	protected _y: number = 0;
-	protected _width: number = 0;
-	protected _height: number = 0;
+	protected [PropertySymbol.x]: number = 0;
+	protected [PropertySymbol.y]: number = 0;
+	protected [PropertySymbol.width]: number = 0;
+	protected [PropertySymbol.height]: number = 0;
 
 	/**
 	 * Constructor.
@@ -19,43 +21,43 @@ export default class DOMRectReadOnly implements IDOMRectInit {
 	 * @param [width] Width.
 	 * @param [height] Height.
 	 */
-	constructor(x?: number, y?: number, width?: number, height?: number) {
-		this._x = x || 0;
-		this._y = y || 0;
-		this._width = width || 0;
-		this._height = height || 0;
+	constructor(x?: number | null, y?: number | null, width?: number | null, height?: number | null) {
+		this[PropertySymbol.x] = x !== undefined && x !== null ? Number(x) : 0;
+		this[PropertySymbol.y] = y !== undefined && y !== null ? Number(y) : 0;
+		this[PropertySymbol.width] = width !== undefined && width !== null ? Number(width) : 0;
+		this[PropertySymbol.height] = height !== undefined && height !== null ? Number(height) : 0;
 	}
 
 	public get x(): number {
-		return this._x;
+		return this[PropertySymbol.x];
 	}
 
 	public get y(): number {
-		return this._y;
+		return this[PropertySymbol.y];
 	}
 
 	public get width(): number {
-		return this._width;
+		return this[PropertySymbol.width];
 	}
 
 	public get height(): number {
-		return this._height;
+		return this[PropertySymbol.height];
 	}
 
 	public get top(): number {
-		return Math.min(this._y, this._y + this._height);
+		return Math.min(this[PropertySymbol.y], this[PropertySymbol.y] + this[PropertySymbol.height]);
 	}
 
 	public get right(): number {
-		return Math.max(this._x, this._x + this._width);
+		return Math.max(this[PropertySymbol.x], this[PropertySymbol.x] + this[PropertySymbol.width]);
 	}
 
 	public get bottom(): number {
-		return Math.max(this._y, this._y + this._height);
+		return Math.max(this[PropertySymbol.y], this[PropertySymbol.y] + this[PropertySymbol.height]);
 	}
 
 	public get left(): number {
-		return Math.min(this._x, this._x + this._width);
+		return Math.min(this[PropertySymbol.x], this[PropertySymbol.x] + this[PropertySymbol.width]);
 	}
 
 	public toJSON(): object {
