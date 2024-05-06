@@ -1,5 +1,6 @@
-import DOMRectReadOnly, { IDOMRectInit } from './DOMRectReadOnly.js';
+import DOMRectReadOnly from './DOMRectReadOnly.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
+import IDOMRectInit from './IDOMRectInit.js';
 
 /* eslint-disable jsdoc/require-jsdoc */
 
@@ -39,5 +40,9 @@ export default class DOMRect extends DOMRectReadOnly {
 
 	public get height(): number {
 		return this[PropertySymbol.height];
+	}
+
+	public static fromRect(other: IDOMRectInit): DOMRect {
+		return new DOMRect(other.x, other.y, other.width, other.height);
 	}
 }
