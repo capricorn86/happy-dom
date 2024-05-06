@@ -45,13 +45,15 @@ export default class HTMLIFrameElementNamedNodeMap extends HTMLElementNamedNodeM
 	 */
 	public override setNamedItem(item: Attr): Attr | null {
 		const replacedAttribute = super.setNamedItem(item);
+
 		if (item[PropertySymbol.name] === 'srcdoc') {
 			this.#pageLoader.loadPage();
 		}
+
 		// If the src attribute and the srcdoc attribute are both specified together, the srcdoc attribute takes priority.
 		if (
 			item[PropertySymbol.name] === 'src' &&
-			this[PropertySymbol.ownerElement].getAttribute('srcdoc') === null &&
+			this[PropertySymbol.ownerElement][PropertySymbol.attributes]['srcdoc']?.value === undefined &&
 			item[PropertySymbol.value] &&
 			item[PropertySymbol.value] !== replacedAttribute?.[PropertySymbol.value]
 		) {
