@@ -1,4 +1,5 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
+import IDOMRectInit from './IDOMRectInit.js';
 
 /* eslint-disable jsdoc/require-jsdoc */
 
@@ -76,11 +77,4 @@ export default class DOMRectReadOnly implements IDOMRectInit {
 	public static fromRect(other: IDOMRectInit): DOMRectReadOnly {
 		return new DOMRectReadOnly(other.x, other.y, other.width, other.height);
 	}
-}
-
-export interface IDOMRectInit {
-	readonly x: number;
-	readonly y: number;
-	readonly width: number;
-	readonly height: number;
 }

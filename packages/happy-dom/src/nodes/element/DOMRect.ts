@@ -1,5 +1,6 @@
-import DOMRectReadOnly, { IDOMRectInit } from './DOMRectReadOnly.js';
+import DOMRectReadOnly from './DOMRectReadOnly.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
+import IDOMRectInit from './IDOMRectInit.js';
 
 /* eslint-disable jsdoc/require-jsdoc */
 
