@@ -70,6 +70,7 @@ import DocumentFragment from './nodes/document-fragment/DocumentFragment.js';
 import DocumentType from './nodes/document-type/DocumentType.js';
 import Document from './nodes/document/Document.js';
 import DOMRect from './nodes/element/DOMRect.js';
+import DOMRectReadOnly from './nodes/element/DOMRectReadOnly.js';
 import Element from './nodes/element/Element.js';
 import HTMLCollection from './nodes/element/HTMLCollection.js';
 import HTMLAnchorElement from './nodes/html-anchor-element/HTMLAnchorElement.js';
@@ -211,6 +212,7 @@ export {
 	DOMException,
 	DOMParser,
 	DOMRect,
+	DOMRectReadOnly,
 	DataTransfer,
 	DataTransferItem,
 	DataTransferItemList,
