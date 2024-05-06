@@ -128,7 +128,7 @@ export default class HTMLIFrameElementPageLoader {
 	/**
 	 * Unloads an iframe page.
 	 */
-	private unloadPage(): void {
+	public unloadPage(): void {
 		if (this.#browserIFrame) {
 			BrowserFrameFactory.destroyFrame(this.#browserIFrame);
 			this.#browserIFrame = null;
