@@ -35,7 +35,7 @@ describe('HTMLIFrameElement', () => {
 		});
 	});
 
-	for (const property of ['src', 'allow', 'height', 'width', 'name', 'srcdoc']) {
+	for (const property of ['src', 'allow', 'height', 'width', 'name']) {
 		describe(`get ${property}()`, () => {
 			it(`Returns the "${property}" attribute.`, () => {
 				element.setAttribute(property, 'value');
@@ -123,6 +123,105 @@ describe('HTMLIFrameElement', () => {
 			);
 			expect(element.sandbox.toString()).toBe('first-invalid second-invalid');
 			expect(element.getAttribute('sandbox')).toBe('first-invalid second-invalid');
+		});
+	});
+
+	describe('get srcdoc()', () => {
+		it('Returns string', () => {
+			expect(element.srcdoc).toBe('');
+			element.srcdoc = '<div></div>';
+			expect(element.getAttribute('srcdoc')).toBe('<div></div>');
+		});
+	});
+
+	describe('set srcdoc()', () => {
+		it("Navigate the element's browsing context to a resource whose Content-Type is text/html", async () => {
+			const actualHTML = await new Promise((resolve) => {
+				element.srcdoc = '<div>TEST</div>';
+				element.addEventListener('load', () => {
+					resolve(element.contentDocument?.documentElement.innerHTML);
+				});
+				document.body.appendChild(element);
+			});
+			expect(actualHTML).toBe('<head></head><body><div>TEST</div></body>');
+		});
+
+		it('Takes priority, when the src attribute and the srcdoc attribute are both specified together', async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			const window = page.mainFrame.window;
+			const document = window.document;
+			const element = <HTMLIFrameElement>document.createElement('iframe');
+			const url = await new Promise((resolve) => {
+				element.srcdoc = '<html><head></head><body>TEST</body></html>';
+				element.src = 'https://localhost:8080/iframe.html';
+				element.addEventListener('load', () => {
+					resolve(page.mainFrame.childFrames[0].url);
+				});
+				document.appendChild(element);
+			});
+			expect(url).toBe('about:srcdoc');
+		});
+
+		it('Resolve the value of the src attribute when the srcdoc attribute has been removed', async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			const window = page.mainFrame.window;
+			const document = window.document;
+			const element = <HTMLIFrameElement>document.createElement('iframe');
+			page.mainFrame.url = 'https://localhost:8080';
+			const responseHTML = '<html><head></head><body>Test</body></html>';
+
+			vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
+				return Promise.resolve(<Response>(<unknown>{
+					text: () => Promise.resolve(responseHTML),
+					ok: true,
+					headers: new Headers()
+				}));
+			});
+			const frameUrl = 'https://localhost:8080/iframe.html';
+			const actualFrameUrl = await new Promise((resolve) => {
+				element.srcdoc = responseHTML;
+				element.src = frameUrl;
+				const firstLoad = (): void => {
+					expect(page.mainFrame.childFrames[0].url).toBe('about:srcdoc');
+					element.removeEventListener('load', firstLoad);
+					element.addEventListener('load', () => {
+						resolve(page.mainFrame.childFrames[0].url);
+					});
+					element.removeAttribute('srcdoc');
+				};
+				element.addEventListener('load', firstLoad);
+				document.body.appendChild(element);
+			});
+			expect(actualFrameUrl).toBe(frameUrl);
+		});
+
+		it('Execute code in the script', async () => {
+			const message = await new Promise((resolve) => {
+				element.srcdoc = `<!doctype html><html><head>
+				<script>
+				function handleMessage(e) {
+					parent.postMessage({ msg: 'loaded' }, '*');
+				}
+				window.addEventListener('message', handleMessage, false);
+				</script>
+				</head><body></body></html>`;
+				element.addEventListener('load', () => {
+					element.contentWindow?.postMessage('MESSAGE', '*');
+				});
+				window.addEventListener(
+					'message',
+					(e) => {
+						const data = (<MessageEvent>e).data;
+						resolve(data);
+					},
+					false
+				);
+				document.body.appendChild(element);
+				expect(element.contentWindow?.parent === window).toBe(true);
+			});
+			expect(message).toMatchObject({ msg: 'loaded' });
 		});
 	});
 
@@ -421,6 +520,36 @@ describe('HTMLIFrameElement', () => {
 				document.body.appendChild(element);
 			});
 		});
+
+		it('Remain at the initial about:blank page when none of the srcdoc/src attributes are set', async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			const window = page.mainFrame.window;
+			const document = window.document;
+			const element = <HTMLIFrameElement>document.createElement('iframe');
+			page.mainFrame.url = 'https://localhost:8080';
+
+			vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
+				return Promise.resolve(<Response>(<unknown>{
+					text: () => Promise.resolve('<html><head></head><body>Test</body></html>'),
+					ok: true,
+					headers: new Headers()
+				}));
+			});
+			const actualFrameUrl = await new Promise((resolve) => {
+				element.src = 'https://localhost:8080/iframe.html';
+				const firstLoad = (): void => {
+					element.removeEventListener('load', firstLoad);
+					element.addEventListener('load', () => {
+						resolve(page.mainFrame.childFrames[0].url);
+					});
+					element.removeAttribute('src');
+				};
+				element.addEventListener('load', firstLoad);
+				document.body.appendChild(element);
+			});
+			expect(actualFrameUrl).toBe('about:blank');
+		});
 	});
 
 	describe('get contentDocument()', () => {
@@ -428,6 +557,7 @@ describe('HTMLIFrameElement', () => {
 			element.src = 'about:blank';
 			expect(element.contentDocument).toBe(null);
 			document.body.appendChild(element);
+			expect(element.contentWindow?.parent === window).toBe(true);
 			expect(element.contentDocument?.documentElement.innerHTML).toBe('<head></head><body></body>');
 		});
 	});
