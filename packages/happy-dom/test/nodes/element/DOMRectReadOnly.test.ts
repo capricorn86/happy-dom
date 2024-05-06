@@ -13,6 +13,10 @@ describe('DOMRectReadOnly', () => {
 			expect(rect.y).toBe(2);
 			expect(rect.width).toBe(3);
 			expect(rect.height).toBe(4);
+			expect(rect.top).toBe(2);
+			expect(rect.right).toBe(4);
+			expect(rect.bottom).toBe(6);
+			expect(rect.left).toBe(1);
 
 			const rect2 = new DOMRectReadOnly(null, null, null, 4);
 			expect(rect2.x).toBe(0);
@@ -103,6 +107,10 @@ describe('DOMRectReadOnly', () => {
 			expect(rect.y).toBe(2);
 			expect(rect.width).toBe(3);
 			expect(rect.height).toBe(4);
+			expect(rect.top).toBe(2);
+			expect(rect.right).toBe(4);
+			expect(rect.bottom).toBe(6);
+			expect(rect.left).toBe(1);
 		});
 	});
 
