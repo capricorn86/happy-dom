@@ -318,8 +318,8 @@ export default class Document extends Node {
 	/**
 	 * Returns a collection of all form elements in a document.
 	 */
-	public get forms(): NodeList<HTMLFormElement> {
-		return this.querySelectorAll('form');
+	public get forms(): HTMLCollection<HTMLFormElement> {
+		return this.getElementsByTagName('form');
 	}
 
 	/**

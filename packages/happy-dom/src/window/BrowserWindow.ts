@@ -97,6 +97,7 @@ import Plugin from '../navigator/Plugin.js';
 import PluginArray from '../navigator/PluginArray.js';
 import Fetch from '../fetch/Fetch.js';
 import DOMRect from '../nodes/element/DOMRect.js';
+import DOMRectReadOnly from '../nodes/element/DOMRectReadOnly.js';
 import VMGlobalPropertyScript from './VMGlobalPropertyScript.js';
 import VM from 'vm';
 import { Buffer } from 'buffer';
@@ -372,6 +373,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly PluginArray = PluginArray;
 	public readonly FileList = FileList;
 	public readonly DOMRect = DOMRect;
+	public readonly DOMRectReadOnly = DOMRectReadOnly;
 	public readonly RadioNodeList = RadioNodeList;
 	public readonly ValidityState = ValidityState;
 	public readonly Headers = Headers;
