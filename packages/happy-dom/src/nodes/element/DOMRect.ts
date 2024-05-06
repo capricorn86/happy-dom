@@ -1,57 +1,43 @@
+import DOMRectReadOnly, { IDOMRectInit } from './DOMRectReadOnly.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
+
+/* eslint-disable jsdoc/require-jsdoc */
+
 /**
  * Bounding rect object.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/DOMRect
  */
-export default class DOMRect {
-	public x = 0;
-	public y = 0;
-	public width = 0;
-	public height = 0;
-	public top = 0;
-	public right = 0;
-	public bottom = 0;
-	public left = 0;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param [x] X position.
-	 * @param [y] Y position.
-	 * @param [width] Width.
-	 * @param [height] Height.
-	 */
-	constructor(x?, y?, width?, height?) {
-		this.x = x || 0;
-		this.y = y || 0;
-		this.width = width || 0;
-		this.height = height || 0;
-		this.top = this.y;
-		this.right = this.x + this.width;
-		this.bottom = this.y + this.height;
-		this.left = this.x;
+export default class DOMRect extends DOMRectReadOnly {
+	public set x(value: number) {
+		this[PropertySymbol.x] = value;
 	}
-	/**
-	 * The fromRect() static method of the DOMRect object creates a new DOMRect object with a given location and dimensions.
-	 * @param rectangle
-	 * @param rectangle.x
-	 * @param rectangle.y
-	 * @param rectangle.width
-	 * @param rectangle.height
-	 */
-	public static fromRect(
-		rectangle: {
-			x?: number;
-			y?: number;
-			width?: number;
-			height?: number;
-		} = {
-			x: 0,
-			y: 0,
-			width: 0,
-			height: 0
-		}
-	): DOMRect {
-		return new DOMRect(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+
+	public get x(): number {
+		return this[PropertySymbol.x];
+	}
+
+	public set y(value: number) {
+		this[PropertySymbol.y] = value;
+	}
+
+	public get y(): number {
+		return this[PropertySymbol.y];
+	}
+
+	public set width(value: number) {
+		this[PropertySymbol.width] = value;
+	}
+
+	public get width(): number {
+		return this[PropertySymbol.width];
+	}
+
+	public set height(value: number) {
+		this[PropertySymbol.height] = value;
+	}
+
+	public get height(): number {
+		return this[PropertySymbol.height];
 	}
 }

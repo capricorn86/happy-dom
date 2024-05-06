@@ -1235,6 +1235,18 @@ describe('Element', () => {
 			expect(element.children['div'] === div).toBe(true);
 			expect(element.children['span2'] === span2).toBe(true);
 		});
+
+		it('Inserts correctly with comment reference node', () => {
+			const container = document.createElement('div');
+			const child = document.createElement('p');
+			child.textContent = 'A';
+			container.appendChild(child);
+			const comment = document.createComment('');
+			container.appendChild(comment);
+			container.insertBefore(child, comment);
+			const elements = container.querySelectorAll('p');
+			expect(elements.length).toBe(1);
+		});
 	});
 
 	describe('get previousElementSibling()', () => {
