@@ -19,6 +19,7 @@ export default class HTMLIFrameElementPageLoader {
 	#contentWindowContainer: { window: BrowserWindow | CrossOriginBrowserWindow | null };
 	#browserParentFrame: IBrowserFrame;
 	#browserIFrame: IBrowserFrame;
+	#srcdoc: string | null = null;
 
 	/**
 	 * Constructor.
@@ -44,15 +45,43 @@ export default class HTMLIFrameElementPageLoader {
 	 */
 	public loadPage(): void {
 		if (!this.#element[PropertySymbol.isConnected]) {
-			if (this.#browserIFrame) {
-				BrowserFrameFactory.destroyFrame(this.#browserIFrame);
-				this.#browserIFrame = null;
-			}
-			this.#contentWindowContainer.window = null;
+			this.unloadPage();
 			return;
 		}
 
+		const srcdoc = this.#element.getAttribute('srcdoc');
 		const window = this.#element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow];
+
+		if (srcdoc !== null) {
+			if (this.#srcdoc === srcdoc) {
+				return;
+			}
+
+			this.unloadPage();
+
+			this.#browserIFrame = BrowserFrameFactory.createChildFrame(this.#browserParentFrame);
+			this.#browserIFrame.url = 'about:srcdoc';
+
+			this.#contentWindowContainer.window = this.#browserIFrame.window;
+
+			(<BrowserWindow>this.#browserIFrame.window.top) = this.#browserParentFrame.window.top;
+			(<BrowserWindow>this.#browserIFrame.window.parent) = this.#browserParentFrame.window;
+
+			this.#browserIFrame.window.document.open();
+			this.#browserIFrame.window.document.write(srcdoc);
+
+			this.#srcdoc = srcdoc;
+
+			this.#element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].requestAnimationFrame(
+				() => this.#element.dispatchEvent(new Event('load'))
+			);
+			return;
+		}
+
+		if (this.#srcdoc !== null) {
+			this.unloadPage();
+		}
+
 		const originURL = this.#browserParentFrame.window.location;
 		const targetURL = BrowserFrameURL.getRelativeURL(this.#browserParentFrame, this.#element.src);
 
@@ -105,5 +134,6 @@ export default class HTMLIFrameElementPageLoader {
 			this.#browserIFrame = null;
 		}
 		this.#contentWindowContainer.window = null;
+		this.#srcdoc = null;
 	}
 }

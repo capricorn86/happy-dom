@@ -124,6 +124,7 @@ describe('Document', () => {
 
 			const forms = document.forms;
 
+			expect(forms).toBeInstanceOf(HTMLCollection);
 			expect(forms.length).toBe(2);
 			expect(forms[0]).toBe(form1);
 			expect(forms[1]).toBe(form2);
