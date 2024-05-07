@@ -53,6 +53,7 @@ export default class HTMLIFrameElement extends HTMLElement {
 	};
 	#browserFrame: IBrowserFrame;
 	#browserChildFrame: IBrowserFrame;
+	#loadedSrcdoc: string | null = null;
 
 	/**
 	 * Constructor.
@@ -274,9 +275,14 @@ export default class HTMLIFrameElement extends HTMLElement {
 	 * @param replacedAttribute Replaced attribute.
 	 */
 	#onSetAttribute(attribute: Attr, replacedAttribute: Attr | null): void {
+		if (attribute[PropertySymbol.name] === 'srcdoc') {
+			this.#loadPage();
+		}
+
 		if (
 			attribute[PropertySymbol.name] === 'src' &&
 			attribute[PropertySymbol.value] &&
+			this[PropertySymbol.attributes]['srcdoc']?.value === undefined &&
 			attribute[PropertySymbol.value] !== replacedAttribute?.[PropertySymbol.value]
 		) {
 			this.#loadPage();
@@ -295,9 +301,16 @@ export default class HTMLIFrameElement extends HTMLElement {
 
 	/**
 	 * Triggered when an attribute is removed.
+	 *
+	 * @param removedAttribute Removed attribute.
 	 */
-	#onRemoveAttribute(): void {
-		this.#unloadPage();
+	#onRemoveAttribute(removedAttribute: Attr): void {
+		if (
+			removedAttribute[PropertySymbol.name] === 'srcdoc' ||
+			removedAttribute[PropertySymbol.name] === 'src'
+		) {
+			this.#loadPage();
+		}
 	}
 
 	/**
@@ -334,15 +347,43 @@ export default class HTMLIFrameElement extends HTMLElement {
 	 */
 	#loadPage(): void {
 		if (!this[PropertySymbol.isConnected]) {
-			if (this.#browserChildFrame) {
-				BrowserFrameFactory.destroyFrame(this.#browserChildFrame);
-				this.#browserChildFrame = null;
-			}
-			this.#contentWindowContainer.window = null;
+			this.#unloadPage();
 			return;
 		}
 
+		const srcdoc = this.getAttribute('srcdoc');
 		const window = this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow];
+
+		if (srcdoc !== null) {
+			if (this.#loadedSrcdoc === srcdoc) {
+				return;
+			}
+
+			this.#unloadPage();
+
+			this.#browserChildFrame = BrowserFrameFactory.createChildFrame(this.#browserFrame);
+			this.#browserChildFrame.url = 'about:srcdoc';
+
+			this.#contentWindowContainer.window = this.#browserChildFrame.window;
+
+			(<BrowserWindow>this.#browserChildFrame.window.top) = this.#browserFrame.window.top;
+			(<BrowserWindow>this.#browserChildFrame.window.parent) = this.#browserFrame.window;
+
+			this.#browserChildFrame.window.document.open();
+			this.#browserChildFrame.window.document.write(srcdoc);
+
+			this.#loadedSrcdoc = srcdoc;
+
+			this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].requestAnimationFrame(() =>
+				this.dispatchEvent(new Event('load'))
+			);
+			return;
+		}
+
+		if (this.#loadedSrcdoc !== null) {
+			this.#unloadPage();
+		}
+
 		const originURL = this.#browserFrame.window.location;
 		const targetURL = BrowserFrameURL.getRelativeURL(this.#browserFrame, this.src);
 
@@ -398,5 +439,6 @@ export default class HTMLIFrameElement extends HTMLElement {
 			this.#browserChildFrame = null;
 		}
 		this.#contentWindowContainer.window = null;
+		this.#loadedSrcdoc = null;
 	}
 }
