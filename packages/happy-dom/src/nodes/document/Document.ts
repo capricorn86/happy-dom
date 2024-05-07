@@ -320,8 +320,8 @@ export default class Document extends Node {
 	/**
 	 * Returns a collection of all form elements in a document.
 	 */
-	public get forms(): NodeList<HTMLFormElement> {
-		return this.querySelectorAll('form');
+	public get forms(): HTMLCollection<HTMLFormElement> {
+		return this.getElementsByTagName('form');
 	}
 
 	/**
@@ -674,6 +674,20 @@ export default class Document extends Node {
 	 */
 	public querySelector(selector: string): Element | null {
 		return QuerySelector.querySelector(this, selector);
+	}
+	/**
+	 * Returns true if the command is supported.
+	 * @deprecated
+	 * @param _ Command.
+	 * @returns True if the command is supported, false otherwise.
+	 */
+	public queryCommandSupported(_: string): boolean {
+		if (!arguments.length) {
+			throw new TypeError(
+				"Failed to execute 'queryCommandSupported' on 'Document': 1 argument required, but only 0 present."
+			);
+		}
+		return true;
 	}
 
 	/**
@@ -1304,6 +1318,17 @@ export default class Document extends Node {
 		);
 		processingInstruction[PropertySymbol.target] = target;
 		return processingInstruction;
+	}
+
+	/**
+	 * Get element at a given point.
+	 *
+	 * @param _x horizontal coordinate
+	 * @param _y vertical coordinate
+	 * @returns Always returns null since Happy DOM does not render elements.
+	 */
+	public elementFromPoint(_x: number, _y: number): Element | null {
+		return null;
 	}
 
 	/**

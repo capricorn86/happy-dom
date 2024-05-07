@@ -124,6 +124,7 @@ describe('Document', () => {
 
 			const forms = document.forms;
 
+			expect(forms).toBeInstanceOf(HTMLCollection);
 			expect(forms.length).toBe(2);
 			expect(forms[0]).toBe(form1);
 			expect(forms[1]).toBe(form2);
@@ -595,6 +596,22 @@ describe('Document', () => {
 			});
 
 			expect(document.querySelector(expectedSelector) === element).toBe(true);
+		});
+	});
+
+	describe('queryCommandSupported', () => {
+		it('Returns true if the command is supported.', () => {
+			// It's just a simple simulation implementation, and it will return true no matter what parameters are passed.
+			expect(document.queryCommandSupported('copy')).toBe(true);
+			expect(document.queryCommandSupported('selectall')).toBe(true);
+		});
+		it('Throws an error if the command is not passed.', () => {
+			// @ts-ignore - Intentionally testing without parameters.
+			expect(() => document.queryCommandSupported()).toThrowError(
+				new TypeError(
+					"Failed to execute 'queryCommandSupported' on 'Document': 1 argument required, but only 0 present."
+				)
+			);
 		});
 	});
 
@@ -1390,6 +1407,13 @@ describe('Document', () => {
 			document.body.appendChild(script2);
 			expect(window['test']).toBe(script2);
 			expect(document.currentScript).toBe(null);
+		});
+	});
+
+	describe('elementFromPoint', () => {
+		it('Returns null.', () => {
+			const element = document.elementFromPoint(0, 0);
+			expect(element).toBe(null);
 		});
 	});
 });

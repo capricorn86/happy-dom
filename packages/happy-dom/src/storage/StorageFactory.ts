@@ -82,11 +82,12 @@ export default class StorageFactory {
 				) {
 					return;
 				}
+
 				return {
 					value: storage[PropertySymbol.data][key],
 					writable: true,
 					enumerable: true,
-					configurable: false
+					configurable: true
 				};
 			}
 		});
