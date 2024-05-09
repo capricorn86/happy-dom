@@ -134,6 +134,7 @@ import HTMLAnchorElement from '../nodes/html-anchor-element/HTMLAnchorElement.js
 import HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js';
 import HTMLOptionElement from '../nodes/html-option-element/HTMLOptionElement.js';
 import HTMLOptGroupElement from '../nodes/html-opt-group-element/HTMLOptGroupElement.js';
+import HTMLTimeElement from '../nodes/html-time-element/HTMLTimeElement.js';
 import WindowPageOpenUtility from './WindowPageOpenUtility.js';
 import IResponseBody from '../fetch/types/IResponseBody.js';
 import IResponseInit from '../fetch/types/IResponseInit.js';
@@ -214,6 +215,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly HTMLLinkElement: typeof HTMLLinkElementImplementation;
 	public readonly HTMLIFrameElement: typeof HTMLIFrameElementImplementation;
 	public readonly HTMLFormElement: typeof HTMLFormElementImplementation;
+	public readonly HTMLTimeElement: typeof HTMLTimeElement = HTMLTimeElement;
 
 	// Non-implemented element classes
 	public readonly HTMLHeadElement: typeof HTMLElement = HTMLElement;
@@ -254,7 +256,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly HTMLTableCellElement: typeof HTMLElement = HTMLElement;
 	public readonly HTMLTableColElement: typeof HTMLElement = HTMLElement;
 	public readonly HTMLTableElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLTimeElement: typeof HTMLElement = HTMLElement;
 	public readonly HTMLTableRowElement: typeof HTMLElement = HTMLElement;
 	public readonly HTMLTableSectionElement: typeof HTMLElement = HTMLElement;
 	public readonly HTMLFrameElement: typeof HTMLElement = HTMLElement;

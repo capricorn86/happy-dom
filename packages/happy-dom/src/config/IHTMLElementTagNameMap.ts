@@ -19,6 +19,7 @@ import HTMLIFrameElement from '../nodes/html-iframe-element/HTMLIFrameElement.js
 import HTMLOptGroupElement from '../nodes/html-opt-group-element/HTMLOptGroupElement.js';
 import HTMLOptionElement from '../nodes/html-option-element/HTMLOptionElement.js';
 import HTMLSelectElement from '../nodes/html-select-element/HTMLSelectElement.js';
+import HTMLTimeElement from '../nodes/html-time-element/HTMLTimeElement.js';
 import HTMLVideoElement from '../nodes/html-video-element/HTMLVideoElement.js';
 
 // Makes it work with custom elements when they declare their own interface.
@@ -139,7 +140,7 @@ export default interface IHTMLElementTagNameMap extends HTMLElementTagNameMap {
 	tfoot: HTMLElement;
 	th: HTMLElement;
 	thead: HTMLElement;
-	time: HTMLElement;
+	time: HTMLTimeElement;
 	title: HTMLElement;
 	tr: HTMLElement;
 	track: HTMLElement;
