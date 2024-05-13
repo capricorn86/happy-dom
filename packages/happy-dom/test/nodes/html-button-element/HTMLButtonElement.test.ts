@@ -7,6 +7,8 @@ import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElement.js';
 import ValidityState from '../../../src/validity-state/ValidityState.js';
 import { beforeEach, afterEach, describe, it, expect } from 'vitest';
+import MouseEvent from '../../../src/event/events/MouseEvent.js';
+import PointerEvent from '../../../src/event/events/PointerEvent.js';
 
 describe('HTMLButtonElement', () => {
 	let window: Window;
@@ -352,7 +354,7 @@ describe('HTMLButtonElement', () => {
 				submitter = (<SubmitEvent>event).submitter;
 			});
 
-			button.click();
+			button.dispatchEvent(new MouseEvent('click'));
 
 			expect(submitTriggeredCount).toBe(1);
 			expect(submitter).toBe(button);
@@ -376,7 +378,7 @@ describe('HTMLButtonElement', () => {
 				submitter = (<SubmitEvent>event).submitter;
 			});
 
-			button.click();
+			button.dispatchEvent(new PointerEvent('click'));
 
 			expect(submitTriggeredCount).toBe(1);
 			expect(submitter).toBe(button);
