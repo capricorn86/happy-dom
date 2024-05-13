@@ -7,7 +7,7 @@ import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import HTMLAnchorElementNamedNodeMap from './HTMLAnchorElementNamedNodeMap.js';
 import Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
-import PointerEvent from '../../event/events/PointerEvent.js';
+import MouseEvent from '../../event/events/MouseEvent.js';
 
 /**
  * HTML Anchor Element.
@@ -499,7 +499,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 
 		if (
 			event.type === 'click' &&
-			event instanceof PointerEvent &&
+			event instanceof MouseEvent &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
 			!event.defaultPrevented

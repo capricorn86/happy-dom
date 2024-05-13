@@ -10,8 +10,8 @@ import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import Node from '../node/Node.js';
 import NodeList from '../node/NodeList.js';
 import HTMLButtonElementNamedNodeMap from './HTMLButtonElementNamedNodeMap.js';
-import PointerEvent from '../../event/events/PointerEvent.js';
 import { URL } from 'url';
+import MouseEvent from '../../event/events/MouseEvent.js';
 
 const BUTTON_TYPES = ['submit', 'reset', 'button', 'menu'];
 
@@ -295,7 +295,7 @@ export default class HTMLButtonElement extends HTMLElement {
 	public override dispatchEvent(event: Event): boolean {
 		if (
 			event.type === 'click' &&
-			event instanceof PointerEvent &&
+			event instanceof MouseEvent &&
 			event.eventPhase === EventPhaseEnum.none &&
 			this.disabled
 		) {
@@ -306,7 +306,7 @@ export default class HTMLButtonElement extends HTMLElement {
 
 		if (
 			event.type === 'click' &&
-			event instanceof PointerEvent &&
+			event instanceof MouseEvent &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
 			this[PropertySymbol.isConnected]
