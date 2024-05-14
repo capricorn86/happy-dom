@@ -3,9 +3,9 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
-import PointerEvent from '../../event/events/PointerEvent.js';
 import HTMLInputElement from '../html-input-element/HTMLInputElement.js';
 import Document from '../document/Document.js';
+import MouseEvent from '../../event/events/MouseEvent.js';
 
 /**
  * HTML Label Element.
@@ -97,12 +97,12 @@ export default class HTMLLabelElement extends HTMLElement {
 
 		if (
 			event.type === 'click' &&
-			event instanceof PointerEvent &&
+			event instanceof MouseEvent &&
 			(event.eventPhase === EventPhaseEnum.atTarget || event.eventPhase === EventPhaseEnum.bubbling)
 		) {
 			const control = this.control;
 			if (control && event.target !== control) {
-				control.dispatchEvent(new PointerEvent('click', { bubbles: true, cancelable: true }));
+				control.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
 			}
 		}
 

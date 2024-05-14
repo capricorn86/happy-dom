@@ -73,7 +73,7 @@ import Document from './nodes/document/Document.js';
 import DOMRect from './nodes/element/DOMRect.js';
 import DOMRectReadOnly from './nodes/element/DOMRectReadOnly.js';
 import Element from './nodes/element/Element.js';
-import HTMLCollection from './nodes/element/HTMLCollection2.js';
+import HTMLCollection from './nodes/element/HTMLCollection.js';
 import HTMLAnchorElement from './nodes/html-anchor-element/HTMLAnchorElement.js';
 import HTMLAreaElement from './nodes/html-area-element/HTMLAreaElement.js';
 import HTMLAudioElement from './nodes/html-audio-element/HTMLAudioElement.js';

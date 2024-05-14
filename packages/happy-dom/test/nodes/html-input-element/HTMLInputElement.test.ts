@@ -12,6 +12,7 @@ import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js
 import SubmitEvent from '../../../src/event/events/SubmitEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import PointerEvent from '../../../src/event/events/PointerEvent.js';
+import MouseEvent from '../../../src/event/events/MouseEvent.js';
 
 describe('HTMLInputElement', () => {
 	let window: Window;
@@ -1206,7 +1207,7 @@ describe('HTMLInputElement', () => {
 			element.addEventListener('change', () => (isChangeTriggered = true));
 
 			// "input" and "change" events should only be triggered if connected to DOM
-			element.dispatchEvent(new PointerEvent('click'));
+			element.dispatchEvent(new MouseEvent('click'));
 
 			expect(isInputTriggered).toBe(false);
 			expect(isChangeTriggered).toBe(false);
@@ -1214,14 +1215,14 @@ describe('HTMLInputElement', () => {
 
 			document.body.appendChild(element);
 
-			element.dispatchEvent(new PointerEvent('click'));
+			element.dispatchEvent(new MouseEvent('click'));
 
 			// "input" and "change" events should now have been triggered as it is connected to DOM
 			expect(isInputTriggered).toBe(true);
 			expect(isChangeTriggered).toBe(true);
 			expect(element.checked).toBe(false);
 
-			element.dispatchEvent(new PointerEvent('click'));
+			element.dispatchEvent(new MouseEvent('click'));
 
 			expect(element.checked).toBe(true);
 		});

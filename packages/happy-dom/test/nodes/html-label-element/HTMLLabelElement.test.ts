@@ -4,6 +4,7 @@ import HTMLLabelElement from '../../../src/nodes/html-label-element/HTMLLabelEle
 import HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement.js';
 import PointerEvent from '../../../src/event/events/PointerEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
+import MouseEvent from '../../../src/event/events/MouseEvent.js';
 
 describe('HTMLLabelElement', () => {
 	let window: Window;
@@ -114,6 +115,30 @@ describe('HTMLLabelElement', () => {
 			expect(input.checked).toBe(false);
 
 			element.dispatchEvent(new PointerEvent('click'));
+
+			expect(input.checked).toBe(true);
+			expect(labelClickCount).toBe(2);
+			expect(inputClickCount).toBe(1);
+		});
+
+		it('Supports MouseEvent.', () => {
+			const input = <HTMLInputElement>document.createElement('input');
+			const span = document.createElement('span');
+
+			input.type = 'checkbox';
+
+			span.appendChild(input);
+			element.appendChild(span);
+
+			let labelClickCount = 0;
+			let inputClickCount = 0;
+
+			element.addEventListener('click', () => labelClickCount++);
+			input.addEventListener('click', () => inputClickCount++);
+
+			expect(input.checked).toBe(false);
+
+			element.dispatchEvent(new MouseEvent('click'));
 
 			expect(input.checked).toBe(true);
 			expect(labelClickCount).toBe(2);

@@ -7,6 +7,7 @@ import Request from '../../../src/fetch/Request.js';
 import Response from '../../../src/fetch/Response.js';
 import Fetch from '../../../src/fetch/Fetch.js';
 import Browser from '../../../src/browser/Browser.js';
+import MouseEvent from '../../../src/event/events/MouseEvent.js';
 
 describe('HTMLAnchorElement', () => {
 	let window: Window;
@@ -347,7 +348,7 @@ describe('HTMLAnchorElement', () => {
 			const element = <HTMLAnchorElement>window.document.createElement('a');
 			element.href = 'https://www.example.com';
 			window.document.body.appendChild(element);
-			element.dispatchEvent(new PointerEvent('click'));
+			element.dispatchEvent(new MouseEvent('click'));
 
 			const newWindow = page.mainFrame.window;
 

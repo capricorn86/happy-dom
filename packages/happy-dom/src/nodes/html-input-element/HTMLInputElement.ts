@@ -10,19 +10,16 @@ import HTMLInputElementSelectionDirectionEnum from './HTMLInputElementSelectionD
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLInputElementValueStepping from './HTMLInputElementValueStepping.js';
 import FileList from './FileList.js';
-import Node from '../node/Node.js';
-import NodeList from '../node/NodeList.js';
 import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import HTMLInputElementDateUtility from './HTMLInputElementDateUtility.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
-import PointerEvent from '../../event/events/PointerEvent.js';
-import { URL } from 'url';
 import HTMLDataListElement from '../html-data-list-element/HTMLDataListElement.js';
 import Document from '../document/Document.js';
 import ShadowRoot from '../shadow-root/ShadowRoot.js';
-import HTMLFieldSetElement from '../html-field-set-element/HTMLFieldSetElement.js';
-import Attr from '../attr/Attr.js';
+import { URL } from 'url';
+import MouseEvent from '../../event/events/MouseEvent.js';
+import NodeList from '../node/INodeList.js';
 
 /**
  * HTML Input Element.
@@ -57,21 +54,6 @@ export default class HTMLInputElement extends HTMLElement {
 	#selectionEnd: number = null;
 	#selectionDirection: HTMLInputElementSelectionDirectionEnum =
 		HTMLInputElementSelectionDirectionEnum.none;
-
-	/**
-	 * Constructor.
-	 */
-	constructor() {
-		super();
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'set',
-			this.#onSetAttribute.bind(this)
-		);
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'remove',
-			this.#onRemoveAttribute.bind(this)
-		);
-	}
 
 	/**
 	 * Returns default checked.
@@ -1337,7 +1319,7 @@ export default class HTMLInputElement extends HTMLElement {
 		// Do nothing if the input element is disabled and the event is a click event.
 		if (
 			event.type === 'click' &&
-			event instanceof PointerEvent &&
+			event instanceof MouseEvent &&
 			event.eventPhase === EventPhaseEnum.none &&
 			this.disabled
 		) {
@@ -1352,7 +1334,7 @@ export default class HTMLInputElement extends HTMLElement {
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
 			event.type === 'click' &&
-			event instanceof PointerEvent
+			event instanceof MouseEvent
 		) {
 			const inputType = this.type;
 			if (inputType === 'checkbox' || inputType === 'radio') {
@@ -1368,7 +1350,7 @@ export default class HTMLInputElement extends HTMLElement {
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
 			event.type === 'click' &&
-			event instanceof PointerEvent &&
+			event instanceof MouseEvent &&
 			this[PropertySymbol.isConnected]
 		) {
 			const inputType = this.type;
@@ -1396,7 +1378,7 @@ export default class HTMLInputElement extends HTMLElement {
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
 			event.type === 'click' &&
-			event instanceof PointerEvent &&
+			event instanceof MouseEvent &&
 			previousCheckedValue !== null
 		) {
 			const inputType = this.type;

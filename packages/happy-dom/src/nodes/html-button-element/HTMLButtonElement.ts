@@ -6,13 +6,10 @@ import HTMLElement from '../html-element/HTMLElement.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
-import Node from '../node/Node.js';
-import NodeList from '../node/NodeList.js';
-import PointerEvent from '../../event/events/PointerEvent.js';
 import { URL } from 'url';
-import HTMLFieldSetElement from '../html-field-set-element/HTMLFieldSetElement.js';
 import Document from '../document/Document.js';
-import Attr from '../attr/Attr.js';
+import MouseEvent from '../../event/events/MouseEvent.js';
+import NodeList from '../node/INodeList.js';
 
 const BUTTON_TYPES = ['submit', 'reset', 'button', 'menu'];
 
@@ -26,21 +23,6 @@ export default class HTMLButtonElement extends HTMLElement {
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
-
-	/**
-	 * Constructor.
-	 */
-	constructor() {
-		super();
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'set',
-			this.#onSetAttribute.bind(this)
-		);
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'remove',
-			this.#onRemoveAttribute.bind(this)
-		);
-	}
 
 	/**
 	 * Returns validation message.
@@ -311,7 +293,7 @@ export default class HTMLButtonElement extends HTMLElement {
 	public override dispatchEvent(event: Event): boolean {
 		if (
 			event.type === 'click' &&
-			event instanceof PointerEvent &&
+			event instanceof MouseEvent &&
 			event.eventPhase === EventPhaseEnum.none &&
 			this.disabled
 		) {
@@ -322,7 +304,7 @@ export default class HTMLButtonElement extends HTMLElement {
 
 		if (
 			event.type === 'click' &&
-			event instanceof PointerEvent &&
+			event instanceof MouseEvent &&
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
 			this[PropertySymbol.isConnected]
