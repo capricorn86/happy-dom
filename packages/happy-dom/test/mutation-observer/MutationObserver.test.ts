@@ -307,13 +307,40 @@ describe('MutationObserver', () => {
 			const observer = new MutationObserver((mutationRecords) => {
 				records = mutationRecords;
 			});
-			observer.observe(div, { attributes: true });
+			const span = document.createElement('span');
+			const text = document.createTextNode('old');
 
-			window.close();
+			span.appendChild(text);
+			div.appendChild(span);
 
-			div.setAttribute('attr', 'value');
+			document.body.appendChild(div);
 
-			await new Promise((resolve) => setTimeout(resolve, 1));
+			observer.observe(div, {
+				attributes: true,
+				childList: true,
+				subtree: true,
+				characterData: true,
+				attributeOldValue: true,
+				characterDataOldValue: true
+			});
+
+			text.textContent = 'new1';
+			div.setAttribute('attr', 'value1');
+
+			await Promise.all([
+				window.happyDOM.close(),
+				(async () => {
+					text.textContent = 'new2';
+					div.setAttribute('attr', 'value2');
+				})(),
+				new Promise((resolve) => setTimeout(resolve, 10))
+			]);
+
+			text.textContent = 'new3';
+			div.removeChild(span);
+			div.setAttribute('attr', 'value3');
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
 
 			expect(records).toEqual([]);
 		});

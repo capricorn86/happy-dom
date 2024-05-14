@@ -13,7 +13,7 @@ export default class MutationListener {
 	#window: BrowserWindow;
 	#observer: MutationObserver;
 	#callback: (record: MutationRecord[], observer: MutationObserver) => void;
-	#records: MutationRecord[] = [];
+	#records: MutationRecord[] | null = [];
 	#immediate: NodeJS.Immediate | null = null;
 
 	/**
@@ -46,13 +46,19 @@ export default class MutationListener {
 	 * @param record Record.
 	 */
 	public report(record: MutationRecord): void {
+		if (!this.#records) {
+			return;
+		}
+
 		this.#records.push(record);
+
 		if (this.#immediate) {
 			this.#window.cancelAnimationFrame(this.#immediate);
 		}
+
 		this.#immediate = this.#window.requestAnimationFrame(() => {
 			const records = this.#records;
-			if (records.length > 0) {
+			if (records?.length > 0) {
 				this.#records = [];
 				this.#callback(records, this.#observer);
 			}
