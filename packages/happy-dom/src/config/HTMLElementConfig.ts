@@ -654,7 +654,7 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	time: {
-		className: 'HTMLElement',
+		className: 'HTMLTimeElement',
 		localName: 'time',
 		tagName: 'TIME',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants

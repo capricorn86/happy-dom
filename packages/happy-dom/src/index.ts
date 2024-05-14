@@ -99,6 +99,7 @@ import HTMLSlotElement from './nodes/html-slot-element/HTMLSlotElement.js';
 import HTMLStyleElement from './nodes/html-style-element/HTMLStyleElement.js';
 import HTMLTemplateElement from './nodes/html-template-element/HTMLTemplateElement.js';
 import HTMLTextAreaElement from './nodes/html-text-area-element/HTMLTextAreaElement.js';
+import HTMLTimeElement from './nodes/html-time-element/HTMLTimeElement.js';
 import HTMLUnknownElement from './nodes/html-unknown-element/HTMLUnknownElement.js';
 import HTMLVideoElement from './nodes/html-video-element/HTMLVideoElement.js';
 import Node from './nodes/node/Node.js';
@@ -303,7 +304,7 @@ export {
 	HTMLElement as HTMLTableSectionElement,
 	HTMLTemplateElement,
 	HTMLTextAreaElement,
-	HTMLElement as HTMLTimeElement,
+	HTMLTimeElement,
 	HTMLElement as HTMLTitleElement,
 	HTMLElement as HTMLTrackElement,
 	HTMLElement as HTMLUListElement,
