@@ -18,8 +18,8 @@ import HTMLInputElementDateUtility from './HTMLInputElementDateUtility.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import HTMLInputElementNamedNodeMap from './HTMLInputElementNamedNodeMap.js';
-import PointerEvent from '../../event/events/PointerEvent.js';
 import { URL } from 'url';
+import MouseEvent from '../../event/events/MouseEvent.js';
 
 /**
  * HTML Input Element.
@@ -1305,7 +1305,7 @@ export default class HTMLInputElement extends HTMLElement {
 		// Do nothing if the input element is disabled and the event is a click event.
 		if (
 			event.type === 'click' &&
-			event instanceof PointerEvent &&
+			event instanceof MouseEvent &&
 			event.eventPhase === EventPhaseEnum.none &&
 			this.disabled
 		) {
@@ -1320,7 +1320,7 @@ export default class HTMLInputElement extends HTMLElement {
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
 			event.type === 'click' &&
-			event instanceof PointerEvent
+			event instanceof MouseEvent
 		) {
 			const inputType = this.type;
 			if (inputType === 'checkbox' || inputType === 'radio') {
@@ -1336,7 +1336,7 @@ export default class HTMLInputElement extends HTMLElement {
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
 			event.type === 'click' &&
-			event instanceof PointerEvent &&
+			event instanceof MouseEvent &&
 			this[PropertySymbol.isConnected]
 		) {
 			const inputType = this.type;
@@ -1364,7 +1364,7 @@ export default class HTMLInputElement extends HTMLElement {
 			(event.eventPhase === EventPhaseEnum.atTarget ||
 				event.eventPhase === EventPhaseEnum.bubbling) &&
 			event.type === 'click' &&
-			event instanceof PointerEvent &&
+			event instanceof MouseEvent &&
 			previousCheckedValue !== null
 		) {
 			const inputType = this.type;
