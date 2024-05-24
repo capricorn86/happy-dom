@@ -479,13 +479,15 @@ export default class HTMLFormElement extends HTMLElement {
 			PropertySymbol.removeEventListener
 		]('remove', this.#documentChildNodeListeners.remove);
 
+		this.#documentChildNodeListeners = null;
+
 		const id = this.id;
 
 		if (!id) {
 			return;
 		}
 
-		for (const node of this[PropertySymbol.ownerDocument][PropertySymbol.childNodesFlatten]) {
+		for (const node of this[PropertySymbol.elements]) {
 			if (
 				node[PropertySymbol.attributes]?.['form']?.value === id &&
 				!this[PropertySymbol.childNodesFlatten][PropertySymbol.includes](node)
