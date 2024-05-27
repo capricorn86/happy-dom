@@ -599,7 +599,23 @@ export default class HTMLElement extends Element {
 						}
 
 						if (newElement[PropertySymbol.isConnected] && newElement.connectedCallback) {
-							newElement.connectedCallback();
+							const result = <void | Promise<void>>newElement.connectedCallback();
+							/**
+							 * It is common to import dependencies in the connectedCallback() method of web components.
+							 * As Happy DOM doesn't have support for dynamic imports yet, this is a temporary solution to wait for imports in connectedCallback().
+							 *
+							 * @see https://github.com/capricorn86/happy-dom/issues/1442
+							 */
+							if (result instanceof Promise) {
+								const asyncTaskManager =
+									this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow][
+										PropertySymbol.asyncTaskManager
+									];
+								const taskID = asyncTaskManager.startTask();
+								result
+									.then(() => asyncTaskManager.endTask(taskID))
+									.catch(() => asyncTaskManager.endTask(taskID));
+							}
 						}
 
 						this[PropertySymbol.connectToNode](null);

@@ -153,6 +153,7 @@ import RangeImplementation from '../range/Range.js';
 import INodeJSGlobal from './INodeJSGlobal.js';
 import CrossOriginBrowserWindow from './CrossOriginBrowserWindow.js';
 import Response from '../fetch/Response.js';
+import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -495,6 +496,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.captureEventListenerCount]: { [eventType: string]: number } = {};
 	public readonly [PropertySymbol.mutationObservers]: MutationObserver[] = [];
 	public readonly [PropertySymbol.readyStateManager] = new DocumentReadyStateManager(this);
+	public [PropertySymbol.asyncTaskManager]: AsyncTaskManager | null = null;
 	public [PropertySymbol.location]: Location;
 	public [PropertySymbol.history]: History;
 	public [PropertySymbol.navigator]: Navigator;
@@ -520,6 +522,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	constructor(browserFrame: IBrowserFrame, options?: { url?: string }) {
 		super();
 
+		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
+
 		this.#browserFrame = browserFrame;
 
 		this.customElements = new CustomElementRegistry(this);
@@ -529,13 +533,13 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this[PropertySymbol.sessionStorage] = StorageFactory.createStorage();
 		this[PropertySymbol.localStorage] = StorageFactory.createStorage();
 		this[PropertySymbol.location] = new Location(this.#browserFrame, options?.url ?? 'about:blank');
+		this[PropertySymbol.asyncTaskManager] = asyncTaskManager;
 
 		this.console = browserFrame.page.console;
 
 		WindowBrowserSettingsReader.setSettings(this, this.#browserFrame.page.context.browser.settings);
 
 		const window = this;
-		const asyncTaskManager = this.#browserFrame[PropertySymbol.asyncTaskManager];
 
 		this[PropertySymbol.setupVMContext]();
 
@@ -1302,6 +1306,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		}
 
 		(<boolean>this.closed) = true;
+		this[PropertySymbol.asyncTaskManager] = null;
 		this.Audio[PropertySymbol.ownerDocument] = null;
 		this.Image[PropertySymbol.ownerDocument] = null;
 		this.DocumentFragment[PropertySymbol.ownerDocument] = null;
