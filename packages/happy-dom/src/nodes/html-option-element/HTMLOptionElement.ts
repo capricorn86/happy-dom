@@ -138,7 +138,7 @@ export default class HTMLOptionElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.connectedToDocument](parentNode: Node = null): void {
+	public override [PropertySymbol.connectedToDocument](): void {
 		const oldSelectNode = <HTMLSelectElement>this[PropertySymbol.selectNode];
 		const oldDataListNode = <HTMLDataListElement>this[PropertySymbol.dataListNode];
 
