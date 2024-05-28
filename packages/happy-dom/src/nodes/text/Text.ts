@@ -38,6 +38,10 @@ export default class Text extends CharacterData {
 		if (this[PropertySymbol.textAreaNode]) {
 			(<HTMLTextAreaElement>this[PropertySymbol.textAreaNode])[PropertySymbol.resetSelection]();
 		}
+
+		if (this[PropertySymbol.styleNode]) {
+			this[PropertySymbol.styleNode][PropertySymbol.updateSheet]();
+		}
 	}
 
 	/**
