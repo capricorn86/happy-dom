@@ -87,7 +87,13 @@ describe('DetachedWindowAPI', () => {
 			});
 			window.clearInterval(intervalID);
 			window.setTimeout(() => {
-				tasksDone++;
+				window.setTimeout(() => {
+					window.setTimeout(() => {
+						window.setTimeout(() => {
+							tasksDone++;
+						});
+					});
+				});
 			});
 			window.setTimeout(() => {
 				tasksDone++;
@@ -100,7 +106,19 @@ describe('DetachedWindowAPI', () => {
 			});
 			window.fetch('/url/1/').then((response) => {
 				response.json().then(() => {
-					tasksDone++;
+					window.fetch('/url/1/').then((response) => {
+						response.json().then(() => {
+							window.fetch('/url/1/').then((response) => {
+								response.json().then(() => {
+									window.fetch('/url/1/').then((response) => {
+										response.json().then(() => {
+											tasksDone++;
+										});
+									});
+								});
+							});
+						});
+					});
 				});
 			});
 			window.fetch('/url/2/').then((response) => {
@@ -108,8 +126,36 @@ describe('DetachedWindowAPI', () => {
 					tasksDone++;
 				});
 			});
+
+			/**
+			 * It is common to import dependencies in the connectedCallback() method of web components.
+			 * As Happy DOM doesn't have support for dynamic imports yet, this is a temporary solution to wait for imports in connectedCallback().
+			 *
+			 * @see https://github.com/capricorn86/happy-dom/issues/1442
+			 */
+			class CustomElement extends window.HTMLElement {
+				/** */
+				public async connectedCallback(): Promise<void> {
+					await new Promise((resolve) => setTimeout(resolve, 200));
+					tasksDone++;
+				}
+			}
+			/** */
+			class CustomElement2 extends window.HTMLElement {
+				/** */
+				public async connectedCallback(): Promise<void> {
+					await new Promise((resolve) => setTimeout(resolve, 100));
+					tasksDone++;
+				}
+			}
+
+			window.customElements.define('custom-element', CustomElement);
+			window.document.body.appendChild(new CustomElement());
+			window.document.body.appendChild(window.document.createElement('custom-element-2'));
+			window.customElements.define('custom-element-2', CustomElement2);
+
 			await window.happyDOM?.waitUntilComplete();
-			expect(tasksDone).toBe(6);
+			expect(tasksDone).toBe(8);
 			expect(isFirstWhenAsyncCompleteCalled).toBe(true);
 		});
 	});

@@ -191,3 +191,5 @@ export const dispatchEvent = Symbol('dispatchEvent');
 export const getNamedItems = Symbol('getNamedItems');
 export const setNamedItemProperty = Symbol('setNamedItemProperty');
 export const selectedOptions = Symbol('selectedOptions');
+export const styleNode = Symbol('styleNode');
+export const updateSheet = Symbol('updateSheet');

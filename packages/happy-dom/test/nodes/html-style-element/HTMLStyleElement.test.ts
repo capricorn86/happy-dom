@@ -75,5 +75,91 @@ describe('HTMLStyleElement', () => {
 			expect(element.sheet.cssRules[1].cssText).toBe('body { background-color: red; }');
 			expect(element.sheet.cssRules[2].cssText).toBe('div { background-color: green; }');
 		});
+
+		it('Updates rules when appending a text node.', () => {
+			document.head.appendChild(element);
+
+			expect(element.sheet.cssRules.length).toBe(0);
+
+			const textNode = document.createTextNode(
+				'body { background-color: red }\ndiv { background-color: green }'
+			);
+
+			element.appendChild(textNode);
+
+			expect(element.sheet.cssRules[0].cssText).toBe('body { background-color: red; }');
+			expect(element.sheet.cssRules[1].cssText).toBe('div { background-color: green; }');
+		});
+
+		it('Updates rules when removing a text node.', () => {
+			document.head.appendChild(element);
+
+			const textNode = document.createTextNode(
+				'body { background-color: red }\ndiv { background-color: green }'
+			);
+
+			element.appendChild(textNode);
+
+			expect(element.sheet.cssRules.length).toBe(2);
+
+			expect(element.sheet.cssRules[0].cssText).toBe('body { background-color: red; }');
+			expect(element.sheet.cssRules[1].cssText).toBe('div { background-color: green; }');
+
+			element.removeChild(textNode);
+
+			expect(element.sheet.cssRules.length).toBe(0);
+		});
+
+		it('Updates rules when inserting a text node.', () => {
+			document.head.appendChild(element);
+
+			const textNode = document.createTextNode(
+				'body { background-color: red }\ndiv { background-color: green }'
+			);
+
+			element.appendChild(textNode);
+
+			expect(element.sheet.cssRules.length).toBe(2);
+
+			expect(element.sheet.cssRules[0].cssText).toBe('body { background-color: red; }');
+			expect(element.sheet.cssRules[1].cssText).toBe('div { background-color: green; }');
+
+			const textNode2 = document.createTextNode('html { background-color: blue }');
+
+			element.insertBefore(textNode2, textNode);
+
+			expect(element.sheet.cssRules.length).toBe(3);
+
+			expect(element.sheet.cssRules[0].cssText).toBe('html { background-color: blue; }');
+			expect(element.sheet.cssRules[1].cssText).toBe('body { background-color: red; }');
+			expect(element.sheet.cssRules[2].cssText).toBe('div { background-color: green; }');
+		});
+
+		it('Updates rules editing data of a child Text node.', () => {
+			document.head.appendChild(element);
+
+			expect(element.sheet.cssRules.length).toBe(0);
+
+			const textNode = document.createTextNode(
+				'body { background-color: red }\ndiv { background-color: green }'
+			);
+
+			const documentElementComputedStyle = window.getComputedStyle(document.documentElement);
+
+			element.appendChild(textNode);
+
+			expect(element.sheet.cssRules.length).toBe(2);
+			expect(element.sheet.cssRules[0].cssText).toBe('body { background-color: red; }');
+			expect(element.sheet.cssRules[1].cssText).toBe('div { background-color: green; }');
+
+			expect(documentElementComputedStyle.backgroundColor).toBe('');
+
+			textNode.data = 'html { background-color: blue }';
+
+			expect(element.sheet.cssRules.length).toBe(1);
+			expect(element.sheet.cssRules[0].cssText).toBe('html { background-color: blue; }');
+
+			expect(documentElementComputedStyle.backgroundColor).toBe('blue');
+		});
 	});
 });

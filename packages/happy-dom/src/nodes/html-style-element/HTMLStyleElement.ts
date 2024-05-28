@@ -2,6 +2,7 @@ import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import Node from '../node/Node.js';
+import Text from '../text/Text.js';
 
 /**
  * HTML Style Element.
@@ -11,6 +12,40 @@ import Node from '../node/Node.js';
  */
 export default class HTMLStyleElement extends HTMLElement {
 	private [PropertySymbol.sheet]: CSSStyleSheet | null = null;
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+
+		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener]('add', (item: Node) => {
+			if (item instanceof Text) {
+				item[PropertySymbol.styleNode] = this;
+				this[PropertySymbol.updateSheet]();
+			}
+		});
+
+		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener](
+			'insert',
+			(item: Node) => {
+				if (item instanceof Text) {
+					item[PropertySymbol.styleNode] = this;
+					this[PropertySymbol.updateSheet]();
+				}
+			}
+		);
+
+		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener](
+			'remove',
+			(item: Node) => {
+				if (item instanceof Text) {
+					item[PropertySymbol.styleNode] = null;
+					this[PropertySymbol.updateSheet]();
+				}
+			}
+		);
+	}
 
 	/**
 	 * Returns CSS style sheet.
@@ -82,52 +117,27 @@ export default class HTMLStyleElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.appendChild](node: Node): Node {
-		const returnValue = super[PropertySymbol.appendChild](node);
-		if (this[PropertySymbol.sheet]) {
-			this[PropertySymbol.sheet].replaceSync(this.textContent);
-		}
-		return returnValue;
+	public override [PropertySymbol.connectedToDocument](): void {
+		super[PropertySymbol.connectedToDocument]();
+		this[PropertySymbol.sheet] = new CSSStyleSheet();
+		this[PropertySymbol.sheet].replaceSync(this.textContent);
 	}
 
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.removeChild](node: Node): Node {
-		const returnValue = super[PropertySymbol.removeChild](node);
-		if (this[PropertySymbol.sheet]) {
-			this[PropertySymbol.sheet].replaceSync(this.textContent);
-		}
-		return returnValue;
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
-		const returnValue = super[PropertySymbol.insertBefore](newNode, referenceNode);
-		if (this[PropertySymbol.sheet]) {
-			this[PropertySymbol.sheet].replaceSync(this.textContent);
-		}
-		return returnValue;
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.connectedToDocument](parentNode: Node): void {
-		super[PropertySymbol.connectedToDocument](parentNode);
-		if (this[PropertySymbol.isConnected]) {
-			this[PropertySymbol.sheet] = new CSSStyleSheet();
-			this[PropertySymbol.sheet].replaceSync(this.textContent);
-		}
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.disconnectedFromDocument](parentNode: Node): void {
-		super[PropertySymbol.disconnectedFromDocument](parentNode);
+	public override [PropertySymbol.disconnectedFromDocument](): void {
+		super[PropertySymbol.disconnectedFromDocument]();
 		this[PropertySymbol.sheet] = null;
+	}
+
+	/**
+	 * Updates the CSSStyleSheet with the text content.
+	 */
+	public [PropertySymbol.updateSheet](): void {
+		if (this[PropertySymbol.sheet]) {
+			this[PropertySymbol.ownerDocument][PropertySymbol.cacheID]++;
+			this[PropertySymbol.sheet].replaceSync(this.textContent);
+		}
 	}
 }
