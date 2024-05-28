@@ -61,6 +61,7 @@ export default class Node extends EventTarget {
 	public [PropertySymbol.formNode]: Node = null;
 	public [PropertySymbol.selectNode]: Node = null;
 	public [PropertySymbol.textAreaNode]: Node = null;
+	public [PropertySymbol.styleNode]: Node = null;
 	public [PropertySymbol.observers]: MutationListener[] = [];
 	public [PropertySymbol.childNodes]: NodeList<Node> = new NodeList<Node>();
 
@@ -516,6 +517,7 @@ export default class Node extends EventTarget {
 		const formNode = (<Node>this)[PropertySymbol.formNode];
 		const selectNode = (<Node>this)[PropertySymbol.selectNode];
 		const textAreaNode = (<Node>this)[PropertySymbol.textAreaNode];
+		const styleNode = (<Node>this)[PropertySymbol.styleNode];
 
 		if (this[PropertySymbol.nodeType] !== NodeTypeEnum.documentFragmentNode) {
 			this[PropertySymbol.parentNode] = parentNode;
@@ -537,6 +539,12 @@ export default class Node extends EventTarget {
 			if (this['tagName'] !== 'TEXTAREA') {
 				(<Node>this)[PropertySymbol.textAreaNode] = parentNode
 					? (<Node>parentNode)[PropertySymbol.textAreaNode]
+					: null;
+			}
+
+			if (this['tagName'] !== 'STYLE') {
+				(<Node>this)[PropertySymbol.styleNode] = parentNode
+					? (<Node>parentNode)[PropertySymbol.styleNode]
 					: null;
 			}
 		}
@@ -584,7 +592,8 @@ export default class Node extends EventTarget {
 		} else if (
 			formNode !== this[PropertySymbol.formNode] ||
 			selectNode !== this[PropertySymbol.selectNode] ||
-			textAreaNode !== this[PropertySymbol.textAreaNode]
+			textAreaNode !== this[PropertySymbol.textAreaNode] ||
+			styleNode !== this[PropertySymbol.styleNode]
 		) {
 			for (const child of this[PropertySymbol.childNodes]) {
 				(<Node>child)[PropertySymbol.connectToNode](this);

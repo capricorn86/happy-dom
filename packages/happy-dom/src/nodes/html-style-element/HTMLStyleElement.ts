@@ -11,6 +11,7 @@ import Node from '../node/Node.js';
  */
 export default class HTMLStyleElement extends HTMLElement {
 	private [PropertySymbol.sheet]: CSSStyleSheet | null = null;
+	public [PropertySymbol.styleNode] = this;
 
 	/**
 	 * Returns CSS style sheet.
@@ -84,9 +85,7 @@ export default class HTMLStyleElement extends HTMLElement {
 	 */
 	public override [PropertySymbol.appendChild](node: Node): Node {
 		const returnValue = super[PropertySymbol.appendChild](node);
-		if (this[PropertySymbol.sheet]) {
-			this[PropertySymbol.sheet].replaceSync(this.textContent);
-		}
+		this[PropertySymbol.updateSheet]();
 		return returnValue;
 	}
 
@@ -95,9 +94,7 @@ export default class HTMLStyleElement extends HTMLElement {
 	 */
 	public override [PropertySymbol.removeChild](node: Node): Node {
 		const returnValue = super[PropertySymbol.removeChild](node);
-		if (this[PropertySymbol.sheet]) {
-			this[PropertySymbol.sheet].replaceSync(this.textContent);
-		}
+		this[PropertySymbol.updateSheet]();
 		return returnValue;
 	}
 
@@ -106,9 +103,7 @@ export default class HTMLStyleElement extends HTMLElement {
 	 */
 	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
 		const returnValue = super[PropertySymbol.insertBefore](newNode, referenceNode);
-		if (this[PropertySymbol.sheet]) {
-			this[PropertySymbol.sheet].replaceSync(this.textContent);
-		}
+		this[PropertySymbol.updateSheet]();
 		return returnValue;
 	}
 
@@ -123,6 +118,16 @@ export default class HTMLStyleElement extends HTMLElement {
 			this[PropertySymbol.sheet].replaceSync(this.textContent);
 		} else {
 			this[PropertySymbol.sheet] = null;
+		}
+	}
+
+	/**
+	 * Updates the CSSStyleSheet with the text content.
+	 */
+	public [PropertySymbol.updateSheet](): void {
+		if (this[PropertySymbol.sheet]) {
+			this[PropertySymbol.ownerDocument][PropertySymbol.cacheID]++;
+			this[PropertySymbol.sheet].replaceSync(this.textContent);
 		}
 	}
 }
