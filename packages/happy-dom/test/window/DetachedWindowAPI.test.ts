@@ -15,7 +15,8 @@ describe('DetachedWindowAPI', () => {
 	});
 
 	afterEach(() => {
-		vi.restoreAllMocks();
+		vi.clearAllMocks();
+		resetMockedModules();
 	});
 
 	describe('get settings()', () => {
@@ -68,7 +69,7 @@ describe('DetachedWindowAPI', () => {
 								};
 								response.rawHeaders = ['content-length', '0'];
 
-								setTimeout(() => callback(response));
+								setTimeout(() => callback(response), 20);
 							}
 						},
 						setTimeout: () => {}
@@ -104,15 +105,22 @@ describe('DetachedWindowAPI', () => {
 			window.requestAnimationFrame(() => {
 				tasksDone++;
 			});
+
+			// It is hard to replicate this bug, but in some cases, microtasks are used by transformed code and waitUntilComplete() is then resolved too early.
+			// This code seems to replicate the issue, at least somewhat.
 			window.fetch('/url/1/').then((response) => {
-				response.json().then(() => {
-					window.fetch('/url/1/').then((response) => {
-						response.json().then(() => {
+				setImmediate(() => {
+					setImmediate(() => {
+						response.text().then(() => {
 							window.fetch('/url/1/').then((response) => {
-								response.json().then(() => {
-									window.fetch('/url/1/').then((response) => {
-										response.json().then(() => {
-											tasksDone++;
+								setImmediate(() => {
+									setImmediate(() => {
+										response.text().then(() => {
+											setImmediate(() => {
+												setImmediate(() => {
+													tasksDone++;
+												});
+											});
 										});
 									});
 								});
@@ -121,6 +129,7 @@ describe('DetachedWindowAPI', () => {
 					});
 				});
 			});
+
 			window.fetch('/url/2/').then((response) => {
 				response.text().then(() => {
 					tasksDone++;
@@ -175,6 +184,33 @@ describe('DetachedWindowAPI', () => {
 	describe('abort()', () => {
 		it('Cancels all ongoing asynchrounous tasks.', async () => {
 			await new Promise((resolve) => {
+				const responseText = '{ "test": "test" }';
+				mockModule('https', {
+					request: () => {
+						return {
+							end: () => {},
+							on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+								if (event === 'response') {
+									async function* generate(): AsyncGenerator<string> {
+										yield responseText;
+									}
+
+									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+									response.statusCode = 200;
+									response.statusMessage = '';
+									response.headers = {
+										'content-length': '0'
+									};
+									response.rawHeaders = ['content-length', '0'];
+
+									setTimeout(() => callback(response));
+								}
+							},
+							setTimeout: () => {}
+						};
+					}
+				});
 				window.location.href = 'https://localhost:8080';
 				let isFirstWhenAsyncCompleteCalled = false;
 				window.happyDOM?.waitUntilComplete().then(() => {
@@ -235,7 +271,7 @@ describe('DetachedWindowAPI', () => {
 					expect(isFirstWhenAsyncCompleteCalled).toBe(true);
 					expect(isSecondWhenAsyncCompleteCalled).toBe(true);
 					resolve(null);
-				}, 10);
+				}, 50);
 			});
 		});
 	});
