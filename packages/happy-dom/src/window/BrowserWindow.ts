@@ -1033,6 +1033,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 */
 	public setTimeout(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
 		// We can group timeouts with a delay of 0 into one timeout to improve performance.
+		// Grouping timeouts will also improve the performance of the async task manager.
+		// It may also make the async task manager to stable as many timeouts may cause waitUntilComplete() to be resolved to early.
 		if (!delay) {
 			if (!this.#zeroTimeouts) {
 				const settings = this.#browserFrame.page?.context?.browser?.settings;
