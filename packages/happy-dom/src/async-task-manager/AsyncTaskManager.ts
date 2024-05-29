@@ -119,6 +119,7 @@ export default class AsyncTaskManager {
 			if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
 				// In some cases, microtasks are used by transformed code and waitUntilComplete() is then resolved too early.
 				// To cater for this we use setTimeout() which has the lowest priority and will be executed last.
+				// "10ms" is an arbitrary value, but it seem to be enough when performing many manual tests.
 				this.waitUntilCompleteTimer = TIMER.setTimeout(() => {
 					this.waitUntilCompleteTimer = null;
 					if (
@@ -128,7 +129,7 @@ export default class AsyncTaskManager {
 					) {
 						this.resolveWhenComplete();
 					}
-				});
+				}, 10);
 			}
 		}
 	}
