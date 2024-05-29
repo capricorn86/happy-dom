@@ -165,6 +165,19 @@ const TIMER = {
 	clearImmediate: globalThis.clearImmediate.bind(globalThis)
 };
 const IS_NODE_JS_TIMEOUT_ENVIRONMENT = setTimeout.toString().includes('new Timeout');
+/**
+ * Zero Timeout.
+ */
+class Timeout {
+	public callback: () => void;
+	/**
+	 * Constructor.
+	 * @param callback Callback.
+	 */
+	constructor(callback: () => void) {
+		this.callback = callback;
+	}
+}
 
 /**
  * Browser window.
@@ -511,6 +524,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	#outerWidth: number | null = null;
 	#outerHeight: number | null = null;
 	#devicePixelRatio: number | null = null;
+	#zeroTimeouts: Array<Timeout> | null = null;
 
 	/**
 	 * Constructor.
@@ -1018,19 +1032,53 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * @returns Timeout ID.
 	 */
 	public setTimeout(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
+		// We can group timeouts with a delay of 0 into one timeout to improve performance.
+		if (!delay) {
+			if (!this.#zeroTimeouts) {
+				const settings = this.#browserFrame.page?.context?.browser?.settings;
+				const useTryCatch =
+					!settings ||
+					!settings.disableErrorCapturing ||
+					settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
+				const id = TIMER.setTimeout(() => {
+					const zeroTimeouts = this.#zeroTimeouts;
+					this.#zeroTimeouts = null;
+					for (const zeroTimeout of zeroTimeouts) {
+						if (useTryCatch) {
+							WindowErrorUtility.captureError(this, () => zeroTimeout.callback());
+						} else {
+							zeroTimeout.callback();
+						}
+					}
+					this.#browserFrame[PropertySymbol.asyncTaskManager].endTimer(id);
+				});
+				this.#zeroTimeouts = [];
+				this.#browserFrame[PropertySymbol.asyncTaskManager].startTimer(id);
+			}
+			const zeroTimeout = new Timeout(() => callback(...args));
+			this.#zeroTimeouts.push(zeroTimeout);
+			return <NodeJS.Timeout>(<unknown>zeroTimeout);
+		}
+
 		const settings = this.#browserFrame.page?.context?.browser?.settings;
 		const useTryCatch =
 			!settings ||
 			!settings.disableErrorCapturing ||
 			settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
-		const id = TIMER.setTimeout(() => {
-			if (useTryCatch) {
-				WindowErrorUtility.captureError(this, () => callback(...args));
-			} else {
-				callback(...args);
-			}
-			this.#browserFrame[PropertySymbol.asyncTaskManager].endTimer(id);
-		}, delay);
+
+		const id = TIMER.setTimeout(
+			() => {
+				if (useTryCatch) {
+					WindowErrorUtility.captureError(this, () => callback(...args));
+				} else {
+					callback(...args);
+				}
+				this.#browserFrame[PropertySymbol.asyncTaskManager].endTimer(id);
+			},
+			settings?.timer.maxTimeout !== -1 && delay && delay > settings?.timer.maxTimeout
+				? settings?.timer.maxTimeout
+				: delay
+		);
 		this.#browserFrame[PropertySymbol.asyncTaskManager].startTimer(id);
 		return id;
 	}
@@ -1041,6 +1089,14 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * @param id ID of the timeout.
 	 */
 	public clearTimeout(id: NodeJS.Timeout): void {
+		if (id && id instanceof Timeout) {
+			const zeroTimeouts = this.#zeroTimeouts || [];
+			const index = zeroTimeouts.indexOf(<Timeout>(<unknown>id));
+			if (index !== -1) {
+				zeroTimeouts.splice(index, 1);
+			}
+			return;
+		}
 		// We need to make sure that the ID is a Timeout object, otherwise Node.js might throw an error.
 		// This is only necessary if we are in a Node.js environment.
 		if (IS_NODE_JS_TIMEOUT_ENVIRONMENT && (!id || id.constructor.name !== 'Timeout')) {
@@ -1064,17 +1120,29 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			!settings ||
 			!settings.disableErrorCapturing ||
 			settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
-		const id = TIMER.setInterval(() => {
-			if (useTryCatch) {
-				WindowErrorUtility.captureError(
-					this,
-					() => callback(...args),
-					() => this.clearInterval(id)
-				);
-			} else {
-				callback(...args);
-			}
-		}, delay);
+		let iterations = 0;
+		const id = TIMER.setInterval(
+			() => {
+				if (useTryCatch) {
+					WindowErrorUtility.captureError(
+						this,
+						() => callback(...args),
+						() => this.clearInterval(id)
+					);
+				} else {
+					callback(...args);
+				}
+				if (settings?.timer.maxIntervalIterations !== -1) {
+					if (iterations >= settings?.timer.maxIntervalIterations) {
+						this.clearInterval(id);
+					}
+					iterations++;
+				}
+			},
+			settings?.timer.maxIntervalTime !== -1 && delay && delay > settings?.timer.maxIntervalTime
+				? settings?.timer.maxIntervalTime
+				: delay
+		);
 		this.#browserFrame[PropertySymbol.asyncTaskManager].startTimer(id);
 		return id;
 	}

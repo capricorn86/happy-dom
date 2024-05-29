@@ -175,9 +175,9 @@ export default class AsyncTaskManager {
 			this.waitUntilCompleteTimer = null;
 		}
 
-		// In some cases, microtasks are used by transformed code and waitUntilComplete() is then resolved too early.
+		// It is not possible to detect when all microtasks are complete (such as process.nextTick() or promises).
 		// To cater for this we use setTimeout() which has the lowest priority and will be executed last.
-		// "10ms" is an arbitrary value, but it seem to be enough when performing many manual tests.
+		// @see https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick
 		this.waitUntilCompleteTimer = TIMER.setTimeout(() => {
 			this.waitUntilCompleteTimer = null;
 			if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
@@ -187,7 +187,7 @@ export default class AsyncTaskManager {
 					resolver();
 				}
 			}
-		}, 10);
+		});
 	}
 
 	/**

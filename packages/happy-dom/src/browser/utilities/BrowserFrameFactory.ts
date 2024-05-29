@@ -42,12 +42,6 @@ export default class BrowserFrameFactory {
 			}
 
 			if (!frame.childFrames.length) {
-				if (frame.window && frame.window[PropertySymbol.mutationObservers]) {
-					for (const mutationObserver of frame.window[PropertySymbol.mutationObservers]) {
-						mutationObserver.disconnect();
-					}
-					frame.window[PropertySymbol.mutationObservers] = [];
-				}
 				return frame[PropertySymbol.asyncTaskManager]
 					.destroy()
 					.then(() => {
@@ -66,12 +60,6 @@ export default class BrowserFrameFactory {
 
 			Promise.all(frame.childFrames.slice().map((childFrame) => this.destroyFrame(childFrame)))
 				.then(() => {
-					if (frame.window && frame.window[PropertySymbol.mutationObservers]) {
-						for (const mutationObserver of frame.window[PropertySymbol.mutationObservers]) {
-							mutationObserver.disconnect();
-						}
-						frame.window[PropertySymbol.mutationObservers] = [];
-					}
 					return frame[PropertySymbol.asyncTaskManager].destroy().then(() => {
 						frame[PropertySymbol.exceptionObserver]?.disconnect();
 						if (frame.window) {
