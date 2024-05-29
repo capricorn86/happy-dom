@@ -1255,7 +1255,7 @@ describe('Document', () => {
 					expect((<Event>readyChangeEvent).target).toBe(document);
 					expect(document.readyState).toBe(DocumentReadyStateEnum.complete);
 					resolve(null);
-				}, 1);
+				}, 20);
 			});
 		});
 

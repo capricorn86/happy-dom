@@ -12,6 +12,11 @@ export default <IBrowserSettings>{
 	disableErrorCapturing: false,
 	errorCapture: BrowserErrorCaptureEnum.tryAndCatch,
 	enableFileSystemHttpRequests: false,
+	timer: {
+		maxTimeout: -1,
+		maxIntervalTime: -1,
+		maxIntervalIterations: -1
+	},
 	navigation: {
 		disableMainFrameNavigation: false,
 		disableChildFrameNavigation: false,

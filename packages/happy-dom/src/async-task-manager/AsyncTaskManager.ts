@@ -49,6 +49,10 @@ export default class AsyncTaskManager {
 	 * @param timerID Timer ID.
 	 */
 	public startTimer(timerID: NodeJS.Timeout): void {
+		if (this.waitUntilCompleteTimer) {
+			TIMER.clearTimeout(this.waitUntilCompleteTimer);
+			this.waitUntilCompleteTimer = null;
+		}
 		this.runningTimers.push(timerID);
 	}
 
@@ -58,12 +62,16 @@ export default class AsyncTaskManager {
 	 * @param timerID Timer ID.
 	 */
 	public endTimer(timerID: NodeJS.Timeout): void {
+		if (this.waitUntilCompleteTimer) {
+			TIMER.clearTimeout(this.waitUntilCompleteTimer);
+			this.waitUntilCompleteTimer = null;
+		}
 		const index = this.runningTimers.indexOf(timerID);
 		if (index !== -1) {
 			this.runningTimers.splice(index, 1);
-			if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
-				this.resolveWhenComplete();
-			}
+		}
+		if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
+			this.resolveWhenComplete();
 		}
 	}
 
@@ -73,6 +81,10 @@ export default class AsyncTaskManager {
 	 * @param immediateID Immediate ID.
 	 */
 	public startImmediate(immediateID: NodeJS.Immediate): void {
+		if (this.waitUntilCompleteTimer) {
+			TIMER.clearTimeout(this.waitUntilCompleteTimer);
+			this.waitUntilCompleteTimer = null;
+		}
 		this.runningImmediates.push(immediateID);
 	}
 
@@ -82,12 +94,16 @@ export default class AsyncTaskManager {
 	 * @param immediateID Immediate ID.
 	 */
 	public endImmediate(immediateID: NodeJS.Immediate): void {
+		if (this.waitUntilCompleteTimer) {
+			TIMER.clearTimeout(this.waitUntilCompleteTimer);
+			this.waitUntilCompleteTimer = null;
+		}
 		const index = this.runningImmediates.indexOf(immediateID);
 		if (index !== -1) {
 			this.runningImmediates.splice(index, 1);
-			if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
-				this.resolveWhenComplete();
-			}
+		}
+		if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
+			this.resolveWhenComplete();
 		}
 	}
 
@@ -98,6 +114,10 @@ export default class AsyncTaskManager {
 	 * @returns Task ID.
 	 */
 	public startTask(abortHandler?: () => void): number {
+		if (this.waitUntilCompleteTimer) {
+			TIMER.clearTimeout(this.waitUntilCompleteTimer);
+			this.waitUntilCompleteTimer = null;
+		}
 		const taskID = this.newTaskID();
 		this.runningTasks[taskID] = abortHandler ? abortHandler : () => {};
 		this.runningTaskCount++;
@@ -110,27 +130,16 @@ export default class AsyncTaskManager {
 	 * @param taskID Task ID.
 	 */
 	public endTask(taskID: number): void {
+		if (this.waitUntilCompleteTimer) {
+			TIMER.clearTimeout(this.waitUntilCompleteTimer);
+			this.waitUntilCompleteTimer = null;
+		}
 		if (this.runningTasks[taskID]) {
 			delete this.runningTasks[taskID];
 			this.runningTaskCount--;
-			if (this.waitUntilCompleteTimer) {
-				TIMER.clearTimeout(this.waitUntilCompleteTimer);
-			}
-			if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
-				// In some cases, microtasks are used by transformed code and waitUntilComplete() is then resolved too early.
-				// To cater for this we use setTimeout() which has the lowest priority and will be executed last.
-				// "10ms" is an arbitrary value, but it seem to be enough when performing many manual tests.
-				this.waitUntilCompleteTimer = TIMER.setTimeout(() => {
-					this.waitUntilCompleteTimer = null;
-					if (
-						!this.runningTaskCount &&
-						!this.runningTimers.length &&
-						!this.runningImmediates.length
-					) {
-						this.resolveWhenComplete();
-					}
-				}, 10);
-			}
+		}
+		if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
+			this.resolveWhenComplete();
 		}
 	}
 
@@ -157,11 +166,28 @@ export default class AsyncTaskManager {
 	 * Resolves when complete.
 	 */
 	private resolveWhenComplete(): void {
-		const resolvers = this.waitUntilCompleteResolvers;
-		this.waitUntilCompleteResolvers = [];
-		for (const resolver of resolvers) {
-			resolver();
+		if (this.runningTaskCount || this.runningTimers.length || this.runningImmediates.length) {
+			return;
 		}
+
+		if (this.waitUntilCompleteTimer) {
+			TIMER.clearTimeout(this.waitUntilCompleteTimer);
+			this.waitUntilCompleteTimer = null;
+		}
+
+		// It is not possible to detect when all microtasks are complete (such as process.nextTick() or promises).
+		// To cater for this we use setTimeout() which has the lowest priority and will be executed last.
+		// @see https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick
+		this.waitUntilCompleteTimer = TIMER.setTimeout(() => {
+			this.waitUntilCompleteTimer = null;
+			if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
+				const resolvers = this.waitUntilCompleteResolvers;
+				this.waitUntilCompleteResolvers = [];
+				for (const resolver of resolvers) {
+					resolver();
+				}
+			}
+		});
 	}
 
 	/**

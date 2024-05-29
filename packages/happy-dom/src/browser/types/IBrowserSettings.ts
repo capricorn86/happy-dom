@@ -20,6 +20,13 @@ export default interface IBrowserSettings {
 	/** Handle disabled resource loading as success */
 	handleDisabledFileLoadingAsSuccess: boolean;
 
+	/** Settings for timers */
+	timer: {
+		maxTimeout: number;
+		maxIntervalTime: number;
+		maxIntervalIterations: number;
+	};
+
 	/**
 	 * Disables error capturing.
 	 *
