@@ -1,8 +1,8 @@
 // We need to set this as a global constant, so that using fake timers in Jest and Vitest won't override this on the global object.
 const TIMER = {
-	setImmediate: globalThis.setImmediate.bind(globalThis),
-	clearImmediate: globalThis.clearImmediate.bind(globalThis),
-	clearTimeout: globalThis.clearTimeout.bind(globalThis)
+	setTimeout: globalThis.setTimeout.bind(globalThis),
+	clearTimeout: globalThis.clearTimeout.bind(globalThis),
+	clearImmediate: globalThis.clearImmediate.bind(globalThis)
 };
 
 /**
@@ -114,10 +114,12 @@ export default class AsyncTaskManager {
 			delete this.runningTasks[taskID];
 			this.runningTaskCount--;
 			if (this.waitUntilCompleteTimer) {
-				TIMER.clearImmediate(this.waitUntilCompleteTimer);
+				TIMER.clearTimeout(this.waitUntilCompleteTimer);
 			}
 			if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
-				this.waitUntilCompleteTimer = TIMER.setImmediate(() => {
+				// In some cases, microtasks are used by transformed code and waitUntilComplete() is then resolved too early.
+				// To cater for this we use setTimeout() which has the lowest priority and will be executed last.
+				this.waitUntilCompleteTimer = TIMER.setTimeout(() => {
 					this.waitUntilCompleteTimer = null;
 					if (
 						!this.runningTaskCount &&
@@ -177,7 +179,7 @@ export default class AsyncTaskManager {
 		this.runningTimers = [];
 
 		if (this.waitUntilCompleteTimer) {
-			TIMER.clearImmediate(this.waitUntilCompleteTimer);
+			TIMER.clearTimeout(this.waitUntilCompleteTimer);
 			this.waitUntilCompleteTimer = null;
 		}
 
