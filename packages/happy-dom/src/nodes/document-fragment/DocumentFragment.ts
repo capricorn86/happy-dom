@@ -3,17 +3,18 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import Element from '../element/Element.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
-import HTMLCollection from '../element/HTMLCollection2.js';
-import NodeList from '../node/NodeList.js';
+import HTMLCollection from '../element/HTMLCollection.js';
+import IHTMLCollection from '../element/IHTMLCollection.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
+import INodeList from '../node/INodeList.js';
 
 /**
  * DocumentFragment.
  */
 export default class DocumentFragment extends Node {
-	public readonly [PropertySymbol.children]: HTMLCollection<Element> = new HTMLCollection();
+	public [PropertySymbol.children]: IHTMLCollection<Element> = new HTMLCollection<Element>();
 	public [PropertySymbol.rootNode]: Node = this;
 	public [PropertySymbol.nodeType] = NodeTypeEnum.documentFragmentNode;
 	public cloneNode: (deep?: boolean) => DocumentFragment;
@@ -23,15 +24,26 @@ export default class DocumentFragment extends Node {
 	 */
 	constructor() {
 		super();
-		this[PropertySymbol.childNodes][PropertySymbol.attachHTMLCollection](
-			this[PropertySymbol.children]
+		this[PropertySymbol.childNodes][PropertySymbol.addEventListener]('add', (item: Node) =>
+			this[PropertySymbol.children][PropertySymbol.addItem](<Element>item)
+		);
+		this[PropertySymbol.childNodes][PropertySymbol.addEventListener](
+			'insert',
+			(item: Node, referenceItem?: Node) =>
+				this[PropertySymbol.children][PropertySymbol.insertItem](
+					<Element>item,
+					<Element>referenceItem
+				)
+		);
+		this[PropertySymbol.childNodes][PropertySymbol.addEventListener]('remove', (item: Node) =>
+			this[PropertySymbol.children][PropertySymbol.removeItem](<Element>item)
 		);
 	}
 
 	/**
 	 * Returns the document fragment children.
 	 */
-	public get children(): HTMLCollection<Element> {
+	public get children(): IHTMLCollection<Element> {
 		return this[PropertySymbol.children];
 	}
 
@@ -131,7 +143,7 @@ export default class DocumentFragment extends Node {
 	 */
 	public querySelectorAll<K extends keyof IHTMLElementTagNameMap>(
 		selector: K
-	): NodeList<IHTMLElementTagNameMap[K]>;
+	): INodeList<IHTMLElementTagNameMap[K]>;
 
 	/**
 	 * Query CSS selector to find matching elments.
@@ -141,7 +153,7 @@ export default class DocumentFragment extends Node {
 	 */
 	public querySelectorAll<K extends keyof ISVGElementTagNameMap>(
 		selector: K
-	): NodeList<ISVGElementTagNameMap[K]>;
+	): INodeList<ISVGElementTagNameMap[K]>;
 
 	/**
 	 * Query CSS selector to find matching elments.
@@ -149,7 +161,7 @@ export default class DocumentFragment extends Node {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): NodeList<Element>;
+	public querySelectorAll(selector: string): INodeList<Element>;
 
 	/**
 	 * Query CSS selector to find matching elments.
@@ -157,7 +169,7 @@ export default class DocumentFragment extends Node {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): NodeList<Element> {
+	public querySelectorAll(selector: string): INodeList<Element> {
 		return QuerySelector.querySelectorAll(this, selector);
 	}
 

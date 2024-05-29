@@ -48,6 +48,7 @@ export default class HTMLTextAreaElement extends HTMLElement {
 		super();
 		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener]('add', (item: Node) => {
 			if (item instanceof Text) {
+				item[PropertySymbol.textAreaNode] = this;
 				this[PropertySymbol.resetSelection]();
 			}
 		});
@@ -55,6 +56,7 @@ export default class HTMLTextAreaElement extends HTMLElement {
 			'insert',
 			(newItem: Node) => {
 				if (newItem instanceof Text) {
+					item[PropertySymbol.textAreaNode] = this;
 					this[PropertySymbol.resetSelection]();
 				}
 			}
@@ -63,6 +65,7 @@ export default class HTMLTextAreaElement extends HTMLElement {
 			'remove',
 			(item: Node) => {
 				if (item instanceof Text) {
+					item[PropertySymbol.textAreaNode] = null;
 					this[PropertySymbol.resetSelection]();
 				}
 			}

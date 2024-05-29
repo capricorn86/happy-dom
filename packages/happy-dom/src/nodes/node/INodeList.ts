@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-/* eslint-disable filenames/match-exported */
-
 import * as PropertySymbol from '../../PropertySymbol.js';
 import TNodeListListener from './TNodeListListener.js';
 
@@ -11,7 +8,7 @@ import TNodeListListener from './TNodeListListener.js';
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NodeList
  */
-interface NodeList<T> {
+export default interface INodeList<T> {
 	readonly [index: number]: T;
 
 	/**
@@ -152,5 +149,3 @@ interface NodeList<T> {
 	 */
 	entries(): IterableIterator<[number, T]>;
 }
-
-export default NodeList;

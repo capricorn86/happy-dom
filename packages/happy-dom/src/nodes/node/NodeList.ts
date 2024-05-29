@@ -1,14 +1,11 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
-import INodeList from './INodeList.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import INodeList from './INodeList.js';
 import TNodeListListener from './TNodeListListener.js';
 
 /**
  * NodeList.
- *
- * We are extending Array here to improve performance.
- * However, we should not expose Array methods to the outside.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NodeList
  */
@@ -226,5 +223,4 @@ for (const key of Object.keys(descriptors)) {
 	}
 }
 
-// Forces the type to be an interface to hide Array methods from the outside.
-export default <new <T>() => INodeList<T>>(<unknown>NodeList);
+export default NodeList;

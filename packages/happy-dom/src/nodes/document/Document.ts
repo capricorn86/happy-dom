@@ -20,7 +20,9 @@ import HTMLElement from '../html-element/HTMLElement.js';
 import Comment from '../comment/Comment.js';
 import Text from '../text/Text.js';
 import NodeList from '../node/NodeList.js';
-import HTMLCollection from '../element/HTMLCollection2.js';
+import INodeList from '../node/INodeList.js';
+import HTMLCollection from '../element/HTMLCollection.js';
+import IHTMLCollection from '../element/IHTMLCollection.js';
 import HTMLLinkElement from '../html-link-element/HTMLLinkElement.js';
 import HTMLStyleElement from '../html-style-element/HTMLStyleElement.js';
 import DocumentReadyStateEnum from './DocumentReadyStateEnum.js';
@@ -51,7 +53,7 @@ const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
  */
 export default class Document extends Node {
 	// Internal properties
-	public [PropertySymbol.children]: HTMLCollection<Element> = new HTMLCollection<Element>();
+	public [PropertySymbol.children]: IHTMLCollection<Element> = new HTMLCollection<Element>();
 	public [PropertySymbol.activeElement]: HTMLElement | SVGElement = null;
 	public [PropertySymbol.nextActiveElement]: HTMLElement | SVGElement = null;
 	public [PropertySymbol.currentScript]: HTMLScriptElement = null;
@@ -196,8 +198,19 @@ export default class Document extends Node {
 		super();
 		this.#browserFrame = injected.browserFrame;
 		this[PropertySymbol.ownerWindow] = injected.window;
-		this[PropertySymbol.childNodes][PropertySymbol.attachHTMLCollection](
-			this[PropertySymbol.children]
+		this[PropertySymbol.childNodes][PropertySymbol.addEventListener]('add', (item: Node) =>
+			this[PropertySymbol.children][PropertySymbol.addItem](<Element>item)
+		);
+		this[PropertySymbol.childNodes][PropertySymbol.addEventListener](
+			'insert',
+			(item: Node, referenceItem?: Node) =>
+				this[PropertySymbol.children][PropertySymbol.insertItem](
+					<Element>item,
+					<Element>referenceItem
+				)
+		);
+		this[PropertySymbol.childNodes][PropertySymbol.addEventListener]('remove', (item: Node) =>
+			this[PropertySymbol.children][PropertySymbol.removeItem](<Element>item)
 		);
 	}
 
@@ -258,7 +271,7 @@ export default class Document extends Node {
 	/**
 	 * Returns document children.
 	 */
-	public get children(): HTMLCollection<Element> {
+	public get children(): IHTMLCollection<Element> {
 		return this[PropertySymbol.children];
 	}
 
@@ -313,7 +326,7 @@ export default class Document extends Node {
 	/**
 	 * Returns a collection of all area elements and a elements in a document with a value for the href attribute.
 	 */
-	public get links(): NodeList<HTMLAnchorElement | HTMLElement> {
+	public get links(): INodeList<HTMLAnchorElement | HTMLElement> {
 		return <NodeList<HTMLElement>>this.querySelectorAll('a[href],area[href]');
 	}
 
