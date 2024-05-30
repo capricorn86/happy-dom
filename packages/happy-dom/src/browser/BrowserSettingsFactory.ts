@@ -25,6 +25,10 @@ export default class BrowserSettingsFactory {
 				...DefaultBrowserSettings.navigator,
 				...settings?.navigator
 			},
+			timer: {
+				...DefaultBrowserSettings.timer,
+				...settings?.timer
+			},
 			device: {
 				...DefaultBrowserSettings.device,
 				...settings?.device
