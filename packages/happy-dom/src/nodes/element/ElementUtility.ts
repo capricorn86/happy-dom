@@ -137,6 +137,10 @@ export default class ElementUtility {
 		referenceNode: Node | null,
 		options?: { disableAncestorValidation?: boolean }
 	): Node {
+		if (newNode === referenceNode) {
+			return newNode;
+		}
+
 		// NodeUtility.insertBefore() will call appendChild() for the scenario where "referenceNode" is "null" or "undefined"
 		if (newNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode && referenceNode) {
 			if (

@@ -1247,6 +1247,18 @@ describe('Element', () => {
 			const elements = container.querySelectorAll('p');
 			expect(elements.length).toBe(1);
 		});
+
+		it('Inserts correctly with when adding a children that is already inserted', () => {
+			const container = document.createElement('div');
+			const child = document.createElement('p');
+			child.textContent = 'A';
+			container.appendChild(child);
+
+			container.insertBefore(child, child);
+
+			const elements = container.querySelectorAll('p');
+			expect(elements.length).toBe(1);
+		});
 	});
 
 	describe('get previousElementSibling()', () => {
