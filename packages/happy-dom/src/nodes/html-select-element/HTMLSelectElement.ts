@@ -7,13 +7,12 @@ import HTMLOptionElement from '../html-option-element/HTMLOptionElement.js';
 import HTMLOptionsCollection from './HTMLOptionsCollection.js';
 import Event from '../../event/Event.js';
 import Node from '../node/Node.js';
-import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import HTMLCollection from '../element/HTMLCollection.js';
-import Document from '../document/Document.js';
 import IHTMLCollection from '../element/IHTMLCollection.js';
 import Element from '../element/Element.js';
 import NodeList from '../node/INodeList.js';
+import NodeTypeEnum from '../node/NodeTypeEnum.js';
 
 /**
  * HTML Select Element.
@@ -25,8 +24,6 @@ export default class HTMLSelectElement extends HTMLElement {
 	// Internal properties.
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
-	public [PropertySymbol.selectNode]: Node = this;
-	public [PropertySymbol.length] = 0;
 	public [PropertySymbol.options]: HTMLOptionsCollection = new HTMLOptionsCollection(this);
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
 	public [PropertySymbol.selectedOptions]: IHTMLCollection<HTMLOptionElement> =
@@ -49,7 +46,7 @@ export default class HTMLSelectElement extends HTMLElement {
 		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener]('add', (item: Node) => {
 			(<HTMLOptionElement>item)[PropertySymbol.selectNode] = this;
 			this[PropertySymbol.options][PropertySymbol.addItem](<HTMLOptionElement>item);
-			this[PropertySymbol.selectedOptions][PropertySymbol.addItem](<HTMLOptionElement>item);
+			this[PropertySymbol.updateSelectedness]();
 		});
 		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener](
 			'insert',
@@ -59,10 +56,7 @@ export default class HTMLSelectElement extends HTMLElement {
 					<HTMLOptionElement>newItem,
 					<HTMLOptionElement>referenceItem
 				);
-				this[PropertySymbol.selectedOptions][PropertySymbol.insertItem](
-					<HTMLOptionElement>newItem,
-					<HTMLOptionElement>referenceItem
-				);
+				this[PropertySymbol.updateSelectedness]();
 			}
 		);
 		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener](
@@ -70,9 +64,36 @@ export default class HTMLSelectElement extends HTMLElement {
 			(item: Node) => {
 				(<HTMLOptionElement>item)[PropertySymbol.selectNode] = null;
 				this[PropertySymbol.options][PropertySymbol.removeItem](<HTMLOptionElement>item);
-				this[PropertySymbol.selectedOptions][PropertySymbol.removeItem](<HTMLOptionElement>item);
+				this[PropertySymbol.updateSelectedness]();
 			}
 		);
+
+		// HTMLOptionsCollection listeners
+		this[PropertySymbol.options][PropertySymbol.addEventListener]('indexChange', (details) => {
+			const length = this[PropertySymbol.options].length;
+			for (let i = details.index; i < length; i++) {
+				this[i] = this[PropertySymbol.options][i];
+			}
+			// Item removed
+			if (!details.item) {
+				delete this[length];
+			}
+		});
+		this[PropertySymbol.options][PropertySymbol.addEventListener]('propertyChange', (details) => {
+			if (!this[PropertySymbol.isValidPropertyName](details.propertyName)) {
+				return;
+			}
+			if (details.propertyValue) {
+				Object.defineProperty(this, details.propertyName, {
+					value: details.propertyValue,
+					writable: false,
+					enumerable: true,
+					configurable: true
+				});
+			} else {
+				delete this[details.propertyName];
+			}
+		});
 	}
 
 	/**
@@ -81,7 +102,7 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @returns Length.
 	 */
 	public get length(): number {
-		return this[PropertySymbol.length];
+		return this[PropertySymbol.options].length;
 	}
 
 	/**
@@ -301,17 +322,6 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @returns Form.
 	 */
 	public get form(): HTMLFormElement {
-		const formID = this.getAttribute('form');
-
-		if (formID !== null) {
-			if (!this[PropertySymbol.isConnected]) {
-				return null;
-			}
-			return formID
-				? <HTMLFormElement>(<Document>this[PropertySymbol.rootNode]).getElementById(formID)
-				: null;
-		}
-
 		return <HTMLFormElement>this[PropertySymbol.formNode];
 	}
 
@@ -402,49 +412,39 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @see https://html.spec.whatwg.org/multipage/form-elements.html#selectedness-setting-algorithm
 	 * @param [selectedOption] Selected option.
 	 */
-	public [PropertySymbol.updateOptionItems](selectedOption?: HTMLOptionElement): void {
-		const optionElements = this.getElementsByTagName('option');
-
-		if (optionElements.length < this[PropertySymbol.options].length) {
-			this[PropertySymbol.options].splice(
-				this[PropertySymbol.options].length - 1,
-				this[PropertySymbol.options].length - optionElements.length
-			);
-
-			for (let i = optionElements.length - 1, max = this[PropertySymbol.length]; i < max; i++) {
-				delete this[i];
-			}
-		}
-
-		const isMultiple = this.hasAttributeNS(null, 'multiple');
+	public [PropertySymbol.updateSelectedness](selectedOption?: HTMLOptionElement): void {
+		const options = this[PropertySymbol.options];
+		const isMultiple = this.hasAttribute('multiple');
+		const selectedOptions = this[PropertySymbol.selectedOptions];
 		const selected: HTMLOptionElement[] = [];
 
-		for (let i = 0; i < optionElements.length; i++) {
-			this[PropertySymbol.options][i] = optionElements[i];
-			this[i] = optionElements[i];
-
+		for (let i = 0, max = options.length; i < max; i++) {
+			const option = <HTMLOptionElement>options[i];
 			if (!isMultiple) {
 				if (selectedOption) {
-					(<HTMLOptionElement>optionElements[i])[PropertySymbol.selectedness] =
-						optionElements[i] === selectedOption;
+					option[PropertySymbol.selectedness] = option === selectedOption;
 				}
 
-				if ((<HTMLOptionElement>optionElements[i])[PropertySymbol.selectedness]) {
-					selected.push(<HTMLOptionElement>optionElements[i]);
+				if (option[PropertySymbol.selectedness]) {
+					selected.push(option);
+
+					if (!selectedOptions[PropertySymbol.includes](option)) {
+						selectedOptions[PropertySymbol.addItem](option);
+					}
+				} else {
+					selectedOptions[PropertySymbol.removeItem](selectedOptions[0]);
 				}
 			}
 		}
-
-		(<number>this[PropertySymbol.length]) = optionElements.length;
 
 		const size = this.#getDisplaySize();
 
 		if (size === 1 && !selected.length) {
-			for (let i = 0, max = optionElements.length; i < max; i++) {
-				const option = <HTMLOptionElement>optionElements[i];
-
-				let disabled = option.hasAttributeNS(null, 'disabled');
+			for (let i = 0, max = options.length; i < max; i++) {
+				const option = <HTMLOptionElement>options[i];
 				const parentNode = <HTMLElement>option[PropertySymbol.parentNode];
+				let disabled = option.hasAttributeNS(null, 'disabled');
+
 				if (
 					parentNode &&
 					parentNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
@@ -460,9 +460,8 @@ export default class HTMLSelectElement extends HTMLElement {
 				}
 			}
 		} else if (selected.length >= 2) {
-			for (let i = 0, max = optionElements.length; i < max; i++) {
-				(<HTMLOptionElement>optionElements[i])[PropertySymbol.selectedness] =
-					i === selected.length - 1;
+			for (let i = 0, max = options.length; i < max; i++) {
+				(<HTMLOptionElement>options[i])[PropertySymbol.selectedness] = i === selected.length - 1;
 			}
 		}
 	}

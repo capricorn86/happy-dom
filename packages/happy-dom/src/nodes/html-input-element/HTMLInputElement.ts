@@ -32,7 +32,7 @@ import NodeList from '../node/INodeList.js';
  */
 export default class HTMLInputElement extends HTMLElement {
 	// Public properties
-	public cloneNode: (deep?: boolean) => HTMLInputElement;
+	public declare cloneNode: (deep?: boolean) => HTMLInputElement;
 
 	// Events
 	public oninput: (event: Event) => void | null = null;
@@ -202,17 +202,6 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @returns Form.
 	 */
 	public get form(): HTMLFormElement {
-		const formID = this.getAttribute('form');
-
-		if (formID !== null) {
-			if (!this[PropertySymbol.isConnected]) {
-				return null;
-			}
-			return formID
-				? <HTMLFormElement>(<Document>this[PropertySymbol.rootNode]).getElementById(formID)
-				: null;
-		}
-
 		return <HTMLFormElement>this[PropertySymbol.formNode];
 	}
 

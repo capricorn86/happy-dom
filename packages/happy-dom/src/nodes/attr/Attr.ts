@@ -10,7 +10,7 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
  */
 export default class Attr extends Node implements Attr {
 	// Public properties
-	public cloneNode: (deep?: boolean) => Attr;
+	public declare cloneNode: (deep?: boolean) => Attr;
 
 	public [PropertySymbol.nodeType] = NodeTypeEnum.attributeNode;
 	public [PropertySymbol.namespaceURI]: string | null = null;

@@ -13,7 +13,7 @@ import SVGElement from '../svg-element/SVGElement.js';
  */
 export default class ShadowRoot extends DocumentFragment {
 	// Public properties
-	public cloneNode: (deep?: boolean) => ShadowRoot;
+	public declare cloneNode: (deep?: boolean) => ShadowRoot;
 
 	// Events
 	public onslotchange: (event: Event) => void | null = null;
@@ -63,8 +63,10 @@ export default class ShadowRoot extends DocumentFragment {
 	 * @param html HTML.
 	 */
 	public set innerHTML(html: string) {
-		for (const child of this[PropertySymbol.childNodes].slice()) {
-			this.removeChild(child);
+		const childNodes = this[PropertySymbol.childNodes];
+
+		while (childNodes.length) {
+			this.removeChild(childNodes[0]);
 		}
 
 		XMLParser.parse(this[PropertySymbol.ownerDocument], html, { rootNode: this });

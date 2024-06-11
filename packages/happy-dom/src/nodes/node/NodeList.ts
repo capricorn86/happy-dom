@@ -205,6 +205,17 @@ class NodeList<T> extends Array<T> implements INodeList<T> {
 	public [PropertySymbol.includes](item: T): boolean {
 		return super.includes(item);
 	}
+
+	/**
+	 * Returns a shallow copy of a portion of an array into a new array object selected from start to end.
+	 *
+	 * @param [start] Start.
+	 * @param [end] End.
+	 * @returns A new array containing the extracted elements.
+	 */
+	public [PropertySymbol.slice](start?: number, end?: number): T[] {
+		return super.slice(start, end);
+	}
 }
 
 // Removes Array methods from NodeList.

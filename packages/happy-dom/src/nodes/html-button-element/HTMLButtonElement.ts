@@ -7,7 +7,6 @@ import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import { URL } from 'url';
-import Document from '../document/Document.js';
 import MouseEvent from '../../event/events/MouseEvent.js';
 import NodeList from '../node/INodeList.js';
 
@@ -229,17 +228,6 @@ export default class HTMLButtonElement extends HTMLElement {
 	 * @returns Form.
 	 */
 	public get form(): HTMLFormElement {
-		const formID = this.getAttribute('form');
-
-		if (formID !== null) {
-			if (!this[PropertySymbol.isConnected]) {
-				return null;
-			}
-			return formID
-				? <HTMLFormElement>(<Document>this[PropertySymbol.rootNode]).getElementById(formID)
-				: null;
-		}
-
 		return <HTMLFormElement>this[PropertySymbol.formNode];
 	}
 

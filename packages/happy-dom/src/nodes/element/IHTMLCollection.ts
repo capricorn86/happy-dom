@@ -105,14 +105,6 @@ export default interface IHTMLCollection<T, NamedItem = T> {
 	): void;
 
 	/**
-	 * Updates named item.
-	 *
-	 * @param item Item.
-	 * @param attributeName Attribute name.
-	 */
-	[PropertySymbol.updateNamedItem](item: T, attributeName: string): void;
-
-	/**
 	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.
 	 *
 	 * @returns Iterator.

@@ -70,7 +70,7 @@ export default class Document extends Node {
 	public [PropertySymbol.referrer] = '';
 	public [PropertySymbol.defaultView]: BrowserWindow | null = null;
 	public [PropertySymbol.ownerWindow]: BrowserWindow;
-	public cloneNode: (deep?: boolean) => Document;
+	public declare cloneNode: (deep?: boolean) => Document;
 
 	// Private properties
 	#selection: Selection = null;
@@ -343,7 +343,7 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public get childElementCount(): number {
-		return this[PropertySymbol.children][PropertySymbol.items].length;
+		return this[PropertySymbol.children].length;
 	}
 
 	/**
@@ -352,7 +352,7 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public get firstElementChild(): Element {
-		return this[PropertySymbol.children][PropertySymbol.items][0] ?? null;
+		return this[PropertySymbol.children][0] ?? null;
 	}
 
 	/**
@@ -361,7 +361,7 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public get lastElementChild(): Element {
-		const children = this[PropertySymbol.children][PropertySymbol.items];
+		const children = this[PropertySymbol.children];
 		return children[children.length - 1] ?? null;
 	}
 
@@ -417,7 +417,7 @@ export default class Document extends Node {
 	 * @returns Document type.
 	 */
 	public get doctype(): DocumentType {
-		for (const node of this[PropertySymbol.childNodes][PropertySymbol.items]) {
+		for (const node of this[PropertySymbol.childNodes]) {
 			if (node instanceof DocumentType) {
 				return node;
 			}
@@ -709,7 +709,7 @@ export default class Document extends Node {
 	 * @param className Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByClassName(className: string): HTMLCollection<Element> {
+	public getElementsByClassName(className: string): IHTMLCollection<Element> {
 		return ParentNodeUtility.getElementsByClassName(this, className);
 	}
 
@@ -739,7 +739,7 @@ export default class Document extends Node {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagName(tagName: string): HTMLCollection<Element>;
+	public getElementsByTagName(tagName: string): IHTMLCollection<Element>;
 
 	/**
 	 * Returns an elements by tag name.
@@ -747,7 +747,7 @@ export default class Document extends Node {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagName(tagName: string): HTMLCollection<Element> {
+	public getElementsByTagName(tagName: string): IHTMLCollection<Element> {
 		return ParentNodeUtility.getElementsByTagName(this, tagName);
 	}
 
@@ -761,7 +761,7 @@ export default class Document extends Node {
 	public getElementsByTagNameNS<K extends keyof IHTMLElementTagNameMap>(
 		namespaceURI: 'http://www.w3.org/1999/xhtml',
 		tagName: K
-	): HTMLCollection<IHTMLElementTagNameMap[K]>;
+	): IHTMLCollection<IHTMLElementTagNameMap[K]>;
 
 	/**
 	 * Returns an elements by tag name and namespace.
@@ -773,7 +773,7 @@ export default class Document extends Node {
 	public getElementsByTagNameNS<K extends keyof ISVGElementTagNameMap>(
 		namespaceURI: 'http://www.w3.org/2000/svg',
 		tagName: K
-	): HTMLCollection<ISVGElementTagNameMap[K]>;
+	): IHTMLCollection<ISVGElementTagNameMap[K]>;
 
 	/**
 	 * Returns an elements by tag name and namespace.
@@ -782,7 +782,7 @@ export default class Document extends Node {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagNameNS(namespaceURI: string, tagName: string): HTMLCollection<Element>;
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<Element>;
 
 	/**
 	 * Returns an elements by tag name and namespace.
@@ -791,7 +791,7 @@ export default class Document extends Node {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagNameNS(namespaceURI: string, tagName: string): HTMLCollection<Element> {
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<Element> {
 		return ParentNodeUtility.getElementsByTagNameNS(this, namespaceURI, tagName);
 	}
 
@@ -817,9 +817,7 @@ export default class Document extends Node {
 			name: string
 		): NodeList<Element> => {
 			const matches = new NodeList<Element>();
-			for (const child of (<Element | Document>parentNode)[PropertySymbol.children][
-				PropertySymbol.items
-			]) {
+			for (const child of (<Element | Document>parentNode)[PropertySymbol.children]) {
 				if (child.getAttributeNS(null, 'name') === name) {
 					matches[PropertySymbol.addItem](child);
 				}
@@ -853,7 +851,7 @@ export default class Document extends Node {
 			let documentElement = null;
 			let documentTypeNode = null;
 
-			for (const node of root[PropertySymbol.childNodes][PropertySymbol.items]) {
+			for (const node of root[PropertySymbol.childNodes]) {
 				if (node['tagName'] === 'HTML') {
 					documentElement = node;
 				} else if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
@@ -888,7 +886,7 @@ export default class Document extends Node {
 					const rootBody = <Element>ParentNodeUtility.getElementByTagName(root, 'body');
 					const body = ParentNodeUtility.getElementByTagName(this, 'body');
 					if (rootBody && body) {
-						const childNodes = rootBody[PropertySymbol.childNodes][PropertySymbol.items];
+						const childNodes = rootBody[PropertySymbol.childNodes];
 						while (childNodes.length) {
 							body.appendChild(childNodes[0]);
 						}
@@ -898,7 +896,7 @@ export default class Document extends Node {
 				// Remaining nodes outside the <html> element are added to the <body> element.
 				const body = ParentNodeUtility.getElementByTagName(this, 'body');
 				if (body) {
-					const childNodes = root[PropertySymbol.childNodes][PropertySymbol.items];
+					const childNodes = root[PropertySymbol.childNodes];
 					while (childNodes.length) {
 						const child = childNodes[0];
 						if (
@@ -913,7 +911,7 @@ export default class Document extends Node {
 				const documentElement = this.createElement('html');
 				const bodyElement = this.createElement('body');
 				const headElement = this.createElement('head');
-				const childNodes = root[PropertySymbol.childNodes][PropertySymbol.items];
+				const childNodes = root[PropertySymbol.childNodes];
 
 				while (childNodes.length) {
 					bodyElement.appendChild(childNodes[0]);
@@ -953,8 +951,9 @@ export default class Document extends Node {
 			}
 		}
 
-		for (const child of this[PropertySymbol.childNodes][PropertySymbol.items]) {
-			this.removeChild(child);
+		const childNodes = this[PropertySymbol.childNodes];
+		while (childNodes.length) {
+			this.removeChild(childNodes[0]);
 		}
 
 		return this;
@@ -1352,7 +1351,7 @@ export default class Document extends Node {
 	#importNode(node: Node): void {
 		node[PropertySymbol.ownerDocument] = this;
 
-		for (const child of node[PropertySymbol.childNodes][PropertySymbol.items]) {
+		for (const child of node[PropertySymbol.childNodes]) {
 			this.#importNode(child);
 		}
 	}

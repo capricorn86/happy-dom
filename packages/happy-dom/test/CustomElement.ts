@@ -65,7 +65,7 @@ export default class CustomElement extends HTMLElement {
 											'key2'
 										)}".
                 </span>
-                <span class="children">${this.childNodes
+                <span class="children">${Array.from(this.childNodes)
 									.map(
 										(child) =>
 											'#' + child['nodeType'] + (child['tagName'] || '') + child.textContent

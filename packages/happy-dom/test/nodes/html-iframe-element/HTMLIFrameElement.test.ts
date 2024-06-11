@@ -13,6 +13,7 @@ import IRequestInfo from '../../../src/fetch/types/IRequestInfo.js';
 import Headers from '../../../src/fetch/Headers.js';
 import Browser from '../../../src/browser/Browser.js';
 import DOMTokenList from '../../../src/dom-token-list/DOMTokenList.js';
+import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCaptureEnum.js';
 
 describe('HTMLIFrameElement', () => {
 	let window: Window;
@@ -269,7 +270,7 @@ describe('HTMLIFrameElement', () => {
 			});
 		});
 
-		it(`Does'nt load anything if the Happy DOM setting "disableIframePageLoading" is set to true.`, () => {
+		it(`Doesn't load anything if the Happy DOM setting "disableIframePageLoading" is set to true.`, () => {
 			const browser = new Browser({ settings: { disableIframePageLoading: true } });
 			const page = browser.newPage();
 			const window = page.mainFrame.window;

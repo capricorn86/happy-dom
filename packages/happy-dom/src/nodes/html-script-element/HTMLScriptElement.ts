@@ -2,7 +2,6 @@ import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Event from '../../event/Event.js';
 import ErrorEvent from '../../event/events/ErrorEvent.js';
-import Node from '../../nodes/node/Node.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
@@ -21,7 +20,7 @@ import DocumentReadyStateManager from '../document/DocumentReadyStateManager.js'
  */
 export default class HTMLScriptElement extends HTMLElement {
 	// Public properties
-	public cloneNode: (deep?: boolean) => HTMLScriptElement;
+	public declare cloneNode: (deep?: boolean) => HTMLScriptElement;
 
 	// Events
 	public onerror: (event: ErrorEvent) => void = null;

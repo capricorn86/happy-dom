@@ -16,6 +16,7 @@ export default class HTMLFormControlsCollection extends HTMLCollection<
 	THTMLFormControlElement,
 	THTMLFormControlElement | RadioNodeList
 > {
+	public [PropertySymbol.namedItems] = new Map<string, RadioNodeList>();
 	#namedNodeMapListeners = new Map<THTMLFormControlElement, TNamedNodeMapListener>();
 
 	/**
@@ -47,6 +48,23 @@ export default class HTMLFormControlsCollection extends HTMLCollection<
 				formElement[PropertySymbol.attributes]['id'].value
 			);
 		});
+	}
+
+	/**
+	 * @override
+	 */
+	public namedItem(name: string): THTMLFormControlElement | RadioNodeList | null {
+		const namedItems = this[PropertySymbol.namedItems].get(name);
+
+		if (!namedItems?.length) {
+			return null;
+		}
+
+		if (namedItems.length === 1) {
+			return namedItems[0];
+		}
+
+		return namedItems;
 	}
 
 	/**
@@ -126,23 +144,6 @@ export default class HTMLFormControlsCollection extends HTMLCollection<
 		item[PropertySymbol.attributes][PropertySymbol.removeEventListener]('remove', listener);
 
 		return true;
-	}
-
-	/**
-	 * @override
-	 */
-	public namedItem(name: string): THTMLFormControlElement | RadioNodeList | null {
-		const namedItems = this[PropertySymbol.namedItems].get(name);
-
-		if (!namedItems?.length) {
-			return null;
-		}
-
-		if (namedItems.length === 1) {
-			return namedItems[0];
-		}
-
-		return namedItems;
 	}
 
 	/**

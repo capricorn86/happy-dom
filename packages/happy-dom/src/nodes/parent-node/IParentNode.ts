@@ -1,7 +1,7 @@
-import HTMLCollection from '../element/HTMLCollection2.js';
+import IHTMLCollection from '../element/IHTMLCollection.js';
 import Element from '../element/Element.js';
 import Node from '../node/Node.js';
-import NodeList from '../node/NodeList.js';
+import INodeList from '../node/INodeList.js';
 import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 
@@ -9,7 +9,7 @@ export default interface IParentNode extends Node {
 	readonly childElementCount: number;
 	readonly firstElementChild: Element;
 	readonly lastElementChild: Element;
-	readonly children: HTMLCollection<Element>;
+	readonly children: IHTMLCollection<Element>;
 
 	/**
 	 * Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.
@@ -47,11 +47,11 @@ export default interface IParentNode extends Node {
 	 */
 	querySelectorAll<K extends keyof IHTMLElementTagNameMap>(
 		selector: K
-	): NodeList<IHTMLElementTagNameMap[K]>;
+	): INodeList<IHTMLElementTagNameMap[K]>;
 	querySelectorAll<K extends keyof ISVGElementTagNameMap>(
 		selector: K
-	): NodeList<ISVGElementTagNameMap[K]>;
-	querySelectorAll(selector: string): NodeList<Element>;
+	): INodeList<ISVGElementTagNameMap[K]>;
+	querySelectorAll(selector: string): INodeList<Element>;
 
 	/**
 	 * Query CSS selector to find matching nodes.
@@ -59,7 +59,7 @@ export default interface IParentNode extends Node {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	querySelectorAll(selector: string): NodeList<Element>;
+	querySelectorAll(selector: string): INodeList<Element>;
 
 	/**
 	 * Returns an elements by class name.
@@ -67,7 +67,7 @@ export default interface IParentNode extends Node {
 	 * @param className Tag name.
 	 * @returns Matching element.
 	 */
-	getElementsByClassName(className: string): HTMLCollection<Element>;
+	getElementsByClassName(className: string): IHTMLCollection<Element>;
 
 	/**
 	 * Returns an elements by tag name.
@@ -77,11 +77,11 @@ export default interface IParentNode extends Node {
 	 */
 	getElementsByTagName<K extends keyof IHTMLElementTagNameMap>(
 		tagName: K
-	): HTMLCollection<IHTMLElementTagNameMap[K]>;
+	): IHTMLCollection<IHTMLElementTagNameMap[K]>;
 	getElementsByTagName<K extends keyof ISVGElementTagNameMap>(
 		tagName: K
-	): HTMLCollection<ISVGElementTagNameMap[K]>;
-	getElementsByTagName(tagName: string): HTMLCollection<Element>;
+	): IHTMLCollection<ISVGElementTagNameMap[K]>;
+	getElementsByTagName(tagName: string): IHTMLCollection<Element>;
 
 	/**
 	 * Returns an elements by tag name and namespace.
@@ -93,12 +93,12 @@ export default interface IParentNode extends Node {
 	getElementsByTagNameNS<K extends keyof IHTMLElementTagNameMap>(
 		namespaceURI: 'http://www.w3.org/1999/xhtml',
 		tagName: K
-	): HTMLCollection<IHTMLElementTagNameMap[K]>;
+	): IHTMLCollection<IHTMLElementTagNameMap[K]>;
 	getElementsByTagNameNS<K extends keyof ISVGElementTagNameMap>(
 		namespaceURI: 'http://www.w3.org/2000/svg',
 		tagName: K
-	): HTMLCollection<ISVGElementTagNameMap[K]>;
-	getElementsByTagNameNS(namespaceURI: string, tagName: string): HTMLCollection<Element>;
+	): IHTMLCollection<ISVGElementTagNameMap[K]>;
+	getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<Element>;
 
 	/**
 	 * Replaces the existing children of a node with a specified new set of children.

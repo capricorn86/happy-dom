@@ -15,7 +15,7 @@ import MouseEvent from '../../event/events/MouseEvent.js';
  */
 export default class HTMLLabelElement extends HTMLElement {
 	// Public properties
-	public cloneNode: (deep?: boolean) => HTMLLabelElement;
+	public declare cloneNode: (deep?: boolean) => HTMLLabelElement;
 
 	/**
 	 * Returns a string containing the ID of the labeled control. This reflects the "for" attribute.

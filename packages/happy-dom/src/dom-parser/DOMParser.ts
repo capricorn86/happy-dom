@@ -38,15 +38,15 @@ export default class DOMParser {
 
 		const newDocument = <Document>this.#createDocument(mimeType);
 
-		while (newDocument[PropertySymbol.childNodes][PropertySymbol.items].length) {
-			newDocument.removeChild(newDocument[PropertySymbol.childNodes][PropertySymbol.items][0]);
+		while (newDocument[PropertySymbol.childNodes].length) {
+			newDocument.removeChild(newDocument[PropertySymbol.childNodes][0]);
 		}
 
 		const root = <DocumentFragment>XMLParser.parse(newDocument, string, { evaluateScripts: true });
 		let documentElement = null;
 		let documentTypeNode = null;
 
-		for (const node of root[PropertySymbol.childNodes][PropertySymbol.items]) {
+		for (const node of root[PropertySymbol.childNodes]) {
 			if (node['tagName'] === 'HTML') {
 				documentElement = node;
 			} else if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
@@ -65,16 +65,16 @@ export default class DOMParser {
 			newDocument.appendChild(documentElement);
 			const body = newDocument.body;
 			if (body) {
-				while (root[PropertySymbol.childNodes][PropertySymbol.items].length) {
-					body.appendChild(root[PropertySymbol.childNodes][PropertySymbol.items][0]);
+				while (root[PropertySymbol.childNodes].length) {
+					body.appendChild(root[PropertySymbol.childNodes][0]);
 				}
 			}
 		} else {
 			switch (mimeType) {
 				case 'image/svg+xml':
 					{
-						while (root[PropertySymbol.childNodes][PropertySymbol.items].length) {
-							newDocument.appendChild(root[PropertySymbol.childNodes][PropertySymbol.items][0]);
+						while (root[PropertySymbol.childNodes].length) {
+							newDocument.appendChild(root[PropertySymbol.childNodes][0]);
 						}
 					}
 					break;
@@ -89,8 +89,8 @@ export default class DOMParser {
 						documentElement.appendChild(bodyElement);
 						newDocument.appendChild(documentElement);
 
-						while (root[PropertySymbol.childNodes][PropertySymbol.items].length) {
-							bodyElement.appendChild(root[PropertySymbol.childNodes][PropertySymbol.items][0]);
+						while (root[PropertySymbol.childNodes].length) {
+							bodyElement.appendChild(root[PropertySymbol.childNodes][0]);
 						}
 					}
 					break;

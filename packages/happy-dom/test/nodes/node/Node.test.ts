@@ -327,12 +327,12 @@ describe('Node', () => {
 		it('Returns "false" if match node is null.', () => {
 			const div = document.createElement('div');
 
-			expect(div.contains(null)).toBe(false);
+			expect(div.contains(<Node>(<unknown>null))).toBe(false);
 		});
 		it('Returns "false" if match node is undefined.', () => {
 			const div = document.createElement('div');
 
-			expect(div.contains(undefined)).toBe(false);
+			expect(div.contains(<Node>(<unknown>undefined))).toBe(false);
 		});
 	});
 
@@ -424,7 +424,7 @@ describe('Node', () => {
 			expect(div !== clone).toBe(true);
 
 			expect(Array.from(clone.children)).toEqual(
-				Array.from(clone.childNodes.filter((node) => node.nodeType === Node.ELEMENT_NODE))
+				Array.from(clone.childNodes).filter((node) => node.nodeType === Node.ELEMENT_NODE)
 			);
 		});
 
@@ -1020,7 +1020,7 @@ describe('Node', () => {
 			expect(
 				document
 					.getElementById('element')
-					.compareDocumentPosition(document.getElementById('element'))
+					?.compareDocumentPosition(<Node>document.getElementById('element'))
 			).toEqual(0);
 		});
 
@@ -1036,7 +1036,9 @@ describe('Node', () => {
 			document.body.appendChild(div);
 
 			expect(
-				document.getElementById('span1').compareDocumentPosition(document.getElementById('span2'))
+				document
+					.getElementById('span1')
+					?.compareDocumentPosition(<Node>document.getElementById('span2'))
 			).toEqual(4);
 		});
 
@@ -1052,7 +1054,9 @@ describe('Node', () => {
 			document.body.appendChild(div);
 
 			expect(
-				document.getElementById('span2').compareDocumentPosition(document.getElementById('span1'))
+				document
+					.getElementById('span2')
+					?.compareDocumentPosition(<Node>document.getElementById('span1'))
 			).toEqual(2);
 		});
 
@@ -1067,7 +1071,7 @@ describe('Node', () => {
 
 			const position = document
 				.getElementById('parent')
-				.compareDocumentPosition(document.getElementById('child'));
+				?.compareDocumentPosition(<Node>document.getElementById('child'));
 			expect(position).toEqual(20);
 		});
 
@@ -1082,7 +1086,7 @@ describe('Node', () => {
 
 			const position = document
 				.getElementById('child')
-				.compareDocumentPosition(document.getElementById('parent'));
+				?.compareDocumentPosition(<Node>document.getElementById('parent'));
 			expect(position).toEqual(10);
 		});
 	});

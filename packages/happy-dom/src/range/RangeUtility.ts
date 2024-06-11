@@ -51,8 +51,9 @@ export default class RangeUtility {
 			}
 
 			if (
-				(<Node>child[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(child) <
-				pointA.offset
+				(<Node>child[PropertySymbol.parentNode])[PropertySymbol.childNodes][PropertySymbol.indexOf](
+					child
+				) < pointA.offset
 			) {
 				return 1;
 			}

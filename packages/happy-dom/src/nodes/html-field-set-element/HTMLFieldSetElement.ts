@@ -1,13 +1,20 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import HTMLCollection from '../element/HTMLCollection2.js';
+import IHTMLCollection from '../element/IHTMLCollection.js';
+import HTMLCollection from '../element/HTMLCollection.js';
 import HTMLInputElement from '../html-input-element/HTMLInputElement.js';
 import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
 import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
 import HTMLButtonElement from '../html-button-element/HTMLButtonElement.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
-import Document from '../document/Document.js';
-import Attr from '../attr/Attr.js';
+import Node from '../node/Node.js';
+import Element from '../element/Element.js';
+
+type THTMLFieldSetElement =
+	| HTMLInputElement
+	| HTMLButtonElement
+	| HTMLTextAreaElement
+	| HTMLSelectElement;
 
 /**
  * HTMLFieldSetElement
@@ -15,24 +22,45 @@ import Attr from '../attr/Attr.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLFieldSetElement
  */
 export default class HTMLFieldSetElement extends HTMLElement {
+	// Public properties
+	public declare cloneNode: (deep?: boolean) => HTMLFieldSetElement;
+
 	// Internal properties
-	public [PropertySymbol.elements] = new HTMLCollection<
-		HTMLInputElement | HTMLButtonElement | HTMLTextAreaElement | HTMLSelectElement
-	>();
+	public [PropertySymbol.elements] = new HTMLCollection<THTMLFieldSetElement>(
+		(item: Element) =>
+			item.tagName === 'INPUT' ||
+			item.tagName === 'BUTTON' ||
+			item.tagName === 'TEXTAREA' ||
+			item.tagName === 'SELECT'
+	);
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
 
 	/**
 	 * Constructor.
+	 *
+	 * @param browserFrame Browser frame.
 	 */
 	constructor() {
 		super();
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'set',
-			this.#onSetAttribute.bind(this)
+		// Child nodes listeners
+		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener]('add', (item: Node) => {
+			this[PropertySymbol.elements][PropertySymbol.addItem](<THTMLFieldSetElement>item);
+		});
+		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener](
+			'insert',
+			(newItem: Node, referenceItem: Node | null) => {
+				this[PropertySymbol.elements][PropertySymbol.insertItem](
+					<THTMLFieldSetElement>newItem,
+					<THTMLFieldSetElement>referenceItem
+				);
+			}
 		);
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
+		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener](
 			'remove',
-			this.#onRemoveAttribute.bind(this)
+			(item: Node) => {
+				(<THTMLFieldSetElement>item)[PropertySymbol.formNode] = null;
+				this[PropertySymbol.elements][PropertySymbol.removeItem](<THTMLFieldSetElement>item);
+			}
 		);
 	}
 
@@ -41,7 +69,7 @@ export default class HTMLFieldSetElement extends HTMLElement {
 	 *
 	 * @returns Elements.
 	 */
-	public get elements(): HTMLCollection<
+	public get elements(): IHTMLCollection<
 		HTMLInputElement | HTMLButtonElement | HTMLTextAreaElement | HTMLSelectElement
 	> {
 		return this[PropertySymbol.elements];
@@ -53,17 +81,6 @@ export default class HTMLFieldSetElement extends HTMLElement {
 	 * @returns Form.
 	 */
 	public get form(): HTMLFormElement {
-		const formID = this.getAttribute('form');
-
-		if (formID !== null) {
-			if (!this[PropertySymbol.isConnected]) {
-				return null;
-			}
-			return formID
-				? <HTMLFormElement>(<Document>this[PropertySymbol.rootNode]).getElementById(formID)
-				: null;
-		}
-
 		return <HTMLFormElement>this[PropertySymbol.formNode];
 	}
 
@@ -165,24 +182,5 @@ export default class HTMLFieldSetElement extends HTMLElement {
 	 */
 	public setCustomValidity(_message: string): void {
 		// Do nothing as fieldset never candidates for constraint validation.
-	}
-
-	/**
-	 * Triggered when an attribute is set.
-	 *
-	 * @param attribute Attribute.
-	 * @param replacedAttribute Replaced attribute.
-	 */
-	#onSetAttribute(attribute: Attr, replacedAttribute: Attr | null): void {
-		this.form?.[PropertySymbol.appendFormControlItem](this, attribute, replacedAttribute);
-	}
-
-	/**
-	 * Triggered when an attribute is removed.
-	 *
-	 * @param removedAttribute Removed attribute.
-	 */
-	#onRemoveAttribute(removedAttribute: Attr): void {
-		this.form?.[PropertySymbol.removeFormControlItem](this, removedAttribute);
 	}
 }

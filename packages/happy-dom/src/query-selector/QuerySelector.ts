@@ -10,6 +10,8 @@ import SelectorParser from './SelectorParser.js';
 import ISelectorMatch from './ISelectorMatch.js';
 import IHTMLElementTagNameMap from '../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../config/ISVGElementTagNameMap.js';
+import IHTMLCollection from '../nodes/element/IHTMLCollection.js';
+import INodeList from '../nodes/node/INodeList.js';
 
 type DocumentPositionAndElement = {
 	documentPosition: string;
@@ -73,7 +75,7 @@ export default class QuerySelector {
 	public static querySelectorAll(
 		node: Element | Document | DocumentFragment,
 		selector: string
-	): NodeList<Element> {
+	): INodeList<Element> {
 		if (<string>selector === '') {
 			throw new Error(
 				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': The provided selector is empty.`
@@ -101,7 +103,7 @@ export default class QuerySelector {
 			);
 		}
 
-		const nodeList = new NodeList<Element>();
+		const nodeList: INodeList<Element> = new NodeList<Element>();
 		const matchesMap: { [position: string]: Element } = {};
 
 		for (let i = 0, max = matches.length; i < max; i++) {
@@ -110,7 +112,7 @@ export default class QuerySelector {
 
 		const keys = Object.keys(matchesMap).sort();
 		for (let i = 0, max = keys.length; i < max; i++) {
-			nodeList.push(matchesMap[keys[i]]);
+			nodeList[PropertySymbol.addItem](matchesMap[keys[i]]);
 		}
 
 		return nodeList;
@@ -323,7 +325,7 @@ export default class QuerySelector {
 	 */
 	private static findAll(
 		rootElement: Element,
-		children: Element[],
+		children: Element[] | IHTMLCollection<Element>,
 		selectorItems: SelectorItem[],
 		documentPosition?: string
 	): DocumentPositionAndElement[] {
@@ -333,7 +335,7 @@ export default class QuerySelector {
 
 		for (let i = 0, max = children.length; i < max; i++) {
 			const child = children[i];
-			const childrenOfChild = (<Element>child)[PropertySymbol.children][PropertySymbol.items];
+			const childrenOfChild = (<Element>child)[PropertySymbol.children];
 			const position = (documentPosition ? documentPosition + '>' : '') + String.fromCharCode(i);
 
 			if (selectorItem.match(child)) {
@@ -388,14 +390,14 @@ export default class QuerySelector {
 	 */
 	private static findFirst(
 		rootElement: Element,
-		children: Element[],
+		children: Element[] | IHTMLCollection<Element>,
 		selectorItems: SelectorItem[]
 	): Element {
 		const selectorItem = selectorItems[0];
 		const nextSelectorItem = selectorItems[1];
 
 		for (const child of children) {
-			const childrenOfChild = (<Element>child)[PropertySymbol.children][PropertySymbol.items];
+			const childrenOfChild = (<Element>child)[PropertySymbol.children];
 
 			if (selectorItem.match(child)) {
 				if (!nextSelectorItem) {

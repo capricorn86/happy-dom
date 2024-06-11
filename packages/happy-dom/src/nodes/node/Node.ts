@@ -85,6 +85,52 @@ export default class Node extends EventTarget {
 			}
 			this[PropertySymbol.ownerDocument] = ownerDocument;
 		}
+
+		const childNodes = this[PropertySymbol.childNodes];
+
+		childNodes[PropertySymbol.addEventListener]('add', (item: Node) => {
+			let parent: Node = this;
+			while (parent) {
+				const childNodesFlatten = parent[PropertySymbol.childNodesFlatten];
+
+				childNodesFlatten[PropertySymbol.addItem](item);
+
+				for (const child of item[PropertySymbol.childNodesFlatten]) {
+					childNodesFlatten[PropertySymbol.addItem](child);
+				}
+
+				parent = parent[PropertySymbol.parentNode];
+			}
+		});
+
+		childNodes[PropertySymbol.addEventListener]('insert', (item: Node, referenceItem?: Node) => {
+			let parent: Node = this;
+			while (parent) {
+				const childNodesFlatten = parent[PropertySymbol.childNodesFlatten];
+
+				childNodesFlatten[PropertySymbol.insertItem](item, referenceItem);
+
+				for (const child of item[PropertySymbol.childNodesFlatten]) {
+					childNodesFlatten[PropertySymbol.insertItem](child, referenceItem);
+				}
+
+				parent = parent[PropertySymbol.parentNode];
+			}
+		});
+		childNodes[PropertySymbol.addEventListener]('remove', (item: Node) => {
+			let parent: Node = this;
+			while (parent) {
+				const childNodesFlatten = parent[PropertySymbol.childNodesFlatten];
+
+				childNodesFlatten[PropertySymbol.removeItem](item);
+
+				for (const child of item[PropertySymbol.childNodesFlatten]) {
+					childNodesFlatten[PropertySymbol.removeItem](child);
+				}
+
+				parent = parent[PropertySymbol.parentNode];
+			}
+		});
 	}
 
 	/**
@@ -420,7 +466,7 @@ export default class Node extends EventTarget {
 			for (const childNode of this[PropertySymbol.childNodes]) {
 				const childClone = childNode.cloneNode(true);
 				childClone[PropertySymbol.parentNode] = clone;
-				clone[PropertySymbol.childNodes][PropertySymbol.appendChild](childClone);
+				clone[PropertySymbol.childNodes][PropertySymbol.addItem](childClone);
 			}
 		}
 
@@ -459,36 +505,21 @@ export default class Node extends EventTarget {
 
 		// Remove the node from its previous parent if it has any.
 		if (node[PropertySymbol.parentNode]) {
-			node[PropertySymbol.parentNode][PropertySymbol.childNodes][PropertySymbol.removeChild](node);
-			let parent = node[PropertySymbol.parentNode];
-			while (parent) {
-				node[PropertySymbol.parentNode][PropertySymbol.childNodesFlatten][
-					PropertySymbol.removeChild
-				](node);
-				parent = node[PropertySymbol.parentNode];
-			}
+			node[PropertySymbol.parentNode][PropertySymbol.childNodes][PropertySymbol.removeItem](node);
 		}
 
 		if (this[PropertySymbol.isConnected]) {
 			(this[PropertySymbol.ownerDocument] || this)[PropertySymbol.cacheID]++;
 		}
 
-		this[PropertySymbol.childNodes][PropertySymbol.appendChild](node);
-
-		let parent: Node = this;
-		while (parent) {
-			parent[PropertySymbol.childNodesFlatten][PropertySymbol.appendChild](node);
-			parent = parent[PropertySymbol.parentNode];
-		}
-
 		node[PropertySymbol.parentNode] = this;
 
-		if (this[PropertySymbol.isConnected] && !(<Node>node)[PropertySymbol.isConnected]) {
-			(<Node>node)[PropertySymbol.isConnected] = true;
-			(<Node>node)[PropertySymbol.connectedToDocument]();
-		} else if (!this[PropertySymbol.isConnected] && (<Node>node)[PropertySymbol.isConnected]) {
-			(<Node>node)[PropertySymbol.isConnected] = false;
-			(<Node>node)[PropertySymbol.disconnectedFromDocument]();
+		this[PropertySymbol.childNodes][PropertySymbol.addItem](node);
+
+		if (this[PropertySymbol.isConnected] && !node[PropertySymbol.isConnected]) {
+			node[PropertySymbol.connectedToDocument]();
+		} else if (!this[PropertySymbol.isConnected] && node[PropertySymbol.isConnected]) {
+			node[PropertySymbol.disconnectedFromDocument]();
 		}
 
 		// MutationObserver
@@ -523,27 +554,23 @@ export default class Node extends EventTarget {
 			(this[PropertySymbol.ownerDocument] || this)[PropertySymbol.cacheID]++;
 		}
 
-		this[PropertySymbol.childNodes][PropertySymbol.removeChild](node);
+		node[PropertySymbol.parentNode] = null;
 
-		let parent: Node = this;
-		while (parent) {
-			parent[PropertySymbol.childNodesFlatten][PropertySymbol.removeChild](node);
-			parent = parent[PropertySymbol.parentNode];
-		}
+		this[PropertySymbol.childNodes][PropertySymbol.removeItem](node);
 
-		if ((<Node>node)[PropertySymbol.isConnected]) {
-			(<Node>node)[PropertySymbol.disconnectedFromDocument]();
+		if (node[PropertySymbol.isConnected]) {
+			node[PropertySymbol.disconnectedFromDocument]();
 		}
 
 		// MutationObserver
-		if ((<Node>this)[PropertySymbol.observers].length > 0) {
+		if (this[PropertySymbol.observers].length > 0) {
 			const record = new MutationRecord({
 				target: this,
 				type: MutationTypeEnum.childList,
 				removedNodes: [node]
 			});
 
-			for (const observer of (<Node>this)[PropertySymbol.observers]) {
+			for (const observer of this[PropertySymbol.observers]) {
 				if (observer.options?.subtree) {
 					(<Node>node)[PropertySymbol.unobserve](observer);
 				}
@@ -599,32 +626,19 @@ export default class Node extends EventTarget {
 		}
 
 		if (newNode[PropertySymbol.parentNode]) {
-			newNode[PropertySymbol.parentNode][PropertySymbol.childNodes][PropertySymbol.removeChild](
+			newNode[PropertySymbol.parentNode][PropertySymbol.childNodes][PropertySymbol.removeItem](
 				newNode
 			);
-			let parent: Node = newNode[PropertySymbol.parentNode];
-			while (parent) {
-				parent[PropertySymbol.childNodesFlatten][PropertySymbol.removeChild](newNode);
-				parent = parent[PropertySymbol.parentNode];
-			}
-		}
-
-		this[PropertySymbol.childNodes][PropertySymbol.insertBefore](newNode, referenceNode);
-
-		let parent: Node = this;
-		while (parent) {
-			parent[PropertySymbol.childNodesFlatten][PropertySymbol.insertBefore](newNode, referenceNode);
-			parent = parent[PropertySymbol.parentNode];
 		}
 
 		newNode[PropertySymbol.parentNode] = this;
 
-		if (this[PropertySymbol.isConnected] && !(<Node>newNode)[PropertySymbol.isConnected]) {
-			(<Node>newNode)[PropertySymbol.isConnected] = true;
-			(<Node>newNode)[PropertySymbol.connectedToDocument]();
-		} else if (!this[PropertySymbol.isConnected] && (<Node>newNode)[PropertySymbol.isConnected]) {
-			(<Node>newNode)[PropertySymbol.isConnected] = false;
-			(<Node>newNode)[PropertySymbol.disconnectedFromDocument]();
+		this[PropertySymbol.childNodes][PropertySymbol.insertItem](newNode, referenceNode);
+
+		if (this[PropertySymbol.isConnected] && !newNode[PropertySymbol.isConnected]) {
+			newNode[PropertySymbol.connectedToDocument]();
+		} else if (!this[PropertySymbol.isConnected] && newNode[PropertySymbol.isConnected]) {
+			newNode[PropertySymbol.disconnectedFromDocument]();
 		}
 
 		// MutationObserver
@@ -719,6 +733,8 @@ export default class Node extends EventTarget {
 	 * Called when connected to document.
 	 */
 	public [PropertySymbol.connectedToDocument](): void {
+		this[PropertySymbol.isConnected] = true;
+
 		if (this[PropertySymbol.nodeType] !== NodeTypeEnum.documentFragmentNode) {
 			this[PropertySymbol.rootNode] = this[PropertySymbol.parentNode][PropertySymbol.rootNode];
 		}
@@ -745,7 +761,7 @@ export default class Node extends EventTarget {
 		}
 
 		for (const child of this[PropertySymbol.childNodes]) {
-			(<Node>child)[PropertySymbol.connectedToDocument]();
+			child[PropertySymbol.connectedToDocument]();
 		}
 
 		// eslint-disable-next-line
@@ -760,6 +776,7 @@ export default class Node extends EventTarget {
 	 * @param e
 	 */
 	public [PropertySymbol.disconnectedFromDocument](): void {
+		this[PropertySymbol.isConnected] = false;
 		this[PropertySymbol.rootNode] = null;
 
 		if (this[PropertySymbol.ownerDocument][PropertySymbol.activeElement] === <unknown>this) {
@@ -771,7 +788,7 @@ export default class Node extends EventTarget {
 		}
 
 		for (const child of this[PropertySymbol.childNodes]) {
-			(<Node>child)[PropertySymbol.disconnectedFromDocument]();
+			child[PropertySymbol.disconnectedFromDocument]();
 		}
 
 		// eslint-disable-next-line

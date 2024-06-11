@@ -1,9 +1,10 @@
 import { Buffer } from 'buffer';
 import { webcrypto } from 'crypto';
+import VM from 'vm';
+import VMGlobalPropertyScript from './VMGlobalPropertyScript.js';
 import Stream from 'stream';
 import { ReadableStream } from 'stream/web';
 import { URLSearchParams } from 'url';
-import VM from 'vm';
 import * as PropertySymbol from '../PropertySymbol.js';
 import Base64 from '../base64/Base64.js';
 import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
@@ -189,7 +190,6 @@ import XMLHttpRequestUpload from '../xml-http-request/XMLHttpRequestUpload.js';
 import XMLSerializer from '../xml-serializer/XMLSerializer.js';
 import CrossOriginBrowserWindow from './CrossOriginBrowserWindow.js';
 import INodeJSGlobal from './INodeJSGlobal.js';
-import VMGlobalPropertyScript from './VMGlobalPropertyScript.js';
 import WindowBrowserSettingsReader from './WindowBrowserSettingsReader.js';
 import WindowErrorUtility from './WindowErrorUtility.js';
 import WindowPageOpenUtility from './WindowPageOpenUtility.js';
@@ -475,65 +475,65 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public name = '';
 
 	// Node.js Globals
-	public Array: typeof Array;
-	public ArrayBuffer: typeof ArrayBuffer;
-	public Boolean: typeof Boolean;
+	public declare Array: typeof Array;
+	public declare ArrayBuffer: typeof ArrayBuffer;
+	public declare Boolean: typeof Boolean;
 	public Buffer: typeof Buffer = Buffer;
-	public DataView: typeof DataView;
-	public Date: typeof Date;
-	public Error: typeof Error;
-	public EvalError: typeof EvalError;
-	public Float32Array: typeof Float32Array;
-	public Float64Array: typeof Float64Array;
-	public Function: typeof Function;
-	public Infinity: typeof Infinity;
-	public Int16Array: typeof Int16Array;
-	public Int32Array: typeof Int32Array;
-	public Int8Array: typeof Int8Array;
-	public Intl: typeof Intl;
-	public JSON: typeof JSON;
-	public Map: MapConstructor;
-	public Math: typeof Math;
-	public NaN: typeof NaN;
-	public Number: typeof Number;
-	public Object: typeof Object;
-	public Promise: typeof Promise;
-	public RangeError: typeof RangeError;
-	public ReferenceError: typeof ReferenceError;
-	public RegExp: typeof RegExp;
-	public Set: SetConstructor;
-	public String: typeof String;
-	public Symbol: Function;
-	public SyntaxError: typeof SyntaxError;
-	public TypeError: typeof TypeError;
-	public URIError: typeof URIError;
-	public Uint16Array: typeof Uint16Array;
-	public Uint32Array: typeof Uint32Array;
-	public Uint8Array: typeof Uint8Array;
-	public Uint8ClampedArray: typeof Uint8ClampedArray;
-	public WeakMap: WeakMapConstructor;
-	public WeakSet: WeakSetConstructor;
-	public decodeURI: typeof decodeURI;
-	public decodeURIComponent: typeof decodeURIComponent;
-	public encodeURI: typeof encodeURI;
-	public encodeURIComponent: typeof encodeURIComponent;
-	public eval: typeof eval;
+	public declare DataView: typeof DataView;
+	public declare Date: typeof Date;
+	public declare Error: typeof Error;
+	public declare EvalError: typeof EvalError;
+	public declare Float32Array: typeof Float32Array;
+	public declare Float64Array: typeof Float64Array;
+	public declare Function: typeof Function;
+	public declare Infinity: typeof Infinity;
+	public declare Int16Array: typeof Int16Array;
+	public declare Int32Array: typeof Int32Array;
+	public declare Int8Array: typeof Int8Array;
+	public declare Intl: typeof Intl;
+	public declare JSON: typeof JSON;
+	public declare Map: MapConstructor;
+	public declare Math: typeof Math;
+	public declare NaN: typeof NaN;
+	public declare Number: typeof Number;
+	public declare Object: typeof Object;
+	public declare Promise: typeof Promise;
+	public declare RangeError: typeof RangeError;
+	public declare ReferenceError: typeof ReferenceError;
+	public declare RegExp: typeof RegExp;
+	public declare Set: SetConstructor;
+	public declare String: typeof String;
+	public declare Symbol: Function;
+	public declare SyntaxError: typeof SyntaxError;
+	public declare TypeError: typeof TypeError;
+	public declare URIError: typeof URIError;
+	public declare Uint16Array: typeof Uint16Array;
+	public declare Uint32Array: typeof Uint32Array;
+	public declare Uint8Array: typeof Uint8Array;
+	public declare Uint8ClampedArray: typeof Uint8ClampedArray;
+	public declare WeakMap: WeakMapConstructor;
+	public declare WeakSet: WeakSetConstructor;
+	public declare decodeURI: typeof decodeURI;
+	public declare decodeURIComponent: typeof decodeURIComponent;
+	public declare encodeURI: typeof encodeURI;
+	public declare encodeURIComponent: typeof encodeURIComponent;
+	public declare eval: typeof eval;
 	/**
 	 * @deprecated
 	 */
-	public escape: (str: string) => string;
-	public global: typeof globalThis;
-	public isFinite: typeof isFinite;
-	public isNaN: typeof isNaN;
-	public parseFloat: typeof parseFloat;
-	public parseInt: typeof parseInt;
-	public undefined: typeof undefined;
+	public declare escape: (str: string) => string;
+	public declare global: typeof globalThis;
+	public declare isFinite: typeof isFinite;
+	public declare isNaN: typeof isNaN;
+	public declare parseFloat: typeof parseFloat;
+	public declare parseInt: typeof parseInt;
+	public declare undefined: typeof undefined;
 	/**
 	 * @deprecated
 	 */
-	public unescape: (str: string) => string;
-	public gc: () => void;
-	public v8debug?: unknown;
+	public declare unescape: (str: string) => string;
+	public declare gc: () => void;
+	public declare v8debug?: unknown;
 
 	// Public internal properties
 
@@ -557,7 +557,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	#outerWidth: number | null = null;
 	#outerHeight: number | null = null;
 	#devicePixelRatio: number | null = null;
-	#zeroTimeouts: Array<Timeout> | null = null;
+	#zeroDelayTimeout: { timeouts: Array<Timeout> | null } = { timeouts: null };
 
 	/**
 	 * Constructor.
@@ -1067,32 +1067,39 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public setTimeout(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
 		// We can group timeouts with a delay of 0 into one timeout to improve performance.
 		// Grouping timeouts will also improve the performance of the async task manager.
-		// It may also make the async task manager to stable as many timeouts may cause waitUntilComplete() to be resolved to early.
+		// It also makes the async task manager more stable as many timeouts may cause waitUntilComplete() to be resolved too early.
 		if (!delay) {
-			if (!this.#zeroTimeouts) {
+			const zeroDelayTimeout = this.#zeroDelayTimeout;
+
+			if (!zeroDelayTimeout.timeouts) {
 				const settings = this.#browserFrame.page?.context?.browser?.settings;
 				const useTryCatch =
 					!settings ||
 					!settings.disableErrorCapturing ||
 					settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
+
 				const id = TIMER.setTimeout(() => {
-					const zeroTimeouts = this.#zeroTimeouts;
-					this.#zeroTimeouts = null;
-					for (const zeroTimeout of zeroTimeouts) {
+					const timeouts = zeroDelayTimeout.timeouts;
+					zeroDelayTimeout.timeouts = null;
+					for (const timeout of timeouts) {
 						if (useTryCatch) {
-							WindowErrorUtility.captureError(this, () => zeroTimeout.callback());
+							WindowErrorUtility.captureError(this, () => timeout.callback());
 						} else {
-							zeroTimeout.callback();
+							timeout.callback();
 						}
 					}
 					this.#browserFrame[PropertySymbol.asyncTaskManager].endTimer(id);
 				});
-				this.#zeroTimeouts = [];
+
+				zeroDelayTimeout.timeouts = [];
 				this.#browserFrame[PropertySymbol.asyncTaskManager].startTimer(id);
 			}
-			const zeroTimeout = new Timeout(() => callback(...args));
-			this.#zeroTimeouts.push(zeroTimeout);
-			return <NodeJS.Timeout>(<unknown>zeroTimeout);
+
+			const timeout = new Timeout(() => callback(...args));
+
+			zeroDelayTimeout.timeouts.push(timeout);
+
+			return <NodeJS.Timeout>(<unknown>timeout);
 		}
 
 		const settings = this.#browserFrame.page?.context?.browser?.settings;
@@ -1125,10 +1132,13 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 */
 	public clearTimeout(id: NodeJS.Timeout): void {
 		if (id && id instanceof Timeout) {
-			const zeroTimeouts = this.#zeroTimeouts || [];
-			const index = zeroTimeouts.indexOf(<Timeout>(<unknown>id));
+			const zeroDelayTimeout = this.#zeroDelayTimeout;
+			if (!zeroDelayTimeout.timeouts) {
+				return;
+			}
+			const index = zeroDelayTimeout.timeouts.indexOf(<Timeout>(<unknown>id));
 			if (index !== -1) {
-				zeroTimeouts.splice(index, 1);
+				zeroDelayTimeout.timeouts.splice(index, 1);
 			}
 			return;
 		}
@@ -1425,12 +1435,14 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this[PropertySymbol.mutationObservers] = [];
 
 		// Disconnects nodes from the document, so that they can be garbage collected.
-		for (const node of this.document[PropertySymbol.childNodes].slice()) {
+		const childNodes = this.document[PropertySymbol.childNodes];
+
+		while (childNodes.length > 0) {
 			// Makes sure that something won't be triggered by the disconnect.
-			if (node.disconnectedCallback) {
-				delete node.disconnectedCallback;
+			if (childNodes[0].disconnectedCallback) {
+				delete childNodes[0].disconnectedCallback;
 			}
-			this.document.removeChild(node);
+			this.document.removeChild(childNodes[0]);
 		}
 
 		if (this.customElements[PropertySymbol.destroy]) {

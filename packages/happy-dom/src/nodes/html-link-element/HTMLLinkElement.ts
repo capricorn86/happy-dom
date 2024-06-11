@@ -3,7 +3,6 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import Event from '../../event/Event.js';
 import ErrorEvent from '../../event/events/ErrorEvent.js';
-import Node from '../../nodes/node/Node.js';
 import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import Attr from '../attr/Attr.js';

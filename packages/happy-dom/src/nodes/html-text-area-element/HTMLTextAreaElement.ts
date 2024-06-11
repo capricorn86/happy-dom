@@ -10,7 +10,6 @@ import ValidityState from '../../validity-state/ValidityState.js';
 import NodeList from '../node/NodeList.js';
 import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
-import Document from '../document/Document.js';
 import Text from '../text/Text.js';
 import Node from '../node/Node.js';
 
@@ -22,7 +21,7 @@ import Node from '../node/Node.js';
  */
 export default class HTMLTextAreaElement extends HTMLElement {
 	// Public properties
-	public cloneNode: (deep?: boolean) => HTMLTextAreaElement;
+	public declare cloneNode: (deep?: boolean) => HTMLTextAreaElement;
 	public readonly type = 'textarea';
 
 	// Events
@@ -54,8 +53,8 @@ export default class HTMLTextAreaElement extends HTMLElement {
 		});
 		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener](
 			'insert',
-			(newItem: Node) => {
-				if (newItem instanceof Text) {
+			(item: Node) => {
+				if (item instanceof Text) {
 					item[PropertySymbol.textAreaNode] = this;
 					this[PropertySymbol.resetSelection]();
 				}
@@ -445,17 +444,6 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 * @returns Form.
 	 */
 	public get form(): HTMLFormElement {
-		const formID = this.getAttribute('form');
-
-		if (formID !== null) {
-			if (!this[PropertySymbol.isConnected]) {
-				return null;
-			}
-			return formID
-				? <HTMLFormElement>(<Document>this[PropertySymbol.rootNode]).getElementById(formID)
-				: null;
-		}
-
 		return <HTMLFormElement>this[PropertySymbol.formNode];
 	}
 

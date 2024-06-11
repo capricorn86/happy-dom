@@ -10,7 +10,7 @@ import HTMLStyleElement from '../html-style-element/HTMLStyleElement.js';
  * Text node.
  */
 export default class Text extends CharacterData {
-	public cloneNode: (deep?: boolean) => Text;
+	public declare cloneNode: (deep?: boolean) => Text;
 	public override [PropertySymbol.nodeType] = NodeTypeEnum.textNode;
 	public override [PropertySymbol.textAreaNode]: HTMLTextAreaElement | null = null;
 	public override [PropertySymbol.styleNode]: HTMLStyleElement | null = null;

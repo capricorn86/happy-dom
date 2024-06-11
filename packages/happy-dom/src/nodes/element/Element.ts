@@ -51,7 +51,7 @@ export default class Element
 	public static [PropertySymbol.localName]: string | null = null;
 	public static [PropertySymbol.namespaceURI]: string | null = null;
 	public static observedAttributes: string[];
-	public cloneNode: (deep?: boolean) => Element;
+	public declare cloneNode: (deep?: boolean) => Element;
 
 	// Events
 	public oncancel: (event: Event) => void | null = null;
@@ -113,28 +113,28 @@ export default class Element
 	 */
 	constructor() {
 		super();
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'set',
-			this.#onSetAttribute.bind(this)
-		);
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'remove',
-			this.#onRemoveAttribute.bind(this)
-		);
-		this[PropertySymbol.childNodes][PropertySymbol.addEventListener]('add', (item: Node) =>
-			this[PropertySymbol.children][PropertySymbol.addItem](<Element>item)
-		);
-		this[PropertySymbol.childNodes][PropertySymbol.addEventListener](
-			'insert',
-			(item: Node, referenceItem?: Node) =>
-				this[PropertySymbol.children][PropertySymbol.insertItem](
-					<Element>item,
-					<Element>referenceItem
-				)
-		);
-		this[PropertySymbol.childNodes][PropertySymbol.addEventListener]('remove', (item: Node) =>
-			this[PropertySymbol.children][PropertySymbol.removeItem](<Element>item)
-		);
+		const attributes = this[PropertySymbol.attributes];
+		attributes[PropertySymbol.addEventListener]('set', this.#onSetAttribute.bind(this));
+		attributes[PropertySymbol.addEventListener]('remove', this.#onRemoveAttribute.bind(this));
+
+		// Use variable here instead of referencing the property to work with HTMLElement[PropertySymbol.connectedToDocument] (when it defines custom element)
+		// Otherwise it will be connected to the new children collection set on the children property
+		const children = this[PropertySymbol.children];
+		const childNodes = this[PropertySymbol.childNodes];
+
+		childNodes[PropertySymbol.addEventListener]('add', (item: Node) => {
+			children[PropertySymbol.addItem](<Element>item);
+			this.#onNodeListChange(item);
+		});
+
+		childNodes[PropertySymbol.addEventListener]('insert', (item: Node, referenceItem?: Node) => {
+			children[PropertySymbol.insertItem](<Element>item, <Element>referenceItem);
+			this.#onNodeListChange(item);
+		});
+		childNodes[PropertySymbol.addEventListener]('remove', (item: Node) => {
+			children[PropertySymbol.removeItem](<Element>item);
+			this.#onNodeListChange(item);
+		});
 	}
 
 	/**
@@ -353,7 +353,7 @@ export default class Element
 	 */
 	public get textContent(): string {
 		let result = '';
-		for (const childNode of this[PropertySymbol.childNodes][PropertySymbol.items]) {
+		for (const childNode of this[PropertySymbol.childNodes]) {
 			if (
 				childNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode ||
 				childNode[PropertySymbol.nodeType] === NodeTypeEnum.textNode
@@ -370,7 +370,7 @@ export default class Element
 	 * @param textContent Text content.
 	 */
 	public set textContent(textContent: string) {
-		const childNodes = this[PropertySymbol.childNodes][PropertySymbol.items];
+		const childNodes = this[PropertySymbol.childNodes];
 		while (childNodes.length) {
 			this.removeChild(childNodes[0]);
 		}
@@ -394,7 +394,7 @@ export default class Element
 	 * @param html HTML.
 	 */
 	public set innerHTML(html: string) {
-		const childNodes = this[PropertySymbol.childNodes][PropertySymbol.items];
+		const childNodes = this[PropertySymbol.childNodes];
 
 		while (childNodes.length) {
 			this.removeChild(childNodes[0]);
@@ -427,7 +427,7 @@ export default class Element
 	 * @returns Element.
 	 */
 	public get childElementCount(): number {
-		return this[PropertySymbol.children][PropertySymbol.items].length;
+		return this[PropertySymbol.children].length;
 	}
 
 	/**
@@ -436,7 +436,7 @@ export default class Element
 	 * @returns Element.
 	 */
 	public get firstElementChild(): Element {
-		return this[PropertySymbol.children][PropertySymbol.items][0] ?? null;
+		return this[PropertySymbol.children][0] ?? null;
 	}
 
 	/**
@@ -445,7 +445,7 @@ export default class Element
 	 * @returns Element.
 	 */
 	public get lastElementChild(): Element {
-		const children = this[PropertySymbol.children][PropertySymbol.items];
+		const children = this[PropertySymbol.children];
 		return children[children.length - 1] ?? null;
 	}
 
@@ -493,7 +493,7 @@ export default class Element
 			escapeEntities: false
 		});
 		let xml = '';
-		for (const node of this[PropertySymbol.childNodes][PropertySymbol.items]) {
+		for (const node of this[PropertySymbol.childNodes]) {
 			xml += xmlSerializer.serializeToString(node);
 		}
 		return xml;
@@ -611,7 +611,7 @@ export default class Element
 	public insertAdjacentHTML(position: InsertAdjacentPosition, text: string): void {
 		const childNodes = (<DocumentFragment>(
 			XMLParser.parse(this[PropertySymbol.ownerDocument], text)
-		))[PropertySymbol.childNodes][PropertySymbol.items];
+		))[PropertySymbol.childNodes];
 		while (childNodes.length) {
 			this.insertAdjacentElement(position, childNodes[0]);
 		}
@@ -1215,20 +1215,24 @@ export default class Element
 			this[PropertySymbol.classList][PropertySymbol.updateIndices]();
 		}
 
-		if (attribute[PropertySymbol.name] === 'id' || attribute[PropertySymbol.name] === 'name') {
-			const parent = this[PropertySymbol.parentNode];
-			while (parent) {
-				this[PropertySymbol.parentNode][PropertySymbol.childNodes][
-					PropertySymbol.htmlCollections
-				].updateNamedItem(this, attribute, replacedAttribute);
-				let parent = this[PropertySymbol.parentNode];
-				while (parent) {
-					parent[PropertySymbol.childNodesFlatten][PropertySymbol.htmlCollections].updateNamedItem(
-						this,
-						attribute,
-						replacedAttribute
-					);
-					parent = parent[PropertySymbol.parentNode];
+		if (
+			attribute[PropertySymbol.name] === 'slot' &&
+			this[PropertySymbol.parentNode] &&
+			this[PropertySymbol.parentNode][PropertySymbol.shadowRoot]
+		) {
+			const shadowRoot = this[PropertySymbol.parentNode][PropertySymbol.shadowRoot];
+			if (oldValue && oldValue !== attribute[PropertySymbol.value]) {
+				const slot = shadowRoot.querySelector(
+					`slot[name="${replacedAttribute[PropertySymbol.value]}"]`
+				);
+				if (slot) {
+					slot.dispatchEvent(new Event('slotchange'));
+				}
+			}
+			if (attribute[PropertySymbol.value]) {
+				const slot = shadowRoot.querySelector(`slot[name="${attribute[PropertySymbol.value]}"]`);
+				if (slot) {
+					slot.dispatchEvent(new Event('slotchange'));
 				}
 			}
 		}
@@ -1283,21 +1287,14 @@ export default class Element
 		}
 
 		if (
+			removedAttribute[PropertySymbol.name] === 'slot' &&
 			this[PropertySymbol.parentNode] &&
-			(removedAttribute[PropertySymbol.name] === 'id' ||
-				removedAttribute[PropertySymbol.name] === 'name')
+			this[PropertySymbol.parentNode][PropertySymbol.shadowRoot]
 		) {
-			this[PropertySymbol.parentNode][PropertySymbol.childNodes][
-				PropertySymbol.htmlCollections
-			].updateNamedItem(this, null, removedAttribute);
-			let parent = this[PropertySymbol.parentNode];
-			while (parent) {
-				parent[PropertySymbol.childNodesFlatten][PropertySymbol.htmlCollections].updateNamedItem(
-					this,
-					null,
-					removedAttribute
-				);
-				parent = parent[PropertySymbol.parentNode];
+			const shadowRoot = this[PropertySymbol.parentNode][PropertySymbol.shadowRoot];
+			const slot = shadowRoot.querySelector(`slot[name="${this.getAttribute('slot')}"]`);
+			if (slot) {
+				slot.dispatchEvent(new Event('slotchange'));
 			}
 		}
 
@@ -1320,6 +1317,37 @@ export default class Element
 						})
 					);
 				}
+			}
+		}
+	}
+
+	/**
+	 * Triggered when child nodes are changed.
+	 *
+	 * @param node Changed node.
+	 */
+	#onNodeListChange(node: Node): void {
+		if (this[PropertySymbol.shadowRoot]) {
+			if (node['slot']) {
+				const slot = this[PropertySymbol.shadowRoot].querySelector(`slot[name="${node['slot']}"]`);
+				if (slot) {
+					slot.dispatchEvent(new Event('slotchange'));
+				}
+			} else if (node[PropertySymbol.nodeType] !== NodeTypeEnum.commentNode) {
+				const slot = this[PropertySymbol.shadowRoot].querySelector('slot:not([slot])');
+				if (slot) {
+					slot.dispatchEvent(new Event('slotchange'));
+				}
+			}
+		} else if (
+			this[PropertySymbol.parentNode] &&
+			this[PropertySymbol.parentNode][PropertySymbol.shadowRoot] &&
+			this.getAttribute('slot')
+		) {
+			const shadowRoot = this[PropertySymbol.parentNode][PropertySymbol.shadowRoot];
+			const slot = shadowRoot.querySelector(`slot[name="${this.getAttribute('slot')}"]`);
+			if (slot) {
+				slot.dispatchEvent(new Event('slotchange'));
 			}
 		}
 	}

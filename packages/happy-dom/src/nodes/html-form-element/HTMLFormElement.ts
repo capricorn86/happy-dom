@@ -23,13 +23,12 @@ import THTMLFormControlElement from './THTMLFormControlElement.js';
  */
 export default class HTMLFormElement extends HTMLElement {
 	// Public properties
-	public cloneNode: (deep?: boolean) => HTMLFormElement;
+	public declare cloneNode: (deep?: boolean) => HTMLFormElement;
 
 	// Internal properties.
 	public [PropertySymbol.elements]: HTMLFormControlsCollection = new HTMLFormControlsCollection(
 		this
 	);
-	public [PropertySymbol.length] = 0;
 	public [PropertySymbol.formNode]: Node = this;
 
 	// Events
@@ -85,12 +84,15 @@ export default class HTMLFormElement extends HTMLElement {
 			}
 		);
 
-		// Form controls listeners
+		// HTMLFormControlsCollection listeners
 		this[PropertySymbol.elements][PropertySymbol.addEventListener]('indexChange', (details) => {
 			const length = this[PropertySymbol.elements].length;
-			this[PropertySymbol.length] = length;
 			for (let i = details.index; i < length; i++) {
 				this[i] = this[PropertySymbol.elements][i];
+			}
+			// Item removed
+			if (!details.item) {
+				delete this[length];
 			}
 		});
 		this[PropertySymbol.elements][PropertySymbol.addEventListener]('propertyChange', (details) => {
@@ -125,7 +127,7 @@ export default class HTMLFormElement extends HTMLElement {
 	 * @returns Length.
 	 */
 	public get length(): number {
-		return this[PropertySymbol.length];
+		return this[PropertySymbol.elements].length;
 	}
 
 	/**

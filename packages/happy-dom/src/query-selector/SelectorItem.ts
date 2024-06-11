@@ -6,6 +6,7 @@ import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
 import ISelectorAttribute from './ISelectorAttribute.js';
 import ISelectorMatch from './ISelectorMatch.js';
 import ISelectorPseudo from './ISelectorPseudo.js';
+import IHTMLCollection from '../nodes/element/IHTMLCollection.js';
 
 /**
  * Selector item.
@@ -191,7 +192,7 @@ export default class SelectorItem {
 	 */
 	private matchPseudoItem(
 		element: Element,
-		parentChildren: Element[],
+		parentChildren: Element[] | IHTMLCollection<Element>,
 		pseudo: ISelectorPseudo
 	): ISelectorMatch | null {
 		switch (pseudo.name) {
@@ -236,17 +237,22 @@ export default class SelectorItem {
 					? { priorityWeight: 10 }
 					: null;
 			case 'empty':
-				return !(<Element>element)[PropertySymbol.children][PropertySymbol.items].length
-					? { priorityWeight: 10 }
-					: null;
+				return !(<Element>element)[PropertySymbol.children].length ? { priorityWeight: 10 } : null;
 			case 'root':
 				return element[PropertySymbol.tagName] === 'HTML' ? { priorityWeight: 10 } : null;
 			case 'not':
 				return !pseudo.selectorItems[0].match(element) ? { priorityWeight: 10 } : null;
 			case 'nth-child':
-				const nthChildIndex = pseudo.selectorItems[0]
-					? parentChildren.filter((child) => pseudo.selectorItems[0].match(child)).indexOf(element)
-					: parentChildren.indexOf(element);
+				let nthChildIndex = -1;
+				for (let i = 0, max = parentChildren.length; i < max; i++) {
+					if (
+						(!pseudo.selectorItems[0] || pseudo.selectorItems[0].match(parentChildren[i])) &&
+						parentChildren[i] === element
+					) {
+						nthChildIndex = i;
+						break;
+					}
+				}
 				return nthChildIndex !== -1 && pseudo.nthFunction(nthChildIndex + 1)
 					? { priorityWeight: 10 }
 					: null;
@@ -254,27 +260,44 @@ export default class SelectorItem {
 				if (!element[PropertySymbol.parentNode]) {
 					return null;
 				}
-				const nthOfTypeIndex = parentChildren
-					.filter((child) => child[PropertySymbol.tagName] === element[PropertySymbol.tagName])
-					.indexOf(element);
+				let nthOfTypeIndex = -1;
+				for (let i = 0, max = parentChildren.length; i < max; i++) {
+					if (
+						parentChildren[i][PropertySymbol.tagName] === element[PropertySymbol.tagName] &&
+						parentChildren[i] === element
+					) {
+						nthOfTypeIndex = i;
+						break;
+					}
+				}
 				return nthOfTypeIndex !== -1 && pseudo.nthFunction(nthOfTypeIndex + 1)
 					? { priorityWeight: 10 }
 					: null;
 			case 'nth-last-child':
-				const nthLastChildIndex = pseudo.selectorItems[0]
-					? parentChildren
-							.filter((child) => pseudo.selectorItems[0].match(child))
-							.reverse()
-							.indexOf(element)
-					: parentChildren.reverse().indexOf(element);
+				let nthLastChildIndex = -1;
+				for (let i = parentChildren.length - 1; i >= 0; i--) {
+					if (
+						(!pseudo.selectorItems[0] || pseudo.selectorItems[0].match(parentChildren[i])) &&
+						parentChildren[i] === element
+					) {
+						nthLastChildIndex = i;
+						break;
+					}
+				}
 				return nthLastChildIndex !== -1 && pseudo.nthFunction(nthLastChildIndex + 1)
 					? { priorityWeight: 10 }
 					: null;
 			case 'nth-last-of-type':
-				const nthLastOfTypeIndex = parentChildren
-					.filter((child) => child[PropertySymbol.tagName] === element[PropertySymbol.tagName])
-					.reverse()
-					.indexOf(element);
+				let nthLastOfTypeIndex = -1;
+				for (let i = parentChildren.length - 1; i >= 0; i--) {
+					if (
+						parentChildren[i][PropertySymbol.tagName] === element[PropertySymbol.tagName] &&
+						parentChildren[i] === element
+					) {
+						nthLastOfTypeIndex = i;
+						break;
+					}
+				}
 				return nthLastOfTypeIndex !== -1 && pseudo.nthFunction(nthLastOfTypeIndex + 1)
 					? { priorityWeight: 10 }
 					: null;

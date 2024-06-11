@@ -20,7 +20,7 @@ export default abstract class CharacterData
 	implements IChildNode, INonDocumentTypeChildNode
 {
 	public [PropertySymbol.data] = '';
-	public cloneNode: (deep?: boolean) => CharacterData;
+	public declare cloneNode: (deep?: boolean) => CharacterData;
 
 	/**
 	 * Constructor.

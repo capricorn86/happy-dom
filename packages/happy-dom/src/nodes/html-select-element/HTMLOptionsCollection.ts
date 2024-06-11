@@ -3,7 +3,7 @@ import HTMLCollection from '../element/HTMLCollection.js';
 import HTMLSelectElement from './HTMLSelectElement.js';
 import HTMLOptionElement from '../html-option-element/HTMLOptionElement.js';
 import Element from '../element/Element.js';
-import { PropertySymbol } from '../../index.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * HTML Options Collection.

@@ -108,7 +108,9 @@ class HTMLCollection<T, NamedItem = T> extends Array<T> implements IHTMLCollecti
 	 * @returns True if the item was added.
 	 */
 	public [PropertySymbol.addItem](item: T): boolean {
-		if (item[PropertySymbol.nodeType] !== NodeTypeEnum.elementNode || !this.#filter?.(item)) {
+		const filter = this.#filter;
+
+		if (item[PropertySymbol.nodeType] !== NodeTypeEnum.elementNode || (filter && !filter?.(item))) {
 			return false;
 		}
 
@@ -118,7 +120,7 @@ class HTMLCollection<T, NamedItem = T> extends Array<T> implements IHTMLCollecti
 
 		super.push(item);
 
-		this[PropertySymbol.addNamedItem](item);
+		this.#addNamedItem(item);
 		this[PropertySymbol.dispatchEvent]('indexChange', { index: this.length - 1, item });
 
 		return true;
@@ -138,7 +140,10 @@ class HTMLCollection<T, NamedItem = T> extends Array<T> implements IHTMLCollecti
 
 		const filter = this.#filter;
 
-		if (newItem[PropertySymbol.nodeType] !== NodeTypeEnum.elementNode || !filter?.(newItem)) {
+		if (
+			newItem[PropertySymbol.nodeType] !== NodeTypeEnum.elementNode ||
+			(filter && !filter?.(newItem))
+		) {
 			return false;
 		}
 
@@ -150,12 +155,12 @@ class HTMLCollection<T, NamedItem = T> extends Array<T> implements IHTMLCollecti
 			return this[PropertySymbol.addItem](newItem);
 		}
 
-		const parentChildNodes = (<Node>referenceItem).parentNode?.[PropertySymbol.childNodes];
 		let referenceItemIndex: number = -1;
 
 		if (referenceItem[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
-			referenceItemIndex = parentChildNodes[PropertySymbol.indexOf](<Node>referenceItem);
+			referenceItemIndex = this[PropertySymbol.indexOf](referenceItem);
 		} else {
+			const parentChildNodes = (<Node>referenceItem).parentNode?.[PropertySymbol.childNodes];
 			for (
 				let i = parentChildNodes[PropertySymbol.indexOf](<Node>referenceItem),
 					max = parentChildNodes.length;
@@ -166,19 +171,21 @@ class HTMLCollection<T, NamedItem = T> extends Array<T> implements IHTMLCollecti
 					parentChildNodes[i][PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
 					(!filter || filter(<T>parentChildNodes[i]))
 				) {
-					referenceItemIndex = i;
+					referenceItemIndex = this[PropertySymbol.indexOf](<T>parentChildNodes[i]);
 					break;
 				}
 			}
 		}
 
 		if (referenceItemIndex === -1) {
-			return this[PropertySymbol.addItem](newItem);
+			throw new Error(
+				'Failed to execute "insertItem" on "HTMLCollection": The node before which the new node is to be inserted is not an item of this collection.'
+			);
 		}
 
 		super.splice(referenceItemIndex, 0, newItem);
 
-		this[PropertySymbol.addNamedItem](newItem);
+		this.#addNamedItem(newItem);
 		this[PropertySymbol.dispatchEvent]('indexChange', { index: referenceItemIndex, item: newItem });
 
 		return true;
@@ -199,7 +206,8 @@ class HTMLCollection<T, NamedItem = T> extends Array<T> implements IHTMLCollecti
 
 		super.splice(index, 1);
 
-		this[PropertySymbol.removeNamedItem](item);
+		this.#removeNamedItem(item);
+		this[PropertySymbol.dispatchEvent]('indexChange', { index: 0, item: null });
 
 		return true;
 	}
@@ -289,110 +297,6 @@ class HTMLCollection<T, NamedItem = T> extends Array<T> implements IHTMLCollecti
 	}
 
 	/**
-	 * Updates named item.
-	 *
-	 * @param item Item.
-	 * @param attributeName Attribute name.
-	 */
-	public [PropertySymbol.updateNamedItem](item: T, attributeName: string): void {
-		if (!this.#filter(item)) {
-			return;
-		}
-
-		const name = (<Element>item)[PropertySymbol.attributes][attributeName]?.value;
-
-		if (name) {
-			const namedItems = this[PropertySymbol.getNamedItems](name);
-
-			if (!namedItems.includes(item)) {
-				this[PropertySymbol.namedItems].set(name, namedItems);
-				this[PropertySymbol.setNamedItemProperty](name);
-			}
-		} else {
-			const namedItems = this[PropertySymbol.getNamedItems](name);
-			const index = namedItems.indexOf(item);
-
-			if (index !== -1) {
-				namedItems.splice(index, 1);
-			}
-
-			this[PropertySymbol.setNamedItemProperty](name);
-		}
-	}
-
-	/**
-	 * Adds named item to collection.
-	 *
-	 * @param item Item.
-	 */
-	protected [PropertySymbol.addNamedItem](item: T): void {
-		const listeners = {
-			set: (attribute: Attr) => {
-				if (NAMED_ITEM_ATTRIBUTES.includes(attribute.name)) {
-					this[PropertySymbol.updateNamedItem](item, attribute.name);
-				}
-			},
-			remove: (attribute: Attr) => {
-				if (NAMED_ITEM_ATTRIBUTES.includes(attribute.name)) {
-					this[PropertySymbol.updateNamedItem](item, attribute.name);
-				}
-			}
-		};
-
-		item[PropertySymbol.attributes][PropertySymbol.addEventListener]('set', listeners.set);
-		item[PropertySymbol.attributes][PropertySymbol.addEventListener]('remove', listeners.remove);
-
-		for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
-			const name = (<Element>item)[PropertySymbol.attributes][attributeName]?.value;
-			if (name) {
-				const namedItems = this[PropertySymbol.getNamedItems](name);
-
-				if (namedItems.includes(item)) {
-					return;
-				}
-
-				this[PropertySymbol.namedItems].set(name, namedItems);
-
-				this[PropertySymbol.setNamedItemProperty](name);
-			}
-		}
-	}
-
-	/**
-	 * Removes named item from collection.
-	 *
-	 * @param item Item.
-	 */
-	protected [PropertySymbol.removeNamedItem](item: T): void {
-		const listeners = this.#namedNodeMapListeners.get(item);
-
-		if (listeners) {
-			item[PropertySymbol.attributes][PropertySymbol.removeEventListener]('set', listeners.set);
-			item[PropertySymbol.attributes][PropertySymbol.removeEventListener](
-				'remove',
-				listeners.remove
-			);
-		}
-
-		for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
-			const name = (<Element>item)[PropertySymbol.attributes][attributeName]?.value;
-			if (name) {
-				const namedItems = this[PropertySymbol.getNamedItems](name);
-
-				const index = namedItems.indexOf(item);
-
-				if (index === -1) {
-					return;
-				}
-
-				namedItems.splice(index, 1);
-
-				this[PropertySymbol.setNamedItemProperty](name);
-			}
-		}
-	}
-
-	/**
 	 * Returns named items.
 	 *
 	 * @param name Name.
@@ -446,6 +350,112 @@ class HTMLCollection<T, NamedItem = T> extends Array<T> implements IHTMLCollecti
 			(isNaN(Number(name)) || name.includes('.'))
 		);
 	}
+
+	/**
+	 * Updates named item.
+	 *
+	 * @param item Item.
+	 * @param attributeName Attribute name.
+	 */
+	#updateNamedItem(item: T, attributeName: string): void {
+		const filter = this.#filter;
+
+		if (item[PropertySymbol.nodeType] !== NodeTypeEnum.elementNode || (filter && !filter?.(item))) {
+			return;
+		}
+
+		const name = (<Element>item)[PropertySymbol.attributes][attributeName]?.value;
+
+		if (name) {
+			const namedItems = this[PropertySymbol.getNamedItems](name);
+
+			if (!namedItems.includes(item)) {
+				this[PropertySymbol.namedItems].set(name, namedItems);
+				this[PropertySymbol.setNamedItemProperty](name);
+			}
+		} else {
+			const namedItems = this[PropertySymbol.getNamedItems](name);
+			const index = namedItems.indexOf(item);
+
+			if (index !== -1) {
+				namedItems.splice(index, 1);
+			}
+
+			this[PropertySymbol.setNamedItemProperty](name);
+		}
+	}
+
+	/**
+	 * Adds named item to collection.
+	 *
+	 * @param item Item.
+	 */
+	#addNamedItem(item: T): void {
+		const listeners = {
+			set: (attribute: Attr) => {
+				if (NAMED_ITEM_ATTRIBUTES.includes(attribute.name)) {
+					this.#updateNamedItem(item, attribute.name);
+				}
+			},
+			remove: (attribute: Attr) => {
+				if (NAMED_ITEM_ATTRIBUTES.includes(attribute.name)) {
+					this.#updateNamedItem(item, attribute.name);
+				}
+			}
+		};
+
+		item[PropertySymbol.attributes][PropertySymbol.addEventListener]('set', listeners.set);
+		item[PropertySymbol.attributes][PropertySymbol.addEventListener]('remove', listeners.remove);
+
+		for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
+			const name = (<Element>item)[PropertySymbol.attributes][attributeName]?.value;
+			if (name) {
+				const namedItems = this[PropertySymbol.getNamedItems](name);
+
+				if (namedItems.includes(item)) {
+					return;
+				}
+
+				this[PropertySymbol.namedItems].set(name, namedItems);
+
+				this[PropertySymbol.setNamedItemProperty](name);
+			}
+		}
+	}
+
+	/**
+	 * Removes named item from collection.
+	 *
+	 * @param item Item.
+	 */
+	#removeNamedItem(item: T): void {
+		const listeners = this.#namedNodeMapListeners.get(item);
+
+		if (listeners) {
+			item[PropertySymbol.attributes][PropertySymbol.removeEventListener]('set', listeners.set);
+			item[PropertySymbol.attributes][PropertySymbol.removeEventListener](
+				'remove',
+				listeners.remove
+			);
+		}
+
+		for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
+			const name = (<Element>item)[PropertySymbol.attributes][attributeName]?.value;
+			if (name) {
+				const namedItems = this[PropertySymbol.getNamedItems](name);
+
+				const index = namedItems.indexOf(item);
+
+				if (index === -1) {
+					return;
+				}
+
+				namedItems.splice(index, 1);
+
+				this[PropertySymbol.setNamedItemProperty](name);
+			}
+		}
+	}
 }
 
 // Removes Array methods from HTMLCollection.
@@ -465,6 +475,4 @@ for (const key of Object.keys(descriptors)) {
 }
 
 // Forces the type to be an interface to hide Array methods from the outside.
-export default <
-	new <T, NamedItem = T>(filter?: (item: T) => boolean) => IHTMLCollection<T, NamedItem>
->(<unknown>HTMLCollection);
+export default HTMLCollection;

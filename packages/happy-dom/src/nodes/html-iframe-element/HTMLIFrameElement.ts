@@ -38,7 +38,7 @@ const SANDBOX_FLAGS = [
  */
 export default class HTMLIFrameElement extends HTMLElement {
 	// Public properties
-	public cloneNode: (deep?: boolean) => HTMLIFrameElement;
+	public declare cloneNode: (deep?: boolean) => HTMLIFrameElement;
 
 	// Events
 	public onload: (event: Event) => void | null = null;

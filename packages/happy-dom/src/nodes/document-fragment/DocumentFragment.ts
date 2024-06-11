@@ -17,7 +17,7 @@ export default class DocumentFragment extends Node {
 	public [PropertySymbol.children]: IHTMLCollection<Element> = new HTMLCollection<Element>();
 	public [PropertySymbol.rootNode]: Node = this;
 	public [PropertySymbol.nodeType] = NodeTypeEnum.documentFragmentNode;
-	public cloneNode: (deep?: boolean) => DocumentFragment;
+	public declare cloneNode: (deep?: boolean) => DocumentFragment;
 
 	/**
 	 * Constructor.
@@ -53,7 +53,7 @@ export default class DocumentFragment extends Node {
 	 * @returns Element.
 	 */
 	public get childElementCount(): number {
-		return this[PropertySymbol.children][PropertySymbol.items].length;
+		return this[PropertySymbol.children].length;
 	}
 
 	/**
@@ -62,7 +62,7 @@ export default class DocumentFragment extends Node {
 	 * @returns Element.
 	 */
 	public get firstElementChild(): Element {
-		return this[PropertySymbol.children][PropertySymbol.items][0] ?? null;
+		return this[PropertySymbol.children][0] ?? null;
 	}
 
 	/**
@@ -71,7 +71,7 @@ export default class DocumentFragment extends Node {
 	 * @returns Element.
 	 */
 	public get lastElementChild(): Element {
-		const children = this[PropertySymbol.children][PropertySymbol.items];
+		const children = this[PropertySymbol.children];
 		return children[children.length - 1] ?? null;
 	}
 
@@ -82,7 +82,7 @@ export default class DocumentFragment extends Node {
 	 */
 	public get textContent(): string {
 		let result = '';
-		for (const childNode of this[PropertySymbol.childNodes][PropertySymbol.items]) {
+		for (const childNode of this[PropertySymbol.childNodes]) {
 			if (
 				childNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode ||
 				childNode[PropertySymbol.nodeType] === NodeTypeEnum.textNode
@@ -99,7 +99,7 @@ export default class DocumentFragment extends Node {
 	 * @param textContent Text content.
 	 */
 	public set textContent(textContent: string) {
-		const childNodes = this[PropertySymbol.childNodes][PropertySymbol.items];
+		const childNodes = this[PropertySymbol.childNodes];
 		while (childNodes.length) {
 			this.removeChild(childNodes[0]);
 		}
