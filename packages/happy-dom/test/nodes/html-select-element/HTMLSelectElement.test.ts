@@ -168,7 +168,7 @@ describe('HTMLSelectElement', () => {
 			expect(element.selectedOptions.length).toBe(0);
 		});
 
-		it('Returns selected options with "selected" attribute is defined.', () => {
+		it('Returns selected options when "selected" attribute is defined.', () => {
 			const option1 = document.createElement('option');
 			const option2 = document.createElement('option');
 
@@ -191,7 +191,7 @@ describe('HTMLSelectElement', () => {
 			expect(element.selectedOptions[0]).toBe(option1);
 		});
 
-		it('Multiple - Returns selected options with "selected" attribute is defined.', () => {
+		it('Returns selected options when "selected" attribute is defined for multiple options.', () => {
 			element.setAttribute('multiple', '');
 			const option1 = document.createElement('option');
 			const option2 = document.createElement('option');

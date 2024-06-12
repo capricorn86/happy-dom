@@ -12,7 +12,6 @@ import HTMLCollection from '../element/HTMLCollection.js';
 import IHTMLCollection from '../element/IHTMLCollection.js';
 import Element from '../element/Element.js';
 import NodeList from '../node/INodeList.js';
-import NodeTypeEnum from '../node/NodeTypeEnum.js';
 
 /**
  * HTML Select Element.
@@ -44,27 +43,21 @@ export default class HTMLSelectElement extends HTMLElement {
 
 		// Child nodes listeners
 		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener]('add', (item: Node) => {
-			(<HTMLOptionElement>item)[PropertySymbol.selectNode] = this;
 			this[PropertySymbol.options][PropertySymbol.addItem](<HTMLOptionElement>item);
-			this[PropertySymbol.updateSelectedness]();
 		});
 		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener](
 			'insert',
 			(newItem: Node, referenceItem: Node | null) => {
-				(<HTMLOptionElement>newItem)[PropertySymbol.selectNode] = this;
 				this[PropertySymbol.options][PropertySymbol.insertItem](
 					<HTMLOptionElement>newItem,
 					<HTMLOptionElement>referenceItem
 				);
-				this[PropertySymbol.updateSelectedness]();
 			}
 		);
 		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener](
 			'remove',
 			(item: Node) => {
-				(<HTMLOptionElement>item)[PropertySymbol.selectNode] = null;
 				this[PropertySymbol.options][PropertySymbol.removeItem](<HTMLOptionElement>item);
-				this[PropertySymbol.updateSelectedness]();
 			}
 		);
 
@@ -401,83 +394,5 @@ export default class HTMLSelectElement extends HTMLElement {
 	 */
 	public reportValidity(): boolean {
 		return this.checkValidity();
-	}
-
-	/**
-	 * Updates option item.
-	 *
-	 * Based on:
-	 * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/nodes/HTMLSelectElement-impl.js
-	 *
-	 * @see https://html.spec.whatwg.org/multipage/form-elements.html#selectedness-setting-algorithm
-	 * @param [selectedOption] Selected option.
-	 */
-	public [PropertySymbol.updateSelectedness](selectedOption?: HTMLOptionElement): void {
-		const options = this[PropertySymbol.options];
-		const isMultiple = this.hasAttribute('multiple');
-		const selectedOptions = this[PropertySymbol.selectedOptions];
-		const selected: HTMLOptionElement[] = [];
-
-		for (let i = 0, max = options.length; i < max; i++) {
-			const option = <HTMLOptionElement>options[i];
-			if (!isMultiple) {
-				if (selectedOption) {
-					option[PropertySymbol.selectedness] = option === selectedOption;
-				}
-
-				if (option[PropertySymbol.selectedness]) {
-					selected.push(option);
-
-					if (!selectedOptions[PropertySymbol.includes](option)) {
-						selectedOptions[PropertySymbol.addItem](option);
-					}
-				} else {
-					selectedOptions[PropertySymbol.removeItem](selectedOptions[0]);
-				}
-			}
-		}
-
-		const size = this.#getDisplaySize();
-
-		if (size === 1 && !selected.length) {
-			for (let i = 0, max = options.length; i < max; i++) {
-				const option = <HTMLOptionElement>options[i];
-				const parentNode = <HTMLElement>option[PropertySymbol.parentNode];
-				let disabled = option.hasAttributeNS(null, 'disabled');
-
-				if (
-					parentNode &&
-					parentNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
-					parentNode[PropertySymbol.tagName] === 'OPTGROUP' &&
-					parentNode.hasAttributeNS(null, 'disabled')
-				) {
-					disabled = true;
-				}
-
-				if (!disabled) {
-					option[PropertySymbol.selectedness] = true;
-					break;
-				}
-			}
-		} else if (selected.length >= 2) {
-			for (let i = 0, max = options.length; i < max; i++) {
-				(<HTMLOptionElement>options[i])[PropertySymbol.selectedness] = i === selected.length - 1;
-			}
-		}
-	}
-
-	/**
-	 * Returns display size.
-	 *
-	 * @returns Display size.
-	 */
-	#getDisplaySize(): number {
-		if (this.hasAttributeNS(null, 'size')) {
-			const size = parseInt(this.getAttribute('size'));
-			if (!isNaN(size) && size >= 0) {
-				return size;
-			}
-		}
-		return this.hasAttributeNS(null, 'multiple') ? 4 : 1;
 	}
 }

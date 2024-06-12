@@ -89,7 +89,7 @@ export default class HTMLOptionElement extends HTMLElement {
 		this[PropertySymbol.selectedness] = Boolean(selected);
 
 		if (selectNode) {
-			selectNode[PropertySymbol.updateSelectedness](
+			selectNode[PropertySymbol.options][PropertySymbol.updateSelectedness](
 				this[PropertySymbol.selectedness] ? this : null
 			);
 		}
@@ -152,7 +152,7 @@ export default class HTMLOptionElement extends HTMLElement {
 			this[PropertySymbol.selectedness] = true;
 
 			if (selectNode) {
-				selectNode[PropertySymbol.updateSelectedness](this);
+				selectNode[PropertySymbol.options][PropertySymbol.updateSelectedness](this);
 			}
 		}
 	}
@@ -173,7 +173,7 @@ export default class HTMLOptionElement extends HTMLElement {
 			this[PropertySymbol.selectedness] = false;
 
 			if (selectNode) {
-				selectNode[PropertySymbol.updateSelectedness]();
+				selectNode[PropertySymbol.options][PropertySymbol.updateSelectedness]();
 			}
 		}
 	}

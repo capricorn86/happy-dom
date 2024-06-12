@@ -62,8 +62,10 @@ export default abstract class CharacterData
 		const oldValue = this[PropertySymbol.data];
 		this[PropertySymbol.data] = String(data);
 
-		if (this[PropertySymbol.isConnected]) {
-			this[PropertySymbol.ownerDocument][PropertySymbol.cacheID]++;
+		let parent: Node = this;
+		while (parent) {
+			parent[PropertySymbol.mutationCacheID].characterData++;
+			parent = parent[PropertySymbol.parentNode];
 		}
 
 		// MutationObserver

@@ -58,8 +58,6 @@ export default class Document extends Node {
 	public [PropertySymbol.nextActiveElement]: HTMLElement | SVGElement = null;
 	public [PropertySymbol.currentScript]: HTMLScriptElement = null;
 	public [PropertySymbol.rootNode] = this;
-	// Used as an unique identifier which is updated whenever the DOM gets modified.
-	public [PropertySymbol.cacheID] = 0;
 	public [PropertySymbol.isFirstWrite] = true;
 	public [PropertySymbol.isFirstWriteAfterOpen] = false;
 	public [PropertySymbol.nodeType] = NodeTypeEnum.documentNode;

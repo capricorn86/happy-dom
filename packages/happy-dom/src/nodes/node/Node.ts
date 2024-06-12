@@ -66,6 +66,17 @@ export default class Node extends EventTarget {
 	public [PropertySymbol.observers]: MutationListener[] = [];
 	public [PropertySymbol.childNodes]: INodeList<Node> = new NodeList<Node>();
 	public [PropertySymbol.childNodesFlatten]: INodeList<Node> = new NodeList<Node>();
+	public [PropertySymbol.mutationCacheID]: {
+		attributes: number;
+		childNodes: number;
+		children: number;
+		characterData: number;
+	} = {
+		attributes: 0,
+		childNodes: 0,
+		children: 0,
+		characterData: 0
+	};
 
 	/**
 	 * Constructor.
@@ -99,6 +110,12 @@ export default class Node extends EventTarget {
 					childNodesFlatten[PropertySymbol.addItem](child);
 				}
 
+				parent[PropertySymbol.mutationCacheID].childNodes++;
+
+				if (parent[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
+					parent[PropertySymbol.mutationCacheID].children++;
+				}
+
 				parent = parent[PropertySymbol.parentNode];
 			}
 		});
@@ -114,6 +131,12 @@ export default class Node extends EventTarget {
 					childNodesFlatten[PropertySymbol.insertItem](child, referenceItem);
 				}
 
+				parent[PropertySymbol.mutationCacheID].childNodes++;
+
+				if (parent[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
+					parent[PropertySymbol.mutationCacheID].children++;
+				}
+
 				parent = parent[PropertySymbol.parentNode];
 			}
 		});
@@ -126,6 +149,12 @@ export default class Node extends EventTarget {
 
 				for (const child of item[PropertySymbol.childNodesFlatten]) {
 					childNodesFlatten[PropertySymbol.removeItem](child);
+				}
+
+				parent[PropertySymbol.mutationCacheID].childNodes++;
+
+				if (parent[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
+					parent[PropertySymbol.mutationCacheID].children++;
 				}
 
 				parent = parent[PropertySymbol.parentNode];

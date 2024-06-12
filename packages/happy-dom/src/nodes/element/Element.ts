@@ -1205,8 +1205,10 @@ export default class Element
 			return null;
 		}
 
-		if (this[PropertySymbol.isConnected]) {
-			this.ownerDocument[PropertySymbol.cacheID]++;
+		let parent: Node = this;
+		while (parent) {
+			parent[PropertySymbol.mutationCacheID].attributes++;
+			parent = parent[PropertySymbol.parentNode];
 		}
 
 		const oldValue = replacedAttribute ? replacedAttribute[PropertySymbol.value] : null;
@@ -1278,8 +1280,10 @@ export default class Element
 	 * @param removedAttribute Attribute.
 	 */
 	#onRemoveAttribute(removedAttribute: Attr): void {
-		if (this[PropertySymbol.isConnected]) {
-			this.ownerDocument[PropertySymbol.cacheID]++;
+		let parent: Node = this;
+		while (parent) {
+			parent[PropertySymbol.mutationCacheID].attributes++;
+			parent = parent[PropertySymbol.parentNode];
 		}
 
 		if (removedAttribute[PropertySymbol.name] === 'class' && this[PropertySymbol.classList]) {

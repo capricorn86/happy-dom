@@ -14,6 +14,7 @@ import Element from '../element/Element.js';
 import BrowserWindow from '../../window/BrowserWindow.js';
 import Attr from '../attr/Attr.js';
 import THTMLFormControlElement from './THTMLFormControlElement.js';
+import IHTMLFormControlsCollection from './IHTMLFormControlsCollection.js';
 
 /**
  * HTML Form Element.
@@ -117,7 +118,7 @@ export default class HTMLFormElement extends HTMLElement {
 	 *
 	 * @returns Elements.
 	 */
-	public get elements(): HTMLFormControlsCollection {
+	public get elements(): IHTMLFormControlsCollection {
 		return this[PropertySymbol.elements];
 	}
 
