@@ -7,11 +7,11 @@ import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLInputElementSelectionDirectionEnum from '../html-input-element/HTMLInputElementSelectionDirectionEnum.js';
 import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputElementSelectionModeEnum.js';
 import ValidityState from '../../validity-state/ValidityState.js';
-import NodeList from '../node/NodeList.js';
 import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import Text from '../text/Text.js';
-import Node from '../node/Node.js';
+import INodeList from '../node/INodeList.js';
+import MutationRecord from '../../mutation-observer/MutationRecord.js';
 
 /**
  * HTML Text Area Element.
@@ -45,30 +45,20 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 */
 	constructor() {
 		super();
-		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener]('add', (item: Node) => {
-			if (item instanceof Text) {
-				item[PropertySymbol.textAreaNode] = this;
-				this[PropertySymbol.resetSelection]();
-			}
+
+		this[PropertySymbol.observeMutations]({
+			options: {
+				childList: true,
+				subtree: true
+			},
+			callback: new WeakRef((record: MutationRecord) => {
+				const node = record.addedNodes[0] || record.removedNodes[0];
+				if (node instanceof Text) {
+					node[PropertySymbol.textAreaNode] = record.addedNodes[0] ? this : null;
+					this[PropertySymbol.resetSelection]();
+				}
+			})
 		});
-		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener](
-			'insert',
-			(item: Node) => {
-				if (item instanceof Text) {
-					item[PropertySymbol.textAreaNode] = this;
-					this[PropertySymbol.resetSelection]();
-				}
-			}
-		);
-		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener](
-			'remove',
-			(item: Node) => {
-				if (item instanceof Text) {
-					item[PropertySymbol.textAreaNode] = null;
-					this[PropertySymbol.resetSelection]();
-				}
-			}
-		);
 	}
 
 	/**
@@ -461,7 +451,7 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 *
 	 * @returns Label elements.
 	 */
-	public get labels(): NodeList<HTMLLabelElement> {
+	public get labels(): INodeList<HTMLLabelElement> {
 		return HTMLLabelElementUtility.getAssociatedLabelElements(this);
 	}
 

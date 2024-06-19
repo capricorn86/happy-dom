@@ -30,7 +30,6 @@ import Location from '../../location/Location.js';
 import Selection from '../../selection/Selection.js';
 import ShadowRoot from '../shadow-root/ShadowRoot.js';
 import Range from '../../range/Range.js';
-import HTMLBaseElement from '../html-base-element/HTMLBaseElement.js';
 import Attr from '../attr/Attr.js';
 import ProcessingInstruction from '../processing-instruction/ProcessingInstruction.js';
 import VisibilityStateEnum from './VisibilityStateEnum.js';
@@ -45,6 +44,10 @@ import SVGElement from '../svg-element/SVGElement.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLAnchorElement from '../html-anchor-element/HTMLAnchorElement.js';
 import HTMLElementConfig from '../../config/HTMLElementConfig.js';
+import CSSStyleDeclarationPropertyManager from '../../css/declaration/property-manager/CSSStyleDeclarationPropertyManager.js';
+import HTMLHtmlElement from '../html-html-element/HTMLHtmlElement.js';
+import HTMLBodyElement from '../html-body-element/HTMLBodyElement.js';
+import HTMLHeadElement from '../html-head-element/HTMLHeadElement.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -68,6 +71,9 @@ export default class Document extends Node {
 	public [PropertySymbol.referrer] = '';
 	public [PropertySymbol.defaultView]: BrowserWindow | null = null;
 	public [PropertySymbol.ownerWindow]: BrowserWindow;
+	public [PropertySymbol.computedStyleCache]: Array<{
+		result: WeakRef<CSSStyleDeclarationPropertyManager>;
+	}> = [];
 	public declare cloneNode: (deep?: boolean) => Document;
 
 	// Private properties
@@ -196,20 +202,8 @@ export default class Document extends Node {
 		super();
 		this.#browserFrame = injected.browserFrame;
 		this[PropertySymbol.ownerWindow] = injected.window;
-		this[PropertySymbol.childNodes][PropertySymbol.addEventListener]('add', (item: Node) =>
-			this[PropertySymbol.children][PropertySymbol.addItem](<Element>item)
-		);
-		this[PropertySymbol.childNodes][PropertySymbol.addEventListener](
-			'insert',
-			(item: Node, referenceItem?: Node) =>
-				this[PropertySymbol.children][PropertySymbol.insertItem](
-					<Element>item,
-					<Element>referenceItem
-				)
-		);
-		this[PropertySymbol.childNodes][PropertySymbol.addEventListener]('remove', (item: Node) =>
-			this[PropertySymbol.children][PropertySymbol.removeItem](<Element>item)
-		);
+		this[PropertySymbol.childNodes][PropertySymbol.attachedHTMLCollection] =
+			this[PropertySymbol.children];
 	}
 
 	/**
@@ -299,7 +293,7 @@ export default class Document extends Node {
 	 * @returns Title.
 	 */
 	public get title(): string {
-		const element = ParentNodeUtility.getElementByTagName(this, 'title');
+		const element = QuerySelector.querySelector(this, 'title');
 		if (element) {
 			return element.textContent;
 		}
@@ -311,7 +305,7 @@ export default class Document extends Node {
 	 *
 	 */
 	public set title(title: string) {
-		const element = ParentNodeUtility.getElementByTagName(this, 'title');
+		const element = QuerySelector.querySelector(this, 'title');
 		if (element) {
 			element.textContent = title;
 		} else {
@@ -405,8 +399,8 @@ export default class Document extends Node {
 	 *
 	 * @returns Element.
 	 */
-	public get documentElement(): HTMLElement {
-		return <HTMLElement>ParentNodeUtility.getElementByTagName(this, 'html');
+	public get documentElement(): HTMLHtmlElement {
+		return QuerySelector.querySelector(this, 'html');
 	}
 
 	/**
@@ -428,8 +422,8 @@ export default class Document extends Node {
 	 *
 	 * @returns Element.
 	 */
-	public get body(): HTMLElement {
-		return <HTMLElement>ParentNodeUtility.getElementByTagName(this, 'body');
+	public get body(): HTMLBodyElement {
+		return QuerySelector.querySelector(this, 'body');
 	}
 
 	/**
@@ -437,8 +431,8 @@ export default class Document extends Node {
 	 *
 	 * @returns Element.
 	 */
-	public get head(): HTMLElement {
-		return <HTMLElement>ParentNodeUtility.getElementByTagName(this, 'head');
+	public get head(): HTMLHeadElement {
+		return QuerySelector.querySelector(this, 'head');
 	}
 
 	/**
@@ -524,7 +518,7 @@ export default class Document extends Node {
 	 * @returns Base URI.
 	 */
 	public get baseURI(): string {
-		const element = <HTMLBaseElement | null>ParentNodeUtility.getElementByTagName(this, 'base');
+		const element = QuerySelector.querySelector(this, 'base');
 		if (element) {
 			return element.href;
 		}
@@ -869,8 +863,8 @@ export default class Document extends Node {
 
 					this.appendChild(documentElement);
 
-					const head = <Element>ParentNodeUtility.getElementByTagName(this, 'head');
-					let body = <Element>ParentNodeUtility.getElementByTagName(this, 'body');
+					const head = QuerySelector.querySelector(this, 'head');
+					let body = QuerySelector.querySelector(this, 'body');
 
 					if (!body) {
 						body = this.createElement('body');
@@ -881,8 +875,8 @@ export default class Document extends Node {
 						documentElement.insertBefore(this.createElement('head'), body);
 					}
 				} else {
-					const rootBody = <Element>ParentNodeUtility.getElementByTagName(root, 'body');
-					const body = ParentNodeUtility.getElementByTagName(this, 'body');
+					const rootBody = QuerySelector.querySelector(root, 'body');
+					const body = QuerySelector.querySelector(this, 'body');
 					if (rootBody && body) {
 						const childNodes = rootBody[PropertySymbol.childNodes];
 						while (childNodes.length) {
@@ -892,7 +886,7 @@ export default class Document extends Node {
 				}
 
 				// Remaining nodes outside the <html> element are added to the <body> element.
-				const body = ParentNodeUtility.getElementByTagName(this, 'body');
+				const body = QuerySelector.querySelector(this, 'body');
 				if (body) {
 					const childNodes = root[PropertySymbol.childNodes];
 					while (childNodes.length) {
@@ -921,8 +915,8 @@ export default class Document extends Node {
 				this.appendChild(documentElement);
 			}
 		} else {
-			const bodyNode = ParentNodeUtility.getElementByTagName(root, 'body');
-			const body = ParentNodeUtility.getElementByTagName(this, 'body');
+			const bodyNode = QuerySelector.querySelector(root, 'body');
+			const body = QuerySelector.querySelector(this, 'body');
 			const childNodes = (<Element>(bodyNode || root))[PropertySymbol.childNodes][
 				PropertySymbol.items
 			];
@@ -1339,6 +1333,16 @@ export default class Document extends Node {
 	 */
 	public elementFromPoint(_x: number, _y: number): Element | null {
 		return null;
+	}
+
+	/**
+	 * Clears computed style cache.
+	 */
+	public [PropertySymbol.clearComputedStyleCache](): void {
+		for (const item of this[PropertySymbol.computedStyleCache]) {
+			item.result = null;
+		}
+		this[PropertySymbol.computedStyleCache] = [];
 	}
 
 	/**

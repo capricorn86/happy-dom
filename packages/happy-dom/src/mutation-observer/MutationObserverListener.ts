@@ -3,13 +3,15 @@ import MutationObserver from './MutationObserver.js';
 import MutationRecord from './MutationRecord.js';
 import Node from '../nodes/node/Node.js';
 import BrowserWindow from '../window/BrowserWindow.js';
+import IMutationListener from './IMutationListener.js';
 
 /**
  * Mutation Observer Listener.
  */
-export default class MutationListener {
+export default class MutationObserverListener {
 	public readonly target: Node;
 	public options: IMutationObserverInit;
+	public mutationListener: IMutationListener;
 	#window: BrowserWindow;
 	#observer: MutationObserver;
 	#callback: (record: MutationRecord[], observer: MutationObserver) => void;
@@ -35,6 +37,10 @@ export default class MutationListener {
 	}) {
 		this.options = init.options;
 		this.target = init.target;
+		this.mutationListener = {
+			options: init.options,
+			callback: new WeakRef((record: MutationRecord) => this.report(record))
+		};
 		this.#window = init.window;
 		this.#observer = init.observer;
 		this.#callback = init.callback;
@@ -86,6 +92,8 @@ export default class MutationListener {
 		}
 		(<null>this.options) = null;
 		(<null>this.target) = null;
+		(<null>this.mutationListener) = null;
+		(<null>this.#window) = null;
 		(<null>this.#observer) = null;
 		(<null>this.#callback) = null;
 		(<null>this.#immediate) = null;

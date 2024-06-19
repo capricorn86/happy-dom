@@ -553,9 +553,6 @@ export default class HTMLElement extends Element {
 						(<NodeList<Node>>newElement[PropertySymbol.childNodes]) = <NodeList<Node>>(
 							this[PropertySymbol.childNodes]
 						);
-						(<NodeList<Node>>newElement[PropertySymbol.childNodesFlatten]) = <NodeList<Node>>(
-							this[PropertySymbol.childNodesFlatten]
-						);
 						(<IHTMLCollection<Element>>newElement[PropertySymbol.children]) =
 							this[PropertySymbol.children];
 						(<boolean>newElement[PropertySymbol.isConnected]) = this[PropertySymbol.isConnected];
@@ -564,7 +561,7 @@ export default class HTMLElement extends Element {
 						newElement[PropertySymbol.formNode] = this[PropertySymbol.formNode];
 						newElement[PropertySymbol.selectNode] = this[PropertySymbol.selectNode];
 						newElement[PropertySymbol.textAreaNode] = this[PropertySymbol.textAreaNode];
-						newElement[PropertySymbol.observers] = this[PropertySymbol.observers];
+						newElement[PropertySymbol.mutationListeners] = this[PropertySymbol.mutationListeners];
 						newElement[PropertySymbol.isValue] = this[PropertySymbol.isValue];
 
 						for (let i = 0, max = this[PropertySymbol.attributes].length; i < max; i++) {
@@ -573,80 +570,20 @@ export default class HTMLElement extends Element {
 							);
 						}
 
-						const children = new HTMLCollection<Element>();
-						const childNodes = new NodeList<Node>();
-						const childNodesFlatten = new NodeList<Node>();
+						(<NodeList<Node>>this[PropertySymbol.childNodes]) = new NodeList<Node>();
+						(<IHTMLCollection<Element>>this[PropertySymbol.children]) =
+							new HTMLCollection<Element>();
 
-						(<NodeList<Node>>this[PropertySymbol.childNodes]) = childNodes;
-						(<NodeList<Node>>this[PropertySymbol.childNodesFlatten]) = childNodesFlatten;
-						(<IHTMLCollection<Element>>this[PropertySymbol.children]) = <IHTMLCollection<Element>>(
-							children
-						);
+						this[PropertySymbol.childNodes][PropertySymbol.attachedHTMLCollection] =
+							this[PropertySymbol.children];
+
 						this[PropertySymbol.rootNode] = null;
 						this[PropertySymbol.formNode] = null;
 						this[PropertySymbol.selectNode] = null;
 						this[PropertySymbol.textAreaNode] = null;
-						this[PropertySymbol.observers] = [];
+						this[PropertySymbol.mutationListeners] = [];
 						this[PropertySymbol.isValue] = null;
 						(<NamedNodeMap>this[PropertySymbol.attributes]) = new NamedNodeMap(this);
-
-						this[PropertySymbol.childNodes][PropertySymbol.addEventListener](
-							'add',
-							(item: Node) => {
-								let parent: Node = this;
-								while (parent) {
-									const childNodesFlatten = parent[PropertySymbol.childNodesFlatten];
-
-									childNodesFlatten[PropertySymbol.addItem](item);
-
-									for (const child of item[PropertySymbol.childNodesFlatten]) {
-										childNodesFlatten[PropertySymbol.addItem](child);
-									}
-
-									parent = parent[PropertySymbol.parentNode];
-								}
-
-								children[PropertySymbol.addItem](<Element>item);
-							}
-						);
-						this[PropertySymbol.childNodes][PropertySymbol.addEventListener](
-							'insert',
-							(item: Node, referenceItem?: Node) => {
-								let parent: Node = this;
-								while (parent) {
-									const childNodesFlatten = parent[PropertySymbol.childNodesFlatten];
-
-									childNodesFlatten[PropertySymbol.insertItem](item, referenceItem);
-
-									for (const child of item[PropertySymbol.childNodesFlatten]) {
-										childNodesFlatten[PropertySymbol.insertItem](child, referenceItem);
-									}
-
-									parent = parent[PropertySymbol.parentNode];
-								}
-
-								children[PropertySymbol.insertItem](<Element>item, <Element>referenceItem);
-							}
-						);
-						this[PropertySymbol.childNodes][PropertySymbol.addEventListener](
-							'remove',
-							(item: Node) => {
-								let parent: Node = this;
-								while (parent) {
-									const childNodesFlatten = parent[PropertySymbol.childNodesFlatten];
-
-									childNodesFlatten[PropertySymbol.removeItem](item);
-
-									for (const child of item[PropertySymbol.childNodesFlatten]) {
-										childNodesFlatten[PropertySymbol.removeItem](child);
-									}
-
-									parent = parent[PropertySymbol.parentNode];
-								}
-
-								children[PropertySymbol.removeItem](<Element>item);
-							}
-						);
 
 						const parentChildNodes = (<HTMLElement>this[PropertySymbol.parentNode])[
 							PropertySymbol.childNodes

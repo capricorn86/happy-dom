@@ -89,10 +89,6 @@ export default abstract class AbstractCSSStyleDeclaration {
 				);
 			}
 
-			if (this.#ownerElement[PropertySymbol.isConnected]) {
-				this.#ownerElement[PropertySymbol.ownerDocument][PropertySymbol.cacheID]++;
-			}
-
 			styleAttribute[PropertySymbol.value] = style.toString();
 		} else {
 			this.#style = new CSSStyleDeclarationPropertyManager({ cssText });
@@ -147,10 +143,6 @@ export default abstract class AbstractCSSStyleDeclaration {
 				);
 			}
 
-			if (this.#ownerElement[PropertySymbol.isConnected]) {
-				this.#ownerElement[PropertySymbol.ownerDocument][PropertySymbol.cacheID]++;
-			}
-
 			const style = this.#elementStyle.getElementStyle();
 			style.set(name, stringValue, !!priority);
 
@@ -179,10 +171,6 @@ export default abstract class AbstractCSSStyleDeclaration {
 			const style = this.#elementStyle.getElementStyle();
 			style.remove(name);
 			const newCSSText = style.toString();
-
-			if (this.#ownerElement[PropertySymbol.isConnected]) {
-				this.#ownerElement[PropertySymbol.ownerDocument][PropertySymbol.cacheID]++;
-			}
 
 			if (newCSSText) {
 				(<Attr>this.#ownerElement[PropertySymbol.attributes]['style'])[PropertySymbol.value] =

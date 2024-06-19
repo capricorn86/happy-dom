@@ -1,5 +1,6 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
-import TNodeListListener from './TNodeListListener.js';
+import Element from '../element/Element.js';
+import IHTMLCollection from '../element/IHTMLCollection.js';
 
 /**
  * NodeList.
@@ -10,6 +11,7 @@ import TNodeListListener from './TNodeListListener.js';
  */
 export default interface INodeList<T> {
 	readonly [index: number]: T;
+	[PropertySymbol.attachedHTMLCollection]: IHTMLCollection<Element> | null;
 
 	/**
 	 * The number of items in the NodeList.
@@ -68,41 +70,6 @@ export default interface INodeList<T> {
 	 * @returns True if removed.
 	 */
 	[PropertySymbol.removeItem](item: T): boolean;
-
-	/**
-	 * Adds event listener.
-	 *
-	 * @param type Type.
-	 * @param listener Listener.
-	 */
-	[PropertySymbol.addEventListener](
-		type: 'add' | 'insert' | 'remove',
-		listener: TNodeListListener<T>
-	): void;
-
-	/**
-	 * Removes event listener.
-	 *
-	 * @param type Type.
-	 * @param listener Listener.
-	 */
-	[PropertySymbol.removeEventListener](
-		type: 'add' | 'insert' | 'remove',
-		listener: TNodeListListener<T>
-	): void;
-
-	/**
-	 * Dispatches event.
-	 *
-	 * @param type Type.
-	 * @param item Item.
-	 * @param referenceItem Reference item.
-	 */
-	[PropertySymbol.dispatchEvent](
-		type: 'add' | 'insert' | 'remove',
-		item: T,
-		referenceItem?: T | null
-	): void;
 
 	/**
 	 * Index of item.

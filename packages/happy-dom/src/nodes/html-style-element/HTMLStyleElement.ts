@@ -1,7 +1,7 @@
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
+import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
-import Node from '../node/Node.js';
 import Text from '../text/Text.js';
 
 /**
@@ -19,32 +19,19 @@ export default class HTMLStyleElement extends HTMLElement {
 	constructor() {
 		super();
 
-		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener]('add', (item: Node) => {
-			if (item instanceof Text) {
-				item[PropertySymbol.styleNode] = this;
-				this[PropertySymbol.updateSheet]();
-			}
+		this[PropertySymbol.observeMutations]({
+			options: {
+				childList: true,
+				subtree: true
+			},
+			callback: new WeakRef((record: MutationRecord) => {
+				const node = record.addedNodes[0] || record.removedNodes[0];
+				if (node instanceof Text) {
+					node[PropertySymbol.styleNode] = record.addedNodes[0] ? this : null;
+					this[PropertySymbol.updateSheet]();
+				}
+			})
 		});
-
-		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener](
-			'insert',
-			(item: Node) => {
-				if (item instanceof Text) {
-					item[PropertySymbol.styleNode] = this;
-					this[PropertySymbol.updateSheet]();
-				}
-			}
-		);
-
-		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener](
-			'remove',
-			(item: Node) => {
-				if (item instanceof Text) {
-					item[PropertySymbol.styleNode] = null;
-					this[PropertySymbol.updateSheet]();
-				}
-			}
-		);
 	}
 
 	/**
@@ -136,7 +123,6 @@ export default class HTMLStyleElement extends HTMLElement {
 	 */
 	public [PropertySymbol.updateSheet](): void {
 		if (this[PropertySymbol.sheet]) {
-			this[PropertySymbol.ownerDocument][PropertySymbol.cacheID]++;
 			this[PropertySymbol.sheet].replaceSync(this.textContent);
 		}
 	}

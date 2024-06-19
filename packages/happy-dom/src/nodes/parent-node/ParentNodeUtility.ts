@@ -3,11 +3,10 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import Document from '../document/Document.js';
 import Element from '../element/Element.js';
-import HTMLCollection from '../element/HTMLCollection.js';
 import Node from '../node/Node.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
 import IHTMLCollection from '../element/IHTMLCollection.js';
-import NodeTypeEnum from '../node/NodeTypeEnum.js';
+import HTMLCollection from '../element/HTMLCollection.js';
 
 /**
  * Parent node utility.
@@ -91,32 +90,10 @@ export default class ParentNodeUtility {
 		parentNode: Element | DocumentFragment | Document,
 		className: string
 	): IHTMLCollection<Element> {
-		const childNodes = parentNode[PropertySymbol.childNodesFlatten];
-		const matches: IHTMLCollection<Element> = new HTMLCollection<Element>((item) =>
-			(<Element>item).className.split(' ').includes(className)
-		);
-
-		childNodes[PropertySymbol.addEventListener]('add', (item: Node) => {
-			matches[PropertySymbol.addItem](<Element>item);
+		return new HTMLCollection({
+			filter: (item: Element) => (<Element>item).className.split(' ').includes(className),
+			observeNode: parentNode
 		});
-
-		childNodes[PropertySymbol.addEventListener]('insert', (item: Node, referenceItem?: Node) => {
-			matches[PropertySymbol.insertItem](<Element>item, <Element>referenceItem);
-		});
-		childNodes[PropertySymbol.addEventListener]('remove', (item: Node) => {
-			matches[PropertySymbol.removeItem](<Element>item);
-		});
-
-		for (const childNode of childNodes) {
-			if (
-				childNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
-				(<Element>childNode).className.split(' ').includes(className)
-			) {
-				matches[PropertySymbol.addItem](<Element>childNode);
-			}
-		}
-
-		return matches;
 	}
 
 	/**
@@ -132,33 +109,11 @@ export default class ParentNodeUtility {
 	): IHTMLCollection<Element> {
 		const upperTagName = tagName.toUpperCase();
 		const includeAll = tagName === '*';
-		const childNodes = parentNode[PropertySymbol.childNodesFlatten];
-		const matches: IHTMLCollection<Element> = new HTMLCollection<Element>(
-			!includeAll && ((item) => item[PropertySymbol.tagName] === upperTagName)
-		);
 
-		childNodes[PropertySymbol.addEventListener]('add', (item: Node) => {
-			matches[PropertySymbol.addItem](<Element>item);
+		return new HTMLCollection({
+			filter: (item: Element) => includeAll || item[PropertySymbol.tagName] === upperTagName,
+			observeNode: parentNode
 		});
-
-		childNodes[PropertySymbol.addEventListener]('insert', (item: Node, referenceItem?: Node) => {
-			matches[PropertySymbol.insertItem](<Element>item, <Element>referenceItem);
-		});
-
-		childNodes[PropertySymbol.addEventListener]('remove', (item: Node) => {
-			matches[PropertySymbol.removeItem](<Element>item);
-		});
-
-		for (const childNode of childNodes) {
-			if (
-				(includeAll || childNode[PropertySymbol.tagName] === upperTagName) &&
-				childNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
-			) {
-				matches[PropertySymbol.addItem](<Element>childNode);
-			}
-		}
-
-		return matches;
 	}
 
 	/**
@@ -177,37 +132,14 @@ export default class ParentNodeUtility {
 		// When the namespace is HTML, the tag name is case-insensitive.
 		const formattedTagName = namespaceURI === NamespaceURI.html ? tagName.toUpperCase() : tagName;
 		const includeAll = tagName === '*';
-		const childNodes = parentNode[PropertySymbol.childNodesFlatten];
-		const matches: IHTMLCollection<Element> = new HTMLCollection<Element>(
-			!includeAll &&
-				((item) =>
-					item[PropertySymbol.tagName] === formattedTagName &&
-					item[PropertySymbol.namespaceURI] === namespaceURI)
-		);
 
-		childNodes[PropertySymbol.addEventListener]('add', (item: Node) => {
-			matches[PropertySymbol.addItem](<Element>item);
+		return new HTMLCollection({
+			filter: (item: Element) =>
+				includeAll ||
+				(item[PropertySymbol.tagName] === formattedTagName &&
+					item[PropertySymbol.namespaceURI] === namespaceURI),
+			observeNode: parentNode
 		});
-
-		childNodes[PropertySymbol.addEventListener]('insert', (item: Node, referenceItem?: Node) => {
-			matches[PropertySymbol.insertItem](<Element>item, <Element>referenceItem);
-		});
-
-		childNodes[PropertySymbol.addEventListener]('remove', (item: Node) => {
-			matches[PropertySymbol.removeItem](<Element>item);
-		});
-
-		for (const childNode of childNodes) {
-			if (
-				(includeAll || childNode[PropertySymbol.tagName] === formattedTagName) &&
-				childNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
-				childNode[PropertySymbol.namespaceURI] === namespaceURI
-			) {
-				matches[PropertySymbol.addItem](<Element>childNode);
-			}
-		}
-
-		return matches;
 	}
 
 	/**
@@ -218,24 +150,24 @@ export default class ParentNodeUtility {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public static getElementByTagName(
-		parentNode: Element | DocumentFragment | Document,
-		tagName: string
-	): Element {
-		const upperTagName = tagName.toUpperCase();
+	// public static getElementByTagName(
+	// 	parentNode: Element | DocumentFragment | Document,
+	// 	tagName: string
+	// ): Element {
+	// 	const upperTagName = tagName.toUpperCase();
 
-		for (const child of (<DocumentFragment>parentNode)[PropertySymbol.children]) {
-			if (child[PropertySymbol.tagName] === upperTagName) {
-				return <Element>child;
-			}
-			const match = this.getElementByTagName(<Element>child, tagName);
-			if (match) {
-				return match;
-			}
-		}
+	// 	for (const child of (<DocumentFragment>parentNode)[PropertySymbol.children]) {
+	// 		if (child[PropertySymbol.tagName] === upperTagName) {
+	// 			return <Element>child;
+	// 		}
+	// 		const match = this.getElementByTagName(<Element>child, tagName);
+	// 		if (match) {
+	// 			return match;
+	// 		}
+	// 	}
 
-		return null;
-	}
+	// 	return null;
+	// }
 
 	/**
 	 * Returns an element by ID.

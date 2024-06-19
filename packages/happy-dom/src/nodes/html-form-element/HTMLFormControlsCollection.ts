@@ -1,8 +1,5 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
-import Attr from '../attr/Attr.js';
-import Element from '../element/Element.js';
 import HTMLCollection from '../element/HTMLCollection.js';
-import TNamedNodeMapListener from '../element/TNamedNodeMapListener.js';
 import HTMLFormElement from './HTMLFormElement.js';
 import RadioNodeList from './RadioNodeList.js';
 import THTMLFormControlElement from './THTMLFormControlElement.js';
@@ -17,37 +14,26 @@ export default class HTMLFormControlsCollection extends HTMLCollection<
 	THTMLFormControlElement | RadioNodeList
 > {
 	public [PropertySymbol.namedItems] = new Map<string, RadioNodeList>();
-	#namedNodeMapListeners = new Map<THTMLFormControlElement, TNamedNodeMapListener>();
+	#formElement: HTMLFormElement;
 
 	/**
 	 * Constructor.
-	 * @param formElement
+	 *
+	 * @param formElement Form element.
 	 */
 	constructor(formElement: HTMLFormElement) {
-		super((item: Element) => {
-			if (
-				item[PropertySymbol.tagName] !== 'INPUT' &&
-				item[PropertySymbol.tagName] !== 'SELECT' &&
-				item[PropertySymbol.tagName] !== 'TEXTAREA' &&
-				item[PropertySymbol.tagName] !== 'BUTTON' &&
-				item[PropertySymbol.tagName] !== 'FIELDSET'
-			) {
-				return false;
-			}
-			if (formElement[PropertySymbol.childNodesFlatten][PropertySymbol.includes](item)) {
-				return true;
-			}
-			if (
-				!item[PropertySymbol.attributes]['form'] ||
-				!formElement[PropertySymbol.attributes]['id']
-			) {
-				return false;
-			}
-			return (
-				item[PropertySymbol.attributes]['form'].value ===
-				formElement[PropertySymbol.attributes]['id'].value
-			);
+		super({
+			filter: (item: THTMLFormControlElement) =>
+				item[PropertySymbol.tagName] === 'INPUT' ||
+				item[PropertySymbol.tagName] === 'SELECT' ||
+				item[PropertySymbol.tagName] === 'TEXTAREA' ||
+				item[PropertySymbol.tagName] === 'BUTTON' ||
+				item[PropertySymbol.tagName] === 'FIELDSET',
+			// Array.splice() method creates a new instance of HTMLOptionsCollection with a number sent as the first argument.
+			observeNode: formElement instanceof HTMLFormElement ? formElement : null,
+			synchronizedPropertiesElement: formElement
 		});
+		this.#formElement = formElement;
 	}
 
 	/**
@@ -80,16 +66,7 @@ export default class HTMLFormControlsCollection extends HTMLCollection<
 			return false;
 		}
 
-		const listener = (attribute: Attr): void => {
-			if (attribute.name === 'form') {
-				this[PropertySymbol.removeItem](item);
-				this[PropertySymbol.addItem](item);
-			}
-		};
-
-		this.#namedNodeMapListeners.set(item, listener);
-		item[PropertySymbol.attributes][PropertySymbol.addEventListener]('set', listener);
-		item[PropertySymbol.attributes][PropertySymbol.addEventListener]('remove', listener);
+		item[PropertySymbol.formNode] = this.#formElement;
 
 		return true;
 	}
@@ -111,16 +88,7 @@ export default class HTMLFormControlsCollection extends HTMLCollection<
 			return false;
 		}
 
-		const listener = (attribute: Attr): void => {
-			if (attribute.name === 'form') {
-				this[PropertySymbol.removeItem](newItem);
-				this[PropertySymbol.insertItem](newItem, referenceItem);
-			}
-		};
-
-		this.#namedNodeMapListeners.set(newItem, listener);
-		newItem[PropertySymbol.attributes][PropertySymbol.addEventListener]('set', listener);
-		newItem[PropertySymbol.attributes][PropertySymbol.addEventListener]('remove', listener);
+		newItem[PropertySymbol.formNode] = this.#formElement;
 
 		return true;
 	}
@@ -138,10 +106,7 @@ export default class HTMLFormControlsCollection extends HTMLCollection<
 			return false;
 		}
 
-		const listener = this.#namedNodeMapListeners.get(item);
-
-		item[PropertySymbol.attributes][PropertySymbol.removeEventListener]('set', listener);
-		item[PropertySymbol.attributes][PropertySymbol.removeEventListener]('remove', listener);
+		item[PropertySymbol.formNode] = null;
 
 		return true;
 	}

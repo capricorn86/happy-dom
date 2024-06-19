@@ -6,7 +6,6 @@ import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import HTMLOptionElement from '../html-option-element/HTMLOptionElement.js';
 import HTMLOptionsCollection from './HTMLOptionsCollection.js';
 import Event from '../../event/Event.js';
-import Node from '../node/Node.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import IHTMLCollection from '../element/IHTMLCollection.js';
@@ -25,69 +24,11 @@ export default class HTMLSelectElement extends HTMLElement {
 	public [PropertySymbol.validity] = new ValidityState(this);
 	public [PropertySymbol.options]: HTMLOptionsCollection = new HTMLOptionsCollection(this);
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
-	public [PropertySymbol.selectedOptions]: IHTMLCollection<HTMLOptionElement> =
-		new HTMLCollection<HTMLOptionElement>(
-			(element: Element) =>
-				element[PropertySymbol.tagName] === 'OPTION' && element[PropertySymbol.selectedness]
-		);
+	public [PropertySymbol.selectedOptions]: IHTMLCollection<HTMLOptionElement> | null = null;
 
 	// Events
 	public onchange: (event: Event) => void | null = null;
 	public oninput: (event: Event) => void | null = null;
-
-	/**
-	 * Constructor.
-	 */
-	constructor() {
-		super();
-
-		// Child nodes listeners
-		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener]('add', (item: Node) => {
-			this[PropertySymbol.options][PropertySymbol.addItem](<HTMLOptionElement>item);
-		});
-		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener](
-			'insert',
-			(newItem: Node, referenceItem: Node | null) => {
-				this[PropertySymbol.options][PropertySymbol.insertItem](
-					<HTMLOptionElement>newItem,
-					<HTMLOptionElement>referenceItem
-				);
-			}
-		);
-		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener](
-			'remove',
-			(item: Node) => {
-				this[PropertySymbol.options][PropertySymbol.removeItem](<HTMLOptionElement>item);
-			}
-		);
-
-		// HTMLOptionsCollection listeners
-		this[PropertySymbol.options][PropertySymbol.addEventListener]('indexChange', (details) => {
-			const length = this[PropertySymbol.options].length;
-			for (let i = details.index; i < length; i++) {
-				this[i] = this[PropertySymbol.options][i];
-			}
-			// Item removed
-			if (!details.item) {
-				delete this[length];
-			}
-		});
-		this[PropertySymbol.options][PropertySymbol.addEventListener]('propertyChange', (details) => {
-			if (!this[PropertySymbol.isValidPropertyName](details.propertyName)) {
-				return;
-			}
-			if (details.propertyValue) {
-				Object.defineProperty(this, details.propertyName, {
-					value: details.propertyValue,
-					writable: false,
-					enumerable: true,
-					configurable: true
-				});
-			} else {
-				delete this[details.propertyName];
-			}
-		});
-	}
 
 	/**
 	 * Returns length.
@@ -297,6 +238,17 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @returns HTMLCollection.
 	 */
 	public get selectedOptions(): IHTMLCollection<HTMLOptionElement> {
+		if (!this[PropertySymbol.selectedOptions]) {
+			this[PropertySymbol.selectedOptions] = new HTMLCollection<HTMLOptionElement>({
+				filter: (element: Element) =>
+					element[PropertySymbol.tagName] === 'OPTION' && element[PropertySymbol.selectedness]
+			});
+			for (const option of this[PropertySymbol.options]) {
+				if (option[PropertySymbol.selectedness]) {
+					this[PropertySymbol.selectedOptions][PropertySymbol.addItem](option);
+				}
+			}
+		}
 		return this[PropertySymbol.selectedOptions];
 	}
 

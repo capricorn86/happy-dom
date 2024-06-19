@@ -1,8 +1,9 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import Element from '../element/Element.js';
+import IHTMLCollection from '../element/IHTMLCollection.js';
 import INodeList from './INodeList.js';
-import TNodeListListener from './TNodeListListener.js';
 
 /**
  * NodeList.
@@ -10,15 +11,7 @@ import TNodeListListener from './TNodeListListener.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NodeList
  */
 class NodeList<T> extends Array<T> implements INodeList<T> {
-	#eventListeners: {
-		add: WeakRef<TNodeListListener<T>>[];
-		insert: WeakRef<TNodeListListener<T>>[];
-		remove: WeakRef<TNodeListListener<T>>[];
-	} = {
-		add: [],
-		insert: [],
-		remove: []
-	};
+	public [PropertySymbol.attachedHTMLCollection]: IHTMLCollection<Element> | null = null;
 
 	/**
 	 * Returns `Symbol.toStringTag`.
@@ -69,7 +62,11 @@ class NodeList<T> extends Array<T> implements INodeList<T> {
 
 		super.push(item);
 
-		this[PropertySymbol.dispatchEvent]('add', item);
+		const htmlCollection = this[PropertySymbol.attachedHTMLCollection];
+
+		if (htmlCollection) {
+			htmlCollection[PropertySymbol.addItem](<Element>item);
+		}
 
 		return true;
 	}
@@ -101,7 +98,11 @@ class NodeList<T> extends Array<T> implements INodeList<T> {
 
 		super.splice(index, 0, newItem);
 
-		this[PropertySymbol.dispatchEvent]('insert', newItem, referenceItem);
+		const htmlCollection = this[PropertySymbol.attachedHTMLCollection];
+
+		if (htmlCollection) {
+			htmlCollection[PropertySymbol.insertItem](<Element>newItem, <Element>referenceItem);
+		}
 
 		return true;
 	}
@@ -124,66 +125,13 @@ class NodeList<T> extends Array<T> implements INodeList<T> {
 
 		super.splice(index, 1);
 
-		this[PropertySymbol.dispatchEvent]('remove', item);
+		const htmlCollection = this[PropertySymbol.attachedHTMLCollection];
+
+		if (htmlCollection) {
+			htmlCollection[PropertySymbol.removeItem](<Element>item);
+		}
 
 		return true;
-	}
-
-	/**
-	 * Adds event listener.
-	 *
-	 * @param type Type.
-	 * @param listener Listener.
-	 */
-	public [PropertySymbol.addEventListener](
-		type: 'add' | 'insert' | 'remove',
-		listener: TNodeListListener<T>
-	): void {
-		this.#eventListeners[type].push(new WeakRef(listener));
-	}
-
-	/**
-	 * Removes event listener.
-	 *
-	 * @param type Type.
-	 * @param listener Listener.
-	 */
-	public [PropertySymbol.removeEventListener](
-		type: 'add' | 'insert' | 'remove',
-		listener: TNodeListListener<T>
-	): void {
-		const listeners = this.#eventListeners[type];
-		for (let i = 0, max = listeners.length; i < max; i++) {
-			if (listeners[i].deref() === listener) {
-				listeners.splice(i, 1);
-				return;
-			}
-		}
-	}
-
-	/**
-	 * Dispatches event.
-	 *
-	 * @param type Type.
-	 * @param item Item.
-	 * @param referenceItem Reference item.
-	 */
-	public [PropertySymbol.dispatchEvent](
-		type: 'add' | 'insert' | 'remove',
-		item: T,
-		referenceItem?: T | null
-	): void {
-		const listeners = this.#eventListeners[type];
-		for (let i = 0, max = listeners.length; i < max; i++) {
-			const listener = listeners[i].deref();
-			if (listener) {
-				listener(item, referenceItem);
-			} else {
-				listeners.splice(i, 1);
-				i--;
-				max--;
-			}
-		}
 	}
 
 	/**

@@ -62,26 +62,13 @@ export default abstract class CharacterData
 		const oldValue = this[PropertySymbol.data];
 		this[PropertySymbol.data] = String(data);
 
-		let parent: Node = this;
-		while (parent) {
-			parent[PropertySymbol.mutationCacheID].characterData++;
-			parent = parent[PropertySymbol.parentNode];
-		}
-
-		// MutationObserver
-		if (this[PropertySymbol.observers].length > 0) {
-			for (const observer of this[PropertySymbol.observers]) {
-				if (observer.options?.characterData) {
-					observer.report(
-						new MutationRecord({
-							target: this,
-							type: MutationTypeEnum.characterData,
-							oldValue: observer.options.characterDataOldValue ? oldValue : null
-						})
-					);
-				}
-			}
-		}
+		this[PropertySymbol.reportMutation](
+			new MutationRecord({
+				target: this,
+				type: MutationTypeEnum.characterData,
+				oldValue
+			})
+		);
 	}
 
 	/**

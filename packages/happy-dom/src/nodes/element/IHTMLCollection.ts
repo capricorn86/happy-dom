@@ -2,7 +2,7 @@
 /* eslint-disable filenames/match-exported */
 
 import * as PropertySymbol from '../../PropertySymbol.js';
-import THTMLCollectionListener from './THTMLCollectionListener.js';
+import Element from './Element.js';
 
 /**
  * HTMLCollection.
@@ -11,7 +11,7 @@ import THTMLCollectionListener from './THTMLCollectionListener.js';
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLCollection
  */
-export default interface IHTMLCollection<T, NamedItem = T> {
+export default interface IHTMLCollection<T extends Element, NamedItem = T> {
 	[index: number]: T;
 
 	/**
@@ -61,48 +61,6 @@ export default interface IHTMLCollection<T, NamedItem = T> {
 	 * @returns True if removed.
 	 */
 	[PropertySymbol.removeItem](item: T): boolean;
-
-	/**
-	 * Adds event listener.
-	 *
-	 * @param type Type.
-	 * @param listener Listener.
-	 */
-	[PropertySymbol.addEventListener](
-		type: 'indexChange' | 'propertyChange',
-		listener: THTMLCollectionListener<T>
-	): void;
-
-	/**
-	 * Removes event listener.
-	 *
-	 * @param type Type.
-	 * @param listener Listener.
-	 */
-	[PropertySymbol.removeEventListener](
-		type: 'indexChange' | 'propertyChange',
-		listener: THTMLCollectionListener<T>
-	): void;
-
-	/**
-	 * Dispatches event.
-	 *
-	 * @param type Type.
-	 * @param details Options.
-	 * @param [details.index] Index.
-	 * @param [details.item] Item.
-	 * @param [details.propertyName] Property name.
-	 * @param [details.propertyValue] Property value.
-	 */
-	[PropertySymbol.dispatchEvent](
-		type: 'indexChange' | 'propertyChange',
-		details: {
-			index?: number;
-			item?: T;
-			propertyName?: string;
-			propertyValue?: any;
-		}
-	): void;
 
 	/**
 	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.

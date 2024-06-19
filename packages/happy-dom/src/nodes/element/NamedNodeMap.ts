@@ -227,10 +227,6 @@ export default class NamedNodeMap {
 		item[PropertySymbol.name] = this.#getAttributeName(item[PropertySymbol.name]);
 		(<Element>item[PropertySymbol.ownerElement]) = this[PropertySymbol.ownerElement];
 
-		if (this[PropertySymbol.ownerElement][PropertySymbol.isConnected]) {
-			this[PropertySymbol.ownerElement][PropertySymbol.ownerDocument][PropertySymbol.cacheID]++;
-		}
-
 		const name = item[PropertySymbol.name];
 		const replacedItem = this[PropertySymbol.namedItems].get(name) || null;
 

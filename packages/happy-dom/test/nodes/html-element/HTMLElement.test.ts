@@ -516,7 +516,7 @@ describe('HTMLElement', () => {
 			const formNode = (element[PropertySymbol.formNode] = document.createElement('div'));
 			const selectNode = (element[PropertySymbol.selectNode] = document.createElement('div'));
 			const textAreaNode = (element[PropertySymbol.textAreaNode] = document.createElement('div'));
-			const observers = element[PropertySymbol.observers];
+			const mutationListeners = element[PropertySymbol.mutationListeners];
 			const isValue = (element[PropertySymbol.isValue] = 'test');
 
 			window.customElements.define('custom-element', CustomElement);
@@ -535,7 +535,7 @@ describe('HTMLElement', () => {
 			expect(customElement[PropertySymbol.formNode] === formNode).toBe(true);
 			expect(customElement[PropertySymbol.selectNode] === selectNode).toBe(true);
 			expect(customElement[PropertySymbol.textAreaNode] === textAreaNode).toBe(true);
-			expect(customElement[PropertySymbol.observers] === observers).toBe(true);
+			expect(customElement[PropertySymbol.mutationListeners] === mutationListeners).toBe(true);
 			expect(customElement[PropertySymbol.isValue] === isValue).toBe(true);
 			expect(customElement.attributes.length).toBe(1);
 			expect(customElement.attributes[0] === attribute1).toBe(true);

@@ -7,7 +7,6 @@ import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.j
 import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
 import HTMLButtonElement from '../html-button-element/HTMLButtonElement.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
-import Node from '../node/Node.js';
 import Element from '../element/Element.js';
 
 type THTMLFieldSetElement =
@@ -26,43 +25,15 @@ export default class HTMLFieldSetElement extends HTMLElement {
 	public declare cloneNode: (deep?: boolean) => HTMLFieldSetElement;
 
 	// Internal properties
-	public [PropertySymbol.elements] = new HTMLCollection<THTMLFieldSetElement>(
-		(item: Element) =>
+	public [PropertySymbol.elements] = new HTMLCollection<THTMLFieldSetElement>({
+		filter: (item: Element) =>
 			item.tagName === 'INPUT' ||
 			item.tagName === 'BUTTON' ||
 			item.tagName === 'TEXTAREA' ||
-			item.tagName === 'SELECT'
-	);
+			item.tagName === 'SELECT',
+		observeNode: this
+	});
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param browserFrame Browser frame.
-	 */
-	constructor() {
-		super();
-		// Child nodes listeners
-		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener]('add', (item: Node) => {
-			this[PropertySymbol.elements][PropertySymbol.addItem](<THTMLFieldSetElement>item);
-		});
-		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener](
-			'insert',
-			(newItem: Node, referenceItem: Node | null) => {
-				this[PropertySymbol.elements][PropertySymbol.insertItem](
-					<THTMLFieldSetElement>newItem,
-					<THTMLFieldSetElement>referenceItem
-				);
-			}
-		);
-		this[PropertySymbol.childNodesFlatten][PropertySymbol.addEventListener](
-			'remove',
-			(item: Node) => {
-				(<THTMLFieldSetElement>item)[PropertySymbol.formNode] = null;
-				this[PropertySymbol.elements][PropertySymbol.removeItem](<THTMLFieldSetElement>item);
-			}
-		);
-	}
 
 	/**
 	 * Returns elements.

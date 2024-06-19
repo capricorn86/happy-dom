@@ -328,6 +328,7 @@ export default class HTMLLinkElement extends HTMLElement {
 			const styleSheet = new CSSStyleSheet();
 			styleSheet.replaceSync(code);
 			this[PropertySymbol.sheet] = styleSheet;
+			this[PropertySymbol.ownerDocument][PropertySymbol.clearComputedStyleCache]();
 			this.dispatchEvent(new Event('load'));
 		}
 	}

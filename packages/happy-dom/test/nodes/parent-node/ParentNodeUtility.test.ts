@@ -264,28 +264,28 @@ describe('ParentNodeUtility', () => {
 		});
 	});
 
-	describe('getElementByTagName()', () => {
-		it('Returns the first element matching a tag name.', () => {
-			const parent = document.createElement('div');
-			const div1 = document.createElement('div');
-			const div2 = document.createElement('div');
-			const div3 = document.createElement('div');
-			const div4 = document.createElement('div');
-			const span1 = document.createElement('span');
-			const span2 = document.createElement('span');
-			const span3 = document.createElement('span');
+	// describe('getElementByTagName()', () => {
+	// 	it('Returns the first element matching a tag name.', () => {
+	// 		const parent = document.createElement('div');
+	// 		const div1 = document.createElement('div');
+	// 		const div2 = document.createElement('div');
+	// 		const div3 = document.createElement('div');
+	// 		const div4 = document.createElement('div');
+	// 		const span1 = document.createElement('span');
+	// 		const span2 = document.createElement('span');
+	// 		const span3 = document.createElement('span');
 
-			parent.appendChild(div1);
-			div1.appendChild(div2);
-			div2.appendChild(span1);
-			span1.appendChild(div3);
-			div3.appendChild(span2);
-			div3.appendChild(span3);
-			span3.appendChild(div4);
+	// 		parent.appendChild(div1);
+	// 		div1.appendChild(div2);
+	// 		div2.appendChild(span1);
+	// 		span1.appendChild(div3);
+	// 		div3.appendChild(span2);
+	// 		div3.appendChild(span3);
+	// 		span3.appendChild(div4);
 
-			expect(ParentNodeUtility.getElementByTagName(parent, 'div') === div1).toBe(true);
-		});
-	});
+	// 		expect(ParentNodeUtility.getElementByTagName(parent, 'div') === div1).toBe(true);
+	// 	});
+	// });
 
 	describe('getElementById()', () => {
 		it('Returns the first element matching an id.', () => {

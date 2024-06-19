@@ -1,6 +1,5 @@
 import EventTarget from '../../event/EventTarget.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import MutationListener from '../../mutation-observer/MutationListener.js';
 import Document from '../document/Document.js';
 import Element from '../element/Element.js';
 import NodeTypeEnum from './NodeTypeEnum.js';
@@ -14,6 +13,10 @@ import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import INodeList from './INodeList.js';
+import IMutationListener from '../../mutation-observer/IMutationListener.js';
+import ICachedQuerySelectorAllItem from './ICachedQuerySelectorAllItem.js';
+import ICachedQuerySelectorItem from './ICachedQuerySelectorItem.js';
+import ICachedMatchesItem from './ICachedMatchesItem.js';
 
 /**
  * Node.
@@ -63,19 +66,28 @@ export default class Node extends EventTarget {
 	public [PropertySymbol.parentNode]: Node | null = null;
 	public [PropertySymbol.nodeType]: NodeTypeEnum;
 	public [PropertySymbol.rootNode]: Node = null;
-	public [PropertySymbol.observers]: MutationListener[] = [];
+	public [PropertySymbol.mutationListeners]: IMutationListener[] = [];
 	public [PropertySymbol.childNodes]: INodeList<Node> = new NodeList<Node>();
-	public [PropertySymbol.childNodesFlatten]: INodeList<Node> = new NodeList<Node>();
-	public [PropertySymbol.mutationCacheID]: {
-		attributes: number;
-		childNodes: number;
-		children: number;
-		characterData: number;
+	public [PropertySymbol.querySelectorCache]: {
+		items: Map<string, ICachedQuerySelectorItem>;
+		affectedItems: ICachedQuerySelectorItem[];
 	} = {
-		attributes: 0,
-		childNodes: 0,
-		children: 0,
-		characterData: 0
+		items: new Map(),
+		affectedItems: []
+	};
+	public [PropertySymbol.querySelectorAllCache]: {
+		items: Map<string, ICachedQuerySelectorAllItem>;
+		affectedItems: ICachedQuerySelectorAllItem[];
+	} = {
+		items: new Map(),
+		affectedItems: []
+	};
+	public [PropertySymbol.matchesCache]: {
+		items: Map<string, ICachedMatchesItem>;
+		affectedItems: ICachedMatchesItem[];
+	} = {
+		items: new Map(),
+		affectedItems: []
 	};
 
 	/**
@@ -96,70 +108,6 @@ export default class Node extends EventTarget {
 			}
 			this[PropertySymbol.ownerDocument] = ownerDocument;
 		}
-
-		const childNodes = this[PropertySymbol.childNodes];
-
-		childNodes[PropertySymbol.addEventListener]('add', (item: Node) => {
-			let parent: Node = this;
-			while (parent) {
-				const childNodesFlatten = parent[PropertySymbol.childNodesFlatten];
-
-				childNodesFlatten[PropertySymbol.addItem](item);
-
-				for (const child of item[PropertySymbol.childNodesFlatten]) {
-					childNodesFlatten[PropertySymbol.addItem](child);
-				}
-
-				parent[PropertySymbol.mutationCacheID].childNodes++;
-
-				if (parent[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
-					parent[PropertySymbol.mutationCacheID].children++;
-				}
-
-				parent = parent[PropertySymbol.parentNode];
-			}
-		});
-
-		childNodes[PropertySymbol.addEventListener]('insert', (item: Node, referenceItem?: Node) => {
-			let parent: Node = this;
-			while (parent) {
-				const childNodesFlatten = parent[PropertySymbol.childNodesFlatten];
-
-				childNodesFlatten[PropertySymbol.insertItem](item, referenceItem);
-
-				for (const child of item[PropertySymbol.childNodesFlatten]) {
-					childNodesFlatten[PropertySymbol.insertItem](child, referenceItem);
-				}
-
-				parent[PropertySymbol.mutationCacheID].childNodes++;
-
-				if (parent[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
-					parent[PropertySymbol.mutationCacheID].children++;
-				}
-
-				parent = parent[PropertySymbol.parentNode];
-			}
-		});
-		childNodes[PropertySymbol.addEventListener]('remove', (item: Node) => {
-			let parent: Node = this;
-			while (parent) {
-				const childNodesFlatten = parent[PropertySymbol.childNodesFlatten];
-
-				childNodesFlatten[PropertySymbol.removeItem](item);
-
-				for (const child of item[PropertySymbol.childNodesFlatten]) {
-					childNodesFlatten[PropertySymbol.removeItem](child);
-				}
-
-				parent[PropertySymbol.mutationCacheID].childNodes++;
-
-				if (parent[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
-					parent[PropertySymbol.mutationCacheID].children++;
-				}
-
-				parent = parent[PropertySymbol.parentNode];
-			}
-		});
 	}
 
 	/**
@@ -537,11 +485,9 @@ export default class Node extends EventTarget {
 			node[PropertySymbol.parentNode][PropertySymbol.childNodes][PropertySymbol.removeItem](node);
 		}
 
-		if (this[PropertySymbol.isConnected]) {
-			(this[PropertySymbol.ownerDocument] || this)[PropertySymbol.cacheID]++;
-		}
-
 		node[PropertySymbol.parentNode] = this;
+
+		node[PropertySymbol.clearCache]();
 
 		this[PropertySymbol.childNodes][PropertySymbol.addItem](node);
 
@@ -551,23 +497,19 @@ export default class Node extends EventTarget {
 			node[PropertySymbol.disconnectedFromDocument]();
 		}
 
-		// MutationObserver
-		if ((<Node>this)[PropertySymbol.observers].length > 0) {
-			const record = new MutationRecord({
+		// Mutation listeners
+		for (const mutationListener of this[PropertySymbol.mutationListeners]) {
+			if (mutationListener.options?.subtree && mutationListener.callback.deref()) {
+				(<Node>node)[PropertySymbol.observeMutations](mutationListener);
+			}
+		}
+		this[PropertySymbol.reportMutation](
+			new MutationRecord({
 				target: this,
 				type: MutationTypeEnum.childList,
 				addedNodes: [node]
-			});
-
-			for (const observer of (<Node>this)[PropertySymbol.observers]) {
-				if (observer.options?.subtree) {
-					(<Node>node)[PropertySymbol.observe](observer);
-				}
-				if (observer.options?.childList) {
-					observer.report(record);
-				}
-			}
-		}
+			})
+		);
 
 		return node;
 	}
@@ -579,11 +521,9 @@ export default class Node extends EventTarget {
 	 * @returns Removed node.
 	 */
 	public [PropertySymbol.removeChild](node: Node): Node {
-		if (this[PropertySymbol.isConnected]) {
-			(this[PropertySymbol.ownerDocument] || this)[PropertySymbol.cacheID]++;
-		}
-
 		node[PropertySymbol.parentNode] = null;
+
+		node[PropertySymbol.clearCache]();
 
 		this[PropertySymbol.childNodes][PropertySymbol.removeItem](node);
 
@@ -591,23 +531,19 @@ export default class Node extends EventTarget {
 			node[PropertySymbol.disconnectedFromDocument]();
 		}
 
-		// MutationObserver
-		if (this[PropertySymbol.observers].length > 0) {
-			const record = new MutationRecord({
+		// Mutation listeners
+		for (const mutationListener of this[PropertySymbol.mutationListeners]) {
+			if (mutationListener.options?.subtree && mutationListener.callback.deref()) {
+				(<Node>node)[PropertySymbol.unobserveMutations](mutationListener);
+			}
+		}
+		this[PropertySymbol.reportMutation](
+			new MutationRecord({
 				target: this,
 				type: MutationTypeEnum.childList,
 				removedNodes: [node]
-			});
-
-			for (const observer of this[PropertySymbol.observers]) {
-				if (observer.options?.subtree) {
-					(<Node>node)[PropertySymbol.unobserve](observer);
-				}
-				if (observer.options?.childList) {
-					observer.report(record);
-				}
-			}
-		}
+			})
+		);
 
 		return node;
 	}
@@ -650,10 +586,6 @@ export default class Node extends EventTarget {
 			);
 		}
 
-		if (this[PropertySymbol.isConnected]) {
-			(this[PropertySymbol.ownerDocument] || this)[PropertySymbol.cacheID]++;
-		}
-
 		if (newNode[PropertySymbol.parentNode]) {
 			newNode[PropertySymbol.parentNode][PropertySymbol.childNodes][PropertySymbol.removeItem](
 				newNode
@@ -661,6 +593,8 @@ export default class Node extends EventTarget {
 		}
 
 		newNode[PropertySymbol.parentNode] = this;
+
+		newNode[PropertySymbol.clearCache]();
 
 		this[PropertySymbol.childNodes][PropertySymbol.insertItem](newNode, referenceNode);
 
@@ -670,23 +604,20 @@ export default class Node extends EventTarget {
 			newNode[PropertySymbol.disconnectedFromDocument]();
 		}
 
-		// MutationObserver
-		if ((<Node>this)[PropertySymbol.observers].length > 0) {
-			const record = new MutationRecord({
+		// Mutation listeners
+		for (const mutationListener of this[PropertySymbol.mutationListeners]) {
+			if (mutationListener.options?.subtree && mutationListener.callback.deref()) {
+				newNode[PropertySymbol.observeMutations](mutationListener);
+			}
+		}
+
+		this[PropertySymbol.reportMutation](
+			new MutationRecord({
 				target: this,
 				type: MutationTypeEnum.childList,
 				addedNodes: [newNode]
-			});
-
-			for (const observer of (<Node>this)[PropertySymbol.observers]) {
-				if (observer.options?.subtree) {
-					(<Node>newNode)[PropertySymbol.observe](observer);
-				}
-				if (observer.options?.childList) {
-					observer.report(record);
-				}
-			}
-		}
+			})
+		);
 
 		return newNode;
 	}
@@ -726,36 +657,135 @@ export default class Node extends EventTarget {
 	}
 
 	/**
-	 * Observeres the node.
-	 * Used by MutationObserver, but it is not part of the HTML standard.
+	 * Observeres mutations on the node.
+	 *
+	 * Used by MutationObserver and internal logic.
 	 *
 	 * @param listener Listener.
 	 */
-	public [PropertySymbol.observe](listener: MutationListener): void {
-		this[PropertySymbol.observers].push(listener);
+	public [PropertySymbol.observeMutations](listener: IMutationListener): void {
+		this[PropertySymbol.mutationListeners].push(listener);
 		if (listener.options.subtree) {
 			for (const node of this[PropertySymbol.childNodes]) {
-				(<Node>node)[PropertySymbol.observe](listener);
+				(<Node>node)[PropertySymbol.observeMutations](listener);
 			}
 		}
 	}
 
 	/**
-	 * Stops observing the node.
-	 * Used by MutationObserver, but it is not part of the HTML standard.
+	 * Observeres mutations on the node once.
+	 *
+	 * Used by MutationObserver and internal logic.
 	 *
 	 * @param listener Listener.
 	 */
-	public [PropertySymbol.unobserve](listener: MutationListener): void {
-		const index = this[PropertySymbol.observers].indexOf(listener);
+	public [PropertySymbol.observeMutationsOnce](listener: IMutationListener): void {
+		const callback = listener.callback.deref();
+		const wrapperListener = {
+			options: listener.options,
+			callback: new WeakRef((record: MutationRecord) => {
+				callback(record);
+				this[PropertySymbol.unobserveMutations](wrapperListener);
+			})
+		};
+		this[PropertySymbol.observeMutations](wrapperListener);
+	}
+
+	/**
+	 * Stops observing mutations on the node.
+	 *
+	 * Used by MutationObserver and internal logic.
+	 *
+	 * @param listener Listener.
+	 */
+	public [PropertySymbol.unobserveMutations](listener: IMutationListener): void {
+		const index = this[PropertySymbol.mutationListeners].indexOf(listener);
 		if (index !== -1) {
-			this[PropertySymbol.observers].splice(index, 1);
+			this[PropertySymbol.mutationListeners].splice(index, 1);
 		}
 		if (listener.options.subtree) {
 			for (const node of this[PropertySymbol.childNodes]) {
-				(<Node>node)[PropertySymbol.unobserve](listener);
+				node[PropertySymbol.unobserveMutations](listener);
 			}
 		}
+	}
+
+	/**
+	 * Reports a mutation on the node.
+	 *
+	 * Used by MutationObserver and internal logic.
+	 *
+	 * @param record Mutation record.
+	 */
+	public [PropertySymbol.reportMutation](record: MutationRecord): void {
+		this[PropertySymbol.clearCache]();
+
+		const mutationListeners = this[PropertySymbol.mutationListeners];
+
+		if (!mutationListeners.length) {
+			return;
+		}
+
+		for (let i = 0, max = mutationListeners.length; i < max; i++) {
+			const mutationListener = mutationListeners[i];
+			const callback = mutationListener.callback.deref();
+			if (callback) {
+				switch (record.type) {
+					case MutationTypeEnum.childList:
+						if (mutationListener.options.childList) {
+							callback(record);
+						}
+						break;
+					case MutationTypeEnum.attributes:
+						if (
+							mutationListener.options.attributes &&
+							(!mutationListener.options.attributeFilter ||
+								mutationListener.options.attributeFilter.includes(record.attributeName))
+						) {
+							callback(record);
+						}
+						break;
+					case MutationTypeEnum.characterData:
+						if (mutationListener.options?.characterData) {
+							callback(record);
+						}
+						break;
+				}
+			} else {
+				mutationListeners.splice(i, 1);
+				i--;
+				max--;
+			}
+		}
+	}
+
+	/**
+	 * Clears query selector cache.
+	 */
+	public [PropertySymbol.clearCache](): void {
+		for (const item of this[PropertySymbol.querySelectorCache].affectedItems) {
+			if (item.result) {
+				item.result = null;
+			}
+		}
+
+		for (const item of this[PropertySymbol.querySelectorAllCache].affectedItems) {
+			if (item.result) {
+				item.result = null;
+			}
+		}
+
+		for (const item of this[PropertySymbol.matchesCache].affectedItems) {
+			if (item.result) {
+				item.result = null;
+			}
+		}
+
+		this[PropertySymbol.querySelectorCache].affectedItems = [];
+		this[PropertySymbol.querySelectorAllCache].affectedItems = [];
+		this[PropertySymbol.matchesCache].affectedItems = [];
+
+		this[PropertySymbol.ownerDocument]?.[PropertySymbol.clearComputedStyleCache]();
 	}
 
 	/**

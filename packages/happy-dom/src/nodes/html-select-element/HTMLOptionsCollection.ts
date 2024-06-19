@@ -18,11 +18,17 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 	#selectElement: HTMLSelectElement;
 
 	/**
+	 * Constructor.
 	 *
-	 * @param selectElement
+	 * @param selectElement Select element.
 	 */
 	constructor(selectElement: HTMLSelectElement) {
-		super((element: Element) => element[PropertySymbol.tagName] === 'OPTION');
+		super({
+			filter: (element: Element) => element[PropertySymbol.tagName] === 'OPTION',
+			// Array.splice() method creates a new instance of HTMLOptionsCollection with a number sent as the first argument.
+			observeNode: selectElement instanceof HTMLSelectElement ? selectElement : null,
+			synchronizedPropertiesElement: selectElement
+		});
 
 		this.#selectElement = selectElement;
 	}
@@ -46,12 +52,18 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 			return;
 		}
 
-		const selectedOption = <HTMLOptionElement>this[selectedIndex];
-
-		if (!selectedOption) {
+		if (selectedIndex < 0 || !this[selectedIndex]) {
+			const selectedOptions = this.#selectElement[PropertySymbol.selectedOptions];
+			for (let i = 0, max = this.length; i < max; i++) {
+				const option = <HTMLOptionElement>this[i];
+				option[PropertySymbol.selectedness] = false;
+				selectedOptions?.[PropertySymbol.removeItem](option);
+			}
 			this.#selectedIndex = -1;
 			return;
 		}
+
+		const selectedOption = <HTMLOptionElement>this[selectedIndex];
 
 		selectedOption[PropertySymbol.selectedness] = true;
 		selectedOption[PropertySymbol.dirtyness] = true;
@@ -125,7 +137,7 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 		const returnValue = super[PropertySymbol.addItem](item);
 		if (returnValue) {
 			item[PropertySymbol.selectNode] = this.#selectElement;
-			this[PropertySymbol.updateSelectedness]();
+			this[PropertySymbol.updateSelectedness](item[PropertySymbol.selectedness] ? item : null);
 		}
 		return returnValue;
 	}
@@ -140,7 +152,9 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 		const returnValue = super[PropertySymbol.insertItem](newItem, referenceItem);
 		if (returnValue) {
 			newItem[PropertySymbol.selectNode] = this.#selectElement;
-			this[PropertySymbol.updateSelectedness]();
+			this[PropertySymbol.updateSelectedness](
+				newItem[PropertySymbol.selectedness] ? newItem : null
+			);
 		}
 		return returnValue;
 	}
@@ -173,9 +187,9 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 
 		this.#selectedIndex = -1;
 
-		for (let i = 0, max = this.length; i < max; i++) {
-			const option = <HTMLOptionElement>this[i];
-			if (!isMultiple) {
+		if (!isMultiple) {
+			for (let i = 0, max = this.length; i < max; i++) {
+				const option = <HTMLOptionElement>this[i];
 				if (selectedOption) {
 					option[PropertySymbol.selectedness] = option === selectedOption;
 				}
@@ -183,15 +197,22 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 				if (option[PropertySymbol.selectedness]) {
 					selected.push(option);
 
-					if (this.#selectedIndex === null) {
+					if (this.#selectedIndex === -1) {
 						this.#selectedIndex = i;
 					}
 
-					if (!selectedOptions[PropertySymbol.includes](option)) {
-						selectedOptions[PropertySymbol.addItem](option);
-					}
+					selectedOptions?.[PropertySymbol.addItem](option);
 				} else {
-					selectedOptions[PropertySymbol.removeItem](option);
+					selectedOptions?.[PropertySymbol.removeItem](option);
+				}
+			}
+		} else {
+			for (let i = 0, max = this.length; i < max; i++) {
+				const option = <HTMLOptionElement>this[i];
+				if (option[PropertySymbol.selectedness]) {
+					selectedOptions?.[PropertySymbol.addItem](option);
+				} else {
+					selectedOptions?.[PropertySymbol.removeItem](option);
 				}
 			}
 		}

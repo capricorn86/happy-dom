@@ -1,10 +1,14 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
+import EventTarget from '../../event/EventTarget.js';
+import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import Attr from '../attr/Attr.js';
+import DocumentFragment from '../document-fragment/DocumentFragment.js';
+import Document from '../document/Document.js';
+import HTMLElement from '../html-element/HTMLElement.js';
 import Node from '../node/Node.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import Element from './Element.js';
 import IHTMLCollection from './IHTMLCollection.js';
-import THTMLCollectionListener from './THTMLCollectionListener.js';
 import TNamedNodeMapListener from './TNamedNodeMapListener.js';
 
 const NAMED_ITEM_ATTRIBUTES = ['id', 'name'];
@@ -17,38 +21,44 @@ const NAMED_ITEM_ATTRIBUTES = ['id', 'name'];
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLCollection
  */
-class HTMLCollection<T, NamedItem = T> extends Array<T> implements IHTMLCollection<T, NamedItem> {
+export default class HTMLCollection<T extends Element, NamedItem = T>
+	extends Array<T>
+	implements IHTMLCollection<T, NamedItem>
+{
 	public [PropertySymbol.namedItems] = new Map<string, Array<T>>();
 	#namedNodeMapListeners = new Map<
 		T,
 		{ set: TNamedNodeMapListener; remove: TNamedNodeMapListener }
 	>();
-	#eventListeners: {
-		indexChange: WeakRef<THTMLCollectionListener<T>>[];
-		propertyChange: WeakRef<THTMLCollectionListener<T>>[];
-	} = {
-		indexChange: [],
-		propertyChange: []
-	};
 	#filter: (item: T) => boolean | null;
+	#synchronizedPropertiesElement: Element;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param [filter] Filter.
-	 * @param items
+	 * @param [options] Options.
+	 * @param [options.filter] Filter.
+	 * @param [options.observeNode] Observe node.
+	 * @param [options.synchronizedPropertiesElement] Synchronized properties element.
 	 */
-	constructor(
-		filter?: (item: T) => boolean,
-		items?: Array<{ [index: number]: T; length: number }>
-	) {
+	constructor(options?: {
+		filter?: (item: T) => boolean;
+		observeNode?: Element | DocumentFragment | Document;
+		synchronizedPropertiesElement?: Element;
+	}) {
 		super();
 
-		this.#filter = filter || null;
+		if (options) {
+			if (options.filter) {
+				this.#filter = options.filter;
+			}
 
-		if (items) {
-			for (let i = 0, max = items.length; i < max; i++) {
-				this[PropertySymbol.addItem](<T>items[i]);
+			if (options.synchronizedPropertiesElement) {
+				this.#synchronizedPropertiesElement = options.synchronizedPropertiesElement;
+			}
+
+			if (options.observeNode) {
+				this.#observeNode(options.observeNode);
 			}
 		}
 	}
@@ -121,7 +131,10 @@ class HTMLCollection<T, NamedItem = T> extends Array<T> implements IHTMLCollecti
 		super.push(item);
 
 		this.#addNamedItem(item);
-		this[PropertySymbol.dispatchEvent]('indexChange', { index: this.length - 1, item });
+
+		if (this.#synchronizedPropertiesElement) {
+			this.#synchronizedPropertiesElement[this.length - 1] = item;
+		}
 
 		return true;
 	}
@@ -134,10 +147,6 @@ class HTMLCollection<T, NamedItem = T> extends Array<T> implements IHTMLCollecti
 	 * @returns True if the item was added.
 	 */
 	public [PropertySymbol.insertItem](newItem: T, referenceItem: T | null): boolean {
-		if (!referenceItem) {
-			return this[PropertySymbol.addItem](newItem);
-		}
-
 		const filter = this.#filter;
 
 		if (
@@ -149,6 +158,19 @@ class HTMLCollection<T, NamedItem = T> extends Array<T> implements IHTMLCollecti
 
 		if (super.includes(newItem)) {
 			this[PropertySymbol.removeItem](newItem);
+		}
+
+		// We should not call addItem() here, as we don't want HTMLOptionsCollection to run updateSelectedness() twice.
+		if (!referenceItem) {
+			super.push(newItem);
+
+			this.#addNamedItem(newItem);
+
+			if (this.#synchronizedPropertiesElement) {
+				this.#synchronizedPropertiesElement[this.length - 1] = newItem;
+			}
+
+			return true;
 		}
 
 		if (!referenceItem) {
@@ -186,7 +208,14 @@ class HTMLCollection<T, NamedItem = T> extends Array<T> implements IHTMLCollecti
 		super.splice(referenceItemIndex, 0, newItem);
 
 		this.#addNamedItem(newItem);
-		this[PropertySymbol.dispatchEvent]('indexChange', { index: referenceItemIndex, item: newItem });
+
+		if (this.#synchronizedPropertiesElement) {
+			this.#synchronizedPropertiesElement[referenceItemIndex] = newItem;
+
+			for (let i = referenceItemIndex + 1, max = this.length; i < max; i++) {
+				this.#synchronizedPropertiesElement[i] = this[i];
+			}
+		}
 
 		return true;
 	}
@@ -207,7 +236,14 @@ class HTMLCollection<T, NamedItem = T> extends Array<T> implements IHTMLCollecti
 		super.splice(index, 1);
 
 		this.#removeNamedItem(item);
-		this[PropertySymbol.dispatchEvent]('indexChange', { index: 0, item: null });
+
+		if (this.#synchronizedPropertiesElement) {
+			for (let i = index, max = this.length; i < max; i++) {
+				this.#synchronizedPropertiesElement[i] = this[i];
+			}
+
+			delete this.#synchronizedPropertiesElement[this.length];
+		}
 
 		return true;
 	}
@@ -230,70 +266,6 @@ class HTMLCollection<T, NamedItem = T> extends Array<T> implements IHTMLCollecti
 	 */
 	public [PropertySymbol.includes](item: T): boolean {
 		return super.includes(item);
-	}
-
-	/**
-	 * Adds event listener.
-	 *
-	 * @param type Type.
-	 * @param listener Listener.
-	 */
-	public [PropertySymbol.addEventListener](
-		type: 'indexChange' | 'propertyChange',
-		listener: THTMLCollectionListener<T>
-	): void {
-		this.#eventListeners[type].push(new WeakRef(listener));
-	}
-
-	/**
-	 * Removes event listener.
-	 *
-	 * @param type Type.
-	 * @param listener Listener.
-	 */
-	public [PropertySymbol.removeEventListener](
-		type: 'indexChange' | 'propertyChange',
-		listener: THTMLCollectionListener<T>
-	): void {
-		const listeners = this.#eventListeners[type];
-		for (let i = 0, max = listeners.length; i < max; i++) {
-			if (listeners[i].deref() === listener) {
-				listeners.splice(i, 1);
-				return;
-			}
-		}
-	}
-
-	/**
-	 * Dispatches event.
-	 *
-	 * @param type Type.
-	 * @param details Options.
-	 * @param [details.index] Index.
-	 * @param [details.item] Item.
-	 * @param [details.propertyName] Property name.
-	 * @param [details.propertyValue] Property value.
-	 */
-	public [PropertySymbol.dispatchEvent](
-		type: 'indexChange' | 'propertyChange',
-		details: {
-			index?: number;
-			item?: T;
-			propertyName?: string;
-			propertyValue?: any;
-		}
-	): void {
-		const listeners = this.#eventListeners[type];
-		for (let i = 0, max = listeners.length; i < max; i++) {
-			const listener = listeners[i].deref();
-			if (listener) {
-				listener(details);
-			} else {
-				listeners.splice(i, 1);
-				i--;
-				max--;
-			}
-		}
 	}
 
 	/**
@@ -326,15 +298,22 @@ class HTMLCollection<T, NamedItem = T> extends Array<T> implements IHTMLCollecti
 					enumerable: true,
 					configurable: true
 				});
+
+				if (this.#synchronizedPropertiesElement) {
+					Object.defineProperty(this.#synchronizedPropertiesElement, name, {
+						value: namedItems[0],
+						writable: false,
+						enumerable: true,
+						configurable: true
+					});
+				}
 			}
 		} else {
 			delete this[name];
+			if (this.#synchronizedPropertiesElement) {
+				delete this.#synchronizedPropertiesElement[name];
+			}
 		}
-
-		this[PropertySymbol.dispatchEvent]('propertyChange', {
-			propertyName: name,
-			propertyValue: this[name] ?? null
-		});
 	}
 
 	/**
@@ -347,6 +326,12 @@ class HTMLCollection<T, NamedItem = T> extends Array<T> implements IHTMLCollecti
 		return (
 			!!name &&
 			!this.constructor.prototype.hasOwnProperty(name) &&
+			(!this.#synchronizedPropertiesElement ||
+				(!this.#synchronizedPropertiesElement.constructor.prototype.hasOwnProperty(name) &&
+					!HTMLElement.constructor.prototype.hasOwnProperty(name) &&
+					!Element.constructor.prototype.hasOwnProperty(name) &&
+					!Node.constructor.hasOwnProperty(name) &&
+					!EventTarget.constructor.hasOwnProperty(name))) &&
 			(isNaN(Number(name)) || name.includes('.'))
 		);
 	}
@@ -364,7 +349,7 @@ class HTMLCollection<T, NamedItem = T> extends Array<T> implements IHTMLCollecti
 			return;
 		}
 
-		const name = (<Element>item)[PropertySymbol.attributes][attributeName]?.value;
+		const name = item[PropertySymbol.attributes][attributeName]?.value;
 
 		if (name) {
 			const namedItems = this[PropertySymbol.getNamedItems](name);
@@ -456,6 +441,111 @@ class HTMLCollection<T, NamedItem = T> extends Array<T> implements IHTMLCollecti
 			}
 		}
 	}
+
+	/**
+	 * Observes node.
+	 *
+	 * @param parentNode Parent node.
+	 */
+	#observeNode(parentNode: Element | DocumentFragment | Document): void {
+		const filter = this.#filter;
+
+		this.#loadObservedItems(parentNode);
+
+		parentNode[PropertySymbol.observeMutations]({
+			options: { childList: true },
+			callback: new WeakRef((record: MutationRecord) => {
+				if (record.addedNodes.length) {
+					// There is always only one added node.
+					const addedNode = record.addedNodes[0];
+
+					if (
+						addedNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
+						(!filter || filter(<T>addedNode))
+					) {
+						const index = this.#getObservedItemIndex(parentNode, <T>addedNode);
+
+						if (index === -1) {
+							throw new Error(
+								`Failed to update observed HTMLCollection after a mutation. Added element "${
+									addedNode[PropertySymbol.tagName]
+								}" could not be found.`
+							);
+						}
+
+						this[PropertySymbol.insertItem](<T>addedNode, this[index] || null);
+					}
+				} else {
+					for (const node of record.removedNodes) {
+						if (
+							node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
+							(!filter || filter(<T>node))
+						) {
+							this[PropertySymbol.removeItem](<T>node);
+						}
+					}
+				}
+			})
+		});
+	}
+
+	/**
+	 * Loads initial observed items.
+	 *
+	 * @param parentNode Parent node.
+	 */
+	#loadObservedItems(parentNode: Element | DocumentFragment | Document): void {
+		const filter = this.#filter;
+		const children = parentNode[PropertySymbol.children];
+
+		for (let i = 0, max = children.length; i < max; i++) {
+			if (
+				children[i][PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
+				(!filter || filter(<T>children[i]))
+			) {
+				this[PropertySymbol.addItem](<T>children[i]);
+			}
+
+			this.#loadObservedItems(children[i]);
+		}
+	}
+
+	/**
+	 * Returns the index for the first element matching the filter inside the parent parent element.
+	 *
+	 * @param parentNode Parent node.
+	 * @param item Item.
+	 * @param [indexContainer] Index container.
+	 */
+	#getObservedItemIndex(
+		parentNode: Element | DocumentFragment | Document,
+		item: T,
+		indexContainer = { index: 0 }
+	): number {
+		const filter = this.#filter;
+		const children = parentNode[PropertySymbol.children];
+
+		for (let i = 0, max = children.length; i < max; i++) {
+			if (
+				children[i][PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
+				(!filter || filter(<T>children[i]))
+			) {
+				if (children[i] === item) {
+					return indexContainer.index;
+				}
+
+				const returnValue = this.#getObservedItemIndex(children[i], item, indexContainer);
+
+				if (returnValue !== -1) {
+					return returnValue;
+				}
+
+				indexContainer.index++;
+			}
+		}
+
+		return -1;
+	}
 }
 
 // Removes Array methods from HTMLCollection.
@@ -473,6 +563,3 @@ for (const key of Object.keys(descriptors)) {
 		}
 	}
 }
-
-// Forces the type to be an interface to hide Array methods from the outside.
-export default HTMLCollection;

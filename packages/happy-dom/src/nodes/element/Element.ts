@@ -30,10 +30,10 @@ import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 import IChildNode from '../child-node/IChildNode.js';
 import INonDocumentTypeChildNode from '../child-node/INonDocumentTypeChildNode.js';
 import IParentNode from '../parent-node/IParentNode.js';
-import MutationListener from '../../mutation-observer/MutationListener.js';
 import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
 import INodeList from '../node/INodeList.js';
+import CSSStyleDeclarationPropertyManager from '../../css/declaration/property-manager/CSSStyleDeclarationPropertyManager.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -107,6 +107,9 @@ export default class Element
 	public [PropertySymbol.namespaceURI]: string | null =
 		this.constructor[PropertySymbol.namespaceURI] || null;
 	public [PropertySymbol.children]: IHTMLCollection<Element> = new HTMLCollection<Element>();
+	public [PropertySymbol.computedStyleCache]: {
+		result: WeakRef<CSSStyleDeclarationPropertyManager> | null;
+	} | null = null;
 
 	/**
 	 * Constructor.
@@ -117,24 +120,8 @@ export default class Element
 		attributes[PropertySymbol.addEventListener]('set', this.#onSetAttribute.bind(this));
 		attributes[PropertySymbol.addEventListener]('remove', this.#onRemoveAttribute.bind(this));
 
-		// Use variable here instead of referencing the property to work with HTMLElement[PropertySymbol.connectedToDocument] (when it defines custom element)
-		// Otherwise it will be connected to the new children collection set on the children property
-		const children = this[PropertySymbol.children];
-		const childNodes = this[PropertySymbol.childNodes];
-
-		childNodes[PropertySymbol.addEventListener]('add', (item: Node) => {
-			children[PropertySymbol.addItem](<Element>item);
-			this.#onNodeListChange(item);
-		});
-
-		childNodes[PropertySymbol.addEventListener]('insert', (item: Node, referenceItem?: Node) => {
-			children[PropertySymbol.insertItem](<Element>item, <Element>referenceItem);
-			this.#onNodeListChange(item);
-		});
-		childNodes[PropertySymbol.addEventListener]('remove', (item: Node) => {
-			children[PropertySymbol.removeItem](<Element>item);
-			this.#onNodeListChange(item);
-		});
+		this[PropertySymbol.childNodes][PropertySymbol.attachedHTMLCollection] =
+			this[PropertySymbol.children];
 	}
 
 	/**
@@ -1195,6 +1182,43 @@ export default class Element
 	}
 
 	/**
+	 * Append a child node to childNodes.
+	 *
+	 * @param  node Node to append.
+	 * @returns Appended node.
+	 */
+	public [PropertySymbol.appendChild](node: Node): Node {
+		const returnValue = super[PropertySymbol.appendChild](node);
+		this.#onNodeListChange(node);
+		return returnValue;
+	}
+
+	/**
+	 * Remove Child element from childNodes array.
+	 *
+	 * @param node Node to remove.
+	 * @returns Removed node.
+	 */
+	public [PropertySymbol.removeChild](node: Node): Node {
+		const returnValue = super[PropertySymbol.removeChild](node);
+		this.#onNodeListChange(node);
+		return returnValue;
+	}
+
+	/**
+	 * Inserts a node before another.
+	 *
+	 * @param newNode Node to insert.
+	 * @param referenceNode Node to insert before.
+	 * @returns Inserted node.
+	 */
+	public [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
+		const returnValue = super[PropertySymbol.insertBefore](newNode, referenceNode);
+		this.#onNodeListChange(newNode);
+		return returnValue;
+	}
+
+	/**
 	 * Triggered when an attribute is set.
 	 *
 	 * @param attribute Attribute.
@@ -1203,12 +1227,6 @@ export default class Element
 	#onSetAttribute(attribute: Attr, replacedAttribute: Attr | null): void {
 		if (!attribute[PropertySymbol.name]) {
 			return null;
-		}
-
-		let parent: Node = this;
-		while (parent) {
-			parent[PropertySymbol.mutationCacheID].attributes++;
-			parent = parent[PropertySymbol.parentNode];
 		}
 
 		const oldValue = replacedAttribute ? replacedAttribute[PropertySymbol.value] : null;
@@ -1239,6 +1257,11 @@ export default class Element
 			}
 		}
 
+		if (this[PropertySymbol.computedStyleCache]) {
+			this[PropertySymbol.computedStyleCache].result = null;
+			this[PropertySymbol.computedStyleCache] = null;
+		}
+
 		if (
 			this.attributeChangedCallback &&
 			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes] &&
@@ -1253,25 +1276,14 @@ export default class Element
 			);
 		}
 
-		// MutationObserver
-		if (this[PropertySymbol.observers].length > 0) {
-			for (const observer of <MutationListener[]>this[PropertySymbol.observers]) {
-				if (
-					observer.options?.attributes &&
-					(!observer.options.attributeFilter ||
-						observer.options.attributeFilter.includes(attribute[PropertySymbol.name]))
-				) {
-					observer.report(
-						new MutationRecord({
-							target: this,
-							type: MutationTypeEnum.attributes,
-							attributeName: attribute[PropertySymbol.name],
-							oldValue: observer.options.attributeOldValue ? oldValue : null
-						})
-					);
-				}
-			}
-		}
+		this[PropertySymbol.reportMutation](
+			new MutationRecord({
+				target: this,
+				type: MutationTypeEnum.attributes,
+				attributeName: attribute[PropertySymbol.name],
+				oldValue
+			})
+		);
 	}
 
 	/**
@@ -1280,12 +1292,6 @@ export default class Element
 	 * @param removedAttribute Attribute.
 	 */
 	#onRemoveAttribute(removedAttribute: Attr): void {
-		let parent: Node = this;
-		while (parent) {
-			parent[PropertySymbol.mutationCacheID].attributes++;
-			parent = parent[PropertySymbol.parentNode];
-		}
-
 		if (removedAttribute[PropertySymbol.name] === 'class' && this[PropertySymbol.classList]) {
 			this[PropertySymbol.classList][PropertySymbol.updateIndices]();
 		}
@@ -1302,27 +1308,33 @@ export default class Element
 			}
 		}
 
-		// MutationObserver
-		if (this[PropertySymbol.observers].length > 0) {
-			for (const observer of <MutationListener[]>this[PropertySymbol.observers]) {
-				if (
-					observer.options?.attributes &&
-					(!observer.options.attributeFilter ||
-						observer.options.attributeFilter.includes(removedAttribute[PropertySymbol.name]))
-				) {
-					observer.report(
-						new MutationRecord({
-							target: this,
-							type: MutationTypeEnum.attributes,
-							attributeName: removedAttribute[PropertySymbol.name],
-							oldValue: observer.options.attributeOldValue
-								? removedAttribute[PropertySymbol.value]
-								: null
-						})
-					);
-				}
-			}
+		if (this[PropertySymbol.computedStyleCache]) {
+			this[PropertySymbol.computedStyleCache].result = null;
+			this[PropertySymbol.computedStyleCache] = null;
 		}
+
+		if (
+			this.attributeChangedCallback &&
+			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes] &&
+			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes].includes(
+				removedAttribute[PropertySymbol.name]
+			)
+		) {
+			this.attributeChangedCallback(
+				removedAttribute[PropertySymbol.name],
+				removedAttribute[PropertySymbol.value],
+				null
+			);
+		}
+
+		this[PropertySymbol.reportMutation](
+			new MutationRecord({
+				type: MutationTypeEnum.attributes,
+				target: this,
+				attributeName: removedAttribute[PropertySymbol.name],
+				oldValue: removedAttribute[PropertySymbol.value]
+			})
+		);
 	}
 
 	/**

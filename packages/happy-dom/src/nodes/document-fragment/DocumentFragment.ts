@@ -24,20 +24,8 @@ export default class DocumentFragment extends Node {
 	 */
 	constructor() {
 		super();
-		this[PropertySymbol.childNodes][PropertySymbol.addEventListener]('add', (item: Node) =>
-			this[PropertySymbol.children][PropertySymbol.addItem](<Element>item)
-		);
-		this[PropertySymbol.childNodes][PropertySymbol.addEventListener](
-			'insert',
-			(item: Node, referenceItem?: Node) =>
-				this[PropertySymbol.children][PropertySymbol.insertItem](
-					<Element>item,
-					<Element>referenceItem
-				)
-		);
-		this[PropertySymbol.childNodes][PropertySymbol.addEventListener]('remove', (item: Node) =>
-			this[PropertySymbol.children][PropertySymbol.removeItem](<Element>item)
-		);
+		this[PropertySymbol.childNodes][PropertySymbol.attachedHTMLCollection] =
+			this[PropertySymbol.children];
 	}
 
 	/**
