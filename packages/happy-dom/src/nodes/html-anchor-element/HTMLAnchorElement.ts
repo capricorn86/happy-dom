@@ -500,8 +500,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 		if (
 			event.type === 'click' &&
 			event instanceof MouseEvent &&
-			(event.eventPhase === EventPhaseEnum.atTarget ||
-				event.eventPhase === EventPhaseEnum.bubbling) &&
+			event.eventPhase === EventPhaseEnum.none &&
 			!event.defaultPrevented
 		) {
 			const href = this.href;
