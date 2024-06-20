@@ -1,7 +1,7 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import HTMLFormElement from './HTMLFormElement.js';
-import RadioNodeList from './RadioNodeList.js';
+import IRadioNodeList from './IRadioNodeList.js';
 import THTMLFormControlElement from './THTMLFormControlElement.js';
 
 /**
@@ -11,9 +11,9 @@ import THTMLFormControlElement from './THTMLFormControlElement.js';
  */
 export default class HTMLFormControlsCollection extends HTMLCollection<
 	THTMLFormControlElement,
-	THTMLFormControlElement | RadioNodeList
+	THTMLFormControlElement | IRadioNodeList
 > {
-	public [PropertySymbol.namedItems] = new Map<string, RadioNodeList>();
+	public [PropertySymbol.namedItems] = new Map<string, IRadioNodeList>();
 	#formElement: HTMLFormElement;
 
 	/**
@@ -39,7 +39,7 @@ export default class HTMLFormControlsCollection extends HTMLCollection<
 	/**
 	 * @override
 	 */
-	public namedItem(name: string): THTMLFormControlElement | RadioNodeList | null {
+	public namedItem(name: string): THTMLFormControlElement | IRadioNodeList | null {
 		const namedItems = this[PropertySymbol.namedItems].get(name);
 
 		if (!namedItems?.length) {
@@ -109,16 +109,6 @@ export default class HTMLFormControlsCollection extends HTMLCollection<
 		item[PropertySymbol.formNode] = null;
 
 		return true;
-	}
-
-	/**
-	 * Returns named items.
-	 *
-	 * @param name Name.
-	 * @returns Named items.
-	 */
-	protected [PropertySymbol.getNamedItems](name: string): RadioNodeList {
-		return this[PropertySymbol.namedItems].get(name) || new RadioNodeList();
 	}
 
 	/**

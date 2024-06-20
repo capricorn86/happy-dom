@@ -1,6 +1,6 @@
 import IHTMLCollection from '../element/IHTMLCollection.js';
-import RadioNodeList from './RadioNodeList.js';
+import IRadioNodeList from './IRadioNodeList.js';
 import THTMLFormControlElement from './THTMLFormControlElement.js';
 
 export default interface IHTMLFormControlsCollection
-	extends IHTMLCollection<THTMLFormControlElement, THTMLFormControlElement | RadioNodeList> {}
+	extends IHTMLCollection<THTMLFormControlElement, THTMLFormControlElement | IRadioNodeList> {}

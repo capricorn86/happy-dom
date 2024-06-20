@@ -5,7 +5,9 @@ import Attr from '../attr/Attr.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import Document from '../document/Document.js';
 import HTMLElement from '../html-element/HTMLElement.js';
+import INodeList from '../node/INodeList.js';
 import Node from '../node/Node.js';
+import NodeList from '../node/NodeList.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import Element from './Element.js';
 import IHTMLCollection from './IHTMLCollection.js';
@@ -25,7 +27,7 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 	extends Array<T>
 	implements IHTMLCollection<T, NamedItem>
 {
-	public [PropertySymbol.namedItems] = new Map<string, Array<T>>();
+	public [PropertySymbol.namedItems] = new Map<string, INodeList<T>>();
 	#namedNodeMapListeners = new Map<
 		T,
 		{ set: TNamedNodeMapListener; remove: TNamedNodeMapListener }
@@ -269,16 +271,6 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 	}
 
 	/**
-	 * Returns named items.
-	 *
-	 * @param name Name.
-	 * @returns Named items.
-	 */
-	protected [PropertySymbol.getNamedItems](name: string): T[] {
-		return this[PropertySymbol.namedItems].get(name) || [];
-	}
-
-	/**
 	 * Sets named item property.
 	 *
 	 * @param name Name.
@@ -317,6 +309,15 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 	}
 
 	/**
+	 * Creates a new NodeList to be used as a named item.
+	 *
+	 * @returns NodeList.
+	 */
+	protected [PropertySymbol.createNamedItemsNodeList](): INodeList<T> {
+		return new NodeList<T>();
+	}
+
+	/**
 	 * Returns "true" if the property name is valid.
 	 *
 	 * @param name Name.
@@ -352,18 +353,17 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 		const name = item[PropertySymbol.attributes][attributeName]?.value;
 
 		if (name) {
-			const namedItems = this[PropertySymbol.getNamedItems](name);
+			const namedItems = this[PropertySymbol.namedItems].get(name);
 
-			if (!namedItems.includes(item)) {
+			if (!namedItems?.[PropertySymbol.includes](item)) {
 				this[PropertySymbol.namedItems].set(name, namedItems);
 				this[PropertySymbol.setNamedItemProperty](name);
 			}
 		} else {
-			const namedItems = this[PropertySymbol.getNamedItems](name);
-			const index = namedItems.indexOf(item);
+			const namedItems = this[PropertySymbol.namedItems].get(name);
 
-			if (index !== -1) {
-				namedItems.splice(index, 1);
+			if (namedItems) {
+				namedItems[PropertySymbol.removeItem](item);
 			}
 
 			this[PropertySymbol.setNamedItemProperty](name);
@@ -395,9 +395,11 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 		for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
 			const name = (<Element>item)[PropertySymbol.attributes][attributeName]?.value;
 			if (name) {
-				const namedItems = this[PropertySymbol.getNamedItems](name);
+				const namedItems =
+					this[PropertySymbol.namedItems].get(name) ||
+					this[PropertySymbol.createNamedItemsNodeList]();
 
-				if (namedItems.includes(item)) {
+				if (namedItems[PropertySymbol.includes](item)) {
 					return;
 				}
 
@@ -427,15 +429,13 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 		for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
 			const name = (<Element>item)[PropertySymbol.attributes][attributeName]?.value;
 			if (name) {
-				const namedItems = this[PropertySymbol.getNamedItems](name);
+				const namedItems = this[PropertySymbol.namedItems].get(name);
 
-				const index = namedItems.indexOf(item);
-
-				if (index === -1) {
+				if (!namedItems) {
 					return;
 				}
 
-				namedItems.splice(index, 1);
+				namedItems[PropertySymbol.removeItem](item);
 
 				this[PropertySymbol.setNamedItemProperty](name);
 			}
@@ -464,29 +464,63 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 						(!filter || filter(<T>addedNode))
 					) {
 						const index = this.#getObservedItemIndex(parentNode, <T>addedNode);
-
-						if (index === -1) {
-							throw new Error(
-								`Failed to update observed HTMLCollection after a mutation. Added element "${
-									addedNode[PropertySymbol.tagName]
-								}" could not be found.`
-							);
-						}
-
+						addedNode[PropertySymbol.isInsideObservedFormNode] = true;
 						this[PropertySymbol.insertItem](<T>addedNode, this[index] || null);
+					} else if (addedNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
+						const items = this.#getItemsInNode(<Element>addedNode);
+						const index = this.#getObservedItemIndex(parentNode, items[items.length - 1]);
+						const referenceItem = this[index];
+
+						for (let i = items.length - 1; i >= 0; i--) {
+							items[i][PropertySymbol.isInsideObservedFormNode] = true;
+							this[PropertySymbol.insertItem](items[i], referenceItem);
+						}
 					}
 				} else {
-					for (const node of record.removedNodes) {
-						if (
-							node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
-							(!filter || filter(<T>node))
-						) {
-							this[PropertySymbol.removeItem](<T>node);
+					const removedNode = record.removedNodes[0];
+					if (
+						removedNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
+						(!filter || filter(<T>removedNode))
+					) {
+						removedNode[PropertySymbol.isInsideObservedFormNode] = true;
+						this[PropertySymbol.removeItem](<T>removedNode);
+					} else {
+						const items = this.#getItemsInNode(<Element>removedNode);
+						for (let i = items.length - 1; i >= 0; i--) {
+							items[i][PropertySymbol.isInsideObservedFormNode] = true;
+							this[PropertySymbol.removeItem](items[i]);
 						}
 					}
 				}
 			})
 		});
+	}
+
+	/**
+	 * Returns items in node.
+	 *
+	 * @param parentNode Parent node.
+	 */
+	#getItemsInNode(parentNode: Element | DocumentFragment | Document): T[] {
+		const filter = this.#filter;
+		const items: T[] = [];
+
+		if (
+			parentNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
+			(!filter || filter(<T>parentNode))
+		) {
+			items.push(<T>parentNode);
+		} else {
+			const children = parentNode[PropertySymbol.children];
+			for (let a = 0; a < children.length; a++) {
+				const childrenOfChild = children[a][PropertySymbol.children];
+				for (let b = 0; b < childrenOfChild.length; b++) {
+					items.push(<T>childrenOfChild[b]);
+				}
+			}
+		}
+
+		return items;
 	}
 
 	/**
@@ -503,6 +537,7 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 				children[i][PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
 				(!filter || filter(<T>children[i]))
 			) {
+				children[i][PropertySymbol.isInsideObservedFormNode] = true;
 				this[PropertySymbol.addItem](<T>children[i]);
 			}
 

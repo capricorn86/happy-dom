@@ -135,9 +135,8 @@ export default class ParentNodeUtility {
 
 		return new HTMLCollection({
 			filter: (item: Element) =>
-				includeAll ||
-				(item[PropertySymbol.tagName] === formattedTagName &&
-					item[PropertySymbol.namespaceURI] === namespaceURI),
+				(includeAll || item[PropertySymbol.tagName] === formattedTagName) &&
+				item[PropertySymbol.namespaceURI] === namespaceURI,
 			observeNode: parentNode
 		});
 	}

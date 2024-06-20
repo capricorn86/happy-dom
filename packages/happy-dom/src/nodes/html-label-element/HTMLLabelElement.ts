@@ -53,19 +53,20 @@ export default class HTMLLabelElement extends HTMLElement {
 			const control = <HTMLElement | null>(
 				(<Document>this[PropertySymbol.rootNode]).getElementById(htmlFor)
 			);
-			switch (control.tagName) {
-				case 'input':
-					return (<HTMLInputElement>control).type !== 'hidden' ? control : null;
-				case 'button':
-				case 'meter':
-				case 'output':
-				case 'progress':
-				case 'select':
-				case 'textarea':
-				case 'textarea':
-					return control;
-				default:
-					return null;
+			if (control) {
+				switch (control[PropertySymbol.tagName]) {
+					case 'INPUT':
+						return (<HTMLInputElement>control).type !== 'hidden' ? control : null;
+					case 'BUTTON':
+					case 'METER':
+					case 'OUTPUT':
+					case 'PROGRESS':
+					case 'SELECT':
+					case 'TEXTAREA':
+						return control;
+					default:
+						return null;
+				}
 			}
 		}
 		return <HTMLElement | null>(

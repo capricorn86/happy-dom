@@ -763,6 +763,12 @@ export default class Node extends EventTarget {
 	 * Clears query selector cache.
 	 */
 	public [PropertySymbol.clearCache](): void {
+		for (const item of this[PropertySymbol.querySelectorCache].items.values()) {
+			if (item.result) {
+				item.result = null;
+			}
+		}
+
 		for (const item of this[PropertySymbol.querySelectorCache].affectedItems) {
 			if (item.result) {
 				item.result = null;
@@ -780,6 +786,10 @@ export default class Node extends EventTarget {
 				item.result = null;
 			}
 		}
+
+		this[PropertySymbol.querySelectorCache].items = new Map();
+		this[PropertySymbol.querySelectorAllCache].items = new Map();
+		this[PropertySymbol.matchesCache].items = new Map();
 
 		this[PropertySymbol.querySelectorCache].affectedItems = [];
 		this[PropertySymbol.querySelectorAllCache].affectedItems = [];

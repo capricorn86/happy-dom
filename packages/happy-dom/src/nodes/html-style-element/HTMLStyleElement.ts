@@ -1,7 +1,9 @@
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
+import Element from '../element/Element.js';
 import HTMLElement from '../html-element/HTMLElement.js';
+import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import Text from '../text/Text.js';
 
 /**
@@ -29,6 +31,14 @@ export default class HTMLStyleElement extends HTMLElement {
 				if (node instanceof Text) {
 					node[PropertySymbol.styleNode] = record.addedNodes[0] ? this : null;
 					this[PropertySymbol.updateSheet]();
+				} else {
+					const textNodes = this.#findTextNodes(<Element>node);
+					if (textNodes.length) {
+						for (const textNode of textNodes) {
+							textNode[PropertySymbol.styleNode] = record.addedNodes[0] ? this : null;
+						}
+						this[PropertySymbol.updateSheet]();
+					}
 				}
 			})
 		});
@@ -125,5 +135,25 @@ export default class HTMLStyleElement extends HTMLElement {
 		if (this[PropertySymbol.sheet]) {
 			this[PropertySymbol.sheet].replaceSync(this.textContent);
 		}
+	}
+
+	/**
+	 * Finds all text nodes in the element.
+	 *
+	 * @param parentElement Parent element.
+	 * @returns Text nodes.
+	 */
+	#findTextNodes(parentElement: Element): Text[] {
+		const textNodes: Text[] = [];
+		for (const childNode of parentElement[PropertySymbol.childNodes]) {
+			if (childNode instanceof Text) {
+				textNodes.push(childNode);
+			} else if (childNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
+				for (const textNode of this.#findTextNodes(<Element>childNode)) {
+					textNodes.push(textNode);
+				}
+			}
+		}
+		return textNodes;
 	}
 }

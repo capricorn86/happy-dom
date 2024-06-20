@@ -78,6 +78,8 @@ describe('HTMLLabelElement', () => {
 		it('Returns parent form element.', () => {
 			const form = document.createElement('form');
 			const div = document.createElement('div');
+			const input = document.createElement('input');
+			element.appendChild(input);
 			div.appendChild(element);
 			form.appendChild(div);
 			expect(element.form).toBe(form);

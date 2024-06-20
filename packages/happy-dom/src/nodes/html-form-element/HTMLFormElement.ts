@@ -17,6 +17,7 @@ import IHTMLFormControlsCollection from './IHTMLFormControlsCollection.js';
 import IMutationListener from '../../mutation-observer/IMutationListener.js';
 import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
+import NodeTypeEnum from '../node/NodeTypeEnum.js';
 
 /**
  * HTML Form Element.
@@ -370,55 +371,74 @@ export default class HTMLFormElement extends HTMLElement {
 				if (!id) {
 					return;
 				}
+
 				switch (record.type) {
 					case MutationTypeEnum.childList:
-						const addedNode = record.addedNodes[0];
-						const removedNode = record.removedNodes[0];
-						if (
-							addedNode &&
-							(addedNode[PropertySymbol.tagName] === 'INPUT' ||
-								addedNode[PropertySymbol.tagName] === 'SELECT' ||
-								addedNode[PropertySymbol.tagName] === 'TEXTAREA' ||
-								addedNode[PropertySymbol.tagName] === 'BUTTON' ||
-								addedNode[PropertySymbol.tagName] === 'FIELDSET') &&
-							addedNode[PropertySymbol.attributes]?.['form']?.value === id &&
-							addedNode[PropertySymbol.formNode] !== this
-						) {
-							addedNode[PropertySymbol.formNode] = this;
-							this[PropertySymbol.elements][PropertySymbol.addItem](
-								<THTMLFormControlElement>addedNode
-							);
-						} else if (
-							(removedNode[PropertySymbol.tagName] === 'INPUT' ||
-								removedNode[PropertySymbol.tagName] === 'SELECT' ||
-								removedNode[PropertySymbol.tagName] === 'TEXTAREA' ||
-								removedNode[PropertySymbol.tagName] === 'BUTTON' ||
-								removedNode[PropertySymbol.tagName] === 'FIELDSET') &&
-							removedNode[PropertySymbol.attributes]?.['form']?.value === id
-						) {
-							this[PropertySymbol.elements][PropertySymbol.removeItem](
-								<THTMLFormControlElement>removedNode
-							);
+						if (record.addedNodes.length) {
+							const addedNode = record.addedNodes[0];
+
+							if (
+								addedNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
+								addedNode[PropertySymbol.attributes]?.['form']?.value === id &&
+								!addedNode[PropertySymbol.isInsideObservedFormNode] &&
+								this.#isFormControlElement(<THTMLFormControlElement>addedNode)
+							) {
+								addedNode[PropertySymbol.formNode] = this;
+								this[PropertySymbol.elements][PropertySymbol.addItem](
+									<THTMLFormControlElement>addedNode
+								);
+							} else if (addedNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
+								const items = this.querySelectorAll(
+									`INPUT['form="${id}"], SELECT['form="${id}"], TEXTAREA['form="${id}"], BUTTON['form="${id}"], FIELDSET['form="${id}"]`
+								);
+								for (const item of items) {
+									if (!item[PropertySymbol.isInsideObservedFormNode]) {
+										this[PropertySymbol.elements][PropertySymbol.addItem](
+											<THTMLFormControlElement>item
+										);
+									}
+								}
+							}
+						} else {
+							const removedNode = record.removedNodes[0];
+
+							if (
+								removedNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
+								removedNode[PropertySymbol.attributes]?.['form']?.value === id &&
+								!removedNode[PropertySymbol.isInsideObservedFormNode] &&
+								this.#isFormControlElement(<THTMLFormControlElement>removedNode)
+							) {
+								this[PropertySymbol.elements][PropertySymbol.removeItem](
+									<THTMLFormControlElement>removedNode
+								);
+							} else if (removedNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
+								const items = this.querySelectorAll(
+									`INPUT['form="${id}"], SELECT['form="${id}"], TEXTAREA['form="${id}"], BUTTON['form="${id}"], FIELDSET['form="${id}"]`
+								);
+								for (const item of items) {
+									if (!item[PropertySymbol.isInsideObservedFormNode]) {
+										this[PropertySymbol.elements][PropertySymbol.removeItem](
+											<THTMLFormControlElement>item
+										);
+									}
+								}
+							}
 						}
 						break;
 					case MutationTypeEnum.attributes:
 						if (
 							record.attributeName === 'form' &&
-							(record.target[PropertySymbol.tagName] === 'INPUT' ||
-								record.target[PropertySymbol.tagName] === 'SELECT' ||
-								record.target[PropertySymbol.tagName] === 'TEXTAREA' ||
-								record.target[PropertySymbol.tagName] === 'BUTTON' ||
-								record.target[PropertySymbol.tagName] === 'FIELDSET')
+							this.#isFormControlElement(<THTMLFormControlElement>record.target)
 						) {
 							if (
 								record.target[PropertySymbol.attributes]?.['form']?.[PropertySymbol.value] ===
 									this[PropertySymbol.attributes]?.['id']?.[PropertySymbol.value] &&
-								record.target[PropertySymbol.formNode] !== this
+								!record.target[PropertySymbol.isInsideObservedFormNode]
 							) {
 								this[PropertySymbol.elements][PropertySymbol.addItem](
 									<THTMLFormControlElement>record.target
 								);
-							} else {
+							} else if (!record.target[PropertySymbol.isInsideObservedFormNode]) {
 								this[PropertySymbol.elements][PropertySymbol.removeItem](
 									<THTMLFormControlElement>record.target
 								);
@@ -442,7 +462,7 @@ export default class HTMLFormElement extends HTMLElement {
 		for (const element of this[PropertySymbol.ownerDocument].querySelectorAll(
 			`INPUT[form="${id}"], SELECT[form="${id}"], TEXTAREA[form="${id}"], BUTTON[form="${id}"], FIELDSET[form="${id}"]`
 		)) {
-			if (element[PropertySymbol.formNode] !== this) {
+			if (!element[PropertySymbol.isInsideObservedFormNode]) {
 				this[PropertySymbol.elements][PropertySymbol.addItem](<THTMLFormControlElement>element);
 			}
 		}
@@ -547,6 +567,22 @@ export default class HTMLFormElement extends HTMLElement {
 				referrer: this.#browserFrame.page.mainFrame.window.location.origin
 			}
 		});
+	}
+
+	/**
+	 * Checks if an element is a form control element.
+	 *
+	 * @param item Item.
+	 * @returns True if the item is a form control element.
+	 */
+	#isFormControlElement(item: THTMLFormControlElement): boolean {
+		return (
+			item[PropertySymbol.tagName] === 'INPUT' ||
+			item[PropertySymbol.tagName] === 'SELECT' ||
+			item[PropertySymbol.tagName] === 'TEXTAREA' ||
+			item[PropertySymbol.tagName] === 'BUTTON' ||
+			item[PropertySymbol.tagName] === 'FIELDSET'
+		);
 	}
 
 	/**

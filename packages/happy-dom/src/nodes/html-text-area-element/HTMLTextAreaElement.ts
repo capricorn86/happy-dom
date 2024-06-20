@@ -12,6 +12,8 @@ import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtili
 import Text from '../text/Text.js';
 import INodeList from '../node/INodeList.js';
 import MutationRecord from '../../mutation-observer/MutationRecord.js';
+import Element from '../element/Element.js';
+import NodeTypeEnum from '../node/NodeTypeEnum.js';
 
 /**
  * HTML Text Area Element.
@@ -34,6 +36,7 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	public [PropertySymbol.value] = null;
 	public [PropertySymbol.textAreaNode]: HTMLTextAreaElement = this;
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
+	public [PropertySymbol.isInsideObservedFormNode] = false;
 
 	// Private properties
 	#selectionStart = null;
@@ -56,6 +59,14 @@ export default class HTMLTextAreaElement extends HTMLElement {
 				if (node instanceof Text) {
 					node[PropertySymbol.textAreaNode] = record.addedNodes[0] ? this : null;
 					this[PropertySymbol.resetSelection]();
+				} else if (node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
+					const textNodes = this.#findTextNodes(<Element>node);
+					if (textNodes.length) {
+						for (const textNode of textNodes) {
+							textNode[PropertySymbol.textAreaNode] = record.addedNodes[0] ? this : null;
+						}
+						this[PropertySymbol.resetSelection]();
+					}
 				}
 			})
 		});
@@ -608,5 +619,25 @@ export default class HTMLTextAreaElement extends HTMLElement {
 			this.#selectionEnd = null;
 			this.#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
 		}
+	}
+
+	/**
+	 * Finds all text nodes in the element.
+	 *
+	 * @param parentElement Parent element.
+	 * @returns Text nodes.
+	 */
+	#findTextNodes(parentElement: Element): Text[] {
+		const textNodes: Text[] = [];
+		for (const childNode of parentElement[PropertySymbol.childNodes]) {
+			if (childNode instanceof Text) {
+				textNodes.push(childNode);
+			} else if (childNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
+				for (const textNode of this.#findTextNodes(<Element>childNode)) {
+					textNodes.push(textNode);
+				}
+			}
+		}
+		return textNodes;
 	}
 }

@@ -25,6 +25,7 @@ export default class HTMLSelectElement extends HTMLElement {
 	public [PropertySymbol.options]: HTMLOptionsCollection = new HTMLOptionsCollection(this);
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
 	public [PropertySymbol.selectedOptions]: IHTMLCollection<HTMLOptionElement> | null = null;
+	public [PropertySymbol.isInsideObservedFormNode] = false;
 
 	// Events
 	public onchange: (event: Event) => void | null = null;

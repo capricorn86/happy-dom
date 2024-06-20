@@ -34,6 +34,7 @@ export default class HTMLFieldSetElement extends HTMLElement {
 		observeNode: this
 	});
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
+	public [PropertySymbol.isInsideObservedFormNode] = false;
 
 	/**
 	 * Returns elements.
