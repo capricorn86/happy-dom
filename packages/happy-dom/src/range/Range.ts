@@ -495,9 +495,9 @@ export default class Range {
 
 			newNode = referenceNode[PropertySymbol.parentNode];
 			newOffset =
-				(<Node>referenceNode[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(
-					referenceNode
-				) + 1;
+				(<Node>referenceNode[PropertySymbol.parentNode])[PropertySymbol.childNodes][
+					PropertySymbol.indexOf
+				](referenceNode) + 1;
 		}
 
 		if (
@@ -656,9 +656,9 @@ export default class Range {
 
 			newNode = referenceNode[PropertySymbol.parentNode];
 			newOffset =
-				(<Node>referenceNode[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(
-					referenceNode
-				) + 1;
+				(<Node>referenceNode[PropertySymbol.parentNode])[PropertySymbol.childNodes][
+					PropertySymbol.indexOf
+				](referenceNode) + 1;
 		}
 
 		if (
@@ -829,9 +829,9 @@ export default class Range {
 
 		let newOffset = !referenceNode
 			? NodeUtility.getNodeLength(parent)
-			: (<Node>referenceNode[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(
-					referenceNode
-				);
+			: (<Node>referenceNode[PropertySymbol.parentNode])[PropertySymbol.childNodes][
+					PropertySymbol.indexOf
+				](referenceNode);
 		newOffset +=
 			newNode[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode
 				? NodeUtility.getNodeLength(newNode)
@@ -863,7 +863,7 @@ export default class Range {
 			return true;
 		}
 
-		const offset = (<Node>parent)[PropertySymbol.childNodes].indexOf(node);
+		const offset = (<Node>parent)[PropertySymbol.childNodes][PropertySymbol.indexOf](node);
 
 		return (
 			RangeUtility.compareBoundaryPointsPosition(
@@ -891,7 +891,9 @@ export default class Range {
 			);
 		}
 
-		const index = (<Node>node[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(node);
+		const index = (<Node>node[PropertySymbol.parentNode])[PropertySymbol.childNodes][
+			PropertySymbol.indexOf
+		](node);
 
 		this[PropertySymbol.start].node = node[PropertySymbol.parentNode];
 		this[PropertySymbol.start].offset = index;
@@ -988,7 +990,9 @@ export default class Range {
 		}
 		this.setEnd(
 			node[PropertySymbol.parentNode],
-			(<Node>node[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(node) + 1
+			(<Node>node[PropertySymbol.parentNode])[PropertySymbol.childNodes][PropertySymbol.indexOf](
+				node
+			) + 1
 		);
 	}
 
@@ -1007,7 +1011,9 @@ export default class Range {
 		}
 		this.setEnd(
 			node[PropertySymbol.parentNode],
-			(<Node>node[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(node)
+			(<Node>node[PropertySymbol.parentNode])[PropertySymbol.childNodes][PropertySymbol.indexOf](
+				node
+			)
 		);
 	}
 
@@ -1026,7 +1032,9 @@ export default class Range {
 		}
 		this.setStart(
 			node[PropertySymbol.parentNode],
-			(<Node>node[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(node) + 1
+			(<Node>node[PropertySymbol.parentNode])[PropertySymbol.childNodes][PropertySymbol.indexOf](
+				node
+			) + 1
 		);
 	}
 
@@ -1045,7 +1053,9 @@ export default class Range {
 		}
 		this.setStart(
 			node[PropertySymbol.parentNode],
-			(<Node>node[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(node)
+			(<Node>node[PropertySymbol.parentNode])[PropertySymbol.childNodes][PropertySymbol.indexOf](
+				node
+			)
 		);
 	}
 

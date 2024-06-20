@@ -59,8 +59,8 @@ export default class FormData implements Iterable<[string, string | File]> {
 									this.append(node.name, file);
 								}
 							}
-						} else if (node.value) {
-							this.append(node.name, node.value);
+						} else if ((<HTMLInputElement>node).value) {
+							this.append(node.name, (<HTMLInputElement>node).value);
 						}
 					}
 				}

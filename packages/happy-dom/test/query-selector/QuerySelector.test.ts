@@ -989,22 +989,22 @@ describe('QuerySelector', () => {
 		it('Throws an error when providing an invalid selector', () => {
 			const div = document.createElement('div');
 			expect(() => div.querySelectorAll('1')).toThrowError(
-				"Failed to execute 'querySelectorAll' on 'HTMLElement': '1' is not a valid selector."
+				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': '1' is not a valid selector."
 			);
 			expect(() => div.querySelectorAll('[1')).toThrowError(
-				"Failed to execute 'querySelectorAll' on 'HTMLElement': '[1' is not a valid selector."
+				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': '[1' is not a valid selector."
 			);
 			expect(() => div.querySelectorAll('.1')).toThrowError(
-				"Failed to execute 'querySelectorAll' on 'HTMLElement': '.1' is not a valid selector."
+				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': '.1' is not a valid selector."
 			);
 			expect(() => div.querySelectorAll('#1')).toThrowError(
-				"Failed to execute 'querySelectorAll' on 'HTMLElement': '#1' is not a valid selector."
+				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': '#1' is not a valid selector."
 			);
 			expect(() => div.querySelectorAll('a.')).toThrowError(
-				"Failed to execute 'querySelectorAll' on 'HTMLElement': 'a.' is not a valid selector."
+				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': 'a.' is not a valid selector."
 			);
 			expect(() => div.querySelectorAll('a#')).toThrowError(
-				"Failed to execute 'querySelectorAll' on 'HTMLElement': 'a#' is not a valid selector."
+				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': 'a#' is not a valid selector."
 			);
 		});
 	});
@@ -1208,22 +1208,22 @@ describe('QuerySelector', () => {
 		it('Throws an error when providing an invalid selector', () => {
 			const div = document.createElement('div');
 			expect(() => div.querySelector('1')).toThrowError(
-				"Failed to execute 'querySelector' on 'HTMLElement': '1' is not a valid selector."
+				"Failed to execute 'querySelector' on 'HTMLDivElement': '1' is not a valid selector."
 			);
 			expect(() => div.querySelector('[1')).toThrowError(
-				"Failed to execute 'querySelector' on 'HTMLElement': '[1' is not a valid selector."
+				"Failed to execute 'querySelector' on 'HTMLDivElement': '[1' is not a valid selector."
 			);
 			expect(() => div.querySelector('.1')).toThrowError(
-				"Failed to execute 'querySelector' on 'HTMLElement': '.1' is not a valid selector."
+				"Failed to execute 'querySelector' on 'HTMLDivElement': '.1' is not a valid selector."
 			);
 			expect(() => div.querySelector('#1')).toThrowError(
-				"Failed to execute 'querySelector' on 'HTMLElement': '#1' is not a valid selector."
+				"Failed to execute 'querySelector' on 'HTMLDivElement': '#1' is not a valid selector."
 			);
 			expect(() => div.querySelector('a.')).toThrowError(
-				"Failed to execute 'querySelector' on 'HTMLElement': 'a.' is not a valid selector."
+				"Failed to execute 'querySelector' on 'HTMLDivElement': 'a.' is not a valid selector."
 			);
 			expect(() => div.querySelector('a#')).toThrowError(
-				"Failed to execute 'querySelector' on 'HTMLElement': 'a#' is not a valid selector."
+				"Failed to execute 'querySelector' on 'HTMLDivElement': 'a#' is not a valid selector."
 			);
 		});
 
@@ -1296,6 +1296,23 @@ describe('QuerySelector', () => {
 			);
 			expect(container.querySelector(':where(div)')).toBe(container.children[0]);
 			expect(container.querySelector(':where(span[attr1="val,ue1"])')).toBe(null);
+		});
+
+		it('Returns element matching selector "datalist#id"', () => {
+			const div = document.createElement('div');
+			const datalist = document.createElement('datalist');
+			const span = document.createElement('span');
+
+			datalist.id = 'datalist_id';
+			span.id = 'span_id';
+
+			div.appendChild(datalist);
+			div.appendChild(span);
+
+			expect(div.querySelector('datalist#span_id') === null).toBe(true);
+			expect(div.querySelector('datalist#datalist_id') === datalist).toBe(true);
+			expect(div.querySelector('span#datalist_id') === null).toBe(true);
+			expect(div.querySelector('span#span_id') === span).toBe(true);
 		});
 	});
 
@@ -1371,20 +1388,24 @@ describe('QuerySelector', () => {
 			div.innerHTML = '<div class="foo"></div>';
 			const element = div.children[0];
 			expect(() => element.matches('1')).toThrow(
-				new Error(`Failed to execute 'matches' on 'HTMLElement': '1' is not a valid selector.`)
+				new Error(`Failed to execute 'matches' on 'HTMLDivElement': '1' is not a valid selector.`)
 			);
 			expect(() => element.matches(':not')).toThrow(
-				new Error(`Failed to execute 'matches' on 'HTMLElement': ':not' is not a valid selector.`)
+				new Error(
+					`Failed to execute 'matches' on 'HTMLDivElement': ':not' is not a valid selector.`
+				)
 			);
 			expect(() => element.matches(':is')).toThrow(
-				new Error(`Failed to execute 'matches' on 'HTMLElement': ':is' is not a valid selector.`)
+				new Error(`Failed to execute 'matches' on 'HTMLDivElement': ':is' is not a valid selector.`)
 			);
 			expect(() => element.matches(':where')).toThrow(
-				new Error(`Failed to execute 'matches' on 'HTMLElement': ':where' is not a valid selector.`)
+				new Error(
+					`Failed to execute 'matches' on 'HTMLDivElement': ':where' is not a valid selector.`
+				)
 			);
 			expect(() => element.matches('div:not')).toThrow(
 				new Error(
-					`Failed to execute 'matches' on 'HTMLElement': 'div:not' is not a valid selector.`
+					`Failed to execute 'matches' on 'HTMLDivElement': 'div:not' is not a valid selector.`
 				)
 			);
 		});

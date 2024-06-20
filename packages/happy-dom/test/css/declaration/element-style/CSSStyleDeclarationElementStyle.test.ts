@@ -1,5 +1,4 @@
 import Window from '../../../../src/window/Window.js';
-import Window from '../../../../src/window/Window.js';
 import Document from '../../../../src/nodes/document/Document.js';
 import HTMLElement from '../../../../src/nodes/html-element/HTMLElement.js';
 import CSSStyleDeclarationElementStyle from '../../../../src/css/declaration/element-style/CSSStyleDeclarationElementStyle.js';

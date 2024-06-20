@@ -3,7 +3,7 @@
 		"outDir": "lib",
 		"rootDir": "src",
 		"tsBuildInfoFile": "tmp/.tsbuildinfo",
-		"target": "es2020",
+		"target": "ES2022",
 		"declaration": true,
 		"declarationMap": true,
 		"module": "CommonJS",
@@ -25,7 +25,7 @@
 			"node"
 		],
 		"lib": [
-			"es2020",
+			"ES2022",
 			"dom"
 		]
 	},

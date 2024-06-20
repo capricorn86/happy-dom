@@ -11,17 +11,15 @@ import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtility.js';
 import DOMException from '../../exception/DOMException.js';
 import HTMLCollection from './HTMLCollection.js';
-import NodeList from '../node/NodeList.js';
+import IHTMLCollection from './IHTMLCollection.js';
 import Text from '../text/Text.js';
 import DOMRectList from './DOMRectList.js';
 import Attr from '../attr/Attr.js';
-import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
+import NamedNodeMap from './NamedNodeMap.js';
 import Event from '../../event/Event.js';
-import ElementUtility from './ElementUtility.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
-import ElementNamedNodeMap from './ElementNamedNodeMap.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
 import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
@@ -32,6 +30,10 @@ import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 import IChildNode from '../child-node/IChildNode.js';
 import INonDocumentTypeChildNode from '../child-node/INonDocumentTypeChildNode.js';
 import IParentNode from '../parent-node/IParentNode.js';
+import MutationRecord from '../../mutation-observer/MutationRecord.js';
+import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
+import INodeList from '../node/INodeList.js';
+import CSSStyleDeclarationPropertyManager from '../../css/declaration/property-manager/CSSStyleDeclarationPropertyManager.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -49,7 +51,7 @@ export default class Element
 	public static [PropertySymbol.localName]: string | null = null;
 	public static [PropertySymbol.namespaceURI]: string | null = null;
 	public static observedAttributes: string[];
-	public cloneNode: (deep?: boolean) => Element;
+	public declare cloneNode: (deep?: boolean) => Element;
 
 	// Events
 	public oncancel: (event: Event) => void | null = null;
@@ -88,7 +90,6 @@ export default class Element
 	public ontouchstart: (event: Event) => void | null = null;
 
 	// Internal properties
-	public [PropertySymbol.children]: HTMLCollection<Element> = new HTMLCollection<Element>();
 	public [PropertySymbol.classList]: DOMTokenList = null;
 	public [PropertySymbol.isValue]: string | null = null;
 	public [PropertySymbol.computedStyle]: CSSStyleDeclaration | null = null;
@@ -102,9 +103,26 @@ export default class Element
 	public [PropertySymbol.scrollWidth] = 0;
 	public [PropertySymbol.scrollTop] = 0;
 	public [PropertySymbol.scrollLeft] = 0;
-	public [PropertySymbol.attributes]: NamedNodeMap = new ElementNamedNodeMap(this);
+	public [PropertySymbol.attributes] = new NamedNodeMap(this);
 	public [PropertySymbol.namespaceURI]: string | null =
 		this.constructor[PropertySymbol.namespaceURI] || null;
+	public [PropertySymbol.children]: IHTMLCollection<Element> = new HTMLCollection<Element>();
+	public [PropertySymbol.computedStyleCache]: {
+		result: WeakRef<CSSStyleDeclarationPropertyManager> | null;
+	} | null = null;
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+		const attributes = this[PropertySymbol.attributes];
+		attributes[PropertySymbol.addEventListener]('set', this.#onSetAttribute.bind(this));
+		attributes[PropertySymbol.addEventListener]('remove', this.#onRemoveAttribute.bind(this));
+
+		this[PropertySymbol.childNodes][PropertySymbol.attachedHTMLCollection] =
+			this[PropertySymbol.children];
+	}
 
 	/**
 	 * Returns tag name.
@@ -209,7 +227,7 @@ export default class Element
 	/**
 	 * Returns element children.
 	 */
-	public get children(): HTMLCollection<Element> {
+	public get children(): IHTMLCollection<Element> {
 		return this[PropertySymbol.children];
 	}
 
@@ -339,8 +357,9 @@ export default class Element
 	 * @param textContent Text content.
 	 */
 	public set textContent(textContent: string) {
-		for (const child of this[PropertySymbol.childNodes].slice()) {
-			this.removeChild(child);
+		const childNodes = this[PropertySymbol.childNodes];
+		while (childNodes.length) {
+			this.removeChild(childNodes[0]);
 		}
 		if (textContent) {
 			this.appendChild(this[PropertySymbol.ownerDocument].createTextNode(textContent));
@@ -362,8 +381,10 @@ export default class Element
 	 * @param html HTML.
 	 */
 	public set innerHTML(html: string) {
-		for (const child of this[PropertySymbol.childNodes].slice()) {
-			this.removeChild(child);
+		const childNodes = this[PropertySymbol.childNodes];
+
+		while (childNodes.length) {
+			this.removeChild(childNodes[0]);
 		}
 
 		XMLParser.parse(this[PropertySymbol.ownerDocument], html, { rootNode: this });
@@ -388,6 +409,15 @@ export default class Element
 	}
 
 	/**
+	 * Last element child.
+	 *
+	 * @returns Element.
+	 */
+	public get childElementCount(): number {
+		return this[PropertySymbol.children].length;
+	}
+
+	/**
 	 * First element child.
 	 *
 	 * @returns Element.
@@ -402,16 +432,8 @@ export default class Element
 	 * @returns Element.
 	 */
 	public get lastElementChild(): Element {
-		return this[PropertySymbol.children][this[PropertySymbol.children].length - 1] ?? null;
-	}
-
-	/**
-	 * Last element child.
-	 *
-	 * @returns Element.
-	 */
-	public get childElementCount(): number {
-		return this[PropertySymbol.children].length;
+		const children = this[PropertySymbol.children];
+		return children[children.length - 1] ?? null;
 	}
 
 	/**
@@ -474,52 +496,7 @@ export default class Element
 		clone[PropertySymbol.localName] = this[PropertySymbol.localName];
 		clone[PropertySymbol.namespaceURI] = this[PropertySymbol.namespaceURI];
 
-		for (let i = 0, max = this[PropertySymbol.attributes].length; i < max; i++) {
-			const attribute = this[PropertySymbol.attributes][i];
-			clone[PropertySymbol.attributes].setNamedItem(
-				Object.assign(
-					this[PropertySymbol.ownerDocument].createAttributeNS(
-						attribute[PropertySymbol.namespaceURI],
-						attribute[PropertySymbol.name]
-					),
-					attribute
-				)
-			);
-		}
-
-		if (deep) {
-			for (const node of clone[PropertySymbol.childNodes]) {
-				if (node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
-					clone[PropertySymbol.children].push(<Element>node);
-				}
-			}
-		}
-
 		return <Element>clone;
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.appendChild](node: Node): Node {
-		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
-		return ElementUtility.appendChild(this, node);
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.removeChild](node: Node): Node {
-		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
-		return ElementUtility.removeChild(this, node);
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
-		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
-		return ElementUtility.insertBefore(this, newNode, referenceNode);
 	}
 
 	/**
@@ -619,10 +596,11 @@ export default class Element
 	 * @param text HTML string to insert.
 	 */
 	public insertAdjacentHTML(position: InsertAdjacentPosition, text: string): void {
-		for (const node of (<DocumentFragment>(
+		const childNodes = (<DocumentFragment>(
 			XMLParser.parse(this[PropertySymbol.ownerDocument], text)
-		))[PropertySymbol.childNodes].slice()) {
-			this.insertAdjacentElement(position, node);
+		))[PropertySymbol.childNodes];
+		while (childNodes.length) {
+			this.insertAdjacentElement(position, childNodes[0]);
 		}
 	}
 
@@ -803,7 +781,7 @@ export default class Element
 
 		shadowRoot[PropertySymbol.host] = this;
 		shadowRoot[PropertySymbol.mode] = init.mode;
-		(<ShadowRoot>shadowRoot)[PropertySymbol.connectToNode](this);
+		(<ShadowRoot>shadowRoot)[PropertySymbol.connectedToDocument]();
 
 		return this[PropertySymbol.shadowRoot];
 	}
@@ -878,7 +856,7 @@ export default class Element
 	 */
 	public querySelectorAll<K extends keyof IHTMLElementTagNameMap>(
 		selector: K
-	): NodeList<IHTMLElementTagNameMap[K]>;
+	): INodeList<IHTMLElementTagNameMap[K]>;
 
 	/**
 	 * Query CSS selector to find matching elments.
@@ -888,7 +866,7 @@ export default class Element
 	 */
 	public querySelectorAll<K extends keyof ISVGElementTagNameMap>(
 		selector: K
-	): NodeList<ISVGElementTagNameMap[K]>;
+	): INodeList<ISVGElementTagNameMap[K]>;
 
 	/**
 	 * Query CSS selector to find matching elments.
@@ -896,7 +874,7 @@ export default class Element
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): NodeList<Element>;
+	public querySelectorAll(selector: string): INodeList<Element>;
 
 	/**
 	 * Query CSS selector to find matching elments.
@@ -904,7 +882,7 @@ export default class Element
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): NodeList<Element> {
+	public querySelectorAll(selector: string): INodeList<Element> {
 		return QuerySelector.querySelectorAll(this, selector);
 	}
 
@@ -952,7 +930,7 @@ export default class Element
 	 * @param className Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByClassName(className: string): HTMLCollection<Element> {
+	public getElementsByClassName(className: string): IHTMLCollection<Element> {
 		return ParentNodeUtility.getElementsByClassName(this, className);
 	}
 
@@ -964,7 +942,7 @@ export default class Element
 	 */
 	public getElementsByTagName<K extends keyof IHTMLElementTagNameMap>(
 		tagName: K
-	): HTMLCollection<IHTMLElementTagNameMap[K]>;
+	): IHTMLCollection<IHTMLElementTagNameMap[K]>;
 
 	/**
 	 * Returns an elements by tag name.
@@ -974,7 +952,7 @@ export default class Element
 	 */
 	public getElementsByTagName<K extends keyof ISVGElementTagNameMap>(
 		tagName: K
-	): HTMLCollection<ISVGElementTagNameMap[K]>;
+	): IHTMLCollection<ISVGElementTagNameMap[K]>;
 
 	/**
 	 * Returns an elements by tag name.
@@ -982,7 +960,7 @@ export default class Element
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagName(tagName: string): HTMLCollection<Element>;
+	public getElementsByTagName(tagName: string): IHTMLCollection<Element>;
 
 	/**
 	 * Returns an elements by tag name.
@@ -990,7 +968,7 @@ export default class Element
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagName(tagName: string): HTMLCollection<Element> {
+	public getElementsByTagName(tagName: string): IHTMLCollection<Element> {
 		return ParentNodeUtility.getElementsByTagName(this, tagName);
 	}
 
@@ -1004,7 +982,7 @@ export default class Element
 	public getElementsByTagNameNS<K extends keyof IHTMLElementTagNameMap>(
 		namespaceURI: 'http://www.w3.org/1999/xhtml',
 		tagName: K
-	): HTMLCollection<IHTMLElementTagNameMap[K]>;
+	): IHTMLCollection<IHTMLElementTagNameMap[K]>;
 
 	/**
 	 * Returns an elements by tag name and namespace.
@@ -1016,7 +994,7 @@ export default class Element
 	public getElementsByTagNameNS<K extends keyof ISVGElementTagNameMap>(
 		namespaceURI: 'http://www.w3.org/2000/svg',
 		tagName: K
-	): HTMLCollection<ISVGElementTagNameMap[K]>;
+	): IHTMLCollection<ISVGElementTagNameMap[K]>;
 
 	/**
 	 * Returns an elements by tag name and namespace.
@@ -1025,7 +1003,7 @@ export default class Element
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagNameNS(namespaceURI: string, tagName: string): HTMLCollection<Element>;
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<Element>;
 
 	/**
 	 * Returns an elements by tag name and namespace.
@@ -1034,7 +1012,7 @@ export default class Element
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagNameNS(namespaceURI: string, tagName: string): HTMLCollection<Element> {
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<Element> {
 		return ParentNodeUtility.getElementsByTagNameNS(this, namespaceURI, tagName);
 	}
 
@@ -1201,5 +1179,192 @@ export default class Element
 		}
 
 		return returnValue;
+	}
+
+	/**
+	 * Append a child node to childNodes.
+	 *
+	 * @param  node Node to append.
+	 * @returns Appended node.
+	 */
+	public [PropertySymbol.appendChild](node: Node): Node {
+		const returnValue = super[PropertySymbol.appendChild](node);
+		this.#onNodeListChange(node);
+		return returnValue;
+	}
+
+	/**
+	 * Remove Child element from childNodes array.
+	 *
+	 * @param node Node to remove.
+	 * @returns Removed node.
+	 */
+	public [PropertySymbol.removeChild](node: Node): Node {
+		const returnValue = super[PropertySymbol.removeChild](node);
+		this.#onNodeListChange(node);
+		return returnValue;
+	}
+
+	/**
+	 * Inserts a node before another.
+	 *
+	 * @param newNode Node to insert.
+	 * @param referenceNode Node to insert before.
+	 * @returns Inserted node.
+	 */
+	public [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
+		const returnValue = super[PropertySymbol.insertBefore](newNode, referenceNode);
+		this.#onNodeListChange(newNode);
+		return returnValue;
+	}
+
+	/**
+	 * Triggered when an attribute is set.
+	 *
+	 * @param attribute Attribute.
+	 * @param replacedAttribute Replaced attribute.
+	 */
+	#onSetAttribute(attribute: Attr, replacedAttribute: Attr | null): void {
+		if (!attribute[PropertySymbol.name]) {
+			return null;
+		}
+
+		const oldValue = replacedAttribute ? replacedAttribute[PropertySymbol.value] : null;
+
+		if (attribute[PropertySymbol.name] === 'class' && this[PropertySymbol.classList]) {
+			this[PropertySymbol.classList][PropertySymbol.updateIndices]();
+		}
+
+		if (
+			attribute[PropertySymbol.name] === 'slot' &&
+			this[PropertySymbol.parentNode] &&
+			this[PropertySymbol.parentNode][PropertySymbol.shadowRoot]
+		) {
+			const shadowRoot = this[PropertySymbol.parentNode][PropertySymbol.shadowRoot];
+			if (oldValue && oldValue !== attribute[PropertySymbol.value]) {
+				const slot = shadowRoot.querySelector(
+					`slot[name="${replacedAttribute[PropertySymbol.value]}"]`
+				);
+				if (slot) {
+					slot.dispatchEvent(new Event('slotchange'));
+				}
+			}
+			if (attribute[PropertySymbol.value]) {
+				const slot = shadowRoot.querySelector(`slot[name="${attribute[PropertySymbol.value]}"]`);
+				if (slot) {
+					slot.dispatchEvent(new Event('slotchange'));
+				}
+			}
+		}
+
+		if (this[PropertySymbol.computedStyleCache]) {
+			this[PropertySymbol.computedStyleCache].result = null;
+			this[PropertySymbol.computedStyleCache] = null;
+		}
+
+		if (
+			this.attributeChangedCallback &&
+			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes] &&
+			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes].includes(
+				attribute[PropertySymbol.name]
+			)
+		) {
+			this.attributeChangedCallback(
+				attribute[PropertySymbol.name],
+				oldValue,
+				attribute[PropertySymbol.value]
+			);
+		}
+
+		this[PropertySymbol.reportMutation](
+			new MutationRecord({
+				target: this,
+				type: MutationTypeEnum.attributes,
+				attributeName: attribute[PropertySymbol.name],
+				oldValue
+			})
+		);
+	}
+
+	/**
+	 * Triggered when an attribute is set.
+	 *
+	 * @param removedAttribute Attribute.
+	 */
+	#onRemoveAttribute(removedAttribute: Attr): void {
+		if (removedAttribute[PropertySymbol.name] === 'class' && this[PropertySymbol.classList]) {
+			this[PropertySymbol.classList][PropertySymbol.updateIndices]();
+		}
+
+		if (
+			removedAttribute[PropertySymbol.name] === 'slot' &&
+			this[PropertySymbol.parentNode] &&
+			this[PropertySymbol.parentNode][PropertySymbol.shadowRoot]
+		) {
+			const shadowRoot = this[PropertySymbol.parentNode][PropertySymbol.shadowRoot];
+			const slot = shadowRoot.querySelector(`slot[name="${this.getAttribute('slot')}"]`);
+			if (slot) {
+				slot.dispatchEvent(new Event('slotchange'));
+			}
+		}
+
+		if (this[PropertySymbol.computedStyleCache]) {
+			this[PropertySymbol.computedStyleCache].result = null;
+			this[PropertySymbol.computedStyleCache] = null;
+		}
+
+		if (
+			this.attributeChangedCallback &&
+			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes] &&
+			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes].includes(
+				removedAttribute[PropertySymbol.name]
+			)
+		) {
+			this.attributeChangedCallback(
+				removedAttribute[PropertySymbol.name],
+				removedAttribute[PropertySymbol.value],
+				null
+			);
+		}
+
+		this[PropertySymbol.reportMutation](
+			new MutationRecord({
+				type: MutationTypeEnum.attributes,
+				target: this,
+				attributeName: removedAttribute[PropertySymbol.name],
+				oldValue: removedAttribute[PropertySymbol.value]
+			})
+		);
+	}
+
+	/**
+	 * Triggered when child nodes are changed.
+	 *
+	 * @param node Changed node.
+	 */
+	#onNodeListChange(node: Node): void {
+		if (this[PropertySymbol.shadowRoot]) {
+			if (node['slot']) {
+				const slot = this[PropertySymbol.shadowRoot].querySelector(`slot[name="${node['slot']}"]`);
+				if (slot) {
+					slot.dispatchEvent(new Event('slotchange'));
+				}
+			} else if (node[PropertySymbol.nodeType] !== NodeTypeEnum.commentNode) {
+				const slot = this[PropertySymbol.shadowRoot].querySelector('slot:not([slot])');
+				if (slot) {
+					slot.dispatchEvent(new Event('slotchange'));
+				}
+			}
+		} else if (
+			this[PropertySymbol.parentNode] &&
+			this[PropertySymbol.parentNode][PropertySymbol.shadowRoot] &&
+			this.getAttribute('slot')
+		) {
+			const shadowRoot = this[PropertySymbol.parentNode][PropertySymbol.shadowRoot];
+			const slot = shadowRoot.querySelector(`slot[name="${this.getAttribute('slot')}"]`);
+			if (slot) {
+				slot.dispatchEvent(new Event('slotchange'));
+			}
+		}
 	}
 }

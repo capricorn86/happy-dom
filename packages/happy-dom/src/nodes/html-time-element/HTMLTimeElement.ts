@@ -1,7 +1,7 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 
 /**
- * HTML Time Element.
+ * HTMLTimeElement.
  *
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLTimeElement

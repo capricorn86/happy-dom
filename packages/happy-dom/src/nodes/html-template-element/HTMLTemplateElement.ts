@@ -13,7 +13,7 @@ import XMLParser from '../../xml-parser/XMLParser.js';
  */
 export default class HTMLTemplateElement extends HTMLElement {
 	// Public properties
-	public cloneNode: (deep?: boolean) => HTMLTemplateElement;
+	public declare cloneNode: (deep?: boolean) => HTMLTemplateElement;
 
 	// Internal properties
 	public [PropertySymbol.content]: DocumentFragment =
@@ -40,9 +40,10 @@ export default class HTMLTemplateElement extends HTMLElement {
 	 */
 	public set innerHTML(html: string) {
 		const content = <DocumentFragment>this[PropertySymbol.content];
+		const childNodes = content[PropertySymbol.childNodes];
 
-		for (const child of content[PropertySymbol.childNodes].slice()) {
-			this[PropertySymbol.content].removeChild(child);
+		while (childNodes.length) {
+			content.removeChild(childNodes[0]);
 		}
 
 		XMLParser.parse(this[PropertySymbol.ownerDocument], html, {

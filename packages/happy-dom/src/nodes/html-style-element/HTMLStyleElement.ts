@@ -1,7 +1,8 @@
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
+import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
-import Node from '../node/Node.js';
+import Text from '../text/Text.js';
 
 /**
  * HTML Style Element.
@@ -11,7 +12,27 @@ import Node from '../node/Node.js';
  */
 export default class HTMLStyleElement extends HTMLElement {
 	private [PropertySymbol.sheet]: CSSStyleSheet | null = null;
-	public [PropertySymbol.styleNode] = this;
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+
+		this[PropertySymbol.observeMutations]({
+			options: {
+				childList: true,
+				subtree: true
+			},
+			callback: new WeakRef((record: MutationRecord) => {
+				const node = record.addedNodes[0] || record.removedNodes[0];
+				if (node instanceof Text) {
+					node[PropertySymbol.styleNode] = record.addedNodes[0] ? this : null;
+					this[PropertySymbol.updateSheet]();
+				}
+			})
+		});
+	}
 
 	/**
 	 * Returns CSS style sheet.
@@ -83,42 +104,18 @@ export default class HTMLStyleElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.appendChild](node: Node): Node {
-		const returnValue = super[PropertySymbol.appendChild](node);
-		this[PropertySymbol.updateSheet]();
-		return returnValue;
+	public override [PropertySymbol.connectedToDocument](): void {
+		super[PropertySymbol.connectedToDocument]();
+		this[PropertySymbol.sheet] = new CSSStyleSheet();
+		this[PropertySymbol.sheet].replaceSync(this.textContent);
 	}
 
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.removeChild](node: Node): Node {
-		const returnValue = super[PropertySymbol.removeChild](node);
-		this[PropertySymbol.updateSheet]();
-		return returnValue;
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
-		const returnValue = super[PropertySymbol.insertBefore](newNode, referenceNode);
-		this[PropertySymbol.updateSheet]();
-		return returnValue;
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
-		super[PropertySymbol.connectToNode](parentNode);
-
-		if (parentNode) {
-			this[PropertySymbol.sheet] = new CSSStyleSheet();
-			this[PropertySymbol.sheet].replaceSync(this.textContent);
-		} else {
-			this[PropertySymbol.sheet] = null;
-		}
+	public override [PropertySymbol.disconnectedFromDocument](): void {
+		super[PropertySymbol.disconnectedFromDocument]();
+		this[PropertySymbol.sheet] = null;
 	}
 
 	/**
@@ -126,7 +123,6 @@ export default class HTMLStyleElement extends HTMLElement {
 	 */
 	public [PropertySymbol.updateSheet](): void {
 		if (this[PropertySymbol.sheet]) {
-			this[PropertySymbol.ownerDocument][PropertySymbol.cacheID]++;
 			this[PropertySymbol.sheet].replaceSync(this.textContent);
 		}
 	}

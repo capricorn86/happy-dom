@@ -20,7 +20,7 @@ interface IMediaError {
  */
 export default class HTMLMediaElement extends HTMLElement {
 	// Public properties
-	public cloneNode: (deep?: boolean) => HTMLMediaElement;
+	public declare cloneNode: (deep?: boolean) => HTMLMediaElement;
 
 	// Events
 	public onabort: (event: Event) => void | null = null;

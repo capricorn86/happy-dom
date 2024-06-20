@@ -24,7 +24,7 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	area: {
-		className: 'HTMLElement',
+		className: 'HTMLAreaElement',
 		localName: 'area',
 		tagName: 'AREA',
 		contentModel: HTMLElementConfigContentModelEnum.noDescendants
@@ -71,14 +71,8 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		tagName: 'BDO',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
-	blockquaote: {
-		className: 'HTMLElement',
-		localName: 'blockquaote',
-		tagName: 'BLOCKQUAOTE',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
-	},
 	body: {
-		className: 'HTMLElement',
+		className: 'HTMLBodyElement',
 		localName: 'body',
 		tagName: 'BODY',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
@@ -150,13 +144,13 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	blockquote: {
-		className: 'HTMLElement',
+		className: 'HTMLQuoteElement',
 		localName: 'blockquote',
 		tagName: 'BLOCKQUOTE',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	br: {
-		className: 'HTMLElement',
+		className: 'HTMLBRElement',
 		localName: 'br',
 		tagName: 'BR',
 		contentModel: HTMLElementConfigContentModelEnum.noDescendants
@@ -168,13 +162,13 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	canvas: {
-		className: 'HTMLElement',
+		className: 'HTMLCanvasElement',
 		localName: 'canvas',
 		tagName: 'CANVAS',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	caption: {
-		className: 'HTMLElement',
+		className: 'HTMLTableCaptionElement',
 		localName: 'caption',
 		tagName: 'CAPTION',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
@@ -192,25 +186,25 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	col: {
-		className: 'HTMLElement',
+		className: 'HTMLTableColElement',
 		localName: 'col',
 		tagName: 'COL',
 		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	colgroup: {
-		className: 'HTMLElement',
+		className: 'HTMLTableColElement',
 		localName: 'colgroup',
 		tagName: 'COLGROUP',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	data: {
-		className: 'HTMLElement',
+		className: 'HTMLDataElement',
 		localName: 'data',
 		tagName: 'DATA',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	datalist: {
-		className: 'HTMLElement',
+		className: 'HTMLDataListElement',
 		localName: 'datalist',
 		tagName: 'DATALIST',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
@@ -222,13 +216,13 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
 	},
 	del: {
-		className: 'HTMLElement',
+		className: 'HTMLModElement',
 		localName: 'del',
 		tagName: 'DEL',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	details: {
-		className: 'HTMLElement',
+		className: 'HTMLDetailsElement',
 		localName: 'details',
 		tagName: 'DETAILS',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
@@ -246,13 +240,13 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	div: {
-		className: 'HTMLElement',
+		className: 'HTMLDivElement',
 		localName: 'div',
 		tagName: 'DIV',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	dl: {
-		className: 'HTMLElement',
+		className: 'HTMLDListElement',
 		localName: 'dl',
 		tagName: 'DL',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
@@ -270,13 +264,13 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	embed: {
-		className: 'HTMLElement',
+		className: 'HTMLEmbedElement',
 		localName: 'embed',
 		tagName: 'EMBED',
 		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	fieldset: {
-		className: 'HTMLElement',
+		className: 'HTMLFieldSetElement',
 		localName: 'fieldset',
 		tagName: 'FIELDSET',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
@@ -300,43 +294,43 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	h1: {
-		className: 'HTMLElement',
+		className: 'HTMLHeadingElement',
 		localName: 'h1',
 		tagName: 'H1',
 		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
 	},
 	h2: {
-		className: 'HTMLElement',
+		className: 'HTMLHeadingElement',
 		localName: 'h2',
 		tagName: 'H2',
 		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
 	},
 	h3: {
-		className: 'HTMLElement',
+		className: 'HTMLHeadingElement',
 		localName: 'h3',
 		tagName: 'H3',
 		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
 	},
 	h4: {
-		className: 'HTMLElement',
+		className: 'HTMLHeadingElement',
 		localName: 'h4',
 		tagName: 'H4',
 		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
 	},
 	h5: {
-		className: 'HTMLElement',
+		className: 'HTMLHeadingElement',
 		localName: 'h5',
 		tagName: 'H5',
 		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
 	},
 	h6: {
-		className: 'HTMLElement',
+		className: 'HTMLHeadingElement',
 		localName: 'h6',
 		tagName: 'H6',
 		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
 	},
 	head: {
-		className: 'HTMLElement',
+		className: 'HTMLHeadElement',
 		localName: 'head',
 		tagName: 'HEAD',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
@@ -354,13 +348,13 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	hr: {
-		className: 'HTMLElement',
+		className: 'HTMLHRElement',
 		localName: 'hr',
 		tagName: 'HR',
 		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	html: {
-		className: 'HTMLElement',
+		className: 'HTMLHtmlElement',
 		localName: 'html',
 		tagName: 'HTML',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
@@ -378,7 +372,7 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	ins: {
-		className: 'HTMLElement',
+		className: 'HTMLModElement',
 		localName: 'ins',
 		tagName: 'INS',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
@@ -390,13 +384,13 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	legend: {
-		className: 'HTMLElement',
+		className: 'HTMLLegendElement',
 		localName: 'legend',
 		tagName: 'LEGEND',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	li: {
-		className: 'HTMLElement',
+		className: 'HTMLLIElement',
 		localName: 'li',
 		tagName: 'LI',
 		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
@@ -408,7 +402,7 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	map: {
-		className: 'HTMLElement',
+		className: 'HTMLMapElement',
 		localName: 'map',
 		tagName: 'MAP',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
@@ -419,26 +413,14 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		tagName: 'MARK',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
-	math: {
-		className: 'HTMLElement',
-		localName: 'math',
-		tagName: 'MATH',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
-	},
 	menu: {
-		className: 'HTMLElement',
+		className: 'HTMLMenuElement',
 		localName: 'menu',
 		tagName: 'MENU',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
-	menuitem: {
-		className: 'HTMLElement',
-		localName: 'menuitem',
-		tagName: 'MENUITEM',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
-	},
 	meter: {
-		className: 'HTMLElement',
+		className: 'HTMLMeterElement',
 		localName: 'meter',
 		tagName: 'METER',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
@@ -456,13 +438,13 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	object: {
-		className: 'HTMLElement',
+		className: 'HTMLObjectElement',
 		localName: 'object',
 		tagName: 'OBJECT',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	ol: {
-		className: 'HTMLElement',
+		className: 'HTMLOListElement',
 		localName: 'ol',
 		tagName: 'OL',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
@@ -480,43 +462,43 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
 	},
 	output: {
-		className: 'HTMLElement',
+		className: 'HTMLOutputElement',
 		localName: 'output',
 		tagName: 'OUTPUT',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	p: {
-		className: 'HTMLElement',
+		className: 'HTMLParagraphElement',
 		localName: 'p',
 		tagName: 'P',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	param: {
-		className: 'HTMLElement',
+		className: 'HTMLParamElement',
 		localName: 'param',
 		tagName: 'PARAM',
 		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	picture: {
-		className: 'HTMLElement',
+		className: 'HTMLPictureElement',
 		localName: 'picture',
 		tagName: 'PICTURE',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	pre: {
-		className: 'HTMLElement',
+		className: 'HTMLPreElement',
 		localName: 'pre',
 		tagName: 'PRE',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	progress: {
-		className: 'HTMLElement',
+		className: 'HTMLProgressElement',
 		localName: 'progress',
 		tagName: 'PROGRESS',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	q: {
-		className: 'HTMLElement',
+		className: 'HTMLQuoteElement',
 		localName: 'q',
 		tagName: 'Q',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
@@ -582,13 +564,13 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	source: {
-		className: 'HTMLElement',
+		className: 'HTMLSourceElement',
 		localName: 'source',
 		tagName: 'SOURCE',
 		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	span: {
-		className: 'HTMLElement',
+		className: 'HTMLSpanElement',
 		localName: 'span',
 		tagName: 'SPAN',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
@@ -618,37 +600,37 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	table: {
-		className: 'HTMLElement',
+		className: 'HTMLTableElement',
 		localName: 'table',
 		tagName: 'TABLE',
 		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
 	},
 	tbody: {
-		className: 'HTMLElement',
+		className: 'HTMLTableSectionElement',
 		localName: 'tbody',
 		tagName: 'TBODY',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	td: {
-		className: 'HTMLElement',
+		className: 'HTMLTableCellElement',
 		localName: 'td',
 		tagName: 'TD',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	tfoot: {
-		className: 'HTMLElement',
+		className: 'HTMLTableSectionElement',
 		localName: 'tfoot',
 		tagName: 'TFOOT',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	th: {
-		className: 'HTMLElement',
+		className: 'HTMLTableCellElement',
 		localName: 'th',
 		tagName: 'TH',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	thead: {
-		className: 'HTMLElement',
+		className: 'HTMLTableSectionElement',
 		localName: 'thead',
 		tagName: 'THEAD',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
@@ -660,19 +642,19 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	title: {
-		className: 'HTMLElement',
+		className: 'HTMLTitleElement',
 		localName: 'title',
 		tagName: 'TITLE',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	tr: {
-		className: 'HTMLElement',
+		className: 'HTMLTableRowElement',
 		localName: 'tr',
 		tagName: 'TR',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	track: {
-		className: 'HTMLElement',
+		className: 'HTMLTrackElement',
 		localName: 'track',
 		tagName: 'TRACK',
 		contentModel: HTMLElementConfigContentModelEnum.noDescendants
@@ -684,7 +666,7 @@ export default <{ [key: string]: IHTMLElementConfigEntity }>{
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	ul: {
-		className: 'HTMLElement',
+		className: 'HTMLUListElement',
 		localName: 'ul',
 		tagName: 'UL',
 		contentModel: HTMLElementConfigContentModelEnum.anyDescendants

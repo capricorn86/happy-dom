@@ -15,7 +15,7 @@ export default class HTMLImageElement extends HTMLElement {
 	public [PropertySymbol.loading] = 'auto';
 	public [PropertySymbol.x] = 0;
 	public [PropertySymbol.y] = 0;
-	public cloneNode: (deep?: boolean) => HTMLImageElement;
+	public declare cloneNode: (deep?: boolean) => HTMLImageElement;
 
 	/**
 	 * Returns complete.

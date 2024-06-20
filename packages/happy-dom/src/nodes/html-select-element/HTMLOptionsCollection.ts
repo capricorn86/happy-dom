@@ -2,6 +2,10 @@ import DOMException from '../../exception/DOMException.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import HTMLSelectElement from './HTMLSelectElement.js';
 import HTMLOptionElement from '../html-option-element/HTMLOptionElement.js';
+import Element from '../element/Element.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
+import HTMLElement from '../html-element/HTMLElement.js';
+import NodeTypeEnum from '../node/NodeTypeEnum.js';
 
 /**
  * HTML Options Collection.
@@ -10,14 +14,21 @@ import HTMLOptionElement from '../html-option-element/HTMLOptionElement.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptionsCollection.
  */
 export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElement> {
+	#selectedIndex: number = -1;
 	#selectElement: HTMLSelectElement;
 
 	/**
+	 * Constructor.
 	 *
-	 * @param selectElement
+	 * @param selectElement Select element.
 	 */
 	constructor(selectElement: HTMLSelectElement) {
-		super();
+		super({
+			filter: (element: Element) => element[PropertySymbol.tagName] === 'OPTION',
+			// Array.splice() method creates a new instance of HTMLOptionsCollection with a number sent as the first argument.
+			observeNode: selectElement instanceof HTMLSelectElement ? selectElement : null,
+			synchronizedPropertiesElement: selectElement
+		});
 
 		this.#selectElement = selectElement;
 	}
@@ -28,7 +39,7 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 	 * @returns SelectedIndex.
 	 */
 	public get selectedIndex(): number {
-		return this.#selectElement.selectedIndex;
+		return this.#selectedIndex;
 	}
 
 	/**
@@ -37,7 +48,27 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 	 * @param selectedIndex SelectedIndex.
 	 */
 	public set selectedIndex(selectedIndex: number) {
-		this.#selectElement.selectedIndex = selectedIndex;
+		if (typeof selectedIndex !== 'number' || isNaN(selectedIndex)) {
+			return;
+		}
+
+		if (selectedIndex < 0 || !this[selectedIndex]) {
+			const selectedOptions = this.#selectElement[PropertySymbol.selectedOptions];
+			for (let i = 0, max = this.length; i < max; i++) {
+				const option = <HTMLOptionElement>this[i];
+				option[PropertySymbol.selectedness] = false;
+				selectedOptions?.[PropertySymbol.removeItem](option);
+			}
+			this.#selectedIndex = -1;
+			return;
+		}
+
+		const selectedOption = <HTMLOptionElement>this[selectedIndex];
+
+		selectedOption[PropertySymbol.selectedness] = true;
+		selectedOption[PropertySymbol.dirtyness] = true;
+
+		this[PropertySymbol.updateSelectedness](selectedOption);
 	}
 
 	/**
@@ -65,11 +96,19 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 				return;
 			}
 
-			this.#selectElement.insertBefore(element, this[<number>before]);
+			const optionsElement = this[<number>before];
+
+			if (!optionsElement) {
+				throw new DOMException(
+					"Failed to execute 'add' on 'DOMException': The node before which the new node is to be inserted is not a child of this node."
+				);
+			}
+
+			this.#selectElement.insertBefore(element, optionsElement);
 			return;
 		}
 
-		const index = this.indexOf(before);
+		const index = this[PropertySymbol.indexOf](<HTMLOptionElement>before);
 
 		if (index === -1) {
 			throw new DOMException(
@@ -89,5 +128,138 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 		if (this[index]) {
 			this.#selectElement.removeChild(<HTMLOptionElement>this[index]);
 		}
+	}
+
+	/**
+	 * @override
+	 */
+	public [PropertySymbol.addItem](item: HTMLOptionElement): boolean {
+		const returnValue = super[PropertySymbol.addItem](item);
+		if (returnValue) {
+			item[PropertySymbol.selectNode] = this.#selectElement;
+			this[PropertySymbol.updateSelectedness](item[PropertySymbol.selectedness] ? item : null);
+		}
+		return returnValue;
+	}
+
+	/**
+	 * @override
+	 */
+	public [PropertySymbol.insertItem](
+		newItem: HTMLOptionElement,
+		referenceItem: HTMLOptionElement | null
+	): boolean {
+		const returnValue = super[PropertySymbol.insertItem](newItem, referenceItem);
+		if (returnValue) {
+			newItem[PropertySymbol.selectNode] = this.#selectElement;
+			this[PropertySymbol.updateSelectedness](
+				newItem[PropertySymbol.selectedness] ? newItem : null
+			);
+		}
+		return returnValue;
+	}
+
+	/**
+	 * @override
+	 */
+	public [PropertySymbol.removeItem](item: HTMLOptionElement): boolean {
+		const returnValue = super[PropertySymbol.removeItem](item);
+		if (returnValue) {
+			item[PropertySymbol.selectNode] = null;
+			this[PropertySymbol.updateSelectedness]();
+		}
+		return returnValue;
+	}
+
+	/**
+	 * Updates option item.
+	 *
+	 * Based on:
+	 * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/nodes/HTMLSelectElement-impl.js
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/form-elements.html#selectedness-setting-algorithm
+	 * @param [selectedOption] Selected option.
+	 */
+	public [PropertySymbol.updateSelectedness](selectedOption?: HTMLOptionElement): void {
+		const isMultiple = this.#selectElement.hasAttribute('multiple');
+		const selectedOptions = this.#selectElement[PropertySymbol.selectedOptions];
+		const selected: HTMLOptionElement[] = [];
+
+		this.#selectedIndex = -1;
+
+		if (!isMultiple) {
+			for (let i = 0, max = this.length; i < max; i++) {
+				const option = <HTMLOptionElement>this[i];
+				if (selectedOption) {
+					option[PropertySymbol.selectedness] = option === selectedOption;
+				}
+
+				if (option[PropertySymbol.selectedness]) {
+					selected.push(option);
+
+					if (this.#selectedIndex === -1) {
+						this.#selectedIndex = i;
+					}
+
+					selectedOptions?.[PropertySymbol.addItem](option);
+				} else {
+					selectedOptions?.[PropertySymbol.removeItem](option);
+				}
+			}
+		} else {
+			for (let i = 0, max = this.length; i < max; i++) {
+				const option = <HTMLOptionElement>this[i];
+				if (option[PropertySymbol.selectedness]) {
+					selectedOptions?.[PropertySymbol.addItem](option);
+				} else {
+					selectedOptions?.[PropertySymbol.removeItem](option);
+				}
+			}
+		}
+
+		const size = this.#getDisplaySize();
+
+		if (size === 1 && !selected.length) {
+			for (let i = 0, max = this.length; i < max; i++) {
+				const option = <HTMLOptionElement>this[i];
+				const parentNode = <HTMLElement>option[PropertySymbol.parentNode];
+				let disabled = option.hasAttributeNS(null, 'disabled');
+
+				if (
+					parentNode &&
+					parentNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
+					parentNode[PropertySymbol.tagName] === 'OPTGROUP' &&
+					parentNode.hasAttributeNS(null, 'disabled')
+				) {
+					disabled = true;
+				}
+
+				if (!disabled) {
+					this.#selectedIndex = i;
+					option[PropertySymbol.selectedness] = true;
+					break;
+				}
+			}
+		} else if (selected.length >= 2) {
+			for (let i = 0, max = this.length; i < max; i++) {
+				(<HTMLOptionElement>this[i])[PropertySymbol.selectedness] = i === selected.length - 1;
+			}
+		}
+	}
+
+	/**
+	 * Returns display size.
+	 *
+	 * @returns Display size.
+	 */
+	#getDisplaySize(): number {
+		const selectElement = this.#selectElement;
+		if (selectElement.hasAttributeNS(null, 'size')) {
+			const size = parseInt(selectElement.getAttribute('size'));
+			if (!isNaN(size) && size >= 0) {
+				return size;
+			}
+		}
+		return selectElement.hasAttributeNS(null, 'multiple') ? 4 : 1;
 	}
 }

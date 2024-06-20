@@ -6,13 +6,12 @@ import HTMLElement from '../html-element/HTMLElement.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLInputElementSelectionDirectionEnum from '../html-input-element/HTMLInputElementSelectionDirectionEnum.js';
 import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputElementSelectionModeEnum.js';
-import Node from '../node/Node.js';
 import ValidityState from '../../validity-state/ValidityState.js';
-import NodeList from '../node/NodeList.js';
 import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
-import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
-import HTMLTextAreaElementNamedNodeMap from './HTMLTextAreaElementNamedNodeMap.js';
+import Text from '../text/Text.js';
+import INodeList from '../node/INodeList.js';
+import MutationRecord from '../../mutation-observer/MutationRecord.js';
 
 /**
  * HTML Text Area Element.
@@ -22,7 +21,7 @@ import HTMLTextAreaElementNamedNodeMap from './HTMLTextAreaElementNamedNodeMap.j
  */
 export default class HTMLTextAreaElement extends HTMLElement {
 	// Public properties
-	public cloneNode: (deep?: boolean) => HTMLTextAreaElement;
+	public declare cloneNode: (deep?: boolean) => HTMLTextAreaElement;
 	public readonly type = 'textarea';
 
 	// Events
@@ -30,18 +29,37 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	public onselectionchange: (event: Event) => void | null = null;
 
 	// Internal properties
-	public override [PropertySymbol.attributes]: NamedNodeMap = new HTMLTextAreaElementNamedNodeMap(
-		this
-	);
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
 	public [PropertySymbol.value] = null;
 	public [PropertySymbol.textAreaNode]: HTMLTextAreaElement = this;
+	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
 
 	// Private properties
 	#selectionStart = null;
 	#selectionEnd = null;
 	#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+
+		this[PropertySymbol.observeMutations]({
+			options: {
+				childList: true,
+				subtree: true
+			},
+			callback: new WeakRef((record: MutationRecord) => {
+				const node = record.addedNodes[0] || record.removedNodes[0];
+				if (node instanceof Text) {
+					node[PropertySymbol.textAreaNode] = record.addedNodes[0] ? this : null;
+					this[PropertySymbol.resetSelection]();
+				}
+			})
+		});
+	}
 
 	/**
 	 * Returns validation message.
@@ -433,7 +451,7 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 *
 	 * @returns Label elements.
 	 */
-	public get labels(): NodeList<HTMLLabelElement> {
+	public get labels(): INodeList<HTMLLabelElement> {
 		return HTMLLabelElementUtility.getAssociatedLabelElements(this);
 	}
 
@@ -589,32 +607,6 @@ export default class HTMLTextAreaElement extends HTMLElement {
 			this.#selectionStart = null;
 			this.#selectionEnd = null;
 			this.#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
-		}
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
-		const oldFormNode = <HTMLFormElement>this[PropertySymbol.formNode];
-
-		super[PropertySymbol.connectToNode](parentNode);
-
-		if (oldFormNode !== this[PropertySymbol.formNode]) {
-			if (oldFormNode) {
-				oldFormNode[PropertySymbol.removeFormControlItem](this, this.name);
-				oldFormNode[PropertySymbol.removeFormControlItem](this, this.id);
-			}
-			if (this[PropertySymbol.formNode]) {
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
-					this,
-					this.name
-				);
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
-					this,
-					this.id
-				);
-			}
 		}
 	}
 }

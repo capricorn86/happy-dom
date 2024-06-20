@@ -1,126 +1,155 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
-import HTMLInputElement from '../html-input-element/HTMLInputElement.js';
-import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
-import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
+import HTMLCollection from '../element/HTMLCollection.js';
+import HTMLFormElement from './HTMLFormElement.js';
 import RadioNodeList from './RadioNodeList.js';
-import HTMLButtonElement from '../html-button-element/HTMLButtonElement.js';
+import THTMLFormControlElement from './THTMLFormControlElement.js';
 
 /**
  * HTMLFormControlsCollection.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormControlsCollection
  */
-export default class HTMLFormControlsCollection
-	extends Array<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | HTMLButtonElement>
-	implements HTMLFormControlsCollection
-{
-	public [PropertySymbol.namedItems]: { [k: string]: RadioNodeList } = {};
+export default class HTMLFormControlsCollection extends HTMLCollection<
+	THTMLFormControlElement,
+	THTMLFormControlElement | RadioNodeList
+> {
+	public [PropertySymbol.namedItems] = new Map<string, RadioNodeList>();
+	#formElement: HTMLFormElement;
 
 	/**
-	 * Returns item by index.
+	 * Constructor.
 	 *
-	 * @param index Index.
+	 * @param formElement Form element.
 	 */
-	public item(
-		index: number
-	): HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | HTMLButtonElement | null {
-		return index >= 0 && this[index] ? this[index] : null;
+	constructor(formElement: HTMLFormElement) {
+		super({
+			filter: (item: THTMLFormControlElement) =>
+				item[PropertySymbol.tagName] === 'INPUT' ||
+				item[PropertySymbol.tagName] === 'SELECT' ||
+				item[PropertySymbol.tagName] === 'TEXTAREA' ||
+				item[PropertySymbol.tagName] === 'BUTTON' ||
+				item[PropertySymbol.tagName] === 'FIELDSET',
+			// Array.splice() method creates a new instance of HTMLOptionsCollection with a number sent as the first argument.
+			observeNode: formElement instanceof HTMLFormElement ? formElement : null,
+			synchronizedPropertiesElement: formElement
+		});
+		this.#formElement = formElement;
 	}
 
 	/**
-	 * Returns named item.
-	 *
-	 * @param name Name.
-	 * @returns Node.
+	 * @override
 	 */
-	public namedItem(
-		name: string
-	):
-		| HTMLInputElement
-		| HTMLTextAreaElement
-		| HTMLSelectElement
-		| HTMLButtonElement
-		| RadioNodeList
-		| null {
-		if (this[PropertySymbol.namedItems][name] && this[PropertySymbol.namedItems][name].length) {
-			if (this[PropertySymbol.namedItems][name].length === 1) {
-				return this[PropertySymbol.namedItems][name][0];
-			}
-			return this[PropertySymbol.namedItems][name];
+	public namedItem(name: string): THTMLFormControlElement | RadioNodeList | null {
+		const namedItems = this[PropertySymbol.namedItems].get(name);
+
+		if (!namedItems?.length) {
+			return null;
 		}
-		return null;
-	}
 
-	/**
-	 * Appends named item.
-	 *
-	 * @param node Node.
-	 * @param name Name.
-	 */
-	public [PropertySymbol.appendNamedItem](
-		node: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | HTMLButtonElement,
-		name: string
-	): void {
-		if (name) {
-			this[PropertySymbol.namedItems][name] =
-				this[PropertySymbol.namedItems][name] || new RadioNodeList();
-
-			if (!this[PropertySymbol.namedItems][name].includes(node)) {
-				this[PropertySymbol.namedItems][name].push(node);
-			}
-
-			if (this[PropertySymbol.isValidPropertyName](name)) {
-				this[name] =
-					this[PropertySymbol.namedItems][name].length > 1
-						? this[PropertySymbol.namedItems][name]
-						: this[PropertySymbol.namedItems][name][0];
-			}
+		if (namedItems.length === 1) {
+			return namedItems[0];
 		}
+
+		return namedItems;
 	}
 
 	/**
-	 * Appends named item.
+	 * Appends item.
 	 *
-	 * @param node Node.
-	 * @param name Name.
+	 * @param item Item.
+	 * @returns True if added.
 	 */
-	public [PropertySymbol.removeNamedItem](
-		node: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | HTMLButtonElement,
-		name: string
-	): void {
-		if (name && this[PropertySymbol.namedItems][name]) {
-			const index = this[PropertySymbol.namedItems][name].indexOf(node);
+	public [PropertySymbol.addItem](item: THTMLFormControlElement): boolean {
+		const returnValue = super[PropertySymbol.addItem](item);
 
-			if (index > -1) {
-				this[PropertySymbol.namedItems][name].splice(index, 1);
-
-				if (this[PropertySymbol.namedItems][name].length === 0) {
-					delete this[PropertySymbol.namedItems][name];
-					if (this.hasOwnProperty(name) && this[PropertySymbol.isValidPropertyName](name)) {
-						delete this[name];
-					}
-				} else if (this[PropertySymbol.isValidPropertyName](name)) {
-					this[name] =
-						this[PropertySymbol.namedItems][name].length > 1
-							? this[PropertySymbol.namedItems][name]
-							: this[PropertySymbol.namedItems][name][0];
-				}
-			}
+		if (!returnValue) {
+			return false;
 		}
+
+		item[PropertySymbol.formNode] = this.#formElement;
+
+		return true;
 	}
 
 	/**
-	 * Returns "true" if the property name is valid.
+	 * Inserts item before another item.
+	 *
+	 * @param newItem New item.
+	 * @param [referenceItem] Reference item.
+	 * @returns True if inserted.
+	 */
+	public [PropertySymbol.insertItem](
+		newItem: THTMLFormControlElement,
+		referenceItem: THTMLFormControlElement | null
+	): boolean {
+		const returnValue = super[PropertySymbol.insertItem](newItem, referenceItem);
+
+		if (!returnValue) {
+			return false;
+		}
+
+		newItem[PropertySymbol.formNode] = this.#formElement;
+
+		return true;
+	}
+
+	/**
+	 * Removes item.
+	 *
+	 * @param item Item.
+	 * @returns True if removed.
+	 */
+	public [PropertySymbol.removeItem](item: THTMLFormControlElement): boolean {
+		const returnValue = super[PropertySymbol.removeItem](item);
+
+		if (!returnValue) {
+			return false;
+		}
+
+		item[PropertySymbol.formNode] = null;
+
+		return true;
+	}
+
+	/**
+	 * Returns named items.
 	 *
 	 * @param name Name.
-	 * @returns True if the property name is valid.
+	 * @returns Named items.
 	 */
-	protected [PropertySymbol.isValidPropertyName](name: string): boolean {
-		return (
-			!!name &&
-			!this.constructor.prototype.hasOwnProperty(name) &&
-			!Array.prototype.hasOwnProperty(name) &&
-			(isNaN(Number(name)) || name.includes('.'))
-		);
+	protected [PropertySymbol.getNamedItems](name: string): RadioNodeList {
+		return this[PropertySymbol.namedItems].get(name) || new RadioNodeList();
+	}
+
+	/**
+	 * Sets named item property.
+	 *
+	 * @param name Name.
+	 */
+	protected [PropertySymbol.setNamedItemProperty](name: string): void {
+		if (!this[PropertySymbol.isValidPropertyName](name)) {
+			return;
+		}
+
+		const namedItems = this[PropertySymbol.namedItems].get(name);
+
+		if (namedItems?.length) {
+			const newValue = namedItems.length === 1 ? namedItems[0] : namedItems;
+			if (Object.getOwnPropertyDescriptor(this, name)?.value !== newValue) {
+				Object.defineProperty(this, name, {
+					value: newValue,
+					writable: false,
+					enumerable: true,
+					configurable: true
+				});
+			}
+		} else {
+			delete this[name];
+		}
+
+		this[PropertySymbol.dispatchEvent]('propertyChange', {
+			propertyName: name,
+			propertyValue: this[name] ?? null
+		});
 	}
 }

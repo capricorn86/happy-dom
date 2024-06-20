@@ -53,69 +53,69 @@ describe('HTMLAnchorElement', () => {
 
 	describe('get href()', () => {
 		it('Returns the "href" attribute.', () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'test');
 			expect(element.href).toBe('https://www.somesite.com/test');
 		});
 
 		it('Returns the "href" attribute when scheme is http.', () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'http://www.example.com');
 			expect(element.href).toBe('http://www.example.com/');
 		});
 
 		it('Returns the "href" attribute when scheme is tel.', () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'tel:+123456789');
 			expect(element.href).toBe('tel:+123456789');
 		});
 
 		it('Returns the "href" attribute when scheme-relative', () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', '//example.com');
 			expect(element.href).toBe('https://example.com/');
 		});
 
 		it('Returns empty string if "href" attribute is empty.', () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			expect(element.href).toBe('');
 		});
 	});
 
 	describe('toString()', () => {
 		it('Returns the "href" attribute.', () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'test');
 			expect(element.toString()).toBe('https://www.somesite.com/test');
 		});
 
 		it('Returns the "href" attribute when scheme is http.', () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'http://www.example.com');
 			expect(element.toString()).toBe('http://www.example.com/');
 		});
 
 		it('Returns the "href" attribute when scheme is tel.', () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'tel:+123456789');
 			expect(element.toString()).toBe('tel:+123456789');
 		});
 
 		it('Returns the "href" attribute when scheme-relative', () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', '//example.com');
 			expect(element.toString()).toBe('https://example.com/');
 		});
 
 		it('Returns empty string if "href" attribute is empty.', () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			expect(element.toString()).toBe('');
 		});
 	});
 
 	describe('set href()', () => {
 		it('Sets the attribute "href".', () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.href = 'test';
 			expect(element.getAttribute('href')).toBe('test');
 		});
@@ -123,19 +123,19 @@ describe('HTMLAnchorElement', () => {
 
 	describe('get origin()', () => {
 		it("Returns the href URL's origin.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'https://www.example.com:443/path?q1=a#xyz');
 			expect(element.origin).toBe('https://www.example.com');
 		});
 
 		it("Returns the href URL's origin with port when non-standard.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'http://www.example.com:8080/path?q1=a#xyz');
 			expect(element.origin).toBe('http://www.example.com:8080');
 		});
 
 		it("Returns the page's origin when href is relative.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', '/path?q1=a#xyz');
 			expect(element.origin).toBe('https://www.somesite.com');
 		});
@@ -143,7 +143,7 @@ describe('HTMLAnchorElement', () => {
 
 	describe('get protocol()', () => {
 		it("Returns the href URL's protocol.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'https://www.example.com:443/path?q1=a#xyz');
 			expect(element.protocol).toBe('https:');
 		});
@@ -151,7 +151,7 @@ describe('HTMLAnchorElement', () => {
 
 	describe('set protocol()', () => {
 		it("Sets the href URL's protocol.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'https://www.example.com:443/path?q1=a#xyz');
 
 			expect(element.protocol).toBe('https:');
@@ -164,7 +164,7 @@ describe('HTMLAnchorElement', () => {
 
 	describe('get username()', () => {
 		it("Returns the href URL's username.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'https://user:pw@www.example.com:443/path?q1=a#xyz');
 			expect(element.username).toBe('user');
 		});
@@ -172,7 +172,7 @@ describe('HTMLAnchorElement', () => {
 
 	describe('set username()', () => {
 		it("Sets the href URL's username.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'https://user:pw@www.example.com:443/path?q1=a#xyz');
 
 			expect(element.username).toBe('user');
@@ -185,7 +185,7 @@ describe('HTMLAnchorElement', () => {
 
 	describe('get password()', () => {
 		it("Returns the href URL's password.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'https://user:pw@www.example.com:443/path?q1=a#xyz');
 			expect(element.password).toBe('pw');
 		});
@@ -193,7 +193,7 @@ describe('HTMLAnchorElement', () => {
 
 	describe('set password()', () => {
 		it("Sets the href URL's password.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'https://user:pw@www.example.com:443/path?q1=a#xyz');
 
 			expect(element.password).toBe('pw');
@@ -206,7 +206,7 @@ describe('HTMLAnchorElement', () => {
 
 	describe('get host()', () => {
 		it("Returns the href URL's host.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'https://www.example.com:443/path?q1=a#xyz');
 			expect(element.host).toBe('www.example.com');
 		});
@@ -214,7 +214,7 @@ describe('HTMLAnchorElement', () => {
 
 	describe('set host()', () => {
 		it("Sets the href URL's host.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'https://www.example.com:443/path?q1=a#xyz');
 
 			expect(element.host).toBe('www.example.com');
@@ -227,7 +227,7 @@ describe('HTMLAnchorElement', () => {
 
 	describe('get hostname()', () => {
 		it("Returns the href URL's hostname.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'https://www.example.com:443/path?q1=a#xyz');
 			expect(element.hostname).toBe('www.example.com');
 		});
@@ -235,7 +235,7 @@ describe('HTMLAnchorElement', () => {
 
 	describe('set hostname()', () => {
 		it("Sets the href URL's hostname.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'https://www.example.com:443/path?q1=a#xyz');
 
 			expect(element.hostname).toBe('www.example.com');
@@ -248,7 +248,7 @@ describe('HTMLAnchorElement', () => {
 
 	describe('get port()', () => {
 		it("Returns the href URL's port.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'https://www.example.com:443/path?q1=a#xyz');
 			expect(element.port).toBe('');
 
@@ -259,7 +259,7 @@ describe('HTMLAnchorElement', () => {
 
 	describe('set port()', () => {
 		it("Sets the href URL's port.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'https://www.example.com:443/path?q1=a#xyz');
 
 			expect(element.port).toBe('');
@@ -272,7 +272,7 @@ describe('HTMLAnchorElement', () => {
 
 	describe('get pathname()', () => {
 		it("Returns the href URL's pathname.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'https://www.example.com:443/path?q1=a#xyz');
 			expect(element.pathname).toBe('/path');
 		});
@@ -280,7 +280,7 @@ describe('HTMLAnchorElement', () => {
 
 	describe('set pathname()', () => {
 		it("Sets the href URL's pathname.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'https://www.example.com:443/path?q1=a#xyz');
 
 			expect(element.pathname).toBe('/path');
@@ -293,7 +293,7 @@ describe('HTMLAnchorElement', () => {
 
 	describe('get search()', () => {
 		it("Returns the href URL's search.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'https://www.example.com:443/path?q1=a#xyz');
 			expect(element.search).toBe('?q1=a');
 		});
@@ -301,7 +301,7 @@ describe('HTMLAnchorElement', () => {
 
 	describe('set search()', () => {
 		it("Sets the href URL's search.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'https://www.example.com:443/path?q1=a#xyz');
 
 			expect(element.search).toBe('?q1=a');
@@ -314,7 +314,7 @@ describe('HTMLAnchorElement', () => {
 
 	describe('get hash()', () => {
 		it("Returns the href URL's hash.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'https://www.example.com:443/path?q1=a#xyz');
 			expect(element.hash).toBe('#xyz');
 		});
@@ -322,7 +322,7 @@ describe('HTMLAnchorElement', () => {
 
 	describe('set hash()', () => {
 		it("Sets the href URL's hash.", () => {
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.setAttribute('href', 'https://www.example.com:443/path?q1=a#xyz');
 
 			expect(element.hash).toBe('#xyz');
@@ -434,7 +434,7 @@ describe('HTMLAnchorElement', () => {
 				throw new Error('Fetch should not be called.');
 			});
 
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.href = 'https://www.example.com';
 			document.body.appendChild(element);
 			element.dispatchEvent(new PointerEvent('click'));
@@ -480,7 +480,7 @@ describe('HTMLAnchorElement', () => {
 				throw new Error('Fetch should not be called.');
 			});
 
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.href = 'https://www.example.com';
 			document.body.appendChild(element);
 			element.dispatchEvent(new PointerEvent('click'));
@@ -497,7 +497,7 @@ describe('HTMLAnchorElement', () => {
 				});
 			});
 
-			const element = <HTMLAnchorElement>document.createElement('a');
+			const element = document.createElement('a');
 			element.target = '_blank';
 			element.href = 'https://www.example.com';
 			document.body.appendChild(element);

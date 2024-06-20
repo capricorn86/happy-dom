@@ -1,6 +1,5 @@
 import EventTarget from '../../event/EventTarget.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import MutationListener from '../../mutation-observer/MutationListener.js';
 import Document from '../document/Document.js';
 import Element from '../element/Element.js';
 import NodeTypeEnum from './NodeTypeEnum.js';
@@ -9,6 +8,15 @@ import NodeUtility from './NodeUtility.js';
 import Attr from '../attr/Attr.js';
 import NodeList from './NodeList.js';
 import NodeFactory from '../NodeFactory.js';
+import MutationRecord from '../../mutation-observer/MutationRecord.js';
+import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
+import DOMException from '../../exception/DOMException.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import INodeList from './INodeList.js';
+import IMutationListener from '../../mutation-observer/IMutationListener.js';
+import ICachedQuerySelectorAllItem from './ICachedQuerySelectorAllItem.js';
+import ICachedQuerySelectorItem from './ICachedQuerySelectorItem.js';
+import ICachedMatchesItem from './ICachedMatchesItem.js';
 
 /**
  * Node.
@@ -58,12 +66,29 @@ export default class Node extends EventTarget {
 	public [PropertySymbol.parentNode]: Node | null = null;
 	public [PropertySymbol.nodeType]: NodeTypeEnum;
 	public [PropertySymbol.rootNode]: Node = null;
-	public [PropertySymbol.formNode]: Node = null;
-	public [PropertySymbol.selectNode]: Node = null;
-	public [PropertySymbol.textAreaNode]: Node = null;
-	public [PropertySymbol.styleNode]: Node = null;
-	public [PropertySymbol.observers]: MutationListener[] = [];
-	public [PropertySymbol.childNodes]: NodeList<Node> = new NodeList<Node>();
+	public [PropertySymbol.mutationListeners]: IMutationListener[] = [];
+	public [PropertySymbol.childNodes]: INodeList<Node> = new NodeList<Node>();
+	public [PropertySymbol.querySelectorCache]: {
+		items: Map<string, ICachedQuerySelectorItem>;
+		affectedItems: ICachedQuerySelectorItem[];
+	} = {
+		items: new Map(),
+		affectedItems: []
+	};
+	public [PropertySymbol.querySelectorAllCache]: {
+		items: Map<string, ICachedQuerySelectorAllItem>;
+		affectedItems: ICachedQuerySelectorAllItem[];
+	} = {
+		items: new Map(),
+		affectedItems: []
+	};
+	public [PropertySymbol.matchesCache]: {
+		items: Map<string, ICachedMatchesItem>;
+		affectedItems: ICachedMatchesItem[];
+	} = {
+		items: new Map(),
+		affectedItems: []
+	};
 
 	/**
 	 * Constructor.
@@ -135,7 +160,7 @@ export default class Node extends EventTarget {
 	 *
 	 * @returns Child nodes list.
 	 */
-	public get childNodes(): NodeList<Node> {
+	public get childNodes(): INodeList<Node> {
 		return this[PropertySymbol.childNodes];
 	}
 
@@ -191,9 +216,9 @@ export default class Node extends EventTarget {
 	 */
 	public get previousSibling(): Node {
 		if (this[PropertySymbol.parentNode]) {
-			const index = (<Node>this[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(
-				this
-			);
+			const index = (<Node>this[PropertySymbol.parentNode])[PropertySymbol.childNodes][
+				PropertySymbol.indexOf
+			](this);
 			if (index > 0) {
 				return (<Node>this[PropertySymbol.parentNode])[PropertySymbol.childNodes][index - 1];
 			}
@@ -208,9 +233,9 @@ export default class Node extends EventTarget {
 	 */
 	public get nextSibling(): Node {
 		if (this[PropertySymbol.parentNode]) {
-			const index = (<Node>this[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(
-				this
-			);
+			const index = (<Node>this[PropertySymbol.parentNode])[PropertySymbol.childNodes][
+				PropertySymbol.indexOf
+			](this);
 			if (
 				index > -1 &&
 				index + 1 < (<Node>this[PropertySymbol.parentNode])[PropertySymbol.childNodes].length
@@ -339,6 +364,11 @@ export default class Node extends EventTarget {
 	 * @returns Appended node.
 	 */
 	public appendChild(node: Node): Node {
+		if (arguments.length < 1) {
+			throw new TypeError(
+				`Failed to execute 'appendChild' on 'Node': 1 argument required, but only 0 present`
+			);
+		}
 		return this[PropertySymbol.appendChild](node);
 	}
 
@@ -349,6 +379,11 @@ export default class Node extends EventTarget {
 	 * @returns Removed node.
 	 */
 	public removeChild(node: Node): Node {
+		if (arguments.length < 1) {
+			throw new TypeError(
+				`Failed to execute 'removeChild' on 'Node': 1 argument required, but only 0 present`
+			);
+		}
 		return this[PropertySymbol.removeChild](node);
 	}
 
@@ -376,6 +411,11 @@ export default class Node extends EventTarget {
 	 * @returns Replaced node.
 	 */
 	public replaceChild(newChild: Node, oldChild: Node): Node {
+		if (arguments.length < 2) {
+			throw new TypeError(
+				`Failed to execute 'replaceChild' on 'Node': 2 arguments required, but only ${arguments.length} present.`
+			);
+		}
 		return this[PropertySymbol.replaceChild](newChild, oldChild);
 	}
 
@@ -393,8 +433,9 @@ export default class Node extends EventTarget {
 
 		// Document has childNodes directly when it is created
 		if (clone[PropertySymbol.childNodes].length) {
-			for (const node of clone[PropertySymbol.childNodes].slice()) {
-				node[PropertySymbol.parentNode].removeChild(node);
+			const childNodes = clone[PropertySymbol.childNodes];
+			while (childNodes.length) {
+				clone.removeChild(childNodes[0]);
 			}
 		}
 
@@ -402,7 +443,7 @@ export default class Node extends EventTarget {
 			for (const childNode of this[PropertySymbol.childNodes]) {
 				const childClone = childNode.cloneNode(true);
 				childClone[PropertySymbol.parentNode] = clone;
-				clone[PropertySymbol.childNodes].push(childClone);
+				clone[PropertySymbol.childNodes][PropertySymbol.addItem](childClone);
 			}
 		}
 
@@ -416,7 +457,61 @@ export default class Node extends EventTarget {
 	 * @returns Appended node.
 	 */
 	public [PropertySymbol.appendChild](node: Node): Node {
-		return NodeUtility.appendChild(this, node);
+		if (node === this) {
+			throw new DOMException(
+				"Failed to execute 'appendChild' on 'Node': Not possible to append a node as a child of itself."
+			);
+		}
+
+		if (NodeUtility.isInclusiveAncestor(node, this, true)) {
+			throw new DOMException(
+				"Failed to execute 'appendChild' on 'Node': The new node is a parent of the node to insert to.",
+				DOMExceptionNameEnum.domException
+			);
+		}
+
+		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
+		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
+		if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode) {
+			const childNodes = node[PropertySymbol.childNodes];
+			while (childNodes.length) {
+				this.appendChild(childNodes[0]);
+			}
+			return node;
+		}
+
+		// Remove the node from its previous parent if it has any.
+		if (node[PropertySymbol.parentNode]) {
+			node[PropertySymbol.parentNode][PropertySymbol.childNodes][PropertySymbol.removeItem](node);
+		}
+
+		node[PropertySymbol.parentNode] = this;
+
+		node[PropertySymbol.clearCache]();
+
+		this[PropertySymbol.childNodes][PropertySymbol.addItem](node);
+
+		if (this[PropertySymbol.isConnected] && !node[PropertySymbol.isConnected]) {
+			node[PropertySymbol.connectedToDocument]();
+		} else if (!this[PropertySymbol.isConnected] && node[PropertySymbol.isConnected]) {
+			node[PropertySymbol.disconnectedFromDocument]();
+		}
+
+		// Mutation listeners
+		for (const mutationListener of this[PropertySymbol.mutationListeners]) {
+			if (mutationListener.options?.subtree && mutationListener.callback.deref()) {
+				(<Node>node)[PropertySymbol.observeMutations](mutationListener);
+			}
+		}
+		this[PropertySymbol.reportMutation](
+			new MutationRecord({
+				target: this,
+				type: MutationTypeEnum.childList,
+				addedNodes: [node]
+			})
+		);
+
+		return node;
 	}
 
 	/**
@@ -426,7 +521,31 @@ export default class Node extends EventTarget {
 	 * @returns Removed node.
 	 */
 	public [PropertySymbol.removeChild](node: Node): Node {
-		return NodeUtility.removeChild(this, node);
+		node[PropertySymbol.parentNode] = null;
+
+		node[PropertySymbol.clearCache]();
+
+		this[PropertySymbol.childNodes][PropertySymbol.removeItem](node);
+
+		if (node[PropertySymbol.isConnected]) {
+			node[PropertySymbol.disconnectedFromDocument]();
+		}
+
+		// Mutation listeners
+		for (const mutationListener of this[PropertySymbol.mutationListeners]) {
+			if (mutationListener.options?.subtree && mutationListener.callback.deref()) {
+				(<Node>node)[PropertySymbol.unobserveMutations](mutationListener);
+			}
+		}
+		this[PropertySymbol.reportMutation](
+			new MutationRecord({
+				target: this,
+				type: MutationTypeEnum.childList,
+				removedNodes: [node]
+			})
+		);
+
+		return node;
 	}
 
 	/**
@@ -437,7 +556,70 @@ export default class Node extends EventTarget {
 	 * @returns Inserted node.
 	 */
 	public [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
-		return NodeUtility.insertBefore(this, newNode, referenceNode);
+		if (NodeUtility.isInclusiveAncestor(newNode, this, true)) {
+			throw new DOMException(
+				"Failed to execute 'insertBefore' on 'Node': The new node is a parent of the node to insert to.",
+				DOMExceptionNameEnum.domException
+			);
+		}
+
+		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
+		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
+		if (newNode[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode) {
+			const childNodes = (<Node>newNode)[PropertySymbol.childNodes];
+			while (childNodes.length > 0) {
+				this.insertBefore(childNodes[0], referenceNode);
+			}
+			return newNode;
+		}
+
+		// If the referenceNode is null or undefined, then the newNode should be appended to the ancestorNode.
+		// According to spec only null is valid, but browsers support undefined as well.
+		if (!referenceNode) {
+			this.appendChild(newNode);
+			return newNode;
+		}
+
+		if (!this[PropertySymbol.childNodes][PropertySymbol.includes](referenceNode)) {
+			throw new DOMException(
+				"Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node."
+			);
+		}
+
+		if (newNode[PropertySymbol.parentNode]) {
+			newNode[PropertySymbol.parentNode][PropertySymbol.childNodes][PropertySymbol.removeItem](
+				newNode
+			);
+		}
+
+		newNode[PropertySymbol.parentNode] = this;
+
+		newNode[PropertySymbol.clearCache]();
+
+		this[PropertySymbol.childNodes][PropertySymbol.insertItem](newNode, referenceNode);
+
+		if (this[PropertySymbol.isConnected] && !newNode[PropertySymbol.isConnected]) {
+			newNode[PropertySymbol.connectedToDocument]();
+		} else if (!this[PropertySymbol.isConnected] && newNode[PropertySymbol.isConnected]) {
+			newNode[PropertySymbol.disconnectedFromDocument]();
+		}
+
+		// Mutation listeners
+		for (const mutationListener of this[PropertySymbol.mutationListeners]) {
+			if (mutationListener.options?.subtree && mutationListener.callback.deref()) {
+				newNode[PropertySymbol.observeMutations](mutationListener);
+			}
+		}
+
+		this[PropertySymbol.reportMutation](
+			new MutationRecord({
+				target: this,
+				type: MutationTypeEnum.childList,
+				addedNodes: [newNode]
+			})
+		);
+
+		return newNode;
 	}
 
 	/**
@@ -475,129 +657,203 @@ export default class Node extends EventTarget {
 	}
 
 	/**
-	 * Observeres the node.
-	 * Used by MutationObserver, but it is not part of the HTML standard.
+	 * Observeres mutations on the node.
+	 *
+	 * Used by MutationObserver and internal logic.
 	 *
 	 * @param listener Listener.
 	 */
-	public [PropertySymbol.observe](listener: MutationListener): void {
-		this[PropertySymbol.observers].push(listener);
+	public [PropertySymbol.observeMutations](listener: IMutationListener): void {
+		this[PropertySymbol.mutationListeners].push(listener);
 		if (listener.options.subtree) {
 			for (const node of this[PropertySymbol.childNodes]) {
-				(<Node>node)[PropertySymbol.observe](listener);
+				(<Node>node)[PropertySymbol.observeMutations](listener);
 			}
 		}
 	}
 
 	/**
-	 * Stops observing the node.
-	 * Used by MutationObserver, but it is not part of the HTML standard.
+	 * Observeres mutations on the node once.
+	 *
+	 * Used by MutationObserver and internal logic.
 	 *
 	 * @param listener Listener.
 	 */
-	public [PropertySymbol.unobserve](listener: MutationListener): void {
-		const index = this[PropertySymbol.observers].indexOf(listener);
+	public [PropertySymbol.observeMutationsOnce](listener: IMutationListener): void {
+		const callback = listener.callback.deref();
+		const wrapperListener = {
+			options: listener.options,
+			callback: new WeakRef((record: MutationRecord) => {
+				callback(record);
+				this[PropertySymbol.unobserveMutations](wrapperListener);
+			})
+		};
+		this[PropertySymbol.observeMutations](wrapperListener);
+	}
+
+	/**
+	 * Stops observing mutations on the node.
+	 *
+	 * Used by MutationObserver and internal logic.
+	 *
+	 * @param listener Listener.
+	 */
+	public [PropertySymbol.unobserveMutations](listener: IMutationListener): void {
+		const index = this[PropertySymbol.mutationListeners].indexOf(listener);
 		if (index !== -1) {
-			this[PropertySymbol.observers].splice(index, 1);
+			this[PropertySymbol.mutationListeners].splice(index, 1);
 		}
 		if (listener.options.subtree) {
 			for (const node of this[PropertySymbol.childNodes]) {
-				(<Node>node)[PropertySymbol.unobserve](listener);
+				node[PropertySymbol.unobserveMutations](listener);
 			}
 		}
 	}
 
 	/**
-	 * Connects this element to another element.
+	 * Reports a mutation on the node.
 	 *
-	 * @param parentNode Parent node.
+	 * Used by MutationObserver and internal logic.
+	 *
+	 * @param record Mutation record.
 	 */
-	public [PropertySymbol.connectToNode](parentNode: Node = null): void {
-		const isConnected = !!parentNode && parentNode[PropertySymbol.isConnected];
-		const formNode = (<Node>this)[PropertySymbol.formNode];
-		const selectNode = (<Node>this)[PropertySymbol.selectNode];
-		const textAreaNode = (<Node>this)[PropertySymbol.textAreaNode];
-		const styleNode = (<Node>this)[PropertySymbol.styleNode];
+	public [PropertySymbol.reportMutation](record: MutationRecord): void {
+		this[PropertySymbol.clearCache]();
+
+		const mutationListeners = this[PropertySymbol.mutationListeners];
+
+		if (!mutationListeners.length) {
+			return;
+		}
+
+		for (let i = 0, max = mutationListeners.length; i < max; i++) {
+			const mutationListener = mutationListeners[i];
+			const callback = mutationListener.callback.deref();
+			if (callback) {
+				switch (record.type) {
+					case MutationTypeEnum.childList:
+						if (mutationListener.options.childList) {
+							callback(record);
+						}
+						break;
+					case MutationTypeEnum.attributes:
+						if (
+							mutationListener.options.attributes &&
+							(!mutationListener.options.attributeFilter ||
+								mutationListener.options.attributeFilter.includes(record.attributeName))
+						) {
+							callback(record);
+						}
+						break;
+					case MutationTypeEnum.characterData:
+						if (mutationListener.options?.characterData) {
+							callback(record);
+						}
+						break;
+				}
+			} else {
+				mutationListeners.splice(i, 1);
+				i--;
+				max--;
+			}
+		}
+	}
+
+	/**
+	 * Clears query selector cache.
+	 */
+	public [PropertySymbol.clearCache](): void {
+		for (const item of this[PropertySymbol.querySelectorCache].affectedItems) {
+			if (item.result) {
+				item.result = null;
+			}
+		}
+
+		for (const item of this[PropertySymbol.querySelectorAllCache].affectedItems) {
+			if (item.result) {
+				item.result = null;
+			}
+		}
+
+		for (const item of this[PropertySymbol.matchesCache].affectedItems) {
+			if (item.result) {
+				item.result = null;
+			}
+		}
+
+		this[PropertySymbol.querySelectorCache].affectedItems = [];
+		this[PropertySymbol.querySelectorAllCache].affectedItems = [];
+		this[PropertySymbol.matchesCache].affectedItems = [];
+
+		this[PropertySymbol.ownerDocument]?.[PropertySymbol.clearComputedStyleCache]();
+	}
+
+	/**
+	 * Called when connected to document.
+	 */
+	public [PropertySymbol.connectedToDocument](): void {
+		this[PropertySymbol.isConnected] = true;
 
 		if (this[PropertySymbol.nodeType] !== NodeTypeEnum.documentFragmentNode) {
-			this[PropertySymbol.parentNode] = parentNode;
-			this[PropertySymbol.rootNode] =
-				isConnected && parentNode ? (<Node>parentNode)[PropertySymbol.rootNode] : null;
+			this[PropertySymbol.rootNode] = this[PropertySymbol.parentNode][PropertySymbol.rootNode];
+		}
 
-			if (this['tagName'] !== 'FORM') {
-				(<Node>this)[PropertySymbol.formNode] = parentNode
-					? (<Node>parentNode)[PropertySymbol.formNode]
-					: null;
-			}
+		if (this.connectedCallback) {
+			const result = <void | Promise<void>>this.connectedCallback();
 
-			if (this['tagName'] !== 'SELECT') {
-				(<Node>this)[PropertySymbol.selectNode] = parentNode
-					? (<Node>parentNode)[PropertySymbol.selectNode]
-					: null;
-			}
-
-			if (this['tagName'] !== 'TEXTAREA') {
-				(<Node>this)[PropertySymbol.textAreaNode] = parentNode
-					? (<Node>parentNode)[PropertySymbol.textAreaNode]
-					: null;
-			}
-
-			if (this['tagName'] !== 'STYLE') {
-				(<Node>this)[PropertySymbol.styleNode] = parentNode
-					? (<Node>parentNode)[PropertySymbol.styleNode]
-					: null;
+			/**
+			 * It is common to import dependencies in the connectedCallback() method of web components.
+			 * As Happy DOM doesn't have support for dynamic imports yet, this is a temporary solution to wait for imports in connectedCallback().
+			 *
+			 * @see https://github.com/capricorn86/happy-dom/issues/1442
+			 */
+			if (result instanceof Promise) {
+				const asyncTaskManager =
+					this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow][
+						PropertySymbol.asyncTaskManager
+					];
+				const taskID = asyncTaskManager.startTask();
+				result
+					.then(() => asyncTaskManager.endTask(taskID))
+					.catch(() => asyncTaskManager.endTask(taskID));
 			}
 		}
 
-		if (this[PropertySymbol.isConnected] !== isConnected) {
-			this[PropertySymbol.isConnected] = isConnected;
+		for (const child of this[PropertySymbol.childNodes]) {
+			child[PropertySymbol.connectedToDocument]();
+		}
 
-			if (!isConnected) {
-				if (this[PropertySymbol.ownerDocument][PropertySymbol.activeElement] === <unknown>this) {
-					this[PropertySymbol.ownerDocument][PropertySymbol.activeElement] = null;
-				}
-			}
-
-			if (isConnected && this.connectedCallback) {
-				const result = <void | Promise<void>>this.connectedCallback();
-				/**
-				 * It is common to import dependencies in the connectedCallback() method of web components.
-				 * As Happy DOM doesn't have support for dynamic imports yet, this is a temporary solution to wait for imports in connectedCallback().
-				 *
-				 * @see https://github.com/capricorn86/happy-dom/issues/1442
-				 */
-				if (result instanceof Promise) {
-					const asyncTaskManager =
-						this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow][
-							PropertySymbol.asyncTaskManager
-						];
-					const taskID = asyncTaskManager.startTask();
-					result
-						.then(() => asyncTaskManager.endTask(taskID))
-						.catch(() => asyncTaskManager.endTask(taskID));
-				}
-			} else if (!isConnected && this.disconnectedCallback) {
-				this.disconnectedCallback();
-			}
-
-			for (const child of this[PropertySymbol.childNodes]) {
-				(<Node>child)[PropertySymbol.connectToNode](this);
-			}
-
+		// eslint-disable-next-line
+		if ((<any>this)[PropertySymbol.shadowRoot]) {
 			// eslint-disable-next-line
-			if ((<any>this)[PropertySymbol.shadowRoot]) {
-				// eslint-disable-next-line
-				(<any>this)[PropertySymbol.shadowRoot][PropertySymbol.connectToNode](this);
-			}
-		} else if (
-			formNode !== this[PropertySymbol.formNode] ||
-			selectNode !== this[PropertySymbol.selectNode] ||
-			textAreaNode !== this[PropertySymbol.textAreaNode] ||
-			styleNode !== this[PropertySymbol.styleNode]
-		) {
-			for (const child of this[PropertySymbol.childNodes]) {
-				(<Node>child)[PropertySymbol.connectToNode](this);
-			}
+			(<any>this)[PropertySymbol.shadowRoot][PropertySymbol.connectedToDocument]();
+		}
+	}
+
+	/**
+	 * Called when disconnected from document.
+	 * @param e
+	 */
+	public [PropertySymbol.disconnectedFromDocument](): void {
+		this[PropertySymbol.isConnected] = false;
+		this[PropertySymbol.rootNode] = null;
+
+		if (this[PropertySymbol.ownerDocument][PropertySymbol.activeElement] === <unknown>this) {
+			this[PropertySymbol.ownerDocument][PropertySymbol.activeElement] = null;
+		}
+
+		if (this.disconnectedCallback) {
+			this.disconnectedCallback();
+		}
+
+		for (const child of this[PropertySymbol.childNodes]) {
+			child[PropertySymbol.disconnectedFromDocument]();
+		}
+
+		// eslint-disable-next-line
+		if ((<any>this)[PropertySymbol.shadowRoot]) {
+			// eslint-disable-next-line
+			(<any>this)[PropertySymbol.shadowRoot][PropertySymbol.disconnectedFromDocument]();
 		}
 	}
 
@@ -745,9 +1001,9 @@ export default class Node extends EventTarget {
 		const node2Node = reverseArrayIndex(node2Ancestors, commonAncestorIndex + 1);
 		const node1Node = reverseArrayIndex(node1Ancestors, commonAncestorIndex + 1);
 
-		const computeNodeIndexes = (nodes: Node[]): void => {
+		const computeNodeIndexes = (nodes: INodeList<Node>): void => {
 			for (const childNode of nodes) {
-				computeNodeIndexes((<Node>childNode)[PropertySymbol.childNodes]);
+				computeNodeIndexes(childNode[PropertySymbol.childNodes]);
 
 				if (childNode === node2Node) {
 					node2Index = indexes;
@@ -763,7 +1019,7 @@ export default class Node extends EventTarget {
 			}
 		};
 
-		computeNodeIndexes((<Node>commonAncestor)[PropertySymbol.childNodes]);
+		computeNodeIndexes(commonAncestor[PropertySymbol.childNodes]);
 
 		/**
 		 * 9. If node1 is preceding node2, then return DOCUMENT_POSITION_PRECEDING.

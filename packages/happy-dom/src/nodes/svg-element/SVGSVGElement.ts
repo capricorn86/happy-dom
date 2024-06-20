@@ -15,7 +15,7 @@ import * as PropertySymbol from '../../PropertySymbol.js';
  */
 export default class SVGSVGElement extends SVGGraphicsElement {
 	// Public properties
-	public cloneNode: (deep?: boolean) => SVGSVGElement;
+	public declare cloneNode: (deep?: boolean) => SVGSVGElement;
 
 	// Events
 	public onafterprint: (event: Event) => void | null = null;

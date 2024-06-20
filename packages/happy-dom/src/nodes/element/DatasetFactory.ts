@@ -1,6 +1,5 @@
 import Element from './Element.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import HTMLElementNamedNodeMap from '../html-element/HTMLElementNamedNodeMap.js';
 import DatasetUtility from './DatasetUtility.js';
 import IDataset from './IDataset.js';
 
@@ -47,9 +46,9 @@ export default class DatasetFactory {
 				return true;
 			},
 			deleteProperty(dataset: IDataset, key: string): boolean {
-				(<HTMLElementNamedNodeMap>element[PropertySymbol.attributes])[
-					PropertySymbol.removeNamedItem
-				]('data-' + DatasetUtility.camelCaseToKebab(key));
+				element[PropertySymbol.attributes][PropertySymbol.removeNamedItem](
+					'data-' + DatasetUtility.camelCaseToKebab(key)
+				);
 				return delete dataset[key];
 			},
 			ownKeys(dataset: IDataset): string[] {

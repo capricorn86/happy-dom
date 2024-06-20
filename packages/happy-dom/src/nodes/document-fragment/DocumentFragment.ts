@@ -4,25 +4,34 @@ import Element from '../element/Element.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 import HTMLCollection from '../element/HTMLCollection.js';
-import ElementUtility from '../element/ElementUtility.js';
-import NodeList from '../node/NodeList.js';
+import IHTMLCollection from '../element/IHTMLCollection.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
+import INodeList from '../node/INodeList.js';
 
 /**
  * DocumentFragment.
  */
 export default class DocumentFragment extends Node {
-	public readonly [PropertySymbol.children]: HTMLCollection<Element> = new HTMLCollection();
+	public [PropertySymbol.children]: IHTMLCollection<Element> = new HTMLCollection<Element>();
 	public [PropertySymbol.rootNode]: Node = this;
 	public [PropertySymbol.nodeType] = NodeTypeEnum.documentFragmentNode;
-	public cloneNode: (deep?: boolean) => DocumentFragment;
+	public declare cloneNode: (deep?: boolean) => DocumentFragment;
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+		this[PropertySymbol.childNodes][PropertySymbol.attachedHTMLCollection] =
+			this[PropertySymbol.children];
+	}
 
 	/**
 	 * Returns the document fragment children.
 	 */
-	public get children(): HTMLCollection<Element> {
+	public get children(): IHTMLCollection<Element> {
 		return this[PropertySymbol.children];
 	}
 
@@ -50,7 +59,8 @@ export default class DocumentFragment extends Node {
 	 * @returns Element.
 	 */
 	public get lastElementChild(): Element {
-		return this[PropertySymbol.children][this[PropertySymbol.children].length - 1] ?? null;
+		const children = this[PropertySymbol.children];
+		return children[children.length - 1] ?? null;
 	}
 
 	/**
@@ -77,8 +87,9 @@ export default class DocumentFragment extends Node {
 	 * @param textContent Text content.
 	 */
 	public set textContent(textContent: string) {
-		for (const child of this[PropertySymbol.childNodes].slice()) {
-			this.removeChild(child);
+		const childNodes = this[PropertySymbol.childNodes];
+		while (childNodes.length) {
+			this.removeChild(childNodes[0]);
 		}
 		if (textContent) {
 			this.appendChild(this[PropertySymbol.ownerDocument].createTextNode(textContent));
@@ -120,7 +131,7 @@ export default class DocumentFragment extends Node {
 	 */
 	public querySelectorAll<K extends keyof IHTMLElementTagNameMap>(
 		selector: K
-	): NodeList<IHTMLElementTagNameMap[K]>;
+	): INodeList<IHTMLElementTagNameMap[K]>;
 
 	/**
 	 * Query CSS selector to find matching elments.
@@ -130,7 +141,7 @@ export default class DocumentFragment extends Node {
 	 */
 	public querySelectorAll<K extends keyof ISVGElementTagNameMap>(
 		selector: K
-	): NodeList<ISVGElementTagNameMap[K]>;
+	): INodeList<ISVGElementTagNameMap[K]>;
 
 	/**
 	 * Query CSS selector to find matching elments.
@@ -138,7 +149,7 @@ export default class DocumentFragment extends Node {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): NodeList<Element>;
+	public querySelectorAll(selector: string): INodeList<Element>;
 
 	/**
 	 * Query CSS selector to find matching elments.
@@ -146,7 +157,7 @@ export default class DocumentFragment extends Node {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): NodeList<Element> {
+	public querySelectorAll(selector: string): INodeList<Element> {
 		return QuerySelector.querySelectorAll(this, selector);
 	}
 
@@ -194,48 +205,7 @@ export default class DocumentFragment extends Node {
 	 * @param id ID.
 	 * @returns Matching element.
 	 */
-	public getElementById(id: string): Element {
+	public getElementById(id: string): Element | null {
 		return ParentNodeUtility.getElementById(this, id);
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.cloneNode](deep = false): DocumentFragment {
-		const clone = <DocumentFragment>super[PropertySymbol.cloneNode](deep);
-
-		if (deep) {
-			for (const node of clone[PropertySymbol.childNodes]) {
-				if (node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
-					clone[PropertySymbol.children].push(<Element>node);
-				}
-			}
-		}
-
-		return <DocumentFragment>clone;
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.appendChild](node: Node): Node {
-		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
-		return ElementUtility.appendChild(this, node);
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.removeChild](node: Node): Node {
-		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
-		return ElementUtility.removeChild(this, node);
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
-		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
-		return ElementUtility.insertBefore(this, newNode, referenceNode);
 	}
 }

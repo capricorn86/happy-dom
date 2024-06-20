@@ -38,8 +38,9 @@ export default class DOMParser {
 
 		const newDocument = <Document>this.#createDocument(mimeType);
 
-		newDocument[PropertySymbol.childNodes].length = 0;
-		newDocument[PropertySymbol.children].length = 0;
+		while (newDocument[PropertySymbol.childNodes].length) {
+			newDocument.removeChild(newDocument[PropertySymbol.childNodes][0]);
+		}
 
 		const root = <DocumentFragment>XMLParser.parse(newDocument, string, { evaluateScripts: true });
 		let documentElement = null;
@@ -64,16 +65,16 @@ export default class DOMParser {
 			newDocument.appendChild(documentElement);
 			const body = newDocument.body;
 			if (body) {
-				for (const child of root[PropertySymbol.childNodes].slice()) {
-					body.appendChild(child);
+				while (root[PropertySymbol.childNodes].length) {
+					body.appendChild(root[PropertySymbol.childNodes][0]);
 				}
 			}
 		} else {
 			switch (mimeType) {
 				case 'image/svg+xml':
 					{
-						for (const node of root[PropertySymbol.childNodes].slice()) {
-							newDocument.appendChild(node);
+						while (root[PropertySymbol.childNodes].length) {
+							newDocument.appendChild(root[PropertySymbol.childNodes][0]);
 						}
 					}
 					break;
@@ -88,8 +89,8 @@ export default class DOMParser {
 						documentElement.appendChild(bodyElement);
 						newDocument.appendChild(documentElement);
 
-						for (const node of root[PropertySymbol.childNodes].slice()) {
-							bodyElement.appendChild(node);
+						while (root[PropertySymbol.childNodes].length) {
+							bodyElement.appendChild(root[PropertySymbol.childNodes][0]);
 						}
 					}
 					break;

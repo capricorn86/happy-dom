@@ -2,7 +2,7 @@
 	"compilerOptions": {
 		"outDir": "lib",
 		"rootDir": "src",
-		"target": "ES2020",
+		"target": "ES2022",
 		"declaration": true,
 		"declarationMap": true,
 		"module": "Node16",
@@ -21,7 +21,7 @@
 		"composite": false,
 		"incremental": false,
         "lib": [
-            "es2020"
+            "ES2022"
         ],
 		"types": [
 			"node"

@@ -3,15 +3,17 @@ import CharacterData from '../character-data/CharacterData.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
-import Node from '../node/Node.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
+import HTMLStyleElement from '../html-style-element/HTMLStyleElement.js';
 
 /**
  * Text node.
  */
 export default class Text extends CharacterData {
-	public cloneNode: (deep?: boolean) => Text;
+	public declare cloneNode: (deep?: boolean) => Text;
 	public override [PropertySymbol.nodeType] = NodeTypeEnum.textNode;
+	public override [PropertySymbol.textAreaNode]: HTMLTextAreaElement | null = null;
+	public override [PropertySymbol.styleNode]: HTMLStyleElement | null = null;
 
 	/**
 	 * Node name.
@@ -88,23 +90,5 @@ export default class Text extends CharacterData {
 	 */
 	public override [PropertySymbol.cloneNode](deep = false): Text {
 		return <Text>super[PropertySymbol.cloneNode](deep);
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
-		const oldTextAreaNode = <HTMLTextAreaElement>this[PropertySymbol.textAreaNode];
-
-		super[PropertySymbol.connectToNode](parentNode);
-
-		if (oldTextAreaNode !== this[PropertySymbol.textAreaNode]) {
-			if (oldTextAreaNode) {
-				oldTextAreaNode[PropertySymbol.resetSelection]();
-			}
-			if (this[PropertySymbol.textAreaNode]) {
-				(<HTMLTextAreaElement>this[PropertySymbol.textAreaNode])[PropertySymbol.resetSelection]();
-			}
-		}
 	}
 }
