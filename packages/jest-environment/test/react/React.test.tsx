@@ -110,4 +110,14 @@ describe('React', () => {
 		await TESTING_LIBRARY_USER.click(button);
 		expect(document.querySelector('p span').textContent).toBe('test');
 	});
+
+	it('Can `preventDefault` to prevent navigation with React click listener on an anchor tag', async () => {
+		location.href = 'http://localhost/';
+		const { getByRole } = ReactTestingLibrary.render(
+			<a href="http://example.com" onClick={(ev) => ev.preventDefault()} />
+		);
+		expect(document.location.href).toBe('http://localhost/');
+		await TESTING_LIBRARY_USER.click(getByRole('link'));
+		expect(document.location.href).toBe('http://localhost/');
+	});
 });
