@@ -43,6 +43,37 @@ describe('AbortSignal', () => {
 		});
 	});
 
+	describe('AbortSignal.any()', () => {
+		it('Returns a signal that is asynchronously aborted when one of the supplied signals is asynchronously aborted.', () => {
+			const signal1 = new AbortSignal();
+			const signal2 = new AbortSignal();
+			const signal = AbortSignal.any([signal1, signal2]);
+
+			expect(signal.aborted).toBe(false);
+
+			const reason2 = new Error('abort reason 2');
+			signal2[PropertySymbol.abort](reason2);
+			const reason1 = new Error('abort reason 1');
+			signal1[PropertySymbol.abort](reason1);
+
+			expect(signal.aborted).toBe(true);
+			expect(signal.reason).toBe(reason2);
+		});
+
+		it('Returns a signal that is already aborted when one of the supplied signals is already aborted.', () => {
+			const signal1 = new AbortSignal();
+			const signal2 = new AbortSignal();
+
+			const reason2 = new Error('abort reason 2');
+			signal2[PropertySymbol.abort](reason2);
+
+			const signal = AbortSignal.any([signal1, signal2]);
+
+			expect(signal.aborted).toBe(true);
+			expect(signal.reason).toBe(reason2);
+		});
+	});
+
 	describe('AbortSignal[Symbol.toStringTag]', () => {
 		it('Returns AbortSignal string.', () => {
 			const description = 'AbortSignal';

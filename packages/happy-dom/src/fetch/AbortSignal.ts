@@ -60,4 +60,43 @@ export default class AbortSignal extends EventTarget {
 		(<boolean>signal.aborted) = true;
 		return signal;
 	}
+
+	/**
+	 * Takes an iterable of abort signals and returns an AbortSignal that is
+	 * aborted when any of the input iterable abort signals are aborted.
+	 *
+	 * The abort reason will be set to the reason of the first signal that is
+	 * aborted. If any of the given abort signals are already aborted then so will
+	 * be the returned AbortSignal.
+	 *
+	 * @param [signals] Iterable of abort signals.
+	 * @returns AbortSignal instance.
+	 */
+	public static any(signals: AbortSignal[]): AbortSignal {
+		for (const signal of signals) {
+			if (signal.aborted) {
+				return AbortSignal.abort(signal.reason);
+			}
+		}
+
+		const anySignal = new AbortSignal();
+		const handlers = new Map<AbortSignal, () => void>();
+
+		const stopListening = (): void => {
+			for (const signal of signals) {
+				signal.removeEventListener('abort', handlers.get(signal));
+			}
+		};
+
+		for (const signal of signals) {
+			const handler = (): void => {
+				stopListening();
+				anySignal[PropertySymbol.abort](signal.reason);
+			};
+			handlers.set(signal, handler);
+			signal.addEventListener('abort', handler);
+		}
+
+		return anySignal;
+	}
 }
