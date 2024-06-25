@@ -1,6 +1,7 @@
 import AbortSignal from '../../src/fetch/AbortSignal.js';
+import DOMException from '../../src/exception/DOMException.js';
 import Event from '../../src/event/Event.js';
-import { describe, it, expect } from 'vitest';
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 
 describe('AbortSignal', () => {
@@ -40,6 +41,28 @@ describe('AbortSignal', () => {
 
 			expect(signal.aborted).toBe(true);
 			expect(signal.reason).toBe(reason);
+		});
+	});
+
+	describe('AbortSignal.timeout()', () => {
+		beforeEach(() => {
+			vi.useFakeTimers();
+		});
+
+		afterEach(() => {
+			vi.useRealTimers();
+		});
+
+		it('Returns a new instance of AbortSignal that aborts with a "TimeoutError" after a timeout.', () => {
+			const signal = AbortSignal.timeout(100);
+
+			expect(signal.aborted).toBe(false);
+
+			vi.advanceTimersByTime(100);
+
+			expect(signal.aborted).toBe(true);
+			expect(signal.reason).toBeInstanceOf(DOMException);
+			expect(signal.reason?.name).toBe('TimeoutError');
 		});
 	});
 
