@@ -280,6 +280,18 @@ export default class QuerySelector {
 					}
 					break;
 				case SelectorCombinatorEnum.child:
+					if (currentElement.parentElement) {
+						const match = this.matchSelector(
+							currentElement.parentElement,
+							currentElement.parentElement,
+							selectorItems.slice(1),
+							priorityWeight + result.priorityWeight
+						);
+						if (match) {
+							return match;
+						}
+					}
+					break;
 				case SelectorCombinatorEnum.descendant:
 					if (currentElement.parentElement) {
 						const match = this.matchSelector(
