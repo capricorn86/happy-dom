@@ -574,7 +574,7 @@ export default class HTMLElement extends Element {
 						(<IHTMLCollection<Element>>this[PropertySymbol.children]) =
 							new HTMLCollection<Element>();
 
-						this[PropertySymbol.childNodes][PropertySymbol.attachedHTMLCollection] =
+						this[PropertySymbol.childNodes][PropertySymbol.htmlCollection] =
 							this[PropertySymbol.children];
 
 						this[PropertySymbol.rootNode] = null;

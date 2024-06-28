@@ -22,7 +22,6 @@ export default class HTMLButtonElement extends HTMLElement {
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
-	public [PropertySymbol.isInsideObservedFormNode] = false;
 
 	/**
 	 * Returns validation message.

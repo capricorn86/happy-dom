@@ -1,6 +1,4 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
-import Element from '../element/Element.js';
-import IHTMLCollection from '../element/IHTMLCollection.js';
 
 /**
  * NodeList.
@@ -11,7 +9,6 @@ import IHTMLCollection from '../element/IHTMLCollection.js';
  */
 export default interface INodeList<T> {
 	readonly [index: number]: T;
-	[PropertySymbol.attachedHTMLCollection]: IHTMLCollection<Element> | null;
 
 	/**
 	 * The number of items in the NodeList.

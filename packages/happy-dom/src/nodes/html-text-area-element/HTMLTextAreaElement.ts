@@ -36,7 +36,6 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	public [PropertySymbol.value] = null;
 	public [PropertySymbol.textAreaNode]: HTMLTextAreaElement = this;
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
-	public [PropertySymbol.isInsideObservedFormNode] = false;
 
 	// Private properties
 	#selectionStart = null;

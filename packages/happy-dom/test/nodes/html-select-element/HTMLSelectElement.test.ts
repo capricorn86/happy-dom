@@ -202,18 +202,18 @@ describe('HTMLSelectElement', () => {
 			element.appendChild(option2);
 
 			expect(element.selectedOptions.length).toBe(1);
-			expect(element.selectedOptions[0]).toBe(option2);
+			expect(element.selectedOptions[0] === option2).toBe(true);
 
 			option1.setAttribute('selected', '');
 
 			expect(element.selectedOptions.length).toBe(2);
-			expect(element.selectedOptions[0]).toBe(option1);
-			expect(element.selectedOptions[1]).toBe(option2);
+			expect(element.selectedOptions[0] === option1).toBe(true);
+			expect(element.selectedOptions[1] === option2).toBe(true);
 
 			option2.removeAttribute('selected');
 
 			expect(element.selectedOptions.length).toBe(1);
-			expect(element.selectedOptions[0]).toBe(option1);
+			expect(element.selectedOptions[0] === option1).toBe(true);
 		});
 	});
 
@@ -490,6 +490,7 @@ describe('HTMLSelectElement', () => {
 			element.appendChild(option2);
 			element.appendChild(option3);
 
+			debugger;
 			element.removeChild(option2);
 
 			expect(element.length).toBe(2);

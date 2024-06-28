@@ -19,9 +19,10 @@ export default class HTMLDataListElement extends HTMLElement {
 	 */
 	public get options(): IHTMLCollection<HTMLOptionElement> {
 		if (!this[PropertySymbol.options]) {
-			this[PropertySymbol.options] = new HTMLCollection<HTMLOptionElement>({
-				filter: (item) => item[PropertySymbol.tagName] === 'OPTION',
-				observeNode: this
+			this[PropertySymbol.options] = new HTMLCollection<HTMLOptionElement>();
+			this[PropertySymbol.options][PropertySymbol.observe](this, {
+				subtree: true,
+				filter: (item) => item[PropertySymbol.tagName] === 'OPTION'
 			});
 		}
 		return this[PropertySymbol.options];

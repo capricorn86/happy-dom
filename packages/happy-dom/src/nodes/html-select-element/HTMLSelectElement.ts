@@ -9,7 +9,6 @@ import Event from '../../event/Event.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import IHTMLCollection from '../element/IHTMLCollection.js';
-import Element from '../element/Element.js';
 import NodeList from '../node/INodeList.js';
 
 /**
@@ -25,11 +24,18 @@ export default class HTMLSelectElement extends HTMLElement {
 	public [PropertySymbol.options]: HTMLOptionsCollection = new HTMLOptionsCollection(this);
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
 	public [PropertySymbol.selectedOptions]: IHTMLCollection<HTMLOptionElement> | null = null;
-	public [PropertySymbol.isInsideObservedFormNode] = false;
 
 	// Events
 	public onchange: (event: Event) => void | null = null;
 	public oninput: (event: Event) => void | null = null;
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+		this[PropertySymbol.options][PropertySymbol.observe]();
+	}
 
 	/**
 	 * Returns length.
@@ -240,10 +246,7 @@ export default class HTMLSelectElement extends HTMLElement {
 	 */
 	public get selectedOptions(): IHTMLCollection<HTMLOptionElement> {
 		if (!this[PropertySymbol.selectedOptions]) {
-			this[PropertySymbol.selectedOptions] = new HTMLCollection<HTMLOptionElement>({
-				filter: (element: Element) =>
-					element[PropertySymbol.tagName] === 'OPTION' && element[PropertySymbol.selectedness]
-			});
+			this[PropertySymbol.selectedOptions] = new HTMLCollection<HTMLOptionElement>();
 			for (const option of this[PropertySymbol.options]) {
 				if (option[PropertySymbol.selectedness]) {
 					this[PropertySymbol.selectedOptions][PropertySymbol.addItem](option);

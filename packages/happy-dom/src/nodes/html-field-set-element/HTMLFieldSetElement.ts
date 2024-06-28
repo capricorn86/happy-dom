@@ -25,25 +25,26 @@ export default class HTMLFieldSetElement extends HTMLElement {
 	public declare cloneNode: (deep?: boolean) => HTMLFieldSetElement;
 
 	// Internal properties
-	public [PropertySymbol.elements] = new HTMLCollection<THTMLFieldSetElement>({
-		filter: (item: Element) =>
-			item.tagName === 'INPUT' ||
-			item.tagName === 'BUTTON' ||
-			item.tagName === 'TEXTAREA' ||
-			item.tagName === 'SELECT',
-		observeNode: this
-	});
+	public [PropertySymbol.elements]: IHTMLCollection<THTMLFieldSetElement> | null = null;
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
-	public [PropertySymbol.isInsideObservedFormNode] = false;
 
 	/**
 	 * Returns elements.
 	 *
 	 * @returns Elements.
 	 */
-	public get elements(): IHTMLCollection<
-		HTMLInputElement | HTMLButtonElement | HTMLTextAreaElement | HTMLSelectElement
-	> {
+	public get elements(): IHTMLCollection<THTMLFieldSetElement> {
+		if (!this[PropertySymbol.elements]) {
+			this[PropertySymbol.elements] = new HTMLCollection<THTMLFieldSetElement>();
+			this[PropertySymbol.elements][PropertySymbol.observe](this, {
+				subtree: true,
+				filter: (item: Element) =>
+					item.tagName === 'INPUT' ||
+					item.tagName === 'BUTTON' ||
+					item.tagName === 'TEXTAREA' ||
+					item.tagName === 'SELECT'
+			});
+		}
 		return this[PropertySymbol.elements];
 	}
 

@@ -202,8 +202,8 @@ export default class Document extends Node {
 		super();
 		this.#browserFrame = injected.browserFrame;
 		this[PropertySymbol.ownerWindow] = injected.window;
-		this[PropertySymbol.childNodes][PropertySymbol.attachedHTMLCollection] =
-			this[PropertySymbol.children];
+
+		this[PropertySymbol.childNodes][PropertySymbol.htmlCollection] = this[PropertySymbol.children];
 	}
 
 	/**

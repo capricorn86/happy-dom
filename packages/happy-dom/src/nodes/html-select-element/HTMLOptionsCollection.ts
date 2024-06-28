@@ -6,6 +6,9 @@ import Element from '../element/Element.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
+import Node from '../node/Node.js';
+import EventTarget from '../../event/EventTarget.js';
+import IHTMLCollectionObservedNode from '../element/IHTMLCollectionObservedNode.js';
 
 /**
  * HTML Options Collection.
@@ -16,6 +19,8 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
 export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElement> {
 	#selectedIndex: number = -1;
 	#selectElement: HTMLSelectElement;
+	#observedSelectElement: IHTMLCollectionObservedNode | null = null;
+	protected [PropertySymbol.attributeFilter]: string[] = ['id', 'name', 'form'];
 
 	/**
 	 * Constructor.
@@ -23,12 +28,7 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 	 * @param selectElement Select element.
 	 */
 	constructor(selectElement: HTMLSelectElement) {
-		super({
-			filter: (element: Element) => element[PropertySymbol.tagName] === 'OPTION',
-			// Array.splice() method creates a new instance of HTMLOptionsCollection with a number sent as the first argument.
-			observeNode: selectElement instanceof HTMLSelectElement ? selectElement : null,
-			synchronizedPropertiesElement: selectElement
-		});
+		super();
 
 		this.#selectElement = selectElement;
 	}
@@ -134,12 +134,16 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 	 * @override
 	 */
 	public [PropertySymbol.addItem](item: HTMLOptionElement): boolean {
-		const returnValue = super[PropertySymbol.addItem](item);
-		if (returnValue) {
-			item[PropertySymbol.selectNode] = this.#selectElement;
-			this[PropertySymbol.updateSelectedness](item[PropertySymbol.selectedness] ? item : null);
+		if (!super[PropertySymbol.addItem](item)) {
+			return false;
 		}
-		return returnValue;
+
+		this.#selectElement[this.length - 1] = item;
+
+		item[PropertySymbol.selectNode] = this.#selectElement;
+		this[PropertySymbol.updateSelectedness](item[PropertySymbol.selectedness] ? item : null);
+
+		return true;
 	}
 
 	/**
@@ -149,26 +153,113 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 		newItem: HTMLOptionElement,
 		referenceItem: HTMLOptionElement | null
 	): boolean {
-		const returnValue = super[PropertySymbol.insertItem](newItem, referenceItem);
-		if (returnValue) {
-			newItem[PropertySymbol.selectNode] = this.#selectElement;
-			this[PropertySymbol.updateSelectedness](
-				newItem[PropertySymbol.selectedness] ? newItem : null
-			);
+		if (!super[PropertySymbol.insertItem](newItem, referenceItem)) {
+			return false;
 		}
-		return returnValue;
+
+		newItem[PropertySymbol.selectNode] = this.#selectElement;
+
+		const index = this[PropertySymbol.indexOf](newItem);
+
+		for (let i = index, max = this.length; i < max; i++) {
+			this.#selectElement[i] = this[i];
+		}
+
+		this[PropertySymbol.updateSelectedness](newItem[PropertySymbol.selectedness] ? newItem : null);
+
+		return true;
 	}
 
 	/**
 	 * @override
 	 */
 	public [PropertySymbol.removeItem](item: HTMLOptionElement): boolean {
-		const returnValue = super[PropertySymbol.removeItem](item);
-		if (returnValue) {
-			item[PropertySymbol.selectNode] = null;
-			this[PropertySymbol.updateSelectedness]();
+		const index = this[PropertySymbol.indexOf](item);
+
+		if (!super[PropertySymbol.removeItem](item)) {
+			return false;
 		}
-		return returnValue;
+
+		item[PropertySymbol.selectNode] = null;
+
+		for (let i = index, max = this.length; i < max; i++) {
+			this.#selectElement[i] = this[i];
+		}
+
+		delete this.#selectElement[this.length];
+
+		this[PropertySymbol.updateSelectedness]();
+
+		return true;
+	}
+
+	/**
+	 * Observes node.
+	 *
+	 * @returns Observed node.
+	 */
+	public [PropertySymbol.observe](): IHTMLCollectionObservedNode {
+		if (this.#observedSelectElement) {
+			return;
+		}
+		const observedNode = super[PropertySymbol.observe](this.#selectElement, {
+			subtree: true,
+			filter: (item) => item[PropertySymbol.tagName] === 'OPTION'
+		});
+
+		this.#observedSelectElement = observedNode;
+
+		return observedNode;
+	}
+
+	/**
+	 * Unobserves node.
+	 *
+	 * @param observedNode Observed node.
+	 */
+	public [PropertySymbol.unobserve](): void {
+		if (!this.#observedSelectElement) {
+			return;
+		}
+		super[PropertySymbol.unobserve](this.#observedSelectElement);
+	}
+
+	/**
+	 * Sets named item property.
+	 *
+	 * @param name Name.
+	 */
+	protected [PropertySymbol.updateNamedItemProperty](name: string): void {
+		super[PropertySymbol.updateNamedItemProperty](name);
+
+		if (this[name]) {
+			Object.defineProperty(this.#selectElement, name, {
+				value: this[name],
+				writable: false,
+				enumerable: true,
+				configurable: true
+			});
+		} else {
+			delete this.#selectElement[name];
+		}
+	}
+
+	/**
+	 * Returns "true" if the property name is valid.
+	 *
+	 * @param name Name.
+	 * @returns True if the property name is valid.
+	 */
+	protected [PropertySymbol.isValidPropertyName](name: string): boolean {
+		return (
+			!HTMLCollection.prototype.hasOwnProperty(name) &&
+			!this.#selectElement.constructor.prototype.hasOwnProperty(name) &&
+			!HTMLElement.constructor.prototype.hasOwnProperty(name) &&
+			!Element.constructor.prototype.hasOwnProperty(name) &&
+			!Node.constructor.hasOwnProperty(name) &&
+			!EventTarget.constructor.hasOwnProperty(name) &&
+			super[PropertySymbol.isValidPropertyName](name)
+		);
 	}
 
 	/**
@@ -185,9 +276,24 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 		const selectedOptions = this.#selectElement[PropertySymbol.selectedOptions];
 		const selected: HTMLOptionElement[] = [];
 
+		if (selectedOptions) {
+			while (selectedOptions.length) {
+				selectedOptions[PropertySymbol.removeItem](selectedOptions[selectedOptions.length - 1]);
+			}
+		}
+
 		this.#selectedIndex = -1;
 
-		if (!isMultiple) {
+		if (isMultiple) {
+			if (selectedOptions) {
+				for (let i = 0, max = this.length; i < max; i++) {
+					const option = <HTMLOptionElement>this[i];
+					if (option[PropertySymbol.selectedness]) {
+						selectedOptions[PropertySymbol.addItem](option);
+					}
+				}
+			}
+		} else {
 			for (let i = 0, max = this.length; i < max; i++) {
 				const option = <HTMLOptionElement>this[i];
 				if (selectedOption) {
@@ -202,17 +308,6 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 					}
 
 					selectedOptions?.[PropertySymbol.addItem](option);
-				} else {
-					selectedOptions?.[PropertySymbol.removeItem](option);
-				}
-			}
-		} else {
-			for (let i = 0, max = this.length; i < max; i++) {
-				const option = <HTMLOptionElement>this[i];
-				if (option[PropertySymbol.selectedness]) {
-					selectedOptions?.[PropertySymbol.addItem](option);
-				} else {
-					selectedOptions?.[PropertySymbol.removeItem](option);
 				}
 			}
 		}

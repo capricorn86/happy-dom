@@ -503,6 +503,7 @@ export default class Node extends EventTarget {
 				(<Node>node)[PropertySymbol.observeMutations](mutationListener);
 			}
 		}
+
 		this[PropertySymbol.reportMutation](
 			new MutationRecord({
 				target: this,
@@ -603,7 +604,6 @@ export default class Node extends EventTarget {
 		} else if (!this[PropertySymbol.isConnected] && newNode[PropertySymbol.isConnected]) {
 			newNode[PropertySymbol.disconnectedFromDocument]();
 		}
-
 		// Mutation listeners
 		for (const mutationListener of this[PropertySymbol.mutationListeners]) {
 			if (mutationListener.options?.subtree && mutationListener.callback.deref()) {
@@ -670,25 +670,6 @@ export default class Node extends EventTarget {
 				(<Node>node)[PropertySymbol.observeMutations](listener);
 			}
 		}
-	}
-
-	/**
-	 * Observeres mutations on the node once.
-	 *
-	 * Used by MutationObserver and internal logic.
-	 *
-	 * @param listener Listener.
-	 */
-	public [PropertySymbol.observeMutationsOnce](listener: IMutationListener): void {
-		const callback = listener.callback.deref();
-		const wrapperListener = {
-			options: listener.options,
-			callback: new WeakRef((record: MutationRecord) => {
-				callback(record);
-				this[PropertySymbol.unobserveMutations](wrapperListener);
-			})
-		};
-		this[PropertySymbol.observeMutations](wrapperListener);
 	}
 
 	/**
@@ -763,37 +744,59 @@ export default class Node extends EventTarget {
 	 * Clears query selector cache.
 	 */
 	public [PropertySymbol.clearCache](): void {
-		for (const item of this[PropertySymbol.querySelectorCache].items.values()) {
-			if (item.result) {
-				item.result = null;
+		if (this[PropertySymbol.querySelectorCache].items.size) {
+			for (const item of this[PropertySymbol.querySelectorCache].items.values()) {
+				if (item.result) {
+					item.result = null;
+				}
 			}
+			this[PropertySymbol.querySelectorCache].items = new Map();
 		}
 
-		for (const item of this[PropertySymbol.querySelectorCache].affectedItems) {
-			if (item.result) {
-				item.result = null;
+		if (this[PropertySymbol.querySelectorCache].affectedItems.length) {
+			for (const item of this[PropertySymbol.querySelectorCache].affectedItems) {
+				if (item.result) {
+					item.result = null;
+				}
 			}
+			this[PropertySymbol.querySelectorCache].affectedItems = [];
 		}
 
-		for (const item of this[PropertySymbol.querySelectorAllCache].affectedItems) {
-			if (item.result) {
-				item.result = null;
+		if (this[PropertySymbol.querySelectorAllCache].items.size) {
+			for (const item of this[PropertySymbol.querySelectorAllCache].items.values()) {
+				if (item.result) {
+					item.result = null;
+				}
 			}
+			this[PropertySymbol.querySelectorAllCache].items = new Map();
 		}
 
-		for (const item of this[PropertySymbol.matchesCache].affectedItems) {
-			if (item.result) {
-				item.result = null;
+		if (this[PropertySymbol.querySelectorAllCache].affectedItems.length) {
+			for (const item of this[PropertySymbol.querySelectorAllCache].affectedItems) {
+				if (item.result) {
+					item.result = null;
+				}
 			}
+			this[PropertySymbol.querySelectorAllCache].affectedItems = [];
 		}
 
-		this[PropertySymbol.querySelectorCache].items = new Map();
-		this[PropertySymbol.querySelectorAllCache].items = new Map();
-		this[PropertySymbol.matchesCache].items = new Map();
+		if (this[PropertySymbol.matchesCache].items.size) {
+			for (const item of this[PropertySymbol.matchesCache].items.values()) {
+				if (item.result) {
+					item.result = null;
+				}
+			}
+			this[PropertySymbol.matchesCache].items = new Map();
+		}
 
-		this[PropertySymbol.querySelectorCache].affectedItems = [];
-		this[PropertySymbol.querySelectorAllCache].affectedItems = [];
-		this[PropertySymbol.matchesCache].affectedItems = [];
+		if (this[PropertySymbol.matchesCache].affectedItems.length) {
+			for (const item of this[PropertySymbol.matchesCache].affectedItems) {
+				if (item.result) {
+					item.result = null;
+				}
+			}
+			this[PropertySymbol.matchesCache].affectedItems = [];
+		}
 
 		this[PropertySymbol.ownerDocument]?.[PropertySymbol.clearComputedStyleCache]();
 	}

@@ -48,7 +48,6 @@ export default class HTMLInputElement extends HTMLElement {
 	public [PropertySymbol.validity] = new ValidityState(this);
 	public [PropertySymbol.files]: FileList = new FileList();
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
-	public [PropertySymbol.isInsideObservedFormNode] = false;
 
 	// Private properties
 	#selectionStart: number = null;

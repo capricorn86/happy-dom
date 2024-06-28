@@ -90,10 +90,14 @@ export default class ParentNodeUtility {
 		parentNode: Element | DocumentFragment | Document,
 		className: string
 	): IHTMLCollection<Element> {
-		return new HTMLCollection({
-			filter: (item: Element) => (<Element>item).className.split(' ').includes(className),
-			observeNode: parentNode
+		const htmlCollection = new HTMLCollection();
+
+		htmlCollection[PropertySymbol.observe](parentNode, {
+			subtree: true,
+			filter: (item: Element) => (<Element>item).className.split(' ').includes(className)
 		});
+
+		return htmlCollection;
 	}
 
 	/**
@@ -109,11 +113,14 @@ export default class ParentNodeUtility {
 	): IHTMLCollection<Element> {
 		const upperTagName = tagName.toUpperCase();
 		const includeAll = tagName === '*';
+		const htmlCollection = new HTMLCollection();
 
-		return new HTMLCollection({
-			filter: (item: Element) => includeAll || item[PropertySymbol.tagName] === upperTagName,
-			observeNode: parentNode
+		htmlCollection[PropertySymbol.observe](parentNode, {
+			subtree: true,
+			filter: (item: Element) => includeAll || item[PropertySymbol.tagName] === upperTagName
 		});
+
+		return htmlCollection;
 	}
 
 	/**
@@ -132,13 +139,16 @@ export default class ParentNodeUtility {
 		// When the namespace is HTML, the tag name is case-insensitive.
 		const formattedTagName = namespaceURI === NamespaceURI.html ? tagName.toUpperCase() : tagName;
 		const includeAll = tagName === '*';
+		const htmlCollection = new HTMLCollection();
 
-		return new HTMLCollection({
+		htmlCollection[PropertySymbol.observe](parentNode, {
+			subtree: true,
 			filter: (item: Element) =>
 				(includeAll || item[PropertySymbol.tagName] === formattedTagName) &&
-				item[PropertySymbol.namespaceURI] === namespaceURI,
-			observeNode: parentNode
+				item[PropertySymbol.namespaceURI] === namespaceURI
 		});
+
+		return htmlCollection;
 	}
 
 	/**

@@ -43,7 +43,7 @@ describe('HTMLFieldSetElement', () => {
 			expect(element.form).toBe(null);
 			document.body.appendChild(element);
 			expect(element.form).toBe(form);
-			expect(form.elements.includes(element)).toBe(true);
+			expect(Array.from(form.elements).includes(element)).toBe(true);
 		});
 
 		it('Returns form element by id if the form attribute is set when element is connected to DOM.', () => {
@@ -53,7 +53,7 @@ describe('HTMLFieldSetElement', () => {
 			document.body.appendChild(element);
 			element.setAttribute('form', 'form');
 			expect(element.form).toBe(form);
-			expect(form.elements.includes(element)).toBe(true);
+			expect(Array.from(form.elements).includes(element)).toBe(true);
 		});
 	});
 

@@ -11,13 +11,7 @@ import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import BrowserFrameNavigator from '../../browser/utilities/BrowserFrameNavigator.js';
 import FormData from '../../form-data/FormData.js';
 import BrowserWindow from '../../window/BrowserWindow.js';
-import Attr from '../attr/Attr.js';
-import THTMLFormControlElement from './THTMLFormControlElement.js';
 import IHTMLFormControlsCollection from './IHTMLFormControlsCollection.js';
-import IMutationListener from '../../mutation-observer/IMutationListener.js';
-import MutationRecord from '../../mutation-observer/MutationRecord.js';
-import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
-import NodeTypeEnum from '../node/NodeTypeEnum.js';
 
 /**
  * HTML Form Element.
@@ -42,7 +36,6 @@ export default class HTMLFormElement extends HTMLElement {
 
 	// Private properties
 	#browserFrame: IBrowserFrame;
-	#documentMutationListener: IMutationListener | null = null;
 
 	/**
 	 * Constructor.
@@ -51,15 +44,10 @@ export default class HTMLFormElement extends HTMLElement {
 	 */
 	constructor(browserFrame: IBrowserFrame) {
 		super();
+
 		this.#browserFrame = browserFrame;
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'set',
-			this.#onSetAttribute.bind(this)
-		);
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'remove',
-			this.#onRemoveAttribute.bind(this)
-		);
+
+		this[PropertySymbol.elements][PropertySymbol.observe]();
 	}
 
 	/**
@@ -355,117 +343,7 @@ export default class HTMLFormElement extends HTMLElement {
 	public override [PropertySymbol.connectedToDocument](): void {
 		super[PropertySymbol.connectedToDocument]();
 
-		/**
-		 * It is possible to associate a form control element by setting the "form" attribute to the form's id.
-		 *
-		 * We need to listen for changes to all elements in the document to detect when a form control element is added or removed.
-		 */
-		this.#documentMutationListener = {
-			options: {
-				childList: true,
-				subtree: true,
-				attributes: true
-			},
-			callback: new WeakRef((record: MutationRecord) => {
-				const id = this[PropertySymbol.attributes]?.['id']?.value;
-				if (!id) {
-					return;
-				}
-
-				switch (record.type) {
-					case MutationTypeEnum.childList:
-						if (record.addedNodes.length) {
-							const addedNode = record.addedNodes[0];
-
-							if (
-								addedNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
-								addedNode[PropertySymbol.attributes]?.['form']?.value === id &&
-								!addedNode[PropertySymbol.isInsideObservedFormNode] &&
-								this.#isFormControlElement(<THTMLFormControlElement>addedNode)
-							) {
-								addedNode[PropertySymbol.formNode] = this;
-								this[PropertySymbol.elements][PropertySymbol.addItem](
-									<THTMLFormControlElement>addedNode
-								);
-							} else if (addedNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
-								const items = this.querySelectorAll(
-									`INPUT['form="${id}"], SELECT['form="${id}"], TEXTAREA['form="${id}"], BUTTON['form="${id}"], FIELDSET['form="${id}"]`
-								);
-								for (const item of items) {
-									if (!item[PropertySymbol.isInsideObservedFormNode]) {
-										this[PropertySymbol.elements][PropertySymbol.addItem](
-											<THTMLFormControlElement>item
-										);
-									}
-								}
-							}
-						} else {
-							const removedNode = record.removedNodes[0];
-
-							if (
-								removedNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
-								removedNode[PropertySymbol.attributes]?.['form']?.value === id &&
-								!removedNode[PropertySymbol.isInsideObservedFormNode] &&
-								this.#isFormControlElement(<THTMLFormControlElement>removedNode)
-							) {
-								this[PropertySymbol.elements][PropertySymbol.removeItem](
-									<THTMLFormControlElement>removedNode
-								);
-							} else if (removedNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
-								const items = this.querySelectorAll(
-									`INPUT['form="${id}"], SELECT['form="${id}"], TEXTAREA['form="${id}"], BUTTON['form="${id}"], FIELDSET['form="${id}"]`
-								);
-								for (const item of items) {
-									if (!item[PropertySymbol.isInsideObservedFormNode]) {
-										this[PropertySymbol.elements][PropertySymbol.removeItem](
-											<THTMLFormControlElement>item
-										);
-									}
-								}
-							}
-						}
-						break;
-					case MutationTypeEnum.attributes:
-						if (
-							record.attributeName === 'form' &&
-							this.#isFormControlElement(<THTMLFormControlElement>record.target)
-						) {
-							if (
-								record.target[PropertySymbol.attributes]?.['form']?.[PropertySymbol.value] ===
-									this[PropertySymbol.attributes]?.['id']?.[PropertySymbol.value] &&
-								!record.target[PropertySymbol.isInsideObservedFormNode]
-							) {
-								this[PropertySymbol.elements][PropertySymbol.addItem](
-									<THTMLFormControlElement>record.target
-								);
-							} else if (!record.target[PropertySymbol.isInsideObservedFormNode]) {
-								this[PropertySymbol.elements][PropertySymbol.removeItem](
-									<THTMLFormControlElement>record.target
-								);
-							}
-						}
-						break;
-				}
-			})
-		};
-
-		this[PropertySymbol.ownerDocument][PropertySymbol.observeMutations](
-			this.#documentMutationListener
-		);
-
-		const id = this[PropertySymbol.attributes]?.['id']?.value;
-
-		if (!id) {
-			return;
-		}
-
-		for (const element of this[PropertySymbol.ownerDocument].querySelectorAll(
-			`INPUT[form="${id}"], SELECT[form="${id}"], TEXTAREA[form="${id}"], BUTTON[form="${id}"], FIELDSET[form="${id}"]`
-		)) {
-			if (!element[PropertySymbol.isInsideObservedFormNode]) {
-				this[PropertySymbol.elements][PropertySymbol.addItem](<THTMLFormControlElement>element);
-			}
-		}
+		this[PropertySymbol.elements][PropertySymbol.observeDocument]();
 	}
 
 	/**
@@ -474,23 +352,7 @@ export default class HTMLFormElement extends HTMLElement {
 	public override [PropertySymbol.disconnectedFromDocument](): void {
 		super[PropertySymbol.disconnectedFromDocument]();
 
-		this[PropertySymbol.ownerDocument][PropertySymbol.unobserveMutations](
-			this.#documentMutationListener
-		);
-
-		this.#documentMutationListener = null;
-
-		const id = this.id;
-
-		if (!id) {
-			return;
-		}
-
-		for (const element of this[PropertySymbol.elements]) {
-			if (element[PropertySymbol.attributes]?.['form']?.value === id && !this.contains(element)) {
-				this[PropertySymbol.elements][PropertySymbol.removeItem](<THTMLFormControlElement>element);
-			}
-		}
+		this[PropertySymbol.elements][PropertySymbol.unobserveDocument]();
 	}
 
 	/**
@@ -567,78 +429,5 @@ export default class HTMLFormElement extends HTMLElement {
 				referrer: this.#browserFrame.page.mainFrame.window.location.origin
 			}
 		});
-	}
-
-	/**
-	 * Checks if an element is a form control element.
-	 *
-	 * @param item Item.
-	 * @returns True if the item is a form control element.
-	 */
-	#isFormControlElement(item: THTMLFormControlElement): boolean {
-		return (
-			item[PropertySymbol.tagName] === 'INPUT' ||
-			item[PropertySymbol.tagName] === 'SELECT' ||
-			item[PropertySymbol.tagName] === 'TEXTAREA' ||
-			item[PropertySymbol.tagName] === 'BUTTON' ||
-			item[PropertySymbol.tagName] === 'FIELDSET'
-		);
-	}
-
-	/**
-	 * Triggered when an attribute is set.
-	 *
-	 * @param attribute Attribute.
-	 * @param replacedAttribute Replaced attribute.
-	 */
-	#onSetAttribute(attribute: Attr, replacedAttribute: Attr | null): void {
-		if (attribute.name !== 'id' || !this[PropertySymbol.isConnected]) {
-			return;
-		}
-
-		if (replacedAttribute[PropertySymbol.value]) {
-			const id = replacedAttribute[PropertySymbol.value];
-			for (const element of this[PropertySymbol.elements]) {
-				if (element[PropertySymbol.attributes]?.['form']?.value === id && !this.contains(element)) {
-					this[PropertySymbol.elements][PropertySymbol.removeItem](
-						<THTMLFormControlElement>element
-					);
-				}
-			}
-		}
-
-		if (attribute[PropertySymbol.value]) {
-			const id = attribute[PropertySymbol.value];
-			for (const element of this[PropertySymbol.elements]) {
-				if (
-					element[PropertySymbol.attributes]?.['form']?.value === id &&
-					element[PropertySymbol.formNode] !== this
-				) {
-					this[PropertySymbol.elements][PropertySymbol.addItem](<THTMLFormControlElement>element);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Triggered when an attribute is removed.
-	 *
-	 * @param removedAttribute Removed attribute.
-	 */
-	#onRemoveAttribute(removedAttribute: Attr): void {
-		if (
-			removedAttribute.name !== 'id' ||
-			!removedAttribute[PropertySymbol.value] ||
-			!this[PropertySymbol.isConnected]
-		) {
-			return;
-		}
-
-		const id = removedAttribute[PropertySymbol.value];
-		for (const element of this[PropertySymbol.elements]) {
-			if (element[PropertySymbol.attributes]?.['form']?.value === id && !this.contains(element)) {
-				this[PropertySymbol.elements][PropertySymbol.removeItem](<THTMLFormControlElement>element);
-			}
-		}
 	}
 }

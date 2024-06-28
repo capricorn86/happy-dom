@@ -11,7 +11,7 @@ import INodeList from './INodeList.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NodeList
  */
 class NodeList<T> extends Array<T> implements INodeList<T> {
-	public [PropertySymbol.attachedHTMLCollection]: IHTMLCollection<Element> | null = null;
+	public [PropertySymbol.htmlCollection]: IHTMLCollection<Element> | null = null;
 
 	/**
 	 * Returns `Symbol.toStringTag`.
@@ -57,15 +57,13 @@ class NodeList<T> extends Array<T> implements INodeList<T> {
 	 */
 	public [PropertySymbol.addItem](item: T): boolean {
 		if (super.includes(item)) {
-			this[PropertySymbol.removeItem](item);
+			return false;
 		}
 
 		super.push(item);
 
-		const htmlCollection = this[PropertySymbol.attachedHTMLCollection];
-
-		if (htmlCollection) {
-			htmlCollection[PropertySymbol.addItem](<Element>item);
+		if (this[PropertySymbol.htmlCollection]) {
+			this[PropertySymbol.htmlCollection][PropertySymbol.addItem](<Element>item);
 		}
 
 		return true;
@@ -80,11 +78,11 @@ class NodeList<T> extends Array<T> implements INodeList<T> {
 	 */
 	public [PropertySymbol.insertItem](newItem: T, referenceItem: T | null): boolean {
 		if (!referenceItem) {
-			return this[PropertySymbol.appendChild](newItem);
+			return this[PropertySymbol.addItem](newItem);
 		}
 
 		if (super.includes(newItem)) {
-			this[PropertySymbol.removeItem](newItem);
+			return false;
 		}
 
 		const index = super.indexOf(referenceItem);
@@ -98,10 +96,12 @@ class NodeList<T> extends Array<T> implements INodeList<T> {
 
 		super.splice(index, 0, newItem);
 
-		const htmlCollection = this[PropertySymbol.attachedHTMLCollection];
-
-		if (htmlCollection) {
-			htmlCollection[PropertySymbol.insertItem](<Element>newItem, <Element>referenceItem);
+		if (this[PropertySymbol.htmlCollection]) {
+			const htmlCollectionReferenceItem = this[PropertySymbol.htmlCollection][index] || null;
+			this[PropertySymbol.htmlCollection][PropertySymbol.insertItem](
+				<Element>newItem,
+				htmlCollectionReferenceItem
+			);
 		}
 
 		return true;
@@ -125,10 +125,8 @@ class NodeList<T> extends Array<T> implements INodeList<T> {
 
 		super.splice(index, 1);
 
-		const htmlCollection = this[PropertySymbol.attachedHTMLCollection];
-
-		if (htmlCollection) {
-			htmlCollection[PropertySymbol.removeItem](<Element>item);
+		if (this[PropertySymbol.htmlCollection]) {
+			this[PropertySymbol.htmlCollection][PropertySymbol.removeItem](<Element>item);
 		}
 
 		return true;
@@ -169,14 +167,21 @@ class NodeList<T> extends Array<T> implements INodeList<T> {
 // Removes Array methods from NodeList.
 const descriptors = Object.getOwnPropertyDescriptors(Array.prototype);
 for (const key of Object.keys(descriptors)) {
-	const descriptor = descriptors[key];
-	if (key === 'length') {
-		Object.defineProperty(NodeList.prototype, key, {
-			set: () => {},
-			get: descriptor.get
-		});
-	} else if (key !== 'values' && key !== 'keys' && key !== 'entries') {
-		if (typeof descriptor.value === 'function') {
+	if (
+		typeof key !== 'symbol' &&
+		key !== 'item' &&
+		key !== 'entries' &&
+		key !== 'values' &&
+		key !== 'keys' &&
+		key !== 'constructor'
+	) {
+		const descriptor = descriptors[key];
+		if (key === 'length') {
+			Object.defineProperty(NodeList.prototype, key, {
+				set: () => {},
+				get: descriptor.get
+			});
+		} else if (typeof descriptor.value === 'function') {
 			Object.defineProperty(NodeList.prototype, key, {});
 		}
 	}

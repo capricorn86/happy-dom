@@ -5,6 +5,7 @@ import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
 import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
 import HTMLFormControlsCollection from '../nodes/html-form-element/HTMLFormControlsCollection.js';
 import RadioNodeList from '../nodes/html-form-element/RadioNodeList.js';
+import IRadioNodeList from '../nodes/html-form-element/IRadioNodeList.js';
 
 type FormDataEntry = {
 	name: string;
@@ -27,41 +28,39 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * @param [form] Form.
 	 */
 	constructor(form?: HTMLFormElement) {
-		if (form) {
-			for (const name of Object.keys(
-				(<HTMLFormControlsCollection>form[PropertySymbol.elements])[PropertySymbol.namedItems]
-			)) {
-				let radioNodeList = (<HTMLFormControlsCollection>form[PropertySymbol.elements])[
-					PropertySymbol.namedItems
-				][name];
+		if (!form) {
+			return;
+		}
 
-				if (
-					radioNodeList[0][PropertySymbol.tagName] === 'INPUT' &&
-					(radioNodeList[0].type === 'checkbox' || radioNodeList[0].type === 'radio')
-				) {
-					const newRadioNodeList = new RadioNodeList();
-					for (const node of radioNodeList) {
-						if ((<HTMLInputElement>node).checked) {
-							newRadioNodeList.push(node);
-							break;
-						}
-					}
-					radioNodeList = newRadioNodeList;
-				}
-
+		for (let radioNodeList of (<HTMLFormControlsCollection>form[PropertySymbol.elements])[
+			PropertySymbol.namedItems
+		].values()) {
+			if (
+				radioNodeList[0][PropertySymbol.tagName] === 'INPUT' &&
+				(radioNodeList[0].type === 'checkbox' || radioNodeList[0].type === 'radio')
+			) {
+				const newRadioNodeList: IRadioNodeList = new RadioNodeList();
 				for (const node of radioNodeList) {
-					if (node.name && SUBMITTABLE_ELEMENTS.includes(node[PropertySymbol.tagName])) {
-						if (node[PropertySymbol.tagName] === 'INPUT' && node.type === 'file') {
-							if ((<HTMLInputElement>node)[PropertySymbol.files].length === 0) {
-								this.append(node.name, new File([], '', { type: 'application/octet-stream' }));
-							} else {
-								for (const file of (<HTMLInputElement>node)[PropertySymbol.files]) {
-									this.append(node.name, file);
-								}
+					if ((<HTMLInputElement>node).checked) {
+						newRadioNodeList[PropertySymbol.addItem](node);
+						break;
+					}
+				}
+				radioNodeList = newRadioNodeList;
+			}
+
+			for (const node of radioNodeList) {
+				if (node.name && SUBMITTABLE_ELEMENTS.includes(node[PropertySymbol.tagName])) {
+					if (node[PropertySymbol.tagName] === 'INPUT' && node.type === 'file') {
+						if ((<HTMLInputElement>node)[PropertySymbol.files].length === 0) {
+							this.append(node.name, new File([], '', { type: 'application/octet-stream' }));
+						} else {
+							for (const file of (<HTMLInputElement>node)[PropertySymbol.files]) {
+								this.append(node.name, file);
 							}
-						} else if ((<HTMLInputElement>node).value) {
-							this.append(node.name, (<HTMLInputElement>node).value);
 						}
+					} else if ((<HTMLInputElement>node).value) {
+						this.append(node.name, (<HTMLInputElement>node).value);
 					}
 				}
 			}

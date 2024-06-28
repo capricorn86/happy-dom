@@ -120,8 +120,7 @@ export default class Element
 		attributes[PropertySymbol.addEventListener]('set', this.#onSetAttribute.bind(this));
 		attributes[PropertySymbol.addEventListener]('remove', this.#onRemoveAttribute.bind(this));
 
-		this[PropertySymbol.childNodes][PropertySymbol.attachedHTMLCollection] =
-			this[PropertySymbol.children];
+		this[PropertySymbol.childNodes][PropertySymbol.htmlCollection] = this[PropertySymbol.children];
 	}
 
 	/**
@@ -495,6 +494,19 @@ export default class Element
 		clone[PropertySymbol.tagName] = this[PropertySymbol.tagName];
 		clone[PropertySymbol.localName] = this[PropertySymbol.localName];
 		clone[PropertySymbol.namespaceURI] = this[PropertySymbol.namespaceURI];
+
+		for (let i = 0, max = this[PropertySymbol.attributes].length; i < max; i++) {
+			const attribute = this[PropertySymbol.attributes][i];
+			clone[PropertySymbol.attributes].setNamedItem(
+				Object.assign(
+					this[PropertySymbol.ownerDocument].createAttributeNS(
+						attribute[PropertySymbol.namespaceURI],
+						attribute[PropertySymbol.name]
+					),
+					attribute
+				)
+			);
+		}
 
 		return <Element>clone;
 	}
