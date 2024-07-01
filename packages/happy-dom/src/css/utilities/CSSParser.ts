@@ -7,6 +7,7 @@ import CSSKeyframesRule from '../rules/CSSKeyframesRule.js';
 import CSSMediaRule from '../rules/CSSMediaRule.js';
 import CSSContainerRule from '../rules/CSSContainerRule.js';
 import CSSSupportsRule from '../rules/CSSSupportsRule.js';
+import CSSFontFaceRule from '../rules/CSSFontFaceRule.js';
 import SelectorParser from '../../query-selector/SelectorParser.js';
 
 const COMMENT_REGEXP = /\/\*[\s\S]*?\*\//gm;
@@ -75,6 +76,14 @@ export default class CSSParser {
 					const newRule = new CSSSupportsRule();
 
 					(<string>newRule.conditionText) = conditionText;
+					newRule.parentStyleSheet = parentStyleSheet;
+					cssRules.push(newRule);
+					parentRule = newRule;
+				} else if (selectorText.startsWith('@font-face')) {
+					const conditionText = selectorText.replace('@font-face', '');
+					const newRule = new CSSFontFaceRule();
+
+					newRule[PropertySymbol.cssText] = conditionText;
 					newRule.parentStyleSheet = parentStyleSheet;
 					cssRules.push(newRule);
 					parentRule = newRule;
