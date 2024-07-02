@@ -1181,6 +1181,26 @@ describe('HTMLInputElement', () => {
 			expect(element.checked).toBe(true);
 		});
 
+		it('Switch "checked" to "true" or "false" and "indeterminate" to "false" if type is "checkbox" and "indeterminate" is "true" and is a "click" event.', () => {
+			element.type = 'checkbox';
+			element.indeterminate = true;
+
+			// "input" and "change" events should only be triggered if connected to DOM
+			document.body.appendChild(element);
+
+			element.dispatchEvent(new MouseEvent('click'));
+
+			expect(element.checked).toBe(true);
+			expect(element.indeterminate).toBe(false);
+
+			element.indeterminate = true;
+
+			element.dispatchEvent(new MouseEvent('click'));
+
+			expect(element.checked).toBe(false);
+			expect(element.indeterminate).toBe(false);
+		});
+
 		it('Sets "checked" to "true" if type is "radio" and is a "click" event.', () => {
 			let isInputTriggered = false;
 			let isChangeTriggered = false;

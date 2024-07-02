@@ -1310,6 +1310,7 @@ export default class HTMLInputElement extends HTMLElement {
 		}
 
 		let previousCheckedValue: boolean | null = null;
+		const previousIndeterminateValue: boolean = this[PropertySymbol.indeterminate];
 
 		// The checkbox or radio button has to be checked before the click event is dispatched, so that event listeners can check the checked value.
 		// However, the value has to be restored if preventDefault() is called on the click event.
@@ -1323,6 +1324,9 @@ export default class HTMLInputElement extends HTMLElement {
 			if (inputType === 'checkbox' || inputType === 'radio') {
 				previousCheckedValue = this.checked;
 				this.#setChecked(inputType === 'checkbox' ? !previousCheckedValue : true);
+				if (inputType === 'checkbox') {
+					this[PropertySymbol.indeterminate] = false;
+				}
 			}
 		}
 
@@ -1367,6 +1371,7 @@ export default class HTMLInputElement extends HTMLElement {
 			const inputType = this.type;
 			if (inputType === 'checkbox' || inputType === 'radio') {
 				this.#setChecked(previousCheckedValue);
+				this[PropertySymbol.indeterminate] = previousIndeterminateValue;
 			}
 		}
 
