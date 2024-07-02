@@ -645,14 +645,7 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
-	for (const property of [
-		'disabled',
-		'autofocus',
-		'required',
-		'indeterminate',
-		'multiple',
-		'readOnly'
-	]) {
+	for (const property of ['disabled', 'autofocus', 'required', 'multiple', 'readOnly']) {
 		describe(`get ${property}()`, () => {
 			it('Returns attribute value.', () => {
 				expect(element[property]).toBe(false);
@@ -833,6 +826,23 @@ describe('HTMLInputElement', () => {
 		it('Sets attribute value.', () => {
 			element.type = 'date';
 			expect(element.getAttribute('type')).toBe('date');
+		});
+	});
+
+	describe('get indeterminate()', () => {
+		it('Returns indeterminate  value.', () => {
+			element.type = 'checkbox';
+			expect(element.indeterminate).toBe(false);
+			expect(element.hasAttribute('indeterminate')).toBe(false);
+		});
+	});
+
+	describe('set indeterminate()', () => {
+		it('Sets indeterminate  value.', () => {
+			element.type = 'checkbox';
+			element.indeterminate = true;
+			expect(element.indeterminate).toBe(true);
+			expect(element.hasAttribute('indeterminate')).toBe(false);
 		});
 	});
 

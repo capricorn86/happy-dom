@@ -51,6 +51,7 @@ export default class HTMLInputElement extends HTMLElement {
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
 	public [PropertySymbol.files]: FileList = new FileList();
+	public [PropertySymbol.indeterminate]: boolean = false;
 
 	// Private properties
 	#selectionStart: number = null;
@@ -685,7 +686,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @returns Indeterminate.
 	 */
 	public get indeterminate(): boolean {
-		return this.getAttribute('indeterminate') !== null;
+		return this[PropertySymbol.indeterminate];
 	}
 
 	/**
@@ -694,11 +695,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @param indeterminate Indeterminate.
 	 */
 	public set indeterminate(indeterminate: boolean) {
-		if (!indeterminate) {
-			this.removeAttribute('indeterminate');
-		} else {
-			this.setAttribute('indeterminate', '');
-		}
+		this[PropertySymbol.indeterminate] = Boolean(indeterminate);
 	}
 
 	/**

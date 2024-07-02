@@ -34,6 +34,7 @@ export const getAttributeName = Symbol('getAttributeName');
 export const happyDOMSettingsID = Symbol('happyDOMSettingsID');
 export const height = Symbol('height');
 export const immediatePropagationStopped = Symbol('immediatePropagationStopped');
+export const indeterminate = Symbol('indeterminate');
 export const isFirstWrite = Symbol('isFirstWrite');
 export const isFirstWriteAfterOpen = Symbol('isFirstWriteAfterOpen');
 export const isInPassiveEventListener = Symbol('isInPassiveEventListener');
