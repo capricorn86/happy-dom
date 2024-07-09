@@ -11,7 +11,6 @@ import Node from '../node/Node.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import DatasetFactory from '../element/DatasetFactory.js';
 import IDataset from '../element/IDataset.js';
-import Attr from '../attr/Attr.js';
 import NamedNodeMap from '../element/NamedNodeMap.js';
 import IHTMLCollection from '../element/IHTMLCollection.js';
 
@@ -69,21 +68,6 @@ export default class HTMLElement extends Element {
 	// Private properties
 	#dataset: IDataset = null;
 	#customElementDefineCallback: () => void = null;
-
-	/**
-	 * Constructor.
-	 */
-	constructor() {
-		super();
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'set',
-			this.#onSetAttribute.bind(this)
-		);
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'remove',
-			this.#onRemoveAttribute.bind(this)
-		);
-	}
 
 	/**
 	 * Returns access key.
@@ -522,12 +506,10 @@ export default class HTMLElement extends Element {
 	}
 
 	/**
-	 * Connects this element to another element.
-	 *
 	 * @override
 	 * @see https://html.spec.whatwg.org/multipage/dom.html#htmlelement
 	 */
-	public [PropertySymbol.connectedToDocument](): void {
+	public override [PropertySymbol.connectedToNode](): void {
 		const localName = this[PropertySymbol.localName];
 
 		// This element can potentially be a custom element that has not been defined yet
@@ -559,6 +541,7 @@ export default class HTMLElement extends Element {
 
 						newElement[PropertySymbol.rootNode] = this[PropertySymbol.rootNode];
 						newElement[PropertySymbol.formNode] = this[PropertySymbol.formNode];
+						newElement[PropertySymbol.parentNode] = this[PropertySymbol.parentNode];
 						newElement[PropertySymbol.selectNode] = this[PropertySymbol.selectNode];
 						newElement[PropertySymbol.textAreaNode] = this[PropertySymbol.textAreaNode];
 						newElement[PropertySymbol.mutationListeners] = this[PropertySymbol.mutationListeners];
@@ -573,9 +556,7 @@ export default class HTMLElement extends Element {
 						(<NodeList<Node>>this[PropertySymbol.childNodes]) = new NodeList<Node>();
 						(<IHTMLCollection<Element>>this[PropertySymbol.children]) =
 							new HTMLCollection<Element>();
-
-						this[PropertySymbol.childNodes][PropertySymbol.htmlCollection] =
-							this[PropertySymbol.children];
+						this[PropertySymbol.children][PropertySymbol.observe](this);
 
 						this[PropertySymbol.rootNode] = null;
 						this[PropertySymbol.formNode] = null;
@@ -588,7 +569,7 @@ export default class HTMLElement extends Element {
 						const parentChildNodes = (<HTMLElement>this[PropertySymbol.parentNode])[
 							PropertySymbol.childNodes
 						];
-						parentChildNodes[PropertySymbol.insertItem](newElement, this.nextElementSibling);
+						parentChildNodes[PropertySymbol.insertItem](newElement, this.nextSibling);
 						parentChildNodes[PropertySymbol.removeItem](this);
 
 						if (newElement[PropertySymbol.isConnected] && newElement.connectedCallback) {
@@ -620,14 +601,13 @@ export default class HTMLElement extends Element {
 			}
 		}
 
-		super[PropertySymbol.connectedToDocument]();
+		super[PropertySymbol.connectedToNode]();
 	}
 
 	/**
-	 * Called when disconnected from document.
-	 * @param e
+	 * @override
 	 */
-	public [PropertySymbol.disconnectedFromDocument](): void {
+	public override [PropertySymbol.disconnectedFromNode](): void {
 		const localName = this[PropertySymbol.localName];
 
 		// This element can potentially be a custom element that has not been defined yet
@@ -656,28 +636,6 @@ export default class HTMLElement extends Element {
 			}
 		}
 
-		super[PropertySymbol.disconnectedFromDocument]();
-	}
-
-	/**
-	 * Triggered when an attribute is set.
-	 *
-	 * @param item Item.
-	 */
-	#onSetAttribute(item: Attr): void {
-		if (item[PropertySymbol.name] === 'style' && this[PropertySymbol.style]) {
-			this[PropertySymbol.style].cssText = item[PropertySymbol.value];
-		}
-	}
-
-	/**
-	 * Triggered when an attribute is removed.
-	 *
-	 * @param removedItem Removed item.
-	 */
-	#onRemoveAttribute(removedItem: Attr): void {
-		if (removedItem && removedItem[PropertySymbol.name] === 'style' && this[PropertySymbol.style]) {
-			this[PropertySymbol.style].cssText = '';
-		}
+		super[PropertySymbol.disconnectedFromNode]();
 	}
 }

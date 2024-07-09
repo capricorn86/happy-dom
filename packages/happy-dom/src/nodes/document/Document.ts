@@ -71,7 +71,7 @@ export default class Document extends Node {
 	public [PropertySymbol.referrer] = '';
 	public [PropertySymbol.defaultView]: BrowserWindow | null = null;
 	public [PropertySymbol.ownerWindow]: BrowserWindow;
-	public [PropertySymbol.computedStyleCache]: Array<{
+	public [PropertySymbol.computedStyleCacheReferences]: Array<{
 		result: WeakRef<CSSStyleDeclarationPropertyManager>;
 	}> = [];
 	public declare cloneNode: (deep?: boolean) => Document;
@@ -203,7 +203,7 @@ export default class Document extends Node {
 		this.#browserFrame = injected.browserFrame;
 		this[PropertySymbol.ownerWindow] = injected.window;
 
-		this[PropertySymbol.childNodes][PropertySymbol.htmlCollection] = this[PropertySymbol.children];
+		this[PropertySymbol.children][PropertySymbol.observe](this);
 	}
 
 	/**
@@ -917,9 +917,7 @@ export default class Document extends Node {
 		} else {
 			const bodyNode = QuerySelector.querySelector(root, 'body');
 			const body = QuerySelector.querySelector(this, 'body');
-			const childNodes = (<Element>(bodyNode || root))[PropertySymbol.childNodes][
-				PropertySymbol.items
-			];
+			const childNodes = (<Element>(bodyNode || root))[PropertySymbol.childNodes];
 			while (childNodes.length) {
 				body.appendChild(childNodes[0]);
 			}
@@ -1228,8 +1226,11 @@ export default class Document extends Node {
 	 */
 	public createAttributeNS(namespaceURI: string, qualifiedName: string): Attr {
 		const attribute = NodeFactory.createNode<Attr>(this, this[PropertySymbol.ownerWindow].Attr);
+		const parts = qualifiedName.split(':');
 		attribute[PropertySymbol.namespaceURI] = namespaceURI;
 		attribute[PropertySymbol.name] = qualifiedName;
+		attribute[PropertySymbol.localName] = parts[1] ?? qualifiedName;
+		attribute[PropertySymbol.prefix] = parts[0] ?? null;
 		return <Attr>attribute;
 	}
 
@@ -1339,10 +1340,10 @@ export default class Document extends Node {
 	 * Clears computed style cache.
 	 */
 	public [PropertySymbol.clearComputedStyleCache](): void {
-		for (const item of this[PropertySymbol.computedStyleCache]) {
+		for (const item of this[PropertySymbol.computedStyleCacheReferences]) {
 			item.result = null;
 		}
-		this[PropertySymbol.computedStyleCache] = [];
+		this[PropertySymbol.computedStyleCacheReferences] = [];
 	}
 
 	/**

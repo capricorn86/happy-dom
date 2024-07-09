@@ -1,8 +1,8 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
 import MutationRecord from '../../mutation-observer/MutationRecord.js';
-import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
 import NodeFilter from '../../tree-walker/NodeFilter.js';
 import TreeWalker from '../../tree-walker/TreeWalker.js';
+import Attr from '../attr/Attr.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import Document from '../document/Document.js';
 import INodeList from '../node/INodeList.js';
@@ -12,6 +12,7 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import Element from './Element.js';
 import IHTMLCollection from './IHTMLCollection.js';
 import IHTMLCollectionObservedNode from './IHTMLCollectionObservedNode.js';
+import TNamedNodeMapListener from './TNamedNodeMapListener.js';
 
 const NAMED_ITEM_ATTRIBUTES = ['id', 'name'];
 
@@ -28,8 +29,22 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 	implements IHTMLCollection<T, NamedItem>
 {
 	public [PropertySymbol.namedItems] = new Map<string, INodeList<T>>();
-	protected [PropertySymbol.attributeFilter]: string[] = ['id', 'name'];
 	#observedNodes: IHTMLCollectionObservedNode[] = [];
+	#attributeListeners = new Map<T, { set: TNamedNodeMapListener; remove: TNamedNodeMapListener }>();
+
+	/**
+	 * Constructor.
+	 *
+	 * @param items Items.
+	 */
+	constructor(items?: T[]) {
+		super();
+		if (items && items instanceof Array) {
+			for (const item of items) {
+				this[PropertySymbol.addItem](item);
+			}
+		}
+	}
 
 	/**
 	 * Returns `Symbol.toStringTag`.
@@ -74,9 +89,7 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 	 * @returns Node.
 	 */
 	public namedItem(name: string): NamedItem | null {
-		return this[PropertySymbol.namedItems][name] && this[PropertySymbol.namedItems][name].length
-			? this[PropertySymbol.namedItems][name][0]
-			: null;
+		return <NamedItem>(<unknown>this[PropertySymbol.namedItems].get(name)?.[0]) ?? null;
 	}
 
 	/**
@@ -167,59 +180,46 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 	 * Observes node.
 	 *
 	 * @param node Root node.
-	 * @param filter Filter.
+	 * @param [options] Options.
+	 * @param [options.subtree] Subtree.
+	 * @param [options.filter] Filter.
 	 * @returns Observed node.
 	 */
 	public [PropertySymbol.observe](
 		node: Element | DocumentFragment | Document,
-		filter?: (item: T) => boolean
+		options?: { subtree: boolean; filter?: (item: T) => boolean }
 	): IHTMLCollectionObservedNode {
 		const observedNode: IHTMLCollectionObservedNode = {
 			node,
-			filter,
+			filter: options?.filter ?? null,
+			subtree: options?.subtree ?? false,
 			mutationListener: null
-		};
-
-		observedNode.mutationListener = {
-			options: {
-				childList: true,
-				subtree: true,
-				attributes: true,
-				attributeOldValue: true,
-				attributeFilter: this[PropertySymbol.attributeFilter]
-			},
-			callback: new WeakRef((record: MutationRecord) => {
-				switch (record.type) {
-					case MutationTypeEnum.childList:
-						if (record.addedNodes.length) {
-							this[PropertySymbol.insertObservedItem](observedNode, <Element>record.addedNodes[0]);
-						} else {
-							this[PropertySymbol.removeObservedItem](observedNode, <T>record.removedNodes[0]);
-						}
-						break;
-					case MutationTypeEnum.attributes:
-						const newValue = record.target[PropertySymbol.attributes][record.attributeName]?.value;
-						if (
-							record.target[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
-							record.oldValue !== newValue &&
-							(!filter || filter(<T>record.target)) &&
-							(!observedNode.mutationListener.options.subtree ||
-								this.#isObservedItem(observedNode, <T>record.target))
-						) {
-							this[PropertySymbol.onObservedItemAttributeChange](
-								<T>record.target,
-								record.attributeName,
-								record.oldValue,
-								newValue
-							);
-						}
-				}
-			})
 		};
 
 		this.#observedNodes.push(observedNode);
 
-		node[PropertySymbol.observeMutations](observedNode.mutationListener);
+		if (observedNode.subtree) {
+			observedNode.mutationListener = {
+				options: {
+					childList: true,
+					subtree: true
+				},
+				callback: new WeakRef((record: MutationRecord) => {
+					if (record.addedNodes.length) {
+						this[PropertySymbol.insertObservedItem](observedNode, <Element>record.addedNodes[0]);
+					} else {
+						this[PropertySymbol.removeObservedItem](observedNode, <T>record.removedNodes[0]);
+					}
+				})
+			};
+
+			node[PropertySymbol.observeMutations](observedNode.mutationListener);
+		} else {
+			node[PropertySymbol.childNodes][PropertySymbol.htmlCollections].push({
+				htmlCollection: this,
+				filter: observedNode.filter
+			});
+		}
 
 		this[PropertySymbol.loadObservedNodes](observedNode, node);
 
@@ -242,7 +242,13 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 
 		this[PropertySymbol.unloadObservedNodes](observedNode, observedNode.node);
 
-		observedNode.node[PropertySymbol.unobserveMutations](observedNode.mutationListener);
+		if (observedNode.subtree) {
+			observedNode.node[PropertySymbol.unobserveMutations](observedNode.mutationListener);
+		} else {
+			const htmlCollections =
+				observedNode.node[PropertySymbol.childNodes][PropertySymbol.htmlCollections];
+			htmlCollections.splice(htmlCollections.indexOf(this), 1);
+		}
 	}
 
 	/**
@@ -277,7 +283,7 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 	): void {
 		const childNodes = parentNode[PropertySymbol.childNodes];
 
-		if (observedNode.mutationListener.options.subtree) {
+		if (observedNode.subtree) {
 			for (let i = 0, max = childNodes.length; i < max; i++) {
 				if (
 					childNodes[i][PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
@@ -315,7 +321,7 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 	): void {
 		const childNodes = parentNode[PropertySymbol.childNodes];
 
-		if (observedNode.mutationListener.options.subtree) {
+		if (observedNode.subtree) {
 			for (let i = 0, max = childNodes.length; i < max; i++) {
 				if (
 					childNodes[i][PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
@@ -328,6 +334,7 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 					this[PropertySymbol.unloadObservedNodes](observedNode, <T>childNodes[i]);
 				}
 			}
+			return;
 		}
 
 		for (let i = 0, max = childNodes.length; i < max; i++) {
@@ -351,7 +358,7 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 		newItem: Element
 	): void {
 		// Is part of a subtree.
-		if (observedNode.mutationListener.options.subtree) {
+		if (observedNode.subtree) {
 			// Check if the item is observed by this listener
 			if (!this.#isObservedItem(observedNode, newItem)) {
 				return;
@@ -428,7 +435,7 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 		item: T
 	): void {
 		// Is part of a subtree.
-		if (observedNode.mutationListener.options.subtree) {
+		if (observedNode.subtree) {
 			// Find all children that pass the filter inside the item.
 			const items = this.#getItemsInElement(observedNode, item);
 
@@ -453,31 +460,36 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 	}
 
 	/**
-	 * Triggered when an attribute changes.
+	 * Triggered when an attribute is set.
 	 *
 	 * @param item Item.
-	 * @param name Name.
-	 * @param oldValue Old value.
-	 * @param value Value.
+	 * @param attribute Attribute.
+	 * @param replacedAttribute Replaced attribute.
 	 */
-	protected [PropertySymbol.onObservedItemAttributeChange](
+	protected [PropertySymbol.onSetAttribute](
 		item: T,
-		name: string,
-		oldValue: string | null,
-		value: string | null
+		attribute: Attr,
+		replacedAttribute: Attr | null
 	): void {
+		const name = attribute[PropertySymbol.name];
+
 		if (name !== 'id' && name !== 'name') {
 			return;
 		}
-		if (oldValue) {
-			const namedItems = this[PropertySymbol.namedItems].get(oldValue);
+
+		const replacedValue = replacedAttribute?.[PropertySymbol.value];
+
+		if (replacedValue) {
+			const namedItems = this[PropertySymbol.namedItems].get(replacedValue);
 
 			if (namedItems) {
 				namedItems[PropertySymbol.removeItem](item);
 			}
 
-			this[PropertySymbol.updateNamedItemProperty](oldValue);
+			this[PropertySymbol.updateNamedItemProperty](replacedValue);
 		}
+
+		const value = attribute.value;
 
 		if (value) {
 			const namedItems =
@@ -489,6 +501,28 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 				this[PropertySymbol.namedItems].set(value, namedItems);
 				this[PropertySymbol.updateNamedItemProperty](value);
 			}
+		}
+	}
+
+	/**
+	 * Triggered when an attribute is set.
+	 *
+	 * @param item Item.
+	 * @param removedAttribute Attribute.
+	 */
+	protected [PropertySymbol.onRemoveAttribute](item: T, removedAttribute: Attr): void {
+		if (removedAttribute.name !== 'id' && removedAttribute.name !== 'name') {
+			return;
+		}
+
+		if (removedAttribute.value) {
+			const namedItems = this[PropertySymbol.namedItems].get(removedAttribute.value);
+
+			if (namedItems) {
+				namedItems[PropertySymbol.removeItem](item);
+			}
+
+			this[PropertySymbol.updateNamedItemProperty](removedAttribute.value);
 		}
 	}
 
@@ -550,7 +584,7 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 	 */
 	#isObservedItem(observedNode: IHTMLCollectionObservedNode, node: Node): boolean {
 		// This method should not be executed when not in a subtree
-		if (!observedNode.mutationListener.options.subtree) {
+		if (!observedNode.subtree) {
 			return true;
 		}
 
@@ -605,6 +639,17 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 	 * @param item Item.
 	 */
 	#addNamedItem(item: T): void {
+		const listeners = {
+			set: (attribute: Attr, replacedAttribute: Attr) =>
+				this[PropertySymbol.onSetAttribute](item, attribute, replacedAttribute),
+			remove: (attribute: Attr) => this[PropertySymbol.onRemoveAttribute](item, attribute)
+		};
+
+		item[PropertySymbol.attributes][PropertySymbol.addEventListener]('set', listeners.set);
+		item[PropertySymbol.attributes][PropertySymbol.addEventListener]('remove', listeners.remove);
+
+		this.#attributeListeners.set(item, listeners);
+
 		for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
 			const name = (<Element>item)[PropertySymbol.attributes][attributeName]?.value;
 			if (name) {
@@ -631,6 +676,16 @@ export default class HTMLCollection<T extends Element, NamedItem = T>
 	 * @param item Item.
 	 */
 	#removeNamedItem(item: T): void {
+		const listeners = this.#attributeListeners.get(item);
+
+		if (listeners) {
+			item[PropertySymbol.attributes][PropertySymbol.removeEventListener]('set', listeners.set);
+			item[PropertySymbol.attributes][PropertySymbol.removeEventListener](
+				'remove',
+				listeners.remove
+			);
+		}
+
 		for (const attributeName of NAMED_ITEM_ATTRIBUTES) {
 			const name = (<Element>item)[PropertySymbol.attributes][attributeName]?.value;
 			if (name) {

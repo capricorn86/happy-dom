@@ -107,7 +107,8 @@ export default class QuerySelector {
 
 		const groups = SelectorParser.getSelectorGroups(selector);
 		const nodeList: INodeList<Element> = new NodeList<Element>();
-		const matchesMap: { [position: string]: Element } = {};
+		const matchesMap: Map<string, Element> = new Map();
+		const matchedPositions: string[] = [];
 		const cachedItem = {
 			result: new WeakRef(nodeList)
 		};
@@ -119,13 +120,16 @@ export default class QuerySelector {
 					? this.findAll(<Element>node, [<Element>node], items, cachedItem)
 					: this.findAll(null, (<Element>node)[PropertySymbol.children], items, cachedItem);
 			for (const match of matches) {
-				matchesMap[match.documentPosition] = match.element;
+				if (!matchesMap.has(match.documentPosition)) {
+					matchesMap.set(match.documentPosition, match.element);
+					matchedPositions.push(match.documentPosition);
+				}
 			}
 		}
 
-		const keys = Object.keys(matchesMap).sort();
+		const keys = matchedPositions.sort();
 		for (let i = 0, max = keys.length; i < max; i++) {
-			nodeList[PropertySymbol.addItem](matchesMap[keys[i]]);
+			nodeList[PropertySymbol.addItem](matchesMap.get(keys[i]));
 		}
 
 		return nodeList;

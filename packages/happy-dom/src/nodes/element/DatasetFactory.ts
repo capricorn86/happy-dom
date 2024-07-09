@@ -46,10 +46,15 @@ export default class DatasetFactory {
 				return true;
 			},
 			deleteProperty(dataset: IDataset, key: string): boolean {
-				element[PropertySymbol.attributes][PropertySymbol.removeNamedItem](
-					'data-' + DatasetUtility.camelCaseToKebab(key)
-				);
-				return delete dataset[key];
+				const attributes = element[PropertySymbol.attributes];
+				const dataKey = 'data-' + DatasetUtility.camelCaseToKebab(key);
+				const item = attributes.getNamedItem(dataKey);
+				delete dataset[key];
+				if (!item) {
+					return true;
+				}
+				attributes[PropertySymbol.removeNamedItem](item);
+				return true;
 			},
 			ownKeys(dataset: IDataset): string[] {
 				// According to Mozilla we have to update the dataset object (target) to contain the same keys as what we return:

@@ -18,7 +18,6 @@ import Attr from '../attr/Attr.js';
 import NamedNodeMap from './NamedNodeMap.js';
 import Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
-import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
@@ -34,6 +33,8 @@ import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
 import INodeList from '../node/INodeList.js';
 import CSSStyleDeclarationPropertyManager from '../../css/declaration/property-manager/CSSStyleDeclarationPropertyManager.js';
+import NamedNodeMapProxyFactory from './NamedNodeMapProxyFactory.js';
+import NamespaceURI from '../../config/NamespaceURI.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -92,7 +93,6 @@ export default class Element
 	// Internal properties
 	public [PropertySymbol.classList]: DOMTokenList = null;
 	public [PropertySymbol.isValue]: string | null = null;
-	public [PropertySymbol.computedStyle]: CSSStyleDeclaration | null = null;
 	public [PropertySymbol.nodeType] = NodeTypeEnum.elementNode;
 	public [PropertySymbol.tagName]: string | null = this.constructor[PropertySymbol.tagName] || null;
 	public [PropertySymbol.localName]: string | null =
@@ -104,9 +104,13 @@ export default class Element
 	public [PropertySymbol.scrollTop] = 0;
 	public [PropertySymbol.scrollLeft] = 0;
 	public [PropertySymbol.attributes] = new NamedNodeMap(this);
+	public [PropertySymbol.attributesProxy]: NamedNodeMap | null = null;
 	public [PropertySymbol.namespaceURI]: string | null =
 		this.constructor[PropertySymbol.namespaceURI] || null;
 	public [PropertySymbol.children]: IHTMLCollection<Element> = new HTMLCollection<Element>();
+	public [PropertySymbol.styleCache]: {
+		result: WeakRef<CSSStyleDeclarationPropertyManager> | null;
+	} | null = null;
 	public [PropertySymbol.computedStyleCache]: {
 		result: WeakRef<CSSStyleDeclarationPropertyManager> | null;
 	} | null = null;
@@ -119,8 +123,7 @@ export default class Element
 		const attributes = this[PropertySymbol.attributes];
 		attributes[PropertySymbol.addEventListener]('set', this.#onSetAttribute.bind(this));
 		attributes[PropertySymbol.addEventListener]('remove', this.#onRemoveAttribute.bind(this));
-
-		this[PropertySymbol.childNodes][PropertySymbol.htmlCollection] = this[PropertySymbol.children];
+		this[PropertySymbol.children][PropertySymbol.observe](this);
 	}
 
 	/**
@@ -211,7 +214,12 @@ export default class Element
 	 * @returns Attributes.
 	 */
 	public get attributes(): NamedNodeMap {
-		return this[PropertySymbol.attributes];
+		if (!this[PropertySymbol.attributesProxy]) {
+			this[PropertySymbol.attributesProxy] = NamedNodeMapProxyFactory.createProxy(
+				this[PropertySymbol.attributes]
+			);
+		}
+		return this[PropertySymbol.attributesProxy];
 	}
 
 	/**
@@ -637,7 +645,12 @@ export default class Element
 	 * @param value Value.
 	 */
 	public setAttribute(name: string, value: string): void {
-		const attribute = this[PropertySymbol.ownerDocument].createAttributeNS(null, name);
+		const namespaceURI = this[PropertySymbol.namespaceURI];
+		// TODO: Is it correct to check for namespaceURI === NamespaceURI.svg?
+		const attribute =
+			namespaceURI === NamespaceURI.svg
+				? this[PropertySymbol.ownerDocument].createAttributeNS(null, name)
+				: this[PropertySymbol.ownerDocument].createAttribute(name);
 		attribute[PropertySymbol.value] = String(value);
 		this.setAttributeNode(attribute);
 	}
@@ -793,7 +806,7 @@ export default class Element
 
 		shadowRoot[PropertySymbol.host] = this;
 		shadowRoot[PropertySymbol.mode] = init.mode;
-		(<ShadowRoot>shadowRoot)[PropertySymbol.connectedToDocument]();
+		(<ShadowRoot>shadowRoot)[PropertySymbol.connectedToNode]();
 
 		return this[PropertySymbol.shadowRoot];
 	}
@@ -1076,19 +1089,9 @@ export default class Element
 	 * @returns Removed attribute.
 	 */
 	public removeAttributeNode(attribute: Attr): Attr | null {
-		return this[PropertySymbol.attributes].removeNamedItem(attribute[PropertySymbol.name]);
-	}
-
-	/**
-	 * Removes an Attr node.
-	 *
-	 * @param attribute Attribute.
-	 * @returns Removed attribute.
-	 */
-	public removeAttributeNodeNS(attribute: Attr): Attr | null {
 		return this[PropertySymbol.attributes].removeNamedItemNS(
 			attribute[PropertySymbol.namespaceURI],
-			attribute.localName
+			attribute[PropertySymbol.name]
 		);
 	}
 
@@ -1269,16 +1272,16 @@ export default class Element
 			}
 		}
 
-		if (this[PropertySymbol.computedStyleCache]) {
-			this[PropertySymbol.computedStyleCache].result = null;
-			this[PropertySymbol.computedStyleCache] = null;
+		if (this[PropertySymbol.styleCache]) {
+			this[PropertySymbol.styleCache].result = null;
+			this[PropertySymbol.styleCache] = null;
 		}
 
 		if (
 			this.attributeChangedCallback &&
 			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes] &&
 			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes].includes(
-				attribute[PropertySymbol.name]
+				attribute[PropertySymbol.name].toLowerCase()
 			)
 		) {
 			this.attributeChangedCallback(
@@ -1320,16 +1323,16 @@ export default class Element
 			}
 		}
 
-		if (this[PropertySymbol.computedStyleCache]) {
-			this[PropertySymbol.computedStyleCache].result = null;
-			this[PropertySymbol.computedStyleCache] = null;
+		if (this[PropertySymbol.styleCache]) {
+			this[PropertySymbol.styleCache].result = null;
+			this[PropertySymbol.styleCache] = null;
 		}
 
 		if (
 			this.attributeChangedCallback &&
 			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes] &&
 			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes].includes(
-				removedAttribute[PropertySymbol.name]
+				removedAttribute[PropertySymbol.name].toLowerCase()
 			)
 		) {
 			this.attributeChangedCallback(

@@ -118,7 +118,7 @@ describe('HTMLCollection', () => {
 
 		it('Supports attributes that has the same name as properties and methods of the HTMLCollection class.', () => {
 			const div = document.createElement('div');
-			div.innerHTML = `<div name="length" class="container1"></div><div name="namedItem" class="container2"></div><div name="push" class="container3"></div>`;
+			div.innerHTML = `<div name="length" class="container1"></div><div name="namedItem" class="container2"></div><div name="item" class="container3"></div>`;
 			const container1 = <HTMLElement>div.querySelector('.container1');
 			const container2 = <HTMLElement>div.querySelector('.container2');
 			const container3 = <HTMLElement>div.querySelector('.container3');
@@ -129,10 +129,11 @@ describe('HTMLCollection', () => {
 			expect(div.children[2] === container3).toBe(true);
 			expect(div.children.namedItem('length') === container1).toBe(true);
 			expect(div.children.namedItem('namedItem') === container2).toBe(true);
-			expect(div.children.namedItem('push') === container3).toBe(true);
+			expect(div.children.namedItem('item') === container3).toBe(true);
 
+			expect(typeof div.children['length']).toBe('number');
 			expect(typeof div.children['namedItem']).toBe('function');
-			expect(typeof div.children['push']).toBe('function');
+			expect(typeof div.children['item']).toBe('function');
 
 			container2.remove();
 
@@ -140,7 +141,7 @@ describe('HTMLCollection', () => {
 			expect(div.children[0] === container1).toBe(true);
 			expect(div.children[1] === container3).toBe(true);
 			expect(div.children.namedItem('length') === container1).toBe(true);
-			expect(div.children.namedItem('push') === container3).toBe(true);
+			expect(div.children.namedItem('item') === container3).toBe(true);
 
 			div.insertBefore(container2, container3);
 
@@ -150,10 +151,11 @@ describe('HTMLCollection', () => {
 			expect(div.children[2] === container3).toBe(true);
 			expect(div.children.namedItem('length') === container1).toBe(true);
 			expect(div.children.namedItem('namedItem') === container2).toBe(true);
-			expect(div.children.namedItem('push') === container3).toBe(true);
+			expect(div.children.namedItem('item') === container3).toBe(true);
 
+			expect(typeof div.children['length']).toBe('number');
 			expect(typeof div.children['namedItem']).toBe('function');
-			expect(typeof div.children['push']).toBe('function');
+			expect(typeof div.children['item']).toBe('function');
 		});
 	});
 });

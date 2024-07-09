@@ -15,6 +15,8 @@ export default class Attr extends Node implements Attr {
 	public [PropertySymbol.nodeType] = NodeTypeEnum.attributeNode;
 	public [PropertySymbol.namespaceURI]: string | null = null;
 	public [PropertySymbol.name]: string | null = null;
+	public [PropertySymbol.localName]: string | null = null;
+	public [PropertySymbol.prefix]: string | null = null;
 	public [PropertySymbol.value]: string | null = null;
 	public [PropertySymbol.specified] = true;
 	public [PropertySymbol.ownerElement]: Element | null = null;
@@ -70,7 +72,7 @@ export default class Attr extends Node implements Attr {
 	 * @returns Local name.
 	 */
 	public get localName(): string {
-		return this[PropertySymbol.name] ? this[PropertySymbol.name].split(':').reverse()[0] : null;
+		return this[PropertySymbol.localName];
 	}
 
 	/**
@@ -79,7 +81,7 @@ export default class Attr extends Node implements Attr {
 	 * @returns Prefix.
 	 */
 	public get prefix(): string {
-		return this[PropertySymbol.name] ? this[PropertySymbol.name].split(':')[0] : null;
+		return this[PropertySymbol.prefix];
 	}
 
 	/**

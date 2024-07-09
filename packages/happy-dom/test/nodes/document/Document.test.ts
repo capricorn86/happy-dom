@@ -171,7 +171,7 @@ describe('Document', () => {
 			const text1 = document.createTextNode('text1');
 			const text2 = document.createTextNode('text2');
 
-			for (const node of document.childNodes.slice()) {
+			for (const node of Array.from(document.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
@@ -192,7 +192,7 @@ describe('Document', () => {
 			const text1 = document.createTextNode('text1');
 			const text2 = document.createTextNode('text2');
 
-			for (const node of document.childNodes.slice()) {
+			for (const node of Array.from(document.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
@@ -707,7 +707,7 @@ describe('Document', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 
-			for (const node of document.childNodes.slice()) {
+			for (const node of Array.from(document.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
@@ -729,7 +729,7 @@ describe('Document', () => {
 
 			const clone = template.content.cloneNode(true);
 
-			for (const node of document.childNodes.slice()) {
+			for (const node of Array.from(document.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
@@ -737,9 +737,11 @@ describe('Document', () => {
 
 			expect(clone.childNodes.length).toBe(0);
 			expect(clone.children.length).toBe(0);
-			expect(document.children.map((child) => child.outerHTML).join('')).toBe(
-				'<div>Div</div><span>Span</span>'
-			);
+			expect(
+				Array.from(document.children)
+					.map((child) => child.outerHTML)
+					.join('')
+			).toBe('<div>Div</div><span>Span</span>');
 		});
 	});
 
@@ -748,7 +750,7 @@ describe('Document', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 
-			for (const node of document.childNodes.slice()) {
+			for (const node of Array.from(document.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
@@ -770,7 +772,7 @@ describe('Document', () => {
 			const div2 = document.createElement('div');
 			const span = document.createElement('span');
 
-			for (const node of document.childNodes.slice()) {
+			for (const node of Array.from(document.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
@@ -796,7 +798,7 @@ describe('Document', () => {
 
 			const clone = template.content.cloneNode(true);
 
-			for (const node of document.childNodes.slice()) {
+			for (const node of Array.from(document.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
@@ -806,9 +808,11 @@ describe('Document', () => {
 			document.insertBefore(clone, child2);
 
 			expect(document.children.length).toBe(4);
-			expect(document.children.map((child) => child.outerHTML).join('')).toBe(
-				'<span></span><div>Template DIV 1</div><span>Template SPAN 1</span><span></span>'
-			);
+			expect(
+				Array.from(document.children)
+					.map((child) => child.outerHTML)
+					.join('')
+			).toBe('<span></span><div>Template DIV 1</div><span>Template SPAN 1</span><span></span>');
 		});
 	});
 
@@ -1201,7 +1205,7 @@ describe('Document', () => {
 			const child = document.createElement('div');
 			child.className = 'className';
 
-			for (const node of document.childNodes.slice()) {
+			for (const node of Array.from(document.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 

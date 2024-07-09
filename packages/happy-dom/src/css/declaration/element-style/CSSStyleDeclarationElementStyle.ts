@@ -55,7 +55,7 @@ export default class CSSStyleDeclarationElementStyle {
 			return this.getComputedElementStyle();
 		}
 
-		const cache = this.element[PropertySymbol.computedStyleCache];
+		const cache = this.element[PropertySymbol.styleCache];
 
 		if (cache?.result) {
 			const result = cache.result.deref();
@@ -68,7 +68,7 @@ export default class CSSStyleDeclarationElementStyle {
 
 		if (cssText) {
 			const propertyManager = new CSSStyleDeclarationPropertyManager({ cssText });
-			this.element[PropertySymbol.computedStyleCache] = {
+			this.element[PropertySymbol.styleCache] = {
 				result: new WeakRef(propertyManager)
 			};
 			return propertyManager;
@@ -304,7 +304,7 @@ export default class CSSStyleDeclarationElementStyle {
 		};
 
 		this.element[PropertySymbol.computedStyleCache] = cachedResult;
-		this.element[PropertySymbol.ownerDocument][PropertySymbol.computedStyleCache].push(
+		this.element[PropertySymbol.ownerDocument][PropertySymbol.computedStyleCacheReferences].push(
 			cachedResult
 		);
 

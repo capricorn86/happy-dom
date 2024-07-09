@@ -345,7 +345,7 @@ describe('Element', () => {
 			const text1 = document.createTextNode('text1');
 			const text2 = document.createTextNode('text2');
 
-			for (const node of document.childNodes.slice()) {
+			for (const node of Array.from(document.childNodes)) {
 				node.parentNode?.removeChild(node);
 			}
 
@@ -366,7 +366,7 @@ describe('Element', () => {
 			const text1 = document.createTextNode('text1');
 			const text2 = document.createTextNode('text2');
 
-			for (const node of document.childNodes.slice()) {
+			for (const node of Array.from(document.childNodes)) {
 				node.parentNode?.removeChild(node);
 			}
 
@@ -868,7 +868,7 @@ describe('Element', () => {
 				(parentNode, requestedClassName) => {
 					expect(parentNode).toBe(element);
 					expect(requestedClassName).toEqual(className);
-					return <HTMLCollection<Element>>[child];
+					return new HTMLCollection<Element>([child]);
 				}
 			);
 
@@ -887,7 +887,7 @@ describe('Element', () => {
 				(parentNode, requestedTagName) => {
 					expect(parentNode).toBe(element);
 					expect(requestedTagName).toEqual(tagName);
-					return <HTMLCollection<Element>>[child];
+					return new HTMLCollection<Element>([child]);
 				}
 			);
 
@@ -908,7 +908,7 @@ describe('Element', () => {
 					expect(parentNode).toBe(element);
 					expect(requestedNamespaceURI).toEqual(namespaceURI);
 					expect(requestedTagName).toEqual(tagName);
-					return <HTMLCollection<Element>>[child];
+					return new HTMLCollection<Element>([child]);
 				}
 			);
 
@@ -1586,6 +1586,7 @@ describe('Element', () => {
 	for (const method of ['setAttributeNode', 'setAttributeNodeNS']) {
 		describe(`${method}()`, () => {
 			it('Sets an Attr node on a <div> element.', () => {
+				const element = document.createElement('div');
 				const attribute1 = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
 				const attribute2 = document.createAttribute('KEY2');
 
@@ -1597,33 +1598,47 @@ describe('Element', () => {
 
 				expect(element.attributes.length).toBe(2);
 
-				expect((<Attr>element.attributes[0]).name).toBe('key1');
-				expect((<Attr>element.attributes[0]).namespaceURI).toBe(NamespaceURI.svg);
-				expect((<Attr>element.attributes[0]).value).toBe('value1');
-				expect((<Attr>element.attributes[0]).specified).toBe(true);
-				expect((<Attr>element.attributes[0]).ownerElement).toBe(element);
-				expect((<Attr>element.attributes[0]).ownerDocument).toBe(document);
+				expect(element.attributes[0].name).toBe('KEY1');
+				expect(element.attributes[0].namespaceURI).toBe(NamespaceURI.svg);
+				expect(element.attributes[0].value).toBe('value1');
+				expect(element.attributes[0].specified).toBe(true);
+				expect(element.attributes[0].ownerElement === element).toBe(true);
+				expect(element.attributes[0].ownerDocument === document).toBe(true);
 
-				expect((<Attr>element.attributes[1]).name).toBe('key2');
-				expect((<Attr>element.attributes[1]).namespaceURI).toBe(null);
-				expect((<Attr>element.attributes[1]).value).toBe('value2');
-				expect((<Attr>element.attributes[1]).specified).toBe(true);
-				expect((<Attr>element.attributes[1]).ownerElement).toBe(element);
-				expect((<Attr>element.attributes[1]).ownerDocument).toBe(document);
+				expect(element.attributes[1].name).toBe('key2');
+				expect(element.attributes[1].namespaceURI).toBe(null);
+				expect(element.attributes[1].value).toBe('value2');
+				expect(element.attributes[1].specified).toBe(true);
+				expect(element.attributes[1].ownerElement === element).toBe(true);
+				expect(element.attributes[1].ownerDocument === document).toBe(true);
 
-				expect((<Attr>element.attributes['key1']).name).toBe('key1');
-				expect((<Attr>element.attributes['key1']).namespaceURI).toBe(NamespaceURI.svg);
-				expect((<Attr>element.attributes['key1']).value).toBe('value1');
-				expect((<Attr>element.attributes['key1']).specified).toBe(true);
-				expect((<Attr>element.attributes['key1']).ownerElement).toBe(element);
-				expect((<Attr>element.attributes['key1']).ownerDocument).toBe(document);
+				// "undefined" as the SVG namespace should not lowercase the key
+				expect(element.attributes['key1']).toBe(undefined);
+				expect(element.attributes['kEy1']).toBe(undefined);
 
-				expect((<Attr>element.attributes['key2']).name).toBe('key2');
-				expect((<Attr>element.attributes['key2']).namespaceURI).toBe(null);
-				expect((<Attr>element.attributes['key2']).value).toBe('value2');
-				expect((<Attr>element.attributes['key2']).specified).toBe(true);
-				expect((<Attr>element.attributes['key2']).ownerElement).toBe(element);
-				expect((<Attr>element.attributes['key2']).ownerDocument).toBe(document);
+				// Matching key is fine in the SVG namespace
+				expect(element.attributes['KEY1'].name).toBe('KEY1');
+				expect(element.attributes['KEY1'].namespaceURI).toBe(NamespaceURI.svg);
+				expect(element.attributes['KEY1'].value).toBe('value1');
+				expect(element.attributes['KEY1'].specified).toBe(true);
+				expect(element.attributes['KEY1'].ownerElement === element).toBe(true);
+				expect(element.attributes['KEY1'].ownerDocument === document).toBe(true);
+
+				// Is converted to lower case through the Proxy in the HTML namespace
+				expect(element.attributes['key2'].name).toBe('key2');
+				expect(element.attributes['key2'].namespaceURI).toBe(null);
+				expect(element.attributes['key2'].value).toBe('value2');
+				expect(element.attributes['key2'].specified).toBe(true);
+				expect(element.attributes['key2'].ownerElement === element).toBe(true);
+				expect(element.attributes['key2'].ownerDocument === document).toBe(true);
+
+				// Is converted to lower case through the Proxy in the HTML namespace
+				expect(element.attributes['KeY2'].name).toBe('key2');
+				expect(element.attributes['KeY2'].namespaceURI).toBe(null);
+				expect(element.attributes['KeY2'].value).toBe('value2');
+				expect(element.attributes['KeY2'].specified).toBe(true);
+				expect(element.attributes['KeY2'].ownerElement === element).toBe(true);
+				expect(element.attributes['KeY2'].ownerDocument === document).toBe(true);
 			});
 
 			it('Sets an Attr node on an <svg> element.', () => {
@@ -1639,33 +1654,42 @@ describe('Element', () => {
 
 				expect(svg.attributes.length).toBe(2);
 
-				expect((<Attr>svg.attributes[0]).name).toBe('KEY1');
-				expect((<Attr>svg.attributes[0]).namespaceURI).toBe(NamespaceURI.svg);
-				expect((<Attr>svg.attributes[0]).value).toBe('value1');
-				expect((<Attr>svg.attributes[0]).specified).toBe(true);
-				expect((<Attr>svg.attributes[0]).ownerElement).toBe(svg);
-				expect((<Attr>svg.attributes[0]).ownerDocument).toBe(document);
+				expect(svg.attributes[0].name).toBe('KEY1');
+				expect(svg.attributes[0].namespaceURI).toBe(NamespaceURI.svg);
+				expect(svg.attributes[0].value).toBe('value1');
+				expect(svg.attributes[0].specified).toBe(true);
+				expect(svg.attributes[0].ownerElement === svg).toBe(true);
+				expect(svg.attributes[0].ownerDocument).toBe(document);
 
-				expect((<Attr>svg.attributes[1]).name).toBe('key2');
-				expect((<Attr>svg.attributes[1]).namespaceURI).toBe(null);
-				expect((<Attr>svg.attributes[1]).value).toBe('value2');
-				expect((<Attr>svg.attributes[1]).specified).toBe(true);
-				expect((<Attr>svg.attributes[1]).ownerElement).toBe(svg);
-				expect((<Attr>svg.attributes[1]).ownerDocument).toBe(document);
+				expect(svg.attributes[1].name).toBe('key2');
+				expect(svg.attributes[1].namespaceURI).toBe(null);
+				expect(svg.attributes[1].value).toBe('value2');
+				expect(svg.attributes[1].specified).toBe(true);
+				expect(svg.attributes[1].ownerElement === svg).toBe(true);
+				expect(svg.attributes[1].ownerDocument).toBe(document);
 
-				expect((<Attr>svg.attributes['KEY1']).name).toBe('KEY1');
-				expect((<Attr>svg.attributes['KEY1']).namespaceURI).toBe(NamespaceURI.svg);
-				expect((<Attr>svg.attributes['KEY1']).value).toBe('value1');
-				expect((<Attr>svg.attributes['KEY1']).specified).toBe(true);
-				expect((<Attr>svg.attributes['KEY1']).ownerElement).toBe(svg);
-				expect((<Attr>svg.attributes['KEY1']).ownerDocument).toBe(document);
+				// "undefined" as the SVG namespace should not lowercase the key
+				expect(svg.attributes['key1']).toBe(undefined);
+				expect(svg.attributes['kEy1']).toBe(undefined);
 
-				expect((<Attr>svg.attributes['key2']).name).toBe('key2');
-				expect((<Attr>svg.attributes['key2']).namespaceURI).toBe(null);
-				expect((<Attr>svg.attributes['key2']).value).toBe('value2');
-				expect((<Attr>svg.attributes['key2']).specified).toBe(true);
-				expect((<Attr>svg.attributes['key2']).ownerElement).toBe(svg);
-				expect((<Attr>svg.attributes['key2']).ownerDocument).toBe(document);
+				// Matching key is fine in the SVG namespace
+				expect(svg.attributes['KEY1'].name).toBe('KEY1');
+				expect(svg.attributes['KEY1'].namespaceURI).toBe(NamespaceURI.svg);
+				expect(svg.attributes['KEY1'].value).toBe('value1');
+				expect(svg.attributes['KEY1'].specified).toBe(true);
+				expect(svg.attributes['KEY1'].ownerElement === svg).toBe(true);
+				expect(svg.attributes['KEY1'].ownerDocument).toBe(document);
+
+				// "undefined" as the SVG namespace should not lowercase the key
+				expect(svg.attributes['KeY2']).toBe(undefined);
+
+				// Works when matching in the SVG namespace
+				expect(svg.attributes['key2'].name).toBe('key2');
+				expect(svg.attributes['key2'].namespaceURI).toBe(null);
+				expect(svg.attributes['key2'].value).toBe('value2');
+				expect(svg.attributes['key2'].specified).toBe(true);
+				expect(svg.attributes['key2'].ownerElement === svg).toBe(true);
+				expect(svg.attributes['key2'].ownerDocument).toBe(document);
 			});
 		});
 	}
@@ -1681,9 +1705,9 @@ describe('Element', () => {
 			element.setAttributeNode(attribute1);
 			element.setAttributeNode(attribute2);
 
-			expect(element.getAttributeNode('key1') === attribute1).toBe(true);
+			expect(element.getAttributeNode('key1') === null).toBe(true);
 			expect(element.getAttributeNode('key2') === attribute2).toBe(true);
-			expect(element.getAttributeNode('KEY1') === attribute1).toBe(true);
+			expect(element.getAttributeNode('KEY1') === null).toBe(true);
 			expect(element.getAttributeNode('KEY2') === attribute2).toBe(true);
 		});
 
@@ -1713,7 +1737,7 @@ describe('Element', () => {
 
 			element.setAttributeNode(attribute1);
 
-			expect(element.getAttributeNodeNS(NamespaceURI.svg, 'key1') === attribute1).toBe(true);
+			expect(element.getAttributeNodeNS(NamespaceURI.svg, 'key1') === null).toBe(true);
 			expect(element.getAttributeNodeNS(NamespaceURI.svg, 'KEY1') === attribute1).toBe(true);
 		});
 
@@ -1731,19 +1755,17 @@ describe('Element', () => {
 		});
 	});
 
-	for (const method of ['removeAttributeNode', 'removeAttributeNodeNS']) {
-		describe(`${method}()`, () => {
-			it('Removes an Attr node.', () => {
-				const attribute = document.createAttribute('KEY1');
+	describe(`removeAttributeNode()`, () => {
+		it('Removes an Attr node.', () => {
+			const attribute = document.createAttribute('KEY1');
 
-				attribute.value = 'value1';
-				element.setAttributeNode(attribute);
-				element[method](attribute);
+			attribute.value = 'value1';
+			element.setAttributeNode(attribute);
+			element.removeAttributeNode(attribute);
 
-				expect(element.attributes.length).toBe(0);
-			});
+			expect(element.attributes.length).toBe(0);
 		});
-	}
+	});
 
 	describe('replaceWith()', () => {
 		it('Replaces a node with another node.', () => {

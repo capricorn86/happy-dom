@@ -245,62 +245,58 @@ export default class SelectorItem {
 			case 'nth-child':
 				let nthChildIndex = -1;
 				for (let i = 0, max = parentChildren.length; i < max; i++) {
-					if (
-						(!pseudo.selectorItems[0] || pseudo.selectorItems[0].match(parentChildren[i])) &&
-						parentChildren[i] === element
-					) {
-						nthChildIndex = i;
-						break;
+					if (!pseudo.selectorItems[0] || pseudo.selectorItems[0].match(parentChildren[i])) {
+						nthChildIndex++;
+					}
+					if (parentChildren[i] === element) {
+						return nthChildIndex !== -1 && pseudo.nthFunction(nthChildIndex + 1)
+							? { priorityWeight: 10 }
+							: null;
 					}
 				}
-				return nthChildIndex !== -1 && pseudo.nthFunction(nthChildIndex + 1)
-					? { priorityWeight: 10 }
-					: null;
+				return null;
 			case 'nth-of-type':
 				if (!element[PropertySymbol.parentNode]) {
 					return null;
 				}
 				let nthOfTypeIndex = -1;
 				for (let i = 0, max = parentChildren.length; i < max; i++) {
-					if (
-						parentChildren[i][PropertySymbol.tagName] === element[PropertySymbol.tagName] &&
-						parentChildren[i] === element
-					) {
-						nthOfTypeIndex = i;
-						break;
+					if (parentChildren[i][PropertySymbol.tagName] === element[PropertySymbol.tagName]) {
+						nthOfTypeIndex++;
+					}
+					if (parentChildren[i] === element) {
+						return nthOfTypeIndex !== -1 && pseudo.nthFunction(nthOfTypeIndex + 1)
+							? { priorityWeight: 10 }
+							: null;
 					}
 				}
-				return nthOfTypeIndex !== -1 && pseudo.nthFunction(nthOfTypeIndex + 1)
-					? { priorityWeight: 10 }
-					: null;
+				return null;
 			case 'nth-last-child':
 				let nthLastChildIndex = -1;
 				for (let i = parentChildren.length - 1; i >= 0; i--) {
-					if (
-						(!pseudo.selectorItems[0] || pseudo.selectorItems[0].match(parentChildren[i])) &&
-						parentChildren[i] === element
-					) {
-						nthLastChildIndex = i;
-						break;
+					if (!pseudo.selectorItems[0] || pseudo.selectorItems[0].match(parentChildren[i])) {
+						nthLastChildIndex++;
+					}
+					if (parentChildren[i] === element) {
+						return nthLastChildIndex !== -1 && pseudo.nthFunction(nthLastChildIndex + 1)
+							? { priorityWeight: 10 }
+							: null;
 					}
 				}
-				return nthLastChildIndex !== -1 && pseudo.nthFunction(nthLastChildIndex + 1)
-					? { priorityWeight: 10 }
-					: null;
+				return null;
 			case 'nth-last-of-type':
 				let nthLastOfTypeIndex = -1;
 				for (let i = parentChildren.length - 1; i >= 0; i--) {
-					if (
-						parentChildren[i][PropertySymbol.tagName] === element[PropertySymbol.tagName] &&
-						parentChildren[i] === element
-					) {
-						nthLastOfTypeIndex = i;
-						break;
+					if (parentChildren[i][PropertySymbol.tagName] === element[PropertySymbol.tagName]) {
+						nthLastOfTypeIndex++;
+					}
+					if (parentChildren[i] === element) {
+						return nthLastOfTypeIndex !== -1 && pseudo.nthFunction(nthLastOfTypeIndex + 1)
+							? { priorityWeight: 10 }
+							: null;
 					}
 				}
-				return nthLastOfTypeIndex !== -1 && pseudo.nthFunction(nthLastOfTypeIndex + 1)
-					? { priorityWeight: 10 }
-					: null;
+				return null;
 			case 'target':
 				const hash = element[PropertySymbol.ownerDocument].location.hash;
 				if (!hash) {

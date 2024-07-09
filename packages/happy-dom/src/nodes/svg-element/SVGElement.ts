@@ -6,7 +6,6 @@ import Event from '../../event/Event.js';
 import HTMLElementUtility from '../html-element/HTMLElementUtility.js';
 import DatasetFactory from '../element/DatasetFactory.js';
 import IDataset from '../element/IDataset.js';
-import Attr from '../attr/Attr.js';
 
 /**
  * SVG Element.
@@ -28,21 +27,6 @@ export default class SVGElement extends Element {
 
 	// Private properties
 	#dataset: IDataset = null;
-
-	/**
-	 * Constructor.
-	 */
-	constructor() {
-		super();
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'set',
-			this.#onSetAttribute.bind(this)
-		);
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'remove',
-			this.#onRemoveAttribute.bind(this)
-		);
-	}
 
 	/**
 	 * Returns viewport.
@@ -126,27 +110,5 @@ export default class SVGElement extends Element {
 	 */
 	public focus(): void {
 		HTMLElementUtility.focus(this);
-	}
-
-	/**
-	 * Triggered when an attribute is set.
-	 *
-	 * @param item Item
-	 */
-	#onSetAttribute(item: Attr): void {
-		if (item[PropertySymbol.name] === 'style' && this[PropertySymbol.style]) {
-			this[PropertySymbol.style].cssText = item[PropertySymbol.value];
-		}
-	}
-
-	/**
-	 * Triggered when an attribute is removed.
-	 *
-	 * @param removedItem Removed item.
-	 */
-	#onRemoveAttribute(removedItem: Attr): void {
-		if (removedItem && removedItem[PropertySymbol.name] === 'style' && this[PropertySymbol.style]) {
-			this[PropertySymbol.style].cssText = '';
-		}
 	}
 }

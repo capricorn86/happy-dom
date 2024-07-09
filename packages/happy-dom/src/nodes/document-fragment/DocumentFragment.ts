@@ -25,7 +25,7 @@ export default class DocumentFragment extends Node {
 	constructor() {
 		super();
 
-		this[PropertySymbol.childNodes][PropertySymbol.htmlCollection] = this[PropertySymbol.children];
+		this[PropertySymbol.children][PropertySymbol.observe](this);
 	}
 
 	/**

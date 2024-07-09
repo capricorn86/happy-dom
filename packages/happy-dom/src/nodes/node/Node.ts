@@ -44,21 +44,21 @@ export default class Node extends EventTarget {
 	public static readonly DOCUMENT_POSITION_PRECEDING = NodeDocumentPositionEnum.preceding;
 
 	// Defined on the prototype
-	public readonly ELEMENT_NODE;
-	public readonly ATTRIBUTE_NODE;
-	public readonly TEXT_NODE;
-	public readonly CDATA_SECTION_NODE;
-	public readonly COMMENT_NODE;
-	public readonly DOCUMENT_NODE;
-	public readonly DOCUMENT_TYPE_NODE;
-	public readonly DOCUMENT_FRAGMENT_NODE;
-	public readonly PROCESSING_INSTRUCTION_NODE;
-	public readonly DOCUMENT_POSITION_CONTAINED_BY;
-	public readonly DOCUMENT_POSITION_CONTAINS;
-	public readonly DOCUMENT_POSITION_DISCONNECTED;
-	public readonly DOCUMENT_POSITION_FOLLOWING;
-	public readonly DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
-	public readonly DOCUMENT_POSITION_PRECEDING;
+	public declare readonly ELEMENT_NODE;
+	public declare readonly ATTRIBUTE_NODE;
+	public declare readonly TEXT_NODE;
+	public declare readonly CDATA_SECTION_NODE;
+	public declare readonly COMMENT_NODE;
+	public declare readonly DOCUMENT_NODE;
+	public declare readonly DOCUMENT_TYPE_NODE;
+	public declare readonly DOCUMENT_FRAGMENT_NODE;
+	public declare readonly PROCESSING_INSTRUCTION_NODE;
+	public declare readonly DOCUMENT_POSITION_CONTAINED_BY;
+	public declare readonly DOCUMENT_POSITION_CONTAINS;
+	public declare readonly DOCUMENT_POSITION_DISCONNECTED;
+	public declare readonly DOCUMENT_POSITION_FOLLOWING;
+	public declare readonly DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
+	public declare readonly DOCUMENT_POSITION_PRECEDING;
 
 	// Internal properties
 	public [PropertySymbol.isConnected] = false;
@@ -482,7 +482,7 @@ export default class Node extends EventTarget {
 
 		// Remove the node from its previous parent if it has any.
 		if (node[PropertySymbol.parentNode]) {
-			node[PropertySymbol.parentNode][PropertySymbol.childNodes][PropertySymbol.removeItem](node);
+			node[PropertySymbol.parentNode][PropertySymbol.removeChild](node);
 		}
 
 		node[PropertySymbol.parentNode] = this;
@@ -491,11 +491,7 @@ export default class Node extends EventTarget {
 
 		this[PropertySymbol.childNodes][PropertySymbol.addItem](node);
 
-		if (this[PropertySymbol.isConnected] && !node[PropertySymbol.isConnected]) {
-			node[PropertySymbol.connectedToDocument]();
-		} else if (!this[PropertySymbol.isConnected] && node[PropertySymbol.isConnected]) {
-			node[PropertySymbol.disconnectedFromDocument]();
-		}
+		node[PropertySymbol.connectedToNode]();
 
 		// Mutation listeners
 		for (const mutationListener of this[PropertySymbol.mutationListeners]) {
@@ -528,9 +524,7 @@ export default class Node extends EventTarget {
 
 		this[PropertySymbol.childNodes][PropertySymbol.removeItem](node);
 
-		if (node[PropertySymbol.isConnected]) {
-			node[PropertySymbol.disconnectedFromDocument]();
-		}
+		node[PropertySymbol.disconnectedFromNode]();
 
 		// Mutation listeners
 		for (const mutationListener of this[PropertySymbol.mutationListeners]) {
@@ -588,9 +582,7 @@ export default class Node extends EventTarget {
 		}
 
 		if (newNode[PropertySymbol.parentNode]) {
-			newNode[PropertySymbol.parentNode][PropertySymbol.childNodes][PropertySymbol.removeItem](
-				newNode
-			);
+			newNode[PropertySymbol.parentNode][PropertySymbol.removeChild](newNode);
 		}
 
 		newNode[PropertySymbol.parentNode] = this;
@@ -599,11 +591,8 @@ export default class Node extends EventTarget {
 
 		this[PropertySymbol.childNodes][PropertySymbol.insertItem](newNode, referenceNode);
 
-		if (this[PropertySymbol.isConnected] && !newNode[PropertySymbol.isConnected]) {
-			newNode[PropertySymbol.connectedToDocument]();
-		} else if (!this[PropertySymbol.isConnected] && newNode[PropertySymbol.isConnected]) {
-			newNode[PropertySymbol.disconnectedFromDocument]();
-		}
+		newNode[PropertySymbol.connectedToNode]();
+
 		// Mutation listeners
 		for (const mutationListener of this[PropertySymbol.mutationListeners]) {
 			if (mutationListener.options?.subtree && mutationListener.callback.deref()) {
@@ -802,6 +791,50 @@ export default class Node extends EventTarget {
 	}
 
 	/**
+	 * Called when connected to a node.
+	 */
+	public [PropertySymbol.connectedToNode](): void {
+		const parent = this[PropertySymbol.parentNode] || this[PropertySymbol.host];
+
+		if (!this[PropertySymbol.isConnected] && parent[PropertySymbol.isConnected]) {
+			this[PropertySymbol.connectedToDocument]();
+		} else if (this[PropertySymbol.isConnected] && !parent[PropertySymbol.isConnected]) {
+			this[PropertySymbol.disconnectedFromDocument]();
+		}
+
+		const childNodes = this[PropertySymbol.childNodes];
+		for (let i = 0, max = childNodes.length; i < max; i++) {
+			childNodes[i][PropertySymbol.connectedToNode]();
+		}
+
+		// eslint-disable-next-line
+		if ((<any>this)[PropertySymbol.shadowRoot]) {
+			// eslint-disable-next-line
+			(<any>this)[PropertySymbol.shadowRoot][PropertySymbol.connectedToNode]();
+		}
+	}
+
+	/**
+	 * Called when disconnected from a node.
+	 */
+	public [PropertySymbol.disconnectedFromNode](): void {
+		if (this[PropertySymbol.isConnected]) {
+			this[PropertySymbol.disconnectedFromDocument]();
+		}
+
+		const childNodes = this[PropertySymbol.childNodes];
+		for (let i = 0, max = childNodes.length; i < max; i++) {
+			childNodes[i][PropertySymbol.disconnectedFromNode]();
+		}
+
+		// eslint-disable-next-line
+		if ((<any>this)[PropertySymbol.shadowRoot]) {
+			// eslint-disable-next-line
+			(<any>this)[PropertySymbol.shadowRoot][PropertySymbol.disconnectedFromNode]();
+		}
+	}
+
+	/**
 	 * Called when connected to document.
 	 */
 	public [PropertySymbol.connectedToDocument](): void {
@@ -831,16 +864,6 @@ export default class Node extends EventTarget {
 					.catch(() => asyncTaskManager.endTask(taskID));
 			}
 		}
-
-		for (const child of this[PropertySymbol.childNodes]) {
-			child[PropertySymbol.connectedToDocument]();
-		}
-
-		// eslint-disable-next-line
-		if ((<any>this)[PropertySymbol.shadowRoot]) {
-			// eslint-disable-next-line
-			(<any>this)[PropertySymbol.shadowRoot][PropertySymbol.connectedToDocument]();
-		}
 	}
 
 	/**
@@ -857,16 +880,6 @@ export default class Node extends EventTarget {
 
 		if (this.disconnectedCallback) {
 			this.disconnectedCallback();
-		}
-
-		for (const child of this[PropertySymbol.childNodes]) {
-			child[PropertySymbol.disconnectedFromDocument]();
-		}
-
-		// eslint-disable-next-line
-		if ((<any>this)[PropertySymbol.shadowRoot]) {
-			// eslint-disable-next-line
-			(<any>this)[PropertySymbol.shadowRoot][PropertySymbol.disconnectedFromDocument]();
 		}
 	}
 

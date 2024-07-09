@@ -795,8 +795,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-child(n+8)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['span.n8', 'div.n9', 'i.n10']);
 		});
@@ -807,8 +807,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-child(2n)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['span.n2', 'b.n4', 'div.n6', 'span.n8', 'i.n10']);
 		});
@@ -819,8 +819,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-child(-n + 3)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['div.', 'b.n1', 'span.n2', 'div.n3']);
 		});
@@ -831,8 +831,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll('div :nth-child(2n+1)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['div.', 'b.n1', 'div.n3', 'span.n5', 'b.n7', 'div.n9']);
 		});
@@ -843,8 +843,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll('div :nth-child(3n+1)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['div.', 'b.n1', 'b.n4', 'b.n7', 'i.n10']);
 		});
@@ -855,8 +855,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-child(3n+1 of b)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['b.n1']);
 		});
@@ -867,8 +867,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-child(n+1 of span)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['span.n2', 'span.n5', 'span.n8']);
 		});
@@ -876,11 +876,12 @@ describe('QuerySelector', () => {
 		it('Returns all elements matching ":nth-last-child(n+1 of span)".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorNthChildHTML;
+			debugger;
 			const elements = container.querySelectorAll(':nth-last-child(n+1 of span)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['span.n2', 'span.n5', 'span.n8']);
 		});
@@ -891,8 +892,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll('div :nth-child(3n+3)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['div.n3', 'div.n6', 'div.n9']);
 		});
@@ -912,8 +913,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-child(odd)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['div.', 'b.n1', 'div.n3', 'span.n5', 'b.n7', 'div.n9']);
 		});
@@ -924,8 +925,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-child(even)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['span.n2', 'b.n4', 'div.n6', 'span.n8', 'i.n10']);
 		});
@@ -936,8 +937,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-of-type(2n)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['b.n4', 'span.n5', 'div.n6']);
 		});
@@ -948,8 +949,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-of-type(odd)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['div.', 'b.n1', 'span.n2', 'div.n3', 'b.n7', 'span.n8', 'div.n9', 'i.n10']);
 		});
@@ -960,8 +961,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-last-child(2n)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['b.n1', 'div.n3', 'span.n5', 'b.n7', 'div.n9']);
 		});
@@ -972,8 +973,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-last-of-type(2n)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['b.n4', 'span.n5', 'div.n6']);
 		});

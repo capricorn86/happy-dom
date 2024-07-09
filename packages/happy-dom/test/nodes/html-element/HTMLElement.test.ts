@@ -489,11 +489,11 @@ describe('HTMLElement', () => {
 			expect(parent.children.length).toBe(1);
 
 			expect(parent.children[0] instanceof CustomElement).toBe(true);
-			expect(parent.children[0].shadowRoot.children.length).toBe(0);
+			expect(parent.children[0].shadowRoot?.children.length).toBe(0);
 
 			document.body.appendChild(parent);
 
-			expect(parent.children[0].shadowRoot.children.length).toBe(2);
+			expect(parent.children[0].shadowRoot?.children.length).toBe(2);
 		});
 
 		it('Copies all properties from the unknown element to the new instance.', () => {

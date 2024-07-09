@@ -4,6 +4,12 @@ import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import Element from '../element/Element.js';
 import IHTMLCollection from '../element/IHTMLCollection.js';
 import INodeList from './INodeList.js';
+import NodeTypeEnum from './NodeTypeEnum.js';
+
+interface IHTMLCollectionAndFilter {
+	htmlCollection: IHTMLCollection<Element>;
+	filter: (item: Element) => boolean | null;
+}
 
 /**
  * NodeList.
@@ -11,7 +17,21 @@ import INodeList from './INodeList.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NodeList
  */
 class NodeList<T> extends Array<T> implements INodeList<T> {
-	public [PropertySymbol.htmlCollection]: IHTMLCollection<Element> | null = null;
+	public [PropertySymbol.htmlCollections]: IHTMLCollectionAndFilter[] = [];
+
+	/**
+	 * Constructor.
+	 *
+	 * @param items Items.
+	 */
+	constructor(items?: T[]) {
+		super();
+		if (items && items instanceof Array) {
+			for (const item of items) {
+				this[PropertySymbol.addItem](item);
+			}
+		}
+	}
 
 	/**
 	 * Returns `Symbol.toStringTag`.
@@ -62,8 +82,14 @@ class NodeList<T> extends Array<T> implements INodeList<T> {
 
 		super.push(item);
 
-		if (this[PropertySymbol.htmlCollection]) {
-			this[PropertySymbol.htmlCollection][PropertySymbol.addItem](<Element>item);
+		const htmlCollections = this[PropertySymbol.htmlCollections];
+		for (const { htmlCollection, filter } of htmlCollections) {
+			if (
+				item[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
+				(!filter || filter(<Element>item))
+			) {
+				htmlCollection[PropertySymbol.addItem](<Element>item);
+			}
 		}
 
 		return true;
@@ -96,12 +122,23 @@ class NodeList<T> extends Array<T> implements INodeList<T> {
 
 		super.splice(index, 0, newItem);
 
-		if (this[PropertySymbol.htmlCollection]) {
-			const htmlCollectionReferenceItem = this[PropertySymbol.htmlCollection][index] || null;
-			this[PropertySymbol.htmlCollection][PropertySymbol.insertItem](
-				<Element>newItem,
-				htmlCollectionReferenceItem
-			);
+		const htmlCollections = this[PropertySymbol.htmlCollections];
+		for (const { htmlCollection, filter } of htmlCollections) {
+			let isInserted = false;
+			for (let i = index + 1; i < this.length; i++) {
+				const referenceItem = this[i];
+				if (
+					referenceItem[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
+					(!filter || filter(<Element>referenceItem))
+				) {
+					isInserted = true;
+					htmlCollection[PropertySymbol.insertItem](<Element>newItem, <Element>referenceItem);
+					break;
+				}
+			}
+			if (!isInserted) {
+				htmlCollection[PropertySymbol.addItem](<Element>newItem);
+			}
 		}
 
 		return true;
@@ -125,8 +162,14 @@ class NodeList<T> extends Array<T> implements INodeList<T> {
 
 		super.splice(index, 1);
 
-		if (this[PropertySymbol.htmlCollection]) {
-			this[PropertySymbol.htmlCollection][PropertySymbol.removeItem](<Element>item);
+		const htmlCollections = this[PropertySymbol.htmlCollections];
+		for (const { htmlCollection, filter } of htmlCollections) {
+			if (
+				item[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
+				(!filter || filter(<Element>item))
+			) {
+				htmlCollection[PropertySymbol.removeItem](<Element>item);
+			}
 		}
 
 		return true;

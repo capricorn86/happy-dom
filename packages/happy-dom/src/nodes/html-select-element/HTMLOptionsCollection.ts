@@ -20,7 +20,6 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 	#selectedIndex: number = -1;
 	#selectElement: HTMLSelectElement;
 	#observedSelectElement: IHTMLCollectionObservedNode | null = null;
-	protected [PropertySymbol.attributeFilter]: string[] = ['id', 'name', 'form'];
 
 	/**
 	 * Constructor.

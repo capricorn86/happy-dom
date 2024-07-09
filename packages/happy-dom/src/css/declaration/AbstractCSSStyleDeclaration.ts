@@ -78,18 +78,10 @@ export default abstract class AbstractCSSStyleDeclaration {
 		}
 
 		if (this.#ownerElement) {
-			const style = new CSSStyleDeclarationPropertyManager({ cssText });
-			let styleAttribute = <Attr>this.#ownerElement[PropertySymbol.attributes]['style'];
-
-			if (!styleAttribute) {
-				styleAttribute = this.#ownerElement[PropertySymbol.ownerDocument].createAttribute('style');
-				(<NamedNodeMap>this.#ownerElement[PropertySymbol.attributes])[PropertySymbol.setNamedItem](
-					styleAttribute,
-					true
-				);
-			}
-
-			styleAttribute[PropertySymbol.value] = style.toString();
+			this.#ownerElement.setAttribute(
+				'style',
+				new CSSStyleDeclarationPropertyManager({ cssText }).toString()
+			);
 		} else {
 			this.#style = new CSSStyleDeclarationPropertyManager({ cssText });
 		}

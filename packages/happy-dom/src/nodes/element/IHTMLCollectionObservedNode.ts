@@ -6,5 +6,6 @@ import Element from './Element.js';
 export default interface IHTMLCollectionObservedNode {
 	node: Element | DocumentFragment | Document;
 	filter: (item: Element) => boolean | null;
+	subtree: boolean;
 	mutationListener: IMutationListener;
 }

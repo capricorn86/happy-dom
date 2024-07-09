@@ -198,12 +198,9 @@ export default class HTMLFormControlsCollection extends HTMLCollection<
 	}
 
 	/**
-	 * Appends item.
-	 *
-	 * @param item Item.
-	 * @returns True if added.
+	 * @override
 	 */
-	public [PropertySymbol.addItem](item: THTMLFormControlElement): boolean {
+	public override [PropertySymbol.addItem](item: THTMLFormControlElement): boolean {
 		if (!super[PropertySymbol.addItem](item)) {
 			return false;
 		}
@@ -216,13 +213,9 @@ export default class HTMLFormControlsCollection extends HTMLCollection<
 	}
 
 	/**
-	 * Inserts item before another item.
-	 *
-	 * @param newItem New item.
-	 * @param [referenceItem] Reference item.
-	 * @returns True if inserted.
+	 * @override
 	 */
-	public [PropertySymbol.insertItem](
+	public override [PropertySymbol.insertItem](
 		newItem: THTMLFormControlElement,
 		referenceItem: THTMLFormControlElement | null
 	): boolean {
@@ -242,12 +235,9 @@ export default class HTMLFormControlsCollection extends HTMLCollection<
 	}
 
 	/**
-	 * Removes item.
-	 *
-	 * @param item Item.
-	 * @returns True if removed.
+	 * @override
 	 */
-	public [PropertySymbol.removeItem](item: THTMLFormControlElement): boolean {
+	public override [PropertySymbol.removeItem](item: THTMLFormControlElement): boolean {
 		const index = this[PropertySymbol.indexOf](item);
 
 		if (!super[PropertySymbol.removeItem](item)) {
@@ -266,21 +256,15 @@ export default class HTMLFormControlsCollection extends HTMLCollection<
 	}
 
 	/**
-	 * Triggered when an attribute changes.
-	 *
-	 * @param item Item.
-	 * @param name Name.
-	 * @param oldValue Old value.
-	 * @param value Value.
+	 * @override
 	 */
-	protected [PropertySymbol.onObservedItemAttributeChange](
+	protected override [PropertySymbol.onSetAttribute](
 		item: THTMLFormControlElement,
-		name: string,
-		oldValue: string | null,
-		value: string | null
+		attribute: Attr,
+		replacedAttribute: Attr | null
 	): void {
-		if (name !== 'form') {
-			super[PropertySymbol.onObservedItemAttributeChange](item, name, oldValue, value);
+		if (attribute.name !== 'form') {
+			super[PropertySymbol.onSetAttribute](item, attribute, replacedAttribute);
 			return;
 		}
 
@@ -294,21 +278,46 @@ export default class HTMLFormControlsCollection extends HTMLCollection<
 			return;
 		}
 
-		if (oldValue === id) {
+		if (replacedAttribute?.value === id) {
 			this.#formElement[PropertySymbol.removeItem](item);
 		}
 
-		if (value === id) {
+		if (attribute.value === id) {
 			this.#formElement[PropertySymbol.addItem](item);
 		}
 	}
 
 	/**
-	 * Sets named item property.
-	 *
-	 * @param name Name.
+	 * @override
 	 */
-	protected [PropertySymbol.updateNamedItemProperty](name: string): void {
+	protected override [PropertySymbol.onRemoveAttribute](
+		item: THTMLFormControlElement,
+		removedAttribute: Attr
+	): void {
+		if (removedAttribute.name !== 'form') {
+			super[PropertySymbol.onRemoveAttribute](item, removedAttribute);
+			return;
+		}
+
+		if (!this.#formElement[PropertySymbol.isConnected]) {
+			return;
+		}
+
+		const id = this.#formElement[PropertySymbol.attributes]['id']?.value;
+
+		if (!id) {
+			return;
+		}
+
+		if (removedAttribute.value === id) {
+			this.#formElement[PropertySymbol.removeItem](item);
+		}
+	}
+
+	/**
+	 * @override
+	 */
+	protected override [PropertySymbol.updateNamedItemProperty](name: string): void {
 		if (!this[PropertySymbol.isValidPropertyName](name)) {
 			return;
 		}
