@@ -119,7 +119,7 @@ describe('HTMLTextAreaElement', () => {
 			const div = document.createElement('div');
 			div.appendChild(element);
 			form.appendChild(div);
-			expect(element.form).toBe(form);
+			expect(element.form === form).toBe(true);
 		});
 
 		it('Returns form element by id if the form attribute is set when connecting node to DOM.', () => {
@@ -129,7 +129,7 @@ describe('HTMLTextAreaElement', () => {
 			element.setAttribute('form', 'form');
 			expect(element.form).toBe(null);
 			document.body.appendChild(element);
-			expect(element.form).toBe(form);
+			expect(element.form === form).toBe(true);
 			expect(Array.from(form.elements).includes(element)).toBe(true);
 		});
 
@@ -139,7 +139,7 @@ describe('HTMLTextAreaElement', () => {
 			document.body.appendChild(form);
 			document.body.appendChild(element);
 			element.setAttribute('form', 'form');
-			expect(element.form).toBe(form);
+			expect(element.form === form).toBe(true);
 			expect(Array.from(form.elements).includes(element)).toBe(true);
 		});
 	});

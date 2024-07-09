@@ -114,6 +114,13 @@ export default class QuerySelector {
 		};
 		node[PropertySymbol.querySelectorAllCache].items.set(selector, cachedItem);
 
+		if (node[PropertySymbol.isConnected]) {
+			// Document is affected for the ":target" selector
+			(node[PropertySymbol.ownerDocument] || node)[
+				PropertySymbol.querySelectorAllCache
+			].affectedItems.push(cachedItem);
+		}
+
 		for (const items of groups) {
 			const matches =
 				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
@@ -214,6 +221,13 @@ export default class QuerySelector {
 		};
 
 		node[PropertySymbol.querySelectorCache].items.set(selector, cachedItem);
+
+		if (node[PropertySymbol.isConnected]) {
+			// Document is affected for the ":target" selector
+			(node[PropertySymbol.ownerDocument] || node)[
+				PropertySymbol.querySelectorCache
+			].affectedItems.push(cachedItem);
+		}
 
 		for (const items of SelectorParser.getSelectorGroups(selector)) {
 			const match =

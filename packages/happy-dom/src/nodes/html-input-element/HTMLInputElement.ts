@@ -1402,6 +1402,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 */
 	#setChecked(checked: boolean): void {
 		this[PropertySymbol.checked] = checked;
+		this[PropertySymbol.clearCache]();
 
 		if (checked && this.type === 'radio' && this.name) {
 			const root = <HTMLElement>(

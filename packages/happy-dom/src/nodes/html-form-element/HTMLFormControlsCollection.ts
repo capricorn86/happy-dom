@@ -94,6 +94,7 @@ export default class HTMLFormControlsCollection extends HTMLCollection<
 			return;
 		}
 		super[PropertySymbol.unobserve](this.#observedFormElement);
+		this.#observedFormElement = null;
 	}
 
 	/**
@@ -190,11 +191,15 @@ export default class HTMLFormControlsCollection extends HTMLCollection<
 			this.#observedDocumentAttributeListeners.remove
 		);
 
+		this.#observedDocumentAttributeListeners.set = null;
+		this.#observedDocumentAttributeListeners.remove = null;
+
 		if (!this.#observedDocument) {
 			return;
 		}
 
 		super[PropertySymbol.unobserve](this.#observedDocument);
+		this.#observedDocument = null;
 	}
 
 	/**

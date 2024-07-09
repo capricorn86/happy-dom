@@ -244,6 +244,9 @@ export default class SelectorItem {
 				return !pseudo.selectorItems[0].match(element) ? { priorityWeight: 10 } : null;
 			case 'nth-child':
 				let nthChildIndex = -1;
+				if (pseudo.selectorItems[0] && !pseudo.selectorItems[0].match(element)) {
+					return null;
+				}
 				for (let i = 0, max = parentChildren.length; i < max; i++) {
 					if (!pseudo.selectorItems[0] || pseudo.selectorItems[0].match(parentChildren[i])) {
 						nthChildIndex++;
@@ -256,9 +259,6 @@ export default class SelectorItem {
 				}
 				return null;
 			case 'nth-of-type':
-				if (!element[PropertySymbol.parentNode]) {
-					return null;
-				}
 				let nthOfTypeIndex = -1;
 				for (let i = 0, max = parentChildren.length; i < max; i++) {
 					if (parentChildren[i][PropertySymbol.tagName] === element[PropertySymbol.tagName]) {
@@ -273,6 +273,9 @@ export default class SelectorItem {
 				return null;
 			case 'nth-last-child':
 				let nthLastChildIndex = -1;
+				if (pseudo.selectorItems[0] && !pseudo.selectorItems[0].match(element)) {
+					return null;
+				}
 				for (let i = parentChildren.length - 1; i >= 0; i--) {
 					if (!pseudo.selectorItems[0] || pseudo.selectorItems[0].match(parentChildren[i])) {
 						nthLastChildIndex++;

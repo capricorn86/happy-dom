@@ -675,6 +675,23 @@ describe('QuerySelector', () => {
 			expect(elements[2] === container.children[0].children[1].children[2]).toBe(true);
 			expect(elements[3] === container.children[1]).toBe(true);
 			expect(elements[4] === container.children[1].children[0]).toBe(true);
+
+			// Check that cache works
+
+			container.innerHTML = '';
+
+			const elements2 = container.querySelectorAll(':last-of-type');
+			expect(elements2.length).toBe(0);
+
+			container.innerHTML = QuerySelectorHTML;
+
+			const elements3 = container.querySelectorAll(':last-of-type');
+			expect(elements3.length).toBe(5);
+			expect(elements3[0] === container.children[0].children[0]).toBe(true);
+			expect(elements3[1] === container.children[0].children[1]).toBe(true);
+			expect(elements3[2] === container.children[0].children[1].children[2]).toBe(true);
+			expect(elements3[3] === container.children[1]).toBe(true);
+			expect(elements3[4] === container.children[1].children[0]).toBe(true);
 		});
 
 		it('Returns all input elements matching "input[name="op"]:checked".', () => {
@@ -691,13 +708,16 @@ describe('QuerySelector', () => {
 			expect(elements.length).toBe(1);
 			expect(elements[0] === container.children[0].children[0]).toBe(true);
 
-			const input = <HTMLInputElement>elements[0];
+			const radio1 = <HTMLInputElement>elements[0];
 
-			expect(input.value).toBe('one');
+			expect(radio1.value).toBe('one');
 
-			const twoEl = <HTMLInputElement>container.querySelector("input[value='two']");
+			const radio2 = <HTMLInputElement>container.querySelector("input[value='two']");
 
-			twoEl.checked = true;
+			radio2.checked = true;
+
+			// Here we also tests that cache works
+
 			elements = container.querySelectorAll('input[name="op"]:checked');
 
 			expect(elements.length).toBe(1);
@@ -713,6 +733,25 @@ describe('QuerySelector', () => {
 			expect(elements.length).toBe(2);
 			expect(elements[0] === container.children[0].children[1].children[1]).toBe(true);
 			expect(elements[1] === container.children[0].children[1].children[2]).toBe(true);
+
+			// Check that cache works
+
+			(<HTMLInputElement>elements[0]).setAttribute('type', 'hidden');
+			(<HTMLInputElement>elements[1]).setAttribute('type', 'hidden');
+
+			const elements2 = container.querySelectorAll('span:not([type=hidden])');
+
+			expect(elements2.length).toBe(0);
+
+			(<HTMLInputElement>elements[0]).setAttribute('type', 'text');
+			(<HTMLInputElement>elements[1]).setAttribute('type', 'text');
+
+			const elements3 = container.querySelectorAll('span:not([type=hidden])');
+
+			expect(elements3.length).toBe(2);
+
+			expect(elements3[0] === container.children[0].children[1].children[1]).toBe(true);
+			expect(elements3[1] === container.children[0].children[1].children[2]).toBe(true);
 		});
 
 		it('Returns all elements matching "input:not([type]):not([list])" to verify that "screen.getByRole(\'checkbox\')" works in Testing Library.', () => {
@@ -876,7 +915,6 @@ describe('QuerySelector', () => {
 		it('Returns all elements matching ":nth-last-child(n+1 of span)".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorNthChildHTML;
-			debugger;
 			const elements = container.querySelectorAll(':nth-last-child(n+1 of span)');
 
 			expect(
@@ -1134,21 +1172,22 @@ describe('QuerySelector', () => {
 			document.appendChild(section);
 
 			window.location.hash = '#id';
-			expect(section.querySelector(':target')).toBe(headline);
-			expect(section.querySelector('h2:target')).toBe(headline);
-			expect(section.querySelector('h3:target')).toBeNull();
+			expect(section.querySelector(':target') === headline).toBe(true);
+			expect(section.querySelector('h2:target') === headline).toBe(true);
+			expect(section.querySelector('h3:target') === null).toBe(true);
 
+			// Here we also test that cache works
 			window.location.hash = '#something-else';
-			expect(section.querySelector(':target')).toBeNull();
-			expect(section.querySelector('h2:target')).toBeNull();
-			expect(section.querySelector('h3:target')).toBeNull();
+			expect(section.querySelector(':target') === null).toBe(true);
+			expect(section.querySelector('h2:target') === null).toBe(true);
+			expect(section.querySelector('h3:target') === null).toBe(true);
 
 			// Detached Elements should not match
 			window.location.hash = '#id';
 			section.remove();
-			expect(section.querySelector(':target')).toBeNull();
-			expect(section.querySelector('h2:target')).toBeNull();
-			expect(section.querySelector('h3:target')).toBeNull();
+			expect(section.querySelector(':target') === null).toBe(true);
+			expect(section.querySelector('h2:target') === null).toBe(true);
+			expect(section.querySelector('h3:target') === null).toBe(true);
 		});
 
 		it('Returns an element by id matching "#:id:".', () => {
