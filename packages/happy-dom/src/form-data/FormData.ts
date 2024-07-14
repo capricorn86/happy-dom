@@ -88,7 +88,9 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 */
 	public append(name: string, value: string | Blob | File, filename?: string): void {
 		if (filename && !(value instanceof File)) {
-			throw new Error('Failed to execute "append" on "FormData": parameter 2 is not of type "Blob".');
+			throw new Error(
+				'Failed to execute "append" on "FormData": parameter 2 is not of type "Blob".'
+			);
 		}
 		this.#entries.push({
 			name,

@@ -134,7 +134,9 @@ describe('FormData', () => {
 
 		it('Throws an error if a filename is provided and the value is not a file.', () => {
 			const formData = new window.FormData();
-			expect(() => formData.append('key1', 'value1', 'filename')).toThrow('Failed to execute "append" on "FormData": parameter 2 is not of type "Blob".');
+			expect(() => formData.append('key1', 'value1', 'filename')).toThrow(
+				'Failed to execute "append" on "FormData": parameter 2 is not of type "Blob".'
+			);
 		});
 	});
 
