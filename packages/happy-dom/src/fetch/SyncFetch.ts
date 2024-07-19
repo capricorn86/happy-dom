@@ -125,10 +125,10 @@ export default class SyncFetch {
 
 		if (!this.compliesWithCrossOriginPolicy()) {
 			this.#window.console.warn(
-				`Cross-Origin Request Blocked: The Same Origin Policy dissallows reading the remote resource at "${this.request.url}".`
+				`Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at "${this.request.url}".`
 			);
 			throw new DOMException(
-				`Cross-Origin Request Blocked: The Same Origin Policy dissallows reading the remote resource at "${this.request.url}".`,
+				`Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at "${this.request.url}".`,
 				DOMExceptionNameEnum.networkError
 			);
 		}
