@@ -57,6 +57,7 @@ export default class Fetch {
 	private disableCrossOriginPolicy: boolean;
 	#browserFrame: IBrowserFrame;
 	#window: BrowserWindow;
+	#unfilteredHeaders: Headers | null = null;
 
 	/**
 	 * Constructor.
@@ -70,6 +71,7 @@ export default class Fetch {
 	 * @param [options.contentType] Content Type.
 	 * @param [options.disableCache] Disables the use of cached responses. It will still store the response in the cache.
 	 * @param [options.disableCrossOriginPolicy] Disables the Cross-Origin policy.
+	 * @param [options.unfilteredHeaders] Unfiltered headers - necessary for preflight requests.
 	 */
 	constructor(options: {
 		browserFrame: IBrowserFrame;
@@ -80,9 +82,11 @@ export default class Fetch {
 		contentType?: string;
 		disableCache?: boolean;
 		disableCrossOriginPolicy?: boolean;
+		unfilteredHeaders?: Headers;
 	}) {
 		this.#browserFrame = options.browserFrame;
 		this.#window = options.window;
+		this.#unfilteredHeaders = options.unfilteredHeaders ?? null;
 		this.request =
 			typeof options.url === 'string' || options.url instanceof URL
 				? new options.browserFrame.window.Request(options.url, options.init)
@@ -276,22 +280,29 @@ export default class Fetch {
 		const requestHeaders = [];
 
 		for (const [header] of this.request.headers) {
-			requestHeaders.push(header);
+			requestHeaders.push(header.toLowerCase());
+		}
+
+		const corsHeaders = new Headers({
+			'Access-Control-Request-Method': this.request.method,
+			Origin: this.#window.location.origin
+		});
+
+		if (requestHeaders.length > 0) {
+			// This intentionally does not use "combine" (comma + space), as the spec dictates.
+			// See https://fetch.spec.whatwg.org/#cors-preflight-fetch for more details.
+			// Sorting the headers is not required, but can optimize cache hits.
+			corsHeaders.set('Access-Control-Request-Headers', requestHeaders.slice().sort().join(','));
 		}
 
 		const fetch = new Fetch({
 			browserFrame: this.#browserFrame,
 			window: this.#window,
 			url: this.request.url,
-			init: {
-				method: 'OPTIONS',
-				headers: new Headers({
-					'Access-Control-Request-Method': this.request.method,
-					'Access-Control-Request-Headers': requestHeaders.join(', ')
-				})
-			},
+			init: { method: 'OPTIONS' },
 			disableCache: true,
-			disableCrossOriginPolicy: true
+			disableCrossOriginPolicy: true,
+			unfilteredHeaders: corsHeaders
 		});
 
 		const response = <Response>await fetch.send();
@@ -373,13 +384,13 @@ export default class Fetch {
 			this.request.signal.addEventListener('abort', this.listeners.onSignalAbort);
 
 			const send = (this.request[PropertySymbol.url].protocol === 'https:' ? HTTPS : HTTP).request;
-
 			this.nodeRequest = send(this.request[PropertySymbol.url].href, {
 				method: this.request.method,
 				headers: FetchRequestHeaderUtility.getRequestHeaders({
 					browserFrame: this.#browserFrame,
 					window: this.#window,
-					request: this.request
+					request: this.request,
+					baseHeaders: this.#unfilteredHeaders
 				}),
 				agent: false,
 				rejectUnauthorized: true,
