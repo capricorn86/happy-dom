@@ -82,7 +82,7 @@ export default class Node extends EventTarget {
 	public [PropertySymbol.mutationListeners]: IMutationListener[] = [];
 	public [PropertySymbol.nodeArray]: Node[] = [];
 	public [PropertySymbol.elementArray]: Element[] = [];
-	public [PropertySymbol.childNodes] = new NodeList<Node>(this[PropertySymbol.nodeArray]);
+	public [PropertySymbol.childNodes]: NodeList<Node> | null = null;
 	public [PropertySymbol.cache]: {
 		querySelector: Map<string, ICachedQuerySelectorResult>;
 		querySelectorAll: Map<string, ICachedQuerySelectorAllResult>;
@@ -177,6 +177,9 @@ export default class Node extends EventTarget {
 	 * @returns Child nodes list.
 	 */
 	public get childNodes(): NodeList<Node> {
+		if (!this[PropertySymbol.childNodes]) {
+			this[PropertySymbol.childNodes] = new NodeList<Node>(this[PropertySymbol.nodeArray]);
+		}
 		return this[PropertySymbol.childNodes];
 	}
 
