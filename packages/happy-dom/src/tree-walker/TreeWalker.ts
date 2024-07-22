@@ -87,7 +87,7 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public firstChild(): Node {
-		const childNodes = this.currentNode ? (<Node>this.currentNode)[PropertySymbol.childNodes] : [];
+		const childNodes = this.currentNode ? (<Node>this.currentNode)[PropertySymbol.nodeArray] : [];
 
 		if (childNodes.length > 0) {
 			this.currentNode = childNodes[0];
@@ -108,7 +108,7 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public lastChild(): Node {
-		const childNodes = this.currentNode ? (<Node>this.currentNode)[PropertySymbol.childNodes] : [];
+		const childNodes = this.currentNode ? (<Node>this.currentNode)[PropertySymbol.nodeArray] : [];
 
 		if (childNodes.length > 0) {
 			this.currentNode = childNodes[childNodes.length - 1];

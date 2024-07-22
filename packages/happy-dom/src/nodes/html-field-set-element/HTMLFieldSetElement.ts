@@ -1,13 +1,12 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IHTMLCollection from '../element/IHTMLCollection.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import HTMLInputElement from '../html-input-element/HTMLInputElement.js';
 import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
 import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
 import HTMLButtonElement from '../html-button-element/HTMLButtonElement.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
-import Element from '../element/Element.js';
+import QuerySelector from '../../query-selector/QuerySelector.js';
 
 type THTMLFieldSetElement =
 	| HTMLInputElement
@@ -25,7 +24,7 @@ export default class HTMLFieldSetElement extends HTMLElement {
 	public declare cloneNode: (deep?: boolean) => HTMLFieldSetElement;
 
 	// Internal properties
-	public [PropertySymbol.elements]: IHTMLCollection<THTMLFieldSetElement> | null = null;
+	public [PropertySymbol.elements]: HTMLCollection<THTMLFieldSetElement> | null = null;
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
 
 	/**
@@ -33,17 +32,16 @@ export default class HTMLFieldSetElement extends HTMLElement {
 	 *
 	 * @returns Elements.
 	 */
-	public get elements(): IHTMLCollection<THTMLFieldSetElement> {
+	public get elements(): HTMLCollection<THTMLFieldSetElement> {
 		if (!this[PropertySymbol.elements]) {
-			this[PropertySymbol.elements] = new HTMLCollection<THTMLFieldSetElement>();
-			this[PropertySymbol.elements][PropertySymbol.observe](this, {
-				subtree: true,
-				filter: (item: Element) =>
-					item.tagName === 'INPUT' ||
-					item.tagName === 'BUTTON' ||
-					item.tagName === 'TEXTAREA' ||
-					item.tagName === 'SELECT'
-			});
+			this[PropertySymbol.elements] = new HTMLCollection<THTMLFieldSetElement>(
+				() =>
+					<THTMLFieldSetElement[]>(
+						QuerySelector.querySelectorAll(this, 'input,button,textarea,select')[
+							PropertySymbol.elements
+						]
+					)
+			);
 		}
 		return this[PropertySymbol.elements];
 	}
@@ -54,7 +52,14 @@ export default class HTMLFieldSetElement extends HTMLElement {
 	 * @returns Form.
 	 */
 	public get form(): HTMLFormElement {
-		return <HTMLFormElement>this[PropertySymbol.formNode];
+		if (this[PropertySymbol.formNode]) {
+			return this[PropertySymbol.formNode];
+		}
+		const id = this.attributes['form']?.[PropertySymbol.value];
+		if (!id || !this[PropertySymbol.isConnected]) {
+			return null;
+		}
+		return <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(id);
 	}
 
 	/**

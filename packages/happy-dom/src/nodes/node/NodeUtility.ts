@@ -48,7 +48,7 @@ export default class NodeUtility {
 			return true;
 		}
 
-		if (!(<Node>ancestorNode)[PropertySymbol.childNodes].length) {
+		if (!(<Node>ancestorNode)[PropertySymbol.nodeArray].length) {
 			return false;
 		}
 
@@ -77,8 +77,8 @@ export default class NodeUtility {
 			parent = parent[PropertySymbol.parentNode]
 				? parent[PropertySymbol.parentNode]
 				: includeShadowRoots && (<ShadowRoot>parent).host
-					? (<ShadowRoot>parent).host
-					: null;
+				? (<ShadowRoot>parent).host
+				: null;
 		}
 
 		return false;
@@ -134,7 +134,7 @@ export default class NodeUtility {
 				return (<Text | Comment>node).data.length;
 
 			default:
-				return (<Node>node)[PropertySymbol.childNodes].length;
+				return (<Node>node)[PropertySymbol.nodeArray].length;
 		}
 	}
 
@@ -293,15 +293,15 @@ export default class NodeUtility {
 		}
 
 		if (
-			(<Node>nodeA)[PropertySymbol.childNodes].length !==
-			(<Node>nodeB)[PropertySymbol.childNodes].length
+			(<Node>nodeA)[PropertySymbol.nodeArray].length !==
+			(<Node>nodeB)[PropertySymbol.nodeArray].length
 		) {
 			return false;
 		}
 
-		for (let i = 0; i < (<Node>nodeA)[PropertySymbol.childNodes].length; i++) {
-			const childNodeA = (<Node>nodeA)[PropertySymbol.childNodes][i];
-			const childNodeB = (<Node>nodeB)[PropertySymbol.childNodes][i];
+		for (let i = 0; i < (<Node>nodeA)[PropertySymbol.nodeArray].length; i++) {
+			const childNodeA = (<Node>nodeA)[PropertySymbol.nodeArray][i];
+			const childNodeB = (<Node>nodeB)[PropertySymbol.nodeArray][i];
 
 			if (!NodeUtility.isEqualNode(childNodeA, childNodeB)) {
 				return false;

@@ -13,21 +13,6 @@ export default class HTMLDetailsElement extends HTMLElement {
 	public ontoggle: (event: Event) => void | null = null;
 
 	/**
-	 * Constructor.
-	 */
-	constructor() {
-		super();
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'set',
-			this.#onSetAttribute.bind(this)
-		);
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'remove',
-			this.#onRemoveAttribute.bind(this)
-		);
-	}
-
-	/**
 	 * Returns the open attribute.
 	 */
 	public get open(): boolean {
@@ -48,12 +33,13 @@ export default class HTMLDetailsElement extends HTMLElement {
 	}
 
 	/**
-	 * Triggered when an attribute is set.
-	 *
-	 * @param attribute Attribute
-	 * @param replacedAttribute Replaced item
+	 * @override
 	 */
-	#onSetAttribute(attribute: Attr, replacedAttribute: Attr | null): void {
+	public override [PropertySymbol.onSetAttribute](
+		attribute: Attr,
+		replacedAttribute: Attr | null
+	): void {
+		super[PropertySymbol.onSetAttribute](attribute, replacedAttribute);
 		if (attribute[PropertySymbol.name] === 'open') {
 			if (attribute[PropertySymbol.value] !== replacedAttribute?.[PropertySymbol.value]) {
 				this.dispatchEvent(new Event('toggle'));
@@ -62,11 +48,10 @@ export default class HTMLDetailsElement extends HTMLElement {
 	}
 
 	/**
-	 * Triggered when an attribute is removed.
-	 *
-	 * @param removedAttribute Removed attribute.
+	 * @override
 	 */
-	#onRemoveAttribute(removedAttribute: Attr): void {
+	public override [PropertySymbol.onRemoveAttribute](removedAttribute: Attr): void {
+		super[PropertySymbol.onRemoveAttribute](removedAttribute);
 		if (removedAttribute && removedAttribute[PropertySymbol.name] === 'open') {
 			this.dispatchEvent(new Event('toggle'));
 		}

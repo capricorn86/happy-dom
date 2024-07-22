@@ -10,11 +10,9 @@ import SelectorParser from './SelectorParser.js';
 import ISelectorMatch from './ISelectorMatch.js';
 import IHTMLElementTagNameMap from '../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../config/ISVGElementTagNameMap.js';
-import IHTMLCollection from '../nodes/element/IHTMLCollection.js';
-import INodeList from '../nodes/node/INodeList.js';
-import ICachedQuerySelectorAllItem from '../nodes/node/ICachedQuerySelectorAllItem.js';
-import ICachedQuerySelectorItem from '../nodes/node/ICachedQuerySelectorItem.js';
-import ICachedMatchesItem from '../nodes/node/ICachedMatchesItem.js';
+import ICachedQuerySelectorAllItem from '../nodes/node/ICachedQuerySelectorAllResult.js';
+import ICachedQuerySelectorItem from '../nodes/node/ICachedQuerySelectorResult.js';
+import ICachedMatchesItem from '../nodes/node/ICachedMatchesResult.js';
 
 type DocumentPositionAndElement = {
 	documentPosition: string;
@@ -78,7 +76,7 @@ export default class QuerySelector {
 	public static querySelectorAll(
 		node: Element | Document | DocumentFragment,
 		selector: string
-	): INodeList<Element> {
+	): NodeList<Element> {
 		if (<string>selector === '') {
 			throw new Error(
 				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': The provided selector is empty.`
@@ -86,11 +84,11 @@ export default class QuerySelector {
 		}
 
 		if (selector === null || selector === undefined) {
-			return new NodeList<Element>();
+			return new NodeList<Element>([]);
 		}
 
-		const cache = node[PropertySymbol.querySelectorAllCache];
-		const cachedResult = cache.items.get(selector);
+		const cache = node[PropertySymbol.cache].querySelectorAll;
+		const cachedResult = cache.get(selector);
 
 		if (cachedResult?.result) {
 			const result = cachedResult.result.deref();
@@ -106,26 +104,25 @@ export default class QuerySelector {
 		}
 
 		const groups = SelectorParser.getSelectorGroups(selector);
-		const nodeList: INodeList<Element> = new NodeList<Element>();
+		const items: Element[] = [];
+		const nodeList = new NodeList<Element>(items);
 		const matchesMap: Map<string, Element> = new Map();
 		const matchedPositions: string[] = [];
 		const cachedItem = {
 			result: new WeakRef(nodeList)
 		};
-		node[PropertySymbol.querySelectorAllCache].items.set(selector, cachedItem);
+		node[PropertySymbol.cache].querySelectorAll.set(selector, cachedItem);
 
 		if (node[PropertySymbol.isConnected]) {
 			// Document is affected for the ":target" selector
-			(node[PropertySymbol.ownerDocument] || node)[
-				PropertySymbol.querySelectorAllCache
-			].affectedItems.push(cachedItem);
+			(node[PropertySymbol.ownerDocument] || node)[PropertySymbol.affectsCache].push(cachedItem);
 		}
 
 		for (const items of groups) {
 			const matches =
 				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
 					? this.findAll(<Element>node, [<Element>node], items, cachedItem)
-					: this.findAll(null, (<Element>node)[PropertySymbol.children], items, cachedItem);
+					: this.findAll(null, (<Element>node)[PropertySymbol.elementArray], items, cachedItem);
 			for (const match of matches) {
 				if (!matchesMap.has(match.documentPosition)) {
 					matchesMap.set(match.documentPosition, match.element);
@@ -135,8 +132,9 @@ export default class QuerySelector {
 		}
 
 		const keys = matchedPositions.sort();
+
 		for (let i = 0, max = keys.length; i < max; i++) {
-			nodeList[PropertySymbol.addItem](matchesMap.get(keys[i]));
+			items.push(matchesMap.get(keys[i]));
 		}
 
 		return nodeList;
@@ -199,7 +197,7 @@ export default class QuerySelector {
 			return null;
 		}
 
-		const cachedResult = node[PropertySymbol.querySelectorCache].items.get(selector);
+		const cachedResult = node[PropertySymbol.cache].querySelector.get(selector);
 
 		if (cachedResult?.result) {
 			const result = cachedResult.result.deref();
@@ -220,20 +218,18 @@ export default class QuerySelector {
 			}
 		};
 
-		node[PropertySymbol.querySelectorCache].items.set(selector, cachedItem);
+		node[PropertySymbol.cache].querySelector.set(selector, cachedItem);
 
 		if (node[PropertySymbol.isConnected]) {
 			// Document is affected for the ":target" selector
-			(node[PropertySymbol.ownerDocument] || node)[
-				PropertySymbol.querySelectorCache
-			].affectedItems.push(cachedItem);
+			(node[PropertySymbol.ownerDocument] || node)[PropertySymbol.affectsCache].push(cachedItem);
 		}
 
 		for (const items of SelectorParser.getSelectorGroups(selector)) {
 			const match =
 				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
 					? this.findFirst(<Element>node, [<Element>node], items, cachedItem)
-					: this.findFirst(null, (<Element>node)[PropertySymbol.children], items, cachedItem);
+					: this.findFirst(null, (<Element>node)[PropertySymbol.elementArray], items, cachedItem);
 
 			if (match) {
 				cachedItem.result = new WeakRef(match);
@@ -269,7 +265,7 @@ export default class QuerySelector {
 		}
 
 		const ignoreErrors = options?.ignoreErrors;
-		const cachedResult = element[PropertySymbol.matchesCache].items.get(selector);
+		const cachedResult = element[PropertySymbol.cache].matches.get(selector);
 
 		if (cachedResult?.result) {
 			return cachedResult.result.match;
@@ -288,7 +284,7 @@ export default class QuerySelector {
 			result: { match: null }
 		};
 
-		element[PropertySymbol.matchesCache].items.set(selector, cachedItem);
+		element[PropertySymbol.cache].matches.set(selector, cachedItem);
 
 		for (const items of SelectorParser.getSelectorGroups(selector, options)) {
 			const result = this.matchSelector(element, element, items.reverse(), cachedItem);
@@ -333,7 +329,7 @@ export default class QuerySelector {
 				case SelectorCombinatorEnum.adjacentSibling:
 					const previousElementSibling = currentElement.previousElementSibling;
 					if (previousElementSibling) {
-						previousElementSibling[PropertySymbol.matchesCache].affectedItems.push(cachedItem);
+						previousElementSibling[PropertySymbol.affectsCache].push(cachedItem);
 						const match = this.matchSelector(
 							targetElement,
 							previousElementSibling,
@@ -351,7 +347,7 @@ export default class QuerySelector {
 				case SelectorCombinatorEnum.descendant:
 					const parentElement = currentElement.parentElement;
 					if (parentElement) {
-						parentElement[PropertySymbol.matchesCache].affectedItems.push(cachedItem);
+						parentElement[PropertySymbol.affectsCache].push(cachedItem);
 						const match = this.matchSelector(
 							targetElement,
 							parentElement,
@@ -397,7 +393,7 @@ export default class QuerySelector {
 	 */
 	private static findAll(
 		rootElement: Element,
-		children: Element[] | IHTMLCollection<Element>,
+		children: Element[],
 		selectorItems: SelectorItem[],
 		cachedItem: ICachedQuerySelectorAllItem,
 		documentPosition?: string
@@ -408,10 +404,10 @@ export default class QuerySelector {
 
 		for (let i = 0, max = children.length; i < max; i++) {
 			const child = children[i];
-			const childrenOfChild = (<Element>child)[PropertySymbol.children];
+			const childrenOfChild = (<Element>child)[PropertySymbol.elementArray];
 			const position = (documentPosition ? documentPosition + '>' : '') + String.fromCharCode(i);
 
-			child[PropertySymbol.querySelectorAllCache].affectedItems.push(cachedItem);
+			child[PropertySymbol.affectsCache].push(cachedItem);
 
 			if (selectorItem.match(child)) {
 				if (!nextSelectorItem) {
@@ -473,7 +469,7 @@ export default class QuerySelector {
 	 */
 	private static findFirst(
 		rootElement: Element,
-		children: Element[] | IHTMLCollection<Element>,
+		children: Element[],
 		selectorItems: SelectorItem[],
 		cachedItem: ICachedQuerySelectorItem
 	): Element {
@@ -481,9 +477,9 @@ export default class QuerySelector {
 		const nextSelectorItem = selectorItems[1];
 
 		for (const child of children) {
-			const childrenOfChild = (<Element>child)[PropertySymbol.children];
+			const childrenOfChild = (<Element>child)[PropertySymbol.elementArray];
 
-			child[PropertySymbol.querySelectorCache].affectedItems.push(cachedItem);
+			child[PropertySymbol.affectsCache].push(cachedItem);
 
 			if (selectorItem.match(child)) {
 				if (!nextSelectorItem) {

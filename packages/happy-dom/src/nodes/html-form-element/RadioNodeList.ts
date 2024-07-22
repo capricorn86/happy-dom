@@ -1,6 +1,7 @@
 import HTMLInputElement from '../html-input-element/HTMLInputElement.js';
 import NodeList from '../node/NodeList.js';
 import THTMLFormControlElement from './THTMLFormControlElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * RadioNodeList
@@ -14,7 +15,7 @@ export default class RadioNodeList extends NodeList<THTMLFormControlElement> {
 	 * @returns Value.
 	 */
 	public get value(): string {
-		for (const node of this) {
+		for (const node of this[PropertySymbol.items]) {
 			if ((<HTMLInputElement>node).checked) {
 				return (<HTMLInputElement>node).value;
 			}

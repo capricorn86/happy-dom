@@ -20,9 +20,7 @@ import HTMLElement from '../html-element/HTMLElement.js';
 import Comment from '../comment/Comment.js';
 import Text from '../text/Text.js';
 import NodeList from '../node/NodeList.js';
-import INodeList from '../node/INodeList.js';
 import HTMLCollection from '../element/HTMLCollection.js';
-import IHTMLCollection from '../element/IHTMLCollection.js';
 import HTMLLinkElement from '../html-link-element/HTMLLinkElement.js';
 import HTMLStyleElement from '../html-style-element/HTMLStyleElement.js';
 import DocumentReadyStateEnum from './DocumentReadyStateEnum.js';
@@ -44,10 +42,11 @@ import SVGElement from '../svg-element/SVGElement.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLAnchorElement from '../html-anchor-element/HTMLAnchorElement.js';
 import HTMLElementConfig from '../../config/HTMLElementConfig.js';
-import CSSStyleDeclarationPropertyManager from '../../css/declaration/property-manager/CSSStyleDeclarationPropertyManager.js';
 import HTMLHtmlElement from '../html-html-element/HTMLHtmlElement.js';
 import HTMLBodyElement from '../html-body-element/HTMLBodyElement.js';
 import HTMLHeadElement from '../html-head-element/HTMLHeadElement.js';
+import HTMLBaseElement from '../html-base-element/HTMLBaseElement.js';
+import ICachedResult from '../node/ICachedResult.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -56,7 +55,7 @@ const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
  */
 export default class Document extends Node {
 	// Internal properties
-	public [PropertySymbol.children]: IHTMLCollection<Element> = new HTMLCollection<Element>();
+	public [PropertySymbol.children]: HTMLCollection<Element> | null = null;
 	public [PropertySymbol.activeElement]: HTMLElement | SVGElement = null;
 	public [PropertySymbol.nextActiveElement]: HTMLElement | SVGElement = null;
 	public [PropertySymbol.currentScript]: HTMLScriptElement = null;
@@ -71,9 +70,8 @@ export default class Document extends Node {
 	public [PropertySymbol.referrer] = '';
 	public [PropertySymbol.defaultView]: BrowserWindow | null = null;
 	public [PropertySymbol.ownerWindow]: BrowserWindow;
-	public [PropertySymbol.computedStyleCacheReferences]: Array<{
-		result: WeakRef<CSSStyleDeclarationPropertyManager>;
-	}> = [];
+	public [PropertySymbol.forms]: HTMLCollection<HTMLFormElement> | null = null;
+	public [PropertySymbol.affectsComputedStyleCache]: ICachedResult[] = [];
 	public declare cloneNode: (deep?: boolean) => Document;
 
 	// Private properties
@@ -202,8 +200,6 @@ export default class Document extends Node {
 		super();
 		this.#browserFrame = injected.browserFrame;
 		this[PropertySymbol.ownerWindow] = injected.window;
-
-		this[PropertySymbol.children][PropertySymbol.observe](this);
 	}
 
 	/**
@@ -263,7 +259,11 @@ export default class Document extends Node {
 	/**
 	 * Returns document children.
 	 */
-	public get children(): IHTMLCollection<Element> {
+	public get children(): HTMLCollection<Element> {
+		if (!this[PropertySymbol.children]) {
+			const elements = this[PropertySymbol.elementArray];
+			this[PropertySymbol.children] = new HTMLCollection<Element>(() => elements);
+		}
 		return this[PropertySymbol.children];
 	}
 
@@ -283,7 +283,10 @@ export default class Document extends Node {
 	 * @returns Character set.
 	 */
 	public get characterSet(): string {
-		const charset = this.querySelector('meta[charset]')?.getAttributeNS(null, 'charset');
+		const charset = QuerySelector.querySelector(this, 'meta[charset]')?.getAttributeNS(
+			null,
+			'charset'
+		);
 		return charset ? charset : 'UTF-8';
 	}
 
@@ -293,7 +296,7 @@ export default class Document extends Node {
 	 * @returns Title.
 	 */
 	public get title(): string {
-		const element = QuerySelector.querySelector(this, 'title');
+		const element = ParentNodeUtility.getElementById(this, 'title');
 		if (element) {
 			return element.textContent;
 		}
@@ -305,7 +308,7 @@ export default class Document extends Node {
 	 *
 	 */
 	public set title(title: string) {
-		const element = QuerySelector.querySelector(this, 'title');
+		const element = ParentNodeUtility.getElementById(this, 'title');
 		if (element) {
 			element.textContent = title;
 		} else {
@@ -318,15 +321,20 @@ export default class Document extends Node {
 	/**
 	 * Returns a collection of all area elements and a elements in a document with a value for the href attribute.
 	 */
-	public get links(): INodeList<HTMLAnchorElement | HTMLElement> {
-		return <NodeList<HTMLElement>>this.querySelectorAll('a[href],area[href]');
+	public get links(): NodeList<HTMLAnchorElement | HTMLElement> {
+		return <NodeList<HTMLElement>>QuerySelector.querySelectorAll(this, 'a[href],area[href]');
 	}
 
 	/**
 	 * Returns a collection of all form elements in a document.
 	 */
 	public get forms(): HTMLCollection<HTMLFormElement> {
-		return this.getElementsByTagName('form');
+		if (!this[PropertySymbol.forms]) {
+			this[PropertySymbol.forms] = <HTMLCollection<HTMLFormElement>>(
+				ParentNodeUtility.getElementsByTagName(this, 'form')
+			);
+		}
+		return this[PropertySymbol.forms];
 	}
 
 	/**
@@ -335,7 +343,7 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public get childElementCount(): number {
-		return this[PropertySymbol.children].length;
+		return this[PropertySymbol.elementArray].length;
 	}
 
 	/**
@@ -344,7 +352,7 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public get firstElementChild(): Element {
-		return this[PropertySymbol.children][0] ?? null;
+		return this[PropertySymbol.elementArray][0] ?? null;
 	}
 
 	/**
@@ -353,7 +361,7 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public get lastElementChild(): Element {
-		const children = this[PropertySymbol.children];
+		const children = this[PropertySymbol.elementArray];
 		return children[children.length - 1] ?? null;
 	}
 
@@ -400,7 +408,7 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public get documentElement(): HTMLHtmlElement {
-		return QuerySelector.querySelector(this, 'html');
+		return <HTMLHtmlElement>ParentNodeUtility.getElementByTagName(this, 'html');
 	}
 
 	/**
@@ -409,7 +417,7 @@ export default class Document extends Node {
 	 * @returns Document type.
 	 */
 	public get doctype(): DocumentType {
-		for (const node of this[PropertySymbol.childNodes]) {
+		for (const node of this[PropertySymbol.nodeArray]) {
 			if (node instanceof DocumentType) {
 				return node;
 			}
@@ -423,7 +431,7 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public get body(): HTMLBodyElement {
-		return QuerySelector.querySelector(this, 'body');
+		return <HTMLBodyElement>ParentNodeUtility.getElementByTagName(this, 'body');
 	}
 
 	/**
@@ -432,7 +440,7 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public get head(): HTMLHeadElement {
-		return QuerySelector.querySelector(this, 'head');
+		return <HTMLHeadElement>ParentNodeUtility.getElementByTagName(this, 'head');
 	}
 
 	/**
@@ -442,7 +450,7 @@ export default class Document extends Node {
 	 */
 	public get styleSheets(): CSSStyleSheet[] {
 		const styles = <NodeList<HTMLLinkElement | HTMLStyleElement>>(
-			this.querySelectorAll('link[rel="stylesheet"][href],style')
+			QuerySelector.querySelectorAll(this, 'link[rel="stylesheet"][href],style')
 		);
 		const styleSheets = [];
 		for (const style of styles) {
@@ -518,7 +526,7 @@ export default class Document extends Node {
 	 * @returns Base URI.
 	 */
 	public get baseURI(): string {
-		const element = QuerySelector.querySelector(this, 'base');
+		const element = <HTMLBaseElement>ParentNodeUtility.getElementByTagName(this, 'base');
 		if (element) {
 			return element.href;
 		}
@@ -701,7 +709,7 @@ export default class Document extends Node {
 	 * @param className Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByClassName(className: string): IHTMLCollection<Element> {
+	public getElementsByClassName(className: string): HTMLCollection<Element> {
 		return ParentNodeUtility.getElementsByClassName(this, className);
 	}
 
@@ -731,7 +739,7 @@ export default class Document extends Node {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagName(tagName: string): IHTMLCollection<Element>;
+	public getElementsByTagName(tagName: string): HTMLCollection<Element>;
 
 	/**
 	 * Returns an elements by tag name.
@@ -739,7 +747,7 @@ export default class Document extends Node {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagName(tagName: string): IHTMLCollection<Element> {
+	public getElementsByTagName(tagName: string): HTMLCollection<Element> {
 		return ParentNodeUtility.getElementsByTagName(this, tagName);
 	}
 
@@ -753,7 +761,7 @@ export default class Document extends Node {
 	public getElementsByTagNameNS<K extends keyof IHTMLElementTagNameMap>(
 		namespaceURI: 'http://www.w3.org/1999/xhtml',
 		tagName: K
-	): IHTMLCollection<IHTMLElementTagNameMap[K]>;
+	): HTMLCollection<IHTMLElementTagNameMap[K]>;
 
 	/**
 	 * Returns an elements by tag name and namespace.
@@ -765,7 +773,7 @@ export default class Document extends Node {
 	public getElementsByTagNameNS<K extends keyof ISVGElementTagNameMap>(
 		namespaceURI: 'http://www.w3.org/2000/svg',
 		tagName: K
-	): IHTMLCollection<ISVGElementTagNameMap[K]>;
+	): HTMLCollection<ISVGElementTagNameMap[K]>;
 
 	/**
 	 * Returns an elements by tag name and namespace.
@@ -774,7 +782,7 @@ export default class Document extends Node {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<Element>;
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): HTMLCollection<Element>;
 
 	/**
 	 * Returns an elements by tag name and namespace.
@@ -783,7 +791,7 @@ export default class Document extends Node {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public getElementsByTagNameNS(namespaceURI: string, tagName: string): IHTMLCollection<Element> {
+	public getElementsByTagNameNS(namespaceURI: string, tagName: string): HTMLCollection<Element> {
 		return ParentNodeUtility.getElementsByTagNameNS(this, namespaceURI, tagName);
 	}
 
@@ -804,22 +812,7 @@ export default class Document extends Node {
 	 * @param name
 	 */
 	public getElementsByName(name: string): NodeList<Element> {
-		const getElementsByName = (
-			parentNode: Element | DocumentFragment | Document,
-			name: string
-		): NodeList<Element> => {
-			const matches = new NodeList<Element>();
-			for (const child of (<Element | Document>parentNode)[PropertySymbol.children]) {
-				if (child.getAttributeNS(null, 'name') === name) {
-					matches[PropertySymbol.addItem](child);
-				}
-				for (const match of getElementsByName(<Element>child, name)) {
-					matches[PropertySymbol.addItem](match);
-				}
-			}
-			return matches;
-		};
-		return getElementsByName(this, name);
+		return QuerySelector.querySelectorAll(this, `[name="${name}"]`);
 	}
 
 	/**
@@ -843,7 +836,7 @@ export default class Document extends Node {
 			let documentElement = null;
 			let documentTypeNode = null;
 
-			for (const node of root[PropertySymbol.childNodes]) {
+			for (const node of root[PropertySymbol.nodeArray]) {
 				if (node['tagName'] === 'HTML') {
 					documentElement = node;
 				} else if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
@@ -863,8 +856,8 @@ export default class Document extends Node {
 
 					this.appendChild(documentElement);
 
-					const head = QuerySelector.querySelector(this, 'head');
-					let body = QuerySelector.querySelector(this, 'body');
+					const head = ParentNodeUtility.getElementByTagName(this, 'head');
+					let body = ParentNodeUtility.getElementByTagName(this, 'body');
 
 					if (!body) {
 						body = this.createElement('body');
@@ -875,10 +868,10 @@ export default class Document extends Node {
 						documentElement.insertBefore(this.createElement('head'), body);
 					}
 				} else {
-					const rootBody = QuerySelector.querySelector(root, 'body');
-					const body = QuerySelector.querySelector(this, 'body');
+					const rootBody = ParentNodeUtility.getElementByTagName(root, 'body');
+					const body = ParentNodeUtility.getElementByTagName(this, 'body');
 					if (rootBody && body) {
-						const childNodes = rootBody[PropertySymbol.childNodes];
+						const childNodes = rootBody[PropertySymbol.nodeArray];
 						while (childNodes.length) {
 							body.appendChild(childNodes[0]);
 						}
@@ -886,9 +879,9 @@ export default class Document extends Node {
 				}
 
 				// Remaining nodes outside the <html> element are added to the <body> element.
-				const body = QuerySelector.querySelector(this, 'body');
+				const body = ParentNodeUtility.getElementByTagName(this, 'body');
 				if (body) {
-					const childNodes = root[PropertySymbol.childNodes];
+					const childNodes = root[PropertySymbol.nodeArray];
 					while (childNodes.length) {
 						const child = childNodes[0];
 						if (
@@ -903,7 +896,7 @@ export default class Document extends Node {
 				const documentElement = this.createElement('html');
 				const bodyElement = this.createElement('body');
 				const headElement = this.createElement('head');
-				const childNodes = root[PropertySymbol.childNodes];
+				const childNodes = root[PropertySymbol.nodeArray];
 
 				while (childNodes.length) {
 					bodyElement.appendChild(childNodes[0]);
@@ -915,9 +908,9 @@ export default class Document extends Node {
 				this.appendChild(documentElement);
 			}
 		} else {
-			const bodyNode = QuerySelector.querySelector(root, 'body');
-			const body = QuerySelector.querySelector(this, 'body');
-			const childNodes = (<Element>(bodyNode || root))[PropertySymbol.childNodes];
+			const bodyNode = ParentNodeUtility.getElementByTagName(root, 'body');
+			const body = ParentNodeUtility.getElementByTagName(this, 'body');
+			const childNodes = (<Element>(bodyNode || root))[PropertySymbol.nodeArray];
 			while (childNodes.length) {
 				body.appendChild(childNodes[0]);
 			}
@@ -941,7 +934,7 @@ export default class Document extends Node {
 			}
 		}
 
-		const childNodes = this[PropertySymbol.childNodes];
+		const childNodes = this[PropertySymbol.nodeArray];
 		while (childNodes.length) {
 			this.removeChild(childNodes[0]);
 		}
@@ -1337,16 +1330,6 @@ export default class Document extends Node {
 	}
 
 	/**
-	 * Clears computed style cache.
-	 */
-	public [PropertySymbol.clearComputedStyleCache](): void {
-		for (const item of this[PropertySymbol.computedStyleCacheReferences]) {
-			item.result = null;
-		}
-		this[PropertySymbol.computedStyleCacheReferences] = [];
-	}
-
-	/**
 	 * Imports a node.
 	 *
 	 * @param node Node.
@@ -1354,7 +1337,7 @@ export default class Document extends Node {
 	#importNode(node: Node): void {
 		node[PropertySymbol.ownerDocument] = this;
 
-		for (const child of node[PropertySymbol.childNodes]) {
+		for (const child of node[PropertySymbol.nodeArray]) {
 			this.#importNode(child);
 		}
 	}

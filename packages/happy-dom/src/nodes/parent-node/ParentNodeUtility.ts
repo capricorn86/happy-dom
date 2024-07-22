@@ -5,8 +5,9 @@ import Document from '../document/Document.js';
 import Element from '../element/Element.js';
 import Node from '../node/Node.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
-import IHTMLCollection from '../element/IHTMLCollection.js';
 import HTMLCollection from '../element/HTMLCollection.js';
+import QuerySelector from '../../query-selector/QuerySelector.js';
+import ICachedResult from '../node/ICachedResult.js';
 
 /**
  * Parent node utility.
@@ -49,7 +50,7 @@ export default class ParentNodeUtility {
 				const childNodes = XMLParser.parse(
 					<Document>parentNode[PropertySymbol.ownerDocument],
 					node
-				)[PropertySymbol.childNodes];
+				)[PropertySymbol.nodeArray];
 
 				while (childNodes.length) {
 					parentNode.insertBefore(childNodes[0], firstChild);
@@ -70,7 +71,7 @@ export default class ParentNodeUtility {
 		parentNode: Element | Document | DocumentFragment,
 		...nodes: (string | Node)[]
 	): void {
-		const childNodes = (<DocumentFragment>parentNode)[PropertySymbol.childNodes];
+		const childNodes = (<DocumentFragment>parentNode)[PropertySymbol.nodeArray];
 
 		while (childNodes.length) {
 			parentNode.removeChild(childNodes[0]);
@@ -89,15 +90,10 @@ export default class ParentNodeUtility {
 	public static getElementsByClassName(
 		parentNode: Element | DocumentFragment | Document,
 		className: string
-	): IHTMLCollection<Element> {
-		const htmlCollection = new HTMLCollection();
-
-		htmlCollection[PropertySymbol.observe](parentNode, {
-			subtree: true,
-			filter: (item: Element) => (<Element>item).className.split(' ').includes(className)
-		});
-
-		return htmlCollection;
+	): HTMLCollection<Element> {
+		return new HTMLCollection(
+			() => QuerySelector.querySelectorAll(parentNode, `.${className}`)[PropertySymbol.items]
+		);
 	}
 
 	/**
@@ -110,17 +106,52 @@ export default class ParentNodeUtility {
 	public static getElementsByTagName(
 		parentNode: Element | DocumentFragment | Document,
 		tagName: string
-	): IHTMLCollection<Element> {
+	): HTMLCollection<Element> {
 		const upperTagName = tagName.toUpperCase();
 		const includeAll = tagName === '*';
-		const htmlCollection = new HTMLCollection();
 
-		htmlCollection[PropertySymbol.observe](parentNode, {
-			subtree: true,
-			filter: (item: Element) => includeAll || item[PropertySymbol.tagName] === upperTagName
-		});
+		const find = (
+			parent: Element | DocumentFragment | Document,
+			cachedResult: ICachedResult
+		): Element[] => {
+			const elements: Element[] = [];
 
-		return htmlCollection;
+			for (const element of (<DocumentFragment>parent)[PropertySymbol.elementArray]) {
+				if (includeAll || element[PropertySymbol.tagName] === upperTagName) {
+					elements.push(<Element>element);
+				}
+
+				element[PropertySymbol.affectsCache].push(cachedResult);
+
+				for (const foundElement of find(<Element>element, cachedResult)) {
+					elements.push(foundElement);
+				}
+			}
+
+			return elements;
+		};
+
+		const query = (): Element[] => {
+			const cache = parentNode[PropertySymbol.cache].elementsByTagName;
+			const cachedItems = cache.get(tagName);
+
+			if (cachedItems?.result) {
+				const items = cachedItems.result.deref();
+				if (items) {
+					return items;
+				}
+			}
+
+			const cachedResult = { result: null };
+			const items = find(parentNode, cachedResult);
+
+			cachedResult.result = new WeakRef(items);
+			cache.set(tagName, cachedResult);
+
+			return items;
+		};
+
+		return new HTMLCollection(query);
 	}
 
 	/**
@@ -135,48 +166,108 @@ export default class ParentNodeUtility {
 		parentNode: Element | DocumentFragment | Document,
 		namespaceURI: string,
 		tagName: string
-	): IHTMLCollection<Element> {
+	): HTMLCollection<Element> {
 		// When the namespace is HTML, the tag name is case-insensitive.
 		const formattedTagName = namespaceURI === NamespaceURI.html ? tagName.toUpperCase() : tagName;
 		const includeAll = tagName === '*';
-		const htmlCollection = new HTMLCollection();
 
-		htmlCollection[PropertySymbol.observe](parentNode, {
-			subtree: true,
-			filter: (item: Element) =>
-				(includeAll || item[PropertySymbol.tagName] === formattedTagName) &&
-				item[PropertySymbol.namespaceURI] === namespaceURI
-		});
+		const find = (
+			parent: Element | DocumentFragment | Document,
+			cachedResult: ICachedResult
+		): Element[] => {
+			const elements: Element[] = [];
 
-		return htmlCollection;
+			for (const element of (<DocumentFragment>parent)[PropertySymbol.elementArray]) {
+				if (
+					(includeAll || element[PropertySymbol.tagName] === formattedTagName) &&
+					element[PropertySymbol.namespaceURI] === namespaceURI
+				) {
+					elements.push(<Element>element);
+				}
+
+				element[PropertySymbol.affectsCache].push(cachedResult);
+
+				for (const foundElement of find(<Element>element, cachedResult)) {
+					elements.push(foundElement);
+				}
+			}
+
+			return elements;
+		};
+
+		const query = (): Element[] => {
+			const cache = parentNode[PropertySymbol.cache].elementsByTagNameNS;
+			const cachedItems = cache.get(tagName);
+
+			if (cachedItems?.result) {
+				const items = cachedItems.result.deref();
+				if (items) {
+					return items;
+				}
+			}
+
+			const cachedResult = { result: null };
+			const items = find(parentNode, cachedResult);
+
+			cachedResult.result = new WeakRef(items);
+			cache.set(tagName, cachedResult);
+
+			return items;
+		};
+
+		return new HTMLCollection(query);
 	}
 
 	/**
 	 * Returns the first element matching a tag name.
-	 * This is not part of the browser standard and is only used internally in the document.
+	 * This is not part of the browser standard and is only used internally (used in Document).
 	 *
 	 * @param parentNode Parent node.
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	// public static getElementByTagName(
-	// 	parentNode: Element | DocumentFragment | Document,
-	// 	tagName: string
-	// ): Element {
-	// 	const upperTagName = tagName.toUpperCase();
+	public static getElementByTagName(
+		parentNode: Element | DocumentFragment | Document,
+		tagName: string
+	): Element {
+		const upperTagName = tagName.toUpperCase();
 
-	// 	for (const child of (<DocumentFragment>parentNode)[PropertySymbol.children]) {
-	// 		if (child[PropertySymbol.tagName] === upperTagName) {
-	// 			return <Element>child;
-	// 		}
-	// 		const match = this.getElementByTagName(<Element>child, tagName);
-	// 		if (match) {
-	// 			return match;
-	// 		}
-	// 	}
+		const find = (
+			parent: Element | DocumentFragment | Document,
+			cachedResult: ICachedResult
+		): Element | null => {
+			for (const element of (<DocumentFragment>parent)[PropertySymbol.elementArray]) {
+				element[PropertySymbol.affectsCache].push(cachedResult);
 
-	// 	return null;
-	// }
+				if (element[PropertySymbol.tagName] === upperTagName) {
+					return <Element>element;
+				}
+
+				const foundElement = find(<Element>element, cachedResult);
+				if (foundElement) {
+					return foundElement;
+				}
+			}
+		};
+
+		const cache = parentNode[PropertySymbol.cache].elementByTagName;
+		const cachedItem = cache.get(tagName);
+
+		if (cachedItem?.result) {
+			const item = cachedItem.result.deref();
+			if (item) {
+				return item;
+			}
+		}
+
+		const cachedResult = { result: null };
+		const item = find(parentNode, cachedResult);
+
+		cachedResult.result = new WeakRef(item);
+		cache.set(tagName, cachedResult);
+
+		return item;
+	}
 
 	/**
 	 * Returns an element by ID.
@@ -190,18 +281,44 @@ export default class ParentNodeUtility {
 		id: string
 	): Element | null {
 		id = String(id);
-		for (const child of (<DocumentFragment>parentNode)[PropertySymbol.children]) {
-			if (child.id === id) {
-				return <Element>child;
+
+		const find = (
+			parent: Element | DocumentFragment | Document,
+			cachedResult: ICachedResult
+		): Element | null => {
+			for (const element of (<DocumentFragment>parent)[PropertySymbol.elementArray]) {
+				element[PropertySymbol.affectsCache].push(cachedResult);
+
+				if (element.id === id) {
+					return <Element>element;
+				}
+
+				const foundElement = find(<Element>element, cachedResult);
+
+				if (foundElement) {
+					return foundElement;
+				}
 			}
 
-			const match = this.getElementById(<Element>child, id);
+			return null;
+		};
 
-			if (match) {
-				return match;
+		const cache = parentNode[PropertySymbol.cache].elementById;
+		const cachedItem = cache.get(id);
+
+		if (cachedItem?.result) {
+			const item = cachedItem.result.deref();
+			if (item) {
+				return item;
 			}
 		}
 
-		return null;
+		const cachedResult = { result: null };
+		const item = find(parentNode, cachedResult);
+
+		cachedResult.result = new WeakRef(item);
+		cache.set(id, cachedResult);
+
+		return item;
 	}
 }

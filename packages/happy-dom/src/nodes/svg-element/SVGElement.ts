@@ -4,8 +4,7 @@ import Element from '../element/Element.js';
 import SVGSVGElement from './SVGSVGElement.js';
 import Event from '../../event/Event.js';
 import HTMLElementUtility from '../html-element/HTMLElementUtility.js';
-import DatasetFactory from '../element/DatasetFactory.js';
-import IDataset from '../element/IDataset.js';
+import DOMStringMap from '../element/DOMStringMap.js';
 
 /**
  * SVG Element.
@@ -26,7 +25,7 @@ export default class SVGElement extends Element {
 	public [PropertySymbol.style]: CSSStyleDeclaration | null = null;
 
 	// Private properties
-	#dataset: IDataset = null;
+	#dataset: DOMStringMap | null = null;
 
 	/**
 	 * Returns viewport.
@@ -59,8 +58,8 @@ export default class SVGElement extends Element {
 	 *
 	 * @returns Data set.
 	 */
-	public get dataset(): IDataset {
-		return (this.#dataset ??= DatasetFactory.createDataset(this));
+	public get dataset(): DOMStringMap {
+		return (this.#dataset ??= new DOMStringMap(this));
 	}
 
 	/**

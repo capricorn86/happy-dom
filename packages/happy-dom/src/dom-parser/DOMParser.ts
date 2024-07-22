@@ -37,16 +37,17 @@ export default class DOMParser {
 		}
 
 		const newDocument = <Document>this.#createDocument(mimeType);
+		const documentChildNodes = newDocument[PropertySymbol.nodeArray];
 
-		while (newDocument[PropertySymbol.childNodes].length) {
-			newDocument.removeChild(newDocument[PropertySymbol.childNodes][0]);
+		while (documentChildNodes.length) {
+			newDocument.removeChild(documentChildNodes[0]);
 		}
 
 		const root = <DocumentFragment>XMLParser.parse(newDocument, string, { evaluateScripts: true });
 		let documentElement = null;
 		let documentTypeNode = null;
 
-		for (const node of root[PropertySymbol.childNodes]) {
+		for (const node of root[PropertySymbol.nodeArray]) {
 			if (node['tagName'] === 'HTML') {
 				documentElement = node;
 			} else if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
@@ -65,16 +66,16 @@ export default class DOMParser {
 			newDocument.appendChild(documentElement);
 			const body = newDocument.body;
 			if (body) {
-				while (root[PropertySymbol.childNodes].length) {
-					body.appendChild(root[PropertySymbol.childNodes][0]);
+				while (root[PropertySymbol.nodeArray].length) {
+					body.appendChild(root[PropertySymbol.nodeArray][0]);
 				}
 			}
 		} else {
 			switch (mimeType) {
 				case 'image/svg+xml':
 					{
-						while (root[PropertySymbol.childNodes].length) {
-							newDocument.appendChild(root[PropertySymbol.childNodes][0]);
+						while (root[PropertySymbol.nodeArray].length) {
+							newDocument.appendChild(root[PropertySymbol.nodeArray][0]);
 						}
 					}
 					break;
@@ -89,8 +90,8 @@ export default class DOMParser {
 						documentElement.appendChild(bodyElement);
 						newDocument.appendChild(documentElement);
 
-						while (root[PropertySymbol.childNodes].length) {
-							bodyElement.appendChild(root[PropertySymbol.childNodes][0]);
+						while (root[PropertySymbol.nodeArray].length) {
+							bodyElement.appendChild(root[PropertySymbol.nodeArray][0]);
 						}
 					}
 					break;

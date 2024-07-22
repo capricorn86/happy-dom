@@ -39,7 +39,7 @@ export default class ChildNodeUtility {
 			if (typeof node === 'string') {
 				const newChildNodes = (<DocumentFragment>(
 					XMLParser.parse(<Document>childNode[PropertySymbol.ownerDocument], node)
-				))[PropertySymbol.childNodes];
+				))[PropertySymbol.nodeArray];
 				while (newChildNodes.length) {
 					parent.insertBefore(newChildNodes[0], childNode);
 				}
@@ -68,7 +68,7 @@ export default class ChildNodeUtility {
 			if (typeof node === 'string') {
 				const newChildNodes = (<DocumentFragment>(
 					XMLParser.parse(<Document>childNode[PropertySymbol.ownerDocument], node)
-				))[PropertySymbol.childNodes];
+				))[PropertySymbol.nodeArray];
 				while (newChildNodes.length) {
 					parent.insertBefore(newChildNodes[0], childNode);
 				}
@@ -97,7 +97,7 @@ export default class ChildNodeUtility {
 			if (typeof node === 'string') {
 				const newChildNodes = (<DocumentFragment>(
 					XMLParser.parse(<Document>childNode[PropertySymbol.ownerDocument], node)
-				))[PropertySymbol.childNodes];
+				))[PropertySymbol.nodeArray];
 				while (newChildNodes.length) {
 					if (!nextSibling) {
 						parent.appendChild(newChildNodes[0]);

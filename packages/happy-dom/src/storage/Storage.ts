@@ -9,6 +9,79 @@ export default class Storage {
 	public [PropertySymbol.data]: { [key: string]: string } = {};
 
 	/**
+	 * Constructor.
+	 */
+	constructor() {
+		return new Proxy(this, {
+			get: (target, property) => {
+				if (property in target || typeof property === 'symbol') {
+					const returnValue = target[property];
+					if (typeof returnValue === 'function') {
+						return returnValue.bind(target);
+					}
+					return returnValue;
+				}
+				const value = target[PropertySymbol.data][String(property)];
+				if (value !== undefined) {
+					return value;
+				}
+			},
+			set(target, property, newValue): boolean {
+				if (property in target) {
+					return false;
+				}
+				target[PropertySymbol.data][String(property)] = String(newValue);
+			},
+			deleteProperty(target, property): boolean {
+				if (property in target) {
+					return false;
+				}
+
+				delete target[PropertySymbol.data][String(property)];
+			},
+			ownKeys(target): string[] {
+				return Object.keys(target[PropertySymbol.data]);
+			},
+			has(target, property): boolean {
+				if (property in target || property in target[PropertySymbol.data]) {
+					return true;
+				}
+
+				return false;
+			},
+			defineProperty(target, property, descriptor): boolean {
+				if (property in target) {
+					Object.defineProperty(target, property, descriptor);
+					return true;
+				}
+
+				if (descriptor.value !== undefined) {
+					target[PropertySymbol.data][String(property)] = String(descriptor.value);
+					return true;
+				}
+
+				return false;
+			},
+			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
+				if (property in target) {
+					return;
+				}
+
+				const value = target[PropertySymbol.data][String(property)];
+
+				if (value !== undefined) {
+					return {
+						value: value,
+						writable: true,
+						enumerable: true,
+						configurable: true
+					};
+				}
+			}
+		});
+	}
+
+	/**
 	 * Returns length.
 	 *
 	 * @returns Length.

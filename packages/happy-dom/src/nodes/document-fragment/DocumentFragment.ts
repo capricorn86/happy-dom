@@ -4,34 +4,28 @@ import Element from '../element/Element.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 import HTMLCollection from '../element/HTMLCollection.js';
-import IHTMLCollection from '../element/IHTMLCollection.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
-import INodeList from '../node/INodeList.js';
+import NodeList from '../node/NodeList.js';
 
 /**
  * DocumentFragment.
  */
 export default class DocumentFragment extends Node {
-	public [PropertySymbol.children]: IHTMLCollection<Element> = new HTMLCollection<Element>();
+	public [PropertySymbol.children]: HTMLCollection<Element> | null = null;
 	public [PropertySymbol.rootNode]: Node = this;
 	public [PropertySymbol.nodeType] = NodeTypeEnum.documentFragmentNode;
 	public declare cloneNode: (deep?: boolean) => DocumentFragment;
 
 	/**
-	 * Constructor.
-	 */
-	constructor() {
-		super();
-
-		this[PropertySymbol.children][PropertySymbol.observe](this);
-	}
-
-	/**
 	 * Returns the document fragment children.
 	 */
-	public get children(): IHTMLCollection<Element> {
+	public get children(): HTMLCollection<Element> {
+		if (!this[PropertySymbol.children]) {
+			const elements = this[PropertySymbol.elementArray];
+			this[PropertySymbol.children] = new HTMLCollection<Element>(() => elements);
+		}
 		return this[PropertySymbol.children];
 	}
 
@@ -41,7 +35,7 @@ export default class DocumentFragment extends Node {
 	 * @returns Element.
 	 */
 	public get childElementCount(): number {
-		return this[PropertySymbol.children].length;
+		return this[PropertySymbol.elementArray].length;
 	}
 
 	/**
@@ -50,7 +44,7 @@ export default class DocumentFragment extends Node {
 	 * @returns Element.
 	 */
 	public get firstElementChild(): Element {
-		return this[PropertySymbol.children][0] ?? null;
+		return this[PropertySymbol.elementArray][0] ?? null;
 	}
 
 	/**
@@ -59,7 +53,7 @@ export default class DocumentFragment extends Node {
 	 * @returns Element.
 	 */
 	public get lastElementChild(): Element {
-		const children = this[PropertySymbol.children];
+		const children = this[PropertySymbol.elementArray];
 		return children[children.length - 1] ?? null;
 	}
 
@@ -70,7 +64,7 @@ export default class DocumentFragment extends Node {
 	 */
 	public get textContent(): string {
 		let result = '';
-		for (const childNode of this[PropertySymbol.childNodes]) {
+		for (const childNode of this[PropertySymbol.nodeArray]) {
 			if (
 				childNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode ||
 				childNode[PropertySymbol.nodeType] === NodeTypeEnum.textNode
@@ -87,7 +81,7 @@ export default class DocumentFragment extends Node {
 	 * @param textContent Text content.
 	 */
 	public set textContent(textContent: string) {
-		const childNodes = this[PropertySymbol.childNodes];
+		const childNodes = this[PropertySymbol.nodeArray];
 		while (childNodes.length) {
 			this.removeChild(childNodes[0]);
 		}
@@ -131,7 +125,7 @@ export default class DocumentFragment extends Node {
 	 */
 	public querySelectorAll<K extends keyof IHTMLElementTagNameMap>(
 		selector: K
-	): INodeList<IHTMLElementTagNameMap[K]>;
+	): NodeList<IHTMLElementTagNameMap[K]>;
 
 	/**
 	 * Query CSS selector to find matching elments.
@@ -141,7 +135,7 @@ export default class DocumentFragment extends Node {
 	 */
 	public querySelectorAll<K extends keyof ISVGElementTagNameMap>(
 		selector: K
-	): INodeList<ISVGElementTagNameMap[K]>;
+	): NodeList<ISVGElementTagNameMap[K]>;
 
 	/**
 	 * Query CSS selector to find matching elments.
@@ -149,7 +143,7 @@ export default class DocumentFragment extends Node {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): INodeList<Element>;
+	public querySelectorAll(selector: string): NodeList<Element>;
 
 	/**
 	 * Query CSS selector to find matching elments.
@@ -157,7 +151,7 @@ export default class DocumentFragment extends Node {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): INodeList<Element> {
+	public querySelectorAll(selector: string): NodeList<Element> {
 		return QuerySelector.querySelectorAll(this, selector);
 	}
 

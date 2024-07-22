@@ -8,11 +8,8 @@ import Event from '../../event/Event.js';
 import HTMLElementUtility from './HTMLElementUtility.js';
 import NodeList from '../node/NodeList.js';
 import Node from '../node/Node.js';
-import HTMLCollection from '../element/HTMLCollection.js';
-import DatasetFactory from '../element/DatasetFactory.js';
-import IDataset from '../element/IDataset.js';
 import NamedNodeMap from '../element/NamedNodeMap.js';
-import IHTMLCollection from '../element/IHTMLCollection.js';
+import DOMStringMap from '../element/DOMStringMap.js';
 
 /**
  * HTML Element.
@@ -64,10 +61,8 @@ export default class HTMLElement extends Element {
 	public [PropertySymbol.clientLeft] = 0;
 	public [PropertySymbol.clientTop] = 0;
 	public [PropertySymbol.style]: CSSStyleDeclaration = null;
-
-	// Private properties
-	#dataset: IDataset = null;
-	#customElementDefineCallback: () => void = null;
+	private [PropertySymbol.dataset]: DOMStringMap | null = null;
+	private [PropertySymbol.customElementDefineCallback]: () => void = null;
 
 	/**
 	 * Returns access key.
@@ -222,7 +217,7 @@ export default class HTMLElement extends Element {
 
 		let result = '';
 
-		for (const childNode of this[PropertySymbol.childNodes]) {
+		for (const childNode of this[PropertySymbol.nodeArray]) {
 			if (childNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
 				const childElement = <HTMLElement>childNode;
 				const computedStyle =
@@ -274,7 +269,7 @@ export default class HTMLElement extends Element {
 	 * @param innerText Inner text.
 	 */
 	public set innerText(text: string) {
-		const childNodes = this[PropertySymbol.childNodes];
+		const childNodes = this[PropertySymbol.nodeArray];
 
 		while (childNodes.length) {
 			this.removeChild(childNodes[0]);
@@ -359,8 +354,8 @@ export default class HTMLElement extends Element {
 	 *
 	 * @returns Data set.
 	 */
-	public get dataset(): IDataset {
-		return (this.#dataset ??= DatasetFactory.createDataset(this));
+	public get dataset(): DOMStringMap {
+		return (this[PropertySymbol.dataset] ??= new DOMStringMap(this));
 	}
 
 	/**
@@ -526,18 +521,20 @@ export default class HTMLElement extends Element {
 					PropertySymbol.callbacks
 				];
 
-			if (!this.#customElementDefineCallback) {
+			if (!this[PropertySymbol.customElementDefineCallback]) {
 				const callback = (): void => {
 					if (this[PropertySymbol.parentNode]) {
 						const newElement = <HTMLElement>(
 							this[PropertySymbol.ownerDocument].createElement(localName)
 						);
-						(<NodeList<Node>>newElement[PropertySymbol.childNodes]) = <NodeList<Node>>(
-							this[PropertySymbol.childNodes]
+						const newCache = newElement[PropertySymbol.cache];
+						newElement[PropertySymbol.nodeArray] = this[PropertySymbol.nodeArray];
+						newElement[PropertySymbol.elementArray] = this[PropertySymbol.elementArray];
+						newElement[PropertySymbol.childNodes] = new NodeList<Node>(
+							newElement[PropertySymbol.nodeArray]
 						);
-						(<IHTMLCollection<Element>>newElement[PropertySymbol.children]) =
-							this[PropertySymbol.children];
-						(<boolean>newElement[PropertySymbol.isConnected]) = this[PropertySymbol.isConnected];
+						newElement[PropertySymbol.children] = null;
+						newElement[PropertySymbol.isConnected] = this[PropertySymbol.isConnected];
 
 						newElement[PropertySymbol.rootNode] = this[PropertySymbol.rootNode];
 						newElement[PropertySymbol.formNode] = this[PropertySymbol.formNode];
@@ -546,6 +543,8 @@ export default class HTMLElement extends Element {
 						newElement[PropertySymbol.textAreaNode] = this[PropertySymbol.textAreaNode];
 						newElement[PropertySymbol.mutationListeners] = this[PropertySymbol.mutationListeners];
 						newElement[PropertySymbol.isValue] = this[PropertySymbol.isValue];
+						newElement[PropertySymbol.cache] = this[PropertySymbol.cache];
+						newElement[PropertySymbol.affectsCache] = this[PropertySymbol.affectsCache];
 
 						for (let i = 0, max = this[PropertySymbol.attributes].length; i < max; i++) {
 							newElement[PropertySymbol.attributes].setNamedItem(
@@ -553,10 +552,10 @@ export default class HTMLElement extends Element {
 							);
 						}
 
-						(<NodeList<Node>>this[PropertySymbol.childNodes]) = new NodeList<Node>();
-						(<IHTMLCollection<Element>>this[PropertySymbol.children]) =
-							new HTMLCollection<Element>();
-						this[PropertySymbol.children][PropertySymbol.observe](this);
+						this[PropertySymbol.nodeArray] = [];
+						this[PropertySymbol.elementArray] = [];
+						this[PropertySymbol.childNodes] = new NodeList<Node>(this[PropertySymbol.nodeArray]);
+						this[PropertySymbol.children] = null;
 
 						this[PropertySymbol.rootNode] = null;
 						this[PropertySymbol.formNode] = null;
@@ -564,13 +563,15 @@ export default class HTMLElement extends Element {
 						this[PropertySymbol.textAreaNode] = null;
 						this[PropertySymbol.mutationListeners] = [];
 						this[PropertySymbol.isValue] = null;
+						this[PropertySymbol.cache] = newCache;
+						this[PropertySymbol.affectsCache] = [];
 						(<NamedNodeMap>this[PropertySymbol.attributes]) = new NamedNodeMap(this);
 
-						const parentChildNodes = (<HTMLElement>this[PropertySymbol.parentNode])[
-							PropertySymbol.childNodes
-						];
-						parentChildNodes[PropertySymbol.insertItem](newElement, this.nextSibling);
-						parentChildNodes[PropertySymbol.removeItem](this);
+						const parentChildNodes = this[PropertySymbol.parentNode][PropertySymbol.nodeArray];
+						const parentChildElements =
+							this[PropertySymbol.parentNode][PropertySymbol.elementArray];
+						parentChildNodes[parentChildNodes.indexOf(this)] = newElement;
+						parentChildElements[parentChildElements.indexOf(this)] = newElement;
 
 						if (newElement[PropertySymbol.isConnected] && newElement.connectedCallback) {
 							const result = <void | Promise<void>>newElement.connectedCallback();
@@ -597,7 +598,7 @@ export default class HTMLElement extends Element {
 				};
 				callbacks[localName] = callbacks[localName] || [];
 				callbacks[localName].push(callback);
-				this.#customElementDefineCallback = callback;
+				this[PropertySymbol.customElementDefineCallback] = callback;
 			}
 		}
 
@@ -624,15 +625,17 @@ export default class HTMLElement extends Element {
 					PropertySymbol.callbacks
 				];
 
-			if (callbacks[localName] && this.#customElementDefineCallback) {
-				const index = callbacks[localName].indexOf(this.#customElementDefineCallback);
+			if (callbacks[localName] && this[PropertySymbol.customElementDefineCallback]) {
+				const index = callbacks[localName].indexOf(
+					this[PropertySymbol.customElementDefineCallback]
+				);
 				if (index !== -1) {
 					callbacks[localName].splice(index, 1);
 				}
 				if (!callbacks[localName].length) {
 					delete callbacks[localName];
 				}
-				this.#customElementDefineCallback = null;
+				this[PropertySymbol.customElementDefineCallback] = null;
 			}
 		}
 

@@ -12,11 +12,20 @@ import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
-import INodeList from './INodeList.js';
 import IMutationListener from '../../mutation-observer/IMutationListener.js';
-import ICachedQuerySelectorAllItem from './ICachedQuerySelectorAllItem.js';
-import ICachedQuerySelectorItem from './ICachedQuerySelectorItem.js';
-import ICachedMatchesItem from './ICachedMatchesItem.js';
+import ICachedQuerySelectorAllResult from './ICachedQuerySelectorAllResult.js';
+import ICachedQuerySelectorResult from './ICachedQuerySelectorResult.js';
+import ICachedMatchesResult from './ICachedMatchesResult.js';
+import ICachedElementsByTagNameResult from './ICachedElementsByTagNameResult.js';
+import ICachedElementByTagNameResult from './ICachedElementByTagNameResult.js';
+import ICachedStyleResult from './ICachedStyleResult.js';
+import ICachedComputedStyleResult from './ICachedComputedStyleResult.js';
+import ICachedResult from './ICachedResult.js';
+import ICachedElementByIdResult from './ICachedElementByIdResult.js';
+import HTMLStyleElement from '../html-style-element/HTMLStyleElement.js';
+import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
+import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
+import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
 
 /**
  * Node.
@@ -66,29 +75,36 @@ export default class Node extends EventTarget {
 	public [PropertySymbol.parentNode]: Node | null = null;
 	public [PropertySymbol.nodeType]: NodeTypeEnum;
 	public [PropertySymbol.rootNode]: Node = null;
+	public [PropertySymbol.styleNode]: HTMLStyleElement | null = null;
+	public [PropertySymbol.textAreaNode]: HTMLTextAreaElement | null = null;
+	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
+	public [PropertySymbol.selectNode]: HTMLSelectElement | null = null;
 	public [PropertySymbol.mutationListeners]: IMutationListener[] = [];
-	public [PropertySymbol.childNodes]: INodeList<Node> = new NodeList<Node>();
-	public [PropertySymbol.querySelectorCache]: {
-		items: Map<string, ICachedQuerySelectorItem>;
-		affectedItems: ICachedQuerySelectorItem[];
+	public [PropertySymbol.nodeArray]: Node[] = [];
+	public [PropertySymbol.elementArray]: Element[] = [];
+	public [PropertySymbol.childNodes] = new NodeList<Node>(this[PropertySymbol.nodeArray]);
+	public [PropertySymbol.cache]: {
+		querySelector: Map<string, ICachedQuerySelectorResult>;
+		querySelectorAll: Map<string, ICachedQuerySelectorAllResult>;
+		matches: Map<string, ICachedMatchesResult>;
+		elementsByTagName: Map<string, ICachedElementsByTagNameResult>;
+		elementsByTagNameNS: Map<string, ICachedElementsByTagNameResult>;
+		elementByTagName: Map<string, ICachedElementByTagNameResult>;
+		elementById: Map<string, ICachedElementByIdResult>;
+		style: ICachedStyleResult | null;
+		computedStyle: ICachedComputedStyleResult | null;
 	} = {
-		items: new Map(),
-		affectedItems: []
+		querySelector: new Map(),
+		querySelectorAll: new Map(),
+		matches: new Map(),
+		elementsByTagName: new Map(),
+		elementsByTagNameNS: new Map(),
+		elementByTagName: new Map(),
+		elementById: new Map(),
+		style: null,
+		computedStyle: null
 	};
-	public [PropertySymbol.querySelectorAllCache]: {
-		items: Map<string, ICachedQuerySelectorAllItem>;
-		affectedItems: ICachedQuerySelectorAllItem[];
-	} = {
-		items: new Map(),
-		affectedItems: []
-	};
-	public [PropertySymbol.matchesCache]: {
-		items: Map<string, ICachedMatchesItem>;
-		affectedItems: ICachedMatchesItem[];
-	} = {
-		items: new Map(),
-		affectedItems: []
-	};
+	public [PropertySymbol.affectsCache]: ICachedResult[] = [];
 
 	/**
 	 * Constructor.
@@ -160,7 +176,7 @@ export default class Node extends EventTarget {
 	 *
 	 * @returns Child nodes list.
 	 */
-	public get childNodes(): INodeList<Node> {
+	public get childNodes(): NodeList<Node> {
 		return this[PropertySymbol.childNodes];
 	}
 
@@ -216,11 +232,10 @@ export default class Node extends EventTarget {
 	 */
 	public get previousSibling(): Node {
 		if (this[PropertySymbol.parentNode]) {
-			const index = (<Node>this[PropertySymbol.parentNode])[PropertySymbol.childNodes][
-				PropertySymbol.indexOf
-			](this);
+			const nodeArray = this[PropertySymbol.parentNode][PropertySymbol.nodeArray];
+			const index = nodeArray.indexOf(this);
 			if (index > 0) {
-				return (<Node>this[PropertySymbol.parentNode])[PropertySymbol.childNodes][index - 1];
+				return nodeArray[index - 1];
 			}
 		}
 		return null;
@@ -233,14 +248,10 @@ export default class Node extends EventTarget {
 	 */
 	public get nextSibling(): Node {
 		if (this[PropertySymbol.parentNode]) {
-			const index = (<Node>this[PropertySymbol.parentNode])[PropertySymbol.childNodes][
-				PropertySymbol.indexOf
-			](this);
-			if (
-				index > -1 &&
-				index + 1 < (<Node>this[PropertySymbol.parentNode])[PropertySymbol.childNodes].length
-			) {
-				return (<Node>this[PropertySymbol.parentNode])[PropertySymbol.childNodes][index + 1];
+			const nodeArray = this[PropertySymbol.parentNode][PropertySymbol.nodeArray];
+			const index = nodeArray.indexOf(this);
+			if (index > -1 && index + 1 < nodeArray.length) {
+				return nodeArray[index + 1];
 			}
 		}
 		return null;
@@ -252,8 +263,9 @@ export default class Node extends EventTarget {
 	 * @returns Node.
 	 */
 	public get firstChild(): Node {
-		if (this[PropertySymbol.childNodes].length > 0) {
-			return this[PropertySymbol.childNodes][0];
+		const nodeArray = this[PropertySymbol.nodeArray];
+		if (nodeArray.length > 0) {
+			return nodeArray[0];
 		}
 		return null;
 	}
@@ -264,8 +276,9 @@ export default class Node extends EventTarget {
 	 * @returns Node.
 	 */
 	public get lastChild(): Node {
-		if (this[PropertySymbol.childNodes].length > 0) {
-			return this[PropertySymbol.childNodes][this[PropertySymbol.childNodes].length - 1];
+		const nodeArray = this[PropertySymbol.nodeArray];
+		if (nodeArray.length > 0) {
+			return nodeArray[nodeArray.length - 1];
 		}
 		return null;
 	}
@@ -312,7 +325,7 @@ export default class Node extends EventTarget {
 	 * @returns "true" if the node has child nodes.
 	 */
 	public hasChildNodes(): boolean {
-		return this[PropertySymbol.childNodes].length > 0;
+		return this[PropertySymbol.nodeArray].length > 0;
 	}
 
 	/**
@@ -432,18 +445,22 @@ export default class Node extends EventTarget {
 		);
 
 		// Document has childNodes directly when it is created
-		if (clone[PropertySymbol.childNodes].length) {
-			const childNodes = clone[PropertySymbol.childNodes];
+		if (clone[PropertySymbol.nodeArray].length) {
+			const childNodes = clone[PropertySymbol.nodeArray];
 			while (childNodes.length) {
 				clone.removeChild(childNodes[0]);
 			}
 		}
 
 		if (deep) {
-			for (const childNode of this[PropertySymbol.childNodes]) {
+			for (const childNode of this[PropertySymbol.nodeArray]) {
 				const childClone = childNode.cloneNode(true);
 				childClone[PropertySymbol.parentNode] = clone;
-				clone[PropertySymbol.childNodes][PropertySymbol.addItem](childClone);
+				clone[PropertySymbol.nodeArray].push(childClone);
+
+				if (childClone[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
+					clone[PropertySymbol.elementArray].push(<Element>childClone);
+				}
 			}
 		}
 
@@ -473,7 +490,7 @@ export default class Node extends EventTarget {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode) {
-			const childNodes = node[PropertySymbol.childNodes];
+			const childNodes = node[PropertySymbol.nodeArray];
 			while (childNodes.length) {
 				this.appendChild(childNodes[0]);
 			}
@@ -489,7 +506,11 @@ export default class Node extends EventTarget {
 
 		node[PropertySymbol.clearCache]();
 
-		this[PropertySymbol.childNodes][PropertySymbol.addItem](node);
+		this[PropertySymbol.nodeArray].push(node);
+
+		if (node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
+			this[PropertySymbol.elementArray].push(<Element>node);
+		}
 
 		node[PropertySymbol.connectedToNode]();
 
@@ -522,7 +543,22 @@ export default class Node extends EventTarget {
 
 		node[PropertySymbol.clearCache]();
 
-		this[PropertySymbol.childNodes][PropertySymbol.removeItem](node);
+		const index = this[PropertySymbol.nodeArray].indexOf(node);
+
+		if (index === -1) {
+			throw new DOMException(
+				`Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.`
+			);
+		}
+
+		this[PropertySymbol.nodeArray].splice(index, 1);
+
+		if (node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
+			const index = this[PropertySymbol.elementArray].indexOf(<Element>node);
+			if (index !== -1) {
+				this[PropertySymbol.elementArray].splice(index, 1);
+			}
+		}
 
 		node[PropertySymbol.disconnectedFromNode]();
 
@@ -561,7 +597,7 @@ export default class Node extends EventTarget {
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		if (newNode[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode) {
-			const childNodes = (<Node>newNode)[PropertySymbol.childNodes];
+			const childNodes = (<Node>newNode)[PropertySymbol.nodeArray];
 			while (childNodes.length > 0) {
 				this.insertBefore(childNodes[0], referenceNode);
 			}
@@ -575,7 +611,9 @@ export default class Node extends EventTarget {
 			return newNode;
 		}
 
-		if (!this[PropertySymbol.childNodes][PropertySymbol.includes](referenceNode)) {
+		const index = this[PropertySymbol.nodeArray].indexOf(referenceNode);
+
+		if (index === -1) {
 			throw new DOMException(
 				"Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node."
 			);
@@ -589,7 +627,14 @@ export default class Node extends EventTarget {
 
 		newNode[PropertySymbol.clearCache]();
 
-		this[PropertySymbol.childNodes][PropertySymbol.insertItem](newNode, referenceNode);
+		this[PropertySymbol.nodeArray].splice(index, 0, newNode);
+
+		if (newNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
+			const index = this[PropertySymbol.elementArray].indexOf(<Element>referenceNode);
+			if (index !== -1) {
+				this[PropertySymbol.elementArray].splice(index, 0, <Element>newNode);
+			}
+		}
 
 		newNode[PropertySymbol.connectedToNode]();
 
@@ -655,7 +700,7 @@ export default class Node extends EventTarget {
 	public [PropertySymbol.observeMutations](listener: IMutationListener): void {
 		this[PropertySymbol.mutationListeners].push(listener);
 		if (listener.options.subtree) {
-			for (const node of this[PropertySymbol.childNodes]) {
+			for (const node of this[PropertySymbol.nodeArray]) {
 				(<Node>node)[PropertySymbol.observeMutations](listener);
 			}
 		}
@@ -674,7 +719,7 @@ export default class Node extends EventTarget {
 			this[PropertySymbol.mutationListeners].splice(index, 1);
 		}
 		if (listener.options.subtree) {
-			for (const node of this[PropertySymbol.childNodes]) {
+			for (const node of this[PropertySymbol.nodeArray]) {
 				node[PropertySymbol.unobserveMutations](listener);
 			}
 		}
@@ -733,68 +778,112 @@ export default class Node extends EventTarget {
 	 * Clears query selector cache.
 	 */
 	public [PropertySymbol.clearCache](): void {
-		if (this[PropertySymbol.querySelectorCache].items.size) {
-			for (const item of this[PropertySymbol.querySelectorCache].items.values()) {
+		const cache = this[PropertySymbol.cache];
+
+		if (cache.querySelector.size) {
+			for (const item of cache.querySelector.values()) {
 				if (item.result) {
 					item.result = null;
 				}
 			}
-			this[PropertySymbol.querySelectorCache].items = new Map();
+			cache.querySelector = new Map();
 		}
 
-		if (this[PropertySymbol.querySelectorCache].affectedItems.length) {
-			for (const item of this[PropertySymbol.querySelectorCache].affectedItems) {
+		if (cache.querySelectorAll.size) {
+			for (const item of cache.querySelectorAll.values()) {
 				if (item.result) {
 					item.result = null;
 				}
 			}
-			this[PropertySymbol.querySelectorCache].affectedItems = [];
+			cache.querySelectorAll = new Map();
 		}
 
-		if (this[PropertySymbol.querySelectorAllCache].items.size) {
-			for (const item of this[PropertySymbol.querySelectorAllCache].items.values()) {
+		if (cache.matches.size) {
+			for (const item of cache.matches.values()) {
 				if (item.result) {
 					item.result = null;
 				}
 			}
-			this[PropertySymbol.querySelectorAllCache].items = new Map();
+			cache.matches = new Map();
 		}
 
-		if (this[PropertySymbol.querySelectorAllCache].affectedItems.length) {
-			for (const item of this[PropertySymbol.querySelectorAllCache].affectedItems) {
+		if (cache.elementsByTagName.size) {
+			for (const item of cache.elementsByTagName.values()) {
 				if (item.result) {
 					item.result = null;
 				}
 			}
-			this[PropertySymbol.querySelectorAllCache].affectedItems = [];
+			cache.elementsByTagName = new Map();
 		}
 
-		if (this[PropertySymbol.matchesCache].items.size) {
-			for (const item of this[PropertySymbol.matchesCache].items.values()) {
+		if (cache.elementsByTagNameNS.size) {
+			for (const item of cache.elementsByTagNameNS.values()) {
 				if (item.result) {
 					item.result = null;
 				}
 			}
-			this[PropertySymbol.matchesCache].items = new Map();
+			cache.elementsByTagNameNS = new Map();
 		}
 
-		if (this[PropertySymbol.matchesCache].affectedItems.length) {
-			for (const item of this[PropertySymbol.matchesCache].affectedItems) {
+		if (cache.elementByTagName.size) {
+			for (const item of cache.elementByTagName.values()) {
 				if (item.result) {
 					item.result = null;
 				}
 			}
-			this[PropertySymbol.matchesCache].affectedItems = [];
+			cache.elementByTagName = new Map();
 		}
 
-		this[PropertySymbol.ownerDocument]?.[PropertySymbol.clearComputedStyleCache]();
+		if (cache.elementById.size) {
+			for (const item of cache.elementById.values()) {
+				if (item.result) {
+					item.result = null;
+				}
+			}
+			cache.elementById = new Map();
+		}
+
+		for (const item of this[PropertySymbol.affectsCache]) {
+			item.result = null;
+		}
+
+		this[PropertySymbol.affectsCache] = [];
+
+		// Computed style cache is affected by all mutations.
+		const document = this[PropertySymbol.ownerDocument];
+
+		if (document) {
+			for (const item of document[PropertySymbol.affectsComputedStyleCache]) {
+				item.result = null;
+			}
+			document[PropertySymbol.affectsComputedStyleCache] = [];
+		}
 	}
 
 	/**
 	 * Called when connected to a node.
 	 */
 	public [PropertySymbol.connectedToNode](): void {
-		const parent = this[PropertySymbol.parentNode] || this[PropertySymbol.host];
+		const parentNode = this[PropertySymbol.parentNode];
+		const parent = parentNode || this[PropertySymbol.host];
+
+		if (parentNode) {
+			if (parentNode[PropertySymbol.styleNode] && this[PropertySymbol.tagName] !== 'STYLE') {
+				this[PropertySymbol.styleNode] = parentNode[PropertySymbol.styleNode];
+			}
+
+			if (parentNode[PropertySymbol.textAreaNode] && this[PropertySymbol.tagName] !== 'TEXTAREA') {
+				this[PropertySymbol.textAreaNode] = parentNode[PropertySymbol.textAreaNode];
+			}
+
+			if (parentNode[PropertySymbol.formNode] && this[PropertySymbol.tagName] !== 'FORM') {
+				this[PropertySymbol.formNode] = parentNode[PropertySymbol.formNode];
+			}
+
+			if (parentNode[PropertySymbol.selectNode] && this[PropertySymbol.tagName] !== 'SELECT') {
+				this[PropertySymbol.selectNode] = parentNode[PropertySymbol.selectNode];
+			}
+		}
 
 		if (!this[PropertySymbol.isConnected] && parent[PropertySymbol.isConnected]) {
 			this[PropertySymbol.connectedToDocument]();
@@ -802,7 +891,7 @@ export default class Node extends EventTarget {
 			this[PropertySymbol.disconnectedFromDocument]();
 		}
 
-		const childNodes = this[PropertySymbol.childNodes];
+		const childNodes = this[PropertySymbol.nodeArray];
 		for (let i = 0, max = childNodes.length; i < max; i++) {
 			childNodes[i][PropertySymbol.connectedToNode]();
 		}
@@ -822,7 +911,23 @@ export default class Node extends EventTarget {
 			this[PropertySymbol.disconnectedFromDocument]();
 		}
 
-		const childNodes = this[PropertySymbol.childNodes];
+		if (this[PropertySymbol.tagName] !== 'STYLE') {
+			this[PropertySymbol.styleNode] = null;
+		}
+
+		if (this[PropertySymbol.tagName] !== 'TEXTAREA') {
+			this[PropertySymbol.textAreaNode] = null;
+		}
+
+		if (this[PropertySymbol.tagName] !== 'FORM') {
+			this[PropertySymbol.formNode] = null;
+		}
+
+		if (this[PropertySymbol.tagName] !== 'SELECT') {
+			this[PropertySymbol.selectNode] = null;
+		}
+
+		const childNodes = this[PropertySymbol.nodeArray];
 		for (let i = 0, max = childNodes.length; i < max; i++) {
 			childNodes[i][PropertySymbol.disconnectedFromNode]();
 		}
@@ -1027,9 +1132,9 @@ export default class Node extends EventTarget {
 		const node2Node = reverseArrayIndex(node2Ancestors, commonAncestorIndex + 1);
 		const node1Node = reverseArrayIndex(node1Ancestors, commonAncestorIndex + 1);
 
-		const computeNodeIndexes = (nodes: INodeList<Node>): void => {
+		const computeNodeIndexes = (nodes: Node[]): void => {
 			for (const childNode of nodes) {
-				computeNodeIndexes(childNode[PropertySymbol.childNodes]);
+				computeNodeIndexes(childNode[PropertySymbol.nodeArray]);
 
 				if (childNode === node2Node) {
 					node2Index = indexes;
@@ -1045,7 +1150,7 @@ export default class Node extends EventTarget {
 			}
 		};
 
-		computeNodeIndexes(commonAncestor[PropertySymbol.childNodes]);
+		computeNodeIndexes(commonAncestor[PropertySymbol.nodeArray]);
 
 		/**
 		 * 9. If node1 is preceding node2, then return DOCUMENT_POSITION_PRECEDING.

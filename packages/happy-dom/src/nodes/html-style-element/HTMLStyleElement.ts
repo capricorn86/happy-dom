@@ -1,10 +1,6 @@
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
-import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import Element from '../element/Element.js';
 import HTMLElement from '../html-element/HTMLElement.js';
-import NodeTypeEnum from '../node/NodeTypeEnum.js';
-import Text from '../text/Text.js';
 
 /**
  * HTML Style Element.
@@ -14,35 +10,7 @@ import Text from '../text/Text.js';
  */
 export default class HTMLStyleElement extends HTMLElement {
 	private [PropertySymbol.sheet]: CSSStyleSheet | null = null;
-
-	/**
-	 * Constructor.
-	 */
-	constructor() {
-		super();
-
-		this[PropertySymbol.observeMutations]({
-			options: {
-				childList: true,
-				subtree: true
-			},
-			callback: new WeakRef((record: MutationRecord) => {
-				const node = record.addedNodes[0] || record.removedNodes[0];
-				if (node instanceof Text) {
-					node[PropertySymbol.styleNode] = record.addedNodes[0] ? this : null;
-					this[PropertySymbol.updateSheet]();
-				} else {
-					const textNodes = this.#findTextNodes(<Element>node);
-					if (textNodes.length) {
-						for (const textNode of textNodes) {
-							textNode[PropertySymbol.styleNode] = record.addedNodes[0] ? this : null;
-						}
-						this[PropertySymbol.updateSheet]();
-					}
-				}
-			})
-		});
-	}
+	public [PropertySymbol.styleNode] = this;
 
 	/**
 	 * Returns CSS style sheet.
@@ -135,25 +103,5 @@ export default class HTMLStyleElement extends HTMLElement {
 		if (this[PropertySymbol.sheet]) {
 			this[PropertySymbol.sheet].replaceSync(this.textContent);
 		}
-	}
-
-	/**
-	 * Finds all text nodes in the element.
-	 *
-	 * @param parentElement Parent element.
-	 * @returns Text nodes.
-	 */
-	#findTextNodes(parentElement: Element): Text[] {
-		const textNodes: Text[] = [];
-		for (const childNode of parentElement[PropertySymbol.childNodes]) {
-			if (childNode instanceof Text) {
-				textNodes.push(childNode);
-			} else if (childNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
-				for (const textNode of this.#findTextNodes(<Element>childNode)) {
-					textNodes.push(textNode);
-				}
-			}
-		}
-		return textNodes;
 	}
 }

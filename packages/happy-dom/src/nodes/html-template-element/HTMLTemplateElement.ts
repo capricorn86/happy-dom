@@ -40,7 +40,7 @@ export default class HTMLTemplateElement extends HTMLElement {
 	 */
 	public set innerHTML(html: string) {
 		const content = <DocumentFragment>this[PropertySymbol.content];
-		const childNodes = content[PropertySymbol.childNodes];
+		const childNodes = content[PropertySymbol.nodeArray];
 
 		while (childNodes.length) {
 			content.removeChild(childNodes[0]);
@@ -75,7 +75,7 @@ export default class HTMLTemplateElement extends HTMLElement {
 		});
 		const content = <DocumentFragment>this[PropertySymbol.content];
 		let xml = '';
-		for (const node of content[PropertySymbol.childNodes]) {
+		for (const node of content[PropertySymbol.nodeArray]) {
 			xml += xmlSerializer.serializeToString(node);
 		}
 		return xml;

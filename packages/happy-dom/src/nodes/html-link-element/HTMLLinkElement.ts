@@ -39,14 +39,6 @@ export default class HTMLLinkElement extends HTMLElement {
 		super();
 
 		this.#browserFrame = browserFrame;
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'set',
-			this.#onSetAttribute.bind(this)
-		);
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'remove',
-			this.#onRemoveAttribute.bind(this)
-		);
 	}
 
 	/**
@@ -232,29 +224,32 @@ export default class HTMLLinkElement extends HTMLElement {
 	}
 
 	/**
-	 * Triggered when an attribute is set.
-	 *
-	 * @param item Item
+	 * @override
 	 */
-	#onSetAttribute(item: Attr): void {
-		if (item[PropertySymbol.name] === 'rel' && this[PropertySymbol.relList]) {
+	public override [PropertySymbol.onSetAttribute](
+		attribute: Attr,
+		replacedAttribute: Attr | null
+	): void {
+		super[PropertySymbol.onSetAttribute](attribute, replacedAttribute);
+
+		if (attribute[PropertySymbol.name] === 'rel' && this[PropertySymbol.relList]) {
 			this[PropertySymbol.relList][PropertySymbol.updateIndices]();
 		}
 
-		if (item[PropertySymbol.name] === 'rel') {
-			this.#loadStyleSheet(this.getAttribute('href'), item[PropertySymbol.value]);
-		} else if (item[PropertySymbol.name] === 'href') {
-			this.#loadStyleSheet(item[PropertySymbol.value], this.getAttribute('rel'));
+		if (attribute[PropertySymbol.name] === 'rel') {
+			this.#loadStyleSheet(this.getAttribute('href'), attribute[PropertySymbol.value]);
+		} else if (attribute[PropertySymbol.name] === 'href') {
+			this.#loadStyleSheet(attribute[PropertySymbol.value], this.getAttribute('rel'));
 		}
 	}
 
 	/**
-	 * Triggered when an attribute is removed.
-	 *
-	 * @param removedItem Removed item.
+	 * @override
 	 */
-	#onRemoveAttribute(removedItem: Attr): void {
-		if (removedItem[PropertySymbol.name] === 'rel' && this[PropertySymbol.relList]) {
+	public override [PropertySymbol.onRemoveAttribute](removedAttribute: Attr): void {
+		super[PropertySymbol.onRemoveAttribute](removedAttribute);
+
+		if (removedAttribute[PropertySymbol.name] === 'rel' && this[PropertySymbol.relList]) {
 			this[PropertySymbol.relList][PropertySymbol.updateIndices]();
 		}
 	}
@@ -328,7 +323,16 @@ export default class HTMLLinkElement extends HTMLElement {
 			const styleSheet = new CSSStyleSheet();
 			styleSheet.replaceSync(code);
 			this[PropertySymbol.sheet] = styleSheet;
-			this[PropertySymbol.ownerDocument][PropertySymbol.clearComputedStyleCache]();
+
+			// Computed style cache is affected by all mutations.
+			const document = this[PropertySymbol.ownerDocument];
+			if (document) {
+				for (const item of document[PropertySymbol.affectsComputedStyleCache]) {
+					item.result = null;
+				}
+				document[PropertySymbol.affectsComputedStyleCache] = [];
+			}
+
 			this.dispatchEvent(new Event('load'));
 		}
 	}

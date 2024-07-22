@@ -58,8 +58,8 @@ export default class XMLSerializer {
 
 				const childNodes =
 					localName === 'template'
-						? (<DocumentFragment>(<HTMLTemplateElement>root).content)[PropertySymbol.childNodes]
-						: (<DocumentFragment>root)[PropertySymbol.childNodes];
+						? (<DocumentFragment>(<HTMLTemplateElement>root).content)[PropertySymbol.nodeArray]
+						: (<DocumentFragment>root)[PropertySymbol.nodeArray];
 				let innerHTML = '';
 
 				for (const node of childNodes) {
@@ -71,7 +71,7 @@ export default class XMLSerializer {
 				if (this.options.includeShadowRoots && element.shadowRoot) {
 					innerHTML += `<template shadowrootmode="${element.shadowRoot[PropertySymbol.mode]}">`;
 
-					for (const node of (<ShadowRoot>element.shadowRoot)[PropertySymbol.childNodes]) {
+					for (const node of (<ShadowRoot>element.shadowRoot)[PropertySymbol.nodeArray]) {
 						innerHTML += this.serializeToString(node);
 					}
 
@@ -82,7 +82,7 @@ export default class XMLSerializer {
 			case Node.DOCUMENT_FRAGMENT_NODE:
 			case Node.DOCUMENT_NODE:
 				let html = '';
-				for (const node of (<Node>root)[PropertySymbol.childNodes]) {
+				for (const node of (<Node>root)[PropertySymbol.nodeArray]) {
 					html += this.serializeToString(node);
 				}
 				return html;

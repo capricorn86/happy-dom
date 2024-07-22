@@ -42,10 +42,6 @@ export default class HTMLScriptElement extends HTMLElement {
 		super();
 
 		this.#browserFrame = browserFrame;
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'set',
-			this.#onSetAttribute.bind(this)
-		);
 	}
 
 	/**
@@ -249,17 +245,20 @@ export default class HTMLScriptElement extends HTMLElement {
 	}
 
 	/**
-	 * Triggered when an attribute is set.
-	 *
-	 * @param item Item
+	 * @override
 	 */
-	#onSetAttribute(item: Attr): void {
+	public override [PropertySymbol.onSetAttribute](
+		attribute: Attr,
+		replacedAttribute: Attr | null
+	): void {
+		super[PropertySymbol.onSetAttribute](attribute, replacedAttribute);
+
 		if (
-			item[PropertySymbol.name] === 'src' &&
-			item[PropertySymbol.value] !== null &&
+			attribute[PropertySymbol.name] === 'src' &&
+			attribute[PropertySymbol.value] !== null &&
 			this[PropertySymbol.isConnected]
 		) {
-			this.#loadScript(item[PropertySymbol.value]);
+			this.#loadScript(attribute[PropertySymbol.value]);
 		}
 	}
 

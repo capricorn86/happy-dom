@@ -63,15 +63,6 @@ export default class HTMLIFrameElement extends HTMLElement {
 	constructor(browserFrame: IBrowserFrame) {
 		super();
 		this.#browserFrame = browserFrame;
-
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'set',
-			this.#onSetAttribute.bind(this)
-		);
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'remove',
-			this.#onRemoveAttribute.bind(this)
-		);
 	}
 
 	/**
@@ -269,12 +260,13 @@ export default class HTMLIFrameElement extends HTMLElement {
 	}
 
 	/**
-	 * Triggered when an attribute is set.
-	 *
-	 * @param attribute Attribute.
-	 * @param replacedAttribute Replaced attribute.
+	 * @override
 	 */
-	#onSetAttribute(attribute: Attr, replacedAttribute: Attr | null): void {
+	public override [PropertySymbol.onSetAttribute](
+		attribute: Attr,
+		replacedAttribute: Attr | null
+	): void {
+		super[PropertySymbol.onSetAttribute](attribute, replacedAttribute);
 		if (attribute[PropertySymbol.name] === 'srcdoc') {
 			this.#loadPage();
 		}
@@ -300,11 +292,11 @@ export default class HTMLIFrameElement extends HTMLElement {
 	}
 
 	/**
-	 * Triggered when an attribute is removed.
-	 *
-	 * @param removedAttribute Removed attribute.
+	 * @override
 	 */
-	#onRemoveAttribute(removedAttribute: Attr): void {
+	public override [PropertySymbol.onRemoveAttribute](removedAttribute: Attr): void {
+		super[PropertySymbol.onRemoveAttribute](removedAttribute);
+
 		if (
 			removedAttribute[PropertySymbol.name] === 'srcdoc' ||
 			removedAttribute[PropertySymbol.name] === 'src'

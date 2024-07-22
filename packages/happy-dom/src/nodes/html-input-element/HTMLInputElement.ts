@@ -19,7 +19,7 @@ import Document from '../document/Document.js';
 import ShadowRoot from '../shadow-root/ShadowRoot.js';
 import { URL } from 'url';
 import MouseEvent from '../../event/events/MouseEvent.js';
-import NodeList from '../node/INodeList.js';
+import NodeList from '../node/NodeList.js';
 
 /**
  * HTML Input Element.
@@ -202,7 +202,14 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @returns Form.
 	 */
 	public get form(): HTMLFormElement {
-		return <HTMLFormElement>this[PropertySymbol.formNode];
+		if (this[PropertySymbol.formNode]) {
+			return this[PropertySymbol.formNode];
+		}
+		const id = this.attributes['form']?.[PropertySymbol.value];
+		if (!id || !this[PropertySymbol.isConnected]) {
+			return null;
+		}
+		return <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(id);
 	}
 
 	/**

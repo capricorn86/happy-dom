@@ -178,7 +178,6 @@ import ResizeObserver from '../resize-observer/ResizeObserver.js';
 import Screen from '../screen/Screen.js';
 import Selection from '../selection/Selection.js';
 import Storage from '../storage/Storage.js';
-import StorageFactory from '../storage/StorageFactory.js';
 import NodeFilter from '../tree-walker/NodeFilter.js';
 import NodeIterator from '../tree-walker/NodeIterator.js';
 import TreeWalker from '../tree-walker/TreeWalker.js';
@@ -577,8 +576,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this[PropertySymbol.navigator] = new Navigator(this);
 		this[PropertySymbol.history] = new History();
 		this[PropertySymbol.screen] = new Screen();
-		this[PropertySymbol.sessionStorage] = StorageFactory.createStorage();
-		this[PropertySymbol.localStorage] = StorageFactory.createStorage();
+		this[PropertySymbol.sessionStorage] = new Storage();
+		this[PropertySymbol.localStorage] = new Storage();
 		this[PropertySymbol.location] = new Location(this.#browserFrame, options?.url ?? 'about:blank');
 		this[PropertySymbol.asyncTaskManager] = asyncTaskManager;
 
@@ -1435,7 +1434,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this[PropertySymbol.mutationObservers] = [];
 
 		// Disconnects nodes from the document, so that they can be garbage collected.
-		const childNodes = this.document[PropertySymbol.childNodes];
+		const childNodes = this.document[PropertySymbol.nodeArray];
 
 		while (childNodes.length > 0) {
 			// Makes sure that something won't be triggered by the disconnect.

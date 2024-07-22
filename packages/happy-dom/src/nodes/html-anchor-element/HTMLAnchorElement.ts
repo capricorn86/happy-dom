@@ -19,21 +19,6 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	#htmlHyperlinkElementUtility = new HTMLHyperlinkElementUtility(this);
 
 	/**
-	 * Constructor.
-	 */
-	constructor() {
-		super();
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'set',
-			this.#onSetAttribute.bind(this)
-		);
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'remove',
-			this.#onRemoveAttribute.bind(this)
-		);
-	}
-
-	/**
 	 * Returns download.
 	 *
 	 * @returns download.
@@ -414,22 +399,24 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	}
 
 	/**
-	 * Triggered when an attribute is set.
-	 * @param item
+	 * @override
 	 */
-	#onSetAttribute(item: Attr): void {
-		if (item[PropertySymbol.name] === 'rel' && this[PropertySymbol.relList]) {
+	public override [PropertySymbol.onSetAttribute](
+		attribute: Attr,
+		replacedAttribute: Attr | null
+	): void {
+		super[PropertySymbol.onSetAttribute](attribute, replacedAttribute);
+		if (attribute[PropertySymbol.name] === 'rel' && this[PropertySymbol.relList]) {
 			this[PropertySymbol.relList][PropertySymbol.updateIndices]();
 		}
 	}
 
 	/**
-	 * Triggered when an attribute is removed.
-	 * @param name
-	 * @param removedItem
+	 * @override
 	 */
-	#onRemoveAttribute(removedItem: Attr): void {
-		if (removedItem[PropertySymbol.name] === 'rel' && this[PropertySymbol.relList]) {
+	public override [PropertySymbol.onRemoveAttribute](removedAttribute: Attr): void {
+		super[PropertySymbol.onRemoveAttribute](removedAttribute);
+		if (removedAttribute[PropertySymbol.name] === 'rel' && this[PropertySymbol.relList]) {
 			this[PropertySymbol.relList][PropertySymbol.updateIndices]();
 		}
 	}

@@ -55,10 +55,10 @@ export default class CSSStyleDeclarationElementStyle {
 			return this.getComputedElementStyle();
 		}
 
-		const cache = this.element[PropertySymbol.styleCache];
+		const cachedResult = this.element[PropertySymbol.cache].style;
 
-		if (cache?.result) {
-			const result = cache.result.deref();
+		if (cachedResult?.result) {
+			const result = cachedResult.result.deref();
 			if (result) {
 				return result;
 			}
@@ -68,7 +68,7 @@ export default class CSSStyleDeclarationElementStyle {
 
 		if (cssText) {
 			const propertyManager = new CSSStyleDeclarationPropertyManager({ cssText });
-			this.element[PropertySymbol.styleCache] = {
+			this.element[PropertySymbol.cache].style = {
 				result: new WeakRef(propertyManager)
 			};
 			return propertyManager;
@@ -96,10 +96,10 @@ export default class CSSStyleDeclarationElementStyle {
 			return new CSSStyleDeclarationPropertyManager();
 		}
 
-		const cache = this.element[PropertySymbol.computedStyleCache];
+		const cacheResult = this.element[PropertySymbol.cache].computedStyle;
 
-		if (cache?.result) {
-			const result = cache.result.deref();
+		if (cacheResult?.result) {
+			const result = cacheResult.result.deref();
 			if (result) {
 				return result;
 			}
@@ -303,8 +303,8 @@ export default class CSSStyleDeclarationElementStyle {
 			result: new WeakRef(propertyManager)
 		};
 
-		this.element[PropertySymbol.computedStyleCache] = cachedResult;
-		this.element[PropertySymbol.ownerDocument][PropertySymbol.computedStyleCacheReferences].push(
+		this.element[PropertySymbol.cache].computedStyle = cachedResult;
+		this.element[PropertySymbol.ownerDocument][PropertySymbol.affectsComputedStyleCache].push(
 			cachedResult
 		);
 

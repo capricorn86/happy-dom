@@ -51,7 +51,7 @@ export default class ShadowRoot extends DocumentFragment {
 			escapeEntities: false
 		});
 		let xml = '';
-		for (const node of this[PropertySymbol.childNodes]) {
+		for (const node of this[PropertySymbol.nodeArray]) {
 			xml += xmlSerializer.serializeToString(node);
 		}
 		return xml;
@@ -63,7 +63,7 @@ export default class ShadowRoot extends DocumentFragment {
 	 * @param html HTML.
 	 */
 	public set innerHTML(html: string) {
-		const childNodes = this[PropertySymbol.childNodes];
+		const childNodes = this[PropertySymbol.nodeArray];
 
 		while (childNodes.length) {
 			this.removeChild(childNodes[0]);

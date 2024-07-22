@@ -1,36 +1,84 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
-import DOMException from '../../exception/DOMException.js';
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
-import Element from '../element/Element.js';
-import IHTMLCollection from '../element/IHTMLCollection.js';
-import INodeList from './INodeList.js';
-import NodeTypeEnum from './NodeTypeEnum.js';
-
-interface IHTMLCollectionAndFilter {
-	htmlCollection: IHTMLCollection<Element>;
-	filter: (item: Element) => boolean | null;
-}
+import Node from './Node.js';
 
 /**
  * NodeList.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NodeList
  */
-class NodeList<T> extends Array<T> implements INodeList<T> {
-	public [PropertySymbol.htmlCollections]: IHTMLCollectionAndFilter[] = [];
+class NodeList<T extends Node> {
+	[index: number]: T;
+	public [PropertySymbol.items]: T[];
 
 	/**
 	 * Constructor.
 	 *
 	 * @param items Items.
 	 */
-	constructor(items?: T[]) {
-		super();
-		if (items && items instanceof Array) {
-			for (const item of items) {
-				this[PropertySymbol.addItem](item);
+	constructor(items: T[]) {
+		this[PropertySymbol.items] = items;
+
+		return new Proxy(this, {
+			get: (target, property, reciever) => {
+				if (property in target || typeof property === 'symbol') {
+					return Reflect.get(target, property, reciever);
+				}
+				const index = Number(property);
+				if (!isNaN(index)) {
+					return items[index];
+				}
+			},
+			set(): boolean {
+				return true;
+			},
+			deleteProperty(): boolean {
+				return true;
+			},
+			ownKeys(): string[] {
+				return Object.keys(items);
+			},
+			has(target, property): boolean {
+				if (property in target) {
+					return true;
+				}
+
+				const index = Number(property);
+				return !isNaN(index) && index >= 0 && index < items.length;
+			},
+			defineProperty(target, property, descriptor): boolean {
+				if (property in target) {
+					Reflect.defineProperty(target, property, descriptor);
+					return true;
+				}
+
+				return false;
+			},
+			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
+				if (property in target) {
+					return;
+				}
+
+				const index = Number(property);
+
+				if (!isNaN(index) && items[index]) {
+					return {
+						value: items[index],
+						writable: false,
+						enumerable: true,
+						configurable: false
+					};
+				}
 			}
-		}
+		});
+	}
+
+	/**
+	 * Returns length.
+	 *
+	 * @returns Length.
+	 */
+	public get length(): number {
+		return this[PropertySymbol.items].length;
 	}
 
 	/**
@@ -66,167 +114,55 @@ class NodeList<T> extends Array<T> implements INodeList<T> {
 	 * @param index Index.
 	 */
 	public item(index: number): T {
-		return index >= 0 && this[index] ? this[index] : null;
+		const nodes = this[PropertySymbol.items];
+		return index >= 0 && nodes[index] ? <T>nodes[index] : null;
 	}
 
 	/**
-	 * Appends item.
+	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.
 	 *
-	 * @param item Item.
-	 * @returns True if added.
+	 * @returns Iterator.
 	 */
-	public [PropertySymbol.addItem](item: T): boolean {
-		if (super.includes(item)) {
-			return false;
-		}
-
-		super.push(item);
-
-		const htmlCollections = this[PropertySymbol.htmlCollections];
-		for (const { htmlCollection, filter } of htmlCollections) {
-			if (
-				item[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
-				(!filter || filter(<Element>item))
-			) {
-				htmlCollection[PropertySymbol.addItem](<Element>item);
-			}
-		}
-
-		return true;
+	public [Symbol.iterator](): IterableIterator<T> {
+		const items = <T[]>this[PropertySymbol.items];
+		return items[Symbol.iterator]();
 	}
 
 	/**
-	 * Inserts item before another item.
+	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.
 	 *
-	 * @param newItem New item.
-	 * @param [referenceItem] Reference item.
-	 * @returns True if inserted.
+	 * @returns Iterator.
 	 */
-	public [PropertySymbol.insertItem](newItem: T, referenceItem: T | null): boolean {
-		if (!referenceItem) {
-			return this[PropertySymbol.addItem](newItem);
-		}
-
-		if (super.includes(newItem)) {
-			return false;
-		}
-
-		const index = super.indexOf(referenceItem);
-
-		if (index === -1) {
-			throw new DOMException(
-				"Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.",
-				DOMExceptionNameEnum.notFoundError
-			);
-		}
-
-		super.splice(index, 0, newItem);
-
-		const htmlCollections = this[PropertySymbol.htmlCollections];
-		for (const { htmlCollection, filter } of htmlCollections) {
-			let isInserted = false;
-			for (let i = index + 1; i < this.length; i++) {
-				const referenceItem = this[i];
-				if (
-					referenceItem[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
-					(!filter || filter(<Element>referenceItem))
-				) {
-					isInserted = true;
-					htmlCollection[PropertySymbol.insertItem](<Element>newItem, <Element>referenceItem);
-					break;
-				}
-			}
-			if (!isInserted) {
-				htmlCollection[PropertySymbol.addItem](<Element>newItem);
-			}
-		}
-
-		return true;
+	public values(): IterableIterator<T> {
+		return (<T[]>this[PropertySymbol.items]).values();
 	}
 
 	/**
-	 * Removes item.
+	 * Returns an iterator, allowing you to go through all key/value pairs contained in this object.
 	 *
-	 * @param item Item.
-	 * @returns True if removed.
+	 * @returns Iterator.
 	 */
-	public [PropertySymbol.removeItem](item: T): boolean {
-		const index = super.indexOf(item);
-
-		if (index === -1) {
-			throw new DOMException(
-				"Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.",
-				DOMExceptionNameEnum.notFoundError
-			);
-		}
-
-		super.splice(index, 1);
-
-		const htmlCollections = this[PropertySymbol.htmlCollections];
-		for (const { htmlCollection, filter } of htmlCollections) {
-			if (
-				item[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
-				(!filter || filter(<Element>item))
-			) {
-				htmlCollection[PropertySymbol.removeItem](<Element>item);
-			}
-		}
-
-		return true;
+	public entries(): IterableIterator<[number, T]> {
+		return (<T[]>this[PropertySymbol.items]).entries();
 	}
 
 	/**
-	 * Index of item.
+	 * Executes a provided callback function once for each DOMTokenList element.
 	 *
-	 * @param item Item.
-	 * @returns Index.
+	 * @param callback Function.
+	 * @param thisArg thisArg.
 	 */
-	public [PropertySymbol.indexOf](item: T): number {
-		return super.indexOf(item);
+	public forEach(callback: (currentValue, currentIndex, listObj) => void, thisArg?: this): void {
+		return (<T[]>this[PropertySymbol.items]).forEach(callback, thisArg);
 	}
 
 	/**
-	 * Returns true if the item is in the list.
+	 * Returns an iterator, allowing you to go through all keys of the key/value pairs contained in this object.
 	 *
-	 * @param item Item.
-	 * @returns True if the item is in the list.
+	 * @returns Iterator.
 	 */
-	public [PropertySymbol.includes](item: T): boolean {
-		return super.includes(item);
-	}
-
-	/**
-	 * Returns a shallow copy of a portion of an array into a new array object selected from start to end.
-	 *
-	 * @param [start] Start.
-	 * @param [end] End.
-	 * @returns A new array containing the extracted elements.
-	 */
-	public [PropertySymbol.slice](start?: number, end?: number): T[] {
-		return super.slice(start, end);
-	}
-}
-
-// Removes Array methods from NodeList.
-const descriptors = Object.getOwnPropertyDescriptors(Array.prototype);
-for (const key of Object.keys(descriptors)) {
-	if (
-		typeof key !== 'symbol' &&
-		key !== 'item' &&
-		key !== 'entries' &&
-		key !== 'values' &&
-		key !== 'keys' &&
-		key !== 'constructor'
-	) {
-		const descriptor = descriptors[key];
-		if (key === 'length') {
-			Object.defineProperty(NodeList.prototype, key, {
-				set: () => {},
-				get: descriptor.get
-			});
-		} else if (typeof descriptor.value === 'function') {
-			Object.defineProperty(NodeList.prototype, key, {});
-		}
+	public keys(): IterableIterator<number> {
+		return (<T[]>this[PropertySymbol.items]).keys();
 	}
 }
 

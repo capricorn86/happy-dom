@@ -21,23 +21,6 @@ export default class HTMLSlotElement extends HTMLElement {
 	public onslotchange: (event: Event) => void | null = null;
 
 	/**
-	 *
-	 */
-	constructor() {
-		super();
-
-		// Attribute listeners
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'set',
-			this.#onSetAttribute.bind(this)
-		);
-		this[PropertySymbol.attributes][PropertySymbol.addEventListener](
-			'remove',
-			this.#onRemoveAttribute.bind(this)
-		);
-	}
-
-	/**
 	 * Returns name.
 	 *
 	 * @returns Name.
@@ -94,12 +77,13 @@ export default class HTMLSlotElement extends HTMLElement {
 	}
 
 	/**
-	 * Triggered when an attribute is set.
-	 *
-	 * @param attribute Attribute.
-	 * @param replacedAttribute Replaced attribute.
+	 * @override
 	 */
-	#onSetAttribute(attribute: Attr, replacedAttribute: Attr | null): void {
+	public override [PropertySymbol.onSetAttribute](
+		attribute: Attr,
+		replacedAttribute: Attr | null
+	): void {
+		super[PropertySymbol.onSetAttribute](attribute, replacedAttribute);
 		if (
 			attribute[PropertySymbol.name] === 'name' &&
 			attribute[PropertySymbol.value] !== replacedAttribute?.[PropertySymbol.value]
@@ -121,11 +105,10 @@ export default class HTMLSlotElement extends HTMLElement {
 	}
 
 	/**
-	 * Triggered when an attribute is set.
-	 *
-	 * @param removedAttribute Attribute.
+	 * @override
 	 */
-	#onRemoveAttribute(removedAttribute: Attr): void {
+	public override [PropertySymbol.onRemoveAttribute](removedAttribute: Attr): void {
+		super[PropertySymbol.onRemoveAttribute](removedAttribute);
 		if (
 			removedAttribute[PropertySymbol.name] === 'name' &&
 			removedAttribute[PropertySymbol.value] &&
@@ -154,9 +137,9 @@ export default class HTMLSlotElement extends HTMLElement {
 
 		const assignedElements = [];
 
-		for (const slotNode of (<HTMLElement>host)[PropertySymbol.childNodes]) {
+		for (const slotNode of (<HTMLElement>host)[PropertySymbol.nodeArray]) {
 			if (name && slotNode['slot'] && slotNode['slot'] === name) {
-				for (const child of slotNode[PropertySymbol.childNodes]) {
+				for (const child of slotNode[PropertySymbol.nodeArray]) {
 					assignedElements.push(child);
 				}
 			} else if (!name && !slotNode['slot']) {
@@ -186,9 +169,9 @@ export default class HTMLSlotElement extends HTMLElement {
 
 		const assignedElements = [];
 
-		for (const slotElement of (<HTMLElement>host)[PropertySymbol.children]) {
+		for (const slotElement of (<HTMLElement>host)[PropertySymbol.elementArray]) {
 			if (name && slotElement.slot === name) {
-				for (const child of slotElement[PropertySymbol.children]) {
+				for (const child of slotElement[PropertySymbol.elementArray]) {
 					assignedElements.push(child);
 				}
 			} else if (!name && !slotElement.slot) {

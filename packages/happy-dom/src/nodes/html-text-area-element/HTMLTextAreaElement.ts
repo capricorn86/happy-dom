@@ -9,11 +9,7 @@ import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputEl
 import ValidityState from '../../validity-state/ValidityState.js';
 import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
-import Text from '../text/Text.js';
-import INodeList from '../node/INodeList.js';
-import MutationRecord from '../../mutation-observer/MutationRecord.js';
-import Element from '../element/Element.js';
-import NodeTypeEnum from '../node/NodeTypeEnum.js';
+import NodeList from '../node/NodeList.js';
 
 /**
  * HTML Text Area Element.
@@ -34,42 +30,13 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
 	public [PropertySymbol.value] = null;
-	public [PropertySymbol.textAreaNode]: HTMLTextAreaElement = this;
+	public [PropertySymbol.textAreaNode] = this;
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
 
 	// Private properties
 	#selectionStart = null;
 	#selectionEnd = null;
 	#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
-
-	/**
-	 * Constructor.
-	 */
-	constructor() {
-		super();
-
-		this[PropertySymbol.observeMutations]({
-			options: {
-				childList: true,
-				subtree: true
-			},
-			callback: new WeakRef((record: MutationRecord) => {
-				const node = record.addedNodes[0] || record.removedNodes[0];
-				if (node instanceof Text) {
-					node[PropertySymbol.textAreaNode] = record.addedNodes[0] ? this : null;
-					this[PropertySymbol.resetSelection]();
-				} else if (node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
-					const textNodes = this.#findTextNodes(<Element>node);
-					if (textNodes.length) {
-						for (const textNode of textNodes) {
-							textNode[PropertySymbol.textAreaNode] = record.addedNodes[0] ? this : null;
-						}
-						this[PropertySymbol.resetSelection]();
-					}
-				}
-			})
-		});
-	}
 
 	/**
 	 * Returns validation message.
@@ -444,7 +411,14 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 * @returns Form.
 	 */
 	public get form(): HTMLFormElement {
-		return <HTMLFormElement>this[PropertySymbol.formNode];
+		if (this[PropertySymbol.formNode]) {
+			return this[PropertySymbol.formNode];
+		}
+		const id = this.attributes['form']?.[PropertySymbol.value];
+		if (!id || !this[PropertySymbol.isConnected]) {
+			return null;
+		}
+		return <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(id);
 	}
 
 	/**
@@ -461,7 +435,7 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 *
 	 * @returns Label elements.
 	 */
-	public get labels(): INodeList<HTMLLabelElement> {
+	public get labels(): NodeList<HTMLLabelElement> {
 		return HTMLLabelElementUtility.getAssociatedLabelElements(this);
 	}
 
@@ -618,25 +592,5 @@ export default class HTMLTextAreaElement extends HTMLElement {
 			this.#selectionEnd = null;
 			this.#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
 		}
-	}
-
-	/**
-	 * Finds all text nodes in the element.
-	 *
-	 * @param parentElement Parent element.
-	 * @returns Text nodes.
-	 */
-	#findTextNodes(parentElement: Element): Text[] {
-		const textNodes: Text[] = [];
-		for (const childNode of parentElement[PropertySymbol.childNodes]) {
-			if (childNode instanceof Text) {
-				textNodes.push(childNode);
-			} else if (childNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
-				for (const textNode of this.#findTextNodes(<Element>childNode)) {
-					textNodes.push(textNode);
-				}
-			}
-		}
-		return textNodes;
 	}
 }

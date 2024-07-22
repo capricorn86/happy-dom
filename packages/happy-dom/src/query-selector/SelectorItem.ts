@@ -6,7 +6,6 @@ import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
 import ISelectorAttribute from './ISelectorAttribute.js';
 import ISelectorMatch from './ISelectorMatch.js';
 import ISelectorPseudo from './ISelectorPseudo.js';
-import IHTMLCollection from '../nodes/element/IHTMLCollection.js';
 
 /**
  * Selector item.
@@ -122,7 +121,7 @@ export default class SelectorItem {
 	private matchPseudo(element: Element): ISelectorMatch | null {
 		const parent = <Element>element[PropertySymbol.parentNode];
 		const parentChildren = element[PropertySymbol.parentNode]
-			? (<Element>element[PropertySymbol.parentNode])[PropertySymbol.children]
+			? (<Element>element[PropertySymbol.parentNode])[PropertySymbol.elementArray]
 			: [];
 
 		if (!this.pseudos) {
@@ -192,7 +191,7 @@ export default class SelectorItem {
 	 */
 	private matchPseudoItem(
 		element: Element,
-		parentChildren: Element[] | IHTMLCollection<Element>,
+		parentChildren: Element[],
 		pseudo: ISelectorPseudo
 	): ISelectorMatch | null {
 		switch (pseudo.name) {
@@ -237,7 +236,9 @@ export default class SelectorItem {
 					? { priorityWeight: 10 }
 					: null;
 			case 'empty':
-				return !(<Element>element)[PropertySymbol.children].length ? { priorityWeight: 10 } : null;
+				return !(<Element>element)[PropertySymbol.elementArray].length
+					? { priorityWeight: 10 }
+					: null;
 			case 'root':
 				return element[PropertySymbol.tagName] === 'HTML' ? { priorityWeight: 10 } : null;
 			case 'not':

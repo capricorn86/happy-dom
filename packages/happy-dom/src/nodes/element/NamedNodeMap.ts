@@ -18,14 +18,6 @@ export default class NamedNodeMap {
 	public [PropertySymbol.namedItems]: Map<string, Attr> = new Map();
 	public [PropertySymbol.ownerElement]: Element;
 
-	#eventListeners: {
-		set: WeakRef<TNamedNodeMapListener>[];
-		remove: WeakRef<TNamedNodeMapListener>[];
-	} = {
-		set: [],
-		remove: []
-	};
-
 	/**
 	 * Constructor.
 	 *
@@ -158,63 +150,6 @@ export default class NamedNodeMap {
 	}
 
 	/**
-	 * Adds event listener.
-	 *
-	 * @param type Type.
-	 * @param listener Listener.
-	 */
-	public [PropertySymbol.addEventListener](
-		type: 'set' | 'remove',
-		listener: TNamedNodeMapListener
-	): void {
-		this.#eventListeners[type].push(new WeakRef(listener));
-	}
-
-	/**
-	 * Removes event listener.
-	 *
-	 * @param type Type.
-	 * @param listener Listener.
-	 */
-	public [PropertySymbol.removeEventListener](
-		type: 'set' | 'remove',
-		listener: TNamedNodeMapListener
-	): void {
-		const listeners = this.#eventListeners[type];
-		for (let i = 0, max = listeners.length; i < max; i++) {
-			if (listeners[i].deref() === listener) {
-				listeners.splice(i, 1);
-				return;
-			}
-		}
-	}
-
-	/**
-	 * Dispatches event.
-	 *
-	 * @param type Type.
-	 * @param attribute Attribute.
-	 * @param replacedAttribute Replaced attribute.
-	 */
-	public [PropertySymbol.dispatchEvent](
-		type: 'set' | 'remove',
-		attribute: Attr,
-		replacedAttribute?: Attr | null
-	): void {
-		const listeners = this.#eventListeners[type];
-		for (let i = 0, max = listeners.length; i < max; i++) {
-			const listener = listeners[i].deref();
-			if (listener) {
-				listener(attribute, replacedAttribute);
-			} else {
-				listeners.splice(i, 1);
-				i--;
-				max--;
-			}
-		}
-	}
-
-	/**
 	 * Sets named item.
 	 *
 	 * @param item Item.
@@ -248,7 +183,7 @@ export default class NamedNodeMap {
 		}
 
 		if (!ignoreListeners) {
-			this[PropertySymbol.dispatchEvent]('set', item, replacedItem);
+			this[PropertySymbol.ownerElement][PropertySymbol.onSetAttribute](item, replacedItem);
 		}
 
 		return replacedItem;
@@ -272,7 +207,7 @@ export default class NamedNodeMap {
 		this[PropertySymbol.namedItems].delete(name);
 
 		if (!ignoreListeners) {
-			this[PropertySymbol.dispatchEvent]('remove', item);
+			this[PropertySymbol.ownerElement][PropertySymbol.onRemoveAttribute](item);
 		}
 	}
 
