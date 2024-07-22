@@ -47,9 +47,9 @@ export default class HTMLSelectElement extends HTMLElement {
 					return QuerySelector.querySelectorAll(target, 'option')[PropertySymbol.items][index];
 				}
 			},
-			set(target, property, newValue, reciever): boolean {
+			set(target, property, newValue): boolean {
 				if (property in target || typeof property === 'symbol') {
-					Reflect.set(target, property, newValue, reciever);
+					target[property] = newValue;
 					return true;
 				}
 
@@ -98,7 +98,7 @@ export default class HTMLSelectElement extends HTMLElement {
 			},
 			defineProperty(target, property, descriptor): boolean {
 				if (property in target) {
-					Reflect.defineProperty(target, property, descriptor);
+					Object.defineProperty(target, property, descriptor);
 					return true;
 				}
 
@@ -128,7 +128,7 @@ export default class HTMLSelectElement extends HTMLElement {
 			},
 			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
 				if (property in target) {
-					return Reflect.getOwnPropertyDescriptor(target, property);
+					return Object.getOwnPropertyDescriptor(target, property);
 				}
 
 				const index = Number(property);

@@ -32,7 +32,10 @@ export default class HTMLCollection<T extends Element, NamedItem = T> {
 				}
 				return target.namedItem(<string>property) || undefined;
 			},
-			set(): boolean {
+			set(target, property, newValue): boolean {
+				if (property in target || typeof property === 'symbol') {
+					target[property] = newValue;
+				}
 				return true;
 			},
 			deleteProperty(): boolean {

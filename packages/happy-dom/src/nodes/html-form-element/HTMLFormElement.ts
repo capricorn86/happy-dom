@@ -60,9 +60,9 @@ export default class HTMLFormElement extends HTMLElement {
 				}
 				return target[PropertySymbol.getFormControlNamedItem](<string>property) || undefined;
 			},
-			set(target, property, newValue, reciever): boolean {
+			set(target, property, newValue): boolean {
 				if (property in target || typeof property === 'symbol') {
-					Reflect.set(target, property, newValue, reciever);
+					target[property] = newValue;
 				}
 				return true;
 			},
@@ -90,6 +90,10 @@ export default class HTMLFormElement extends HTMLElement {
 					return true;
 				}
 
+				if (typeof property === 'symbol') {
+					return false;
+				}
+
 				const items = target[PropertySymbol.getFormControlItems]();
 				const index = Number(property);
 
@@ -114,7 +118,7 @@ export default class HTMLFormElement extends HTMLElement {
 			},
 			defineProperty(target, property, descriptor): boolean {
 				if (property in target) {
-					Reflect.defineProperty(target, property, descriptor);
+					Object.defineProperty(target, property, descriptor);
 					return true;
 				}
 
@@ -122,7 +126,7 @@ export default class HTMLFormElement extends HTMLElement {
 			},
 			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
 				if (property in target) {
-					return Reflect.getOwnPropertyDescriptor(target, property);
+					return Object.getOwnPropertyDescriptor(target, property);
 				}
 
 				const items = target[PropertySymbol.getFormControlItems]();
@@ -505,7 +509,7 @@ export default class HTMLFormElement extends HTMLElement {
 		}
 
 		if (namedItems.length === 1) {
-			namedItems[0];
+			return namedItems[0];
 		}
 
 		return new RadioNodeList(namedItems);

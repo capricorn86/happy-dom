@@ -12,38 +12,39 @@ export default class Storage {
 	 * Constructor.
 	 */
 	constructor() {
+		const data = this[PropertySymbol.data];
 		return new Proxy(this, {
-			get: (target, property) => {
-				if (property in target || typeof property === 'symbol') {
-					const returnValue = target[property];
-					if (typeof returnValue === 'function') {
-						return returnValue.bind(target);
-					}
-					return returnValue;
+			get: (target, property, reciever) => {
+				if (typeof property === 'symbol') {
+					return target[property];
 				}
-				const value = target[PropertySymbol.data][String(property)];
-				if (value !== undefined) {
-					return value;
+				if (property in target) {
+					return Reflect.get(target, property, reciever);
+				}
+				if (property in data) {
+					return data[property];
 				}
 			},
 			set(target, property, newValue): boolean {
-				if (property in target) {
-					return false;
-				}
-				target[PropertySymbol.data][String(property)] = String(newValue);
-			},
-			deleteProperty(target, property): boolean {
-				if (property in target) {
-					return false;
+				if (property in target || typeof property === 'symbol') {
+					return true;
 				}
 
-				delete target[PropertySymbol.data][String(property)];
+				data[String(property)] = String(newValue);
+				return true;
 			},
-			ownKeys(target): string[] {
-				return Object.keys(target[PropertySymbol.data]);
+			deleteProperty(_target, property): boolean {
+				if (property in data) {
+					delete data[String(property)];
+					return true;
+				}
+				return false;
+			},
+			ownKeys(): string[] {
+				return Object.keys(data);
 			},
 			has(target, property): boolean {
-				if (property in target || property in target[PropertySymbol.data]) {
+				if (property in target || property in data) {
 					return true;
 				}
 
@@ -51,12 +52,12 @@ export default class Storage {
 			},
 			defineProperty(target, property, descriptor): boolean {
 				if (property in target) {
-					Object.defineProperty(target, property, descriptor);
+					Reflect.defineProperty(target, property, descriptor);
 					return true;
 				}
 
 				if (descriptor.value !== undefined) {
-					target[PropertySymbol.data][String(property)] = String(descriptor.value);
+					data[String(property)] = String(descriptor.value);
 					return true;
 				}
 
@@ -67,7 +68,7 @@ export default class Storage {
 					return;
 				}
 
-				const value = target[PropertySymbol.data][String(property)];
+				const value = data[String(property)];
 
 				if (value !== undefined) {
 					return {
@@ -134,6 +135,9 @@ export default class Storage {
 	 * Clears storage.
 	 */
 	public clear(): void {
-		this[PropertySymbol.data] = {};
+		const data = this[PropertySymbol.data];
+		for (const key of Object.keys(data)) {
+			delete data[key];
+		}
 	}
 }

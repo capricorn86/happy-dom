@@ -296,7 +296,7 @@ export default class Document extends Node {
 	 * @returns Title.
 	 */
 	public get title(): string {
-		const element = ParentNodeUtility.getElementById(this, 'title');
+		const element = ParentNodeUtility.getElementByTagName(this, 'title');
 		if (element) {
 			return element.textContent;
 		}
@@ -308,7 +308,7 @@ export default class Document extends Node {
 	 *
 	 */
 	public set title(title: string) {
-		const element = ParentNodeUtility.getElementById(this, 'title');
+		const element = ParentNodeUtility.getElementByTagName(this, 'title');
 		if (element) {
 			element.textContent = title;
 		} else {

@@ -135,9 +135,9 @@ export default class TreeWalker {
 			this.currentNode[PropertySymbol.parentNode]
 		) {
 			const siblings = (<Node>this.currentNode[PropertySymbol.parentNode])[
-				PropertySymbol.childNodes
+				PropertySymbol.nodeArray
 			];
-			const index = siblings[PropertySymbol.indexOf](this.currentNode);
+			const index = siblings.indexOf(this.currentNode);
 
 			if (index > 0) {
 				this.currentNode = siblings[index - 1];
@@ -165,9 +165,9 @@ export default class TreeWalker {
 			this.currentNode[PropertySymbol.parentNode]
 		) {
 			const siblings = (<Node>this.currentNode[PropertySymbol.parentNode])[
-				PropertySymbol.childNodes
+				PropertySymbol.nodeArray
 			];
-			const index = siblings[PropertySymbol.indexOf](this.currentNode);
+			const index = siblings.indexOf(this.currentNode);
 
 			if (index + 1 < siblings.length) {
 				this.currentNode = siblings[index + 1];

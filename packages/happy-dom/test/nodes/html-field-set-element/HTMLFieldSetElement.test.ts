@@ -141,10 +141,10 @@ describe('HTMLFieldSetElement', () => {
 			expect(element.elements[6]).toBe(element.children[6]);
 			expect(element.elements[7]).toBe(element.children[7]);
 			expect(element.elements['text1']).toBe(undefined);
-			expect(element.elements['textarea1']).toBe(element.children[2]);
-			expect(element.elements['checkbox1']).toBe(undefined);
-			expect(element.elements['radio1']).toBe(element.children[6]);
-			expect(element.elements['button1']).toBe(element.children[9]);
+			expect(element.elements['textarea1']).toBe(element.children[1]);
+			expect(element.elements['checkbox1']).toBe(element.children[2]);
+			expect(element.elements['radio1']).toBe(element.children[4]);
+			expect(element.elements['button1']).toBe(element.children[7]);
 		});
 	});
 });

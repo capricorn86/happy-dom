@@ -868,7 +868,7 @@ describe('Element', () => {
 				(parentNode, requestedClassName) => {
 					expect(parentNode).toBe(element);
 					expect(requestedClassName).toEqual(className);
-					return new HTMLCollection<Element>([child]);
+					return new HTMLCollection<Element>(() => [child]);
 				}
 			);
 
@@ -887,7 +887,7 @@ describe('Element', () => {
 				(parentNode, requestedTagName) => {
 					expect(parentNode).toBe(element);
 					expect(requestedTagName).toEqual(tagName);
-					return new HTMLCollection<Element>([child]);
+					return new HTMLCollection<Element>(() => [child]);
 				}
 			);
 
@@ -908,7 +908,7 @@ describe('Element', () => {
 					expect(parentNode).toBe(element);
 					expect(requestedNamespaceURI).toEqual(namespaceURI);
 					expect(requestedTagName).toEqual(tagName);
-					return new HTMLCollection<Element>([child]);
+					return new HTMLCollection<Element>(() => [child]);
 				}
 			);
 

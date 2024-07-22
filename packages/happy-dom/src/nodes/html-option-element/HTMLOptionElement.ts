@@ -167,4 +167,26 @@ export default class HTMLOptionElement extends HTMLElement {
 			}
 		}
 	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.connectedToNode](): void {
+		super[PropertySymbol.connectedToNode]();
+
+		if (this[PropertySymbol.selectNode]) {
+			this[PropertySymbol.selectNode][PropertySymbol.updateSelectedness]();
+		}
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.disconnectedFromNode](): void {
+		if (this[PropertySymbol.selectNode]) {
+			(<HTMLSelectElement>this[PropertySymbol.selectNode])[PropertySymbol.updateSelectedness]();
+		}
+
+		super[PropertySymbol.disconnectedFromNode]();
+	}
 }

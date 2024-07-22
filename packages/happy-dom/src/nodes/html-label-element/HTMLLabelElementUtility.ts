@@ -26,6 +26,8 @@ export default class HTMLLabelElementUtility {
 			labels = <HTMLLabelElement[]>(
 				rootNode.querySelectorAll(`label[for="${id}"]`)[PropertySymbol.items]
 			);
+		} else {
+			labels = [];
 		}
 
 		let parent = element[PropertySymbol.parentNode];

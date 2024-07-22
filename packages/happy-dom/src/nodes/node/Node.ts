@@ -611,9 +611,10 @@ export default class Node extends EventTarget {
 			return newNode;
 		}
 
-		const index = this[PropertySymbol.nodeArray].indexOf(referenceNode);
+		const nodeArray = this[PropertySymbol.nodeArray];
 
-		if (index === -1) {
+		// We need to check if the referenceNode is a child of this node before removing it from its parent, as the parent may be the same node and the index would be wrong.
+		if (!nodeArray.includes(referenceNode)) {
 			throw new DOMException(
 				"Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node."
 			);
@@ -627,12 +628,26 @@ export default class Node extends EventTarget {
 
 		newNode[PropertySymbol.clearCache]();
 
-		this[PropertySymbol.nodeArray].splice(index, 0, newNode);
+		const index = nodeArray.indexOf(referenceNode);
+
+		nodeArray.splice(index, 0, newNode);
 
 		if (newNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
-			const index = this[PropertySymbol.elementArray].indexOf(<Element>referenceNode);
-			if (index !== -1) {
-				this[PropertySymbol.elementArray].splice(index, 0, <Element>newNode);
+			const elementArray = this[PropertySymbol.elementArray];
+			if (referenceNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
+				elementArray.splice(elementArray.indexOf(<Element>referenceNode), 0, <Element>newNode);
+			} else {
+				let isInserted = false;
+				for (let i = index, max = nodeArray.length; i < max; i++) {
+					if (nodeArray[i][PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
+						elementArray.splice(i, 0, <Element>newNode);
+						isInserted = true;
+						break;
+					}
+				}
+				if (!isInserted) {
+					elementArray.push(<Element>newNode);
+				}
 			}
 		}
 
@@ -843,11 +858,14 @@ export default class Node extends EventTarget {
 			cache.elementById = new Map();
 		}
 
-		for (const item of this[PropertySymbol.affectsCache]) {
-			item.result = null;
-		}
+		const affectsCache = this[PropertySymbol.affectsCache];
 
-		this[PropertySymbol.affectsCache] = [];
+		if (affectsCache.length) {
+			for (const item of affectsCache) {
+				item.result = null;
+			}
+			this[PropertySymbol.affectsCache] = [];
+		}
 
 		// Computed style cache is affected by all mutations.
 		const document = this[PropertySymbol.ownerDocument];

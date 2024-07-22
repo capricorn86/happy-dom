@@ -94,6 +94,7 @@ describe('HTMLLabelElement', () => {
 			input.setAttribute('form', 'form');
 			element.htmlFor = 'input';
 			document.body.appendChild(element);
+			document.body.appendChild(input);
 			expect(element.form).toBe(form);
 		});
 	});

@@ -3,7 +3,6 @@ import Attr from '../attr/Attr.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import Element from './Element.js';
-import TNamedNodeMapListener from './TNamedNodeMapListener.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
 
 /**

@@ -248,6 +248,8 @@ export default class ParentNodeUtility {
 					return foundElement;
 				}
 			}
+
+			return null;
 		};
 
 		const cache = parentNode[PropertySymbol.cache].elementByTagName;
@@ -263,7 +265,7 @@ export default class ParentNodeUtility {
 		const cachedResult = { result: null };
 		const item = find(parentNode, cachedResult);
 
-		cachedResult.result = new WeakRef(item);
+		cachedResult.result = item ? new WeakRef(item) : { deref: () => null };
 		cache.set(tagName, cachedResult);
 
 		return item;
@@ -289,7 +291,7 @@ export default class ParentNodeUtility {
 			for (const element of (<DocumentFragment>parent)[PropertySymbol.elementArray]) {
 				element[PropertySymbol.affectsCache].push(cachedResult);
 
-				if (element.id === id) {
+				if (element[PropertySymbol.attributes]['id']?.[PropertySymbol.value] === id) {
 					return <Element>element;
 				}
 
@@ -316,7 +318,7 @@ export default class ParentNodeUtility {
 		const cachedResult = { result: null };
 		const item = find(parentNode, cachedResult);
 
-		cachedResult.result = new WeakRef(item);
+		cachedResult.result = item ? new WeakRef(item) : { deref: () => null };
 		cache.set(id, cachedResult);
 
 		return item;

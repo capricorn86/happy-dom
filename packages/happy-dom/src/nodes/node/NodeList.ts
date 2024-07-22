@@ -20,6 +20,9 @@ class NodeList<T extends Node> {
 
 		return new Proxy(this, {
 			get: (target, property, reciever) => {
+				if (property === 'length') {
+					return items.length;
+				}
 				if (property in target || typeof property === 'symbol') {
 					return Reflect.get(target, property, reciever);
 				}

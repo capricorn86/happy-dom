@@ -38,7 +38,7 @@ export default class HTMLFieldSetElement extends HTMLElement {
 				() =>
 					<THTMLFieldSetElement[]>(
 						QuerySelector.querySelectorAll(this, 'input,button,textarea,select')[
-							PropertySymbol.elements
+							PropertySymbol.items
 						]
 					)
 			);

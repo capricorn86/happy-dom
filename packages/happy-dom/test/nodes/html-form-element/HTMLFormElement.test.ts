@@ -17,8 +17,6 @@ import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import HTMLIFrameElement from '../../../src/nodes/html-iframe-element/HTMLIFrameElement.js';
 import BrowserWindow from '../../../src/window/BrowserWindow.js';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
-import IRadioNodeList from '../../../src/nodes/html-form-element/IRadioNodeList.js';
-import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import THTMLFormControlElement from '../../../src/nodes/html-form-element/THTMLFormControlElement.js';
 
 describe('HTMLFormElement', () => {
@@ -173,16 +171,16 @@ describe('HTMLFormElement', () => {
 			expect(elements.item(7) === root.children[7]).toBe(true);
 			expect(elements.item(8) === root.children[8]).toBe(true);
 
-			const radioNodeList1: IRadioNodeList = new RadioNodeList();
-			const radioNodeList2: IRadioNodeList = new RadioNodeList();
-
-			radioNodeList1[PropertySymbol.addItem](<THTMLFormControlElement>root.children[2]);
-			radioNodeList1[PropertySymbol.addItem](<THTMLFormControlElement>root.children[3]);
-			radioNodeList1[PropertySymbol.addItem](<THTMLFormControlElement>root.children[4]);
-
-			radioNodeList2[PropertySymbol.addItem](<THTMLFormControlElement>root.children[5]);
-			radioNodeList2[PropertySymbol.addItem](<THTMLFormControlElement>root.children[6]);
-			radioNodeList2[PropertySymbol.addItem](<THTMLFormControlElement>root.children[7]);
+			const radioNodeList1 = new RadioNodeList([
+				<THTMLFormControlElement>root.children[2],
+				<THTMLFormControlElement>root.children[3],
+				<THTMLFormControlElement>root.children[4]
+			]);
+			const radioNodeList2 = new RadioNodeList([
+				<THTMLFormControlElement>root.children[5],
+				<THTMLFormControlElement>root.children[6],
+				<THTMLFormControlElement>root.children[7]
+			]);
 
 			expect(element['text1'] === root.children[0]).toBe(true);
 			expect(element['button1'] === root.children[1]).toBe(true);
@@ -250,28 +248,16 @@ describe('HTMLFormElement', () => {
 			expect(elements[15] === anotherRoot.children[6]).toBe(true);
 			expect(elements[16] === anotherRoot.children[7]).toBe(true);
 
-			const anotherRadioNodeList1: IRadioNodeList = new RadioNodeList();
-			const anotherRadioNodeList2: IRadioNodeList = new RadioNodeList();
-
-			anotherRadioNodeList1[PropertySymbol.addItem](
-				<THTMLFormControlElement>anotherRoot.children[2]
-			);
-			anotherRadioNodeList1[PropertySymbol.addItem](
-				<THTMLFormControlElement>anotherRoot.children[3]
-			);
-			anotherRadioNodeList1[PropertySymbol.addItem](
+			const anotherRadioNodeList1 = new RadioNodeList([
+				<THTMLFormControlElement>anotherRoot.children[2],
+				<THTMLFormControlElement>anotherRoot.children[3],
 				<THTMLFormControlElement>anotherRoot.children[4]
-			);
-
-			anotherRadioNodeList2[PropertySymbol.addItem](
-				<THTMLFormControlElement>anotherRoot.children[5]
-			);
-			anotherRadioNodeList2[PropertySymbol.addItem](
-				<THTMLFormControlElement>anotherRoot.children[6]
-			);
-			anotherRadioNodeList2[PropertySymbol.addItem](
+			]);
+			const anotherRadioNodeList2 = new RadioNodeList([
+				<THTMLFormControlElement>anotherRoot.children[5],
+				<THTMLFormControlElement>anotherRoot.children[6],
 				<THTMLFormControlElement>anotherRoot.children[7]
-			);
+			]);
 
 			expect(element['anotherText1'] === anotherRoot.children[0]).toBe(true);
 			expect(element['anotherButton1'] === anotherRoot.children[1]).toBe(true);
@@ -355,10 +341,11 @@ describe('HTMLFormElement', () => {
 			expect(elements.item(3) === root.children[3]).toBe(true);
 			expect(elements.item(4) === root.children[4]).toBe(true);
 
-			const radioNodeList: IRadioNodeList = new RadioNodeList();
-			radioNodeList[PropertySymbol.addItem](<THTMLFormControlElement>root.children[1]);
-			radioNodeList[PropertySymbol.addItem](<THTMLFormControlElement>root.children[2]);
-			radioNodeList[PropertySymbol.addItem](<THTMLFormControlElement>root.children[3]);
+			const radioNodeList = new RadioNodeList([
+				<THTMLFormControlElement>root.children[1],
+				<THTMLFormControlElement>root.children[2],
+				<THTMLFormControlElement>root.children[3]
+			]);
 
 			expect(typeof elements.item).toBe('function');
 			expect(typeof elements.namedItem).toBe('function');

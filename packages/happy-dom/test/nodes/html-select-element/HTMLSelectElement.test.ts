@@ -490,7 +490,6 @@ describe('HTMLSelectElement', () => {
 			element.appendChild(option2);
 			element.appendChild(option3);
 
-			debugger;
 			element.removeChild(option2);
 
 			expect(element.length).toBe(2);
