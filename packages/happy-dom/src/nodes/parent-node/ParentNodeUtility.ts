@@ -291,7 +291,11 @@ export default class ParentNodeUtility {
 			for (const element of (<DocumentFragment>parent)[PropertySymbol.elementArray]) {
 				element[PropertySymbol.affectsCache].push(cachedResult);
 
-				if (element[PropertySymbol.attributes]['id']?.[PropertySymbol.value] === id) {
+				if (
+					element[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
+						PropertySymbol.value
+					] === id
+				) {
 					return <Element>element;
 				}
 

@@ -93,7 +93,7 @@ export default class HTMLCollection<T extends Element, NamedItem = T> {
 				return false;
 			},
 			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
-				if (property in target) {
+				if (property in target || typeof property === 'symbol') {
 					return;
 				}
 

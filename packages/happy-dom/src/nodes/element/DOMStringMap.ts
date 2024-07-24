@@ -21,7 +21,7 @@ export default class DOMStringMap {
 		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy
 		return new Proxy(this, {
 			get(_target, property: string): string {
-				const attribute = element[PropertySymbol.attributes].getNamedItem(
+				const attribute = element[PropertySymbol.attributes][PropertySymbol.namedItems].get(
 					'data-' + DOMStringMapUtility.camelCaseToKebab(property)
 				);
 				if (attribute) {
@@ -33,13 +33,7 @@ export default class DOMStringMap {
 				return true;
 			},
 			deleteProperty(_target, property: string): boolean {
-				const attributes = element[PropertySymbol.attributes];
-				const dataKey = 'data-' + DOMStringMapUtility.camelCaseToKebab(property);
-				const item = attributes.getNamedItem(dataKey);
-				if (!item) {
-					return true;
-				}
-				attributes[PropertySymbol.removeNamedItem](item);
+				element.removeAttribute('data-' + DOMStringMapUtility.camelCaseToKebab(property));
 				return true;
 			},
 			ownKeys(_target): string[] {
@@ -47,17 +41,17 @@ export default class DOMStringMap {
 				// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/Proxy/ownKeys
 				// "The result List must contain the keys of all non-configurable own properties of the target object."
 				const keys = [];
-				const attributes = element[PropertySymbol.attributes];
-				for (let i = 0, max = attributes.length; i < max; i++) {
-					const name = attributes[i][PropertySymbol.name];
-					if (name.startsWith('data-')) {
-						keys.push(DOMStringMapUtility.kebabToCamelCase(name.replace('data-', '')));
+				for (const item of element[PropertySymbol.attributes][PropertySymbol.namedItems].values()) {
+					if (item[PropertySymbol.name].startsWith('data-')) {
+						keys.push(
+							DOMStringMapUtility.kebabToCamelCase(item[PropertySymbol.name].replace('data-', ''))
+						);
 					}
 				}
 				return keys;
 			},
 			has(_target, property: string): boolean {
-				return !!element[PropertySymbol.attributes].getNamedItem(
+				return element[PropertySymbol.attributes][PropertySymbol.namedItems].has(
 					'data-' + DOMStringMapUtility.camelCaseToKebab(property)
 				);
 			},
@@ -74,17 +68,18 @@ export default class DOMStringMap {
 				return true;
 			},
 			getOwnPropertyDescriptor(_target, property: string): PropertyDescriptor {
-				const attribute = element[PropertySymbol.attributes].getNamedItem(
+				const attribute = element[PropertySymbol.attributes][PropertySymbol.namedItems].get(
 					'data-' + DOMStringMapUtility.camelCaseToKebab(property)
 				);
-				if (attribute) {
-					return {
-						value: attribute[PropertySymbol.value],
-						writable: true,
-						enumerable: true,
-						configurable: true
-					};
+				if (!attribute) {
+					return;
 				}
+				return {
+					value: attribute[PropertySymbol.value],
+					writable: true,
+					enumerable: true,
+					configurable: true
+				};
 			}
 		});
 	}

@@ -30,10 +30,10 @@ import INonDocumentTypeChildNode from '../child-node/INonDocumentTypeChildNode.j
 import IParentNode from '../parent-node/IParentNode.js';
 import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
-import NamedNodeMapProxyFactory from './NamedNodeMapProxyFactory.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
 import NodeList from '../node/NodeList.js';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
+import NamedNodeMapProxyFactory from './NamedNodeMapProxyFactory.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -490,17 +490,8 @@ export default class Element
 		clone[PropertySymbol.localName] = this[PropertySymbol.localName];
 		clone[PropertySymbol.namespaceURI] = this[PropertySymbol.namespaceURI];
 
-		for (let i = 0, max = this[PropertySymbol.attributes].length; i < max; i++) {
-			const attribute = this[PropertySymbol.attributes][i];
-			clone[PropertySymbol.attributes].setNamedItem(
-				Object.assign(
-					this[PropertySymbol.ownerDocument].createAttributeNS(
-						attribute[PropertySymbol.namespaceURI],
-						attribute[PropertySymbol.name]
-					),
-					attribute
-				)
-			);
+		for (const item of this[PropertySymbol.attributes][PropertySymbol.namespaceItems].values()) {
+			clone[PropertySymbol.attributes].setNamedItem(item.cloneNode());
 		}
 
 		return <Element>clone;
@@ -639,7 +630,7 @@ export default class Element
 				? this[PropertySymbol.ownerDocument].createAttributeNS(null, name)
 				: this[PropertySymbol.ownerDocument].createAttribute(name);
 		attribute[PropertySymbol.value] = String(value);
-		this.setAttributeNode(attribute);
+		this[PropertySymbol.attributes].setNamedItem(attribute);
 	}
 
 	/**
@@ -652,7 +643,7 @@ export default class Element
 	public setAttributeNS(namespaceURI: string, name: string, value: string): void {
 		const attribute = this[PropertySymbol.ownerDocument].createAttributeNS(namespaceURI, name);
 		attribute[PropertySymbol.value] = String(value);
-		this.setAttributeNode(attribute);
+		this[PropertySymbol.attributes].setNamedItemNS(attribute);
 	}
 
 	/**
@@ -661,11 +652,11 @@ export default class Element
 	 * @returns Attribute names.
 	 */
 	public getAttributeNames(): string[] {
-		const attributeNames = [];
-		for (let i = 0, max = this[PropertySymbol.attributes].length; i < max; i++) {
-			attributeNames.push(this[PropertySymbol.attributes][i][PropertySymbol.name]);
+		const names = [];
+		for (const item of this[PropertySymbol.attributes][PropertySymbol.namedItems].values()) {
+			names.push(item[PropertySymbol.name]);
 		}
-		return attributeNames;
+		return names;
 	}
 
 	/**
@@ -674,7 +665,7 @@ export default class Element
 	 * @param name Name.
 	 */
 	public getAttribute(name: string): string {
-		const attribute = this.getAttributeNode(name);
+		const attribute = this[PropertySymbol.attributes].getNamedItem(name);
 		if (attribute) {
 			return attribute[PropertySymbol.value];
 		}
@@ -690,12 +681,12 @@ export default class Element
 	 */
 	public toggleAttribute(name: string, force?: boolean): boolean {
 		name = name.toLowerCase();
-		const attribute = this.getAttributeNode(name);
+		const attribute = this[PropertySymbol.attributes].getNamedItem(name);
 		if (attribute) {
 			if (force === true) {
 				return true;
 			}
-			this.removeAttributeNode(attribute);
+			this[PropertySymbol.attributes][PropertySymbol.removeNamedItem](attribute);
 			return false;
 		}
 		if (force === false) {
@@ -746,7 +737,7 @@ export default class Element
 	 * @returns "true" if the element has attributes.
 	 */
 	public hasAttributes(): boolean {
-		return this[PropertySymbol.attributes].length > 0;
+		return this[PropertySymbol.attributes][PropertySymbol.namespaceItems].size > 0;
 	}
 
 	/**
@@ -769,7 +760,11 @@ export default class Element
 	 * @param localName Local name.
 	 */
 	public removeAttributeNS(namespace: string | null, localName: string): void {
-		this[PropertySymbol.attributes].removeNamedItemNS(namespace, localName);
+		try {
+			this[PropertySymbol.attributes].removeNamedItemNS(namespace, localName);
+		} catch (error) {
+			// Ignore DOMException when the attribute does not exist.
+		}
 	}
 
 	/**
@@ -1076,10 +1071,13 @@ export default class Element
 	 * @returns Removed attribute.
 	 */
 	public removeAttributeNode(attribute: Attr): Attr | null {
-		return this[PropertySymbol.attributes].removeNamedItemNS(
-			attribute[PropertySymbol.namespaceURI],
-			attribute[PropertySymbol.name]
-		);
+		if (attribute[PropertySymbol.ownerElement] !== this) {
+			throw new DOMException(
+				"Failed to execute 'removeAttributeNode' on 'Element': The node provided is owned by another element."
+			);
+		}
+		this[PropertySymbol.attributes][PropertySymbol.removeNamedItem](attribute);
+		return attribute;
 	}
 
 	/**
@@ -1243,18 +1241,27 @@ export default class Element
 			this[PropertySymbol.parentNode][PropertySymbol.shadowRoot]
 		) {
 			const shadowRoot = this[PropertySymbol.parentNode][PropertySymbol.shadowRoot];
-			if (oldValue && oldValue !== attribute[PropertySymbol.value]) {
-				const slot = shadowRoot.querySelector(
-					`slot[name="${replacedAttribute[PropertySymbol.value]}"]`
-				);
-				if (slot) {
-					slot.dispatchEvent(new Event('slotchange'));
+
+			if (attribute[PropertySymbol.value] !== oldValue) {
+				// Previous slot
+				if (oldValue !== null) {
+					const slot = shadowRoot.querySelector(
+						`slot[name="${replacedAttribute[PropertySymbol.value]}"]`
+					);
+					if (slot) {
+						slot.dispatchEvent(new Event('slotchange', { bubbles: true }));
+					}
+				} else {
+					const slot = shadowRoot.querySelector('slot:not([name])');
+					if (slot) {
+						slot.dispatchEvent(new Event('slotchange', { bubbles: true }));
+					}
 				}
-			}
-			if (attribute[PropertySymbol.value]) {
+
+				// New slot
 				const slot = shadowRoot.querySelector(`slot[name="${attribute[PropertySymbol.value]}"]`);
 				if (slot) {
-					slot.dispatchEvent(new Event('slotchange'));
+					slot.dispatchEvent(new Event('slotchange', { bubbles: true }));
 				}
 			}
 		}
@@ -1304,9 +1311,15 @@ export default class Element
 			this[PropertySymbol.parentNode][PropertySymbol.shadowRoot]
 		) {
 			const shadowRoot = this[PropertySymbol.parentNode][PropertySymbol.shadowRoot];
-			const slot = shadowRoot.querySelector(`slot[name="${this.getAttribute('slot')}"]`);
-			if (slot) {
-				slot.dispatchEvent(new Event('slotchange'));
+			const namedSlot = shadowRoot.querySelector(
+				`slot[name="${removedAttribute[PropertySymbol.value]}"]`
+			);
+			const defaultSlot = shadowRoot.querySelector('slot:not([name])');
+			if (namedSlot) {
+				namedSlot.dispatchEvent(new Event('slotchange', { bubbles: true }));
+			}
+			if (defaultSlot) {
+				defaultSlot.dispatchEvent(new Event('slotchange', { bubbles: true }));
 			}
 		}
 
@@ -1346,26 +1359,37 @@ export default class Element
 	 */
 	private [PropertySymbol.onNodeListChange](node: Node): void {
 		if (this[PropertySymbol.shadowRoot]) {
-			if (node['slot']) {
-				const slot = this[PropertySymbol.shadowRoot].querySelector(`slot[name="${node['slot']}"]`);
+			const slotAttribute =
+				node[PropertySymbol.attributes]?.[PropertySymbol.namedItems].get('slot');
+			if (slotAttribute) {
+				const slot = this[PropertySymbol.shadowRoot].querySelector(
+					`slot[name="${slotAttribute[PropertySymbol.value]}"]`
+				);
 				if (slot) {
-					slot.dispatchEvent(new Event('slotchange'));
+					slot.dispatchEvent(new Event('slotchange', { bubbles: true }));
 				}
 			} else if (node[PropertySymbol.nodeType] !== NodeTypeEnum.commentNode) {
-				const slot = this[PropertySymbol.shadowRoot].querySelector('slot:not([slot])');
+				const slot = this[PropertySymbol.shadowRoot].querySelector('slot:not([name])');
 				if (slot) {
-					slot.dispatchEvent(new Event('slotchange'));
+					slot.dispatchEvent(new Event('slotchange', { bubbles: true }));
 				}
 			}
 		} else if (
 			this[PropertySymbol.parentNode] &&
 			this[PropertySymbol.parentNode][PropertySymbol.shadowRoot] &&
-			this.getAttribute('slot')
+			this[PropertySymbol.attributes]?.[PropertySymbol.namedItems].has('slot') &&
+			node[PropertySymbol.nodeType] !== NodeTypeEnum.commentNode
 		) {
 			const shadowRoot = this[PropertySymbol.parentNode][PropertySymbol.shadowRoot];
-			const slot = shadowRoot.querySelector(`slot[name="${this.getAttribute('slot')}"]`);
+			const slot = shadowRoot.querySelector(
+				`slot[name="${
+					this[PropertySymbol.attributes][PropertySymbol.namedItems].get('slot')[
+						PropertySymbol.value
+					]
+				}"]`
+			);
 			if (slot) {
-				slot.dispatchEvent(new Event('slotchange'));
+				slot.dispatchEvent(new Event('slotchange', { bubbles: true }));
 			}
 		}
 	}

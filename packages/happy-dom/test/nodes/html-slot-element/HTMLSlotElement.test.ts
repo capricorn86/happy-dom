@@ -149,11 +149,11 @@ describe('HTMLSlotElement', () => {
 			customElementWithNamedSlots.appendChild(comment3);
 			customElementWithNamedSlots.appendChild(element3);
 
-			expect(slot1.assignedNodes()).toEqual([element1]);
+			expect(slot1.assignedElements()).toEqual([element1]);
 
-			expect(slot2.assignedNodes()).toEqual([element2]);
+			expect(slot2.assignedElements()).toEqual([element2]);
 
-			expect(slot3.assignedNodes()).toEqual([element3]);
+			expect(slot3.assignedElements()).toEqual([element3]);
 		});
 	});
 
@@ -210,7 +210,7 @@ describe('HTMLSlotElement', () => {
 			);
 			let dispatchedEvent1: Event | null = null;
 			let dispatchedEvent2: Event | null = null;
-			const dispatchedEvent3: Event | null = null;
+			let dispatchedEvent3: Event | null = null;
 
 			const div = document.createElement('div');
 			div.setAttribute('slot', 'slot1');
@@ -220,22 +220,27 @@ describe('HTMLSlotElement', () => {
 
 			slot1.addEventListener('slotchange', (event) => (dispatchedEvent1 = event));
 			slot2.addEventListener('slotchange', (event) => (dispatchedEvent2 = event));
-			slot3.addEventListener('slotchange', (event) => (dispatchedEvent2 = event));
+			slot3.addEventListener('slotchange', (event) => (dispatchedEvent3 = event));
 
 			div.setAttribute('slot', 'slot2');
 
 			expect((<Event>(<unknown>dispatchedEvent1)).type).toBe('slotchange');
+			expect((<Event>(<unknown>dispatchedEvent1)).bubbles).toBe(true);
 			expect((<Event>(<unknown>dispatchedEvent2)).type).toBe('slotchange');
+			expect((<Event>(<unknown>dispatchedEvent2)).bubbles).toBe(true);
 			expect(dispatchedEvent3).toBe(null);
 
 			dispatchedEvent1 = null;
 			dispatchedEvent2 = null;
+			dispatchedEvent3 = null;
 
 			div.removeAttribute('slot');
 
 			expect(dispatchedEvent1).toBe(null);
-			expect(dispatchedEvent2).toBe(null);
+			expect((<Event>(<unknown>dispatchedEvent2)).type).toBe('slotchange');
+			expect((<Event>(<unknown>dispatchedEvent2)).bubbles).toBe(true);
 			expect((<Event>(<unknown>dispatchedEvent3)).type).toBe('slotchange');
+			expect((<Event>(<unknown>dispatchedEvent3)).bubbles).toBe(true);
 		});
 
 		it('Dispatches "slotchange" event adding an element to a named slot', () => {
@@ -257,6 +262,7 @@ describe('HTMLSlotElement', () => {
 			div.appendChild(newNode);
 
 			expect((<Event>(<unknown>dispatchedEvent)).type).toBe('slotchange');
+			expect((<Event>(<unknown>dispatchedEvent)).bubbles).toBe(true);
 		});
 
 		it('Dispatches "slotchange" event adding a text node to a named slot', () => {
@@ -278,6 +284,7 @@ describe('HTMLSlotElement', () => {
 			div.appendChild(newNode);
 
 			expect((<Event>(<unknown>dispatchedEvent)).type).toBe('slotchange');
+			expect((<Event>(<unknown>dispatchedEvent)).bubbles).toBe(true);
 		});
 
 		it('Doesn\'t dispatch "slotchange" event adding a comment node to a named slot', () => {
@@ -313,11 +320,11 @@ describe('HTMLSlotElement', () => {
 			);
 			let dispatchedEvent1: Event | null = null;
 			let dispatchedEvent2: Event | null = null;
-			const dispatchedEvent3: Event | null = null;
+			let dispatchedEvent3: Event | null = null;
 
 			slot1.addEventListener('slotchange', (event) => (dispatchedEvent1 = event));
 			slot2.addEventListener('slotchange', (event) => (dispatchedEvent2 = event));
-			slot3.addEventListener('slotchange', (event) => (dispatchedEvent2 = event));
+			slot3.addEventListener('slotchange', (event) => (dispatchedEvent3 = event));
 
 			const newNode = document.createElement('span');
 			customElementWithNamedSlots.appendChild(newNode);
@@ -325,6 +332,7 @@ describe('HTMLSlotElement', () => {
 			expect(dispatchedEvent1).toBe(null);
 			expect(dispatchedEvent2).toBe(null);
 			expect((<Event>(<unknown>dispatchedEvent3)).type).toBe('slotchange');
+			expect((<Event>(<unknown>dispatchedEvent3)).bubbles).toBe(true);
 		});
 
 		it('Dispatches "slotchange" event adding a text node to a default slot', () => {
@@ -339,11 +347,11 @@ describe('HTMLSlotElement', () => {
 			);
 			let dispatchedEvent1: Event | null = null;
 			let dispatchedEvent2: Event | null = null;
-			const dispatchedEvent3: Event | null = null;
+			let dispatchedEvent3: Event | null = null;
 
 			slot1.addEventListener('slotchange', (event) => (dispatchedEvent1 = event));
 			slot2.addEventListener('slotchange', (event) => (dispatchedEvent2 = event));
-			slot3.addEventListener('slotchange', (event) => (dispatchedEvent2 = event));
+			slot3.addEventListener('slotchange', (event) => (dispatchedEvent3 = event));
 
 			const newNode = document.createTextNode('test');
 			customElementWithNamedSlots.appendChild(newNode);
@@ -351,6 +359,7 @@ describe('HTMLSlotElement', () => {
 			expect(dispatchedEvent1).toBe(null);
 			expect(dispatchedEvent2).toBe(null);
 			expect((<Event>(<unknown>dispatchedEvent3)).type).toBe('slotchange');
+			expect((<Event>(<unknown>dispatchedEvent3)).bubbles).toBe(true);
 		});
 
 		it('Doesn\'t dispatch "slotchange" event adding a comment node to a default slot', () => {
@@ -365,11 +374,11 @@ describe('HTMLSlotElement', () => {
 			);
 			let dispatchedEvent1: Event | null = null;
 			let dispatchedEvent2: Event | null = null;
-			const dispatchedEvent3: Event | null = null;
+			let dispatchedEvent3: Event | null = null;
 
 			slot1.addEventListener('slotchange', (event) => (dispatchedEvent1 = event));
 			slot2.addEventListener('slotchange', (event) => (dispatchedEvent2 = event));
-			slot3.addEventListener('slotchange', (event) => (dispatchedEvent2 = event));
+			slot3.addEventListener('slotchange', (event) => (dispatchedEvent3 = event));
 
 			const newNode = document.createComment('test');
 			customElementWithNamedSlots.appendChild(newNode);

@@ -92,12 +92,12 @@ export default class HTMLSlotElement extends HTMLElement {
 			const assignedNodes = this.#assignedNodes(attribute.value);
 
 			if (replacedAssignedNodes.length !== assignedNodes.length) {
-				this.dispatchEvent(new Event('slotchange'));
+				this.dispatchEvent(new Event('slotchange', { bubbles: true }));
 			}
 
 			for (let i = 0, max = assignedNodes.length; i < max; i++) {
 				if (replacedAssignedNodes[i] !== assignedNodes[i]) {
-					this.dispatchEvent(new Event('slotchange'));
+					this.dispatchEvent(new Event('slotchange', { bubbles: true }));
 					break;
 				}
 			}
@@ -114,7 +114,7 @@ export default class HTMLSlotElement extends HTMLElement {
 			removedAttribute[PropertySymbol.value] &&
 			this.#assignedNodes(removedAttribute.value).length > 0
 		) {
-			this.dispatchEvent(new Event('slotchange'));
+			this.dispatchEvent(new Event('slotchange', { bubbles: true }));
 		}
 	}
 

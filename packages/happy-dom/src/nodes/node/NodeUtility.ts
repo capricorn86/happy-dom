@@ -199,13 +199,25 @@ export default class NodeUtility {
 	 * @param elementB
 	 */
 	public static attributeListsEqual(elementA: Element, elementB: Element): boolean {
-		for (let i = 0, max = elementA[PropertySymbol.attributes].length; i < max; i++) {
-			const attributeA = elementA[PropertySymbol.attributes][i];
-			const attributeB = elementB[PropertySymbol.attributes].getNamedItemNS(
-				attributeA[PropertySymbol.namespaceURI],
-				attributeA.localName
-			);
-			if (!attributeB || attributeB[PropertySymbol.value] !== attributeA[PropertySymbol.value]) {
+		const attributesA = Array.from(
+			elementA[PropertySymbol.attributes][PropertySymbol.namedItems].values()
+		);
+		const attributesB = Array.from(
+			elementB[PropertySymbol.attributes][PropertySymbol.namedItems].values()
+		);
+		for (const attributeA of attributesA) {
+			let found = false;
+			for (const attributeB of attributesB) {
+				if (
+					attributeA[PropertySymbol.namespaceURI] === attributeB[PropertySymbol.namespaceURI] &&
+					attributeA.localName === attributeB.localName &&
+					attributeA[PropertySymbol.value] === attributeB[PropertySymbol.value]
+				) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
 				return false;
 			}
 		}
@@ -244,8 +256,9 @@ export default class NodeUtility {
 				if (
 					elementA[PropertySymbol.namespaceURI] !== elementB[PropertySymbol.namespaceURI] ||
 					elementA[PropertySymbol.prefix] !== elementB[PropertySymbol.prefix] ||
-					elementA.localName !== elementB.localName ||
-					elementA[PropertySymbol.attributes].length !== elementB[PropertySymbol.attributes].length
+					elementA[PropertySymbol.localName] !== elementB[PropertySymbol.localName] ||
+					elementA[PropertySymbol.attributes][PropertySymbol.namespaceItems].size !==
+						elementB[PropertySymbol.attributes][PropertySymbol.namespaceItems].size
 				) {
 					return false;
 				}

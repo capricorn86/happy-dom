@@ -465,15 +465,20 @@ export default class HTMLFormElement extends HTMLElement {
 		);
 
 		if (this[PropertySymbol.isConnected]) {
-			const id = this[PropertySymbol.attributes]['id']?.value;
-			for (const element of <THTMLFormControlElement[]>(
-				QuerySelector.querySelectorAll(
-					this[PropertySymbol.ownerDocument],
-					`input[form="${id}"],select[form="${id}"],textarea[form="${id}"],button[form="${id}"],fieldset[form="${id}"]`
-				)[PropertySymbol.items]
-			)) {
-				if (!elements.includes(element)) {
-					elements.push(element);
+			const id =
+				this[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
+					PropertySymbol.value
+				];
+			if (id) {
+				for (const element of <THTMLFormControlElement[]>(
+					QuerySelector.querySelectorAll(
+						this[PropertySymbol.ownerDocument],
+						`input[form="${id}"],select[form="${id}"],textarea[form="${id}"],button[form="${id}"],fieldset[form="${id}"]`
+					)[PropertySymbol.items]
+				)) {
+					if (!elements.includes(element)) {
+						elements.push(element);
+					}
 				}
 			}
 		}

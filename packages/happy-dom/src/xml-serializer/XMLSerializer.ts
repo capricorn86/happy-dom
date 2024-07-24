@@ -122,14 +122,13 @@ export default class XMLSerializer {
 			attributeString += ' is="' + (<Element>element)[PropertySymbol.isValue] + '"';
 		}
 
-		for (let i = 0, max = (<Element>element)[PropertySymbol.attributes].length; i < max; i++) {
-			const attribute = (<Element>element)[PropertySymbol.attributes][i];
-			if (attribute[PropertySymbol.value] !== null) {
-				const escapedValue = this.options.escapeEntities
-					? Entities.escapeText(attribute[PropertySymbol.value])
-					: attribute[PropertySymbol.value];
-				attributeString += ' ' + attribute[PropertySymbol.name] + '="' + escapedValue + '"';
-			}
+		for (const attribute of (<Element>element)[PropertySymbol.attributes][
+			PropertySymbol.namedItems
+		].values()) {
+			const escapedValue = this.options.escapeEntities
+				? Entities.escapeText(attribute[PropertySymbol.value])
+				: attribute[PropertySymbol.value];
+			attributeString += ' ' + attribute[PropertySymbol.name] + '="' + escapedValue + '"';
 		}
 
 		return attributeString;

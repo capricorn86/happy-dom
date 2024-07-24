@@ -57,7 +57,7 @@ class NodeList<T extends Node> {
 				return false;
 			},
 			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
-				if (property in target) {
+				if (property in target || typeof property === 'symbol') {
 					return;
 				}
 

@@ -545,11 +545,15 @@ export default class HTMLElement extends Element {
 						newElement[PropertySymbol.isValue] = this[PropertySymbol.isValue];
 						newElement[PropertySymbol.cache] = this[PropertySymbol.cache];
 						newElement[PropertySymbol.affectsCache] = this[PropertySymbol.affectsCache];
+						newElement[PropertySymbol.attributes][PropertySymbol.namedItems] =
+							this[PropertySymbol.attributes][PropertySymbol.namedItems];
+						newElement[PropertySymbol.attributes][PropertySymbol.namespaceItems] =
+							this[PropertySymbol.attributes][PropertySymbol.namespaceItems];
 
-						for (let i = 0, max = this[PropertySymbol.attributes].length; i < max; i++) {
-							newElement[PropertySymbol.attributes].setNamedItem(
-								this[PropertySymbol.attributes][i]
-							);
+						for (const attr of newElement[PropertySymbol.attributes][
+							PropertySymbol.namedItems
+						].values()) {
+							attr[PropertySymbol.ownerElement] = newElement;
 						}
 
 						this[PropertySymbol.nodeArray] = [];
@@ -565,7 +569,8 @@ export default class HTMLElement extends Element {
 						this[PropertySymbol.isValue] = null;
 						this[PropertySymbol.cache] = newCache;
 						this[PropertySymbol.affectsCache] = [];
-						(<NamedNodeMap>this[PropertySymbol.attributes]) = new NamedNodeMap(this);
+						this[PropertySymbol.attributes][PropertySymbol.namedItems] = new Map();
+						this[PropertySymbol.attributes][PropertySymbol.namespaceItems] = new Map();
 
 						const parentChildNodes = this[PropertySymbol.parentNode][PropertySymbol.nodeArray];
 						const parentChildElements =

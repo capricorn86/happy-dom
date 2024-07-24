@@ -15,16 +15,24 @@ export default class NamedNodeMapProxyFactory {
 	 * @param namedNodeMap
 	 */
 	public static createProxy(namedNodeMap: NamedNodeMap): NamedNodeMap {
+		const namedItems = namedNodeMap[PropertySymbol.namedItems];
+		const namespaceItems = namedNodeMap[PropertySymbol.namespaceItems];
+
+		this.bindMethods(namedNodeMap);
+
 		return new Proxy<NamedNodeMap>(namedNodeMap, {
-			get(attributes: NamedNodeMap, key: string): unknown {
-				const returnValue = attributes[key];
-				if (typeof returnValue === 'function') {
-					return returnValue.bind(attributes);
+			get: (target, property) => {
+				if (property === 'length') {
+					return namespaceItems.size;
 				}
-				if (returnValue !== undefined) {
-					return returnValue;
+				if (property in target || typeof property === 'symbol') {
+					return target[property];
 				}
-				return attributes.getNamedItem(key) ?? undefined;
+				const index = Number(property);
+				if (!isNaN(index)) {
+					return Array.from(namespaceItems.values())[index];
+				}
+				return target.getNamedItem(<string>property) || undefined;
 			},
 			set(): boolean {
 				return true;
@@ -32,69 +40,95 @@ export default class NamedNodeMapProxyFactory {
 			deleteProperty(): boolean {
 				return true;
 			},
-			ownKeys(attributes: NamedNodeMap): string[] {
-				const keys = Array.from(attributes[PropertySymbol.namedItems].keys());
-				for (let i = 0, max = attributes.length; i < max; i++) {
+			ownKeys(): string[] {
+				const keys = Array.from(namedItems.keys());
+				for (let i = 0, max = namespaceItems.size; i < max; i++) {
 					keys.push(String(i));
 				}
 				return keys;
 			},
-			has(attributes: NamedNodeMap, key: string): boolean {
-				if (attributes[PropertySymbol.namedItems].has(key)) {
-					return true;
-				}
-				const index = parseInt(key, 10);
-				return !isNaN(index) && index < attributes.length;
-			},
-			defineProperty(
-				attributes: NamedNodeMap,
-				key: string,
-				descriptor: PropertyDescriptor
-			): boolean {
-				if (!NamedNodeMap.prototype.hasOwnProperty(key)) {
+			has(target, property): boolean {
+				if (typeof property === 'symbol') {
 					return false;
 				}
-				if (descriptor.get || descriptor.set) {
-					Object.defineProperty(attributes, key, {
-						...descriptor,
-						get: descriptor.get ? descriptor.get.bind(attributes) : undefined,
-						set: descriptor.set ? descriptor.set.bind(attributes) : undefined
-					});
-				} else {
-					Object.defineProperty(attributes, key, {
-						...descriptor,
-						value:
-							typeof descriptor.value === 'function'
-								? descriptor.value.bind(attributes)
-								: descriptor.value
-					});
+
+				if (property in target || namedItems.has(property)) {
+					return true;
 				}
-				return true;
+
+				const index = Number(property);
+
+				if (!isNaN(index) && index >= 0 && index < namespaceItems.size) {
+					return true;
+				}
+
+				return false;
 			},
-			getOwnPropertyDescriptor(attributes: NamedNodeMap, key: string): PropertyDescriptor {
-				if (NamedNodeMap.prototype.hasOwnProperty(key)) {
+			defineProperty(target, property, descriptor): boolean {
+				if (property in target) {
+					Reflect.defineProperty(target, property, descriptor);
+					return true;
+				}
+
+				return false;
+			},
+			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
+				if (property in target || typeof property === 'symbol') {
 					return;
 				}
 
-				if (attributes[PropertySymbol.namedItems].has(key)) {
+				const index = Number(property);
+
+				if (!isNaN(index) && index >= 0 && index < namespaceItems.size) {
 					return {
-						value: attributes[PropertySymbol.namedItems].get(key),
+						value: Array.from(namespaceItems.values())[index],
 						writable: false,
-						enumerable: false,
+						enumerable: true,
 						configurable: false
 					};
 				}
 
-				const index = parseInt(key, 10);
-				if (!isNaN(index) && index < attributes.length) {
+				const namedItem = target.getNamedItem(<string>property);
+
+				if (namedItem) {
 					return {
-						value: attributes[index],
+						value: namedItem,
 						writable: false,
-						enumerable: false,
+						enumerable: true,
 						configurable: false
 					};
 				}
 			}
 		});
+	}
+
+	/**
+	 * Bind methods.
+	 *
+	 * @param target Target.
+	 */
+	private static bindMethods(target: NamedNodeMap): void {
+		const propertyDescriptors = Object.getOwnPropertyDescriptors(target.constructor.prototype);
+		for (const key of Object.keys(propertyDescriptors)) {
+			const descriptor = propertyDescriptors[key];
+			if (descriptor.get || descriptor.set) {
+				Object.defineProperty(target, key, {
+					configurable: true,
+					enumerable: true,
+					get: descriptor.get?.bind(target),
+					set: descriptor.set?.bind(target)
+				});
+			} else if (
+				key !== 'constructor' &&
+				key[0] !== '_' &&
+				key[0] === key[0].toLowerCase() &&
+				typeof target[key] === 'function' &&
+				!target[key].toString().startsWith('class ')
+			) {
+				target[key] = target[key].bind(target);
+			}
+		}
+
+		target[Symbol.iterator] = target[Symbol.iterator].bind(target);
 	}
 }

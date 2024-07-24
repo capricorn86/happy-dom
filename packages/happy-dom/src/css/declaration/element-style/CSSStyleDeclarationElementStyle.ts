@@ -64,7 +64,10 @@ export default class CSSStyleDeclarationElementStyle {
 			}
 		}
 
-		const cssText = this.element[PropertySymbol.attributes]['style']?.[PropertySymbol.value];
+		const cssText =
+			this.element[PropertySymbol.attributes][PropertySymbol.namedItems].get('style')?.[
+				PropertySymbol.value
+			];
 
 		if (cssText) {
 			const propertyManager = new CSSStyleDeclarationPropertyManager({ cssText });
@@ -242,8 +245,8 @@ export default class CSSStyleDeclarationElementStyle {
 			}
 
 			const elementStyleAttribute = (<Element>parentElement.element)[PropertySymbol.attributes][
-				'style'
-			];
+				PropertySymbol.namedItems
+			].get('style');
 
 			if (elementStyleAttribute) {
 				elementCSSText += elementStyleAttribute[PropertySymbol.value];

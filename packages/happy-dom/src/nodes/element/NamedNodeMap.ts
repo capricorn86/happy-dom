@@ -13,9 +13,13 @@ import NamespaceURI from '../../config/NamespaceURI.js';
 export default class NamedNodeMap {
 	[index: number]: Attr;
 
-	public length = 0;
+	// All items with the namespaceURI as prefix
+	public [PropertySymbol.namespaceItems]: Map<string, Attr> = new Map();
+
+	// Items without namespaceURI as prefix, where the HTML namespace is the default namespace
 	public [PropertySymbol.namedItems]: Map<string, Attr> = new Map();
-	public [PropertySymbol.ownerElement]: Element;
+
+	public declare [PropertySymbol.ownerElement]: Element;
 
 	/**
 	 * Constructor.
@@ -24,6 +28,15 @@ export default class NamedNodeMap {
 	 */
 	constructor(ownerElement: Element) {
 		this[PropertySymbol.ownerElement] = ownerElement;
+	}
+
+	/**
+	 * Returns length.
+	 *
+	 * @returns Length.
+	 */
+	public get length(): number {
+		return this[PropertySymbol.namespaceItems].size;
 	}
 
 	/**
@@ -36,14 +49,21 @@ export default class NamedNodeMap {
 	}
 
 	/**
+	 * Returns string.
+	 *
+	 * @returns string.
+	 */
+	public toString(): string {
+		return '[object NamedNodeMap]';
+	}
+
+	/**
 	 * Iterator.
 	 *
 	 * @returns Iterator.
 	 */
-	public *[Symbol.iterator](): IterableIterator<Attr> {
-		for (let i = 0, max = this.length; i < max; i++) {
-			yield this[i];
-		}
+	public [Symbol.iterator](): IterableIterator<Attr> {
+		return this[PropertySymbol.namespaceItems].values();
 	}
 
 	/**
@@ -52,7 +72,8 @@ export default class NamedNodeMap {
 	 * @param index Index.
 	 */
 	public item(index: number): Attr | null {
-		return index >= 0 && this[index] ? this[index] : null;
+		const items = Array.from(this[PropertySymbol.namespaceItems].values());
+		return index >= 0 && items[index] ? items[index] : null;
 	}
 
 	/**
@@ -64,7 +85,10 @@ export default class NamedNodeMap {
 	public getNamedItem(name: string): Attr | null {
 		return (
 			this[PropertySymbol.namedItems].get(
-				this.#getAttributeName(this[PropertySymbol.ownerElement][PropertySymbol.namespaceURI], name)
+				this[PropertySymbol.getNamedItemKey](
+					this[PropertySymbol.ownerElement][PropertySymbol.namespaceURI],
+					name
+				)
 			) || null
 		);
 	}
@@ -77,8 +101,7 @@ export default class NamedNodeMap {
 	 * @returns Item.
 	 */
 	public getNamedItemNS(namespace: string, localName: string): Attr | null {
-		for (let i = 0; i < this.length; i++) {
-			const item = this[i];
+		for (const item of this[PropertySymbol.namespaceItems].values()) {
 			if (
 				item[PropertySymbol.namespaceURI] === namespace &&
 				item[PropertySymbol.localName] === localName
@@ -96,7 +119,37 @@ export default class NamedNodeMap {
 	 * @returns Replaced item.
 	 */
 	public setNamedItem(item: Attr): Attr | null {
-		return this[PropertySymbol.setNamedItem](item);
+		if (!item[PropertySymbol.name]) {
+			return null;
+		}
+
+		item[PropertySymbol.ownerElement] = this[PropertySymbol.ownerElement];
+
+		const namespaceItemKey = this[PropertySymbol.getNamespaceItemKey](item);
+		const replacedItem = this[PropertySymbol.namespaceItems].get(namespaceItemKey) || null;
+		const replacedNamedItem =
+			this[PropertySymbol.namedItems].get(item[PropertySymbol.name]) || null;
+
+		this[PropertySymbol.namespaceItems].set(namespaceItemKey, item);
+
+		// The HTML namespace should be prioritized over other namespaces in the namedItems map
+		// The HTML namespace is the default namespace
+		if (
+			(!replacedNamedItem ||
+				(replacedNamedItem[PropertySymbol.namespaceURI] &&
+					replacedNamedItem[PropertySymbol.namespaceURI] !== NamespaceURI.html) ||
+				!item[PropertySymbol.namespaceURI] ||
+				item[PropertySymbol.namespaceURI] === NamespaceURI.html) &&
+			// Only lower case names should be stored in the namedItems map
+			(this[PropertySymbol.ownerElement][PropertySymbol.namespaceURI] !== NamespaceURI.html ||
+				item[PropertySymbol.name].toLowerCase() === item[PropertySymbol.name])
+		) {
+			this[PropertySymbol.namedItems].set(item[PropertySymbol.name], item);
+		}
+
+		this[PropertySymbol.ownerElement][PropertySymbol.onSetAttribute](item, replacedItem);
+
+		return replacedItem;
 	}
 
 	/**
@@ -107,7 +160,7 @@ export default class NamedNodeMap {
 	 * @returns Replaced item.
 	 */
 	public setNamedItemNS(item: Attr): Attr | null {
-		return this[PropertySymbol.setNamedItem](item);
+		return this.setNamedItem(item);
 	}
 
 	/**
@@ -119,13 +172,16 @@ export default class NamedNodeMap {
 	 */
 	public removeNamedItem(name: string): Attr {
 		const item = this.getNamedItem(name);
+
 		if (!item) {
 			throw new DOMException(
 				`Failed to execute 'removeNamedItem' on 'NamedNodeMap': No item with name '${name}' was found.`,
 				DOMExceptionNameEnum.notFoundError
 			);
 		}
+
 		this[PropertySymbol.removeNamedItem](item);
+
 		return item;
 	}
 
@@ -138,124 +194,63 @@ export default class NamedNodeMap {
 	 */
 	public removeNamedItemNS(namespace: string, localName: string): Attr | null {
 		const item = this.getNamedItemNS(namespace, localName);
+
 		if (!item) {
 			throw new DOMException(
 				`Failed to execute 'removeNamedItemNS' on 'NamedNodeMap': No item with name '${localName}' in namespace '${namespace}' was found.`,
 				DOMExceptionNameEnum.notFoundError
 			);
 		}
+
 		this[PropertySymbol.removeNamedItem](item);
+
 		return item;
 	}
 
 	/**
-	 * Sets named item.
-	 *
-	 * @param item Item.
-	 * @param [ignoreListeners] Ignores listeners.
-	 * @returns Replaced item.
-	 */
-	public [PropertySymbol.setNamedItem](item: Attr, ignoreListeners = false): Attr | null {
-		if (!item[PropertySymbol.name]) {
-			return null;
-		}
-
-		(<Element>item[PropertySymbol.ownerElement]) = this[PropertySymbol.ownerElement];
-
-		const namespaceURI =
-			item[PropertySymbol.namespaceURI] ??
-			this[PropertySymbol.ownerElement][PropertySymbol.namespaceURI];
-		const name = this.#getAttributeName(namespaceURI, item[PropertySymbol.name]);
-		const replacedItem = this[PropertySymbol.namedItems].get(name) || null;
-
-		this[PropertySymbol.namedItems].set(name, item);
-
-		if (replacedItem) {
-			this.#removeNamedItemIndex(replacedItem);
-		}
-
-		this[this.length] = item;
-		this.length++;
-
-		if (name === item[PropertySymbol.name] && this.#isValidPropertyName(name)) {
-			this[name] = item;
-		}
-
-		if (!ignoreListeners) {
-			this[PropertySymbol.ownerElement][PropertySymbol.onSetAttribute](item, replacedItem);
-		}
-
-		return replacedItem;
-	}
-
-	/**
-	 * Removes an item.
-	 *
-	 * @param item Item.
-	 * @param [ignoreListeners] Ignores listeners.
-	 */
-	public [PropertySymbol.removeNamedItem](item: Attr, ignoreListeners = false): void {
-		this.#removeNamedItemIndex(item);
-
-		const name = item[PropertySymbol.name];
-
-		if (this[name] === item) {
-			delete this[name];
-		}
-
-		this[PropertySymbol.namedItems].delete(name);
-
-		if (!ignoreListeners) {
-			this[PropertySymbol.ownerElement][PropertySymbol.onRemoveAttribute](item);
-		}
-	}
-
-	/**
-	 * Removes an item from index.
+	 * Removes named item.
 	 *
 	 * @param item Item.
 	 */
-	#removeNamedItemIndex(item: Attr): void {
-		for (let i = 0; i < this.length; i++) {
-			if (this[i] === item) {
-				for (let b = i; b < this.length; b++) {
-					if (b < this.length - 1) {
-						this[b] = this[b + 1];
-					} else {
-						delete this[b];
-					}
-				}
-				this.length--;
-				break;
-			}
-		}
-	}
-
-	/**
-	 * Returns "true" if the property name is valid.
-	 *
-	 * @param name Name.
-	 * @returns True if the property name is valid.
-	 */
-	#isValidPropertyName(name: string): boolean {
-		return (
-			!!name &&
-			!this.constructor.prototype.hasOwnProperty(name) &&
-			(isNaN(Number(name)) || name.includes('.'))
+	public [PropertySymbol.removeNamedItem](item: Attr): void {
+		item[PropertySymbol.ownerElement] = null;
+		this[PropertySymbol.namespaceItems].delete(this[PropertySymbol.getNamespaceItemKey](item));
+		this[PropertySymbol.namedItems].delete(
+			this[PropertySymbol.getNamedItemKey](
+				this[PropertySymbol.ownerElement][PropertySymbol.namespaceURI],
+				item[PropertySymbol.name]
+			)
 		);
+		this[PropertySymbol.ownerElement][PropertySymbol.onRemoveAttribute](item);
 	}
 
 	/**
-	 * Returns attribute name.
+	 * Returns item name based on namespace.
 	 *
-	 * @param namespace Namespace.
+	 * @param namespaceURI Namespace.
 	 * @param name Name.
-	 * @returns Attribute name based on namespace.
+	 * @returns Item name based on namespace.
 	 */
-	#getAttributeName(namespace: string, name: string): string {
-		if (namespace === NamespaceURI.svg) {
-			return name;
+	private [PropertySymbol.getNamedItemKey](namespaceURI: string, name: string): string {
+		if (!namespaceURI || namespaceURI === NamespaceURI.html) {
+			return name.toLowerCase();
 		}
-		return name.toLowerCase();
+		return name;
+	}
+
+	/**
+	 * Returns item key.
+	 *
+	 * @param item Item.
+	 * @returns Key.
+	 */
+	private [PropertySymbol.getNamespaceItemKey](item: Attr): string {
+		if (
+			!item[PropertySymbol.namespaceURI] ||
+			item[PropertySymbol.namespaceURI] === NamespaceURI.html
+		) {
+			return item[PropertySymbol.name].toLowerCase();
+		}
+		return `${item[PropertySymbol.namespaceURI] || ''}:${item[PropertySymbol.name]}`;
 	}
 }
