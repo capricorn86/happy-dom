@@ -1,3 +1,4 @@
+import ClassMethodBinder from '../../ClassMethodBinder.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Element from './Element.js';
 
@@ -21,11 +22,22 @@ export default class HTMLCollection<T extends Element, NamedItem = T> {
 	constructor(query: () => T[]) {
 		this[PropertySymbol.query] = query;
 
+		// This only works for one level of inheritance, but it should be fine as there is no collection that goes deeper according to spec.
+		ClassMethodBinder.bindMethods(
+			this,
+			this.constructor !== HTMLCollection ? [HTMLCollection, this.constructor] : [HTMLCollection],
+			true
+		);
+
 		return new Proxy(this, {
-			get: (target, property, reciever) => {
-				if (property in target || typeof property === 'symbol') {
-					return Reflect.get(target, property, reciever);
+			get: (target, property) => {
+				if (property === 'length') {
+					return query().length;
 				}
+				if (property in target || typeof property === 'symbol') {
+					return target[property];
+				}
+
 				const index = Number(property);
 				if (!isNaN(index)) {
 					return query()[index];
@@ -47,8 +59,12 @@ export default class HTMLCollection<T extends Element, NamedItem = T> {
 				for (let i = 0; i < items.length; i++) {
 					const item = items[i];
 					const name =
-						item.attributes['id']?.[PropertySymbol.value] ||
-						item.attributes['name']?.[PropertySymbol.value];
+						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
+							PropertySymbol.value
+						] ||
+						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('name')?.[
+							PropertySymbol.value
+						];
 					keys.push(String(i));
 
 					if (name) {
@@ -74,8 +90,12 @@ export default class HTMLCollection<T extends Element, NamedItem = T> {
 				for (let i = 0; i < items.length; i++) {
 					const item = items[i];
 					const name =
-						item.attributes['id']?.[PropertySymbol.value] ||
-						item.attributes['name']?.[PropertySymbol.value];
+						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
+							PropertySymbol.value
+						] ||
+						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('name')?.[
+							PropertySymbol.value
+						];
 
 					if (name && name === property) {
 						return true;
@@ -86,7 +106,7 @@ export default class HTMLCollection<T extends Element, NamedItem = T> {
 			},
 			defineProperty(target, property, descriptor): boolean {
 				if (property in target) {
-					Reflect.defineProperty(target, property, descriptor);
+					Object.defineProperty(target, property, descriptor);
 					return true;
 				}
 
@@ -105,22 +125,26 @@ export default class HTMLCollection<T extends Element, NamedItem = T> {
 						value: items[index],
 						writable: false,
 						enumerable: true,
-						configurable: false
+						configurable: true
 					};
 				}
 
 				for (let i = 0; i < items.length; i++) {
 					const item = items[i];
 					const name =
-						item.attributes['id']?.[PropertySymbol.value] ||
-						item.attributes['name']?.[PropertySymbol.value];
+						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
+							PropertySymbol.value
+						] ||
+						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('name')?.[
+							PropertySymbol.value
+						];
 
 					if (name && name === property) {
 						return {
 							value: item,
 							writable: false,
 							enumerable: true,
-							configurable: false
+							configurable: true
 						};
 					}
 				}
@@ -195,8 +219,12 @@ export default class HTMLCollection<T extends Element, NamedItem = T> {
 		name = String(name);
 		for (const item of items) {
 			if (
-				item.attributes['id']?.[PropertySymbol.value] === name ||
-				item.attributes['name']?.[PropertySymbol.value] === name
+				item[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
+					PropertySymbol.value
+				] === name ||
+				item[PropertySymbol.attributes][PropertySymbol.namedItems].get('name')?.[
+					PropertySymbol.value
+				] === name
 			) {
 				return <NamedItem>(<unknown>item);
 			}

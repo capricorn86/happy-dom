@@ -1,3 +1,4 @@
+import ClassMethodBinder from '../../ClassMethodBinder.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Node from './Node.js';
 
@@ -18,13 +19,20 @@ class NodeList<T extends Node> {
 	constructor(items: T[]) {
 		this[PropertySymbol.items] = items;
 
+		// This only works for one level of inheritance, but it should be fine as there is no collection that goes deeper according to spec.
+		ClassMethodBinder.bindMethods(
+			this,
+			this.constructor !== NodeList ? [NodeList, this.constructor] : [NodeList],
+			true
+		);
+
 		return new Proxy(this, {
-			get: (target, property, reciever) => {
+			get: (target, property) => {
 				if (property === 'length') {
 					return items.length;
 				}
 				if (property in target || typeof property === 'symbol') {
-					return Reflect.get(target, property, reciever);
+					return target[property];
 				}
 				const index = Number(property);
 				if (!isNaN(index)) {
@@ -50,7 +58,7 @@ class NodeList<T extends Node> {
 			},
 			defineProperty(target, property, descriptor): boolean {
 				if (property in target) {
-					Reflect.defineProperty(target, property, descriptor);
+					Object.defineProperty(target, property, descriptor);
 					return true;
 				}
 
@@ -68,7 +76,7 @@ class NodeList<T extends Node> {
 						value: items[index],
 						writable: false,
 						enumerable: true,
-						configurable: false
+						configurable: true
 					};
 				}
 			}

@@ -12,6 +12,10 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import NodeList from '../node/NodeList.js';
 import DOMException from '../../exception/DOMException.js';
+import ClassMethodBinder from '../../ClassMethodBinder.js';
+import Element from '../element/Element.js';
+import Node from '../node/Node.js';
+import EventTarget from '../../event/EventTarget.js';
 
 /**
  * HTML Select Element.
@@ -37,10 +41,16 @@ export default class HTMLSelectElement extends HTMLElement {
 		super();
 		this[PropertySymbol.options] = new HTMLOptionsCollection(this);
 
+		ClassMethodBinder.bindMethods(
+			this,
+			[EventTarget, Node, Element, HTMLElement, HTMLSelectElement],
+			true
+		);
+
 		const proxy = new Proxy(this, {
-			get: (target, property, reciever) => {
+			get: (target, property) => {
 				if (property in target || typeof property === 'symbol') {
-					return Reflect.get(target, property, reciever);
+					return target[property];
 				}
 				const index = Number(property);
 				if (!isNaN(index)) {
@@ -434,7 +444,10 @@ export default class HTMLSelectElement extends HTMLElement {
 		if (this[PropertySymbol.formNode]) {
 			return this[PropertySymbol.formNode];
 		}
-		const id = this.attributes['form']?.[PropertySymbol.value];
+		const id =
+			this[PropertySymbol.attributes][PropertySymbol.namedItems].get('form')?.[
+				PropertySymbol.value
+			];
 		if (!id || !this[PropertySymbol.isConnected]) {
 			return null;
 		}

@@ -801,7 +801,7 @@ describe('HTMLFormElement', () => {
 
 			expect(submitEvent).toBeInstanceOf(SubmitEvent);
 			expect((<SubmitEvent>(<unknown>submitEvent)).type).toBe('submit');
-			expect((<SubmitEvent>(<unknown>submitEvent)).submitter).toBe(element);
+			expect((<SubmitEvent>(<unknown>submitEvent)).submitter === element).toBe(true);
 
 			submitEvent = null;
 

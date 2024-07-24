@@ -231,7 +231,10 @@ export default class HTMLButtonElement extends HTMLElement {
 		if (this[PropertySymbol.formNode]) {
 			return this[PropertySymbol.formNode];
 		}
-		const id = this.attributes['form']?.[PropertySymbol.value];
+		const id =
+			this[PropertySymbol.attributes][PropertySymbol.namedItems].get('form')?.[
+				PropertySymbol.value
+			];
 		if (!id || !this[PropertySymbol.isConnected]) {
 			return null;
 		}

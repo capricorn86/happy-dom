@@ -222,3 +222,4 @@ export const getDisplaySize = Symbol('getDisplaySize');
 export const getNamespaceItemKey = Symbol('getNamespaceItemKey');
 export const getNamedItemKey = Symbol('getNamedItemKey');
 export const namespaceItems = Symbol('namespaceItems');
+export const proxy = Symbol('proxy');

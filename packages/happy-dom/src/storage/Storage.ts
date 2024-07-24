@@ -1,3 +1,4 @@
+import ClassMethodBinder from '../ClassMethodBinder.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 
 /**
@@ -13,13 +14,13 @@ export default class Storage {
 	 */
 	constructor() {
 		const data = this[PropertySymbol.data];
+
+		ClassMethodBinder.bindMethods(this, [Storage], true);
+
 		return new Proxy(this, {
-			get: (target, property, reciever) => {
-				if (typeof property === 'symbol') {
+			get: (target, property) => {
+				if (property in target || typeof property === 'symbol') {
 					return target[property];
-				}
-				if (property in target) {
-					return Reflect.get(target, property, reciever);
 				}
 				if (property in data) {
 					return data[property];
@@ -52,7 +53,7 @@ export default class Storage {
 			},
 			defineProperty(target, property, descriptor): boolean {
 				if (property in target) {
-					Reflect.defineProperty(target, property, descriptor);
+					Object.defineProperty(target, property, descriptor);
 					return true;
 				}
 

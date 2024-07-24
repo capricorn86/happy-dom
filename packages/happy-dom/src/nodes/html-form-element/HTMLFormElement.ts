@@ -13,6 +13,10 @@ import BrowserWindow from '../../window/BrowserWindow.js';
 import THTMLFormControlElement from './THTMLFormControlElement.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import RadioNodeList from './RadioNodeList.js';
+import Element from '../element/Element.js';
+import EventTarget from '../../event/EventTarget.js';
+import Node from '../node/Node.js';
+import ClassMethodBinder from '../../ClassMethodBinder.js';
 
 /**
  * HTML Form Element.
@@ -26,6 +30,7 @@ export default class HTMLFormElement extends HTMLElement {
 
 	// Internal properties.
 	public [PropertySymbol.elements]: HTMLFormControlsCollection | null = null;
+	public [PropertySymbol.proxy]: HTMLFormElement;
 
 	// Events
 	public onformdata: (event: Event) => void | null = null;
@@ -44,15 +49,24 @@ export default class HTMLFormElement extends HTMLElement {
 	constructor(browserFrame: IBrowserFrame) {
 		super();
 
+		ClassMethodBinder.bindMethods(
+			this,
+			[EventTarget, Node, Element, HTMLElement, HTMLFormElement],
+			true
+		);
+
 		this[PropertySymbol.submit] = this[PropertySymbol.submitWithBrowserFrame].bind(
 			this,
 			browserFrame
 		);
 
 		const proxy = new Proxy(this, {
-			get: (target, property, reciever) => {
+			get: (target, property) => {
+				if (property === 'length') {
+					return target[PropertySymbol.getFormControlItems]().length;
+				}
 				if (property in target || typeof property === 'symbol') {
-					return Reflect.get(target, property, reciever);
+					return target[property];
 				}
 				const index = Number(property);
 				if (!isNaN(index)) {
@@ -70,20 +84,7 @@ export default class HTMLFormElement extends HTMLElement {
 				return true;
 			},
 			ownKeys(target): string[] {
-				const keys: string[] = [];
-				const items = target[PropertySymbol.getFormControlItems]();
-				for (let i = 0; i < items.length; i++) {
-					const item = items[i];
-					const name =
-						item.attributes['id']?.[PropertySymbol.value] ||
-						item.attributes['name']?.[PropertySymbol.value];
-					keys.push(String(i));
-
-					if (name) {
-						keys.push(name);
-					}
-				}
-				return keys;
+				return Object.keys(target[PropertySymbol.getFormControlItems]());
 			},
 			has(target, property): boolean {
 				if (property in target) {
@@ -106,8 +107,12 @@ export default class HTMLFormElement extends HTMLElement {
 				for (let i = 0; i < items.length; i++) {
 					const item = items[i];
 					const name =
-						item.attributes['id']?.[PropertySymbol.value] ||
-						item.attributes['name']?.[PropertySymbol.value];
+						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
+							PropertySymbol.value
+						] ||
+						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('name')?.[
+							PropertySymbol.value
+						];
 
 					if (name && name === property) {
 						return true;
@@ -137,27 +142,32 @@ export default class HTMLFormElement extends HTMLElement {
 						value: items[index],
 						writable: false,
 						enumerable: true,
-						configurable: false
+						configurable: true
 					};
 				}
 
 				for (let i = 0; i < items.length; i++) {
 					const item = items[i];
 					const name =
-						item.attributes['id']?.[PropertySymbol.value] ||
-						item.attributes['name']?.[PropertySymbol.value];
+						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
+							PropertySymbol.value
+						] ||
+						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('name')?.[
+							PropertySymbol.value
+						];
 
 					if (name && name === property) {
 						return {
 							value: item,
 							writable: false,
 							enumerable: true,
-							configurable: false
+							configurable: true
 						};
 					}
 				}
 			}
 		});
+		this[PropertySymbol.proxy] = proxy;
 		this[PropertySymbol.formNode] = proxy;
 		return proxy;
 	}
@@ -374,7 +384,11 @@ export default class HTMLFormElement extends HTMLElement {
 		const noValidate = submitter?.formNoValidate || this.noValidate;
 		if (noValidate || this.checkValidity()) {
 			this.dispatchEvent(
-				new SubmitEvent('submit', { bubbles: true, cancelable: true, submitter: submitter || this })
+				new SubmitEvent('submit', {
+					bubbles: true,
+					cancelable: true,
+					submitter: submitter || this[PropertySymbol.proxy]
+				})
 			);
 			this[PropertySymbol.submit](submitter);
 		}
@@ -502,8 +516,12 @@ export default class HTMLFormElement extends HTMLElement {
 
 		for (const item of items) {
 			if (
-				item.attributes['id']?.[PropertySymbol.value] === name ||
-				item.attributes['name']?.[PropertySymbol.value] === name
+				item[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
+					PropertySymbol.value
+				] === name ||
+				item[PropertySymbol.attributes][PropertySymbol.namedItems].get('name')?.[
+					PropertySymbol.value
+				] === name
 			) {
 				namedItems.push(item);
 			}

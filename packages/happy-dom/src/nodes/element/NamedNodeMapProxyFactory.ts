@@ -1,5 +1,6 @@
 /* eslint-disable filenames/match-exported */
 
+import ClassMethodBinder from '../../ClassMethodBinder.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import NamedNodeMap from './NamedNodeMap.js';
 
@@ -18,7 +19,7 @@ export default class NamedNodeMapProxyFactory {
 		const namedItems = namedNodeMap[PropertySymbol.namedItems];
 		const namespaceItems = namedNodeMap[PropertySymbol.namespaceItems];
 
-		this.bindMethods(namedNodeMap);
+		ClassMethodBinder.bindMethods(namedNodeMap, [NamedNodeMap], true);
 
 		return new Proxy<NamedNodeMap>(namedNodeMap, {
 			get: (target, property) => {
@@ -66,7 +67,7 @@ export default class NamedNodeMapProxyFactory {
 			},
 			defineProperty(target, property, descriptor): boolean {
 				if (property in target) {
-					Reflect.defineProperty(target, property, descriptor);
+					Object.defineProperty(target, property, descriptor);
 					return true;
 				}
 
@@ -84,7 +85,7 @@ export default class NamedNodeMapProxyFactory {
 						value: Array.from(namespaceItems.values())[index],
 						writable: false,
 						enumerable: true,
-						configurable: false
+						configurable: true
 					};
 				}
 
@@ -95,40 +96,10 @@ export default class NamedNodeMapProxyFactory {
 						value: namedItem,
 						writable: false,
 						enumerable: true,
-						configurable: false
+						configurable: true
 					};
 				}
 			}
 		});
-	}
-
-	/**
-	 * Bind methods.
-	 *
-	 * @param target Target.
-	 */
-	private static bindMethods(target: NamedNodeMap): void {
-		const propertyDescriptors = Object.getOwnPropertyDescriptors(target.constructor.prototype);
-		for (const key of Object.keys(propertyDescriptors)) {
-			const descriptor = propertyDescriptors[key];
-			if (descriptor.get || descriptor.set) {
-				Object.defineProperty(target, key, {
-					configurable: true,
-					enumerable: true,
-					get: descriptor.get?.bind(target),
-					set: descriptor.set?.bind(target)
-				});
-			} else if (
-				key !== 'constructor' &&
-				key[0] !== '_' &&
-				key[0] === key[0].toLowerCase() &&
-				typeof target[key] === 'function' &&
-				!target[key].toString().startsWith('class ')
-			) {
-				target[key] = target[key].bind(target);
-			}
-		}
-
-		target[Symbol.iterator] = target[Symbol.iterator].bind(target);
 	}
 }

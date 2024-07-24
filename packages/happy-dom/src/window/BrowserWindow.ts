@@ -193,6 +193,7 @@ import WindowBrowserSettingsReader from './WindowBrowserSettingsReader.js';
 import WindowErrorUtility from './WindowErrorUtility.js';
 import WindowPageOpenUtility from './WindowPageOpenUtility.js';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
+import ClassMethodBinder from '../ClassMethodBinder.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -718,7 +719,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			this.document.dispatchEvent(new Event('load', { bubbles: true }));
 		});
 
-		this.#bindToThisScope();
+		ClassMethodBinder.bindMethods(this, [EventTarget, BrowserWindow]);
 	}
 
 	/**
@@ -1454,39 +1455,5 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this.document[PropertySymbol.selection] = null;
 
 		WindowBrowserSettingsReader.removeSettings(this);
-	}
-
-	/**
-	 * Binds methods, getters and setters to a scope.
-	 *
-	 * Getters and setters need to be bound to show up in Object.getOwnPropertyNames(), which is something Vitest and GlobalRegistrator relies on.
-	 *
-	 * @see https://github.com/capricorn86/happy-dom/issues/1339
-	 */
-	#bindToThisScope(): void {
-		const propertyDescriptors = Object.assign(
-			Object.getOwnPropertyDescriptors(EventTarget.prototype),
-			Object.getOwnPropertyDescriptors(BrowserWindow.prototype)
-		);
-
-		for (const key of Object.keys(propertyDescriptors)) {
-			const descriptor = propertyDescriptors[key];
-			if (descriptor.get || descriptor.set) {
-				Object.defineProperty(this, key, {
-					configurable: true,
-					enumerable: true,
-					get: descriptor.get?.bind(this),
-					set: descriptor.set?.bind(this)
-				});
-			} else if (
-				key !== 'constructor' &&
-				key[0] !== '_' &&
-				key[0] === key[0].toLowerCase() &&
-				typeof this[key] === 'function' &&
-				!this[key].toString().startsWith('class ')
-			) {
-				this[key] = this[key].bind(this);
-			}
-		}
 	}
 }
