@@ -8,7 +8,6 @@ import Event from '../../event/Event.js';
 import HTMLElementUtility from './HTMLElementUtility.js';
 import NodeList from '../node/NodeList.js';
 import Node from '../node/Node.js';
-import NamedNodeMap from '../element/NamedNodeMap.js';
 import DOMStringMap from '../element/DOMStringMap.js';
 
 /**

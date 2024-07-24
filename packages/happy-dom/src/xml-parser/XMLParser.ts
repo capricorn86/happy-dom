@@ -98,9 +98,9 @@ export default class XMLParser {
 							(match[1] || match[2] || match[3] || match[4] || match[5] !== undefined || match[6])
 						) {
 							// Plain text between tags.
-
-							currentNode.appendChild(
-								document.createTextNode(Entities.decodeHTML(xml.substring(lastIndex, match.index)))
+							currentNode[PropertySymbol.appendChild](
+								document.createTextNode(Entities.decodeHTML(xml.substring(lastIndex, match.index))),
+								true
 							);
 						}
 
@@ -145,7 +145,7 @@ export default class XMLParser {
 									: (<Element>currentNode)[PropertySymbol.namespaceURI] || NamespaceURI.html;
 							const newElement = document.createElementNS(namespaceURI, localName);
 
-							currentNode.appendChild(newElement);
+							currentNode[PropertySymbol.appendChild](newElement, true);
 							currentNode = newElement;
 							stack.push(currentNode);
 							stackTagNames.push(tagName);
@@ -180,14 +180,18 @@ export default class XMLParser {
 								comment = '?' + match[6];
 							}
 
-							currentNode.appendChild(document.createComment(Entities.decodeHTML(comment)));
+							currentNode[PropertySymbol.appendChild](
+								document.createComment(Entities.decodeHTML(comment)),
+								true
+							);
 						} else if (match[5] !== undefined) {
 							// Exclamation mark comment.
 							// Document type node or comment.
 							const exclamationComment = Entities.decodeHTML(match[5]);
-							currentNode.appendChild(
+							currentNode[PropertySymbol.appendChild](
 								this.getDocumentTypeNode(document, exclamationComment) ||
-									document.createComment(exclamationComment)
+									document.createComment(exclamationComment),
+								true
 							);
 						} else if (match[6]) {
 							// Processing instruction (not supported by HTML).
@@ -195,10 +199,11 @@ export default class XMLParser {
 						} else {
 							// Plain text between tags, including the match as it is not a valid start or end tag.
 
-							currentNode.appendChild(
+							currentNode[PropertySymbol.appendChild](
 								document.createTextNode(
 									Entities.decodeHTML(xml.substring(lastIndex, markupRegexp.lastIndex))
-								)
+								),
+								true
 							);
 						}
 
@@ -223,7 +228,6 @@ export default class XMLParser {
 										attributeMatch[9]
 									) {
 										// Valid attribute name and value.
-
 										const name =
 											attributeMatch[1] ||
 											attributeMatch[3] ||
@@ -234,14 +238,23 @@ export default class XMLParser {
 											attributeMatch[2] || attributeMatch[4] || attributeMatch[7] || '';
 										const value = rawValue ? Entities.decodeHTMLAttribute(rawValue) : '';
 
-										// In XML and SVG namespaces, the attribute "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
-										const namespaceURI =
-											(<Element>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg &&
-											name === 'xmlns'
-												? NamespaceURI.xmlns
-												: null;
-
-										(<Element>currentNode).setAttributeNS(namespaceURI, name, value);
+										if ((<Element>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg) {
+											// In XML and SVG namespaces, the attribute "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
+											const attributeItem = document.createAttributeNS(
+												name === 'xmlns' ? NamespaceURI.xmlns : null,
+												name
+											);
+											attributeItem[PropertySymbol.value] = value;
+											(<Element>currentNode)[PropertySymbol.attributes][
+												PropertySymbol.setNamedItem
+											](attributeItem);
+										} else {
+											const attributeItem = document.createAttribute(name);
+											attributeItem[PropertySymbol.value] = value;
+											(<Element>currentNode)[PropertySymbol.attributes][
+												PropertySymbol.setNamedItem
+											](attributeItem);
+										}
 
 										startTagIndex += attributeMatch[0].length;
 									} else if (
@@ -250,7 +263,6 @@ export default class XMLParser {
 											(attributeMatch[6] && !attributeMatch[8]))
 									) {
 										// End attribute apostrophe is missing (e.g. "attr='value" or 'attr="value').
-
 										hasAttributeStringEnded = false;
 										break;
 									}
@@ -305,10 +317,11 @@ export default class XMLParser {
 							}
 
 							// Plain text elements such as <script> and <style> should only contain text.
-							currentNode.appendChild(
+							currentNode[PropertySymbol.appendChild](
 								document.createTextNode(
 									Entities.decodeHTML(xml.substring(startTagIndex, match.index))
-								)
+								),
+								true
 							);
 
 							stack.pop();
@@ -326,8 +339,9 @@ export default class XMLParser {
 			if (lastIndex !== xml.length) {
 				// Plain text after tags.
 
-				currentNode.appendChild(
-					document.createTextNode(Entities.decodeHTML(xml.substring(lastIndex)))
+				currentNode[PropertySymbol.appendChild](
+					document.createTextNode(Entities.decodeHTML(xml.substring(lastIndex))),
+					true
 				);
 			}
 		}

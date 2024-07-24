@@ -119,37 +119,7 @@ export default class NamedNodeMap {
 	 * @returns Replaced item.
 	 */
 	public setNamedItem(item: Attr): Attr | null {
-		if (!item[PropertySymbol.name]) {
-			return null;
-		}
-
-		item[PropertySymbol.ownerElement] = this[PropertySymbol.ownerElement];
-
-		const namespaceItemKey = this[PropertySymbol.getNamespaceItemKey](item);
-		const replacedItem = this[PropertySymbol.namespaceItems].get(namespaceItemKey) || null;
-		const replacedNamedItem =
-			this[PropertySymbol.namedItems].get(item[PropertySymbol.name]) || null;
-
-		this[PropertySymbol.namespaceItems].set(namespaceItemKey, item);
-
-		// The HTML namespace should be prioritized over other namespaces in the namedItems map
-		// The HTML namespace is the default namespace
-		if (
-			(!replacedNamedItem ||
-				(replacedNamedItem[PropertySymbol.namespaceURI] &&
-					replacedNamedItem[PropertySymbol.namespaceURI] !== NamespaceURI.html) ||
-				!item[PropertySymbol.namespaceURI] ||
-				item[PropertySymbol.namespaceURI] === NamespaceURI.html) &&
-			// Only lower case names should be stored in the namedItems map
-			(this[PropertySymbol.ownerElement][PropertySymbol.namespaceURI] !== NamespaceURI.html ||
-				item[PropertySymbol.name].toLowerCase() === item[PropertySymbol.name])
-		) {
-			this[PropertySymbol.namedItems].set(item[PropertySymbol.name], item);
-		}
-
-		this[PropertySymbol.ownerElement][PropertySymbol.onSetAttribute](item, replacedItem);
-
-		return replacedItem;
+		return this[PropertySymbol.setNamedItem](item);
 	}
 
 	/**
@@ -160,7 +130,7 @@ export default class NamedNodeMap {
 	 * @returns Replaced item.
 	 */
 	public setNamedItemNS(item: Attr): Attr | null {
-		return this.setNamedItem(item);
+		return this[PropertySymbol.setNamedItem](item);
 	}
 
 	/**
@@ -208,11 +178,55 @@ export default class NamedNodeMap {
 	}
 
 	/**
+	 * Sets named item.
+	 *
+	 * @param item Item.
+	 * @param [ignoreListeners] Ignore listeners.
+	 * @returns Replaced item.
+	 */
+	public [PropertySymbol.setNamedItem](item: Attr, ignoreListeners = false): Attr {
+		if (!item[PropertySymbol.name]) {
+			return null;
+		}
+
+		item[PropertySymbol.ownerElement] = this[PropertySymbol.ownerElement];
+
+		const namespaceItemKey = this[PropertySymbol.getNamespaceItemKey](item);
+		const replacedItem = this[PropertySymbol.namespaceItems].get(namespaceItemKey) || null;
+		const replacedNamedItem =
+			this[PropertySymbol.namedItems].get(item[PropertySymbol.name]) || null;
+
+		this[PropertySymbol.namespaceItems].set(namespaceItemKey, item);
+
+		// The HTML namespace should be prioritized over other namespaces in the namedItems map
+		// The HTML namespace is the default namespace
+		if (
+			(!replacedNamedItem ||
+				(replacedNamedItem[PropertySymbol.namespaceURI] &&
+					replacedNamedItem[PropertySymbol.namespaceURI] !== NamespaceURI.html) ||
+				!item[PropertySymbol.namespaceURI] ||
+				item[PropertySymbol.namespaceURI] === NamespaceURI.html) &&
+			// Only lower case names should be stored in the namedItems map
+			(this[PropertySymbol.ownerElement][PropertySymbol.namespaceURI] !== NamespaceURI.html ||
+				item[PropertySymbol.name].toLowerCase() === item[PropertySymbol.name])
+		) {
+			this[PropertySymbol.namedItems].set(item[PropertySymbol.name], item);
+		}
+
+		if (!ignoreListeners) {
+			this[PropertySymbol.ownerElement][PropertySymbol.onSetAttribute](item, replacedItem);
+		}
+
+		return replacedItem;
+	}
+
+	/**
 	 * Removes named item.
 	 *
 	 * @param item Item.
+	 * @param ignoreListeners
 	 */
-	public [PropertySymbol.removeNamedItem](item: Attr): void {
+	public [PropertySymbol.removeNamedItem](item: Attr, ignoreListeners = false): void {
 		item[PropertySymbol.ownerElement] = null;
 		this[PropertySymbol.namespaceItems].delete(this[PropertySymbol.getNamespaceItemKey](item));
 		this[PropertySymbol.namedItems].delete(
@@ -221,7 +235,10 @@ export default class NamedNodeMap {
 				item[PropertySymbol.name]
 			)
 		);
-		this[PropertySymbol.ownerElement][PropertySymbol.onRemoveAttribute](item);
+
+		if (!ignoreListeners) {
+			this[PropertySymbol.ownerElement][PropertySymbol.onRemoveAttribute](item);
+		}
 	}
 
 	/**

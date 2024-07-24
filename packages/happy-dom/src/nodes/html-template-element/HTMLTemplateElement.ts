@@ -84,29 +84,29 @@ export default class HTMLTemplateElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.appendChild](node: Node): Node {
-		return this[PropertySymbol.content].appendChild(node);
+	public override [PropertySymbol.appendChild](node: Node, isDuringParsing = false): Node {
+		return this[PropertySymbol.content][PropertySymbol.appendChild](node, isDuringParsing);
 	}
 
 	/**
 	 * @override
 	 */
 	public override [PropertySymbol.removeChild](node: Node): Node {
-		return this[PropertySymbol.content].removeChild(node);
+		return this[PropertySymbol.content][PropertySymbol.removeChild](node);
 	}
 
 	/**
 	 * @override
 	 */
 	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node): Node {
-		return this[PropertySymbol.content].insertBefore(newNode, referenceNode);
+		return this[PropertySymbol.content][PropertySymbol.insertBefore](newNode, referenceNode);
 	}
 
 	/**
 	 * @override
 	 */
 	public override [PropertySymbol.replaceChild](newChild: Node, oldChild: Node): Node {
-		return this[PropertySymbol.content].replaceChild(newChild, oldChild);
+		return this[PropertySymbol.content][PropertySymbol.replaceChild](newChild, oldChild);
 	}
 
 	/**

@@ -223,3 +223,4 @@ export const getNamespaceItemKey = Symbol('getNamespaceItemKey');
 export const getNamedItemKey = Symbol('getNamedItemKey');
 export const namespaceItems = Symbol('namespaceItems');
 export const proxy = Symbol('proxy');
+export const setNamedItem = Symbol('setNamedItem');

@@ -1182,37 +1182,27 @@ export default class Element
 	}
 
 	/**
-	 * Append a child node to childNodes.
-	 *
-	 * @param  node Node to append.
-	 * @returns Appended node.
+	 * @override
 	 */
-	public [PropertySymbol.appendChild](node: Node): Node {
-		const returnValue = super[PropertySymbol.appendChild](node);
+	public override [PropertySymbol.appendChild](node: Node, isDuringParsing = false): Node {
+		const returnValue = super[PropertySymbol.appendChild](node, isDuringParsing);
 		this[PropertySymbol.onNodeListChange](node);
 		return returnValue;
 	}
 
 	/**
-	 * Remove Child element from childNodes array.
-	 *
-	 * @param node Node to remove.
-	 * @returns Removed node.
+	 * @override
 	 */
-	public [PropertySymbol.removeChild](node: Node): Node {
+	public override [PropertySymbol.removeChild](node: Node): Node {
 		const returnValue = super[PropertySymbol.removeChild](node);
 		this[PropertySymbol.onNodeListChange](node);
 		return returnValue;
 	}
 
 	/**
-	 * Inserts a node before another.
-	 *
-	 * @param newNode Node to insert.
-	 * @param referenceNode Node to insert before.
-	 * @returns Inserted node.
+	 * @override
 	 */
-	public [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
+	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
 		const returnValue = super[PropertySymbol.insertBefore](newNode, referenceNode);
 		this[PropertySymbol.onNodeListChange](newNode);
 		return returnValue;

@@ -474,20 +474,23 @@ export default class Node extends EventTarget {
 	 * Append a child node to childNodes.
 	 *
 	 * @param  node Node to append.
+	 * @param [isDuringParsing=false] "true" if the node is being appended during parsing.
 	 * @returns Appended node.
 	 */
-	public [PropertySymbol.appendChild](node: Node): Node {
-		if (node === this) {
-			throw new DOMException(
-				"Failed to execute 'appendChild' on 'Node': Not possible to append a node as a child of itself."
-			);
-		}
+	public [PropertySymbol.appendChild](node: Node, isDuringParsing = false): Node {
+		if (!isDuringParsing) {
+			if (node === this) {
+				throw new DOMException(
+					"Failed to execute 'appendChild' on 'Node': Not possible to append a node as a child of itself."
+				);
+			}
 
-		if (NodeUtility.isInclusiveAncestor(node, this, true)) {
-			throw new DOMException(
-				"Failed to execute 'appendChild' on 'Node': The new node is a parent of the node to insert to.",
-				DOMExceptionNameEnum.domException
-			);
+			if (NodeUtility.isInclusiveAncestor(node, this, true)) {
+				throw new DOMException(
+					"Failed to execute 'appendChild' on 'Node': The new node is a parent of the node to insert to.",
+					DOMExceptionNameEnum.domException
+				);
+			}
 		}
 
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
