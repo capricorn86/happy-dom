@@ -5,7 +5,7 @@ import Document from '../document/Document.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
-import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
+import DOMTokenList from '../element/DOMTokenList.js';
 import Attr from '../attr/Attr.js';
 import BrowserFrameFactory from '../../browser/utilities/BrowserFrameFactory.js';
 import BrowserFrameURL from '../../browser/utilities/BrowserFrameURL.js';
@@ -45,7 +45,7 @@ export default class HTMLIFrameElement extends HTMLElement {
 	public onerror: (event: Event) => void | null = null;
 
 	// Internal properties
-	public [PropertySymbol.sandbox]: DOMTokenList = null;
+	public [PropertySymbol.sandbox]: DOMTokenList | null = null;
 
 	// Private properties
 	#contentWindowContainer: { window: BrowserWindow | CrossOriginBrowserWindow | null } = {
@@ -281,12 +281,6 @@ export default class HTMLIFrameElement extends HTMLElement {
 		}
 
 		if (attribute[PropertySymbol.name] === 'sandbox') {
-			if (!this[PropertySymbol.sandbox]) {
-				this[PropertySymbol.sandbox] = new DOMTokenList(this, 'sandbox');
-			} else {
-				this[PropertySymbol.sandbox][PropertySymbol.updateIndices]();
-			}
-
 			this.#validateSandboxFlags();
 		}
 	}
@@ -312,10 +306,9 @@ export default class HTMLIFrameElement extends HTMLElement {
 	 */
 	#validateSandboxFlags(): void {
 		const window = this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow];
-		const values = this[PropertySymbol.sandbox].values();
 		const invalidFlags: string[] = [];
 
-		for (const token of values) {
+		for (const token of this.sandbox) {
 			if (!SANDBOX_FLAGS.includes(token)) {
 				invalidFlags.push(token);
 			}

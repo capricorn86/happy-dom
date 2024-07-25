@@ -71,7 +71,12 @@ export default class HTMLFormElement extends HTMLElement {
 				return target[PropertySymbol.getFormControlNamedItem](<string>property) || undefined;
 			},
 			set(target, property, newValue): boolean {
-				if (property in target || typeof property === 'symbol') {
+				if (typeof property === 'symbol') {
+					target[property] = newValue;
+					return true;
+				}
+				const index = Number(property);
+				if (isNaN(index)) {
 					target[property] = newValue;
 				}
 				return true;
@@ -118,7 +123,13 @@ export default class HTMLFormElement extends HTMLElement {
 				return false;
 			},
 			defineProperty(target, property, descriptor): boolean {
-				if (property in target) {
+				if (!descriptor.value) {
+					Object.defineProperty(target, property, descriptor);
+					return true;
+				}
+
+				const index = Number(descriptor.value);
+				if (isNaN(index)) {
 					Object.defineProperty(target, property, descriptor);
 					return true;
 				}
@@ -368,7 +379,7 @@ export default class HTMLFormElement extends HTMLElement {
 	 * Submits form. No submit event is raised. In particular, the form's "submit" event handler is not run.
 	 */
 	public submit(): void {
-		this[PropertySymbol.submit]();
+		this.#submit();
 	}
 
 	/**
@@ -386,7 +397,7 @@ export default class HTMLFormElement extends HTMLElement {
 					submitter: submitter || this[PropertySymbol.proxy]
 				})
 			);
-			this[PropertySymbol.submit](submitter);
+			this.#submit(submitter);
 		}
 	}
 
@@ -540,7 +551,7 @@ export default class HTMLFormElement extends HTMLElement {
 	 * @param browserFrame Browser frame. Injected by the constructor.
 	 * @param [submitter] Submitter.
 	 */
-	private [PropertySymbol.submit](submitter?: HTMLInputElement | HTMLButtonElement): void {
+	#submit(submitter?: HTMLInputElement | HTMLButtonElement): void {
 		const action = submitter?.hasAttribute('formaction')
 			? submitter?.formAction || this.action
 			: this.action;

@@ -1,8 +1,8 @@
-import Window from '../../src/window/Window.js';
-import Document from '../../src/nodes/document/Document.js';
-import Element from '../../src/nodes/element/Element.js';
-import DOMTokenList from '../../src/dom-token-list/DOMTokenList.js';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import Element from '../../../src/nodes/element/Element.js';
 import { beforeEach, describe, it, expect } from 'vitest';
+import DOMTokenList from '../../../src/nodes/element/DOMTokenList.js';
 
 describe('DOMTokenList', () => {
 	let window: Window;

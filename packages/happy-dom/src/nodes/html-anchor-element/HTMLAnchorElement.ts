@@ -1,11 +1,10 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
+import DOMTokenList from '../element/DOMTokenList.js';
 import Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import HTMLHyperlinkElementUtility from '../html-hyperlink-element/HTMLHyperlinkElementUtility.js';
 import IHTMLHyperlinkElement from '../html-hyperlink-element/IHTMLHyperlinkElement.js';
-import Attr from '../attr/Attr.js';
 import MouseEvent from '../../event/events/MouseEvent.js';
 
 /**
@@ -15,7 +14,7 @@ import MouseEvent from '../../event/events/MouseEvent.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement.
  */
 export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyperlinkElement {
-	public [PropertySymbol.relList]: DOMTokenList = null;
+	public [PropertySymbol.relList]: DOMTokenList | null = null;
 	#htmlHyperlinkElementUtility = new HTMLHyperlinkElementUtility(this);
 
 	/**
@@ -395,28 +394,5 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 		}
 
 		return returnValue;
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.onSetAttribute](
-		attribute: Attr,
-		replacedAttribute: Attr | null
-	): void {
-		super[PropertySymbol.onSetAttribute](attribute, replacedAttribute);
-		if (attribute[PropertySymbol.name] === 'rel' && this[PropertySymbol.relList]) {
-			this[PropertySymbol.relList][PropertySymbol.updateIndices]();
-		}
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.onRemoveAttribute](removedAttribute: Attr): void {
-		super[PropertySymbol.onRemoveAttribute](removedAttribute);
-		if (removedAttribute[PropertySymbol.name] === 'rel' && this[PropertySymbol.relList]) {
-			this[PropertySymbol.relList][PropertySymbol.updateIndices]();
-		}
 	}
 }

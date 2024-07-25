@@ -3,7 +3,7 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import Event from '../../event/Event.js';
 import ErrorEvent from '../../event/events/ErrorEvent.js';
-import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
+import DOMTokenList from '../element/DOMTokenList.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import Attr from '../attr/Attr.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
@@ -26,7 +26,7 @@ export default class HTMLLinkElement extends HTMLElement {
 	// Internal properties
 	public [PropertySymbol.sheet]: CSSStyleSheet = null;
 	public [PropertySymbol.evaluateCSS] = true;
-	public [PropertySymbol.relList]: DOMTokenList = null;
+	public [PropertySymbol.relList]: DOMTokenList | null = null;
 	#loadedStyleSheetURL: string | null = null;
 	#browserFrame: IBrowserFrame;
 
@@ -232,25 +232,10 @@ export default class HTMLLinkElement extends HTMLElement {
 	): void {
 		super[PropertySymbol.onSetAttribute](attribute, replacedAttribute);
 
-		if (attribute[PropertySymbol.name] === 'rel' && this[PropertySymbol.relList]) {
-			this[PropertySymbol.relList][PropertySymbol.updateIndices]();
-		}
-
 		if (attribute[PropertySymbol.name] === 'rel') {
 			this.#loadStyleSheet(this.getAttribute('href'), attribute[PropertySymbol.value]);
 		} else if (attribute[PropertySymbol.name] === 'href') {
 			this.#loadStyleSheet(attribute[PropertySymbol.value], this.getAttribute('rel'));
-		}
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.onRemoveAttribute](removedAttribute: Attr): void {
-		super[PropertySymbol.onRemoveAttribute](removedAttribute);
-
-		if (removedAttribute[PropertySymbol.name] === 'rel' && this[PropertySymbol.relList]) {
-			this[PropertySymbol.relList][PropertySymbol.updateIndices]();
 		}
 	}
 

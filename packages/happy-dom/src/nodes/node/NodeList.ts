@@ -39,7 +39,16 @@ class NodeList<T extends Node> {
 					return items[index];
 				}
 			},
-			set(): boolean {
+			set(target, property, newValue): boolean {
+				if (typeof property === 'symbol') {
+					target[property] = newValue;
+					return true;
+				}
+
+				const index = Number(property);
+				if (isNaN(index)) {
+					target[property] = newValue;
+				}
 				return true;
 			},
 			deleteProperty(): boolean {

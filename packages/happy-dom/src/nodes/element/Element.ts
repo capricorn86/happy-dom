@@ -2,7 +2,7 @@ import Node from '../node/Node.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import ShadowRoot from '../shadow-root/ShadowRoot.js';
 import DOMRect from './DOMRect.js';
-import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
+import DOMTokenList from './DOMTokenList.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
 import XMLSerializer from '../../xml-serializer/XMLSerializer.js';
@@ -90,7 +90,7 @@ export default class Element
 	public ontouchstart: (event: Event) => void | null = null;
 
 	// Internal properties
-	public [PropertySymbol.classList]: DOMTokenList = null;
+	public [PropertySymbol.classList]: DOMTokenList | null = null;
 	public [PropertySymbol.isValue]: string | null = null;
 	public [PropertySymbol.nodeType] = NodeTypeEnum.elementNode;
 	public [PropertySymbol.tagName]: string | null = this.constructor[PropertySymbol.tagName] || null;
@@ -1221,10 +1221,6 @@ export default class Element
 
 		const oldValue = replacedAttribute ? replacedAttribute[PropertySymbol.value] : null;
 
-		if (attribute[PropertySymbol.name] === 'class' && this[PropertySymbol.classList]) {
-			this[PropertySymbol.classList][PropertySymbol.updateIndices]();
-		}
-
 		if (
 			attribute[PropertySymbol.name] === 'slot' &&
 			this[PropertySymbol.parentNode] &&
@@ -1291,10 +1287,6 @@ export default class Element
 	 * @param removedAttribute Attribute.
 	 */
 	public [PropertySymbol.onRemoveAttribute](removedAttribute: Attr): void {
-		if (removedAttribute[PropertySymbol.name] === 'class' && this[PropertySymbol.classList]) {
-			this[PropertySymbol.classList][PropertySymbol.updateIndices]();
-		}
-
 		if (
 			removedAttribute[PropertySymbol.name] === 'slot' &&
 			this[PropertySymbol.parentNode] &&

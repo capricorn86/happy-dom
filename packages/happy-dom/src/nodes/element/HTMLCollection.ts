@@ -45,7 +45,12 @@ export default class HTMLCollection<T extends Element, NamedItem = T> {
 				return target.namedItem(<string>property) || undefined;
 			},
 			set(target, property, newValue): boolean {
-				if (property in target || typeof property === 'symbol') {
+				if (typeof property === 'symbol') {
+					target[property] = newValue;
+					return true;
+				}
+				const index = Number(property);
+				if (isNaN(index)) {
 					target[property] = newValue;
 				}
 				return true;

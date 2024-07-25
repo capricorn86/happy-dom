@@ -27,7 +27,7 @@ export default class HTMLSelectElement extends HTMLElement {
 	// Internal properties.
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
-	public [PropertySymbol.options]: HTMLOptionsCollection = new HTMLOptionsCollection(this);
+	public [PropertySymbol.options]: HTMLOptionsCollection | null = null;
 	public [PropertySymbol.selectedOptions]: HTMLCollection<HTMLOptionElement> | null = null;
 
 	// Events
@@ -39,7 +39,6 @@ export default class HTMLSelectElement extends HTMLElement {
 	 */
 	constructor() {
 		super();
-		this[PropertySymbol.options] = new HTMLOptionsCollection(this);
 
 		ClassMethodBinder.bindMethods(
 			this,
@@ -58,31 +57,41 @@ export default class HTMLSelectElement extends HTMLElement {
 				}
 			},
 			set(target, property, newValue): boolean {
-				if (property in target || typeof property === 'symbol') {
+				if (typeof property === 'symbol') {
 					target[property] = newValue;
 					return true;
 				}
 
 				const index = Number(property);
 
-				if (isNaN(index) || !newValue || !(newValue instanceof HTMLOptionElement)) {
-					return false;
+				if (isNaN(index)) {
+					target[property] = newValue;
+					return true;
+				}
+
+				if (!newValue || !(newValue instanceof HTMLOptionElement)) {
+					throw new Error(
+						`TypeError: Failed to set an indexed property [${index}] on 'HTMLSelectElement': parameter 2 is not of type 'HTMLOptionElement'.`
+					);
 				}
 
 				const options = QuerySelector.querySelectorAll(target, 'option')[PropertySymbol.items];
-
-				if (!options[index]) {
-					return false;
-				}
-
 				const childNodes = target[PropertySymbol.nodeArray];
 
 				while (childNodes.length) {
 					target[PropertySymbol.removeChild](childNodes[0]);
 				}
 
-				for (let i = 0, max = options.length; i < max; i++) {
-					target[PropertySymbol.appendChild](i === index ? newValue : options[i]);
+				for (let i = 0; i <= index; i++) {
+					if (i === index) {
+						target[PropertySymbol.appendChild](newValue);
+					} else if (options[i]) {
+						target[PropertySymbol.appendChild](options[i]);
+					} else {
+						target[PropertySymbol.appendChild](
+							target[PropertySymbol.ownerDocument].createElement('option')
+						);
+					}
 				}
 
 				return true;
@@ -107,31 +116,36 @@ export default class HTMLSelectElement extends HTMLElement {
 				return false;
 			},
 			defineProperty(target, property, descriptor): boolean {
-				if (property in target) {
+				const index = Number(property);
+
+				if (isNaN(index)) {
 					Object.defineProperty(target, property, descriptor);
 					return true;
 				}
 
-				const index = Number(property);
-
-				if (isNaN(index) || !descriptor.value || !(descriptor.value instanceof HTMLOptionElement)) {
-					return false;
+				if (!descriptor.value || !(descriptor.value instanceof HTMLOptionElement)) {
+					throw new Error(
+						`TypeError: Failed to set an indexed property [${index}] on 'HTMLSelectElement': parameter 2 is not of type 'HTMLOptionElement'.`
+					);
 				}
 
 				const options = QuerySelector.querySelectorAll(target, 'option')[PropertySymbol.items];
-
-				if (!options[index]) {
-					return false;
-				}
-
 				const childNodes = target[PropertySymbol.nodeArray];
 
 				while (childNodes.length) {
 					target[PropertySymbol.removeChild](childNodes[0]);
 				}
 
-				for (let i = 0, max = options.length; i < max; i++) {
-					target[PropertySymbol.appendChild](i === index ? descriptor.value : options[i]);
+				for (let i = 0; i <= index; i++) {
+					if (i === index) {
+						target[PropertySymbol.appendChild](descriptor.value);
+					} else if (options[i]) {
+						target[PropertySymbol.appendChild](options[i]);
+					} else {
+						target[PropertySymbol.appendChild](
+							target[PropertySymbol.ownerDocument].createElement('option')
+						);
+					}
 				}
 
 				return true;
@@ -182,6 +196,10 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @returns Options.
 	 */
 	public get options(): HTMLOptionsCollection {
+		if (!this[PropertySymbol.options]) {
+			this[PropertySymbol.options] = new HTMLOptionsCollection(this);
+		}
+
 		return this[PropertySymbol.options];
 	}
 
@@ -623,7 +641,7 @@ export default class HTMLSelectElement extends HTMLElement {
 			}
 		}
 
-		const size = this[PropertySymbol.getDisplaySize]();
+		const size = this.#getDisplaySize();
 
 		if (size === 1 && !selected.length) {
 			for (let i = 0, max = options.length; i < max; i++) {
@@ -657,7 +675,7 @@ export default class HTMLSelectElement extends HTMLElement {
 	 *
 	 * @returns Display size.
 	 */
-	private [PropertySymbol.getDisplaySize](): number {
+	#getDisplaySize(): number {
 		if (this.hasAttributeNS(null, 'size')) {
 			const size = parseInt(this.getAttribute('size'));
 			if (!isNaN(size) && size >= 0) {

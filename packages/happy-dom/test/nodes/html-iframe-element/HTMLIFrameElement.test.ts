@@ -12,8 +12,7 @@ import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest';
 import IRequestInfo from '../../../src/fetch/types/IRequestInfo.js';
 import Headers from '../../../src/fetch/Headers.js';
 import Browser from '../../../src/browser/Browser.js';
-import DOMTokenList from '../../../src/dom-token-list/DOMTokenList.js';
-import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCaptureEnum.js';
+import DOMTokenList from '../../../src/nodes/element/DOMTokenList.js';
 
 describe('HTMLIFrameElement', () => {
 	let window: Window;
