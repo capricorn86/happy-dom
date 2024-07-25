@@ -9,7 +9,6 @@ describe('Text', () => {
 	let document: Document;
 
 	beforeEach(() => {
-		debugger;
 		window = new Window();
 		document = window.document;
 	});
