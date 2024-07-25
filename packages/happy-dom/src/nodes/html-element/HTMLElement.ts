@@ -6,8 +6,6 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import DOMException from '../../exception/DOMException.js';
 import Event from '../../event/Event.js';
 import HTMLElementUtility from './HTMLElementUtility.js';
-import NodeList from '../node/NodeList.js';
-import Node from '../node/Node.js';
 import DOMStringMap from '../element/DOMStringMap.js';
 
 /**
@@ -492,10 +490,6 @@ export default class HTMLElement extends Element {
 		clone[PropertySymbol.contentEditable] = this[PropertySymbol.contentEditable];
 		clone[PropertySymbol.isContentEditable] = this[PropertySymbol.isContentEditable];
 
-		if (this[PropertySymbol.style]) {
-			clone.style.cssText = this[PropertySymbol.style].cssText;
-		}
-
 		return clone;
 	}
 
@@ -529,9 +523,7 @@ export default class HTMLElement extends Element {
 						const newCache = newElement[PropertySymbol.cache];
 						newElement[PropertySymbol.nodeArray] = this[PropertySymbol.nodeArray];
 						newElement[PropertySymbol.elementArray] = this[PropertySymbol.elementArray];
-						newElement[PropertySymbol.childNodes] = new NodeList<Node>(
-							newElement[PropertySymbol.nodeArray]
-						);
+						newElement[PropertySymbol.childNodes] = null;
 						newElement[PropertySymbol.children] = null;
 						newElement[PropertySymbol.isConnected] = this[PropertySymbol.isConnected];
 
@@ -557,7 +549,7 @@ export default class HTMLElement extends Element {
 
 						this[PropertySymbol.nodeArray] = [];
 						this[PropertySymbol.elementArray] = [];
-						this[PropertySymbol.childNodes] = new NodeList<Node>(this[PropertySymbol.nodeArray]);
+						this[PropertySymbol.childNodes] = null;
 						this[PropertySymbol.children] = null;
 
 						this[PropertySymbol.rootNode] = null;

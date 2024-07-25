@@ -735,5 +735,45 @@ describe('XMLParser', () => {
 				`<li></li><li><span>Test</span></li>`.replace(/\s/gm, '')
 			);
 		});
+
+		it('Handles ending with unclosed start tag.', () => {
+			const root = XMLParser.parse(
+				document,
+				`<div>
+                    <ul>
+                        <li>
+                            <ul>
+                                <li>aaaaa</li>
+                                <li
+                            </ul>
+                        </li>
+                    </ul>
+                </div>`
+			);
+
+			// TODO: Should actually be:
+			// <div>
+			//         <ul>
+			//             <li>
+			//                 <ul>
+			//                     <li>aaaaa</li>
+			//                     <li <="" ul="">
+			//             </li>
+			//         </ul>
+			//     </li></ul></div>
+
+			expect(new XMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
+				`<div>
+                    <ul>
+                        <li>
+                            <ul>
+                                <li>aaaaa</li>
+                                <li></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>`.replace(/\s/gm, '')
+			);
+		});
 	});
 });

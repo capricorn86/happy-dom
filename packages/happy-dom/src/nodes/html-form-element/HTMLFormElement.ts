@@ -37,9 +37,8 @@ export default class HTMLFormElement extends HTMLElement {
 	public onreset: (event: Event) => void | null = null;
 	public onsubmit: (event: Event) => void | null = null;
 
-	private declare [PropertySymbol.submit]: (
-		submitter?: HTMLInputElement | HTMLButtonElement
-	) => void;
+	// Private properties
+	#browserFrame: IBrowserFrame;
 
 	/**
 	 * Constructor.
@@ -49,15 +48,12 @@ export default class HTMLFormElement extends HTMLElement {
 	constructor(browserFrame: IBrowserFrame) {
 		super();
 
+		this.#browserFrame = browserFrame;
+
 		ClassMethodBinder.bindMethods(
 			this,
 			[EventTarget, Node, Element, HTMLElement, HTMLFormElement],
 			true
-		);
-
-		this[PropertySymbol.submit] = this[PropertySymbol.submitWithBrowserFrame].bind(
-			this,
-			browserFrame
 		);
 
 		const proxy = new Proxy(this, {
@@ -475,7 +471,7 @@ export default class HTMLFormElement extends HTMLElement {
 		const elements = <THTMLFormControlElement[]>(
 			QuerySelector.querySelectorAll(this, 'input,select,textarea,button,fieldset')[
 				PropertySymbol.items
-			]
+			].slice()
 		);
 
 		if (this[PropertySymbol.isConnected]) {
@@ -544,13 +540,11 @@ export default class HTMLFormElement extends HTMLElement {
 	 * @param browserFrame Browser frame. Injected by the constructor.
 	 * @param [submitter] Submitter.
 	 */
-	private [PropertySymbol.submitWithBrowserFrame](
-		browserFrame: IBrowserFrame,
-		submitter?: HTMLInputElement | HTMLButtonElement
-	): void {
+	private [PropertySymbol.submit](submitter?: HTMLInputElement | HTMLButtonElement): void {
 		const action = submitter?.hasAttribute('formaction')
 			? submitter?.formAction || this.action
 			: this.action;
+		const browserFrame = this.#browserFrame;
 
 		if (!action) {
 			// The URL is invalid when the action is empty.

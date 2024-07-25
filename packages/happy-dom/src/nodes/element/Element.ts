@@ -1186,7 +1186,7 @@ export default class Element
 	 */
 	public override [PropertySymbol.appendChild](node: Node, isDuringParsing = false): Node {
 		const returnValue = super[PropertySymbol.appendChild](node, isDuringParsing);
-		this[PropertySymbol.onNodeListChange](node);
+		this.#onNodeListChange(node);
 		return returnValue;
 	}
 
@@ -1195,7 +1195,7 @@ export default class Element
 	 */
 	public override [PropertySymbol.removeChild](node: Node): Node {
 		const returnValue = super[PropertySymbol.removeChild](node);
-		this[PropertySymbol.onNodeListChange](node);
+		this.#onNodeListChange(node);
 		return returnValue;
 	}
 
@@ -1204,7 +1204,7 @@ export default class Element
 	 */
 	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
 		const returnValue = super[PropertySymbol.insertBefore](newNode, referenceNode);
-		this[PropertySymbol.onNodeListChange](newNode);
+		this.#onNodeListChange(newNode);
 		return returnValue;
 	}
 
@@ -1347,7 +1347,7 @@ export default class Element
 	 *
 	 * @param node Changed node.
 	 */
-	private [PropertySymbol.onNodeListChange](node: Node): void {
+	#onNodeListChange(node: Node): void {
 		if (this[PropertySymbol.shadowRoot]) {
 			const slotAttribute =
 				node[PropertySymbol.attributes]?.[PropertySymbol.namedItems].get('slot');

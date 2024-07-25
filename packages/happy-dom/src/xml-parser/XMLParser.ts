@@ -81,6 +81,7 @@ export default class XMLParser {
 		const stackTagNames: string[] = [];
 		const markupRegexp = new RegExp(MARKUP_REGEXP, 'gm');
 		const { evaluateScripts = false } = options || {};
+		let newNode: Node | null = null;
 		let currentNode: Node | null = root;
 		let match: RegExpExecArray;
 		let readState: MarkupReadStateEnum = MarkupReadStateEnum.startOrEndTag;
@@ -108,34 +109,6 @@ export default class XMLParser {
 							// Start tag.
 							const tagName = match[1].toUpperCase();
 							const localName = tagName === 'SVG' ? 'svg' : match[1];
-							const config = HTMLElementConfig[localName];
-
-							// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
-							// Therefore we need to auto-close the tag, so that it become valid (e.g. "<a></a><a></a>").
-							if (
-								config?.contentModel ===
-									HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants &&
-								stackTagNames[stackTagNames.length - 1] === tagName
-							) {
-								stack.pop();
-								stackTagNames.pop();
-								currentNode = stack[stack.length - 1] || root;
-							} else if (
-								config?.contentModel === HTMLElementConfigContentModelEnum.noSelfDescendants &&
-								stackTagNames.includes(tagName)
-							) {
-								while (currentNode !== root) {
-									if ((<Element>currentNode)[PropertySymbol.tagName].toUpperCase() === tagName) {
-										stack.pop();
-										stackTagNames.pop();
-										currentNode = stack[stack.length - 1] || root;
-										break;
-									}
-									stack.pop();
-									stackTagNames.pop();
-									currentNode = stack[stack.length - 1] || root;
-								}
-							}
 
 							// NamespaceURI is inherited from the parent element.
 							// NamespaceURI should be SVG for SVGSVGElement.
@@ -143,12 +116,10 @@ export default class XMLParser {
 								tagName === 'SVG'
 									? NamespaceURI.svg
 									: (<Element>currentNode)[PropertySymbol.namespaceURI] || NamespaceURI.html;
-							const newElement = document.createElementNS(namespaceURI, localName);
 
-							currentNode[PropertySymbol.appendChild](newElement, true);
-							currentNode = newElement;
-							stack.push(currentNode);
-							stackTagNames.push(tagName);
+							// Create a new element.
+							newNode = document.createElementNS(namespaceURI, localName);
+
 							readState = MarkupReadStateEnum.insideStartTag;
 							startTagIndex = markupRegexp.lastIndex;
 						} else if (match[2]) {
@@ -238,22 +209,22 @@ export default class XMLParser {
 											attributeMatch[2] || attributeMatch[4] || attributeMatch[7] || '';
 										const value = rawValue ? Entities.decodeHTMLAttribute(rawValue) : '';
 
-										if ((<Element>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg) {
+										if ((<Element>newNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg) {
 											// In XML and SVG namespaces, the attribute "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
 											const attributeItem = document.createAttributeNS(
 												name === 'xmlns' ? NamespaceURI.xmlns : null,
 												name
 											);
 											attributeItem[PropertySymbol.value] = value;
-											(<Element>currentNode)[PropertySymbol.attributes][
-												PropertySymbol.setNamedItem
-											](attributeItem);
+											(<Element>newNode)[PropertySymbol.attributes][PropertySymbol.setNamedItem](
+												attributeItem
+											);
 										} else {
 											const attributeItem = document.createAttribute(name);
 											attributeItem[PropertySymbol.value] = value;
-											(<Element>currentNode)[PropertySymbol.attributes][
-												PropertySymbol.setNamedItem
-											](attributeItem);
+											(<Element>newNode)[PropertySymbol.attributes][PropertySymbol.setNamedItem](
+												attributeItem
+											);
 										}
 
 										startTagIndex += attributeMatch[0].length;
@@ -272,7 +243,42 @@ export default class XMLParser {
 							// We need to check if the attribute string is read completely.
 							// The attribute string can potentially contain "/>" or ">".
 							if (hasAttributeStringEnded) {
-								const config = HTMLElementConfig[(<Element>currentNode)[PropertySymbol.localName]];
+								const config = HTMLElementConfig[(<Element>newNode)[PropertySymbol.localName]];
+								const tagName = (<Element>newNode)[PropertySymbol.tagName];
+
+								// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
+								// Therefore we need to auto-close the tag, so that it become valid (e.g. "<a></a><a></a>").
+								if (
+									config?.contentModel ===
+										HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants &&
+									stackTagNames[stackTagNames.length - 1] === tagName
+								) {
+									stack.pop();
+									stackTagNames.pop();
+									currentNode = stack[stack.length - 1] || root;
+								} else if (
+									config?.contentModel === HTMLElementConfigContentModelEnum.noSelfDescendants &&
+									stackTagNames.includes(tagName)
+								) {
+									while (currentNode !== root) {
+										if ((<Element>currentNode)[PropertySymbol.tagName].toUpperCase() === tagName) {
+											stack.pop();
+											stackTagNames.pop();
+											currentNode = stack[stack.length - 1] || root;
+											break;
+										}
+										stack.pop();
+										stackTagNames.pop();
+										currentNode = stack[stack.length - 1] || root;
+									}
+								}
+
+								// Appends the new node to its parent and sets is as current node.
+								currentNode[PropertySymbol.appendChild](newNode, true);
+								currentNode = newNode;
+								stack.push(currentNode);
+								stackTagNames.push(tagName);
+								newNode = null;
 
 								// Checks if the tag is a self closing tag (ends with "/>") or void element.
 								// When it is a self closing tag or void element it should be closed immediately.
@@ -334,6 +340,12 @@ export default class XMLParser {
 				}
 
 				lastIndex = markupRegexp.lastIndex;
+			}
+
+			// We expected the "newNode" to be null if the start tag was closed correctly.
+			// We should append the last node to the current node to correct it.
+			if (newNode && currentNode) {
+				currentNode[PropertySymbol.appendChild](newNode, true);
 			}
 
 			if (lastIndex !== xml.length) {

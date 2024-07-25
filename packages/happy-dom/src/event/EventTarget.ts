@@ -53,7 +53,7 @@ export default abstract class EventTarget {
 
 		// Tracks the amount of capture event listeners to improve performance when they are not used.
 		if (listenerOptions && listenerOptions.capture) {
-			const window = this[PropertySymbol.getWindow]();
+			const window = this.#getWindow();
 			if (window) {
 				window[PropertySymbol.captureEventListenerCount][type] =
 					window[PropertySymbol.captureEventListenerCount][type] ?? 0;
@@ -80,7 +80,7 @@ export default abstract class EventTarget {
 					this[PropertySymbol.listenerOptions][type][index] &&
 					this[PropertySymbol.listenerOptions][type][index].capture
 				) {
-					const window = this[PropertySymbol.getWindow]();
+					const window = this.#getWindow();
 					if (window && window[PropertySymbol.captureEventListenerCount][type]) {
 						window[PropertySymbol.captureEventListenerCount][type]--;
 					}
@@ -101,7 +101,7 @@ export default abstract class EventTarget {
 	 * @returns The return value is false if event is cancelable and at least one of the event handlers which handled this event called Event.preventDefault().
 	 */
 	public dispatchEvent(event: Event): boolean {
-		const window = this[PropertySymbol.getWindow]();
+		const window = this.#getWindow();
 
 		if (event.eventPhase === EventPhaseEnum.none) {
 			event[PropertySymbol.target] = this;
@@ -277,7 +277,7 @@ export default abstract class EventTarget {
 	 *
 	 * @returns Window.
 	 */
-	private [PropertySymbol.getWindow](): BrowserWindow | null {
+	#getWindow(): BrowserWindow | null {
 		if ((<Node>(<unknown>this))[PropertySymbol.ownerDocument]) {
 			return (<Node>(<unknown>this))[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow];
 		}

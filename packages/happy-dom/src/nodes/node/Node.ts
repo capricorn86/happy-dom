@@ -474,11 +474,11 @@ export default class Node extends EventTarget {
 	 * Append a child node to childNodes.
 	 *
 	 * @param  node Node to append.
-	 * @param [isDuringParsing=false] "true" if the node is being appended during parsing.
+	 * @param [disableValidations=false] "true" to disable validations.
 	 * @returns Appended node.
 	 */
-	public [PropertySymbol.appendChild](node: Node, isDuringParsing = false): Node {
-		if (!isDuringParsing) {
+	public [PropertySymbol.appendChild](node: Node, disableValidations = false): Node {
+		if (!disableValidations) {
 			if (node === this) {
 				throw new DOMException(
 					"Failed to execute 'appendChild' on 'Node': Not possible to append a node as a child of itself."

@@ -380,6 +380,109 @@ describe('HTMLFormElement', () => {
 			expect(elements.namedItem('namedItem')).toEqual(radioNodeList);
 			expect(elements.namedItem('item') === root.children[4]).toBe(true);
 		});
+
+		it('Returns control elements referenced by "form" attribute.', () => {
+			const div = document.createElement('div');
+			div.innerHTML = `
+                <div>
+                    <input form="testForm" type="text" name="length" value="value1">
+                    <input form="testForm" type="checkbox" name="namedItem" value="value1">
+                    <input form="testForm" type="checkbox" name="namedItem" value="value2" checked>
+                    <input form="testForm" type="checkbox" name="namedItem" value="value3">
+                    <input form="testForm" type="hidden" name="item" value="value1">
+                </div>
+            `;
+			element.id = 'testForm';
+			document.body.appendChild(element);
+			document.body.appendChild(div);
+
+			const elements = element.elements;
+			const root = div.children[0];
+
+			expect(element.length).toBe(5);
+			expect(elements.length).toBe(5);
+
+			expect(element[0] === root.children[0]).toBe(true);
+			expect(element[1] === root.children[1]).toBe(true);
+			expect(element[2] === root.children[2]).toBe(true);
+			expect(element[3] === root.children[3]).toBe(true);
+			expect(element[4] === root.children[4]).toBe(true);
+
+			expect(elements[0] === root.children[0]).toBe(true);
+			expect(elements[1] === root.children[1]).toBe(true);
+			expect(elements[2] === root.children[2]).toBe(true);
+			expect(elements[3] === root.children[3]).toBe(true);
+			expect(elements[4] === root.children[4]).toBe(true);
+
+			expect(elements.item(0) === root.children[0]).toBe(true);
+			expect(elements.item(1) === root.children[1]).toBe(true);
+			expect(elements.item(2) === root.children[2]).toBe(true);
+			expect(elements.item(3) === root.children[3]).toBe(true);
+			expect(elements.item(4) === root.children[4]).toBe(true);
+
+			expect(elements[0].form === element).toBe(true);
+			expect(elements[1].form === element).toBe(true);
+			expect(elements[2].form === element).toBe(true);
+			expect(elements[3].form === element).toBe(true);
+			expect(elements[4].form === element).toBe(true);
+
+			const radioNodeList = new RadioNodeList([
+				<THTMLFormControlElement>root.children[1],
+				<THTMLFormControlElement>root.children[2],
+				<THTMLFormControlElement>root.children[3]
+			]);
+
+			expect(typeof elements.item).toBe('function');
+			expect(typeof elements.namedItem).toBe('function');
+			expect(elements.namedItem('length') === root.children[0]).toBe(true);
+			expect(elements.namedItem('namedItem')).toEqual(radioNodeList);
+			expect(elements.namedItem('item') === root.children[4]).toBe(true);
+
+			const children = Array.from(root.children);
+
+			for (const child of children) {
+				root.removeChild(child);
+			}
+
+			expect(element.length).toBe(0);
+			expect(elements.length).toBe(0);
+
+			for (const child of children) {
+				root.appendChild(child);
+			}
+
+			expect(element.length).toBe(5);
+			expect(elements.length).toBe(5);
+
+			expect(elements[0] === root.children[0]).toBe(true);
+			expect(elements[1] === root.children[1]).toBe(true);
+			expect(elements[2] === root.children[2]).toBe(true);
+			expect(elements[3] === root.children[3]).toBe(true);
+			expect(elements[4] === root.children[4]).toBe(true);
+
+			expect(typeof elements.item).toBe('function');
+			expect(typeof elements.namedItem).toBe('function');
+			expect(elements.namedItem('length') === root.children[0]).toBe(true);
+			expect(elements.namedItem('namedItem')).toEqual(radioNodeList);
+			expect(elements.namedItem('item') === root.children[4]).toBe(true);
+
+			element.id = 'testForm2';
+
+			expect(element.length).toBe(0);
+			expect(elements.length).toBe(0);
+
+			element.id = 'testForm';
+
+			expect(element.length).toBe(5);
+			expect(elements.length).toBe(5);
+
+			for (const child of children) {
+				child.removeAttribute('form');
+			}
+
+			expect(element.length).toBe(0);
+			expect(elements.length).toBe(0);
+		});
 	});
 
 	describe('submit()', () => {
