@@ -593,6 +593,10 @@ export default class Node extends EventTarget {
 	 * @returns Inserted node.
 	 */
 	public [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
+		if (newNode === referenceNode) {
+			return newNode;
+		}
+
 		if (NodeUtility.isInclusiveAncestor(newNode, this, true)) {
 			throw new DOMException(
 				"Failed to execute 'insertBefore' on 'Node': The new node is a parent of the node to insert to.",
