@@ -375,7 +375,7 @@ export default class Element
 	 * @returns HTML.
 	 */
 	public get outerHTML(): string {
-		return new XMLSerializer({ escapeEntities: false }).serializeToString(this);
+		return new XMLSerializer({ escapeEntities: true }).serializeToString(this);
 	}
 
 	/**
@@ -448,6 +448,7 @@ export default class Element
 	 *
 	 * @see https://web.dev/declarative-shadow-dom/
 	 * @see https://chromestatus.com/feature/5191745052606464
+	 * @see https://html.spec.whatwg.org/#serialising-html-fragments
 	 * @param [options] Options.
 	 * @param [options.includeShadowRoots] Set to "true" to include shadow roots.
 	 * @returns HTML.
@@ -455,7 +456,7 @@ export default class Element
 	public getInnerHTML(options?: { includeShadowRoots?: boolean }): string {
 		const xmlSerializer = new XMLSerializer({
 			includeShadowRoots: options && options.includeShadowRoots,
-			escapeEntities: false
+			escapeEntities: true
 		});
 		let xml = '';
 		for (const node of this[PropertySymbol.childNodes]) {

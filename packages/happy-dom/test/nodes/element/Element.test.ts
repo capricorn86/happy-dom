@@ -201,21 +201,6 @@ describe('Element', () => {
 		});
 	});
 
-	describe('get innerHTML()', () => {
-		it('Returns HTML of children as a concatenated string.', () => {
-			const div = document.createElement('div');
-
-			element.appendChild(div);
-
-			vi.spyOn(XMLSerializer.prototype, 'serializeToString').mockImplementation((rootElement) => {
-				expect(rootElement).toBe(div);
-				return 'EXPECTED_HTML';
-			});
-
-			expect(element.innerHTML).toBe('EXPECTED_HTML');
-		});
-	});
-
 	describe('set innerHTML()', () => {
 		it('Creates child nodes from provided HTML.', () => {
 			const div = document.createElement('div');
@@ -246,6 +231,29 @@ describe('Element', () => {
 			element.appendChild(textNode1);
 
 			expect(element.outerHTML).toBe('<div><div></div>text1</div>');
+		});
+
+		it('Returns HTML of children as a concatenated string.', () => {
+			const div = document.createElement('div');
+
+			element.appendChild(div);
+
+			vi.spyOn(XMLSerializer.prototype, 'serializeToString').mockImplementation((rootElement) => {
+				expect(rootElement).toBe(div);
+				return 'EXPECTED_HTML';
+			});
+
+			expect(element.innerHTML).toBe('EXPECTED_HTML');
+		});
+
+		it('Returns encoded HTML string with setter innerText.', () => {
+			const div = document.createElement('div');
+
+			div.innerText = '<b>&a</b>';
+
+			element.appendChild(div);
+
+			expect(element.innerHTML).toBe('<div>&lt;b&gt;&amp;a&lt;/b&gt;</div>');
 		});
 	});
 
