@@ -1297,6 +1297,16 @@ describe('QuerySelector', () => {
 			expect(container.querySelector(':where(div)')).toBe(container.children[0]);
 			expect(container.querySelector(':where(span[attr1="val,ue1"])')).toBe(null);
 		});
+
+		it('Remove new line from selector and trim selector before parse', () => {
+			const container = document.createElement('div');
+
+			container.innerHTML = QuerySelectorHTML;
+
+			expect(container.querySelector('\n \n\r	\t	\f h1 \n \n\r	\t	\f')).toBe(
+				container.children[0].children[0]
+			);
+		});
 	});
 
 	describe('matches()', () => {

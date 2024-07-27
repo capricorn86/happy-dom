@@ -86,6 +86,8 @@ export default class SelectorParser {
 		selector: string,
 		options?: { ignoreErrors?: boolean }
 	): Array<Array<SelectorItem>> {
+		selector = selector.replace(/[\n\r\f\t]/g, '').trim();
+
 		const ignoreErrors = options?.ignoreErrors;
 		if (selector === '*') {
 			return [[new SelectorItem({ tagName: '*', ignoreErrors })]];
