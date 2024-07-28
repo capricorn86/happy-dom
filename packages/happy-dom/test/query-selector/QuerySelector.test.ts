@@ -1306,6 +1306,9 @@ describe('QuerySelector', () => {
 			expect(container.querySelector('\n \n\r	\t	\f h1 \n \n\r	\t	\f')).toBe(
 				container.children[0].children[0]
 			);
+			expect(container.querySelector('\n \n\r	\t	\f div div        span \n \n\r	\t	\f')).toBe(
+				container.children[0].children[1].children[0]
+			);
 		});
 	});
 
