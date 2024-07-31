@@ -746,10 +746,9 @@ export default class Element
 	 * @param name Name.
 	 */
 	public removeAttribute(name: string): void {
-		try {
-			this[PropertySymbol.attributes].removeNamedItem(name);
-		} catch (error) {
-			// Ignore DOMException when the attribute does not exist.
+		const item = this[PropertySymbol.attributes].getNamedItem(name);
+		if (item) {
+			this[PropertySymbol.attributes][PropertySymbol.removeNamedItem](item);
 		}
 	}
 
@@ -760,10 +759,9 @@ export default class Element
 	 * @param localName Local name.
 	 */
 	public removeAttributeNS(namespace: string | null, localName: string): void {
-		try {
-			this[PropertySymbol.attributes].removeNamedItemNS(namespace, localName);
-		} catch (error) {
-			// Ignore DOMException when the attribute does not exist.
+		const item = this[PropertySymbol.attributes].getNamedItemNS(namespace, localName);
+		if (item) {
+			this[PropertySymbol.attributes][PropertySymbol.removeNamedItem](item);
 		}
 	}
 

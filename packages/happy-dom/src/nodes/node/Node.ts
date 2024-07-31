@@ -880,7 +880,7 @@ export default class Node extends EventTarget {
 		// Computed style cache is affected by all mutations.
 		const document = this[PropertySymbol.ownerDocument];
 
-		if (document) {
+		if (document && document[PropertySymbol.affectsComputedStyleCache].length) {
 			for (const item of document[PropertySymbol.affectsComputedStyleCache]) {
 				item.result = null;
 			}

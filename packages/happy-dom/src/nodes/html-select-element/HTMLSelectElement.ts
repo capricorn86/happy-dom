@@ -96,8 +96,16 @@ export default class HTMLSelectElement extends HTMLElement {
 
 				return true;
 			},
-			deleteProperty(): boolean {
-				return false;
+			deleteProperty(target, property): boolean {
+				if (typeof property === 'symbol') {
+					delete target[property];
+					return true;
+				}
+				const index = Number(property);
+				if (isNaN(index)) {
+					delete target[property];
+				}
+				return true;
 			},
 			ownKeys(target): string[] {
 				return Object.keys(QuerySelector.querySelectorAll(target, 'option')[PropertySymbol.items]);

@@ -56,7 +56,15 @@ export default class DOMTokenList {
 				}
 				return true;
 			},
-			deleteProperty(): boolean {
+			deleteProperty(target, property): boolean {
+				if (typeof property === 'symbol') {
+					delete target[property];
+					return true;
+				}
+				const index = Number(property);
+				if (isNaN(index)) {
+					delete target[property];
+				}
 				return true;
 			},
 			ownKeys(target): string[] {
