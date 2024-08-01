@@ -47,9 +47,7 @@ export default class ShadowRoot extends DocumentFragment {
 	 * @returns HTML.
 	 */
 	public get innerHTML(): string {
-		const xmlSerializer = new XMLSerializer({
-			escapeEntities: false
-		});
+		const xmlSerializer = new XMLSerializer();
 		let xml = '';
 		for (const node of this[PropertySymbol.nodeArray]) {
 			xml += xmlSerializer.serializeToString(node);

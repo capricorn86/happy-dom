@@ -390,7 +390,7 @@ export default class Element
 	 * @returns HTML.
 	 */
 	public get outerHTML(): string {
-		return new XMLSerializer({ escapeEntities: false }).serializeToString(this);
+		return new XMLSerializer().serializeToString(this);
 	}
 
 	/**
@@ -470,8 +470,7 @@ export default class Element
 	 */
 	public getInnerHTML(options?: { includeShadowRoots?: boolean }): string {
 		const xmlSerializer = new XMLSerializer({
-			includeShadowRoots: options && options.includeShadowRoots,
-			escapeEntities: false
+			includeShadowRoots: options && options.includeShadowRoots
 		});
 		let xml = '';
 		for (const node of this[PropertySymbol.nodeArray]) {

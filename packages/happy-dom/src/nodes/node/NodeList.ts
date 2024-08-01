@@ -23,7 +23,10 @@ class NodeList<T extends Node> {
 		ClassMethodBinder.bindMethods(
 			this,
 			this.constructor !== NodeList ? [NodeList, this.constructor] : [NodeList],
-			true
+			{
+				bindSymbols: true,
+				forwardToPrototype: true
+			}
 		);
 
 		return new Proxy(this, {

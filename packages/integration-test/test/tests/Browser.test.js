@@ -10,8 +10,16 @@ describe('Browser', () => {
 
 		await page.goto('https://github.com/capricorn86');
 
-		page.mainFrame.document.querySelector('a[href="/capricorn86/happy-dom"]').click();
+		const link = page.mainFrame.document.querySelector('a[href="/capricorn86/happy-dom"]');
+
+		debugger;
+		link.click();
+
+		await new Promise((resolve) => setTimeout(resolve, 500));
+
 		await page.waitUntilComplete();
+
+		debugger;
 
 		expect(page.mainFrame.url).toBe('https://github.com/capricorn86/happy-dom');
 		expect(page.mainFrame.document.title.startsWith('GitHub - capricorn86/happy-dom')).toBe(true);

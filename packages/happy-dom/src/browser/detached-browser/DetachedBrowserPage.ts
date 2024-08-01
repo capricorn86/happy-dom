@@ -12,6 +12,9 @@ import DefaultBrowserPageViewport from '../DefaultBrowserPageViewport.js';
 import IOptionalBrowserPageViewport from '../types/IOptionalBrowserPageViewport.js';
 import IBrowserPageViewport from '../types/IBrowserPageViewport.js';
 import Event from '../../event/Event.js';
+import IHistoryItem from '../../history/IHistoryItem.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
+import BrowserFrameNavigator from '../utilities/BrowserFrameNavigator.js';
 
 /**
  * Detached browser page used when constructing a Window instance without a browser.
@@ -155,12 +158,41 @@ export default class DetachedBrowserPage implements IBrowserPage {
 	}
 
 	/**
+	 * Navigates back in history.
+	 *
+	 * @param [options] Options.
+	 */
+	public goBack(options?: IGoToOptions): Promise<Response | null> {
+		return this.mainFrame.goBack(options);
+	}
+
+	/**
+	 * Navigates forward in history.
+	 *
+	 * @param [options] Options.
+	 */
+	public goForward(options?: IGoToOptions): Promise<Response | null> {
+		return this.mainFrame.goForward(options);
+	}
+
+	/**
+	 * Navigates a delta in history.
+	 *
+	 * @param delta Delta.
+	 * @param steps
+	 * @param [options] Options.
+	 */
+	public goSteps(steps?: number, options?: IGoToOptions): Promise<Response | null> {
+		return this.mainFrame.goSteps(steps, options);
+	}
+
+	/**
 	 * Reloads the current page.
 	 *
 	 * @param [options] Options.
 	 * @returns Response.
 	 */
-	public reload(options: IReloadOptions): Promise<Response | null> {
+	public reload(options?: IReloadOptions): Promise<Response | null> {
 		return this.mainFrame.reload(options);
 	}
 }

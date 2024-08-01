@@ -575,11 +575,11 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 
 		this.customElements = new CustomElementRegistry(this);
 		this[PropertySymbol.navigator] = new Navigator(this);
-		this[PropertySymbol.history] = new History();
 		this[PropertySymbol.screen] = new Screen();
 		this[PropertySymbol.sessionStorage] = new Storage();
 		this[PropertySymbol.localStorage] = new Storage();
 		this[PropertySymbol.location] = new Location(this.#browserFrame, options?.url ?? 'about:blank');
+		this[PropertySymbol.history] = new History(this.#browserFrame, this);
 		this[PropertySymbol.asyncTaskManager] = asyncTaskManager;
 
 		this.console = browserFrame.page.console;
@@ -1447,6 +1447,10 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 
 		if (this.customElements[PropertySymbol.destroy]) {
 			this.customElements[PropertySymbol.destroy]();
+		}
+
+		if (this.history[PropertySymbol.destroy]) {
+			this.history[PropertySymbol.destroy]();
 		}
 
 		this.document[PropertySymbol.activeElement] = null;

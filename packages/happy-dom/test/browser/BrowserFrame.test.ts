@@ -2,8 +2,8 @@ import { Script } from 'vm';
 import Browser from '../../src/browser/Browser';
 import Event from '../../src/event/Event';
 import BrowserWindow from '../../src/window/BrowserWindow';
-import Request from '../../src/fetch/types/Request';
-import Response from '../../src/fetch/types/Response';
+import Request from '../../src/fetch/Request';
+import Response from '../../src/fetch/Response';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import Fetch from '../../src/fetch/Fetch';
 import DOMException from '../../src/exception/DOMException';
@@ -12,7 +12,6 @@ import BrowserNavigationCrossOriginPolicyEnum from '../../src/browser/enums/Brow
 import BrowserFrameFactory from '../../src/browser/utilities/BrowserFrameFactory';
 import BrowserErrorCaptureEnum from '../../src/browser/enums/BrowserErrorCaptureEnum';
 import Headers from '../../src/fetch/Headers';
-import HTMLAnchorElement from '../../src/nodes/html-anchor-element/HTMLAnchorElement';
 import * as PropertySymbol from '../../src/PropertySymbol';
 
 describe('BrowserFrame', () => {

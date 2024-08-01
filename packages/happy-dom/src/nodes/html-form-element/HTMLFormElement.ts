@@ -53,7 +53,10 @@ export default class HTMLFormElement extends HTMLElement {
 		ClassMethodBinder.bindMethods(
 			this,
 			[EventTarget, Node, Element, HTMLElement, HTMLFormElement],
-			true
+			{
+				bindSymbols: true,
+				forwardToPrototype: true
+			}
 		);
 
 		const proxy = new Proxy(this, {

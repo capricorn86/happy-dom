@@ -15,7 +15,10 @@ export default class Storage {
 	constructor() {
 		const data = this[PropertySymbol.data];
 
-		ClassMethodBinder.bindMethods(this, [Storage], true);
+		ClassMethodBinder.bindMethods(this, [Storage], {
+			bindSymbols: true,
+			forwardToPrototype: true
+		});
 
 		return new Proxy(this, {
 			get: (target, property) => {

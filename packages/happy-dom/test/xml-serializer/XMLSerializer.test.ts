@@ -256,7 +256,7 @@ describe('XMLSerializer', () => {
 			div.setAttribute('attr3', '');
 
 			expect(xmlSerializer.serializeToString(div)).toBe(
-				'<div attr1="Hello \u{2068}John\u{2069}" attr2="&lt;span&gt; test" attr3=""></div>'
+				'<div attr1="Hello ⁨John⁩" attr2="<span> test" attr3=""></div>'
 			);
 		});
 

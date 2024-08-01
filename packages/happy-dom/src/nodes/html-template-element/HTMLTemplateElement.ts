@@ -70,8 +70,7 @@ export default class HTMLTemplateElement extends HTMLElement {
 	 */
 	public getInnerHTML(options?: { includeShadowRoots?: boolean }): string {
 		const xmlSerializer = new XMLSerializer({
-			includeShadowRoots: options && options.includeShadowRoots,
-			escapeEntities: false
+			includeShadowRoots: options && options.includeShadowRoots
 		});
 		const content = <DocumentFragment>this[PropertySymbol.content];
 		let xml = '';

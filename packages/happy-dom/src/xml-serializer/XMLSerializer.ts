@@ -16,8 +16,7 @@ import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigConten
  */
 export default class XMLSerializer {
 	private options = {
-		includeShadowRoots: false,
-		escapeEntities: true
+		includeShadowRoots: false
 	};
 
 	/**
@@ -25,16 +24,11 @@ export default class XMLSerializer {
 	 *
 	 * @param [options] Options.
 	 * @param [options.includeShadowRoots] Include shadow roots.
-	 * @param [options.escapeEntities] Escape text.
 	 */
-	constructor(options?: { includeShadowRoots?: boolean; escapeEntities?: boolean }) {
+	constructor(options?: { includeShadowRoots?: boolean }) {
 		if (options) {
 			if (options.includeShadowRoots !== undefined) {
 				this.options.includeShadowRoots = options.includeShadowRoots;
-			}
-
-			if (options.escapeEntities !== undefined) {
-				this.options.escapeEntities = options.escapeEntities;
 			}
 		}
 	}
@@ -92,9 +86,7 @@ export default class XMLSerializer {
 				// TODO: Add support for processing instructions.
 				return `<!--?${(<ProcessingInstruction>root).target} ${root.textContent}?-->`;
 			case NodeTypeEnum.textNode:
-				return this.options.escapeEntities
-					? Entities.escapeText(root.textContent)
-					: root.textContent;
+				return Entities.escapeText(root.textContent);
 			case NodeTypeEnum.documentTypeNode:
 				const doctype = <DocumentType>root;
 				const identifier = doctype.publicId ? ' PUBLIC' : doctype.systemId ? ' SYSTEM' : '';
@@ -125,9 +117,7 @@ export default class XMLSerializer {
 		for (const attribute of (<Element>element)[PropertySymbol.attributes][
 			PropertySymbol.namedItems
 		].values()) {
-			const escapedValue = this.options.escapeEntities
-				? Entities.escapeText(attribute[PropertySymbol.value])
-				: attribute[PropertySymbol.value];
+			const escapedValue = Entities.escapeAttribute(attribute[PropertySymbol.value]);
 			attributeString += ' ' + attribute[PropertySymbol.name] + '="' + escapedValue + '"';
 		}
 

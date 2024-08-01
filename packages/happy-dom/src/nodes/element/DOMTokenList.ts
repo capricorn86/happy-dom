@@ -30,7 +30,10 @@ export default class DOMTokenList {
 		this[PropertySymbol.ownerElement] = ownerElement;
 		this[PropertySymbol.attributeName] = attributeName;
 
-		ClassMethodBinder.bindMethods(this, [DOMTokenList], true);
+		ClassMethodBinder.bindMethods(this, [DOMTokenList], {
+			bindSymbols: true,
+			forwardToPrototype: true
+		});
 
 		return new Proxy(this, {
 			get: (target, property) => {

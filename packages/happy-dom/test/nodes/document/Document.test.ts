@@ -877,7 +877,7 @@ describe('Document', () => {
 			const html = `<html test="1"><body>Test></body></html>`;
 			document.write(html);
 			expect(document.documentElement.outerHTML).toBe(
-				'<html test="1"><head></head><body>Test></body></html>'
+				'<html test="1"><head></head><body>Test&gt;</body></html>'
 			);
 		});
 	});

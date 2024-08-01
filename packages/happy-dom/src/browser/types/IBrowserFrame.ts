@@ -9,6 +9,7 @@ import { Script } from 'vm';
 import IReloadOptions from './IReloadOptions.js';
 import BrowserFrameExceptionObserver from '../utilities/BrowserFrameExceptionObserver.js';
 import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
+import IHistoryItem from '../../history/IHistoryItem.js';
 
 /**
  * Browser frame.
@@ -21,6 +22,7 @@ export default interface IBrowserFrame {
 	readonly document: Document;
 	content: string;
 	url: string;
+	[PropertySymbol.history]: IHistoryItem[];
 	[PropertySymbol.asyncTaskManager]: AsyncTaskManager;
 	[PropertySymbol.exceptionObserver]: BrowserFrameExceptionObserver | null;
 	[PropertySymbol.listeners]: { navigation: Array<() => void> };
@@ -58,6 +60,28 @@ export default interface IBrowserFrame {
 	 * @param [options] Options.
 	 */
 	goto(url: string, options?: IGoToOptions): Promise<Response | null>;
+
+	/**
+	 * Navigates back in history.
+	 *
+	 * @param [options] Options.
+	 */
+	goBack(options?: IGoToOptions): Promise<Response | null>;
+
+	/**
+	 * Navigates forward in history.
+	 *
+	 * @param [options] Options.
+	 */
+	goForward(options?: IGoToOptions): Promise<Response | null>;
+
+	/**
+	 * Navigates a delta in history.
+	 *
+	 * @param steps Steps.
+	 * @param [options] Options.
+	 */
+	goSteps(steps?: number, options?: IGoToOptions): Promise<Response | null>;
 
 	/**
 	 * Reloads the current frame.

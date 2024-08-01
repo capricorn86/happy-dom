@@ -43,7 +43,10 @@ export default class HTMLSelectElement extends HTMLElement {
 		ClassMethodBinder.bindMethods(
 			this,
 			[EventTarget, Node, Element, HTMLElement, HTMLSelectElement],
-			true
+			{
+				bindSymbols: true,
+				forwardToPrototype: true
+			}
 		);
 
 		const proxy = new Proxy(this, {

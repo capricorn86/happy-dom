@@ -19,7 +19,10 @@ export default class NamedNodeMapProxyFactory {
 		const namedItems = namedNodeMap[PropertySymbol.namedItems];
 		const namespaceItems = namedNodeMap[PropertySymbol.namespaceItems];
 
-		ClassMethodBinder.bindMethods(namedNodeMap, [NamedNodeMap], true);
+		ClassMethodBinder.bindMethods(namedNodeMap, [NamedNodeMap], {
+			bindSymbols: true,
+			forwardToPrototype: true
+		});
 
 		return new Proxy<NamedNodeMap>(namedNodeMap, {
 			get: (target, property) => {

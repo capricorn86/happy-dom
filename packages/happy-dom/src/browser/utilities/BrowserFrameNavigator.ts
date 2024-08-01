@@ -12,6 +12,8 @@ import BrowserFrameValidator from './BrowserFrameValidator.js';
 import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
 import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
 import FormData from '../../form-data/FormData.js';
+import HistoryScrollRestorationEnum from '../../history/HistoryScrollRestorationEnum.js';
+import IHistoryItem from '../../history/IHistoryItem.js';
 
 /**
  * Browser frame navigation utility.
@@ -25,9 +27,10 @@ export default class BrowserFrameNavigator {
 	 * @param options.windowClass Window class.
 	 * @param options.frame Frame.
 	 * @param options.url URL.
-	 * @param [options.formData] Form data.
-	 * @param [options.method] Method.
 	 * @param [options.goToOptions] Go to options.
+	 * @param [options.method] Method.
+	 * @param [options.formData] Form data.
+	 * @param [options.disableHistory] Disables adding the navigation to the history.
 	 * @returns Response.
 	 */
 	public static async navigate(options: {
@@ -40,10 +43,18 @@ export default class BrowserFrameNavigator {
 		goToOptions?: IGoToOptions;
 		method?: string;
 		formData?: FormData;
+		disableHistory?: boolean;
 	}): Promise<Response | null> {
-		const { windowClass, frame, url, formData, method, goToOptions } = options;
+		const { windowClass, frame, url, formData, method, goToOptions, disableHistory } = options;
 		const referrer = goToOptions?.referrer || frame.window.location.origin;
 		const targetURL = BrowserFrameURL.getRelativeURL(frame, url);
+		const resolveNavigationListeners = (): void => {
+			const listeners = frame[PropertySymbol.listeners].navigation;
+			frame[PropertySymbol.listeners].navigation = [];
+			for (const listener of listeners) {
+				listener();
+			}
+		};
 
 		if (!frame.window) {
 			throw new Error('The frame has been destroyed, the "window" property is not set.');
@@ -73,6 +84,8 @@ export default class BrowserFrameNavigator {
 				}
 
 				readyStateManager.endTask();
+
+				resolveNavigationListeners();
 			}
 
 			return null;
@@ -100,6 +113,31 @@ export default class BrowserFrameNavigator {
 			BrowserFrameFactory.destroyFrame(childFrame);
 		}
 
+		// History management.
+		if (!disableHistory) {
+			const history = frame[PropertySymbol.history];
+
+			for (let i = history.length - 1; i >= 0; i--) {
+				if (history[i].isCurrent) {
+					history[i].isCurrent = false;
+
+					// We need to remove all history items after the current one.
+					history.length = i + 1;
+					break;
+				}
+			}
+
+			history.push({
+				title: '',
+				href: targetURL.href,
+				state: null,
+				scrollRestoration: HistoryScrollRestorationEnum.auto,
+				method: method || (formData ? 'POST' : 'GET'),
+				formData: formData || null,
+				isCurrent: true
+			});
+		}
+
 		(<IBrowserFrame[]>frame.childFrames) = [];
 		frame.window[PropertySymbol.destroy]();
 		frame[PropertySymbol.asyncTaskManager].destroy();
@@ -115,6 +153,8 @@ export default class BrowserFrameNavigator {
 		}
 
 		if (targetURL.protocol === 'about:') {
+			await new Promise((resolve) => frame.page.mainFrame.window.requestAnimationFrame(resolve));
+			resolveNavigationListeners();
 			return null;
 		}
 
@@ -135,11 +175,7 @@ export default class BrowserFrameNavigator {
 		const finalize = (): void => {
 			frame.window.clearTimeout(timeout);
 			readyStateManager.endTask();
-			const listeners = frame[PropertySymbol.listeners].navigation;
-			frame[PropertySymbol.listeners].navigation = [];
-			for (const listener of listeners) {
-				listener();
-			}
+			resolveNavigationListeners();
 		};
 
 		try {
@@ -188,5 +224,242 @@ export default class BrowserFrameNavigator {
 		);
 
 		return response;
+	}
+
+	/**
+	 * Navigates back in history.
+	 *
+	 * @param options Options.
+	 * @param options.windowClass Window class.
+	 * @param options.frame Frame.
+	 * @param [options.goToOptions] Go to options.
+	 */
+	public static navigateBack(options: {
+		windowClass: new (
+			browserFrame: IBrowserFrame,
+			options?: { url?: string; width?: number; height?: number }
+		) => BrowserWindow;
+		frame: IBrowserFrame;
+		goToOptions?: IGoToOptions;
+	}): Promise<Response | null> {
+		const { windowClass, frame, goToOptions } = options;
+		const history = frame[PropertySymbol.history];
+		let historyItem: IHistoryItem;
+
+		for (let i = history.length - 1; i >= 0; i--) {
+			if (history[i].isCurrent) {
+				if (i > 0) {
+					history[i].isCurrent = false;
+					historyItem = history[i - 1];
+				}
+				break;
+			}
+		}
+
+		if (!historyItem) {
+			return new Promise((resolve) => {
+				frame.window.setTimeout(() => {
+					const listeners = frame[PropertySymbol.listeners].navigation;
+					frame[PropertySymbol.listeners].navigation = [];
+					for (const listener of listeners) {
+						listener();
+					}
+					resolve(null);
+				});
+			});
+		}
+
+		historyItem.isCurrent = true;
+
+		return BrowserFrameNavigator.navigate({
+			windowClass,
+			frame,
+			goToOptions: {
+				...goToOptions,
+				referrer: frame.url
+			},
+			url: historyItem.href,
+			method: historyItem.method,
+			formData: historyItem.formData,
+			disableHistory: true
+		});
+	}
+
+	/**
+	 * Navigates forward in history.
+	 *
+	 * @param options Options.
+	 * @param options.windowClass Window class.
+	 * @param options.frame Frame.
+	 * @param [options.goToOptions] Go to options.
+	 */
+	public static navigateForward(options: {
+		windowClass: new (
+			browserFrame: IBrowserFrame,
+			options?: { url?: string; width?: number; height?: number }
+		) => BrowserWindow;
+		frame: IBrowserFrame;
+		goToOptions?: IGoToOptions;
+	}): Promise<Response | null> {
+		const { windowClass, frame, goToOptions } = options;
+		const history = frame[PropertySymbol.history];
+		let historyItem: IHistoryItem;
+
+		for (let i = history.length - 1; i >= 0; i--) {
+			if (history[i].isCurrent) {
+				if (i < history.length - 1) {
+					history[i].isCurrent = false;
+					historyItem = history[i + 1];
+				}
+				break;
+			}
+		}
+
+		if (!historyItem) {
+			return new Promise((resolve) => {
+				frame.window.setTimeout(() => {
+					const listeners = frame[PropertySymbol.listeners].navigation;
+					frame[PropertySymbol.listeners].navigation = [];
+					for (const listener of listeners) {
+						listener();
+					}
+					resolve(null);
+				});
+			});
+		}
+
+		historyItem.isCurrent = true;
+
+		return BrowserFrameNavigator.navigate({
+			windowClass,
+			frame,
+			goToOptions: {
+				...goToOptions,
+				referrer: frame.url
+			},
+			url: historyItem.href,
+			method: historyItem.method,
+			formData: historyItem.formData,
+			disableHistory: true
+		});
+	}
+
+	/**
+	 * Navigates steps in history.
+	 *
+	 * @param options Options.
+	 * @param options.windowClass Window class.
+	 * @param options.frame Frame.
+	 * @param options.goToOptions Go to options.
+	 * @param options.steps Steps.
+	 */
+	public static navigateSteps(options: {
+		windowClass: new (
+			browserFrame: IBrowserFrame,
+			options?: { url?: string; width?: number; height?: number }
+		) => BrowserWindow;
+		frame: IBrowserFrame;
+		goToOptions?: IGoToOptions;
+		steps?: number;
+	}): Promise<Response | null> {
+		if (!options.steps) {
+			return this.reload(options);
+		}
+
+		const { windowClass, frame, goToOptions, steps } = options;
+		const history = frame[PropertySymbol.history];
+		let historyItem: IHistoryItem;
+
+		for (let i = history.length - 1; i >= 0; i--) {
+			if (history[i].isCurrent) {
+				if (history[i + steps]) {
+					history[i].isCurrent = false;
+					historyItem = history[i + steps];
+				}
+				break;
+			}
+		}
+
+		if (!historyItem) {
+			return new Promise((resolve) => {
+				frame.window.setTimeout(() => {
+					const listeners = frame[PropertySymbol.listeners].navigation;
+					frame[PropertySymbol.listeners].navigation = [];
+					for (const listener of listeners) {
+						listener();
+					}
+					resolve(null);
+				});
+			});
+		}
+
+		historyItem.isCurrent = true;
+
+		return BrowserFrameNavigator.navigate({
+			windowClass,
+			frame,
+			goToOptions: {
+				...goToOptions,
+				referrer: frame.url
+			},
+			url: historyItem.href,
+			method: historyItem.method,
+			formData: historyItem.formData,
+			disableHistory: true
+		});
+	}
+
+	/**
+	 * Reloads the current history item.
+	 *
+	 * @param options Options.
+	 * @param options.windowClass Window class.
+	 * @param options.frame Frame.
+	 * @param options.goToOptions Go to options.
+	 */
+	public static reload(options: {
+		windowClass: new (
+			browserFrame: IBrowserFrame,
+			options?: { url?: string; width?: number; height?: number }
+		) => BrowserWindow;
+		frame: IBrowserFrame;
+		goToOptions?: IGoToOptions;
+	}): Promise<Response | null> {
+		const { windowClass, frame, goToOptions } = options;
+		const history = frame[PropertySymbol.history];
+		let historyItem: IHistoryItem;
+
+		for (let i = history.length - 1; i >= 0; i--) {
+			if (history[i].isCurrent) {
+				historyItem = history[i];
+				break;
+			}
+		}
+
+		if (!historyItem) {
+			return new Promise((resolve) => {
+				frame.window.setTimeout(() => {
+					const listeners = frame[PropertySymbol.listeners].navigation;
+					frame[PropertySymbol.listeners].navigation = [];
+					for (const listener of listeners) {
+						listener();
+					}
+					resolve(null);
+				});
+			});
+		}
+
+		return BrowserFrameNavigator.navigate({
+			windowClass,
+			frame,
+			goToOptions: {
+				...goToOptions,
+				referrer: frame.url
+			},
+			url: historyItem.href,
+			method: historyItem.method,
+			formData: historyItem.formData,
+			disableHistory: true
+		});
 	}
 }
