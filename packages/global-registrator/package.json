@@ -67,12 +67,12 @@
 	"scripts": {
 		"compile": "npm run compile:esm && npm run compile:cjs",
 		"compile:esm": "tsc",
-		"compile:cjs": "rm -rf cjs && tsc --moduleResolution Node --module CommonJS --outDir cjs && npm run compile:change-cjs-file-extension",
+		"compile:cjs": "node -e \"fs.rmSync('./cjs', { recursive: true, force: true })\" && tsc --moduleResolution Node --module CommonJS --outDir cjs && npm run compile:change-cjs-file-extension",
 		"compile:change-cjs-file-extension": "node ../happy-dom/bin/change-file-extension.cjs --dir=./cjs --fromExt=.js --toExt=.cjs",
 		"watch": "npm run compile && tsc -w --preserveWatchOutput",
 		"test": "npm run test:react && npm run test:bun",
 		"test:debug": "tsc --project ./test/react && node ../happy-dom/bin/change-file-extension.cjs --dir=./tmp --fromExt=.js --toExt=.cjs && node --inspect-brk ./tmp/react/React.test.cjs",
-		"test:react": "rm -rf tmp && tsc --project ./test/react && node ../happy-dom/bin/change-file-extension.cjs --dir=./tmp --fromExt=.js --toExt=.cjs && node ./tmp/react/React.test.cjs",
+		"test:react": "node -e \"fs.rmSync('./tmp', { recursive: true, force: true })\" && tsc --project ./test/react && node ../happy-dom/bin/change-file-extension.cjs --dir=./tmp --fromExt=.js --toExt=.cjs && node ./tmp/react/React.test.cjs",
 		"test:bun": "bun test ./test/bun/Bun.test.js"
 	},
 	"dependencies": {
