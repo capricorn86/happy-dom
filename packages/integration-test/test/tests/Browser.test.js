@@ -12,8 +12,11 @@ describe('Browser', () => {
 
 		const link = page.mainFrame.document.querySelector('a[href="/capricorn86/happy-dom"]');
 
+		// Github is the https://github.com/hydrostack/hydro/, which will load the page using fetch()
+		// The links behaviour is disabled by using event.preventDefault() in the click event.
 		link.click();
 
+		// We need to wait for Hydro to load the page.
 		await page.waitUntilComplete();
 
 		expect(page.mainFrame.url).toBe('https://github.com/capricorn86/happy-dom');
@@ -39,7 +42,7 @@ describe('Browser', () => {
 
 		link.click();
 
-		await page.waitUntilComplete();
+		await page.waitForNavigation();
 
 		expect(page.mainFrame.url).toBe('https://github.com/capricorn86/happy-dom/wiki/');
 		expect(page.mainFrame.document.title).toBe('Home · capricorn86/happy-dom Wiki · GitHub');

@@ -16,7 +16,7 @@ export default class MutationObserverListener {
 	#observer: MutationObserver;
 	#callback: (record: MutationRecord[], observer: MutationObserver) => void;
 	#records: MutationRecord[] | null = [];
-	#immediate: NodeJS.Immediate | null = null;
+	#timeout: NodeJS.Timeout | null = null;
 
 	/**
 	 * Constructor.
@@ -58,11 +58,11 @@ export default class MutationObserverListener {
 
 		this.#records.push(record);
 
-		if (this.#immediate) {
-			this.#window.cancelAnimationFrame(this.#immediate);
+		if (this.#timeout) {
+			this.#window.clearTimeout(this.#timeout);
 		}
 
-		this.#immediate = this.#window.requestAnimationFrame(() => {
+		this.#timeout = this.#window.setTimeout(() => {
 			const records = this.#records;
 			if (records?.length > 0) {
 				this.#records = [];
@@ -75,8 +75,8 @@ export default class MutationObserverListener {
 	 * Destroys the listener.
 	 */
 	public takeRecords(): MutationRecord[] {
-		if (this.#immediate) {
-			this.#window.cancelAnimationFrame(this.#immediate);
+		if (this.#timeout) {
+			this.#window.clearTimeout(this.#timeout);
 		}
 		const records = this.#records;
 		this.#records = [];
@@ -87,8 +87,8 @@ export default class MutationObserverListener {
 	 * Destroys the listener.
 	 */
 	public destroy(): void {
-		if (this.#immediate) {
-			this.#window.cancelAnimationFrame(this.#immediate);
+		if (this.#timeout) {
+			this.#window.clearTimeout(this.#timeout);
 		}
 		(<null>this.options) = null;
 		(<null>this.target) = null;
@@ -96,7 +96,7 @@ export default class MutationObserverListener {
 		(<null>this.#window) = null;
 		(<null>this.#observer) = null;
 		(<null>this.#callback) = null;
-		(<null>this.#immediate) = null;
+		(<null>this.#timeout) = null;
 		(<null>this.#records) = null;
 	}
 }

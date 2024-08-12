@@ -574,6 +574,7 @@ export default class Node extends EventTarget {
 				(<Node>node)[PropertySymbol.unobserveMutations](mutationListener);
 			}
 		}
+
 		this[PropertySymbol.reportMutation](
 			new MutationRecord({
 				target: this,

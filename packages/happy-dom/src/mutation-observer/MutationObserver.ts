@@ -115,7 +115,9 @@ export default class MutationObserver {
 		this.#listeners.push(listener);
 
 		// Stores all observers on the window object, so that they can be disconnected when the window is closed.
-		this.#window[PropertySymbol.mutationObservers].push(this);
+		if (!this.#window[PropertySymbol.mutationObservers].includes(this)) {
+			this.#window[PropertySymbol.mutationObservers].push(this);
+		}
 
 		// Starts observing target node.
 		(<Node>target)[PropertySymbol.observeMutations](listener.mutationListener);
@@ -125,15 +127,15 @@ export default class MutationObserver {
 	 * Disconnects.
 	 */
 	public disconnect(): void {
-		if (this.#listeners.length === 0) {
-			return;
-		}
-
 		const mutationObservers = this.#window[PropertySymbol.mutationObservers];
 		const index = mutationObservers.indexOf(this);
 
 		if (index !== -1) {
 			mutationObservers.splice(index, 1);
+		}
+
+		if (this.#listeners.length === 0) {
+			return;
 		}
 
 		for (const listener of this.#listeners) {

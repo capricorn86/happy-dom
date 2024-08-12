@@ -1124,8 +1124,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 				const settings = this.#browserFrame.page?.context?.browser?.settings;
 				const useTryCatch =
 					!settings ||
-					!settings.disableErrorCapturing ||
-					settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
+					(!settings.disableErrorCapturing &&
+						settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch);
 
 				const id = TIMER.setTimeout(() => {
 					const timeouts = zeroDelayTimeout.timeouts;
@@ -1154,8 +1154,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		const settings = this.#browserFrame.page?.context?.browser?.settings;
 		const useTryCatch =
 			!settings ||
-			!settings.disableErrorCapturing ||
-			settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
+			(!settings.disableErrorCapturing &&
+				settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch);
 
 		const id = TIMER.setTimeout(
 			() => {
@@ -1212,8 +1212,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		const settings = this.#browserFrame.page?.context?.browser?.settings;
 		const useTryCatch =
 			!settings ||
-			!settings.disableErrorCapturing ||
-			settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
+			(!settings.disableErrorCapturing &&
+				settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch);
 		let iterations = 0;
 		const id = TIMER.setInterval(
 			() => {
@@ -1266,8 +1266,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		const settings = this.#browserFrame.page?.context?.browser?.settings;
 		const useTryCatch =
 			!settings ||
-			!settings.disableErrorCapturing ||
-			settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
+			(!settings.disableErrorCapturing &&
+				settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch);
 		const id = TIMER.setImmediate(() => {
 			if (useTryCatch) {
 				WindowErrorUtility.captureError(this, () => callback(this.performance.now()));
@@ -1308,8 +1308,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		const settings = this.#browserFrame.page?.context?.browser?.settings;
 		const useTryCatch =
 			!settings ||
-			!settings.disableErrorCapturing ||
-			settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
+			(!settings.disableErrorCapturing &&
+				settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch);
 		TIMER.queueMicrotask(() => {
 			if (!isAborted) {
 				if (useTryCatch) {
@@ -1468,18 +1468,20 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		}
 
 		(<boolean>this.closed) = true;
-		this[PropertySymbol.asyncTaskManager] = null;
-		this.Audio[PropertySymbol.ownerDocument] = null;
-		this.Image[PropertySymbol.ownerDocument] = null;
-		this.DocumentFragment[PropertySymbol.ownerDocument] = null;
-		this.Text[PropertySymbol.ownerDocument] = null;
-		this.Comment[PropertySymbol.ownerDocument] = null;
 
 		const mutationObservers = this[PropertySymbol.mutationObservers];
 
 		for (const mutationObserver of mutationObservers) {
 			mutationObserver.disconnect();
 		}
+
+		this[PropertySymbol.mutationObservers] = [];
+		this[PropertySymbol.asyncTaskManager] = null;
+		this.Audio[PropertySymbol.ownerDocument] = null;
+		this.Image[PropertySymbol.ownerDocument] = null;
+		this.DocumentFragment[PropertySymbol.ownerDocument] = null;
+		this.Text[PropertySymbol.ownerDocument] = null;
+		this.Comment[PropertySymbol.ownerDocument] = null;
 
 		this[PropertySymbol.mutationObservers] = [];
 
