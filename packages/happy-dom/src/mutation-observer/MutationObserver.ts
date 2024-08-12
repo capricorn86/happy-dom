@@ -127,13 +127,6 @@ export default class MutationObserver {
 	 * Disconnects.
 	 */
 	public disconnect(): void {
-		const mutationObservers = this.#window[PropertySymbol.mutationObservers];
-		const index = mutationObservers.indexOf(this);
-
-		if (index !== -1) {
-			mutationObservers.splice(index, 1);
-		}
-
 		if (this.#listeners.length === 0) {
 			return;
 		}
@@ -144,6 +137,13 @@ export default class MutationObserver {
 		}
 
 		this.#listeners = [];
+
+		const mutationObservers = this.#window[PropertySymbol.mutationObservers];
+		const index = mutationObservers.indexOf(this);
+
+		if (index !== -1) {
+			mutationObservers.splice(index, 1);
+		}
 	}
 
 	/**
