@@ -92,7 +92,6 @@ async function main(): Promise<void> {
 			throw Error('Happy DOM function not registered.');
 		}
 
-		debugger;
 		for (const property of selfReferringProperties) {
 			if (global[property] !== global) {
 				throw Error('Self referring property property was not registered.');
