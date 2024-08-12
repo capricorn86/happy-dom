@@ -401,14 +401,17 @@ export default class HTMLFormElement extends HTMLElement {
 	public requestSubmit(submitter?: HTMLInputElement | HTMLButtonElement): void {
 		const noValidate = submitter?.formNoValidate || this.noValidate;
 		if (noValidate || this.checkValidity()) {
-			this.dispatchEvent(
-				new SubmitEvent('submit', {
-					bubbles: true,
-					cancelable: true,
-					submitter: submitter || this[PropertySymbol.proxy]
-				})
-			);
-			this.#submit(submitter);
+			const event = new SubmitEvent('submit', {
+				bubbles: true,
+				cancelable: true,
+				submitter: submitter || this[PropertySymbol.proxy]
+			});
+
+			this.dispatchEvent(event);
+
+			if (!event.defaultPrevented) {
+				this.#submit(submitter);
+			}
 		}
 	}
 

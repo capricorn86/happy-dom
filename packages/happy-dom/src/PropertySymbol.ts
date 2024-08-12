@@ -189,3 +189,7 @@ export const proxy = Symbol('proxy');
 export const setNamedItem = Symbol('setNamedItem');
 export const getTokenList = Symbol('getTokenList');
 export const attributeName = Symbol('attributeName');
+export const selectedIndex = Symbol('selectedIndex');
+export const self = Symbol('self');
+export const parent = Symbol('parent');
+export const top = Symbol('top');

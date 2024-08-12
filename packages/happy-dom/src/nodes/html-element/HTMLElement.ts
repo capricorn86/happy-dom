@@ -459,7 +459,8 @@ export default class HTMLElement extends Element {
 	public click(): void {
 		const event = new PointerEvent('click', {
 			bubbles: true,
-			composed: true
+			composed: true,
+			cancelable: true
 		});
 		event[PropertySymbol.target] = this;
 		event[PropertySymbol.currentTarget] = this;

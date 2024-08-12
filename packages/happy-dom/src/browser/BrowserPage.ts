@@ -12,10 +12,6 @@ import IBrowserPageViewport from './types/IBrowserPageViewport.js';
 import IOptionalBrowserPageViewport from './types/IOptionalBrowserPageViewport.js';
 import DefaultBrowserPageViewport from './DefaultBrowserPageViewport.js';
 import Event from '../event/Event.js';
-import IHistoryItem from '../history/IHistoryItem.js';
-import * as PropertySymbol from '../PropertySymbol.js';
-import BrowserFrameNavigator from './utilities/BrowserFrameNavigator.js';
-import BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * Browser page.

@@ -94,6 +94,28 @@ describe('HTMLSelectElement', () => {
 
 			expect(element.options.selectedIndex).toBe(0);
 		});
+
+		it('Dispatches "change" event.', () => {
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
+			option1.value = 'option1';
+			option2.value = 'option2';
+			element.appendChild(option1);
+			element.appendChild(option2);
+
+			let dispatchedEvent: Event | null = null;
+			element.addEventListener('change', (event: Event) => (dispatchedEvent = event));
+
+			element.value = 'option2';
+
+			expect((<Event>(<unknown>dispatchedEvent)).type).toBe('change');
+
+			dispatchedEvent = null;
+
+			element.value = 'option2';
+
+			expect(dispatchedEvent).toBeNull();
+		});
 	});
 
 	for (const property of ['disabled', 'autofocus', 'required', 'multiple']) {
@@ -241,6 +263,27 @@ describe('HTMLSelectElement', () => {
 
 			element.selectedIndex = 1000;
 			expect(element.options.selectedIndex).toBe(-1);
+		});
+
+		it('Dispatched "change" event.', () => {
+			const option1 = document.createElement('option');
+			const option2 = document.createElement('option');
+
+			element.appendChild(option1);
+			element.appendChild(option2);
+
+			let dispatchedEvent: Event | null = null;
+			element.addEventListener('change', (event: Event) => (dispatchedEvent = event));
+
+			element.selectedIndex = 1;
+
+			expect((<Event>(<unknown>dispatchedEvent)).type).toBe('change');
+
+			dispatchedEvent = null;
+
+			element.selectedIndex = 1;
+
+			expect(dispatchedEvent).toBeNull();
 		});
 	});
 
@@ -423,6 +466,37 @@ describe('HTMLSelectElement', () => {
 			expect(element.item(0) === option1).toBe(true);
 			expect(element.item(1) === option2).toBe(true);
 			expect(element.item(2) === option3).toBe(true);
+		});
+
+		it('Dispatches "change" event.', () => {
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
+			const option3 = <HTMLOptionElement>document.createElement('option');
+
+			let dispatchedEvent: Event | null = null;
+
+			element.addEventListener('change', (event: Event) => (dispatchedEvent = event));
+
+			element.appendChild(option1);
+			element.appendChild(option2);
+			element.appendChild(option3);
+
+			expect((<Event>(<unknown>dispatchedEvent)).type).toBe('change');
+			expect(element.selectedIndex).toBe(0);
+
+			dispatchedEvent = null;
+
+			option3.selected = true;
+
+			expect((<Event>(<unknown>dispatchedEvent)).type).toBe('change');
+			expect(element.selectedIndex).toBe(2);
+
+			dispatchedEvent = null;
+
+			option3.remove();
+
+			expect((<Event>(<unknown>dispatchedEvent)).type).toBe('change');
+			expect(element.selectedIndex).toBe(0);
 		});
 	});
 

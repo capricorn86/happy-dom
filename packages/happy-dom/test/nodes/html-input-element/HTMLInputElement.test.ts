@@ -1311,14 +1311,14 @@ describe('HTMLInputElement', () => {
 
 			document.body.appendChild(element);
 
-			element.dispatchEvent(new PointerEvent('click'));
+			element.dispatchEvent(new PointerEvent('click', { cancelable: true }));
 
 			expect(isClickChecked).toBe(true);
 			expect(element.checked).toBe(false);
 
 			element.checked = true;
 
-			element.dispatchEvent(new PointerEvent('click'));
+			element.dispatchEvent(new PointerEvent('click', { cancelable: true }));
 
 			expect(element.checked).toBe(true);
 		});
@@ -1335,14 +1335,14 @@ describe('HTMLInputElement', () => {
 
 			document.body.appendChild(element);
 
-			element.dispatchEvent(new PointerEvent('click'));
+			element.dispatchEvent(new PointerEvent('click', { cancelable: true }));
 
 			expect(isClickChecked).toBe(true);
 			expect(element.checked).toBe(false);
 
 			element.checked = true;
 
-			element.dispatchEvent(new PointerEvent('click'));
+			element.dispatchEvent(new PointerEvent('click', { cancelable: true }));
 
 			expect(element.checked).toBe(true);
 		});

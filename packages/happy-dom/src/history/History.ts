@@ -179,6 +179,12 @@ export default class History {
 	 * @param [url] URL.
 	 */
 	public replaceState(state: object, title, url?: string): void {
+		const history = this.#browserFrame[PropertySymbol.history];
+
+		if (!history) {
+			return;
+		}
+
 		const location = this.#ownerWindow[PropertySymbol.location];
 		const newURL = url ? BrowserFrameURL.getRelativeURL(this.#browserFrame, url) : location;
 
@@ -189,17 +195,24 @@ export default class History {
 			);
 		}
 
-		const previousHistoryItem = this.#currentHistoryItem;
+		for (let i = history.length - 1; i >= 0; i--) {
+			if (history[i].isCurrent) {
+				const newHistoryItem = {
+					title: title || this.#ownerWindow.document.title,
+					href: newURL.href,
+					state: JSON.parse(JSON.stringify(state)),
+					scrollRestoration: history[i].scrollRestoration,
+					method: history[i].method,
+					formData: history[i].formData,
+					isCurrent: true
+				};
 
-		this.#currentHistoryItem = {
-			title: title || this.#ownerWindow.document.title,
-			href: newURL.href,
-			state: JSON.parse(JSON.stringify(state)),
-			scrollRestoration: previousHistoryItem.scrollRestoration,
-			method: previousHistoryItem.method,
-			formData: previousHistoryItem.formData,
-			isCurrent: true
-		};
+				history[i] = newHistoryItem;
+				this.#currentHistoryItem = newHistoryItem;
+
+				break;
+			}
+		}
 
 		if (url) {
 			location[PropertySymbol.setURL](this.#browserFrame, this.#currentHistoryItem.href);

@@ -194,6 +194,8 @@ import WindowErrorUtility from './WindowErrorUtility.js';
 import WindowPageOpenUtility from './WindowPageOpenUtility.js';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 import ClassMethodBinder from '../ClassMethodBinder.js';
+import IntersectionObserver from '../intersection-observer/IntersectionObserver.js';
+import IntersectionObserverEntry from '../intersection-observer/IntersectionObserverEntry.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -380,6 +382,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly NodeIterator = NodeIterator;
 	public readonly TreeWalker = TreeWalker;
 	public readonly MutationObserver = MutationObserver;
+	public readonly IntersectionObserver = IntersectionObserver;
+	public readonly IntersectionObserverEntry = IntersectionObserverEntry;
 	public readonly MutationRecord = MutationRecord;
 	public readonly CSSStyleDeclaration = CSSStyleDeclaration;
 	public readonly EventTarget = EventTarget;
@@ -459,9 +463,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	// Public properties.
 	public readonly document: DocumentImplementation;
 	public readonly customElements: CustomElementRegistry;
-	public readonly self: BrowserWindow = this;
-	public readonly top: BrowserWindow = this;
-	public readonly parent: BrowserWindow = this;
 	public readonly window: BrowserWindow = this;
 	public readonly globalThis: BrowserWindow = this;
 	public readonly performance: typeof performance = performance;
@@ -549,6 +550,9 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.screen]: Screen;
 	public [PropertySymbol.sessionStorage]: Storage;
 	public [PropertySymbol.localStorage]: Storage;
+	public [PropertySymbol.self]: BrowserWindow = this;
+	public [PropertySymbol.top]: BrowserWindow = this;
+	public [PropertySymbol.parent]: BrowserWindow = this;
 
 	// Private properties
 	#browserFrame: IBrowserFrame;
@@ -720,6 +724,51 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		});
 
 		ClassMethodBinder.bindMethods(this, [EventTarget, BrowserWindow]);
+	}
+
+	/**
+	 * Returns self.
+	 *
+	 * @returns Self.
+	 */
+	public get self(): BrowserWindow {
+		return this[PropertySymbol.self];
+	}
+
+	/**
+	 * Returns self.
+	 *
+	 * @param self Self.
+	 */
+	public set self(self: BrowserWindow | null) {
+		this[PropertySymbol.self] = self;
+	}
+
+	/**
+	 * Returns top.
+	 *
+	 * @returns Top.
+	 */
+	public get top(): BrowserWindow {
+		return this[PropertySymbol.top];
+	}
+
+	/**
+	 * Returns parent.
+	 *
+	 * @returns Parent.
+	 */
+	public get parent(): BrowserWindow {
+		return this[PropertySymbol.parent];
+	}
+
+	/**
+	 * Returns parent.
+	 *
+	 * @param parent Parent.
+	 */
+	public set parent(parent: BrowserWindow | null) {
+		this[PropertySymbol.parent] = parent;
 	}
 
 	/**

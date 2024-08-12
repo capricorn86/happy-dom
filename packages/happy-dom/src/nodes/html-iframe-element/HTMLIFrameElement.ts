@@ -351,8 +351,8 @@ export default class HTMLIFrameElement extends HTMLElement {
 
 			this.#contentWindowContainer.window = this.#browserChildFrame.window;
 
-			(<BrowserWindow>this.#browserChildFrame.window.top) = this.#browserFrame.window.top;
-			(<BrowserWindow>this.#browserChildFrame.window.parent) = this.#browserFrame.window;
+			this.#browserChildFrame.window[PropertySymbol.top] = this.#browserFrame.window.top;
+			this.#browserChildFrame.window[PropertySymbol.parent] = this.#browserFrame.window;
 
 			this.#browserChildFrame.window.document.open();
 			this.#browserChildFrame.window.document.write(srcdoc);
@@ -397,10 +397,8 @@ export default class HTMLIFrameElement extends HTMLElement {
 		this.#browserChildFrame =
 			this.#browserChildFrame ?? BrowserFrameFactory.createChildFrame(this.#browserFrame);
 
-		(<BrowserWindow | CrossOriginBrowserWindow>(<unknown>this.#browserChildFrame.window.top)) =
-			parentWindow;
-		(<BrowserWindow | CrossOriginBrowserWindow>(<unknown>this.#browserChildFrame.window.parent)) =
-			parentWindow;
+		this.#browserChildFrame.window[PropertySymbol.top] = <BrowserWindow>parentWindow;
+		this.#browserChildFrame.window[PropertySymbol.parent] = <BrowserWindow>parentWindow;
 
 		this.#browserChildFrame
 			.goto(targetURL.href, {

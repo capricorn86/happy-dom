@@ -2,7 +2,7 @@ import { describe, it, expect } from '../utilities/TestFunctions.js';
 import { Browser, BrowserErrorCaptureEnum } from 'happy-dom';
 
 describe('Browser', () => {
-	it('Goes to a real page.', async () => {
+	it('Goes to a "github.com".', async () => {
 		const browser = new Browser({
 			settings: { errorCapture: BrowserErrorCaptureEnum.processLevel }
 		});
@@ -12,20 +12,37 @@ describe('Browser', () => {
 
 		const link = page.mainFrame.document.querySelector('a[href="/capricorn86/happy-dom"]');
 
-		debugger;
 		link.click();
 
-		await new Promise((resolve) => setTimeout(resolve, 500));
-
 		await page.waitUntilComplete();
-
-		debugger;
 
 		expect(page.mainFrame.url).toBe('https://github.com/capricorn86/happy-dom');
 		expect(page.mainFrame.document.title.startsWith('GitHub - capricorn86/happy-dom')).toBe(true);
 		expect(
 			page.mainFrame.document.querySelector('a[href="/capricorn86/happy-dom"]').textContent.trim()
 		).toBe('happy-dom');
+
+		await browser.close();
+	});
+
+	it('Goes to "npmjs.com".', async () => {
+		const browser = new Browser({
+			settings: { errorCapture: BrowserErrorCaptureEnum.processLevel }
+		});
+		const page = browser.newPage();
+
+		await page.goto('https://www.npmjs.com/package/happy-dom');
+
+		const link = page.mainFrame.document.querySelector(
+			'a[href="https://github.com/capricorn86/happy-dom/wiki/"]'
+		);
+
+		link.click();
+
+		await page.waitUntilComplete();
+
+		expect(page.mainFrame.url).toBe('https://github.com/capricorn86/happy-dom/wiki/');
+		expect(page.mainFrame.document.title).toBe('Home · capricorn86/happy-dom Wiki · GitHub');
 
 		await browser.close();
 	});

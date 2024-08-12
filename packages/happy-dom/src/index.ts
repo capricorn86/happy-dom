@@ -65,6 +65,8 @@ import History from './history/History.js';
 import Location from './location/Location.js';
 import MutationObserver from './mutation-observer/MutationObserver.js';
 import MutationRecord from './mutation-observer/MutationRecord.js';
+import IntersectionObserver from './intersection-observer/IntersectionObserver.js';
+import IntersectionObserverEntry from './intersection-observer/IntersectionObserverEntry.js';
 import Attr from './nodes/attr/Attr.js';
 import Comment from './nodes/comment/Comment.js';
 import DocumentFragment from './nodes/document-fragment/DocumentFragment.js';
@@ -358,6 +360,8 @@ export {
 	MouseEvent,
 	MutationObserver,
 	MutationRecord,
+	IntersectionObserver,
+	IntersectionObserverEntry,
 	Node,
 	NodeFilter,
 	NodeIterator,

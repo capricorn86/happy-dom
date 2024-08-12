@@ -845,7 +845,7 @@ describe('Node', () => {
 			expect(parentEvent).toBe(event);
 		});
 
-		it('Supports capture events that are not bubbles.', () => {
+		it("Supports capture events that doesn't bubble.", () => {
 			const parent = document.createElement('div');
 			const child1 = document.createElement('span');
 			const child2 = document.createElement('span');

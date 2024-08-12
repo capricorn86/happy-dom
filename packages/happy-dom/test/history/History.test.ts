@@ -319,17 +319,101 @@ describe('History', () => {
 
 			expect(browserFrame.window.location.href).toBe('https://www.example.com/');
 
+			// Shouldn't navigate as there is no history item at this position.
 			history.go(2);
 
 			await browserFrame.waitForNavigation();
 
-			expect(browserFrame.window.location.href).toBe('https://localhost:3000/');
+			expect(browserFrame.window.location.href).toBe('https://www.example.com/');
 
 			history.go(1);
 
 			await browserFrame.waitForNavigation();
 
 			expect(browserFrame.window.location.href).toBe('https://localhost:3000/');
+		});
+	});
+
+	describe('pushState()', () => {
+		it('Pushes a new state to the history.', () => {
+			history.pushState({ key: 'value' }, '', '');
+
+			expect(history.state).toEqual({ key: 'value' });
+
+			expect(browserFrame[PropertySymbol.history]).toEqual([
+				{
+					title: '',
+					href: 'about:blank',
+					state: null,
+					scrollRestoration: HistoryScrollRestorationEnum.auto,
+					method: 'GET',
+					formData: null,
+					isCurrent: false
+				},
+				{
+					title: '',
+					href: 'about:blank',
+					state: { key: 'value' },
+					scrollRestoration: HistoryScrollRestorationEnum.auto,
+					method: 'GET',
+					formData: null,
+					isCurrent: true
+				}
+			]);
+		});
+	});
+
+	describe('replaceState()', () => {
+		it('Replaces the current state in the history.', () => {
+			history.pushState({ key: 'value' }, '', '');
+
+			expect(history.state).toEqual({ key: 'value' });
+
+			expect(browserFrame[PropertySymbol.history]).toEqual([
+				{
+					title: '',
+					href: 'about:blank',
+					state: null,
+					scrollRestoration: HistoryScrollRestorationEnum.auto,
+					method: 'GET',
+					formData: null,
+					isCurrent: false
+				},
+				{
+					title: '',
+					href: 'about:blank',
+					state: { key: 'value' },
+					scrollRestoration: HistoryScrollRestorationEnum.auto,
+					method: 'GET',
+					formData: null,
+					isCurrent: true
+				}
+			]);
+
+			history.replaceState({ key: 'value2' }, '', '');
+
+			expect(history.state).toEqual({ key: 'value2' });
+
+			expect(browserFrame[PropertySymbol.history]).toEqual([
+				{
+					title: '',
+					href: 'about:blank',
+					state: null,
+					scrollRestoration: HistoryScrollRestorationEnum.auto,
+					method: 'GET',
+					formData: null,
+					isCurrent: false
+				},
+				{
+					title: '',
+					href: 'about:blank',
+					state: { key: 'value2' },
+					scrollRestoration: HistoryScrollRestorationEnum.auto,
+					method: 'GET',
+					formData: null,
+					isCurrent: true
+				}
+			]);
 		});
 	});
 });

@@ -1027,6 +1027,37 @@ describe('HTMLFormElement', () => {
 			);
 			expect(page.mainFrame.window.document.body.innerHTML).toBe('Test');
 		});
+
+		it('Does not submit form when calling event.preventDefault() on "submit" event.', async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			const window = page.mainFrame.window;
+
+			window.document.write(`
+                <form action="http://example.com">
+                    <input type="text" name="text1" value="value1">
+                    <input type="hidden" name="text2" value="value2">
+                    <input type="checkbox" name="checkbox1" value="value1" checked>
+                    <input type="checkbox" name="checkbox2" value="value2">
+                    <input type="radio" name="radio1" value="value1">
+                    <input type="radio" name="radio1" value="value2" checked>
+                    <input type="radio" name="radio1" value="value3">
+                    <input type="submit" name="button1">
+                </form>
+            `);
+
+			const form = window.document.querySelector('form');
+
+			form?.addEventListener('submit', (event) => {
+				event.preventDefault();
+			});
+
+			form?.requestSubmit();
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(page.mainFrame.url).toBe('about:blank');
+		});
 	});
 
 	describe('reset()', () => {

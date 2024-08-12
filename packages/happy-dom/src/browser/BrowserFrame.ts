@@ -208,7 +208,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	 * @param [options] Options.
 	 * @returns Response.
 	 */
-	public reload(options: IReloadOptions): Promise<Response | null> {
+	public reload(options?: IReloadOptions): Promise<Response | null> {
 		return BrowserFrameNavigator.reload({
 			windowClass: BrowserWindow,
 			frame: this,

@@ -12,9 +12,6 @@ import DefaultBrowserPageViewport from '../DefaultBrowserPageViewport.js';
 import IOptionalBrowserPageViewport from '../types/IOptionalBrowserPageViewport.js';
 import IBrowserPageViewport from '../types/IBrowserPageViewport.js';
 import Event from '../../event/Event.js';
-import IHistoryItem from '../../history/IHistoryItem.js';
-import * as PropertySymbol from '../../PropertySymbol.js';
-import BrowserFrameNavigator from '../utilities/BrowserFrameNavigator.js';
 
 /**
  * Detached browser page used when constructing a Window instance without a browser.

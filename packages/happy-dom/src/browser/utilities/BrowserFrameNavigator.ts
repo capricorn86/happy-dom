@@ -106,8 +106,8 @@ export default class BrowserFrameNavigator {
 		const width = frame.window.innerWidth;
 		const height = frame.window.innerHeight;
 		const devicePixelRatio = frame.window.devicePixelRatio;
-		const parentWindow = frame.window.parent !== frame.window ? frame.window.parent : null;
-		const topWindow = frame.window.top !== frame.window ? frame.window.top : null;
+		const parentWindow = frame.parentFrame ? frame.parentFrame.window : frame.page.mainFrame.window;
+		const topWindow = frame.page.mainFrame.window;
 
 		for (const childFrame of frame.childFrames) {
 			BrowserFrameFactory.destroyFrame(childFrame);
@@ -144,8 +144,8 @@ export default class BrowserFrameNavigator {
 		frame[PropertySymbol.asyncTaskManager] = new AsyncTaskManager();
 
 		(<BrowserWindow>frame.window) = new windowClass(frame, { url: targetURL.href, width, height });
-		(<BrowserWindow>frame.window.parent) = parentWindow;
-		(<BrowserWindow>frame.window.top) = topWindow;
+		frame.window[PropertySymbol.parent] = parentWindow;
+		frame.window[PropertySymbol.top] = topWindow;
 		(<number>frame.window.devicePixelRatio) = devicePixelRatio;
 
 		if (referrer) {
@@ -258,7 +258,7 @@ export default class BrowserFrameNavigator {
 
 		if (!historyItem) {
 			return new Promise((resolve) => {
-				frame.window.setTimeout(() => {
+				frame.window.requestAnimationFrame(() => {
 					const listeners = frame[PropertySymbol.listeners].navigation;
 					frame[PropertySymbol.listeners].navigation = [];
 					for (const listener of listeners) {
@@ -317,7 +317,7 @@ export default class BrowserFrameNavigator {
 
 		if (!historyItem) {
 			return new Promise((resolve) => {
-				frame.window.setTimeout(() => {
+				frame.window.requestAnimationFrame(() => {
 					const listeners = frame[PropertySymbol.listeners].navigation;
 					frame[PropertySymbol.listeners].navigation = [];
 					for (const listener of listeners) {
@@ -382,7 +382,7 @@ export default class BrowserFrameNavigator {
 
 		if (!historyItem) {
 			return new Promise((resolve) => {
-				frame.window.setTimeout(() => {
+				frame.window.requestAnimationFrame(() => {
 					const listeners = frame[PropertySymbol.listeners].navigation;
 					frame[PropertySymbol.listeners].navigation = [];
 					for (const listener of listeners) {
@@ -438,7 +438,7 @@ export default class BrowserFrameNavigator {
 
 		if (!historyItem) {
 			return new Promise((resolve) => {
-				frame.window.setTimeout(() => {
+				frame.window.requestAnimationFrame(() => {
 					const listeners = frame[PropertySymbol.listeners].navigation;
 					frame[PropertySymbol.listeners].navigation = [];
 					for (const listener of listeners) {

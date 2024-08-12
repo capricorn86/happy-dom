@@ -450,7 +450,7 @@ export default class HTMLTextAreaElement extends HTMLElement {
 		this.#selectionEnd = this.value.length;
 		this.#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
 
-		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: true }));
+		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: false }));
 	}
 
 	/**
@@ -468,7 +468,7 @@ export default class HTMLTextAreaElement extends HTMLElement {
 			direction === HTMLInputElementSelectionDirectionEnum.backward
 				? direction
 				: HTMLInputElementSelectionDirectionEnum.none;
-		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: true }));
+		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: false }));
 	}
 
 	/**

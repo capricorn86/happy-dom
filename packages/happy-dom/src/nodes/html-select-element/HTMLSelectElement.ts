@@ -29,6 +29,7 @@ export default class HTMLSelectElement extends HTMLElement {
 	public [PropertySymbol.validity] = new ValidityState(this);
 	public [PropertySymbol.options]: HTMLOptionsCollection | null = null;
 	public [PropertySymbol.selectedOptions]: HTMLCollection<HTMLOptionElement> | null = null;
+	public [PropertySymbol.selectedIndex]: number = -1;
 
 	// Events
 	public onchange: (event: Event) => void | null = null;
@@ -372,15 +373,23 @@ export default class HTMLSelectElement extends HTMLElement {
 	 */
 	public set value(value: string) {
 		const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
+		const previousSelectedIndex = this[PropertySymbol.selectedIndex];
+
+		this[PropertySymbol.selectedIndex] = -1;
 
 		for (let i = 0, max = options.length; i < max; i++) {
 			const option = <HTMLOptionElement>options[i];
 			if (option.value === value) {
 				option[PropertySymbol.selectedness] = true;
 				option[PropertySymbol.dirtyness] = true;
+				this[PropertySymbol.selectedIndex] = i;
 			} else {
 				option[PropertySymbol.selectedness] = false;
 			}
+		}
+
+		if (previousSelectedIndex !== this[PropertySymbol.selectedIndex]) {
+			this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
 		}
 	}
 
@@ -390,15 +399,7 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @returns Value.
 	 */
 	public get selectedIndex(): number {
-		const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
-
-		for (let i = 0, max = options.length; i < max; i++) {
-			if ((<HTMLOptionElement>options[i])[PropertySymbol.selectedness]) {
-				return i;
-			}
-		}
-
-		return -1;
+		return this[PropertySymbol.selectedIndex];
 	}
 
 	/**
@@ -407,7 +408,16 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @param selectedIndex Selected index.
 	 */
 	public set selectedIndex(selectedIndex: number) {
+		selectedIndex = Number(selectedIndex);
+
+		if (isNaN(selectedIndex)) {
+			return;
+		}
+
 		const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
+		const previousSelectedIndex = this[PropertySymbol.selectedIndex];
+
+		this[PropertySymbol.selectedIndex] = -1;
 
 		if (typeof selectedIndex === 'number' && !isNaN(selectedIndex)) {
 			for (let i = 0, max = options.length; i < max; i++) {
@@ -418,7 +428,12 @@ export default class HTMLSelectElement extends HTMLElement {
 			if (selectedOption) {
 				selectedOption[PropertySymbol.selectedness] = true;
 				selectedOption[PropertySymbol.dirtyness] = true;
+				this[PropertySymbol.selectedIndex] = selectedIndex;
 			}
+		}
+
+		if (previousSelectedIndex !== this[PropertySymbol.selectedIndex]) {
+			this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
 		}
 	}
 
@@ -637,6 +652,11 @@ export default class HTMLSelectElement extends HTMLElement {
 		const isMultiple = this.hasAttribute('multiple');
 		const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
 		const selected: HTMLOptionElement[] = [];
+		const previousSelectedIndex = this[PropertySymbol.selectedIndex];
+
+		if (selectedOption) {
+			this[PropertySymbol.selectedIndex] = -1;
+		}
 
 		if (!isMultiple) {
 			for (let i = 0, max = options.length; i < max; i++) {
@@ -644,6 +664,10 @@ export default class HTMLSelectElement extends HTMLElement {
 
 				if (selectedOption) {
 					option[PropertySymbol.selectedness] = option === selectedOption;
+
+					if (option === selectedOption) {
+						this[PropertySymbol.selectedIndex] = i;
+					}
 				}
 
 				if (option[PropertySymbol.selectedness]) {
@@ -655,6 +679,7 @@ export default class HTMLSelectElement extends HTMLElement {
 		const size = this.#getDisplaySize();
 
 		if (size === 1 && !selected.length) {
+			this[PropertySymbol.selectedIndex] = -1;
 			for (let i = 0, max = options.length; i < max; i++) {
 				const option = <HTMLOptionElement>options[i];
 				const parentNode = <HTMLElement>option[PropertySymbol.parentNode];
@@ -671,13 +696,24 @@ export default class HTMLSelectElement extends HTMLElement {
 
 				if (!disabled) {
 					option[PropertySymbol.selectedness] = true;
+					this[PropertySymbol.selectedIndex] = i;
 					break;
 				}
 			}
 		} else if (selected.length >= 2) {
+			this[PropertySymbol.selectedIndex] = -1;
+
 			for (let i = 0, max = options.length; i < max; i++) {
 				(<HTMLOptionElement>options[i])[PropertySymbol.selectedness] = i === selected.length - 1;
+
+				if (i === selected.length - 1) {
+					this[PropertySymbol.selectedIndex] = i;
+				}
 			}
+		}
+
+		if (previousSelectedIndex !== this[PropertySymbol.selectedIndex]) {
+			this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
 		}
 	}
 

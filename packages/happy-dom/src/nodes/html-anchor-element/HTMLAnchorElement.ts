@@ -382,11 +382,24 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 			!event.defaultPrevented
 		) {
 			const href = this.href;
+
 			if (href) {
+				const features = [];
+
+				if (this.relList.contains('noreferrer')) {
+					features.push('noreferrer');
+				}
+
+				if (this.relList.contains('noopener')) {
+					features.push('noopener');
+				}
+
 				this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].open(
 					href,
-					this.target || '_self'
+					this.target || '_self',
+					features.join(',')
 				);
+
 				if (this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].closed) {
 					event.stopImmediatePropagation();
 				}

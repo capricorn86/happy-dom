@@ -8,6 +8,7 @@ import Response from '../../../src/fetch/Response.js';
 import Fetch from '../../../src/fetch/Fetch.js';
 import Browser from '../../../src/browser/Browser.js';
 import MouseEvent from '../../../src/event/events/MouseEvent.js';
+import BrowserWindow from '../../../src/window/BrowserWindow.js';
 
 describe('HTMLAnchorElement', () => {
 	let window: Window;
@@ -418,6 +419,37 @@ describe('HTMLAnchorElement', () => {
 			await browser.waitUntilComplete();
 
 			expect(newWindow.document.body.innerHTML).toBe('Test');
+		});
+
+		it('Handles "noopener" and "noreferrer" set in the "rel" attribute.', async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			const window = page.mainFrame.window;
+			let usedURL: string | null = null;
+			let usedTarget: string | null = null;
+			let usedFeatures: string | null = null;
+
+			vi.spyOn(window, 'open').mockImplementation((url, target, features): BrowserWindow => {
+				usedURL = <string>url;
+				usedTarget = <string>target;
+				usedFeatures = <string>features;
+
+				return <BrowserWindow>{};
+			});
+
+			const element = <HTMLAnchorElement>window.document.createElement('a');
+			element.href = 'https://www.example.com';
+			element.relList.add('noreferrer');
+			element.relList.add('noopener');
+
+			window.document.body.appendChild(element);
+
+			element.dispatchEvent(new MouseEvent('click'));
+
+			expect(element.getAttribute('rel')).toBe('noreferrer noopener');
+			expect(usedURL).toBe('https://www.example.com/');
+			expect(usedTarget).toBe('_self');
+			expect(usedFeatures).toBe('noreferrer,noopener');
 		});
 
 		it(`Doesn't navigate or change the location when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "navigation.disableFallbackToSetURL" is set to "true".`, () => {
