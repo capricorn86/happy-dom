@@ -66,6 +66,13 @@ export default class GlobalRegistrator {
 		for (const key of propertySymbols) {
 			const propertyDescriptor = Object.getOwnPropertyDescriptor(window, key);
 			this.registered[key] = null;
+
+			// If the property is the window object, replace it with the global object
+			if (propertyDescriptor.value === window) {
+				window[key] = global;
+				propertyDescriptor.value = global;
+			}
+
 			Object.defineProperty(global, key, {
 				...propertyDescriptor,
 				configurable: true
