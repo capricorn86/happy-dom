@@ -249,7 +249,6 @@ describe('ShadowRoot', () => {
 	describe('cloneNode()', () => {
 		it('Clones the value of the "mode" property when cloned.', () => {
 			const customElement = document.createElement('custom-element-b');
-			// We need to grab it using PropertySymbol as the shadow root is closed
 			const shadowRoot = <ShadowRoot>customElement[PropertySymbol.shadowRoot];
 			const clone = shadowRoot.cloneNode();
 
