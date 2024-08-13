@@ -185,9 +185,8 @@ describe('HTMLSlotElement', () => {
 					super();
 					this.attachShadow({ mode: 'open' });
 
-					(<ShadowRoot>(
-						this.shadowRoot
-					)).innerHTML = `<b><slot></slot><slot name="namedSlot"></slot></b>`;
+					(<ShadowRoot>this.shadowRoot).innerHTML =
+						`<b><slot></slot><slot name="namedSlot"></slot></b>`;
 				}
 			}
 
@@ -198,9 +197,8 @@ describe('HTMLSlotElement', () => {
 					super();
 					this.attachShadow({ mode: 'open' });
 
-					(<ShadowRoot>(
-						this.shadowRoot
-					)).innerHTML = `<custom-element-a><slot></slot><slot name="namedSlot" slot="namedSlot"></slot></custom-element>`;
+					(<ShadowRoot>this.shadowRoot).innerHTML =
+						`<custom-element-a><slot></slot><slot name="namedSlot" slot="namedSlot"></slot></custom-element>`;
 				}
 			}
 
