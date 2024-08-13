@@ -420,26 +420,30 @@ export default class HTMLFormElement extends HTMLElement {
 	 */
 	public reset(): void {
 		for (const element of this[PropertySymbol.getFormControlItems]()) {
-			if (
-				element[PropertySymbol.tagName] === 'INPUT' ||
-				element[PropertySymbol.tagName] === 'TEXTAREA'
-			) {
-				element[PropertySymbol.value] = null;
-				element[PropertySymbol.checked] = null;
-			} else if (element[PropertySymbol.tagName] === 'TEXTAREA') {
-				element[PropertySymbol.value] = null;
-			} else if (element[PropertySymbol.tagName] === 'SELECT') {
-				let hasSelectedAttribute = false;
-				for (const option of (<HTMLSelectElement>element).options) {
-					if (option.hasAttribute('selected')) {
-						hasSelectedAttribute = true;
-						option.selected = true;
-						break;
+			switch (element[PropertySymbol.tagName]) {
+				case 'TEXTAREA':
+					element[PropertySymbol.value] = null;
+					break;
+				case 'INPUT':
+					element[PropertySymbol.value] = null;
+					element[PropertySymbol.checked] = null;
+					break;
+				case 'OUTPUT':
+					element.textContent = element[PropertySymbol.defaultValue];
+					break;
+				case 'SELECT':
+					let hasSelectedAttribute = false;
+					for (const option of (<HTMLSelectElement>element).options) {
+						if (option.hasAttribute('selected')) {
+							hasSelectedAttribute = true;
+							option.selected = true;
+							break;
+						}
 					}
-				}
-				if (!hasSelectedAttribute && (<HTMLSelectElement>element).options.length > 0) {
-					(<HTMLSelectElement>element).options[0].selected = true;
-				}
+					if (!hasSelectedAttribute && (<HTMLSelectElement>element).options.length > 0) {
+						(<HTMLSelectElement>element).options[0].selected = true;
+					}
+					break;
 			}
 		}
 
@@ -494,7 +498,7 @@ export default class HTMLFormElement extends HTMLElement {
 	 */
 	public [PropertySymbol.getFormControlItems](): THTMLFormControlElement[] {
 		const elements = <THTMLFormControlElement[]>(
-			QuerySelector.querySelectorAll(this, 'input,select,textarea,button,fieldset')[
+			QuerySelector.querySelectorAll(this, 'input,select,textarea,button,fieldset,object,output')[
 				PropertySymbol.items
 			].slice()
 		);
@@ -508,7 +512,7 @@ export default class HTMLFormElement extends HTMLElement {
 				for (const element of <THTMLFormControlElement[]>(
 					QuerySelector.querySelectorAll(
 						this[PropertySymbol.ownerDocument],
-						`input[form="${id}"],select[form="${id}"],textarea[form="${id}"],button[form="${id}"],fieldset[form="${id}"]`
+						`input[form="${id}"],select[form="${id}"],textarea[form="${id}"],button[form="${id}"],fieldset[form="${id}"],object[form="${id}"],output[form="${id}"]`
 					)[PropertySymbol.items]
 				)) {
 					if (!elements.includes(element)) {

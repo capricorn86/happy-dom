@@ -237,6 +237,7 @@ describe('HTMLButtonElement', () => {
 			div.appendChild(element);
 			form.appendChild(div);
 			expect(element.form).toBe(form);
+			expect(Array.from(form.elements).includes(element)).toBe(true);
 		});
 
 		it('Returns form element by id if the form attribute is set when connecting node to DOM.', () => {

@@ -15,8 +15,32 @@ describe('HTMLQuoteElement', () => {
 	});
 
 	describe('constructor()', () => {
-		it('Should be an instanceof HTMLQuoteElement', () => {
-			expect(element instanceof HTMLQuoteElement).toBe(true);
+		it('Should be an instanceof HTMLQuoteElement for the "q" tag.', () => {
+			expect(document.createElement('q') instanceof HTMLQuoteElement).toBe(true);
+		});
+
+		it('Should be an instanceof HTMLQuoteElement for the "blockquote" tag.', () => {
+			expect(document.createElement('blockquote') instanceof HTMLQuoteElement).toBe(true);
+		});
+	});
+
+	describe('get cite()', () => {
+		it('Returns the "cite" attribute.', () => {
+			element.setAttribute('cite', 'test');
+			expect(element.cite).toBe('test');
+		});
+
+		it('Returns URL relative to window location.', () => {
+			window.happyDOM.setURL('https://localhost:8080/test/path/');
+			element.setAttribute('cite', 'test');
+			expect(element.cite).toBe('https://localhost:8080/test/path/test');
+		});
+	});
+
+	describe('set cite()', () => {
+		it('Sets the attribute "cite".', () => {
+			element.cite = 'test';
+			expect(element.getAttribute('cite')).toBe('test');
 		});
 	});
 });

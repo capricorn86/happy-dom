@@ -18,6 +18,7 @@ import HTMLIFrameElement from '../../../src/nodes/html-iframe-element/HTMLIFrame
 import BrowserWindow from '../../../src/window/BrowserWindow.js';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 import THTMLFormControlElement from '../../../src/nodes/html-form-element/THTMLFormControlElement.js';
+import HTMLOutputElement from '../../../src/nodes/html-output-element/HTMLOutputElement.js';
 
 describe('HTMLFormElement', () => {
 	let window: Window;
@@ -1077,6 +1078,7 @@ describe('HTMLFormElement', () => {
                     <input type="radio" name="radio1" value="value1">
                     <input type="radio" name="radio1" value="value2" checked>
                     <input type="radio" name="radio1" value="value3">
+                    <output>Value</output>
                 </div>
             `;
 
@@ -1091,6 +1093,7 @@ describe('HTMLFormElement', () => {
 			(<HTMLInputElement>root.children[3]).click();
 			(<HTMLInputElement>root.children[5]).click();
 			(<HTMLInputElement>root.children[7]).click();
+			(<HTMLOutputElement>root.children[9]).defaultValue = 'Default value';
 
 			element.addEventListener('reset', (event: Event) => (resetEvent = event));
 
@@ -1109,6 +1112,9 @@ describe('HTMLFormElement', () => {
 			expect((<HTMLInputElement>root.children[6]).checked).toBe(false);
 			expect((<HTMLInputElement>root.children[7]).checked).toBe(true);
 			expect((<HTMLInputElement>root.children[8]).checked).toBe(false);
+
+			expect((<HTMLOutputElement>root.children[9]).value).toBe('Default value');
+			expect((<HTMLOutputElement>root.children[9]).textContent).toBe('Default value');
 		});
 	});
 

@@ -103,22 +103,22 @@ export default class ParentNodeUtility {
 	 * @param tagName Tag name.
 	 * @returns Matching element.
 	 */
-	public static getElementsByTagName(
+	public static getElementsByTagName<T extends Element = Element>(
 		parentNode: Element | DocumentFragment | Document,
 		tagName: string
-	): HTMLCollection<Element> {
+	): HTMLCollection<T> {
 		const upperTagName = tagName.toUpperCase();
 		const includeAll = tagName === '*';
 
 		const find = (
 			parent: Element | DocumentFragment | Document,
 			cachedResult: ICachedResult
-		): Element[] => {
-			const elements: Element[] = [];
+		): T[] => {
+			const elements: T[] = [];
 
 			for (const element of (<DocumentFragment>parent)[PropertySymbol.elementArray]) {
 				if (includeAll || element[PropertySymbol.tagName] === upperTagName) {
-					elements.push(<Element>element);
+					elements.push(<T>element);
 				}
 
 				element[PropertySymbol.affectsCache].push(cachedResult);
@@ -131,14 +131,14 @@ export default class ParentNodeUtility {
 			return elements;
 		};
 
-		const query = (): Element[] => {
+		const query = (): T[] => {
 			const cache = parentNode[PropertySymbol.cache].elementsByTagName;
 			const cachedItems = cache.get(tagName);
 
 			if (cachedItems?.result) {
 				const items = cachedItems.result.deref();
 				if (items) {
-					return items;
+					return <T[]>items;
 				}
 			}
 
@@ -151,7 +151,7 @@ export default class ParentNodeUtility {
 			return items;
 		};
 
-		return new HTMLCollection(query);
+		return new HTMLCollection<T>(query);
 	}
 
 	/**
@@ -283,6 +283,14 @@ export default class ParentNodeUtility {
 		id: string
 	): Element | null {
 		id = String(id);
+
+		if (parentNode instanceof Document) {
+			const entry = parentNode[PropertySymbol.elementIdMap].get(id);
+			if (entry?.elements.length > 0) {
+				return entry.elements[0];
+			}
+			return null;
+		}
 
 		const find = (
 			parent: Element | DocumentFragment | Document,

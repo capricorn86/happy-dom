@@ -72,6 +72,10 @@ export default class Document extends Node {
 	public [PropertySymbol.ownerWindow]: BrowserWindow;
 	public [PropertySymbol.forms]: HTMLCollection<HTMLFormElement> | null = null;
 	public [PropertySymbol.affectsComputedStyleCache]: ICachedResult[] = [];
+	public [PropertySymbol.elementIdMap]: Map<
+		string,
+		{ htmlCollection: HTMLCollection<Element> | null; elements: Element[] }
+	> = new Map();
 	public declare cloneNode: (deep?: boolean) => Document;
 
 	// Private properties

@@ -15,8 +15,46 @@ describe('HTMLModElement', () => {
 	});
 
 	describe('constructor()', () => {
-		it('Should be an instanceof HTMLModElement', () => {
-			expect(element instanceof HTMLModElement).toBe(true);
+		it('Should be an instanceof HTMLModElement for tag name "ins".', () => {
+			expect(document.createElement('ins') instanceof HTMLModElement).toBe(true);
+		});
+
+		it('Should be an instanceof HTMLModElement for tag name "del".', () => {
+			expect(document.createElement('del') instanceof HTMLModElement).toBe(true);
+		});
+	});
+
+	describe('get cite()', () => {
+		it('Returns the "cite" attribute.', () => {
+			element.setAttribute('cite', 'test');
+			expect(element.cite).toBe('test');
+		});
+
+		it('Returns URL relative to window location.', () => {
+			window.happyDOM.setURL('https://localhost:8080/test/path/');
+			element.setAttribute('cite', 'test');
+			expect(element.cite).toBe('https://localhost:8080/test/path/test');
+		});
+	});
+
+	describe('set cite()', () => {
+		it('Sets the attribute "cite".', () => {
+			element.cite = 'test';
+			expect(element.getAttribute('cite')).toBe('test');
+		});
+	});
+
+	describe('get dateTime()', () => {
+		it(`Returns the attribute "datetime".`, () => {
+			element.setAttribute('datetime', 'VALUE');
+			expect(element.dateTime).toBe('VALUE');
+		});
+	});
+
+	describe('set dateTime()', () => {
+		it(`Sets the attribute "datetime".`, () => {
+			element.dateTime = 'VALUE';
+			expect(element.getAttribute('datetime')).toBe('VALUE');
 		});
 	});
 });

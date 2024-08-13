@@ -19,4 +19,40 @@ describe('HTMLLegendElement', () => {
 			expect(element instanceof HTMLLegendElement).toBe(true);
 		});
 	});
+
+	describe('get form()', () => {
+		it('Returns null if no parent fieldset or form element exists.', () => {
+			expect(element.form).toBe(null);
+
+			document.body.innerHTML = `<form><legend></legend></form>`;
+
+			expect(document.querySelector('legend')?.form).toBe(null);
+
+			document.body.innerHTML = `<fieldset><legend></legend></fieldset>`;
+
+			expect(document.querySelector('legend')?.form).toBe(null);
+		});
+
+		it('Returns form of the parent fieldset.', () => {
+			document.body.innerHTML = `<form>
+                <fieldset>
+                    <legend>Choose your favorite monster</legend>
+
+                    <input type="radio" id="kraken" name="monster" value="K" />
+                    <label for="kraken">Kraken</label><br />
+
+                    <input type="radio" id="sasquatch" name="monster" value="S" />
+                    <label for="sasquatch">Sasquatch</label><br />
+
+                    <input type="radio" id="mothman" name="monster" value="M" />
+                    <label for="mothman">Mothman</label>
+                </fieldset>
+            </form>`;
+
+			const form = document.querySelector('form');
+			const legend = document.querySelector('legend');
+
+			expect(legend?.form).toBe(form);
+		});
+	});
 });

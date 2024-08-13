@@ -19,4 +19,45 @@ describe('HTMLMapElement', () => {
 			expect(element instanceof HTMLMapElement).toBe(true);
 		});
 	});
+
+	describe('get areas()', () => {
+		it('Should return areas', () => {
+			const div = document.createElement('div');
+
+			div.innerHTML =
+				'<area shape="circle" coords="15,15,5" /><area shape="circle" coords="15,15,5" />';
+			element.appendChild(div);
+
+			expect(element.areas.length).toBe(2);
+			expect(element.areas[0]).toBe(div.children[0]);
+			expect(element.areas[1]).toBe(div.children[1]);
+
+			div.children[0].remove();
+
+			expect(element.areas.length).toBe(1);
+			expect(element.areas[0]).toBe(div.children[0]);
+		});
+
+		it('Should return an empty collection', () => {
+			expect(element.areas.length).toBe(0);
+		});
+	});
+
+	describe('get name()', () => {
+		it('Should return name', () => {
+			element.setAttribute('name', 'test');
+			expect(element.name).toBe('test');
+		});
+
+		it('Should return an empty string', () => {
+			expect(element.name).toBe('');
+		});
+	});
+
+	describe('set name()', () => {
+		it('Should set name', () => {
+			element.name = 'test';
+			expect(element.getAttribute('name')).toBe('test');
+		});
+	});
 });

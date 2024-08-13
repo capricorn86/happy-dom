@@ -5,6 +5,8 @@ import CustomElementWithNamedSlots from './CustomElementWithNamedSlots.js';
 import CustomElementWithSlot from './CustomElementWithSlot.js';
 import Event from '../../../src/event/Event.js';
 import { beforeEach, describe, it, expect } from 'vitest';
+import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
 
 describe('HTMLSlotElement', () => {
 	let window: Window;
@@ -98,11 +100,66 @@ describe('HTMLSlotElement', () => {
 			customElementWithNamedSlots.appendChild(comment3);
 			customElementWithNamedSlots.appendChild(element3);
 
-			expect(slot1.assignedNodes()).toEqual([text1, comment1, element1]);
+			expect(slot1.assignedNodes()).toEqual([slot1Element]);
 
-			expect(slot2.assignedNodes()).toEqual([text2, comment2, element2]);
+			expect(slot2.assignedNodes()).toEqual([slot2Element]);
 
 			expect(slot3.assignedNodes()).toEqual([text3, comment3, element3]);
+		});
+
+		it('Returns assigned nodes flatten when sending it in as an option.', () => {
+			/* eslint-disable jsdoc/require-jsdoc */
+			class CustomElementA extends HTMLElement {
+				constructor() {
+					super();
+					this.attachShadow({ mode: 'open' });
+
+					(<ShadowRoot>(
+						this.shadowRoot
+					)).innerHTML = `<b><slot></slot><slot name="namedSlot"></slot></b>`;
+				}
+			}
+
+			window.customElements.define('custom-element-a', CustomElementA);
+
+			class CustomElementB extends HTMLElement {
+				constructor() {
+					super();
+					this.attachShadow({ mode: 'open' });
+
+					(<ShadowRoot>(
+						this.shadowRoot
+					)).innerHTML = `<custom-element-a><slot></slot><slot name="namedSlot" slot="namedSlot"></slot></custom-element>`;
+				}
+			}
+
+			window.customElements.define('custom-element-b', CustomElementB);
+
+			/* eslint-enable jsdoc/require-jsdoc */
+
+			const customElement = document.createElement('custom-element-b');
+			customElement.innerHTML = `<div><span>Test 1</span></div><div slot="namedSlot"><span>Test 2</span></div>`;
+			document.body.appendChild(customElement);
+
+			const slot = <HTMLSlotElement>(
+				customElement.shadowRoot
+					?.querySelector('custom-element-a')
+					?.shadowRoot?.querySelector('slot:not([name])')
+			);
+			const namedSlot = <HTMLSlotElement>(
+				customElement.shadowRoot
+					?.querySelector('custom-element-a')
+					?.shadowRoot?.querySelector('slot[name="namedSlot"]')
+			);
+
+			expect(slot?.assignedNodes()).toEqual([
+				customElement.shadowRoot?.querySelector('slot:not([name])')
+			]);
+			expect(namedSlot?.assignedNodes()).toEqual([
+				customElement.shadowRoot?.querySelector('slot[name="namedSlot"]')
+			]);
+			expect(slot?.assignedNodes({ flatten: true })).toEqual([customElement.children[0]]);
+			expect(namedSlot?.assignedNodes({ flatten: true })).toEqual([customElement.children[1]]);
 		});
 	});
 
@@ -149,32 +206,20 @@ describe('HTMLSlotElement', () => {
 			customElementWithNamedSlots.appendChild(comment3);
 			customElementWithNamedSlots.appendChild(element3);
 
-			expect(slot1.assignedElements()).toEqual([element1]);
+			expect(slot1.assignedElements()).toEqual([slot1Element]);
 
-			expect(slot2.assignedElements()).toEqual([element2]);
+			expect(slot2.assignedElements()).toEqual([slot2Element]);
 
 			expect(slot3.assignedElements()).toEqual([element3]);
 		});
 	});
 
 	describe('dispatchEvent()', () => {
-		it('Doesn\'n dispatch "slotchange" event when setting "name" attribute if assigned nodes isn\'t changed.', () => {
-			const slot = <HTMLSlotElement>customElementWithNamedSlots.shadowRoot?.querySelector('slot');
+		it('Doesn\'t dispatch "slotchange" event when setting "name" attribute if assigned nodes isn\'t changed.', () => {
+			const slot = <HTMLSlotElement>(
+				customElementWithNamedSlots.shadowRoot?.querySelector('slot[name="slot1"]')
+			);
 			let dispatchedEvent: Event | null = null;
-
-			slot.addEventListener('slotchange', (event) => (dispatchedEvent = event));
-			slot.setAttribute('name', 'new-name');
-
-			expect(dispatchedEvent).toBe(null);
-		});
-
-		it('Doesn\'n dispatch "slotchange" event when changing "name" attribute if assigned nodes are changed, even if there is a child with matching "slot" attribute.', () => {
-			const slot = <HTMLSlotElement>customElementWithNamedSlots.shadowRoot?.querySelector('slot');
-			let dispatchedEvent: Event | null = null;
-
-			const div = document.createElement('div');
-			div.setAttribute('slot', 'slot1');
-			customElementWithNamedSlots.appendChild(div);
 
 			slot.addEventListener('slotchange', (event) => (dispatchedEvent = event));
 			slot.setAttribute('name', 'new-name');
@@ -183,7 +228,9 @@ describe('HTMLSlotElement', () => {
 		});
 
 		it('Dispatches "slotchange" event when changing "name" attribute if assigned nodes are changed.', () => {
-			const slot = <HTMLSlotElement>customElementWithNamedSlots.shadowRoot?.querySelector('slot');
+			const slot = <HTMLSlotElement>(
+				customElementWithNamedSlots.shadowRoot?.querySelector('slot[name="slot1"]')
+			);
 			let dispatchedEvent: Event | null = null;
 
 			const div = document.createElement('div');
@@ -251,59 +298,18 @@ describe('HTMLSlotElement', () => {
 
 			const div = document.createElement('div');
 			div.setAttribute('slot', 'slot1');
-			const span = document.createElement('span');
-			div.appendChild(span);
-			customElementWithNamedSlots.appendChild(div);
 
 			slot.addEventListener('slotchange', (event) => (dispatchedEvent = event));
 
-			const newNode = document.createElement('span');
-
-			div.appendChild(newNode);
+			customElementWithNamedSlots.appendChild(div);
 
 			expect((<Event>(<unknown>dispatchedEvent)).type).toBe('slotchange');
 			expect((<Event>(<unknown>dispatchedEvent)).bubbles).toBe(true);
-		});
 
-		it('Dispatches "slotchange" event adding a text node to a named slot', () => {
-			const slot = <HTMLSlotElement>(
-				customElementWithNamedSlots.shadowRoot?.querySelector('slot[name="slot1"]')
-			);
-			let dispatchedEvent: Event | null = null;
+			// Should do nothing when adding a node to the slotted element
+			dispatchedEvent = null;
 
-			const div = document.createElement('div');
-			div.setAttribute('slot', 'slot1');
-			const span = document.createElement('span');
-			div.appendChild(span);
-			customElementWithNamedSlots.appendChild(div);
-
-			slot.addEventListener('slotchange', (event) => (dispatchedEvent = event));
-
-			const newNode = document.createTextNode('test');
-
-			div.appendChild(newNode);
-
-			expect((<Event>(<unknown>dispatchedEvent)).type).toBe('slotchange');
-			expect((<Event>(<unknown>dispatchedEvent)).bubbles).toBe(true);
-		});
-
-		it('Doesn\'t dispatch "slotchange" event adding a comment node to a named slot', () => {
-			const slot = <HTMLSlotElement>(
-				customElementWithNamedSlots.shadowRoot?.querySelector('slot[name="slot1"]')
-			);
-			let dispatchedEvent: Event | null = null;
-
-			const div = document.createElement('div');
-			div.setAttribute('slot', 'slot1');
-			const span = document.createElement('span');
-			div.appendChild(span);
-			customElementWithNamedSlots.appendChild(div);
-
-			slot.addEventListener('slotchange', (event) => (dispatchedEvent = event));
-
-			const newNode = document.createComment('test');
-
-			div.appendChild(newNode);
+			div.appendChild(document.createElement('span'));
 
 			expect(dispatchedEvent).toBe(null);
 		});

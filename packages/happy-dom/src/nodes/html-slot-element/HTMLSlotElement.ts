@@ -50,23 +50,23 @@ export default class HTMLSlotElement extends HTMLElement {
 	/**
 	 * Returns assigned nodes.
 	 *
-	 * @param [_options] Options.
-	 * @param [_options.flatten] A boolean value indicating whether to return the assigned nodes of any available child <slot> elements (true) or not (false). Defaults to false.
+	 * @param [options] Options.
+	 * @param [options.flatten] A boolean value indicating whether to return the assigned nodes of any available child <slot> elements (true) or not (false). Defaults to false.
 	 * @returns Nodes.
 	 */
-	public assignedNodes(_options?: { flatten?: boolean }): Node[] {
-		return this.#assignedNodes(this.name, _options);
+	public assignedNodes(options?: { flatten?: boolean }): Node[] {
+		return this.#assignedNodes(this.name, options);
 	}
 
 	/**
 	 * Returns assigned elements.
 	 *
-	 * @param [_options] Options.
-	 * @param [_options.flatten] A boolean value indicating whether to return the assigned elements of any available child <slot> elements (true) or not (false). Defaults to false.
+	 * @param [options] Options.
+	 * @param [options.flatten] A boolean value indicating whether to return the assigned elements of any available child <slot> elements (true) or not (false). Defaults to false.
 	 * @returns Nodes.
 	 */
-	public assignedElements(_options?: { flatten?: boolean }): Element[] {
-		return this.#assignedElements(this.name, _options);
+	public assignedElements(options?: { flatten?: boolean }): Element[] {
+		return this.#assignedElements(this.name, options);
 	}
 
 	/**
@@ -93,12 +93,12 @@ export default class HTMLSlotElement extends HTMLElement {
 
 			if (replacedAssignedNodes.length !== assignedNodes.length) {
 				this.dispatchEvent(new Event('slotchange', { bubbles: true }));
-			}
-
-			for (let i = 0, max = assignedNodes.length; i < max; i++) {
-				if (replacedAssignedNodes[i] !== assignedNodes[i]) {
-					this.dispatchEvent(new Event('slotchange', { bubbles: true }));
-					break;
+			} else {
+				for (let i = 0, max = assignedNodes.length; i < max; i++) {
+					if (replacedAssignedNodes[i] !== assignedNodes[i]) {
+						this.dispatchEvent(new Event('slotchange', { bubbles: true }));
+						break;
+					}
 				}
 			}
 		}
@@ -122,63 +122,67 @@ export default class HTMLSlotElement extends HTMLElement {
 	 * Returns assigned nodes.
 	 *
 	 * @param name Name.
-	 * @param [_options] Options.
-	 * @param [_options.flatten] A boolean value indicating whether to return the assigned nodes of any available child <slot> elements (true) or not (false). Defaults to false.
+	 * @param [options] Options.
+	 * @param [options.flatten] A boolean value indicating whether to return the assigned nodes of any available child <slot> elements (true) or not (false). Defaults to false.
 	 * @returns Nodes.
 	 */
-	#assignedNodes(name?: string, _options?: { flatten?: boolean }): Node[] {
+	#assignedNodes(name?: string, options?: { flatten?: boolean }): Node[] {
 		const host = (<ShadowRoot>this.getRootNode())?.host;
-
-		// TODO: Add support for options.flatten. We need to find an example of how it expected to work before it can be implemented.
+		const flatten = !!options?.flatten;
 
 		if (!host) {
 			return [];
 		}
 
-		const assignedElements = [];
+		const assigned = [];
 
 		for (const slotNode of (<HTMLElement>host)[PropertySymbol.nodeArray]) {
-			if (name && slotNode['slot'] && slotNode['slot'] === name) {
-				for (const child of slotNode[PropertySymbol.nodeArray]) {
-					assignedElements.push(child);
+			const slotName = slotNode['slot'];
+			if ((name && slotName && slotName === name) || (!name && !slotName)) {
+				if (flatten && slotNode instanceof HTMLSlotElement) {
+					for (const slotChild of slotNode.assignedNodes(options)) {
+						assigned.push(slotChild);
+					}
+				} else {
+					assigned.push(slotNode);
 				}
-			} else if (!name && !slotNode['slot']) {
-				assignedElements.push(slotNode);
 			}
 		}
 
-		return assignedElements;
+		return assigned;
 	}
 
 	/**
 	 * Returns assigned elements.
 	 *
 	 * @param name Name.
-	 * @param [_options] Options.
-	 * @param [_options.flatten] A boolean value indicating whether to return the assigned elements of any available child <slot> elements (true) or not (false). Defaults to false.
+	 * @param [options] Options.
+	 * @param [options.flatten] A boolean value indicating whether to return the assigned elements of any available child <slot> elements (true) or not (false). Defaults to false.
 	 * @returns Nodes.
 	 */
-	#assignedElements(name?: string, _options?: { flatten?: boolean }): Element[] {
+	#assignedElements(name?: string, options?: { flatten?: boolean }): Element[] {
 		const host = (<ShadowRoot>this.getRootNode())?.host;
-
-		// TODO: Add support for options.flatten. We need to find an example of how it expected to work before it can be implemented.
+		const flatten = !!options?.flatten;
 
 		if (!host) {
 			return [];
 		}
 
-		const assignedElements = [];
+		const assigned = [];
 
 		for (const slotElement of (<HTMLElement>host)[PropertySymbol.elementArray]) {
-			if (name && slotElement.slot === name) {
-				for (const child of slotElement[PropertySymbol.elementArray]) {
-					assignedElements.push(child);
+			const slotName = slotElement.slot;
+			if ((name && slotName === name) || (!name && !slotName)) {
+				if (flatten && slotElement instanceof HTMLSlotElement) {
+					for (const slotChild of slotElement.assignedElements(options)) {
+						assigned.push(slotChild);
+					}
+				} else {
+					assigned.push(slotElement);
 				}
-			} else if (!name && !slotElement.slot) {
-				assignedElements.push(slotElement);
 			}
 		}
 
-		return assignedElements;
+		return assigned;
 	}
 }

@@ -9,8 +9,6 @@ type FormDataEntry = {
 	value: string | File;
 };
 
-const SUBMITTABLE_ELEMENTS = ['BUTTON', 'INPUT', 'OBJECT', 'SELECT', 'TEXTAREA'];
-
 /**
  * FormData.
  *
@@ -32,23 +30,48 @@ export default class FormData implements Iterable<[string, string | File]> {
 		const items = form[PropertySymbol.getFormControlItems]();
 
 		for (const item of items) {
-			if (
-				item.name &&
-				SUBMITTABLE_ELEMENTS.includes(item[PropertySymbol.tagName]) &&
-				(item[PropertySymbol.tagName] !== 'INPUT' ||
-					(item.type !== 'checkbox' && item.type !== 'radio') ||
-					(<HTMLInputElement>item).checked)
-			) {
-				if (item[PropertySymbol.tagName] === 'INPUT' && item.type === 'file') {
-					if ((<HTMLInputElement>item)[PropertySymbol.files].length === 0) {
-						this.append(item.name, new File([], '', { type: 'application/octet-stream' }));
-					} else {
-						for (const file of (<HTMLInputElement>item)[PropertySymbol.files]) {
-							this.append(item.name, file);
+			const name = item.name;
+
+			if (name) {
+				switch (item[PropertySymbol.tagName]) {
+					case 'INPUT':
+						switch ((<HTMLInputElement>item).type) {
+							case 'file':
+								if ((<HTMLInputElement>item)[PropertySymbol.files].length === 0) {
+									this.append(name, new File([], '', { type: 'application/octet-stream' }));
+								} else {
+									for (const file of (<HTMLInputElement>item)[PropertySymbol.files]) {
+										this.append(name, file);
+									}
+								}
+								break;
+							case 'checkbox':
+							case 'radio':
+								if ((<HTMLInputElement>item).checked) {
+									this.append(name, (<HTMLInputElement>item).value);
+								}
+								break;
+							case 'submit':
+							case 'reset':
+							case 'button':
+								if ((<HTMLInputElement>item).value) {
+									this.append(name, (<HTMLInputElement>item).value);
+								}
+								break;
+							default:
+								this.append(name, (<HTMLInputElement>item).value);
+								break;
 						}
-					}
-				} else if ((<HTMLInputElement>item).value) {
-					this.append(item.name, (<HTMLInputElement>item).value);
+						break;
+					case 'BUTTON':
+						if ((<HTMLInputElement>item).value) {
+							this.append(name, (<HTMLInputElement>item).value);
+						}
+						break;
+					case 'TEXTAREA':
+					case 'SELECT':
+						this.append(name, (<HTMLInputElement>item).value);
+						break;
 				}
 			}
 		}

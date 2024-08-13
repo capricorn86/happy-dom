@@ -193,3 +193,6 @@ export const selectedIndex = Symbol('selectedIndex');
 export const self = Symbol('self');
 export const parent = Symbol('parent');
 export const top = Symbol('top');
+export const areas = Symbol('areas');
+export const defaultValue = Symbol('defaultValue');
+export const elementIdMap = Symbol('elementIdMap');

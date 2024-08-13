@@ -1183,7 +1183,7 @@ export default class Element
 	 */
 	public override [PropertySymbol.appendChild](node: Node, isDuringParsing = false): Node {
 		const returnValue = super[PropertySymbol.appendChild](node, isDuringParsing);
-		this.#onNodeListChange(node);
+		this.#onSlotChange(node);
 		return returnValue;
 	}
 
@@ -1192,7 +1192,7 @@ export default class Element
 	 */
 	public override [PropertySymbol.removeChild](node: Node): Node {
 		const returnValue = super[PropertySymbol.removeChild](node);
-		this.#onNodeListChange(node);
+		this.#onSlotChange(node);
 		return returnValue;
 	}
 
@@ -1201,7 +1201,7 @@ export default class Element
 	 */
 	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
 		const returnValue = super[PropertySymbol.insertBefore](newNode, referenceNode);
-		this.#onNodeListChange(newNode);
+		this.#onSlotChange(newNode);
 		return returnValue;
 	}
 
@@ -1247,6 +1247,13 @@ export default class Element
 					slot.dispatchEvent(new Event('slotchange', { bubbles: true }));
 				}
 			}
+		}
+
+		if (attribute[PropertySymbol.name] === 'id' && this[PropertySymbol.isConnected]) {
+			if (replacedAttribute?.[PropertySymbol.value]) {
+				this.#removeIdentifierFromWindow(replacedAttribute[PropertySymbol.value]);
+			}
+			this.#addIdentifierToWindow(attribute[PropertySymbol.value]);
 		}
 
 		if (this[PropertySymbol.cache].style) {
@@ -1302,6 +1309,10 @@ export default class Element
 			}
 		}
 
+		if (removedAttribute[PropertySymbol.name] === 'id' && this[PropertySymbol.isConnected]) {
+			this.#removeIdentifierFromWindow(removedAttribute[PropertySymbol.value]);
+		}
+
 		if (this[PropertySymbol.cache].style) {
 			this[PropertySymbol.cache].style.result = null;
 			this[PropertySymbol.cache].style = null;
@@ -1332,41 +1343,145 @@ export default class Element
 	}
 
 	/**
-	 * Triggered when child nodes are changed.
-	 *
-	 * @param node Changed node.
+	 * @override
 	 */
-	#onNodeListChange(node: Node): void {
-		if (this[PropertySymbol.shadowRoot]) {
-			const slotAttribute =
-				node[PropertySymbol.attributes]?.[PropertySymbol.namedItems].get('slot');
-			if (slotAttribute) {
-				const slot = this[PropertySymbol.shadowRoot].querySelector(
-					`slot[name="${slotAttribute[PropertySymbol.value]}"]`
-				);
-				if (slot) {
-					slot.dispatchEvent(new Event('slotchange', { bubbles: true }));
+	public override [PropertySymbol.connectedToDocument](): void {
+		super[PropertySymbol.connectedToDocument]();
+
+		const id =
+			this[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[PropertySymbol.value];
+		if (id) {
+			this.#addIdentifierToWindow(id);
+		}
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.disconnectedFromDocument](): void {
+		super[PropertySymbol.disconnectedFromDocument]();
+
+		const id =
+			this[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[PropertySymbol.value];
+		if (id) {
+			this.#removeIdentifierFromWindow(
+				this[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[PropertySymbol.value]
+			);
+		}
+	}
+
+	/**
+	 * Adds identifier to the window object.
+	 *
+	 * @param id Identifier.
+	 */
+	#addIdentifierToWindow(id: string): void {
+		if (!id) {
+			return;
+		}
+
+		const document = this[PropertySymbol.ownerDocument];
+		const window = document[PropertySymbol.ownerWindow];
+
+		// We should not add the identifier when inside a shadow root
+		if (this[PropertySymbol.rootNode] && this[PropertySymbol.rootNode] !== document) {
+			return;
+		}
+
+		if (!document[PropertySymbol.elementIdMap].has(id)) {
+			document[PropertySymbol.elementIdMap].set(id, { elements: [], htmlCollection: null });
+		}
+
+		const entry = document[PropertySymbol.elementIdMap].get(id);
+
+		// HTMLFormElement or HTMLSelectElement can be a proxy, but this can be the target of the proxy
+		// To make sure we use the proxy we can check for the property
+		const element = this[PropertySymbol.proxy] || this;
+
+		entry.elements.push(element);
+
+		if (entry.elements.length > 1) {
+			if (!entry.htmlCollection) {
+				entry.htmlCollection = new HTMLCollection<Element>(() => entry.elements);
+			}
+
+			if (!(id in window) || window[id] === entry.elements[0]) {
+				window[id] = entry.htmlCollection;
+			}
+		} else if (!(id in window) || window[id] === entry.htmlCollection) {
+			window[id] = element;
+		}
+	}
+
+	/**
+	 * Removes identifier from the window object.
+	 *
+	 * @param id Identifier.
+	 */
+	#removeIdentifierFromWindow(id: string): void {
+		if (!id) {
+			return;
+		}
+
+		const document = this[PropertySymbol.ownerDocument];
+		const window = document[PropertySymbol.ownerWindow];
+
+		// We should not add the identifier when inside a shadow root
+		if (this[PropertySymbol.rootNode] && this[PropertySymbol.rootNode] !== document) {
+			return;
+		}
+
+		const entry = document[PropertySymbol.elementIdMap].get(id);
+
+		if (entry) {
+			// HTMLFormElement or HTMLSelectElement can be a proxy, but this can be the target of the proxy
+			// To make sure we use the proxy we can check for the property
+			const element = this[PropertySymbol.proxy] || this;
+			const index = entry.elements.indexOf(element);
+
+			if (index !== -1) {
+				entry.elements.splice(index, 1);
+			}
+
+			if (entry.elements.length === 1) {
+				if (window[id] === entry.htmlCollection) {
+					window[id] = entry.elements[0];
 				}
-			} else if (node[PropertySymbol.nodeType] !== NodeTypeEnum.commentNode) {
-				const slot = this[PropertySymbol.shadowRoot].querySelector('slot:not([name])');
-				if (slot) {
-					slot.dispatchEvent(new Event('slotchange', { bubbles: true }));
+
+				entry.htmlCollection = null;
+			} else if (!entry.elements.length) {
+				document[PropertySymbol.elementIdMap].delete(id);
+
+				if (window[id] === element || window[id] === entry.htmlCollection) {
+					delete window[id];
 				}
 			}
-		} else if (
-			this[PropertySymbol.parentNode] &&
-			this[PropertySymbol.parentNode][PropertySymbol.shadowRoot] &&
-			this[PropertySymbol.attributes]?.[PropertySymbol.namedItems].has('slot') &&
-			node[PropertySymbol.nodeType] !== NodeTypeEnum.commentNode
-		) {
-			const shadowRoot = this[PropertySymbol.parentNode][PropertySymbol.shadowRoot];
-			const slot = shadowRoot.querySelector(
-				`slot[name="${
-					this[PropertySymbol.attributes][PropertySymbol.namedItems].get('slot')[
-						PropertySymbol.value
-					]
-				}"]`
-			);
+		}
+	}
+
+	/**
+	 * Triggered when child nodes are changed.
+	 *
+	 * @param addedOrRemovedNode Changed node.
+	 */
+	#onSlotChange(addedOrRemovedNode: Node): void {
+		const shadowRoot = this[PropertySymbol.shadowRoot];
+
+		if (!shadowRoot) {
+			return;
+		}
+
+		const slotName =
+			addedOrRemovedNode[PropertySymbol.attributes]?.[PropertySymbol.namedItems].get('slot')?.[
+				PropertySymbol.value
+			];
+		if (slotName) {
+			const slot = shadowRoot.querySelector(`slot[name="${slotName}"]`);
+			if (slot) {
+				slot.dispatchEvent(new Event('slotchange', { bubbles: true }));
+			}
+		} else if (addedOrRemovedNode[PropertySymbol.nodeType] !== NodeTypeEnum.commentNode) {
+			const slot = shadowRoot.querySelector('slot:not([name])');
 			if (slot) {
 				slot.dispatchEvent(new Event('slotchange', { bubbles: true }));
 			}

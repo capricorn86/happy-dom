@@ -16,7 +16,6 @@ import Node from '../../../src/nodes/node/Node.js';
 import HTMLCollection from '../../../src/nodes/element/HTMLCollection.js';
 import Element from '../../../src/nodes/element/Element.js';
 import NodeList from '../../../src/nodes/node/NodeList.js';
-import Attr from '../../../src/nodes/attr/Attr.js';
 import Event from '../../../src/event/Event.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
@@ -70,6 +69,62 @@ describe('Element', () => {
 		it('Sets the element "id" as an attribute.', () => {
 			element.id = 'id';
 			expect(element.getAttribute('id')).toBe('id');
+		});
+
+		it('Adds the "id" attribute as a property to Window.', () => {
+			element.setAttribute('id', 'element1');
+
+			expect(window['element1']).toBeUndefined();
+
+			document.body.appendChild(element);
+
+			expect(window['element1']).toBe(element);
+
+			document.body.removeChild(element);
+
+			expect(window['element1']).toBeUndefined();
+
+			document.body.appendChild(element);
+
+			expect(window['element1']).toBe(element);
+
+			element.setAttribute('id', 'element2');
+
+			expect(window['element1']).toBeUndefined();
+			expect(window['element2']).toBe(element);
+
+			const element2 = document.createElement('div');
+			element2.id = 'element2';
+
+			document.body.appendChild(element2);
+
+			expect(window['element2']).toBeInstanceOf(HTMLCollection);
+			expect(window['element2'].length).toBe(2);
+			expect(window['element2'][0]).toBe(element);
+			expect(window['element2'][1]).toBe(element2);
+
+			document.body.removeChild(element2);
+
+			expect(window['element2']).toBe(element);
+
+			document.body.appendChild(element2);
+
+			expect(window['element2']).toBeInstanceOf(HTMLCollection);
+			expect(window['element2'].length).toBe(2);
+
+			element2.removeAttribute('id');
+
+			expect(window['element2']).toBe(element);
+
+			element.removeAttribute('id');
+
+			expect(window['element2']).toBe(undefined);
+		});
+
+		it(`Doesn't the "id" attribute as a property to Window if it collides with Window properties.`, () => {
+			element.setAttribute('id', 'document');
+			document.body.appendChild(element);
+			expect(window['document']).toBe(document);
 		});
 	});
 
