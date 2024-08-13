@@ -15,23 +15,15 @@ import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigConten
  * Utility for converting an element to string.
  */
 export default class XMLSerializer {
-	private options = {
-		includeShadowRoots: false
+	public [PropertySymbol.options]: {
+		serializableShadowRoots: boolean;
+		shadowRoots: ShadowRoot[] | null;
+		allShadowRoots: boolean;
+	} = {
+		serializableShadowRoots: false,
+		shadowRoots: null,
+		allShadowRoots: false
 	};
-
-	/**
-	 * Constructor.
-	 *
-	 * @param [options] Options.
-	 * @param [options.includeShadowRoots] Include shadow roots.
-	 */
-	constructor(options?: { includeShadowRoots?: boolean }) {
-		if (options) {
-			if (options.includeShadowRoots !== undefined) {
-				this.options.includeShadowRoots = options.includeShadowRoots;
-			}
-		}
-	}
 
 	/**
 	 * Renders an element as HTML.
@@ -40,6 +32,8 @@ export default class XMLSerializer {
 	 * @returns Result.
 	 */
 	public serializeToString(root: Node): string {
+		const options = this[PropertySymbol.options];
+
 		switch (root[PropertySymbol.nodeType]) {
 			case NodeTypeEnum.elementNode:
 				const element = <Element>root;
@@ -60,10 +54,16 @@ export default class XMLSerializer {
 					innerHTML += this.serializeToString(node);
 				}
 
-				// TODO: Should we include closed shadow roots?
-				// We are currently only including open shadow roots.
-				if (this.options.includeShadowRoots && element.shadowRoot) {
-					innerHTML += `<template shadowrootmode="${element.shadowRoot[PropertySymbol.mode]}">`;
+				// TODO: Should we include closed shadow roots? We are currently only including open shadow roots.
+				if (
+					element.shadowRoot &&
+					(options.allShadowRoots ||
+						(options.serializableShadowRoots && element.shadowRoot[PropertySymbol.serializable]) ||
+						options.shadowRoots?.includes(element.shadowRoot))
+				) {
+					innerHTML += `<template shadowrootmode="${element.shadowRoot[PropertySymbol.mode]}"${
+						element.shadowRoot[PropertySymbol.serializable] ? ' shadowrootserializable=""' : ''
+					}>`;
 
 					for (const node of (<ShadowRoot>element.shadowRoot)[PropertySymbol.nodeArray]) {
 						innerHTML += this.serializeToString(node);

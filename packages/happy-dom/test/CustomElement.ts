@@ -7,6 +7,7 @@ import HTMLElement from '../src/nodes/html-element/HTMLElement.js';
 export default class CustomElement extends HTMLElement {
 	public static observedAttributesCallCount = 0;
 	public static shadowRootMode = 'open';
+	public static serializable = false;
 	public changedAttributes: Array<{
 		name: string;
 		oldValue: string | null;
@@ -19,7 +20,10 @@ export default class CustomElement extends HTMLElement {
 	 */
 	constructor() {
 		super();
-		this.internalShadowRoot = this.attachShadow({ mode: CustomElement.shadowRootMode });
+		this.internalShadowRoot = this.attachShadow({
+			mode: <'open'>CustomElement.shadowRootMode,
+			serializable: CustomElement.serializable
+		});
 
 		// Test to create a node while constructing this node.
 		this.ownerDocument.createElement('div');
@@ -62,8 +66,8 @@ export default class CustomElement extends HTMLElement {
             <div>
                 <span class="propKey">
                     key1 is "${this.getAttribute('key1')}" and key2 is "${this.getAttribute(
-											'key2'
-										)}".
+			'key2'
+		)}".
                 </span>
                 <span class="children">${Array.from(this.childNodes)
 									.map(

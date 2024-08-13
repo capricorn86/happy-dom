@@ -366,7 +366,7 @@ export default class Element
 	 * @returns HTML.
 	 */
 	public get innerHTML(): string {
-		return this.getInnerHTML();
+		return this.getHTML();
 	}
 
 	/**
@@ -460,22 +460,57 @@ export default class Element
 	/**
 	 * Returns inner HTML and optionally the content of shadow roots.
 	 *
-	 * This is a feature implemented in Chromium, but not supported by Mozilla yet.
-	 *
-	 * @see https://web.dev/declarative-shadow-dom/
-	 * @see https://chromestatus.com/feature/5191745052606464
+	 * @deprecated
 	 * @param [options] Options.
 	 * @param [options.includeShadowRoots] Set to "true" to include shadow roots.
 	 * @returns HTML.
 	 */
 	public getInnerHTML(options?: { includeShadowRoots?: boolean }): string {
-		const xmlSerializer = new XMLSerializer({
-			includeShadowRoots: options && options.includeShadowRoots
-		});
+		const xmlSerializer = new XMLSerializer();
+
+		if (options?.includeShadowRoots) {
+			xmlSerializer[PropertySymbol.options].allShadowRoots = true;
+		}
+
 		let xml = '';
+
 		for (const node of this[PropertySymbol.nodeArray]) {
 			xml += xmlSerializer.serializeToString(node);
 		}
+
+		return xml;
+	}
+
+	/**
+	 * Returns inner HTML and optionally the content of shadow roots.
+	 *
+	 * @param [options] Options.
+	 * @param [options.serializableShadowRoots] A boolean value that specifies whether to include serializable shadow roots. The default value is false.
+	 * @param [options.shadowRoots] An array of ShadowRoot objects to serialize. These are included regardless of whether they are marked as serializable, or if they are open or closed. The default value is an empty array.
+	 * @returns HTML.
+	 */
+	public getHTML(options?: {
+		serializableShadowRoots?: boolean;
+		shadowRoots?: ShadowRoot[];
+	}): string {
+		const xmlSerializer = new XMLSerializer();
+
+		if (options) {
+			if (options.serializableShadowRoots) {
+				xmlSerializer[PropertySymbol.options].serializableShadowRoots =
+					options.serializableShadowRoots;
+			}
+			if (options.shadowRoots) {
+				xmlSerializer[PropertySymbol.options].shadowRoots = options.shadowRoots;
+			}
+		}
+
+		let xml = '';
+
+		for (const node of this[PropertySymbol.nodeArray]) {
+			xml += xmlSerializer.serializeToString(node);
+		}
+
 		return xml;
 	}
 
@@ -488,6 +523,11 @@ export default class Element
 		clone[PropertySymbol.tagName] = this[PropertySymbol.tagName];
 		clone[PropertySymbol.localName] = this[PropertySymbol.localName];
 		clone[PropertySymbol.namespaceURI] = this[PropertySymbol.namespaceURI];
+
+		if (this[PropertySymbol.shadowRoot]?.[PropertySymbol.clonable]) {
+			clone[PropertySymbol.shadowRoot] = this[PropertySymbol.shadowRoot].cloneNode(deep);
+			clone[PropertySymbol.shadowRoot][PropertySymbol.host] = clone;
+		}
 
 		for (const item of this[PropertySymbol.attributes][PropertySymbol.namespaceItems].values()) {
 			clone[PropertySymbol.attributes].setNamedItem(item.cloneNode());
@@ -769,11 +809,41 @@ export default class Element
 	 *
 	 * @param init Shadow root init.
 	 * @param init.mode Shadow root mode.
+	 * @param [init.clonable] Clonable.
+	 * @param [init.delegateFocus] Delegate focus.
+	 * @param [init.serializable] Serializable.
+	 * @param [init.slotAssignment] Slot assignment.
 	 * @returns Shadow root.
 	 */
-	public attachShadow(init: { mode: string }): ShadowRoot {
+	public attachShadow(init: {
+		mode: 'open' | 'closed';
+		clonable?: boolean;
+		delegateFocus?: boolean;
+		serializable?: boolean;
+		slotAssignment?: 'named' | 'manual';
+	}): ShadowRoot {
+		if (!init) {
+			throw new TypeError(
+				"Failed to execute 'attachShadow' on 'Element': 1 argument required, but only 0 present."
+			);
+		}
+
+		if (!init.mode) {
+			throw new TypeError(
+				"Failed to execute 'attachShadow' on 'Element': Failed to read the 'mode' property from 'ShadowRootInit': Required member is undefined."
+			);
+		}
+
+		if (init.mode !== 'open' && init.mode !== 'closed') {
+			throw new TypeError(
+				`Failed to execute 'attachShadow' on 'Element': Failed to read the 'mode' property from 'ShadowRootInit': The provided value '${init.mode}' is not a valid enum value of type ShadowRootMode.`
+			);
+		}
+
 		if (this[PropertySymbol.shadowRoot]) {
-			throw new DOMException('Shadow root has already been attached.');
+			throw new DOMException(
+				"Failed to execute 'attachShadow' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree."
+			);
 		}
 
 		const shadowRoot = NodeFactory.createNode<ShadowRoot>(
@@ -785,6 +855,12 @@ export default class Element
 
 		shadowRoot[PropertySymbol.host] = this;
 		shadowRoot[PropertySymbol.mode] = init.mode;
+		shadowRoot[PropertySymbol.clonable] = !!init.clonable;
+		shadowRoot[PropertySymbol.delegatesFocus] = !!init.delegateFocus;
+		shadowRoot[PropertySymbol.serializable] = !!init.serializable;
+		shadowRoot[PropertySymbol.slotAssignment] =
+			init.slotAssignment === 'manual' ? 'manual' : 'named';
+
 		(<ShadowRoot>shadowRoot)[PropertySymbol.connectedToNode]();
 
 		return this[PropertySymbol.shadowRoot];

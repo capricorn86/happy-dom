@@ -22,6 +22,10 @@ export default class ShadowRoot extends DocumentFragment {
 	public [PropertySymbol.adoptedStyleSheets]: CSSStyleSheet[] = [];
 	public [PropertySymbol.mode] = 'open';
 	public [PropertySymbol.host]: Element | null = null;
+	public [PropertySymbol.clonable]: boolean = false;
+	public [PropertySymbol.delegatesFocus]: boolean = false;
+	public [PropertySymbol.serializable]: boolean = false;
+	public [PropertySymbol.slotAssignment]: 'named' | 'manual' = 'named';
 
 	/**
 	 * Returns mode.
@@ -39,6 +43,73 @@ export default class ShadowRoot extends DocumentFragment {
 	 */
 	public get host(): Element {
 		return this[PropertySymbol.host];
+	}
+
+	/**
+	 * Returns clonable.
+	 *
+	 * @returns Clonable.
+	 */
+	public get clonable(): boolean {
+		return this[PropertySymbol.clonable];
+	}
+
+	/**
+	 * Returns delegates focus.
+	 *
+	 * @returns Delegates focus.
+	 */
+	public get delegatesFocus(): boolean {
+		// TODO: Implement delegates focus
+		return this[PropertySymbol.delegatesFocus];
+	}
+
+	/**
+	 * Returns serializable.
+	 *
+	 * @returns Serializable.
+	 */
+	public get serializable(): boolean {
+		return this[PropertySymbol.serializable];
+	}
+
+	/**
+	 * Returns slot assignment.
+	 *
+	 * @returns Slot assignment.
+	 */
+	public get slotAssignment(): 'named' | 'manual' {
+		return this[PropertySymbol.slotAssignment];
+	}
+
+	/**
+	 * The element that's currently in full screen mode for this shadow tree.
+	 *
+	 * @returns Fullscreen element.
+	 */
+	public get fullscreenElement(): Element | null {
+		// TODO: Implement fullscreen element
+		return null;
+	}
+
+	/**
+	 * Returns the Element within the shadow tree that is currently being presented in picture-in-picture mode.
+	 *
+	 * @returns Picture-in-picture element.
+	 */
+	public get pictureInPictureElement(): Element | null {
+		// TODO: Implement picture-in-picture element
+		return null;
+	}
+
+	/**
+	 * Returns the Element set as the target for mouse events while the pointer is locked. null if lock is pending, pointer is unlocked, or if the target is in another tree.
+	 *
+	 * @returns Pointer lock element.
+	 */
+	public get pointerLockElement(): Element | null {
+		// TODO: Implement pointer lock element
+		return null;
 	}
 
 	/**
@@ -107,6 +178,33 @@ export default class ShadowRoot extends DocumentFragment {
 	}
 
 	/**
+	 * Returns an array of all Animation objects currently in effect, whose target elements are descendants of the shadow tree.
+	 *
+	 * @returns Array of animations.
+	 */
+	public getAnimations(): object[] {
+		// TODO: Implement getAnimations()
+		return [];
+	}
+
+	/**
+	 * Parses a string of HTML into a document fragment, without sanitization, which then replaces the shadowroot's original subtree. The HTML string may include declarative shadow roots, which would be parsed as template elements the HTML was set using ShadowRoot.innerHTML.
+	 *
+	 * @param html HTML.
+	 */
+	public setHTMLUnsafe(html: string): void {
+		// TODO: Implement support for declarative shadow roots
+
+		const childNodes = this[PropertySymbol.nodeArray];
+
+		while (childNodes.length) {
+			this.removeChild(childNodes[0]);
+		}
+
+		XMLParser.parse(this[PropertySymbol.ownerDocument], html, { rootNode: this });
+	}
+
+	/**
 	 * Converts to string.
 	 *
 	 * @returns String.
@@ -120,7 +218,11 @@ export default class ShadowRoot extends DocumentFragment {
 	 */
 	public override [PropertySymbol.cloneNode](deep = false): ShadowRoot {
 		const clone = <ShadowRoot>super[PropertySymbol.cloneNode](deep);
-		clone[PropertySymbol.mode] = this.mode;
+		clone[PropertySymbol.mode] = this[PropertySymbol.mode];
+		clone[PropertySymbol.clonable] = this[PropertySymbol.clonable];
+		clone[PropertySymbol.delegatesFocus] = this[PropertySymbol.delegatesFocus];
+		clone[PropertySymbol.serializable] = this[PropertySymbol.serializable];
+		clone[PropertySymbol.slotAssignment] = this[PropertySymbol.slotAssignment];
 		return clone;
 	}
 }

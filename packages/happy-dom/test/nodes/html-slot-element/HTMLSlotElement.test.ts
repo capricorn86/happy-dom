@@ -51,9 +51,80 @@ describe('HTMLSlotElement', () => {
 
 	describe('assign()', () => {
 		it("Sets the slot's manually assigned nodes to an ordered set of slottables.", () => {
-			const slot = <HTMLSlotElement>customElementWithSlot.shadowRoot?.querySelector('slot');
-			// TODO: Do nothing for now. We need to find an example of how it is expected to work before it can be implemented.
-			expect(slot.assign()).toBe(undefined);
+			/* eslint-disable jsdoc/require-jsdoc */
+			class CustomElement extends HTMLElement {
+				constructor() {
+					super();
+					this.attachShadow({ mode: 'open', slotAssignment: 'manual' });
+				}
+
+				public connectedCallback(): void {
+					(<ShadowRoot>this.shadowRoot).innerHTML = `
+                        <div>
+                            <span><slot name="slot1"></slot></span>
+                            <span><slot name="slot2"></slot></span>
+                            <span><slot></slot></span>
+                        </div>
+                    `;
+				}
+			}
+			/* eslint-enable jsdoc/require-jsdoc */
+
+			window.customElements.define('custom-element', CustomElement);
+
+			const customElement = <CustomElement>document.createElement('custom-element');
+
+			document.body.appendChild(customElement);
+
+			const slot1 = <HTMLSlotElement>customElement.shadowRoot?.querySelector('slot[name="slot1"]');
+			const slot2 = <HTMLSlotElement>customElement.shadowRoot?.querySelector('slot[name="slot2"]');
+			const slot3 = <HTMLSlotElement>customElement.shadowRoot?.querySelector('slot:not([name])');
+
+			const node1 = document.createElement('div');
+			const node2 = document.createTextNode('text');
+
+			slot1.assign(node1, node2);
+
+			expect(slot1.assignedNodes()).toEqual([]);
+			expect(slot1.assignedElements()).toEqual([]);
+
+			customElement.appendChild(node1);
+			customElement.appendChild(node2);
+
+			slot1.assign(node1, node2);
+
+			expect(slot1.assignedNodes()).toEqual([node1, node2]);
+			expect(slot1.assignedElements()).toEqual([node1]);
+
+			customElement.removeChild(node1);
+			customElement.removeChild(node2);
+
+			expect(slot1.assignedNodes()).toEqual([]);
+			expect(slot1.assignedElements()).toEqual([]);
+
+			customElement.appendChild(node1);
+			customElement.appendChild(node2);
+
+			slot1.assign(node1, node2);
+			slot2.assign(node1, node2);
+
+			expect(slot1.assignedNodes()).toEqual([]);
+			expect(slot2.assignedNodes()).toEqual([node1, node2]);
+			expect(slot3.assignedNodes()).toEqual([]);
+
+			expect(slot1.assignedElements()).toEqual([]);
+			expect(slot2.assignedElements()).toEqual([node1]);
+			expect(slot3.assignedElements()).toEqual([]);
+
+			slot3.assign(node1, node2);
+
+			expect(slot1.assignedNodes()).toEqual([]);
+			expect(slot2.assignedNodes()).toEqual([]);
+			expect(slot3.assignedNodes()).toEqual([node1, node2]);
+
+			expect(slot1.assignedElements()).toEqual([]);
+			expect(slot2.assignedElements()).toEqual([]);
+			expect(slot3.assignedElements()).toEqual([node1]);
 		});
 	});
 

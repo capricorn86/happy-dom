@@ -35,6 +35,7 @@ describe('Element', () => {
 	});
 
 	afterEach(() => {
+		CustomElement.serializable = false;
 		vi.restoreAllMocks();
 	});
 
@@ -448,15 +449,64 @@ describe('Element', () => {
 			expect(element.getInnerHTML()).toBe('EXPECTED_HTML');
 		});
 
-		it('Returns HTML of children and shadow roots of custom elements as a concatenated string.', () => {
-			const div = document.createElement('div');
-			const customElement = <CustomElement>document.createElement('custom-element');
-
-			div.appendChild(customElement);
-			document.body.appendChild(div);
+		it('Returns HTML of children and shadow roots of custom elements serialized to HTML when the option "includeShadowRoots" is set.', () => {
+			document.body.innerHTML = '<div><custom-element></custom-element></div>';
 
 			expect(
 				document.body.getInnerHTML({ includeShadowRoots: true }).includes('<span class="propKey">')
+			).toBe(true);
+		});
+	});
+
+	describe('getHTML()', () => {
+		it('Returns HTML of children as a concatenated string.', () => {
+			const div = document.createElement('div');
+
+			element.appendChild(div);
+
+			vi.spyOn(XMLSerializer.prototype, 'serializeToString').mockImplementation((rootElement) => {
+				expect(rootElement === div).toBe(true);
+				return 'EXPECTED_HTML';
+			});
+
+			expect(element.getHTML()).toBe('EXPECTED_HTML');
+		});
+
+		it('Returns HTML of children and shadow roots of custom elements serialized to HTML when the option "serializableShadowRoots" is set.', () => {
+			document.body.innerHTML = '<div><custom-element></custom-element></div>';
+
+			expect(
+				document.body.getHTML({ serializableShadowRoots: true }).includes('<span class="propKey">')
+			).toBe(false);
+
+			CustomElement.serializable = true;
+
+			document.body.innerHTML = '<div><custom-element></custom-element></div>';
+
+			expect(
+				document.body.getHTML({ serializableShadowRoots: true }).includes('<span class="propKey">')
+			).toBe(true);
+		});
+
+		it('Returns HTML of children and shadow roots of custom elements serialized to HTML when the option "shadowRoots" is set.', () => {
+			CustomElement.serializable = true;
+
+			document.body.innerHTML = '<div><custom-element></custom-element></div>';
+
+			expect(
+				document.body
+					.getHTML({
+						shadowRoots: []
+					})
+					.includes('<span class="propKey">')
+			).toBe(false);
+
+			expect(
+				document.body
+					.getHTML({
+						shadowRoots: [<ShadowRoot>document.body.querySelector('custom-element')?.shadowRoot]
+					})
+					.includes('<span class="propKey">')
 			).toBe(true);
 		});
 	});
@@ -1647,6 +1697,58 @@ describe('Element', () => {
 			expect(clone.children.length).toEqual(0);
 			expect(clone2.children.length).toBe(1);
 			expect(clone2.children[0].outerHTML).toBe('<div class="className"></div>');
+		});
+
+		it('Clones shadow root when it is "clonable".', () => {
+			/* eslint-disable jsdoc/require-jsdoc */
+			class CustomElementA extends window.HTMLElement {
+				constructor() {
+					super();
+					this.attachShadow({ mode: 'open', clonable: false });
+				}
+
+				public connectedCallback(): void {
+					(<ShadowRoot>this.shadowRoot).innerHTML = `
+                        <div>Test A</div>
+                    `;
+				}
+			}
+			class CustomElementB extends window.HTMLElement {
+				constructor() {
+					super();
+					if (!this.shadowRoot) {
+						this.attachShadow({ mode: 'open', clonable: true });
+					}
+				}
+
+				public connectedCallback(): void {
+					(<ShadowRoot>this.shadowRoot).innerHTML = `
+                        <div>Test B</div>
+                    `;
+				}
+			}
+			/* eslint-enable jsdoc/require-jsdoc */
+
+			window.customElements.define('custom-element-a', CustomElementA);
+			window.customElements.define('custom-element-b', CustomElementB);
+
+			const customElementA = document.createElement('custom-element-a');
+			const customElementB = document.createElement('custom-element-b');
+
+			element.appendChild(customElementA);
+			element.appendChild(customElementB);
+
+			document.body.innerHTML = `
+                <custom-element-a></custom-element-a>
+                <custom-element-b></custom-element-b>
+            `;
+
+			const clone = document.body.cloneNode(true);
+
+			expect(clone.children[0].shadowRoot?.innerHTML).toBe('');
+			expect(clone.children[0].shadowRoot?.host).toBe(clone.children[0]);
+			expect(clone.children[1].shadowRoot?.innerHTML.trim()).toBe('<div>Test B</div>');
+			expect(clone.children[1].shadowRoot?.host).toBe(clone.children[1]);
 		});
 	});
 

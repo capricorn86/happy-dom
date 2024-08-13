@@ -6,6 +6,7 @@ import Element from '../element/Element.js';
 import Node from '../node/Node.js';
 import Event from '../../event/Event.js';
 import Attr from '../attr/Attr.js';
+import NodeTypeEnum from '../node/NodeTypeEnum.js';
 
 /**
  * HTML Slot Element.
@@ -16,6 +17,9 @@ import Attr from '../attr/Attr.js';
 export default class HTMLSlotElement extends HTMLElement {
 	// Public properties
 	public declare cloneNode: (deep?: boolean) => HTMLSlotElement;
+
+	// Internal properties
+	public [PropertySymbol.assignedNodes]: Node[] = [];
 
 	// Events
 	public onslotchange: (event: Event) => void | null = null;
@@ -41,10 +45,35 @@ export default class HTMLSlotElement extends HTMLElement {
 	/**
 	 * Sets the slot's manually assigned nodes to an ordered set of slottables.
 	 *
-	 * @param _nodes Nodes.
+	 * @param nodes Nodes.
 	 */
-	public assign(..._nodes: Array<Text | Element>): void {
-		// TODO: Do nothing for now. We need to find an example of how it is expected to work before it can be implemented.
+	public assign(...nodes: Array<Text | Element>): void {
+		const shadowRoot = <ShadowRoot>this.getRootNode();
+
+		if (shadowRoot?.[PropertySymbol.slotAssignment] !== 'manual') {
+			return;
+		}
+
+		const host = shadowRoot.host;
+
+		for (const node of nodes) {
+			if (node instanceof Node) {
+				if (
+					host[PropertySymbol.nodeArray].includes(node) &&
+					node[PropertySymbol.nodeType] !== NodeTypeEnum.commentNode
+				) {
+					if (node[PropertySymbol.assignedToSlot]) {
+						const index =
+							node[PropertySymbol.assignedToSlot][PropertySymbol.assignedNodes].indexOf(node);
+						if (index !== -1) {
+							node[PropertySymbol.assignedToSlot][PropertySymbol.assignedNodes].splice(index, 1);
+						}
+					}
+					node[PropertySymbol.assignedToSlot] = this;
+					this[PropertySymbol.assignedNodes].push(node);
+				}
+			}
+		}
 	}
 
 	/**
@@ -127,13 +156,18 @@ export default class HTMLSlotElement extends HTMLElement {
 	 * @returns Nodes.
 	 */
 	#assignedNodes(name?: string, options?: { flatten?: boolean }): Node[] {
-		const host = (<ShadowRoot>this.getRootNode())?.host;
-		const flatten = !!options?.flatten;
+		const shadowRoot = <ShadowRoot>this.getRootNode();
 
-		if (!host) {
+		if (!shadowRoot?.host) {
 			return [];
 		}
 
+		if (shadowRoot[PropertySymbol.slotAssignment] === 'manual') {
+			return this[PropertySymbol.assignedNodes];
+		}
+
+		const host = shadowRoot.host;
+		const flatten = !!options?.flatten;
 		const assigned = [];
 
 		for (const slotNode of (<HTMLElement>host)[PropertySymbol.nodeArray]) {
@@ -161,13 +195,24 @@ export default class HTMLSlotElement extends HTMLElement {
 	 * @returns Nodes.
 	 */
 	#assignedElements(name?: string, options?: { flatten?: boolean }): Element[] {
-		const host = (<ShadowRoot>this.getRootNode())?.host;
-		const flatten = !!options?.flatten;
+		const shadowRoot = <ShadowRoot>this.getRootNode();
 
-		if (!host) {
+		if (!shadowRoot?.host) {
 			return [];
 		}
 
+		if (shadowRoot[PropertySymbol.slotAssignment] === 'manual') {
+			const elements: Element[] = [];
+			for (const node of this[PropertySymbol.assignedNodes]) {
+				if (node instanceof Element) {
+					elements.push(node);
+				}
+			}
+			return elements;
+		}
+
+		const host = shadowRoot.host;
+		const flatten = !!options?.flatten;
 		const assigned = [];
 
 		for (const slotElement of (<HTMLElement>host)[PropertySymbol.elementArray]) {

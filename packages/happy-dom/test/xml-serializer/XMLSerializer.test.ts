@@ -2,6 +2,7 @@ import XMLSerializer from '../../src/xml-serializer/XMLSerializer.js';
 import Window from '../../src/window/Window.js';
 import Document from '../../src/nodes/document/Document.js';
 import CustomElement from '../CustomElement.js';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 
 describe('XMLSerializer', () => {
@@ -130,7 +131,7 @@ describe('XMLSerializer', () => {
 			);
 		});
 
-		it('Includes shadow roots of custom elements when the "includeShadowRoots" sent in as an option.', () => {
+		it('Includes shadow roots of custom elements when "allShadowRoots" is set as an option.', () => {
 			const div = document.createElement('div');
 			const customElement1 = document.createElement('custom-element');
 
@@ -151,9 +152,11 @@ describe('XMLSerializer', () => {
 			// Connects the custom element to DOM which will trigger connectedCallback() on it
 			document.body.appendChild(div);
 
-			expect(
-				new XMLSerializer({ includeShadowRoots: true }).serializeToString(div).replace(/[\s]/gm, '')
-			).toBe(
+			const xmlSerializer = new XMLSerializer();
+
+			xmlSerializer[PropertySymbol.options].allShadowRoots = true;
+
+			expect(xmlSerializer.serializeToString(div).replace(/[\s]/gm, '')).toBe(
 				`
 					<div>
 						<custom-element key1="value1" key2="value2">

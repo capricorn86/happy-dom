@@ -26,6 +26,7 @@ import HTMLStyleElement from '../html-style-element/HTMLStyleElement.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
 import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
+import HTMLSlotElement from '../html-slot-element/HTMLSlotElement.js';
 
 /**
  * Node.
@@ -83,6 +84,7 @@ export default class Node extends EventTarget {
 	public [PropertySymbol.nodeArray]: Node[] = [];
 	public [PropertySymbol.elementArray]: Element[] = [];
 	public [PropertySymbol.childNodes]: NodeList<Node> | null = null;
+	public [PropertySymbol.assignedToSlot]: HTMLSlotElement | null = null;
 	public [PropertySymbol.cache]: {
 		querySelector: Map<string, ICachedQuerySelectorResult>;
 		querySelectorAll: Map<string, ICachedQuerySelectorAllResult>;
@@ -566,6 +568,14 @@ export default class Node extends EventTarget {
 			}
 		}
 
+		if (node[PropertySymbol.assignedToSlot]) {
+			const index = node[PropertySymbol.assignedToSlot][PropertySymbol.assignedNodes].indexOf(node);
+			if (index !== -1) {
+				node[PropertySymbol.assignedToSlot][PropertySymbol.assignedNodes].splice(index, 1);
+			}
+			node[PropertySymbol.assignedToSlot] = null;
+		}
+
 		node[PropertySymbol.disconnectedFromNode]();
 
 		// Mutation listeners
@@ -978,6 +988,12 @@ export default class Node extends EventTarget {
 			this[PropertySymbol.rootNode] = this[PropertySymbol.parentNode][PropertySymbol.rootNode];
 		}
 
+		// eslint-disable-next-line
+		if ((<any>this)[PropertySymbol.shadowRoot]) {
+			// eslint-disable-next-line
+			(<any>this)[PropertySymbol.shadowRoot][PropertySymbol.connectedToDocument]();
+		}
+
 		if (this.connectedCallback) {
 			const result = <void | Promise<void>>this.connectedCallback();
 
@@ -1010,6 +1026,12 @@ export default class Node extends EventTarget {
 
 		if (this[PropertySymbol.ownerDocument][PropertySymbol.activeElement] === <unknown>this) {
 			this[PropertySymbol.ownerDocument][PropertySymbol.activeElement] = null;
+		}
+
+		// eslint-disable-next-line
+		if ((<any>this)[PropertySymbol.shadowRoot]) {
+			// eslint-disable-next-line
+			(<any>this)[PropertySymbol.shadowRoot][PropertySymbol.disconnectedFromDocument]();
 		}
 
 		if (this.disconnectedCallback) {
