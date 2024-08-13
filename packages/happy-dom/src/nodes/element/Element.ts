@@ -1394,8 +1394,8 @@ export default class Element
 
 		const entry = document[PropertySymbol.elementIdMap].get(id);
 
-		// HTMLFormElement or HTMLSelectElement can be a proxy, but this can be the target of the proxy
-		// To make sure we use the proxy we can check for the property
+		// HTMLFormElement and HTMLSelectElement can be a proxy, but the scope can be the target and not the actual proxy
+		// To make sure we use the proxy we can check for the proxy property
 		const element = this[PropertySymbol.proxy] || this;
 
 		entry.elements.push(element);
@@ -1434,8 +1434,8 @@ export default class Element
 		const entry = document[PropertySymbol.elementIdMap].get(id);
 
 		if (entry) {
-			// HTMLFormElement or HTMLSelectElement can be a proxy, but this can be the target of the proxy
-			// To make sure we use the proxy we can check for the property
+			// HTMLFormElement and HTMLSelectElement can be a proxy, but the scope can be the target and not the actual proxy
+			// To make sure we use the proxy we can check for the proxy property
 			const element = this[PropertySymbol.proxy] || this;
 			const index = entry.elements.indexOf(element);
 
