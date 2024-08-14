@@ -30,25 +30,11 @@ export default class History {
 
 		const history = browserFrame[PropertySymbol.history];
 
-		if (history.length) {
-			for (let i = history.length - 1; i >= 0; i--) {
-				if (history[i].isCurrent) {
-					this.#currentHistoryItem = history[i];
-					break;
-				}
+		for (let i = history.length - 1; i >= 0; i--) {
+			if (history[i].isCurrent) {
+				this.#currentHistoryItem = history[i];
+				break;
 			}
-		} else {
-			const newHistoryItem = {
-				title: '',
-				href: ownerWindow[PropertySymbol.location].href,
-				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null,
-				isCurrent: true
-			};
-			history.push(newHistoryItem);
-			this.#currentHistoryItem = newHistoryItem;
 		}
 	}
 

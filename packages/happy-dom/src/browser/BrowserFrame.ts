@@ -15,6 +15,7 @@ import BrowserFrameExceptionObserver from './utilities/BrowserFrameExceptionObse
 import BrowserErrorCaptureEnum from './enums/BrowserErrorCaptureEnum.js';
 import Document from '../nodes/document/Document.js';
 import IHistoryItem from '../history/IHistoryItem.js';
+import HistoryScrollRestorationEnum from '../history/HistoryScrollRestorationEnum.js';
 
 /**
  * Browser frame.
@@ -24,13 +25,23 @@ export default class BrowserFrame implements IBrowserFrame {
 	public readonly parentFrame: BrowserFrame | null = null;
 	public readonly page: BrowserPage;
 	public readonly window: BrowserWindow;
-	public [PropertySymbol.history]: IHistoryItem[] = [];
 	public [PropertySymbol.asyncTaskManager] = new AsyncTaskManager();
 	public [PropertySymbol.exceptionObserver]: BrowserFrameExceptionObserver | null = null;
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
 	public [PropertySymbol.openerFrame]: IBrowserFrame | null = null;
 	public [PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
 	public [PropertySymbol.popup] = false;
+	public [PropertySymbol.history]: IHistoryItem[] = [
+		{
+			title: '',
+			href: 'about:blank',
+			state: null,
+			scrollRestoration: HistoryScrollRestorationEnum.auto,
+			method: 'GET',
+			formData: null,
+			isCurrent: true
+		}
+	];
 
 	/**
 	 * Constructor.

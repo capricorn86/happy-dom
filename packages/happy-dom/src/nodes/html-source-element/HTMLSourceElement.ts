@@ -13,8 +13,8 @@ export default class HTMLSourceElement extends HTMLElement {
 	 * @returns Height.
 	 */
 	public get height(): number {
-		const varlue = Number(this.getAttribute('height'));
-		return isNaN(varlue) ? 0 : varlue;
+		const value = Number(this.getAttribute('height'));
+		return isNaN(value) || value < 0 ? 0 : value;
 	}
 
 	/**
@@ -24,10 +24,7 @@ export default class HTMLSourceElement extends HTMLElement {
 	 */
 	public set height(value: number) {
 		const parsedValue = Number(value);
-		this.setAttribute(
-			'height',
-			isNaN(parsedValue) ? '0' : parsedValue < 0 ? '0' : String(parsedValue)
-		);
+		this.setAttribute('height', isNaN(parsedValue) || parsedValue < 0 ? '0' : String(parsedValue));
 	}
 
 	/**
@@ -36,8 +33,8 @@ export default class HTMLSourceElement extends HTMLElement {
 	 * @returns Width.
 	 */
 	public get width(): number {
-		const varlue = Number(this.getAttribute('width'));
-		return isNaN(varlue) ? 0 : varlue;
+		const value = Number(this.getAttribute('width'));
+		return isNaN(value) || value < 0 ? 0 : value;
 	}
 
 	/**
@@ -47,10 +44,7 @@ export default class HTMLSourceElement extends HTMLElement {
 	 */
 	public set width(value: number) {
 		const parsedValue = Number(value);
-		this.setAttribute(
-			'width',
-			isNaN(parsedValue) ? '0' : parsedValue < 0 ? '0' : String(parsedValue)
-		);
+		this.setAttribute('width', isNaN(parsedValue) || parsedValue < 0 ? '0' : String(parsedValue));
 	}
 
 	/**

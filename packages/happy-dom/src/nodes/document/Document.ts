@@ -47,6 +47,7 @@ import HTMLBodyElement from '../html-body-element/HTMLBodyElement.js';
 import HTMLHeadElement from '../html-head-element/HTMLHeadElement.js';
 import HTMLBaseElement from '../html-base-element/HTMLBaseElement.js';
 import ICachedResult from '../node/ICachedResult.js';
+import HTMLTitleElement from '../html-title-element/HTMLTitleElement.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -300,9 +301,9 @@ export default class Document extends Node {
 	 * @returns Title.
 	 */
 	public get title(): string {
-		const element = ParentNodeUtility.getElementByTagName(this, 'title');
+		const element = <HTMLTitleElement | null>ParentNodeUtility.getElementByTagName(this, 'title');
 		if (element) {
-			return element.textContent;
+			return element.text.trim();
 		}
 		return '';
 	}

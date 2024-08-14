@@ -32,14 +32,14 @@ export default class HTMLTemplateElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public get innerHTML(): string {
+	public override get innerHTML(): string {
 		return this.getHTML();
 	}
 
 	/**
 	 * @override
 	 */
-	public set innerHTML(html: string) {
+	public override set innerHTML(html: string) {
 		const content = <DocumentFragment>this[PropertySymbol.content];
 		const childNodes = content[PropertySymbol.nodeArray];
 
@@ -55,14 +55,14 @@ export default class HTMLTemplateElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public get firstChild(): Node {
+	public override get firstChild(): Node {
 		return this[PropertySymbol.content].firstChild;
 	}
 
 	/**
 	 * @override
 	 */
-	public get lastChild(): Node {
+	public override get lastChild(): Node {
 		return this[PropertySymbol.content].lastChild;
 	}
 

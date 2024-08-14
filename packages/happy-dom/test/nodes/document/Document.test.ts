@@ -290,17 +290,70 @@ describe('Document', () => {
 		});
 	});
 
-	describe('get title() and set title()', () => {
-		it('Returns and sets title.', () => {
-			document.title = 'test title';
-			expect(document.title).toBe('test title');
-			const title = <Element>document.head.querySelector('title');
-			expect(title.textContent).toBe('test title');
-			document.title = 'new title';
-			expect(document.title).toBe('new title');
-			expect(title.textContent).toBe('new title');
-			title.textContent = 'new title 2';
-			expect(document.title).toBe('new title 2');
+	describe('get title()', () => {
+		it('Returns title trimmed.', () => {
+			document.write(`<html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>
+                        Hello world!
+                    </title>
+                </head>
+                <body></body>
+            </html>`);
+
+			expect(document.title).toBe('Hello world!');
+		});
+
+		it('Returns empty string if no title is set.', () => {
+			document.write(`<html>
+                <head>
+                    <meta charset="utf-8">
+                </head>
+                <body></body>
+            </html>`);
+
+			expect(document.title).toBe('');
+		});
+
+		it('Should only return the data of Text nodes inside the HTMLTitleElement', () => {
+			document.write(`<html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>
+                        Hello world! <span class="highlight">Isn't this wonderful</span> really?
+                    </title>
+                </head>
+                <body></body>
+            </html>`);
+
+			expect(document.title).toBe('Hello world!  really?');
+		});
+	});
+
+	describe('set title()', () => {
+		it('Sets text content of HTMLTitleElement.', () => {
+			document.write(`<html><head><title>Hello world!</title></head><body></body></html>`);
+
+			document.title = '  New title!  ';
+
+			expect(document.documentElement.outerHTML).toBe(
+				'<html><head><title>  New title!  </title></head><body></body></html>'
+			);
+
+			expect(document.title).toBe('New title!');
+		});
+
+		it('Creates a new title element if it does not exist.', () => {
+			document.write(`<html><head></head><body></body></html>`);
+
+			document.title = '  New title!  ';
+
+			expect(document.documentElement.outerHTML).toBe(
+				'<html><head><title>  New title!  </title></head><body></body></html>'
+			);
+
+			expect(document.title).toBe('New title!');
 		});
 	});
 
