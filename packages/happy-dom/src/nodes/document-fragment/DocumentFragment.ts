@@ -24,7 +24,10 @@ export default class DocumentFragment extends Node {
 	public get children(): HTMLCollection<Element> {
 		if (!this[PropertySymbol.children]) {
 			const elements = this[PropertySymbol.elementArray];
-			this[PropertySymbol.children] = new HTMLCollection<Element>(() => elements);
+			this[PropertySymbol.children] = new HTMLCollection<Element>(
+				PropertySymbol.illegalConstructor,
+				() => elements
+			);
 		}
 		return this[PropertySymbol.children];
 	}

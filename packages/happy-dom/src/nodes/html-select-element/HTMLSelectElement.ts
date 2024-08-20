@@ -209,7 +209,10 @@ export default class HTMLSelectElement extends HTMLElement {
 	 */
 	public get options(): HTMLOptionsCollection {
 		if (!this[PropertySymbol.options]) {
-			this[PropertySymbol.options] = new HTMLOptionsCollection(this);
+			this[PropertySymbol.options] = new HTMLOptionsCollection(
+				PropertySymbol.illegalConstructor,
+				this
+			);
 		}
 
 		return this[PropertySymbol.options];
@@ -444,27 +447,30 @@ export default class HTMLSelectElement extends HTMLElement {
 	 */
 	public get selectedOptions(): HTMLCollection<HTMLOptionElement> {
 		if (!this[PropertySymbol.selectedOptions]) {
-			this[PropertySymbol.selectedOptions] = new HTMLCollection<HTMLOptionElement>(() => {
-				const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
+			this[PropertySymbol.selectedOptions] = new HTMLCollection<HTMLOptionElement>(
+				PropertySymbol.illegalConstructor,
+				() => {
+					const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
 
-				// If we hit the cache, we should recieve the same Array instance as before, which will then contain the selected options.
-				if (options[PropertySymbol.selectedOptions]) {
-					return options[PropertySymbol.selectedOptions];
-				}
-
-				const selectedOptions = [];
-
-				for (let i = 0, max = options.length; i < max; i++) {
-					const option = <HTMLOptionElement>options[i];
-					if (option[PropertySymbol.selectedness]) {
-						selectedOptions.push(option);
+					// If we hit the cache, we should recieve the same Array instance as before, which will then contain the selected options.
+					if (options[PropertySymbol.selectedOptions]) {
+						return options[PropertySymbol.selectedOptions];
 					}
+
+					const selectedOptions = [];
+
+					for (let i = 0, max = options.length; i < max; i++) {
+						const option = <HTMLOptionElement>options[i];
+						if (option[PropertySymbol.selectedness]) {
+							selectedOptions.push(option);
+						}
+					}
+
+					options[PropertySymbol.selectedOptions] = selectedOptions;
+
+					return selectedOptions;
 				}
-
-				options[PropertySymbol.selectedOptions] = selectedOptions;
-
-				return selectedOptions;
-			});
+			);
 		}
 
 		return this[PropertySymbol.selectedOptions];

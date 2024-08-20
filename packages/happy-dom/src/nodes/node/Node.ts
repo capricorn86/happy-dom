@@ -120,9 +120,7 @@ export default class Node extends EventTarget {
 		} else {
 			const ownerDocument = NodeFactory.pullOwnerDocument();
 			if (!ownerDocument) {
-				throw new Error(
-					'Failed to construct "Node": No owner document in queue. Please use "NodeFactory" to create instances of a Node.'
-				);
+				throw new TypeError('Illegal constructor');
 			}
 			this[PropertySymbol.ownerDocument] = ownerDocument;
 		}
@@ -180,7 +178,10 @@ export default class Node extends EventTarget {
 	 */
 	public get childNodes(): NodeList<Node> {
 		if (!this[PropertySymbol.childNodes]) {
-			this[PropertySymbol.childNodes] = new NodeList<Node>(this[PropertySymbol.nodeArray]);
+			this[PropertySymbol.childNodes] = new NodeList<Node>(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.nodeArray]
+			);
 		}
 		return this[PropertySymbol.childNodes];
 	}

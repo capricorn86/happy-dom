@@ -147,6 +147,7 @@ export default class HTMLTableElement extends HTMLElement {
 	public get rows(): HTMLCollection<HTMLTableRowElement> {
 		if (!this[PropertySymbol.rows]) {
 			this[PropertySymbol.rows] = new HTMLCollection<HTMLTableRowElement>(
+				PropertySymbol.illegalConstructor,
 				() =>
 					<HTMLTableRowElement[]>QuerySelector.querySelectorAll(this, 'tr')[PropertySymbol.items]
 			);
@@ -162,6 +163,7 @@ export default class HTMLTableElement extends HTMLElement {
 	public get tBodies(): HTMLCollection<HTMLTableSectionElement> {
 		if (!this[PropertySymbol.tBodies]) {
 			this[PropertySymbol.tBodies] = new HTMLCollection<HTMLTableSectionElement>(
+				PropertySymbol.illegalConstructor,
 				() =>
 					<HTMLTableSectionElement[]>(
 						QuerySelector.querySelectorAll(this, 'tbody')[PropertySymbol.items]

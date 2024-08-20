@@ -183,7 +183,7 @@ describe('DocumentFragment', () => {
 			vi.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
 				expect(parentNode).toBe(documentFragment);
 				expect(selector).toBe(expectedSelector);
-				return new NodeList<Element>([element]);
+				return new NodeList<Element>(PropertySymbol.illegalConstructor, [element]);
 			});
 
 			expect(Array.from(documentFragment.querySelectorAll(expectedSelector))).toEqual([element]);

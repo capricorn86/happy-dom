@@ -8,7 +8,7 @@ import * as PropertySymbol from '../../PropertySymbol.js';
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/TextTrackCue
  */
-export default class TextTrackCue extends EventTarget {
+export default abstract class TextTrackCue extends EventTarget {
 	// Public properties
 	public id: string = '';
 	public startTime: number = 0;
@@ -25,13 +25,13 @@ export default class TextTrackCue extends EventTarget {
 	/**
 	 * Constructor.
 	 *
-	 * @param startTime The start time for the cue.
-	 * @param endTime The end time for the cue.
+	 * @param [illegalConstructorSymbol] Illegal constructor symbol.
 	 */
-	constructor(startTime: number, endTime: number) {
+	constructor(illegalConstructorSymbol?: symbol) {
 		super();
-		this.startTime = startTime;
-		this.endTime = endTime;
+		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
+			throw new TypeError('Illegal constructor');
+		}
 	}
 
 	/**

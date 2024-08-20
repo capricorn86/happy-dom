@@ -84,7 +84,7 @@ export default class QuerySelector {
 		}
 
 		if (selector === null || selector === undefined) {
-			return new NodeList<Element>([]);
+			return new NodeList<Element>(PropertySymbol.illegalConstructor, []);
 		}
 
 		const cache = node[PropertySymbol.cache].querySelectorAll;
@@ -105,7 +105,7 @@ export default class QuerySelector {
 
 		const groups = SelectorParser.getSelectorGroups(selector);
 		const items: Element[] = [];
-		const nodeList = new NodeList<Element>(items);
+		const nodeList = new NodeList<Element>(PropertySymbol.illegalConstructor, items);
 		const matchesMap: Map<string, Element> = new Map();
 		const matchedPositions: string[] = [];
 		const cachedItem = {

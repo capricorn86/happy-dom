@@ -5,7 +5,7 @@ import { beforeEach, describe, it, expect } from 'vitest';
 import CanvasCaptureMediaStreamTrack from '../../../src/nodes/html-canvas-element/CanvasCaptureMediaStreamTrack.js';
 import Blob from '../../../src/file/Blob.js';
 import OffscreenCanvas from '../../../src/nodes/html-canvas-element/OffscreenCanvas.js';
-import MediaStream from '../../../src/nodes/html-canvas-element/MediaStream.js';
+import MediaStream from '../../../src/nodes/html-media-element/MediaStream.js';
 
 const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+ab12C3+1aBCdEf==';
 

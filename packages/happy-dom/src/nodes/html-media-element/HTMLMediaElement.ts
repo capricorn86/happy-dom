@@ -3,8 +3,14 @@ import Event from '../../event/Event.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import HTMLElement from '../html-element/HTMLElement.js';
+import TimeRanges from './TimeRanges.js';
+import DOMTokenList from '../element/DOMTokenList.js';
+import RemotePlayback from './RemotePlayback.js';
+import MediaStream from './MediaStream.js';
+import TextTrackList from './TextTrackList.js';
+import TextTrack from './TextTrack.js';
+import TextTrackKindEnum from './TextTrackKindEnum.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import TimeRange from './TimeRange.js';
 
 interface IMediaError {
 	code: number;
@@ -15,7 +21,7 @@ interface IMediaError {
  * HTML Media Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement.
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement
  *
  */
 export default class HTMLMediaElement extends HTMLElement {
@@ -56,24 +62,28 @@ export default class HTMLMediaElement extends HTMLElement {
 	public [PropertySymbol.muted] = false;
 	public [PropertySymbol.defaultMuted] = false;
 	public [PropertySymbol.preservesPitch] = true;
-	public [PropertySymbol.buffered] = new TimeRange();
+	public [PropertySymbol.buffered] = new TimeRanges(PropertySymbol.illegalConstructor);
 	public [PropertySymbol.duration] = NaN;
 	public [PropertySymbol.error]: IMediaError = null;
 	public [PropertySymbol.ended] = false;
 	public [PropertySymbol.networkState] = 0;
 	public [PropertySymbol.readyState] = 0;
-	public [PropertySymbol.textTracks]: object[] = [];
-	public [PropertySymbol.videoTracks]: object[] = [];
 	public [PropertySymbol.seeking] = false;
-	public [PropertySymbol.seekable] = new TimeRange();
-	public [PropertySymbol.played] = new TimeRange();
+	public [PropertySymbol.seekable] = new TimeRanges(PropertySymbol.illegalConstructor);
+	public [PropertySymbol.sinkId]: string = '';
+	public [PropertySymbol.played] = new TimeRanges(PropertySymbol.illegalConstructor);
+	public [PropertySymbol.remote] = new RemotePlayback();
+	public [PropertySymbol.controlsList]: DOMTokenList | null = null;
+	public [PropertySymbol.mediaKeys]: object | null = null;
+	public [PropertySymbol.srcObject]: MediaStream | null = null;
+	public [PropertySymbol.textTracks]: TextTrack[] = [];
 
 	/**
 	 * Returns buffered.
 	 *
 	 * @returns Buffered.
 	 */
-	public get buffered(): object {
+	public get buffered(): TimeRanges {
 		return this[PropertySymbol.buffered];
 	}
 
@@ -123,21 +133,12 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	/**
-	 * Returns textTracks.
+	 * Return a RemotePlayback object instance associated with the media element.
 	 *
-	 * @returns TextTracks.
+	 * @returns RemotePlayback.
 	 */
-	public get textTracks(): object[] {
-		return this[PropertySymbol.textTracks];
-	}
-
-	/**
-	 * Returns videoTracks.
-	 *
-	 * @returns VideoTracks.
-	 */
-	public get videoTracks(): object[] {
-		return this[PropertySymbol.videoTracks];
+	public get remote(): RemotePlayback {
+		return this[PropertySymbol.remote];
 	}
 
 	/**
@@ -154,8 +155,17 @@ export default class HTMLMediaElement extends HTMLElement {
 	 *
 	 * @returns Seekable.
 	 */
-	public get seekable(): object {
+	public get seekable(): TimeRanges {
 		return this[PropertySymbol.seekable];
+	}
+
+	/**
+	 * Returns sinkId.
+	 *
+	 * @returns SinkId.
+	 */
+	public get sinkId(): string {
+		return this[PropertySymbol.sinkId];
 	}
 
 	/**
@@ -163,7 +173,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	 *
 	 * @returns Played.
 	 */
-	public get played(): object {
+	public get played(): TimeRanges {
 		return this[PropertySymbol.played];
 	}
 
@@ -232,6 +242,79 @@ export default class HTMLMediaElement extends HTMLElement {
 			this.setAttribute('loop', '');
 		}
 	}
+
+	/**
+	 * Returns preload.
+	 *
+	 * @returns preload.
+	 */
+	public get preload(): string {
+		return this.getAttribute('preload') || 'auto';
+	}
+
+	/**
+	 * Sets preload.
+	 *
+	 * @param preload preload.
+	 */
+	public set preload(preload: string) {
+		this.setAttribute('preload', preload);
+	}
+
+	/**
+	 * Returns src.
+	 *
+	 * @returns Src.
+	 */
+	public get src(): string {
+		if (!this.hasAttribute('src')) {
+			return '';
+		}
+
+		try {
+			return new URL(this.getAttribute('src'), this[PropertySymbol.ownerDocument].location.href)
+				.href;
+		} catch (e) {
+			return this.getAttribute('src');
+		}
+	}
+
+	/**
+	 * Sets src.
+	 *
+	 * @param src Src.
+	 */
+	public set src(src: string) {
+		this.setAttribute('src', src);
+
+		if (Boolean(src)) {
+			this.dispatchEvent(new Event('canplay', { bubbles: false, cancelable: false }));
+			this.dispatchEvent(new Event('durationchange', { bubbles: false, cancelable: false }));
+		}
+	}
+
+	/**
+	 * Returns controlsList.
+	 *
+	 * @returns ControlsList.
+	 */
+	public get controlsList(): DOMTokenList {
+		if (this[PropertySymbol.controlsList] === null) {
+			this[PropertySymbol.controlsList] = new DOMTokenList(this, 'controlslist');
+		}
+
+		return this[PropertySymbol.controlsList];
+	}
+
+	/**
+	 * Returns mediaKeys.
+	 *
+	 * @returns MediaKeys.
+	 */
+	public get mediaKeys(): object | null {
+		return this[PropertySymbol.mediaKeys];
+	}
+
 	/**
 	 * Returns muted.
 	 *
@@ -287,25 +370,50 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	/**
-	 * Returns src.
+	 * Returns disableRemotePlayback.
 	 *
-	 * @returns Src.
+	 * @returns DisableRemotePlayback.
 	 */
-	public get src(): string {
-		return this.getAttribute('src') || '';
+	public get disableRemotePlayback(): boolean {
+		return this.getAttribute('disableremoteplayback') !== null;
 	}
 
 	/**
-	 * Sets src.
+	 * Sets disableRemotePlayback.
 	 *
-	 * @param src Src.
+	 * @param disableRemotePlayback DisableRemotePlayback.
 	 */
-	public set src(src: string) {
-		this.setAttribute('src', src);
-		if (Boolean(src)) {
-			this.dispatchEvent(new Event('canplay', { bubbles: false, cancelable: false }));
-			this.dispatchEvent(new Event('durationchange', { bubbles: false, cancelable: false }));
+	public set disableRemotePlayback(disableRemotePlayback: boolean) {
+		if (!disableRemotePlayback) {
+			this.removeAttribute('disableremoteplayback');
+		} else {
+			this.setAttribute('disableremoteplayback', '');
 		}
+	}
+
+	/**
+	 * A MediaStream representing the media to play or that has played in the current HTMLMediaElement, or null if not assigned.
+	 *
+	 * @returns MediaStream.
+	 */
+	public get srcObject(): MediaStream | null {
+		return this[PropertySymbol.srcObject];
+	}
+
+	/**
+	 * Returns text track list.
+	 *
+	 * @returns Text track list.
+	 */
+	public get textTracks(): TextTrackList {
+		const items = [];
+		for (const track of this[PropertySymbol.textTracks]) {
+			items.push(track);
+		}
+		for (const track of this.querySelectorAll('track')[PropertySymbol.items]) {
+			items.push(track.track);
+		}
+		return new TextTrackList(PropertySymbol.illegalConstructor, items);
 	}
 
 	/**
@@ -314,7 +422,12 @@ export default class HTMLMediaElement extends HTMLElement {
 	 * @returns CurrentrSrc.
 	 */
 	public get currentSrc(): string {
-		return this.src;
+		const src = this.src;
+		if (src) {
+			return src;
+		}
+		const sourceElement = this.querySelector('source');
+		return sourceElement ? sourceElement.src : '';
 	}
 
 	/**
@@ -355,7 +468,14 @@ export default class HTMLMediaElement extends HTMLElement {
 	 * @returns CrossOrigin.
 	 */
 	public get crossOrigin(): string {
-		return this.getAttribute('crossorigin');
+		const crossOrigin = this.getAttribute('crossorigin');
+		if (crossOrigin === 'use-credentials') {
+			return 'use-credentials';
+		}
+		if (crossOrigin !== null) {
+			return 'anonymous';
+		}
+		return null;
 	}
 
 	/**
@@ -364,15 +484,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	 * @param crossOrigin CrossOrigin.
 	 */
 	public set crossOrigin(crossOrigin: string | null) {
-		if (crossOrigin === null) {
-			return;
-		}
-
-		if (['', 'use-credentials', 'anonymous'].includes(crossOrigin)) {
-			this.setAttribute('crossorigin', crossOrigin);
-		} else {
-			this.setAttribute('crossorigin', 'anonymous');
-		}
+		this.setAttribute('crossorigin', crossOrigin);
 	}
 
 	/**
@@ -466,24 +578,6 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	/**
-	 * Returns preload.
-	 *
-	 * @returns preload.
-	 */
-	public get preload(): string {
-		return this.getAttribute('preload') || 'auto';
-	}
-
-	/**
-	 * Sets preload.
-	 *
-	 * @param preload preload.
-	 */
-	public set preload(preload: string) {
-		this.setAttribute('preload', preload);
-	}
-
-	/**
 	 * Returns paused.
 	 *
 	 * @returns Paused.
@@ -493,9 +587,38 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	/**
+	 * Adds a new text track to the media element.
+	 *
+	 * @param kind The kind of text track.
+	 * @param label The label of the text track.
+	 * @param language The language of the text track data.
+	 */
+	public addTextTrack(kind: TextTrackKindEnum, label?: string, language?: string): TextTrack {
+		if (arguments.length === 0) {
+			throw new TypeError(
+				`Failed to execute 'addTextTrack' on 'HTMLMediaElement': 1 argument required, but only 0 present.`
+			);
+		}
+		if (!TextTrackKindEnum[kind]) {
+			throw new TypeError(
+				`Failed to execute 'addTextTrack' on 'HTMLMediaElement': The provided value '${kind}' is not a valid enum value of type TextTrackKind.`
+			);
+		}
+		const track = new TextTrack(PropertySymbol.illegalConstructor);
+		track[PropertySymbol.kind] = kind;
+		track[PropertySymbol.label] = label || '';
+		track[PropertySymbol.language] = language || '';
+		this[PropertySymbol.textTracks].push(track);
+		return track;
+	}
+
+	/**
 	 * Pause played media.
 	 */
 	public pause(): void {
+		if (this[PropertySymbol.paused]) {
+			return;
+		}
 		this[PropertySymbol.paused] = true;
 		this.dispatchEvent(new Event('pause', { bubbles: false, cancelable: false }));
 	}
@@ -504,16 +627,32 @@ export default class HTMLMediaElement extends HTMLElement {
 	 * Start playing media.
 	 */
 	public async play(): Promise<void> {
+		if (!this[PropertySymbol.paused]) {
+			return;
+		}
 		this[PropertySymbol.paused] = false;
-		return Promise.resolve();
+		this.dispatchEvent(new Event('play', { bubbles: false, cancelable: false }));
+		this.dispatchEvent(new Event('playing', { bubbles: false, cancelable: false }));
 	}
 
 	/**
+	 * Reports how likely it is that the current browser will be able to play media of a given MIME type.
 	 *
-	 * @param _type
+	 * @param _type MIME type.
+	 * @returns Can play type.
 	 */
 	public canPlayType(_type: string): string {
+		// TODO: Implement this method
 		return '';
+	}
+
+	/**
+	 * Quickly seeks the media to the new time with precision tradeoff.
+	 *
+	 * @param _time Time.
+	 */
+	public fastSeek(_time: number): void {
+		// TODO: Implement this method
 	}
 
 	/**
@@ -524,10 +663,32 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	/**
+	 * Sets media keys.
 	 *
+	 * @param mediaKeys MediaKeys.
+	 * @returns Promise.
 	 */
-	public captureStream(): object {
-		return {};
+	public async setMediaKeys(mediaKeys: object | null): Promise<void> {
+		this[PropertySymbol.mediaKeys] = mediaKeys;
+	}
+
+	/**
+	 * Sets sink id.
+	 *
+	 * @param sinkId SinkId.
+	 * @returns Promise.
+	 */
+	public async setSinkId(sinkId: string): Promise<void> {
+		this[PropertySymbol.sinkId] = sinkId;
+	}
+
+	/**
+	 * Returns MediaStream, captures a stream of the media content.
+	 *
+	 * @returns MediaStream.
+	 */
+	public captureStream(): MediaStream {
+		return new MediaStream();
 	}
 
 	/**

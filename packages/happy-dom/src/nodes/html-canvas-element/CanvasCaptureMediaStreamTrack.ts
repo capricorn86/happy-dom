@@ -1,5 +1,6 @@
+import MediaStreamTrack from '../html-media-element/MediaStreamTrack.js';
 import HTMLCanvasElement from './HTMLCanvasElement.js';
-import MediaStreamTrack from './MediaStreamTrack.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * Canvas Capture Media Stream Track.
@@ -7,18 +8,27 @@ import MediaStreamTrack from './MediaStreamTrack.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/CanvasCaptureMediaStreamTrack
  */
 export default class CanvasCaptureMediaStreamTrack extends MediaStreamTrack {
-	public canvas: HTMLCanvasElement;
+	public [PropertySymbol.canvas]: HTMLCanvasElement;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param options Options.
-	 * @param options.kind 'audio' or 'video'.
-	 * @param options.canvas Canvas.
+	 * @param [illegalConstructorSymbol] Illegal constructor symbol.
+	 * @param [canvas] Canvas.
 	 */
-	constructor(options: { kind: 'audio' | 'video'; canvas: HTMLCanvasElement }) {
-		super(options);
-		this.canvas = options.canvas;
+	constructor(illegalConstructorSymbol?: symbol, canvas: HTMLCanvasElement | null = null) {
+		super(illegalConstructorSymbol);
+
+		this[PropertySymbol.canvas] = <HTMLCanvasElement>canvas;
+	}
+
+	/**
+	 * Returns the canvas.
+	 *
+	 * @returns Canvas.
+	 */
+	public get canvas(): HTMLCanvasElement {
+		return this[PropertySymbol.canvas];
 	}
 
 	/**
@@ -35,7 +45,7 @@ export default class CanvasCaptureMediaStreamTrack extends MediaStreamTrack {
 	 */
 	public clone(): CanvasCaptureMediaStreamTrack {
 		const clone = <CanvasCaptureMediaStreamTrack>super.clone();
-		clone.canvas = this.canvas;
+		clone[PropertySymbol.canvas] = this.canvas;
 		return clone;
 	}
 }

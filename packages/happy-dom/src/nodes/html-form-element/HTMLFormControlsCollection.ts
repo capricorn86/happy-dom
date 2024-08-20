@@ -14,13 +14,15 @@ export default class HTMLFormControlsCollection extends HTMLCollection<
 	THTMLFormControlElement | RadioNodeList
 > {
 	private declare [PropertySymbol.ownerElement]: HTMLFormElement;
+
 	/**
 	 * Constructor.
 	 *
-	 * @param ownerElement Form element.
+	 * @param [illegalConstructorSymbol] Illegal constructor symbol.
+	 * @param [ownerElement] Form element.
 	 */
-	constructor(ownerElement: HTMLFormElement) {
-		super(() => ownerElement[PropertySymbol.getFormControlItems]());
+	constructor(illegalConstructorSymbol?: symbol, ownerElement: HTMLFormElement | null = null) {
+		super(illegalConstructorSymbol, () => ownerElement[PropertySymbol.getFormControlItems]());
 		this[PropertySymbol.ownerElement] = ownerElement;
 	}
 

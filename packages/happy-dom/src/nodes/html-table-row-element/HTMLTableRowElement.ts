@@ -23,6 +23,7 @@ export default class HTMLTableRowElement extends HTMLElement {
 	public get cells(): HTMLCollection<HTMLTableCellElement> {
 		if (!this[PropertySymbol.cells]) {
 			this[PropertySymbol.cells] = new HTMLCollection<HTMLTableCellElement>(
+				PropertySymbol.illegalConstructor,
 				() =>
 					<HTMLTableCellElement[]>(
 						QuerySelector.querySelectorAll(this, 'td,th')[PropertySymbol.items]

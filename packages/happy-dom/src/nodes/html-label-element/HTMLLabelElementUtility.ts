@@ -39,6 +39,6 @@ export default class HTMLLabelElementUtility {
 			parent = parent[PropertySymbol.parentNode];
 		}
 
-		return new NodeList<HTMLLabelElement>(labels);
+		return new NodeList<HTMLLabelElement>(PropertySymbol.illegalConstructor, labels);
 	}
 }

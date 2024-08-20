@@ -19,6 +19,7 @@ import BrowserWindow from '../../../src/window/BrowserWindow.js';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 import THTMLFormControlElement from '../../../src/nodes/html-form-element/THTMLFormControlElement.js';
 import HTMLOutputElement from '../../../src/nodes/html-output-element/HTMLOutputElement.js';
+import * as PropertySymbol from '../../../src/PropertySymbol.js';
 
 describe('HTMLFormElement', () => {
 	let window: Window;
@@ -172,12 +173,12 @@ describe('HTMLFormElement', () => {
 			expect(elements.item(7) === root.children[7]).toBe(true);
 			expect(elements.item(8) === root.children[8]).toBe(true);
 
-			const radioNodeList1 = new RadioNodeList([
+			const radioNodeList1 = new RadioNodeList(PropertySymbol.illegalConstructor, [
 				<THTMLFormControlElement>root.children[2],
 				<THTMLFormControlElement>root.children[3],
 				<THTMLFormControlElement>root.children[4]
 			]);
-			const radioNodeList2 = new RadioNodeList([
+			const radioNodeList2 = new RadioNodeList(PropertySymbol.illegalConstructor, [
 				<THTMLFormControlElement>root.children[5],
 				<THTMLFormControlElement>root.children[6],
 				<THTMLFormControlElement>root.children[7]
@@ -249,12 +250,12 @@ describe('HTMLFormElement', () => {
 			expect(elements[15] === anotherRoot.children[6]).toBe(true);
 			expect(elements[16] === anotherRoot.children[7]).toBe(true);
 
-			const anotherRadioNodeList1 = new RadioNodeList([
+			const anotherRadioNodeList1 = new RadioNodeList(PropertySymbol.illegalConstructor, [
 				<THTMLFormControlElement>anotherRoot.children[2],
 				<THTMLFormControlElement>anotherRoot.children[3],
 				<THTMLFormControlElement>anotherRoot.children[4]
 			]);
-			const anotherRadioNodeList2 = new RadioNodeList([
+			const anotherRadioNodeList2 = new RadioNodeList(PropertySymbol.illegalConstructor, [
 				<THTMLFormControlElement>anotherRoot.children[5],
 				<THTMLFormControlElement>anotherRoot.children[6],
 				<THTMLFormControlElement>anotherRoot.children[7]
@@ -342,7 +343,7 @@ describe('HTMLFormElement', () => {
 			expect(elements.item(3) === root.children[3]).toBe(true);
 			expect(elements.item(4) === root.children[4]).toBe(true);
 
-			const radioNodeList = new RadioNodeList([
+			const radioNodeList = new RadioNodeList(PropertySymbol.illegalConstructor, [
 				<THTMLFormControlElement>root.children[1],
 				<THTMLFormControlElement>root.children[2],
 				<THTMLFormControlElement>root.children[3]
@@ -427,7 +428,7 @@ describe('HTMLFormElement', () => {
 			expect(elements[3].form === element).toBe(true);
 			expect(elements[4].form === element).toBe(true);
 
-			const radioNodeList = new RadioNodeList([
+			const radioNodeList = new RadioNodeList(PropertySymbol.illegalConstructor, [
 				<THTMLFormControlElement>root.children[1],
 				<THTMLFormControlElement>root.children[2],
 				<THTMLFormControlElement>root.children[3]

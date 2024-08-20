@@ -35,6 +35,7 @@ export default class HTMLFieldSetElement extends HTMLElement {
 	public get elements(): HTMLCollection<THTMLFieldSetElement> {
 		if (!this[PropertySymbol.elements]) {
 			this[PropertySymbol.elements] = new HTMLCollection<THTMLFieldSetElement>(
+				PropertySymbol.illegalConstructor,
 				() =>
 					<THTMLFieldSetElement[]>(
 						QuerySelector.querySelectorAll(this, 'input,button,textarea,select')[

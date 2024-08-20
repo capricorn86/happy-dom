@@ -47,10 +47,11 @@ export default class MediaStreamTrack extends EventTarget {
 		| 'text' = '';
 	public enabled = true;
 	public readonly id: string = Crypto.randomUUID();
-	public readonly kind: 'audio' | 'video' = 'video';
 	public muted = false;
 	public readyState: 'live' | 'ended' = 'live';
 	public label: string = '';
+	public [PropertySymbol.label]: string = '';
+	public [PropertySymbol.kind]: 'audio' | 'video' = 'video';
 	public [PropertySymbol.constraints]: object = {};
 	public [PropertySymbol.capabilities]: IMediaTrackCapabilities = JSON.parse(
 		JSON.stringify(CAPABILITIES)
@@ -65,12 +66,23 @@ export default class MediaStreamTrack extends EventTarget {
 	/**
 	 * Constructor.
 	 *
-	 * @param options Options.
-	 * @param options.kind 'audio' or 'video'.
+	 * @param [illegalConstructorSymbol] Illegal constructor symbol.
 	 */
-	constructor(options: { kind: 'audio' | 'video' }) {
+	constructor(illegalConstructorSymbol?: symbol) {
 		super();
-		this.kind = options.kind;
+
+		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
+			throw new TypeError('Illegal constructor');
+		}
+	}
+
+	/**
+	 * Returns the kind of the track.
+	 *
+	 * @returns Kind.
+	 */
+	public get kind(): 'audio' | 'video' {
+		return this[PropertySymbol.kind];
 	}
 
 	/**
@@ -116,7 +128,10 @@ export default class MediaStreamTrack extends EventTarget {
 	 * @returns Clone.
 	 */
 	public clone(): MediaStreamTrack {
-		const clone = new (<typeof MediaStreamTrack>this.constructor)({ kind: this.kind });
+		const clone = new (<typeof MediaStreamTrack>this.constructor)(
+			PropertySymbol.illegalConstructor
+		);
+		clone[PropertySymbol.kind] = this[PropertySymbol.kind];
 		clone[PropertySymbol.constraints] = this[PropertySymbol.constraints];
 		clone[PropertySymbol.capabilities] = this[PropertySymbol.capabilities];
 		clone[PropertySymbol.settings] = this[PropertySymbol.settings];

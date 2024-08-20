@@ -92,6 +92,7 @@ export default class ParentNodeUtility {
 		className: string
 	): HTMLCollection<Element> {
 		return new HTMLCollection(
+			PropertySymbol.illegalConstructor,
 			() => QuerySelector.querySelectorAll(parentNode, `.${className}`)[PropertySymbol.items]
 		);
 	}
@@ -151,7 +152,7 @@ export default class ParentNodeUtility {
 			return items;
 		};
 
-		return new HTMLCollection<T>(query);
+		return new HTMLCollection<T>(PropertySymbol.illegalConstructor, query);
 	}
 
 	/**
@@ -215,7 +216,7 @@ export default class ParentNodeUtility {
 			return items;
 		};
 
-		return new HTMLCollection(query);
+		return new HTMLCollection(PropertySymbol.illegalConstructor, query);
 	}
 
 	/**

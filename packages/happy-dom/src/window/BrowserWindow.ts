@@ -1,11 +1,12 @@
 import { Buffer } from 'buffer';
 import { webcrypto } from 'crypto';
-import VM from 'vm';
-import VMGlobalPropertyScript from './VMGlobalPropertyScript.js';
 import Stream from 'stream';
 import { ReadableStream } from 'stream/web';
 import { URLSearchParams } from 'url';
+import VM from 'vm';
+import ClassMethodBinder from '../ClassMethodBinder.js';
 import * as PropertySymbol from '../PropertySymbol.js';
+import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 import Base64 from '../base64/Base64.js';
 import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
@@ -67,6 +68,8 @@ import File from '../file/File.js';
 import FileReaderImplementation from '../file/FileReader.js';
 import FormData from '../form-data/FormData.js';
 import History from '../history/History.js';
+import IntersectionObserver from '../intersection-observer/IntersectionObserver.js';
+import IntersectionObserverEntry from '../intersection-observer/IntersectionObserverEntry.js';
 import Location from '../location/Location.js';
 import MediaQueryList from '../match-media/MediaQueryList.js';
 import MutationObserver from '../mutation-observer/MutationObserver.js';
@@ -126,6 +129,15 @@ import HTMLLIElement from '../nodes/html-li-element/HTMLLIElement.js';
 import HTMLLinkElementImplementation from '../nodes/html-link-element/HTMLLinkElement.js';
 import HTMLMapElement from '../nodes/html-map-element/HTMLMapElement.js';
 import HTMLMediaElement from '../nodes/html-media-element/HTMLMediaElement.js';
+import MediaStream from '../nodes/html-media-element/MediaStream.js';
+import MediaStreamTrack from '../nodes/html-media-element/MediaStreamTrack.js';
+import RemotePlayback from '../nodes/html-media-element/RemotePlayback.js';
+import TextTrack from '../nodes/html-media-element/TextTrack.js';
+import TextTrackCue from '../nodes/html-media-element/TextTrackCue.js';
+import TextTrackCueList from '../nodes/html-media-element/TextTrackCueList.js';
+import TextTrackList from '../nodes/html-media-element/TextTrackList.js';
+import TimeRanges from '../nodes/html-media-element/TimeRanges.js';
+import VTTCueImplementation from '../nodes/html-media-element/VTTCue.js';
 import HTMLMenuElement from '../nodes/html-menu-element/HTMLMenuElement.js';
 import HTMLMetaElement from '../nodes/html-meta-element/HTMLMetaElement.js';
 import HTMLMeterElement from '../nodes/html-meter-element/HTMLMeterElement.js';
@@ -189,13 +201,10 @@ import XMLHttpRequestUpload from '../xml-http-request/XMLHttpRequestUpload.js';
 import XMLSerializer from '../xml-serializer/XMLSerializer.js';
 import CrossOriginBrowserWindow from './CrossOriginBrowserWindow.js';
 import INodeJSGlobal from './INodeJSGlobal.js';
+import VMGlobalPropertyScript from './VMGlobalPropertyScript.js';
 import WindowBrowserSettingsReader from './WindowBrowserSettingsReader.js';
 import WindowErrorUtility from './WindowErrorUtility.js';
 import WindowPageOpenUtility from './WindowPageOpenUtility.js';
-import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
-import ClassMethodBinder from '../ClassMethodBinder.js';
-import IntersectionObserver from '../intersection-observer/IntersectionObserver.js';
-import IntersectionObserverEntry from '../intersection-observer/IntersectionObserverEntry.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -451,10 +460,23 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly XMLHttpRequest: new () => XMLHttpRequestImplementation;
 	public readonly DOMParser: new () => DOMParserImplementation;
 	public readonly Range: new () => RangeImplementation;
+	public readonly VTTCue: new (
+		startTime: number,
+		endTime: number,
+		text: string
+	) => VTTCueImplementation;
+	public readonly TextTrack = TextTrack;
+	public readonly TextTrackCue = TextTrackCue;
+	public readonly TextTrackCueList = TextTrackCueList;
 	public readonly FileReader: new () => FileReaderImplementation;
 	public readonly Image: typeof ImageImplementation;
 	public readonly DocumentFragment: typeof DocumentFragmentImplementation;
 	public readonly Audio: typeof AudioImplementation;
+	public readonly TimeRanges = TimeRanges;
+	public readonly RemotePlayback = RemotePlayback;
+	public readonly MediaStream = MediaStream;
+	public readonly MediaStreamTrack = MediaStreamTrack;
+	public readonly TextTrackList = TextTrackList;
 
 	// Events
 	public onload: ((event: Event) => void) | null = null;
@@ -630,6 +652,11 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 				super(window);
 			}
 		}
+		class VTTCue extends VTTCueImplementation {
+			constructor(startTime: number, endTime: number, text: string) {
+				super(window, startTime, endTime, text);
+			}
+		}
 		class HTMLScriptElement extends HTMLScriptElementImplementation {
 			constructor() {
 				super(browserFrame);
@@ -687,6 +714,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this.DocumentFragment = DocumentFragment;
 		this.FileReader = FileReader;
 		this.DOMParser = DOMParser;
+		this.VTTCue = VTTCue;
 		this.XMLHttpRequest = XMLHttpRequest;
 		this.Range = Range;
 		this.Audio = Audio;

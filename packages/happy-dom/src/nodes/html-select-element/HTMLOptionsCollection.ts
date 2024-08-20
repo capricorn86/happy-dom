@@ -16,10 +16,12 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 	/**
 	 * Constructor.
 	 *
-	 * @param ownerElement Select element.
+	 * @param [illegalConstructorSymbol] Illegal constructor symbol.
+	 * @param [ownerElement] Select element.
 	 */
-	constructor(ownerElement: HTMLSelectElement) {
+	constructor(illegalConstructorSymbol?: symbol, ownerElement: HTMLSelectElement | null = null) {
 		super(
+			illegalConstructorSymbol,
 			() =>
 				<HTMLOptionElement[]>(
 					QuerySelector.querySelectorAll(ownerElement, 'option')[PropertySymbol.items]

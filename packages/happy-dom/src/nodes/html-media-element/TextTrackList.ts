@@ -1,15 +1,21 @@
-import ClassMethodBinder from '../../ClassMethodBinder.js';
+import TextTrack from './TextTrack.js';
+import EventTarget from '../../event/EventTarget.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import Node from './Node.js';
+import ClassMethodBinder from '../../ClassMethodBinder.js';
 
 /**
- * NodeList.
+ * TextTrackList.
  *
- * @see https://developer.mozilla.org/en-US/docs/Web/API/NodeList
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/TextTrackList
  */
-class NodeList<T extends Node> {
-	[index: number]: T;
-	public [PropertySymbol.items]: T[];
+export default class TextTrackList extends EventTarget {
+	// Internal properties
+	public [PropertySymbol.items]: TextTrack[] = [];
+
+	// Events
+	public onaddtrack: (event: Event) => void = null;
+	public onchange: (event: Event) => void = null;
+	public onremovetrack: (event: Event) => void = null;
 
 	/**
 	 * Constructor.
@@ -17,7 +23,9 @@ class NodeList<T extends Node> {
 	 * @param [illegalConstructorSymbol] Illegal constructor symbol.
 	 * @param [items] Items.
 	 */
-	constructor(illegalConstructorSymbol?: symbol, items: T[] = []) {
+	constructor(illegalConstructorSymbol?: symbol, items: TextTrack[] = []) {
+		super();
+
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}
@@ -25,14 +33,10 @@ class NodeList<T extends Node> {
 		this[PropertySymbol.items] = items;
 
 		// This only works for one level of inheritance, but it should be fine as there is no collection that goes deeper according to spec.
-		ClassMethodBinder.bindMethods(
-			this,
-			this.constructor !== NodeList ? [NodeList, this.constructor] : [NodeList],
-			{
-				bindSymbols: true,
-				forwardToPrototype: true
-			}
-		);
+		ClassMethodBinder.bindMethods(this, [TextTrackList], {
+			bindSymbols: true,
+			forwardToPrototype: true
+		});
 
 		return new Proxy(this, {
 			get: (target, property) => {
@@ -109,9 +113,9 @@ class NodeList<T extends Node> {
 	}
 
 	/**
-	 * Returns length.
+	 * Returns the number of TextTrack objects in the TextTrackList.
 	 *
-	 * @returns Length.
+	 * @returns Number of TextTrack objects.
 	 */
 	public get length(): number {
 		return this[PropertySymbol.items].length;
@@ -123,7 +127,7 @@ class NodeList<T extends Node> {
 	 * @returns `Symbol.toStringTag`.
 	 */
 	public get [Symbol.toStringTag](): string {
-		return 'NodeList';
+		return 'TextTrackList';
 	}
 
 	/**
@@ -132,7 +136,7 @@ class NodeList<T extends Node> {
 	 * @returns `[object NodeList]`.
 	 */
 	public toLocaleString(): string {
-		return '[object NodeList]';
+		return '[object TextTrackList]';
 	}
 
 	/**
@@ -141,17 +145,7 @@ class NodeList<T extends Node> {
 	 * @returns `[object NodeList]`.
 	 */
 	public toString(): string {
-		return '[object NodeList]';
-	}
-
-	/**
-	 * Returns item by index.
-	 *
-	 * @param index Index.
-	 */
-	public item(index: number): T {
-		const nodes = this[PropertySymbol.items];
-		return index >= 0 && nodes[index] ? <T>nodes[index] : null;
+		return '[object TextTrackList]';
 	}
 
 	/**
@@ -159,47 +153,23 @@ class NodeList<T extends Node> {
 	 *
 	 * @returns Iterator.
 	 */
-	public [Symbol.iterator](): IterableIterator<T> {
-		const items = <T[]>this[PropertySymbol.items];
+	public [Symbol.iterator](): IterableIterator<TextTrack> {
+		const items = <TextTrack[]>this[PropertySymbol.items];
 		return items[Symbol.iterator]();
 	}
 
 	/**
-	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.
+	 * Returns the TextTrack found within the TextTrackList whose id matches the specified string. If no match is found, null is returned.
 	 *
-	 * @returns Iterator.
+	 * @param id Text track cue identifier.
+	 * @returns TextTrack.
 	 */
-	public values(): IterableIterator<T> {
-		return (<T[]>this[PropertySymbol.items]).values();
-	}
-
-	/**
-	 * Returns an iterator, allowing you to go through all key/value pairs contained in this object.
-	 *
-	 * @returns Iterator.
-	 */
-	public entries(): IterableIterator<[number, T]> {
-		return (<T[]>this[PropertySymbol.items]).entries();
-	}
-
-	/**
-	 * Executes a provided callback function once for each DOMTokenList element.
-	 *
-	 * @param callback Function.
-	 * @param thisArg thisArg.
-	 */
-	public forEach(callback: (currentValue, currentIndex, listObj) => void, thisArg?: this): void {
-		return (<T[]>this[PropertySymbol.items]).forEach(callback, thisArg);
-	}
-
-	/**
-	 * Returns an iterator, allowing you to go through all keys of the key/value pairs contained in this object.
-	 *
-	 * @returns Iterator.
-	 */
-	public keys(): IterableIterator<number> {
-		return (<T[]>this[PropertySymbol.items]).keys();
+	public getTrackById(id: string): TextTrack | null {
+		for (const cue of this[PropertySymbol.items]) {
+			if (cue.id === id) {
+				return cue;
+			}
+		}
+		return null;
 	}
 }
-
-export default NodeList;

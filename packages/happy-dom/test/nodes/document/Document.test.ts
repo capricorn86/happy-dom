@@ -627,7 +627,7 @@ describe('Document', () => {
 			vi.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
 				expect(parentNode === document).toBe(true);
 				expect(selector).toEqual(expectedSelector);
-				return new NodeList([element]);
+				return new NodeList(PropertySymbol.illegalConstructor, [element]);
 			});
 
 			const result = document.querySelectorAll(expectedSelector);
@@ -677,7 +677,7 @@ describe('Document', () => {
 				(parentNode, requestedClassName) => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedClassName).toEqual(className);
-					return new HTMLCollection(() => [element]);
+					return new HTMLCollection(PropertySymbol.illegalConstructor, () => [element]);
 				}
 			);
 
@@ -696,7 +696,7 @@ describe('Document', () => {
 				(parentNode, requestedTagName) => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedTagName).toEqual(tagName);
-					return new HTMLCollection(() => [element]);
+					return new HTMLCollection(PropertySymbol.illegalConstructor, () => [element]);
 				}
 			);
 

@@ -197,7 +197,10 @@ export default class HTMLFormElement extends HTMLElement {
 	 */
 	public get elements(): HTMLFormControlsCollection {
 		if (!this[PropertySymbol.elements]) {
-			this[PropertySymbol.elements] = new HTMLFormControlsCollection(this);
+			this[PropertySymbol.elements] = new HTMLFormControlsCollection(
+				PropertySymbol.illegalConstructor,
+				this
+			);
 		}
 		return this[PropertySymbol.elements];
 	}
@@ -560,7 +563,7 @@ export default class HTMLFormElement extends HTMLElement {
 			return namedItems[0];
 		}
 
-		return new RadioNodeList(namedItems);
+		return new RadioNodeList(PropertySymbol.illegalConstructor, namedItems);
 	}
 
 	/**

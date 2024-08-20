@@ -1,10 +1,10 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import CanvasCaptureMediaStreamTrack from './CanvasCaptureMediaStreamTrack.js';
-import MediaStream from './MediaStream.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Blob from '../../file/Blob.js';
 import OffscreenCanvas from './OffscreenCanvas.js';
 import Event from '../../event/Event.js';
+import MediaStream from '../html-media-element/MediaStream.js';
 
 const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+ab12C3+1aBCdEf==';
 
@@ -67,11 +67,9 @@ export default class HTMLCanvasElement extends HTMLElement {
 	 */
 	public captureStream(frameRate?: number): MediaStream {
 		const stream = new MediaStream();
-		const track = new CanvasCaptureMediaStreamTrack({
-			kind: 'video',
-			canvas: this
-		});
+		const track = new CanvasCaptureMediaStreamTrack(PropertySymbol.illegalConstructor, this);
 
+		track[PropertySymbol.kind] = 'video';
 		track[PropertySymbol.capabilities].deviceId = DEVICE_ID;
 		track[PropertySymbol.capabilities].aspectRatio.max = this.width;
 		track[PropertySymbol.capabilities].height.max = this.height;

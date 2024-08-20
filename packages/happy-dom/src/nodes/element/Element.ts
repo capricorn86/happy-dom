@@ -220,7 +220,10 @@ export default class Element
 	public get children(): HTMLCollection<Element> {
 		if (!this[PropertySymbol.children]) {
 			const elements = this[PropertySymbol.elementArray];
-			this[PropertySymbol.children] = new HTMLCollection<Element>(() => elements);
+			this[PropertySymbol.children] = new HTMLCollection<Element>(
+				PropertySymbol.illegalConstructor,
+				() => elements
+			);
 		}
 		return this[PropertySymbol.children];
 	}
@@ -1478,7 +1481,10 @@ export default class Element
 
 		if (entry.elements.length > 1) {
 			if (!entry.htmlCollection) {
-				entry.htmlCollection = new HTMLCollection<Element>(() => entry.elements);
+				entry.htmlCollection = new HTMLCollection<Element>(
+					PropertySymbol.illegalConstructor,
+					() => entry.elements
+				);
 			}
 
 			if (!(id in window) || window[id] === entry.elements[0]) {

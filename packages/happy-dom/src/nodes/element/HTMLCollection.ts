@@ -17,9 +17,14 @@ export default class HTMLCollection<T extends Element, NamedItem = T> {
 	/**
 	 * Constructor.
 	 *
+	 * @param [illegalConstructorSymbol] Illegal constructor symbol.
 	 * @param query Query function.
 	 */
-	constructor(query: () => T[]) {
+	constructor(illegalConstructorSymbol?: symbol, query: () => T[] = () => []) {
+		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
+			throw new TypeError('Illegal constructor');
+		}
+
 		this[PropertySymbol.query] = query;
 
 		// This only works for one level of inheritance, but it should be fine as there is no collection that goes deeper according to spec.
