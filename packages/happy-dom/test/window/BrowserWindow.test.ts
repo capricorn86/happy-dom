@@ -1628,6 +1628,7 @@ describe('BrowserWindow', () => {
 			await new Promise((resolve) => {
 				newWindow.addEventListener('load', () => {
 					expect(newWindow.document.body.innerHTML).toBe('Test');
+					expect(newWindow.opener).toBe(window);
 					resolve(null);
 				});
 			});
