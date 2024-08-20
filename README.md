@@ -46,7 +46,10 @@ And much more..
 
 <p align="center"><b>Gold Sponsors</b></p>
 
-<p align="center"><a href="https://rtvision.com"><img alt="RT Vision" width="100px" src="https://avatars.githubusercontent.com/u/8292810?s=200&v=4"></a></p>
+<p align="center">
+    <a href="https://rtvision.com"><img alt="RT Vision" width="100px" src="https://avatars.githubusercontent.com/u/8292810?s=200&v=4"></a>
+    <a href="https://opensource.microsoft.com"><img alt="Microsoft" width="100px" src="https://avatars.githubusercontent.com/u/6154722?s=200&v=4"></a>
+</p>
 
 <p align="center"><b>Sponsors</b></p>
 
