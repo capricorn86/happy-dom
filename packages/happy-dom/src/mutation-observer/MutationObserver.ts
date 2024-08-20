@@ -1,7 +1,7 @@
 import * as PropertySymbol from '../PropertySymbol.js';
 import Node from '../nodes/node/Node.js';
 import IMutationObserverInit from './IMutationObserverInit.js';
-import MutationListener from './MutationListener.js';
+import MutationObserverListener from './MutationObserverListener.js';
 import MutationRecord from './MutationRecord.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 
@@ -12,7 +12,7 @@ import BrowserWindow from '../window/BrowserWindow.js';
  */
 export default class MutationObserver {
 	#callback: (records: MutationRecord[], observer: MutationObserver) => void;
-	#listeners: MutationListener[] = [];
+	#listeners: MutationObserverListener[] = [];
 	#window: BrowserWindow | null = null;
 
 	/**
@@ -104,7 +104,7 @@ export default class MutationObserver {
 			}
 		}
 
-		const listener = new MutationListener({
+		const listener = new MutationObserverListener({
 			window: this.#window,
 			options,
 			callback: this.#callback.bind(this),
@@ -115,10 +115,12 @@ export default class MutationObserver {
 		this.#listeners.push(listener);
 
 		// Stores all observers on the window object, so that they can be disconnected when the window is closed.
-		this.#window[PropertySymbol.mutationObservers].push(this);
+		if (!this.#window[PropertySymbol.mutationObservers].includes(this)) {
+			this.#window[PropertySymbol.mutationObservers].push(this);
+		}
 
 		// Starts observing target node.
-		(<Node>target)[PropertySymbol.observe](listener);
+		(<Node>target)[PropertySymbol.observeMutations](listener.mutationListener);
 	}
 
 	/**
@@ -129,19 +131,19 @@ export default class MutationObserver {
 			return;
 		}
 
+		for (const listener of this.#listeners) {
+			(<Node>listener.target)[PropertySymbol.unobserveMutations](listener.mutationListener);
+			listener.destroy();
+		}
+
+		this.#listeners = [];
+
 		const mutationObservers = this.#window[PropertySymbol.mutationObservers];
 		const index = mutationObservers.indexOf(this);
 
 		if (index !== -1) {
 			mutationObservers.splice(index, 1);
 		}
-
-		for (const listener of this.#listeners) {
-			(<Node>listener.target)[PropertySymbol.unobserve](listener);
-			listener.destroy();
-		}
-
-		this.#listeners = [];
 	}
 
 	/**

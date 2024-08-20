@@ -1,13 +1,26 @@
 import CharacterData from '../character-data/CharacterData.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
+import Document from '../document/Document.js';
 
 /**
  * Comment node.
  */
 export default class Comment extends CharacterData {
 	public [PropertySymbol.nodeType] = NodeTypeEnum.commentNode;
-	public cloneNode: (deep?: boolean) => Comment;
+	public declare cloneNode: (deep?: boolean) => Comment;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param [ownerDocument] Owner document.
+	 * @param [data] Data.
+	 */
+	constructor(ownerDocument?: Document, data?: string) {
+		super(ownerDocument);
+
+		this[PropertySymbol.data] = data !== undefined ? String(data) : '';
+	}
 
 	/**
 	 * Node name.

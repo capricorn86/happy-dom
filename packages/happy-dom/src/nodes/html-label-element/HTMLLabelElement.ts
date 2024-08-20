@@ -3,6 +3,8 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
+import HTMLInputElement from '../html-input-element/HTMLInputElement.js';
+import Document from '../document/Document.js';
 import MouseEvent from '../../event/events/MouseEvent.js';
 
 /**
@@ -13,7 +15,7 @@ import MouseEvent from '../../event/events/MouseEvent.js';
  */
 export default class HTMLLabelElement extends HTMLElement {
 	// Public properties
-	public cloneNode: (deep?: boolean) => HTMLLabelElement;
+	public declare cloneNode: (deep?: boolean) => HTMLLabelElement;
 
 	/**
 	 * Returns a string containing the ID of the labeled control. This reflects the "for" attribute.
@@ -42,13 +44,32 @@ export default class HTMLLabelElement extends HTMLElement {
 	 *
 	 * @returns Control element.
 	 */
-	public get control(): HTMLElement {
-		const htmlFor = this.htmlFor;
-		if (htmlFor) {
-			const control = <HTMLElement>this[PropertySymbol.ownerDocument].getElementById(htmlFor);
-			return control !== this ? control : null;
+	public get control(): HTMLElement | null {
+		const htmlFor = this.getAttribute('for');
+		if (htmlFor !== null) {
+			if (!htmlFor || !this[PropertySymbol.isConnected]) {
+				return null;
+			}
+			const control = <HTMLElement | null>(
+				(<Document>this[PropertySymbol.rootNode]).getElementById(htmlFor)
+			);
+			if (control) {
+				switch (control[PropertySymbol.tagName]) {
+					case 'INPUT':
+						return (<HTMLInputElement>control).type !== 'hidden' ? control : null;
+					case 'BUTTON':
+					case 'METER':
+					case 'OUTPUT':
+					case 'PROGRESS':
+					case 'SELECT':
+					case 'TEXTAREA':
+						return control;
+					default:
+						return null;
+				}
+			}
 		}
-		return <HTMLElement>(
+		return <HTMLElement | null>(
 			this.querySelector('button,input:not([type="hidden"]),meter,output,progress,select,textarea')
 		);
 	}
@@ -58,8 +79,8 @@ export default class HTMLLabelElement extends HTMLElement {
 	 *
 	 * @returns Form.
 	 */
-	public get form(): HTMLFormElement {
-		return <HTMLFormElement>this[PropertySymbol.formNode];
+	public get form(): HTMLFormElement | null {
+		return (<HTMLInputElement>this.control)?.form || null;
 	}
 
 	/**

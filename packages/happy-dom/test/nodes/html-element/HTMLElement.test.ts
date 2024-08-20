@@ -25,8 +25,8 @@ describe('HTMLElement', () => {
 	});
 
 	describe('Object.prototype.toString', () => {
-		it('Returns `[object HTMLElement]`', () => {
-			expect(Object.prototype.toString.call(element)).toBe('[object HTMLElement]');
+		it('Returns `[object HTMLDivElement]`', () => {
+			expect(Object.prototype.toString.call(element)).toBe('[object HTMLDivElement]');
 		});
 	});
 
@@ -489,11 +489,11 @@ describe('HTMLElement', () => {
 			expect(parent.children.length).toBe(1);
 
 			expect(parent.children[0] instanceof CustomElement).toBe(true);
-			expect(parent.children[0].shadowRoot.children.length).toBe(0);
+			expect(parent.children[0].shadowRoot?.children.length).toBe(0);
 
 			document.body.appendChild(parent);
 
-			expect(parent.children[0].shadowRoot.children.length).toBe(2);
+			expect(parent.children[0].shadowRoot?.children.length).toBe(2);
 		});
 
 		it('Copies all properties from the unknown element to the new instance.', () => {
@@ -510,13 +510,12 @@ describe('HTMLElement', () => {
 			attribute1.value = 'test';
 			element.attributes.setNamedItem(attribute1);
 
-			const childNodes = element.childNodes;
-			const children = element.children;
 			const rootNode = (element[PropertySymbol.rootNode] = document.createElement('div'));
-			const formNode = (element[PropertySymbol.formNode] = document.createElement('div'));
-			const selectNode = (element[PropertySymbol.selectNode] = document.createElement('div'));
-			const textAreaNode = (element[PropertySymbol.textAreaNode] = document.createElement('div'));
-			const observers = element[PropertySymbol.observers];
+			const formNode = (element[PropertySymbol.formNode] = document.createElement('form'));
+			const selectNode = (element[PropertySymbol.selectNode] = document.createElement('select'));
+			const textAreaNode = (element[PropertySymbol.textAreaNode] =
+				document.createElement('textarea'));
+			const mutationListeners = element[PropertySymbol.mutationListeners];
 			const isValue = (element[PropertySymbol.isValue] = 'test');
 
 			window.customElements.define('custom-element', CustomElement);
@@ -529,13 +528,17 @@ describe('HTMLElement', () => {
 			expect(customElement.isConnected).toBe(true);
 			expect(customElement.shadowRoot?.children.length).toBe(2);
 
-			expect(customElement.childNodes === childNodes).toBe(true);
-			expect(customElement.children === children).toBe(true);
+			expect(customElement.childNodes.length).toBe(2);
+			expect(customElement.childNodes[0]).toBe(child1);
+			expect(customElement.childNodes[1]).toBe(child2);
+			expect(customElement.children.length).toBe(2);
+			expect(customElement.children[0]).toBe(child1);
+			expect(customElement.children[1]).toBe(child2);
 			expect(customElement[PropertySymbol.rootNode] === rootNode).toBe(true);
 			expect(customElement[PropertySymbol.formNode] === formNode).toBe(true);
 			expect(customElement[PropertySymbol.selectNode] === selectNode).toBe(true);
 			expect(customElement[PropertySymbol.textAreaNode] === textAreaNode).toBe(true);
-			expect(customElement[PropertySymbol.observers] === observers).toBe(true);
+			expect(customElement[PropertySymbol.mutationListeners] === mutationListeners).toBe(true);
 			expect(customElement[PropertySymbol.isValue] === isValue).toBe(true);
 			expect(customElement.attributes.length).toBe(1);
 			expect(customElement.attributes[0] === attribute1).toBe(true);

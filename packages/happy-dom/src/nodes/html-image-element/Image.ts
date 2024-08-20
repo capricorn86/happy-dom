@@ -1,3 +1,4 @@
+import Document from '../document/Document.js';
 import HTMLImageElement from './HTMLImageElement.js';
 
 /**
@@ -10,11 +11,12 @@ export default class Image extends HTMLImageElement {
 	/**
 	 * Constructor.
 	 *
+	 * @param [ownerDocument] Owner document.
 	 * @param [width] Width.
 	 * @param [height] Height.
 	 */
-	constructor(width: number = null, height: number = null) {
-		super();
+	constructor(ownerDocument?: Document, width: number = null, height: number = null) {
+		super(ownerDocument);
 
 		if (width !== null) {
 			this.width = width;

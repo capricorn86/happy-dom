@@ -14,6 +14,8 @@ import IReloadOptions from './types/IReloadOptions.js';
 import BrowserFrameExceptionObserver from './utilities/BrowserFrameExceptionObserver.js';
 import BrowserErrorCaptureEnum from './enums/BrowserErrorCaptureEnum.js';
 import Document from '../nodes/document/Document.js';
+import IHistoryItem from '../history/IHistoryItem.js';
+import HistoryScrollRestorationEnum from '../history/HistoryScrollRestorationEnum.js';
 
 /**
  * Browser frame.
@@ -29,6 +31,17 @@ export default class BrowserFrame implements IBrowserFrame {
 	public [PropertySymbol.openerFrame]: IBrowserFrame | null = null;
 	public [PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
 	public [PropertySymbol.popup] = false;
+	public [PropertySymbol.history]: IHistoryItem[] = [
+		{
+			title: '',
+			href: 'about:blank',
+			state: null,
+			scrollRestoration: HistoryScrollRestorationEnum.auto,
+			method: 'GET',
+			formData: null,
+			isCurrent: true
+		}
+	];
 
 	/**
 	 * Constructor.
@@ -160,16 +173,56 @@ export default class BrowserFrame implements IBrowserFrame {
 	}
 
 	/**
+	 * Navigates back in history.
+	 *
+	 * @param [options] Options.
+	 */
+	public goBack(options?: IGoToOptions): Promise<Response | null> {
+		return BrowserFrameNavigator.navigateBack({
+			windowClass: BrowserWindow,
+			frame: this,
+			goToOptions: options
+		});
+	}
+
+	/**
+	 * Navigates forward in history.
+	 *
+	 * @param [options] Options.
+	 */
+	public goForward(options?: IGoToOptions): Promise<Response | null> {
+		return BrowserFrameNavigator.navigateForward({
+			windowClass: BrowserWindow,
+			frame: this,
+			goToOptions: options
+		});
+	}
+
+	/**
+	 * Navigates a delta in history.
+	 *
+	 * @param steps Steps.
+	 * @param [options] Options.
+	 */
+	public goSteps(steps?: number, options?: IGoToOptions): Promise<Response | null> {
+		return BrowserFrameNavigator.navigateSteps({
+			windowClass: BrowserWindow,
+			frame: this,
+			steps: steps,
+			goToOptions: options
+		});
+	}
+
+	/**
 	 * Reloads the current frame.
 	 *
 	 * @param [options] Options.
 	 * @returns Response.
 	 */
-	public reload(options: IReloadOptions): Promise<Response | null> {
-		return BrowserFrameNavigator.navigate({
+	public reload(options?: IReloadOptions): Promise<Response | null> {
+		return BrowserFrameNavigator.reload({
 			windowClass: BrowserWindow,
 			frame: this,
-			url: this.url,
 			goToOptions: options
 		});
 	}

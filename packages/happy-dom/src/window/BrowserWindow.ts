@@ -1,67 +1,22 @@
-import CustomElementRegistry from '../custom-element/CustomElementRegistry.js';
-import * as PropertySymbol from '../PropertySymbol.js';
-import DocumentImplementation from '../nodes/document/Document.js';
-import HTMLDocumentImplementation from '../nodes/html-document/HTMLDocument.js';
-import XMLDocumentImplementation from '../nodes/xml-document/XMLDocument.js';
-import SVGDocumentImplementation from '../nodes/svg-document/SVGDocument.js';
-import Node from '../nodes/node/Node.js';
-import NodeFilter from '../tree-walker/NodeFilter.js';
-import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
-import HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement.js';
-import HTMLFormElementImplementation from '../nodes/html-form-element/HTMLFormElement.js';
-import HTMLElement from '../nodes/html-element/HTMLElement.js';
-import HTMLUnknownElement from '../nodes/html-unknown-element/HTMLUnknownElement.js';
-import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
-import HTMLSelectElement from '../nodes/html-select-element/HTMLSelectElement.js';
-import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement.js';
-import HTMLLinkElementImplementation from '../nodes/html-link-element/HTMLLinkElement.js';
-import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement.js';
-import HTMLSlotElement from '../nodes/html-slot-element/HTMLSlotElement.js';
-import HTMLLabelElement from '../nodes/html-label-element/HTMLLabelElement.js';
-import HTMLMetaElement from '../nodes/html-meta-element/HTMLMetaElement.js';
-import HTMLMediaElement from '../nodes/html-media-element/HTMLMediaElement.js';
-import HTMLAudioElement from '../nodes/html-audio-element/HTMLAudioElement.js';
-import HTMLVideoElement from '../nodes/html-video-element/HTMLVideoElement.js';
-import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement.js';
-import HTMLIFrameElementImplementation from '../nodes/html-iframe-element/HTMLIFrameElement.js';
-import HTMLDialogElement from '../nodes/html-dialog-element/HTMLDialogElement.js';
-import SVGSVGElement from '../nodes/svg-element/SVGSVGElement.js';
-import SVGElement from '../nodes/svg-element/SVGElement.js';
-import SVGGraphicsElement from '../nodes/svg-element/SVGGraphicsElement.js';
-import HTMLScriptElementImplementation from '../nodes/html-script-element/HTMLScriptElement.js';
-import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement.js';
-import CharacterData from '../nodes/character-data/CharacterData.js';
-import DocumentType from '../nodes/document-type/DocumentType.js';
-import NodeIterator from '../tree-walker/NodeIterator.js';
-import TreeWalker from '../tree-walker/TreeWalker.js';
-import Event from '../event/Event.js';
-import CustomEvent from '../event/events/CustomEvent.js';
-import AnimationEvent from '../event/events/AnimationEvent.js';
-import KeyboardEvent from '../event/events/KeyboardEvent.js';
-import MessageEvent from '../event/events/MessageEvent.js';
-import ProgressEvent from '../event/events/ProgressEvent.js';
-import MediaQueryListEvent from '../event/events/MediaQueryListEvent.js';
-import HashChangeEvent from '../event/events/HashChangeEvent.js';
-import TouchEvent from '../event/events/TouchEvent.js';
-import Touch from '../event/Touch.js';
-import EventTarget from '../event/EventTarget.js';
-import MessagePort from '../event/MessagePort.js';
+import { Buffer } from 'buffer';
+import { webcrypto } from 'crypto';
+import Stream from 'stream';
+import { ReadableStream } from 'stream/web';
 import { URLSearchParams } from 'url';
-import URL from '../url/URL.js';
-import Location from '../location/Location.js';
-import MutationObserver from '../mutation-observer/MutationObserver.js';
-import MutationRecord from '../mutation-observer/MutationRecord.js';
-import XMLSerializer from '../xml-serializer/XMLSerializer.js';
-import ResizeObserver from '../resize-observer/ResizeObserver.js';
-import Blob from '../file/Blob.js';
-import File from '../file/File.js';
-import DOMException from '../exception/DOMException.js';
-import History from '../history/History.js';
-import CSSStyleSheet from '../css/CSSStyleSheet.js';
-import CSSStyleDeclaration from '../css/declaration/CSSStyleDeclaration.js';
+import VM from 'vm';
+import ClassMethodBinder from '../ClassMethodBinder.js';
+import * as PropertySymbol from '../PropertySymbol.js';
+import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
+import Base64 from '../base64/Base64.js';
+import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
+import IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import Clipboard from '../clipboard/Clipboard.js';
+import ClipboardItem from '../clipboard/ClipboardItem.js';
 import CSS from '../css/CSS.js';
-import CSSUnitValue from '../css/CSSUnitValue.js';
 import CSSRule from '../css/CSSRule.js';
+import CSSStyleSheet from '../css/CSSStyleSheet.js';
+import CSSUnitValue from '../css/CSSUnitValue.js';
+import CSSStyleDeclaration from '../css/declaration/CSSStyleDeclaration.js';
 import CSSContainerRule from '../css/rules/CSSContainerRule.js';
 import CSSFontFaceRule from '../css/rules/CSSFontFaceRule.js';
 import CSSKeyframeRule from '../css/rules/CSSKeyframeRule.js';
@@ -69,91 +24,187 @@ import CSSKeyframesRule from '../css/rules/CSSKeyframesRule.js';
 import CSSMediaRule from '../css/rules/CSSMediaRule.js';
 import CSSStyleRule from '../css/rules/CSSStyleRule.js';
 import CSSSupportsRule from '../css/rules/CSSSupportsRule.js';
-import MouseEvent from '../event/events/MouseEvent.js';
-import PointerEvent from '../event/events/PointerEvent.js';
-import FocusEvent from '../event/events/FocusEvent.js';
-import WheelEvent from '../event/events/WheelEvent.js';
+import CustomElementRegistry from '../custom-element/CustomElementRegistry.js';
+import DOMParserImplementation from '../dom-parser/DOMParser.js';
 import DataTransfer from '../event/DataTransfer.js';
 import DataTransferItem from '../event/DataTransferItem.js';
 import DataTransferItemList from '../event/DataTransferItemList.js';
-import InputEvent from '../event/events/InputEvent.js';
+import Event from '../event/Event.js';
+import EventTarget from '../event/EventTarget.js';
+import MessagePort from '../event/MessagePort.js';
+import Touch from '../event/Touch.js';
 import UIEvent from '../event/UIEvent.js';
+import AnimationEvent from '../event/events/AnimationEvent.js';
+import ClipboardEvent from '../event/events/ClipboardEvent.js';
+import CustomEvent from '../event/events/CustomEvent.js';
 import ErrorEvent from '../event/events/ErrorEvent.js';
+import FocusEvent from '../event/events/FocusEvent.js';
+import HashChangeEvent from '../event/events/HashChangeEvent.js';
+import InputEvent from '../event/events/InputEvent.js';
+import KeyboardEvent from '../event/events/KeyboardEvent.js';
+import MediaQueryListEvent from '../event/events/MediaQueryListEvent.js';
+import MessageEvent from '../event/events/MessageEvent.js';
+import MouseEvent from '../event/events/MouseEvent.js';
+import PointerEvent from '../event/events/PointerEvent.js';
+import ProgressEvent from '../event/events/ProgressEvent.js';
 import StorageEvent from '../event/events/StorageEvent.js';
 import SubmitEvent from '../event/events/SubmitEvent.js';
-import Screen from '../screen/Screen.js';
-import IRequestInit from '../fetch/types/IRequestInit.js';
-import Storage from '../storage/Storage.js';
-import StorageFactory from '../storage/StorageFactory.js';
-import HTMLCollection from '../nodes/element/HTMLCollection.js';
-import HTMLFormControlsCollection from '../nodes/html-form-element/HTMLFormControlsCollection.js';
-import NodeList from '../nodes/node/NodeList.js';
-import MediaQueryList from '../match-media/MediaQueryList.js';
-import Selection from '../selection/Selection.js';
-import Navigator from '../navigator/Navigator.js';
-import MimeType from '../navigator/MimeType.js';
-import MimeTypeArray from '../navigator/MimeTypeArray.js';
-import Plugin from '../navigator/Plugin.js';
-import PluginArray from '../navigator/PluginArray.js';
-import Fetch from '../fetch/Fetch.js';
-import DOMRect from '../nodes/element/DOMRect.js';
-import DOMRectReadOnly from '../nodes/element/DOMRectReadOnly.js';
-import VMGlobalPropertyScript from './VMGlobalPropertyScript.js';
-import VM from 'vm';
-import { Buffer } from 'buffer';
-import { webcrypto } from 'crypto';
-import XMLHttpRequestUpload from '../xml-http-request/XMLHttpRequestUpload.js';
-import XMLHttpRequestEventTarget from '../xml-http-request/XMLHttpRequestEventTarget.js';
-import Base64 from '../base64/Base64.js';
-import Attr from '../nodes/attr/Attr.js';
-import NamedNodeMap from '../named-node-map/NamedNodeMap.js';
-import Element from '../nodes/element/Element.js';
-import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction.js';
-import FileList from '../nodes/html-input-element/FileList.js';
-import Stream from 'stream';
-import { ReadableStream } from 'stream/web';
-import FormData from '../form-data/FormData.js';
+import TouchEvent from '../event/events/TouchEvent.js';
+import WheelEvent from '../event/events/WheelEvent.js';
+import DOMException from '../exception/DOMException.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import AbortController from '../fetch/AbortController.js';
 import AbortSignal from '../fetch/AbortSignal.js';
-import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
-import RadioNodeList from '../nodes/html-form-element/RadioNodeList.js';
-import ValidityState from '../validity-state/ValidityState.js';
-import WindowErrorUtility from './WindowErrorUtility.js';
-import Permissions from '../permissions/Permissions.js';
-import PermissionStatus from '../permissions/PermissionStatus.js';
-import Clipboard from '../clipboard/Clipboard.js';
-import ClipboardItem from '../clipboard/ClipboardItem.js';
-import ClipboardEvent from '../event/events/ClipboardEvent.js';
+import Fetch from '../fetch/Fetch.js';
 import Headers from '../fetch/Headers.js';
-import XMLHttpRequestImplementation from '../xml-http-request/XMLHttpRequest.js';
-import WindowBrowserSettingsReader from './WindowBrowserSettingsReader.js';
-import DocumentReadyStateManager from '../nodes/document/DocumentReadyStateManager.js';
-import DocumentReadyStateEnum from '../nodes/document/DocumentReadyStateEnum.js';
-import IBrowserFrame from '../browser/types/IBrowserFrame.js';
-import HTMLAnchorElement from '../nodes/html-anchor-element/HTMLAnchorElement.js';
-import HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js';
-import HTMLOptionElement from '../nodes/html-option-element/HTMLOptionElement.js';
-import HTMLOptGroupElement from '../nodes/html-opt-group-element/HTMLOptGroupElement.js';
-import HTMLTimeElement from '../nodes/html-time-element/HTMLTimeElement.js';
-import WindowPageOpenUtility from './WindowPageOpenUtility.js';
+import RequestImplementation from '../fetch/Request.js';
+import { default as Response, default as ResponseImplementation } from '../fetch/Response.js';
+import IRequestInfo from '../fetch/types/IRequestInfo.js';
+import IRequestInit from '../fetch/types/IRequestInit.js';
 import IResponseBody from '../fetch/types/IResponseBody.js';
 import IResponseInit from '../fetch/types/IResponseInit.js';
-import IRequestInfo from '../fetch/types/IRequestInfo.js';
-import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
-import AudioImplementation from '../nodes/html-audio-element/Audio.js';
-import ImageImplementation from '../nodes/html-image-element/Image.js';
-import TextImplementation from '../nodes/text/Text.js';
+import Blob from '../file/Blob.js';
+import File from '../file/File.js';
+import FileReaderImplementation from '../file/FileReader.js';
+import FormData from '../form-data/FormData.js';
+import History from '../history/History.js';
+import IntersectionObserver from '../intersection-observer/IntersectionObserver.js';
+import IntersectionObserverEntry from '../intersection-observer/IntersectionObserverEntry.js';
+import Location from '../location/Location.js';
+import MediaQueryList from '../match-media/MediaQueryList.js';
+import MutationObserver from '../mutation-observer/MutationObserver.js';
+import MutationRecord from '../mutation-observer/MutationRecord.js';
+import MimeType from '../navigator/MimeType.js';
+import MimeTypeArray from '../navigator/MimeTypeArray.js';
+import Navigator from '../navigator/Navigator.js';
+import Plugin from '../navigator/Plugin.js';
+import PluginArray from '../navigator/PluginArray.js';
+import Attr from '../nodes/attr/Attr.js';
+import CharacterData from '../nodes/character-data/CharacterData.js';
 import CommentImplementation from '../nodes/comment/Comment.js';
 import DocumentFragmentImplementation from '../nodes/document-fragment/DocumentFragment.js';
-import DOMParserImplementation from '../dom-parser/DOMParser.js';
-import FileReaderImplementation from '../file/FileReader.js';
-import RequestImplementation from '../fetch/Request.js';
-import ResponseImplementation from '../fetch/Response.js';
+import DocumentType from '../nodes/document-type/DocumentType.js';
+import DocumentImplementation from '../nodes/document/Document.js';
+import DocumentReadyStateEnum from '../nodes/document/DocumentReadyStateEnum.js';
+import DocumentReadyStateManager from '../nodes/document/DocumentReadyStateManager.js';
+import DOMRect from '../nodes/element/DOMRect.js';
+import DOMRectReadOnly from '../nodes/element/DOMRectReadOnly.js';
+import Element from '../nodes/element/Element.js';
+import HTMLCollection from '../nodes/element/HTMLCollection.js';
+import NamedNodeMap from '../nodes/element/NamedNodeMap.js';
+import HTMLAnchorElement from '../nodes/html-anchor-element/HTMLAnchorElement.js';
+import HTMLAreaElement from '../nodes/html-area-element/HTMLAreaElement.js';
+import AudioImplementation from '../nodes/html-audio-element/Audio.js';
+import HTMLAudioElement from '../nodes/html-audio-element/HTMLAudioElement.js';
+import HTMLBaseElement from '../nodes/html-base-element/HTMLBaseElement.js';
+import HTMLBodyElement from '../nodes/html-body-element/HTMLBodyElement.js';
+import HTMLBRElement from '../nodes/html-br-element/HTMLBRElement.js';
+import HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js';
+import HTMLCanvasElement from '../nodes/html-canvas-element/HTMLCanvasElement.js';
+import HTMLDListElement from '../nodes/html-d-list-element/HTMLDListElement.js';
+import HTMLDataElement from '../nodes/html-data-element/HTMLDataElement.js';
+import HTMLDataListElement from '../nodes/html-data-list-element/HTMLDataListElement.js';
+import HTMLDetailsElement from '../nodes/html-details-element/HTMLDetailsElement.js';
+import HTMLDialogElement from '../nodes/html-dialog-element/HTMLDialogElement.js';
+import HTMLDivElement from '../nodes/html-div-element/HTMLDivElement.js';
+import HTMLDocumentImplementation from '../nodes/html-document/HTMLDocument.js';
+import HTMLElement from '../nodes/html-element/HTMLElement.js';
+import HTMLEmbedElement from '../nodes/html-embed-element/HTMLEmbedElement.js';
+import HTMLFieldSetElement from '../nodes/html-field-set-element/HTMLFieldSetElement.js';
+import HTMLFormControlsCollection from '../nodes/html-form-element/HTMLFormControlsCollection.js';
+import HTMLFormElementImplementation from '../nodes/html-form-element/HTMLFormElement.js';
+import RadioNodeList from '../nodes/html-form-element/RadioNodeList.js';
+import HTMLHeadElement from '../nodes/html-head-element/HTMLHeadElement.js';
+import HTMLHeadingElement from '../nodes/html-heading-element/HTMLHeadingElement.js';
+import HTMLHRElement from '../nodes/html-hr-element/HTMLHRElement.js';
+import HTMLHtmlElement from '../nodes/html-html-element/HTMLHtmlElement.js';
+import HTMLIFrameElementImplementation from '../nodes/html-iframe-element/HTMLIFrameElement.js';
+import HTMLImageElement from '../nodes/html-image-element/HTMLImageElement.js';
+import ImageImplementation from '../nodes/html-image-element/Image.js';
+import FileList from '../nodes/html-input-element/FileList.js';
+import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
+import HTMLLabelElement from '../nodes/html-label-element/HTMLLabelElement.js';
+import HTMLLegendElement from '../nodes/html-legend-element/HTMLLegendElement.js';
+import HTMLLIElement from '../nodes/html-li-element/HTMLLIElement.js';
+import HTMLLinkElementImplementation from '../nodes/html-link-element/HTMLLinkElement.js';
+import HTMLMapElement from '../nodes/html-map-element/HTMLMapElement.js';
+import HTMLMediaElement from '../nodes/html-media-element/HTMLMediaElement.js';
+import MediaStream from '../nodes/html-media-element/MediaStream.js';
+import MediaStreamTrack from '../nodes/html-media-element/MediaStreamTrack.js';
+import RemotePlayback from '../nodes/html-media-element/RemotePlayback.js';
+import TextTrack from '../nodes/html-media-element/TextTrack.js';
+import TextTrackCue from '../nodes/html-media-element/TextTrackCue.js';
+import TextTrackCueList from '../nodes/html-media-element/TextTrackCueList.js';
+import TextTrackList from '../nodes/html-media-element/TextTrackList.js';
+import TimeRanges from '../nodes/html-media-element/TimeRanges.js';
+import VTTCueImplementation from '../nodes/html-media-element/VTTCue.js';
+import HTMLMenuElement from '../nodes/html-menu-element/HTMLMenuElement.js';
+import HTMLMetaElement from '../nodes/html-meta-element/HTMLMetaElement.js';
+import HTMLMeterElement from '../nodes/html-meter-element/HTMLMeterElement.js';
+import HTMLModElement from '../nodes/html-mod-element/HTMLModElement.js';
+import HTMLOListElement from '../nodes/html-o-list-element/HTMLOListElement.js';
+import HTMLObjectElement from '../nodes/html-object-element/HTMLObjectElement.js';
+import HTMLOptGroupElement from '../nodes/html-opt-group-element/HTMLOptGroupElement.js';
+import HTMLOptionElement from '../nodes/html-option-element/HTMLOptionElement.js';
+import HTMLOutputElement from '../nodes/html-output-element/HTMLOutputElement.js';
+import HTMLParagraphElement from '../nodes/html-paragraph-element/HTMLParagraphElement.js';
+import HTMLParamElement from '../nodes/html-param-element/HTMLParamElement.js';
+import HTMLPictureElement from '../nodes/html-picture-element/HTMLPictureElement.js';
+import HTMLPreElement from '../nodes/html-pre-element/HTMLPreElement.js';
+import HTMLProgressElement from '../nodes/html-progress-element/HTMLProgressElement.js';
+import HTMLQuoteElement from '../nodes/html-quote-element/HTMLQuoteElement.js';
+import HTMLScriptElementImplementation from '../nodes/html-script-element/HTMLScriptElement.js';
+import HTMLSelectElement from '../nodes/html-select-element/HTMLSelectElement.js';
+import HTMLSlotElement from '../nodes/html-slot-element/HTMLSlotElement.js';
+import HTMLSourceElement from '../nodes/html-source-element/HTMLSourceElement.js';
+import HTMLSpanElement from '../nodes/html-span-element/HTMLSpanElement.js';
+import HTMLStyleElement from '../nodes/html-style-element/HTMLStyleElement.js';
+import HTMLTableCaptionElement from '../nodes/html-table-caption-element/HTMLTableCaptionElement.js';
+import HTMLTableCellElement from '../nodes/html-table-cell-element/HTMLTableCellElement.js';
+import HTMLTableColElement from '../nodes/html-table-col-element/HTMLTableColElement.js';
+import HTMLTableElement from '../nodes/html-table-element/HTMLTableElement.js';
+import HTMLTableRowElement from '../nodes/html-table-row-element/HTMLTableRowElement.js';
+import HTMLTableSectionElement from '../nodes/html-table-section-element/HTMLTableSectionElement.js';
+import HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement.js';
+import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement.js';
+import HTMLTimeElement from '../nodes/html-time-element/HTMLTimeElement.js';
+import HTMLTitleElement from '../nodes/html-title-element/HTMLTitleElement.js';
+import HTMLTrackElement from '../nodes/html-track-element/HTMLTrackElement.js';
+import HTMLUListElement from '../nodes/html-u-list-element/HTMLUListElement.js';
+import HTMLUnknownElement from '../nodes/html-unknown-element/HTMLUnknownElement.js';
+import HTMLVideoElement from '../nodes/html-video-element/HTMLVideoElement.js';
+import Node from '../nodes/node/Node.js';
+import NodeList from '../nodes/node/NodeList.js';
+import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction.js';
+import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
+import SVGDocumentImplementation from '../nodes/svg-document/SVGDocument.js';
+import SVGElement from '../nodes/svg-element/SVGElement.js';
+import SVGGraphicsElement from '../nodes/svg-element/SVGGraphicsElement.js';
+import SVGSVGElement from '../nodes/svg-element/SVGSVGElement.js';
+import TextImplementation from '../nodes/text/Text.js';
+import XMLDocumentImplementation from '../nodes/xml-document/XMLDocument.js';
+import PermissionStatus from '../permissions/PermissionStatus.js';
+import Permissions from '../permissions/Permissions.js';
 import RangeImplementation from '../range/Range.js';
-import INodeJSGlobal from './INodeJSGlobal.js';
+import ResizeObserver from '../resize-observer/ResizeObserver.js';
+import Screen from '../screen/Screen.js';
+import Selection from '../selection/Selection.js';
+import Storage from '../storage/Storage.js';
+import NodeFilter from '../tree-walker/NodeFilter.js';
+import NodeIterator from '../tree-walker/NodeIterator.js';
+import TreeWalker from '../tree-walker/TreeWalker.js';
+import URL from '../url/URL.js';
+import ValidityState from '../validity-state/ValidityState.js';
+import XMLHttpRequestImplementation from '../xml-http-request/XMLHttpRequest.js';
+import XMLHttpRequestEventTarget from '../xml-http-request/XMLHttpRequestEventTarget.js';
+import XMLHttpRequestUpload from '../xml-http-request/XMLHttpRequestUpload.js';
+import XMLSerializer from '../xml-serializer/XMLSerializer.js';
 import CrossOriginBrowserWindow from './CrossOriginBrowserWindow.js';
-import Response from '../fetch/Response.js';
-import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
+import INodeJSGlobal from './INodeJSGlobal.js';
+import VMGlobalPropertyScript from './VMGlobalPropertyScript.js';
+import WindowBrowserSettingsReader from './WindowBrowserSettingsReader.js';
+import WindowErrorUtility from './WindowErrorUtility.js';
+import WindowPageOpenUtility from './WindowPageOpenUtility.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -201,8 +252,11 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly HTMLDocument: new () => HTMLDocumentImplementation;
 	public readonly XMLDocument: new () => XMLDocumentImplementation;
 	public readonly SVGDocument: new () => SVGDocumentImplementation;
-	public readonly Text: typeof TextImplementation;
-	public readonly Comment: typeof CommentImplementation;
+	public readonly Text: new (data?: string) => TextImplementation;
+	public readonly Comment: new (data?: string) => CommentImplementation;
+	public readonly Image: new (width?: number, height?: number) => ImageImplementation;
+	public readonly DocumentFragment: typeof DocumentFragmentImplementation;
+	public readonly Audio: new (url?: string) => AudioImplementation;
 
 	// Element classes
 	public readonly HTMLAnchorElement: typeof HTMLAnchorElement = HTMLAnchorElement;
@@ -229,55 +283,48 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly HTMLLinkElement: typeof HTMLLinkElementImplementation;
 	public readonly HTMLIFrameElement: typeof HTMLIFrameElementImplementation;
 	public readonly HTMLFormElement: typeof HTMLFormElementImplementation;
+	public readonly HTMLUListElement: typeof HTMLUListElement = HTMLUListElement;
+	public readonly HTMLTrackElement: typeof HTMLTrackElement = HTMLTrackElement;
+	public readonly HTMLTableRowElement: typeof HTMLTableRowElement = HTMLTableRowElement;
+	public readonly HTMLTitleElement: typeof HTMLTitleElement = HTMLTitleElement;
 	public readonly HTMLTimeElement: typeof HTMLTimeElement = HTMLTimeElement;
-
-	// Non-implemented element classes
-	public readonly HTMLHeadElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLTitleElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLBodyElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLHeadingElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLParagraphElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLHRElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLPreElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLUListElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLOListElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLLElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLMenuElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLDListElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLDivElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLAreaElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLBRElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLCanvasElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLDataElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLDataListElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLDetailsElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLDirectoryElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLFieldSetElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLFontElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLHtmlElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLLegendElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLMapElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLMarqueeElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLMeterElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLModElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLOutputElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLPictureElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLProgressElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLQuoteElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLSourceElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLSpanElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLTableCaptionElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLTableCellElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLTableColElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLTableElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLTableRowElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLTableSectionElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLFrameElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLFrameSetElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLEmbedElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLObjectElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLParamElement: typeof HTMLElement = HTMLElement;
-	public readonly HTMLTrackElement: typeof HTMLElement = HTMLElement;
+	public readonly HTMLTableSectionElement: typeof HTMLTableSectionElement = HTMLTableSectionElement;
+	public readonly HTMLTableCellElement: typeof HTMLTableCellElement = HTMLTableCellElement;
+	public readonly HTMLTableElement: typeof HTMLTableElement = HTMLTableElement;
+	public readonly HTMLSpanElement: typeof HTMLSpanElement = HTMLSpanElement;
+	public readonly HTMLSourceElement: typeof HTMLSourceElement = HTMLSourceElement;
+	public readonly HTMLQuoteElement: typeof HTMLQuoteElement = HTMLQuoteElement;
+	public readonly HTMLProgressElement: typeof HTMLProgressElement = HTMLProgressElement;
+	public readonly HTMLPreElement: typeof HTMLPreElement = HTMLPreElement;
+	public readonly HTMLPictureElement: typeof HTMLPictureElement = HTMLPictureElement;
+	public readonly HTMLParamElement: typeof HTMLParamElement = HTMLParamElement;
+	public readonly HTMLParagraphElement: typeof HTMLParagraphElement = HTMLParagraphElement;
+	public readonly HTMLOutputElement: typeof HTMLOutputElement = HTMLOutputElement;
+	public readonly HTMLOListElement: typeof HTMLOListElement = HTMLOListElement;
+	public readonly HTMLObjectElement: typeof HTMLObjectElement = HTMLObjectElement;
+	public readonly HTMLMeterElement: typeof HTMLMeterElement = HTMLMeterElement;
+	public readonly HTMLMenuElement: typeof HTMLMenuElement = HTMLMenuElement;
+	public readonly HTMLMapElement: typeof HTMLMapElement = HTMLMapElement;
+	public readonly HTMLLIElement: typeof HTMLLIElement = HTMLLIElement;
+	public readonly HTMLLegendElement: typeof HTMLLegendElement = HTMLLegendElement;
+	public readonly HTMLModElement: typeof HTMLModElement = HTMLModElement;
+	public readonly HTMLHtmlElement: typeof HTMLHtmlElement = HTMLHtmlElement;
+	public readonly HTMLHRElement: typeof HTMLHRElement = HTMLHRElement;
+	public readonly HTMLHeadElement: typeof HTMLHeadElement = HTMLHeadElement;
+	public readonly HTMLHeadingElement: typeof HTMLHeadingElement = HTMLHeadingElement;
+	public readonly HTMLFieldSetElement: typeof HTMLFieldSetElement = HTMLFieldSetElement;
+	public readonly HTMLEmbedElement: typeof HTMLEmbedElement = HTMLEmbedElement;
+	public readonly HTMLDListElement: typeof HTMLDListElement = HTMLDListElement;
+	public readonly HTMLDivElement: typeof HTMLDivElement = HTMLDivElement;
+	public readonly HTMLDetailsElement: typeof HTMLDetailsElement = HTMLDetailsElement;
+	public readonly HTMLDataListElement: typeof HTMLDataListElement = HTMLDataListElement;
+	public readonly HTMLDataElement: typeof HTMLDataElement = HTMLDataElement;
+	public readonly HTMLTableColElement: typeof HTMLTableColElement = HTMLTableColElement;
+	public readonly HTMLTableCaptionElement: typeof HTMLTableCaptionElement = HTMLTableCaptionElement;
+	public readonly HTMLCanvasElement: typeof HTMLCanvasElement = HTMLCanvasElement;
+	public readonly HTMLBRElement: typeof HTMLBRElement = HTMLBRElement;
+	public readonly HTMLBodyElement: typeof HTMLBodyElement = HTMLBodyElement;
+	public readonly HTMLAreaElement: typeof HTMLAreaElement = HTMLAreaElement;
 
 	// Event classes
 	public readonly Event = Event;
@@ -347,6 +394,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly NodeIterator = NodeIterator;
 	public readonly TreeWalker = TreeWalker;
 	public readonly MutationObserver = MutationObserver;
+	public readonly IntersectionObserver = IntersectionObserver;
+	public readonly IntersectionObserverEntry = IntersectionObserverEntry;
 	public readonly MutationRecord = MutationRecord;
 	public readonly CSSStyleDeclaration = CSSStyleDeclaration;
 	public readonly EventTarget = EventTarget;
@@ -414,10 +463,20 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly XMLHttpRequest: new () => XMLHttpRequestImplementation;
 	public readonly DOMParser: new () => DOMParserImplementation;
 	public readonly Range: new () => RangeImplementation;
+	public readonly VTTCue: new (
+		startTime: number,
+		endTime: number,
+		text: string
+	) => VTTCueImplementation;
+	public readonly TextTrack = TextTrack;
+	public readonly TextTrackCue = TextTrackCue;
+	public readonly TextTrackCueList = TextTrackCueList;
 	public readonly FileReader: new () => FileReaderImplementation;
-	public readonly Image: typeof ImageImplementation;
-	public readonly DocumentFragment: typeof DocumentFragmentImplementation;
-	public readonly Audio: typeof AudioImplementation;
+	public readonly TimeRanges = TimeRanges;
+	public readonly RemotePlayback = RemotePlayback;
+	public readonly MediaStream = MediaStream;
+	public readonly MediaStreamTrack = MediaStreamTrack;
+	public readonly TextTrackList = TextTrackList;
 
 	// Events
 	public onload: ((event: Event) => void) | null = null;
@@ -426,9 +485,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	// Public properties.
 	public readonly document: DocumentImplementation;
 	public readonly customElements: CustomElementRegistry;
-	public readonly self: BrowserWindow = this;
-	public readonly top: BrowserWindow = this;
-	public readonly parent: BrowserWindow = this;
 	public readonly window: BrowserWindow = this;
 	public readonly globalThis: BrowserWindow = this;
 	public readonly performance: typeof performance = performance;
@@ -442,65 +498,65 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public name = '';
 
 	// Node.js Globals
-	public Array: typeof Array;
-	public ArrayBuffer: typeof ArrayBuffer;
-	public Boolean: typeof Boolean;
+	public declare Array: typeof Array;
+	public declare ArrayBuffer: typeof ArrayBuffer;
+	public declare Boolean: typeof Boolean;
 	public Buffer: typeof Buffer = Buffer;
-	public DataView: typeof DataView;
-	public Date: typeof Date;
-	public Error: typeof Error;
-	public EvalError: typeof EvalError;
-	public Float32Array: typeof Float32Array;
-	public Float64Array: typeof Float64Array;
-	public Function: typeof Function;
-	public Infinity: typeof Infinity;
-	public Int16Array: typeof Int16Array;
-	public Int32Array: typeof Int32Array;
-	public Int8Array: typeof Int8Array;
-	public Intl: typeof Intl;
-	public JSON: typeof JSON;
-	public Map: MapConstructor;
-	public Math: typeof Math;
-	public NaN: typeof NaN;
-	public Number: typeof Number;
-	public Object: typeof Object;
-	public Promise: typeof Promise;
-	public RangeError: typeof RangeError;
-	public ReferenceError: typeof ReferenceError;
-	public RegExp: typeof RegExp;
-	public Set: SetConstructor;
-	public String: typeof String;
-	public Symbol: Function;
-	public SyntaxError: typeof SyntaxError;
-	public TypeError: typeof TypeError;
-	public URIError: typeof URIError;
-	public Uint16Array: typeof Uint16Array;
-	public Uint32Array: typeof Uint32Array;
-	public Uint8Array: typeof Uint8Array;
-	public Uint8ClampedArray: typeof Uint8ClampedArray;
-	public WeakMap: WeakMapConstructor;
-	public WeakSet: WeakSetConstructor;
-	public decodeURI: typeof decodeURI;
-	public decodeURIComponent: typeof decodeURIComponent;
-	public encodeURI: typeof encodeURI;
-	public encodeURIComponent: typeof encodeURIComponent;
-	public eval: typeof eval;
+	public declare DataView: typeof DataView;
+	public declare Date: typeof Date;
+	public declare Error: typeof Error;
+	public declare EvalError: typeof EvalError;
+	public declare Float32Array: typeof Float32Array;
+	public declare Float64Array: typeof Float64Array;
+	public declare Function: typeof Function;
+	public declare Infinity: typeof Infinity;
+	public declare Int16Array: typeof Int16Array;
+	public declare Int32Array: typeof Int32Array;
+	public declare Int8Array: typeof Int8Array;
+	public declare Intl: typeof Intl;
+	public declare JSON: typeof JSON;
+	public declare Map: MapConstructor;
+	public declare Math: typeof Math;
+	public declare NaN: typeof NaN;
+	public declare Number: typeof Number;
+	public declare Object: typeof Object;
+	public declare Promise: typeof Promise;
+	public declare RangeError: typeof RangeError;
+	public declare ReferenceError: typeof ReferenceError;
+	public declare RegExp: typeof RegExp;
+	public declare Set: SetConstructor;
+	public declare String: typeof String;
+	public declare Symbol: Function;
+	public declare SyntaxError: typeof SyntaxError;
+	public declare TypeError: typeof TypeError;
+	public declare URIError: typeof URIError;
+	public declare Uint16Array: typeof Uint16Array;
+	public declare Uint32Array: typeof Uint32Array;
+	public declare Uint8Array: typeof Uint8Array;
+	public declare Uint8ClampedArray: typeof Uint8ClampedArray;
+	public declare WeakMap: WeakMapConstructor;
+	public declare WeakSet: WeakSetConstructor;
+	public declare decodeURI: typeof decodeURI;
+	public declare decodeURIComponent: typeof decodeURIComponent;
+	public declare encodeURI: typeof encodeURI;
+	public declare encodeURIComponent: typeof encodeURIComponent;
+	public declare eval: typeof eval;
 	/**
 	 * @deprecated
 	 */
-	public escape: (str: string) => string;
-	public global: typeof globalThis;
-	public isFinite: typeof isFinite;
-	public isNaN: typeof isNaN;
-	public parseFloat: typeof parseFloat;
-	public parseInt: typeof parseInt;
-	public undefined: typeof undefined;
+	public declare escape: (str: string) => string;
+	public declare global: typeof globalThis;
+	public declare isFinite: typeof isFinite;
+	public declare isNaN: typeof isNaN;
+	public declare parseFloat: typeof parseFloat;
+	public declare parseInt: typeof parseInt;
+	public declare undefined: typeof undefined;
 	/**
 	 * @deprecated
 	 */
-	public unescape: (str: string) => string;
-	public gc: () => void;
-	public v8debug?: unknown;
+	public declare unescape: (str: string) => string;
+	public declare gc: () => void;
+	public declare v8debug?: unknown;
 
 	// Public internal properties
 
@@ -516,6 +572,9 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.screen]: Screen;
 	public [PropertySymbol.sessionStorage]: Storage;
 	public [PropertySymbol.localStorage]: Storage;
+	public [PropertySymbol.self]: BrowserWindow = this;
+	public [PropertySymbol.top]: BrowserWindow = this;
+	public [PropertySymbol.parent]: BrowserWindow = this;
 
 	// Private properties
 	#browserFrame: IBrowserFrame;
@@ -524,7 +583,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	#outerWidth: number | null = null;
 	#outerHeight: number | null = null;
 	#devicePixelRatio: number | null = null;
-	#zeroTimeouts: Array<Timeout> | null = null;
+	#zeroDelayTimeout: { timeouts: Array<Timeout> | null } = { timeouts: null };
 
 	/**
 	 * Constructor.
@@ -541,12 +600,13 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this.#browserFrame = browserFrame;
 
 		this.customElements = new CustomElementRegistry(this);
+
 		this[PropertySymbol.navigator] = new Navigator(this);
-		this[PropertySymbol.history] = new History();
 		this[PropertySymbol.screen] = new Screen();
-		this[PropertySymbol.sessionStorage] = StorageFactory.createStorage();
-		this[PropertySymbol.localStorage] = StorageFactory.createStorage();
+		this[PropertySymbol.sessionStorage] = new Storage();
+		this[PropertySymbol.localStorage] = new Storage();
 		this[PropertySymbol.location] = new Location(this.#browserFrame, options?.url ?? 'about:blank');
+		this[PropertySymbol.history] = new History(this.#browserFrame, this);
 		this[PropertySymbol.asyncTaskManager] = asyncTaskManager;
 
 		this.console = browserFrame.page.console;
@@ -593,24 +653,29 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 				super(window);
 			}
 		}
+		class VTTCue extends VTTCueImplementation {
+			constructor(startTime: number, endTime: number, text: string) {
+				super(window, startTime, endTime, text);
+			}
+		}
 		class HTMLScriptElement extends HTMLScriptElementImplementation {
 			constructor() {
-				super(browserFrame);
+				super({ browserFrame, ownerDocument: window.document });
 			}
 		}
 		class HTMLLinkElement extends HTMLLinkElementImplementation {
 			constructor() {
-				super(browserFrame);
+				super({ browserFrame, ownerDocument: window.document });
 			}
 		}
 		class HTMLIFrameElement extends HTMLIFrameElementImplementation {
 			constructor() {
-				super(browserFrame);
+				super({ browserFrame, ownerDocument: window.document });
 			}
 		}
 		class HTMLFormElement extends HTMLFormElementImplementation {
 			constructor() {
-				super(browserFrame);
+				super({ browserFrame, ownerDocument: window.document });
 			}
 		}
 		class Document extends DocumentImplementation {
@@ -633,12 +698,31 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 				super({ window, browserFrame });
 			}
 		}
-
-		class Audio extends AudioImplementation {}
-		class Image extends ImageImplementation {}
-		class DocumentFragment extends DocumentFragmentImplementation {}
-		class Text extends TextImplementation {}
-		class Comment extends CommentImplementation {}
+		class Audio extends AudioImplementation {
+			constructor(url: string = null) {
+				super(window.document, url);
+			}
+		}
+		class Image extends ImageImplementation {
+			constructor(width: number = null, height: number = null) {
+				super(window.document, width, height);
+			}
+		}
+		class DocumentFragment extends DocumentFragmentImplementation {
+			constructor() {
+				super(window.document);
+			}
+		}
+		class Text extends TextImplementation {
+			constructor(data: string) {
+				super(window.document, data);
+			}
+		}
+		class Comment extends CommentImplementation {
+			constructor(data: string) {
+				super(window.document, data);
+			}
+		}
 
 		/* eslint-enable jsdoc/require-jsdoc */
 
@@ -650,6 +734,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this.DocumentFragment = DocumentFragment;
 		this.FileReader = FileReader;
 		this.DOMParser = DOMParser;
+		this.VTTCue = VTTCue;
 		this.XMLHttpRequest = XMLHttpRequest;
 		this.Range = Range;
 		this.Audio = Audio;
@@ -662,22 +747,9 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this.XMLDocument = XMLDocument;
 		this.SVGDocument = SVGDocument;
 
-		// Override owner document
-		this.Document[PropertySymbol.ownerDocument] = null;
-		this.HTMLDocument[PropertySymbol.ownerDocument] = null;
-		this.XMLDocument[PropertySymbol.ownerDocument] = null;
-		this.SVGDocument[PropertySymbol.ownerDocument] = null;
-
 		// Document
 		this.document = new HTMLDocument();
 		this.document[PropertySymbol.defaultView] = this;
-
-		// Override owner document
-		this.Audio[PropertySymbol.ownerDocument] = this.document;
-		this.Image[PropertySymbol.ownerDocument] = this.document;
-		this.DocumentFragment[PropertySymbol.ownerDocument] = this.document;
-		this.Text[PropertySymbol.ownerDocument] = this.document;
-		this.Comment[PropertySymbol.ownerDocument] = this.document;
 
 		// Ready state manager
 		this[PropertySymbol.readyStateManager].waitUntilComplete().then(() => {
@@ -686,7 +758,52 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			this.document.dispatchEvent(new Event('load', { bubbles: true }));
 		});
 
-		this.#bindToThisScope();
+		ClassMethodBinder.bindMethods(this, [EventTarget, BrowserWindow]);
+	}
+
+	/**
+	 * Returns self.
+	 *
+	 * @returns Self.
+	 */
+	public get self(): BrowserWindow {
+		return this[PropertySymbol.self];
+	}
+
+	/**
+	 * Returns self.
+	 *
+	 * @param self Self.
+	 */
+	public set self(self: BrowserWindow | null) {
+		this[PropertySymbol.self] = self;
+	}
+
+	/**
+	 * Returns top.
+	 *
+	 * @returns Top.
+	 */
+	public get top(): BrowserWindow {
+		return this[PropertySymbol.top];
+	}
+
+	/**
+	 * Returns parent.
+	 *
+	 * @returns Parent.
+	 */
+	public get parent(): BrowserWindow {
+		return this[PropertySymbol.parent];
+	}
+
+	/**
+	 * Returns parent.
+	 *
+	 * @param parent Parent.
+	 */
+	public set parent(parent: BrowserWindow | null) {
+		this[PropertySymbol.parent] = parent;
 	}
 
 	/**
@@ -1034,39 +1151,46 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public setTimeout(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
 		// We can group timeouts with a delay of 0 into one timeout to improve performance.
 		// Grouping timeouts will also improve the performance of the async task manager.
-		// It may also make the async task manager to stable as many timeouts may cause waitUntilComplete() to be resolved to early.
+		// It also makes the async task manager more stable as many timeouts may cause waitUntilComplete() to be resolved too early.
 		if (!delay) {
-			if (!this.#zeroTimeouts) {
+			const zeroDelayTimeout = this.#zeroDelayTimeout;
+
+			if (!zeroDelayTimeout.timeouts) {
 				const settings = this.#browserFrame.page?.context?.browser?.settings;
 				const useTryCatch =
 					!settings ||
-					!settings.disableErrorCapturing ||
-					settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
+					(!settings.disableErrorCapturing &&
+						settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch);
+
 				const id = TIMER.setTimeout(() => {
-					const zeroTimeouts = this.#zeroTimeouts;
-					this.#zeroTimeouts = null;
-					for (const zeroTimeout of zeroTimeouts) {
+					const timeouts = zeroDelayTimeout.timeouts;
+					zeroDelayTimeout.timeouts = null;
+					for (const timeout of timeouts) {
 						if (useTryCatch) {
-							WindowErrorUtility.captureError(this, () => zeroTimeout.callback());
+							WindowErrorUtility.captureError(this, () => timeout.callback());
 						} else {
-							zeroTimeout.callback();
+							timeout.callback();
 						}
 					}
 					this.#browserFrame[PropertySymbol.asyncTaskManager].endTimer(id);
 				});
-				this.#zeroTimeouts = [];
+
+				zeroDelayTimeout.timeouts = [];
 				this.#browserFrame[PropertySymbol.asyncTaskManager].startTimer(id);
 			}
-			const zeroTimeout = new Timeout(() => callback(...args));
-			this.#zeroTimeouts.push(zeroTimeout);
-			return <NodeJS.Timeout>(<unknown>zeroTimeout);
+
+			const timeout = new Timeout(() => callback(...args));
+
+			zeroDelayTimeout.timeouts.push(timeout);
+
+			return <NodeJS.Timeout>(<unknown>timeout);
 		}
 
 		const settings = this.#browserFrame.page?.context?.browser?.settings;
 		const useTryCatch =
 			!settings ||
-			!settings.disableErrorCapturing ||
-			settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
+			(!settings.disableErrorCapturing &&
+				settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch);
 
 		const id = TIMER.setTimeout(
 			() => {
@@ -1092,10 +1216,13 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 */
 	public clearTimeout(id: NodeJS.Timeout): void {
 		if (id && id instanceof Timeout) {
-			const zeroTimeouts = this.#zeroTimeouts || [];
-			const index = zeroTimeouts.indexOf(<Timeout>(<unknown>id));
+			const zeroDelayTimeout = this.#zeroDelayTimeout;
+			if (!zeroDelayTimeout.timeouts) {
+				return;
+			}
+			const index = zeroDelayTimeout.timeouts.indexOf(<Timeout>(<unknown>id));
 			if (index !== -1) {
-				zeroTimeouts.splice(index, 1);
+				zeroDelayTimeout.timeouts.splice(index, 1);
 			}
 			return;
 		}
@@ -1120,8 +1247,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		const settings = this.#browserFrame.page?.context?.browser?.settings;
 		const useTryCatch =
 			!settings ||
-			!settings.disableErrorCapturing ||
-			settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
+			(!settings.disableErrorCapturing &&
+				settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch);
 		let iterations = 0;
 		const id = TIMER.setInterval(
 			() => {
@@ -1174,8 +1301,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		const settings = this.#browserFrame.page?.context?.browser?.settings;
 		const useTryCatch =
 			!settings ||
-			!settings.disableErrorCapturing ||
-			settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
+			(!settings.disableErrorCapturing &&
+				settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch);
 		const id = TIMER.setImmediate(() => {
 			if (useTryCatch) {
 				WindowErrorUtility.captureError(this, () => callback(this.performance.now()));
@@ -1216,8 +1343,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		const settings = this.#browserFrame.page?.context?.browser?.settings;
 		const useTryCatch =
 			!settings ||
-			!settings.disableErrorCapturing ||
-			settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
+			(!settings.disableErrorCapturing &&
+				settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch);
 		TIMER.queueMicrotask(() => {
 			if (!isAborted) {
 				if (useTryCatch) {
@@ -1371,17 +1498,11 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * Destroys the window.
 	 */
 	public [PropertySymbol.destroy](): void {
-		if (!this.Audio[PropertySymbol.ownerDocument]) {
+		if (<boolean>this.closed) {
 			return;
 		}
 
 		(<boolean>this.closed) = true;
-		this[PropertySymbol.asyncTaskManager] = null;
-		this.Audio[PropertySymbol.ownerDocument] = null;
-		this.Image[PropertySymbol.ownerDocument] = null;
-		this.DocumentFragment[PropertySymbol.ownerDocument] = null;
-		this.Text[PropertySymbol.ownerDocument] = null;
-		this.Comment[PropertySymbol.ownerDocument] = null;
 
 		const mutationObservers = this[PropertySymbol.mutationObservers];
 
@@ -1390,18 +1511,26 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		}
 
 		this[PropertySymbol.mutationObservers] = [];
+		this[PropertySymbol.asyncTaskManager] = null;
+		this[PropertySymbol.mutationObservers] = [];
 
 		// Disconnects nodes from the document, so that they can be garbage collected.
-		for (const node of this.document[PropertySymbol.childNodes].slice()) {
+		const childNodes = this.document[PropertySymbol.nodeArray];
+
+		while (childNodes.length > 0) {
 			// Makes sure that something won't be triggered by the disconnect.
-			if (node.disconnectedCallback) {
-				delete node.disconnectedCallback;
+			if (childNodes[0].disconnectedCallback) {
+				delete childNodes[0].disconnectedCallback;
 			}
-			this.document.removeChild(node);
+			this.document.removeChild(childNodes[0]);
 		}
 
 		if (this.customElements[PropertySymbol.destroy]) {
 			this.customElements[PropertySymbol.destroy]();
+		}
+
+		if (this.history[PropertySymbol.destroy]) {
+			this.history[PropertySymbol.destroy]();
 		}
 
 		this.document[PropertySymbol.activeElement] = null;
@@ -1410,39 +1539,5 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this.document[PropertySymbol.selection] = null;
 
 		WindowBrowserSettingsReader.removeSettings(this);
-	}
-
-	/**
-	 * Binds methods, getters and setters to a scope.
-	 *
-	 * Getters and setters need to be bound to show up in Object.getOwnPropertyNames(), which is something Vitest and GlobalRegistrator relies on.
-	 *
-	 * @see https://github.com/capricorn86/happy-dom/issues/1339
-	 */
-	#bindToThisScope(): void {
-		const propertyDescriptors = Object.assign(
-			Object.getOwnPropertyDescriptors(EventTarget.prototype),
-			Object.getOwnPropertyDescriptors(BrowserWindow.prototype)
-		);
-
-		for (const key of Object.keys(propertyDescriptors)) {
-			const descriptor = propertyDescriptors[key];
-			if (descriptor.get || descriptor.set) {
-				Object.defineProperty(this, key, {
-					configurable: true,
-					enumerable: true,
-					get: descriptor.get?.bind(this),
-					set: descriptor.set?.bind(this)
-				});
-			} else if (
-				key !== 'constructor' &&
-				key[0] !== '_' &&
-				key[0] === key[0].toLowerCase() &&
-				typeof this[key] === 'function' &&
-				!this[key].toString().startsWith('class ')
-			) {
-				this[key] = this[key].bind(this);
-			}
-		}
 	}
 }

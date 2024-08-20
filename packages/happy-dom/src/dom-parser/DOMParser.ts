@@ -37,15 +37,17 @@ export default class DOMParser {
 		}
 
 		const newDocument = <Document>this.#createDocument(mimeType);
+		const documentChildNodes = newDocument[PropertySymbol.nodeArray];
 
-		newDocument[PropertySymbol.childNodes].length = 0;
-		newDocument[PropertySymbol.children].length = 0;
+		while (documentChildNodes.length) {
+			newDocument.removeChild(documentChildNodes[0]);
+		}
 
 		const root = <DocumentFragment>XMLParser.parse(newDocument, string, { evaluateScripts: true });
 		let documentElement = null;
 		let documentTypeNode = null;
 
-		for (const node of root[PropertySymbol.childNodes]) {
+		for (const node of root[PropertySymbol.nodeArray]) {
 			if (node['tagName'] === 'HTML') {
 				documentElement = node;
 			} else if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
@@ -64,16 +66,16 @@ export default class DOMParser {
 			newDocument.appendChild(documentElement);
 			const body = newDocument.body;
 			if (body) {
-				for (const child of root[PropertySymbol.childNodes].slice()) {
-					body.appendChild(child);
+				while (root[PropertySymbol.nodeArray].length) {
+					body.appendChild(root[PropertySymbol.nodeArray][0]);
 				}
 			}
 		} else {
 			switch (mimeType) {
 				case 'image/svg+xml':
 					{
-						for (const node of root[PropertySymbol.childNodes].slice()) {
-							newDocument.appendChild(node);
+						while (root[PropertySymbol.nodeArray].length) {
+							newDocument.appendChild(root[PropertySymbol.nodeArray][0]);
 						}
 					}
 					break;
@@ -88,8 +90,8 @@ export default class DOMParser {
 						documentElement.appendChild(bodyElement);
 						newDocument.appendChild(documentElement);
 
-						for (const node of root[PropertySymbol.childNodes].slice()) {
-							bodyElement.appendChild(node);
+						while (root[PropertySymbol.nodeArray].length) {
+							bodyElement.appendChild(root[PropertySymbol.nodeArray][0]);
 						}
 					}
 					break;

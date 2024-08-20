@@ -1,6 +1,9 @@
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
-import { beforeEach, afterEach, describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect } from 'vitest';
+import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import * as PropertySymbol from '../../../src/PropertySymbol.js';
+import HTMLCollection from '../../../src/nodes/element/HTMLCollection.js';
 
 describe('HTMLCollection', () => {
 	let window: Window;
@@ -9,6 +12,16 @@ describe('HTMLCollection', () => {
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
+	});
+
+	describe('constructor()', () => {
+		it('Should throw an error if the "illegalConstructor" symbol is not sent to the constructor', () => {
+			expect(() => new HTMLCollection()).toThrow(new TypeError('Illegal constructor'));
+		});
+
+		it('Should not throw an error if the "illegalConstructor" symbol is provided', () => {
+			expect(() => new HTMLCollection(PropertySymbol.illegalConstructor)).not.toThrow();
+		});
 	});
 
 	describe('item()', () => {
@@ -76,10 +89,10 @@ describe('HTMLCollection', () => {
 		it('Supports attributes only consisting of numbers.', () => {
 			const div = document.createElement('div');
 			div.innerHTML = `<div name="container1" class="container1"></div><div name="container2" class="container2"></div><div name="0" class="container3"></div><div name="1" class="container4"></div>`;
-			const container1 = div.querySelector('.container1');
-			const container2 = div.querySelector('.container2');
-			const container3 = div.querySelector('.container3');
-			const container4 = div.querySelector('.container4');
+			const container1 = <HTMLElement>div.querySelector('.container1');
+			const container2 = <HTMLElement>div.querySelector('.container2');
+			const container3 = <HTMLElement>div.querySelector('.container3');
+			const container4 = <HTMLElement>div.querySelector('.container4');
 
 			expect(div.children.length).toBe(4);
 			expect(div.children[0] === container1).toBe(true);
@@ -117,10 +130,10 @@ describe('HTMLCollection', () => {
 
 		it('Supports attributes that has the same name as properties and methods of the HTMLCollection class.', () => {
 			const div = document.createElement('div');
-			div.innerHTML = `<div name="length" class="container1"></div><div name="namedItem" class="container2"></div><div name="push" class="container3"></div>`;
-			const container1 = div.querySelector('.container1');
-			const container2 = div.querySelector('.container2');
-			const container3 = div.querySelector('.container3');
+			div.innerHTML = `<div name="length" class="container1"></div><div name="namedItem" class="container2"></div><div name="item" class="container3"></div>`;
+			const container1 = <HTMLElement>div.querySelector('.container1');
+			const container2 = <HTMLElement>div.querySelector('.container2');
+			const container3 = <HTMLElement>div.querySelector('.container3');
 
 			expect(div.children.length).toBe(3);
 			expect(div.children[0] === container1).toBe(true);
@@ -128,10 +141,11 @@ describe('HTMLCollection', () => {
 			expect(div.children[2] === container3).toBe(true);
 			expect(div.children.namedItem('length') === container1).toBe(true);
 			expect(div.children.namedItem('namedItem') === container2).toBe(true);
-			expect(div.children.namedItem('push') === container3).toBe(true);
+			expect(div.children.namedItem('item') === container3).toBe(true);
 
+			expect(typeof div.children['length']).toBe('number');
 			expect(typeof div.children['namedItem']).toBe('function');
-			expect(typeof div.children['push']).toBe('function');
+			expect(typeof div.children['item']).toBe('function');
 
 			container2.remove();
 
@@ -139,7 +153,7 @@ describe('HTMLCollection', () => {
 			expect(div.children[0] === container1).toBe(true);
 			expect(div.children[1] === container3).toBe(true);
 			expect(div.children.namedItem('length') === container1).toBe(true);
-			expect(div.children.namedItem('push') === container3).toBe(true);
+			expect(div.children.namedItem('item') === container3).toBe(true);
 
 			div.insertBefore(container2, container3);
 
@@ -149,10 +163,11 @@ describe('HTMLCollection', () => {
 			expect(div.children[2] === container3).toBe(true);
 			expect(div.children.namedItem('length') === container1).toBe(true);
 			expect(div.children.namedItem('namedItem') === container2).toBe(true);
-			expect(div.children.namedItem('push') === container3).toBe(true);
+			expect(div.children.namedItem('item') === container3).toBe(true);
 
+			expect(typeof div.children['length']).toBe('number');
 			expect(typeof div.children['namedItem']).toBe('function');
-			expect(typeof div.children['push']).toBe('function');
+			expect(typeof div.children['item']).toBe('function');
 		});
 	});
 });

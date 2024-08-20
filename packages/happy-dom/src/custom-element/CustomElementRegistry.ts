@@ -70,9 +70,9 @@ export default class CustomElementRegistry {
 		this[PropertySymbol.registedClass].set(elementClass, name);
 
 		// ObservedAttributes should only be called once by CustomElementRegistry (see #117)
-		if (elementClass.prototype.attributeChangedCallback) {
-			elementClass[PropertySymbol.observedAttributes] = elementClass.observedAttributes;
-		}
+		elementClass[PropertySymbol.observedAttributes] = (elementClass.observedAttributes || []).map(
+			(name) => String(name).toLowerCase()
+		);
 
 		if (this[PropertySymbol.callbacks][name]) {
 			const callbacks = this[PropertySymbol.callbacks][name];

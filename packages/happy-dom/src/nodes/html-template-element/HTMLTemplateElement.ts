@@ -4,6 +4,7 @@ import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import Node from '../node/Node.js';
 import XMLSerializer from '../../xml-serializer/XMLSerializer.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
+import ShadowRoot from '../shadow-root/ShadowRoot.js';
 
 /**
  * HTML Template Element.
@@ -13,7 +14,7 @@ import XMLParser from '../../xml-parser/XMLParser.js';
  */
 export default class HTMLTemplateElement extends HTMLElement {
 	// Public properties
-	public cloneNode: (deep?: boolean) => HTMLTemplateElement;
+	public declare cloneNode: (deep?: boolean) => HTMLTemplateElement;
 
 	// Internal properties
 	public [PropertySymbol.content]: DocumentFragment =
@@ -31,18 +32,19 @@ export default class HTMLTemplateElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public get innerHTML(): string {
-		return this.getInnerHTML();
+	public override get innerHTML(): string {
+		return this.getHTML();
 	}
 
 	/**
 	 * @override
 	 */
-	public set innerHTML(html: string) {
+	public override set innerHTML(html: string) {
 		const content = <DocumentFragment>this[PropertySymbol.content];
+		const childNodes = content[PropertySymbol.nodeArray];
 
-		for (const child of content[PropertySymbol.childNodes].slice()) {
-			this[PropertySymbol.content].removeChild(child);
+		while (childNodes.length) {
+			content.removeChild(childNodes[0]);
 		}
 
 		XMLParser.parse(this[PropertySymbol.ownerDocument], html, {
@@ -53,59 +55,83 @@ export default class HTMLTemplateElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public get firstChild(): Node {
+	public override get firstChild(): Node {
 		return this[PropertySymbol.content].firstChild;
 	}
 
 	/**
 	 * @override
 	 */
-	public get lastChild(): Node {
+	public override get lastChild(): Node {
 		return this[PropertySymbol.content].lastChild;
 	}
 
 	/**
+	 * @deprecated
 	 * @override
 	 */
-	public getInnerHTML(options?: { includeShadowRoots?: boolean }): string {
-		const xmlSerializer = new XMLSerializer({
-			includeShadowRoots: options && options.includeShadowRoots,
-			escapeEntities: false
-		});
+	public override getInnerHTML(_options?: { includeShadowRoots?: boolean }): string {
+		const xmlSerializer = new XMLSerializer();
+
+		// Options should be ignored as shadow roots should not be serialized for HTMLTemplateElement.
+
 		const content = <DocumentFragment>this[PropertySymbol.content];
 		let xml = '';
-		for (const node of content[PropertySymbol.childNodes]) {
+
+		for (const node of content[PropertySymbol.nodeArray]) {
 			xml += xmlSerializer.serializeToString(node);
 		}
+
 		return xml;
 	}
 
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.appendChild](node: Node): Node {
-		return this[PropertySymbol.content].appendChild(node);
+	public override getHTML(_options?: {
+		serializableShadowRoots?: boolean;
+		shadowRoots?: ShadowRoot[];
+	}): string {
+		const xmlSerializer = new XMLSerializer();
+
+		// Options should be ignored as shadow roots should not be serialized for HTMLTemplateElement.
+
+		const content = <DocumentFragment>this[PropertySymbol.content];
+		let xml = '';
+
+		for (const node of content[PropertySymbol.nodeArray]) {
+			xml += xmlSerializer.serializeToString(node);
+		}
+
+		return xml;
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.appendChild](node: Node, isDuringParsing = false): Node {
+		return this[PropertySymbol.content][PropertySymbol.appendChild](node, isDuringParsing);
 	}
 
 	/**
 	 * @override
 	 */
 	public override [PropertySymbol.removeChild](node: Node): Node {
-		return this[PropertySymbol.content].removeChild(node);
+		return this[PropertySymbol.content][PropertySymbol.removeChild](node);
 	}
 
 	/**
 	 * @override
 	 */
 	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node): Node {
-		return this[PropertySymbol.content].insertBefore(newNode, referenceNode);
+		return this[PropertySymbol.content][PropertySymbol.insertBefore](newNode, referenceNode);
 	}
 
 	/**
 	 * @override
 	 */
 	public override [PropertySymbol.replaceChild](newChild: Node, oldChild: Node): Node {
-		return this[PropertySymbol.content].replaceChild(newChild, oldChild);
+		return this[PropertySymbol.content][PropertySymbol.replaceChild](newChild, oldChild);
 	}
 
 	/**

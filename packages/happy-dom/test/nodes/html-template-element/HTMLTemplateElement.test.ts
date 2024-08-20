@@ -17,6 +17,7 @@ describe('HTMLTemplateElement', () => {
 	});
 
 	afterEach(() => {
+		CustomElement.serializable = false;
 		vi.restoreAllMocks();
 	});
 
@@ -137,17 +138,50 @@ describe('HTMLTemplateElement', () => {
 			expect(element.getInnerHTML()).toBe('');
 		});
 
-		it('Returns HTML of children and shadow roots of custom elements as a concatenated string.', () => {
+		it('Should ignore shadow roots, as they should not be included in HTMLTemplateElement.', () => {
 			window.customElements.define('custom-element', CustomElement);
 
-			const div = document.createElement('div');
-			const customElement = <CustomElement>document.createElement('custom-element');
-			div.appendChild(customElement);
-			document.body.appendChild(div);
+			element.innerHTML = '<div><custom-element></custom-element></div>';
 
-			expect(
-				document.body.getInnerHTML({ includeShadowRoots: true }).includes('<span class="propKey">')
-			).toBe(true);
+			expect(element.getInnerHTML({ includeShadowRoots: true })).toBe(
+				'<div><custom-element></custom-element></div>'
+			);
+		});
+	});
+
+	describe('getHTML()', () => {
+		it('Returns HTML of children as a concatenated string.', () => {
+			const div = document.createElement('div');
+
+			div.innerHTML = 'Test';
+
+			expect(element.content.childNodes.length).toBe(0);
+			expect(element.getHTML()).toBe('');
+
+			element.appendChild(div);
+
+			expect(element.childNodes.length).toBe(0);
+			expect(element.getHTML()).toBe('<div>Test</div>');
+			expect(new XMLSerializer().serializeToString(element.content)).toBe('<div>Test</div>');
+
+			element.removeChild(div);
+
+			expect(element.content.childNodes.length).toBe(0);
+			expect(element.getHTML()).toBe('');
+		});
+
+		it('Should ignore shadow roots, as they should not be included in HTMLTemplateElement.', () => {
+			CustomElement.serializable = true;
+
+			window.customElements.define('custom-element', CustomElement);
+
+			element.innerHTML = '<div><custom-element></custom-element></div>';
+
+			document.body.appendChild(element);
+
+			expect(element.getHTML({ serializableShadowRoots: true })).toBe(
+				'<div><custom-element></custom-element></div>'
+			);
 		});
 	});
 

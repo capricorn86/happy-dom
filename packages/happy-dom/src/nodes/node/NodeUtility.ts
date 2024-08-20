@@ -8,223 +8,11 @@ import DocumentType from '../document-type/DocumentType.js';
 import Attr from '../attr/Attr.js';
 import ProcessingInstruction from '../processing-instruction/ProcessingInstruction.js';
 import ShadowRoot from '../shadow-root/ShadowRoot.js';
-import DOMException from '../../exception/DOMException.js';
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
-import MutationRecord from '../../mutation-observer/MutationRecord.js';
-import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
 
 /**
  * Node utility.
  */
 export default class NodeUtility {
-	/**
-	 * Append a child node to childNodes.
-	 *
-	 * @param ancestorNode Ancestor node.
-	 * @param node Node to append.
-	 * @param [options] Options.
-	 * @param [options.disableAncestorValidation] Disables validation for checking if the node is an ancestor of the ancestorNode.
-	 * @returns Appended node.
-	 */
-	public static appendChild(
-		ancestorNode: Node,
-		node: Node,
-		options?: { disableAncestorValidation?: boolean }
-	): Node {
-		if (node === ancestorNode) {
-			throw new DOMException(
-				"Failed to execute 'appendChild' on 'Node': Not possible to append a node as a child of itself."
-			);
-		}
-
-		if (!options?.disableAncestorValidation && this.isInclusiveAncestor(node, ancestorNode, true)) {
-			throw new DOMException(
-				"Failed to execute 'appendChild' on 'Node': The new node is a parent of the node to insert to.",
-				DOMExceptionNameEnum.domException
-			);
-		}
-
-		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
-		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode) {
-			for (const child of (<Node>node)[PropertySymbol.childNodes].slice()) {
-				ancestorNode.appendChild(child);
-			}
-			return node;
-		}
-
-		// Remove the node from its previous parent if it has any.
-		if (node[PropertySymbol.parentNode]) {
-			const index = (<Node>node[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(
-				node
-			);
-			if (index !== -1) {
-				(<Node>node[PropertySymbol.parentNode])[PropertySymbol.childNodes].splice(index, 1);
-			}
-		}
-
-		if (ancestorNode[PropertySymbol.isConnected]) {
-			(ancestorNode[PropertySymbol.ownerDocument] || this)[PropertySymbol.cacheID]++;
-		}
-
-		(<Node>ancestorNode)[PropertySymbol.childNodes].push(node);
-
-		(<Node>node)[PropertySymbol.connectToNode](ancestorNode);
-
-		// MutationObserver
-		if ((<Node>ancestorNode)[PropertySymbol.observers].length > 0) {
-			const record = new MutationRecord({
-				target: ancestorNode,
-				type: MutationTypeEnum.childList,
-				addedNodes: [node]
-			});
-
-			for (const observer of (<Node>ancestorNode)[PropertySymbol.observers]) {
-				if (observer.options?.subtree) {
-					(<Node>node)[PropertySymbol.observe](observer);
-				}
-				if (observer.options?.childList) {
-					observer.report(record);
-				}
-			}
-		}
-
-		return node;
-	}
-
-	/**
-	 * Remove Child element from childNodes array.
-	 *
-	 * @param ancestorNode Ancestor node.
-	 * @param node Node to remove.
-	 * @returns Removed node.
-	 */
-	public static removeChild(ancestorNode: Node, node: Node): Node {
-		const index = (<Node>ancestorNode)[PropertySymbol.childNodes].indexOf(node);
-
-		if (index === -1) {
-			throw new DOMException('Failed to remove node. Node is not child of parent.');
-		}
-
-		if (ancestorNode[PropertySymbol.isConnected]) {
-			(ancestorNode[PropertySymbol.ownerDocument] || this)[PropertySymbol.cacheID]++;
-		}
-
-		(<Node>ancestorNode)[PropertySymbol.childNodes].splice(index, 1);
-
-		(<Node>node)[PropertySymbol.connectToNode](null);
-
-		// MutationObserver
-		if ((<Node>ancestorNode)[PropertySymbol.observers].length > 0) {
-			const record = new MutationRecord({
-				target: ancestorNode,
-				type: MutationTypeEnum.childList,
-				removedNodes: [node]
-			});
-
-			for (const observer of (<Node>ancestorNode)[PropertySymbol.observers]) {
-				if (observer.options?.subtree) {
-					(<Node>node)[PropertySymbol.unobserve](observer);
-				}
-				if (observer.options?.childList) {
-					observer.report(record);
-				}
-			}
-		}
-
-		return node;
-	}
-
-	/**
-	 * Inserts a node before another.
-	 *
-	 * @param ancestorNode Ancestor node.
-	 * @param newNode Node to insert.
-	 * @param referenceNode Node to insert before.
-	 * @param [options] Options.
-	 * @param [options.disableAncestorValidation] Disables validation for checking if the node is an ancestor of the ancestorNode.
-	 * @returns Inserted node.
-	 */
-	public static insertBefore(
-		ancestorNode: Node,
-		newNode: Node,
-		referenceNode: Node | null,
-		options?: { disableAncestorValidation?: boolean }
-	): Node {
-		if (
-			!options?.disableAncestorValidation &&
-			this.isInclusiveAncestor(newNode, ancestorNode, true)
-		) {
-			throw new DOMException(
-				"Failed to execute 'insertBefore' on 'Node': The new node is a parent of the node to insert to.",
-				DOMExceptionNameEnum.domException
-			);
-		}
-
-		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
-		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
-		if (newNode[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode) {
-			for (const child of (<Node>newNode)[PropertySymbol.childNodes].slice()) {
-				ancestorNode.insertBefore(child, referenceNode);
-			}
-			return newNode;
-		}
-
-		// If the referenceNode is null or undefined, then the newNode should be appended to the ancestorNode.
-		// According to spec only null is valid, but browsers support undefined as well.
-		if (!referenceNode) {
-			ancestorNode.appendChild(newNode);
-			return newNode;
-		}
-
-		if ((<Node>ancestorNode)[PropertySymbol.childNodes].indexOf(referenceNode) === -1) {
-			throw new DOMException(
-				"Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node."
-			);
-		}
-
-		if (ancestorNode[PropertySymbol.isConnected]) {
-			(ancestorNode[PropertySymbol.ownerDocument] || this)[PropertySymbol.cacheID]++;
-		}
-
-		if (newNode[PropertySymbol.parentNode]) {
-			const index = (<Node>newNode[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(
-				newNode
-			);
-			if (index !== -1) {
-				(<Node>newNode[PropertySymbol.parentNode])[PropertySymbol.childNodes].splice(index, 1);
-			}
-		}
-
-		(<Node>ancestorNode)[PropertySymbol.childNodes].splice(
-			(<Node>ancestorNode)[PropertySymbol.childNodes].indexOf(referenceNode),
-			0,
-			newNode
-		);
-
-		(<Node>newNode)[PropertySymbol.connectToNode](ancestorNode);
-
-		// MutationObserver
-		if ((<Node>ancestorNode)[PropertySymbol.observers].length > 0) {
-			const record = new MutationRecord({
-				target: ancestorNode,
-				type: MutationTypeEnum.childList,
-				addedNodes: [newNode]
-			});
-
-			for (const observer of (<Node>ancestorNode)[PropertySymbol.observers]) {
-				if (observer.options?.subtree) {
-					(<Node>newNode)[PropertySymbol.observe](observer);
-				}
-				if (observer.options?.childList) {
-					observer.report(record);
-				}
-			}
-		}
-
-		return newNode;
-	}
-
 	/**
 	 * Returns whether the passed node is a text node, and narrows its type.
 	 *
@@ -260,7 +48,7 @@ export default class NodeUtility {
 			return true;
 		}
 
-		if (!(<Node>ancestorNode)[PropertySymbol.childNodes].length) {
+		if (!(<Node>ancestorNode)[PropertySymbol.nodeArray].length) {
 			return false;
 		}
 
@@ -346,7 +134,7 @@ export default class NodeUtility {
 				return (<Text | Comment>node).data.length;
 
 			default:
-				return (<Node>node)[PropertySymbol.childNodes].length;
+				return (<Node>node)[PropertySymbol.nodeArray].length;
 		}
 	}
 
@@ -411,13 +199,25 @@ export default class NodeUtility {
 	 * @param elementB
 	 */
 	public static attributeListsEqual(elementA: Element, elementB: Element): boolean {
-		for (let i = 0, max = elementA[PropertySymbol.attributes].length; i < max; i++) {
-			const attributeA = elementA[PropertySymbol.attributes][i];
-			const attributeB = elementB[PropertySymbol.attributes].getNamedItemNS(
-				attributeA[PropertySymbol.namespaceURI],
-				attributeA.localName
-			);
-			if (!attributeB || attributeB[PropertySymbol.value] !== attributeA[PropertySymbol.value]) {
+		const attributesA = Array.from(
+			elementA[PropertySymbol.attributes][PropertySymbol.namedItems].values()
+		);
+		const attributesB = Array.from(
+			elementB[PropertySymbol.attributes][PropertySymbol.namedItems].values()
+		);
+		for (const attributeA of attributesA) {
+			let found = false;
+			for (const attributeB of attributesB) {
+				if (
+					attributeA[PropertySymbol.namespaceURI] === attributeB[PropertySymbol.namespaceURI] &&
+					attributeA.localName === attributeB.localName &&
+					attributeA[PropertySymbol.value] === attributeB[PropertySymbol.value]
+				) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
 				return false;
 			}
 		}
@@ -456,8 +256,9 @@ export default class NodeUtility {
 				if (
 					elementA[PropertySymbol.namespaceURI] !== elementB[PropertySymbol.namespaceURI] ||
 					elementA[PropertySymbol.prefix] !== elementB[PropertySymbol.prefix] ||
-					elementA.localName !== elementB.localName ||
-					elementA[PropertySymbol.attributes].length !== elementB[PropertySymbol.attributes].length
+					elementA[PropertySymbol.localName] !== elementB[PropertySymbol.localName] ||
+					elementA[PropertySymbol.attributes][PropertySymbol.namespaceItems].size !==
+						elementB[PropertySymbol.attributes][PropertySymbol.namespaceItems].size
 				) {
 					return false;
 				}
@@ -505,15 +306,15 @@ export default class NodeUtility {
 		}
 
 		if (
-			(<Node>nodeA)[PropertySymbol.childNodes].length !==
-			(<Node>nodeB)[PropertySymbol.childNodes].length
+			(<Node>nodeA)[PropertySymbol.nodeArray].length !==
+			(<Node>nodeB)[PropertySymbol.nodeArray].length
 		) {
 			return false;
 		}
 
-		for (let i = 0; i < (<Node>nodeA)[PropertySymbol.childNodes].length; i++) {
-			const childNodeA = (<Node>nodeA)[PropertySymbol.childNodes][i];
-			const childNodeB = (<Node>nodeB)[PropertySymbol.childNodes][i];
+		for (let i = 0; i < (<Node>nodeA)[PropertySymbol.nodeArray].length; i++) {
+			const childNodeA = (<Node>nodeA)[PropertySymbol.nodeArray][i];
+			const childNodeB = (<Node>nodeB)[PropertySymbol.nodeArray][i];
 
 			if (!NodeUtility.isEqualNode(childNodeA, childNodeB)) {
 				return false;

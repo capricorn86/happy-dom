@@ -435,7 +435,7 @@ export default class Selection {
 			return;
 		}
 
-		const length = node.childNodes.length;
+		const length = node[PropertySymbol.nodeArray].length;
 		const newRange = new this.#ownerDocument[PropertySymbol.ownerWindow].Range();
 
 		newRange[PropertySymbol.start].node = node;

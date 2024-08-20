@@ -1,3 +1,4 @@
+import Document from '../document/Document.js';
 import HTMLAudioElement from './HTMLAudioElement.js';
 
 /**
@@ -10,10 +11,11 @@ export default class Audio extends HTMLAudioElement {
 	/**
 	 * Constructor.
 	 *
+	 * @param [ownerDocument] Owner document.
 	 * @param [url] source URL.
 	 */
-	constructor(url: string = null) {
-		super();
+	constructor(ownerDocument?: Document, url: string = null) {
+		super(ownerDocument);
 
 		if (url !== null) {
 			this.src = url;

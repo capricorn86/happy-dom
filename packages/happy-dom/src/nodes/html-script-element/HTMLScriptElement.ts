@@ -2,14 +2,16 @@ import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Event from '../../event/Event.js';
 import ErrorEvent from '../../event/events/ErrorEvent.js';
-import Node from '../../nodes/node/Node.js';
-import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
-import HTMLScriptElementNamedNodeMap from './HTMLScriptElementNamedNodeMap.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
-import HTMLScriptElementScriptLoader from './HTMLScriptElementScriptLoader.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
+import Attr from '../attr/Attr.js';
+import DOMException from '../../exception/DOMException.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import ResourceFetch from '../../fetch/ResourceFetch.js';
+import DocumentReadyStateManager from '../document/DocumentReadyStateManager.js';
+import Document from '../document/Document.js';
 
 /**
  * HTML Script Element.
@@ -19,33 +21,30 @@ import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum
  */
 export default class HTMLScriptElement extends HTMLElement {
 	// Public properties
-	public cloneNode: (deep?: boolean) => HTMLScriptElement;
+	public declare cloneNode: (deep?: boolean) => HTMLScriptElement;
 
 	// Events
 	public onerror: (event: ErrorEvent) => void = null;
 	public onload: (event: Event) => void = null;
 
 	// Internal properties
-	public override [PropertySymbol.attributes]: NamedNodeMap;
 	public [PropertySymbol.evaluateScript] = true;
 
 	// Private properties
-	#scriptLoader: HTMLScriptElementScriptLoader;
+	#browserFrame: IBrowserFrame;
+	#loadedScriptURL: string | null = null;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param browserFrame Browser frame.
+	 * @param injected Injected properties.
+	 * @param injected.browserFrame Browser frame.
+	 * @param injected.ownerDocument Owner document.
 	 */
-	constructor(browserFrame: IBrowserFrame) {
-		super();
+	constructor(injected: { browserFrame: IBrowserFrame; ownerDocument: Document }) {
+		super(injected.ownerDocument);
 
-		this.#scriptLoader = new HTMLScriptElementScriptLoader({
-			element: this,
-			browserFrame
-		});
-
-		this[PropertySymbol.attributes] = new HTMLScriptElementNamedNodeMap(this, this.#scriptLoader);
+		this.#browserFrame = injected.browserFrame;
 	}
 
 	/**
@@ -201,24 +200,18 @@ export default class HTMLScriptElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
-		const isConnected = this[PropertySymbol.isConnected];
-		const isParentConnected = parentNode ? parentNode[PropertySymbol.isConnected] : false;
+	public override [PropertySymbol.connectedToDocument](): void {
 		const browserSettings = WindowBrowserSettingsReader.getSettings(
 			this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow]
 		);
 
-		super[PropertySymbol.connectToNode](parentNode);
+		super[PropertySymbol.connectedToDocument]();
 
-		if (
-			isParentConnected &&
-			isConnected !== isParentConnected &&
-			this[PropertySymbol.evaluateScript]
-		) {
+		if (this[PropertySymbol.evaluateScript]) {
 			const src = this.getAttribute('src');
 
 			if (src !== null) {
-				this.#scriptLoader.loadScript(src);
+				this.#loadScript(src);
 			} else if (!browserSettings.disableJavaScriptEvaluation) {
 				const textContent = this.textContent;
 				const type = this.getAttribute('type');
@@ -251,6 +244,124 @@ export default class HTMLScriptElement extends HTMLElement {
 					this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = null;
 				}
 			}
+		}
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.onSetAttribute](
+		attribute: Attr,
+		replacedAttribute: Attr | null
+	): void {
+		super[PropertySymbol.onSetAttribute](attribute, replacedAttribute);
+
+		if (
+			attribute[PropertySymbol.name] === 'src' &&
+			attribute[PropertySymbol.value] !== null &&
+			this[PropertySymbol.isConnected]
+		) {
+			this.#loadScript(attribute[PropertySymbol.value]);
+		}
+	}
+
+	/**
+	 * Returns a URL relative to the given Location object.
+	 *
+	 * @param url URL.
+	 */
+	async #loadScript(url: string): Promise<void> {
+		const browserSettings = this.#browserFrame.page.context.browser.settings;
+		const async = this.getAttribute('async') !== null;
+
+		if (!url || !this[PropertySymbol.isConnected]) {
+			return;
+		}
+
+		let absoluteURL: string;
+		try {
+			absoluteURL = new URL(
+				url,
+				this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].location.href
+			).href;
+		} catch (error) {
+			return;
+		}
+
+		if (this.#loadedScriptURL === absoluteURL) {
+			return;
+		}
+
+		if (
+			browserSettings.disableJavaScriptFileLoading ||
+			browserSettings.disableJavaScriptEvaluation
+		) {
+			if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+				this.dispatchEvent(new Event('load'));
+			} else {
+				WindowErrorUtility.dispatchError(
+					this,
+					new DOMException(
+						`Failed to load external script "${absoluteURL}". JavaScript file loading is disabled.`,
+						DOMExceptionNameEnum.notSupportedError
+					)
+				);
+			}
+			return;
+		}
+
+		const resourceFetch = new ResourceFetch({
+			browserFrame: this.#browserFrame,
+			window: this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow]
+		});
+		let code: string | null = null;
+		let error: Error | null = null;
+
+		this.#loadedScriptURL = absoluteURL;
+
+		if (async) {
+			const readyStateManager = (<
+				{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }
+			>(<unknown>this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow]))[
+				PropertySymbol.readyStateManager
+			];
+
+			readyStateManager.startTask();
+
+			try {
+				code = await resourceFetch.fetch(absoluteURL);
+			} catch (e) {
+				error = e;
+			}
+
+			readyStateManager.endTask();
+		} else {
+			try {
+				code = resourceFetch.fetchSync(absoluteURL);
+			} catch (e) {
+				error = e;
+			}
+		}
+
+		if (error) {
+			WindowErrorUtility.dispatchError(this, error);
+		} else {
+			this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = this;
+			code = '//# sourceURL=' + absoluteURL + '\n' + code;
+
+			if (
+				browserSettings.disableErrorCapturing ||
+				browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
+			) {
+				this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].eval(code);
+			} else {
+				WindowErrorUtility.captureError(
+					this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow],
+					() => this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].eval(code)
+				);
+			}
+			this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = null;
+			this.dispatchEvent(new Event('load'));
 		}
 	}
 }

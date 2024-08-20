@@ -1,12 +1,11 @@
 import Storage from '../../src/storage/Storage.js';
-import StorageFactory from '../../src/storage/StorageFactory.js';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 
 describe('Storage', () => {
 	let storage: Storage;
 
 	beforeEach(() => {
-		storage = StorageFactory.createStorage();
+		storage = new Storage();
 	});
 
 	describe('get length()', () => {
@@ -63,7 +62,7 @@ describe('Storage', () => {
 			expect(storage.getItem('removeItem')).toBe('value');
 			expect(storage.getItem('clear')).toBe('value');
 
-			const storage2 = StorageFactory.createStorage();
+			const storage2 = new Storage();
 
 			// @ts-expect-error
 			storage2.length = 'value';

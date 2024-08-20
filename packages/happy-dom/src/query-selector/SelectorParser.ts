@@ -87,6 +87,7 @@ export default class SelectorParser {
 		options?: { ignoreErrors?: boolean }
 	): Array<Array<SelectorItem>> {
 		const ignoreErrors = options?.ignoreErrors;
+
 		if (selector === '*') {
 			return [[new SelectorItem({ tagName: '*', ignoreErrors })]];
 		}
