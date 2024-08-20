@@ -6,6 +6,8 @@ import QuerySelectorNthChildHTML from './data/QuerySelectorNthChildHTML.js';
 import HTMLInputElement from '../../src/nodes/html-input-element/HTMLInputElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import QuerySelector from '../../src/query-selector/QuerySelector.js';
+import DOMException from '../../src/exception/DOMException.js';
+import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 
 describe('QuerySelector', () => {
 	let window: Window;
@@ -17,6 +19,26 @@ describe('QuerySelector', () => {
 	});
 
 	describe('querySelectorAll', () => {
+		it('Throws an error for invalid selectors.', () => {
+			const container = document.createElement('div');
+			expect(() => container.querySelectorAll(<string>(<unknown>12))).toThrow(
+				new DOMException(
+					`Failed to execute 'querySelectorAll' on 'HTMLDivElement': '12' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
+				)
+			);
+			expect(() => container.querySelectorAll(<string>(<unknown>(() => {})))).toThrow(
+				new DOMException(
+					`Failed to execute 'querySelectorAll' on 'HTMLDivElement': '() => {\n      }' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
+				)
+			);
+			expect(() => container.querySelectorAll(<string>(<unknown>Symbol('test')))).toThrow(
+				new Error(`Cannot convert a Symbol value to a string`)
+			);
+			expect(() => container.querySelectorAll(<string>(<unknown>true))).not.toThrow();
+		});
+
 		it('Returns all span elements.', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
@@ -1049,6 +1071,26 @@ describe('QuerySelector', () => {
 	});
 
 	describe('querySelector', () => {
+		it('Throws an error for invalid selectors.', () => {
+			const container = document.createElement('div');
+			expect(() => container.querySelector(<string>(<unknown>12))).toThrow(
+				new DOMException(
+					`Failed to execute 'querySelector' on 'HTMLDivElement': '12' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
+				)
+			);
+			expect(() => container.querySelector(<string>(<unknown>(() => {})))).toThrow(
+				new DOMException(
+					`Failed to execute 'querySelector' on 'HTMLDivElement': '() => {\n      }' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
+				)
+			);
+			expect(() => container.querySelector(<string>(<unknown>Symbol('test')))).toThrow(
+				new Error(`Cannot convert a Symbol value to a string`)
+			);
+			expect(() => container.querySelector(<string>(<unknown>true))).not.toThrow();
+		});
+
 		it('Returns a span matching "span".', () => {
 			const div1 = document.createElement('div');
 			const div2 = document.createElement('div');
@@ -1357,6 +1399,26 @@ describe('QuerySelector', () => {
 	});
 
 	describe('matches()', () => {
+		it('Throws an error for invalid selectors.', () => {
+			const container = document.createElement('div');
+			expect(() => container.matches(<string>(<unknown>12))).toThrow(
+				new DOMException(
+					`Failed to execute 'matches' on 'HTMLDivElement': '12' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
+				)
+			);
+			expect(() => container.matches(<string>(<unknown>(() => {})))).toThrow(
+				new DOMException(
+					`Failed to execute 'matches' on 'HTMLDivElement': '() => {\n      }' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
+				)
+			);
+			expect(() => container.matches(<string>(<unknown>Symbol('test')))).toThrow(
+				new Error(`Cannot convert a Symbol value to a string`)
+			);
+			expect(() => container.matches(<string>(<unknown>true))).not.toThrow();
+		});
+
 		it('Returns true when the element matches the selector', () => {
 			const div = document.createElement('div');
 			div.innerHTML = '<div class="foo"></div>';

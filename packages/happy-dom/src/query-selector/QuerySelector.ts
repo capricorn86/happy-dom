@@ -13,6 +13,8 @@ import ISVGElementTagNameMap from '../config/ISVGElementTagNameMap.js';
 import ICachedQuerySelectorAllItem from '../nodes/node/ICachedQuerySelectorAllResult.js';
 import ICachedQuerySelectorItem from '../nodes/node/ICachedQuerySelectorResult.js';
 import ICachedMatchesItem from '../nodes/node/ICachedMatchesResult.js';
+import DOMException from '../exception/DOMException.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 
 type DocumentPositionAndElement = {
 	documentPosition: string;
@@ -77,15 +79,24 @@ export default class QuerySelector {
 		node: Element | Document | DocumentFragment,
 		selector: string
 	): NodeList<Element> {
+		if (selector === null || selector === undefined) {
+			return new NodeList<Element>(PropertySymbol.illegalConstructor, []);
+		}
+
 		if (<string>selector === '') {
 			throw new Error(
 				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': The provided selector is empty.`
 			);
 		}
 
-		if (selector === null || selector === undefined) {
-			return new NodeList<Element>(PropertySymbol.illegalConstructor, []);
+		if (typeof selector !== 'string' && typeof selector !== 'boolean') {
+			throw new DOMException(
+				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': '${selector}' is not a valid selector.`,
+				'SyntaxError'
+			);
 		}
+
+		selector = String(selector);
 
 		const cache = node[PropertySymbol.cache].querySelectorAll;
 		const cachedResult = cache.get(selector);
@@ -187,15 +198,24 @@ export default class QuerySelector {
 		node: Element | Document | DocumentFragment,
 		selector: string
 	): Element | null {
+		if (selector === null || selector === undefined) {
+			return null;
+		}
+
 		if (selector === '') {
 			throw new Error(
 				`Failed to execute 'querySelector' on '${node.constructor.name}': The provided selector is empty.`
 			);
 		}
 
-		if (selector === null || selector === undefined) {
-			return null;
+		if (typeof selector !== 'string' && typeof selector !== 'boolean') {
+			throw new DOMException(
+				`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`,
+				'SyntaxError'
+			);
 		}
+
+		selector = String(selector);
 
 		const cachedResult = node[PropertySymbol.cache].querySelector.get(selector);
 
@@ -257,6 +277,27 @@ export default class QuerySelector {
 		if (!selector) {
 			return null;
 		}
+
+		if (selector === null || selector === undefined) {
+			return {
+				priorityWeight: 0
+			};
+		}
+
+		if (<string>selector === '') {
+			throw new Error(
+				`Failed to execute 'matches' on '${element.constructor.name}': The provided selector is empty.`
+			);
+		}
+
+		if (typeof selector !== 'string' && typeof selector !== 'boolean') {
+			throw new DOMException(
+				`Failed to execute 'matches' on '${element.constructor.name}': '${selector}' is not a valid selector.`,
+				DOMExceptionNameEnum.syntaxError
+			);
+		}
+
+		selector = String(selector);
 
 		if (selector === '*') {
 			return {
