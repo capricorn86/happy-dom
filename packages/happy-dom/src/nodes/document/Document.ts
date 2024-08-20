@@ -34,7 +34,6 @@ import VisibilityStateEnum from './VisibilityStateEnum.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import CookieStringUtility from '../../cookie/urilities/CookieStringUtility.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
-import NodeFactory from '../NodeFactory.js';
 import { URL } from 'url';
 import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
@@ -202,9 +201,10 @@ export default class Document extends Node {
 	 * @param injected.window Window.
 	 */
 	constructor(injected: { browserFrame: IBrowserFrame; window: BrowserWindow }) {
-		super();
+		super(<Document>{});
 		this.#browserFrame = injected.browserFrame;
 		this[PropertySymbol.ownerWindow] = injected.window;
+		this[PropertySymbol.ownerDocument] = null;
 	}
 
 	/**
@@ -1074,12 +1074,10 @@ export default class Document extends Node {
 
 		// SVG element
 		if (namespaceURI === NamespaceURI.svg) {
-			const element = NodeFactory.createNode<SVGElement>(
-				this,
+			const element =
 				qualifiedName === 'svg'
-					? this[PropertySymbol.ownerWindow].SVGSVGElement
-					: this[PropertySymbol.ownerWindow].SVGElement
-			);
+					? new this[PropertySymbol.ownerWindow].SVGSVGElement(this)
+					: new this[PropertySymbol.ownerWindow].SVGElement(this);
 			element[PropertySymbol.tagName] = qualifiedName;
 			element[PropertySymbol.localName] = qualifiedName;
 			element[PropertySymbol.namespaceURI] = namespaceURI;
@@ -1109,7 +1107,7 @@ export default class Document extends Node {
 
 		// Known HTML element
 		if (elementClass) {
-			const element = NodeFactory.createNode<HTMLElement>(this, elementClass);
+			const element = new elementClass(this);
 
 			element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
 			element[PropertySymbol.localName] = localName;
@@ -1120,13 +1118,9 @@ export default class Document extends Node {
 		}
 
 		// Unknown HTML element
-		const element = NodeFactory.createNode<Element>(
-			this,
-			// If the tag name contains a hyphen, it is an unknown custom element and we should use HTMLElement.
-			localName.includes('-')
-				? this[PropertySymbol.ownerWindow].HTMLElement
-				: this[PropertySymbol.ownerWindow].HTMLUnknownElement
-		);
+		const element = localName.includes('-')
+			? new this[PropertySymbol.ownerWindow].HTMLElement(this)
+			: new this[PropertySymbol.ownerWindow].HTMLUnknownElement(this);
 
 		element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
 		element[PropertySymbol.localName] = localName;
@@ -1150,7 +1144,7 @@ export default class Document extends Node {
 				`Failed to execute 'createTextNode' on 'Document': 1 argument required, but only ${arguments.length} present.`
 			);
 		}
-		return NodeFactory.createNode<Text>(this, this[PropertySymbol.ownerWindow].Text, String(data));
+		return new this[PropertySymbol.ownerWindow].Text(String(data));
 	}
 
 	/**
@@ -1160,7 +1154,12 @@ export default class Document extends Node {
 	 * @returns Text node.
 	 */
 	public createComment(data?: string): Comment {
-		return NodeFactory.createNode<Comment>(this, this[PropertySymbol.ownerWindow].Comment, data);
+		if (arguments.length < 1) {
+			throw new TypeError(
+				`Failed to execute 'createComment' on 'Document': 1 argument required, but only ${arguments.length} present.`
+			);
+		}
+		return new this[PropertySymbol.ownerWindow].Comment(String(data));
 	}
 
 	/**
@@ -1226,7 +1225,7 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public createAttributeNS(namespaceURI: string, qualifiedName: string): Attr {
-		const attribute = NodeFactory.createNode<Attr>(this, this[PropertySymbol.ownerWindow].Attr);
+		const attribute = new this[PropertySymbol.ownerWindow].Attr(this);
 		const parts = qualifiedName.split(':');
 		attribute[PropertySymbol.namespaceURI] = namespaceURI;
 		attribute[PropertySymbol.name] = qualifiedName;
@@ -1307,6 +1306,15 @@ export default class Document extends Node {
 	 * @returns ProcessingInstruction.
 	 */
 	public createProcessingInstruction(target: string, data: string): ProcessingInstruction {
+		if (arguments.length < 2) {
+			throw new TypeError(
+				`Failed to execute 'createProcessingInstruction' on 'Document': 2 arguments required, but only ${arguments.length} present.`
+			);
+		}
+
+		target = String(target);
+		data = String(data);
+
 		if (!target || !PROCESSING_INSTRUCTION_TARGET_REGEXP.test(target)) {
 			throw new DOMException(
 				`Failed to execute 'createProcessingInstruction' on 'Document': The target provided ('${target}') is not a valid name.`
@@ -1317,12 +1325,11 @@ export default class Document extends Node {
 				`Failed to execute 'createProcessingInstruction' on 'Document': The data provided ('?>') contains '?>'`
 			);
 		}
-		const processingInstruction = NodeFactory.createNode<ProcessingInstruction>(
-			this,
-			this[PropertySymbol.ownerWindow].ProcessingInstruction,
-			data
-		);
+		const processingInstruction = new this[PropertySymbol.ownerWindow].ProcessingInstruction(this);
+
+		processingInstruction[PropertySymbol.data] = data;
 		processingInstruction[PropertySymbol.target] = target;
+
 		return processingInstruction;
 	}
 

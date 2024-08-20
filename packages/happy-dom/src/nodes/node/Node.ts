@@ -7,7 +7,6 @@ import NodeDocumentPositionEnum from './NodeDocumentPositionEnum.js';
 import NodeUtility from './NodeUtility.js';
 import Attr from '../attr/Attr.js';
 import NodeList from './NodeList.js';
-import NodeFactory from '../NodeFactory.js';
 import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
 import DOMException from '../../exception/DOMException.js';
@@ -110,20 +109,21 @@ export default class Node extends EventTarget {
 
 	/**
 	 * Constructor.
+	 *
+	 * @param [ownerDocument] Owner document.
 	 */
-	constructor() {
+	constructor(ownerDocument?: Document) {
 		super();
-		if ((<typeof Node>this.constructor)[PropertySymbol.ownerDocument] !== undefined) {
-			this[PropertySymbol.ownerDocument] = (<typeof Node>this.constructor)[
-				PropertySymbol.ownerDocument
-			];
-		} else {
-			const ownerDocument = NodeFactory.pullOwnerDocument();
-			if (!ownerDocument) {
-				throw new TypeError('Illegal constructor');
-			}
-			this[PropertySymbol.ownerDocument] = ownerDocument;
+
+		if (!ownerDocument) {
+			ownerDocument = (<typeof Node>this.constructor)[PropertySymbol.ownerDocument];
 		}
+
+		if (!ownerDocument) {
+			throw new TypeError('Illegal constructor');
+		}
+
+		this[PropertySymbol.ownerDocument] = ownerDocument;
 	}
 
 	/**
@@ -445,10 +445,12 @@ export default class Node extends EventTarget {
 	 * @returns Cloned node.
 	 */
 	public [PropertySymbol.cloneNode](deep = false): Node {
-		const clone = NodeFactory.createNode<Node>(
-			this[PropertySymbol.ownerDocument],
-			<typeof Node>this.constructor
-		);
+		(<typeof Node>this.constructor)[PropertySymbol.ownerDocument] =
+			this[PropertySymbol.ownerDocument];
+
+		const clone = new (<typeof Node>this.constructor)();
+
+		(<typeof Node>this.constructor)[PropertySymbol.ownerDocument] = null;
 
 		// Document has childNodes directly when it is created
 		if (clone[PropertySymbol.nodeArray].length) {

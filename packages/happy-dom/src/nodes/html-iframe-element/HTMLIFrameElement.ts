@@ -58,11 +58,14 @@ export default class HTMLIFrameElement extends HTMLElement {
 	/**
 	 * Constructor.
 	 *
-	 * @param browserFrame Browser frame.
+	 * @param injected Injected properties.
+	 * @param injected.browserFrame Browser frame.
+	 * @param injected.ownerDocument Owner document.
 	 */
-	constructor(browserFrame: IBrowserFrame) {
-		super();
-		this.#browserFrame = browserFrame;
+	constructor(injected: { browserFrame: IBrowserFrame; ownerDocument: Document }) {
+		super(injected.ownerDocument);
+
+		this.#browserFrame = injected.browserFrame;
 	}
 
 	/**

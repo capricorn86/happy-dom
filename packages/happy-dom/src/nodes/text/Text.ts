@@ -5,6 +5,7 @@ import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import HTMLStyleElement from '../html-style-element/HTMLStyleElement.js';
+import Document from '../document/Document.js';
 
 /**
  * Text node.
@@ -14,6 +15,18 @@ export default class Text extends CharacterData {
 	public override [PropertySymbol.nodeType] = NodeTypeEnum.textNode;
 	public override [PropertySymbol.textAreaNode]: HTMLTextAreaElement | null = null;
 	public override [PropertySymbol.styleNode]: HTMLStyleElement | null = null;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param [ownerDocument] Owner document.
+	 * @param [data] Data.
+	 */
+	constructor(ownerDocument?: Document, data?: string) {
+		super(ownerDocument);
+
+		this[PropertySymbol.data] = data !== undefined ? String(data) : '';
+	}
 
 	/**
 	 * Node name.

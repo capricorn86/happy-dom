@@ -17,6 +17,7 @@ import Element from '../element/Element.js';
 import EventTarget from '../../event/EventTarget.js';
 import Node from '../node/Node.js';
 import ClassMethodBinder from '../../ClassMethodBinder.js';
+import Document from '../document/Document.js';
 
 /**
  * HTML Form Element.
@@ -43,12 +44,14 @@ export default class HTMLFormElement extends HTMLElement {
 	/**
 	 * Constructor.
 	 *
-	 * @param browserFrame Browser frame.
+	 * @param injected Injected properties.
+	 * @param injected.browserFrame Browser frame.
+	 * @param injected.ownerDocument Owner document.
 	 */
-	constructor(browserFrame: IBrowserFrame) {
-		super();
+	constructor(injected: { browserFrame: IBrowserFrame; ownerDocument: Document }) {
+		super(injected.ownerDocument);
 
-		this.#browserFrame = browserFrame;
+		this.#browserFrame = injected.browserFrame;
 
 		ClassMethodBinder.bindMethods(
 			this,

@@ -326,6 +326,7 @@ describe('NodeUtility', () => {
 				const instruction1 = document.createProcessingInstruction('target', 'foo1');
 				const instruction2 = document.createProcessingInstruction('target', 'foo2');
 
+				debugger;
 				expect(NodeUtility.isEqualNode(instruction1, instruction2)).toEqual(false);
 			});
 

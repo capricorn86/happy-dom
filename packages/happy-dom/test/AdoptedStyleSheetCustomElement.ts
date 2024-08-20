@@ -7,7 +7,7 @@ import CSSStyleSheet from '../src/css/CSSStyleSheet.js';
  */
 export default class AdoptedStyleSheetCustomElement extends HTMLElement {
 	public static observedAttributesCallCount = 0;
-	public static shadowRootMode = 'open';
+	public static shadowRootMode: 'open' | 'closed' = 'open';
 	public changedAttributes: Array<{
 		name: string;
 		oldValue: string | null;
@@ -67,8 +67,8 @@ export default class AdoptedStyleSheetCustomElement extends HTMLElement {
             <div>
                 <span class="propKey">
                     key1 is "${this.getAttribute('key1')}" and key2 is "${this.getAttribute(
-											'key2'
-										)}".
+			'key2'
+		)}".
                 </span>
                 <span class="children">${Array.from(this.childNodes)
 									.map(

@@ -11,7 +11,6 @@ import EventPhaseEnum from '../../../src/event/EventPhaseEnum.js';
 import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
-import NodeFactory from '../../../src/nodes/NodeFactory.js';
 
 describe('Node', () => {
 	let window: Window;
@@ -126,13 +125,13 @@ describe('Node', () => {
 
 	describe('get nodeValue()', () => {
 		it('Returns null.', () => {
-			expect(NodeFactory.createNode(document, Node).nodeValue).toBe(null);
+			expect(new Node(document).nodeValue).toBe(null);
 		});
 	});
 
 	describe('get nodeName()', () => {
 		it('Returns emptry string.', () => {
-			expect(NodeFactory.createNode(document, Node).nodeName).toBe('');
+			expect(new Node(document).nodeName).toBe('');
 		});
 	});
 

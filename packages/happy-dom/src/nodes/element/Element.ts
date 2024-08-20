@@ -21,7 +21,6 @@ import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
 import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
-import NodeFactory from '../NodeFactory.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
@@ -849,10 +848,9 @@ export default class Element
 			);
 		}
 
-		const shadowRoot = NodeFactory.createNode<ShadowRoot>(
-			this[PropertySymbol.ownerDocument],
-			this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].ShadowRoot
-		);
+		const shadowRoot = new this[PropertySymbol.ownerDocument][
+			PropertySymbol.ownerWindow
+		].ShadowRoot(this[PropertySymbol.ownerDocument]);
 
 		this[PropertySymbol.shadowRoot] = shadowRoot;
 

@@ -1130,7 +1130,7 @@ describe('Document', () => {
 
 			for (let i = 0; i < inputs.length; i++) {
 				// @ts-ignore
-				const textNode = document.createTextNode(inputs[i]);
+				const textNode = document.createTextNode(<string>inputs[i]);
 				expect(textNode.data).toBe(outputs[i]);
 			}
 		});
@@ -1138,15 +1138,30 @@ describe('Document', () => {
 
 	describe('createComment()', () => {
 		it('Creates a comment node.', () => {
-			const textContent = 'text';
-			const commentNode = document.createComment(textContent);
-			expect(commentNode.textContent).toBe(textContent);
-			expect(commentNode instanceof Comment).toBe(true);
+			const commentContent = 'comment';
+			const commentNode = document.createTextNode(commentContent);
+			expect(commentNode.textContent).toBe(commentContent);
+			expect(commentNode instanceof Text).toBe(true);
 		});
 
 		it('Creates a comment node without content.', () => {
-			const commentNode = document.createComment();
-			expect(commentNode.data).toBe('');
+			// @ts-ignore
+			expect(() => document.createComment()).toThrow(
+				new TypeError(
+					`Failed to execute 'createComment' on 'Document': 1 argument required, but only 0 present.`
+				)
+			);
+		});
+
+		it('Creates a comment node with non string content.', () => {
+			const inputs = [1, -1, true, false, null, undefined, {}, []];
+			const outputs = ['1', '-1', 'true', 'false', 'null', 'undefined', '[object Object]', ''];
+
+			for (let i = 0; i < inputs.length; i++) {
+				// @ts-ignore
+				const commentNode = document.createComment(<string>inputs[i]);
+				expect(commentNode.data).toBe(outputs[i]);
+			}
 		});
 	});
 

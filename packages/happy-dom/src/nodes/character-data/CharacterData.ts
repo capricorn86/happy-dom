@@ -23,19 +23,6 @@ export default abstract class CharacterData
 	public declare cloneNode: (deep?: boolean) => CharacterData;
 
 	/**
-	 * Constructor.
-	 *
-	 * @param [data] Data.
-	 */
-	constructor(data?: string) {
-		super();
-
-		if (data) {
-			this[PropertySymbol.data] = data;
-		}
-	}
-
-	/**
 	 * Returns text content.
 	 *
 	 * @returns Text content.
