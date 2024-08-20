@@ -445,12 +445,19 @@ export default class Node extends EventTarget {
 	 * @returns Cloned node.
 	 */
 	public [PropertySymbol.cloneNode](deep = false): Node {
+		// Can be a custom element, which should keep the ownerDocument
+		const hasOwnerDocument =
+			(<typeof Node>this.constructor)[PropertySymbol.ownerDocument] ===
+			this[PropertySymbol.ownerDocument];
+
 		(<typeof Node>this.constructor)[PropertySymbol.ownerDocument] =
 			this[PropertySymbol.ownerDocument];
 
 		const clone = new (<typeof Node>this.constructor)();
 
-		(<typeof Node>this.constructor)[PropertySymbol.ownerDocument] = null;
+		if (!hasOwnerDocument) {
+			(<typeof Node>this.constructor)[PropertySymbol.ownerDocument] = null;
+		}
 
 		// Document has childNodes directly when it is created
 		if (clone[PropertySymbol.nodeArray].length) {
@@ -654,8 +661,6 @@ export default class Node extends EventTarget {
 
 		const index = nodeArray.indexOf(referenceNode);
 
-		nodeArray.splice(index, 0, newNode);
-
 		if (newNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
 			const elementArray = this[PropertySymbol.elementArray];
 			if (referenceNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
@@ -664,7 +669,7 @@ export default class Node extends EventTarget {
 				let isInserted = false;
 				for (let i = index, max = nodeArray.length; i < max; i++) {
 					if (nodeArray[i][PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
-						elementArray.splice(i, 0, <Element>newNode);
+						elementArray.splice(elementArray.indexOf(<Element>nodeArray[i]), 0, <Element>newNode);
 						isInserted = true;
 						break;
 					}
@@ -674,6 +679,8 @@ export default class Node extends EventTarget {
 				}
 			}
 		}
+
+		nodeArray.splice(index, 0, newNode);
 
 		newNode[PropertySymbol.connectedToNode]();
 

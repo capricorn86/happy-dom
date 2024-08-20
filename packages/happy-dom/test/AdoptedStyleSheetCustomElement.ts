@@ -67,8 +67,8 @@ export default class AdoptedStyleSheetCustomElement extends HTMLElement {
             <div>
                 <span class="propKey">
                     key1 is "${this.getAttribute('key1')}" and key2 is "${this.getAttribute(
-			'key2'
-		)}".
+											'key2'
+										)}".
                 </span>
                 <span class="children">${Array.from(this.childNodes)
 									.map(

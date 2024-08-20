@@ -161,7 +161,6 @@ describe('TextTrack', () => {
 			const cue = new window.VTTCue(0, 10, 'test');
 
 			textTrack.addCue(cue);
-			debugger;
 			textTrack.removeCue(cue);
 
 			expect(cue.track).toBe(null);

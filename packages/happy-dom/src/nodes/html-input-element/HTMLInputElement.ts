@@ -1298,8 +1298,6 @@ export default class HTMLInputElement extends HTMLElement {
 	 */
 	public override [PropertySymbol.cloneNode](deep = false): HTMLInputElement {
 		const clone = <HTMLInputElement>super[PropertySymbol.cloneNode](deep);
-		clone.formAction = this.formAction;
-		clone.formMethod = this.formMethod;
 		clone[PropertySymbol.value] = this[PropertySymbol.value];
 		clone[PropertySymbol.height] = this[PropertySymbol.height];
 		clone[PropertySymbol.width] = this[PropertySymbol.width];

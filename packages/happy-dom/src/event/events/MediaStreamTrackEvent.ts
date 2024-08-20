@@ -1,4 +1,4 @@
-import MediaStreamTrack from '../../nodes/html-canvas-element/MediaStreamTrack.js';
+import MediaStreamTrack from '../../nodes/html-media-element/MediaStreamTrack.js';
 import Event from '../Event.js';
 import IMediaQueryListEventInit from './IMediaQueryListEventInit.js';
 

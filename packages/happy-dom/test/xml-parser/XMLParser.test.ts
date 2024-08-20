@@ -775,5 +775,36 @@ describe('XMLParser', () => {
                 </div>`.replace(/\s/gm, '')
 			);
 		});
+
+		it('Handles complex style attributes', () => {
+			const root = XMLParser.parse(
+				document,
+				`<div class="container">
+                    <div class="sliderContainer">
+                        <input class="slider" type="range" step="1" min="0" max="100">
+                            
+                        <div class="value">
+                            <kompis-text-0-0-0 data-element-name="kompis-text"><!---->0<!----></kompis-text-0-0-0>
+                        </div>
+		
+					    <div class="sliderBackground" style="background: linear-gradient(to right, rgb(17, 17, 17) 0%, rgb(17, 17, 17) 0.75rem, rgb(223, 223, 223) 0.75rem, rgb(223, 223, 223) 100%);"></div>
+				    </div>
+			    </div>`
+			);
+
+			expect(new XMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
+				`<div class="container">
+                    <div class="sliderContainer">
+                        <input class="slider" type="range" step="1" min="0" max="100">
+                            
+                        <div class="value">
+                            <kompis-text-0-0-0 data-element-name="kompis-text"><!---->0<!----></kompis-text-0-0-0>
+                        </div>
+		
+					    <div class="sliderBackground" style="background: linear-gradient(to right, rgb(17, 17, 17) 0%, rgb(17, 17, 17) 0.75rem, rgb(223, 223, 223) 0.75rem, rgb(223, 223, 223) 100%);"></div>
+				    </div>
+			    </div>`.replace(/\s/gm, '')
+			);
+		});
 	});
 });
