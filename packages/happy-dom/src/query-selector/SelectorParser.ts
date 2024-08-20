@@ -88,8 +88,6 @@ export default class SelectorParser {
 	): Array<Array<SelectorItem>> {
 		const ignoreErrors = options?.ignoreErrors;
 
-		selector = String(selector);
-
 		if (selector === '*') {
 			return [[new SelectorItem({ tagName: '*', ignoreErrors })]];
 		}
