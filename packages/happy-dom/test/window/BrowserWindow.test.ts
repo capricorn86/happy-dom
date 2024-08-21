@@ -32,6 +32,7 @@ import IBrowserPage from '../../src/browser/types/IBrowserPage.js';
 import AdoptedStyleSheetCustomElement from '../AdoptedStyleSheetCustomElement.js';
 import CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
 import Location from '../../src/location/Location.js';
+import HTMLElementConfig from '../../src/config/HTMLElementConfig.js';
 
 import '../types.d.js';
 
@@ -136,6 +137,16 @@ describe('BrowserWindow', () => {
 			const request = new window.Request('https://localhost:8080/test/page/');
 			expect(request instanceof Request).toBe(true);
 		});
+	});
+
+	describe('get {ElementClass}()', () => {
+		for (const tagName of Object.keys(HTMLElementConfig)) {
+			it(`Exposes the element class "${HTMLElementConfig[tagName].className}" for tag name "${tagName}"`, () => {
+				expect(window[HTMLElementConfig[tagName].className].name).toBe(
+					HTMLElementConfig[tagName].className
+				);
+			});
+		}
 	});
 
 	describe('get performance()', () => {
@@ -1617,6 +1628,7 @@ describe('BrowserWindow', () => {
 			await new Promise((resolve) => {
 				newWindow.addEventListener('load', () => {
 					expect(newWindow.document.body.innerHTML).toBe('Test');
+					expect(newWindow.opener).toBe(window);
 					resolve(null);
 				});
 			});

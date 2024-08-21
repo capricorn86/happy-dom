@@ -5,14 +5,17 @@ import ValidityState from '../../validity-state/ValidityState.js';
 import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import HTMLOptionElement from '../html-option-element/HTMLOptionElement.js';
 import HTMLOptionsCollection from './HTMLOptionsCollection.js';
-import NodeList from '../node/NodeList.js';
 import Event from '../../event/Event.js';
-import Node from '../node/Node.js';
-import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
-import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
-import HTMLSelectElementNamedNodeMap from './HTMLSelectElementNamedNodeMap.js';
 import HTMLCollection from '../element/HTMLCollection.js';
+import NodeTypeEnum from '../node/NodeTypeEnum.js';
+import QuerySelector from '../../query-selector/QuerySelector.js';
+import NodeList from '../node/NodeList.js';
+import DOMException from '../../exception/DOMException.js';
+import ClassMethodBinder from '../../ClassMethodBinder.js';
+import Element from '../element/Element.js';
+import Node from '../node/Node.js';
+import EventTarget from '../../event/EventTarget.js';
 
 /**
  * HTML Select Element.
@@ -22,18 +25,173 @@ import HTMLCollection from '../element/HTMLCollection.js';
  */
 export default class HTMLSelectElement extends HTMLElement {
 	// Internal properties.
-	public override [PropertySymbol.attributes]: NamedNodeMap = new HTMLSelectElementNamedNodeMap(
-		this
-	);
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
-	public [PropertySymbol.selectNode]: Node = this;
-	public [PropertySymbol.length] = 0;
-	public [PropertySymbol.options]: HTMLOptionsCollection = new HTMLOptionsCollection(this);
+	public [PropertySymbol.options]: HTMLOptionsCollection | null = null;
+	public [PropertySymbol.selectedOptions]: HTMLCollection<HTMLOptionElement> | null = null;
+	public [PropertySymbol.selectedIndex]: number = -1;
 
 	// Events
 	public onchange: (event: Event) => void | null = null;
 	public oninput: (event: Event) => void | null = null;
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+
+		ClassMethodBinder.bindMethods(
+			this,
+			[EventTarget, Node, Element, HTMLElement, HTMLSelectElement],
+			{
+				bindSymbols: true,
+				forwardToPrototype: true
+			}
+		);
+
+		const proxy = new Proxy(this, {
+			get: (target, property) => {
+				if (property in target || typeof property === 'symbol') {
+					return target[property];
+				}
+				const index = Number(property);
+				if (!isNaN(index)) {
+					return QuerySelector.querySelectorAll(target, 'option')[PropertySymbol.items][index];
+				}
+			},
+			set(target, property, newValue): boolean {
+				if (typeof property === 'symbol') {
+					target[property] = newValue;
+					return true;
+				}
+
+				const index = Number(property);
+
+				if (isNaN(index)) {
+					target[property] = newValue;
+					return true;
+				}
+
+				if (!newValue || !(newValue instanceof HTMLOptionElement)) {
+					throw new Error(
+						`TypeError: Failed to set an indexed property [${index}] on 'HTMLSelectElement': parameter 2 is not of type 'HTMLOptionElement'.`
+					);
+				}
+
+				const options = QuerySelector.querySelectorAll(target, 'option')[PropertySymbol.items];
+				const childNodes = target[PropertySymbol.nodeArray];
+
+				while (childNodes.length) {
+					target[PropertySymbol.removeChild](childNodes[0]);
+				}
+
+				for (let i = 0; i <= index; i++) {
+					if (i === index) {
+						target[PropertySymbol.appendChild](newValue);
+					} else if (options[i]) {
+						target[PropertySymbol.appendChild](options[i]);
+					} else {
+						target[PropertySymbol.appendChild](
+							target[PropertySymbol.ownerDocument].createElement('option')
+						);
+					}
+				}
+
+				return true;
+			},
+			deleteProperty(target, property): boolean {
+				if (typeof property === 'symbol') {
+					delete target[property];
+					return true;
+				}
+				const index = Number(property);
+				if (isNaN(index)) {
+					delete target[property];
+				}
+				return true;
+			},
+			ownKeys(target): string[] {
+				return Object.keys(QuerySelector.querySelectorAll(target, 'option')[PropertySymbol.items]);
+			},
+			has(target, property): boolean {
+				if (property in target) {
+					return true;
+				}
+
+				const index = Number(property);
+
+				if (!isNaN(index)) {
+					return !!QuerySelector.querySelectorAll(target, 'option')[PropertySymbol.items][index];
+				}
+
+				return false;
+			},
+			defineProperty(target, property, descriptor): boolean {
+				const index = Number(property);
+
+				if (isNaN(index)) {
+					Object.defineProperty(target, property, descriptor);
+					return true;
+				}
+
+				if (!descriptor.value || !(descriptor.value instanceof HTMLOptionElement)) {
+					throw new Error(
+						`TypeError: Failed to set an indexed property [${index}] on 'HTMLSelectElement': parameter 2 is not of type 'HTMLOptionElement'.`
+					);
+				}
+
+				const options = QuerySelector.querySelectorAll(target, 'option')[PropertySymbol.items];
+				const childNodes = target[PropertySymbol.nodeArray];
+
+				while (childNodes.length) {
+					target[PropertySymbol.removeChild](childNodes[0]);
+				}
+
+				for (let i = 0; i <= index; i++) {
+					if (i === index) {
+						target[PropertySymbol.appendChild](descriptor.value);
+					} else if (options[i]) {
+						target[PropertySymbol.appendChild](options[i]);
+					} else {
+						target[PropertySymbol.appendChild](
+							target[PropertySymbol.ownerDocument].createElement('option')
+						);
+					}
+				}
+
+				return true;
+			},
+			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
+				if (property in target) {
+					return Object.getOwnPropertyDescriptor(target, property);
+				}
+
+				const index = Number(property);
+
+				if (isNaN(index)) {
+					return;
+				}
+
+				const options = QuerySelector.querySelectorAll(target, 'option')[PropertySymbol.items];
+
+				if (!options[index]) {
+					return;
+				}
+
+				return {
+					value: options[index],
+					writable: true,
+					enumerable: true,
+					configurable: true
+				};
+			}
+		});
+
+		this[PropertySymbol.selectNode] = proxy;
+
+		return proxy;
+	}
 
 	/**
 	 * Returns length.
@@ -41,7 +199,7 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @returns Length.
 	 */
 	public get length(): number {
-		return this[PropertySymbol.length];
+		return QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items].length;
 	}
 
 	/**
@@ -50,6 +208,13 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @returns Options.
 	 */
 	public get options(): HTMLOptionsCollection {
+		if (!this[PropertySymbol.options]) {
+			this[PropertySymbol.options] = new HTMLOptionsCollection(
+				PropertySymbol.illegalConstructor,
+				this
+			);
+		}
+
 		return this[PropertySymbol.options];
 	}
 
@@ -192,8 +357,10 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @returns Value.
 	 */
 	public get value(): string {
-		for (let i = 0, max = this[PropertySymbol.options].length; i < max; i++) {
-			const option = <HTMLOptionElement>this[PropertySymbol.options][i];
+		const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
+
+		for (let i = 0, max = options.length; i < max; i++) {
+			const option = <HTMLOptionElement>options[i];
 			if (option[PropertySymbol.selectedness]) {
 				return option.value;
 			}
@@ -208,14 +375,24 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @param value Value.
 	 */
 	public set value(value: string) {
-		for (let i = 0, max = this[PropertySymbol.options].length; i < max; i++) {
-			const option = <HTMLOptionElement>this[PropertySymbol.options][i];
+		const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
+		const previousSelectedIndex = this[PropertySymbol.selectedIndex];
+
+		this[PropertySymbol.selectedIndex] = -1;
+
+		for (let i = 0, max = options.length; i < max; i++) {
+			const option = <HTMLOptionElement>options[i];
 			if (option.value === value) {
 				option[PropertySymbol.selectedness] = true;
 				option[PropertySymbol.dirtyness] = true;
+				this[PropertySymbol.selectedIndex] = i;
 			} else {
 				option[PropertySymbol.selectedness] = false;
 			}
+		}
+
+		if (previousSelectedIndex !== this[PropertySymbol.selectedIndex]) {
+			this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
 		}
 	}
 
@@ -225,12 +402,7 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @returns Value.
 	 */
 	public get selectedIndex(): number {
-		for (let i = 0, max = this[PropertySymbol.options].length; i < max; i++) {
-			if ((<HTMLOptionElement>this[PropertySymbol.options][i])[PropertySymbol.selectedness]) {
-				return i;
-			}
-		}
-		return -1;
+		return this[PropertySymbol.selectedIndex];
 	}
 
 	/**
@@ -239,16 +411,32 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @param selectedIndex Selected index.
 	 */
 	public set selectedIndex(selectedIndex: number) {
+		selectedIndex = Number(selectedIndex);
+
+		if (isNaN(selectedIndex)) {
+			return;
+		}
+
+		const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
+		const previousSelectedIndex = this[PropertySymbol.selectedIndex];
+
+		this[PropertySymbol.selectedIndex] = -1;
+
 		if (typeof selectedIndex === 'number' && !isNaN(selectedIndex)) {
-			for (let i = 0, max = this[PropertySymbol.options].length; i < max; i++) {
-				(<HTMLOptionElement>this[PropertySymbol.options][i])[PropertySymbol.selectedness] = false;
+			for (let i = 0, max = options.length; i < max; i++) {
+				(<HTMLOptionElement>options[i])[PropertySymbol.selectedness] = false;
 			}
 
-			const selectedOption = <HTMLOptionElement>this[PropertySymbol.options][selectedIndex];
+			const selectedOption = <HTMLOptionElement>options[selectedIndex];
 			if (selectedOption) {
 				selectedOption[PropertySymbol.selectedness] = true;
 				selectedOption[PropertySymbol.dirtyness] = true;
+				this[PropertySymbol.selectedIndex] = selectedIndex;
 			}
+		}
+
+		if (previousSelectedIndex !== this[PropertySymbol.selectedIndex]) {
+			this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
 		}
 	}
 
@@ -258,13 +446,34 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @returns HTMLCollection.
 	 */
 	public get selectedOptions(): HTMLCollection<HTMLOptionElement> {
-		const selectedOptions = new HTMLCollection<HTMLOptionElement>();
-		for (let i = 0, max = this[PropertySymbol.options].length; i < max; i++) {
-			if ((<HTMLOptionElement>this[PropertySymbol.options][i])[PropertySymbol.selectedness]) {
-				selectedOptions.push(<HTMLOptionElement>this[PropertySymbol.options][i]);
-			}
+		if (!this[PropertySymbol.selectedOptions]) {
+			this[PropertySymbol.selectedOptions] = new HTMLCollection<HTMLOptionElement>(
+				PropertySymbol.illegalConstructor,
+				() => {
+					const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
+
+					// If we hit the cache, we should recieve the same Array instance as before, which will then contain the selected options.
+					if (options[PropertySymbol.selectedOptions]) {
+						return options[PropertySymbol.selectedOptions];
+					}
+
+					const selectedOptions = [];
+
+					for (let i = 0, max = options.length; i < max; i++) {
+						const option = <HTMLOptionElement>options[i];
+						if (option[PropertySymbol.selectedness]) {
+							selectedOptions.push(option);
+						}
+					}
+
+					options[PropertySymbol.selectedOptions] = selectedOptions;
+
+					return selectedOptions;
+				}
+			);
 		}
-		return selectedOptions;
+
+		return this[PropertySymbol.selectedOptions];
 	}
 
 	/**
@@ -282,7 +491,17 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @returns Form.
 	 */
 	public get form(): HTMLFormElement {
-		return <HTMLFormElement>this[PropertySymbol.formNode];
+		if (this[PropertySymbol.formNode]) {
+			return this[PropertySymbol.formNode];
+		}
+		const id =
+			this[PropertySymbol.attributes][PropertySymbol.namedItems].get('form')?.[
+				PropertySymbol.value
+			];
+		if (!id || !this[PropertySymbol.isConnected]) {
+			return null;
+		}
+		return <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(id);
 	}
 
 	/**
@@ -316,7 +535,54 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @param before HTMLOptionElement or index number.
 	 */
 	public add(element: HTMLOptionElement, before?: number | HTMLOptionElement): void {
-		this[PropertySymbol.options].add(element, before);
+		const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
+
+		if (!before && before !== 0) {
+			const childNodes = this[PropertySymbol.nodeArray];
+
+			while (childNodes.length) {
+				this[PropertySymbol.removeChild](childNodes[0]);
+			}
+
+			for (const option of options) {
+				this[PropertySymbol.appendChild](option);
+			}
+
+			this[PropertySymbol.appendChild](element);
+
+			return;
+		}
+
+		if (typeof before !== 'number') {
+			if (!(before instanceof HTMLOptionElement)) {
+				throw new DOMException(
+					"Failed to execute 'add' on 'HTMLFormElement': The node before which the new node is to be inserted before is not an 'HTMLOptionElement'."
+				);
+			}
+
+			before = options.indexOf(<HTMLOptionElement>before);
+		}
+
+		const optionsElement = options[before];
+
+		if (!optionsElement) {
+			throw new DOMException(
+				"Failed to execute 'add' on 'HTMLFormElement': The node before which the new node is to be inserted before is not a child of this node."
+			);
+		}
+
+		const childNodes = this[PropertySymbol.nodeArray];
+
+		while (childNodes.length) {
+			this[PropertySymbol.removeChild](childNodes[0]);
+		}
+
+		for (let i = 0, max = options.length; i < max; i++) {
+			if (i === before) {
+				this[PropertySymbol.appendChild](element);
+			}
+			this[PropertySymbol.appendChild](options[i]);
+		}
 	}
 
 	/**
@@ -326,7 +592,23 @@ export default class HTMLSelectElement extends HTMLElement {
 	 */
 	public override remove(index?: number): void {
 		if (typeof index === 'number') {
-			this[PropertySymbol.options].remove(index);
+			const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
+
+			if (!options[index]) {
+				return;
+			}
+
+			const childNodes = this[PropertySymbol.nodeArray];
+
+			while (childNodes.length) {
+				this[PropertySymbol.removeChild](childNodes[0]);
+			}
+
+			for (let i = 0, max = options.length; i < max; i++) {
+				if (i !== index) {
+					this[PropertySymbol.appendChild](options[i]);
+				}
+			}
 		} else {
 			super.remove();
 		}
@@ -372,49 +654,43 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @see https://html.spec.whatwg.org/multipage/form-elements.html#selectedness-setting-algorithm
 	 * @param [selectedOption] Selected option.
 	 */
-	public [PropertySymbol.updateOptionItems](selectedOption?: HTMLOptionElement): void {
-		const optionElements = this.getElementsByTagName('option');
-
-		if (optionElements.length < this[PropertySymbol.options].length) {
-			this[PropertySymbol.options].splice(
-				this[PropertySymbol.options].length - 1,
-				this[PropertySymbol.options].length - optionElements.length
-			);
-
-			for (let i = optionElements.length - 1, max = this[PropertySymbol.length]; i < max; i++) {
-				delete this[i];
-			}
-		}
-
-		const isMultiple = this.hasAttributeNS(null, 'multiple');
+	public [PropertySymbol.updateSelectedness](selectedOption?: HTMLOptionElement): void {
+		const isMultiple = this.hasAttribute('multiple');
+		const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
 		const selected: HTMLOptionElement[] = [];
+		const previousSelectedIndex = this[PropertySymbol.selectedIndex];
 
-		for (let i = 0; i < optionElements.length; i++) {
-			this[PropertySymbol.options][i] = optionElements[i];
-			this[i] = optionElements[i];
+		if (selectedOption) {
+			this[PropertySymbol.selectedIndex] = -1;
+		}
 
-			if (!isMultiple) {
+		if (!isMultiple) {
+			for (let i = 0, max = options.length; i < max; i++) {
+				const option = <HTMLOptionElement>options[i];
+
 				if (selectedOption) {
-					(<HTMLOptionElement>optionElements[i])[PropertySymbol.selectedness] =
-						optionElements[i] === selectedOption;
+					option[PropertySymbol.selectedness] = option === selectedOption;
+
+					if (option === selectedOption) {
+						this[PropertySymbol.selectedIndex] = i;
+					}
 				}
 
-				if ((<HTMLOptionElement>optionElements[i])[PropertySymbol.selectedness]) {
-					selected.push(<HTMLOptionElement>optionElements[i]);
+				if (option[PropertySymbol.selectedness]) {
+					selected.push(option);
 				}
 			}
 		}
-
-		(<number>this[PropertySymbol.length]) = optionElements.length;
 
 		const size = this.#getDisplaySize();
 
 		if (size === 1 && !selected.length) {
-			for (let i = 0, max = optionElements.length; i < max; i++) {
-				const option = <HTMLOptionElement>optionElements[i];
-
-				let disabled = option.hasAttributeNS(null, 'disabled');
+			this[PropertySymbol.selectedIndex] = -1;
+			for (let i = 0, max = options.length; i < max; i++) {
+				const option = <HTMLOptionElement>options[i];
 				const parentNode = <HTMLElement>option[PropertySymbol.parentNode];
+				let disabled = option.hasAttributeNS(null, 'disabled');
+
 				if (
 					parentNode &&
 					parentNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
@@ -426,40 +702,24 @@ export default class HTMLSelectElement extends HTMLElement {
 
 				if (!disabled) {
 					option[PropertySymbol.selectedness] = true;
+					this[PropertySymbol.selectedIndex] = i;
 					break;
 				}
 			}
 		} else if (selected.length >= 2) {
-			for (let i = 0, max = optionElements.length; i < max; i++) {
-				(<HTMLOptionElement>optionElements[i])[PropertySymbol.selectedness] =
-					i === selected.length - 1;
+			this[PropertySymbol.selectedIndex] = -1;
+
+			for (let i = 0, max = options.length; i < max; i++) {
+				(<HTMLOptionElement>options[i])[PropertySymbol.selectedness] = i === selected.length - 1;
+
+				if (i === selected.length - 1) {
+					this[PropertySymbol.selectedIndex] = i;
+				}
 			}
 		}
-	}
 
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
-		const oldFormNode = <HTMLFormElement>this[PropertySymbol.formNode];
-
-		super[PropertySymbol.connectToNode](parentNode);
-
-		if (oldFormNode !== this[PropertySymbol.formNode]) {
-			if (oldFormNode) {
-				oldFormNode[PropertySymbol.removeFormControlItem](this, this.name);
-				oldFormNode[PropertySymbol.removeFormControlItem](this, this.id);
-			}
-			if (this[PropertySymbol.formNode]) {
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
-					this,
-					this.name
-				);
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
-					this,
-					this.id
-				);
-			}
+		if (previousSelectedIndex !== this[PropertySymbol.selectedIndex]) {
+			this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
 		}
 	}
 

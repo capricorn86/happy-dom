@@ -71,12 +71,31 @@ describe('HTMLLabelElement', () => {
 	});
 
 	describe('get form()', () => {
+		it('Returns null if no parent form element exists.', () => {
+			expect(element.form).toBe(null);
+		});
+
 		it('Returns parent form element.', () => {
 			const form = document.createElement('form');
 			const div = document.createElement('div');
+			const input = document.createElement('input');
+			element.appendChild(input);
 			div.appendChild(element);
 			form.appendChild(div);
-			expect(element.form === form).toBe(true);
+			expect(element.form).toBe(form);
+		});
+
+		it('Returns associated control form element.', () => {
+			const form = document.createElement('form');
+			const input = document.createElement('input');
+			form.id = 'form';
+			document.body.appendChild(form);
+			input.id = 'input';
+			input.setAttribute('form', 'form');
+			element.htmlFor = 'input';
+			document.body.appendChild(element);
+			document.body.appendChild(input);
+			expect(element.form).toBe(form);
 		});
 	});
 

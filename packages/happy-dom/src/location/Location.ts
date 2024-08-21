@@ -47,6 +47,7 @@ export default class Location {
 			this.#browserFrame.window?.dispatchEvent(
 				new HashChangeEvent('hashchange', { oldURL, newURL })
 			);
+			this.#browserFrame.window?.document?.[PropertySymbol.clearCache]();
 		}
 	}
 

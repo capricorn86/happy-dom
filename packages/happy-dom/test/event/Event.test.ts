@@ -73,13 +73,13 @@ describe('Event', () => {
 
 	describe('preventDefault()', () => {
 		it('Prevents default behaviour.', () => {
-			const event = new Event('click');
+			const event = new Event('click', { cancelable: true });
 			event.preventDefault();
 			expect(event.defaultPrevented).toBe(true);
 		});
 
 		it("Doesn't prevent default if event is in a passive listener.", () => {
-			const event = new Event('click', { bubbles: true });
+			const event = new Event('click', { bubbles: true, cancelable: true });
 			expect(event.currentTarget === null).toBe(true);
 
 			const div = document.createElement('div');
@@ -106,6 +106,12 @@ describe('Event', () => {
 			span.dispatchEvent(event);
 
 			expect(event.defaultPrevented).toBe(true);
+		});
+
+		it("Doesn't prevent default if event is not cancelable.", () => {
+			const event = new Event('click', { bubbles: true, cancelable: false });
+			event.preventDefault();
+			expect(event.defaultPrevented).toBe(false);
 		});
 	});
 
@@ -209,7 +215,7 @@ describe('Event', () => {
 				composedPath = event.composedPath();
 			});
 
-			customELement.shadowRoot.children[1].children[0].dispatchEvent(
+			customELement.shadowRoot?.children[1].children[0].dispatchEvent(
 				new Event('click', {
 					bubbles: true,
 					composed: true
@@ -219,10 +225,10 @@ describe('Event', () => {
 			expect((<EventTarget[]>(<unknown>composedPath)).length).toBe(9);
 			expect(
 				(<EventTarget[]>(<unknown>composedPath))[0] ===
-					customELement.shadowRoot.children[1].children[0]
+					customELement.shadowRoot?.children[1].children[0]
 			).toBe(true);
 			expect(
-				(<EventTarget[]>(<unknown>composedPath))[1] === customELement.shadowRoot.children[1]
+				(<EventTarget[]>(<unknown>composedPath))[1] === customELement.shadowRoot?.children[1]
 			).toBe(true);
 			expect((<EventTarget[]>(<unknown>composedPath))[2] === customELement.shadowRoot).toBe(true);
 			expect((<EventTarget[]>(<unknown>composedPath))[3] === customELement).toBe(true);
@@ -239,11 +245,11 @@ describe('Event', () => {
 
 			document.body.appendChild(customELement);
 
-			customELement.shadowRoot.children[1].addEventListener('click', (event: Event) => {
+			customELement.shadowRoot?.children[1].addEventListener('click', (event: Event) => {
 				composedPath = event.composedPath();
 			});
 
-			customELement.shadowRoot.children[1].children[0].dispatchEvent(
+			customELement.shadowRoot?.children[1].children[0].dispatchEvent(
 				new Event('click', {
 					bubbles: true
 				})
@@ -252,10 +258,10 @@ describe('Event', () => {
 			expect((<EventTarget[]>(<unknown>composedPath)).length).toBe(3);
 			expect(
 				(<EventTarget[]>(<unknown>composedPath))[0] ===
-					customELement.shadowRoot.children[1].children[0]
+					customELement.shadowRoot?.children[1].children[0]
 			).toBe(true);
 			expect(
-				(<EventTarget[]>(<unknown>composedPath))[1] === customELement.shadowRoot.children[1]
+				(<EventTarget[]>(<unknown>composedPath))[1] === customELement.shadowRoot?.children[1]
 			).toBe(true);
 			expect((<EventTarget[]>(<unknown>composedPath))[2] === customELement.shadowRoot).toBe(true);
 		});

@@ -104,6 +104,21 @@ describe('FormData', () => {
 			expect(formData.get('button3')).toBe('button3');
 			expect(formData.get('button4')).toBe('button4');
 		});
+
+		it('Supports input elements with empty values.', () => {
+			const form = document.createElement('form');
+			const textInput = document.createElement('input');
+
+			textInput.type = 'text';
+			textInput.name = 'textInput';
+			textInput.value = '';
+
+			form.appendChild(textInput);
+
+			const formData = new window.FormData(form);
+
+			expect(formData.get('textInput')).toBe('');
+		});
 	});
 
 	describe('forEach()', () => {

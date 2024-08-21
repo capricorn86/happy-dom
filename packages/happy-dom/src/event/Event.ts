@@ -125,7 +125,7 @@ export default class Event {
 	 * Prevents default.
 	 */
 	public preventDefault(): void {
-		if (!this[PropertySymbol.isInPassiveEventListener]) {
+		if (!this[PropertySymbol.isInPassiveEventListener] && this.cancelable) {
 			this.defaultPrevented = true;
 		}
 	}

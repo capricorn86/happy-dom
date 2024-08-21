@@ -10,16 +10,16 @@ import HTMLInputElementSelectionDirectionEnum from './HTMLInputElementSelectionD
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLInputElementValueStepping from './HTMLInputElementValueStepping.js';
 import FileList from './FileList.js';
-import Node from '../node/Node.js';
-import NodeList from '../node/NodeList.js';
 import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import HTMLInputElementDateUtility from './HTMLInputElementDateUtility.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
-import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
-import HTMLInputElementNamedNodeMap from './HTMLInputElementNamedNodeMap.js';
+import HTMLDataListElement from '../html-data-list-element/HTMLDataListElement.js';
+import Document from '../document/Document.js';
+import ShadowRoot from '../shadow-root/ShadowRoot.js';
 import { URL } from 'url';
 import MouseEvent from '../../event/events/MouseEvent.js';
+import NodeList from '../node/NodeList.js';
 
 /**
  * HTML Input Element.
@@ -32,17 +32,13 @@ import MouseEvent from '../../event/events/MouseEvent.js';
  */
 export default class HTMLInputElement extends HTMLElement {
 	// Public properties
-	public cloneNode: (deep?: boolean) => HTMLInputElement;
+	public declare cloneNode: (deep?: boolean) => HTMLInputElement;
 
 	// Events
 	public oninput: (event: Event) => void | null = null;
 	public oninvalid: (event: Event) => void | null = null;
 	public onselectionchange: (event: Event) => void | null = null;
 
-	// Internal properties
-	public override [PropertySymbol.attributes]: NamedNodeMap = new HTMLInputElementNamedNodeMap(
-		this
-	);
 	public [PropertySymbol.value] = null;
 	public [PropertySymbol.height] = 0;
 	public [PropertySymbol.width] = 0;
@@ -51,6 +47,7 @@ export default class HTMLInputElement extends HTMLElement {
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
 	public [PropertySymbol.files]: FileList = new FileList();
+	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
 
 	// Private properties
 	#selectionStart: number = null;
@@ -204,17 +201,18 @@ export default class HTMLInputElement extends HTMLElement {
 	 *
 	 * @returns Form.
 	 */
-	public get form(): HTMLFormElement | null {
+	public get form(): HTMLFormElement {
 		if (this[PropertySymbol.formNode]) {
-			return <HTMLFormElement>this[PropertySymbol.formNode];
+			return this[PropertySymbol.formNode];
 		}
-		if (!this.isConnected) {
+		const id =
+			this[PropertySymbol.attributes][PropertySymbol.namedItems].get('form')?.[
+				PropertySymbol.value
+			];
+		if (!id || !this[PropertySymbol.isConnected]) {
 			return null;
 		}
-		const formID = this.getAttribute('form');
-		return formID
-			? <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(formID)
-			: null;
+		return <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(id);
 	}
 
 	/**
@@ -1103,6 +1101,21 @@ export default class HTMLInputElement extends HTMLElement {
 	}
 
 	/**
+	 * Returns associated datalist element.
+	 *
+	 * @returns Data list element.
+	 */
+	public get list(): HTMLDataListElement | null {
+		const id = this.getAttribute('list');
+		if (!id) {
+			return null;
+		}
+		const rootNode =
+			<Document | ShadowRoot>this[PropertySymbol.rootNode] || this[PropertySymbol.ownerDocument];
+		return <HTMLDataListElement | null>rootNode.querySelector(`datalist#${id}`);
+	}
+
+	/**
 	 * Sets validation message.
 	 *
 	 * @param message Message.
@@ -1123,7 +1136,7 @@ export default class HTMLInputElement extends HTMLElement {
 		this.#selectionEnd = this.value.length;
 		this.#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
 
-		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: true }));
+		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: false }));
 	}
 
 	/**
@@ -1148,7 +1161,7 @@ export default class HTMLInputElement extends HTMLElement {
 			direction === HTMLInputElementSelectionDirectionEnum.backward
 				? direction
 				: HTMLInputElementSelectionDirectionEnum.none;
-		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: true }));
+		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: false }));
 	}
 
 	/**
@@ -1285,8 +1298,6 @@ export default class HTMLInputElement extends HTMLElement {
 	 */
 	public override [PropertySymbol.cloneNode](deep = false): HTMLInputElement {
 		const clone = <HTMLInputElement>super[PropertySymbol.cloneNode](deep);
-		clone.formAction = this.formAction;
-		clone.formMethod = this.formMethod;
 		clone[PropertySymbol.value] = this[PropertySymbol.value];
 		clone[PropertySymbol.height] = this[PropertySymbol.height];
 		clone[PropertySymbol.width] = this[PropertySymbol.width];
@@ -1377,32 +1388,6 @@ export default class HTMLInputElement extends HTMLElement {
 	}
 
 	/**
-	 * @override
-	 */
-	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
-		const oldFormNode = <HTMLFormElement>this[PropertySymbol.formNode];
-
-		super[PropertySymbol.connectToNode](parentNode);
-
-		if (oldFormNode !== this[PropertySymbol.formNode]) {
-			if (oldFormNode) {
-				oldFormNode[PropertySymbol.removeFormControlItem](this, this.name);
-				oldFormNode[PropertySymbol.removeFormControlItem](this, this.id);
-			}
-			if (this[PropertySymbol.formNode]) {
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
-					this,
-					this.name
-				);
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
-					this,
-					this.id
-				);
-			}
-		}
-	}
-
-	/**
 	 * Checks is selection is supported.
 	 *
 	 * @returns "true" if selection is supported.
@@ -1425,6 +1410,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 */
 	#setChecked(checked: boolean): void {
 		this[PropertySymbol.checked] = checked;
+		this[PropertySymbol.clearCache]();
 
 		if (checked && this.type === 'radio' && this.name) {
 			const root = <HTMLElement>(

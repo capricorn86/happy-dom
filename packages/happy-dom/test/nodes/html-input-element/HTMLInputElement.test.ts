@@ -620,7 +620,7 @@ describe('HTMLInputElement', () => {
 			expect(element.form).toBe(form);
 		});
 
-		it('Returns form element by id if the form attribute is set.', () => {
+		it('Returns form element by id if the form attribute is set when connecting node to DOM.', () => {
 			const form = document.createElement('form');
 			form.id = 'form';
 			document.body.appendChild(form);
@@ -628,6 +628,62 @@ describe('HTMLInputElement', () => {
 			expect(element.form).toBe(null);
 			document.body.appendChild(element);
 			expect(element.form).toBe(form);
+			expect(Array.from(form.elements).includes(element)).toBe(true);
+		});
+
+		it('Returns form element by id if the form attribute is set when element is connected to DOM.', () => {
+			const form = document.createElement('form');
+			form.id = 'form';
+			document.body.appendChild(form);
+			document.body.appendChild(element);
+			element.setAttribute('form', 'form');
+			expect(element.form).toBe(form);
+			expect(Array.from(form.elements).includes(element)).toBe(true);
+		});
+	});
+
+	describe('get list()', () => {
+		it('Returns null if the attribute "list" is not set.', () => {
+			expect(element.list).toBe(null);
+		});
+
+		it('Returns null if no associated list element matches the attribuge "list".', () => {
+			element.setAttribute('list', 'datalist');
+			expect(element.list).toBe(null);
+		});
+
+		it('Returns the associated datalist element.', () => {
+			const datalist = document.createElement('datalist');
+			datalist.id = 'list_id';
+			document.body.appendChild(datalist);
+			element.setAttribute('list', 'list_id');
+			expect(element.list).toBe(datalist);
+		});
+
+		it('Finds datalist inside a shadowroot.', () => {
+			/* eslint-disable-next-line jsdoc/require-jsdoc */
+			class MyComponent extends window.HTMLElement {
+				/* eslint-disable-next-line jsdoc/require-jsdoc */
+				constructor() {
+					super();
+					this.attachShadow({ mode: 'open' });
+					if (this.shadowRoot) {
+						this.shadowRoot.innerHTML = `
+                            <datalist id="list_id">
+                                <option value="1">
+                                <option value="2">
+                            </datalist>
+                            <input list="list_id">
+                        `;
+					}
+				}
+			}
+			window.customElements.define('my-component', MyComponent);
+			const component = document.createElement('my-component');
+			document.body.appendChild(component);
+			const input = component.shadowRoot?.querySelector('input');
+			const list = component.shadowRoot?.querySelector('datalist');
+			expect(input?.list === list).toBe(true);
 		});
 	});
 
@@ -1255,14 +1311,14 @@ describe('HTMLInputElement', () => {
 
 			document.body.appendChild(element);
 
-			element.dispatchEvent(new PointerEvent('click'));
+			element.dispatchEvent(new PointerEvent('click', { cancelable: true }));
 
 			expect(isClickChecked).toBe(true);
 			expect(element.checked).toBe(false);
 
 			element.checked = true;
 
-			element.dispatchEvent(new PointerEvent('click'));
+			element.dispatchEvent(new PointerEvent('click', { cancelable: true }));
 
 			expect(element.checked).toBe(true);
 		});
@@ -1279,14 +1335,14 @@ describe('HTMLInputElement', () => {
 
 			document.body.appendChild(element);
 
-			element.dispatchEvent(new PointerEvent('click'));
+			element.dispatchEvent(new PointerEvent('click', { cancelable: true }));
 
 			expect(isClickChecked).toBe(true);
 			expect(element.checked).toBe(false);
 
 			element.checked = true;
 
-			element.dispatchEvent(new PointerEvent('click'));
+			element.dispatchEvent(new PointerEvent('click', { cancelable: true }));
 
 			expect(element.checked).toBe(true);
 		});

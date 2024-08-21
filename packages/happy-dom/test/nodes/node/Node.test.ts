@@ -11,6 +11,7 @@ import EventPhaseEnum from '../../../src/event/EventPhaseEnum.js';
 import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
+import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import NodeFactory from '../../../src/nodes/NodeFactory.js';
 
 describe('Node', () => {
@@ -78,6 +79,22 @@ describe('Node', () => {
 		CustomButtonElement.output = customElementOutput;
 		window.customElements.define('custom-counter', CustomCounterElement);
 		window.customElements.define('custom-button', CustomButtonElement);
+	});
+
+	describe('constructor', () => {
+		it('Throws an exception if called without using the NodeFactory or define "ownerDocument" as a property on the class', () => {
+			expect(() => new Node()).toThrow('Illegal constructor');
+		});
+
+		it('Doesn\'t throw an exception if "ownerDocument" is defined as a property on the class', () => {
+			Node[PropertySymbol.ownerDocument] = document;
+			expect(() => new Node()).not.toThrow();
+			Node[PropertySymbol.ownerDocument] = null;
+		});
+
+		it("Doesn't throw an exception if NodeFactory is used", () => {
+			expect(() => NodeFactory.createNode(document, Node)).not.toThrow();
+		});
 	});
 
 	describe('get isConnected()', () => {
@@ -327,12 +344,12 @@ describe('Node', () => {
 		it('Returns "false" if match node is null.', () => {
 			const div = document.createElement('div');
 
-			expect(div.contains(null)).toBe(false);
+			expect(div.contains(<Node>(<unknown>null))).toBe(false);
 		});
 		it('Returns "false" if match node is undefined.', () => {
 			const div = document.createElement('div');
 
-			expect(div.contains(undefined)).toBe(false);
+			expect(div.contains(<Node>(<unknown>undefined))).toBe(false);
 		});
 	});
 
@@ -373,6 +390,11 @@ describe('Node', () => {
 
 		it('Returns Document when called on Document', () => {
 			expect(document.getRootNode() === document).toBe(true);
+		});
+
+		it('Returns self when element is not connected to DOM', () => {
+			const element = document.createElement('div');
+			expect(element.getRootNode() === element).toBe(true);
 		});
 	});
 
@@ -419,7 +441,7 @@ describe('Node', () => {
 			expect(div !== clone).toBe(true);
 
 			expect(Array.from(clone.children)).toEqual(
-				Array.from(clone.childNodes.filter((node) => node.nodeType === Node.ELEMENT_NODE))
+				Array.from(clone.childNodes).filter((node) => node.nodeType === Node.ELEMENT_NODE)
 			);
 		});
 
@@ -432,6 +454,13 @@ describe('Node', () => {
 			expect(div.tagName).toBe(clone.tagName);
 			expect(div.localName).toBe(clone.localName);
 			expect(div.namespaceURI).toBe(clone.namespaceURI);
+		});
+
+		it("Doesn't remove ownerDocument of a custom element.", () => {
+			const customElement = document.createElement('custom-counter');
+			const clone = customElement.cloneNode(true);
+
+			expect(clone.constructor[PropertySymbol.ownerDocument]).toBe(document);
 		});
 	});
 
@@ -513,6 +542,7 @@ describe('Node', () => {
 
 			expect(child.parentNode).toBe(parent);
 			expect(Array.from(parent.childNodes)).toEqual([child]);
+			expect(Array.from(parent.children)).toEqual([child]);
 			expect(child.isConnected).toBe(false);
 
 			document.body.appendChild(parent);
@@ -523,6 +553,7 @@ describe('Node', () => {
 
 			expect(child.parentNode).toBe(null);
 			expect(Array.from(parent.childNodes)).toEqual([]);
+			expect(Array.from(parent.children)).toEqual([]);
 			expect(child.isConnected).toBe(false);
 			expect(removed).toEqual(child);
 		});
@@ -553,6 +584,7 @@ describe('Node', () => {
 
 			expect(newNode.parentNode).toBe(parent);
 			expect(Array.from(parent.childNodes)).toEqual([child1, newNode, child2]);
+			expect(Array.from(parent.children)).toEqual([child1, newNode, child2]);
 			expect(newNode.isConnected).toBe(false);
 
 			document.body.appendChild(parent);
@@ -635,6 +667,44 @@ describe('Node', () => {
 			expect(parent.childNodes[3]).toBe(newNode1);
 		});
 
+		it('Correctly updates "children" property when a comment is the last node.', () => {
+			const parent = document.createElement('div');
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+			const newElement = document.createElement('b');
+			const comment1 = document.createComment('comment1');
+			const comment2 = document.createComment('comment2');
+
+			parent.appendChild(span1);
+			parent.appendChild(comment1);
+			parent.appendChild(span2);
+			parent.appendChild(comment2);
+
+			parent.insertBefore(newElement, comment2);
+
+			expect(Array.from(parent.children)).toEqual([span1, span2, newElement]);
+		});
+
+		it('Correctly updates "children" property when an element is the last node.', () => {
+			const parent = document.createElement('div');
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+			const span3 = document.createElement('span');
+			const newElement = document.createElement('b');
+			const comment1 = document.createComment('comment1');
+			const comment2 = document.createComment('comment2');
+
+			parent.appendChild(span1);
+			parent.appendChild(comment1);
+			parent.appendChild(span2);
+			parent.appendChild(comment2);
+			parent.appendChild(span3);
+
+			parent.insertBefore(newElement, comment2);
+
+			expect(Array.from(parent.children)).toEqual([span1, span2, newElement, span3]);
+		});
+
 		it('Throws an exception if reference node is not child of parent node.', () => {
 			const referenceNode = document.createElement('span');
 			const newNode = document.createElement('span');
@@ -694,6 +764,7 @@ describe('Node', () => {
 
 			expect(newNode.parentNode).toBe(parent);
 			expect(Array.from(parent.childNodes)).toEqual([child1, newNode]);
+			expect(Array.from(parent.children)).toEqual([child1, newNode]);
 			expect(newNode.isConnected).toBe(false);
 
 			document.body.appendChild(parent);
@@ -715,6 +786,7 @@ describe('Node', () => {
 
 			expect(newNode.parentNode).toBe(parent);
 			expect(Array.from(parent.childNodes)).toEqual([child1, newNode]);
+			expect(Array.from(parent.children)).toEqual([child1, newNode]);
 			expect(newNode.isConnected).toBe(false);
 
 			document.body.appendChild(parent);
@@ -840,7 +912,7 @@ describe('Node', () => {
 			expect(parentEvent).toBe(event);
 		});
 
-		it('Supports capture events that are not bubbles.', () => {
+		it("Supports capture events that doesn't bubble.", () => {
 			const parent = document.createElement('div');
 			const child1 = document.createElement('span');
 			const child2 = document.createElement('span');
@@ -1015,7 +1087,7 @@ describe('Node', () => {
 			expect(
 				document
 					.getElementById('element')
-					.compareDocumentPosition(document.getElementById('element'))
+					?.compareDocumentPosition(<Node>document.getElementById('element'))
 			).toEqual(0);
 		});
 
@@ -1031,7 +1103,9 @@ describe('Node', () => {
 			document.body.appendChild(div);
 
 			expect(
-				document.getElementById('span1').compareDocumentPosition(document.getElementById('span2'))
+				document
+					.getElementById('span1')
+					?.compareDocumentPosition(<Node>document.getElementById('span2'))
 			).toEqual(4);
 		});
 
@@ -1047,7 +1121,9 @@ describe('Node', () => {
 			document.body.appendChild(div);
 
 			expect(
-				document.getElementById('span2').compareDocumentPosition(document.getElementById('span1'))
+				document
+					.getElementById('span2')
+					?.compareDocumentPosition(<Node>document.getElementById('span1'))
 			).toEqual(2);
 		});
 
@@ -1062,7 +1138,7 @@ describe('Node', () => {
 
 			const position = document
 				.getElementById('parent')
-				.compareDocumentPosition(document.getElementById('child'));
+				?.compareDocumentPosition(<Node>document.getElementById('child'));
 			expect(position).toEqual(20);
 		});
 
@@ -1077,7 +1153,7 @@ describe('Node', () => {
 
 			const position = document
 				.getElementById('child')
-				.compareDocumentPosition(document.getElementById('parent'));
+				?.compareDocumentPosition(<Node>document.getElementById('parent'));
 			expect(position).toEqual(10);
 		});
 	});

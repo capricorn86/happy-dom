@@ -1,17 +1,14 @@
 import Event from '../../event/Event.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
-import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import ValidityState from '../../validity-state/ValidityState.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
-import Node from '../node/Node.js';
-import NodeList from '../node/NodeList.js';
-import HTMLButtonElementNamedNodeMap from './HTMLButtonElementNamedNodeMap.js';
 import { URL } from 'url';
 import MouseEvent from '../../event/events/MouseEvent.js';
+import NodeList from '../node/NodeList.js';
 
 const BUTTON_TYPES = ['submit', 'reset', 'button', 'menu'];
 
@@ -22,11 +19,9 @@ const BUTTON_TYPES = ['submit', 'reset', 'button', 'menu'];
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLButtonElement.
  */
 export default class HTMLButtonElement extends HTMLElement {
-	public override [PropertySymbol.attributes]: NamedNodeMap = new HTMLButtonElementNamedNodeMap(
-		this
-	);
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
+	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
 
 	/**
 	 * Returns validation message.
@@ -232,17 +227,18 @@ export default class HTMLButtonElement extends HTMLElement {
 	 *
 	 * @returns Form.
 	 */
-	public get form(): HTMLFormElement | null {
+	public get form(): HTMLFormElement {
 		if (this[PropertySymbol.formNode]) {
-			return <HTMLFormElement>this[PropertySymbol.formNode];
+			return this[PropertySymbol.formNode];
 		}
-		if (!this.isConnected) {
+		const id =
+			this[PropertySymbol.attributes][PropertySymbol.namedItems].get('form')?.[
+				PropertySymbol.value
+			];
+		if (!id || !this[PropertySymbol.isConnected]) {
 			return null;
 		}
-		const formID = this.getAttribute('form');
-		return formID
-			? <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(formID)
-			: null;
+		return <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(id);
 	}
 
 	/**
@@ -326,32 +322,6 @@ export default class HTMLButtonElement extends HTMLElement {
 		}
 
 		return returnValue;
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
-		const oldFormNode = <HTMLFormElement>this[PropertySymbol.formNode];
-
-		super[PropertySymbol.connectToNode](parentNode);
-
-		if (oldFormNode !== this[PropertySymbol.formNode]) {
-			if (oldFormNode) {
-				oldFormNode[PropertySymbol.removeFormControlItem](this, this.name);
-				oldFormNode[PropertySymbol.removeFormControlItem](this, this.id);
-			}
-			if (this[PropertySymbol.formNode]) {
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
-					this,
-					this.name
-				);
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
-					this,
-					this.id
-				);
-			}
-		}
 	}
 
 	/**

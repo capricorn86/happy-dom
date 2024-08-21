@@ -31,16 +31,6 @@ type IStyleAndElement = {
  * CSS Style Declaration utility
  */
 export default class CSSStyleDeclarationElementStyle {
-	private cache: {
-		propertyManager: CSSStyleDeclarationPropertyManager;
-		cssText: string;
-		documentCacheID: number;
-	} = {
-		propertyManager: null,
-		cssText: null,
-		documentCacheID: null
-	};
-
 	private element: Element;
 	private computed: boolean;
 
@@ -65,15 +55,26 @@ export default class CSSStyleDeclarationElementStyle {
 			return this.getComputedElementStyle();
 		}
 
-		const cssText = this.element[PropertySymbol.attributes]['style']?.[PropertySymbol.value];
+		const cachedResult = this.element[PropertySymbol.cache].style;
+
+		if (cachedResult?.result) {
+			const result = cachedResult.result.deref();
+			if (result) {
+				return result;
+			}
+		}
+
+		const cssText =
+			this.element[PropertySymbol.attributes][PropertySymbol.namedItems].get('style')?.[
+				PropertySymbol.value
+			];
 
 		if (cssText) {
-			if (this.cache.propertyManager && this.cache.cssText === cssText) {
-				return this.cache.propertyManager;
-			}
-			this.cache.cssText = cssText;
-			this.cache.propertyManager = new CSSStyleDeclarationPropertyManager({ cssText });
-			return this.cache.propertyManager;
+			const propertyManager = new CSSStyleDeclarationPropertyManager({ cssText });
+			this.element[PropertySymbol.cache].style = {
+				result: new WeakRef(propertyManager)
+			};
+			return propertyManager;
 		}
 
 		return new CSSStyleDeclarationPropertyManager();
@@ -98,15 +99,14 @@ export default class CSSStyleDeclarationElementStyle {
 			return new CSSStyleDeclarationPropertyManager();
 		}
 
-		if (
-			this.cache.propertyManager &&
-			this.cache.documentCacheID ===
-				this.element[PropertySymbol.ownerDocument][PropertySymbol.cacheID]
-		) {
-			return this.cache.propertyManager;
-		}
+		const cacheResult = this.element[PropertySymbol.cache].computedStyle;
 
-		this.cache.documentCacheID = this.element[PropertySymbol.ownerDocument][PropertySymbol.cacheID];
+		if (cacheResult?.result) {
+			const result = cacheResult.result.deref();
+			if (result) {
+				return result;
+			}
+		}
 
 		// Walks through all parent elements and stores them in an array with element and matching CSS text.
 		while (styleAndElement.element) {
@@ -245,8 +245,8 @@ export default class CSSStyleDeclarationElementStyle {
 			}
 
 			const elementStyleAttribute = (<Element>parentElement.element)[PropertySymbol.attributes][
-				'style'
-			];
+				PropertySymbol.namedItems
+			].get('style');
 
 			if (elementStyleAttribute) {
 				elementCSSText += elementStyleAttribute[PropertySymbol.value];
@@ -302,7 +302,14 @@ export default class CSSStyleDeclarationElementStyle {
 			}
 		}
 
-		this.cache.propertyManager = propertyManager;
+		const cachedResult = {
+			result: new WeakRef(propertyManager)
+		};
+
+		this.element[PropertySymbol.cache].computedStyle = cachedResult;
+		this.element[PropertySymbol.ownerDocument][PropertySymbol.affectsComputedStyleCache].push(
+			cachedResult
+		);
 
 		return propertyManager;
 	}

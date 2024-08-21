@@ -6,13 +6,10 @@ import HTMLElement from '../html-element/HTMLElement.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLInputElementSelectionDirectionEnum from '../html-input-element/HTMLInputElementSelectionDirectionEnum.js';
 import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputElementSelectionModeEnum.js';
-import Node from '../node/Node.js';
 import ValidityState from '../../validity-state/ValidityState.js';
-import NodeList from '../node/NodeList.js';
 import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
-import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
-import HTMLTextAreaElementNamedNodeMap from './HTMLTextAreaElementNamedNodeMap.js';
+import NodeList from '../node/NodeList.js';
 
 /**
  * HTML Text Area Element.
@@ -22,7 +19,7 @@ import HTMLTextAreaElementNamedNodeMap from './HTMLTextAreaElementNamedNodeMap.j
  */
 export default class HTMLTextAreaElement extends HTMLElement {
 	// Public properties
-	public cloneNode: (deep?: boolean) => HTMLTextAreaElement;
+	public declare cloneNode: (deep?: boolean) => HTMLTextAreaElement;
 	public readonly type = 'textarea';
 
 	// Events
@@ -30,13 +27,11 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	public onselectionchange: (event: Event) => void | null = null;
 
 	// Internal properties
-	public override [PropertySymbol.attributes]: NamedNodeMap = new HTMLTextAreaElementNamedNodeMap(
-		this
-	);
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
 	public [PropertySymbol.value] = null;
-	public [PropertySymbol.textAreaNode]: HTMLTextAreaElement = this;
+	public [PropertySymbol.textAreaNode] = this;
+	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
 
 	// Private properties
 	#selectionStart = null;
@@ -416,7 +411,17 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 * @returns Form.
 	 */
 	public get form(): HTMLFormElement {
-		return <HTMLFormElement>this[PropertySymbol.formNode];
+		if (this[PropertySymbol.formNode]) {
+			return this[PropertySymbol.formNode];
+		}
+		const id =
+			this[PropertySymbol.attributes][PropertySymbol.namedItems].get('form')?.[
+				PropertySymbol.value
+			];
+		if (!id || !this[PropertySymbol.isConnected]) {
+			return null;
+		}
+		return <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(id);
 	}
 
 	/**
@@ -445,7 +450,7 @@ export default class HTMLTextAreaElement extends HTMLElement {
 		this.#selectionEnd = this.value.length;
 		this.#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
 
-		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: true }));
+		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: false }));
 	}
 
 	/**
@@ -463,7 +468,7 @@ export default class HTMLTextAreaElement extends HTMLElement {
 			direction === HTMLInputElementSelectionDirectionEnum.backward
 				? direction
 				: HTMLInputElementSelectionDirectionEnum.none;
-		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: true }));
+		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: false }));
 	}
 
 	/**
@@ -589,32 +594,6 @@ export default class HTMLTextAreaElement extends HTMLElement {
 			this.#selectionStart = null;
 			this.#selectionEnd = null;
 			this.#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
-		}
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
-		const oldFormNode = <HTMLFormElement>this[PropertySymbol.formNode];
-
-		super[PropertySymbol.connectToNode](parentNode);
-
-		if (oldFormNode !== this[PropertySymbol.formNode]) {
-			if (oldFormNode) {
-				oldFormNode[PropertySymbol.removeFormControlItem](this, this.name);
-				oldFormNode[PropertySymbol.removeFormControlItem](this, this.id);
-			}
-			if (this[PropertySymbol.formNode]) {
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
-					this,
-					this.name
-				);
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
-					this,
-					this.id
-				);
-			}
 		}
 	}
 }

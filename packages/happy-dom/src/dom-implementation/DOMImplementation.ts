@@ -46,13 +46,15 @@ export default class DOMImplementation {
 		publicId: string,
 		systemId: string
 	): DocumentType {
-		const documentType = NodeFactory.createNode<DocumentType>(
+		const documentType = NodeFactory.createNode(
 			this.#document,
 			this.#document[PropertySymbol.ownerWindow].DocumentType
 		);
+
 		documentType[PropertySymbol.name] = qualifiedName;
 		documentType[PropertySymbol.publicId] = publicId;
 		documentType[PropertySymbol.systemId] = systemId;
+
 		return documentType;
 	}
 }

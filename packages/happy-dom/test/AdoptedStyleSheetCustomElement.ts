@@ -7,7 +7,7 @@ import CSSStyleSheet from '../src/css/CSSStyleSheet.js';
  */
 export default class AdoptedStyleSheetCustomElement extends HTMLElement {
 	public static observedAttributesCallCount = 0;
-	public static shadowRootMode = 'open';
+	public static shadowRootMode: 'open' | 'closed' = 'open';
 	public changedAttributes: Array<{
 		name: string;
 		oldValue: string | null;
@@ -70,7 +70,7 @@ export default class AdoptedStyleSheetCustomElement extends HTMLElement {
 											'key2'
 										)}".
                 </span>
-                <span class="children">${this.childNodes
+                <span class="children">${Array.from(this.childNodes)
 									.map(
 										(child) =>
 											'#' + child['nodeType'] + (child['tagName'] || '') + child.textContent

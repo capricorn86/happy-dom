@@ -171,7 +171,7 @@ describe('Document', () => {
 			const text1 = document.createTextNode('text1');
 			const text2 = document.createTextNode('text2');
 
-			for (const node of document.childNodes.slice()) {
+			for (const node of Array.from(document.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
@@ -192,7 +192,7 @@ describe('Document', () => {
 			const text1 = document.createTextNode('text1');
 			const text2 = document.createTextNode('text2');
 
-			for (const node of document.childNodes.slice()) {
+			for (const node of Array.from(document.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
@@ -290,17 +290,70 @@ describe('Document', () => {
 		});
 	});
 
-	describe('get title() and set title()', () => {
-		it('Returns and sets title.', () => {
-			document.title = 'test title';
-			expect(document.title).toBe('test title');
-			const title = <Element>document.head.querySelector('title');
-			expect(title.textContent).toBe('test title');
-			document.title = 'new title';
-			expect(document.title).toBe('new title');
-			expect(title.textContent).toBe('new title');
-			title.textContent = 'new title 2';
-			expect(document.title).toBe('new title 2');
+	describe('get title()', () => {
+		it('Returns title trimmed.', () => {
+			document.write(`<html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>
+                        Hello world!
+                    </title>
+                </head>
+                <body></body>
+            </html>`);
+
+			expect(document.title).toBe('Hello world!');
+		});
+
+		it('Returns empty string if no title is set.', () => {
+			document.write(`<html>
+                <head>
+                    <meta charset="utf-8">
+                </head>
+                <body></body>
+            </html>`);
+
+			expect(document.title).toBe('');
+		});
+
+		it('Should only return the data of Text nodes inside the HTMLTitleElement', () => {
+			document.write(`<html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>
+                        Hello world! <span class="highlight">Isn't this wonderful</span> really?
+                    </title>
+                </head>
+                <body></body>
+            </html>`);
+
+			expect(document.title).toBe('Hello world!  really?');
+		});
+	});
+
+	describe('set title()', () => {
+		it('Sets text content of HTMLTitleElement.', () => {
+			document.write(`<html><head><title>Hello world!</title></head><body></body></html>`);
+
+			document.title = '  New title!  ';
+
+			expect(document.documentElement.outerHTML).toBe(
+				'<html><head><title>  New title!  </title></head><body></body></html>'
+			);
+
+			expect(document.title).toBe('New title!');
+		});
+
+		it('Creates a new title element if it does not exist.', () => {
+			document.write(`<html><head></head><body></body></html>`);
+
+			document.title = '  New title!  ';
+
+			expect(document.documentElement.outerHTML).toBe(
+				'<html><head><title>  New title!  </title></head><body></body></html>'
+			);
+
+			expect(document.title).toBe('New title!');
 		});
 	});
 
@@ -574,7 +627,7 @@ describe('Document', () => {
 			vi.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
 				expect(parentNode === document).toBe(true);
 				expect(selector).toEqual(expectedSelector);
-				return <NodeList<HTMLElement>>[element];
+				return new NodeList(PropertySymbol.illegalConstructor, [element]);
 			});
 
 			const result = document.querySelectorAll(expectedSelector);
@@ -624,7 +677,7 @@ describe('Document', () => {
 				(parentNode, requestedClassName) => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedClassName).toEqual(className);
-					return <HTMLCollection<HTMLElement>>[element];
+					return new HTMLCollection(PropertySymbol.illegalConstructor, () => [element]);
 				}
 			);
 
@@ -643,7 +696,7 @@ describe('Document', () => {
 				(parentNode, requestedTagName) => {
 					expect(parentNode === document).toBe(true);
 					expect(requestedTagName).toEqual(tagName);
-					return <HTMLCollection<HTMLElement>>[element];
+					return new HTMLCollection(PropertySymbol.illegalConstructor, () => [element]);
 				}
 			);
 
@@ -707,7 +760,7 @@ describe('Document', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 
-			for (const node of document.childNodes.slice()) {
+			for (const node of Array.from(document.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
@@ -729,7 +782,7 @@ describe('Document', () => {
 
 			const clone = template.content.cloneNode(true);
 
-			for (const node of document.childNodes.slice()) {
+			for (const node of Array.from(document.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
@@ -737,9 +790,11 @@ describe('Document', () => {
 
 			expect(clone.childNodes.length).toBe(0);
 			expect(clone.children.length).toBe(0);
-			expect(document.children.map((child) => child.outerHTML).join('')).toBe(
-				'<div>Div</div><span>Span</span>'
-			);
+			expect(
+				Array.from(document.children)
+					.map((child) => child.outerHTML)
+					.join('')
+			).toBe('<div>Div</div><span>Span</span>');
 		});
 	});
 
@@ -748,7 +803,7 @@ describe('Document', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 
-			for (const node of document.childNodes.slice()) {
+			for (const node of Array.from(document.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
@@ -770,7 +825,7 @@ describe('Document', () => {
 			const div2 = document.createElement('div');
 			const span = document.createElement('span');
 
-			for (const node of document.childNodes.slice()) {
+			for (const node of Array.from(document.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
@@ -796,7 +851,7 @@ describe('Document', () => {
 
 			const clone = template.content.cloneNode(true);
 
-			for (const node of document.childNodes.slice()) {
+			for (const node of Array.from(document.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
@@ -806,9 +861,11 @@ describe('Document', () => {
 			document.insertBefore(clone, child2);
 
 			expect(document.children.length).toBe(4);
-			expect(document.children.map((child) => child.outerHTML).join('')).toBe(
-				'<span></span><div>Template DIV 1</div><span>Template SPAN 1</span><span></span>'
-			);
+			expect(
+				Array.from(document.children)
+					.map((child) => child.outerHTML)
+					.join('')
+			).toBe('<span></span><div>Template DIV 1</div><span>Template SPAN 1</span><span></span>');
 		});
 	});
 
@@ -873,7 +930,7 @@ describe('Document', () => {
 			const html = `<html test="1"><body>Test></body></html>`;
 			document.write(html);
 			expect(document.documentElement.outerHTML).toBe(
-				'<html test="1"><head></head><body>Test></body></html>'
+				'<html test="1"><head></head><body>Test&gt;</body></html>'
 			);
 		});
 	});
@@ -1073,7 +1130,7 @@ describe('Document', () => {
 
 			for (let i = 0; i < inputs.length; i++) {
 				// @ts-ignore
-				const textNode = document.createTextNode(inputs[i]);
+				const textNode = document.createTextNode(<string>inputs[i]);
 				expect(textNode.data).toBe(outputs[i]);
 			}
 		});
@@ -1081,15 +1138,30 @@ describe('Document', () => {
 
 	describe('createComment()', () => {
 		it('Creates a comment node.', () => {
-			const textContent = 'text';
-			const commentNode = document.createComment(textContent);
-			expect(commentNode.textContent).toBe(textContent);
-			expect(commentNode instanceof Comment).toBe(true);
+			const commentContent = 'comment';
+			const commentNode = document.createTextNode(commentContent);
+			expect(commentNode.textContent).toBe(commentContent);
+			expect(commentNode instanceof Text).toBe(true);
 		});
 
 		it('Creates a comment node without content.', () => {
-			const commentNode = document.createComment();
-			expect(commentNode.data).toBe('');
+			// @ts-ignore
+			expect(() => document.createComment()).toThrow(
+				new TypeError(
+					`Failed to execute 'createComment' on 'Document': 1 argument required, but only 0 present.`
+				)
+			);
+		});
+
+		it('Creates a comment node with non string content.', () => {
+			const inputs = [1, -1, true, false, null, undefined, {}, []];
+			const outputs = ['1', '-1', 'true', 'false', 'null', 'undefined', '[object Object]', ''];
+
+			for (let i = 0; i < inputs.length; i++) {
+				// @ts-ignore
+				const commentNode = document.createComment(<string>inputs[i]);
+				expect(commentNode.data).toBe(outputs[i]);
+			}
 		});
 	});
 
@@ -1201,7 +1273,7 @@ describe('Document', () => {
 			const child = document.createElement('div');
 			child.className = 'className';
 
-			for (const node of document.childNodes.slice()) {
+			for (const node of Array.from(document.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
