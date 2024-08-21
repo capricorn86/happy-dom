@@ -22,6 +22,7 @@ export default class HTMLButtonElement extends HTMLElement {
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
+	public [PropertySymbol.popoverTargetElement]: HTMLElement | null = null;
 
 	/**
 	 * Returns validation message.
@@ -248,6 +249,51 @@ export default class HTMLButtonElement extends HTMLElement {
 	 */
 	public get labels(): NodeList<HTMLLabelElement> {
 		return HTMLLabelElementUtility.getAssociatedLabelElements(this);
+	}
+
+	/**
+	 * Returns popover target element.
+	 *
+	 * @returns Popover target element.
+	 */
+	public get popoverTargetElement(): HTMLElement | null {
+		return this[PropertySymbol.popoverTargetElement];
+	}
+
+	/**
+	 * Sets popover target element.
+	 *
+	 * @param popoverTargetElement Popover target element.
+	 */
+	public set popoverTargetElement(popoverTargetElement: HTMLElement | null) {
+		if (popoverTargetElement !== null && !(popoverTargetElement instanceof HTMLElement)) {
+			throw new TypeError(
+				`Failed to set the 'popoverTargetElement' property on 'HTMLInputElement': Failed to convert value to 'Element'.`
+			);
+		}
+		this[PropertySymbol.popoverTargetElement] = popoverTargetElement;
+	}
+
+	/**
+	 * Returns popover target action.
+	 *
+	 * @returns Popover target action.
+	 */
+	public get popoverTargetAction(): string {
+		const value = this.getAttribute('popovertargetaction');
+		if (value === null || (value !== 'hide' && value !== 'show' && value !== 'toggle')) {
+			return 'toggle';
+		}
+		return value;
+	}
+
+	/**
+	 * Sets popover target action.
+	 *
+	 * @param value Popover target action.
+	 */
+	public set popoverTargetAction(value: string) {
+		this.setAttribute('popovertargetaction', value);
 	}
 
 	/**

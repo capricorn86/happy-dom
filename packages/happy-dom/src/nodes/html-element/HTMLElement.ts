@@ -58,8 +58,10 @@ export default class HTMLElement extends Element {
 	public [PropertySymbol.clientLeft] = 0;
 	public [PropertySymbol.clientTop] = 0;
 	public [PropertySymbol.style]: CSSStyleDeclaration = null;
-	private [PropertySymbol.dataset]: DOMStringMap | null = null;
-	private [PropertySymbol.customElementDefineCallback]: () => void = null;
+	public [PropertySymbol.dataset]: DOMStringMap | null = null;
+
+	// Private properties
+	#customElementDefineCallback: () => void = null;
 
 	/**
 	 * Returns access key.
@@ -454,6 +456,39 @@ export default class HTMLElement extends Element {
 	}
 
 	/**
+	 * Returns popover.
+	 *
+	 * @returns Popover.
+	 */
+	public get popover(): string | null {
+		const value = this.getAttribute('popover');
+		switch (value) {
+			case null:
+				return null;
+			case '':
+			case 'auto':
+				return 'auto';
+			case 'manual':
+				return 'manual';
+			default:
+				return 'manual';
+		}
+	}
+
+	/**
+	 * Sets popover.
+	 *
+	 * @param value Value.
+	 */
+	public set popover(value: string | null) {
+		if (value === null) {
+			this.removeAttribute('popover');
+			return;
+		}
+		this.setAttribute('popover', value);
+	}
+
+	/**
 	 * Triggers a click event.
 	 */
 	public click(): void {
@@ -515,7 +550,7 @@ export default class HTMLElement extends Element {
 					PropertySymbol.callbacks
 				];
 
-			if (!this[PropertySymbol.customElementDefineCallback]) {
+			if (!this.#customElementDefineCallback) {
 				const callback = (): void => {
 					if (this[PropertySymbol.parentNode]) {
 						const newElement = <HTMLElement>(
@@ -595,7 +630,7 @@ export default class HTMLElement extends Element {
 				};
 				callbacks[localName] = callbacks[localName] || [];
 				callbacks[localName].push(callback);
-				this[PropertySymbol.customElementDefineCallback] = callback;
+				this.#customElementDefineCallback = callback;
 			}
 		}
 
@@ -622,17 +657,15 @@ export default class HTMLElement extends Element {
 					PropertySymbol.callbacks
 				];
 
-			if (callbacks[localName] && this[PropertySymbol.customElementDefineCallback]) {
-				const index = callbacks[localName].indexOf(
-					this[PropertySymbol.customElementDefineCallback]
-				);
+			if (callbacks[localName] && this.#customElementDefineCallback) {
+				const index = callbacks[localName].indexOf(this.#customElementDefineCallback);
 				if (index !== -1) {
 					callbacks[localName].splice(index, 1);
 				}
 				if (!callbacks[localName].length) {
 					delete callbacks[localName];
 				}
-				this[PropertySymbol.customElementDefineCallback] = null;
+				this.#customElementDefineCallback = null;
 			}
 		}
 

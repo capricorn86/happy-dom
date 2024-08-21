@@ -4,7 +4,9 @@ import { Browser, BrowserErrorCaptureEnum } from 'happy-dom';
 describe('Browser', () => {
 	it('Goes to a "github.com".', async () => {
 		const browser = new Browser({
-			settings: { errorCapture: BrowserErrorCaptureEnum.processLevel }
+			settings: {
+				errorCapture: BrowserErrorCaptureEnum.processLevel
+			}
 		});
 		const page = browser.newPage();
 
@@ -30,7 +32,9 @@ describe('Browser', () => {
 
 	it('Goes to "npmjs.com".', async () => {
 		const browser = new Browser({
-			settings: { errorCapture: BrowserErrorCaptureEnum.processLevel }
+			settings: {
+				errorCapture: BrowserErrorCaptureEnum.processLevel
+			}
 		});
 		const page = browser.newPage();
 

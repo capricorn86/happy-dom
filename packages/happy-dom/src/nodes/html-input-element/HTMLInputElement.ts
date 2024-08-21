@@ -48,6 +48,7 @@ export default class HTMLInputElement extends HTMLElement {
 	public [PropertySymbol.validity] = new ValidityState(this);
 	public [PropertySymbol.files]: FileList = new FileList();
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
+	public [PropertySymbol.popoverTargetElement]: HTMLElement | null = null;
 
 	// Private properties
 	#selectionStart: number = null;
@@ -1113,6 +1114,51 @@ export default class HTMLInputElement extends HTMLElement {
 		const rootNode =
 			<Document | ShadowRoot>this[PropertySymbol.rootNode] || this[PropertySymbol.ownerDocument];
 		return <HTMLDataListElement | null>rootNode.querySelector(`datalist#${id}`);
+	}
+
+	/**
+	 * Returns popover target element.
+	 *
+	 * @returns Popover target element.
+	 */
+	public get popoverTargetElement(): HTMLElement | null {
+		return this[PropertySymbol.popoverTargetElement];
+	}
+
+	/**
+	 * Sets popover target element.
+	 *
+	 * @param popoverTargetElement Popover target element.
+	 */
+	public set popoverTargetElement(popoverTargetElement: HTMLElement | null) {
+		if (popoverTargetElement !== null && !(popoverTargetElement instanceof HTMLElement)) {
+			throw new TypeError(
+				`Failed to set the 'popoverTargetElement' property on 'HTMLInputElement': Failed to convert value to 'Element'.`
+			);
+		}
+		this[PropertySymbol.popoverTargetElement] = popoverTargetElement;
+	}
+
+	/**
+	 * Returns popover target action.
+	 *
+	 * @returns Popover target action.
+	 */
+	public get popoverTargetAction(): string {
+		const value = this.getAttribute('popovertargetaction');
+		if (value === null || (value !== 'hide' && value !== 'show' && value !== 'toggle')) {
+			return 'toggle';
+		}
+		return value;
+	}
+
+	/**
+	 * Sets popover target action.
+	 *
+	 * @param value Popover target action.
+	 */
+	public set popoverTargetAction(value: string) {
+		this.setAttribute('popovertargetaction', value);
 	}
 
 	/**

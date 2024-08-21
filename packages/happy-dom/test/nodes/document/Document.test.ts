@@ -549,16 +549,23 @@ describe('Document', () => {
 		});
 	});
 
-	describe('URL', () => {
+	describe('get URL()', () => {
 		it('Returns the URL of the document.', () => {
 			document.location.href = 'http://localhost:8080/path/to/file.html';
 			expect(document.URL).toBe('http://localhost:8080/path/to/file.html');
 		});
 	});
-	describe('documentURI', () => {
+
+	describe('get documentURI()', () => {
 		it('Returns the documentURI of the document.', () => {
 			document.location.href = 'http://localhost:8080/path/to/file.html';
 			expect(document.documentURI).toBe('http://localhost:8080/path/to/file.html');
+		});
+	});
+	describe('get domain()', () => {
+		it('Returns hostname.', () => {
+			document.location.href = 'http://localhost:8080/path/to/file.html';
+			expect(document.domain).toBe('localhost');
 		});
 	});
 

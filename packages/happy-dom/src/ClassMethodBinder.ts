@@ -14,7 +14,7 @@ export default class ClassMethodBinder {
 	public static bindMethods(
 		target: Object,
 		classes: any[],
-		options?: { bindSymbols: boolean; forwardToPrototype: boolean }
+		options?: { bindSymbols?: boolean; forwardToPrototype?: boolean }
 	): void {
 		for (const _class of classes) {
 			const propertyDescriptors = Object.getOwnPropertyDescriptors(_class.prototype);

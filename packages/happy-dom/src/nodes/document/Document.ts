@@ -548,7 +548,7 @@ export default class Document extends Node {
 	/**
 	 * Returns URL.
 	 *
-	 * @returns the URL of the current document.
+	 * @returns URL of the current document.
 	 * */
 	public get URL(): string {
 		return this[PropertySymbol.ownerWindow].location.href;
@@ -557,10 +557,19 @@ export default class Document extends Node {
 	/**
 	 * Returns document URI.
 	 *
-	 * @returns the URL of the current document.
+	 * @returns URL of the current document.
 	 * */
 	public get documentURI(): string {
 		return this.URL;
+	}
+
+	/**
+	 * Returns domain.
+	 *
+	 * @returns Domain.
+	 * */
+	public get domain(): string {
+		return this[PropertySymbol.ownerWindow].location.hostname;
 	}
 
 	/**

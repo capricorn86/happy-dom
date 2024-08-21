@@ -31,10 +31,7 @@ export default class HTMLCollection<T extends Element, NamedItem = T> {
 		ClassMethodBinder.bindMethods(
 			this,
 			this.constructor !== HTMLCollection ? [HTMLCollection, this.constructor] : [HTMLCollection],
-			{
-				bindSymbols: true,
-				forwardToPrototype: true
-			}
+			{ bindSymbols: true }
 		);
 
 		return new Proxy(this, {

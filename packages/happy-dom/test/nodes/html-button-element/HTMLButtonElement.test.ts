@@ -300,6 +300,74 @@ describe('HTMLButtonElement', () => {
 		});
 	});
 
+	describe('get popoverTargetElement()', () => {
+		it('Returns null by default', () => {
+			expect(element.popoverTargetElement).toBe(null);
+		});
+
+		it('Returns the defined element if it exists', () => {
+			const target = document.createElement('div');
+			element.popoverTargetElement = target;
+			expect(element.popoverTargetElement).toBe(target);
+		});
+	});
+
+	describe('set popoverTargetElement()', () => {
+		it('Sets the target element', () => {
+			const target = document.createElement('div');
+			element.popoverTargetElement = target;
+			expect(element.popoverTargetElement).toBe(target);
+		});
+
+		it('Throws an error if the target element is not an instance of HTMLElement', () => {
+			expect(() => {
+				element.popoverTargetElement = <HTMLElement>(<unknown>'test');
+			}).toThrow(
+				new TypeError(
+					`Failed to set the 'popoverTargetElement' property on 'HTMLInputElement': Failed to convert value to 'Element'.`
+				)
+			);
+		});
+	});
+
+	describe('get popoverTargetAction()', () => {
+		it('Returns "toggle" by default', () => {
+			expect(element.popoverTargetAction).toBe('toggle');
+		});
+
+		it('Returns the attribute "popovertargetaction" if it exists', () => {
+			element.setAttribute('popovertargetaction', 'hide');
+			expect(element.popoverTargetAction).toBe('hide');
+
+			element.setAttribute('popovertargetaction', 'show');
+			expect(element.popoverTargetAction).toBe('show');
+
+			element.setAttribute('popovertargetaction', 'toggle');
+			expect(element.popoverTargetAction).toBe('toggle');
+		});
+
+		it('Returns "toggle" if the defined action is not valid', () => {
+			element.setAttribute('popovertargetaction', 'invalid');
+			expect(element.popoverTargetAction).toBe('toggle');
+		});
+	});
+
+	describe('set popoverTargetAction()', () => {
+		it('Sets the attribute "popovertargetaction"', () => {
+			element.popoverTargetAction = 'hide';
+			expect(element.getAttribute('popovertargetaction')).toBe('hide');
+
+			element.popoverTargetAction = 'show';
+			expect(element.getAttribute('popovertargetaction')).toBe('show');
+
+			element.popoverTargetAction = 'toggle';
+			expect(element.getAttribute('popovertargetaction')).toBe('toggle');
+
+			element.popoverTargetAction = 'invalid';
+			expect(element.getAttribute('popovertargetaction')).toBe('invalid');
+		});
+	});
+
 	describe('setCustomValidity()', () => {
 		it('Returns validation message.', () => {
 			element.setCustomValidity('Error message');

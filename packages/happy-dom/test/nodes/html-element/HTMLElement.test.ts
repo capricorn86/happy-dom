@@ -379,6 +379,58 @@ describe('HTMLElement', () => {
 		});
 	});
 
+	describe('get popover()', () => {
+		it('Returns null by default', () => {
+			const div = document.createElement('div');
+			expect(div.popover).toBe(null);
+		});
+
+		it('Returns "auto" when the attribute "popover" is set to "auto"', () => {
+			const div = document.createElement('div');
+			div.setAttribute('popover', 'auto');
+			expect(div.popover).toBe('auto');
+		});
+
+		it('Returns "manual" when the attribute "popover" is set to "manual"', () => {
+			const div = document.createElement('div');
+			div.setAttribute('popover', 'manual');
+			expect(div.popover).toBe('manual');
+		});
+
+		it('Returns "auto" when the attribute "popover" is set to empty string', () => {
+			const div = document.createElement('div');
+			div.setAttribute('popover', '');
+			expect(div.popover).toBe('auto');
+		});
+
+		it('Returns "manual" when the attribute "popover" is set to an invalid value', () => {
+			const div = document.createElement('div');
+			div.setAttribute('popover', 'invalid');
+			expect(div.popover).toBe('manual');
+		});
+
+		it('Removes the attribute "popover" when set to null', () => {
+			const div = document.createElement('div');
+			div.setAttribute('popover', 'auto');
+			div.popover = null;
+			expect(div.getAttribute('popover')).toBe(null);
+		});
+	});
+
+	describe('set popover()', () => {
+		it('Sets the attribute "popover".', () => {
+			const div = document.createElement('div');
+			div.popover = 'auto';
+			expect(div.getAttribute('popover')).toBe('auto');
+			div.popover = 'manual';
+			expect(div.getAttribute('popover')).toBe('manual');
+			div.popover = 'invalid';
+			expect(div.getAttribute('popover')).toBe('invalid');
+			div.popover = null;
+			expect(div.getAttribute('popover')).toBe(null);
+		});
+	});
+
 	for (const property of ['lang', 'title']) {
 		describe(`get ${property}`, () => {
 			it(`Returns the attribute "${property}".`, () => {
