@@ -26,6 +26,7 @@ import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
 import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
 import HTMLSlotElement from '../html-slot-element/HTMLSlotElement.js';
+import NodeFactory from '../NodeFactory.js';
 
 /**
  * Node.
@@ -109,21 +110,22 @@ export default class Node extends EventTarget {
 
 	/**
 	 * Constructor.
-	 *
-	 * @param [ownerDocument] Owner document.
 	 */
-	constructor(ownerDocument?: Document) {
+	constructor() {
 		super();
 
-		if (!ownerDocument) {
-			ownerDocument = (<typeof Node>this.constructor)[PropertySymbol.ownerDocument];
-		}
+		const definedOwnerDocument = (<typeof Node>this.constructor)[PropertySymbol.ownerDocument];
 
-		if (!ownerDocument) {
-			throw new TypeError('Illegal constructor');
-		}
+		if (definedOwnerDocument) {
+			this[PropertySymbol.ownerDocument] = definedOwnerDocument;
+		} else {
+			const ownerDocument = NodeFactory.pullOwnerDocument();
 
-		this[PropertySymbol.ownerDocument] = ownerDocument;
+			if (!ownerDocument) {
+				throw new TypeError('Illegal constructor');
+			}
+			this[PropertySymbol.ownerDocument] = ownerDocument;
+		}
 	}
 
 	/**
@@ -445,19 +447,10 @@ export default class Node extends EventTarget {
 	 * @returns Cloned node.
 	 */
 	public [PropertySymbol.cloneNode](deep = false): Node {
-		// Can be a custom element, which should keep the ownerDocument
-		const hasOwnerDocument =
-			(<typeof Node>this.constructor)[PropertySymbol.ownerDocument] ===
-			this[PropertySymbol.ownerDocument];
-
-		(<typeof Node>this.constructor)[PropertySymbol.ownerDocument] =
-			this[PropertySymbol.ownerDocument];
-
-		const clone = new (<typeof Node>this.constructor)();
-
-		if (!hasOwnerDocument) {
-			(<typeof Node>this.constructor)[PropertySymbol.ownerDocument] = null;
-		}
+		const clone = NodeFactory.createNode(
+			this[PropertySymbol.ownerDocument],
+			<typeof Node>this.constructor
+		);
 
 		// Document has childNodes directly when it is created
 		if (clone[PropertySymbol.nodeArray].length) {

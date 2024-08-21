@@ -12,6 +12,7 @@ import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
+import NodeFactory from '../../../src/nodes/NodeFactory.js';
 
 describe('Node', () => {
 	let window: Window;
@@ -80,6 +81,22 @@ describe('Node', () => {
 		window.customElements.define('custom-button', CustomButtonElement);
 	});
 
+	describe('constructor', () => {
+		it('Throws an exception if called without using the NodeFactory or define "ownerDocument" as a property on the class', () => {
+			expect(() => new Node()).toThrow('Illegal constructor');
+		});
+
+		it('Doesn\'t throw an exception if "ownerDocument" is defined as a property on the class', () => {
+			Node[PropertySymbol.ownerDocument] = document;
+			expect(() => new Node()).not.toThrow();
+			Node[PropertySymbol.ownerDocument] = null;
+		});
+
+		it("Doesn't throw an exception if NodeFactory is used", () => {
+			expect(() => NodeFactory.createNode(document, Node)).not.toThrow();
+		});
+	});
+
 	describe('get isConnected()', () => {
 		it('Returns "true" if the node is connected to the document.', () => {
 			const div = document.createElement('div');
@@ -126,13 +143,13 @@ describe('Node', () => {
 
 	describe('get nodeValue()', () => {
 		it('Returns null.', () => {
-			expect(new Node(document).nodeValue).toBe(null);
+			expect(NodeFactory.createNode(document, Node).nodeValue).toBe(null);
 		});
 	});
 
 	describe('get nodeName()', () => {
 		it('Returns emptry string.', () => {
-			expect(new Node(document).nodeName).toBe('');
+			expect(NodeFactory.createNode(document, Node).nodeName).toBe('');
 		});
 	});
 

@@ -33,6 +33,7 @@ import NamespaceURI from '../../config/NamespaceURI.js';
 import NodeList from '../node/NodeList.js';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import NamedNodeMapProxyFactory from './NamedNodeMapProxyFactory.js';
+import NodeFactory from '../NodeFactory.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -848,9 +849,10 @@ export default class Element
 			);
 		}
 
-		const shadowRoot = new this[PropertySymbol.ownerDocument][
-			PropertySymbol.ownerWindow
-		].ShadowRoot(this[PropertySymbol.ownerDocument]);
+		const shadowRoot = NodeFactory.createNode<ShadowRoot>(
+			this[PropertySymbol.ownerDocument],
+			this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].ShadowRoot
+		);
 
 		this[PropertySymbol.shadowRoot] = shadowRoot;
 
@@ -862,7 +864,7 @@ export default class Element
 		shadowRoot[PropertySymbol.slotAssignment] =
 			init.slotAssignment === 'manual' ? 'manual' : 'named';
 
-		(<ShadowRoot>shadowRoot)[PropertySymbol.connectedToNode]();
+		shadowRoot[PropertySymbol.connectedToNode]();
 
 		return this[PropertySymbol.shadowRoot];
 	}

@@ -16,7 +16,6 @@ import ClassMethodBinder from '../../ClassMethodBinder.js';
 import Element from '../element/Element.js';
 import Node from '../node/Node.js';
 import EventTarget from '../../event/EventTarget.js';
-import Document from '../document/Document.js';
 
 /**
  * HTML Select Element.
@@ -38,11 +37,9 @@ export default class HTMLSelectElement extends HTMLElement {
 
 	/**
 	 * Constructor.
-	 *
-	 * @param ownerDocument Owner document.
 	 */
-	constructor(ownerDocument?: Document) {
-		super(ownerDocument);
+	constructor() {
+		super();
 
 		ClassMethodBinder.bindMethods(
 			this,

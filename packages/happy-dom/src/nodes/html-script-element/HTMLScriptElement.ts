@@ -11,7 +11,6 @@ import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import ResourceFetch from '../../fetch/ResourceFetch.js';
 import DocumentReadyStateManager from '../document/DocumentReadyStateManager.js';
-import Document from '../document/Document.js';
 
 /**
  * HTML Script Element.
@@ -37,14 +36,12 @@ export default class HTMLScriptElement extends HTMLElement {
 	/**
 	 * Constructor.
 	 *
-	 * @param injected Injected properties.
-	 * @param injected.browserFrame Browser frame.
-	 * @param injected.ownerDocument Owner document.
+	 * @param browserFrame Browser frame.
 	 */
-	constructor(injected: { browserFrame: IBrowserFrame; ownerDocument: Document }) {
-		super(injected.ownerDocument);
+	constructor(browserFrame) {
+		super();
 
-		this.#browserFrame = injected.browserFrame;
+		this.#browserFrame = browserFrame;
 	}
 
 	/**
