@@ -47,6 +47,7 @@ import HTMLHeadElement from '../html-head-element/HTMLHeadElement.js';
 import HTMLBaseElement from '../html-base-element/HTMLBaseElement.js';
 import ICachedResult from '../node/ICachedResult.js';
 import HTMLTitleElement from '../html-title-element/HTMLTitleElement.js';
+import NodeFactory from '../NodeFactory.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -54,6 +55,9 @@ const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
  * Document.
  */
 export default class Document extends Node {
+	// Static properties
+	public static [PropertySymbol.ownerDocument]: Document = <Document>{};
+
 	// Internal properties
 	public [PropertySymbol.children]: HTMLCollection<Element> | null = null;
 	public [PropertySymbol.activeElement]: HTMLElement | SVGElement = null;
@@ -201,7 +205,7 @@ export default class Document extends Node {
 	 * @param injected.window Window.
 	 */
 	constructor(injected: { browserFrame: IBrowserFrame; window: BrowserWindow }) {
-		super(<Document>{});
+		super();
 		this.#browserFrame = injected.browserFrame;
 		this[PropertySymbol.ownerWindow] = injected.window;
 		this[PropertySymbol.ownerDocument] = null;
@@ -1074,15 +1078,19 @@ export default class Document extends Node {
 
 		// SVG element
 		if (namespaceURI === NamespaceURI.svg) {
-			const element =
+			const elementClass =
 				qualifiedName === 'svg'
-					? new this[PropertySymbol.ownerWindow].SVGSVGElement(this)
-					: new this[PropertySymbol.ownerWindow].SVGElement(this);
+					? this[PropertySymbol.ownerWindow].SVGSVGElement
+					: this[PropertySymbol.ownerWindow].SVGElement;
+
+			const element = NodeFactory.createNode<SVGElement>(this, elementClass);
+
 			element[PropertySymbol.tagName] = qualifiedName;
 			element[PropertySymbol.localName] = qualifiedName;
 			element[PropertySymbol.namespaceURI] = namespaceURI;
 			element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
-			return <HTMLElement>(<unknown>element);
+
+			return element;
 		}
 
 		// Custom HTML element
@@ -1107,7 +1115,7 @@ export default class Document extends Node {
 
 		// Known HTML element
 		if (elementClass) {
-			const element = new elementClass(this);
+			const element = NodeFactory.createNode<Element>(this, elementClass);
 
 			element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
 			element[PropertySymbol.localName] = localName;
@@ -1118,16 +1126,18 @@ export default class Document extends Node {
 		}
 
 		// Unknown HTML element
-		const element = localName.includes('-')
-			? new this[PropertySymbol.ownerWindow].HTMLElement(this)
-			: new this[PropertySymbol.ownerWindow].HTMLUnknownElement(this);
+		const unknownElementClass = localName.includes('-')
+			? this[PropertySymbol.ownerWindow].HTMLElement
+			: this[PropertySymbol.ownerWindow].HTMLUnknownElement;
+
+		const element = NodeFactory.createNode<Element>(this, unknownElementClass);
 
 		element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
 		element[PropertySymbol.localName] = localName;
 		element[PropertySymbol.namespaceURI] = namespaceURI;
 		element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
 
-		return <HTMLElement>element;
+		return element;
 	}
 
 	/* eslint-enable jsdoc/valid-types */
@@ -1225,13 +1235,15 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public createAttributeNS(namespaceURI: string, qualifiedName: string): Attr {
-		const attribute = new this[PropertySymbol.ownerWindow].Attr(this);
+		const attribute = NodeFactory.createNode<Attr>(this, this[PropertySymbol.ownerWindow].Attr);
+
 		const parts = qualifiedName.split(':');
 		attribute[PropertySymbol.namespaceURI] = namespaceURI;
 		attribute[PropertySymbol.name] = qualifiedName;
 		attribute[PropertySymbol.localName] = parts[1] ?? qualifiedName;
 		attribute[PropertySymbol.prefix] = parts[0] ?? null;
-		return <Attr>attribute;
+
+		return attribute;
 	}
 
 	/**
@@ -1325,12 +1337,16 @@ export default class Document extends Node {
 				`Failed to execute 'createProcessingInstruction' on 'Document': The data provided ('?>') contains '?>'`
 			);
 		}
-		const processingInstruction = new this[PropertySymbol.ownerWindow].ProcessingInstruction(this);
 
-		processingInstruction[PropertySymbol.data] = data;
-		processingInstruction[PropertySymbol.target] = target;
+		const element = NodeFactory.createNode<ProcessingInstruction>(
+			this,
+			this[PropertySymbol.ownerWindow].ProcessingInstruction
+		);
 
-		return processingInstruction;
+		element[PropertySymbol.data] = data;
+		element[PropertySymbol.target] = target;
+
+		return element;
 	}
 
 	/**

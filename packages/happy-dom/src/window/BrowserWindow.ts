@@ -252,11 +252,11 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly HTMLDocument: new () => HTMLDocumentImplementation;
 	public readonly XMLDocument: new () => XMLDocumentImplementation;
 	public readonly SVGDocument: new () => SVGDocumentImplementation;
-	public readonly Text: new (data?: string) => TextImplementation;
-	public readonly Comment: new (data?: string) => CommentImplementation;
-	public readonly Image: new (width?: number, height?: number) => ImageImplementation;
+	public readonly Text: typeof TextImplementation;
+	public readonly Comment: typeof CommentImplementation;
+	public readonly Image: typeof ImageImplementation;
 	public readonly DocumentFragment: typeof DocumentFragmentImplementation;
-	public readonly Audio: new (url?: string) => AudioImplementation;
+	public readonly Audio: typeof AudioImplementation;
 
 	// Element classes
 	public readonly HTMLAnchorElement: typeof HTMLAnchorElement = HTMLAnchorElement;
@@ -618,7 +618,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this[PropertySymbol.setupVMContext]();
 
 		// Class overrides
-		// For classes that need to be bound to the correct context.
+		// For classes that need to be bound to the correct context to be instantiable using the "new" keyword.
 
 		/* eslint-disable jsdoc/require-jsdoc */
 
@@ -660,22 +660,22 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		}
 		class HTMLScriptElement extends HTMLScriptElementImplementation {
 			constructor() {
-				super({ browserFrame, ownerDocument: window.document });
+				super(browserFrame);
 			}
 		}
 		class HTMLLinkElement extends HTMLLinkElementImplementation {
 			constructor() {
-				super({ browserFrame, ownerDocument: window.document });
+				super(browserFrame);
 			}
 		}
 		class HTMLIFrameElement extends HTMLIFrameElementImplementation {
 			constructor() {
-				super({ browserFrame, ownerDocument: window.document });
+				super(browserFrame);
 			}
 		}
 		class HTMLFormElement extends HTMLFormElementImplementation {
 			constructor() {
-				super({ browserFrame, ownerDocument: window.document });
+				super(browserFrame);
 			}
 		}
 		class Document extends DocumentImplementation {
@@ -698,31 +698,12 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 				super({ window, browserFrame });
 			}
 		}
-		class Audio extends AudioImplementation {
-			constructor(url: string = null) {
-				super(window.document, url);
-			}
-		}
-		class Image extends ImageImplementation {
-			constructor(width: number = null, height: number = null) {
-				super(window.document, width, height);
-			}
-		}
-		class DocumentFragment extends DocumentFragmentImplementation {
-			constructor() {
-				super(window.document);
-			}
-		}
-		class Text extends TextImplementation {
-			constructor(data: string) {
-				super(window.document, data);
-			}
-		}
-		class Comment extends CommentImplementation {
-			constructor(data: string) {
-				super(window.document, data);
-			}
-		}
+
+		class Audio extends AudioImplementation {}
+		class Image extends ImageImplementation {}
+		class DocumentFragment extends DocumentFragmentImplementation {}
+		class Text extends TextImplementation {}
+		class Comment extends CommentImplementation {}
 
 		/* eslint-enable jsdoc/require-jsdoc */
 
@@ -750,6 +731,13 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		// Document
 		this.document = new HTMLDocument();
 		this.document[PropertySymbol.defaultView] = this;
+
+		// Override owner document
+		this.Audio[PropertySymbol.ownerDocument] = this.document;
+		this.Image[PropertySymbol.ownerDocument] = this.document;
+		this.DocumentFragment[PropertySymbol.ownerDocument] = this.document;
+		this.Text[PropertySymbol.ownerDocument] = this.document;
+		this.Comment[PropertySymbol.ownerDocument] = this.document;
 
 		// Ready state manager
 		this[PropertySymbol.readyStateManager].waitUntilComplete().then(() => {
@@ -1513,6 +1501,12 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this[PropertySymbol.mutationObservers] = [];
 		this[PropertySymbol.asyncTaskManager] = null;
 		this[PropertySymbol.mutationObservers] = [];
+
+		this.Audio[PropertySymbol.ownerDocument] = null;
+		this.Image[PropertySymbol.ownerDocument] = null;
+		this.DocumentFragment[PropertySymbol.ownerDocument] = null;
+		this.Text[PropertySymbol.ownerDocument] = null;
+		this.Comment[PropertySymbol.ownerDocument] = null;
 
 		// Disconnects nodes from the document, so that they can be garbage collected.
 		const childNodes = this.document[PropertySymbol.nodeArray];

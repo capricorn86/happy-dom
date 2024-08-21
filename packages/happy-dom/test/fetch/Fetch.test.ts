@@ -3659,7 +3659,7 @@ describe('Fetch', () => {
 			});
 			const text1 = await response1.text();
 
-			await new Promise((resolve) => setTimeout(resolve, 20));
+			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			const response2 = await window.fetch(url);
 			const text2 = await response2.text();
@@ -3989,7 +3989,7 @@ describe('Fetch', () => {
 			});
 			const text1 = await response1.text();
 
-			await new Promise((resolve) => setTimeout(resolve, 20));
+			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			const response2 = await window.fetch(url, {
 				method: 'HEAD'
@@ -4158,7 +4158,7 @@ describe('Fetch', () => {
 			});
 			const text1 = await response1.text();
 
-			await new Promise((resolve) => setTimeout(resolve, 20));
+			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			const response2 = await window.fetch(url);
 			const text2 = await response2.text();
