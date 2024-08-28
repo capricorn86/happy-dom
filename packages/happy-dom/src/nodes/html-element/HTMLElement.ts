@@ -3,10 +3,10 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import PointerEvent from '../../event/events/PointerEvent.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
-import DOMException from '../../exception/DOMException.js';
 import Event from '../../event/Event.js';
 import HTMLElementUtility from './HTMLElementUtility.js';
 import DOMStringMap from '../element/DOMStringMap.js';
+import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 
 /**
  * HTML Element.
@@ -219,10 +219,7 @@ export default class HTMLElement extends Element {
 		for (const childNode of this[PropertySymbol.nodeArray]) {
 			if (childNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
 				const childElement = <HTMLElement>childNode;
-				const computedStyle =
-					this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].getComputedStyle(
-						childElement
-					);
+				const computedStyle = this[PropertySymbol.window].getComputedStyle(childElement);
 
 				if (
 					childElement[PropertySymbol.tagName] !== 'SCRIPT' &&
@@ -303,7 +300,7 @@ export default class HTMLElement extends Element {
 	 */
 	public set outerText(text: string) {
 		if (!this[PropertySymbol.parentNode]) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				"Failed to set the 'outerHTML' property on 'Element': This element has no parent node."
 			);
 		}
@@ -492,14 +489,13 @@ export default class HTMLElement extends Element {
 	 * Triggers a click event.
 	 */
 	public click(): void {
-		const event = new PointerEvent('click', {
-			bubbles: true,
-			composed: true,
-			cancelable: true
-		});
-		event[PropertySymbol.target] = this;
-		event[PropertySymbol.currentTarget] = this;
-		this.dispatchEvent(event);
+		this.dispatchEvent(
+			new PointerEvent('click', {
+				bubbles: true,
+				composed: true,
+				cancelable: true
+			})
+		);
 	}
 
 	/**
@@ -534,102 +530,21 @@ export default class HTMLElement extends Element {
 	 * @see https://html.spec.whatwg.org/multipage/dom.html#htmlelement
 	 */
 	public override [PropertySymbol.connectedToNode](): void {
+		const window = this[PropertySymbol.window];
 		const localName = this[PropertySymbol.localName];
+		const allCallbacks = window.customElements[PropertySymbol.callbacks];
 
 		// This element can potentially be a custom element that has not been defined yet
 		// Therefore we need to register a callback for when it is defined in CustomElementRegistry and replace it with the registered element (see #404)
-		if (
-			this.constructor === HTMLElement &&
-			localName.includes('-') &&
-			this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].customElements[
-				PropertySymbol.callbacks
-			]
-		) {
-			const callbacks =
-				this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].customElements[
-					PropertySymbol.callbacks
-				];
-
+		if (this.constructor === window.HTMLElement && localName.includes('-') && allCallbacks) {
 			if (!this.#customElementDefineCallback) {
-				const callback = (): void => {
-					if (this[PropertySymbol.parentNode]) {
-						const newElement = <HTMLElement>(
-							this[PropertySymbol.ownerDocument].createElement(localName)
-						);
-						const newCache = newElement[PropertySymbol.cache];
-						newElement[PropertySymbol.nodeArray] = this[PropertySymbol.nodeArray];
-						newElement[PropertySymbol.elementArray] = this[PropertySymbol.elementArray];
-						newElement[PropertySymbol.childNodes] = null;
-						newElement[PropertySymbol.children] = null;
-						newElement[PropertySymbol.isConnected] = this[PropertySymbol.isConnected];
-
-						newElement[PropertySymbol.rootNode] = this[PropertySymbol.rootNode];
-						newElement[PropertySymbol.formNode] = this[PropertySymbol.formNode];
-						newElement[PropertySymbol.parentNode] = this[PropertySymbol.parentNode];
-						newElement[PropertySymbol.selectNode] = this[PropertySymbol.selectNode];
-						newElement[PropertySymbol.textAreaNode] = this[PropertySymbol.textAreaNode];
-						newElement[PropertySymbol.mutationListeners] = this[PropertySymbol.mutationListeners];
-						newElement[PropertySymbol.isValue] = this[PropertySymbol.isValue];
-						newElement[PropertySymbol.cache] = this[PropertySymbol.cache];
-						newElement[PropertySymbol.affectsCache] = this[PropertySymbol.affectsCache];
-						newElement[PropertySymbol.attributes][PropertySymbol.namedItems] =
-							this[PropertySymbol.attributes][PropertySymbol.namedItems];
-						newElement[PropertySymbol.attributes][PropertySymbol.namespaceItems] =
-							this[PropertySymbol.attributes][PropertySymbol.namespaceItems];
-
-						for (const attr of newElement[PropertySymbol.attributes][
-							PropertySymbol.namedItems
-						].values()) {
-							attr[PropertySymbol.ownerElement] = newElement;
-						}
-
-						this[PropertySymbol.nodeArray] = [];
-						this[PropertySymbol.elementArray] = [];
-						this[PropertySymbol.childNodes] = null;
-						this[PropertySymbol.children] = null;
-
-						this[PropertySymbol.rootNode] = null;
-						this[PropertySymbol.formNode] = null;
-						this[PropertySymbol.selectNode] = null;
-						this[PropertySymbol.textAreaNode] = null;
-						this[PropertySymbol.mutationListeners] = [];
-						this[PropertySymbol.isValue] = null;
-						this[PropertySymbol.cache] = newCache;
-						this[PropertySymbol.affectsCache] = [];
-						this[PropertySymbol.attributes][PropertySymbol.namedItems] = new Map();
-						this[PropertySymbol.attributes][PropertySymbol.namespaceItems] = new Map();
-
-						const parentChildNodes = this[PropertySymbol.parentNode][PropertySymbol.nodeArray];
-						const parentChildElements =
-							this[PropertySymbol.parentNode][PropertySymbol.elementArray];
-						parentChildNodes[parentChildNodes.indexOf(this)] = newElement;
-						parentChildElements[parentChildElements.indexOf(this)] = newElement;
-
-						if (newElement[PropertySymbol.isConnected] && newElement.connectedCallback) {
-							const result = <void | Promise<void>>newElement.connectedCallback();
-							/**
-							 * It is common to import dependencies in the connectedCallback() method of web components.
-							 * As Happy DOM doesn't have support for dynamic imports yet, this is a temporary solution to wait for imports in connectedCallback().
-							 *
-							 * @see https://github.com/capricorn86/happy-dom/issues/1442
-							 */
-							if (result instanceof Promise) {
-								const asyncTaskManager =
-									this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow][
-										PropertySymbol.asyncTaskManager
-									];
-								const taskID = asyncTaskManager.startTask();
-								result
-									.then(() => asyncTaskManager.endTask(taskID))
-									.catch(() => asyncTaskManager.endTask(taskID));
-							}
-						}
-
-						this[PropertySymbol.disconnectedFromDocument]();
-					}
-				};
-				callbacks[localName] = callbacks[localName] || [];
-				callbacks[localName].push(callback);
+				const callback = this.#onCustomElementConnected.bind(this);
+				const callbacks = allCallbacks.get(localName);
+				if (callbacks) {
+					callbacks.push(callback);
+				} else {
+					allCallbacks.set(localName, [callback]);
+				}
 				this.#customElementDefineCallback = callback;
 			}
 		}
@@ -641,34 +556,108 @@ export default class HTMLElement extends Element {
 	 * @override
 	 */
 	public override [PropertySymbol.disconnectedFromNode](): void {
+		const window = this[PropertySymbol.window];
 		const localName = this[PropertySymbol.localName];
+		const allCallbacks = window.customElements[PropertySymbol.callbacks];
 
 		// This element can potentially be a custom element that has not been defined yet
 		// Therefore we need to register a callback for when it is defined in CustomElementRegistry and replace it with the registered element (see #404)
-		if (
-			this.constructor === HTMLElement &&
-			localName.includes('-') &&
-			this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].customElements[
-				PropertySymbol.callbacks
-			]
-		) {
-			const callbacks =
-				this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].customElements[
-					PropertySymbol.callbacks
-				];
+		if (this.constructor === window.HTMLElement && localName.includes('-') && allCallbacks) {
+			const callbacks = allCallbacks.get(localName);
 
-			if (callbacks[localName] && this.#customElementDefineCallback) {
-				const index = callbacks[localName].indexOf(this.#customElementDefineCallback);
+			if (callbacks && this.#customElementDefineCallback) {
+				const index = callbacks.indexOf(this.#customElementDefineCallback);
 				if (index !== -1) {
-					callbacks[localName].splice(index, 1);
+					callbacks.splice(index, 1);
 				}
-				if (!callbacks[localName].length) {
-					delete callbacks[localName];
+				if (!callbacks.length) {
+					allCallbacks.delete(localName);
 				}
 				this.#customElementDefineCallback = null;
 			}
 		}
 
 		super[PropertySymbol.disconnectedFromNode]();
+	}
+
+	/**
+	 * Triggered when a custom element is connected to the DOM.
+	 */
+	#onCustomElementConnected(): void {
+		if (!this[PropertySymbol.parentNode]) {
+			return;
+		}
+
+		const localName = this[PropertySymbol.localName];
+		const newElement = <HTMLElement>this[PropertySymbol.ownerDocument].createElement(localName);
+		const newCache = newElement[PropertySymbol.cache];
+
+		newElement[PropertySymbol.nodeArray] = this[PropertySymbol.nodeArray];
+		newElement[PropertySymbol.elementArray] = this[PropertySymbol.elementArray];
+		newElement[PropertySymbol.childNodes] = null;
+		newElement[PropertySymbol.children] = null;
+		newElement[PropertySymbol.isConnected] = this[PropertySymbol.isConnected];
+
+		newElement[PropertySymbol.rootNode] = this[PropertySymbol.rootNode];
+		newElement[PropertySymbol.formNode] = this[PropertySymbol.formNode];
+		newElement[PropertySymbol.parentNode] = this[PropertySymbol.parentNode];
+		newElement[PropertySymbol.selectNode] = this[PropertySymbol.selectNode];
+		newElement[PropertySymbol.textAreaNode] = this[PropertySymbol.textAreaNode];
+		newElement[PropertySymbol.mutationListeners] = this[PropertySymbol.mutationListeners];
+		newElement[PropertySymbol.isValue] = this[PropertySymbol.isValue];
+		newElement[PropertySymbol.cache] = this[PropertySymbol.cache];
+		newElement[PropertySymbol.affectsCache] = this[PropertySymbol.affectsCache];
+		newElement[PropertySymbol.attributes][PropertySymbol.namedItems] =
+			this[PropertySymbol.attributes][PropertySymbol.namedItems];
+		newElement[PropertySymbol.attributes][PropertySymbol.namespaceItems] =
+			this[PropertySymbol.attributes][PropertySymbol.namespaceItems];
+
+		for (const attr of newElement[PropertySymbol.attributes][PropertySymbol.namedItems].values()) {
+			attr[PropertySymbol.ownerElement] = newElement;
+		}
+
+		this[PropertySymbol.nodeArray] = [];
+		this[PropertySymbol.elementArray] = [];
+		this[PropertySymbol.childNodes] = null;
+		this[PropertySymbol.children] = null;
+
+		this[PropertySymbol.rootNode] = null;
+		this[PropertySymbol.formNode] = null;
+		this[PropertySymbol.selectNode] = null;
+		this[PropertySymbol.textAreaNode] = null;
+		this[PropertySymbol.mutationListeners] = [];
+		this[PropertySymbol.isValue] = null;
+		this[PropertySymbol.cache] = newCache;
+		this[PropertySymbol.affectsCache] = [];
+		this[PropertySymbol.attributes][PropertySymbol.namedItems] = new Map();
+		this[PropertySymbol.attributes][PropertySymbol.namespaceItems] = new Map();
+
+		const parentChildNodes = this[PropertySymbol.parentNode][PropertySymbol.nodeArray];
+		const parentChildElements = this[PropertySymbol.parentNode][PropertySymbol.elementArray];
+		parentChildNodes[parentChildNodes.indexOf(this)] = newElement;
+		parentChildElements[parentChildElements.indexOf(this)] = newElement;
+
+		if (newElement[PropertySymbol.isConnected] && newElement.connectedCallback) {
+			const result = <void | Promise<void>>newElement.connectedCallback();
+			/**
+			 * It is common to import dependencies in the connectedCallback() method of web components.
+			 * As Happy DOM doesn't have support for dynamic imports yet, this is a temporary solution to wait for imports in connectedCallback().
+			 *
+			 * @see https://github.com/capricorn86/happy-dom/issues/1442
+			 */
+			if (result instanceof Promise) {
+				const asyncTaskManager = new WindowBrowserContext(
+					this[PropertySymbol.window]
+				).getAsyncTaskManager();
+				if (asyncTaskManager) {
+					const taskID = asyncTaskManager.startTask();
+					result
+						.then(() => asyncTaskManager.endTask(taskID))
+						.catch(() => asyncTaskManager.endTask(taskID));
+				}
+			}
+		}
+
+		this[PropertySymbol.disconnectedFromDocument]();
 	}
 }

@@ -8,6 +8,7 @@ import CustomElement from '../../CustomElement.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import CustomElementRegistry from '../../../src/custom-element/CustomElementRegistry.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
+import EventTarget from '../../../src/event/EventTarget.js';
 
 describe('HTMLElement', () => {
 	let window: Window;
@@ -451,20 +452,28 @@ describe('HTMLElement', () => {
 
 	describe('click()', () => {
 		it('Dispatches "click" event.', () => {
-			let triggeredEvent: PointerEvent | null = null;
+			let event: PointerEvent | null = null;
+			let target: EventTarget | null = null;
+			let currentTarget: EventTarget | null = null;
 
-			element.addEventListener('click', (event) => (triggeredEvent = <PointerEvent>event));
+			element.addEventListener('click', (e) => {
+				event = <PointerEvent>e;
+				target = e.target;
+				currentTarget = e.currentTarget;
+			});
 
 			element.click();
 
-			expect(<PointerEvent>(<unknown>triggeredEvent) instanceof PointerEvent).toBe(true);
-			expect((<PointerEvent>(<unknown>triggeredEvent)).type).toBe('click');
-			expect((<PointerEvent>(<unknown>triggeredEvent)).bubbles).toBe(true);
-			expect((<PointerEvent>(<unknown>triggeredEvent)).composed).toBe(true);
-			expect((<PointerEvent>(<unknown>triggeredEvent)).target === element).toBe(true);
-			expect((<PointerEvent>(<unknown>triggeredEvent)).currentTarget === element).toBe(true);
-			expect((<PointerEvent>(<unknown>triggeredEvent)).width).toBe(1);
-			expect((<PointerEvent>(<unknown>triggeredEvent)).height).toBe(1);
+			expect(<PointerEvent>(<unknown>event) instanceof PointerEvent).toBe(true);
+			expect((<PointerEvent>(<unknown>event)).type).toBe('click');
+			expect((<PointerEvent>(<unknown>event)).bubbles).toBe(true);
+			expect((<PointerEvent>(<unknown>event)).composed).toBe(true);
+			expect((<PointerEvent>(<unknown>event)).width).toBe(1);
+			expect((<PointerEvent>(<unknown>event)).height).toBe(1);
+			expect((<PointerEvent>(<unknown>event)).target).toBe(null);
+			expect((<PointerEvent>(<unknown>event)).currentTarget).toBe(null);
+			expect(target).toBe(element);
+			expect(currentTarget).toBe(element);
 		});
 	});
 
@@ -528,7 +537,7 @@ describe('HTMLElement', () => {
 
 			parent.appendChild(element);
 
-			expect(window.customElements[PropertySymbol.callbacks]['custom-element'].length).toBe(1);
+			expect(window.customElements[PropertySymbol.callbacks].get('custom-element')?.length).toBe(1);
 
 			parent.removeChild(element);
 

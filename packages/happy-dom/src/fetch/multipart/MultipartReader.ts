@@ -1,7 +1,7 @@
-import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import File from '../../file/File.js';
 import FormData from '../../form-data/FormData.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 
 enum MultiparParserStateEnum {
 	boundary = 0,
@@ -37,15 +37,18 @@ export default class MultipartReader {
 		contentType: null,
 		header: ''
 	};
+	private window: BrowserWindow;
 
 	/**
 	 * Constructor.
 	 *
+	 * @param window Window.
 	 * @param formData Form data.
 	 * @param boundary Boundary.
 	 */
-	constructor(boundary: string) {
+	constructor(window: BrowserWindow, boundary: string) {
 		const boundaryHeader = `--${boundary}`;
+		this.window = window;
 		this.boundary = new Uint8Array(boundaryHeader.length);
 
 		for (let i = 0, max = boundaryHeader.length; i < max; i++) {
@@ -156,7 +159,7 @@ export default class MultipartReader {
 	 */
 	public end(): FormData {
 		if (this.state !== MultiparParserStateEnum.data) {
-			throw new DOMException(
+			throw new this.window.DOMException(
 				`Unexpected end of multipart stream. Expected state to be "${MultiparParserStateEnum.data}" but got "${this.state}".`,
 				DOMExceptionNameEnum.invalidStateError
 			);

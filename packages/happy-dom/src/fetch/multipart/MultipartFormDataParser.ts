@@ -2,9 +2,9 @@ import FormData from '../../form-data/FormData.js';
 import { ReadableStream } from 'stream/web';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import MultipartReader from './MultipartReader.js';
-import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import { Buffer } from 'buffer';
+import BrowserWindow from '../../window/BrowserWindow.js';
 
 /**
  * Multipart form data factory.
@@ -16,16 +16,18 @@ export default class MultipartFormDataParser {
 	/**
 	 * Returns form data.
 	 *
+	 * @param window Window.
 	 * @param body Body.
 	 * @param contentType Content type header value.
 	 * @returns Form data.
 	 */
 	public static async streamToFormData(
+		window: BrowserWindow,
 		body: ReadableStream,
 		contentType: string
 	): Promise<{ formData: FormData; buffer: Buffer }> {
 		if (!/multipart/i.test(contentType)) {
-			throw new DOMException(
+			throw new window.DOMException(
 				`Failed to build FormData object: The "content-type" header isn't of type "multipart/form-data".`,
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -34,14 +36,14 @@ export default class MultipartFormDataParser {
 		const match = contentType.match(/boundary=(?:"([^"]+)"|([^;]+))/i);
 
 		if (!match) {
-			throw new DOMException(
+			throw new window.DOMException(
 				`Failed to build FormData object: The "content-type" header doesn't contain any multipart boundary.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
 
 		const bodyReader = body.getReader();
-		const reader = new MultipartReader(match[1] || match[2]);
+		const reader = new MultipartReader(window, match[1] || match[2]);
 		const chunks = [];
 		let buffer: Buffer;
 		const bytes = 0;
@@ -49,6 +51,15 @@ export default class MultipartFormDataParser {
 		let readResult = await bodyReader.read();
 
 		while (!readResult.done) {
+			if (body[PropertySymbol.error]) {
+				throw body[PropertySymbol.error];
+			}
+			if (body[PropertySymbol.aborted]) {
+				throw new window.DOMException(
+					'Failed to read response body: The stream was aborted.',
+					DOMExceptionNameEnum.abortError
+				);
+			}
 			reader.write(readResult.value);
 			readResult = await bodyReader.read();
 		}
@@ -57,7 +68,7 @@ export default class MultipartFormDataParser {
 			buffer =
 				typeof chunks[0] === 'string' ? Buffer.from(chunks.join('')) : Buffer.concat(chunks, bytes);
 		} catch (error) {
-			throw new DOMException(
+			throw new window.DOMException(
 				`Could not create Buffer from response body. Error: ${error.message}.`,
 				DOMExceptionNameEnum.invalidStateError
 			);

@@ -2,6 +2,7 @@ import IBrowserFrame from '../types/IBrowserFrame.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import BrowserWindow from '../../window/BrowserWindow.js';
 import IBrowserPage from '../types/IBrowserPage.js';
+
 /**
  * Browser frame factory.
  */
@@ -27,7 +28,9 @@ export default class BrowserFrameFactory {
 	 * @param frame Frame.
 	 */
 	public static destroyFrame(frame: IBrowserFrame): Promise<void> {
-		// Using Promise instead of async/await to prevent microtask
+		const exceptionObserver = frame.page.context.browser[PropertySymbol.exceptionObserver];
+
+		// Using Promise instead of async/await to prevent usage of a microtask
 		return new Promise((resolve, reject) => {
 			if (!frame.window) {
 				resolve();
@@ -42,54 +45,43 @@ export default class BrowserFrameFactory {
 			}
 
 			if (!frame.childFrames.length) {
-				if (frame.window && frame.window[PropertySymbol.mutationObservers]) {
-					for (const mutationObserver of frame.window[PropertySymbol.mutationObservers]) {
-						mutationObserver.disconnect();
-					}
-					frame.window[PropertySymbol.mutationObservers] = [];
-				}
-				return frame[PropertySymbol.asyncTaskManager]
+				frame[PropertySymbol.asyncTaskManager]
 					.destroy()
 					.then(() => {
-						frame[PropertySymbol.exceptionObserver]?.disconnect();
-						if (frame.window) {
-							frame.window[PropertySymbol.destroy]();
-							(<IBrowserPage | null>frame.page) = null;
-							(<BrowserWindow | null>frame.window) = null;
-							frame[PropertySymbol.openerFrame] = null;
-							frame[PropertySymbol.openerWindow] = null;
+						if (exceptionObserver && frame.window) {
+							exceptionObserver.disconnect(frame.window);
 						}
 						resolve();
 					})
 					.catch((error) => reject(error));
+				if (frame.window) {
+					frame.window[PropertySymbol.destroy]();
+					(<IBrowserPage | null>frame.page) = null;
+					(<BrowserWindow | null>frame.window) = null;
+					frame[PropertySymbol.openerFrame] = null;
+					frame[PropertySymbol.openerWindow] = null;
+				}
+				return;
 			}
 
 			Promise.all(frame.childFrames.slice().map((childFrame) => this.destroyFrame(childFrame)))
 				.then(() => {
-					if (frame.window && frame.window[PropertySymbol.mutationObservers]) {
-						for (const mutationObserver of frame.window[PropertySymbol.mutationObservers]) {
-							mutationObserver.disconnect();
-						}
-						frame.window[PropertySymbol.mutationObservers] = [];
-					}
-					return frame[PropertySymbol.asyncTaskManager].destroy().then(() => {
-						frame[PropertySymbol.exceptionObserver]?.disconnect();
-						if (frame.window) {
-							const listeners = frame[PropertySymbol.listeners];
-
-							frame.window[PropertySymbol.destroy]();
-							(<IBrowserPage | null>frame.page) = null;
-							(<BrowserWindow | null>frame.window) = null;
-							frame[PropertySymbol.listeners] = null;
-							frame[PropertySymbol.openerFrame] = null;
-							frame[PropertySymbol.openerWindow] = null;
-
-							for (const listener of listeners.navigation) {
-								listener();
+					frame[PropertySymbol.asyncTaskManager]
+						.destroy()
+						.then(() => {
+							if (exceptionObserver && frame.window) {
+								exceptionObserver.disconnect(frame.window);
 							}
-						}
-						resolve();
-					});
+							resolve();
+						})
+						.catch((error) => reject(error));
+					if (frame.window) {
+						frame.window[PropertySymbol.destroy]();
+						(<IBrowserPage | null>frame.page) = null;
+						(<BrowserWindow | null>frame.window) = null;
+						frame[PropertySymbol.openerFrame] = null;
+						frame[PropertySymbol.openerWindow] = null;
+					}
 				})
 				.catch((error) => reject(error));
 		});

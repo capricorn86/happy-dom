@@ -376,10 +376,10 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 		const returnValue = super.dispatchEvent(event);
 
 		if (
+			!event[PropertySymbol.defaultPrevented] &&
 			event.type === 'click' &&
 			event instanceof MouseEvent &&
-			event.eventPhase === EventPhaseEnum.none &&
-			!event.defaultPrevented
+			event.eventPhase === EventPhaseEnum.none
 		) {
 			const href = this.href;
 
@@ -394,13 +394,9 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 					features.push('noopener');
 				}
 
-				this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].open(
-					href,
-					this.target || '_self',
-					features.join(',')
-				);
+				this[PropertySymbol.window].open(href, this.target || '_self', features.join(','));
 
-				if (this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].closed) {
+				if (this[PropertySymbol.window].closed) {
 					event.stopImmediatePropagation();
 				}
 			}

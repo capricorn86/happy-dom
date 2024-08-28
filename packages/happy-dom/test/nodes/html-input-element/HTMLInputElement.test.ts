@@ -1312,6 +1312,8 @@ describe('HTMLInputElement', () => {
 			expect(isChangeTriggered).toBe(false);
 			expect(element.checked).toBe(true);
 
+			element.checked = false;
+
 			document.body.appendChild(element);
 
 			element.dispatchEvent(new PointerEvent('click'));
@@ -1324,6 +1326,24 @@ describe('HTMLInputElement', () => {
 			element.dispatchEvent(new PointerEvent('click'));
 
 			expect(element.checked).toBe(true);
+		});
+
+		it('Doesn\'t trigger "change" and "input" event if type is "radio" it is already checked when dispatching a "click" event.', () => {
+			let isInputTriggered = false;
+			let isChangeTriggered = false;
+
+			element.addEventListener('input', () => (isInputTriggered = true));
+			element.addEventListener('change', () => (isChangeTriggered = true));
+
+			element.type = 'radio';
+			element.checked = true;
+
+			document.body.appendChild(element);
+
+			element.dispatchEvent(new PointerEvent('click'));
+
+			expect(isInputTriggered).toBe(false);
+			expect(isChangeTriggered).toBe(false);
 		});
 
 		it('Sets "checked" to "true" before triggering listeners if type is "checkbox".', () => {

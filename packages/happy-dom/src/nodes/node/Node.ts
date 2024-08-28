@@ -9,7 +9,6 @@ import Attr from '../attr/Attr.js';
 import NodeList from './NodeList.js';
 import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
-import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import IMutationListener from '../../mutation-observer/IMutationListener.js';
 import ICachedQuerySelectorAllResult from './ICachedQuerySelectorAllResult.js';
@@ -26,14 +25,15 @@ import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
 import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
 import HTMLSlotElement from '../html-slot-element/HTMLSlotElement.js';
+import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import NodeFactory from '../NodeFactory.js';
 
 /**
  * Node.
  */
 export default class Node extends EventTarget {
-	// This is used when overriding a Node class and set it in a owner document context (used in BrowserWindow.constructor()).
-	public static [PropertySymbol.ownerDocument]: Document | null;
+	// Can be injected by CustomElementRegistry or a sub-class
+	public declare [PropertySymbol.ownerDocument]: Document;
 
 	// Public properties
 	public static readonly ELEMENT_NODE = NodeTypeEnum.elementNode;
@@ -72,7 +72,6 @@ export default class Node extends EventTarget {
 
 	// Internal properties
 	public [PropertySymbol.isConnected] = false;
-	public [PropertySymbol.ownerDocument]: Document;
 	public [PropertySymbol.parentNode]: Node | null = null;
 	public [PropertySymbol.nodeType]: NodeTypeEnum;
 	public [PropertySymbol.rootNode]: Node = null;
@@ -114,17 +113,18 @@ export default class Node extends EventTarget {
 	constructor() {
 		super();
 
-		const definedOwnerDocument = (<typeof Node>this.constructor)[PropertySymbol.ownerDocument];
-
-		if (definedOwnerDocument) {
-			this[PropertySymbol.ownerDocument] = definedOwnerDocument;
+		// Window injected by WindowClassExtender (used when the Node can be created using "new" keyword)
+		if (this[PropertySymbol.window]) {
+			this[PropertySymbol.ownerDocument] = this[PropertySymbol.window].document;
 		} else {
 			const ownerDocument = NodeFactory.pullOwnerDocument();
 
 			if (!ownerDocument) {
 				throw new TypeError('Illegal constructor');
 			}
+
 			this[PropertySymbol.ownerDocument] = ownerDocument;
+			this[PropertySymbol.window] = ownerDocument[PropertySymbol.window];
 		}
 	}
 
@@ -314,7 +314,7 @@ export default class Node extends EventTarget {
 		if (base) {
 			return base.href;
 		}
-		return this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].location.href;
+		return this[PropertySymbol.window].location.href;
 	}
 
 	/**
@@ -386,7 +386,7 @@ export default class Node extends EventTarget {
 	 */
 	public appendChild(node: Node): Node {
 		if (arguments.length < 1) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'appendChild' on 'Node': 1 argument required, but only 0 present`
 			);
 		}
@@ -401,7 +401,7 @@ export default class Node extends EventTarget {
 	 */
 	public removeChild(node: Node): Node {
 		if (arguments.length < 1) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'removeChild' on 'Node': 1 argument required, but only 0 present`
 			);
 		}
@@ -417,7 +417,7 @@ export default class Node extends EventTarget {
 	 */
 	public insertBefore(newNode: Node, referenceNode: Node | null): Node {
 		if (arguments.length < 2) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only ${arguments.length} present.`
 			);
 		}
@@ -433,7 +433,7 @@ export default class Node extends EventTarget {
 	 */
 	public replaceChild(newChild: Node, oldChild: Node): Node {
 		if (arguments.length < 2) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'replaceChild' on 'Node': 2 arguments required, but only ${arguments.length} present.`
 			);
 		}
@@ -453,6 +453,7 @@ export default class Node extends EventTarget {
 		);
 
 		// Document has childNodes directly when it is created
+		// We need to remove them
 		if (clone[PropertySymbol.nodeArray].length) {
 			const childNodes = clone[PropertySymbol.nodeArray];
 			while (childNodes.length) {
@@ -485,13 +486,13 @@ export default class Node extends EventTarget {
 	public [PropertySymbol.appendChild](node: Node, disableValidations = false): Node {
 		if (!disableValidations) {
 			if (node === this) {
-				throw new DOMException(
+				throw new this[PropertySymbol.window].DOMException(
 					"Failed to execute 'appendChild' on 'Node': Not possible to append a node as a child of itself."
 				);
 			}
 
 			if (NodeUtility.isInclusiveAncestor(node, this, true)) {
-				throw new DOMException(
+				throw new this[PropertySymbol.window].DOMException(
 					"Failed to execute 'appendChild' on 'Node': The new node is a parent of the node to insert to.",
 					DOMExceptionNameEnum.domException
 				);
@@ -557,7 +558,7 @@ export default class Node extends EventTarget {
 		const index = this[PropertySymbol.nodeArray].indexOf(node);
 
 		if (index === -1) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.`
 			);
 		}
@@ -612,7 +613,7 @@ export default class Node extends EventTarget {
 		}
 
 		if (NodeUtility.isInclusiveAncestor(newNode, this, true)) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				"Failed to execute 'insertBefore' on 'Node': The new node is a parent of the node to insert to.",
 				DOMExceptionNameEnum.domException
 			);
@@ -639,7 +640,7 @@ export default class Node extends EventTarget {
 
 		// We need to check if the referenceNode is a child of this node before removing it from its parent, as the parent may be the same node and the index would be wrong.
 		if (!nodeArray.includes(referenceNode)) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				"Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node."
 			);
 		}
@@ -1007,14 +1008,15 @@ export default class Node extends EventTarget {
 			 * @see https://github.com/capricorn86/happy-dom/issues/1442
 			 */
 			if (result instanceof Promise) {
-				const asyncTaskManager =
-					this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow][
-						PropertySymbol.asyncTaskManager
-					];
-				const taskID = asyncTaskManager.startTask();
-				result
-					.then(() => asyncTaskManager.endTask(taskID))
-					.catch(() => asyncTaskManager.endTask(taskID));
+				const asyncTaskManager = new WindowBrowserContext(
+					this[PropertySymbol.window]
+				).getAsyncTaskManager();
+				if (asyncTaskManager) {
+					const taskID = asyncTaskManager.startTask();
+					result
+						.then(() => asyncTaskManager.endTask(taskID))
+						.catch(() => asyncTaskManager.endTask(taskID));
+				}
 			}
 		}
 	}

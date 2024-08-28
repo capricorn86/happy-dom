@@ -36,6 +36,7 @@ import BrowserWindow from '../../../src/window/BrowserWindow.js';
 import Fetch from '../../../src/fetch/Fetch.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import HTMLUnknownElement from '../../../src/nodes/html-unknown-element/HTMLUnknownElement.js';
+import EventTarget from '../../../src/event/EventTarget.js';
 
 /* eslint-disable jsdoc/require-jsdoc */
 
@@ -1288,7 +1289,7 @@ describe('Document', () => {
 
 			const clone = document.cloneNode(false);
 			const clone2 = document.cloneNode(true);
-			expect(clone[PropertySymbol.ownerWindow] === window).toBe(true);
+			expect(clone[PropertySymbol.window] === window).toBe(true);
 			expect(clone.defaultView === null).toBe(true);
 			expect(clone.children.length).toBe(0);
 			expect(clone2.children.length).toBe(1);
@@ -1322,16 +1323,22 @@ describe('Document', () => {
 	describe('addEventListener()', () => {
 		it('Triggers "readystatechange" event if no resources needs to be loaded.', async () => {
 			await new Promise((resolve) => {
-				let readyChangeEvent: Event | null = null;
+				let event: Event | null = null;
+				let target: EventTarget | null = null;
+				let currentTarget: EventTarget | null = null;
 
-				document.addEventListener('readystatechange', (event) => {
-					readyChangeEvent = event;
+				document.addEventListener('readystatechange', (e) => {
+					event = e;
+					target = e.target;
+					currentTarget = e.currentTarget;
 				});
 
 				expect(document.readyState).toBe(DocumentReadyStateEnum.interactive);
 
 				setTimeout(() => {
-					expect((<Event>readyChangeEvent).target).toBe(document);
+					expect((<Event>event).target).toBe(null);
+					expect(target).toBe(document);
+					expect(currentTarget).toBe(document);
 					expect(document.readyState).toBe(DocumentReadyStateEnum.complete);
 					resolve(null);
 				}, 20);
@@ -1348,7 +1355,9 @@ describe('Document', () => {
 				let resourceFetchCSSURL: string | null = null;
 				let resourceFetchJSWindow: BrowserWindow | null = null;
 				let resourceFetchJSURL: string | null = null;
-				let readyChangeEvent: Event | null = null;
+				let event: Event | null = null;
+				let target: EventTarget | null = null;
+				let currentTarget: EventTarget | null = null;
 
 				vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
 					if (url.endsWith('.css')) {
@@ -1362,8 +1371,10 @@ describe('Document', () => {
 					return jsResponse;
 				});
 
-				document.addEventListener('readystatechange', (event) => {
-					readyChangeEvent = event;
+				document.addEventListener('readystatechange', (e) => {
+					event = e;
+					target = e.target;
+					currentTarget = e.currentTarget;
 				});
 
 				const script = <HTMLScriptElement>document.createElement('script');
@@ -1384,7 +1395,9 @@ describe('Document', () => {
 					expect(resourceFetchCSSURL).toBe(cssURL);
 					expect(resourceFetchJSWindow).toBe(window);
 					expect(resourceFetchJSURL).toBe(jsURL);
-					expect((<Event>readyChangeEvent).target).toBe(document);
+					expect((<Event>event).target).toBe(null);
+					expect(target).toBe(document);
+					expect(currentTarget).toBe(document);
 					expect(document.readyState).toBe(DocumentReadyStateEnum.complete);
 					expect(document.styleSheets.length).toBe(1);
 					expect(document.styleSheets[0].cssRules[0].cssText).toBe(cssResponse);
@@ -1394,7 +1407,7 @@ describe('Document', () => {
 					delete window['test'];
 
 					resolve(null);
-				}, 0);
+				}, 10);
 			});
 		});
 	});
@@ -1434,6 +1447,16 @@ describe('Document', () => {
 			document.dispatchEvent(event);
 
 			expect(emittedEvent).toBe(event);
+		});
+
+		it('Doesn\t bubble to Window if the event type is "load".', () => {
+			const event = new Event('load', { bubbles: true });
+			let emittedEvent: Event | null = null;
+
+			window.addEventListener('load', (event) => (emittedEvent = event));
+			document.dispatchEvent(event);
+
+			expect(emittedEvent).toBe(null);
 		});
 	});
 

@@ -4,13 +4,12 @@ import HTMLElement from '../html-element/HTMLElement.js';
 import Event from '../../event/Event.js';
 import ErrorEvent from '../../event/events/ErrorEvent.js';
 import DOMTokenList from '../element/DOMTokenList.js';
-import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import Attr from '../attr/Attr.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
-import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import ResourceFetch from '../../fetch/ResourceFetch.js';
 import DocumentReadyStateManager from '../document/DocumentReadyStateManager.js';
+import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 
 /**
  * HTML Link Element.
@@ -28,18 +27,6 @@ export default class HTMLLinkElement extends HTMLElement {
 	public [PropertySymbol.evaluateCSS] = true;
 	public [PropertySymbol.relList]: DOMTokenList | null = null;
 	#loadedStyleSheetURL: string | null = null;
-	#browserFrame: IBrowserFrame;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param browserFrame Browser frame.
-	 */
-	constructor(browserFrame) {
-		super();
-
-		this.#browserFrame = browserFrame;
-	}
 
 	/**
 	 * Returns sheet.
@@ -246,8 +233,14 @@ export default class HTMLLinkElement extends HTMLElement {
 	 * @param rel Rel.
 	 */
 	async #loadStyleSheet(url: string | null, rel: string | null): Promise<void> {
-		const browserSettings = this.#browserFrame.page.context.browser.settings;
-		const window = this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow];
+		const window = this[PropertySymbol.window];
+		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+
+		if (!browserFrame) {
+			return;
+		}
+
+		const browserSettings = browserFrame.page?.context?.browser?.settings;
 
 		if (!url || !rel || rel.toLowerCase() !== 'stylesheet' || !this[PropertySymbol.isConnected]) {
 			return;
@@ -264,13 +257,13 @@ export default class HTMLLinkElement extends HTMLElement {
 			return;
 		}
 
-		if (browserSettings.disableCSSFileLoading) {
+		if (browserSettings && browserSettings.disableCSSFileLoading) {
 			if (browserSettings.handleDisabledFileLoadingAsSuccess) {
 				this.dispatchEvent(new Event('load'));
 			} else {
 				WindowErrorUtility.dispatchError(
 					this,
-					new DOMException(
+					new window.DOMException(
 						`Failed to load external stylesheet "${absoluteURL}". CSS file loading is disabled.`,
 						DOMExceptionNameEnum.notSupportedError
 					)
@@ -280,7 +273,7 @@ export default class HTMLLinkElement extends HTMLElement {
 		}
 
 		const resourceFetch = new ResourceFetch({
-			browserFrame: this.#browserFrame,
+			browserFrame,
 			window: window
 		});
 		const readyStateManager = (<{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }>(

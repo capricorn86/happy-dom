@@ -10,11 +10,12 @@ export default class ClassMethodBinder {
 	 * @param [options] Options.
 	 * @param [options.bindSymbols] Bind symbol methods.
 	 * @param [options.forwardToPrototype] Forwards the method calls to the prototype. This makes it possible for test tools to override methods on the prototype (e.g. Object.defineProperty(HTMLCollection.prototype, 'item', {})).
+	 * @param [options.proxy] Bind methods using a proxy.
 	 */
 	public static bindMethods(
 		target: Object,
 		classes: any[],
-		options?: { bindSymbols?: boolean; forwardToPrototype?: boolean }
+		options?: { bindSymbols?: boolean; forwardToPrototype?: boolean; proxy?: any }
 	): void {
 		for (const _class of classes) {
 			const propertyDescriptors = Object.getOwnPropertyDescriptors(_class.prototype);
@@ -26,6 +27,8 @@ export default class ClassMethodBinder {
 				}
 			}
 
+			const scope = options?.proxy ? options.proxy : target;
+
 			if (options?.forwardToPrototype) {
 				for (const key of keys) {
 					const descriptor = propertyDescriptors[<string>key];
@@ -34,11 +37,11 @@ export default class ClassMethodBinder {
 							...descriptor,
 							get:
 								descriptor.get &&
-								(() => Object.getOwnPropertyDescriptor(_class.prototype, key).get.call(target)),
+								(() => Object.getOwnPropertyDescriptor(_class.prototype, key).get.call(scope)),
 							set:
 								descriptor.set &&
 								((newValue) =>
-									Object.getOwnPropertyDescriptor(_class.prototype, key).set.call(target, newValue))
+									Object.getOwnPropertyDescriptor(_class.prototype, key).set.call(scope, newValue))
 						});
 					} else if (
 						key !== 'constructor' &&
@@ -47,7 +50,7 @@ export default class ClassMethodBinder {
 					) {
 						Object.defineProperty(target, key, {
 							...descriptor,
-							value: (...args) => _class.prototype[key].apply(target, args)
+							value: (...args) => _class.prototype[key].apply(scope, args)
 						});
 					}
 				}
@@ -57,8 +60,8 @@ export default class ClassMethodBinder {
 					if (descriptor.get || descriptor.set) {
 						Object.defineProperty(target, key, {
 							...descriptor,
-							get: descriptor.get?.bind(target),
-							set: descriptor.set?.bind(target)
+							get: descriptor.get?.bind(scope),
+							set: descriptor.set?.bind(scope)
 						});
 					} else if (
 						key !== 'constructor' &&
@@ -67,7 +70,7 @@ export default class ClassMethodBinder {
 					) {
 						Object.defineProperty(target, key, {
 							...descriptor,
-							value: descriptor.value.bind(target)
+							value: descriptor.value.bind(scope)
 						});
 					}
 				}

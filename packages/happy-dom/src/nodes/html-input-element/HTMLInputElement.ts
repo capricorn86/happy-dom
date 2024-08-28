@@ -1,7 +1,6 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import ValidityState from '../../validity-state/ValidityState.js';
-import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import Event from '../../event/Event.js';
 import HTMLInputElementValueSanitizer from './HTMLInputElementValueSanitizer.js';
@@ -793,7 +792,7 @@ export default class HTMLInputElement extends HTMLElement {
 				break;
 			case 'file':
 				if (value !== '') {
-					throw new DOMException(
+					throw new this[PropertySymbol.window].DOMException(
 						'Input elements of type "file" may only programmatically set the value to empty string.',
 						DOMExceptionNameEnum.invalidStateError
 					);
@@ -837,7 +836,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 */
 	public set selectionStart(start: number) {
 		if (!this.#isSelectionSupported()) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`The input element's type (${this.type}) does not support selection.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -870,7 +869,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 */
 	public set selectionEnd(end: number) {
 		if (!this.#isSelectionSupported()) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`The input element's type (${this.type}) does not support selection.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -899,7 +898,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 */
 	public set selectionDirection(direction: string) {
 		if (!this.#isSelectionSupported()) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`The input element's type (${this.type}) does not support selection.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -954,17 +953,17 @@ export default class HTMLInputElement extends HTMLElement {
 	public set valueAsDate(value: Date | null) {
 		// Specs at https://html.spec.whatwg.org/multipage/input.html#dom-input-valueasdate
 		if (!['date', 'month', 'time', 'week'].includes(this.type)) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				"Failed to set the 'valueAsDate' property on 'HTMLInputElement': This input element does not support Date values.",
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
 		if (typeof value !== 'object') {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				"Failed to set the 'valueAsDate' property on 'HTMLInputElement': Failed to convert value to 'object'."
 			);
 		} else if (value && !(value instanceof Date)) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				"Failed to set the 'valueAsDate' property on 'HTMLInputElement': The provided value is not a Date."
 			);
 		} else if (value === null || isNaN(value.getTime())) {
@@ -1085,7 +1084,7 @@ export default class HTMLInputElement extends HTMLElement {
 				break;
 			}
 			default:
-				throw new DOMException(
+				throw new this[PropertySymbol.window].DOMException(
 					"Failed to set the 'valueAsNumber' property on 'HTMLInputElement': This input element does not support Number values.",
 					DOMExceptionNameEnum.invalidStateError
 				);
@@ -1132,7 +1131,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 */
 	public set popoverTargetElement(popoverTargetElement: HTMLElement | null) {
 		if (popoverTargetElement !== null && !(popoverTargetElement instanceof HTMLElement)) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to set the 'popoverTargetElement' property on 'HTMLInputElement': Failed to convert value to 'Element'.`
 			);
 		}
@@ -1194,7 +1193,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 */
 	public setSelectionRange(start: number, end: number, direction = 'none'): void {
 		if (!this.#isSelectionSupported()) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`The input element's type (${this.type}) does not support selection.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -1226,7 +1225,7 @@ export default class HTMLInputElement extends HTMLElement {
 		selectionMode = HTMLInputElementSelectionModeEnum.preserve
 	): void {
 		if (!this.#isSelectionSupported()) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`The input element's type (${this.type}) does not support selection.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -1240,7 +1239,7 @@ export default class HTMLInputElement extends HTMLElement {
 		}
 
 		if (start > end) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				'The index is not in the allowed range.',
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -1359,13 +1358,16 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @override
 	 */
 	public override dispatchEvent(event: Event): boolean {
-		// Do nothing if the input element is disabled and the event is a click event.
 		if (
-			event.type === 'click' &&
-			event instanceof MouseEvent &&
-			event.eventPhase === EventPhaseEnum.none &&
-			this.disabled
+			event[PropertySymbol.type] !== 'click' ||
+			event[PropertySymbol.eventPhase] !== EventPhaseEnum.none ||
+			!(event instanceof MouseEvent)
 		) {
+			return super.dispatchEvent(event);
+		}
+
+		// Do nothing if the input element is disabled and the event is a click event.
+		if (this.disabled) {
 			return false;
 		}
 
@@ -1373,60 +1375,47 @@ export default class HTMLInputElement extends HTMLElement {
 
 		// The checkbox or radio button has to be checked before the click event is dispatched, so that event listeners can check the checked value.
 		// However, the value has to be restored if preventDefault() is called on the click event.
-		if (
-			(event.eventPhase === EventPhaseEnum.atTarget ||
-				event.eventPhase === EventPhaseEnum.bubbling) &&
-			event.type === 'click' &&
-			event instanceof MouseEvent
-		) {
-			const inputType = this.type;
-			if (inputType === 'checkbox' || inputType === 'radio') {
-				previousCheckedValue = this.checked;
-				this.#setChecked(inputType === 'checkbox' ? !previousCheckedValue : true);
-			}
+		const type = this.type;
+
+		if (type === 'checkbox' || type === 'radio') {
+			previousCheckedValue = this.checked;
+			this.#setChecked(type === 'checkbox' ? !previousCheckedValue : true);
 		}
 
+		// Dispatches the event
 		const returnValue = super.dispatchEvent(event);
 
 		if (
-			!event.defaultPrevented &&
-			(event.eventPhase === EventPhaseEnum.atTarget ||
-				event.eventPhase === EventPhaseEnum.bubbling) &&
-			event.type === 'click' &&
-			event instanceof MouseEvent &&
-			this[PropertySymbol.isConnected]
+			event[PropertySymbol.type] !== 'click' ||
+			event[PropertySymbol.eventPhase] !== EventPhaseEnum.none ||
+			!(event instanceof MouseEvent)
 		) {
-			const inputType = this.type;
-			if (!this.readOnly || inputType === 'checkbox' || inputType === 'radio') {
-				if (inputType === 'checkbox' || inputType === 'radio') {
-					this.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
-					this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
-				} else if (inputType === 'submit') {
-					const form = this.form;
-					if (form) {
+			return returnValue;
+		}
+
+		if (event[PropertySymbol.defaultPrevented]) {
+			// Restore checked state if preventDefault() is triggered inside a listener of the click event.
+			if (previousCheckedValue !== null) {
+				this.#setChecked(previousCheckedValue);
+			}
+		} else {
+			const type = this.type;
+
+			if (type === 'checkbox' && this[PropertySymbol.isConnected]) {
+				this.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+				this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+			} else if (type === 'radio' && !previousCheckedValue && this[PropertySymbol.isConnected]) {
+				this.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+				this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+			} else if (type === 'submit' || type === 'reset') {
+				const form = this.form;
+				if (form) {
+					if (type === 'submit' && this[PropertySymbol.isConnected]) {
 						form.requestSubmit(this);
-					}
-				} else if (inputType === 'reset' && this[PropertySymbol.isConnected]) {
-					const form = this.form;
-					if (form) {
+					} else if (type === 'reset') {
 						form.reset();
 					}
 				}
-			}
-		}
-
-		// Restore checked state if preventDefault() is triggered on the click event.
-		if (
-			event.defaultPrevented &&
-			(event.eventPhase === EventPhaseEnum.atTarget ||
-				event.eventPhase === EventPhaseEnum.bubbling) &&
-			event.type === 'click' &&
-			event instanceof MouseEvent &&
-			previousCheckedValue !== null
-		) {
-			const inputType = this.type;
-			if (inputType === 'checkbox' || inputType === 'radio') {
-				this.#setChecked(previousCheckedValue);
 			}
 		}
 

@@ -1,9 +1,9 @@
 import Element from '../../nodes/element/Element.js';
 import CSSRule from '../CSSRule.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
-import DOMException from '../../exception/DOMException.js';
 import CSSStyleDeclarationElementStyle from './element-style/CSSStyleDeclarationElementStyle.js';
 import CSSStyleDeclarationPropertyManager from './property-manager/CSSStyleDeclarationPropertyManager.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * CSS Style Declaration.
@@ -68,7 +68,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 */
 	public set cssText(cssText: string) {
 		if (this.#computed) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'cssText' on 'CSSStyleDeclaration': These styles are computed, and the properties are therefore read-only.`,
 				DOMExceptionNameEnum.domException
 			);
@@ -106,7 +106,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 */
 	public setProperty(name: string, value: string, priority?: 'important' | '' | undefined): void {
 		if (this.#computed) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'setProperty' on 'CSSStyleDeclaration': These styles are computed, and therefore the '${name}' property is read-only.`,
 				DOMExceptionNameEnum.domException
 			);
@@ -139,7 +139,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 */
 	public removeProperty(name: string): void {
 		if (this.#computed) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'removeProperty' on 'CSSStyleDeclaration': These styles are computed, and therefore the '${name}' property is read-only.`,
 				DOMExceptionNameEnum.domException
 			);

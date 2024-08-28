@@ -109,8 +109,11 @@ describe('HTMLButtonElement', () => {
 			element.setAttribute('type', 'submit');
 			expect(element.type).toBe('submit');
 
-			element.setAttribute('type', 'MeNu');
+			element.setAttribute('type', 'menu');
 			expect(element.type).toBe('menu');
+
+			element.setAttribute('type', 'MeNu');
+			expect(element.type).toBe('submit');
 
 			element.setAttribute('type', 'foobar');
 			expect(element.type).toBe('submit');
@@ -118,9 +121,9 @@ describe('HTMLButtonElement', () => {
 	});
 
 	describe('set type()', () => {
-		it(`Sets the attribute "type" after sanitizing.`, () => {
+		it(`Sets the attribute "type".`, () => {
 			element.type = 'SuBmIt';
-			expect(element.getAttribute('type')).toBe('submit');
+			expect(element.getAttribute('type')).toBe('SuBmIt');
 
 			element.type = 'reset';
 			expect(element.getAttribute('type')).toBe('reset');
@@ -132,7 +135,7 @@ describe('HTMLButtonElement', () => {
 			expect(element.getAttribute('type')).toBe('menu');
 
 			(<null>(<unknown>element.type)) = null;
-			expect(element.getAttribute('type')).toBe('submit');
+			expect(element.getAttribute('type')).toBe('null');
 		});
 	});
 

@@ -9,7 +9,6 @@ import XMLSerializer from '../../xml-serializer/XMLSerializer.js';
 import ChildNodeUtility from '../child-node/ChildNodeUtility.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtility.js';
-import DOMException from '../../exception/DOMException.js';
 import HTMLCollection from './HTMLCollection.js';
 import Text from '../text/Text.js';
 import DOMRectList from './DOMRectList.js';
@@ -19,7 +18,7 @@ import Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
-import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
+import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
@@ -93,9 +92,6 @@ export default class Element
 	public [PropertySymbol.classList]: DOMTokenList | null = null;
 	public [PropertySymbol.isValue]: string | null = null;
 	public [PropertySymbol.nodeType] = NodeTypeEnum.elementNode;
-	public [PropertySymbol.tagName]: string | null = this.constructor[PropertySymbol.tagName] || null;
-	public [PropertySymbol.localName]: string | null =
-		this.constructor[PropertySymbol.localName] || null;
 	public [PropertySymbol.prefix]: string | null = null;
 	public [PropertySymbol.shadowRoot]: ShadowRoot | null = null;
 	public [PropertySymbol.scrollHeight] = 0;
@@ -104,10 +100,33 @@ export default class Element
 	public [PropertySymbol.scrollLeft] = 0;
 	public [PropertySymbol.attributes] = new NamedNodeMap(this);
 	public [PropertySymbol.attributesProxy]: NamedNodeMap | null = null;
-	public [PropertySymbol.namespaceURI]: string | null =
-		this.constructor[PropertySymbol.namespaceURI] || null;
 	public [PropertySymbol.children]: HTMLCollection<Element> | null = null;
 	public [PropertySymbol.computedStyle]: CSSStyleDeclaration | null = null;
+	public declare [PropertySymbol.tagName]: string | null;
+	public declare [PropertySymbol.localName]: string | null;
+	public declare [PropertySymbol.namespaceURI]: string | null;
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+
+		// CustomElementRegistry will populate the properties upon calling "CustomElementRegistry.define()".
+		// Elements that can be constructed with the "new" keyword (without using "Document.createElement()") will also populate the properties.
+
+		if (!this[PropertySymbol.tagName]) {
+			this[PropertySymbol.tagName] = null;
+		}
+
+		if (!this[PropertySymbol.localName]) {
+			this[PropertySymbol.localName] = null;
+		}
+
+		if (!this[PropertySymbol.namespaceURI]) {
+			this[PropertySymbol.namespaceURI] = null;
+		}
+	}
 
 	/**
 	 * Returns tag name.
@@ -825,33 +844,35 @@ export default class Element
 		serializable?: boolean;
 		slotAssignment?: 'named' | 'manual';
 	}): ShadowRoot {
+		const window = this[PropertySymbol.window];
+
 		if (!init) {
-			throw new TypeError(
+			throw new window.TypeError(
 				"Failed to execute 'attachShadow' on 'Element': 1 argument required, but only 0 present."
 			);
 		}
 
 		if (!init.mode) {
-			throw new TypeError(
+			throw new window.TypeError(
 				"Failed to execute 'attachShadow' on 'Element': Failed to read the 'mode' property from 'ShadowRootInit': Required member is undefined."
 			);
 		}
 
 		if (init.mode !== 'open' && init.mode !== 'closed') {
-			throw new TypeError(
+			throw new window.TypeError(
 				`Failed to execute 'attachShadow' on 'Element': Failed to read the 'mode' property from 'ShadowRootInit': The provided value '${init.mode}' is not a valid enum value of type ShadowRootMode.`
 			);
 		}
 
 		if (this[PropertySymbol.shadowRoot]) {
-			throw new DOMException(
+			throw new window.DOMException(
 				"Failed to execute 'attachShadow' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree."
 			);
 		}
 
-		const shadowRoot = NodeFactory.createNode<ShadowRoot>(
+		const shadowRoot = NodeFactory.createNode(
 			this[PropertySymbol.ownerDocument],
-			this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].ShadowRoot
+			this[PropertySymbol.window].ShadowRoot
 		);
 
 		this[PropertySymbol.shadowRoot] = shadowRoot;
@@ -1148,7 +1169,7 @@ export default class Element
 	 */
 	public removeAttributeNode(attribute: Attr): Attr | null {
 		if (attribute[PropertySymbol.ownerElement] !== this) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				"Failed to execute 'removeAttributeNode' on 'Element': The node provided is owned by another element."
 			);
 		}
@@ -1165,7 +1186,7 @@ export default class Element
 	public scroll(x: { top?: number; left?: number; behavior?: string } | number, y?: number): void {
 		if (typeof x === 'object') {
 			if (x.behavior === 'smooth') {
-				this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].setTimeout(() => {
+				this[PropertySymbol.window].setTimeout(() => {
 					if (x.top !== undefined) {
 						(<number>this.scrollTop) = x.top;
 					}
@@ -1222,33 +1243,27 @@ export default class Element
 	 */
 	public override dispatchEvent(event: Event): boolean {
 		const returnValue = super.dispatchEvent(event);
-		const browserSettings = WindowBrowserSettingsReader.getSettings(
-			this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow]
-		);
+		const browserSettings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
 
 		if (
 			browserSettings &&
 			!browserSettings.disableJavaScriptEvaluation &&
-			(event.eventPhase === EventPhaseEnum.atTarget ||
-				event.eventPhase === EventPhaseEnum.bubbling) &&
+			event.eventPhase === EventPhaseEnum.none &&
 			!event[PropertySymbol.immediatePropagationStopped]
 		) {
 			const attribute = this.getAttribute('on' + event.type);
 
 			if (attribute && !event[PropertySymbol.immediatePropagationStopped]) {
-				const code = `//# sourceURL=${
-					this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].location.href
-				}\n${attribute}`;
+				const code = `//# sourceURL=${this[PropertySymbol.window].location.href}\n${attribute}`;
 
 				if (
 					browserSettings.disableErrorCapturing ||
 					browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
 				) {
-					this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].eval(code);
+					this[PropertySymbol.window].eval(code);
 				} else {
-					WindowErrorUtility.captureError(
-						this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow],
-						() => this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].eval(code)
+					WindowErrorUtility.captureError(this[PropertySymbol.window], () =>
+						this[PropertySymbol.window].eval(code)
 					);
 				}
 			}
@@ -1460,7 +1475,7 @@ export default class Element
 		}
 
 		const document = this[PropertySymbol.ownerDocument];
-		const window = document[PropertySymbol.ownerWindow];
+		const window = this[PropertySymbol.window];
 
 		// We should not add the identifier when inside a shadow root
 		if (this[PropertySymbol.rootNode] && this[PropertySymbol.rootNode] !== document) {
@@ -1506,7 +1521,7 @@ export default class Element
 		}
 
 		const document = this[PropertySymbol.ownerDocument];
-		const window = document[PropertySymbol.ownerWindow];
+		const window = this[PropertySymbol.window];
 
 		// We should not add the identifier when inside a shadow root
 		if (this[PropertySymbol.rootNode] && this[PropertySymbol.rootNode] !== document) {

@@ -15,7 +15,8 @@ export default <IBrowserSettings>{
 	timer: {
 		maxTimeout: -1,
 		maxIntervalTime: -1,
-		maxIntervalIterations: -1
+		maxIntervalIterations: -1,
+		preventTimerLoops: false
 	},
 	navigation: {
 		disableMainFrameNavigation: false,

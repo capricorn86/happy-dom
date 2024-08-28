@@ -29,6 +29,12 @@ export default class MediaStream extends EventTarget {
 	constructor(streamOrTracks?: MediaStream | MediaStreamTrack[]) {
 		super();
 
+		if (!this[PropertySymbol.window]) {
+			throw new TypeError(
+				`Failed to construct '${this.constructor.name}': '${this.constructor.name}' was constructed outside a Window context.`
+			);
+		}
+
 		if (streamOrTracks !== undefined) {
 			this[PropertySymbol.tracks] =
 				streamOrTracks instanceof MediaStream

@@ -13,7 +13,6 @@ import ISVGElementTagNameMap from '../config/ISVGElementTagNameMap.js';
 import ICachedQuerySelectorAllItem from '../nodes/node/ICachedQuerySelectorAllResult.js';
 import ICachedQuerySelectorItem from '../nodes/node/ICachedQuerySelectorResult.js';
 import ICachedMatchesItem from '../nodes/node/ICachedMatchesResult.js';
-import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 
 type DocumentPositionAndElement = {
@@ -83,14 +82,16 @@ export default class QuerySelector {
 			return new NodeList<Element>(PropertySymbol.illegalConstructor, []);
 		}
 
+		const window = node[PropertySymbol.window];
+
 		if (<string>selector === '') {
-			throw new Error(
+			throw new window.Error(
 				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': The provided selector is empty.`
 			);
 		}
 
 		if (typeof selector !== 'string' && typeof selector !== 'boolean') {
-			throw new DOMException(
+			throw new window.DOMException(
 				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': '${selector}' is not a valid selector.`,
 				'SyntaxError'
 			);
@@ -109,7 +110,7 @@ export default class QuerySelector {
 		}
 
 		if (INVALID_SELECTOR_REGEXP.test(selector)) {
-			throw new Error(
+			throw new window.Error(
 				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': '${selector}' is not a valid selector.`
 			);
 		}
@@ -202,14 +203,16 @@ export default class QuerySelector {
 			return null;
 		}
 
+		const window = node[PropertySymbol.window];
+
 		if (selector === '') {
-			throw new Error(
+			throw new window.Error(
 				`Failed to execute 'querySelector' on '${node.constructor.name}': The provided selector is empty.`
 			);
 		}
 
 		if (typeof selector !== 'string' && typeof selector !== 'boolean') {
-			throw new DOMException(
+			throw new window.DOMException(
 				`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`,
 				'SyntaxError'
 			);
@@ -227,7 +230,7 @@ export default class QuerySelector {
 		}
 
 		if (INVALID_SELECTOR_REGEXP.test(selector)) {
-			throw new Error(
+			throw new window.Error(
 				`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`
 			);
 		}
@@ -284,14 +287,16 @@ export default class QuerySelector {
 			};
 		}
 
+		const window = element[PropertySymbol.window];
+
 		if (<string>selector === '') {
-			throw new Error(
+			throw new window.Error(
 				`Failed to execute 'matches' on '${element.constructor.name}': The provided selector is empty.`
 			);
 		}
 
 		if (typeof selector !== 'string' && typeof selector !== 'boolean') {
-			throw new DOMException(
+			throw new window.DOMException(
 				`Failed to execute 'matches' on '${element.constructor.name}': '${selector}' is not a valid selector.`,
 				DOMExceptionNameEnum.syntaxError
 			);
@@ -316,7 +321,7 @@ export default class QuerySelector {
 			if (ignoreErrors) {
 				return null;
 			}
-			throw new Error(
+			throw new window.Error(
 				`Failed to execute 'matches' on '${element.constructor.name}': '${selector}' is not a valid selector.`
 			);
 		}

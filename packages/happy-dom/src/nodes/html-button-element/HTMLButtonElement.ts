@@ -106,16 +106,20 @@ export default class HTMLButtonElement extends HTMLElement {
 	 * @returns Type
 	 */
 	public get type(): string {
-		return this.#sanitizeType(this.getAttribute('type'));
+		const type = this.getAttribute('type');
+		if (type === null || !BUTTON_TYPES.includes(type)) {
+			return 'submit';
+		}
+		return type;
 	}
 
 	/**
 	 * Sets type
 	 *
-	 * @param v Type
+	 * @param value Type
 	 */
-	public set type(v: string) {
-		this.setAttribute('type', this.#sanitizeType(v));
+	public set type(value: string) {
+		this.setAttribute('type', value);
 	}
 
 	/**
@@ -267,7 +271,7 @@ export default class HTMLButtonElement extends HTMLElement {
 	 */
 	public set popoverTargetElement(popoverTargetElement: HTMLElement | null) {
 		if (popoverTargetElement !== null && !(popoverTargetElement instanceof HTMLElement)) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to set the 'popoverTargetElement' property on 'HTMLInputElement': Failed to convert value to 'Element'.`
 			);
 		}
@@ -347,44 +351,24 @@ export default class HTMLButtonElement extends HTMLElement {
 		const returnValue = super.dispatchEvent(event);
 
 		if (
+			!event[PropertySymbol.defaultPrevented] &&
 			event.type === 'click' &&
-			event instanceof MouseEvent &&
-			(event.eventPhase === EventPhaseEnum.atTarget ||
-				event.eventPhase === EventPhaseEnum.bubbling) &&
-			this[PropertySymbol.isConnected]
+			event.eventPhase === EventPhaseEnum.none &&
+			event instanceof MouseEvent
 		) {
-			const form = this.form;
-			if (!form) {
-				return returnValue;
-			}
-			switch (this.type) {
-				case 'submit':
-					form.requestSubmit(this);
-					break;
-				case 'reset':
-					form.reset();
-					break;
+			const type = this.type;
+			if (type === 'submit' || type === 'reset') {
+				const form = this.form;
+				if (form) {
+					if (type === 'submit' && this[PropertySymbol.isConnected]) {
+						form.requestSubmit(this);
+					} else if (type === 'reset') {
+						form.reset();
+					}
+				}
 			}
 		}
 
 		return returnValue;
-	}
-
-	/**
-	 * Sanitizes type.
-	 *
-	 * TODO: We can improve performance a bit if we make the types as a constant.
-	 *
-	 * @param type Type.
-	 * @returns Type sanitized.
-	 */
-	#sanitizeType(type: string): string {
-		type = (type && type.toLowerCase()) || 'submit';
-
-		if (!BUTTON_TYPES.includes(type)) {
-			type = 'submit';
-		}
-
-		return type;
 	}
 }

@@ -4,13 +4,10 @@ import IGoToOptions from '../types/IGoToOptions.js';
 import Response from '../../fetch/Response.js';
 import DocumentReadyStateManager from '../../nodes/document/DocumentReadyStateManager.js';
 import BrowserWindow from '../../window/BrowserWindow.js';
-import WindowErrorUtility from '../../window/WindowErrorUtility.js';
-import AbortController from '../../fetch/AbortController.js';
 import BrowserFrameFactory from './BrowserFrameFactory.js';
 import BrowserFrameURL from './BrowserFrameURL.js';
 import BrowserFrameValidator from './BrowserFrameValidator.js';
 import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
-import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
 import FormData from '../../form-data/FormData.js';
 import HistoryScrollRestorationEnum from '../../history/HistoryScrollRestorationEnum.js';
 import IHistoryItem from '../../history/IHistoryItem.js';
@@ -46,6 +43,7 @@ export default class BrowserFrameNavigator {
 		disableHistory?: boolean;
 	}): Promise<Response | null> {
 		const { windowClass, frame, url, formData, method, goToOptions, disableHistory } = options;
+		const exceptionObserver = frame.page.context.browser[PropertySymbol.exceptionObserver];
 		const referrer = goToOptions?.referrer || frame.window.location.origin;
 		const targetURL = BrowserFrameURL.getRelativeURL(frame, url);
 		const resolveNavigationListeners = (): void => {
@@ -60,6 +58,7 @@ export default class BrowserFrameNavigator {
 			throw new Error('The frame has been destroyed, the "window" property is not set.');
 		}
 
+		// Javascript protocol
 		if (targetURL.protocol === 'javascript:') {
 			if (frame && !frame.page.context.browser.settings.disableJavaScriptEvaluation) {
 				const readyStateManager = (<
@@ -67,30 +66,26 @@ export default class BrowserFrameNavigator {
 				>(<unknown>frame.window))[PropertySymbol.readyStateManager];
 
 				readyStateManager.startTask();
-
-				// The browser will wait for the next tick before executing the script.
-				await new Promise((resolve) => frame.page.mainFrame.window.setTimeout(resolve));
-
 				const code =
 					'//# sourceURL=' + frame.url + '\n' + targetURL.href.replace('javascript:', '');
 
-				if (
-					frame.page.context.browser.settings.disableErrorCapturing ||
-					frame.page.context.browser.settings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
-				) {
-					frame.window.eval(code);
-				} else {
-					WindowErrorUtility.captureError(frame.window, () => frame.window.eval(code));
-				}
+				// The browser will wait for the next tick before executing the script.
+				// Fixes issue where evaluating the response can throw an error.
+				// By using requestAnimationFrame() the error will not reject the promise.
+				// The error will be caught by process error level listener or a try and catch in the requestAnimationFrame().
+				frame.window.requestAnimationFrame(() => frame.window.eval(code));
+
+				// We need to wait for the next tick before resolving navigation listeners and ending the ready state task.
+				await new Promise((resolve) => frame.window.setTimeout(() => resolve(null)));
 
 				readyStateManager.endTask();
-
 				resolveNavigationListeners();
 			}
 
 			return null;
 		}
 
+		// Validate navigation
 		if (!BrowserFrameValidator.validateCrossOriginPolicy(frame, targetURL)) {
 			return null;
 		}
@@ -101,16 +96,6 @@ export default class BrowserFrameNavigator {
 			}
 
 			return null;
-		}
-
-		const width = frame.window.innerWidth;
-		const height = frame.window.innerHeight;
-		const devicePixelRatio = frame.window.devicePixelRatio;
-		const parentWindow = frame.parentFrame ? frame.parentFrame.window : frame.page.mainFrame.window;
-		const topWindow = frame.page.mainFrame.window;
-
-		for (const childFrame of frame.childFrames) {
-			BrowserFrameFactory.destroyFrame(childFrame);
 		}
 
 		// History management.
@@ -138,36 +123,63 @@ export default class BrowserFrameNavigator {
 			});
 		}
 
-		(<IBrowserFrame[]>frame.childFrames) = [];
-		frame.window[PropertySymbol.destroy]();
-		frame[PropertySymbol.asyncTaskManager].destroy();
-		frame[PropertySymbol.asyncTaskManager] = new AsyncTaskManager();
+		// Store current Window state
+		const previousWindow = frame.window;
+		const previousAsyncTaskManager = frame[PropertySymbol.asyncTaskManager];
+		const width = previousWindow.innerWidth;
+		const height = previousWindow.innerHeight;
+		const devicePixelRatio = previousWindow.devicePixelRatio;
+		const parentWindow = frame.parentFrame ? frame.parentFrame.window : frame.page.mainFrame.window;
+		const topWindow = frame.page.mainFrame.window;
 
+		// Create new Window
+		frame[PropertySymbol.asyncTaskManager] = new AsyncTaskManager(frame);
 		(<BrowserWindow>frame.window) = new windowClass(frame, { url: targetURL.href, width, height });
 		frame.window[PropertySymbol.parent] = parentWindow;
 		frame.window[PropertySymbol.top] = topWindow;
 		(<number>frame.window.devicePixelRatio) = devicePixelRatio;
 
+		if (exceptionObserver) {
+			exceptionObserver.observe(frame.window);
+		}
+
 		if (referrer) {
 			frame.window.document[PropertySymbol.referrer] = referrer;
 		}
 
+		// Destroy child frames and Window
+		const destroyTaskID = frame[PropertySymbol.asyncTaskManager].startTask();
+		const destroyWindowAndAsyncTaskManager = (): void => {
+			previousAsyncTaskManager.destroy().then(() => {
+				if (exceptionObserver) {
+					exceptionObserver.disconnect(previousWindow);
+				}
+				frame[PropertySymbol.asyncTaskManager].endTask(destroyTaskID);
+			});
+
+			previousWindow[PropertySymbol.destroy]();
+		};
+
+		if (frame.childFrames.length) {
+			Promise.all(
+				frame.childFrames.map((childFrame) => BrowserFrameFactory.destroyFrame(childFrame))
+			).then(destroyWindowAndAsyncTaskManager);
+		} else {
+			destroyWindowAndAsyncTaskManager();
+		}
+
+		// About protocol
 		if (targetURL.protocol === 'about:') {
 			await new Promise((resolve) => frame.page.mainFrame.window.requestAnimationFrame(resolve));
 			resolveNavigationListeners();
 			return null;
 		}
 
+		// Start navigation
 		const readyStateManager = (<{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }>(
 			(<unknown>frame.window)
 		))[PropertySymbol.readyStateManager];
-
-		readyStateManager.startTask();
-
-		const abortController = new AbortController();
-		let response: Response;
-		let responseText: string;
-
+		const abortController = new frame.window.AbortController();
 		const timeout = frame.window.setTimeout(
 			() => abortController.abort(new Error('Request timed out.')),
 			goToOptions?.timeout ?? 30000
@@ -177,6 +189,10 @@ export default class BrowserFrameNavigator {
 			readyStateManager.endTask();
 			resolveNavigationListeners();
 		};
+		let response: Response;
+		let responseText: string;
+
+		readyStateManager.startTask();
 
 		try {
 			response = await frame.window.fetch(targetURL.href, {
@@ -211,13 +227,19 @@ export default class BrowserFrameNavigator {
 			frame.page.console.error(`GET ${targetURL.href} ${response.status} (${response.statusText})`);
 		}
 
+		// The frame may be destroyed during teardown.
+		if (!frame.window) {
+			return;
+		}
+
 		// Fixes issue where evaluating the response can throw an error.
 		// By using requestAnimationFrame() the error will not reject the promise.
 		// The error will be caught by process error level listener or a try and catch in the requestAnimationFrame().
 		frame.window.requestAnimationFrame(() => (frame.content = responseText));
 
+		// Finalize the navigation
 		await new Promise((resolve) =>
-			frame.window.requestAnimationFrame(() => {
+			frame.window.setTimeout(() => {
 				finalize();
 				resolve(null);
 			})

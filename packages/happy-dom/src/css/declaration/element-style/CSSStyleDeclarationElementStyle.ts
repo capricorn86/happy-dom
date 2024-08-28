@@ -17,7 +17,7 @@ import CSSStyleDeclarationCSSParser from '../css-parser/CSSStyleDeclarationCSSPa
 import QuerySelector from '../../../query-selector/QuerySelector.js';
 import CSSMeasurementConverter from '../measurement-converter/CSSMeasurementConverter.js';
 import MediaQueryList from '../../../match-media/MediaQueryList.js';
-import WindowBrowserSettingsReader from '../../../window/WindowBrowserSettingsReader.js';
+import WindowBrowserContext from '../../../window/WindowBrowserContext.js';
 
 const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
 const CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+)\)|var\( *(--[^), ]+), *(.+)\)/;
@@ -333,7 +333,7 @@ export default class CSSStyleDeclarationElementStyle {
 			return;
 		}
 
-		const ownerWindow = this.element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow];
+		const window = this.element[PropertySymbol.window];
 
 		for (const rule of options.cssRules) {
 			if (rule.type === CSSRuleTypeEnum.styleRule) {
@@ -371,7 +371,7 @@ export default class CSSStyleDeclarationElementStyle {
 				rule.type === CSSRuleTypeEnum.mediaRule &&
 				// TODO: We need to send in a predfined root font size as it will otherwise be calculated using Window.getComputedStyle(), which will cause a never ending loop. Is there another solution?
 				new MediaQueryList({
-					ownerWindow,
+					window,
 					media: (<CSSMediaRule>rule).conditionText,
 					rootFontSize: this.element[PropertySymbol.tagName] === 'HTML' ? 16 : null
 				}).matches
@@ -425,9 +425,8 @@ export default class CSSStyleDeclarationElementStyle {
 		parentSize: string | number | null;
 	}): string {
 		if (
-			WindowBrowserSettingsReader.getSettings(
-				this.element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow]
-			).disableComputedStyleRendering
+			new WindowBrowserContext(this.element[PropertySymbol.window]).getSettings()
+				?.disableComputedStyleRendering
 		) {
 			return options.value;
 		}
@@ -439,7 +438,7 @@ export default class CSSStyleDeclarationElementStyle {
 		while ((match = regexp.exec(options.value)) !== null) {
 			if (match[1] !== 'px') {
 				const valueInPixels = CSSMeasurementConverter.toPixels({
-					ownerWindow: this.element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow],
+					window: this.element[PropertySymbol.window],
 					value: match[0],
 					rootFontSize: options.rootFontSize,
 					parentFontSize: options.parentFontSize,

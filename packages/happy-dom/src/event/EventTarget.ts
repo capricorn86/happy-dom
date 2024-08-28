@@ -1,25 +1,36 @@
-import IEventListener from './IEventListener.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import Event from './Event.js';
 import IEventListenerOptions from './IEventListenerOptions.js';
 import EventPhaseEnum from './EventPhaseEnum.js';
-import Node from '../nodes/node/Node.js';
-import Document from '../nodes/document/Document.js';
-import BrowserWindow from '../window/BrowserWindow.js';
 import WindowErrorUtility from '../window/WindowErrorUtility.js';
-import WindowBrowserSettingsReader from '../window/WindowBrowserSettingsReader.js';
+import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
+import TEventListener from './TEventListener.js';
+import TEventListenerObject from './TEventListenerObject.js';
+import TEventListenerFunction from './TEventListenerFunction.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * Handles events.
  */
-export default abstract class EventTarget {
+export default class EventTarget {
+	// Injected by WindowClassExtender
+	protected declare [PropertySymbol.window]: BrowserWindow;
+
 	public readonly [PropertySymbol.listeners]: {
-		[k: string]: (((event: Event) => void) | IEventListener)[];
-	} = {};
+		capturing: Map<string, TEventListener[]>;
+		bubbling: Map<string, TEventListener[]>;
+	} = {
+		capturing: new Map(),
+		bubbling: new Map()
+	};
 	public readonly [PropertySymbol.listenerOptions]: {
-		[k: string]: (IEventListenerOptions | null)[];
-	} = {};
+		capturing: Map<string, IEventListenerOptions[]>;
+		bubbling: Map<string, IEventListenerOptions[]>;
+	} = {
+		capturing: new Map(),
+		bubbling: new Map()
+	};
 
 	/**
 	 * Return a default description for the EventTarget class.
@@ -38,28 +49,29 @@ export default abstract class EventTarget {
 	 */
 	public addEventListener(
 		type: string,
-		listener: ((event: Event) => void) | IEventListener,
+		listener: TEventListener,
 		options?: boolean | IEventListenerOptions
 	): void {
-		const listenerOptions = typeof options === 'boolean' ? { capture: options } : options || null;
+		options = typeof options === 'boolean' ? { capture: options } : options || {};
+		const eventPhase = options.capture ? 'capturing' : 'bubbling';
 
-		this[PropertySymbol.listeners][type] = this[PropertySymbol.listeners][type] || [];
-		this[PropertySymbol.listenerOptions][type] = this[PropertySymbol.listenerOptions][type] || [];
-		if (this[PropertySymbol.listeners][type].includes(listener)) {
+		let listeners: TEventListener[] = this[PropertySymbol.listeners][eventPhase].get(type);
+		let listenerOptions: IEventListenerOptions[] =
+			this[PropertySymbol.listenerOptions][eventPhase].get(type);
+
+		if (!listeners) {
+			listeners = [];
+			listenerOptions = [];
+			this[PropertySymbol.listeners][eventPhase].set(type, listeners);
+			this[PropertySymbol.listenerOptions][eventPhase].set(type, listenerOptions);
+		}
+
+		if (listeners.includes(listener)) {
 			return;
 		}
-		this[PropertySymbol.listeners][type].push(listener);
-		this[PropertySymbol.listenerOptions][type].push(listenerOptions);
 
-		// Tracks the amount of capture event listeners to improve performance when they are not used.
-		if (listenerOptions && listenerOptions.capture) {
-			const window = this.#getWindow();
-			if (window) {
-				window[PropertySymbol.captureEventListenerCount][type] =
-					window[PropertySymbol.captureEventListenerCount][type] ?? 0;
-				window[PropertySymbol.captureEventListenerCount][type]++;
-			}
-		}
+		listeners.push(listener);
+		listenerOptions.push(options);
 	}
 
 	/**
@@ -68,26 +80,23 @@ export default abstract class EventTarget {
 	 * @param type Event type.
 	 * @param listener Listener.
 	 */
-	public removeEventListener(
-		type: string,
-		listener: ((event: Event) => void) | IEventListener
-	): void {
-		if (this[PropertySymbol.listeners][type]) {
-			const index = this[PropertySymbol.listeners][type].indexOf(listener);
+	public removeEventListener(type: string, listener: TEventListener): void {
+		const bubblingListeners = this[PropertySymbol.listeners].bubbling.get(type);
+		if (bubblingListeners) {
+			const index = bubblingListeners.indexOf(listener);
 			if (index !== -1) {
-				// Tracks the amount of capture event listeners to improve performance when they are not used.
-				if (
-					this[PropertySymbol.listenerOptions][type][index] &&
-					this[PropertySymbol.listenerOptions][type][index].capture
-				) {
-					const window = this.#getWindow();
-					if (window && window[PropertySymbol.captureEventListenerCount][type]) {
-						window[PropertySymbol.captureEventListenerCount][type]--;
-					}
-				}
+				bubblingListeners.splice(index, 1);
+				this[PropertySymbol.listenerOptions].bubbling.get(type).splice(index, 1);
+				return;
+			}
+		}
 
-				this[PropertySymbol.listeners][type].splice(index, 1);
-				this[PropertySymbol.listenerOptions][type].splice(index, 1);
+		const capturingListeners = this[PropertySymbol.listeners].capturing.get(type);
+		if (capturingListeners) {
+			const index = capturingListeners.indexOf(listener);
+			if (index !== -1) {
+				capturingListeners.splice(index, 1);
+				this[PropertySymbol.listenerOptions].capturing.get(type).splice(index, 1);
 			}
 		}
 	}
@@ -101,63 +110,119 @@ export default abstract class EventTarget {
 	 * @returns The return value is false if event is cancelable and at least one of the event handlers which handled this event called Event.preventDefault().
 	 */
 	public dispatchEvent(event: Event): boolean {
-		const window = this.#getWindow();
-
-		if (event.eventPhase === EventPhaseEnum.none) {
+		if (!event[PropertySymbol.target]) {
 			event[PropertySymbol.target] = this;
 
-			const composedPath = event.composedPath();
+			this.#goThroughDispatchEventPhases(event);
 
-			// Capturing phase
-
-			// We only need to iterate over the composed path if there are capture event listeners.
-			if (window && window[PropertySymbol.captureEventListenerCount][event.type]) {
-				event.eventPhase = EventPhaseEnum.capturing;
-
-				for (let i = composedPath.length - 1; i >= 0; i--) {
-					composedPath[i].dispatchEvent(event);
-					if (
-						event[PropertySymbol.propagationStopped] ||
-						event[PropertySymbol.immediatePropagationStopped]
-					) {
-						break;
-					}
-				}
-			}
-
-			// At target phase
-			event.eventPhase = EventPhaseEnum.atTarget;
-
-			this.dispatchEvent(event);
-
-			// Bubbling phase
-			if (
-				event.bubbles &&
-				!event[PropertySymbol.propagationStopped] &&
-				!event[PropertySymbol.immediatePropagationStopped]
-			) {
-				event.eventPhase = EventPhaseEnum.bubbling;
-
-				for (let i = 1; i < composedPath.length; i++) {
-					composedPath[i].dispatchEvent(event);
-					if (
-						event[PropertySymbol.propagationStopped] ||
-						event[PropertySymbol.immediatePropagationStopped]
-					) {
-						break;
-					}
-				}
-			}
-
-			// None phase (completed)
-			event.eventPhase = EventPhaseEnum.none;
-
-			return !(event.cancelable && event.defaultPrevented);
+			return !(event[PropertySymbol.cancelable] && event[PropertySymbol.defaultPrevented]);
 		}
 
-		event[PropertySymbol.currentTarget] = this;
+		this.#callDispatchEventListeners(event);
 
-		const browserSettings = window ? WindowBrowserSettingsReader.getSettings(window) : null;
+		return !(event[PropertySymbol.cancelable] && event[PropertySymbol.defaultPrevented]);
+	}
+
+	/**
+	 * Adds an event listener.
+	 *
+	 * TODO:
+	 * Was used by with IE8- and Opera. React believed Happy DOM was a legacy browser and used them, but that is no longer the case, so we should remove this method after that this is verified.
+	 *
+	 * @deprecated
+	 * @param type Event type.
+	 * @param listener Listener.
+	 */
+	public attachEvent(type: string, listener: TEventListener): void {
+		this.addEventListener(type.replace('on', ''), listener);
+	}
+
+	/**
+	 * Removes an event listener.
+	 *
+	 * TODO:
+	 * Was used by IE8- and Opera. React believed Happy DOM was a legacy browser and used them, but that is no longer the case, so we should remove this method after that this is verified.
+	 *
+	 * @deprecated
+	 * @param type Event type.
+	 * @param listener Listener.
+	 */
+	public detachEvent(type: string, listener: TEventListener): void {
+		this.removeEventListener(type.replace('on', ''), listener);
+	}
+
+	/**
+	 * Goes through dispatch event phases.
+	 *
+	 * @param event Event.
+	 */
+	#goThroughDispatchEventPhases(event: Event): void {
+		const composedPath = event.composedPath();
+
+		// Capturing phase
+		event[PropertySymbol.eventPhase] = EventPhaseEnum.capturing;
+
+		for (let i = composedPath.length - 1; i >= 0; i--) {
+			event[PropertySymbol.currentTarget] = composedPath[i];
+
+			composedPath[i].dispatchEvent(event);
+
+			if (
+				event[PropertySymbol.propagationStopped] ||
+				event[PropertySymbol.immediatePropagationStopped]
+			) {
+				event[PropertySymbol.eventPhase] = EventPhaseEnum.none;
+				event[PropertySymbol.target] = null;
+				event[PropertySymbol.currentTarget] = null;
+				return;
+			}
+		}
+
+		// At target phase
+		event[PropertySymbol.eventPhase] = EventPhaseEnum.atTarget;
+		event[PropertySymbol.currentTarget] = this;
+		event[PropertySymbol.target].dispatchEvent(event);
+
+		// Bubbling phase
+		event[PropertySymbol.eventPhase] = EventPhaseEnum.bubbling;
+
+		if (
+			event[PropertySymbol.bubbles] &&
+			!event[PropertySymbol.propagationStopped] &&
+			!event[PropertySymbol.immediatePropagationStopped]
+		) {
+			for (let i = 1, max = composedPath.length; i < max; i++) {
+				event[PropertySymbol.currentTarget] = composedPath[i];
+
+				composedPath[i].dispatchEvent(event);
+
+				if (
+					event[PropertySymbol.propagationStopped] ||
+					event[PropertySymbol.immediatePropagationStopped]
+				) {
+					event[PropertySymbol.eventPhase] = EventPhaseEnum.none;
+					event[PropertySymbol.target] = null;
+					event[PropertySymbol.currentTarget] = null;
+					return;
+				}
+			}
+		}
+
+		// None phase (done)
+		event[PropertySymbol.eventPhase] = EventPhaseEnum.none;
+		event[PropertySymbol.target] = null;
+		event[PropertySymbol.currentTarget] = null;
+	}
+
+	/**
+	 * Handles dispatch event listeners.
+	 *
+	 * @param event Event.
+	 */
+	#callDispatchEventListeners(event: Event): void {
+		const window = this[PropertySymbol.window];
+		const browserSettings = window ? new WindowBrowserContext(window).getSettings() : null;
+		const eventPhase = event.eventPhase === EventPhaseEnum.capturing ? 'capturing' : 'bubbling';
 
 		if (event.eventPhase !== EventPhaseEnum.capturing) {
 			const onEventName = 'on' + event.type.toLowerCase();
@@ -177,116 +242,66 @@ export default abstract class EventTarget {
 			}
 		}
 
-		if (this[PropertySymbol.listeners][event.type]) {
-			// We need to clone the arrays because the listeners may remove themselves while we are iterating.
-			const listeners = this[PropertySymbol.listeners][event.type].slice();
-			const listenerOptions = this[PropertySymbol.listenerOptions][event.type].slice();
+		// We need to clone the arrays because the listeners may remove themselves while we are iterating.
+		const listeners = this[PropertySymbol.listeners][eventPhase].get(event.type)?.slice();
 
-			for (let i = 0, max = listeners.length; i < max; i++) {
-				const listener = listeners[i];
-				const options = listenerOptions[i];
+		if (!listeners) {
+			return;
+		}
 
-				if (
-					(options?.capture && event.eventPhase !== EventPhaseEnum.capturing) ||
-					(!options?.capture && event.eventPhase === EventPhaseEnum.capturing)
-				) {
-					continue;
-				}
+		const listenerOptions = this[PropertySymbol.listenerOptions][eventPhase]
+			.get(event.type)
+			?.slice();
 
-				if (options?.passive) {
-					event[PropertySymbol.isInPassiveEventListener] = true;
-				}
+		for (let i = 0, max = listeners.length; i < max; i++) {
+			const listener = listeners[i];
+			const options = listenerOptions[i];
 
-				// We can end up in a never ending loop if the listener for the error event on Window also throws an error.
-				if (
-					window &&
-					(this !== <EventTarget>window || event.type !== 'error') &&
-					!browserSettings?.disableErrorCapturing &&
-					browserSettings?.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
-				) {
-					if ((<IEventListener>listener).handleEvent) {
-						WindowErrorUtility.captureError(
-							window,
-							(<IEventListener>listener).handleEvent.bind(listener, event)
-						);
-					} else {
-						WindowErrorUtility.captureError(
-							window,
-							(<(event: Event) => void>listener).bind(this, event)
-						);
-					}
+			if (options?.passive) {
+				event[PropertySymbol.isInPassiveEventListener] = true;
+			}
+
+			// We can end up in a never ending loop if the listener for the error event on Window also throws an error.
+			if (
+				window &&
+				(this !== <EventTarget>window || event.type !== 'error') &&
+				!browserSettings?.disableErrorCapturing &&
+				browserSettings?.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
+			) {
+				if ((<TEventListenerObject>listener).handleEvent) {
+					WindowErrorUtility.captureError(
+						window,
+						(<TEventListenerObject>listener).handleEvent.bind(listener, event)
+					);
 				} else {
-					if ((<IEventListener>listener).handleEvent) {
-						(<IEventListener>listener).handleEvent(event);
-					} else {
-						(<(event: Event) => void>listener).call(this, event);
-					}
+					WindowErrorUtility.captureError(
+						window,
+						(<TEventListenerFunction>listener).bind(this, event)
+					);
 				}
-
-				event[PropertySymbol.isInPassiveEventListener] = false;
-
-				if (options?.once) {
-					// At this time, listeners and listenersOptions are cloned arrays. When the original value is deleted,
-					// The value corresponding to the cloned array is not deleted. So we need to delete the value in the cloned array.
-					listeners.splice(i, 1);
-					listenerOptions.splice(i, 1);
-					this.removeEventListener(event.type, listener);
-					i--;
-					max--;
-				}
-
-				if (event[PropertySymbol.immediatePropagationStopped]) {
-					return !(event.cancelable && event.defaultPrevented);
+			} else {
+				if ((<TEventListenerObject>listener).handleEvent) {
+					(<TEventListenerObject>listener).handleEvent(event);
+				} else {
+					(<TEventListenerFunction>listener).call(this, event);
 				}
 			}
-		}
 
-		return !(event.cancelable && event.defaultPrevented);
-	}
+			event[PropertySymbol.isInPassiveEventListener] = false;
 
-	/**
-	 * Adds an event listener.
-	 *
-	 * TODO:
-	 * Was used by with IE8- and Opera. React believed Happy DOM was a legacy browser and used them, but that is no longer the case, so we should remove this method after that this is verified.
-	 *
-	 * @deprecated
-	 * @param type Event type.
-	 * @param listener Listener.
-	 */
-	public attachEvent(type: string, listener: ((event: Event) => void) | IEventListener): void {
-		this.addEventListener(type.replace('on', ''), listener);
-	}
+			if (options?.once) {
+				// At this time, listeners and listenersOptions are cloned arrays. When the original value is deleted,
+				// The value corresponding to the cloned array is not deleted. So we need to delete the value in the cloned array.
+				listeners.splice(i, 1);
+				listenerOptions.splice(i, 1);
+				this.removeEventListener(event.type, listener);
+				i--;
+				max--;
+			}
 
-	/**
-	 * Removes an event listener.
-	 *
-	 * TODO:
-	 * Was used by IE8- and Opera. React believed Happy DOM was a legacy browser and used them, but that is no longer the case, so we should remove this method after that this is verified.
-	 *
-	 * @deprecated
-	 * @param type Event type.
-	 * @param listener Listener.
-	 */
-	public detachEvent(type: string, listener: ((event: Event) => void) | IEventListener): void {
-		this.removeEventListener(type.replace('on', ''), listener);
-	}
-
-	/**
-	 * Finds and returns window if possible.
-	 *
-	 * @returns Window.
-	 */
-	#getWindow(): BrowserWindow | null {
-		if ((<Node>(<unknown>this))[PropertySymbol.ownerDocument]) {
-			return (<Node>(<unknown>this))[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow];
+			if (event[PropertySymbol.immediatePropagationStopped]) {
+				return;
+			}
 		}
-		if ((<Document>(<unknown>this))[PropertySymbol.ownerWindow]) {
-			return (<Document>(<unknown>this))[PropertySymbol.ownerWindow];
-		}
-		if ((<BrowserWindow>(<unknown>this)).document) {
-			return <BrowserWindow>(<unknown>this);
-		}
-		return null;
 	}
 }

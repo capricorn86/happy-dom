@@ -1,7 +1,6 @@
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import TextTrackCue from './TextTrackCue.js';
 import VTTRegion from './VTTRegion.js';
-import BrowserWindow from '../../window/BrowserWindow.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
@@ -20,18 +19,18 @@ export default class VTTCue extends TextTrackCue {
 	public size: number = 100;
 	public align: string = '';
 	public text: string = '';
-	#window: BrowserWindow;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param window Owner window object. Injected by BrowserWindow.
 	 * @param startTime The start time for the cue.
 	 * @param endTime The end time for the cue.
 	 * @param text The text of the cue.
 	 */
-	constructor(window: BrowserWindow, startTime: number, endTime: number, text: string) {
+	constructor(startTime: number, endTime: number, text: string) {
 		super(PropertySymbol.illegalConstructor);
+
+		const window = this[PropertySymbol.window];
 
 		// TODO: Can we find a better solution for counting arguments by using the "arguments" property?
 
@@ -48,7 +47,7 @@ export default class VTTCue extends TextTrackCue {
 		}
 
 		if (argumentCount < 3) {
-			throw new TypeError(
+			throw new window.TypeError(
 				`Failed to construct 'VTTCue': 3 arguments required, but only ${argumentCount} present.`
 			);
 		}
@@ -57,10 +56,11 @@ export default class VTTCue extends TextTrackCue {
 		endTime = Number(endTime);
 
 		if (isNaN(startTime) || isNaN(endTime)) {
-			throw new TypeError(`Failed to construct 'VTTCue': The provided double value is non-finite.`);
+			throw new window.TypeError(
+				`Failed to construct 'VTTCue': The provided double value is non-finite.`
+			);
 		}
 
-		this.#window = window;
 		this.startTime = startTime;
 		this.endTime = endTime;
 		this.text = String(text);
@@ -72,8 +72,9 @@ export default class VTTCue extends TextTrackCue {
 	 * @returns DocumentFragment
 	 */
 	public getCueAsHTML(): DocumentFragment {
-		const fragment = this.#window.document.createDocumentFragment();
-		fragment.appendChild(this.#window.document.createTextNode(this.text));
+		const window = this[PropertySymbol.window];
+		const fragment = window.document.createDocumentFragment();
+		fragment.appendChild(window.document.createTextNode(this.text));
 		return fragment;
 	}
 }

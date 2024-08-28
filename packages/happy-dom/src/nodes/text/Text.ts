@@ -1,6 +1,5 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
 import CharacterData from '../character-data/CharacterData.js';
-import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
@@ -57,7 +56,7 @@ export default class Text extends CharacterData {
 		const length = this[PropertySymbol.data].length;
 
 		if (offset < 0 || offset > length) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				'The index is not in the allowed range.',
 				DOMExceptionNameEnum.indexSizeError
 			);

@@ -1,3 +1,5 @@
+import IBrowserFrame from '../browser/types/IBrowserFrame.js';
+
 // We need to set this as a global constant, so that using fake timers in Jest and Vitest won't override this on the global object.
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -10,12 +12,24 @@ const TIMER = {
  */
 export default class AsyncTaskManager {
 	private static taskID = 0;
-	private runningTasks: { [k: string]: (destroy: boolean) => void | Promise<void> } = {};
+	private runningTasks: { [k: string]: (destroy: boolean) => void } = {};
 	private runningTaskCount = 0;
 	private runningTimers: NodeJS.Timeout[] = [];
 	private runningImmediates: NodeJS.Immediate[] = [];
 	private waitUntilCompleteTimer: NodeJS.Immediate | null = null;
 	private waitUntilCompleteResolvers: Array<() => void> = [];
+	private aborted = false;
+	private destroyed = false;
+	#browserFrame: IBrowserFrame;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param browserFrame Browser frame.
+	 */
+	constructor(browserFrame: IBrowserFrame) {
+		this.#browserFrame = browserFrame;
+	}
 
 	/**
 	 * Returns a promise that is resolved when async tasks are complete.
@@ -25,7 +39,7 @@ export default class AsyncTaskManager {
 	public waitUntilComplete(): Promise<void> {
 		return new Promise((resolve) => {
 			this.waitUntilCompleteResolvers.push(resolve);
-			this.endTask(this.startTask());
+			this.resolveWhenComplete();
 		});
 	}
 
@@ -33,6 +47,12 @@ export default class AsyncTaskManager {
 	 * Aborts all tasks.
 	 */
 	public abort(): Promise<void> {
+		if (this.aborted) {
+			return new Promise((resolve) => {
+				this.waitUntilCompleteResolvers.push(resolve);
+				this.resolveWhenComplete();
+			});
+		}
 		return this.abortAll(false);
 	}
 
@@ -40,6 +60,12 @@ export default class AsyncTaskManager {
 	 * Destroys the manager.
 	 */
 	public destroy(): Promise<void> {
+		if (this.aborted) {
+			return new Promise((resolve) => {
+				this.waitUntilCompleteResolvers.push(resolve);
+				this.resolveWhenComplete();
+			});
+		}
 		return this.abortAll(true);
 	}
 
@@ -49,6 +75,10 @@ export default class AsyncTaskManager {
 	 * @param timerID Timer ID.
 	 */
 	public startTimer(timerID: NodeJS.Timeout): void {
+		if (this.aborted) {
+			TIMER.clearTimeout(timerID);
+			return;
+		}
 		if (this.waitUntilCompleteTimer) {
 			TIMER.clearTimeout(this.waitUntilCompleteTimer);
 			this.waitUntilCompleteTimer = null;
@@ -62,16 +92,16 @@ export default class AsyncTaskManager {
 	 * @param timerID Timer ID.
 	 */
 	public endTimer(timerID: NodeJS.Timeout): void {
-		if (this.waitUntilCompleteTimer) {
-			TIMER.clearTimeout(this.waitUntilCompleteTimer);
-			this.waitUntilCompleteTimer = null;
+		if (this.aborted) {
+			TIMER.clearTimeout(timerID);
+			return;
 		}
 		const index = this.runningTimers.indexOf(timerID);
 		if (index !== -1) {
 			this.runningTimers.splice(index, 1);
-		}
-		if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
-			this.resolveWhenComplete();
+			if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
+				this.resolveWhenComplete();
+			}
 		}
 	}
 
@@ -81,6 +111,10 @@ export default class AsyncTaskManager {
 	 * @param immediateID Immediate ID.
 	 */
 	public startImmediate(immediateID: NodeJS.Immediate): void {
+		if (this.aborted) {
+			TIMER.clearImmediate(immediateID);
+			return;
+		}
 		if (this.waitUntilCompleteTimer) {
 			TIMER.clearTimeout(this.waitUntilCompleteTimer);
 			this.waitUntilCompleteTimer = null;
@@ -94,16 +128,16 @@ export default class AsyncTaskManager {
 	 * @param immediateID Immediate ID.
 	 */
 	public endImmediate(immediateID: NodeJS.Immediate): void {
-		if (this.waitUntilCompleteTimer) {
-			TIMER.clearTimeout(this.waitUntilCompleteTimer);
-			this.waitUntilCompleteTimer = null;
+		if (this.aborted) {
+			TIMER.clearImmediate(immediateID);
+			return;
 		}
 		const index = this.runningImmediates.indexOf(immediateID);
 		if (index !== -1) {
 			this.runningImmediates.splice(index, 1);
-		}
-		if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
-			this.resolveWhenComplete();
+			if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
+				this.resolveWhenComplete();
+			}
 		}
 	}
 
@@ -113,7 +147,15 @@ export default class AsyncTaskManager {
 	 * @param abortHandler Abort handler.
 	 * @returns Task ID.
 	 */
-	public startTask(abortHandler?: () => void): number {
+	public startTask(abortHandler?: (destroy?: boolean) => void): number {
+		if (this.aborted) {
+			if (abortHandler) {
+				abortHandler(this.destroyed);
+			}
+			throw new this.#browserFrame.window.Error(
+				`Failed to execute 'startTask()' on 'AsyncTaskManager': The asynchrounous task manager has been aborted.`
+			);
+		}
 		if (this.waitUntilCompleteTimer) {
 			TIMER.clearTimeout(this.waitUntilCompleteTimer);
 			this.waitUntilCompleteTimer = null;
@@ -130,16 +172,15 @@ export default class AsyncTaskManager {
 	 * @param taskID Task ID.
 	 */
 	public endTask(taskID: number): void {
-		if (this.waitUntilCompleteTimer) {
-			TIMER.clearTimeout(this.waitUntilCompleteTimer);
-			this.waitUntilCompleteTimer = null;
+		if (this.aborted) {
+			return;
 		}
 		if (this.runningTasks[taskID]) {
 			delete this.runningTasks[taskID];
 			this.runningTaskCount--;
-		}
-		if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
-			this.resolveWhenComplete();
+			if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
+				this.resolveWhenComplete();
+			}
 		}
 	}
 
@@ -186,8 +227,9 @@ export default class AsyncTaskManager {
 				for (const resolver of resolvers) {
 					resolver();
 				}
+				this.aborted = false;
 			}
-		});
+		}, 1);
 	}
 
 	/**
@@ -200,6 +242,8 @@ export default class AsyncTaskManager {
 		const runningImmediates = this.runningImmediates;
 		const runningTasks = this.runningTasks;
 
+		this.aborted = true;
+		this.destroyed = destroy;
 		this.runningTasks = {};
 		this.runningTaskCount = 0;
 		this.runningImmediates = [];
@@ -218,26 +262,14 @@ export default class AsyncTaskManager {
 			TIMER.clearTimeout(timer);
 		}
 
-		const taskPromises = [];
-
 		for (const key of Object.keys(runningTasks)) {
-			const returnValue = runningTasks[key](destroy);
-			if (returnValue instanceof Promise) {
-				taskPromises.push(returnValue);
-			}
-		}
-
-		if (taskPromises.length) {
-			return Promise.all(taskPromises)
-				.then(() => this.waitUntilComplete())
-				.catch((error) => {
-					/* eslint-disable-next-line no-console */
-					console.error(error);
-					throw error;
-				});
+			runningTasks[key](destroy);
 		}
 
 		// We need to wait for microtasks to complete before resolving.
-		return this.waitUntilComplete();
+		return new Promise((resolve) => {
+			this.waitUntilCompleteResolvers.push(resolve);
+			this.resolveWhenComplete();
+		});
 	}
 }
