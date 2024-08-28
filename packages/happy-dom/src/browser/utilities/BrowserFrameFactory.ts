@@ -28,7 +28,7 @@ export default class BrowserFrameFactory {
 	 * @param frame Frame.
 	 */
 	public static destroyFrame(frame: IBrowserFrame): Promise<void> {
-		const exceptionObserver = frame.page.context.browser[PropertySymbol.exceptionObserver];
+		const exceptionObserver = frame.page?.context?.browser?.[PropertySymbol.exceptionObserver];
 
 		// Using Promise instead of async/await to prevent usage of a microtask
 		return new Promise((resolve, reject) => {
