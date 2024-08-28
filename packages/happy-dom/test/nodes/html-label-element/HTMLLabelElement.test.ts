@@ -117,7 +117,7 @@ describe('HTMLLabelElement', () => {
 
 			expect(input.checked).toBe(false);
 
-			element.dispatchEvent(new PointerEvent('click'));
+			element.click();
 
 			expect(input.checked).toBe(true);
 			expect(labelClickCount).toBe(2);
@@ -146,6 +146,30 @@ describe('HTMLLabelElement', () => {
 			expect(input.checked).toBe(true);
 			expect(labelClickCount).toBe(2);
 			expect(inputClickCount).toBe(1);
+		});
+
+		it("Doesn't trigger when preventDefault() has been called.", () => {
+			const input = <HTMLInputElement>document.createElement('input');
+			const span = document.createElement('span');
+
+			input.type = 'checkbox';
+
+			span.appendChild(input);
+			element.appendChild(span);
+
+			let inputClickCount = 0;
+
+			element.addEventListener('click', (event) => {
+				event.preventDefault();
+			});
+			input.addEventListener('click', () => inputClickCount++);
+
+			expect(input.checked).toBe(false);
+
+			element.click();
+
+			expect(input.checked).toBe(false);
+			expect(inputClickCount).toBe(0);
 		});
 	});
 });

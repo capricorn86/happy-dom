@@ -11,7 +11,6 @@ import HTMLCollection from '../element/HTMLCollection.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import NodeList from '../node/NodeList.js';
-import DOMException from '../../exception/DOMException.js';
 import ClassMethodBinder from '../../ClassMethodBinder.js';
 import Element from '../element/Element.js';
 import Node from '../node/Node.js';
@@ -74,7 +73,7 @@ export default class HTMLSelectElement extends HTMLElement {
 				}
 
 				if (!newValue || !(newValue instanceof HTMLOptionElement)) {
-					throw new Error(
+					throw new this[PropertySymbol.window].Error(
 						`TypeError: Failed to set an indexed property [${index}] on 'HTMLSelectElement': parameter 2 is not of type 'HTMLOptionElement'.`
 					);
 				}
@@ -136,7 +135,7 @@ export default class HTMLSelectElement extends HTMLElement {
 				}
 
 				if (!descriptor.value || !(descriptor.value instanceof HTMLOptionElement)) {
-					throw new Error(
+					throw new this[PropertySymbol.window].Error(
 						`TypeError: Failed to set an indexed property [${index}] on 'HTMLSelectElement': parameter 2 is not of type 'HTMLOptionElement'.`
 					);
 				}
@@ -553,9 +552,11 @@ export default class HTMLSelectElement extends HTMLElement {
 			return;
 		}
 
+		const window = this[PropertySymbol.window];
+
 		if (typeof before !== 'number') {
 			if (!(before instanceof HTMLOptionElement)) {
-				throw new DOMException(
+				throw new window.DOMException(
 					"Failed to execute 'add' on 'HTMLFormElement': The node before which the new node is to be inserted before is not an 'HTMLOptionElement'."
 				);
 			}
@@ -566,7 +567,7 @@ export default class HTMLSelectElement extends HTMLElement {
 		const optionsElement = options[before];
 
 		if (!optionsElement) {
-			throw new DOMException(
+			throw new window.DOMException(
 				"Failed to execute 'add' on 'HTMLFormElement': The node before which the new node is to be inserted before is not a child of this node."
 			);
 		}

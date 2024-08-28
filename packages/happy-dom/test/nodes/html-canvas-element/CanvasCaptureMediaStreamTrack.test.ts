@@ -2,7 +2,6 @@ import HTMLCanvasElement from '../../../src/nodes/html-canvas-element/HTMLCanvas
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect } from 'vitest';
-import CanvasCaptureMediaStreamTrack from '../../../src/nodes/html-canvas-element/CanvasCaptureMediaStreamTrack.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import MediaStreamTrack from '../../../src/nodes/html-media-element/MediaStreamTrack.js';
 
@@ -19,27 +18,30 @@ describe('CanvasCaptureMediaStreamTrack', () => {
 
 	describe('constructor()', () => {
 		it('Should throw an error if the "illegalConstructor" symbol is not sent to the constructor', () => {
-			expect(() => new CanvasCaptureMediaStreamTrack()).toThrow(
+			expect(() => new window.CanvasCaptureMediaStreamTrack()).toThrow(
 				new TypeError('Illegal constructor')
 			);
 		});
 
 		it('Should not throw an error if the "illegalConstructor" symbol is provided', () => {
 			expect(
-				() => new CanvasCaptureMediaStreamTrack(PropertySymbol.illegalConstructor)
+				() => new window.CanvasCaptureMediaStreamTrack(PropertySymbol.illegalConstructor)
 			).not.toThrow();
 		});
 
 		it('Is an instance of MediaStreamTrack', () => {
-			expect(new CanvasCaptureMediaStreamTrack(PropertySymbol.illegalConstructor)).toBeInstanceOf(
-				MediaStreamTrack
-			);
+			expect(
+				new window.CanvasCaptureMediaStreamTrack(PropertySymbol.illegalConstructor)
+			).toBeInstanceOf(MediaStreamTrack);
 		});
 	});
 
 	describe('get canvas()', () => {
 		it('Returns the canvas.', () => {
-			const track = new CanvasCaptureMediaStreamTrack(PropertySymbol.illegalConstructor, canvas);
+			const track = new window.CanvasCaptureMediaStreamTrack(
+				PropertySymbol.illegalConstructor,
+				canvas
+			);
 			track[PropertySymbol.kind] = 'video';
 			expect(track.canvas).toBe(canvas);
 		});
@@ -47,7 +49,10 @@ describe('CanvasCaptureMediaStreamTrack', () => {
 
 	describe('requestFrame()', () => {
 		it('Does nothing.', () => {
-			const track = new CanvasCaptureMediaStreamTrack(PropertySymbol.illegalConstructor, canvas);
+			const track = new window.CanvasCaptureMediaStreamTrack(
+				PropertySymbol.illegalConstructor,
+				canvas
+			);
 			track[PropertySymbol.kind] = 'video';
 			expect(() => track.requestFrame()).not.toThrow();
 		});
@@ -55,7 +60,10 @@ describe('CanvasCaptureMediaStreamTrack', () => {
 
 	describe('clone()', () => {
 		it('Clones the track.', () => {
-			const track = new CanvasCaptureMediaStreamTrack(PropertySymbol.illegalConstructor, canvas);
+			const track = new window.CanvasCaptureMediaStreamTrack(
+				PropertySymbol.illegalConstructor,
+				canvas
+			);
 			track[PropertySymbol.kind] = 'video';
 			const clone = track.clone();
 

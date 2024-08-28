@@ -1,26 +1,35 @@
-import { describe, it, expect } from 'vitest';
-import MediaStreamTrack from '../../../src/nodes/html-media-element/MediaStreamTrack.js';
+import { describe, it, expect, beforeEach } from 'vitest';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import EventTarget from '../../../src/event/EventTarget.js';
+import BrowserWindow from '../../../src/window/BrowserWindow.js';
+import Window from '../../../src/window/Window.js';
 
 describe('MediaStreamTrack', () => {
+	let window: BrowserWindow;
+
+	beforeEach(() => {
+		window = new Window();
+	});
+
 	describe('constructor()', () => {
 		it('Should throw an error if the "illegalConstructor" symbol is not sent to the constructor', () => {
-			expect(() => new MediaStreamTrack()).toThrow(new TypeError('Illegal constructor'));
+			expect(() => new window.MediaStreamTrack()).toThrow(new TypeError('Illegal constructor'));
 		});
 
 		it('Should not throw an error if the "illegalConstructor" symbol is provided', () => {
-			expect(() => new MediaStreamTrack(PropertySymbol.illegalConstructor)).not.toThrow();
+			expect(() => new window.MediaStreamTrack(PropertySymbol.illegalConstructor)).not.toThrow();
 		});
 
 		it('Is an instance of EventTarget', () => {
-			expect(new MediaStreamTrack(PropertySymbol.illegalConstructor)).toBeInstanceOf(EventTarget);
+			expect(new window.MediaStreamTrack(PropertySymbol.illegalConstructor)).toBeInstanceOf(
+				EventTarget
+			);
 		});
 	});
 
 	describe('applyConstraints()', () => {
 		it('Applies constraints.', () => {
-			const track = new MediaStreamTrack(PropertySymbol.illegalConstructor);
+			const track = new window.MediaStreamTrack(PropertySymbol.illegalConstructor);
 			track[PropertySymbol.kind] = 'video';
 			const constraints = {
 				width: { min: 640, ideal: 1280 },
@@ -41,7 +50,7 @@ describe('MediaStreamTrack', () => {
 
 	describe('getConstrains()', () => {
 		it('Returns constraints.', () => {
-			const track = new MediaStreamTrack(PropertySymbol.illegalConstructor);
+			const track = new window.MediaStreamTrack(PropertySymbol.illegalConstructor);
 			track[PropertySymbol.kind] = 'video';
 			const constraints = {
 				width: { min: 640, ideal: 1280 },
@@ -55,7 +64,7 @@ describe('MediaStreamTrack', () => {
 
 	describe('getCapabilities()', () => {
 		it('Returns capabilities.', () => {
-			const track = new MediaStreamTrack(PropertySymbol.illegalConstructor);
+			const track = new window.MediaStreamTrack(PropertySymbol.illegalConstructor);
 			track[PropertySymbol.kind] = 'video';
 			expect(track.getCapabilities()).toEqual({
 				aspectRatio: {
@@ -81,7 +90,7 @@ describe('MediaStreamTrack', () => {
 		});
 
 		it('Is possible to edit object.', () => {
-			const track = new MediaStreamTrack(PropertySymbol.illegalConstructor);
+			const track = new window.MediaStreamTrack(PropertySymbol.illegalConstructor);
 			track[PropertySymbol.kind] = 'video';
 			track[PropertySymbol.capabilities].width.max = 800;
 			expect(track.getCapabilities().width.max).toBe(800);
@@ -90,7 +99,7 @@ describe('MediaStreamTrack', () => {
 
 	describe('getSettings()', () => {
 		it('Returns settings.', () => {
-			const track = new MediaStreamTrack(PropertySymbol.illegalConstructor);
+			const track = new window.MediaStreamTrack(PropertySymbol.illegalConstructor);
 			track[PropertySymbol.kind] = 'video';
 			expect(track.getSettings()).toEqual({
 				deviceId: '',
@@ -100,7 +109,7 @@ describe('MediaStreamTrack', () => {
 		});
 
 		it('Is possible to edit object.', () => {
-			const track = new MediaStreamTrack(PropertySymbol.illegalConstructor);
+			const track = new window.MediaStreamTrack(PropertySymbol.illegalConstructor);
 			track[PropertySymbol.kind] = 'video';
 			track[PropertySymbol.settings].frameRate = 30;
 			expect(track.getSettings().frameRate).toBe(30);
@@ -109,7 +118,7 @@ describe('MediaStreamTrack', () => {
 
 	describe('clone()', () => {
 		it('Clones the track.', () => {
-			const track = new MediaStreamTrack(PropertySymbol.illegalConstructor);
+			const track = new window.MediaStreamTrack(PropertySymbol.illegalConstructor);
 			track[PropertySymbol.kind] = 'video';
 			const clone = track.clone();
 			expect(clone).not.toBe(track);

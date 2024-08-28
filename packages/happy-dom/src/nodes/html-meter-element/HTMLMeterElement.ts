@@ -2,6 +2,8 @@ import HTMLElement from '../html-element/HTMLElement.js';
 import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import NodeList from '../node/NodeList.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
+
 /**
  * HTMLMeterElement
  *
@@ -31,7 +33,7 @@ export default class HTMLMeterElement extends HTMLElement {
 	 */
 	public set high(high: number) {
 		if (typeof high !== 'number') {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				"Failed to set the 'high' property on 'HTMLMeterElement': The provided double value is non-finite."
 			);
 		}
@@ -62,7 +64,7 @@ export default class HTMLMeterElement extends HTMLElement {
 	 */
 	public set low(low: number) {
 		if (typeof low !== 'number') {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				"Failed to set the 'low' property on 'HTMLMeterElement': The provided double value is non-finite."
 			);
 		}
@@ -93,7 +95,7 @@ export default class HTMLMeterElement extends HTMLElement {
 	 */
 	public set max(max: number) {
 		if (typeof max !== 'number') {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				"Failed to set the 'max' property on 'HTMLMeterElement': The provided double value is non-finite."
 			);
 		}
@@ -124,7 +126,7 @@ export default class HTMLMeterElement extends HTMLElement {
 	 */
 	public set min(min: number) {
 		if (typeof min !== 'number') {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				"Failed to set the 'min' property on 'HTMLMeterElement': The provided double value is non-finite."
 			);
 		}
@@ -158,7 +160,7 @@ export default class HTMLMeterElement extends HTMLElement {
 	 */
 	public set optimum(optimum: number) {
 		if (typeof optimum !== 'number') {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				"Failed to set the 'optimum' property on 'HTMLMeterElement': The provided double value is non-finite."
 			);
 		}
@@ -189,7 +191,7 @@ export default class HTMLMeterElement extends HTMLElement {
 	 */
 	public set value(value: number) {
 		if (typeof value !== 'number') {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				"Failed to set the 'value' property on 'HTMLMeterElement': The provided double value is non-finite."
 			);
 		}

@@ -80,7 +80,6 @@ export default class GlobalRegistrator {
 		}
 
 		// Set owner window on document to global
-		global.document[PropertySymbol.ownerWindow] = global;
 		global.document[PropertySymbol.defaultView] = global;
 	}
 

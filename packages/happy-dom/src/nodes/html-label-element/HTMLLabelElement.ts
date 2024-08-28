@@ -6,6 +6,12 @@ import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import HTMLInputElement from '../html-input-element/HTMLInputElement.js';
 import Document from '../document/Document.js';
 import MouseEvent from '../../event/events/MouseEvent.js';
+import HTMLButtonElement from '../html-button-element/HTMLButtonElement.js';
+import HTMLMeterElement from '../html-meter-element/HTMLMeterElement.js';
+import HTMLOutputElement from '../html-output-element/HTMLOutputElement.js';
+import HTMLProgressElement from '../html-progress-element/HTMLProgressElement.js';
+import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
+import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
 
 /**
  * HTML Label Element.
@@ -44,7 +50,15 @@ export default class HTMLLabelElement extends HTMLElement {
 	 *
 	 * @returns Control element.
 	 */
-	public get control(): HTMLElement | null {
+	public get control():
+		| HTMLInputElement
+		| HTMLButtonElement
+		| HTMLMeterElement
+		| HTMLOutputElement
+		| HTMLProgressElement
+		| HTMLSelectElement
+		| HTMLTextAreaElement
+		| null {
 		const htmlFor = this.getAttribute('for');
 		if (htmlFor !== null) {
 			if (!htmlFor || !this[PropertySymbol.isConnected]) {
@@ -56,20 +70,20 @@ export default class HTMLLabelElement extends HTMLElement {
 			if (control) {
 				switch (control[PropertySymbol.tagName]) {
 					case 'INPUT':
-						return (<HTMLInputElement>control).type !== 'hidden' ? control : null;
+						return (<HTMLInputElement>control).type !== 'hidden' ? <HTMLInputElement>control : null;
 					case 'BUTTON':
 					case 'METER':
 					case 'OUTPUT':
 					case 'PROGRESS':
 					case 'SELECT':
 					case 'TEXTAREA':
-						return control;
+						return <HTMLInputElement>control;
 					default:
 						return null;
 				}
 			}
 		}
-		return <HTMLElement | null>(
+		return <HTMLInputElement | null>(
 			this.querySelector('button,input:not([type="hidden"]),meter,output,progress,select,textarea')
 		);
 	}
@@ -97,9 +111,10 @@ export default class HTMLLabelElement extends HTMLElement {
 		const returnValue = super.dispatchEvent(event);
 
 		if (
+			!event[PropertySymbol.defaultPrevented] &&
 			event.type === 'click' &&
-			event instanceof MouseEvent &&
-			(event.eventPhase === EventPhaseEnum.atTarget || event.eventPhase === EventPhaseEnum.bubbling)
+			event.eventPhase === EventPhaseEnum.none &&
+			event instanceof MouseEvent
 		) {
 			const control = this.control;
 			if (control && event.target !== control) {

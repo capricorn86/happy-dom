@@ -3,7 +3,6 @@ import HistoryScrollRestorationEnum from './HistoryScrollRestorationEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import IHistoryItem from './IHistoryItem.js';
 import BrowserFrameURL from '../browser/utilities/BrowserFrameURL.js';
-import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 
@@ -15,18 +14,22 @@ import BrowserWindow from '../window/BrowserWindow.js';
  */
 export default class History {
 	#browserFrame: IBrowserFrame;
-	#ownerWindow: BrowserWindow;
+	#window: BrowserWindow;
 	#currentHistoryItem: IHistoryItem;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param browserFrame Browser frame.
-	 * @param ownerWindow Owner window.
+	 * @param window Owner window.
 	 */
-	constructor(browserFrame: IBrowserFrame, ownerWindow: BrowserWindow) {
+	constructor(browserFrame: IBrowserFrame, window: BrowserWindow) {
+		if (!browserFrame) {
+			throw new TypeError('Illegal constructor');
+		}
+
 		this.#browserFrame = browserFrame;
-		this.#ownerWindow = ownerWindow;
+		this.#window = window;
 
 		const history = browserFrame[PropertySymbol.history];
 
@@ -83,14 +86,18 @@ export default class History {
 	 * Goes to the previous page in session history.
 	 */
 	public back(): void {
-		this.#browserFrame.goBack();
+		if (!this.#window.closed) {
+			this.#browserFrame.goBack();
+		}
 	}
 
 	/**
 	 * Goes to the next page in session history.
 	 */
 	public forward(): void {
-		this.#browserFrame.goForward();
+		if (!this.#window.closed) {
+			this.#browserFrame.goForward();
+		}
 	}
 
 	/**
@@ -100,7 +107,9 @@ export default class History {
 	 * @param _delta
 	 */
 	public go(delta: number): void {
-		this.#browserFrame.goSteps(delta);
+		if (!this.#window.closed) {
+			this.#browserFrame.goSteps(delta);
+		}
 	}
 
 	/**
@@ -111,17 +120,21 @@ export default class History {
 	 * @param [url] URL.
 	 */
 	public pushState(state: object, title, url?: string): void {
+		if (this.#window.closed) {
+			return;
+		}
+
 		const history = this.#browserFrame[PropertySymbol.history];
 
 		if (!history) {
 			return;
 		}
 
-		const location = this.#ownerWindow[PropertySymbol.location];
+		const location = this.#window[PropertySymbol.location];
 		const newURL = url ? BrowserFrameURL.getRelativeURL(this.#browserFrame, url) : location;
 
 		if (url && newURL.origin !== location.origin) {
-			throw new DOMException(
+			throw new this.#window.DOMException(
 				`Failed to execute 'pushState' on 'History': A history state object with URL '${url}' cannot be created in a document with origin '${location.origin}' and URL '${location.href}'.`,
 				DOMExceptionNameEnum.securityError
 			);
@@ -141,7 +154,7 @@ export default class History {
 		}
 
 		const newHistoryItem: IHistoryItem = {
-			title: title || this.#ownerWindow.document.title,
+			title: title || this.#window.document.title,
 			href: newURL.href,
 			state: JSON.parse(JSON.stringify(state)),
 			scrollRestoration: this.#currentHistoryItem.scrollRestoration,
@@ -165,17 +178,21 @@ export default class History {
 	 * @param [url] URL.
 	 */
 	public replaceState(state: object, title, url?: string): void {
+		if (this.#window.closed) {
+			return;
+		}
+
 		const history = this.#browserFrame[PropertySymbol.history];
 
 		if (!history) {
 			return;
 		}
 
-		const location = this.#ownerWindow[PropertySymbol.location];
+		const location = this.#window[PropertySymbol.location];
 		const newURL = url ? BrowserFrameURL.getRelativeURL(this.#browserFrame, url) : location;
 
 		if (url && newURL.origin !== location.origin) {
-			throw new DOMException(
+			throw new this.#window.DOMException(
 				`Failed to execute 'pushState' on 'History': A history state object with URL '${url}' cannot be created in a document with origin '${location.origin}' and URL '${location.href}'.`,
 				DOMExceptionNameEnum.securityError
 			);
@@ -184,7 +201,7 @@ export default class History {
 		for (let i = history.length - 1; i >= 0; i--) {
 			if (history[i].isCurrent) {
 				const newHistoryItem = {
-					title: title || this.#ownerWindow.document.title,
+					title: title || this.#window.document.title,
 					href: newURL.href,
 					state: JSON.parse(JSON.stringify(state)),
 					scrollRestoration: history[i].scrollRestoration,

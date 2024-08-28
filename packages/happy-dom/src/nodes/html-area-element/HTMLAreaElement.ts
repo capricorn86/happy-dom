@@ -3,9 +3,9 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import DOMTokenList from '../element/DOMTokenList.js';
 import HTMLHyperlinkElementUtility from '../html-hyperlink-element/HTMLHyperlinkElementUtility.js';
 import IHTMLHyperlinkElement from '../html-hyperlink-element/IHTMLHyperlinkElement.js';
-import PointerEvent from '../../event/events/PointerEvent.js';
 import Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
+import MouseEvent from '../../event/events/MouseEvent.js';
 
 /**
  * HTMLAreaElement
@@ -375,19 +375,15 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 		const returnValue = super.dispatchEvent(event);
 
 		if (
-			event.type === 'click' &&
-			event instanceof PointerEvent &&
-			(event.eventPhase === EventPhaseEnum.atTarget ||
-				event.eventPhase === EventPhaseEnum.bubbling) &&
-			!event.defaultPrevented
+			!event[PropertySymbol.defaultPrevented] &&
+			event[PropertySymbol.type] === 'click' &&
+			event[PropertySymbol.eventPhase] === EventPhaseEnum.none &&
+			event instanceof MouseEvent
 		) {
 			const href = this.href;
 			if (href) {
-				this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].open(
-					href,
-					this.target || '_self'
-				);
-				if (this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].closed) {
+				this[PropertySymbol.window].open(href, this.target || '_self');
+				if (this[PropertySymbol.window].closed) {
 					event.stopImmediatePropagation();
 				}
 			}

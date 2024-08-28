@@ -3,6 +3,7 @@ import Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import NodeList from '../../../src/nodes/node/NodeList.js';
+import Node from '../../../src/nodes/node/Node.js';
 
 describe('NodeList', () => {
 	let window: Window;
@@ -31,6 +32,43 @@ describe('NodeList', () => {
 			document.body.appendChild(comment);
 			expect(document.body.childNodes.item(0) === text).toBe(true);
 			expect(document.body.childNodes.item(1) === comment).toBe(true);
+		});
+	});
+
+	describe('[Symbol.iterator]()', () => {
+		it('Returns iterator', () => {
+			const nodes: Node[] = [];
+
+			const parent = document.createElement('div');
+			const node1 = document.createTextNode('node1');
+			const node2 = document.createComment('node2');
+			const node3 = document.createTextNode('node3');
+
+			parent.appendChild(node1);
+			parent.appendChild(node2);
+			parent.appendChild(node3);
+
+			for (const node of parent.childNodes) {
+				nodes.push(node);
+			}
+
+			expect(nodes).toEqual([node1, node2, node3]);
+		});
+	});
+
+	describe('Array.from()', () => {
+		it('Should support Array.from()', () => {
+			const items: Node[] = [];
+			const nodeList = new NodeList(PropertySymbol.illegalConstructor, items);
+			const node1 = document.createTextNode('node1');
+			const node2 = document.createComment('node2');
+			const node3 = document.createTextNode('node3');
+
+			items.push(node1);
+			items.push(node2);
+			items.push(node3);
+
+			expect(Array.from(nodeList)).toEqual([node1, node2, node3]);
 		});
 	});
 });

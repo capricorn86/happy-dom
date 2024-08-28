@@ -3,11 +3,9 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import Event from '../../event/Event.js';
 import ErrorEvent from '../../event/events/ErrorEvent.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
-import WindowBrowserSettingsReader from '../../window/WindowBrowserSettingsReader.js';
-import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
+import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
 import Attr from '../attr/Attr.js';
-import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import ResourceFetch from '../../fetch/ResourceFetch.js';
 import DocumentReadyStateManager from '../document/DocumentReadyStateManager.js';
@@ -30,20 +28,7 @@ export default class HTMLScriptElement extends HTMLElement {
 	public [PropertySymbol.evaluateScript] = true;
 
 	// Private properties
-	#browserFrame: IBrowserFrame;
 	#loadedScriptURL: string | null = null;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param browserFrame Browser frame.
-	 */
-	constructor(browserFrame) {
-		super();
-
-		this.#browserFrame = browserFrame;
-	}
-
 	/**
 	 * Returns type.
 	 *
@@ -198,9 +183,7 @@ export default class HTMLScriptElement extends HTMLElement {
 	 * @override
 	 */
 	public override [PropertySymbol.connectedToDocument](): void {
-		const browserSettings = WindowBrowserSettingsReader.getSettings(
-			this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow]
-		);
+		const browserSettings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
 
 		super[PropertySymbol.connectedToDocument]();
 
@@ -209,7 +192,7 @@ export default class HTMLScriptElement extends HTMLElement {
 
 			if (src !== null) {
 				this.#loadScript(src);
-			} else if (!browserSettings.disableJavaScriptEvaluation) {
+			} else if (browserSettings && !browserSettings.disableJavaScriptEvaluation) {
 				const textContent = this.textContent;
 				const type = this.getAttribute('type');
 				if (
@@ -221,20 +204,16 @@ export default class HTMLScriptElement extends HTMLElement {
 				) {
 					this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = this;
 
-					const code =
-						`//# sourceURL=${
-							this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].location.href
-						}\n` + textContent;
+					const code = `//# sourceURL=${this[PropertySymbol.window].location.href}\n` + textContent;
 
 					if (
 						browserSettings.disableErrorCapturing ||
 						browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
 					) {
-						this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].eval(code);
+						this[PropertySymbol.window].eval(code);
 					} else {
-						WindowErrorUtility.captureError(
-							this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow],
-							() => this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].eval(code)
+						WindowErrorUtility.captureError(this[PropertySymbol.window], () =>
+							this[PropertySymbol.window].eval(code)
 						);
 					}
 
@@ -268,8 +247,15 @@ export default class HTMLScriptElement extends HTMLElement {
 	 * @param url URL.
 	 */
 	async #loadScript(url: string): Promise<void> {
-		const browserSettings = this.#browserFrame.page.context.browser.settings;
+		const window = this[PropertySymbol.window];
+		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
 		const async = this.getAttribute('async') !== null;
+
+		if (!browserFrame) {
+			return;
+		}
+
+		const browserSettings = browserFrame.page?.context?.browser?.settings;
 
 		if (!url || !this[PropertySymbol.isConnected]) {
 			return;
@@ -277,10 +263,7 @@ export default class HTMLScriptElement extends HTMLElement {
 
 		let absoluteURL: string;
 		try {
-			absoluteURL = new URL(
-				url,
-				this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].location.href
-			).href;
+			absoluteURL = new URL(url, this[PropertySymbol.window].location.href).href;
 		} catch (error) {
 			return;
 		}
@@ -290,15 +273,15 @@ export default class HTMLScriptElement extends HTMLElement {
 		}
 
 		if (
-			browserSettings.disableJavaScriptFileLoading ||
-			browserSettings.disableJavaScriptEvaluation
+			browserSettings &&
+			(browserSettings.disableJavaScriptFileLoading || browserSettings.disableJavaScriptEvaluation)
 		) {
 			if (browserSettings.handleDisabledFileLoadingAsSuccess) {
 				this.dispatchEvent(new Event('load'));
 			} else {
 				WindowErrorUtility.dispatchError(
 					this,
-					new DOMException(
+					new window.DOMException(
 						`Failed to load external script "${absoluteURL}". JavaScript file loading is disabled.`,
 						DOMExceptionNameEnum.notSupportedError
 					)
@@ -308,8 +291,8 @@ export default class HTMLScriptElement extends HTMLElement {
 		}
 
 		const resourceFetch = new ResourceFetch({
-			browserFrame: this.#browserFrame,
-			window: this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow]
+			browserFrame,
+			window: this[PropertySymbol.window]
 		});
 		let code: string | null = null;
 		let error: Error | null = null;
@@ -319,9 +302,7 @@ export default class HTMLScriptElement extends HTMLElement {
 		if (async) {
 			const readyStateManager = (<
 				{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }
-			>(<unknown>this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow]))[
-				PropertySymbol.readyStateManager
-			];
+			>(<unknown>this[PropertySymbol.window]))[PropertySymbol.readyStateManager];
 
 			readyStateManager.startTask();
 
@@ -350,11 +331,10 @@ export default class HTMLScriptElement extends HTMLElement {
 				browserSettings.disableErrorCapturing ||
 				browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
 			) {
-				this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].eval(code);
+				this[PropertySymbol.window].eval(code);
 			} else {
-				WindowErrorUtility.captureError(
-					this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow],
-					() => this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].eval(code)
+				WindowErrorUtility.captureError(this[PropertySymbol.window], () =>
+					this[PropertySymbol.window].eval(code)
 				);
 			}
 			this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = null;

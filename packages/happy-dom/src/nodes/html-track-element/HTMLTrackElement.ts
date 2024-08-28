@@ -140,7 +140,7 @@ export default class HTMLTrackElement extends HTMLElement {
 	 * @returns TextTrack
 	 */
 	public get track(): TextTrack {
-		const textTrack = new TextTrack(PropertySymbol.illegalConstructor);
+		const textTrack = new this[PropertySymbol.window].TextTrack(PropertySymbol.illegalConstructor);
 		textTrack[PropertySymbol.kind] = <TextTrackKindEnum>this.kind;
 		textTrack[PropertySymbol.label] = this.label;
 		textTrack[PropertySymbol.language] = this.srclang;

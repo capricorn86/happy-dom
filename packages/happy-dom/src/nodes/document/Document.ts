@@ -14,7 +14,6 @@ import DocumentType from '../document-type/DocumentType.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
-import DOMException from '../../exception/DOMException.js';
 import HTMLScriptElement from '../html-script-element/HTMLScriptElement.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import Comment from '../comment/Comment.js';
@@ -33,7 +32,6 @@ import ProcessingInstruction from '../processing-instruction/ProcessingInstructi
 import VisibilityStateEnum from './VisibilityStateEnum.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import CookieStringUtility from '../../cookie/urilities/CookieStringUtility.js';
-import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import { URL } from 'url';
 import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
@@ -47,6 +45,7 @@ import HTMLHeadElement from '../html-head-element/HTMLHeadElement.js';
 import HTMLBaseElement from '../html-base-element/HTMLBaseElement.js';
 import ICachedResult from '../node/ICachedResult.js';
 import HTMLTitleElement from '../html-title-element/HTMLTitleElement.js';
+import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import NodeFactory from '../NodeFactory.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
@@ -55,9 +54,6 @@ const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
  * Document.
  */
 export default class Document extends Node {
-	// Static properties
-	public static [PropertySymbol.ownerDocument]: Document = <Document>{};
-
 	// Internal properties
 	public [PropertySymbol.children]: HTMLCollection<Element> | null = null;
 	public [PropertySymbol.activeElement]: HTMLElement | SVGElement = null;
@@ -73,9 +69,9 @@ export default class Document extends Node {
 	public [PropertySymbol.readyState] = DocumentReadyStateEnum.interactive;
 	public [PropertySymbol.referrer] = '';
 	public [PropertySymbol.defaultView]: BrowserWindow | null = null;
-	public [PropertySymbol.ownerWindow]: BrowserWindow;
 	public [PropertySymbol.forms]: HTMLCollection<HTMLFormElement> | null = null;
 	public [PropertySymbol.affectsComputedStyleCache]: ICachedResult[] = [];
+	public [PropertySymbol.ownerDocument]: Document | null = null;
 	public [PropertySymbol.elementIdMap]: Map<
 		string,
 		{ htmlCollection: HTMLCollection<Element> | null; elements: Element[] }
@@ -84,7 +80,6 @@ export default class Document extends Node {
 
 	// Private properties
 	#selection: Selection = null;
-	#browserFrame: IBrowserFrame;
 
 	// Events
 	public onreadystatechange: (event: Event) => void = null;
@@ -196,20 +191,6 @@ export default class Document extends Node {
 	public oncut: (event: Event) => void = null;
 	public onpaste: (event: Event) => void = null;
 	public onbeforematch: (event: Event) => void = null;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param injected Injected properties.
-	 * @param injected.browserFrame Browser frame.
-	 * @param injected.window Window.
-	 */
-	constructor(injected: { browserFrame: IBrowserFrame; window: BrowserWindow }) {
-		super();
-		this.#browserFrame = injected.browserFrame;
-		this[PropertySymbol.ownerWindow] = injected.window;
-		this[PropertySymbol.ownerDocument] = null;
-	}
 
 	/**
 	 * Returns adopted style sheets.
@@ -383,9 +364,13 @@ export default class Document extends Node {
 	 * @returns Cookie.
 	 */
 	public get cookie(): string {
+		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
+		if (!browserFrame) {
+			return '';
+		}
 		return CookieStringUtility.cookiesToString(
-			this.#browserFrame.page.context.cookieContainer.getCookies(
-				new URL(this[PropertySymbol.ownerWindow].location.href),
+			browserFrame.page.context.cookieContainer.getCookies(
+				new URL(this[PropertySymbol.window].location.href),
 				true
 			)
 		);
@@ -397,11 +382,12 @@ export default class Document extends Node {
 	 * @param cookie Cookie string.
 	 */
 	public set cookie(cookie: string) {
-		this.#browserFrame.page.context.cookieContainer.addCookies([
-			CookieStringUtility.stringToCookie(
-				new URL(this[PropertySymbol.ownerWindow].location.href),
-				cookie
-			)
+		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
+		if (!browserFrame) {
+			return;
+		}
+		browserFrame.page.context.cookieContainer.addCookies([
+			CookieStringUtility.stringToCookie(new URL(this[PropertySymbol.window].location.href), cookie)
 		]);
 	}
 
@@ -519,7 +505,7 @@ export default class Document extends Node {
 	 * @returns Location.
 	 */
 	public get location(): Location {
-		return this[PropertySymbol.ownerWindow].location;
+		return this[PropertySymbol.window].location;
 	}
 
 	/**
@@ -542,25 +528,34 @@ export default class Document extends Node {
 		if (element) {
 			return element.href;
 		}
-		return this[PropertySymbol.ownerWindow].location.href;
+		return this[PropertySymbol.window].location.href;
 	}
 
 	/**
 	 * Returns URL.
 	 *
-	 * @returns the URL of the current document.
+	 * @returns URL of the current document.
 	 * */
 	public get URL(): string {
-		return this[PropertySymbol.ownerWindow].location.href;
+		return this[PropertySymbol.window].location.href;
 	}
 
 	/**
 	 * Returns document URI.
 	 *
-	 * @returns the URL of the current document.
+	 * @returns URL of the current document.
 	 * */
 	public get documentURI(): string {
 		return this.URL;
+	}
+
+	/**
+	 * Returns domain.
+	 *
+	 * @returns Domain.
+	 * */
+	public get domain(): string {
+		return this[PropertySymbol.window].location.hostname;
 	}
 
 	/**
@@ -708,7 +703,7 @@ export default class Document extends Node {
 	 */
 	public queryCommandSupported(_: string): boolean {
 		if (!arguments.length) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				"Failed to execute 'queryCommandSupported' on 'Document': 1 argument required, but only 0 present."
 			);
 		}
@@ -937,8 +932,17 @@ export default class Document extends Node {
 	public open(): Document {
 		this[PropertySymbol.isFirstWriteAfterOpen] = true;
 
-		for (const eventType of Object.keys(this[PropertySymbol.listeners])) {
-			const listeners = this[PropertySymbol.listeners][eventType];
+		for (const eventType of this[PropertySymbol.listeners].bubbling.keys()) {
+			const listeners = this[PropertySymbol.listeners].bubbling.get(eventType);
+			if (listeners) {
+				for (const listener of listeners) {
+					this.removeEventListener(eventType, listener);
+				}
+			}
+		}
+
+		for (const eventType of this[PropertySymbol.listeners].capturing.keys()) {
+			const listeners = this[PropertySymbol.listeners].capturing.get(eventType);
 			if (listeners) {
 				for (const listener of listeners) {
 					this.removeEventListener(eventType, listener);
@@ -1071,7 +1075,7 @@ export default class Document extends Node {
 		qualifiedName = String(qualifiedName);
 
 		if (!qualifiedName) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				"Failed to execute 'createElementNS' on 'Document': The qualified name provided is empty."
 			);
 		}
@@ -1080,8 +1084,8 @@ export default class Document extends Node {
 		if (namespaceURI === NamespaceURI.svg) {
 			const elementClass =
 				qualifiedName === 'svg'
-					? this[PropertySymbol.ownerWindow].SVGSVGElement
-					: this[PropertySymbol.ownerWindow].SVGElement;
+					? this[PropertySymbol.window].SVGSVGElement
+					: this[PropertySymbol.window].SVGElement;
 
 			const element = NodeFactory.createNode<SVGElement>(this, elementClass);
 
@@ -1095,7 +1099,7 @@ export default class Document extends Node {
 
 		// Custom HTML element
 		const customElement =
-			this[PropertySymbol.ownerWindow].customElements[PropertySymbol.registry]?.[
+			this[PropertySymbol.window].customElements[PropertySymbol.registry]?.[
 				options && options.is ? String(options.is) : qualifiedName
 			];
 
@@ -1110,7 +1114,7 @@ export default class Document extends Node {
 
 		const localName = qualifiedName.toLowerCase();
 		const elementClass = HTMLElementConfig[localName]
-			? this[PropertySymbol.ownerWindow][HTMLElementConfig[localName].className]
+			? this[PropertySymbol.window][HTMLElementConfig[localName].className]
 			: null;
 
 		// Known HTML element
@@ -1127,8 +1131,8 @@ export default class Document extends Node {
 
 		// Unknown HTML element
 		const unknownElementClass = localName.includes('-')
-			? this[PropertySymbol.ownerWindow].HTMLElement
-			: this[PropertySymbol.ownerWindow].HTMLUnknownElement;
+			? this[PropertySymbol.window].HTMLElement
+			: this[PropertySymbol.window].HTMLUnknownElement;
 
 		const element = NodeFactory.createNode<Element>(this, unknownElementClass);
 
@@ -1150,11 +1154,12 @@ export default class Document extends Node {
 	 */
 	public createTextNode(data: string): Text {
 		if (arguments.length < 1) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'createTextNode' on 'Document': 1 argument required, but only ${arguments.length} present.`
 			);
 		}
-		return new this[PropertySymbol.ownerWindow].Text(String(data));
+		// We should use the NodeFactory and not the class constructor, so that owner document will be this document
+		return NodeFactory.createNode(this, Text, String(data));
 	}
 
 	/**
@@ -1165,11 +1170,12 @@ export default class Document extends Node {
 	 */
 	public createComment(data?: string): Comment {
 		if (arguments.length < 1) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'createComment' on 'Document': 1 argument required, but only ${arguments.length} present.`
 			);
 		}
-		return new this[PropertySymbol.ownerWindow].Comment(String(data));
+		// We should use the NodeFactory and not the class constructor, so that owner document will be this document
+		return NodeFactory.createNode(this, Comment, String(data));
 	}
 
 	/**
@@ -1178,7 +1184,8 @@ export default class Document extends Node {
 	 * @returns Document fragment.
 	 */
 	public createDocumentFragment(): DocumentFragment {
-		return new this[PropertySymbol.ownerWindow].DocumentFragment();
+		// We should use the NodeFactory and not the class constructor, so that owner document will be this document
+		return NodeFactory.createNode(this, DocumentFragment);
 	}
 
 	/**
@@ -1211,8 +1218,8 @@ export default class Document extends Node {
 	 * @returns Event.
 	 */
 	public createEvent(type: string): Event {
-		if (typeof this[PropertySymbol.ownerWindow][type] === 'function') {
-			return new this[PropertySymbol.ownerWindow][type]('init');
+		if (typeof this[PropertySymbol.window][type] === 'function') {
+			return new this[PropertySymbol.window][type]('init');
 		}
 		return new Event('init');
 	}
@@ -1235,7 +1242,8 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public createAttributeNS(namespaceURI: string, qualifiedName: string): Attr {
-		const attribute = NodeFactory.createNode<Attr>(this, this[PropertySymbol.ownerWindow].Attr);
+		// We should use the NodeFactory and not the class constructor, so that owner document will be this document
+		const attribute = NodeFactory.createNode(this, Attr);
 
 		const parts = qualifiedName.split(':');
 		attribute[PropertySymbol.namespaceURI] = namespaceURI;
@@ -1254,7 +1262,7 @@ export default class Document extends Node {
 	 */
 	public importNode(node: Node, deep = false): Node {
 		if (!(node instanceof Node)) {
-			throw new DOMException('Parameter 1 was not of type Node.');
+			throw new this[PropertySymbol.window].DOMException('Parameter 1 was not of type Node.');
 		}
 		const clone = node.cloneNode(deep);
 		this.#importNode(clone);
@@ -1267,7 +1275,7 @@ export default class Document extends Node {
 	 * @returns Range.
 	 */
 	public createRange(): Range {
-		return new this[PropertySymbol.ownerWindow].Range();
+		return new this[PropertySymbol.window].Range();
 	}
 
 	/**
@@ -1278,7 +1286,7 @@ export default class Document extends Node {
 	 */
 	public adoptNode(node: Node): Node {
 		if (!(node instanceof Node)) {
-			throw new DOMException('Parameter 1 was not of type Node.');
+			throw new this[PropertySymbol.window].DOMException('Parameter 1 was not of type Node.');
 		}
 
 		const adopted = node[PropertySymbol.parentNode]
@@ -1319,7 +1327,7 @@ export default class Document extends Node {
 	 */
 	public createProcessingInstruction(target: string, data: string): ProcessingInstruction {
 		if (arguments.length < 2) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'createProcessingInstruction' on 'Document': 2 arguments required, but only ${arguments.length} present.`
 			);
 		}
@@ -1328,20 +1336,17 @@ export default class Document extends Node {
 		data = String(data);
 
 		if (!target || !PROCESSING_INSTRUCTION_TARGET_REGEXP.test(target)) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'createProcessingInstruction' on 'Document': The target provided ('${target}') is not a valid name.`
 			);
 		}
 		if (data.includes('?>')) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'createProcessingInstruction' on 'Document': The data provided ('?>') contains '?>'`
 			);
 		}
-
-		const element = NodeFactory.createNode<ProcessingInstruction>(
-			this,
-			this[PropertySymbol.ownerWindow].ProcessingInstruction
-		);
+		// We should use the NodeFactory and not the class constructor, so that owner document will be this document
+		const element = NodeFactory.createNode(this, ProcessingInstruction);
 
 		element[PropertySymbol.data] = data;
 		element[PropertySymbol.target] = target;

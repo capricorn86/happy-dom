@@ -17,7 +17,7 @@ describe('MutationObserver', () => {
 		it('Observes attributes.', async () => {
 			let records: MutationRecord[] = [];
 			const div = document.createElement('div');
-			const observer = new MutationObserver((mutationRecords) => {
+			const observer = new window.MutationObserver((mutationRecords) => {
 				records = mutationRecords;
 			});
 			observer.observe(div, { attributes: true });
@@ -42,13 +42,17 @@ describe('MutationObserver', () => {
 
 		it('Throws TypeError for invalid options.', async () => {
 			const div = document.createElement('div');
-			const observer = new MutationObserver(() => {});
-			expect(() => observer.observe(div, {})).toThrow(TypeError);
+			const observer = new window.MutationObserver(() => {});
+			expect(() => observer.observe(div, {})).toThrow(
+				new TypeError(
+					`Failed to execute 'observe' on 'MutationObserver': The options object must set at least one of 'attributes', 'characterData', or 'childList' to true.`
+				)
+			);
 		});
 
 		it('Allows to omit "attributes" if "attributeOldValue" or "attributeFilter" is specified.', async () => {
 			const div = document.createElement('div');
-			const observer = new MutationObserver(() => {});
+			const observer = new window.MutationObserver(() => {});
 			expect(() => observer.observe(div, { attributes: false, attributeOldValue: true })).toThrow();
 			expect(() =>
 				observer.observe(div, { attributes: false, attributeFilter: ['style', 'class'] })
@@ -60,7 +64,7 @@ describe('MutationObserver', () => {
 
 		it('Allows to omit "characterData" if "characterDataOldValue" is specified.', async () => {
 			const text = document.createTextNode('old');
-			const observer = new MutationObserver(() => {});
+			const observer = new window.MutationObserver(() => {});
 			expect(() =>
 				observer.observe(text, { characterData: false, characterDataOldValue: true })
 			).toThrow();
@@ -70,7 +74,7 @@ describe('MutationObserver', () => {
 		it('Observes attributes and old attribute values.', async () => {
 			let records: MutationRecord[] = [];
 			const div = document.createElement('div');
-			const observer = new MutationObserver((mutationRecords) => {
+			const observer = new window.MutationObserver((mutationRecords) => {
 				records = mutationRecords;
 			});
 			div.setAttribute('attr', 'old');
@@ -97,7 +101,7 @@ describe('MutationObserver', () => {
 		it('Only observes a list of filtered attributes if defined.', async () => {
 			const records: MutationRecord[][] = [];
 			const div = document.createElement('div');
-			const observer = new MutationObserver((mutationRecords) => {
+			const observer = new window.MutationObserver((mutationRecords) => {
 				records.push(mutationRecords);
 			});
 			div.setAttribute('attr1', 'old');
@@ -132,7 +136,7 @@ describe('MutationObserver', () => {
 		it('Observers character data changes on text node.', async () => {
 			const records: MutationRecord[][] = [];
 			const text = document.createTextNode('old');
-			const observer = new MutationObserver((mutationRecords) => {
+			const observer = new window.MutationObserver((mutationRecords) => {
 				records.push(mutationRecords);
 			});
 			observer.observe(text, { characterData: true, characterDataOldValue: true });
@@ -161,7 +165,7 @@ describe('MutationObserver', () => {
 			const records: MutationRecord[][] = [];
 			const div = document.createElement('div');
 			const text = document.createTextNode('old');
-			const observer = new MutationObserver((mutationRecords) => {
+			const observer = new window.MutationObserver((mutationRecords) => {
 				records.push(mutationRecords);
 			});
 			div.appendChild(text);
@@ -193,7 +197,7 @@ describe('MutationObserver', () => {
 			const span = document.createElement('span');
 			const article = document.createElement('article');
 			const text = document.createTextNode('old');
-			const observer = new MutationObserver((mutationRecords) => {
+			const observer = new window.MutationObserver((mutationRecords) => {
 				records.push(mutationRecords);
 			});
 			observer.observe(div, { subtree: true, childList: true });
@@ -257,7 +261,7 @@ describe('MutationObserver', () => {
 		it('Can observe document node.', async () => {
 			let records: MutationRecord[] = [];
 			const div = document.createElement('div');
-			const observer = new MutationObserver((mutationRecords) => {
+			const observer = new window.MutationObserver((mutationRecords) => {
 				records = mutationRecords;
 			});
 			document.appendChild(div);
@@ -286,7 +290,7 @@ describe('MutationObserver', () => {
 		it('Disconnects the observer.', async () => {
 			let records: MutationRecord[] = [];
 			const div = document.createElement('div');
-			const observer = new MutationObserver((mutationRecords) => {
+			const observer = new window.MutationObserver((mutationRecords) => {
 				records = mutationRecords;
 			});
 
@@ -304,7 +308,7 @@ describe('MutationObserver', () => {
 		it('Disconnects the observer when closing window.', async () => {
 			let records: MutationRecord[] = [];
 			const div = document.createElement('div');
-			const observer = new MutationObserver((mutationRecords) => {
+			const observer = new window.MutationObserver((mutationRecords) => {
 				records = mutationRecords;
 			});
 			const span = document.createElement('span');
@@ -346,7 +350,7 @@ describe('MutationObserver', () => {
 		});
 
 		it('Ignores if triggered when it is not observing.', () => {
-			const observer = new MutationObserver(() => {});
+			const observer = new window.MutationObserver(() => {});
 			expect(() => observer.disconnect()).not.toThrow();
 		});
 	});
@@ -355,7 +359,7 @@ describe('MutationObserver', () => {
 		it('Returns all records and empties the record queue.', async () => {
 			let records: MutationRecord[] = [];
 			const div = document.createElement('div');
-			const observer = new MutationObserver((mutationRecords) => {
+			const observer = new window.MutationObserver((mutationRecords) => {
 				records = mutationRecords;
 			});
 

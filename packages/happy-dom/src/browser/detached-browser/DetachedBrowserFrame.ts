@@ -10,8 +10,6 @@ import BrowserFrameScriptEvaluator from '../utilities/BrowserFrameScriptEvaluato
 import BrowserFrameNavigator from '../utilities/BrowserFrameNavigator.js';
 import BrowserWindow from '../../window/BrowserWindow.js';
 import IReloadOptions from '../types/IReloadOptions.js';
-import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
-import BrowserFrameExceptionObserver from '../utilities/BrowserFrameExceptionObserver.js';
 import Document from '../../nodes/document/Document.js';
 import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import IHistoryItem from '../../history/IHistoryItem.js';
@@ -26,8 +24,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	public readonly page: DetachedBrowserPage;
 	// Needs to be injected from the outside when the browser frame is constructed.
 	public window: BrowserWindow;
-	public [PropertySymbol.asyncTaskManager] = new AsyncTaskManager();
-	public [PropertySymbol.exceptionObserver]: BrowserFrameExceptionObserver | null = null;
+	public [PropertySymbol.asyncTaskManager] = new AsyncTaskManager(this);
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
 	public [PropertySymbol.openerFrame]: IBrowserFrame | null = null;
 	public [PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
@@ -57,9 +54,8 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 		}
 
 		// Attach process level error capturing.
-		if (page.context.browser.settings.errorCapture === BrowserErrorCaptureEnum.processLevel) {
-			this[PropertySymbol.exceptionObserver] = new BrowserFrameExceptionObserver();
-			this[PropertySymbol.exceptionObserver].observe(this);
+		if (page.context.browser[PropertySymbol.exceptionObserver]) {
+			page.context.browser[PropertySymbol.exceptionObserver].observe(this.window);
 		}
 	}
 

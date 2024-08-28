@@ -1,6 +1,5 @@
 import IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
 import Browser from '../../src/browser/Browser.js';
-import History from '../../src/history/History.js';
 import HistoryScrollRestorationEnum from '../../src/history/HistoryScrollRestorationEnum.js';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
@@ -10,11 +9,9 @@ import Response from '../../src/fetch/Response';
 
 describe('History', () => {
 	let browserFrame: IBrowserFrame;
-	let history: History;
 
 	beforeEach(() => {
 		browserFrame = new Browser().newPage().mainFrame;
-		history = new History(browserFrame, browserFrame.window);
 	});
 
 	describe('get length()', () => {
@@ -40,47 +37,51 @@ describe('History', () => {
 			});
 
 			// 3 as the first item is added as "about:blank" in the constructor.
-			expect(history.length).toBe(3);
+			expect(browserFrame.window.history.length).toBe(3);
 		});
 	});
 
 	describe('get state()', () => {
 		it('Returns "null" if no state as been set.', () => {
-			expect(history.state).toBe(null);
+			expect(browserFrame.window.history.state).toBe(null);
 		});
 
 		it('Returns the state if set by pushState().', () => {
-			history.pushState({ key: 'value' }, '', '');
-			expect(history.state).toEqual({ key: 'value' });
+			browserFrame.window.history.pushState({ key: 'value' }, '', '');
+			expect(browserFrame.window.history.state).toEqual({ key: 'value' });
 		});
 
 		it('Returns the state if set by replaceState().', () => {
-			history.replaceState({ key: 'value' }, '', '');
-			expect(history.state).toEqual({ key: 'value' });
+			browserFrame.window.history.replaceState({ key: 'value' }, '', '');
+			expect(browserFrame.window.history.state).toEqual({ key: 'value' });
 		});
 	});
 
 	describe('get scrollRestoration()', () => {
 		it('Returns "auto" by default.', () => {
-			expect(history.scrollRestoration).toBe(HistoryScrollRestorationEnum.auto);
+			expect(browserFrame.window.history.scrollRestoration).toBe(HistoryScrollRestorationEnum.auto);
 		});
 
 		it('Returns set scroll restoration.', () => {
-			history.scrollRestoration = HistoryScrollRestorationEnum.manual;
-			expect(history.scrollRestoration).toBe(HistoryScrollRestorationEnum.manual);
+			browserFrame.window.history.scrollRestoration = HistoryScrollRestorationEnum.manual;
+			expect(browserFrame.window.history.scrollRestoration).toBe(
+				HistoryScrollRestorationEnum.manual
+			);
 		});
 	});
 
 	describe('set scrollRestoration()', () => {
 		it('Is not possible to set an invalid value.', () => {
 			// @ts-ignore
-			history.scrollRestoration = 'invalid';
-			expect(history.scrollRestoration).toBe(HistoryScrollRestorationEnum.auto);
+			browserFrame.window.history.scrollRestoration = 'invalid';
+			expect(browserFrame.window.history.scrollRestoration).toBe(HistoryScrollRestorationEnum.auto);
 		});
 
 		it('Is possible to set to "manual".', () => {
-			history.scrollRestoration = HistoryScrollRestorationEnum.manual;
-			expect(history.scrollRestoration).toBe(HistoryScrollRestorationEnum.manual);
+			browserFrame.window.history.scrollRestoration = HistoryScrollRestorationEnum.manual;
+			expect(browserFrame.window.history.scrollRestoration).toBe(
+				HistoryScrollRestorationEnum.manual
+			);
 		});
 	});
 
@@ -139,25 +140,24 @@ describe('History', () => {
 				isCurrent: true
 			});
 
-			history.back();
+			browserFrame.window.history.back();
 
 			await browserFrame.waitForNavigation();
 
 			expect(browserFrame.window.location.href).toBe('https://www.example.com/');
 
-			history.back();
-
+			browserFrame.window.history.back();
 			await browserFrame.waitForNavigation();
 
 			expect(browserFrame.window.location.href).toBe('https://www.github.com/');
 
-			history.back();
+			browserFrame.window.history.back();
 
 			await browserFrame.waitForNavigation();
 
 			expect(browserFrame.window.location.href).toBe('about:blank');
 
-			history.back();
+			browserFrame.window.history.back();
 
 			await browserFrame.waitForNavigation();
 
@@ -220,31 +220,31 @@ describe('History', () => {
 				isCurrent: true
 			});
 
-			history.back();
+			browserFrame.window.history.back();
 
 			await browserFrame.waitForNavigation();
 
 			expect(browserFrame.window.location.href).toBe('https://www.example.com/');
 
-			history.back();
+			browserFrame.window.history.back();
 
 			await browserFrame.waitForNavigation();
 
 			expect(browserFrame.window.location.href).toBe('https://www.github.com/');
 
-			history.forward();
+			browserFrame.window.history.forward();
 
 			await browserFrame.waitForNavigation();
 
 			expect(browserFrame.window.location.href).toBe('https://www.example.com/');
 
-			history.forward();
+			browserFrame.window.history.forward();
 
 			await browserFrame.waitForNavigation();
 
 			expect(browserFrame.window.location.href).toBe('https://localhost:3000/');
 
-			history.forward();
+			browserFrame.window.history.forward();
 
 			await browserFrame.waitForNavigation();
 
@@ -307,26 +307,26 @@ describe('History', () => {
 				isCurrent: true
 			});
 
-			history.go(-2);
+			browserFrame.window.history.go(-2);
 
 			await browserFrame.waitForNavigation();
 
 			expect(browserFrame.window.location.href).toBe('https://www.github.com/');
 
-			history.go(1);
+			browserFrame.window.history.go(1);
 
 			await browserFrame.waitForNavigation();
 
 			expect(browserFrame.window.location.href).toBe('https://www.example.com/');
 
 			// Shouldn't navigate as there is no history item at this position.
-			history.go(2);
+			browserFrame.window.history.go(2);
 
 			await browserFrame.waitForNavigation();
 
 			expect(browserFrame.window.location.href).toBe('https://www.example.com/');
 
-			history.go(1);
+			browserFrame.window.history.go(1);
 
 			await browserFrame.waitForNavigation();
 
@@ -336,9 +336,9 @@ describe('History', () => {
 
 	describe('pushState()', () => {
 		it('Pushes a new state to the history.', () => {
-			history.pushState({ key: 'value' }, '', '');
+			browserFrame.window.history.pushState({ key: 'value' }, '', '');
 
-			expect(history.state).toEqual({ key: 'value' });
+			expect(browserFrame.window.history.state).toEqual({ key: 'value' });
 
 			expect(browserFrame[PropertySymbol.history]).toEqual([
 				{
@@ -365,9 +365,9 @@ describe('History', () => {
 
 	describe('replaceState()', () => {
 		it('Replaces the current state in the history.', () => {
-			history.pushState({ key: 'value' }, '', '');
+			browserFrame.window.history.pushState({ key: 'value' }, '', '');
 
-			expect(history.state).toEqual({ key: 'value' });
+			expect(browserFrame.window.history.state).toEqual({ key: 'value' });
 
 			expect(browserFrame[PropertySymbol.history]).toEqual([
 				{
@@ -390,9 +390,9 @@ describe('History', () => {
 				}
 			]);
 
-			history.replaceState({ key: 'value2' }, '', '');
+			browserFrame.window.history.replaceState({ key: 'value2' }, '', '');
 
-			expect(history.state).toEqual({ key: 'value2' });
+			expect(browserFrame.window.history.state).toEqual({ key: 'value2' });
 
 			expect(browserFrame[PropertySymbol.history]).toEqual([
 				{

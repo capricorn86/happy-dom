@@ -1,12 +1,13 @@
 import Event from '../Event.js';
 import ICustomEventInit from './ICustomEventInit.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  *
  */
 export default class CustomEvent extends Event {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	public detail: any;
+	public [PropertySymbol.detail]: any;
 
 	/**
 	 * Constructor.
@@ -17,7 +18,16 @@ export default class CustomEvent extends Event {
 	constructor(type: string, eventInit: ICustomEventInit | null = null) {
 		super(type, eventInit);
 
-		this.detail = eventInit?.detail ?? null;
+		this[PropertySymbol.detail] = eventInit?.detail ?? null;
+	}
+
+	/**
+	 * Returns detail.
+	 *
+	 * @returns Detail.
+	 */
+	public get detail(): any {
+		return this[PropertySymbol.detail];
 	}
 
 	/**
@@ -35,9 +45,9 @@ export default class CustomEvent extends Event {
 		cancelable = false,
 		detail: object = null
 	): void {
-		this.type = type;
-		this.bubbles = bubbles;
-		this.cancelable = cancelable;
-		this.detail = detail;
+		this[PropertySymbol.type] = type;
+		this[PropertySymbol.bubbles] = bubbles;
+		this[PropertySymbol.cancelable] = cancelable;
+		this[PropertySymbol.detail] = detail;
 	}
 }

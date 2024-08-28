@@ -24,17 +24,7 @@ class NodeList<T extends Node> {
 
 		this[PropertySymbol.items] = items;
 
-		// This only works for one level of inheritance, but it should be fine as there is no collection that goes deeper according to spec.
-		ClassMethodBinder.bindMethods(
-			this,
-			this.constructor !== NodeList ? [NodeList, this.constructor] : [NodeList],
-			{
-				bindSymbols: true,
-				forwardToPrototype: true
-			}
-		);
-
-		return new Proxy(this, {
+		const proxy = new Proxy(this, {
 			get: (target, property) => {
 				if (property === 'length') {
 					return items.length;
@@ -106,6 +96,15 @@ class NodeList<T extends Node> {
 				}
 			}
 		});
+
+		// This only works for one level of inheritance, but it should be fine as there is no collection that goes deeper according to spec.
+		ClassMethodBinder.bindMethods(
+			this,
+			this.constructor !== NodeList ? [NodeList, this.constructor] : [NodeList],
+			{ bindSymbols: true, proxy }
+		);
+
+		return proxy;
 	}
 
 	/**

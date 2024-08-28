@@ -13,6 +13,7 @@ import SubmitEvent from '../../../src/event/events/SubmitEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import PointerEvent from '../../../src/event/events/PointerEvent.js';
 import MouseEvent from '../../../src/event/events/MouseEvent.js';
+import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 
 describe('HTMLInputElement', () => {
 	let window: Window;
@@ -962,6 +963,74 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
+	describe('get popoverTargetElement()', () => {
+		it('Returns null by default', () => {
+			expect(element.popoverTargetElement).toBe(null);
+		});
+
+		it('Returns the defined element if it exists', () => {
+			const target = document.createElement('div');
+			element.popoverTargetElement = target;
+			expect(element.popoverTargetElement).toBe(target);
+		});
+	});
+
+	describe('set popoverTargetElement()', () => {
+		it('Sets the target element', () => {
+			const target = document.createElement('div');
+			element.popoverTargetElement = target;
+			expect(element.popoverTargetElement).toBe(target);
+		});
+
+		it('Throws an error if the target element is not an instance of HTMLElement', () => {
+			expect(() => {
+				element.popoverTargetElement = <HTMLElement>(<unknown>'test');
+			}).toThrow(
+				new TypeError(
+					`Failed to set the 'popoverTargetElement' property on 'HTMLInputElement': Failed to convert value to 'Element'.`
+				)
+			);
+		});
+	});
+
+	describe('get popoverTargetAction()', () => {
+		it('Returns "toggle" by default', () => {
+			expect(element.popoverTargetAction).toBe('toggle');
+		});
+
+		it('Returns the attribute "popovertargetaction" if it exists', () => {
+			element.setAttribute('popovertargetaction', 'hide');
+			expect(element.popoverTargetAction).toBe('hide');
+
+			element.setAttribute('popovertargetaction', 'show');
+			expect(element.popoverTargetAction).toBe('show');
+
+			element.setAttribute('popovertargetaction', 'toggle');
+			expect(element.popoverTargetAction).toBe('toggle');
+		});
+
+		it('Returns "toggle" if the defined action is not valid', () => {
+			element.setAttribute('popovertargetaction', 'invalid');
+			expect(element.popoverTargetAction).toBe('toggle');
+		});
+	});
+
+	describe('set popoverTargetAction()', () => {
+		it('Sets the attribute "popovertargetaction"', () => {
+			element.popoverTargetAction = 'hide';
+			expect(element.getAttribute('popovertargetaction')).toBe('hide');
+
+			element.popoverTargetAction = 'show';
+			expect(element.getAttribute('popovertargetaction')).toBe('show');
+
+			element.popoverTargetAction = 'toggle';
+			expect(element.getAttribute('popovertargetaction')).toBe('toggle');
+
+			element.popoverTargetAction = 'invalid';
+			expect(element.getAttribute('popovertargetaction')).toBe('invalid');
+		});
+	});
+
 	describe('setCustomValidity()', () => {
 		it('Returns validation message.', () => {
 			element.setCustomValidity('Error message');
@@ -1243,6 +1312,8 @@ describe('HTMLInputElement', () => {
 			expect(isChangeTriggered).toBe(false);
 			expect(element.checked).toBe(true);
 
+			element.checked = false;
+
 			document.body.appendChild(element);
 
 			element.dispatchEvent(new PointerEvent('click'));
@@ -1255,6 +1326,24 @@ describe('HTMLInputElement', () => {
 			element.dispatchEvent(new PointerEvent('click'));
 
 			expect(element.checked).toBe(true);
+		});
+
+		it('Doesn\'t trigger "change" and "input" event if type is "radio" it is already checked when dispatching a "click" event.', () => {
+			let isInputTriggered = false;
+			let isChangeTriggered = false;
+
+			element.addEventListener('input', () => (isInputTriggered = true));
+			element.addEventListener('change', () => (isChangeTriggered = true));
+
+			element.type = 'radio';
+			element.checked = true;
+
+			document.body.appendChild(element);
+
+			element.dispatchEvent(new PointerEvent('click'));
+
+			expect(isInputTriggered).toBe(false);
+			expect(isChangeTriggered).toBe(false);
 		});
 
 		it('Sets "checked" to "true" before triggering listeners if type is "checkbox".', () => {

@@ -10,9 +10,9 @@ import Attr from '../attr/Attr.js';
 import BrowserFrameFactory from '../../browser/utilities/BrowserFrameFactory.js';
 import BrowserFrameURL from '../../browser/utilities/BrowserFrameURL.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
-import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import IRequestReferrerPolicy from '../../fetch/types/IRequestReferrerPolicy.js';
+import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 
 const SANDBOX_FLAGS = [
 	'allow-downloads',
@@ -51,20 +51,8 @@ export default class HTMLIFrameElement extends HTMLElement {
 	#contentWindowContainer: { window: BrowserWindow | CrossOriginBrowserWindow | null } = {
 		window: null
 	};
-	#browserFrame: IBrowserFrame;
-	#browserChildFrame: IBrowserFrame;
+	#iframe: IBrowserFrame;
 	#loadedSrcdoc: string | null = null;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param browserFrame Browser frame.
-	 */
-	constructor(browserFrame) {
-		super();
-
-		this.#browserFrame = browserFrame;
-	}
 
 	/**
 	 * Returns source.
@@ -306,7 +294,7 @@ export default class HTMLIFrameElement extends HTMLElement {
 	 * @param vconsole
 	 */
 	#validateSandboxFlags(): void {
-		const window = this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow];
+		const window = this[PropertySymbol.window];
 		const invalidFlags: string[] = [];
 
 		for (const token of this.sandbox) {
@@ -338,7 +326,12 @@ export default class HTMLIFrameElement extends HTMLElement {
 		}
 
 		const srcdoc = this.getAttribute('srcdoc');
-		const window = this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow];
+		const window = this[PropertySymbol.window];
+		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+
+		if (!browserFrame) {
+			return;
+		}
 
 		if (srcdoc !== null) {
 			if (this.#loadedSrcdoc === srcdoc) {
@@ -347,20 +340,20 @@ export default class HTMLIFrameElement extends HTMLElement {
 
 			this.#unloadPage();
 
-			this.#browserChildFrame = BrowserFrameFactory.createChildFrame(this.#browserFrame);
-			this.#browserChildFrame.url = 'about:srcdoc';
+			this.#iframe = BrowserFrameFactory.createChildFrame(browserFrame);
+			this.#iframe.url = 'about:srcdoc';
 
-			this.#contentWindowContainer.window = this.#browserChildFrame.window;
+			this.#contentWindowContainer.window = this.#iframe.window;
 
-			this.#browserChildFrame.window[PropertySymbol.top] = this.#browserFrame.window.top;
-			this.#browserChildFrame.window[PropertySymbol.parent] = this.#browserFrame.window;
+			this.#iframe.window[PropertySymbol.top] = browserFrame.window.top;
+			this.#iframe.window[PropertySymbol.parent] = browserFrame.window;
 
-			this.#browserChildFrame.window.document.open();
-			this.#browserChildFrame.window.document.write(srcdoc);
+			this.#iframe.window.document.open();
+			this.#iframe.window.document.write(srcdoc);
 
 			this.#loadedSrcdoc = srcdoc;
 
-			this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].requestAnimationFrame(() =>
+			this[PropertySymbol.window].requestAnimationFrame(() =>
 				this.dispatchEvent(new Event('load'))
 			);
 			return;
@@ -370,20 +363,17 @@ export default class HTMLIFrameElement extends HTMLElement {
 			this.#unloadPage();
 		}
 
-		const originURL = this.#browserFrame.window.location;
-		const targetURL = BrowserFrameURL.getRelativeURL(this.#browserFrame, this.src);
+		const originURL = browserFrame.window.location;
+		const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
 
-		if (
-			this.#browserChildFrame &&
-			this.#browserChildFrame.window.location.href === targetURL.href
-		) {
+		if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
 			return;
 		}
 
-		if (this.#browserFrame.page.context.browser.settings.disableIframePageLoading) {
+		if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
 			WindowErrorUtility.dispatchError(
 				this,
-				new DOMException(
+				new window.DOMException(
 					`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`,
 					DOMExceptionNameEnum.notSupportedError
 				)
@@ -395,13 +385,12 @@ export default class HTMLIFrameElement extends HTMLElement {
 		const isSameOrigin = originURL.origin === targetURL.origin || targetURL.origin === 'null';
 		const parentWindow = isSameOrigin ? window : new CrossOriginBrowserWindow(window);
 
-		this.#browserChildFrame =
-			this.#browserChildFrame ?? BrowserFrameFactory.createChildFrame(this.#browserFrame);
+		this.#iframe = this.#iframe ?? BrowserFrameFactory.createChildFrame(browserFrame);
 
-		this.#browserChildFrame.window[PropertySymbol.top] = <BrowserWindow>parentWindow;
-		this.#browserChildFrame.window[PropertySymbol.parent] = <BrowserWindow>parentWindow;
+		this.#iframe.window[PropertySymbol.top] = <BrowserWindow>parentWindow;
+		this.#iframe.window[PropertySymbol.parent] = <BrowserWindow>parentWindow;
 
-		this.#browserChildFrame
+		this.#iframe
 			.goto(targetURL.href, {
 				referrer: originURL.origin,
 				referrerPolicy: <IRequestReferrerPolicy>this.referrerPolicy
@@ -410,17 +399,17 @@ export default class HTMLIFrameElement extends HTMLElement {
 			.catch((error) => WindowErrorUtility.dispatchError(this, error));
 
 		this.#contentWindowContainer.window = isSameOrigin
-			? this.#browserChildFrame.window
-			: new CrossOriginBrowserWindow(this.#browserChildFrame.window, window);
+			? this.#iframe.window
+			: new CrossOriginBrowserWindow(this.#iframe.window, window);
 	}
 
 	/**
 	 * Unloads an iframe page.
 	 */
 	#unloadPage(): void {
-		if (this.#browserChildFrame) {
-			BrowserFrameFactory.destroyFrame(this.#browserChildFrame);
-			this.#browserChildFrame = null;
+		if (this.#iframe) {
+			BrowserFrameFactory.destroyFrame(this.#iframe);
+			this.#iframe = null;
 		}
 		this.#contentWindowContainer.window = null;
 		this.#loadedSrcdoc = null;

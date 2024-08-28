@@ -1,6 +1,5 @@
 import ErrorEvent from '../../event/events/ErrorEvent.js';
 import Event from '../../event/Event.js';
-import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import TimeRanges from './TimeRanges.js';
@@ -72,7 +71,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	public [PropertySymbol.seekable] = new TimeRanges(PropertySymbol.illegalConstructor);
 	public [PropertySymbol.sinkId]: string = '';
 	public [PropertySymbol.played] = new TimeRanges(PropertySymbol.illegalConstructor);
-	public [PropertySymbol.remote] = new RemotePlayback();
+	public [PropertySymbol.remote] = new this[PropertySymbol.window].RemotePlayback();
 	public [PropertySymbol.controlsList]: DOMTokenList | null = null;
 	public [PropertySymbol.mediaKeys]: object | null = null;
 	public [PropertySymbol.srcObject]: MediaStream | null = null;
@@ -413,7 +412,7 @@ export default class HTMLMediaElement extends HTMLElement {
 		for (const track of this.querySelectorAll('track')[PropertySymbol.items]) {
 			items.push(track.track);
 		}
-		return new TextTrackList(PropertySymbol.illegalConstructor, items);
+		return new this[PropertySymbol.window].TextTrackList(PropertySymbol.illegalConstructor, items);
 	}
 
 	/**
@@ -448,12 +447,12 @@ export default class HTMLMediaElement extends HTMLElement {
 		const parsedVolume = Number(volume);
 
 		if (isNaN(parsedVolume)) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to set the 'volume' property on 'HTMLMediaElement': The provided double value is non-finite.`
 			);
 		}
 		if (parsedVolume < 0 || parsedVolume > 1) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to set the 'volume' property on 'HTMLMediaElement': The volume provided (${parsedVolume}) is outside the range [0, 1].`,
 				DOMExceptionNameEnum.indexSizeError
 			);
@@ -504,7 +503,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	public set currentTime(currentTime: number | string) {
 		const parsedCurrentTime = Number(currentTime);
 		if (isNaN(parsedCurrentTime)) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to set the 'currentTime' property on 'HTMLMediaElement': The provided double value is non-finite.`
 			);
 		}
@@ -528,7 +527,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	public set playbackRate(playbackRate: number | string) {
 		const parsedPlaybackRate = Number(playbackRate);
 		if (isNaN(parsedPlaybackRate)) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to set the 'playbackRate' property on 'HTMLMediaElement': The provided double value is non-finite.`
 			);
 		}
@@ -552,7 +551,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	public set defaultPlaybackRate(defaultPlaybackRate: number | string) {
 		const parsedDefaultPlaybackRate = Number(defaultPlaybackRate);
 		if (isNaN(parsedDefaultPlaybackRate)) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to set the 'defaultPlaybackRate' property on 'HTMLMediaElement': The provided double value is non-finite.`
 			);
 		}
@@ -594,17 +593,21 @@ export default class HTMLMediaElement extends HTMLElement {
 	 * @param language The language of the text track data.
 	 */
 	public addTextTrack(kind: TextTrackKindEnum, label?: string, language?: string): TextTrack {
+		const window = this[PropertySymbol.window];
+
 		if (arguments.length === 0) {
-			throw new TypeError(
+			throw new window.TypeError(
 				`Failed to execute 'addTextTrack' on 'HTMLMediaElement': 1 argument required, but only 0 present.`
 			);
 		}
+
 		if (!TextTrackKindEnum[kind]) {
-			throw new TypeError(
+			throw new window.TypeError(
 				`Failed to execute 'addTextTrack' on 'HTMLMediaElement': The provided value '${kind}' is not a valid enum value of type TextTrackKind.`
 			);
 		}
-		const track = new TextTrack(PropertySymbol.illegalConstructor);
+
+		const track = new window.TextTrack(PropertySymbol.illegalConstructor);
 		track[PropertySymbol.kind] = kind;
 		track[PropertySymbol.label] = label || '';
 		track[PropertySymbol.language] = language || '';
@@ -688,7 +691,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	 * @returns MediaStream.
 	 */
 	public captureStream(): MediaStream {
-		return new MediaStream();
+		return new this[PropertySymbol.window].MediaStream();
 	}
 
 	/**

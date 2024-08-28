@@ -188,7 +188,7 @@ import type IBrowserPage from './browser/types/IBrowserPage.js';
 import type IBrowserSettings from './browser/types/IBrowserSettings.js';
 import type IOptionalBrowserSettings from './browser/types/IOptionalBrowserSettings.js';
 import type IEventInit from './event/IEventInit.js';
-import type IEventListener from './event/IEventListener.js';
+import type TEventListener from './event/TEventListener.js';
 import type ITouchInit from './event/ITouchInit.js';
 import type IUIEventInit from './event/IUIEventInit.js';
 import type IAnimationEventInit from './event/events/IAnimationEventInit.js';
@@ -217,7 +217,7 @@ export type {
 	ICustomEventInit,
 	IErrorEventInit,
 	IEventInit,
-	IEventListener,
+	TEventListener,
 	IFocusEventInit,
 	IHashChangeEventInit,
 	IInputEventInit,

@@ -17,6 +17,7 @@ import Element from '../element/Element.js';
 import EventTarget from '../../event/EventTarget.js';
 import Node from '../node/Node.js';
 import ClassMethodBinder from '../../ClassMethodBinder.js';
+import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 
 /**
  * HTML Form Element.
@@ -37,18 +38,11 @@ export default class HTMLFormElement extends HTMLElement {
 	public onreset: (event: Event) => void | null = null;
 	public onsubmit: (event: Event) => void | null = null;
 
-	// Private properties
-	#browserFrame: IBrowserFrame;
-
 	/**
 	 * Constructor.
-	 *
-	 * @param browserFrame Browser frame.
 	 */
-	constructor(browserFrame) {
+	constructor() {
 		super();
-
-		this.#browserFrame = browserFrame;
 
 		ClassMethodBinder.bindMethods(
 			this,
@@ -576,7 +570,11 @@ export default class HTMLFormElement extends HTMLElement {
 		const action = submitter?.hasAttribute('formaction')
 			? submitter?.formAction || this.action
 			: this.action;
-		const browserFrame = this.#browserFrame;
+		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
+
+		if (!browserFrame) {
+			return;
+		}
 
 		if (!action) {
 			// The URL is invalid when the action is empty.

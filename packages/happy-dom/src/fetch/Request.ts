@@ -1,8 +1,6 @@
 import * as PropertySymbol from '../PropertySymbol.js';
-import Document from '../nodes/document/Document.js';
 import IRequestInit from './types/IRequestInit.js';
 import URL from '../url/URL.js';
-import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import IRequestInfo from './types/IRequestInfo.js';
 import Headers from './Headers.js';
@@ -18,8 +16,8 @@ import FetchRequestHeaderUtility from './utilities/FetchRequestHeaderUtility.js'
 import IRequestCredentials from './types/IRequestCredentials.js';
 import FormData from '../form-data/FormData.js';
 import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
-import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
 import BrowserWindow from '../window/BrowserWindow.js';
+import WindowBrowserContext from '../window/WindowBrowserContext.js';
 
 /**
  * Fetch request.
@@ -30,6 +28,9 @@ import BrowserWindow from '../window/BrowserWindow.js';
  * @see https://fetch.spec.whatwg.org/#request-class
  */
 export default class Request implements Request {
+	// Injected by WindowClassExtender
+	protected declare [PropertySymbol.window]: BrowserWindow;
+
 	// Public properties
 	public readonly method: string;
 	public readonly body: ReadableStream | null;
@@ -41,42 +42,39 @@ export default class Request implements Request {
 	public readonly credentials: IRequestCredentials;
 
 	// Internal properties
+	public [PropertySymbol.aborted]: boolean = false;
 	public [PropertySymbol.contentLength]: number | null = null;
 	public [PropertySymbol.contentType]: string | null = null;
 	public [PropertySymbol.referrer]: '' | 'no-referrer' | 'client' | URL = 'client';
 	public [PropertySymbol.url]: URL;
 	public [PropertySymbol.bodyBuffer]: Buffer | null;
 
-	// Private properties
-	readonly #window: BrowserWindow;
-	readonly #asyncTaskManager: AsyncTaskManager;
-
 	/**
 	 * Constructor.
 	 *
-	 * @param injected Injected properties.
-	 * @param injected.window
 	 * @param input Input.
-	 * @param injected.asyncTaskManager
 	 * @param [init] Init.
 	 */
-	constructor(
-		injected: { window: BrowserWindow; asyncTaskManager: AsyncTaskManager },
-		input: IRequestInfo,
-		init?: IRequestInit
-	) {
-		this.#window = injected.window;
-		this.#asyncTaskManager = injected.asyncTaskManager;
+	constructor(input: IRequestInfo, init?: IRequestInit) {
+		const window = this[PropertySymbol.window];
+
+		if (!window) {
+			throw new TypeError(
+				`Failed to construct 'Request': 'Request' was constructed outside a Window context.`
+			);
+		}
 
 		if (!input) {
-			throw new TypeError(`Failed to contruct 'Request': 1 argument required, only 0 present.`);
+			throw new window.TypeError(
+				`Failed to contruct 'Request': 1 argument required, only 0 present.`
+			);
 		}
 
 		this.method = (init?.method || (<Request>input).method || 'GET').toUpperCase();
 
 		const { stream, buffer, contentType, contentLength } = FetchBodyUtility.getBodyStream(
 			input instanceof Request && (input[PropertySymbol.bodyBuffer] || input.body)
-				? input[PropertySymbol.bodyBuffer] || FetchBodyUtility.cloneBodyStream(input)
+				? input[PropertySymbol.bodyBuffer] || FetchBodyUtility.cloneBodyStream(window, input)
 				: init?.body
 		);
 
@@ -106,9 +104,9 @@ export default class Request implements Request {
 		this.referrerPolicy = <IRequestReferrerPolicy>(
 			(init?.referrerPolicy || (<Request>input).referrerPolicy || '').toLowerCase()
 		);
-		this.signal = init?.signal || (<Request>input).signal || new AbortSignal();
+		this.signal = init?.signal || (<Request>input).signal || new window.AbortSignal();
 		this[PropertySymbol.referrer] = FetchRequestReferrerUtility.getInitialReferrer(
-			injected.window,
+			window,
 			init?.referrer !== null && init?.referrer !== undefined
 				? init?.referrer
 				: (<Request>input).referrer
@@ -119,16 +117,16 @@ export default class Request implements Request {
 		} else {
 			try {
 				if (input instanceof Request && input.url) {
-					this[PropertySymbol.url] = new URL(input.url, injected.window.location.href);
+					this[PropertySymbol.url] = new URL(input.url, window.location.href);
 				} else {
-					this[PropertySymbol.url] = new URL(<string>input, injected.window.location.href);
+					this[PropertySymbol.url] = new URL(<string>input, window.location.href);
 				}
 			} catch (error) {
-				throw new DOMException(
-					`Failed to construct 'Request. Invalid URL "${input}" on document location '${
-						injected.window.location
+				throw new window.DOMException(
+					`Failed to construct 'Request': Invalid URL "${input}" on document location '${
+						window.location
 					}'.${
-						injected.window.location.origin === 'null'
+						window.location.origin === 'null'
 							? ' Relative URLs are not permitted on current document location.'
 							: ''
 					}`,
@@ -142,13 +140,6 @@ export default class Request implements Request {
 		FetchRequestValidationUtility.validateURL(this[PropertySymbol.url]);
 		FetchRequestValidationUtility.validateReferrerPolicy(this.referrerPolicy);
 		FetchRequestValidationUtility.validateRedirect(this.redirect);
-	}
-
-	/**
-	 * Returns owner document.
-	 */
-	protected get [PropertySymbol.ownerDocument](): Document {
-		throw new Error('[PropertySymbol.ownerDocument] getter needs to be implemented by sub-class.');
 	}
 
 	/**
@@ -192,26 +183,35 @@ export default class Request implements Request {
 	 * @returns Array buffer.
 	 */
 	public async arrayBuffer(): Promise<ArrayBuffer> {
+		const window = this[PropertySymbol.window];
+
 		if (this.bodyUsed) {
-			throw new DOMException(
+			throw new window.DOMException(
 				`Body has already been used for "${this.url}".`,
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
 
+		const asyncTaskManager = new WindowBrowserContext(window).getAsyncTaskManager();
+
 		(<boolean>this.bodyUsed) = true;
 
-		const taskID = this.#asyncTaskManager.startTask(() => this.signal[PropertySymbol.abort]());
+		const taskID = asyncTaskManager.startTask(() => {
+			if (this.body) {
+				this.body[PropertySymbol.aborted] = true;
+			}
+			this.signal[PropertySymbol.abort]();
+		});
 		let buffer: Buffer;
 
 		try {
-			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
+			buffer = await FetchBodyUtility.consumeBodyStream(window, this.body);
 		} catch (error) {
-			this.#asyncTaskManager.endTask(taskID);
+			asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		this.#asyncTaskManager.endTask(taskID);
+		asyncTaskManager.endTask(taskID);
 
 		return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 	}
@@ -234,26 +234,35 @@ export default class Request implements Request {
 	 * @returns Buffer.
 	 */
 	public async buffer(): Promise<Buffer> {
+		const window = this[PropertySymbol.window];
+
 		if (this.bodyUsed) {
-			throw new DOMException(
+			throw new window.DOMException(
 				`Body has already been used for "${this.url}".`,
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
 
+		const asyncTaskManager = new WindowBrowserContext(window).getAsyncTaskManager();
+
 		(<boolean>this.bodyUsed) = true;
 
-		const taskID = this.#asyncTaskManager.startTask(() => this.signal[PropertySymbol.abort]());
+		const taskID = asyncTaskManager.startTask(() => {
+			if (this.body) {
+				this.body[PropertySymbol.aborted] = true;
+			}
+			this.signal[PropertySymbol.abort]();
+		});
 		let buffer: Buffer;
 
 		try {
-			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
+			buffer = await FetchBodyUtility.consumeBodyStream(window, this.body);
 		} catch (error) {
-			this.#asyncTaskManager.endTask(taskID);
+			asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		this.#asyncTaskManager.endTask(taskID);
+		asyncTaskManager.endTask(taskID);
 
 		return buffer;
 	}
@@ -264,26 +273,35 @@ export default class Request implements Request {
 	 * @returns Text.
 	 */
 	public async text(): Promise<string> {
+		const window = this[PropertySymbol.window];
+
 		if (this.bodyUsed) {
-			throw new DOMException(
+			throw new window.DOMException(
 				`Body has already been used for "${this.url}".`,
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
 
+		const asyncTaskManager = new WindowBrowserContext(window).getAsyncTaskManager();
+
 		(<boolean>this.bodyUsed) = true;
 
-		const taskID = this.#asyncTaskManager.startTask(() => this.signal[PropertySymbol.abort]());
+		const taskID = asyncTaskManager.startTask(() => {
+			if (this.body) {
+				this.body[PropertySymbol.aborted] = true;
+			}
+			this.signal[PropertySymbol.abort]();
+		});
 		let buffer: Buffer;
 
 		try {
-			buffer = await FetchBodyUtility.consumeBodyStream(this.body);
+			buffer = await FetchBodyUtility.consumeBodyStream(window, this.body);
 		} catch (error) {
-			this.#asyncTaskManager.endTask(taskID);
+			asyncTaskManager.endTask(taskID);
 			throw error;
 		}
 
-		this.#asyncTaskManager.endTask(taskID);
+		asyncTaskManager.endTask(taskID);
 
 		return new TextDecoder().decode(buffer);
 	}
@@ -304,12 +322,13 @@ export default class Request implements Request {
 	 * @returns FormData.
 	 */
 	public async formData(): Promise<FormData> {
+		const window = this[PropertySymbol.window];
+		const asyncTaskManager = new WindowBrowserContext(window).getAsyncTaskManager();
 		const contentType = this[PropertySymbol.contentType];
-		const asyncTaskManager = this.#asyncTaskManager;
 
 		if (/multipart/i.test(contentType)) {
 			if (this.bodyUsed) {
-				throw new DOMException(
+				throw new window.DOMException(
 					`Body has already been used for "${this.url}".`,
 					DOMExceptionNameEnum.invalidStateError
 				);
@@ -317,11 +336,20 @@ export default class Request implements Request {
 
 			(<boolean>this.bodyUsed) = true;
 
-			const taskID = asyncTaskManager.startTask(() => this.signal[PropertySymbol.abort]());
+			const taskID = asyncTaskManager.startTask(() => {
+				if (this.body) {
+					this.body[PropertySymbol.aborted] = true;
+				}
+				this.signal[PropertySymbol.abort]();
+			});
 			let formData: FormData;
 
 			try {
-				const result = await MultipartFormDataParser.streamToFormData(this.body, contentType);
+				const result = await MultipartFormDataParser.streamToFormData(
+					window,
+					this.body,
+					contentType
+				);
 				formData = result.formData;
 			} catch (error) {
 				asyncTaskManager.endTask(taskID);
@@ -344,7 +372,7 @@ export default class Request implements Request {
 			return formData;
 		}
 
-		throw new DOMException(
+		throw new window.DOMException(
 			`Failed to construct FormData object: The "content-type" header is neither "application/x-www-form-urlencoded" nor "multipart/form-data".`,
 			DOMExceptionNameEnum.invalidStateError
 		);
@@ -356,6 +384,6 @@ export default class Request implements Request {
 	 * @returns Clone.
 	 */
 	public clone(): Request {
-		return new this.#window.Request(this);
+		return new this[PropertySymbol.window].Request(this);
 	}
 }
