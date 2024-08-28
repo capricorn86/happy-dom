@@ -88,6 +88,24 @@ export default class AbortSignal extends EventTarget {
 	}
 
 	/**
+	 * Returns an AbortSignal that will automatically abort after a specified
+	 * time.
+	 *
+	 * @param [time] Time in milliseconds.
+	 * @returns AbortSignal instance.
+	 */
+	public static timeout(time: number): AbortSignal {
+		const window = this[PropertySymbol.window];
+		const signal = new this();
+		window.setTimeout(() => {
+			signal[PropertySymbol.abort](
+				new window.DOMException('signal timed out', DOMExceptionNameEnum.timeoutError)
+			);
+		}, time);
+		return signal;
+	}
+
+	/**
 	 * Takes an iterable of abort signals and returns an AbortSignal that is
 	 * aborted when any of the input iterable abort signals are aborted.
 	 *

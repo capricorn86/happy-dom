@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import BrowserWindow from '../../src/window/BrowserWindow.js';
 import Window from '../../src/window/Window.js';
+import DOMException from '../../src/exception/DOMException.js';
 
 describe('AbortSignal', () => {
 	let window: BrowserWindow;
@@ -47,6 +48,20 @@ describe('AbortSignal', () => {
 
 			expect(signal.aborted).toBe(true);
 			expect(signal.reason).toBe(reason);
+		});
+	});
+
+	describe('AbortSignal.timeout()', () => {
+		it('Returns a new instance of AbortSignal that aborts with a "TimeoutError" after a timeout.', async () => {
+			const signal = window.AbortSignal.timeout(10);
+
+			expect(signal.aborted).toBe(false);
+
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			expect(signal.aborted).toBe(true);
+			expect(signal.reason).toBeInstanceOf(DOMException);
+			expect(signal.reason?.name).toBe('TimeoutError');
 		});
 	});
 
