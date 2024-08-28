@@ -121,7 +121,7 @@ export default class SelectorItem {
 	private matchPseudo(element: Element): ISelectorMatch | null {
 		const parent = <Element>element[PropertySymbol.parentNode];
 		const parentChildren = element[PropertySymbol.parentNode]
-			? (<Element>element[PropertySymbol.parentNode])[PropertySymbol.children]
+			? (<Element>element[PropertySymbol.parentNode])[PropertySymbol.elementArray]
 			: [];
 
 		if (!this.pseudos) {
@@ -236,46 +236,71 @@ export default class SelectorItem {
 					? { priorityWeight: 10 }
 					: null;
 			case 'empty':
-				return !(<Element>element)[PropertySymbol.children].length ? { priorityWeight: 10 } : null;
+				return !(<Element>element)[PropertySymbol.elementArray].length
+					? { priorityWeight: 10 }
+					: null;
 			case 'root':
 				return element[PropertySymbol.tagName] === 'HTML' ? { priorityWeight: 10 } : null;
 			case 'not':
 				return !pseudo.selectorItems[0].match(element) ? { priorityWeight: 10 } : null;
 			case 'nth-child':
-				const nthChildIndex = pseudo.selectorItems[0]
-					? parentChildren.filter((child) => pseudo.selectorItems[0].match(child)).indexOf(element)
-					: parentChildren.indexOf(element);
-				return nthChildIndex !== -1 && pseudo.nthFunction(nthChildIndex + 1)
-					? { priorityWeight: 10 }
-					: null;
-			case 'nth-of-type':
-				if (!element[PropertySymbol.parentNode]) {
+				let nthChildIndex = -1;
+				if (pseudo.selectorItems[0] && !pseudo.selectorItems[0].match(element)) {
 					return null;
 				}
-				const nthOfTypeIndex = parentChildren
-					.filter((child) => child[PropertySymbol.tagName] === element[PropertySymbol.tagName])
-					.indexOf(element);
-				return nthOfTypeIndex !== -1 && pseudo.nthFunction(nthOfTypeIndex + 1)
-					? { priorityWeight: 10 }
-					: null;
+				for (let i = 0, max = parentChildren.length; i < max; i++) {
+					if (!pseudo.selectorItems[0] || pseudo.selectorItems[0].match(parentChildren[i])) {
+						nthChildIndex++;
+					}
+					if (parentChildren[i] === element) {
+						return nthChildIndex !== -1 && pseudo.nthFunction(nthChildIndex + 1)
+							? { priorityWeight: 10 }
+							: null;
+					}
+				}
+				return null;
+			case 'nth-of-type':
+				let nthOfTypeIndex = -1;
+				for (let i = 0, max = parentChildren.length; i < max; i++) {
+					if (parentChildren[i][PropertySymbol.tagName] === element[PropertySymbol.tagName]) {
+						nthOfTypeIndex++;
+					}
+					if (parentChildren[i] === element) {
+						return nthOfTypeIndex !== -1 && pseudo.nthFunction(nthOfTypeIndex + 1)
+							? { priorityWeight: 10 }
+							: null;
+					}
+				}
+				return null;
 			case 'nth-last-child':
-				const nthLastChildIndex = pseudo.selectorItems[0]
-					? parentChildren
-							.filter((child) => pseudo.selectorItems[0].match(child))
-							.reverse()
-							.indexOf(element)
-					: parentChildren.reverse().indexOf(element);
-				return nthLastChildIndex !== -1 && pseudo.nthFunction(nthLastChildIndex + 1)
-					? { priorityWeight: 10 }
-					: null;
+				let nthLastChildIndex = -1;
+				if (pseudo.selectorItems[0] && !pseudo.selectorItems[0].match(element)) {
+					return null;
+				}
+				for (let i = parentChildren.length - 1; i >= 0; i--) {
+					if (!pseudo.selectorItems[0] || pseudo.selectorItems[0].match(parentChildren[i])) {
+						nthLastChildIndex++;
+					}
+					if (parentChildren[i] === element) {
+						return nthLastChildIndex !== -1 && pseudo.nthFunction(nthLastChildIndex + 1)
+							? { priorityWeight: 10 }
+							: null;
+					}
+				}
+				return null;
 			case 'nth-last-of-type':
-				const nthLastOfTypeIndex = parentChildren
-					.filter((child) => child[PropertySymbol.tagName] === element[PropertySymbol.tagName])
-					.reverse()
-					.indexOf(element);
-				return nthLastOfTypeIndex !== -1 && pseudo.nthFunction(nthLastOfTypeIndex + 1)
-					? { priorityWeight: 10 }
-					: null;
+				let nthLastOfTypeIndex = -1;
+				for (let i = parentChildren.length - 1; i >= 0; i--) {
+					if (parentChildren[i][PropertySymbol.tagName] === element[PropertySymbol.tagName]) {
+						nthLastOfTypeIndex++;
+					}
+					if (parentChildren[i] === element) {
+						return nthLastOfTypeIndex !== -1 && pseudo.nthFunction(nthLastOfTypeIndex + 1)
+							? { priorityWeight: 10 }
+							: null;
+					}
+				}
+				return null;
 			case 'target':
 				const hash = element[PropertySymbol.ownerDocument].location.hash;
 				if (!hash) {

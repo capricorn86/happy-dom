@@ -30,9 +30,8 @@ export default class DocumentReadyStateManager {
 				resolve();
 			} else {
 				this.readyStateCallbacks.push(resolve);
-				if (this.totalTasks === 0 && !this.immediate) {
-					this.immediate = this.window.requestAnimationFrame(this.endTask.bind(this));
-				}
+				this.startTask();
+				this.endTask();
 			}
 		});
 	}
@@ -68,15 +67,19 @@ export default class DocumentReadyStateManager {
 
 		this.totalTasks--;
 
-		if (this.totalTasks <= 0) {
-			const callbacks = this.readyStateCallbacks;
+		this.immediate = this.window.requestAnimationFrame(() => {
+			this.immediate = null;
 
-			this.readyStateCallbacks = [];
-			this.isComplete = true;
+			if (this.totalTasks <= 0) {
+				const callbacks = this.readyStateCallbacks;
 
-			for (const callback of callbacks) {
-				callback();
+				this.readyStateCallbacks = [];
+				this.isComplete = true;
+
+				for (const callback of callbacks) {
+					callback();
+				}
 			}
-		}
+		});
 	}
 }

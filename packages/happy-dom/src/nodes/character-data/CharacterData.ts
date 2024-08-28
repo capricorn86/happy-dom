@@ -20,7 +20,7 @@ export default abstract class CharacterData
 	implements IChildNode, INonDocumentTypeChildNode
 {
 	public [PropertySymbol.data] = '';
-	public cloneNode: (deep?: boolean) => CharacterData;
+	public declare cloneNode: (deep?: boolean) => CharacterData;
 
 	/**
 	 * Constructor.
@@ -30,9 +30,7 @@ export default abstract class CharacterData
 	constructor(data?: string) {
 		super();
 
-		if (data) {
-			this[PropertySymbol.data] = data;
-		}
+		this[PropertySymbol.data] = data !== undefined ? String(data) : '';
 	}
 
 	/**
@@ -62,24 +60,13 @@ export default abstract class CharacterData
 		const oldValue = this[PropertySymbol.data];
 		this[PropertySymbol.data] = String(data);
 
-		if (this[PropertySymbol.isConnected]) {
-			this[PropertySymbol.ownerDocument][PropertySymbol.cacheID]++;
-		}
-
-		// MutationObserver
-		if (this[PropertySymbol.observers].length > 0) {
-			for (const observer of this[PropertySymbol.observers]) {
-				if (observer.options?.characterData) {
-					observer.report(
-						new MutationRecord({
-							target: this,
-							type: MutationTypeEnum.characterData,
-							oldValue: observer.options.characterDataOldValue ? oldValue : null
-						})
-					);
-				}
-			}
-		}
+		this[PropertySymbol.reportMutation](
+			new MutationRecord({
+				target: this,
+				type: MutationTypeEnum.characterData,
+				oldValue
+			})
+		);
 	}
 
 	/**

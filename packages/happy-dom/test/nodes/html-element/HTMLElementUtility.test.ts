@@ -4,6 +4,7 @@ import Document from '../../../src/nodes/document/Document.js';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import Window from '../../../src/window/Window.js';
 import { beforeEach, describe, it, expect } from 'vitest';
+import EventTarget from '../../../src/event/EventTarget.js';
 
 describe('HTMLElementUtility', () => {
 	let window: Window;
@@ -20,31 +21,43 @@ describe('HTMLElementUtility', () => {
 				<HTMLElement>document.createElement('div'),
 				<SVGElement>document.createElementNS('http://www.w3.org/2000/svg', 'svg')
 			]) {
-				let triggeredBlurEvent: FocusEvent | null = null;
-				let triggeredFocusOutEvent: FocusEvent | null = null;
+				let blurEvent: FocusEvent | null = null;
+				let blurTarget: EventTarget | null = null;
+				let blurCurrentTarget: EventTarget | null = null;
+				let focusOutEvent: FocusEvent | null = null;
+				let focusOutTarget: EventTarget | null = null;
+				let focusOutCurrentTarget: EventTarget | null = null;
 
 				document.body.appendChild(element);
 
 				element.addEventListener('blur', (event) => {
-					triggeredBlurEvent = <FocusEvent>event;
+					blurEvent = <FocusEvent>event;
+					blurTarget = event.target;
+					blurCurrentTarget = event.currentTarget;
 				});
 
 				element.addEventListener('focusout', (event) => {
-					triggeredFocusOutEvent = <FocusEvent>event;
+					focusOutEvent = <FocusEvent>event;
+					focusOutTarget = event.target;
+					focusOutCurrentTarget = event.currentTarget;
 				});
 
 				element.focus();
 				element.blur();
 
-				expect((<FocusEvent>(<unknown>triggeredBlurEvent)).type).toBe('blur');
-				expect((<FocusEvent>(<unknown>triggeredBlurEvent)).bubbles).toBe(false);
-				expect((<FocusEvent>(<unknown>triggeredBlurEvent)).composed).toBe(true);
-				expect((<FocusEvent>(<unknown>triggeredBlurEvent)).target === element).toBe(true);
+				expect((<FocusEvent>(<unknown>blurEvent)).type).toBe('blur');
+				expect((<FocusEvent>(<unknown>blurEvent)).bubbles).toBe(false);
+				expect((<FocusEvent>(<unknown>blurEvent)).composed).toBe(true);
+				expect((<FocusEvent>(<unknown>blurEvent)).target).toBe(null);
+				expect(blurTarget).toBe(element);
+				expect(blurCurrentTarget).toBe(element);
 
-				expect((<FocusEvent>(<unknown>triggeredFocusOutEvent)).type).toBe('focusout');
-				expect((<FocusEvent>(<unknown>triggeredFocusOutEvent)).bubbles).toBe(true);
-				expect((<FocusEvent>(<unknown>triggeredFocusOutEvent)).composed).toBe(true);
-				expect((<FocusEvent>(<unknown>triggeredFocusOutEvent)).target === element).toBe(true);
+				expect((<FocusEvent>(<unknown>focusOutEvent)).type).toBe('focusout');
+				expect((<FocusEvent>(<unknown>focusOutEvent)).bubbles).toBe(true);
+				expect((<FocusEvent>(<unknown>focusOutEvent)).composed).toBe(true);
+				expect((<FocusEvent>(<unknown>focusOutEvent)).target).toBe(null);
+				expect(focusOutTarget).toBe(element);
+				expect(focusOutCurrentTarget).toBe(element);
 
 				expect(document.activeElement === document.body).toBe(true);
 			}
@@ -94,32 +107,44 @@ describe('HTMLElementUtility', () => {
 				<HTMLElement>document.createElement('div'),
 				<SVGElement>document.createElementNS('http://www.w3.org/2000/svg', 'svg')
 			]) {
-				let triggeredFocusEvent: FocusEvent | null = null;
-				let triggeredFocusInEvent: FocusEvent | null = null;
+				let focusEvent: FocusEvent | null = null;
+				let focusTarget: EventTarget | null = null;
+				let focusCurrentTarget: EventTarget | null = null;
+				let focusInEvent: FocusEvent | null = null;
+				let focusInTarget: EventTarget | null = null;
+				let focusInCurrentTarget: EventTarget | null = null;
 
 				document.body.appendChild(element);
 
 				element.addEventListener('focus', (event) => {
-					triggeredFocusEvent = <FocusEvent>event;
+					focusEvent = <FocusEvent>event;
+					focusTarget = event.target;
+					focusCurrentTarget = event.currentTarget;
 				});
 
 				element.addEventListener('focusin', (event) => {
-					triggeredFocusInEvent = <FocusEvent>event;
+					focusInEvent = <FocusEvent>event;
+					focusInTarget = event.target;
+					focusInCurrentTarget = event.currentTarget;
 				});
 
 				element.focus();
 
-				expect((<FocusEvent>(<unknown>triggeredFocusEvent)).type).toBe('focus');
-				expect((<FocusEvent>(<unknown>triggeredFocusEvent)).bubbles).toBe(false);
-				expect((<FocusEvent>(<unknown>triggeredFocusEvent)).composed).toBe(true);
-				expect((<FocusEvent>(<unknown>triggeredFocusEvent)).target === element).toBe(true);
+				expect((<FocusEvent>(<unknown>focusEvent)).type).toBe('focus');
+				expect((<FocusEvent>(<unknown>focusEvent)).bubbles).toBe(false);
+				expect((<FocusEvent>(<unknown>focusEvent)).composed).toBe(true);
+				expect((<FocusEvent>(<unknown>focusEvent)).target).toBe(null);
+				expect(focusTarget).toBe(element);
+				expect(focusCurrentTarget).toBe(element);
 
-				expect((<FocusEvent>(<unknown>triggeredFocusInEvent)).type).toBe('focusin');
-				expect((<FocusEvent>(<unknown>triggeredFocusInEvent)).bubbles).toBe(true);
-				expect((<FocusEvent>(<unknown>triggeredFocusInEvent)).composed).toBe(true);
-				expect((<FocusEvent>(<unknown>triggeredFocusInEvent)).target === element).toBe(true);
+				expect((<FocusEvent>(<unknown>focusInEvent)).type).toBe('focusin');
+				expect((<FocusEvent>(<unknown>focusInEvent)).bubbles).toBe(true);
+				expect((<FocusEvent>(<unknown>focusInEvent)).composed).toBe(true);
+				expect((<FocusEvent>(<unknown>focusInEvent)).target).toBe(null);
+				expect(focusInTarget).toBe(element);
+				expect(focusInCurrentTarget).toBe(element);
 
-				expect(document.activeElement === element).toBe(true);
+				expect(document.activeElement).toBe(element);
 			}
 		});
 
@@ -167,23 +192,29 @@ describe('HTMLElementUtility', () => {
 				<SVGElement>document.createElementNS('http://www.w3.org/2000/svg', 'svg')
 			]) {
 				const previousElement = <HTMLElement>document.createElement('div');
-				let triggeredEvent: FocusEvent | null = null;
+				let event: FocusEvent | null = null;
+				let target: EventTarget | null = null;
+				let currentTarget: EventTarget | null = null;
 
 				document.body.appendChild(element);
 				document.body.appendChild(previousElement);
 
 				previousElement.focus();
 
-				previousElement.addEventListener('blur', (event) => {
-					triggeredEvent = <FocusEvent>event;
+				previousElement.addEventListener('blur', (e) => {
+					event = <FocusEvent>e;
+					target = e.target;
+					currentTarget = e.currentTarget;
 				});
 
 				element.focus();
 
-				expect((<FocusEvent>(<unknown>triggeredEvent)).type).toBe('blur');
-				expect((<FocusEvent>(<unknown>triggeredEvent)).bubbles).toBe(false);
-				expect((<FocusEvent>(<unknown>triggeredEvent)).composed).toBe(true);
-				expect((<FocusEvent>(<unknown>triggeredEvent)).target === previousElement).toBe(true);
+				expect((<FocusEvent>(<unknown>event)).type).toBe('blur');
+				expect((<FocusEvent>(<unknown>event)).bubbles).toBe(false);
+				expect((<FocusEvent>(<unknown>event)).composed).toBe(true);
+				expect((<FocusEvent>(<unknown>event)).target).toBe(null);
+				expect(target).toBe(previousElement);
+				expect(currentTarget).toBe(previousElement);
 			}
 		});
 	});

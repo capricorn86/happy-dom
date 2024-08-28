@@ -25,6 +25,7 @@ export default interface IBrowserSettings {
 		maxTimeout: number;
 		maxIntervalTime: number;
 		maxIntervalIterations: number;
+		preventTimerLoops: boolean;
 	};
 
 	/**
