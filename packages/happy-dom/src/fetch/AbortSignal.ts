@@ -76,7 +76,7 @@ export default class AbortSignal extends EventTarget {
 	 * @returns AbortSignal instance.
 	 */
 	public static abort(reason?: Error): AbortSignal {
-		const signal = new this[PropertySymbol.window].AbortSignal();
+		const signal = new this();
 		(<Error>signal.reason) =
 			reason ||
 			new this[PropertySymbol.window].DOMException(
@@ -101,11 +101,11 @@ export default class AbortSignal extends EventTarget {
 	public static any(signals: AbortSignal[]): AbortSignal {
 		for (const signal of signals) {
 			if (signal.aborted) {
-				return AbortSignal.abort(signal.reason);
+				return this.abort(signal.reason);
 			}
 		}
 
-		const anySignal = new this[PropertySymbol.window].AbortSignal();
+		const anySignal = new this();
 		const handlers = new Map<AbortSignal, () => void>();
 
 		const stopListening = (): void => {
