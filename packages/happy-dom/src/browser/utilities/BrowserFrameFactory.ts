@@ -51,15 +51,17 @@ export default class BrowserFrameFactory {
 						if (exceptionObserver && frame.window) {
 							exceptionObserver.disconnect(frame.window);
 						}
+
+						(<IBrowserPage | null>frame.page) = null;
+						(<BrowserWindow | null>frame.window) = null;
+						frame[PropertySymbol.openerFrame] = null;
+						frame[PropertySymbol.openerWindow] = null;
+
 						resolve();
 					})
 					.catch((error) => reject(error));
 				if (frame.window) {
 					frame.window[PropertySymbol.destroy]();
-					(<IBrowserPage | null>frame.page) = null;
-					(<BrowserWindow | null>frame.window) = null;
-					frame[PropertySymbol.openerFrame] = null;
-					frame[PropertySymbol.openerWindow] = null;
 				}
 				return;
 			}
@@ -72,15 +74,17 @@ export default class BrowserFrameFactory {
 							if (exceptionObserver && frame.window) {
 								exceptionObserver.disconnect(frame.window);
 							}
+
+							(<IBrowserPage | null>frame.page) = null;
+							(<BrowserWindow | null>frame.window) = null;
+							frame[PropertySymbol.openerFrame] = null;
+							frame[PropertySymbol.openerWindow] = null;
+
 							resolve();
 						})
 						.catch((error) => reject(error));
 					if (frame.window) {
 						frame.window[PropertySymbol.destroy]();
-						(<IBrowserPage | null>frame.page) = null;
-						(<BrowserWindow | null>frame.window) = null;
-						frame[PropertySymbol.openerFrame] = null;
-						frame[PropertySymbol.openerWindow] = null;
 					}
 				})
 				.catch((error) => reject(error));
