@@ -35,6 +35,12 @@ import Location from '../../src/location/Location.js';
 import HTMLElementConfig from '../../src/config/HTMLElementConfig.js';
 
 import '../types.d.js';
+import EventTarget from '../../src/event/EventTarget.js';
+import EventPhaseEnum from '../../src/event/EventPhaseEnum.js';
+import { PerformanceEntry, PerformanceObserver } from 'perf_hooks';
+import { URLSearchParams } from 'url';
+import Stream from 'stream';
+import { ReadableStream } from 'stream/web';
 
 const PLATFORM =
 	'X11; ' +
@@ -121,7 +127,7 @@ describe('BrowserWindow', () => {
 
 	describe('get Headers()', () => {
 		it('Returns Headers class.', () => {
-			expect(window.Headers).toBe(Headers);
+			expect(new window.Headers()).toBeInstanceOf(Headers);
 		});
 	});
 
@@ -139,6 +145,18 @@ describe('BrowserWindow', () => {
 		});
 	});
 
+	describe('get PerformanceObserver()', () => {
+		it('Returns PerformanceObserver class.', () => {
+			expect(window.PerformanceObserver).toBe(PerformanceObserver);
+			expect(window.PerformanceEntry).toBe(PerformanceEntry);
+			expect(window.PerformanceObserverEntryList.name).toBe('PerformanceObserverEntryList');
+
+			expect(() => new window.PerformanceObserverEntryList()).toThrow(
+				new TypeError('Illegal constructor')
+			);
+		});
+	});
+
 	describe('get {ElementClass}()', () => {
 		for (const tagName of Object.keys(HTMLElementConfig)) {
 			it(`Exposes the element class "${HTMLElementConfig[tagName].className}" for tag name "${tagName}"`, () => {
@@ -152,6 +170,12 @@ describe('BrowserWindow', () => {
 	describe('get performance()', () => {
 		it('Exposes "performance" from NodeJS.', () => {
 			expect(typeof window.performance.now()).toBe('number');
+		});
+	});
+
+	describe('get process()', () => {
+		it('Returns undefined.', () => {
+			expect(window['process']).toBeUndefined();
 		});
 	});
 
@@ -202,7 +226,7 @@ describe('BrowserWindow', () => {
 					length: 0
 				},
 				onLine: true,
-				permissions: new Permissions(),
+				permissions: new Permissions(window),
 				clipboard: new Clipboard(window),
 				platform: PLATFORM,
 				plugins: {
@@ -306,6 +330,30 @@ describe('BrowserWindow', () => {
 	describe('get sessionStorage()', () => {
 		it('Returns the "sessionStorage" object.', () => {
 			expect(window.sessionStorage).toBeInstanceOf(window.Storage);
+		});
+	});
+
+	describe('get URLSearchParams()', () => {
+		it('Returns the URLSearchParams class.', () => {
+			expect(window.URLSearchParams).toBe(URLSearchParams);
+		});
+	});
+
+	describe('get WritableStream()', () => {
+		it('Returns the WritableStream class.', () => {
+			expect(window.WritableStream).toBe(Stream.Writable);
+		});
+	});
+
+	describe('get ReadableStream()', () => {
+		it('Returns the ReadableStream class.', () => {
+			expect(window.ReadableStream).toBe(ReadableStream);
+		});
+	});
+
+	describe('get TransformStream()', () => {
+		it('Returns the TransformStream class.', () => {
+			expect(window.TransformStream).toBe(Stream.Transform);
 		});
 	});
 
@@ -986,6 +1034,35 @@ describe('BrowserWindow', () => {
 				}, 20);
 			});
 		});
+
+		it('Supports preventing timeout loops when the setting "preventTimerLoops" is set to "true".', async () => {
+			let loopCount = 0;
+
+			browser.settings.timer.preventTimerLoops = false;
+
+			const timeoutLoop = (): void => {
+				if (loopCount < 10) {
+					loopCount++;
+					window.setTimeout(timeoutLoop, loopCount < 3 ? 1 : 0);
+				}
+			};
+
+			timeoutLoop();
+
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			expect(loopCount).toBe(10);
+
+			browser.settings.timer.preventTimerLoops = true;
+
+			loopCount = 0;
+
+			timeoutLoop();
+
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			expect(loopCount).toBe(3);
+		});
 	});
 
 	describe('queueMicrotask()', () => {
@@ -1210,6 +1287,35 @@ describe('BrowserWindow', () => {
 				}, 20);
 			});
 		});
+
+		it('Supports preventing timeout loops when the setting "preventTimerLoops" is set to "true".', async () => {
+			let loopCount = 0;
+
+			browser.settings.timer.preventTimerLoops = false;
+
+			const timeoutLoop = (): void => {
+				if (loopCount < 10) {
+					loopCount++;
+					window.requestAnimationFrame(timeoutLoop);
+				}
+			};
+
+			timeoutLoop();
+
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			expect(loopCount).toBe(10);
+
+			browser.settings.timer.preventTimerLoops = true;
+
+			loopCount = 0;
+
+			timeoutLoop();
+
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			expect(loopCount).toBe(3);
+		});
 	});
 
 	describe('cancelAnimationFrame()', () => {
@@ -1339,14 +1445,22 @@ describe('BrowserWindow', () => {
 	describe('addEventListener()', () => {
 		it('Triggers "load" event if no resources needs to be loaded.', async () => {
 			await new Promise((resolve) => {
-				let loadEvent: Event | null = null;
+				let event: Event | null = null;
+				let target: EventTarget | null = null;
+				let currentTarget: EventTarget | null = null;
 
-				window.addEventListener('load', (event) => {
-					loadEvent = event;
+				window.addEventListener('load', (e) => {
+					event = e;
+					target = e.target;
+					currentTarget = e.currentTarget;
 				});
 
 				setTimeout(() => {
-					expect((<Event>loadEvent).target).toBe(document);
+					expect((<Event>event).target).toBe(null);
+					expect((<Event>event).currentTarget).toBe(null);
+					expect((<Event>event).eventPhase).toBe(EventPhaseEnum.none);
+					expect(target).toBe(document);
+					expect(currentTarget).toBe(document);
 					resolve(null);
 				}, 20);
 			});
@@ -1363,6 +1477,8 @@ describe('BrowserWindow', () => {
 				let resourceFetchJSWindow: BrowserWindow | null = null;
 				let resourceFetchJSURL: string | null = null;
 				let loadEvent: Event | null = null;
+				let loadEventTarget: EventTarget | null = null;
+				let loadEventCurrentTarget: EventTarget | null = null;
 
 				vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
 					if (url.endsWith('.css')) {
@@ -1378,6 +1494,8 @@ describe('BrowserWindow', () => {
 
 				window.addEventListener('load', (event) => {
 					loadEvent = event;
+					loadEventTarget = event.target;
+					loadEventCurrentTarget = event.currentTarget;
 				});
 
 				const script = <HTMLScriptElement>document.createElement('script');
@@ -1396,7 +1514,11 @@ describe('BrowserWindow', () => {
 					expect(resourceFetchCSSURL).toBe(cssURL);
 					expect(resourceFetchJSWindow === window).toBe(true);
 					expect(resourceFetchJSURL).toBe(jsURL);
-					expect((<Event>loadEvent).target).toBe(document);
+					expect((<Event>loadEvent).target).toBe(null);
+					expect((<Event>loadEvent).currentTarget).toBe(null);
+					expect((<Event>loadEvent).eventPhase).toBe(EventPhaseEnum.none);
+					expect(loadEventTarget).toBe(document);
+					expect(loadEventCurrentTarget).toBe(document);
 					expect(document.styleSheets.length).toBe(1);
 					expect(document.styleSheets[0].cssRules[0].cssText).toBe(cssResponse);
 
@@ -1412,6 +1534,7 @@ describe('BrowserWindow', () => {
 				const errorEvents: ErrorEvent[] = [];
 
 				window.addEventListener('error', (event) => {
+					expect(event.target).toBe(window);
 					errorEvents.push(<ErrorEvent>event);
 				});
 
@@ -1425,9 +1548,9 @@ describe('BrowserWindow', () => {
 
 				setTimeout(() => {
 					expect(errorEvents.length).toBe(2);
-					expect(errorEvents[0].target).toBe(window);
+					expect(errorEvents[0].target).toBe(null);
 					expect((<Error>errorEvents[0].error).message).toBe('Script error');
-					expect(errorEvents[1].target).toBe(window);
+					expect(errorEvents[1].target).toBe(null);
 					expect((<Error>errorEvents[1].error).message).toBe('Timeout error');
 
 					resolve(null);

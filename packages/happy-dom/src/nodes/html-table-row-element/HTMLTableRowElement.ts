@@ -4,7 +4,6 @@ import HTMLTableCellElement from '../html-table-cell-element/HTMLTableCellElemen
 import * as PropertySymbol from '../../PropertySymbol.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import HTMLTableSectionElement from '../html-table-section-element/HTMLTableSectionElement.js';
-import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 
 /**
@@ -83,14 +82,14 @@ export default class HTMLTableRowElement extends HTMLElement {
 		const cells = QuerySelector.querySelectorAll(this, 'td,th')[PropertySymbol.items];
 
 		if (index < -1) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'insertCell' on 'HTMLTableRowElement': The index provided (${index}) is less than -1.`,
 				DOMExceptionNameEnum.indexSizeError
 			);
 		}
 
 		if (index > cells.length) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'insertCell' on 'HTMLTableRowElement': The index provided (${index}) is greater than the number of cells (${cells.length}).`,
 				DOMExceptionNameEnum.indexSizeError
 			);
@@ -115,7 +114,7 @@ export default class HTMLTableRowElement extends HTMLElement {
 	 */
 	public deleteCell(index: number): void {
 		if (arguments.length === 0) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				"Failed to execute 'deleteCell' on 'HTMLTableRowElement': 1 argument required, but only 0 present."
 			);
 		}
@@ -125,7 +124,7 @@ export default class HTMLTableRowElement extends HTMLElement {
 		}
 
 		if (index < -1) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'deleteCell' on 'HTMLTableRowElement': The index provided (${index}) is less than -1.`,
 				DOMExceptionNameEnum.indexSizeError
 			);
@@ -134,7 +133,7 @@ export default class HTMLTableRowElement extends HTMLElement {
 		const cells = QuerySelector.querySelectorAll(this, 'td,th')[PropertySymbol.items];
 
 		if (index >= cells.length) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'deleteCell' on 'HTMLTableRowElement': The index provided (${index}) is greater than the number of cells in the row (${cells.length}).`,
 				DOMExceptionNameEnum.indexSizeError
 			);

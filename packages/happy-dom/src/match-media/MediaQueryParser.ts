@@ -38,18 +38,18 @@ export default class MediaQueryParser {
 	 * Parses a media query string.
 	 *
 	 * @param options Options.
-	 * @param options.ownerWindow Owner window.
+	 * @param options.window Owner window.
 	 * @param options.mediaQuery Media query string.
 	 * @param [options.rootFontSize] Root font size.
 	 * @returns Media query items.
 	 */
 	public static parse(options: {
-		ownerWindow: BrowserWindow;
+		window: BrowserWindow;
 		mediaQuery: string;
 		rootFontSize?: string | number | null;
 	}): MediaQueryItem[] {
 		let currentMediaQueryItem: MediaQueryItem = new MediaQueryItem({
-			ownerWindow: options.ownerWindow,
+			window: options.window,
 			rootFontSize: options.rootFontSize
 		});
 		const mediaQueryItems: MediaQueryItem[] = [currentMediaQueryItem];
@@ -59,7 +59,7 @@ export default class MediaQueryParser {
 		while ((match = regexp.exec(options.mediaQuery.toLowerCase()))) {
 			if (match[4] === ',' || match[5] === 'or') {
 				currentMediaQueryItem = new MediaQueryItem({
-					ownerWindow: options.ownerWindow,
+					window: options.window,
 					rootFontSize: options.rootFontSize
 				});
 				mediaQueryItems.push(currentMediaQueryItem);
@@ -93,7 +93,7 @@ export default class MediaQueryParser {
 					if (!trimmedValue && !match[3]) {
 						return [
 							new MediaQueryItem({
-								ownerWindow: options.ownerWindow,
+								window: options.window,
 								rootFontSize: options.rootFontSize,
 								not: true,
 								mediaTypes: [MediaQueryTypeEnum.all]

@@ -12,6 +12,7 @@ import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
+import EventTarget from '../../../src/event/EventTarget.js';
 import NodeFactory from '../../../src/nodes/NodeFactory.js';
 
 describe('Node', () => {
@@ -86,10 +87,13 @@ describe('Node', () => {
 			expect(() => new Node()).toThrow('Illegal constructor');
 		});
 
-		it('Doesn\'t throw an exception if "ownerDocument" is defined as a property on the class', () => {
-			Node[PropertySymbol.ownerDocument] = document;
-			expect(() => new Node()).not.toThrow();
-			Node[PropertySymbol.ownerDocument] = null;
+		it('Doesn\'t throw an exception if "window" is defined on the prototype that makes it possible to construct the Node with the "new" keyword', () => {
+			/**
+			 *
+			 */
+			class ChildNode extends Node {}
+			ChildNode.prototype[PropertySymbol.window] = window;
+			expect(() => new ChildNode()).not.toThrow();
 		});
 
 		it("Doesn't throw an exception if NodeFactory is used", () => {
@@ -454,13 +458,6 @@ describe('Node', () => {
 			expect(div.tagName).toBe(clone.tagName);
 			expect(div.localName).toBe(clone.localName);
 			expect(div.namespaceURI).toBe(clone.namespaceURI);
-		});
-
-		it("Doesn't remove ownerDocument of a custom element.", () => {
-			const customElement = document.createElement('custom-counter');
-			const clone = customElement.cloneNode(true);
-
-			expect(clone.constructor[PropertySymbol.ownerDocument]).toBe(document);
 		});
 	});
 
@@ -835,18 +832,28 @@ describe('Node', () => {
 			const parent = document.createElement('div');
 			const event = new Event('click', { bubbles: false });
 			let childEvent: Event | null = null;
+			let childEventTarget: EventTarget | null = null;
+			let childEventCurrentTarget: EventTarget | null = null;
 			let parentEvent: Event | null = null;
 
 			parent.appendChild(child);
 
-			child.addEventListener('click', (event) => (childEvent = event));
-			parent.addEventListener('click', (event) => (parentEvent = event));
+			child.addEventListener('click', (event) => {
+				childEvent = event;
+				childEventTarget = event.target;
+				childEventCurrentTarget = event.currentTarget;
+			});
+			parent.addEventListener('click', (event) => {
+				parentEvent = event;
+			});
 
 			expect(child.dispatchEvent(event)).toBe(true);
 
 			expect(childEvent).toBe(event);
-			expect((<Event>(<unknown>childEvent)).target).toBe(child);
-			expect((<Event>(<unknown>childEvent)).currentTarget).toBe(child);
+			expect((<Event>(<unknown>childEvent)).target).toBe(null);
+			expect((<Event>(<unknown>childEvent)).currentTarget).toBe(null);
+			expect(childEventTarget).toBe(child);
+			expect(childEventCurrentTarget).toBe(child);
 			expect(parentEvent).toBe(null);
 		});
 
@@ -855,19 +862,35 @@ describe('Node', () => {
 			const parent = document.createElement('div');
 			const event = new Event('click', { bubbles: true });
 			let childEvent: Event | null = null;
+			let childEventTarget: EventTarget | null = null;
+			let childEventCurrentTarget: EventTarget | null = null;
 			let parentEvent: Event | null = null;
+			let parentEventTarget: EventTarget | null = null;
+			let parentEventCurrentTarget: EventTarget | null = null;
 
 			parent.appendChild(child);
 
-			child.addEventListener('click', (event) => (childEvent = event));
-			parent.addEventListener('click', (event) => (parentEvent = event));
+			child.addEventListener('click', (event) => {
+				childEvent = event;
+				childEventTarget = event.target;
+				childEventCurrentTarget = event.currentTarget;
+			});
+			parent.addEventListener('click', (event) => {
+				parentEvent = event;
+				parentEventTarget = event.target;
+				parentEventCurrentTarget = event.currentTarget;
+			});
 
 			expect(child.dispatchEvent(event)).toBe(true);
 
 			expect(childEvent).toBe(event);
 			expect(parentEvent).toBe(event);
-			expect((<Event>(<unknown>parentEvent)).target).toBe(child);
-			expect((<Event>(<unknown>parentEvent)).currentTarget).toBe(parent);
+			expect((<Event>(<unknown>parentEvent)).target).toBe(null);
+			expect((<Event>(<unknown>parentEvent)).currentTarget).toBe(null);
+			expect(childEventTarget).toBe(child);
+			expect(childEventCurrentTarget).toBe(child);
+			expect(parentEventTarget).toBe(child);
+			expect(parentEventCurrentTarget).toBe(parent);
 		});
 
 		it('Does not bubble to parent if propagation is stopped.', () => {

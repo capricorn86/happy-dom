@@ -1,4 +1,3 @@
-import DOMException from '../exception/DOMException.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import HTMLElement from '../nodes/html-element/HTMLElement.js';
 import Node from '../nodes/node/Node.js';
@@ -13,7 +12,8 @@ export default class CustomElementRegistry {
 		[k: string]: { elementClass: typeof HTMLElement; extends: string };
 	} = {};
 	public [PropertySymbol.registedClass]: Map<typeof HTMLElement, string> = new Map();
-	public [PropertySymbol.callbacks]: { [k: string]: (() => void)[] } = {};
+	public [PropertySymbol.callbacks]: Map<string, Array<() => void>> = new Map();
+	public [PropertySymbol.destroyed]: boolean = false;
 	#window: BrowserWindow;
 
 	/**
@@ -22,6 +22,9 @@ export default class CustomElementRegistry {
 	 * @param window Window.
 	 */
 	constructor(window: BrowserWindow) {
+		if (!window) {
+			throw new TypeError('Illegal constructor');
+		}
 		this.#window = window;
 	}
 
@@ -38,30 +41,35 @@ export default class CustomElementRegistry {
 		elementClass: typeof HTMLElement,
 		options?: { extends?: string }
 	): void {
+		if (this[PropertySymbol.destroyed]) {
+			return;
+		}
+
 		if (!this.#isValidCustomElementName(name)) {
-			throw new DOMException(
+			throw new this.#window.DOMException(
 				`Failed to execute 'define' on 'CustomElementRegistry': "${name}" is not a valid custom element name`
 			);
 		}
 
 		if (this[PropertySymbol.registry][name]) {
-			throw new DOMException(
+			throw new this.#window.DOMException(
 				`Failed to execute 'define' on 'CustomElementRegistry': the name "${name}" has already been used with this registry`
 			);
 		}
 
 		if (this[PropertySymbol.registedClass].has(elementClass)) {
-			throw new DOMException(
+			throw new this.#window.DOMException(
 				"Failed to execute 'define' on 'CustomElementRegistry': this constructor has already been used with this registry"
 			);
 		}
 
 		const tagName = name.toUpperCase();
 
-		elementClass[PropertySymbol.ownerDocument] = this.#window.document;
-		elementClass[PropertySymbol.tagName] = tagName;
-		elementClass[PropertySymbol.localName] = name;
-		elementClass[PropertySymbol.namespaceURI] = NamespaceURI.html;
+		elementClass.prototype[PropertySymbol.window] = this.#window;
+		elementClass.prototype[PropertySymbol.ownerDocument] = this.#window.document;
+		elementClass.prototype[PropertySymbol.tagName] = tagName;
+		elementClass.prototype[PropertySymbol.localName] = name;
+		elementClass.prototype[PropertySymbol.namespaceURI] = NamespaceURI.html;
 
 		this[PropertySymbol.registry][name] = {
 			elementClass,
@@ -74,9 +82,9 @@ export default class CustomElementRegistry {
 			(name) => String(name).toLowerCase()
 		);
 
-		if (this[PropertySymbol.callbacks][name]) {
-			const callbacks = this[PropertySymbol.callbacks][name];
-			delete this[PropertySymbol.callbacks][name];
+		const callbacks = this[PropertySymbol.callbacks].get(name);
+		if (callbacks) {
+			this[PropertySymbol.callbacks].delete(name);
 			for (const callback of callbacks) {
 				callback();
 			}
@@ -110,15 +118,30 @@ export default class CustomElementRegistry {
 	 * @param name Tag name of element.
 	 */
 	public whenDefined(name: string): Promise<void> {
+		if (this[PropertySymbol.destroyed]) {
+			return Promise.reject(
+				new this.#window.DOMException(
+					`Failed to execute 'whenDefined' on 'CustomElementRegistry': The custom element registry has been destroyed.`
+				)
+			);
+		}
 		if (!this.#isValidCustomElementName(name)) {
-			return Promise.reject(new DOMException(`Invalid custom element name: "${name}"`));
+			return Promise.reject(
+				new this.#window.DOMException(
+					`Failed to execute 'whenDefined' on 'CustomElementRegistry': Invalid custom element name: "${name}"`
+				)
+			);
 		}
 		if (this.get(name)) {
 			return Promise.resolve();
 		}
 		return new Promise((resolve) => {
-			this[PropertySymbol.callbacks][name] = this[PropertySymbol.callbacks][name] || [];
-			this[PropertySymbol.callbacks][name].push(resolve);
+			const callbacks: Array<() => void> = this[PropertySymbol.callbacks].get(name);
+			if (callbacks) {
+				callbacks.push(resolve);
+			} else {
+				this[PropertySymbol.callbacks].set(name, [resolve]);
+			}
 		});
 	}
 
@@ -136,12 +159,17 @@ export default class CustomElementRegistry {
 	 * Destroys the registry.
 	 */
 	public [PropertySymbol.destroy](): void {
+		this[PropertySymbol.destroyed] = true;
 		for (const entity of Object.values(this[PropertySymbol.registry])) {
-			entity.elementClass[PropertySymbol.ownerDocument] = null;
+			entity.elementClass.prototype[PropertySymbol.window] = null;
+			entity.elementClass.prototype[PropertySymbol.ownerDocument] = null;
+			entity.elementClass.prototype[PropertySymbol.tagName] = null;
+			entity.elementClass.prototype[PropertySymbol.localName] = null;
+			entity.elementClass.prototype[PropertySymbol.namespaceURI] = null;
 		}
 		this[PropertySymbol.registry] = {};
 		this[PropertySymbol.registedClass] = new Map();
-		this[PropertySymbol.callbacks] = {};
+		this[PropertySymbol.callbacks] = new Map();
 	}
 
 	/**

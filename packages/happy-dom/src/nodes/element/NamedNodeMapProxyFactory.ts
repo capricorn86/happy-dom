@@ -1,6 +1,5 @@
 /* eslint-disable filenames/match-exported */
 
-import ClassMethodBinder from '../../ClassMethodBinder.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import NamedNodeMap from './NamedNodeMap.js';
 
@@ -18,11 +17,6 @@ export default class NamedNodeMapProxyFactory {
 	public static createProxy(namedNodeMap: NamedNodeMap): NamedNodeMap {
 		const namedItems = namedNodeMap[PropertySymbol.namedItems];
 		const namespaceItems = namedNodeMap[PropertySymbol.namespaceItems];
-
-		ClassMethodBinder.bindMethods(namedNodeMap, [NamedNodeMap], {
-			bindSymbols: true,
-			forwardToPrototype: true
-		});
 
 		return new Proxy<NamedNodeMap>(namedNodeMap, {
 			get: (target, property) => {

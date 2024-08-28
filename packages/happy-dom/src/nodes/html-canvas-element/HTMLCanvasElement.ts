@@ -1,5 +1,4 @@
 import HTMLElement from '../html-element/HTMLElement.js';
-import CanvasCaptureMediaStreamTrack from './CanvasCaptureMediaStreamTrack.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Blob from '../../file/Blob.js';
 import OffscreenCanvas from './OffscreenCanvas.js';
@@ -66,8 +65,11 @@ export default class HTMLCanvasElement extends HTMLElement {
 	 * @returns Capture stream.
 	 */
 	public captureStream(frameRate?: number): MediaStream {
-		const stream = new MediaStream();
-		const track = new CanvasCaptureMediaStreamTrack(PropertySymbol.illegalConstructor, this);
+		const stream = new this[PropertySymbol.window].MediaStream();
+		const track = new this[PropertySymbol.window].CanvasCaptureMediaStreamTrack(
+			PropertySymbol.illegalConstructor,
+			this
+		);
 
 		track[PropertySymbol.kind] = 'video';
 		track[PropertySymbol.capabilities].deviceId = DEVICE_ID;

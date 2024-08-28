@@ -1,7 +1,6 @@
 import Document from '../nodes/document/Document.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import XMLParser from '../xml-parser/XMLParser.js';
-import DOMException from '../exception/DOMException.js';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
@@ -13,16 +12,8 @@ import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/DOMParser.
  */
 export default class DOMParser {
-	readonly #window: BrowserWindow;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param window Window.
-	 */
-	constructor(window: BrowserWindow) {
-		this.#window = window;
-	}
+	// Injected by WindowClassExtender
+	protected declare [PropertySymbol.window]: BrowserWindow;
 
 	/**
 	 * Parses HTML and returns a root element.
@@ -33,7 +24,9 @@ export default class DOMParser {
 	 */
 	public parseFromString(string: string, mimeType: string): Document {
 		if (!mimeType) {
-			throw new DOMException('Second parameter "mimeType" is mandatory.');
+			throw new this[PropertySymbol.window].DOMException(
+				'Second parameter "mimeType" is mandatory.'
+			);
 		}
 
 		const newDocument = <Document>this.#createDocument(mimeType);
@@ -107,17 +100,19 @@ export default class DOMParser {
 	 * @returns Document.
 	 */
 	#createDocument(mimeType: string): Document {
+		const window = this[PropertySymbol.window];
+
 		switch (mimeType) {
 			case 'text/html':
-				return new this.#window.HTMLDocument();
+				return new window.HTMLDocument();
 			case 'image/svg+xml':
-				return new this.#window.SVGDocument();
+				return new window.SVGDocument();
 			case 'text/xml':
 			case 'application/xml':
 			case 'application/xhtml+xml':
-				return new this.#window.XMLDocument();
+				return new window.XMLDocument();
 			default:
-				throw new DOMException(`Unknown mime type "${mimeType}".`);
+				throw new window.DOMException(`Unknown mime type "${mimeType}".`);
 		}
 	}
 }

@@ -1,6 +1,5 @@
 import Event from '../../event/Event.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
@@ -494,7 +493,7 @@ export default class HTMLTextAreaElement extends HTMLElement {
 		}
 
 		if (start > end) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				'The index is not in the allowed range.',
 				DOMExceptionNameEnum.invalidStateError
 			);

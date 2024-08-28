@@ -7,7 +7,6 @@ import Response from '../../fetch/Response.js';
 import IGoToOptions from './IGoToOptions.js';
 import { Script } from 'vm';
 import IReloadOptions from './IReloadOptions.js';
-import BrowserFrameExceptionObserver from '../utilities/BrowserFrameExceptionObserver.js';
 import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import IHistoryItem from '../../history/IHistoryItem.js';
 
@@ -24,7 +23,6 @@ export default interface IBrowserFrame {
 	url: string;
 	[PropertySymbol.history]: IHistoryItem[];
 	[PropertySymbol.asyncTaskManager]: AsyncTaskManager;
-	[PropertySymbol.exceptionObserver]: BrowserFrameExceptionObserver | null;
 	[PropertySymbol.listeners]: { navigation: Array<() => void> };
 	[PropertySymbol.openerFrame]: IBrowserFrame | null;
 	[PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null;
@@ -46,7 +44,6 @@ export default interface IBrowserFrame {
 	abort(): Promise<void>;
 
 	/**
-	 * Evaluates code or a VM Script in the page's context.
 	 *
 	 * @param script Script.
 	 * @returns Result.

@@ -1,7 +1,7 @@
 import { describe, it, expect } from '../utilities/TestFunctions.js';
 import { Browser, BrowserErrorCaptureEnum } from 'happy-dom';
 
-describe('BrowserFrameExceptionObserver', () => {
+describe('BrowserExceptionObserver', () => {
 	describe('observe()', () => {
 		it('Observes unhandles fetch rejections.', async () => {
 			const browser = new Browser({
@@ -31,7 +31,7 @@ describe('BrowserFrameExceptionObserver', () => {
                 </script>
             `);
 
-			await new Promise((resolve) => setTimeout(resolve, 2));
+			await new Promise((resolve) => setTimeout(resolve, 10));
 
 			expect(errorEvent instanceof window.ErrorEvent).toBe(true);
 			expect(errorEvent.error.message).toBe('Test error');
@@ -66,7 +66,7 @@ describe('BrowserFrameExceptionObserver', () => {
                 </script>
             `);
 
-			await new Promise((resolve) => setTimeout(resolve, 2));
+			await new Promise((resolve) => setTimeout(resolve, 10));
 
 			const consoleOutput = page.virtualConsolePrinter.readAsString();
 

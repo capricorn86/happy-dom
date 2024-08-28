@@ -2,6 +2,8 @@ import HTMLElement from '../html-element/HTMLElement.js';
 import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import NodeList from '../node/NodeList.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
+
 /**
  * HTMLProgressElement
  *
@@ -31,7 +33,7 @@ export default class HTMLProgressElement extends HTMLElement {
 	 */
 	public set max(max: number) {
 		if (typeof max !== 'number') {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				"Failed to set the 'max' property on 'HTMLProgressElement': The provided double value is non-finite."
 			);
 		}
@@ -62,7 +64,7 @@ export default class HTMLProgressElement extends HTMLElement {
 	 */
 	public set value(value: number) {
 		if (typeof value !== 'number') {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				"Failed to set the 'value' property on 'HTMLProgressElement': The provided double value is non-finite."
 			);
 		}

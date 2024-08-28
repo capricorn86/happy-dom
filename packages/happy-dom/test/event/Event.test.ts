@@ -23,6 +23,7 @@ describe('Event', () => {
 	describe('get target()', () => {
 		it('Returns target.', () => {
 			const event = new Event('click', { bubbles: true });
+			let target: EventTarget | null = null;
 			expect(event.target === null).toBe(true);
 
 			const div = document.createElement('div');
@@ -30,15 +31,20 @@ describe('Event', () => {
 
 			div.appendChild(span);
 
+			span.addEventListener('click', (e: Event) => {
+				target = e.target;
+			});
 			span.dispatchEvent(event);
 
-			expect(event.target === span).toBe(true);
+			expect(event.target).toBe(null);
+			expect(target).toBe(span);
 		});
 	});
 
 	describe('get currentTarget()', () => {
 		it('Returns current target.', () => {
 			const event = new Event('click', { bubbles: true });
+			let currentTarget: EventTarget | null = null;
 			expect(event.currentTarget === null).toBe(true);
 
 			const div = document.createElement('div');
@@ -46,9 +52,13 @@ describe('Event', () => {
 
 			div.appendChild(span);
 
+			span.addEventListener('click', (e: Event) => {
+				currentTarget = e.currentTarget;
+			});
 			span.dispatchEvent(event);
 
-			expect(event.currentTarget === div).toBe(true);
+			expect(event.currentTarget).toBe(null);
+			expect(currentTarget).toBe(span);
 		});
 	});
 
@@ -200,6 +210,33 @@ describe('Event', () => {
 			expect((<EventTarget[]>(<unknown>composedPath))[3] === document.documentElement).toBe(true);
 			expect((<EventTarget[]>(<unknown>composedPath))[4] === document).toBe(true);
 			expect((<EventTarget[]>(<unknown>composedPath))[5] === window).toBe(true);
+		});
+
+		it('Excludes Window from the composed path if the event type is "load".', () => {
+			const div = document.createElement('div');
+			const span = document.createElement('span');
+			let composedPath: EventTarget[] | null = null;
+
+			div.appendChild(span);
+			document.body.appendChild(div);
+
+			div.addEventListener('load', (event: Event) => {
+				composedPath = event.composedPath();
+			});
+
+			span.dispatchEvent(
+				new Event('load', {
+					bubbles: true
+				})
+			);
+
+			expect((<EventTarget[]>(<unknown>composedPath)).length).toBe(5);
+			expect((<EventTarget[]>(<unknown>composedPath))[0] === span).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[1] === div).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[2] === document.body).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[3] === document.documentElement).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[4] === document).toBe(true);
+			expect((<EventTarget[]>(<unknown>composedPath))[5] === undefined).toBe(true);
 		});
 
 		it('Goes through shadow roots if composed is set to "true".', () => {

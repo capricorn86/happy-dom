@@ -14,6 +14,7 @@ import TextTrackKindEnum from '../../../src/nodes/html-media-element/TextTrackKi
 import TextTrack from '../../../src/nodes/html-media-element/TextTrack.js';
 import MediaStream from '../../../src/nodes/html-media-element/MediaStream.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
+import NamespaceURI from '../../../src/config/NamespaceURI.js';
 
 describe('HTMLMediaElement', () => {
 	let window: Window;
@@ -32,6 +33,16 @@ describe('HTMLMediaElement', () => {
 			expect(document.createElement('audio')).toBeInstanceOf(HTMLAudioElement);
 			expect(document.createElement('video')).toBeInstanceOf(HTMLMediaElement);
 			expect(document.createElement('video')).toBeInstanceOf(HTMLVideoElement);
+
+			const audio = new window.Audio();
+			expect(audio).toBeInstanceOf(HTMLMediaElement);
+			expect(audio).toBeInstanceOf(HTMLAudioElement);
+			expect(audio.ownerDocument).toBe(document);
+			expect(audio.tagName).toBe('AUDIO');
+			expect(audio.localName).toBe('audio');
+			expect(audio.namespaceURI).toBe(NamespaceURI.html);
+
+			expect(window['Video']).toBe(undefined);
 		});
 	});
 

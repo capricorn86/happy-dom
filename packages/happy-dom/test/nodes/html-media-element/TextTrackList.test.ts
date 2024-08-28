@@ -15,31 +15,31 @@ describe('TextTrackList', () => {
 
 	describe('constructor()', () => {
 		it('Should throw an error if the "illegalConstructor" symbol is not sent to the constructor', () => {
-			expect(() => new TextTrackList()).toThrow(new TypeError('Illegal constructor'));
+			expect(() => new window.TextTrackList()).toThrow(new TypeError('Illegal constructor'));
 		});
 
 		it('Should not throw an error if the "illegalConstructor" symbol is provided', () => {
-			expect(() => new TextTrackList(PropertySymbol.illegalConstructor)).not.toThrow();
+			expect(() => new window.TextTrackList(PropertySymbol.illegalConstructor)).not.toThrow();
 		});
 
 		it('Is an instance of EventTarget', () => {
-			const textTrackList = new TextTrackList(PropertySymbol.illegalConstructor);
+			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor);
 			expect(textTrackList).toBeInstanceOf(EventTarget);
 		});
 	});
 
 	describe('get length()', () => {
 		it('Should return 0 by default', () => {
-			const textTrackList = new TextTrackList(PropertySymbol.illegalConstructor);
+			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor);
 			expect(textTrackList.length).toBe(0);
 		});
 
 		it('Should return the number of tracks', () => {
 			const items = [
-				new TextTrack(PropertySymbol.illegalConstructor),
-				new TextTrack(PropertySymbol.illegalConstructor)
+				new window.TextTrack(PropertySymbol.illegalConstructor),
+				new window.TextTrack(PropertySymbol.illegalConstructor)
 			];
-			const textTrackList = new TextTrackList(PropertySymbol.illegalConstructor, items);
+			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor, items);
 			expect(textTrackList.length).toBe(2);
 		});
 	});
@@ -47,10 +47,10 @@ describe('TextTrackList', () => {
 	describe('get [index]()', () => {
 		it('Should return the item at the index', () => {
 			const items = [
-				new TextTrack(PropertySymbol.illegalConstructor),
-				new TextTrack(PropertySymbol.illegalConstructor)
+				new window.TextTrack(PropertySymbol.illegalConstructor),
+				new window.TextTrack(PropertySymbol.illegalConstructor)
 			];
-			const textTrackList = new TextTrackList(PropertySymbol.illegalConstructor, items);
+			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor, items);
 			expect(textTrackList[0]).toBe(items[0]);
 			expect(textTrackList[1]).toBe(items[1]);
 		});
@@ -58,21 +58,21 @@ describe('TextTrackList', () => {
 
 	describe('get [Symbol.toStringTag]()', () => {
 		it('Should return "TextTrackList"', () => {
-			const textTrackList = new TextTrackList(PropertySymbol.illegalConstructor);
+			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor);
 			expect(textTrackList[Symbol.toStringTag]).toBe('TextTrackList');
 		});
 	});
 
 	describe('toLocaleString()', () => {
 		it('Should return "[object TextTrackList]"', () => {
-			const textTrackList = new TextTrackList(PropertySymbol.illegalConstructor);
+			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor);
 			expect(textTrackList.toLocaleString()).toBe('[object TextTrackList]');
 		});
 	});
 
 	describe('toString()', () => {
 		it('Should return "[object TextTrackList]"', () => {
-			const textTrackList = new TextTrackList(PropertySymbol.illegalConstructor);
+			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor);
 			expect(textTrackList.toString()).toBe('[object TextTrackList]');
 		});
 	});
@@ -80,10 +80,10 @@ describe('TextTrackList', () => {
 	describe('[Symbol.iterator]()', () => {
 		it('Should return an iterator', () => {
 			const items = [
-				new TextTrack(PropertySymbol.illegalConstructor),
-				new TextTrack(PropertySymbol.illegalConstructor)
+				new window.TextTrack(PropertySymbol.illegalConstructor),
+				new window.TextTrack(PropertySymbol.illegalConstructor)
 			];
-			const textTrackList = new TextTrackList(PropertySymbol.illegalConstructor, items);
+			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor, items);
 			const iteratedItems: TextTrack[] = [];
 
 			for (const item of textTrackList) {
@@ -96,17 +96,17 @@ describe('TextTrackList', () => {
 
 	describe('getTrackById()', () => {
 		it('Should return null if no track is found', () => {
-			const textTrackList = new TextTrackList(PropertySymbol.illegalConstructor);
+			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor);
 			expect(textTrackList.getTrackById('test')).toBeNull();
 		});
 
 		it('Should return the track if found', () => {
-			const track1 = new TextTrack(PropertySymbol.illegalConstructor);
-			const track2 = new TextTrack(PropertySymbol.illegalConstructor);
+			const track1 = new window.TextTrack(PropertySymbol.illegalConstructor);
+			const track2 = new window.TextTrack(PropertySymbol.illegalConstructor);
 			track1[PropertySymbol.id] = 'track1';
 			track2[PropertySymbol.id] = 'track2';
 			const items = [track1, track2];
-			const textTrackList = new TextTrackList(PropertySymbol.illegalConstructor, items);
+			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor, items);
 			expect(textTrackList.getTrackById('track1')).toBe(track1);
 			expect(textTrackList.getTrackById('track2')).toBe(track2);
 		});

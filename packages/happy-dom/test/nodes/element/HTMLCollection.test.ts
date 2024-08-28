@@ -4,6 +4,7 @@ import { beforeEach, describe, it, expect } from 'vitest';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import HTMLCollection from '../../../src/nodes/element/HTMLCollection.js';
+import Element from '../../../src/nodes/element/Element.js';
 
 describe('HTMLCollection', () => {
 	let window: Window;
@@ -168,6 +169,43 @@ describe('HTMLCollection', () => {
 			expect(typeof div.children['length']).toBe('number');
 			expect(typeof div.children['namedItem']).toBe('function');
 			expect(typeof div.children['item']).toBe('function');
+		});
+	});
+
+	describe('[Symbol.iterator]()', () => {
+		it('Returns iterator', () => {
+			const elements: Element[] = [];
+
+			const parent = document.createElement('div');
+			const element1 = document.createElement('div');
+			const element2 = document.createElement('div');
+			const element3 = document.createElement('div');
+
+			parent.appendChild(element1);
+			parent.appendChild(element2);
+			parent.appendChild(element3);
+
+			for (const child of parent.children) {
+				elements.push(child);
+			}
+
+			expect(elements).toEqual([element1, element2, element3]);
+		});
+	});
+
+	describe('Array.from()', () => {
+		it('Should support Array.from()', () => {
+			const items: Element[] = [];
+			const collection = new HTMLCollection(PropertySymbol.illegalConstructor, () => items);
+			const element1 = document.createElement('div');
+			const element2 = document.createElement('div');
+			const element3 = document.createElement('div');
+
+			items.push(element1);
+			items.push(element2);
+			items.push(element3);
+
+			expect(Array.from(collection)).toEqual([element1, element2, element3]);
 		});
 	});
 });

@@ -38,6 +38,12 @@ export default class TextTrack extends EventTarget {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}
+
+		if (!this[PropertySymbol.window]) {
+			throw new TypeError(
+				`Failed to construct '${this.constructor.name}': '${this.constructor.name}' was constructed outside a Window context.`
+			);
+		}
 	}
 
 	/**

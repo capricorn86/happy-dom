@@ -21,7 +21,7 @@ export default class NodeFactory {
 		nodeClass: new (...args) => T,
 		...args: any[]
 	): T {
-		if (!nodeClass[PropertySymbol.ownerDocument]) {
+		if (!nodeClass.prototype[PropertySymbol.window]) {
 			this.ownerDocuments.push(ownerDocument);
 		}
 		return new nodeClass(...args);

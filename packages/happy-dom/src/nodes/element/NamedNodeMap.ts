@@ -4,6 +4,7 @@ import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import Element from './Element.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
+import ClassMethodBinder from '../../ClassMethodBinder.js';
 
 /**
  * Named Node Map.
@@ -28,6 +29,9 @@ export default class NamedNodeMap {
 	 */
 	constructor(ownerElement: Element) {
 		this[PropertySymbol.ownerElement] = ownerElement;
+		ClassMethodBinder.bindMethods(this, [NamedNodeMap], {
+			bindSymbols: true
+		});
 	}
 
 	/**

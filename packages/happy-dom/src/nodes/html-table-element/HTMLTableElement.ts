@@ -5,7 +5,6 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import HTMLTableCaptionElement from '../html-table-caption-element/HTMLTableCaptionElement.js';
 import HTMLTableSectionElement from '../html-table-section-element/HTMLTableSectionElement.js';
-import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 
 /**
@@ -34,7 +33,7 @@ export default class HTMLTableElement extends HTMLElement {
 	public set caption(caption: HTMLTableCaptionElement | null) {
 		if (caption) {
 			if (!(caption instanceof HTMLTableCaptionElement)) {
-				throw new TypeError(
+				throw new this[PropertySymbol.window].TypeError(
 					"Failed to set the 'caption' property on 'HTMLTableElement': Failed to convert value to 'HTMLTableCaptionElement'."
 				);
 			}
@@ -63,7 +62,7 @@ export default class HTMLTableElement extends HTMLElement {
 	public set tHead(tHead: HTMLTableSectionElement | null) {
 		if (tHead) {
 			if (!(tHead instanceof HTMLTableSectionElement)) {
-				throw new TypeError(
+				throw new this[PropertySymbol.window].TypeError(
 					"Failed to set the 'tHead' property on 'HTMLTableElement': Failed to convert value to 'HTMLTableSectionElement'."
 				);
 			}
@@ -109,7 +108,7 @@ export default class HTMLTableElement extends HTMLElement {
 	public set tFoot(tFoot: HTMLTableSectionElement | null) {
 		if (tFoot) {
 			if (!(tFoot instanceof HTMLTableSectionElement)) {
-				throw new TypeError(
+				throw new this[PropertySymbol.window].TypeError(
 					"Failed to set the 'tFoot' property on 'HTMLTableElement': Failed to convert value to 'HTMLTableSectionElement'."
 				);
 			}
@@ -271,14 +270,14 @@ export default class HTMLTableElement extends HTMLElement {
 		const rows = QuerySelector.querySelectorAll(this, 'tr')[PropertySymbol.items];
 
 		if (index < -1) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'insertRow' on 'HTMLTableElement': The index provided (${index}) is less than -1.`,
 				DOMExceptionNameEnum.indexSizeError
 			);
 		}
 
 		if (index > rows.length) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'insertRow' on 'HTMLTableElement': The index provided (${index}) is greater than the number of rows (${rows.length}).`,
 				DOMExceptionNameEnum.indexSizeError
 			);
@@ -303,7 +302,7 @@ export default class HTMLTableElement extends HTMLElement {
 	 */
 	public deleteRow(index: number): void {
 		if (arguments.length === 0) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				"Failed to execute 'deleteRow' on 'HTMLTableElement': 1 argument required, but only 0 present."
 			);
 		}
@@ -313,7 +312,7 @@ export default class HTMLTableElement extends HTMLElement {
 		}
 
 		if (index < -1) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'deleteRow' on 'HTMLTableElement': The index provided (${index}) is less than -1.`,
 				DOMExceptionNameEnum.indexSizeError
 			);
@@ -322,7 +321,7 @@ export default class HTMLTableElement extends HTMLElement {
 		const rows = QuerySelector.querySelectorAll(this, 'tr')[PropertySymbol.items];
 
 		if (index >= rows.length) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'deleteRow' on 'HTMLTableElement': The index provided (${index}) is greater than the number of rows in the table (${rows.length}).`,
 				DOMExceptionNameEnum.indexSizeError
 			);

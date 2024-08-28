@@ -11,8 +11,6 @@ import BrowserFrameURL from './utilities/BrowserFrameURL.js';
 import BrowserFrameScriptEvaluator from './utilities/BrowserFrameScriptEvaluator.js';
 import BrowserFrameNavigator from './utilities/BrowserFrameNavigator.js';
 import IReloadOptions from './types/IReloadOptions.js';
-import BrowserFrameExceptionObserver from './utilities/BrowserFrameExceptionObserver.js';
-import BrowserErrorCaptureEnum from './enums/BrowserErrorCaptureEnum.js';
 import Document from '../nodes/document/Document.js';
 import IHistoryItem from '../history/IHistoryItem.js';
 import HistoryScrollRestorationEnum from '../history/HistoryScrollRestorationEnum.js';
@@ -25,8 +23,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	public readonly parentFrame: BrowserFrame | null = null;
 	public readonly page: BrowserPage;
 	public readonly window: BrowserWindow;
-	public [PropertySymbol.asyncTaskManager] = new AsyncTaskManager();
-	public [PropertySymbol.exceptionObserver]: BrowserFrameExceptionObserver | null = null;
+	public [PropertySymbol.asyncTaskManager] = new AsyncTaskManager(this);
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
 	public [PropertySymbol.openerFrame]: IBrowserFrame | null = null;
 	public [PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
@@ -53,9 +50,8 @@ export default class BrowserFrame implements IBrowserFrame {
 		this.window = new BrowserWindow(this);
 
 		// Attach process level error capturing.
-		if (page.context.browser.settings.errorCapture === BrowserErrorCaptureEnum.processLevel) {
-			this[PropertySymbol.exceptionObserver] = new BrowserFrameExceptionObserver();
-			this[PropertySymbol.exceptionObserver].observe(this);
+		if (page.context.browser[PropertySymbol.exceptionObserver]) {
+			page.context.browser[PropertySymbol.exceptionObserver].observe(this.window);
 		}
 	}
 

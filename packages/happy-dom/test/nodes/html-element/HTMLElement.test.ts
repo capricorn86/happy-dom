@@ -8,6 +8,7 @@ import CustomElement from '../../CustomElement.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import CustomElementRegistry from '../../../src/custom-element/CustomElementRegistry.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
+import EventTarget from '../../../src/event/EventTarget.js';
 
 describe('HTMLElement', () => {
 	let window: Window;
@@ -379,6 +380,58 @@ describe('HTMLElement', () => {
 		});
 	});
 
+	describe('get popover()', () => {
+		it('Returns null by default', () => {
+			const div = document.createElement('div');
+			expect(div.popover).toBe(null);
+		});
+
+		it('Returns "auto" when the attribute "popover" is set to "auto"', () => {
+			const div = document.createElement('div');
+			div.setAttribute('popover', 'auto');
+			expect(div.popover).toBe('auto');
+		});
+
+		it('Returns "manual" when the attribute "popover" is set to "manual"', () => {
+			const div = document.createElement('div');
+			div.setAttribute('popover', 'manual');
+			expect(div.popover).toBe('manual');
+		});
+
+		it('Returns "auto" when the attribute "popover" is set to empty string', () => {
+			const div = document.createElement('div');
+			div.setAttribute('popover', '');
+			expect(div.popover).toBe('auto');
+		});
+
+		it('Returns "manual" when the attribute "popover" is set to an invalid value', () => {
+			const div = document.createElement('div');
+			div.setAttribute('popover', 'invalid');
+			expect(div.popover).toBe('manual');
+		});
+
+		it('Removes the attribute "popover" when set to null', () => {
+			const div = document.createElement('div');
+			div.setAttribute('popover', 'auto');
+			div.popover = null;
+			expect(div.getAttribute('popover')).toBe(null);
+		});
+	});
+
+	describe('set popover()', () => {
+		it('Sets the attribute "popover".', () => {
+			const div = document.createElement('div');
+			div.popover = 'auto';
+			expect(div.getAttribute('popover')).toBe('auto');
+			div.popover = 'manual';
+			expect(div.getAttribute('popover')).toBe('manual');
+			div.popover = 'invalid';
+			expect(div.getAttribute('popover')).toBe('invalid');
+			div.popover = null;
+			expect(div.getAttribute('popover')).toBe(null);
+		});
+	});
+
 	for (const property of ['lang', 'title']) {
 		describe(`get ${property}`, () => {
 			it(`Returns the attribute "${property}".`, () => {
@@ -399,20 +452,28 @@ describe('HTMLElement', () => {
 
 	describe('click()', () => {
 		it('Dispatches "click" event.', () => {
-			let triggeredEvent: PointerEvent | null = null;
+			let event: PointerEvent | null = null;
+			let target: EventTarget | null = null;
+			let currentTarget: EventTarget | null = null;
 
-			element.addEventListener('click', (event) => (triggeredEvent = <PointerEvent>event));
+			element.addEventListener('click', (e) => {
+				event = <PointerEvent>e;
+				target = e.target;
+				currentTarget = e.currentTarget;
+			});
 
 			element.click();
 
-			expect(<PointerEvent>(<unknown>triggeredEvent) instanceof PointerEvent).toBe(true);
-			expect((<PointerEvent>(<unknown>triggeredEvent)).type).toBe('click');
-			expect((<PointerEvent>(<unknown>triggeredEvent)).bubbles).toBe(true);
-			expect((<PointerEvent>(<unknown>triggeredEvent)).composed).toBe(true);
-			expect((<PointerEvent>(<unknown>triggeredEvent)).target === element).toBe(true);
-			expect((<PointerEvent>(<unknown>triggeredEvent)).currentTarget === element).toBe(true);
-			expect((<PointerEvent>(<unknown>triggeredEvent)).width).toBe(1);
-			expect((<PointerEvent>(<unknown>triggeredEvent)).height).toBe(1);
+			expect(<PointerEvent>(<unknown>event) instanceof PointerEvent).toBe(true);
+			expect((<PointerEvent>(<unknown>event)).type).toBe('click');
+			expect((<PointerEvent>(<unknown>event)).bubbles).toBe(true);
+			expect((<PointerEvent>(<unknown>event)).composed).toBe(true);
+			expect((<PointerEvent>(<unknown>event)).width).toBe(1);
+			expect((<PointerEvent>(<unknown>event)).height).toBe(1);
+			expect((<PointerEvent>(<unknown>event)).target).toBe(null);
+			expect((<PointerEvent>(<unknown>event)).currentTarget).toBe(null);
+			expect(target).toBe(element);
+			expect(currentTarget).toBe(element);
 		});
 	});
 
@@ -476,7 +537,7 @@ describe('HTMLElement', () => {
 
 			parent.appendChild(element);
 
-			expect(window.customElements[PropertySymbol.callbacks]['custom-element'].length).toBe(1);
+			expect(window.customElements[PropertySymbol.callbacks].get('custom-element')?.length).toBe(1);
 
 			parent.removeChild(element);
 
