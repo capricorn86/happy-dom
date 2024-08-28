@@ -889,7 +889,7 @@ describe('Element', () => {
 			expect(grandparentElement.matches('div > div[role="alert"]')).toBe(false);
 		});
 
-		it('Checks if the ancestor element matches with a child combinator', () => {
+		it('Checks if the ancestor element matches with a child combinator using ".x > .x"', () => {
 			const a = document.createElement('div');
 			a.classList.add('a');
 
