@@ -2,8 +2,8 @@ import { Script } from 'vm';
 import Browser from '../../src/browser/Browser';
 import Event from '../../src/event/Event';
 import BrowserWindow from '../../src/window/BrowserWindow';
-import Request from '../../src/fetch/types/Request';
-import Response from '../../src/fetch/types/Response';
+import Request from '../../src/fetch/Request';
+import Response from '../../src/fetch/Response';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import Fetch from '../../src/fetch/Fetch';
 import DOMException from '../../src/exception/DOMException';
@@ -12,7 +12,6 @@ import BrowserNavigationCrossOriginPolicyEnum from '../../src/browser/enums/Brow
 import BrowserFrameFactory from '../../src/browser/utilities/BrowserFrameFactory';
 import BrowserErrorCaptureEnum from '../../src/browser/enums/BrowserErrorCaptureEnum';
 import Headers from '../../src/fetch/Headers';
-import HTMLAnchorElement from '../../src/nodes/html-anchor-element/HTMLAnchorElement';
 import * as PropertySymbol from '../../src/PropertySymbol';
 
 describe('BrowserFrame', () => {
@@ -746,6 +745,201 @@ describe('BrowserFrame', () => {
 
 			expect(page.mainFrame.url).toBe('http://localhost:9999/');
 			expect(page.mainFrame.window === oldWindow).toBe(false);
+		});
+	});
+
+	describe('goBack()', () => {
+		it('Navigates back in history.', async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>{
+					status: 200,
+					text: () =>
+						new Promise((resolve) =>
+							setTimeout(
+								() =>
+									resolve(
+										this.request.url === 'http://localhost:3000/'
+											? '<a href="http://localhost:3000/navigated/">'
+											: '<b>Navigated</b>'
+									),
+								1
+							)
+						)
+				});
+			});
+
+			const browser = new Browser();
+			const page = browser.newPage();
+
+			await page.mainFrame.goto('http://localhost:3000', {
+				referrer: 'http://localhost:3000/referrer',
+				referrerPolicy: 'no-referrer-when-downgrade'
+			});
+
+			page.mainFrame.document.querySelector('a')?.click();
+
+			await page.mainFrame.waitForNavigation();
+
+			expect(page.mainFrame.document.querySelector('b')?.textContent).toBe('Navigated');
+
+			const result1 = await page.mainFrame.goBack();
+
+			expect(result1?.status).toBe(200);
+			expect(page.mainFrame.url).toBe('http://localhost:3000/');
+			expect(page.mainFrame.window.document.body.innerHTML).toBe(
+				'<a href="http://localhost:3000/navigated/"></a>'
+			);
+
+			await page.mainFrame.goBack();
+
+			expect(page.mainFrame.url).toBe('about:blank');
+			expect(page.mainFrame.window.document.body.innerHTML).toBe('');
+
+			const result2 = await page.mainFrame.goBack();
+
+			expect(result2).toBeNull();
+			expect(page.mainFrame.url).toBe('about:blank');
+		});
+	});
+
+	describe('goForward()', () => {
+		it('Navigates forward in history.', async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>{
+					status: 200,
+					text: () =>
+						new Promise((resolve) =>
+							setTimeout(
+								() =>
+									resolve(
+										this.request.url === 'http://localhost:3000/'
+											? '<a href="http://localhost:3000/navigated/">'
+											: '<b>Navigated</b>'
+									),
+								1
+							)
+						)
+				});
+			});
+
+			const browser = new Browser();
+			const page = browser.newPage();
+
+			await page.mainFrame.goto('http://localhost:3000', {
+				referrer: 'http://localhost:3000/referrer',
+				referrerPolicy: 'no-referrer-when-downgrade'
+			});
+
+			page.mainFrame.document.querySelector('a')?.click();
+
+			await page.mainFrame.waitForNavigation();
+
+			expect(page.mainFrame.document.querySelector('b')?.textContent).toBe('Navigated');
+
+			const result1 = await page.mainFrame.goBack();
+
+			expect(result1?.status).toBe(200);
+
+			expect(page.mainFrame.url).toBe('http://localhost:3000/');
+			expect(page.mainFrame.window.document.body.innerHTML).toBe(
+				'<a href="http://localhost:3000/navigated/"></a>'
+			);
+
+			await page.mainFrame.goForward();
+
+			expect(page.mainFrame.url).toBe('http://localhost:3000/navigated/');
+			expect(page.mainFrame.window.document.body.innerHTML).toBe('<b>Navigated</b>');
+
+			const result2 = await page.mainFrame.goForward();
+
+			expect(result2).toBeNull();
+			expect(page.mainFrame.url).toBe('http://localhost:3000/navigated/');
+		});
+	});
+
+	describe('goSteps()', () => {
+		it('Navigates a delta in history.', async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>{
+					status: 200,
+					text: () =>
+						new Promise((resolve) =>
+							setTimeout(
+								() =>
+									resolve(
+										this.request.url === 'http://localhost:3000/'
+											? '<a href="http://localhost:3000/navigated/">'
+											: '<b>Navigated</b>'
+									),
+								1
+							)
+						)
+				});
+			});
+
+			const browser = new Browser();
+			const page = browser.newPage();
+
+			await page.mainFrame.goto('http://localhost:3000', {
+				referrer: 'http://localhost:3000/referrer',
+				referrerPolicy: 'no-referrer-when-downgrade'
+			});
+
+			page.mainFrame.document.querySelector('a')?.click();
+
+			await page.mainFrame.waitForNavigation();
+
+			expect(page.mainFrame.document.querySelector('b')?.textContent).toBe('Navigated');
+
+			const result1 = await page.mainFrame.goSteps(-2);
+
+			expect(result1).toBeNull();
+			expect(page.mainFrame.url).toBe('about:blank');
+			expect(page.mainFrame.window.document.body.innerHTML).toBe('');
+
+			const result2 = await page.mainFrame.goSteps(1);
+
+			expect(result2?.status).toBe(200);
+			expect(page.mainFrame.url).toBe('http://localhost:3000/');
+			expect(page.mainFrame.window.document.body.innerHTML).toBe(
+				'<a href="http://localhost:3000/navigated/"></a>'
+			);
+
+			await page.mainFrame.goSteps(-1);
+			await page.mainFrame.goSteps(2);
+
+			expect(page.mainFrame.url).toBe('http://localhost:3000/navigated/');
+			expect(page.mainFrame.window.document.body.innerHTML).toBe('<b>Navigated</b>');
+
+			const result3 = await page.mainFrame.goSteps(1);
+
+			expect(result3).toBeNull();
+			expect(page.mainFrame.url).toBe('http://localhost:3000/navigated/');
+		});
+	});
+
+	describe('reload()', () => {
+		it('Reloads the frame.', async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>{
+					status: 200,
+					text: () => new Promise((resolve) => setTimeout(() => resolve('Test'), 1))
+				});
+			});
+
+			const browser = new Browser();
+			const page = browser.newPage();
+
+			await page.mainFrame.goto('http://localhost:3000');
+
+			expect(page.mainFrame.document.body.innerHTML).toBe('Test');
+
+			const result1 = await page.mainFrame.reload();
+
+			expect(result1?.status).toBe(200);
+
+			expect(page.mainFrame.url).toBe('http://localhost:3000/');
+			expect(page.mainFrame.window.document.body.innerHTML).toBe('Test');
 		});
 	});
 });

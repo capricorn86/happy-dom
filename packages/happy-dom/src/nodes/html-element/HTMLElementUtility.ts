@@ -29,14 +29,16 @@ export default class HTMLElementUtility {
 			new FocusEvent('blur', {
 				relatedTarget,
 				bubbles: false,
-				composed: true
+				composed: true,
+				cancelable: true
 			})
 		);
 		element.dispatchEvent(
 			new FocusEvent('focusout', {
 				relatedTarget,
 				bubbles: true,
-				composed: true
+				composed: true,
+				cancelable: true
 			})
 		);
 	}

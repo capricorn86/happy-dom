@@ -34,6 +34,10 @@ export default class WindowPageOpenUtility {
 		const oldWindow = browserFrame.window;
 		let targetFrame: IBrowserFrame;
 
+		if (browserFrame.window !== oldWindow) {
+			return null;
+		}
+
 		switch (target) {
 			case '_self':
 				targetFrame = browserFrame;
@@ -57,7 +61,13 @@ export default class WindowPageOpenUtility {
 				referrer: features.noreferrer ? undefined : browserFrame.window.location.origin,
 				referrerPolicy: features.noreferrer ? 'no-referrer' : undefined
 			})
-			.catch((error) => targetFrame.page.console.error(error));
+			.catch((error) => {
+				if (targetFrame.page?.console) {
+					targetFrame.page.console.error(error);
+				} else {
+					throw error;
+				}
+			});
 
 		if (targetURL.protocol === 'javascript:') {
 			return targetFrame.window;

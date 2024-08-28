@@ -1,4 +1,3 @@
-import DOMException from '../exception/DOMException.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import URL from '../url/URL.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
@@ -40,7 +39,7 @@ export default class ResourceFetch {
 		const response = await fetch.send();
 
 		if (!response.ok) {
-			throw new DOMException(
+			throw new this.window.DOMException(
 				`Failed to perform request to "${new URL(url, this.window.location.href).href}". Status ${
 					response.status
 				} ${response.statusText}.`
@@ -67,7 +66,7 @@ export default class ResourceFetch {
 		const response = fetch.send();
 
 		if (!response.ok) {
-			throw new DOMException(
+			throw new this.window.DOMException(
 				`Failed to perform request to "${new URL(url, this.window.location.href).href}". Status ${
 					response.status
 				} ${response.statusText}.`

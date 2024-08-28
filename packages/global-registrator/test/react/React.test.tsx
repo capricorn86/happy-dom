@@ -58,6 +58,17 @@ async function main(): Promise<void> {
 	testGetters();
 
 	/**
+	 * Test if Window properties are available on the global object.
+	 */
+	function testWindowProperties(): void {
+		if (!(globalThis.customElements instanceof globalThis.CustomElementRegistry)) {
+			throw Error('Expected globalThis.customElements to be an instance of CustomElementRegistry.');
+		}
+	}
+
+	testWindowProperties();
+
+	/**
 	 * Test if it is possible to create a React component and mount it.
 	 */
 	async function testReactComponent(): Promise<void> {

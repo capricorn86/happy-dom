@@ -1,6 +1,6 @@
 import CSSMeasurementConverter from '../css/declaration/measurement-converter/CSSMeasurementConverter.js';
 import BrowserWindow from '../window/BrowserWindow.js';
-import WindowBrowserSettingsReader from '../window/WindowBrowserSettingsReader.js';
+import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import IMediaQueryRange from './IMediaQueryRange.js';
 import IMediaQueryRule from './IMediaQueryRule.js';
 import MediaQueryTypeEnum from './MediaQueryTypeEnum.js';
@@ -14,13 +14,13 @@ export default class MediaQueryItem {
 	public rules: IMediaQueryRule[];
 	public ranges: IMediaQueryRange[];
 	private rootFontSize: string | number | null = null;
-	private ownerWindow: BrowserWindow;
+	private window: BrowserWindow;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param options Options.
-	 * @param options.ownerWindow Owner window.
+	 * @param options.window Owner window.
 	 * @param [options.rootFontSize] Root font size.
 	 * @param [options.mediaTypes] Media types.
 	 * @param [options.not] Not.
@@ -28,14 +28,14 @@ export default class MediaQueryItem {
 	 * @param [options.ranges] Ranges.
 	 */
 	constructor(options: {
-		ownerWindow: BrowserWindow;
+		window: BrowserWindow;
 		rootFontSize?: string | number | null;
 		mediaTypes?: MediaQueryTypeEnum[];
 		not?: boolean;
 		rules?: IMediaQueryRule[];
 		ranges?: IMediaQueryRange[];
 	}) {
-		this.ownerWindow = options.ownerWindow;
+		this.window = options.window;
 		this.rootFontSize = options.rootFontSize || null;
 		this.mediaTypes = options.mediaTypes || [];
 		this.not = options.not || false;
@@ -115,7 +115,7 @@ export default class MediaQueryItem {
 		if (mediaType === MediaQueryTypeEnum.all) {
 			return true;
 		}
-		return mediaType === WindowBrowserSettingsReader.getSettings(this.ownerWindow).device.mediaType;
+		return mediaType === new WindowBrowserContext(this.window).getSettings()?.device.mediaType;
 	}
 
 	/**
@@ -125,8 +125,7 @@ export default class MediaQueryItem {
 	 * @returns "true" if the range matches.
 	 */
 	private matchesRange(range: IMediaQueryRange): boolean {
-		const windowSize =
-			range.type === 'width' ? this.ownerWindow.innerWidth : this.ownerWindow.innerHeight;
+		const windowSize = range.type === 'width' ? this.window.innerWidth : this.window.innerHeight;
 
 		if (range.before) {
 			const beforeValue = this.toPixels(range.before.value);
@@ -226,38 +225,38 @@ export default class MediaQueryItem {
 		switch (rule.name) {
 			case 'min-width':
 				const minWidth = this.toPixels(rule.value);
-				return minWidth !== null && this.ownerWindow.innerWidth >= minWidth;
+				return minWidth !== null && this.window.innerWidth >= minWidth;
 			case 'max-width':
 				const maxWidth = this.toPixels(rule.value);
-				return maxWidth !== null && this.ownerWindow.innerWidth <= maxWidth;
+				return maxWidth !== null && this.window.innerWidth <= maxWidth;
 			case 'min-height':
 				const minHeight = this.toPixels(rule.value);
-				return minHeight !== null && this.ownerWindow.innerHeight >= minHeight;
+				return minHeight !== null && this.window.innerHeight >= minHeight;
 			case 'max-height':
 				const maxHeight = this.toPixels(rule.value);
-				return maxHeight !== null && this.ownerWindow.innerHeight <= maxHeight;
+				return maxHeight !== null && this.window.innerHeight <= maxHeight;
 			case 'width':
 				const width = this.toPixels(rule.value);
-				return width !== null && this.ownerWindow.innerWidth === width;
+				return width !== null && this.window.innerWidth === width;
 			case 'height':
 				const height = this.toPixels(rule.value);
-				return height !== null && this.ownerWindow.innerHeight === height;
+				return height !== null && this.window.innerHeight === height;
 			case 'orientation':
 				return rule.value === 'landscape'
-					? this.ownerWindow.innerWidth > this.ownerWindow.innerHeight
-					: this.ownerWindow.innerWidth < this.ownerWindow.innerHeight;
+					? this.window.innerWidth > this.window.innerHeight
+					: this.window.innerWidth < this.window.innerHeight;
 			case 'prefers-color-scheme':
 				return (
 					rule.value ===
-					WindowBrowserSettingsReader.getSettings(this.ownerWindow).device.prefersColorScheme
+					new WindowBrowserContext(this.window).getSettings().device.prefersColorScheme
 				);
 			case 'any-hover':
 			case 'hover':
 				if (rule.value === 'none') {
-					return this.ownerWindow.navigator.maxTouchPoints > 0;
+					return this.window.navigator.maxTouchPoints > 0;
 				}
 				if (rule.value === 'hover') {
-					return this.ownerWindow.navigator.maxTouchPoints === 0;
+					return this.window.navigator.maxTouchPoints === 0;
 				}
 				return false;
 			case 'any-pointer':
@@ -267,11 +266,11 @@ export default class MediaQueryItem {
 				}
 
 				if (rule.value === 'coarse') {
-					return this.ownerWindow.navigator.maxTouchPoints > 0;
+					return this.window.navigator.maxTouchPoints > 0;
 				}
 
 				if (rule.value === 'fine') {
-					return this.ownerWindow.navigator.maxTouchPoints === 0;
+					return this.window.navigator.maxTouchPoints === 0;
 				}
 
 				return false;
@@ -292,17 +291,17 @@ export default class MediaQueryItem {
 					case 'min-aspect-ratio':
 						return (
 							aspectRatioWidth / aspectRatioHeight <=
-							this.ownerWindow.innerWidth / this.ownerWindow.innerHeight
+							this.window.innerWidth / this.window.innerHeight
 						);
 					case 'max-aspect-ratio':
 						return (
 							aspectRatioWidth / aspectRatioHeight >=
-							this.ownerWindow.innerWidth / this.ownerWindow.innerHeight
+							this.window.innerWidth / this.window.innerHeight
 						);
 					case 'aspect-ratio':
 						return (
 							aspectRatioWidth / aspectRatioHeight ===
-							this.ownerWindow.innerWidth / this.ownerWindow.innerHeight
+							this.window.innerWidth / this.window.innerHeight
 						);
 				}
 		}
@@ -318,23 +317,21 @@ export default class MediaQueryItem {
 	 */
 	private toPixels(value: string): number | null {
 		if (
-			!WindowBrowserSettingsReader.getSettings(this.ownerWindow).disableComputedStyleRendering &&
+			!new WindowBrowserContext(this.window).getSettings()?.disableComputedStyleRendering &&
 			value.endsWith('em')
 		) {
 			this.rootFontSize =
 				this.rootFontSize ||
-				parseFloat(
-					this.ownerWindow.getComputedStyle(this.ownerWindow.document.documentElement).fontSize
-				);
+				parseFloat(this.window.getComputedStyle(this.window.document.documentElement).fontSize);
 			return CSSMeasurementConverter.toPixels({
-				ownerWindow: this.ownerWindow,
+				window: this.window,
 				value,
 				rootFontSize: this.rootFontSize,
 				parentFontSize: this.rootFontSize
 			});
 		}
 		return CSSMeasurementConverter.toPixels({
-			ownerWindow: this.ownerWindow,
+			window: this.window,
 			value,
 			rootFontSize: 16,
 			parentFontSize: 16

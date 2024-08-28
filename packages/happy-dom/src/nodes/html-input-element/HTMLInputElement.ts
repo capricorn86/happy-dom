@@ -1,7 +1,6 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import ValidityState from '../../validity-state/ValidityState.js';
-import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import Event from '../../event/Event.js';
 import HTMLInputElementValueSanitizer from './HTMLInputElementValueSanitizer.js';
@@ -10,16 +9,16 @@ import HTMLInputElementSelectionDirectionEnum from './HTMLInputElementSelectionD
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLInputElementValueStepping from './HTMLInputElementValueStepping.js';
 import FileList from './FileList.js';
-import Node from '../node/Node.js';
-import NodeList from '../node/NodeList.js';
 import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import HTMLInputElementDateUtility from './HTMLInputElementDateUtility.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
-import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
-import HTMLInputElementNamedNodeMap from './HTMLInputElementNamedNodeMap.js';
+import HTMLDataListElement from '../html-data-list-element/HTMLDataListElement.js';
+import Document from '../document/Document.js';
+import ShadowRoot from '../shadow-root/ShadowRoot.js';
 import { URL } from 'url';
 import MouseEvent from '../../event/events/MouseEvent.js';
+import NodeList from '../node/NodeList.js';
 
 /**
  * HTML Input Element.
@@ -32,17 +31,13 @@ import MouseEvent from '../../event/events/MouseEvent.js';
  */
 export default class HTMLInputElement extends HTMLElement {
 	// Public properties
-	public cloneNode: (deep?: boolean) => HTMLInputElement;
+	public declare cloneNode: (deep?: boolean) => HTMLInputElement;
 
 	// Events
 	public oninput: (event: Event) => void | null = null;
 	public oninvalid: (event: Event) => void | null = null;
 	public onselectionchange: (event: Event) => void | null = null;
 
-	// Internal properties
-	public override [PropertySymbol.attributes]: NamedNodeMap = new HTMLInputElementNamedNodeMap(
-		this
-	);
 	public [PropertySymbol.value] = null;
 	public [PropertySymbol.height] = 0;
 	public [PropertySymbol.width] = 0;
@@ -51,6 +46,8 @@ export default class HTMLInputElement extends HTMLElement {
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
 	public [PropertySymbol.files]: FileList = new FileList();
+	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
+	public [PropertySymbol.popoverTargetElement]: HTMLElement | null = null;
 
 	// Private properties
 	#selectionStart: number = null;
@@ -204,17 +201,18 @@ export default class HTMLInputElement extends HTMLElement {
 	 *
 	 * @returns Form.
 	 */
-	public get form(): HTMLFormElement | null {
+	public get form(): HTMLFormElement {
 		if (this[PropertySymbol.formNode]) {
-			return <HTMLFormElement>this[PropertySymbol.formNode];
+			return this[PropertySymbol.formNode];
 		}
-		if (!this.isConnected) {
+		const id =
+			this[PropertySymbol.attributes][PropertySymbol.namedItems].get('form')?.[
+				PropertySymbol.value
+			];
+		if (!id || !this[PropertySymbol.isConnected]) {
 			return null;
 		}
-		const formID = this.getAttribute('form');
-		return formID
-			? <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(formID)
-			: null;
+		return <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(id);
 	}
 
 	/**
@@ -794,7 +792,7 @@ export default class HTMLInputElement extends HTMLElement {
 				break;
 			case 'file':
 				if (value !== '') {
-					throw new DOMException(
+					throw new this[PropertySymbol.window].DOMException(
 						'Input elements of type "file" may only programmatically set the value to empty string.',
 						DOMExceptionNameEnum.invalidStateError
 					);
@@ -838,7 +836,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 */
 	public set selectionStart(start: number) {
 		if (!this.#isSelectionSupported()) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`The input element's type (${this.type}) does not support selection.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -871,7 +869,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 */
 	public set selectionEnd(end: number) {
 		if (!this.#isSelectionSupported()) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`The input element's type (${this.type}) does not support selection.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -900,7 +898,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 */
 	public set selectionDirection(direction: string) {
 		if (!this.#isSelectionSupported()) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`The input element's type (${this.type}) does not support selection.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -955,17 +953,17 @@ export default class HTMLInputElement extends HTMLElement {
 	public set valueAsDate(value: Date | null) {
 		// Specs at https://html.spec.whatwg.org/multipage/input.html#dom-input-valueasdate
 		if (!['date', 'month', 'time', 'week'].includes(this.type)) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				"Failed to set the 'valueAsDate' property on 'HTMLInputElement': This input element does not support Date values.",
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
 		if (typeof value !== 'object') {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				"Failed to set the 'valueAsDate' property on 'HTMLInputElement': Failed to convert value to 'object'."
 			);
 		} else if (value && !(value instanceof Date)) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				"Failed to set the 'valueAsDate' property on 'HTMLInputElement': The provided value is not a Date."
 			);
 		} else if (value === null || isNaN(value.getTime())) {
@@ -1086,7 +1084,7 @@ export default class HTMLInputElement extends HTMLElement {
 				break;
 			}
 			default:
-				throw new DOMException(
+				throw new this[PropertySymbol.window].DOMException(
 					"Failed to set the 'valueAsNumber' property on 'HTMLInputElement': This input element does not support Number values.",
 					DOMExceptionNameEnum.invalidStateError
 				);
@@ -1100,6 +1098,66 @@ export default class HTMLInputElement extends HTMLElement {
 	 */
 	public get labels(): NodeList<HTMLLabelElement> {
 		return HTMLLabelElementUtility.getAssociatedLabelElements(this);
+	}
+
+	/**
+	 * Returns associated datalist element.
+	 *
+	 * @returns Data list element.
+	 */
+	public get list(): HTMLDataListElement | null {
+		const id = this.getAttribute('list');
+		if (!id) {
+			return null;
+		}
+		const rootNode =
+			<Document | ShadowRoot>this[PropertySymbol.rootNode] || this[PropertySymbol.ownerDocument];
+		return <HTMLDataListElement | null>rootNode.querySelector(`datalist#${id}`);
+	}
+
+	/**
+	 * Returns popover target element.
+	 *
+	 * @returns Popover target element.
+	 */
+	public get popoverTargetElement(): HTMLElement | null {
+		return this[PropertySymbol.popoverTargetElement];
+	}
+
+	/**
+	 * Sets popover target element.
+	 *
+	 * @param popoverTargetElement Popover target element.
+	 */
+	public set popoverTargetElement(popoverTargetElement: HTMLElement | null) {
+		if (popoverTargetElement !== null && !(popoverTargetElement instanceof HTMLElement)) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to set the 'popoverTargetElement' property on 'HTMLInputElement': Failed to convert value to 'Element'.`
+			);
+		}
+		this[PropertySymbol.popoverTargetElement] = popoverTargetElement;
+	}
+
+	/**
+	 * Returns popover target action.
+	 *
+	 * @returns Popover target action.
+	 */
+	public get popoverTargetAction(): string {
+		const value = this.getAttribute('popovertargetaction');
+		if (value === null || (value !== 'hide' && value !== 'show' && value !== 'toggle')) {
+			return 'toggle';
+		}
+		return value;
+	}
+
+	/**
+	 * Sets popover target action.
+	 *
+	 * @param value Popover target action.
+	 */
+	public set popoverTargetAction(value: string) {
+		this.setAttribute('popovertargetaction', value);
 	}
 
 	/**
@@ -1123,7 +1181,7 @@ export default class HTMLInputElement extends HTMLElement {
 		this.#selectionEnd = this.value.length;
 		this.#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
 
-		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: true }));
+		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: false }));
 	}
 
 	/**
@@ -1135,7 +1193,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 */
 	public setSelectionRange(start: number, end: number, direction = 'none'): void {
 		if (!this.#isSelectionSupported()) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`The input element's type (${this.type}) does not support selection.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -1148,7 +1206,7 @@ export default class HTMLInputElement extends HTMLElement {
 			direction === HTMLInputElementSelectionDirectionEnum.backward
 				? direction
 				: HTMLInputElementSelectionDirectionEnum.none;
-		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: true }));
+		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: false }));
 	}
 
 	/**
@@ -1167,7 +1225,7 @@ export default class HTMLInputElement extends HTMLElement {
 		selectionMode = HTMLInputElementSelectionModeEnum.preserve
 	): void {
 		if (!this.#isSelectionSupported()) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`The input element's type (${this.type}) does not support selection.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -1181,7 +1239,7 @@ export default class HTMLInputElement extends HTMLElement {
 		}
 
 		if (start > end) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				'The index is not in the allowed range.',
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -1285,8 +1343,6 @@ export default class HTMLInputElement extends HTMLElement {
 	 */
 	public override [PropertySymbol.cloneNode](deep = false): HTMLInputElement {
 		const clone = <HTMLInputElement>super[PropertySymbol.cloneNode](deep);
-		clone.formAction = this.formAction;
-		clone.formMethod = this.formMethod;
 		clone[PropertySymbol.value] = this[PropertySymbol.value];
 		clone[PropertySymbol.height] = this[PropertySymbol.height];
 		clone[PropertySymbol.width] = this[PropertySymbol.width];
@@ -1302,13 +1358,16 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @override
 	 */
 	public override dispatchEvent(event: Event): boolean {
-		// Do nothing if the input element is disabled and the event is a click event.
 		if (
-			event.type === 'click' &&
-			event instanceof MouseEvent &&
-			event.eventPhase === EventPhaseEnum.none &&
-			this.disabled
+			event[PropertySymbol.type] !== 'click' ||
+			event[PropertySymbol.eventPhase] !== EventPhaseEnum.none ||
+			!(event instanceof MouseEvent)
 		) {
+			return super.dispatchEvent(event);
+		}
+
+		// Do nothing if the input element is disabled and the event is a click event.
+		if (this.disabled) {
 			return false;
 		}
 
@@ -1316,90 +1375,51 @@ export default class HTMLInputElement extends HTMLElement {
 
 		// The checkbox or radio button has to be checked before the click event is dispatched, so that event listeners can check the checked value.
 		// However, the value has to be restored if preventDefault() is called on the click event.
-		if (
-			(event.eventPhase === EventPhaseEnum.atTarget ||
-				event.eventPhase === EventPhaseEnum.bubbling) &&
-			event.type === 'click' &&
-			event instanceof MouseEvent
-		) {
-			const inputType = this.type;
-			if (inputType === 'checkbox' || inputType === 'radio') {
-				previousCheckedValue = this.checked;
-				this.#setChecked(inputType === 'checkbox' ? !previousCheckedValue : true);
-			}
+		const type = this.type;
+
+		if (type === 'checkbox' || type === 'radio') {
+			previousCheckedValue = this.checked;
+			this.#setChecked(type === 'checkbox' ? !previousCheckedValue : true);
 		}
 
+		// Dispatches the event
 		const returnValue = super.dispatchEvent(event);
 
 		if (
-			!event.defaultPrevented &&
-			(event.eventPhase === EventPhaseEnum.atTarget ||
-				event.eventPhase === EventPhaseEnum.bubbling) &&
-			event.type === 'click' &&
-			event instanceof MouseEvent &&
-			this[PropertySymbol.isConnected]
+			event[PropertySymbol.type] !== 'click' ||
+			event[PropertySymbol.eventPhase] !== EventPhaseEnum.none ||
+			!(event instanceof MouseEvent)
 		) {
-			const inputType = this.type;
-			if (!this.readOnly || inputType === 'checkbox' || inputType === 'radio') {
-				if (inputType === 'checkbox' || inputType === 'radio') {
-					this.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
-					this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
-				} else if (inputType === 'submit') {
-					const form = this.form;
-					if (form) {
+			return returnValue;
+		}
+
+		if (event[PropertySymbol.defaultPrevented]) {
+			// Restore checked state if preventDefault() is triggered inside a listener of the click event.
+			if (previousCheckedValue !== null) {
+				this.#setChecked(previousCheckedValue);
+			}
+		} else {
+			const type = this.type;
+
+			if (type === 'checkbox' && this[PropertySymbol.isConnected]) {
+				this.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+				this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+			} else if (type === 'radio' && !previousCheckedValue && this[PropertySymbol.isConnected]) {
+				this.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+				this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+			} else if (type === 'submit' || type === 'reset') {
+				const form = this.form;
+				if (form) {
+					if (type === 'submit' && this[PropertySymbol.isConnected]) {
 						form.requestSubmit(this);
-					}
-				} else if (inputType === 'reset' && this[PropertySymbol.isConnected]) {
-					const form = this.form;
-					if (form) {
+					} else if (type === 'reset') {
 						form.reset();
 					}
 				}
 			}
 		}
 
-		// Restore checked state if preventDefault() is triggered on the click event.
-		if (
-			event.defaultPrevented &&
-			(event.eventPhase === EventPhaseEnum.atTarget ||
-				event.eventPhase === EventPhaseEnum.bubbling) &&
-			event.type === 'click' &&
-			event instanceof MouseEvent &&
-			previousCheckedValue !== null
-		) {
-			const inputType = this.type;
-			if (inputType === 'checkbox' || inputType === 'radio') {
-				this.#setChecked(previousCheckedValue);
-			}
-		}
-
 		return returnValue;
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
-		const oldFormNode = <HTMLFormElement>this[PropertySymbol.formNode];
-
-		super[PropertySymbol.connectToNode](parentNode);
-
-		if (oldFormNode !== this[PropertySymbol.formNode]) {
-			if (oldFormNode) {
-				oldFormNode[PropertySymbol.removeFormControlItem](this, this.name);
-				oldFormNode[PropertySymbol.removeFormControlItem](this, this.id);
-			}
-			if (this[PropertySymbol.formNode]) {
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
-					this,
-					this.name
-				);
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
-					this,
-					this.id
-				);
-			}
-		}
 	}
 
 	/**
@@ -1425,6 +1445,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 */
 	#setChecked(checked: boolean): void {
 		this[PropertySymbol.checked] = checked;
+		this[PropertySymbol.clearCache]();
 
 		if (checked && this.type === 'radio' && this.name) {
 			const root = <HTMLElement>(

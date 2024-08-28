@@ -2,7 +2,7 @@ import EventTarget from '../event/EventTarget.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import Event from '../event/Event.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
-import DOMException from '../exception/DOMException.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * AbortSignal.
@@ -10,9 +10,29 @@ import DOMException from '../exception/DOMException.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal
  */
 export default class AbortSignal extends EventTarget {
+	// Injected by WindowClassExtender
+	protected declare static [PropertySymbol.window]: BrowserWindow;
+	protected declare [PropertySymbol.window]: BrowserWindow;
+
+	// Public properties
 	public readonly aborted: boolean = false;
 	public readonly reason: Error | null = null;
+
+	// Events
 	public onabort: ((this: AbortSignal, event: Event) => void) | null = null;
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+
+		if (!this[PropertySymbol.window]) {
+			throw new TypeError(
+				`Failed to construct '${this.constructor.name}': '${this.constructor.name}' was constructed outside a Window context.`
+			);
+		}
+	}
 
 	/**
 	 * Return a default description for the AbortSignal class.
@@ -32,7 +52,10 @@ export default class AbortSignal extends EventTarget {
 		}
 		(<Error>this.reason) =
 			reason ||
-			new DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError);
+			new this[PropertySymbol.window].DOMException(
+				'signal is aborted without reason',
+				DOMExceptionNameEnum.abortError
+			);
 		(<boolean>this.aborted) = true;
 		this.dispatchEvent(new Event('abort'));
 	}
@@ -53,10 +76,13 @@ export default class AbortSignal extends EventTarget {
 	 * @returns AbortSignal instance.
 	 */
 	public static abort(reason?: Error): AbortSignal {
-		const signal = new AbortSignal();
+		const signal = new this[PropertySymbol.window].AbortSignal();
 		(<Error>signal.reason) =
 			reason ||
-			new DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError);
+			new this[PropertySymbol.window].DOMException(
+				'signal is aborted without reason',
+				DOMExceptionNameEnum.abortError
+			);
 		(<boolean>signal.aborted) = true;
 		return signal;
 	}
@@ -69,10 +95,11 @@ export default class AbortSignal extends EventTarget {
 	 * @returns AbortSignal instance.
 	 */
 	public static timeout(time: number): AbortSignal {
+		const window = this[PropertySymbol.window];
 		const signal = new AbortSignal();
-		setTimeout(() => {
+		window.setTimeout(() => {
 			signal[PropertySymbol.abort](
-				new DOMException('signal timed out', DOMExceptionNameEnum.timeoutError)
+				new window.DOMException('signal timed out', DOMExceptionNameEnum.timeoutError)
 			);
 		}, time);
 		return signal;
