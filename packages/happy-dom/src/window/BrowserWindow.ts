@@ -265,12 +265,12 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly Element = Element;
 	public readonly CharacterData = CharacterData;
 	public readonly DocumentType = DocumentType;
-	public readonly Document = Document;
-	public readonly HTMLDocument = HTMLDocument;
-	public readonly XMLDocument = XMLDocument;
-	public readonly SVGDocument = SVGDocument;
 
 	// Nodes that can be created using "new" keyword (populated by WindowClassExtender)
+	public declare readonly Document: typeof Document;
+	public declare readonly HTMLDocument: typeof HTMLDocument;
+	public declare readonly XMLDocument: typeof XMLDocument;
+	public declare readonly SVGDocument: typeof SVGDocument;
 	public declare readonly DocumentFragment: typeof DocumentFragment;
 	public declare readonly Text: typeof Text;
 	public declare readonly Comment: typeof Comment;
@@ -505,7 +505,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 
 	// Public properties.
 	public readonly document: Document;
-	public readonly customElements: CustomElementRegistry;
+	public readonly customElements: CustomElementRegistry = new CustomElementRegistry(this);
 	public readonly window: BrowserWindow = this;
 	public readonly globalThis: BrowserWindow = this;
 	public readonly performance: typeof performance = performance;
@@ -619,7 +619,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 
 		this.#browserFrame = browserFrame;
 
-		this.customElements = new CustomElementRegistry(this);
 		this.console = browserFrame.page.console;
 
 		this[PropertySymbol.navigator] = new Navigator(this);

@@ -1,7 +1,6 @@
 import BrowserWindow from './BrowserWindow.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 
-import ElementImplementation from '../nodes/element/Element.js';
 import DocumentImplementation from '../nodes/document/Document.js';
 import HTMLDocumentImplementation from '../nodes/html-document/HTMLDocument.js';
 import XMLDocumentImplementation from '../nodes/xml-document/XMLDocument.js';
@@ -63,11 +62,6 @@ export default class WindowClassExtender {
 	 */
 	public static extendClass(window: BrowserWindow): void {
 		/* eslint-disable jsdoc/require-jsdoc */
-
-		// Element
-		class Element extends ElementImplementation {}
-		Element.prototype[PropertySymbol.window] = window;
-		(<typeof Element>window.Element) = Element;
 
 		// Document
 		class Document extends DocumentImplementation {}
