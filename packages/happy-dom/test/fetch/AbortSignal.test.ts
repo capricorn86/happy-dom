@@ -1,8 +1,9 @@
 import Event from '../../src/event/Event.js';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import BrowserWindow from '../../src/window/BrowserWindow.js';
 import Window from '../../src/window/Window.js';
+import DOMException from '../../src/exception/DOMException.js';
 
 describe('AbortSignal', () => {
 	let window: BrowserWindow;
@@ -51,20 +52,12 @@ describe('AbortSignal', () => {
 	});
 
 	describe('AbortSignal.timeout()', () => {
-		beforeEach(() => {
-			vi.useFakeTimers();
-		});
-
-		afterEach(() => {
-			vi.useRealTimers();
-		});
-
-		it('Returns a new instance of AbortSignal that aborts with a "TimeoutError" after a timeout.', () => {
-			const signal = window.AbortSignal.timeout(100);
+		it('Returns a new instance of AbortSignal that aborts with a "TimeoutError" after a timeout.', async () => {
+			const signal = window.AbortSignal.timeout(10);
 
 			expect(signal.aborted).toBe(false);
 
-			vi.advanceTimersByTime(100);
+			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			expect(signal.aborted).toBe(true);
 			expect(signal.reason).toBeInstanceOf(DOMException);

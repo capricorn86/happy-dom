@@ -76,7 +76,7 @@ export default class AbortSignal extends EventTarget {
 	 * @returns AbortSignal instance.
 	 */
 	public static abort(reason?: Error): AbortSignal {
-		const signal = new this[PropertySymbol.window].AbortSignal();
+		const signal = new this();
 		(<Error>signal.reason) =
 			reason ||
 			new this[PropertySymbol.window].DOMException(
@@ -96,7 +96,7 @@ export default class AbortSignal extends EventTarget {
 	 */
 	public static timeout(time: number): AbortSignal {
 		const window = this[PropertySymbol.window];
-		const signal = new AbortSignal();
+		const signal = new this();
 		window.setTimeout(() => {
 			signal[PropertySymbol.abort](
 				new window.DOMException('signal timed out', DOMExceptionNameEnum.timeoutError)
