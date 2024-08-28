@@ -333,7 +333,7 @@ export default class QuerySelector {
 		element[PropertySymbol.cache].matches.set(selector, cachedItem);
 
 		for (const items of SelectorParser.getSelectorGroups(selector, options)) {
-			const result = this.matchSelector(element, element, items.reverse(), cachedItem);
+			const result = this.matchSelector(element, items.reverse(), cachedItem);
 
 			if (result) {
 				cachedItem.result.match = result;
@@ -347,22 +347,23 @@ export default class QuerySelector {
 	/**
 	 * Checks if a node matches a selector.
 	 *
-	 * @param targetElement Target element.
-	 * @param currentElement Current element.
+	 * @param element Target element.
+	 * @param currentElement
 	 * @param selectorItems Selector items.
 	 * @param cachedItem Cached item.
+	 * @param [previousSelectorItem] Previous selector item.
 	 * @param [priorityWeight] Priority weight.
 	 * @returns Result.
 	 */
 	private static matchSelector(
-		targetElement: Element,
-		currentElement: Element,
+		element: Element,
 		selectorItems: SelectorItem[],
 		cachedItem: ICachedMatchesItem,
+		previousSelectorItem: SelectorItem | null = null,
 		priorityWeight = 0
 	): ISelectorMatch | null {
 		const selectorItem = selectorItems[0];
-		const result = selectorItem.match(currentElement);
+		const result = selectorItem.match(element);
 
 		if (result) {
 			if (selectorItems.length === 1) {
@@ -373,14 +374,14 @@ export default class QuerySelector {
 
 			switch (selectorItem.combinator) {
 				case SelectorCombinatorEnum.adjacentSibling:
-					const previousElementSibling = currentElement.previousElementSibling;
+					const previousElementSibling = element.previousElementSibling;
 					if (previousElementSibling) {
 						previousElementSibling[PropertySymbol.affectsCache].push(cachedItem);
 						const match = this.matchSelector(
-							targetElement,
 							previousElementSibling,
 							selectorItems.slice(1),
 							cachedItem,
+							selectorItem,
 							priorityWeight + result.priorityWeight
 						);
 
@@ -391,16 +392,18 @@ export default class QuerySelector {
 					break;
 				case SelectorCombinatorEnum.child:
 				case SelectorCombinatorEnum.descendant:
-					const parentElement = currentElement.parentElement;
+					const parentElement = element.parentElement;
 					if (parentElement) {
 						parentElement[PropertySymbol.affectsCache].push(cachedItem);
+
 						const match = this.matchSelector(
-							targetElement,
 							parentElement,
 							selectorItems.slice(1),
 							cachedItem,
+							selectorItem,
 							priorityWeight + result.priorityWeight
 						);
+
 						if (match) {
 							return match;
 						}
@@ -409,19 +412,17 @@ export default class QuerySelector {
 			}
 		}
 
-		const parentElement = currentElement.parentElement;
-		if (
-			selectorItem.combinator === SelectorCombinatorEnum.descendant &&
-			targetElement !== currentElement &&
-			parentElement
-		) {
-			return this.matchSelector(
-				targetElement,
-				parentElement,
-				selectorItems,
-				cachedItem,
-				priorityWeight
-			);
+		if (previousSelectorItem?.combinator === SelectorCombinatorEnum.descendant) {
+			const parentElement = element.parentElement;
+			if (parentElement) {
+				return this.matchSelector(
+					parentElement,
+					selectorItems,
+					cachedItem,
+					previousSelectorItem,
+					priorityWeight
+				);
+			}
 		}
 
 		return null;

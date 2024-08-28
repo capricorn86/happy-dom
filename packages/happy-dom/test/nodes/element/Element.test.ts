@@ -877,7 +877,7 @@ describe('Element', () => {
 			grandparentElement.setAttribute('role', 'alert');
 
 			const parentElement = document.createElement('div');
-			grandparentElement.setAttribute('role', 'status');
+			parentElement.setAttribute('role', 'status');
 			grandparentElement.appendChild(parentElement);
 
 			const element = document.createElement('div');
@@ -887,6 +887,33 @@ describe('Element', () => {
 			expect(element.matches('div[role="status"] > div.active')).toBe(true);
 			expect(element.matches('div[role="alert"] > div.active')).toBe(false);
 			expect(grandparentElement.matches('div > div[role="alert"]')).toBe(false);
+		});
+
+		it('Checks if the ancestor element matches with a child combinator using ".x > .x"', () => {
+			const a = document.createElement('div');
+			a.classList.add('a');
+
+			const b = document.createElement('div');
+			b.classList.add('b');
+
+			const c = document.createElement('div');
+			c.classList.add('c');
+
+			const d = document.createElement('div');
+			d.classList.add('d');
+
+			a.appendChild(b);
+			b.appendChild(c);
+			c.appendChild(d);
+
+			a.classList.add('x');
+			b.classList.add('x');
+			d.classList.add('x');
+
+			expect(a.matches('.x > .x')).toBe(false);
+			expect(b.matches('.x > .x')).toBe(true);
+			expect(c.matches('.x > .x')).toBe(false);
+			expect(d.matches('.x > .x')).toBe(false);
 		});
 	});
 
