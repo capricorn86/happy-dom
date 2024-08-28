@@ -105,7 +105,7 @@ export default class AbortSignal extends EventTarget {
 			}
 		}
 
-		const anySignal = new AbortSignal();
+		const anySignal = new this[PropertySymbol.window].AbortSignal();
 		const handlers = new Map<AbortSignal, () => void>();
 
 		const stopListening = (): void => {
