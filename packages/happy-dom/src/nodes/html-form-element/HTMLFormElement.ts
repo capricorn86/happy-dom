@@ -8,7 +8,6 @@ import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
 import HTMLButtonElement from '../html-button-element/HTMLButtonElement.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import BrowserFrameNavigator from '../../browser/utilities/BrowserFrameNavigator.js';
-import FormData from '../../form-data/FormData.js';
 import BrowserWindow from '../../window/BrowserWindow.js';
 import THTMLFormControlElement from './THTMLFormControlElement.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
@@ -584,7 +583,7 @@ export default class HTMLFormElement extends HTMLElement {
 		}
 
 		const method = submitter?.formMethod || this.method;
-		const formData = new FormData(this);
+		const formData = new this[PropertySymbol.window].FormData(this);
 		let targetFrame: IBrowserFrame;
 
 		switch (submitter?.formTarget || this.target) {

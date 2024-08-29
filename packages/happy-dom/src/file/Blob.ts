@@ -15,12 +15,12 @@ export default class Blob {
 	/**
 	 * Constructor.
 	 *
-	 * @param bits Bits.
+	 * @param [bits] Bits.
 	 * @param [options] Options.
 	 * @param [options.type] MIME type.
 	 */
 	constructor(
-		bits: (ArrayBuffer | ArrayBufferView | Blob | Buffer | string)[],
+		bits?: (ArrayBuffer | ArrayBufferView | Blob | Buffer | string)[],
 		options?: { type?: string }
 	) {
 		const buffers = [];
