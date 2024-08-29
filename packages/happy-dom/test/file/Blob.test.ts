@@ -38,6 +38,24 @@ describe('Blob', () => {
 		});
 	});
 
+	describe('stream()', () => {
+		it('Returns all data in a ReadableStream.', async () => {
+			const data = 'Test1Test2';
+			const blob = new Blob(['Test1', 'Test2']);
+			const stream = blob.stream();
+
+			let i = 0;
+			for await (const chunk of stream.values()) {
+				for (const value of chunk) {
+					expect(i).toBeLessThan(data.length);
+					expect(value).toBe(data[i].charCodeAt(0));
+					++i;
+				}
+			}
+			expect(i).toBe(data.length);
+		});
+	});
+
 	describe('toString()', () => {
 		it('Returns "[object Blob]".', () => {
 			const blob = new Blob(['TEST']);
