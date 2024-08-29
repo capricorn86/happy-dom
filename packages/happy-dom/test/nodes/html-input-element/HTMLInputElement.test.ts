@@ -731,7 +731,7 @@ describe('HTMLInputElement', () => {
 		'pattern',
 		'placeholder',
 		'step',
-		'inputmode'
+		'inputMode'
 	]) {
 		describe(`get ${property}()`, () => {
 			it('Returns attribute value.', () => {

@@ -161,7 +161,7 @@ describe('HTMLTextAreaElement', () => {
 		});
 	}
 
-	for (const property of ['name', 'autocomplete', 'cols', 'rows', 'placeholder']) {
+	for (const property of ['name', 'autocomplete', 'cols', 'rows', 'placeholder', 'inputMode']) {
 		describe(`get ${property}()`, () => {
 			it('Returns attribute value.', () => {
 				expect(element[property]).toBe('');
