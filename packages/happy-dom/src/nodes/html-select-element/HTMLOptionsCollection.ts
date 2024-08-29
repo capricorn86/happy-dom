@@ -1,7 +1,8 @@
-import DOMException from '../../exception/DOMException.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import HTMLSelectElement from './HTMLSelectElement.js';
 import HTMLOptionElement from '../html-option-element/HTMLOptionElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
+import QuerySelector from '../../query-selector/QuerySelector.js';
 
 /**
  * HTML Options Collection.
@@ -10,16 +11,24 @@ import HTMLOptionElement from '../html-option-element/HTMLOptionElement.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptionsCollection.
  */
 export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElement> {
-	#selectElement: HTMLSelectElement;
+	private declare [PropertySymbol.ownerElement]: HTMLSelectElement;
 
 	/**
+	 * Constructor.
 	 *
-	 * @param selectElement
+	 * @param [illegalConstructorSymbol] Illegal constructor symbol.
+	 * @param [ownerElement] Select element.
 	 */
-	constructor(selectElement: HTMLSelectElement) {
-		super();
+	constructor(illegalConstructorSymbol?: symbol, ownerElement: HTMLSelectElement | null = null) {
+		super(
+			illegalConstructorSymbol,
+			() =>
+				<HTMLOptionElement[]>(
+					QuerySelector.querySelectorAll(ownerElement, 'option')[PropertySymbol.items]
+				)
+		);
 
-		this.#selectElement = selectElement;
+		this[PropertySymbol.ownerElement] = ownerElement;
 	}
 
 	/**
@@ -28,7 +37,7 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 	 * @returns SelectedIndex.
 	 */
 	public get selectedIndex(): number {
-		return this.#selectElement.selectedIndex;
+		return this[PropertySymbol.ownerElement].selectedIndex;
 	}
 
 	/**
@@ -37,16 +46,7 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 	 * @param selectedIndex SelectedIndex.
 	 */
 	public set selectedIndex(selectedIndex: number) {
-		this.#selectElement.selectedIndex = selectedIndex;
-	}
-
-	/**
-	 * Returns item by index.
-	 *
-	 * @param index Index.
-	 */
-	public item(index: number): HTMLOptionElement {
-		return this[index];
+		this[PropertySymbol.ownerElement].selectedIndex = selectedIndex;
 	}
 
 	/**
@@ -55,29 +55,7 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 	 * @param before
 	 */
 	public add(element: HTMLOptionElement, before?: number | HTMLOptionElement): void {
-		if (!before && before !== 0) {
-			this.#selectElement.appendChild(element);
-			return;
-		}
-
-		if (!Number.isNaN(Number(before))) {
-			if (<number>before < 0) {
-				return;
-			}
-
-			this.#selectElement.insertBefore(element, this[<number>before]);
-			return;
-		}
-
-		const index = this.indexOf(before);
-
-		if (index === -1) {
-			throw new DOMException(
-				"Failed to execute 'add' on 'DOMException': The node before which the new node is to be inserted is not a child of this node."
-			);
-		}
-
-		this.#selectElement.insertBefore(element, this[index]);
+		this[PropertySymbol.ownerElement].add(element, before);
 	}
 
 	/**
@@ -86,8 +64,6 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 	 * @param index Index.
 	 */
 	public remove(index: number): void {
-		if (this[index]) {
-			this.#selectElement.removeChild(<HTMLOptionElement>this[index]);
-		}
+		this[PropertySymbol.ownerElement].remove(index);
 	}
 }

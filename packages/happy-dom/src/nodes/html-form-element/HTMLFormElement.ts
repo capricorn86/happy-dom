@@ -3,16 +3,21 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import Event from '../../event/Event.js';
 import SubmitEvent from '../../event/events/SubmitEvent.js';
 import HTMLFormControlsCollection from './HTMLFormControlsCollection.js';
-import Node from '../node/Node.js';
 import HTMLInputElement from '../html-input-element/HTMLInputElement.js';
-import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
 import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
 import HTMLButtonElement from '../html-button-element/HTMLButtonElement.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import BrowserFrameNavigator from '../../browser/utilities/BrowserFrameNavigator.js';
 import FormData from '../../form-data/FormData.js';
-import Element from '../element/Element.js';
 import BrowserWindow from '../../window/BrowserWindow.js';
+import THTMLFormControlElement from './THTMLFormControlElement.js';
+import QuerySelector from '../../query-selector/QuerySelector.js';
+import RadioNodeList from './RadioNodeList.js';
+import Element from '../element/Element.js';
+import EventTarget from '../../event/EventTarget.js';
+import Node from '../node/Node.js';
+import ClassMethodBinder from '../../ClassMethodBinder.js';
+import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 
 /**
  * HTML Form Element.
@@ -22,29 +27,161 @@ import BrowserWindow from '../../window/BrowserWindow.js';
  */
 export default class HTMLFormElement extends HTMLElement {
 	// Public properties
-	public cloneNode: (deep?: boolean) => HTMLFormElement;
+	public declare cloneNode: (deep?: boolean) => HTMLFormElement;
 
 	// Internal properties.
-	public [PropertySymbol.elements]: HTMLFormControlsCollection = new HTMLFormControlsCollection();
-	public [PropertySymbol.length] = 0;
-	public [PropertySymbol.formNode]: Node = this;
+	public [PropertySymbol.elements]: HTMLFormControlsCollection | null = null;
+	public [PropertySymbol.proxy]: HTMLFormElement;
 
 	// Events
 	public onformdata: (event: Event) => void | null = null;
 	public onreset: (event: Event) => void | null = null;
 	public onsubmit: (event: Event) => void | null = null;
 
-	// Private properties
-	#browserFrame: IBrowserFrame;
-
 	/**
 	 * Constructor.
-	 *
-	 * @param browserFrame Browser frame.
 	 */
-	constructor(browserFrame: IBrowserFrame) {
+	constructor() {
 		super();
-		this.#browserFrame = browserFrame;
+
+		ClassMethodBinder.bindMethods(
+			this,
+			[EventTarget, Node, Element, HTMLElement, HTMLFormElement],
+			{
+				bindSymbols: true,
+				forwardToPrototype: true
+			}
+		);
+
+		const proxy = new Proxy(this, {
+			get: (target, property) => {
+				if (property === 'length') {
+					return target[PropertySymbol.getFormControlItems]().length;
+				}
+				if (property in target || typeof property === 'symbol') {
+					return target[property];
+				}
+				const index = Number(property);
+				if (!isNaN(index)) {
+					return target[PropertySymbol.getFormControlItems]()[index];
+				}
+				return target[PropertySymbol.getFormControlNamedItem](<string>property) || undefined;
+			},
+			set(target, property, newValue): boolean {
+				if (typeof property === 'symbol') {
+					target[property] = newValue;
+					return true;
+				}
+				const index = Number(property);
+				if (isNaN(index)) {
+					target[property] = newValue;
+				}
+				return true;
+			},
+			deleteProperty(target, property): boolean {
+				if (typeof property === 'symbol') {
+					delete target[property];
+					return true;
+				}
+				const index = Number(property);
+				if (isNaN(index)) {
+					delete target[property];
+				}
+				return true;
+			},
+			ownKeys(target): string[] {
+				return Object.keys(target[PropertySymbol.getFormControlItems]());
+			},
+			has(target, property): boolean {
+				if (property in target) {
+					return true;
+				}
+
+				if (typeof property === 'symbol') {
+					return false;
+				}
+
+				const items = target[PropertySymbol.getFormControlItems]();
+				const index = Number(property);
+
+				if (!isNaN(index) && index >= 0 && index < items.length) {
+					return true;
+				}
+
+				property = String(property);
+
+				for (let i = 0; i < items.length; i++) {
+					const item = items[i];
+					const name =
+						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
+							PropertySymbol.value
+						] ||
+						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('name')?.[
+							PropertySymbol.value
+						];
+
+					if (name && name === property) {
+						return true;
+					}
+				}
+
+				return false;
+			},
+			defineProperty(target, property, descriptor): boolean {
+				if (!descriptor.value) {
+					Object.defineProperty(target, property, descriptor);
+					return true;
+				}
+
+				const index = Number(descriptor.value);
+				if (isNaN(index)) {
+					Object.defineProperty(target, property, descriptor);
+					return true;
+				}
+
+				return false;
+			},
+			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
+				if (property in target) {
+					return Object.getOwnPropertyDescriptor(target, property);
+				}
+
+				const items = target[PropertySymbol.getFormControlItems]();
+				const index = Number(property);
+
+				if (!isNaN(index) && index >= 0 && index < items.length) {
+					return {
+						value: items[index],
+						writable: false,
+						enumerable: true,
+						configurable: true
+					};
+				}
+
+				for (let i = 0; i < items.length; i++) {
+					const item = items[i];
+					const name =
+						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
+							PropertySymbol.value
+						] ||
+						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('name')?.[
+							PropertySymbol.value
+						];
+
+					if (name && name === property) {
+						return {
+							value: item,
+							writable: false,
+							enumerable: true,
+							configurable: true
+						};
+					}
+				}
+			}
+		});
+		this[PropertySymbol.proxy] = proxy;
+		this[PropertySymbol.formNode] = proxy;
+		return proxy;
 	}
 
 	/**
@@ -53,6 +190,12 @@ export default class HTMLFormElement extends HTMLElement {
 	 * @returns Elements.
 	 */
 	public get elements(): HTMLFormControlsCollection {
+		if (!this[PropertySymbol.elements]) {
+			this[PropertySymbol.elements] = new HTMLFormControlsCollection(
+				PropertySymbol.illegalConstructor,
+				this
+			);
+		}
 		return this[PropertySymbol.elements];
 	}
 
@@ -62,7 +205,7 @@ export default class HTMLFormElement extends HTMLElement {
 	 * @returns Length.
 	 */
 	public get length(): number {
-		return this[PropertySymbol.length];
+		return this[PropertySymbol.getFormControlItems]().length;
 	}
 
 	/**
@@ -255,10 +398,17 @@ export default class HTMLFormElement extends HTMLElement {
 	public requestSubmit(submitter?: HTMLInputElement | HTMLButtonElement): void {
 		const noValidate = submitter?.formNoValidate || this.noValidate;
 		if (noValidate || this.checkValidity()) {
-			this.dispatchEvent(
-				new SubmitEvent('submit', { bubbles: true, cancelable: true, submitter: submitter || this })
-			);
-			this.#submit(submitter);
+			const event = new SubmitEvent('submit', {
+				bubbles: true,
+				cancelable: true,
+				submitter: submitter || this[PropertySymbol.proxy]
+			});
+
+			this.dispatchEvent(event);
+
+			if (!event.defaultPrevented) {
+				this.#submit(submitter);
+			}
 		}
 	}
 
@@ -266,27 +416,31 @@ export default class HTMLFormElement extends HTMLElement {
 	 * Resets form.
 	 */
 	public reset(): void {
-		for (const element of this[PropertySymbol.elements]) {
-			if (
-				element[PropertySymbol.tagName] === 'INPUT' ||
-				element[PropertySymbol.tagName] === 'TEXTAREA'
-			) {
-				element[PropertySymbol.value] = null;
-				element[PropertySymbol.checked] = null;
-			} else if (element[PropertySymbol.tagName] === 'TEXTAREA') {
-				element[PropertySymbol.value] = null;
-			} else if (element[PropertySymbol.tagName] === 'SELECT') {
-				let hasSelectedAttribute = false;
-				for (const option of (<HTMLSelectElement>element).options) {
-					if (option.hasAttribute('selected')) {
-						hasSelectedAttribute = true;
-						option.selected = true;
-						break;
+		for (const element of this[PropertySymbol.getFormControlItems]()) {
+			switch (element[PropertySymbol.tagName]) {
+				case 'TEXTAREA':
+					element[PropertySymbol.value] = null;
+					break;
+				case 'INPUT':
+					element[PropertySymbol.value] = null;
+					element[PropertySymbol.checked] = null;
+					break;
+				case 'OUTPUT':
+					element.textContent = element[PropertySymbol.defaultValue];
+					break;
+				case 'SELECT':
+					let hasSelectedAttribute = false;
+					for (const option of (<HTMLSelectElement>element).options) {
+						if (option.hasAttribute('selected')) {
+							hasSelectedAttribute = true;
+							option.selected = true;
+							break;
+						}
 					}
-				}
-				if (!hasSelectedAttribute && (<HTMLSelectElement>element).options.length > 0) {
-					(<HTMLSelectElement>element).options[0].selected = true;
-				}
+					if (!hasSelectedAttribute && (<HTMLSelectElement>element).options.length > 0) {
+						(<HTMLSelectElement>element).options[0].selected = true;
+					}
+					break;
 			}
 		}
 
@@ -302,7 +456,7 @@ export default class HTMLFormElement extends HTMLElement {
 		const radioValidationState: { [k: string]: boolean } = {};
 		let isFormValid = true;
 
-		for (const element of this[PropertySymbol.elements]) {
+		for (const element of this[PropertySymbol.getFormControlItems]()) {
 			if (element[PropertySymbol.tagName] === 'INPUT' && element.type === 'radio' && element.name) {
 				if (!radioValidationState[element.name]) {
 					radioValidationState[element.name] = true;
@@ -335,89 +489,92 @@ export default class HTMLFormElement extends HTMLElement {
 	}
 
 	/**
-	 * Appends a form control item.
+	 * Returns form control items.
 	 *
-	 * @param node Node.
-	 * @param name Name
+	 * @returns Form control items.
 	 */
-	public [PropertySymbol.appendFormControlItem](
-		node: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | HTMLButtonElement,
-		name: string
-	): void {
-		const elements = this[PropertySymbol.elements];
-
-		if (!elements.includes(node)) {
-			this[elements.length] = node;
-			elements.push(node);
-			this[PropertySymbol.length] = elements.length;
-		}
-
-		(<HTMLFormControlsCollection>elements)[PropertySymbol.appendNamedItem](node, name);
-
-		if (this[PropertySymbol.isValidPropertyName](name)) {
-			this[name] = elements[name];
-		}
-	}
-
-	/**
-	 * Remove a form control item.
-	 *
-	 * @param node Node.
-	 * @param name Name.
-	 */
-	public [PropertySymbol.removeFormControlItem](
-		node: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | HTMLButtonElement,
-		name: string
-	): void {
-		const elements = this[PropertySymbol.elements];
-		const index = elements.indexOf(node);
-
-		if (index !== -1) {
-			elements.splice(index, 1);
-			for (let i = index; i < this[PropertySymbol.length]; i++) {
-				this[i] = this[i + 1];
-			}
-			delete this[this[PropertySymbol.length] - 1];
-			this[PropertySymbol.length]--;
-		}
-
-		(<HTMLFormControlsCollection>elements)[PropertySymbol.removeNamedItem](node, name);
-
-		if (this[PropertySymbol.isValidPropertyName](name)) {
-			if (elements[name]) {
-				this[name] = elements[name];
-			} else {
-				delete this[name];
-			}
-		}
-	}
-
-	/**
-	 * Returns "true" if the property name is valid.
-	 *
-	 * @param name Name.
-	 * @returns True if the property name is valid.
-	 */
-	protected [PropertySymbol.isValidPropertyName](name: string): boolean {
-		return (
-			!!name &&
-			!HTMLFormElement.prototype.hasOwnProperty(name) &&
-			!HTMLElement.prototype.hasOwnProperty(name) &&
-			!Element.prototype.hasOwnProperty(name) &&
-			!Node.prototype.hasOwnProperty(name) &&
-			(isNaN(Number(name)) || name.includes('.'))
+	public [PropertySymbol.getFormControlItems](): THTMLFormControlElement[] {
+		const elements = <THTMLFormControlElement[]>(
+			QuerySelector.querySelectorAll(this, 'input,select,textarea,button,fieldset,object,output')[
+				PropertySymbol.items
+			].slice()
 		);
+
+		if (this[PropertySymbol.isConnected]) {
+			const id =
+				this[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
+					PropertySymbol.value
+				];
+			if (id) {
+				for (const element of <THTMLFormControlElement[]>(
+					QuerySelector.querySelectorAll(
+						this[PropertySymbol.ownerDocument],
+						`input[form="${id}"],select[form="${id}"],textarea[form="${id}"],button[form="${id}"],fieldset[form="${id}"],object[form="${id}"],output[form="${id}"]`
+					)[PropertySymbol.items]
+				)) {
+					if (!elements.includes(element)) {
+						elements.push(element);
+					}
+				}
+			}
+		}
+
+		return elements;
+	}
+
+	/**
+	 * Returns form control named item.
+	 *
+	 * @param name
+	 * @returns Form control named item.
+	 */
+	public [PropertySymbol.getFormControlNamedItem](
+		name: string
+	): THTMLFormControlElement | RadioNodeList | null {
+		const items = this[PropertySymbol.getFormControlItems]();
+		const namedItems = [];
+
+		name = String(name);
+
+		for (const item of items) {
+			if (
+				item[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
+					PropertySymbol.value
+				] === name ||
+				item[PropertySymbol.attributes][PropertySymbol.namedItems].get('name')?.[
+					PropertySymbol.value
+				] === name
+			) {
+				namedItems.push(item);
+			}
+		}
+
+		if (!namedItems.length) {
+			return null;
+		}
+
+		if (namedItems.length === 1) {
+			return namedItems[0];
+		}
+
+		return new RadioNodeList(PropertySymbol.illegalConstructor, namedItems);
 	}
 
 	/**
 	 * Submits form.
 	 *
+	 * @param browserFrame Browser frame. Injected by the constructor.
 	 * @param [submitter] Submitter.
 	 */
 	#submit(submitter?: HTMLInputElement | HTMLButtonElement): void {
 		const action = submitter?.hasAttribute('formaction')
 			? submitter?.formAction || this.action
 			: this.action;
+		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
+
+		if (!browserFrame) {
+			return;
+		}
 
 		if (!action) {
 			// The URL is invalid when the action is empty.
@@ -433,18 +590,18 @@ export default class HTMLFormElement extends HTMLElement {
 		switch (submitter?.formTarget || this.target) {
 			default:
 			case '_self':
-				targetFrame = this.#browserFrame;
+				targetFrame = browserFrame;
 				break;
 			case '_top':
-				targetFrame = this.#browserFrame.page.mainFrame;
+				targetFrame = browserFrame.page.mainFrame;
 				break;
 			case '_parent':
-				targetFrame = this.#browserFrame.parentFrame ?? this.#browserFrame;
+				targetFrame = browserFrame.parentFrame ?? browserFrame;
 				break;
 			case '_blank':
-				const newPage = this.#browserFrame.page.context.newPage();
+				const newPage = browserFrame.page.context.newPage();
 				targetFrame = newPage.mainFrame;
-				targetFrame[PropertySymbol.openerFrame] = this.#browserFrame;
+				targetFrame[PropertySymbol.openerFrame] = browserFrame;
 				break;
 		}
 
@@ -464,7 +621,7 @@ export default class HTMLFormElement extends HTMLElement {
 				frame: targetFrame,
 				url: url.href,
 				goToOptions: {
-					referrer: this.#browserFrame.page.mainFrame.window.location.origin
+					referrer: browserFrame.page.mainFrame.window.location.origin
 				}
 			});
 
@@ -480,7 +637,7 @@ export default class HTMLFormElement extends HTMLElement {
 			url: action,
 			formData,
 			goToOptions: {
-				referrer: this.#browserFrame.page.mainFrame.window.location.origin
+				referrer: browserFrame.page.mainFrame.window.location.origin
 			}
 		});
 	}

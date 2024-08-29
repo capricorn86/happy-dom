@@ -1,10 +1,9 @@
-import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
+import QuerySelector from '../../query-selector/QuerySelector.js';
+import Attr from '../attr/Attr.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
-import Node from '../node/Node.js';
-import HTMLOptionElementNamedNodeMap from './HTMLOptionElementNamedNodeMap.js';
 
 /**
  * HTML Option Element.
@@ -13,11 +12,9 @@ import HTMLOptionElementNamedNodeMap from './HTMLOptionElementNamedNodeMap.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptionElement.
  */
 export default class HTMLOptionElement extends HTMLElement {
-	public override [PropertySymbol.attributes]: NamedNodeMap = new HTMLOptionElementNamedNodeMap(
-		this
-	);
 	public [PropertySymbol.selectedness] = false;
 	public [PropertySymbol.dirtyness] = false;
+	public [PropertySymbol.selectNode]: HTMLSelectElement | null = null;
 
 	/**
 	 * Returns inner text, which is the rendered appearance of text.
@@ -43,9 +40,13 @@ export default class HTMLOptionElement extends HTMLElement {
 	 * @returns Index.
 	 */
 	public get index(): number {
-		return this[PropertySymbol.selectNode]
-			? (<HTMLSelectElement>this[PropertySymbol.selectNode]).options.indexOf(this)
-			: 0;
+		if (!this[PropertySymbol.selectNode]) {
+			return 0;
+		}
+		const options = QuerySelector.querySelectorAll(this[PropertySymbol.selectNode], 'option')[
+			PropertySymbol.elements
+		];
+		return options.indexOf(this);
 	}
 
 	/**
@@ -54,7 +55,7 @@ export default class HTMLOptionElement extends HTMLElement {
 	 * @returns Form.
 	 */
 	public get form(): HTMLFormElement {
-		return <HTMLFormElement>this[PropertySymbol.formNode];
+		return (<HTMLSelectElement>this[PropertySymbol.selectNode])?.form || null;
 	}
 
 	/**
@@ -78,7 +79,9 @@ export default class HTMLOptionElement extends HTMLElement {
 		this[PropertySymbol.selectedness] = Boolean(selected);
 
 		if (selectNode) {
-			selectNode[PropertySymbol.updateOptionItems](this[PropertySymbol.selectedness] ? this : null);
+			selectNode[PropertySymbol.updateSelectedness](
+				this[PropertySymbol.selectedness] ? this : null
+			);
 		}
 	}
 
@@ -125,18 +128,65 @@ export default class HTMLOptionElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
-		const oldSelectNode = <HTMLSelectElement>this[PropertySymbol.selectNode];
+	public override [PropertySymbol.onSetAttribute](
+		attribute: Attr,
+		replacedAttribute: Attr | null
+	): void {
+		super[PropertySymbol.onSetAttribute](attribute, replacedAttribute);
+		if (
+			!this[PropertySymbol.dirtyness] &&
+			attribute[PropertySymbol.name] === 'selected' &&
+			replacedAttribute?.[PropertySymbol.value] !== attribute[PropertySymbol.value]
+		) {
+			const selectNode = <HTMLSelectElement>this[PropertySymbol.selectNode];
 
-		super[PropertySymbol.connectToNode](parentNode);
+			this[PropertySymbol.selectedness] = true;
 
-		if (oldSelectNode !== this[PropertySymbol.selectNode]) {
-			if (oldSelectNode) {
-				oldSelectNode[PropertySymbol.updateOptionItems]();
-			}
-			if (this[PropertySymbol.selectNode]) {
-				(<HTMLSelectElement>this[PropertySymbol.selectNode])[PropertySymbol.updateOptionItems]();
+			if (selectNode) {
+				selectNode[PropertySymbol.updateSelectedness](this);
 			}
 		}
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.onRemoveAttribute](removedAttribute: Attr): void {
+		super[PropertySymbol.onRemoveAttribute](removedAttribute);
+		if (
+			removedAttribute &&
+			!this[PropertySymbol.dirtyness] &&
+			removedAttribute[PropertySymbol.name] === 'selected'
+		) {
+			const selectNode = <HTMLSelectElement>this[PropertySymbol.selectNode];
+
+			this[PropertySymbol.selectedness] = false;
+
+			if (selectNode) {
+				selectNode[PropertySymbol.updateSelectedness]();
+			}
+		}
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.connectedToNode](): void {
+		super[PropertySymbol.connectedToNode]();
+
+		if (this[PropertySymbol.selectNode]) {
+			this[PropertySymbol.selectNode][PropertySymbol.updateSelectedness]();
+		}
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.disconnectedFromNode](): void {
+		if (this[PropertySymbol.selectNode]) {
+			(<HTMLSelectElement>this[PropertySymbol.selectNode])[PropertySymbol.updateSelectedness]();
+		}
+
+		super[PropertySymbol.disconnectedFromNode]();
 	}
 }

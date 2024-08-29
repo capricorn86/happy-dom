@@ -1,7 +1,6 @@
 import IRequestInit from './types/IRequestInit.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import IRequestInfo from './types/IRequestInfo.js';
-import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import URL from '../url/URL.js';
 import Request from './Request.js';
@@ -70,7 +69,7 @@ export default class SyncFetch {
 		this.#window = options.window;
 		this.request =
 			typeof options.url === 'string' || options.url instanceof URL
-				? new options.browserFrame.window.Request(options.url, options.init)
+				? new options.window.Request(options.url, options.init)
 				: <Request>options.url;
 		if (options.contentType) {
 			(<string>this.request[PropertySymbol.contentType]) = options.contentType;
@@ -90,7 +89,10 @@ export default class SyncFetch {
 		FetchRequestValidationUtility.validateSchema(this.request);
 
 		if (this.request.signal.aborted) {
-			throw new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError);
+			throw new this.#window.DOMException(
+				'The operation was aborted.',
+				DOMExceptionNameEnum.abortError
+			);
 		}
 
 		if (this.request[PropertySymbol.url].protocol === 'data:') {
@@ -111,7 +113,7 @@ export default class SyncFetch {
 			this.request[PropertySymbol.url].protocol === 'http:' &&
 			this.#window.location.protocol === 'https:'
 		) {
-			throw new DOMException(
+			throw new this.#window.DOMException(
 				`Mixed Content: The page at '${this.#window.location.href}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${this.request.url}'. This request has been blocked; the content must be served over HTTPS.`,
 				DOMExceptionNameEnum.securityError
 			);
@@ -127,7 +129,7 @@ export default class SyncFetch {
 			this.#window.console.warn(
 				`Cross-Origin Request Blocked: The Same Origin Policy dissallows reading the remote resource at "${this.request.url}".`
 			);
-			throw new DOMException(
+			throw new this.#window.DOMException(
 				`Cross-Origin Request Blocked: The Same Origin Policy dissallows reading the remote resource at "${this.request.url}".`,
 				DOMExceptionNameEnum.networkError
 			);
@@ -322,7 +324,7 @@ export default class SyncFetch {
 	 */
 	public sendRequest(): ISyncResponse {
 		if (!this.request[PropertySymbol.bodyBuffer] && this.request.body) {
-			throw new DOMException(
+			throw new this.#window.DOMException(
 				`Streams are not supported as request body for synchrounous requests.`,
 				DOMExceptionNameEnum.notSupportedError
 			);
@@ -347,7 +349,7 @@ export default class SyncFetch {
 
 		// If content length is 0, then there was an error
 		if (!content.length) {
-			throw new DOMException(
+			throw new this.#window.DOMException(
 				`Synchronous fetch to "${this.request.url}" failed.`,
 				DOMExceptionNameEnum.networkError
 			);
@@ -356,7 +358,7 @@ export default class SyncFetch {
 		const { error, incomingMessage } = <ISyncHTTPResponse>JSON.parse(content.toString());
 
 		if (error) {
-			throw new DOMException(
+			throw new this.#window.DOMException(
 				`Synchronous fetch to "${this.request.url}" failed. Error: ${error}`,
 				DOMExceptionNameEnum.networkError
 			);
@@ -441,7 +443,7 @@ export default class SyncFetch {
 				return Zlib.brotliDecompressSync(options.body);
 			}
 		} catch (error) {
-			throw new DOMException(
+			throw new this.#window.DOMException(
 				`Failed to read response body. Error: ${error.message}.`,
 				DOMExceptionNameEnum.encodingError
 			);
@@ -463,7 +465,7 @@ export default class SyncFetch {
 
 		switch (this.request.redirect) {
 			case 'error':
-				throw new DOMException(
+				throw new this.#window.DOMException(
 					`URI requested responds with a redirect, redirect mode is set to "error": ${this.request.url}`,
 					DOMExceptionNameEnum.abortError
 				);
@@ -480,7 +482,7 @@ export default class SyncFetch {
 					try {
 						locationURL = new URL(locationHeader, this.request.url);
 					} catch {
-						throw new DOMException(
+						throw new this.#window.DOMException(
 							`URI requested responds with an invalid redirect URL: ${locationHeader}`,
 							DOMExceptionNameEnum.uriMismatchError
 						);
@@ -492,7 +494,7 @@ export default class SyncFetch {
 				}
 
 				if (FetchResponseRedirectUtility.isMaxRedirectsReached(this.redirectCount)) {
-					throw new DOMException(
+					throw new this.#window.DOMException(
 						`Maximum redirects reached at: ${this.request.url}`,
 						DOMExceptionNameEnum.networkError
 					);
@@ -546,7 +548,7 @@ export default class SyncFetch {
 
 				return fetch.send();
 			default:
-				throw new DOMException(
+				throw new this.#window.DOMException(
 					`Redirect option '${this.request.redirect}' is not a valid value of IRequestRedirect`
 				);
 		}

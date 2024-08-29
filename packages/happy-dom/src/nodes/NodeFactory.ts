@@ -1,4 +1,6 @@
 import Document from '../nodes/document/Document.js';
+import Node from './node/Node.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 
 /**
  * Node factory used for setting the owner document to nodes.
@@ -14,12 +16,14 @@ export default class NodeFactory {
 	 * @param [args] Node arguments.
 	 * @returns Node instance.
 	 */
-	public static createNode<T>(
+	public static createNode<T extends Node>(
 		ownerDocument: Document,
 		nodeClass: new (...args) => T,
 		...args: any[]
 	): T {
-		this.ownerDocuments.push(ownerDocument);
+		if (!nodeClass.prototype[PropertySymbol.window]) {
+			this.ownerDocuments.push(ownerDocument);
+		}
 		return new nodeClass(...args);
 	}
 

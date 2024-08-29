@@ -10,6 +10,7 @@ import IRequestBody from '../types/IRequestBody.js';
 import IResponseBody from '../types/IResponseBody.js';
 import { Buffer } from 'buffer';
 import Stream from 'stream';
+import BrowserWindow from '../../window/BrowserWindow.js';
 
 /**
  * Fetch body utility.
@@ -97,17 +98,21 @@ export default class FetchBodyUtility {
 	 * It is actually not cloning the stream.
 	 * It creates a pass through stream and pipes the original stream to it.
 	 *
+	 * @param window Window.
 	 * @param requestOrResponse Request or Response.
 	 * @param requestOrResponse.body Body.
 	 * @param requestOrResponse.bodyUsed Body used.
 	 * @returns New stream.
 	 */
-	public static cloneBodyStream(requestOrResponse: {
-		body: ReadableStream | null;
-		bodyUsed: boolean;
-	}): ReadableStream {
+	public static cloneBodyStream(
+		window: BrowserWindow,
+		requestOrResponse: {
+			body: ReadableStream | null;
+			bodyUsed: boolean;
+		}
+	): ReadableStream {
 		if (requestOrResponse.bodyUsed) {
-			throw new DOMException(
+			throw new window.DOMException(
 				`Failed to clone body stream of request: Request body is already used.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -153,10 +158,14 @@ export default class FetchBodyUtility {
 	 * https://github.com/node-fetch/node-fetch/blob/main/src/body.js (MIT)
 	 *
 	 * @see https://fetch.spec.whatwg.org/#concept-body-consume-body
+	 * @param window Window.
 	 * @param body Body stream.
 	 * @returns Promise.
 	 */
-	public static async consumeBodyStream(body: ReadableStream | null): Promise<Buffer> {
+	public static async consumeBodyStream(
+		window: BrowserWindow,
+		body: ReadableStream | null
+	): Promise<Buffer> {
 		if (body === null || !(body instanceof ReadableStream)) {
 			return Buffer.alloc(0);
 		}
@@ -175,6 +184,12 @@ export default class FetchBodyUtility {
 				if (body[PropertySymbol.error]) {
 					throw body[PropertySymbol.error];
 				}
+				if (body[PropertySymbol.aborted]) {
+					throw new window.DOMException(
+						'Failed to read response body: The stream was aborted.',
+						DOMExceptionNameEnum.abortError
+					);
+				}
 				const chunk = readResult.value;
 				bytes += chunk.length;
 				chunks.push(chunk);
@@ -184,7 +199,7 @@ export default class FetchBodyUtility {
 			if (error instanceof DOMException) {
 				throw error;
 			}
-			throw new DOMException(
+			throw new window.DOMException(
 				`Failed to read response body. Error: ${error.message}.`,
 				DOMExceptionNameEnum.encodingError
 			);
@@ -197,7 +212,7 @@ export default class FetchBodyUtility {
 
 			return Buffer.concat(chunks, bytes);
 		} catch (error) {
-			throw new DOMException(
+			throw new window.DOMException(
 				`Could not create Buffer from response body. Error: ${error.message}.`,
 				DOMExceptionNameEnum.invalidStateError
 			);

@@ -2,7 +2,7 @@ import EventTarget from '../event/EventTarget.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import Event from '../event/Event.js';
 import BrowserWindow from '../window/BrowserWindow.js';
-import IEventListener from '../event/IEventListener.js';
+import TEventListener from '../event/TEventListener.js';
 import MediaQueryListEvent from '../event/events/MediaQueryListEvent.js';
 import IMediaQueryItem from './MediaQueryItem.js';
 import MediaQueryParser from './MediaQueryParser.js';
@@ -15,7 +15,7 @@ import MediaQueryParser from './MediaQueryParser.js';
  */
 export default class MediaQueryList extends EventTarget {
 	public onchange: (event: Event) => void = null;
-	#ownerWindow: BrowserWindow;
+	#window: BrowserWindow;
 	#items: IMediaQueryItem[] | null = null;
 	#media: string;
 	#rootFontSize: string | number | null = null;
@@ -24,17 +24,13 @@ export default class MediaQueryList extends EventTarget {
 	 * Constructor.
 	 *
 	 * @param options Options.
-	 * @param options.ownerWindow Owner window.
+	 * @param options.window Owner window.
 	 * @param options.media Media.
 	 * @param [options.rootFontSize] Root font size.
 	 */
-	constructor(options: {
-		ownerWindow: BrowserWindow;
-		media: string;
-		rootFontSize?: string | number;
-	}) {
+	constructor(options: { window: BrowserWindow; media: string; rootFontSize?: string | number }) {
 		super();
-		this.#ownerWindow = options.ownerWindow;
+		this.#window = options.window;
 		this.#media = options.media;
 		this.#rootFontSize = options.rootFontSize || null;
 	}
@@ -48,7 +44,7 @@ export default class MediaQueryList extends EventTarget {
 		this.#items =
 			this.#items ||
 			MediaQueryParser.parse({
-				ownerWindow: this.#ownerWindow,
+				window: this.#window,
 				mediaQuery: this.#media,
 				rootFontSize: this.#rootFontSize
 			});
@@ -65,7 +61,7 @@ export default class MediaQueryList extends EventTarget {
 		this.#items =
 			this.#items ||
 			MediaQueryParser.parse({
-				ownerWindow: this.#ownerWindow,
+				window: this.#window,
 				mediaQuery: this.#media,
 				rootFontSize: this.#rootFontSize
 			});
@@ -102,7 +98,7 @@ export default class MediaQueryList extends EventTarget {
 	/**
 	 * @override
 	 */
-	public addEventListener(type: string, listener: IEventListener | ((event: Event) => void)): void {
+	public addEventListener(type: string, listener: TEventListener): void {
 		super.addEventListener(type, listener);
 		if (type === 'change') {
 			let matchesState = false;
@@ -114,23 +110,17 @@ export default class MediaQueryList extends EventTarget {
 				}
 			};
 			listener[PropertySymbol.windowResizeListener] = resizeListener;
-			this.#ownerWindow.addEventListener('resize', resizeListener);
+			this.#window.addEventListener('resize', resizeListener);
 		}
 	}
 
 	/**
 	 * @override
 	 */
-	public removeEventListener(
-		type: string,
-		listener: IEventListener | ((event: Event) => void)
-	): void {
+	public removeEventListener(type: string, listener: TEventListener): void {
 		super.removeEventListener(type, listener);
 		if (type === 'change' && listener[PropertySymbol.windowResizeListener]) {
-			this.#ownerWindow.removeEventListener(
-				'resize',
-				listener[PropertySymbol.windowResizeListener]
-			);
+			this.#window.removeEventListener('resize', listener[PropertySymbol.windowResizeListener]);
 		}
 	}
 }

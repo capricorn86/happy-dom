@@ -8,7 +8,7 @@ export default class CSSMeasurementConverter {
 	 * Returns measurement in pixels.
 	 *
 	 * @param options Options.
-	 * @param options.ownerWindow Owner window.
+	 * @param options.window Owner window.
 	 * @param options.value Measurement (e.g. "10px", "10rem" or "10em").
 	 * @param options.rootFontSize Root font size in pixels.
 	 * @param options.parentFontSize Parent font size in pixels.
@@ -16,7 +16,7 @@ export default class CSSMeasurementConverter {
 	 * @returns Measurement in pixels.
 	 */
 	public static toPixels(options: {
-		ownerWindow: BrowserWindow;
+		window: BrowserWindow;
 		value: string;
 		rootFontSize: string | number;
 		parentFontSize: string | number;
@@ -37,21 +37,19 @@ export default class CSSMeasurementConverter {
 			case 'em':
 				return this.round(value * parseFloat(<string>options.parentFontSize));
 			case 'vw':
-				return this.round((value * options.ownerWindow.innerWidth) / 100);
+				return this.round((value * options.window.innerWidth) / 100);
 			case 'vh':
-				return this.round((value * options.ownerWindow.innerHeight) / 100);
+				return this.round((value * options.window.innerHeight) / 100);
 			case '%':
 				return options.parentSize !== undefined && options.parentSize !== null
 					? this.round((value * parseFloat(<string>options.parentSize)) / 100)
 					: null;
 			case 'vmin':
 				return this.round(
-					(value * Math.min(options.ownerWindow.innerWidth, options.ownerWindow.innerHeight)) / 100
+					(value * Math.min(options.window.innerWidth, options.window.innerHeight)) / 100
 				);
 			case 'vmax':
-				return (
-					(value * Math.max(options.ownerWindow.innerWidth, options.ownerWindow.innerHeight)) / 100
-				);
+				return (value * Math.max(options.window.innerWidth, options.window.innerHeight)) / 100;
 			case 'cm':
 				return this.round(value * 37.7812);
 			case 'mm':
