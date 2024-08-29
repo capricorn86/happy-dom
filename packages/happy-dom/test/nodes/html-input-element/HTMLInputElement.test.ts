@@ -702,14 +702,7 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
-	for (const property of [
-		'disabled',
-		'autofocus',
-		'required',
-		'indeterminate',
-		'multiple',
-		'readOnly'
-	]) {
+	for (const property of ['disabled', 'autofocus', 'required', 'multiple', 'readOnly']) {
 		describe(`get ${property}()`, () => {
 			it('Returns attribute value.', () => {
 				expect(element[property]).toBe(false);
@@ -890,6 +883,23 @@ describe('HTMLInputElement', () => {
 		it('Sets attribute value.', () => {
 			element.type = 'date';
 			expect(element.getAttribute('type')).toBe('date');
+		});
+	});
+
+	describe('get indeterminate()', () => {
+		it('Returns indeterminate  value.', () => {
+			element.type = 'checkbox';
+			expect(element.indeterminate).toBe(false);
+			expect(element.hasAttribute('indeterminate')).toBe(false);
+		});
+	});
+
+	describe('set indeterminate()', () => {
+		it('Sets indeterminate  value.', () => {
+			element.type = 'checkbox';
+			element.indeterminate = true;
+			expect(element.indeterminate).toBe(true);
+			expect(element.hasAttribute('indeterminate')).toBe(false);
 		});
 	});
 
@@ -1294,6 +1304,26 @@ describe('HTMLInputElement', () => {
 			element.dispatchEvent(new MouseEvent('click'));
 
 			expect(element.checked).toBe(true);
+		});
+
+		it('Switch "checked" to "true" or "false" and "indeterminate" to "false" if type is "checkbox" and "indeterminate" is "true" and is a "click" event.', () => {
+			element.type = 'checkbox';
+			element.indeterminate = true;
+
+			// "input" and "change" events should only be triggered if connected to DOM
+			document.body.appendChild(element);
+
+			element.dispatchEvent(new MouseEvent('click'));
+
+			expect(element.checked).toBe(true);
+			expect(element.indeterminate).toBe(false);
+
+			element.indeterminate = true;
+
+			element.dispatchEvent(new MouseEvent('click'));
+
+			expect(element.checked).toBe(false);
+			expect(element.indeterminate).toBe(false);
 		});
 
 		it('Sets "checked" to "true" if type is "radio" and is a "click" event.', () => {

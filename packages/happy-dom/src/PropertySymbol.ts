@@ -31,6 +31,7 @@ export const formNode = Symbol('formNode');
 export const internalId = Symbol('internalId');
 export const height = Symbol('height');
 export const immediatePropagationStopped = Symbol('immediatePropagationStopped');
+export const indeterminate = Symbol('indeterminate');
 export const isFirstWrite = Symbol('isFirstWrite');
 export const isFirstWriteAfterOpen = Symbol('isFirstWriteAfterOpen');
 export const isInPassiveEventListener = Symbol('isInPassiveEventListener');

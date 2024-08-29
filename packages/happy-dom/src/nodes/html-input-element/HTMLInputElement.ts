@@ -46,6 +46,7 @@ export default class HTMLInputElement extends HTMLElement {
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
 	public [PropertySymbol.files]: FileList = new FileList();
+	public [PropertySymbol.indeterminate]: boolean = false;
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
 	public [PropertySymbol.popoverTargetElement]: HTMLElement | null = null;
 
@@ -683,7 +684,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @returns Indeterminate.
 	 */
 	public get indeterminate(): boolean {
-		return this.getAttribute('indeterminate') !== null;
+		return this[PropertySymbol.indeterminate];
 	}
 
 	/**
@@ -692,11 +693,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @param indeterminate Indeterminate.
 	 */
 	public set indeterminate(indeterminate: boolean) {
-		if (!indeterminate) {
-			this.removeAttribute('indeterminate');
-		} else {
-			this.setAttribute('indeterminate', '');
-		}
+		this[PropertySymbol.indeterminate] = Boolean(indeterminate);
 	}
 
 	/**
@@ -1372,6 +1369,7 @@ export default class HTMLInputElement extends HTMLElement {
 		}
 
 		let previousCheckedValue: boolean | null = null;
+		let previousIndeterminateValue: boolean = this[PropertySymbol.indeterminate];
 
 		// The checkbox or radio button has to be checked before the click event is dispatched, so that event listeners can check the checked value.
 		// However, the value has to be restored if preventDefault() is called on the click event.
@@ -1380,6 +1378,10 @@ export default class HTMLInputElement extends HTMLElement {
 		if (type === 'checkbox' || type === 'radio') {
 			previousCheckedValue = this.checked;
 			this.#setChecked(type === 'checkbox' ? !previousCheckedValue : true);
+			if (type === 'checkbox') {
+				previousIndeterminateValue = this[PropertySymbol.indeterminate];
+				this[PropertySymbol.indeterminate] = false;
+			}
 		}
 
 		// Dispatches the event
@@ -1397,6 +1399,7 @@ export default class HTMLInputElement extends HTMLElement {
 			// Restore checked state if preventDefault() is triggered inside a listener of the click event.
 			if (previousCheckedValue !== null) {
 				this.#setChecked(previousCheckedValue);
+				this[PropertySymbol.indeterminate] = previousIndeterminateValue;
 			}
 		} else {
 			const type = this.type;
