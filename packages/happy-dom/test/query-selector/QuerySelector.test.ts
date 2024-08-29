@@ -1380,6 +1380,23 @@ describe('QuerySelector', () => {
 			expect(container.querySelector(':where(span[attr1="val,ue1"])')).toBe(null);
 		});
 
+		it('Remove new line from selector and trim selector before parse', () => {
+			const container = document.createElement('div');
+
+			container.innerHTML = QuerySelectorHTML;
+
+			expect(container.querySelector('\n \n\r	\t	\f h1 \n \n\r	\t	\f')).toBe(
+				container.children[0].children[0]
+			);
+			expect(container.querySelector('\n \n\r	\t	\f div div        span \n \n\r	\t	\f')).toBe(
+				container.children[0].children[1].children[0]
+			);
+			expect(
+				container.querySelector('div.class1\n.class2 span') ===
+					container.children[0].children[1].children[0]
+			).toBe(true);
+		});
+
 		it('Returns element matching selector "datalist#id"', () => {
 			const div = document.createElement('div');
 			const datalist = document.createElement('datalist');
