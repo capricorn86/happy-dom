@@ -62,10 +62,32 @@ export default interface IBrowserPage {
 	goto(url: string, options?: IGoToOptions): Promise<Response | null>;
 
 	/**
+	 * Navigates back in history.
+	 *
+	 * @param [options] Options.
+	 */
+	goBack(options?: IGoToOptions): Promise<Response | null>;
+
+	/**
+	 * Navigates forward in history.
+	 *
+	 * @param [options] Options.
+	 */
+	goForward(options?: IGoToOptions): Promise<Response | null>;
+
+	/**
+	 * Navigates a delta in history.
+	 *
+	 * @param steps Steps.
+	 * @param [options] Options.
+	 */
+	goSteps(steps?: number, options?: IGoToOptions): Promise<Response | null>;
+
+	/**
 	 * Reloads the current page.
 	 *
 	 * @param [options] Options.
 	 * @returns Response.
 	 */
-	reload(options: IReloadOptions): Promise<Response | null>;
+	reload(options?: IReloadOptions): Promise<Response | null>;
 }

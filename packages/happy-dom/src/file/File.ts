@@ -27,6 +27,14 @@ export default class File extends Blob {
 		name: string,
 		options?: { type?: string; lastModified?: number }
 	) {
+		if (arguments.length < 2) {
+			throw new TypeError(
+				"Failed to construct 'File': 2 arguments required, but only " +
+					arguments.length +
+					' present.'
+			);
+		}
+
 		super(bits, options);
 
 		this.name = name.replace(/\//g, ':');

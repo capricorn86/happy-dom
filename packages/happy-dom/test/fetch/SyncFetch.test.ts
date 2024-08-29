@@ -61,7 +61,7 @@ describe('SyncFetch', () => {
 
 			expect(error).toEqual(
 				new DOMException(
-					`Failed to construct 'Request. Invalid URL "${url}" on document location 'about:blank'. Relative URLs are not permitted on current document location.`,
+					`Failed to construct 'Request': Invalid URL "${url}" on document location 'about:blank'. Relative URLs are not permitted on current document location.`,
 					DOMExceptionNameEnum.notSupportedError
 				)
 			);
@@ -86,7 +86,7 @@ describe('SyncFetch', () => {
 
 			expect(error).toEqual(
 				new DOMException(
-					`Failed to construct 'Request. Invalid URL "${url}" on document location 'about:blank'. Relative URLs are not permitted on current document location.`,
+					`Failed to construct 'Request': Invalid URL "${url}" on document location 'about:blank'. Relative URLs are not permitted on current document location.`,
 					DOMExceptionNameEnum.notSupportedError
 				)
 			);
@@ -1548,7 +1548,7 @@ describe('SyncFetch', () => {
 
 			const url = 'https://localhost:8080/test/';
 
-			const abortController = new AbortController();
+			const abortController = new window.AbortController();
 			const abortSignal = abortController.signal;
 
 			abortController.abort();
@@ -2029,7 +2029,7 @@ describe('SyncFetch', () => {
 
 			const body =
 				'------HappyDOMFormDataBoundary0.ssssssssst\r\nContent-Disposition: form-data; name="key1"\r\n\r\nvalue1\r\n------HappyDOMFormDataBoundary0.ssssssssst\r\nContent-Disposition: form-data; name="key2"\r\n\r\nvalue2\r\n';
-			const formData = new FormData();
+			const formData = new window.FormData();
 			let requestArgs: string | null = null;
 
 			vi.spyOn(Math, 'random').mockImplementation(() => 0.8);

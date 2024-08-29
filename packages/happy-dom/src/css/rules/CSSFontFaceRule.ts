@@ -8,7 +8,7 @@ import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration.js';
 export default class CSSFontFaceRule extends CSSRule {
 	public readonly type = CSSRule.FONT_FACE_RULE;
 	public [PropertySymbol.cssText] = '';
-	#style: CSSStyleDeclaration = null;
+	#style: CSSStyleDeclaration | null = null;
 
 	/**
 	 * Returns style.
@@ -22,5 +22,14 @@ export default class CSSFontFaceRule extends CSSRule {
 			this.#style.cssText = this[PropertySymbol.cssText];
 		}
 		return this.#style;
+	}
+
+	/**
+	 * Returns css text.
+	 *
+	 * @returns CSS text.
+	 */
+	public get cssText(): string {
+		return `@font-face { ${this.style.cssText} }`;
 	}
 }

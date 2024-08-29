@@ -1,4 +1,6 @@
+import NamespaceURI from '../../config/NamespaceURI.js';
 import HTMLAudioElement from './HTMLAudioElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * Image as constructor.
@@ -7,6 +9,10 @@ import HTMLAudioElement from './HTMLAudioElement.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLAudioElement/Audio.
  */
 export default class Audio extends HTMLAudioElement {
+	public [PropertySymbol.tagName] = 'AUDIO';
+	public [PropertySymbol.localName] = 'audio';
+	public [PropertySymbol.namespaceURI] = NamespaceURI.html;
+
 	/**
 	 * Constructor.
 	 *

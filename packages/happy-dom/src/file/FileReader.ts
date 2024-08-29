@@ -1,8 +1,6 @@
 import WhatwgMIMEType from 'whatwg-mimetype';
 import * as PropertySymbol from '../PropertySymbol.js';
-import BrowserWindow from '../window/BrowserWindow.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
-import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import Blob from './Blob.js';
 import FileReaderReadyStateEnum from './FileReaderReadyStateEnum.js';
@@ -31,16 +29,18 @@ export default class FileReader extends EventTarget {
 	#isTerminated = false;
 	#loadTimeout: NodeJS.Timeout | null = null;
 	#parseTimeout: NodeJS.Timeout | null = null;
-	readonly #window: BrowserWindow;
 
 	/**
 	 * Constructor.
-	 *
-	 * @param window Window.
 	 */
-	constructor(window: BrowserWindow) {
+	constructor() {
 		super();
-		this.#window = window;
+
+		if (!this[PropertySymbol.window]) {
+			throw new TypeError(
+				`Failed to construct '${this.constructor.name}': '${this.constructor.name}' was constructed outside a Window context.`
+			);
+		}
 	}
 
 	/**
@@ -84,8 +84,10 @@ export default class FileReader extends EventTarget {
 	 * Aborts the file reader.
 	 */
 	public abort(): void {
-		this.#window.clearTimeout(this.#loadTimeout);
-		this.#window.clearTimeout(this.#parseTimeout);
+		const window = this[PropertySymbol.window];
+
+		window.clearTimeout(this.#loadTimeout);
+		window.clearTimeout(this.#parseTimeout);
 
 		if (
 			this.readyState === FileReaderReadyStateEnum.empty ||
@@ -113,8 +115,10 @@ export default class FileReader extends EventTarget {
 	 * @param [encoding] Encoding.
 	 */
 	#readFile(blob: Blob, format: FileReaderFormatEnum, encoding: string | null = null): void {
+		const window = this[PropertySymbol.window];
+
 		if (this.readyState === FileReaderReadyStateEnum.loading) {
-			throw new DOMException(
+			throw new window.DOMException(
 				'The object is in an invalid state.',
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -122,7 +126,7 @@ export default class FileReader extends EventTarget {
 
 		(<number>this.readyState) = FileReaderReadyStateEnum.loading;
 
-		this.#loadTimeout = this.#window.setTimeout(() => {
+		this.#loadTimeout = window.setTimeout(() => {
 			if (this.#isTerminated) {
 				this.#isTerminated = false;
 				return;
@@ -143,7 +147,7 @@ export default class FileReader extends EventTarget {
 				})
 			);
 
-			this.#parseTimeout = this.#window.setTimeout(() => {
+			this.#parseTimeout = window.setTimeout(() => {
 				if (this.#isTerminated) {
 					this.#isTerminated = false;
 					return;

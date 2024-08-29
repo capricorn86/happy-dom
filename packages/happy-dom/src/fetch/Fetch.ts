@@ -3,7 +3,6 @@ import * as PropertySymbol from '../PropertySymbol.js';
 import IRequestInfo from './types/IRequestInfo.js';
 import Headers from './Headers.js';
 import FetchRequestReferrerUtility from './utilities/FetchRequestReferrerUtility.js';
-import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import HTTP, { IncomingMessage } from 'http';
 import HTTPS from 'https';
@@ -85,7 +84,7 @@ export default class Fetch {
 		this.#window = options.window;
 		this.request =
 			typeof options.url === 'string' || options.url instanceof URL
-				? new options.browserFrame.window.Request(options.url, options.init)
+				? new options.window.Request(options.url, options.init)
 				: <Request>options.url;
 		if (options.contentType) {
 			(<string>this.request[PropertySymbol.contentType]) = options.contentType;
@@ -105,7 +104,10 @@ export default class Fetch {
 		FetchRequestValidationUtility.validateSchema(this.request);
 
 		if (this.request.signal.aborted) {
-			throw new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError);
+			throw new this.#window.DOMException(
+				'The operation was aborted.',
+				DOMExceptionNameEnum.abortError
+			);
 		}
 
 		if (this.request[PropertySymbol.url].protocol === 'data:') {
@@ -121,7 +123,7 @@ export default class Fetch {
 			this.request[PropertySymbol.url].protocol === 'http:' &&
 			this.#window.location.protocol === 'https:'
 		) {
-			throw new DOMException(
+			throw new this.#window.DOMException(
 				`Mixed Content: The page at '${this.#window.location.href}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${this.request.url}'. This request has been blocked; the content must be served over HTTPS.`,
 				DOMExceptionNameEnum.securityError
 			);
@@ -142,7 +144,7 @@ export default class Fetch {
 				this.#window.console.warn(
 					`Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at "${this.request.url}".`
 				);
-				throw new DOMException(
+				throw new this.#window.DOMException(
 					`Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at "${this.request.url}".`,
 					DOMExceptionNameEnum.networkError
 				);
@@ -342,7 +344,7 @@ export default class Fetch {
 			);
 
 			if (this.resolve) {
-				throw new Error('Fetch already sent.');
+				throw new this.#window.Error('Fetch already sent.');
 			}
 
 			this.resolve = (response: Response | Promise<Response>): void => {
@@ -417,7 +419,10 @@ export default class Fetch {
 	private onSocket(socket: Socket): void {
 		const onSocketClose = (): void => {
 			if (this.isChunkedTransfer && !this.isProperLastChunkReceived) {
-				const error = new DOMException('Premature close.', DOMExceptionNameEnum.networkError);
+				const error = new this.#window.DOMException(
+					'Premature close.',
+					DOMExceptionNameEnum.networkError
+				);
 
 				if (this.response && this.response.body) {
 					this.response.body[PropertySymbol.error] = error;
@@ -469,8 +474,8 @@ export default class Fetch {
 		this.finalizeRequest();
 		this.#window.console.error(error);
 		this.reject(
-			new DOMException(
-				`Fetch to "${this.request.url}" failed. Error: ${error.message}`,
+			new this.#window.DOMException(
+				`Failed to execute "fetch()" on "Window" with URL "${this.request.url}": ${error.message}`,
 				DOMExceptionNameEnum.networkError
 			)
 		);
@@ -480,7 +485,20 @@ export default class Fetch {
 	 * Triggered when the async task manager aborts.
 	 */
 	private onAsyncTaskManagerAbort(): void {
-		const error = new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError);
+		const error = new this.#window.DOMException(
+			'The operation was aborted.',
+			DOMExceptionNameEnum.abortError
+		);
+
+		this.request[PropertySymbol.aborted] = true;
+
+		if (this.request.body) {
+			this.request.body[PropertySymbol.error] = error;
+		}
+
+		if (this.listeners.onSignalAbort) {
+			this.request.signal.removeEventListener('abort', this.listeners.onSignalAbort);
+		}
 
 		if (this.nodeRequest && !this.nodeRequest.destroyed) {
 			this.nodeRequest.destroy(error);
@@ -670,7 +688,7 @@ export default class Fetch {
 			case 'error':
 				this.finalizeRequest();
 				this.reject(
-					new DOMException(
+					new this.#window.DOMException(
 						`URI requested responds with a redirect, redirect mode is set to "error": ${this.request.url}`,
 						DOMExceptionNameEnum.abortError
 					)
@@ -693,7 +711,7 @@ export default class Fetch {
 					} catch {
 						this.finalizeRequest();
 						this.reject(
-							new DOMException(
+							new this.#window.DOMException(
 								`URI requested responds with an invalid redirect URL: ${locationHeader}`,
 								DOMExceptionNameEnum.uriMismatchError
 							)
@@ -709,7 +727,7 @@ export default class Fetch {
 				if (FetchResponseRedirectUtility.isMaxRedirectsReached(this.redirectCount)) {
 					this.finalizeRequest();
 					this.reject(
-						new DOMException(
+						new this.#window.DOMException(
 							`Maximum redirects reached at: ${this.request.url}`,
 							DOMExceptionNameEnum.networkError
 						)
@@ -777,7 +795,7 @@ export default class Fetch {
 			default:
 				this.finalizeRequest();
 				this.reject(
-					new DOMException(
+					new this.#window.DOMException(
 						`Redirect option '${this.request.redirect}' is not a valid value of IRequestRedirect`
 					)
 				);
@@ -799,10 +817,16 @@ export default class Fetch {
 	 * @param reason Reason.
 	 */
 	private abort(reason?: Error): void {
-		const error = new DOMException(
+		const error = new this.#window.DOMException(
 			'The operation was aborted.' + (reason ? ' ' + reason.toString() : ''),
 			DOMExceptionNameEnum.abortError
 		);
+
+		this.request[PropertySymbol.aborted] = true;
+
+		if (this.request.body) {
+			this.request.body[PropertySymbol.error] = error;
+		}
 
 		if (this.nodeRequest && !this.nodeRequest.destroyed) {
 			this.nodeRequest.destroy(error);

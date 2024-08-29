@@ -322,7 +322,7 @@ describe('Response', () => {
 
 	describe('formData()', () => {
 		it('Returns FormData for FormData object (multipart)', async () => {
-			const formData = new FormData();
+			const formData = new window.FormData();
 			formData.append('some', 'test');
 			const response = new window.Response(formData);
 			const formDataResponse = await response.formData();
@@ -362,7 +362,7 @@ describe('Response', () => {
 		});
 
 		it('Returns FormData for multipart text fields.', async () => {
-			const formData = new FormData();
+			const formData = new window.FormData();
 
 			vi.spyOn(Math, 'random').mockImplementation(() => 0.8);
 
@@ -385,7 +385,7 @@ describe('Response', () => {
 		});
 
 		it('Returns FormData for multipart files.', async () => {
-			const formData = new FormData();
+			const formData = new window.FormData();
 			const imageBuffer = await FS.promises.readFile(
 				Path.join(__dirname, 'data', 'test-image.jpg')
 			);
@@ -461,13 +461,16 @@ describe('Response', () => {
 
 		it('Supports window.happyDOM?.waitUntilComplete() for multipart content.', async () => {
 			await new Promise((resolve) => {
-				const response = new window.Response(new FormData());
+				const response = new window.Response(new window.FormData());
 				let isAsyncComplete = false;
 
 				vi.spyOn(MultipartFormDataParser, 'streamToFormData').mockImplementation(
 					(): Promise<{ formData: FormData; buffer: Buffer }> =>
 						new Promise((resolve) =>
-							setTimeout(() => resolve({ formData: new FormData(), buffer: Buffer.from([]) }), 10)
+							setTimeout(
+								() => resolve({ formData: new window.FormData(), buffer: Buffer.from([]) }),
+								10
+							)
 						)
 				);
 

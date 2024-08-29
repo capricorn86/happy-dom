@@ -2,17 +2,17 @@ const COLOR_REGEXP =
 	/^#([0-9a-fA-F]{3,4}){1,2}$|^rgb\(([^)]*)\)$|^rgba\(([^)]*)\)$|^hsla?\(\s*(-?\d+|-?\d*.\d+)\s*,\s*(-?\d+|-?\d*.\d+)%\s*,\s*(-?\d+|-?\d*.\d+)%\s*(,\s*(-?\d+|-?\d*.\d+)\s*)?\)/;
 
 const LENGTH_REGEXP =
-	/^(0|[-+]?[0-9]*\.?[0-9]+(in|cm|em|mm|pt|pc|px|ex|rem|vh|vw|ch|vw|vh|vmin|vmax|Q))$/;
+	/^(0|[-+]?[0-9]*\.?[0-9]+)(in|cm|em|mm|pt|pc|px|ex|rem|vh|vw|ch|vw|vh|vmin|vmax|Q)$/;
 const PERCENTAGE_REGEXP = /^[-+]?[0-9]*\.?[0-9]+%$/;
 const DEGREE_REGEXP = /^[0-9]+deg$/;
 const URL_REGEXP = /^url\(\s*([^)]*)\s*\)$/;
 const INTEGER_REGEXP = /^[0-9]+$/;
 const FLOAT_REGEXP = /^[0-9.]+$/;
 const CALC_REGEXP = /^calc\([^^)]+\)$/;
-const CSS_VARIABLE_REGEXP = /^var\( *(--[^) ]+)\)$/;
+const CSS_VARIABLE_REGEXP = /^var\(\s*(--[^)\s]+)\)$/;
 const FIT_CONTENT_REGEXP = /^fit-content\([^^)]+\)$/;
 const GRADIENT_REGEXP =
-	/^(repeating-linear|linear|radial|repeating-radial|conic|repeating-conic)-gradient\([^)]+\)$/;
+	/^((repeating-linear|linear|radial|repeating-radial|conic|repeating-conic)-gradient)\(([^)]+)\)$/;
 const GLOBALS = ['inherit', 'initial', 'unset', 'revert'];
 const COLORS = [
 	'none',
@@ -182,8 +182,14 @@ export default class CSSStyleDeclarationValueParser {
 		if (value === '0') {
 			return '0px';
 		}
-		if (LENGTH_REGEXP.test(value)) {
-			return value;
+		const match = value.match(LENGTH_REGEXP);
+		if (match) {
+			const number = parseFloat(match[1]);
+			if (isNaN(number)) {
+				return null;
+			}
+			const unit = match[2];
+			return `${Math.round(number * 1000000) / 1000000}${unit}`;
 		}
 		return null;
 	}
@@ -309,7 +315,11 @@ export default class CSSStyleDeclarationValueParser {
 	 */
 	public static getFloat(value: string): string {
 		if (FLOAT_REGEXP.test(value)) {
-			return value;
+			const number = parseFloat(value);
+			if (isNaN(number)) {
+				return null;
+			}
+			return String(Math.round(number * 1000000) / 1000000);
 		}
 		return null;
 	}
@@ -321,8 +331,12 @@ export default class CSSStyleDeclarationValueParser {
 	 * @returns Parsed value.
 	 */
 	public static getGradient(value: string): string {
-		if (GRADIENT_REGEXP.test(value)) {
-			return value;
+		const match = value.match(GRADIENT_REGEXP);
+		if (match) {
+			return `${match[1]}(${match[3]
+				.trim()
+				.split(/\s*,\s*/)
+				.join(', ')})`;
 		}
 		return null;
 	}
@@ -368,7 +382,7 @@ export default class CSSStyleDeclarationValueParser {
 			return null;
 		}
 
-		let url = result[1];
+		let url = result[1].trim();
 
 		if ((url[0] === '"' || url[0] === "'") && url[0] !== url[url.length - 1]) {
 			return null;

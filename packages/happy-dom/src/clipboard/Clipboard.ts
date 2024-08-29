@@ -1,4 +1,3 @@
-import DOMException from '../exception/DOMException.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import ClipboardItem from './ClipboardItem.js';
 import Blob from '../file/Blob.js';
@@ -10,16 +9,19 @@ import Blob from '../file/Blob.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/Clipboard.
  */
 export default class Clipboard {
-	#ownerWindow: BrowserWindow;
+	#window: BrowserWindow;
 	#data: ClipboardItem[] = [];
 
 	/**
 	 * Constructor.
 	 *
-	 * @param ownerWindow Owner window.
+	 * @param window Owner window.
 	 */
-	constructor(ownerWindow: BrowserWindow) {
-		this.#ownerWindow = ownerWindow;
+	constructor(window: BrowserWindow) {
+		if (!window) {
+			throw new TypeError('Illegal constructor');
+		}
+		this.#window = window;
 	}
 
 	/**
@@ -28,11 +30,13 @@ export default class Clipboard {
 	 * @returns Data.
 	 */
 	public async read(): Promise<ClipboardItem[]> {
-		const permissionStatus = await this.#ownerWindow.navigator.permissions.query({
+		const permissionStatus = await this.#window.navigator.permissions.query({
 			name: 'clipboard-read'
 		});
 		if (permissionStatus.state === 'denied') {
-			throw new DOMException(`Failed to execute 'read' on 'Clipboard': The request is not allowed`);
+			throw new this.#window.DOMException(
+				`Failed to execute 'read' on 'Clipboard': The request is not allowed`
+			);
 		}
 		return this.#data;
 	}
@@ -43,11 +47,11 @@ export default class Clipboard {
 	 * @returns Text.
 	 */
 	public async readText(): Promise<string> {
-		const permissionStatus = await this.#ownerWindow.navigator.permissions.query({
+		const permissionStatus = await this.#window.navigator.permissions.query({
 			name: 'clipboard-read'
 		});
 		if (permissionStatus.state === 'denied') {
-			throw new DOMException(
+			throw new this.#window.DOMException(
 				`Failed to execute 'readText' on 'Clipboard': The request is not allowed`
 			);
 		}
@@ -72,11 +76,11 @@ export default class Clipboard {
 	 * @param data Data.
 	 */
 	public async write(data: ClipboardItem[]): Promise<void> {
-		const permissionStatus = await this.#ownerWindow.navigator.permissions.query({
+		const permissionStatus = await this.#window.navigator.permissions.query({
 			name: 'clipboard-write'
 		});
 		if (permissionStatus.state === 'denied') {
-			throw new DOMException(
+			throw new this.#window.DOMException(
 				`Failed to execute 'write' on 'Clipboard': The request is not allowed`
 			);
 		}
@@ -89,14 +93,16 @@ export default class Clipboard {
 	 * @param text Text.
 	 */
 	public async writeText(text: string): Promise<void> {
-		const permissionStatus = await this.#ownerWindow.navigator.permissions.query({
+		const permissionStatus = await this.#window.navigator.permissions.query({
 			name: 'clipboard-write'
 		});
 		if (permissionStatus.state === 'denied') {
-			throw new DOMException(
+			throw new this.#window.DOMException(
 				`Failed to execute 'writeText' on 'Clipboard': The request is not allowed`
 			);
 		}
-		this.#data = [new ClipboardItem({ 'text/plain': new Blob([text], { type: 'text/plain' }) })];
+		this.#data = [
+			new this.#window.ClipboardItem({ 'text/plain': new Blob([text], { type: 'text/plain' }) })
+		];
 	}
 }

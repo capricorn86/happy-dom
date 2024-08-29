@@ -1,6 +1,8 @@
 import IBrowserContext from './IBrowserContext.js';
 import IBrowserPage from './IBrowserPage.js';
 import IBrowserSettings from './IBrowserSettings.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
+import BrowserExceptionObserver from '../utilities/BrowserExceptionObserver.js';
 
 /**
  * Browser.
@@ -12,6 +14,7 @@ export default interface IBrowser {
 	readonly contexts: IBrowserContext[];
 	readonly settings: IBrowserSettings;
 	readonly console: Console | null;
+	readonly [PropertySymbol.exceptionObserver]: BrowserExceptionObserver | null;
 
 	/**
 	 * Aborts all ongoing operations and destroys the browser.

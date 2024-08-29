@@ -1,20 +1,19 @@
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
-import HTMLBaseElement from '../../../src/nodes/html-base-element/HTMLBaseElement.js';
-import { beforeEach, afterEach, describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLBaseElement', () => {
 	let window: Window;
 	let document: Document;
 
 	beforeEach(() => {
-		window = new Window();
+		window = new Window({ url: 'https://www.somesite.com/test.html' });
 		document = window.document;
 	});
 
 	describe('get target()', () => {
 		it('Returns the "target" attribute.', () => {
-			const element = <HTMLBaseElement>document.createElement('base');
+			const element = document.createElement('base');
 			element.setAttribute('target', 'test');
 			expect(element.target).toBe('test');
 		});
@@ -22,7 +21,7 @@ describe('HTMLBaseElement', () => {
 
 	describe('set target()', () => {
 		it('Sets the attribute "target".', () => {
-			const element = <HTMLBaseElement>document.createElement('base');
+			const element = document.createElement('base');
 			element.target = 'test';
 			expect(element.getAttribute('target')).toBe('test');
 		});
@@ -30,21 +29,38 @@ describe('HTMLBaseElement', () => {
 
 	describe('get href()', () => {
 		it('Returns the "href" attribute.', () => {
-			const element = <HTMLBaseElement>document.createElement('base');
+			const element = document.createElement('base');
 			element.setAttribute('href', 'test');
-			expect(element.href).toBe('test');
+			expect(element.href).toBe('https://www.somesite.com/test');
 		});
 
-		it('Returns location.href if not set.', () => {
-			const element = <HTMLBaseElement>document.createElement('base');
-			document.location.href = 'https://localhost:8080/base/path/to/script/?key=value=1#test';
-			expect(element.href).toBe('https://localhost:8080/base/path/to/script/?key=value=1#test');
+		it('Returns the "href" attribute when scheme is http.', () => {
+			const element = document.createElement('base');
+			element.setAttribute('href', 'http://www.example.com');
+			expect(element.href).toBe('http://www.example.com/');
+		});
+
+		it('Returns the "href" attribute when scheme is tel.', () => {
+			const element = document.createElement('base');
+			element.setAttribute('href', 'tel:+123456789');
+			expect(element.href).toBe('tel:+123456789');
+		});
+
+		it('Returns the "href" attribute when scheme-relative', () => {
+			const element = document.createElement('base');
+			element.setAttribute('href', '//example.com');
+			expect(element.href).toBe('https://example.com/');
+		});
+
+		it('Returns window location if "href" attribute is empty.', () => {
+			const element = document.createElement('base');
+			expect(element.href).toBe('https://www.somesite.com/test.html');
 		});
 	});
 
 	describe('set href()', () => {
 		it('Sets the attribute "href".', () => {
-			const element = <HTMLBaseElement>document.createElement('base');
+			const element = document.createElement('base');
 			element.href = 'test';
 			expect(element.getAttribute('href')).toBe('test');
 		});
