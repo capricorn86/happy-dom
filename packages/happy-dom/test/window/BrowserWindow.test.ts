@@ -599,7 +599,7 @@ describe('BrowserWindow', () => {
 			document.body.appendChild(parent);
 
 			expect(computedStyle.border).toBe('1px solid #000');
-			expect(computedStyle.font).toBe('14px "Tahoma"');
+			expect(computedStyle.font).toBe('14px Tahoma');
 			expect(computedStyle.color).toBe('');
 		});
 
@@ -638,7 +638,7 @@ describe('BrowserWindow', () => {
 			document.body.appendChild(parent);
 
 			expect(computedStyle.border).toBe('1px solid #000');
-			expect(computedStyle.font).toBe('14px "Tahoma"');
+			expect(computedStyle.font).toBe('14px Tahoma');
 			expect(computedStyle.color).toBe('');
 		});
 
