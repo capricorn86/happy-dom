@@ -3170,6 +3170,8 @@ export default class CSSStyleDeclarationPropertySetParser {
 				} else if (trimmedPart[0] !== '"' && trimmedPart[trimmedPart.length - 1] !== '"') {
 					trimmedPart = `"${trimmedPart}"`;
 				}
+			} else {
+				trimmedPart = trimmedPart.replace(/"/g, '');
 			}
 
 			if (i > 0) {
