@@ -323,6 +323,11 @@ export default class SelectorItem {
 					}
 				}
 				return null;
+			case 'focus':
+			case 'focus-visible':
+				return element[PropertySymbol.ownerDocument].activeElement === element
+					? { priorityWeight: 10 }
+					: null;
 			default:
 				return null;
 		}

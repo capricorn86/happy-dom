@@ -1030,6 +1030,7 @@ export default class Node extends EventTarget {
 		this[PropertySymbol.rootNode] = null;
 
 		if (this[PropertySymbol.ownerDocument][PropertySymbol.activeElement] === <unknown>this) {
+			this[PropertySymbol.ownerDocument][PropertySymbol.clearCache]();
 			this[PropertySymbol.ownerDocument][PropertySymbol.activeElement] = null;
 		}
 
