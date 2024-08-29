@@ -332,6 +332,13 @@ export default class QuerySelector {
 
 		element[PropertySymbol.cache].matches.set(selector, cachedItem);
 
+		if (element[PropertySymbol.isConnected]) {
+			// Document is affected for the ":target" selector
+			(element[PropertySymbol.ownerDocument] || element)[PropertySymbol.affectsCache].push(
+				cachedItem
+			);
+		}
+
 		for (const items of SelectorParser.getSelectorGroups(selector, options)) {
 			const result = this.matchSelector(element, items.reverse(), cachedItem);
 
