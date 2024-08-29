@@ -91,7 +91,7 @@ describe('Request', () => {
 
 			expect(error).toEqual(
 				new DOMException(
-					`Failed to construct 'Request. Invalid URL "/path/" on document location 'about:blank'. Relative URLs are not permitted on current document location.`,
+					`Failed to construct 'Request': Invalid URL "/path/" on document location 'about:blank'. Relative URLs are not permitted on current document location.`,
 					DOMExceptionNameEnum.notSupportedError
 				)
 			);
@@ -285,13 +285,13 @@ describe('Request', () => {
 		});
 
 		it('Supports signal from Request object.', () => {
-			const signal = new AbortSignal();
+			const signal = new window.AbortSignal();
 			const request = new window.Request(new window.Request(TEST_URL, { signal }));
 			expect(request.signal).toBe(signal);
 		});
 
 		it('Supports signal from init object.', () => {
-			const signal = new AbortSignal();
+			const signal = new window.AbortSignal();
 			const request = new window.Request(TEST_URL, { signal });
 			expect(request.signal).toBe(signal);
 		});
@@ -804,7 +804,7 @@ describe('Request', () => {
 		it('Returns a clone.', async () => {
 			window.happyDOM?.setURL('https://example.com/other/path/');
 
-			const signal = new AbortSignal();
+			const signal = new window.AbortSignal();
 			const request = new window.Request(TEST_URL, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },

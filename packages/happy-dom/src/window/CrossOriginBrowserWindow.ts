@@ -3,6 +3,7 @@ import BrowserWindow from './BrowserWindow.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import Location from '../location/Location.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 
 /**
  * Browser window with limited access due to CORS restrictions in iframes.
@@ -11,11 +12,15 @@ export default class CrossOriginBrowserWindow
 	extends EventTarget
 	implements CrossOriginBrowserWindow
 {
-	public readonly self = this;
 	public readonly window = this;
-	public readonly parent: BrowserWindow | CrossOriginBrowserWindow;
-	public readonly top: BrowserWindow | CrossOriginBrowserWindow;
 	public readonly location: Location;
+
+	// Internal properties
+	public [PropertySymbol.self]: BrowserWindow | CrossOriginBrowserWindow = this;
+	public declare [PropertySymbol.top]: BrowserWindow | CrossOriginBrowserWindow;
+	public declare [PropertySymbol.parent]: BrowserWindow | CrossOriginBrowserWindow;
+
+	// Private properties
 	#targetWindow: BrowserWindow;
 
 	/**
@@ -27,8 +32,9 @@ export default class CrossOriginBrowserWindow
 	constructor(target: BrowserWindow, parent?: BrowserWindow) {
 		super();
 
-		this.parent = parent ?? this;
-		this.top = parent ?? this;
+		this[PropertySymbol.parent] = parent ?? this;
+		this[PropertySymbol.top] = parent ?? this;
+
 		this.location = <Location>new Proxy(
 			{},
 			{
@@ -47,6 +53,51 @@ export default class CrossOriginBrowserWindow
 			}
 		);
 		this.#targetWindow = target;
+	}
+
+	/**
+	 * Returns self.
+	 *
+	 * @returns Self.
+	 */
+	public get self(): BrowserWindow | CrossOriginBrowserWindow {
+		return this[PropertySymbol.self];
+	}
+
+	/**
+	 * Returns self.
+	 *
+	 * @param self Self.
+	 */
+	public set self(self: BrowserWindow | CrossOriginBrowserWindow | null) {
+		this[PropertySymbol.self] = self;
+	}
+
+	/**
+	 * Returns top.
+	 *
+	 * @returns Top.
+	 */
+	public get top(): BrowserWindow | CrossOriginBrowserWindow {
+		return this[PropertySymbol.top];
+	}
+
+	/**
+	 * Returns parent.
+	 *
+	 * @returns Parent.
+	 */
+	public get parent(): BrowserWindow | CrossOriginBrowserWindow {
+		return this[PropertySymbol.parent];
+	}
+
+	/**
+	 * Returns parent.
+	 *
+	 * @param parent Parent.
+	 */
+	public set parent(parent: BrowserWindow | null) {
+		this[PropertySymbol.parent] = parent;
 	}
 
 	/**

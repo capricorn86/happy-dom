@@ -1,12 +1,11 @@
 import EventTarget from './EventTarget.js';
-import IMessagePort from './IMessagePort.js';
 
 /**
  * Message port.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/MessagePort
  */
-export default abstract class MessagePort extends EventTarget implements IMessagePort {
+export default abstract class MessagePort extends EventTarget {
 	/**
 	 * Sends a message from the port, and optionally, transfers ownership of objects to other browsing contexts.
 	 *

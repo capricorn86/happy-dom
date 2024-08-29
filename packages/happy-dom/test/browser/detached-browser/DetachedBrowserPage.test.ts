@@ -4,7 +4,7 @@ import Window from '../../../src/window/Window';
 import BrowserWindow from '../../../src/window/BrowserWindow';
 import VirtualConsolePrinter from '../../../src/console/VirtualConsolePrinter';
 import VirtualConsole from '../../../src/console/VirtualConsole';
-import Response from '../../../src/fetch/types/Response';
+import Response from '../../../src/fetch/Response';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import IGoToOptions from '../../../src/browser/types/IGoToOptions';
 import BrowserFrameFactory from '../../../src/browser/utilities/BrowserFrameFactory';
@@ -281,6 +281,77 @@ describe('DetachedBrowserPage', () => {
 			const response = await page.goto('http://localhost:3000', { timeout: 10000 });
 			expect((<Response>response).url).toBe('http://localhost:3000');
 			expect(usedURL).toBe('http://localhost:3000');
+			expect(usedOptions).toEqual({ timeout: 10000 });
+		});
+	});
+
+	describe('goBack()', () => {
+		it('Navigates back in history.', async () => {
+			const browser = new DetachedBrowser(BrowserWindow);
+			const page = browser.newPage();
+			let usedOptions: IGoToOptions | null = null;
+
+			vi.spyOn(page.mainFrame, 'goBack').mockImplementation((options) => {
+				usedOptions = <IGoToOptions>options;
+				return Promise.resolve(<Response>{ status: 201 });
+			});
+
+			const response = await page.goBack({ timeout: 10000 });
+			expect((<Response>response).status).toBe(201);
+			expect(usedOptions).toEqual({ timeout: 10000 });
+		});
+	});
+
+	describe('goForward()', () => {
+		it('Navigates forward in history.', async () => {
+			const browser = new DetachedBrowser(BrowserWindow);
+			const page = browser.newPage();
+			let usedOptions: IGoToOptions | null = null;
+
+			vi.spyOn(page.mainFrame, 'goForward').mockImplementation((options) => {
+				usedOptions = <IGoToOptions>options;
+				return Promise.resolve(<Response>{ status: 201 });
+			});
+
+			const response = await page.goForward({ timeout: 10000 });
+			expect((<Response>response).status).toBe(201);
+			expect(usedOptions).toEqual({ timeout: 10000 });
+		});
+	});
+
+	describe('goSteps()', () => {
+		it('Navigates a delta in history.', async () => {
+			const browser = new DetachedBrowser(BrowserWindow);
+			const page = browser.newPage();
+			let usedSteps: number | null = null;
+			let usedOptions: IGoToOptions | null = null;
+
+			vi.spyOn(page.mainFrame, 'goSteps').mockImplementation((steps, options) => {
+				usedSteps = <number>steps;
+				usedOptions = <IGoToOptions>options;
+				return Promise.resolve(<Response>{ status: 201 });
+			});
+
+			const response = await page.goSteps(-2, { timeout: 10000 });
+			expect((<Response>response).status).toBe(201);
+			expect(usedSteps).toBe(-2);
+			expect(usedOptions).toEqual({ timeout: 10000 });
+		});
+	});
+
+	describe('reload()', () => {
+		it('Reloads the frame.', async () => {
+			const browser = new DetachedBrowser(BrowserWindow);
+			const page = browser.newPage();
+			let usedOptions: IGoToOptions | null = null;
+
+			vi.spyOn(page.mainFrame, 'reload').mockImplementation((options) => {
+				usedOptions = <IGoToOptions>options;
+				return Promise.resolve(<Response>{ status: 201 });
+			});
+
+			const response = await page.reload({ timeout: 10000 });
+			expect((<Response>response).status).toBe(201);
 			expect(usedOptions).toEqual({ timeout: 10000 });
 		});
 	});

@@ -142,12 +142,41 @@ export default class BrowserPage implements IBrowserPage {
 	}
 
 	/**
+	 * Navigates back in history.
+	 *
+	 * @param [options] Options.
+	 */
+	public goBack(options?: IGoToOptions): Promise<Response | null> {
+		return this.mainFrame.goBack(options);
+	}
+
+	/**
+	 * Navigates forward in history.
+	 *
+	 * @param [options] Options.
+	 */
+	public goForward(options?: IGoToOptions): Promise<Response | null> {
+		return this.mainFrame.goForward(options);
+	}
+
+	/**
+	 * Navigates a delta in history.
+	 *
+	 * @param delta Delta.
+	 * @param steps
+	 * @param [options] Options.
+	 */
+	public goSteps(steps?: number, options?: IGoToOptions): Promise<Response | null> {
+		return this.mainFrame.goSteps(steps, options);
+	}
+
+	/**
 	 * Reloads the current page.
 	 *
 	 * @param [options] Options.
 	 * @returns Response.
 	 */
-	public reload(options: IReloadOptions): Promise<Response | null> {
+	public reload(options?: IReloadOptions): Promise<Response | null> {
 		return this.mainFrame.reload(options);
 	}
 }
