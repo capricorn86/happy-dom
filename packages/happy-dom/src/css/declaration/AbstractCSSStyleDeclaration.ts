@@ -1,12 +1,9 @@
 import Element from '../../nodes/element/Element.js';
-import * as PropertySymbol from '../../PropertySymbol.js';
-import Attr from '../../nodes/attr/Attr.js';
 import CSSRule from '../CSSRule.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
-import DOMException from '../../exception/DOMException.js';
 import CSSStyleDeclarationElementStyle from './element-style/CSSStyleDeclarationElementStyle.js';
 import CSSStyleDeclarationPropertyManager from './property-manager/CSSStyleDeclarationPropertyManager.js';
-import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * CSS Style Declaration.
@@ -71,29 +68,17 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 */
 	public set cssText(cssText: string) {
 		if (this.#computed) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'cssText' on 'CSSStyleDeclaration': These styles are computed, and the properties are therefore read-only.`,
 				DOMExceptionNameEnum.domException
 			);
 		}
 
 		if (this.#ownerElement) {
-			const style = new CSSStyleDeclarationPropertyManager({ cssText });
-			let styleAttribute = <Attr>this.#ownerElement[PropertySymbol.attributes]['style'];
-
-			if (!styleAttribute) {
-				styleAttribute = this.#ownerElement[PropertySymbol.ownerDocument].createAttribute('style');
-				// We use "[PropertySymbol.setNamedItemWithoutConsequences]" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
-				(<NamedNodeMap>this.#ownerElement[PropertySymbol.attributes])[
-					PropertySymbol.setNamedItemWithoutConsequences
-				](styleAttribute);
-			}
-
-			if (this.#ownerElement[PropertySymbol.isConnected]) {
-				this.#ownerElement[PropertySymbol.ownerDocument][PropertySymbol.cacheID]++;
-			}
-
-			styleAttribute[PropertySymbol.value] = style.toString();
+			this.#ownerElement.setAttribute(
+				'style',
+				new CSSStyleDeclarationPropertyManager({ cssText }).toString()
+			);
 		} else {
 			this.#style = new CSSStyleDeclarationPropertyManager({ cssText });
 		}
@@ -121,7 +106,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 */
 	public setProperty(name: string, value: string, priority?: 'important' | '' | undefined): void {
 		if (this.#computed) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'setProperty' on 'CSSStyleDeclaration': These styles are computed, and therefore the '${name}' property is read-only.`,
 				DOMExceptionNameEnum.domException
 			);
@@ -136,25 +121,10 @@ export default abstract class AbstractCSSStyleDeclaration {
 		if (!stringValue) {
 			this.removeProperty(name);
 		} else if (this.#ownerElement) {
-			let styleAttribute = <Attr>this.#ownerElement[PropertySymbol.attributes]['style'];
-
-			if (!styleAttribute) {
-				styleAttribute = this.#ownerElement[PropertySymbol.ownerDocument].createAttribute('style');
-
-				// We use "[PropertySymbol.setNamedItemWithoutConsequences]" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
-				(<NamedNodeMap>this.#ownerElement[PropertySymbol.attributes])[
-					PropertySymbol.setNamedItemWithoutConsequences
-				](styleAttribute);
-			}
-
-			if (this.#ownerElement[PropertySymbol.isConnected]) {
-				this.#ownerElement[PropertySymbol.ownerDocument][PropertySymbol.cacheID]++;
-			}
-
 			const style = this.#elementStyle.getElementStyle();
 			style.set(name, stringValue, !!priority);
 
-			styleAttribute[PropertySymbol.value] = style.toString();
+			this.#ownerElement.setAttribute('style', style.toString());
 		} else {
 			this.#style.set(name, stringValue, !!priority);
 		}
@@ -169,7 +139,7 @@ export default abstract class AbstractCSSStyleDeclaration {
 	 */
 	public removeProperty(name: string): void {
 		if (this.#computed) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'removeProperty' on 'CSSStyleDeclaration': These styles are computed, and therefore the '${name}' property is read-only.`,
 				DOMExceptionNameEnum.domException
 			);
@@ -180,18 +150,10 @@ export default abstract class AbstractCSSStyleDeclaration {
 			style.remove(name);
 			const newCSSText = style.toString();
 
-			if (this.#ownerElement[PropertySymbol.isConnected]) {
-				this.#ownerElement[PropertySymbol.ownerDocument][PropertySymbol.cacheID]++;
-			}
-
 			if (newCSSText) {
-				(<Attr>this.#ownerElement[PropertySymbol.attributes]['style'])[PropertySymbol.value] =
-					newCSSText;
+				this.#ownerElement.setAttribute('style', newCSSText);
 			} else {
-				// We use "[PropertySymbol.removeNamedItemWithoutConsequences]" here to avoid triggering setting "Element.style.cssText" when setting the "style" attribute.
-				(<NamedNodeMap>this.#ownerElement[PropertySymbol.attributes])[
-					PropertySymbol.removeNamedItemWithoutConsequences
-				]('style');
+				this.#ownerElement.removeAttribute('style');
 			}
 		} else {
 			this.#style.remove(name);

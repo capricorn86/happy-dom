@@ -10,7 +10,7 @@ export default class CSSStyleRule extends CSSRule {
 	public readonly selectorText = '';
 	public readonly styleMap = new Map();
 	public [PropertySymbol.cssText] = '';
-	#style: CSSStyleDeclaration = null;
+	#style: CSSStyleDeclaration | null = null;
 
 	/**
 	 * Returns style.

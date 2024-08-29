@@ -8,13 +8,12 @@ import URL from '../url/URL.js';
 import { ReadableStream } from 'stream/web';
 import FormData from '../form-data/FormData.js';
 import FetchBodyUtility from './utilities/FetchBodyUtility.js';
-import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
 import BrowserWindow from '../window/BrowserWindow.js';
-import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import ICachedResponse from './cache/response/ICachedResponse.js';
 import { Buffer } from 'buffer';
+import WindowBrowserContext from '../window/WindowBrowserContext.js';
 
 const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
 
@@ -27,8 +26,9 @@ const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Response/Response
  */
 export default class Response implements Response {
-	// Needs to be injected by sub-class.
-	protected static [PropertySymbol.window]: BrowserWindow;
+	// Injected by WindowClassExtender
+	protected declare static [PropertySymbol.window]: BrowserWindow;
+	protected declare [PropertySymbol.window]: BrowserWindow;
 
 	// Public properties
 	public readonly body: ReadableStream | null = null;
@@ -43,26 +43,20 @@ export default class Response implements Response {
 	public readonly headers: Headers;
 	public [PropertySymbol.cachedResponse]: ICachedResponse | null = null;
 	public [PropertySymbol.buffer]: Buffer | null = null;
-	readonly #window: BrowserWindow;
-	readonly #browserFrame: IBrowserFrame;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param injected Injected properties.
-	 * @param input Input.
-	 * @param injected.window
-	 * @param body
-	 * @param injected.browserFrame
+	 * @param body Body.
 	 * @param [init] Init.
 	 */
-	constructor(
-		injected: { window: BrowserWindow; browserFrame: IBrowserFrame },
-		body?: IResponseBody,
-		init?: IResponseInit
-	) {
-		this.#window = injected.window;
-		this.#browserFrame = injected.browserFrame;
+	constructor(body?: IResponseBody, init?: IResponseInit) {
+		if (!this[PropertySymbol.window]) {
+			throw new TypeError(
+				`Failed to construct '${this.constructor.name}': '${this.constructor.name}' was constructed outside a Window context.`
+			);
+		}
+
 		this.status = init?.status !== undefined ? init.status : 200;
 		this.statusText = init?.statusText || '';
 		this.ok = this.status >= 200 && this.status < 300;
@@ -101,28 +95,37 @@ export default class Response implements Response {
 	 * @returns Array buffer.
 	 */
 	public async arrayBuffer(): Promise<ArrayBuffer> {
+		const window = this[PropertySymbol.window];
+
 		if (this.bodyUsed) {
-			throw new DOMException(
+			throw new window.DOMException(
 				`Body has already been used for "${this.url}".`,
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
+
+		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
 
 		(<boolean>this.bodyUsed) = true;
 
 		let buffer: Buffer | null = this[PropertySymbol.buffer];
 
 		if (!buffer) {
-			const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
+			const taskID = asyncTaskManager.startTask(() => {
+				if (this.body) {
+					this.body[PropertySymbol.aborted] = true;
+				}
+			});
 
 			try {
-				buffer = await FetchBodyUtility.consumeBodyStream(this.body);
+				buffer = await FetchBodyUtility.consumeBodyStream(window, this.body);
 			} catch (error) {
-				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+				asyncTaskManager.endTask(taskID);
 				throw error;
 			}
 
-			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+			asyncTaskManager.endTask(taskID);
 		}
 
 		this.#storeBodyInCache(buffer);
@@ -148,26 +151,35 @@ export default class Response implements Response {
 	 * @returns Buffer.
 	 */
 	public async buffer(): Promise<Buffer> {
+		const window = this[PropertySymbol.window];
+
 		if (this.bodyUsed) {
-			throw new DOMException(
+			throw new window.DOMException(
 				`Body has already been used for "${this.url}".`,
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
+
+		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
 
 		(<boolean>this.bodyUsed) = true;
 
 		let buffer: Buffer | null = this[PropertySymbol.buffer];
 
 		if (!buffer) {
-			const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
+			const taskID = asyncTaskManager.startTask(() => {
+				if (this.body) {
+					this.body[PropertySymbol.aborted] = true;
+				}
+			});
 			try {
-				buffer = await FetchBodyUtility.consumeBodyStream(this.body);
+				buffer = await FetchBodyUtility.consumeBodyStream(window, this.body);
 			} catch (error) {
-				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+				asyncTaskManager.endTask(taskID);
 				throw error;
 			}
-			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+			asyncTaskManager.endTask(taskID);
 		}
 
 		this.#storeBodyInCache(buffer);
@@ -181,26 +193,35 @@ export default class Response implements Response {
 	 * @returns Text.
 	 */
 	public async text(): Promise<string> {
+		const window = this[PropertySymbol.window];
+
 		if (this.bodyUsed) {
-			throw new DOMException(
+			throw new window.DOMException(
 				`Body has already been used for "${this.url}".`,
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
+
+		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
 
 		(<boolean>this.bodyUsed) = true;
 
 		let buffer: Buffer | null = this[PropertySymbol.buffer];
 
 		if (!buffer) {
-			const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
+			const taskID = asyncTaskManager.startTask(() => {
+				if (this.body) {
+					this.body[PropertySymbol.aborted] = true;
+				}
+			});
 			try {
-				buffer = await FetchBodyUtility.consumeBodyStream(this.body);
+				buffer = await FetchBodyUtility.consumeBodyStream(window, this.body);
 			} catch (error) {
-				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+				asyncTaskManager.endTask(taskID);
 				throw error;
 			}
-			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+			asyncTaskManager.endTask(taskID);
 		}
 
 		this.#storeBodyInCache(buffer);
@@ -224,12 +245,14 @@ export default class Response implements Response {
 	 * @returns Form data.
 	 */
 	public async formData(): Promise<FormData> {
+		const window = this[PropertySymbol.window];
+		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
 		const contentType = this.headers.get('Content-Type');
-		const asyncTaskManager = this.#browserFrame[PropertySymbol.asyncTaskManager];
 
 		if (/multipart/i.test(contentType)) {
 			if (this.bodyUsed) {
-				throw new DOMException(
+				throw new window.DOMException(
 					`Body has already been used for "${this.url}".`,
 					DOMExceptionNameEnum.invalidStateError
 				);
@@ -237,12 +260,20 @@ export default class Response implements Response {
 
 			(<boolean>this.bodyUsed) = true;
 
-			const taskID = asyncTaskManager.startTask();
+			const taskID = browserFrame[PropertySymbol.asyncTaskManager].startTask(() => {
+				if (this.body) {
+					this.body[PropertySymbol.aborted] = true;
+				}
+			});
 			let formData: FormData;
 			let buffer: Buffer;
 
 			try {
-				const result = await MultipartFormDataParser.streamToFormData(this.body, contentType);
+				const result = await MultipartFormDataParser.streamToFormData(
+					window,
+					this.body,
+					contentType
+				);
 				formData = result.formData;
 				buffer = result.buffer;
 			} catch (error) {
@@ -258,7 +289,7 @@ export default class Response implements Response {
 
 		if (contentType?.startsWith('application/x-www-form-urlencoded')) {
 			const parameters = new URLSearchParams(await this.text());
-			const formData = new FormData();
+			const formData = new window.FormData();
 
 			for (const [key, value] of parameters) {
 				formData.append(key, value);
@@ -267,7 +298,7 @@ export default class Response implements Response {
 			return formData;
 		}
 
-		throw new DOMException(
+		throw new window.DOMException(
 			`Failed to build FormData object: The "content-type" header is neither "application/x-www-form-urlencoded" nor "multipart/form-data".`,
 			DOMExceptionNameEnum.invalidStateError
 		);
@@ -279,9 +310,10 @@ export default class Response implements Response {
 	 * @returns Clone.
 	 */
 	public clone(): Response {
-		const body = FetchBodyUtility.cloneBodyStream(this);
+		const window = this[PropertySymbol.window];
+		const body = FetchBodyUtility.cloneBodyStream(window, this);
 
-		const response = new this.#window.Response(body, {
+		const response = new window.Response(body, {
 			status: this.status,
 			statusText: this.statusText,
 			headers: this.headers
@@ -317,14 +349,16 @@ export default class Response implements Response {
 	 * @returns Response.
 	 */
 	public static redirect(url: string, status = 302): Response {
+		const window = this[PropertySymbol.window];
+
 		if (!REDIRECT_STATUS_CODES.includes(status)) {
-			throw new DOMException(
+			throw new window.DOMException(
 				'Failed to create redirect response: Invalid redirect status code.',
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
 
-		return new this[PropertySymbol.window].Response(null, {
+		return new window.Response(null, {
 			headers: {
 				location: new URL(url).toString()
 			},
@@ -354,19 +388,20 @@ export default class Response implements Response {
 	 * @returns Response.
 	 */
 	public static json(data: object, init?: IResponseInit): Response {
+		const window = this[PropertySymbol.window];
 		const body = JSON.stringify(data);
 
 		if (body === undefined) {
-			throw new TypeError('data is not JSON serializable');
+			throw new window.TypeError('data is not JSON serializable');
 		}
 
-		const headers = new this[PropertySymbol.window].Headers(init && init.headers);
+		const headers = new window.Headers(init && init.headers);
 
 		if (!headers.has('Content-Type')) {
 			headers.set('Content-Type', 'application/json');
 		}
 
-		return new this[PropertySymbol.window].Response(body, {
+		return new window.Response(body, {
 			status: 200,
 			...init,
 			headers

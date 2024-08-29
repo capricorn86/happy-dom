@@ -12,17 +12,18 @@ import Document from '../nodes/document/Document.js';
  * Event.
  */
 export default class Event {
-	public composed: boolean;
-	public bubbles: boolean;
-	public cancelable: boolean;
-	public defaultPrevented = false;
-	public eventPhase: EventPhaseEnum = EventPhaseEnum.none;
-	public timeStamp: number = performance.now();
-	public type: string;
 	public NONE = EventPhaseEnum.none;
 	public CAPTURING_PHASE = EventPhaseEnum.capturing;
 	public AT_TARGET = EventPhaseEnum.atTarget;
 	public BUBBLING_PHASE = EventPhaseEnum.bubbling;
+
+	public [PropertySymbol.composed] = false;
+	public [PropertySymbol.bubbles] = false;
+	public [PropertySymbol.cancelable] = false;
+	public [PropertySymbol.defaultPrevented] = false;
+	public [PropertySymbol.eventPhase] = EventPhaseEnum.none;
+	public [PropertySymbol.timeStamp] = performance.now();
+	public [PropertySymbol.type]: string;
 
 	public [PropertySymbol.immediatePropagationStopped] = false;
 	public [PropertySymbol.propagationStopped] = false;
@@ -37,11 +38,73 @@ export default class Event {
 	 * @param [eventInit] Event init.
 	 */
 	constructor(type: string, eventInit: IEventInit | null = null) {
-		this.type = type;
+		this[PropertySymbol.type] = type;
+		this[PropertySymbol.bubbles] = eventInit?.bubbles ?? false;
+		this[PropertySymbol.cancelable] = eventInit?.cancelable ?? false;
+		this[PropertySymbol.composed] = eventInit?.composed ?? false;
+	}
 
-		this.bubbles = eventInit?.bubbles ?? false;
-		this.cancelable = eventInit?.cancelable ?? false;
-		this.composed = eventInit?.composed ?? false;
+	/**
+	 * Returns composed.
+	 *
+	 * @returns Composed.
+	 */
+	public get composed(): boolean {
+		return this[PropertySymbol.composed];
+	}
+
+	/**
+	 * Returns bubbles.
+	 *
+	 * @returns Bubbles.
+	 */
+	public get bubbles(): boolean {
+		return this[PropertySymbol.bubbles];
+	}
+
+	/**
+	 * Returns cancelable.
+	 *
+	 * @returns Cancelable.
+	 */
+	public get cancelable(): boolean {
+		return this[PropertySymbol.cancelable];
+	}
+
+	/**
+	 * Returns defaultPrevented.
+	 *
+	 * @returns Default prevented.
+	 */
+	public get defaultPrevented(): boolean {
+		return this[PropertySymbol.defaultPrevented];
+	}
+
+	/**
+	 * Returns eventPhase.
+	 *
+	 * @returns Event phase.
+	 */
+	public get eventPhase(): EventPhaseEnum {
+		return this[PropertySymbol.eventPhase];
+	}
+
+	/**
+	 * Returns timeStamp.
+	 *
+	 * @returns Time stamp.
+	 */
+	public get timeStamp(): number {
+		return this[PropertySymbol.timeStamp];
+	}
+
+	/**
+	 * Returns type.
+	 *
+	 * @returns Type.
+	 */
+	public get type(): string {
+		return this[PropertySymbol.type];
 	}
 
 	/**
@@ -92,13 +155,17 @@ export default class Event {
 			if ((<Node>(<unknown>eventTarget)).parentNode) {
 				eventTarget = (<Node>(<unknown>eventTarget)).parentNode;
 			} else if (
-				this.composed &&
+				this[PropertySymbol.composed] &&
 				(<Node>eventTarget)[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode &&
 				(<ShadowRoot>eventTarget).host
 			) {
 				eventTarget = (<ShadowRoot>eventTarget).host;
-			} else if ((<Node>eventTarget)[PropertySymbol.nodeType] === NodeTypeEnum.documentNode) {
-				eventTarget = (<Document>(<unknown>eventTarget))[PropertySymbol.ownerWindow];
+			} else if (
+				(<Node>eventTarget)[PropertySymbol.nodeType] === NodeTypeEnum.documentNode &&
+				// The "load" event is a special case. It should not bubble up to the window.
+				this[PropertySymbol.type] !== 'load'
+			) {
+				eventTarget = (<Document>(<unknown>eventTarget))[PropertySymbol.window];
 			} else {
 				break;
 			}
@@ -116,17 +183,17 @@ export default class Event {
 	 * @param [cancelable=false] "true" if it cancelable.
 	 */
 	public initEvent(type: string, bubbles = false, cancelable = false): void {
-		this.type = type;
-		this.bubbles = bubbles;
-		this.cancelable = cancelable;
+		this[PropertySymbol.type] = type;
+		this[PropertySymbol.bubbles] = bubbles;
+		this[PropertySymbol.cancelable] = cancelable;
 	}
 
 	/**
 	 * Prevents default.
 	 */
 	public preventDefault(): void {
-		if (!this[PropertySymbol.isInPassiveEventListener]) {
-			this.defaultPrevented = true;
+		if (!this[PropertySymbol.isInPassiveEventListener] && this.cancelable) {
+			this[PropertySymbol.defaultPrevented] = true;
 		}
 	}
 

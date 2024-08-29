@@ -1,12 +1,10 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import DOMTokenList from '../../dom-token-list/DOMTokenList.js';
-import IHTMLHyperlinkElementUtils from './IHTMLHyperlinkElementUtils.js';
-import URL from '../../url/URL.js';
-import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
-import HTMLAnchorElementNamedNodeMap from './HTMLAnchorElementNamedNodeMap.js';
+import DOMTokenList from '../element/DOMTokenList.js';
 import Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
+import HTMLHyperlinkElementUtility from '../html-hyperlink-element/HTMLHyperlinkElementUtility.js';
+import IHTMLHyperlinkElement from '../html-hyperlink-element/IHTMLHyperlinkElement.js';
 import MouseEvent from '../../event/events/MouseEvent.js';
 
 /**
@@ -15,11 +13,9 @@ import MouseEvent from '../../event/events/MouseEvent.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement.
  */
-export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyperlinkElementUtils {
-	public override [PropertySymbol.attributes]: NamedNodeMap = new HTMLAnchorElementNamedNodeMap(
-		this
-	);
-	public [PropertySymbol.relList]: DOMTokenList = null;
+export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyperlinkElement {
+	public [PropertySymbol.relList]: DOMTokenList | null = null;
+	#htmlHyperlinkElementUtility = new HTMLHyperlinkElementUtility(this);
 
 	/**
 	 * Returns download.
@@ -45,17 +41,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Hash.
 	 */
 	public get hash(): string {
-		const href = this.getAttribute('href');
-		if (href.startsWith('#')) {
-			return href;
-		}
-		let url: URL;
-		try {
-			url = new URL(this.href);
-		} catch (e) {
-			return '';
-		}
-		return url.hash;
+		return this.#htmlHyperlinkElementUtility.getHash();
 	}
 
 	/**
@@ -64,14 +50,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @param hash Hash.
 	 */
 	public set hash(hash: string) {
-		let url: URL;
-		try {
-			url = new URL(this.href);
-		} catch (e) {
-			return;
-		}
-		url.hash = hash;
-		this.href = url.href;
+		this.#htmlHyperlinkElementUtility.setHash(hash);
 	}
 
 	/**
@@ -80,16 +59,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Href.
 	 */
 	public get href(): string {
-		if (!this.hasAttribute('href')) {
-			return '';
-		}
-
-		try {
-			return new URL(this.getAttribute('href'), this[PropertySymbol.ownerDocument].location.href)
-				.href;
-		} catch (e) {
-			return this.getAttribute('href');
-		}
+		return this.#htmlHyperlinkElementUtility.getHref();
 	}
 
 	/**
@@ -98,7 +68,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @param href Href.
 	 */
 	public set href(href: string) {
-		this.setAttribute('href', href);
+		this.#htmlHyperlinkElementUtility.setHref(href);
 	}
 
 	/**
@@ -125,11 +95,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Origin.
 	 */
 	public get origin(): string {
-		try {
-			return new URL(this.href).origin;
-		} catch (e) {
-			return '';
-		}
+		return this.#htmlHyperlinkElementUtility.getOrigin();
 	}
 
 	/**
@@ -156,11 +122,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Protocol.
 	 */
 	public get protocol(): string {
-		try {
-			return new URL(this.href).protocol;
-		} catch (e) {
-			return '';
-		}
+		return this.#htmlHyperlinkElementUtility.getProtocol();
 	}
 
 	/**
@@ -169,14 +131,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @param protocol Protocol.
 	 */
 	public set protocol(protocol: string) {
-		let url: URL;
-		try {
-			url = new URL(this.href);
-		} catch (e) {
-			return;
-		}
-		url.protocol = protocol;
-		this.href = url.href;
+		this.#htmlHyperlinkElementUtility.setProtocol(protocol);
 	}
 
 	/**
@@ -185,11 +140,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Username.
 	 */
 	public get username(): string {
-		try {
-			return new URL(this.href).username;
-		} catch (e) {
-			return '';
-		}
+		return this.#htmlHyperlinkElementUtility.getUsername();
 	}
 
 	/**
@@ -198,14 +149,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @param username Username.
 	 */
 	public set username(username: string) {
-		let url: URL;
-		try {
-			url = new URL(this.href);
-		} catch (e) {
-			return;
-		}
-		url.username = username;
-		this.href = url.href;
+		this.#htmlHyperlinkElementUtility.setUsername(username);
 	}
 
 	/**
@@ -214,11 +158,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Password.
 	 */
 	public get password(): string {
-		try {
-			return new URL(this.href).password;
-		} catch (e) {
-			return '';
-		}
+		return this.#htmlHyperlinkElementUtility.getPassword();
 	}
 
 	/**
@@ -227,14 +167,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @param password Password.
 	 */
 	public set password(password: string) {
-		let url: URL;
-		try {
-			url = new URL(this.href);
-		} catch (e) {
-			return;
-		}
-		url.password = password;
-		this.href = url.href;
+		this.#htmlHyperlinkElementUtility.setPassword(password);
 	}
 
 	/**
@@ -243,11 +176,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Pathname.
 	 */
 	public get pathname(): string {
-		try {
-			return new URL(this.href).pathname;
-		} catch (e) {
-			return '';
-		}
+		return this.#htmlHyperlinkElementUtility.getPathname();
 	}
 
 	/**
@@ -256,14 +185,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @param pathname Pathname.
 	 */
 	public set pathname(pathname: string) {
-		let url: URL;
-		try {
-			url = new URL(this.href);
-		} catch (e) {
-			return;
-		}
-		url.pathname = pathname;
-		this.href = url.href;
+		this.#htmlHyperlinkElementUtility.setPathname(pathname);
 	}
 
 	/**
@@ -272,11 +194,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Port.
 	 */
 	public get port(): string {
-		try {
-			return new URL(this.href).port;
-		} catch (e) {
-			return '';
-		}
+		return this.#htmlHyperlinkElementUtility.getPort();
 	}
 
 	/**
@@ -285,14 +203,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @param port Port.
 	 */
 	public set port(port: string) {
-		let url: URL;
-		try {
-			url = new URL(this.href);
-		} catch (e) {
-			return;
-		}
-		url.port = port;
-		this.href = url.href;
+		this.#htmlHyperlinkElementUtility.setPort(port);
 	}
 
 	/**
@@ -301,11 +212,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Host.
 	 */
 	public get host(): string {
-		try {
-			return new URL(this.href).host;
-		} catch (e) {
-			return '';
-		}
+		return this.#htmlHyperlinkElementUtility.getHost();
 	}
 
 	/**
@@ -314,14 +221,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @param host Host.
 	 */
 	public set host(host: string) {
-		let url: URL;
-		try {
-			url = new URL(this.href);
-		} catch (e) {
-			return;
-		}
-		url.host = host;
-		this.href = url.href;
+		this.#htmlHyperlinkElementUtility.setHost(host);
 	}
 
 	/**
@@ -330,11 +230,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Hostname.
 	 */
 	public get hostname(): string {
-		try {
-			return new URL(this.href).hostname;
-		} catch (e) {
-			return '';
-		}
+		return this.#htmlHyperlinkElementUtility.getHostname();
 	}
 
 	/**
@@ -343,14 +239,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @param hostname Hostname.
 	 */
 	public set hostname(hostname: string) {
-		let url: URL;
-		try {
-			url = new URL(this.href);
-		} catch (e) {
-			return;
-		}
-		url.hostname = hostname;
-		this.href = url.href;
+		this.#htmlHyperlinkElementUtility.setHostname(hostname);
 	}
 
 	/**
@@ -407,11 +296,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Search.
 	 */
 	public get search(): string {
-		try {
-			return new URL(this.href).search;
-		} catch (e) {
-			return '';
-		}
+		return this.#htmlHyperlinkElementUtility.getSearch();
 	}
 
 	/**
@@ -420,14 +305,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @param search Search.
 	 */
 	public set search(search: string) {
-		let url: URL;
-		try {
-			url = new URL(this.href);
-		} catch (e) {
-			return;
-		}
-		url.search = search;
-		this.href = url.href;
+		this.#htmlHyperlinkElementUtility.setSearch(search);
 	}
 
 	/**
@@ -498,18 +376,27 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 		const returnValue = super.dispatchEvent(event);
 
 		if (
+			!event[PropertySymbol.defaultPrevented] &&
 			event.type === 'click' &&
 			event instanceof MouseEvent &&
-			event.eventPhase === EventPhaseEnum.none &&
-			!event.defaultPrevented
+			event.eventPhase === EventPhaseEnum.none
 		) {
 			const href = this.href;
+
 			if (href) {
-				this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].open(
-					href,
-					this.target || '_self'
-				);
-				if (this[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow].closed) {
+				const features = [];
+
+				if (this.relList.contains('noreferrer')) {
+					features.push('noreferrer');
+				}
+
+				if (this.relList.contains('noopener')) {
+					features.push('noopener');
+				}
+
+				this[PropertySymbol.window].open(href, this.target || '_self', features.join(','));
+
+				if (this[PropertySymbol.window].closed) {
 					event.stopImmediatePropagation();
 				}
 			}

@@ -9,8 +9,6 @@ import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import XMLHttpResponseTypeEnum from './XMLHttpResponseTypeEnum.js';
 import ErrorEvent from '../event/events/ErrorEvent.js';
-import IBrowserFrame from '../browser/types/IBrowserFrame.js';
-import BrowserWindow from '../window/BrowserWindow.js';
 import Headers from '../fetch/Headers.js';
 import Fetch from '../fetch/Fetch.js';
 import SyncFetch from '../fetch/SyncFetch.js';
@@ -23,6 +21,7 @@ import IRequestBody from '../fetch/types/IRequestBody.js';
 import XMLHttpRequestResponseDataParser from './XMLHttpRequestResponseDataParser.js';
 import FetchRequestHeaderUtility from '../fetch/utilities/FetchRequestHeaderUtility.js';
 import Response from '../fetch/Response.js';
+import WindowBrowserContext from '../window/WindowBrowserContext.js';
 
 /**
  * XMLHttpRequest.
@@ -39,12 +38,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	public static DONE = XMLHttpRequestReadyStateEnum.done;
 
 	// Public properties
-	public upload: XMLHttpRequestUpload = new XMLHttpRequestUpload();
+	public upload: XMLHttpRequestUpload = new this[PropertySymbol.window].XMLHttpRequestUpload();
 	public withCredentials = false;
 
 	// Private properties
-	#browserFrame: IBrowserFrame;
-	#window: BrowserWindow;
 	#async = true;
 	#abortController: AbortController | null = null;
 	#aborted = false;
@@ -56,15 +53,15 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 	/**
 	 * Constructor.
-	 *
-	 * @param injected Injected properties.
-	 * @param injected.browserFrame Browser frame.
-	 * @param injected.window Window.
 	 */
-	constructor(injected: { browserFrame: IBrowserFrame; window: BrowserWindow }) {
+	constructor() {
 		super();
-		this.#browserFrame = injected.browserFrame;
-		this.#window = injected.window;
+
+		if (!this[PropertySymbol.window]) {
+			throw new TypeError(
+				`Failed to construct '${this.constructor.name}': '${this.constructor.name}' was constructed outside a Window context.`
+			);
+		}
 	}
 
 	/**
@@ -106,7 +103,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 */
 	public get responseText(): string {
 		if (this.responseType !== XMLHttpResponseTypeEnum.text && this.responseType !== '') {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to read the 'responseText' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'text' (was '${this.responseType}').`,
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -122,7 +119,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 */
 	public get responseXML(): Document {
 		if (this.responseType !== XMLHttpResponseTypeEnum.document && this.responseType !== '') {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to read the 'responseXML' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'document' (was '${this.responseType}').`,
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -161,14 +158,14 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.readyState !== XMLHttpRequestReadyStateEnum.opened &&
 			this.readyState !== XMLHttpRequestReadyStateEnum.unsent
 		) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to set the 'responseType' property on 'XMLHttpRequest': The object's state must be OPENED or UNSENT.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
 		// Sync requests can only have empty string or 'text' as response type.
 		if (!this.#async) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to set the 'responseType' property on 'XMLHttpRequest': The response type cannot be changed for synchronous requests made from a document.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -195,8 +192,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param [password] Password for basic authentication (optional).
 	 */
 	public open(method: string, url: string, async = true, user?: string, password?: string): void {
+		const window = this[PropertySymbol.window];
+
 		if (!async && !!this.responseType && this.responseType !== XMLHttpResponseTypeEnum.text) {
-			throw new DOMException(
+			throw new window.DOMException(
 				`Failed to execute 'open' on 'XMLHttpRequest': Synchronous requests from a document must not set a response type.`,
 				DOMExceptionNameEnum.invalidAccessError
 			);
@@ -212,8 +211,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#aborted = false;
 		this.#response = null;
 		this.#responseBody = null;
-		this.#abortController = new AbortController();
-		this.#request = new this.#window.Request(url, {
+		this.#abortController = new window.AbortController();
+		this.#request = new window.Request(url, {
 			method,
 			headers,
 			signal: this.#abortController.signal,
@@ -232,7 +231,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 */
 	public setRequestHeader(name: string, value: string): boolean {
 		if (this.readyState !== XMLHttpRequestReadyStateEnum.opened) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'setRequestHeader' on 'XMLHttpRequest': The object's state must be OPENED.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -287,7 +286,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 */
 	public send(body?: Document | IRequestBody): void {
 		if (this.readyState != XMLHttpRequestReadyStateEnum.opened) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'send' on 'XMLHttpRequest': Connection must be opened before send() is called.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -328,9 +327,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param body Optional data to send as request body.
 	 */
 	async #sendAsync(body?: IRequestBody): Promise<void> {
-		const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask(() =>
-			this.abort()
-		);
+		const window = this[PropertySymbol.window];
+		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
+		const taskID = asyncTaskManager.startTask(() => this.abort());
 
 		this.#readyState = XMLHttpRequestReadyStateEnum.loading;
 
@@ -338,7 +338,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.dispatchEvent(new Event('loadstart'));
 
 		if (body) {
-			this.#request = new this.#window.Request(this.#request.url, {
+			this.#request = new window.Request(this.#request.url, {
 				method: this.#request.method,
 				headers: this.#request.headers,
 				signal: this.#abortController.signal,
@@ -353,7 +353,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.dispatchEvent(new Event('abort'));
 			this.dispatchEvent(new Event('loadend'));
 			this.dispatchEvent(new Event('readystatechange'));
-			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+			asyncTaskManager.endTask(taskID);
 		});
 
 		const onError = (error: Error): void => {
@@ -369,12 +369,12 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			}
 			this.dispatchEvent(new Event('loadend'));
 			this.dispatchEvent(new Event('readystatechange'));
-			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+			asyncTaskManager.endTask(taskID);
 		};
 
 		const fetch = new Fetch({
-			browserFrame: this.#browserFrame,
-			window: this.#window,
+			browserFrame: browserFrame,
+			window: window,
 			url: this.#request.url,
 			init: this.#request
 		});
@@ -426,7 +426,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		}
 
 		this.#responseBody = XMLHttpRequestResponseDataParser.parse({
-			window: this.#window,
+			window: window,
 			responseType: this.#responseType,
 			data,
 			contentType:
@@ -434,11 +434,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		});
 		this.#readyState = XMLHttpRequestReadyStateEnum.done;
 
+		asyncTaskManager.endTask(taskID);
+
 		this.dispatchEvent(new Event('readystatechange'));
 		this.dispatchEvent(new Event('load'));
 		this.dispatchEvent(new Event('loadend'));
-
-		this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 	}
 
 	/**
@@ -447,8 +447,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param body Optional data to send as request body.
 	 */
 	#sendSync(body?: IRequestBody): void {
+		const window = this[PropertySymbol.window];
+		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+
 		if (body) {
-			this.#request = new this.#window.Request(this.#request.url, {
+			this.#request = new window.Request(this.#request.url, {
 				method: this.#request.method,
 				headers: this.#request.headers,
 				signal: this.#abortController.signal,
@@ -460,8 +463,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#readyState = XMLHttpRequestReadyStateEnum.loading;
 
 		const fetch = new SyncFetch({
-			browserFrame: this.#browserFrame,
-			window: this.#window,
+			browserFrame,
+			window: window,
 			url: this.#request.url,
 			init: this.#request
 		});
@@ -479,7 +482,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#readyState = XMLHttpRequestReadyStateEnum.headersRecieved;
 
 		this.#responseBody = XMLHttpRequestResponseDataParser.parse({
-			window: this.#window,
+			window: window,
 			responseType: this.#responseType,
 			data: this.#response.body,
 			contentType:

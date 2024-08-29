@@ -8,18 +8,24 @@ import * as PropertySymbol from '../../PropertySymbol.js';
  * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base.
  */
 export default class HTMLBaseElement extends HTMLElement {
-	public cloneNode: (deep?: boolean) => HTMLBaseElement;
+	public declare cloneNode: (deep?: boolean) => HTMLBaseElement;
+
 	/**
 	 * Returns href.
 	 *
 	 * @returns Href.
 	 */
 	public get href(): string {
-		const href = this.getAttribute('href');
-		if (href !== null) {
-			return href;
+		if (!this.hasAttribute('href')) {
+			return this[PropertySymbol.ownerDocument].location.href;
 		}
-		return this[PropertySymbol.ownerDocument].location.href;
+
+		try {
+			return new URL(this.getAttribute('href'), this[PropertySymbol.ownerDocument].location.href)
+				.href;
+		} catch (e) {
+			return this.getAttribute('href');
+		}
 	}
 
 	/**

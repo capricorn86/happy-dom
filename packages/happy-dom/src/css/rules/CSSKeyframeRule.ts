@@ -9,7 +9,7 @@ export default class CSSKeyframeRule extends CSSRule {
 	public readonly type = CSSRule.KEYFRAME_RULE;
 	public readonly keyText: string;
 	public [PropertySymbol.cssText] = '';
-	#style: CSSStyleDeclaration = null;
+	#style: CSSStyleDeclaration | null = null;
 
 	/**
 	 * Returns style.

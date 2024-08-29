@@ -1,17 +1,14 @@
 import Event from '../../event/Event.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
-import NamedNodeMap from '../../named-node-map/NamedNodeMap.js';
 import ValidityState from '../../validity-state/ValidityState.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
-import Node from '../node/Node.js';
-import NodeList from '../node/NodeList.js';
-import HTMLButtonElementNamedNodeMap from './HTMLButtonElementNamedNodeMap.js';
 import { URL } from 'url';
 import MouseEvent from '../../event/events/MouseEvent.js';
+import NodeList from '../node/NodeList.js';
 
 const BUTTON_TYPES = ['submit', 'reset', 'button', 'menu'];
 
@@ -22,11 +19,10 @@ const BUTTON_TYPES = ['submit', 'reset', 'button', 'menu'];
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLButtonElement.
  */
 export default class HTMLButtonElement extends HTMLElement {
-	public override [PropertySymbol.attributes]: NamedNodeMap = new HTMLButtonElementNamedNodeMap(
-		this
-	);
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
+	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
+	public [PropertySymbol.popoverTargetElement]: HTMLElement | null = null;
 
 	/**
 	 * Returns validation message.
@@ -110,16 +106,20 @@ export default class HTMLButtonElement extends HTMLElement {
 	 * @returns Type
 	 */
 	public get type(): string {
-		return this.#sanitizeType(this.getAttribute('type'));
+		const type = this.getAttribute('type');
+		if (type === null || !BUTTON_TYPES.includes(type)) {
+			return 'submit';
+		}
+		return type;
 	}
 
 	/**
 	 * Sets type
 	 *
-	 * @param v Type
+	 * @param value Type
 	 */
-	public set type(v: string) {
-		this.setAttribute('type', this.#sanitizeType(v));
+	public set type(value: string) {
+		this.setAttribute('type', value);
 	}
 
 	/**
@@ -232,17 +232,18 @@ export default class HTMLButtonElement extends HTMLElement {
 	 *
 	 * @returns Form.
 	 */
-	public get form(): HTMLFormElement | null {
+	public get form(): HTMLFormElement {
 		if (this[PropertySymbol.formNode]) {
-			return <HTMLFormElement>this[PropertySymbol.formNode];
+			return this[PropertySymbol.formNode];
 		}
-		if (!this.isConnected) {
+		const id =
+			this[PropertySymbol.attributes][PropertySymbol.namedItems].get('form')?.[
+				PropertySymbol.value
+			];
+		if (!id || !this[PropertySymbol.isConnected]) {
 			return null;
 		}
-		const formID = this.getAttribute('form');
-		return formID
-			? <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(formID)
-			: null;
+		return <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(id);
 	}
 
 	/**
@@ -252,6 +253,51 @@ export default class HTMLButtonElement extends HTMLElement {
 	 */
 	public get labels(): NodeList<HTMLLabelElement> {
 		return HTMLLabelElementUtility.getAssociatedLabelElements(this);
+	}
+
+	/**
+	 * Returns popover target element.
+	 *
+	 * @returns Popover target element.
+	 */
+	public get popoverTargetElement(): HTMLElement | null {
+		return this[PropertySymbol.popoverTargetElement];
+	}
+
+	/**
+	 * Sets popover target element.
+	 *
+	 * @param popoverTargetElement Popover target element.
+	 */
+	public set popoverTargetElement(popoverTargetElement: HTMLElement | null) {
+		if (popoverTargetElement !== null && !(popoverTargetElement instanceof HTMLElement)) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to set the 'popoverTargetElement' property on 'HTMLInputElement': Failed to convert value to 'Element'.`
+			);
+		}
+		this[PropertySymbol.popoverTargetElement] = popoverTargetElement;
+	}
+
+	/**
+	 * Returns popover target action.
+	 *
+	 * @returns Popover target action.
+	 */
+	public get popoverTargetAction(): string {
+		const value = this.getAttribute('popovertargetaction');
+		if (value === null || (value !== 'hide' && value !== 'show' && value !== 'toggle')) {
+			return 'toggle';
+		}
+		return value;
+	}
+
+	/**
+	 * Sets popover target action.
+	 *
+	 * @param value Popover target action.
+	 */
+	public set popoverTargetAction(value: string) {
+		this.setAttribute('popovertargetaction', value);
 	}
 
 	/**
@@ -305,70 +351,24 @@ export default class HTMLButtonElement extends HTMLElement {
 		const returnValue = super.dispatchEvent(event);
 
 		if (
+			!event[PropertySymbol.defaultPrevented] &&
 			event.type === 'click' &&
-			event instanceof MouseEvent &&
-			(event.eventPhase === EventPhaseEnum.atTarget ||
-				event.eventPhase === EventPhaseEnum.bubbling) &&
-			this[PropertySymbol.isConnected]
+			event.eventPhase === EventPhaseEnum.none &&
+			event instanceof MouseEvent
 		) {
-			const form = this.form;
-			if (!form) {
-				return returnValue;
-			}
-			switch (this.type) {
-				case 'submit':
-					form.requestSubmit(this);
-					break;
-				case 'reset':
-					form.reset();
-					break;
+			const type = this.type;
+			if (type === 'submit' || type === 'reset') {
+				const form = this.form;
+				if (form) {
+					if (type === 'submit' && this[PropertySymbol.isConnected]) {
+						form.requestSubmit(this);
+					} else if (type === 'reset') {
+						form.reset();
+					}
+				}
 			}
 		}
 
 		return returnValue;
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
-		const oldFormNode = <HTMLFormElement>this[PropertySymbol.formNode];
-
-		super[PropertySymbol.connectToNode](parentNode);
-
-		if (oldFormNode !== this[PropertySymbol.formNode]) {
-			if (oldFormNode) {
-				oldFormNode[PropertySymbol.removeFormControlItem](this, this.name);
-				oldFormNode[PropertySymbol.removeFormControlItem](this, this.id);
-			}
-			if (this[PropertySymbol.formNode]) {
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
-					this,
-					this.name
-				);
-				(<HTMLFormElement>this[PropertySymbol.formNode])[PropertySymbol.appendFormControlItem](
-					this,
-					this.id
-				);
-			}
-		}
-	}
-
-	/**
-	 * Sanitizes type.
-	 *
-	 * TODO: We can improve performance a bit if we make the types as a constant.
-	 *
-	 * @param type Type.
-	 * @returns Type sanitized.
-	 */
-	#sanitizeType(type: string): string {
-		type = (type && type.toLowerCase()) || 'submit';
-
-		if (!BUTTON_TYPES.includes(type)) {
-			type = 'submit';
-		}
-
-		return type;
 	}
 }

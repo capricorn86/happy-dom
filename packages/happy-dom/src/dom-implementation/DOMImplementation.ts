@@ -12,26 +12,34 @@ export default class DOMImplementation {
 	/**
 	 * Constructor.
 	 *
-	 * @param window Window.
+	 * @param document Document.
 	 */
-	constructor(window: Document) {
-		this.#document = window;
+	constructor(document: Document) {
+		this.#document = document;
 	}
 
 	/**
 	 * Creates and returns an XML Document.
 	 *
 	 * TODO: Not fully implemented.
+	 *
+	 * @param _namespaceURI Namespace URI.
+	 * @param _qualifiedName Qualified name.
+	 * @param [_docType] Document type.
 	 */
-	public createDocument(): Document {
-		return new this.#document[PropertySymbol.ownerWindow].HTMLDocument();
+	public createDocument(
+		_namespaceURI: string,
+		_qualifiedName: string,
+		_docType?: string
+	): Document {
+		return new this.#document[PropertySymbol.window].HTMLDocument();
 	}
 
 	/**
 	 * Creates and returns an HTML Document.
 	 */
 	public createHTMLDocument(): Document {
-		return new this.#document[PropertySymbol.ownerWindow].HTMLDocument();
+		return new this.#document[PropertySymbol.window].HTMLDocument();
 	}
 
 	/**
@@ -46,13 +54,12 @@ export default class DOMImplementation {
 		publicId: string,
 		systemId: string
 	): DocumentType {
-		const documentType = NodeFactory.createNode<DocumentType>(
-			this.#document,
-			this.#document[PropertySymbol.ownerWindow].DocumentType
-		);
+		const documentType = NodeFactory.createNode<DocumentType>(this.#document, DocumentType);
+
 		documentType[PropertySymbol.name] = qualifiedName;
 		documentType[PropertySymbol.publicId] = publicId;
 		documentType[PropertySymbol.systemId] = systemId;
+
 		return documentType;
 	}
 }
