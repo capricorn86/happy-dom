@@ -1391,6 +1391,10 @@ describe('QuerySelector', () => {
 			expect(container.querySelector('\n \n\r	\t	\f div div        span \n \n\r	\t	\f')).toBe(
 				container.children[0].children[1].children[0]
 			);
+			expect(
+				container.querySelector('div.class1\n.class2 span') ===
+					container.children[0].children[1].children[0]
+			).toBe(true);
 		});
 
 		it('Returns element matching selector "datalist#id"', () => {
