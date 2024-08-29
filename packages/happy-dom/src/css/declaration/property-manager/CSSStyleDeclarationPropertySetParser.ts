@@ -534,7 +534,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		return color
 			? {
 					'outline-color': { value: color, important }
-			  }
+				}
 			: null;
 	}
 
@@ -1430,7 +1430,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		return color
 			? {
 					'border-top-color': { value: color, important }
-			  }
+				}
 			: null;
 	}
 
@@ -1458,7 +1458,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		return color
 			? {
 					'border-right-color': { value: color, important }
-			  }
+				}
 			: null;
 	}
 
@@ -1486,7 +1486,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		return color
 			? {
 					'border-bottom-color': { value: color, important }
-			  }
+				}
 			: null;
 	}
 
@@ -1514,7 +1514,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		return color
 			? {
 					'border-left-color': { value: color, important }
-			  }
+				}
 			: null;
 	}
 
@@ -2782,7 +2782,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		return color
 			? {
 					['background-color']: { important, value: color }
-			  }
+				}
 			: null;
 	}
 
