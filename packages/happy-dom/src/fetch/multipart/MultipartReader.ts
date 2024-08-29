@@ -22,7 +22,7 @@ const CHARACTER_CODE = {
  * https://github.com/node-fetch/node-fetch/blob/main/src/utils/multipart-parser.js (MIT)
  */
 export default class MultipartReader {
-	private formData = new FormData();
+	private formData: FormData;
 	private boundary: Uint8Array;
 	private boundaryIndex = 0;
 	private state = MultiparParserStateEnum.boundary;
@@ -50,6 +50,7 @@ export default class MultipartReader {
 		const boundaryHeader = `--${boundary}`;
 		this.window = window;
 		this.boundary = new Uint8Array(boundaryHeader.length);
+		this.formData = new window.FormData();
 
 		for (let i = 0, max = boundaryHeader.length; i < max; i++) {
 			this.boundary[i] = boundaryHeader.charCodeAt(i);

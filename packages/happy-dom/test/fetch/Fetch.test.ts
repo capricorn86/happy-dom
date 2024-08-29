@@ -3285,7 +3285,7 @@ describe('Fetch', () => {
 
 		it('Supports POST request with body as FormData.', async () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
-			const formData = new FormData();
+			const formData = new window.FormData();
 
 			vi.spyOn(Math, 'random').mockImplementation(() => 0.8);
 

@@ -2029,7 +2029,7 @@ describe('SyncFetch', () => {
 
 			const body =
 				'------HappyDOMFormDataBoundary0.ssssssssst\r\nContent-Disposition: form-data; name="key1"\r\n\r\nvalue1\r\n------HappyDOMFormDataBoundary0.ssssssssst\r\nContent-Disposition: form-data; name="key2"\r\n\r\nvalue2\r\n';
-			const formData = new FormData();
+			const formData = new window.FormData();
 			let requestArgs: string | null = null;
 
 			vi.spyOn(Math, 'random').mockImplementation(() => 0.8);

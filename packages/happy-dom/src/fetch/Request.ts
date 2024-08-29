@@ -363,7 +363,7 @@ export default class Request implements Request {
 
 		if (contentType?.startsWith('application/x-www-form-urlencoded')) {
 			const parameters = new URLSearchParams(await this.text());
-			const formData = new FormData();
+			const formData = new window.FormData();
 
 			for (const [key, value] of parameters) {
 				formData.append(key, value);

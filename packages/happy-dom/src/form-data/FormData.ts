@@ -3,6 +3,7 @@ import * as PropertySymbol from '../PropertySymbol.js';
 import File from '../file/File.js';
 import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
 import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 
 type FormDataEntry = {
 	name: string;
@@ -15,6 +16,9 @@ type FormDataEntry = {
  * @see https://developer.mozilla.org/en-US/docs/Web/API/FormData
  */
 export default class FormData implements Iterable<[string, string | File]> {
+	// Injected by WindowClassExtender
+	protected declare [PropertySymbol.window]: BrowserWindow;
+
 	#entries: FormDataEntry[] = [];
 
 	/**
@@ -96,8 +100,8 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * @param [filename] Filename.
 	 */
 	public append(name: string, value: string | Blob | File, filename?: string): void {
-		if (filename && !(value instanceof File)) {
-			throw new Error(
+		if (filename && !(value instanceof Blob)) {
+			throw new this[PropertySymbol.window].TypeError(
 				'Failed to execute "append" on "FormData": parameter 2 is not of type "Blob".'
 			);
 		}
@@ -237,12 +241,6 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * @returns Parsed value.
 	 */
 	#parseValue(value: string | Blob | File, filename?: string): string | File {
-		if (value instanceof Blob && !(value instanceof File)) {
-			const file = new File([], 'blob', { type: value.type });
-			file[PropertySymbol.buffer] = value[PropertySymbol.buffer];
-			return file;
-		}
-
 		if (value instanceof File) {
 			if (filename) {
 				const file = new File([], filename, { type: value.type, lastModified: value.lastModified });
@@ -250,6 +248,12 @@ export default class FormData implements Iterable<[string, string | File]> {
 				return file;
 			}
 			return value;
+		}
+
+		if (value instanceof Blob) {
+			const file = new File([], 'blob', { type: value.type });
+			file[PropertySymbol.buffer] = value[PropertySymbol.buffer];
+			return file;
 		}
 
 		return String(value);
