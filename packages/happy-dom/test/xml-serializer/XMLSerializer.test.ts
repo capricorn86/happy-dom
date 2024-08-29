@@ -2,6 +2,7 @@ import XMLSerializer from '../../src/xml-serializer/XMLSerializer.js';
 import Window from '../../src/window/Window.js';
 import Document from '../../src/nodes/document/Document.js';
 import CustomElement from '../CustomElement.js';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 
 describe('XMLSerializer', () => {
@@ -130,7 +131,7 @@ describe('XMLSerializer', () => {
 			);
 		});
 
-		it('Includes shadow roots of custom elements when the "includeShadowRoots" sent in as an option.', () => {
+		it('Includes shadow roots of custom elements when "allShadowRoots" is set as an option.', () => {
 			const div = document.createElement('div');
 			const customElement1 = document.createElement('custom-element');
 
@@ -151,9 +152,11 @@ describe('XMLSerializer', () => {
 			// Connects the custom element to DOM which will trigger connectedCallback() on it
 			document.body.appendChild(div);
 
-			expect(
-				new XMLSerializer({ includeShadowRoots: true }).serializeToString(div).replace(/[\s]/gm, '')
-			).toBe(
+			const xmlSerializer = new XMLSerializer();
+
+			xmlSerializer[PropertySymbol.options].allShadowRoots = true;
+
+			expect(xmlSerializer.serializeToString(div).replace(/[\s]/gm, '')).toBe(
 				`
 					<div>
 						<custom-element key1="value1" key2="value2">
@@ -256,7 +259,7 @@ describe('XMLSerializer', () => {
 			div.setAttribute('attr3', '');
 
 			expect(xmlSerializer.serializeToString(div)).toBe(
-				'<div attr1="Hello \u{2068}John\u{2069}" attr2="&lt;span&gt; test" attr3=""></div>'
+				'<div attr1="Hello ⁨John⁩" attr2="<span> test" attr3=""></div>'
 			);
 		});
 
@@ -271,6 +274,32 @@ describe('XMLSerializer', () => {
 			div.setAttribute('is', 'custom-replacement');
 
 			expect(xmlSerializer.serializeToString(div)).toBe('<div is="custom-replacement"></div>');
+		});
+
+		it('Serializes text content.', () => {
+			const div = document.createElement('div');
+
+			div.innerText = '<b>a</b>';
+			expect(xmlSerializer.serializeToString(div)).toBe('<div>&lt;b&gt;a&lt;/b&gt;</div>');
+		});
+
+		it('Serializes attributes to prevent injection attacks.', () => {
+			const a = document.createElement('a');
+
+			document.body.appendChild(a);
+
+			a.href = 'https://example.com" style="font-size: 500%;';
+			a.textContent = "I'm a link!";
+
+			expect(xmlSerializer.serializeToString(a)).toBe(
+				`<a href="https://example.com&quot; style=&quot;font-size: 500%;">I'm a link!</a>`
+			);
+
+			document.body.innerHTML = `<a href="https://www.com/" style="background-image: url(&quot;https://cdn.cookie.org/image.svg&quot;);"></a>`;
+
+			expect(document.body.innerHTML).toBe(
+				`<a href="https://www.com/" style="background-image: url(&quot;https://cdn.cookie.org/image.svg&quot;);"></a>`
+			);
 		});
 	});
 });

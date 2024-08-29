@@ -605,9 +605,9 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.borderImageOutset).toBe('var(--test-variable)');
 
-			element.setAttribute('style', 'border-image-outset: 1rem');
+			element.setAttribute('style', 'border-image-outset: 0.5833333333333334rem');
 
-			expect(declaration.borderImageOutset).toBe('1rem');
+			expect(declaration.borderImageOutset).toBe('0.583333rem');
 
 			element.setAttribute('style', 'border-image-outset: 1 1.2');
 
@@ -1857,6 +1857,17 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.background).toBe(
 				'url("../img/image.png") center top / 80% no-repeat scroll'
+			);
+		});
+
+		it('Supports linear-gradient values.', () => {
+			const declaration = new CSSStyleDeclaration(element);
+
+			element.style.background =
+				'linear-gradient(\n\t\t\tto right,\n\t\t\t#111111 0%,\n\t\t\t#111111 0.5833333333333334rem,\n\t\t\t#dfdfdf 0.5833333333333334rem,\n\t\t\t#dfdfdf 100%)';
+
+			expect(declaration.background).toBe(
+				'linear-gradient(to right, #111111 0%, #111111 0.5833333333333334rem, #dfdfdf 0.5833333333333334rem, #dfdfdf 100%)'
 			);
 		});
 	});

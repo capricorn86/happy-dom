@@ -1,5 +1,6 @@
 import PermissionStatus from './PermissionStatus.js';
 import PermissionNameEnum from './PermissionNameEnum.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * Permissions API.
@@ -11,6 +12,19 @@ export default class Permissions {
 	#permissionStatus: {
 		[name in PermissionNameEnum]?: PermissionStatus;
 	} = {};
+	#window: BrowserWindow;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param window Window.
+	 */
+	constructor(window: BrowserWindow) {
+		if (!window?.document) {
+			new TypeError('Invalid constructor');
+		}
+		this.#window = window;
+	}
 
 	/**
 	 * Returns scroll restoration.
@@ -38,7 +52,9 @@ export default class Permissions {
 			);
 		}
 
-		this.#permissionStatus[permissionDescriptor.name] = new PermissionStatus('granted');
+		this.#permissionStatus[permissionDescriptor.name] = new this.#window.PermissionStatus(
+			'granted'
+		);
 
 		return this.#permissionStatus[permissionDescriptor.name];
 	}

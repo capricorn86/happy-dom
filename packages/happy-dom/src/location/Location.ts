@@ -21,6 +21,9 @@ export default class Location {
 	 * @param url URL.
 	 */
 	constructor(browserFrame: IBrowserFrame, url: string) {
+		if (!browserFrame) {
+			throw new TypeError('Illegal constructor');
+		}
 		this.#browserFrame = browserFrame;
 		this.#url = new URL(url);
 	}
@@ -40,6 +43,10 @@ export default class Location {
 	 * @param hash Value.
 	 */
 	public set hash(hash: string) {
+		if (!this.#browserFrame) {
+			return;
+		}
+
 		const oldURL = this.#url.href;
 		this.#url.hash = hash;
 		const newURL = this.#url.href;
@@ -47,6 +54,7 @@ export default class Location {
 			this.#browserFrame.window?.dispatchEvent(
 				new HashChangeEvent('hashchange', { oldURL, newURL })
 			);
+			this.#browserFrame.window?.document?.[PropertySymbol.clearCache]();
 		}
 	}
 
@@ -67,9 +75,7 @@ export default class Location {
 	public set host(host: string) {
 		const url = new URL(this.#url.href);
 		url.host = host;
-		this.#browserFrame
-			.goto(url.href)
-			.catch((error) => this.#browserFrame.page.console.error(error));
+		this.href = url.href;
 	}
 
 	/**
@@ -89,9 +95,7 @@ export default class Location {
 	public set hostname(hostname: string) {
 		const url = new URL(this.#url.href);
 		url.hostname = hostname;
-		this.#browserFrame
-			.goto(url.href)
-			.catch((error) => this.#browserFrame.page.console.error(error));
+		this.href = url.href;
 	}
 
 	/**
@@ -105,7 +109,17 @@ export default class Location {
 	 * Override set href.
 	 */
 	public set href(url: string) {
-		this.#browserFrame.goto(url).catch((error) => this.#browserFrame.page.console.error(error));
+		if (!this.#browserFrame) {
+			return;
+		}
+
+		this.#browserFrame.goto(url).catch((error) => {
+			if (this.#browserFrame.page?.console) {
+				this.#browserFrame.page.console.error(error);
+			} else {
+				throw error;
+			}
+		});
 	}
 
 	/**
@@ -134,9 +148,7 @@ export default class Location {
 	public set pathname(pathname: string) {
 		const url = new URL(this.#url.href);
 		url.pathname = pathname;
-		this.#browserFrame
-			.goto(url.href)
-			.catch((error) => this.#browserFrame.page.console.error(error));
+		this.href = url.href;
 	}
 
 	/**
@@ -156,9 +168,7 @@ export default class Location {
 	public set port(port: string) {
 		const url = new URL(this.#url.href);
 		url.port = port;
-		this.#browserFrame
-			.goto(url.href)
-			.catch((error) => this.#browserFrame.page.console.error(error));
+		this.href = url.href;
 	}
 
 	/**
@@ -178,9 +188,7 @@ export default class Location {
 	public set protocol(protocol: string) {
 		const url = new URL(this.#url.href);
 		url.protocol = protocol;
-		this.#browserFrame
-			.goto(url.href)
-			.catch((error) => this.#browserFrame.page.console.error(error));
+		this.href = url.href;
 	}
 
 	/**
@@ -200,9 +208,7 @@ export default class Location {
 	public set search(search: string) {
 		const url = new URL(this.#url.href);
 		url.search = search;
-		this.#browserFrame
-			.goto(url.href)
-			.catch((error) => this.#browserFrame.page.console.error(error));
+		this.href = url.href;
 	}
 
 	/**
@@ -227,9 +233,17 @@ export default class Location {
 	 * Reloads the resource from the current URL.
 	 */
 	public reload(): void {
-		this.#browserFrame
-			.goto(this.href)
-			.catch((error) => this.#browserFrame.page.console.error(error));
+		if (!this.#browserFrame) {
+			return;
+		}
+
+		this.#browserFrame.goto(this.href).catch((error) => {
+			if (this.#browserFrame.page?.console) {
+				this.#browserFrame.page.console.error(error);
+			} else {
+				throw error;
+			}
+		});
 	}
 
 	/**
@@ -239,11 +253,22 @@ export default class Location {
 	 * @param url URL.
 	 */
 	public [PropertySymbol.setURL](browserFrame: IBrowserFrame, url: string): void {
+		if (!this.#browserFrame) {
+			return;
+		}
+
 		if (this.#browserFrame !== browserFrame) {
 			throw new Error('Failed to set URL. Browser frame mismatch.');
 		}
 
 		this.#url.href = url;
+	}
+
+	/**
+	 * Destroys the location.
+	 */
+	public [PropertySymbol.destroy](): void {
+		this.#browserFrame = null;
 	}
 
 	/**

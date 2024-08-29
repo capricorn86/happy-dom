@@ -6,6 +6,7 @@ import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
 import Event from '../../../src/event/Event.js';
 import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
+import EventTarget from '../../../src/event/EventTarget.js';
 
 describe('HTMLLinkElement', () => {
 	let window: Window;
@@ -90,6 +91,8 @@ describe('HTMLLinkElement', () => {
 			let loadedWindow: BrowserWindow | null = null;
 			let loadedURL: string | null = null;
 			let loadEvent: Event | null = null;
+			let loadEventTarget: EventTarget | null = null;
+			let loadEventCurrentTarget: EventTarget | null = null;
 
 			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
 				loadedWindow = this.window;
@@ -101,6 +104,8 @@ describe('HTMLLinkElement', () => {
 
 			element.addEventListener('load', (event) => {
 				loadEvent = event;
+				loadEventTarget = event.target;
+				loadEventCurrentTarget = event.currentTarget;
 			});
 
 			element.rel = 'stylesheet';
@@ -112,7 +117,9 @@ describe('HTMLLinkElement', () => {
 			expect(loadedURL).toBe('https://localhost:8080/test/path/file.css');
 			expect(element.sheet.cssRules.length).toBe(1);
 			expect(element.sheet.cssRules[0].cssText).toBe('div { background: red; }');
-			expect((<Event>(<unknown>loadEvent)).target).toBe(element);
+			expect((<Event>(<unknown>loadEvent)).target).toBe(null);
+			expect(loadEventTarget).toBe(element);
+			expect(loadEventCurrentTarget).toBe(element);
 		});
 
 		it('Triggers error event when fetching a CSS file fails during setting the "href" and "rel" attributes.', async () => {
@@ -164,6 +171,8 @@ describe('HTMLLinkElement', () => {
 			const element = document.createElement('link');
 			const css = 'div { background: red; }';
 			let loadEvent: Event | null = null;
+			let loadEventTarget: EventTarget | null = null;
+			let loadEventCurrentTarget: EventTarget | null = null;
 			let loadedWindow: BrowserWindow | null = null;
 			let loadedURL: string | null = null;
 
@@ -177,6 +186,8 @@ describe('HTMLLinkElement', () => {
 			element.href = 'https://localhost:8080/test/path/file.css';
 			element.addEventListener('load', (event) => {
 				loadEvent = event;
+				loadEventTarget = event.target;
+				loadEventCurrentTarget = event.currentTarget;
 			});
 
 			document.body.appendChild(element);
@@ -187,7 +198,9 @@ describe('HTMLLinkElement', () => {
 			expect(loadedURL).toBe('https://localhost:8080/test/path/file.css');
 			expect(element.sheet.cssRules.length).toBe(1);
 			expect(element.sheet.cssRules[0].cssText).toBe('div { background: red; }');
-			expect((<Event>(<unknown>loadEvent)).target).toBe(element);
+			expect((<Event>(<unknown>loadEvent)).target).toBe(null);
+			expect(loadEventTarget).toBe(element);
+			expect(loadEventCurrentTarget).toBe(element);
 		});
 
 		it('Triggers error event when fetching a CSS file fails while appending the element to the document.', async () => {

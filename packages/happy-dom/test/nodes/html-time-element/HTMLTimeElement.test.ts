@@ -11,7 +11,13 @@ describe('HTMLTimeElement', () => {
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <HTMLTimeElement>document.createElement('time');
+		element = document.createElement('time');
+	});
+
+	describe('constructor()', () => {
+		it('Should be an instanceof HTMLTimeElement', () => {
+			expect(element instanceof HTMLTimeElement).toBe(true);
+		});
 	});
 
 	describe('get dateTime()', () => {
