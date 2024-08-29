@@ -762,7 +762,7 @@ describe('BrowserFrame', () => {
 											? '<a href="http://localhost:3000/navigated/">'
 											: '<b>Navigated</b>'
 									),
-								1
+								10
 							)
 						)
 				});
@@ -816,7 +816,7 @@ describe('BrowserFrame', () => {
 											? '<a href="http://localhost:3000/navigated/">'
 											: '<b>Navigated</b>'
 									),
-								1
+								10
 							)
 						)
 				});
@@ -871,7 +871,7 @@ describe('BrowserFrame', () => {
 											? '<a href="http://localhost:3000/navigated/">'
 											: '<b>Navigated</b>'
 									),
-								1
+								10
 							)
 						)
 				});
