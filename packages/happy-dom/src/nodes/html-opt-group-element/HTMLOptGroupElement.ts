@@ -4,7 +4,7 @@ import HTMLElement from '../html-element/HTMLElement.js';
  * HTML Opt Group Element.
  *
  * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptGroupElement.
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptGroupElement
  */
 export default class HTMLOptGroupElement extends HTMLElement {
 	/**

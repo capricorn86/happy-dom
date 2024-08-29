@@ -3,15 +3,12 @@ import * as PropertySymbol from '../PropertySymbol.js';
 import File from '../file/File.js';
 import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
 import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
-import HTMLFormControlsCollection from '../nodes/html-form-element/HTMLFormControlsCollection.js';
-import RadioNodeList from '../nodes/html-form-element/RadioNodeList.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 
 type FormDataEntry = {
 	name: string;
 	value: string | File;
 };
-
-const SUBMITTABLE_ELEMENTS = ['BUTTON', 'INPUT', 'OBJECT', 'SELECT', 'TEXTAREA'];
 
 /**
  * FormData.
@@ -19,6 +16,9 @@ const SUBMITTABLE_ELEMENTS = ['BUTTON', 'INPUT', 'OBJECT', 'SELECT', 'TEXTAREA']
  * @see https://developer.mozilla.org/en-US/docs/Web/API/FormData
  */
 export default class FormData implements Iterable<[string, string | File]> {
+	// Injected by WindowClassExtender
+	protected declare [PropertySymbol.window]: BrowserWindow;
+
 	#entries: FormDataEntry[] = [];
 
 	/**
@@ -27,42 +27,55 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * @param [form] Form.
 	 */
 	constructor(form?: HTMLFormElement) {
-		if (form) {
-			for (const name of Object.keys(
-				(<HTMLFormControlsCollection>form[PropertySymbol.elements])[PropertySymbol.namedItems]
-			)) {
-				let radioNodeList = (<HTMLFormControlsCollection>form[PropertySymbol.elements])[
-					PropertySymbol.namedItems
-				][name];
+		if (!form) {
+			return;
+		}
 
-				if (
-					radioNodeList[0][PropertySymbol.tagName] === 'INPUT' &&
-					(radioNodeList[0].type === 'checkbox' || radioNodeList[0].type === 'radio')
-				) {
-					const newRadioNodeList = new RadioNodeList();
-					for (const node of radioNodeList) {
-						if ((<HTMLInputElement>node).checked) {
-							newRadioNodeList.push(node);
-							break;
-						}
-					}
-					radioNodeList = newRadioNodeList;
-				}
+		const items = form[PropertySymbol.getFormControlItems]();
 
-				for (const node of radioNodeList) {
-					if (node.name && SUBMITTABLE_ELEMENTS.includes(node[PropertySymbol.tagName])) {
-						if (node[PropertySymbol.tagName] === 'INPUT' && node.type === 'file') {
-							if ((<HTMLInputElement>node)[PropertySymbol.files].length === 0) {
-								this.append(node.name, new File([], '', { type: 'application/octet-stream' }));
-							} else {
-								for (const file of (<HTMLInputElement>node)[PropertySymbol.files]) {
-									this.append(node.name, file);
+		for (const item of items) {
+			const name = item.name;
+
+			if (name) {
+				switch (item[PropertySymbol.tagName]) {
+					case 'INPUT':
+						switch ((<HTMLInputElement>item).type) {
+							case 'file':
+								if ((<HTMLInputElement>item)[PropertySymbol.files].length === 0) {
+									this.append(name, new File([], '', { type: 'application/octet-stream' }));
+								} else {
+									for (const file of (<HTMLInputElement>item)[PropertySymbol.files]) {
+										this.append(name, file);
+									}
 								}
-							}
-						} else if (node.value) {
-							this.append(node.name, node.value);
+								break;
+							case 'checkbox':
+							case 'radio':
+								if ((<HTMLInputElement>item).checked) {
+									this.append(name, (<HTMLInputElement>item).value);
+								}
+								break;
+							case 'submit':
+							case 'reset':
+							case 'button':
+								if ((<HTMLInputElement>item).value) {
+									this.append(name, (<HTMLInputElement>item).value);
+								}
+								break;
+							default:
+								this.append(name, (<HTMLInputElement>item).value);
+								break;
 						}
-					}
+						break;
+					case 'BUTTON':
+						if ((<HTMLInputElement>item).value) {
+							this.append(name, (<HTMLInputElement>item).value);
+						}
+						break;
+					case 'TEXTAREA':
+					case 'SELECT':
+						this.append(name, (<HTMLInputElement>item).value);
+						break;
 				}
 			}
 		}
@@ -87,6 +100,11 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * @param [filename] Filename.
 	 */
 	public append(name: string, value: string | Blob | File, filename?: string): void {
+		if (filename && !(value instanceof Blob)) {
+			throw new this[PropertySymbol.window].TypeError(
+				'Failed to execute "append" on "FormData": parameter 2 is not of type "Blob".'
+			);
+		}
 		this.#entries.push({
 			name,
 			value: this.#parseValue(value, filename)
@@ -223,12 +241,6 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * @returns Parsed value.
 	 */
 	#parseValue(value: string | Blob | File, filename?: string): string | File {
-		if (value instanceof Blob && !(value instanceof File)) {
-			const file = new File([], 'blob', { type: value.type });
-			file[PropertySymbol.buffer] = value[PropertySymbol.buffer];
-			return file;
-		}
-
 		if (value instanceof File) {
 			if (filename) {
 				const file = new File([], filename, { type: value.type, lastModified: value.lastModified });
@@ -236,6 +248,12 @@ export default class FormData implements Iterable<[string, string | File]> {
 				return file;
 			}
 			return value;
+		}
+
+		if (value instanceof Blob) {
+			const file = new File([], 'blob', { type: value.type });
+			file[PropertySymbol.buffer] = value[PropertySymbol.buffer];
+			return file;
 		}
 
 		return String(value);

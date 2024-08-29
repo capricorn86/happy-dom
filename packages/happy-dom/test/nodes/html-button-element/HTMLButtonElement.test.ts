@@ -109,8 +109,11 @@ describe('HTMLButtonElement', () => {
 			element.setAttribute('type', 'submit');
 			expect(element.type).toBe('submit');
 
-			element.setAttribute('type', 'MeNu');
+			element.setAttribute('type', 'menu');
 			expect(element.type).toBe('menu');
+
+			element.setAttribute('type', 'MeNu');
+			expect(element.type).toBe('submit');
 
 			element.setAttribute('type', 'foobar');
 			expect(element.type).toBe('submit');
@@ -118,9 +121,9 @@ describe('HTMLButtonElement', () => {
 	});
 
 	describe('set type()', () => {
-		it(`Sets the attribute "type" after sanitizing.`, () => {
+		it(`Sets the attribute "type".`, () => {
 			element.type = 'SuBmIt';
-			expect(element.getAttribute('type')).toBe('submit');
+			expect(element.getAttribute('type')).toBe('SuBmIt');
 
 			element.type = 'reset';
 			expect(element.getAttribute('type')).toBe('reset');
@@ -132,7 +135,7 @@ describe('HTMLButtonElement', () => {
 			expect(element.getAttribute('type')).toBe('menu');
 
 			(<null>(<unknown>element.type)) = null;
-			expect(element.getAttribute('type')).toBe('submit');
+			expect(element.getAttribute('type')).toBe('null');
 		});
 	});
 
@@ -237,9 +240,10 @@ describe('HTMLButtonElement', () => {
 			div.appendChild(element);
 			form.appendChild(div);
 			expect(element.form).toBe(form);
+			expect(Array.from(form.elements).includes(element)).toBe(true);
 		});
 
-		it('Returns form element by id if the form attribute is set.', () => {
+		it('Returns form element by id if the form attribute is set when connecting node to DOM.', () => {
 			const form = document.createElement('form');
 			form.id = 'form';
 			document.body.appendChild(form);
@@ -247,6 +251,17 @@ describe('HTMLButtonElement', () => {
 			expect(element.form).toBe(null);
 			document.body.appendChild(element);
 			expect(element.form).toBe(form);
+			expect(Array.from(form.elements).includes(element)).toBe(true);
+		});
+
+		it('Returns form element by id if the form attribute is set when element is connected to DOM.', () => {
+			const form = document.createElement('form');
+			form.id = 'form';
+			document.body.appendChild(form);
+			document.body.appendChild(element);
+			element.setAttribute('form', 'form');
+			expect(element.form).toBe(form);
+			expect(Array.from(form.elements).includes(element)).toBe(true);
 		});
 	});
 
@@ -285,6 +300,74 @@ describe('HTMLButtonElement', () => {
 			expect(labels[0] === label1).toBe(true);
 			expect(labels[1] === label2).toBe(true);
 			expect(labels[2] === parentLabel).toBe(true);
+		});
+	});
+
+	describe('get popoverTargetElement()', () => {
+		it('Returns null by default', () => {
+			expect(element.popoverTargetElement).toBe(null);
+		});
+
+		it('Returns the defined element if it exists', () => {
+			const target = document.createElement('div');
+			element.popoverTargetElement = target;
+			expect(element.popoverTargetElement).toBe(target);
+		});
+	});
+
+	describe('set popoverTargetElement()', () => {
+		it('Sets the target element', () => {
+			const target = document.createElement('div');
+			element.popoverTargetElement = target;
+			expect(element.popoverTargetElement).toBe(target);
+		});
+
+		it('Throws an error if the target element is not an instance of HTMLElement', () => {
+			expect(() => {
+				element.popoverTargetElement = <HTMLElement>(<unknown>'test');
+			}).toThrow(
+				new TypeError(
+					`Failed to set the 'popoverTargetElement' property on 'HTMLInputElement': Failed to convert value to 'Element'.`
+				)
+			);
+		});
+	});
+
+	describe('get popoverTargetAction()', () => {
+		it('Returns "toggle" by default', () => {
+			expect(element.popoverTargetAction).toBe('toggle');
+		});
+
+		it('Returns the attribute "popovertargetaction" if it exists', () => {
+			element.setAttribute('popovertargetaction', 'hide');
+			expect(element.popoverTargetAction).toBe('hide');
+
+			element.setAttribute('popovertargetaction', 'show');
+			expect(element.popoverTargetAction).toBe('show');
+
+			element.setAttribute('popovertargetaction', 'toggle');
+			expect(element.popoverTargetAction).toBe('toggle');
+		});
+
+		it('Returns "toggle" if the defined action is not valid', () => {
+			element.setAttribute('popovertargetaction', 'invalid');
+			expect(element.popoverTargetAction).toBe('toggle');
+		});
+	});
+
+	describe('set popoverTargetAction()', () => {
+		it('Sets the attribute "popovertargetaction"', () => {
+			element.popoverTargetAction = 'hide';
+			expect(element.getAttribute('popovertargetaction')).toBe('hide');
+
+			element.popoverTargetAction = 'show';
+			expect(element.getAttribute('popovertargetaction')).toBe('show');
+
+			element.popoverTargetAction = 'toggle';
+			expect(element.getAttribute('popovertargetaction')).toBe('toggle');
+
+			element.popoverTargetAction = 'invalid';
+			expect(element.getAttribute('popovertargetaction')).toBe('invalid');
 		});
 	});
 

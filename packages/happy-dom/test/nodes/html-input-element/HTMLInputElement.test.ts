@@ -13,6 +13,7 @@ import SubmitEvent from '../../../src/event/events/SubmitEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import PointerEvent from '../../../src/event/events/PointerEvent.js';
 import MouseEvent from '../../../src/event/events/MouseEvent.js';
+import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 
 describe('HTMLInputElement', () => {
 	let window: Window;
@@ -620,7 +621,7 @@ describe('HTMLInputElement', () => {
 			expect(element.form).toBe(form);
 		});
 
-		it('Returns form element by id if the form attribute is set.', () => {
+		it('Returns form element by id if the form attribute is set when connecting node to DOM.', () => {
 			const form = document.createElement('form');
 			form.id = 'form';
 			document.body.appendChild(form);
@@ -628,6 +629,62 @@ describe('HTMLInputElement', () => {
 			expect(element.form).toBe(null);
 			document.body.appendChild(element);
 			expect(element.form).toBe(form);
+			expect(Array.from(form.elements).includes(element)).toBe(true);
+		});
+
+		it('Returns form element by id if the form attribute is set when element is connected to DOM.', () => {
+			const form = document.createElement('form');
+			form.id = 'form';
+			document.body.appendChild(form);
+			document.body.appendChild(element);
+			element.setAttribute('form', 'form');
+			expect(element.form).toBe(form);
+			expect(Array.from(form.elements).includes(element)).toBe(true);
+		});
+	});
+
+	describe('get list()', () => {
+		it('Returns null if the attribute "list" is not set.', () => {
+			expect(element.list).toBe(null);
+		});
+
+		it('Returns null if no associated list element matches the attribuge "list".', () => {
+			element.setAttribute('list', 'datalist');
+			expect(element.list).toBe(null);
+		});
+
+		it('Returns the associated datalist element.', () => {
+			const datalist = document.createElement('datalist');
+			datalist.id = 'list_id';
+			document.body.appendChild(datalist);
+			element.setAttribute('list', 'list_id');
+			expect(element.list).toBe(datalist);
+		});
+
+		it('Finds datalist inside a shadowroot.', () => {
+			/* eslint-disable-next-line jsdoc/require-jsdoc */
+			class MyComponent extends window.HTMLElement {
+				/* eslint-disable-next-line jsdoc/require-jsdoc */
+				constructor() {
+					super();
+					this.attachShadow({ mode: 'open' });
+					if (this.shadowRoot) {
+						this.shadowRoot.innerHTML = `
+                            <datalist id="list_id">
+                                <option value="1">
+                                <option value="2">
+                            </datalist>
+                            <input list="list_id">
+                        `;
+					}
+				}
+			}
+			window.customElements.define('my-component', MyComponent);
+			const component = document.createElement('my-component');
+			document.body.appendChild(component);
+			const input = component.shadowRoot?.querySelector('input');
+			const list = component.shadowRoot?.querySelector('datalist');
+			expect(input?.list === list).toBe(true);
 		});
 	});
 
@@ -645,14 +702,7 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
-	for (const property of [
-		'disabled',
-		'autofocus',
-		'required',
-		'indeterminate',
-		'multiple',
-		'readOnly'
-	]) {
+	for (const property of ['disabled', 'autofocus', 'required', 'multiple', 'readOnly']) {
 		describe(`get ${property}()`, () => {
 			it('Returns attribute value.', () => {
 				expect(element[property]).toBe(false);
@@ -836,6 +886,23 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
+	describe('get indeterminate()', () => {
+		it('Returns indeterminate  value.', () => {
+			element.type = 'checkbox';
+			expect(element.indeterminate).toBe(false);
+			expect(element.hasAttribute('indeterminate')).toBe(false);
+		});
+	});
+
+	describe('set indeterminate()', () => {
+		it('Sets indeterminate  value.', () => {
+			element.type = 'checkbox';
+			element.indeterminate = true;
+			expect(element.indeterminate).toBe(true);
+			expect(element.hasAttribute('indeterminate')).toBe(false);
+		});
+	});
+
 	describe('get size()', () => {
 		it('Returns attribute value.', () => {
 			expect(element.size).toBe(20);
@@ -903,6 +970,74 @@ describe('HTMLInputElement', () => {
 
 			expect(labels.length).toBe(1);
 			expect(labels[0] === parentLabel).toBe(true);
+		});
+	});
+
+	describe('get popoverTargetElement()', () => {
+		it('Returns null by default', () => {
+			expect(element.popoverTargetElement).toBe(null);
+		});
+
+		it('Returns the defined element if it exists', () => {
+			const target = document.createElement('div');
+			element.popoverTargetElement = target;
+			expect(element.popoverTargetElement).toBe(target);
+		});
+	});
+
+	describe('set popoverTargetElement()', () => {
+		it('Sets the target element', () => {
+			const target = document.createElement('div');
+			element.popoverTargetElement = target;
+			expect(element.popoverTargetElement).toBe(target);
+		});
+
+		it('Throws an error if the target element is not an instance of HTMLElement', () => {
+			expect(() => {
+				element.popoverTargetElement = <HTMLElement>(<unknown>'test');
+			}).toThrow(
+				new TypeError(
+					`Failed to set the 'popoverTargetElement' property on 'HTMLInputElement': Failed to convert value to 'Element'.`
+				)
+			);
+		});
+	});
+
+	describe('get popoverTargetAction()', () => {
+		it('Returns "toggle" by default', () => {
+			expect(element.popoverTargetAction).toBe('toggle');
+		});
+
+		it('Returns the attribute "popovertargetaction" if it exists', () => {
+			element.setAttribute('popovertargetaction', 'hide');
+			expect(element.popoverTargetAction).toBe('hide');
+
+			element.setAttribute('popovertargetaction', 'show');
+			expect(element.popoverTargetAction).toBe('show');
+
+			element.setAttribute('popovertargetaction', 'toggle');
+			expect(element.popoverTargetAction).toBe('toggle');
+		});
+
+		it('Returns "toggle" if the defined action is not valid', () => {
+			element.setAttribute('popovertargetaction', 'invalid');
+			expect(element.popoverTargetAction).toBe('toggle');
+		});
+	});
+
+	describe('set popoverTargetAction()', () => {
+		it('Sets the attribute "popovertargetaction"', () => {
+			element.popoverTargetAction = 'hide';
+			expect(element.getAttribute('popovertargetaction')).toBe('hide');
+
+			element.popoverTargetAction = 'show';
+			expect(element.getAttribute('popovertargetaction')).toBe('show');
+
+			element.popoverTargetAction = 'toggle';
+			expect(element.getAttribute('popovertargetaction')).toBe('toggle');
+
+			element.popoverTargetAction = 'invalid';
+			expect(element.getAttribute('popovertargetaction')).toBe('invalid');
 		});
 	});
 
@@ -1171,6 +1306,26 @@ describe('HTMLInputElement', () => {
 			expect(element.checked).toBe(true);
 		});
 
+		it('Switch "checked" to "true" or "false" and "indeterminate" to "false" if type is "checkbox" and "indeterminate" is "true" and is a "click" event.', () => {
+			element.type = 'checkbox';
+			element.indeterminate = true;
+
+			// "input" and "change" events should only be triggered if connected to DOM
+			document.body.appendChild(element);
+
+			element.dispatchEvent(new MouseEvent('click'));
+
+			expect(element.checked).toBe(true);
+			expect(element.indeterminate).toBe(false);
+
+			element.indeterminate = true;
+
+			element.dispatchEvent(new MouseEvent('click'));
+
+			expect(element.checked).toBe(false);
+			expect(element.indeterminate).toBe(false);
+		});
+
 		it('Sets "checked" to "true" if type is "radio" and is a "click" event.', () => {
 			let isInputTriggered = false;
 			let isChangeTriggered = false;
@@ -1187,6 +1342,8 @@ describe('HTMLInputElement', () => {
 			expect(isChangeTriggered).toBe(false);
 			expect(element.checked).toBe(true);
 
+			element.checked = false;
+
 			document.body.appendChild(element);
 
 			element.dispatchEvent(new PointerEvent('click'));
@@ -1199,6 +1356,24 @@ describe('HTMLInputElement', () => {
 			element.dispatchEvent(new PointerEvent('click'));
 
 			expect(element.checked).toBe(true);
+		});
+
+		it('Doesn\'t trigger "change" and "input" event if type is "radio" it is already checked when dispatching a "click" event.', () => {
+			let isInputTriggered = false;
+			let isChangeTriggered = false;
+
+			element.addEventListener('input', () => (isInputTriggered = true));
+			element.addEventListener('change', () => (isChangeTriggered = true));
+
+			element.type = 'radio';
+			element.checked = true;
+
+			document.body.appendChild(element);
+
+			element.dispatchEvent(new PointerEvent('click'));
+
+			expect(isInputTriggered).toBe(false);
+			expect(isChangeTriggered).toBe(false);
 		});
 
 		it('Sets "checked" to "true" before triggering listeners if type is "checkbox".', () => {
@@ -1255,14 +1430,14 @@ describe('HTMLInputElement', () => {
 
 			document.body.appendChild(element);
 
-			element.dispatchEvent(new PointerEvent('click'));
+			element.dispatchEvent(new PointerEvent('click', { cancelable: true }));
 
 			expect(isClickChecked).toBe(true);
 			expect(element.checked).toBe(false);
 
 			element.checked = true;
 
-			element.dispatchEvent(new PointerEvent('click'));
+			element.dispatchEvent(new PointerEvent('click', { cancelable: true }));
 
 			expect(element.checked).toBe(true);
 		});
@@ -1279,14 +1454,14 @@ describe('HTMLInputElement', () => {
 
 			document.body.appendChild(element);
 
-			element.dispatchEvent(new PointerEvent('click'));
+			element.dispatchEvent(new PointerEvent('click', { cancelable: true }));
 
 			expect(isClickChecked).toBe(true);
 			expect(element.checked).toBe(false);
 
 			element.checked = true;
 
-			element.dispatchEvent(new PointerEvent('click'));
+			element.dispatchEvent(new PointerEvent('click', { cancelable: true }));
 
 			expect(element.checked).toBe(true);
 		});

@@ -6,6 +6,8 @@ import QuerySelectorNthChildHTML from './data/QuerySelectorNthChildHTML.js';
 import HTMLInputElement from '../../src/nodes/html-input-element/HTMLInputElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import QuerySelector from '../../src/query-selector/QuerySelector.js';
+import DOMException from '../../src/exception/DOMException.js';
+import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 
 describe('QuerySelector', () => {
 	let window: Window;
@@ -17,6 +19,26 @@ describe('QuerySelector', () => {
 	});
 
 	describe('querySelectorAll', () => {
+		it('Throws an error for invalid selectors.', () => {
+			const container = document.createElement('div');
+			expect(() => container.querySelectorAll(<string>(<unknown>12))).toThrow(
+				new DOMException(
+					`Failed to execute 'querySelectorAll' on 'HTMLDivElement': '12' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
+				)
+			);
+			expect(() => container.querySelectorAll(<string>(<unknown>(() => {})))).toThrow(
+				new DOMException(
+					`Failed to execute 'querySelectorAll' on 'HTMLDivElement': '() => {\n      }' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
+				)
+			);
+			expect(() => container.querySelectorAll(<string>(<unknown>Symbol('test')))).toThrow(
+				new Error(`Cannot convert a Symbol value to a string`)
+			);
+			expect(() => container.querySelectorAll(<string>(<unknown>true))).not.toThrow();
+		});
+
 		it('Returns all span elements.', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
@@ -675,6 +697,23 @@ describe('QuerySelector', () => {
 			expect(elements[2] === container.children[0].children[1].children[2]).toBe(true);
 			expect(elements[3] === container.children[1]).toBe(true);
 			expect(elements[4] === container.children[1].children[0]).toBe(true);
+
+			// Check that cache works
+
+			container.innerHTML = '';
+
+			const elements2 = container.querySelectorAll(':last-of-type');
+			expect(elements2.length).toBe(0);
+
+			container.innerHTML = QuerySelectorHTML;
+
+			const elements3 = container.querySelectorAll(':last-of-type');
+			expect(elements3.length).toBe(5);
+			expect(elements3[0] === container.children[0].children[0]).toBe(true);
+			expect(elements3[1] === container.children[0].children[1]).toBe(true);
+			expect(elements3[2] === container.children[0].children[1].children[2]).toBe(true);
+			expect(elements3[3] === container.children[1]).toBe(true);
+			expect(elements3[4] === container.children[1].children[0]).toBe(true);
 		});
 
 		it('Returns all input elements matching "input[name="op"]:checked".', () => {
@@ -691,13 +730,16 @@ describe('QuerySelector', () => {
 			expect(elements.length).toBe(1);
 			expect(elements[0] === container.children[0].children[0]).toBe(true);
 
-			const input = <HTMLInputElement>elements[0];
+			const radio1 = <HTMLInputElement>elements[0];
 
-			expect(input.value).toBe('one');
+			expect(radio1.value).toBe('one');
 
-			const twoEl = <HTMLInputElement>container.querySelector("input[value='two']");
+			const radio2 = <HTMLInputElement>container.querySelector("input[value='two']");
 
-			twoEl.checked = true;
+			radio2.checked = true;
+
+			// Here we also tests that cache works
+
 			elements = container.querySelectorAll('input[name="op"]:checked');
 
 			expect(elements.length).toBe(1);
@@ -713,6 +755,25 @@ describe('QuerySelector', () => {
 			expect(elements.length).toBe(2);
 			expect(elements[0] === container.children[0].children[1].children[1]).toBe(true);
 			expect(elements[1] === container.children[0].children[1].children[2]).toBe(true);
+
+			// Check that cache works
+
+			(<HTMLInputElement>elements[0]).setAttribute('type', 'hidden');
+			(<HTMLInputElement>elements[1]).setAttribute('type', 'hidden');
+
+			const elements2 = container.querySelectorAll('span:not([type=hidden])');
+
+			expect(elements2.length).toBe(0);
+
+			(<HTMLInputElement>elements[0]).setAttribute('type', 'text');
+			(<HTMLInputElement>elements[1]).setAttribute('type', 'text');
+
+			const elements3 = container.querySelectorAll('span:not([type=hidden])');
+
+			expect(elements3.length).toBe(2);
+
+			expect(elements3[0] === container.children[0].children[1].children[1]).toBe(true);
+			expect(elements3[1] === container.children[0].children[1].children[2]).toBe(true);
 		});
 
 		it('Returns all elements matching "input:not([type]):not([list])" to verify that "screen.getByRole(\'checkbox\')" works in Testing Library.', () => {
@@ -795,8 +856,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-child(n+8)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['span.n8', 'div.n9', 'i.n10']);
 		});
@@ -807,8 +868,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-child(2n)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['span.n2', 'b.n4', 'div.n6', 'span.n8', 'i.n10']);
 		});
@@ -819,8 +880,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-child(-n + 3)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['div.', 'b.n1', 'span.n2', 'div.n3']);
 		});
@@ -831,8 +892,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll('div :nth-child(2n+1)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['div.', 'b.n1', 'div.n3', 'span.n5', 'b.n7', 'div.n9']);
 		});
@@ -843,8 +904,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll('div :nth-child(3n+1)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['div.', 'b.n1', 'b.n4', 'b.n7', 'i.n10']);
 		});
@@ -855,8 +916,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-child(3n+1 of b)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['b.n1']);
 		});
@@ -867,8 +928,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-child(n+1 of span)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['span.n2', 'span.n5', 'span.n8']);
 		});
@@ -879,8 +940,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-last-child(n+1 of span)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['span.n2', 'span.n5', 'span.n8']);
 		});
@@ -891,8 +952,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll('div :nth-child(3n+3)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['div.n3', 'div.n6', 'div.n9']);
 		});
@@ -912,8 +973,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-child(odd)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['div.', 'b.n1', 'div.n3', 'span.n5', 'b.n7', 'div.n9']);
 		});
@@ -924,8 +985,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-child(even)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['span.n2', 'b.n4', 'div.n6', 'span.n8', 'i.n10']);
 		});
@@ -936,8 +997,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-of-type(2n)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['b.n4', 'span.n5', 'div.n6']);
 		});
@@ -948,8 +1009,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-of-type(odd)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['div.', 'b.n1', 'span.n2', 'div.n3', 'b.n7', 'span.n8', 'div.n9', 'i.n10']);
 		});
@@ -960,8 +1021,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-last-child(2n)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['b.n1', 'div.n3', 'span.n5', 'b.n7', 'div.n9']);
 		});
@@ -972,8 +1033,8 @@ describe('QuerySelector', () => {
 			const elements = container.querySelectorAll(':nth-last-of-type(2n)');
 
 			expect(
-				Array.from(
-					elements.map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+				Array.from(elements).map(
+					(element) => `${element.tagName.toLowerCase()}.${element.className}`
 				)
 			).toEqual(['b.n4', 'span.n5', 'div.n6']);
 		});
@@ -989,27 +1050,47 @@ describe('QuerySelector', () => {
 		it('Throws an error when providing an invalid selector', () => {
 			const div = document.createElement('div');
 			expect(() => div.querySelectorAll('1')).toThrowError(
-				"Failed to execute 'querySelectorAll' on 'HTMLElement': '1' is not a valid selector."
+				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': '1' is not a valid selector."
 			);
 			expect(() => div.querySelectorAll('[1')).toThrowError(
-				"Failed to execute 'querySelectorAll' on 'HTMLElement': '[1' is not a valid selector."
+				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': '[1' is not a valid selector."
 			);
 			expect(() => div.querySelectorAll('.1')).toThrowError(
-				"Failed to execute 'querySelectorAll' on 'HTMLElement': '.1' is not a valid selector."
+				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': '.1' is not a valid selector."
 			);
 			expect(() => div.querySelectorAll('#1')).toThrowError(
-				"Failed to execute 'querySelectorAll' on 'HTMLElement': '#1' is not a valid selector."
+				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': '#1' is not a valid selector."
 			);
 			expect(() => div.querySelectorAll('a.')).toThrowError(
-				"Failed to execute 'querySelectorAll' on 'HTMLElement': 'a.' is not a valid selector."
+				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': 'a.' is not a valid selector."
 			);
 			expect(() => div.querySelectorAll('a#')).toThrowError(
-				"Failed to execute 'querySelectorAll' on 'HTMLElement': 'a#' is not a valid selector."
+				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': 'a#' is not a valid selector."
 			);
 		});
 	});
 
 	describe('querySelector', () => {
+		it('Throws an error for invalid selectors.', () => {
+			const container = document.createElement('div');
+			expect(() => container.querySelector(<string>(<unknown>12))).toThrow(
+				new DOMException(
+					`Failed to execute 'querySelector' on 'HTMLDivElement': '12' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
+				)
+			);
+			expect(() => container.querySelector(<string>(<unknown>(() => {})))).toThrow(
+				new DOMException(
+					`Failed to execute 'querySelector' on 'HTMLDivElement': '() => {\n      }' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
+				)
+			);
+			expect(() => container.querySelector(<string>(<unknown>Symbol('test')))).toThrow(
+				new Error(`Cannot convert a Symbol value to a string`)
+			);
+			expect(() => container.querySelector(<string>(<unknown>true))).not.toThrow();
+		});
+
 		it('Returns a span matching "span".', () => {
 			const div1 = document.createElement('div');
 			const div2 = document.createElement('div');
@@ -1133,21 +1214,22 @@ describe('QuerySelector', () => {
 			document.appendChild(section);
 
 			window.location.hash = '#id';
-			expect(section.querySelector(':target')).toBe(headline);
-			expect(section.querySelector('h2:target')).toBe(headline);
-			expect(section.querySelector('h3:target')).toBeNull();
+			expect(section.querySelector(':target') === headline).toBe(true);
+			expect(section.querySelector('h2:target') === headline).toBe(true);
+			expect(section.querySelector('h3:target') === null).toBe(true);
 
+			// Here we also test that cache works
 			window.location.hash = '#something-else';
-			expect(section.querySelector(':target')).toBeNull();
-			expect(section.querySelector('h2:target')).toBeNull();
-			expect(section.querySelector('h3:target')).toBeNull();
+			expect(section.querySelector(':target') === null).toBe(true);
+			expect(section.querySelector('h2:target') === null).toBe(true);
+			expect(section.querySelector('h3:target') === null).toBe(true);
 
 			// Detached Elements should not match
 			window.location.hash = '#id';
 			section.remove();
-			expect(section.querySelector(':target')).toBeNull();
-			expect(section.querySelector('h2:target')).toBeNull();
-			expect(section.querySelector('h3:target')).toBeNull();
+			expect(section.querySelector(':target') === null).toBe(true);
+			expect(section.querySelector('h2:target') === null).toBe(true);
+			expect(section.querySelector('h3:target') === null).toBe(true);
 		});
 
 		it('Returns an element by id matching "#:id:".', () => {
@@ -1208,22 +1290,22 @@ describe('QuerySelector', () => {
 		it('Throws an error when providing an invalid selector', () => {
 			const div = document.createElement('div');
 			expect(() => div.querySelector('1')).toThrowError(
-				"Failed to execute 'querySelector' on 'HTMLElement': '1' is not a valid selector."
+				"Failed to execute 'querySelector' on 'HTMLDivElement': '1' is not a valid selector."
 			);
 			expect(() => div.querySelector('[1')).toThrowError(
-				"Failed to execute 'querySelector' on 'HTMLElement': '[1' is not a valid selector."
+				"Failed to execute 'querySelector' on 'HTMLDivElement': '[1' is not a valid selector."
 			);
 			expect(() => div.querySelector('.1')).toThrowError(
-				"Failed to execute 'querySelector' on 'HTMLElement': '.1' is not a valid selector."
+				"Failed to execute 'querySelector' on 'HTMLDivElement': '.1' is not a valid selector."
 			);
 			expect(() => div.querySelector('#1')).toThrowError(
-				"Failed to execute 'querySelector' on 'HTMLElement': '#1' is not a valid selector."
+				"Failed to execute 'querySelector' on 'HTMLDivElement': '#1' is not a valid selector."
 			);
 			expect(() => div.querySelector('a.')).toThrowError(
-				"Failed to execute 'querySelector' on 'HTMLElement': 'a.' is not a valid selector."
+				"Failed to execute 'querySelector' on 'HTMLDivElement': 'a.' is not a valid selector."
 			);
 			expect(() => div.querySelector('a#')).toThrowError(
-				"Failed to execute 'querySelector' on 'HTMLElement': 'a#' is not a valid selector."
+				"Failed to execute 'querySelector' on 'HTMLDivElement': 'a#' is not a valid selector."
 			);
 		});
 
@@ -1310,9 +1392,46 @@ describe('QuerySelector', () => {
 				container.children[0].children[1].children[0]
 			);
 		});
+
+		it('Returns element matching selector "datalist#id"', () => {
+			const div = document.createElement('div');
+			const datalist = document.createElement('datalist');
+			const span = document.createElement('span');
+
+			datalist.id = 'datalist_id';
+			span.id = 'span_id';
+
+			div.appendChild(datalist);
+			div.appendChild(span);
+
+			expect(div.querySelector('datalist#span_id') === null).toBe(true);
+			expect(div.querySelector('datalist#datalist_id') === datalist).toBe(true);
+			expect(div.querySelector('span#datalist_id') === null).toBe(true);
+			expect(div.querySelector('span#span_id') === span).toBe(true);
+		});
 	});
 
 	describe('matches()', () => {
+		it('Throws an error for invalid selectors.', () => {
+			const container = document.createElement('div');
+			expect(() => container.matches(<string>(<unknown>12))).toThrow(
+				new DOMException(
+					`Failed to execute 'matches' on 'HTMLDivElement': '12' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
+				)
+			);
+			expect(() => container.matches(<string>(<unknown>(() => {})))).toThrow(
+				new DOMException(
+					`Failed to execute 'matches' on 'HTMLDivElement': '() => {\n      }' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
+				)
+			);
+			expect(() => container.matches(<string>(<unknown>Symbol('test')))).toThrow(
+				new Error(`Cannot convert a Symbol value to a string`)
+			);
+			expect(() => container.matches(<string>(<unknown>true))).not.toThrow();
+		});
+
 		it('Returns true when the element matches the selector', () => {
 			const div = document.createElement('div');
 			div.innerHTML = '<div class="foo"></div>';
@@ -1384,20 +1503,24 @@ describe('QuerySelector', () => {
 			div.innerHTML = '<div class="foo"></div>';
 			const element = div.children[0];
 			expect(() => element.matches('1')).toThrow(
-				new Error(`Failed to execute 'matches' on 'HTMLElement': '1' is not a valid selector.`)
+				new Error(`Failed to execute 'matches' on 'HTMLDivElement': '1' is not a valid selector.`)
 			);
 			expect(() => element.matches(':not')).toThrow(
-				new Error(`Failed to execute 'matches' on 'HTMLElement': ':not' is not a valid selector.`)
+				new Error(
+					`Failed to execute 'matches' on 'HTMLDivElement': ':not' is not a valid selector.`
+				)
 			);
 			expect(() => element.matches(':is')).toThrow(
-				new Error(`Failed to execute 'matches' on 'HTMLElement': ':is' is not a valid selector.`)
+				new Error(`Failed to execute 'matches' on 'HTMLDivElement': ':is' is not a valid selector.`)
 			);
 			expect(() => element.matches(':where')).toThrow(
-				new Error(`Failed to execute 'matches' on 'HTMLElement': ':where' is not a valid selector.`)
+				new Error(
+					`Failed to execute 'matches' on 'HTMLDivElement': ':where' is not a valid selector.`
+				)
 			);
 			expect(() => element.matches('div:not')).toThrow(
 				new Error(
-					`Failed to execute 'matches' on 'HTMLElement': 'div:not' is not a valid selector.`
+					`Failed to execute 'matches' on 'HTMLDivElement': 'div:not' is not a valid selector.`
 				)
 			);
 		});

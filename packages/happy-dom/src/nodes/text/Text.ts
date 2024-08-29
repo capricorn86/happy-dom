@@ -1,17 +1,18 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
 import CharacterData from '../character-data/CharacterData.js';
-import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
-import Node from '../node/Node.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
+import HTMLStyleElement from '../html-style-element/HTMLStyleElement.js';
 
 /**
  * Text node.
  */
 export default class Text extends CharacterData {
-	public cloneNode: (deep?: boolean) => Text;
+	public declare cloneNode: (deep?: boolean) => Text;
 	public override [PropertySymbol.nodeType] = NodeTypeEnum.textNode;
+	public override [PropertySymbol.textAreaNode]: HTMLTextAreaElement | null = null;
+	public override [PropertySymbol.styleNode]: HTMLStyleElement | null = null;
 
 	/**
 	 * Node name.
@@ -55,7 +56,7 @@ export default class Text extends CharacterData {
 		const length = this[PropertySymbol.data].length;
 
 		if (offset < 0 || offset > length) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				'The index is not in the allowed range.',
 				DOMExceptionNameEnum.indexSizeError
 			);
@@ -93,18 +94,30 @@ export default class Text extends CharacterData {
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
-		const oldTextAreaNode = <HTMLTextAreaElement>this[PropertySymbol.textAreaNode];
+	public override [PropertySymbol.connectedToNode](): void {
+		super[PropertySymbol.connectedToNode]();
 
-		super[PropertySymbol.connectToNode](parentNode);
-
-		if (oldTextAreaNode !== this[PropertySymbol.textAreaNode]) {
-			if (oldTextAreaNode) {
-				oldTextAreaNode[PropertySymbol.resetSelection]();
-			}
-			if (this[PropertySymbol.textAreaNode]) {
-				(<HTMLTextAreaElement>this[PropertySymbol.textAreaNode])[PropertySymbol.resetSelection]();
-			}
+		if (this[PropertySymbol.textAreaNode]) {
+			(<HTMLTextAreaElement>this[PropertySymbol.textAreaNode])[PropertySymbol.resetSelection]();
 		}
+
+		if (this[PropertySymbol.styleNode] && this[PropertySymbol.data]) {
+			this[PropertySymbol.styleNode][PropertySymbol.updateSheet]();
+		}
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.disconnectedFromNode](): void {
+		if (this[PropertySymbol.textAreaNode]) {
+			(<HTMLTextAreaElement>this[PropertySymbol.textAreaNode])[PropertySymbol.resetSelection]();
+		}
+
+		if (this[PropertySymbol.styleNode] && this[PropertySymbol.data]) {
+			this[PropertySymbol.styleNode][PropertySymbol.updateSheet]();
+		}
+
+		super[PropertySymbol.disconnectedFromNode]();
 	}
 }

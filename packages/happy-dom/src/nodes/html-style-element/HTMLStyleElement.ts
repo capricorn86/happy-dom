@@ -1,7 +1,6 @@
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
-import Node from '../node/Node.js';
 
 /**
  * HTML Style Element.
@@ -83,42 +82,18 @@ export default class HTMLStyleElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.appendChild](node: Node): Node {
-		const returnValue = super[PropertySymbol.appendChild](node);
-		this[PropertySymbol.updateSheet]();
-		return returnValue;
+	public override [PropertySymbol.connectedToDocument](): void {
+		super[PropertySymbol.connectedToDocument]();
+		this[PropertySymbol.sheet] = new CSSStyleSheet();
+		this[PropertySymbol.sheet].replaceSync(this.textContent);
 	}
 
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.removeChild](node: Node): Node {
-		const returnValue = super[PropertySymbol.removeChild](node);
-		this[PropertySymbol.updateSheet]();
-		return returnValue;
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
-		const returnValue = super[PropertySymbol.insertBefore](newNode, referenceNode);
-		this[PropertySymbol.updateSheet]();
-		return returnValue;
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.connectToNode](parentNode: Node = null): void {
-		super[PropertySymbol.connectToNode](parentNode);
-
-		if (parentNode) {
-			this[PropertySymbol.sheet] = new CSSStyleSheet();
-			this[PropertySymbol.sheet].replaceSync(this.textContent);
-		} else {
-			this[PropertySymbol.sheet] = null;
-		}
+	public override [PropertySymbol.disconnectedFromDocument](): void {
+		super[PropertySymbol.disconnectedFromDocument]();
+		this[PropertySymbol.sheet] = null;
 	}
 
 	/**
@@ -126,7 +101,6 @@ export default class HTMLStyleElement extends HTMLElement {
 	 */
 	public [PropertySymbol.updateSheet](): void {
 		if (this[PropertySymbol.sheet]) {
-			this[PropertySymbol.ownerDocument][PropertySymbol.cacheID]++;
 			this[PropertySymbol.sheet].replaceSync(this.textContent);
 		}
 	}

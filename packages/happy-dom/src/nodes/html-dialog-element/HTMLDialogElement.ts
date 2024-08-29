@@ -5,8 +5,7 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 /**
  * HTML Dialog Element.
  *
- * Reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/HTMLDialogElement.
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLDialogElement
  */
 export default class HTMLDialogElement extends HTMLElement {
 	// Internal properties

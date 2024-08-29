@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20]
+        node-version: [22]
 
     outputs:
       next_version: ${{ steps.versionCheck.outputs.next_version }}

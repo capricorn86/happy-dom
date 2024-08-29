@@ -1,18 +1,229 @@
+import ClassMethodBinder from '../../ClassMethodBinder.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
+import Element from './Element.js';
 
 /**
- * HTML collection.
+ * HTMLCollection.
+ *
+ * We are extending Array here to improve performance.
+ * However, we should not expose Array methods to the outside.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLCollection
  */
-export default class HTMLCollection<T> extends Array implements HTMLCollection<T> {
-	protected [PropertySymbol.namedItems]: { [k: string]: T[] } = {};
+export default class HTMLCollection<T extends Element, NamedItem = T> {
+	[index: number]: T;
+	protected [PropertySymbol.query]: () => T[];
+
+	/**
+	 * Constructor.
+	 *
+	 * @param [illegalConstructorSymbol] Illegal constructor symbol.
+	 * @param query Query function.
+	 */
+	constructor(illegalConstructorSymbol?: symbol, query: () => T[] = () => []) {
+		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
+			throw new TypeError('Illegal constructor');
+		}
+
+		this[PropertySymbol.query] = query;
+
+		// This only works for one level of inheritance, but it should be fine as there is no collection that goes deeper according to spec.
+		ClassMethodBinder.bindMethods(
+			this,
+			this.constructor !== HTMLCollection ? [HTMLCollection, this.constructor] : [HTMLCollection],
+			{ bindSymbols: true }
+		);
+
+		return new Proxy(this, {
+			get: (target, property) => {
+				if (property === 'length') {
+					return query().length;
+				}
+				if (property in target || typeof property === 'symbol') {
+					return target[property];
+				}
+
+				const index = Number(property);
+				if (!isNaN(index)) {
+					return query()[index];
+				}
+				return target.namedItem(<string>property) || undefined;
+			},
+			set(target, property, newValue): boolean {
+				if (typeof property === 'symbol') {
+					target[property] = newValue;
+					return true;
+				}
+				const index = Number(property);
+				if (isNaN(index)) {
+					target[property] = newValue;
+				}
+				return true;
+			},
+			deleteProperty(target, property): boolean {
+				if (typeof property === 'symbol') {
+					delete target[property];
+					return true;
+				}
+				const index = Number(property);
+				if (isNaN(index)) {
+					delete target[property];
+				}
+				return true;
+			},
+			ownKeys(): string[] {
+				const keys: string[] = [];
+				const items = query();
+				for (let i = 0; i < items.length; i++) {
+					const item = items[i];
+					const name =
+						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
+							PropertySymbol.value
+						] ||
+						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('name')?.[
+							PropertySymbol.value
+						];
+					keys.push(String(i));
+
+					if (name) {
+						keys.push(name);
+					}
+				}
+				return keys;
+			},
+			has(target, property): boolean {
+				if (property in target) {
+					return true;
+				}
+
+				const items = query();
+				const index = Number(property);
+
+				if (!isNaN(index) && index >= 0 && index < items.length) {
+					return true;
+				}
+
+				property = String(property);
+
+				for (let i = 0; i < items.length; i++) {
+					const item = items[i];
+					const name =
+						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
+							PropertySymbol.value
+						] ||
+						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('name')?.[
+							PropertySymbol.value
+						];
+
+					if (name && name === property) {
+						return true;
+					}
+				}
+
+				return false;
+			},
+			defineProperty(target, property, descriptor): boolean {
+				if (property in target) {
+					Object.defineProperty(target, property, descriptor);
+					return true;
+				}
+
+				return false;
+			},
+			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
+				if (property in target || typeof property === 'symbol') {
+					return;
+				}
+
+				const items = query();
+				const index = Number(property);
+
+				if (!isNaN(index) && index >= 0 && index < items.length) {
+					return {
+						value: items[index],
+						writable: false,
+						enumerable: true,
+						configurable: true
+					};
+				}
+
+				for (let i = 0; i < items.length; i++) {
+					const item = items[i];
+					const name =
+						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
+							PropertySymbol.value
+						] ||
+						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('name')?.[
+							PropertySymbol.value
+						];
+
+					if (name && name === property) {
+						return {
+							value: item,
+							writable: false,
+							enumerable: true,
+							configurable: true
+						};
+					}
+				}
+			}
+		});
+	}
+
+	/**
+	 * Returns length.
+	 *
+	 * @returns Length.
+	 */
+	public get length(): number {
+		return this[PropertySymbol.query]().length;
+	}
+
+	/**
+	 * Returns `Symbol.toStringTag`.
+	 *
+	 * @returns `Symbol.toStringTag`.
+	 */
+	public get [Symbol.toStringTag](): string {
+		return this.constructor.name;
+	}
+
+	/**
+	 * Returns `[object HTMLCollection]`.
+	 *
+	 * @returns `[object HTMLCollection]`.
+	 */
+	public toLocaleString(): string {
+		return `[object ${this.constructor.name}]`;
+	}
+
+	/**
+	 * Returns `[object HTMLCollection]`.
+	 *
+	 * @returns `[object HTMLCollection]`.
+	 */
+	public toString(): string {
+		return `[object ${this.constructor.name}]`;
+	}
 
 	/**
 	 * Returns item by index.
 	 *
 	 * @param index Index.
 	 */
-	public item(index: number): T | null {
-		return index >= 0 && this[index] ? this[index] : null;
+	public item(index: number): T {
+		const items = this[PropertySymbol.query]();
+		return index >= 0 && items[index] ? items[index] : null;
+	}
+
+	/**
+	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.
+	 *
+	 * @returns Iterator.
+	 */
+	public [Symbol.iterator](): IterableIterator<T> {
+		const items = this[PropertySymbol.query]();
+		return items[Symbol.iterator]();
 	}
 
 	/**
@@ -21,69 +232,21 @@ export default class HTMLCollection<T> extends Array implements HTMLCollection<T
 	 * @param name Name.
 	 * @returns Node.
 	 */
-	public namedItem(name: string): T | null {
-		return this[PropertySymbol.namedItems][name] && this[PropertySymbol.namedItems][name].length
-			? this[PropertySymbol.namedItems][name][0]
-			: null;
-	}
-
-	/**
-	 * Appends named item.
-	 *
-	 * @param node Node.
-	 * @param name Name.
-	 */
-	public [PropertySymbol.appendNamedItem](node: T, name: string): void {
-		if (name) {
-			this[PropertySymbol.namedItems][name] = this[PropertySymbol.namedItems][name] || [];
-
-			if (!this[PropertySymbol.namedItems][name].includes(node)) {
-				this[PropertySymbol.namedItems][name].push(node);
-			}
-
-			if (!this.hasOwnProperty(name) && this[PropertySymbol.isValidPropertyName](name)) {
-				this[name] = this[PropertySymbol.namedItems][name][0];
+	public namedItem(name: string): NamedItem | null {
+		const items = this[PropertySymbol.query]();
+		name = String(name);
+		for (const item of items) {
+			if (
+				item[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
+					PropertySymbol.value
+				] === name ||
+				item[PropertySymbol.attributes][PropertySymbol.namedItems].get('name')?.[
+					PropertySymbol.value
+				] === name
+			) {
+				return <NamedItem>(<unknown>item);
 			}
 		}
-	}
-
-	/**
-	 * Appends named item.
-	 *
-	 * @param node Node.
-	 * @param name Name.
-	 */
-	public [PropertySymbol.removeNamedItem](node: T, name: string): void {
-		if (name && this[PropertySymbol.namedItems][name]) {
-			const index = this[PropertySymbol.namedItems][name].indexOf(node);
-
-			if (index > -1) {
-				this[PropertySymbol.namedItems][name].splice(index, 1);
-
-				if (this[PropertySymbol.namedItems][name].length === 0) {
-					delete this[PropertySymbol.namedItems][name];
-					if (this.hasOwnProperty(name) && this[PropertySymbol.isValidPropertyName](name)) {
-						delete this[name];
-					}
-				} else if (this[PropertySymbol.isValidPropertyName](name)) {
-					this[name] = this[PropertySymbol.namedItems][name][0];
-				}
-			}
-		}
-	}
-
-	/**
-	 * Returns "true" if the property name is valid.
-	 *
-	 * @param name Name.
-	 * @returns True if the property name is valid.
-	 */
-	protected [PropertySymbol.isValidPropertyName](name: string): boolean {
-		return (
-			!!name &&
-			!this.constructor.prototype.hasOwnProperty(name) &&
-			!Array.prototype.hasOwnProperty(name) &&
-			(isNaN(Number(name)) || name.includes('.'))
-		);
+		return null;
 	}
 }

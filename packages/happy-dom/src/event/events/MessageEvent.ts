@@ -1,6 +1,6 @@
 import BrowserWindow from '../../window/BrowserWindow.js';
 import Event from '../Event.js';
-import IMessagePort from '../IMessagePort.js';
+import MessagePort from '../MessagePort.js';
 import IMessageEventInit from './IMessageEventInit.js';
 
 /**
@@ -13,7 +13,7 @@ export default class MessageEvent extends Event {
 	public readonly origin: string;
 	public readonly lastEventId: string;
 	public readonly source: BrowserWindow | null;
-	public readonly ports: IMessagePort[];
+	public readonly ports: MessagePort[];
 
 	/**
 	 * Constructor.

@@ -91,7 +91,7 @@ describe('Request', () => {
 
 			expect(error).toEqual(
 				new DOMException(
-					`Failed to construct 'Request. Invalid URL "/path/" on document location 'about:blank'. Relative URLs are not permitted on current document location.`,
+					`Failed to construct 'Request': Invalid URL "/path/" on document location 'about:blank'. Relative URLs are not permitted on current document location.`,
 					DOMExceptionNameEnum.notSupportedError
 				)
 			);
@@ -285,13 +285,13 @@ describe('Request', () => {
 		});
 
 		it('Supports signal from Request object.', () => {
-			const signal = new AbortSignal();
+			const signal = new window.AbortSignal();
 			const request = new window.Request(new window.Request(TEST_URL, { signal }));
 			expect(request.signal).toBe(signal);
 		});
 
 		it('Supports signal from init object.', () => {
-			const signal = new AbortSignal();
+			const signal = new window.AbortSignal();
 			const request = new window.Request(TEST_URL, { signal });
 			expect(request.signal).toBe(signal);
 		});
@@ -670,7 +670,7 @@ describe('Request', () => {
 
 	describe('formData()', () => {
 		it('Returns FormData for FormData object (multipart)', async () => {
-			const formData = new FormData();
+			const formData = new window.FormData();
 			formData.append('some', 'test');
 			const request = new window.Request(TEST_URL, { method: 'POST', body: formData });
 			const formDataResponse = await request.formData();
@@ -710,7 +710,7 @@ describe('Request', () => {
 		});
 
 		it('Returns FormData for multipart text fields.', async () => {
-			const formData = new FormData();
+			const formData = new window.FormData();
 
 			vi.spyOn(Math, 'random').mockImplementation(() => 0.8);
 
@@ -733,7 +733,7 @@ describe('Request', () => {
 		});
 
 		it('Returns FormData for multipart files.', async () => {
-			const formData = new FormData();
+			const formData = new window.FormData();
 			const imageBuffer = await FS.promises.readFile(
 				Path.join(__dirname, 'data', 'test-image.jpg')
 			);
@@ -773,7 +773,7 @@ describe('Request', () => {
 
 		it('Supports window.happyDOM?.waitUntilComplete().', async () => {
 			await new Promise((resolve) => {
-				const formData = new FormData();
+				const formData = new window.FormData();
 				formData.append('some', 'test');
 				const request = new window.Request(TEST_URL, { method: 'POST', body: formData });
 				let isAsyncComplete = false;
@@ -804,7 +804,7 @@ describe('Request', () => {
 		it('Returns a clone.', async () => {
 			window.happyDOM?.setURL('https://example.com/other/path/');
 
-			const signal = new AbortSignal();
+			const signal = new window.AbortSignal();
 			const request = new window.Request(TEST_URL, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },

@@ -1,3 +1,4 @@
+import ClassMethodBinder from '../ClassMethodBinder.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 
 /**
@@ -7,6 +8,83 @@ import * as PropertySymbol from '../PropertySymbol.js';
  */
 export default class Storage {
 	public [PropertySymbol.data]: { [key: string]: string } = {};
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		const data = this[PropertySymbol.data];
+
+		ClassMethodBinder.bindMethods(this, [Storage], {
+			bindSymbols: true,
+			forwardToPrototype: true
+		});
+
+		return new Proxy(this, {
+			get: (target, property) => {
+				if (property in target || typeof property === 'symbol') {
+					return target[property];
+				}
+				if (property in data) {
+					return data[property];
+				}
+			},
+			set(target, property, newValue): boolean {
+				if (property in target || typeof property === 'symbol') {
+					return true;
+				}
+
+				data[String(property)] = String(newValue);
+				return true;
+			},
+			deleteProperty(_target, property): boolean {
+				if (property in data) {
+					delete data[String(property)];
+					return true;
+				}
+				return false;
+			},
+			ownKeys(): string[] {
+				return Object.keys(data);
+			},
+			has(target, property): boolean {
+				if (property in target || property in data) {
+					return true;
+				}
+
+				return false;
+			},
+			defineProperty(target, property, descriptor): boolean {
+				if (property in target) {
+					Object.defineProperty(target, property, descriptor);
+					return true;
+				}
+
+				if (descriptor.value !== undefined) {
+					data[String(property)] = String(descriptor.value);
+					return true;
+				}
+
+				return false;
+			},
+			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
+				if (property in target) {
+					return;
+				}
+
+				const value = data[String(property)];
+
+				if (value !== undefined) {
+					return {
+						value: value,
+						writable: true,
+						enumerable: true,
+						configurable: true
+					};
+				}
+			}
+		});
+	}
 
 	/**
 	 * Returns length.
@@ -61,6 +139,9 @@ export default class Storage {
 	 * Clears storage.
 	 */
 	public clear(): void {
-		this[PropertySymbol.data] = {};
+		const data = this[PropertySymbol.data];
+		for (const key of Object.keys(data)) {
+			delete data[key];
+		}
 	}
 }

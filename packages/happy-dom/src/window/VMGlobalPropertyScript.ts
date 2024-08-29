@@ -48,7 +48,6 @@ this.isFinite = globalThis.isFinite;
 this.isNaN = globalThis.isNaN;
 this.parseFloat = globalThis.parseFloat;
 this.parseInt = globalThis.parseInt;
-this.process = null;
 this.root = globalThis.root;
 this.undefined = globalThis.undefined;
 this.unescape = globalThis.unescape;
