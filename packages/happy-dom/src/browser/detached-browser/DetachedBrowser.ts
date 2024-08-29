@@ -6,6 +6,9 @@ import DetachedBrowserPage from './DetachedBrowserPage.js';
 import IBrowser from '../types/IBrowser.js';
 import IBrowserFrame from '../types/IBrowserFrame.js';
 import BrowserWindow from '../../window/BrowserWindow.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
+import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
+import BrowserExceptionObserver from '../utilities/BrowserExceptionObserver.js';
 
 /**
  * Detached browser used when constructing a Window instance without a browser.
@@ -20,6 +23,7 @@ export default class DetachedBrowser implements IBrowser {
 		browserFrame: IBrowserFrame,
 		options?: { url?: string; width?: number; height?: number }
 	) => BrowserWindow | null;
+	public [PropertySymbol.exceptionObserver]: BrowserExceptionObserver | null = null;
 
 	/**
 	 * Constructor.
@@ -39,6 +43,9 @@ export default class DetachedBrowser implements IBrowser {
 		this.windowClass = windowClass;
 		this.console = options?.console || null;
 		this.settings = BrowserSettingsFactory.createSettings(options?.settings);
+		if (this.settings.errorCapture === BrowserErrorCaptureEnum.processLevel) {
+			this[PropertySymbol.exceptionObserver] = new BrowserExceptionObserver();
+		}
 		this.contexts = [];
 		this.contexts.push(new DetachedBrowserContext(this));
 	}

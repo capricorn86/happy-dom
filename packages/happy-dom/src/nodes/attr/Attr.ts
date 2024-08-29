@@ -9,9 +9,14 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
  * Reference: https://developer.mozilla.org/en-US/docs/Web/API/Attr.
  */
 export default class Attr extends Node implements Attr {
+	// Public properties
+	public declare cloneNode: (deep?: boolean) => Attr;
+
 	public [PropertySymbol.nodeType] = NodeTypeEnum.attributeNode;
 	public [PropertySymbol.namespaceURI]: string | null = null;
 	public [PropertySymbol.name]: string | null = null;
+	public [PropertySymbol.localName]: string | null = null;
+	public [PropertySymbol.prefix]: string | null = null;
 	public [PropertySymbol.value]: string | null = null;
 	public [PropertySymbol.specified] = true;
 	public [PropertySymbol.ownerElement]: Element | null = null;
@@ -67,7 +72,7 @@ export default class Attr extends Node implements Attr {
 	 * @returns Local name.
 	 */
 	public get localName(): string {
-		return this[PropertySymbol.name] ? this[PropertySymbol.name].split(':').reverse()[0] : null;
+		return this[PropertySymbol.localName];
 	}
 
 	/**
@@ -76,7 +81,7 @@ export default class Attr extends Node implements Attr {
 	 * @returns Prefix.
 	 */
 	public get prefix(): string {
-		return this[PropertySymbol.name] ? this[PropertySymbol.name].split(':')[0] : null;
+		return this[PropertySymbol.prefix];
 	}
 
 	/**
@@ -93,5 +98,21 @@ export default class Attr extends Node implements Attr {
 	 */
 	public get namespaceURI(): string | null {
 		return this[PropertySymbol.namespaceURI];
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.cloneNode](deep = false): Attr {
+		const clone = <Attr>super[PropertySymbol.cloneNode](deep);
+
+		clone[PropertySymbol.namespaceURI] = this[PropertySymbol.namespaceURI];
+		clone[PropertySymbol.name] = this[PropertySymbol.name];
+		clone[PropertySymbol.localName] = this[PropertySymbol.localName];
+		clone[PropertySymbol.prefix] = this[PropertySymbol.prefix];
+		clone[PropertySymbol.value] = this[PropertySymbol.value];
+		clone[PropertySymbol.specified] = this[PropertySymbol.specified];
+
+		return clone;
 	}
 }

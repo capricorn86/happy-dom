@@ -3,7 +3,7 @@ import PluginArray from './PluginArray.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import Permissions from '../permissions/Permissions.js';
 import Clipboard from '../clipboard/Clipboard.js';
-import WindowBrowserSettingsReader from '../window/WindowBrowserSettingsReader.js';
+import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import Blob from '../file/Blob.js';
 import FormData from '../form-data/FormData.js';
 
@@ -16,19 +16,23 @@ import FormData from '../form-data/FormData.js';
  * https://html.spec.whatwg.org/multipage/system-state.html#dom-navigator.
  */
 export default class Navigator {
-	#ownerWindow: BrowserWindow;
+	#window: BrowserWindow;
 	#clipboard: Clipboard;
 	#permissions: Permissions;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param ownerWindow Owner window.
+	 * @param window Owner window.
 	 */
-	constructor(ownerWindow: BrowserWindow) {
-		this.#ownerWindow = ownerWindow;
-		this.#clipboard = new Clipboard(ownerWindow);
-		this.#permissions = new Permissions();
+	constructor(window: BrowserWindow) {
+		if (!window) {
+			throw new TypeError('Invalid constructor');
+		}
+
+		this.#window = window;
+		this.#clipboard = new Clipboard(window);
+		this.#permissions = new Permissions(window);
 	}
 
 	/**
@@ -77,9 +81,7 @@ export default class Navigator {
 	 * Maximum number of simultaneous touch contact points are supported by the current device.
 	 */
 	public get maxTouchPoints(): number {
-		return (
-			WindowBrowserSettingsReader.getSettings(this.#ownerWindow)?.navigator.maxTouchPoints || 0
-		);
+		return new WindowBrowserContext(this.#window).getSettings()?.navigator.maxTouchPoints || 0;
 	}
 
 	/**
@@ -156,7 +158,7 @@ export default class Navigator {
 	 * "appCodeName/appVersion number (Platform; Security; OS-or-CPU; Localization; rv: revision-version-number) product/productSub Application-Name Application-Name-version".
 	 */
 	public get userAgent(): string {
-		return WindowBrowserSettingsReader.getSettings(this.#ownerWindow)?.navigator.userAgent || '';
+		return new WindowBrowserContext(this.#window).getSettings()?.navigator.userAgent || '';
 	}
 
 	/**
@@ -227,7 +229,7 @@ export default class Navigator {
 		url: string,
 		data: string | Blob | ArrayBuffer | ArrayBufferView | FormData
 	): boolean {
-		this.#ownerWindow.fetch(url, {
+		this.#window.fetch(url, {
 			method: 'POST',
 			body: data
 		});

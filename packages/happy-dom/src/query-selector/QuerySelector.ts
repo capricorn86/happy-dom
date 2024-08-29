@@ -10,6 +10,10 @@ import SelectorParser from './SelectorParser.js';
 import ISelectorMatch from './ISelectorMatch.js';
 import IHTMLElementTagNameMap from '../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../config/ISVGElementTagNameMap.js';
+import ICachedQuerySelectorAllItem from '../nodes/node/ICachedQuerySelectorAllResult.js';
+import ICachedQuerySelectorItem from '../nodes/node/ICachedQuerySelectorResult.js';
+import ICachedMatchesItem from '../nodes/node/ICachedMatchesResult.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 
 type DocumentPositionAndElement = {
 	documentPosition: string;
@@ -74,43 +78,75 @@ export default class QuerySelector {
 		node: Element | Document | DocumentFragment,
 		selector: string
 	): NodeList<Element> {
+		if (selector === null || selector === undefined) {
+			return new NodeList<Element>(PropertySymbol.illegalConstructor, []);
+		}
+
+		const window = node[PropertySymbol.window];
+
 		if (<string>selector === '') {
-			throw new Error(
+			throw new window.Error(
 				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': The provided selector is empty.`
 			);
 		}
 
-		if (selector === null || selector === undefined) {
-			return new NodeList<Element>();
+		if (typeof selector !== 'string' && typeof selector !== 'boolean') {
+			throw new window.DOMException(
+				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': '${selector}' is not a valid selector.`,
+				'SyntaxError'
+			);
+		}
+
+		selector = String(selector);
+
+		const cache = node[PropertySymbol.cache].querySelectorAll;
+		const cachedResult = cache.get(selector);
+
+		if (cachedResult?.result) {
+			const result = cachedResult.result.deref();
+			if (result) {
+				return result;
+			}
 		}
 
 		if (INVALID_SELECTOR_REGEXP.test(selector)) {
-			throw new Error(
+			throw new window.Error(
 				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': '${selector}' is not a valid selector.`
 			);
 		}
 
 		const groups = SelectorParser.getSelectorGroups(selector);
-		let matches: DocumentPositionAndElement[] = [];
+		const items: Element[] = [];
+		const nodeList = new NodeList<Element>(PropertySymbol.illegalConstructor, items);
+		const matchesMap: Map<string, Element> = new Map();
+		const matchedPositions: string[] = [];
+		const cachedItem = {
+			result: new WeakRef(nodeList)
+		};
+		node[PropertySymbol.cache].querySelectorAll.set(selector, cachedItem);
+
+		if (node[PropertySymbol.isConnected]) {
+			// Document is affected for the ":target" selector
+			(node[PropertySymbol.ownerDocument] || node)[PropertySymbol.affectsCache].push(cachedItem);
+		}
 
 		for (const items of groups) {
-			matches = matches.concat(
+			const matches =
 				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
-					? this.findAll(<Element>node, [<Element>node], items)
-					: this.findAll(null, (<Element>node)[PropertySymbol.children], items)
-			);
+					? this.findAll(<Element>node, [<Element>node], items, cachedItem)
+					: this.findAll(null, (<Element>node)[PropertySymbol.elementArray], items, cachedItem);
+			for (const match of matches) {
+				if (!matchesMap.has(match.documentPosition)) {
+					matchesMap.set(match.documentPosition, match.element);
+					matchedPositions.push(match.documentPosition);
+				}
+			}
 		}
 
-		const nodeList = new NodeList<Element>();
-		const matchesMap: { [position: string]: Element } = {};
+		const keys = matchedPositions.sort();
 
-		for (let i = 0, max = matches.length; i < max; i++) {
-			matchesMap[matches[i].documentPosition] = matches[i].element;
-		}
-
-		const keys = Object.keys(matchesMap).sort();
 		for (let i = 0, max = keys.length; i < max; i++) {
-			nodeList.push(matchesMap[keys[i]]);
+			items.push(matchesMap.get(keys[i]));
 		}
 
 		return nodeList;
@@ -163,29 +199,63 @@ export default class QuerySelector {
 		node: Element | Document | DocumentFragment,
 		selector: string
 	): Element | null {
-		if (selector === '') {
-			throw new Error(
-				`Failed to execute 'querySelector' on '${node.constructor.name}': The provided selector is empty.`
-			);
-		}
-
 		if (selector === null || selector === undefined) {
 			return null;
 		}
 
+		const window = node[PropertySymbol.window];
+
+		if (selector === '') {
+			throw new window.Error(
+				`Failed to execute 'querySelector' on '${node.constructor.name}': The provided selector is empty.`
+			);
+		}
+
+		if (typeof selector !== 'string' && typeof selector !== 'boolean') {
+			throw new window.DOMException(
+				`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`,
+				'SyntaxError'
+			);
+		}
+
+		selector = String(selector);
+
+		const cachedResult = node[PropertySymbol.cache].querySelector.get(selector);
+
+		if (cachedResult?.result) {
+			const result = cachedResult.result.deref();
+			if (result) {
+				return result;
+			}
+		}
+
 		if (INVALID_SELECTOR_REGEXP.test(selector)) {
-			throw new Error(
+			throw new window.Error(
 				`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`
 			);
+		}
+
+		const cachedItem: ICachedQuerySelectorItem = {
+			result: <WeakRef<Element | null>>{
+				deref: () => null
+			}
+		};
+
+		node[PropertySymbol.cache].querySelector.set(selector, cachedItem);
+
+		if (node[PropertySymbol.isConnected]) {
+			// Document is affected for the ":target" selector
+			(node[PropertySymbol.ownerDocument] || node)[PropertySymbol.affectsCache].push(cachedItem);
 		}
 
 		for (const items of SelectorParser.getSelectorGroups(selector)) {
 			const match =
 				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
-					? this.findFirst(<Element>node, [<Element>node], items)
-					: this.findFirst(null, (<Element>node)[PropertySymbol.children], items);
+					? this.findFirst(<Element>node, [<Element>node], items, cachedItem)
+					: this.findFirst(null, (<Element>node)[PropertySymbol.elementArray], items, cachedItem);
 
 			if (match) {
+				cachedItem.result = new WeakRef(match);
 				return match;
 			}
 		}
@@ -211,6 +281,29 @@ export default class QuerySelector {
 			return null;
 		}
 
+		if (selector === null || selector === undefined) {
+			return {
+				priorityWeight: 0
+			};
+		}
+
+		const window = element[PropertySymbol.window];
+
+		if (<string>selector === '') {
+			throw new window.Error(
+				`Failed to execute 'matches' on '${element.constructor.name}': The provided selector is empty.`
+			);
+		}
+
+		if (typeof selector !== 'string' && typeof selector !== 'boolean') {
+			throw new window.DOMException(
+				`Failed to execute 'matches' on '${element.constructor.name}': '${selector}' is not a valid selector.`,
+				DOMExceptionNameEnum.syntaxError
+			);
+		}
+
+		selector = String(selector);
+
 		if (selector === '*') {
 			return {
 				priorityWeight: 1
@@ -218,20 +311,32 @@ export default class QuerySelector {
 		}
 
 		const ignoreErrors = options?.ignoreErrors;
+		const cachedResult = element[PropertySymbol.cache].matches.get(selector);
+
+		if (cachedResult?.result) {
+			return cachedResult.result.match;
+		}
 
 		if (INVALID_SELECTOR_REGEXP.test(selector)) {
 			if (ignoreErrors) {
 				return null;
 			}
-			throw new Error(
+			throw new window.Error(
 				`Failed to execute 'matches' on '${element.constructor.name}': '${selector}' is not a valid selector.`
 			);
 		}
 
+		const cachedItem: ICachedMatchesItem = {
+			result: { match: null }
+		};
+
+		element[PropertySymbol.cache].matches.set(selector, cachedItem);
+
 		for (const items of SelectorParser.getSelectorGroups(selector, options)) {
-			const result = this.matchSelector(element, element, items.reverse(), 0);
+			const result = this.matchSelector(element, items.reverse(), cachedItem);
 
 			if (result) {
+				cachedItem.result.match = result;
 				return result;
 			}
 		}
@@ -242,20 +347,23 @@ export default class QuerySelector {
 	/**
 	 * Checks if a node matches a selector.
 	 *
-	 * @param targetElement Target element.
-	 * @param currentElement Current element.
+	 * @param element Target element.
+	 * @param currentElement
 	 * @param selectorItems Selector items.
+	 * @param cachedItem Cached item.
+	 * @param [previousSelectorItem] Previous selector item.
 	 * @param [priorityWeight] Priority weight.
 	 * @returns Result.
 	 */
 	private static matchSelector(
-		targetElement: Element,
-		currentElement: Element,
+		element: Element,
 		selectorItems: SelectorItem[],
+		cachedItem: ICachedMatchesItem,
+		previousSelectorItem: SelectorItem | null = null,
 		priorityWeight = 0
 	): ISelectorMatch | null {
 		const selectorItem = selectorItems[0];
-		const result = selectorItem.match(currentElement);
+		const result = selectorItem.match(element);
 
 		if (result) {
 			if (selectorItems.length === 1) {
@@ -266,11 +374,14 @@ export default class QuerySelector {
 
 			switch (selectorItem.combinator) {
 				case SelectorCombinatorEnum.adjacentSibling:
-					if (currentElement.previousElementSibling) {
+					const previousElementSibling = element.previousElementSibling;
+					if (previousElementSibling) {
+						previousElementSibling[PropertySymbol.affectsCache].push(cachedItem);
 						const match = this.matchSelector(
-							targetElement,
-							currentElement.previousElementSibling,
+							previousElementSibling,
 							selectorItems.slice(1),
+							cachedItem,
+							selectorItem,
 							priorityWeight + result.priorityWeight
 						);
 
@@ -281,13 +392,18 @@ export default class QuerySelector {
 					break;
 				case SelectorCombinatorEnum.child:
 				case SelectorCombinatorEnum.descendant:
-					if (currentElement.parentElement) {
+					const parentElement = element.parentElement;
+					if (parentElement) {
+						parentElement[PropertySymbol.affectsCache].push(cachedItem);
+
 						const match = this.matchSelector(
-							targetElement,
-							currentElement.parentElement,
+							parentElement,
 							selectorItems.slice(1),
+							cachedItem,
+							selectorItem,
 							priorityWeight + result.priorityWeight
 						);
+
 						if (match) {
 							return match;
 						}
@@ -296,17 +412,17 @@ export default class QuerySelector {
 			}
 		}
 
-		if (
-			selectorItem.combinator === SelectorCombinatorEnum.descendant &&
-			targetElement !== currentElement &&
-			currentElement.parentElement
-		) {
-			return this.matchSelector(
-				targetElement,
-				currentElement.parentElement,
-				selectorItems,
-				priorityWeight
-			);
+		if (previousSelectorItem?.combinator === SelectorCombinatorEnum.descendant) {
+			const parentElement = element.parentElement;
+			if (parentElement) {
+				return this.matchSelector(
+					parentElement,
+					selectorItems,
+					cachedItem,
+					previousSelectorItem,
+					priorityWeight
+				);
+			}
 		}
 
 		return null;
@@ -318,6 +434,7 @@ export default class QuerySelector {
 	 * @param rootElement Root element.
 	 * @param children Child elements.
 	 * @param selectorItems Selector items.
+	 * @param cachedItem Cached item.
 	 * @param [documentPosition] Document position of the element.
 	 * @returns Document position and element map.
 	 */
@@ -325,6 +442,7 @@ export default class QuerySelector {
 		rootElement: Element,
 		children: Element[],
 		selectorItems: SelectorItem[],
+		cachedItem: ICachedQuerySelectorAllItem,
 		documentPosition?: string
 	): DocumentPositionAndElement[] {
 		const selectorItem = selectorItems[0];
@@ -333,7 +451,10 @@ export default class QuerySelector {
 
 		for (let i = 0, max = children.length; i < max; i++) {
 			const child = children[i];
+			const childrenOfChild = (<Element>child)[PropertySymbol.elementArray];
 			const position = (documentPosition ? documentPosition + '>' : '') + String.fromCharCode(i);
+
+			child[PropertySymbol.affectsCache].push(cachedItem);
 
 			if (selectorItem.match(child)) {
 				if (!nextSelectorItem) {
@@ -352,6 +473,7 @@ export default class QuerySelector {
 										rootElement,
 										[child.nextElementSibling],
 										selectorItems.slice(1),
+										cachedItem,
 										position
 									)
 								);
@@ -362,8 +484,9 @@ export default class QuerySelector {
 							matched = matched.concat(
 								this.findAll(
 									rootElement,
-									(<Element>child)[PropertySymbol.children],
+									childrenOfChild,
 									selectorItems.slice(1),
+									cachedItem,
 									position
 								)
 							);
@@ -372,17 +495,9 @@ export default class QuerySelector {
 				}
 			}
 
-			if (
-				selectorItem.combinator === SelectorCombinatorEnum.descendant &&
-				(<Element>child)[PropertySymbol.children].length
-			) {
+			if (selectorItem.combinator === SelectorCombinatorEnum.descendant && childrenOfChild.length) {
 				matched = matched.concat(
-					this.findAll(
-						rootElement,
-						(<Element>child)[PropertySymbol.children],
-						selectorItems,
-						position
-					)
+					this.findAll(rootElement, childrenOfChild, selectorItems, cachedItem, position)
 				);
 			}
 		}
@@ -396,17 +511,23 @@ export default class QuerySelector {
 	 * @param rootElement Root element.
 	 * @param children Child elements.
 	 * @param selectorItems Selector items.
+	 * @param cachedItem Cached item.
 	 * @returns HTML element.
 	 */
 	private static findFirst(
 		rootElement: Element,
 		children: Element[],
-		selectorItems: SelectorItem[]
+		selectorItems: SelectorItem[],
+		cachedItem: ICachedQuerySelectorItem
 	): Element {
 		const selectorItem = selectorItems[0];
 		const nextSelectorItem = selectorItems[1];
 
 		for (const child of children) {
+			const childrenOfChild = (<Element>child)[PropertySymbol.elementArray];
+
+			child[PropertySymbol.affectsCache].push(cachedItem);
+
 			if (selectorItem.match(child)) {
 				if (!nextSelectorItem) {
 					if (rootElement !== child) {
@@ -419,7 +540,8 @@ export default class QuerySelector {
 								const match = this.findFirst(
 									rootElement,
 									[child.nextElementSibling],
-									selectorItems.slice(1)
+									selectorItems.slice(1),
+									cachedItem
 								);
 								if (match) {
 									return match;
@@ -430,8 +552,9 @@ export default class QuerySelector {
 						case SelectorCombinatorEnum.child:
 							const match = this.findFirst(
 								rootElement,
-								(<Element>child)[PropertySymbol.children],
-								selectorItems.slice(1)
+								childrenOfChild,
+								selectorItems.slice(1),
+								cachedItem
 							);
 							if (match) {
 								return match;
@@ -441,15 +564,8 @@ export default class QuerySelector {
 				}
 			}
 
-			if (
-				selectorItem.combinator === SelectorCombinatorEnum.descendant &&
-				(<Element>child)[PropertySymbol.children].length
-			) {
-				const match = this.findFirst(
-					rootElement,
-					(<Element>child)[PropertySymbol.children],
-					selectorItems
-				);
+			if (selectorItem.combinator === SelectorCombinatorEnum.descendant && childrenOfChild.length) {
+				const match = this.findFirst(rootElement, childrenOfChild, selectorItems, cachedItem);
 
 				if (match) {
 					return match;

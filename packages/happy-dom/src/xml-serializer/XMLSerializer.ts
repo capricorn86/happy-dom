@@ -15,29 +15,15 @@ import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigConten
  * Utility for converting an element to string.
  */
 export default class XMLSerializer {
-	private options = {
-		includeShadowRoots: false,
-		escapeEntities: true
+	public [PropertySymbol.options]: {
+		serializableShadowRoots: boolean;
+		shadowRoots: ShadowRoot[] | null;
+		allShadowRoots: boolean;
+	} = {
+		serializableShadowRoots: false,
+		shadowRoots: null,
+		allShadowRoots: false
 	};
-
-	/**
-	 * Constructor.
-	 *
-	 * @param [options] Options.
-	 * @param [options.includeShadowRoots] Include shadow roots.
-	 * @param [options.escapeEntities] Escape text.
-	 */
-	constructor(options?: { includeShadowRoots?: boolean; escapeEntities?: boolean }) {
-		if (options) {
-			if (options.includeShadowRoots !== undefined) {
-				this.options.includeShadowRoots = options.includeShadowRoots;
-			}
-
-			if (options.escapeEntities !== undefined) {
-				this.options.escapeEntities = options.escapeEntities;
-			}
-		}
-	}
 
 	/**
 	 * Renders an element as HTML.
@@ -46,6 +32,8 @@ export default class XMLSerializer {
 	 * @returns Result.
 	 */
 	public serializeToString(root: Node): string {
+		const options = this[PropertySymbol.options];
+
 		switch (root[PropertySymbol.nodeType]) {
 			case NodeTypeEnum.elementNode:
 				const element = <Element>root;
@@ -58,20 +46,26 @@ export default class XMLSerializer {
 
 				const childNodes =
 					localName === 'template'
-						? (<DocumentFragment>(<HTMLTemplateElement>root).content)[PropertySymbol.childNodes]
-						: (<DocumentFragment>root)[PropertySymbol.childNodes];
+						? (<DocumentFragment>(<HTMLTemplateElement>root).content)[PropertySymbol.nodeArray]
+						: (<DocumentFragment>root)[PropertySymbol.nodeArray];
 				let innerHTML = '';
 
 				for (const node of childNodes) {
 					innerHTML += this.serializeToString(node);
 				}
 
-				// TODO: Should we include closed shadow roots?
-				// We are currently only including open shadow roots.
-				if (this.options.includeShadowRoots && element.shadowRoot) {
-					innerHTML += `<template shadowrootmode="${element.shadowRoot[PropertySymbol.mode]}">`;
+				// TODO: Should we include closed shadow roots? We are currently only including open shadow roots.
+				if (
+					element.shadowRoot &&
+					(options.allShadowRoots ||
+						(options.serializableShadowRoots && element.shadowRoot[PropertySymbol.serializable]) ||
+						options.shadowRoots?.includes(element.shadowRoot))
+				) {
+					innerHTML += `<template shadowrootmode="${element.shadowRoot[PropertySymbol.mode]}"${
+						element.shadowRoot[PropertySymbol.serializable] ? ' shadowrootserializable=""' : ''
+					}>`;
 
-					for (const node of (<ShadowRoot>element.shadowRoot)[PropertySymbol.childNodes]) {
+					for (const node of (<ShadowRoot>element.shadowRoot)[PropertySymbol.nodeArray]) {
 						innerHTML += this.serializeToString(node);
 					}
 
@@ -82,7 +76,7 @@ export default class XMLSerializer {
 			case Node.DOCUMENT_FRAGMENT_NODE:
 			case Node.DOCUMENT_NODE:
 				let html = '';
-				for (const node of (<Node>root)[PropertySymbol.childNodes]) {
+				for (const node of (<Node>root)[PropertySymbol.nodeArray]) {
 					html += this.serializeToString(node);
 				}
 				return html;
@@ -92,9 +86,7 @@ export default class XMLSerializer {
 				// TODO: Add support for processing instructions.
 				return `<!--?${(<ProcessingInstruction>root).target} ${root.textContent}?-->`;
 			case NodeTypeEnum.textNode:
-				return this.options.escapeEntities
-					? Entities.escapeText(root.textContent)
-					: root.textContent;
+				return Entities.escapeText(root.textContent);
 			case NodeTypeEnum.documentTypeNode:
 				const doctype = <DocumentType>root;
 				const identifier = doctype.publicId ? ' PUBLIC' : doctype.systemId ? ' SYSTEM' : '';
@@ -122,14 +114,11 @@ export default class XMLSerializer {
 			attributeString += ' is="' + (<Element>element)[PropertySymbol.isValue] + '"';
 		}
 
-		for (let i = 0, max = (<Element>element)[PropertySymbol.attributes].length; i < max; i++) {
-			const attribute = (<Element>element)[PropertySymbol.attributes][i];
-			if (attribute[PropertySymbol.value] !== null) {
-				const escapedValue = this.options.escapeEntities
-					? Entities.escapeText(attribute[PropertySymbol.value])
-					: attribute[PropertySymbol.value];
-				attributeString += ' ' + attribute[PropertySymbol.name] + '="' + escapedValue + '"';
-			}
+		for (const attribute of (<Element>element)[PropertySymbol.attributes][
+			PropertySymbol.namedItems
+		].values()) {
+			const escapedValue = Entities.escapeAttribute(attribute[PropertySymbol.value]);
+			attributeString += ' ' + attribute[PropertySymbol.name] + '="' + escapedValue + '"';
 		}
 
 		return attributeString;

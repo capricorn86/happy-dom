@@ -17,7 +17,7 @@ import CSSStyleDeclarationCSSParser from '../css-parser/CSSStyleDeclarationCSSPa
 import QuerySelector from '../../../query-selector/QuerySelector.js';
 import CSSMeasurementConverter from '../measurement-converter/CSSMeasurementConverter.js';
 import MediaQueryList from '../../../match-media/MediaQueryList.js';
-import WindowBrowserSettingsReader from '../../../window/WindowBrowserSettingsReader.js';
+import WindowBrowserContext from '../../../window/WindowBrowserContext.js';
 
 const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
 const CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+)\)|var\( *(--[^), ]+), *(.+)\)/;
@@ -31,16 +31,6 @@ type IStyleAndElement = {
  * CSS Style Declaration utility
  */
 export default class CSSStyleDeclarationElementStyle {
-	private cache: {
-		propertyManager: CSSStyleDeclarationPropertyManager;
-		cssText: string;
-		documentCacheID: number;
-	} = {
-		propertyManager: null,
-		cssText: null,
-		documentCacheID: null
-	};
-
 	private element: Element;
 	private computed: boolean;
 
@@ -65,15 +55,26 @@ export default class CSSStyleDeclarationElementStyle {
 			return this.getComputedElementStyle();
 		}
 
-		const cssText = this.element[PropertySymbol.attributes]['style']?.[PropertySymbol.value];
+		const cachedResult = this.element[PropertySymbol.cache].style;
+
+		if (cachedResult?.result) {
+			const result = cachedResult.result.deref();
+			if (result) {
+				return result;
+			}
+		}
+
+		const cssText =
+			this.element[PropertySymbol.attributes][PropertySymbol.namedItems].get('style')?.[
+				PropertySymbol.value
+			];
 
 		if (cssText) {
-			if (this.cache.propertyManager && this.cache.cssText === cssText) {
-				return this.cache.propertyManager;
-			}
-			this.cache.cssText = cssText;
-			this.cache.propertyManager = new CSSStyleDeclarationPropertyManager({ cssText });
-			return this.cache.propertyManager;
+			const propertyManager = new CSSStyleDeclarationPropertyManager({ cssText });
+			this.element[PropertySymbol.cache].style = {
+				result: new WeakRef(propertyManager)
+			};
+			return propertyManager;
 		}
 
 		return new CSSStyleDeclarationPropertyManager();
@@ -98,15 +99,14 @@ export default class CSSStyleDeclarationElementStyle {
 			return new CSSStyleDeclarationPropertyManager();
 		}
 
-		if (
-			this.cache.propertyManager &&
-			this.cache.documentCacheID ===
-				this.element[PropertySymbol.ownerDocument][PropertySymbol.cacheID]
-		) {
-			return this.cache.propertyManager;
-		}
+		const cacheResult = this.element[PropertySymbol.cache].computedStyle;
 
-		this.cache.documentCacheID = this.element[PropertySymbol.ownerDocument][PropertySymbol.cacheID];
+		if (cacheResult?.result) {
+			const result = cacheResult.result.deref();
+			if (result) {
+				return result;
+			}
+		}
 
 		// Walks through all parent elements and stores them in an array with element and matching CSS text.
 		while (styleAndElement.element) {
@@ -245,8 +245,8 @@ export default class CSSStyleDeclarationElementStyle {
 			}
 
 			const elementStyleAttribute = (<Element>parentElement.element)[PropertySymbol.attributes][
-				'style'
-			];
+				PropertySymbol.namedItems
+			].get('style');
 
 			if (elementStyleAttribute) {
 				elementCSSText += elementStyleAttribute[PropertySymbol.value];
@@ -302,7 +302,14 @@ export default class CSSStyleDeclarationElementStyle {
 			}
 		}
 
-		this.cache.propertyManager = propertyManager;
+		const cachedResult = {
+			result: new WeakRef(propertyManager)
+		};
+
+		this.element[PropertySymbol.cache].computedStyle = cachedResult;
+		this.element[PropertySymbol.ownerDocument][PropertySymbol.affectsComputedStyleCache].push(
+			cachedResult
+		);
 
 		return propertyManager;
 	}
@@ -326,7 +333,7 @@ export default class CSSStyleDeclarationElementStyle {
 			return;
 		}
 
-		const ownerWindow = this.element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow];
+		const window = this.element[PropertySymbol.window];
 
 		for (const rule of options.cssRules) {
 			if (rule.type === CSSRuleTypeEnum.styleRule) {
@@ -364,7 +371,7 @@ export default class CSSStyleDeclarationElementStyle {
 				rule.type === CSSRuleTypeEnum.mediaRule &&
 				// TODO: We need to send in a predfined root font size as it will otherwise be calculated using Window.getComputedStyle(), which will cause a never ending loop. Is there another solution?
 				new MediaQueryList({
-					ownerWindow,
+					window,
 					media: (<CSSMediaRule>rule).conditionText,
 					rootFontSize: this.element[PropertySymbol.tagName] === 'HTML' ? 16 : null
 				}).matches
@@ -418,9 +425,8 @@ export default class CSSStyleDeclarationElementStyle {
 		parentSize: string | number | null;
 	}): string {
 		if (
-			WindowBrowserSettingsReader.getSettings(
-				this.element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow]
-			).disableComputedStyleRendering
+			new WindowBrowserContext(this.element[PropertySymbol.window]).getSettings()
+				?.disableComputedStyleRendering
 		) {
 			return options.value;
 		}
@@ -432,7 +438,7 @@ export default class CSSStyleDeclarationElementStyle {
 		while ((match = regexp.exec(options.value)) !== null) {
 			if (match[1] !== 'px') {
 				const valueInPixels = CSSMeasurementConverter.toPixels({
-					ownerWindow: this.element[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow],
+					window: this.element[PropertySymbol.window],
 					value: match[0],
 					rootFontSize: options.rootFontSize,
 					parentFontSize: options.parentFontSize,

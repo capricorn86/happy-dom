@@ -4,25 +4,31 @@ import Element from '../element/Element.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 import HTMLCollection from '../element/HTMLCollection.js';
-import ElementUtility from '../element/ElementUtility.js';
-import NodeList from '../node/NodeList.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
+import NodeList from '../node/NodeList.js';
 
 /**
  * DocumentFragment.
  */
 export default class DocumentFragment extends Node {
-	public readonly [PropertySymbol.children]: HTMLCollection<Element> = new HTMLCollection();
+	public [PropertySymbol.children]: HTMLCollection<Element> | null = null;
 	public [PropertySymbol.rootNode]: Node = this;
 	public [PropertySymbol.nodeType] = NodeTypeEnum.documentFragmentNode;
-	public cloneNode: (deep?: boolean) => DocumentFragment;
+	public declare cloneNode: (deep?: boolean) => DocumentFragment;
 
 	/**
 	 * Returns the document fragment children.
 	 */
 	public get children(): HTMLCollection<Element> {
+		if (!this[PropertySymbol.children]) {
+			const elements = this[PropertySymbol.elementArray];
+			this[PropertySymbol.children] = new HTMLCollection<Element>(
+				PropertySymbol.illegalConstructor,
+				() => elements
+			);
+		}
 		return this[PropertySymbol.children];
 	}
 
@@ -32,7 +38,7 @@ export default class DocumentFragment extends Node {
 	 * @returns Element.
 	 */
 	public get childElementCount(): number {
-		return this[PropertySymbol.children].length;
+		return this[PropertySymbol.elementArray].length;
 	}
 
 	/**
@@ -41,7 +47,7 @@ export default class DocumentFragment extends Node {
 	 * @returns Element.
 	 */
 	public get firstElementChild(): Element {
-		return this[PropertySymbol.children][0] ?? null;
+		return this[PropertySymbol.elementArray][0] ?? null;
 	}
 
 	/**
@@ -50,7 +56,8 @@ export default class DocumentFragment extends Node {
 	 * @returns Element.
 	 */
 	public get lastElementChild(): Element {
-		return this[PropertySymbol.children][this[PropertySymbol.children].length - 1] ?? null;
+		const children = this[PropertySymbol.elementArray];
+		return children[children.length - 1] ?? null;
 	}
 
 	/**
@@ -60,7 +67,7 @@ export default class DocumentFragment extends Node {
 	 */
 	public get textContent(): string {
 		let result = '';
-		for (const childNode of this[PropertySymbol.childNodes]) {
+		for (const childNode of this[PropertySymbol.nodeArray]) {
 			if (
 				childNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode ||
 				childNode[PropertySymbol.nodeType] === NodeTypeEnum.textNode
@@ -77,8 +84,9 @@ export default class DocumentFragment extends Node {
 	 * @param textContent Text content.
 	 */
 	public set textContent(textContent: string) {
-		for (const child of this[PropertySymbol.childNodes].slice()) {
-			this.removeChild(child);
+		const childNodes = this[PropertySymbol.nodeArray];
+		while (childNodes.length) {
+			this.removeChild(childNodes[0]);
 		}
 		if (textContent) {
 			this.appendChild(this[PropertySymbol.ownerDocument].createTextNode(textContent));
@@ -194,48 +202,7 @@ export default class DocumentFragment extends Node {
 	 * @param id ID.
 	 * @returns Matching element.
 	 */
-	public getElementById(id: string): Element {
+	public getElementById(id: string): Element | null {
 		return ParentNodeUtility.getElementById(this, id);
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.cloneNode](deep = false): DocumentFragment {
-		const clone = <DocumentFragment>super[PropertySymbol.cloneNode](deep);
-
-		if (deep) {
-			for (const node of clone[PropertySymbol.childNodes]) {
-				if (node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
-					clone[PropertySymbol.children].push(<Element>node);
-				}
-			}
-		}
-
-		return <DocumentFragment>clone;
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.appendChild](node: Node): Node {
-		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
-		return ElementUtility.appendChild(this, node);
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.removeChild](node: Node): Node {
-		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
-		return ElementUtility.removeChild(this, node);
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
-		// We do not call super here as this will be handled by ElementUtility to improve performance by avoiding validation and other checks.
-		return ElementUtility.insertBefore(this, newNode, referenceNode);
 	}
 }

@@ -2,7 +2,8 @@ import CSSStyleDeclarationValueParser from './CSSStyleDeclarationValueParser.js'
 import ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyValue.js';
 
 const RECT_REGEXP = /^rect\((.*)\)$/i;
-const SPLIT_PARTS_REGEXP = /,(?=(?:(?:(?!\))[\s\S])*\()|[^\(\)]*$)/; // Split on commas that are outside of parentheses
+const SPLIT_COMMA_SEPARATED_REGEXP = /,(?=(?:(?:(?!\))[\s\S])*\()|[^\(\)]*$)/; // Split on commas that are outside of parentheses
+const SPLIT_SPACE_SEPARATED_REGEXP = /\s+(?=(?:(?:(?!\))[\s\S])*\()|[^\(\)]*$)/; // Split on spaces that are outside of parentheses
 const BORDER_STYLE = [
 	'none',
 	'hidden',
@@ -496,7 +497,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			...this.getOutlineWidth('initial', important)
 		};
 
-		const parts = value.split(/ +/);
+		const parts = value.split(SPLIT_SPACE_SEPARATED_REGEXP);
 
 		for (const part of parts) {
 			const width = this.getOutlineWidth(part, important);
@@ -648,7 +649,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			...this.getBorderImage('initial', important)
 		};
 
-		const parts = value.replace(/ *, */g, ',').split(/ +/);
+		const parts = value.replace(/\s*,\s*/g, ',').split(SPLIT_SPACE_SEPARATED_REGEXP);
 
 		for (const part of parts) {
 			const width = this.getBorderWidth(part, important);
@@ -694,7 +695,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			};
 		}
 
-		const parts = value.split(/ +/);
+		const parts = value.split(SPLIT_SPACE_SEPARATED_REGEXP);
 		const top = this.getBorderTopWidth(parts[0], important);
 		const right = this.getBorderRightWidth(parts[1] || parts[0], important);
 		const bottom = this.getBorderBottomWidth(parts[2] || parts[0], important);
@@ -740,7 +741,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			};
 		}
 
-		const parts = value.split(/ +/);
+		const parts = value.split(SPLIT_SPACE_SEPARATED_REGEXP);
 		const top = this.getBorderTopStyle(parts[0], important);
 		const right = this.getBorderRightStyle(parts[1] || parts[0], important);
 		const bottom = this.getBorderBottomStyle(parts[2] || parts[0], important);
@@ -787,7 +788,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			};
 		}
 
-		const parts = value.split(/ +/);
+		const parts = value.split(SPLIT_SPACE_SEPARATED_REGEXP);
 		const top = this.getBorderTopColor(parts[0], important);
 		const right = this.getBorderRightColor(parts[1] || parts[0], important);
 		const bottom = this.getBorderBottomColor(parts[2] || parts[0], important);
@@ -835,14 +836,14 @@ export default class CSSStyleDeclarationPropertySetParser {
 			};
 		}
 
-		let parsedValue = value.replace(/[ ]*\/[ ]*/g, '/');
-		const sourceMatch = parsedValue.match(/ *([a-zA-Z-]+\([^)]*\)) */);
+		let parsedValue = value.replace(/\s\/\s/g, '/');
+		const sourceMatch = parsedValue.match(/\s*([a-zA-Z-]+\([^)]*\))\s*/);
 
 		if (sourceMatch) {
 			parsedValue = parsedValue.replace(sourceMatch[0], '');
 		}
 
-		const parts = parsedValue.split(/ +/);
+		const parts = parsedValue.split(SPLIT_SPACE_SEPARATED_REGEXP);
 
 		if (sourceMatch) {
 			parts.push(sourceMatch[1]);
@@ -1037,7 +1038,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			};
 		}
 
-		const parts = lowerValue.split(/ +/);
+		const parts = lowerValue.split(SPLIT_SPACE_SEPARATED_REGEXP);
 
 		if (parts.length > 4) {
 			return null;
@@ -1073,6 +1074,15 @@ export default class CSSStyleDeclarationPropertySetParser {
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
 	} {
+		if (value === '0') {
+			return {
+				'border-image-outset': {
+					important,
+					value
+				}
+			};
+		}
+
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-image-outset': { value: variable, important } };
@@ -1089,25 +1099,28 @@ export default class CSSStyleDeclarationPropertySetParser {
 			};
 		}
 
-		const parts = value.split(/ +/);
+		const parts = value.split(SPLIT_SPACE_SEPARATED_REGEXP);
 
 		if (parts.length > 4) {
 			return null;
 		}
 
+		const newParts = [];
+
 		for (const part of parts) {
-			if (
-				!CSSStyleDeclarationValueParser.getLength(part) &&
-				!CSSStyleDeclarationValueParser.getFloat(part)
-			) {
+			const parsedValue =
+				CSSStyleDeclarationValueParser.getLength(part) ||
+				CSSStyleDeclarationValueParser.getFloat(part);
+			if (!parsedValue) {
 				return null;
 			}
+			newParts.push(parsedValue === '0px' ? '0' : parsedValue);
 		}
 
 		return {
 			'border-image-outset': {
 				important,
-				value
+				value: newParts.join(' ')
 			}
 		};
 	}
@@ -1141,7 +1154,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			};
 		}
 
-		const parts = lowerValue.split(/ +/);
+		const parts = lowerValue.split(SPLIT_SPACE_SEPARATED_REGEXP);
 
 		if (parts.length > 2) {
 			return null;
@@ -1532,7 +1545,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			};
 		}
 
-		const parts = value.split(/ +/);
+		const parts = value.split(SPLIT_SPACE_SEPARATED_REGEXP);
 		const topLeft = this.getBorderTopLeftRadius(parts[0], important);
 		const topRight = this.getBorderTopRightRadius(parts[1] || parts[0], important);
 		const bottomRight = this.getBorderBottomRightRadius(parts[2] || parts[0], important);
@@ -1670,7 +1683,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			...this.getBorderTopColor('initial', important)
 		};
 
-		const parts = value.split(/ +/);
+		const parts = value.split(SPLIT_SPACE_SEPARATED_REGEXP);
 
 		for (const part of parts) {
 			const width = this.getBorderTopWidth(part, important);
@@ -1719,7 +1732,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			...this.getBorderRightColor('initial', important)
 		};
 
-		const parts = value.split(/ +/);
+		const parts = value.split(SPLIT_SPACE_SEPARATED_REGEXP);
 
 		for (const part of parts) {
 			const width = this.getBorderRightWidth(part, important);
@@ -1768,7 +1781,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			...this.getBorderBottomColor('initial', important)
 		};
 
-		const parts = value.split(/ +/);
+		const parts = value.split(SPLIT_SPACE_SEPARATED_REGEXP);
 
 		for (const part of parts) {
 			const width = this.getBorderBottomWidth(part, important);
@@ -1817,7 +1830,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			...this.getBorderLeftColor('initial', important)
 		};
 
-		const parts = value.split(/ +/);
+		const parts = value.split(SPLIT_SPACE_SEPARATED_REGEXP);
 
 		for (const part of parts) {
 			const width = this.getBorderLeftWidth(part, important);
@@ -1860,7 +1873,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			};
 		}
 
-		const parts = value.split(/ +/);
+		const parts = value.split(SPLIT_SPACE_SEPARATED_REGEXP);
 		const top = this.getPaddingTop(parts[0], important);
 		const right = this.getPaddingRight(parts[1] || parts[0], important);
 		const bottom = this.getPaddingBottom(parts[2] || parts[0], important);
@@ -1993,7 +2006,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			};
 		}
 
-		const parts = value.split(/ +/);
+		const parts = value.split(SPLIT_SPACE_SEPARATED_REGEXP);
 		const top = this.getMarginTop(parts[0], important);
 		const right = this.getMarginRight(parts[1] || parts[0], important);
 		const bottom = this.getMarginBottom(parts[2] || parts[0], important);
@@ -2151,7 +2164,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			};
 		}
 
-		const parts = value.split(/ +/);
+		const parts = value.split(SPLIT_SPACE_SEPARATED_REGEXP);
 		const flexGrow = this.getFlexGrow(parts[0], important);
 		const flexShrink = this.getFlexShrink(parts[1] || '1', important);
 		const flexBasis = this.getFlexBasis(parts[2] || '0%', important);
@@ -2285,9 +2298,9 @@ export default class CSSStyleDeclarationPropertySetParser {
 		};
 
 		const parts = value
-			.replace(/[ ]*,[ ]*/g, ',')
-			.replace(/[ ]*\/[ ]*/g, '/')
-			.split(/ +/);
+			.replace(/\s,\s/g, ',')
+			.replace(/\s\/\s/g, '/')
+			.split(SPLIT_SPACE_SEPARATED_REGEXP);
 
 		const backgroundPositions = [];
 
@@ -2384,7 +2397,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			return { 'background-size': { value: lowerValue, important } };
 		}
 
-		const imageParts = lowerValue.split(SPLIT_PARTS_REGEXP);
+		const imageParts = lowerValue.split(SPLIT_COMMA_SEPARATED_REGEXP);
 		const parsed = [];
 
 		for (const imagePart of imageParts) {
@@ -2555,12 +2568,12 @@ export default class CSSStyleDeclarationPropertySetParser {
 			};
 		}
 
-		const imageParts = value.split(SPLIT_PARTS_REGEXP);
+		const imageParts = value.split(SPLIT_COMMA_SEPARATED_REGEXP);
 		let x = '';
 		let y = '';
 
 		for (const imagePart of imageParts) {
-			const parts = imagePart.trim().split(/ +/);
+			const parts = imagePart.trim().split(SPLIT_SPACE_SEPARATED_REGEXP);
 
 			if (x) {
 				x += ',';
@@ -2668,11 +2681,11 @@ export default class CSSStyleDeclarationPropertySetParser {
 			return { 'background-position-x': { value: lowerValue, important } };
 		}
 
-		const imageParts = lowerValue.split(SPLIT_PARTS_REGEXP);
+		const imageParts = lowerValue.split(SPLIT_COMMA_SEPARATED_REGEXP);
 		let parsedValue = '';
 
 		for (const imagePart of imageParts) {
-			const parts = imagePart.trim().split(/ +/);
+			const parts = imagePart.trim().split(SPLIT_SPACE_SEPARATED_REGEXP);
 
 			if (parsedValue) {
 				parsedValue += ',';
@@ -2719,11 +2732,11 @@ export default class CSSStyleDeclarationPropertySetParser {
 			return { 'background-position-y': { value: lowerValue, important } };
 		}
 
-		const imageParts = lowerValue.split(SPLIT_PARTS_REGEXP);
+		const imageParts = lowerValue.split(SPLIT_COMMA_SEPARATED_REGEXP);
 		let parsedValue = '';
 
 		for (const imagePart of imageParts) {
-			const parts = imagePart.trim().split(/ +/);
+			const parts = imagePart.trim().split(SPLIT_SPACE_SEPARATED_REGEXP);
 
 			if (parsedValue) {
 				parsedValue += ',';
@@ -2795,15 +2808,17 @@ export default class CSSStyleDeclarationPropertySetParser {
 			return { 'background-image': { value: lowerValue, important } };
 		}
 
-		const parts = value.split(SPLIT_PARTS_REGEXP);
+		const parts = value.split(SPLIT_COMMA_SEPARATED_REGEXP);
 		const parsed = [];
 
 		for (const part of parts) {
-			const url = CSSStyleDeclarationValueParser.getURL(part.trim());
-			if (!url) {
+			const parsedValue =
+				CSSStyleDeclarationValueParser.getURL(part.trim()) ||
+				CSSStyleDeclarationValueParser.getGradient(part.trim());
+			if (!parsedValue) {
 				return null;
 			}
-			parsed.push(url);
+			parsed.push(parsedValue);
 		}
 
 		if (parsed.length) {
@@ -2902,7 +2917,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			...this.getLineHeight('normal', important)
 		};
 
-		const parts = value.replace(/ *\/ */g, '/').split(/ +/);
+		const parts = value.replace(/\s*\/\s*/g, '/').split(SPLIT_SPACE_SEPARATED_REGEXP);
 
 		for (let i = 0, max = parts.length; i < max; i++) {
 			const part = parts[i];
@@ -2970,7 +2985,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue) || FONT_STYLE.includes(lowerValue)) {
 			return { 'font-style': { value: lowerValue, important } };
 		}
-		const parts = value.split(/ +/);
+		const parts = value.split(SPLIT_SPACE_SEPARATED_REGEXP);
 		if (parts.length === 2 && parts[0] === 'oblique') {
 			const degree = CSSStyleDeclarationValueParser.getDegree(parts[1]);
 			return degree ? { 'font-style': { value: lowerValue, important } } : null;
@@ -3155,6 +3170,8 @@ export default class CSSStyleDeclarationPropertySetParser {
 				} else if (trimmedPart[0] !== '"' && trimmedPart[trimmedPart.length - 1] !== '"') {
 					trimmedPart = `"${trimmedPart}"`;
 				}
+			} else {
+				trimmedPart = trimmedPart.replace(/"/g, '');
 			}
 
 			if (i > 0) {

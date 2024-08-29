@@ -1,7 +1,6 @@
 import Document from '../nodes/document/Document.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import XMLParser from '../xml-parser/XMLParser.js';
-import DOMException from '../exception/DOMException.js';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
@@ -13,16 +12,8 @@ import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/DOMParser.
  */
 export default class DOMParser {
-	readonly #window: BrowserWindow;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param window Window.
-	 */
-	constructor(window: BrowserWindow) {
-		this.#window = window;
-	}
+	// Injected by WindowClassExtender
+	protected declare [PropertySymbol.window]: BrowserWindow;
 
 	/**
 	 * Parses HTML and returns a root element.
@@ -33,19 +24,23 @@ export default class DOMParser {
 	 */
 	public parseFromString(string: string, mimeType: string): Document {
 		if (!mimeType) {
-			throw new DOMException('Second parameter "mimeType" is mandatory.');
+			throw new this[PropertySymbol.window].DOMException(
+				'Second parameter "mimeType" is mandatory.'
+			);
 		}
 
 		const newDocument = <Document>this.#createDocument(mimeType);
+		const documentChildNodes = newDocument[PropertySymbol.nodeArray];
 
-		newDocument[PropertySymbol.childNodes].length = 0;
-		newDocument[PropertySymbol.children].length = 0;
+		while (documentChildNodes.length) {
+			newDocument.removeChild(documentChildNodes[0]);
+		}
 
 		const root = <DocumentFragment>XMLParser.parse(newDocument, string, { evaluateScripts: true });
 		let documentElement = null;
 		let documentTypeNode = null;
 
-		for (const node of root[PropertySymbol.childNodes]) {
+		for (const node of root[PropertySymbol.nodeArray]) {
 			if (node['tagName'] === 'HTML') {
 				documentElement = node;
 			} else if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
@@ -64,16 +59,16 @@ export default class DOMParser {
 			newDocument.appendChild(documentElement);
 			const body = newDocument.body;
 			if (body) {
-				for (const child of root[PropertySymbol.childNodes].slice()) {
-					body.appendChild(child);
+				while (root[PropertySymbol.nodeArray].length) {
+					body.appendChild(root[PropertySymbol.nodeArray][0]);
 				}
 			}
 		} else {
 			switch (mimeType) {
 				case 'image/svg+xml':
 					{
-						for (const node of root[PropertySymbol.childNodes].slice()) {
-							newDocument.appendChild(node);
+						while (root[PropertySymbol.nodeArray].length) {
+							newDocument.appendChild(root[PropertySymbol.nodeArray][0]);
 						}
 					}
 					break;
@@ -88,8 +83,8 @@ export default class DOMParser {
 						documentElement.appendChild(bodyElement);
 						newDocument.appendChild(documentElement);
 
-						for (const node of root[PropertySymbol.childNodes].slice()) {
-							bodyElement.appendChild(node);
+						while (root[PropertySymbol.nodeArray].length) {
+							bodyElement.appendChild(root[PropertySymbol.nodeArray][0]);
 						}
 					}
 					break;
@@ -105,17 +100,19 @@ export default class DOMParser {
 	 * @returns Document.
 	 */
 	#createDocument(mimeType: string): Document {
+		const window = this[PropertySymbol.window];
+
 		switch (mimeType) {
 			case 'text/html':
-				return new this.#window.HTMLDocument();
+				return new window.HTMLDocument();
 			case 'image/svg+xml':
-				return new this.#window.SVGDocument();
+				return new window.SVGDocument();
 			case 'text/xml':
 			case 'application/xml':
 			case 'application/xhtml+xml':
-				return new this.#window.XMLDocument();
+				return new window.XMLDocument();
 			default:
-				throw new DOMException(`Unknown mime type "${mimeType}".`);
+				throw new window.DOMException(`Unknown mime type "${mimeType}".`);
 		}
 	}
 }

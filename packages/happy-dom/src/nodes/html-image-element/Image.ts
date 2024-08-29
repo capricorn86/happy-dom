@@ -1,4 +1,6 @@
 import HTMLImageElement from './HTMLImageElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
+import NamespaceURI from '../../config/NamespaceURI.js';
 
 /**
  * Image as constructor.
@@ -7,6 +9,10 @@ import HTMLImageElement from './HTMLImageElement.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/Image.
  */
 export default class Image extends HTMLImageElement {
+	public [PropertySymbol.tagName] = 'IMG';
+	public [PropertySymbol.localName] = 'img';
+	public [PropertySymbol.namespaceURI] = NamespaceURI.html;
+
 	/**
 	 * Constructor.
 	 *
