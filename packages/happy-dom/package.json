@@ -67,7 +67,7 @@
 	"scripts": {
 		"compile": "npm run compile:esm && npm run compile:cjs npm run build-version-file",
 		"compile:esm": "tsc",
-		"compile:cjs": "rm -rf ./cjs && tsc --moduleResolution Node --module CommonJS --outDir cjs && npm run compile:change-cjs-file-extension",
+		"compile:cjs": "node -e \"fs.rmSync('./cjs', { recursive: true, force: true })\" && tsc --moduleResolution Node --module CommonJS --outDir cjs && npm run compile:change-cjs-file-extension",
 		"compile:change-cjs-file-extension": "node ./bin/change-file-extension.cjs --dir=./cjs --fromExt=.js --toExt=.cjs",
 		"build-version-file": "node ./bin/build-version-file.cjs",
 		"watch": "tsc -w --preserveWatchOutput",
