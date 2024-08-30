@@ -380,6 +380,85 @@ describe('SyncFetch', () => {
 			expect(response.body.toString()).toBe(responseText);
 		});
 
+		it('Includes Origin + Access-Control headers on cross-origin requests.', async () => {
+			const originURL = 'http://localhost:8080';
+			browserFrame.url = originURL;
+			const url = 'http://other.origin.com/some/path';
+			const body = '{"foo": "bar"}';
+
+			const requestArgs: string[] = [];
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					requestArgs.push(args[1]);
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							rawHeaders: ['Access-Control-Allow-Origin', '*'],
+							data: ''
+						}
+					});
+				}
+			});
+
+			new SyncFetch({
+				browserFrame,
+				window,
+				url,
+				init: {
+					method: 'POST',
+					body,
+					headers: {
+						'X-Custom-Header': 'yes',
+						'Content-Type': 'application/json'
+					}
+				}
+			}).send();
+
+			expect(requestArgs.length, 'preflight + post request').toBe(2);
+
+			// Access-Control headers should only be on preflight request, so expect to find them once
+			const [optionsRequestArgs, postRequestArgs] = requestArgs;
+
+			expect(optionsRequestArgs).toBe(
+				SyncFetchScriptBuilder.getScript({
+					url: new URL(url),
+					method: 'OPTIONS',
+					headers: {
+						Accept: '*/*',
+						'Access-Control-Request-Method': 'POST',
+						'Access-Control-Request-Headers': 'content-type,x-custom-header',
+						Connection: 'close',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br',
+						Origin: originURL,
+						Referer: originURL + '/'
+					}
+				})
+			);
+
+			expect(postRequestArgs).toBe(
+				SyncFetchScriptBuilder.getScript({
+					url: new URL(url),
+					method: 'POST',
+					headers: {
+						Accept: '*/*',
+						Connection: 'close',
+						'Content-Length': `${body.length}`,
+						'Content-Type': 'application/json',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br',
+						Origin: originURL,
+						Referer: originURL + '/',
+						'X-Custom-Header': 'yes'
+					},
+					body: Buffer.from(body)
+				})
+			);
+		});
+
 		for (const httpCode of [301, 302, 303, 307, 308]) {
 			for (const method of ['GET', 'POST', 'PATCH']) {
 				it(`Should follow ${method} request redirect code ${httpCode}.`, () => {
@@ -954,6 +1033,7 @@ describe('SyncFetch', () => {
 						Connection: 'close',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
+						Origin: originURL,
 						Referer: originURL + '/'
 					},
 					body: null
@@ -1099,6 +1179,7 @@ describe('SyncFetch', () => {
 						Connection: 'close',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
+						Origin: originURL,
 						Referer: originURL + '/',
 						Cookie: cookies,
 						authorization: 'authorization',

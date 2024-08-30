@@ -73,10 +73,12 @@ export default class BrowserFrameNavigator {
 				// Fixes issue where evaluating the response can throw an error.
 				// By using requestAnimationFrame() the error will not reject the promise.
 				// The error will be caught by process error level listener or a try and catch in the requestAnimationFrame().
-				frame.window.requestAnimationFrame(() => frame.window.eval(code));
-
-				// We need to wait for the next tick before resolving navigation listeners and ending the ready state task.
-				await new Promise((resolve) => frame.window.setTimeout(() => resolve(null)));
+				await new Promise((resolve) => {
+					frame.window.requestAnimationFrame(() => {
+						frame.window.requestAnimationFrame(resolve);
+						frame.window.eval(code);
+					});
+				});
 
 				readyStateManager.endTask();
 				resolveNavigationListeners();
@@ -235,15 +237,14 @@ export default class BrowserFrameNavigator {
 		// Fixes issue where evaluating the response can throw an error.
 		// By using requestAnimationFrame() the error will not reject the promise.
 		// The error will be caught by process error level listener or a try and catch in the requestAnimationFrame().
-		frame.window.requestAnimationFrame(() => (frame.content = responseText));
+		await new Promise((resolve) => {
+			frame.window.requestAnimationFrame(() => {
+				frame.window.requestAnimationFrame(resolve);
+				frame.content = responseText;
+			});
+		});
 
-		// Finalize the navigation
-		await new Promise((resolve) =>
-			frame.window.setTimeout(() => {
-				finalize();
-				resolve(null);
-			})
-		);
+		finalize();
 
 		return response;
 	}
