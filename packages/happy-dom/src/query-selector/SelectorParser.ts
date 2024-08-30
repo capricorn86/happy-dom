@@ -313,15 +313,33 @@ export default class SelectorParser {
 				};
 			case 'is':
 			case 'where':
-				const selectorGroups = this.getSelectorGroups(args, options);
 				const selectorItems = [];
-				for (const group of selectorGroups) {
+				for (const group of this.getSelectorGroups(args, options)) {
 					selectorItems.push(group[0]);
 				}
 				return {
 					name: lowerName,
 					arguments: args,
 					selectorItems,
+					nthFunction: null
+				};
+			case 'has':
+				const hasSelectorItems = [];
+
+				// The ":has()" pseudo selector doesn't allow for it to be nested inside another ":has()" pseudo selector, as it can lead to cyclic querying.
+				if (!args.includes(':has(')) {
+					for (const group of this.getSelectorGroups(
+						args.startsWith('+') ? args.replace('+', '') : args,
+						options
+					)) {
+						hasSelectorItems.push(group[0]);
+					}
+				}
+
+				return {
+					name: lowerName,
+					arguments: args,
+					selectorItems: hasSelectorItems,
 					nthFunction: null
 				};
 			default:
