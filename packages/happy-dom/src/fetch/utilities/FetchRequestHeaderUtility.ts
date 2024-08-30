@@ -69,14 +69,20 @@ export default class FetchRequestHeaderUtility {
 	 * @param options.browserFrame Browser frame.
 	 * @param options.window Window.
 	 * @param options.request Request.
+	 * @param [options.baseHeaders] Any base headers (may be overwritten by browser/window headers).
 	 * @returns Headers.
 	 */
 	public static getRequestHeaders(options: {
 		browserFrame: IBrowserFrame;
 		window: BrowserWindow;
 		request: Request;
+		baseHeaders?: Headers;
 	}): { [key: string]: string } {
-		const headers = new Headers(options.request.headers);
+		const headers = new Headers(options.baseHeaders);
+		options.request.headers.forEach((value, key) => {
+			headers.set(key, value);
+		});
+
 		const originURL = new URL(options.window.location.href);
 		const isCORS = FetchCORSUtility.isCORS(originURL, options.request[PropertySymbol.url]);
 
@@ -123,6 +129,10 @@ export default class FetchRequestHeaderUtility {
 
 		if (!headers.has('Content-Type') && options.request[PropertySymbol.contentType]) {
 			headers.set('Content-Type', options.request[PropertySymbol.contentType]);
+		}
+
+		if (isCORS) {
+			headers.set('Origin', originURL.origin);
 		}
 
 		// We need to convert the headers to Node request headers.
