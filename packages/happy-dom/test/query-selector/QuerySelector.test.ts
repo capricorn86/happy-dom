@@ -1087,6 +1087,30 @@ describe('QuerySelector', () => {
 			expect(document.querySelectorAll(':focus')[0]).toBe(div);
 			expect(document.querySelectorAll(':focus-visible')[0]).toBe(div);
 		});
+
+		it('Returns element matching selector with CSS pseudo ":has()"', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+                <span><video attr="value1"></video></span>
+                <span><b><video></video></b></span>
+                <video></video>
+                <h1></h1>
+                <h2></h2>
+            `;
+			expect(Array.from(container.querySelectorAll('span:has(video)'))).toEqual([
+				container.children[0],
+				container.children[1]
+			]);
+			expect(Array.from(container.querySelectorAll('span:has(video[attr="value1"])'))).toEqual([
+				container.children[0]
+			]);
+			expect(Array.from(container.querySelectorAll('span:has(+video)'))).toEqual([
+				container.children[1]
+			]);
+			expect(Array.from(container.querySelectorAll('h1:has(+h2)'))).toEqual([
+				container.children[3]
+			]);
+		});
 	});
 
 	describe('querySelector', () => {
@@ -1399,6 +1423,21 @@ describe('QuerySelector', () => {
 			expect(container.querySelector(':where(span[attr1="val,ue1"])')).toBe(null);
 		});
 
+		it('Returns element matching selector with CSS pseudo ":has()"', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+                <span><video attr="value1"></video></span>
+                <span><b><video></video></b></span>
+                <video></video>
+                <h1></h1>
+                <h2></h2>
+            `;
+			expect(container.querySelector('span:has(video)')).toBe(container.children[0]);
+			expect(container.querySelector('span:has(video[attr="value1"])')).toBe(container.children[0]);
+			expect(container.querySelector('span:has(+video)')).toBe(container.children[1]);
+			expect(container.querySelector('h1:has(+h2)')).toBe(container.children[3]);
+		});
+
 		it('Remove new line from selector and trim selector before parse', () => {
 			const container = document.createElement('div');
 
@@ -1538,6 +1577,22 @@ describe('QuerySelector', () => {
 			expect(element.matches(':where(div, span[attr1="value1"])')).toBe(true);
 			expect(element.matches(':where(span[attr1="val,ue1"], span[attr1="value1"])')).toBe(true);
 			expect(element.matches(':where(div)')).toBe(false);
+		});
+
+		it('Returns element matching selector with CSS pseudo ":has()"', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+                <span><video attr="value1"></video></span>
+                <span><b><video></video></b></span>
+                <video></video>
+                <h1></h1>
+                <h2></h2>
+            `;
+			expect(container.children[0].matches('span:has(video)')).toBe(true);
+			expect(container.children[0].matches(':has(video[attr="value1"])')).toBe(true);
+			expect(container.children[1].matches('span:has(+video)')).toBe(true);
+			expect(container.children[3].matches(':has(+h2)')).toBe(true);
+			expect(container.children[3].matches('h1:has(+h2)')).toBe(true);
 		});
 
 		it('Returns true for selector with CSS pseudo ":focus" and ":focus-visible"', () => {

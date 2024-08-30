@@ -308,14 +308,14 @@ export default class SelectorItem {
 				}
 				return element.isConnected && element.id === hash.slice(1) ? { priorityWeight: 10 } : null;
 			case 'is':
-				let priorityWeight = 0;
+				let priorityWeightForIs = 0;
 				for (const selectorItem of pseudo.selectorItems) {
 					const match = selectorItem.match(element);
-					if (match) {
-						priorityWeight = match.priorityWeight;
+					if (match && priorityWeightForIs < match.priorityWeight) {
+						priorityWeightForIs = match.priorityWeight;
 					}
 				}
-				return priorityWeight ? { priorityWeight } : null;
+				return priorityWeightForIs ? { priorityWeight: priorityWeightForIs } : null;
 			case 'where':
 				for (const selectorItem of pseudo.selectorItems) {
 					if (selectorItem.match(element)) {
@@ -323,6 +323,28 @@ export default class SelectorItem {
 					}
 				}
 				return null;
+			case 'has':
+				let priorityWeightForHas = 0;
+				if (pseudo.arguments.startsWith('+')) {
+					const nextSibling = element.nextElementSibling;
+					if (!nextSibling) {
+						return null;
+					}
+					for (const selectorItem of pseudo.selectorItems) {
+						const match = selectorItem.match(nextSibling);
+						if (match && priorityWeightForHas < match.priorityWeight) {
+							priorityWeightForHas = match.priorityWeight;
+						}
+					}
+				} else {
+					for (const selectorItem of pseudo.selectorItems) {
+						const match = this.matchChildOfElement(selectorItem, element);
+						if (match && priorityWeightForHas < match.priorityWeight) {
+							priorityWeightForHas = match.priorityWeight;
+						}
+					}
+				}
+				return priorityWeightForHas ? { priorityWeight: priorityWeightForHas } : null;
 			case 'focus':
 			case 'focus-visible':
 				return element[PropertySymbol.ownerDocument].activeElement === element
@@ -392,6 +414,29 @@ export default class SelectorItem {
 		}
 
 		return { priorityWeight };
+	}
+
+	/**
+	 * Matches a selector item against children of an element.
+	 *
+	 * @param selectorItem Selector item.
+	 * @param element Element.
+	 * @returns Result.
+	 */
+	private matchChildOfElement(
+		selectorItem: SelectorItem,
+		element: Element
+	): { priorityWeight: number } | null {
+		for (const child of element[PropertySymbol.elementArray]) {
+			const match = selectorItem.match(child);
+			if (match) {
+				return match;
+			}
+			const childMatch = this.matchChildOfElement(selectorItem, child);
+			if (childMatch) {
+				return childMatch;
+			}
+		}
 	}
 
 	/**
