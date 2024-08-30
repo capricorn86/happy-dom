@@ -13,7 +13,6 @@ import ISVGElementTagNameMap from '../config/ISVGElementTagNameMap.js';
 import ICachedQuerySelectorAllItem from '../nodes/node/ICachedQuerySelectorAllResult.js';
 import ICachedQuerySelectorItem from '../nodes/node/ICachedQuerySelectorResult.js';
 import ICachedMatchesItem from '../nodes/node/ICachedMatchesResult.js';
-import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 
 type DocumentPositionAndElement = {
 	documentPosition: string;
