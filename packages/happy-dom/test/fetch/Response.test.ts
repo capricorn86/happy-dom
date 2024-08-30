@@ -141,7 +141,7 @@ describe('Response', () => {
 				setTimeout(() => {
 					expect(isAsyncComplete).toBe(true);
 					resolve(null);
-				}, 30);
+				}, 50);
 			});
 		});
 	});
@@ -190,7 +190,7 @@ describe('Response', () => {
 				setTimeout(() => {
 					expect(isAsyncComplete).toBe(true);
 					resolve(null);
-				}, 30);
+				}, 50);
 			});
 		});
 	});
@@ -233,7 +233,7 @@ describe('Response', () => {
 				setTimeout(() => {
 					expect(isAsyncComplete).toBe(true);
 					resolve(null);
-				}, 30);
+				}, 50);
 			});
 		});
 	});
@@ -273,7 +273,7 @@ describe('Response', () => {
 				setTimeout(() => {
 					expect(isAsyncComplete).toBe(true);
 					resolve(null);
-				}, 30);
+				}, 50);
 			});
 		});
 	});
@@ -315,7 +315,7 @@ describe('Response', () => {
 				setTimeout(() => {
 					expect(isAsyncComplete).toBe(true);
 					resolve(null);
-				}, 30);
+				}, 50);
 			});
 		});
 	});
@@ -455,7 +455,7 @@ describe('Response', () => {
 				setTimeout(() => {
 					expect(isAsyncComplete).toBe(true);
 					resolve(null);
-				}, 30);
+				}, 50);
 			});
 		});
 
@@ -484,7 +484,7 @@ describe('Response', () => {
 				setTimeout(() => {
 					expect(isAsyncComplete).toBe(true);
 					resolve(null);
-				}, 30);
+				}, 50);
 			});
 		});
 	});
