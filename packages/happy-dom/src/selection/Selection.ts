@@ -1,6 +1,5 @@
 import Event from '../event/Event.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import Document from '../nodes/document/Document.js';
 import Node from '../nodes/node/Node.js';
@@ -171,7 +170,9 @@ export default class Selection {
 	 */
 	public addRange(newRange: Range): void {
 		if (!newRange) {
-			throw new Error('Failed to execute addRange on Selection. Parameter 1 is not of type Range.');
+			throw new this.#ownerDocument[PropertySymbol.window].TypeError(
+				'Failed to execute addRange on Selection. Parameter 1 is not of type Range.'
+			);
 		}
 		if (!this.#range && newRange[PropertySymbol.ownerDocument] === this.#ownerDocument) {
 			this.#associateRange(newRange);
@@ -187,7 +188,10 @@ export default class Selection {
 	 */
 	public getRangeAt(index: number): Range {
 		if (!this.#range || index !== 0) {
-			throw new DOMException('Invalid range index.', DOMExceptionNameEnum.indexSizeError);
+			throw new this.#ownerDocument[PropertySymbol.window].DOMException(
+				'Invalid range index.',
+				DOMExceptionNameEnum.indexSizeError
+			);
 		}
 
 		return this.#range;
@@ -201,7 +205,10 @@ export default class Selection {
 	 */
 	public removeRange(range: Range): void {
 		if (this.#range !== range) {
-			throw new DOMException('Invalid range.', DOMExceptionNameEnum.notFoundError);
+			throw new this.#ownerDocument[PropertySymbol.window].DOMException(
+				'Invalid range.',
+				DOMExceptionNameEnum.notFoundError
+			);
 		}
 		this.#associateRange(null);
 	}
@@ -236,21 +243,24 @@ export default class Selection {
 		}
 
 		if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
-			throw new DOMException(
+			throw new this.#ownerDocument[PropertySymbol.window].DOMException(
 				"DocumentType Node can't be used as boundary point.",
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
 
 		if (offset > NodeUtility.getNodeLength(node)) {
-			throw new DOMException('Invalid range index.', DOMExceptionNameEnum.indexSizeError);
+			throw new this.#ownerDocument[PropertySymbol.window].DOMException(
+				'Invalid range index.',
+				DOMExceptionNameEnum.indexSizeError
+			);
 		}
 
 		if (node[PropertySymbol.ownerDocument] !== this.#ownerDocument) {
 			return;
 		}
 
-		const newRange = new this.#ownerDocument[PropertySymbol.ownerWindow].Range();
+		const newRange = new this.#ownerDocument[PropertySymbol.window].Range();
 
 		newRange[PropertySymbol.start].node = node;
 		newRange[PropertySymbol.start].offset = offset;
@@ -279,14 +289,14 @@ export default class Selection {
 	 */
 	public collapseToEnd(): void {
 		if (this.#range === null) {
-			throw new DOMException(
+			throw new this.#ownerDocument[PropertySymbol.window].DOMException(
 				'There is no selection to collapse.',
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
 
 		const { node, offset } = this.#range[PropertySymbol.end];
-		const newRange = new this.#ownerDocument[PropertySymbol.ownerWindow].Range();
+		const newRange = new this.#ownerDocument[PropertySymbol.window].Range();
 
 		newRange[PropertySymbol.start].node = node;
 		newRange[PropertySymbol.start].offset = offset;
@@ -303,14 +313,14 @@ export default class Selection {
 	 */
 	public collapseToStart(): void {
 		if (!this.#range) {
-			throw new DOMException(
+			throw new this.#ownerDocument[PropertySymbol.window].DOMException(
 				'There is no selection to collapse.',
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
 
 		const { node, offset } = this.#range[PropertySymbol.start];
-		const newRange = new this.#ownerDocument[PropertySymbol.ownerWindow].Range();
+		const newRange = new this.#ownerDocument[PropertySymbol.window].Range();
 
 		newRange[PropertySymbol.start].node = node;
 		newRange[PropertySymbol.start].offset = offset;
@@ -373,7 +383,7 @@ export default class Selection {
 		}
 
 		if (!this.#range) {
-			throw new DOMException(
+			throw new this.#ownerDocument[PropertySymbol.window].DOMException(
 				'There is no selection to extend.',
 				DOMExceptionNameEnum.invalidStateError
 			);
@@ -381,7 +391,7 @@ export default class Selection {
 
 		const anchorNode = this.anchorNode;
 		const anchorOffset = this.anchorOffset;
-		const newRange = new this.#ownerDocument[PropertySymbol.ownerWindow].Range();
+		const newRange = new this.#ownerDocument[PropertySymbol.window].Range();
 		newRange[PropertySymbol.start].node = node;
 		newRange[PropertySymbol.start].offset = 0;
 		newRange[PropertySymbol.end].node = node;
@@ -425,7 +435,7 @@ export default class Selection {
 	 */
 	public selectAllChildren(node: Node): void {
 		if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
-			throw new DOMException(
+			throw new this.#ownerDocument[PropertySymbol.window].DOMException(
 				"DocumentType Node can't be used as boundary point.",
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
@@ -435,8 +445,8 @@ export default class Selection {
 			return;
 		}
 
-		const length = node.childNodes.length;
-		const newRange = new this.#ownerDocument[PropertySymbol.ownerWindow].Range();
+		const length = node[PropertySymbol.nodeArray].length;
+		const newRange = new this.#ownerDocument[PropertySymbol.window].Range();
 
 		newRange[PropertySymbol.start].node = node;
 		newRange[PropertySymbol.start].offset = 0;
@@ -465,7 +475,7 @@ export default class Selection {
 			anchorOffset > NodeUtility.getNodeLength(anchorNode) ||
 			focusOffset > NodeUtility.getNodeLength(focusNode)
 		) {
-			throw new DOMException(
+			throw new this.#ownerDocument[PropertySymbol.window].DOMException(
 				'Invalid anchor or focus offset.',
 				DOMExceptionNameEnum.indexSizeError
 			);
@@ -480,7 +490,7 @@ export default class Selection {
 
 		const anchor = { node: anchorNode, offset: anchorOffset };
 		const focus = { node: focusNode, offset: focusOffset };
-		const newRange = new this.#ownerDocument[PropertySymbol.ownerWindow].Range();
+		const newRange = new this.#ownerDocument[PropertySymbol.window].Range();
 
 		if (RangeUtility.compareBoundaryPointsPosition(anchor, focus) === -1) {
 			newRange[PropertySymbol.start] = anchor;

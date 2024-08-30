@@ -1,9 +1,9 @@
 import * as PropertySymbol from '../PropertySymbol.js';
 import Node from '../nodes/node/Node.js';
-import IMutationObserverInit from './IMutationObserverInit.js';
-import MutationListener from './MutationListener.js';
-import MutationRecord from './MutationRecord.js';
 import BrowserWindow from '../window/BrowserWindow.js';
+import IMutationObserverInit from './IMutationObserverInit.js';
+import MutationObserverListener from './MutationObserverListener.js';
+import MutationRecord from './MutationRecord.js';
 
 /**
  * The MutationObserver interface provides the ability to watch for changes being made to the DOM tree.
@@ -11,9 +11,11 @@ import BrowserWindow from '../window/BrowserWindow.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver
  */
 export default class MutationObserver {
+	// Injected by WindowClassExtender
+	protected declare [PropertySymbol.window]: BrowserWindow;
 	#callback: (records: MutationRecord[], observer: MutationObserver) => void;
-	#listeners: MutationListener[] = [];
-	#window: BrowserWindow | null = null;
+	#listeners: MutationObserverListener[] = [];
+	#destroyed: boolean = false;
 
 	/**
 	 * Constructor.
@@ -21,6 +23,12 @@ export default class MutationObserver {
 	 * @param callback Callback.
 	 */
 	constructor(callback: (records: MutationRecord[], observer: MutationObserver) => void) {
+		if (!this[PropertySymbol.window]) {
+			throw new TypeError(
+				`Failed to construct '${this.constructor.name}': '${this.constructor.name}' was constructed outside a Window context.`
+			);
+		}
+
 		this.#callback = callback;
 	}
 
@@ -31,8 +39,12 @@ export default class MutationObserver {
 	 * @param options Options.
 	 */
 	public observe(target: Node, options: IMutationObserverInit): void {
+		if (this.#destroyed) {
+			return;
+		}
+
 		if (!target) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'observe' on 'MutationObserver': The first parameter "target" should be of type "Node".`
 			);
 		}
@@ -47,13 +59,13 @@ export default class MutationObserver {
 			}
 
 			if (!options.attributes && options.attributeOldValue) {
-				throw new TypeError(
+				throw new this[PropertySymbol.window].TypeError(
 					`Failed to execute 'observe' on 'MutationObserver': The options object may only set 'attributeOldValue' to true when 'attributes' is true or not present.`
 				);
 			}
 
 			if (!options.attributes && options.attributeFilter) {
-				throw new TypeError(
+				throw new this[PropertySymbol.window].TypeError(
 					`Failed to execute 'observe' on 'MutationObserver': The options object may only set 'attributeFilter' when 'attributes' is true or not present.`
 				);
 			}
@@ -68,22 +80,16 @@ export default class MutationObserver {
 			}
 
 			if (!options.characterData && options.characterDataOldValue) {
-				throw new TypeError(
+				throw new this[PropertySymbol.window].TypeError(
 					`Failed to execute 'observe' on 'MutationObserver': The options object may only set 'characterDataOldValue' to true when 'characterData' is true or not present.`
 				);
 			}
 		}
 
 		if (!options || (!options.childList && !options.attributes && !options.characterData)) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'observe' on 'MutationObserver': The options object must set at least one of 'attributes', 'characterData', or 'childList' to true.`
 			);
-		}
-
-		if (!this.#window) {
-			this.#window = target[PropertySymbol.ownerDocument]
-				? target[PropertySymbol.ownerDocument][PropertySymbol.ownerWindow]
-				: target[PropertySymbol.ownerWindow];
 		}
 
 		// Makes sure that attribute names are lower case.
@@ -104,8 +110,8 @@ export default class MutationObserver {
 			}
 		}
 
-		const listener = new MutationListener({
-			window: this.#window,
+		const listener = new MutationObserverListener({
+			window: this[PropertySymbol.window],
 			options,
 			callback: this.#callback.bind(this),
 			observer: this,
@@ -115,33 +121,37 @@ export default class MutationObserver {
 		this.#listeners.push(listener);
 
 		// Stores all observers on the window object, so that they can be disconnected when the window is closed.
-		this.#window[PropertySymbol.mutationObservers].push(this);
+		if (!this[PropertySymbol.window][PropertySymbol.mutationObservers].includes(this)) {
+			this[PropertySymbol.window][PropertySymbol.mutationObservers].push(this);
+		}
 
 		// Starts observing target node.
-		(<Node>target)[PropertySymbol.observe](listener);
+		(<Node>target)[PropertySymbol.observeMutations](listener.mutationListener);
 	}
 
 	/**
 	 * Disconnects.
 	 */
 	public disconnect(): void {
+		this.#destroyed = true;
+
 		if (this.#listeners.length === 0) {
 			return;
 		}
 
-		const mutationObservers = this.#window[PropertySymbol.mutationObservers];
+		for (const listener of this.#listeners) {
+			(<Node>listener.target)[PropertySymbol.unobserveMutations](listener.mutationListener);
+			listener.destroy();
+		}
+
+		this.#listeners = [];
+
+		const mutationObservers = this[PropertySymbol.window][PropertySymbol.mutationObservers];
 		const index = mutationObservers.indexOf(this);
 
 		if (index !== -1) {
 			mutationObservers.splice(index, 1);
 		}
-
-		for (const listener of this.#listeners) {
-			(<Node>listener.target)[PropertySymbol.unobserve](listener);
-			listener.destroy();
-		}
-
-		this.#listeners = [];
 	}
 
 	/**

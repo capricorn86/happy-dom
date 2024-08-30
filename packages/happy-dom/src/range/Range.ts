@@ -4,7 +4,6 @@ import Document from '../nodes/document/Document.js';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import DOMRect from '../nodes/element/DOMRect.js';
 import RangeHowEnum from './RangeHowEnum.js';
-import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import RangeUtility from './RangeUtility.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
@@ -26,6 +25,9 @@ import BrowserWindow from '../window/BrowserWindow.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/Range.
  */
 export default class Range {
+	// Injected by WindowClassExtender
+	protected declare [PropertySymbol.window]: BrowserWindow;
+
 	public static readonly END_TO_END: number = RangeHowEnum.endToEnd;
 	public static readonly END_TO_START: number = RangeHowEnum.endToStart;
 	public static readonly START_TO_END: number = RangeHowEnum.startToEnd;
@@ -36,7 +38,6 @@ export default class Range {
 	public readonly START_TO_START: number = RangeHowEnum.startToStart;
 	public [PropertySymbol.start]: IRangeBoundaryPoint | null = null;
 	public [PropertySymbol.end]: IRangeBoundaryPoint | null = null;
-	#window: BrowserWindow;
 	public readonly [PropertySymbol.ownerDocument]: Document;
 
 	/**
@@ -44,8 +45,15 @@ export default class Range {
 	 *
 	 * @param window Window.
 	 */
-	constructor(window: BrowserWindow) {
-		this.#window = window;
+	constructor() {
+		const window = this[PropertySymbol.window];
+
+		if (!window) {
+			throw new TypeError(
+				`Failed to construct '${this.constructor.name}': '${this.constructor.name}' was constructed outside a Window context.`
+			);
+		}
+
 		this[PropertySymbol.ownerDocument] = window.document;
 		this[PropertySymbol.start] = { node: window.document, offset: 0 };
 		this[PropertySymbol.end] = { node: window.document, offset: 0 };
@@ -166,14 +174,14 @@ export default class Range {
 			how !== RangeHowEnum.endToEnd &&
 			how !== RangeHowEnum.endToStart
 		) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`The comparison method provided must be one of '${RangeHowEnum.startToStart}', '${RangeHowEnum.startToEnd}', '${RangeHowEnum.endToEnd}' or '${RangeHowEnum.endToStart}'.`,
 				DOMExceptionNameEnum.notSupportedError
 			);
 		}
 
 		if (this[PropertySymbol.ownerDocument] !== sourceRange[PropertySymbol.ownerDocument]) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`The two Ranges are not in the same tree.`,
 				DOMExceptionNameEnum.wrongDocumentError
 			);
@@ -228,7 +236,7 @@ export default class Range {
 	 */
 	public comparePoint(node: Node, offset): number {
 		if (node[PropertySymbol.ownerDocument] !== this[PropertySymbol.ownerDocument]) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`The two Ranges are not in the same tree.`,
 				DOMExceptionNameEnum.wrongDocumentError
 			);
@@ -264,6 +272,7 @@ export default class Range {
 	 * @returns Document fragment.
 	 */
 	public cloneContents(): DocumentFragment {
+		const window = this[PropertySymbol.window];
 		const fragment = this[PropertySymbol.ownerDocument].createDocumentFragment();
 		const startOffset = this.startOffset;
 		const endOffset = this.endOffset;
@@ -326,10 +335,10 @@ export default class Range {
 
 		const containedChildren = [];
 
-		for (const node of (<Node>commonAncestor)[PropertySymbol.childNodes]) {
+		for (const node of (<Node>commonAncestor)[PropertySymbol.nodeArray]) {
 			if (RangeUtility.isContained(node, this)) {
 				if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
-					throw new DOMException(
+					throw new window.DOMException(
 						'Invalid document type element.',
 						DOMExceptionNameEnum.hierarchyRequestError
 					);
@@ -356,7 +365,7 @@ export default class Range {
 			const clone = firstPartialContainedChild.cloneNode();
 			fragment.appendChild(clone);
 
-			const subRange = new this.#window.Range();
+			const subRange = new window.Range();
 			subRange[PropertySymbol.start].node = this[PropertySymbol.start].node;
 			subRange[PropertySymbol.start].offset = startOffset;
 			subRange[PropertySymbol.end].node = firstPartialContainedChild;
@@ -386,7 +395,7 @@ export default class Range {
 			const clone = lastPartiallyContainedChild.cloneNode(false);
 			fragment.appendChild(clone);
 
-			const subRange = new this.#window.Range();
+			const subRange = new window.Range();
 			subRange[PropertySymbol.start].node = lastPartiallyContainedChild;
 			subRange[PropertySymbol.start].offset = 0;
 			subRange[PropertySymbol.end].node = this[PropertySymbol.end].node;
@@ -406,7 +415,7 @@ export default class Range {
 	 * @returns Range.
 	 */
 	public cloneRange(): Range {
-		const clone = new this.#window.Range();
+		const clone = new this[PropertySymbol.window].Range();
 
 		clone[PropertySymbol.start].node = this[PropertySymbol.start].node;
 		clone[PropertySymbol.start].offset = this[PropertySymbol.start].offset;
@@ -495,7 +504,7 @@ export default class Range {
 
 			newNode = referenceNode[PropertySymbol.parentNode];
 			newOffset =
-				(<Node>referenceNode[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(
+				(<Node>referenceNode[PropertySymbol.parentNode])[PropertySymbol.nodeArray].indexOf(
 					referenceNode
 				) + 1;
 		}
@@ -549,6 +558,7 @@ export default class Range {
 	 * @returns Document fragment.
 	 */
 	public extractContents(): DocumentFragment {
+		const window = this[PropertySymbol.window];
 		const fragment = this[PropertySymbol.ownerDocument].createDocumentFragment();
 		const startOffset = this.startOffset;
 		const endOffset = this.endOffset;
@@ -619,10 +629,10 @@ export default class Range {
 
 		const containedChildren = [];
 
-		for (const node of (<Node>commonAncestor)[PropertySymbol.childNodes]) {
+		for (const node of (<Node>commonAncestor)[PropertySymbol.nodeArray]) {
 			if (RangeUtility.isContained(node, this)) {
 				if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
-					throw new DOMException(
+					throw new this[PropertySymbol.window].DOMException(
 						'Invalid document type element.',
 						DOMExceptionNameEnum.hierarchyRequestError
 					);
@@ -656,7 +666,7 @@ export default class Range {
 
 			newNode = referenceNode[PropertySymbol.parentNode];
 			newOffset =
-				(<Node>referenceNode[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(
+				(<Node>referenceNode[PropertySymbol.parentNode])[PropertySymbol.nodeArray].indexOf(
 					referenceNode
 				) + 1;
 		}
@@ -685,7 +695,7 @@ export default class Range {
 			const clone = firstPartialContainedChild.cloneNode(false);
 			fragment.appendChild(clone);
 
-			const subRange = new this.#window.Range();
+			const subRange = new window.Range();
 			subRange[PropertySymbol.start].node = this[PropertySymbol.start].node;
 			subRange[PropertySymbol.start].offset = startOffset;
 			subRange[PropertySymbol.end].node = firstPartialContainedChild;
@@ -716,7 +726,7 @@ export default class Range {
 			const clone = lastPartiallyContainedChild.cloneNode(false);
 			fragment.appendChild(clone);
 
-			const subRange = new this.#window.Range();
+			const subRange = new window.Range();
 			subRange[PropertySymbol.start].node = lastPartiallyContainedChild;
 			subRange[PropertySymbol.start].offset = 0;
 			subRange[PropertySymbol.end].node = this[PropertySymbol.end].node;
@@ -802,13 +812,16 @@ export default class Range {
 				!this[PropertySymbol.start].node[PropertySymbol.parentNode]) ||
 			newNode === this[PropertySymbol.start].node
 		) {
-			throw new DOMException('Invalid start node.', DOMExceptionNameEnum.hierarchyRequestError);
+			throw new this[PropertySymbol.window].DOMException(
+				'Invalid start node.',
+				DOMExceptionNameEnum.hierarchyRequestError
+			);
 		}
 
 		let referenceNode =
 			this[PropertySymbol.start].node[PropertySymbol.nodeType] === NodeTypeEnum.textNode
 				? this[PropertySymbol.start].node
-				: (<Node>this[PropertySymbol.start].node)[PropertySymbol.childNodes][this.startOffset] ||
+				: (<Node>this[PropertySymbol.start].node)[PropertySymbol.nodeArray][this.startOffset] ||
 					null;
 		const parent = !referenceNode
 			? this[PropertySymbol.start].node
@@ -829,7 +842,7 @@ export default class Range {
 
 		let newOffset = !referenceNode
 			? NodeUtility.getNodeLength(parent)
-			: (<Node>referenceNode[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(
+			: (<Node>referenceNode[PropertySymbol.parentNode])[PropertySymbol.nodeArray].indexOf(
 					referenceNode
 				);
 		newOffset +=
@@ -863,7 +876,7 @@ export default class Range {
 			return true;
 		}
 
-		const offset = (<Node>parent)[PropertySymbol.childNodes].indexOf(node);
+		const offset = (<Node>parent)[PropertySymbol.nodeArray].indexOf(node);
 
 		return (
 			RangeUtility.compareBoundaryPointsPosition(
@@ -885,13 +898,13 @@ export default class Range {
 	 */
 	public selectNode(node: Node): void {
 		if (!node[PropertySymbol.parentNode]) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`The given Node has no parent.`,
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
 
-		const index = (<Node>node[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(node);
+		const index = (<Node>node[PropertySymbol.parentNode])[PropertySymbol.nodeArray].indexOf(node);
 
 		this[PropertySymbol.start].node = node[PropertySymbol.parentNode];
 		this[PropertySymbol.start].offset = index;
@@ -907,7 +920,7 @@ export default class Range {
 	 */
 	public selectNodeContents(node: Node): void {
 		if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				"DocumentType Node can't be used as boundary point.",
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
@@ -981,14 +994,14 @@ export default class Range {
 	 */
 	public setEndAfter(node: Node): void {
 		if (!node[PropertySymbol.parentNode]) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				'The given Node has no parent.',
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
 		this.setEnd(
 			node[PropertySymbol.parentNode],
-			(<Node>node[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(node) + 1
+			(<Node>node[PropertySymbol.parentNode])[PropertySymbol.nodeArray].indexOf(node) + 1
 		);
 	}
 
@@ -1000,14 +1013,14 @@ export default class Range {
 	 */
 	public setEndBefore(node: Node): void {
 		if (!node[PropertySymbol.parentNode]) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				'The given Node has no parent.',
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
 		this.setEnd(
 			node[PropertySymbol.parentNode],
-			(<Node>node[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(node)
+			(<Node>node[PropertySymbol.parentNode])[PropertySymbol.nodeArray].indexOf(node)
 		);
 	}
 
@@ -1019,14 +1032,14 @@ export default class Range {
 	 */
 	public setStartAfter(node: Node): void {
 		if (!node[PropertySymbol.parentNode]) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				'The given Node has no parent.',
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
 		this.setStart(
 			node[PropertySymbol.parentNode],
-			(<Node>node[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(node) + 1
+			(<Node>node[PropertySymbol.parentNode])[PropertySymbol.nodeArray].indexOf(node) + 1
 		);
 	}
 
@@ -1038,14 +1051,14 @@ export default class Range {
 	 */
 	public setStartBefore(node: Node): void {
 		if (!node[PropertySymbol.parentNode]) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				'The given Node has no parent.',
 				DOMExceptionNameEnum.invalidNodeTypeError
 			);
 		}
 		this.setStart(
 			node[PropertySymbol.parentNode],
-			(<Node>node[PropertySymbol.parentNode])[PropertySymbol.childNodes].indexOf(node)
+			(<Node>node[PropertySymbol.parentNode])[PropertySymbol.nodeArray].indexOf(node)
 		);
 	}
 
@@ -1063,7 +1076,7 @@ export default class Range {
 				node[PropertySymbol.nodeType] !== NodeTypeEnum.textNode &&
 				RangeUtility.isPartiallyContained(node, this)
 			) {
-				throw new DOMException(
+				throw new this[PropertySymbol.window].DOMException(
 					'The Range has partially contains a non-Text node.',
 					DOMExceptionNameEnum.invalidStateError
 				);
@@ -1077,7 +1090,10 @@ export default class Range {
 			newParent[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode ||
 			newParent[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode
 		) {
-			throw new DOMException('Invalid element type.', DOMExceptionNameEnum.invalidNodeTypeError);
+			throw new this[PropertySymbol.window].DOMException(
+				'Invalid element type.',
+				DOMExceptionNameEnum.invalidNodeTypeError
+			);
 		}
 
 		const fragment = this.extractContents();

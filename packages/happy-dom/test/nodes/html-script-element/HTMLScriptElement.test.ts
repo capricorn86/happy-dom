@@ -9,6 +9,7 @@ import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import BrowserWindow from '../../../src/window/BrowserWindow.js';
 import Fetch from '../../../src/fetch/Fetch.js';
 import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCaptureEnum.js';
+import EventTarget from '../../../src/event/EventTarget.js';
 
 describe('HTMLScriptElement', () => {
 	let window: Window;
@@ -177,6 +178,8 @@ describe('HTMLScriptElement', () => {
 		it('Loads external script asynchronously.', async () => {
 			let fetchedURL: string | null = null;
 			let loadEvent: Event | null = null;
+			let loadEventTarget: EventTarget | null = null;
+			let loadEventCurrentTarget: EventTarget | null = null;
 
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
 				fetchedURL = this.request.url;
@@ -192,13 +195,17 @@ describe('HTMLScriptElement', () => {
 			script.async = true;
 			script.addEventListener('load', (event) => {
 				loadEvent = event;
+				loadEventTarget = event.target;
+				loadEventCurrentTarget = event.currentTarget;
 			});
 
 			document.body.appendChild(script);
 
 			await window.happyDOM?.waitUntilComplete();
 
-			expect((<Event>(<unknown>loadEvent)).target).toBe(script);
+			expect((<Event>(<unknown>loadEvent)).target).toBe(null);
+			expect(loadEventTarget).toBe(script);
+			expect(loadEventCurrentTarget).toBe(script);
 			expect(fetchedURL).toBe('https://localhost:8080/path/to/script.js');
 			expect(window['test']).toBe('test');
 			expect(window['currentScript']).toBe(script);
@@ -237,6 +244,8 @@ describe('HTMLScriptElement', () => {
 			let fetchedWindow: BrowserWindow | null = null;
 			let fetchedURL: string | null = null;
 			let loadEvent: Event | null = null;
+			let loadEventTarget: EventTarget | null = null;
+			let loadEventCurrentTarget: EventTarget | null = null;
 
 			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(function (url: string) {
 				fetchedWindow = this.window;
@@ -248,11 +257,15 @@ describe('HTMLScriptElement', () => {
 			script.src = 'path/to/script.js';
 			script.addEventListener('load', (event) => {
 				loadEvent = event;
+				loadEventTarget = event.target;
+				loadEventCurrentTarget = event.currentTarget;
 			});
 
 			document.body.appendChild(script);
 
-			expect((<Event>(<unknown>loadEvent)).target).toBe(script);
+			expect((<Event>(<unknown>loadEvent)).target).toBe(null);
+			expect(loadEventTarget).toBe(script);
+			expect(loadEventCurrentTarget).toBe(script);
 			expect(fetchedWindow).toBe(window);
 			expect(fetchedURL).toBe('https://localhost:8080/base/path/to/script.js');
 			expect(window['test']).toBe('test');

@@ -110,12 +110,37 @@ describe('HTMLTextAreaElement', () => {
 	});
 
 	describe('get form()', () => {
+		it('Returns null if no parent form element exists.', () => {
+			expect(element.form).toBe(null);
+		});
+
 		it('Returns parent form element.', () => {
 			const form = document.createElement('form');
 			const div = document.createElement('div');
 			div.appendChild(element);
 			form.appendChild(div);
-			expect(element.form).toBe(form);
+			expect(element.form === form).toBe(true);
+		});
+
+		it('Returns form element by id if the form attribute is set when connecting node to DOM.', () => {
+			const form = document.createElement('form');
+			form.id = 'form';
+			document.body.appendChild(form);
+			element.setAttribute('form', 'form');
+			expect(element.form).toBe(null);
+			document.body.appendChild(element);
+			expect(element.form === form).toBe(true);
+			expect(Array.from(form.elements).includes(element)).toBe(true);
+		});
+
+		it('Returns form element by id if the form attribute is set when element is connected to DOM.', () => {
+			const form = document.createElement('form');
+			form.id = 'form';
+			document.body.appendChild(form);
+			document.body.appendChild(element);
+			element.setAttribute('form', 'form');
+			expect(element.form === form).toBe(true);
+			expect(Array.from(form.elements).includes(element)).toBe(true);
 		});
 	});
 
@@ -136,7 +161,7 @@ describe('HTMLTextAreaElement', () => {
 		});
 	}
 
-	for (const property of ['name', 'autocomplete', 'cols', 'rows', 'placeholder']) {
+	for (const property of ['name', 'autocomplete', 'cols', 'rows', 'placeholder', 'inputMode']) {
 		describe(`get ${property}()`, () => {
 			it('Returns attribute value.', () => {
 				expect(element[property]).toBe('');

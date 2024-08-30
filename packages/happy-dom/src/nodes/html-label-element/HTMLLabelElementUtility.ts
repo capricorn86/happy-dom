@@ -17,12 +17,17 @@ export default class HTMLLabelElementUtility {
 	 */
 	public static getAssociatedLabelElements(element: HTMLElement): NodeList<HTMLLabelElement> {
 		const id = element.id;
-		let labels: NodeList<HTMLLabelElement>;
-		if (id) {
-			const rootNode = <Document | ShadowRoot>element.getRootNode();
-			labels = <NodeList<HTMLLabelElement>>rootNode.querySelectorAll(`label[for="${id}"]`);
+		let labels: HTMLLabelElement[];
+
+		if (id && element[PropertySymbol.isConnected]) {
+			const rootNode =
+				<Document | ShadowRoot>element[PropertySymbol.rootNode] ||
+				element[PropertySymbol.ownerDocument];
+			labels = <HTMLLabelElement[]>(
+				rootNode.querySelectorAll(`label[for="${id}"]`)[PropertySymbol.items]
+			);
 		} else {
-			labels = new NodeList<HTMLLabelElement>();
+			labels = [];
 		}
 
 		let parent = element[PropertySymbol.parentNode];
@@ -34,6 +39,6 @@ export default class HTMLLabelElementUtility {
 			parent = parent[PropertySymbol.parentNode];
 		}
 
-		return labels;
+		return new NodeList<HTMLLabelElement>(PropertySymbol.illegalConstructor, labels);
 	}
 }

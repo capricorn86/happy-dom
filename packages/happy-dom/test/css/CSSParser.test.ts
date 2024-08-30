@@ -219,5 +219,25 @@ describe('CSSParser', () => {
 			expect((<CSSStyleRule>cssRules[10]).style.length).toBe(1);
 			expect((<CSSStyleRule>cssRules[10]).style.cssText).toBe('color: pink;');
 		});
+
+		it('Supports @font-face.', () => {
+			const css = `
+                @font-face {
+                    font-family: "Ionicons";
+                    src: url("~react-native-vector-icons/Fonts/Ionicons.ttf");
+                }
+            `;
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSStyleRule>cssRules[0]).cssText).toBe(
+				'@font-face { font-family: Ionicons; src: url("~react-native-vector-icons/Fonts/Ionicons.ttf"); }'
+			);
+			expect((<CSSStyleRule>cssRules[0]).style.fontFamily).toBe('Ionicons');
+			expect((<CSSStyleRule>cssRules[0]).style.src).toBe(
+				'url("~react-native-vector-icons/Fonts/Ionicons.ttf")'
+			);
+		});
 	});
 });

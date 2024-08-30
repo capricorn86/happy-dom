@@ -5,6 +5,8 @@ import XMLHttpResponseTypeEnum from '../../src/xml-http-request/XMLHttpResponseT
 import ProgressEvent from '../../src/event/events/ProgressEvent.js';
 import Blob from '../../src/file/Blob.js';
 import Document from '../../src/nodes/document/Document.js';
+import type { IncomingMessage } from 'http';
+import Stream from 'stream';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import SyncFetch from '../../src/fetch/SyncFetch.js';
 import Response from '../../src/fetch/Response.js';
@@ -17,7 +19,9 @@ import { ReadableStream } from 'stream/web';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 
 const WINDOW_URL = 'https://localhost:8080';
+const WINDOW_ORIGIN = new URL(WINDOW_URL).origin;
 const REQUEST_URL = '/path/to/resource/';
+const CORS_REQUEST_URL = 'https://other.origin' + REQUEST_URL;
 const FORBIDDEN_REQUEST_METHODS = ['TRACE', 'TRACK', 'CONNECT'];
 const FORBIDDEN_REQUEST_HEADERS = [
 	'accept-charset',
@@ -1017,6 +1021,95 @@ describe('XMLHttpRequest', () => {
 						method: 'POST',
 						url: WINDOW_URL + REQUEST_URL,
 						body
+					});
+					expect(request.responseText).toBe(responseText);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
+					expect(isProgressTriggered).toBe(true);
+
+					resolve(null);
+				});
+
+				request.send(body);
+			});
+		});
+
+		it('Performs an asynchronous cross-origin POST request with the HTTPS protocol.', async () => {
+			await new Promise((resolve) => {
+				const body = '{"foo": "bar"}';
+				const responseText = 'http.request.body';
+
+				let requestedUrl: string | null = null;
+				let postRequestHeaders: { [k: string]: string } | null = null;
+				let optionsRequestHeaders: { [k: string]: string } | null = null;
+
+				mockModule('https', {
+					request: (url, options) => {
+						requestedUrl = url;
+						if (options.method === 'OPTIONS') {
+							optionsRequestHeaders = options.headers;
+						} else if (options.method === 'POST') {
+							postRequestHeaders = options.headers;
+						}
+
+						return {
+							end: () => {},
+							on: (event: string, callback: (response: IncomingMessage) => void) => {
+								if (event === 'response') {
+									const response = <IncomingMessage>Stream.Readable.from(responseText);
+									const baseHeaders = ['Access-Control-Allow-Origin', WINDOW_ORIGIN];
+									const headers = [
+										...baseHeaders,
+										...(options.method === 'POST'
+											? ['Content-Length', `${responseText.length}`, 'Content-Type', 'text/html']
+											: [])
+									];
+
+									response.headers = {};
+									response.rawHeaders = headers;
+
+									callback(response);
+								}
+							},
+							setTimeout: () => {}
+						};
+					}
+				});
+
+				request.open('POST', CORS_REQUEST_URL, true);
+				request.setRequestHeader('Content-Type', 'application/json');
+				request.setRequestHeader('X-Custom-Header', 'yes');
+
+				let isProgressTriggered = false;
+
+				request.addEventListener('progress', (event) => {
+					isProgressTriggered = true;
+					expect((<ProgressEvent>event).lengthComputable).toBe(true);
+					expect((<ProgressEvent>event).loaded).toBe(responseText.length);
+					expect((<ProgressEvent>event).total).toBe(responseText.length);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
+				});
+
+				request.addEventListener('load', () => {
+					expect(requestedUrl).toBe(CORS_REQUEST_URL);
+					expect(optionsRequestHeaders).toEqual({
+						Accept: '*/*',
+						'Access-Control-Request-Method': 'POST',
+						'Access-Control-Request-Headers': 'content-type,x-custom-header',
+						Connection: 'close',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br',
+						Origin: WINDOW_ORIGIN,
+						Referer: WINDOW_URL + '/'
+					});
+					expect(postRequestHeaders).toEqual({
+						Accept: '*/*',
+						Connection: 'close',
+						'Content-Type': 'application/json',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br',
+						Origin: WINDOW_ORIGIN,
+						Referer: WINDOW_URL + '/',
+						'X-Custom-Header': 'yes'
 					});
 					expect(request.responseText).toBe(responseText);
 					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);

@@ -1,4 +1,5 @@
 import { Buffer } from 'buffer';
+import { ReadableStream } from 'stream/web';
 import * as PropertySymbol from '../PropertySymbol.js';
 
 /**
@@ -15,12 +16,12 @@ export default class Blob {
 	/**
 	 * Constructor.
 	 *
-	 * @param bits Bits.
+	 * @param [bits] Bits.
 	 * @param [options] Options.
 	 * @param [options.type] MIME type.
 	 */
 	constructor(
-		bits: (ArrayBuffer | ArrayBufferView | Blob | Buffer | string)[],
+		bits?: (ArrayBuffer | ArrayBufferView | Blob | Buffer | string)[],
 		options?: { type?: string }
 	) {
 		const buffers = [];
@@ -134,6 +135,21 @@ export default class Blob {
 	 */
 	public async text(): Promise<string> {
 		return this[PropertySymbol.buffer].toString();
+	}
+
+	/**
+	 * Returns returns a ReadableStream which upon reading returns the data contained within the Blob.
+	 *
+	 * @returns ReadableStream
+	 */
+	public stream(): ReadableStream {
+		const buffer = this[PropertySymbol.buffer];
+		return new ReadableStream({
+			start(controller) {
+				controller.enqueue(buffer);
+				controller.close();
+			}
+		});
 	}
 
 	/**

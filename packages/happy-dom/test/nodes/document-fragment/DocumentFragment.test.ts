@@ -1,7 +1,6 @@
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import DocumentFragment from '../../../src/nodes/document-fragment/DocumentFragment.js';
-import DocumentFragment from '../../../src/nodes/document-fragment/DocumentFragment.js';
 import Node from '../../../src/nodes/node/Node.js';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility.js';
 import QuerySelector from '../../../src/query-selector/QuerySelector.js';
@@ -184,7 +183,7 @@ describe('DocumentFragment', () => {
 			vi.spyOn(QuerySelector, 'querySelectorAll').mockImplementation((parentNode, selector) => {
 				expect(parentNode).toBe(documentFragment);
 				expect(selector).toBe(expectedSelector);
-				return <NodeList<Element>>[element];
+				return new NodeList<Element>(PropertySymbol.illegalConstructor, [element]);
 			});
 
 			expect(Array.from(documentFragment.querySelectorAll(expectedSelector))).toEqual([element]);
@@ -231,9 +230,11 @@ describe('DocumentFragment', () => {
 
 			expect(Array.from(clone.childNodes)).toEqual([]);
 			expect(Array.from(clone.children)).toEqual([]);
-			expect(documentFragment.children.map((child) => child.outerHTML).join('')).toBe(
-				'<div>Div</div><span>Span</span>'
-			);
+			expect(
+				Array.from(documentFragment.children)
+					.map((child) => child.outerHTML)
+					.join('')
+			).toBe('<div>Div</div><span>Span</span>');
 		});
 	});
 
@@ -284,9 +285,11 @@ describe('DocumentFragment', () => {
 			documentFragment.insertBefore(clone, child2);
 
 			expect(documentFragment.children.length).toBe(4);
-			expect(documentFragment.children.map((child) => child.outerHTML).join('')).toEqual(
-				'<span></span><div>Template DIV 1</div><span>Template SPAN 1</span><span></span>'
-			);
+			expect(
+				Array.from(documentFragment.children)
+					.map((child) => child.outerHTML)
+					.join('')
+			).toEqual('<span></span><div>Template DIV 1</div><span>Template SPAN 1</span><span></span>');
 		});
 	});
 
@@ -323,7 +326,7 @@ describe('DocumentFragment', () => {
 			expect((<DocumentFragment>clone)[PropertySymbol.rootNode]).toBe(clone);
 			expect(clone.childNodes.length).toBe(3);
 			expect(Array.from(clone.children)).toEqual(
-				Array.from(clone.childNodes.filter((node) => node.nodeType === Node.ELEMENT_NODE))
+				Array.from(clone.childNodes).filter((node) => node.nodeType === Node.ELEMENT_NODE)
 			);
 		});
 	});

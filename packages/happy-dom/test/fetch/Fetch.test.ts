@@ -17,6 +17,7 @@ import { ReadableStream } from 'stream/web';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import FetchHTTPSCertificate from '../../src/fetch/certificate/FetchHTTPSCertificate.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
+import Event from '../../src/event/Event.js';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -47,7 +48,7 @@ describe('Fetch', () => {
 
 			expect(error).toEqual(
 				new DOMException(
-					`Failed to construct 'Request. Invalid URL "${url}" on document location 'about:blank'. Relative URLs are not permitted on current document location.`,
+					`Failed to construct 'Request': Invalid URL "${url}" on document location 'about:blank'. Relative URLs are not permitted on current document location.`,
 					DOMExceptionNameEnum.notSupportedError
 				)
 			);
@@ -66,7 +67,7 @@ describe('Fetch', () => {
 
 			expect(error).toEqual(
 				new DOMException(
-					`Failed to construct 'Request. Invalid URL "${url}" on document location 'about:blank'. Relative URLs are not permitted on current document location.`,
+					`Failed to construct 'Request': Invalid URL "${url}" on document location 'about:blank'. Relative URLs are not permitted on current document location.`,
 					DOMExceptionNameEnum.notSupportedError
 				)
 			);
@@ -495,6 +496,78 @@ describe('Fetch', () => {
 					key: FetchHTTPSCertificate.key,
 					cert: FetchHTTPSCertificate.cert
 				}
+			});
+		});
+
+		it('Includes Origin + Access-Control headers on cross-origin requests.', async () => {
+			const originURL = 'http://localhost:8080';
+			const window = new Window({ url: originURL });
+			const url = 'http://other.origin.com/some/path';
+
+			let requestedUrl: string | null = null;
+			let postRequestHeaders: { [k: string]: string } | null = null;
+			let optionsRequestHeaders: { [k: string]: string } | null = null;
+
+			mockModule('http', {
+				request: (url, options) => {
+					requestedUrl = url;
+					if (options.method === 'OPTIONS') {
+						optionsRequestHeaders = options.headers;
+					} else if (options.method === 'POST') {
+						postRequestHeaders = options.headers;
+					}
+
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								async function* generate(): AsyncGenerator<string> {}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.headers = {};
+								response.rawHeaders =
+									options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : [];
+
+								callback(response);
+							}
+						},
+						setTimeout: () => {}
+					};
+				}
+			});
+
+			await window.fetch(url, {
+				method: 'POST',
+				body: '{"foo": "bar"}',
+				headers: {
+					'X-Custom-Header': 'yes',
+					'Content-Type': 'application/json'
+				}
+			});
+
+			expect(requestedUrl).toBe(url);
+			expect(optionsRequestHeaders).toEqual({
+				Accept: '*/*',
+				'Access-Control-Request-Method': 'POST',
+				'Access-Control-Request-Headers': 'content-type,x-custom-header',
+				Connection: 'close',
+				'User-Agent': window.navigator.userAgent,
+				'Accept-Encoding': 'gzip, deflate, br',
+				Origin: originURL,
+				Referer: originURL + '/'
+			});
+
+			expect(postRequestHeaders).toEqual({
+				Accept: '*/*',
+				Connection: 'close',
+				'Content-Type': 'application/json',
+				'Content-Length': '14',
+				'User-Agent': window.navigator.userAgent,
+				'Accept-Encoding': 'gzip, deflate, br',
+				Origin: originURL,
+				Referer: originURL + '/',
+				'X-Custom-Header': 'yes'
 			});
 		});
 
@@ -1102,6 +1175,7 @@ describe('Fetch', () => {
 						Connection: 'close',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
+						Origin: originURL,
 						Referer: originURL + '/'
 					},
 					agent: false,
@@ -1257,6 +1331,7 @@ describe('Fetch', () => {
 						Connection: 'close',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
+						Origin: originURL,
 						Referer: originURL + '/',
 						Cookie: cookies,
 						authorization: 'authorization',
@@ -1426,7 +1501,7 @@ describe('Fetch', () => {
 
 			expect(error).toEqual(
 				new DOMException(
-					`Fetch to "${url}" failed. Error: connect ECONNREFUSED ::1:8080`,
+					`Failed to execute "fetch()" on "Window" with URL "${url}": connect ECONNREFUSED ::1:8080`,
 					DOMExceptionNameEnum.networkError
 				)
 			);
@@ -2138,7 +2213,7 @@ describe('Fetch', () => {
 				}
 			});
 
-			const abortController = new AbortController();
+			const abortController = new window.AbortController();
 			const abortSignal = abortController.signal;
 			let error: Error | null = null;
 
@@ -2196,7 +2271,7 @@ describe('Fetch', () => {
 				}
 			});
 
-			const abortController = new AbortController();
+			const abortController = new window.AbortController();
 			const abortSignal = abortController.signal;
 			let error: Error | null = null;
 
@@ -2249,7 +2324,7 @@ describe('Fetch', () => {
 					}
 				});
 
-				const abortController = new AbortController();
+				const abortController = new window.AbortController();
 				const abortSignal = abortController.signal;
 				let error1: Error | null = null;
 				let error2: Error | null = null;
@@ -2292,7 +2367,7 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
-			const abortController = new AbortController();
+			const abortController = new window.AbortController();
 			const abortSignal = abortController.signal;
 
 			abortController.abort();
@@ -2338,7 +2413,7 @@ describe('Fetch', () => {
 				}
 			});
 
-			const abortController = new AbortController();
+			const abortController = new window.AbortController();
 			const abortSignal = abortController.signal;
 			const response = await window.fetch(url, { method: 'GET', signal: abortSignal });
 			let error: Error | null = null;
@@ -2402,7 +2477,7 @@ describe('Fetch', () => {
 				}
 			});
 
-			const abortController = new AbortController();
+			const abortController = new window.AbortController();
 			const abortSignal = abortController.signal;
 			const response = await window.fetch(url, { method: 'GET', signal: abortSignal });
 			let error: Error | null = null;
@@ -2476,7 +2551,7 @@ describe('Fetch', () => {
 				}
 			});
 
-			const abortController = new AbortController();
+			const abortController = new window.AbortController();
 			const abortSignal = abortController.signal;
 			let error: Error | null = null;
 
@@ -2524,13 +2599,13 @@ describe('Fetch', () => {
 				}
 			});
 
-			const abortController = new AbortController();
+			const abortController = new window.AbortController();
 			const abortSignal = abortController.signal;
 			const response = await window.fetch(url, { method: 'GET', signal: abortSignal });
 
 			await response.text();
 
-			expect(abortSignal[PropertySymbol.listeners]['abort']).toEqual([]);
+			expect(abortSignal[PropertySymbol.listeners].bubbling.get('abort')).toEqual([]);
 			expect(() => abortController.abort()).not.toThrow();
 		});
 
@@ -3276,7 +3351,7 @@ describe('Fetch', () => {
 
 			expect(error).toEqual(
 				new DOMException(
-					`Fetch to "https://localhost:8080/test/" failed. Error: test`,
+					`Failed to execute "fetch()" on "Window" with URL "https://localhost:8080/test/": test`,
 					DOMExceptionNameEnum.networkError
 				)
 			);
@@ -3284,7 +3359,7 @@ describe('Fetch', () => {
 
 		it('Supports POST request with body as FormData.', async () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
-			const formData = new FormData();
+			const formData = new window.FormData();
 
 			vi.spyOn(Math, 'random').mockImplementation(() => 0.8);
 
@@ -3659,7 +3734,7 @@ describe('Fetch', () => {
 			});
 			const text1 = await response1.text();
 
-			await new Promise((resolve) => setTimeout(resolve, 20));
+			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			const response2 = await window.fetch(url);
 			const text2 = await response2.text();
@@ -3989,7 +4064,7 @@ describe('Fetch', () => {
 			});
 			const text1 = await response1.text();
 
-			await new Promise((resolve) => setTimeout(resolve, 20));
+			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			const response2 = await window.fetch(url, {
 				method: 'HEAD'
@@ -4158,7 +4233,7 @@ describe('Fetch', () => {
 			});
 			const text1 = await response1.text();
 
-			await new Promise((resolve) => setTimeout(resolve, 20));
+			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			const response2 = await window.fetch(url);
 			const text2 = await response2.text();

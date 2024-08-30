@@ -13,30 +13,35 @@ export default class HTMLElementUtility {
 	 * @param element Element.
 	 */
 	public static blur(element: HTMLElement | SVGElement): void {
+		const document = element[PropertySymbol.ownerDocument];
+
 		if (
-			element[PropertySymbol.ownerDocument][PropertySymbol.activeElement] !== element ||
+			document[PropertySymbol.activeElement] !== element ||
 			!element[PropertySymbol.isConnected]
 		) {
 			return;
 		}
 
-		const relatedTarget =
-			element[PropertySymbol.ownerDocument][PropertySymbol.nextActiveElement] ?? null;
+		const relatedTarget = document[PropertySymbol.nextActiveElement] ?? null;
 
-		element[PropertySymbol.ownerDocument][PropertySymbol.activeElement] = null;
+		document[PropertySymbol.activeElement] = null;
+
+		document[PropertySymbol.clearCache]();
 
 		element.dispatchEvent(
 			new FocusEvent('blur', {
 				relatedTarget,
 				bubbles: false,
-				composed: true
+				composed: true,
+				cancelable: true
 			})
 		);
 		element.dispatchEvent(
 			new FocusEvent('focusout', {
 				relatedTarget,
 				bubbles: true,
-				composed: true
+				composed: true,
+				cancelable: true
 			})
 		);
 	}
@@ -47,26 +52,30 @@ export default class HTMLElementUtility {
 	 * @param element Element.
 	 */
 	public static focus(element: HTMLElement | SVGElement): void {
+		const document = element[PropertySymbol.ownerDocument];
+
 		if (
-			element[PropertySymbol.ownerDocument][PropertySymbol.activeElement] === element ||
+			document[PropertySymbol.activeElement] === element ||
 			!element[PropertySymbol.isConnected]
 		) {
 			return;
 		}
 
 		// Set the next active element so `blur` can use it for `relatedTarget`.
-		element[PropertySymbol.ownerDocument][PropertySymbol.nextActiveElement] = element;
+		document[PropertySymbol.nextActiveElement] = element;
 
-		const relatedTarget = element[PropertySymbol.ownerDocument][PropertySymbol.activeElement];
+		const relatedTarget = document[PropertySymbol.activeElement];
 
-		if (element[PropertySymbol.ownerDocument][PropertySymbol.activeElement] !== null) {
-			element[PropertySymbol.ownerDocument][PropertySymbol.activeElement].blur();
+		if (document[PropertySymbol.activeElement] !== null) {
+			document[PropertySymbol.activeElement].blur();
 		}
 
 		// Clean up after blur, so it does not affect next blur call.
-		element[PropertySymbol.ownerDocument][PropertySymbol.nextActiveElement] = null;
+		document[PropertySymbol.nextActiveElement] = null;
 
-		element[PropertySymbol.ownerDocument][PropertySymbol.activeElement] = element;
+		document[PropertySymbol.activeElement] = element;
+
+		document[PropertySymbol.clearCache]();
 
 		element.dispatchEvent(
 			new FocusEvent('focus', {

@@ -1,7 +1,8 @@
 import Window from '../../src/window/Window.js';
 import Document from '../../src/nodes/document/Document.js';
 import File from '../../src/file/File.js';
-import { beforeEach, describe, it, expect } from 'vitest';
+import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
+import Blob from '../../src/file/Blob.js';
 
 describe('FormData', () => {
 	let window: Window;
@@ -10,6 +11,10 @@ describe('FormData', () => {
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	describe('constructor', () => {
@@ -104,6 +109,21 @@ describe('FormData', () => {
 			expect(formData.get('button3')).toBe('button3');
 			expect(formData.get('button4')).toBe('button4');
 		});
+
+		it('Supports input elements with empty values.', () => {
+			const form = document.createElement('form');
+			const textInput = document.createElement('input');
+
+			textInput.type = 'text';
+			textInput.name = 'textInput';
+			textInput.value = '';
+
+			form.appendChild(textInput);
+
+			const formData = new window.FormData(form);
+
+			expect(formData.get('textInput')).toBe('');
+		});
 	});
 
 	describe('forEach()', () => {
@@ -124,12 +144,27 @@ describe('FormData', () => {
 
 	describe('append()', () => {
 		it('Appends a value.', () => {
+			vi.spyOn(Date, 'now').mockImplementation(() => 1000);
+
 			const formData = new window.FormData();
+			const blob = new Blob();
+			const file = new File([], 'filename');
 
 			formData.append('key1', 'value1');
 			formData.append('key1', 'value2');
+			formData.append('key2', blob);
+			formData.append('key3', file);
 
 			expect(formData.getAll('key1')).toEqual(['value1', 'value2']);
+			expect(formData.getAll('key2')).toEqual([new File([], 'blob')]);
+			expect(formData.getAll('key3')).toEqual([file]);
+		});
+
+		it('Throws an error if a filename is provided and the value is not an instance of a Blob.', () => {
+			const formData = new window.FormData();
+			expect(() => formData.append('key1', 'value1', 'filename')).toThrow(
+				'Failed to execute "append" on "FormData": parameter 2 is not of type "Blob".'
+			);
 		});
 	});
 

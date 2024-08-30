@@ -14,6 +14,7 @@ enum DOMExceptionNameEnum {
 	invalidAccessError = 'InvalidAccessError',
 	unknownError = 'UnknownError',
 	abortError = 'AbortError',
+	timeoutError = 'TimeoutError',
 	encodingError = 'EncodingError',
 	uriMismatchError = 'URIMismatchError'
 }
