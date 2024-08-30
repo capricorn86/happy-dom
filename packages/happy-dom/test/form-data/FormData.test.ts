@@ -1,7 +1,7 @@
 import Window from '../../src/window/Window.js';
 import Document from '../../src/nodes/document/Document.js';
 import File from '../../src/file/File.js';
-import { beforeEach, describe, it, expect } from 'vitest';
+import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Blob from '../../src/file/Blob.js';
 
 describe('FormData', () => {
@@ -11,6 +11,10 @@ describe('FormData', () => {
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	describe('constructor', () => {
@@ -140,6 +144,8 @@ describe('FormData', () => {
 
 	describe('append()', () => {
 		it('Appends a value.', () => {
+			vi.spyOn(Date, 'now').mockImplementation(() => 1000);
+
 			const formData = new window.FormData();
 			const blob = new Blob();
 			const file = new File([], 'filename');

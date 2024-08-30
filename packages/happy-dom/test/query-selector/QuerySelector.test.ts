@@ -1068,6 +1068,25 @@ describe('QuerySelector', () => {
 				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': 'a#' is not a valid selector."
 			);
 		});
+
+		it('Returns true for selector with CSS pseudo ":focus" and ":focus-visible"', () => {
+			document.body.innerHTML = QuerySelectorHTML;
+			const span = <HTMLElement>document.querySelector('span.class1');
+			const div = <HTMLElement>document.querySelector('div.class1');
+
+			expect(document.querySelectorAll(':focus')[0]).toBe(document.body);
+			expect(document.querySelectorAll(':focus-visible')[0]).toBe(document.body);
+
+			span.focus();
+
+			expect(document.querySelectorAll(':focus')[0]).toBe(span);
+			expect(document.querySelectorAll(':focus-visible')[0]).toBe(span);
+
+			div.focus();
+
+			expect(document.querySelectorAll(':focus')[0]).toBe(div);
+			expect(document.querySelectorAll(':focus-visible')[0]).toBe(div);
+		});
 	});
 
 	describe('querySelector', () => {
@@ -1380,6 +1399,23 @@ describe('QuerySelector', () => {
 			expect(container.querySelector(':where(span[attr1="val,ue1"])')).toBe(null);
 		});
 
+		it('Remove new line from selector and trim selector before parse', () => {
+			const container = document.createElement('div');
+
+			container.innerHTML = QuerySelectorHTML;
+
+			expect(container.querySelector('\n \n\r	\t	\f h1 \n \n\r	\t	\f')).toBe(
+				container.children[0].children[0]
+			);
+			expect(container.querySelector('\n \n\r	\t	\f div div        span \n \n\r	\t	\f')).toBe(
+				container.children[0].children[1].children[0]
+			);
+			expect(
+				container.querySelector('div.class1\n.class2 span') ===
+					container.children[0].children[1].children[0]
+			).toBe(true);
+		});
+
 		it('Returns element matching selector "datalist#id"', () => {
 			const div = document.createElement('div');
 			const datalist = document.createElement('datalist');
@@ -1395,6 +1431,25 @@ describe('QuerySelector', () => {
 			expect(div.querySelector('datalist#datalist_id') === datalist).toBe(true);
 			expect(div.querySelector('span#datalist_id') === null).toBe(true);
 			expect(div.querySelector('span#span_id') === span).toBe(true);
+		});
+
+		it('Returns true for selector with CSS pseudo ":focus" and ":focus-visible"', () => {
+			document.body.innerHTML = QuerySelectorHTML;
+			const span = <HTMLElement>document.querySelector('span.class1');
+			const div = <HTMLElement>document.querySelector('div.class1');
+
+			expect(document.querySelector(':focus')).toBe(document.body);
+			expect(document.querySelector(':focus-visible')).toBe(document.body);
+
+			span.focus();
+
+			expect(document.querySelector(':focus')).toBe(span);
+			expect(document.querySelector(':focus-visible')).toBe(span);
+
+			div.focus();
+
+			expect(document.querySelector(':focus')).toBe(div);
+			expect(document.querySelector(':focus-visible')).toBe(div);
 		});
 	});
 
@@ -1483,6 +1538,27 @@ describe('QuerySelector', () => {
 			expect(element.matches(':where(div, span[attr1="value1"])')).toBe(true);
 			expect(element.matches(':where(span[attr1="val,ue1"], span[attr1="value1"])')).toBe(true);
 			expect(element.matches(':where(div)')).toBe(false);
+		});
+
+		it('Returns true for selector with CSS pseudo ":focus" and ":focus-visible"', () => {
+			document.body.innerHTML = QuerySelectorHTML;
+			const span = <HTMLElement>document.querySelector('span.class1');
+			const div = <HTMLElement>document.querySelector('div.class1');
+
+			expect(span.matches(':focus')).toBe(false);
+			expect(span.matches(':focus-visible')).toBe(false);
+
+			span.focus();
+
+			expect(span.matches(':focus')).toBe(true);
+			expect(span.matches(':focus-visible')).toBe(true);
+
+			div.focus();
+
+			expect(span.matches(':focus')).toBe(false);
+			expect(span.matches(':focus-visible')).toBe(false);
+			expect(div.matches(':focus')).toBe(true);
+			expect(div.matches(':focus-visible')).toBe(true);
 		});
 
 		it('Throws an error when providing an invalid selector', () => {

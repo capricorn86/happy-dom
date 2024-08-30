@@ -71,9 +71,9 @@
 		"compile:change-cjs-file-extension": "node ./bin/change-file-extension.cjs --dir=./cjs --fromExt=.js --toExt=.cjs",
 		"build-version-file": "node ./bin/build-version-file.cjs",
 		"watch": "tsc -w --preserveWatchOutput",
-		"test": "vitest run --singleThread",
+		"test": "vitest run",
 		"test:ui": "vitest --ui",
-		"test:watch": "vitest --singleThread",
+		"test:watch": "vitest",
 		"test:debug": "vitest run --inspect-brk --threads=false"
 	},
 	"dependencies": {
@@ -87,7 +87,7 @@
 		"@webref/css": "6.6.2",
 		"prettier": "^2.6.0",
 		"typescript": "^5.0.4",
-		"vitest": "^0.32.4"
+		"vitest": "^2.0.5"
 	},
 	"engines": {
 		"node": ">=18.0.0"

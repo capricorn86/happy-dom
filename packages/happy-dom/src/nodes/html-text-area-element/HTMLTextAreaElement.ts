@@ -158,7 +158,7 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 *
 	 * @returns Inputmode.
 	 */
-	public get inputmode(): string {
+	public get inputMode(): string {
 		return this.getAttribute('inputmode') || '';
 	}
 
@@ -167,7 +167,7 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 *
 	 * @param inputmode Inputmode.
 	 */
-	public set inputmode(inputmode: string) {
+	public set inputMode(inputmode: string) {
 		this.setAttribute('inputmode', inputmode);
 	}
 
