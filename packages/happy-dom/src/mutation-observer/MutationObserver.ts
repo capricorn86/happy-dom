@@ -133,8 +133,6 @@ export default class MutationObserver {
 	 * Disconnects.
 	 */
 	public disconnect(): void {
-		this.#destroyed = true;
-
 		if (this.#listeners.length === 0) {
 			return;
 		}
@@ -165,5 +163,13 @@ export default class MutationObserver {
 			records = records.concat(listener.takeRecords());
 		}
 		return records;
+	}
+
+	/**
+	 *
+	 */
+	public [PropertySymbol.destroy](): void {
+		this.#destroyed = true;
+		this.disconnect();
 	}
 }
