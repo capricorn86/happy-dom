@@ -1462,7 +1462,9 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		const mutationObservers = this[PropertySymbol.mutationObservers];
 
 		for (const mutationObserver of mutationObservers) {
-			mutationObserver.disconnect();
+			if (mutationObserver[PropertySymbol.destroy]) {
+				mutationObserver[PropertySymbol.destroy]();
+			}
 		}
 
 		this[PropertySymbol.mutationObservers] = [];
