@@ -13,7 +13,6 @@ import ISVGElementTagNameMap from '../config/ISVGElementTagNameMap.js';
 import ICachedQuerySelectorAllItem from '../nodes/node/ICachedQuerySelectorAllResult.js';
 import ICachedQuerySelectorItem from '../nodes/node/ICachedQuerySelectorResult.js';
 import ICachedMatchesItem from '../nodes/node/ICachedMatchesResult.js';
-import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 
 type DocumentPositionAndElement = {
 	documentPosition: string;
@@ -78,26 +77,31 @@ export default class QuerySelector {
 		node: Element | Document | DocumentFragment,
 		selector: string
 	): NodeList<Element> {
-		if (selector === null || selector === undefined) {
-			return new NodeList<Element>(PropertySymbol.illegalConstructor, []);
-		}
-
 		const window = node[PropertySymbol.window];
 
 		if (<string>selector === '') {
-			throw new window.Error(
+			throw new window.DOMException(
 				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': The provided selector is empty.`
 			);
 		}
 
-		if (typeof selector !== 'string' && typeof selector !== 'boolean') {
+		if (typeof selector === 'function') {
 			throw new window.DOMException(
-				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': '${selector}' is not a valid selector.`,
-				'SyntaxError'
+				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': '${selector}' is not a valid selector.`
 			);
 		}
 
+		if (typeof selector === 'symbol') {
+			throw new window.TypeError(`Cannot convert a Symbol value to a string`);
+		}
+
 		selector = String(selector);
+
+		if (INVALID_SELECTOR_REGEXP.test(selector)) {
+			throw new window.DOMException(
+				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': '${selector}' is not a valid selector.`
+			);
+		}
 
 		const cache = node[PropertySymbol.cache].querySelectorAll;
 		const cachedResult = cache.get(selector);
@@ -107,12 +111,6 @@ export default class QuerySelector {
 			if (result) {
 				return result;
 			}
-		}
-
-		if (INVALID_SELECTOR_REGEXP.test(selector)) {
-			throw new window.Error(
-				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': '${selector}' is not a valid selector.`
-			);
 		}
 
 		const groups = SelectorParser.getSelectorGroups(selector);
@@ -199,26 +197,37 @@ export default class QuerySelector {
 		node: Element | Document | DocumentFragment,
 		selector: string
 	): Element | null {
-		if (selector === null || selector === undefined) {
-			return null;
-		}
-
 		const window = node[PropertySymbol.window];
 
 		if (selector === '') {
-			throw new window.Error(
+			throw new window.DOMException(
 				`Failed to execute 'querySelector' on '${node.constructor.name}': The provided selector is empty.`
 			);
 		}
 
-		if (typeof selector !== 'string' && typeof selector !== 'boolean') {
+		if (typeof selector === 'function' || typeof selector === 'symbol') {
 			throw new window.DOMException(
-				`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`,
-				'SyntaxError'
+				`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`
 			);
 		}
 
+		if (typeof selector === 'function') {
+			throw new window.DOMException(
+				`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`
+			);
+		}
+
+		if (typeof selector === 'symbol') {
+			throw new window.TypeError(`Cannot convert a Symbol value to a string`);
+		}
+
 		selector = String(selector);
+
+		if (INVALID_SELECTOR_REGEXP.test(selector)) {
+			throw new window.DOMException(
+				`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`
+			);
+		}
 
 		const cachedResult = node[PropertySymbol.cache].querySelector.get(selector);
 
@@ -227,12 +236,6 @@ export default class QuerySelector {
 			if (result) {
 				return result;
 			}
-		}
-
-		if (INVALID_SELECTOR_REGEXP.test(selector)) {
-			throw new window.Error(
-				`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`
-			);
 		}
 
 		const cachedItem: ICachedQuerySelectorItem = {
@@ -277,32 +280,8 @@ export default class QuerySelector {
 		selector: string,
 		options?: { ignoreErrors?: boolean }
 	): ISelectorMatch | null {
-		if (!selector) {
-			return null;
-		}
-
-		if (selector === null || selector === undefined) {
-			return {
-				priorityWeight: 0
-			};
-		}
-
+		const ignoreErrors = options?.ignoreErrors;
 		const window = element[PropertySymbol.window];
-
-		if (<string>selector === '') {
-			throw new window.Error(
-				`Failed to execute 'matches' on '${element.constructor.name}': The provided selector is empty.`
-			);
-		}
-
-		if (typeof selector !== 'string' && typeof selector !== 'boolean') {
-			throw new window.DOMException(
-				`Failed to execute 'matches' on '${element.constructor.name}': '${selector}' is not a valid selector.`,
-				DOMExceptionNameEnum.syntaxError
-			);
-		}
-
-		selector = String(selector);
 
 		if (selector === '*') {
 			return {
@@ -310,20 +289,46 @@ export default class QuerySelector {
 			};
 		}
 
-		const ignoreErrors = options?.ignoreErrors;
-		const cachedResult = element[PropertySymbol.cache].matches.get(selector);
-
-		if (cachedResult?.result) {
-			return cachedResult.result.match;
+		if (<string>selector === '') {
+			if (ignoreErrors) {
+				return null;
+			}
+			throw new window.DOMException(
+				`Failed to execute 'matches' on '${element.constructor.name}': The provided selector is empty.`
+			);
 		}
+
+		if (typeof selector === 'function') {
+			if (ignoreErrors) {
+				return null;
+			}
+			throw new window.DOMException(
+				`Failed to execute 'matches' on '${element.constructor.name}': '${selector}' is not a valid selector.`
+			);
+		}
+
+		if (typeof selector === 'symbol') {
+			if (ignoreErrors) {
+				return null;
+			}
+			throw new window.TypeError(`Cannot convert a Symbol value to a string`);
+		}
+
+		selector = String(selector);
 
 		if (INVALID_SELECTOR_REGEXP.test(selector)) {
 			if (ignoreErrors) {
 				return null;
 			}
-			throw new window.Error(
+			throw new window.DOMException(
 				`Failed to execute 'matches' on '${element.constructor.name}': '${selector}' is not a valid selector.`
 			);
+		}
+
+		const cachedResult = element[PropertySymbol.cache].matches.get(selector);
+
+		if (cachedResult?.result) {
+			return cachedResult.result.match;
 		}
 
 		const cachedItem: ICachedMatchesItem = {

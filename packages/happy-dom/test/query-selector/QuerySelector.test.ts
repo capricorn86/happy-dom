@@ -39,6 +39,38 @@ describe('QuerySelector', () => {
 			expect(() => container.querySelectorAll(<string>(<unknown>true))).not.toThrow();
 		});
 
+		it('Converts selector values to string.', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+                <span>
+                    <false></false>
+                    <true></true>
+                    <null></null>
+                    <undefined></undefined>
+                </span>
+            `;
+
+			const elements = container.querySelectorAll(<string>(<unknown>['false']));
+			expect(elements.length).toBe(1);
+			expect(elements[0] === container.children[0].children[0]).toBe(true);
+
+			const elements2 = container.querySelectorAll(<string>(<unknown>false));
+			expect(elements2.length).toBe(1);
+			expect(elements2[0] === container.children[0].children[0]).toBe(true);
+
+			const elements3 = container.querySelectorAll(<string>(<unknown>true));
+			expect(elements3.length).toBe(1);
+			expect(elements3[0] === container.children[0].children[1]).toBe(true);
+
+			const elements4 = container.querySelectorAll(<string>(<unknown>null));
+			expect(elements4.length).toBe(1);
+			expect(elements4[0] === container.children[0].children[2]).toBe(true);
+
+			const elements5 = container.querySelectorAll(<string>(<unknown>undefined));
+			expect(elements5.length).toBe(1);
+			expect(elements5[0] === container.children[0].children[3]).toBe(true);
+		});
+
 		it('Returns all span elements.', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
@@ -1134,6 +1166,38 @@ describe('QuerySelector', () => {
 			expect(() => container.querySelector(<string>(<unknown>true))).not.toThrow();
 		});
 
+		it('Converts selector values to string.', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+                <span>
+                    <false></false>
+                    <true></true>
+                    <null></null>
+                    <undefined></undefined>
+                </span>
+            `;
+
+			expect(container.querySelector(<string>(<unknown>['false']))).toBe(
+				container.children[0].children[0]
+			);
+
+			expect(container.querySelector(<string>(<string>(<unknown>false)))).toBe(
+				container.children[0].children[0]
+			);
+
+			expect(container.querySelector(<string>(<string>(<unknown>true)))).toBe(
+				container.children[0].children[1]
+			);
+
+			expect(container.querySelector(<string>(<string>(<unknown>null)))).toBe(
+				container.children[0].children[2]
+			);
+
+			expect(container.querySelector(<string>(<string>(<unknown>undefined)))).toBe(
+				container.children[0].children[3]
+			);
+		});
+
 		it('Returns a span matching "span".', () => {
 			const div1 = document.createElement('div');
 			const div2 = document.createElement('div');
@@ -1511,6 +1575,22 @@ describe('QuerySelector', () => {
 				new Error(`Cannot convert a Symbol value to a string`)
 			);
 			expect(() => container.matches(<string>(<unknown>true))).not.toThrow();
+		});
+
+		it('Converts selector values to string.', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+                <false></false>
+                <true></true>
+                <null></null>
+                <undefined></undefined>
+            `;
+
+			expect(container.children[0].matches(<string>(<unknown>['false']))).toBe(true);
+			expect(container.children[0].matches(<string>(<unknown>false))).toBe(true);
+			expect(container.children[1].matches(<string>(<unknown>true))).toBe(true);
+			expect(container.children[2].matches(<string>(<unknown>null))).toBe(true);
+			expect(container.children[3].matches(<string>(<unknown>undefined))).toBe(true);
 		});
 
 		it('Returns true when the element matches the selector', () => {
