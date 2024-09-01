@@ -239,6 +239,23 @@ describe('HTMLSelectElement', () => {
 		});
 	});
 
+	describe('get symbol()', () => {
+		it('returns existing symbol properties', () => {
+			const symbol = Symbol('test');
+			element[symbol] = 'test';
+			expect(element[symbol]).toBe('test');
+		});
+
+		it('ignores missing symbol properties', () => {
+			const symbol = Symbol('other-test');
+
+			expect(element[symbol]).toBe(undefined);
+
+			// https://github.com/capricorn86/happy-dom/issues/1526
+			expect(symbol in element).toBe(false);
+		});
+	});
+
 	describe(`set selectedIndex()`, () => {
 		it('Allows -1', () => {
 			element.selectedIndex = -1;

@@ -118,6 +118,10 @@ export default class HTMLSelectElement extends HTMLElement {
 					return true;
 				}
 
+				if (typeof property === 'symbol') {
+					return false;
+				}
+
 				const index = Number(property);
 
 				if (!isNaN(index)) {
