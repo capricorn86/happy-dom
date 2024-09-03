@@ -159,8 +159,8 @@ import ProcessingInstruction from './nodes/processing-instruction/ProcessingInst
 import ShadowRoot from './nodes/shadow-root/ShadowRoot.js';
 import SVGDocument from './nodes/svg-document/SVGDocument.js';
 import SVGElement from './nodes/svg-element/SVGElement.js';
-import SVGGraphicsElement from './nodes/svg-element/SVGGraphicsElement.js';
-import SVGSVGElement from './nodes/svg-element/SVGSVGElement.js';
+import SVGGraphicsElement from './nodes/svg-graphics-element/SVGGraphicsElement.js';
+import SVGSVGElement from './nodes/svg-svg-element/SVGSVGElement.js';
 import Text from './nodes/text/Text.js';
 import XMLDocument from './nodes/xml-document/XMLDocument.js';
 import PermissionStatus from './permissions/PermissionStatus.js';

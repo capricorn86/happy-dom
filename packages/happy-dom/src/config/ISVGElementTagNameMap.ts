@@ -1,4 +1,4 @@
-import SVGSVGElement from '../nodes/svg-element/SVGSVGElement.js';
+import SVGSVGElement from '../nodes/svg-svg-element/SVGSVGElement.js';
 import SVGElement from '../nodes/svg-element/SVGElement.js';
 
 export default interface ISVGElementTagNameMap {

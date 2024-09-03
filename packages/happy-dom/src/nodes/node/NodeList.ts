@@ -14,10 +14,10 @@ class NodeList<T extends Node> {
 	/**
 	 * Constructor.
 	 *
-	 * @param [illegalConstructorSymbol] Illegal constructor symbol.
-	 * @param [items] Items.
+	 * @param illegalConstructorSymbol Illegal constructor symbol.
+	 * @param items Items.
 	 */
-	constructor(illegalConstructorSymbol?: symbol, items: T[] = []) {
+	constructor(illegalConstructorSymbol: symbol, items: T[]) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}
@@ -66,6 +66,10 @@ class NodeList<T extends Node> {
 			has(target, property): boolean {
 				if (property in target) {
 					return true;
+				}
+
+				if (typeof property === 'symbol') {
+					return false;
 				}
 
 				const index = Number(property);

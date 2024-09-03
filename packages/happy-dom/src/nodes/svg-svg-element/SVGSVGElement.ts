@@ -1,11 +1,11 @@
-import SVGGraphicsElement from './SVGGraphicsElement.js';
-import SVGRect from './SVGRect.js';
-import SVGPoint from './SVGPoint.js';
-import SVGLength from './SVGLength.js';
-import SVGAngle from './SVGAngle.js';
-import SVGNumber from './SVGNumber.js';
-import SVGTransform from './SVGTransform.js';
-import SVGAnimatedRect from './SVGAnimatedRect.js';
+import SVGGraphicsElement from '../svg-graphics-element/SVGGraphicsElement.js';
+import SVGRect from '../svg-element/SVGRect.js';
+import SVGPoint from '../svg-element/SVGPoint.js';
+import SVGLength from '../svg-element/SVGLength.js';
+import SVGAngle from '../svg-element/SVGAngle.js';
+import SVGNumber from '../svg-element/SVGNumber.js';
+import SVGTransform from '../svg-element/SVGTransform.js';
+import SVGAnimatedRect from '../svg-element/SVGAnimatedRect.js';
 import Node from '../node/Node.js';
 import Event from '../../event/Event.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
@@ -290,7 +290,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 * @returns Length.
 	 */
 	public createSVGLength(): SVGLength {
-		return new SVGLength();
+		return new SVGLength(PropertySymbol.illegalConstructor, this);
 	}
 
 	/**

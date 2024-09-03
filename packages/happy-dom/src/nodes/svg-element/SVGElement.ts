@@ -1,7 +1,7 @@
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Element from '../element/Element.js';
-import SVGSVGElement from './SVGSVGElement.js';
+import SVGSVGElement from '../svg-svg-element/SVGSVGElement.js';
 import Event from '../../event/Event.js';
 import HTMLElementUtility from '../html-element/HTMLElementUtility.js';
 import DOMStringMap from '../element/DOMStringMap.js';
@@ -28,20 +28,11 @@ export default class SVGElement extends Element {
 	#dataset: DOMStringMap | null = null;
 
 	/**
-	 * Returns viewport.
-	 *
-	 * @returns SVG rect.
-	 */
-	public get viewportElement(): SVGElement {
-		return null;
-	}
-
-	/**
 	 * Returns current translate.
 	 *
 	 * @returns Element.
 	 */
-	public get ownerSVGElement(): SVGSVGElement {
+	public get ownerSVGElement(): SVGSVGElement | null {
 		let parent = this[PropertySymbol.parentNode];
 		while (parent) {
 			if (parent[PropertySymbol.localName] === 'svg') {
@@ -51,6 +42,15 @@ export default class SVGElement extends Element {
 			parent = parent[PropertySymbol.parentNode];
 		}
 		return null;
+	}
+
+	/**
+	 * Returns the SVGElement which established the current viewport. Often the nearest ancestor <svg> element. null if the given element is the outermost <svg> element.
+	 *
+	 * @returns SVG element.
+	 */
+	public get viewportElement(): SVGElement | null {
+		return this.ownerSVGElement;
 	}
 
 	/**

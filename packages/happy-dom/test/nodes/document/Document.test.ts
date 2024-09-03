@@ -37,6 +37,7 @@ import Fetch from '../../../src/fetch/Fetch.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import HTMLUnknownElement from '../../../src/nodes/html-unknown-element/HTMLUnknownElement.js';
 import EventTarget from '../../../src/event/EventTarget.js';
+import SVGGraphicsElement from '../../../src/nodes/svg-element/SVGGraphicsElement.js';
 
 /* eslint-disable jsdoc/require-jsdoc */
 
@@ -1040,6 +1041,13 @@ describe('Document', () => {
 			expect(element.localName).toBe('svg');
 			expect(element.namespaceURI).toBe(NamespaceURI.svg);
 			expect(element instanceof SVGSVGElement).toBe(true);
+		});
+
+		it('Creates an svg elements.', () => {
+			expect(document.createElementNS(NamespaceURI.svg, 'rect')).toBeInstanceOf(SVGGraphicsElement);
+			expect(document.createElementNS(NamespaceURI.svg, 'polygon')).toBeInstanceOf(
+				SVGPolygonElement
+			);
 		});
 
 		it('Creates an unknown SVG element.', () => {

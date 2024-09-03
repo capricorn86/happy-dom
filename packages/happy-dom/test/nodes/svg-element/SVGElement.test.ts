@@ -1,6 +1,6 @@
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
-import SVGSVGElement from '../../../src/nodes/svg-element/SVGSVGElement.js';
+import SVGSVGElement from '../../../src/nodes/svg-svg-element/SVGSVGElement.js';
 import NamespaceURI from '../../../src/config/NamespaceURI.js';
 import SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
 import HTMLElementUtility from '../../../src/nodes/html-element/HTMLElementUtility.js';

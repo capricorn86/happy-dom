@@ -17,10 +17,10 @@ export default class HTMLCollection<T extends Element, NamedItem = T> {
 	/**
 	 * Constructor.
 	 *
-	 * @param [illegalConstructorSymbol] Illegal constructor symbol.
+	 * @param illegalConstructorSymbol Illegal constructor symbol.
 	 * @param query Query function.
 	 */
-	constructor(illegalConstructorSymbol?: symbol, query: () => T[] = () => []) {
+	constructor(illegalConstructorSymbol: symbol, query: () => T[]) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}

@@ -23,10 +23,15 @@ export default class DOMTokenList {
 	/**
 	 * Constructor.
 	 *
+	 * @param illegalConstructorSymbol Illegal constructor symbol.
 	 * @param ownerElement Owner element.
 	 * @param attributeName Attribute name.
 	 */
-	constructor(ownerElement: Element, attributeName) {
+	constructor(illegalConstructorSymbol: symbol, ownerElement: Element, attributeName: string) {
+		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
+			throw new TypeError('Illegal constructor');
+		}
+
 		this[PropertySymbol.ownerElement] = ownerElement;
 		this[PropertySymbol.attributeName] = attributeName;
 
@@ -76,6 +81,10 @@ export default class DOMTokenList {
 			has(target, property): boolean {
 				if (property in target) {
 					return true;
+				}
+
+				if (typeof property === 'symbol') {
+					return false;
 				}
 
 				const index = Number(property);
@@ -148,8 +157,12 @@ export default class DOMTokenList {
 	 * */
 	public item(index: number | string): string {
 		const items = this[PropertySymbol.getTokenList]();
-		index = typeof index === 'number' ? index : 0;
-		return index >= 0 && items[index] ? items[index] : null;
+		if (typeof index === 'number') {
+			return items[index] ? items[index] : null;
+		}
+		index = Number(index);
+		index = isNaN(index) ? 0 : index;
+		return items[index] ? items[index] : null;
 	}
 
 	/**
@@ -313,7 +326,7 @@ export default class DOMTokenList {
 		const trimmed = attributeValue.trim();
 
 		if (trimmed) {
-			for (const item of attributeValue.trim().split(ATTRIBUTE_SPLIT_REGEXP)) {
+			for (const item of trimmed.split(ATTRIBUTE_SPLIT_REGEXP)) {
 				if (!items.includes(item)) {
 					items.push(item);
 				}
