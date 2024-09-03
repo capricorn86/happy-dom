@@ -10,8 +10,8 @@ import SVGUnitTypeEnum from './SVGUnitTypeEnum.js';
 export default class SVGLength {
 	// Static properties
 	public static SVG_LENGTHTYPE_UNKNOWN = SVGUnitTypeEnum.unknown;
-	public static SVG_LENGTHTYPE_NUMBER = 1;
-	public static SVG_LENGTHTYPE_PERCENTAGE = 2;
+	public static SVG_LENGTHTYPE_NUMBER = SVGUnitTypeEnum.number;
+	public static SVG_LENGTHTYPE_PERCENTAGE = SVGUnitTypeEnum.percentage;
 	public static SVG_LENGTHTYPE_EMS = 3;
 	public static SVG_LENGTHTYPE_EXS = 4;
 	public static SVG_LENGTHTYPE_PX = 5;
