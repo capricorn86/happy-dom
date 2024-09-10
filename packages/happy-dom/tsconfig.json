@@ -20,9 +20,9 @@
 		"baseUrl": ".",
 		"composite": false,
 		"incremental": false,
-        "lib": [
-            "ES2022"
-        ],
+		"lib": [
+			"ES2022"
+		],
 		"types": [
 			"node"
 		]
@@ -31,7 +31,7 @@
 		"@types/node",
 		"src"
 	],
-    "exclude": [
-        "@types/dom"
-    ]
+	"exclude": [
+		"@types/dom"
+	]
 }

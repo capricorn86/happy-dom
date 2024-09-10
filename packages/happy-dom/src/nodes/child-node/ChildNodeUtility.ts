@@ -1,8 +1,5 @@
 import DOMException from '../../exception/DOMException.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import XMLParser from '../../xml-parser/XMLParser.js';
-import DocumentFragment from '../document-fragment/DocumentFragment.js';
-import Document from '../document/Document.js';
 import Node from '../node/Node.js';
 import IParentNode from '../parent-node/IParentNode.js';
 import IChildNode from './IChildNode.js';
@@ -36,15 +33,10 @@ export default class ChildNodeUtility {
 		}
 
 		for (const node of nodes) {
-			if (typeof node === 'string') {
-				const newChildNodes = (<DocumentFragment>(
-					XMLParser.parse(<Document>childNode[PropertySymbol.ownerDocument], node)
-				))[PropertySymbol.nodeArray];
-				while (newChildNodes.length) {
-					parent.insertBefore(newChildNodes[0], childNode);
-				}
-			} else {
+			if (node instanceof Node) {
 				parent.insertBefore(node, childNode);
+			} else {
+				parent.insertBefore(parent[PropertySymbol.ownerDocument].createTextNode(String(node)), childNode);
 			}
 		}
 
@@ -65,15 +57,10 @@ export default class ChildNodeUtility {
 		}
 
 		for (const node of nodes) {
-			if (typeof node === 'string') {
-				const newChildNodes = (<DocumentFragment>(
-					XMLParser.parse(<Document>childNode[PropertySymbol.ownerDocument], node)
-				))[PropertySymbol.nodeArray];
-				while (newChildNodes.length) {
-					parent.insertBefore(newChildNodes[0], childNode);
-				}
-			} else {
+			if (node instanceof Node) {
 				parent.insertBefore(node, childNode);
+			} else {
+				parent.insertBefore(parent[PropertySymbol.ownerDocument].createTextNode(String(node)), childNode);
 			}
 		}
 	}
@@ -94,21 +81,13 @@ export default class ChildNodeUtility {
 		const nextSibling = childNode.nextSibling;
 
 		for (const node of nodes) {
-			if (typeof node === 'string') {
-				const newChildNodes = (<DocumentFragment>(
-					XMLParser.parse(<Document>childNode[PropertySymbol.ownerDocument], node)
-				))[PropertySymbol.nodeArray];
-				while (newChildNodes.length) {
-					if (!nextSibling) {
-						parent.appendChild(newChildNodes[0]);
-					} else {
-						parent.insertBefore(newChildNodes[0], nextSibling);
-					}
-				}
-			} else if (!nextSibling) {
-				parent.appendChild(node);
+			const insertedNode = node instanceof Node
+				? node
+				: parent[PropertySymbol.ownerDocument].createTextNode(String(node));
+			if (!nextSibling) {
+				parent.appendChild(insertedNode);
 			} else {
-				parent.insertBefore(node, nextSibling);
+				parent.insertBefore(insertedNode, nextSibling);
 			}
 		}
 	}
