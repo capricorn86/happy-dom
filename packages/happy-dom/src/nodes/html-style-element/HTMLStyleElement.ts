@@ -18,7 +18,13 @@ export default class HTMLStyleElement extends HTMLElement {
 	 * @returns CSS style sheet.
 	 */
 	public get sheet(): CSSStyleSheet {
-		return this[PropertySymbol.sheet] ? this[PropertySymbol.sheet] : null;
+		if (!this[PropertySymbol.isConnected]) {
+			return null;
+		}
+		if (!this[PropertySymbol.sheet]) {
+			this[PropertySymbol.sheet] = new CSSStyleSheet();
+		}
+		return this[PropertySymbol.sheet];
 	}
 
 	/**
@@ -77,15 +83,6 @@ export default class HTMLStyleElement extends HTMLElement {
 		} else {
 			this.setAttribute('disabled', '');
 		}
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.connectedToDocument](): void {
-		super[PropertySymbol.connectedToDocument]();
-		this[PropertySymbol.sheet] = new CSSStyleSheet();
-		this[PropertySymbol.sheet].replaceSync(this.textContent);
 	}
 
 	/**

@@ -1,4 +1,4 @@
-import SVGGeometryElement from '../svg-geometry-element/SVGGeometryElement.js';
+import SVGElement from './SVGElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
@@ -8,19 +8,22 @@ import * as PropertySymbol from '../../PropertySymbol.js';
  */
 export default class SVGAnimatedNumber {
 	// Internal properties
-	public [PropertySymbol.ownerElement]: SVGGeometryElement;
+	public [PropertySymbol.ownerElement]: SVGElement;
+	public [PropertySymbol.attributeName]: string;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param illegalConstructorSymbol Illegal constructor symbol.
 	 * @param ownerElement Owner element.
+	 * @param attributeName Attribute name.
 	 */
-	constructor(illegalConstructorSymbol: symbol, ownerElement: SVGGeometryElement) {
+	constructor(illegalConstructorSymbol: symbol, ownerElement: SVGElement, attributeName: string) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}
 		this[PropertySymbol.ownerElement] = ownerElement;
+		this[PropertySymbol.attributeName] = attributeName;
 	}
 
 	/**
@@ -47,19 +50,21 @@ export default class SVGAnimatedNumber {
 	 * @returns Base value.
 	 */
 	public get baseVal(): number {
-		const pathLength = this[PropertySymbol.ownerElement].getAttribute('pathLength');
+		const attributeValue = this[PropertySymbol.ownerElement].getAttribute(
+			this[PropertySymbol.attributeName]
+		);
 
-		if (!pathLength) {
+		if (!attributeValue) {
 			return 0;
 		}
 
-		const pathLengthNumber = parseFloat(pathLength);
+		const value = parseFloat(attributeValue);
 
-		if (isNaN(pathLengthNumber)) {
+		if (isNaN(value)) {
 			return 0;
 		}
 
-		return pathLengthNumber;
+		return value;
 	}
 
 	/**
@@ -68,15 +73,17 @@ export default class SVGAnimatedNumber {
 	 * @param value Base value.
 	 */
 	public set baseVal(value: number) {
-		const pathLengthNumber =
-			typeof value !== 'number' ? parseFloat(<string>(<unknown>value)) : value;
+		const parsedValue = typeof value !== 'number' ? parseFloat(<string>(<unknown>value)) : value;
 
-		if (isNaN(pathLengthNumber)) {
+		if (isNaN(parsedValue)) {
 			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
 				`TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedNumber': The provided float value is non-finite.`
 			);
 		}
 
-		this[PropertySymbol.ownerElement].setAttribute('pathLength', String(pathLengthNumber));
+		this[PropertySymbol.ownerElement].setAttribute(
+			this[PropertySymbol.attributeName],
+			String(parsedValue)
+		);
 	}
 }

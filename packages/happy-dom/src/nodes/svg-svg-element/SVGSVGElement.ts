@@ -14,6 +14,9 @@ import * as PropertySymbol from '../../PropertySymbol.js';
  * SVGSVGElement.
  */
 export default class SVGSVGElement extends SVGGraphicsElement {
+	// Internal properties
+	public [PropertySymbol.viewBox]: SVGAnimatedRect | null = null;
+
 	// Public properties
 	public declare cloneNode: (deep?: boolean) => SVGSVGElement;
 
@@ -168,21 +171,12 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	}
 
 	/**
-	 * Returns viewport.
-	 *
-	 * @returns SVG rect.
-	 */
-	public get viewport(): SVGRect {
-		return new SVGRect();
-	}
-
-	/**
 	 * Returns current translate.
 	 *
 	 * @returns SVG point.
 	 */
 	public get currentTranslate(): SVGPoint {
-		return new SVGPoint();
+		return new SVGPoint(PropertySymbol.illegalConstructor);
 	}
 
 	/**
@@ -191,14 +185,10 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 * @returns Viewbox.
 	 */
 	public get viewBox(): SVGAnimatedRect {
-		const rect = new SVGAnimatedRect();
-		const viewBox = this.getAttribute('viewBox');
-		const list = viewBox.split(/\s+/);
-		rect.baseVal.x = Number(list[0]);
-		rect.baseVal.y = Number(list[1]);
-		rect.baseVal.width = Number(list[2]);
-		rect.baseVal.height = Number(list[3]);
-		return rect;
+		if (!this[PropertySymbol.viewBox]) {
+			this[PropertySymbol.viewBox] = new SVGAnimatedRect(PropertySymbol.illegalConstructor, this);
+		}
+		return this[PropertySymbol.viewBox];
 	}
 
 	/**
@@ -290,7 +280,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 * @returns Length.
 	 */
 	public createSVGLength(): SVGLength {
-		return new SVGLength(PropertySymbol.illegalConstructor, this);
+		return new SVGLength(PropertySymbol.illegalConstructor, this, false);
 	}
 
 	/**
@@ -299,7 +289,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 * @returns Angle.
 	 */
 	public createSVGAngle(): SVGAngle {
-		return new SVGAngle();
+		return new SVGAngle(PropertySymbol.illegalConstructor, this, false);
 	}
 
 	/**
@@ -308,7 +298,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 * @returns Point.
 	 */
 	public createSVGPoint(): SVGPoint {
-		return new SVGPoint();
+		return new SVGPoint(PropertySymbol.illegalConstructor);
 	}
 
 	/**
@@ -317,7 +307,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 * @returns Rect.
 	 */
 	public createSVGRect(): SVGRect {
-		return new SVGRect();
+		return new SVGRect(PropertySymbol.illegalConstructor, this);
 	}
 
 	/**

@@ -1,101 +1,48 @@
 import SVGGeometryElement from '../svg-geometry-element/SVGGeometryElement.js';
-import DOMRect from '../element/DOMRect.js';
-import DOMMatrix from '../svg-element/DOMMatrix.js';
-import SVGStringList from '../svg-element/SVGStringList.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGStringListAttributeSeparatorEnum from '../svg-element/SVGStringListAttributeSeparatorEnum.js';
-import SVGAnimatedTransformList from '../svg-element/SVGAnimatedTransformList.js';
-import Event from '../../event/Event.js';
+import SVGPointList from '../svg-element/SVGPointList.js';
 
 /**
- * SVG Graphics Element.
+ * SVG Polygon Element.
  *
- * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGGraphicsElement
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGPolygonElement
  */
 export default class SVGPolygonElement extends SVGGeometryElement {
 	// Internal properties
-	public [PropertySymbol.requiredExtensions]: SVGStringList | null = null;
-	public [PropertySymbol.systemLanguage]: SVGStringList | null = null;
-	public [PropertySymbol.transform]: SVGAnimatedTransformList | null = null;
-
-	// Events
-	public oncopy: (event: Event) => void | null = null;
-	public oncut: (event: Event) => void | null = null;
-	public onpaste: (event: Event) => void | null = null;
+	public [PropertySymbol.animatedPoints]: SVGPointList | null = null;
+	public [PropertySymbol.points]: SVGPointList | null = null;
 
 	/**
-	 * Returns required extensions.
+	 * Returns animated points.
 	 *
-	 * @returns Required extensions.
+	 * @returns Animated points.
 	 */
-	public get requiredExtensions(): SVGStringList {
-		if (!this[PropertySymbol.requiredExtensions]) {
-			this[PropertySymbol.requiredExtensions] = new SVGStringList(
+	public get animatedPoints(): SVGPointList {
+		if (!this[PropertySymbol.animatedPoints]) {
+			this[PropertySymbol.animatedPoints] = new SVGPointList(
 				PropertySymbol.illegalConstructor,
 				this,
-				'requiredExtensions',
-				SVGStringListAttributeSeparatorEnum.space
+				'points',
+				true
 			);
 		}
-		return this[PropertySymbol.requiredExtensions];
+		return this[PropertySymbol.animatedPoints];
 	}
 
 	/**
-	 * Returns system language.
+	 * Returns points.
 	 *
-	 * @returns System language.
+	 * @returns Points.
 	 */
-	public get systemLanguage(): SVGStringList {
-		if (!this[PropertySymbol.systemLanguage]) {
-			this[PropertySymbol.systemLanguage] = new SVGStringList(
+	public get points(): SVGPointList {
+		if (!this[PropertySymbol.points]) {
+			this[PropertySymbol.points] = new SVGPointList(
 				PropertySymbol.illegalConstructor,
 				this,
-				'systemLanguage',
-				SVGStringListAttributeSeparatorEnum.comma
+				'points',
+				false
 			);
 		}
-		return this[PropertySymbol.systemLanguage];
-	}
-
-	/**
-	 * Returns transform.
-	 *
-	 * @returns Transform.
-	 */
-	public get transform(): SVGAnimatedTransformList {
-		if (!this[PropertySymbol.transform]) {
-			this[PropertySymbol.transform] = new SVGAnimatedTransformList(
-				PropertySymbol.illegalConstructor,
-				this[PropertySymbol.window]
-			);
-		}
-		return this[PropertySymbol.transform];
-	}
-
-	/**
-	 * Returns DOM rect.
-	 *
-	 * @returns DOM rect.
-	 */
-	public getBBox(): DOMRect {
-		return new DOMRect();
-	}
-
-	/**
-	 * Returns CTM.
-	 *
-	 * @returns CTM.
-	 */
-	public getCTM(): DOMMatrix {
-		return new DOMMatrix();
-	}
-
-	/**
-	 * Returns screen CTM.
-	 *
-	 * @returns Screen CTM.
-	 */
-	public getScreenCTM(): DOMMatrix {
-		return new DOMMatrix();
+		return this[PropertySymbol.points];
 	}
 }

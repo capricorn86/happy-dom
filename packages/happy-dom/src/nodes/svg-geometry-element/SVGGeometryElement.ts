@@ -20,7 +20,8 @@ export default class SVGGeometryElement extends SVGGraphicsElement {
 		if (!this[PropertySymbol.pathLength]) {
 			this[PropertySymbol.pathLength] = new SVGAnimatedNumber(
 				PropertySymbol.illegalConstructor,
-				this
+				this,
+				'pathLength'
 			);
 		}
 		return this[PropertySymbol.pathLength]!;

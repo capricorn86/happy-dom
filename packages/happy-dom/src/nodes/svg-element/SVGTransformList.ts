@@ -157,13 +157,13 @@ export default class SVGTransformList {
 	public initialize(newItem: SVGTransform): SVGTransform {
 		if (arguments.length < 1) {
 			throw new this[PropertySymbol.window].TypeError(
-				`Failed to execute 'initialize' on 'SVGStringList': 1 arguments required, but only ${arguments.length} present.`
+				`Failed to execute 'initialize' on 'SVGTransformList': 1 arguments required, but only ${arguments.length} present.`
 			);
 		}
 
 		if (!(newItem instanceof SVGTransform)) {
 			throw new this[PropertySymbol.window].TypeError(
-				`Failed to execute 'appendItem' on 'SVGStringList': parameter 1 is not of type 'SVGTransform'.`
+				`Failed to execute 'appendItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'.`
 			);
 		}
 
@@ -199,13 +199,13 @@ export default class SVGTransformList {
 	public insertItemBefore(newItem: SVGTransform, index: number): SVGTransform {
 		if (arguments.length < 2) {
 			throw new this[PropertySymbol.window].TypeError(
-				`Failed to execute 'insertItemBefore' on 'SVGStringList': 2 arguments required, but only ${arguments.length} present.`
+				`Failed to execute 'insertItemBefore' on 'SVGTransformList': 2 arguments required, but only ${arguments.length} present.`
 			);
 		}
 
 		if (!(newItem instanceof SVGTransform)) {
 			throw new this[PropertySymbol.window].TypeError(
-				`Failed to execute 'insertItemBefore' on 'SVGStringList': parameter 1 is not of type 'SVGTransform'.`
+				`Failed to execute 'insertItemBefore' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'.`
 			);
 		}
 
@@ -237,13 +237,13 @@ export default class SVGTransformList {
 	public replaceItem(newItem: SVGTransform, index: number): SVGTransform {
 		if (arguments.length < 2) {
 			throw new this[PropertySymbol.window].TypeError(
-				`Failed to execute 'replaceItem' on 'SVGStringList': 2 arguments required, but only ${arguments.length} present.`
+				`Failed to execute 'replaceItem' on 'SVGTransformList': 2 arguments required, but only ${arguments.length} present.`
 			);
 		}
 
 		if (!(newItem instanceof SVGTransform)) {
 			throw new this[PropertySymbol.window].TypeError(
-				`Failed to execute 'replaceItem' on 'SVGStringList': parameter 1 is not of type 'SVGTransform'.`
+				`Failed to execute 'replaceItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'.`
 			);
 		}
 
@@ -274,7 +274,7 @@ export default class SVGTransformList {
 	public removeItem(index: number): SVGTransform {
 		if (arguments.length < 1) {
 			throw new this[PropertySymbol.window].TypeError(
-				`Failed to execute 'removeItem' on 'SVGStringList': 1 argument required, but only ${arguments.length} present.`
+				`Failed to execute 'removeItem' on 'SVGTransformList': 1 argument required, but only ${arguments.length} present.`
 			);
 		}
 
@@ -288,14 +288,14 @@ export default class SVGTransformList {
 
 		if (index >= items.length) {
 			throw new this[PropertySymbol.window].DOMException(
-				`Failed to execute 'removeItem' on 'SVGStringList':  The index provided (${index}) is greater than the maximum bound.`,
+				`Failed to execute 'removeItem' on 'SVGTransformList':  The index provided (${index}) is greater than the maximum bound.`,
 				DOMExceptionNameEnum.indexSizeError
 			);
 		}
 
 		if (index < 0) {
 			throw new this[PropertySymbol.window].DOMException(
-				`Failed to execute 'removeItem' on 'SVGStringList':  The index provided (${index}) is negative.`,
+				`Failed to execute 'removeItem' on 'SVGTransformList':  The index provided (${index}) is negative.`,
 				DOMExceptionNameEnum.indexSizeError
 			);
 		}
@@ -316,13 +316,13 @@ export default class SVGTransformList {
 	public appendItem(newItem: SVGTransform): SVGTransform {
 		if (arguments.length < 1) {
 			throw new this[PropertySymbol.window].TypeError(
-				`Failed to execute 'appendItem' on 'SVGStringList': 1 argument required, but only ${arguments.length} present.`
+				`Failed to execute 'appendItem' on 'SVGTransformList': 1 argument required, but only ${arguments.length} present.`
 			);
 		}
 
 		if (!(newItem instanceof SVGTransform)) {
 			throw new this[PropertySymbol.window].TypeError(
-				`Failed to execute 'appendItem' on 'SVGStringList': parameter 1 is not of type 'SVGTransform'.`
+				`Failed to execute 'appendItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'.`
 			);
 		}
 
