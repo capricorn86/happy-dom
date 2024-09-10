@@ -18,15 +18,14 @@ export default class ParentNodeUtility {
 	 * @param parentNode Parent node.
 	 * @param nodes List of Node or DOMString.
 	 */
-	public static append(
-		parentNode: Element | Document | DocumentFragment,
-		...nodes: any[]
-	): void {
+	public static append(parentNode: Element | Document | DocumentFragment, ...nodes: any[]): void {
 		for (const node of nodes) {
 			if (node instanceof Node) {
 				parentNode.appendChild(node);
 			} else {
-				parentNode.appendChild(parentNode[PropertySymbol.ownerDocument].createTextNode(String(node)));
+				parentNode.appendChild(
+					parentNode[PropertySymbol.ownerDocument].createTextNode(String(node))
+				);
 			}
 		}
 	}
@@ -46,7 +45,10 @@ export default class ParentNodeUtility {
 			if (node instanceof Node) {
 				parentNode.insertBefore(node, firstChild);
 			} else {
-				parentNode.insertBefore(parentNode[PropertySymbol.ownerDocument].createTextNode(String(node)), firstChild);
+				parentNode.insertBefore(
+					parentNode[PropertySymbol.ownerDocument].createTextNode(String(node)),
+					firstChild
+				);
 			}
 		}
 	}

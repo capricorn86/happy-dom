@@ -36,7 +36,10 @@ export default class ChildNodeUtility {
 			if (node instanceof Node) {
 				parent.insertBefore(node, childNode);
 			} else {
-				parent.insertBefore(parent[PropertySymbol.ownerDocument].createTextNode(String(node)), childNode);
+				parent.insertBefore(
+					parent[PropertySymbol.ownerDocument].createTextNode(String(node)),
+					childNode
+				);
 			}
 		}
 
@@ -60,7 +63,10 @@ export default class ChildNodeUtility {
 			if (node instanceof Node) {
 				parent.insertBefore(node, childNode);
 			} else {
-				parent.insertBefore(parent[PropertySymbol.ownerDocument].createTextNode(String(node)), childNode);
+				parent.insertBefore(
+					parent[PropertySymbol.ownerDocument].createTextNode(String(node)),
+					childNode
+				);
 			}
 		}
 	}
@@ -81,9 +87,10 @@ export default class ChildNodeUtility {
 		const nextSibling = childNode.nextSibling;
 
 		for (const node of nodes) {
-			const insertedNode = node instanceof Node
-				? node
-				: parent[PropertySymbol.ownerDocument].createTextNode(String(node));
+			const insertedNode =
+				node instanceof Node
+					? node
+					: parent[PropertySymbol.ownerDocument].createTextNode(String(node));
 			if (!nextSibling) {
 				parent.appendChild(insertedNode);
 			} else {
