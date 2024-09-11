@@ -4,3 +4,4 @@ lerna-debug.log
 .DS_Store
 .idea
 .turbo
+dist

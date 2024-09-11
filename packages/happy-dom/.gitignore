@@ -3,3 +3,4 @@ tmp
 lib
 cjs
 .DS_Store
+dist
