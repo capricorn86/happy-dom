@@ -44,6 +44,10 @@
 			"require": "./cjs/*.map",
 			"default": "./cjs/*.map"
 		},
+		"./bundled": {
+			"import": "./dist/bundle.js",
+			"types": "./lib/index.d.ts"
+		},
 		"./src/*.ts": "./src/*.ts",
 		"./package.json": "./package.json",
 		"./.eslintrc.cjs": "./.eslintrc.cjs",
@@ -65,9 +69,10 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "npm run compile:esm && npm run compile:cjs npm run build-version-file",
+		"compile": "npm run compile:esm && npm run compile:cjs && npm run build-version-file && npm run compile:bundle",
 		"compile:esm": "tsc",
 		"compile:cjs": "node -e \"fs.rmSync('./cjs', { recursive: true, force: true })\" && tsc --moduleResolution Node --module CommonJS --outDir cjs && npm run compile:change-cjs-file-extension",
+		"compile:bundle": "node -e \"fs.rmSync('./dist', { recursive: true, force: true })\" && esbuild bundle=src/index.ts --bundle --outdir=dist --platform=node --packages=external --format=esm --sourcemap=linked",
 		"compile:change-cjs-file-extension": "node ./bin/change-file-extension.cjs --dir=./cjs --fromExt=.js --toExt=.cjs",
 		"build-version-file": "node ./bin/build-version-file.cjs",
 		"watch": "tsc -w --preserveWatchOutput",
@@ -78,13 +83,13 @@
 	},
 	"dependencies": {
 		"entities": "^4.5.0",
-		"webidl-conversions": "^7.0.0",
 		"whatwg-mimetype": "^3.0.0"
 	},
 	"devDependencies": {
 		"@types/node": "^16.11.7",
 		"@vitest/ui": "^0.33.0",
 		"@webref/css": "6.6.2",
+		"esbuild": "^0.23.1",
 		"prettier": "^2.6.0",
 		"typescript": "^5.0.4",
 		"vitest": "^2.0.5"
