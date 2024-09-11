@@ -421,7 +421,10 @@ export default class Element
 	 * @param html HTML.
 	 */
 	public set outerHTML(html: string) {
-		this.replaceWith(html);
+		const childNodes = (<DocumentFragment>(
+			XMLParser.parse(this[PropertySymbol.ownerDocument], html)
+		))[PropertySymbol.nodeArray];
+		this.replaceWith(...childNodes);
 	}
 
 	/**
