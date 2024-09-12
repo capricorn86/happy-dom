@@ -509,6 +509,9 @@ export default class CSSStyleDeclarationPropertyManager {
 			case 'visibility':
 				properties = CSSStyleDeclarationPropertySetParser.getVisibility(value, important);
 				break;
+			case 'aspect-ratio':
+				properties = CSSStyleDeclarationPropertySetParser.getAspectRatio(value, important);
+				break;
 
 			default:
 				const trimmedValue = value.trim();

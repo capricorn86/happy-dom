@@ -3256,4 +3256,38 @@ export default class CSSStyleDeclarationPropertySetParser {
 		}
 		return null;
 	}
+
+	/**
+	 * Returns aspect ratio.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property
+	 */
+	public static getAspectRatio(
+		value: string,
+		important: boolean
+	): {
+		[key: string]: ICSSStyleDeclarationPropertyValue;
+	} {
+		const variable = CSSStyleDeclarationValueParser.getVariable(value);
+		if (variable) {
+			return { 'aspect-ratio': { value: variable, important } };
+		}
+
+		const lowerValue = value.toLowerCase();
+		if (CSSStyleDeclarationValueParser.getGlobal(lowerValue)) {
+			return { 'aspect-ratio': { value: lowerValue, important } };
+		}
+
+		const parts = value.split('/');
+		if (parts.length === 1 && !Number.isNaN(Number(parts[0]))) {
+			return { 'aspect-ratio': { value, important } };
+		}
+		if (parts.length === 2 && !Number.isNaN(Number(parts[0])) && !Number.isNaN(Number(parts[1]))) {
+			return { 'aspect-ratio': { value, important } };
+		}
+
+		return null;
+	}
 }
