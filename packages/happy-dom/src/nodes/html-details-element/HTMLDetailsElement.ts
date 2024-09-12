@@ -2,6 +2,8 @@ import Event from '../../event/Event.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Attr from '../attr/Attr.js';
+import EventPhaseEnum from '../../event/EventPhaseEnum.js';
+import MouseEvent from '../../event/events/MouseEvent.js';
 
 /**
  * HTMLDetailsElement
@@ -55,5 +57,22 @@ export default class HTMLDetailsElement extends HTMLElement {
 		if (removedAttribute && removedAttribute[PropertySymbol.name] === 'open') {
 			this.dispatchEvent(new Event('toggle'));
 		}
+	}
+
+	/**
+	 * @override
+	 */
+	public override dispatchEvent(event: Event): boolean {
+		const returnValue = super.dispatchEvent(event);
+
+		if (
+			event.type === 'click' &&
+			event.eventPhase === EventPhaseEnum.bubbling &&
+			event instanceof MouseEvent
+		) {
+			this.open = !this.open;
+		}
+
+		return returnValue;
 	}
 }

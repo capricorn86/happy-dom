@@ -78,4 +78,34 @@ describe('TestingLibrary', () => {
 		expect(attribute).toMatch('test');
 		expect(attribute).not.toMatch('hello');
 	});
+
+	it('Removes and adds `open` attribute for `<details>` element on click event.', async () => {
+		const user = UserEvent.setup();
+		const handleToggle = jest.fn();
+
+		render(
+			<details open={true} onToggle={handleToggle}>
+				<summary>summary</summary>details
+			</details>
+		);
+
+		expect(document.body.innerHTML).toBe(
+			'<div><details open=""><summary>summary</summary>details</details></div>'
+		);
+		expect(handleToggle).toHaveBeenCalledTimes(0);
+
+		await user.click(screen.getByText('summary'));
+
+		expect(document.body.innerHTML).toBe(
+			'<div><details><summary>summary</summary>details</details></div>'
+		);
+		expect(handleToggle).toHaveBeenCalledTimes(1);
+
+		await user.click(screen.getByText('summary'));
+
+		expect(document.body.innerHTML).toBe(
+			'<div><details open=""><summary>summary</summary>details</details></div>'
+		);
+		expect(handleToggle).toHaveBeenCalledTimes(2);
+	});
 });
