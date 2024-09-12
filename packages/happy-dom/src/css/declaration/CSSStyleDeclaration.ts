@@ -4740,4 +4740,12 @@ export default class CSSStyleDeclaration extends AbstractCSSStyleDeclaration {
 	public set containerName(value: string) {
 		this.setProperty('container-name', value);
 	}
+
+	public get aspectRatio(): string {
+		return this.getPropertyValue('aspect-ratio');
+	}
+
+	public set aspectRatio(value: string) {
+		this.setProperty('aspect-ratio', value);
+	}
 }
