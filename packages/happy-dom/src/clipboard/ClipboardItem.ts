@@ -43,12 +43,15 @@ export default class ClipboardItem {
 	 * @param type Type.
 	 * @returns Data.
 	 */
-	public async getType(type: string): Promise<Blob | string> {
+	public async getType(type: string): Promise<Blob> {
 		if (!this.#data[type]) {
 			throw new DOMException(
 				`Failed to execute 'getType' on 'ClipboardItem': The type '${type}' was not found`
 			);
 		}
-		return this.#data[type];
+		if (this.#data[type] instanceof Blob) {
+			return this.#data[type];
+		}
+		return new Blob([await this.#data[type]], { type });
 	}
 }

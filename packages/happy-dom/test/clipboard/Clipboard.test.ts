@@ -37,11 +37,9 @@ describe('Clipboard', () => {
 
 			for (const item of data) {
 				const data = await item.getType(item.types[0]);
-				if (typeof data === 'string') {
-					text += data;
-				} else {
-					text += await data.text();
-				}
+				expect(data).toBeInstanceOf(Blob);
+
+				text += await data.text();
 			}
 
 			expect(text).toBe('test-a<b>test-b</b>test-ctest-dtest-e');
