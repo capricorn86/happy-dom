@@ -1,6 +1,6 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
 import SVGLength from './SVGLength.js';
-import SVGElement from './SVGElement.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 
 /**
  * SVG Animated Length.
@@ -9,8 +9,9 @@ import SVGElement from './SVGElement.js';
  */
 export default class SVGAnimatedLength {
 	// Internal properties
-	public [PropertySymbol.ownerElement]: SVGElement;
-	public [PropertySymbol.attributeName]: string;
+	public [PropertySymbol.window]: BrowserWindow;
+	public [PropertySymbol.getAttribute]: () => string | null = null;
+	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
 	public [PropertySymbol.baseVal]: SVGLength | null = null;
 	public [PropertySymbol.animVal]: SVGLength | null = null;
 
@@ -18,15 +19,29 @@ export default class SVGAnimatedLength {
 	 * Constructor.
 	 *
 	 * @param illegalConstructorSymbol Illegal constructor symbol.
-	 * @param ownerElement Owner element.
-	 * @param attributeName Attribute name.
+	 * @param window Window.
+	 * @param [options] Options.
+	 * @param [options.getAttribute] Get attribute.
+	 * @param [options.setAttribute] Set attribute.
 	 */
-	constructor(illegalConstructorSymbol: symbol, ownerElement: SVGElement, attributeName: string) {
+	constructor(
+		illegalConstructorSymbol: symbol,
+		window: BrowserWindow,
+		options?: {
+			getAttribute?: () => string | null;
+			setAttribute?: (value: string) => void;
+		}
+	) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}
-		this[PropertySymbol.ownerElement] = ownerElement;
-		this[PropertySymbol.attributeName] = attributeName;
+
+		this[PropertySymbol.window] = window;
+
+		if (options) {
+			this[PropertySymbol.getAttribute] = options.getAttribute || null;
+			this[PropertySymbol.setAttribute] = options.setAttribute || null;
+		}
 	}
 
 	/**
@@ -38,9 +53,11 @@ export default class SVGAnimatedLength {
 		if (!this[PropertySymbol.animVal]) {
 			this[PropertySymbol.animVal] = new SVGLength(
 				PropertySymbol.illegalConstructor,
-				this[PropertySymbol.ownerElement],
-				true,
-				this[PropertySymbol.attributeName]
+				this[PropertySymbol.window],
+				{
+					readOnly: true,
+					getAttribute: this[PropertySymbol.getAttribute]
+				}
 			);
 		}
 		return this[PropertySymbol.animVal];
@@ -64,9 +81,11 @@ export default class SVGAnimatedLength {
 		if (!this[PropertySymbol.baseVal]) {
 			this[PropertySymbol.baseVal] = new SVGLength(
 				PropertySymbol.illegalConstructor,
-				this[PropertySymbol.ownerElement],
-				false,
-				this[PropertySymbol.attributeName]
+				this[PropertySymbol.window],
+				{
+					getAttribute: this[PropertySymbol.getAttribute],
+					setAttribute: this[PropertySymbol.setAttribute]
+				}
 			);
 		}
 		return this[PropertySymbol.baseVal];

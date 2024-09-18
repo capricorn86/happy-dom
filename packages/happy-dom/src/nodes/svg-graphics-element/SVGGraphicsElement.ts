@@ -1,6 +1,6 @@
 import SVGElement from '../svg-element/SVGElement.js';
 import DOMRect from '../element/DOMRect.js';
-import DOMMatrix from '../svg-element/DOMMatrix.js';
+import DOMMatrix from '../element/DOMMatrix.js';
 import SVGStringList from '../svg-element/SVGStringList.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import SVGStringListAttributeSeparatorEnum from '../svg-element/SVGStringListAttributeSeparatorEnum.js';
@@ -66,7 +66,8 @@ export default class SVGGraphicsElement extends SVGElement {
 		if (!this[PropertySymbol.transform]) {
 			this[PropertySymbol.transform] = new SVGAnimatedTransformList(
 				PropertySymbol.illegalConstructor,
-				this[PropertySymbol.window]
+				this,
+				'transform'
 			);
 		}
 		return this[PropertySymbol.transform];

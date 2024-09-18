@@ -1,19 +1,21 @@
-import SVGGraphicsElement from '../svg-graphics-element/SVGGraphicsElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import SVGAnimatedLength from '../svg-element/SVGAnimatedLength.js';
 import SVGAnimatedEnumeration from '../svg-element/SVGAnimatedEnumeration.js';
 import SVGPoint from '../svg-element/SVGPoint.js';
 import SVGRect from '../svg-element/SVGRect.js';
+import SVGTextContentElement from '../svg-text-content-element/SVGTextContentElement.js';
 
 /**
- * SVG Text Content Element.
+ * SVG Text Positioning Element.
  *
- * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGTextContentElement
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGTextPositioningElement
  */
-export default class SVGTextContentElement extends SVGGraphicsElement {
+export default class SVGTextPositioningElement extends SVGTextContentElement {
 	// Internal properties
 	public [PropertySymbol.textLength]: SVGAnimatedLength | null = null;
 	public [PropertySymbol.lengthAdjust]: SVGAnimatedEnumeration | null = null;
+	public [PropertySymbol.x]: SVGAnimatedLength | null = null;
+	public [PropertySymbol.y]: SVGAnimatedLength | null = null;
 
 	/**
 	 * Returns textLength.

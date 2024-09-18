@@ -1,7 +1,9 @@
 import DOMRect from './DOMRect.js';
 
 /**
- * DOMRectList.
+ * DOM Rect List.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/DOMRectList
  */
 export default class DOMRectList extends Array<DOMRect> {
 	/**

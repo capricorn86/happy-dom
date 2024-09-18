@@ -1,5 +1,5 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGElement from './SVGElement.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 
 /**
  * Rect object.
@@ -8,8 +8,10 @@ import SVGElement from './SVGElement.js';
  */
 export default class SVGRect {
 	// Internal properties
-	public [PropertySymbol.ownerElement]: SVGElement;
-	public [PropertySymbol.attributeName]: string | null = null;
+	public [PropertySymbol.window]: BrowserWindow;
+	public [PropertySymbol.getAttribute]: () => string | null = null;
+	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
+	public [PropertySymbol.readOnly]: boolean = false;
 	public [PropertySymbol.x]: number = 0;
 	public [PropertySymbol.y]: number = 0;
 	public [PropertySymbol.width]: number = 0;
@@ -19,19 +21,32 @@ export default class SVGRect {
 	 * Constructor.
 	 *
 	 * @param illegalConstructorSymbol Illegal constructor symbol.
-	 * @param ownerElement Owner element.
-	 * @param [attributeName] Attribute name.
+	 * @param window Window.
+	 * @param [options] Options.
+	 * @param [options.readOnly] Read only.
+	 * @param [options.getAttribute] Get attribute.
+	 * @param [options.setAttribute] Set attribute.
 	 */
 	constructor(
 		illegalConstructorSymbol: symbol,
-		ownerElement: SVGElement,
-		attributeName: string | null = null
+		window: BrowserWindow,
+		options?: {
+			readOnly?: boolean;
+			getAttribute?: () => string | null;
+			setAttribute?: (value: string) => void;
+		}
 	) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}
-		this[PropertySymbol.ownerElement] = ownerElement;
-		this[PropertySymbol.attributeName] = attributeName;
+
+		this[PropertySymbol.window] = window;
+
+		if (options) {
+			this[PropertySymbol.readOnly] = !!options.readOnly;
+			this[PropertySymbol.getAttribute] = options.getAttribute || null;
+			this[PropertySymbol.setAttribute] = options.setAttribute || null;
+		}
 	}
 
 	/**
@@ -40,13 +55,11 @@ export default class SVGRect {
 	 * @returns X value.
 	 */
 	public get x(): number {
-		if (!this[PropertySymbol.attributeName]) {
+		if (!this[PropertySymbol.getAttribute]) {
 			return this[PropertySymbol.x];
 		}
 
-		const parts = this[PropertySymbol.ownerElement]
-			.getAttribute(this[PropertySymbol.attributeName])
-			?.split(/\s+/);
+		const parts = this[PropertySymbol.getAttribute]()?.split(/\s+/);
 
 		if (!parts) {
 			return 0;
@@ -62,17 +75,14 @@ export default class SVGRect {
 	 * @param value X value.
 	 */
 	public set x(value: number) {
-		if (!this[PropertySymbol.attributeName]) {
+		if (!this[PropertySymbol.getAttribute]) {
 			this[PropertySymbol.x] = Number(value);
 			return;
 		}
 
-		const parts = this[PropertySymbol.ownerElement]
-			.getAttribute(this[PropertySymbol.attributeName])
-			?.split(/\s+/);
+		const parts = this[PropertySymbol.getAttribute]()?.split(/\s+/);
 
-		this[PropertySymbol.ownerElement].setAttribute(
-			this[PropertySymbol.attributeName],
+		this[PropertySymbol.setAttribute](
 			`${String(value)} ${parts[1] ?? 0} ${parts[2] ?? 0} ${parts[3] ?? 0}`
 		);
 	}
@@ -83,13 +93,11 @@ export default class SVGRect {
 	 * @returns Y value.
 	 */
 	public get y(): number {
-		if (!this[PropertySymbol.attributeName]) {
+		if (!this[PropertySymbol.getAttribute]) {
 			return this[PropertySymbol.y];
 		}
 
-		const parts = this[PropertySymbol.ownerElement]
-			.getAttribute(this[PropertySymbol.attributeName])
-			?.split(/\s+/);
+		const parts = this[PropertySymbol.getAttribute]()?.split(/\s+/);
 
 		if (!parts) {
 			return 0;
@@ -105,17 +113,14 @@ export default class SVGRect {
 	 * @param value Y value.
 	 */
 	public set y(value: number) {
-		if (!this[PropertySymbol.attributeName]) {
+		if (!this[PropertySymbol.getAttribute]) {
 			this[PropertySymbol.y] = Number(value);
 			return;
 		}
 
-		const parts = this[PropertySymbol.ownerElement]
-			.getAttribute(this[PropertySymbol.attributeName])
-			?.split(/\s+/);
+		const parts = this[PropertySymbol.getAttribute]()?.split(/\s+/);
 
-		this[PropertySymbol.ownerElement].setAttribute(
-			this[PropertySymbol.attributeName],
+		this[PropertySymbol.setAttribute](
 			`${parts[0] ?? 0} ${String(value)} ${parts[2] ?? 0} ${parts[3] ?? 0}`
 		);
 	}
@@ -126,13 +131,11 @@ export default class SVGRect {
 	 * @returns Width value.
 	 */
 	public get width(): number {
-		if (!this[PropertySymbol.attributeName]) {
+		if (!this[PropertySymbol.getAttribute]) {
 			return this[PropertySymbol.width];
 		}
 
-		const parts = this[PropertySymbol.ownerElement]
-			.getAttribute(this[PropertySymbol.attributeName])
-			?.split(/\s+/);
+		const parts = this[PropertySymbol.getAttribute]()?.split(/\s+/);
 
 		if (!parts) {
 			return 0;
@@ -148,17 +151,14 @@ export default class SVGRect {
 	 * @param value Width value.
 	 */
 	public set width(value: number) {
-		if (!this[PropertySymbol.attributeName]) {
+		if (!this[PropertySymbol.getAttribute]) {
 			this[PropertySymbol.width] = Number(value);
 			return;
 		}
 
-		const parts = this[PropertySymbol.ownerElement]
-			.getAttribute(this[PropertySymbol.attributeName])
-			?.split(/\s+/);
+		const parts = this[PropertySymbol.getAttribute]()?.split(/\s+/);
 
-		this[PropertySymbol.ownerElement].setAttribute(
-			this[PropertySymbol.attributeName],
+		this[PropertySymbol.setAttribute](
 			`${parts[0] ?? 0} ${parts[1] ?? 0} ${String(value)} ${parts[3] ?? 0}`
 		);
 	}
@@ -169,13 +169,11 @@ export default class SVGRect {
 	 * @returns Height value.
 	 */
 	public get height(): number {
-		if (!this[PropertySymbol.attributeName]) {
+		if (!this[PropertySymbol.getAttribute]) {
 			return this[PropertySymbol.height];
 		}
 
-		const parts = this[PropertySymbol.ownerElement]
-			.getAttribute(this[PropertySymbol.attributeName])
-			?.split(/\s+/);
+		const parts = this[PropertySymbol.getAttribute]()?.split(/\s+/);
 
 		if (!parts) {
 			return 0;
@@ -191,17 +189,14 @@ export default class SVGRect {
 	 * @param value Height value.
 	 */
 	public set height(value: number) {
-		if (!this[PropertySymbol.attributeName]) {
+		if (!this[PropertySymbol.getAttribute]) {
 			this[PropertySymbol.height] = Number(value);
 			return;
 		}
 
-		const parts = this[PropertySymbol.ownerElement]
-			.getAttribute(this[PropertySymbol.attributeName])
-			?.split(/\s+/);
+		const parts = this[PropertySymbol.getAttribute]()?.split(/\s+/);
 
-		this[PropertySymbol.ownerElement].setAttribute(
-			this[PropertySymbol.attributeName],
+		this[PropertySymbol.setAttribute](
 			`${parts[0] ?? 0} ${parts[1] ?? 0} ${parts[2] ?? 0} ${String(value)}`
 		);
 	}

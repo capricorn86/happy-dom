@@ -1,6 +1,6 @@
 import SVGAngleTypeEnum from './SVGAngleTypeEnum.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGElement from './SVGElement.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 
 const ATTRIBUTE_REGEXP = /^(\d+|\d+\.\d+)(deg|rad|grad|turn|)$/;
 
@@ -18,9 +18,10 @@ export default class SVGAngle {
 	public static SVG_ANGLETYPE_GRAD = SVGAngleTypeEnum.grad;
 
 	// Internal properties
-	public [PropertySymbol.ownerElement]: SVGElement;
-	public [PropertySymbol.readOnly]: boolean;
-	public [PropertySymbol.attributeName]: string | null;
+	public [PropertySymbol.window]: BrowserWindow;
+	public [PropertySymbol.getAttribute]: () => string | null = null;
+	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
+	public [PropertySymbol.readOnly]: boolean = false;
 	public [PropertySymbol.value]: number = 0;
 	public [PropertySymbol.unitType]: SVGAngleTypeEnum = SVGAngleTypeEnum.unspecified;
 
@@ -28,22 +29,32 @@ export default class SVGAngle {
 	 * Constructor.
 	 *
 	 * @param illegalConstructorSymbol Illegal constructor symbol.
-	 * @param ownerElement Owner element.
-	 * @param readOnly Read only.
-	 * @param [attributeName] Attribute name.
+	 * @param window Window.
+	 * @param [options] Options.
+	 * @param [options.readOnly] Read only.
+	 * @param [options.getAttribute] Get attribute.
+	 * @param [options.setAttribute] Set attribute.
 	 */
 	constructor(
 		illegalConstructorSymbol: symbol,
-		ownerElement: SVGElement,
-		readOnly: boolean,
-		attributeName: string | null = null
+		window: BrowserWindow,
+		options?: {
+			readOnly?: boolean;
+			getAttribute?: () => string | null;
+			setAttribute?: (value: string) => void;
+		}
 	) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}
-		this[PropertySymbol.ownerElement] = ownerElement;
-		this[PropertySymbol.readOnly] = readOnly;
-		this[PropertySymbol.attributeName] = attributeName;
+
+		this[PropertySymbol.window] = window;
+
+		if (options) {
+			this[PropertySymbol.readOnly] = !!options.readOnly;
+			this[PropertySymbol.getAttribute] = options.getAttribute || null;
+			this[PropertySymbol.setAttribute] = options.setAttribute || null;
+		}
 	}
 
 	/**
@@ -52,13 +63,11 @@ export default class SVGAngle {
 	 * @returns Unit type.
 	 */
 	public get unitType(): SVGAngleTypeEnum {
-		if (!this[PropertySymbol.attributeName]) {
+		if (!this[PropertySymbol.getAttribute]) {
 			return this[PropertySymbol.unitType];
 		}
 
-		const attributeValue = this[PropertySymbol.ownerElement].getAttribute(
-			this[PropertySymbol.attributeName]
-		);
+		const attributeValue = this[PropertySymbol.getAttribute]();
 		const match = attributeValue.match(ATTRIBUTE_REGEXP);
 
 		if (!match) {
@@ -91,12 +100,10 @@ export default class SVGAngle {
 	 * @returns Value.
 	 */
 	public get value(): number {
-		if (!this[PropertySymbol.attributeName]) {
+		if (!this[PropertySymbol.getAttribute]) {
 			return this[PropertySymbol.value];
 		}
-		const attributeValue = this[PropertySymbol.ownerElement].getAttribute(
-			this[PropertySymbol.attributeName]
-		);
+		const attributeValue = this[PropertySymbol.getAttribute]();
 		const match = attributeValue.match(ATTRIBUTE_REGEXP);
 
 		if (!match) {
@@ -132,7 +139,7 @@ export default class SVGAngle {
 	 */
 	public set value(value: number) {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to set the 'value' property on 'SVGAngle': The object is read-only.`
 			);
 		}
@@ -140,11 +147,11 @@ export default class SVGAngle {
 		// Value in pixels
 		value = typeof value !== 'number' ? parseFloat(String(value)) : value;
 		if (isNaN(value)) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to set the 'value' property on 'SVGAngle': The provided float value is non-finite.`
 			);
 		}
-		if (!this[PropertySymbol.attributeName]) {
+		if (!this[PropertySymbol.getAttribute]) {
 			this[PropertySymbol.value] = value;
 			return;
 		}
@@ -176,10 +183,7 @@ export default class SVGAngle {
 				break;
 		}
 
-		this[PropertySymbol.ownerElement].setAttribute(
-			this[PropertySymbol.attributeName],
-			String(valueInSpecifiedUnits) + unitType
-		);
+		this[PropertySymbol.setAttribute](String(valueInSpecifiedUnits) + unitType);
 	}
 
 	/**
@@ -220,13 +224,13 @@ export default class SVGAngle {
 	 */
 	public newValueSpecifiedUnits(unitType: number, value: number): void {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': The object is read-only.`
 			);
 		}
 
 		if (typeof unitType !== 'number') {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': parameter 1 ('unitType') is not of type 'number'.`
 			);
 		}
@@ -234,12 +238,12 @@ export default class SVGAngle {
 		value = typeof value !== 'number' ? parseFloat(String(value)) : value;
 
 		if (isNaN(value)) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': The provided float value is non-finite.`
 			);
 		}
 
-		if (this[PropertySymbol.attributeName]) {
+		if (this[PropertySymbol.getAttribute]) {
 			let unitTypeString = '';
 			switch (unitType) {
 				case SVGAngleTypeEnum.unspecified:
@@ -263,10 +267,7 @@ export default class SVGAngle {
 				default:
 					break;
 			}
-			this[PropertySymbol.ownerElement].setAttribute(
-				this[PropertySymbol.attributeName],
-				String(value) + unitTypeString
-			);
+			this[PropertySymbol.setAttribute](String(value) + unitTypeString);
 			return;
 		}
 
@@ -299,18 +300,18 @@ export default class SVGAngle {
 	 */
 	public convertToSpecifiedUnits(unitType: SVGAngleTypeEnum): void {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'convertToSpecifiedUnits' on 'SVGAngle': The object is read-only.`
 			);
 		}
 
 		if (typeof unitType !== 'number') {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'convertToSpecifiedUnits' on 'SVGAngle': parameter 1 ('unitType') is not of type 'number'.`
 			);
 		}
 
-		if (!this[PropertySymbol.attributeName]) {
+		if (!this[PropertySymbol.getAttribute]) {
 			this[PropertySymbol.unitType] = unitType;
 			return;
 		}
@@ -341,9 +342,6 @@ export default class SVGAngle {
 				break;
 		}
 
-		this[PropertySymbol.ownerElement].setAttribute(
-			this[PropertySymbol.attributeName],
-			String(value) + unitTypeString
-		);
+		this[PropertySymbol.setAttribute](String(value) + unitTypeString);
 	}
 }

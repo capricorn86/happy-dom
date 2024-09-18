@@ -1,6 +1,6 @@
-import SVGElement from './SVGElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import SVGUnitTypeEnum from './SVGUnitTypeEnum.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 
 const ATTRIBUTE_REGEXP = /^(\d+|\d+\.\d+)(px|em|ex|cm|mm|in|pt|pc|%|)$/;
 
@@ -24,9 +24,10 @@ export default class SVGLength {
 	public static SVG_LENGTHTYPE_PC = SVGUnitTypeEnum.pc;
 
 	// Internal properties
-	public [PropertySymbol.ownerElement]: SVGElement;
-	public [PropertySymbol.readOnly]: boolean;
-	public [PropertySymbol.attributeName]: string | null;
+	public [PropertySymbol.window]: BrowserWindow;
+	public [PropertySymbol.getAttribute]: () => string | null = null;
+	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
+	public [PropertySymbol.readOnly]: boolean = false;
 	public [PropertySymbol.value]: number = 0;
 	public [PropertySymbol.unitType]: SVGUnitTypeEnum = SVGUnitTypeEnum.number;
 
@@ -34,22 +35,32 @@ export default class SVGLength {
 	 * Constructor.
 	 *
 	 * @param illegalConstructorSymbol Illegal constructor symbol.
-	 * @param ownerElement Owner element.
-	 * @param readOnly Read only.
-	 * @param [attributeName] Attribute name.
+	 * @param window Window.
+	 * @param [options] Options.
+	 * @param [options.readOnly] Read only.
+	 * @param [options.getAttribute] Get attribute.
+	 * @param [options.setAttribute] Set attribute.
 	 */
 	constructor(
 		illegalConstructorSymbol: symbol,
-		ownerElement: SVGElement,
-		readOnly: boolean,
-		attributeName: string | null = null
+		window: BrowserWindow,
+		options?: {
+			readOnly?: boolean;
+			getAttribute?: () => string | null;
+			setAttribute?: (value: string) => void;
+		}
 	) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}
-		this[PropertySymbol.ownerElement] = ownerElement;
-		this[PropertySymbol.readOnly] = readOnly;
-		this[PropertySymbol.attributeName] = attributeName;
+
+		this[PropertySymbol.window] = window;
+
+		if (options) {
+			this[PropertySymbol.readOnly] = !!options.readOnly;
+			this[PropertySymbol.getAttribute] = options.getAttribute || null;
+			this[PropertySymbol.setAttribute] = options.setAttribute || null;
+		}
 	}
 
 	/**
@@ -58,13 +69,11 @@ export default class SVGLength {
 	 * @returns Unit type.
 	 */
 	public get unitType(): SVGUnitTypeEnum {
-		if (!this[PropertySymbol.attributeName]) {
+		if (!this[PropertySymbol.getAttribute]) {
 			return this[PropertySymbol.unitType];
 		}
 
-		const attributeValue = this[PropertySymbol.ownerElement].getAttribute(
-			this[PropertySymbol.attributeName]
-		);
+		const attributeValue = this[PropertySymbol.getAttribute]();
 		const match = attributeValue.match(ATTRIBUTE_REGEXP);
 
 		if (!match) {
@@ -93,7 +102,7 @@ export default class SVGLength {
 			case 'em':
 			case 'ex':
 			case '%':
-				throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+				throw new this[PropertySymbol.window].TypeError(
 					`Failed to execute 'value' on 'SVGLength': Could not resolve relative length.`
 				);
 			default:
@@ -107,12 +116,10 @@ export default class SVGLength {
 	 * @returns Value.
 	 */
 	public get value(): number {
-		if (!this[PropertySymbol.attributeName]) {
+		if (!this[PropertySymbol.getAttribute]) {
 			return this[PropertySymbol.value];
 		}
-		const attributeValue = this[PropertySymbol.ownerElement].getAttribute(
-			this[PropertySymbol.attributeName]
-		);
+		const attributeValue = this[PropertySymbol.getAttribute]();
 		const match = attributeValue.match(ATTRIBUTE_REGEXP);
 
 		if (!match) {
@@ -143,7 +150,7 @@ export default class SVGLength {
 			case 'em':
 			case 'ex':
 			case '%':
-				throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+				throw new this[PropertySymbol.window].TypeError(
 					`Failed to execute 'value' on 'SVGLength': Could not resolve relative length.`
 				);
 			default:
@@ -158,7 +165,7 @@ export default class SVGLength {
 	 */
 	public set value(value: number) {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to set the 'value' property on 'SVGLength': The object is read-only.`
 			);
 		}
@@ -166,11 +173,11 @@ export default class SVGLength {
 		// Value in pixels
 		value = typeof value !== 'number' ? parseFloat(String(value)) : value;
 		if (isNaN(value)) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to set the 'value' property on 'SVGLength': The provided float value is non-finite.`
 			);
 		}
-		if (!this[PropertySymbol.attributeName]) {
+		if (!this[PropertySymbol.getAttribute]) {
 			this[PropertySymbol.value] = value;
 			return;
 		}
@@ -208,16 +215,13 @@ export default class SVGLength {
 			case SVGUnitTypeEnum.percentage:
 			case SVGUnitTypeEnum.ems:
 			case SVGUnitTypeEnum.exs:
-				throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+				throw new this[PropertySymbol.window].TypeError(
 					`Failed to set the 'value' property on 'SVGLength': Could not resolve relative length.`
 				);
 			default:
 				break;
 		}
-		this[PropertySymbol.ownerElement].setAttribute(
-			this[PropertySymbol.attributeName],
-			String(valueInSpecifiedUnits) + unitType
-		);
+		this[PropertySymbol.setAttribute](String(valueInSpecifiedUnits) + unitType);
 	}
 
 	/**
@@ -226,7 +230,29 @@ export default class SVGLength {
 	 * @returns Value as string.
 	 */
 	public get valueAsString(): string {
-		return this.value.toString() + this.unitType;
+		switch (this.unitType) {
+			case SVGUnitTypeEnum.number:
+			case SVGUnitTypeEnum.px:
+				return this.value + 'px';
+			case SVGUnitTypeEnum.cm:
+				return (this.value / 96) * 2.54 + 'cm';
+			case SVGUnitTypeEnum.mm:
+				return (this.value / 96) * 25.4 + 'mm';
+			case SVGUnitTypeEnum.in:
+				return this.value / 96 + 'in';
+			case SVGUnitTypeEnum.pt:
+				return this.value / 72 + 'pt';
+			case SVGUnitTypeEnum.pc:
+				return this.value / 6 + 'pc';
+			case SVGUnitTypeEnum.percentage:
+			case SVGUnitTypeEnum.ems:
+			case SVGUnitTypeEnum.exs:
+				throw new this[PropertySymbol.window].TypeError(
+					`Failed to executute 'valueInSpecifiedUnits' on 'SVGLength': Could not resolve relative length.`
+				);
+			default:
+				return this.value.toString();
+		}
 	}
 
 	/**
@@ -252,7 +278,7 @@ export default class SVGLength {
 			case SVGUnitTypeEnum.percentage:
 			case SVGUnitTypeEnum.ems:
 			case SVGUnitTypeEnum.exs:
-				throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+				throw new this[PropertySymbol.window].TypeError(
 					`Failed to executute 'valueInSpecifiedUnits' on 'SVGLength': Could not resolve relative length.`
 				);
 			default:
@@ -262,18 +288,19 @@ export default class SVGLength {
 
 	/**
 	 * New value specific units.
+	 *
 	 * @param unitType
 	 * @param value
 	 */
 	public newValueSpecifiedUnits(unitType: number, value: number): void {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': The object is read-only.`
 			);
 		}
 
 		if (typeof unitType !== 'number') {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': parameter 1 ('unitType') is not of type 'number'.`
 			);
 		}
@@ -281,12 +308,12 @@ export default class SVGLength {
 		value = typeof value !== 'number' ? parseFloat(String(value)) : value;
 
 		if (isNaN(value)) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': The provided float value is non-finite.`
 			);
 		}
 
-		if (this[PropertySymbol.attributeName]) {
+		if (this[PropertySymbol.getAttribute]) {
 			let unitTypeString = '';
 			switch (unitType) {
 				case SVGUnitTypeEnum.number:
@@ -313,16 +340,13 @@ export default class SVGLength {
 				case SVGUnitTypeEnum.ems:
 				case SVGUnitTypeEnum.exs:
 				case SVGUnitTypeEnum.percentage:
-					throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+					throw new this[PropertySymbol.window].TypeError(
 						`Failed to executute 'newValueSpecifiedUnits' on 'SVGLength': Could not resolve relative length.`
 					);
 				default:
 					break;
 			}
-			this[PropertySymbol.ownerElement].setAttribute(
-				this[PropertySymbol.attributeName],
-				String(value) + unitTypeString
-			);
+			this[PropertySymbol.setAttribute](String(value) + unitTypeString);
 			return;
 		}
 
@@ -351,7 +375,7 @@ export default class SVGLength {
 			case SVGUnitTypeEnum.percentage:
 			case SVGUnitTypeEnum.ems:
 			case SVGUnitTypeEnum.exs:
-				throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+				throw new this[PropertySymbol.window].TypeError(
 					`Failed to executute 'newValueSpecifiedUnits' on 'SVGLength': Could not resolve relative length.`
 				);
 			default:
@@ -365,18 +389,18 @@ export default class SVGLength {
 	 */
 	public convertToSpecifiedUnits(unitType: SVGUnitTypeEnum): void {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'convertToSpecifiedUnits' on 'SVGLength': The object is read-only.`
 			);
 		}
 
 		if (typeof unitType !== 'number') {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'convertToSpecifiedUnits' on 'SVGLength': parameter 1 ('unitType') is not of type 'number'.`
 			);
 		}
 
-		if (!this[PropertySymbol.attributeName]) {
+		if (!this[PropertySymbol.getAttribute]) {
 			this[PropertySymbol.unitType] = unitType;
 			return;
 		}
@@ -414,16 +438,13 @@ export default class SVGLength {
 			case SVGUnitTypeEnum.percentage:
 			case SVGUnitTypeEnum.ems:
 			case SVGUnitTypeEnum.exs:
-				throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+				throw new this[PropertySymbol.window].TypeError(
 					`Failed to executute 'convertToSpecifiedUnits' on 'SVGLength': Could not resolve relative length.`
 				);
 			default:
 				break;
 		}
 
-		this[PropertySymbol.ownerElement].setAttribute(
-			this[PropertySymbol.attributeName],
-			String(value) + unitTypeString
-		);
+		this[PropertySymbol.setAttribute](String(value) + unitTypeString);
 	}
 }

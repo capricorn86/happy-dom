@@ -1,5 +1,5 @@
-import SVGElement from './SVGElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 
 /**
  * SVG Animated Number.
@@ -8,22 +8,35 @@ import * as PropertySymbol from '../../PropertySymbol.js';
  */
 export default class SVGAnimatedNumber {
 	// Internal properties
-	public [PropertySymbol.ownerElement]: SVGElement;
-	public [PropertySymbol.attributeName]: string;
+	public [PropertySymbol.window]: BrowserWindow;
+	public [PropertySymbol.getAttribute]: () => string | null = null;
+	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param illegalConstructorSymbol Illegal constructor symbol.
-	 * @param ownerElement Owner element.
-	 * @param attributeName Attribute name.
+	 * @param window Window.
+	 * @param options Options.
+	 * @param options.getAttribute Get attribute.
+	 * @param options.setAttribute Set attribute.
 	 */
-	constructor(illegalConstructorSymbol: symbol, ownerElement: SVGElement, attributeName: string) {
+	constructor(
+		illegalConstructorSymbol: symbol,
+		window: BrowserWindow,
+		options: {
+			getAttribute: () => string | null;
+			setAttribute: (value: string) => void;
+		}
+	) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}
-		this[PropertySymbol.ownerElement] = ownerElement;
-		this[PropertySymbol.attributeName] = attributeName;
+
+		this[PropertySymbol.window] = window;
+
+		this[PropertySymbol.getAttribute] = options.getAttribute;
+		this[PropertySymbol.setAttribute] = options.setAttribute;
 	}
 
 	/**
@@ -50,9 +63,7 @@ export default class SVGAnimatedNumber {
 	 * @returns Base value.
 	 */
 	public get baseVal(): number {
-		const attributeValue = this[PropertySymbol.ownerElement].getAttribute(
-			this[PropertySymbol.attributeName]
-		);
+		const attributeValue = this[PropertySymbol.getAttribute]();
 
 		if (!attributeValue) {
 			return 0;
@@ -76,14 +87,11 @@ export default class SVGAnimatedNumber {
 		const parsedValue = typeof value !== 'number' ? parseFloat(<string>(<unknown>value)) : value;
 
 		if (isNaN(parsedValue)) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedNumber': The provided float value is non-finite.`
 			);
 		}
 
-		this[PropertySymbol.ownerElement].setAttribute(
-			this[PropertySymbol.attributeName],
-			String(parsedValue)
-		);
+		this[PropertySymbol.setAttribute](String(parsedValue));
 	}
 }

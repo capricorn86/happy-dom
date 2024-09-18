@@ -1,5 +1,5 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGElement from './SVGElement.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 
 /**
  * SVG Animated Enumaration.
@@ -8,8 +8,9 @@ import SVGElement from './SVGElement.js';
  */
 export default class SVGAnimatedEnumeration {
 	// Internal properties
-	public [PropertySymbol.ownerElement]: SVGElement;
-	public [PropertySymbol.attributeName]: string;
+	public [PropertySymbol.window]: BrowserWindow;
+	public [PropertySymbol.getAttribute]: () => string;
+	public [PropertySymbol.setAttribute]: (value: string) => void;
 	public [PropertySymbol.values]: string[];
 	public [PropertySymbol.defaultValue]: string;
 
@@ -17,25 +18,33 @@ export default class SVGAnimatedEnumeration {
 	 * Constructor.
 	 *
 	 * @param illegalConstructorSymbol Illegal constructor symbol.
-	 * @param ownerElement Owner element.
-	 * @param attributeName Attribute name.
-	 * @param values Values.
-	 * @param defaultValue Default value.
+	 * @param window Window.
+	 * @param options Options.
+	 * @param options.getAttribute Get attribute.
+	 * @param options.setAttribute Set attribute.
+	 * @param options.values Values.
+	 * @param options.defaultValue Default value.
 	 */
 	constructor(
 		illegalConstructorSymbol: symbol,
-		ownerElement: SVGElement,
-		attributeName: string,
-		values: string[],
-		defaultValue: string
+		window: BrowserWindow,
+		options: {
+			getAttribute: () => string | null;
+			setAttribute: (value: string) => void;
+			values: string[];
+			defaultValue: string;
+		}
 	) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}
-		this[PropertySymbol.ownerElement] = ownerElement;
-		this[PropertySymbol.attributeName] = attributeName;
-		this[PropertySymbol.values] = values;
-		this[PropertySymbol.defaultValue] = defaultValue;
+
+		this[PropertySymbol.window] = window;
+
+		this[PropertySymbol.getAttribute] = options.getAttribute;
+		this[PropertySymbol.setAttribute] = options.setAttribute;
+		this[PropertySymbol.values] = options.values;
+		this[PropertySymbol.defaultValue] = options.defaultValue;
 	}
 
 	/**
@@ -62,9 +71,7 @@ export default class SVGAnimatedEnumeration {
 	 * @returns Base value.
 	 */
 	public get baseVal(): number {
-		const value = this[PropertySymbol.ownerElement].getAttribute(
-			this[PropertySymbol.attributeName]
-		);
+		const value = this[PropertySymbol.getAttribute]();
 		if (!value) {
 			return this[PropertySymbol.values].indexOf(this[PropertySymbol.defaultValue]) + 1;
 		}
@@ -97,9 +104,7 @@ export default class SVGAnimatedEnumeration {
 				}).`
 			);
 		}
-		const currentValue = this[PropertySymbol.ownerElement].getAttribute(
-			this[PropertySymbol.attributeName]
-		);
+		const currentValue = this[PropertySymbol.getAttribute]();
 		const isAnyValue = this[PropertySymbol.values][parsedValue - 1] === null;
 		const newValue = isAnyValue ? '0' : this[PropertySymbol.values][parsedValue - 1];
 		if (
@@ -107,7 +112,7 @@ export default class SVGAnimatedEnumeration {
 			(isAnyValue && this[PropertySymbol.values].includes(currentValue)) ||
 			(!isAnyValue && currentValue !== newValue)
 		) {
-			this[PropertySymbol.ownerElement].setAttribute(this[PropertySymbol.attributeName], newValue);
+			this[PropertySymbol.setAttribute](newValue);
 		}
 	}
 }

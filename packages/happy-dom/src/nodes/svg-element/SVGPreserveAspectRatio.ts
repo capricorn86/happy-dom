@@ -1,7 +1,7 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGElement from './SVGElement.js';
 import SVGPreserveAspectRatioMeetOrSliceEnum from './SVGPreserveAspectRatioMeetOrSliceEnum.js';
 import SVGPreserveAspectRatioAlignEnum from './SVGPreserveAspectRatioAlignEnum.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 
 /**
  * SVG preserve aspect ratio.
@@ -26,22 +26,41 @@ export default class SVGPreserveAspectRatio {
 	public static SVG_PRESERVEASPECTRATIO_XMAXYMAX = SVGPreserveAspectRatioAlignEnum.xMaxYMax;
 
 	// Internal properties
-	public [PropertySymbol.ownerElement]: SVGElement;
-	public [PropertySymbol.readOnly]: boolean;
+	public [PropertySymbol.window]: BrowserWindow;
+	public [PropertySymbol.getAttribute]: () => string | null = null;
+	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
+	public [PropertySymbol.readOnly]: boolean = false;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param illegalConstructorSymbol Illegal constructor symbol.
-	 * @param ownerElement Owner element.
-	 * @param readOnly Read only.
+	 * @param window Window.
+	 * @param [options] Options.
+	 * @param [options.readOnly] Read only.
+	 * @param [options.getAttribute] Get attribute.
+	 * @param [options.setAttribute] Set attribute.
 	 */
-	constructor(illegalConstructorSymbol: symbol, ownerElement: SVGElement, readOnly: boolean) {
+	constructor(
+		illegalConstructorSymbol: symbol,
+		window: BrowserWindow,
+		options?: {
+			readOnly?: boolean;
+			getAttribute?: () => string | null;
+			setAttribute?: (value: string) => void;
+		}
+	) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}
-		this[PropertySymbol.ownerElement] = ownerElement;
-		this[PropertySymbol.readOnly] = readOnly;
+
+		this[PropertySymbol.window] = window;
+
+		if (options) {
+			this[PropertySymbol.readOnly] = !!options.readOnly;
+			this[PropertySymbol.getAttribute] = options.getAttribute || null;
+			this[PropertySymbol.setAttribute] = options.setAttribute || null;
+		}
 	}
 
 	/**
@@ -50,7 +69,7 @@ export default class SVGPreserveAspectRatio {
 	 * @returns Align.
 	 */
 	public get align(): SVGPreserveAspectRatioAlignEnum {
-		const attributeValue = this[PropertySymbol.ownerElement].getAttribute('preserveAspectRatio');
+		const attributeValue = this[PropertySymbol.getAttribute]();
 
 		if (!attributeValue) {
 			return SVGPreserveAspectRatioAlignEnum.xMidYMid;
@@ -72,7 +91,7 @@ export default class SVGPreserveAspectRatio {
 	 */
 	public set align(value: SVGPreserveAspectRatioAlignEnum) {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to set the 'align' property on 'SVGPreserveAspectRatio': The object is read-only.`
 			);
 		}
@@ -80,13 +99,12 @@ export default class SVGPreserveAspectRatio {
 		const parsedValue = Number(value);
 
 		if (isNaN(parsedValue) || parsedValue < 1 || parsedValue > 10) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to set the 'align' property on 'SVGPreserveAspectRatio': The alignment provided is invalid.`
 			);
 		}
 
-		this[PropertySymbol.ownerElement].setAttribute(
-			'preserveAspectRatio',
+		this[PropertySymbol.setAttribute](
 			`${Object.keys(SVGPreserveAspectRatioAlignEnum)[parsedValue]} ${
 				Object.keys(SVGPreserveAspectRatioMeetOrSliceEnum)[this.meetOrSlice]
 			}`
@@ -99,7 +117,7 @@ export default class SVGPreserveAspectRatio {
 	 * @returns Meet or slice.
 	 */
 	public get meetOrSlice(): SVGPreserveAspectRatioMeetOrSliceEnum {
-		const attributeValue = this[PropertySymbol.ownerElement].getAttribute('preserveAspectRatio');
+		const attributeValue = this[PropertySymbol.getAttribute]();
 
 		if (!attributeValue) {
 			return SVGPreserveAspectRatioMeetOrSliceEnum.meet;
@@ -121,7 +139,7 @@ export default class SVGPreserveAspectRatio {
 	 */
 	public set meetOrSlice(value: SVGPreserveAspectRatioMeetOrSliceEnum) {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to set the 'meetOrSlice' property on 'SVGPreserveAspectRatio': The object is read-only.`
 			);
 		}
@@ -129,13 +147,12 @@ export default class SVGPreserveAspectRatio {
 		const parsedValue = Number(value);
 
 		if (isNaN(parsedValue) || parsedValue < 1 || parsedValue > 2) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to set the 'meetOrSlice' property on 'SVGPreserveAspectRatio': The meetOrSlice provided is invalid.`
 			);
 		}
 
-		this[PropertySymbol.ownerElement].setAttribute(
-			'preserveAspectRatio',
+		this[PropertySymbol.setAttribute](
 			`${Object.keys(SVGPreserveAspectRatioAlignEnum)[this.align]} ${
 				Object.keys(SVGPreserveAspectRatioMeetOrSliceEnum)[parsedValue]
 			}`

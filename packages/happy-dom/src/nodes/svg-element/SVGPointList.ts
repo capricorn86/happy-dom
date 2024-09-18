@@ -1,6 +1,7 @@
 import ClassMethodBinder from '../../ClassMethodBinder.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 import SVGElement from './SVGElement.js';
 import SVGPoint from './SVGPoint.js';
 
@@ -14,9 +15,10 @@ const ATTRIBUTE_SEPARATOR_REGEXP = /[\t\f\n\r ]+/;
 export default class SVGPointList {
 	[index: number]: SVGPoint;
 
-	private [PropertySymbol.ownerElement]: SVGElement;
-	private [PropertySymbol.attributeName]: string;
-	private [PropertySymbol.readOnly]: boolean;
+	public [PropertySymbol.window]: BrowserWindow;
+	public [PropertySymbol.getAttribute]: () => string | null = null;
+	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
+	public [PropertySymbol.readOnly]: boolean = false;
 	private [PropertySymbol.cache]: { items: SVGPoint[]; attributeValue: string } = {
 		items: [],
 		attributeValue: ''
@@ -26,23 +28,29 @@ export default class SVGPointList {
 	 * Constructor.
 	 *
 	 * @param illegalConstructorSymbol Illegal constructor symbol.
-	 * @param ownerElement Owner element.
-	 * @param attributeName Attribute name.
-	 * @param readOnly Read only.
+	 * @param window Window.
+	 * @param options Options.
+	 * @param options.getAttribute Get attribute.
+	 * @param options.setAttribute Set attribute.
+	 * @param [options.readOnly] Read only.
 	 */
 	constructor(
 		illegalConstructorSymbol: symbol,
-		ownerElement: SVGElement,
-		attributeName: string,
-		readOnly: boolean
+		window: BrowserWindow,
+		options: {
+			readOnly?: boolean;
+			getAttribute: () => string | null;
+			setAttribute: (value: string) => void;
+		}
 	) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}
 
-		this[PropertySymbol.ownerElement] = ownerElement;
-		this[PropertySymbol.attributeName] = attributeName;
-		this[PropertySymbol.readOnly] = readOnly;
+		this[PropertySymbol.window] = window;
+		this[PropertySymbol.readOnly] = !!options.readOnly;
+		this[PropertySymbol.getAttribute] = options.getAttribute || null;
+		this[PropertySymbol.setAttribute] = options.setAttribute || null;
 
 		ClassMethodBinder.bindMethods(this, [SVGPointList], {
 			bindSymbols: true,
@@ -169,20 +177,17 @@ export default class SVGPointList {
 	 */
 	public initialize(newItem: SVGPoint): SVGPoint {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'initialize' on 'SVGPointList': The object is read-only.`
 			);
 		}
 
 		if (arguments.length < 1) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'initialize' on 'SVGPointList': 1 arguments required, but only ${arguments.length} present.`
 			);
 		}
-		this[PropertySymbol.ownerElement].setAttribute(
-			this[PropertySymbol.attributeName],
-			`${newItem.x} ${newItem.y}`
-		);
+		this[PropertySymbol.setAttribute](`${newItem.x} ${newItem.y}`);
 		return newItem;
 	}
 
@@ -211,13 +216,13 @@ export default class SVGPointList {
 	 */
 	public insertItemBefore(newItem: SVGPoint, index: number): SVGPoint {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'insertItemBefore' on 'SVGPointList': The object is read-only.`
 			);
 		}
 
 		if (arguments.length < 2) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'insertItemBefore' on 'SVGPointList': 2 arguments required, but only ${arguments.length} present.`
 			);
 		}
@@ -237,10 +242,7 @@ export default class SVGPointList {
 
 		items.splice(index, 0, newItem);
 
-		this[PropertySymbol.ownerElement].setAttribute(
-			this[PropertySymbol.attributeName],
-			items.map((item) => `${item.x} ${item.y}`).join(' ')
-		);
+		this[PropertySymbol.setAttribute](items.map((item) => `${item.x} ${item.y}`).join(' '));
 
 		return newItem;
 	}
@@ -254,13 +256,13 @@ export default class SVGPointList {
 	 */
 	public replaceItem(newItem: SVGPoint, index: number): SVGPoint {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'replaceItem' on 'SVGPointList': The object is read-only.`
 			);
 		}
 
 		if (arguments.length < 2) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'replaceItem' on 'SVGPointList': 2 arguments required, but only ${arguments.length} present.`
 			);
 		}
@@ -280,10 +282,7 @@ export default class SVGPointList {
 
 		items[index] = newItem;
 
-		this[PropertySymbol.ownerElement].setAttribute(
-			this[PropertySymbol.attributeName],
-			items.map((item) => `${item.x} ${item.y}`).join(' ')
-		);
+		this[PropertySymbol.setAttribute](items.map((item) => `${item.x} ${item.y}`).join(' '));
 
 		return newItem;
 	}
@@ -296,13 +295,13 @@ export default class SVGPointList {
 	 */
 	public removeItem(index: number): SVGPoint {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'removeItem' on 'SVGPointList': The object is read-only.`
 			);
 		}
 
 		if (arguments.length < 1) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'removeItem' on 'SVGPointList': 1 argument required, but only ${arguments.length} present.`
 			);
 		}
@@ -316,14 +315,14 @@ export default class SVGPointList {
 		}
 
 		if (index >= items.length) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'removeItem' on 'SVGPointList':  The index provided (${index}) is greater than the maximum bound.`,
 				DOMExceptionNameEnum.indexSizeError
 			);
 		}
 
 		if (index < 0) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'removeItem' on 'SVGPointList':  The index provided (${index}) is negative.`,
 				DOMExceptionNameEnum.indexSizeError
 			);
@@ -333,10 +332,7 @@ export default class SVGPointList {
 
 		items.splice(index, 1);
 
-		this[PropertySymbol.ownerElement].setAttribute(
-			this[PropertySymbol.attributeName],
-			items.map((item) => `${item.x} ${item.y}`).join(' ')
-		);
+		this[PropertySymbol.setAttribute](items.map((item) => `${item.x} ${item.y}`).join(' '));
 
 		return removedItem;
 	}
@@ -349,13 +345,13 @@ export default class SVGPointList {
 	 */
 	public appendItem(newItem: SVGPoint): SVGPoint {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'appendItem' on 'SVGPointList': The object is read-only.`
 			);
 		}
 
 		if (arguments.length < 1) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'appendItem' on 'SVGPointList': 1 argument required, but only ${arguments.length} present.`
 			);
 		}
@@ -369,10 +365,7 @@ export default class SVGPointList {
 
 		items.push(newItem);
 
-		this[PropertySymbol.ownerElement].setAttribute(
-			this[PropertySymbol.attributeName],
-			items.map((item) => `${item.x} ${item.y}`).join(' ')
-		);
+		this[PropertySymbol.setAttribute](items.map((item) => `${item.x} ${item.y}`).join(' '));
 
 		return newItem;
 	}
@@ -383,8 +376,7 @@ export default class SVGPointList {
 	 * @see https://infra.spec.whatwg.org/#split-on-ascii-whitespace
 	 */
 	public [PropertySymbol.getItemList](): SVGPoint[] {
-		const attributeValue =
-			this[PropertySymbol.ownerElement].getAttribute(this[PropertySymbol.attributeName]) ?? '';
+		const attributeValue = this[PropertySymbol.getAttribute]() ?? '';
 
 		const cache = this[PropertySymbol.cache];
 
@@ -398,13 +390,21 @@ export default class SVGPointList {
 
 		if (trimmed) {
 			const parts = trimmed.split(ATTRIBUTE_SEPARATOR_REGEXP);
-			for (let i = 0, max = parts.length; i < max; i++) {
-				const point = new SVGPoint(PropertySymbol.illegalConstructor);
-				const x = parts[i];
-				const y = parts[++i];
-				point.x = parseFloat(x);
-				point.y = y !== undefined ? parseFloat(y) : 0;
-				items.push(point);
+			for (let i = 0, max = parts.length; i < max; i += 2) {
+				const x = parseFloat(parts[i]);
+				const y = parts[i + 1] !== undefined ? ' ' + parseFloat(parts[i + 1]) : '';
+				let attributeValue = `${x}${y}`;
+				items.push(
+					new SVGPoint(PropertySymbol.illegalConstructor, this[PropertySymbol.window], {
+						getAttribute: () => attributeValue,
+						setAttribute: (value: string) => {
+							attributeValue = value;
+							const newAttributeValue = items.map((item) => `${item.x} ${item.y}`).join(' ');
+							cache.attributeValue = newAttributeValue;
+							this[PropertySymbol.setAttribute](newAttributeValue);
+						}
+					})
+				);
 			}
 		}
 

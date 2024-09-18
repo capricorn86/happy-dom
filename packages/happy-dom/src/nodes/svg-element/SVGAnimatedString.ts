@@ -1,5 +1,5 @@
-import SVGElement from './SVGElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 
 /**
  * SVG Animated String.
@@ -8,22 +8,35 @@ import * as PropertySymbol from '../../PropertySymbol.js';
  */
 export default class SVGAnimatedString {
 	// Internal properties
-	public [PropertySymbol.ownerElement]: SVGElement;
-	public [PropertySymbol.attributeName]: string;
+	public [PropertySymbol.window]: BrowserWindow;
+	public [PropertySymbol.getAttribute]: () => string | null = null;
+	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param illegalConstructorSymbol Illegal constructor symbol.
-	 * @param ownerElement Owner element.
-	 * @param attributeName Attribute name.
+	 * @param window Window.
+	 * @param options Options.
+	 * @param options.getAttribute Get attribute.
+	 * @param options.setAttribute Set attribute.
 	 */
-	constructor(illegalConstructorSymbol: symbol, ownerElement: SVGElement, attributeName: string) {
+	constructor(
+		illegalConstructorSymbol: symbol,
+		window: BrowserWindow,
+		options: {
+			getAttribute: () => string | null;
+			setAttribute: (value: string) => void;
+		}
+	) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}
-		this[PropertySymbol.ownerElement] = ownerElement;
-		this[PropertySymbol.attributeName] = attributeName;
+
+		this[PropertySymbol.window] = window;
+
+		this[PropertySymbol.getAttribute] = options.getAttribute;
+		this[PropertySymbol.setAttribute] = options.setAttribute;
 	}
 
 	/**
@@ -50,9 +63,7 @@ export default class SVGAnimatedString {
 	 * @returns Base value.
 	 */
 	public get baseVal(): string {
-		const attributeValue = this[PropertySymbol.ownerElement].getAttribute(
-			this[PropertySymbol.attributeName]
-		);
+		const attributeValue = this[PropertySymbol.getAttribute]();
 
 		if (!attributeValue) {
 			return '';
@@ -67,9 +78,6 @@ export default class SVGAnimatedString {
 	 * @param value Base value.
 	 */
 	public set baseVal(value: string) {
-		this[PropertySymbol.ownerElement].setAttribute(
-			this[PropertySymbol.attributeName],
-			String(value)
-		);
+		this[PropertySymbol.setAttribute](String(value));
 	}
 }

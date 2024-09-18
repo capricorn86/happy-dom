@@ -2,34 +2,51 @@ import ClassMethodBinder from '../../ClassMethodBinder.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import BrowserWindow from '../../window/BrowserWindow.js';
+import SVGElement from './SVGElement.js';
 import SVGTransform from './SVGTransform.js';
 
 /**
  * SVGTransformList.
+ *
+ * TODO: Complete implementation. It should use the attribute.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGTransformList
  */
 export default class SVGTransformList {
 	[index: number]: SVGTransform;
 
-	private [PropertySymbol.items]: SVGTransform[];
-	private [PropertySymbol.window]: BrowserWindow;
+	public [PropertySymbol.window]: BrowserWindow;
+	public [PropertySymbol.getAttribute]: () => string | null = null;
+	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
+	public [PropertySymbol.readOnly]: boolean = false;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param illegalConstructorSymbol Illegal constructor symbol.
 	 * @param window Window.
+	 * @param options Options.
+	 * @param options.getAttribute Get attribute.
+	 * @param options.setAttribute Set attribute.
+	 * @param [options.readOnly] Read only.
 	 */
-	constructor(illegalConstructorSymbol: symbol, window: BrowserWindow) {
+	constructor(
+		illegalConstructorSymbol: symbol,
+		window: BrowserWindow,
+		options: {
+			readOnly?: boolean;
+			getAttribute: () => string | null;
+			setAttribute: (value: string) => void;
+		}
+	) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}
 
-		const items: SVGTransform[] = [];
-
-		this[PropertySymbol.items] = items;
 		this[PropertySymbol.window] = window;
+		this[PropertySymbol.readOnly] = !!options.readOnly;
+		this[PropertySymbol.getAttribute] = options.getAttribute;
+		this[PropertySymbol.setAttribute] = options.setAttribute;
 
 		ClassMethodBinder.bindMethods(this, [SVGTransformList], {
 			bindSymbols: true,
@@ -155,6 +172,12 @@ export default class SVGTransformList {
 	 * @returns The item being replaced.
 	 */
 	public initialize(newItem: SVGTransform): SVGTransform {
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+				`Failed to execute 'initialize' on 'SVGTransformList': The object is read-only.`
+			);
+		}
+
 		if (arguments.length < 1) {
 			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'initialize' on 'SVGTransformList': 1 arguments required, but only ${arguments.length} present.`
@@ -197,6 +220,12 @@ export default class SVGTransformList {
 	 * @returns The item being inserted.
 	 */
 	public insertItemBefore(newItem: SVGTransform, index: number): SVGTransform {
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+				`Failed to execute 'insertItemBefore' on 'SVGTransformList': The object is read-only.`
+			);
+		}
+
 		if (arguments.length < 2) {
 			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'insertItemBefore' on 'SVGTransformList': 2 arguments required, but only ${arguments.length} present.`
@@ -235,6 +264,12 @@ export default class SVGTransformList {
 	 * @returns The item being replaced.
 	 */
 	public replaceItem(newItem: SVGTransform, index: number): SVGTransform {
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+				`Failed to execute 'replaceItem' on 'SVGTransformList': The object is read-only.`
+			);
+		}
+
 		if (arguments.length < 2) {
 			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'replaceItem' on 'SVGTransformList': 2 arguments required, but only ${arguments.length} present.`
@@ -272,6 +307,12 @@ export default class SVGTransformList {
 	 * @returns The removed item.
 	 */
 	public removeItem(index: number): SVGTransform {
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+				`Failed to execute 'removeItem' on 'SVGTransformList': The object is read-only.`
+			);
+		}
+
 		if (arguments.length < 1) {
 			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'removeItem' on 'SVGTransformList': 1 argument required, but only ${arguments.length} present.`
@@ -314,6 +355,12 @@ export default class SVGTransformList {
 	 * @returns The item being appended.
 	 */
 	public appendItem(newItem: SVGTransform): SVGTransform {
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+				`Failed to execute 'appendItem' on 'SVGTransformList': The object is read-only.`
+			);
+		}
+
 		if (arguments.length < 1) {
 			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'appendItem' on 'SVGTransformList': 1 argument required, but only ${arguments.length} present.`
@@ -336,5 +383,47 @@ export default class SVGTransformList {
 		items.push(newItem);
 
 		return newItem;
+	}
+
+	/**
+	 * Returns item list from attribute value.
+	 *
+	 * @see https://infra.spec.whatwg.org/#split-on-ascii-whitespace
+	 */
+	public [PropertySymbol.getItemList](): SVGTransform[] {
+		const attributeValue = this[PropertySymbol.getAttribute]() ?? '';
+
+		const cache = this[PropertySymbol.cache];
+
+		if (cache.attributeValue === attributeValue) {
+			return cache.items;
+		}
+
+		// It is possible to make this statement shorter by using Array.from() and Set, but this is faster when comparing using a bench test.
+		const items: SVGTransform[] = [];
+		const trimmed = attributeValue.trim();
+
+		if (trimmed) {
+			const parts = trimmed.split(ATTRIBUTE_SEPARATOR_REGEXP);
+			for (let i = 0, max = parts.length; i < max; i++) {
+				let attributeValue = parts[i];
+				items.push(
+					new SVGLength(PropertySymbol.illegalConstructor, this[PropertySymbol.window], {
+						getAttribute: () => attributeValue,
+						setAttribute: (value: string) => {
+							attributeValue = value;
+							const newAttributeValue = items.map((item) => item.valueAsString).join(' ');
+							cache.attributeValue = newAttributeValue;
+							this[PropertySymbol.setAttribute](newAttributeValue);
+						}
+					})
+				);
+			}
+		}
+
+		cache.attributeValue = attributeValue;
+		cache.items = items;
+
+		return items;
 	}
 }

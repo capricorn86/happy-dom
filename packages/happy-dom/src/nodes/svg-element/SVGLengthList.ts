@@ -2,29 +2,26 @@ import ClassMethodBinder from '../../ClassMethodBinder.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import BrowserWindow from '../../window/BrowserWindow.js';
-import SVGStringListAttributeSeparatorEnum from './SVGStringListAttributeSeparatorEnum.js';
+import SVGLength from './SVGLength.js';
 
-const ATTRIBUTE_SPLIT_REGEXP = {
-	[SVGStringListAttributeSeparatorEnum.space]: /[\t\f\n\r ]+/,
-	[SVGStringListAttributeSeparatorEnum.comma]: /[\t\f\n\r ]*,[\t\f\n\r ]*/
-};
+const ATTRIBUTE_SEPARATOR_REGEXP = /[\t\f\n\r ]+/;
 
 /**
- * SVGStringList.
+ * SVG Length List.
  *
- * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGStringList
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGLengthList
  */
-export default class SVGStringList {
-	[index: number]: string;
+export default class SVGLengthList {
+	[index: number]: SVGLength;
 
 	public [PropertySymbol.window]: BrowserWindow;
 	public [PropertySymbol.getAttribute]: () => string | null = null;
 	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
-	private [PropertySymbol.cache]: { items: string[]; attributeValue: string } = {
+	public [PropertySymbol.readOnly]: boolean = false;
+	private [PropertySymbol.cache]: { items: SVGLength[]; attributeValue: string } = {
 		items: [],
 		attributeValue: ''
 	};
-	private [PropertySymbol.attributeSeparator]: RegExp;
 
 	/**
 	 * Constructor.
@@ -34,15 +31,15 @@ export default class SVGStringList {
 	 * @param options Options.
 	 * @param options.getAttribute Get attribute.
 	 * @param options.setAttribute Set attribute.
-	 * @param options.attributeSeparator Attribute separator.
+	 * @param [options.readOnly] Read only.
 	 */
 	constructor(
 		illegalConstructorSymbol: symbol,
 		window: BrowserWindow,
 		options: {
+			readOnly?: boolean;
 			getAttribute: () => string | null;
 			setAttribute: (value: string) => void;
-			attributeSeparator: SVGStringListAttributeSeparatorEnum;
 		}
 	) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
@@ -50,22 +47,17 @@ export default class SVGStringList {
 		}
 
 		this[PropertySymbol.window] = window;
-		this[PropertySymbol.getAttribute] = options.getAttribute || null;
-		this[PropertySymbol.setAttribute] = options.setAttribute || null;
-		this[PropertySymbol.attributeSeparator] = ATTRIBUTE_SPLIT_REGEXP[options.attributeSeparator];
+		this[PropertySymbol.readOnly] = !!options.readOnly;
+		this[PropertySymbol.getAttribute] = options.getAttribute;
+		this[PropertySymbol.setAttribute] = options.setAttribute;
 
-		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
-			throw new TypeError('Illegal constructor');
-		}
-
-		ClassMethodBinder.bindMethods(this, [SVGStringList], {
+		ClassMethodBinder.bindMethods(this, [SVGLengthList], {
 			bindSymbols: true,
 			forwardToPrototype: true
 		});
 
 		// This only works for one level of inheritance, but it should be fine as there is no collection that goes deeper according to spec.
-		ClassMethodBinder.bindMethods(this, [SVGStringList], { bindSymbols: true });
-
+		ClassMethodBinder.bindMethods(this, [SVGLengthList], { bindSymbols: true });
 		return new Proxy(this, {
 			get: (target, property) => {
 				if (property === 'length' || property === 'numberOfItems') {
@@ -165,7 +157,7 @@ export default class SVGStringList {
 	/**
 	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.
 	 */
-	public [Symbol.iterator](): IterableIterator<string> {
+	public [Symbol.iterator](): IterableIterator<SVGLength> {
 		return this[PropertySymbol.getItemList]().values();
 	}
 
@@ -173,7 +165,7 @@ export default class SVGStringList {
 	 * Clears all items from the list.
 	 */
 	public clear(): void {
-		this[PropertySymbol.setAttribute](null);
+		this[PropertySymbol.ownerElement].removeAttribute(this[PropertySymbol.attributeName]);
 	}
 
 	/**
@@ -182,14 +174,19 @@ export default class SVGStringList {
 	 * @param newItem New item.
 	 * @returns The item being replaced.
 	 */
-	public initialize(newItem: string): string {
-		if (arguments.length < 1) {
+	public initialize(newItem: SVGLength): SVGLength {
+		if (this[PropertySymbol.readOnly]) {
 			throw new this[PropertySymbol.window].TypeError(
-				`Failed to execute 'initialize' on 'SVGStringList': 1 arguments required, but only ${arguments.length} present.`
+				`Failed to execute 'initialize' on 'SVGLengthList': The object is read-only.`
 			);
 		}
-		newItem = String(newItem);
-		this[PropertySymbol.setAttribute](newItem);
+
+		if (arguments.length < 1) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'initialize' on 'SVGLengthList': 1 arguments required, but only ${arguments.length} present.`
+			);
+		}
+		this[PropertySymbol.setAttribute](newItem.valueAsString);
 		return newItem;
 	}
 
@@ -199,7 +196,7 @@ export default class SVGStringList {
 	 * @param index Index.
 	 * @returns The item at the index.
 	 **/
-	public getItem(index: number | string): string {
+	public getItem(index: number | string): SVGLength {
 		const items = this[PropertySymbol.getItemList]();
 		if (typeof index === 'number') {
 			return items[index] ? items[index] : null;
@@ -216,14 +213,18 @@ export default class SVGStringList {
 	 * @param index Index.
 	 * @returns The item being inserted.
 	 */
-	public insertItemBefore(newItem: string, index: number): string {
-		if (arguments.length < 2) {
+	public insertItemBefore(newItem: SVGLength, index: number): SVGLength {
+		if (this[PropertySymbol.readOnly]) {
 			throw new this[PropertySymbol.window].TypeError(
-				`Failed to execute 'insertItemBefore' on 'SVGStringList': 2 arguments required, but only ${arguments.length} present.`
+				`Failed to execute 'insertItemBefore' on 'SVGLengthList': The object is read-only.`
 			);
 		}
 
-		newItem = String(newItem);
+		if (arguments.length < 2) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'insertItemBefore' on 'SVGLengthList': 2 arguments required, but only ${arguments.length} present.`
+			);
+		}
 
 		const items = this[PropertySymbol.getItemList]();
 		const existingIndex = items.indexOf(newItem);
@@ -240,7 +241,7 @@ export default class SVGStringList {
 
 		items.splice(index, 0, newItem);
 
-		this[PropertySymbol.setAttribute](items.join(' '));
+		this[PropertySymbol.setAttribute](items.map((item) => item.valueAsString).join(' '));
 
 		return newItem;
 	}
@@ -252,13 +253,18 @@ export default class SVGStringList {
 	 * @param index Index.
 	 * @returns The item being replaced.
 	 */
-	public replaceItem(newItem: string, index: number): string {
-		if (arguments.length < 2) {
+	public replaceItem(newItem: SVGLength, index: number): SVGLength {
+		if (this[PropertySymbol.readOnly]) {
 			throw new this[PropertySymbol.window].TypeError(
-				`Failed to execute 'replaceItem' on 'SVGStringList': 2 arguments required, but only ${arguments.length} present.`
+				`Failed to execute 'replaceItem' on 'SVGLengthList': The object is read-only.`
 			);
 		}
-		newItem = String(newItem);
+
+		if (arguments.length < 2) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'replaceItem' on 'SVGLengthList': 2 arguments required, but only ${arguments.length} present.`
+			);
+		}
 
 		const items = this[PropertySymbol.getItemList]();
 		const existingIndex = items.indexOf(newItem);
@@ -275,7 +281,7 @@ export default class SVGStringList {
 
 		items[index] = newItem;
 
-		this[PropertySymbol.setAttribute](items.join(' '));
+		this[PropertySymbol.setAttribute](items.map((item) => item.valueAsString).join(' '));
 
 		return newItem;
 	}
@@ -286,10 +292,16 @@ export default class SVGStringList {
 	 * @param index Index.
 	 * @returns The removed item.
 	 */
-	public removeItem(index: number): string {
+	public removeItem(index: number): SVGLength {
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'removeItem' on 'SVGLengthList': The object is read-only.`
+			);
+		}
+
 		if (arguments.length < 1) {
 			throw new this[PropertySymbol.window].TypeError(
-				`Failed to execute 'removeItem' on 'SVGStringList': 1 argument required, but only ${arguments.length} present.`
+				`Failed to execute 'removeItem' on 'SVGLengthList': 1 argument required, but only ${arguments.length} present.`
 			);
 		}
 
@@ -303,14 +315,14 @@ export default class SVGStringList {
 
 		if (index >= items.length) {
 			throw new this[PropertySymbol.window].DOMException(
-				`Failed to execute 'removeItem' on 'SVGStringList':  The index provided (${index}) is greater than the maximum bound.`,
+				`Failed to execute 'removeItem' on 'SVGLengthList':  The index provided (${index}) is greater than the maximum bound.`,
 				DOMExceptionNameEnum.indexSizeError
 			);
 		}
 
 		if (index < 0) {
 			throw new this[PropertySymbol.window].DOMException(
-				`Failed to execute 'removeItem' on 'SVGStringList':  The index provided (${index}) is negative.`,
+				`Failed to execute 'removeItem' on 'SVGLengthList':  The index provided (${index}) is negative.`,
 				DOMExceptionNameEnum.indexSizeError
 			);
 		}
@@ -319,7 +331,7 @@ export default class SVGStringList {
 
 		items.splice(index, 1);
 
-		this[PropertySymbol.setAttribute](items.join(' '));
+		this[PropertySymbol.setAttribute](items.map((item) => item.valueAsString).join(' '));
 
 		return removedItem;
 	}
@@ -330,14 +342,18 @@ export default class SVGStringList {
 	 * @param newItem The item to add to the list.
 	 * @returns The item being appended.
 	 */
-	public appendItem(newItem: string): string {
-		if (arguments.length < 1) {
+	public appendItem(newItem: SVGLength): SVGLength {
+		if (this[PropertySymbol.readOnly]) {
 			throw new this[PropertySymbol.window].TypeError(
-				`Failed to execute 'appendItem' on 'SVGStringList': 1 argument required, but only ${arguments.length} present.`
+				`Failed to execute 'appendItem' on 'SVGLengthList': The object is read-only.`
 			);
 		}
 
-		newItem = String(newItem);
+		if (arguments.length < 1) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'appendItem' on 'SVGLengthList': 1 argument required, but only ${arguments.length} present.`
+			);
+		}
 
 		const items = this[PropertySymbol.getItemList]();
 		const existingIndex = items.indexOf(newItem);
@@ -348,7 +364,7 @@ export default class SVGStringList {
 
 		items.push(newItem);
 
-		this[PropertySymbol.setAttribute](items.join(' '));
+		this[PropertySymbol.setAttribute](items.map((item) => item.valueAsString).join(' '));
 
 		return newItem;
 	}
@@ -358,7 +374,7 @@ export default class SVGStringList {
 	 *
 	 * @see https://infra.spec.whatwg.org/#split-on-ascii-whitespace
 	 */
-	public [PropertySymbol.getItemList](): string[] {
+	public [PropertySymbol.getItemList](): SVGLength[] {
 		const attributeValue = this[PropertySymbol.getAttribute]() ?? '';
 
 		const cache = this[PropertySymbol.cache];
@@ -368,14 +384,24 @@ export default class SVGStringList {
 		}
 
 		// It is possible to make this statement shorter by using Array.from() and Set, but this is faster when comparing using a bench test.
-		const items = [];
+		const items: SVGLength[] = [];
 		const trimmed = attributeValue.trim();
 
 		if (trimmed) {
-			for (const item of trimmed.split(this[PropertySymbol.attributeSeparator])) {
-				if (!items.includes(item)) {
-					items.push(item);
-				}
+			const parts = trimmed.split(ATTRIBUTE_SEPARATOR_REGEXP);
+			for (let i = 0, max = parts.length; i < max; i++) {
+				let attributeValue = parts[i];
+				items.push(
+					new SVGLength(PropertySymbol.illegalConstructor, this[PropertySymbol.window], {
+						getAttribute: () => attributeValue,
+						setAttribute: (value: string) => {
+							attributeValue = value;
+							const newAttributeValue = items.map((item) => item.valueAsString).join(' ');
+							cache.attributeValue = newAttributeValue;
+							this[PropertySymbol.setAttribute](newAttributeValue);
+						}
+					})
+				);
 			}
 		}
 
