@@ -28,7 +28,7 @@ export default class GlobalRegistrator {
 			throw new Error('Failed to register. Happy DOM has already been globally registered.');
 		}
 
-		const window = new GlobalWindow({ ...options, console: global.console });
+		const window = new GlobalWindow({ ...options, console: globalThis.console });
 
 		this.registered = {};
 
@@ -38,7 +38,7 @@ export default class GlobalRegistrator {
 		for (const key of Object.keys(propertyDescriptors)) {
 			if (!IGNORE_LIST.includes(key)) {
 				const windowPropertyDescriptor = propertyDescriptors[key];
-				const globalPropertyDescriptor = Object.getOwnPropertyDescriptor(global, key);
+				const globalPropertyDescriptor = Object.getOwnPropertyDescriptor(globalThis, key);
 
 				if (
 					globalPropertyDescriptor?.value === undefined ||
@@ -48,11 +48,11 @@ export default class GlobalRegistrator {
 
 					// If the property is the window object, replace it with the global object
 					if (windowPropertyDescriptor.value === window) {
-						window[key] = global;
-						windowPropertyDescriptor.value = global;
+						window[key] = globalThis;
+						windowPropertyDescriptor.value = globalThis;
 					}
 
-					Object.defineProperty(global, key, {
+					Object.defineProperty(globalThis, key, {
 						...windowPropertyDescriptor,
 						configurable: true
 					});
@@ -69,18 +69,18 @@ export default class GlobalRegistrator {
 
 			// If the property is the window object, replace it with the global object
 			if (propertyDescriptor.value === window) {
-				window[key] = global;
-				propertyDescriptor.value = global;
+				window[key] = globalThis;
+				propertyDescriptor.value = globalThis;
 			}
 
-			Object.defineProperty(global, key, {
+			Object.defineProperty(globalThis, key, {
 				...propertyDescriptor,
 				configurable: true
 			});
 		}
 
 		// Set owner window on document to global
-		global.document[PropertySymbol.defaultView] = global;
+		globalThis.document[PropertySymbol.defaultView] = globalThis;
 	}
 
 	/**
@@ -93,13 +93,13 @@ export default class GlobalRegistrator {
 			);
 		}
 
-		const happyDOM = global.happyDOM;
+		const happyDOM = globalThis.happyDOM;
 
 		for (const key of Object.keys(this.registered)) {
 			if (this.registered[key] !== null) {
-				Object.defineProperty(global, key, this.registered[key]);
+				Object.defineProperty(globalThis, key, this.registered[key]);
 			} else {
-				delete global[key];
+				delete globalThis[key];
 			}
 		}
 
