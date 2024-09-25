@@ -5,6 +5,9 @@ export default interface IOptionalBrowserSettings {
 	/** Disables JavaScript evaluation. */
 	disableJavaScriptEvaluation?: boolean;
 
+	/** Disables Cross Origin Policy for http requests. */
+	disableCrossOriginPolicy?: boolean;
+
 	/** Disables JavaScript file loading. */
 	disableJavaScriptFileLoading?: boolean;
 

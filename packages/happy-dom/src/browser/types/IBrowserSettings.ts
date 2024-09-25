@@ -14,6 +14,9 @@ export default interface IBrowserSettings {
 	/** Disables CSS file loading. */
 	disableCSSFileLoading: boolean;
 
+	/** Disables cross-origin policy. */
+	disableCrossOriginPolicy: boolean;
+
 	/** Disables computed style rendering. */
 	disableComputedStyleRendering: boolean;
 
