@@ -95,7 +95,10 @@ export default class Fetch {
 		}
 		this.redirectCount = options.redirectCount ?? 0;
 		this.disableCache = options.disableCache ?? false;
-		this.disableCrossOriginPolicy = options.disableCrossOriginPolicy ?? false;
+		this.disableCrossOriginPolicy =
+			options.disableCrossOriginPolicy ??
+			this.#browserFrame.page.context.browser.settings.disableCrossOriginPolicy ??
+			false;
 	}
 
 	/**
