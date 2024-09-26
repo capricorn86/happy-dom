@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import * as ReactTestingLibrary from '@testing-library/react';
 import ReactTestingLibraryUserEvent from '@testing-library/user-event';
-import { act } from 'react-dom/test-utils';
 import {
 	ReactDivComponent,
 	ReactSelectComponent,
@@ -28,7 +27,7 @@ describe('React', () => {
 	});
 
 	it('Tests integration.', async () => {
-		act(() => {
+		React.act(() => {
 			ReactDOM.createRoot(appElement).render(<ReactDivComponent />);
 		});
 		await new Promise((resolve) => setTimeout(resolve, 2));
@@ -37,18 +36,18 @@ describe('React', () => {
 
 	it('Can unmount a component.', async () => {
 		const root = ReactDOM.createRoot(appElement);
-		act(() => {
+		React.act(() => {
 			root.render(<ReactDivComponent />);
 		});
 		await new Promise((resolve) => setTimeout(resolve, 2));
-		act(() => {
+		React.act(() => {
 			root.unmount();
 		});
 		expect(appElement.innerHTML).toBe('');
 	});
 
 	it('Handles adding and removing event listeners.', () => {
-		act(() => {
+		React.act(() => {
 			ReactDOM.createRoot(appElement).render(<ReactSelectComponent onChange={() => {}} />);
 		});
 	});
@@ -63,7 +62,7 @@ describe('React', () => {
 	});
 
 	it('Can render Radix UI Select component.', async () => {
-		act(() => {
+		React.act(() => {
 			ReactDOM.createRoot(appElement).render(
 				<Select.Root>
 					<Select.Trigger>

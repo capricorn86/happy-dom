@@ -18,6 +18,8 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 	public window: Window;
 	public global: Global.Global;
 	public moduleMocker: ModuleMocker;
+	public customExportConditions = ['browser'];
+	private _configuredExportConditions: string[];
 
 	/**
 	 * Constructor.
@@ -45,6 +47,18 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 			projectConfig = config.projectConfig;
 		} else {
 			throw new Error('Unsupported jest version.');
+		}
+
+		if ('customExportConditions' in projectConfig.testEnvironmentOptions) {
+			const { customExportConditions } = projectConfig.testEnvironmentOptions;
+			if (
+				Array.isArray(customExportConditions) &&
+				customExportConditions.every((condition) => typeof condition === 'string')
+			) {
+				this._configuredExportConditions = customExportConditions;
+			} else {
+				throw new Error('Custom export conditions specified but they are not an array of strings');
+			}
 		}
 
 		// Initialize Window and Global
@@ -98,6 +112,13 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 			}
 			return happyDOMSetTimeout.call(this.global, ...args);
 		};
+	}
+	/**
+	 * Respect any export conditions specified as options
+	 * https://jestjs.io/docs/configuration#testenvironmentoptions-object
+	 */
+	public exportConditions(): string[] {
+		return this._configuredExportConditions ?? this.customExportConditions;
 	}
 
 	/**
