@@ -1,5 +1,5 @@
 import SVGGraphicsElement from '../svg-graphics-element/SVGGraphicsElement.js';
-import SVGAnimatedNumber from '../svg-element/SVGAnimatedNumber.js';
+import SVGAnimatedNumber from '../../svg/SVGAnimatedNumber.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
@@ -20,8 +20,12 @@ export default class SVGGeometryElement extends SVGGraphicsElement {
 		if (!this[PropertySymbol.pathLength]) {
 			this[PropertySymbol.pathLength] = new SVGAnimatedNumber(
 				PropertySymbol.illegalConstructor,
-				this,
-				'pathLength'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('pathLength'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('pathLength', value) : this.removeAttribute('pathLength')
+				}
 			);
 		}
 		return this[PropertySymbol.pathLength]!;

@@ -1,5 +1,5 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGAnimatedNumber from '../svg-element/SVGAnimatedNumber.js';
+import SVGAnimatedNumber from '../../svg/SVGAnimatedNumber.js';
 import SVGElement from '../svg-element/SVGElement.js';
 
 /**
@@ -20,8 +20,12 @@ export default class SVGStopElement extends SVGElement {
 		if (!this[PropertySymbol.offset]) {
 			this[PropertySymbol.offset] = new SVGAnimatedNumber(
 				PropertySymbol.illegalConstructor,
-				this,
-				'offset'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('offset'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('offset', value) : this.removeAttribute('offset')
+				}
 			);
 		}
 		return this[PropertySymbol.offset];

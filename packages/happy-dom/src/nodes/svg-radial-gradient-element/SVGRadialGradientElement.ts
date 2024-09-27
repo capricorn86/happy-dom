@@ -1,5 +1,5 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGAnimatedLength from '../svg-element/SVGAnimatedLength.js';
+import SVGAnimatedLength from '../../svg/SVGAnimatedLength.js';
 import SVGGradientElement from '../svg-gradient-element/SVGGradientElement.js';
 
 /**
@@ -24,8 +24,12 @@ export default class SVGRadialGradientElement extends SVGGradientElement {
 		if (!this[PropertySymbol.cx]) {
 			this[PropertySymbol.cx] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'cx'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('cx'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('cx', value) : this.removeAttribute('cx')
+				}
 			);
 		}
 		return this[PropertySymbol.cx];
@@ -40,8 +44,12 @@ export default class SVGRadialGradientElement extends SVGGradientElement {
 		if (!this[PropertySymbol.cy]) {
 			this[PropertySymbol.cy] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'cy'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('cy'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('cy', value) : this.removeAttribute('cy')
+				}
 			);
 		}
 		return this[PropertySymbol.cy];
@@ -54,7 +62,15 @@ export default class SVGRadialGradientElement extends SVGGradientElement {
 	 */
 	public get r(): SVGAnimatedLength {
 		if (!this[PropertySymbol.r]) {
-			this[PropertySymbol.r] = new SVGAnimatedLength(PropertySymbol.illegalConstructor, this, 'r');
+			this[PropertySymbol.r] = new SVGAnimatedLength(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('r'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('r', value) : this.removeAttribute('r')
+				}
+			);
 		}
 		return this[PropertySymbol.r];
 	}
@@ -68,8 +84,12 @@ export default class SVGRadialGradientElement extends SVGGradientElement {
 		if (!this[PropertySymbol.fx]) {
 			this[PropertySymbol.fx] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'fx'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('fx'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('fx', value) : this.removeAttribute('fx')
+				}
 			);
 		}
 		return this[PropertySymbol.fx];
@@ -84,8 +104,12 @@ export default class SVGRadialGradientElement extends SVGGradientElement {
 		if (!this[PropertySymbol.fy]) {
 			this[PropertySymbol.fy] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'fy'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('fy'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('fy', value) : this.removeAttribute('fy')
+				}
 			);
 		}
 		return this[PropertySymbol.fy];

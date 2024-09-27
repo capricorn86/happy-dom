@@ -1,6 +1,6 @@
 import SVGGeometryElement from '../svg-geometry-element/SVGGeometryElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGPointList from '../svg-element/SVGPointList.js';
+import SVGPointList from '../../svg/SVGPointList.js';
 
 /**
  * SVG Polyline Element.
@@ -21,9 +21,12 @@ export default class SVGPolylineElement extends SVGGeometryElement {
 		if (!this[PropertySymbol.animatedPoints]) {
 			this[PropertySymbol.animatedPoints] = new SVGPointList(
 				PropertySymbol.illegalConstructor,
-				this,
-				'points',
-				true
+				this[PropertySymbol.window],
+				{
+					readOnly: true,
+					getAttribute: () => this.getAttribute('points'),
+					setAttribute: () => {}
+				}
 			);
 		}
 		return this[PropertySymbol.animatedPoints];
@@ -38,9 +41,12 @@ export default class SVGPolylineElement extends SVGGeometryElement {
 		if (!this[PropertySymbol.points]) {
 			this[PropertySymbol.points] = new SVGPointList(
 				PropertySymbol.illegalConstructor,
-				this,
-				'points',
-				false
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('points'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('points', value) : this.removeAttribute('points')
+				}
 			);
 		}
 		return this[PropertySymbol.points];

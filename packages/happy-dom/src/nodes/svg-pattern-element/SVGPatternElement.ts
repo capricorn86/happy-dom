@@ -1,9 +1,9 @@
-import SVGAnimatedString from '../svg-element/SVGAnimatedString.js';
+import SVGAnimatedString from '../../svg/SVGAnimatedString.js';
 import SVGElement from '../svg-element/SVGElement.js';
-import SVGAnimatedEnumeration from '../svg-element/SVGAnimatedEnumeration.js';
+import SVGAnimatedEnumeration from '../../svg/SVGAnimatedEnumeration.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGAnimatedTransformList from '../svg-element/SVGAnimatedTransformList.js';
-import SVGAnimatedLength from '../svg-element/SVGAnimatedLength.js';
+import SVGAnimatedTransformList from '../../svg/SVGAnimatedTransformList.js';
+import SVGAnimatedLength from '../../svg/SVGAnimatedLength.js';
 
 /**
  * SVG Pattern Element.
@@ -30,8 +30,12 @@ export default class SVGPatternElement extends SVGElement {
 		if (!this[PropertySymbol.href]) {
 			this[PropertySymbol.href] = new SVGAnimatedString(
 				PropertySymbol.illegalConstructor,
-				this,
-				'href'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('href'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('href', value) : this.removeAttribute('href')
+				}
 			);
 		}
 		return this[PropertySymbol.href];
@@ -46,10 +50,14 @@ export default class SVGPatternElement extends SVGElement {
 		if (!this[PropertySymbol.patternUnits]) {
 			this[PropertySymbol.patternUnits] = new SVGAnimatedEnumeration(
 				PropertySymbol.illegalConstructor,
-				this,
-				'patternUnits',
-				['userSpaceOnUse', 'objectBoundingBox'],
-				'objectBoundingBox'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('patternUnits'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('patternUnits', value) : this.removeAttribute('patternUnits'),
+					values: ['userSpaceOnUse', 'objectBoundingBox'],
+					defaultValue: 'objectBoundingBox'
+				}
 			);
 		}
 		return this[PropertySymbol.patternUnits];
@@ -64,10 +72,16 @@ export default class SVGPatternElement extends SVGElement {
 		if (!this[PropertySymbol.patternContentUnits]) {
 			this[PropertySymbol.patternContentUnits] = new SVGAnimatedEnumeration(
 				PropertySymbol.illegalConstructor,
-				this,
-				'patternContentUnits',
-				['userSpaceOnUse', 'objectBoundingBox'],
-				'userSpaceOnUse'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('patternContentUnits'),
+					setAttribute: (value) =>
+						value
+							? this.setAttribute('patternContentUnits', value)
+							: this.removeAttribute('patternContentUnits'),
+					values: ['userSpaceOnUse', 'objectBoundingBox'],
+					defaultValue: 'userSpaceOnUse'
+				}
 			);
 		}
 		return this[PropertySymbol.patternContentUnits];
@@ -82,7 +96,14 @@ export default class SVGPatternElement extends SVGElement {
 		if (!this[PropertySymbol.patternTransform]) {
 			this[PropertySymbol.patternTransform] = new SVGAnimatedTransformList(
 				PropertySymbol.illegalConstructor,
-				this[PropertySymbol.window]
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('patternTransform'),
+					setAttribute: (value) =>
+						value
+							? this.setAttribute('patternTransform', value)
+							: this.removeAttribute('patternTransform')
+				}
 			);
 		}
 		return this[PropertySymbol.patternTransform];
@@ -95,7 +116,15 @@ export default class SVGPatternElement extends SVGElement {
 	 */
 	public get x(): SVGAnimatedLength {
 		if (!this[PropertySymbol.x]) {
-			this[PropertySymbol.x] = new SVGAnimatedLength(PropertySymbol.illegalConstructor, this, 'x');
+			this[PropertySymbol.x] = new SVGAnimatedLength(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('x'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('x', value) : this.removeAttribute('x')
+				}
+			);
 		}
 		return this[PropertySymbol.x];
 	}
@@ -107,7 +136,15 @@ export default class SVGPatternElement extends SVGElement {
 	 */
 	public get y(): SVGAnimatedLength {
 		if (!this[PropertySymbol.y]) {
-			this[PropertySymbol.y] = new SVGAnimatedLength(PropertySymbol.illegalConstructor, this, 'y');
+			this[PropertySymbol.y] = new SVGAnimatedLength(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('y'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('y', value) : this.removeAttribute('y')
+				}
+			);
 		}
 		return this[PropertySymbol.y];
 	}
@@ -121,8 +158,12 @@ export default class SVGPatternElement extends SVGElement {
 		if (!this[PropertySymbol.width]) {
 			this[PropertySymbol.width] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'width'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('width'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('width', value) : this.removeAttribute('width')
+				}
 			);
 		}
 		return this[PropertySymbol.width];
@@ -137,8 +178,12 @@ export default class SVGPatternElement extends SVGElement {
 		if (!this[PropertySymbol.height]) {
 			this[PropertySymbol.height] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'height'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('height'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('height', value) : this.removeAttribute('height')
+				}
 			);
 		}
 		return this[PropertySymbol.height];

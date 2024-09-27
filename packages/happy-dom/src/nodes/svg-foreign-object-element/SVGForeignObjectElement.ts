@@ -1,5 +1,5 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGAnimatedLength from '../svg-element/SVGAnimatedLength.js';
+import SVGAnimatedLength from '../../svg/SVGAnimatedLength.js';
 import SVGGraphicsElement from '../svg-graphics-element/SVGGraphicsElement.js';
 
 /**
@@ -21,7 +21,15 @@ export default class SVGForeignObjectElement extends SVGGraphicsElement {
 	 */
 	public get x(): SVGAnimatedLength {
 		if (!this[PropertySymbol.x]) {
-			this[PropertySymbol.x] = new SVGAnimatedLength(PropertySymbol.illegalConstructor, this, 'x');
+			this[PropertySymbol.x] = new SVGAnimatedLength(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('x'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('x', value) : this.removeAttribute('x')
+				}
+			);
 		}
 		return this[PropertySymbol.x];
 	}
@@ -33,7 +41,15 @@ export default class SVGForeignObjectElement extends SVGGraphicsElement {
 	 */
 	public get y(): SVGAnimatedLength {
 		if (!this[PropertySymbol.y]) {
-			this[PropertySymbol.y] = new SVGAnimatedLength(PropertySymbol.illegalConstructor, this, 'y');
+			this[PropertySymbol.y] = new SVGAnimatedLength(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('y'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('y', value) : this.removeAttribute('y')
+				}
+			);
 		}
 		return this[PropertySymbol.y];
 	}
@@ -47,8 +63,12 @@ export default class SVGForeignObjectElement extends SVGGraphicsElement {
 		if (!this[PropertySymbol.width]) {
 			this[PropertySymbol.width] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'width'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('width'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('width', value) : this.removeAttribute('width')
+				}
 			);
 		}
 		return this[PropertySymbol.width];
@@ -63,8 +83,12 @@ export default class SVGForeignObjectElement extends SVGGraphicsElement {
 		if (!this[PropertySymbol.height]) {
 			this[PropertySymbol.height] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'height'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('height'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('height', value) : this.removeAttribute('height')
+				}
 			);
 		}
 		return this[PropertySymbol.height];

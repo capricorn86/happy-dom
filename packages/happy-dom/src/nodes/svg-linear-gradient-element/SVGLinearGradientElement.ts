@@ -1,5 +1,5 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGAnimatedLength from '../svg-element/SVGAnimatedLength.js';
+import SVGAnimatedLength from '../../svg/SVGAnimatedLength.js';
 import SVGGradientElement from '../svg-gradient-element/SVGGradientElement.js';
 
 /**
@@ -23,8 +23,12 @@ export default class SVGLinearGradientElement extends SVGGradientElement {
 		if (!this[PropertySymbol.x1]) {
 			this[PropertySymbol.x1] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'x1'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('x1'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('x1', value) : this.removeAttribute('x1')
+				}
 			);
 		}
 		return this[PropertySymbol.x1];
@@ -39,8 +43,12 @@ export default class SVGLinearGradientElement extends SVGGradientElement {
 		if (!this[PropertySymbol.y1]) {
 			this[PropertySymbol.y1] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'y1'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('y1'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('y1', value) : this.removeAttribute('y1')
+				}
 			);
 		}
 		return this[PropertySymbol.y1];
@@ -55,8 +63,12 @@ export default class SVGLinearGradientElement extends SVGGradientElement {
 		if (!this[PropertySymbol.x2]) {
 			this[PropertySymbol.x2] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'x2'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('x2'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('x2', value) : this.removeAttribute('x2')
+				}
 			);
 		}
 		return this[PropertySymbol.x2];
@@ -71,8 +83,12 @@ export default class SVGLinearGradientElement extends SVGGradientElement {
 		if (!this[PropertySymbol.y2]) {
 			this[PropertySymbol.y2] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'y2'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('y2'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('y2', value) : this.removeAttribute('y2')
+				}
 			);
 		}
 		return this[PropertySymbol.y2];

@@ -1,6 +1,6 @@
 import SVGGeometryElement from '../svg-geometry-element/SVGGeometryElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGAnimatedLength from '../svg-element/SVGAnimatedLength.js';
+import SVGAnimatedLength from '../../svg/SVGAnimatedLength.js';
 
 /**
  * SVG Circle Element.
@@ -22,8 +22,12 @@ export default class SVGCircleElement extends SVGGeometryElement {
 		if (!this[PropertySymbol.cx]) {
 			this[PropertySymbol.cx] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'cx'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('cx'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('cx', value) : this.removeAttribute('cx')
+				}
 			);
 		}
 		return this[PropertySymbol.cx];
@@ -38,8 +42,12 @@ export default class SVGCircleElement extends SVGGeometryElement {
 		if (!this[PropertySymbol.cy]) {
 			this[PropertySymbol.cy] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'cy'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('cy'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('cy', value) : this.removeAttribute('cy')
+				}
 			);
 		}
 		return this[PropertySymbol.cy];
@@ -52,7 +60,15 @@ export default class SVGCircleElement extends SVGGeometryElement {
 	 */
 	public get r(): SVGAnimatedLength {
 		if (!this[PropertySymbol.r]) {
-			this[PropertySymbol.r] = new SVGAnimatedLength(PropertySymbol.illegalConstructor, this, 'r');
+			this[PropertySymbol.r] = new SVGAnimatedLength(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('r'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('r', value) : this.removeAttribute('r')
+				}
+			);
 		}
 		return this[PropertySymbol.r];
 	}

@@ -1,11 +1,11 @@
 import SVGGraphicsElement from '../svg-graphics-element/SVGGraphicsElement.js';
-import SVGRect from '../svg-element/SVGRect.js';
-import SVGPoint from '../svg-element/SVGPoint.js';
-import SVGLength from '../svg-element/SVGLength.js';
-import SVGAngle from '../svg-element/SVGAngle.js';
-import SVGNumber from '../svg-element/SVGNumber.js';
-import SVGTransform from '../svg-element/SVGTransform.js';
-import SVGAnimatedRect from '../svg-element/SVGAnimatedRect.js';
+import SVGRect from '../../svg/SVGRect.js';
+import SVGPoint from '../../svg/SVGPoint.js';
+import SVGLength from '../../svg/SVGLength.js';
+import SVGAngle from '../../svg/SVGAngle.js';
+import SVGNumber from '../../svg/SVGNumber.js';
+import SVGTransform from '../../svg/SVGTransform.js';
+import SVGAnimatedRect from '../../svg/SVGAnimatedRect.js';
 import Node from '../node/Node.js';
 import Event from '../../event/Event.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
@@ -176,7 +176,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 * @returns SVG point.
 	 */
 	public get currentTranslate(): SVGPoint {
-		return new SVGPoint(PropertySymbol.illegalConstructor);
+		return new SVGPoint(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
 	}
 
 	/**
@@ -186,7 +186,15 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 */
 	public get viewBox(): SVGAnimatedRect {
 		if (!this[PropertySymbol.viewBox]) {
-			this[PropertySymbol.viewBox] = new SVGAnimatedRect(PropertySymbol.illegalConstructor, this);
+			this[PropertySymbol.viewBox] = new SVGAnimatedRect(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('viewBox'),
+					setAttribute: (value: string) =>
+						value ? this.setAttribute('viewBox', value) : this.removeAttribute('viewBox')
+				}
+			);
 		}
 		return this[PropertySymbol.viewBox];
 	}
@@ -280,7 +288,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 * @returns Length.
 	 */
 	public createSVGLength(): SVGLength {
-		return new SVGLength(PropertySymbol.illegalConstructor, this, false);
+		return new SVGLength(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
 	}
 
 	/**
@@ -289,7 +297,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 * @returns Angle.
 	 */
 	public createSVGAngle(): SVGAngle {
-		return new SVGAngle(PropertySymbol.illegalConstructor, this, false);
+		return new SVGAngle(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
 	}
 
 	/**
@@ -298,7 +306,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 * @returns Point.
 	 */
 	public createSVGPoint(): SVGPoint {
-		return new SVGPoint(PropertySymbol.illegalConstructor);
+		return new SVGPoint(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
 	}
 
 	/**
@@ -307,7 +315,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 * @returns Rect.
 	 */
 	public createSVGRect(): SVGRect {
-		return new SVGRect(PropertySymbol.illegalConstructor, this);
+		return new SVGRect(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
 	}
 
 	/**
@@ -316,7 +324,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 * @returns Transform.
 	 */
 	public createSVGTransform(): SVGTransform {
-		return new SVGTransform();
+		return new SVGTransform(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
 	}
 
 	/**

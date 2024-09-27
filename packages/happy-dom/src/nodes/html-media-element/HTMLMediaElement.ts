@@ -3,7 +3,7 @@ import Event from '../../event/Event.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import TimeRanges from './TimeRanges.js';
-import DOMTokenList from '../element/DOMTokenList.js';
+import DOMTokenList from '../../dom/DOMTokenList.js';
 import RemotePlayback from './RemotePlayback.js';
 import MediaStream from './MediaStream.js';
 import TextTrackList from './TextTrackList.js';

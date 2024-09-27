@@ -5,7 +5,7 @@ import PointerEvent from '../../event/events/PointerEvent.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import Event from '../../event/Event.js';
 import HTMLElementUtility from './HTMLElementUtility.js';
-import DOMStringMap from '../element/DOMStringMap.js';
+import DOMStringMap from '../../dom/DOMStringMap.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 
 /**

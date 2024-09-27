@@ -1,10 +1,10 @@
 import SVGElement from '../svg-element/SVGElement.js';
-import DOMRect from '../element/DOMRect.js';
-import DOMMatrix from '../element/DOMMatrix.js';
-import SVGStringList from '../svg-element/SVGStringList.js';
+import DOMRect from '../../dom/DOMRect.js';
+import DOMMatrix from '../../dom/dom-matrix/DOMMatrix.js';
+import SVGStringList from '../../svg/SVGStringList.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGStringListAttributeSeparatorEnum from '../svg-element/SVGStringListAttributeSeparatorEnum.js';
-import SVGAnimatedTransformList from '../svg-element/SVGAnimatedTransformList.js';
+import SVGStringListAttributeSeparatorEnum from '../../svg/SVGStringListAttributeSeparatorEnum.js';
+import SVGAnimatedTransformList from '../../svg/SVGAnimatedTransformList.js';
 import Event from '../../event/Event.js';
 
 /**
@@ -32,9 +32,15 @@ export default class SVGGraphicsElement extends SVGElement {
 		if (!this[PropertySymbol.requiredExtensions]) {
 			this[PropertySymbol.requiredExtensions] = new SVGStringList(
 				PropertySymbol.illegalConstructor,
-				this,
-				'requiredExtensions',
-				SVGStringListAttributeSeparatorEnum.space
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('requiredExtensions'),
+					setAttribute: (value) =>
+						value
+							? this.setAttribute('requiredExtensions', value)
+							: this.removeAttribute('requiredExtensions'),
+					attributeSeparator: SVGStringListAttributeSeparatorEnum.space
+				}
 			);
 		}
 		return this[PropertySymbol.requiredExtensions];
@@ -49,9 +55,15 @@ export default class SVGGraphicsElement extends SVGElement {
 		if (!this[PropertySymbol.systemLanguage]) {
 			this[PropertySymbol.systemLanguage] = new SVGStringList(
 				PropertySymbol.illegalConstructor,
-				this,
-				'systemLanguage',
-				SVGStringListAttributeSeparatorEnum.comma
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('systemLanguage'),
+					setAttribute: (value) =>
+						value
+							? this.setAttribute('systemLanguage', value)
+							: this.removeAttribute('systemLanguage'),
+					attributeSeparator: SVGStringListAttributeSeparatorEnum.comma
+				}
 			);
 		}
 		return this[PropertySymbol.systemLanguage];
@@ -66,8 +78,12 @@ export default class SVGGraphicsElement extends SVGElement {
 		if (!this[PropertySymbol.transform]) {
 			this[PropertySymbol.transform] = new SVGAnimatedTransformList(
 				PropertySymbol.illegalConstructor,
-				this,
-				'transform'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('transform'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('transform', value) : this.removeAttribute('transform')
+				}
 			);
 		}
 		return this[PropertySymbol.transform];

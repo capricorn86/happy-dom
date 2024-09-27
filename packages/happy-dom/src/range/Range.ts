@@ -2,7 +2,7 @@ import Node from '../nodes/node/Node.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import Document from '../nodes/document/Document.js';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
-import DOMRect from '../nodes/element/DOMRect.js';
+import DOMRect from '../dom/DOMRect.js';
 import RangeHowEnum from './RangeHowEnum.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import RangeUtility from './RangeUtility.js';
@@ -11,7 +11,7 @@ import NodeUtility from '../nodes/node/NodeUtility.js';
 import XMLParser from '../xml-parser/XMLParser.js';
 import Comment from '../nodes/comment/Comment.js';
 import Text from '../nodes/text/Text.js';
-import DOMRectList from '../nodes/element/DOMRectList.js';
+import DOMRectList from '../dom/DOMRectList.js';
 import IRangeBoundaryPoint from './IRangeBoundaryPoint.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 
@@ -822,7 +822,7 @@ export default class Range {
 			this[PropertySymbol.start].node[PropertySymbol.nodeType] === NodeTypeEnum.textNode
 				? this[PropertySymbol.start].node
 				: (<Node>this[PropertySymbol.start].node)[PropertySymbol.nodeArray][this.startOffset] ||
-					null;
+				  null;
 		const parent = !referenceNode
 			? this[PropertySymbol.start].node
 			: referenceNode[PropertySymbol.parentNode];
@@ -844,7 +844,7 @@ export default class Range {
 			? NodeUtility.getNodeLength(parent)
 			: (<Node>referenceNode[PropertySymbol.parentNode])[PropertySymbol.nodeArray].indexOf(
 					referenceNode
-				);
+			  );
 		newOffset +=
 			newNode[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode
 				? NodeUtility.getNodeLength(newNode)

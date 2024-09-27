@@ -1,6 +1,6 @@
 import SVGElement from '../svg-element/SVGElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGAnimatedEnumeration from '../svg-element/SVGAnimatedEnumeration.js';
+import SVGAnimatedEnumeration from '../../svg/SVGAnimatedEnumeration.js';
 
 /**
  * SVG ClipPath Element.
@@ -20,10 +20,16 @@ export default class SVGClipPathElement extends SVGElement {
 		if (!this[PropertySymbol.clipPathUnits]) {
 			this[PropertySymbol.clipPathUnits] = new SVGAnimatedEnumeration(
 				PropertySymbol.illegalConstructor,
-				this,
-				'clipPathUnits',
-				['userSpaceOnUse', 'objectBoundingBox'],
-				'userSpaceOnUse'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('clipPathUnits'),
+					setAttribute: (value) =>
+						value
+							? this.setAttribute('clipPathUnits', value)
+							: this.removeAttribute('clipPathUnits'),
+					values: ['userSpaceOnUse', 'objectBoundingBox'],
+					defaultValue: 'userSpaceOnUse'
+				}
 			);
 		}
 		return this[PropertySymbol.clipPathUnits];

@@ -1,5 +1,5 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGAnimatedString from '../svg-element/SVGAnimatedString.js';
+import SVGAnimatedString from '../../svg/SVGAnimatedString.js';
 import SVGGraphicsElement from '../svg-graphics-element/SVGGraphicsElement.js';
 
 /**
@@ -20,8 +20,12 @@ export default class SVGScriptElement extends SVGGraphicsElement {
 		if (!this[PropertySymbol.href]) {
 			this[PropertySymbol.href] = new SVGAnimatedString(
 				PropertySymbol.illegalConstructor,
-				this,
-				'href'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('href'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('href', value) : this.removeAttribute('href')
+				}
 			);
 		}
 		return this[PropertySymbol.href];

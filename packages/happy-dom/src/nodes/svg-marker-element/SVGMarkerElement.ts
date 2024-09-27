@@ -1,11 +1,11 @@
 import SVGGeometryElement from '../svg-geometry-element/SVGGeometryElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGAnimatedEnumeration from '../svg-element/SVGAnimatedEnumeration.js';
-import SVGAnimatedLength from '../svg-element/SVGAnimatedLength.js';
-import SVGAnimatedAngle from '../svg-element/SVGAnimatedAngle.js';
-import SVGAnimatedRect from '../svg-element/SVGAnimatedRect.js';
-import SVGAnimatedPreserveAspectRatio from '../svg-element/SVGAnimatedPreserveAspectRatio.js';
-import SVGAngle from '../svg-element/SVGAngle.js';
+import SVGAnimatedEnumeration from '../../svg/SVGAnimatedEnumeration.js';
+import SVGAnimatedLength from '../../svg/SVGAnimatedLength.js';
+import SVGAnimatedAngle from '../../svg/SVGAnimatedAngle.js';
+import SVGAnimatedRect from '../../svg/SVGAnimatedRect.js';
+import SVGAnimatedPreserveAspectRatio from '../../svg/SVGAnimatedPreserveAspectRatio.js';
+import SVGAngle from '../../svg/SVGAngle.js';
 
 /**
  * SVG Rect Element.
@@ -33,10 +33,14 @@ export default class SVGMarkerElement extends SVGGeometryElement {
 		if (!this[PropertySymbol.markerUnits]) {
 			this[PropertySymbol.markerUnits] = new SVGAnimatedEnumeration(
 				PropertySymbol.illegalConstructor,
-				this,
-				'markerUnits',
-				['userSpaceOnUse', 'strokeWidth'],
-				'strokeWidth'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('markerUnits'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('markerUnits', value) : this.removeAttribute('markerUnits'),
+					values: ['userSpaceOnUse', 'strokeWidth'],
+					defaultValue: 'strokeWidth'
+				}
 			);
 		}
 		return this[PropertySymbol.markerUnits];
@@ -51,8 +55,12 @@ export default class SVGMarkerElement extends SVGGeometryElement {
 		if (!this[PropertySymbol.markerWidth]) {
 			this[PropertySymbol.markerWidth] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'markerWidth'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('markerWidth'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('markerWidth', value) : this.removeAttribute('markerWidth')
+				}
 			);
 		}
 		return this[PropertySymbol.markerWidth];
@@ -67,8 +75,12 @@ export default class SVGMarkerElement extends SVGGeometryElement {
 		if (!this[PropertySymbol.markerHeight]) {
 			this[PropertySymbol.markerHeight] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'markerHeight'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('markerHeight'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('markerHeight', value) : this.removeAttribute('markerHeight')
+				}
 			);
 		}
 		return this[PropertySymbol.markerHeight];
@@ -83,10 +95,14 @@ export default class SVGMarkerElement extends SVGGeometryElement {
 		if (!this[PropertySymbol.orientType]) {
 			this[PropertySymbol.orientType] = new SVGAnimatedEnumeration(
 				PropertySymbol.illegalConstructor,
-				this,
-				'orient',
-				['auto', null],
-				'auto'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('orient'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('orient', value) : this.removeAttribute('orient'),
+					values: ['auto', null],
+					defaultValue: 'auto'
+				}
 			);
 		}
 		return this[PropertySymbol.orientType];
@@ -101,8 +117,12 @@ export default class SVGMarkerElement extends SVGGeometryElement {
 		if (!this[PropertySymbol.orientAngle]) {
 			this[PropertySymbol.orientAngle] = new SVGAnimatedAngle(
 				PropertySymbol.illegalConstructor,
-				this,
-				'orient'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('orient'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('orient', value) : this.removeAttribute('orient')
+				}
 			);
 		}
 		return this[PropertySymbol.orientAngle];
@@ -117,8 +137,12 @@ export default class SVGMarkerElement extends SVGGeometryElement {
 		if (!this[PropertySymbol.refX]) {
 			this[PropertySymbol.refX] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'refX'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('refX'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('refX', value) : this.removeAttribute('refX')
+				}
 			);
 		}
 		return this[PropertySymbol.refX];
@@ -133,8 +157,12 @@ export default class SVGMarkerElement extends SVGGeometryElement {
 		if (!this[PropertySymbol.refY]) {
 			this[PropertySymbol.refY] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'refY'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('refY'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('refY', value) : this.removeAttribute('refY')
+				}
 			);
 		}
 		return this[PropertySymbol.refY];
@@ -147,7 +175,15 @@ export default class SVGMarkerElement extends SVGGeometryElement {
 	 */
 	public get viewBox(): SVGAnimatedRect {
 		if (!this[PropertySymbol.viewBox]) {
-			this[PropertySymbol.viewBox] = new SVGAnimatedRect(PropertySymbol.illegalConstructor, this);
+			this[PropertySymbol.viewBox] = new SVGAnimatedRect(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('viewBox'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('viewBox', value) : this.removeAttribute('viewBox')
+				}
+			);
 		}
 		return this[PropertySymbol.viewBox];
 	}
@@ -161,7 +197,14 @@ export default class SVGMarkerElement extends SVGGeometryElement {
 		if (!this[PropertySymbol.preserveAspectRatio]) {
 			this[PropertySymbol.preserveAspectRatio] = new SVGAnimatedPreserveAspectRatio(
 				PropertySymbol.illegalConstructor,
-				this
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('preserveAspectRatio'),
+					setAttribute: (value) =>
+						value
+							? this.setAttribute('preserveAspectRatio', value)
+							: this.removeAttribute('preserveAspectRatio')
+				}
 			);
 		}
 		return this[PropertySymbol.preserveAspectRatio];

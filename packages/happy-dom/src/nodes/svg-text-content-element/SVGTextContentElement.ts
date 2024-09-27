@@ -1,9 +1,9 @@
 import SVGGraphicsElement from '../svg-graphics-element/SVGGraphicsElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGAnimatedLength from '../svg-element/SVGAnimatedLength.js';
-import SVGAnimatedEnumeration from '../svg-element/SVGAnimatedEnumeration.js';
-import SVGPoint from '../svg-element/SVGPoint.js';
-import SVGRect from '../svg-element/SVGRect.js';
+import SVGAnimatedLength from '../../svg/SVGAnimatedLength.js';
+import SVGAnimatedEnumeration from '../../svg/SVGAnimatedEnumeration.js';
+import SVGPoint from '../../svg/SVGPoint.js';
+import SVGRect from '../../svg/SVGRect.js';
 
 /**
  * SVG Text Content Element.
@@ -24,8 +24,12 @@ export default class SVGTextContentElement extends SVGGraphicsElement {
 		if (!this[PropertySymbol.textLength]) {
 			this[PropertySymbol.textLength] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'textLength'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('textLength'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('textLength', value) : this.removeAttribute('textLength')
+				}
 			);
 		}
 		return this[PropertySymbol.textLength];
@@ -40,10 +44,14 @@ export default class SVGTextContentElement extends SVGGraphicsElement {
 		if (!this[PropertySymbol.lengthAdjust]) {
 			this[PropertySymbol.lengthAdjust] = new SVGAnimatedEnumeration(
 				PropertySymbol.illegalConstructor,
-				this,
-				'lengthAdjust',
-				['spacing', 'spacingAndGlyphs'],
-				'spacing'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('lengthAdjust'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('lengthAdjust', value) : this.removeAttribute('lengthAdjust'),
+					values: ['spacing', 'spacingAndGlyphs'],
+					defaultValue: 'spacing'
+				}
 			);
 		}
 		return this[PropertySymbol.lengthAdjust];
@@ -90,7 +98,7 @@ export default class SVGTextContentElement extends SVGGraphicsElement {
 	 */
 	public getStartPositionOfChar(_charnum: number): SVGPoint {
 		// TODO: Implement.
-		return new SVGPoint(PropertySymbol.illegalConstructor);
+		return new SVGPoint(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
 	}
 
 	/**
@@ -100,7 +108,7 @@ export default class SVGTextContentElement extends SVGGraphicsElement {
 	 */
 	public getEndPositionOfChar(_charnum: number): SVGPoint {
 		// TODO: Implement.
-		return new SVGPoint(PropertySymbol.illegalConstructor);
+		return new SVGPoint(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
 	}
 
 	/**
@@ -110,7 +118,7 @@ export default class SVGTextContentElement extends SVGGraphicsElement {
 	 */
 	public getExtentOfChar(_charnum: number): SVGRect {
 		// TODO: Implement.
-		return new SVGRect(PropertySymbol.illegalConstructor, this);
+		return new SVGRect(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
 	}
 
 	/**

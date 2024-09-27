@@ -1,7 +1,7 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGAnimatedEnumeration from '../svg-element/SVGAnimatedEnumeration.js';
-import SVGAnimatedString from '../svg-element/SVGAnimatedString.js';
-import SVGAnimatedTransformList from '../svg-element/SVGAnimatedTransformList.js';
+import SVGAnimatedEnumeration from '../../svg/SVGAnimatedEnumeration.js';
+import SVGAnimatedString from '../../svg/SVGAnimatedString.js';
+import SVGAnimatedTransformList from '../../svg/SVGAnimatedTransformList.js';
 import SVGGraphicsElement from '../svg-graphics-element/SVGGraphicsElement.js';
 
 /**
@@ -25,8 +25,12 @@ export default class SVGGradientElement extends SVGGraphicsElement {
 		if (!this[PropertySymbol.href]) {
 			this[PropertySymbol.href] = new SVGAnimatedString(
 				PropertySymbol.illegalConstructor,
-				this,
-				'href'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('href'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('href', value) : this.removeAttribute('href')
+				}
 			);
 		}
 		return this[PropertySymbol.href];
@@ -41,10 +45,16 @@ export default class SVGGradientElement extends SVGGraphicsElement {
 		if (!this[PropertySymbol.gradientUnits]) {
 			this[PropertySymbol.gradientUnits] = new SVGAnimatedEnumeration(
 				PropertySymbol.illegalConstructor,
-				this,
-				'gradientUnits',
-				['userSpaceOnUse', 'objectBoundingBox'],
-				'objectBoundingBox'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('gradientUnits'),
+					setAttribute: (value) =>
+						value
+							? this.setAttribute('gradientUnits', value)
+							: this.removeAttribute('gradientUnits'),
+					values: ['userSpaceOnUse', 'objectBoundingBox'],
+					defaultValue: 'objectBoundingBox'
+				}
 			);
 		}
 		return this[PropertySymbol.gradientUnits];
@@ -59,7 +69,14 @@ export default class SVGGradientElement extends SVGGraphicsElement {
 		if (!this[PropertySymbol.gradientTransform]) {
 			this[PropertySymbol.gradientTransform] = new SVGAnimatedTransformList(
 				PropertySymbol.illegalConstructor,
-				this[PropertySymbol.window]
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('gradientTransform'),
+					setAttribute: (value) =>
+						value
+							? this.setAttribute('gradientTransform', value)
+							: this.removeAttribute('gradientTransform')
+				}
 			);
 		}
 		return this[PropertySymbol.gradientTransform];
@@ -74,10 +91,14 @@ export default class SVGGradientElement extends SVGGraphicsElement {
 		if (!this[PropertySymbol.spreadMethod]) {
 			this[PropertySymbol.spreadMethod] = new SVGAnimatedEnumeration(
 				PropertySymbol.illegalConstructor,
-				this,
-				'spreadMethod',
-				['pad', 'reflect', 'repeat'],
-				'pad'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('spreadMethod'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('spreadMethod', value) : this.removeAttribute('spreadMethod'),
+					values: ['pad', 'reflect', 'repeat'],
+					defaultValue: 'pad'
+				}
 			);
 		}
 		return this[PropertySymbol.spreadMethod];

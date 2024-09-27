@@ -1,7 +1,7 @@
 import SVGElement from '../svg-element/SVGElement.js';
-import SVGStringList from '../svg-element/SVGStringList.js';
+import SVGStringList from '../../svg/SVGStringList.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGStringListAttributeSeparatorEnum from '../svg-element/SVGStringListAttributeSeparatorEnum.js';
+import SVGStringListAttributeSeparatorEnum from '../../svg/SVGStringListAttributeSeparatorEnum.js';
 import Event from '../../event/Event.js';
 
 /**
@@ -28,9 +28,15 @@ export default class SVGAnimationElement extends SVGElement {
 		if (!this[PropertySymbol.requiredExtensions]) {
 			this[PropertySymbol.requiredExtensions] = new SVGStringList(
 				PropertySymbol.illegalConstructor,
-				this,
-				'requiredExtensions',
-				SVGStringListAttributeSeparatorEnum.space
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('requiredExtensions'),
+					setAttribute: (value) =>
+						value
+							? this.setAttribute('requiredExtensions', value)
+							: this.removeAttribute('requiredExtensions'),
+					attributeSeparator: SVGStringListAttributeSeparatorEnum.space
+				}
 			);
 		}
 		return this[PropertySymbol.requiredExtensions];
@@ -45,9 +51,15 @@ export default class SVGAnimationElement extends SVGElement {
 		if (!this[PropertySymbol.systemLanguage]) {
 			this[PropertySymbol.systemLanguage] = new SVGStringList(
 				PropertySymbol.illegalConstructor,
-				this,
-				'systemLanguage',
-				SVGStringListAttributeSeparatorEnum.comma
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('systemLanguage'),
+					setAttribute: (value) =>
+						value
+							? this.setAttribute('systemLanguage', value)
+							: this.removeAttribute('systemLanguage'),
+					attributeSeparator: SVGStringListAttributeSeparatorEnum.space
+				}
 			);
 		}
 		return this[PropertySymbol.systemLanguage];

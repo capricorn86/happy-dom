@@ -1,6 +1,6 @@
 import SVGGeometryElement from '../svg-geometry-element/SVGGeometryElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGAnimatedLength from '../svg-element/SVGAnimatedLength.js';
+import SVGAnimatedLength from '../../svg/SVGAnimatedLength.js';
 
 /**
  * SVG Ellipse Element.
@@ -23,8 +23,12 @@ export default class SVGEllipseElement extends SVGGeometryElement {
 		if (!this[PropertySymbol.cx]) {
 			this[PropertySymbol.cx] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'cx'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('cx'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('cx', value) : this.removeAttribute('cx')
+				}
 			);
 		}
 		return this[PropertySymbol.cx];
@@ -39,8 +43,12 @@ export default class SVGEllipseElement extends SVGGeometryElement {
 		if (!this[PropertySymbol.cy]) {
 			this[PropertySymbol.cy] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'cy'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('cy'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('cy', value) : this.removeAttribute('cy')
+				}
 			);
 		}
 		return this[PropertySymbol.cy];
@@ -55,8 +63,12 @@ export default class SVGEllipseElement extends SVGGeometryElement {
 		if (!this[PropertySymbol.rx]) {
 			this[PropertySymbol.rx] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'rx'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('rx'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('rx', value) : this.removeAttribute('rx')
+				}
 			);
 		}
 		return this[PropertySymbol.rx];
@@ -71,8 +83,12 @@ export default class SVGEllipseElement extends SVGGeometryElement {
 		if (!this[PropertySymbol.ry]) {
 			this[PropertySymbol.ry] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'ry'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('ry'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('ry', value) : this.removeAttribute('ry')
+				}
 			);
 		}
 		return this[PropertySymbol.ry];

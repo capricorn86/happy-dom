@@ -1,7 +1,7 @@
 import SVGElement from '../svg-element/SVGElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGAnimatedEnumeration from '../svg-element/SVGAnimatedEnumeration.js';
-import SVGAnimatedLength from '../svg-element/SVGAnimatedLength.js';
+import SVGAnimatedEnumeration from '../../svg/SVGAnimatedEnumeration.js';
+import SVGAnimatedLength from '../../svg/SVGAnimatedLength.js';
 
 /**
  * SVG Mask Element.
@@ -26,10 +26,14 @@ export default class SVGMaskElement extends SVGElement {
 		if (!this[PropertySymbol.maskUnits]) {
 			this[PropertySymbol.maskUnits] = new SVGAnimatedEnumeration(
 				PropertySymbol.illegalConstructor,
-				this,
-				'maskUnits',
-				['userSpaceOnUse', 'objectBoundingBox'],
-				'userSpaceOnUse'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('maskUnits'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('maskUnits', value) : this.removeAttribute('maskUnits'),
+					values: ['userSpaceOnUse', 'objectBoundingBox'],
+					defaultValue: 'userSpaceOnUse'
+				}
 			);
 		}
 		return this[PropertySymbol.maskUnits];
@@ -44,10 +48,16 @@ export default class SVGMaskElement extends SVGElement {
 		if (!this[PropertySymbol.maskContentUnits]) {
 			this[PropertySymbol.maskContentUnits] = new SVGAnimatedEnumeration(
 				PropertySymbol.illegalConstructor,
-				this,
-				'maskContentUnits',
-				['userSpaceOnUse', 'objectBoundingBox'],
-				'userSpaceOnUse'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('maskContentUnits'),
+					setAttribute: (value) =>
+						value
+							? this.setAttribute('maskContentUnits', value)
+							: this.removeAttribute('maskContentUnits'),
+					values: ['userSpaceOnUse', 'objectBoundingBox'],
+					defaultValue: 'userSpaceOnUse'
+				}
 			);
 		}
 		return this[PropertySymbol.maskContentUnits];
@@ -60,7 +70,15 @@ export default class SVGMaskElement extends SVGElement {
 	 */
 	public get x(): SVGAnimatedLength {
 		if (!this[PropertySymbol.x]) {
-			this[PropertySymbol.x] = new SVGAnimatedLength(PropertySymbol.illegalConstructor, this, 'x');
+			this[PropertySymbol.x] = new SVGAnimatedLength(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('x'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('x', value) : this.removeAttribute('x')
+				}
+			);
 		}
 		return this[PropertySymbol.x];
 	}
@@ -72,7 +90,15 @@ export default class SVGMaskElement extends SVGElement {
 	 */
 	public get y(): SVGAnimatedLength {
 		if (!this[PropertySymbol.y]) {
-			this[PropertySymbol.y] = new SVGAnimatedLength(PropertySymbol.illegalConstructor, this, 'y');
+			this[PropertySymbol.y] = new SVGAnimatedLength(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('y'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('y', value) : this.removeAttribute('y')
+				}
+			);
 		}
 		return this[PropertySymbol.y];
 	}
@@ -86,8 +112,12 @@ export default class SVGMaskElement extends SVGElement {
 		if (!this[PropertySymbol.width]) {
 			this[PropertySymbol.width] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'width'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('width'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('width', value) : this.removeAttribute('width')
+				}
 			);
 		}
 		return this[PropertySymbol.width];
@@ -102,8 +132,12 @@ export default class SVGMaskElement extends SVGElement {
 		if (!this[PropertySymbol.height]) {
 			this[PropertySymbol.height] = new SVGAnimatedLength(
 				PropertySymbol.illegalConstructor,
-				this,
-				'height'
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('height'),
+					setAttribute: (value) =>
+						value ? this.setAttribute('height', value) : this.removeAttribute('height')
+				}
 			);
 		}
 		return this[PropertySymbol.height];

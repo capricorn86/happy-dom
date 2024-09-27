@@ -4,7 +4,7 @@ import Element from '../element/Element.js';
 import SVGSVGElement from '../svg-svg-element/SVGSVGElement.js';
 import Event from '../../event/Event.js';
 import HTMLElementUtility from '../html-element/HTMLElementUtility.js';
-import DOMStringMap from '../element/DOMStringMap.js';
+import DOMStringMap from '../../dom/DOMStringMap.js';
 
 /**
  * SVG Element.
