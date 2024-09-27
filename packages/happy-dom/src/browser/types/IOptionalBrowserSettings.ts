@@ -2,6 +2,12 @@ import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
 import BrowserNavigationCrossOriginPolicyEnum from '../enums/BrowserNavigationCrossOriginPolicyEnum.js';
 
 export default interface IOptionalBrowserSettings {
+	/**
+	 * Allows resource urls to be transformed.
+	 * Ex: https://www.example.com/assets/index.js -> file:///Users/example-user/Projects/example/dist/assets/index.js
+	 */
+	resourceUrlTransformer?: (url: string) => string;
+
 	/** Disables JavaScript evaluation. */
 	disableJavaScriptEvaluation?: boolean;
 

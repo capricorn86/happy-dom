@@ -30,6 +30,12 @@ export default class ResourceFetch {
 	 * @returns Response.
 	 */
 	public async fetch(url: string): Promise<string> {
+		if (
+			typeof this.#browserFrame.page.context.browser.settings.resourceUrlTransformer === 'function'
+		) {
+			url = this.#browserFrame.page.context.browser.settings.resourceUrlTransformer(url);
+		}
+
 		const fetch = new Fetch({
 			browserFrame: this.#browserFrame,
 			window: this.window,
@@ -56,6 +62,11 @@ export default class ResourceFetch {
 	 * @returns Response.
 	 */
 	public fetchSync(url: string): string {
+		if (
+			typeof this.#browserFrame.page.context.browser.settings.resourceUrlTransformer === 'function'
+		) {
+			url = this.#browserFrame.page.context.browser.settings.resourceUrlTransformer(url);
+		}
 		const fetch = new SyncFetch({
 			browserFrame: this.#browserFrame,
 			window: this.window,

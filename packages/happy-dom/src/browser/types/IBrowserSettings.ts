@@ -5,6 +5,12 @@ import BrowserNavigationCrossOriginPolicyEnum from '../enums/BrowserNavigationCr
  * Browser settings.
  */
 export default interface IBrowserSettings {
+	/**
+	 * Allows resource urls to be transformed.
+	 * Ex: https://www.example.com/assets/index.js -> file:///Users/example-user/Projects/example/dist/assets/index.js
+	 */
+	resourceUrlTransformer?: (url: string) => string;
+
 	/** Disables JavaScript evaluation. */
 	disableJavaScriptEvaluation: boolean;
 
