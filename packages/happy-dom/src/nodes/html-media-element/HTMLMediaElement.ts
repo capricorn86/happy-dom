@@ -400,6 +400,15 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	/**
+	 * Sets src object.
+	 *
+	 * @param srcObject SrcObject.
+	 */
+	public set srcObject(srcObject: MediaStream | null) {
+		this[PropertySymbol.srcObject] = srcObject;
+	}
+
+	/**
 	 * Returns text track list.
 	 *
 	 * @returns Text track list.

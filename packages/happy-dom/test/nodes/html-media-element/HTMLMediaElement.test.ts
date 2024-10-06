@@ -293,6 +293,14 @@ describe('HTMLMediaElement', () => {
 		});
 	});
 
+	describe('set srcObject()', () => {
+		it('Sets the srcObject property', async () => {
+			const srcObject = <MediaStream>{};
+			element.srcObject = srcObject;
+			expect(element.srcObject).toBe(srcObject);
+		});
+	});
+
 	describe('get textTracks()', () => {
 		it('Returns an empty TextTrackList object by default.', () => {
 			expect(element.textTracks.length).toBe(0);
