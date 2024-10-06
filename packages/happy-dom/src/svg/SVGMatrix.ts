@@ -389,9 +389,7 @@ export default class SVGMatrix {
 	 * @param domMatrix DOM matrix.
 	 */
 	public [PropertySymbol.setDOMMatrix](domMatrix: DOMMatrix): void {
-		this[PropertySymbol.attributeValue] = `matrix(${domMatrix[PropertySymbol.toArray](true).join(
-			' '
-		)})`;
+		this[PropertySymbol.attributeValue] = domMatrix.toString().replace(/, /g, ' ');
 
 		if (this[PropertySymbol.setAttribute]) {
 			this[PropertySymbol.setAttribute](this[PropertySymbol.attributeValue]);

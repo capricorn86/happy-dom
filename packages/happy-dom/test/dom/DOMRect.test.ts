@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import DOMRect from '../../../src/nodes/element/DOMRect';
+import DOMRect from '../../src/dom/DOMRect.js';
 
 describe('DOMRect', () => {
 	afterEach(() => {

@@ -176,8 +176,6 @@ import ProcessingInstruction from '../nodes/processing-instruction/ProcessingIns
 import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
 import SVGDocument from '../nodes/svg-document/SVGDocument.js';
 import SVGElement from '../nodes/svg-element/SVGElement.js';
-import SVGGraphicsElement from '../nodes/svg-graphics-element/SVGGraphicsElement.js';
-import SVGSVGElement from '../nodes/svg-svg-element/SVGSVGElement.js';
 import Text from '../nodes/text/Text.js';
 import XMLDocument from '../nodes/xml-document/XMLDocument.js';
 import PermissionStatus from '../permissions/PermissionStatus.js';
@@ -211,6 +209,75 @@ import HTMLOptionsCollection from '../nodes/html-select-element/HTMLOptionsColle
 import WindowClassExtender from './WindowClassExtender.js';
 import WindowBrowserContext from './WindowBrowserContext.js';
 import CanvasCaptureMediaStreamTrack from '../nodes/html-canvas-element/CanvasCaptureMediaStreamTrack.js';
+import SVGSVGElement from '../nodes/svg-svg-element/SVGSVGElement.js';
+import SVGGraphicsElement from '../nodes/svg-graphics-element/SVGGraphicsElement.js';
+import SVGAnimateElement from '../nodes/svg-animate-element/SVGAnimateElement.js';
+import SVGAnimateMotionElement from '../nodes/svg-animate-motion-element/SVGAnimateMotionElement.js';
+import SVGAnimateTransformElement from '../nodes/svg-animate-transform-element/SVGAnimateTransformElement.js';
+import SVGCircleElement from '../nodes/svg-circle-element/SVGCircleElement.js';
+import SVGClipPathElement from '../nodes/svg-clip-path-element/SVGClipPathElement.js';
+import SVGDefsElement from '../nodes/svg-defs-element/SVGDefsElement.js';
+import SVGDescElement from '../nodes/svg-desc-element/SVGDescElement.js';
+import SVGEllipseElement from '../nodes/svg-ellipse-element/SVGEllipseElement.js';
+import SVGFEBlendElement from '../nodes/svg-fe-blend-element/SVGFEBlendElement.js';
+import SVGFEColorMatrixElement from '../nodes/svg-fe-color-matrix-element/SVGFEColorMatrixElement.js';
+import SVGFEComponentTransferElement from '../nodes/svg-fe-component-transfer-element/SVGFEComponentTransferElement.js';
+import SVGFECompositeElement from '../nodes/svg-fe-composite-element/SVGFECompositeElement.js';
+import SVGFEConvolveMatrixElement from '../nodes/svg-fe-convolve-matrix-element/SVGFEConvolveMatrixElement.js';
+import SVGFEDiffuseLightingElement from '../nodes/svg-fe-diffuse-lighting-element/SVGFEDiffuseLightingElement.js';
+import SVGFEDisplacementMapElement from '../nodes/svg-fe-displacement-map-element/SVGFEDisplacementMapElement.js';
+import SVGFEDistantLightElement from '../nodes/svg-fe-distant-light-element/SVGFEDistantLightElement.js';
+import SVGFEDropShadowElement from '../nodes/svg-fe-drop-shadow-element/SVGFEDropShadowElement.js';
+import SVGFEFloodElement from '../nodes/svg-fe-flood-element/SVGFEFloodElement.js';
+import SVGFEFuncAElement from '../nodes/svg-fe-func-a-element/SVGFEFuncAElement.js';
+import SVGFEFuncBElement from '../nodes/svg-fe-func-b-element/SVGFEFuncBElement.js';
+import SVGFEFuncGElement from '../nodes/svg-fe-func-g-element/SVGFEFuncGElement.js';
+import SVGFEFuncRElement from '../nodes/svg-fe-func-r-element/SVGFEFuncRElement.js';
+import SVGFEGaussianBlurElement from '../nodes/svg-fe-gaussian-blur-element/SVGFEGaussianBlurElement.js';
+import SVGFEImageElement from '../nodes/svg-fe-image-element/SVGFEImageElement.js';
+import SVGFEMergeElement from '../nodes/svg-fe-merge-element/SVGFEMergeElement.js';
+import SVGFEMergeNodeElement from '../nodes/svg-fe-merge-node-element/SVGFEMergeNodeElement.js';
+import SVGFEMorphologyElement from '../nodes/svg-fe-morphology-element/SVGFEMorphologyElement.js';
+import SVGFEOffsetElement from '../nodes/svg-fe-offset-element/SVGFEOffsetElement.js';
+import SVGFEPointLightElement from '../nodes/svg-fe-point-light-element/SVGFEPointLightElement.js';
+import SVGFESpecularLightingElement from '../nodes/svg-fe-specular-lighting-element/SVGFESpecularLightingElement.js';
+import SVGFESpotLightElement from '../nodes/svg-fe-spot-light-element/SVGFESpotLightElement.js';
+import SVGFETileElement from '../nodes/svg-fe-tile-element/SVGFETileElement.js';
+import SVGFETurbulenceElement from '../nodes/svg-fe-turbulence-element/SVGFETurbulenceElement.js';
+import SVGFilterElement from '../nodes/svg-filter-element/SVGFilterElement.js';
+import SVGForeignObjectElement from '../nodes/svg-foreign-object-element/SVGForeignObjectElement.js';
+import SVGGElement from '../nodes/svg-g-element/SVGGElement.js';
+import SVGImageElement from '../nodes/svg-image-element/SVGImageElement.js';
+import SVGLineElement from '../nodes/svg-line-element/SVGLineElement.js';
+import SVGLinearGradientElement from '../nodes/svg-linear-gradient-element/SVGLinearGradientElement.js';
+import SVGMarkerElement from '../nodes/svg-marker-element/SVGMarkerElement.js';
+import SVGMaskElement from '../nodes/svg-mask-element/SVGMaskElement.js';
+import SVGMetadataElement from '../nodes/svg-metadata-element/SVGMetadataElement.js';
+import SVGMPathElement from '../nodes/svg-m-path-element/SVGMPathElement.js';
+import SVGPathElement from '../nodes/svg-path-element/SVGPathElement.js';
+import SVGPatternElement from '../nodes/svg-pattern-element/SVGPatternElement.js';
+import SVGPolygonElement from '../nodes/svg-polygon-element/SVGPolygonElement.js';
+import SVGPolylineElement from '../nodes/svg-polyline-element/SVGPolylineElement.js';
+import SVGRadialGradientElement from '../nodes/svg-radial-gradient-element/SVGRadialGradientElement.js';
+import SVGRectElement from '../nodes/svg-rect-element/SVGRectElement.js';
+import SVGScriptElement from '../nodes/svg-script-element/SVGScriptElement.js';
+import SVGSetElement from '../nodes/svg-set-element/SVGSetElement.js';
+import SVGStopElement from '../nodes/svg-stop-element/SVGStopElement.js';
+import SVGStyleElement from '../nodes/svg-style-element/SVGStyleElement.js';
+import SVGSwitchElement from '../nodes/svg-switch-element/SVGSwitchElement.js';
+import SVGSymbolElement from '../nodes/svg-symbol-element/SVGSymbolElement.js';
+import SVGTextElement from '../nodes/svg-text-element/SVGTextElement.js';
+import SVGTextPathElement from '../nodes/svg-text-path-element/SVGTextPathElement.js';
+import SVGTitleElement from '../nodes/svg-title-element/SVGTitleElement.js';
+import SVGTSpanElement from '../nodes/svg-t-span-element/SVGTSpanElement.js';
+import SVGUseElement from '../nodes/svg-use-element/SVGUseElement.js';
+import SVGViewElement from '../nodes/svg-view-element/SVGViewElement.js';
+import SVGAnimationElement from '../nodes/svg-animation-element/SVGAnimationElement.js';
+import SVGComponentTransferFunctionElement from '../nodes/svg-component-transfer-function-element/SVGComponentTransferFunctionElement.js';
+import SVGGeometryElement from '../nodes/svg-geometry-element/SVGGeometryElement.js';
+import SVGGradientElement from '../nodes/svg-gradient-element/SVGGradientElement.js';
+import SVGTextPositioningElement from '../nodes/svg-text-positioning-element/SVGTextPositioningElement.js';
+
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
 	clearTimeout: globalThis.clearTimeout.bind(globalThis),
@@ -220,6 +287,7 @@ const TIMER = {
 	setImmediate: globalThis.setImmediate.bind(globalThis),
 	clearImmediate: globalThis.clearImmediate.bind(globalThis)
 };
+
 const IS_NODE_JS_TIMEOUT_ENVIRONMENT = setTimeout.toString().includes('new Timeout');
 
 /**
@@ -257,9 +325,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	// Nodes
 	public readonly Node = Node;
 	public readonly Attr = Attr;
-	public readonly SVGSVGElement = SVGSVGElement;
-	public readonly SVGElement = SVGElement;
-	public readonly SVGGraphicsElement = SVGGraphicsElement;
 	public readonly ShadowRoot = ShadowRoot;
 	public readonly ProcessingInstruction = ProcessingInstruction;
 	public readonly Element = Element;
@@ -277,7 +342,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare readonly Image: typeof Image;
 	public declare readonly Audio: typeof Audio;
 
-	// Element classes
+	// HTML Element classes
 	public readonly HTMLAnchorElement = HTMLAnchorElement;
 	public readonly HTMLButtonElement = HTMLButtonElement;
 	public readonly HTMLOptGroupElement = HTMLOptGroupElement;
@@ -344,6 +409,79 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly HTMLBRElement = HTMLBRElement;
 	public readonly HTMLBodyElement = HTMLBodyElement;
 	public readonly HTMLAreaElement = HTMLAreaElement;
+
+	// SVG Element classes
+	public readonly SVGSVGElement = SVGSVGElement;
+	public readonly SVGAnimateElement = SVGAnimateElement;
+	public readonly SVGAnimateMotionElement = SVGAnimateMotionElement;
+	public readonly SVGAnimateTransformElement = SVGAnimateTransformElement;
+	public readonly SVGCircleElement = SVGCircleElement;
+	public readonly SVGClipPathElement = SVGClipPathElement;
+	public readonly SVGDefsElement = SVGDefsElement;
+	public readonly SVGDescElement = SVGDescElement;
+	public readonly SVGEllipseElement = SVGEllipseElement;
+	public readonly SVGFEBlendElement = SVGFEBlendElement;
+	public readonly SVGFEColorMatrixElement = SVGFEColorMatrixElement;
+	public readonly SVGFEComponentTransferElement = SVGFEComponentTransferElement;
+	public readonly SVGFECompositeElement = SVGFECompositeElement;
+	public readonly SVGFEConvolveMatrixElement = SVGFEConvolveMatrixElement;
+	public readonly SVGFEDiffuseLightingElement = SVGFEDiffuseLightingElement;
+	public readonly SVGFEDisplacementMapElement = SVGFEDisplacementMapElement;
+	public readonly SVGFEDistantLightElement = SVGFEDistantLightElement;
+	public readonly SVGFEDropShadowElement = SVGFEDropShadowElement;
+	public readonly SVGFEFloodElement = SVGFEFloodElement;
+	public readonly SVGFEFuncAElement = SVGFEFuncAElement;
+	public readonly SVGFEFuncBElement = SVGFEFuncBElement;
+	public readonly SVGFEFuncGElement = SVGFEFuncGElement;
+	public readonly SVGFEFuncRElement = SVGFEFuncRElement;
+	public readonly SVGFEGaussianBlurElement = SVGFEGaussianBlurElement;
+	public readonly SVGFEImageElement = SVGFEImageElement;
+	public readonly SVGFEMergeElement = SVGFEMergeElement;
+	public readonly SVGFEMergeNodeElement = SVGFEMergeNodeElement;
+	public readonly SVGFEMorphologyElement = SVGFEMorphologyElement;
+	public readonly SVGFEOffsetElement = SVGFEOffsetElement;
+	public readonly SVGFEPointLightElement = SVGFEPointLightElement;
+	public readonly SVGFESpecularLightingElement = SVGFESpecularLightingElement;
+	public readonly SVGFESpotLightElement = SVGFESpotLightElement;
+	public readonly SVGFETileElement = SVGFETileElement;
+	public readonly SVGFETurbulenceElement = SVGFETurbulenceElement;
+	public readonly SVGFilterElement = SVGFilterElement;
+	public readonly SVGForeignObjectElement = SVGForeignObjectElement;
+	public readonly SVGGElement = SVGGElement;
+	public readonly SVGImageElement = SVGImageElement;
+	public readonly SVGLineElement = SVGLineElement;
+	public readonly SVGLinearGradientElement = SVGLinearGradientElement;
+	public readonly SVGMarkerElement = SVGMarkerElement;
+	public readonly SVGMaskElement = SVGMaskElement;
+	public readonly SVGMetadataElement = SVGMetadataElement;
+	public readonly SVGMPathElement = SVGMPathElement;
+	public readonly SVGPathElement = SVGPathElement;
+	public readonly SVGPatternElement = SVGPatternElement;
+	public readonly SVGPolygonElement = SVGPolygonElement;
+	public readonly SVGPolylineElement = SVGPolylineElement;
+	public readonly SVGRadialGradientElement = SVGRadialGradientElement;
+	public readonly SVGRectElement = SVGRectElement;
+	public readonly SVGScriptElement = SVGScriptElement;
+	public readonly SVGSetElement = SVGSetElement;
+	public readonly SVGStopElement = SVGStopElement;
+	public readonly SVGStyleElement = SVGStyleElement;
+	public readonly SVGSwitchElement = SVGSwitchElement;
+	public readonly SVGSymbolElement = SVGSymbolElement;
+	public readonly SVGTextElement = SVGTextElement;
+	public readonly SVGTextPathElement = SVGTextPathElement;
+	public readonly SVGTitleElement = SVGTitleElement;
+	public readonly SVGTSpanElement = SVGTSpanElement;
+	public readonly SVGUseElement = SVGUseElement;
+	public readonly SVGViewElement = SVGViewElement;
+
+	// Abstract SVG Element classes
+	public readonly SVGElement = SVGElement;
+	public readonly SVGAnimationElement = SVGAnimationElement;
+	public readonly SVGComponentTransferFunctionElement = SVGComponentTransferFunctionElement;
+	public readonly SVGGeometryElement = SVGGeometryElement;
+	public readonly SVGGradientElement = SVGGradientElement;
+	public readonly SVGTextPositioningElement = SVGTextPositioningElement;
+	public readonly SVGGraphicsElement = SVGGraphicsElement;
 
 	// Event classes
 	public readonly Event = Event;

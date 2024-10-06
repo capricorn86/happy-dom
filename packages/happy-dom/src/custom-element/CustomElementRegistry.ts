@@ -11,7 +11,7 @@ export default class CustomElementRegistry {
 	public [PropertySymbol.registry]: {
 		[k: string]: { elementClass: typeof HTMLElement; extends: string };
 	} = {};
-	public [PropertySymbol.registedClass]: Map<typeof HTMLElement, string> = new Map();
+	public [PropertySymbol.classRegistry]: Map<typeof HTMLElement, string> = new Map();
 	public [PropertySymbol.callbacks]: Map<string, Array<() => void>> = new Map();
 	public [PropertySymbol.destroyed]: boolean = false;
 	#window: BrowserWindow;
@@ -57,7 +57,7 @@ export default class CustomElementRegistry {
 			);
 		}
 
-		if (this[PropertySymbol.registedClass].has(elementClass)) {
+		if (this[PropertySymbol.classRegistry].has(elementClass)) {
 			throw new this.#window.DOMException(
 				"Failed to execute 'define' on 'CustomElementRegistry': this constructor has already been used with this registry"
 			);
@@ -75,7 +75,7 @@ export default class CustomElementRegistry {
 			elementClass,
 			extends: options && options.extends ? options.extends.toLowerCase() : null
 		};
-		this[PropertySymbol.registedClass].set(elementClass, name);
+		this[PropertySymbol.classRegistry].set(elementClass, name);
 
 		// ObservedAttributes should only be called once by CustomElementRegistry (see #117)
 		elementClass[PropertySymbol.observedAttributes] = (elementClass.observedAttributes || []).map(
@@ -152,7 +152,7 @@ export default class CustomElementRegistry {
 	 * @returns Found tag name or `null`.
 	 */
 	public getName(elementClass: typeof HTMLElement): string | null {
-		return this[PropertySymbol.registedClass].get(elementClass) || null;
+		return this[PropertySymbol.classRegistry].get(elementClass) || null;
 	}
 
 	/**
@@ -168,7 +168,7 @@ export default class CustomElementRegistry {
 			entity.elementClass.prototype[PropertySymbol.namespaceURI] = null;
 		}
 		this[PropertySymbol.registry] = {};
-		this[PropertySymbol.registedClass] = new Map();
+		this[PropertySymbol.classRegistry] = new Map();
 		this[PropertySymbol.callbacks] = new Map();
 	}
 

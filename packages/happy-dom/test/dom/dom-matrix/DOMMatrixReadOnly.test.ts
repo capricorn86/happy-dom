@@ -1,0 +1,1062 @@
+import { describe, it, expect } from 'vitest';
+import DOMMatrixReadOnly from '../../../src/dom/dom-matrix/DOMMatrixReadOnly.js';
+import DOMMatrix from '../../../src/dom/dom-matrix/DOMMatrix.js';
+import * as PropertySymbol from '../../../src/PropertySymbol.js';
+
+describe('DOMMatrixReadOnly', () => {
+	describe('constructor()', () => {
+		it('Creates a new DOMMatrixReadOnly.', () => {
+			const matrix = new DOMMatrixReadOnly();
+			expect(matrix).toBeInstanceOf(DOMMatrixReadOnly);
+		});
+
+		it('Creates a new DOMMatrixReadOnly from a 2D matrix string.', () => {
+			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+
+			expect(matrix.a).toBe(10);
+			expect(matrix.b).toBe(20);
+			expect(matrix.c).toBe(30);
+			expect(matrix.d).toBe(40);
+			expect(matrix.e).toBe(50);
+			expect(matrix.f).toBe(60);
+			expect(matrix.m11).toBe(10);
+			expect(matrix.m12).toBe(20);
+			expect(matrix.m13).toBe(0);
+			expect(matrix.m14).toBe(0);
+			expect(matrix.m21).toBe(30);
+			expect(matrix.m22).toBe(40);
+			expect(matrix.m23).toBe(0);
+			expect(matrix.m24).toBe(0);
+			expect(matrix.m31).toBe(0);
+			expect(matrix.m32).toBe(0);
+			expect(matrix.m33).toBe(1);
+			expect(matrix.m34).toBe(0);
+			expect(matrix.m41).toBe(50);
+			expect(matrix.m42).toBe(60);
+			expect(matrix.m43).toBe(0);
+			expect(matrix.m44).toBe(1);
+		});
+
+		it('Creates a new DOMMatrixReadOnly from a 3D matrix string.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
+			);
+
+			expect(matrix.a).toBe(1);
+			expect(matrix.b).toBe(2);
+			expect(matrix.c).toBe(5);
+			expect(matrix.d).toBe(6);
+			expect(matrix.e).toBe(13);
+			expect(matrix.f).toBe(14);
+			expect(matrix.m11).toBe(1);
+			expect(matrix.m12).toBe(2);
+			expect(matrix.m13).toBe(3);
+			expect(matrix.m14).toBe(4);
+			expect(matrix.m21).toBe(5);
+			expect(matrix.m22).toBe(6);
+			expect(matrix.m23).toBe(7);
+			expect(matrix.m24).toBe(8);
+			expect(matrix.m31).toBe(9);
+			expect(matrix.m32).toBe(10);
+			expect(matrix.m33).toBe(11);
+			expect(matrix.m34).toBe(12);
+			expect(matrix.m41).toBe(13);
+			expect(matrix.m42).toBe(14);
+			expect(matrix.m43).toBe(15);
+			expect(matrix.m44).toBe(16);
+		});
+
+		it('Creates a new DOMMatrixReadOnly from a DOMMatrix.', () => {
+			const matrix = new DOMMatrixReadOnly(new DOMMatrix('matrix(10, 20, 30, 40, 50, 60)'));
+
+			expect(matrix.a).toBe(10);
+			expect(matrix.b).toBe(20);
+			expect(matrix.c).toBe(30);
+			expect(matrix.d).toBe(40);
+			expect(matrix.e).toBe(50);
+			expect(matrix.f).toBe(60);
+			expect(matrix.m11).toBe(10);
+			expect(matrix.m12).toBe(20);
+			expect(matrix.m13).toBe(0);
+			expect(matrix.m14).toBe(0);
+			expect(matrix.m21).toBe(30);
+			expect(matrix.m22).toBe(40);
+			expect(matrix.m23).toBe(0);
+			expect(matrix.m24).toBe(0);
+			expect(matrix.m31).toBe(0);
+			expect(matrix.m32).toBe(0);
+			expect(matrix.m33).toBe(1);
+			expect(matrix.m34).toBe(0);
+			expect(matrix.m41).toBe(50);
+			expect(matrix.m42).toBe(60);
+			expect(matrix.m43).toBe(0);
+			expect(matrix.m44).toBe(1);
+		});
+
+		it('Creates a new DOMMatrixReadOnly from a DOMMatrixReadOnly.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				new DOMMatrixReadOnly('matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)')
+			);
+
+			expect(matrix.a).toBe(1);
+			expect(matrix.b).toBe(2);
+			expect(matrix.c).toBe(5);
+			expect(matrix.d).toBe(6);
+			expect(matrix.e).toBe(13);
+			expect(matrix.f).toBe(14);
+			expect(matrix.m11).toBe(1);
+			expect(matrix.m12).toBe(2);
+			expect(matrix.m13).toBe(3);
+			expect(matrix.m14).toBe(4);
+			expect(matrix.m21).toBe(5);
+			expect(matrix.m22).toBe(6);
+			expect(matrix.m23).toBe(7);
+			expect(matrix.m24).toBe(8);
+			expect(matrix.m31).toBe(9);
+			expect(matrix.m32).toBe(10);
+			expect(matrix.m33).toBe(11);
+			expect(matrix.m34).toBe(12);
+			expect(matrix.m41).toBe(13);
+			expect(matrix.m42).toBe(14);
+			expect(matrix.m43).toBe(15);
+			expect(matrix.m44).toBe(16);
+		});
+
+		it('Creates a new DOMMatrixReadOnly from a DOM Matrix compatible object.', () => {
+			const matrix = new DOMMatrixReadOnly({
+				a: 10,
+				b: 20,
+				c: 30,
+				d: 40,
+				e: 50,
+				f: 60
+			});
+
+			expect(matrix.a).toBe(10);
+			expect(matrix.b).toBe(20);
+			expect(matrix.c).toBe(30);
+			expect(matrix.d).toBe(40);
+			expect(matrix.e).toBe(50);
+			expect(matrix.f).toBe(60);
+			expect(matrix.m11).toBe(10);
+			expect(matrix.m12).toBe(20);
+			expect(matrix.m13).toBe(0);
+			expect(matrix.m14).toBe(0);
+			expect(matrix.m21).toBe(30);
+			expect(matrix.m22).toBe(40);
+			expect(matrix.m23).toBe(0);
+			expect(matrix.m24).toBe(0);
+			expect(matrix.m31).toBe(0);
+			expect(matrix.m32).toBe(0);
+			expect(matrix.m33).toBe(1);
+			expect(matrix.m34).toBe(0);
+			expect(matrix.m41).toBe(50);
+			expect(matrix.m42).toBe(60);
+			expect(matrix.m43).toBe(0);
+			expect(matrix.m44).toBe(1);
+
+			const matrix2 = new DOMMatrixReadOnly({
+				m11: 1,
+				m12: 2,
+				m13: 3,
+				m14: 4,
+				m21: 5,
+				m22: 6,
+				m23: 7,
+				m24: 8,
+				m31: 9,
+				m32: 10,
+				m33: 11,
+				m34: 12,
+				m41: 13,
+				m42: 14,
+				m43: 15,
+				m44: 16
+			});
+
+			expect(matrix2.a).toBe(1);
+			expect(matrix2.b).toBe(2);
+			expect(matrix2.c).toBe(5);
+			expect(matrix2.d).toBe(6);
+			expect(matrix2.e).toBe(13);
+			expect(matrix2.f).toBe(14);
+			expect(matrix2.m11).toBe(1);
+			expect(matrix2.m12).toBe(2);
+			expect(matrix2.m13).toBe(3);
+			expect(matrix2.m14).toBe(4);
+			expect(matrix2.m21).toBe(5);
+			expect(matrix2.m22).toBe(6);
+			expect(matrix2.m23).toBe(7);
+			expect(matrix2.m24).toBe(8);
+			expect(matrix2.m31).toBe(9);
+			expect(matrix2.m32).toBe(10);
+			expect(matrix2.m33).toBe(11);
+			expect(matrix2.m34).toBe(12);
+			expect(matrix2.m41).toBe(13);
+			expect(matrix2.m42).toBe(14);
+			expect(matrix2.m43).toBe(15);
+
+			const matrix3 = new DOMMatrixReadOnly({
+				m11: 1,
+				m12: 2,
+				m13: 3,
+				m14: 4
+			});
+
+			expect(matrix3.a).toBe(1);
+			expect(matrix3.b).toBe(2);
+			expect(matrix3.c).toBe(0);
+			expect(matrix3.d).toBe(1);
+			expect(matrix3.e).toBe(0);
+			expect(matrix3.f).toBe(0);
+			expect(matrix3.m11).toBe(1);
+			expect(matrix3.m12).toBe(2);
+			expect(matrix3.m13).toBe(3);
+			expect(matrix3.m14).toBe(4);
+			expect(matrix3.m21).toBe(0);
+			expect(matrix3.m22).toBe(1);
+			expect(matrix3.m23).toBe(0);
+			expect(matrix3.m24).toBe(0);
+			expect(matrix3.m31).toBe(0);
+			expect(matrix3.m32).toBe(0);
+			expect(matrix3.m33).toBe(1);
+			expect(matrix3.m34).toBe(0);
+			expect(matrix3.m41).toBe(0);
+			expect(matrix3.m42).toBe(0);
+			expect(matrix3.m43).toBe(0);
+			expect(matrix3.m44).toBe(1);
+		});
+
+		it('Creates a new DOMMatrixReadOnly from an 2D array.', () => {
+			const matrix = new DOMMatrixReadOnly([10, 20, 30, 40, 50, 60]);
+
+			expect(matrix.a).toBe(10);
+			expect(matrix.b).toBe(20);
+			expect(matrix.c).toBe(30);
+			expect(matrix.d).toBe(40);
+			expect(matrix.e).toBe(50);
+			expect(matrix.f).toBe(60);
+			expect(matrix.m11).toBe(10);
+			expect(matrix.m12).toBe(20);
+			expect(matrix.m13).toBe(0);
+			expect(matrix.m14).toBe(0);
+			expect(matrix.m21).toBe(30);
+			expect(matrix.m22).toBe(40);
+			expect(matrix.m23).toBe(0);
+			expect(matrix.m24).toBe(0);
+			expect(matrix.m31).toBe(0);
+			expect(matrix.m32).toBe(0);
+			expect(matrix.m33).toBe(1);
+			expect(matrix.m34).toBe(0);
+			expect(matrix.m41).toBe(50);
+			expect(matrix.m42).toBe(60);
+			expect(matrix.m43).toBe(0);
+			expect(matrix.m44).toBe(1);
+		});
+
+		it('Creates a new DOMMatrixReadOnly from an 3D array.', () => {
+			// prettier-ignore
+			const matrix = new DOMMatrixReadOnly([
+                1, 2, 3, 4,
+                5, 6, 7, 8,
+                9, 10, 11, 12,
+                13, 14, 15, 16
+            ]);
+
+			expect(matrix.a).toBe(1);
+			expect(matrix.b).toBe(2);
+			expect(matrix.c).toBe(5);
+			expect(matrix.d).toBe(6);
+			expect(matrix.e).toBe(13);
+			expect(matrix.f).toBe(14);
+			expect(matrix.m11).toBe(1);
+			expect(matrix.m12).toBe(2);
+			expect(matrix.m13).toBe(3);
+			expect(matrix.m14).toBe(4);
+			expect(matrix.m21).toBe(5);
+			expect(matrix.m22).toBe(6);
+			expect(matrix.m23).toBe(7);
+			expect(matrix.m24).toBe(8);
+			expect(matrix.m31).toBe(9);
+			expect(matrix.m32).toBe(10);
+			expect(matrix.m33).toBe(11);
+			expect(matrix.m34).toBe(12);
+			expect(matrix.m41).toBe(13);
+			expect(matrix.m42).toBe(14);
+			expect(matrix.m43).toBe(15);
+			expect(matrix.m44).toBe(16);
+		});
+	});
+
+	describe('get a()', () => {
+		it('Returns "m11" property.', () => {
+			const matrix = new DOMMatrixReadOnly();
+			matrix[PropertySymbol.m11] = 10;
+			expect(matrix.a).toBe(10);
+		});
+	});
+
+	describe('get b()', () => {
+		it('Returns "m12" property.', () => {
+			const matrix = new DOMMatrixReadOnly();
+			matrix[PropertySymbol.m12] = 10;
+			expect(matrix.b).toBe(10);
+		});
+	});
+
+	describe('get c()', () => {
+		it('Returns "m21" property.', () => {
+			const matrix = new DOMMatrixReadOnly();
+			matrix[PropertySymbol.m21] = 10;
+			expect(matrix.c).toBe(10);
+		});
+	});
+
+	describe('get d()', () => {
+		it('Returns "m22" property.', () => {
+			const matrix = new DOMMatrixReadOnly();
+			matrix[PropertySymbol.m22] = 10;
+			expect(matrix.d).toBe(10);
+		});
+	});
+
+	describe('get e()', () => {
+		it('Returns "m41" property.', () => {
+			const matrix = new DOMMatrixReadOnly();
+			matrix[PropertySymbol.m41] = 10;
+			expect(matrix.e).toBe(10);
+		});
+	});
+
+	describe('get f()', () => {
+		it('Returns "m42" property.', () => {
+			const matrix = new DOMMatrixReadOnly();
+			matrix[PropertySymbol.m42] = 10;
+			expect(matrix.f).toBe(10);
+		});
+	});
+
+	describe('get isIdentity()', () => {
+		it('Returns true if the matrix is an identity matrix.', () => {
+			const matrix = new DOMMatrixReadOnly();
+			expect(matrix.isIdentity).toBe(true);
+		});
+
+		it('Returns false if the matrix is not an identity matrix.', () => {
+			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			expect(matrix.isIdentity).toBe(false);
+		});
+	});
+
+	describe('get is2D()', () => {
+		it('Returns true if the matrix is a 2D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly();
+			expect(matrix.is2D).toBe(true);
+		});
+
+		it('Returns false if the matrix is a 3D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
+			);
+			expect(matrix.is2D).toBe(false);
+		});
+	});
+
+	describe('toFloat32Array()', () => {
+		it('Returns a Float32Array with the matrix values when "is2D" is not set.', () => {
+			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const array = matrix.toFloat32Array();
+
+			expect(array).toBeInstanceOf(Float32Array);
+			expect(array).toHaveLength(16);
+			expect(array[0]).toBe(10);
+			expect(array[1]).toBe(20);
+			expect(array[2]).toBe(0);
+			expect(array[3]).toBe(0);
+			expect(array[4]).toBe(30);
+			expect(array[5]).toBe(40);
+			expect(array[6]).toBe(0);
+			expect(array[7]).toBe(0);
+			expect(array[8]).toBe(0);
+			expect(array[9]).toBe(0);
+			expect(array[10]).toBe(1);
+			expect(array[11]).toBe(0);
+			expect(array[12]).toBe(50);
+			expect(array[13]).toBe(60);
+			expect(array[14]).toBe(0);
+			expect(array[15]).toBe(1);
+		});
+
+		it('Returns a Float32Array with the matrix values when "is2D" is set.', () => {
+			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const array = matrix.toFloat32Array(true);
+
+			expect(array).toBeInstanceOf(Float32Array);
+			expect(array).toHaveLength(6);
+			expect(array[0]).toBe(10);
+			expect(array[1]).toBe(20);
+			expect(array[2]).toBe(30);
+			expect(array[3]).toBe(40);
+			expect(array[4]).toBe(50);
+			expect(array[5]).toBe(60);
+		});
+	});
+
+	describe('toFloat64Array()', () => {
+		it('Returns a Float64Array with the matrix values when "is2D" is not set.', () => {
+			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const array = matrix.toFloat64Array();
+
+			expect(array).toBeInstanceOf(Float64Array);
+			expect(array).toHaveLength(16);
+			expect(array[0]).toBe(10);
+			expect(array[1]).toBe(20);
+			expect(array[2]).toBe(0);
+			expect(array[3]).toBe(0);
+			expect(array[4]).toBe(30);
+			expect(array[5]).toBe(40);
+			expect(array[6]).toBe(0);
+			expect(array[7]).toBe(0);
+			expect(array[8]).toBe(0);
+			expect(array[9]).toBe(0);
+			expect(array[10]).toBe(1);
+			expect(array[11]).toBe(0);
+			expect(array[12]).toBe(50);
+			expect(array[13]).toBe(60);
+			expect(array[14]).toBe(0);
+			expect(array[15]).toBe(1);
+		});
+
+		it('Returns a Float64Array with the matrix values when "is2D" is set.', () => {
+			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const array = matrix.toFloat64Array(true);
+
+			expect(array).toBeInstanceOf(Float64Array);
+			expect(array).toHaveLength(6);
+			expect(array[0]).toBe(10);
+			expect(array[1]).toBe(20);
+			expect(array[2]).toBe(30);
+			expect(array[3]).toBe(40);
+			expect(array[4]).toBe(50);
+			expect(array[5]).toBe(60);
+		});
+	});
+
+	describe('toString()', () => {
+		it('Returns a string representation of a 2D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			expect(matrix.toString()).toBe('matrix(10, 20, 30, 40, 50, 60)');
+		});
+
+		it('Returns a string representation of a 3D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
+			);
+			expect(matrix.toString()).toBe(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
+			);
+		});
+	});
+
+	describe('toJSON()', () => {
+		it('Returns a JSON representation of a 2D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			expect(matrix.toJSON()).toEqual({
+				a: 10,
+				b: 20,
+				c: 30,
+				d: 40,
+				e: 50,
+				f: 60,
+				is2D: true,
+				isIdentity: false,
+				m11: 10,
+				m12: 20,
+				m13: 0,
+				m14: 0,
+				m21: 30,
+				m22: 40,
+				m23: 0,
+				m24: 0,
+				m31: 0,
+				m32: 0,
+				m33: 1,
+				m34: 0,
+				m41: 50,
+				m42: 60,
+				m43: 0,
+				m44: 1
+			});
+		});
+
+		it('Returns a JSON representation of a 3D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
+			);
+			expect(matrix.toJSON()).toEqual({
+				a: 1,
+				b: 2,
+				c: 5,
+				d: 6,
+				e: 13,
+				f: 14,
+				is2D: false,
+				isIdentity: false,
+				m11: 1,
+				m12: 2,
+				m13: 3,
+				m14: 4,
+				m21: 5,
+				m22: 6,
+				m23: 7,
+				m24: 8,
+				m31: 9,
+				m32: 10,
+				m33: 11,
+				m34: 12,
+				m41: 13,
+				m42: 14,
+				m43: 15,
+				m44: 16
+			});
+		});
+	});
+
+	describe('multiply()', () => {
+		it('Multiplies two 2d matrices.', () => {
+			const matrix1 = new DOMMatrixReadOnly('matrix(2, 3, 4, 5, 6, 7)');
+			const matrix2 = new DOMMatrixReadOnly('matrix(2, 3, 4, 5, 6, 7)');
+			const result = matrix1.multiply(matrix2);
+
+			expect(result.m11).toBe(16);
+			expect(result.m12).toBe(21);
+			expect(result.m13).toBe(0);
+			expect(result.m14).toBe(0);
+			expect(result.m21).toBe(28);
+			expect(result.m22).toBe(37);
+			expect(result.m23).toBe(0);
+			expect(result.m24).toBe(0);
+			expect(result.m31).toBe(0);
+			expect(result.m32).toBe(0);
+			expect(result.m33).toBe(1);
+			expect(result.m34).toBe(0);
+			expect(result.m41).toBe(46);
+			expect(result.m42).toBe(60);
+			expect(result.m43).toBe(0);
+			expect(result.m44).toBe(1);
+
+			expect(result.a).toBe(16);
+			expect(result.b).toBe(21);
+			expect(result.c).toBe(28);
+			expect(result.d).toBe(37);
+			expect(result.e).toBe(46);
+			expect(result.f).toBe(60);
+		});
+
+		it('Multiplies two 3d matrices.', () => {
+			const matrix1 = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
+			);
+			const matrix2 = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
+			);
+			const result = matrix1.multiply(matrix2);
+
+			expect(result.m11).toBe(90);
+			expect(result.m12).toBe(100);
+			expect(result.m13).toBe(110);
+			expect(result.m14).toBe(120);
+			expect(result.m21).toBe(202);
+			expect(result.m22).toBe(228);
+			expect(result.m23).toBe(254);
+			expect(result.m24).toBe(280);
+			expect(result.m31).toBe(314);
+			expect(result.m32).toBe(356);
+			expect(result.m33).toBe(398);
+			expect(result.m34).toBe(440);
+			expect(result.m41).toBe(426);
+			expect(result.m42).toBe(484);
+			expect(result.m43).toBe(542);
+			expect(result.m44).toBe(600);
+
+			expect(result.a).toBe(90);
+			expect(result.b).toBe(100);
+			expect(result.c).toBe(202);
+			expect(result.d).toBe(228);
+			expect(result.e).toBe(426);
+			expect(result.f).toBe(484);
+		});
+	});
+
+	describe('translate()', () => {
+		it('Translates a 2D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const result = matrix.translate(10, 20);
+
+			expect(result.toJSON()).toEqual({
+				a: 10,
+				b: 20,
+				c: 30,
+				d: 40,
+				e: 750,
+				f: 1060,
+				is2D: true,
+				isIdentity: false,
+				m11: 10,
+				m12: 20,
+				m13: 0,
+				m14: 0,
+				m21: 30,
+				m22: 40,
+				m23: 0,
+				m24: 0,
+				m31: 0,
+				m32: 0,
+				m33: 1,
+				m34: 0,
+				m41: 750,
+				m42: 1060,
+				m43: 0,
+				m44: 1
+			});
+		});
+
+		it('Translates a 3D matrix.', () => {
+			const matrix1 = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
+			);
+			const result1 = matrix1.translate(10, 20, 30);
+
+			expect(result1.toJSON()).toEqual({
+				a: 1,
+				b: 2,
+				c: 5,
+				d: 6,
+				e: 393,
+				f: 454,
+				m11: 1,
+				m12: 2,
+				m13: 3,
+				m14: 4,
+				m21: 5,
+				m22: 6,
+				m23: 7,
+				m24: 8,
+				m31: 9,
+				m32: 10,
+				m33: 11,
+				m34: 12,
+				m41: 393,
+				m42: 454,
+				m43: 515,
+				m44: 576,
+				is2D: false,
+				isIdentity: false
+			});
+			const matrix2 = new DOMMatrixReadOnly(
+				'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 30, 1)'
+			);
+			const result2 = matrix2.translate(5, 6, 7);
+
+			expect(result2.toJSON()).toEqual({
+				a: 1,
+				b: 0,
+				c: 0,
+				d: 1,
+				e: 15,
+				f: 26,
+				m11: 1,
+				m12: 0,
+				m13: 0,
+				m14: 0,
+				m21: 0,
+				m22: 1,
+				m23: 0,
+				m24: 0,
+				m31: 0,
+				m32: 0,
+				m33: 1,
+				m34: 0,
+				m41: 15,
+				m42: 26,
+				m43: 37,
+				m44: 1,
+				is2D: false,
+				isIdentity: false
+			});
+		});
+	});
+
+	describe('scale()', () => {
+		it('Scales a 2D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const result = matrix.scale(2, 3);
+
+			expect(result.toJSON()).toEqual({
+				a: 20,
+				b: 40,
+				c: 90,
+				d: 120,
+				e: 50,
+				f: 60,
+				m11: 20,
+				m12: 40,
+				m13: 0,
+				m14: 0,
+				m21: 90,
+				m22: 120,
+				m23: 0,
+				m24: 0,
+				m31: 0,
+				m32: 0,
+				m33: 1,
+				m34: 0,
+				m41: 50,
+				m42: 60,
+				m43: 0,
+				m44: 1,
+				is2D: true,
+				isIdentity: false
+			});
+		});
+
+		it('Scales a 3D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
+			);
+			const result = matrix.scale(2, 3, 4);
+
+			expect(result.toJSON()).toEqual({
+				a: 2,
+				b: 4,
+				c: 15,
+				d: 18,
+				e: 13,
+				f: 14,
+				m11: 2,
+				m12: 4,
+				m13: 6,
+				m14: 8,
+				m21: 15,
+				m22: 18,
+				m23: 21,
+				m24: 24,
+				m31: 36,
+				m32: 40,
+				m33: 44,
+				m34: 48,
+				m41: 13,
+				m42: 14,
+				m43: 15,
+				m44: 16,
+				is2D: false,
+				isIdentity: false
+			});
+		});
+
+		it('Scales a 3D matrix with a point.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 30, 1)'
+			);
+			const result = matrix.scale(2, 3, 4, 5, 6, 7);
+
+			expect(result.toJSON()).toEqual({
+				a: 2,
+				b: 0,
+				c: 0,
+				d: 3,
+				e: 5,
+				f: 8,
+				m11: 2,
+				m12: 0,
+				m13: 0,
+				m14: 0,
+				m21: 0,
+				m22: 3,
+				m23: 0,
+				m24: 0,
+				m31: 0,
+				m32: 0,
+				m33: 4,
+				m34: 0,
+				m41: 5,
+				m42: 8,
+				m43: 9,
+				m44: 1,
+				is2D: false,
+				isIdentity: false
+			});
+		});
+	});
+
+	describe('scale3d()', () => {
+		it('Scales a 3D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
+			);
+			const result = matrix.scale3d(2);
+
+			expect(result.toJSON()).toEqual({
+				a: 2,
+				b: 4,
+				c: 10,
+				d: 12,
+				e: 13,
+				f: 14,
+				m11: 2,
+				m12: 4,
+				m13: 6,
+				m14: 8,
+				m21: 10,
+				m22: 12,
+				m23: 14,
+				m24: 16,
+				m31: 18,
+				m32: 20,
+				m33: 22,
+				m34: 24,
+				m41: 13,
+				m42: 14,
+				m43: 15,
+				m44: 16,
+				is2D: false,
+				isIdentity: false
+			});
+		});
+
+		it('Scales a 3D matrix with a point.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 30, 1)'
+			);
+			const result = matrix.scale3d(2, 5, 6, 7);
+
+			expect(result.toJSON()).toEqual({
+				a: 2,
+				b: 0,
+				c: 0,
+				d: 2,
+				e: 5,
+				f: 14,
+				m11: 2,
+				m12: 0,
+				m13: 0,
+				m14: 0,
+				m21: 0,
+				m22: 2,
+				m23: 0,
+				m24: 0,
+				m31: 0,
+				m32: 0,
+				m33: 2,
+				m34: 0,
+				m41: 5,
+				m42: 14,
+				m43: 23,
+				m44: 1,
+				is2D: false,
+				isIdentity: false
+			});
+		});
+	});
+
+	describe('scaleNonUniform()', () => {
+		it('Scales a 2D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const result = matrix.scaleNonUniform(2, 3);
+
+			expect(result.toJSON()).toEqual({
+				a: 20,
+				b: 40,
+				c: 90,
+				d: 120,
+				e: 50,
+				f: 60,
+				m11: 20,
+				m12: 40,
+				m13: 0,
+				m14: 0,
+				m21: 90,
+				m22: 120,
+				m23: 0,
+				m24: 0,
+				m31: 0,
+				m32: 0,
+				m33: 1,
+				m34: 0,
+				m41: 50,
+				m42: 60,
+				m43: 0,
+				m44: 1,
+				is2D: true,
+				isIdentity: false
+			});
+		});
+
+		it('Scales a 3D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
+			);
+			const result = matrix.scaleNonUniform(2, 3);
+
+			expect(result.toJSON()).toEqual({
+				a: 2,
+				b: 4,
+				c: 15,
+				d: 18,
+				e: 13,
+				f: 14,
+				m11: 2,
+				m12: 4,
+				m13: 6,
+				m14: 8,
+				m21: 15,
+				m22: 18,
+				m23: 21,
+				m24: 24,
+				m31: 9,
+				m32: 10,
+				m33: 11,
+				m34: 12,
+				m41: 13,
+				m42: 14,
+				m43: 15,
+				m44: 16,
+				is2D: false,
+				isIdentity: false
+			});
+		});
+	});
+
+	describe('rotateAxisAngle()', () => {
+		it('Rotates a 3D matrix around an axis.', () => {
+			const matrix1 = new DOMMatrixReadOnly(
+				'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 30, 1)'
+			);
+			const result1 = matrix1.rotateAxisAngle(0, 0, 1, 90);
+
+			expect(result1.toJSON()).toEqual({
+				a: 0,
+				b: 1,
+				c: -1,
+				d: 0,
+				e: 10,
+				f: 20,
+				m11: 0,
+				m12: 1,
+				m13: 0,
+				m14: 0,
+				m21: -1,
+				m22: 0,
+				m23: 0,
+				m24: 0,
+				m31: 0,
+				m32: 0,
+				m33: 1,
+				m34: 0,
+				m41: 10,
+				m42: 20,
+				m43: 30,
+				m44: 1,
+				is2D: false,
+				isIdentity: false
+			});
+
+			const matrix2 = new DOMMatrixReadOnly(
+				'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 30, 1)'
+			);
+			const result2 = matrix2.rotateAxisAngle(1, 0, 0, 90);
+
+			expect(result2.toJSON()).toEqual({
+				a: 1,
+				b: 0,
+				c: 0,
+				d: 0,
+				e: 10,
+				f: 20,
+				m11: 1,
+				m12: 0,
+				m13: 0,
+				m14: 0,
+				m21: 0,
+				m22: 0,
+				m23: 1,
+				m24: 0,
+				m31: 0,
+				m32: -1,
+				m33: 0,
+				m34: 0,
+				m41: 10,
+				m42: 20,
+				m43: 30,
+				m44: 1,
+				is2D: false,
+				isIdentity: false
+			});
+			const matrix3 = new DOMMatrixReadOnly(
+				'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 30, 1)'
+			);
+			const result3 = matrix3.rotateAxisAngle(1, 1, 1, 90);
+
+			expect(result3.toJSON()).toEqual({
+				a: 0.3333333333333334,
+				b: 0.9106836025229592,
+				c: -0.24401693585629242,
+				d: 0.3333333333333334,
+				e: 10,
+				f: 20,
+				m11: 0.3333333333333334,
+				m12: 0.9106836025229592,
+				m13: -0.24401693585629242,
+				m14: 0,
+				m21: -0.24401693585629242,
+				m22: 0.3333333333333334,
+				m23: 0.9106836025229592,
+				m24: 0,
+				m31: 0.9106836025229592,
+				m32: -0.24401693585629242,
+				m33: 0.3333333333333334,
+				m34: 0,
+				m41: 10,
+				m42: 20,
+				m43: 30,
+				m44: 1,
+				is2D: false,
+				isIdentity: false
+			});
+		});
+	});
+
+	// describe('rotate()', () => {
+	// 	it('Rotates a 2D matrix.', () => {
+	// 		const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+	// 		const result = matrix.rotate(90);
+
+	// 		expect(result.toJSON()).toEqual({
+	// 			a: 30,
+	// 			b: 40,
+	// 			c: -10,
+	// 			d: -20,
+	// 			e: 50,
+	// 			f: 60,
+	// 			m11: 30,
+	// 			m12: 40,
+	// 			m13: 0,
+	// 			m14: 0,
+	// 			m21: -10,
+	// 			m22: -20,
+	// 			m23: 0,
+	// 			m24: 0,
+	// 			m31: 0,
+	// 			m32: 0,
+	// 			m33: 1,
+	// 			m34: 0,
+	// 			m41: 50,
+	// 			m42: 60,
+	// 			m43: 0,
+	// 			m44: 1,
+	// 			is2D: true,
+	// 			isIdentity: false
+	// 		});
+	// 	});
+	// });
+});

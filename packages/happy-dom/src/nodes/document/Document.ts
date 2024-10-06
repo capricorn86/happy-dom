@@ -47,6 +47,7 @@ import ICachedResult from '../node/ICachedResult.js';
 import HTMLTitleElement from '../html-title-element/HTMLTitleElement.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import NodeFactory from '../NodeFactory.js';
+import SVGElementConfig from '../../config/SVGElementConfig.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -1072,10 +1073,12 @@ export default class Document extends Node {
 		qualifiedName: string,
 		options?: { is?: string }
 	): Element {
+		const window = this[PropertySymbol.window];
+
 		qualifiedName = String(qualifiedName);
 
 		if (!qualifiedName) {
-			throw new this[PropertySymbol.window].DOMException(
+			throw new window.DOMException(
 				"Failed to execute 'createElementNS' on 'Document': The qualified name provided is empty."
 			);
 		}
@@ -1083,9 +1086,8 @@ export default class Document extends Node {
 		// SVG element
 		if (namespaceURI === NamespaceURI.svg) {
 			const elementClass =
-				qualifiedName === 'svg'
-					? this[PropertySymbol.window].SVGSVGElement
-					: this[PropertySymbol.window].SVGElement;
+				(SVGElementConfig[qualifiedName] && window[SVGElementConfig[qualifiedName]]) ??
+				window.SVGElement;
 
 			const element = NodeFactory.createNode<SVGElement>(this, elementClass);
 
@@ -1099,7 +1101,7 @@ export default class Document extends Node {
 
 		// Custom HTML element
 		const customElement =
-			this[PropertySymbol.window].customElements[PropertySymbol.registry]?.[
+			window.customElements[PropertySymbol.registry]?.[
 				options && options.is ? String(options.is) : qualifiedName
 			];
 
@@ -1114,7 +1116,7 @@ export default class Document extends Node {
 
 		const localName = qualifiedName.toLowerCase();
 		const elementClass = HTMLElementConfig[localName]
-			? this[PropertySymbol.window][HTMLElementConfig[localName].className]
+			? window[HTMLElementConfig[localName].className]
 			: null;
 
 		// Known HTML element
@@ -1129,10 +1131,10 @@ export default class Document extends Node {
 			return element;
 		}
 
-		// Unknown HTML element
+		// Unknown HTML element (if it has an hyphen in the name, it is a custom element that hasn't been defined yet)
 		const unknownElementClass = localName.includes('-')
-			? this[PropertySymbol.window].HTMLElement
-			: this[PropertySymbol.window].HTMLUnknownElement;
+			? window.HTMLElement
+			: window.HTMLUnknownElement;
 
 		const element = NodeFactory.createNode<Element>(this, unknownElementClass);
 

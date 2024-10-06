@@ -41,8 +41,26 @@ const TRANSFORM_PARAMETER_SPLIT_REGEXP = /[\s,]+/;
  * DOM Matrix.
  *
  * Based on:
- * - https://github.com/thednp/dommatrix/tree/master
  * - https://github.com/trusktr/geometry-interfaces
+ * - https://github.com/thednp/dommatrix/tree/master
+ *
+ *
+ * 3D Matrix:
+ * _________________________
+ * | m11 | m21 | m31 | m41 |
+ * | m12 | m22 | m32 | m42 |
+ * | m13 | m23 | m33 | m43 |
+ * | m14 | m24 | m34 | m44 |
+ * -------------------------̣
+ *
+ * 2D Matrix:
+ * _________________________
+ * | m11 | m21 | 0   | m41 |
+ * | m12 | m22 | 0   | m42 |
+ * | 0   | 0   | 1   | 0   |
+ * | 0   | 0   | 0   | 1   |
+ * -------------------------
+ *
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/DOMMatrixReadOnly
  */
@@ -307,8 +325,8 @@ export default class DOMMatrixReadOnly {
 	 * @returns A string representation of the matrix.
 	 */
 	public toString(): string {
-		const { is2D } = this;
-		const values = this.toFloat64Array(is2D).join(', ');
+		const is2D = this.is2D;
+		const values = this[PropertySymbol.toArray](is2D).join(', ');
 		const type = is2D ? 'matrix' : 'matrix3d';
 		return `${type}(${values})`;
 	}
@@ -357,7 +375,7 @@ export default class DOMMatrixReadOnly {
 	 * @returns A new DOMMatrix object.
 	 */
 	public multiply(secondMatrix: IDOMMatrixCompatibleObject): DOMMatrixReadOnly {
-		const matrix = new (<typeof DOMMatrixReadOnly>this.constructor)();
+		const matrix = new (<typeof DOMMatrixReadOnly>this.constructor)(this);
 		matrix[PropertySymbol.multiplySelf](secondMatrix);
 		return matrix;
 	}
@@ -379,27 +397,37 @@ export default class DOMMatrixReadOnly {
 	/**
 	 * Returns a new DOMMatrix instance which is this matrix post multiplied by a scale 2D matrix containing the passed values.
 	 *
-	 * @param scale The scale factor.
+	 * @param [scaleX] X-Axis scale.
+	 * @param [scaleY] Y-Axis scale.
+	 * @param [scaleZ] Z-Axis scale.
 	 * @param [originX] X-Axis scale.
 	 * @param [originY] Y-Axis scale.
+	 * @param [originZ] Z-Axis scale.
 	 * @returns The resulted matrix
 	 */
-	public scale(scale, originX = 0, originY = 0): DOMMatrixReadOnly {
+	public scale(
+		scaleX = 1,
+		scaleY = 1,
+		scaleZ = 1,
+		originX = 0,
+		originY = 0,
+		originZ = 0
+	): DOMMatrixReadOnly {
 		const matrix = new (<typeof DOMMatrixReadOnly>this.constructor)(this);
-		matrix[PropertySymbol.scaleSelf](scale, originX, originY);
+		matrix[PropertySymbol.scaleSelf](scaleX, scaleY, scaleZ, originX, originY, originZ);
 		return matrix;
 	}
 
 	/**
 	 * Returns a new DOMMatrix instance which is this matrix post multiplied by a scale 3D matrix containing the passed values.
 	 *
-	 * @param scale The scale factor.
+	 * @param [scale] The scale factor.
 	 * @param [originX] X-Axis scale.
 	 * @param [originY] Y-Axis scale.
 	 * @param [originZ] Z-Axis scale.
 	 * @returns The resulted matrix
 	 */
-	public scale3d(scale, originX = 0, originY = 0, originZ = 0): DOMMatrixReadOnly {
+	public scale3d(scale = 1, originX = 0, originY = 0, originZ = 0): DOMMatrixReadOnly {
 		const matrix = new (<typeof DOMMatrixReadOnly>this.constructor)(this);
 		matrix[PropertySymbol.scale3dSelf](scale, originX, originY, originZ);
 		return matrix;
@@ -408,38 +436,27 @@ export default class DOMMatrixReadOnly {
 	/**
 	 * Returns a new DOMMatrix instance which is this matrix post multiplied by a scale 3D matrix containing the passed values.
 	 *
-	 * @param scaleX X-Axis scale.
+	 * @param [scaleX] X-Axis scale.
 	 * @param [scaleY] Y-Axis scale.
-	 * @param [scaleZ] Z-Axis scale.
-	 * @param [originX] X-Axis scale.
-	 * @param [originY] Y-Axis scale.
-	 * @param [originZ] Z-Axis scale.
 	 * @returns The resulted matrix
 	 */
-	public scaleNonUniform(
-		scaleX: number,
-		scaleY: number = 1,
-		scaleZ: number = 1,
-		originX: number = 0,
-		originY: number = 0,
-		originZ: number = 0
-	): DOMMatrixReadOnly {
+	public scaleNonUniform(scaleX = 1, scaleY = 1): DOMMatrixReadOnly {
 		const matrix = new (<typeof DOMMatrixReadOnly>this.constructor)(this);
-		matrix[PropertySymbol.scaleNonUniformSelf](scaleX, scaleY, scaleZ, originX, originY, originZ);
+		matrix[PropertySymbol.scaleNonUniformSelf](scaleX, scaleY);
 		return matrix;
 	}
 
 	/**
 	 * Returns a new DOMMatrix instance which is this matrix post multiplied by each of 3 rotation matrices about the major axes, first X, then Y, then Z.
 	 *
-	 * @param rx X component of the rotation, or Z if Y and Z are null.
-	 * @param [ry] Y component of the rotation value.
-	 * @param [rz] Z component of the rotation value.
+	 * @param [x] X component of the rotation, or Z if Y and Z are null.
+	 * @param [y] Y component of the rotation value.
+	 * @param [z] Z component of the rotation value.
 	 * @returns The resulted matrix
 	 */
-	public rotate(rx: number, ry: number = 0, rz: number = 0): DOMMatrixReadOnly {
+	public rotate(x = 0, y?: number, z?: number): DOMMatrixReadOnly {
 		const matrix = new (<typeof DOMMatrixReadOnly>this.constructor)(this);
-		matrix[PropertySymbol.rotateSelf](rx, ry, rz);
+		matrix[PropertySymbol.rotateSelf](x, y, z);
 		return matrix;
 	}
 
@@ -577,14 +594,16 @@ export default class DOMMatrixReadOnly {
 		if (typeof source === 'string' && source.length && source !== 'none') {
 			matrix = (<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromString](source);
 		}
-
 		// Array
-		if (Array.isArray(source) || source instanceof Float64Array || source instanceof Float32Array) {
+		else if (
+			Array.isArray(source) ||
+			source instanceof Float64Array ||
+			source instanceof Float32Array
+		) {
 			matrix = (<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray](source);
 		}
-
-		// DOMMatrixReadOnly or IMatrix
-		if (typeof source === 'object') {
+		// DOMMatrixReadOnly or IDOMMatrixCompatibleObject
+		else if (typeof source === 'object') {
 			matrix = (<typeof DOMMatrixReadOnly>this.constructor).fromMatrix(
 				<IDOMMatrixCompatibleObject>source
 			);
@@ -606,83 +625,6 @@ export default class DOMMatrixReadOnly {
 		this[PropertySymbol.m42] = matrix[PropertySymbol.m42];
 		this[PropertySymbol.m43] = matrix[PropertySymbol.m43];
 		this[PropertySymbol.m44] = matrix[PropertySymbol.m44];
-	}
-
-	/**
-	 * Applies translate to the matrix.
-	 *
-	 * This method is equivalent to the CSS `translate3d()` function.
-	 *
-	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/translate3d
-	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
-	 * @param [x] X-Axis position.
-	 * @param [y] Y-Axis position.
-	 * @param [z] Z-Axis position.
-	 */
-	public [PropertySymbol.translateSelf](x: number = 0, y: number = 0, z: number = 0): void {
-		// http://www.w3.org/TR/2012/WD-css3-transforms-20120911/#Translate3dDefined
-		// prettier-ignore
-		const translationMatrix = new DOMMatrixReadOnly([
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            x, y, z, 1,
-        ]);
-
-		this[PropertySymbol.multiplySelf](translationMatrix);
-	}
-
-	/**
-	 * Applies a rotation to the matrix.
-	 *
-	 * @see http://en.wikipedia.org/wiki/Rotation_matrix
-	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
-	 * @param rx X-Axis rotation.
-	 * @param [ry] Y-Axis rotation.
-	 * @param [rz] Z-Axis rotation.
-	 */
-	public [PropertySymbol.rotateSelf](rx: number, ry: number = 0, rz: number = 0): void {
-		// TODO: Is this correct?
-		if (typeof rx === 'number' && typeof ry === 'undefined' && typeof rz === 'undefined') {
-			rx = 0;
-			ry = 0;
-			rz = rx;
-		}
-
-		const matrix = Object.assign({}, DEFAULT_MATRIX_JSON);
-
-		const degToRad = Math.PI / 180;
-		const radX = rx * degToRad;
-		const radY = ry * degToRad;
-		const radZ = rz * degToRad;
-
-		// minus sin() because of right-handed system
-		const cosx = Math.cos(radX);
-		const sinx = -Math.sin(radX);
-		const cosy = Math.cos(radY);
-		const siny = -Math.sin(radY);
-		const cosz = Math.cos(radZ);
-		const sinz = -Math.sin(radZ);
-
-		const m11 = cosy * cosz;
-		const m12 = -cosy * sinz;
-
-		matrix.m11 = m11;
-		matrix.m12 = m12;
-		matrix.m13 = siny;
-
-		const m21 = sinx * siny * cosz + cosx * sinz;
-
-		matrix.m21 = m21;
-
-		const m22 = cosx * cosz - sinx * siny * sinz;
-
-		matrix.m22 = m22;
-		matrix.m23 = -sinx * cosy;
-		matrix.m31 = sinx * sinz - cosx * siny * cosz;
-		matrix.m32 = sinx * cosz + cosx * siny * sinz;
-
-		return this[PropertySymbol.multiplySelf](matrix);
 	}
 
 	/**
@@ -710,77 +652,121 @@ export default class DOMMatrixReadOnly {
 
 		if (isNaN(x) || isNaN(y) || isNaN(z) || isNaN(angle)) {
 			throw new TypeError(
-				`Failed to execute 'rotateAxisAngle' on 'DOMMatrix': The arguments must be numbers.`
+				`Failed to execute 'rotateAxisAngleSelf' on 'DOMMatrix': The arguments must be numbers.`
 			);
 		}
-
 		const length = Math.sqrt(x * x + y * y + z * z);
 
 		// Bad vector length
 		if (length === 0) {
+			// TODO: Should this throw an error?
 			return;
 		}
 
-		const matrix = Object.assign({}, DEFAULT_MATRIX_JSON);
-		const X = x / length;
-		const Y = y / length;
-		const Z = z / length;
+		x = x / length;
+		y = y / length;
+		z = z / length;
 
-		const angleToApply = angle * (Math.PI / 360);
-		const sinA = Math.sin(angleToApply);
-		const cosA = Math.cos(angleToApply);
-		const sinA2 = sinA * sinA;
-		const x2 = X * X;
-		const y2 = Y * Y;
-		const z2 = Z * Z;
+		const alpha = (angle * Math.PI) / 180;
 
-		const m11 = 1 - 2 * (y2 + z2) * sinA2;
+		const sc = Math.sin(alpha / 2) * Math.cos(alpha / 2);
+		const sq = Math.sin(alpha / 2) * Math.sin(alpha / 2);
 
-		matrix.m11 = m11;
+		/**
+		 * 3D Matrix:
+		 * _________________________
+		 * | m11 | m21 | m31 | m41 |
+		 * | m12 | m22 | m32 | m42 |
+		 * | m13 | m23 | m33 | m43 |
+		 * | m14 | m24 | m34 | m44 |
+		 * -------------------------̣
+		 */
 
-		const m12 = 2 * (X * Y * sinA2 + Z * sinA * cosA);
-
-		matrix.m12 = m12;
-		matrix.m13 = 2 * (X * Z * sinA2 - Y * sinA * cosA);
-
-		const m21 = 2 * (Y * X * sinA2 - Z * sinA * cosA);
-
-		matrix.m21 = m21;
-
-		const m22 = 1 - 2 * (z2 + x2) * sinA2;
-
-		matrix.m22 = m22;
-		matrix.m23 = 2 * (Y * Z * sinA2 + X * sinA * cosA);
-		matrix.m31 = 2 * (Z * X * sinA2 + Y * sinA * cosA);
-		matrix.m32 = 2 * (Z * Y * sinA2 - X * sinA * cosA);
-		matrix.m33 = 1 - 2 * (x2 + y2) * sinA2;
-
-		return this[PropertySymbol.multiplySelf](matrix);
-	}
-
-	/**
-	 * Applies a scale to the matrix.
-	 *
-	 * This method is equivalent to the CSS `scale()` function.
-	 *
-	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/scale3d
-	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
-	 * @param scale The scale factor.
-	 * @param [originX] X-Axis scale.
-	 * @param [originY] Y-Axis scale.
-	 */
-	public [PropertySymbol.scaleSelf](scale, originX = 0, originY = 0): void {
-		this[PropertySymbol.translateSelf](originX, originY);
+		const m11 = 1 - 2 * (y * y + z * z) * sq;
+		const m12 = 2 * (x * y * sq + z * sc);
+		const m13 = 2 * (x * z * sq - y * sc);
+		const m21 = 2 * (x * y * sq - z * sc);
+		const m22 = 1 - 2 * (x * x + z * z) * sq;
+		const m23 = 2 * (y * z * sq + x * sc);
+		const m31 = 2 * (x * z * sq + y * sc);
+		const m32 = 2 * (y * z * sq - x * sc);
+		const m33 = 1 - 2 * (x * x + y * y) * sq;
 
 		// prettier-ignore
-		this[PropertySymbol.multiplySelf](new (<typeof DOMMatrixReadOnly>this.constructor)([
-            // 2D:
-            /* a*/scale, /* b*/0,
-            /* c*/0,     /* d*/scale,
-            /* e*/0,     /* f*/0,
-        ]))
+		const matrix = (<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
+            m11, m21, m31, 0,
+            m12, m22, m32, 0,
+            m13, m23, m33, 0,
+            0,   0,   0,   1
+        ]);
 
-		this[PropertySymbol.translateSelf](-originX, -originY);
+		this[PropertySymbol.multiplySelf](matrix);
+	}
+
+	/**
+	 * Applies a rotation to the matrix.
+	 *
+	 * @see http://en.wikipedia.org/wiki/Rotation_matrix
+	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
+	 * @param [x] X-Axis rotation.
+	 * @param [y] Y-Axis rotation.
+	 * @param [z] Z-Axis rotation.
+	 */
+	public [PropertySymbol.rotateSelf](x: number = 0, y?: number, z?: number): void {
+		// If Y and Z are both missing, set Z to the value of X and set X and Y to 0.
+		if (y === undefined && z === undefined) {
+			z = x;
+			x = 0;
+			y = 0;
+		}
+
+		// If Y is still missing, set Y to 0.
+		if (y === undefined) {
+			y = 0;
+		}
+
+		// If Z is still missing, set Z to 0
+		if (z === undefined) {
+			y = 0;
+		}
+
+		x = Number(x);
+		y = Number(y);
+		z = Number(z);
+
+		if (isNaN(x) || isNaN(y) || isNaN(z)) {
+			throw new TypeError(
+				`Failed to execute 'rotateSelf' on 'DOMMatrix': The arguments must be numbers.`
+			);
+		}
+
+		this[PropertySymbol.rotateAxisAngleSelf](0, 0, 1, z);
+		this[PropertySymbol.rotateAxisAngleSelf](0, 1, 0, y);
+		this[PropertySymbol.rotateAxisAngleSelf](1, 0, 0, x);
+	}
+
+	/**
+	 * Applies translate to the matrix.
+	 *
+	 * This method is equivalent to the CSS `translate3d()` function.
+	 *
+	 * @see https://drafts.csswg.org/css-transforms-1/#TranslateDefined
+	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/translate3d
+	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
+	 * @param [x] X-Axis position.
+	 * @param [y] Y-Axis position.
+	 * @param [z] Z-Axis position.
+	 */
+	public [PropertySymbol.translateSelf](x: number = 0, y: number = 0, z: number = 0): void {
+		// prettier-ignore
+		const translationMatrix = (<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            x, y, z, 1,
+        ]);
+
+		this[PropertySymbol.multiplySelf](translationMatrix);
 	}
 
 	/**
@@ -788,19 +774,58 @@ export default class DOMMatrixReadOnly {
 	 *
 	 * This method is equivalent to the CSS `scale()` function.
 	 *
-	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/scale3d
+	 * @see https://drafts.csswg.org/css-transforms-1/#ScaleDefined
+	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/scale
 	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
-	 * @param scale The scale factor.
+	 * @param [scaleX] X-Axis scale.
+	 * @param [scaleY] Y-Axis scale.
+	 * @param [scaleZ] Z-Axis scale.
 	 * @param [originX] X-Axis scale.
 	 * @param [originY] Y-Axis scale.
 	 * @param [originZ] Z-Axis scale.
 	 */
-	public [PropertySymbol.scale3dSelf](scale, originX = 0, originY = 0, originZ = 0): void {
+	public [PropertySymbol.scaleSelf](
+		scaleX: number,
+		scaleY: number,
+		scaleZ = 1,
+		originX = 0,
+		originY = 0,
+		originZ = 0
+	): void {
+		// If scaleY is missing, set scaleY to the value of scaleX.
+		scaleX = scaleX === undefined ? 1 : Number(scaleX);
+		scaleY = scaleY === undefined ? scaleX : Number(scaleY);
+
 		this[PropertySymbol.translateSelf](originX, originY, originZ);
 
 		// prettier-ignore
-		this[PropertySymbol.multiplySelf](new (<typeof DOMMatrixReadOnly>this.constructor)([
-            // 3D
+		this[PropertySymbol.multiplySelf]((<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
+            scaleX, 0,      0,      0,
+            0,      scaleY, 0,      0,
+            0,      0,      scaleZ, 0,
+            0,      0,      0,      1,
+        ]))
+
+		this[PropertySymbol.translateSelf](-originX, -originY, -originZ);
+	}
+
+	/**
+	 * Applies a scale to the matrix.
+	 *
+	 * This method is equivalent to the CSS `scale()` function.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/scale3d
+	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
+	 * @param [scale] The scale factor.
+	 * @param [originX] X-Axis scale.
+	 * @param [originY] Y-Axis scale.
+	 * @param [originZ] Z-Axis scale.
+	 */
+	public [PropertySymbol.scale3dSelf](scale = 1, originX = 0, originY = 0, originZ = 0): void {
+		this[PropertySymbol.translateSelf](originX, originY, originZ);
+
+		// prettier-ignore
+		this[PropertySymbol.multiplySelf]((<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
             scale, 0,     0,     0,
             0,     scale, 0,     0,
             0,     0,     scale, 0,
@@ -814,33 +839,17 @@ export default class DOMMatrixReadOnly {
 	 * Applies a scale to the matrix.
 	 *
 	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
-	 * @param scaleX X-Axis scale.
+	 * @param [scaleX] X-Axis scale.
 	 * @param [scaleY] Y-Axis scale.
-	 * @param [scaleZ] Z-Axis scale.
-	 * @param [originX] X-Axis scale.
-	 * @param [originY] Y-Axis scale.
-	 * @param [originZ] Z-Axis scale.
 	 */
-	public [PropertySymbol.scaleNonUniformSelf](
-		scaleX,
-		scaleY = 1,
-		scaleZ = 1,
-		originX = 0,
-		originY = 0,
-		originZ = 0
-	): void {
-		this[PropertySymbol.translateSelf](originX, originY, originZ);
-
+	public [PropertySymbol.scaleNonUniformSelf](scaleX = 1, scaleY = 1): void {
 		// prettier-ignore
-		this[PropertySymbol.multiplySelf](new (<typeof DOMMatrixReadOnly>this.constructor)([
-            // 3D
+		this[PropertySymbol.multiplySelf]((<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
             scaleX, 0,      0,      0,
             0,      scaleY, 0,      0,
-            0,      0,      scaleZ, 0,
+            0,      0,      1,      0,
             0,      0,      0,      1,
-        ]))
-
-		this[PropertySymbol.translateSelf](-originX, -originY, -originZ);
+        ]));
 	}
 
 	/**
@@ -889,101 +898,120 @@ export default class DOMMatrixReadOnly {
 	 * @param matrix Second matrix.
 	 */
 	public [PropertySymbol.multiplySelf](matrix: IDOMMatrixCompatibleObject): void {
-		if (matrix?.m11 === undefined && matrix?.a !== undefined) {
-			matrix = Object.assign({}, DEFAULT_MATRIX_JSON, matrix);
-			matrix.m11 = matrix.a;
-			matrix.m12 = matrix.b;
-			matrix.m21 = matrix.c;
-			matrix.m22 = matrix.d;
-			matrix.m41 = matrix.e;
-			matrix.m42 = matrix.f;
-		} else {
-			matrix = Object.assign({}, DEFAULT_MATRIX_JSON, matrix);
+		if (!(matrix instanceof DOMMatrixReadOnly)) {
+			if (matrix?.m11 === undefined && matrix?.a !== undefined) {
+				matrix = Object.assign({}, DEFAULT_MATRIX_JSON, matrix);
+				matrix.m11 = matrix.a;
+				matrix.m12 = matrix.b;
+				matrix.m21 = matrix.c;
+				matrix.m22 = matrix.d;
+				matrix.m41 = matrix.e;
+				matrix.m42 = matrix.f;
+			} else {
+				matrix = Object.assign({}, DEFAULT_MATRIX_JSON, matrix);
+			}
 		}
 
-		this[PropertySymbol.m11] =
-			matrix.m11 * this[PropertySymbol.m11] +
-			matrix.m12 * this[PropertySymbol.m21] +
-			matrix.m13 * this[PropertySymbol.m31] +
-			matrix.m14 * this[PropertySymbol.m41];
-		this[PropertySymbol.m12] =
-			matrix.m11 * this[PropertySymbol.m12] +
-			matrix.m12 * this[PropertySymbol.m22] +
-			matrix.m13 * this[PropertySymbol.m32] +
-			matrix.m14 * this[PropertySymbol.m42];
-		this[PropertySymbol.m13] =
-			matrix.m11 * this[PropertySymbol.m13] +
-			matrix.m12 * this[PropertySymbol.m23] +
-			matrix.m13 * this[PropertySymbol.m33] +
-			matrix.m14 * this[PropertySymbol.m43];
-		this[PropertySymbol.m14] =
-			matrix.m11 * this[PropertySymbol.m14] +
-			matrix.m12 * this[PropertySymbol.m24] +
-			matrix.m13 * this[PropertySymbol.m34] +
-			matrix.m14 * this[PropertySymbol.m44];
+		const m11 =
+			this[PropertySymbol.m11] * matrix.m11 +
+			this[PropertySymbol.m21] * matrix.m12 +
+			this[PropertySymbol.m31] * matrix.m13 +
+			this[PropertySymbol.m41] * matrix.m14;
+		const m21 =
+			this[PropertySymbol.m11] * matrix.m21 +
+			this[PropertySymbol.m21] * matrix.m22 +
+			this[PropertySymbol.m31] * matrix.m23 +
+			this[PropertySymbol.m41] * matrix.m24;
+		const m31 =
+			this[PropertySymbol.m11] * matrix.m31 +
+			this[PropertySymbol.m21] * matrix.m32 +
+			this[PropertySymbol.m31] * matrix.m33 +
+			this[PropertySymbol.m41] * matrix.m34;
+		const m41 =
+			this[PropertySymbol.m11] * matrix.m41 +
+			this[PropertySymbol.m21] * matrix.m42 +
+			this[PropertySymbol.m31] * matrix.m43 +
+			this[PropertySymbol.m41] * matrix.m44;
 
-		this[PropertySymbol.m21] =
-			matrix.m21 * this[PropertySymbol.m11] +
-			matrix.m22 * this[PropertySymbol.m21] +
-			matrix.m23 * this[PropertySymbol.m31] +
-			matrix.m24 * this[PropertySymbol.m41];
-		this[PropertySymbol.m22] =
-			matrix.m21 * this[PropertySymbol.m12] +
-			matrix.m22 * this[PropertySymbol.m22] +
-			matrix.m23 * this[PropertySymbol.m32] +
-			matrix.m24 * this[PropertySymbol.m42];
-		this[PropertySymbol.m23] =
-			matrix.m21 * this[PropertySymbol.m13] +
-			matrix.m22 * this[PropertySymbol.m23] +
-			matrix.m23 * this[PropertySymbol.m33] +
-			matrix.m24 * this[PropertySymbol.m43];
-		this[PropertySymbol.m24] =
-			matrix.m21 * this[PropertySymbol.m14] +
-			matrix.m22 * this[PropertySymbol.m24] +
-			matrix.m23 * this[PropertySymbol.m34] +
-			matrix.m24 * this[PropertySymbol.m44];
+		const m12 =
+			this[PropertySymbol.m12] * matrix.m11 +
+			this[PropertySymbol.m22] * matrix.m12 +
+			this[PropertySymbol.m32] * matrix.m13 +
+			this[PropertySymbol.m42] * matrix.m14;
+		const m22 =
+			this[PropertySymbol.m12] * matrix.m21 +
+			this[PropertySymbol.m22] * matrix.m22 +
+			this[PropertySymbol.m32] * matrix.m23 +
+			this[PropertySymbol.m42] * matrix.m24;
+		const m32 =
+			this[PropertySymbol.m12] * matrix.m31 +
+			this[PropertySymbol.m22] * matrix.m32 +
+			this[PropertySymbol.m32] * matrix.m33 +
+			this[PropertySymbol.m42] * matrix.m34;
+		const m42 =
+			this[PropertySymbol.m12] * matrix.m41 +
+			this[PropertySymbol.m22] * matrix.m42 +
+			this[PropertySymbol.m32] * matrix.m43 +
+			this[PropertySymbol.m42] * matrix.m44;
 
-		this[PropertySymbol.m31] =
-			matrix.m31 * this[PropertySymbol.m11] +
-			matrix.m32 * this[PropertySymbol.m21] +
-			matrix.m33 * this[PropertySymbol.m31] +
-			matrix.m34 * this[PropertySymbol.m41];
-		this[PropertySymbol.m32] =
-			matrix.m31 * this[PropertySymbol.m12] +
-			matrix.m32 * this[PropertySymbol.m22] +
-			matrix.m33 * this[PropertySymbol.m32] +
-			matrix.m34 * this[PropertySymbol.m42];
-		this[PropertySymbol.m33] =
-			matrix.m31 * this[PropertySymbol.m13] +
-			matrix.m32 * this[PropertySymbol.m23] +
-			matrix.m33 * this[PropertySymbol.m33] +
-			matrix.m34 * this[PropertySymbol.m43];
-		this[PropertySymbol.m34] =
-			matrix.m31 * this[PropertySymbol.m14] +
-			matrix.m32 * this[PropertySymbol.m24] +
-			matrix.m33 * this[PropertySymbol.m34] +
-			matrix.m34 * this[PropertySymbol.m44];
+		const m13 =
+			this[PropertySymbol.m13] * matrix.m11 +
+			this[PropertySymbol.m23] * matrix.m12 +
+			this[PropertySymbol.m33] * matrix.m13 +
+			this[PropertySymbol.m43] * matrix.m14;
+		const m23 =
+			this[PropertySymbol.m13] * matrix.m21 +
+			this[PropertySymbol.m23] * matrix.m22 +
+			this[PropertySymbol.m33] * matrix.m23 +
+			this[PropertySymbol.m43] * matrix.m24;
+		const m33 =
+			this[PropertySymbol.m13] * matrix.m31 +
+			this[PropertySymbol.m23] * matrix.m32 +
+			this[PropertySymbol.m33] * matrix.m33 +
+			this[PropertySymbol.m43] * matrix.m34;
+		const m43 =
+			this[PropertySymbol.m13] * matrix.m41 +
+			this[PropertySymbol.m23] * matrix.m42 +
+			this[PropertySymbol.m33] * matrix.m43 +
+			this[PropertySymbol.m43] * matrix.m44;
 
-		this[PropertySymbol.m41] =
-			matrix.m41 * this[PropertySymbol.m11] +
-			matrix.m42 * this[PropertySymbol.m21] +
-			matrix.m43 * this[PropertySymbol.m31] +
-			matrix.m44 * this[PropertySymbol.m41];
-		this[PropertySymbol.m42] =
-			matrix.m41 * this[PropertySymbol.m12] +
-			matrix.m42 * this[PropertySymbol.m22] +
-			matrix.m43 * this[PropertySymbol.m32] +
-			matrix.m44 * this[PropertySymbol.m42];
-		this[PropertySymbol.m43] =
-			matrix.m41 * this[PropertySymbol.m13] +
-			matrix.m42 * this[PropertySymbol.m23] +
-			matrix.m43 * this[PropertySymbol.m33] +
-			matrix.m44 * this[PropertySymbol.m43];
-		this[PropertySymbol.m44] =
-			matrix.m41 * this[PropertySymbol.m14] +
-			matrix.m42 * this[PropertySymbol.m24] +
-			matrix.m43 * this[PropertySymbol.m34] +
-			matrix.m44 * this[PropertySymbol.m44];
+		const m14 =
+			this[PropertySymbol.m14] * matrix.m11 +
+			this[PropertySymbol.m24] * matrix.m12 +
+			this[PropertySymbol.m34] * matrix.m13 +
+			this[PropertySymbol.m44] * matrix.m14;
+		const m24 =
+			this[PropertySymbol.m14] * matrix.m21 +
+			this[PropertySymbol.m24] * matrix.m22 +
+			this[PropertySymbol.m34] * matrix.m23 +
+			this[PropertySymbol.m44] * matrix.m24;
+		const m34 =
+			this[PropertySymbol.m14] * matrix.m31 +
+			this[PropertySymbol.m24] * matrix.m32 +
+			this[PropertySymbol.m34] * matrix.m33 +
+			this[PropertySymbol.m44] * matrix.m34;
+		const m44 =
+			this[PropertySymbol.m14] * matrix.m41 +
+			this[PropertySymbol.m24] * matrix.m42 +
+			this[PropertySymbol.m34] * matrix.m43 +
+			this[PropertySymbol.m44] * matrix.m44;
+
+		this[PropertySymbol.m11] = m11;
+		this[PropertySymbol.m12] = m12;
+		this[PropertySymbol.m13] = m13;
+		this[PropertySymbol.m14] = m14;
+		this[PropertySymbol.m21] = m21;
+		this[PropertySymbol.m22] = m22;
+		this[PropertySymbol.m23] = m23;
+		this[PropertySymbol.m24] = m24;
+		this[PropertySymbol.m31] = m31;
+		this[PropertySymbol.m32] = m32;
+		this[PropertySymbol.m33] = m33;
+		this[PropertySymbol.m34] = m34;
+		this[PropertySymbol.m41] = m41;
+		this[PropertySymbol.m42] = m42;
+		this[PropertySymbol.m43] = m43;
+		this[PropertySymbol.m44] = m44;
 	}
 
 	/**
@@ -1031,16 +1059,18 @@ export default class DOMMatrixReadOnly {
 	 * @param matrix Matrix.
 	 */
 	public static fromMatrix(matrix: IDOMMatrixCompatibleObject): DOMMatrixReadOnly {
-		if (matrix?.m11 === undefined && matrix?.a !== undefined) {
-			matrix = Object.assign({}, DEFAULT_MATRIX_JSON, matrix);
-			matrix.m11 = matrix.a;
-			matrix.m12 = matrix.b;
-			matrix.m21 = matrix.c;
-			matrix.m22 = matrix.d;
-			matrix.m41 = matrix.e;
-			matrix.m42 = matrix.f;
-		} else {
-			matrix = Object.assign({}, DEFAULT_MATRIX_JSON, matrix);
+		if (!(matrix instanceof DOMMatrixReadOnly)) {
+			if (matrix?.m11 === undefined && matrix?.a !== undefined) {
+				matrix = Object.assign({}, DEFAULT_MATRIX_JSON, matrix);
+				matrix.m11 = matrix.a;
+				matrix.m12 = matrix.b;
+				matrix.m21 = matrix.c;
+				matrix.m22 = matrix.d;
+				matrix.m41 = matrix.e;
+				matrix.m42 = matrix.f;
+			} else {
+				matrix = Object.assign({}, DEFAULT_MATRIX_JSON, matrix);
+			}
 		}
 
 		return this[PropertySymbol.fromArray]([
@@ -1102,44 +1132,43 @@ export default class DOMMatrixReadOnly {
 			(array.length !== 6 && array.length !== 16)
 		) {
 			throw TypeError(
-				`Failed to execute 'fromArray' on '${this.constructor.name}': '${String(
+				`Failed to execute 'fromArray' on '${this.name}': '${String(
 					array
 				)}' is not a compatible array.`
 			);
 		}
 
-		const matrix = new (<typeof DOMMatrixReadOnly>this.constructor)();
+		const matrix = new (<typeof DOMMatrixReadOnly>this)();
 
 		if (array.length === 16) {
 			const [m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44] =
 				array;
 
 			matrix[PropertySymbol.m11] = m11;
-			matrix[PropertySymbol.m21] = m21;
-			matrix[PropertySymbol.m31] = m31;
-			matrix[PropertySymbol.m41] = m41;
 			matrix[PropertySymbol.m12] = m12;
-			matrix[PropertySymbol.m22] = m22;
-			matrix[PropertySymbol.m32] = m32;
-			matrix[PropertySymbol.m42] = m42;
-
 			matrix[PropertySymbol.m13] = m13;
-			matrix[PropertySymbol.m23] = m23;
-			matrix[PropertySymbol.m33] = m33;
-			matrix[PropertySymbol.m43] = m43;
 			matrix[PropertySymbol.m14] = m14;
+			matrix[PropertySymbol.m21] = m21;
+			matrix[PropertySymbol.m22] = m22;
+			matrix[PropertySymbol.m23] = m23;
 			matrix[PropertySymbol.m24] = m24;
+			matrix[PropertySymbol.m31] = m31;
+			matrix[PropertySymbol.m32] = m32;
+			matrix[PropertySymbol.m33] = m33;
 			matrix[PropertySymbol.m34] = m34;
+			matrix[PropertySymbol.m41] = m41;
+			matrix[PropertySymbol.m42] = m42;
+			matrix[PropertySymbol.m43] = m43;
 			matrix[PropertySymbol.m44] = m44;
 		} else if (array.length === 6) {
-			const [M11, M12, M21, M22, M41, M42] = array;
+			const [m11, m12, m21, m22, m41, m42] = array;
 
-			matrix[PropertySymbol.m11] = M11;
-			matrix[PropertySymbol.m12] = M12;
-			matrix[PropertySymbol.m21] = M21;
-			matrix[PropertySymbol.m22] = M22;
-			matrix[PropertySymbol.m41] = M41;
-			matrix[PropertySymbol.m42] = M42;
+			matrix[PropertySymbol.m11] = m11;
+			matrix[PropertySymbol.m12] = m12;
+			matrix[PropertySymbol.m21] = m21;
+			matrix[PropertySymbol.m22] = m22;
+			matrix[PropertySymbol.m41] = m41;
+			matrix[PropertySymbol.m42] = m42;
 		}
 
 		return matrix;
@@ -1154,13 +1183,13 @@ export default class DOMMatrixReadOnly {
 	public static [PropertySymbol.fromString](source: string): DOMMatrixReadOnly {
 		if (typeof source !== 'string') {
 			throw TypeError(
-				`Failed to execute 'setMatrixValue' on '${this.constructor.name}': Expected '${String(
+				`Failed to execute 'setMatrixValue' on '${this.name}': Expected '${String(
 					source
 				)}' to be a string.`
 			);
 		}
 
-		const domMatrix = new (<typeof DOMMatrixReadOnly>this.constructor)();
+		const domMatrix = new (<typeof DOMMatrixReadOnly>this)();
 		const regexp = new RegExp(TRANSFORM_REGEXP);
 		let match: RegExpMatchArray | null;
 
@@ -1188,7 +1217,7 @@ export default class DOMMatrixReadOnly {
 				case 'matrix':
 				case 'matrix3d':
 					if (parameters.length === 6 || parameters.length === 16) {
-						domMatrix[PropertySymbol.multiplySelf](this[PropertySymbol.fromArray](parameters));
+						domMatrix[PropertySymbol.setMatrixValue](this[PropertySymbol.fromArray](parameters));
 					}
 					break;
 				case 'translate':
@@ -1263,7 +1292,7 @@ export default class DOMMatrixReadOnly {
 					break;
 				default:
 					throw TypeError(
-						`Failed to execute 'setMatrixValue' on '${this.constructor.name}': Unknown transform function '${match[1]}'.`
+						`Failed to execute 'setMatrixValue' on '${this.name}': Unknown transform function '${match[1]}'.`
 					);
 			}
 		}

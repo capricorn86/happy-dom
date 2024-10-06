@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import DOMRectReadOnly from '../../../src/nodes/element/DOMRectReadOnly';
+import DOMRectReadOnly from '../../src/dom/DOMRectReadOnly';
 
 describe('DOMRectReadOnly', () => {
 	afterEach(() => {

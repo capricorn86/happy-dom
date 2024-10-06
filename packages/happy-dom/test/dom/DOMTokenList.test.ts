@@ -1,9 +1,10 @@
-import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
-import Element from '../../../src/nodes/element/Element.js';
+import Window from '../../src/window/Window.js';
+import Document from '../../src/nodes/document/Document.js';
+import Element from '../../src/nodes/element/Element.js';
 import { beforeEach, describe, it, expect } from 'vitest';
+import DOMTokenList from '../../src/dom/DOMTokenList.js';
 
-describe('SVGStringList', () => {
+describe('DOMTokenList', () => {
 	let window: Window;
 	let document: Document;
 	let element: Element;
@@ -92,8 +93,8 @@ describe('SVGStringList', () => {
 		it('Returns an item in the list.', () => {
 			classList.add('class1');
 			expect(classList.item(0)).toBe('class1');
-			expect(classList.item(<number>(<unknown>'0'))).toBe('class1');
-			expect(classList.item(<number>(<unknown>'a'))).toBe('class1');
+			expect(classList.item('0')).toBe('class1');
+			expect(classList.item('a')).toBe('class1');
 		});
 	});
 

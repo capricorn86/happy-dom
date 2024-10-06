@@ -359,34 +359,7 @@ export default class DOMMatrix extends DOMMatrixReadOnly {
 	/**
 	 * Sets self to be multiplied by a scale matrix containing the passed values.
 	 *
-	 * @param scale The scale factor.
-	 * @param [originX] X-Axis scale.
-	 * @param [originY] Y-Axis scale.
-	 * @returns Self.
-	 */
-	public scaleSelf(scale, originX = 0, originY = 0): DOMMatrix {
-		this[PropertySymbol.scaleSelf](scale, originX, originY);
-		return this;
-	}
-
-	/**
-	 * Sets self to be multiplied by a scale matrix containing the passed values.
-	 *
-	 * @param scale The scale factor.
-	 * @param originX X-Axis scale.
-	 * @param originY Y-Axis scale.
-	 * @param originZ Z-Axis scale.
-	 * @returns Self.
-	 */
-	public scale3dSelf(scale, originX = 0, originY = 0, originZ = 0): DOMMatrix {
-		this[PropertySymbol.scale3dSelf](scale, originX, originY, originZ);
-		return this;
-	}
-
-	/**
-	 * Sets self to be multiplied by a scale matrix containing the passed values.
-	 *
-	 * @param scaleX X-Axis scale.
+	 * @param [scaleX] X-Axis scale.
 	 * @param [scaleY] Y-Axis scale.
 	 * @param [scaleZ] Z-Axis scale.
 	 * @param [originX] X-Axis scale.
@@ -394,41 +367,72 @@ export default class DOMMatrix extends DOMMatrixReadOnly {
 	 * @param [originZ] Z-Axis scale.
 	 * @returns Self.
 	 */
-	public scaleNonUniformSelf(
-		scaleX: number,
-		scaleY: number = 1,
-		scaleZ: number = 1,
-		originX: number = 0,
-		originY: number = 0,
-		originZ: number = 0
+	public scaleSelf(
+		scaleX = 1,
+		scaleY = 1,
+		scaleZ = 1,
+		originX = 0,
+		originY = 0,
+		originZ = 0
 	): DOMMatrix {
-		this[PropertySymbol.scaleNonUniformSelf](scaleX, scaleY, scaleZ, originX, originY, originZ);
+		this[PropertySymbol.scaleSelf](scaleX, scaleY, scaleZ, originX, originY, originZ);
+		return this;
+	}
+
+	/**
+	 * Sets self to be multiplied by a scale matrix containing the passed values.
+	 *
+	 * @param [scale] The scale factor.
+	 * @param [originX] X-Axis scale.
+	 * @param [originY] Y-Axis scale.
+	 * @param [originZ] Z-Axis scale.
+	 * @returns Self.
+	 */
+	public scale3dSelf(scale = 1, originX = 0, originY = 0, originZ = 0): DOMMatrix {
+		this[PropertySymbol.scale3dSelf](scale, originX, originY, originZ);
+		return this;
+	}
+
+	/**
+	 * Sets self to be multiplied by a scale matrix containing the passed values.
+	 *
+	 * @param [scaleX] X-Axis scale.
+	 * @param [scaleY] Y-Axis scale.
+	 * @returns Self.
+	 */
+	public scaleNonUniformSelf(scaleX = 1, scaleY = 1): DOMMatrix {
+		this[PropertySymbol.scaleNonUniformSelf](scaleX, scaleY);
 		return this;
 	}
 
 	/**
 	 * Set self to be multiplied by each of 3 rotation matrices about the major axes, first X, then Y, then Z.
 	 *
-	 * @param rx X component of the rotation, or Z if Y and Z are null.
-	 * @param [ry] Y component of the rotation value.
-	 * @param [rz] Z component of the rotation value.
+	 * @param [x] X component of the rotation, or Z if Y and Z are null.
+	 * @param [y] Y component of the rotation value.
+	 * @param [z] Z component of the rotation value.
 	 * @returns Self.
 	 */
-	public rotateSelf(rx: number, ry?: number, rz?: number): DOMMatrixReadOnly {
-		this[PropertySymbol.rotateSelf](rx, ry, rz);
+	public rotateSelf(x = 0, y?: number, z?: number): DOMMatrixReadOnly {
+		this[PropertySymbol.rotateSelf](x, y, z);
 		return this;
 	}
 
 	/**
 	 * Sets self to be multiplied by a rotation matrix with the given axis and `angle`.
 	 *
-	 * @param x The X component of the axis vector.
-	 * @param y The Y component of the axis vector.
-	 * @param z The Z component of the axis vector.
-	 * @param angle Angle of rotation about the axis vector, in degrees.
+	 * @param [x] The X component of the axis vector.
+	 * @param [y] The Y component of the axis vector.
+	 * @param [z] The Z component of the axis vector.
+	 * @param [angle] Angle of rotation about the axis vector, in degrees.
 	 * @returns Self.
 	 */
-	public rotateAxisAngleSelf(x: number, y: number, z: number, angle: number): DOMMatrixReadOnly {
+	public rotateAxisAngleSelf(
+		x?: number,
+		y?: number,
+		z?: number,
+		angle?: number
+	): DOMMatrixReadOnly {
 		this[PropertySymbol.rotateAxisAngleSelf](x, y, z, angle);
 		return this;
 	}

@@ -6,17 +6,18 @@ import BrowserWindow from '../window/BrowserWindow.js';
 const ATTRIBUTE_SPLIT_REGEXP = /[\t\f\n\r ,]+/;
 
 /**
- * SVGStringList.
+ * SVGNumberList.
  *
- * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGStringList
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGNumberList
  */
-export default class SVGStringList {
+export default class SVGNumberList {
 	[index: number]: string;
 
 	public [PropertySymbol.window]: BrowserWindow;
 	public [PropertySymbol.getAttribute]: () => string | null = null;
 	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
-	private [PropertySymbol.cache]: { items: string[]; attributeValue: string } = {
+	public [PropertySymbol.readOnly]: boolean = false;
+	private [PropertySymbol.cache]: { items: number[]; attributeValue: string } = {
 		items: [],
 		attributeValue: ''
 	};
@@ -27,6 +28,7 @@ export default class SVGStringList {
 	 * @param illegalConstructorSymbol Illegal constructor symbol.
 	 * @param window Window.
 	 * @param options Options.
+	 * @param [options.readOnly] Read only.
 	 * @param options.getAttribute Get attribute.
 	 * @param options.setAttribute Set attribute.
 	 */
@@ -34,6 +36,7 @@ export default class SVGStringList {
 		illegalConstructorSymbol: symbol,
 		window: BrowserWindow,
 		options: {
+			readOnly?: boolean;
 			getAttribute: () => string | null;
 			setAttribute: (value: string) => void;
 		}
@@ -43,6 +46,7 @@ export default class SVGStringList {
 		}
 
 		this[PropertySymbol.window] = window;
+		this[PropertySymbol.readOnly] = !!options.readOnly;
 		this[PropertySymbol.getAttribute] = options.getAttribute || null;
 		this[PropertySymbol.setAttribute] = options.setAttribute || null;
 
@@ -50,13 +54,13 @@ export default class SVGStringList {
 			throw new TypeError('Illegal constructor');
 		}
 
-		ClassMethodBinder.bindMethods(this, [SVGStringList], {
+		ClassMethodBinder.bindMethods(this, [SVGNumberList], {
 			bindSymbols: true,
 			forwardToPrototype: true
 		});
 
 		// This only works for one level of inheritance, but it should be fine as there is no collection that goes deeper according to spec.
-		ClassMethodBinder.bindMethods(this, [SVGStringList], { bindSymbols: true });
+		ClassMethodBinder.bindMethods(this, [SVGNumberList], { bindSymbols: true });
 
 		return new Proxy(this, {
 			get: (target, property) => {
@@ -157,7 +161,7 @@ export default class SVGStringList {
 	/**
 	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.
 	 */
-	public [Symbol.iterator](): IterableIterator<string> {
+	public [Symbol.iterator](): IterableIterator<number> {
 		return this[PropertySymbol.getItemList]().values();
 	}
 
@@ -165,6 +169,11 @@ export default class SVGStringList {
 	 * Clears all items from the list.
 	 */
 	public clear(): void {
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+				`Failed to execute 'clear' on 'SVGNumberList': The object is read-only.`
+			);
+		}
 		this[PropertySymbol.setAttribute](null);
 	}
 
@@ -174,14 +183,19 @@ export default class SVGStringList {
 	 * @param newItem New item.
 	 * @returns The item being replaced.
 	 */
-	public initialize(newItem: string): string {
+	public initialize(newItem: number): number {
 		if (arguments.length < 1) {
 			throw new this[PropertySymbol.window].TypeError(
-				`Failed to execute 'initialize' on 'SVGStringList': 1 arguments required, but only ${arguments.length} present.`
+				`Failed to execute 'initialize' on 'SVGNumberList': 1 arguments required, but only ${arguments.length} present.`
 			);
 		}
-		newItem = String(newItem);
-		this[PropertySymbol.setAttribute](newItem);
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+				`Failed to execute 'initialize' on 'SVGNumberList': The object is read-only.`
+			);
+		}
+		newItem = Number(newItem);
+		this[PropertySymbol.setAttribute](String(newItem));
 		return newItem;
 	}
 
@@ -191,7 +205,7 @@ export default class SVGStringList {
 	 * @param index Index.
 	 * @returns The item at the index.
 	 **/
-	public getItem(index: number | string): string {
+	public getItem(index: number | string): number {
 		const items = this[PropertySymbol.getItemList]();
 		if (typeof index === 'number') {
 			return items[index] ? items[index] : null;
@@ -208,14 +222,17 @@ export default class SVGStringList {
 	 * @param index Index.
 	 * @returns The item being inserted.
 	 */
-	public insertItemBefore(newItem: string, index: number): string {
+	public insertItemBefore(newItem: number, index: number): number {
 		if (arguments.length < 2) {
 			throw new this[PropertySymbol.window].TypeError(
-				`Failed to execute 'insertItemBefore' on 'SVGStringList': 2 arguments required, but only ${arguments.length} present.`
+				`Failed to execute 'insertItemBefore' on 'SVGNumberList': 2 arguments required, but only ${arguments.length} present.`
 			);
 		}
-
-		newItem = String(newItem);
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+				`Failed to execute 'insertItemBefore' on 'SVGNumberList': The object is read-only.`
+			);
+		}
 
 		const items = this[PropertySymbol.getItemList]();
 		const existingIndex = items.indexOf(newItem);
@@ -244,13 +261,18 @@ export default class SVGStringList {
 	 * @param index Index.
 	 * @returns The item being replaced.
 	 */
-	public replaceItem(newItem: string, index: number): string {
+	public replaceItem(newItem: number, index: number): number {
 		if (arguments.length < 2) {
 			throw new this[PropertySymbol.window].TypeError(
-				`Failed to execute 'replaceItem' on 'SVGStringList': 2 arguments required, but only ${arguments.length} present.`
+				`Failed to execute 'replaceItem' on 'SVGNumberList': 2 arguments required, but only ${arguments.length} present.`
 			);
 		}
-		newItem = String(newItem);
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+				`Failed to execute 'replaceItem' on 'SVGNumberList': The object is read-only.`
+			);
+		}
+		newItem = Number(newItem);
 
 		const items = this[PropertySymbol.getItemList]();
 		const existingIndex = items.indexOf(newItem);
@@ -278,10 +300,15 @@ export default class SVGStringList {
 	 * @param index Index.
 	 * @returns The removed item.
 	 */
-	public removeItem(index: number): string {
+	public removeItem(index: number): number {
 		if (arguments.length < 1) {
 			throw new this[PropertySymbol.window].TypeError(
-				`Failed to execute 'removeItem' on 'SVGStringList': 1 argument required, but only ${arguments.length} present.`
+				`Failed to execute 'removeItem' on 'SVGNumberList': 1 argument required, but only ${arguments.length} present.`
+			);
+		}
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+				`Failed to execute 'removeItem' on 'SVGNumberList': The object is read-only.`
 			);
 		}
 
@@ -295,14 +322,14 @@ export default class SVGStringList {
 
 		if (index >= items.length) {
 			throw new this[PropertySymbol.window].DOMException(
-				`Failed to execute 'removeItem' on 'SVGStringList':  The index provided (${index}) is greater than the maximum bound.`,
+				`Failed to execute 'removeItem' on 'SVGNumberList':  The index provided (${index}) is greater than the maximum bound.`,
 				DOMExceptionNameEnum.indexSizeError
 			);
 		}
 
 		if (index < 0) {
 			throw new this[PropertySymbol.window].DOMException(
-				`Failed to execute 'removeItem' on 'SVGStringList':  The index provided (${index}) is negative.`,
+				`Failed to execute 'removeItem' on 'SVGNumberList':  The index provided (${index}) is negative.`,
 				DOMExceptionNameEnum.indexSizeError
 			);
 		}
@@ -322,14 +349,19 @@ export default class SVGStringList {
 	 * @param newItem The item to add to the list.
 	 * @returns The item being appended.
 	 */
-	public appendItem(newItem: string): string {
+	public appendItem(newItem: number): number {
 		if (arguments.length < 1) {
 			throw new this[PropertySymbol.window].TypeError(
-				`Failed to execute 'appendItem' on 'SVGStringList': 1 argument required, but only ${arguments.length} present.`
+				`Failed to execute 'appendItem' on 'SVGNumberList': 1 argument required, but only ${arguments.length} present.`
+			);
+		}
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+				`Failed to execute 'appendItem' on 'SVGNumberList': The object is read-only.`
 			);
 		}
 
-		newItem = String(newItem);
+		newItem = Number(newItem);
 
 		const items = this[PropertySymbol.getItemList]();
 		const existingIndex = items.indexOf(newItem);
@@ -350,7 +382,7 @@ export default class SVGStringList {
 	 *
 	 * @see https://infra.spec.whatwg.org/#split-on-ascii-whitespace
 	 */
-	public [PropertySymbol.getItemList](): string[] {
+	public [PropertySymbol.getItemList](): number[] {
 		const attributeValue = this[PropertySymbol.getAttribute]() ?? '';
 
 		const cache = this[PropertySymbol.cache];
@@ -366,7 +398,7 @@ export default class SVGStringList {
 		if (trimmed) {
 			for (const item of trimmed.split(ATTRIBUTE_SPLIT_REGEXP)) {
 				if (!items.includes(item)) {
-					items.push(item);
+					items.push(Number(item));
 				}
 			}
 		}
