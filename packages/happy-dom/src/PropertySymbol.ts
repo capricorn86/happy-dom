@@ -367,3 +367,7 @@ export const baseFrequencyY = Symbol('baseFrequencyY');
 export const numOctaves = Symbol('numOctaves');
 export const seed = Symbol('seed');
 export const stitchTiles = Symbol('stitchTiles');
+export const rotateFromVectorSelf = Symbol('rotateFromVectorSelf');
+export const flipXSelf = Symbol('flipXSelf');
+export const flipYSelf = Symbol('flipYSelf');
+export const invertSelf = Symbol('invertSelf');

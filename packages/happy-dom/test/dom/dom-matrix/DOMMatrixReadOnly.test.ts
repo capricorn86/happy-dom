@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import DOMMatrixReadOnly from '../../../src/dom/dom-matrix/DOMMatrixReadOnly.js';
 import DOMMatrix from '../../../src/dom/dom-matrix/DOMMatrix.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
+import DOMPoint from '../../../src/dom/DOMPoint.js';
 
 describe('DOMMatrixReadOnly', () => {
 	describe('constructor()', () => {
@@ -928,97 +929,238 @@ describe('DOMMatrixReadOnly', () => {
 	});
 
 	describe('rotateAxisAngle()', () => {
-		it('Rotates a 3D matrix around an axis.', () => {
-			const matrix1 = new DOMMatrixReadOnly(
-				'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 30, 1)'
+		it('Rotates a 3D matrix around an axis with parameters 1, 0, 0, 90.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
-			const result1 = matrix1.rotateAxisAngle(0, 0, 1, 90);
+			const result = matrix.rotateAxisAngle(1, 0, 0, 90);
 
-			expect(result1.toJSON()).toEqual({
-				a: 0,
-				b: 1,
-				c: -1,
-				d: 0,
-				e: 10,
-				f: 20,
-				m11: 0,
-				m12: 1,
-				m13: 0,
-				m14: 0,
-				m21: -1,
-				m22: 0,
-				m23: 0,
-				m24: 0,
-				m31: 0,
-				m32: 0,
-				m33: 1,
-				m34: 0,
-				m41: 10,
-				m42: 20,
-				m43: 30,
-				m44: 1,
-				is2D: false,
-				isIdentity: false
-			});
-
-			const matrix2 = new DOMMatrixReadOnly(
-				'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 30, 1)'
-			);
-			const result2 = matrix2.rotateAxisAngle(1, 0, 0, 90);
-
-			expect(result2.toJSON()).toEqual({
+			expect(result.toJSON()).toEqual({
 				a: 1,
-				b: 0,
-				c: 0,
-				d: 0,
-				e: 10,
-				f: 20,
+				b: 2,
+				c: 9,
+				d: 10,
+				e: 40,
+				f: 50,
 				m11: 1,
-				m12: 0,
-				m13: 0,
-				m14: 0,
-				m21: 0,
-				m22: 0,
-				m23: 1,
-				m24: 0,
-				m31: 0,
-				m32: -1,
-				m33: 0,
-				m34: 0,
-				m41: 10,
-				m42: 20,
-				m43: 30,
+				m12: 2,
+				m13: 3,
+				m14: 4,
+				m21: 9,
+				m22: 10,
+				m23: 20,
+				m24: 30,
+				m31: -5,
+				m32: -6,
+				m33: -7,
+				m34: -8,
+				m41: 40,
+				m42: 50,
+				m43: 60,
 				m44: 1,
 				is2D: false,
 				isIdentity: false
 			});
-			const matrix3 = new DOMMatrixReadOnly(
-				'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 30, 1)'
-			);
-			const result3 = matrix3.rotateAxisAngle(1, 1, 1, 90);
+		});
 
-			expect(result3.toJSON()).toEqual({
-				a: 0.3333333333333334,
-				b: 0.9106836025229592,
-				c: -0.24401693585629242,
-				d: 0.3333333333333334,
-				e: 10,
-				f: 20,
-				m11: 0.3333333333333334,
-				m12: 0.9106836025229592,
-				m13: -0.24401693585629242,
-				m14: 0,
-				m21: -0.24401693585629242,
-				m22: 0.3333333333333334,
-				m23: 0.9106836025229592,
-				m24: 0,
-				m31: 0.9106836025229592,
-				m32: -0.24401693585629242,
-				m33: 0.3333333333333334,
-				m34: 0,
-				m41: 10,
-				m42: 20,
-				m43: 30,
+		it('Rotates a 3D matrix around an axis with parameters 0, 1, 0, 90.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
+			);
+			const result = matrix.rotateAxisAngle(0, 1, 0, 90);
+
+			expect(result.toJSON()).toEqual({
+				a: -9,
+				b: -10,
+				c: 5,
+				d: 6,
+				e: 40,
+				f: 50,
+				m11: -9,
+				m12: -10,
+				m13: -20,
+				m14: -30,
+				m21: 5,
+				m22: 6,
+				m23: 7,
+				m24: 8,
+				m31: 1,
+				m32: 2,
+				m33: 3,
+				m34: 4,
+				m41: 40,
+				m42: 50,
+				m43: 60,
+				m44: 1,
+				is2D: false,
+				isIdentity: false
+			});
+		});
+
+		it('Rotates a 3D matrix around an axis with parameters 0, 0, 1, 90.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
+			);
+			const result = matrix.rotateAxisAngle(0, 0, 1, 90);
+
+			expect(result.toJSON()).toEqual({
+				a: 5,
+				b: 6,
+				c: -1,
+				d: -2,
+				e: 40,
+				f: 50,
+				m11: 5,
+				m12: 6,
+				m13: 7,
+				m14: 8,
+				m21: -1,
+				m22: -2,
+				m23: -3,
+				m24: -4,
+				m31: 9,
+				m32: 10,
+				m33: 20,
+				m34: 30,
+				m41: 40,
+				m42: 50,
+				m43: 60,
+				m44: 1,
+				is2D: false,
+				isIdentity: false
+			});
+		});
+
+		it('Rotates a 3D matrix around an axis with parameters 1, 1, 1, 90.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
+			);
+			const result = matrix.rotateAxisAngle(1, 1, 1, 100);
+
+			expect(result.toJSON()).toEqual({
+				a: 3.420276625461204,
+				b: 4.420276625461204,
+				c: 9.548632170413033,
+				d: 10.548632170413033,
+				e: 40,
+				f: 50,
+				is2D: false,
+				isIdentity: false,
+				m11: 3.420276625461204,
+				m12: 4.420276625461204,
+				m13: 3.8240099667473326,
+				m14: 3.227743308033462,
+				m21: 9.548632170413033,
+				m22: 10.548632170413033,
+				m23: 20.186787895128486,
+				m24: 29.824943619843935,
+				m31: 2.0310912041257643,
+				m32: 3.0310912041257643,
+				m33: 5.989202138124184,
+				m34: 8.947313072122604,
+				m41: 40,
+				m42: 50,
+				m43: 60,
+				m44: 1
+			});
+		});
+
+		it('Rotates a 3D matrix around an axis with parameters 2, 2, 2, 90.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
+			);
+			const result = matrix.rotateAxisAngle(2, 2, 2, 90);
+
+			expect(result.toJSON()).toEqual({
+				a: 2.6905989232415,
+				b: 3.6905989232414997,
+				c: 9.618802153517002,
+				d: 10.618802153517004,
+				e: 40,
+				f: 50,
+				is2D: false,
+				isIdentity: false,
+				m11: 2.6905989232415,
+				m12: 3.6905989232414997,
+				m13: 2.494446500534872,
+				m14: 1.2982940778282437,
+				m21: 9.618802153517002,
+				m22: 10.618802153517004,
+				m23: 19.814954576223634,
+				m24: 29.011106998930266,
+				m31: 2.690598923241496,
+				m32: 3.690598923241496,
+				m33: 7.690598923241493,
+				m34: 11.69059892324149,
+				m41: 40,
+				m42: 50,
+				m43: 60,
+				m44: 1
+			});
+		});
+
+		it('Rotates a 3D matrix around an axis with parameters 0, 0, 1, 360 + 90.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
+			);
+			const result = matrix.rotateAxisAngle(0, 0, 1, 360 + 90);
+
+			expect(result.toJSON()).toEqual({
+				a: 5,
+				b: 6,
+				c: -1,
+				d: -2,
+				e: 40,
+				f: 50,
+				m11: 5,
+				m12: 6,
+				m13: 7,
+				m14: 8,
+				m21: -1,
+				m22: -2,
+				m23: -3,
+				m24: -4,
+				m31: 9,
+				m32: 10,
+				m33: 20,
+				m34: 30,
+				m41: 40,
+				m42: 50,
+				m43: 60,
+				m44: 1,
+				is2D: false,
+				isIdentity: false
+			});
+		});
+
+		it('Rotates a 3D matrix around an axis with parameters 0, 0, 1, -90.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
+			);
+			const result = matrix.rotateAxisAngle(0, 0, 1, -90);
+
+			expect(result.toJSON()).toEqual({
+				a: -5,
+				b: -6,
+				c: 1,
+				d: 2,
+				e: 40,
+				f: 50,
+				m11: -5,
+				m12: -6,
+				m13: -7,
+				m14: -8,
+				m21: 1,
+				m22: 2,
+				m23: 3,
+				m24: 4,
+				m31: 9,
+				m32: 10,
+				m33: 20,
+				m34: 30,
+				m41: 40,
+				m42: 50,
+				m43: 60,
 				m44: 1,
 				is2D: false,
 				isIdentity: false
@@ -1026,37 +1168,467 @@ describe('DOMMatrixReadOnly', () => {
 		});
 	});
 
-	// describe('rotate()', () => {
-	// 	it('Rotates a 2D matrix.', () => {
-	// 		const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
-	// 		const result = matrix.rotate(90);
+	describe('rotate()', () => {
+		it('Rotates a 3D matrix with x defined.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
+			);
+			const result = matrix.rotate(90);
 
-	// 		expect(result.toJSON()).toEqual({
-	// 			a: 30,
-	// 			b: 40,
-	// 			c: -10,
-	// 			d: -20,
-	// 			e: 50,
-	// 			f: 60,
-	// 			m11: 30,
-	// 			m12: 40,
-	// 			m13: 0,
-	// 			m14: 0,
-	// 			m21: -10,
-	// 			m22: -20,
-	// 			m23: 0,
-	// 			m24: 0,
-	// 			m31: 0,
-	// 			m32: 0,
-	// 			m33: 1,
-	// 			m34: 0,
-	// 			m41: 50,
-	// 			m42: 60,
-	// 			m43: 0,
-	// 			m44: 1,
-	// 			is2D: true,
-	// 			isIdentity: false
-	// 		});
-	// 	});
-	// });
+			expect(result.toJSON()).toEqual({
+				a: 5,
+				b: 6,
+				c: -1,
+				d: -2,
+				e: 40,
+				f: 50,
+				m11: 5,
+				m12: 6,
+				m13: 7,
+				m14: 8,
+				m21: -1,
+				m22: -2,
+				m23: -3,
+				m24: -4,
+				m31: 9,
+				m32: 10,
+				m33: 20,
+				m34: 30,
+				m41: 40,
+				m42: 50,
+				m43: 60,
+				m44: 1,
+				is2D: false,
+				isIdentity: false
+			});
+		});
+
+		it('Rotates a 3D matrix with x and y defined.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
+			);
+			const result = matrix.rotate(90, 90);
+
+			expect(result.toJSON()).toEqual({
+				a: -9,
+				b: -10,
+				c: 1,
+				d: 2,
+				e: 40,
+				f: 50,
+				m11: -9,
+				m12: -10,
+				m13: -20,
+				m14: -30,
+				m21: 1,
+				m22: 2,
+				m23: 3,
+				m24: 4,
+				m31: -5,
+				m32: -6,
+				m33: -7,
+				m34: -8,
+				m41: 40,
+				m42: 50,
+				m43: 60,
+				m44: 1,
+				is2D: false,
+				isIdentity: false
+			});
+		});
+
+		it('Rotates a 3D matrix with x, y and z defined.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
+			);
+			const result = matrix.rotate(90, 90, 90);
+
+			expect(result.toJSON()).toEqual({
+				a: -9,
+				b: -10,
+				c: 5,
+				d: 6,
+				e: 40,
+				f: 50,
+				m11: -9,
+				m12: -10,
+				m13: -20,
+				m14: -30,
+				m21: 5,
+				m22: 6,
+				m23: 7,
+				m24: 8,
+				m31: 1,
+				m32: 2,
+				m33: 3,
+				m34: 4,
+				m41: 40,
+				m42: 50,
+				m43: 60,
+				m44: 1,
+				is2D: false,
+				isIdentity: false
+			});
+		});
+	});
+
+	describe('rotateFromVector()', () => {
+		it('Rotates a 3D matrix with x defined.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
+			);
+			const result = matrix.rotateFromVector(90);
+
+			expect(result.toJSON()).toEqual({
+				a: 1,
+				b: 2,
+				c: 5,
+				d: 6,
+				e: 40,
+				f: 50,
+				m11: 1,
+				m12: 2,
+				m13: 3,
+				m14: 4,
+				m21: 5,
+				m22: 6,
+				m23: 7,
+				m24: 8,
+				m31: 9,
+				m32: 10,
+				m33: 20,
+				m34: 30,
+				m41: 40,
+				m42: 50,
+				m43: 60,
+				m44: 1,
+				is2D: false,
+				isIdentity: false
+			});
+		});
+
+		it('Rotates a 3D matrix with x and y defined.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
+			);
+			const result = matrix.rotateFromVector(90, 90);
+
+			expect(result.toJSON()).toEqual({
+				a: 4.242640687119288,
+				b: 5.656854249492384,
+				c: 2.828427124746192,
+				d: 2.8284271247461925,
+				e: 40,
+				f: 50,
+				is2D: false,
+				isIdentity: false,
+				m11: 4.242640687119288,
+				m12: 5.656854249492384,
+				m13: 7.071067811865481,
+				m14: 8.485281374238577,
+				m21: 2.828427124746192,
+				m22: 2.8284271247461925,
+				m23: 2.828427124746192,
+				m24: 2.828427124746192,
+				m31: 9,
+				m32: 10,
+				m33: 20,
+				m34: 30,
+				m41: 40,
+				m42: 50,
+				m43: 60,
+				m44: 1
+			});
+		});
+	});
+
+	describe('skewX()', () => {
+		it('Skews a 2D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const result = matrix.skewX(10);
+
+			expect(result.toJSON()).toEqual({
+				a: 10,
+				b: 20,
+				c: 31.76326980708465,
+				d: 43.5265396141693,
+				e: 50,
+				f: 60,
+				m11: 10,
+				m12: 20,
+				m13: 0,
+				m14: 0,
+				m21: 31.76326980708465,
+				m22: 43.5265396141693,
+				m23: 0,
+				m24: 0,
+				m31: 0,
+				m32: 0,
+				m33: 1,
+				m34: 0,
+				m41: 50,
+				m42: 60,
+				m43: 0,
+				m44: 1,
+				is2D: true,
+				isIdentity: false
+			});
+		});
+
+		it('Skews a 3D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
+			);
+			const result = matrix.skewX(10);
+
+			expect(result.toJSON()).toEqual({
+				a: 1,
+				b: 2,
+				c: 5.176326980708465,
+				d: 6.35265396141693,
+				e: 40,
+				f: 50,
+				m11: 1,
+				m12: 2,
+				m13: 3,
+				m14: 4,
+				m21: 5.176326980708465,
+				m22: 6.35265396141693,
+				m23: 7.528980942125395,
+				m24: 8.70530792283386,
+				m31: 9,
+				m32: 10,
+				m33: 20,
+				m34: 30,
+				m41: 40,
+				m42: 50,
+				m43: 60,
+				m44: 1,
+				is2D: false,
+				isIdentity: false
+			});
+		});
+	});
+
+	describe('flipX()', () => {
+		it('Flips a 2D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const result = matrix.flipX();
+
+			expect(result.toJSON()).toEqual({
+				a: -10,
+				b: -20,
+				c: 30,
+				d: 40,
+				e: 50,
+				f: 60,
+				m11: -10,
+				m12: -20,
+				m13: 0,
+				m14: 0,
+				m21: 30,
+				m22: 40,
+				m23: 0,
+				m24: 0,
+				m31: 0,
+				m32: 0,
+				m33: 1,
+				m34: 0,
+				m41: 50,
+				m42: 60,
+				m43: 0,
+				m44: 1,
+				is2D: true,
+				isIdentity: false
+			});
+		});
+
+		it('Flips a 3D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
+			);
+			const result = matrix.flipX();
+
+			expect(result.toJSON()).toEqual({
+				a: -1,
+				b: -2,
+				c: 5,
+				d: 6,
+				e: 40,
+				f: 50,
+				m11: -1,
+				m12: -2,
+				m13: -3,
+				m14: -4,
+				m21: 5,
+				m22: 6,
+				m23: 7,
+				m24: 8,
+				m31: 9,
+				m32: 10,
+				m33: 20,
+				m34: 30,
+				m41: 40,
+				m42: 50,
+				m43: 60,
+				m44: 1,
+				is2D: false,
+				isIdentity: false
+			});
+		});
+	});
+
+	describe('flipY()', () => {
+		it('Flips a 2D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const result = matrix.flipY();
+
+			expect(result.toJSON()).toEqual({
+				a: 10,
+				b: 20,
+				c: -30,
+				d: -40,
+				e: 50,
+				f: 60,
+				m11: 10,
+				m12: 20,
+				m13: 0,
+				m14: 0,
+				m21: -30,
+				m22: -40,
+				m23: 0,
+				m24: 0,
+				m31: 0,
+				m32: 0,
+				m33: 1,
+				m34: 0,
+				m41: 50,
+				m42: 60,
+				m43: 0,
+				m44: 1,
+				is2D: true,
+				isIdentity: false
+			});
+		});
+
+		it('Flips a 3D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
+			);
+			const result = matrix.flipY();
+
+			expect(result.toJSON()).toEqual({
+				a: 1,
+				b: 2,
+				c: -5,
+				d: -6,
+				e: 40,
+				f: 50,
+				m11: 1,
+				m12: 2,
+				m13: 3,
+				m14: 4,
+				m21: -5,
+				m22: -6,
+				m23: -7,
+				m24: -8,
+				m31: 9,
+				m32: 10,
+				m33: 20,
+				m34: 30,
+				m41: 40,
+				m42: 50,
+				m43: 60,
+				m44: 1,
+				is2D: false,
+				isIdentity: false
+			});
+		});
+	});
+
+	describe('inverse()', () => {
+		it('Inverses a 2D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly('matrix(1, 2, 3, 4, 5, 6)');
+			const result = matrix.inverse();
+
+			expect(result.toJSON()).toEqual({
+				a: -2,
+				b: 1,
+				c: 1.5,
+				d: -0.5,
+				e: 1,
+				f: -2,
+				m11: -2,
+				m12: 1,
+				m13: 0,
+				m14: 0,
+				m21: 1.5,
+				m22: -0.5,
+				m23: 0,
+				m24: 0,
+				m31: 0,
+				m32: 0,
+				m33: 1,
+				m34: 0,
+				m41: 1,
+				m42: -2,
+				m43: 0,
+				m44: 1,
+				is2D: true,
+				isIdentity: false
+			});
+		});
+
+		it('Inverses a 3D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
+			);
+			const result = matrix.inverse();
+
+			expect(result.toJSON()).toEqual({
+				a: -1.3888888888888888,
+				b: 0.2777777777777778,
+				c: 1.0640096618357489,
+				d: 0.3031400966183575,
+				e: 0.036231884057971016,
+				f: 0.10869565217391304,
+				m11: -1.3888888888888888,
+				m12: 0.2777777777777778,
+				m13: 0.1111111111111111,
+				m14: 0,
+				m21: 1.0640096618357489,
+				m22: 0.3031400966183575,
+				m23: -0.2222222222222222,
+				m24: -0.014492753623188406,
+				m31: 0.03864734299516908,
+				m32: -0.4396135265700483,
+				m33: 0.1111111111111111,
+				m34: 0.028985507246376812,
+				m41: 0.036231884057971016,
+				m42: 0.10869565217391304,
+				m43: 0,
+				m44: -0.014492753623188406,
+				is2D: false,
+				isIdentity: false
+			});
+		});
+	});
+
+	describe('transformPoint()', () => {
+		it('Transforms a point with a 2D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly('matrix(1, 2, 3, 4, 5, 6)');
+			const result = matrix.transformPoint({ x: 10, y: 20 });
+
+			expect(result).toEqual(new DOMPoint(75, 106, 0, 1));
+		});
+
+		it('Transforms a point with a 3D matrix.', () => {
+			const matrix = new DOMMatrixReadOnly(
+				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
+			);
+			const result = matrix.transformPoint({ x: 10, y: 20 });
+
+			expect(result).toEqual(new DOMPoint(150, 190, 230, 201));
+		});
+	});
 });

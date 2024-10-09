@@ -43,6 +43,8 @@ const TRANSFORM_PARAMETER_SPLIT_REGEXP = /[\s,]+/;
  * Based on:
  * - https://github.com/trusktr/geometry-interfaces
  * - https://github.com/thednp/dommatrix/tree/master
+ * - https://github.com/jarek-foksa/geometry-polyfill/blob/master/geometry-polyfill.js
+ * - https://github.com/Automattic/node-canvas/blob/master/lib/DOMMatrix.js
  *
  *
  * 3D Matrix:
@@ -447,6 +449,21 @@ export default class DOMMatrixReadOnly {
 	}
 
 	/**
+	 * Returns a new DOMMatrix instance which is this matrix post multiplied by a rotation matrix with the given axis and `angle`.
+	 *
+	 * @param [x] The X component of the axis vector.
+	 * @param [y] The Y component of the axis vector.
+	 * @param [z] The Z component of the axis vector.
+	 * @param [angle] Angle of rotation about the axis vector, in degrees.
+	 * @returns The resulted matrix
+	 */
+	public rotateAxisAngle(x = 0, y = 0, z = 0, angle = 0): DOMMatrixReadOnly {
+		const matrix = new (<typeof DOMMatrixReadOnly>this.constructor)(this);
+		matrix[PropertySymbol.rotateAxisAngleSelf](x, y, z, angle);
+		return matrix;
+	}
+
+	/**
 	 * Returns a new DOMMatrix instance which is this matrix post multiplied by each of 3 rotation matrices about the major axes, first X, then Y, then Z.
 	 *
 	 * @param [x] X component of the rotation, or Z if Y and Z are null.
@@ -461,38 +478,15 @@ export default class DOMMatrixReadOnly {
 	}
 
 	/**
-	 * Returns a new DOMMatrix instance which is this matrix post multiplied by a rotation matrix with the given axis and `angle`.
+	 * Returns a new DOMMatrix instance which is this matrix post multiplied by a rotation matrix with the angle between the specified vector and (1, 0).
 	 *
-	 * @param x The X component of the axis vector.
-	 * @param y The Y component of the axis vector.
-	 * @param z The Z component of the axis vector.
-	 * @param angle Angle of rotation about the axis vector, in degrees.
-	 * @returns The resulted matrix
+	 * @param [x] X-Axis skew.
+	 * @param [y] Y-Axis skew.
 	 */
-	public rotateAxisAngle(x: number, y: number, z: number, angle: number): DOMMatrixReadOnly {
-		if (arguments.length !== 4) {
-			throw new TypeError(
-				`Failed to execute 'rotateAxisAngle' on 'DOMMatrix': 4 arguments required, but only ${arguments.length} present.`
-			);
-		}
-
+	public rotateFromVector(x = 0, y = 0): DOMMatrixReadOnly {
 		const matrix = new (<typeof DOMMatrixReadOnly>this.constructor)(this);
-		matrix[PropertySymbol.rotateAxisAngleSelf](x, y, z, angle);
+		matrix[PropertySymbol.rotateFromVectorSelf](x, y);
 		return matrix;
-	}
-
-	/**
-	 * Returns a new DOMMatrix instance which is this matrix post multiplied by a skew matrix along the X axis by the given angle.
-	 *
-	 * Not implemented in Happy DOM yet.
-	 *
-	 * @param [_x] X-Axis skew.
-	 * @param [_y] Y-Axis skew.
-	 */
-	public rotateFromVector(_x: number = 0, _y: number = 0): DOMMatrixReadOnly {
-		throw new TypeError(
-			`Failed to execute 'rotateFromVector' on '${this.constructor.name}': Method has not been implemented in Happy DOM yet.`
-		);
 	}
 
 	/**
@@ -523,27 +517,27 @@ export default class DOMMatrixReadOnly {
 	 * Returns a new DOMMatrix instance which is this matrix flipped on X-axis.
 	 */
 	public flipX(): DOMMatrixReadOnly {
-		throw new TypeError(
-			`Failed to execute 'flipX' on '${this.constructor.name}': Method has not been implemented in Happy DOM yet.`
-		);
+		const matrix = new (<typeof DOMMatrixReadOnly>this.constructor)(this);
+		matrix[PropertySymbol.flipXSelf]();
+		return matrix;
 	}
 
 	/**
 	 * Returns a new DOMMatrix instance which is this matrix flipped on Y-axis.
 	 */
 	public flipY(): DOMMatrixReadOnly {
-		throw new TypeError(
-			`Failed to execute 'flipY' on '${this.constructor.name}': Method has not been implemented in Happy DOM yet.`
-		);
+		const matrix = new (<typeof DOMMatrixReadOnly>this.constructor)(this);
+		matrix[PropertySymbol.flipYSelf]();
+		return matrix;
 	}
 
 	/**
-	 * Returns a new DOMMatrix instance which is this matrix inverted.
+	 * Returns a new DOMMatrix instance which is this matrix inversed.
 	 */
 	public inverse(): DOMMatrixReadOnly {
-		throw new TypeError(
-			`Failed to execute 'inverse' on '${this.constructor.name}': Method has not been implemented in Happy DOM yet.`
-		);
+		const matrix = new (<typeof DOMMatrixReadOnly>this.constructor)(this);
+		matrix[PropertySymbol.invertSelf]();
+		return matrix;
 	}
 
 	/**
@@ -552,7 +546,7 @@ export default class DOMMatrixReadOnly {
 	 * @param domPoint DOM point compatible object.
 	 * @returns A new DOMPoint object.
 	 */
-	public transformPoint(domPoint: IDOMPointInit): IDOMPointInit {
+	public transformPoint(domPoint: IDOMPointInit): DOMPoint {
 		const xPoint = domPoint.x ?? 0;
 		const yPoint = domPoint.y ?? 0;
 		const zPoint = domPoint.z ?? 0;
@@ -625,271 +619,6 @@ export default class DOMMatrixReadOnly {
 		this[PropertySymbol.m42] = matrix[PropertySymbol.m42];
 		this[PropertySymbol.m43] = matrix[PropertySymbol.m43];
 		this[PropertySymbol.m44] = matrix[PropertySymbol.m44];
-	}
-
-	/**
-	 * Applies a rotation to the matrix.
-	 *
-	 * This method is equivalent to the CSS `rotate3d()` function.
-	 *
-	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/rotate3d
-	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
-	 * @param [x] X-Axis vector length.
-	 * @param [y] Y-Axis vector length.
-	 * @param [z] Z-Axis vector length.
-	 * @param [angle] Angle in degrees of the rotation.
-	 */
-	public [PropertySymbol.rotateAxisAngleSelf](
-		x: number = 0,
-		y: number = 0,
-		z: number = 0,
-		angle: number = 0
-	): void {
-		x = Number(x);
-		y = Number(y);
-		z = Number(z);
-		angle = Number(angle);
-
-		if (isNaN(x) || isNaN(y) || isNaN(z) || isNaN(angle)) {
-			throw new TypeError(
-				`Failed to execute 'rotateAxisAngleSelf' on 'DOMMatrix': The arguments must be numbers.`
-			);
-		}
-		const length = Math.sqrt(x * x + y * y + z * z);
-
-		// Bad vector length
-		if (length === 0) {
-			// TODO: Should this throw an error?
-			return;
-		}
-
-		x = x / length;
-		y = y / length;
-		z = z / length;
-
-		const alpha = (angle * Math.PI) / 180;
-
-		const sc = Math.sin(alpha / 2) * Math.cos(alpha / 2);
-		const sq = Math.sin(alpha / 2) * Math.sin(alpha / 2);
-
-		/**
-		 * 3D Matrix:
-		 * _________________________
-		 * | m11 | m21 | m31 | m41 |
-		 * | m12 | m22 | m32 | m42 |
-		 * | m13 | m23 | m33 | m43 |
-		 * | m14 | m24 | m34 | m44 |
-		 * -------------------------̣
-		 */
-
-		const m11 = 1 - 2 * (y * y + z * z) * sq;
-		const m12 = 2 * (x * y * sq + z * sc);
-		const m13 = 2 * (x * z * sq - y * sc);
-		const m21 = 2 * (x * y * sq - z * sc);
-		const m22 = 1 - 2 * (x * x + z * z) * sq;
-		const m23 = 2 * (y * z * sq + x * sc);
-		const m31 = 2 * (x * z * sq + y * sc);
-		const m32 = 2 * (y * z * sq - x * sc);
-		const m33 = 1 - 2 * (x * x + y * y) * sq;
-
-		// prettier-ignore
-		const matrix = (<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
-            m11, m21, m31, 0,
-            m12, m22, m32, 0,
-            m13, m23, m33, 0,
-            0,   0,   0,   1
-        ]);
-
-		this[PropertySymbol.multiplySelf](matrix);
-	}
-
-	/**
-	 * Applies a rotation to the matrix.
-	 *
-	 * @see http://en.wikipedia.org/wiki/Rotation_matrix
-	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
-	 * @param [x] X-Axis rotation.
-	 * @param [y] Y-Axis rotation.
-	 * @param [z] Z-Axis rotation.
-	 */
-	public [PropertySymbol.rotateSelf](x: number = 0, y?: number, z?: number): void {
-		// If Y and Z are both missing, set Z to the value of X and set X and Y to 0.
-		if (y === undefined && z === undefined) {
-			z = x;
-			x = 0;
-			y = 0;
-		}
-
-		// If Y is still missing, set Y to 0.
-		if (y === undefined) {
-			y = 0;
-		}
-
-		// If Z is still missing, set Z to 0
-		if (z === undefined) {
-			y = 0;
-		}
-
-		x = Number(x);
-		y = Number(y);
-		z = Number(z);
-
-		if (isNaN(x) || isNaN(y) || isNaN(z)) {
-			throw new TypeError(
-				`Failed to execute 'rotateSelf' on 'DOMMatrix': The arguments must be numbers.`
-			);
-		}
-
-		this[PropertySymbol.rotateAxisAngleSelf](0, 0, 1, z);
-		this[PropertySymbol.rotateAxisAngleSelf](0, 1, 0, y);
-		this[PropertySymbol.rotateAxisAngleSelf](1, 0, 0, x);
-	}
-
-	/**
-	 * Applies translate to the matrix.
-	 *
-	 * This method is equivalent to the CSS `translate3d()` function.
-	 *
-	 * @see https://drafts.csswg.org/css-transforms-1/#TranslateDefined
-	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/translate3d
-	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
-	 * @param [x] X-Axis position.
-	 * @param [y] Y-Axis position.
-	 * @param [z] Z-Axis position.
-	 */
-	public [PropertySymbol.translateSelf](x: number = 0, y: number = 0, z: number = 0): void {
-		// prettier-ignore
-		const translationMatrix = (<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            x, y, z, 1,
-        ]);
-
-		this[PropertySymbol.multiplySelf](translationMatrix);
-	}
-
-	/**
-	 * Applies a scale to the matrix.
-	 *
-	 * This method is equivalent to the CSS `scale()` function.
-	 *
-	 * @see https://drafts.csswg.org/css-transforms-1/#ScaleDefined
-	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/scale
-	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
-	 * @param [scaleX] X-Axis scale.
-	 * @param [scaleY] Y-Axis scale.
-	 * @param [scaleZ] Z-Axis scale.
-	 * @param [originX] X-Axis scale.
-	 * @param [originY] Y-Axis scale.
-	 * @param [originZ] Z-Axis scale.
-	 */
-	public [PropertySymbol.scaleSelf](
-		scaleX: number,
-		scaleY: number,
-		scaleZ = 1,
-		originX = 0,
-		originY = 0,
-		originZ = 0
-	): void {
-		// If scaleY is missing, set scaleY to the value of scaleX.
-		scaleX = scaleX === undefined ? 1 : Number(scaleX);
-		scaleY = scaleY === undefined ? scaleX : Number(scaleY);
-
-		this[PropertySymbol.translateSelf](originX, originY, originZ);
-
-		// prettier-ignore
-		this[PropertySymbol.multiplySelf]((<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
-            scaleX, 0,      0,      0,
-            0,      scaleY, 0,      0,
-            0,      0,      scaleZ, 0,
-            0,      0,      0,      1,
-        ]))
-
-		this[PropertySymbol.translateSelf](-originX, -originY, -originZ);
-	}
-
-	/**
-	 * Applies a scale to the matrix.
-	 *
-	 * This method is equivalent to the CSS `scale()` function.
-	 *
-	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/scale3d
-	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
-	 * @param [scale] The scale factor.
-	 * @param [originX] X-Axis scale.
-	 * @param [originY] Y-Axis scale.
-	 * @param [originZ] Z-Axis scale.
-	 */
-	public [PropertySymbol.scale3dSelf](scale = 1, originX = 0, originY = 0, originZ = 0): void {
-		this[PropertySymbol.translateSelf](originX, originY, originZ);
-
-		// prettier-ignore
-		this[PropertySymbol.multiplySelf]((<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
-            scale, 0,     0,     0,
-            0,     scale, 0,     0,
-            0,     0,     scale, 0,
-            0,     0,     0,     1,
-        ]))
-
-		this[PropertySymbol.translateSelf](-originX, -originY, -originZ);
-	}
-
-	/**
-	 * Applies a scale to the matrix.
-	 *
-	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
-	 * @param [scaleX] X-Axis scale.
-	 * @param [scaleY] Y-Axis scale.
-	 */
-	public [PropertySymbol.scaleNonUniformSelf](scaleX = 1, scaleY = 1): void {
-		// prettier-ignore
-		this[PropertySymbol.multiplySelf]((<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
-            scaleX, 0,      0,      0,
-            0,      scaleY, 0,      0,
-            0,      0,      1,      0,
-            0,      0,      0,      1,
-        ]));
-	}
-
-	/**
-	 * Applies a skew operation to the matrix on the X axis.
-	 *
-	 * This method is equivalent to the CSS `skewX()` function.
-	 *
-	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/skewX
-	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
-	 * @param angle Angle in degrees.
-	 */
-	public [PropertySymbol.skewXSelf](angle: number): void {
-		const matrix = Object.assign({}, DEFAULT_MATRIX_JSON);
-		const radX = (angle * Math.PI) / 180;
-		const tX = Math.tan(radX);
-
-		matrix.m21 = tX;
-		matrix.c = tX;
-
-		this[PropertySymbol.multiplySelf](matrix);
-	}
-
-	/**
-	 * Applies a skew operation to the matrix on the Y axis.
-	 *
-	 * This method is equivalent to the CSS `skewY()` function.
-	 *
-	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/skewY
-	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
-	 * @param angle Angle in degrees.
-	 */
-	public [PropertySymbol.skewYSelf](angle: number): void {
-		const matrix = Object.assign({}, DEFAULT_MATRIX_JSON);
-		const radY = (angle * Math.PI) / 180;
-		const tY = Math.tan(radY);
-
-		matrix.m12 = tY;
-		matrix.b = tY;
-
-		this[PropertySymbol.multiplySelf](matrix);
 	}
 
 	/**
@@ -1015,6 +744,483 @@ export default class DOMMatrixReadOnly {
 	}
 
 	/**
+	 * Applies translate to the matrix.
+	 *
+	 * This method is equivalent to the CSS `translate3d()` function.
+	 *
+	 * @see https://drafts.csswg.org/css-transforms-1/#TranslateDefined
+	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/translate3d
+	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
+	 * @param [x] X-Axis position.
+	 * @param [y] Y-Axis position.
+	 * @param [z] Z-Axis position.
+	 */
+	public [PropertySymbol.translateSelf](x: number = 0, y: number = 0, z: number = 0): void {
+		// prettier-ignore
+		const translationMatrix = (<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            x, y, z, 1,
+        ]);
+
+		this[PropertySymbol.multiplySelf](translationMatrix);
+	}
+
+	/**
+	 * Applies a scale to the matrix.
+	 *
+	 * This method is equivalent to the CSS `scale()` function.
+	 *
+	 * @see https://drafts.csswg.org/css-transforms-1/#ScaleDefined
+	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/scale
+	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
+	 * @param [scaleX] X-Axis scale.
+	 * @param [scaleY] Y-Axis scale.
+	 * @param [scaleZ] Z-Axis scale.
+	 * @param [originX] X-Axis scale.
+	 * @param [originY] Y-Axis scale.
+	 * @param [originZ] Z-Axis scale.
+	 */
+	public [PropertySymbol.scaleSelf](
+		scaleX: number,
+		scaleY: number,
+		scaleZ = 1,
+		originX = 0,
+		originY = 0,
+		originZ = 0
+	): void {
+		// If scaleY is missing, set scaleY to the value of scaleX.
+		scaleX = scaleX === undefined ? 1 : Number(scaleX);
+		scaleY = scaleY === undefined ? scaleX : Number(scaleY);
+
+		this[PropertySymbol.translateSelf](originX, originY, originZ);
+
+		// prettier-ignore
+		this[PropertySymbol.multiplySelf]((<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
+            scaleX, 0,      0,      0,
+            0,      scaleY, 0,      0,
+            0,      0,      scaleZ, 0,
+            0,      0,      0,      1,
+        ]))
+
+		this[PropertySymbol.translateSelf](-originX, -originY, -originZ);
+	}
+
+	/**
+	 * Applies a scale to the matrix.
+	 *
+	 * This method is equivalent to the CSS `scale()` function.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/scale3d
+	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
+	 * @param [scale] The scale factor.
+	 * @param [originX] X-Axis scale.
+	 * @param [originY] Y-Axis scale.
+	 * @param [originZ] Z-Axis scale.
+	 */
+	public [PropertySymbol.scale3dSelf](scale = 1, originX = 0, originY = 0, originZ = 0): void {
+		this[PropertySymbol.translateSelf](originX, originY, originZ);
+
+		// prettier-ignore
+		this[PropertySymbol.multiplySelf]((<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
+            scale, 0,     0,     0,
+            0,     scale, 0,     0,
+            0,     0,     scale, 0,
+            0,     0,     0,     1,
+        ]))
+
+		this[PropertySymbol.translateSelf](-originX, -originY, -originZ);
+	}
+
+	/**
+	 * Applies a scale to the matrix.
+	 *
+	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
+	 * @param [scaleX] X-Axis scale.
+	 * @param [scaleY] Y-Axis scale.
+	 */
+	public [PropertySymbol.scaleNonUniformSelf](scaleX = 1, scaleY = 1): void {
+		// prettier-ignore
+		this[PropertySymbol.multiplySelf]((<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
+            scaleX, 0,      0,      0,
+            0,      scaleY, 0,      0,
+            0,      0,      1,      0,
+            0,      0,      0,      1,
+        ]));
+	}
+
+	/**
+	 * Applies a rotation to the matrix.
+	 *
+	 * This method is equivalent to the CSS `rotate3d()` function.
+	 *
+	 * @see https://drafts.fxtf.org/geometry/#dom-dommatrixreadonly-rotateaxisangleself
+	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
+	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/rotate3d
+	 * @param [x] X-Axis vector.
+	 * @param [y] Y-Axis vector.
+	 * @param [z] Z-Axis vector.
+	 * @param [angle] Angle in degrees of the rotation.
+	 */
+	public [PropertySymbol.rotateAxisAngleSelf](x = 0, y = 0, z = 0, angle = 0): void {
+		x = Number(x);
+		y = Number(y);
+		z = Number(z);
+		angle = Number(angle);
+
+		if (isNaN(x) || isNaN(y) || isNaN(z) || isNaN(angle)) {
+			throw new TypeError(
+				`Failed to execute 'rotateAxisAngleSelf' on 'DOMMatrix': The arguments must be numbers.`
+			);
+		}
+
+		const length = Math.hypot(x, y, z);
+
+		if (length === 0) {
+			return;
+		}
+
+		if (length !== 1) {
+			x /= length;
+			y /= length;
+			z /= length;
+		}
+
+		// Degree to radian divided by 2
+		const alpha = -((angle * Math.PI) / 360);
+		const round = this.#round;
+		const sc = Math.sin(alpha) * Math.cos(alpha);
+		const sq = Math.sin(alpha) * Math.sin(alpha);
+
+		// We round it as the calculation is off by about 0.000000000000001, which causes the matrix to be different from the browser.
+		// The rounding doesn't solve the issue for all cases, it would be better to find a more accurate solution.
+
+		const m11 = round(1 - 2 * (y * y + z * z) * sq);
+		const m12 = round(2 * (x * y * sq + z * sc));
+		const m13 = round(2 * (x * z * sq - y * sc));
+		const m21 = round(2 * (x * y * sq - z * sc));
+		const m22 = round(1 - 2 * (x * x + z * z) * sq);
+		const m23 = round(2 * (y * z * sq + x * sc));
+		const m31 = round(2 * (x * z * sq + y * sc));
+		const m32 = round(2 * (y * z * sq - x * sc));
+		const m33 = round(1 - 2 * (x * x + y * y) * sq);
+
+		// prettier-ignore
+		const matrix = (<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
+            m11, m21, m31, 0,
+		    m12, m22, m32, 0,
+		    m13, m23, m33, 0,
+		    0,   0,   0,   1
+		]);
+
+		this[PropertySymbol.multiplySelf](matrix);
+	}
+
+	/**
+	 * Applies a rotation to the matrix.
+	 *
+	 * @see http://en.wikipedia.org/wiki/Rotation_matrix
+	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
+	 * @param [x] X-Axis rotation in degrees.
+	 * @param [y] Y-Axis rotation in degrees.
+	 * @param [z] Z-Axis rotation in degrees.
+	 */
+	public [PropertySymbol.rotateSelf](x = 0, y?: number, z?: number): void {
+		// If Y and Z are both missing, set Z to the value of X and set X and Y to 0.
+		if (y === undefined && z === undefined) {
+			z = x;
+			x = 0;
+			y = 0;
+		}
+
+		// If Y is still missing, set Y to 0.
+		if (y === undefined) {
+			y = 0;
+		}
+
+		// If Z is still missing, set Z to 0
+		if (z === undefined) {
+			z = 0;
+		}
+
+		x = Number(x);
+		y = Number(y);
+		z = Number(z);
+
+		if (isNaN(x) || isNaN(y) || isNaN(z)) {
+			throw new TypeError(
+				`Failed to execute 'rotateSelf' on 'DOMMatrix': The arguments must be numbers.`
+			);
+		}
+
+		if (z !== 0) {
+			this[PropertySymbol.rotateAxisAngleSelf](0, 0, 1, z);
+		}
+		if (x !== 0) {
+			this[PropertySymbol.rotateAxisAngleSelf](0, 1, 0, y);
+		}
+		if (x !== 0) {
+			this[PropertySymbol.rotateAxisAngleSelf](1, 0, 0, x);
+		}
+	}
+
+	/**
+	 * Modifies the matrix by rotating it by the angle between the specified vector and (1, 0).
+	 *
+	 * @param x The X component of the axis vector.
+	 * @param y The Y component of the axis vector.
+	 */
+	public [PropertySymbol.rotateFromVectorSelf](x = 0, y = 0): void {
+		this[PropertySymbol.rotateSelf](x === 0 && y === 0 ? 0 : (Math.atan2(y, x) * 180) / Math.PI);
+	}
+
+	/**
+	 * Applies a skew operation to the matrix on the X axis.
+	 *
+	 * This method is equivalent to the CSS `skewX()` function.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/skewX
+	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
+	 * @param angle Angle in degrees.
+	 */
+	public [PropertySymbol.skewXSelf](angle: number): void {
+		const matrix = Object.assign({}, DEFAULT_MATRIX_JSON);
+		const radX = (angle * Math.PI) / 180;
+		const tX = Math.tan(radX);
+
+		matrix.m21 = tX;
+		matrix.c = tX;
+
+		this[PropertySymbol.multiplySelf](matrix);
+	}
+
+	/**
+	 * Applies a skew operation to the matrix on the Y axis.
+	 *
+	 * This method is equivalent to the CSS `skewY()` function.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/skewY
+	 * @see https://www.w3.org/TR/css-transforms-1/#transform-functions
+	 * @param angle Angle in degrees.
+	 */
+	public [PropertySymbol.skewYSelf](angle: number): void {
+		const matrix = Object.assign({}, DEFAULT_MATRIX_JSON);
+		const radY = (angle * Math.PI) / 180;
+		const tY = Math.tan(radY);
+
+		matrix.m12 = tY;
+		matrix.b = tY;
+
+		this[PropertySymbol.multiplySelf](matrix);
+	}
+
+	/**
+	 * Applies a flip operation to the matrix on the X axis.
+	 */
+	public [PropertySymbol.flipXSelf](): void {
+		// prettier-ignore
+		const matrix = (<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
+            -1, 0, 0, 0,
+            0,  1, 0, 0,
+            0,  0, 1, 0,
+            0,  0, 0, 1 
+        ]);
+		this[PropertySymbol.multiplySelf](matrix);
+	}
+
+	/**
+	 * Applies a flip operation to the matrix on the Y axis.
+	 */
+	public [PropertySymbol.flipYSelf](): void {
+		// prettier-ignore
+		const matrix = (<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
+            1, 0,  0, 0,
+            0, -1, 0, 0,
+            0, 0,  1, 0,
+            0, 0,  0, 1
+        ]);
+		this[PropertySymbol.multiplySelf](matrix);
+	}
+
+	/**
+	 * Applies an inversion operation to the matrix.
+	 */
+	public [PropertySymbol.invertSelf](): void {
+		const m11 =
+			this[PropertySymbol.m22] * this[PropertySymbol.m33] * this[PropertySymbol.m44] -
+			this[PropertySymbol.m22] * this[PropertySymbol.m34] * this[PropertySymbol.m43] -
+			this[PropertySymbol.m32] * this[PropertySymbol.m23] * this[PropertySymbol.m44] +
+			this[PropertySymbol.m32] * this[PropertySymbol.m24] * this[PropertySymbol.m43] +
+			this[PropertySymbol.m42] * this[PropertySymbol.m23] * this[PropertySymbol.m34] -
+			this[PropertySymbol.m42] * this[PropertySymbol.m24] * this[PropertySymbol.m33];
+
+		const m12 =
+			-this[PropertySymbol.m12] * this[PropertySymbol.m33] * this[PropertySymbol.m44] +
+			this[PropertySymbol.m12] * this[PropertySymbol.m34] * this[PropertySymbol.m43] +
+			this[PropertySymbol.m32] * this[PropertySymbol.m13] * this[PropertySymbol.m44] -
+			this[PropertySymbol.m32] * this[PropertySymbol.m14] * this[PropertySymbol.m43] -
+			this[PropertySymbol.m42] * this[PropertySymbol.m13] * this[PropertySymbol.m34] +
+			this[PropertySymbol.m42] * this[PropertySymbol.m14] * this[PropertySymbol.m33];
+
+		const m13 =
+			this[PropertySymbol.m12] * this[PropertySymbol.m23] * this[PropertySymbol.m44] -
+			this[PropertySymbol.m12] * this[PropertySymbol.m24] * this[PropertySymbol.m43] -
+			this[PropertySymbol.m22] * this[PropertySymbol.m13] * this[PropertySymbol.m44] +
+			this[PropertySymbol.m22] * this[PropertySymbol.m14] * this[PropertySymbol.m43] +
+			this[PropertySymbol.m42] * this[PropertySymbol.m13] * this[PropertySymbol.m24] -
+			this[PropertySymbol.m42] * this[PropertySymbol.m14] * this[PropertySymbol.m23];
+
+		const m14 =
+			-this[PropertySymbol.m12] * this[PropertySymbol.m23] * this[PropertySymbol.m34] +
+			this[PropertySymbol.m12] * this[PropertySymbol.m24] * this[PropertySymbol.m33] +
+			this[PropertySymbol.m22] * this[PropertySymbol.m13] * this[PropertySymbol.m34] -
+			this[PropertySymbol.m22] * this[PropertySymbol.m14] * this[PropertySymbol.m33] -
+			this[PropertySymbol.m32] * this[PropertySymbol.m13] * this[PropertySymbol.m24] +
+			this[PropertySymbol.m32] * this[PropertySymbol.m14] * this[PropertySymbol.m23];
+
+		const det =
+			this[PropertySymbol.m11] * m11 +
+			this[PropertySymbol.m21] * m12 +
+			this[PropertySymbol.m31] * m13 +
+			this[PropertySymbol.m41] * m14;
+
+		// If the current matrix is not invertible set all attributes to NaN and set is 2D to false.
+		if (det === 0) {
+			this[PropertySymbol.m11] = NaN;
+			this[PropertySymbol.m12] = NaN;
+			this[PropertySymbol.m13] = NaN;
+			this[PropertySymbol.m14] = NaN;
+			this[PropertySymbol.m21] = NaN;
+			this[PropertySymbol.m22] = NaN;
+			this[PropertySymbol.m23] = NaN;
+			this[PropertySymbol.m24] = NaN;
+			this[PropertySymbol.m31] = NaN;
+			this[PropertySymbol.m32] = NaN;
+			this[PropertySymbol.m33] = NaN;
+			this[PropertySymbol.m34] = NaN;
+			this[PropertySymbol.m41] = NaN;
+			this[PropertySymbol.m42] = NaN;
+			this[PropertySymbol.m43] = NaN;
+			this[PropertySymbol.m44] = NaN;
+			return;
+		}
+
+		const m21 =
+			-this[PropertySymbol.m21] * this[PropertySymbol.m33] * this[PropertySymbol.m44] +
+			this[PropertySymbol.m21] * this[PropertySymbol.m34] * this[PropertySymbol.m43] +
+			this[PropertySymbol.m31] * this[PropertySymbol.m23] * this[PropertySymbol.m44] -
+			this[PropertySymbol.m31] * this[PropertySymbol.m24] * this[PropertySymbol.m43] -
+			this[PropertySymbol.m41] * this[PropertySymbol.m23] * this[PropertySymbol.m34] +
+			this[PropertySymbol.m41] * this[PropertySymbol.m24] * this[PropertySymbol.m33];
+
+		const m22 =
+			this[PropertySymbol.m11] * this[PropertySymbol.m33] * this[PropertySymbol.m44] -
+			this[PropertySymbol.m11] * this[PropertySymbol.m34] * this[PropertySymbol.m43] -
+			this[PropertySymbol.m31] * this[PropertySymbol.m13] * this[PropertySymbol.m44] +
+			this[PropertySymbol.m31] * this[PropertySymbol.m14] * this[PropertySymbol.m43] +
+			this[PropertySymbol.m41] * this[PropertySymbol.m13] * this[PropertySymbol.m34] -
+			this[PropertySymbol.m41] * this[PropertySymbol.m14] * this[PropertySymbol.m33];
+
+		const m23 =
+			-this[PropertySymbol.m11] * this[PropertySymbol.m23] * this[PropertySymbol.m44] +
+			this[PropertySymbol.m11] * this[PropertySymbol.m24] * this[PropertySymbol.m43] +
+			this[PropertySymbol.m21] * this[PropertySymbol.m13] * this[PropertySymbol.m44] -
+			this[PropertySymbol.m21] * this[PropertySymbol.m14] * this[PropertySymbol.m43] -
+			this[PropertySymbol.m41] * this[PropertySymbol.m13] * this[PropertySymbol.m24] +
+			this[PropertySymbol.m41] * this[PropertySymbol.m14] * this[PropertySymbol.m23];
+
+		const m24 =
+			this[PropertySymbol.m11] * this[PropertySymbol.m23] * this[PropertySymbol.m34] -
+			this[PropertySymbol.m11] * this[PropertySymbol.m24] * this[PropertySymbol.m33] -
+			this[PropertySymbol.m21] * this[PropertySymbol.m13] * this[PropertySymbol.m34] +
+			this[PropertySymbol.m21] * this[PropertySymbol.m14] * this[PropertySymbol.m33] +
+			this[PropertySymbol.m31] * this[PropertySymbol.m13] * this[PropertySymbol.m24] -
+			this[PropertySymbol.m31] * this[PropertySymbol.m14] * this[PropertySymbol.m23];
+
+		const m31 =
+			this[PropertySymbol.m21] * this[PropertySymbol.m32] * this[PropertySymbol.m44] -
+			this[PropertySymbol.m21] * this[PropertySymbol.m34] * this[PropertySymbol.m42] -
+			this[PropertySymbol.m31] * this[PropertySymbol.m22] * this[PropertySymbol.m44] +
+			this[PropertySymbol.m31] * this[PropertySymbol.m24] * this[PropertySymbol.m42] +
+			this[PropertySymbol.m41] * this[PropertySymbol.m22] * this[PropertySymbol.m34] -
+			this[PropertySymbol.m41] * this[PropertySymbol.m24] * this[PropertySymbol.m32];
+
+		const m32 =
+			-this[PropertySymbol.m11] * this[PropertySymbol.m32] * this[PropertySymbol.m44] +
+			this[PropertySymbol.m11] * this[PropertySymbol.m34] * this[PropertySymbol.m42] +
+			this[PropertySymbol.m31] * this[PropertySymbol.m12] * this[PropertySymbol.m44] -
+			this[PropertySymbol.m31] * this[PropertySymbol.m14] * this[PropertySymbol.m42] -
+			this[PropertySymbol.m41] * this[PropertySymbol.m12] * this[PropertySymbol.m34] +
+			this[PropertySymbol.m41] * this[PropertySymbol.m14] * this[PropertySymbol.m32];
+
+		const m33 =
+			this[PropertySymbol.m11] * this[PropertySymbol.m22] * this[PropertySymbol.m44] -
+			this[PropertySymbol.m11] * this[PropertySymbol.m24] * this[PropertySymbol.m42] -
+			this[PropertySymbol.m21] * this[PropertySymbol.m12] * this[PropertySymbol.m44] +
+			this[PropertySymbol.m21] * this[PropertySymbol.m14] * this[PropertySymbol.m42] +
+			this[PropertySymbol.m41] * this[PropertySymbol.m12] * this[PropertySymbol.m24] -
+			this[PropertySymbol.m41] * this[PropertySymbol.m14] * this[PropertySymbol.m22];
+
+		const m34 =
+			-this[PropertySymbol.m11] * this[PropertySymbol.m22] * this[PropertySymbol.m34] +
+			this[PropertySymbol.m11] * this[PropertySymbol.m24] * this[PropertySymbol.m32] +
+			this[PropertySymbol.m21] * this[PropertySymbol.m12] * this[PropertySymbol.m34] -
+			this[PropertySymbol.m21] * this[PropertySymbol.m14] * this[PropertySymbol.m32] -
+			this[PropertySymbol.m31] * this[PropertySymbol.m12] * this[PropertySymbol.m24] +
+			this[PropertySymbol.m31] * this[PropertySymbol.m14] * this[PropertySymbol.m22];
+
+		const m41 =
+			-this[PropertySymbol.m21] * this[PropertySymbol.m32] * this[PropertySymbol.m43] +
+			this[PropertySymbol.m21] * this[PropertySymbol.m33] * this[PropertySymbol.m42] +
+			this[PropertySymbol.m31] * this[PropertySymbol.m22] * this[PropertySymbol.m43] -
+			this[PropertySymbol.m31] * this[PropertySymbol.m23] * this[PropertySymbol.m42] -
+			this[PropertySymbol.m41] * this[PropertySymbol.m22] * this[PropertySymbol.m33] +
+			this[PropertySymbol.m41] * this[PropertySymbol.m23] * this[PropertySymbol.m32];
+
+		const m42 =
+			this[PropertySymbol.m11] * this[PropertySymbol.m32] * this[PropertySymbol.m43] -
+			this[PropertySymbol.m11] * this[PropertySymbol.m33] * this[PropertySymbol.m42] -
+			this[PropertySymbol.m31] * this[PropertySymbol.m12] * this[PropertySymbol.m43] +
+			this[PropertySymbol.m31] * this[PropertySymbol.m13] * this[PropertySymbol.m42] +
+			this[PropertySymbol.m41] * this[PropertySymbol.m12] * this[PropertySymbol.m33] -
+			this[PropertySymbol.m41] * this[PropertySymbol.m13] * this[PropertySymbol.m32];
+
+		const m43 =
+			-this[PropertySymbol.m11] * this[PropertySymbol.m22] * this[PropertySymbol.m43] +
+			this[PropertySymbol.m11] * this[PropertySymbol.m23] * this[PropertySymbol.m42] +
+			this[PropertySymbol.m21] * this[PropertySymbol.m12] * this[PropertySymbol.m43] -
+			this[PropertySymbol.m21] * this[PropertySymbol.m13] * this[PropertySymbol.m42] -
+			this[PropertySymbol.m41] * this[PropertySymbol.m12] * this[PropertySymbol.m23] +
+			this[PropertySymbol.m41] * this[PropertySymbol.m13] * this[PropertySymbol.m22];
+
+		const m44 =
+			this[PropertySymbol.m11] * this[PropertySymbol.m22] * this[PropertySymbol.m33] -
+			this[PropertySymbol.m11] * this[PropertySymbol.m23] * this[PropertySymbol.m32] -
+			this[PropertySymbol.m21] * this[PropertySymbol.m12] * this[PropertySymbol.m33] +
+			this[PropertySymbol.m21] * this[PropertySymbol.m13] * this[PropertySymbol.m32] +
+			this[PropertySymbol.m31] * this[PropertySymbol.m12] * this[PropertySymbol.m23] -
+			this[PropertySymbol.m31] * this[PropertySymbol.m13] * this[PropertySymbol.m22];
+
+		this[PropertySymbol.m11] = m11 / det || 0;
+		this[PropertySymbol.m12] = m12 / det || 0;
+		this[PropertySymbol.m13] = m13 / det || 0;
+		this[PropertySymbol.m14] = m14 / det || 0;
+		this[PropertySymbol.m21] = m21 / det || 0;
+		this[PropertySymbol.m22] = m22 / det || 0;
+		this[PropertySymbol.m23] = m23 / det || 0;
+		this[PropertySymbol.m24] = m24 / det || 0;
+		this[PropertySymbol.m31] = m31 / det || 0;
+		this[PropertySymbol.m32] = m32 / det || 0;
+		this[PropertySymbol.m33] = m33 / det || 0;
+		this[PropertySymbol.m34] = m34 / det || 0;
+		this[PropertySymbol.m41] = m41 / det || 0;
+		this[PropertySymbol.m42] = m42 / det || 0;
+		this[PropertySymbol.m43] = m43 / det || 0;
+		this[PropertySymbol.m44] = m44 / det || 0;
+	}
+
+	/**
 	 * Returns an *Array* containing elements which comprise the matrix.
 	 *
 	 * @param matrix Matrix to convert.
@@ -1051,6 +1257,16 @@ export default class DOMMatrixReadOnly {
 			this[PropertySymbol.m43],
 			this[PropertySymbol.m44]
 		];
+	}
+
+	/**
+	 * Rounds the value to the given number of decimals.
+	 *
+	 * @param value The value to round.
+	 * @param [decimals] The number of decimals to round to.
+	 */
+	#round(value: number, decimals: number = 1e15): number {
+		return Math.round(value * decimals) / decimals;
 	}
 
 	/**

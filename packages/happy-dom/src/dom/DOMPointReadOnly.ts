@@ -10,7 +10,7 @@ export default class DOMPointReadOnly implements IDOMPointInit {
 	protected [PropertySymbol.x]: number = 0;
 	protected [PropertySymbol.y]: number = 0;
 	protected [PropertySymbol.z]: number = 0;
-	protected [PropertySymbol.w]: number = 0;
+	protected [PropertySymbol.w]: number = 1;
 
 	/**
 	 * Constructor.
@@ -24,7 +24,7 @@ export default class DOMPointReadOnly implements IDOMPointInit {
 		this[PropertySymbol.x] = x !== undefined && x !== null ? Number(x) : 0;
 		this[PropertySymbol.y] = y !== undefined && y !== null ? Number(y) : 0;
 		this[PropertySymbol.z] = z !== undefined && z !== null ? Number(z) : 0;
-		this[PropertySymbol.w] = w !== undefined && w !== null ? Number(w) : 0;
+		this[PropertySymbol.w] = w !== undefined && w !== null ? Number(w) : 1;
 	}
 
 	/**
