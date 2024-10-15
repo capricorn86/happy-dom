@@ -80,10 +80,18 @@ export default class DOMPointReadOnly implements IDOMPointInit {
 	/**
 	 * Returns a new DOMPointReadOnly object.
 	 *
-	 * @param other
+	 * @param [otherPoint] Other point.
 	 * @returns Cloned object.
 	 */
-	public static fromPoint(other: IDOMPointInit): DOMPointReadOnly {
-		return new DOMPointReadOnly(other.x, other.y, other.z, other.w);
+	public static fromPoint(otherPoint?: IDOMPointInit): DOMPointReadOnly {
+		if (!otherPoint) {
+			return new this();
+		}
+		return new this(
+			otherPoint.x ?? null,
+			otherPoint.y ?? null,
+			otherPoint.z ?? null,
+			otherPoint.w ?? null
+		);
 	}
 }

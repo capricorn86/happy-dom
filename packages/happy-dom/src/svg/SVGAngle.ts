@@ -21,7 +21,7 @@ export default class SVGAngle {
 	public [PropertySymbol.window]: BrowserWindow;
 	public [PropertySymbol.getAttribute]: () => string | null = null;
 	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
-	public [PropertySymbol.attributeValue]: string | null = null;
+	public [PropertySymbol.attributeValue]: string = '';
 	public [PropertySymbol.readOnly]: boolean = false;
 
 	/**
@@ -124,7 +124,7 @@ export default class SVGAngle {
 			case 'turn':
 				return parsedValue * 360;
 			default:
-				return 0;
+				return parsedValue;
 		}
 	}
 
@@ -188,7 +188,9 @@ export default class SVGAngle {
 	 * @returns Value as string.
 	 */
 	public get valueAsString(): string {
-		return this.value.toString() + this.unitType;
+		return this[PropertySymbol.getAttribute]
+			? this[PropertySymbol.getAttribute]() || '0'
+			: this[PropertySymbol.attributeValue] || '0';
 	}
 
 	/**
@@ -197,20 +199,8 @@ export default class SVGAngle {
 	 * @returns Value in specified units.
 	 */
 	public get valueInSpecifiedUnits(): number {
-		switch (this.unitType) {
-			case SVGAngleTypeEnum.unspecified:
-				return this.value;
-			case SVGAngleTypeEnum.deg:
-				return this.value;
-			case SVGAngleTypeEnum.rad:
-				return this.value / (180 / Math.PI);
-			case SVGAngleTypeEnum.grad:
-				return this.value / (180 / 200);
-			case SVGAngleTypeEnum.unknown:
-				return this.value / 360;
-			default:
-				return 0;
-		}
+		const attributeValue = this.valueAsString;
+		return parseFloat(attributeValue) || 0;
 	}
 
 	/**
@@ -231,7 +221,7 @@ export default class SVGAngle {
 			);
 		}
 
-		value = typeof value !== 'number' ? parseFloat(String(value)) : value;
+		value = typeof value !== 'number' ? parseFloat(value) : value;
 
 		if (isNaN(value)) {
 			throw new this[PropertySymbol.window].TypeError(
@@ -239,32 +229,29 @@ export default class SVGAngle {
 			);
 		}
 
-		let unitTypeString = '';
+		let unit = '';
 
 		switch (unitType) {
 			case SVGAngleTypeEnum.unspecified:
-				unitTypeString = '';
+				unit = '';
 				break;
 			case SVGAngleTypeEnum.deg:
-				unitTypeString = 'deg';
+				unit = 'deg';
 				break;
 			case SVGAngleTypeEnum.rad:
-				unitTypeString = 'rad';
-				value = value / (180 / Math.PI);
+				unit = 'rad';
 				break;
 			case SVGAngleTypeEnum.grad:
-				unitTypeString = 'grad';
-				value = value / (180 / 200);
+				unit = 'grad';
 				break;
 			case SVGAngleTypeEnum.unknown:
-				unitTypeString = 'turn';
-				value = value / 360;
+				unit = 'turn';
 				break;
 			default:
 				break;
 		}
 
-		this[PropertySymbol.attributeValue] = String(value) + unitTypeString;
+		this[PropertySymbol.attributeValue] = String(value) + unit;
 
 		if (this[PropertySymbol.setAttribute]) {
 			this[PropertySymbol.setAttribute](this[PropertySymbol.attributeValue]);
@@ -289,32 +276,32 @@ export default class SVGAngle {
 		}
 
 		let value = this.value;
-		let unitTypeString = '';
+		let unit = '';
 
 		switch (unitType) {
 			case SVGAngleTypeEnum.unspecified:
-				unitTypeString = '';
+				unit = '';
 				break;
 			case SVGAngleTypeEnum.deg:
-				unitTypeString = 'deg';
+				unit = 'deg';
 				break;
 			case SVGAngleTypeEnum.rad:
-				unitTypeString = 'rad';
+				unit = 'rad';
 				value = value / (180 / Math.PI);
 				break;
 			case SVGAngleTypeEnum.grad:
-				unitTypeString = 'grad';
+				unit = 'grad';
 				value = value / (180 / 200);
 				break;
 			case SVGAngleTypeEnum.unknown:
-				unitTypeString = 'turn';
+				unit = 'turn';
 				value = value / 360;
 				break;
 			default:
 				break;
 		}
 
-		this[PropertySymbol.attributeValue] = String(value) + unitTypeString;
+		this[PropertySymbol.attributeValue] = String(value) + unit;
 
 		if (this[PropertySymbol.setAttribute]) {
 			this[PropertySymbol.setAttribute](this[PropertySymbol.attributeValue]);

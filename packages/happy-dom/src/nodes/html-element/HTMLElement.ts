@@ -351,7 +351,10 @@ export default class HTMLElement extends Element {
 	 * @returns Data set.
 	 */
 	public get dataset(): DOMStringMap {
-		return (this[PropertySymbol.dataset] ??= new DOMStringMap(this));
+		return (this[PropertySymbol.dataset] ??= new DOMStringMap(
+			PropertySymbol.illegalConstructor,
+			this
+		));
 	}
 
 	/**

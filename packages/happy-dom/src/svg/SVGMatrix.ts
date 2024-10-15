@@ -233,25 +233,14 @@ export default class SVGMatrix {
 	/**
 	 * Returns a new SVGMatrix instance which is this matrix post multiplied by a scale 3D matrix containing the passed values.
 	 *
-	 * @param scaleX X-Axis scale.
+	 * @param [scaleX] X-Axis scale.
 	 * @param [scaleY] Y-Axis scale.
-	 * @param [scaleZ] Z-Axis scale.
-	 * @param [originX] X-Axis scale.
-	 * @param [originY] Y-Axis scale.
-	 * @param [originZ] Z-Axis scale.
 	 * @returns The resulted matrix
 	 */
-	public scaleNonUniform(
-		scaleX: number,
-		scaleY: number = 1,
-		scaleZ: number = 1,
-		originX: number = 0,
-		originY: number = 0,
-		originZ: number = 0
-	): SVGMatrix {
+	public scaleNonUniform(scaleX = 1, scaleY = 1): SVGMatrix {
 		const domMatrix = this[PropertySymbol.getDOMMatrix]();
 		const svgMatrix = new SVGMatrix(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
-		domMatrix.scaleNonUniformSelf(scaleX, scaleY, scaleZ, originX, originY, originZ);
+		domMatrix.scaleNonUniformSelf(scaleX, scaleY);
 		svgMatrix[PropertySymbol.setDOMMatrix](domMatrix);
 		return svgMatrix;
 	}

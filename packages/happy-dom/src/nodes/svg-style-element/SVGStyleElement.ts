@@ -98,6 +98,7 @@ export default class SVGStyleElement extends SVGElement {
 		}
 		if (!this[PropertySymbol.sheet]) {
 			this[PropertySymbol.sheet] = new CSSStyleSheet();
+			this[PropertySymbol.sheet].replaceSync(this.textContent);
 		}
 		return this[PropertySymbol.sheet];
 	}

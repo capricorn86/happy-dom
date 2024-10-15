@@ -14,9 +14,14 @@ export default class DOMStringMap {
 	/**
 	 * Constructor.
 	 *
+	 * @param illegalConstructorSymbol Illegal constructor symbol.
 	 * @param element Element.
 	 */
-	constructor(element: Element) {
+	constructor(illegalConstructorSymbol: symbol, element: Element) {
+		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
+			throw new TypeError('Illegal constructor');
+		}
+
 		// Documentation for Proxy:
 		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy
 		return new Proxy(this, {

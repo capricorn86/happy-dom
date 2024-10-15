@@ -1,7 +1,6 @@
 import SVGElement from '../svg-element/SVGElement.js';
 import SVGStringList from '../../svg/SVGStringList.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGStringListAttributeSeparatorEnum from '../../svg/SVGStringListAttributeSeparatorEnum.js';
 import Event from '../../event/Event.js';
 
 /**
@@ -34,8 +33,7 @@ export default class SVGAnimationElement extends SVGElement {
 					setAttribute: (value) =>
 						value
 							? this.setAttribute('requiredExtensions', value)
-							: this.removeAttribute('requiredExtensions'),
-					attributeSeparator: SVGStringListAttributeSeparatorEnum.space
+							: this.removeAttribute('requiredExtensions')
 				}
 			);
 		}
@@ -57,8 +55,7 @@ export default class SVGAnimationElement extends SVGElement {
 					setAttribute: (value) =>
 						value
 							? this.setAttribute('systemLanguage', value)
-							: this.removeAttribute('systemLanguage'),
-					attributeSeparator: SVGStringListAttributeSeparatorEnum.space
+							: this.removeAttribute('systemLanguage')
 				}
 			);
 		}

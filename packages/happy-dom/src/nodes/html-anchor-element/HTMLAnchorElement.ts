@@ -285,7 +285,11 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 */
 	public get relList(): DOMTokenList {
 		if (!this[PropertySymbol.relList]) {
-			this[PropertySymbol.relList] = new DOMTokenList(this, 'rel');
+			this[PropertySymbol.relList] = new DOMTokenList(
+				PropertySymbol.illegalConstructor,
+				this,
+				'rel'
+			);
 		}
 		return <DOMTokenList>this[PropertySymbol.relList];
 	}

@@ -3,7 +3,6 @@ import DOMRect from '../../dom/DOMRect.js';
 import DOMMatrix from '../../dom/dom-matrix/DOMMatrix.js';
 import SVGStringList from '../../svg/SVGStringList.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGStringListAttributeSeparatorEnum from '../../svg/SVGStringListAttributeSeparatorEnum.js';
 import SVGAnimatedTransformList from '../../svg/SVGAnimatedTransformList.js';
 import Event from '../../event/Event.js';
 
@@ -38,8 +37,7 @@ export default class SVGGraphicsElement extends SVGElement {
 					setAttribute: (value) =>
 						value
 							? this.setAttribute('requiredExtensions', value)
-							: this.removeAttribute('requiredExtensions'),
-					attributeSeparator: SVGStringListAttributeSeparatorEnum.space
+							: this.removeAttribute('requiredExtensions')
 				}
 			);
 		}
@@ -61,8 +59,7 @@ export default class SVGGraphicsElement extends SVGElement {
 					setAttribute: (value) =>
 						value
 							? this.setAttribute('systemLanguage', value)
-							: this.removeAttribute('systemLanguage'),
-					attributeSeparator: SVGStringListAttributeSeparatorEnum.comma
+							: this.removeAttribute('systemLanguage')
 				}
 			);
 		}

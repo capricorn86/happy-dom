@@ -2,13 +2,13 @@ import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import SVGSVGElement from '../../../src/nodes/svg-svg-element/SVGSVGElement.js';
 import NamespaceURI from '../../../src/config/NamespaceURI.js';
-import SVGRect from '../../../src/nodes/svg-element/SVGRect.js';
-import SVGPoint from '../../../src/nodes/svg-element/SVGPoint.js';
-import SVGAnimatedRect from '../../../src/nodes/svg-element/SVGAnimatedRect.js';
-import SVGNumber from '../../../src/nodes/svg-element/SVGNumber.js';
-import SVGLength from '../../../src/nodes/svg-element/SVGLength.js';
-import SVGAngle from '../../../src/nodes/svg-element/SVGAngle.js';
-import SVGTransform from '../../../src/nodes/svg-element/SVGTransform.js';
+import SVGRect from '../../../src/svg/SVGRect.js';
+import SVGPoint from '../../../src/svg/SVGPoint.js';
+import SVGAnimatedRect from '../../../src/svg/SVGAnimatedRect.js';
+import SVGNumber from '../../../src/svg/SVGNumber.js';
+import SVGLength from '../../../src/svg/SVGLength.js';
+import SVGAngle from '../../../src/svg/SVGAngle.js';
+import SVGTransform from '../../../src/svg/SVGTransform.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('SVGSVGElement', () => {
@@ -72,12 +72,6 @@ describe('SVGSVGElement', () => {
 		});
 	});
 
-	describe('get viewport()', () => {
-		it('Returns an instanceof SVGRect.', () => {
-			expect(element.viewport instanceof SVGRect).toBe(true);
-		});
-	});
-
 	describe('get currentTranslate()', () => {
 		it('Returns an instanceof SVGPoint.', () => {
 			expect(element.currentTranslate instanceof SVGPoint).toBe(true);
@@ -86,14 +80,12 @@ describe('SVGSVGElement', () => {
 
 	describe('get viewBox()', () => {
 		it('Returns an instanceof SVGAnimatedRect with values from the attribute "viewBox".', () => {
-			element.setAttribute('viewBox', '0 0 100 100');
+			element.setAttribute('viewBox', '10 20 100 200');
 			expect(element.viewBox instanceof SVGAnimatedRect).toBe(true);
-			expect(element.viewBox.baseVal).toEqual({
-				x: 0,
-				y: 0,
-				width: 100,
-				height: 100
-			});
+			expect(element.viewBox.baseVal.x).toBe(10);
+			expect(element.viewBox.baseVal.y).toBe(20);
+			expect(element.viewBox.baseVal.width).toBe(100);
+			expect(element.viewBox.baseVal.height).toBe(200);
 		});
 	});
 

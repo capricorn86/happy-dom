@@ -34,7 +34,7 @@ const DEFAULT_MATRIX_JSON: IDOMMatrixJSON = {
 	isIdentity: true
 };
 
-const TRANSFORM_REGEXP = /([a-z0-9]+)\(([^)]+)\)/gm;
+const TRANSFORM_REGEXP = /([a-zA-Z0-9]+)\(([^)]+)\)/gm;
 const TRANSFORM_PARAMETER_SPLIT_REGEXP = /[\s,]+/;
 
 /**
@@ -408,8 +408,8 @@ export default class DOMMatrixReadOnly {
 	 * @returns The resulted matrix
 	 */
 	public scale(
-		scaleX = 1,
-		scaleY = 1,
+		scaleX?: number,
+		scaleY?: number,
 		scaleZ = 1,
 		originX = 0,
 		originY = 0,
@@ -783,8 +783,8 @@ export default class DOMMatrixReadOnly {
 	 * @param [originZ] Z-Axis scale.
 	 */
 	public [PropertySymbol.scaleSelf](
-		scaleX: number,
-		scaleY: number,
+		scaleX?: number,
+		scaleY?: number,
 		scaleZ = 1,
 		originX = 0,
 		originY = 0,
@@ -957,7 +957,7 @@ export default class DOMMatrixReadOnly {
 		if (z !== 0) {
 			this[PropertySymbol.rotateAxisAngleSelf](0, 0, 1, z);
 		}
-		if (x !== 0) {
+		if (y !== 0) {
 			this[PropertySymbol.rotateAxisAngleSelf](0, 1, 0, y);
 		}
 		if (x !== 0) {
@@ -986,11 +986,10 @@ export default class DOMMatrixReadOnly {
 	 */
 	public [PropertySymbol.skewXSelf](angle: number): void {
 		const matrix = Object.assign({}, DEFAULT_MATRIX_JSON);
-		const radX = (angle * Math.PI) / 180;
-		const tX = Math.tan(radX);
+		const value = Math.tan((angle * Math.PI) / 180);
 
-		matrix.m21 = tX;
-		matrix.c = tX;
+		matrix.m21 = value;
+		matrix.c = value;
 
 		this[PropertySymbol.multiplySelf](matrix);
 	}
@@ -1006,11 +1005,10 @@ export default class DOMMatrixReadOnly {
 	 */
 	public [PropertySymbol.skewYSelf](angle: number): void {
 		const matrix = Object.assign({}, DEFAULT_MATRIX_JSON);
-		const radY = (angle * Math.PI) / 180;
-		const tY = Math.tan(radY);
+		const value = Math.tan((angle * Math.PI) / 180);
 
-		matrix.m12 = tY;
-		matrix.b = tY;
+		matrix.m12 = value;
+		matrix.b = value;
 
 		this[PropertySymbol.multiplySelf](matrix);
 	}
@@ -1407,33 +1405,25 @@ export default class DOMMatrixReadOnly {
 
 		const domMatrix = new (<typeof DOMMatrixReadOnly>this)();
 		const regexp = new RegExp(TRANSFORM_REGEXP);
+
 		let match: RegExpMatchArray | null;
 
 		while ((match = regexp.exec(source))) {
+			const name = match[1];
 			const parameters: number[] = <number[]>(
 				(<unknown>match[2].split(TRANSFORM_PARAMETER_SPLIT_REGEXP))
 			);
 
 			for (let i = 0, max = parameters.length; i < max; i++) {
-				if ((<string>(<unknown>parameters[i])).includes('rad')) {
-					parameters[i] = parseFloat(<string>(<unknown>parameters[i])) * (180 / Math.PI);
-				} else {
-					parameters[i] = parseFloat(<string>(<unknown>parameters[i]));
-				}
+				parameters[i] = this[PropertySymbol.getLength](<string>(<unknown>parameters[i]));
 			}
 
 			const [x, y, z, a] = parameters;
 
-			switch (match[1]) {
+			switch (name) {
 				case 'perspective':
-					if (!isNaN(x) && y === undefined && z === undefined) {
+					if (!isNaN(x) && x !== 0 && y === undefined && z === undefined) {
 						domMatrix[PropertySymbol.m34] = -1 / x;
-					}
-					break;
-				case 'matrix':
-				case 'matrix3d':
-					if (parameters.length === 6 || parameters.length === 16) {
-						domMatrix[PropertySymbol.setMatrixValue](this[PropertySymbol.fromArray](parameters));
 					}
 					break;
 				case 'translate':
@@ -1448,12 +1438,12 @@ export default class DOMMatrixReadOnly {
 					break;
 				case 'translateX':
 					if (!isNaN(x) && y === undefined && z === undefined) {
-						domMatrix[PropertySymbol.translateSelf](x, 0, 0);
+						domMatrix[PropertySymbol.translateSelf](x);
 					}
 					break;
 				case 'translateY':
 					if (!isNaN(x) && y === undefined && z === undefined) {
-						domMatrix[PropertySymbol.translateSelf](0, x, 0);
+						domMatrix[PropertySymbol.translateSelf](0, x);
 					}
 					break;
 				case 'translateZ':
@@ -1461,7 +1451,14 @@ export default class DOMMatrixReadOnly {
 						domMatrix[PropertySymbol.translateSelf](0, 0, x);
 					}
 					break;
+				case 'matrix':
+				case 'matrix3d':
+					if (parameters.length === 6 || parameters.length === 16) {
+						domMatrix[PropertySymbol.setMatrixValue](this[PropertySymbol.fromArray](parameters));
+					}
+					break;
 				case 'rotate':
+				case 'rotateZ':
 					if (!isNaN(x) && y === undefined && z === undefined) {
 						domMatrix[PropertySymbol.rotateSelf](0, 0, x);
 					}
@@ -1486,13 +1483,30 @@ export default class DOMMatrixReadOnly {
 					}
 					break;
 				case 'scale3d':
-					if (!isNaN(x) && !isNaN(y) && !isNaN(z) && (x !== 1 || y !== 1 || z !== 1)) {
-						domMatrix[PropertySymbol.scale3dSelf](x, y, z);
+					if (!isNaN(x) && !isNaN(y) && !isNaN(z)) {
+						domMatrix[PropertySymbol.scaleSelf](x, y, z);
+					}
+					break;
+				case 'scaleX':
+					if (!isNaN(x) && y === undefined && z === undefined) {
+						domMatrix[PropertySymbol.scaleSelf](x, 1, 1);
+					}
+					break;
+				case 'scaleY':
+					if (!isNaN(x) && y === undefined && z === undefined) {
+						domMatrix[PropertySymbol.scaleSelf](1, x, 1);
+					}
+					break;
+				case 'scaleZ':
+					if (!isNaN(x) && y === undefined && z === undefined) {
+						domMatrix[PropertySymbol.scaleSelf](1, 1, x);
 					}
 					break;
 				case 'skew':
-					if (!isNaN(x) && !isNaN(y) && z === undefined) {
+					if (!isNaN(x)) {
 						domMatrix[PropertySymbol.skewXSelf](x);
+					}
+					if (!isNaN(y)) {
 						domMatrix[PropertySymbol.skewYSelf](y);
 					}
 					break;
@@ -1514,5 +1528,48 @@ export default class DOMMatrixReadOnly {
 		}
 
 		return domMatrix;
+	}
+
+	/**
+	 * Returns length.
+	 *
+	 * @param length Length to convert.
+	 * @returns Length.
+	 */
+	private static [PropertySymbol.getLength](length: string): number {
+		const value = parseFloat(length);
+		const unit = length.replace(value.toString(), '');
+		switch (unit) {
+			case 'rem':
+			case 'em':
+			case 'vw':
+			case 'vh':
+			case '%':
+			case 'vmin':
+			case 'vmax':
+				throw new SyntaxError(
+					`Failed to construct '${this.name}': Lengths must be absolute, not relative`
+				);
+			case 'rad':
+				return value * (180 / Math.PI);
+			case 'turn':
+				return value * 360;
+			case 'px':
+				return value;
+			case 'cm':
+				return value * 37.7812;
+			case 'mm':
+				return value * 3.7781;
+			case 'in':
+				return value * 96;
+			case 'pt':
+				return value * 1.3281;
+			case 'pc':
+				return value * 16;
+			case 'Q':
+				return value * 0.945;
+			default:
+				return value;
+		}
 	}
 }

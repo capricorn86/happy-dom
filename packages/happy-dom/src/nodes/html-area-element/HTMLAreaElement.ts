@@ -149,7 +149,11 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 */
 	public get relList(): DOMTokenList {
 		if (!this[PropertySymbol.relList]) {
-			this[PropertySymbol.relList] = new DOMTokenList(this, 'rel');
+			this[PropertySymbol.relList] = new DOMTokenList(
+				PropertySymbol.illegalConstructor,
+				this,
+				'rel'
+			);
 		}
 		return <DOMTokenList>this[PropertySymbol.relList];
 	}

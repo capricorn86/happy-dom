@@ -368,8 +368,8 @@ export default class DOMMatrix extends DOMMatrixReadOnly {
 	 * @returns Self.
 	 */
 	public scaleSelf(
-		scaleX = 1,
-		scaleY = 1,
+		scaleX?: number,
+		scaleY?: number,
 		scaleZ = 1,
 		originX = 0,
 		originY = 0,
@@ -406,6 +406,20 @@ export default class DOMMatrix extends DOMMatrixReadOnly {
 	}
 
 	/**
+	 * Sets self to be multiplied by a rotation matrix with the given axis and `angle`.
+	 *
+	 * @param [x] The X component of the axis vector.
+	 * @param [y] The Y component of the axis vector.
+	 * @param [z] The Z component of the axis vector.
+	 * @param [angle] Angle of rotation about the axis vector, in degrees.
+	 * @returns Self.
+	 */
+	public rotateAxisAngleSelf(x = 0, y = 0, z = 0, angle = 0): DOMMatrixReadOnly {
+		this[PropertySymbol.rotateAxisAngleSelf](x, y, z, angle);
+		return this;
+	}
+
+	/**
 	 * Set self to be multiplied by each of 3 rotation matrices about the major axes, first X, then Y, then Z.
 	 *
 	 * @param [x] X component of the rotation, or Z if Y and Z are null.
@@ -419,36 +433,14 @@ export default class DOMMatrix extends DOMMatrixReadOnly {
 	}
 
 	/**
-	 * Sets self to be multiplied by a rotation matrix with the given axis and `angle`.
-	 *
-	 * @param [x] The X component of the axis vector.
-	 * @param [y] The Y component of the axis vector.
-	 * @param [z] The Z component of the axis vector.
-	 * @param [angle] Angle of rotation about the axis vector, in degrees.
-	 * @returns Self.
-	 */
-	public rotateAxisAngleSelf(
-		x?: number,
-		y?: number,
-		z?: number,
-		angle?: number
-	): DOMMatrixReadOnly {
-		this[PropertySymbol.rotateAxisAngleSelf](x, y, z, angle);
-		return this;
-	}
-
-	/**
 	 * Sets self to be multiplied by a skew matrix along the X axis by the given angle.
 	 *
-	 * Not implemented in Happy DOM yet.
-	 *
-	 * @param [_x] X-Axis skew.
-	 * @param [_y] Y-Axis skew.
+	 * @param [x] X-Axis skew.
+	 * @param [y] Y-Axis skew.
 	 */
-	public rotateFromVectorSelf(_x: number = 0, _y: number = 0): DOMMatrixReadOnly {
-		throw new TypeError(
-			`Failed to execute 'rotateFromVectorSelf' on '${this.constructor.name}': Method has not been implemented in Happy DOM yet.`
-		);
+	public rotateFromVectorSelf(x = 0, y = 0): DOMMatrixReadOnly {
+		this[PropertySymbol.rotateFromVectorSelf](x, y);
+		return this;
 	}
 
 	/**
@@ -477,26 +469,23 @@ export default class DOMMatrix extends DOMMatrixReadOnly {
 	 * Set self to be specified as matrix flipped on X-axis.
 	 */
 	public flipXSelf(): DOMMatrixReadOnly {
-		throw new TypeError(
-			`Failed to execute 'flipXSelf' on '${this.constructor.name}': Method has not been implemented in Happy DOM yet.`
-		);
+		this[PropertySymbol.flipXSelf]();
+		return this;
 	}
 
 	/**
 	 * Set self to be specified as matrix flipped on Y-axis.
 	 */
 	public flipYSelf(): DOMMatrixReadOnly {
-		throw new TypeError(
-			`Failed to execute 'flipYSelf' on '${this.constructor.name}': Method has not been implemented in Happy DOM yet.`
-		);
+		this[PropertySymbol.flipYSelf]();
+		return this;
 	}
 
 	/**
 	 * Set self to be specified as matrix inverted.
 	 */
 	public invertSelf(): DOMMatrixReadOnly {
-		throw new TypeError(
-			`Failed to execute 'invertSelf' on '${this.constructor.name}': Method has not been implemented in Happy DOM yet.`
-		);
+		this[PropertySymbol.invertSelf]();
+		return this;
 	}
 }

@@ -75,7 +75,11 @@ export default class HTMLTableCellElement extends HTMLElement {
 	 */
 	public get headers(): DOMTokenList {
 		if (!this[PropertySymbol.headers]) {
-			this[PropertySymbol.headers] = new DOMTokenList(this, 'headers');
+			this[PropertySymbol.headers] = new DOMTokenList(
+				PropertySymbol.illegalConstructor,
+				this,
+				'headers'
+			);
 		}
 		return <DOMTokenList>this[PropertySymbol.headers];
 	}

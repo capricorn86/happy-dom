@@ -254,7 +254,11 @@ export default class Element
 	 */
 	public get classList(): DOMTokenList {
 		if (!this[PropertySymbol.classList]) {
-			this[PropertySymbol.classList] = new DOMTokenList(this, 'class');
+			this[PropertySymbol.classList] = new DOMTokenList(
+				PropertySymbol.illegalConstructor,
+				this,
+				'class'
+			);
 		}
 		return <DOMTokenList>this[PropertySymbol.classList];
 	}

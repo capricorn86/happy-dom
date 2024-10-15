@@ -160,7 +160,11 @@ export default class HTMLIFrameElement extends HTMLElement {
 	 */
 	public get sandbox(): DOMTokenList {
 		if (!this[PropertySymbol.sandbox]) {
-			this[PropertySymbol.sandbox] = new DOMTokenList(this, 'sandbox');
+			this[PropertySymbol.sandbox] = new DOMTokenList(
+				PropertySymbol.illegalConstructor,
+				this,
+				'sandbox'
+			);
 		}
 		return <DOMTokenList>this[PropertySymbol.sandbox];
 	}

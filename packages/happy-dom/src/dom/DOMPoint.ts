@@ -1,6 +1,5 @@
 import DOMPointReadOnly from './DOMPointReadOnly.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import IDOMPointInit from './IDOMPointInit.js';
 
 /**
  * DOM Point.
@@ -78,15 +77,5 @@ export default class DOMPoint extends DOMPointReadOnly {
 	 */
 	public get w(): number {
 		return this[PropertySymbol.w];
-	}
-
-	/**
-	 * Returns a new DOMPoint object.
-	 *
-	 * @param other
-	 * @returns Cloned object.
-	 */
-	public static fromPoint(other: IDOMPointInit): DOMPoint {
-		return new DOMPoint(other.x, other.y, other.z, other.w);
 	}
 }

@@ -59,7 +59,7 @@ export default class SVGElement extends Element {
 	 * @returns Data set.
 	 */
 	public get dataset(): DOMStringMap {
-		return (this.#dataset ??= new DOMStringMap(this));
+		return (this.#dataset ??= new DOMStringMap(PropertySymbol.illegalConstructor, this));
 	}
 
 	/**

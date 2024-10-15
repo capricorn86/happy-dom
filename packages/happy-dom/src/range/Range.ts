@@ -761,7 +761,7 @@ export default class Range {
 	 */
 	public getClientRects(): DOMRectList {
 		// TODO: Not full implementation
-		return new DOMRectList();
+		return new DOMRectList(PropertySymbol.illegalConstructor);
 	}
 
 	/**
@@ -822,7 +822,7 @@ export default class Range {
 			this[PropertySymbol.start].node[PropertySymbol.nodeType] === NodeTypeEnum.textNode
 				? this[PropertySymbol.start].node
 				: (<Node>this[PropertySymbol.start].node)[PropertySymbol.nodeArray][this.startOffset] ||
-				  null;
+					null;
 		const parent = !referenceNode
 			? this[PropertySymbol.start].node
 			: referenceNode[PropertySymbol.parentNode];
@@ -844,7 +844,7 @@ export default class Range {
 			? NodeUtility.getNodeLength(parent)
 			: (<Node>referenceNode[PropertySymbol.parentNode])[PropertySymbol.nodeArray].indexOf(
 					referenceNode
-			  );
+				);
 		newOffset +=
 			newNode[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode
 				? NodeUtility.getNodeLength(newNode)

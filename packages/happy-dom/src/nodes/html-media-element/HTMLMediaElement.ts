@@ -299,7 +299,11 @@ export default class HTMLMediaElement extends HTMLElement {
 	 */
 	public get controlsList(): DOMTokenList {
 		if (this[PropertySymbol.controlsList] === null) {
-			this[PropertySymbol.controlsList] = new DOMTokenList(this, 'controlslist');
+			this[PropertySymbol.controlsList] = new DOMTokenList(
+				PropertySymbol.illegalConstructor,
+				this,
+				'controlslist'
+			);
 		}
 
 		return this[PropertySymbol.controlsList];

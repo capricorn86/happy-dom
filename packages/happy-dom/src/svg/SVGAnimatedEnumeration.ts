@@ -11,7 +11,7 @@ export default class SVGAnimatedEnumeration {
 	public [PropertySymbol.window]: BrowserWindow;
 	public [PropertySymbol.getAttribute]: () => string;
 	public [PropertySymbol.setAttribute]: (value: string) => void;
-	public [PropertySymbol.values]: string[];
+	public [PropertySymbol.values]: Array<string | null>;
 	public [PropertySymbol.defaultValue]: string;
 
 	/**
@@ -31,7 +31,7 @@ export default class SVGAnimatedEnumeration {
 		options: {
 			getAttribute: () => string | null;
 			setAttribute: (value: string) => void;
-			values: string[];
+			values: Array<string | null>;
 			defaultValue: string;
 		}
 	) {
@@ -77,7 +77,8 @@ export default class SVGAnimatedEnumeration {
 		}
 		const index = this[PropertySymbol.values].indexOf(value);
 		if (index === -1) {
-			return 0;
+			const anyValueIndex = this[PropertySymbol.values].indexOf(null);
+			return anyValueIndex !== -1 ? anyValueIndex + 1 : 0;
 		}
 		return index + 1;
 	}
@@ -92,12 +93,12 @@ export default class SVGAnimatedEnumeration {
 		if (isNaN(parsedValue)) {
 			parsedValue = 0;
 		}
-		if (parsedValue === 0) {
+		if (parsedValue < 1) {
 			throw new TypeError(
-				`Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided is 0, which is not settable.`
+				`Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided is ${parsedValue}, which is not settable.`
 			);
 		}
-		if (parsedValue < 0 || parsedValue > this[PropertySymbol.values].length) {
+		if (parsedValue > this[PropertySymbol.values].length) {
 			throw new TypeError(
 				`Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided (${parsedValue}) is larger than the largest allowed value (${
 					this[PropertySymbol.values].length

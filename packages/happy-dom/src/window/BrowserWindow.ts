@@ -277,6 +277,12 @@ import SVGComponentTransferFunctionElement from '../nodes/svg-component-transfer
 import SVGGeometryElement from '../nodes/svg-geometry-element/SVGGeometryElement.js';
 import SVGGradientElement from '../nodes/svg-gradient-element/SVGGradientElement.js';
 import SVGTextPositioningElement from '../nodes/svg-text-positioning-element/SVGTextPositioningElement.js';
+import DOMMatrixReadOnly from '../dom/dom-matrix/DOMMatrixReadOnly.js';
+import DOMMatrix from '../dom/dom-matrix/DOMMatrix.js';
+import SVGAngle from '../svg/SVGAngle.js';
+import SVGAnimatedAngle from '../svg/SVGAnimatedAngle.js';
+import SVGAnimatedBoolean from '../svg/SVGAnimatedBoolean.js';
+import SVGAnimatedEnumeration from '../svg/SVGAnimatedEnumeration.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -624,6 +630,12 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly RadioNodeList = RadioNodeList;
 	public readonly FileList = FileList;
 	public readonly Screen = Screen;
+	public readonly DOMMatrixReadOnly = DOMMatrixReadOnly;
+	public readonly DOMMatrix = DOMMatrix;
+	public readonly SVGAngle = SVGAngle;
+	public readonly SVGAnimatedAngle = SVGAnimatedAngle;
+	public readonly SVGAnimatedBoolean = SVGAnimatedBoolean;
+	public readonly SVGAnimatedEnumeration = SVGAnimatedEnumeration;
 	public readonly Window = <typeof BrowserWindow>this.constructor;
 
 	// Node.js Classes

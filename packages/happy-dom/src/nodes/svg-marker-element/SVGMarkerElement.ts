@@ -13,6 +13,19 @@ import SVGAngle from '../../svg/SVGAngle.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGMarkerElement
  */
 export default class SVGMarkerElement extends SVGGeometryElement {
+	// Static properties
+	public static readonly SVG_MARKER_ORIENT_UNKNOWN = 0;
+	public static readonly SVG_MARKER_ORIENT_AUTO = 1;
+	public static readonly SVG_MARKER_ORIENT_ANGLE = 2;
+	public static readonly SVG_MARKERUNITS_UNKNOWN = 0;
+	public static readonly SVG_MARKERUNITS_USERSPACEONUSE = 1;
+	public static readonly SVG_MARKERUNITS_STROKEWIDTH = 2;
+
+	// Public properties
+	public readonly SVG_MARKER_ORIENT_UNKNOWN = 0;
+	public readonly SVG_MARKER_ORIENT_AUTO = 1;
+	public readonly SVG_MARKER_ORIENT_ANGLE = 2;
+
 	// Internal properties
 	public [PropertySymbol.markerUnits]: SVGAnimatedEnumeration | null = null;
 	public [PropertySymbol.markerWidth]: SVGAnimatedLength | null = null;

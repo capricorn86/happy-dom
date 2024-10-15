@@ -5,7 +5,7 @@ import CustomElement from '../../CustomElement.js';
 import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
 import Document from '../../../src/nodes/document/Document.js';
 import Text from '../../../src/nodes/text/Text.js';
-import DOMRect from '../../../src/nodes/element/DOMRect.js';
+import DOMRect from '../../../src/dom/DOMRect.js';
 import NamespaceURI from '../../../src/config/NamespaceURI.js';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility.js';
 import QuerySelector from '../../../src/query-selector/QuerySelector.js';

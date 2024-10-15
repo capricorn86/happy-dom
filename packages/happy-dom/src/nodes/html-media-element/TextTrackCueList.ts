@@ -8,9 +8,9 @@ export default class TextTrackCueList extends Array<TextTrackCue> {
 	/**
 	 * Constructor.
 	 *
-	 * @param illegalConstructorSymbol Illegal constructor symbol.
+	 * @param [illegalConstructorSymbol] Illegal constructor symbol.
 	 */
-	constructor(illegalConstructorSymbol: symbol) {
+	constructor(illegalConstructorSymbol?: symbol) {
 		super();
 		// "illegalConstructorSymbol" can be "1" when calling the "splice()" method
 		if (

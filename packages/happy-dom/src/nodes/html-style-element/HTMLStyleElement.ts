@@ -23,6 +23,7 @@ export default class HTMLStyleElement extends HTMLElement {
 		}
 		if (!this[PropertySymbol.sheet]) {
 			this[PropertySymbol.sheet] = new CSSStyleSheet();
+			this[PropertySymbol.sheet].replaceSync(this.textContent);
 		}
 		return this[PropertySymbol.sheet];
 	}

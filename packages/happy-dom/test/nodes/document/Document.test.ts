@@ -10,7 +10,7 @@ import Node from '../../../src/nodes/node/Node.js';
 import Document from '../../../src/nodes/document/Document.js';
 import Element from '../../../src/nodes/element/Element.js';
 import Event from '../../../src/event/Event.js';
-import SVGSVGElement from '../../../src/nodes/svg-element/SVGSVGElement.js';
+import SVGSVGElement from '../../../src/nodes/svg-svg-element/SVGSVGElement.js';
 import SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
 import NamespaceURI from '../../../src/config/NamespaceURI.js';
 import Attr from '../../../src/nodes/attr/Attr.js';
@@ -37,7 +37,8 @@ import Fetch from '../../../src/fetch/Fetch.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import HTMLUnknownElement from '../../../src/nodes/html-unknown-element/HTMLUnknownElement.js';
 import EventTarget from '../../../src/event/EventTarget.js';
-import SVGGraphicsElement from '../../../src/nodes/svg-element/SVGGraphicsElement.js';
+import SVGGraphicsElement from '../../../src/nodes/svg-graphics-element/SVGGraphicsElement.js';
+import SVGPolygonElement from '../../../src/nodes/svg-polygon-element/SVGPolygonElement.js';
 
 /* eslint-disable jsdoc/require-jsdoc */
 
