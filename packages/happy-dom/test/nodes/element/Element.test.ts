@@ -270,6 +270,21 @@ describe('Element', () => {
 
 			expect(element.innerHTML).toBe('EXPECTED_HTML');
 		});
+
+		it('Returns HTML of a mixture of normal and raw text elements as a concatenated string.', () => {
+			const container = document.createElement('div');
+			const testString = `/* &<>\xA0 */`;
+			const div = document.createElement('div');
+			div.textContent = testString;
+			const script = document.createElement('script');
+			script.textContent = testString;
+			const style = document.createElement('style');
+			style.textContent = testString;
+			container.append(div, script, style);
+			expect(container.innerHTML).toBe(
+				'<div>/* &amp;&lt;&gt;&nbsp; */</div><script>/* &<>\xA0 */</script><style>/* &<>\xA0 */</style>'
+			);
+		});
 	});
 
 	describe('set innerHTML()', () => {

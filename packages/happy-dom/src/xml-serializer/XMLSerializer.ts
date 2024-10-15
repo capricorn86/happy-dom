@@ -86,6 +86,13 @@ export default class XMLSerializer {
 				// TODO: Add support for processing instructions.
 				return `<!--?${(<ProcessingInstruction>root).target} ${root.textContent}?-->`;
 			case NodeTypeEnum.textNode:
+				const parentElement = root.parentElement;
+				if (parentElement) {
+					const parentConfig = HTMLElementConfig[parentElement[PropertySymbol.localName]];
+					if (parentConfig?.contentModel === HTMLElementConfigContentModelEnum.rawText) {
+						return root.textContent;
+					}
+				}
 				return Entities.escapeText(root.textContent);
 			case NodeTypeEnum.documentTypeNode:
 				const doctype = <DocumentType>root;
