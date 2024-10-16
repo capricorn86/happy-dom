@@ -2,8 +2,9 @@ import ClassMethodBinder from '../ClassMethodBinder.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import BrowserWindow from '../window/BrowserWindow.js';
+import SVGNumber from './SVGNumber.js';
 
-const ATTRIBUTE_SPLIT_REGEXP = /[\t\f\n\r ,]+/;
+const ATTRIBUTE_SEPARATOR_REGEXP = /[\t\f\n\r ]+/;
 
 /**
  * SVGNumberList.
@@ -11,13 +12,13 @@ const ATTRIBUTE_SPLIT_REGEXP = /[\t\f\n\r ,]+/;
  * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGNumberList
  */
 export default class SVGNumberList {
-	[index: number]: string;
+	[index: number]: SVGNumber;
 
 	public [PropertySymbol.window]: BrowserWindow;
 	public [PropertySymbol.getAttribute]: () => string | null = null;
 	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
 	public [PropertySymbol.readOnly]: boolean = false;
-	private [PropertySymbol.cache]: { items: number[]; attributeValue: string } = {
+	private [PropertySymbol.cache]: { items: SVGNumber[]; attributeValue: string } = {
 		items: [],
 		attributeValue: ''
 	};
@@ -161,7 +162,7 @@ export default class SVGNumberList {
 	/**
 	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.
 	 */
-	public [Symbol.iterator](): IterableIterator<number> {
+	public [Symbol.iterator](): IterableIterator<SVGNumber> {
 		return this[PropertySymbol.getItemList]().values();
 	}
 
@@ -174,6 +175,14 @@ export default class SVGNumberList {
 				`Failed to execute 'clear' on 'SVGNumberList': The object is read-only.`
 			);
 		}
+
+		for (const item of this[PropertySymbol.cache].items) {
+			item[PropertySymbol.getAttribute] = null;
+			item[PropertySymbol.setAttribute] = null;
+		}
+
+		this[PropertySymbol.cache].items = [];
+		this[PropertySymbol.cache].attributeValue = null;
 		this[PropertySymbol.setAttribute](null);
 	}
 
@@ -183,19 +192,36 @@ export default class SVGNumberList {
 	 * @param newItem New item.
 	 * @returns The item being replaced.
 	 */
-	public initialize(newItem: number): number {
+	public initialize(newItem: SVGNumber): SVGNumber {
 		if (arguments.length < 1) {
 			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'initialize' on 'SVGNumberList': 1 arguments required, but only ${arguments.length} present.`
 			);
 		}
+
 		if (this[PropertySymbol.readOnly]) {
 			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
 				`Failed to execute 'initialize' on 'SVGNumberList': The object is read-only.`
 			);
 		}
-		newItem = Number(newItem);
-		this[PropertySymbol.setAttribute](String(newItem));
+
+		for (const item of this[PropertySymbol.cache].items) {
+			item[PropertySymbol.getAttribute] = null;
+			item[PropertySymbol.setAttribute] = null;
+		}
+
+		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
+		newItem[PropertySymbol.setAttribute] = () => {
+			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
+				.map((item) => item[PropertySymbol.attributeValue])
+				.join(' ');
+			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
+		};
+
+		this[PropertySymbol.cache].items = [newItem];
+		this[PropertySymbol.cache].attributeValue = newItem[PropertySymbol.attributeValue];
+		this[PropertySymbol.setAttribute](newItem[PropertySymbol.attributeValue]);
+
 		return newItem;
 	}
 
@@ -205,7 +231,7 @@ export default class SVGNumberList {
 	 * @param index Index.
 	 * @returns The item at the index.
 	 **/
-	public getItem(index: number | string): number {
+	public getItem(index: number | string): SVGNumber {
 		const items = this[PropertySymbol.getItemList]();
 		if (typeof index === 'number') {
 			return items[index] ? items[index] : null;
@@ -222,15 +248,22 @@ export default class SVGNumberList {
 	 * @param index Index.
 	 * @returns The item being inserted.
 	 */
-	public insertItemBefore(newItem: number, index: number): number {
+	public insertItemBefore(newItem: SVGNumber, index: number): SVGNumber {
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'insertItemBefore' on 'SVGNumberList': The object is read-only.`
+			);
+		}
+
 		if (arguments.length < 2) {
 			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'insertItemBefore' on 'SVGNumberList': 2 arguments required, but only ${arguments.length} present.`
 			);
 		}
-		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
-				`Failed to execute 'insertItemBefore' on 'SVGNumberList': The object is read-only.`
+
+		if (!(newItem instanceof SVGNumber)) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'insertItemBefore' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'.`
 			);
 		}
 
@@ -249,7 +282,18 @@ export default class SVGNumberList {
 
 		items.splice(index, 0, newItem);
 
-		this[PropertySymbol.setAttribute](items.join(' '));
+		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
+		newItem[PropertySymbol.setAttribute] = () => {
+			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
+				.map((item) => item[PropertySymbol.attributeValue])
+				.join(' ');
+			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
+		};
+
+		this[PropertySymbol.cache].attributeValue = items
+			.map((item) => item[PropertySymbol.attributeValue])
+			.join(' ');
+		this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 
 		return newItem;
 	}
@@ -261,18 +305,24 @@ export default class SVGNumberList {
 	 * @param index Index.
 	 * @returns The item being replaced.
 	 */
-	public replaceItem(newItem: number, index: number): number {
+	public replaceItem(newItem: SVGNumber, index: number): SVGNumber {
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'replaceItem' on 'SVGNumberList': The object is read-only.`
+			);
+		}
+
 		if (arguments.length < 2) {
 			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'replaceItem' on 'SVGNumberList': 2 arguments required, but only ${arguments.length} present.`
 			);
 		}
-		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
-				`Failed to execute 'replaceItem' on 'SVGNumberList': The object is read-only.`
+
+		if (!(newItem instanceof SVGNumber)) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'replaceItem' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'.`
 			);
 		}
-		newItem = Number(newItem);
 
 		const items = this[PropertySymbol.getItemList]();
 		const existingIndex = items.indexOf(newItem);
@@ -287,9 +337,25 @@ export default class SVGNumberList {
 			index = items.length - 1;
 		}
 
+		if (items[index]) {
+			items[index][PropertySymbol.getAttribute] = null;
+			items[index][PropertySymbol.setAttribute] = null;
+		}
+
 		items[index] = newItem;
 
-		this[PropertySymbol.setAttribute](items.join(' '));
+		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
+		newItem[PropertySymbol.setAttribute] = () => {
+			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
+				.map((item) => item[PropertySymbol.attributeValue])
+				.join(' ');
+			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
+		};
+
+		this[PropertySymbol.cache].attributeValue = items
+			.map((item) => item[PropertySymbol.attributeValue])
+			.join(' ');
+		this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 
 		return newItem;
 	}
@@ -300,15 +366,16 @@ export default class SVGNumberList {
 	 * @param index Index.
 	 * @returns The removed item.
 	 */
-	public removeItem(index: number): number {
+	public removeItem(index: number): SVGNumber {
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'removeItem' on 'SVGNumberList': The object is read-only.`
+			);
+		}
+
 		if (arguments.length < 1) {
 			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'removeItem' on 'SVGNumberList': 1 argument required, but only ${arguments.length} present.`
-			);
-		}
-		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
-				`Failed to execute 'removeItem' on 'SVGNumberList': The object is read-only.`
 			);
 		}
 
@@ -336,9 +403,16 @@ export default class SVGNumberList {
 
 		const removedItem = items[index];
 
+		if (removedItem) {
+			removedItem[PropertySymbol.getAttribute] = null;
+			removedItem[PropertySymbol.setAttribute] = null;
+		}
+
 		items.splice(index, 1);
 
-		this[PropertySymbol.setAttribute](items.join(' '));
+		this[PropertySymbol.setAttribute](
+			items.map((item) => item[PropertySymbol.attributeValue]).join(' ')
+		);
 
 		return removedItem;
 	}
@@ -349,19 +423,24 @@ export default class SVGNumberList {
 	 * @param newItem The item to add to the list.
 	 * @returns The item being appended.
 	 */
-	public appendItem(newItem: number): number {
+	public appendItem(newItem: SVGNumber): SVGNumber {
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'appendItem' on 'SVGNumberList': The object is read-only.`
+			);
+		}
+
 		if (arguments.length < 1) {
 			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'appendItem' on 'SVGNumberList': 1 argument required, but only ${arguments.length} present.`
 			);
 		}
-		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
-				`Failed to execute 'appendItem' on 'SVGNumberList': The object is read-only.`
+
+		if (!(newItem instanceof SVGNumber)) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'appendItem' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'.`
 			);
 		}
-
-		newItem = Number(newItem);
 
 		const items = this[PropertySymbol.getItemList]();
 		const existingIndex = items.indexOf(newItem);
@@ -372,7 +451,18 @@ export default class SVGNumberList {
 
 		items.push(newItem);
 
-		this[PropertySymbol.setAttribute](items.join(' '));
+		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
+		newItem[PropertySymbol.setAttribute] = () => {
+			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
+				.map((item) => item[PropertySymbol.attributeValue])
+				.join(' ');
+			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
+		};
+
+		this[PropertySymbol.cache].attributeValue = items
+			.map((item) => item[PropertySymbol.attributeValue])
+			.join(' ');
+		this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 
 		return newItem;
 	}
@@ -382,7 +472,7 @@ export default class SVGNumberList {
 	 *
 	 * @see https://infra.spec.whatwg.org/#split-on-ascii-whitespace
 	 */
-	public [PropertySymbol.getItemList](): number[] {
+	public [PropertySymbol.getItemList](): SVGNumber[] {
 		const attributeValue = this[PropertySymbol.getAttribute]() ?? '';
 
 		const cache = this[PropertySymbol.cache];
@@ -391,15 +481,33 @@ export default class SVGNumberList {
 			return cache.items;
 		}
 
+		if (cache.items.length) {
+			for (const item of cache.items) {
+				item[PropertySymbol.getAttribute] = null;
+				item[PropertySymbol.setAttribute] = null;
+			}
+		}
+
 		// It is possible to make this statement shorter by using Array.from() and Set, but this is faster when comparing using a bench test.
-		const items = [];
+		const items: SVGNumber[] = [];
 		const trimmed = attributeValue.trim();
 
 		if (trimmed) {
-			for (const item of trimmed.split(ATTRIBUTE_SPLIT_REGEXP)) {
-				if (!items.includes(item)) {
-					items.push(Number(item));
-				}
+			const parts = trimmed.split(ATTRIBUTE_SEPARATOR_REGEXP);
+			for (let i = 0, max = parts.length; i < max; i++) {
+				const value = parseFloat(parts[i]);
+				const item = new SVGNumber(PropertySymbol.illegalConstructor, this[PropertySymbol.window], {
+					readOnly: this[PropertySymbol.readOnly],
+					getAttribute: () => item[PropertySymbol.attributeValue],
+					setAttribute: () => {
+						this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
+							.map((item) => item[PropertySymbol.attributeValue])
+							.join(' ');
+						this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
+					}
+				});
+				item[PropertySymbol.attributeValue] = String(value);
+				items.push(item);
 			}
 		}
 

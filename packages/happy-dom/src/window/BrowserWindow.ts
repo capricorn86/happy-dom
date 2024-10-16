@@ -283,6 +283,11 @@ import SVGAngle from '../svg/SVGAngle.js';
 import SVGAnimatedAngle from '../svg/SVGAnimatedAngle.js';
 import SVGAnimatedBoolean from '../svg/SVGAnimatedBoolean.js';
 import SVGAnimatedEnumeration from '../svg/SVGAnimatedEnumeration.js';
+import SVGAnimatedInteger from '../svg/SVGAnimatedInteger.js';
+import SVGAnimatedLength from '../svg/SVGAnimatedLength.js';
+import SVGLength from '../svg/SVGLength.js';
+import SVGAnimatedNumber from '../svg/SVGAnimatedNumber.js';
+import SVGAnimatedNumberList from '../svg/SVGAnimatedNumberList.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -636,6 +641,11 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly SVGAnimatedAngle = SVGAnimatedAngle;
 	public readonly SVGAnimatedBoolean = SVGAnimatedBoolean;
 	public readonly SVGAnimatedEnumeration = SVGAnimatedEnumeration;
+	public readonly SVGAnimatedInteger = SVGAnimatedInteger;
+	public readonly SVGAnimatedLength = SVGAnimatedLength;
+	public readonly SVGAnimatedNumber = SVGAnimatedNumber;
+	public readonly SVGAnimatedNumberList = SVGAnimatedNumberList;
+	public readonly SVGLength = SVGLength;
 	public readonly Window = <typeof BrowserWindow>this.constructor;
 
 	// Node.js Classes

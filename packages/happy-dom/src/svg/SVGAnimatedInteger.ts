@@ -84,7 +84,7 @@ export default class SVGAnimatedInteger {
 	 * @param value Base value.
 	 */
 	public set baseVal(value: number) {
-		const parsedValue = typeof value !== 'number' ? parseInt(<string>(<unknown>value)) : value;
+		const parsedValue = parseInt(String(value));
 
 		if (isNaN(parsedValue)) {
 			throw new this[PropertySymbol.window].TypeError(

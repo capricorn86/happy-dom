@@ -411,7 +411,9 @@ export default class SVGPointList {
 
 		items.splice(index, 1);
 
-		this[PropertySymbol.setAttribute](items.map((item) => `${item.x} ${item.y}`).join(' '));
+		this[PropertySymbol.setAttribute](
+			items.map((item) => item[PropertySymbol.attributeValue]).join(' ')
+		);
 
 		return removedItem;
 	}

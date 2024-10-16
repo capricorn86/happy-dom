@@ -1,4 +1,3 @@
-import SVGGeometryElement from '../svg-geometry-element/SVGGeometryElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import SVGAnimatedEnumeration from '../../svg/SVGAnimatedEnumeration.js';
 import SVGAnimatedLength from '../../svg/SVGAnimatedLength.js';
@@ -6,13 +5,14 @@ import SVGAnimatedAngle from '../../svg/SVGAnimatedAngle.js';
 import SVGAnimatedRect from '../../svg/SVGAnimatedRect.js';
 import SVGAnimatedPreserveAspectRatio from '../../svg/SVGAnimatedPreserveAspectRatio.js';
 import SVGAngle from '../../svg/SVGAngle.js';
+import SVGElement from '../svg-element/SVGElement.js';
 
 /**
  * SVG Rect Element.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGMarkerElement
  */
-export default class SVGMarkerElement extends SVGGeometryElement {
+export default class SVGMarkerElement extends SVGElement {
 	// Static properties
 	public static readonly SVG_MARKER_ORIENT_UNKNOWN = 0;
 	public static readonly SVG_MARKER_ORIENT_AUTO = 1;

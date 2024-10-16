@@ -227,29 +227,9 @@ export default class SVGLength {
 	 * @returns Value as string.
 	 */
 	public get valueAsString(): string {
-		switch (this.unitType) {
-			case SVGUnitTypeEnum.number:
-			case SVGUnitTypeEnum.px:
-				return this.value + 'px';
-			case SVGUnitTypeEnum.cm:
-				return (this.value / 96) * 2.54 + 'cm';
-			case SVGUnitTypeEnum.mm:
-				return (this.value / 96) * 25.4 + 'mm';
-			case SVGUnitTypeEnum.in:
-				return this.value / 96 + 'in';
-			case SVGUnitTypeEnum.pt:
-				return this.value / 72 + 'pt';
-			case SVGUnitTypeEnum.pc:
-				return this.value / 6 + 'pc';
-			case SVGUnitTypeEnum.percentage:
-			case SVGUnitTypeEnum.ems:
-			case SVGUnitTypeEnum.exs:
-				throw new this[PropertySymbol.window].TypeError(
-					`Failed to executute 'valueInSpecifiedUnits' on 'SVGLength': Could not resolve relative length.`
-				);
-			default:
-				return this.value.toString();
-		}
+		return this[PropertySymbol.getAttribute]
+			? this[PropertySymbol.getAttribute]() || '0'
+			: this[PropertySymbol.attributeValue] || '0';
 	}
 
 	/**
@@ -258,29 +238,8 @@ export default class SVGLength {
 	 * @returns Value in specified units.
 	 */
 	public get valueInSpecifiedUnits(): number {
-		switch (this.unitType) {
-			case SVGUnitTypeEnum.number:
-			case SVGUnitTypeEnum.px:
-				return this.value;
-			case SVGUnitTypeEnum.cm:
-				return (this.value / 96) * 2.54;
-			case SVGUnitTypeEnum.mm:
-				return (this.value / 96) * 25.4;
-			case SVGUnitTypeEnum.in:
-				return this.value / 96;
-			case SVGUnitTypeEnum.pt:
-				return this.value / 72;
-			case SVGUnitTypeEnum.pc:
-				return this.value / 6;
-			case SVGUnitTypeEnum.percentage:
-			case SVGUnitTypeEnum.ems:
-			case SVGUnitTypeEnum.exs:
-				throw new this[PropertySymbol.window].TypeError(
-					`Failed to executute 'valueInSpecifiedUnits' on 'SVGLength': Could not resolve relative length.`
-				);
-			default:
-				return 0;
-		}
+		const attributeValue = this.valueAsString;
+		return parseFloat(attributeValue) || 0;
 	}
 
 	/**
@@ -310,28 +269,28 @@ export default class SVGLength {
 			);
 		}
 
-		let unitTypeString = '';
+		let unit = '';
 		switch (unitType) {
 			case SVGUnitTypeEnum.number:
-				unitTypeString = '';
+				unit = '';
 				break;
 			case SVGUnitTypeEnum.px:
-				unitTypeString = 'px';
+				unit = 'px';
 				break;
 			case SVGUnitTypeEnum.cm:
-				unitTypeString = 'cm';
+				unit = 'cm';
 				break;
 			case SVGUnitTypeEnum.mm:
-				unitTypeString = 'mm';
+				unit = 'mm';
 				break;
 			case SVGUnitTypeEnum.in:
-				unitTypeString = 'in';
+				unit = 'in';
 				break;
 			case SVGUnitTypeEnum.pt:
-				unitTypeString = 'pt';
+				unit = 'pt';
 				break;
 			case SVGUnitTypeEnum.pc:
-				unitTypeString = 'pc';
+				unit = 'pc';
 				break;
 			case SVGUnitTypeEnum.ems:
 			case SVGUnitTypeEnum.exs:
@@ -343,7 +302,7 @@ export default class SVGLength {
 				break;
 		}
 
-		this[PropertySymbol.attributeValue] = String(value) + unitTypeString;
+		this[PropertySymbol.attributeValue] = String(value) + unit;
 
 		if (this[PropertySymbol.setAttribute]) {
 			this[PropertySymbol.setAttribute](this[PropertySymbol.attributeValue]);
@@ -368,34 +327,34 @@ export default class SVGLength {
 		}
 
 		let value = this.value;
-		let unitTypeString = '';
+		let unit = '';
 
 		switch (unitType) {
 			case SVGUnitTypeEnum.number:
-				unitTypeString = '';
+				unit = '';
 				break;
 			case SVGUnitTypeEnum.px:
-				unitTypeString = 'px';
+				unit = 'px';
 				break;
 			case SVGUnitTypeEnum.cm:
 				value = (value / 96) * 2.54;
-				unitTypeString = 'cm';
+				unit = 'cm';
 				break;
 			case SVGUnitTypeEnum.mm:
 				value = (value / 96) * 25.4;
-				unitTypeString = 'mm';
+				unit = 'mm';
 				break;
 			case SVGUnitTypeEnum.in:
 				value = value / 96;
-				unitTypeString = 'in';
+				unit = 'in';
 				break;
 			case SVGUnitTypeEnum.pt:
 				value = value / 72;
-				unitTypeString = 'pt';
+				unit = 'pt';
 				break;
 			case SVGUnitTypeEnum.pc:
 				value = value / 6;
-				unitTypeString = 'pc';
+				unit = 'pc';
 				break;
 			case SVGUnitTypeEnum.percentage:
 			case SVGUnitTypeEnum.ems:
@@ -407,7 +366,7 @@ export default class SVGLength {
 				break;
 		}
 
-		this[PropertySymbol.attributeValue] = String(value) + unitTypeString;
+		this[PropertySymbol.attributeValue] = String(value) + unit;
 
 		if (this[PropertySymbol.setAttribute]) {
 			this[PropertySymbol.setAttribute](this[PropertySymbol.attributeValue]);

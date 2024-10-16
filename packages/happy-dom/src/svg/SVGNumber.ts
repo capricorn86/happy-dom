@@ -1,4 +1,5 @@
 import * as PropertySymbol from '../PropertySymbol.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * SVG number.
@@ -6,7 +7,44 @@ import * as PropertySymbol from '../PropertySymbol.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGNumber
  */
 export default class SVGNumber {
-	public [PropertySymbol.value]: number = 0;
+	// Internal properties
+	public [PropertySymbol.window]: BrowserWindow;
+	public [PropertySymbol.getAttribute]: () => string | null = null;
+	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
+	public [PropertySymbol.attributeValue]: string | null = null;
+	public [PropertySymbol.readOnly]: boolean = false;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param illegalConstructorSymbol Illegal constructor symbol.
+	 * @param window Window.
+	 * @param [options] Options.
+	 * @param [options.readOnly] Read only.
+	 * @param [options.getAttribute] Get attribute.
+	 * @param [options.setAttribute] Set attribute
+	 */
+	constructor(
+		illegalConstructorSymbol: symbol,
+		window: BrowserWindow,
+		options?: {
+			readOnly?: boolean;
+			getAttribute?: () => string | null;
+			setAttribute?: (value: string) => void;
+		}
+	) {
+		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
+			throw new TypeError('Illegal constructor');
+		}
+
+		this[PropertySymbol.window] = window;
+
+		if (options) {
+			this[PropertySymbol.readOnly] = !!options.readOnly;
+			this[PropertySymbol.getAttribute] = options.getAttribute || null;
+			this[PropertySymbol.setAttribute] = options.setAttribute || null;
+		}
+	}
 
 	/**
 	 * Returns value.
@@ -14,7 +52,10 @@ export default class SVGNumber {
 	 * @returns Value.
 	 */
 	public get value(): number {
-		return this[PropertySymbol.value];
+		const attributeValue = this[PropertySymbol.getAttribute]
+			? this[PropertySymbol.getAttribute]()
+			: this[PropertySymbol.attributeValue];
+		return parseFloat(attributeValue || '0');
 	}
 
 	/**
@@ -23,6 +64,14 @@ export default class SVGNumber {
 	 * @param value Value.
 	 */
 	public set value(value: number) {
-		this[PropertySymbol.value] = Number(value);
+		if (this[PropertySymbol.readOnly]) {
+			throw new TypeError(
+				`Failed to set the 'value' property on 'SVGNumber': The object is read-only.`
+			);
+		}
+		this[PropertySymbol.attributeValue] = value.toString();
+		if (this[PropertySymbol.setAttribute]) {
+			this[PropertySymbol.setAttribute](this[PropertySymbol.attributeValue] || '');
+		}
 	}
 }

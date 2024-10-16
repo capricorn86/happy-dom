@@ -43,6 +43,34 @@ export default class SVGAnimatedNumberList {
 	}
 
 	/**
+	 * Returns animated value.
+	 *
+	 * @returns Animated value.
+	 */
+	public get animVal(): SVGNumberList {
+		if (!this[PropertySymbol.animVal]) {
+			this[PropertySymbol.animVal] = new SVGNumberList(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: this[PropertySymbol.getAttribute],
+					setAttribute: this[PropertySymbol.setAttribute]
+				}
+			);
+		}
+		return this[PropertySymbol.animVal];
+	}
+
+	/**
+	 * Returns animated value.
+	 *
+	 * @param value Animated value.
+	 */
+	public set animVal(_value) {
+		// Do nothing
+	}
+
+	/**
 	 * Returns base value.
 	 *
 	 * @returns Base value.
@@ -63,21 +91,11 @@ export default class SVGAnimatedNumberList {
 	}
 
 	/**
-	 * Returns animated value.
+	 * Sets base value.
 	 *
-	 * @returns Animated value.
+	 * @param value Base value.
 	 */
-	public get animVal(): SVGNumberList {
-		if (!this[PropertySymbol.animVal]) {
-			this[PropertySymbol.animVal] = new SVGNumberList(
-				PropertySymbol.illegalConstructor,
-				this[PropertySymbol.window],
-				{
-					getAttribute: this[PropertySymbol.getAttribute],
-					setAttribute: this[PropertySymbol.setAttribute]
-				}
-			);
-		}
-		return this[PropertySymbol.animVal];
+	public set baseVal(_value) {
+		// Do nothing
 	}
 }

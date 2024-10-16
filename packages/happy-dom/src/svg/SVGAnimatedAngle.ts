@@ -62,7 +62,7 @@ export default class SVGAnimatedAngle {
 	}
 
 	/**
-	 * Returns animated value.
+	 * Sets animated value.
 	 *
 	 * @param value Animated value.
 	 */
@@ -90,7 +90,7 @@ export default class SVGAnimatedAngle {
 	}
 
 	/**
-	 * Returns base value.
+	 * Sets base value.
 	 *
 	 * @param value Base value.
 	 */
