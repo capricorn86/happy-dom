@@ -288,6 +288,10 @@ import SVGAnimatedLength from '../svg/SVGAnimatedLength.js';
 import SVGLength from '../svg/SVGLength.js';
 import SVGAnimatedNumber from '../svg/SVGAnimatedNumber.js';
 import SVGAnimatedNumberList from '../svg/SVGAnimatedNumberList.js';
+import SVGAnimatedPreserveAspectRatio from '../svg/SVGAnimatedPreserveAspectRatio.js';
+import SVGAnimatedRect from '../svg/SVGAnimatedRect.js';
+import SVGAnimatedString from '../svg/SVGAnimatedString.js';
+import SVGAnimatedTransformList from '../svg/SVGAnimatedTransformList.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -645,6 +649,10 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly SVGAnimatedLength = SVGAnimatedLength;
 	public readonly SVGAnimatedNumber = SVGAnimatedNumber;
 	public readonly SVGAnimatedNumberList = SVGAnimatedNumberList;
+	public readonly SVGAnimatedPreserveAspectRatio = SVGAnimatedPreserveAspectRatio;
+	public readonly SVGAnimatedRect = SVGAnimatedRect;
+	public readonly SVGAnimatedString = SVGAnimatedString;
+	public readonly SVGAnimatedTransformList = SVGAnimatedTransformList;
 	public readonly SVGLength = SVGLength;
 	public readonly Window = <typeof BrowserWindow>this.constructor;
 

@@ -29,6 +29,7 @@ export default class SVGPreserveAspectRatio {
 	public [PropertySymbol.window]: BrowserWindow;
 	public [PropertySymbol.getAttribute]: () => string | null = null;
 	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
+	public [PropertySymbol.attributeValue]: string | null = null;
 	public [PropertySymbol.readOnly]: boolean = false;
 
 	/**
@@ -69,7 +70,9 @@ export default class SVGPreserveAspectRatio {
 	 * @returns Align.
 	 */
 	public get align(): SVGPreserveAspectRatioAlignEnum {
-		const attributeValue = this[PropertySymbol.getAttribute]();
+		const attributeValue = this[PropertySymbol.getAttribute]
+			? this[PropertySymbol.getAttribute]()
+			: this[PropertySymbol.attributeValue];
 
 		if (!attributeValue) {
 			return SVGPreserveAspectRatioAlignEnum.xMidYMid;
@@ -104,11 +107,13 @@ export default class SVGPreserveAspectRatio {
 			);
 		}
 
-		this[PropertySymbol.setAttribute](
-			`${Object.keys(SVGPreserveAspectRatioAlignEnum)[parsedValue]} ${
-				Object.keys(SVGPreserveAspectRatioMeetOrSliceEnum)[this.meetOrSlice]
-			}`
-		);
+		this[PropertySymbol.attributeValue] = `${
+			Object.keys(SVGPreserveAspectRatioAlignEnum)[parsedValue]
+		} ${Object.keys(SVGPreserveAspectRatioMeetOrSliceEnum)[this.meetOrSlice]}`;
+
+		if (this[PropertySymbol.setAttribute]) {
+			this[PropertySymbol.setAttribute](this[PropertySymbol.attributeValue]);
+		}
 	}
 
 	/**
@@ -117,7 +122,9 @@ export default class SVGPreserveAspectRatio {
 	 * @returns Meet or slice.
 	 */
 	public get meetOrSlice(): SVGPreserveAspectRatioMeetOrSliceEnum {
-		const attributeValue = this[PropertySymbol.getAttribute]();
+		const attributeValue = this[PropertySymbol.getAttribute]
+			? this[PropertySymbol.getAttribute]()
+			: this[PropertySymbol.attributeValue];
 
 		if (!attributeValue) {
 			return SVGPreserveAspectRatioMeetOrSliceEnum.meet;
@@ -125,7 +132,7 @@ export default class SVGPreserveAspectRatio {
 
 		const meetOrSlice = attributeValue.split(/\s+/)[1];
 
-		if (SVGPreserveAspectRatioMeetOrSliceEnum[meetOrSlice] === undefined) {
+		if (!meetOrSlice || SVGPreserveAspectRatioMeetOrSliceEnum[meetOrSlice] === undefined) {
 			return SVGPreserveAspectRatioMeetOrSliceEnum.meet;
 		}
 
@@ -152,10 +159,11 @@ export default class SVGPreserveAspectRatio {
 			);
 		}
 
-		this[PropertySymbol.setAttribute](
-			`${Object.keys(SVGPreserveAspectRatioAlignEnum)[this.align]} ${
-				Object.keys(SVGPreserveAspectRatioMeetOrSliceEnum)[parsedValue]
-			}`
-		);
+		this[PropertySymbol.attributeValue] = `${
+			Object.keys(SVGPreserveAspectRatioAlignEnum)[this.align]
+		} ${Object.keys(SVGPreserveAspectRatioMeetOrSliceEnum)[parsedValue]}`;
+		if (this[PropertySymbol.setAttribute]) {
+			this[PropertySymbol.setAttribute](this[PropertySymbol.attributeValue]);
+		}
 	}
 }

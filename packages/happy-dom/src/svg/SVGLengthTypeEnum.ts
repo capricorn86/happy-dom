@@ -1,4 +1,4 @@
-enum SVGUnitTypeEnum {
+enum SVGLengthTypeEnum {
 	unknown = 0,
 	number = 1,
 	percentage = 2,
@@ -12,4 +12,4 @@ enum SVGUnitTypeEnum {
 	pc = 10
 }
 
-export default SVGUnitTypeEnum;
+export default SVGLengthTypeEnum;

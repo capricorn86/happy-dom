@@ -15,6 +15,10 @@ export default class SVGMatrix {
 	public [PropertySymbol.attributeValue]: string | null = null;
 	public [PropertySymbol.readOnly]: boolean = false;
 	public [PropertySymbol.domMatrix]: DOMMatrix | null = null;
+	private [PropertySymbol.cache]: { domMatrix: DOMMatrix | null; attributeValue: string } = {
+		domMatrix: null,
+		attributeValue: ''
+	};
 
 	/**
 	 * Constructor.
@@ -365,11 +369,18 @@ export default class SVGMatrix {
 			? this[PropertySymbol.getAttribute]()
 			: this[PropertySymbol.attributeValue];
 
-		if (!attribute) {
-			return new DOMMatrix();
+		if (this[PropertySymbol.cache].attributeValue === attribute) {
+			return this[PropertySymbol.cache].domMatrix;
 		}
 
-		return <DOMMatrix>DOMMatrix[PropertySymbol.fromString](attribute);
+		const domMatrix = attribute
+			? <DOMMatrix>DOMMatrix[PropertySymbol.fromString](attribute)
+			: new DOMMatrix();
+
+		this[PropertySymbol.cache].domMatrix = domMatrix;
+		this[PropertySymbol.cache].attributeValue = attribute;
+
+		return domMatrix;
 	}
 
 	/**

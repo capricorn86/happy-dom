@@ -1,5 +1,5 @@
 import * as PropertySymbol from '../PropertySymbol.js';
-import SVGUnitTypeEnum from './SVGUnitTypeEnum.js';
+import SVGLengthTypeEnum from './SVGLengthTypeEnum.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 
 const ATTRIBUTE_REGEXP = /^(\d+|\d+\.\d+)(px|em|ex|cm|mm|in|pt|pc|%|)$/;
@@ -11,17 +11,17 @@ const ATTRIBUTE_REGEXP = /^(\d+|\d+\.\d+)(px|em|ex|cm|mm|in|pt|pc|%|)$/;
  */
 export default class SVGLength {
 	// Static properties
-	public static SVG_LENGTHTYPE_UNKNOWN = SVGUnitTypeEnum.unknown;
-	public static SVG_LENGTHTYPE_NUMBER = SVGUnitTypeEnum.number;
-	public static SVG_LENGTHTYPE_PERCENTAGE = SVGUnitTypeEnum.percentage;
-	public static SVG_LENGTHTYPE_EMS = SVGUnitTypeEnum.ems;
-	public static SVG_LENGTHTYPE_EXS = SVGUnitTypeEnum.exs;
-	public static SVG_LENGTHTYPE_PX = SVGUnitTypeEnum.px;
-	public static SVG_LENGTHTYPE_CM = SVGUnitTypeEnum.cm;
-	public static SVG_LENGTHTYPE_MM = SVGUnitTypeEnum.mm;
-	public static SVG_LENGTHTYPE_IN = SVGUnitTypeEnum.in;
-	public static SVG_LENGTHTYPE_PT = SVGUnitTypeEnum.pt;
-	public static SVG_LENGTHTYPE_PC = SVGUnitTypeEnum.pc;
+	public static SVG_LENGTHTYPE_UNKNOWN = SVGLengthTypeEnum.unknown;
+	public static SVG_LENGTHTYPE_NUMBER = SVGLengthTypeEnum.number;
+	public static SVG_LENGTHTYPE_PERCENTAGE = SVGLengthTypeEnum.percentage;
+	public static SVG_LENGTHTYPE_EMS = SVGLengthTypeEnum.ems;
+	public static SVG_LENGTHTYPE_EXS = SVGLengthTypeEnum.exs;
+	public static SVG_LENGTHTYPE_PX = SVGLengthTypeEnum.px;
+	public static SVG_LENGTHTYPE_CM = SVGLengthTypeEnum.cm;
+	public static SVG_LENGTHTYPE_MM = SVGLengthTypeEnum.mm;
+	public static SVG_LENGTHTYPE_IN = SVGLengthTypeEnum.in;
+	public static SVG_LENGTHTYPE_PT = SVGLengthTypeEnum.pt;
+	public static SVG_LENGTHTYPE_PC = SVGLengthTypeEnum.pc;
 
 	// Internal properties
 	public [PropertySymbol.window]: BrowserWindow;
@@ -67,35 +67,35 @@ export default class SVGLength {
 	 *
 	 * @returns Unit type.
 	 */
-	public get unitType(): SVGUnitTypeEnum {
+	public get unitType(): SVGLengthTypeEnum {
 		const attributeValue = this[PropertySymbol.getAttribute]
-			? this[PropertySymbol.getAttribute]()
-			: this[PropertySymbol.attributeValue];
+			? this[PropertySymbol.getAttribute]() || ''
+			: this[PropertySymbol.attributeValue] || '';
 		const match = attributeValue.match(ATTRIBUTE_REGEXP);
 
 		if (!match) {
-			return SVGUnitTypeEnum.unknown;
+			return SVGLengthTypeEnum.unknown;
 		}
 
 		if (isNaN(parseFloat(match[1]))) {
-			return SVGUnitTypeEnum.unknown;
+			return SVGLengthTypeEnum.unknown;
 		}
 
 		switch (match[2]) {
 			case '':
-				return SVGUnitTypeEnum.number;
+				return SVGLengthTypeEnum.number;
 			case 'px':
-				return SVGUnitTypeEnum.px;
+				return SVGLengthTypeEnum.px;
 			case 'cm':
-				return SVGUnitTypeEnum.cm;
+				return SVGLengthTypeEnum.cm;
 			case 'mm':
-				return SVGUnitTypeEnum.mm;
+				return SVGLengthTypeEnum.mm;
 			case 'in':
-				return SVGUnitTypeEnum.in;
+				return SVGLengthTypeEnum.in;
 			case 'pt':
-				return SVGUnitTypeEnum.pt;
+				return SVGLengthTypeEnum.pt;
 			case 'pc':
-				return SVGUnitTypeEnum.pc;
+				return SVGLengthTypeEnum.pc;
 			case 'em':
 			case 'ex':
 			case '%':
@@ -103,7 +103,7 @@ export default class SVGLength {
 					`Failed to execute 'value' on 'SVGLength': Could not resolve relative length.`
 				);
 			default:
-				return SVGUnitTypeEnum.unknown;
+				return SVGLengthTypeEnum.unknown;
 		}
 	}
 
@@ -114,8 +114,8 @@ export default class SVGLength {
 	 */
 	public get value(): number {
 		const attributeValue = this[PropertySymbol.getAttribute]
-			? this[PropertySymbol.getAttribute]()
-			: this[PropertySymbol.attributeValue];
+			? this[PropertySymbol.getAttribute]() || ''
+			: this[PropertySymbol.attributeValue] || '';
 		const match = attributeValue.match(ATTRIBUTE_REGEXP);
 
 		if (!match) {
@@ -176,37 +176,37 @@ export default class SVGLength {
 		let unitType = '';
 		let valueInSpecifiedUnits = value;
 		switch (this.unitType) {
-			case SVGUnitTypeEnum.number:
+			case SVGLengthTypeEnum.number:
 				valueInSpecifiedUnits = value;
 				unitType = '';
 				break;
-			case SVGUnitTypeEnum.px:
+			case SVGLengthTypeEnum.px:
 				valueInSpecifiedUnits = value;
 				unitType = 'px';
 				break;
-			case SVGUnitTypeEnum.cm:
+			case SVGLengthTypeEnum.cm:
 				valueInSpecifiedUnits = (value / 96) * 2.54;
 				unitType = 'cm';
 				break;
-			case SVGUnitTypeEnum.mm:
+			case SVGLengthTypeEnum.mm:
 				valueInSpecifiedUnits = (value / 96) * 25.4;
 				unitType = 'mm';
 				break;
-			case SVGUnitTypeEnum.in:
+			case SVGLengthTypeEnum.in:
 				valueInSpecifiedUnits = value / 96;
 				unitType = 'in';
 				break;
-			case SVGUnitTypeEnum.pt:
+			case SVGLengthTypeEnum.pt:
 				valueInSpecifiedUnits = value / 72;
 				unitType = 'pt';
 				break;
-			case SVGUnitTypeEnum.pc:
+			case SVGLengthTypeEnum.pc:
 				valueInSpecifiedUnits = value / 6;
 				unitType = 'pc';
 				break;
-			case SVGUnitTypeEnum.percentage:
-			case SVGUnitTypeEnum.ems:
-			case SVGUnitTypeEnum.exs:
+			case SVGLengthTypeEnum.percentage:
+			case SVGLengthTypeEnum.ems:
+			case SVGLengthTypeEnum.exs:
 				throw new this[PropertySymbol.window].TypeError(
 					`Failed to set the 'value' property on 'SVGLength': Could not resolve relative length.`
 				);
@@ -271,32 +271,32 @@ export default class SVGLength {
 
 		let unit = '';
 		switch (unitType) {
-			case SVGUnitTypeEnum.number:
+			case SVGLengthTypeEnum.number:
 				unit = '';
 				break;
-			case SVGUnitTypeEnum.px:
+			case SVGLengthTypeEnum.px:
 				unit = 'px';
 				break;
-			case SVGUnitTypeEnum.cm:
+			case SVGLengthTypeEnum.cm:
 				unit = 'cm';
 				break;
-			case SVGUnitTypeEnum.mm:
+			case SVGLengthTypeEnum.mm:
 				unit = 'mm';
 				break;
-			case SVGUnitTypeEnum.in:
+			case SVGLengthTypeEnum.in:
 				unit = 'in';
 				break;
-			case SVGUnitTypeEnum.pt:
+			case SVGLengthTypeEnum.pt:
 				unit = 'pt';
 				break;
-			case SVGUnitTypeEnum.pc:
+			case SVGLengthTypeEnum.pc:
 				unit = 'pc';
 				break;
-			case SVGUnitTypeEnum.ems:
-			case SVGUnitTypeEnum.exs:
-			case SVGUnitTypeEnum.percentage:
+			case SVGLengthTypeEnum.ems:
+			case SVGLengthTypeEnum.exs:
+			case SVGLengthTypeEnum.percentage:
 				throw new this[PropertySymbol.window].TypeError(
-					`Failed to executute 'newValueSpecifiedUnits' on 'SVGLength': Could not resolve relative length.`
+					`Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': Could not resolve relative length.`
 				);
 			default:
 				break;
@@ -313,7 +313,7 @@ export default class SVGLength {
 	 * Convert to specific units.
 	 * @param unitType
 	 */
-	public convertToSpecifiedUnits(unitType: SVGUnitTypeEnum): void {
+	public convertToSpecifiedUnits(unitType: SVGLengthTypeEnum): void {
 		if (this[PropertySymbol.readOnly]) {
 			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'convertToSpecifiedUnits' on 'SVGLength': The object is read-only.`
@@ -330,37 +330,37 @@ export default class SVGLength {
 		let unit = '';
 
 		switch (unitType) {
-			case SVGUnitTypeEnum.number:
+			case SVGLengthTypeEnum.number:
 				unit = '';
 				break;
-			case SVGUnitTypeEnum.px:
+			case SVGLengthTypeEnum.px:
 				unit = 'px';
 				break;
-			case SVGUnitTypeEnum.cm:
+			case SVGLengthTypeEnum.cm:
 				value = (value / 96) * 2.54;
 				unit = 'cm';
 				break;
-			case SVGUnitTypeEnum.mm:
+			case SVGLengthTypeEnum.mm:
 				value = (value / 96) * 25.4;
 				unit = 'mm';
 				break;
-			case SVGUnitTypeEnum.in:
+			case SVGLengthTypeEnum.in:
 				value = value / 96;
 				unit = 'in';
 				break;
-			case SVGUnitTypeEnum.pt:
+			case SVGLengthTypeEnum.pt:
 				value = value / 72;
 				unit = 'pt';
 				break;
-			case SVGUnitTypeEnum.pc:
+			case SVGLengthTypeEnum.pc:
 				value = value / 6;
 				unit = 'pc';
 				break;
-			case SVGUnitTypeEnum.percentage:
-			case SVGUnitTypeEnum.ems:
-			case SVGUnitTypeEnum.exs:
+			case SVGLengthTypeEnum.percentage:
+			case SVGLengthTypeEnum.ems:
+			case SVGLengthTypeEnum.exs:
 				throw new this[PropertySymbol.window].TypeError(
-					`Failed to executute 'convertToSpecifiedUnits' on 'SVGLength': Could not resolve relative length.`
+					`Failed to execute 'convertToSpecifiedUnits' on 'SVGLength': Could not resolve relative length.`
 				);
 			default:
 				break;

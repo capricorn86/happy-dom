@@ -4,7 +4,7 @@ import * as PropertySymbol from '../PropertySymbol.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import SVGTransform from './SVGTransform.js';
 
-const TRANSFORM_REGEXP = /([a-z0-9]+)\(([^)]+)\)/gm;
+const TRANSFORM_REGEXP = /([a-zA-Z0-9]+)\(([^)]+)\)/gm;
 
 /**
  * SVGTransformList.
@@ -18,6 +18,10 @@ export default class SVGTransformList {
 	public [PropertySymbol.getAttribute]: () => string | null = null;
 	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
 	public [PropertySymbol.readOnly]: boolean = false;
+	private [PropertySymbol.cache]: { items: SVGTransform[]; attributeValue: string } = {
+		items: [],
+		attributeValue: ''
+	};
 
 	/**
 	 * Constructor.
