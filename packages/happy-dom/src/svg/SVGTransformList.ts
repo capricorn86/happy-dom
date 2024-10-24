@@ -5,6 +5,7 @@ import BrowserWindow from '../window/BrowserWindow.js';
 import SVGTransform from './SVGTransform.js';
 
 const TRANSFORM_REGEXP = /([a-zA-Z0-9]+)\(([^)]+)\)/gm;
+const EMPTY_MATRIX = 'matrix(1 0 0 1 0 0)';
 
 /**
  * SVGTransformList.
@@ -215,7 +216,7 @@ export default class SVGTransformList {
 		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
 		newItem[PropertySymbol.setAttribute] = () => {
 			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-				.map((item) => item[PropertySymbol.attributeValue] || 'matrix(1 0 0 1 0 0)')
+				.map((item) => item[PropertySymbol.attributeValue] || EMPTY_MATRIX)
 				.join(' ');
 			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 		};
@@ -287,13 +288,13 @@ export default class SVGTransformList {
 		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
 		newItem[PropertySymbol.setAttribute] = () => {
 			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-				.map((item) => item[PropertySymbol.attributeValue] || 'matrix(1 0 0 1 0 0)')
+				.map((item) => item[PropertySymbol.attributeValue] || EMPTY_MATRIX)
 				.join(' ');
 			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 		};
 
 		this[PropertySymbol.cache].attributeValue = items
-			.map((item) => item[PropertySymbol.attributeValue] || 'matrix(1 0 0 1 0 0)')
+			.map((item) => item[PropertySymbol.attributeValue] || EMPTY_MATRIX)
 			.join(' ');
 		this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 
@@ -355,13 +356,13 @@ export default class SVGTransformList {
 		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
 		newItem[PropertySymbol.setAttribute] = () => {
 			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-				.map((item) => item[PropertySymbol.attributeValue] || 'matrix(1 0 0 1 0 0)')
+				.map((item) => item[PropertySymbol.attributeValue] || EMPTY_MATRIX)
 				.join(' ');
 			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 		};
 
 		this[PropertySymbol.cache].attributeValue = items
-			.map((item) => item[PropertySymbol.attributeValue] || 'matrix(1 0 0 1 0 0)')
+			.map((item) => item[PropertySymbol.attributeValue] || EMPTY_MATRIX)
 			.join(' ');
 		this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 
@@ -419,7 +420,7 @@ export default class SVGTransformList {
 		items.splice(index, 1);
 
 		this[PropertySymbol.cache].attributeValue = items
-			.map((item) => item[PropertySymbol.attributeValue] || 'matrix(1 0 0 1 0 0)')
+			.map((item) => item[PropertySymbol.attributeValue] || EMPTY_MATRIX)
 			.join(' ');
 		this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 
@@ -463,13 +464,13 @@ export default class SVGTransformList {
 		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
 		newItem[PropertySymbol.setAttribute] = () => {
 			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-				.map((item) => item[PropertySymbol.attributeValue] || 'matrix(1 0 0 1 0 0)')
+				.map((item) => item[PropertySymbol.attributeValue] || EMPTY_MATRIX)
 				.join(' ');
 			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 		};
 
 		this[PropertySymbol.cache].attributeValue = items
-			.map((item) => item[PropertySymbol.attributeValue] || 'matrix(1 0 0 1 0 0)')
+			.map((item) => item[PropertySymbol.attributeValue] || EMPTY_MATRIX)
 			.join(' ');
 		this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 
@@ -513,7 +514,7 @@ export default class SVGTransformList {
 						getAttribute: () => item[PropertySymbol.attributeValue],
 						setAttribute: () => {
 							this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-								.map((item) => item[PropertySymbol.attributeValue] || 'matrix(1 0 0 1 0 0)')
+								.map((item) => item[PropertySymbol.attributeValue] || EMPTY_MATRIX)
 								.join(' ');
 							this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 						}

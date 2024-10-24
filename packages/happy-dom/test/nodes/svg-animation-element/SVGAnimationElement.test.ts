@@ -55,7 +55,7 @@ describe('SVGAnimationElement', () => {
 
 			element.requiredExtensions.clear();
 
-			expect(element.getAttribute('requiredExtensions')).toBe(null);
+			expect(element.getAttribute('requiredExtensions')).toBe('');
 		});
 	});
 
@@ -89,7 +89,7 @@ describe('SVGAnimationElement', () => {
 
 			element.systemLanguage.clear();
 
-			expect(element.getAttribute('systemLanguage')).toBe(null);
+			expect(element.getAttribute('systemLanguage')).toBe('');
 		});
 	});
 });

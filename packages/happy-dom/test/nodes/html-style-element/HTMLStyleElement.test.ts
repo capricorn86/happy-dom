@@ -119,7 +119,6 @@ describe('HTMLStyleElement', () => {
 
 			element.appendChild(textNode);
 
-			debugger;
 			expect(element.sheet.cssRules.length).toBe(2);
 
 			expect(element.sheet.cssRules[0].cssText).toBe('body { background-color: red; }');
