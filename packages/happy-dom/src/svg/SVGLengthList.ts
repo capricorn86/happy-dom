@@ -165,7 +165,7 @@ export default class SVGLengthList {
 	 * Clears all items from the list.
 	 */
 	public clear(): void {
-		this[PropertySymbol.ownerElement].removeAttribute(this[PropertySymbol.attributeName]);
+		this[PropertySymbol.setAttribute](null);
 	}
 
 	/**
@@ -195,7 +195,7 @@ export default class SVGLengthList {
 		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
 		newItem[PropertySymbol.setAttribute] = () => {
 			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-				.map((item) => item[PropertySymbol.attributeValue])
+				.map((item) => item[PropertySymbol.attributeValue] ?? '0')
 				.join(' ');
 			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 		};
@@ -261,13 +261,13 @@ export default class SVGLengthList {
 		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
 		newItem[PropertySymbol.setAttribute] = () => {
 			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-				.map((item) => item[PropertySymbol.attributeValue])
+				.map((item) => item[PropertySymbol.attributeValue] ?? '0')
 				.join(' ');
 			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 		};
 
 		this[PropertySymbol.cache].attributeValue = items
-			.map((item) => item[PropertySymbol.attributeValue])
+			.map((item) => item[PropertySymbol.attributeValue] ?? '0')
 			.join(' ');
 		this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 
@@ -297,6 +297,10 @@ export default class SVGLengthList {
 		const items = this[PropertySymbol.getItemList]();
 		const existingIndex = items.indexOf(newItem);
 
+		if (existingIndex === index) {
+			return newItem;
+		}
+
 		if (existingIndex !== -1) {
 			items.splice(existingIndex, 1);
 		}
@@ -312,22 +316,24 @@ export default class SVGLengthList {
 			items[index][PropertySymbol.setAttribute] = null;
 		}
 
+		const replacedItem = items[index];
+
 		items[index] = newItem;
 
 		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
 		newItem[PropertySymbol.setAttribute] = () => {
 			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-				.map((item) => item[PropertySymbol.attributeValue])
+				.map((item) => item[PropertySymbol.attributeValue] ?? '0')
 				.join(' ');
 			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 		};
 
 		this[PropertySymbol.cache].attributeValue = items
-			.map((item) => item[PropertySymbol.attributeValue])
+			.map((item) => item[PropertySymbol.attributeValue] ?? '0')
 			.join(' ');
 		this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 
-		return newItem;
+		return replacedItem;
 	}
 
 	/**
@@ -380,7 +386,9 @@ export default class SVGLengthList {
 
 		items.splice(index, 1);
 
-		this[PropertySymbol.setAttribute](items.map((item) => item.valueAsString).join(' '));
+		this[PropertySymbol.setAttribute](
+			items.map((item) => item[PropertySymbol.attributeValue] ?? '0').join(' ')
+		);
 
 		return removedItem;
 	}
@@ -416,13 +424,13 @@ export default class SVGLengthList {
 		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
 		newItem[PropertySymbol.setAttribute] = () => {
 			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-				.map((item) => item[PropertySymbol.attributeValue])
+				.map((item) => item[PropertySymbol.attributeValue] ?? '0')
 				.join(' ');
 			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 		};
 
 		this[PropertySymbol.cache].attributeValue = items
-			.map((item) => item[PropertySymbol.attributeValue])
+			.map((item) => item[PropertySymbol.attributeValue] ?? '0')
 			.join(' ');
 		this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 
@@ -457,18 +465,19 @@ export default class SVGLengthList {
 		if (trimmed) {
 			const parts = trimmed.split(ATTRIBUTE_SEPARATOR_REGEXP);
 			for (let i = 0, max = parts.length; i < max; i++) {
-				let attributeValue = parts[i];
-				items.push(
-					new SVGLength(PropertySymbol.illegalConstructor, this[PropertySymbol.window], {
-						getAttribute: () => attributeValue,
-						setAttribute: (value: string) => {
-							attributeValue = value;
-							const newAttributeValue = items.map((item) => item.valueAsString).join(' ');
-							cache.attributeValue = newAttributeValue;
-							this[PropertySymbol.setAttribute](newAttributeValue);
-						}
-					})
-				);
+				const item = new SVGLength(PropertySymbol.illegalConstructor, this[PropertySymbol.window], {
+					getAttribute: () => item[PropertySymbol.attributeValue],
+					setAttribute: (value: string) => {
+						item[PropertySymbol.attributeValue] = value;
+						const newAttributeValue = items
+							.map((item) => item[PropertySymbol.attributeValue] ?? '0')
+							.join(' ');
+						cache.attributeValue = newAttributeValue;
+						this[PropertySymbol.setAttribute](newAttributeValue);
+					}
+				});
+				item[PropertySymbol.attributeValue] = parts[i];
+				items.push(item);
 			}
 		}
 

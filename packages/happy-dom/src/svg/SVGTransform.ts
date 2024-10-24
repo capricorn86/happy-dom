@@ -1,8 +1,9 @@
 import * as PropertySymbol from '../PropertySymbol.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import SVGMatrix from './SVGMatrix.js';
+import SVGTransformTypeEnum from './SVGTransformTypeEnum.js';
 
-const TRANSFORM_REGEXP = /([a-z0-9]+)\(([^)]+)\)/gm;
+const TRANSFORM_REGEXP = /([a-zA-Z0-9]+)\(([^)]+)\)/;
 const TRANSFORM_PARAMETER_SPLIT_REGEXP = /[\s,]+/;
 
 /**
@@ -11,13 +12,13 @@ const TRANSFORM_PARAMETER_SPLIT_REGEXP = /[\s,]+/;
  * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGTransform
  */
 export default class SVGTransform {
-	public static SVG_TRANSFORM_UNKNOWN = 0;
-	public static SVG_TRANSFORM_MATRIX = 1;
-	public static SVG_TRANSFORM_TRANSLATE = 2;
-	public static SVG_TRANSFORM_SCALE = 3;
-	public static SVG_TRANSFORM_ROTATE = 4;
-	public static SVG_TRANSFORM_SKEWX = 5;
-	public static SVG_TRANSFORM_SKEWY = 6;
+	public static SVG_TRANSFORM_UNKNOWN = SVGTransformTypeEnum.unknown;
+	public static SVG_TRANSFORM_MATRIX = SVGTransformTypeEnum.matrix;
+	public static SVG_TRANSFORM_TRANSLATE = SVGTransformTypeEnum.translate;
+	public static SVG_TRANSFORM_SCALE = SVGTransformTypeEnum.scale;
+	public static SVG_TRANSFORM_ROTATE = SVGTransformTypeEnum.rotate;
+	public static SVG_TRANSFORM_SKEWX = SVGTransformTypeEnum.skewX;
+	public static SVG_TRANSFORM_SKEWY = SVGTransformTypeEnum.skewY;
 
 	// Internal properties
 	public [PropertySymbol.window]: BrowserWindow;
@@ -71,22 +72,22 @@ export default class SVGTransform {
 		const match = attributeValue?.match(TRANSFORM_REGEXP);
 
 		if (!match) {
-			return 0;
+			return SVGTransformTypeEnum.unknown;
 		}
 
 		switch (match[1]) {
 			case 'matrix':
-				return SVGTransform.SVG_TRANSFORM_MATRIX;
+				return SVGTransformTypeEnum.matrix;
 			case 'translate':
-				return SVGTransform.SVG_TRANSFORM_TRANSLATE;
+				return SVGTransformTypeEnum.translate;
 			case 'rotate':
-				return SVGTransform.SVG_TRANSFORM_ROTATE;
+				return SVGTransformTypeEnum.rotate;
 			case 'scale':
-				return SVGTransform.SVG_TRANSFORM_SCALE;
+				return SVGTransformTypeEnum.scale;
 			case 'skewX':
-				return SVGTransform.SVG_TRANSFORM_SKEWX;
+				return SVGTransformTypeEnum.skewX;
 			case 'skewY':
-				return SVGTransform.SVG_TRANSFORM_SKEWY;
+				return SVGTransformTypeEnum.skewY;
 		}
 
 		return 0;
@@ -107,22 +108,17 @@ export default class SVGTransform {
 			return 0;
 		}
 
+		const angle = parseFloat(match[2].trim().split(TRANSFORM_PARAMETER_SPLIT_REGEXP)[0]);
+
+		if (isNaN(angle)) {
+			return 0;
+		}
+
 		switch (match[1]) {
 			case 'rotate':
-				const rotate = parseFloat(match[2].split(TRANSFORM_PARAMETER_SPLIT_REGEXP)[0]);
-				return isNaN(rotate) ? 0 : rotate;
-			case 'rotateX':
-				const rotateX = parseFloat(match[2]);
-				return isNaN(rotateX) ? 0 : rotateX;
-			case 'rotateY':
-				const rotateY = parseFloat(match[2]);
-				return isNaN(rotateY) ? 0 : rotateY;
 			case 'skewX':
-				const skewX = parseFloat(match[2]);
-				return isNaN(skewX) ? 0 : skewX;
 			case 'skewY':
-				const skewY = parseFloat(match[2]);
-				return isNaN(skewY) ? 0 : skewY;
+				return angle;
 		}
 
 		return 0;
@@ -199,7 +195,7 @@ export default class SVGTransform {
 
 		this[PropertySymbol.matrix] = matrix;
 
-		if (matrix[PropertySymbol.attributeValue]) {
+		if (matrix[PropertySymbol.attributeValue] !== this[PropertySymbol.attributeValue]) {
 			this[PropertySymbol.attributeValue] = matrix[PropertySymbol.attributeValue];
 
 			if (this[PropertySymbol.setAttribute]) {
@@ -276,9 +272,10 @@ export default class SVGTransform {
 
 	/**
 	 * Set rotate.
-	 * @param angle
-	 * @param x
-	 * @param y
+	 *
+	 * @param angle Angle.
+	 * @param x X.
+	 * @param y Y.
 	 */
 	public setRotate(angle: number, x: number, y: number): void {
 		if (arguments.length < 3) {

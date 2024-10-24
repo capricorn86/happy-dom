@@ -292,6 +292,17 @@ import SVGAnimatedPreserveAspectRatio from '../svg/SVGAnimatedPreserveAspectRati
 import SVGAnimatedRect from '../svg/SVGAnimatedRect.js';
 import SVGAnimatedString from '../svg/SVGAnimatedString.js';
 import SVGAnimatedTransformList from '../svg/SVGAnimatedTransformList.js';
+import SVGLengthList from '../svg/SVGLengthList.js';
+import SVGMatrix from '../svg/SVGMatrix.js';
+import SVGNumber from '../svg/SVGNumber.js';
+import SVGNumberList from '../svg/SVGNumberList.js';
+import SVGPoint from '../svg/SVGPoint.js';
+import SVGPointList from '../svg/SVGPointList.js';
+import SVGPreserveAspectRatio from '../svg/SVGPreserveAspectRatio.js';
+import SVGRect from '../svg/SVGRect.js';
+import SVGStringList from '../svg/SVGStringList.js';
+import SVGTransform from '../svg/SVGTransform.js';
+import SVGTransformList from '../svg/SVGTransformList.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -654,6 +665,17 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly SVGAnimatedString = SVGAnimatedString;
 	public readonly SVGAnimatedTransformList = SVGAnimatedTransformList;
 	public readonly SVGLength = SVGLength;
+	public readonly SVGLengthList = SVGLengthList;
+	public readonly SVGMatrix = SVGMatrix;
+	public readonly SVGNumber = SVGNumber;
+	public readonly SVGNumberList = SVGNumberList;
+	public readonly SVGPoint = SVGPoint;
+	public readonly SVGPointList = SVGPointList;
+	public readonly SVGPreserveAspectRatio = SVGPreserveAspectRatio;
+	public readonly SVGRect = SVGRect;
+	public readonly SVGStringList = SVGStringList;
+	public readonly SVGTransform = SVGTransform;
+	public readonly SVGTransformList = SVGTransformList;
 	public readonly Window = <typeof BrowserWindow>this.constructor;
 
 	// Node.js Classes

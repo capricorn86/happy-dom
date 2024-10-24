@@ -49,12 +49,12 @@ describe('SVGAnimatedTransformList', () => {
 
 			expect(animated.animVal).toBeInstanceOf(SVGTransformList);
 
-			expect(animated.animVal[0].matrix.a).toBe(1);
-			expect(animated.animVal[0].matrix.b).toBe(0);
-			expect(animated.animVal[0].matrix.c).toBe(0);
-			expect(animated.animVal[0].matrix.d).toBe(1);
-			expect(animated.animVal[0].matrix.e).toBe(0);
-			expect(animated.animVal[0].matrix.f).toBe(0);
+			expect(animated.animVal[0].matrix.a).toBe(0.984807753012208);
+			expect(animated.animVal[0].matrix.b).toBe(-0.17364817766693033);
+			expect(animated.animVal[0].matrix.c).toBe(0.17364817766693033);
+			expect(animated.animVal[0].matrix.d).toBe(0.984807753012208);
+			expect(animated.animVal[0].matrix.e).toBe(-16.605205417303438);
+			expect(animated.animVal[0].matrix.f).toBe(10.201633582125709);
 
 			expect(animated.animVal[1].matrix.a).toBe(1);
 			expect(animated.animVal[1].matrix.b).toBe(0);
@@ -118,12 +118,12 @@ describe('SVGAnimatedTransformList', () => {
 
 			expect(animated.baseVal).toBeInstanceOf(SVGTransformList);
 
-			expect(animated.baseVal[0].matrix.a).toBe(1);
-			expect(animated.baseVal[0].matrix.b).toBe(0);
-			expect(animated.baseVal[0].matrix.c).toBe(0);
-			expect(animated.baseVal[0].matrix.d).toBe(1);
-			expect(animated.baseVal[0].matrix.e).toBe(0);
-			expect(animated.baseVal[0].matrix.f).toBe(0);
+			expect(animated.baseVal[0].matrix.a).toBe(0.984807753012208);
+			expect(animated.baseVal[0].matrix.b).toBe(-0.17364817766693033);
+			expect(animated.baseVal[0].matrix.c).toBe(0.17364817766693033);
+			expect(animated.baseVal[0].matrix.d).toBe(0.984807753012208);
+			expect(animated.baseVal[0].matrix.e).toBe(-16.605205417303438);
+			expect(animated.baseVal[0].matrix.f).toBe(10.201633582125709);
 
 			expect(animated.baseVal[1].matrix.a).toBe(1);
 			expect(animated.baseVal[1].matrix.b).toBe(0);

@@ -2,6 +2,9 @@ import * as PropertySymbol from '../PropertySymbol.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import DOMMatrix from '../dom/dom-matrix/DOMMatrix.js';
 
+const TRANSFORM_REGEXP = /([a-zA-Z0-9]+)\(([^)]+)\)/;
+const TRANSFORM_PARAMETER_SPLIT_REGEXP = /[\s,]+/;
+
 /**
  * SVG Matrix.
  *
@@ -14,11 +17,6 @@ export default class SVGMatrix {
 	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
 	public [PropertySymbol.attributeValue]: string | null = null;
 	public [PropertySymbol.readOnly]: boolean = false;
-	public [PropertySymbol.domMatrix]: DOMMatrix | null = null;
-	private [PropertySymbol.cache]: { domMatrix: DOMMatrix | null; attributeValue: string } = {
-		domMatrix: null,
-		attributeValue: ''
-	};
 
 	/**
 	 * Constructor.
@@ -180,7 +178,7 @@ export default class SVGMatrix {
 		}
 		const domMatrix = this[PropertySymbol.getDOMMatrix]();
 		const svgMatrix = new SVGMatrix(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
-		domMatrix.multiplySelf(secondMatrix);
+		domMatrix.multiplySelf(secondMatrix[PropertySymbol.getDOMMatrix]());
 		svgMatrix[PropertySymbol.setDOMMatrix](domMatrix);
 		return svgMatrix;
 	}
@@ -190,13 +188,12 @@ export default class SVGMatrix {
 	 *
 	 * @param [x=0] X component of the translation value.
 	 * @param [y=0] Y component of the translation value.
-	 * @param [z=0] Z component of the translation value.
 	 * @returns The resulted matrix
 	 */
-	public translate(x: number = 0, y: number = 0, z: number = 0): SVGMatrix {
+	public translate(x: number = 0, y: number = 0): SVGMatrix {
 		const domMatrix = this[PropertySymbol.getDOMMatrix]();
 		const svgMatrix = new SVGMatrix(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
-		domMatrix.translateSelf(x, y, z);
+		domMatrix.translateSelf(x, y);
 		svgMatrix[PropertySymbol.setDOMMatrix](domMatrix);
 		return svgMatrix;
 	}
@@ -205,31 +202,12 @@ export default class SVGMatrix {
 	 * Returns a new SVGMatrix instance which is this matrix post multiplied by a scale 2D matrix containing the passed values.
 	 *
 	 * @param scale The scale factor.
-	 * @param [originX] X-Axis scale.
-	 * @param [originY] Y-Axis scale.
 	 * @returns The resulted matrix
 	 */
-	public scale(scale, originX = 0, originY = 0): SVGMatrix {
+	public scale(scale: number): SVGMatrix {
 		const domMatrix = this[PropertySymbol.getDOMMatrix]();
 		const svgMatrix = new SVGMatrix(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
-		domMatrix.scaleSelf(scale, originX, originY);
-		svgMatrix[PropertySymbol.setDOMMatrix](domMatrix);
-		return svgMatrix;
-	}
-
-	/**
-	 * Returns a new SVGMatrix instance which is this matrix post multiplied by a scale 3D matrix containing the passed values.
-	 *
-	 * @param scale The scale factor.
-	 * @param [originX] X-Axis scale.
-	 * @param [originY] Y-Axis scale.
-	 * @param [originZ] Z-Axis scale.
-	 * @returns The resulted matrix
-	 */
-	public scale3d(scale, originX = 0, originY = 0, originZ = 0): SVGMatrix {
-		const domMatrix = this[PropertySymbol.getDOMMatrix]();
-		const svgMatrix = new SVGMatrix(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
-		domMatrix.scale3dSelf(scale, originX, originY, originZ);
+		domMatrix.scaleSelf(scale);
 		svgMatrix[PropertySymbol.setDOMMatrix](domMatrix);
 		return svgMatrix;
 	}
@@ -252,32 +230,13 @@ export default class SVGMatrix {
 	/**
 	 * Returns a new SVGMatrix instance which is this matrix post multiplied by each of 3 rotation matrices about the major axes, first X, then Y, then Z.
 	 *
-	 * @param rx X component of the rotation, or Z if Y and Z are null.
-	 * @param [ry] Y component of the rotation value.
-	 * @param [rz] Z component of the rotation value.
+	 * @param angle Angle of rotation in degrees.
 	 * @returns The resulted matrix
 	 */
-	public rotate(rx: number, ry: number = 0, rz: number = 0): SVGMatrix {
+	public rotate(angle: number): SVGMatrix {
 		const domMatrix = this[PropertySymbol.getDOMMatrix]();
 		const svgMatrix = new SVGMatrix(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
-		domMatrix.rotateSelf(rx, ry, rz);
-		svgMatrix[PropertySymbol.setDOMMatrix](domMatrix);
-		return svgMatrix;
-	}
-
-	/**
-	 * Returns a new SVGMatrix instance which is this matrix post multiplied by a rotation matrix with the given axis and `angle`.
-	 *
-	 * @param x The X component of the axis vector.
-	 * @param y The Y component of the axis vector.
-	 * @param z The Z component of the axis vector.
-	 * @param angle Angle of rotation about the axis vector, in degrees.
-	 * @returns The resulted matrix
-	 */
-	public rotateAxisAngle(x: number, y: number, z: number, angle: number): SVGMatrix {
-		const domMatrix = this[PropertySymbol.getDOMMatrix]();
-		const svgMatrix = new SVGMatrix(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
-		domMatrix.rotateAxisAngleSelf(x, y, z, angle);
+		domMatrix.rotateSelf(angle);
 		svgMatrix[PropertySymbol.setDOMMatrix](domMatrix);
 		return svgMatrix;
 	}
@@ -369,18 +328,89 @@ export default class SVGMatrix {
 			? this[PropertySymbol.getAttribute]()
 			: this[PropertySymbol.attributeValue];
 
-		if (this[PropertySymbol.cache].attributeValue === attribute) {
-			return this[PropertySymbol.cache].domMatrix;
+		if (!attribute) {
+			return new DOMMatrix();
 		}
 
-		const domMatrix = attribute
-			? <DOMMatrix>DOMMatrix[PropertySymbol.fromString](attribute)
-			: new DOMMatrix();
+		const match = attribute.match(TRANSFORM_REGEXP);
 
-		this[PropertySymbol.cache].domMatrix = domMatrix;
-		this[PropertySymbol.cache].attributeValue = attribute;
+		if (!match) {
+			return new DOMMatrix();
+		}
+		const parameters: number[] = [];
 
-		return domMatrix;
+		for (const parameter of match[2].trim().split(TRANSFORM_PARAMETER_SPLIT_REGEXP)) {
+			const value = Number(parameter);
+			if (isNaN(value)) {
+				throw new this[PropertySymbol.window].TypeError(
+					`Failed to parse transform attribute: Expected number, but got "${parameter}" in "${attribute}".`
+				);
+			}
+			parameters.push(value);
+		}
+
+		switch (match[1]) {
+			case 'matrix':
+				if (parameters.length !== 6) {
+					throw new this[PropertySymbol.window].TypeError(
+						`Failed to parse transform attribute: Expected 6 parameters in "${attribute}".`
+					);
+				}
+				return <DOMMatrix>DOMMatrix[PropertySymbol.fromString](attribute);
+			case 'scale':
+			case 'translate':
+				if (parameters.length !== 1 && parameters.length !== 2) {
+					throw new this[PropertySymbol.window].TypeError(
+						`Failed to parse transform attribute: Expected 1 or 2 parameters in "${attribute}".`
+					);
+				}
+				return <DOMMatrix>DOMMatrix[PropertySymbol.fromString](attribute);
+			case 'skewY':
+			case 'skewX':
+				if (parameters.length !== 1) {
+					throw new this[PropertySymbol.window].TypeError(
+						`Failed to parse transform attribute: Expected 1 parameter in "${attribute}".`
+					);
+				}
+				return <DOMMatrix>DOMMatrix[PropertySymbol.fromString](attribute);
+			case 'rotate':
+				const domMatrix = new DOMMatrix();
+
+				if (parameters.length !== 1 && parameters.length !== 3) {
+					throw new this[PropertySymbol.window].TypeError(
+						`Failed to parse transform attribute: Expected 1 or 3 parameters in "${attribute}".`
+					);
+				}
+
+				const [angle, x, y] = parameters;
+
+				if (x || y) {
+					domMatrix.translateSelf(x, y);
+				}
+
+				const radian = (angle * Math.PI) / 180;
+
+				/**
+				 * @see https://www.w3.org/TR/SVG11/coords.html#TransformAttribute
+				 **/
+				domMatrix.multiplySelf(
+					// prettier-ignore
+					new DOMMatrix([
+						Math.cos(radian), Math.sin(radian), -Math.sin(radian),
+						Math.cos(radian), 0,                 0
+					])
+				);
+
+				if (x || y) {
+					domMatrix.translateSelf(-x, -y);
+				}
+
+				return domMatrix;
+			default:
+				throw new this[PropertySymbol.window].TypeError(
+					`Failed to parse transform attribute: Unknown transformation "${attribute}".`
+				);
+		}
 	}
 
 	/**

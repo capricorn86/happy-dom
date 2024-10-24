@@ -16,6 +16,7 @@ export default class SVGStringList {
 	public [PropertySymbol.window]: BrowserWindow;
 	public [PropertySymbol.getAttribute]: () => string | null = null;
 	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
+	public [PropertySymbol.readOnly]: boolean = false;
 	private [PropertySymbol.cache]: { items: string[]; attributeValue: string } = {
 		items: [],
 		attributeValue: ''
@@ -27,6 +28,7 @@ export default class SVGStringList {
 	 * @param illegalConstructorSymbol Illegal constructor symbol.
 	 * @param window Window.
 	 * @param options Options.
+	 * @param [options.readOnly] Read only.
 	 * @param options.getAttribute Get attribute.
 	 * @param options.setAttribute Set attribute.
 	 */
@@ -34,6 +36,7 @@ export default class SVGStringList {
 		illegalConstructorSymbol: symbol,
 		window: BrowserWindow,
 		options: {
+			readOnly?: boolean;
 			getAttribute: () => string | null;
 			setAttribute: (value: string) => void;
 		}
@@ -43,6 +46,7 @@ export default class SVGStringList {
 		}
 
 		this[PropertySymbol.window] = window;
+		this[PropertySymbol.readOnly] = !!options.readOnly;
 		this[PropertySymbol.getAttribute] = options.getAttribute || null;
 		this[PropertySymbol.setAttribute] = options.setAttribute || null;
 
@@ -165,6 +169,8 @@ export default class SVGStringList {
 	 * Clears all items from the list.
 	 */
 	public clear(): void {
+		this[PropertySymbol.cache].attributeValue = null;
+		this[PropertySymbol.cache].items = [];
 		this[PropertySymbol.setAttribute](null);
 	}
 
@@ -175,12 +181,21 @@ export default class SVGStringList {
 	 * @returns The item being replaced.
 	 */
 	public initialize(newItem: string): string {
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'initialize' on 'SVGStringList': The object is read-only.`
+			);
+		}
 		if (arguments.length < 1) {
 			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'initialize' on 'SVGStringList': 1 arguments required, but only ${arguments.length} present.`
 			);
 		}
 		newItem = String(newItem);
+		if (!newItem) {
+			this.clear();
+			return;
+		}
 		this[PropertySymbol.setAttribute](newItem);
 		return newItem;
 	}
@@ -209,6 +224,11 @@ export default class SVGStringList {
 	 * @returns The item being inserted.
 	 */
 	public insertItemBefore(newItem: string, index: number): string {
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'insertItemBefore' on 'SVGStringList': The object is read-only.`
+			);
+		}
 		if (arguments.length < 2) {
 			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'insertItemBefore' on 'SVGStringList': 2 arguments required, but only ${arguments.length} present.`
@@ -216,6 +236,10 @@ export default class SVGStringList {
 		}
 
 		newItem = String(newItem);
+
+		if (!newItem) {
+			return newItem;
+		}
 
 		const items = this[PropertySymbol.getItemList]();
 		const existingIndex = items.indexOf(newItem);
@@ -245,19 +269,24 @@ export default class SVGStringList {
 	 * @returns The item being replaced.
 	 */
 	public replaceItem(newItem: string, index: number): string {
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'replaceItem' on 'SVGStringList': The object is read-only.`
+			);
+		}
 		if (arguments.length < 2) {
 			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'replaceItem' on 'SVGStringList': 2 arguments required, but only ${arguments.length} present.`
 			);
 		}
+
 		newItem = String(newItem);
 
-		const items = this[PropertySymbol.getItemList]();
-		const existingIndex = items.indexOf(newItem);
-
-		if (existingIndex !== -1) {
-			items.splice(existingIndex, 1);
+		if (!newItem) {
+			return this.removeItem(index);
 		}
+
+		const items = this[PropertySymbol.getItemList]();
 
 		if (index < 0) {
 			index = 0;
@@ -265,11 +294,13 @@ export default class SVGStringList {
 			index = items.length - 1;
 		}
 
+		const replacedItem = items[index];
+
 		items[index] = newItem;
 
 		this[PropertySymbol.setAttribute](items.join(' '));
 
-		return newItem;
+		return replacedItem;
 	}
 
 	/**
@@ -279,6 +310,11 @@ export default class SVGStringList {
 	 * @returns The removed item.
 	 */
 	public removeItem(index: number): string {
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'removeItem' on 'SVGStringList': The object is read-only.`
+			);
+		}
 		if (arguments.length < 1) {
 			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'removeItem' on 'SVGStringList': 1 argument required, but only ${arguments.length} present.`
@@ -323,6 +359,11 @@ export default class SVGStringList {
 	 * @returns The item being appended.
 	 */
 	public appendItem(newItem: string): string {
+		if (this[PropertySymbol.readOnly]) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'appendItem' on 'SVGStringList': The object is read-only.`
+			);
+		}
 		if (arguments.length < 1) {
 			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'appendItem' on 'SVGStringList': 1 argument required, but only ${arguments.length} present.`
@@ -330,6 +371,10 @@ export default class SVGStringList {
 		}
 
 		newItem = String(newItem);
+
+		if (!newItem) {
+			return newItem;
+		}
 
 		const items = this[PropertySymbol.getItemList]();
 		const existingIndex = items.indexOf(newItem);

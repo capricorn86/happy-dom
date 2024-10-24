@@ -75,14 +75,9 @@ export default class SVGRect {
 			);
 		}
 
-		const attributeValue = this[PropertySymbol.getAttribute]
-			? this[PropertySymbol.getAttribute]()
-			: this[PropertySymbol.attributeValue];
-		const parts = attributeValue ? attributeValue.split(/\s+/) : [];
-
-		this[PropertySymbol.attributeValue] = `${String(value)} ${parts[1] ?? 0} ${parts[2] ?? 0} ${
-			parts[3] ?? 0
-		}`;
+		this[PropertySymbol.attributeValue] = `${String(
+			typeof value === 'number' ? value : parseFloat(value)
+		)} ${this.y} ${this.width} ${this.height}`;
 
 		if (this[PropertySymbol.setAttribute]) {
 			this[PropertySymbol.setAttribute](this[PropertySymbol.attributeValue]);
@@ -118,14 +113,9 @@ export default class SVGRect {
 			);
 		}
 
-		const attributeValue = this[PropertySymbol.getAttribute]
-			? this[PropertySymbol.getAttribute]()
-			: this[PropertySymbol.attributeValue];
-		const parts = attributeValue ? attributeValue.split(/\s+/) : [];
-
-		this[PropertySymbol.attributeValue] = `${parts[0] ?? 0} ${String(value)} ${parts[2] ?? 0} ${
-			parts[3] ?? 0
-		}`;
+		this[PropertySymbol.attributeValue] = `${this.x} ${String(
+			typeof value === 'number' ? value : parseFloat(value)
+		)} ${this.width} ${this.height}`;
 
 		if (this[PropertySymbol.setAttribute]) {
 			this[PropertySymbol.setAttribute](this[PropertySymbol.attributeValue]);
@@ -160,14 +150,10 @@ export default class SVGRect {
 				`Failed to set the 'width' property on 'SVGRect': The object is read-only.`
 			);
 		}
-		const attributeValue = this[PropertySymbol.getAttribute]
-			? this[PropertySymbol.getAttribute]()
-			: this[PropertySymbol.attributeValue];
-		const parts = attributeValue ? attributeValue.split(/\s+/) : [];
 
-		this[PropertySymbol.attributeValue] = `${parts[0] ?? 0} ${parts[1] ?? 0} ${String(value)} ${
-			parts[3] ?? 0
-		}`;
+		this[PropertySymbol.attributeValue] = `${this.x} ${this.y} ${String(
+			typeof value === 'number' ? value : parseFloat(value)
+		)} ${this.height}`;
 
 		if (this[PropertySymbol.setAttribute]) {
 			this[PropertySymbol.setAttribute](this[PropertySymbol.attributeValue]);
@@ -202,14 +188,10 @@ export default class SVGRect {
 				`Failed to set the 'height' property on 'SVGRect': The object is read-only.`
 			);
 		}
-		const attributeValue = this[PropertySymbol.getAttribute]
-			? this[PropertySymbol.getAttribute]()
-			: this[PropertySymbol.attributeValue];
-		const parts = attributeValue ? attributeValue.split(/\s+/) : [];
 
-		this[PropertySymbol.attributeValue] = `${parts[0] ?? 0} ${parts[1] ?? 0} ${
-			parts[2] ?? 0
-		} ${String(value)}`;
+		this[PropertySymbol.attributeValue] = `${this.x} ${this.y} ${this.width} ${String(
+			typeof value === 'number' ? value : parseFloat(value)
+		)}`;
 
 		if (this[PropertySymbol.setAttribute]) {
 			this[PropertySymbol.setAttribute](this[PropertySymbol.attributeValue]);

@@ -166,7 +166,7 @@ export default class SVGPointList {
 	 */
 	public clear(): void {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'clear' on 'SVGPointList': The object is read-only.`
 			);
 		}
@@ -189,7 +189,7 @@ export default class SVGPointList {
 	 */
 	public initialize(newItem: SVGPoint): SVGPoint {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'initialize' on 'SVGPointList': The object is read-only.`
 			);
 		}
@@ -214,7 +214,7 @@ export default class SVGPointList {
 		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
 		newItem[PropertySymbol.setAttribute] = () => {
 			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-				.map((item) => item[PropertySymbol.attributeValue])
+				.map((item) => item[PropertySymbol.attributeValue] || '0 0')
 				.join(' ');
 			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 		};
@@ -286,13 +286,13 @@ export default class SVGPointList {
 		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
 		newItem[PropertySymbol.setAttribute] = () => {
 			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-				.map((item) => item[PropertySymbol.attributeValue])
+				.map((item) => item[PropertySymbol.attributeValue] || '0 0')
 				.join(' ');
 			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 		};
 
 		this[PropertySymbol.cache].attributeValue = items
-			.map((item) => item[PropertySymbol.attributeValue])
+			.map((item) => item[PropertySymbol.attributeValue] || '0 0')
 			.join(' ');
 		this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 
@@ -328,6 +328,10 @@ export default class SVGPointList {
 		const items = this[PropertySymbol.getItemList]();
 		const existingIndex = items.indexOf(newItem);
 
+		if (existingIndex === index) {
+			return newItem;
+		}
+
 		if (existingIndex !== -1) {
 			items.splice(existingIndex, 1);
 		}
@@ -343,22 +347,24 @@ export default class SVGPointList {
 			items[index][PropertySymbol.setAttribute] = null;
 		}
 
+		const replacedItem = items[index];
+
 		items[index] = newItem;
 
 		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
 		newItem[PropertySymbol.setAttribute] = () => {
 			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-				.map((item) => item[PropertySymbol.attributeValue])
+				.map((item) => item[PropertySymbol.attributeValue] || '0 0')
 				.join(' ');
 			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 		};
 
 		this[PropertySymbol.cache].attributeValue = items
-			.map((item) => item[PropertySymbol.attributeValue])
+			.map((item) => item[PropertySymbol.attributeValue] || '0 0')
 			.join(' ');
 		this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 
-		return newItem;
+		return replacedItem;
 	}
 
 	/**
@@ -412,7 +418,7 @@ export default class SVGPointList {
 		items.splice(index, 1);
 
 		this[PropertySymbol.setAttribute](
-			items.map((item) => item[PropertySymbol.attributeValue]).join(' ')
+			items.map((item) => item[PropertySymbol.attributeValue] || '0 0').join(' ')
 		);
 
 		return removedItem;
@@ -455,13 +461,13 @@ export default class SVGPointList {
 		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
 		newItem[PropertySymbol.setAttribute] = () => {
 			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-				.map((item) => item[PropertySymbol.attributeValue])
+				.map((item) => item[PropertySymbol.attributeValue] || '0 0')
 				.join(' ');
 			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 		};
 
 		this[PropertySymbol.cache].attributeValue = items
-			.map((item) => item[PropertySymbol.attributeValue])
+			.map((item) => item[PropertySymbol.attributeValue] || '0 0')
 			.join(' ');
 		this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 
@@ -503,7 +509,7 @@ export default class SVGPointList {
 					getAttribute: () => item[PropertySymbol.attributeValue],
 					setAttribute: () => {
 						this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-							.map((item) => item[PropertySymbol.attributeValue])
+							.map((item) => item[PropertySymbol.attributeValue] || '0 0')
 							.join(' ');
 						this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 					}

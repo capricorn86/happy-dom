@@ -2202,6 +2202,38 @@ describe('DOMMatrixReadOnly', () => {
 	});
 
 	describe('rotateFromVector()', () => {
+		it('Rotates a 2D matrix with x and y defined.', () => {
+			const matrix = new DOMMatrixReadOnly('matrix(1, 2, 3, 4, 5, 6)');
+			const result = matrix.rotateFromVector(1, 7);
+
+			expect(result.toJSON()).toEqual({
+				a: 3.111269837220811,
+				b: 4.242640687119288,
+				c: -0.565685424949236,
+				d: -1.414213562373092,
+				e: 5,
+				f: 6,
+				m11: 3.111269837220811,
+				m12: 4.242640687119288,
+				m13: 0,
+				m14: 0,
+				m21: -0.565685424949236,
+				m22: -1.414213562373092,
+				m23: 0,
+				m24: 0,
+				m31: 0,
+				m32: 0,
+				m33: 1,
+				m34: 0,
+				m41: 5,
+				m42: 6,
+				m43: 0,
+				m44: 1,
+				is2D: true,
+				isIdentity: false
+			});
+		});
+
 		it('Rotates a 3D matrix with x defined.', () => {
 			const matrix = new DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'

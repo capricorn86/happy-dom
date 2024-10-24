@@ -279,7 +279,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	 * @returns Number.
 	 */
 	public createSVGNumber(): SVGNumber {
-		return new SVGNumber();
+		return new SVGNumber(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
 	}
 
 	/**

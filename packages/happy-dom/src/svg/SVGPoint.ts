@@ -58,7 +58,7 @@ export default class SVGPoint {
 			? this[PropertySymbol.getAttribute]()
 			: this[PropertySymbol.attributeValue];
 		const parts = (attributeValue || '').split(ATTRIBUTE_SEPARATOR_REGEXP);
-		return parts.length > 0 ? parseFloat(parts[0]) : 0;
+		return !!parts[0] ? parseFloat(parts[0]) : 0;
 	}
 
 	/**
@@ -90,7 +90,7 @@ export default class SVGPoint {
 			? this[PropertySymbol.getAttribute]()
 			: this[PropertySymbol.attributeValue];
 		const parts = (attributeValue || '').split(ATTRIBUTE_SEPARATOR_REGEXP);
-		return parts.length > 1 ? parseFloat(parts[1]) : 0;
+		return !!parts[1] ? parseFloat(parts[1]) : 0;
 	}
 
 	/**

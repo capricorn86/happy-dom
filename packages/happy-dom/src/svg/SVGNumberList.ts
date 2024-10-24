@@ -171,7 +171,7 @@ export default class SVGNumberList {
 	 */
 	public clear(): void {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'clear' on 'SVGNumberList': The object is read-only.`
 			);
 		}
@@ -200,7 +200,7 @@ export default class SVGNumberList {
 		}
 
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'initialize' on 'SVGNumberList': The object is read-only.`
 			);
 		}
@@ -213,7 +213,7 @@ export default class SVGNumberList {
 		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
 		newItem[PropertySymbol.setAttribute] = () => {
 			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-				.map((item) => item[PropertySymbol.attributeValue])
+				.map((item) => item[PropertySymbol.attributeValue] || '0')
 				.join(' ');
 			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 		};
@@ -285,13 +285,13 @@ export default class SVGNumberList {
 		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
 		newItem[PropertySymbol.setAttribute] = () => {
 			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-				.map((item) => item[PropertySymbol.attributeValue])
+				.map((item) => item[PropertySymbol.attributeValue] || '0')
 				.join(' ');
 			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 		};
 
 		this[PropertySymbol.cache].attributeValue = items
-			.map((item) => item[PropertySymbol.attributeValue])
+			.map((item) => item[PropertySymbol.attributeValue] || '0')
 			.join(' ');
 		this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 
@@ -327,6 +327,10 @@ export default class SVGNumberList {
 		const items = this[PropertySymbol.getItemList]();
 		const existingIndex = items.indexOf(newItem);
 
+		if (existingIndex === index) {
+			return newItem;
+		}
+
 		if (existingIndex !== -1) {
 			items.splice(existingIndex, 1);
 		}
@@ -342,22 +346,24 @@ export default class SVGNumberList {
 			items[index][PropertySymbol.setAttribute] = null;
 		}
 
+		const replacedItem = items[index];
+
 		items[index] = newItem;
 
 		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
 		newItem[PropertySymbol.setAttribute] = () => {
 			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-				.map((item) => item[PropertySymbol.attributeValue])
+				.map((item) => item[PropertySymbol.attributeValue] || '0')
 				.join(' ');
 			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 		};
 
 		this[PropertySymbol.cache].attributeValue = items
-			.map((item) => item[PropertySymbol.attributeValue])
+			.map((item) => item[PropertySymbol.attributeValue] || '0')
 			.join(' ');
 		this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 
-		return newItem;
+		return replacedItem;
 	}
 
 	/**
@@ -411,7 +417,7 @@ export default class SVGNumberList {
 		items.splice(index, 1);
 
 		this[PropertySymbol.setAttribute](
-			items.map((item) => item[PropertySymbol.attributeValue]).join(' ')
+			items.map((item) => item[PropertySymbol.attributeValue] || '0').join(' ')
 		);
 
 		return removedItem;
@@ -454,13 +460,13 @@ export default class SVGNumberList {
 		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
 		newItem[PropertySymbol.setAttribute] = () => {
 			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-				.map((item) => item[PropertySymbol.attributeValue])
+				.map((item) => item[PropertySymbol.attributeValue] || '0')
 				.join(' ');
 			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 		};
 
 		this[PropertySymbol.cache].attributeValue = items
-			.map((item) => item[PropertySymbol.attributeValue])
+			.map((item) => item[PropertySymbol.attributeValue] || '0')
 			.join(' ');
 		this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 
@@ -495,18 +501,17 @@ export default class SVGNumberList {
 		if (trimmed) {
 			const parts = trimmed.split(ATTRIBUTE_SEPARATOR_REGEXP);
 			for (let i = 0, max = parts.length; i < max; i++) {
-				const value = parseFloat(parts[i]);
 				const item = new SVGNumber(PropertySymbol.illegalConstructor, this[PropertySymbol.window], {
 					readOnly: this[PropertySymbol.readOnly],
 					getAttribute: () => item[PropertySymbol.attributeValue],
 					setAttribute: () => {
 						this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-							.map((item) => item[PropertySymbol.attributeValue])
+							.map((item) => item[PropertySymbol.attributeValue] || '0')
 							.join(' ');
 						this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 					}
 				});
-				item[PropertySymbol.attributeValue] = String(value);
+				item[PropertySymbol.attributeValue] = String(parseFloat(parts[i]));
 				items.push(item);
 			}
 		}

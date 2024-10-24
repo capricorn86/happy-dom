@@ -167,7 +167,7 @@ export default class SVGTransformList {
 	 */
 	public clear(): void {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'clear' on 'SVGTransformList': The object is read-only.`
 			);
 		}
@@ -190,7 +190,7 @@ export default class SVGTransformList {
 	 */
 	public initialize(newItem: SVGTransform): SVGTransform {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'initialize' on 'SVGTransformList': The object is read-only.`
 			);
 		}
@@ -215,7 +215,7 @@ export default class SVGTransformList {
 		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
 		newItem[PropertySymbol.setAttribute] = () => {
 			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-				.map((item) => item[PropertySymbol.attributeValue])
+				.map((item) => item[PropertySymbol.attributeValue] || 'matrix(1 0 0 1 0 0)')
 				.join(' ');
 			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 		};
@@ -252,7 +252,7 @@ export default class SVGTransformList {
 	 */
 	public insertItemBefore(newItem: SVGTransform, index: number): SVGTransform {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'insertItemBefore' on 'SVGTransformList': The object is read-only.`
 			);
 		}
@@ -287,13 +287,13 @@ export default class SVGTransformList {
 		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
 		newItem[PropertySymbol.setAttribute] = () => {
 			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-				.map((item) => item[PropertySymbol.attributeValue])
+				.map((item) => item[PropertySymbol.attributeValue] || 'matrix(1 0 0 1 0 0)')
 				.join(' ');
 			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 		};
 
 		this[PropertySymbol.cache].attributeValue = items
-			.map((item) => item[PropertySymbol.attributeValue])
+			.map((item) => item[PropertySymbol.attributeValue] || 'matrix(1 0 0 1 0 0)')
 			.join(' ');
 		this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 
@@ -309,7 +309,7 @@ export default class SVGTransformList {
 	 */
 	public replaceItem(newItem: SVGTransform, index: number): SVGTransform {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'replaceItem' on 'SVGTransformList': The object is read-only.`
 			);
 		}
@@ -329,6 +329,10 @@ export default class SVGTransformList {
 		const items = this[PropertySymbol.getItemList]();
 		const existingIndex = items.indexOf(newItem);
 
+		if (existingIndex === index) {
+			return newItem;
+		}
+
 		if (existingIndex !== -1) {
 			items.splice(existingIndex, 1);
 		}
@@ -344,22 +348,24 @@ export default class SVGTransformList {
 			items[index][PropertySymbol.setAttribute] = null;
 		}
 
+		const replacedItem = items[index];
+
 		items[index] = newItem;
 
 		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
 		newItem[PropertySymbol.setAttribute] = () => {
 			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-				.map((item) => item[PropertySymbol.attributeValue])
+				.map((item) => item[PropertySymbol.attributeValue] || 'matrix(1 0 0 1 0 0)')
 				.join(' ');
 			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 		};
 
 		this[PropertySymbol.cache].attributeValue = items
-			.map((item) => item[PropertySymbol.attributeValue])
+			.map((item) => item[PropertySymbol.attributeValue] || 'matrix(1 0 0 1 0 0)')
 			.join(' ');
 		this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 
-		return newItem;
+		return replacedItem;
 	}
 
 	/**
@@ -370,7 +376,7 @@ export default class SVGTransformList {
 	 */
 	public removeItem(index: number): SVGTransform {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'removeItem' on 'SVGTransformList': The object is read-only.`
 			);
 		}
@@ -412,6 +418,11 @@ export default class SVGTransformList {
 
 		items.splice(index, 1);
 
+		this[PropertySymbol.cache].attributeValue = items
+			.map((item) => item[PropertySymbol.attributeValue] || 'matrix(1 0 0 1 0 0)')
+			.join(' ');
+		this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
+
 		return removedItem;
 	}
 
@@ -423,7 +434,7 @@ export default class SVGTransformList {
 	 */
 	public appendItem(newItem: SVGTransform): SVGTransform {
 		if (this[PropertySymbol.readOnly]) {
-			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'appendItem' on 'SVGTransformList': The object is read-only.`
 			);
 		}
@@ -452,13 +463,13 @@ export default class SVGTransformList {
 		newItem[PropertySymbol.getAttribute] = () => newItem[PropertySymbol.attributeValue];
 		newItem[PropertySymbol.setAttribute] = () => {
 			this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-				.map((item) => item[PropertySymbol.attributeValue])
+				.map((item) => item[PropertySymbol.attributeValue] || 'matrix(1 0 0 1 0 0)')
 				.join(' ');
 			this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 		};
 
 		this[PropertySymbol.cache].attributeValue = items
-			.map((item) => item[PropertySymbol.attributeValue])
+			.map((item) => item[PropertySymbol.attributeValue] || 'matrix(1 0 0 1 0 0)')
 			.join(' ');
 		this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 
@@ -502,7 +513,7 @@ export default class SVGTransformList {
 						getAttribute: () => item[PropertySymbol.attributeValue],
 						setAttribute: () => {
 							this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
-								.map((item) => item[PropertySymbol.attributeValue])
+								.map((item) => item[PropertySymbol.attributeValue] || 'matrix(1 0 0 1 0 0)')
 								.join(' ');
 							this[PropertySymbol.setAttribute](this[PropertySymbol.cache].attributeValue);
 						}

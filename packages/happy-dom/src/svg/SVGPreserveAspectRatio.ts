@@ -3,6 +3,12 @@ import SVGPreserveAspectRatioMeetOrSliceEnum from './SVGPreserveAspectRatioMeetO
 import SVGPreserveAspectRatioAlignEnum from './SVGPreserveAspectRatioAlignEnum.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 
+const ALIGN_KEYS = Object.values(SVGPreserveAspectRatioAlignEnum);
+ALIGN_KEYS.length = ALIGN_KEYS.indexOf(0);
+
+const MEET_OR_SLICE_KEYS = Object.values(SVGPreserveAspectRatioMeetOrSliceEnum);
+MEET_OR_SLICE_KEYS.length = MEET_OR_SLICE_KEYS.indexOf(0);
+
 /**
  * SVG preserve aspect ratio.
  *
@@ -101,15 +107,15 @@ export default class SVGPreserveAspectRatio {
 
 		const parsedValue = Number(value);
 
-		if (isNaN(parsedValue) || parsedValue < 1 || parsedValue > 10) {
+		if (isNaN(parsedValue) || parsedValue < 1 || parsedValue > ALIGN_KEYS.length) {
 			throw new this[PropertySymbol.window].TypeError(
 				`Failed to set the 'align' property on 'SVGPreserveAspectRatio': The alignment provided is invalid.`
 			);
 		}
 
-		this[PropertySymbol.attributeValue] = `${
-			Object.keys(SVGPreserveAspectRatioAlignEnum)[parsedValue]
-		} ${Object.keys(SVGPreserveAspectRatioMeetOrSliceEnum)[this.meetOrSlice]}`;
+		this[PropertySymbol.attributeValue] = `${ALIGN_KEYS[parsedValue]} ${
+			MEET_OR_SLICE_KEYS[this.meetOrSlice]
+		}`;
 
 		if (this[PropertySymbol.setAttribute]) {
 			this[PropertySymbol.setAttribute](this[PropertySymbol.attributeValue]);
@@ -159,9 +165,10 @@ export default class SVGPreserveAspectRatio {
 			);
 		}
 
-		this[PropertySymbol.attributeValue] = `${
-			Object.keys(SVGPreserveAspectRatioAlignEnum)[this.align]
-		} ${Object.keys(SVGPreserveAspectRatioMeetOrSliceEnum)[parsedValue]}`;
+		this[PropertySymbol.attributeValue] = `${ALIGN_KEYS[this.align]} ${
+			MEET_OR_SLICE_KEYS[parsedValue]
+		}`;
+
 		if (this[PropertySymbol.setAttribute]) {
 			this[PropertySymbol.setAttribute](this[PropertySymbol.attributeValue]);
 		}

@@ -97,6 +97,12 @@ describe('SVGLength', () => {
 			expect(length.unitType).toBe(SVGLengthTypeEnum.unknown);
 		});
 
+		it('Returns defined unit type', () => {
+			const length = new window.SVGLength(PropertySymbol.illegalConstructor, window);
+			length.newValueSpecifiedUnits(SVGLengthTypeEnum.cm, 10);
+			expect(length.unitType).toBe(SVGLengthTypeEnum.cm);
+		});
+
 		it('Returns type part of "10px" attribute', () => {
 			const length = new window.SVGLength(PropertySymbol.illegalConstructor, window, {
 				getAttribute: () => '10px'
@@ -177,6 +183,12 @@ describe('SVGLength', () => {
 		it('Returns 0 by default', () => {
 			const length = new window.SVGLength(PropertySymbol.illegalConstructor, window);
 			expect(length.value).toBe(0);
+		});
+
+		it('Returns defined value', () => {
+			const length = new window.SVGLength(PropertySymbol.illegalConstructor, window);
+			length.value = 10;
+			expect(length.value).toBe(10);
 		});
 
 		it('Returns value part of "10px" attribute', () => {
@@ -260,6 +272,7 @@ describe('SVGLength', () => {
 			const length = new window.SVGLength(PropertySymbol.illegalConstructor, window);
 			length.value = 10;
 			expect(length.value).toBe(10);
+			expect(length[PropertySymbol.attributeValue]).toBe('10');
 		});
 
 		it('Sets value part of "10px" attribute', () => {
@@ -352,6 +365,17 @@ describe('SVGLength', () => {
 				new TypeError(
 					`Failed to execute 'value' on 'SVGLength': Could not resolve relative length.`
 				)
+			);
+		});
+
+		it('Throws an error if read only', () => {
+			const length = new window.SVGLength(PropertySymbol.illegalConstructor, window, {
+				readOnly: true
+			});
+			expect(() => {
+				length.value = 10;
+			}).toThrow(
+				new TypeError(`Failed to set the 'value' property on 'SVGLength': The object is read-only.`)
 			);
 		});
 	});
@@ -535,6 +559,26 @@ describe('SVGLength', () => {
 				)
 			);
 		});
+
+		it('Throws an error if value is not a number', () => {
+			const length = new window.SVGLength(PropertySymbol.illegalConstructor, window);
+			expect(() => length.newValueSpecifiedUnits(<number>(<unknown>'test'), 10)).toThrow(
+				new TypeError(
+					`Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': parameter 1 ('unitType') is not of type 'number'.`
+				)
+			);
+		});
+
+		it('Throws an error if read only', () => {
+			const length = new window.SVGLength(PropertySymbol.illegalConstructor, window, {
+				readOnly: true
+			});
+			expect(() => length.newValueSpecifiedUnits(SVGLengthTypeEnum.px, 10)).toThrow(
+				new TypeError(
+					`Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': The object is read-only.`
+				)
+			);
+		});
 	});
 
 	describe('convertToSpecifiedUnits()', () => {
@@ -621,6 +665,17 @@ describe('SVGLength', () => {
 			expect(() => length.convertToSpecifiedUnits(SVGLengthTypeEnum.percentage)).toThrow(
 				new TypeError(
 					`Failed to execute 'convertToSpecifiedUnits' on 'SVGLength': Could not resolve relative length.`
+				)
+			);
+		});
+
+		it('Throws an error if read only', () => {
+			const length = new window.SVGLength(PropertySymbol.illegalConstructor, window, {
+				readOnly: true
+			});
+			expect(() => length.convertToSpecifiedUnits(SVGLengthTypeEnum.px)).toThrow(
+				new TypeError(
+					`Failed to execute 'convertToSpecifiedUnits' on 'SVGLength': The object is read-only.`
 				)
 			);
 		});

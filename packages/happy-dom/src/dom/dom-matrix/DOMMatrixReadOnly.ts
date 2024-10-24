@@ -794,17 +794,23 @@ export default class DOMMatrixReadOnly {
 		scaleX = scaleX === undefined ? 1 : Number(scaleX);
 		scaleY = scaleY === undefined ? scaleX : Number(scaleY);
 
-		this[PropertySymbol.translateSelf](originX, originY, originZ);
+		if (originX !== 0 || originY !== 0 || originZ !== 0) {
+			this[PropertySymbol.translateSelf](originX, originY, originZ);
+		}
 
-		// prettier-ignore
-		this[PropertySymbol.multiplySelf]((<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
-            scaleX, 0,      0,      0,
-            0,      scaleY, 0,      0,
-            0,      0,      scaleZ, 0,
-            0,      0,      0,      1,
-        ]))
+		if (scaleX !== 1 || scaleY !== 1 || scaleZ !== 1) {
+			// prettier-ignore
+			this[PropertySymbol.multiplySelf]((<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
+                scaleX, 0,      0,      0,
+                0,      scaleY, 0,      0,
+                0,      0,      scaleZ, 0,
+                0,      0,      0,      1,
+            ]));
+		}
 
-		this[PropertySymbol.translateSelf](-originX, -originY, -originZ);
+		if (originX !== 0 || originY !== 0 || originZ !== 0) {
+			this[PropertySymbol.translateSelf](-originX, -originY, -originZ);
+		}
 	}
 
 	/**
@@ -820,17 +826,23 @@ export default class DOMMatrixReadOnly {
 	 * @param [originZ] Z-Axis scale.
 	 */
 	public [PropertySymbol.scale3dSelf](scale = 1, originX = 0, originY = 0, originZ = 0): void {
-		this[PropertySymbol.translateSelf](originX, originY, originZ);
+		if (originX !== 0 || originY !== 0 || originZ !== 0) {
+			this[PropertySymbol.translateSelf](originX, originY, originZ);
+		}
 
-		// prettier-ignore
-		this[PropertySymbol.multiplySelf]((<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
-            scale, 0,     0,     0,
-            0,     scale, 0,     0,
-            0,     0,     scale, 0,
-            0,     0,     0,     1,
-        ]))
+		if (scale !== 1) {
+			// prettier-ignore
+			this[PropertySymbol.multiplySelf]((<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
+                scale, 0,     0,     0,
+                0,     scale, 0,     0,
+                0,     0,     scale, 0,
+                0,     0,     0,     1,
+            ]));
+		}
 
-		this[PropertySymbol.translateSelf](-originX, -originY, -originZ);
+		if (originX !== 0 || originY !== 0 || originZ !== 0) {
+			this[PropertySymbol.translateSelf](-originX, -originY, -originZ);
+		}
 	}
 
 	/**
@@ -841,6 +853,10 @@ export default class DOMMatrixReadOnly {
 	 * @param [scaleY] Y-Axis scale.
 	 */
 	public [PropertySymbol.scaleNonUniformSelf](scaleX = 1, scaleY = 1): void {
+		if (scaleX === 1 && scaleY === 1) {
+			return;
+		}
+
 		// prettier-ignore
 		this[PropertySymbol.multiplySelf]((<typeof DOMMatrixReadOnly>this.constructor)[PropertySymbol.fromArray]([
             scaleX, 0,      0,      0,
@@ -972,7 +988,10 @@ export default class DOMMatrixReadOnly {
 	 * @param y The Y component of the axis vector.
 	 */
 	public [PropertySymbol.rotateFromVectorSelf](x = 0, y = 0): void {
-		this[PropertySymbol.rotateSelf](x === 0 && y === 0 ? 0 : (Math.atan2(y, x) * 180) / Math.PI);
+		if (x === 0 && y === 0) {
+			return;
+		}
+		this[PropertySymbol.rotateSelf]((Math.atan2(y, x) * 180) / Math.PI);
 	}
 
 	/**

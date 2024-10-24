@@ -69,7 +69,13 @@ export default class SVGNumber {
 				`Failed to set the 'value' property on 'SVGNumber': The object is read-only.`
 			);
 		}
-		this[PropertySymbol.attributeValue] = value.toString();
+		const parsedValue = typeof value !== 'number' ? parseFloat(String(value)) : value;
+		if (isNaN(parsedValue)) {
+			throw new TypeError(
+				`Failed to set the 'value' property on 'SVGNumber': The provided value is not a number.`
+			);
+		}
+		this[PropertySymbol.attributeValue] = String(value);
 		if (this[PropertySymbol.setAttribute]) {
 			this[PropertySymbol.setAttribute](this[PropertySymbol.attributeValue] || '');
 		}
