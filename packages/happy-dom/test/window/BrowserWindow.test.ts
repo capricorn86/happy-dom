@@ -41,6 +41,7 @@ import { PerformanceEntry, PerformanceObserver } from 'perf_hooks';
 import { URLSearchParams } from 'url';
 import Stream from 'stream';
 import { ReadableStream } from 'stream/web';
+import SVGElementConfig from '../../src/config/SVGElementConfig.js';
 
 const PLATFORM =
 	'X11; ' +
@@ -159,10 +160,16 @@ describe('BrowserWindow', () => {
 
 	describe('get {ElementClass}()', () => {
 		for (const tagName of Object.keys(HTMLElementConfig)) {
-			it(`Exposes the element class "${HTMLElementConfig[tagName].className}" for tag name "${tagName}"`, () => {
+			it(`Exposes the HTML element class "${HTMLElementConfig[tagName].className}" for tag name "${tagName}"`, () => {
 				expect(window[HTMLElementConfig[tagName].className].name).toBe(
 					HTMLElementConfig[tagName].className
 				);
+			});
+		}
+
+		for (const tagName of Object.keys(SVGElementConfig)) {
+			it(`Exposes the SVG element class "${SVGElementConfig[tagName]}" for tag name "${tagName}"`, () => {
+				expect(window[SVGElementConfig[tagName]].name).toBe(SVGElementConfig[tagName]);
 			});
 		}
 	});
