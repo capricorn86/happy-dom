@@ -165,7 +165,7 @@ export default class SVGLengthList {
 	 * Clears all items from the list.
 	 */
 	public clear(): void {
-		this[PropertySymbol.setAttribute](null);
+		this[PropertySymbol.setAttribute]('');
 	}
 
 	/**

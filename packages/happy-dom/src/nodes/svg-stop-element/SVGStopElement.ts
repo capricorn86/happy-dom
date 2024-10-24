@@ -23,8 +23,7 @@ export default class SVGStopElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('offset'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('offset', value) : this.removeAttribute('offset')
+					setAttribute: (value) => this.setAttribute('offset', value)
 				}
 			);
 		}

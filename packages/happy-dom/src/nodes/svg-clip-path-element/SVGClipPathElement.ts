@@ -23,10 +23,7 @@ export default class SVGClipPathElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('clipPathUnits'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('clipPathUnits', value)
-							: this.removeAttribute('clipPathUnits'),
+					setAttribute: (value) => this.setAttribute('clipPathUnits', value),
 					values: ['userSpaceOnUse', 'objectBoundingBox'],
 					defaultValue: 'userSpaceOnUse'
 				}

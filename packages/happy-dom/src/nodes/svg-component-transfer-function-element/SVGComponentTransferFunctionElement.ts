@@ -39,8 +39,7 @@ export default class SVGComponentTransferFunctionElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('type'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('type', value) : this.removeAttribute('type'),
+					setAttribute: (value) => this.setAttribute('type', value),
 					values: ['identity', 'table', 'discrete', 'linear', 'gamma'],
 					defaultValue: 'identity'
 				}
@@ -61,8 +60,7 @@ export default class SVGComponentTransferFunctionElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('tableValues'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('tableValues', value) : this.removeAttribute('tableValues')
+					setAttribute: (value) => this.setAttribute('tableValues', value)
 				}
 			);
 		}
@@ -81,8 +79,7 @@ export default class SVGComponentTransferFunctionElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('slope'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('slope', value) : this.removeAttribute('slope')
+					setAttribute: (value) => this.setAttribute('slope', value)
 				}
 			);
 		}
@@ -101,8 +98,7 @@ export default class SVGComponentTransferFunctionElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('intercept'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('intercept', value) : this.removeAttribute('intercept')
+					setAttribute: (value) => this.setAttribute('intercept', value)
 				}
 			);
 		}
@@ -121,8 +117,7 @@ export default class SVGComponentTransferFunctionElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('amplitude'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('amplitude', value) : this.removeAttribute('amplitude')
+					setAttribute: (value) => this.setAttribute('amplitude', value)
 				}
 			);
 		}
@@ -141,8 +136,7 @@ export default class SVGComponentTransferFunctionElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('exponent'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('exponent', value) : this.removeAttribute('exponent')
+					setAttribute: (value) => this.setAttribute('exponent', value)
 				}
 			);
 		}
@@ -161,8 +155,7 @@ export default class SVGComponentTransferFunctionElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('offset'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('offset', value) : this.removeAttribute('offset')
+					setAttribute: (value) => this.setAttribute('offset', value)
 				}
 			);
 		}

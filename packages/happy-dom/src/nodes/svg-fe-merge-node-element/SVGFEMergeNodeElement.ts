@@ -23,8 +23,7 @@ export default class SVGFEMergeNodeElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('in'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('in', value) : this.removeAttribute('in')
+					setAttribute: (value) => this.setAttribute('in', value)
 				}
 			);
 		}

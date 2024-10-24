@@ -25,8 +25,7 @@ export default class SVGCircleElement extends SVGGeometryElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('cx'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('cx', value) : this.removeAttribute('cx')
+					setAttribute: (value) => this.setAttribute('cx', value)
 				}
 			);
 		}
@@ -45,8 +44,7 @@ export default class SVGCircleElement extends SVGGeometryElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('cy'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('cy', value) : this.removeAttribute('cy')
+					setAttribute: (value) => this.setAttribute('cy', value)
 				}
 			);
 		}
@@ -65,8 +63,7 @@ export default class SVGCircleElement extends SVGGeometryElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('r'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('r', value) : this.removeAttribute('r')
+					setAttribute: (value) => this.setAttribute('r', value)
 				}
 			);
 		}

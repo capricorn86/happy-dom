@@ -26,8 +26,7 @@ export default class SVGLinearGradientElement extends SVGGradientElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('x1'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('x1', value) : this.removeAttribute('x1')
+					setAttribute: (value) => this.setAttribute('x1', value)
 				}
 			);
 		}
@@ -46,8 +45,7 @@ export default class SVGLinearGradientElement extends SVGGradientElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('y1'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('y1', value) : this.removeAttribute('y1')
+					setAttribute: (value) => this.setAttribute('y1', value)
 				}
 			);
 		}
@@ -66,8 +64,7 @@ export default class SVGLinearGradientElement extends SVGGradientElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('x2'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('x2', value) : this.removeAttribute('x2')
+					setAttribute: (value) => this.setAttribute('x2', value)
 				}
 			);
 		}
@@ -86,8 +83,7 @@ export default class SVGLinearGradientElement extends SVGGradientElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('y2'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('y2', value) : this.removeAttribute('y2')
+					setAttribute: (value) => this.setAttribute('y2', value)
 				}
 			);
 		}

@@ -169,9 +169,9 @@ export default class SVGStringList {
 	 * Clears all items from the list.
 	 */
 	public clear(): void {
-		this[PropertySymbol.cache].attributeValue = null;
+		this[PropertySymbol.cache].attributeValue = '';
 		this[PropertySymbol.cache].items = [];
-		this[PropertySymbol.setAttribute](null);
+		this[PropertySymbol.setAttribute]('');
 	}
 
 	/**

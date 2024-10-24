@@ -36,8 +36,7 @@ export default class SVGTextPathElement extends SVGTextContentElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('href'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('href', value) : this.removeAttribute('href')
+					setAttribute: (value) => this.setAttribute('href', value)
 				}
 			);
 		}
@@ -56,8 +55,7 @@ export default class SVGTextPathElement extends SVGTextContentElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('startOffset'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('startOffset', value) : this.removeAttribute('startOffset')
+					setAttribute: (value) => this.setAttribute('startOffset', value)
 				}
 			);
 		}
@@ -76,8 +74,7 @@ export default class SVGTextPathElement extends SVGTextContentElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('method'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('method', value) : this.removeAttribute('method'),
+					setAttribute: (value) => this.setAttribute('method', value),
 					values: ['align', 'stretch'],
 					defaultValue: 'align'
 				}
@@ -98,8 +95,7 @@ export default class SVGTextPathElement extends SVGTextContentElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('spacing'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('spacing', value) : this.removeAttribute('spacing'),
+					setAttribute: (value) => this.setAttribute('spacing', value),
 					values: ['auto', 'exact'],
 					defaultValue: 'exact'
 				}

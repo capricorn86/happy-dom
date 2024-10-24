@@ -35,8 +35,7 @@ export default class SVGFESpecularLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('height'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('height', value) : this.removeAttribute('height')
+					setAttribute: (value) => this.setAttribute('height', value)
 				}
 			);
 		}
@@ -55,8 +54,7 @@ export default class SVGFESpecularLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('in'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('in', value) : this.removeAttribute('in')
+					setAttribute: (value) => this.setAttribute('in', value)
 				}
 			);
 		}
@@ -75,10 +73,7 @@ export default class SVGFESpecularLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('kernelUnitLengthX'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('kernelUnitLengthX', value)
-							: this.removeAttribute('kernelUnitLengthX')
+					setAttribute: (value) => this.setAttribute('kernelUnitLengthX', value)
 				}
 			);
 		}
@@ -97,10 +92,7 @@ export default class SVGFESpecularLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('kernelUnitLengthY'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('kernelUnitLengthY', value)
-							: this.removeAttribute('kernelUnitLengthY')
+					setAttribute: (value) => this.setAttribute('kernelUnitLengthY', value)
 				}
 			);
 		}
@@ -119,8 +111,7 @@ export default class SVGFESpecularLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('result'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('result', value) : this.removeAttribute('result')
+					setAttribute: (value) => this.setAttribute('result', value)
 				}
 			);
 		}
@@ -139,10 +130,7 @@ export default class SVGFESpecularLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('specularConstant'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('specularConstant', value)
-							: this.removeAttribute('specularConstant')
+					setAttribute: (value) => this.setAttribute('specularConstant', value)
 				}
 			);
 		}
@@ -161,10 +149,7 @@ export default class SVGFESpecularLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('specularExponent'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('specularExponent', value)
-							: this.removeAttribute('specularExponent')
+					setAttribute: (value) => this.setAttribute('specularExponent', value)
 				}
 			);
 		}
@@ -183,8 +168,7 @@ export default class SVGFESpecularLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('surfaceScale'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('surfaceScale', value) : this.removeAttribute('surfaceScale')
+					setAttribute: (value) => this.setAttribute('surfaceScale', value)
 				}
 			);
 		}
@@ -203,8 +187,7 @@ export default class SVGFESpecularLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('width'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('width', value) : this.removeAttribute('width')
+					setAttribute: (value) => this.setAttribute('width', value)
 				}
 			);
 		}
@@ -223,8 +206,7 @@ export default class SVGFESpecularLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('x'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('x', value) : this.removeAttribute('x')
+					setAttribute: (value) => this.setAttribute('x', value)
 				}
 			);
 		}
@@ -243,8 +225,7 @@ export default class SVGFESpecularLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('y'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('y', value) : this.removeAttribute('y')
+					setAttribute: (value) => this.setAttribute('y', value)
 				}
 			);
 		}

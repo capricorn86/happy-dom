@@ -29,8 +29,7 @@ export default class SVGTextPositioningElement extends SVGTextContentElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('textLength'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('textLength', value) : this.removeAttribute('textLength')
+					setAttribute: (value) => this.setAttribute('textLength', value)
 				}
 			);
 		}
@@ -49,8 +48,7 @@ export default class SVGTextPositioningElement extends SVGTextContentElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('lengthAdjust'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('lengthAdjust', value) : this.removeAttribute('lengthAdjust'),
+					setAttribute: (value) => this.setAttribute('lengthAdjust', value),
 					values: ['spacing', 'spacingAndGlyphs'],
 					defaultValue: 'spacing'
 				}

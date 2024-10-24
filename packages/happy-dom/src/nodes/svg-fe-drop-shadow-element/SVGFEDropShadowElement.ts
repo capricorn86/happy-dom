@@ -34,8 +34,7 @@ export default class SVGFEDropShadowElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('dx'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('dx', value) : this.removeAttribute('dx')
+					setAttribute: (value) => this.setAttribute('dx', value)
 				}
 			);
 		}
@@ -54,8 +53,7 @@ export default class SVGFEDropShadowElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('dy'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('dy', value) : this.removeAttribute('dy')
+					setAttribute: (value) => this.setAttribute('dy', value)
 				}
 			);
 		}
@@ -74,8 +72,7 @@ export default class SVGFEDropShadowElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('height'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('height', value) : this.removeAttribute('height')
+					setAttribute: (value) => this.setAttribute('height', value)
 				}
 			);
 		}
@@ -94,8 +91,7 @@ export default class SVGFEDropShadowElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('in'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('in', value) : this.removeAttribute('in')
+					setAttribute: (value) => this.setAttribute('in', value)
 				}
 			);
 		}
@@ -114,8 +110,7 @@ export default class SVGFEDropShadowElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('result'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('result', value) : this.removeAttribute('result')
+					setAttribute: (value) => this.setAttribute('result', value)
 				}
 			);
 		}
@@ -134,10 +129,7 @@ export default class SVGFEDropShadowElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('stdDeviationX') || '2',
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('stdDeviationX', value)
-							: this.removeAttribute('stdDeviationX')
+					setAttribute: (value) => this.setAttribute('stdDeviationX', value)
 				}
 			);
 		}
@@ -156,10 +148,7 @@ export default class SVGFEDropShadowElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('stdDeviationY') || '2',
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('stdDeviationY', value)
-							: this.removeAttribute('stdDeviationY')
+					setAttribute: (value) => this.setAttribute('stdDeviationY', value)
 				}
 			);
 		}
@@ -178,8 +167,7 @@ export default class SVGFEDropShadowElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('width'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('width', value) : this.removeAttribute('width')
+					setAttribute: (value) => this.setAttribute('width', value)
 				}
 			);
 		}
@@ -198,8 +186,7 @@ export default class SVGFEDropShadowElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('x'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('x', value) : this.removeAttribute('x')
+					setAttribute: (value) => this.setAttribute('x', value)
 				}
 			);
 		}
@@ -218,8 +205,7 @@ export default class SVGFEDropShadowElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('y'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('y', value) : this.removeAttribute('y')
+					setAttribute: (value) => this.setAttribute('y', value)
 				}
 			);
 		}

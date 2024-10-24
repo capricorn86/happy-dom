@@ -33,8 +33,7 @@ export default class SVGPatternElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('href'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('href', value) : this.removeAttribute('href')
+					setAttribute: (value) => this.setAttribute('href', value)
 				}
 			);
 		}
@@ -53,8 +52,7 @@ export default class SVGPatternElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('patternUnits'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('patternUnits', value) : this.removeAttribute('patternUnits'),
+					setAttribute: (value) => this.setAttribute('patternUnits', value),
 					values: ['userSpaceOnUse', 'objectBoundingBox'],
 					defaultValue: 'objectBoundingBox'
 				}
@@ -75,10 +73,7 @@ export default class SVGPatternElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('patternContentUnits'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('patternContentUnits', value)
-							: this.removeAttribute('patternContentUnits'),
+					setAttribute: (value) => this.setAttribute('patternContentUnits', value),
 					values: ['userSpaceOnUse', 'objectBoundingBox'],
 					defaultValue: 'userSpaceOnUse'
 				}
@@ -99,10 +94,7 @@ export default class SVGPatternElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('patternTransform'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('patternTransform', value)
-							: this.removeAttribute('patternTransform')
+					setAttribute: (value) => this.setAttribute('patternTransform', value)
 				}
 			);
 		}
@@ -121,8 +113,7 @@ export default class SVGPatternElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('x'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('x', value) : this.removeAttribute('x')
+					setAttribute: (value) => this.setAttribute('x', value)
 				}
 			);
 		}
@@ -141,8 +132,7 @@ export default class SVGPatternElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('y'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('y', value) : this.removeAttribute('y')
+					setAttribute: (value) => this.setAttribute('y', value)
 				}
 			);
 		}
@@ -161,8 +151,7 @@ export default class SVGPatternElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('width'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('width', value) : this.removeAttribute('width')
+					setAttribute: (value) => this.setAttribute('width', value)
 				}
 			);
 		}
@@ -181,8 +170,7 @@ export default class SVGPatternElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('height'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('height', value) : this.removeAttribute('height')
+					setAttribute: (value) => this.setAttribute('height', value)
 				}
 			);
 		}

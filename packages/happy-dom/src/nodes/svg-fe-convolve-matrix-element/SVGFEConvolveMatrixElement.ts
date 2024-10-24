@@ -51,8 +51,7 @@ export default class SVGFEConvolveMatrixElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('bias'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('bias', value) : this.removeAttribute('bias')
+					setAttribute: (value) => this.setAttribute('bias', value)
 				}
 			);
 		}
@@ -71,8 +70,7 @@ export default class SVGFEConvolveMatrixElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('divisor'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('divisor', value) : this.removeAttribute('divisor')
+					setAttribute: (value) => this.setAttribute('divisor', value)
 				}
 			);
 		}
@@ -91,8 +89,7 @@ export default class SVGFEConvolveMatrixElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('edgeMode'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('edgeMode', value) : this.removeAttribute('edgeMode'),
+					setAttribute: (value) => this.setAttribute('edgeMode', value),
 					values: ['duplicate', 'wrap', 'none'],
 					defaultValue: 'duplicate'
 				}
@@ -113,8 +110,7 @@ export default class SVGFEConvolveMatrixElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('height'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('height', value) : this.removeAttribute('height')
+					setAttribute: (value) => this.setAttribute('height', value)
 				}
 			);
 		}
@@ -133,8 +129,7 @@ export default class SVGFEConvolveMatrixElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('in'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('in', value) : this.removeAttribute('in')
+					setAttribute: (value) => this.setAttribute('in', value)
 				}
 			);
 		}
@@ -153,8 +148,7 @@ export default class SVGFEConvolveMatrixElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('kernelMatrix'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('kernelMatrix', value) : this.removeAttribute('kernelMatrix')
+					setAttribute: (value) => this.setAttribute('kernelMatrix', value)
 				}
 			);
 		}
@@ -173,10 +167,7 @@ export default class SVGFEConvolveMatrixElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('kernelUnitLengthX'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('kernelUnitLengthX', value)
-							: this.removeAttribute('kernelUnitLengthX')
+					setAttribute: (value) => this.setAttribute('kernelUnitLengthX', value)
 				}
 			);
 		}
@@ -195,10 +186,7 @@ export default class SVGFEConvolveMatrixElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('kernelUnitLengthY'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('kernelUnitLengthY', value)
-							: this.removeAttribute('kernelUnitLengthY')
+					setAttribute: (value) => this.setAttribute('kernelUnitLengthY', value)
 				}
 			);
 		}
@@ -217,8 +205,7 @@ export default class SVGFEConvolveMatrixElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('orderX'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('orderX', value) : this.removeAttribute('orderX')
+					setAttribute: (value) => this.setAttribute('orderX', value)
 				}
 			);
 		}
@@ -237,8 +224,7 @@ export default class SVGFEConvolveMatrixElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('orderY'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('orderY', value) : this.removeAttribute('orderY')
+					setAttribute: (value) => this.setAttribute('orderY', value)
 				}
 			);
 		}
@@ -257,10 +243,7 @@ export default class SVGFEConvolveMatrixElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('preserveAlpha'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('preserveAlpha', value)
-							: this.removeAttribute('preserveAlpha')
+					setAttribute: (value) => this.setAttribute('preserveAlpha', value)
 				}
 			);
 		}
@@ -279,8 +262,7 @@ export default class SVGFEConvolveMatrixElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('result'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('result', value) : this.removeAttribute('result')
+					setAttribute: (value) => this.setAttribute('result', value)
 				}
 			);
 		}
@@ -299,8 +281,7 @@ export default class SVGFEConvolveMatrixElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('targetX'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('targetX', value) : this.removeAttribute('targetX')
+					setAttribute: (value) => this.setAttribute('targetX', value)
 				}
 			);
 		}
@@ -319,8 +300,7 @@ export default class SVGFEConvolveMatrixElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('targetY'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('targetY', value) : this.removeAttribute('targetY')
+					setAttribute: (value) => this.setAttribute('targetY', value)
 				}
 			);
 		}
@@ -339,8 +319,7 @@ export default class SVGFEConvolveMatrixElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('type'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('type', value) : this.removeAttribute('type'),
+					setAttribute: (value) => this.setAttribute('type', value),
 					values: ['matrix', 'saturate', 'huerotate', 'luminancetoalpha'],
 					defaultValue: 'matrix'
 				}
@@ -361,8 +340,7 @@ export default class SVGFEConvolveMatrixElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('values'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('values', value) : this.removeAttribute('values')
+					setAttribute: (value) => this.setAttribute('values', value)
 				}
 			);
 		}
@@ -381,8 +359,7 @@ export default class SVGFEConvolveMatrixElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('width'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('width', value) : this.removeAttribute('width')
+					setAttribute: (value) => this.setAttribute('width', value)
 				}
 			);
 		}
@@ -401,8 +378,7 @@ export default class SVGFEConvolveMatrixElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('x'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('x', value) : this.removeAttribute('x')
+					setAttribute: (value) => this.setAttribute('x', value)
 				}
 			);
 		}
@@ -421,8 +397,7 @@ export default class SVGFEConvolveMatrixElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('y'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('y', value) : this.removeAttribute('y')
+					setAttribute: (value) => this.setAttribute('y', value)
 				}
 			);
 		}

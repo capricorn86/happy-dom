@@ -25,8 +25,7 @@ export default class SVGFEPointLightElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('x'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('x', value) : this.removeAttribute('x')
+					setAttribute: (value) => this.setAttribute('x', value)
 				}
 			);
 		}
@@ -45,8 +44,7 @@ export default class SVGFEPointLightElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('y'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('y', value) : this.removeAttribute('y')
+					setAttribute: (value) => this.setAttribute('y', value)
 				}
 			);
 		}
@@ -65,8 +63,7 @@ export default class SVGFEPointLightElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('z'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('z', value) : this.removeAttribute('z')
+					setAttribute: (value) => this.setAttribute('z', value)
 				}
 			);
 		}

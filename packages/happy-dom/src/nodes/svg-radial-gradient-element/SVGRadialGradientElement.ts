@@ -27,8 +27,7 @@ export default class SVGRadialGradientElement extends SVGGradientElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('cx'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('cx', value) : this.removeAttribute('cx')
+					setAttribute: (value) => this.setAttribute('cx', value)
 				}
 			);
 		}
@@ -47,8 +46,7 @@ export default class SVGRadialGradientElement extends SVGGradientElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('cy'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('cy', value) : this.removeAttribute('cy')
+					setAttribute: (value) => this.setAttribute('cy', value)
 				}
 			);
 		}
@@ -67,8 +65,7 @@ export default class SVGRadialGradientElement extends SVGGradientElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('r'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('r', value) : this.removeAttribute('r')
+					setAttribute: (value) => this.setAttribute('r', value)
 				}
 			);
 		}
@@ -87,8 +84,7 @@ export default class SVGRadialGradientElement extends SVGGradientElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('fx'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('fx', value) : this.removeAttribute('fx')
+					setAttribute: (value) => this.setAttribute('fx', value)
 				}
 			);
 		}
@@ -107,8 +103,7 @@ export default class SVGRadialGradientElement extends SVGGradientElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('fy'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('fy', value) : this.removeAttribute('fy')
+					setAttribute: (value) => this.setAttribute('fy', value)
 				}
 			);
 		}

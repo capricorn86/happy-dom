@@ -26,8 +26,7 @@ export default class SVGEllipseElement extends SVGGeometryElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('cx'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('cx', value) : this.removeAttribute('cx')
+					setAttribute: (value) => this.setAttribute('cx', value)
 				}
 			);
 		}
@@ -46,8 +45,7 @@ export default class SVGEllipseElement extends SVGGeometryElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('cy'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('cy', value) : this.removeAttribute('cy')
+					setAttribute: (value) => this.setAttribute('cy', value)
 				}
 			);
 		}
@@ -66,8 +64,7 @@ export default class SVGEllipseElement extends SVGGeometryElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('rx'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('rx', value) : this.removeAttribute('rx')
+					setAttribute: (value) => this.setAttribute('rx', value)
 				}
 			);
 		}
@@ -86,8 +83,7 @@ export default class SVGEllipseElement extends SVGGeometryElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('ry'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('ry', value) : this.removeAttribute('ry')
+					setAttribute: (value) => this.setAttribute('ry', value)
 				}
 			);
 		}

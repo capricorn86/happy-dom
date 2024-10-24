@@ -44,8 +44,7 @@ export default class SVGPolylineElement extends SVGGeometryElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('points'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('points', value) : this.removeAttribute('points')
+					setAttribute: (value) => this.setAttribute('points', value)
 				}
 			);
 		}

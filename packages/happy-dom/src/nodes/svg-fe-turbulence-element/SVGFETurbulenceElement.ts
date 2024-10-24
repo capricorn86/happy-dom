@@ -46,10 +46,7 @@ export default class SVGFETurbulenceElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('baseFrequencyX'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('baseFrequencyX', value)
-							: this.removeAttribute('baseFrequencyX')
+					setAttribute: (value) => this.setAttribute('baseFrequencyX', value)
 				}
 			);
 		}
@@ -68,10 +65,7 @@ export default class SVGFETurbulenceElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('baseFrequencyY'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('baseFrequencyY', value)
-							: this.removeAttribute('baseFrequencyY')
+					setAttribute: (value) => this.setAttribute('baseFrequencyY', value)
 				}
 			);
 		}
@@ -90,8 +84,7 @@ export default class SVGFETurbulenceElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('height'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('height', value) : this.removeAttribute('height')
+					setAttribute: (value) => this.setAttribute('height', value)
 				}
 			);
 		}
@@ -110,8 +103,7 @@ export default class SVGFETurbulenceElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('numOctaves'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('numOctaves', value) : this.removeAttribute('numOctaves')
+					setAttribute: (value) => this.setAttribute('numOctaves', value)
 				}
 			);
 		}
@@ -130,8 +122,7 @@ export default class SVGFETurbulenceElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('result'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('result', value) : this.removeAttribute('result')
+					setAttribute: (value) => this.setAttribute('result', value)
 				}
 			);
 		}
@@ -150,8 +141,7 @@ export default class SVGFETurbulenceElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('seed'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('seed', value) : this.removeAttribute('seed')
+					setAttribute: (value) => this.setAttribute('seed', value)
 				}
 			);
 		}
@@ -170,8 +160,7 @@ export default class SVGFETurbulenceElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('stitchTiles'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('stitchTiles', value) : this.removeAttribute('stitchTiles'),
+					setAttribute: (value) => this.setAttribute('stitchTiles', value),
 					values: ['stitch', 'noStitch'],
 					defaultValue: 'stitch'
 				}
@@ -192,8 +181,7 @@ export default class SVGFETurbulenceElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('type'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('type', value) : this.removeAttribute('type'),
+					setAttribute: (value) => this.setAttribute('type', value),
 					values: ['fractalNoise', 'turbulence'],
 					defaultValue: 'turbulence'
 				}
@@ -214,8 +202,7 @@ export default class SVGFETurbulenceElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('width'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('width', value) : this.removeAttribute('width')
+					setAttribute: (value) => this.setAttribute('width', value)
 				}
 			);
 		}
@@ -234,8 +221,7 @@ export default class SVGFETurbulenceElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('x'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('x', value) : this.removeAttribute('x')
+					setAttribute: (value) => this.setAttribute('x', value)
 				}
 			);
 		}
@@ -254,8 +240,7 @@ export default class SVGFETurbulenceElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('y'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('y', value) : this.removeAttribute('y')
+					setAttribute: (value) => this.setAttribute('y', value)
 				}
 			);
 		}

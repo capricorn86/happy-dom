@@ -49,8 +49,7 @@ export default class SVGMarkerElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('markerUnits'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('markerUnits', value) : this.removeAttribute('markerUnits'),
+					setAttribute: (value) => this.setAttribute('markerUnits', value),
 					values: ['userSpaceOnUse', 'strokeWidth'],
 					defaultValue: 'strokeWidth'
 				}
@@ -71,8 +70,7 @@ export default class SVGMarkerElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('markerWidth'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('markerWidth', value) : this.removeAttribute('markerWidth')
+					setAttribute: (value) => this.setAttribute('markerWidth', value)
 				}
 			);
 		}
@@ -91,8 +89,7 @@ export default class SVGMarkerElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('markerHeight'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('markerHeight', value) : this.removeAttribute('markerHeight')
+					setAttribute: (value) => this.setAttribute('markerHeight', value)
 				}
 			);
 		}
@@ -111,8 +108,7 @@ export default class SVGMarkerElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('orient'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('orient', value) : this.removeAttribute('orient'),
+					setAttribute: (value) => this.setAttribute('orient', value),
 					values: ['auto', null],
 					defaultValue: 'auto'
 				}
@@ -133,8 +129,7 @@ export default class SVGMarkerElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('orient'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('orient', value) : this.removeAttribute('orient')
+					setAttribute: (value) => this.setAttribute('orient', value)
 				}
 			);
 		}
@@ -153,8 +148,7 @@ export default class SVGMarkerElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('refX'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('refX', value) : this.removeAttribute('refX')
+					setAttribute: (value) => this.setAttribute('refX', value)
 				}
 			);
 		}
@@ -173,8 +167,7 @@ export default class SVGMarkerElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('refY'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('refY', value) : this.removeAttribute('refY')
+					setAttribute: (value) => this.setAttribute('refY', value)
 				}
 			);
 		}
@@ -193,8 +186,7 @@ export default class SVGMarkerElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('viewBox'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('viewBox', value) : this.removeAttribute('viewBox')
+					setAttribute: (value) => this.setAttribute('viewBox', value)
 				}
 			);
 		}
@@ -213,10 +205,7 @@ export default class SVGMarkerElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('preserveAspectRatio'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('preserveAspectRatio', value)
-							: this.removeAttribute('preserveAspectRatio')
+					setAttribute: (value) => this.setAttribute('preserveAspectRatio', value)
 				}
 			);
 		}

@@ -39,8 +39,7 @@ export default class SVGFEMorphologyElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('height'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('height', value) : this.removeAttribute('height')
+					setAttribute: (value) => this.setAttribute('height', value)
 				}
 			);
 		}
@@ -59,8 +58,7 @@ export default class SVGFEMorphologyElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('in'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('in', value) : this.removeAttribute('in')
+					setAttribute: (value) => this.setAttribute('in', value)
 				}
 			);
 		}
@@ -79,8 +77,7 @@ export default class SVGFEMorphologyElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('operator'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('operator', value) : this.removeAttribute('operator'),
+					setAttribute: (value) => this.setAttribute('operator', value),
 					values: ['erode', 'dilate'],
 					defaultValue: 'erode'
 				}
@@ -101,8 +98,7 @@ export default class SVGFEMorphologyElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('radiusX'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('radiusX', value) : this.removeAttribute('radiusX')
+					setAttribute: (value) => this.setAttribute('radiusX', value)
 				}
 			);
 		}
@@ -121,8 +117,7 @@ export default class SVGFEMorphologyElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('radiusY'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('radiusY', value) : this.removeAttribute('radiusY')
+					setAttribute: (value) => this.setAttribute('radiusY', value)
 				}
 			);
 		}
@@ -141,8 +136,7 @@ export default class SVGFEMorphologyElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('result'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('result', value) : this.removeAttribute('result')
+					setAttribute: (value) => this.setAttribute('result', value)
 				}
 			);
 		}
@@ -161,8 +155,7 @@ export default class SVGFEMorphologyElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('width'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('width', value) : this.removeAttribute('width')
+					setAttribute: (value) => this.setAttribute('width', value)
 				}
 			);
 		}
@@ -181,8 +174,7 @@ export default class SVGFEMorphologyElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('x'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('x', value) : this.removeAttribute('x')
+					setAttribute: (value) => this.setAttribute('x', value)
 				}
 			);
 		}
@@ -201,8 +193,7 @@ export default class SVGFEMorphologyElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('y'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('y', value) : this.removeAttribute('y')
+					setAttribute: (value) => this.setAttribute('y', value)
 				}
 			);
 		}

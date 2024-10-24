@@ -23,8 +23,7 @@ export default class SVGScriptElement extends SVGGraphicsElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('href'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('href', value) : this.removeAttribute('href')
+					setAttribute: (value) => this.setAttribute('href', value)
 				}
 			);
 		}

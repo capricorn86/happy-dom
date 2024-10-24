@@ -23,8 +23,7 @@ export default class SVGGeometryElement extends SVGGraphicsElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('pathLength'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('pathLength', value) : this.removeAttribute('pathLength')
+					setAttribute: (value) => this.setAttribute('pathLength', value)
 				}
 			);
 		}

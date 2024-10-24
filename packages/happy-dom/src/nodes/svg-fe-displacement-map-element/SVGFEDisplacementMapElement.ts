@@ -42,8 +42,7 @@ export default class SVGFEDisplacementMapElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('height'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('height', value) : this.removeAttribute('height')
+					setAttribute: (value) => this.setAttribute('height', value)
 				}
 			);
 		}
@@ -62,8 +61,7 @@ export default class SVGFEDisplacementMapElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('in'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('in', value) : this.removeAttribute('in')
+					setAttribute: (value) => this.setAttribute('in', value)
 				}
 			);
 		}
@@ -82,8 +80,7 @@ export default class SVGFEDisplacementMapElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('in2'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('in2', value) : this.removeAttribute('in2')
+					setAttribute: (value) => this.setAttribute('in2', value)
 				}
 			);
 		}
@@ -102,8 +99,7 @@ export default class SVGFEDisplacementMapElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('result'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('result', value) : this.removeAttribute('result')
+					setAttribute: (value) => this.setAttribute('result', value)
 				}
 			);
 		}
@@ -122,8 +118,7 @@ export default class SVGFEDisplacementMapElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('scale'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('scale', value) : this.removeAttribute('scale')
+					setAttribute: (value) => this.setAttribute('scale', value)
 				}
 			);
 		}
@@ -142,8 +137,7 @@ export default class SVGFEDisplacementMapElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('width'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('width', value) : this.removeAttribute('width')
+					setAttribute: (value) => this.setAttribute('width', value)
 				}
 			);
 		}
@@ -162,8 +156,7 @@ export default class SVGFEDisplacementMapElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('x'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('x', value) : this.removeAttribute('x')
+					setAttribute: (value) => this.setAttribute('x', value)
 				}
 			);
 		}
@@ -182,10 +175,7 @@ export default class SVGFEDisplacementMapElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('xChannelSelector'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('xChannelSelector', value)
-							: this.removeAttribute('xChannelSelector'),
+					setAttribute: (value) => this.setAttribute('xChannelSelector', value),
 					values: ['r', 'g', 'b', 'a'],
 					defaultValue: 'r'
 				}
@@ -206,8 +196,7 @@ export default class SVGFEDisplacementMapElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('y'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('y', value) : this.removeAttribute('y')
+					setAttribute: (value) => this.setAttribute('y', value)
 				}
 			);
 		}
@@ -226,10 +215,7 @@ export default class SVGFEDisplacementMapElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('yChannelSelector'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('yChannelSelector', value)
-							: this.removeAttribute('yChannelSelector'),
+					setAttribute: (value) => this.setAttribute('yChannelSelector', value),
 					values: ['r', 'g', 'b', 'a'],
 					defaultValue: 'r'
 				}

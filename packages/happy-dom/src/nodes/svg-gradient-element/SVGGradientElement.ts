@@ -28,8 +28,7 @@ export default class SVGGradientElement extends SVGGraphicsElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('href'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('href', value) : this.removeAttribute('href')
+					setAttribute: (value) => this.setAttribute('href', value)
 				}
 			);
 		}
@@ -48,10 +47,7 @@ export default class SVGGradientElement extends SVGGraphicsElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('gradientUnits'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('gradientUnits', value)
-							: this.removeAttribute('gradientUnits'),
+					setAttribute: (value) => this.setAttribute('gradientUnits', value),
 					values: ['userSpaceOnUse', 'objectBoundingBox'],
 					defaultValue: 'objectBoundingBox'
 				}
@@ -72,10 +68,7 @@ export default class SVGGradientElement extends SVGGraphicsElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('gradientTransform'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('gradientTransform', value)
-							: this.removeAttribute('gradientTransform')
+					setAttribute: (value) => this.setAttribute('gradientTransform', value)
 				}
 			);
 		}
@@ -94,8 +87,7 @@ export default class SVGGradientElement extends SVGGraphicsElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('spreadMethod'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('spreadMethod', value) : this.removeAttribute('spreadMethod'),
+					setAttribute: (value) => this.setAttribute('spreadMethod', value),
 					values: ['pad', 'reflect', 'repeat'],
 					defaultValue: 'pad'
 				}

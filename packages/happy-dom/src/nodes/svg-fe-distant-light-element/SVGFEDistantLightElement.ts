@@ -24,8 +24,7 @@ export default class SVGFEDistantLightElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('azimuth'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('azimuth', value) : this.removeAttribute('azimuth')
+					setAttribute: (value) => this.setAttribute('azimuth', value)
 				}
 			);
 		}
@@ -44,8 +43,7 @@ export default class SVGFEDistantLightElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('elevation'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('elevation', value) : this.removeAttribute('elevation')
+					setAttribute: (value) => this.setAttribute('elevation', value)
 				}
 			);
 		}

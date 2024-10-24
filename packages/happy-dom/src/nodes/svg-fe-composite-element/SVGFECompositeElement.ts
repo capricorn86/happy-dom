@@ -42,8 +42,7 @@ export default class SVGFECompositeElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('height'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('height', value) : this.removeAttribute('height')
+					setAttribute: (value) => this.setAttribute('height', value)
 				}
 			);
 		}
@@ -62,8 +61,7 @@ export default class SVGFECompositeElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('in'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('in', value) : this.removeAttribute('in')
+					setAttribute: (value) => this.setAttribute('in', value)
 				}
 			);
 		}
@@ -82,8 +80,7 @@ export default class SVGFECompositeElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('result'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('result', value) : this.removeAttribute('result')
+					setAttribute: (value) => this.setAttribute('result', value)
 				}
 			);
 		}
@@ -102,8 +99,7 @@ export default class SVGFECompositeElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('type'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('type', value) : this.removeAttribute('type'),
+					setAttribute: (value) => this.setAttribute('type', value),
 					values: ['over', 'in', 'out', 'atop', 'xor', 'arithmetic'],
 					defaultValue: 'over'
 				}
@@ -124,8 +120,7 @@ export default class SVGFECompositeElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('values'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('values', value) : this.removeAttribute('values')
+					setAttribute: (value) => this.setAttribute('values', value)
 				}
 			);
 		}
@@ -144,8 +139,7 @@ export default class SVGFECompositeElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('width'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('width', value) : this.removeAttribute('width')
+					setAttribute: (value) => this.setAttribute('width', value)
 				}
 			);
 		}
@@ -164,8 +158,7 @@ export default class SVGFECompositeElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('x'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('x', value) : this.removeAttribute('x')
+					setAttribute: (value) => this.setAttribute('x', value)
 				}
 			);
 		}
@@ -184,8 +177,7 @@ export default class SVGFECompositeElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('y'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('y', value) : this.removeAttribute('y')
+					setAttribute: (value) => this.setAttribute('y', value)
 				}
 			);
 		}

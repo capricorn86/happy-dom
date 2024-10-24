@@ -30,10 +30,7 @@ export default class SVGAnimationElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('requiredExtensions'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('requiredExtensions', value)
-							: this.removeAttribute('requiredExtensions')
+					setAttribute: (value) => this.setAttribute('requiredExtensions', value)
 				}
 			);
 		}
@@ -52,10 +49,7 @@ export default class SVGAnimationElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('systemLanguage'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('systemLanguage', value)
-							: this.removeAttribute('systemLanguage')
+					setAttribute: (value) => this.setAttribute('systemLanguage', value)
 				}
 			);
 		}

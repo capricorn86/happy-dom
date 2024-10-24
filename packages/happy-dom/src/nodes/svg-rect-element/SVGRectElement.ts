@@ -28,8 +28,7 @@ export default class SVGRectElement extends SVGGeometryElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('x'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('x', value) : this.removeAttribute('x')
+					setAttribute: (value) => this.setAttribute('x', value)
 				}
 			);
 		}
@@ -48,8 +47,7 @@ export default class SVGRectElement extends SVGGeometryElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('y'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('y', value) : this.removeAttribute('y')
+					setAttribute: (value) => this.setAttribute('y', value)
 				}
 			);
 		}
@@ -68,8 +66,7 @@ export default class SVGRectElement extends SVGGeometryElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('width'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('width', value) : this.removeAttribute('width')
+					setAttribute: (value) => this.setAttribute('width', value)
 				}
 			);
 		}
@@ -88,8 +85,7 @@ export default class SVGRectElement extends SVGGeometryElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('height'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('height', value) : this.removeAttribute('height')
+					setAttribute: (value) => this.setAttribute('height', value)
 				}
 			);
 		}
@@ -108,8 +104,7 @@ export default class SVGRectElement extends SVGGeometryElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('rx'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('rx', value) : this.removeAttribute('rx')
+					setAttribute: (value) => this.setAttribute('rx', value)
 				}
 			);
 		}
@@ -128,8 +123,7 @@ export default class SVGRectElement extends SVGGeometryElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('ry'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('ry', value) : this.removeAttribute('ry')
+					setAttribute: (value) => this.setAttribute('ry', value)
 				}
 			);
 		}

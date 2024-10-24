@@ -34,10 +34,7 @@ export default class SVGGraphicsElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('requiredExtensions'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('requiredExtensions', value)
-							: this.removeAttribute('requiredExtensions')
+					setAttribute: (value) => this.setAttribute('requiredExtensions', value)
 				}
 			);
 		}
@@ -56,10 +53,7 @@ export default class SVGGraphicsElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('systemLanguage'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('systemLanguage', value)
-							: this.removeAttribute('systemLanguage')
+					setAttribute: (value) => this.setAttribute('systemLanguage', value)
 				}
 			);
 		}
@@ -78,8 +72,7 @@ export default class SVGGraphicsElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('transform'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('transform', value) : this.removeAttribute('transform')
+					setAttribute: (value) => this.setAttribute('transform', value)
 				}
 			);
 		}

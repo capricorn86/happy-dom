@@ -40,10 +40,7 @@ export default class SVGFEDiffuseLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('diffuseConstant'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('diffuseConstant', value)
-							: this.removeAttribute('diffuseConstant')
+					setAttribute: (value) => this.setAttribute('diffuseConstant', value)
 				}
 			);
 		}
@@ -62,8 +59,7 @@ export default class SVGFEDiffuseLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('height'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('height', value) : this.removeAttribute('height')
+					setAttribute: (value) => this.setAttribute('height', value)
 				}
 			);
 		}
@@ -82,8 +78,7 @@ export default class SVGFEDiffuseLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('in'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('in', value) : this.removeAttribute('in')
+					setAttribute: (value) => this.setAttribute('in', value)
 				}
 			);
 		}
@@ -102,10 +97,7 @@ export default class SVGFEDiffuseLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('kernelUnitLengthX'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('kernelUnitLengthX', value)
-							: this.removeAttribute('kernelUnitLengthX')
+					setAttribute: (value) => this.setAttribute('kernelUnitLengthX', value)
 				}
 			);
 		}
@@ -124,10 +116,7 @@ export default class SVGFEDiffuseLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('kernelUnitLengthY'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('kernelUnitLengthY', value)
-							: this.removeAttribute('kernelUnitLengthY')
+					setAttribute: (value) => this.setAttribute('kernelUnitLengthY', value)
 				}
 			);
 		}
@@ -146,8 +135,7 @@ export default class SVGFEDiffuseLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('result'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('result', value) : this.removeAttribute('result')
+					setAttribute: (value) => this.setAttribute('result', value)
 				}
 			);
 		}
@@ -166,8 +154,7 @@ export default class SVGFEDiffuseLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('surfaceScale'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('surfaceScale', value) : this.removeAttribute('surfaceScale')
+					setAttribute: (value) => this.setAttribute('surfaceScale', value)
 				}
 			);
 		}
@@ -186,8 +173,7 @@ export default class SVGFEDiffuseLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('width'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('width', value) : this.removeAttribute('width')
+					setAttribute: (value) => this.setAttribute('width', value)
 				}
 			);
 		}
@@ -206,8 +192,7 @@ export default class SVGFEDiffuseLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('x'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('x', value) : this.removeAttribute('x')
+					setAttribute: (value) => this.setAttribute('x', value)
 				}
 			);
 		}
@@ -226,8 +211,7 @@ export default class SVGFEDiffuseLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('y'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('y', value) : this.removeAttribute('y')
+					setAttribute: (value) => this.setAttribute('y', value)
 				}
 			);
 		}

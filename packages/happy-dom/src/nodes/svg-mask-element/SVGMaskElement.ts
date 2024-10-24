@@ -29,8 +29,7 @@ export default class SVGMaskElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('maskUnits'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('maskUnits', value) : this.removeAttribute('maskUnits'),
+					setAttribute: (value) => this.setAttribute('maskUnits', value),
 					values: ['userSpaceOnUse', 'objectBoundingBox'],
 					defaultValue: 'userSpaceOnUse'
 				}
@@ -51,10 +50,7 @@ export default class SVGMaskElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('maskContentUnits'),
-					setAttribute: (value) =>
-						value
-							? this.setAttribute('maskContentUnits', value)
-							: this.removeAttribute('maskContentUnits'),
+					setAttribute: (value) => this.setAttribute('maskContentUnits', value),
 					values: ['userSpaceOnUse', 'objectBoundingBox'],
 					defaultValue: 'userSpaceOnUse'
 				}
@@ -75,8 +71,7 @@ export default class SVGMaskElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('x'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('x', value) : this.removeAttribute('x')
+					setAttribute: (value) => this.setAttribute('x', value)
 				}
 			);
 		}
@@ -95,8 +90,7 @@ export default class SVGMaskElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('y'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('y', value) : this.removeAttribute('y')
+					setAttribute: (value) => this.setAttribute('y', value)
 				}
 			);
 		}
@@ -115,8 +109,7 @@ export default class SVGMaskElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('width'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('width', value) : this.removeAttribute('width')
+					setAttribute: (value) => this.setAttribute('width', value)
 				}
 			);
 		}
@@ -135,8 +128,7 @@ export default class SVGMaskElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('height'),
-					setAttribute: (value) =>
-						value ? this.setAttribute('height', value) : this.removeAttribute('height')
+					setAttribute: (value) => this.setAttribute('height', value)
 				}
 			);
 		}

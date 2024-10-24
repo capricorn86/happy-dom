@@ -178,8 +178,8 @@ export default class SVGTransformList {
 		}
 
 		this[PropertySymbol.cache].items = [];
-		this[PropertySymbol.cache].attributeValue = null;
-		this[PropertySymbol.setAttribute](null);
+		this[PropertySymbol.cache].attributeValue = '';
+		this[PropertySymbol.setAttribute]('');
 	}
 
 	/**
