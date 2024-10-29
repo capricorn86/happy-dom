@@ -14,26 +14,6 @@ export default class SVGStyleElement extends SVGElement {
 	public [PropertySymbol.disabled] = false;
 
 	/**
-	 * Returns type.
-	 *
-	 * @deprecated
-	 * @returns Type.
-	 */
-	public get type(): string {
-		return this.getAttribute('type') || 'text/css';
-	}
-
-	/**
-	 * Sets type.
-	 *
-	 * @deprecated
-	 * @param value New value.
-	 */
-	public set type(value: string) {
-		this.setAttribute('type', value);
-	}
-
-	/**
 	 * Returns media.
 	 *
 	 * @returns Media.
@@ -49,6 +29,26 @@ export default class SVGStyleElement extends SVGElement {
 	 */
 	public set media(media: string) {
 		this.setAttribute('media', media);
+	}
+
+	/**
+	 * Returns type.
+	 *
+	 * @deprecated
+	 * @returns Type.
+	 */
+	public get type(): string {
+		return this.getAttribute('type') || 'text/css';
+	}
+
+	/**
+	 * Sets type.
+	 *
+	 * @deprecated
+	 * @param type Type.
+	 */
+	public set type(type: string) {
+		this.setAttribute('type', type);
 	}
 
 	/**

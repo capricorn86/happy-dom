@@ -66,6 +66,34 @@ describe('SVGLengthList', () => {
 
 			expect(list[6]).toBeUndefined();
 		});
+
+		it('Handles comma and line break as separator', () => {
+			const list = new window.SVGLengthList(PropertySymbol.illegalConstructor, window, {
+				getAttribute: () => `10px,10cm,10mm,10in,10pt	
+                10pc`,
+				setAttribute: () => {}
+			});
+
+			expect(list[0].valueInSpecifiedUnits).toBe(10);
+			expect(list[0].unitType).toBe(SVGLengthTypeEnum.px);
+
+			expect(list[1].valueInSpecifiedUnits).toBe(10);
+			expect(list[1].unitType).toBe(SVGLengthTypeEnum.cm);
+
+			expect(list[2].valueInSpecifiedUnits).toBe(10);
+			expect(list[2].unitType).toBe(SVGLengthTypeEnum.mm);
+
+			expect(list[3].valueInSpecifiedUnits).toBe(10);
+			expect(list[3].unitType).toBe(SVGLengthTypeEnum.in);
+
+			expect(list[4].valueInSpecifiedUnits).toBe(10);
+			expect(list[4].unitType).toBe(SVGLengthTypeEnum.pt);
+
+			expect(list[5].valueInSpecifiedUnits).toBe(10);
+			expect(list[5].unitType).toBe(SVGLengthTypeEnum.pc);
+
+			expect(list[6]).toBeUndefined();
+		});
 	});
 
 	describe('get length()', () => {
@@ -143,7 +171,7 @@ describe('SVGLengthList', () => {
 			list.clear();
 
 			expect(list.length).toBe(0);
-			expect(attribute).toBe(null);
+			expect(attribute).toBe('');
 
 			// Make sure that the items are disconnected from the list.
 			expect(item1.value).toBe(10);
@@ -152,7 +180,7 @@ describe('SVGLengthList', () => {
 			expect(item1.value).toBe(100);
 
 			expect(list.length).toBe(0);
-			expect(attribute).toBe(null);
+			expect(attribute).toBe('');
 		});
 	});
 

@@ -3,6 +3,8 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import CSSParser from './utilities/CSSParser.js';
 import CSSRule from './CSSRule.js';
 import MediaList from './MediaList.js';
+import BrowserWindow from '../window/BrowserWindow.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 
 /**
  * CSS StyleSheet.
@@ -11,6 +13,9 @@ import MediaList from './MediaList.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet.
  */
 export default class CSSStyleSheet {
+	// Injected by WindowClassExtender
+	protected declare [PropertySymbol.window]: BrowserWindow;
+
 	public value: string = null;
 	public name: string = null;
 	public namespaceURI: string = null;
@@ -56,11 +61,14 @@ export default class CSSStyleSheet {
 		const rules = CSSParser.parseFromString(this, rule);
 
 		if (rules.length === 0) {
-			throw new DOMException('Invalid CSS rule.', DOMExceptionNameEnum.hierarchyRequestError);
+			throw new this[PropertySymbol.window].DOMException(
+				'Invalid CSS rule.',
+				DOMExceptionNameEnum.hierarchyRequestError
+			);
 		}
 
 		if (rules.length > 1) {
-			throw new DOMException(
+			throw new this[PropertySymbol.window].DOMException(
 				'Only one rule is allowed to be added.',
 				DOMExceptionNameEnum.syntaxError
 			);
@@ -68,7 +76,7 @@ export default class CSSStyleSheet {
 
 		if (index !== undefined) {
 			if (index > this.cssRules.length) {
-				throw new DOMException(
+				throw new this[PropertySymbol.window].DOMException(
 					'Index is more than the length of CSSRuleList.',
 					DOMExceptionNameEnum.indexSizeError
 				);

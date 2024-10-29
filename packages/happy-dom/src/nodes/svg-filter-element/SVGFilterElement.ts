@@ -81,6 +81,44 @@ export default class SVGFilterElement extends SVGElement {
 	}
 
 	/**
+	 * Returns height.
+	 *
+	 * @returns Height.
+	 */
+	public get height(): SVGAnimatedLength {
+		if (!this[PropertySymbol.height]) {
+			this[PropertySymbol.height] = new SVGAnimatedLength(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('height'),
+					setAttribute: (value) => this.setAttribute('height', value)
+				}
+			);
+		}
+		return this[PropertySymbol.height];
+	}
+
+	/**
+	 * Returns width.
+	 *
+	 * @returns Width.
+	 */
+	public get width(): SVGAnimatedLength {
+		if (!this[PropertySymbol.width]) {
+			this[PropertySymbol.width] = new SVGAnimatedLength(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('width'),
+					setAttribute: (value) => this.setAttribute('width', value)
+				}
+			);
+		}
+		return this[PropertySymbol.width];
+	}
+
+	/**
 	 * Returns x position.
 	 *
 	 * @returns X position.
@@ -116,43 +154,5 @@ export default class SVGFilterElement extends SVGElement {
 			);
 		}
 		return this[PropertySymbol.y];
-	}
-
-	/**
-	 * Returns width.
-	 *
-	 * @returns Width.
-	 */
-	public get width(): SVGAnimatedLength {
-		if (!this[PropertySymbol.width]) {
-			this[PropertySymbol.width] = new SVGAnimatedLength(
-				PropertySymbol.illegalConstructor,
-				this[PropertySymbol.window],
-				{
-					getAttribute: () => this.getAttribute('width'),
-					setAttribute: (value) => this.setAttribute('width', value)
-				}
-			);
-		}
-		return this[PropertySymbol.width];
-	}
-
-	/**
-	 * Returns height.
-	 *
-	 * @returns Height.
-	 */
-	public get height(): SVGAnimatedLength {
-		if (!this[PropertySymbol.height]) {
-			this[PropertySymbol.height] = new SVGAnimatedLength(
-				PropertySymbol.illegalConstructor,
-				this[PropertySymbol.window],
-				{
-					getAttribute: () => this.getAttribute('height'),
-					setAttribute: (value) => this.setAttribute('height', value)
-				}
-			);
-		}
-		return this[PropertySymbol.height];
 	}
 }

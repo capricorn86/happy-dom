@@ -308,46 +308,6 @@ export default class SVGFEConvolveMatrixElement extends SVGElement {
 	}
 
 	/**
-	 * Returns type.
-	 *
-	 * @returns Type.
-	 */
-	public get type(): SVGAnimatedEnumeration {
-		if (!this[PropertySymbol.type]) {
-			this[PropertySymbol.type] = new SVGAnimatedEnumeration(
-				PropertySymbol.illegalConstructor,
-				this[PropertySymbol.window],
-				{
-					getAttribute: () => this.getAttribute('type'),
-					setAttribute: (value) => this.setAttribute('type', value),
-					values: ['matrix', 'saturate', 'huerotate', 'luminancetoalpha'],
-					defaultValue: 'matrix'
-				}
-			);
-		}
-		return this[PropertySymbol.type];
-	}
-
-	/**
-	 * Returns values.
-	 *
-	 * @returns Values.
-	 */
-	public get values(): SVGAnimatedNumberList {
-		if (!this[PropertySymbol.values]) {
-			this[PropertySymbol.values] = new SVGAnimatedNumberList(
-				PropertySymbol.illegalConstructor,
-				this[PropertySymbol.window],
-				{
-					getAttribute: () => this.getAttribute('values'),
-					setAttribute: (value) => this.setAttribute('values', value)
-				}
-			);
-		}
-		return this[PropertySymbol.values];
-	}
-
-	/**
 	 * Returns width.
 	 *
 	 * @returns Width.

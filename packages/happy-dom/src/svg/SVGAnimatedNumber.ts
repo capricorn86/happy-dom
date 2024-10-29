@@ -11,6 +11,7 @@ export default class SVGAnimatedNumber {
 	public [PropertySymbol.window]: BrowserWindow;
 	public [PropertySymbol.getAttribute]: () => string | null = null;
 	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
+	public [PropertySymbol.defaultValue]: number = 0;
 
 	/**
 	 * Constructor.
@@ -20,6 +21,7 @@ export default class SVGAnimatedNumber {
 	 * @param options Options.
 	 * @param options.getAttribute Get attribute.
 	 * @param options.setAttribute Set attribute.
+	 * @param options.defaultValue
 	 */
 	constructor(
 		illegalConstructorSymbol: symbol,
@@ -27,6 +29,7 @@ export default class SVGAnimatedNumber {
 		options: {
 			getAttribute: () => string | null;
 			setAttribute: (value: string) => void;
+			defaultValue?: number;
 		}
 	) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
@@ -37,6 +40,7 @@ export default class SVGAnimatedNumber {
 
 		this[PropertySymbol.getAttribute] = options.getAttribute;
 		this[PropertySymbol.setAttribute] = options.setAttribute;
+		this[PropertySymbol.defaultValue] = options.defaultValue || 0;
 	}
 
 	/**
@@ -66,13 +70,13 @@ export default class SVGAnimatedNumber {
 		const attributeValue = this[PropertySymbol.getAttribute]();
 
 		if (!attributeValue) {
-			return 0;
+			return this[PropertySymbol.defaultValue];
 		}
 
 		const value = parseFloat(attributeValue);
 
 		if (isNaN(value)) {
-			return 0;
+			return this[PropertySymbol.defaultValue];
 		}
 
 		return value;

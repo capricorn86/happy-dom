@@ -55,25 +55,6 @@ export default class SVGRectElement extends SVGGeometryElement {
 	}
 
 	/**
-	 * Returns width.
-	 *
-	 * @returns Width.
-	 */
-	public get width(): SVGAnimatedLength {
-		if (!this[PropertySymbol.width]) {
-			this[PropertySymbol.width] = new SVGAnimatedLength(
-				PropertySymbol.illegalConstructor,
-				this[PropertySymbol.window],
-				{
-					getAttribute: () => this.getAttribute('width'),
-					setAttribute: (value) => this.setAttribute('width', value)
-				}
-			);
-		}
-		return this[PropertySymbol.width];
-	}
-
-	/**
 	 * Returns height.
 	 *
 	 * @returns Height.
@@ -90,6 +71,25 @@ export default class SVGRectElement extends SVGGeometryElement {
 			);
 		}
 		return this[PropertySymbol.height];
+	}
+
+	/**
+	 * Returns width.
+	 *
+	 * @returns Width.
+	 */
+	public get width(): SVGAnimatedLength {
+		if (!this[PropertySymbol.width]) {
+			this[PropertySymbol.width] = new SVGAnimatedLength(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('width'),
+					setAttribute: (value) => this.setAttribute('width', value)
+				}
+			);
+		}
+		return this[PropertySymbol.width];
 	}
 
 	/**

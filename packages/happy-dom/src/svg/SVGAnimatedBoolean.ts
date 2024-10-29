@@ -64,7 +64,7 @@ export default class SVGAnimatedBoolean {
 	 */
 	public get baseVal(): boolean {
 		const attributeValue = this[PropertySymbol.getAttribute]();
-		return attributeValue !== null;
+		return attributeValue === 'true';
 	}
 
 	/**
@@ -73,7 +73,8 @@ export default class SVGAnimatedBoolean {
 	 * @param value Base value.
 	 */
 	public set baseVal(value: boolean) {
-		const parsedValue = typeof value !== 'boolean' ? Boolean(value) : value;
-		this[PropertySymbol.setAttribute](parsedValue ? '' : null);
+		this[PropertySymbol.setAttribute](
+			typeof value !== 'boolean' ? String(Boolean(value)) : String(value)
+		);
 	}
 }

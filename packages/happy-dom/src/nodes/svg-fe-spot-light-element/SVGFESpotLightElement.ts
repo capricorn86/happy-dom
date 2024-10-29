@@ -144,7 +144,8 @@ export default class SVGFESpotLightElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('specularExponent'),
-					setAttribute: (value) => this.setAttribute('specularExponent', value)
+					setAttribute: (value) => this.setAttribute('specularExponent', value),
+					defaultValue: 1
 				}
 			);
 		}

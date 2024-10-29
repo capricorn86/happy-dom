@@ -10,6 +10,12 @@ import SVGGraphicsElement from '../svg-graphics-element/SVGGraphicsElement.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGGradientElement
  */
 export default class SVGGradientElement extends SVGGraphicsElement {
+	// Public static properties
+	public static readonly SVG_SPREADMETHOD_UNKNOWN = 0;
+	public static readonly SVG_SPREADMETHOD_PAD = 1;
+	public static readonly SVG_SPREADMETHOD_REFLECT = 2;
+	public static readonly SVG_SPREADMETHOD_REPEAT = 3;
+
 	// Internal properties
 	public [PropertySymbol.href]: SVGAnimatedString | null = null;
 	public [PropertySymbol.gradientUnits]: SVGAnimatedEnumeration | null = null;

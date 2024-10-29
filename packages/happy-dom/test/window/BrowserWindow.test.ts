@@ -169,7 +169,9 @@ describe('BrowserWindow', () => {
 
 		for (const tagName of Object.keys(SVGElementConfig)) {
 			it(`Exposes the SVG element class "${SVGElementConfig[tagName]}" for tag name "${tagName}"`, () => {
-				expect(window[SVGElementConfig[tagName]].name).toBe(SVGElementConfig[tagName]);
+				expect(window[SVGElementConfig[tagName].className].name).toBe(
+					SVGElementConfig[tagName].className
+				);
 			});
 		}
 	});

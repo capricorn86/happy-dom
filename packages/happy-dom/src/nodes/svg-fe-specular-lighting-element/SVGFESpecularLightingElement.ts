@@ -130,7 +130,8 @@ export default class SVGFESpecularLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('specularConstant'),
-					setAttribute: (value) => this.setAttribute('specularConstant', value)
+					setAttribute: (value) => this.setAttribute('specularConstant', value),
+					defaultValue: 1
 				}
 			);
 		}
@@ -149,7 +150,8 @@ export default class SVGFESpecularLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('specularExponent'),
-					setAttribute: (value) => this.setAttribute('specularExponent', value)
+					setAttribute: (value) => this.setAttribute('specularExponent', value),
+					defaultValue: 1
 				}
 			);
 		}
@@ -168,7 +170,8 @@ export default class SVGFESpecularLightingElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('surfaceScale'),
-					setAttribute: (value) => this.setAttribute('surfaceScale', value)
+					setAttribute: (value) => this.setAttribute('surfaceScale', value),
+					defaultValue: 1
 				}
 			);
 		}

@@ -157,7 +157,6 @@ import HTMLVideoElement from './nodes/html-video-element/HTMLVideoElement.js';
 import Node from './nodes/node/Node.js';
 import ProcessingInstruction from './nodes/processing-instruction/ProcessingInstruction.js';
 import ShadowRoot from './nodes/shadow-root/ShadowRoot.js';
-import SVGDocument from './nodes/svg-document/SVGDocument.js';
 import SVGElement from './nodes/svg-element/SVGElement.js';
 import SVGGraphicsElement from './nodes/svg-graphics-element/SVGGraphicsElement.js';
 import SVGSVGElement from './nodes/svg-svg-element/SVGSVGElement.js';
@@ -391,7 +390,6 @@ export {
 	ShadowRoot,
 	Storage,
 	SubmitEvent,
-	SVGDocument,
 	SVGElement,
 	SVGGraphicsElement,
 	SVGSVGElement,

@@ -174,7 +174,6 @@ import Node from '../nodes/node/Node.js';
 import NodeList from '../nodes/node/NodeList.js';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction.js';
 import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
-import SVGDocument from '../nodes/svg-document/SVGDocument.js';
 import SVGElement from '../nodes/svg-element/SVGElement.js';
 import Text from '../nodes/text/Text.js';
 import XMLDocument from '../nodes/xml-document/XMLDocument.js';
@@ -303,6 +302,8 @@ import SVGRect from '../svg/SVGRect.js';
 import SVGStringList from '../svg/SVGStringList.js';
 import SVGTransform from '../svg/SVGTransform.js';
 import SVGTransformList from '../svg/SVGTransformList.js';
+import SVGUnitTypes from '../svg/SVGUnitTypes.js';
+import DOMPoint from '../dom/DOMPoint.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -361,7 +362,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare readonly Document: typeof Document;
 	public declare readonly HTMLDocument: typeof HTMLDocument;
 	public declare readonly XMLDocument: typeof XMLDocument;
-	public declare readonly SVGDocument: typeof SVGDocument;
 	public declare readonly DocumentFragment: typeof DocumentFragment;
 	public declare readonly Text: typeof Text;
 	public declare readonly Comment: typeof Comment;
@@ -575,7 +575,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare readonly NodeIterator: typeof NodeIterator;
 	public declare readonly TreeWalker: typeof TreeWalker;
 	public declare readonly MutationObserver: typeof MutationObserver;
-	public declare readonly CSSStyleDeclaration: typeof CSSStyleDeclaration;
 	public declare readonly MessagePort: typeof MessagePort;
 	public declare readonly DataTransfer: typeof DataTransfer;
 	public declare readonly DataTransferItem: typeof DataTransferItem;
@@ -621,6 +620,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly MutationRecord = MutationRecord;
 	public readonly IntersectionObserver = IntersectionObserver;
 	public readonly IntersectionObserverEntry = IntersectionObserverEntry;
+	public readonly CSSStyleDeclaration = CSSStyleDeclaration;
 	public readonly CSSRule = CSSRule;
 	public readonly CSSContainerRule = CSSContainerRule;
 	public readonly CSSFontFaceRule = CSSFontFaceRule;
@@ -676,6 +676,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly SVGStringList = SVGStringList;
 	public readonly SVGTransform = SVGTransform;
 	public readonly SVGTransformList = SVGTransformList;
+	public readonly SVGUnitTypes = SVGUnitTypes;
+	public readonly DOMPoint = DOMPoint;
 	public readonly Window = <typeof BrowserWindow>this.constructor;
 
 	// Node.js Classes
@@ -1116,7 +1118,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 */
 	public getComputedStyle(element: Element): CSSStyleDeclaration {
 		element[PropertySymbol.computedStyle] =
-			element[PropertySymbol.computedStyle] || new CSSStyleDeclaration(element, true);
+			element[PropertySymbol.computedStyle] ||
+			new CSSStyleDeclaration(PropertySymbol.illegalConstructor, this, { element, computed: true });
 		return element[PropertySymbol.computedStyle];
 	}
 

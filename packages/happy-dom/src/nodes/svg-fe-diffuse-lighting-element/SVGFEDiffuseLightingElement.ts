@@ -10,12 +10,6 @@ import SVGAnimatedNumber from '../../svg/SVGAnimatedNumber.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGFEDiffuseLightingElement
  */
 export default class SVGFEDiffuseLightingElement extends SVGElement {
-	// Static properties
-	public static SVG_EDGEMODE_UNKNOWN = 0;
-	public static SVG_EDGEMODE_DUPLICATE = 1;
-	public static SVG_EDGEMODE_WRAP = 2;
-	public static SVG_EDGEMODE_NONE = 3;
-
 	// Internal properties
 	public [PropertySymbol.diffuseConstant]: SVGAnimatedNumber | null = null;
 	public [PropertySymbol.height]: SVGAnimatedLength | null = null;

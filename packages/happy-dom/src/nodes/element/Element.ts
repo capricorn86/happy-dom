@@ -921,7 +921,7 @@ export default class Element
 	 */
 	public getClientRects(): DOMRectList {
 		// TODO: Not full implementation
-		const domRectList = new DOMRectList();
+		const domRectList = new DOMRectList(PropertySymbol.illegalConstructor);
 		domRectList.push(this.getBoundingClientRect());
 		return domRectList;
 	}
@@ -1354,11 +1354,6 @@ export default class Element
 			this.#addIdentifierToWindow(attribute[PropertySymbol.value]);
 		}
 
-		if (this[PropertySymbol.cache].style) {
-			this[PropertySymbol.cache].style.result = null;
-			this[PropertySymbol.cache].style = null;
-		}
-
 		if (
 			this.attributeChangedCallback &&
 			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes] &&
@@ -1409,11 +1404,6 @@ export default class Element
 
 		if (removedAttribute[PropertySymbol.name] === 'id' && this[PropertySymbol.isConnected]) {
 			this.#removeIdentifierFromWindow(removedAttribute[PropertySymbol.value]);
-		}
-
-		if (this[PropertySymbol.cache].style) {
-			this[PropertySymbol.cache].style.result = null;
-			this[PropertySymbol.cache].style = null;
 		}
 
 		if (

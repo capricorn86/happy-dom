@@ -79,7 +79,8 @@ export default class SVGComponentTransferFunctionElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('slope'),
-					setAttribute: (value) => this.setAttribute('slope', value)
+					setAttribute: (value) => this.setAttribute('slope', value),
+					defaultValue: 1
 				}
 			);
 		}
@@ -117,7 +118,8 @@ export default class SVGComponentTransferFunctionElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('amplitude'),
-					setAttribute: (value) => this.setAttribute('amplitude', value)
+					setAttribute: (value) => this.setAttribute('amplitude', value),
+					defaultValue: 1
 				}
 			);
 		}
@@ -136,7 +138,8 @@ export default class SVGComponentTransferFunctionElement extends SVGElement {
 				this[PropertySymbol.window],
 				{
 					getAttribute: () => this.getAttribute('exponent'),
-					setAttribute: (value) => this.setAttribute('exponent', value)
+					setAttribute: (value) => this.setAttribute('exponent', value),
+					defaultValue: 1
 				}
 			);
 		}

@@ -128,8 +128,9 @@ export default class SVGFEDropShadowElement extends SVGElement {
 				PropertySymbol.illegalConstructor,
 				this[PropertySymbol.window],
 				{
-					getAttribute: () => this.getAttribute('stdDeviationX') || '2',
-					setAttribute: (value) => this.setAttribute('stdDeviationX', value)
+					getAttribute: () => this.getAttribute('stdDeviationX'),
+					setAttribute: (value) => this.setAttribute('stdDeviationX', value),
+					defaultValue: 2
 				}
 			);
 		}
@@ -147,8 +148,9 @@ export default class SVGFEDropShadowElement extends SVGElement {
 				PropertySymbol.illegalConstructor,
 				this[PropertySymbol.window],
 				{
-					getAttribute: () => this.getAttribute('stdDeviationY') || '2',
-					setAttribute: (value) => this.setAttribute('stdDeviationY', value)
+					getAttribute: () => this.getAttribute('stdDeviationY'),
+					setAttribute: (value) => this.setAttribute('stdDeviationY', value),
+					defaultValue: 2
 				}
 			);
 		}

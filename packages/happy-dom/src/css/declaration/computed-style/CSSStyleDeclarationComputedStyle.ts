@@ -30,9 +30,8 @@ type IStyleAndElement = {
 /**
  * CSS Style Declaration utility
  */
-export default class CSSStyleDeclarationElementStyle {
+export default class CSSStyleDeclarationComputedStyle {
 	private element: Element;
-	private computed: boolean;
 
 	/**
 	 * Constructor.
@@ -40,44 +39,8 @@ export default class CSSStyleDeclarationElementStyle {
 	 * @param element Element.
 	 * @param [computed] Computed.
 	 */
-	constructor(element: Element, computed = false) {
+	constructor(element: Element) {
 		this.element = element;
-		this.computed = computed;
-	}
-
-	/**
-	 * Returns element style properties.
-	 *
-	 * @returns Element style properties.
-	 */
-	public getElementStyle(): CSSStyleDeclarationPropertyManager {
-		if (this.computed) {
-			return this.getComputedElementStyle();
-		}
-
-		const cachedResult = this.element[PropertySymbol.cache].style;
-
-		if (cachedResult?.result) {
-			const result = cachedResult.result.deref();
-			if (result) {
-				return result;
-			}
-		}
-
-		const cssText =
-			this.element[PropertySymbol.attributes][PropertySymbol.namedItems].get('style')?.[
-				PropertySymbol.value
-			];
-
-		if (cssText) {
-			const propertyManager = new CSSStyleDeclarationPropertyManager({ cssText });
-			this.element[PropertySymbol.cache].style = {
-				result: new WeakRef(propertyManager)
-			};
-			return propertyManager;
-		}
-
-		return new CSSStyleDeclarationPropertyManager();
 	}
 
 	/**
@@ -86,7 +49,7 @@ export default class CSSStyleDeclarationElementStyle {
 	 * @param element Element.
 	 * @returns Style sheets.
 	 */
-	private getComputedElementStyle(): CSSStyleDeclarationPropertyManager {
+	public getComputedStyle(): CSSStyleDeclarationPropertyManager {
 		const documentElements: Array<IStyleAndElement> = [];
 		const parentElements: Array<IStyleAndElement> = [];
 		let styleAndElement: IStyleAndElement = {

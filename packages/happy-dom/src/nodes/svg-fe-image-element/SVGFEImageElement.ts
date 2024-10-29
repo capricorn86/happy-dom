@@ -21,22 +21,21 @@ export default class SVGFEImageElement extends SVGElement {
 	public [PropertySymbol.y]: SVGAnimatedLength | null = null;
 
 	/**
-	 * Returns crossOrigin.
+	 * Returns "crossorigin" attribute.
 	 *
-	 * @returns CrossOrigin.
+	 * @returns Cross origin.
 	 */
-	public get crossOrigin(): SVGAnimatedString {
-		if (!this[PropertySymbol.crossOrigin]) {
-			this[PropertySymbol.crossOrigin] = new SVGAnimatedString(
-				PropertySymbol.illegalConstructor,
-				this[PropertySymbol.window],
-				{
-					getAttribute: () => this.getAttribute('crossOrigin'),
-					setAttribute: (value) => this.setAttribute('crossOrigin', value)
-				}
-			);
-		}
-		return this[PropertySymbol.crossOrigin];
+	public get crossOrigin(): string {
+		return this.getAttribute('crossorigin');
+	}
+
+	/**
+	 * Sets "crossorigin" attribute.
+	 *
+	 * @param value Cross origin.
+	 */
+	public set crossOrigin(value: string) {
+		this.setAttribute('crossorigin', value);
 	}
 
 	/**

@@ -50,6 +50,20 @@ describe('SVGNumberList', () => {
 
 			expect(list[3]).toBeUndefined();
 		});
+
+		it('Handles comma and line break as separator', () => {
+			const list = new window.SVGNumberList(PropertySymbol.illegalConstructor, window, {
+				getAttribute: () => `1,2.2	
+                3`,
+				setAttribute: () => {}
+			});
+
+			expect(list[0].value).toBe(1);
+			expect(list[1].value).toBe(2.2);
+			expect(list[2].value).toBe(3);
+
+			expect(list[3]).toBeUndefined();
+		});
 	});
 
 	describe('get length()', () => {
@@ -112,7 +126,7 @@ describe('SVGNumberList', () => {
 			list.clear();
 
 			expect(list.length).toBe(0);
-			expect(attribute).toBe(null);
+			expect(attribute).toBe('');
 
 			// Make sure that the item is disconnected from the list.
 			expect(item1.value).toBe(1);
@@ -120,7 +134,7 @@ describe('SVGNumberList', () => {
 
 			expect(item1.value).toBe(10);
 			expect(list.length).toBe(0);
-			expect(attribute).toBe(null);
+			expect(attribute).toBe('');
 		});
 	});
 

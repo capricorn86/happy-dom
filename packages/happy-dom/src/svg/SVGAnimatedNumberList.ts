@@ -53,8 +53,9 @@ export default class SVGAnimatedNumberList {
 				PropertySymbol.illegalConstructor,
 				this[PropertySymbol.window],
 				{
+					readOnly: true,
 					getAttribute: this[PropertySymbol.getAttribute],
-					setAttribute: this[PropertySymbol.setAttribute]
+					setAttribute: () => {}
 				}
 			);
 		}
@@ -81,9 +82,8 @@ export default class SVGAnimatedNumberList {
 				PropertySymbol.illegalConstructor,
 				this[PropertySymbol.window],
 				{
-					readOnly: true,
 					getAttribute: this[PropertySymbol.getAttribute],
-					setAttribute: () => {}
+					setAttribute: this[PropertySymbol.setAttribute]
 				}
 			);
 		}

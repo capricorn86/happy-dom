@@ -65,7 +65,7 @@ export default class SVGAngle {
 		const attributeValue = this[PropertySymbol.getAttribute]
 			? this[PropertySymbol.getAttribute]()
 			: this[PropertySymbol.attributeValue];
-		const match = attributeValue.match(ATTRIBUTE_REGEXP);
+		const match = attributeValue?.match(ATTRIBUTE_REGEXP);
 
 		if (!match) {
 			return SVGAngleTypeEnum.unknown;
@@ -100,7 +100,7 @@ export default class SVGAngle {
 		const attributeValue = this[PropertySymbol.getAttribute]
 			? this[PropertySymbol.getAttribute]()
 			: this[PropertySymbol.attributeValue];
-		const match = attributeValue.match(ATTRIBUTE_REGEXP);
+		const match = attributeValue?.match(ATTRIBUTE_REGEXP);
 
 		if (!match) {
 			return 0;

@@ -162,7 +162,7 @@ describe('SVGTransformList', () => {
 			list.clear();
 
 			expect(list.length).toBe(0);
-			expect(attribute).toBe(null);
+			expect(attribute).toBe('');
 
 			// Make sure that the item is disconnected from the list.
 			expect(item1.matrix.a).toBe(1);
@@ -191,7 +191,7 @@ describe('SVGTransformList', () => {
 			expect(item1.matrix.f).toBe(60);
 
 			expect(list.length).toBe(0);
-			expect(attribute).toBe(null);
+			expect(attribute).toBe('');
 		});
 	});
 

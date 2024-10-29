@@ -11,22 +11,7 @@ import HTMLElement from '../html-element/HTMLElement.js';
 export default class HTMLStyleElement extends HTMLElement {
 	private [PropertySymbol.sheet]: CSSStyleSheet | null = null;
 	public [PropertySymbol.styleNode] = this;
-
-	/**
-	 * Returns CSS style sheet.
-	 *
-	 * @returns CSS style sheet.
-	 */
-	public get sheet(): CSSStyleSheet {
-		if (!this[PropertySymbol.isConnected]) {
-			return null;
-		}
-		if (!this[PropertySymbol.sheet]) {
-			this[PropertySymbol.sheet] = new CSSStyleSheet();
-			this[PropertySymbol.sheet].replaceSync(this.textContent);
-		}
-		return this[PropertySymbol.sheet];
-	}
+	public [PropertySymbol.disabled] = false;
 
 	/**
 	 * Returns media.
@@ -49,6 +34,7 @@ export default class HTMLStyleElement extends HTMLElement {
 	/**
 	 * Returns type.
 	 *
+	 * @deprecated
 	 * @returns Type.
 	 */
 	public get type(): string {
@@ -58,6 +44,7 @@ export default class HTMLStyleElement extends HTMLElement {
 	/**
 	 * Sets type.
 	 *
+	 * @deprecated
 	 * @param type Type.
 	 */
 	public set type(type: string) {
@@ -70,7 +57,7 @@ export default class HTMLStyleElement extends HTMLElement {
 	 * @returns Disabled.
 	 */
 	public get disabled(): boolean {
-		return this.getAttribute('disabled') !== null;
+		return this[PropertySymbol.disabled];
 	}
 
 	/**
@@ -79,11 +66,23 @@ export default class HTMLStyleElement extends HTMLElement {
 	 * @param disabled Disabled.
 	 */
 	public set disabled(disabled: boolean) {
-		if (!disabled) {
-			this.removeAttribute('disabled');
-		} else {
-			this.setAttribute('disabled', '');
+		this[PropertySymbol.disabled] = Boolean(disabled);
+	}
+
+	/**
+	 * Returns CSS style sheet.
+	 *
+	 * @returns CSS style sheet.
+	 */
+	public get sheet(): CSSStyleSheet {
+		if (!this[PropertySymbol.isConnected]) {
+			return null;
 		}
+		if (!this[PropertySymbol.sheet]) {
+			this[PropertySymbol.sheet] = new CSSStyleSheet();
+			this[PropertySymbol.sheet].replaceSync(this.textContent);
+		}
+		return this[PropertySymbol.sheet];
 	}
 
 	/**

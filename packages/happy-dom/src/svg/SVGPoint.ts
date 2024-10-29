@@ -1,7 +1,7 @@
 import * as PropertySymbol from '../PropertySymbol.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 
-const ATTRIBUTE_SEPARATOR_REGEXP = /[\t\f\n\r ]+/;
+const ATTRIBUTE_SEPARATOR_REGEXP = /[\t\f\n\r, ]+/;
 
 /**
  * SVG point.

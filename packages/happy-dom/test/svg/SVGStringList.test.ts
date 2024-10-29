@@ -99,7 +99,7 @@ describe('SVGStringList', () => {
 			list.clear();
 
 			expect(list.length).toBe(0);
-			expect(attribute).toBe(null);
+			expect(attribute).toBe('');
 		});
 	});
 

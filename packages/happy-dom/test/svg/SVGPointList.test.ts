@@ -53,6 +53,25 @@ describe('SVGPointList', () => {
 
 			expect(list[3]).toBeUndefined();
 		});
+
+		it('Handles comma and line break as separator', () => {
+			const list = new window.SVGPointList(PropertySymbol.illegalConstructor, window, {
+				getAttribute: () => `1,2.2 3,4	5	
+                6`,
+				setAttribute: () => {}
+			});
+
+			expect(list[0].x).toBe(1);
+			expect(list[0].y).toBe(2.2);
+
+			expect(list[1].x).toBe(3);
+			expect(list[1].y).toBe(4);
+
+			expect(list[2].x).toBe(5);
+			expect(list[2].y).toBe(6);
+
+			expect(list[3]).toBeUndefined();
+		});
 	});
 
 	describe('get length()', () => {
@@ -118,7 +137,7 @@ describe('SVGPointList', () => {
 			list.clear();
 
 			expect(list.length).toBe(0);
-			expect(attribute).toBe(null);
+			expect(attribute).toBe('');
 
 			// Make sure that the item is disconnected from the list.
 			expect(item1.x).toBe(1);
@@ -129,7 +148,7 @@ describe('SVGPointList', () => {
 			expect(item1.x).toBe(10);
 			expect(item1.y).toBe(20);
 			expect(list.length).toBe(0);
-			expect(attribute).toBe(null);
+			expect(attribute).toBe('');
 		});
 	});
 

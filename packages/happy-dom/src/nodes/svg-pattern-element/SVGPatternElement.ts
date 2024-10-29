@@ -102,44 +102,6 @@ export default class SVGPatternElement extends SVGElement {
 	}
 
 	/**
-	 * Returns x position.
-	 *
-	 * @returns X position.
-	 */
-	public get x(): SVGAnimatedLength {
-		if (!this[PropertySymbol.x]) {
-			this[PropertySymbol.x] = new SVGAnimatedLength(
-				PropertySymbol.illegalConstructor,
-				this[PropertySymbol.window],
-				{
-					getAttribute: () => this.getAttribute('x'),
-					setAttribute: (value) => this.setAttribute('x', value)
-				}
-			);
-		}
-		return this[PropertySymbol.x];
-	}
-
-	/**
-	 * Returns y position.
-	 *
-	 * @returns Y position.
-	 */
-	public get y(): SVGAnimatedLength {
-		if (!this[PropertySymbol.y]) {
-			this[PropertySymbol.y] = new SVGAnimatedLength(
-				PropertySymbol.illegalConstructor,
-				this[PropertySymbol.window],
-				{
-					getAttribute: () => this.getAttribute('y'),
-					setAttribute: (value) => this.setAttribute('y', value)
-				}
-			);
-		}
-		return this[PropertySymbol.y];
-	}
-
-	/**
 	 * Returns width.
 	 *
 	 * @returns Width.
@@ -175,5 +137,43 @@ export default class SVGPatternElement extends SVGElement {
 			);
 		}
 		return this[PropertySymbol.height];
+	}
+
+	/**
+	 * Returns x position.
+	 *
+	 * @returns X position.
+	 */
+	public get x(): SVGAnimatedLength {
+		if (!this[PropertySymbol.x]) {
+			this[PropertySymbol.x] = new SVGAnimatedLength(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('x'),
+					setAttribute: (value) => this.setAttribute('x', value)
+				}
+			);
+		}
+		return this[PropertySymbol.x];
+	}
+
+	/**
+	 * Returns y position.
+	 *
+	 * @returns Y position.
+	 */
+	public get y(): SVGAnimatedLength {
+		if (!this[PropertySymbol.y]) {
+			this[PropertySymbol.y] = new SVGAnimatedLength(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('y'),
+					setAttribute: (value) => this.setAttribute('y', value)
+				}
+			);
+		}
+		return this[PropertySymbol.y];
 	}
 }

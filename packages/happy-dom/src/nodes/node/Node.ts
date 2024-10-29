@@ -93,7 +93,6 @@ export default class Node extends EventTarget {
 		elementsByTagNameNS: Map<string, ICachedElementsByTagNameResult>;
 		elementByTagName: Map<string, ICachedElementByTagNameResult>;
 		elementById: Map<string, ICachedElementByIdResult>;
-		style: ICachedStyleResult | null;
 		computedStyle: ICachedComputedStyleResult | null;
 	} = {
 		querySelector: new Map(),
@@ -103,7 +102,6 @@ export default class Node extends EventTarget {
 		elementsByTagNameNS: new Map(),
 		elementByTagName: new Map(),
 		elementById: new Map(),
-		style: null,
 		computedStyle: null
 	};
 	public [PropertySymbol.affectsCache]: ICachedResult[] = [];

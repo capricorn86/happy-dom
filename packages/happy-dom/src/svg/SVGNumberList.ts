@@ -4,7 +4,7 @@ import * as PropertySymbol from '../PropertySymbol.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import SVGNumber from './SVGNumber.js';
 
-const ATTRIBUTE_SEPARATOR_REGEXP = /[\t\f\n\r ]+/;
+const ATTRIBUTE_SEPARATOR_REGEXP = /[\t\f\n\r, ]+/;
 
 /**
  * SVGNumberList.

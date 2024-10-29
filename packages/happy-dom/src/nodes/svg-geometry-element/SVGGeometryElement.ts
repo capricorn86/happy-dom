@@ -1,6 +1,7 @@
 import SVGGraphicsElement from '../svg-graphics-element/SVGGraphicsElement.js';
 import SVGAnimatedNumber from '../../svg/SVGAnimatedNumber.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
+import SVGPoint from '../../svg/SVGPoint.js';
 
 /**
  * SVG Geometry Element.
@@ -35,10 +36,15 @@ export default class SVGGeometryElement extends SVGGraphicsElement {
 	 *
 	 * Not implemented yet.
 	 *
-	 * @param _domPoint DOM point.
+	 * @param point Point.
 	 * @returns True if the point is in the fill of the element.
 	 */
-	public isPointInFill(_domPoint: object): boolean {
+	public isPointInFill(point: SVGPoint): boolean {
+		if (!(point instanceof SVGPoint)) {
+			throw new TypeError(
+				`Failed to execute 'isPointInFill' on 'SVGGeometryElement': parameter 1 is not of type 'SVGPoint'.`
+			);
+		}
 		// TODO: Implement isPointInFill()
 		return false;
 	}
@@ -48,10 +54,15 @@ export default class SVGGeometryElement extends SVGGraphicsElement {
 	 *
 	 * Not implemented yet.
 	 *
-	 * @param _domPoint DOM point.
+	 * @param point Point.
 	 * @returns True if the point is in the stroke of the element.
 	 */
-	public isPointInStroke(_domPoint: object): boolean {
+	public isPointInStroke(point: SVGPoint): boolean {
+		if (!(point instanceof SVGPoint)) {
+			throw new TypeError(
+				`Failed to execute 'isPointInFill' on 'SVGGeometryElement': parameter 1 is not of type 'SVGPoint'.`
+			);
+		}
 		// TODO: Implement isPointInStroke()
 		return false;
 	}
@@ -76,8 +87,8 @@ export default class SVGGeometryElement extends SVGGraphicsElement {
 	 * @param _distance Distance.
 	 * @returns Point at length.
 	 */
-	public getPointAtLength(_distance: number): object {
+	public getPointAtLength(_distance: number): SVGPoint {
 		// TODO: Implement getPointAtLength()
-		return {};
+		return new SVGPoint(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
 	}
 }

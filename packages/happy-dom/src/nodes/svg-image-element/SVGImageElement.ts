@@ -19,6 +19,24 @@ export default class SVGImageElement extends SVGGraphicsElement {
 	public [PropertySymbol.height]: SVGAnimatedLength | null = null;
 
 	/**
+	 * Returns "crossorigin" attribute.
+	 *
+	 * @returns Cross origin.
+	 */
+	public get crossOrigin(): string {
+		return this.getAttribute('crossorigin');
+	}
+
+	/**
+	 * Sets "crossorigin" attribute.
+	 *
+	 * @param value Cross origin.
+	 */
+	public set crossOrigin(value: string) {
+		this.setAttribute('crossorigin', value);
+	}
+
+	/**
 	 * Returns href.
 	 *
 	 * @returns Href.
@@ -55,6 +73,15 @@ export default class SVGImageElement extends SVGGraphicsElement {
 	}
 
 	/**
+	 * Sets decoding.
+	 *
+	 * @param value Decoding.
+	 */
+	public set decoding(value: string) {
+		this.setAttribute('decoding', value);
+	}
+
+	/**
 	 * Returns preserve aspect ratio.
 	 *
 	 * @returns Preserve aspect ratio.
@@ -74,12 +101,41 @@ export default class SVGImageElement extends SVGGraphicsElement {
 	}
 
 	/**
-	 * Sets decoding.
+	 * Returns height.
 	 *
-	 * @param value Decoding.
+	 * @returns Height.
 	 */
-	public set decoding(value: string) {
-		this.setAttribute('decoding', value);
+	public get height(): SVGAnimatedLength {
+		if (!this[PropertySymbol.height]) {
+			this[PropertySymbol.height] = new SVGAnimatedLength(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('height'),
+					setAttribute: (value) => this.setAttribute('height', value)
+				}
+			);
+		}
+		return this[PropertySymbol.height];
+	}
+
+	/**
+	 * Returns width.
+	 *
+	 * @returns Width.
+	 */
+	public get width(): SVGAnimatedLength {
+		if (!this[PropertySymbol.width]) {
+			this[PropertySymbol.width] = new SVGAnimatedLength(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('width'),
+					setAttribute: (value) => this.setAttribute('width', value)
+				}
+			);
+		}
+		return this[PropertySymbol.width];
 	}
 
 	/**
@@ -121,49 +177,12 @@ export default class SVGImageElement extends SVGGraphicsElement {
 	}
 
 	/**
-	 * Returns width.
-	 *
-	 * @returns Width.
-	 */
-	public get width(): SVGAnimatedLength {
-		if (!this[PropertySymbol.width]) {
-			this[PropertySymbol.width] = new SVGAnimatedLength(
-				PropertySymbol.illegalConstructor,
-				this[PropertySymbol.window],
-				{
-					getAttribute: () => this.getAttribute('width'),
-					setAttribute: (value) => this.setAttribute('width', value)
-				}
-			);
-		}
-		return this[PropertySymbol.width];
-	}
-
-	/**
-	 * Returns height.
-	 *
-	 * @returns Height.
-	 */
-	public get height(): SVGAnimatedLength {
-		if (!this[PropertySymbol.height]) {
-			this[PropertySymbol.height] = new SVGAnimatedLength(
-				PropertySymbol.illegalConstructor,
-				this[PropertySymbol.window],
-				{
-					getAttribute: () => this.getAttribute('height'),
-					setAttribute: (value) => this.setAttribute('height', value)
-				}
-			);
-		}
-		return this[PropertySymbol.height];
-	}
-
-	/**
 	 * Decodes the image.
 	 *
 	 * @returns Promise.
 	 */
 	public decode(): Promise<void> {
+		// TODO: Implement decode()
 		return Promise.resolve();
 	}
 }

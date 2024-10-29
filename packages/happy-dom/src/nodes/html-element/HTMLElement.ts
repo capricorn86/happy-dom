@@ -330,7 +330,11 @@ export default class HTMLElement extends Element {
 	 */
 	public get style(): CSSStyleDeclaration {
 		if (!this[PropertySymbol.style]) {
-			this[PropertySymbol.style] = new CSSStyleDeclaration(this);
+			this[PropertySymbol.style] = new CSSStyleDeclaration(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{ element: this }
+			);
 		}
 		return this[PropertySymbol.style];
 	}

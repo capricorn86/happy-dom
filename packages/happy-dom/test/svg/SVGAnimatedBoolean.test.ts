@@ -32,13 +32,22 @@ describe('SVGAnimatedBoolean', () => {
 	});
 
 	describe('get animVal()', () => {
-		it('Returns true if attribute is set to empty string', () => {
+		it('Returns true if attribute is set to "true', () => {
 			const animated = new window.SVGAnimatedBoolean(PropertySymbol.illegalConstructor, window, {
-				getAttribute: () => '',
+				getAttribute: () => 'true',
 				setAttribute: () => {}
 			});
 
 			expect(animated.animVal).toBe(true);
+		});
+
+		it('Returns false if attribute is set to "false"', () => {
+			const animated = new window.SVGAnimatedBoolean(PropertySymbol.illegalConstructor, window, {
+				getAttribute: () => 'false',
+				setAttribute: () => {}
+			});
+
+			expect(animated.animVal).toBe(false);
 		});
 
 		it('Returns false if attribute is set to null', () => {
@@ -65,13 +74,22 @@ describe('SVGAnimatedBoolean', () => {
 	});
 
 	describe('get baseVal()', () => {
-		it('Returns true if attribute is set to empty string', () => {
+		it('Returns true if attribute is set to "true', () => {
 			const animated = new window.SVGAnimatedBoolean(PropertySymbol.illegalConstructor, window, {
-				getAttribute: () => '',
+				getAttribute: () => 'true',
 				setAttribute: () => {}
 			});
 
 			expect(animated.baseVal).toBe(true);
+		});
+
+		it('Returns false if attribute is set to "false"', () => {
+			const animated = new window.SVGAnimatedBoolean(PropertySymbol.illegalConstructor, window, {
+				getAttribute: () => 'false',
+				setAttribute: () => {}
+			});
+
+			expect(animated.baseVal).toBe(false);
 		});
 
 		it('Returns false if attribute is set to null', () => {
@@ -93,7 +111,7 @@ describe('SVGAnimatedBoolean', () => {
 			});
 
 			animated.baseVal = true;
-			expect(attributeValue).toBe('');
+			expect(attributeValue).toBe('true');
 		});
 
 		it('Sets attribute to null if false', () => {
@@ -104,7 +122,7 @@ describe('SVGAnimatedBoolean', () => {
 			});
 
 			animated.baseVal = false;
-			expect(attributeValue).toBe(null);
+			expect(attributeValue).toBe('false');
 		});
 	});
 });
