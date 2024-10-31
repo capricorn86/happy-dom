@@ -11,6 +11,11 @@ import SVGRect from '../../svg/SVGRect.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGTextContentElement
  */
 export default class SVGTextContentElement extends SVGGraphicsElement {
+	// Public static properties
+	public static readonly LENGTHADJUST_UNKNOWN = 0;
+	public static readonly LENGTHADJUST_SPACING = 1;
+	public static readonly LENGTHADJUST_SPACINGANDGLYPHS = 2;
+
 	// Internal properties
 	public [PropertySymbol.textLength]: SVGAnimatedLength | null = null;
 	public [PropertySymbol.lengthAdjust]: SVGAnimatedEnumeration | null = null;
@@ -61,11 +66,8 @@ export default class SVGTextContentElement extends SVGGraphicsElement {
 	 * @returns Number of characters.
 	 */
 	public getNumberOfChars(): number {
-		if (!this[PropertySymbol.isConnected]) {
-			return 0;
-		}
-
-		return this.textContent.length;
+		// TODO: Implement.
+		return 0;
 	}
 
 	/**

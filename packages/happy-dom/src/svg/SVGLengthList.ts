@@ -466,6 +466,7 @@ export default class SVGLengthList {
 			const parts = trimmed.split(ATTRIBUTE_SEPARATOR_REGEXP);
 			for (let i = 0, max = parts.length; i < max; i++) {
 				const item = new SVGLength(PropertySymbol.illegalConstructor, this[PropertySymbol.window], {
+					readOnly: this[PropertySymbol.readOnly],
 					getAttribute: () => item[PropertySymbol.attributeValue],
 					setAttribute: (value: string) => {
 						item[PropertySymbol.attributeValue] = value;

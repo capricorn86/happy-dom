@@ -92,12 +92,12 @@ describe('SVGAnimatedTransformList', () => {
 			);
 
 			expect(attributeValue).toBe('');
-			const aspectRatio = animated.animVal;
+			const list = animated.animVal;
 			animated.animVal = new SVGTransformList(PropertySymbol.illegalConstructor, window, {
 				getAttribute: () => 'rotate(-10 50 100) translate(-36 45.5) skewX(40) scale(1 0.5)',
 				setAttribute: () => {}
 			});
-			expect(animated.animVal).toBe(aspectRatio);
+			expect(animated.animVal).toBe(list);
 			animated.animVal = <SVGTransformList>(
 				(<unknown>'rotate(-10 50 100) translate(-36 45.5) skewX(40) scale(1 0.5)')
 			);
@@ -161,12 +161,12 @@ describe('SVGAnimatedTransformList', () => {
 			);
 
 			expect(attributeValue).toBe('');
-			const aspectRatio = animated.baseVal;
+			const list = animated.baseVal;
 			animated.baseVal = new SVGTransformList(PropertySymbol.illegalConstructor, window, {
 				getAttribute: () => 'rotate(-10 50 100) translate(-36 45.5) skewX(40) scale(1 0.5)',
 				setAttribute: () => {}
 			});
-			expect(animated.baseVal).toBe(aspectRatio);
+			expect(animated.baseVal).toBe(list);
 			animated.baseVal = <SVGTransformList>(
 				(<unknown>'rotate(-10 50 100) translate(-36 45.5) skewX(40) scale(1 0.5)')
 			);

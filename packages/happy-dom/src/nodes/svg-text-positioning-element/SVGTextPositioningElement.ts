@@ -1,9 +1,7 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
-import SVGAnimatedLength from '../../svg/SVGAnimatedLength.js';
-import SVGAnimatedEnumeration from '../../svg/SVGAnimatedEnumeration.js';
-import SVGPoint from '../../svg/SVGPoint.js';
-import SVGRect from '../../svg/SVGRect.js';
 import SVGTextContentElement from '../svg-text-content-element/SVGTextContentElement.js';
+import SVGAnimatedLengthList from '../../svg/SVGAnimatedLengthList.js';
+import SVGAnimatedNumberList from '../../svg/SVGAnimatedNumberList.js';
 
 /**
  * SVG Text Positioning Element.
@@ -12,132 +10,104 @@ import SVGTextContentElement from '../svg-text-content-element/SVGTextContentEle
  */
 export default class SVGTextPositioningElement extends SVGTextContentElement {
 	// Internal properties
-	public [PropertySymbol.textLength]: SVGAnimatedLength | null = null;
-	public [PropertySymbol.lengthAdjust]: SVGAnimatedEnumeration | null = null;
-	public [PropertySymbol.x]: SVGAnimatedLength | null = null;
-	public [PropertySymbol.y]: SVGAnimatedLength | null = null;
+	public [PropertySymbol.x]: SVGAnimatedLengthList | null = null;
+	public [PropertySymbol.y]: SVGAnimatedLengthList | null = null;
+	public [PropertySymbol.dx]: SVGAnimatedLengthList | null = null;
+	public [PropertySymbol.dy]: SVGAnimatedLengthList | null = null;
+	public [PropertySymbol.rotate]: SVGAnimatedNumberList | null = null;
 
 	/**
-	 * Returns textLength.
+	 * Returns x.
 	 *
-	 * @returns Text length.
+	 * @returns X.
 	 */
-	public get textLength(): SVGAnimatedLength {
-		if (!this[PropertySymbol.textLength]) {
-			this[PropertySymbol.textLength] = new SVGAnimatedLength(
+	public get x(): SVGAnimatedLengthList {
+		if (!this[PropertySymbol.x]) {
+			this[PropertySymbol.x] = new SVGAnimatedLengthList(
 				PropertySymbol.illegalConstructor,
 				this[PropertySymbol.window],
 				{
-					getAttribute: () => this.getAttribute('textLength'),
-					setAttribute: (value) => this.setAttribute('textLength', value)
+					getAttribute: () => this.getAttribute('x'),
+					setAttribute: (value) => this.setAttribute('x', value)
 				}
 			);
 		}
-		return this[PropertySymbol.textLength];
+		return this[PropertySymbol.x];
 	}
 
 	/**
-	 * Returns lengthAdjust.
+	 * Returns y.
 	 *
-	 * @returns Length adjust.
+	 * @returns Y.
 	 */
-	public get lengthAdjust(): SVGAnimatedEnumeration {
-		if (!this[PropertySymbol.lengthAdjust]) {
-			this[PropertySymbol.lengthAdjust] = new SVGAnimatedEnumeration(
+	public get y(): SVGAnimatedLengthList {
+		if (!this[PropertySymbol.y]) {
+			this[PropertySymbol.y] = new SVGAnimatedLengthList(
 				PropertySymbol.illegalConstructor,
 				this[PropertySymbol.window],
 				{
-					getAttribute: () => this.getAttribute('lengthAdjust'),
-					setAttribute: (value) => this.setAttribute('lengthAdjust', value),
-					values: ['spacing', 'spacingAndGlyphs'],
-					defaultValue: 'spacing'
+					getAttribute: () => this.getAttribute('y'),
+					setAttribute: (value) => this.setAttribute('y', value)
 				}
 			);
 		}
-		return this[PropertySymbol.lengthAdjust];
+		return this[PropertySymbol.y];
 	}
 
 	/**
-	 * Returns the number of characters available for rendering.
+	 * Returns dx.
 	 *
-	 * @returns Number of characters.
+	 * @returns DX.
 	 */
-	public getNumberOfChars(): number {
-		if (!this[PropertySymbol.isConnected]) {
-			return 0;
+	public get dx(): SVGAnimatedLengthList {
+		if (!this[PropertySymbol.dx]) {
+			this[PropertySymbol.dx] = new SVGAnimatedLengthList(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('dx'),
+					setAttribute: (value) => this.setAttribute('dx', value)
+				}
+			);
 		}
-
-		return this.textContent.length;
+		return this[PropertySymbol.dx];
 	}
 
 	/**
-	 * Returns a float representing the computed length for the text within the element.
+	 * Returns dy.
 	 *
-	 * @returns Computed text length.
+	 * @returns DY.
 	 */
-	public getComputedTextLength(): number {
-		// TODO: Implement.
-		return 0;
+	public get dy(): SVGAnimatedLengthList {
+		if (!this[PropertySymbol.dy]) {
+			this[PropertySymbol.dy] = new SVGAnimatedLengthList(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('dy'),
+					setAttribute: (value) => this.setAttribute('dy', value)
+				}
+			);
+		}
+		return this[PropertySymbol.dy];
 	}
 
 	/**
-	 * Returns a float representing the computed length of the formatted text advance distance for a substring of text within the element. Note that this method only accounts for the widths of the glyphs in the substring and any extra spacing inserted by the CSS 'letter-spacing' and 'word-spacing' properties. Visual spacing adjustments made by the 'x' attribute is ignored.
+	 * Returns rotate.
 	 *
-	 * @param _charnum The index of the first character in the substring.
-	 * @param _nchars The number of characters in the substring.
+	 * @returns Rotate.
 	 */
-	public getSubStringLength(_charnum: number, _nchars: number): number {
-		// TODO: Implement.
-		return 0;
-	}
-
-	/**
-	 * Returns a SVGPoint representing the position of a typographic character after text layout has been performed.
-	 *
-	 * @param _charnum The index of the character.
-	 */
-	public getStartPositionOfChar(_charnum: number): SVGPoint {
-		// TODO: Implement.
-		return new SVGPoint(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
-	}
-
-	/**
-	 * Returns a SVGPoint representing the trailing position of a typographic character after text layout has been performed.
-	 *
-	 * @param _charnum The index of the character.
-	 */
-	public getEndPositionOfChar(_charnum: number): SVGPoint {
-		// TODO: Implement.
-		return new SVGPoint(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
-	}
-
-	/**
-	 * Returns a SVGRect representing the computed tight bounding box of the glyph cell that corresponds to a given typographic character.
-	 *
-	 * @param _charnum The index of the character.
-	 */
-	public getExtentOfChar(_charnum: number): SVGRect {
-		// TODO: Implement.
-		return new SVGRect(PropertySymbol.illegalConstructor, this[PropertySymbol.window]);
-	}
-
-	/**
-	 * Returns a float representing the rotation of typographic character.
-	 *
-	 * @param _charnum The index of the character.
-	 */
-	public getRotationOfChar(_charnum: number): number {
-		// TODO: Implement.
-		return 0;
-	}
-
-	/**
-	 * Returns a long representing the character which caused a text glyph to be rendered at a given position in the coordinate system. Because the relationship between characters and glyphs is not one-to-one, only the first character of the relevant typographic character is returned
-	 *
-	 * @param _point The point to be tested.
-	 */
-	public getCharNumAtPosition(_point: SVGPoint): number {
-		// TODO: Implement.
-		return 0;
+	public get rotate(): SVGAnimatedNumberList {
+		if (!this[PropertySymbol.rotate]) {
+			this[PropertySymbol.rotate] = new SVGAnimatedNumberList(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{
+					getAttribute: () => this.getAttribute('rotate'),
+					setAttribute: (value) => this.setAttribute('rotate', value)
+				}
+			);
+		}
+		return this[PropertySymbol.rotate];
 	}
 }
