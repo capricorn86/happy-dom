@@ -1,4 +1,3 @@
-import XMLParser from '../../xml-parser/XMLParser.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import Document from '../document/Document.js';
@@ -19,17 +18,14 @@ export default class ParentNodeUtility {
 	 * @param parentNode Parent node.
 	 * @param nodes List of Node or DOMString.
 	 */
-	public static append(
-		parentNode: Element | Document | DocumentFragment,
-		...nodes: (Node | string)[]
-	): void {
+	public static append(parentNode: Element | Document | DocumentFragment, ...nodes: any[]): void {
 		for (const node of nodes) {
-			if (typeof node === 'string') {
-				XMLParser.parse(<Document>parentNode[PropertySymbol.ownerDocument], node, {
-					rootNode: parentNode
-				});
-			} else {
+			if (node instanceof Node) {
 				parentNode.appendChild(node);
+			} else {
+				parentNode.appendChild(
+					parentNode[PropertySymbol.ownerDocument].createTextNode(String(node))
+				);
 			}
 		}
 	}
@@ -46,17 +42,13 @@ export default class ParentNodeUtility {
 	): void {
 		const firstChild = parentNode.firstChild;
 		for (const node of nodes) {
-			if (typeof node === 'string') {
-				const childNodes = XMLParser.parse(
-					<Document>parentNode[PropertySymbol.ownerDocument],
-					node
-				)[PropertySymbol.nodeArray];
-
-				while (childNodes.length) {
-					parentNode.insertBefore(childNodes[0], firstChild);
-				}
-			} else {
+			if (node instanceof Node) {
 				parentNode.insertBefore(node, firstChild);
+			} else {
+				parentNode.insertBefore(
+					parentNode[PropertySymbol.ownerDocument].createTextNode(String(node)),
+					firstChild
+				);
 			}
 		}
 	}

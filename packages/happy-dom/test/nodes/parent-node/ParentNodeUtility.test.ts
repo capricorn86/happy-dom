@@ -38,23 +38,22 @@ describe('ParentNodeUtility', () => {
 		it('Appends a mixed list of Node and DOMString after the last child of the ParentNode', () => {
 			const parent = document.createElement('div');
 			const newChildrenParent = document.createElement('div');
-			const newChildrenHtml =
-				'<span class="child4"></span><span class="child5"></span><span class="child6"></span>';
+			const newTextChildContent = '<span class="child4"></span>'; // this should not be parsed as HTML!
 			newChildrenParent.innerHTML =
-				'<span class="child7"></span><span class="child8"></span><span class="child9"></span>';
+				'<span class="child5"></span><span class="child6"></span><span class="child7"></span>';
 			parent.innerHTML =
 				'<span class="child1"></span><span class="child2"></span><span class="child3"></span>';
 
-			ParentNodeUtility.append(parent, ...[newChildrenHtml, ...newChildrenParent.children]);
+			ParentNodeUtility.append(parent, ...[newTextChildContent, ...newChildrenParent.children]);
 			expect(parent.innerHTML).toBe(
-				'<span class="child1"></span><span class="child2"></span><span class="child3"></span><span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
+				'<span class="child1"></span><span class="child2"></span><span class="child3"></span>&lt;span class="child4"&gt;&lt;/span&gt;<span class="child5"></span><span class="child6"></span><span class="child7"></span>'
 			);
 			expect(
 				Array.from(parent.children)
 					.map((element) => element.outerHTML)
 					.join('')
 			).toBe(
-				'<span class="child1"></span><span class="child2"></span><span class="child3"></span><span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
+				'<span class="child1"></span><span class="child2"></span><span class="child3"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span>'
 			);
 		});
 	});
@@ -83,23 +82,22 @@ describe('ParentNodeUtility', () => {
 		it('Prepends a mixed list of Node and DOMString before the first child of the ParentNode', () => {
 			const parent = document.createElement('div');
 			const newChildrenParent = document.createElement('div');
-			const newChildrenHtml =
-				'<span class="child4"></span><span class="child5"></span><span class="child6"></span>';
+			const newTextChildContent = '<span class="child4"></span>'; // this should not be parsed as HTML!
 			newChildrenParent.innerHTML =
-				'<span class="child7"></span><span class="child8"></span><span class="child9"></span>';
+				'<span class="child5"></span><span class="child6"></span><span class="child7"></span>';
 			parent.innerHTML =
 				'<span class="child1"></span><span class="child2"></span><span class="child3"></span>';
 
-			ParentNodeUtility.prepend(parent, ...[newChildrenHtml, ...newChildrenParent.children]);
+			ParentNodeUtility.prepend(parent, ...[newTextChildContent, ...newChildrenParent.children]);
 			expect(parent.innerHTML).toBe(
-				'<span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span><span class="child1"></span><span class="child2"></span><span class="child3"></span>'
+				'&lt;span class="child4"&gt;&lt;/span&gt;<span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child1"></span><span class="child2"></span><span class="child3"></span>'
 			);
 			expect(
 				Array.from(parent.children)
 					.map((element) => element.outerHTML)
 					.join('')
 			).toBe(
-				'<span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span><span class="child1"></span><span class="child2"></span><span class="child3"></span>'
+				'<span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child1"></span><span class="child2"></span><span class="child3"></span>'
 			);
 		});
 	});
@@ -108,26 +106,25 @@ describe('ParentNodeUtility', () => {
 		it('Replaces the existing children of a ParentNode with a mixed list of Node and DOMString.', () => {
 			const parent = document.createElement('div');
 			const newChildrenParent = document.createElement('div');
-			const newChildrenHtml =
-				'<span class="child4"></span><span class="child5"></span><span class="child6"></span>';
+			const newTextChildContent = '<span class="child4"></span>'; // this should not be parsed as HTML!
 			newChildrenParent.innerHTML =
-				'<span class="child7"></span><span class="child8"></span><span class="child9"></span>';
+				'<span class="child5"></span><span class="child6"></span><span class="child7"></span>';
 			parent.innerHTML =
 				'<span class="child1"></span><span class="child2"></span><span class="child3"></span>';
 
 			ParentNodeUtility.replaceChildren(
 				parent,
-				...[newChildrenHtml, ...newChildrenParent.children]
+				...[newTextChildContent, ...newChildrenParent.children]
 			);
 			expect(parent.innerHTML).toBe(
-				'<span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
+				'&lt;span class="child4"&gt;&lt;/span&gt;<span class="child5"></span><span class="child6"></span><span class="child7"></span>'
 			);
 			expect(
 				Array.from(parent.children)
 					.map((element) => element.outerHTML)
 					.join('')
 			).toBe(
-				'<span class="child4"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span><span class="child8"></span><span class="child9"></span>'
+				'<span class="child5"></span><span class="child6"></span><span class="child7"></span>'
 			);
 		});
 	});
