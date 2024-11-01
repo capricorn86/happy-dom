@@ -16,7 +16,6 @@ import ICachedQuerySelectorResult from './ICachedQuerySelectorResult.js';
 import ICachedMatchesResult from './ICachedMatchesResult.js';
 import ICachedElementsByTagNameResult from './ICachedElementsByTagNameResult.js';
 import ICachedElementByTagNameResult from './ICachedElementByTagNameResult.js';
-import ICachedStyleResult from './ICachedStyleResult.js';
 import ICachedComputedStyleResult from './ICachedComputedStyleResult.js';
 import ICachedResult from './ICachedResult.js';
 import ICachedElementByIdResult from './ICachedElementByIdResult.js';
