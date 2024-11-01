@@ -51,19 +51,15 @@ export default class SVGLengthList {
 		this[PropertySymbol.getAttribute] = options.getAttribute;
 		this[PropertySymbol.setAttribute] = options.setAttribute;
 
-		ClassMethodBinder.bindMethods(this, [SVGLengthList], {
-			bindSymbols: true,
-			forwardToPrototype: true
-		});
+		const methodBinder = new ClassMethodBinder(this, [SVGLengthList]);
 
-		// This only works for one level of inheritance, but it should be fine as there is no collection that goes deeper according to spec.
-		ClassMethodBinder.bindMethods(this, [SVGLengthList], { bindSymbols: true });
 		return new Proxy(this, {
 			get: (target, property) => {
 				if (property === 'length' || property === 'numberOfItems') {
 					return target[PropertySymbol.getItemList]().length;
 				}
 				if (property in target || typeof property === 'symbol') {
+					methodBinder.bind(property);
 					return target[property];
 				}
 				const index = Number(property);
@@ -72,6 +68,7 @@ export default class SVGLengthList {
 				}
 			},
 			set(target, property, newValue): boolean {
+				methodBinder.bind(property);
 				if (typeof property === 'symbol') {
 					target[property] = newValue;
 					return true;
@@ -109,6 +106,8 @@ export default class SVGLengthList {
 				return !isNaN(index) && index >= 0 && index < target[PropertySymbol.getItemList]().length;
 			},
 			defineProperty(target, property, descriptor): boolean {
+				methodBinder.preventBinding(property);
+
 				if (property in target) {
 					Object.defineProperty(target, property, descriptor);
 					return true;

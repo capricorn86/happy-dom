@@ -4,7 +4,6 @@ import Stream from 'stream';
 import { ReadableStream } from 'stream/web';
 import { URLSearchParams } from 'url';
 import VM from 'vm';
-import ClassMethodBinder from '../ClassMethodBinder.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import Base64 from '../base64/Base64.js';
 import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
@@ -851,7 +850,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			loadEvent[PropertySymbol.eventPhase] = EventPhaseEnum.none;
 		});
 
-		ClassMethodBinder.bindMethods(this, [EventTarget, BrowserWindow]);
+		this[PropertySymbol.bindMethods]();
 	}
 
 	/**
@@ -1703,5 +1702,35 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this.document[PropertySymbol.selection] = null;
 
 		WindowBrowserContext.removeWindowBrowserFrameRelation(this);
+	}
+
+	/**
+	 * Binds methods to a window as scope.
+	 */
+	public [PropertySymbol.bindMethods](): void {
+		for (const _class of [BrowserWindow, EventTarget]) {
+			const propertyDescriptors = Object.getOwnPropertyDescriptors(_class.prototype);
+			const keys: Array<string | symbol> = Object.keys(propertyDescriptors);
+
+			for (const key of keys) {
+				const descriptor = propertyDescriptors[<string>key];
+				if (descriptor.get || descriptor.set) {
+					Object.defineProperty(this, key, {
+						...descriptor,
+						get: descriptor.get?.bind(this),
+						set: descriptor.set?.bind(this)
+					});
+				} else if (
+					key !== 'constructor' &&
+					typeof descriptor.value === 'function' &&
+					!descriptor.value.toString().startsWith('class ')
+				) {
+					Object.defineProperty(this, key, {
+						...descriptor,
+						value: descriptor.value.bind(this)
+					});
+				}
+			}
+		}
 	}
 }

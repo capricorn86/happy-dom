@@ -54,13 +54,7 @@ export default class SVGStringList {
 			throw new TypeError('Illegal constructor');
 		}
 
-		ClassMethodBinder.bindMethods(this, [SVGStringList], {
-			bindSymbols: true,
-			forwardToPrototype: true
-		});
-
-		// This only works for one level of inheritance, but it should be fine as there is no collection that goes deeper according to spec.
-		ClassMethodBinder.bindMethods(this, [SVGStringList], { bindSymbols: true });
+		const methodBinder = new ClassMethodBinder(this, [SVGStringList]);
 
 		return new Proxy(this, {
 			get: (target, property) => {
@@ -68,6 +62,7 @@ export default class SVGStringList {
 					return target[PropertySymbol.getItemList]().length;
 				}
 				if (property in target || typeof property === 'symbol') {
+					methodBinder.bind(property);
 					return target[property];
 				}
 				const index = Number(property);
@@ -76,6 +71,7 @@ export default class SVGStringList {
 				}
 			},
 			set(target, property, newValue): boolean {
+				methodBinder.bind(property);
 				if (typeof property === 'symbol') {
 					target[property] = newValue;
 					return true;
@@ -113,6 +109,8 @@ export default class SVGStringList {
 				return !isNaN(index) && index >= 0 && index < target[PropertySymbol.getItemList]().length;
 			},
 			defineProperty(target, property, descriptor): boolean {
+				methodBinder.preventBinding(property);
+
 				if (property in target) {
 					Object.defineProperty(target, property, descriptor);
 					return true;

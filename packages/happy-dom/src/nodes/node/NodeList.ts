@@ -24,12 +24,18 @@ class NodeList<T extends Node> {
 
 		this[PropertySymbol.items] = items;
 
+		const methodBinder = new ClassMethodBinder(
+			this,
+			this.constructor !== NodeList ? [this.constructor, NodeList] : [NodeList]
+		);
+
 		const proxy = new Proxy(this, {
 			get: (target, property) => {
 				if (property === 'length') {
 					return items.length;
 				}
 				if (property in target || typeof property === 'symbol') {
+					methodBinder.bind(property);
 					return target[property];
 				}
 				const index = Number(property);
@@ -38,6 +44,8 @@ class NodeList<T extends Node> {
 				}
 			},
 			set(target, property, newValue): boolean {
+				methodBinder.bind(property);
+
 				if (typeof property === 'symbol') {
 					target[property] = newValue;
 					return true;
@@ -76,6 +84,8 @@ class NodeList<T extends Node> {
 				return !isNaN(index) && index >= 0 && index < items.length;
 			},
 			defineProperty(target, property, descriptor): boolean {
+				methodBinder.preventBinding(property);
+
 				if (property in target) {
 					Object.defineProperty(target, property, descriptor);
 					return true;
@@ -100,13 +110,6 @@ class NodeList<T extends Node> {
 				}
 			}
 		});
-
-		// This only works for one level of inheritance, but it should be fine as there is no collection that goes deeper according to spec.
-		ClassMethodBinder.bindMethods(
-			this,
-			this.constructor !== NodeList ? [NodeList, this.constructor] : [NodeList],
-			{ bindSymbols: true, proxy }
-		);
 
 		return proxy;
 	}

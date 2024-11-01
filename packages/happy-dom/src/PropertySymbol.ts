@@ -374,3 +374,4 @@ export const invertSelf = Symbol('invertSelf');
 export const getLength = Symbol('getLength');
 export const currentScale = Symbol('currentScale');
 export const rotate = Symbol('rotate');
+export const bindMethods = Symbol('bindMethods');

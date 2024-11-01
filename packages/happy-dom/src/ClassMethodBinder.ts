@@ -2,79 +2,65 @@
  * Node utility.
  */
 export default class ClassMethodBinder {
+	private target: Object;
+	private classes: any[];
+	private cache = new Map<string | symbol, Boolean>();
+
 	/**
-	 * Binds methods to a target.
+	 * Constructor.
 	 *
 	 * @param target Target.
 	 * @param classes Classes.
-	 * @param [options] Options.
-	 * @param [options.bindSymbols] Bind symbol methods.
-	 * @param [options.forwardToPrototype] Forwards the method calls to the prototype. This makes it possible for test tools to override methods on the prototype (e.g. Object.defineProperty(HTMLCollection.prototype, 'item', {})).
-	 * @param [options.proxy] Bind methods using a proxy.
 	 */
-	public static bindMethods(
-		target: Object,
-		classes: any[],
-		options?: { bindSymbols?: boolean; forwardToPrototype?: boolean; proxy?: any }
-	): void {
-		for (const _class of classes) {
-			const propertyDescriptors = Object.getOwnPropertyDescriptors(_class.prototype);
-			const keys: Array<string | symbol> = Object.keys(propertyDescriptors);
+	constructor(target: Object, classes: any[]) {
+		this.target = target;
+		this.classes = classes;
+	}
 
-			if (options?.bindSymbols) {
-				for (const symbol of Object.getOwnPropertySymbols(propertyDescriptors)) {
-					keys.push(symbol);
-				}
-			}
+	/**
+	 * Binds method, getters and setters to a target.
+	 *
+	 * @param name Method name.
+	 */
+	public bind(name: string | symbol): void {
+		if (this.cache.has(name)) {
+			return;
+		}
 
-			const scope = options?.proxy ? options.proxy : target;
+		this.cache.set(name, true);
 
-			if (options?.forwardToPrototype) {
-				for (const key of keys) {
-					const descriptor = propertyDescriptors[<string>key];
-					if (descriptor.get || descriptor.set) {
-						Object.defineProperty(target, key, {
-							...descriptor,
-							get:
-								descriptor.get &&
-								(() => Object.getOwnPropertyDescriptor(_class.prototype, key).get.call(scope)),
-							set:
-								descriptor.set &&
-								((newValue) =>
-									Object.getOwnPropertyDescriptor(_class.prototype, key).set.call(scope, newValue))
-						});
-					} else if (
-						key !== 'constructor' &&
-						typeof descriptor.value === 'function' &&
-						!descriptor.value.toString().startsWith('class ')
-					) {
-						Object.defineProperty(target, key, {
-							...descriptor,
-							value: (...args) => _class.prototype[key].apply(scope, args)
-						});
-					}
+		const target = this.target;
+
+		if (!(name in target)) {
+			return;
+		}
+
+		for (const _class of this.classes) {
+			const descriptor = Object.getOwnPropertyDescriptor(_class.prototype, name);
+			if (descriptor) {
+				if (typeof descriptor.value === 'function') {
+					Object.defineProperty(target, name, {
+						...descriptor,
+						value: descriptor.value.bind(target)
+					});
+				} else if (descriptor.get !== undefined) {
+					Object.defineProperty(target, name, {
+						...descriptor,
+						get: descriptor.get?.bind(target),
+						set: descriptor.set?.bind(target)
+					});
 				}
-			} else {
-				for (const key of keys) {
-					const descriptor = propertyDescriptors[<string>key];
-					if (descriptor.get || descriptor.set) {
-						Object.defineProperty(target, key, {
-							...descriptor,
-							get: descriptor.get?.bind(scope),
-							set: descriptor.set?.bind(scope)
-						});
-					} else if (
-						key !== 'constructor' &&
-						typeof descriptor.value === 'function' &&
-						!descriptor.value.toString().startsWith('class ')
-					) {
-						Object.defineProperty(target, key, {
-							...descriptor,
-							value: descriptor.value.bind(scope)
-						});
-					}
-				}
+				return;
 			}
 		}
+	}
+
+	/**
+	 * Prevents a method, getter or setter from being bound.
+	 *
+	 * @param name Method name.
+	 */
+	public preventBinding(name: string | symbol): void {
+		this.cache.set(name, true);
 	}
 }

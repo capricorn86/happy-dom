@@ -1,6 +1,6 @@
+import ClassMethodBinder from '../ClassMethodBinder.js';
 import Element from '../nodes/element/Element.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import ClassMethodBinder from '../ClassMethodBinder.js';
 
 const ATTRIBUTE_SPLIT_REGEXP = /[\t\f\n\r ]+/;
 
@@ -35,10 +35,7 @@ export default class DOMTokenList {
 		this[PropertySymbol.ownerElement] = ownerElement;
 		this[PropertySymbol.attributeName] = attributeName;
 
-		ClassMethodBinder.bindMethods(this, [DOMTokenList], {
-			bindSymbols: true,
-			forwardToPrototype: true
-		});
+		const methodBinder = new ClassMethodBinder(this, [DOMTokenList]);
 
 		return new Proxy(this, {
 			get: (target, property) => {
@@ -46,6 +43,7 @@ export default class DOMTokenList {
 					return target[PropertySymbol.getTokenList]().length;
 				}
 				if (property in target || typeof property === 'symbol') {
+					methodBinder.bind(property);
 					return target[property];
 				}
 				const index = Number(property);
@@ -54,6 +52,7 @@ export default class DOMTokenList {
 				}
 			},
 			set(target, property, newValue): boolean {
+				methodBinder.bind(property);
 				if (typeof property === 'symbol') {
 					target[property] = newValue;
 					return true;
@@ -91,6 +90,8 @@ export default class DOMTokenList {
 				return !isNaN(index) && index >= 0 && index < target[PropertySymbol.getTokenList]().length;
 			},
 			defineProperty(target, property, descriptor): boolean {
+				methodBinder.preventBinding(property);
+
 				if (property in target) {
 					Object.defineProperty(target, property, descriptor);
 					return true;
