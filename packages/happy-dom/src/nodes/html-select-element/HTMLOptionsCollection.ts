@@ -16,10 +16,10 @@ export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElem
 	/**
 	 * Constructor.
 	 *
-	 * @param [illegalConstructorSymbol] Illegal constructor symbol.
-	 * @param [ownerElement] Select element.
+	 * @param illegalConstructorSymbol Illegal constructor symbol.
+	 * @param ownerElement Select element.
 	 */
-	constructor(illegalConstructorSymbol?: symbol, ownerElement: HTMLSelectElement | null = null) {
+	constructor(illegalConstructorSymbol: symbol, ownerElement: HTMLSelectElement) {
 		super(
 			illegalConstructorSymbol,
 			() =>

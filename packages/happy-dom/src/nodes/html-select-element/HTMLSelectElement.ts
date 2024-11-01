@@ -12,8 +12,8 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import NodeList from '../node/NodeList.js';
 import ClassMethodBinder from '../../ClassMethodBinder.js';
-import Element from '../element/Element.js';
 import Node from '../node/Node.js';
+import Element from '../element/Element.js';
 import EventTarget from '../../event/EventTarget.js';
 
 /**
@@ -40,18 +40,18 @@ export default class HTMLSelectElement extends HTMLElement {
 	constructor() {
 		super();
 
-		ClassMethodBinder.bindMethods(
-			this,
-			[EventTarget, Node, Element, HTMLElement, HTMLSelectElement],
-			{
-				bindSymbols: true,
-				forwardToPrototype: true
-			}
-		);
+		const methodBinder = new ClassMethodBinder(this, [
+			HTMLSelectElement,
+			HTMLElement,
+			Element,
+			Node,
+			EventTarget
+		]);
 
 		const proxy = new Proxy(this, {
 			get: (target, property) => {
 				if (property in target || typeof property === 'symbol') {
+					methodBinder.bind(property);
 					return target[property];
 				}
 				const index = Number(property);
@@ -60,6 +60,8 @@ export default class HTMLSelectElement extends HTMLElement {
 				}
 			},
 			set(target, property, newValue): boolean {
+				methodBinder.bind(property);
+
 				if (typeof property === 'symbol') {
 					target[property] = newValue;
 					return true;
@@ -131,6 +133,8 @@ export default class HTMLSelectElement extends HTMLElement {
 				return false;
 			},
 			defineProperty(target, property, descriptor): boolean {
+				methodBinder.preventBinding(property);
+
 				const index = Number(property);
 
 				if (isNaN(index)) {

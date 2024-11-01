@@ -3,7 +3,7 @@ import Document from '../../src/nodes/document/Document.js';
 import Range from '../../src/range/Range.js';
 import NodeTypeEnum from '../../src/nodes/node/NodeTypeEnum.js';
 import Text from '../../src/nodes/text/Text.js';
-import DOMRect from '../../src/nodes/element/DOMRect.js';
+import DOMRect from '../../src/dom/DOMRect.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import Node from '../../src/nodes/node/Node.js';
 
