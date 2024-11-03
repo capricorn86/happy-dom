@@ -1,10 +1,10 @@
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Element from '../element/Element.js';
-import SVGSVGElement from './SVGSVGElement.js';
+import SVGSVGElement from '../svg-svg-element/SVGSVGElement.js';
 import Event from '../../event/Event.js';
 import HTMLElementUtility from '../html-element/HTMLElementUtility.js';
-import DOMStringMap from '../element/DOMStringMap.js';
+import DOMStringMap from '../../dom/DOMStringMap.js';
 
 /**
  * SVG Element.
@@ -28,20 +28,11 @@ export default class SVGElement extends Element {
 	#dataset: DOMStringMap | null = null;
 
 	/**
-	 * Returns viewport.
-	 *
-	 * @returns SVG rect.
-	 */
-	public get viewportElement(): SVGElement {
-		return null;
-	}
-
-	/**
 	 * Returns current translate.
 	 *
 	 * @returns Element.
 	 */
-	public get ownerSVGElement(): SVGSVGElement {
+	public get ownerSVGElement(): SVGSVGElement | null {
 		let parent = this[PropertySymbol.parentNode];
 		while (parent) {
 			if (parent[PropertySymbol.localName] === 'svg') {
@@ -54,12 +45,21 @@ export default class SVGElement extends Element {
 	}
 
 	/**
+	 * Returns the SVGElement which established the current viewport. Often the nearest ancestor <svg> element. null if the given element is the outermost <svg> element.
+	 *
+	 * @returns SVG element.
+	 */
+	public get viewportElement(): SVGElement | null {
+		return this.ownerSVGElement;
+	}
+
+	/**
 	 * Returns data set.
 	 *
 	 * @returns Data set.
 	 */
 	public get dataset(): DOMStringMap {
-		return (this.#dataset ??= new DOMStringMap(this));
+		return (this.#dataset ??= new DOMStringMap(PropertySymbol.illegalConstructor, this));
 	}
 
 	/**
@@ -69,7 +69,11 @@ export default class SVGElement extends Element {
 	 */
 	public get style(): CSSStyleDeclaration {
 		if (!this[PropertySymbol.style]) {
-			this[PropertySymbol.style] = new CSSStyleDeclaration(this);
+			this[PropertySymbol.style] = new CSSStyleDeclaration(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{ element: this }
+			);
 		}
 		return this[PropertySymbol.style];
 	}

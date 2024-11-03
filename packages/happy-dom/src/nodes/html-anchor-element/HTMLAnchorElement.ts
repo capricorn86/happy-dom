@@ -1,6 +1,6 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import DOMTokenList from '../element/DOMTokenList.js';
+import DOMTokenList from '../../dom/DOMTokenList.js';
 import Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import HTMLHyperlinkElementUtility from '../html-hyperlink-element/HTMLHyperlinkElementUtility.js';
@@ -285,7 +285,11 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 */
 	public get relList(): DOMTokenList {
 		if (!this[PropertySymbol.relList]) {
-			this[PropertySymbol.relList] = new DOMTokenList(this, 'rel');
+			this[PropertySymbol.relList] = new DOMTokenList(
+				PropertySymbol.illegalConstructor,
+				this,
+				'rel'
+			);
 		}
 		return <DOMTokenList>this[PropertySymbol.relList];
 	}
