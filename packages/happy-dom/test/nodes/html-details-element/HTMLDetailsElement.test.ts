@@ -3,6 +3,7 @@ import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 import Event from '../../../src/event/Event.js';
+import MouseEvent from '../../../src/event/events/MouseEvent.js';
 
 describe('HTMLDetailsElement', () => {
 	let window: Window;
@@ -50,6 +51,22 @@ describe('HTMLDetailsElement', () => {
 			triggeredEvent = null;
 			element.open = false;
 			expect((<Event>(<unknown>triggeredEvent)).type).toBe('toggle');
+		});
+
+		it('Should not toggle the open state when a click event is dispatched directly on the details element', () => {
+			element.dispatchEvent(new MouseEvent('click'));
+			expect(element.open).toBe(false);
+		});
+
+		it('Should toggle the "open" attribute when a click event is dispatched on a summary element, which is a child of the details element', () => {
+			const summary = document.createElement('summary');
+			element.appendChild(summary);
+
+			summary.click();
+			expect(element.open).toBe(true);
+
+			summary.click();
+			expect(element.open).toBe(false);
 		});
 	});
 });

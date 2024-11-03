@@ -66,6 +66,8 @@ export default class HTMLDetailsElement extends HTMLElement {
 		const returnValue = super.dispatchEvent(event);
 
 		if (
+			!event[PropertySymbol.defaultPrevented] &&
+			event[PropertySymbol.target]?.[PropertySymbol.localName] === 'summary' &&
 			event.type === 'click' &&
 			event.eventPhase === EventPhaseEnum.bubbling &&
 			event instanceof MouseEvent
