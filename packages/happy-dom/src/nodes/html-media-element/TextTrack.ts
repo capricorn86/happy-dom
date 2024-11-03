@@ -30,9 +30,9 @@ export default class TextTrack extends EventTarget {
 	/**
 	 * Constructor.
 	 *
-	 * @param [illegalConstructorSymbol] Illegal constructor symbol.
+	 * @param illegalConstructorSymbol Illegal constructor symbol.
 	 */
-	constructor(illegalConstructorSymbol?: symbol) {
+	constructor(illegalConstructorSymbol: symbol) {
 		super();
 
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {

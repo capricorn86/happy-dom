@@ -1,4 +1,4 @@
-import DOMRect from '../nodes/element/DOMRect.js';
+import DOMRect from '../dom/DOMRect.js';
 import Node from '../nodes/node/Node.js';
 
 /**

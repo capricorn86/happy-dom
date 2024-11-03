@@ -18,7 +18,10 @@ export default class CSSKeyframeRule extends CSSRule {
 	 */
 	public get style(): CSSStyleDeclaration {
 		if (!this.#style) {
-			this.#style = new CSSStyleDeclaration();
+			this.#style = new CSSStyleDeclaration(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window]
+			);
 			(<CSSRule>this.#style.parentRule) = this;
 			this.#style.cssText = this[PropertySymbol.cssText];
 		}

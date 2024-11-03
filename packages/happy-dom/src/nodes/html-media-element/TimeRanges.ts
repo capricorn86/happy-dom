@@ -9,9 +9,9 @@ export default class TimeRanges {
 	/**
 	 * Constructor.
 	 *
-	 * @param [illegalConstructorSymbol] Illegal constructor symbol.
+	 * @param illegalConstructorSymbol Illegal constructor symbol.
 	 */
-	constructor(illegalConstructorSymbol?: symbol) {
+	constructor(illegalConstructorSymbol: symbol) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}

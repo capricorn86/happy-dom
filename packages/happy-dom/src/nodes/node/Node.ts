@@ -16,7 +16,6 @@ import ICachedQuerySelectorResult from './ICachedQuerySelectorResult.js';
 import ICachedMatchesResult from './ICachedMatchesResult.js';
 import ICachedElementsByTagNameResult from './ICachedElementsByTagNameResult.js';
 import ICachedElementByTagNameResult from './ICachedElementByTagNameResult.js';
-import ICachedStyleResult from './ICachedStyleResult.js';
 import ICachedComputedStyleResult from './ICachedComputedStyleResult.js';
 import ICachedResult from './ICachedResult.js';
 import ICachedElementByIdResult from './ICachedElementByIdResult.js';
@@ -27,6 +26,7 @@ import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.j
 import HTMLSlotElement from '../html-slot-element/HTMLSlotElement.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import NodeFactory from '../NodeFactory.js';
+import SVGStyleElement from '../svg-style-element/SVGStyleElement.js';
 
 /**
  * Node.
@@ -75,7 +75,7 @@ export default class Node extends EventTarget {
 	public [PropertySymbol.parentNode]: Node | null = null;
 	public [PropertySymbol.nodeType]: NodeTypeEnum;
 	public [PropertySymbol.rootNode]: Node = null;
-	public [PropertySymbol.styleNode]: HTMLStyleElement | null = null;
+	public [PropertySymbol.styleNode]: HTMLStyleElement | SVGStyleElement | null = null;
 	public [PropertySymbol.textAreaNode]: HTMLTextAreaElement | null = null;
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
 	public [PropertySymbol.selectNode]: HTMLSelectElement | null = null;
@@ -92,7 +92,6 @@ export default class Node extends EventTarget {
 		elementsByTagNameNS: Map<string, ICachedElementsByTagNameResult>;
 		elementByTagName: Map<string, ICachedElementByTagNameResult>;
 		elementById: Map<string, ICachedElementByIdResult>;
-		style: ICachedStyleResult | null;
 		computedStyle: ICachedComputedStyleResult | null;
 	} = {
 		querySelector: new Map(),
@@ -102,7 +101,6 @@ export default class Node extends EventTarget {
 		elementsByTagNameNS: new Map(),
 		elementByTagName: new Map(),
 		elementById: new Map(),
-		style: null,
 		computedStyle: null
 	};
 	public [PropertySymbol.affectsCache]: ICachedResult[] = [];
