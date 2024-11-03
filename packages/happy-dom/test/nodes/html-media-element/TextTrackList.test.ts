@@ -15,22 +15,24 @@ describe('TextTrackList', () => {
 
 	describe('constructor()', () => {
 		it('Should throw an error if the "illegalConstructor" symbol is not sent to the constructor', () => {
-			expect(() => new window.TextTrackList()).toThrow(new TypeError('Illegal constructor'));
+			expect(() => new window.TextTrackList(Symbol(''), [])).toThrow(
+				new TypeError('Illegal constructor')
+			);
 		});
 
 		it('Should not throw an error if the "illegalConstructor" symbol is provided', () => {
-			expect(() => new window.TextTrackList(PropertySymbol.illegalConstructor)).not.toThrow();
+			expect(() => new window.TextTrackList(PropertySymbol.illegalConstructor, [])).not.toThrow();
 		});
 
 		it('Is an instance of EventTarget', () => {
-			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor);
+			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor, []);
 			expect(textTrackList).toBeInstanceOf(EventTarget);
 		});
 	});
 
 	describe('get length()', () => {
 		it('Should return 0 by default', () => {
-			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor);
+			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor, []);
 			expect(textTrackList.length).toBe(0);
 		});
 
@@ -58,21 +60,21 @@ describe('TextTrackList', () => {
 
 	describe('get [Symbol.toStringTag]()', () => {
 		it('Should return "TextTrackList"', () => {
-			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor);
+			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor, []);
 			expect(textTrackList[Symbol.toStringTag]).toBe('TextTrackList');
 		});
 	});
 
 	describe('toLocaleString()', () => {
 		it('Should return "[object TextTrackList]"', () => {
-			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor);
+			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor, []);
 			expect(textTrackList.toLocaleString()).toBe('[object TextTrackList]');
 		});
 	});
 
 	describe('toString()', () => {
 		it('Should return "[object TextTrackList]"', () => {
-			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor);
+			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor, []);
 			expect(textTrackList.toString()).toBe('[object TextTrackList]');
 		});
 	});
@@ -96,7 +98,7 @@ describe('TextTrackList', () => {
 
 	describe('getTrackById()', () => {
 		it('Should return null if no track is found', () => {
-			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor);
+			const textTrackList = new window.TextTrackList(PropertySymbol.illegalConstructor, []);
 			expect(textTrackList.getTrackById('test')).toBeNull();
 		});
 

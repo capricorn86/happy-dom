@@ -74,7 +74,7 @@
 		"test": "vitest run",
 		"test:ui": "vitest --ui",
 		"test:watch": "vitest",
-		"test:debug": "vitest run --inspect-brk --threads=false"
+		"test:debug": "vitest run --inspect-brk --no-file-parallelism"
 	},
 	"dependencies": {
 		"entities": "^4.5.0",

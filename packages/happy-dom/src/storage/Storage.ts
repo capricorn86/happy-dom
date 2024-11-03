@@ -15,14 +15,12 @@ export default class Storage {
 	constructor() {
 		const data = this[PropertySymbol.data];
 
-		ClassMethodBinder.bindMethods(this, [Storage], {
-			bindSymbols: true,
-			forwardToPrototype: true
-		});
+		const methodBinder = new ClassMethodBinder(this, [Storage]);
 
 		return new Proxy(this, {
 			get: (target, property) => {
 				if (property in target || typeof property === 'symbol') {
+					methodBinder.bind(property);
 					return target[property];
 				}
 				if (property in data) {
@@ -30,6 +28,8 @@ export default class Storage {
 				}
 			},
 			set(target, property, newValue): boolean {
+				methodBinder.bind(property);
+
 				if (property in target || typeof property === 'symbol') {
 					return true;
 				}
@@ -55,6 +55,8 @@ export default class Storage {
 				return false;
 			},
 			defineProperty(target, property, descriptor): boolean {
+				methodBinder.preventBinding(property);
+
 				if (property in target) {
 					Object.defineProperty(target, property, descriptor);
 					return true;

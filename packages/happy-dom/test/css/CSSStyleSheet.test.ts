@@ -2,12 +2,16 @@ import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 import CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
 import { beforeEach, describe, it, expect } from 'vitest';
+import BrowserWindow from '../../src/window/BrowserWindow.js';
+import Window from '../../src/window/Window.js';
 
 describe('CSSStyleSheet', () => {
+	let window: BrowserWindow;
 	let cssStyleSheet: CSSStyleSheet;
 
 	beforeEach(() => {
-		cssStyleSheet = new CSSStyleSheet();
+		window = new Window();
+		cssStyleSheet = new window.CSSStyleSheet();
 	});
 
 	describe('insertRule()', () => {
