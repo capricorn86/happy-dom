@@ -512,7 +512,7 @@ export default class Node extends EventTarget {
 			node[PropertySymbol.parentNode][PropertySymbol.removeChild](node);
 		}
 
-		node[PropertySymbol.parentNode] = this;
+		node[PropertySymbol.parentNode] = this[PropertySymbol.proxy] || this;
 
 		node[PropertySymbol.clearCache]();
 
@@ -647,7 +647,7 @@ export default class Node extends EventTarget {
 			newNode[PropertySymbol.parentNode][PropertySymbol.removeChild](newNode);
 		}
 
-		newNode[PropertySymbol.parentNode] = this;
+		newNode[PropertySymbol.parentNode] = this[PropertySymbol.proxy] || this;
 
 		newNode[PropertySymbol.clearCache]();
 
@@ -1061,7 +1061,7 @@ export default class Node extends EventTarget {
 		 * 2. Let node1 be other and node2 be this.
 		 */
 		let node1: Node = otherNode;
-		let node2: Node = this;
+		let node2: Node = this[PropertySymbol.proxy] || this;
 
 		/**
 		 * 3. Let attr1 and attr2 be null.
