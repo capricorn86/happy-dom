@@ -1157,6 +1157,46 @@ describe('HTMLFormElement', () => {
 		});
 	});
 
+	describe('appendChild()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			const child = document.createElement('input');
+			const child2 = document.createElement('textarea');
+			const child3 = document.createElement('select');
+
+			element.appendChild(child);
+			element.appendChild(child2);
+			element.appendChild(child3);
+
+			expect(child.parentNode).toBe(element);
+			expect(child2.parentNode).toBe(element);
+			expect(child3.parentNode).toBe(element);
+
+			expect(child.parentElement).toBe(element);
+			expect(child2.parentElement).toBe(element);
+			expect(child3.parentElement).toBe(element);
+		});
+	});
+
+	describe('insertBefore()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			const child = document.createElement('input');
+			const child2 = document.createElement('textarea');
+			const child3 = document.createElement('select');
+
+			element.appendChild(child);
+			element.appendChild(child2);
+			element.insertBefore(child3, child2);
+
+			expect(child.parentNode).toBe(element);
+			expect(child2.parentNode).toBe(element);
+			expect(child3.parentNode).toBe(element);
+
+			expect(child.parentElement).toBe(element);
+			expect(child2.parentElement).toBe(element);
+			expect(child3.parentElement).toBe(element);
+		});
+	});
+
 	for (const method of ['checkValidity', 'reportValidity']) {
 		describe(`${method}()`, () => {
 			it('Validates the form.', () => {
