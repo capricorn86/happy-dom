@@ -1025,7 +1025,10 @@ export default class Node extends EventTarget {
 	 */
 	public [PropertySymbol.disconnectedFromDocument](): void {
 		this[PropertySymbol.isConnected] = false;
-		this[PropertySymbol.rootNode] = null;
+
+		if (this[PropertySymbol.nodeType] !== NodeTypeEnum.documentFragmentNode) {
+			this[PropertySymbol.rootNode] = null;
+		}
 
 		if (this[PropertySymbol.ownerDocument][PropertySymbol.activeElement] === <unknown>this) {
 			this[PropertySymbol.ownerDocument][PropertySymbol.clearCache]();
