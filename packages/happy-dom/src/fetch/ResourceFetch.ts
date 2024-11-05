@@ -34,7 +34,7 @@ export default class ResourceFetch {
 			browserFrame: this.#browserFrame,
 			window: this.window,
 			url,
-			disableCrossOriginPolicy: true
+			disableSameOriginPolicy: true
 		});
 		const response = await fetch.send();
 
@@ -60,7 +60,7 @@ export default class ResourceFetch {
 			browserFrame: this.#browserFrame,
 			window: this.window,
 			url,
-			disableCrossOriginPolicy: true
+			disableSameOriginPolicy: true
 		});
 
 		const response = fetch.send();

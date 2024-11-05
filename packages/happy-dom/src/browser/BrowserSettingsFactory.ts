@@ -29,6 +29,10 @@ export default class BrowserSettingsFactory {
 				...DefaultBrowserSettings.timer,
 				...settings?.timer
 			},
+			fetch: {
+				...DefaultBrowserSettings.fetch,
+				...settings?.fetch
+			},
 			device: {
 				...DefaultBrowserSettings.device,
 				...settings?.device
