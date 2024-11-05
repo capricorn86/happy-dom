@@ -2730,7 +2730,7 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get aspectRatio()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, element);
 
 			for (const value of [
 				'var(--test-variable)',
