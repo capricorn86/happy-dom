@@ -110,7 +110,7 @@ export default class ParentNodeUtility {
 			const elements: T[] = [];
 
 			for (const element of (<DocumentFragment>parent)[PropertySymbol.elementArray]) {
-				if (includeAll || element[PropertySymbol.tagName] === upperTagName) {
+				if (includeAll || element[PropertySymbol.tagName].toUpperCase() === upperTagName) {
 					elements.push(<T>element);
 				}
 

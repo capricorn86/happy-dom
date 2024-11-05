@@ -72,8 +72,8 @@ import Comment from './nodes/comment/Comment.js';
 import DocumentFragment from './nodes/document-fragment/DocumentFragment.js';
 import DocumentType from './nodes/document-type/DocumentType.js';
 import Document from './nodes/document/Document.js';
-import DOMRect from './nodes/element/DOMRect.js';
-import DOMRectReadOnly from './nodes/element/DOMRectReadOnly.js';
+import DOMRect from './dom/DOMRect.js';
+import DOMRectReadOnly from './dom/DOMRectReadOnly.js';
 import Element from './nodes/element/Element.js';
 import HTMLCollection from './nodes/element/HTMLCollection.js';
 import HTMLAnchorElement from './nodes/html-anchor-element/HTMLAnchorElement.js';
@@ -157,10 +157,9 @@ import HTMLVideoElement from './nodes/html-video-element/HTMLVideoElement.js';
 import Node from './nodes/node/Node.js';
 import ProcessingInstruction from './nodes/processing-instruction/ProcessingInstruction.js';
 import ShadowRoot from './nodes/shadow-root/ShadowRoot.js';
-import SVGDocument from './nodes/svg-document/SVGDocument.js';
 import SVGElement from './nodes/svg-element/SVGElement.js';
-import SVGGraphicsElement from './nodes/svg-element/SVGGraphicsElement.js';
-import SVGSVGElement from './nodes/svg-element/SVGSVGElement.js';
+import SVGGraphicsElement from './nodes/svg-graphics-element/SVGGraphicsElement.js';
+import SVGSVGElement from './nodes/svg-svg-element/SVGSVGElement.js';
 import Text from './nodes/text/Text.js';
 import XMLDocument from './nodes/xml-document/XMLDocument.js';
 import PermissionStatus from './permissions/PermissionStatus.js';
@@ -391,7 +390,6 @@ export {
 	ShadowRoot,
 	Storage,
 	SubmitEvent,
-	SVGDocument,
 	SVGElement,
 	SVGGraphicsElement,
 	SVGSVGElement,

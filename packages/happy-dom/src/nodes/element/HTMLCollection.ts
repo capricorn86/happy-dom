@@ -17,21 +17,19 @@ export default class HTMLCollection<T extends Element, NamedItem = T> {
 	/**
 	 * Constructor.
 	 *
-	 * @param [illegalConstructorSymbol] Illegal constructor symbol.
+	 * @param illegalConstructorSymbol Illegal constructor symbol.
 	 * @param query Query function.
 	 */
-	constructor(illegalConstructorSymbol?: symbol, query: () => T[] = () => []) {
+	constructor(illegalConstructorSymbol: symbol, query: () => T[]) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}
 
 		this[PropertySymbol.query] = query;
 
-		// This only works for one level of inheritance, but it should be fine as there is no collection that goes deeper according to spec.
-		ClassMethodBinder.bindMethods(
+		const methodBinder = new ClassMethodBinder(
 			this,
-			this.constructor !== HTMLCollection ? [HTMLCollection, this.constructor] : [HTMLCollection],
-			{ bindSymbols: true }
+			this.constructor !== HTMLCollection ? [this.constructor, HTMLCollection] : [HTMLCollection]
 		);
 
 		return new Proxy(this, {
@@ -40,9 +38,9 @@ export default class HTMLCollection<T extends Element, NamedItem = T> {
 					return query().length;
 				}
 				if (property in target || typeof property === 'symbol') {
+					methodBinder.bind(property);
 					return target[property];
 				}
-
 				const index = Number(property);
 				if (!isNaN(index)) {
 					return query()[index];
@@ -50,6 +48,7 @@ export default class HTMLCollection<T extends Element, NamedItem = T> {
 				return target.namedItem(<string>property) || undefined;
 			},
 			set(target, property, newValue): boolean {
+				methodBinder.bind(property);
 				if (typeof property === 'symbol') {
 					target[property] = newValue;
 					return true;
@@ -123,6 +122,8 @@ export default class HTMLCollection<T extends Element, NamedItem = T> {
 				return false;
 			},
 			defineProperty(target, property, descriptor): boolean {
+				methodBinder.preventBinding(property);
+
 				if (property in target) {
 					Object.defineProperty(target, property, descriptor);
 					return true;

@@ -1,8 +1,8 @@
 import Node from '../node/Node.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import ShadowRoot from '../shadow-root/ShadowRoot.js';
-import DOMRect from './DOMRect.js';
-import DOMTokenList from './DOMTokenList.js';
+import DOMRect from '../../dom/DOMRect.js';
+import DOMTokenList from '../../dom/DOMTokenList.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
 import XMLSerializer from '../../xml-serializer/XMLSerializer.js';
@@ -11,7 +11,7 @@ import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtility.js';
 import HTMLCollection from './HTMLCollection.js';
 import Text from '../text/Text.js';
-import DOMRectList from './DOMRectList.js';
+import DOMRectList from '../../dom/DOMRectList.js';
 import Attr from '../attr/Attr.js';
 import NamedNodeMap from './NamedNodeMap.js';
 import Event from '../../event/Event.js';
@@ -254,7 +254,11 @@ export default class Element
 	 */
 	public get classList(): DOMTokenList {
 		if (!this[PropertySymbol.classList]) {
-			this[PropertySymbol.classList] = new DOMTokenList(this, 'class');
+			this[PropertySymbol.classList] = new DOMTokenList(
+				PropertySymbol.illegalConstructor,
+				this,
+				'class'
+			);
 		}
 		return <DOMTokenList>this[PropertySymbol.classList];
 	}
@@ -920,7 +924,7 @@ export default class Element
 	 */
 	public getClientRects(): DOMRectList {
 		// TODO: Not full implementation
-		const domRectList = new DOMRectList();
+		const domRectList = new DOMRectList(PropertySymbol.illegalConstructor);
 		domRectList.push(this.getBoundingClientRect());
 		return domRectList;
 	}
@@ -1353,11 +1357,6 @@ export default class Element
 			this.#addIdentifierToWindow(attribute[PropertySymbol.value]);
 		}
 
-		if (this[PropertySymbol.cache].style) {
-			this[PropertySymbol.cache].style.result = null;
-			this[PropertySymbol.cache].style = null;
-		}
-
 		if (
 			this.attributeChangedCallback &&
 			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes] &&
@@ -1408,11 +1407,6 @@ export default class Element
 
 		if (removedAttribute[PropertySymbol.name] === 'id' && this[PropertySymbol.isConnected]) {
 			this.#removeIdentifierFromWindow(removedAttribute[PropertySymbol.value]);
-		}
-
-		if (this[PropertySymbol.cache].style) {
-			this[PropertySymbol.cache].style.result = null;
-			this[PropertySymbol.cache].style = null;
 		}
 
 		if (

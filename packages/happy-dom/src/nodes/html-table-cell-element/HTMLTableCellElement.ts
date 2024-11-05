@@ -1,7 +1,7 @@
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import DOMTokenList from '../element/DOMTokenList.js';
+import DOMTokenList from '../../dom/DOMTokenList.js';
 
 /**
  * HTMLTableCellElement
@@ -75,7 +75,11 @@ export default class HTMLTableCellElement extends HTMLElement {
 	 */
 	public get headers(): DOMTokenList {
 		if (!this[PropertySymbol.headers]) {
-			this[PropertySymbol.headers] = new DOMTokenList(this, 'headers');
+			this[PropertySymbol.headers] = new DOMTokenList(
+				PropertySymbol.illegalConstructor,
+				this,
+				'headers'
+			);
 		}
 		return <DOMTokenList>this[PropertySymbol.headers];
 	}
