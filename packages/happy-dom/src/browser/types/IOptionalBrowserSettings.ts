@@ -5,9 +5,6 @@ export default interface IOptionalBrowserSettings {
 	/** Disables JavaScript evaluation. */
 	disableJavaScriptEvaluation?: boolean;
 
-	/** Disables Cross Origin Policy for http requests. */
-	disableCrossOriginPolicy?: boolean;
-
 	/** Disables JavaScript file loading. */
 	disableJavaScriptFileLoading?: boolean;
 
@@ -25,6 +22,18 @@ export default interface IOptionalBrowserSettings {
 		maxTimeout?: number;
 		maxIntervalTime?: number;
 		maxIntervalIterations?: number;
+	};
+
+	/**
+	 * Settings for fetch
+	 */
+	fetch?: {
+		/**
+		 * Disables same-origin policy (CORS)
+		 *
+		 * @see https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy
+		 */
+		disableSameOriginPolicy?: boolean;
 	};
 
 	/**

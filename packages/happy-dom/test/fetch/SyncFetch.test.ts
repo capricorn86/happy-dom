@@ -2,13 +2,10 @@ import BrowserWindow from '../../src/window/BrowserWindow.js';
 import Headers from '../../src/fetch/Headers.js';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
-import AbortController from '../../src/fetch/AbortController.js';
-import Stream from 'stream';
 import { ReadableStream } from 'stream/web';
 import Zlib from 'zlib';
 import { TextEncoder } from 'util';
 import Blob from '../../src/file/Blob.js';
-import FormData from '../../src/form-data/FormData.js';
 import { URLSearchParams } from 'url';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import SyncFetchScriptBuilder from '../../src/fetch/utilities/SyncFetchScriptBuilder.js';
@@ -440,6 +437,68 @@ describe('SyncFetch', () => {
 			);
 
 			expect(postRequestArgs).toBe(
+				SyncFetchScriptBuilder.getScript({
+					url: new URL(url),
+					method: 'POST',
+					headers: {
+						Accept: '*/*',
+						Connection: 'close',
+						'Content-Length': `${body.length}`,
+						'Content-Type': 'application/json',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br',
+						Origin: originURL,
+						Referer: originURL + '/',
+						'X-Custom-Header': 'yes'
+					},
+					body: Buffer.from(body)
+				})
+			);
+		});
+
+		it('Allows cross-origin request if "Browser.settings.fetch.disableSameOriginPolicy" is set to "true".', async () => {
+			const originURL = 'http://localhost:8080';
+
+			browserFrame.url = originURL;
+			browserFrame.page.context.browser.settings.fetch.disableSameOriginPolicy = true;
+
+			const url = 'http://other.origin.com/some/path';
+			const body = '{"foo": "bar"}';
+
+			const requestArgs: string[] = [];
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					requestArgs.push(args[1]);
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							rawHeaders: ['Access-Control-Allow-Origin', '*'],
+							data: ''
+						}
+					});
+				}
+			});
+
+			new SyncFetch({
+				browserFrame,
+				window,
+				url,
+				init: {
+					method: 'POST',
+					body,
+					headers: {
+						'X-Custom-Header': 'yes',
+						'Content-Type': 'application/json'
+					}
+				}
+			}).send();
+
+			expect(requestArgs.length).toBe(1);
+
+			expect(requestArgs[0]).toBe(
 				SyncFetchScriptBuilder.getScript({
 					url: new URL(url),
 					method: 'POST',
