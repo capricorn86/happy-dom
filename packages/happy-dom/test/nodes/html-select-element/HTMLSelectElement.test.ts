@@ -515,6 +515,24 @@ describe('HTMLSelectElement', () => {
 			expect((<Event>(<unknown>dispatchedEvent)).type).toBe('change');
 			expect(element.selectedIndex).toBe(0);
 		});
+
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
+			const option3 = <HTMLOptionElement>document.createElement('option');
+
+			element.appendChild(option1);
+			element.appendChild(option2);
+			element.appendChild(option3);
+
+			expect(option1.parentNode).toBe(element);
+			expect(option2.parentNode).toBe(element);
+			expect(option3.parentNode).toBe(element);
+
+			expect(option1.parentElement).toBe(element);
+			expect(option2.parentElement).toBe(element);
+			expect(option3.parentElement).toBe(element);
+		});
 	});
 
 	describe(`insertBefore()`, () => {
@@ -568,6 +586,24 @@ describe('HTMLSelectElement', () => {
 			expect(element.item(0) === option1).toBe(true);
 			expect(element.item(1) === option2).toBe(true);
 			expect(element.item(2) === option3).toBe(true);
+		});
+
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
+			const option3 = <HTMLOptionElement>document.createElement('option');
+
+			element.appendChild(option1);
+			element.appendChild(option2);
+			element.insertBefore(option3, option2);
+
+			expect(option1.parentNode).toBe(element);
+			expect(option2.parentNode).toBe(element);
+			expect(option3.parentNode).toBe(element);
+
+			expect(option1.parentElement).toBe(element);
+			expect(option2.parentElement).toBe(element);
+			expect(option3.parentElement).toBe(element);
 		});
 	});
 

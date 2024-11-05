@@ -1382,16 +1382,19 @@ describe('QuerySelector', () => {
                         L 2605.182 817.996 A 80 80 0 0 0 2683.131 880 L 3955.829 880 L 3955.829 0" 
                         vector-effect="non-scaling-stroke">
                     </path>
+                    <unknown></unknown>
                 </g>
             </svg>`;
 
 			const svg = document.querySelector('svg');
 			const path = document.querySelector('path');
+			const unknown = document.querySelector('unknown');
 
 			expect(svg?.constructor.name).toBe('SVGSVGElement');
 
-			// TODO: Should be SVGPathElement, but it is not supported yet
-			expect(path?.constructor.name).toBe('SVGElement');
+			expect(path?.constructor.name).toBe('SVGPathElement');
+
+			expect(unknown?.constructor.name).toBe('SVGElement');
 		});
 
 		it('Throws an error when providing an invalid selector', () => {
