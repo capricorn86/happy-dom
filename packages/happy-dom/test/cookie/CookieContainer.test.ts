@@ -29,7 +29,9 @@ describe('CookieContainer', () => {
 						`key1=value1; Expires=${new Date(expires).toString()};`
 					)
 				),
-				<ICookie>CookieStringUtility.stringToCookie(originURL, `key2=value2; Max-Age=${maxAge};`),
+				<ICookie>(
+					CookieStringUtility.stringToCookie(originURL, `key2   =    value2   ; Max-Age=${maxAge};`)
+				),
 				<ICookie>CookieStringUtility.stringToCookie(originURL, `key3=value3; Domain=example.com;`),
 				<ICookie>CookieStringUtility.stringToCookie(originURL, `key4=value4; Domain=other.com;`),
 				<ICookie>(
