@@ -38,7 +38,7 @@ export default class SyncFetch {
 	private request: Request;
 	private redirectCount = 0;
 	private disableCache: boolean;
-	private disableCrossOriginPolicy: boolean;
+	private disableSameOriginPolicy: boolean;
 	#browserFrame: IBrowserFrame;
 	#window: BrowserWindow;
 	#unfilteredHeaders: Headers | null = null;
@@ -54,7 +54,7 @@ export default class SyncFetch {
 	 * @param [options.redirectCount] Redirect count.
 	 * @param [options.contentType] Content Type.
 	 * @param [options.disableCache] Disables the use of cached responses. It will still store the response in the cache.
-	 * @param [options.disableCrossOriginPolicy] Disables the Cross-Origin policy.
+	 * @param [options.disableSameOriginPolicy] Disables the Same-Origin policy.
 	 * @param [options.unfilteredHeaders] Unfiltered headers - necessary for preflight requests.
 	 */
 	constructor(options: {
@@ -65,7 +65,7 @@ export default class SyncFetch {
 		redirectCount?: number;
 		contentType?: string;
 		disableCache?: boolean;
-		disableCrossOriginPolicy?: boolean;
+		disableSameOriginPolicy?: boolean;
 		unfilteredHeaders?: Headers;
 	}) {
 		this.#browserFrame = options.browserFrame;
@@ -80,7 +80,10 @@ export default class SyncFetch {
 		}
 		this.redirectCount = options.redirectCount ?? 0;
 		this.disableCache = options.disableCache ?? false;
-		this.disableCrossOriginPolicy = options.disableCrossOriginPolicy ?? false;
+		this.disableSameOriginPolicy =
+			options.disableSameOriginPolicy ??
+			this.#browserFrame.page.context.browser.settings.fetch.disableSameOriginPolicy ??
+			false;
 	}
 
 	/**
@@ -118,7 +121,11 @@ export default class SyncFetch {
 			this.#window.location.protocol === 'https:'
 		) {
 			throw new this.#window.DOMException(
-				`Mixed Content: The page at '${this.#window.location.href}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${this.request.url}'. This request has been blocked; the content must be served over HTTPS.`,
+				`Mixed Content: The page at '${
+					this.#window.location.href
+				}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${
+					this.request.url
+				}'. This request has been blocked; the content must be served over HTTPS.`,
 				DOMExceptionNameEnum.securityError
 			);
 		}
@@ -177,7 +184,7 @@ export default class SyncFetch {
 					url: this.request.url,
 					init: { headers, method: cachedResponse.request.method },
 					disableCache: true,
-					disableCrossOriginPolicy: true
+					disableSameOriginPolicy: true
 				});
 
 				const validateResponse = <ISyncResponse>fetch.send();
@@ -199,7 +206,7 @@ export default class SyncFetch {
 					url: this.request.url,
 					init: { headers, method: cachedResponse.request.method },
 					disableCache: true,
-					disableCrossOriginPolicy: true
+					disableSameOriginPolicy: true
 				});
 				fetch.send().then((response) => {
 					response.buffer().then((body: Buffer) => {
@@ -236,7 +243,7 @@ export default class SyncFetch {
 	 */
 	private compliesWithCrossOriginPolicy(): boolean {
 		if (
-			this.disableCrossOriginPolicy ||
+			this.disableSameOriginPolicy ||
 			!FetchCORSUtility.isCORS(this.#window.location.href, this.request[PropertySymbol.url])
 		) {
 			return true;
@@ -288,7 +295,7 @@ export default class SyncFetch {
 			url: this.request.url,
 			init: { method: 'OPTIONS' },
 			disableCache: true,
-			disableCrossOriginPolicy: true,
+			disableSameOriginPolicy: true,
 			unfilteredHeaders: corsHeaders
 		});
 

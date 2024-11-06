@@ -366,6 +366,14 @@ describe('Node', () => {
 			const rootNode = (<ShadowRoot>customElement.shadowRoot).querySelector('span')?.getRootNode();
 
 			expect(rootNode === customElement.shadowRoot).toBe(true);
+
+			document.body.removeChild(customElement);
+
+			document.body.appendChild(customElement);
+
+			const rootNode2 = (<ShadowRoot>customElement.shadowRoot).querySelector('span')?.getRootNode();
+
+			expect(rootNode2 === customElement.shadowRoot).toBe(true);
 		});
 
 		it('Returns Document when used on a node inside a ShadowRoot and the option "composed" is set to "true".', () => {

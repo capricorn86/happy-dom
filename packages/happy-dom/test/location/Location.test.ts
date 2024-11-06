@@ -386,6 +386,21 @@ describe('Location', () => {
 				browserFrame.page.virtualConsolePrinter.readAsString().startsWith('Error: Test error\n')
 			).toBe(true);
 		});
+
+		it('Accepts url as URL object.', () => {
+			const location = new Location(browserFrame, 'about:blank');
+			let calledURL: string | null = null;
+
+			vi.spyOn(browserFrame, 'goto').mockImplementation(
+				async (url: string): Promise<Response | null> => {
+					calledURL = url;
+					return null;
+				}
+			);
+
+			location.assign(new URL(HREF));
+			expect(calledURL).toBe(HREF);
+		});
 	});
 
 	describe('reload()', () => {

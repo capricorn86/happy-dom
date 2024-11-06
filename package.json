@@ -12,7 +12,7 @@
 		"lint:fix": "eslint --max-warnings 0 --cache --cache-location ./.turbo/eslint.cache --fix .",
 		"test": "turbo run test --cache-dir=.turbo",
 		"test:watch": "turbo run test:watch --parallel",
-		"prepare": "husky install"
+		"prepare": "husky"
 	},
 	"devDependencies": {
 		"@types/he": "^1.1.2",
