@@ -25,6 +25,18 @@ export default interface IOptionalBrowserSettings {
 	};
 
 	/**
+	 * Settings for fetch
+	 */
+	fetch?: {
+		/**
+		 * Disables same-origin policy (CORS)
+		 *
+		 * @see https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy
+		 */
+		disableSameOriginPolicy?: boolean;
+	};
+
+	/**
 	 * Disables error capturing.
 	 *
 	 * @deprecated Use errorCapture instead.

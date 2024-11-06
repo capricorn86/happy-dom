@@ -82,7 +82,7 @@ describe('DOMParser', () => {
 				`<html>
 					<body>
 						<script>
-                        var test = {className:"meta",begin:/&lt;![a-z]/,end:/&gt;/,contains:[t,i,l,c]};
+							var test = {className:"meta",begin:/<![a-z]/,end:/>/,contains:[t,i,l,c]};
 						</script>
 					</body>
 				</html>`.replace(/\s/g, '')

@@ -7,6 +7,7 @@ import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import HTMLElement from '../../nodes/html-element/HTMLElement.js';
 import Event from '../../event/Event.js';
 import SVGElement from '../svg-element/SVGElement.js';
+import Document from '../document/Document.js';
 
 /**
  * ShadowRoot.
@@ -165,16 +166,25 @@ export default class ShadowRoot extends DocumentFragment {
 	 * @returns Active element.
 	 */
 	public get activeElement(): HTMLElement | SVGElement | null {
-		const activeElement: HTMLElement | SVGElement =
+		let activeElement: HTMLElement | SVGElement =
 			this[PropertySymbol.ownerDocument][PropertySymbol.activeElement];
-		if (
-			activeElement &&
-			activeElement[PropertySymbol.isConnected] &&
-			activeElement.getRootNode() === this
-		) {
+
+		let rootNode: ShadowRoot | Document = <ShadowRoot | Document>activeElement?.getRootNode();
+
+		if (!rootNode || rootNode === this[PropertySymbol.ownerDocument]) {
+			return null;
+		}
+
+		if (rootNode === this) {
 			return activeElement;
 		}
-		return null;
+
+		while (rootNode && rootNode !== this) {
+			activeElement = <HTMLElement | SVGElement>(<ShadowRoot>rootNode).host;
+			rootNode = <ShadowRoot | Document>activeElement.getRootNode();
+		}
+
+		return activeElement;
 	}
 
 	/**
