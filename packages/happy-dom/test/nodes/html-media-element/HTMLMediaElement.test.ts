@@ -9,7 +9,7 @@ import HTMLVideoElement from '../../../src/nodes/html-video-element/HTMLVideoEle
 import HTMLAudioElement from '../../../src/nodes/html-audio-element/HTMLAudioElement.js';
 import TimeRanges from '../../../src/nodes/html-media-element/TimeRanges.js';
 import RemotePlayback from '../../../src/nodes/html-media-element/RemotePlayback.js';
-import DOMTokenList from '../../../src/nodes/element/DOMTokenList.js';
+import DOMTokenList from '../../../src/dom/DOMTokenList.js';
 import TextTrackKindEnum from '../../../src/nodes/html-media-element/TextTrackKindEnum.js';
 import TextTrack from '../../../src/nodes/html-media-element/TextTrack.js';
 import MediaStream from '../../../src/nodes/html-media-element/MediaStream.js';
@@ -290,6 +290,30 @@ describe('HTMLMediaElement', () => {
 	describe('get srcObject()', () => {
 		it('Returns null by default', () => {
 			expect(element.srcObject).toBeNull();
+		});
+	});
+
+	describe('set srcObject()', () => {
+		it('Sets a MediaStream object', () => {
+			const srcObject = new window.MediaStream();
+			element.srcObject = srcObject;
+			expect(element.srcObject).toBe(srcObject);
+		});
+
+		it('Allows to be set to null', () => {
+			element.srcObject = new window.MediaStream();
+			element.srcObject = null;
+			expect(element.srcObject).toBeNull();
+		});
+
+		it('Throws an error if the value is not a MediaStream object', () => {
+			expect(() => {
+				element.srcObject = <MediaStream>{};
+			}).toThrowError(
+				new TypeError(
+					`Failed to set the 'srcObject' property on 'HTMLMediaElement': The provided value is not of type 'MediaStream'.`
+				)
+			);
 		});
 	});
 

@@ -4,7 +4,6 @@ import * as PropertySymbol from '../PropertySymbol.js';
 import DocumentImplementation from '../nodes/document/Document.js';
 import HTMLDocumentImplementation from '../nodes/html-document/HTMLDocument.js';
 import XMLDocumentImplementation from '../nodes/xml-document/XMLDocument.js';
-import SVGDocumentImplementation from '../nodes/svg-document/SVGDocument.js';
 import DocumentFragmentImplementation from '../nodes/document-fragment/DocumentFragment.js';
 import TextImplementation from '../nodes/text/Text.js';
 import CommentImplementation from '../nodes/comment/Comment.js';
@@ -13,7 +12,6 @@ import AudioImplementation from '../nodes/html-audio-element/Audio.js';
 import NodeIteratorImplementation from '../tree-walker/NodeIterator.js';
 import TreeWalkerImplementation from '../tree-walker/TreeWalker.js';
 import MutationObserverImplementation from '../mutation-observer/MutationObserver.js';
-import CSSStyleDeclarationImplementation from '../css/declaration/CSSStyleDeclaration.js';
 import MessagePortImplementation from '../event/MessagePort.js';
 import DataTransferImplementation from '../event/DataTransfer.js';
 import DataTransferItemImplementation from '../event/DataTransferItem.js';
@@ -78,11 +76,6 @@ export default class WindowClassExtender {
 		XMLDocument.prototype[PropertySymbol.window] = window;
 		(<typeof XMLDocument>window.XMLDocument) = XMLDocument;
 
-		// SVGDocument
-		class SVGDocument extends SVGDocumentImplementation {}
-		SVGDocument.prototype[PropertySymbol.window] = window;
-		(<typeof SVGDocument>window.SVGDocument) = SVGDocument;
-
 		// DocumentFragment
 		class DocumentFragment extends DocumentFragmentImplementation {}
 		DocumentFragment.prototype[PropertySymbol.window] = window;
@@ -122,11 +115,6 @@ export default class WindowClassExtender {
 		class MutationObserver extends MutationObserverImplementation {}
 		MutationObserver.prototype[PropertySymbol.window] = window;
 		(<typeof MutationObserver>window.MutationObserver) = MutationObserver;
-
-		// CSSStyleDeclaration
-		class CSSStyleDeclaration extends CSSStyleDeclarationImplementation {}
-		CSSStyleDeclaration.prototype[PropertySymbol.window] = window;
-		(<typeof CSSStyleDeclaration>window.CSSStyleDeclaration) = CSSStyleDeclaration;
 
 		// MessagePort
 		class MessagePort extends MessagePortImplementation {}

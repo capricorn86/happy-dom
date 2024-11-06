@@ -571,6 +571,70 @@ describe('Fetch', () => {
 			});
 		});
 
+		it('Allows cross-origin request if "Browser.settings.fetch.disableSameOriginPolicy" is set to "true".', async () => {
+			const originURL = 'http://localhost:8080';
+			const window = new Window({ url: originURL });
+			const url = 'http://other.origin.com/some/path';
+
+			window.happyDOM.settings.fetch.disableSameOriginPolicy = true;
+
+			let requestedUrl: string | null = null;
+			let postRequestHeaders: { [k: string]: string } | null = null;
+			let optionsRequestHeaders: { [k: string]: string } | null = null;
+
+			mockModule('http', {
+				request: (url, options) => {
+					requestedUrl = url;
+					if (options.method === 'OPTIONS') {
+						optionsRequestHeaders = options.headers;
+					} else if (options.method === 'POST') {
+						postRequestHeaders = options.headers;
+					}
+
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								async function* generate(): AsyncGenerator<string> {}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.headers = {};
+								response.rawHeaders = [];
+
+								callback(response);
+							}
+						},
+						setTimeout: () => {}
+					};
+				}
+			});
+
+			await window.fetch(url, {
+				method: 'POST',
+				body: '{"foo": "bar"}',
+				headers: {
+					'X-Custom-Header': 'yes',
+					'Content-Type': 'application/json'
+				}
+			});
+
+			expect(requestedUrl).toBe(url);
+			expect(optionsRequestHeaders).toBeNull();
+
+			expect(postRequestHeaders).toEqual({
+				Accept: '*/*',
+				Connection: 'close',
+				'Content-Type': 'application/json',
+				'Content-Length': '14',
+				'User-Agent': window.navigator.userAgent,
+				'Accept-Encoding': 'gzip, deflate, br',
+				Origin: originURL,
+				Referer: originURL + '/',
+				'X-Custom-Header': 'yes'
+			});
+		});
+
 		for (const httpCode of [301, 302, 303, 307, 308]) {
 			for (const method of ['GET', 'POST', 'PATCH']) {
 				it(`Should follow ${method} request redirect code ${httpCode}.`, async () => {

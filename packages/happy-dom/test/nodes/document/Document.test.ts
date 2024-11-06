@@ -10,7 +10,7 @@ import Node from '../../../src/nodes/node/Node.js';
 import Document from '../../../src/nodes/document/Document.js';
 import Element from '../../../src/nodes/element/Element.js';
 import Event from '../../../src/event/Event.js';
-import SVGSVGElement from '../../../src/nodes/svg-element/SVGSVGElement.js';
+import SVGSVGElement from '../../../src/nodes/svg-svg-element/SVGSVGElement.js';
 import SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
 import NamespaceURI from '../../../src/config/NamespaceURI.js';
 import Attr from '../../../src/nodes/attr/Attr.js';
@@ -37,6 +37,9 @@ import Fetch from '../../../src/fetch/Fetch.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import HTMLUnknownElement from '../../../src/nodes/html-unknown-element/HTMLUnknownElement.js';
 import EventTarget from '../../../src/event/EventTarget.js';
+import SVGGraphicsElement from '../../../src/nodes/svg-graphics-element/SVGGraphicsElement.js';
+import SVGPolygonElement from '../../../src/nodes/svg-polygon-element/SVGPolygonElement.js';
+import SVGFETurbulenceElement from '../../../src/nodes/svg-fe-turbulence-element/SVGFETurbulenceElement.js';
 
 /* eslint-disable jsdoc/require-jsdoc */
 
@@ -993,6 +996,14 @@ describe('Document', () => {
 			expect(element instanceof HTMLUnknownElement).toBe(true);
 		});
 
+		it('Lowercases the "localName" of non-custom HTML element names.', () => {
+			const element = document.createElement('DIV');
+			expect(element.tagName).toBe('DIV');
+			expect(element.localName).toBe('div');
+			expect(element.namespaceURI).toBe(NamespaceURI.html);
+			expect(element instanceof HTMLElement).toBe(true);
+		});
+
 		it('Creates a custom element.', () => {
 			window.customElements.define('custom-element', CustomElement);
 			const element = document.createElement('custom-element');
@@ -1042,6 +1053,17 @@ describe('Document', () => {
 			expect(element instanceof SVGSVGElement).toBe(true);
 		});
 
+		it('Creates svg elements.', () => {
+			expect(document.createElementNS(NamespaceURI.svg, 'rect')).toBeInstanceOf(SVGGraphicsElement);
+			expect(document.createElementNS(NamespaceURI.svg, 'polygon')).toBeInstanceOf(
+				SVGPolygonElement
+			);
+			const feTurbulence = document.createElementNS(NamespaceURI.svg, 'feTurbulence');
+			expect(feTurbulence).toBeInstanceOf(SVGFETurbulenceElement);
+			expect(feTurbulence.localName).toBe('feTurbulence');
+			expect(feTurbulence.tagName).toBe('feTurbulence');
+		});
+
 		it('Creates an unknown SVG element.', () => {
 			const element = document.createElementNS(NamespaceURI.svg, 'test');
 			expect(element.tagName).toBe('test');
@@ -1070,6 +1092,22 @@ describe('Document', () => {
 				document.createElementNS(<string>(<unknown>null), <string>(<unknown>true))
 			);
 			expect(element.tagName).toBe('TRUE');
+		});
+
+		it("Returns HTMLUnknownElement when case doesn't match for an HTML element.", () => {
+			const element = document.createElementNS(NamespaceURI.html, 'BuTtOn');
+			expect(element.tagName).toBe('BUTTON');
+			expect(element.localName).toBe('BuTtOn');
+			expect(element).toBeInstanceOf(HTMLUnknownElement);
+			expect(element.constructor.name).toBe('HTMLUnknownElement');
+		});
+
+		it("Returns SVGElement when case doesn't match for an SVG element.", () => {
+			const element = document.createElementNS(NamespaceURI.svg, 'clippath');
+			expect(element.tagName).toBe('clippath');
+			expect(element.localName).toBe('clippath');
+			expect(element).toBeInstanceOf(SVGElement);
+			expect(element.constructor.name).toBe('SVGElement');
 		});
 	});
 

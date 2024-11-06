@@ -173,32 +173,51 @@ describe('HTMLFormElement', () => {
 			expect(elements.item(7) === root.children[7]).toBe(true);
 			expect(elements.item(8) === root.children[8]).toBe(true);
 
-			const radioNodeList1 = new RadioNodeList(PropertySymbol.illegalConstructor, [
+			expect(element['text1'] === root.children[0]).toBe(true);
+			expect(element['button1'] === root.children[1]).toBe(true);
+			expect(element['checkbox1']).toBeInstanceOf(RadioNodeList);
+			expect(Array.from(<any>element['checkbox1'])).toEqual([
 				<THTMLFormControlElement>root.children[2],
 				<THTMLFormControlElement>root.children[3],
 				<THTMLFormControlElement>root.children[4]
 			]);
-			const radioNodeList2 = new RadioNodeList(PropertySymbol.illegalConstructor, [
+			expect(element['radio1']).toBeInstanceOf(RadioNodeList);
+			expect(Array.from(<any>element['radio1'])).toEqual([
 				<THTMLFormControlElement>root.children[5],
 				<THTMLFormControlElement>root.children[6],
 				<THTMLFormControlElement>root.children[7]
 			]);
 
-			expect(element['text1'] === root.children[0]).toBe(true);
-			expect(element['button1'] === root.children[1]).toBe(true);
-			expect(element['checkbox1']).toEqual(radioNodeList1);
-			expect(element['radio1']).toEqual(radioNodeList2);
-
 			expect(elements['text1'] === root.children[0]).toBe(true);
 			expect(elements['button1'] === root.children[1]).toBe(true);
-			expect(elements['checkbox1']).toEqual(radioNodeList1);
-			expect(elements['radio1']).toEqual(radioNodeList2);
+			expect(elements['checkbox1']).toBeInstanceOf(RadioNodeList);
+			expect(Array.from(<any>elements['checkbox1'])).toEqual([
+				<THTMLFormControlElement>root.children[2],
+				<THTMLFormControlElement>root.children[3],
+				<THTMLFormControlElement>root.children[4]
+			]);
+			expect(elements['radio1']).toBeInstanceOf(RadioNodeList);
+			expect(Array.from(<any>elements['radio1'])).toEqual([
+				<THTMLFormControlElement>root.children[5],
+				<THTMLFormControlElement>root.children[6],
+				<THTMLFormControlElement>root.children[7]
+			]);
 
 			expect(elements.namedItem('text1') === root.children[0]).toBe(true);
 			expect(elements.namedItem('button1') === root.children[1]).toBe(true);
-			expect(elements.namedItem('checkbox1')).toEqual(radioNodeList1);
+			expect(elements.namedItem('checkbox1')).toBeInstanceOf(RadioNodeList);
+			expect(Array.from(<any>elements.namedItem('checkbox1'))).toEqual([
+				<THTMLFormControlElement>root.children[2],
+				<THTMLFormControlElement>root.children[3],
+				<THTMLFormControlElement>root.children[4]
+			]);
 			expect((<HTMLInputElement>elements.namedItem('checkbox1')).value).toBe('value2');
-			expect(elements.namedItem('radio1')).toEqual(radioNodeList2);
+			expect(elements.namedItem('radio1')).toBeInstanceOf(RadioNodeList);
+			expect(Array.from(<any>elements.namedItem('radio1'))).toEqual([
+				<THTMLFormControlElement>root.children[5],
+				<THTMLFormControlElement>root.children[6],
+				<THTMLFormControlElement>root.children[7]
+			]);
 			expect((<HTMLInputElement>elements.namedItem('radio1')).value).toBe('value2');
 			expect((<HTMLInputElement>elements.namedItem('1')).value).toBe('value1');
 
@@ -250,26 +269,37 @@ describe('HTMLFormElement', () => {
 			expect(elements[15] === anotherRoot.children[6]).toBe(true);
 			expect(elements[16] === anotherRoot.children[7]).toBe(true);
 
-			const anotherRadioNodeList1 = new RadioNodeList(PropertySymbol.illegalConstructor, [
+			expect(element['anotherText1'] === anotherRoot.children[0]).toBe(true);
+			expect(element['anotherButton1'] === anotherRoot.children[1]).toBe(true);
+
+			expect(element['anotherCheckbox1']).toBeInstanceOf(RadioNodeList);
+			expect(Array.from(<any>element['anotherCheckbox1'])).toEqual([
 				<THTMLFormControlElement>anotherRoot.children[2],
 				<THTMLFormControlElement>anotherRoot.children[3],
 				<THTMLFormControlElement>anotherRoot.children[4]
 			]);
-			const anotherRadioNodeList2 = new RadioNodeList(PropertySymbol.illegalConstructor, [
+			expect(element['anotherRadio1']).toBeInstanceOf(RadioNodeList);
+			expect(Array.from(<any>element['anotherRadio1'])).toEqual([
 				<THTMLFormControlElement>anotherRoot.children[5],
 				<THTMLFormControlElement>anotherRoot.children[6],
 				<THTMLFormControlElement>anotherRoot.children[7]
 			]);
 
-			expect(element['anotherText1'] === anotherRoot.children[0]).toBe(true);
-			expect(element['anotherButton1'] === anotherRoot.children[1]).toBe(true);
-			expect(element['anotherCheckbox1']).toEqual(anotherRadioNodeList1);
-			expect(element['anotherRadio1']).toEqual(anotherRadioNodeList2);
-
 			expect(elements['anotherText1'] === anotherRoot.children[0]).toBe(true);
 			expect(elements['anotherButton1'] === anotherRoot.children[1]).toBe(true);
-			expect(elements['anotherCheckbox1']).toEqual(anotherRadioNodeList1);
-			expect(elements['anotherRadio1']).toEqual(anotherRadioNodeList2);
+
+			expect(elements['anotherCheckbox1']).toBeInstanceOf(RadioNodeList);
+			expect(Array.from(<any>elements['anotherCheckbox1'])).toEqual([
+				<THTMLFormControlElement>anotherRoot.children[2],
+				<THTMLFormControlElement>anotherRoot.children[3],
+				<THTMLFormControlElement>anotherRoot.children[4]
+			]);
+			expect(elements['anotherRadio1']).toBeInstanceOf(RadioNodeList);
+			expect(Array.from(<any>elements['anotherRadio1'])).toEqual([
+				<THTMLFormControlElement>anotherRoot.children[5],
+				<THTMLFormControlElement>anotherRoot.children[6],
+				<THTMLFormControlElement>anotherRoot.children[7]
+			]);
 
 			for (const child of Array.from(root.children)) {
 				if (child !== anotherElement) {
@@ -343,16 +373,15 @@ describe('HTMLFormElement', () => {
 			expect(elements.item(3) === root.children[3]).toBe(true);
 			expect(elements.item(4) === root.children[4]).toBe(true);
 
-			const radioNodeList = new RadioNodeList(PropertySymbol.illegalConstructor, [
+			expect(typeof elements.item).toBe('function');
+			expect(typeof elements.namedItem).toBe('function');
+			expect(elements.namedItem('length') === root.children[0]).toBe(true);
+			expect(elements.namedItem('namedItem')).toBeInstanceOf(RadioNodeList);
+			expect(Array.from(<any>elements.namedItem('namedItem'))).toEqual([
 				<THTMLFormControlElement>root.children[1],
 				<THTMLFormControlElement>root.children[2],
 				<THTMLFormControlElement>root.children[3]
 			]);
-
-			expect(typeof elements.item).toBe('function');
-			expect(typeof elements.namedItem).toBe('function');
-			expect(elements.namedItem('length') === root.children[0]).toBe(true);
-			expect(elements.namedItem('namedItem')).toEqual(radioNodeList);
 			expect(elements.namedItem('item') === root.children[4]).toBe(true);
 
 			const children = Array.from(root.children);
@@ -379,7 +408,12 @@ describe('HTMLFormElement', () => {
 			expect(typeof elements.item).toBe('function');
 			expect(typeof elements.namedItem).toBe('function');
 			expect(elements.namedItem('length') === root.children[0]).toBe(true);
-			expect(elements.namedItem('namedItem')).toEqual(radioNodeList);
+			expect(elements.namedItem('namedItem')).toBeInstanceOf(RadioNodeList);
+			expect(Array.from(<any>elements.namedItem('namedItem'))).toEqual([
+				<THTMLFormControlElement>root.children[1],
+				<THTMLFormControlElement>root.children[2],
+				<THTMLFormControlElement>root.children[3]
+			]);
 			expect(elements.namedItem('item') === root.children[4]).toBe(true);
 		});
 
@@ -428,16 +462,15 @@ describe('HTMLFormElement', () => {
 			expect(elements[3].form === element).toBe(true);
 			expect(elements[4].form === element).toBe(true);
 
-			const radioNodeList = new RadioNodeList(PropertySymbol.illegalConstructor, [
+			expect(typeof elements.item).toBe('function');
+			expect(typeof elements.namedItem).toBe('function');
+			expect(elements.namedItem('length') === root.children[0]).toBe(true);
+			expect(elements.namedItem('namedItem')).toBeInstanceOf(RadioNodeList);
+			expect(Array.from(<any>elements.namedItem('namedItem'))).toEqual([
 				<THTMLFormControlElement>root.children[1],
 				<THTMLFormControlElement>root.children[2],
 				<THTMLFormControlElement>root.children[3]
 			]);
-
-			expect(typeof elements.item).toBe('function');
-			expect(typeof elements.namedItem).toBe('function');
-			expect(elements.namedItem('length') === root.children[0]).toBe(true);
-			expect(elements.namedItem('namedItem')).toEqual(radioNodeList);
 			expect(elements.namedItem('item') === root.children[4]).toBe(true);
 
 			const children = Array.from(root.children);
@@ -465,7 +498,12 @@ describe('HTMLFormElement', () => {
 			expect(typeof elements.item).toBe('function');
 			expect(typeof elements.namedItem).toBe('function');
 			expect(elements.namedItem('length') === root.children[0]).toBe(true);
-			expect(elements.namedItem('namedItem')).toEqual(radioNodeList);
+			expect(elements.namedItem('namedItem')).toBeInstanceOf(RadioNodeList);
+			expect(Array.from(<any>elements.namedItem('namedItem'))).toEqual([
+				<THTMLFormControlElement>root.children[1],
+				<THTMLFormControlElement>root.children[2],
+				<THTMLFormControlElement>root.children[3]
+			]);
 			expect(elements.namedItem('item') === root.children[4]).toBe(true);
 
 			element.id = 'testForm2';
@@ -1116,6 +1154,46 @@ describe('HTMLFormElement', () => {
 
 			expect((<HTMLOutputElement>root.children[9]).value).toBe('Default value');
 			expect((<HTMLOutputElement>root.children[9]).textContent).toBe('Default value');
+		});
+	});
+
+	describe('appendChild()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			const child = document.createElement('input');
+			const child2 = document.createElement('textarea');
+			const child3 = document.createElement('select');
+
+			element.appendChild(child);
+			element.appendChild(child2);
+			element.appendChild(child3);
+
+			expect(child.parentNode).toBe(element);
+			expect(child2.parentNode).toBe(element);
+			expect(child3.parentNode).toBe(element);
+
+			expect(child.parentElement).toBe(element);
+			expect(child2.parentElement).toBe(element);
+			expect(child3.parentElement).toBe(element);
+		});
+	});
+
+	describe('insertBefore()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			const child = document.createElement('input');
+			const child2 = document.createElement('textarea');
+			const child3 = document.createElement('select');
+
+			element.appendChild(child);
+			element.appendChild(child2);
+			element.insertBefore(child3, child2);
+
+			expect(child.parentNode).toBe(element);
+			expect(child2.parentNode).toBe(element);
+			expect(child3.parentNode).toBe(element);
+
+			expect(child.parentElement).toBe(element);
+			expect(child2.parentElement).toBe(element);
+			expect(child3.parentElement).toBe(element);
 		});
 	});
 

@@ -10,6 +10,7 @@ import XMLSerializer from '../../src/xml-serializer/XMLSerializer.js';
 import HTMLTemplateElement from '../../src/nodes/html-template-element/HTMLTemplateElement.js';
 import NodeTypeEnum from '../../src/nodes/node/NodeTypeEnum.js';
 import { beforeEach, describe, it, expect } from 'vitest';
+import CustomElement from '../CustomElement.js';
 
 const GET_EXPECTED_HTML = (html: string): string =>
 	html
@@ -285,7 +286,9 @@ describe('XMLParser', () => {
 						<circle cx="150" cy="50" r="4" />
 					
 						<svg viewBox="0 0 10 10" x="200" width="100">
-							<circle cx="5" cy="5" r="4" />
+							<clippath>
+								<circle cx="5" cy="5" r="4" />
+							</clippath>
 						</svg>
 					</svg>
 				</div>
@@ -367,7 +370,9 @@ describe('XMLParser', () => {
 						<circle cx="150" cy="50" r="4"></circle>
 					
 						<svg viewBox="0 0 10 10" x="200" width="100">
-							<circle cx="5" cy="5" r="4"></circle>
+							<clipPath>
+								<circle cx="5" cy="5" r="4"></circle>
+							</clipPath>
 						</svg>
 					</svg>
 				</div>
@@ -390,6 +395,7 @@ describe('XMLParser', () => {
 						<stop cx="50" cy="50" r="40" />
 						<use cx="50" cy="50" r="40" />
 						<circle cx="150" cy="50" r="4"><test></test></circle>
+                        <clippath><circle cx="5" cy="5" r="4"></clippath>
 					
 						<svg viewBox="0 0 10 10" x="200" width="100">
 							<circle cx="5" cy="5" r="4" />
@@ -412,6 +418,7 @@ describe('XMLParser', () => {
 						<stop cx="50" cy="50" r="40"></stop>
 						<use cx="50" cy="50" r="40"></use>
 						<circle cx="150" cy="50" r="4"><test></test></circle>
+                        <clipPath><circle cx="5" cy="5" r="4"></circle></clipPath>
 					
 						<svg viewBox="0 0 10 10" x="200" width="100">
 							<circle cx="5" cy="5" r="4"></circle>
@@ -804,6 +811,31 @@ describe('XMLParser', () => {
 					    <div class="sliderBackground" style="background: linear-gradient(to right, rgb(17, 17, 17) 0%, rgb(17, 17, 17) 0.75rem, rgb(223, 223, 223) 0.75rem, rgb(223, 223, 223) 100%);"></div>
 				    </div>
 			    </div>`.replace(/\s/gm, '')
+			);
+		});
+
+		it('Handles parsing custom elements registered with non-ASCII characters.', () => {
+			window.customElements.define('a-Öa', CustomElement);
+
+			const root = XMLParser.parse(
+				document,
+				`
+                <div>
+                    <a-Öa key1="value1" key2="value2">
+                        <span>Test</span>
+                    </a-Öa>
+                </div>
+                `
+			);
+
+			expect(new XMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
+				`
+                <div>
+                    <a-Öa key1="value1" key2="value2">
+                        <span>Test</span>
+                    </a-Öa>
+                </div>
+                `.replace(/\s/gm, '')
 			);
 		});
 	});

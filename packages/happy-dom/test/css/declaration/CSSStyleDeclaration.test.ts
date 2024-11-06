@@ -2,6 +2,7 @@ import CSSStyleDeclaration from '../../../src/css/declaration/CSSStyleDeclaratio
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('CSSStyleDeclaration', () => {
@@ -17,7 +18,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe(`get {number}()`, () => {
 		it('Returns name of property when style is set on element.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', `border: 2px solid green;border-radius: 2px;font-size: 12px;`);
 
@@ -48,7 +51,7 @@ describe('CSSStyleDeclaration', () => {
 		});
 
 		it('Returns name of property without element.', () => {
-			const declaration = new CSSStyleDeclaration();
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window);
 
 			declaration.border = '2px solid green';
 			declaration.borderRadius = '2px';
@@ -83,7 +86,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get border()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border: inherit');
 
@@ -200,7 +205,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderTop()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-top: inherit');
 
@@ -234,7 +241,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderRight()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-right: inherit');
 
@@ -268,7 +277,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderBottom()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-bottom: inherit');
 
@@ -302,7 +313,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderLeft()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-left: inherit');
 
@@ -336,7 +349,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderWidth()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-width: inherit');
 
@@ -371,7 +386,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderStyle()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-style: inherit');
 
@@ -406,7 +423,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderColor()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-color: inherit');
 
@@ -441,7 +460,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderImage()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-image: inherit');
 
@@ -506,7 +527,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderImageSource()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', `border-image-source: inherit`);
 
@@ -540,7 +563,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderImageSlice()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-image-slice: inherit');
 
@@ -569,7 +594,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderImageWidth()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-image-width: inherit');
 
@@ -595,7 +622,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderImageOutset()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-image-outset: inherit');
 
@@ -621,7 +650,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderImageRepeat()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-image-repeat: inherit');
 
@@ -647,7 +678,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderTopWidth()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-top-width: inherit');
 
@@ -669,7 +702,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderRightWidth()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-right-width: inherit');
 
@@ -691,7 +726,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderBottomWidth()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-bottom-width: inherit');
 
@@ -713,7 +750,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderLeftWidth()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-left-width: inherit');
 
@@ -735,7 +774,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderTopColor()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-top-color: inherit');
 
@@ -757,7 +798,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderRightColor()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-right-color: inherit');
 
@@ -779,7 +822,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderBottomColor()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-bottom-color: inherit');
 
@@ -801,7 +846,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderLeftColor()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-left-color: inherit');
 
@@ -823,7 +870,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderTopStyle()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-top-style: inherit');
 
@@ -845,7 +894,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderRightStyle()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-right-style: inherit');
 
@@ -867,7 +918,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderBottomStyle()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-bottom-style: inherit');
 
@@ -889,7 +942,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderLeftStyle()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-left-style: inherit');
 
@@ -911,7 +966,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderRadius()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-radius: inherit');
 
@@ -953,7 +1010,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderTopLeftRadius()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-top-left-radius: inherit');
 
@@ -971,7 +1030,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderTopRightRadius()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-top-right-radius: inherit');
 
@@ -989,7 +1050,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderBottomRightRadius()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-bottom-right-radius: inherit');
 
@@ -1007,7 +1070,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderBottomLeftRadius()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'border-bottom-left-radius: inherit');
 
@@ -1025,7 +1090,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get borderCollapse()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			for (const value of ['collapse', 'separate', 'inherit', 'var(--test-variable)']) {
 				element.setAttribute('style', `border-collapse: ${value}`);
@@ -1037,7 +1104,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get outline()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'outline: inherit');
 
@@ -1072,7 +1141,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get outlineColor()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'outline-color: inherit');
 
@@ -1090,7 +1161,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get outlineWidth()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'outline-width: inherit');
 
@@ -1108,7 +1181,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get outlineStyle()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'outline-style: inherit');
 
@@ -1126,7 +1201,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get outlineOffset()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'outline-offset: inherit');
 
@@ -1144,7 +1221,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get letterSpacing()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'letter-spacing: inherit');
 
@@ -1162,7 +1241,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get wordSpacing()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'word-spacing: inherit');
 
@@ -1180,7 +1261,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get textIndent()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'text-indent: inherit');
 
@@ -1198,7 +1281,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get clear()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			for (const value of ['inherit', 'var(--test-variable)', 'none', 'left', 'right', 'both']) {
 				element.setAttribute('style', `clear: ${value}`);
@@ -1210,7 +1295,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get clip()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'clip: inherit');
 
@@ -1232,7 +1319,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get cssFloat()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			for (const value of [
 				'inherit',
@@ -1252,7 +1341,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get float()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			for (const value of [
 				'inherit',
@@ -1272,7 +1363,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get display()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			for (const value of [
 				'var(--test-variable)',
@@ -1311,7 +1404,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get direction()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			for (const value of [
 				'inherit',
@@ -1331,7 +1426,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get flex()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'flex: inherit');
 
@@ -1401,7 +1498,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get flexShrink()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'flex-shrink: inherit');
 
@@ -1423,7 +1522,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get flexGrow()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'flex-grow: inherit');
 
@@ -1445,7 +1546,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get flexBasis()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'flex-basis: 10em');
 
@@ -1477,7 +1580,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get padding()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'padding: inherit');
 
@@ -1535,7 +1640,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get paddingTop()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'padding-top: inherit');
 
@@ -1557,7 +1664,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get paddingRight()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'padding-right: inherit');
 
@@ -1579,7 +1688,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get paddingBottom()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'padding-bottom: inherit');
 
@@ -1601,7 +1712,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get paddingLeft()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'padding-left: inherit');
 
@@ -1623,7 +1736,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get margin()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'margin: inherit');
 
@@ -1685,7 +1800,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get marginTop()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'margin-top: inherit');
 
@@ -1711,7 +1828,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get marginRight()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'margin-right: inherit');
 
@@ -1737,7 +1856,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get marginBottom()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'margin-bottom: inherit');
 
@@ -1763,7 +1884,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get marginLeft()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'margin-left: inherit');
 
@@ -1789,7 +1912,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get background()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'background: inherit');
 
@@ -1861,7 +1986,9 @@ describe('CSSStyleDeclaration', () => {
 		});
 
 		it('Supports linear-gradient values.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.style.background =
 				'linear-gradient(\n\t\t\tto right,\n\t\t\t#111111 0%,\n\t\t\t#111111 0.5833333333333334rem,\n\t\t\t#dfdfdf 0.5833333333333334rem,\n\t\t\t#dfdfdf 100%)';
@@ -1874,7 +2001,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get backgroundImage()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'background-image: inherit');
 
@@ -1909,7 +2038,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get backgroundColor()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'background-color: inherit');
 
@@ -1931,7 +2062,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get backgroundRepeat()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			for (const repeat of [
 				'inherit',
@@ -1952,7 +2085,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get backgroundAttachment()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			for (const repeat of [
 				'inherit',
@@ -1971,7 +2106,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get backgroundPosition()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'background-position: inherit');
 
@@ -2087,7 +2224,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get width()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'width: inherit');
 
@@ -2115,7 +2254,9 @@ describe('CSSStyleDeclaration', () => {
 		});
 
 		it('Returns width for "width: calc(10% - 1px)".', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'width: calc(10% - 1px)');
 
@@ -2125,7 +2266,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get height()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'height: inherit');
 
@@ -2155,7 +2298,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get top()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'top: inherit');
 
@@ -2185,7 +2330,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get right()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'right: inherit');
 
@@ -2211,7 +2358,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get bottom()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'bottom: inherit');
 
@@ -2237,7 +2386,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get left()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'left: inherit');
 
@@ -2263,7 +2414,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get font()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', 'font: inherit');
 
@@ -2321,7 +2474,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get fontStyle()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			for (const property of [
 				'inherit',
@@ -2339,7 +2494,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get fontVariant()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			for (const property of ['inherit', 'var(--test-variable)', 'normal', 'small-caps']) {
 				element.setAttribute('style', `font-variant: ${property}`);
@@ -2350,7 +2507,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get fontWeight()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			for (const property of [
 				'inherit',
@@ -2377,7 +2536,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get fontStretch()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			for (const property of [
 				'inherit',
@@ -2400,7 +2561,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get fontSize()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			for (const property of [
 				'inherit',
@@ -2426,7 +2589,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get lineHeight()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			for (const property of [
 				'inherit',
@@ -2445,7 +2610,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get fontFamily()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			for (const property of [
 				'inherit',
@@ -2476,7 +2643,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get color()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			for (const property of [
 				'inherit',
@@ -2493,7 +2662,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get floodColor()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			for (const property of [
 				'inherit',
@@ -2510,7 +2681,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get textTransform()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			for (const value of [
 				'var(--test-variable)',
@@ -2534,7 +2707,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get visibility()', () => {
 		it('Returns style property.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			for (const value of [
 				'var(--test-variable)',
@@ -2553,9 +2728,51 @@ describe('CSSStyleDeclaration', () => {
 		});
 	});
 
+	describe('get aspectRatio()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			for (const value of [
+				'var(--test-variable)',
+				'inherit',
+				'initial',
+				'revert',
+				'unset',
+				'auto',
+				'1 / 1',
+				'16 / 9',
+				'4 / 3',
+				'1 / 2',
+				'2 / 1',
+				'3 / 4',
+				'9 / 16'
+			]) {
+				element.setAttribute('style', `aspect-ratio: ${value}`);
+
+				expect(declaration.aspectRatio).toBe(value);
+			}
+
+			element.setAttribute('style', 'aspect-ratio: 2');
+
+			expect(declaration.aspectRatio).toBe('2 / 1');
+
+			element.setAttribute('style', 'aspect-ratio: 16/9 auto');
+
+			expect(declaration.aspectRatio).toBe('auto 16 / 9');
+
+			element.setAttribute('style', 'aspect-ratio: 16/9');
+
+			expect(declaration.aspectRatio).toBe('16 / 9');
+		});
+	});
+
 	describe('get length()', () => {
 		it('Returns length when of styles on element.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', `border: 2px solid green;border-radius: 2px;font-size: 12px;`);
 
@@ -2563,7 +2780,7 @@ describe('CSSStyleDeclaration', () => {
 		});
 
 		it('Returns length without element.', () => {
-			const declaration = new CSSStyleDeclaration();
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window);
 
 			declaration.border = '2px solid green';
 			declaration.borderRadius = '2px';
@@ -2575,7 +2792,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('get cssText()', () => {
 		it('Returns CSS text when using element.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute(
 				'style',
@@ -2588,7 +2807,7 @@ describe('CSSStyleDeclaration', () => {
 		});
 
 		it('Returns CSS without element.', () => {
-			const declaration = new CSSStyleDeclaration();
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window);
 
 			declaration.border = '2px solid green';
 			declaration.borderRadius = '2px';
@@ -2602,7 +2821,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('set cssText()', () => {
 		it('Sets CSS text when using element.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			declaration.cssText = 'border: 2px solid green;     border-radius:   2px;font-size:   12px;';
 
@@ -2612,7 +2833,7 @@ describe('CSSStyleDeclaration', () => {
 		});
 
 		it('Sets CSS text without element.', () => {
-			const declaration = new CSSStyleDeclaration();
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window);
 
 			declaration.cssText = 'border: 2px solid green;     border-radius:   2px;font-size:   12px;';
 
@@ -2622,7 +2843,9 @@ describe('CSSStyleDeclaration', () => {
 		});
 
 		it('Removes style property on element if empty value is sent.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			declaration.cssText = '';
 
@@ -2632,7 +2855,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('item()', () => {
 		it('Returns an item by index when using element.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', `border: 2px solid green;border-radius: 2px;font-size: 12px;`);
 
@@ -2662,7 +2887,9 @@ describe('CSSStyleDeclaration', () => {
 		});
 
 		it('Returns an item by index without element.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			declaration.cssText = 'border: 2px solid green;border-radius: 2px;font-size: 12px;';
 
@@ -2694,7 +2921,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('setProperty()', () => {
 		it('Sets a CSS property when using element.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', `border: 2px solid green;border-radius: 2px;font-size: 12px;`);
 
@@ -2707,7 +2936,7 @@ describe('CSSStyleDeclaration', () => {
 		});
 
 		it('Sets a CSS property without element.', () => {
-			const declaration = new CSSStyleDeclaration();
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window);
 
 			declaration.cssText = `border: 2px solid green;border-radius: 2px;font-size: 12px;`;
 			declaration.setProperty('background-color', 'green');
@@ -2718,11 +2947,13 @@ describe('CSSStyleDeclaration', () => {
 		});
 
 		it('Handles when value is a number.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			declaration.setProperty('top', <string>(<unknown>1));
 
-			expect(element.getAttribute('style')).toBe('');
+			expect(element.getAttribute('style')).toBe(null);
 
 			declaration.setProperty('top', <string>(<unknown>0));
 
@@ -2730,7 +2961,9 @@ describe('CSSStyleDeclaration', () => {
 		});
 
 		it('Removes style attribute on element if empty value is sent', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', `border: 2px solid green;`);
 
@@ -2740,7 +2973,9 @@ describe('CSSStyleDeclaration', () => {
 		});
 
 		it('Can set a CSS variable.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', `border: 2px solid green;`);
 
@@ -2751,7 +2986,9 @@ describe('CSSStyleDeclaration', () => {
 		});
 
 		it('Can set a CSS variable.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', `border: 2px solid green;`);
 
@@ -2764,13 +3001,20 @@ describe('CSSStyleDeclaration', () => {
 		it('Can set a CSS variable as element style property.', () => {
 			element.style.setProperty('--test-key', 'value');
 			document.body.appendChild(element);
-			expect(new CSSStyleDeclaration(element, true).getPropertyValue('--test-key')).toBe('value');
+			expect(
+				new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+					element,
+					computed: true
+				}).getPropertyValue('--test-key')
+			).toBe('value');
 		});
 	});
 
 	describe('removeProperty()', () => {
 		it('Removes a CSS property when using element.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', `border: 2px solid blue; color: red;`);
 			declaration.removeProperty('border');
@@ -2844,7 +3088,7 @@ describe('CSSStyleDeclaration', () => {
 		});
 
 		it('Removes a CSS property without element.', () => {
-			const declaration = new CSSStyleDeclaration();
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window);
 
 			declaration.cssText = `border: 2px solid green;border-radius: 2px;font-size: 12px;`;
 			declaration.removeProperty('border-radius');
@@ -2853,7 +3097,9 @@ describe('CSSStyleDeclaration', () => {
 		});
 
 		it('Removes style attribute on element if there are no CSS properties left.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', `border: 2px solid green;border-radius: 2px;`);
 
@@ -2866,7 +3112,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('getPropertyValue()', () => {
 		it('Returns a CSS property value when using element.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', `border: 2px solid green;border-radius: 2px;font-size: 12px;`);
 
@@ -2877,7 +3125,7 @@ describe('CSSStyleDeclaration', () => {
 		});
 
 		it('Returns a CSS property without element.', () => {
-			const declaration = new CSSStyleDeclaration();
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window);
 
 			declaration.cssText = `border: 2px solid green;border-radius: 2px;font-size: 12px;`;
 
@@ -2888,7 +3136,9 @@ describe('CSSStyleDeclaration', () => {
 		});
 
 		it('Does not override important values when defined multiple times.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute(
 				'style',
@@ -2902,7 +3152,9 @@ describe('CSSStyleDeclaration', () => {
 
 	describe('getPropertyPriority()', () => {
 		it('Returns property priority.', () => {
-			const declaration = new CSSStyleDeclaration(element);
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
 
 			element.setAttribute('style', `text-transform: uppercase`);
 

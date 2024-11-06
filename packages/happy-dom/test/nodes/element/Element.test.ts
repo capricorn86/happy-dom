@@ -5,7 +5,7 @@ import CustomElement from '../../CustomElement.js';
 import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
 import Document from '../../../src/nodes/document/Document.js';
 import Text from '../../../src/nodes/text/Text.js';
-import DOMRect from '../../../src/nodes/element/DOMRect.js';
+import DOMRect from '../../../src/dom/DOMRect.js';
 import NamespaceURI from '../../../src/config/NamespaceURI.js';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility.js';
 import QuerySelector from '../../../src/query-selector/QuerySelector.js';
@@ -523,6 +523,48 @@ describe('Element', () => {
 					})
 					.includes('<span class="propKey">')
 			).toBe(true);
+		});
+
+		it('Returns HTML slotted elements.', () => {
+			CustomElement.serializable = true;
+
+			document.body.innerHTML =
+				'<div><custom-element key1="value1" key2="value2"><span>Slotted</span></custom-element></div>';
+
+			expect(document.body.getHTML({ serializableShadowRoots: true }).replace(/\s/g, '')).toBe(
+				`
+                <div>
+                    <custom-element key1="value1" key2="value2">
+                        <template shadowrootmode="open" shadowrootserializable="">
+                            <style>
+                                :host {
+                                    display: block;
+                                    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+                                }
+
+                                span {
+                                    color: pink;
+                                }
+
+                                .propKey {
+                                    color: yellow;
+                                }
+                            </style>
+                            <div>
+                                <span class="propKey">
+                                    key1 is "value1" and key2 is "value2".
+                                </span>
+                                <span class="children"></span>
+                                <span>
+                                    <slot></slot>
+                                </span>
+                            </div>
+                        </template>
+                        <span>Slotted</span>
+                    </custom-element>
+                </div>
+                `.replace(/\s/g, '')
+			);
 		});
 	});
 

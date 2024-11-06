@@ -1,39 +1,55 @@
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
-import SVGSVGElement from '../../../src/nodes/svg-element/SVGSVGElement.js';
+import SVGSVGElement from '../../../src/nodes/svg-svg-element/SVGSVGElement.js';
 import NamespaceURI from '../../../src/config/NamespaceURI.js';
 import SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
 import HTMLElementUtility from '../../../src/nodes/html-element/HTMLElementUtility.js';
 import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import Element from '../../../src/nodes/element/Element.js';
 
 describe('SVGElement', () => {
 	let window: Window;
 	let document: Document;
-	let element: SVGSVGElement;
-	let line: SVGElement;
+	let element: SVGElement;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		element = <SVGSVGElement>document.createElementNS(NamespaceURI.svg, 'svg');
-		line = <SVGElement>document.createElementNS(NamespaceURI.svg, 'line');
+		element = <SVGElement>document.createElementNS('http://www.w3.org/2000/svg', 'unknown');
 	});
 
 	afterEach(() => {
 		vi.restoreAllMocks();
 	});
 
-	describe('get ownerSVGElement()', () => {
-		it('Returns svg element when append to some svg.', () => {
-			element.append(line);
-			const ownerSVG = line.ownerSVGElement;
-			expect(ownerSVG).toBe(element);
+	describe('constructor()', () => {
+		it('Should be an instanceof SVGElement', () => {
+			expect(element instanceof SVGElement).toBe(true);
 		});
 
-		it('Returns null when dangling.', () => {
-			const ownerSVG = line.ownerSVGElement;
-			expect(ownerSVG).toBe(null);
+		it('Should be an instanceof Element', () => {
+			expect(element instanceof Element).toBe(true);
+		});
+	});
+
+	describe('get ownerSVGElement()', () => {
+		it('Returns the owner SVG element.', () => {
+			const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+			const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+			svg.appendChild(rect);
+			rect.appendChild(element);
+			expect(element.ownerSVGElement).toBe(svg);
+		});
+	});
+
+	describe('get viewportElement()', () => {
+		it('Returns the viewport element.', () => {
+			const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+			const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+			svg.appendChild(rect);
+			rect.appendChild(element);
+			expect(element.viewportElement).toBe(svg);
 		});
 	});
 
@@ -67,6 +83,53 @@ describe('SVGElement', () => {
 			expect(element.getAttribute('data-test-delta')).toBe(null);
 			expect(Object.keys(dataset)).toEqual(['testAlpha', 'testBeta', 'testGamma']);
 			expect(Object.values(dataset)).toEqual(['value2', 'value4', 'value5']);
+		});
+	});
+
+	describe('get style()', () => {
+		it('Returns an instance of CSSStyleDeclaration.', () => {
+			const style = element.style;
+
+			expect(style).toBeInstanceOf(window.CSSStyleDeclaration);
+			expect(element.style).toBe(style);
+
+			style.border = '1px solid red';
+
+			expect(element.getAttribute('style')).toBe('border: 1px solid red;');
+
+			element.setAttribute('style', 'color: blue;');
+
+			expect(style.color).toBe('blue');
+		});
+
+		it('Returns correct style properties.', () => {
+			element.setAttribute('style', 'border-radius: 2px; padding: 2px;');
+			expect(element.style.length).toEqual(8);
+			expect(element.style[0]).toEqual('border-top-left-radius');
+			expect(element.style[1]).toEqual('border-top-right-radius');
+			expect(element.style[2]).toEqual('border-bottom-right-radius');
+			expect(element.style[3]).toEqual('border-bottom-left-radius');
+			expect(element.style[4]).toEqual('padding-top');
+			expect(element.style[5]).toEqual('padding-right');
+			expect(element.style[6]).toEqual('padding-bottom');
+			expect(element.style[7]).toEqual('padding-left');
+			expect(element.style.borderRadius).toEqual('2px');
+			expect(element.style.padding).toEqual('2px');
+			expect(element.style.cssText).toEqual('border-radius: 2px; padding: 2px;');
+
+			element.setAttribute('style', 'border-radius: 4px; padding: 4px;');
+			expect(element.style.length).toEqual(8);
+			expect(element.style[0]).toEqual('border-top-left-radius');
+			expect(element.style[1]).toEqual('border-top-right-radius');
+			expect(element.style[2]).toEqual('border-bottom-right-radius');
+			expect(element.style[3]).toEqual('border-bottom-left-radius');
+			expect(element.style[4]).toEqual('padding-top');
+			expect(element.style[5]).toEqual('padding-right');
+			expect(element.style[6]).toEqual('padding-bottom');
+			expect(element.style[7]).toEqual('padding-left');
+			expect(element.style.borderRadius).toEqual('4px');
+			expect(element.style.padding).toEqual('4px');
+			expect(element.style.cssText).toEqual('border-radius: 4px; padding: 4px;');
 		});
 	});
 
