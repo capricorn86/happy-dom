@@ -18,7 +18,15 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 	public window: Window;
 	public global: Global.Global;
 	public moduleMocker: ModuleMocker;
-	public customExportConditions = ['browser'];
+
+	/**
+	 * jest-environment-jsdom" has the default set to ['browser']
+	 * As changing this value would be a breaking change, we will keep it at ['node', 'node-addons'] until we do a major release
+	 *
+	 * @see https://stackoverflow.com/questions/72428323/jest-referenceerror-vue-is-not-defined
+	 */
+	public customExportConditions = ['node', 'node-addons'];
+
 	private _configuredExportConditions: string[];
 
 	/**
