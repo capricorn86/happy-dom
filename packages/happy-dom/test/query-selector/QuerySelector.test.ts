@@ -779,6 +779,45 @@ describe('QuerySelector', () => {
 			expect((<HTMLInputElement>elements[0]).value).toBe('two');
 		});
 
+		it('Returns all elements matching ":disabled".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+			<form>
+				<input type="radio" id="id1" name="op" value="one" disabled/>
+				<input type="radio" id="id2" name="op" value="two"/>
+                <button disabled>Disabled</button>
+                <fieldset disabled></fieldset>
+                <select disabled>
+                    <option>Option 1</option>
+                    <option disabled>Option 2</option>
+                </select>
+                <textarea disabled></textarea>
+			</form>
+			`;
+			const elements = container.querySelectorAll(':disabled');
+
+			expect(elements.length).toBe(6);
+			expect(elements[0] === container.children[0].children[0]).toBe(true);
+			expect(elements[1] === container.children[0].children[2]).toBe(true);
+			expect(elements[2] === container.children[0].children[3]).toBe(true);
+			expect(elements[3] === container.children[0].children[4]).toBe(true);
+			expect(elements[4] === container.children[0].children[4].children[1]).toBe(true);
+			expect(elements[5] === container.children[0].children[5]).toBe(true);
+
+			// Here we also tests that cache works
+
+			(<HTMLInputElement>container.children[0].children[0]).disabled = false;
+
+			const elements2 = container.querySelectorAll(':disabled');
+
+			expect(elements2.length).toBe(5);
+			expect(elements2[0] === container.children[0].children[2]).toBe(true);
+			expect(elements2[1] === container.children[0].children[3]).toBe(true);
+			expect(elements2[2] === container.children[0].children[4]).toBe(true);
+			expect(elements2[3] === container.children[0].children[4].children[1]).toBe(true);
+			expect(elements2[4] === container.children[0].children[5]).toBe(true);
+		});
+
 		it('Returns all elements matching "span:not([type=hidden])".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;

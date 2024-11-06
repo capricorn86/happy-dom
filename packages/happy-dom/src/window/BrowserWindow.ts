@@ -204,7 +204,7 @@ import {
 } from 'node:perf_hooks';
 import EventPhaseEnum from '../event/EventPhaseEnum.js';
 import HTMLOptionsCollection from '../nodes/html-select-element/HTMLOptionsCollection.js';
-import WindowClassExtender from './WindowClassExtender.js';
+import WindowContextClassExtender from './WindowContextClassExtender.js';
 import WindowBrowserContext from './WindowBrowserContext.js';
 import CanvasCaptureMediaStreamTrack from '../nodes/html-canvas-element/CanvasCaptureMediaStreamTrack.js';
 import SVGSVGElement from '../nodes/svg-svg-element/SVGSVGElement.js';
@@ -825,7 +825,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 
 		this[PropertySymbol.setupVMContext]();
 
-		WindowClassExtender.extendClass(this);
+		WindowContextClassExtender.extendClasses(this);
 
 		// Document
 		this.document = new this.HTMLDocument();
