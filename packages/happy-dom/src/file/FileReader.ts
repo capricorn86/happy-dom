@@ -50,7 +50,7 @@ export default class FileReader extends EventTarget {
 	 */
 	public readAsArrayBuffer(blob: Blob): void {
 		if (!(blob instanceof Blob)) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'readAsArrayBuffer' on 'FileReader': parameter 1 is not of type 'Blob'.`
 			);
 		}
@@ -64,7 +64,7 @@ export default class FileReader extends EventTarget {
 	 */
 	public readAsBinaryString(blob: Blob): void {
 		if (!(blob instanceof Blob)) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'readAsBinaryString' on 'FileReader': parameter 1 is not of type 'Blob'.`
 			);
 		}
@@ -78,7 +78,7 @@ export default class FileReader extends EventTarget {
 	 */
 	public readAsDataURL(blob: Blob): void {
 		if (!(blob instanceof Blob)) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'readAsDataURL' on 'FileReader': parameter 1 is not of type 'Blob'.`
 			);
 		}
@@ -93,7 +93,7 @@ export default class FileReader extends EventTarget {
 	 */
 	public readAsText(blob: Blob, encoding: string | null = null): void {
 		if (!(blob instanceof Blob)) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'readAsText' on 'FileReader': parameter 1 is not of type 'Blob'.`
 			);
 		}
@@ -186,8 +186,9 @@ export default class FileReader extends EventTarget {
 					case FileReaderFormatEnum.dataURL: {
 						// Spec seems very unclear here; see https://github.com/w3c/FileAPI/issues/104.
 						const contentType = WhatwgMIMEType.parse(blob.type) || 'application/octet-stream';
-						(<Buffer | ArrayBuffer | string>this.result) =
-							`data:${contentType};base64,${data.toString('base64')}`;
+						(<Buffer | ArrayBuffer | string>(
+							this.result
+						)) = `data:${contentType};base64,${data.toString('base64')}`;
 						break;
 					}
 					case FileReaderFormatEnum.text: {
