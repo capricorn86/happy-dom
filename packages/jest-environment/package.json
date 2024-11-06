@@ -64,7 +64,7 @@
 		"@radix-ui/react-select": "^1.2.2",
 		"@testing-library/react": "^14.0.0",
 		"@testing-library/user-event": "^14.5.1",
-		"@vue/test-utils": "^2.4.4",
+		"@vue/test-utils": "^2.4.6",
 		"@types/jest": "29.5.2",
 		"@types/node": "^16.11.7",
 		"@types/react": "^18.2.0",
@@ -85,7 +85,7 @@
 		"rxjs": "^6.5.3",
 		"ts-jest": "^29.1.1",
 		"typescript": "^5.0.4",
-		"vue": "^3.2.31",
+		"vue": "^3.5.12",
 		"zone.js": "^0.10.3"
 	},
 	"engines": {

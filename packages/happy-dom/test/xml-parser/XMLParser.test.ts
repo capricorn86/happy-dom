@@ -246,9 +246,9 @@ describe('XMLParser', () => {
 
 			expect(new XMLSerializer().serializeToString(root)).toBe(
 				`<div>
-					<script>if(1&lt;Math['random']()){}else if(Math['random']()&gt;1){console.log("1")}</script>
-					<script>&lt;b&gt;&lt;/b&gt;</script>
-					<style>&lt;b&gt;&lt;/b&gt;</style>
+					<script>if(1<Math['random']()){}else if(Math['random']()>1){console.log("1")}</script>
+					<script><b></b></script>
+					<style><b></b></style>
 				</div>`
 			);
 
