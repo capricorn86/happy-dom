@@ -249,6 +249,72 @@ describe('SyncFetch', () => {
 			expect(response.body.toString()).toBe(responseText);
 		});
 
+		it('Should not allow to inject code into scripts executed using child_process.execFileSync().', () => {
+			browserFrame.url = 'https://localhost:8080/';
+
+			const url =
+				"https://localhost:8080/`+require('child_process').execSync('id')+`/'+require('child_process').execSync('id')+'";
+			const responseText = 'test';
+
+			mockModule('child_process', {
+				execFileSync: (
+					command: string,
+					args: string[],
+					options: { encoding: string; maxBuffer: number }
+				) => {
+					expect(command).toEqual(process.argv[0]);
+					expect(args[0]).toBe('-e');
+					expect(args[1]).toBe(
+						SyncFetchScriptBuilder.getScript({
+							url: new URL(
+								"https://localhost:8080/%60+require('child_process').execSync('id')+%60/'+require('child_process').execSync('id')+'"
+							),
+							method: 'GET',
+							headers: {
+								Accept: '*/*',
+								Connection: 'close',
+								Referer: 'https://localhost:8080/',
+								'User-Agent': window.navigator.userAgent,
+								'Accept-Encoding': 'gzip, deflate, br'
+							},
+							body: null
+						})
+					);
+					// new URL() will convert ` into %60
+					// By using ` for the URL string within the script, we can prevent the script from being injected
+					expect(
+						args[1].includes(
+							`\`https://localhost:8080/%60+require('child_process').execSync('id')+%60/'+require('child_process').execSync('id')+'\``
+						)
+					).toBe(true);
+					expect(options).toEqual({
+						encoding: 'buffer',
+						maxBuffer: 1024 * 1024 * 1024
+					});
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							rawHeaders: [],
+							data: Buffer.from(responseText).toString('base64')
+						}
+					});
+				}
+			});
+
+			const response = new SyncFetch({
+				browserFrame,
+				window,
+				url,
+				init: {
+					method: 'GET'
+				}
+			}).send();
+
+			expect(response.body.toString()).toBe(responseText);
+		});
+
 		it('Should send custom key/value object request headers.', () => {
 			browserFrame.url = 'https://localhost:8080/';
 
