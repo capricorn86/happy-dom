@@ -1,10 +1,13 @@
 import CSSStyleSheet from './CSSStyleSheet.js';
 import CSSRuleTypeEnum from './CSSRuleTypeEnum.js';
+import * as PropertySymbol from '../PropertySymbol.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * CSSRule interface.
  */
 export default class CSSRule {
+	// Static properties
 	public static CONTAINER_RULE = CSSRuleTypeEnum.containerRule;
 	public static STYLE_RULE = CSSRuleTypeEnum.styleRule;
 	public static IMPORT_RULE = CSSRuleTypeEnum.importRule;
@@ -20,9 +23,27 @@ export default class CSSRule {
 	public static FONT_FEATURE_VALUES_RULE = CSSRuleTypeEnum.fontFeatureValuesRule;
 	public static REGION_STYLE_RULE = CSSRuleTypeEnum.regionStyleRule;
 
+	// Internal properties
+	public [PropertySymbol.window]: BrowserWindow;
+
+	// Public properties
 	public parentRule: CSSRule = null;
 	public parentStyleSheet: CSSStyleSheet = null;
 	public type: number = null;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param illegalConstructorSymbol Illegal constructor symbol.
+	 * @param window Window.
+	 */
+	constructor(illegalConstructorSymbol: Symbol, window: BrowserWindow) {
+		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
+			throw new TypeError('Illegal constructor');
+		}
+
+		this[PropertySymbol.window] = window;
+	}
 
 	/**
 	 * Returns selector text.

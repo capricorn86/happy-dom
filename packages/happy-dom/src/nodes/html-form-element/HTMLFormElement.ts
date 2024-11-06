@@ -12,11 +12,11 @@ import BrowserWindow from '../../window/BrowserWindow.js';
 import THTMLFormControlElement from './THTMLFormControlElement.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import RadioNodeList from './RadioNodeList.js';
+import WindowBrowserContext from '../../window/WindowBrowserContext.js';
+import ClassMethodBinder from '../../ClassMethodBinder.js';
+import Node from '../node/Node.js';
 import Element from '../element/Element.js';
 import EventTarget from '../../event/EventTarget.js';
-import Node from '../node/Node.js';
-import ClassMethodBinder from '../../ClassMethodBinder.js';
-import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 
 /**
  * HTML Form Element.
@@ -43,14 +43,13 @@ export default class HTMLFormElement extends HTMLElement {
 	constructor() {
 		super();
 
-		ClassMethodBinder.bindMethods(
-			this,
-			[EventTarget, Node, Element, HTMLElement, HTMLFormElement],
-			{
-				bindSymbols: true,
-				forwardToPrototype: true
-			}
-		);
+		const methodBinder = new ClassMethodBinder(this, [
+			HTMLFormElement,
+			HTMLElement,
+			Element,
+			Node,
+			EventTarget
+		]);
 
 		const proxy = new Proxy(this, {
 			get: (target, property) => {
@@ -58,6 +57,7 @@ export default class HTMLFormElement extends HTMLElement {
 					return target[PropertySymbol.getFormControlItems]().length;
 				}
 				if (property in target || typeof property === 'symbol') {
+					methodBinder.bind(property);
 					return target[property];
 				}
 				const index = Number(property);
@@ -67,6 +67,7 @@ export default class HTMLFormElement extends HTMLElement {
 				return target[PropertySymbol.getFormControlNamedItem](<string>property) || undefined;
 			},
 			set(target, property, newValue): boolean {
+				methodBinder.bind(property);
 				if (typeof property === 'symbol') {
 					target[property] = newValue;
 					return true;
@@ -127,6 +128,8 @@ export default class HTMLFormElement extends HTMLElement {
 				return false;
 			},
 			defineProperty(target, property, descriptor): boolean {
+				methodBinder.preventBinding(property);
+
 				if (!descriptor.value) {
 					Object.defineProperty(target, property, descriptor);
 					return true;

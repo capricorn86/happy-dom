@@ -3,7 +3,7 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import Event from '../../event/Event.js';
 import ErrorEvent from '../../event/events/ErrorEvent.js';
-import DOMTokenList from '../element/DOMTokenList.js';
+import DOMTokenList from '../../dom/DOMTokenList.js';
 import Attr from '../attr/Attr.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
@@ -42,7 +42,11 @@ export default class HTMLLinkElement extends HTMLElement {
 	 */
 	public get relList(): DOMTokenList {
 		if (!this[PropertySymbol.relList]) {
-			this[PropertySymbol.relList] = new DOMTokenList(this, 'rel');
+			this[PropertySymbol.relList] = new DOMTokenList(
+				PropertySymbol.illegalConstructor,
+				this,
+				'rel'
+			);
 		}
 		return <DOMTokenList>this[PropertySymbol.relList];
 	}

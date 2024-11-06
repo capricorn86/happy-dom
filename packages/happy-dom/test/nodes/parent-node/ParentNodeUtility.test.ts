@@ -204,6 +204,30 @@ describe('ParentNodeUtility', () => {
 
 			expect(ParentNodeUtility.getElementsByTagName(parent, '*').length).toEqual(7);
 		});
+
+		it('Handles SVG elements.', () => {
+			const parent = document.createElement('div');
+			const svg = document.createElementNS(NamespaceURI.svg, 'svg');
+			const rect = document.createElementNS(NamespaceURI.svg, 'rect');
+			const clipPath = document.createElementNS(NamespaceURI.svg, 'clippath');
+
+			parent.appendChild(svg);
+			svg.appendChild(rect);
+			svg.appendChild(clipPath);
+
+			const svgElements = ParentNodeUtility.getElementsByTagName(parent, 'svg');
+			const rectElements = ParentNodeUtility.getElementsByTagName(parent, 'rect');
+			const clipPathElements = ParentNodeUtility.getElementsByTagName(parent, 'ClIpPaTh');
+
+			expect(svgElements.length).toBe(1);
+			expect(svgElements[0]).toBe(svg);
+
+			expect(rectElements.length).toBe(1);
+			expect(rectElements[0]).toBe(rect);
+
+			expect(clipPathElements.length).toBe(1);
+			expect(clipPathElements[0]).toBe(clipPath);
+		});
 	});
 
 	describe('getElementsByTagNameNS()', () => {
@@ -259,30 +283,29 @@ describe('ParentNodeUtility', () => {
 				ParentNodeUtility.getElementsByTagNameNS(parent, NamespaceURI.svg, '*').length
 			).toEqual(3);
 		});
+
+		it('Matches SVG elements local name and namespace.', () => {
+			const parent = document.createElement('div');
+			const svg = document.createElementNS(NamespaceURI.svg, 'svg');
+			const clipPath = document.createElementNS(NamespaceURI.svg, 'clippath');
+
+			parent.appendChild(svg);
+			svg.appendChild(clipPath);
+
+			const clipPathElements = ParentNodeUtility.getElementsByTagNameNS(
+				parent,
+				NamespaceURI.svg,
+				'clippath'
+			);
+
+			expect(clipPathElements.length).toBe(1);
+			expect(clipPathElements[0]).toBe(clipPath);
+
+			expect(
+				ParentNodeUtility.getElementsByTagNameNS(parent, NamespaceURI.svg, 'clipPath').length
+			).toBe(0);
+		});
 	});
-
-	// describe('getElementByTagName()', () => {
-	// 	it('Returns the first element matching a tag name.', () => {
-	// 		const parent = document.createElement('div');
-	// 		const div1 = document.createElement('div');
-	// 		const div2 = document.createElement('div');
-	// 		const div3 = document.createElement('div');
-	// 		const div4 = document.createElement('div');
-	// 		const span1 = document.createElement('span');
-	// 		const span2 = document.createElement('span');
-	// 		const span3 = document.createElement('span');
-
-	// 		parent.appendChild(div1);
-	// 		div1.appendChild(div2);
-	// 		div2.appendChild(span1);
-	// 		span1.appendChild(div3);
-	// 		div3.appendChild(span2);
-	// 		div3.appendChild(span3);
-	// 		span3.appendChild(div4);
-
-	// 		expect(ParentNodeUtility.getElementByTagName(parent, 'div') === div1).toBe(true);
-	// 	});
-	// });
 
 	describe('getElementById()', () => {
 		it('Returns the first element matching an id.', () => {

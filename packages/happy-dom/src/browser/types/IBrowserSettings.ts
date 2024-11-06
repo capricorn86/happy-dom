@@ -20,12 +20,26 @@ export default interface IBrowserSettings {
 	/** Handle disabled resource loading as success */
 	handleDisabledFileLoadingAsSuccess: boolean;
 
-	/** Settings for timers */
+	/**
+	 * Settings for timers
+	 */
 	timer: {
 		maxTimeout: number;
 		maxIntervalTime: number;
 		maxIntervalIterations: number;
 		preventTimerLoops: boolean;
+	};
+
+	/**
+	 * Settings for fetch
+	 */
+	fetch: {
+		/**
+		 * Disables same-origin policy (CORS)
+		 *
+		 * @see https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy
+		 */
+		disableSameOriginPolicy: boolean;
 	};
 
 	/**

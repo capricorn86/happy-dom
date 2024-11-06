@@ -68,6 +68,9 @@ export default class WindowBrowserContext {
 	 * @returns Browser frame.
 	 */
 	public getBrowserFrame(): IBrowserFrame | null {
+		if (!this.#window) {
+			return null;
+		}
 		return (
 			(<typeof WindowBrowserContext>this.constructor)[PropertySymbol.browserFrames].get(
 				this.#window[PropertySymbol.internalId]

@@ -2,13 +2,10 @@ import BrowserWindow from '../../src/window/BrowserWindow.js';
 import Headers from '../../src/fetch/Headers.js';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
-import AbortController from '../../src/fetch/AbortController.js';
-import Stream from 'stream';
 import { ReadableStream } from 'stream/web';
 import Zlib from 'zlib';
 import { TextEncoder } from 'util';
 import Blob from '../../src/file/Blob.js';
-import FormData from '../../src/form-data/FormData.js';
 import { URLSearchParams } from 'url';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import SyncFetchScriptBuilder from '../../src/fetch/utilities/SyncFetchScriptBuilder.js';
@@ -252,6 +249,72 @@ describe('SyncFetch', () => {
 			expect(response.body.toString()).toBe(responseText);
 		});
 
+		it('Should not allow to inject code into scripts executed using child_process.execFileSync().', () => {
+			browserFrame.url = 'https://localhost:8080/';
+
+			const url =
+				"https://localhost:8080/`+require('child_process').execSync('id')+`/'+require('child_process').execSync('id')+'";
+			const responseText = 'test';
+
+			mockModule('child_process', {
+				execFileSync: (
+					command: string,
+					args: string[],
+					options: { encoding: string; maxBuffer: number }
+				) => {
+					expect(command).toEqual(process.argv[0]);
+					expect(args[0]).toBe('-e');
+					expect(args[1]).toBe(
+						SyncFetchScriptBuilder.getScript({
+							url: new URL(
+								"https://localhost:8080/%60+require('child_process').execSync('id')+%60/'+require('child_process').execSync('id')+'"
+							),
+							method: 'GET',
+							headers: {
+								Accept: '*/*',
+								Connection: 'close',
+								Referer: 'https://localhost:8080/',
+								'User-Agent': window.navigator.userAgent,
+								'Accept-Encoding': 'gzip, deflate, br'
+							},
+							body: null
+						})
+					);
+					// new URL() will convert ` into %60
+					// By using ` for the URL string within the script, we can prevent the script from being injected
+					expect(
+						args[1].includes(
+							`\`https://localhost:8080/%60+require('child_process').execSync('id')+%60/'+require('child_process').execSync('id')+'\``
+						)
+					).toBe(true);
+					expect(options).toEqual({
+						encoding: 'buffer',
+						maxBuffer: 1024 * 1024 * 1024
+					});
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							rawHeaders: [],
+							data: Buffer.from(responseText).toString('base64')
+						}
+					});
+				}
+			});
+
+			const response = new SyncFetch({
+				browserFrame,
+				window,
+				url,
+				init: {
+					method: 'GET'
+				}
+			}).send();
+
+			expect(response.body.toString()).toBe(responseText);
+		});
+
 		it('Should send custom key/value object request headers.', () => {
 			browserFrame.url = 'https://localhost:8080/';
 
@@ -440,6 +503,68 @@ describe('SyncFetch', () => {
 			);
 
 			expect(postRequestArgs).toBe(
+				SyncFetchScriptBuilder.getScript({
+					url: new URL(url),
+					method: 'POST',
+					headers: {
+						Accept: '*/*',
+						Connection: 'close',
+						'Content-Length': `${body.length}`,
+						'Content-Type': 'application/json',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br',
+						Origin: originURL,
+						Referer: originURL + '/',
+						'X-Custom-Header': 'yes'
+					},
+					body: Buffer.from(body)
+				})
+			);
+		});
+
+		it('Allows cross-origin request if "Browser.settings.fetch.disableSameOriginPolicy" is set to "true".', async () => {
+			const originURL = 'http://localhost:8080';
+
+			browserFrame.url = originURL;
+			browserFrame.page.context.browser.settings.fetch.disableSameOriginPolicy = true;
+
+			const url = 'http://other.origin.com/some/path';
+			const body = '{"foo": "bar"}';
+
+			const requestArgs: string[] = [];
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					requestArgs.push(args[1]);
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							rawHeaders: ['Access-Control-Allow-Origin', '*'],
+							data: ''
+						}
+					});
+				}
+			});
+
+			new SyncFetch({
+				browserFrame,
+				window,
+				url,
+				init: {
+					method: 'POST',
+					body,
+					headers: {
+						'X-Custom-Header': 'yes',
+						'Content-Type': 'application/json'
+					}
+				}
+			}).send();
+
+			expect(requestArgs.length).toBe(1);
+
+			expect(requestArgs[0]).toBe(
 				SyncFetchScriptBuilder.getScript({
 					url: new URL(url),
 					method: 'POST',

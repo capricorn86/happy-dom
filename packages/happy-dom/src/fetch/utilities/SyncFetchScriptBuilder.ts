@@ -23,6 +23,7 @@ export default class SyncFetchScriptBuilder {
 	}): string {
 		const sortedHeaders = {};
 		const headerNames = Object.keys(request.headers).sort();
+
 		for (const name of headerNames) {
 			sortedHeaders[name] = request.headers[name];
 		}
@@ -43,7 +44,7 @@ export default class SyncFetchScriptBuilder {
 									null,
 									4
 								)};
-                const request = sendRequest('${request.url.href}', options, (incomingMessage) => {
+                const request = sendRequest(\`${request.url.href}\`, options, (incomingMessage) => {
                     let data = Buffer.alloc(0);
                     incomingMessage.on('data', (chunk) => {
                         data = Buffer.concat([data, Buffer.from(chunk)]);

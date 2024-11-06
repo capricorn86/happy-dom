@@ -44,15 +44,7 @@ export default class XMLSerializer {
 					return `<${localName}${this.getAttributes(element)}>`;
 				}
 
-				const childNodes =
-					localName === 'template'
-						? (<DocumentFragment>(<HTMLTemplateElement>root).content)[PropertySymbol.nodeArray]
-						: (<DocumentFragment>root)[PropertySymbol.nodeArray];
 				let innerHTML = '';
-
-				for (const node of childNodes) {
-					innerHTML += this.serializeToString(node);
-				}
 
 				// TODO: Should we include closed shadow roots? We are currently only including open shadow roots.
 				if (
@@ -70,6 +62,15 @@ export default class XMLSerializer {
 					}
 
 					innerHTML += '</template>';
+				}
+
+				const childNodes =
+					localName === 'template'
+						? (<DocumentFragment>(<HTMLTemplateElement>root).content)[PropertySymbol.nodeArray]
+						: (<DocumentFragment>root)[PropertySymbol.nodeArray];
+
+				for (const node of childNodes) {
+					innerHTML += this.serializeToString(node);
 				}
 
 				return `<${localName}${this.getAttributes(element)}>${innerHTML}</${localName}>`;
