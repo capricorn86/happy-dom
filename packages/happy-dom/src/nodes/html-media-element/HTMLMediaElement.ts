@@ -405,6 +405,11 @@ export default class HTMLMediaElement extends HTMLElement {
 	 * @param srcObject SrcObject.
 	 */
 	public set srcObject(srcObject: MediaStream | null) {
+		if (srcObject !== null && !(srcObject instanceof MediaStream)) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to set the 'srcObject' property on 'HTMLMediaElement': The provided value is not of type 'MediaStream'.`
+			);
+		}
 		this[PropertySymbol.srcObject] = srcObject;
 	}
 

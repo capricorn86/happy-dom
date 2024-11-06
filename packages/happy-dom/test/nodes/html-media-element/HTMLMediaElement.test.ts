@@ -294,10 +294,26 @@ describe('HTMLMediaElement', () => {
 	});
 
 	describe('set srcObject()', () => {
-		it('Sets the srcObject property', async () => {
-			const srcObject = <MediaStream>{};
+		it('Sets a MediaStream object', () => {
+			const srcObject = new window.MediaStream();
 			element.srcObject = srcObject;
 			expect(element.srcObject).toBe(srcObject);
+		});
+
+		it('Allows to be set to null', () => {
+			element.srcObject = new window.MediaStream();
+			element.srcObject = null;
+			expect(element.srcObject).toBeNull();
+		});
+
+		it('Throws an error if the value is not a MediaStream object', () => {
+			expect(() => {
+				element.srcObject = <MediaStream>{};
+			}).toThrowError(
+				new TypeError(
+					`Failed to set the 'srcObject' property on 'HTMLMediaElement': The provided value is not of type 'MediaStream'.`
+				)
+			);
 		});
 	});
 
