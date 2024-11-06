@@ -49,6 +49,11 @@ export default class FileReader extends EventTarget {
 	 * @param blob Blob.
 	 */
 	public readAsArrayBuffer(blob: Blob): void {
+		if (!(blob instanceof Blob)) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'readAsArrayBuffer' on 'FileReader': parameter 1 is not of type 'Blob'.`
+			);
+		}
 		this.#readFile(blob, FileReaderFormatEnum.buffer);
 	}
 
@@ -58,6 +63,11 @@ export default class FileReader extends EventTarget {
 	 * @param blob Blob.
 	 */
 	public readAsBinaryString(blob: Blob): void {
+		if (!(blob instanceof Blob)) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'readAsBinaryString' on 'FileReader': parameter 1 is not of type 'Blob'.`
+			);
+		}
 		this.#readFile(blob, FileReaderFormatEnum.binaryString);
 	}
 
@@ -67,6 +77,11 @@ export default class FileReader extends EventTarget {
 	 * @param blob Blob.
 	 */
 	public readAsDataURL(blob: Blob): void {
+		if (!(blob instanceof Blob)) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'readAsDataURL' on 'FileReader': parameter 1 is not of type 'Blob'.`
+			);
+		}
 		this.#readFile(blob, FileReaderFormatEnum.dataURL);
 	}
 
@@ -77,6 +92,11 @@ export default class FileReader extends EventTarget {
 	 * @param [encoding] Encoding.
 	 */
 	public readAsText(blob: Blob, encoding: string | null = null): void {
+		if (!(blob instanceof Blob)) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'readAsText' on 'FileReader': parameter 1 is not of type 'Blob'.`
+			);
+		}
 		this.#readFile(blob, FileReaderFormatEnum.text, encoding || 'UTF-8');
 	}
 
