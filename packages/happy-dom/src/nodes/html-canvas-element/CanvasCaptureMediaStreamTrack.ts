@@ -13,13 +13,13 @@ export default class CanvasCaptureMediaStreamTrack extends MediaStreamTrack {
 	/**
 	 * Constructor.
 	 *
-	 * @param [illegalConstructorSymbol] Illegal constructor symbol.
-	 * @param [canvas] Canvas.
+	 * @param illegalConstructorSymbol Illegal constructor symbol.
+	 * @param canvas Canvas.
 	 */
-	constructor(illegalConstructorSymbol?: symbol, canvas: HTMLCanvasElement | null = null) {
+	constructor(illegalConstructorSymbol: symbol, canvas: HTMLCanvasElement) {
 		super(illegalConstructorSymbol);
 
-		this[PropertySymbol.canvas] = <HTMLCanvasElement>canvas;
+		this[PropertySymbol.canvas] = canvas;
 	}
 
 	/**

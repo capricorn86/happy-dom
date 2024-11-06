@@ -5,7 +5,7 @@ import Document from '../document/Document.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
-import DOMTokenList from '../element/DOMTokenList.js';
+import DOMTokenList from '../../dom/DOMTokenList.js';
 import Attr from '../attr/Attr.js';
 import BrowserFrameFactory from '../../browser/utilities/BrowserFrameFactory.js';
 import BrowserFrameURL from '../../browser/utilities/BrowserFrameURL.js';
@@ -160,7 +160,11 @@ export default class HTMLIFrameElement extends HTMLElement {
 	 */
 	public get sandbox(): DOMTokenList {
 		if (!this[PropertySymbol.sandbox]) {
-			this[PropertySymbol.sandbox] = new DOMTokenList(this, 'sandbox');
+			this[PropertySymbol.sandbox] = new DOMTokenList(
+				PropertySymbol.illegalConstructor,
+				this,
+				'sandbox'
+			);
 		}
 		return <DOMTokenList>this[PropertySymbol.sandbox];
 	}

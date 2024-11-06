@@ -160,7 +160,6 @@ describe('XMLSerializer', () => {
 				`
 					<div>
 						<custom-element key1="value1" key2="value2">
-							<span>Slotted content</span>
 							<template shadowrootmode="open">
 								<style>
 									:host {
@@ -184,6 +183,7 @@ describe('XMLSerializer', () => {
 									<span><slot></slot></span>
 								</div>
 							</template>
+							<span>Slotted content</span>
 						</custom-element>
 						<custom-element key1="value4" key2="value5"></custom-element>
 					</div>`.replace(/[\s]/gm, '')
@@ -236,7 +236,6 @@ describe('XMLSerializer', () => {
 			).toBe(
 				`
             <my-custom-element>
-                <span>Slotted content</span>
                 <template shadowrootmode="open">
                     <style>
                         :host {
@@ -246,6 +245,7 @@ describe('XMLSerializer', () => {
                     </style>
                     <div><slot></slot></div>
                 </template>
+                <span>Slotted content</span>
             </my-custom-element>
             `.replace(/\s/gm, '')
 			);

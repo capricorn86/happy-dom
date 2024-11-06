@@ -9,7 +9,7 @@ import HTMLVideoElement from '../../../src/nodes/html-video-element/HTMLVideoEle
 import HTMLAudioElement from '../../../src/nodes/html-audio-element/HTMLAudioElement.js';
 import TimeRanges from '../../../src/nodes/html-media-element/TimeRanges.js';
 import RemotePlayback from '../../../src/nodes/html-media-element/RemotePlayback.js';
-import DOMTokenList from '../../../src/nodes/element/DOMTokenList.js';
+import DOMTokenList from '../../../src/dom/DOMTokenList.js';
 import TextTrackKindEnum from '../../../src/nodes/html-media-element/TextTrackKindEnum.js';
 import TextTrack from '../../../src/nodes/html-media-element/TextTrack.js';
 import MediaStream from '../../../src/nodes/html-media-element/MediaStream.js';

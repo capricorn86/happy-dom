@@ -3,7 +3,7 @@ import Event from '../../event/Event.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import TimeRanges from './TimeRanges.js';
-import DOMTokenList from '../element/DOMTokenList.js';
+import DOMTokenList from '../../dom/DOMTokenList.js';
 import RemotePlayback from './RemotePlayback.js';
 import MediaStream from './MediaStream.js';
 import TextTrackList from './TextTrackList.js';
@@ -299,7 +299,11 @@ export default class HTMLMediaElement extends HTMLElement {
 	 */
 	public get controlsList(): DOMTokenList {
 		if (this[PropertySymbol.controlsList] === null) {
-			this[PropertySymbol.controlsList] = new DOMTokenList(this, 'controlslist');
+			this[PropertySymbol.controlsList] = new DOMTokenList(
+				PropertySymbol.illegalConstructor,
+				this,
+				'controlslist'
+			);
 		}
 
 		return this[PropertySymbol.controlsList];

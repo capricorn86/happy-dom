@@ -1,5 +1,6 @@
 /* eslint-disable filenames/match-exported */
 
+import ClassMethodBinder from '../../ClassMethodBinder.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import NamedNodeMap from './NamedNodeMap.js';
 
@@ -18,12 +19,15 @@ export default class NamedNodeMapProxyFactory {
 		const namedItems = namedNodeMap[PropertySymbol.namedItems];
 		const namespaceItems = namedNodeMap[PropertySymbol.namespaceItems];
 
+		const methodBinder = new ClassMethodBinder(this, [NamedNodeMap]);
+
 		return new Proxy<NamedNodeMap>(namedNodeMap, {
 			get: (target, property) => {
 				if (property === 'length') {
 					return namespaceItems.size;
 				}
 				if (property in target || typeof property === 'symbol') {
+					methodBinder.bind(property);
 					return target[property];
 				}
 				const index = Number(property);
@@ -33,6 +37,7 @@ export default class NamedNodeMapProxyFactory {
 				return target.getNamedItem(<string>property) || undefined;
 			},
 			set(target, property, newValue): boolean {
+				methodBinder.bind(property);
 				if (typeof property === 'symbol') {
 					target[property] = newValue;
 					return true;
@@ -79,6 +84,8 @@ export default class NamedNodeMapProxyFactory {
 				return false;
 			},
 			defineProperty(target, property, descriptor): boolean {
+				methodBinder.preventBinding(property);
+
 				if (property in target) {
 					Object.defineProperty(target, property, descriptor);
 					return true;
