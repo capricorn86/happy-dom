@@ -4791,6 +4791,14 @@ export default class CSSStyleDeclaration {
 		this.setProperty('container-name', value);
 	}
 
+	public get aspectRatio(): string {
+		return this.getPropertyValue('aspect-ratio');
+	}
+
+	public set aspectRatio(value: string) {
+		this.setProperty('aspect-ratio', value);
+	}
+
 	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**

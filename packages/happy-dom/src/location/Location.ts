@@ -216,8 +216,8 @@ export default class Location {
 	 *
 	 * @param url URL.
 	 */
-	public replace(url: string): void {
-		this.href = url;
+	public replace(url: string | URL): void {
+		this.href = String(url);
 	}
 
 	/**
@@ -225,8 +225,8 @@ export default class Location {
 	 *
 	 * @param url URL.
 	 */
-	public assign(url: string): void {
-		this.href = url;
+	public assign(url: string | URL): void {
+		this.href = String(url);
 	}
 
 	/**

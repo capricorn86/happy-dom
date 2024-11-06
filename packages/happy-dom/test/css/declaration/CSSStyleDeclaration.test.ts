@@ -2728,6 +2728,46 @@ describe('CSSStyleDeclaration', () => {
 		});
 	});
 
+	describe('get aspectRatio()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			for (const value of [
+				'var(--test-variable)',
+				'inherit',
+				'initial',
+				'revert',
+				'unset',
+				'auto',
+				'1 / 1',
+				'16 / 9',
+				'4 / 3',
+				'1 / 2',
+				'2 / 1',
+				'3 / 4',
+				'9 / 16'
+			]) {
+				element.setAttribute('style', `aspect-ratio: ${value}`);
+
+				expect(declaration.aspectRatio).toBe(value);
+			}
+
+			element.setAttribute('style', 'aspect-ratio: 2');
+
+			expect(declaration.aspectRatio).toBe('2 / 1');
+
+			element.setAttribute('style', 'aspect-ratio: 16/9 auto');
+
+			expect(declaration.aspectRatio).toBe('auto 16 / 9');
+
+			element.setAttribute('style', 'aspect-ratio: 16/9');
+
+			expect(declaration.aspectRatio).toBe('16 / 9');
+		});
+	});
+
 	describe('get length()', () => {
 		it('Returns length when of styles on element.', () => {
 			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {

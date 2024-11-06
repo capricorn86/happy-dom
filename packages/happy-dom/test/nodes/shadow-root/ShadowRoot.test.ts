@@ -218,6 +218,29 @@ describe('ShadowRoot', () => {
 
 			expect(shadowRoot.activeElement === null).toBe(true);
 		});
+
+		it('Returns the first custom element when the active element is not a child of the ShadowRoot, but is a child of a custom element within it.', () => {
+			const customElement = document.createElement('custom-element');
+			const shadowRoot = <ShadowRoot>customElement.shadowRoot;
+			const div = <HTMLElement>document.createElement('div');
+			const customElementA = document.createElement('custom-element-a');
+			const shadowRootA = <ShadowRoot>customElementA.shadowRoot;
+
+			document.body.appendChild(customElement);
+
+			shadowRoot.appendChild(customElementA);
+			shadowRootA.appendChild(div);
+
+			expect(shadowRoot.activeElement === null).toBe(true);
+
+			div.focus();
+
+			expect(shadowRoot.activeElement).toBe(customElementA);
+
+			customElementA.remove();
+
+			expect(shadowRoot.activeElement === null).toBe(true);
+		});
 	});
 
 	describe('getAnimations()', () => {
