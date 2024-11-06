@@ -15,12 +15,15 @@ export default class CookieStringUtility {
 	 */
 	public static stringToCookie(originURL: URL, cookieString: string): ICookie | null {
 		const parts = cookieString.split(';');
-		const [key, value] = parts.shift().split('=');
+		const part = parts.shift();
+		const index = part.indexOf('=');
+		const key = index !== -1 ? part.slice(0, index).trim() : part.trim();
+		const value = index !== -1 ? part.slice(index + 1).trim() : null;
 
 		const cookie: ICookie = {
 			// Required
-			key: key.trim(),
-			value: value ?? null,
+			key,
+			value,
 			originURL,
 
 			// Optional
@@ -38,9 +41,10 @@ export default class CookieStringUtility {
 		}
 
 		for (const part of parts) {
-			const keyAndValue = part.split('=');
-			const key = keyAndValue[0].trim().toLowerCase();
-			const value = keyAndValue[1];
+			const index = part.indexOf('=');
+			const key =
+				index !== -1 ? part.slice(0, index).trim().toLowerCase() : part.trim().toLowerCase();
+			const value = index !== -1 ? part.slice(index + 1).trim() : '';
 
 			switch (key) {
 				case 'expires':

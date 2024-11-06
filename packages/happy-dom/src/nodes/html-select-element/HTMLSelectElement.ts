@@ -29,6 +29,7 @@ export default class HTMLSelectElement extends HTMLElement {
 	public [PropertySymbol.options]: HTMLOptionsCollection | null = null;
 	public [PropertySymbol.selectedOptions]: HTMLCollection<HTMLOptionElement> | null = null;
 	public [PropertySymbol.selectedIndex]: number = -1;
+	public [PropertySymbol.proxy]: HTMLSelectElement;
 
 	// Events
 	public onchange: (event: Event) => void | null = null;
@@ -195,6 +196,7 @@ export default class HTMLSelectElement extends HTMLElement {
 			}
 		});
 
+		this[PropertySymbol.proxy] = proxy;
 		this[PropertySymbol.selectNode] = proxy;
 
 		return proxy;
