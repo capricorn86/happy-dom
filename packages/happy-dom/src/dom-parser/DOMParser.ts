@@ -106,7 +106,6 @@ export default class DOMParser {
 			case 'text/html':
 				return new window.HTMLDocument();
 			case 'image/svg+xml':
-				return new window.SVGDocument();
 			case 'text/xml':
 			case 'application/xml':
 			case 'application/xhtml+xml':

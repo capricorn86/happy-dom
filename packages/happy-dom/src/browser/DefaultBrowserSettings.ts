@@ -18,6 +18,9 @@ export default <IBrowserSettings>{
 		maxIntervalIterations: -1,
 		preventTimerLoops: false
 	},
+	fetch: {
+		disableSameOriginPolicy: false
+	},
 	navigation: {
 		disableMainFrameNavigation: false,
 		disableChildFrameNavigation: false,

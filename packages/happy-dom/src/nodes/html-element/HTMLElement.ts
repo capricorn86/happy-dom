@@ -5,7 +5,7 @@ import PointerEvent from '../../event/events/PointerEvent.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import Event from '../../event/Event.js';
 import HTMLElementUtility from './HTMLElementUtility.js';
-import DOMStringMap from '../element/DOMStringMap.js';
+import DOMStringMap from '../../dom/DOMStringMap.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 
 /**
@@ -330,7 +330,11 @@ export default class HTMLElement extends Element {
 	 */
 	public get style(): CSSStyleDeclaration {
 		if (!this[PropertySymbol.style]) {
-			this[PropertySymbol.style] = new CSSStyleDeclaration(this);
+			this[PropertySymbol.style] = new CSSStyleDeclaration(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				{ element: this }
+			);
 		}
 		return this[PropertySymbol.style];
 	}
@@ -351,7 +355,10 @@ export default class HTMLElement extends Element {
 	 * @returns Data set.
 	 */
 	public get dataset(): DOMStringMap {
-		return (this[PropertySymbol.dataset] ??= new DOMStringMap(this));
+		return (this[PropertySymbol.dataset] ??= new DOMStringMap(
+			PropertySymbol.illegalConstructor,
+			this
+		));
 	}
 
 	/**

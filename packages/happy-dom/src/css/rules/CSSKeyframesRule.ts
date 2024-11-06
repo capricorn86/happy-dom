@@ -1,6 +1,7 @@
 import CSSRule from '../CSSRule.js';
 import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration.js';
 import CSSKeyframeRule from './CSSKeyframeRule.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 const CSS_RULE_REGEXP = /([^{]+){([^}]+)}/;
 
@@ -33,8 +34,14 @@ export default class CSSKeyframesRule extends CSSRule {
 	public appendRule(rule: string): void {
 		const match = rule.match(CSS_RULE_REGEXP);
 		if (match) {
-			const cssRule = new CSSKeyframeRule();
-			const style = new CSSStyleDeclaration();
+			const cssRule = new CSSKeyframeRule(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window]
+			);
+			const style = new CSSStyleDeclaration(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window]
+			);
 
 			(<CSSRule>cssRule.parentRule) = this;
 			(<string>cssRule.keyText) = match[1].trim();

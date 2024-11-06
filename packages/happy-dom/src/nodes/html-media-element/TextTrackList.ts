@@ -20,10 +20,10 @@ export default class TextTrackList extends EventTarget {
 	/**
 	 * Constructor.
 	 *
-	 * @param [illegalConstructorSymbol] Illegal constructor symbol.
-	 * @param [items] Items.
+	 * @param illegalConstructorSymbol Illegal constructor symbol.
+	 * @param items Items.
 	 */
-	constructor(illegalConstructorSymbol?: symbol, items: TextTrack[] = []) {
+	constructor(illegalConstructorSymbol: symbol, items: TextTrack[]) {
 		super();
 
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
@@ -32,11 +32,7 @@ export default class TextTrackList extends EventTarget {
 
 		this[PropertySymbol.items] = items;
 
-		// This only works for one level of inheritance, but it should be fine as there is no collection that goes deeper according to spec.
-		ClassMethodBinder.bindMethods(this, [TextTrackList], {
-			bindSymbols: true,
-			forwardToPrototype: true
-		});
+		const methodBinder = new ClassMethodBinder(this, [TextTrackList, EventTarget]);
 
 		return new Proxy(this, {
 			get: (target, property) => {
@@ -44,6 +40,7 @@ export default class TextTrackList extends EventTarget {
 					return items.length;
 				}
 				if (property in target || typeof property === 'symbol') {
+					methodBinder.bind(property);
 					return target[property];
 				}
 				const index = Number(property);
@@ -52,6 +49,7 @@ export default class TextTrackList extends EventTarget {
 				}
 			},
 			set(target, property, newValue): boolean {
+				methodBinder.bind(property);
 				if (typeof property === 'symbol') {
 					target[property] = newValue;
 					return true;
@@ -82,10 +80,16 @@ export default class TextTrackList extends EventTarget {
 					return true;
 				}
 
+				if (typeof property === 'symbol') {
+					return false;
+				}
+
 				const index = Number(property);
 				return !isNaN(index) && index >= 0 && index < items.length;
 			},
 			defineProperty(target, property, descriptor): boolean {
+				methodBinder.preventBinding(property);
+
 				if (property in target) {
 					Object.defineProperty(target, property, descriptor);
 					return true;

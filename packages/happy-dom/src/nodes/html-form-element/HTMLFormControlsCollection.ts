@@ -18,10 +18,10 @@ export default class HTMLFormControlsCollection extends HTMLCollection<
 	/**
 	 * Constructor.
 	 *
-	 * @param [illegalConstructorSymbol] Illegal constructor symbol.
-	 * @param [ownerElement] Form element.
+	 * @param illegalConstructorSymbol Illegal constructor symbol.
+	 * @param ownerElement Form element.
 	 */
-	constructor(illegalConstructorSymbol?: symbol, ownerElement: HTMLFormElement | null = null) {
+	constructor(illegalConstructorSymbol: symbol, ownerElement: HTMLFormElement) {
 		super(illegalConstructorSymbol, () => ownerElement[PropertySymbol.getFormControlItems]());
 		this[PropertySymbol.ownerElement] = ownerElement;
 	}
