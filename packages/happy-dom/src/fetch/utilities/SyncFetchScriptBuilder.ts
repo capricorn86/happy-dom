@@ -44,7 +44,9 @@ export default class SyncFetchScriptBuilder {
 									null,
 									4
 								)};
-                const request = sendRequest(\`${request.url.href}\`, options, (incomingMessage) => {
+                const request = sendRequest(${JSON.stringify(
+									request.url.href
+								)}, options, (incomingMessage) => {
                     let data = Buffer.alloc(0);
                     incomingMessage.on('data', (chunk) => {
                         data = Buffer.concat([data, Buffer.from(chunk)]);

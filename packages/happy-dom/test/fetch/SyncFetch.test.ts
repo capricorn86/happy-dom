@@ -252,8 +252,7 @@ describe('SyncFetch', () => {
 		it('Should not allow to inject code into scripts executed using child_process.execFileSync().', () => {
 			browserFrame.url = 'https://localhost:8080/';
 
-			const url =
-				"https://localhost:8080/`+require('child_process').execSync('id')+`/'+require('child_process').execSync('id')+'";
+			const url = `https://localhost:8080/\`+require('child_process').execSync('id')+\`/'+require('child_process').execSync('id')+'/?key="+require('child_process').execSync('id')+"`;
 			const responseText = 'test';
 
 			mockModule('child_process', {
@@ -267,7 +266,7 @@ describe('SyncFetch', () => {
 					expect(args[1]).toBe(
 						SyncFetchScriptBuilder.getScript({
 							url: new URL(
-								"https://localhost:8080/%60+require('child_process').execSync('id')+%60/'+require('child_process').execSync('id')+'"
+								`https://localhost:8080/\`+require('child_process').execSync('id')+\`/'+require('child_process').execSync('id')+'/?key="+require('child_process').execSync('id')+"`
 							),
 							method: 'GET',
 							headers: {
@@ -280,11 +279,9 @@ describe('SyncFetch', () => {
 							body: null
 						})
 					);
-					// new URL() will convert ` into %60
-					// By using ` for the URL string within the script, we can prevent the script from being injected
 					expect(
 						args[1].includes(
-							`\`https://localhost:8080/%60+require('child_process').execSync('id')+%60/'+require('child_process').execSync('id')+'\``
+							`"https://localhost:8080/%60+require('child_process').execSync('id')+%60/'+require('child_process').execSync('id')+'/?key=%22+require(%27child_process%27).execSync(%27id%27)+%22"`
 						)
 					).toBe(true);
 					expect(options).toEqual({
