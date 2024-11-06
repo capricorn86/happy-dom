@@ -186,9 +186,8 @@ export default class FileReader extends EventTarget {
 					case FileReaderFormatEnum.dataURL: {
 						// Spec seems very unclear here; see https://github.com/w3c/FileAPI/issues/104.
 						const contentType = WhatwgMIMEType.parse(blob.type) || 'application/octet-stream';
-						(<Buffer | ArrayBuffer | string>(
-							this.result
-						)) = `data:${contentType};base64,${data.toString('base64')}`;
+						(<Buffer | ArrayBuffer | string>this.result) =
+							`data:${contentType};base64,${data.toString('base64')}`;
 						break;
 					}
 					case FileReaderFormatEnum.text: {
