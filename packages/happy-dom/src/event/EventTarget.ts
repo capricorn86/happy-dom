@@ -14,7 +14,7 @@ import BrowserWindow from '../window/BrowserWindow.js';
  * Handles events.
  */
 export default class EventTarget {
-	// Injected by WindowClassExtender
+	// Injected by WindowContextClassExtender
 	protected declare [PropertySymbol.window]: BrowserWindow;
 
 	public readonly [PropertySymbol.listeners]: {

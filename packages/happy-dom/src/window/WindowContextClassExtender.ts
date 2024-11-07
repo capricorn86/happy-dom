@@ -52,13 +52,13 @@ import NamedNodeMapImplementation from '../nodes/element/NamedNodeMap.js';
  *
  * By using WindowBrowserContext, the classes can get access to their Browser context, for accessing settings or navigating the browser.
  */
-export default class WindowClassExtender {
+export default class WindowContextClassExtender {
 	/**
 	 * Extends classes with a "window" property.
 	 *
 	 * @param window Window.
 	 */
-	public static extendClass(window: BrowserWindow): void {
+	public static extendClasses(window: BrowserWindow): void {
 		/* eslint-disable jsdoc/require-jsdoc */
 
 		// Document

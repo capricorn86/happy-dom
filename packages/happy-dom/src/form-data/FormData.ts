@@ -16,7 +16,7 @@ type FormDataEntry = {
  * @see https://developer.mozilla.org/en-US/docs/Web/API/FormData
  */
 export default class FormData implements Iterable<[string, string | File]> {
-	// Injected by WindowClassExtender
+	// Injected by WindowContextClassExtender
 	protected declare [PropertySymbol.window]: BrowserWindow;
 
 	#entries: FormDataEntry[] = [];

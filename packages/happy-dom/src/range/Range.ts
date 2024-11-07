@@ -25,7 +25,7 @@ import BrowserWindow from '../window/BrowserWindow.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/Range.
  */
 export default class Range {
-	// Injected by WindowClassExtender
+	// Injected by WindowContextClassExtender
 	protected declare [PropertySymbol.window]: BrowserWindow;
 
 	public static readonly END_TO_END: number = RangeHowEnum.endToEnd;

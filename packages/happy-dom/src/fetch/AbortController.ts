@@ -8,7 +8,7 @@ import BrowserWindow from '../window/BrowserWindow.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/AbortController
  */
 export default class AbortController {
-	// Injected by WindowClassExtender
+	// Injected by WindowContextClassExtender
 	protected declare [PropertySymbol.window]: BrowserWindow;
 
 	// Public properties
