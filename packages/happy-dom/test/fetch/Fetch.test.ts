@@ -267,6 +267,99 @@ describe('Fetch', () => {
 			expect(response.bodyUsed).toBe(true);
 		});
 
+		it('Supports making a request using a Request object.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
+			const url = 'https://localhost:8080/some/path';
+			const responseText = 'some text';
+			const requestObject = new window.Request(url, {
+				method: `POST`,
+				body: ''
+			});
+			let requestArgs: {
+				url: string;
+				options: { method: string; headers: { [k: string]: string } };
+			} | null = null;
+
+			mockModule('https', {
+				request: (url, options) => {
+					requestArgs = { url, options };
+
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText;
+								}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.statusCode = 200;
+								response.statusMessage = 'OK';
+								response.headers = {};
+								response.rawHeaders = [
+									'content-type',
+									'text/html',
+									'content-length',
+									String(responseText.length)
+								];
+
+								callback(response);
+							}
+						},
+						setTimeout: () => {}
+					};
+				}
+			});
+
+			const response = await window.fetch(requestObject);
+
+			expect(requestArgs).toEqual({
+				url,
+				options: {
+					method: 'POST',
+					headers: {
+						Accept: '*/*',
+						Connection: 'close',
+						'Content-Type': 'text/plain;charset=UTF-8',
+						Referer: 'https://localhost:8080/',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br'
+					},
+					agent: false,
+					rejectUnauthorized: true,
+					key: FetchHTTPSCertificate.key,
+					cert: FetchHTTPSCertificate.cert
+				}
+			});
+
+			expect(response instanceof Response).toBe(true);
+			expect(response.url).toBe(url);
+			expect(response.ok).toBe(true);
+			expect(response.redirected).toBe(false);
+			expect(response.status).toBe(200);
+			expect(response.statusText).toBe('OK');
+			expect(response.bodyUsed).toBe(false);
+			expect(response.body instanceof ReadableStream).toBe(true);
+			expect(response.headers instanceof Headers).toBe(true);
+
+			const headers = {};
+			for (const [key, value] of response.headers) {
+				headers[key] = value;
+			}
+
+			expect(headers).toEqual({
+				'content-type': 'text/html',
+				'content-length': String(responseText.length)
+			});
+
+			const text = await response.text();
+
+			expect(text).toBe(responseText);
+
+			expect(response.bodyUsed).toBe(true);
+		});
+
 		it('Performs a chunked HTTP GET request.', async () => {
 			const window = new Window({ url: 'http://localhost:8080/' });
 			const url = 'http://localhost:8080/some/path';
