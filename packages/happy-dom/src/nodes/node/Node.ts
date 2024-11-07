@@ -111,7 +111,7 @@ export default class Node extends EventTarget {
 	constructor() {
 		super();
 
-		// Window injected by WindowClassExtender (used when the Node can be created using "new" keyword)
+		// Window injected by WindowContextClassExtender (used when the Node can be created using "new" keyword)
 		if (this[PropertySymbol.window]) {
 			this[PropertySymbol.ownerDocument] = this[PropertySymbol.window].document;
 		} else {

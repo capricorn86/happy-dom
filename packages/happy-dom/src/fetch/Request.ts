@@ -28,7 +28,7 @@ import WindowBrowserContext from '../window/WindowBrowserContext.js';
  * @see https://fetch.spec.whatwg.org/#request-class
  */
 export default class Request implements Request {
-	// Injected by WindowClassExtender
+	// Injected by WindowContextClassExtender
 	protected declare [PropertySymbol.window]: BrowserWindow;
 
 	// Public properties

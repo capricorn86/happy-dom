@@ -25,7 +25,7 @@ import BrowserWindow from '../window/BrowserWindow.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/Range.
  */
 export default class Range {
-	// Injected by WindowClassExtender
+	// Injected by WindowContextClassExtender
 	protected declare [PropertySymbol.window]: BrowserWindow;
 
 	public static readonly END_TO_END: number = RangeHowEnum.endToEnd;
@@ -822,7 +822,7 @@ export default class Range {
 			this[PropertySymbol.start].node[PropertySymbol.nodeType] === NodeTypeEnum.textNode
 				? this[PropertySymbol.start].node
 				: (<Node>this[PropertySymbol.start].node)[PropertySymbol.nodeArray][this.startOffset] ||
-					null;
+				  null;
 		const parent = !referenceNode
 			? this[PropertySymbol.start].node
 			: referenceNode[PropertySymbol.parentNode];
@@ -844,7 +844,7 @@ export default class Range {
 			? NodeUtility.getNodeLength(parent)
 			: (<Node>referenceNode[PropertySymbol.parentNode])[PropertySymbol.nodeArray].indexOf(
 					referenceNode
-				);
+			  );
 		newOffset +=
 			newNode[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode
 				? NodeUtility.getNodeLength(newNode)

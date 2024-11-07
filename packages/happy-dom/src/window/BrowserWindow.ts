@@ -358,7 +358,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly CharacterData = CharacterData;
 	public readonly DocumentType = DocumentType;
 
-	// Nodes that can be created using "new" keyword (populated by WindowClassExtender)
+	// Nodes that can be created using "new" keyword (populated by WindowContextClassExtender)
 	public declare readonly Document: typeof Document;
 	public declare readonly HTMLDocument: typeof HTMLDocument;
 	public declare readonly XMLDocument: typeof XMLDocument;
@@ -571,7 +571,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly WebGLContextEvent = Event;
 	public readonly TextEvent = Event;
 
-	// Other classes that has to be bound to the Window context (populated by WindowClassExtender)
+	// Other classes that has to be bound to the Window context (populated by WindowContextClassExtender)
 	public declare readonly NodeIterator: typeof NodeIterator;
 	public declare readonly TreeWalker: typeof TreeWalker;
 	public declare readonly MutationObserver: typeof MutationObserver;

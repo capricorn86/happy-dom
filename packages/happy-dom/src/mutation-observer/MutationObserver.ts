@@ -11,7 +11,7 @@ import MutationRecord from './MutationRecord.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver
  */
 export default class MutationObserver {
-	// Injected by WindowClassExtender
+	// Injected by WindowContextClassExtender
 	protected declare [PropertySymbol.window]: BrowserWindow;
 	#callback: (records: MutationRecord[], observer: MutationObserver) => void;
 	#listeners: MutationObserverListener[] = [];
