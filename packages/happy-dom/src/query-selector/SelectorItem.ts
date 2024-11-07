@@ -235,6 +235,11 @@ export default class SelectorItem {
 				return element[PropertySymbol.tagName] === 'INPUT' && (<HTMLInputElement>element).checked
 					? { priorityWeight: 10 }
 					: null;
+			case 'disabled':
+				return 'disabled' in element &&
+					element[PropertySymbol.attributes][PropertySymbol.namedItems].has('disabled')
+					? { priorityWeight: 10 }
+					: null;
 			case 'empty':
 				return !(<Element>element)[PropertySymbol.elementArray].length
 					? { priorityWeight: 10 }

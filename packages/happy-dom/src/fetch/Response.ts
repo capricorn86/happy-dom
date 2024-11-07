@@ -26,7 +26,7 @@ const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Response/Response
  */
 export default class Response implements Response {
-	// Injected by WindowClassExtender
+	// Injected by WindowContextClassExtender
 	protected declare static [PropertySymbol.window]: BrowserWindow;
 	protected declare [PropertySymbol.window]: BrowserWindow;
 

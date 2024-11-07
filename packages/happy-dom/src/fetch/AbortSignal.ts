@@ -10,7 +10,7 @@ import BrowserWindow from '../window/BrowserWindow.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal
  */
 export default class AbortSignal extends EventTarget {
-	// Injected by WindowClassExtender
+	// Injected by WindowContextClassExtender
 	protected declare static [PropertySymbol.window]: BrowserWindow;
 	protected declare [PropertySymbol.window]: BrowserWindow;
 
