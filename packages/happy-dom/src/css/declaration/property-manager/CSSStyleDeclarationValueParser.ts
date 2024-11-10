@@ -384,11 +384,13 @@ export default class CSSStyleDeclarationValueParser {
 
 		let url = result[1].trim();
 
-		if ((url[0] === '"' || url[0] === "'") && url[0] !== url[url.length - 1]) {
+		const hasQuotes = url[0] === '"' || url[0] === "'";
+
+		if (hasQuotes && url[0] !== url[url.length - 1]) {
 			return null;
 		}
 
-		if (url[0] === '"' || url[0] === "'") {
+		if (hasQuotes) {
 			url = url.substring(1, url.length - 1);
 		}
 
@@ -408,7 +410,11 @@ export default class CSSStyleDeclarationValueParser {
 			}
 		}
 
-		return `url("${url}")`;
+		if (hasQuotes) {
+			url = `"${url}"`;
+		}
+
+		return `url(${url})`;
 	}
 
 	/**

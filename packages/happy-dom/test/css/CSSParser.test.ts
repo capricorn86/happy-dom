@@ -41,7 +41,7 @@ describe('CSSParser', () => {
 			expect((<CSSStyleRule>cssRules[1]).parentStyleSheet).toBe(cssStyleSheet);
 			expect((<CSSStyleRule>cssRules[1]).selectorText).toBe('.container');
 			expect((<CSSStyleRule>cssRules[1]).cssText).toBe(
-				'.container { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; --css-variable: 1px; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="), url("test.jpg"); }'
+				'.container { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; --css-variable: 1px; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="), url(test.jpg); }'
 			);
 			expect((<CSSStyleRule>cssRules[1]).style.length).toBe(6);
 			expect((<CSSStyleRule>cssRules[1]).style.parentRule).toBe(cssRules[1]);
@@ -57,10 +57,10 @@ describe('CSSParser', () => {
 			expect((<CSSStyleRule>cssRules[1]).style.overflow).toBe('hidden');
 			expect((<CSSStyleRule>cssRules[1]).style.getPropertyValue('--css-variable')).toBe('1px');
 			expect((<CSSStyleRule>cssRules[1]).style.backgroundImage).toBe(
-				'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="), url("test.jpg")'
+				'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="), url(test.jpg)'
 			);
 			expect((<CSSStyleRule>cssRules[1]).style.cssText).toBe(
-				'flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; --css-variable: 1px; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="), url("test.jpg");'
+				'flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; --css-variable: 1px; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="), url(test.jpg);'
 			);
 
 			// CSSMediaRule
