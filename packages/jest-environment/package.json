@@ -50,7 +50,7 @@
 		"@jest/environment": "^29.4.0",
 		"@jest/fake-timers": "^29.4.0",
 		"@jest/types": "^29.4.0",
-		"happy-dom": "^0.0.0",
+		"happy-dom": "^15.11.0",
 		"jest-mock": "^29.4.0",
 		"jest-util": "^29.4.0"
 	},
