@@ -644,6 +644,16 @@ describe('HTMLSelectElement', () => {
 		});
 	});
 
+	describe('focus()', () => {
+		it('Should set Document.activeElement to the proxy.', () => {
+			document.body.appendChild(element);
+			element.focus();
+			expect(document.activeElement).toBe(element);
+			element.blur();
+			expect(document.activeElement).toBe(document.body);
+		});
+	});
+
 	for (const method of ['checkValidity', 'reportValidity']) {
 		describe(`${method}()`, () => {
 			it('Returns "true" if the field is "disabled".', () => {
