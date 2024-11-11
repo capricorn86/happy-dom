@@ -13,12 +13,10 @@ export default class HTMLElementUtility {
 	 * @param element Element.
 	 */
 	public static blur(element: HTMLElement | SVGElement): void {
-		const document = element[PropertySymbol.ownerDocument];
+		const target = element[PropertySymbol.proxy] || element;
+		const document = target[PropertySymbol.ownerDocument];
 
-		if (
-			document[PropertySymbol.activeElement] !== element ||
-			!element[PropertySymbol.isConnected]
-		) {
+		if (document[PropertySymbol.activeElement] !== target || !target[PropertySymbol.isConnected]) {
 			return;
 		}
 
@@ -28,7 +26,7 @@ export default class HTMLElementUtility {
 
 		document[PropertySymbol.clearCache]();
 
-		element.dispatchEvent(
+		target.dispatchEvent(
 			new FocusEvent('blur', {
 				relatedTarget,
 				bubbles: false,
@@ -36,7 +34,7 @@ export default class HTMLElementUtility {
 				cancelable: true
 			})
 		);
-		element.dispatchEvent(
+		target.dispatchEvent(
 			new FocusEvent('focusout', {
 				relatedTarget,
 				bubbles: true,
@@ -52,17 +50,15 @@ export default class HTMLElementUtility {
 	 * @param element Element.
 	 */
 	public static focus(element: HTMLElement | SVGElement): void {
-		const document = element[PropertySymbol.ownerDocument];
+		const target = element[PropertySymbol.proxy] || element;
+		const document = target[PropertySymbol.ownerDocument];
 
-		if (
-			document[PropertySymbol.activeElement] === element ||
-			!element[PropertySymbol.isConnected]
-		) {
+		if (document[PropertySymbol.activeElement] === target || !target[PropertySymbol.isConnected]) {
 			return;
 		}
 
 		// Set the next active element so `blur` can use it for `relatedTarget`.
-		document[PropertySymbol.nextActiveElement] = element;
+		document[PropertySymbol.nextActiveElement] = target;
 
 		const relatedTarget = document[PropertySymbol.activeElement];
 
@@ -73,18 +69,18 @@ export default class HTMLElementUtility {
 		// Clean up after blur, so it does not affect next blur call.
 		document[PropertySymbol.nextActiveElement] = null;
 
-		document[PropertySymbol.activeElement] = element;
+		document[PropertySymbol.activeElement] = target;
 
 		document[PropertySymbol.clearCache]();
 
-		element.dispatchEvent(
+		target.dispatchEvent(
 			new FocusEvent('focus', {
 				relatedTarget,
 				bubbles: false,
 				composed: true
 			})
 		);
-		element.dispatchEvent(
+		target.dispatchEvent(
 			new FocusEvent('focusin', {
 				relatedTarget,
 				bubbles: true,
