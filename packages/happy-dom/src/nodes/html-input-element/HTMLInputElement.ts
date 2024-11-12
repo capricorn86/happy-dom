@@ -774,9 +774,9 @@ export default class HTMLInputElement extends HTMLElement {
 	 *
 	 * @param value Value.
 	 */
-	public set value(value: string) {
+	public set value(value: string | null) {
 		// The value maybe not string, so we need to convert it to string
-		value = String(value);
+		value = value === null ? '' : String(value);
 		switch (this.type) {
 			case 'hidden':
 			case 'submit':
@@ -788,12 +788,13 @@ export default class HTMLInputElement extends HTMLElement {
 				this.setAttribute('value', value);
 				break;
 			case 'file':
-				if (value !== '') {
+				if (value !== null && value !== '') {
 					throw new this[PropertySymbol.window].DOMException(
 						'Input elements of type "file" may only programmatically set the value to empty string.',
 						DOMExceptionNameEnum.invalidStateError
 					);
 				}
+				this[PropertySymbol.files] = new FileList();
 				break;
 			default:
 				const oldValue = this.value;
