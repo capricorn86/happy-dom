@@ -847,6 +847,31 @@ describe('QuerySelector', () => {
 			expect(elements3[1] === container.children[0].children[1].children[2]).toBe(true);
 		});
 
+		it('Returns all elements matching the selector without ending parenthese "button:not([type]"', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+				<button></button>
+                <button type="submit"></button>
+                <button></button>
+			`;
+			const elements = container.querySelectorAll('button:not([type]');
+			expect(elements.length).toBe(2);
+			expect(elements[0]).toBe(container.children[0]);
+			expect(elements[1]).toBe(container.children[2]);
+		});
+
+		it('Returns all elements matching the invalid selector "[q\\:shadowroot]"', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+				<span q\\:shadowroot></span>
+                <button></button>
+                <article></article>
+			`;
+			const elements = container.querySelectorAll('[q\\:shadowroot]');
+			expect(elements.length).toBe(1);
+			expect(elements[0]).toBe(container.children[0]);
+		});
+
 		it('Returns all elements matching "input:not([type]):not([list])" to verify that "screen.getByRole(\'checkbox\')" works in Testing Library.', () => {
 			const container = document.createElement('div');
 
