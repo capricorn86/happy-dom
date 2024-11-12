@@ -78,6 +78,10 @@ describe('HTMLInputElement', () => {
 				element.type = type;
 				element.value = 'VALUE';
 				expect(element.getAttribute('value')).toBe('VALUE');
+				element.value = null;
+				expect(element.getAttribute('value')).toBe('');
+				element.value = <string>(<unknown>undefined);
+				expect(element.getAttribute('value')).toBe('undefined');
 			});
 		}
 
@@ -91,8 +95,19 @@ describe('HTMLInputElement', () => {
 		});
 
 		it('Accepts an empty string if type is "file".', () => {
+			const fileList = element.files;
 			element.type = 'file';
 			element.value = '';
+			expect(element.files).not.toBe(fileList);
+			expect(element.files.length).toBe(0);
+		});
+
+		it('Accepts null if type is "file".', () => {
+			const fileList = element.files;
+			element.type = 'file';
+			element.value = null;
+			expect(element.files).not.toBe(fileList);
+			expect(element.files.length).toBe(0);
 		});
 
 		it('Trims the value if type is "email".', () => {
@@ -203,6 +218,15 @@ describe('HTMLInputElement', () => {
 			element.type = 'url';
 			element.value = '  \n\rhttp://www.test.com\n\r ';
 			expect(element.value).toBe('http://www.test.com');
+		});
+
+		it('Converts null to empty string.', () => {
+			element.type = 'text';
+			element.value = 'test';
+			element.value = null;
+			expect(element.value).toBe('');
+			element.value = <string>(<unknown>undefined);
+			expect(element.value).toBe('undefined');
 		});
 	});
 
