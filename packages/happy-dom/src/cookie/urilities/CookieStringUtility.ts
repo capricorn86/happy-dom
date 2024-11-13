@@ -57,7 +57,7 @@ export default class CookieStringUtility {
 					cookie.domain = value;
 					break;
 				case 'path':
-					cookie.path = value.startsWith('/') ? value : `/${value}`;
+					cookie.path = value[0] === '/' ? value : `/${value}`;
 					break;
 				case 'httponly':
 					cookie.httpOnly = true;

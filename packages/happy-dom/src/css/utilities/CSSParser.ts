@@ -88,7 +88,7 @@ export default class CSSParser {
 					newRule.parentStyleSheet = parentStyleSheet;
 					cssRules.push(newRule);
 					parentRule = newRule;
-				} else if (selectorText.startsWith('@')) {
+				} else if (selectorText[0] === '@') {
 					// Unknown rule.
 					// We will create a new rule to let it grab its content, but we will not add it to the cssRules array.
 					const newRule = new CSSRule(PropertySymbol.illegalConstructor, window);

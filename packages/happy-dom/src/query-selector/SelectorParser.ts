@@ -329,7 +329,7 @@ export default class SelectorParser {
 				// The ":has()" pseudo selector doesn't allow for it to be nested inside another ":has()" pseudo selector, as it can lead to cyclic querying.
 				if (!args.includes(':has(')) {
 					for (const group of this.getSelectorGroups(
-						args.startsWith('+') ? args.replace('+', '') : args,
+						args[0] === '+' ? args.replace('+', '') : args,
 						options
 					)) {
 						hasSelectorItems.push(group[0]);

@@ -299,7 +299,7 @@ export default class HTMLHyperlinkElementUtility {
 	 */
 	public getHash(): string {
 		const href = this.element.getAttribute('href');
-		if (href.startsWith('#')) {
+		if (href[0] === '#') {
 			return href;
 		}
 		let url: URL;
