@@ -330,7 +330,7 @@ export default class SelectorItem {
 				return null;
 			case 'has':
 				let priorityWeightForHas = 0;
-				if (pseudo.arguments.startsWith('+')) {
+				if (pseudo.arguments[0] === '+') {
 					const nextSibling = element.nextElementSibling;
 					if (!nextSibling) {
 						return null;
