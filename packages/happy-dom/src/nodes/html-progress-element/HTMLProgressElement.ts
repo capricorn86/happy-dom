@@ -32,7 +32,8 @@ export default class HTMLProgressElement extends HTMLElement {
 	 * @param max Max.
 	 */
 	public set max(max: number) {
-		if (typeof max !== 'number') {
+		max = typeof max !== 'number' ? Number(max) : max;
+		if (isNaN(max)) {
 			throw new this[PropertySymbol.window].TypeError(
 				"Failed to set the 'max' property on 'HTMLProgressElement': The provided double value is non-finite."
 			);
@@ -63,7 +64,8 @@ export default class HTMLProgressElement extends HTMLElement {
 	 * @param value Value.
 	 */
 	public set value(value: number) {
-		if (typeof value !== 'number') {
+		value = typeof value !== 'number' ? Number(value) : value;
+		if (isNaN(value)) {
 			throw new this[PropertySymbol.window].TypeError(
 				"Failed to set the 'value' property on 'HTMLProgressElement': The provided double value is non-finite."
 			);
