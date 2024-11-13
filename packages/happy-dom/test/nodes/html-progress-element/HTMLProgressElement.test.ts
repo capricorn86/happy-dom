@@ -56,6 +56,13 @@ describe('HTMLProgressElement', () => {
 			expect(element.getAttribute('max')).toBe('0.5');
 		});
 
+		it('Should convert strings to numbers.', () => {
+			element.max = <number>(<unknown>'2');
+			expect(element.getAttribute('max')).toBe('2');
+			element.max = <number>(<unknown>'0.5');
+			expect(element.getAttribute('max')).toBe('0.5');
+		});
+
 		it('Should throw an error when the value is not a number.', () => {
 			expect(() => {
 				element.max = <number>(<unknown>'invalid');
@@ -100,6 +107,13 @@ describe('HTMLProgressElement', () => {
 			element.value = 2;
 			expect(element.getAttribute('value')).toBe('2');
 			element.value = 0.5;
+			expect(element.getAttribute('value')).toBe('0.5');
+		});
+
+		it('Should convert strings to numbers.', () => {
+			element.value = <number>(<unknown>'2');
+			expect(element.getAttribute('value')).toBe('2');
+			element.value = <number>(<unknown>'0.5');
 			expect(element.getAttribute('value')).toBe('0.5');
 		});
 

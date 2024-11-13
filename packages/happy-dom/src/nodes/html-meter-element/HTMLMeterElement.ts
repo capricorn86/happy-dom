@@ -32,7 +32,8 @@ export default class HTMLMeterElement extends HTMLElement {
 	 * @param high High.
 	 */
 	public set high(high: number) {
-		if (typeof high !== 'number') {
+		high = typeof high !== 'number' ? Number(high) : high;
+		if (isNaN(high)) {
 			throw new this[PropertySymbol.window].TypeError(
 				"Failed to set the 'high' property on 'HTMLMeterElement': The provided double value is non-finite."
 			);
@@ -63,7 +64,8 @@ export default class HTMLMeterElement extends HTMLElement {
 	 * @param low Low.
 	 */
 	public set low(low: number) {
-		if (typeof low !== 'number') {
+		low = typeof low !== 'number' ? Number(low) : low;
+		if (isNaN(low)) {
 			throw new this[PropertySymbol.window].TypeError(
 				"Failed to set the 'low' property on 'HTMLMeterElement': The provided double value is non-finite."
 			);
@@ -94,7 +96,8 @@ export default class HTMLMeterElement extends HTMLElement {
 	 * @param max Max.
 	 */
 	public set max(max: number) {
-		if (typeof max !== 'number') {
+		max = typeof max !== 'number' ? Number(max) : max;
+		if (isNaN(max)) {
 			throw new this[PropertySymbol.window].TypeError(
 				"Failed to set the 'max' property on 'HTMLMeterElement': The provided double value is non-finite."
 			);
@@ -125,7 +128,8 @@ export default class HTMLMeterElement extends HTMLElement {
 	 * @param min Min.
 	 */
 	public set min(min: number) {
-		if (typeof min !== 'number') {
+		min = typeof min !== 'number' ? Number(min) : min;
+		if (isNaN(min)) {
 			throw new this[PropertySymbol.window].TypeError(
 				"Failed to set the 'min' property on 'HTMLMeterElement': The provided double value is non-finite."
 			);
@@ -159,7 +163,8 @@ export default class HTMLMeterElement extends HTMLElement {
 	 * @param optimum Optimum.
 	 */
 	public set optimum(optimum: number) {
-		if (typeof optimum !== 'number') {
+		optimum = typeof optimum !== 'number' ? Number(optimum) : optimum;
+		if (isNaN(optimum)) {
 			throw new this[PropertySymbol.window].TypeError(
 				"Failed to set the 'optimum' property on 'HTMLMeterElement': The provided double value is non-finite."
 			);
@@ -190,7 +195,8 @@ export default class HTMLMeterElement extends HTMLElement {
 	 * @param value Value.
 	 */
 	public set value(value: number) {
-		if (typeof value !== 'number') {
+		value = typeof value !== 'number' ? Number(value) : value;
+		if (isNaN(value)) {
 			throw new this[PropertySymbol.window].TypeError(
 				"Failed to set the 'value' property on 'HTMLMeterElement': The provided double value is non-finite."
 			);

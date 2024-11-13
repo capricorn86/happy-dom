@@ -94,6 +94,11 @@ describe('HTMLMeterElement', () => {
 				expect(element.getAttribute(property.name)).toBe('0.5');
 			});
 
+			it('Should convert strings to number.', () => {
+				element[property.name] = '0.5';
+				expect(element.getAttribute(property.name)).toBe('0.5');
+			});
+
 			it('Should throw an error when the value is not a number.', () => {
 				expect(() => {
 					element[property.name] = 'invalid';
