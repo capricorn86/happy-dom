@@ -200,6 +200,18 @@ describe('BrowserWindow', () => {
 		});
 	});
 
+	describe('get TextEncoder()', () => {
+		it('Returns an instance of TextEncoder.', () => {
+			expect(window.TextEncoder).toBe(TextEncoder);
+		});
+	});
+
+	describe('get TextDecoder()', () => {
+		it('Returns an instance of TextDecoder.', () => {
+			expect(window.TextDecoder).toBe(TextDecoder);
+		});
+	});
+
 	describe('get location()', () => {
 		it('Returns an instance of Location', () => {
 			expect(window.location).toBeInstanceOf(Location);
@@ -489,7 +501,7 @@ describe('BrowserWindow', () => {
 			elementStyle.innerHTML = `
 				span {
 					border: 1px solid #000;
-					border-radius: 2px; 
+					border-radius: 2px;
 					color: green;
 					cursor: default;
                     direction: ltr;
@@ -664,7 +676,7 @@ describe('BrowserWindow', () => {
 					--result1: var(--color1, var(--unknown, var(--unknown, green)));
 					--result2: var(--unknown, var(--color1, var(--unknown, green)));
 					--result3: var(--unknown, var(--unknown, var(--color1, green)));
-					
+
 					--result4: var(--unknown, var(--unknown, var(--unknown, var(--unknown, white))));
 
 					--result5: var(--color1, var(--color2));
@@ -920,7 +932,7 @@ describe('BrowserWindow', () => {
                 span {
                     color: green;
                 }
-                
+
                 :not {
                     color: red;
                 }
