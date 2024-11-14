@@ -385,7 +385,6 @@ export default class HTMLSelectElement extends HTMLElement {
 	 */
 	public set value(value: string) {
 		const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
-		const previousSelectedIndex = this[PropertySymbol.selectedIndex];
 
 		this[PropertySymbol.selectedIndex] = -1;
 
@@ -398,10 +397,6 @@ export default class HTMLSelectElement extends HTMLElement {
 			} else {
 				option[PropertySymbol.selectedness] = false;
 			}
-		}
-
-		if (previousSelectedIndex !== this[PropertySymbol.selectedIndex]) {
-			this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
 		}
 	}
 
@@ -427,7 +422,6 @@ export default class HTMLSelectElement extends HTMLElement {
 		}
 
 		const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
-		const previousSelectedIndex = this[PropertySymbol.selectedIndex];
 
 		this[PropertySymbol.selectedIndex] = -1;
 
@@ -442,10 +436,6 @@ export default class HTMLSelectElement extends HTMLElement {
 				selectedOption[PropertySymbol.dirtyness] = true;
 				this[PropertySymbol.selectedIndex] = selectedIndex;
 			}
-		}
-
-		if (previousSelectedIndex !== this[PropertySymbol.selectedIndex]) {
-			this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
 		}
 	}
 
@@ -669,7 +659,6 @@ export default class HTMLSelectElement extends HTMLElement {
 		const isMultiple = this.hasAttribute('multiple');
 		const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
 		const selected: HTMLOptionElement[] = [];
-		const previousSelectedIndex = this[PropertySymbol.selectedIndex];
 
 		if (selectedOption) {
 			this[PropertySymbol.selectedIndex] = -1;
@@ -727,10 +716,6 @@ export default class HTMLSelectElement extends HTMLElement {
 					this[PropertySymbol.selectedIndex] = i;
 				}
 			}
-		}
-
-		if (previousSelectedIndex !== this[PropertySymbol.selectedIndex]) {
-			this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
 		}
 	}
 

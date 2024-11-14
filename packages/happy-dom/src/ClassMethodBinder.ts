@@ -23,7 +23,8 @@ export default class ClassMethodBinder {
 	 * @param name Method name.
 	 */
 	public bind(name: string | symbol): void {
-		if (this.cache.has(name)) {
+		// We should never bind the Symbol.iterator method as it can cause problems with Array.from()
+		if (this.cache.has(name) || name === Symbol.iterator) {
 			return;
 		}
 
