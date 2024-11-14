@@ -1,5 +1,6 @@
 import { Buffer } from 'buffer';
 import { webcrypto } from 'crypto';
+import { TextEncoder, TextDecoder } from 'util';
 import Stream from 'stream';
 import { ReadableStream } from 'stream/web';
 import { URLSearchParams } from 'url';
@@ -707,6 +708,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly screenX: number = 0;
 	public readonly screenY: number = 0;
 	public readonly crypto: typeof webcrypto = webcrypto;
+	public readonly TextEncoder: typeof TextEncoder = TextEncoder;
+	public readonly TextDecoder: typeof TextDecoder = TextDecoder;
 	public readonly closed = false;
 	public console: Console;
 	public name = '';
