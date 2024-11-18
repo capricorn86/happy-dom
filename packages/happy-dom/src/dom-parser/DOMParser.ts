@@ -39,12 +39,15 @@ export default class DOMParser {
 		const root = <DocumentFragment>XMLParser.parse(newDocument, string, { evaluateScripts: true });
 		let documentElement = null;
 		let documentTypeNode = null;
+		let bodyElement = null;
 
 		for (const node of root[PropertySymbol.nodeArray]) {
 			if (node['tagName'] === 'HTML') {
 				documentElement = node;
 			} else if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
 				documentTypeNode = node;
+			} else if (node['tagName'] === 'BODY') {
+				bodyElement = node;
 			}
 
 			if (documentElement && documentTypeNode) {
@@ -76,7 +79,7 @@ export default class DOMParser {
 				default:
 					{
 						const documentElement = newDocument.createElement('html');
-						const bodyElement = newDocument.createElement('body');
+						bodyElement = bodyElement ?? newDocument.createElement('body');
 						const headElement = newDocument.createElement('head');
 
 						documentElement.appendChild(headElement);
