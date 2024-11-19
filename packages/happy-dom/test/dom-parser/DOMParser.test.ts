@@ -98,15 +98,18 @@ describe('DOMParser', () => {
 			expect(newDocument.body.textContent).toBe('here is some html elástica ');
 		});
 
-		it('parses SVGs', () => {
+		it('Parses SVGs', () => {
 			const newDocument = domParser.parseFromString(DOMParserSVG, 'image/svg+xml');
 			expect(new XMLSerializer().serializeToString(newDocument).replace(/[\s]/gm, '')).toBe(
 				DOMParserSVG.replace(/[\s]/gm, '')
 			);
 		});
 
-		it('recognises BODY', () => {
-			const newDocument = domParser.parseFromString('<body><example></example>Example Text</body>', 'text/html');
+		it('Parses body', () => {
+			const newDocument = domParser.parseFromString(
+				'<body><example></example>Example Text</body>',
+				'text/html'
+			);
 			expect(newDocument.body.innerHTML).toBe('<example></example>Example Text');
 		});
 	});

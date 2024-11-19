@@ -97,7 +97,7 @@ export default class XMLParser {
 						html: HTMLDocumentModeEnum.noTag,
 						body: HTMLDocumentModeEnum.noTag,
 						head: HTMLDocumentModeEnum.noTag
-				  }
+					}
 				: null;
 		let newNode: Node | null = null;
 		let currentNode: Node | null = root;
