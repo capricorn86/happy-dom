@@ -12,6 +12,7 @@ import * as Entities from 'entities';
 import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigContentModelEnum.js';
 import SVGElementConfig from '../config/SVGElementConfig.js';
 import StringUtility from '../StringUtility.js';
+import HTMLDocument from '../nodes/html-document/HTMLDocument.js';
 
 /**
  * Markup RegExp.
@@ -50,6 +51,12 @@ enum MarkupReadStateEnum {
 	plainTextContent = 'plainTextContent'
 }
 
+enum HTMLDocumentModeEnum {
+	noTag = 0,
+	startTag = 1,
+	endTag = 2
+}
+
 /**
  * Document type attribute RegExp.
  *
@@ -83,6 +90,15 @@ export default class XMLParser {
 		const localNameStack: string[] = [null];
 		const markupRegexp = new RegExp(MARKUP_REGEXP, 'gm');
 		const { evaluateScripts = false } = options || {};
+		// Parser is in document mode if the root node is a document node.
+		const htmlDocumentMode =
+			root instanceof HTMLDocument
+				? {
+						html: HTMLDocumentModeEnum.noTag,
+						body: HTMLDocumentModeEnum.noTag,
+						head: HTMLDocumentModeEnum.noTag
+				  }
+				: null;
 		let newNode: Node | null = null;
 		let currentNode: Node | null = root;
 		let match: RegExpExecArray;
@@ -125,21 +141,58 @@ export default class XMLParser {
 									? SVGElementConfig[name].localName
 									: name;
 
-							// Create a new element.
-							newNode = document.createElementNS(namespaceURI, qualifiedName);
+							const isHTMLDocumentModeElement =
+								htmlDocumentMode &&
+								(qualifiedName === 'html' || qualifiedName === 'body' || qualifiedName === 'head');
+
+							// If HTML document and the tag is "html", "body" or "head" we should use them.
+							if (
+								isHTMLDocumentModeElement &&
+								htmlDocumentMode[qualifiedName] === HTMLDocumentModeEnum.noTag
+							) {
+								htmlDocumentMode[qualifiedName] = HTMLDocumentModeEnum.startTag;
+							} else {
+								// If we are in HTML document mode there is no head or body tag, we should add new elements to the head.
+								if (
+									htmlDocumentMode &&
+									htmlDocumentMode.head === HTMLDocumentModeEnum.noTag &&
+									htmlDocumentMode.body === HTMLDocumentModeEnum.noTag &&
+									nodeStack[0] === root
+								) {
+									nodeStack[0] = (<Document>root).head;
+									if (currentNode === root) {
+										currentNode = nodeStack[0];
+									}
+								}
+
+								// New element.
+								newNode = document.createElementNS(namespaceURI, qualifiedName);
+							}
 
 							readState = MarkupReadStateEnum.insideStartTag;
 							startTagIndex = markupRegexp.lastIndex;
 						} else if (match[2]) {
 							// End tag.
 
-							// We close all tags up until the first tag that matches the end tag.
 							const localName = StringUtility.asciiLowerCase(match[2]);
-							const index = localNameStack.lastIndexOf(localName);
-							if (index !== -1) {
-								nodeStack.splice(index, nodeStack.length - index);
-								localNameStack.splice(index, localNameStack.length - index);
-								currentNode = nodeStack[nodeStack.length - 1] || root;
+							const isHTMLDocumentModeElement =
+								htmlDocumentMode &&
+								(localName === 'html' || localName === 'body' || localName === 'head');
+							if (
+								!isHTMLDocumentModeElement ||
+								htmlDocumentMode[localName] === HTMLDocumentModeEnum.startTag
+							) {
+								// We close all tags up until the first tag that matches the end tag.
+								const index = localNameStack.lastIndexOf(localName);
+								if (index !== -1) {
+									nodeStack.splice(index, nodeStack.length - index);
+									localNameStack.splice(index, localNameStack.length - index);
+									currentNode = nodeStack[nodeStack.length - 1] || root;
+								}
+
+								if (isHTMLDocumentModeElement) {
+									htmlDocumentMode[localName] = HTMLDocumentModeEnum.endTag;
+								}
 							}
 						} else if (
 							match[3] ||
@@ -188,137 +241,147 @@ export default class XMLParser {
 
 						break;
 					case MarkupReadStateEnum.insideStartTag:
-						// End of start tag
-						if (match[7] || match[8]) {
-							// Attribute name and value.
+						const currentLocalName = newNode[PropertySymbol.localName];
+						const isHTMLDocumentModeElement =
+							htmlDocumentMode &&
+							(currentLocalName === 'html' ||
+								currentLocalName === 'body' ||
+								currentLocalName === 'head');
+						if (
+							!isHTMLDocumentModeElement ||
+							htmlDocumentMode[currentLocalName] === HTMLDocumentModeEnum.startTag
+						) {
+							// End of start tag
+							if (match[7] || match[8]) {
+								// Attribute name and value.
 
-							const attributeString = xml.substring(startTagIndex, match.index);
-							let hasAttributeStringEnded = true;
+								const attributeString = xml.substring(startTagIndex, match.index);
+								let hasAttributeStringEnded = true;
 
-							if (!!attributeString) {
-								const attributeRegexp = new RegExp(ATTRIBUTE_REGEXP, 'gm');
-								let attributeMatch: RegExpExecArray;
+								if (!!attributeString) {
+									const attributeRegexp = new RegExp(ATTRIBUTE_REGEXP, 'gm');
+									let attributeMatch: RegExpExecArray;
 
-								while ((attributeMatch = attributeRegexp.exec(attributeString))) {
-									if (
-										(attributeMatch[1] && attributeMatch[2]) ||
-										(attributeMatch[3] && attributeMatch[5] === '"') ||
-										(attributeMatch[6] && attributeMatch[8] === "'") ||
-										attributeMatch[9]
-									) {
-										// Valid attribute name and value.
-										const name =
-											attributeMatch[1] ||
-											attributeMatch[3] ||
-											attributeMatch[6] ||
-											attributeMatch[9] ||
-											'';
-										const rawValue =
-											attributeMatch[2] || attributeMatch[4] || attributeMatch[7] || '';
-										const value = rawValue ? Entities.decodeHTMLAttribute(rawValue) : '';
+									while ((attributeMatch = attributeRegexp.exec(attributeString))) {
+										if (
+											(attributeMatch[1] && attributeMatch[2]) ||
+											(attributeMatch[3] && attributeMatch[5] === '"') ||
+											(attributeMatch[6] && attributeMatch[8] === "'") ||
+											attributeMatch[9]
+										) {
+											// Valid attribute name and value.
+											const name =
+												attributeMatch[1] ||
+												attributeMatch[3] ||
+												attributeMatch[6] ||
+												attributeMatch[9] ||
+												'';
+											const rawValue =
+												attributeMatch[2] || attributeMatch[4] || attributeMatch[7] || '';
+											const value = rawValue ? Entities.decodeHTMLAttribute(rawValue) : '';
 
-										if ((<Element>newNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg) {
-											// In XML and SVG namespaces, the attribute "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
-											const attributeItem = document.createAttributeNS(
-												name === 'xmlns' ? NamespaceURI.xmlns : null,
-												name
-											);
-											attributeItem[PropertySymbol.value] = value;
-											(<Element>newNode)[PropertySymbol.attributes][PropertySymbol.setNamedItem](
-												attributeItem
-											);
-										} else {
-											const attributeItem = document.createAttribute(name);
-											attributeItem[PropertySymbol.value] = value;
-											(<Element>newNode)[PropertySymbol.attributes][PropertySymbol.setNamedItem](
-												attributeItem
-											);
-										}
+											if ((<Element>newNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg) {
+												// In XML and SVG namespaces, the attribute "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
+												const attributeItem = document.createAttributeNS(
+													name === 'xmlns' ? NamespaceURI.xmlns : null,
+													name
+												);
+												attributeItem[PropertySymbol.value] = value;
+												(<Element>newNode)[PropertySymbol.attributes][PropertySymbol.setNamedItem](
+													attributeItem
+												);
+											} else {
+												const attributeItem = document.createAttribute(name);
+												attributeItem[PropertySymbol.value] = value;
+												(<Element>newNode)[PropertySymbol.attributes][PropertySymbol.setNamedItem](
+													attributeItem
+												);
+											}
 
-										startTagIndex += attributeMatch[0].length;
-									} else if (
-										!attributeMatch[1] &&
-										((attributeMatch[3] && !attributeMatch[5]) ||
-											(attributeMatch[6] && !attributeMatch[8]))
-									) {
-										// End attribute apostrophe is missing (e.g. "attr='value" or 'attr="value').
-										hasAttributeStringEnded = false;
-										break;
-									}
-								}
-							}
-
-							// We need to check if the attribute string is read completely.
-							// The attribute string can potentially contain "/>" or ">".
-							if (hasAttributeStringEnded) {
-								const config = HTMLElementConfig[(<Element>newNode)[PropertySymbol.localName]];
-								const localName = StringUtility.asciiLowerCase(
-									(<Element>newNode)[PropertySymbol.localName]
-								);
-
-								// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
-								// Therefore we need to auto-close the tag, so that it become valid (e.g. "<a></a><a></a>").
-								if (
-									config?.contentModel ===
-										HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants &&
-									localNameStack[localNameStack.length - 1] === localName
-								) {
-									nodeStack.pop();
-									localNameStack.pop();
-									currentNode = nodeStack[nodeStack.length - 1] || root;
-								} else if (
-									config?.contentModel === HTMLElementConfigContentModelEnum.noSelfDescendants &&
-									localNameStack.includes(localName)
-								) {
-									while (currentNode !== root) {
-										if ((<Element>currentNode)[PropertySymbol.localName] === localName) {
-											nodeStack.pop();
-											localNameStack.pop();
-											currentNode = nodeStack[nodeStack.length - 1] || root;
+											startTagIndex += attributeMatch[0].length;
+										} else if (
+											!attributeMatch[1] &&
+											((attributeMatch[3] && !attributeMatch[5]) ||
+												(attributeMatch[6] && !attributeMatch[8]))
+										) {
+											// End attribute apostrophe is missing (e.g. "attr='value" or 'attr="value').
+											hasAttributeStringEnded = false;
 											break;
 										}
+									}
+								}
+
+								// We need to check if the attribute string is read completely.
+								// The attribute string can potentially contain "/>" or ">".
+								if (hasAttributeStringEnded) {
+									const localName = newNode[PropertySymbol.localName];
+									const config = HTMLElementConfig[localName];
+
+									// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
+									// Therefore we need to auto-close the tag, so that it become valid (e.g. "<a></a><a></a>").
+									if (
+										config?.contentModel ===
+											HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants &&
+										localNameStack[localNameStack.length - 1] === localName
+									) {
 										nodeStack.pop();
 										localNameStack.pop();
 										currentNode = nodeStack[nodeStack.length - 1] || root;
+									} else if (
+										config?.contentModel === HTMLElementConfigContentModelEnum.noSelfDescendants &&
+										localNameStack.includes(localName)
+									) {
+										while (currentNode !== root) {
+											if ((<Element>currentNode)[PropertySymbol.localName] === localName) {
+												nodeStack.pop();
+												localNameStack.pop();
+												currentNode = nodeStack[nodeStack.length - 1] || root;
+												break;
+											}
+											nodeStack.pop();
+											localNameStack.pop();
+											currentNode = nodeStack[nodeStack.length - 1] || root;
+										}
 									}
+
+									// Appends the new node to its parent and sets is as current node.
+									if (!isHTMLDocumentModeElement) {
+										currentNode[PropertySymbol.appendChild](newNode, true);
+									}
+									currentNode = newNode;
+									nodeStack.push(currentNode);
+									localNameStack.push(localName);
+									newNode = null;
+
+									// Checks if the tag is a self closing tag (ends with "/>") or void element.
+									// When it is a self closing tag or void element it should be closed immediately.
+									// Self closing tags are not allowed in the HTML namespace, but the parser should still allow it for void elements.
+									// Self closing tags is supported in the SVG namespace.
+									if (
+										config?.contentModel === HTMLElementConfigContentModelEnum.noDescendants ||
+										// SVG tag is self closing (<svg/>).
+										(match[7] &&
+											(<Element>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg)
+									) {
+										nodeStack.pop();
+										localNameStack.pop();
+										currentNode = nodeStack[nodeStack.length - 1] || root;
+										readState = MarkupReadStateEnum.startOrEndTag;
+									} else {
+										readState =
+											config?.contentModel === HTMLElementConfigContentModelEnum.rawText
+												? MarkupReadStateEnum.plainTextContent
+												: MarkupReadStateEnum.startOrEndTag;
+									}
+
+									startTagIndex = markupRegexp.lastIndex;
 								}
-
-								// Appends the new node to its parent and sets is as current node.
-								currentNode[PropertySymbol.appendChild](newNode, true);
-								currentNode = newNode;
-								nodeStack.push(currentNode);
-								localNameStack.push(localName);
-								newNode = null;
-
-								// Checks if the tag is a self closing tag (ends with "/>") or void element.
-								// When it is a self closing tag or void element it should be closed immediately.
-								// Self closing tags are not allowed in the HTML namespace, but the parser should still allow it for void elements.
-								// Self closing tags is supported in the SVG namespace.
-								if (
-									config?.contentModel === HTMLElementConfigContentModelEnum.noDescendants ||
-									// SVG tag is self closing (<svg/>).
-									(match[7] &&
-										(<Element>currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg)
-								) {
-									nodeStack.pop();
-									localNameStack.pop();
-									currentNode = nodeStack[nodeStack.length - 1] || root;
-									readState = MarkupReadStateEnum.startOrEndTag;
-								} else {
-									readState =
-										config?.contentModel === HTMLElementConfigContentModelEnum.rawText
-											? MarkupReadStateEnum.plainTextContent
-											: MarkupReadStateEnum.startOrEndTag;
-								}
-
-								startTagIndex = markupRegexp.lastIndex;
 							}
 						}
 
 						break;
 					case MarkupReadStateEnum.plainTextContent:
 						const localName = currentNode[PropertySymbol.localName];
-
 						if (localName && match[2] && StringUtility.asciiLowerCase(match[2]) === localName) {
 							// End of plain text tag.
 

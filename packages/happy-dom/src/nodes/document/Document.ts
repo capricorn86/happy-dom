@@ -408,7 +408,7 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public get documentElement(): HTMLHtmlElement {
-		return <HTMLHtmlElement>ParentNodeUtility.getElementByTagName(this, 'html');
+		return <HTMLHtmlElement>this[PropertySymbol.elementArray][0] ?? null;
 	}
 
 	/**

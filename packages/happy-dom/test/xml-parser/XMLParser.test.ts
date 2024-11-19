@@ -838,5 +838,31 @@ describe('XMLParser', () => {
                 `.replace(/\s/gm, '')
 			);
 		});
+
+		it('Sets attributes before connecting the element to the DOM.', () => {
+			/* eslint-disable jsdoc/require-jsdoc */
+			class CustomElement extends window.HTMLElement {
+				public key1: string | null = null;
+				public connectedCallback(): void {
+					this.key1 = this.getAttribute('key1');
+				}
+			}
+			/* eslint-enable jsdoc/require-jsdoc */
+
+			window.customElements.define('custom-element', CustomElement);
+
+			const root = XMLParser.parse(
+				document,
+				`
+                <div>
+                    <custom-element key1="value1"></custom-element>
+                </div>
+                `
+			);
+
+			document.body.appendChild(root.children[0]);
+
+			expect(document.body.children[0].children[0]['key1']).toBe('value1');
+		});
 	});
 });

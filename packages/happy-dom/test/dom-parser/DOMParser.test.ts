@@ -104,5 +104,10 @@ describe('DOMParser', () => {
 				DOMParserSVG.replace(/[\s]/gm, '')
 			);
 		});
+
+		it('recognises BODY', () => {
+			const newDocument = domParser.parseFromString('<body><example></example>Example Text</body>', 'text/html');
+			expect(newDocument.body.innerHTML).toBe('<example></example>Example Text');
+		});
 	});
 });
