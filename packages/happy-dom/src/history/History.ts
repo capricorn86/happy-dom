@@ -119,7 +119,7 @@ export default class History {
 	 * @param title Title.
 	 * @param [url] URL.
 	 */
-	public pushState(state: object, title, url?: string): void {
+	public pushState(state: object, title, url?: string | URL): void {
 		if (this.#window.closed) {
 			return;
 		}
@@ -135,7 +135,7 @@ export default class History {
 
 		if (url && newURL.origin !== location.origin) {
 			throw new this.#window.DOMException(
-				`Failed to execute 'pushState' on 'History': A history state object with URL '${url}' cannot be created in a document with origin '${location.origin}' and URL '${location.href}'.`,
+				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${location.origin}' and URL '${location.href}'.`,
 				DOMExceptionNameEnum.securityError
 			);
 		}
@@ -177,7 +177,7 @@ export default class History {
 	 * @param title Title.
 	 * @param [url] URL.
 	 */
-	public replaceState(state: object, title, url?: string): void {
+	public replaceState(state: object, title, url?: string | URL): void {
 		if (this.#window.closed) {
 			return;
 		}
@@ -193,7 +193,7 @@ export default class History {
 
 		if (url && newURL.origin !== location.origin) {
 			throw new this.#window.DOMException(
-				`Failed to execute 'pushState' on 'History': A history state object with URL '${url}' cannot be created in a document with origin '${location.origin}' and URL '${location.href}'.`,
+				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${location.origin}' and URL '${location.href}'.`,
 				DOMExceptionNameEnum.securityError
 			);
 		}
