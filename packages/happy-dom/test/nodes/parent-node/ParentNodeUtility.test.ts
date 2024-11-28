@@ -153,6 +153,32 @@ describe('ParentNodeUtility', () => {
 			expect(elementByClassName[1]).toBe(element2);
 			expect(elementByClassName[2]).toBe(element3);
 		});
+
+		it('Supports space-separated class names.', () => {
+			const addedClassName = 'className otherClassName verySeparatedClassName';
+			const queriedClassName = 'className otherClassName       verySeparatedClassName';
+
+			const parent = document.createElement('div');
+			const element1 = document.createElement('div');
+			const element2 = document.createElement('div');
+			const element3 = document.createElement('div');
+
+			element1.className = addedClassName;
+			element2.className = addedClassName;
+			element3.className = addedClassName;
+
+			parent.appendChild(element1);
+			element1.appendChild(element2);
+			element1.appendChild(element3);
+
+			const elementByClassName = ParentNodeUtility.getElementsByClassName(parent, queriedClassName);
+
+			expect(elementByClassName instanceof HTMLCollection).toBe(true);
+			expect(elementByClassName.length).toBe(3);
+			expect(elementByClassName[0]).toBe(element1);
+			expect(elementByClassName[1]).toBe(element2);
+			expect(elementByClassName[2]).toBe(element3);
+		});
 	});
 
 	describe('getElementsByTagName()', () => {
