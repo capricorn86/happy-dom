@@ -250,6 +250,7 @@ describe('Node', () => {
 
 		it('Returns null if parent node is not an element.', () => {
 			const htmlElement = document.createElement('html');
+			document.removeChild(document.children[0]);
 			document.appendChild(htmlElement);
 
 			expect(htmlElement.parentNode).toBe(document);
@@ -1232,12 +1233,12 @@ describe('Node', () => {
 			expect(b.childNodes).toHaveLength(0);
 		});
 
-		it('Normalizes the document.', () => {
-			const count = document.childNodes.length;
-			document.append(document.createTextNode(''));
-			expect(document.childNodes).toHaveLength(count + 1);
-			document.normalize();
-			expect(document.childNodes).toHaveLength(count);
+		it('Normalizes the child nodes.', () => {
+			const count = document.body.childNodes.length;
+			document.body.append(document.createTextNode(''));
+			expect(document.body.childNodes).toHaveLength(count + 1);
+			document.body.normalize();
+			expect(document.body.childNodes).toHaveLength(count);
 		});
 
 		it('Does nothing on a text node.', () => {

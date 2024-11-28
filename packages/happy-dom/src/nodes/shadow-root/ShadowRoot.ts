@@ -8,6 +8,7 @@ import HTMLElement from '../../nodes/html-element/HTMLElement.js';
 import Event from '../../event/Event.js';
 import SVGElement from '../svg-element/SVGElement.js';
 import Document from '../document/Document.js';
+import XMLParserModeEnum from '../../xml-parser/XMLParserModeEnum.js';
 
 /**
  * ShadowRoot.
@@ -139,7 +140,7 @@ export default class ShadowRoot extends DocumentFragment {
 			this.removeChild(childNodes[0]);
 		}
 
-		XMLParser.parse(this[PropertySymbol.ownerDocument], html, { rootNode: this });
+		new XMLParser(this[PropertySymbol.window]).parse(html, this);
 	}
 
 	/**
@@ -211,7 +212,7 @@ export default class ShadowRoot extends DocumentFragment {
 			this.removeChild(childNodes[0]);
 		}
 
-		XMLParser.parse(this[PropertySymbol.ownerDocument], html, { rootNode: this });
+		new XMLParser(this[PropertySymbol.window]).parse(html, this);
 	}
 
 	/**

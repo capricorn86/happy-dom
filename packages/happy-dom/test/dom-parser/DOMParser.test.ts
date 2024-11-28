@@ -32,7 +32,7 @@ describe('DOMParser', () => {
 		it('Parses HTML with just a string and returns a new document with <html>, <head> and <body> tags.', () => {
 			const newDocument = domParser.parseFromString('Test', 'text/html');
 			expect(new XMLSerializer().serializeToString(newDocument)).toBe(
-				'<html><head></head><body>Test</body></html>'
+				'<!DOCTYPE html><html><head></head><body>Test</body></html>'
 			);
 		});
 
@@ -51,18 +51,16 @@ describe('DOMParser', () => {
 			`,
 				'text/html'
 			);
-			expect(new XMLSerializer().serializeToString(newDocument).replace(/[\s]/gm, '')).toBe(
-				`
-				<html>
-					<head>
+			expect(new XMLSerializer().serializeToString(newDocument)).toBe(
+				`<!DOCTYPE html><html><head>
 						<title>Title</title>
 					</head>
 					<body>
 						<span>Body</span>
-						<div>Should be added to body</div>
-					</body>
-				</html>
-				`.replace(/[\s]/gm, '')
+					
+				
+				<div>Should be added to body</div>
+			</body></html>`
 			);
 		});
 
@@ -78,14 +76,13 @@ describe('DOMParser', () => {
 				'text/html'
 			);
 			// Spurious comment `<!--[a-z]/,end:/-->` should be solved
-			expect(new XMLSerializer().serializeToString(newDocument).replace(/\s/g, '')).toBe(
-				`<html>
-					<body>
+			expect(new XMLSerializer().serializeToString(newDocument)).toBe(
+				`<!DOCTYPE html><html><head></head><body>
 						<script>
 							var test = {className:"meta",begin:/<![a-z]/,end:/>/,contains:[t,i,l,c]};
 						</script>
-					</body>
-				</html>`.replace(/\s/g, '')
+					
+				</body></html>`
 			);
 		});
 
@@ -94,15 +91,23 @@ describe('DOMParser', () => {
 				'<p>here is some</p> html el&#225;stica ',
 				'text/html'
 			);
-			// Spurious comment `<!--[a-z]/,end:/-->` should be solved
 			expect(newDocument.body.textContent).toBe('here is some html elástica ');
 		});
 
 		it('Parses SVGs', () => {
-			const newDocument = domParser.parseFromString(DOMParserSVG, 'image/svg+xml');
-			expect(new XMLSerializer().serializeToString(newDocument).replace(/[\s]/gm, '')).toBe(
-				DOMParserSVG.replace(/[\s]/gm, '')
+			const newDocument = domParser.parseFromString(
+				`
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14 6.53333V7.46667H7.46667V14H6.53333V7.46667H0V6.53333H6.53333V0H7.46667V6.53333H14Z" fill="#0078D4"></path>
+                    </svg>
+                `,
+				'image/svg+xml'
 			);
+			expect(new XMLSerializer().serializeToString(newDocument))
+				.toBe(`<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M14 6.53333V7.46667H7.46667V14H6.53333V7.46667H0V6.53333H6.53333V0H7.46667V6.53333H14Z" fill="#0078D4"/>
+                    </svg>`);
+			expect(newDocument.documentElement).toBe(newDocument.childNodes[0]);
 		});
 
 		it('Parses body', () => {
@@ -111,6 +116,42 @@ describe('DOMParser', () => {
 				'text/html'
 			);
 			expect(newDocument.body.innerHTML).toBe('<example></example>Example Text');
+		});
+
+		it('Parses XML', () => {
+			const newDocument = domParser.parseFromString(
+				`<?xml version="1.0" encoding="UTF-8"?>
+                <breakfast_menu>
+                    <food>
+                        <name>Belgian Waffles</name>
+                        <price>$5.95</price>
+                        <description>Two of our famous Belgian Waffles with plenty of real maple syrup</description>
+                        <calories>650</calories>
+                    </food>
+                    <food>
+                        <name>Strawberry Belgian Waffles</name>
+                        <price>$7.95</price>
+                        <description>Light Belgian waffles covered with strawberries and whipped cream</description>
+                        <calories>900</calories>
+                    </food>
+                </breakfast_menu>
+                `,
+				'application/xml'
+			);
+			expect(new XMLSerializer().serializeToString(newDocument)).toBe(`<breakfast_menu>
+                    <food>
+                        <name>Belgian Waffles</name>
+                        <price>$5.95</price>
+                        <description>Two of our famous Belgian Waffles with plenty of real maple syrup</description>
+                        <calories>650</calories>
+                    </food>
+                    <food>
+                        <name>Strawberry Belgian Waffles</name>
+                        <price>$7.95</price>
+                        <description>Light Belgian waffles covered with strawberries and whipped cream</description>
+                        <calories>900</calories>
+                    </food>
+                </breakfast_menu>`);
 		});
 	});
 });

@@ -5,6 +5,7 @@ import Node from '../node/Node.js';
 import XMLSerializer from '../../xml-serializer/XMLSerializer.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
 import ShadowRoot from '../shadow-root/ShadowRoot.js';
+import XMLParserModeEnum from '../../xml-parser/XMLParserModeEnum.js';
 
 /**
  * HTML Template Element.
@@ -47,9 +48,7 @@ export default class HTMLTemplateElement extends HTMLElement {
 			content.removeChild(childNodes[0]);
 		}
 
-		XMLParser.parse(this[PropertySymbol.ownerDocument], html, {
-			rootNode: this[PropertySymbol.content]
-		});
+		new XMLParser(this[PropertySymbol.window]).parse(html, this[PropertySymbol.content]);
 	}
 
 	/**
@@ -123,8 +122,16 @@ export default class HTMLTemplateElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node): Node {
-		return this[PropertySymbol.content][PropertySymbol.insertBefore](newNode, referenceNode);
+	public override [PropertySymbol.insertBefore](
+		newNode: Node,
+		referenceNode: Node,
+		disableValidations = false
+	): Node {
+		return this[PropertySymbol.content][PropertySymbol.insertBefore](
+			newNode,
+			referenceNode,
+			disableValidations
+		);
 	}
 
 	/**

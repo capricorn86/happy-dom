@@ -603,18 +603,31 @@ export default class Node extends EventTarget {
 	 *
 	 * @param newNode Node to insert.
 	 * @param referenceNode Node to insert before.
+	 * @param [disableValidations=false] "true" to disable validations.
 	 * @returns Inserted node.
 	 */
-	public [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
+	public [PropertySymbol.insertBefore](
+		newNode: Node,
+		referenceNode: Node | null,
+		disableValidations = false
+	): Node {
 		if (newNode === referenceNode) {
 			return newNode;
 		}
 
-		if (NodeUtility.isInclusiveAncestor(newNode, this, true)) {
-			throw new this[PropertySymbol.window].DOMException(
-				"Failed to execute 'insertBefore' on 'Node': The new node is a parent of the node to insert to.",
-				DOMExceptionNameEnum.domException
-			);
+		if (!disableValidations) {
+			if (newNode === this) {
+				throw new this[PropertySymbol.window].DOMException(
+					"Failed to execute 'insertBefore' on 'Node': Not possible to insert a node as a child of itself."
+				);
+			}
+
+			if (NodeUtility.isInclusiveAncestor(newNode, this, true)) {
+				throw new this[PropertySymbol.window].DOMException(
+					"Failed to execute 'insertBefore' on 'Node': The new node is a parent of the node to insert to.",
+					DOMExceptionNameEnum.domException
+				);
+			}
 		}
 
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
@@ -622,7 +635,7 @@ export default class Node extends EventTarget {
 		if (newNode[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode) {
 			const childNodes = (<Node>newNode)[PropertySymbol.nodeArray];
 			while (childNodes.length > 0) {
-				this.insertBefore(childNodes[0], referenceNode);
+				this[PropertySymbol.insertBefore](childNodes[0], referenceNode, true);
 			}
 			return newNode;
 		}
@@ -630,7 +643,7 @@ export default class Node extends EventTarget {
 		// If the referenceNode is null or undefined, then the newNode should be appended to the ancestorNode.
 		// According to spec only null is valid, but browsers support undefined as well.
 		if (!referenceNode) {
-			this.appendChild(newNode);
+			this[PropertySymbol.appendChild](newNode, true);
 			return newNode;
 		}
 

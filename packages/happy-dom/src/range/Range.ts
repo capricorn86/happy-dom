@@ -433,8 +433,8 @@ export default class Range {
 	 * @returns Document fragment.
 	 */
 	public createContextualFragment(tagString: string): DocumentFragment {
-		// TODO: We only have support for HTML in the parser currently, so it is not necessary to check which context it is
-		return <DocumentFragment>XMLParser.parse(this[PropertySymbol.ownerDocument], tagString);
+		// TODO: Implement support for checking which context to use
+		return <DocumentFragment>new XMLParser(this[PropertySymbol.window]).parse(tagString);
 	}
 
 	/**
@@ -822,7 +822,7 @@ export default class Range {
 			this[PropertySymbol.start].node[PropertySymbol.nodeType] === NodeTypeEnum.textNode
 				? this[PropertySymbol.start].node
 				: (<Node>this[PropertySymbol.start].node)[PropertySymbol.nodeArray][this.startOffset] ||
-					null;
+				  null;
 		const parent = !referenceNode
 			? this[PropertySymbol.start].node
 			: referenceNode[PropertySymbol.parentNode];
@@ -844,7 +844,7 @@ export default class Range {
 			? NodeUtility.getNodeLength(parent)
 			: (<Node>referenceNode[PropertySymbol.parentNode])[PropertySymbol.nodeArray].indexOf(
 					referenceNode
-				);
+			  );
 		newOffset +=
 			newNode[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode
 				? NodeUtility.getNodeLength(newNode)

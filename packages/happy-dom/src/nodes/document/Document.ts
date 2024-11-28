@@ -49,6 +49,7 @@ import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import NodeFactory from '../NodeFactory.js';
 import SVGElementConfig from '../../config/SVGElementConfig.js';
 import StringUtility from '../../StringUtility.js';
+import XMLParserModeEnum from '../../xml-parser/XMLParserModeEnum.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -431,7 +432,10 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public get body(): HTMLBodyElement {
-		return <HTMLBodyElement>ParentNodeUtility.getElementByTagName(this, 'body');
+		const documentElement = this.documentElement;
+		return documentElement
+			? <HTMLBodyElement>ParentNodeUtility.getElementByTagName(documentElement, 'body')
+			: null;
 	}
 
 	/**
@@ -440,7 +444,10 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public get head(): HTMLHeadElement {
-		return <HTMLHeadElement>ParentNodeUtility.getElementByTagName(this, 'head');
+		const documentElement = this.documentElement;
+		return documentElement
+			? <HTMLHeadElement>ParentNodeUtility.getElementByTagName(documentElement, 'head')
+			: null;
 	}
 
 	/**
@@ -830,8 +837,6 @@ export default class Document extends Node {
 	 * @param html HTML.
 	 */
 	public write(html: string): void {
-		const root = <DocumentFragment>XMLParser.parse(this, html, { evaluateScripts: true });
-
 		if (this[PropertySymbol.isFirstWrite] || this[PropertySymbol.isFirstWriteAfterOpen]) {
 			if (this[PropertySymbol.isFirstWrite]) {
 				if (!this[PropertySymbol.isFirstWriteAfterOpen]) {
@@ -842,87 +847,16 @@ export default class Document extends Node {
 			}
 
 			this[PropertySymbol.isFirstWriteAfterOpen] = false;
-			let documentElement = null;
-			let documentTypeNode = null;
 
-			for (const node of root[PropertySymbol.nodeArray]) {
-				if (node['tagName'] === 'HTML') {
-					documentElement = node;
-				} else if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
-					documentTypeNode = node;
-				}
-
-				if (documentElement && documentTypeNode) {
-					break;
-				}
-			}
-
-			if (documentElement) {
-				if (!this.documentElement) {
-					if (documentTypeNode) {
-						this.appendChild(documentTypeNode);
-					}
-
-					this.appendChild(documentElement);
-
-					const head = ParentNodeUtility.getElementByTagName(this, 'head');
-					let body = ParentNodeUtility.getElementByTagName(this, 'body');
-
-					if (!body) {
-						body = this.createElement('body');
-						documentElement.appendChild(this.createElement('body'));
-					}
-
-					if (!head) {
-						documentElement.insertBefore(this.createElement('head'), body);
-					}
-				} else {
-					const rootBody = ParentNodeUtility.getElementByTagName(root, 'body');
-					const body = ParentNodeUtility.getElementByTagName(this, 'body');
-					if (rootBody && body) {
-						const childNodes = rootBody[PropertySymbol.nodeArray];
-						while (childNodes.length) {
-							body.appendChild(childNodes[0]);
-						}
-					}
-				}
-
-				// Remaining nodes outside the <html> element are added to the <body> element.
-				const body = ParentNodeUtility.getElementByTagName(this, 'body');
-				if (body) {
-					const childNodes = root[PropertySymbol.nodeArray];
-					while (childNodes.length) {
-						const child = childNodes[0];
-						if (
-							child['tagName'] !== 'HTML' &&
-							child[PropertySymbol.nodeType] !== NodeTypeEnum.documentTypeNode
-						) {
-							body.appendChild(child);
-						}
-					}
-				}
-			} else {
-				const documentElement = this.createElement('html');
-				const bodyElement = this.createElement('body');
-				const headElement = this.createElement('head');
-				const childNodes = root[PropertySymbol.nodeArray];
-
-				while (childNodes.length) {
-					bodyElement.appendChild(childNodes[0]);
-				}
-
-				documentElement.appendChild(headElement);
-				documentElement.appendChild(bodyElement);
-
-				this.appendChild(documentElement);
-			}
+			new XMLParser(this[PropertySymbol.window], {
+				mode: XMLParserModeEnum.htmlDocument,
+				evaluateScripts: true
+			}).parse(html, this);
 		} else {
-			const bodyNode = ParentNodeUtility.getElementByTagName(root, 'body');
-			const body = ParentNodeUtility.getElementByTagName(this, 'body');
-			const childNodes = (<Element>(bodyNode || root))[PropertySymbol.nodeArray];
-			while (childNodes.length) {
-				body.appendChild(childNodes[0]);
-			}
+			new XMLParser(this[PropertySymbol.window], {
+				mode: XMLParserModeEnum.htmlFragment,
+				evaluateScripts: true
+			}).parse(html, this.body);
 		}
 	}
 
@@ -956,6 +890,18 @@ export default class Document extends Node {
 		while (childNodes.length) {
 			this.removeChild(childNodes[0]);
 		}
+
+		// Default document elements
+		const doctype = this[PropertySymbol.implementation].createDocumentType('html', '', '');
+		const documentElement = this.createElement('html');
+		const bodyElement = this.createElement('body');
+		const headElement = this.createElement('head');
+
+		this.appendChild(doctype);
+		this.appendChild(documentElement);
+
+		documentElement.appendChild(headElement);
+		documentElement.appendChild(bodyElement);
 
 		return this;
 	}

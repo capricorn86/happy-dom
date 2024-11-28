@@ -16,7 +16,6 @@ import Attr from '../attr/Attr.js';
 import NamedNodeMap from './NamedNodeMap.js';
 import Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
-import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
@@ -33,6 +32,7 @@ import NodeList from '../node/NodeList.js';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import NamedNodeMapProxyFactory from './NamedNodeMapProxyFactory.js';
 import NodeFactory from '../NodeFactory.js';
+import XMLParserModeEnum from '../../xml-parser/XMLParserModeEnum.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -407,7 +407,7 @@ export default class Element
 			this.removeChild(childNodes[0]);
 		}
 
-		XMLParser.parse(this[PropertySymbol.ownerDocument], html, { rootNode: this });
+		new XMLParser(this[PropertySymbol.window]).parse(html, this);
 	}
 
 	/**
@@ -425,9 +425,9 @@ export default class Element
 	 * @param html HTML.
 	 */
 	public set outerHTML(html: string) {
-		const childNodes = (<DocumentFragment>(
-			XMLParser.parse(this[PropertySymbol.ownerDocument], html)
-		))[PropertySymbol.nodeArray];
+		const childNodes = new XMLParser(this[PropertySymbol.window]).parse(html)[
+			PropertySymbol.nodeArray
+		];
 		this.replaceWith(...childNodes);
 	}
 
@@ -662,9 +662,9 @@ export default class Element
 	 * @param text HTML string to insert.
 	 */
 	public insertAdjacentHTML(position: InsertAdjacentPosition, text: string): void {
-		const childNodes = (<DocumentFragment>(
-			XMLParser.parse(this[PropertySymbol.ownerDocument], text)
-		))[PropertySymbol.nodeArray];
+		const childNodes = new XMLParser(this[PropertySymbol.window]).parse(text)[
+			PropertySymbol.nodeArray
+		];
 		while (childNodes.length) {
 			this.insertAdjacentElement(position, childNodes[0]);
 		}
@@ -1300,8 +1300,16 @@ export default class Element
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
-		const returnValue = super[PropertySymbol.insertBefore](newNode, referenceNode);
+	public override [PropertySymbol.insertBefore](
+		newNode: Node,
+		referenceNode: Node | null,
+		disableValidations = false
+	): Node {
+		const returnValue = super[PropertySymbol.insertBefore](
+			newNode,
+			referenceNode,
+			disableValidations
+		);
 		this.#onSlotChange(newNode);
 		return returnValue;
 	}

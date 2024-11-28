@@ -402,9 +402,9 @@ describe('Element', () => {
 
 	describe('get childElementCount()', () => {
 		it('Returns child element count.', () => {
-			document.appendChild(document.createElement('div'));
-			document.appendChild(document.createTextNode('test'));
-			expect(document.childElementCount).toEqual(2);
+			document.body.appendChild(document.createElement('div'));
+			document.body.appendChild(document.createTextNode('test'));
+			expect(document.body.childElementCount).toEqual(1);
 		});
 	});
 
@@ -575,14 +575,14 @@ describe('Element', () => {
 			let isCalled = false;
 
 			vi.spyOn(ParentNodeUtility, 'append').mockImplementation((parentNode, ...nodes) => {
-				expect(parentNode === document).toBe(true);
+				expect(parentNode === document.body).toBe(true);
 				expect(nodes.length).toBe(2);
 				expect(nodes[0] === node1).toBe(true);
 				expect(nodes[1] === node2).toBe(true);
 				isCalled = true;
 			});
 
-			document.append(node1, node2);
+			document.body.append(node1, node2);
 			expect(isCalled).toBe(true);
 		});
 	});
@@ -594,14 +594,14 @@ describe('Element', () => {
 			let isCalled = false;
 
 			vi.spyOn(ParentNodeUtility, 'prepend').mockImplementation((parentNode, ...nodes) => {
-				expect(parentNode === document).toBe(true);
+				expect(parentNode === document.body).toBe(true);
 				expect(nodes.length).toBe(2);
 				expect(nodes[0] === node1).toBe(true);
 				expect(nodes[1] === node2).toBe(true);
 				isCalled = true;
 			});
 
-			document.prepend(node1, node2);
+			document.body.prepend(node1, node2);
 			expect(isCalled).toBe(true);
 		});
 	});
@@ -901,7 +901,7 @@ describe('Element', () => {
 		it('Checks if the element matches with a descendant combinator', () => {
 			const grandparentElement = document.createElement('div');
 			grandparentElement.setAttribute('role', 'alert');
-			document.appendChild(grandparentElement);
+			document.body.appendChild(grandparentElement);
 
 			const parentElement = document.createElement('div');
 			parentElement.setAttribute('role', 'status');
@@ -1678,7 +1678,7 @@ describe('Element', () => {
 			expect(element.shadowRoot instanceof ShadowRoot).toBe(true);
 			expect(element.shadowRoot?.ownerDocument === document).toBe(true);
 			expect(element.shadowRoot?.isConnected).toBe(false);
-			document.appendChild(element);
+			document.body.appendChild(element);
 			expect(element.shadowRoot?.isConnected).toBe(true);
 		});
 
@@ -1688,7 +1688,7 @@ describe('Element', () => {
 			expect(element[PropertySymbol.shadowRoot] instanceof ShadowRoot).toBe(true);
 			expect(element[PropertySymbol.shadowRoot]?.ownerDocument === document).toBe(true);
 			expect(element[PropertySymbol.shadowRoot]?.isConnected).toBe(false);
-			document.appendChild(element);
+			document.body.appendChild(element);
 			expect(element[PropertySymbol.shadowRoot]?.isConnected).toBe(true);
 		});
 	});

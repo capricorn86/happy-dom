@@ -3,7 +3,6 @@ import Window from '../../src/window/Window.js';
 import Document from '../../src/nodes/document/Document.js';
 import Node from '../../src/nodes/node/Node.js';
 import HTMLElement from '../../src/nodes/html-element/HTMLElement.js';
-import XMLParserHTML from './data/XMLParserHTML.js';
 import NamespaceURI from '../../src/config/NamespaceURI.js';
 import DocumentType from '../../src/nodes/document-type/DocumentType.js';
 import XMLSerializer from '../../src/xml-serializer/XMLSerializer.js';
@@ -11,15 +10,8 @@ import HTMLTemplateElement from '../../src/nodes/html-template-element/HTMLTempl
 import NodeTypeEnum from '../../src/nodes/node/NodeTypeEnum.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import CustomElement from '../CustomElement.js';
-
-const GET_EXPECTED_HTML = (html: string): string =>
-	html
-		.replace('<?processing instruction?>', '<!--?processing instruction?-->')
-		.replace('<?processing-instruction>', '<!--?processing-instruction-->')
-		.replace('<!Exclamation mark comment>', '<!--Exclamation mark comment-->')
-		.replace('<!>', '<!---->')
-		.replace('<!DOCTYPE HTML', '<!DOCTYPE html')
-		.replace('<img />', '<img>');
+import XMLParserModeEnum from '../../src/xml-parser/XMLParserModeEnum.js';
+import HTMLHtmlElement from '../../src/nodes/html-html-element/HTMLHtmlElement.js';
 
 describe('XMLParser', () => {
 	let window: Window;
@@ -32,15 +24,14 @@ describe('XMLParser', () => {
 
 	describe('parse()', () => {
 		it('Parses HTML with a single <div>.', () => {
-			const root = XMLParser.parse(document, '<div></div>');
+			const root = new XMLParser(window).parse('<div></div>');
 			expect(root.childNodes.length).toBe(1);
 			expect(root.childNodes[0].childNodes.length).toBe(0);
 			expect((<HTMLElement>root.childNodes[0]).tagName).toBe('DIV');
 		});
 
 		it('Parses HTML with a single <div> with attributes.', () => {
-			const root = XMLParser.parse(
-				document,
+			const root = new XMLParser(window).parse(
 				'<div class="class1 class2" id="id" data-no-value></div>'
 			);
 			expect(root.childNodes.length).toBe(1);
@@ -116,26 +107,124 @@ describe('XMLParser', () => {
 		});
 
 		it('Parses an entire HTML page.', () => {
-			const root = XMLParser.parse(document, XMLParserHTML);
-			expect(new XMLSerializer().serializeToString(root)).toBe(GET_EXPECTED_HTML(XMLParserHTML));
+			const html = `
+	<!DOCTYPE html>
+	<html>
+		<head>
+			<title>Title</title>
+		</head>
+		<body>
+			<div class="class1 class2" id="id">
+				<!--Comment 1!-->
+				<?processing instruction?>
+				<?processing-instruction>
+				<!Exclamation mark comment>
+				<b>Bold</b>
+				<!-- Comment 2 !-->
+				<span>Span</span>
+                <!>
+			</div>
+			<article class="class1 class2" id="id">
+				<!-- Comment 1 !-->
+				<b>Bold</b>
+				<!-- Comment 2 !-->
+			</article>
+			<img>
+			<img />
+		</body>
+	</html>
+`;
+			const expected = `<!DOCTYPE html><html><head>
+			<title>Title</title>
+		</head>
+		<body>
+			<div class="class1 class2" id="id">
+				<!--Comment 1!-->
+				<!--?processing instruction?-->
+				<!--?processing-instruction-->
+				<!--Exclamation mark comment-->
+				<b>Bold</b>
+				<!-- Comment 2 !-->
+				<span>Span</span>
+                <!---->
+			</div>
+			<article class="class1 class2" id="id">
+				<!-- Comment 1 !-->
+				<b>Bold</b>
+				<!-- Comment 2 !-->
+			</article>
+			<img>
+			<img>
+		
+	
+</body></html>`;
+			const root = new XMLParser(window, { mode: XMLParserModeEnum.htmlDocument }).parse(html);
+			expect(new XMLSerializer().serializeToString(root)).toBe(expected);
 		});
 
 		it('Parses a page with document type set to "HTML 4.01".', () => {
-			const pageHTML = XMLParserHTML.trim().replace(
-				'<!DOCTYPE html>',
-				'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">'
-			);
-			const root = XMLParser.parse(document, pageHTML);
+			const html = `
+	<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+	<html>
+		<head>
+			<title>Title</title>
+		</head>
+		<body>
+			<div class="class1 class2" id="id">
+				<!--Comment 1!-->
+				<?processing instruction?>
+				<?processing-instruction>
+				<!Exclamation mark comment>
+				<b>Bold</b>
+				<!-- Comment 2 !-->
+				<span>Span</span>
+                <!>
+			</div>
+			<article class="class1 class2" id="id">
+				<!-- Comment 1 !-->
+				<b>Bold</b>
+				<!-- Comment 2 !-->
+			</article>
+			<img>
+			<img />
+		</body>
+	</html>
+`;
+			const expected = `<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"><html><head>
+			<title>Title</title>
+		</head>
+		<body>
+			<div class="class1 class2" id="id">
+				<!--Comment 1!-->
+				<!--?processing instruction?-->
+				<!--?processing-instruction-->
+				<!--Exclamation mark comment-->
+				<b>Bold</b>
+				<!-- Comment 2 !-->
+				<span>Span</span>
+                <!---->
+			</div>
+			<article class="class1 class2" id="id">
+				<!-- Comment 1 !-->
+				<b>Bold</b>
+				<!-- Comment 2 !-->
+			</article>
+			<img>
+			<img>
+		
+	
+</body></html>`;
+
+			const root = new XMLParser(window, { mode: XMLParserModeEnum.htmlDocument }).parse(html);
 			const doctype = <DocumentType>root.childNodes[0];
 			expect(doctype.name).toBe('html');
 			expect(doctype.publicId).toBe('-//W3C//DTD HTML 4.01//EN');
 			expect(doctype.systemId).toBe('http://www.w3.org/TR/html4/strict.dtd');
-			expect(new XMLSerializer().serializeToString(root)).toBe(GET_EXPECTED_HTML(pageHTML));
+			expect(new XMLSerializer().serializeToString(root)).toBe(expected);
 		});
 
 		it('Handles unnestable elements correctly when there are siblings.', () => {
-			const root = XMLParser.parse(
-				document,
+			const root = new XMLParser(window).parse(
 				`<article>
                     <span>
                         <div>
@@ -160,8 +249,7 @@ describe('XMLParser', () => {
 		});
 
 		it('Handles unnestable elements correctly when the nested element is wrapped by another element.', () => {
-			const root = XMLParser.parse(
-				document,
+			const root = new XMLParser(window).parse(
 				`<article>
                     <span>
                         <div>
@@ -186,21 +274,65 @@ describe('XMLParser', () => {
 		});
 
 		it('Parses a page with document type set to "MathML 1.01".', () => {
-			const pageHTML = XMLParserHTML.trim().replace(
-				'<!DOCTYPE html>',
-				'<!DOCTYPE math SYSTEM "http://www.w3.org/Math/DTD/mathml1/mathml.dtd">'
-			);
-			const root = XMLParser.parse(document, pageHTML);
+			const html = `<!DOCTYPE math SYSTEM "http://www.w3.org/Math/DTD/mathml1/mathml.dtd">
+<html>
+    <head>
+        <title>Title</title>
+    </head>
+    <body>
+        <div class="class1 class2" id="id">
+            <!--Comment 1!-->
+            <?processing instruction?>
+            <?processing-instruction>
+            <!Exclamation mark comment>
+            <b>Bold</b>
+            <!-- Comment 2 !-->
+            <span>Span</span>
+            <!>
+        </div>
+        <article class="class1 class2" id="id">
+            <!-- Comment 1 !-->
+            <b>Bold</b>
+            <!-- Comment 2 !-->
+        </article>
+        <img>
+        <img />
+    </body>
+</html>`;
+			const expected = `<!DOCTYPE math SYSTEM "http://www.w3.org/Math/DTD/mathml1/mathml.dtd"><html><head>
+        <title>Title</title>
+    </head>
+    <body>
+        <div class="class1 class2" id="id">
+            <!--Comment 1!-->
+            <!--?processing instruction?-->
+            <!--?processing-instruction-->
+            <!--Exclamation mark comment-->
+            <b>Bold</b>
+            <!-- Comment 2 !-->
+            <span>Span</span>
+            <!---->
+        </div>
+        <article class="class1 class2" id="id">
+            <!-- Comment 1 !-->
+            <b>Bold</b>
+            <!-- Comment 2 !-->
+        </article>
+        <img>
+        <img>
+    
+</body></html>`;
+
+			const root = new XMLParser(window, { mode: XMLParserModeEnum.htmlDocument }).parse(html);
 			const doctype = <DocumentType>root.childNodes[0];
 			expect(doctype.name).toBe('math');
 			expect(doctype.publicId).toBe('');
 			expect(doctype.systemId).toBe('http://www.w3.org/Math/DTD/mathml1/mathml.dtd');
-			expect(new XMLSerializer().serializeToString(root)).toBe(GET_EXPECTED_HTML(pageHTML));
+			expect(new XMLSerializer().serializeToString(root)).toBe(expected);
 		});
 
 		it('Handles unclosed tags of unnestable elements (e.g. <a>, <li>).', () => {
-			const root = XMLParser.parse(
-				document,
+			const root = new XMLParser(window).parse(
 				`
 				<div class="test" disabled>
 					<ul>
@@ -228,8 +360,7 @@ describe('XMLParser', () => {
 		});
 
 		it('Does not parse the content of script and style elements.', () => {
-			const root = XMLParser.parse(
-				document,
+			const root = new XMLParser(window).parse(
 				`<div>
 					<script>if(1<Math['random']()){}else if(Math['random']()>1){console.log("1")}</script>
 					<script><b></b></script>
@@ -252,8 +383,7 @@ describe('XMLParser', () => {
 				</div>`
 			);
 
-			const root2 = XMLParser.parse(
-				document,
+			const root2 = new XMLParser(window, { mode: XMLParserModeEnum.htmlDocument }).parse(
 				`<html>
                     <head>
                         <title>Title</title>
@@ -269,7 +399,7 @@ describe('XMLParser', () => {
 		});
 
 		it('Handles unclosed regular elements.', () => {
-			const root = XMLParser.parse(document, `<div>test`);
+			const root = new XMLParser(window).parse(`<div>test`);
 
 			expect(root.childNodes.length).toBe(1);
 			expect((<HTMLElement>root.childNodes[0]).tagName).toBe('DIV');
@@ -277,8 +407,7 @@ describe('XMLParser', () => {
 		});
 
 		it('Parses an SVG with "xmlns" set to HTML.', () => {
-			const root = XMLParser.parse(
-				document,
+			const root = new XMLParser(window).parse(
 				`
 				<div>
 					<svg viewBox="0 0 300 100" stroke="red" fill="grey" xmlns="${NamespaceURI.html}">
@@ -381,8 +510,7 @@ describe('XMLParser', () => {
 		});
 
 		it('Parses a malformed SVG with "xmlns" set to HTML.', () => {
-			const root = XMLParser.parse(
-				document,
+			const root = new XMLParser(window).parse(
 				`
 				<div>
 					<svg viewBox="0 0 300 100" stroke="red" fill="grey" xmlns="${NamespaceURI.html}">
@@ -405,7 +533,7 @@ describe('XMLParser', () => {
 			`
 			);
 
-			expect(new XMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
+			expect(new XMLSerializer().serializeToString(root)).toBe(
 				`
 				<div>
 					<svg viewBox="0 0 300 100" stroke="red" fill="grey" xmlns="http://www.w3.org/1999/xhtml">
@@ -423,15 +551,13 @@ describe('XMLParser', () => {
 						<svg viewBox="0 0 10 10" x="200" width="100">
 							<circle cx="5" cy="5" r="4"></circle>
 						</svg>
-					</polygon>
-				</path>
-			</line></ellipse></svg></div>`.replace(/\s/gm, '')
+					</polygon></path></line></ellipse></svg>
+				</div>`
 			);
 		});
 
 		it('Parses childless elements with start and end tag names in different case', () => {
-			const root = XMLParser.parse(
-				document,
+			const root = new XMLParser(window).parse(
 				`
 				<script type="text/JavaScript">console.log('hello')</SCRIPT>
 				`
@@ -441,16 +567,16 @@ describe('XMLParser', () => {
 		});
 
 		it('Handles different value types.', () => {
-			const root1 = XMLParser.parse(document, <string>(<unknown>null));
+			const root1 = new XMLParser(window).parse(<string>(<unknown>null));
 			expect(new XMLSerializer().serializeToString(root1)).toBe('');
 
-			const root2 = XMLParser.parse(document, <string>(<unknown>undefined));
+			const root2 = new XMLParser(window).parse(<string>(<unknown>undefined));
 			expect(new XMLSerializer().serializeToString(root2)).toBe('');
 
-			const root3 = XMLParser.parse(document, <string>(<unknown>1000));
+			const root3 = new XMLParser(window).parse(<string>(<unknown>1000));
 			expect(new XMLSerializer().serializeToString(root3)).toBe('1000');
 
-			const root4 = XMLParser.parse(document, <string>(<unknown>false));
+			const root4 = new XMLParser(window).parse(<string>(<unknown>false));
 			expect(new XMLSerializer().serializeToString(root4)).toBe('false');
 		});
 
@@ -483,46 +609,74 @@ describe('XMLParser', () => {
 				// Conditional comment - Contoso 2
 				'<!--[if lt Contoso 2]>\n' +
 					'<p>Your version of the Contoso control is out of date; Please update to the latest.</p>\n' +
-					'<![endif]-->',
-
-				// Conditional comment - IE 9 - With multiple scripts
-				'<!DOCTYPE html><html lang="en">\n' +
-					'<head>\n' +
-					'    <meta charset="UTF-8">\n' +
-					'    <title>Title</title>\n' +
-					'</head>\n' +
-					'<body>\n' +
-					'<!--[if lt IE 9]>\n' +
-					"<script>window.location = 'browser.htm';</script>\n" +
-					'<![endif]-->\n' +
-					'\n' +
-					'\n' +
-					'<script>\n' +
-					"    const node = document.createElement('a');\n" +
-					"    node.href = 'http://www.google.com';\n" +
-					"    node.target = '_blank';\n" +
-					"    node.innerHTML = 'google';\n" +
-					'    window.document.body.appendChild(node);\n' +
-					'</script>\n' +
-					'</body>\n' +
-					'</html>\n'
+					'<![endif]-->'
 			];
 
 			for (const html of testHTML) {
-				const root = XMLParser.parse(document, html);
+				const root = new XMLParser(window, { mode: XMLParserModeEnum.htmlFragment }).parse(html);
 				expect(new XMLSerializer().serializeToString(root)).toBe(html);
 			}
 		});
 
+		it('Parses conditional comments for IE 9 with multiple scripts', () => {
+			const html =
+				'<!DOCTYPE html><html lang="en">\n' +
+				'<head>\n' +
+				'    <meta charset="UTF-8">\n' +
+				'    <title>Title</title>\n' +
+				'</head>\n' +
+				'<body>\n' +
+				'<!--[if lt IE 9]>\n' +
+				"<script>window.location = 'browser.htm';</script>\n" +
+				'<![endif]-->\n' +
+				'\n' +
+				'\n' +
+				'<script>\n' +
+				"    const node = document.createElement('a');\n" +
+				"    node.href = 'http://www.google.com';\n" +
+				"    node.target = '_blank';\n" +
+				"    node.innerHTML = 'google';\n" +
+				'    window.document.body.appendChild(node);\n' +
+				'</script>\n' +
+				'</body>\n' +
+				'</html>\n';
+			const expected =
+				'<!DOCTYPE html><html lang="en">' +
+				'<head>\n' +
+				'    <meta charset="UTF-8">\n' +
+				'    <title>Title</title>\n' +
+				'</head>\n' +
+				'<body>\n' +
+				'<!--[if lt IE 9]>\n' +
+				"<script>window.location = 'browser.htm';</script>\n" +
+				'<![endif]-->\n' +
+				'\n' +
+				'\n' +
+				'<script>\n' +
+				"    const node = document.createElement('a');\n" +
+				"    node.href = 'http://www.google.com';\n" +
+				"    node.target = '_blank';\n" +
+				"    node.innerHTML = 'google';\n" +
+				'    window.document.body.appendChild(node);\n' +
+				'</script>\n\n\n' +
+				'</body>' +
+				'</html>';
+
+			const root = new XMLParser(window, { mode: XMLParserModeEnum.htmlDocument }).parse(html);
+			expect(new XMLSerializer().serializeToString(root)).toBe(expected);
+		});
+
 		it('Parses comments with dash in them.', () => {
-			const root = XMLParser.parse(document, '<!-- comment with - in - it -->');
+			const root = new XMLParser(window).parse('<!-- comment with - in - it -->');
 			expect(root.childNodes.length).toBe(1);
 			expect(root.childNodes[0].nodeType).toBe(NodeTypeEnum.commentNode);
 			expect(root.childNodes[0].nodeValue).toBe(' comment with - in - it ');
 		});
 
 		it('Parses <template> elements, including its content.', () => {
-			const root = XMLParser.parse(document, '<div><template><tr><td></td></tr></template></div>');
+			const root = new XMLParser(window).parse(
+				'<div><template><tr><td></td></tr></template></div>'
+			);
 			expect(root.childNodes.length).toBe(1);
 			const template = <HTMLTemplateElement>root.childNodes[0].childNodes[0];
 			expect(template.childNodes.length).toBe(0);
@@ -534,8 +688,7 @@ describe('XMLParser', () => {
 		});
 
 		it('Parses HTML with attributes using colon (:) and value containing ">".', () => {
-			const root = XMLParser.parse(
-				document,
+			const root = new XMLParser(window).parse(
 				'<template><component :is="type" :disabled="index > 1" data-testid="button"/></template>'
 			);
 
@@ -550,8 +703,7 @@ describe('XMLParser', () => {
 		});
 
 		it('Doesn\'t close non-void elements when using "/>" when namespace is HTML.', () => {
-			const root = XMLParser.parse(
-				document,
+			const root = new XMLParser(window).parse(
 				`
                 <span key1="value1"/>
                 <span key1="value1" key2/>
@@ -570,14 +722,13 @@ describe('XMLParser', () => {
 		});
 
 		it('Can read text with ">" in it.', () => {
-			const root = XMLParser.parse(document, `<span>1 > 0</span>`);
+			const root = new XMLParser(window).parse(`<span>1 > 0</span>`);
 
 			expect(new XMLSerializer().serializeToString(root)).toBe(`<span>1 &gt; 0</span>`);
 		});
 
 		it('Parses malformed attributes.', () => {
-			const root = XMLParser.parse(
-				document,
+			const root = new XMLParser(window).parse(
 				`
                 <span key1="value1""></span>
                 <span key1="value1"" key2></span>
@@ -647,8 +798,7 @@ describe('XMLParser', () => {
 		});
 
 		it('Parses attributes with characters that lit-html is using (".", "$", "@").', () => {
-			const root = XMLParser.parse(
-				document,
+			const root = new XMLParser(window).parse(
 				`
                 <img key1="value1" key2/>
                 <img key1="value1"/>
@@ -665,8 +815,7 @@ describe('XMLParser', () => {
 		});
 
 		it('Parses attributes without apostrophs.', () => {
-			const root = XMLParser.parse(
-				document,
+			const root = new XMLParser(window).parse(
 				`<div .theme$lit$={{lit-12345}} key1="value1">Test</div>`
 			);
 
@@ -676,7 +825,7 @@ describe('XMLParser', () => {
 		});
 
 		it('Parses attributes with URL without apostrophs.', () => {
-			const root = XMLParser.parse(document, `<a href=http://www.github.com/path>Click me</a>`);
+			const root = new XMLParser(window).parse(`<a href=http://www.github.com/path>Click me</a>`);
 
 			expect(new XMLSerializer().serializeToString(root)).toBe(
 				'<a href="http://www.github.com/path">Click me</a>'
@@ -684,7 +833,7 @@ describe('XMLParser', () => {
 		});
 
 		it('Parses attributes with single apostrophs.', () => {
-			const root = XMLParser.parse(document, `<div key1='value1' key2='value2'>Test</div>`);
+			const root = new XMLParser(window).parse(`<div key1='value1' key2='value2'>Test</div>`);
 
 			expect(new XMLSerializer().serializeToString(root)).toBe(
 				`<div key1="value1" key2="value2">Test</div>`
@@ -692,8 +841,7 @@ describe('XMLParser', () => {
 		});
 
 		it('Parses HTML with end ">" on a new line.', () => {
-			const root = XMLParser.parse(
-				document,
+			const root = new XMLParser(window).parse(
 				`
                 <div key1="value1">
                     Test
@@ -709,8 +857,7 @@ describe('XMLParser', () => {
 		});
 
 		it('Parses <ul> and <li> elements.', () => {
-			const root = XMLParser.parse(
-				document,
+			const root = new XMLParser(window).parse(
 				`<div>
                     <ul>
                         <li>
@@ -736,7 +883,7 @@ describe('XMLParser', () => {
                 </div>`.replace(/\s/gm, '')
 			);
 
-			const root2 = XMLParser.parse(document, `<li><li><span>Test</span></li></li>`);
+			const root2 = new XMLParser(window).parse(`<li><li><span>Test</span></li></li>`);
 
 			expect(new XMLSerializer().serializeToString(root2).replace(/\s/gm, '')).toBe(
 				`<li></li><li><span>Test</span></li>`.replace(/\s/gm, '')
@@ -744,8 +891,7 @@ describe('XMLParser', () => {
 		});
 
 		it('Handles ending with unclosed start tag.', () => {
-			const root = XMLParser.parse(
-				document,
+			const root = new XMLParser(window).parse(
 				`<div>
                     <ul>
                         <li>
@@ -758,34 +904,21 @@ describe('XMLParser', () => {
                 </div>`
 			);
 
-			// TODO: Should actually be:
-			// <div>
-			//         <ul>
-			//             <li>
-			//                 <ul>
-			//                     <li>aaaaa</li>
-			//                     <li <="" ul="">
-			//             </li>
-			//         </ul>
-			//     </li></ul></div>
-
-			expect(new XMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
+			expect(new XMLSerializer().serializeToString(root)).toBe(
 				`<div>
                     <ul>
                         <li>
                             <ul>
                                 <li>aaaaa</li>
-                                <li></li>
-                            </ul>
+                                <li <="" ul="">
                         </li>
                     </ul>
-                </div>`.replace(/\s/gm, '')
+                </li></ul></div>`
 			);
 		});
 
 		it('Handles complex style attributes', () => {
-			const root = XMLParser.parse(
-				document,
+			const root = new XMLParser(window).parse(
 				`<div class="container">
                     <div class="sliderContainer">
                         <input class="slider" type="range" step="1" min="0" max="100">
@@ -817,8 +950,7 @@ describe('XMLParser', () => {
 		it('Handles parsing custom elements registered with non-ASCII characters.', () => {
 			window.customElements.define('a-Öa', CustomElement);
 
-			const root = XMLParser.parse(
-				document,
+			const root = new XMLParser(window).parse(
 				`
                 <div>
                     <a-Öa key1="value1" key2="value2">
@@ -851,8 +983,7 @@ describe('XMLParser', () => {
 
 			window.customElements.define('custom-element', CustomElement);
 
-			const root = XMLParser.parse(
-				document,
+			const root = new XMLParser(window).parse(
 				`
                 <div>
                     <custom-element key1="value1"></custom-element>
@@ -863,6 +994,157 @@ describe('XMLParser', () => {
 			document.body.appendChild(root.children[0]);
 
 			expect(document.body.children[0].children[0]['key1']).toBe('value1');
+		});
+
+		it('Ignores <!DOCTYPE>, <html>, <head> and <body> when parsing an HTML fragment.', () => {
+			const root = new XMLParser(window).parse(
+				'<!DOCTYPE html><html><head></head><body><div>Test</div></body></html>'
+			);
+
+			expect(new XMLSerializer().serializeToString(root)).toBe('<div>Test</div>');
+		});
+
+		it('Handles multiple <!DOCTYPE>.', () => {
+			const root = new XMLParser(window, { mode: XMLParserModeEnum.htmlDocument }).parse(
+				`<!DOCTYPE math SYSTEM "http://www.w3.org/Math/DTD/mathml1/mathml.dtd">
+                <!DOCTYPE html>
+                <html>
+                    <head></head>
+                    <body><div>Test</div></body>
+                </html>`
+			);
+
+			expect((<Document>root).doctype).toBe(root.childNodes[0]);
+			expect(root.childNodes.length).toBe(2);
+			expect(root.childNodes[0].nodeType).toBe(NodeTypeEnum.documentTypeNode);
+			expect((<DocumentType>root.childNodes[0]).name).toBe('math');
+			expect((<DocumentType>root.childNodes[0]).publicId).toBe('');
+			expect((<DocumentType>root.childNodes[0]).systemId).toBe(
+				'http://www.w3.org/Math/DTD/mathml1/mathml.dtd'
+			);
+			expect(root.childNodes[1]).toBeInstanceOf(HTMLHtmlElement);
+		});
+
+		it('Handles multiple <html> tag names', () => {
+			const root = new XMLParser(window, { mode: XMLParserModeEnum.htmlDocument }).parse(
+				`<html>
+                    <head></head>
+                    <body><div>Test</div></body>
+                </html>
+                <html style="color: red">
+                    <head></head>
+                    <body><div>Test</div></body>
+                </html>`
+			);
+
+			expect(new XMLSerializer().serializeToString(root)).toBe(
+				`<!DOCTYPE html><html style="color: red"><head></head>
+                    <body><div>Test</div>
+                
+                
+                    
+                    <div>Test</div>
+                </body></html>`
+			);
+		});
+
+		it('Handles multiple <head> tag names without <body>', () => {
+			const root = new XMLParser(window, { mode: XMLParserModeEnum.htmlDocument }).parse(
+				`<head style="color: red">
+                    <title>Title 1</title>
+                </head>
+                <head style="color: green">
+                    <title>Title 2</title>
+                </head>`
+			);
+
+			expect(new XMLSerializer().serializeToString(root))
+				.toBe(`<!DOCTYPE html><html><head style="color: red">
+                    <title>Title 1</title>
+                <title>Title 2</title></head>
+                
+                    
+                <body></body></html>`);
+		});
+
+		it('Handles multiple <head> tag names with <body>', () => {
+			const root = new XMLParser(window, { mode: XMLParserModeEnum.htmlDocument }).parse(
+				`<head>
+                    <title>Title 1</title>
+                </head>
+                <body></body>
+                <head style="color: green">
+                    <title>Title 2</title>
+                </head>`
+			);
+
+			expect(new XMLSerializer().serializeToString(root)).toBe(`<!DOCTYPE html><html><head>
+                    <title>Title 1</title>
+                </head>
+                <body>
+                
+                    <title>Title 2</title>
+                </body></html>`);
+		});
+
+		it('Handles multiple <body> tag names', () => {
+			const root1 = new XMLParser(window, { mode: XMLParserModeEnum.htmlDocument }).parse(
+				`<body>
+                    <div>Test 1</div>
+                </body>
+                <body style="color: red">
+                    <div>Test 2</div>
+                </body>`
+			);
+
+			expect(new XMLSerializer().serializeToString(root1))
+				.toBe(`<!DOCTYPE html><html><head></head><body style="color: red">
+                    <div>Test 1</div>
+                
+                
+                    <div>Test 2</div>
+                </body></html>`);
+
+			const root2 = new XMLParser(window, { mode: XMLParserModeEnum.htmlDocument }).parse(
+				`<html>
+                    <head>
+                        <title>Title</title>
+                    </head>
+                    <body  style="color: red">
+                        <div>Test 1</div>
+                    </body>
+                    <body style="color: green">
+                        <div>Test 2</div>
+                    </body>
+                </html>`
+			);
+
+			expect(new XMLSerializer().serializeToString(root2)).toBe(`<!DOCTYPE html><html><head>
+                        <title>Title</title>
+                    </head>
+                    <body style="color: red">
+                        <div>Test 1</div>
+                    
+                    
+                        <div>Test 2</div>
+                    
+                </body></html>`);
+		});
+
+		it('Handles processing instructions as comments.', () => {
+			const root = new XMLParser(window).parse(
+				`<?xml version="1.0" encoding="UTF-8"?>
+                <div>
+                    <div>Test</div>
+                </div>`
+			);
+
+			expect(new XMLSerializer().serializeToString(root)).toBe(
+				`<!--?xml version="1.0" encoding="UTF-8"?-->
+                <div>
+                    <div>Test</div>
+                </div>`
+			);
 		});
 	});
 });

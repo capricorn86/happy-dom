@@ -10,6 +10,7 @@ import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
 import HTMLElementConfig from '../config/HTMLElementConfig.js';
 import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigContentModelEnum.js';
+import NamespaceURI from '../config/NamespaceURI.js';
 
 /**
  * Utility for converting an element to string.
@@ -73,6 +74,14 @@ export default class XMLSerializer {
 					innerHTML += this.serializeToString(node);
 				}
 
+				if (
+					!innerHTML &&
+					(root[PropertySymbol.namespaceURI] === NamespaceURI.xmlns ||
+						root[PropertySymbol.namespaceURI] === NamespaceURI.svg)
+				) {
+					return `<${localName}${this.getAttributes(element)}/>`;
+				}
+
 				return `<${localName}${this.getAttributes(element)}>${innerHTML}</${localName}>`;
 			case Node.DOCUMENT_FRAGMENT_NODE:
 			case Node.DOCUMENT_NODE:
@@ -122,11 +131,29 @@ export default class XMLSerializer {
 			attributeString += ' is="' + (<Element>element)[PropertySymbol.isValue] + '"';
 		}
 
-		for (const attribute of (<Element>element)[PropertySymbol.attributes][
-			PropertySymbol.namedItems
-		].values()) {
-			const escapedValue = Entities.escapeAttribute(attribute[PropertySymbol.value]);
-			attributeString += ' ' + attribute[PropertySymbol.name] + '="' + escapedValue + '"';
+		const namedItems = (<Element>element)[PropertySymbol.attributes][PropertySymbol.namedItems];
+
+		if (
+			element[PropertySymbol.namespaceURI] === NamespaceURI.svg ||
+			element[PropertySymbol.namespaceURI] === NamespaceURI.xmlns
+		) {
+			const xmlns = namedItems.get('xmlns');
+
+			// The "xmlns" attribute should always be the first attribute if it exists.
+			if (xmlns && xmlns[PropertySymbol.value]) {
+				attributeString += ' xmlns="' + xmlns[PropertySymbol.value] + '"';
+			}
+		}
+
+		for (const attribute of namedItems.values()) {
+			if (
+				attribute[PropertySymbol.name] !== 'xmlns' ||
+				(element[PropertySymbol.namespaceURI] !== NamespaceURI.svg &&
+					element[PropertySymbol.namespaceURI] !== NamespaceURI.xmlns)
+			) {
+				const escapedValue = Entities.escapeAttribute(attribute[PropertySymbol.value]);
+				attributeString += ' ' + attribute[PropertySymbol.name] + '="' + escapedValue + '"';
+			}
 		}
 
 		return attributeString;

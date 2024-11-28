@@ -264,7 +264,7 @@ describe('MutationObserver', () => {
 			const observer = new window.MutationObserver((mutationRecords) => {
 				records = mutationRecords;
 			});
-			document.appendChild(div);
+			document.body.appendChild(div);
 			observer.observe(document, { attributes: true, subtree: true });
 			div.setAttribute('attr', 'value');
 
