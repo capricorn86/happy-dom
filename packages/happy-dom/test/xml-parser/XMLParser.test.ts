@@ -552,7 +552,8 @@ describe('XMLParser', () => {
 							<circle cx="5" cy="5" r="4"></circle>
 						</svg>
 					</polygon></path></line></ellipse></svg>
-				</div>`
+				</div>
+			`
 			);
 		});
 
@@ -1144,6 +1145,33 @@ describe('XMLParser', () => {
                 <div>
                     <div>Test</div>
                 </div>`
+			);
+		});
+
+		it('Handles namespaced XML', () => {
+			const root = new XMLParser(window, { mode: XMLParserModeEnum.xmlDocument }).parse(
+				`<?xml version="1.0" encoding="UTF-8"?>
+                <personxml:person xmlns:personxml="http://www.your.example.com/xml/person" xmlns:cityxml="http://www.my.example.com/xml/cities">
+                <personxml:name>Rob</personxml:name>
+                <personxml:age>37</personxml:age>
+                <cityxml:homecity>
+                    <cityxml:name>London</cityxml:name>
+                    <cityxml:lat>123.000</cityxml:lat>
+                    <cityxml:long>0.00</cityxml:long>
+                </cityxml:homecity>
+                </personxml:person>`
+			);
+
+			expect(new XMLSerializer().serializeToString(root)).toBe(
+				`<personxml:person xmlns:personxml="http://www.your.example.com/xml/person" xmlns:cityxml="http://www.my.example.com/xml/cities">
+                <personxml:name>Rob</personxml:name>
+                <personxml:age>37</personxml:age>
+                <cityxml:homecity>
+                    <cityxml:name>London</cityxml:name>
+                    <cityxml:lat>123.000</cityxml:lat>
+                    <cityxml:long>0.00</cityxml:long>
+                </cityxml:homecity>
+                </personxml:person>`
 			);
 		});
 	});

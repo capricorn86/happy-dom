@@ -12,11 +12,9 @@ import HTMLElementConfig from '../config/HTMLElementConfig.js';
 import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigContentModelEnum.js';
 
 /**
- * Serializes a node into XML.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/API/XMLSerializer
+ * Serializes a node into HTML.
  */
-export default class XMLSerializer {
+export default class HTMLSerializer {
 	public [PropertySymbol.options]: {
 		serializableShadowRoots: boolean;
 		shadowRoots: ShadowRoot[] | null;

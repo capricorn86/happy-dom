@@ -33,16 +33,14 @@ export default class DOMParser {
 		switch (mimeType) {
 			case 'text/html':
 				return <Document>new XMLParser(this[PropertySymbol.window], {
-					mode: XMLParserModeEnum.htmlDocument,
-					evaluateScripts: false
+					mode: XMLParserModeEnum.htmlDocument
 				}).parse(string);
 			case 'image/svg+xml':
 			case 'text/xml':
 			case 'application/xml':
 			case 'application/xhtml+xml':
 				return <Document>new XMLParser(this[PropertySymbol.window], {
-					mode: XMLParserModeEnum.xmlDocument,
-					evaluateScripts: false
+					mode: XMLParserModeEnum.xmlDocument
 				}).parse(string);
 			default:
 				throw new window.DOMException(`Unknown mime type "${mimeType}".`);
