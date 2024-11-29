@@ -4,12 +4,7 @@ import HTMLElementConfigContentModelEnum from './HTMLElementConfigContentModelEn
  * @see https://html.spec.whatwg.org/multipage/indices.html
  */
 export default <
-	{
-		[key: string]: {
-			className: string;
-			contentModel: HTMLElementConfigContentModelEnum;
-		};
-	}
+	{ [key: string]: { className: string; contentModel: HTMLElementConfigContentModelEnum } }
 >{
 	a: {
 		className: 'HTMLAnchorElement',
