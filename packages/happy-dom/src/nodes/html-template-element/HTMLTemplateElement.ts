@@ -2,10 +2,9 @@ import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import Node from '../node/Node.js';
-import XMLSerializer from '../../xml-serializer/XMLSerializer.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
 import ShadowRoot from '../shadow-root/ShadowRoot.js';
-import XMLParserModeEnum from '../../xml-parser/XMLParserModeEnum.js';
+import HTMLSerializer from '../../html-serializer/HTMLSerializer.js';
 
 /**
  * HTML Template Element.
@@ -70,18 +69,18 @@ export default class HTMLTemplateElement extends HTMLElement {
 	 * @override
 	 */
 	public override getInnerHTML(_options?: { includeShadowRoots?: boolean }): string {
-		const xmlSerializer = new XMLSerializer();
+		const serializer = new HTMLSerializer();
 
 		// Options should be ignored as shadow roots should not be serialized for HTMLTemplateElement.
 
 		const content = <DocumentFragment>this[PropertySymbol.content];
-		let xml = '';
+		let html = '';
 
 		for (const node of content[PropertySymbol.nodeArray]) {
-			xml += xmlSerializer.serializeToString(node);
+			html += serializer.serializeToString(node);
 		}
 
-		return xml;
+		return html;
 	}
 
 	/**
@@ -91,18 +90,18 @@ export default class HTMLTemplateElement extends HTMLElement {
 		serializableShadowRoots?: boolean;
 		shadowRoots?: ShadowRoot[];
 	}): string {
-		const xmlSerializer = new XMLSerializer();
+		const serializer = new HTMLSerializer();
 
 		// Options should be ignored as shadow roots should not be serialized for HTMLTemplateElement.
 
 		const content = <DocumentFragment>this[PropertySymbol.content];
-		let xml = '';
+		let html = '';
 
 		for (const node of content[PropertySymbol.nodeArray]) {
-			xml += xmlSerializer.serializeToString(node);
+			html += serializer.serializeToString(node);
 		}
 
-		return xml;
+		return html;
 	}
 
 	/**

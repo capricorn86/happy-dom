@@ -1,14 +1,13 @@
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
-import XMLSerializer from '../../xml-serializer/XMLSerializer.js';
 import Element from '../element/Element.js';
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import HTMLElement from '../../nodes/html-element/HTMLElement.js';
 import Event from '../../event/Event.js';
 import SVGElement from '../svg-element/SVGElement.js';
 import Document from '../document/Document.js';
-import XMLParserModeEnum from '../../xml-parser/XMLParserModeEnum.js';
+import HTMLSerializer from '../../html-serializer/HTMLSerializer.js';
 
 /**
  * ShadowRoot.
@@ -120,12 +119,12 @@ export default class ShadowRoot extends DocumentFragment {
 	 * @returns HTML.
 	 */
 	public get innerHTML(): string {
-		const xmlSerializer = new XMLSerializer();
-		let xml = '';
+		const serializer = new HTMLSerializer();
+		let html = '';
 		for (const node of this[PropertySymbol.nodeArray]) {
-			xml += xmlSerializer.serializeToString(node);
+			html += serializer.serializeToString(node);
 		}
-		return xml;
+		return html;
 	}
 
 	/**

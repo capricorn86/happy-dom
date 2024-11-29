@@ -5,7 +5,6 @@ import DOMRect from '../../dom/DOMRect.js';
 import DOMTokenList from '../../dom/DOMTokenList.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
-import XMLSerializer from '../../xml-serializer/XMLSerializer.js';
 import ChildNodeUtility from '../child-node/ChildNodeUtility.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtility.js';
@@ -32,7 +31,7 @@ import NodeList from '../node/NodeList.js';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import NamedNodeMapProxyFactory from './NamedNodeMapProxyFactory.js';
 import NodeFactory from '../NodeFactory.js';
-import XMLParserModeEnum from '../../xml-parser/XMLParserModeEnum.js';
+import HTMLSerializer from '../../html-serializer/HTMLSerializer.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -416,7 +415,7 @@ export default class Element
 	 * @returns HTML.
 	 */
 	public get outerHTML(): string {
-		return new XMLSerializer().serializeToString(this);
+		return new HTMLSerializer().serializeToString(this);
 	}
 
 	/**
@@ -495,19 +494,17 @@ export default class Element
 	 * @returns HTML.
 	 */
 	public getInnerHTML(options?: { includeShadowRoots?: boolean }): string {
-		const xmlSerializer = new XMLSerializer();
+		const serializer = new HTMLSerializer({
+			allShadowRoots: !!options?.includeShadowRoots
+		});
 
-		if (options?.includeShadowRoots) {
-			xmlSerializer[PropertySymbol.options].allShadowRoots = true;
-		}
-
-		let xml = '';
+		let html = '';
 
 		for (const node of this[PropertySymbol.nodeArray]) {
-			xml += xmlSerializer.serializeToString(node);
+			html += serializer.serializeToString(node);
 		}
 
-		return xml;
+		return html;
 	}
 
 	/**
@@ -522,25 +519,18 @@ export default class Element
 		serializableShadowRoots?: boolean;
 		shadowRoots?: ShadowRoot[];
 	}): string {
-		const xmlSerializer = new XMLSerializer();
+		const serializer = new HTMLSerializer({
+			serializableShadowRoots: !!options?.serializableShadowRoots,
+			shadowRoots: options?.shadowRoots ?? null
+		});
 
-		if (options) {
-			if (options.serializableShadowRoots) {
-				xmlSerializer[PropertySymbol.options].serializableShadowRoots =
-					options.serializableShadowRoots;
-			}
-			if (options.shadowRoots) {
-				xmlSerializer[PropertySymbol.options].shadowRoots = options.shadowRoots;
-			}
-		}
-
-		let xml = '';
+		let html = '';
 
 		for (const node of this[PropertySymbol.nodeArray]) {
-			xml += xmlSerializer.serializeToString(node);
+			html += serializer.serializeToString(node);
 		}
 
-		return xml;
+		return html;
 	}
 
 	/**

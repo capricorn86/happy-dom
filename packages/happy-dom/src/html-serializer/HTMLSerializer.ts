@@ -15,7 +15,7 @@ import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigConten
  * Serializes a node into HTML.
  */
 export default class HTMLSerializer {
-	public [PropertySymbol.options]: {
+	private options: {
 		serializableShadowRoots: boolean;
 		shadowRoots: ShadowRoot[] | null;
 		allShadowRoots: boolean;
@@ -26,14 +26,40 @@ export default class HTMLSerializer {
 	};
 
 	/**
+	 * Constructor.
+	 *
+	 * @param [options] Options.
+	 * @param [options.serializableShadowRoots] If shadow roots should be serialized.
+	 * @param [options.shadowRoots] Shadow roots to serialize.
+	 * @param [options.allShadowRoots] If all shadow roots should be serialized.
+	 */
+	constructor(options?: {
+		serializableShadowRoots?: boolean;
+		shadowRoots?: ShadowRoot[] | null;
+		allShadowRoots?: boolean;
+	}) {
+		if (options) {
+			if (options.serializableShadowRoots) {
+				this.options.serializableShadowRoots = options.serializableShadowRoots;
+			}
+
+			if (options.shadowRoots) {
+				this.options.shadowRoots = options.shadowRoots;
+			}
+
+			if (options.allShadowRoots) {
+				this.options.allShadowRoots = options.allShadowRoots;
+			}
+		}
+	}
+
+	/**
 	 * Renders an element as HTML.
 	 *
 	 * @param root Root element.
 	 * @returns Result.
 	 */
 	public serializeToString(root: Node): string {
-		const options = this[PropertySymbol.options];
-
 		switch (root[PropertySymbol.nodeType]) {
 			case NodeTypeEnum.elementNode:
 				const element = <Element>root;
@@ -49,9 +75,10 @@ export default class HTMLSerializer {
 				// TODO: Should we include closed shadow roots? We are currently only including open shadow roots.
 				if (
 					element.shadowRoot &&
-					(options.allShadowRoots ||
-						(options.serializableShadowRoots && element.shadowRoot[PropertySymbol.serializable]) ||
-						options.shadowRoots?.includes(element.shadowRoot))
+					(this.options.allShadowRoots ||
+						(this.options.serializableShadowRoots &&
+							element.shadowRoot[PropertySymbol.serializable]) ||
+						this.options.shadowRoots?.includes(element.shadowRoot))
 				) {
 					innerHTML += `<template shadowrootmode="${element.shadowRoot[PropertySymbol.mode]}"${
 						element.shadowRoot[PropertySymbol.serializable] ? ' shadowrootserializable=""' : ''
@@ -73,14 +100,6 @@ export default class HTMLSerializer {
 					innerHTML += this.serializeToString(node);
 				}
 
-				// if (
-				// 	!innerHTML &&
-				// 	(root[PropertySymbol.namespaceURI] === NamespaceURI.xmlns ||
-				// 		root[PropertySymbol.namespaceURI] === NamespaceURI.svg)
-				// ) {
-				// 	return `<${localName}${this.getAttributes(element)}/>`;
-				// }
-
 				return `<${localName}${this.getAttributes(element)}>${innerHTML}</${localName}>`;
 			case Node.DOCUMENT_FRAGMENT_NODE:
 			case Node.DOCUMENT_NODE:
@@ -92,7 +111,6 @@ export default class HTMLSerializer {
 			case NodeTypeEnum.commentNode:
 				return `<!--${root.textContent}-->`;
 			case NodeTypeEnum.processingInstructionNode:
-				// TODO: Add support for processing instructions.
 				return `<!--?${(<ProcessingInstruction>root).target} ${root.textContent}?-->`;
 			case NodeTypeEnum.textNode:
 				const parentElement = root.parentElement;
@@ -123,36 +141,15 @@ export default class HTMLSerializer {
 	private getAttributes(element: Element): string {
 		let attributeString = '';
 
-		if (
-			!(<Element>element)[PropertySymbol.attributes].getNamedItem('is') &&
-			(<Element>element)[PropertySymbol.isValue]
-		) {
-			attributeString += ' is="' + (<Element>element)[PropertySymbol.isValue] + '"';
-		}
-
 		const namedItems = (<Element>element)[PropertySymbol.attributes][PropertySymbol.namedItems];
 
-		// if (
-		// 	element[PropertySymbol.namespaceURI] === NamespaceURI.svg ||
-		// 	element[PropertySymbol.namespaceURI] === NamespaceURI.xmlns
-		// ) {
-		// 	const xmlns = namedItems.get('xmlns');
-
-		// 	// The "xmlns" attribute should always be the first attribute if it exists.
-		// 	if (xmlns && xmlns[PropertySymbol.value]) {
-		// 		attributeString += ' xmlns="' + xmlns[PropertySymbol.value] + '"';
-		// 	}
-		// }
+		if (!namedItems.has('is') && element[PropertySymbol.isValue]) {
+			attributeString += ' is="' + element[PropertySymbol.isValue] + '"';
+		}
 
 		for (const attribute of namedItems.values()) {
-			// if (
-			// 	attribute[PropertySymbol.name] !== 'xmlns' ||
-			// 	(element[PropertySymbol.namespaceURI] !== NamespaceURI.svg &&
-			// 		element[PropertySymbol.namespaceURI] !== NamespaceURI.xmlns)
-			// ) {
 			const escapedValue = Entities.escapeAttribute(attribute[PropertySymbol.value]);
 			attributeString += ' ' + attribute[PropertySymbol.name] + '="' + escapedValue + '"';
-			// }
 		}
 
 		return attributeString;

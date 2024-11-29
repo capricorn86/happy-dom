@@ -12,6 +12,7 @@ import { beforeEach, describe, it, expect } from 'vitest';
 import CustomElement from '../CustomElement.js';
 import XMLParserModeEnum from '../../src/xml-parser/XMLParserModeEnum.js';
 import HTMLHtmlElement from '../../src/nodes/html-html-element/HTMLHtmlElement.js';
+import HTMLSerializer from '../../src/html-serializer/HTMLSerializer.js';
 
 describe('XMLParser', () => {
 	let window: Window;
@@ -159,7 +160,7 @@ describe('XMLParser', () => {
 	
 </body></html>`;
 			const root = new XMLParser(window, { mode: XMLParserModeEnum.htmlDocument }).parse(html);
-			expect(new XMLSerializer().serializeToString(root)).toBe(expected);
+			expect(new HTMLSerializer().serializeToString(root)).toBe(expected);
 		});
 
 		it('Parses a page with document type set to "HTML 4.01".', () => {
@@ -220,7 +221,7 @@ describe('XMLParser', () => {
 			expect(doctype.name).toBe('html');
 			expect(doctype.publicId).toBe('-//W3C//DTD HTML 4.01//EN');
 			expect(doctype.systemId).toBe('http://www.w3.org/TR/html4/strict.dtd');
-			expect(new XMLSerializer().serializeToString(root)).toBe(expected);
+			expect(new HTMLSerializer().serializeToString(root)).toBe(expected);
 		});
 
 		it('Handles unnestable elements correctly when there are siblings.', () => {
@@ -234,7 +235,7 @@ describe('XMLParser', () => {
                     <b>Test</b>
                 </article>`
 			);
-			expect(new XMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
+			expect(new HTMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
 				`
                 <article>
                     <span>
@@ -259,7 +260,7 @@ describe('XMLParser', () => {
                     <b>Test</b>
                 </article>`
 			);
-			expect(new XMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
+			expect(new HTMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
 				`
                 <article>
                     <span>
@@ -328,7 +329,7 @@ describe('XMLParser', () => {
 			expect(doctype.name).toBe('math');
 			expect(doctype.publicId).toBe('');
 			expect(doctype.systemId).toBe('http://www.w3.org/Math/DTD/mathml1/mathml.dtd');
-			expect(new XMLSerializer().serializeToString(root)).toBe(expected);
+			expect(new HTMLSerializer().serializeToString(root)).toBe(expected);
 		});
 
 		it('Handles unclosed tags of unnestable elements (e.g. <a>, <li>).', () => {
@@ -345,7 +346,7 @@ describe('XMLParser', () => {
 				`
 			);
 
-			expect(new XMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
+			expect(new HTMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
 				`
 				<div class="test" disabled="">
 					<ul>
@@ -375,7 +376,7 @@ describe('XMLParser', () => {
 			expect((<HTMLElement>root.children[0].children[1]).innerText).toBe('<b></b>');
 			expect((<HTMLElement>root.children[0].children[2]).innerText).toBe('<b></b>');
 
-			expect(new XMLSerializer().serializeToString(root)).toBe(
+			expect(new HTMLSerializer().serializeToString(root)).toBe(
 				`<div>
 					<script>if(1<Math['random']()){}else if(Math['random']()>1){console.log("1")}</script>
 					<script><b></b></script>
@@ -491,7 +492,7 @@ describe('XMLParser', () => {
 			expect(svg.attributes['xmlns'].ownerElement === svg).toBe(true);
 			expect(svg.attributes['xmlns'].ownerDocument === document).toBe(true);
 
-			expect(new XMLSerializer().serializeToString(root)).toBe(
+			expect(new HTMLSerializer().serializeToString(root)).toBe(
 				`
 				<div>
 					<svg viewBox="0 0 300 100" stroke="red" fill="grey" xmlns="${NamespaceURI.html}">
@@ -533,7 +534,7 @@ describe('XMLParser', () => {
 			`
 			);
 
-			expect(new XMLSerializer().serializeToString(root)).toBe(
+			expect(new HTMLSerializer().serializeToString(root)).toBe(
 				`
 				<div>
 					<svg viewBox="0 0 300 100" stroke="red" fill="grey" xmlns="http://www.w3.org/1999/xhtml">
@@ -569,16 +570,16 @@ describe('XMLParser', () => {
 
 		it('Handles different value types.', () => {
 			const root1 = new XMLParser(window).parse(<string>(<unknown>null));
-			expect(new XMLSerializer().serializeToString(root1)).toBe('');
+			expect(new HTMLSerializer().serializeToString(root1)).toBe('');
 
 			const root2 = new XMLParser(window).parse(<string>(<unknown>undefined));
-			expect(new XMLSerializer().serializeToString(root2)).toBe('');
+			expect(new HTMLSerializer().serializeToString(root2)).toBe('');
 
 			const root3 = new XMLParser(window).parse(<string>(<unknown>1000));
-			expect(new XMLSerializer().serializeToString(root3)).toBe('1000');
+			expect(new HTMLSerializer().serializeToString(root3)).toBe('1000');
 
 			const root4 = new XMLParser(window).parse(<string>(<unknown>false));
-			expect(new XMLSerializer().serializeToString(root4)).toBe('false');
+			expect(new HTMLSerializer().serializeToString(root4)).toBe('false');
 		});
 
 		it('Parses conditional comments', () => {
@@ -615,7 +616,7 @@ describe('XMLParser', () => {
 
 			for (const html of testHTML) {
 				const root = new XMLParser(window, { mode: XMLParserModeEnum.htmlFragment }).parse(html);
-				expect(new XMLSerializer().serializeToString(root)).toBe(html);
+				expect(new HTMLSerializer().serializeToString(root)).toBe(html);
 			}
 		});
 
@@ -664,7 +665,7 @@ describe('XMLParser', () => {
 				'</html>';
 
 			const root = new XMLParser(window, { mode: XMLParserModeEnum.htmlDocument }).parse(html);
-			expect(new XMLSerializer().serializeToString(root)).toBe(expected);
+			expect(new HTMLSerializer().serializeToString(root)).toBe(expected);
 		});
 
 		it('Parses comments with dash in them.', () => {
@@ -712,7 +713,7 @@ describe('XMLParser', () => {
                 `
 			);
 
-			expect(new XMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
+			expect(new HTMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
 				`
                 <span key1="value1">
                     <span key1="value1" key2="">
@@ -725,7 +726,7 @@ describe('XMLParser', () => {
 		it('Can read text with ">" in it.', () => {
 			const root = new XMLParser(window).parse(`<span>1 > 0</span>`);
 
-			expect(new XMLSerializer().serializeToString(root)).toBe(`<span>1 &gt; 0</span>`);
+			expect(new HTMLSerializer().serializeToString(root)).toBe(`<span>1 &gt; 0</span>`);
 		});
 
 		it('Parses malformed attributes.', () => {
@@ -820,7 +821,7 @@ describe('XMLParser', () => {
 				`<div .theme$lit$={{lit-12345}} key1="value1">Test</div>`
 			);
 
-			expect(new XMLSerializer().serializeToString(root)).toBe(
+			expect(new HTMLSerializer().serializeToString(root)).toBe(
 				'<div .theme$lit$="{{lit-12345}}" key1="value1">Test</div>'
 			);
 		});
@@ -828,7 +829,7 @@ describe('XMLParser', () => {
 		it('Parses attributes with URL without apostrophs.', () => {
 			const root = new XMLParser(window).parse(`<a href=http://www.github.com/path>Click me</a>`);
 
-			expect(new XMLSerializer().serializeToString(root)).toBe(
+			expect(new HTMLSerializer().serializeToString(root)).toBe(
 				'<a href="http://www.github.com/path">Click me</a>'
 			);
 		});
@@ -836,7 +837,7 @@ describe('XMLParser', () => {
 		it('Parses attributes with single apostrophs.', () => {
 			const root = new XMLParser(window).parse(`<div key1='value1' key2='value2'>Test</div>`);
 
-			expect(new XMLSerializer().serializeToString(root)).toBe(
+			expect(new HTMLSerializer().serializeToString(root)).toBe(
 				`<div key1="value1" key2="value2">Test</div>`
 			);
 		});
@@ -851,7 +852,7 @@ describe('XMLParser', () => {
                 `
 			);
 
-			expect(new XMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
+			expect(new HTMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
 				'<divkey1="value1">Test</div>'
 			);
 			expect(root.children[0].textContent.replace(/\s/gm, '')).toBe('Test');
@@ -871,7 +872,7 @@ describe('XMLParser', () => {
                 </div>`
 			);
 
-			expect(new XMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
+			expect(new HTMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
 				`<div>
                     <ul>
                         <li>
@@ -886,7 +887,7 @@ describe('XMLParser', () => {
 
 			const root2 = new XMLParser(window).parse(`<li><li><span>Test</span></li></li>`);
 
-			expect(new XMLSerializer().serializeToString(root2).replace(/\s/gm, '')).toBe(
+			expect(new HTMLSerializer().serializeToString(root2).replace(/\s/gm, '')).toBe(
 				`<li></li><li><span>Test</span></li>`.replace(/\s/gm, '')
 			);
 		});
@@ -905,7 +906,7 @@ describe('XMLParser', () => {
                 </div>`
 			);
 
-			expect(new XMLSerializer().serializeToString(root)).toBe(
+			expect(new HTMLSerializer().serializeToString(root)).toBe(
 				`<div>
                     <ul>
                         <li>
@@ -933,7 +934,7 @@ describe('XMLParser', () => {
 			    </div>`
 			);
 
-			expect(new XMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
+			expect(new HTMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
 				`<div class="container">
                     <div class="sliderContainer">
                         <input class="slider" type="range" step="1" min="0" max="100">
@@ -961,7 +962,7 @@ describe('XMLParser', () => {
                 `
 			);
 
-			expect(new XMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
+			expect(new HTMLSerializer().serializeToString(root).replace(/\s/gm, '')).toBe(
 				`
                 <div>
                     <a-Öa key1="value1" key2="value2">
@@ -1002,7 +1003,7 @@ describe('XMLParser', () => {
 				'<!DOCTYPE html><html><head></head><body><div>Test</div></body></html>'
 			);
 
-			expect(new XMLSerializer().serializeToString(root)).toBe('<div>Test</div>');
+			expect(new HTMLSerializer().serializeToString(root)).toBe('<div>Test</div>');
 		});
 
 		it('Handles multiple <!DOCTYPE>.', () => {
@@ -1038,7 +1039,7 @@ describe('XMLParser', () => {
                 </html>`
 			);
 
-			expect(new XMLSerializer().serializeToString(root)).toBe(
+			expect(new HTMLSerializer().serializeToString(root)).toBe(
 				`<!DOCTYPE html><html style="color: red"><head></head>
                     <body><div>Test</div>
                 
@@ -1059,7 +1060,7 @@ describe('XMLParser', () => {
                 </head>`
 			);
 
-			expect(new XMLSerializer().serializeToString(root))
+			expect(new HTMLSerializer().serializeToString(root))
 				.toBe(`<!DOCTYPE html><html><head style="color: red">
                     <title>Title 1</title>
                 <title>Title 2</title></head>
@@ -1079,7 +1080,7 @@ describe('XMLParser', () => {
                 </head>`
 			);
 
-			expect(new XMLSerializer().serializeToString(root)).toBe(`<!DOCTYPE html><html><head>
+			expect(new HTMLSerializer().serializeToString(root)).toBe(`<!DOCTYPE html><html><head>
                     <title>Title 1</title>
                 </head>
                 <body>
@@ -1098,7 +1099,7 @@ describe('XMLParser', () => {
                 </body>`
 			);
 
-			expect(new XMLSerializer().serializeToString(root1))
+			expect(new HTMLSerializer().serializeToString(root1))
 				.toBe(`<!DOCTYPE html><html><head></head><body style="color: red">
                     <div>Test 1</div>
                 
@@ -1120,7 +1121,7 @@ describe('XMLParser', () => {
                 </html>`
 			);
 
-			expect(new XMLSerializer().serializeToString(root2)).toBe(`<!DOCTYPE html><html><head>
+			expect(new HTMLSerializer().serializeToString(root2)).toBe(`<!DOCTYPE html><html><head>
                         <title>Title</title>
                     </head>
                     <body style="color: red">
@@ -1132,7 +1133,7 @@ describe('XMLParser', () => {
                 </body></html>`);
 		});
 
-		it('Handles processing instructions as comments.', () => {
+		it('Handles processing instructions as comments when parser mode is HTML.', () => {
 			const root = new XMLParser(window).parse(
 				`<?xml version="1.0" encoding="UTF-8"?>
                 <div>
@@ -1140,9 +1141,24 @@ describe('XMLParser', () => {
                 </div>`
 			);
 
-			expect(new XMLSerializer().serializeToString(root)).toBe(
+			expect(new HTMLSerializer().serializeToString(root)).toBe(
 				`<!--?xml version="1.0" encoding="UTF-8"?-->
                 <div>
+                    <div>Test</div>
+                </div>`
+			);
+		});
+
+		it('Ignores processing instructions as comments when parser mode is XML.', () => {
+			const root = new XMLParser(window, { mode: XMLParserModeEnum.xmlDocument }).parse(
+				`<?xml version="1.0" encoding="UTF-8"?>
+                <div>
+                    <div>Test</div>
+                </div>`
+			);
+
+			expect(new XMLSerializer().serializeToString(root)).toBe(
+				`<div>
                     <div>Test</div>
                 </div>`
 			);
@@ -1163,7 +1179,7 @@ describe('XMLParser', () => {
 			);
 
 			expect(new XMLSerializer().serializeToString(root)).toBe(
-				`<personxml:person xmlns:personxml="http://www.your.example.com/xml/person" xmlns:cityxml="http://www.my.example.com/xml/cities">
+				`<?xml version="1.0" encoding="UTF-8"?><personxml:person xmlns:personxml="http://www.your.example.com/xml/person" xmlns:cityxml="http://www.my.example.com/xml/cities">
                 <personxml:name>Rob</personxml:name>
                 <personxml:age>37</personxml:age>
                 <cityxml:homecity>
