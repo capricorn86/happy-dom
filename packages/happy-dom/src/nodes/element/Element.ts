@@ -1229,6 +1229,29 @@ export default class Element
 	}
 
 	/**
+	 * Scrolls by a relative amount from the current position.
+	 *
+	 * @param topOrOptions pixels to scroll by from top or scroll options object.
+	 * @param left pixels to scroll by from left.
+	 */
+	public scrollBy(
+		topOrOptions: { top?: number; left?: number; behavior?: string } | number,
+		left?: number
+	): void {
+		if (typeof topOrOptions !== 'object' && arguments.length === 1) {
+			throw new TypeError(
+				"Failed to execute 'scrollBy' on 'Element': The provided value is not of type 'ScrollToOptions'."
+			);
+		}
+		const options = typeof topOrOptions === 'object' ? topOrOptions : { left, top: topOrOptions };
+		this.scroll({
+			left: this.scrollLeft + (options.left ?? 0),
+			top: this.scrollTop + (options.top ?? 0),
+			behavior: options.behavior
+		});
+	}
+
+	/**
 	 * Scrolls the element's ancestor containers such that the element on which scrollIntoView() is called is visible to the user.
 	 *
 	 * @param [_options] Options.
