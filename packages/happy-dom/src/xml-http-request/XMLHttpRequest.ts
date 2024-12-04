@@ -216,7 +216,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			method,
 			headers,
 			signal: this.#abortController.signal,
-			credentials: this.withCredentials ? 'include' : 'omit'
+			credentials: this.withCredentials ? 'include' : 'same-origin'
 		});
 
 		this.#readyState = XMLHttpRequestReadyStateEnum.opened;
