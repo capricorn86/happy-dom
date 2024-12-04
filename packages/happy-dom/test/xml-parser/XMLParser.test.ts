@@ -1158,7 +1158,7 @@ describe('XMLParser', () => {
 			);
 
 			expect(new XMLSerializer().serializeToString(root)).toBe(
-				`<div>
+				`<?xml version="1.0" encoding="UTF-8"?><div>
                     <div>Test</div>
                 </div>`
 			);

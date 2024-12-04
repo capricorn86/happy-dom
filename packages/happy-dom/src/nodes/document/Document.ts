@@ -79,6 +79,7 @@ export default class Document extends Node {
 		string,
 		{ htmlCollection: HTMLCollection<Element> | null; elements: Element[] }
 	> = new Map();
+	public [PropertySymbol.hasXMLProcessingInstruction] = false;
 	public declare cloneNode: (deep?: boolean) => Document;
 
 	// Private properties
@@ -1036,66 +1037,77 @@ export default class Document extends Node {
 			);
 		}
 
-		// SVG element
-		if (namespaceURI === NamespaceURI.svg) {
-			const config = SVGElementConfig[qualifiedName.toLowerCase()];
-			const elementClass =
-				config && config.localName === qualifiedName ? window[config.className] : window.SVGElement;
+		switch (namespaceURI) {
+			case NamespaceURI.svg:
+				const config = SVGElementConfig[qualifiedName.toLowerCase()];
+				const svgElementClass =
+					config && config.localName === qualifiedName
+						? window[config.className]
+						: window.SVGElement;
 
-			const element = NodeFactory.createNode<SVGElement>(this, elementClass);
+				const svgElement = NodeFactory.createNode<SVGElement>(this, svgElementClass);
 
-			element[PropertySymbol.tagName] = qualifiedName;
-			element[PropertySymbol.localName] = qualifiedName;
-			element[PropertySymbol.namespaceURI] = namespaceURI;
-			element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
+				svgElement[PropertySymbol.tagName] = qualifiedName;
+				svgElement[PropertySymbol.localName] = qualifiedName;
+				svgElement[PropertySymbol.namespaceURI] = namespaceURI;
+				svgElement[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
 
-			return element;
+				return svgElement;
+			case NamespaceURI.html:
+				// Custom HTML element
+				const customElement =
+					window.customElements[PropertySymbol.registry]?.[
+						options && options.is ? String(options.is) : qualifiedName
+					];
+
+				if (customElement) {
+					const element = new customElement.elementClass();
+					element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
+					element[PropertySymbol.localName] = qualifiedName;
+					element[PropertySymbol.namespaceURI] = namespaceURI;
+					element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
+					return element;
+				}
+
+				const elementClass = HTMLElementConfig[qualifiedName]
+					? window[HTMLElementConfig[qualifiedName].className]
+					: null;
+
+				// Known HTML element
+				if (elementClass) {
+					const element = NodeFactory.createNode<Element>(this, elementClass);
+
+					element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
+					element[PropertySymbol.localName] = qualifiedName;
+					element[PropertySymbol.namespaceURI] = namespaceURI;
+					element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
+
+					return element;
+				}
+
+				// Unknown HTML element (if it has an hyphen in the name, it is a custom element that hasn't been defined yet)
+				const unknownElementClass = qualifiedName.includes('-')
+					? window.HTMLElement
+					: window.HTMLUnknownElement;
+
+				const unknownElement = NodeFactory.createNode<Element>(this, unknownElementClass);
+
+				unknownElement[PropertySymbol.tagName] = qualifiedName.toUpperCase();
+				unknownElement[PropertySymbol.localName] = qualifiedName;
+				unknownElement[PropertySymbol.namespaceURI] = namespaceURI;
+				unknownElement[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
+
+				return unknownElement;
+			default:
+				const element = NodeFactory.createNode<Element>(this, Element);
+
+				element[PropertySymbol.tagName] = qualifiedName;
+				element[PropertySymbol.localName] = qualifiedName;
+				element[PropertySymbol.namespaceURI] = namespaceURI;
+				element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
+
+				return element;
 		}
-
-		// Custom HTML element
-		const customElement =
-			window.customElements[PropertySymbol.registry]?.[
-				options && options.is ? String(options.is) : qualifiedName
-			];
-
-		if (customElement) {
-			const element = new customElement.elementClass();
-			element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
-			element[PropertySymbol.localName] = qualifiedName;
-			element[PropertySymbol.namespaceURI] = namespaceURI;
-			element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
-			return element;
-		}
-
-		const elementClass = HTMLElementConfig[qualifiedName]
-			? window[HTMLElementConfig[qualifiedName].className]
-			: null;
-
-		// Known HTML element
-		if (elementClass) {
-			const element = NodeFactory.createNode<Element>(this, elementClass);
-
-			element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
-			element[PropertySymbol.localName] = qualifiedName;
-			element[PropertySymbol.namespaceURI] = namespaceURI;
-			element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
-
-			return element;
-		}
-
-		// Unknown HTML element (if it has an hyphen in the name, it is a custom element that hasn't been defined yet)
-		const unknownElementClass = qualifiedName.includes('-')
-			? window.HTMLElement
-			: window.HTMLUnknownElement;
-
-		const element = NodeFactory.createNode<Element>(this, unknownElementClass);
-
-		element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
-		element[PropertySymbol.localName] = qualifiedName;
-		element[PropertySymbol.namespaceURI] = namespaceURI;
-		element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
-
-		return element;
 	}
 
 	/* eslint-enable jsdoc/valid-types */
@@ -1203,7 +1215,7 @@ export default class Document extends Node {
 		attribute[PropertySymbol.namespaceURI] = namespaceURI;
 		attribute[PropertySymbol.name] = qualifiedName;
 		attribute[PropertySymbol.localName] = parts[1] ?? qualifiedName;
-		attribute[PropertySymbol.prefix] = parts[0] ?? null;
+		attribute[PropertySymbol.prefix] = parts[1] ? parts[0] : null;
 
 		return attribute;
 	}

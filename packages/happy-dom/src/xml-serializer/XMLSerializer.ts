@@ -8,9 +8,7 @@ import * as Entities from 'entities';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import HTMLElementConfig from '../config/HTMLElementConfig.js';
 import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigContentModelEnum.js';
-import Document from '../nodes/document/Document.js';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction.js';
-import XMLDocument from '../nodes/xml-document/XMLDocument.js';
 
 /**
  * Serializes a node into XML.
@@ -21,9 +19,9 @@ export default class XMLSerializer {
 	public [PropertySymbol.rootNode]: Node | null = null;
 
 	/**
-	 * Renders an element as HTML.
+	 * Serializes a node into XML.
 	 *
-	 * @param root Root element.
+	 * @param root Root node.
 	 * @returns Result.
 	 */
 	public serializeToString(root: Node): string {
@@ -38,7 +36,7 @@ export default class XMLSerializer {
 				const config = HTMLElementConfig[element[PropertySymbol.localName]];
 
 				if (config?.contentModel === HTMLElementConfigContentModelEnum.noDescendants) {
-					return `<${localName}${this.getAttributes(element)}>`;
+					return `<${localName}${this.#getAttributes(element)}>`;
 				}
 
 				let innerHTML = '';
@@ -53,13 +51,15 @@ export default class XMLSerializer {
 				}
 
 				if (!innerHTML) {
-					return `<${localName}${this.getAttributes(element)}/>`;
+					return `<${localName}${this.#getAttributes(element)}/>`;
 				}
 
-				return `<${localName}${this.getAttributes(element)}>${innerHTML}</${localName}>`;
+				return `<${localName}${this.#getAttributes(element)}>${innerHTML}</${localName}>`;
 			case Node.DOCUMENT_FRAGMENT_NODE:
 			case Node.DOCUMENT_NODE:
-				let html = root instanceof XMLDocument ? '<?xml version="1.0" encoding="UTF-8"?>' : '';
+				let html = root[PropertySymbol.hasXMLProcessingInstruction]
+					? '<?xml version="1.0" encoding="UTF-8"?>'
+					: '';
 				for (const node of (<Node>root)[PropertySymbol.nodeArray]) {
 					html += this.serializeToString(node);
 				}
@@ -87,28 +87,24 @@ export default class XMLSerializer {
 
 		return '';
 	}
-
 	/**
 	 * Returns attributes as a string.
 	 *
 	 * @param element Element.
 	 * @returns Attributes.
 	 */
-	private getAttributes(element: Element): string {
+	#getAttributes(element: Element): string {
 		let attributeString = '';
 
 		const namedItems = (<Element>element)[PropertySymbol.attributes][PropertySymbol.namedItems];
-		const parentNamespaceURI = this.getNamespaceURI(this[PropertySymbol.parentNode]);
-		const namespaceURI = this.getNamespaceURI(element);
+		const inheritedNamespaceURI = element.parentElement
+			? element.parentElement[PropertySymbol.namespaceURI]
+			: null;
+		const namespaceURI = element[PropertySymbol.namespaceURI];
 
 		// We should add the namespace as an "xmlns" attribute if the element is the root element or if the namespace is different from the parent namespace.
-		if (
-			this[PropertySymbol.rootNode] === element ||
-			(parentNamespaceURI && namespaceURI !== parentNamespaceURI)
-		) {
-			if (namespaceURI) {
-				attributeString += ' xmlns="' + namespaceURI + '"';
-			}
+		if (namespaceURI && namespaceURI !== inheritedNamespaceURI && namedItems.has('xmlns')) {
+			attributeString += ' xmlns="' + namespaceURI + '"';
 		}
 
 		if (!namedItems.has('is') && element[PropertySymbol.isValue]) {
@@ -116,7 +112,7 @@ export default class XMLSerializer {
 		}
 
 		for (const attribute of namedItems.values()) {
-			// TODO: Attributes with the name "xmlns" are not serialized as they collide with the namespace attribute. Is this correct?
+			// TODO: Attributes with the name "xmlns" are not serialized as they collide with the namespace attribute.
 			if (attribute[PropertySymbol.name] !== 'xmlns') {
 				const escapedValue = Entities.escapeAttribute(attribute[PropertySymbol.value]);
 				attributeString += ' ' + attribute[PropertySymbol.name] + '="' + escapedValue + '"';
@@ -124,21 +120,5 @@ export default class XMLSerializer {
 		}
 
 		return attributeString;
-	}
-
-	/**
-	 * Returns the namespace URI of a node.
-	 *
-	 * @param node Node.
-	 */
-	private getNamespaceURI(node: Node): string {
-		if (!node) {
-			return null;
-		}
-		if (node instanceof Document) {
-			return node.documentElement[PropertySymbol.namespaceURI];
-		}
-
-		return node[PropertySymbol.namespaceURI];
 	}
 }

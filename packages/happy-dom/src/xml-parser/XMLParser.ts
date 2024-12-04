@@ -117,6 +117,10 @@ export default class XMLParser {
 	private nodeStack: Node[] = [];
 	private localNameStack: string[] = [];
 	private htmlDocumentStructure: IHTMLDocumentStructure | null = null;
+	private namespacePrefixStack: Array<{ [key: string]: string } | null> | null = null;
+	private newNamespacePrefixMap: { [key: string]: string } | null = null;
+	private hasNamespacePrefix = false;
+	private newElement: Element | null = null;
 	private currentNode: Node | null = null;
 	private readState: MarkupReadStateEnum = MarkupReadStateEnum.startOrEndTag;
 
@@ -162,6 +166,8 @@ export default class XMLParser {
 		this.localNameStack = [null];
 		this.currentNode = this.rootNode;
 		this.readState = <MarkupReadStateEnum>MarkupReadStateEnum.startOrEndTag;
+		this.namespacePrefixStack = [];
+		this.hasNamespacePrefix = false;
 
 		if (this.mode === XMLParserModeEnum.xmlDocument && !(this.rootNode instanceof XMLDocument)) {
 			throw new Error(
@@ -199,7 +205,6 @@ export default class XMLParser {
 		let match: RegExpExecArray;
 		let lastIndex = 0;
 		let startTagIndex = 0;
-		let newElement: Element | null = null;
 
 		if (xml === null || xml === undefined) {
 			return this.rootNode;
@@ -220,7 +225,8 @@ export default class XMLParser {
 
 					if (match[1]) {
 						// Start tag.
-						newElement = this.createElement(match[1]);
+						this.newElement = this.getStartTagElement(match[1]);
+						this.newNamespacePrefixMap = null;
 						startTagIndex = markupRegexp.lastIndex;
 						this.readState = MarkupReadStateEnum.endOfStartTag;
 					} else if (match[2]) {
@@ -251,8 +257,33 @@ export default class XMLParser {
 								// Should become a comment in HTML as it is not supported.
 								this.parseComment('?' + match[6]);
 								break;
+							case XMLParserModeEnum.xmlDocument:
+							case XMLParserModeEnum.xmlFragment:
+								const parts = match[6].split(' ');
+								// When the processing instruction has "xml" as target, we should not add it as a child node.
+								// Instead we will store the state on the root node, so that it is added when serializing the document with XMLSerializer.
+								if (parts[0] === 'xml') {
+									if (
+										this.currentNode !== this.rootNode ||
+										this.rootNode[PropertySymbol.elementArray].length !== 0
+									) {
+										this.parseXMLDocumentError(
+											'error on line 1 at column 1: XML declaration allowed only at the start of the document'
+										);
+									} else {
+										this.rootNode[PropertySymbol.hasXMLProcessingInstruction] = true;
+									}
+								} else {
+									this.currentNode[PropertySymbol.appendChild](
+										this.window.document.createProcessingInstruction(
+											parts[0],
+											parts.slice(1).join(' ')
+										),
+										true
+									);
+								}
+								break;
 						}
-						// TODO: It seems like it is ignored when parsing XML, but perhaps something should be done here.
 					} else {
 						// Plain text between tags, including the matched tag as it is not a valid start or end tag.
 						this.parsePlainText(xml.substring(lastIndex, markupRegexp.lastIndex));
@@ -263,22 +294,22 @@ export default class XMLParser {
 					// End of start tag
 
 					// match[2] is matching an end tag in case the start tag wasn't closed (e.g. "<div\n</ul>" instead of "<div>\n</ul>").
-					if (newElement && (match[7] || match[8] || match[2])) {
+					if (this.newElement && (match[7] || match[8] || match[2])) {
 						const attributeString = xml.substring(
 							startTagIndex,
 							match[2] ? markupRegexp.lastIndex - 1 : match.index
 						);
-						const parsedCharacters = this.parseStartTagAttributes(newElement, attributeString);
+						const parsedCharacters = this.parseAttributes(attributeString);
 
 						// We need to check if the attribute string is read completely as the attribute string can potentially contain "/>" or ">".
 						if (parsedCharacters === attributeString.length) {
 							const isSelfClosed = !!match[7];
-							this.parseStartTag(newElement, isSelfClosed);
+							this.parseStartTag(isSelfClosed);
 							startTagIndex = markupRegexp.lastIndex;
 						} else {
 							startTagIndex += parsedCharacters;
 						}
-					} else if (!newElement && (match[7] || match[8] || match[2])) {
+					} else if (!this.newElement && (match[7] || match[8] || match[2])) {
 						// The node is null when the tag is not allowed (<html>, <head> and <body> are not allowed in an HTML fragment or to be nested)
 						this.currentNode = this.rootNode;
 						this.readState = MarkupReadStateEnum.startOrEndTag;
@@ -375,15 +406,14 @@ export default class XMLParser {
 	/**
 	 * Parses start tag attributes.
 	 *
-	 * @param newElement New element.
 	 * @param attributeString Attribute string.
 	 * @returns Amount of characters parsed.
 	 */
-	private parseStartTagAttributes(newElement: Element, attributeString: string): number {
+	private parseAttributes(attributeString: string): number {
 		if (
 			!attributeString ||
 			(this.mode === XMLParserModeEnum.htmlDocument &&
-				newElement === this.htmlDocumentStructure.nodes.head &&
+				this.newElement === this.htmlDocumentStructure.nodes.head &&
 				this.htmlDocumentStructure.level === HTMLDocumentStructureLevelEnum.body)
 		) {
 			return attributeString.length;
@@ -406,11 +436,41 @@ export default class XMLParser {
 					attributeMatch[1] || attributeMatch[3] || attributeMatch[6] || attributeMatch[9] || '';
 				const rawValue = attributeMatch[2] || attributeMatch[4] || attributeMatch[7] || '';
 				const value = rawValue ? Entities.decodeHTMLAttribute(rawValue) : '';
-				const attributes = newElement[PropertySymbol.attributes];
+				const attributes = this.newElement[PropertySymbol.attributes];
 
-				if (newElement[PropertySymbol.namespaceURI] === NamespaceURI.svg) {
-					// In XML and SVG namespaces, the attribute "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
+				if (
+					this.mode === XMLParserModeEnum.xmlDocument ||
+					this.mode === XMLParserModeEnum.xmlFragment
+				) {
+					// In XML, attributes prefixed with "xmlns:" or named "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
+					const namespaceURI = name.startsWith('xmlns:') ? NamespaceURI.xmlns : null;
+
+					if (!attributes.getNamedItemNS(namespaceURI, name)) {
+						const attributeItem = document.createAttributeNS(namespaceURI, name);
+						attributeItem[PropertySymbol.value] = value;
+						attributes[PropertySymbol.setNamedItem](attributeItem);
+
+						// If the attribute is "xmlns", we should upgrade the element to an element created using the namespace URI.
+						if (name === 'xmlns') {
+							this.newElement = this.window.document.createElementNS(
+								value,
+								this.newElement.localName
+							);
+							this.newElement[PropertySymbol.attributes] = attributes;
+						}
+
+						// Attributes prefixed with "xmlns:" should be added to the namespace prefix map, so that the prefix can be added as namespaceURI to elements using the prefix.
+						if (attributeItem[PropertySymbol.prefix] === 'xmlns') {
+							this.hasNamespacePrefix = true;
+							this.newNamespacePrefixMap = this.newNamespacePrefixMap || {};
+							this.newNamespacePrefixMap[attributeItem[PropertySymbol.localName]] =
+								attributeItem[PropertySymbol.value];
+						}
+					}
+				} else if (this.newElement[PropertySymbol.namespaceURI] === NamespaceURI.svg) {
+					// In the SVG namespaces (when not parsing as XML), the attribute "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
 					const namespaceURI = name === 'xmlns' ? NamespaceURI.xmlns : null;
+
 					if (!attributes.getNamedItemNS(namespaceURI, name)) {
 						const attributeItem = document.createAttributeNS(namespaceURI, name);
 						attributeItem[PropertySymbol.value] = value;
@@ -438,11 +498,10 @@ export default class XMLParser {
 	/**
 	 * Parses start tag.
 	 *
-	 * @param newElement New element.
 	 * @param isSelfClosed Is void.
 	 */
-	private parseStartTag(newElement: Element, isSelfClosed: boolean): void {
-		const localName = newElement[PropertySymbol.localName];
+	private parseStartTag(isSelfClosed: boolean): void {
+		const localName = this.newElement[PropertySymbol.localName];
 
 		// Handles pre-processing, before the new element is appended to its parent.
 		switch (this.mode) {
@@ -458,6 +517,7 @@ export default class XMLParser {
 				) {
 					this.nodeStack.pop();
 					this.localNameStack.pop();
+					this.namespacePrefixStack.pop();
 					this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
 				} else if (
 					config?.contentModel === HTMLElementConfigContentModelEnum.noSelfDescendants &&
@@ -467,11 +527,13 @@ export default class XMLParser {
 						if ((<Element>this.currentNode)[PropertySymbol.localName] === localName) {
 							this.nodeStack.pop();
 							this.localNameStack.pop();
+							this.namespacePrefixStack.pop();
 							this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
 							break;
 						}
 						this.nodeStack.pop();
 						this.localNameStack.pop();
+						this.namespacePrefixStack.pop();
 						this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
 					}
 				}
@@ -490,9 +552,9 @@ export default class XMLParser {
 				// <html>, <head> and <body> are special elements with context constraints. They are already available in the document.
 				if (
 					(!config || config.contentModel !== HTMLElementConfigContentModelEnum.rawText) &&
-					newElement !== documentElement &&
-					newElement !== head &&
-					newElement !== body
+					this.newElement !== documentElement &&
+					this.newElement !== head &&
+					this.newElement !== body
 				) {
 					// When parser mode is "htmlDocument", any element added directly to the document or document element should be added to the body.
 					if (
@@ -501,16 +563,16 @@ export default class XMLParser {
 							this.currentNode === documentElement ||
 							(this.currentNode === head && level >= HTMLDocumentStructureLevelEnum.body))
 					) {
-						body[PropertySymbol.appendChild](newElement, true);
+						body[PropertySymbol.appendChild](this.newElement, true);
 					} else {
-						this.currentNode[PropertySymbol.appendChild](newElement, true);
+						this.currentNode[PropertySymbol.appendChild](this.newElement, true);
 					}
 				}
 
 				break;
 			case XMLParserModeEnum.htmlFragment:
 			case XMLParserModeEnum.xmlFragment:
-				this.currentNode[PropertySymbol.appendChild](newElement, true);
+				this.currentNode[PropertySymbol.appendChild](this.newElement, true);
 				break;
 			case XMLParserModeEnum.xmlDocument:
 				if (
@@ -522,14 +584,15 @@ export default class XMLParser {
 					);
 					return;
 				}
-				this.currentNode[PropertySymbol.appendChild](newElement, true);
+				this.currentNode[PropertySymbol.appendChild](this.newElement, true);
 				break;
 		}
 
 		// Sets the new element as the current node.
-		this.currentNode = newElement;
+		this.currentNode = this.newElement;
 		this.nodeStack.push(this.currentNode);
 		this.localNameStack.push(localName);
+		this.namespacePrefixStack.push(this.newNamespacePrefixMap);
 
 		// Handles post-processing of the element after it has been appended to the parent.
 		switch (this.mode) {
@@ -547,6 +610,7 @@ export default class XMLParser {
 				) {
 					this.nodeStack.pop();
 					this.localNameStack.pop();
+					this.namespacePrefixStack.pop();
 					this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
 					this.readState = MarkupReadStateEnum.startOrEndTag;
 				} else {
@@ -563,6 +627,7 @@ export default class XMLParser {
 				if (isSelfClosed) {
 					this.nodeStack.pop();
 					this.localNameStack.pop();
+					this.namespacePrefixStack.pop();
 					this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
 				}
 				this.readState = MarkupReadStateEnum.startOrEndTag;
@@ -584,6 +649,7 @@ export default class XMLParser {
 		if (index !== -1) {
 			this.nodeStack.splice(index, this.nodeStack.length - index);
 			this.localNameStack.splice(index, this.localNameStack.length - index);
+			this.namespacePrefixStack.splice(index, this.namespacePrefixStack.length - index);
 			this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
 		}
 	}
@@ -777,15 +843,14 @@ export default class XMLParser {
 	 *
 	 * @param tagName Tag name.
 	 */
-	private createElement(tagName: string): Element {
+	private getStartTagElement(tagName: string): Element {
 		const document = this.window.document;
+		const { localName, namespaceURI } = this.getElementLocalNameAndNamespaceURI(tagName);
 
 		if (
 			this.mode === XMLParserModeEnum.htmlDocument ||
 			this.mode === XMLParserModeEnum.htmlFragment
 		) {
-			const { localName, namespaceURI } = this.getElementLocalNameAndNamespaceURI(tagName);
-
 			// New element.
 			switch (localName) {
 				case 'html':
@@ -820,7 +885,6 @@ export default class XMLParser {
 			}
 		}
 
-		const { localName, namespaceURI } = this.getElementLocalNameAndNamespaceURI(tagName);
 		return document.createElementNS(namespaceURI, localName);
 	}
 
@@ -833,37 +897,57 @@ export default class XMLParser {
 		localName: string;
 		namespaceURI: string;
 	} {
-		const lowerName = StringUtility.asciiLowerCase(tagName);
+		if (
+			this.mode === XMLParserModeEnum.htmlDocument ||
+			this.mode === XMLParserModeEnum.htmlFragment
+		) {
+			const lowerName = StringUtility.asciiLowerCase(tagName);
 
-		// NamespaceURI is inherited from the parent element.
-		const namespaceURI = this.currentNode[PropertySymbol.namespaceURI];
+			// NamespaceURI is inherited from the parent element.
+			const namespaceURI = this.currentNode[PropertySymbol.namespaceURI];
 
-		// NamespaceURI should be SVG when the tag name is "svg" (even in XML mode).
-		if (lowerName === 'svg') {
-			return { localName: 'svg', namespaceURI: NamespaceURI.svg };
-		}
+			// NamespaceURI should be SVG when the tag name is "svg" (even in XML mode).
+			if (lowerName === 'svg') {
+				return { localName: 'svg', namespaceURI: NamespaceURI.svg };
+			}
 
-		if (namespaceURI === NamespaceURI.svg) {
+			if (namespaceURI === NamespaceURI.svg) {
+				return {
+					localName: SVGElementConfig[lowerName]?.localName || tagName,
+					namespaceURI: NamespaceURI.svg
+				};
+			}
+
 			return {
-				localName: SVGElementConfig[lowerName]?.localName || tagName,
-				namespaceURI: NamespaceURI.svg
+				localName: lowerName,
+				namespaceURI: namespaceURI || NamespaceURI.html
 			};
 		}
 
-		switch (this.mode) {
-			case XMLParserModeEnum.htmlDocument:
-			case XMLParserModeEnum.htmlFragment:
-				return {
-					localName: lowerName,
-					namespaceURI: namespaceURI || NamespaceURI.html
-				};
-			case XMLParserModeEnum.xmlDocument:
-			case XMLParserModeEnum.xmlFragment:
-				return {
-					localName: tagName,
-					namespaceURI: namespaceURI || NamespaceURI.xmlns
-				};
+		return {
+			localName: tagName,
+			namespaceURI: this.getXMLNamespaceURI(tagName)
+		};
+	}
+
+	/**
+	 * Returns the namespace URI of an element in XML.
+	 *
+	 * @param tagName Tag name.
+	 * @returns Namespace URI.
+	 */
+	private getXMLNamespaceURI(tagName: string): string {
+		if (!this.hasNamespacePrefix) {
+			return this.currentNode[PropertySymbol.namespaceURI];
 		}
+		const map = {};
+		for (const prefixes of this.namespacePrefixStack) {
+			if (prefixes) {
+				Object.assign(map, prefixes);
+			}
+		}
+		const parts = tagName.split(':');
+		return (parts.length > 1 && map[parts[0]]) || this.currentNode[PropertySymbol.namespaceURI];
 	}
 
 	/**
