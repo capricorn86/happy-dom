@@ -8,6 +8,7 @@ import Event from '../../event/Event.js';
 import SVGElement from '../svg-element/SVGElement.js';
 import Document from '../document/Document.js';
 import HTMLSerializer from '../../html-serializer/HTMLSerializer.js';
+import HTMLParser from '../../html-parser/HTMLParser.js';
 
 /**
  * ShadowRoot.
@@ -139,7 +140,7 @@ export default class ShadowRoot extends DocumentFragment {
 			this.removeChild(childNodes[0]);
 		}
 
-		new XMLParser(this[PropertySymbol.window]).parse(html, this);
+		new HTMLParser(this[PropertySymbol.window]).parse(html, this);
 	}
 
 	/**
@@ -211,7 +212,7 @@ export default class ShadowRoot extends DocumentFragment {
 			this.removeChild(childNodes[0]);
 		}
 
-		new XMLParser(this[PropertySymbol.window]).parse(html, this);
+		new HTMLParser(this[PropertySymbol.window]).parse(html, this);
 	}
 
 	/**

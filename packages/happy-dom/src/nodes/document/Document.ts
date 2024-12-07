@@ -49,7 +49,7 @@ import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import NodeFactory from '../NodeFactory.js';
 import SVGElementConfig from '../../config/SVGElementConfig.js';
 import StringUtility from '../../StringUtility.js';
-import XMLParserModeEnum from '../../xml-parser/XMLParserModeEnum.js';
+import HTMLParser from '../../html-parser/HTMLParser.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -849,13 +849,11 @@ export default class Document extends Node {
 
 			this[PropertySymbol.isFirstWriteAfterOpen] = false;
 
-			new XMLParser(this[PropertySymbol.window], {
-				mode: XMLParserModeEnum.htmlDocument,
+			new HTMLParser(this[PropertySymbol.window], {
 				evaluateScripts: true
 			}).parse(html, this);
 		} else {
-			new XMLParser(this[PropertySymbol.window], {
-				mode: XMLParserModeEnum.htmlFragment,
+			new HTMLParser(this[PropertySymbol.window], {
 				evaluateScripts: true
 			}).parse(html, this.body);
 		}
@@ -1037,6 +1035,10 @@ export default class Document extends Node {
 			);
 		}
 
+		const parts = qualifiedName.split(':');
+		const localName = parts[1] ?? parts[0];
+		const prefix = parts[1] ? parts[0] : null;
+
 		switch (namespaceURI) {
 			case NamespaceURI.svg:
 				const config = SVGElementConfig[qualifiedName.toLowerCase()];
@@ -1048,7 +1050,8 @@ export default class Document extends Node {
 				const svgElement = NodeFactory.createNode<SVGElement>(this, svgElementClass);
 
 				svgElement[PropertySymbol.tagName] = qualifiedName;
-				svgElement[PropertySymbol.localName] = qualifiedName;
+				svgElement[PropertySymbol.localName] = localName;
+				svgElement[PropertySymbol.prefix] = prefix;
 				svgElement[PropertySymbol.namespaceURI] = namespaceURI;
 				svgElement[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
 
@@ -1062,8 +1065,9 @@ export default class Document extends Node {
 
 				if (customElement) {
 					const element = new customElement.elementClass();
-					element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
-					element[PropertySymbol.localName] = qualifiedName;
+					element[PropertySymbol.tagName] = StringUtility.asciiUpperCase(qualifiedName);
+					element[PropertySymbol.localName] = localName;
+					element[PropertySymbol.prefix] = prefix;
 					element[PropertySymbol.namespaceURI] = namespaceURI;
 					element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
 					return element;
@@ -1077,8 +1081,9 @@ export default class Document extends Node {
 				if (elementClass) {
 					const element = NodeFactory.createNode<Element>(this, elementClass);
 
-					element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
-					element[PropertySymbol.localName] = qualifiedName;
+					element[PropertySymbol.tagName] = StringUtility.asciiUpperCase(qualifiedName);
+					element[PropertySymbol.localName] = localName;
+					element[PropertySymbol.prefix] = prefix;
 					element[PropertySymbol.namespaceURI] = namespaceURI;
 					element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
 
@@ -1092,8 +1097,9 @@ export default class Document extends Node {
 
 				const unknownElement = NodeFactory.createNode<Element>(this, unknownElementClass);
 
-				unknownElement[PropertySymbol.tagName] = qualifiedName.toUpperCase();
-				unknownElement[PropertySymbol.localName] = qualifiedName;
+				unknownElement[PropertySymbol.tagName] = StringUtility.asciiUpperCase(qualifiedName);
+				unknownElement[PropertySymbol.localName] = localName;
+				unknownElement[PropertySymbol.prefix] = prefix;
 				unknownElement[PropertySymbol.namespaceURI] = namespaceURI;
 				unknownElement[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
 
@@ -1102,7 +1108,8 @@ export default class Document extends Node {
 				const element = NodeFactory.createNode<Element>(this, Element);
 
 				element[PropertySymbol.tagName] = qualifiedName;
-				element[PropertySymbol.localName] = qualifiedName;
+				element[PropertySymbol.localName] = localName;
+				element[PropertySymbol.prefix] = prefix;
 				element[PropertySymbol.namespaceURI] = namespaceURI;
 				element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
 

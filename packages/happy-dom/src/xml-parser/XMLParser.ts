@@ -1,24 +1,10 @@
-import Document from '../nodes/document/Document.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import NamespaceURI from '../config/NamespaceURI.js';
-import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement.js';
 import Element from '../nodes/element/Element.js';
-import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement.js';
 import Node from '../nodes/node/Node.js';
-import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
-import HTMLElementConfig from '../config/HTMLElementConfig.js';
 import * as Entities from 'entities';
-import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigContentModelEnum.js';
-import SVGElementConfig from '../config/SVGElementConfig.js';
-import StringUtility from '../StringUtility.js';
-import XMLParserModeEnum from './XMLParserModeEnum.js';
 import BrowserWindow from '../window/BrowserWindow.js';
-import HTMLDocument from '../nodes/html-document/HTMLDocument.js';
 import XMLDocument from '../nodes/xml-document/XMLDocument.js';
-import DocumentType from '../nodes/document-type/DocumentType.js';
-import HTMLHeadElement from '../nodes/html-head-element/HTMLHeadElement.js';
-import HTMLBodyElement from '../nodes/html-body-element/HTMLBodyElement.js';
-import HTMLHtmlElement from '../nodes/html-html-element/HTMLHtmlElement.js';
 
 /**
  * Markup RegExp.
@@ -40,16 +26,14 @@ const MARKUP_REGEXP =
  *
  * Group 1: Attribute name when the attribute has a value using double apostrophe (e.g. "name" in "<div name="value">").
  * Group 2: Attribute value when the attribute has a value using double apostrophe (e.g. "value" in "<div name="value">").
- * Group 3: Attribute name when the attribute has a value using double apostrophe (e.g. "name" in "<div name="value">").
- * Group 4: Attribute value when the attribute has a value using double apostrophe (e.g. "value" in "<div name="value">").
- * Group 5: Attribute end apostrophe when the attribute has a value using double apostrophe (e.g. '"' in "<div name="value">").
- * Group 6: Attribute name when the attribute has a value using single apostrophe (e.g. "name" in "<div name='value'>").
- * Group 7: Attribute value when the attribute has a value using single apostrophe (e.g. "value" in "<div name='value'>").
- * Group 8: Attribute end apostrophe when the attribute has a value using single apostrophe (e.g. "'" in "<div name='value'>").
- * Group 9: Attribute name when the attribute has no value (e.g. "disabled" in "<div disabled>").
+ * Group 3: Attribute end apostrophe when the attribute has a value using double apostrophe (e.g. '"' in "<div name="value">").
+ * Group 4: Attribute name when the attribute has a value using single apostrophe (e.g. "name" in "<div name='value'>").
+ * Group 5: Attribute value when the attribute has a value using single apostrophe (e.g. "value" in "<div name='value'>").
+ * Group 6: Attribute end apostrophe when the attribute has a value using single apostrophe (e.g. "'" in "<div name='value'>").
+ * Group 7: Attribute name when the attribute has no value (e.g. "disabled" in "<div disabled>").
  */
 const ATTRIBUTE_REGEXP =
-	/\s*([a-zA-Z0-9-_:.$@?\\<]+)\s*=\s*([a-zA-Z0-9-_:.$@?{}/<]+)|\s*([a-zA-Z0-9-_:.$@?\\<]+)\s*=\s*"([^"]*)("{0,1})|\s*([a-zA-Z0-9-_:.$@?\\<]+)\s*=\s*'([^']*)('{0,1})|\s*([a-zA-Z0-9-_:.$@?\\<]+)/gm;
+	/\s*([a-zA-Z0-9-_]+)\s*=\s*"([^"]*)("{0,1})|\s*([a-zA-Z0-9-_]+)\s*=\s*'([^']*)('{0,1})|\s*([a-zA-Z0-9-_]+)/gm;
 
 /**
  * Document type attribute RegExp.
@@ -59,9 +43,9 @@ const ATTRIBUTE_REGEXP =
 const DOCUMENT_TYPE_ATTRIBUTE_REGEXP = /"([^"]+)"/gm;
 
 /**
- * Space in the beginning of string RegExp.
+ * Space RegExp.
  */
-const SPACE_IN_BEGINNING_REGEXP = /^\s+/;
+const SPACE_REGEXP = /\s+/;
 
 /**
  * Markup read state (which state the parser is in).
@@ -69,7 +53,6 @@ const SPACE_IN_BEGINNING_REGEXP = /^\s+/;
 enum MarkupReadStateEnum {
 	startOrEndTag = 'startOrEndTag',
 	endOfStartTag = 'endOfStartTag',
-	plainTextContent = 'plainTextContent',
 	error = 'error'
 }
 
@@ -82,47 +65,24 @@ interface IDocumentType {
 	systemId: string;
 }
 
-/**
- * How much of the HTML document that has been parsed (where the parser level is).
- */
-enum HTMLDocumentStructureLevelEnum {
-	root = 0,
-	doctype = 1,
-	documentElement = 2,
-	head = 3,
-	additionalHeadWithoutBody = 4,
-	body = 5
-}
-
-interface IHTMLDocumentStructure {
-	nodes: {
-		doctype: DocumentType;
-		documentElement: HTMLHtmlElement;
-		head: HTMLHeadElement;
-		body: HTMLBodyElement;
-	};
-	level: HTMLDocumentStructureLevelEnum;
-}
+const NAMESPACE_URIS = Object.values(NamespaceURI);
 
 /**
  * XML parser.
- *
- * @see https://html.spec.whatwg.org/multipage/indices.html
  */
 export default class XMLParser {
 	private window: BrowserWindow;
-	private mode: XMLParserModeEnum = XMLParserModeEnum.htmlFragment;
-	private evaluateScripts: boolean = false;
-	private rootNode: Element | DocumentFragment | Document | null = null;
+	private rootNode: XMLDocument | null = null;
 	private nodeStack: Node[] = [];
-	private localNameStack: string[] = [];
-	private htmlDocumentStructure: IHTMLDocumentStructure | null = null;
-	private namespacePrefixStack: Array<{ [key: string]: string } | null> | null = null;
-	private newNamespacePrefixMap: { [key: string]: string } | null = null;
-	private hasNamespacePrefix = false;
-	private newElement: Element | null = null;
+	private tagNameStack: string[] = [];
+	private defaultNamespaceStack: string[] | null = null;
+	private namespacePrefixStack: Array<Map<string, string>> | null = null;
+	private startTagIndex = 0;
+	private markupRegExp: RegExp | null = null;
+	private nextElement: Element | null = null;
 	private currentNode: Node | null = null;
 	private readState: MarkupReadStateEnum = MarkupReadStateEnum.startOrEndTag;
+	private errorMessage: string | null = null;
 
 	/**
 	 * Constructor.
@@ -132,87 +92,31 @@ export default class XMLParser {
 	 * @param [options.mode] Mode. Defaults to "htmlFragment".
 	 * @param [options.evaluateScripts] Set to "true" to enable script execution
 	 */
-	constructor(
-		window: BrowserWindow,
-		options?: {
-			mode?: XMLParserModeEnum;
-			evaluateScripts?: boolean;
-		}
-	) {
+	constructor(window: BrowserWindow) {
 		this.window = window;
-
-		if (options) {
-			if (options.mode) {
-				this.mode = options.mode;
-			}
-			if (options.evaluateScripts) {
-				this.evaluateScripts = true;
-			}
-		}
 	}
 	/**
-	 * Parses XML/HTML and returns a root element.
+	 * Parses XML and returns an XML document containing nodes found.
 	 *
-	 * @param xml XML/HTML string.
-	 * @param [rootNode] Root node.
-	 * @returns Root node.
+	 * @param xml XML string.
+	 * @returns XML document.
 	 */
-	public parse(
-		xml: string,
-		rootNode?: Element | DocumentFragment | Document
-	): Element | DocumentFragment | Document {
-		this.rootNode = rootNode || this.createRootNode();
+	public parse(xml: string): XMLDocument {
+		this.rootNode = new this.window.XMLDocument();
 		this.nodeStack = [this.rootNode];
-		this.localNameStack = [null];
+		this.tagNameStack = [null];
 		this.currentNode = this.rootNode;
 		this.readState = <MarkupReadStateEnum>MarkupReadStateEnum.startOrEndTag;
-		this.namespacePrefixStack = [];
-		this.hasNamespacePrefix = false;
-
-		if (this.mode === XMLParserModeEnum.xmlDocument && !(this.rootNode instanceof XMLDocument)) {
-			throw new Error(
-				'Failed to parse XML: The root node must be of type XMLDocument when the mode is "xmlDocument".'
-			);
-		}
-
-		if (this.mode === XMLParserModeEnum.htmlDocument) {
-			if (!(this.rootNode instanceof HTMLDocument)) {
-				throw new Error(
-					'Failed to parse XML: The root node must be of type HTMLDocument when the mode is "htmlDocument".'
-				);
-			}
-
-			const { doctype, documentElement, head, body } = <HTMLDocument>this.rootNode;
-
-			if (!doctype || !documentElement || !head || !body) {
-				throw new Error(
-					'Failed to parse XML: The root node must have "doctype", "documentElement", "head" and "body" when the mode is "htmlDocument".'
-				);
-			}
-
-			this.htmlDocumentStructure = {
-				nodes: {
-					doctype,
-					documentElement,
-					head,
-					body
-				},
-				level: HTMLDocumentStructureLevelEnum.root
-			};
-		}
-
-		const markupRegexp = new RegExp(MARKUP_REGEXP, 'gm');
+		this.defaultNamespaceStack = [null];
+		this.namespacePrefixStack = [null];
+		this.startTagIndex = 0;
+		this.markupRegExp = new RegExp(MARKUP_REGEXP, 'gm');
 		let match: RegExpExecArray;
 		let lastIndex = 0;
-		let startTagIndex = 0;
-
-		if (xml === null || xml === undefined) {
-			return this.rootNode;
-		}
 
 		xml = String(xml);
 
-		while ((match = markupRegexp.exec(xml))) {
+		while ((match = this.markupRegExp.exec(xml))) {
 			switch (this.readState) {
 				case MarkupReadStateEnum.startOrEndTag:
 					if (
@@ -225,10 +129,7 @@ export default class XMLParser {
 
 					if (match[1]) {
 						// Start tag.
-						this.newElement = this.getStartTagElement(match[1]);
-						this.newNamespacePrefixMap = null;
-						startTagIndex = markupRegexp.lastIndex;
-						this.readState = MarkupReadStateEnum.endOfStartTag;
+						this.parseStartTag(match[1]);
 					} else if (match[2]) {
 						// End tag.
 						this.parseEndTag(match[2]);
@@ -239,96 +140,60 @@ export default class XMLParser {
 							(<Element>this.currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.html)
 					) {
 						// Comment.
-						if (match[3]) {
-							this.parseComment(match[3]);
-						} else if (match[4]) {
-							this.parseComment(match[4].endsWith('--') ? match[4].slice(0, -2) : match[4]);
-						} else {
-							this.parseComment('?' + match[6]);
-						}
+						this.parseComment(
+							match[3] ??
+								(match[4]?.endsWith('--') ? match[4].slice(0, -2) : match[4] ?? null) ??
+								match[6]
+						);
 					} else if (match[5] !== undefined) {
-						// Document type comment.
+						// Document type
 						this.parseDocumentType(match[5]);
 					} else if (match[6]) {
 						// Processing instruction.
-						switch (this.mode) {
-							case XMLParserModeEnum.htmlDocument:
-							case XMLParserModeEnum.htmlFragment:
-								// Should become a comment in HTML as it is not supported.
-								this.parseComment('?' + match[6]);
-								break;
-							case XMLParserModeEnum.xmlDocument:
-							case XMLParserModeEnum.xmlFragment:
-								const parts = match[6].split(' ');
-								// When the processing instruction has "xml" as target, we should not add it as a child node.
-								// Instead we will store the state on the root node, so that it is added when serializing the document with XMLSerializer.
-								if (parts[0] === 'xml') {
-									if (
-										this.currentNode !== this.rootNode ||
-										this.rootNode[PropertySymbol.elementArray].length !== 0
-									) {
-										this.parseXMLDocumentError(
-											'error on line 1 at column 1: XML declaration allowed only at the start of the document'
-										);
-									} else {
-										this.rootNode[PropertySymbol.hasXMLProcessingInstruction] = true;
-									}
-								} else {
-									this.currentNode[PropertySymbol.appendChild](
-										this.window.document.createProcessingInstruction(
-											parts[0],
-											parts.slice(1).join(' ')
-										),
-										true
-									);
-								}
-								break;
-						}
+						this.parseProcessingInstruction(match[6]);
 					} else {
 						// Plain text between tags, including the matched tag as it is not a valid start or end tag.
-						this.parsePlainText(xml.substring(lastIndex, markupRegexp.lastIndex));
+						this.parsePlainText(xml.substring(lastIndex, this.markupRegExp.lastIndex));
 					}
 
 					break;
 				case MarkupReadStateEnum.endOfStartTag:
 					// End of start tag
 
-					// match[2] is matching an end tag in case the start tag wasn't closed (e.g. "<div\n</ul>" instead of "<div>\n</ul>").
-					if (this.newElement && (match[7] || match[8] || match[2])) {
+					if (match[7] || match[8]) {
 						const attributeString = xml.substring(
-							startTagIndex,
-							match[2] ? markupRegexp.lastIndex - 1 : match.index
+							this.startTagIndex,
+							match[2] ? this.markupRegExp.lastIndex - 1 : match.index
 						);
-						const parsedCharacters = this.parseAttributes(attributeString);
+						const isSelfClosed = !!match[7];
 
-						// We need to check if the attribute string is read completely as the attribute string can potentially contain "/>" or ">".
-						if (parsedCharacters === attributeString.length) {
-							const isSelfClosed = !!match[7];
-							this.parseStartTag(isSelfClosed);
-							startTagIndex = markupRegexp.lastIndex;
-						} else {
-							startTagIndex += parsedCharacters;
-						}
-					} else if (!this.newElement && (match[7] || match[8] || match[2])) {
-						// The node is null when the tag is not allowed (<html>, <head> and <body> are not allowed in an HTML fragment or to be nested)
-						this.currentNode = this.rootNode;
-						this.readState = MarkupReadStateEnum.startOrEndTag;
-						startTagIndex = markupRegexp.lastIndex;
+						this.parseEndOfStartTag(attributeString, isSelfClosed);
+					} else {
+						this.errorMessage = 'error parsing attribute name';
+						this.readState = MarkupReadStateEnum.error;
 					}
 					break;
-				case MarkupReadStateEnum.plainTextContent:
-					// Raw text content.
-					this.parseRawTextElementContent(match[2], xml.substring(startTagIndex, match.index));
-					break;
 				case MarkupReadStateEnum.error:
+					this.parseError(xml.slice(0, lastIndex), this.errorMessage);
 					return this.rootNode;
 			}
 
-			lastIndex = markupRegexp.lastIndex;
+			lastIndex = this.markupRegExp.lastIndex;
+		}
+
+		// Missing end tag.
+		if (this.nodeStack.length !== 1) {
+			this.parseError(xml, 'Premature end of data in tag article line 1');
+			return this.rootNode;
+		}
+
+		// Missing start tag (e.g. when parsing just a string like "Test").
+		if (this.rootNode[PropertySymbol.elementArray].length === 0) {
+			this.parseError(xml, `Start tag expected, '&lt;' not found`);
+			return this.rootNode;
 		}
 
 		// Plain text after tags.
-
 		if (lastIndex !== xml.length && this.currentNode) {
 			this.parsePlainText(xml.substring(lastIndex));
 		}
@@ -344,313 +209,53 @@ export default class XMLParser {
 	private parsePlainText(text: string): void {
 		const document = this.window.document;
 
-		switch (this.mode) {
-			case XMLParserModeEnum.htmlDocument:
-				const level = this.htmlDocumentStructure.level;
-				const { documentElement, head, body } = this.htmlDocumentStructure.nodes;
-
-				// We should remove space in beginning inside the document and the <html> tag.
-				const htmlText =
-					(this.currentNode === this.rootNode || this.currentNode === documentElement) &&
-					level < HTMLDocumentStructureLevelEnum.head &&
-					body[PropertySymbol.elementArray].length === 0
-						? text.replace(SPACE_IN_BEGINNING_REGEXP, '')
-						: text;
-
-				if (htmlText) {
-					const textNode = document.createTextNode(Entities.decodeHTML(htmlText));
-					if (
-						this.currentNode === head &&
-						level === HTMLDocumentStructureLevelEnum.additionalHeadWithoutBody
-					) {
-						documentElement[PropertySymbol.insertBefore](textNode, body, true);
-					} else if (
-						this.currentNode === this.rootNode ||
-						this.currentNode === documentElement ||
-						(this.currentNode === head && level >= HTMLDocumentStructureLevelEnum.body)
-					) {
-						if (level === HTMLDocumentStructureLevelEnum.head) {
-							// Space between <head> and <body> is allowed
-							documentElement[PropertySymbol.insertBefore](textNode, body, true);
-						} else {
-							// Nodes outside <html>, <head> and <body> should be appended to the body
-							body[PropertySymbol.appendChild](textNode, true);
-						}
-					} else {
-						this.currentNode[PropertySymbol.appendChild](textNode, true);
-					}
-				}
-				break;
-			case XMLParserModeEnum.xmlDocument:
-				const xmlText =
-					this.currentNode === this.rootNode ? text.replace(SPACE_IN_BEGINNING_REGEXP, '') : text;
-				if (xmlText) {
-					if (this.currentNode === this.rootNode) {
-						this.parseXMLDocumentError(
-							'error on line 1 at column 1: Extra content at the end of the document'
-						);
-						return;
-					}
-					const textNode = document.createTextNode(Entities.decodeHTML(xmlText));
-					this.currentNode[PropertySymbol.appendChild](textNode, true);
-				}
-				break;
-			case XMLParserModeEnum.xmlFragment:
-			case XMLParserModeEnum.htmlFragment:
-				const textNode = document.createTextNode(Entities.decodeHTML(text));
-				this.currentNode[PropertySymbol.appendChild](textNode, true);
-				break;
-		}
-	}
-
-	/**
-	 * Parses start tag attributes.
-	 *
-	 * @param attributeString Attribute string.
-	 * @returns Amount of characters parsed.
-	 */
-	private parseAttributes(attributeString: string): number {
-		if (
-			!attributeString ||
-			(this.mode === XMLParserModeEnum.htmlDocument &&
-				this.newElement === this.htmlDocumentStructure.nodes.head &&
-				this.htmlDocumentStructure.level === HTMLDocumentStructureLevelEnum.body)
-		) {
-			return attributeString.length;
-		}
-
-		const document = this.window.document;
-		const attributeRegexp = new RegExp(ATTRIBUTE_REGEXP, 'gm');
-		let attributeMatch: RegExpExecArray;
-		let parsedCharacters = 0;
-
-		while ((attributeMatch = attributeRegexp.exec(attributeString))) {
-			if (
-				(attributeMatch[1] && attributeMatch[2]) ||
-				(attributeMatch[3] && attributeMatch[5] === '"') ||
-				(attributeMatch[6] && attributeMatch[8] === "'") ||
-				attributeMatch[9]
-			) {
-				// Valid attribute name and value.
-				const name =
-					attributeMatch[1] || attributeMatch[3] || attributeMatch[6] || attributeMatch[9] || '';
-				const rawValue = attributeMatch[2] || attributeMatch[4] || attributeMatch[7] || '';
-				const value = rawValue ? Entities.decodeHTMLAttribute(rawValue) : '';
-				const attributes = this.newElement[PropertySymbol.attributes];
-
-				if (
-					this.mode === XMLParserModeEnum.xmlDocument ||
-					this.mode === XMLParserModeEnum.xmlFragment
-				) {
-					// In XML, attributes prefixed with "xmlns:" or named "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
-					const namespaceURI = name.startsWith('xmlns:') ? NamespaceURI.xmlns : null;
-
-					if (!attributes.getNamedItemNS(namespaceURI, name)) {
-						const attributeItem = document.createAttributeNS(namespaceURI, name);
-						attributeItem[PropertySymbol.value] = value;
-						attributes[PropertySymbol.setNamedItem](attributeItem);
-
-						// If the attribute is "xmlns", we should upgrade the element to an element created using the namespace URI.
-						if (name === 'xmlns') {
-							this.newElement = this.window.document.createElementNS(
-								value,
-								this.newElement.localName
-							);
-							this.newElement[PropertySymbol.attributes] = attributes;
-						}
-
-						// Attributes prefixed with "xmlns:" should be added to the namespace prefix map, so that the prefix can be added as namespaceURI to elements using the prefix.
-						if (attributeItem[PropertySymbol.prefix] === 'xmlns') {
-							this.hasNamespacePrefix = true;
-							this.newNamespacePrefixMap = this.newNamespacePrefixMap || {};
-							this.newNamespacePrefixMap[attributeItem[PropertySymbol.localName]] =
-								attributeItem[PropertySymbol.value];
-						}
-					}
-				} else if (this.newElement[PropertySymbol.namespaceURI] === NamespaceURI.svg) {
-					// In the SVG namespaces (when not parsing as XML), the attribute "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
-					const namespaceURI = name === 'xmlns' ? NamespaceURI.xmlns : null;
-
-					if (!attributes.getNamedItemNS(namespaceURI, name)) {
-						const attributeItem = document.createAttributeNS(namespaceURI, name);
-						attributeItem[PropertySymbol.value] = value;
-						attributes[PropertySymbol.setNamedItem](attributeItem);
-					}
-				} else if (!attributes.getNamedItem(name)) {
-					const attributeItem = document.createAttribute(name);
-					attributeItem[PropertySymbol.value] = value;
-					attributes[PropertySymbol.setNamedItem](attributeItem);
-				}
-
-				parsedCharacters += attributeMatch[0].length;
-			} else if (
-				!attributeMatch[1] &&
-				((attributeMatch[3] && !attributeMatch[5]) || (attributeMatch[6] && !attributeMatch[8]))
-			) {
-				// End attribute apostrophe is missing (e.g. "attr='value" or 'attr="value').
-				return parsedCharacters;
+		if (this.currentNode === this.rootNode) {
+			const xmlText = text.replace(SPACE_REGEXP, '');
+			if (xmlText) {
+				this.errorMessage = 'Extra content at the end of the document';
+				this.readState = MarkupReadStateEnum.error;
 			}
-		}
-
-		return attributeString.length;
-	}
-
-	/**
-	 * Parses start tag.
-	 *
-	 * @param isSelfClosed Is void.
-	 */
-	private parseStartTag(isSelfClosed: boolean): void {
-		const localName = this.newElement[PropertySymbol.localName];
-
-		// Handles pre-processing, before the new element is appended to its parent.
-		switch (this.mode) {
-			case XMLParserModeEnum.htmlDocument:
-			case XMLParserModeEnum.htmlFragment:
-				const config = HTMLElementConfig[localName];
-
-				// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
-				// Therefore we need to auto-close tags with the same name matching the config, so that it become valid (e.g. "<a></a><a></a>").
-				if (
-					config?.contentModel === HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants &&
-					this.localNameStack[this.localNameStack.length - 1] === localName
-				) {
-					this.nodeStack.pop();
-					this.localNameStack.pop();
-					this.namespacePrefixStack.pop();
-					this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
-				} else if (
-					config?.contentModel === HTMLElementConfigContentModelEnum.noSelfDescendants &&
-					this.localNameStack.includes(localName)
-				) {
-					while (this.currentNode !== this.rootNode) {
-						if ((<Element>this.currentNode)[PropertySymbol.localName] === localName) {
-							this.nodeStack.pop();
-							this.localNameStack.pop();
-							this.namespacePrefixStack.pop();
-							this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
-							break;
-						}
-						this.nodeStack.pop();
-						this.localNameStack.pop();
-						this.namespacePrefixStack.pop();
-						this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
-					}
-				}
-				break;
-		}
-
-		// Appends the new element to its parent
-		switch (this.mode) {
-			case XMLParserModeEnum.htmlDocument:
-				const config = HTMLElementConfig[localName];
-				const { documentElement, head, body } = this.htmlDocumentStructure.nodes;
-				const level = this.htmlDocumentStructure.level;
-				// Appends the new node to its parent and sets is as current node.
-
-				// Raw text elements (e.g. <script>) should be appended after the raw text has been added as content to the element.
-				// <html>, <head> and <body> are special elements with context constraints. They are already available in the document.
-				if (
-					(!config || config.contentModel !== HTMLElementConfigContentModelEnum.rawText) &&
-					this.newElement !== documentElement &&
-					this.newElement !== head &&
-					this.newElement !== body
-				) {
-					// When parser mode is "htmlDocument", any element added directly to the document or document element should be added to the body.
-					if (
-						documentElement &&
-						(this.currentNode === this.rootNode ||
-							this.currentNode === documentElement ||
-							(this.currentNode === head && level >= HTMLDocumentStructureLevelEnum.body))
-					) {
-						body[PropertySymbol.appendChild](this.newElement, true);
-					} else {
-						this.currentNode[PropertySymbol.appendChild](this.newElement, true);
-					}
-				}
-
-				break;
-			case XMLParserModeEnum.htmlFragment:
-			case XMLParserModeEnum.xmlFragment:
-				this.currentNode[PropertySymbol.appendChild](this.newElement, true);
-				break;
-			case XMLParserModeEnum.xmlDocument:
-				if (
-					this.currentNode === this.rootNode &&
-					this.rootNode[PropertySymbol.elementArray].length !== 0
-				) {
-					this.parseXMLDocumentError(
-						'error on line 1 at column 1: Extra content at the end of the document'
-					);
-					return;
-				}
-				this.currentNode[PropertySymbol.appendChild](this.newElement, true);
-				break;
-		}
-
-		// Sets the new element as the current node.
-		this.currentNode = this.newElement;
-		this.nodeStack.push(this.currentNode);
-		this.localNameStack.push(localName);
-		this.namespacePrefixStack.push(this.newNamespacePrefixMap);
-
-		// Handles post-processing of the element after it has been appended to the parent.
-		switch (this.mode) {
-			case XMLParserModeEnum.htmlDocument:
-			case XMLParserModeEnum.htmlFragment:
-				const config = HTMLElementConfig[localName];
-
-				// Check if the tag is a void element and should be closed immediately.
-				// Elements in the SVG namespace can be self-closed (e.g. "/>").
-				// "/>" will be ignored in the HTML namespace.
-				if (
-					config?.contentModel === HTMLElementConfigContentModelEnum.noDescendants ||
-					(isSelfClosed &&
-						(<Element>this.currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg)
-				) {
-					this.nodeStack.pop();
-					this.localNameStack.pop();
-					this.namespacePrefixStack.pop();
-					this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
-					this.readState = MarkupReadStateEnum.startOrEndTag;
-				} else {
-					// We will set the read state to "rawText" for raw text elements such as <script> and <style> elements.
-					this.readState =
-						config?.contentModel === HTMLElementConfigContentModelEnum.rawText
-							? MarkupReadStateEnum.plainTextContent
-							: MarkupReadStateEnum.startOrEndTag;
-				}
-				break;
-			case XMLParserModeEnum.xmlDocument:
-			case XMLParserModeEnum.xmlFragment:
-				// XML nodes can be self closed using "/>"
-				if (isSelfClosed) {
-					this.nodeStack.pop();
-					this.localNameStack.pop();
-					this.namespacePrefixStack.pop();
-					this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
-				}
-				this.readState = MarkupReadStateEnum.startOrEndTag;
-				break;
+		} else {
+			this.currentNode[PropertySymbol.appendChild](
+				document.createTextNode(Entities.decodeHTML(text)),
+				true
+			);
 		}
 	}
 
 	/**
-	 * Parses end tag.
+	 * Parses processing instruction.
 	 *
-	 * @param tagName Tag name.
+	 * @param text Text.
 	 */
-	private parseEndTag(tagName: string): void {
-		const { localName } = this.getElementLocalNameAndNamespaceURI(tagName);
+	private parseProcessingInstruction(text: string): void {
+		const parts = text.split(' ');
 
-		// We close all tags up until the first tag that matches the end tag.
-		const index = this.localNameStack.lastIndexOf(localName);
-
-		if (index !== -1) {
-			this.nodeStack.splice(index, this.nodeStack.length - index);
-			this.localNameStack.splice(index, this.localNameStack.length - index);
-			this.namespacePrefixStack.splice(index, this.namespacePrefixStack.length - index);
-			this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
+		// When the processing instruction has "xml" as target, we should not add it as a child node.
+		// Instead we will store the state on the root node, so that it is added when serializing the document with XMLSerializer.
+		if (parts[0] === 'xml') {
+			if (
+				this.currentNode !== this.rootNode ||
+				this.rootNode[PropertySymbol.elementArray].length !== 0
+			) {
+				this.errorMessage = 'XML declaration allowed only at the start of the document';
+				this.readState = MarkupReadStateEnum.error;
+			} else {
+				this.rootNode[PropertySymbol.hasXMLProcessingInstruction] = true;
+			}
+		} else if (parts.length > 1) {
+			const name = parts[0];
+			const content = parts.slice(1).join(' ');
+			this.currentNode[PropertySymbol.appendChild](
+				this.window.document.createProcessingInstruction(
+					name,
+					content.endsWith('?') ? content.slice(0, -1) : content
+				),
+				true
+			);
+		} else {
+			this.errorMessage = 'error parsing processing instruction';
+			this.readState = MarkupReadStateEnum.error;
 		}
 	}
 
@@ -661,41 +266,13 @@ export default class XMLParser {
 	 */
 	private parseComment(comment: string): void {
 		const document = this.window.document;
-		const commentNode = document.createComment(Entities.decodeHTML(comment));
 
-		switch (this.mode) {
-			case XMLParserModeEnum.htmlDocument:
-				const level = this.htmlDocumentStructure.level;
-				const { documentElement, head, body } = this.htmlDocumentStructure.nodes;
-
-				// We need to add the comment node to the correct position in the document.
-				let beforeNode: Node | null = null;
-				if (this.currentNode === this.rootNode && level === HTMLDocumentStructureLevelEnum.root) {
-					beforeNode = documentElement;
-				} else if (
-					this.currentNode === documentElement &&
-					level === HTMLDocumentStructureLevelEnum.documentElement
-				) {
-					beforeNode = head;
-				} else if (
-					this.currentNode === documentElement &&
-					level === HTMLDocumentStructureLevelEnum.head
-				) {
-					beforeNode = body;
-				}
-
-				this.currentNode[PropertySymbol.insertBefore](commentNode, beforeNode, true);
-				break;
-			case XMLParserModeEnum.xmlDocument:
-				// Comments are not allowed in the root when parsing XML.
-				if (this.currentNode !== this.rootNode) {
-					this.currentNode[PropertySymbol.appendChild](commentNode, true);
-				}
-				break;
-			case XMLParserModeEnum.xmlFragment:
-			case XMLParserModeEnum.htmlFragment:
-				this.currentNode[PropertySymbol.appendChild](commentNode, true);
-				break;
+		// Comments are not allowed in the root when parsing XML.
+		if (this.currentNode !== this.rootNode) {
+			this.currentNode[PropertySymbol.appendChild](
+				document.createComment(Entities.decodeHTML(comment)),
+				true
+			);
 		}
 	}
 
@@ -705,266 +282,252 @@ export default class XMLParser {
 	 * @param text Text.
 	 */
 	private parseDocumentType(text: string): void {
-		const decodedText = Entities.decodeHTML(text);
+		if (
+			this.currentNode === this.rootNode &&
+			this.rootNode[PropertySymbol.nodeArray].length === 0
+		) {
+			const decodedText = Entities.decodeHTML(text);
+			const documentType = this.getDocumentType(decodedText);
 
-		switch (this.mode) {
-			case XMLParserModeEnum.htmlDocument:
-				const { doctype } = this.htmlDocumentStructure.nodes;
-				const documentType = this.getDocumentType(decodedText);
-				// Document type nodes are only allowed at the beginning of the document.
-				if (documentType) {
-					if (
-						this.currentNode === this.rootNode &&
-						this.htmlDocumentStructure.level === HTMLDocumentStructureLevelEnum.root
-					) {
-						doctype[PropertySymbol.name] = documentType.name;
-						doctype[PropertySymbol.publicId] = documentType.publicId;
-						doctype[PropertySymbol.systemId] = documentType.systemId;
-
-						this.htmlDocumentStructure.level = HTMLDocumentStructureLevelEnum.doctype;
-					}
-				} else {
-					this.parseComment(decodedText);
-				}
-				break;
-			case XMLParserModeEnum.htmlFragment:
-				// Document type nodes are only allowed at the beginning of the document.
-				if (!this.getDocumentType(decodedText)) {
-					this.parseComment(decodedText);
-				}
-				break;
-			case XMLParserModeEnum.xmlFragment:
-			case XMLParserModeEnum.xmlDocument:
-				this.parseXMLDocumentError('error on line 1 at column 1: StartTag: invalid element name');
-				break;
+			if (documentType?.name) {
+				this.rootNode[PropertySymbol.appendChild](
+					this.window.document.implementation.createDocumentType(
+						documentType.name,
+						documentType.publicId,
+						documentType.systemId
+					),
+					true
+				);
+			} else if (documentType) {
+				this.errorMessage = 'xmlParseDocTypeDecl : no DOCTYPE name';
+				this.readState = MarkupReadStateEnum.error;
+			} else {
+				this.errorMessage = 'StartTag: invalid element name';
+				this.readState = MarkupReadStateEnum.error;
+			}
+		} else if (
+			this.currentNode === this.rootNode &&
+			this.rootNode[PropertySymbol.elementArray].length === 1
+		) {
+			this.errorMessage = 'Extra content at the end of the document';
+			this.readState = MarkupReadStateEnum.error;
+		} else {
+			this.errorMessage = 'StartTag: invalid element name';
+			this.readState = MarkupReadStateEnum.error;
 		}
 	}
 
 	/**
-	 * Parses raw text content for elements such as <script> and <style>.
+	 * Parses start tag.
 	 *
-	 * @param endTagName End tag name.
-	 * @param text Text.
+	 * @param tagName Tag name.
 	 */
-	private parseRawTextElementContent(endTagName: string, text: string): void {
+	private parseStartTag(tagName: string): void {
+		const parts = tagName.split(':');
+
+		if (parts.length > 1) {
+			this.nextElement = this.window.document.createElementNS(
+				this.namespacePrefixStack[this.namespacePrefixStack.length - 1]?.get(parts[0]) || null,
+				tagName
+			);
+		} else {
+			this.nextElement = this.window.document.createElementNS(
+				this.defaultNamespaceStack[this.defaultNamespaceStack.length - 1] || null,
+				tagName
+			);
+		}
+
+		this.namespacePrefixStack.push(
+			new Map(this.namespacePrefixStack[this.namespacePrefixStack.length - 1])
+		);
+
+		this.startTagIndex = this.markupRegExp.lastIndex;
+		this.readState = MarkupReadStateEnum.endOfStartTag;
+	}
+
+	/**
+	 * Parses end of start tag.
+	 *
+	 * @param attributeString Attribute string.
+	 * @param isSelfClosed Is self closed.
+	 */
+	private parseEndOfStartTag(attributeString: string, isSelfClosed: boolean): void {
 		const document = this.window.document;
+		const attributeRegexp = new RegExp(ATTRIBUTE_REGEXP, 'gm');
+		const namespacePrefix = this.namespacePrefixStack[this.namespacePrefixStack.length - 1];
+		let attributeMatch: RegExpExecArray;
+		let lastIndex = 0;
 
-		const localName = this.currentNode[PropertySymbol.localName];
+		while ((attributeMatch = attributeRegexp.exec(attributeString))) {
+			const textBetweenAttributes = attributeString
+				.substring(lastIndex, attributeMatch.index)
+				.replace(SPACE_REGEXP, '');
 
-		if (!endTagName || StringUtility.asciiLowerCase(endTagName) !== localName) {
+			// If there is text between attributes, the text did not match a valid attribute.
+			if (textBetweenAttributes.length) {
+				this.errorMessage = 'attributes construct error';
+				this.readState = MarkupReadStateEnum.error;
+				return;
+			}
+
+			if (
+				(attributeMatch[1] && attributeMatch[3] === '"') ||
+				(attributeMatch[4] && attributeMatch[6] === "'") ||
+				attributeMatch[7]
+			) {
+				// Valid attribute name and value.
+				const name = attributeMatch[1] ?? attributeMatch[4] ?? attributeMatch[7];
+				const rawValue = attributeMatch[2] ?? attributeMatch[5] ?? null;
+
+				if (rawValue === null) {
+					this.errorMessage = `Specification mandates value for attribute ${name}`;
+					this.readState = MarkupReadStateEnum.error;
+					return;
+				}
+
+				const value = rawValue ? Entities.decodeHTMLAttribute(rawValue) : '';
+				const attributes = this.nextElement[PropertySymbol.attributes];
+
+				// In XML, attributes prefixed with "xmlns:" or named "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
+				const namespaceURI = name.startsWith('xmlns:') ? NamespaceURI.xmlns : null;
+
+				if (!attributes.getNamedItemNS(namespaceURI, name)) {
+					const attributeItem = document.createAttributeNS(namespaceURI, name);
+					attributeItem[PropertySymbol.value] = value;
+					attributes[PropertySymbol.setNamedItem](attributeItem);
+
+					// Attributes prefixed with "xmlns:" should be added to the namespace prefix map, so that the prefix can be added as namespaceURI to elements using the prefix.
+					if (attributeItem[PropertySymbol.prefix] === 'xmlns') {
+						namespacePrefix.set(attributeItem[PropertySymbol.prefix], value);
+
+						// If the prefix matches the current element, we should set the namespace URI of the element to the value of the attribute.
+						// We don't need to upgrade the element, as there are no defined element types using a prefix.
+						if (this.nextElement[PropertySymbol.prefix] === attributeItem[PropertySymbol.prefix]) {
+							this.nextElement[PropertySymbol.namespaceURI] = value;
+						}
+					}
+					// If the attribute is "xmlns", we should upgrade the element to an element created using the namespace URI.
+					else if (name === 'xmlns' && !this.nextElement[PropertySymbol.prefix]) {
+						// We only need to create a new instance if it is a known namespace URI.
+						if (NAMESPACE_URIS.includes(value)) {
+							this.nextElement = this.window.document.createElementNS(
+								value,
+								this.nextElement[PropertySymbol.tagName]
+							);
+							this.nextElement[PropertySymbol.attributes] = attributes;
+						} else {
+							this.nextElement[PropertySymbol.namespaceURI] = value;
+						}
+					}
+				} else {
+					this.errorMessage = `Attribute ${name} redefined`;
+					this.readState = MarkupReadStateEnum.error;
+				}
+
+				this.startTagIndex += attributeMatch[0].length;
+			} else if (
+				(attributeMatch[1] && attributeMatch[3] !== '"') ||
+				(attributeMatch[4] && attributeMatch[6] !== "'")
+			) {
+				// End attribute apostrophe is missing (e.g. "attr='value" or 'attr="value').
+				// We should continue to the next end of start tag match.
+				return;
+			}
+
+			lastIndex = attributeRegexp.lastIndex;
+		}
+
+		// We need to check if the attribute string is read completely as the attribute string can potentially contain "/>" or ">".
+		const tagName = this.nextElement[PropertySymbol.tagName];
+
+		// Prefixed elements need to have a namespace URI defined by a prefixed "xmlns:" attribute either by a parent or in the current element.
+		if (this.nextElement[PropertySymbol.prefix] && !this.nextElement[PropertySymbol.namespaceURI]) {
+			this.errorMessage = `Namespace prefix ${
+				this.nextElement[PropertySymbol.prefix]
+			} on name is not defined`;
+			this.readState = MarkupReadStateEnum.error;
 			return;
 		}
 
-		// Scripts are not allowed to be executed when they are parsed using innerHTML, outerHTML, replaceWith() etc.
-		// However, they are allowed to be executed when document.write() is used.
-		// See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement
-		if (localName === 'script') {
-			(<HTMLScriptElement>this.currentNode)[PropertySymbol.evaluateScript] = this.evaluateScripts;
-		} else if (localName === 'link') {
-			// An assumption that the same rule should be applied for the HTMLLinkElement is made here.
-			(<HTMLLinkElement>this.currentNode)[PropertySymbol.evaluateCSS] = this.evaluateScripts;
+		// Only one document element is allowed in the document.
+		if (
+			this.currentNode === this.rootNode &&
+			this.rootNode[PropertySymbol.elementArray].length !== 0
+		) {
+			this.errorMessage = 'Extra content at the end of the document';
+			this.readState = MarkupReadStateEnum.error;
+			return;
 		}
 
-		// Plain text elements such as <script> and <style> should only contain text.
-		this.currentNode[PropertySymbol.appendChild](
-			document.createTextNode(Entities.decodeHTML(text)),
-			true
-		);
+		this.currentNode[PropertySymbol.appendChild](this.nextElement, true);
 
-		const rawTextElement = this.currentNode;
+		// Sets the new element as the current node.
+		// XML nodes can be self closed using "/>"
+		if (!isSelfClosed) {
+			this.currentNode = this.nextElement;
+			this.nodeStack.push(this.currentNode);
+			this.tagNameStack.push(tagName);
 
-		this.nodeStack.pop();
-		this.localNameStack.pop();
-		this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
+			if (
+				this.currentNode[PropertySymbol.namespaceURI] &&
+				!this.currentNode[PropertySymbol.prefix]
+			) {
+				this.defaultNamespaceStack.push(this.currentNode[PropertySymbol.namespaceURI]);
+			} else {
+				this.defaultNamespaceStack.push(
+					this.defaultNamespaceStack[this.defaultNamespaceStack.length - 1]
+				);
+			}
+		}
+
 		this.readState = MarkupReadStateEnum.startOrEndTag;
+		this.startTagIndex = this.markupRegExp.lastIndex;
+	}
 
-		// Appends the raw text element to its parent.
-
-		switch (this.mode) {
-			case XMLParserModeEnum.htmlDocument:
-				const { documentElement, body } = this.htmlDocumentStructure.nodes;
-
-				// When parser mode is "htmlDocument", any element added directly to the document or document element should be added to the body.
-				if (
-					documentElement &&
-					(this.currentNode === this.rootNode || this.currentNode === documentElement)
-				) {
-					body[PropertySymbol.appendChild](rawTextElement, true);
-				} else {
-					this.currentNode[PropertySymbol.appendChild](rawTextElement, true);
-				}
-				break;
-			case XMLParserModeEnum.htmlFragment:
-			case XMLParserModeEnum.xmlFragment:
-				this.currentNode[PropertySymbol.appendChild](rawTextElement, true);
-				break;
-			case XMLParserModeEnum.xmlDocument:
-				if (
-					this.currentNode === this.rootNode &&
-					this.rootNode[PropertySymbol.elementArray].length !== 0
-				) {
-					this.parseXMLDocumentError(
-						'error on line 1 at column 1: Extra content at the end of the document'
-					);
-					return;
-				}
-				this.currentNode[PropertySymbol.appendChild](rawTextElement, true);
-				break;
+	/**
+	 * Parses end tag.
+	 *
+	 * @param tagName Tag name.
+	 */
+	private parseEndTag(tagName: string): void {
+		if (this.tagNameStack[this.tagNameStack.length - 1] === tagName) {
+			this.nodeStack.pop();
+			this.tagNameStack.pop();
+			this.namespacePrefixStack.pop();
+			this.defaultNamespaceStack.pop();
+			this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
+		} else {
+			this.errorMessage = 'Opening and ending tag mismatch';
+			this.readState = MarkupReadStateEnum.error;
 		}
 	}
 
 	/**
 	 * Parses XML document error.
 	 *
-	 * @param error Error.
+	 * @param readXML XML that has been read.
+	 * @param errorMessage Error message.
 	 */
-	private parseXMLDocumentError(error: string): void {
+	private parseError(readXML: string, errorMessage: string): void {
 		const document = this.window.document;
 
-		let errorRoot = (<XMLDocument>this.rootNode).documentElement;
+		let errorRoot: Element = (<XMLDocument>this.rootNode).documentElement;
 
 		if (!errorRoot) {
-			const documentElement = document.createElement('html');
-			const body = document.createElement('body');
-			documentElement.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+			const documentElement = document.createElementNS(NamespaceURI.html, 'html');
+			const body = document.createElementNS(NamespaceURI.html, 'body');
 			documentElement.appendChild(body);
 			errorRoot = body;
+			this.rootNode[PropertySymbol.appendChild](documentElement, true);
 		}
 
 		const container = document.createElement('div');
+		const rows = readXML.split('\n');
+		const column = rows[rows.length - 1].length;
+		const error = `error on line ${rows.length} at column ${column}: ${errorMessage}`;
+
 		container.innerHTML = `<parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">${error}</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror>`;
 		errorRoot.insertBefore(container[PropertySymbol.elementArray][0], errorRoot.firstChild);
-
-		this.readState = MarkupReadStateEnum.error;
-	}
-
-	/**
-	 * Creates an element or returns a reference to it.
-	 *
-	 * @param tagName Tag name.
-	 */
-	private getStartTagElement(tagName: string): Element {
-		const document = this.window.document;
-		const { localName, namespaceURI } = this.getElementLocalNameAndNamespaceURI(tagName);
-
-		if (
-			this.mode === XMLParserModeEnum.htmlDocument ||
-			this.mode === XMLParserModeEnum.htmlFragment
-		) {
-			// New element.
-			switch (localName) {
-				case 'html':
-					if (this.mode === XMLParserModeEnum.htmlFragment) {
-						return null;
-					}
-					if (this.htmlDocumentStructure.level < HTMLDocumentStructureLevelEnum.documentElement) {
-						this.htmlDocumentStructure.level = HTMLDocumentStructureLevelEnum.documentElement;
-					}
-					return this.htmlDocumentStructure.nodes.documentElement ?? null;
-				case 'head':
-					if (this.mode === XMLParserModeEnum.htmlFragment) {
-						return null;
-					}
-					if (this.htmlDocumentStructure.level < HTMLDocumentStructureLevelEnum.head) {
-						this.htmlDocumentStructure.level = HTMLDocumentStructureLevelEnum.head;
-					} else if (this.htmlDocumentStructure.level === HTMLDocumentStructureLevelEnum.head) {
-						this.htmlDocumentStructure.level =
-							HTMLDocumentStructureLevelEnum.additionalHeadWithoutBody;
-					}
-					return this.htmlDocumentStructure.nodes.head ?? null;
-				case 'body':
-					if (this.mode === XMLParserModeEnum.htmlFragment) {
-						return null;
-					}
-					if (this.htmlDocumentStructure.level < HTMLDocumentStructureLevelEnum.body) {
-						this.htmlDocumentStructure.level = HTMLDocumentStructureLevelEnum.body;
-					}
-					return this.htmlDocumentStructure.nodes.body ?? null;
-				default:
-					return document.createElementNS(namespaceURI, localName);
-			}
-		}
-
-		return document.createElementNS(namespaceURI, localName);
-	}
-
-	/**
-	 * Returns the local name and namespace URI of an element.
-	 *
-	 * @param tagName
-	 */
-	private getElementLocalNameAndNamespaceURI(tagName: string): {
-		localName: string;
-		namespaceURI: string;
-	} {
-		if (
-			this.mode === XMLParserModeEnum.htmlDocument ||
-			this.mode === XMLParserModeEnum.htmlFragment
-		) {
-			const lowerName = StringUtility.asciiLowerCase(tagName);
-
-			// NamespaceURI is inherited from the parent element.
-			const namespaceURI = this.currentNode[PropertySymbol.namespaceURI];
-
-			// NamespaceURI should be SVG when the tag name is "svg" (even in XML mode).
-			if (lowerName === 'svg') {
-				return { localName: 'svg', namespaceURI: NamespaceURI.svg };
-			}
-
-			if (namespaceURI === NamespaceURI.svg) {
-				return {
-					localName: SVGElementConfig[lowerName]?.localName || tagName,
-					namespaceURI: NamespaceURI.svg
-				};
-			}
-
-			return {
-				localName: lowerName,
-				namespaceURI: namespaceURI || NamespaceURI.html
-			};
-		}
-
-		return {
-			localName: tagName,
-			namespaceURI: this.getXMLNamespaceURI(tagName)
-		};
-	}
-
-	/**
-	 * Returns the namespace URI of an element in XML.
-	 *
-	 * @param tagName Tag name.
-	 * @returns Namespace URI.
-	 */
-	private getXMLNamespaceURI(tagName: string): string {
-		if (!this.hasNamespacePrefix) {
-			return this.currentNode[PropertySymbol.namespaceURI];
-		}
-		const map = {};
-		for (const prefixes of this.namespacePrefixStack) {
-			if (prefixes) {
-				Object.assign(map, prefixes);
-			}
-		}
-		const parts = tagName.split(':');
-		return (parts.length > 1 && map[parts[0]]) || this.currentNode[PropertySymbol.namespaceURI];
-	}
-
-	/**
-	 * Returns root node.
-	 *
-	 * @returns Root node.
-	 */
-	private createRootNode(): DocumentFragment | Document {
-		switch (this.mode) {
-			case XMLParserModeEnum.htmlDocument:
-				return new this.window.HTMLDocument();
-			case XMLParserModeEnum.xmlDocument:
-				return new this.window.XMLDocument();
-			case XMLParserModeEnum.xmlFragment:
-			case XMLParserModeEnum.htmlFragment:
-				return this.window.document.createDocumentFragment();
-		}
 	}
 
 	/**

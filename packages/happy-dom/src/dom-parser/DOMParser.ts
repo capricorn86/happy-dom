@@ -2,7 +2,7 @@ import Document from '../nodes/document/Document.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import XMLParser from '../xml-parser/XMLParser.js';
 import BrowserWindow from '../window/BrowserWindow.js';
-import XMLParserModeEnum from '../xml-parser/XMLParserModeEnum.js';
+import HTMLParser from '../html-parser/HTMLParser.js';
 
 /**
  * DOM parser.
@@ -32,16 +32,14 @@ export default class DOMParser {
 
 		switch (mimeType) {
 			case 'text/html':
-				return <Document>new XMLParser(this[PropertySymbol.window], {
-					mode: XMLParserModeEnum.htmlDocument
-				}).parse(string);
+				return <Document>(
+					new HTMLParser(this[PropertySymbol.window]).parse(string, new window.HTMLDocument())
+				);
 			case 'image/svg+xml':
 			case 'text/xml':
 			case 'application/xml':
 			case 'application/xhtml+xml':
-				return <Document>new XMLParser(this[PropertySymbol.window], {
-					mode: XMLParserModeEnum.xmlDocument
-				}).parse(string);
+				return <Document>new XMLParser(this[PropertySymbol.window]).parse(string);
 			default:
 				throw new window.DOMException(`Unknown mime type "${mimeType}".`);
 		}

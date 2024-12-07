@@ -5,6 +5,7 @@ import Node from '../node/Node.js';
 import XMLParser from '../../xml-parser/XMLParser.js';
 import ShadowRoot from '../shadow-root/ShadowRoot.js';
 import HTMLSerializer from '../../html-serializer/HTMLSerializer.js';
+import HTMLParser from '../../html-parser/HTMLParser.js';
 
 /**
  * HTML Template Element.
@@ -47,7 +48,7 @@ export default class HTMLTemplateElement extends HTMLElement {
 			content.removeChild(childNodes[0]);
 		}
 
-		new XMLParser(this[PropertySymbol.window]).parse(html, this[PropertySymbol.content]);
+		new HTMLParser(this[PropertySymbol.window]).parse(html, this[PropertySymbol.content]);
 	}
 
 	/**

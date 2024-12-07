@@ -144,7 +144,7 @@ export default class HTMLSerializer {
 		const namedItems = (<Element>element)[PropertySymbol.attributes][PropertySymbol.namedItems];
 
 		if (!namedItems.has('is') && element[PropertySymbol.isValue]) {
-			attributeString += ' is="' + element[PropertySymbol.isValue] + '"';
+			attributeString += ' is="' + Entities.escapeAttribute(element[PropertySymbol.isValue]) + '"';
 		}
 
 		for (const attribute of namedItems.values()) {

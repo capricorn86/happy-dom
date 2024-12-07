@@ -14,6 +14,7 @@ import Text from '../nodes/text/Text.js';
 import DOMRectList from '../dom/DOMRectList.js';
 import IRangeBoundaryPoint from './IRangeBoundaryPoint.js';
 import BrowserWindow from '../window/BrowserWindow.js';
+import HTMLParser from '../html-parser/HTMLParser.js';
 
 /**
  * Range.
@@ -434,7 +435,7 @@ export default class Range {
 	 */
 	public createContextualFragment(tagString: string): DocumentFragment {
 		// TODO: Implement support for checking which context to use
-		return <DocumentFragment>new XMLParser(this[PropertySymbol.window]).parse(tagString);
+		return <DocumentFragment>new HTMLParser(this[PropertySymbol.window]).parse(tagString);
 	}
 
 	/**

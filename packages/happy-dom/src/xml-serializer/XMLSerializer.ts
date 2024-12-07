@@ -9,6 +9,7 @@ import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import HTMLElementConfig from '../config/HTMLElementConfig.js';
 import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigContentModelEnum.js';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction.js';
+import NamespaceURI from '../config/NamespaceURI.js';
 
 /**
  * Serializes a node into XML.
@@ -16,8 +17,6 @@ import ProcessingInstruction from '../nodes/processing-instruction/ProcessingIns
  * @see https://developer.mozilla.org/en-US/docs/Web/API/XMLSerializer
  */
 export default class XMLSerializer {
-	public [PropertySymbol.rootNode]: Node | null = null;
-
 	/**
 	 * Serializes a node into XML.
 	 *
@@ -25,19 +24,26 @@ export default class XMLSerializer {
 	 * @returns Result.
 	 */
 	public serializeToString(root: Node): string {
-		if (!this[PropertySymbol.rootNode]) {
-			this[PropertySymbol.rootNode] = root;
-		}
+		return this.#serializeToString(root);
+	}
 
+	/**
+	 * Serializes a node into XML.
+	 *
+	 * @param root Root node.
+	 * @param [inheritedDefaultNamespace] Default namespace.
+	 * @param [inheritedNamespacePrefixes] Inherited namespace prefixes.
+	 * @returns Result.
+	 */
+	#serializeToString(
+		root: Node,
+		inheritedDefaultNamespace: string | null = null,
+		inheritedNamespacePrefixes: Map<string, string> = null
+	): string {
 		switch (root[PropertySymbol.nodeType]) {
 			case NodeTypeEnum.elementNode:
 				const element = <Element>root;
 				const localName = element[PropertySymbol.localName];
-				const config = HTMLElementConfig[element[PropertySymbol.localName]];
-
-				if (config?.contentModel === HTMLElementConfigContentModelEnum.noDescendants) {
-					return `<${localName}${this.#getAttributes(element)}>`;
-				}
 
 				let innerHTML = '';
 
@@ -46,22 +52,39 @@ export default class XMLSerializer {
 						? (<DocumentFragment>(<HTMLTemplateElement>root).content)[PropertySymbol.nodeArray]
 						: (<DocumentFragment>root)[PropertySymbol.nodeArray];
 
+				const namespacePrefixes = this.#getNamespacePrefixes(element, inheritedNamespacePrefixes);
+				const elementPrefix = this.#getElementPrefix(element, namespacePrefixes);
+				const tagName = `${elementPrefix ? elementPrefix + ':' : ''}${localName}`;
+				const defaultNamespace = elementPrefix
+					? inheritedDefaultNamespace
+					: element[PropertySymbol.namespaceURI] || inheritedDefaultNamespace;
+				const attributes = this.#getAttributes(
+					element,
+					elementPrefix,
+					inheritedDefaultNamespace,
+					inheritedNamespacePrefixes
+				);
+
 				for (const node of childNodes) {
-					innerHTML += this.serializeToString(node);
+					innerHTML += this.#serializeToString(node, defaultNamespace, namespacePrefixes);
 				}
 
 				if (!innerHTML) {
-					return `<${localName}${this.#getAttributes(element)}/>`;
+					return `<${tagName}${attributes}/>`;
 				}
 
-				return `<${localName}${this.#getAttributes(element)}>${innerHTML}</${localName}>`;
+				return `<${tagName}${attributes}>${innerHTML}</${tagName}>`;
 			case Node.DOCUMENT_FRAGMENT_NODE:
 			case Node.DOCUMENT_NODE:
 				let html = root[PropertySymbol.hasXMLProcessingInstruction]
 					? '<?xml version="1.0" encoding="UTF-8"?>'
 					: '';
 				for (const node of (<Node>root)[PropertySymbol.nodeArray]) {
-					html += this.serializeToString(node);
+					html += this.#serializeToString(
+						node,
+						inheritedDefaultNamespace,
+						new Map(inheritedNamespacePrefixes)
+					);
 				}
 				return html;
 			case NodeTypeEnum.commentNode:
@@ -87,36 +110,133 @@ export default class XMLSerializer {
 
 		return '';
 	}
+
+	/**
+	 * Returns namespace prefixes.
+	 *
+	 * @param element Element.
+	 * @param inheritedNamespacePrefixes Inherited namespace prefixes.
+	 * @returns Namespace prefixes.
+	 */
+	#getNamespacePrefixes(
+		element: Element,
+		inheritedNamespacePrefixes: Map<string, string> | null
+	): Map<string, string> | null {
+		const namespacePrefixes = new Map<string, string>(inheritedNamespacePrefixes);
+		const namedItems = (<Element>element)[PropertySymbol.attributes][PropertySymbol.namedItems];
+
+		for (const attribute of namedItems.values()) {
+			if (
+				attribute[PropertySymbol.namespaceURI] === NamespaceURI.xmlns &&
+				attribute[PropertySymbol.prefix]
+			) {
+				namespacePrefixes.set(attribute[PropertySymbol.value], attribute[PropertySymbol.prefix]);
+			}
+		}
+
+		return namespacePrefixes;
+	}
+
+	/**
+	 * Returns namespace prefixes.
+	 *
+	 * @param element Element.
+	 * @param namespacePrefixes Inherited namespace prefixes.
+	 * @returns Element prefix.
+	 */
+	#getElementPrefix(
+		element: Element,
+		namespacePrefixes: Map<string, string> | null
+	): string | null {
+		if (element[PropertySymbol.prefix] && !element[PropertySymbol.namespaceURI]) {
+			throw new Error('Element has a prefix but no namespace.');
+		}
+
+		if (!element[PropertySymbol.prefix]) {
+			return null;
+		}
+
+		const elementPrefix = namespacePrefixes.get(element[PropertySymbol.namespaceURI]);
+
+		if (elementPrefix) {
+			return elementPrefix;
+		}
+
+		const existingPrefixes = new Set(namespacePrefixes.values());
+
+		if (existingPrefixes.has(element[PropertySymbol.prefix])) {
+			let i = 1;
+			while (existingPrefixes.has('n' + i)) {
+				i++;
+			}
+			namespacePrefixes.set(element[PropertySymbol.namespaceURI], 'n' + i);
+			return 'n' + i;
+		}
+
+		namespacePrefixes.set(element[PropertySymbol.namespaceURI], element[PropertySymbol.prefix]);
+
+		return element[PropertySymbol.prefix];
+	}
+
 	/**
 	 * Returns attributes as a string.
 	 *
 	 * @param element Element.
+	 * @param elementPrefix Element prefix.
+	 * @param inheritedDefaultNamespace Inherited default namespace.
+	 * @param inheritedNamespacePrefixes Inherited namespace prefixes.
 	 * @returns Attributes.
 	 */
-	#getAttributes(element: Element): string {
+	#getAttributes(
+		element: Element,
+		elementPrefix: string | null,
+		inheritedDefaultNamespace: string | null,
+		inheritedNamespacePrefixes: Map<string, string> | null
+	): string {
 		let attributeString = '';
 
 		const namedItems = (<Element>element)[PropertySymbol.attributes][PropertySymbol.namedItems];
-		const inheritedNamespaceURI = element.parentElement
-			? element.parentElement[PropertySymbol.namespaceURI]
-			: null;
-		const namespaceURI = element[PropertySymbol.namespaceURI];
-
-		// We should add the namespace as an "xmlns" attribute if the element is the root element or if the namespace is different from the parent namespace.
-		if (namespaceURI && namespaceURI !== inheritedNamespaceURI && namedItems.has('xmlns')) {
-			attributeString += ' xmlns="' + namespaceURI + '"';
-		}
-
-		if (!namedItems.has('is') && element[PropertySymbol.isValue]) {
-			attributeString += ' is="' + element[PropertySymbol.isValue] + '"';
-		}
+		const handledNamespaces = new Set();
 
 		for (const attribute of namedItems.values()) {
-			// TODO: Attributes with the name "xmlns" are not serialized as they collide with the namespace attribute.
-			if (attribute[PropertySymbol.name] !== 'xmlns') {
-				const escapedValue = Entities.escapeAttribute(attribute[PropertySymbol.value]);
-				attributeString += ' ' + attribute[PropertySymbol.name] + '="' + escapedValue + '"';
+			const escapedValue = Entities.encode(attribute[PropertySymbol.value], {
+				level: Entities.EntityLevel.XML
+			});
+
+			// Namespace attributes should be in the beginning of the string.
+			if (attribute[PropertySymbol.namespaceURI] === NamespaceURI.xmlns) {
+				attributeString = ` ${attribute[PropertySymbol.name]}="${escapedValue}"${attributeString}`;
+				handledNamespaces.add(attribute[PropertySymbol.value]);
+			} else {
+				attributeString += ` ${attribute[PropertySymbol.name]}="${escapedValue}"`;
 			}
+		}
+
+		// We should add the namespace as an attribute if it has not been added yet.
+		if (
+			element[PropertySymbol.namespaceURI] &&
+			!handledNamespaces.has(element[PropertySymbol.namespaceURI])
+		) {
+			if (elementPrefix && !inheritedNamespacePrefixes.has(element[PropertySymbol.namespaceURI])) {
+				attributeString = ` xmlns:${elementPrefix}="${Entities.encode(
+					element[PropertySymbol.namespaceURI],
+					{ level: Entities.EntityLevel.XML }
+				)}"${attributeString}`;
+			} else if (
+				!elementPrefix &&
+				inheritedDefaultNamespace !== element[PropertySymbol.namespaceURI]
+			) {
+				attributeString = ` xmlns="${Entities.encode(element[PropertySymbol.namespaceURI], {
+					level: Entities.EntityLevel.XML
+				})}"${attributeString}`;
+			}
+		}
+
+		// We should add the "is" attribute if the element was created using the "is" option.
+		if (!namedItems.has('is') && element[PropertySymbol.isValue]) {
+			attributeString += ` is="${Entities.encode(element[PropertySymbol.isValue], {
+				level: Entities.EntityLevel.XML
+			})}"`;
 		}
 
 		return attributeString;

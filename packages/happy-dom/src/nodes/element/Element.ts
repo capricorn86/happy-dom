@@ -32,6 +32,7 @@ import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import NamedNodeMapProxyFactory from './NamedNodeMapProxyFactory.js';
 import NodeFactory from '../NodeFactory.js';
 import HTMLSerializer from '../../html-serializer/HTMLSerializer.js';
+import HTMLParser from '../../html-parser/HTMLParser.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -406,7 +407,7 @@ export default class Element
 			this.removeChild(childNodes[0]);
 		}
 
-		new XMLParser(this[PropertySymbol.window]).parse(html, this);
+		new HTMLParser(this[PropertySymbol.window]).parse(html, this);
 	}
 
 	/**
@@ -424,7 +425,7 @@ export default class Element
 	 * @param html HTML.
 	 */
 	public set outerHTML(html: string) {
-		const childNodes = new XMLParser(this[PropertySymbol.window]).parse(html)[
+		const childNodes = new HTMLParser(this[PropertySymbol.window]).parse(html)[
 			PropertySymbol.nodeArray
 		];
 		this.replaceWith(...childNodes);
@@ -652,7 +653,7 @@ export default class Element
 	 * @param text HTML string to insert.
 	 */
 	public insertAdjacentHTML(position: InsertAdjacentPosition, text: string): void {
-		const childNodes = new XMLParser(this[PropertySymbol.window]).parse(text)[
+		const childNodes = new HTMLParser(this[PropertySymbol.window]).parse(text)[
 			PropertySymbol.nodeArray
 		];
 		while (childNodes.length) {
