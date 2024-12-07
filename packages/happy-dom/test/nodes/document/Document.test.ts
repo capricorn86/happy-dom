@@ -84,7 +84,7 @@ describe('Document', () => {
 
 	describe('get children()', () => {
 		it('Returns Element child nodes.', () => {
-			document.appendChild(document.createTextNode('test'));
+			document.appendChild(document.createComment('test'));
 			expect(document.children.length).toEqual(1);
 			expect(document.children[0] === document.documentElement).toBe(true);
 		});
@@ -161,9 +161,9 @@ describe('Document', () => {
 
 	describe('get childElementCount()', () => {
 		it('Returns child element count.', () => {
-			document.appendChild(document.createElement('div'));
-			document.appendChild(document.createTextNode('test'));
-			expect(document.childElementCount).toEqual(2);
+			document.body.appendChild(document.createElement('div'));
+			document.body.appendChild(document.createTextNode('test'));
+			expect(document.body.childElementCount).toEqual(1);
 		});
 	});
 
@@ -408,8 +408,8 @@ describe('Document', () => {
 
 				style.appendChild(textNode);
 
-				document.appendChild(style);
-				document.appendChild(link);
+				document.body.appendChild(style);
+				document.body.appendChild(link);
 
 				setTimeout(() => {
 					expect(fetchedUrl).toBe('https://localhost:8080/path/to/file.css');
@@ -434,8 +434,8 @@ describe('Document', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 
-			document.appendChild(div);
-			document.appendChild(span);
+			document.body.appendChild(div);
+			document.body.appendChild(span);
 
 			expect(document.activeElement === document.body).toBe(true);
 
@@ -455,7 +455,7 @@ describe('Document', () => {
 		it('Unsets the active element when it gets disconnected.', () => {
 			const div = document.createElement('div');
 
-			document.appendChild(div);
+			document.body.appendChild(div);
 
 			expect(document.activeElement === document.body).toBe(true);
 
@@ -580,14 +580,14 @@ describe('Document', () => {
 			let isCalled = false;
 
 			vi.spyOn(ParentNodeUtility, 'append').mockImplementation((parentNode, ...nodes) => {
-				expect(parentNode === document).toBe(true);
+				expect(parentNode === document.body).toBe(true);
 				expect(nodes.length).toBe(2);
 				expect(nodes[0] === node1).toBe(true);
 				expect(nodes[1] === node2).toBe(true);
 				isCalled = true;
 			});
 
-			document.append(node1, node2);
+			document.body.append(node1, node2);
 			expect(isCalled).toBe(true);
 		});
 	});
@@ -599,14 +599,14 @@ describe('Document', () => {
 			let isCalled = false;
 
 			vi.spyOn(ParentNodeUtility, 'prepend').mockImplementation((parentNode, ...nodes) => {
-				expect(parentNode === document).toBe(true);
+				expect(parentNode === document.body).toBe(true);
 				expect(nodes.length).toBe(2);
 				expect(nodes[0] === node1).toBe(true);
 				expect(nodes[1] === node2).toBe(true);
 				isCalled = true;
 			});
 
-			document.prepend(node1, node2);
+			document.body.prepend(node1, node2);
 			expect(isCalled).toBe(true);
 		});
 	});
@@ -618,14 +618,14 @@ describe('Document', () => {
 			let isCalled = false;
 
 			vi.spyOn(ParentNodeUtility, 'replaceChildren').mockImplementation((parentNode, ...nodes) => {
-				expect(parentNode === document).toBe(true);
+				expect(parentNode === document.body).toBe(true);
 				expect(nodes.length).toBe(2);
 				expect(nodes[0] === node1).toBe(true);
 				expect(nodes[1] === node2).toBe(true);
 				isCalled = true;
 			});
 
-			document.replaceChildren(node1, node2);
+			document.body.replaceChildren(node1, node2);
 			expect(isCalled).toBe(true);
 		});
 	});
@@ -760,7 +760,7 @@ describe('Document', () => {
 		it('Returns elements by name.', () => {
 			const parent = document.createElement('div');
 			parent.innerHTML = `<img alt="" name="image" src=""/><img alt="" name="image" src=""/><img alt="" name="image" src=""/><img alt="" name="image" src=""/><meta name="test"><p name="test"><span name="test">test</span></p></meta>`;
-			document.appendChild(parent);
+			document.body.appendChild(parent);
 			expect(document.getElementsByName('image').length).toBe(4);
 			expect(document.getElementsByName('test').length).toBe(3);
 		});
@@ -771,18 +771,18 @@ describe('Document', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 
-			for (const node of Array.from(document.childNodes)) {
+			for (const node of Array.from(document.body.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
-			document.appendChild(document.createComment('test'));
-			document.appendChild(div);
-			document.appendChild(document.createComment('test'));
-			document.appendChild(span);
+			document.body.appendChild(document.createComment('test'));
+			document.body.appendChild(div);
+			document.body.appendChild(document.createComment('test'));
+			document.body.appendChild(span);
 
-			expect(document.children.length).toBe(2);
-			expect(document.children[0]).toBe(div);
-			expect(document.children[1]).toBe(span);
+			expect(document.body.children.length).toBe(2);
+			expect(document.body.children[0]).toBe(div);
+			expect(document.body.children[1]).toBe(span);
 		});
 
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
@@ -793,16 +793,16 @@ describe('Document', () => {
 
 			const clone = template.content.cloneNode(true);
 
-			for (const node of Array.from(document.childNodes)) {
+			for (const node of Array.from(document.body.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
-			document.appendChild(clone);
+			document.body.appendChild(clone);
 
 			expect(clone.childNodes.length).toBe(0);
 			expect(clone.children.length).toBe(0);
 			expect(
-				Array.from(document.children)
+				Array.from(document.body.children)
 					.map((child) => child.outerHTML)
 					.join('')
 			).toBe('<div>Div</div><span>Span</span>');
@@ -814,19 +814,19 @@ describe('Document', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 
-			for (const node of Array.from(document.childNodes)) {
+			for (const node of Array.from(document.body.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
-			document.appendChild(document.createComment('test'));
-			document.appendChild(div);
-			document.appendChild(document.createComment('test'));
-			document.appendChild(span);
+			document.body.appendChild(document.createComment('test'));
+			document.body.appendChild(div);
+			document.body.appendChild(document.createComment('test'));
+			document.body.appendChild(span);
 
-			document.removeChild(div);
+			document.body.removeChild(div);
 
-			expect(document.children.length).toBe(1);
-			expect(document.children[0]).toBe(span);
+			expect(document.body.children.length).toBe(1);
+			expect(document.body.children[0]).toBe(span);
 		});
 	});
 
@@ -836,20 +836,20 @@ describe('Document', () => {
 			const div2 = document.createElement('div');
 			const span = document.createElement('span');
 
-			for (const node of Array.from(document.childNodes)) {
+			for (const node of Array.from(document.body.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
-			document.appendChild(document.createComment('test'));
-			document.appendChild(div1);
-			document.appendChild(document.createComment('test'));
-			document.appendChild(span);
-			document.insertBefore(div2, div1);
+			document.body.appendChild(document.createComment('test'));
+			document.body.appendChild(div1);
+			document.body.appendChild(document.createComment('test'));
+			document.body.appendChild(span);
+			document.body.insertBefore(div2, div1);
 
-			expect(document.children.length).toBe(3);
-			expect(document.children[0]).toBe(div2);
-			expect(document.children[1]).toBe(div1);
-			expect(document.children[2]).toBe(span);
+			expect(document.body.children.length).toBe(3);
+			expect(document.body.children[0]).toBe(div2);
+			expect(document.body.children[1]).toBe(div1);
+			expect(document.body.children[2]).toBe(span);
 		});
 
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
@@ -862,18 +862,18 @@ describe('Document', () => {
 
 			const clone = template.content.cloneNode(true);
 
-			for (const node of Array.from(document.childNodes)) {
+			for (const node of Array.from(document.body.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
-			document.appendChild(child1);
-			document.appendChild(child2);
+			document.body.appendChild(child1);
+			document.body.appendChild(child2);
 
-			document.insertBefore(clone, child2);
+			document.body.insertBefore(clone, child2);
 
-			expect(document.children.length).toBe(4);
+			expect(document.body.children.length).toBe(4);
 			expect(
-				Array.from(document.children)
+				Array.from(document.body.children)
 					.map((child) => child.outerHTML)
 					.join('')
 			).toBe('<span></span><div>Template DIV 1</div><span>Template SPAN 1</span><span></span>');
@@ -1319,11 +1319,11 @@ describe('Document', () => {
 			const child = document.createElement('div');
 			child.className = 'className';
 
-			for (const node of Array.from(document.childNodes)) {
+			for (const node of Array.from(document.body.childNodes)) {
 				(<Node>node.parentNode).removeChild(node);
 			}
 
-			document.appendChild(child);
+			document.body.appendChild(child);
 
 			const clone = document.cloneNode(false);
 			const clone2 = document.cloneNode(true);
@@ -1331,7 +1331,9 @@ describe('Document', () => {
 			expect(clone.defaultView === null).toBe(true);
 			expect(clone.children.length).toBe(0);
 			expect(clone2.children.length).toBe(1);
-			expect(clone2.children[0].outerHTML).toBe('<div class="className"></div>');
+			expect(clone2.children[0].outerHTML).toBe(
+				'<html><head></head><body><div class="className"></div></body></html>'
+			);
 		});
 	});
 

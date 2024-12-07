@@ -101,15 +101,11 @@ export default class NamedNodeMap {
 	 * @returns Item.
 	 */
 	public getNamedItemNS(namespace: string, localName: string): Attr | null {
-		for (const item of this[PropertySymbol.namespaceItems].values()) {
-			if (
-				item[PropertySymbol.namespaceURI] === namespace &&
-				item[PropertySymbol.localName] === localName
-			) {
-				return item;
-			}
-		}
-		return null;
+		return (
+			this[PropertySymbol.namespaceItems].get(
+				this[PropertySymbol.getNamespaceItemKey](namespace, localName)
+			) || null
+		);
 	}
 
 	/**
@@ -191,7 +187,10 @@ export default class NamedNodeMap {
 
 		item[PropertySymbol.ownerElement] = this[PropertySymbol.ownerElement];
 
-		const namespaceItemKey = this[PropertySymbol.getNamespaceItemKey](item);
+		const namespaceItemKey = this[PropertySymbol.getNamespaceItemKey](
+			item[PropertySymbol.namespaceURI],
+			item[PropertySymbol.name]
+		);
 		const replacedItem = this[PropertySymbol.namespaceItems].get(namespaceItemKey) || null;
 		const replacedNamedItem =
 			this[PropertySymbol.namedItems].get(item[PropertySymbol.name]) || null;
@@ -228,7 +227,12 @@ export default class NamedNodeMap {
 	 */
 	public [PropertySymbol.removeNamedItem](item: Attr, ignoreListeners = false): void {
 		item[PropertySymbol.ownerElement] = null;
-		this[PropertySymbol.namespaceItems].delete(this[PropertySymbol.getNamespaceItemKey](item));
+		this[PropertySymbol.namespaceItems].delete(
+			this[PropertySymbol.getNamespaceItemKey](
+				item[PropertySymbol.namespaceURI],
+				item[PropertySymbol.name]
+			)
+		);
 		this[PropertySymbol.namedItems].delete(
 			this[PropertySymbol.getNamedItemKey](
 				this[PropertySymbol.ownerElement][PropertySymbol.namespaceURI],
@@ -258,16 +262,14 @@ export default class NamedNodeMap {
 	/**
 	 * Returns item key.
 	 *
-	 * @param item Item.
+	 * @param namespaceURI Namespace.
+	 * @param name Name.
 	 * @returns Key.
 	 */
-	private [PropertySymbol.getNamespaceItemKey](item: Attr): string {
-		if (
-			!item[PropertySymbol.namespaceURI] ||
-			item[PropertySymbol.namespaceURI] === NamespaceURI.html
-		) {
-			return item[PropertySymbol.name].toLowerCase();
+	private [PropertySymbol.getNamespaceItemKey](namespaceURI: string, name: string): string {
+		if (!namespaceURI || namespaceURI === NamespaceURI.html) {
+			return name.toLowerCase();
 		}
-		return `${item[PropertySymbol.namespaceURI] || ''}:${item[PropertySymbol.name]}`;
+		return `${namespaceURI}:${name}`;
 	}
 }
