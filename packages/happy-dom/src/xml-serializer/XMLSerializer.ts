@@ -69,7 +69,7 @@ export default class XMLSerializer {
 					innerHTML += this.#serializeToString(node, defaultNamespace, namespacePrefixes);
 				}
 
-				if (!innerHTML) {
+				if (!innerHTML && defaultNamespace !== NamespaceURI.html) {
 					return `<${tagName}${attributes}/>`;
 				}
 
@@ -130,7 +130,7 @@ export default class XMLSerializer {
 				attribute[PropertySymbol.namespaceURI] === NamespaceURI.xmlns &&
 				attribute[PropertySymbol.prefix]
 			) {
-				namespacePrefixes.set(attribute[PropertySymbol.value], attribute[PropertySymbol.prefix]);
+				namespacePrefixes.set(attribute[PropertySymbol.value], attribute[PropertySymbol.localName]);
 			}
 		}
 
@@ -194,6 +194,7 @@ export default class XMLSerializer {
 		inheritedNamespacePrefixes: Map<string, string> | null
 	): string {
 		let attributeString = '';
+		let namespaceString = '';
 
 		const namedItems = (<Element>element)[PropertySymbol.attributes][PropertySymbol.namedItems];
 		const handledNamespaces = new Set();
@@ -205,7 +206,7 @@ export default class XMLSerializer {
 
 			// Namespace attributes should be in the beginning of the string.
 			if (attribute[PropertySymbol.namespaceURI] === NamespaceURI.xmlns) {
-				attributeString = ` ${attribute[PropertySymbol.name]}="${escapedValue}"${attributeString}`;
+				namespaceString += ` ${attribute[PropertySymbol.name]}="${escapedValue}"`;
 				handledNamespaces.add(attribute[PropertySymbol.value]);
 			} else {
 				attributeString += ` ${attribute[PropertySymbol.name]}="${escapedValue}"`;
@@ -218,17 +219,17 @@ export default class XMLSerializer {
 			!handledNamespaces.has(element[PropertySymbol.namespaceURI])
 		) {
 			if (elementPrefix && !inheritedNamespacePrefixes.has(element[PropertySymbol.namespaceURI])) {
-				attributeString = ` xmlns:${elementPrefix}="${Entities.encode(
+				namespaceString += ` xmlns:${elementPrefix}="${Entities.encode(
 					element[PropertySymbol.namespaceURI],
 					{ level: Entities.EntityLevel.XML }
-				)}"${attributeString}`;
+				)}"`;
 			} else if (
 				!elementPrefix &&
 				inheritedDefaultNamespace !== element[PropertySymbol.namespaceURI]
 			) {
-				attributeString = ` xmlns="${Entities.encode(element[PropertySymbol.namespaceURI], {
+				namespaceString += ` xmlns="${Entities.encode(element[PropertySymbol.namespaceURI], {
 					level: Entities.EntityLevel.XML
-				})}"${attributeString}`;
+				})}"`;
 			}
 		}
 
@@ -239,6 +240,6 @@ export default class XMLSerializer {
 			})}"`;
 		}
 
-		return attributeString;
+		return namespaceString + attributeString;
 	}
 }

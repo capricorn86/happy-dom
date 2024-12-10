@@ -311,8 +311,8 @@ undefined`
 				</div>`
 			);
 
-			expect((<HTMLElement>result.children[0].children[0]).innerText).toBe('');
-			expect((<HTMLElement>result.children[0].children[1]).innerText).toBe('');
+			expect((<HTMLElement>result.children[0].children[0]).textContent).toBe('');
+			expect((<HTMLElement>result.children[0].children[1]).textContent).toBe('');
 			expect((<HTMLElement>result.children[0].children[0]).innerHTML).toBe('<b></b>');
 			expect((<HTMLElement>result.children[0].children[1]).innerHTML).toBe('<b></b>');
 		});
@@ -321,11 +321,11 @@ undefined`
 			const result = new XMLParser(window).parse(`<article>test`);
 
 			expect(new XMLSerializer().serializeToString(result)).toBe(
-				`<article><parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 3 at column 13: error parsing attribute name
-</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></article>
-undefined`
+				`<article><parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 1 at column 14: Premature end of data in tag article line 1
+</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror>test</article>`
 			);
 		});
+
 		it('Parses an SVG with "xmlns" set to SVG.', () => {
 			const result = new XMLParser(window).parse(
 				`
@@ -342,6 +342,21 @@ undefined`
 					</svg>
 				</div>
 			`
+			);
+
+			expect(new XMLSerializer().serializeToString(result)).toBe(
+				`<div>
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100" stroke="red" fill="grey">
+						<circle cx="50" cy="50" r="40"/>
+						<circle cx="150" cy="50" r="4"/>
+					
+						<svg viewBox="0 0 10 10" x="200" width="100">
+							<clippath>
+								<circle cx="5" cy="5" r="4"/>
+							</clippath>
+						</svg>
+					</svg>
+				</div>`
 			);
 
 			const div = result.children[0];
@@ -410,26 +425,10 @@ undefined`
 			expect(svg.attributes['xmlns'].specified).toBe(true);
 			expect(svg.attributes['xmlns'].ownerElement === svg).toBe(true);
 			expect(svg.attributes['xmlns'].ownerDocument === document).toBe(true);
-
-			expect(new XMLSerializer().serializeToString(result)).toBe(
-				`
-				<div>
-					<svg viewBox="0 0 300 100" stroke="red" fill="grey" xmlns="${NamespaceURI.html}">
-						<circle cx="50" cy="50" r="40"></circle>
-						<circle cx="150" cy="50" r="4"></circle>
-					
-						<svg viewBox="0 0 10 10" x="200" width="100">
-							<clipPath>
-								<circle cx="5" cy="5" r="4"></circle>
-							</clipPath>
-						</svg>
-					</svg>
-				</div>
-			`
-			);
 		});
 
 		it('Parses an SVG with "xmlns" set to HTML.', () => {
+			debugger;
 			const result = new XMLParser(window).parse(
 				`
 				<div>
@@ -445,6 +444,21 @@ undefined`
 					</svg>
 				</div>
 			`
+			);
+
+			expect(new XMLSerializer().serializeToString(result)).toBe(
+				`<div>
+					<svg xmlns="${NamespaceURI.html}" viewBox="0 0 300 100" stroke="red" fill="grey">
+						<circle cx="50" cy="50" r="40"></circle>
+						<circle cx="150" cy="50" r="4"></circle>
+					
+						<svg viewBox="0 0 10 10" x="200" width="100">
+							<clippath>
+								<circle cx="5" cy="5" r="4"></circle>
+							</clippath>
+						</svg>
+					</svg>
+				</div>`
 			);
 
 			const div = result.children[0];
@@ -513,23 +527,6 @@ undefined`
 			expect(svg.attributes['xmlns'].specified).toBe(true);
 			expect(svg.attributes['xmlns'].ownerElement === svg).toBe(true);
 			expect(svg.attributes['xmlns'].ownerDocument === document).toBe(true);
-
-			expect(new XMLSerializer().serializeToString(result)).toBe(
-				`
-				<div>
-					<svg viewBox="0 0 300 100" stroke="red" fill="grey" xmlns="${NamespaceURI.html}">
-						<circle cx="50" cy="50" r="40"></circle>
-						<circle cx="150" cy="50" r="4"></circle>
-					
-						<svg viewBox="0 0 10 10" x="200" width="100">
-							<clipPath>
-								<circle cx="5" cy="5" r="4"></circle>
-							</clipPath>
-						</svg>
-					</svg>
-				</div>
-			`
-			);
 		});
 
 		it('Outputs error for a malformed SVG.', () => {
@@ -676,13 +673,13 @@ undefined`
 
 		it('Parses XML with attributes on new lines.', () => {
 			const result = new XMLParser(window).parse(
-				`<root><component disabled="test
-                " data-testid="button"
+				`<root><component disabled="part1
+part2" data-testid="button"
                 /></root>`
 			);
 
 			expect(new XMLSerializer().serializeToString(result)).toBe(
-				'<root><component disabled="test                 " data-testid="button"/></root>'
+				'<root><component disabled="part1 part2" data-testid="button"/></root>'
 			);
 		});
 
@@ -692,7 +689,8 @@ undefined`
 			);
 
 			expect(new XMLSerializer().serializeToString(result)).toBe(
-				`<root><parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 1 at column 21: attributes construct error</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></root>`
+				`<root><parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 1 at column 21: Failed to parse QName ':is'
+</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></root>`
 			);
 		});
 
@@ -702,7 +700,8 @@ undefined`
 			);
 
 			expect(new XMLSerializer().serializeToString(result)).toBe(
-				`<root><parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 1 at column 21: attributes construct error</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></root>`
+				`<root><parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 1 at column 27: attributes construct error
+</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></root>`
 			);
 		});
 
@@ -712,7 +711,8 @@ undefined`
 			);
 
 			expect(new XMLSerializer().serializeToString(result)).toBe(
-				`<root><parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 1 at column 21: attributes construct error</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></root>`
+				`<root><parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 1 at column 40: attributes construct error
+</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></root>`
 			);
 		});
 
@@ -722,7 +722,8 @@ undefined`
 			);
 
 			expect(new XMLSerializer().serializeToString(result)).toBe(
-				`<root><parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 1 at column 21: attributes construct error</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></root>`
+				`<root><parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 1 at column 49: Unescaped '&lt;' not allowed in attributes values
+</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></root>`
 			);
 		});
 
@@ -739,7 +740,7 @@ undefined`
 				`<root>
                     <span key1="value1"/>
                     <span key1="value1" key2=""/>
-                    <span key2/>
+                    <span key2=""/>
                 </root>`
 			);
 
@@ -747,7 +748,7 @@ undefined`
 				`<root>
                     <span key1="value1"/>
                     <span key1="value1" key2=""/>
-                    <span key2/>
+                    <span key2=""/>
                 </root>`
 			);
 		});
@@ -1022,6 +1023,25 @@ undefined`
                 </root>`
 			);
 
+			expect(new XMLSerializer().serializeToString(result)).toBe(
+				`<?xml version="1.0" encoding="UTF-8"?><root xmlns="http://www.example.com">
+                    <personxml:person xmlns:personxml="http://www.your.example.com/xml/person" xmlns:cityxml="http://www.my.example.com/xml/cities">
+                        <personxml:name>Rob</personxml:name>
+                        <personxml:age>37</personxml:age>
+                        <cityxml:homecity>
+                            <cityxml:name>London</cityxml:name>
+                            <cityxml:lat>123.000</cityxml:lat>
+                            <cityxml:long>0.00</cityxml:long>
+                        </cityxml:homecity>
+                        <homecity/>
+                        <cityxml/>
+                        <test xmlns="http://www.other.com">
+                            <child/>
+                        </test>
+                    </personxml:person>
+                </root>`
+			);
+
 			expect(result.children[0].namespaceURI).toBe('http://www.example.com');
 			expect(result.children[0].attributes[0].namespaceURI).toBe(NamespaceURI.xmlns);
 			expect(result.children[0].attributes[0].name).toBe('xmlns');
@@ -1077,25 +1097,6 @@ undefined`
 
 			expect(result.children[0].children[0].children[5].children[0].namespaceURI).toBe(
 				'http://www.other.com'
-			);
-
-			expect(new XMLSerializer().serializeToString(result)).toBe(
-				`<?xml version="1.0" encoding="UTF-8"?><root xmlns="http://www.example.com">
-                    <personxml:person xmlns:personxml="http://www.your.example.com/xml/person" xmlns:cityxml="http://www.my.example.com/xml/cities">
-                        <personxml:name>Rob</personxml:name>
-                        <personxml:age>37</personxml:age>
-                        <cityxml:homecity>
-                            <cityxml:name>London</cityxml:name>
-                            <cityxml:lat>123.000</cityxml:lat>
-                            <cityxml:long>0.00</cityxml:long>
-                        </cityxml:homecity>
-                        <homecity/>
-                        <cityxml/>
-                        <test xmlns="http://www.other.com">
-                            <child/>
-                        </test>
-                    </personxml:person>
-                </root>`
 			);
 		});
 	});

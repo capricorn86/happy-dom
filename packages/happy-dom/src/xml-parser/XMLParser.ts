@@ -33,7 +33,12 @@ const MARKUP_REGEXP =
  * Group 7: Attribute name when the attribute has no value (e.g. "disabled" in "<div disabled>").
  */
 const ATTRIBUTE_REGEXP =
-	/\s*([a-zA-Z0-9-_]+)\s*=\s*"([^"]*)("{0,1})|\s*([a-zA-Z0-9-_]+)\s*=\s*'([^']*)('{0,1})|\s*([a-zA-Z0-9-_]+)/gm;
+	/\s*([a-zA-Z0-9-_:]+)\s*=\s*"([^"]*)("{0,1})|\s*([a-zA-Z0-9-_:]+)\s*=\s*'([^']*)('{0,1})/gm;
+
+/**
+ * Attribute without value RegExp.
+ */
+const ATTRIBUTE_WITHOUT_VALUE_REGEXP = /^\s*([a-zA-Z0-9-_:]+)$/;
 
 /**
  * Document type attribute RegExp.
@@ -46,6 +51,11 @@ const DOCUMENT_TYPE_ATTRIBUTE_REGEXP = /"([^"]+)"/gm;
  * Space RegExp.
  */
 const SPACE_REGEXP = /\s+/;
+
+/**
+ * New line RegExp.
+ */
+const NEW_LINE_REGEXP = /\n/g;
 
 /**
  * Markup read state (which state the parser is in).
@@ -79,7 +89,10 @@ export default class XMLParser {
 	private namespacePrefixStack: Array<Map<string, string>> | null = null;
 	private startTagIndex = 0;
 	private markupRegExp: RegExp | null = null;
+	private lastIndex = 0;
+	private errorIndex = 0;
 	private nextElement: Element | null = null;
+	private nextTagName: string | null = null;
 	private currentNode: Node | null = null;
 	private readState: MarkupReadStateEnum = MarkupReadStateEnum.startOrEndTag;
 	private errorMessage: string | null = null;
@@ -110,9 +123,11 @@ export default class XMLParser {
 		this.defaultNamespaceStack = [null];
 		this.namespacePrefixStack = [null];
 		this.startTagIndex = 0;
+		this.errorIndex = 0;
+		this.errorMessage = null;
 		this.markupRegExp = new RegExp(MARKUP_REGEXP, 'gm');
+		this.lastIndex = 0;
 		let match: RegExpExecArray;
-		let lastIndex = 0;
 
 		xml = String(xml);
 
@@ -120,11 +135,11 @@ export default class XMLParser {
 			switch (this.readState) {
 				case MarkupReadStateEnum.startOrEndTag:
 					if (
-						match.index !== lastIndex &&
+						match.index !== this.lastIndex &&
 						(match[1] || match[2] || match[3] || match[4] || match[5] !== undefined || match[6])
 					) {
 						// Plain text between tags.
-						this.parsePlainText(xml.substring(lastIndex, match.index));
+						this.parsePlainText(xml.substring(this.lastIndex, match.index));
 					}
 
 					if (match[1]) {
@@ -132,7 +147,13 @@ export default class XMLParser {
 						this.parseStartTag(match[1]);
 					} else if (match[2]) {
 						// End tag.
-						this.parseEndTag(match[2]);
+						if (!this.parseEndTag(match[2])) {
+							this.errorMessage = `Opening and ending tag mismatch: ${
+								this.tagNameStack[this.tagNameStack.length - 1]
+							} line ${xml.substring(0, this.startTagIndex).split(/\n/g).length} and ${match[2]}\n`;
+							this.errorIndex = this.markupRegExp.lastIndex;
+							this.readState = MarkupReadStateEnum.error;
+						}
 					} else if (
 						match[3] ||
 						match[4] ||
@@ -153,7 +174,7 @@ export default class XMLParser {
 						this.parseProcessingInstruction(match[6]);
 					} else {
 						// Plain text between tags, including the matched tag as it is not a valid start or end tag.
-						this.parsePlainText(xml.substring(lastIndex, this.markupRegExp.lastIndex));
+						this.parsePlainText(xml.substring(this.lastIndex, this.markupRegExp.lastIndex));
 					}
 
 					break;
@@ -169,33 +190,47 @@ export default class XMLParser {
 
 						this.parseEndOfStartTag(attributeString, isSelfClosed);
 					} else {
-						this.errorMessage = 'error parsing attribute name';
+						this.errorMessage =
+							match[2] && this.lastIndex !== this.startTagIndex
+								? `Unescaped '&lt;' not allowed in attributes values\n`
+								: 'error parsing attribute name\n';
+						this.errorIndex = match.index;
 						this.readState = MarkupReadStateEnum.error;
 					}
 					break;
 				case MarkupReadStateEnum.error:
-					this.parseError(xml.slice(0, lastIndex), this.errorMessage);
+					this.parseError(xml.slice(0, this.errorIndex), this.errorMessage);
 					return this.rootNode;
 			}
 
-			lastIndex = this.markupRegExp.lastIndex;
+			this.lastIndex = this.markupRegExp.lastIndex;
+		}
+
+		if (this.readState === MarkupReadStateEnum.error) {
+			this.parseError(xml.slice(0, this.errorIndex), this.errorMessage);
+			return this.rootNode;
 		}
 
 		// Missing end tag.
 		if (this.nodeStack.length !== 1) {
-			this.parseError(xml, 'Premature end of data in tag article line 1');
+			this.parseError(
+				xml,
+				this.nextElement
+					? 'attributes construct error'
+					: 'Premature end of data in tag article line 1'
+			);
 			return this.rootNode;
 		}
 
 		// Missing start tag (e.g. when parsing just a string like "Test").
 		if (this.rootNode[PropertySymbol.elementArray].length === 0) {
-			this.parseError(xml, `Start tag expected, '&lt;' not found`);
+			this.parseError('', `Start tag expected, '&lt;' not found`);
 			return this.rootNode;
 		}
 
 		// Plain text after tags.
-		if (lastIndex !== xml.length && this.currentNode) {
-			this.parsePlainText(xml.substring(lastIndex));
+		if (this.lastIndex !== xml.length && this.currentNode) {
+			this.parsePlainText(xml.substring(this.lastIndex));
 		}
 
 		return this.rootNode;
@@ -212,7 +247,8 @@ export default class XMLParser {
 		if (this.currentNode === this.rootNode) {
 			const xmlText = text.replace(SPACE_REGEXP, '');
 			if (xmlText) {
-				this.errorMessage = 'Extra content at the end of the document';
+				this.errorMessage = 'Extra content at the end of the document\n';
+				this.errorIndex = this.lastIndex;
 				this.readState = MarkupReadStateEnum.error;
 			}
 		} else {
@@ -238,7 +274,8 @@ export default class XMLParser {
 				this.currentNode !== this.rootNode ||
 				this.rootNode[PropertySymbol.elementArray].length !== 0
 			) {
-				this.errorMessage = 'XML declaration allowed only at the start of the document';
+				this.errorMessage = 'XML declaration allowed only at the start of the document\n';
+				this.errorIndex = this.lastIndex;
 				this.readState = MarkupReadStateEnum.error;
 			} else {
 				this.rootNode[PropertySymbol.hasXMLProcessingInstruction] = true;
@@ -254,7 +291,8 @@ export default class XMLParser {
 				true
 			);
 		} else {
-			this.errorMessage = 'error parsing processing instruction';
+			this.errorMessage = 'error parsing processing instruction\n';
+			this.errorIndex = this.lastIndex;
 			this.readState = MarkupReadStateEnum.error;
 		}
 	}
@@ -299,20 +337,24 @@ export default class XMLParser {
 					true
 				);
 			} else if (documentType) {
-				this.errorMessage = 'xmlParseDocTypeDecl : no DOCTYPE name';
+				this.errorMessage = 'xmlParseDocTypeDecl : no DOCTYPE name\n';
+				this.errorIndex = this.markupRegExp.lastIndex - text.length - 2;
 				this.readState = MarkupReadStateEnum.error;
 			} else {
-				this.errorMessage = 'StartTag: invalid element name';
+				this.errorMessage = 'StartTag: invalid element name\n';
+				this.errorIndex = this.markupRegExp.lastIndex - text.length - 2;
 				this.readState = MarkupReadStateEnum.error;
 			}
 		} else if (
 			this.currentNode === this.rootNode &&
 			this.rootNode[PropertySymbol.elementArray].length === 1
 		) {
-			this.errorMessage = 'Extra content at the end of the document';
+			this.errorMessage = 'Extra content at the end of the document\n';
+			this.errorIndex = this.markupRegExp.lastIndex - text.length - 2;
 			this.readState = MarkupReadStateEnum.error;
 		} else {
-			this.errorMessage = 'StartTag: invalid element name';
+			this.errorMessage = 'StartTag: invalid element name\n';
+			this.errorIndex = this.markupRegExp.lastIndex - text.length - 2;
 			this.readState = MarkupReadStateEnum.error;
 		}
 	}
@@ -341,6 +383,8 @@ export default class XMLParser {
 			new Map(this.namespacePrefixStack[this.namespacePrefixStack.length - 1])
 		);
 
+		this.nextTagName = tagName;
+
 		this.startTagIndex = this.markupRegExp.lastIndex;
 		this.readState = MarkupReadStateEnum.endOfStartTag;
 	}
@@ -353,98 +397,130 @@ export default class XMLParser {
 	 */
 	private parseEndOfStartTag(attributeString: string, isSelfClosed: boolean): void {
 		const document = this.window.document;
-		const attributeRegexp = new RegExp(ATTRIBUTE_REGEXP, 'gm');
 		const namespacePrefix = this.namespacePrefixStack[this.namespacePrefixStack.length - 1];
-		let attributeMatch: RegExpExecArray;
-		let lastIndex = 0;
 
-		while ((attributeMatch = attributeRegexp.exec(attributeString))) {
-			const textBetweenAttributes = attributeString
-				.substring(lastIndex, attributeMatch.index)
-				.replace(SPACE_REGEXP, '');
+		if (attributeString) {
+			const attributeRegexp = new RegExp(ATTRIBUTE_REGEXP, 'gm');
+			let attributeMatch: RegExpExecArray;
+			let lastIndex = 0;
 
-			// If there is text between attributes, the text did not match a valid attribute.
-			if (textBetweenAttributes.length) {
-				this.errorMessage = 'attributes construct error';
-				this.readState = MarkupReadStateEnum.error;
-				return;
-			}
+			while ((attributeMatch = attributeRegexp.exec(attributeString))) {
+				const textBetweenAttributes = attributeString
+					.substring(lastIndex, attributeMatch.index)
+					.replace(SPACE_REGEXP, '');
 
-			if (
-				(attributeMatch[1] && attributeMatch[3] === '"') ||
-				(attributeMatch[4] && attributeMatch[6] === "'") ||
-				attributeMatch[7]
-			) {
-				// Valid attribute name and value.
-				const name = attributeMatch[1] ?? attributeMatch[4] ?? attributeMatch[7];
-				const rawValue = attributeMatch[2] ?? attributeMatch[5] ?? null;
-
-				if (rawValue === null) {
-					this.errorMessage = `Specification mandates value for attribute ${name}`;
+				// If there is text between attributes, the text did not match a valid attribute.
+				if (textBetweenAttributes.length) {
+					const match = textBetweenAttributes.match(ATTRIBUTE_WITHOUT_VALUE_REGEXP);
+					this.errorMessage = match
+						? `Specification mandates value for attribute ${match[1]}\n`
+						: 'attributes construct error\n';
+					this.errorIndex = this.startTagIndex;
 					this.readState = MarkupReadStateEnum.error;
 					return;
 				}
 
-				const value = rawValue ? Entities.decodeHTMLAttribute(rawValue) : '';
-				const attributes = this.nextElement[PropertySymbol.attributes];
+				if (
+					(attributeMatch[1] && attributeMatch[3] === '"') ||
+					(attributeMatch[4] && attributeMatch[6] === "'")
+				) {
+					// Valid attribute name and value.
+					const name = attributeMatch[1] ?? attributeMatch[4];
+					const rawValue = attributeMatch[2] ?? attributeMatch[5];
 
-				// In XML, attributes prefixed with "xmlns:" or named "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
-				const namespaceURI = name.startsWith('xmlns:') ? NamespaceURI.xmlns : null;
+					// In XML, new line characters should be replaced with a space.
+					const value = rawValue
+						? Entities.decodeHTMLAttribute(rawValue.replace(NEW_LINE_REGEXP, ' '))
+						: '';
+					const attributes = this.nextElement[PropertySymbol.attributes];
+					const nameParts = name.split(':');
 
-				if (!attributes.getNamedItemNS(namespaceURI, name)) {
-					const attributeItem = document.createAttributeNS(namespaceURI, name);
-					attributeItem[PropertySymbol.value] = value;
-					attributes[PropertySymbol.setNamedItem](attributeItem);
-
-					// Attributes prefixed with "xmlns:" should be added to the namespace prefix map, so that the prefix can be added as namespaceURI to elements using the prefix.
-					if (attributeItem[PropertySymbol.prefix] === 'xmlns') {
-						namespacePrefix.set(attributeItem[PropertySymbol.prefix], value);
-
-						// If the prefix matches the current element, we should set the namespace URI of the element to the value of the attribute.
-						// We don't need to upgrade the element, as there are no defined element types using a prefix.
-						if (this.nextElement[PropertySymbol.prefix] === attributeItem[PropertySymbol.prefix]) {
-							this.nextElement[PropertySymbol.namespaceURI] = value;
-						}
+					if (
+						nameParts.length > 2 ||
+						(nameParts.length === 2 && (!nameParts[0] || !nameParts[1]))
+					) {
+						this.errorMessage = `Failed to parse QName '${name}'\n`;
+						this.errorIndex =
+							this.startTagIndex + attributeMatch.index + attributeMatch[0].split('=')[0].length;
+						this.readState = MarkupReadStateEnum.error;
+						return;
 					}
-					// If the attribute is "xmlns", we should upgrade the element to an element created using the namespace URI.
-					else if (name === 'xmlns' && !this.nextElement[PropertySymbol.prefix]) {
-						// We only need to create a new instance if it is a known namespace URI.
-						if (NAMESPACE_URIS.includes(value)) {
-							this.nextElement = this.window.document.createElementNS(
-								value,
-								this.nextElement[PropertySymbol.tagName]
-							);
-							this.nextElement[PropertySymbol.attributes] = attributes;
-						} else {
-							this.nextElement[PropertySymbol.namespaceURI] = value;
+
+					// In XML, attributes prefixed with "xmlns:" or named "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
+					const namespaceURI = nameParts[0] === 'xmlns' ? NamespaceURI.xmlns : null;
+
+					if (!attributes.getNamedItemNS(namespaceURI, name)) {
+						const attributeItem = document.createAttributeNS(namespaceURI, name);
+						attributeItem[PropertySymbol.value] = value;
+						attributes[PropertySymbol.setNamedItem](attributeItem);
+
+						// Attributes prefixed with "xmlns:" should be added to the namespace prefix map, so that the prefix can be added as namespaceURI to elements using the prefix.
+						if (attributeItem[PropertySymbol.prefix] === 'xmlns') {
+							namespacePrefix.set(attributeItem[PropertySymbol.localName], value);
+
+							// If the prefix matches the current element, we should set the namespace URI of the element to the value of the attribute.
+							// We don't need to upgrade the element, as there are no defined element types using a prefix.
+							if (
+								this.nextElement[PropertySymbol.prefix] === attributeItem[PropertySymbol.localName]
+							) {
+								this.nextElement[PropertySymbol.namespaceURI] = value;
+							}
 						}
+						// If the attribute is "xmlns", we should upgrade the element to an element created using the namespace URI.
+						else if (name === 'xmlns' && !this.nextElement[PropertySymbol.prefix]) {
+							// We only need to create a new instance if it is a known namespace URI.
+							if (NAMESPACE_URIS.includes(value)) {
+								this.nextElement = this.window.document.createElementNS(
+									value,
+									this.nextElement[PropertySymbol.tagName]
+								);
+								this.nextElement[PropertySymbol.attributes] = attributes;
+								attributes[PropertySymbol.ownerElement] = this.nextElement;
+							} else {
+								this.nextElement[PropertySymbol.namespaceURI] = value;
+							}
+						}
+					} else {
+						this.errorMessage = `Attribute ${name} redefined\n`;
+						this.errorIndex = this.startTagIndex;
+						this.readState = MarkupReadStateEnum.error;
 					}
-				} else {
-					this.errorMessage = `Attribute ${name} redefined`;
-					this.readState = MarkupReadStateEnum.error;
+
+					this.startTagIndex += attributeMatch[0].length;
+				} else if (
+					(attributeMatch[1] && attributeMatch[3] !== '"') ||
+					(attributeMatch[4] && attributeMatch[6] !== "'")
+				) {
+					// End attribute apostrophe is missing (e.g. "attr='value" or 'attr="value').
+					// We should continue to the next end of start tag match.
+					return;
 				}
 
-				this.startTagIndex += attributeMatch[0].length;
-			} else if (
-				(attributeMatch[1] && attributeMatch[3] !== '"') ||
-				(attributeMatch[4] && attributeMatch[6] !== "'")
-			) {
-				// End attribute apostrophe is missing (e.g. "attr='value" or 'attr="value').
-				// We should continue to the next end of start tag match.
-				return;
+				lastIndex = attributeRegexp.lastIndex;
 			}
 
-			lastIndex = attributeRegexp.lastIndex;
-		}
+			const attributeStringEnd = attributeString.substring(lastIndex).replace(SPACE_REGEXP, '');
 
-		// We need to check if the attribute string is read completely as the attribute string can potentially contain "/>" or ">".
-		const tagName = this.nextElement[PropertySymbol.tagName];
+			if (attributeStringEnd.length) {
+				const match = attributeStringEnd.match(ATTRIBUTE_WITHOUT_VALUE_REGEXP);
+				if (match) {
+					this.errorMessage = `Specification mandates value for attribute ${match[1]}\n`;
+					this.errorIndex = this.markupRegExp.lastIndex - 2;
+				} else {
+					this.errorMessage = 'attributes construct error\n';
+					this.errorIndex = this.startTagIndex;
+				}
+				this.readState = MarkupReadStateEnum.error;
+				return;
+			}
+		}
 
 		// Prefixed elements need to have a namespace URI defined by a prefixed "xmlns:" attribute either by a parent or in the current element.
 		if (this.nextElement[PropertySymbol.prefix] && !this.nextElement[PropertySymbol.namespaceURI]) {
 			this.errorMessage = `Namespace prefix ${
 				this.nextElement[PropertySymbol.prefix]
-			} on name is not defined`;
+			} on name is not defined\n`;
+			this.errorIndex = this.lastIndex;
 			this.readState = MarkupReadStateEnum.error;
 			return;
 		}
@@ -454,7 +530,8 @@ export default class XMLParser {
 			this.currentNode === this.rootNode &&
 			this.rootNode[PropertySymbol.elementArray].length !== 0
 		) {
-			this.errorMessage = 'Extra content at the end of the document';
+			this.errorMessage = 'Extra content at the end of the document\n';
+			this.errorIndex = this.lastIndex - this.nextElement[PropertySymbol.tagName].length - 1;
 			this.readState = MarkupReadStateEnum.error;
 			return;
 		}
@@ -466,7 +543,7 @@ export default class XMLParser {
 		if (!isSelfClosed) {
 			this.currentNode = this.nextElement;
 			this.nodeStack.push(this.currentNode);
-			this.tagNameStack.push(tagName);
+			this.tagNameStack.push(this.nextTagName);
 
 			if (
 				this.currentNode[PropertySymbol.namespaceURI] &&
@@ -480,6 +557,8 @@ export default class XMLParser {
 			}
 		}
 
+		this.nextElement = null;
+		this.nextTagName = null;
 		this.readState = MarkupReadStateEnum.startOrEndTag;
 		this.startTagIndex = this.markupRegExp.lastIndex;
 	}
@@ -488,18 +567,18 @@ export default class XMLParser {
 	 * Parses end tag.
 	 *
 	 * @param tagName Tag name.
+	 * @returns True if the end tag was parsed, false otherwise.
 	 */
-	private parseEndTag(tagName: string): void {
+	private parseEndTag(tagName: string): boolean {
 		if (this.tagNameStack[this.tagNameStack.length - 1] === tagName) {
 			this.nodeStack.pop();
 			this.tagNameStack.pop();
 			this.namespacePrefixStack.pop();
 			this.defaultNamespaceStack.pop();
 			this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
-		} else {
-			this.errorMessage = 'Opening and ending tag mismatch';
-			this.readState = MarkupReadStateEnum.error;
+			return true;
 		}
+		return false;
 	}
 
 	/**
@@ -521,13 +600,25 @@ export default class XMLParser {
 			this.rootNode[PropertySymbol.appendChild](documentElement, true);
 		}
 
-		const container = document.createElement('div');
 		const rows = readXML.split('\n');
-		const column = rows[rows.length - 1].length;
+		const column = rows[rows.length - 1].length + 1;
 		const error = `error on line ${rows.length} at column ${column}: ${errorMessage}`;
+		const errorElement = document.createElementNS(NamespaceURI.html, 'parsererror');
 
-		container.innerHTML = `<parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">${error}</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror>`;
-		errorRoot.insertBefore(container[PropertySymbol.elementArray][0], errorRoot.firstChild);
+		errorElement.setAttribute(
+			'style',
+			'display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black'
+		);
+		errorElement.innerHTML = `<h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">${error}</div><h3>Below is a rendering of the page up to the first error.</h3>`;
+
+		errorRoot.insertBefore(errorElement, errorRoot.firstChild);
+
+		// It seems like the browser removes all text nodes in the end of the rendered content.
+		if (this.currentNode && this.currentNode !== this.rootNode) {
+			while (this.currentNode.lastChild?.[PropertySymbol.nodeType] === Node.TEXT_NODE) {
+				this.currentNode.removeChild(this.currentNode.lastChild);
+			}
+		}
 	}
 
 	/**
