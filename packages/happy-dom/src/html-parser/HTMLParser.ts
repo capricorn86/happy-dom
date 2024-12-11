@@ -200,17 +200,10 @@ export default class HTMLParser {
 					} else if (match[2]) {
 						// End tag.
 						this.parseEndTag(match[2]);
-					} else if (
-						match[3] ||
-						match[4] ||
-						(match[6] &&
-							(<Element>this.currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.html)
-					) {
+					} else if (match[3] || match[4]) {
 						// Comment.
 						this.parseComment(
-							match[3] ??
-								(match[4]?.endsWith('--') ? match[4].slice(0, -2) : match[4] ?? null) ??
-								match[6]
+							match[3] ?? (match[4]?.endsWith('--') ? match[4].slice(0, -2) : match[4])
 						);
 					} else if (match[5] !== undefined) {
 						// Document type comment.

@@ -1204,7 +1204,7 @@ export default class Document extends Node {
 	 * @returns Attribute.
 	 */
 	public createAttribute(qualifiedName: string): Attr {
-		return this.createAttributeNS(null, qualifiedName.toLowerCase());
+		return this.createAttributeNS(null, StringUtility.asciiLowerCase(qualifiedName));
 	}
 
 	/**

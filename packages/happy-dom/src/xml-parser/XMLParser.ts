@@ -153,6 +153,7 @@ export default class XMLParser {
 							} line ${xml.substring(0, this.startTagIndex).split(/\n/g).length} and ${match[2]}\n`;
 							this.errorIndex = this.markupRegExp.lastIndex;
 							this.readState = MarkupReadStateEnum.error;
+							this.removeOverflowingTextNodes();
 						}
 					} else if (
 						match[3] ||
@@ -196,6 +197,7 @@ export default class XMLParser {
 								: 'error parsing attribute name\n';
 						this.errorIndex = match.index;
 						this.readState = MarkupReadStateEnum.error;
+						this.removeOverflowingTextNodes();
 					}
 					break;
 				case MarkupReadStateEnum.error:
@@ -211,17 +213,6 @@ export default class XMLParser {
 			return this.rootNode;
 		}
 
-		// Missing end tag.
-		if (this.nodeStack.length !== 1) {
-			this.parseError(
-				xml,
-				this.nextElement
-					? 'attributes construct error'
-					: 'Premature end of data in tag article line 1'
-			);
-			return this.rootNode;
-		}
-
 		// Missing start tag (e.g. when parsing just a string like "Test").
 		if (this.rootNode[PropertySymbol.elementArray].length === 0) {
 			this.parseError('', `Start tag expected, '&lt;' not found`);
@@ -231,6 +222,17 @@ export default class XMLParser {
 		// Plain text after tags.
 		if (this.lastIndex !== xml.length && this.currentNode) {
 			this.parsePlainText(xml.substring(this.lastIndex));
+		}
+
+		// Missing end tag.
+		if (this.nodeStack.length !== 1) {
+			this.parseError(
+				xml,
+				this.nextElement
+					? 'attributes construct error\n'
+					: 'Premature end of data in tag article line 1\n'
+			);
+			return this.rootNode;
 		}
 
 		return this.rootNode;
@@ -269,7 +271,7 @@ export default class XMLParser {
 
 		// When the processing instruction has "xml" as target, we should not add it as a child node.
 		// Instead we will store the state on the root node, so that it is added when serializing the document with XMLSerializer.
-		if (parts[0] === 'xml') {
+		if (parts.length > 1 && parts[0] === 'xml') {
 			if (
 				this.currentNode !== this.rootNode ||
 				this.rootNode[PropertySymbol.elementArray].length !== 0
@@ -290,9 +292,13 @@ export default class XMLParser {
 				),
 				true
 			);
+		} else if (parts.length === 1) {
+			this.errorMessage = 'ParsePI: PI processing-instruction space expected\n';
+			this.errorIndex = this.markupRegExp.lastIndex - 1;
+			this.readState = MarkupReadStateEnum.error;
 		} else {
 			this.errorMessage = 'error parsing processing instruction\n';
-			this.errorIndex = this.lastIndex;
+			this.errorIndex = this.markupRegExp.lastIndex - 1;
 			this.readState = MarkupReadStateEnum.error;
 		}
 	}
@@ -417,6 +423,7 @@ export default class XMLParser {
 						: 'attributes construct error\n';
 					this.errorIndex = this.startTagIndex;
 					this.readState = MarkupReadStateEnum.error;
+					this.removeOverflowingTextNodes();
 					return;
 				}
 
@@ -476,6 +483,9 @@ export default class XMLParser {
 								);
 								this.nextElement[PropertySymbol.attributes] = attributes;
 								attributes[PropertySymbol.ownerElement] = this.nextElement;
+								for (const attr of attributes[PropertySymbol.namedItems].values()) {
+									attr[PropertySymbol.ownerElement] = this.nextElement;
+								}
 							} else {
 								this.nextElement[PropertySymbol.namespaceURI] = value;
 							}
@@ -511,6 +521,7 @@ export default class XMLParser {
 					this.errorIndex = this.startTagIndex;
 				}
 				this.readState = MarkupReadStateEnum.error;
+				this.removeOverflowingTextNodes();
 				return;
 			}
 		}
@@ -612,8 +623,14 @@ export default class XMLParser {
 		errorElement.innerHTML = `<h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">${error}</div><h3>Below is a rendering of the page up to the first error.</h3>`;
 
 		errorRoot.insertBefore(errorElement, errorRoot.firstChild);
+	}
 
-		// It seems like the browser removes all text nodes in the end of the rendered content.
+	/**
+	 * Removes overflowing text nodes in the current node.
+	 *
+	 * This needs to be done for some errors.
+	 */
+	private removeOverflowingTextNodes(): void {
 		if (this.currentNode && this.currentNode !== this.rootNode) {
 			while (this.currentNode.lastChild?.[PropertySymbol.nodeType] === Node.TEXT_NODE) {
 				this.currentNode.removeChild(this.currentNode.lastChild);

@@ -69,6 +69,14 @@ export default class XMLSerializer {
 					innerHTML += this.#serializeToString(node, defaultNamespace, namespacePrefixes);
 				}
 
+				if (
+					defaultNamespace === NamespaceURI.html &&
+					HTMLElementConfig[localName.toLowerCase()]?.contentModel ===
+						HTMLElementConfigContentModelEnum.noDescendants
+				) {
+					return `<${tagName}${attributes} />`;
+				}
+
 				if (!innerHTML && defaultNamespace !== NamespaceURI.html) {
 					return `<${tagName}${attributes}/>`;
 				}
@@ -231,13 +239,6 @@ export default class XMLSerializer {
 					level: Entities.EntityLevel.XML
 				})}"`;
 			}
-		}
-
-		// We should add the "is" attribute if the element was created using the "is" option.
-		if (!namedItems.has('is') && element[PropertySymbol.isValue]) {
-			attributeString += ` is="${Entities.encode(element[PropertySymbol.isValue], {
-				level: Entities.EntityLevel.XML
-			})}"`;
 		}
 
 		return namespaceString + attributeString;

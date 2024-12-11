@@ -22,16 +22,16 @@ describe('XMLParser', () => {
 	});
 
 	describe('parse()', () => {
-		it('Parses HTML with a single <div>.', () => {
+		it('Parses XML with a single <div>.', () => {
 			const result = new XMLParser(window).parse('<div></div>');
 			expect(result.childNodes.length).toBe(1);
 			expect(result.childNodes[0].childNodes.length).toBe(0);
 			expect((<HTMLElement>result.childNodes[0]).tagName).toBe('div');
 		});
 
-		it('Parses HTML with a single <div> with attributes.', () => {
+		it('Parses XML with a single <div> with attributes.', () => {
 			const result = new XMLParser(window).parse(
-				'<div class="class1 class2" id="id" data-no-value></div>'
+				'<div class="class1 class2" id="id" data-no-value=""></div>'
 			);
 			expect(result.childNodes.length).toBe(1);
 			expect(result.childNodes[0].childNodes.length).toBe(0);
@@ -166,7 +166,10 @@ describe('XMLParser', () => {
 		
 	
 </body></html>`;
-			const result = new HTMLParser(window).parse(html);
+			const result = new HTMLParser(window).parse(
+				html,
+				window.document.implementation.createHTMLDocument()
+			);
 			expect(new XMLSerializer().serializeToString(result)).toBe(expected);
 		});
 
@@ -223,7 +226,10 @@ describe('XMLParser', () => {
 	
 </body></html>`;
 
-			const result = new HTMLParser(window).parse(html);
+			const result = new HTMLParser(window).parse(
+				html,
+				window.document.implementation.createHTMLDocument()
+			);
 			const doctype = <DocumentType>result.childNodes[0];
 			expect(doctype.name).toBe('html');
 			expect(doctype.publicId).toBe('-//W3C//DTD HTML 4.01//EN');
@@ -286,7 +292,6 @@ describe('XMLParser', () => {
 
 			expect(new XMLSerializer().serializeToString(result)).toBe(
 				`<html xmlns="http://www.w3.org/1999/xhtml"><body><parsererror style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 1 at column 25: ParsePI: PI processing-instruction space expected
-error on line 2 at column 20: ParsePI: PI processing-instruction never end ...
 </div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></body></html>`
 			);
 		});
@@ -298,8 +303,7 @@ error on line 2 at column 20: ParsePI: PI processing-instruction never end ...
 
 			expect(new XMLSerializer().serializeToString(result)).toBe(
 				`<article><parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 3 at column 13: error parsing attribute name
-</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></article>
-undefined`
+</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></article>`
 			);
 		});
 
@@ -392,7 +396,7 @@ undefined`
 			expect(svg.attributes[2].ownerDocument === document).toBe(true);
 
 			expect(svg.attributes[3].name).toBe('xmlns');
-			expect(svg.attributes[3].value).toBe(NamespaceURI.html);
+			expect(svg.attributes[3].value).toBe(NamespaceURI.svg);
 			expect(svg.attributes[3].namespaceURI).toBe(NamespaceURI.xmlns);
 			expect(svg.attributes[3].specified).toBe(true);
 			expect(svg.attributes[3].ownerElement === svg).toBe(true);
@@ -420,7 +424,7 @@ undefined`
 			expect(svg.attributes['fill'].ownerDocument === document).toBe(true);
 
 			expect(svg.attributes['xmlns'].name).toBe('xmlns');
-			expect(svg.attributes['xmlns'].value).toBe(NamespaceURI.html);
+			expect(svg.attributes['xmlns'].value).toBe(NamespaceURI.svg);
 			expect(svg.attributes['xmlns'].namespaceURI).toBe(NamespaceURI.xmlns);
 			expect(svg.attributes['xmlns'].specified).toBe(true);
 			expect(svg.attributes['xmlns'].ownerElement === svg).toBe(true);
@@ -428,7 +432,6 @@ undefined`
 		});
 
 		it('Parses an SVG with "xmlns" set to HTML.', () => {
-			debugger;
 			const result = new XMLParser(window).parse(
 				`
 				<div>
@@ -448,7 +451,7 @@ undefined`
 
 			expect(new XMLSerializer().serializeToString(result)).toBe(
 				`<div>
-					<svg xmlns="${NamespaceURI.html}" viewBox="0 0 300 100" stroke="red" fill="grey">
+					<svg xmlns="http://www.w3.org/1999/xhtml" viewBox="0 0 300 100" stroke="red" fill="grey">
 						<circle cx="50" cy="50" r="40"></circle>
 						<circle cx="150" cy="50" r="4"></circle>
 					

@@ -685,9 +685,9 @@ export default class Element
 		const namespaceURI = this[PropertySymbol.namespaceURI];
 		// TODO: Is it correct to check for namespaceURI === NamespaceURI.svg?
 		const attribute =
-			namespaceURI === NamespaceURI.svg
-				? this[PropertySymbol.ownerDocument].createAttributeNS(null, name)
-				: this[PropertySymbol.ownerDocument].createAttribute(name);
+			namespaceURI === NamespaceURI.html
+				? this[PropertySymbol.ownerDocument].createAttribute(name)
+				: this[PropertySymbol.ownerDocument].createAttributeNS(null, name);
 		attribute[PropertySymbol.value] = String(value);
 		this[PropertySymbol.attributes].setNamedItem(attribute);
 	}
