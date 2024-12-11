@@ -17,14 +17,13 @@ export default class NamedNodeMapProxyFactory {
 	 */
 	public static createProxy(namedNodeMap: NamedNodeMap): NamedNodeMap {
 		const namedItems = namedNodeMap[PropertySymbol.namedItems];
-		const namespaceItems = namedNodeMap[PropertySymbol.namespaceItems];
 
 		const methodBinder = new ClassMethodBinder(this, [NamedNodeMap]);
 
 		return new Proxy<NamedNodeMap>(namedNodeMap, {
 			get: (target, property) => {
 				if (property === 'length') {
-					return namespaceItems.size;
+					return namedItems.size;
 				}
 				if (property in target || typeof property === 'symbol') {
 					methodBinder.bind(property);
@@ -32,9 +31,9 @@ export default class NamedNodeMapProxyFactory {
 				}
 				const index = Number(property);
 				if (!isNaN(index)) {
-					return Array.from(namespaceItems.values())[index];
+					return Array.from(namedItems.values())[index];
 				}
-				return target.getNamedItem(<string>property) || undefined;
+				return namedItems.get(<string>property) || undefined;
 			},
 			set(target, property, newValue): boolean {
 				methodBinder.bind(property);
@@ -61,7 +60,7 @@ export default class NamedNodeMapProxyFactory {
 			},
 			ownKeys(): string[] {
 				const keys = Array.from(namedItems.keys());
-				for (let i = 0, max = namespaceItems.size; i < max; i++) {
+				for (let i = 0, max = namedItems.size; i < max; i++) {
 					keys.push(String(i));
 				}
 				return keys;
@@ -77,7 +76,7 @@ export default class NamedNodeMapProxyFactory {
 
 				const index = Number(property);
 
-				if (!isNaN(index) && index >= 0 && index < namespaceItems.size) {
+				if (!isNaN(index) && index >= 0 && index < namedItems.size) {
 					return true;
 				}
 
@@ -100,16 +99,16 @@ export default class NamedNodeMapProxyFactory {
 
 				const index = Number(property);
 
-				if (!isNaN(index) && index >= 0 && index < namespaceItems.size) {
+				if (!isNaN(index) && index >= 0 && index < namedItems.size) {
 					return {
-						value: Array.from(namespaceItems.values())[index],
+						value: Array.from(namedItems.values())[index],
 						writable: false,
 						enumerable: true,
 						configurable: true
 					};
 				}
 
-				const namedItem = target.getNamedItem(<string>property);
+				const namedItem = namedItems.get(<string>property);
 
 				if (namedItem) {
 					return {

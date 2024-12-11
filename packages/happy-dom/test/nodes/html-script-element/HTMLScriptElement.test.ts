@@ -329,10 +329,15 @@ describe('HTMLScriptElement', () => {
 			expect(window['test']).toBe('test');
 		});
 
-		it('Evaluates the text content as code when using DOMParser.parseFromString().', () => {
+		it("Doesn't evaluate the text content as code when using DOMParser.parseFromString().", () => {
 			const domParser = new window.DOMParser();
-			domParser.parseFromString('<script>globalThis.test = "test";</script>', 'text/html');
-			expect(window['test']).toBe('test');
+			const result = domParser.parseFromString(
+				'<script>globalThis.test = "test";</script>',
+				'text/html'
+			);
+			expect(window['test']).toBe(undefined);
+			document.body.appendChild(result);
+			expect(window['test']).toBe(undefined);
 		});
 
 		it('Loads and evaluates an external script when "src" attribute has been set, but does not evaluate text content.', () => {

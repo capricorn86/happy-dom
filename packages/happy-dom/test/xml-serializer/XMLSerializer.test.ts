@@ -127,127 +127,7 @@ describe('XMLSerializer', () => {
 			document.body.appendChild(div);
 
 			expect(xmlSerializer.serializeToString(div)).toBe(
-				'<div><custom-element attr1="value1" attr2="value2" attr3=""></custom-element></div>'
-			);
-		});
-
-		it('Includes shadow roots of custom elements when "allShadowRoots" is set as an option.', () => {
-			const div = document.createElement('div');
-			const customElement1 = document.createElement('custom-element');
-
-			CustomElement.shadowRootMode = 'closed';
-
-			const customElement2 = document.createElement('custom-element');
-
-			customElement1.setAttribute('key1', 'value1');
-			customElement1.setAttribute('key2', 'value2');
-			customElement1.innerHTML = '<span>Slotted content</span>';
-
-			customElement2.setAttribute('key1', 'value4');
-			customElement2.setAttribute('key2', 'value5');
-
-			div.appendChild(customElement1);
-			div.appendChild(customElement2);
-
-			// Connects the custom element to DOM which will trigger connectedCallback() on it
-			document.body.appendChild(div);
-
-			const xmlSerializer = new XMLSerializer();
-
-			xmlSerializer[PropertySymbol.options].allShadowRoots = true;
-
-			expect(xmlSerializer.serializeToString(div).replace(/[\s]/gm, '')).toBe(
-				`
-					<div>
-						<custom-element key1="value1" key2="value2">
-							<template shadowrootmode="open">
-								<style>
-									:host {
-										display: block;
-                                        font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
-									}
-									span {
-										color: pink;
-									}
-									.propKey {
-										color: yellow;
-									}
-								</style>
-								<div>
-									<span class="propKey">
-										key1 is "value1" and key2 is "value2".
-									</span>
-									<span class="children">
-                                        #1SPANSlottedcontent
-									</span>
-									<span><slot></slot></span>
-								</div>
-							</template>
-							<span>Slotted content</span>
-						</custom-element>
-						<custom-element key1="value4" key2="value5"></custom-element>
-					</div>`.replace(/[\s]/gm, '')
-			);
-		});
-
-		it('Renders the code from the documentation for server-side rendering as expected.', () => {
-			document.write(`
-                <html>
-                    <head>
-                         <title>Test page</title>
-                    </head>
-                    <body>
-                        <div>
-                            <my-custom-element>
-                                <span>Slotted content</span>
-                            </my-custom-element>
-                        </div>
-                        <script>
-                            class MyCustomElement extends HTMLElement {
-                                constructor() {
-                                    super();
-                                    this.attachShadow({ mode: 'open' });
-                                }
-            
-                                connectedCallback() {
-                                    this.shadowRoot.innerHTML = \`
-                                        <style>
-                                            :host {
-                                                display: inline-block;
-                                                background: red;
-                                            }
-                                        </style>
-                                        <div><slot></slot></div>
-                                    \`;
-                                }
-                            }
-            
-                            customElements.define('my-custom-element', MyCustomElement);
-                        </script>
-                    </body>
-                </html>
-            `);
-
-			expect(
-				document.body
-					.querySelector('div')
-					?.getInnerHTML({ includeShadowRoots: true })
-					.replace(/\s/gm, '')
-			).toBe(
-				`
-            <my-custom-element>
-                <template shadowrootmode="open">
-                    <style>
-                        :host {
-                            display: inline-block;
-                            background: red;
-                        }
-                    </style>
-                    <div><slot></slot></div>
-                </template>
-                <span>Slotted content</span>
-            </my-custom-element>
-            `.replace(/\s/gm, '')
+				'<div xmlns="http://www.w3.org/1999/xhtml"><custom-element attr1="value1" attr2="value2" attr3=""></custom-element></div>'
 			);
 		});
 
@@ -259,28 +139,25 @@ describe('XMLSerializer', () => {
 			div.setAttribute('attr3', '');
 
 			expect(xmlSerializer.serializeToString(div)).toBe(
-				'<div attr1="Hello ⁨John⁩" attr2="<span> test" attr3=""></div>'
+				'<div xmlns="http://www.w3.org/1999/xhtml" attr1="Hello ⁨John⁩" attr2="&lt;span&gt; test" attr3=""></div>'
 			);
 		});
 
-		it('Serializes the is value.', () => {
+		it('Doesn\'t serialize the "is" value.', () => {
 			const div = document.createElement('div', { is: 'custom-element' });
 
-			expect(xmlSerializer.serializeToString(div)).toBe('<div is="custom-element"></div>');
-		});
-
-		it('Ignores the is value if the is attribute is present.', () => {
-			const div = document.createElement('div', { is: 'custom-element' });
-			div.setAttribute('is', 'custom-replacement');
-
-			expect(xmlSerializer.serializeToString(div)).toBe('<div is="custom-replacement"></div>');
+			expect(xmlSerializer.serializeToString(div)).toBe(
+				'<div xmlns="http://www.w3.org/1999/xhtml"></div>'
+			);
 		});
 
 		it('Serializes text content.', () => {
 			const div = document.createElement('div');
 
 			div.innerText = '<b>a</b>';
-			expect(xmlSerializer.serializeToString(div)).toBe('<div>&lt;b&gt;a&lt;/b&gt;</div>');
+			expect(xmlSerializer.serializeToString(div)).toBe(
+				'<div xmlns="http://www.w3.org/1999/xhtml">&lt;b&gt;a&lt;/b&gt;</div>'
+			);
 		});
 
 		it('Serializes attributes to prevent injection attacks.', () => {
@@ -292,13 +169,13 @@ describe('XMLSerializer', () => {
 			a.textContent = "I'm a link!";
 
 			expect(xmlSerializer.serializeToString(a)).toBe(
-				`<a href="https://example.com&quot; style=&quot;font-size: 500%;">I'm a link!</a>`
+				`<a xmlns="http://www.w3.org/1999/xhtml" href="https://example.com&quot; style=&quot;font-size: 500%;">I'm a link!</a>`
 			);
 
 			document.body.innerHTML = `<a href="https://www.com/" style="background-image: url(&quot;https://cdn.cookie.org/image.svg&quot;);"></a>`;
 
-			expect(document.body.innerHTML).toBe(
-				`<a href="https://www.com/" style="background-image: url(&quot;https://cdn.cookie.org/image.svg&quot;);"></a>`
+			expect(xmlSerializer.serializeToString(document.body)).toBe(
+				`<body xmlns="http://www.w3.org/1999/xhtml"><a href="https://www.com/" style="background-image: url(&quot;https://cdn.cookie.org/image.svg&quot;);"></a></body>`
 			);
 		});
 	});
