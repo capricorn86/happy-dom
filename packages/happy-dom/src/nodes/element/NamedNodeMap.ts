@@ -4,7 +4,7 @@ import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import Element from './Element.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
-import StringUtility from '../../StringUtility.js';
+import StringUtility from '../../utilities/StringUtility.js';
 
 /**
  * Named Node Map.

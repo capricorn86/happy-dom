@@ -11,7 +11,7 @@ import HTMLCollection from '../element/HTMLCollection.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import NodeList from '../node/NodeList.js';
-import ClassMethodBinder from '../../ClassMethodBinder.js';
+import ClassMethodBinder from '../../utilities/ClassMethodBinder.js';
 import Node from '../node/Node.js';
 import Element from '../element/Element.js';
 import EventTarget from '../../event/EventTarget.js';

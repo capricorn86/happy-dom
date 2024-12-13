@@ -1,5 +1,4 @@
 import XMLParser from '../../src/xml-parser/XMLParser.js';
-import HTMLParser from '../../src/html-parser/HTMLParser.js';
 import Window from '../../src/window/Window.js';
 import Document from '../../src/nodes/document/Document.js';
 import HTMLElement from '../../src/nodes/html-element/HTMLElement.js';
@@ -112,129 +111,6 @@ describe('XMLParser', () => {
 			expect(
 				(<HTMLElement>result.childNodes[0]).attributes['data-no-value'].ownerDocument === document
 			).toBe(true);
-		});
-
-		it('Parses an entire HTML page.', () => {
-			const html = `
-	<!DOCTYPE html>
-	<html>
-		<head>
-			<title>Title</title>
-		</head>
-		<body>
-			<div class="class1 class2" id="id">
-				<!--Comment 1!-->
-				<?processing instruction?>
-				<?processing-instruction>
-				<!Exclamation mark comment>
-				<b>Bold</b>
-				<!-- Comment 2 !-->
-				<span>Span</span>
-                <!>
-			</div>
-			<article class="class1 class2" id="id">
-				<!-- Comment 1 !-->
-				<b>Bold</b>
-				<!-- Comment 2 !-->
-			</article>
-			<img>
-			<img />
-		</body>
-	</html>
-`;
-			const expected = `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head>
-			<title>Title</title>
-		</head>
-		<body>
-			<div class="class1 class2" id="id">
-				<!--Comment 1!-->
-				<!--?processing instruction?-->
-				<!--?processing-instruction-->
-				<!--Exclamation mark comment-->
-				<b>Bold</b>
-				<!-- Comment 2 !-->
-				<span>Span</span>
-                <!---->
-			</div>
-			<article class="class1 class2" id="id">
-				<!-- Comment 1 !-->
-				<b>Bold</b>
-				<!-- Comment 2 !-->
-			</article>
-			<img />
-			<img />
-		
-	
-</body></html>`;
-			const result = new HTMLParser(window).parse(
-				html,
-				window.document.implementation.createHTMLDocument()
-			);
-			expect(new XMLSerializer().serializeToString(result)).toBe(expected);
-		});
-
-		it('Parses a page with document type set to "HTML 4.01".', () => {
-			const html = `
-	<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-	<html>
-		<head>
-			<title>Title</title>
-		</head>
-		<body>
-			<div class="class1 class2" id="id">
-				<!--Comment 1!-->
-				<?processing instruction?>
-				<?processing-instruction>
-				<!Exclamation mark comment>
-				<b>Bold</b>
-				<!-- Comment 2 !-->
-				<span>Span</span>
-                <!>
-			</div>
-			<article class="class1 class2" id="id">
-				<!-- Comment 1 !-->
-				<b>Bold</b>
-				<!-- Comment 2 !-->
-			</article>
-			<img>
-			<img />
-		</body>
-	</html>
-`;
-			const expected = `<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head>
-			<title>Title</title>
-		</head>
-		<body>
-			<div class="class1 class2" id="id">
-				<!--Comment 1!-->
-				<!--?processing instruction?-->
-				<!--?processing-instruction-->
-				<!--Exclamation mark comment-->
-				<b>Bold</b>
-				<!-- Comment 2 !-->
-				<span>Span</span>
-                <!---->
-			</div>
-			<article class="class1 class2" id="id">
-				<!-- Comment 1 !-->
-				<b>Bold</b>
-				<!-- Comment 2 !-->
-			</article>
-			<img />
-			<img />
-		
-	
-</body></html>`;
-
-			const result = new HTMLParser(window).parse(
-				html,
-				window.document.implementation.createHTMLDocument()
-			);
-			const doctype = <DocumentType>result.childNodes[0];
-			expect(doctype.name).toBe('html');
-			expect(doctype.publicId).toBe('-//W3C//DTD HTML 4.01//EN');
-			expect(doctype.systemId).toBe('http://www.w3.org/TR/html4/strict.dtd');
-			expect(new XMLSerializer().serializeToString(result)).toBe(expected);
 		});
 
 		it("Doesn't use the config for unnestable elements when there are siblings.", () => {
@@ -934,16 +810,16 @@ part2" data-testid="button"
                 </div>`
 			);
 
-			expect(result.childNodes.length).toBe(2);
-			expect((<ProcessingInstruction>result.childNodes[0]).target).toBe('custom');
-			expect((<ProcessingInstruction>result.childNodes[0]).textContent).toBe('data="test"');
-			expect((<Element>result.childNodes[1]).tagName).toBe('div');
-
 			expect(new XMLSerializer().serializeToString(result)).toBe(
 				`<?custom data="test"?><div>
                     <div>Test</div>
                 </div>`
 			);
+
+			expect(result.childNodes.length).toBe(2);
+			expect((<ProcessingInstruction>result.childNodes[0]).target).toBe('custom');
+			expect((<ProcessingInstruction>result.childNodes[0]).textContent).toBe('data="test"');
+			expect((<Element>result.childNodes[1]).tagName).toBe('div');
 		});
 
 		it('Handles namespaced XML', () => {
@@ -1045,6 +921,8 @@ part2" data-testid="button"
                 </root>`
 			);
 
+			expect(result.children[0].constructor.name).toBe('Element');
+
 			expect(result.children[0].namespaceURI).toBe('http://www.example.com');
 			expect(result.children[0].attributes[0].namespaceURI).toBe(NamespaceURI.xmlns);
 			expect(result.children[0].attributes[0].name).toBe('xmlns');
@@ -1100,6 +978,34 @@ part2" data-testid="button"
 
 			expect(result.children[0].children[0].children[5].children[0].namespaceURI).toBe(
 				'http://www.other.com'
+			);
+		});
+
+		it('Outputs error for "xml" processing instructions not at the start of the document', () => {
+			const result = new XMLParser(window).parse(
+				`<div>
+                    <?xml version="1.0" encoding="UTF-8"?>
+                    <div>Test</div>
+                </div>`
+			);
+
+			expect(new XMLSerializer().serializeToString(result)).toBe(
+				`<div><parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 2 at column 26: XML declaration allowed only at the start of the document
+</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></div>`
+			);
+		});
+
+		it('Outputs error for "xml" processing instruction without version attribute', () => {
+			const result = new XMLParser(window).parse(
+				`<?xml encoding="UTF-8"?>
+                <div>
+                    <div>Test</div>
+                </div>`
+			);
+
+			expect(new XMLSerializer().serializeToString(result)).toBe(
+				`<html xmlns="http://www.w3.org/1999/xhtml"><body><parsererror style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 1 at column 7: Malformed declaration expecting version
+</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></body></html>`
 			);
 		});
 	});

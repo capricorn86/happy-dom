@@ -4,12 +4,12 @@ import Node from '../nodes/node/Node.js';
 import DocumentType from '../nodes/document-type/DocumentType.js';
 import HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
-import * as Entities from 'entities';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import HTMLElementConfig from '../config/HTMLElementConfig.js';
 import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigContentModelEnum.js';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction.js';
 import NamespaceURI from '../config/NamespaceURI.js';
+import XMLEncodeUtility from '../utilities/XMLEncodeUtility.js';
 
 /**
  * Serializes a node into XML.
@@ -47,13 +47,11 @@ export default class XMLSerializer {
 
 				let innerHTML = '';
 
-				const childNodes =
-					localName === 'template'
-						? (<DocumentFragment>(<HTMLTemplateElement>root).content)[PropertySymbol.nodeArray]
-						: (<DocumentFragment>root)[PropertySymbol.nodeArray];
-
 				const namespacePrefixes = this.#getNamespacePrefixes(element, inheritedNamespacePrefixes);
-				const elementPrefix = this.#getElementPrefix(element, namespacePrefixes);
+				const elementPrefix =
+					element[PropertySymbol.namespaceURI] === NamespaceURI.html
+						? element[PropertySymbol.prefix]
+						: this.#getElementPrefix(element, namespacePrefixes);
 				const tagName = `${elementPrefix ? elementPrefix + ':' : ''}${localName}`;
 				const defaultNamespace = elementPrefix
 					? inheritedDefaultNamespace
@@ -65,11 +63,17 @@ export default class XMLSerializer {
 					inheritedNamespacePrefixes
 				);
 
+				const childNodes =
+					defaultNamespace === NamespaceURI.html && localName === 'template'
+						? (<DocumentFragment>(<HTMLTemplateElement>root).content)[PropertySymbol.nodeArray]
+						: (<DocumentFragment>root)[PropertySymbol.nodeArray];
+
 				for (const node of childNodes) {
 					innerHTML += this.#serializeToString(node, defaultNamespace, namespacePrefixes);
 				}
 
 				if (
+					!innerHTML &&
 					defaultNamespace === NamespaceURI.html &&
 					HTMLElementConfig[localName.toLowerCase()]?.contentModel ===
 						HTMLElementConfigContentModelEnum.noDescendants
@@ -107,7 +111,7 @@ export default class XMLSerializer {
 						return root.textContent;
 					}
 				}
-				return Entities.escapeText(root.textContent);
+				return XMLEncodeUtility.encodeTextContent(root.textContent);
 			case NodeTypeEnum.documentTypeNode:
 				const doctype = <DocumentType>root;
 				const identifier = doctype.publicId ? ' PUBLIC' : doctype.systemId ? ' SYSTEM' : '';
@@ -208,36 +212,56 @@ export default class XMLSerializer {
 		const handledNamespaces = new Set();
 
 		for (const attribute of namedItems.values()) {
-			const escapedValue = Entities.encode(attribute[PropertySymbol.value], {
-				level: Entities.EntityLevel.XML
-			});
-
 			// Namespace attributes should be in the beginning of the string.
 			if (attribute[PropertySymbol.namespaceURI] === NamespaceURI.xmlns) {
-				namespaceString += ` ${attribute[PropertySymbol.name]}="${escapedValue}"`;
-				handledNamespaces.add(attribute[PropertySymbol.value]);
+				if (
+					elementPrefix &&
+					attribute[PropertySymbol.localName] === elementPrefix &&
+					element[PropertySymbol.namespaceURI]
+				) {
+					namespaceString += ` xmlns:${elementPrefix}="${XMLEncodeUtility.encodeAttributeValue(
+						element[PropertySymbol.namespaceURI]
+					)}"`;
+					handledNamespaces.add(element[PropertySymbol.namespaceURI]);
+				} else if (
+					!elementPrefix &&
+					attribute[PropertySymbol.name] === 'xmlns' &&
+					element[PropertySymbol.namespaceURI]
+				) {
+					namespaceString += ` xmlns="${XMLEncodeUtility.encodeAttributeValue(
+						element[PropertySymbol.namespaceURI]
+					)}"`;
+					handledNamespaces.add(element[PropertySymbol.namespaceURI]);
+				} else {
+					namespaceString += ` ${
+						attribute[PropertySymbol.name]
+					}="${XMLEncodeUtility.encodeAttributeValue(attribute[PropertySymbol.value])}"`;
+					handledNamespaces.add(attribute[PropertySymbol.value]);
+				}
 			} else {
-				attributeString += ` ${attribute[PropertySymbol.name]}="${escapedValue}"`;
+				attributeString += ` ${
+					attribute[PropertySymbol.name]
+				}="${XMLEncodeUtility.encodeAttributeValue(attribute[PropertySymbol.value])}"`;
 			}
 		}
 
 		// We should add the namespace as an attribute if it has not been added yet.
 		if (
 			element[PropertySymbol.namespaceURI] &&
+			inheritedDefaultNamespace !== element[PropertySymbol.namespaceURI] &&
 			!handledNamespaces.has(element[PropertySymbol.namespaceURI])
 		) {
 			if (elementPrefix && !inheritedNamespacePrefixes.has(element[PropertySymbol.namespaceURI])) {
-				namespaceString += ` xmlns:${elementPrefix}="${Entities.encode(
-					element[PropertySymbol.namespaceURI],
-					{ level: Entities.EntityLevel.XML }
+				namespaceString += ` xmlns:${elementPrefix}="${XMLEncodeUtility.encodeAttributeValue(
+					element[PropertySymbol.namespaceURI]
 				)}"`;
 			} else if (
 				!elementPrefix &&
 				inheritedDefaultNamespace !== element[PropertySymbol.namespaceURI]
 			) {
-				namespaceString += ` xmlns="${Entities.encode(element[PropertySymbol.namespaceURI], {
-					level: Entities.EntityLevel.XML
-				})}"`;
+				namespaceString += ` xmlns="${XMLEncodeUtility.encodeAttributeValue(
+					element[PropertySymbol.namespaceURI]
+				)}"`;
 			}
 		}
 

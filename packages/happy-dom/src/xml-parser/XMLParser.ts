@@ -2,9 +2,9 @@ import * as PropertySymbol from '../PropertySymbol.js';
 import NamespaceURI from '../config/NamespaceURI.js';
 import Element from '../nodes/element/Element.js';
 import Node from '../nodes/node/Node.js';
-import * as Entities from 'entities';
 import BrowserWindow from '../window/BrowserWindow.js';
 import XMLDocument from '../nodes/xml-document/XMLDocument.js';
+import XMLEncodeUtility from '../utilities/XMLEncodeUtility.js';
 
 /**
  * Markup RegExp.
@@ -39,6 +39,11 @@ const ATTRIBUTE_REGEXP =
  * Attribute without value RegExp.
  */
 const ATTRIBUTE_WITHOUT_VALUE_REGEXP = /^\s*([a-zA-Z0-9-_:]+)$/;
+
+/**
+ * XML processing instruction version RegExp.
+ */
+const XML_PROCESSING_INSTRUCTION_VERSION_REGEXP = /version="[^"]+"/;
 
 /**
  * Document type attribute RegExp.
@@ -150,7 +155,7 @@ export default class XMLParser {
 						if (!this.parseEndTag(match[2])) {
 							this.errorMessage = `Opening and ending tag mismatch: ${
 								this.tagNameStack[this.tagNameStack.length - 1]
-							} line ${xml.substring(0, this.startTagIndex).split(/\n/g).length} and ${match[2]}\n`;
+							} line ${xml.substring(0, this.startTagIndex).split('\n').length} and ${match[2]}\n`;
 							this.errorIndex = this.markupRegExp.lastIndex;
 							this.readState = MarkupReadStateEnum.error;
 							this.removeOverflowingTextNodes();
@@ -255,7 +260,7 @@ export default class XMLParser {
 			}
 		} else {
 			this.currentNode[PropertySymbol.appendChild](
-				document.createTextNode(Entities.decodeHTML(text)),
+				document.createTextNode(XMLEncodeUtility.decodeTextContent(text)),
 				true
 			);
 		}
@@ -267,39 +272,51 @@ export default class XMLParser {
 	 * @param text Text.
 	 */
 	private parseProcessingInstruction(text: string): void {
-		const parts = text.split(' ');
+		const parts = text.split(SPACE_REGEXP);
+		const endsWithQuestionMark = text[text.length - 1] === '?';
 
-		// When the processing instruction has "xml" as target, we should not add it as a child node.
-		// Instead we will store the state on the root node, so that it is added when serializing the document with XMLSerializer.
-		if (parts.length > 1 && parts[0] === 'xml') {
+		if (parts[0] === 'xml') {
 			if (
 				this.currentNode !== this.rootNode ||
-				this.rootNode[PropertySymbol.elementArray].length !== 0
+				this.rootNode[PropertySymbol.nodeArray].length !== 0 ||
+				parts.length === 1
 			) {
 				this.errorMessage = 'XML declaration allowed only at the start of the document\n';
-				this.errorIndex = this.lastIndex;
+				this.errorIndex = this.markupRegExp.lastIndex - text.length + 2;
+				this.readState = MarkupReadStateEnum.error;
+				this.removeOverflowingTextNodes();
+			} else if (!XML_PROCESSING_INSTRUCTION_VERSION_REGEXP.test(parts[1])) {
+				this.errorMessage = 'Malformed declaration expecting version\n';
+				this.errorIndex = this.markupRegExp.lastIndex - text.length + 3;
+				this.readState = MarkupReadStateEnum.error;
+			} else if (!endsWithQuestionMark) {
+				this.errorMessage = 'Blank needed here\n';
+				this.errorIndex = this.markupRegExp.lastIndex - 1;
 				this.readState = MarkupReadStateEnum.error;
 			} else {
+				// When the processing instruction has "xml" as target, we should not add it as a child node.
+				// Instead we will store the state on the root node, so that it is added when serializing the document with XMLSerializer.
+				// TODO: We need to handle validation of version and encoding.
 				this.rootNode[PropertySymbol.hasXMLProcessingInstruction] = true;
 			}
-		} else if (parts.length > 1) {
-			const name = parts[0];
-			const content = parts.slice(1).join(' ');
-			this.currentNode[PropertySymbol.appendChild](
-				this.window.document.createProcessingInstruction(
-					name,
-					content.endsWith('?') ? content.slice(0, -1) : content
-				),
-				true
-			);
-		} else if (parts.length === 1) {
-			this.errorMessage = 'ParsePI: PI processing-instruction space expected\n';
-			this.errorIndex = this.markupRegExp.lastIndex - 1;
-			this.readState = MarkupReadStateEnum.error;
 		} else {
-			this.errorMessage = 'error parsing processing instruction\n';
-			this.errorIndex = this.markupRegExp.lastIndex - 1;
-			this.readState = MarkupReadStateEnum.error;
+			if (parts.length === 1 && !endsWithQuestionMark) {
+				this.errorMessage = 'ParsePI: PI processing-instruction space expected\n';
+				this.errorIndex = this.markupRegExp.lastIndex - 1;
+				this.readState = MarkupReadStateEnum.error;
+			} else if (parts.length > 1 && !endsWithQuestionMark) {
+				this.errorMessage = 'ParsePI: PI processing-instruction never end ...\n';
+				this.errorIndex = this.markupRegExp.lastIndex - 1;
+				this.readState = MarkupReadStateEnum.error;
+			} else {
+				const name = parts[0];
+				// We need to remove the ending "?".
+				const content = parts.slice(1).join(' ').slice(0, -1);
+				this.currentNode[PropertySymbol.appendChild](
+					this.window.document.createProcessingInstruction(name, content),
+					true
+				);
+			}
 		}
 	}
 
@@ -314,7 +331,7 @@ export default class XMLParser {
 		// Comments are not allowed in the root when parsing XML.
 		if (this.currentNode !== this.rootNode) {
 			this.currentNode[PropertySymbol.appendChild](
-				document.createComment(Entities.decodeHTML(comment)),
+				document.createComment(XMLEncodeUtility.decodeTextContent(comment)),
 				true
 			);
 		}
@@ -330,8 +347,7 @@ export default class XMLParser {
 			this.currentNode === this.rootNode &&
 			this.rootNode[PropertySymbol.nodeArray].length === 0
 		) {
-			const decodedText = Entities.decodeHTML(text);
-			const documentType = this.getDocumentType(decodedText);
+			const documentType = this.getDocumentType(XMLEncodeUtility.decodeTextContent(text));
 
 			if (documentType?.name) {
 				this.rootNode[PropertySymbol.appendChild](
@@ -437,7 +453,7 @@ export default class XMLParser {
 
 					// In XML, new line characters should be replaced with a space.
 					const value = rawValue
-						? Entities.decodeHTMLAttribute(rawValue.replace(NEW_LINE_REGEXP, ' '))
+						? XMLEncodeUtility.decodeAttributeValue(rawValue.replace(NEW_LINE_REGEXP, ' '))
 						: '';
 					const attributes = this.nextElement[PropertySymbol.attributes];
 					const nameParts = name.split(':');
@@ -649,7 +665,7 @@ export default class XMLParser {
 			return null;
 		}
 
-		const docTypeSplit = value.split(' ');
+		const docTypeSplit = value.split(SPACE_REGEXP);
 
 		if (docTypeSplit.length <= 1) {
 			return null;

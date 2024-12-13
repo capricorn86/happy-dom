@@ -48,7 +48,7 @@ import HTMLTitleElement from '../html-title-element/HTMLTitleElement.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import NodeFactory from '../NodeFactory.js';
 import SVGElementConfig from '../../config/SVGElementConfig.js';
-import StringUtility from '../../StringUtility.js';
+import StringUtility from '../../utilities/StringUtility.js';
 import HTMLParser from '../../html-parser/HTMLParser.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;

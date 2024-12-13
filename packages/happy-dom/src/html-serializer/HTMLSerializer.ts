@@ -5,11 +5,11 @@ import DocumentType from '../nodes/document-type/DocumentType.js';
 import HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction.js';
-import * as Entities from 'entities';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
 import HTMLElementConfig from '../config/HTMLElementConfig.js';
 import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigContentModelEnum.js';
+import XMLEncodeUtility from '../utilities/XMLEncodeUtility.js';
 
 /**
  * Serializes a node into HTML.
@@ -63,11 +63,13 @@ export default class HTMLSerializer {
 		switch (root[PropertySymbol.nodeType]) {
 			case NodeTypeEnum.elementNode:
 				const element = <Element>root;
+				const prefix = element[PropertySymbol.prefix];
 				const localName = element[PropertySymbol.localName];
 				const config = HTMLElementConfig[element[PropertySymbol.localName]];
+				const tagName = prefix ? `${prefix}:${localName}` : localName;
 
 				if (config?.contentModel === HTMLElementConfigContentModelEnum.noDescendants) {
-					return `<${localName}${this.getAttributes(element)}>`;
+					return `<${tagName}${this.getAttributes(element)}>`;
 				}
 
 				let innerHTML = '';
@@ -92,7 +94,7 @@ export default class HTMLSerializer {
 				}
 
 				const childNodes =
-					localName === 'template'
+					tagName === 'template'
 						? (<DocumentFragment>(<HTMLTemplateElement>root).content)[PropertySymbol.nodeArray]
 						: (<DocumentFragment>root)[PropertySymbol.nodeArray];
 
@@ -100,7 +102,7 @@ export default class HTMLSerializer {
 					innerHTML += this.serializeToString(node);
 				}
 
-				return `<${localName}${this.getAttributes(element)}>${innerHTML}</${localName}>`;
+				return `<${tagName}${this.getAttributes(element)}>${innerHTML}</${tagName}>`;
 			case Node.DOCUMENT_FRAGMENT_NODE:
 			case Node.DOCUMENT_NODE:
 				let html = '';
@@ -120,7 +122,7 @@ export default class HTMLSerializer {
 						return root.textContent;
 					}
 				}
-				return Entities.escapeText(root.textContent);
+				return XMLEncodeUtility.encodeTextContent(root.textContent);
 			case NodeTypeEnum.documentTypeNode:
 				const doctype = <DocumentType>root;
 				const identifier = doctype.publicId ? ' PUBLIC' : doctype.systemId ? ' SYSTEM' : '';
@@ -144,11 +146,12 @@ export default class HTMLSerializer {
 		const namedItems = (<Element>element)[PropertySymbol.attributes][PropertySymbol.namedItems];
 
 		if (!namedItems.has('is') && element[PropertySymbol.isValue]) {
-			attributeString += ' is="' + Entities.escapeAttribute(element[PropertySymbol.isValue]) + '"';
+			attributeString +=
+				' is="' + XMLEncodeUtility.encodeAttributeValue(element[PropertySymbol.isValue]) + '"';
 		}
 
 		for (const attribute of namedItems.values()) {
-			const escapedValue = Entities.escapeAttribute(attribute[PropertySymbol.value]);
+			const escapedValue = XMLEncodeUtility.encodeAttributeValue(attribute[PropertySymbol.value]);
 			attributeString += ' ' + attribute[PropertySymbol.name] + '="' + escapedValue + '"';
 		}
 

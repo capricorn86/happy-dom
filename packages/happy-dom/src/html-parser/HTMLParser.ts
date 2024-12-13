@@ -7,15 +7,15 @@ import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement.js';
 import Node from '../nodes/node/Node.js';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import HTMLElementConfig from '../config/HTMLElementConfig.js';
-import * as Entities from 'entities';
 import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigContentModelEnum.js';
 import SVGElementConfig from '../config/SVGElementConfig.js';
-import StringUtility from '../StringUtility.js';
+import StringUtility from '../utilities/StringUtility.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import DocumentType from '../nodes/document-type/DocumentType.js';
 import HTMLHeadElement from '../nodes/html-head-element/HTMLHeadElement.js';
 import HTMLBodyElement from '../nodes/html-body-element/HTMLBodyElement.js';
 import HTMLHtmlElement from '../nodes/html-html-element/HTMLHtmlElement.js';
+import XMLEncodeUtility from '../utilities/XMLEncodeUtility.js';
 
 /**
  * Markup RegExp.
@@ -54,6 +54,11 @@ const ATTRIBUTE_REGEXP =
  * Group 1: Attribute value.
  */
 const DOCUMENT_TYPE_ATTRIBUTE_REGEXP = /"([^"]+)"/gm;
+
+/**
+ * Space RegExp.
+ */
+const SPACE_REGEXP = /\s+/;
 
 /**
  * Space in the beginning of string RegExp.
@@ -235,7 +240,6 @@ export default class HTMLParser {
 							// If "nextElement" is set to null, the tag is not allowed (<html>, <head> and <body> are not allowed in an HTML fragment or to be nested).
 							this.currentNode = this.rootNode;
 							this.readState = MarkupReadStateEnum.startOrEndTag;
-							this.startTagIndex = this.markupRegExp.lastIndex;
 						}
 					}
 					break;
@@ -283,7 +287,7 @@ export default class HTMLParser {
 					: text;
 
 			if (htmlText) {
-				const textNode = document.createTextNode(Entities.decodeHTML(htmlText));
+				const textNode = document.createTextNode(XMLEncodeUtility.decodeTextContent(htmlText));
 				if (
 					this.currentNode === head &&
 					level === HTMLDocumentStructureLevelEnum.additionalHeadWithoutBody
@@ -306,7 +310,7 @@ export default class HTMLParser {
 				}
 			}
 		} else {
-			const textNode = document.createTextNode(Entities.decodeHTML(text));
+			const textNode = document.createTextNode(XMLEncodeUtility.decodeTextContent(text));
 			this.currentNode[PropertySymbol.appendChild](textNode, true);
 		}
 	}
@@ -339,11 +343,11 @@ export default class HTMLParser {
 					const name =
 						attributeMatch[1] || attributeMatch[3] || attributeMatch[6] || attributeMatch[9] || '';
 					const rawValue = attributeMatch[2] || attributeMatch[4] || attributeMatch[7] || '';
-					const value = rawValue ? Entities.decodeHTMLAttribute(rawValue) : '';
+					const value = rawValue ? XMLEncodeUtility.decodeAttributeValue(rawValue) : '';
 					const attributes = this.nextElement[PropertySymbol.attributes];
 
 					if (this.nextElement[PropertySymbol.namespaceURI] === NamespaceURI.svg) {
-						// In the SVG namespaces (when not parsing as XML), the attribute "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
+						// In the SVG namespace, the attribute "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
 						const namespaceURI = name === 'xmlns' ? NamespaceURI.xmlns : null;
 
 						if (!attributes.getNamedItemNS(namespaceURI, name)) {
@@ -452,6 +456,8 @@ export default class HTMLParser {
 					? MarkupReadStateEnum.plainTextContent
 					: MarkupReadStateEnum.startOrEndTag;
 		}
+
+		this.startTagIndex = this.markupRegExp.lastIndex;
 	}
 
 	/**
@@ -460,9 +466,14 @@ export default class HTMLParser {
 	 * @param tagName Tag name.
 	 */
 	private parseEndTag(tagName: string): void {
-		// We close all tags up until the first tag that matches the end tag.
-		const index = this.tagNameStack.lastIndexOf(StringUtility.asciiUpperCase(tagName));
+		// SVG elements are case-sensitive.
+		const name =
+			this.currentNode[PropertySymbol.namespaceURI] === NamespaceURI.html
+				? StringUtility.asciiUpperCase(tagName)
+				: SVGElementConfig[StringUtility.asciiLowerCase(tagName)]?.localName || tagName;
+		const index = this.tagNameStack.lastIndexOf(name);
 
+		// We close all tags up until the first tag that matches the end tag.
 		if (index !== -1) {
 			this.nodeStack.splice(index, this.nodeStack.length - index);
 			this.tagNameStack.splice(index, this.tagNameStack.length - index);
@@ -477,7 +488,7 @@ export default class HTMLParser {
 	 */
 	private parseComment(comment: string): void {
 		const document = this.window.document;
-		const commentNode = document.createComment(Entities.decodeHTML(comment));
+		const commentNode = document.createComment(XMLEncodeUtility.decodeTextContent(comment));
 
 		if (this.documentStructure) {
 			const level = this.documentStructure.level;
@@ -511,7 +522,7 @@ export default class HTMLParser {
 	 * @param text Text.
 	 */
 	private parseDocumentType(text: string): void {
-		const decodedText = Entities.decodeHTML(text);
+		const decodedText = XMLEncodeUtility.decodeTextContent(text);
 
 		if (this.documentStructure) {
 			const { doctype } = this.documentStructure.nodes;
@@ -565,7 +576,7 @@ export default class HTMLParser {
 
 		// Plain text elements such as <script> and <style> should only contain text.
 		this.currentNode[PropertySymbol.appendChild](
-			document.createTextNode(Entities.decodeHTML(text)),
+			document.createTextNode(XMLEncodeUtility.decodeTextContent(text)),
 			true
 		);
 
@@ -663,7 +674,7 @@ export default class HTMLParser {
 			return null;
 		}
 
-		const docTypeSplit = value.split(' ');
+		const docTypeSplit = value.split(SPACE_REGEXP);
 
 		if (docTypeSplit.length <= 1) {
 			return null;

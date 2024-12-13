@@ -1,6 +1,6 @@
 /* eslint-disable filenames/match-exported */
 
-import ClassMethodBinder from '../../ClassMethodBinder.js';
+import ClassMethodBinder from '../../utilities/ClassMethodBinder.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import NamedNodeMap from './NamedNodeMap.js';
 
