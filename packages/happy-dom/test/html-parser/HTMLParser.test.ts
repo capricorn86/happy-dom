@@ -782,48 +782,44 @@ describe('HTMLParser', () => {
 		});
 
 		it('Parses conditional comments for IE 9 with multiple scripts', () => {
-			const html =
-				'<!DOCTYPE html><html lang="en">\n' +
-				'<head>\n' +
-				'    <meta charset="UTF-8">\n' +
-				'    <title>Title</title>\n' +
-				'</head>\n' +
-				'<body>\n' +
-				'<!--[if lt IE 9]>\n' +
-				"<script>window.location = 'browser.htm';</script>\n" +
-				'<![endif]-->\n' +
-				'\n' +
-				'\n' +
-				'<script>\n' +
-				"    const node = document.createElement('a');\n" +
-				"    node.href = 'http://www.google.com';\n" +
-				"    node.target = '_blank';\n" +
-				"    node.innerHTML = 'google';\n" +
-				'    window.document.body.appendChild(node);\n' +
-				'</script>\n' +
-				'</body>\n' +
-				'</html>\n';
-			const expected =
-				'<!DOCTYPE html><html lang="en">' +
-				'<head>\n' +
-				'    <meta charset="UTF-8">\n' +
-				'    <title>Title</title>\n' +
-				'</head>\n' +
-				'<body>\n' +
-				'<!--[if lt IE 9]>\n' +
-				"<script>window.location = 'browser.htm';</script>\n" +
-				'<![endif]-->\n' +
-				'\n' +
-				'\n' +
-				'<script>\n' +
-				"    const node = document.createElement('a');\n" +
-				"    node.href = 'http://www.google.com';\n" +
-				"    node.target = '_blank';\n" +
-				"    node.innerHTML = 'google';\n" +
-				'    window.document.body.appendChild(node);\n' +
-				'</script>\n\n\n' +
-				'</body>' +
-				'</html>';
+			const html = `<!DOCTYPE html><html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Title</title>
+                </head>
+                <body>
+                <!--[if lt IE 9]>
+                <script>window.location = 'browser.htm';</script>
+                <![endif]-->
+
+                <script>
+                    const node = document.createElement('a');
+                    node.href = 'http://www.google.com';
+                    node.target = '_blank';
+                    node.innerHTML = 'google';
+                    window.document.body.appendChild(node);
+                </script>
+                </body>
+            </html>`;
+
+			const expected = `<!DOCTYPE html><html lang="en"><head>
+                    <meta charset="UTF-8">
+                    <title>Title</title>
+                </head>
+                <body>
+                <!--[if lt IE 9]>
+                <script>window.location = 'browser.htm';</script>
+                <![endif]-->
+
+                <script>
+                    const node = document.createElement('a');
+                    node.href = 'http://www.google.com';
+                    node.target = '_blank';
+                    node.innerHTML = 'google';
+                    window.document.body.appendChild(node);
+                </script>
+                
+            </body></html>`;
 
 			const result = new HTMLParser(window).parse(
 				html,
@@ -841,16 +837,16 @@ describe('HTMLParser', () => {
 
 		it('Parses <template> elements, including its content.', () => {
 			const result = new HTMLParser(window).parse(
-				'<div><template><tr><td></td></tr></template></div>'
+				'<div><template><article><b></b></article></template></div>'
 			);
 			expect(result.childNodes.length).toBe(1);
 			const template = <HTMLTemplateElement>result.childNodes[0].childNodes[0];
 			expect(template.childNodes.length).toBe(0);
 			expect(template.children.length).toBe(0);
 			expect(template.content.children.length).toBe(1);
-			expect(template.content.children[0].tagName).toBe('TR');
+			expect(template.content.children[0].tagName).toBe('ARTICLE');
 			expect(template.content.children[0].children.length).toBe(1);
-			expect(template.content.children[0].children[0].tagName).toBe('TD');
+			expect(template.content.children[0].children[0].tagName).toBe('B');
 		});
 
 		it('Parses HTML with attributes using colon (:) and value containing ">".', () => {
@@ -1305,6 +1301,129 @@ describe('HTMLParser', () => {
                 </body></html>`);
 		});
 
+		it('Handles body in head', () => {
+			const result = new HTMLParser(window).parse(
+				`<head>
+                    <body>
+                        <div>Test</div>
+                    </body>
+                </head>`,
+				document.implementation.createHTMLDocument()
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(`<!DOCTYPE html><html><head>
+                    </head><body>
+                        <div>Test</div>
+                    
+                </body></html>`);
+		});
+
+		it('Handles body in body', () => {
+			const result = new HTMLParser(window).parse(
+				`<body>
+                    <body>
+                        <div>Test</div>
+                    </body>
+                </body>`,
+				document.implementation.createHTMLDocument()
+			);
+
+			expect(new HTMLSerializer().serializeToString(result))
+				.toBe(`<!DOCTYPE html><html><head></head><body>
+                    
+                        <div>Test</div>
+                    
+                </body></html>`);
+		});
+
+		it('Handles body in div', () => {
+			const result = new HTMLParser(window).parse(
+				`<!DOCTYPE html>
+                <html>
+                    <head>
+                        <title>Title</title>
+                    </head>
+                    <div>
+                        <body>
+                            <div>Test</div>
+                        </body>
+                    </div>
+                </html>`,
+				document.implementation.createHTMLDocument()
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(`<!DOCTYPE html><html><head>
+                        <title>Title</title>
+                    </head>
+                    <body><div>
+                        
+                            <div>Test</div>
+                        
+                    </div>
+                </body></html>`);
+		});
+
+		it('Handles multiple body when in fragment mode', () => {
+			const result = new HTMLParser(window).parse(
+				`<body>
+                    <div>Test 1</div>
+                </body>
+                <body style="color: red">
+                    <div>Test 2</div>
+                </body>`
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(`
+                    <div>Test 1</div>
+                
+                
+                    <div>Test 2</div>
+                `);
+
+			const result2 = new HTMLParser(window).parse(
+				'<body><example></example>Example Text</body><body></body>'
+			);
+
+			expect(new HTMLSerializer().serializeToString(result2)).toBe(
+				'<example></example>Example Text'
+			);
+
+			const result3 = new HTMLParser(window).parse(
+				'<body><body></body><example></example>Example Text</body>'
+			);
+
+			expect(new HTMLSerializer().serializeToString(result3)).toBe(
+				'<example></example>Example Text'
+			);
+		});
+
+		it('Handles content outside document element', () => {
+			const result = new HTMLParser(window).parse(
+				`<!DOCTYPE html>
+                <div>Test</div>
+                <html>
+                    <head>
+                        <title>Title</title>
+                    </head>
+                    <body style="color: red">
+                        <div>Test</div>
+                    </body>
+                </html>`,
+				document.implementation.createHTMLDocument()
+			);
+
+			expect(new HTMLSerializer().serializeToString(result))
+				.toBe(`<!DOCTYPE html><html><head></head><body style="color: red"><div>Test</div>
+                
+                    
+                        <title>Title</title>
+                    
+                    
+                        <div>Test</div>
+                    
+                </body></html>`);
+		});
+
 		it('Handles processing instructions as comments when parser mode is HTML.', () => {
 			const result = new HTMLParser(window).parse(
 				`<?xml version="1.0" encoding="UTF-8"?>
@@ -1360,6 +1479,274 @@ describe('HTMLParser', () => {
                     <cityxml:long>0.00</cityxml:long>
                 </cityxml:homecity>
                 </personxml:person></body></html>`
+			);
+		});
+
+		it('Handles table elements', () => {
+			const result = new HTMLParser(window).parse(
+				`
+                <table>
+                    <caption>Test</caption>
+                    <colgroup>
+                        <col>
+                        <col>
+                        <col>
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Test 1</th>
+                            <td>Test 2</td>
+                            <td>Test 3</td>
+                        </tr>
+                        <tr>
+                            <th>Test 4</th>
+                            <td>Test 5</td>
+                            <td>Test 6</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th>Test 7</th>
+                            <td>Test 8</td>
+                            <td>Test 9</td>
+                        </tr>
+                        <tr>
+                            <th>Test 10</th>
+                            <td>Test 11</td>
+                            <td>Test 12</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>Test 13</th>
+                            <td>Test 14</td>
+                            <td>Test 15</td>
+                        </tr>
+                    </tfoot>
+                </table>
+                `
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`
+                <table>
+                    <caption>Test</caption>
+                    <colgroup>
+                        <col>
+                        <col>
+                        <col>
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Test 1</th>
+                            <td>Test 2</td>
+                            <td>Test 3</td>
+                        </tr>
+                        <tr>
+                            <th>Test 4</th>
+                            <td>Test 5</td>
+                            <td>Test 6</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th>Test 7</th>
+                            <td>Test 8</td>
+                            <td>Test 9</td>
+                        </tr>
+                        <tr>
+                            <th>Test 10</th>
+                            <td>Test 11</td>
+                            <td>Test 12</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>Test 13</th>
+                            <td>Test 14</td>
+                            <td>Test 15</td>
+                        </tr>
+                    </tfoot>
+                </table>
+                `
+			);
+		});
+
+		it('Handles malformed table elements', () => {
+			const result = new HTMLParser(window).parse(
+				`
+                <div class="test" disabled>
+                    <dl>
+                        <dt>Test
+                        <dd>Test</dt></dt></dt></dt>
+                        <dt>Test</dt>
+                        <dd>Test
+                    </dl>
+                    <select>
+                        <option>Test 1
+                        <optgroup>
+                            <option>Test 2
+                            <option>Test 3</option>
+                            <option>Test 4
+                        <optgroup>
+                            <option>Test 5
+                            <option>Test 6
+                    </select>
+                    <ruby>明日
+                        <rp>(
+                        <rt>Ashita
+                        <rp>)
+                    </ruby>
+                    <table>
+                        <caption>Test
+                        <colgroup>
+                            <col>
+                            <col>
+                            <col>
+                        <thead>
+                            <tr>
+                                <th>Test 1</th><td>Test 2<td>Test 3
+                            <tr>
+                                <th>Test 4<td>Test 5<td>Test 6</th></th></th>
+                        <tbody>
+                            <tr>
+                                <th>Test 7<td>Test 8<td>Test 9</td>
+                            </tr>
+                            <tr>
+                                <th></td></td></td></td></td></td>Test 10<td>Test 11<td>Test 12
+                        <tfoot>
+                            <tr>
+                                <th>Test 13<td>Test 14<td>Test 15
+                    </table>
+                </div>
+                `
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`
+                <div class="test" disabled="">
+                    <dl>
+                        <dt>Test
+                        </dt><dd>Test
+                        </dd><dt>Test</dt>
+                        <dd>Test
+                    </dd></dl>
+                    <select>
+                        <option>Test 1
+                        </option><optgroup>
+                            <option>Test 2
+                            </option><option>Test 3</option>
+                            <option>Test 4
+                        </option></optgroup><optgroup>
+                            <option>Test 5
+                            </option><option>Test 6
+                    </option></optgroup></select>
+                    <ruby>明日
+                        <rp>(
+                        </rp><rt>Ashita
+                        </rt><rp>)
+                    </rp></ruby>
+                    <table>
+                        <caption>Test
+                        </caption><colgroup>
+                            <col>
+                            <col>
+                            <col>
+                        </colgroup><thead>
+                            <tr>
+                                <th>Test 1</th><td>Test 2</td><td>Test 3
+                            </td></tr><tr>
+                                <th>Test 4</th><td>Test 5</td><td>Test 6
+                        </td></tr></thead><tbody>
+                            <tr>
+                                <th>Test 7</th><td>Test 8</td><td>Test 9</td>
+                            </tr>
+                            <tr>
+                                <th>Test 10</th><td>Test 11</td><td>Test 12
+                        </td></tr></tbody><tfoot>
+                            <tr>
+                                <th>Test 13</th><td>Test 14</td><td>Test 15
+                    </td></tr></tfoot></table>
+                </div>
+                `
+			);
+		});
+
+		it('Handles <thead> without table as parent', () => {
+			const result = new HTMLParser(window).parse(
+				`
+                <thead>
+                    <tr>
+                        <th>Test 1</th>
+                        <td>Test 2</td>
+                        <td>Test 3</td>
+                    </tr>
+                </thead>
+                `
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`
+                
+                    
+                        Test 1
+                        Test 2
+                        Test 3
+                    
+                
+                `
+			);
+		});
+
+		it('Handles <tbody> without table as parent', () => {
+			const result = new HTMLParser(window).parse(
+				`
+                <tbody>
+                    <tr>
+                        <th>Test 1</th>
+                        <td>Test 2</td>
+                        <td>Test 3</td>
+                    </tr>
+                </tbody>
+                `
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`
+                
+                    
+                        Test 1
+                        Test 2
+                        Test 3
+                    
+                
+                `
+			);
+		});
+
+		it('Handles <tfoot> without table as parent', () => {
+			const result = new HTMLParser(window).parse(
+				`
+                <tfoot>
+                    <tr>
+                        <th>Test 1</th>
+                        <td>Test 2</td>
+                        <td>Test 3</td>
+                    </tr>
+                </tfoot>
+                `
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`
+                
+                    
+                        Test 1
+                        Test 2
+                        Test 3
+                    
+                
+                `
 			);
 		});
 	});

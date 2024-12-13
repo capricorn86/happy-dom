@@ -3,6 +3,7 @@ import HTMLSerializer from '../../src/html-serializer/HTMLSerializer.js';
 import DOMParser from '../../src/dom-parser/DOMParser.js';
 import DOMParserHTML from './data/DOMParserHTML.js';
 import { beforeEach, describe, it, expect } from 'vitest';
+import XMLSerializer from '../../src/xml-serializer/XMLSerializer.js';
 
 describe('DOMParser', () => {
 	let domParser: DOMParser;
@@ -102,7 +103,7 @@ describe('DOMParser', () => {
                 `,
 				'image/svg+xml'
 			);
-			expect(new HTMLSerializer().serializeToString(newDocument))
+			expect(new XMLSerializer().serializeToString(newDocument))
 				.toBe(`<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
                         <path d="M14 6.53333V7.46667H7.46667V14H6.53333V7.46667H0V6.53333H6.53333V0H7.46667V6.53333H14Z" fill="#0078D4"/>
                     </svg>`);
@@ -117,7 +118,7 @@ describe('DOMParser', () => {
 			expect(newDocument.body.innerHTML).toBe('<example></example>Example Text');
 		});
 
-		it('Parses XML', () => {
+		it('Parses basic XML', () => {
 			const newDocument = domParser.parseFromString(
 				`<?xml version="1.0" encoding="UTF-8"?>
                 <breakfast_menu>
@@ -151,6 +152,76 @@ describe('DOMParser', () => {
                         <calories>900</calories>
                     </food>
                 </breakfast_menu>`);
+		});
+
+		it('Parses XML with style tags', () => {
+			const newDocument = domParser.parseFromString(
+				`<?xml version="1.0" encoding="UTF-8"?>
+                <!DOCTYPE start SYSTEM "http://xml.start.com/pub/start.dtd">
+                <start>
+                <div style="--en-clipped-content:fullPage; --en-clipped-source-url:https://l3pro.netlify.app/; --en-clipped-source-title:https://l3pro.netlify.app/;">
+                <div><br></br></div><div style="; font-size: 16px; display:inline-block; min-width: 100%; position: relative;"> <span><div>
+                <div>
+                    <h1 title="H1 " style="text-align:center;color:#006600;text-decoration:underline;"> This is a test </h1>
+                    <h2></h2>
+
+                    <p title="P " style="color:#660000;font-family:sans-serif;">This has some dynamic generated content</p>
+                    <p title="P " style="color:#660000;font-family:sans-serif;">This should be enought to test</p>
+                    <hr></hr>
+
+                    <p title="P " style="color:#660000;font-family:sans-serif;">Absolute paths</p>
+                    <img src="https://l3pro.netlify.app/celes.jpeg" width="50" height="100"></img>
+                    <img src="https://l3pro.netlify.app/img/guitar.jpeg" width="50" height="100"></img>
+                        <img src="https://l3pro.netlify.app/img/mk2.jpg" width="50" height="100"></img>
+                            <img src="https://l3pro.netlify.app/img/yo.png" width="50" height="100"></img>
+
+                <p title="P " style="color:#660000;font-family:sans-serif;">Relative paths</p>
+                    <img src="celes.jpeg" width="50" height="100"></img>
+                    <img src="img/guitar.jpeg" width="50" height="100"></img>
+                    <img src="img/mk2.jpg" width="50" height="100"></img>
+                                <img src="img/yo.png" width="50" height="100"></img>
+
+
+                    
+                
+
+                </div></div></span></div>
+                </div>
+                </start>`,
+				'application/xml'
+			);
+
+			expect(new XMLSerializer().serializeToString(newDocument))
+				.toBe(`<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE start SYSTEM "http://xml.start.com/pub/start.dtd"><start>
+                <div style="--en-clipped-content:fullPage; --en-clipped-source-url:https://l3pro.netlify.app/; --en-clipped-source-title:https://l3pro.netlify.app/;">
+                <div><br/></div><div style="; font-size: 16px; display:inline-block; min-width: 100%; position: relative;"> <span><div>
+                <div>
+                    <h1 title="H1 " style="text-align:center;color:#006600;text-decoration:underline;"> This is a test </h1>
+                    <h2/>
+
+                    <p title="P " style="color:#660000;font-family:sans-serif;">This has some dynamic generated content</p>
+                    <p title="P " style="color:#660000;font-family:sans-serif;">This should be enought to test</p>
+                    <hr/>
+
+                    <p title="P " style="color:#660000;font-family:sans-serif;">Absolute paths</p>
+                    <img src="https://l3pro.netlify.app/celes.jpeg" width="50" height="100"/>
+                    <img src="https://l3pro.netlify.app/img/guitar.jpeg" width="50" height="100"/>
+                        <img src="https://l3pro.netlify.app/img/mk2.jpg" width="50" height="100"/>
+                            <img src="https://l3pro.netlify.app/img/yo.png" width="50" height="100"/>
+
+                <p title="P " style="color:#660000;font-family:sans-serif;">Relative paths</p>
+                    <img src="celes.jpeg" width="50" height="100"/>
+                    <img src="img/guitar.jpeg" width="50" height="100"/>
+                    <img src="img/mk2.jpg" width="50" height="100"/>
+                                <img src="img/yo.png" width="50" height="100"/>
+
+
+                    
+                
+
+                </div></div></span></div>
+                </div>
+                </start>`);
 		});
 	});
 });

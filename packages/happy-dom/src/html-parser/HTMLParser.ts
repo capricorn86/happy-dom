@@ -92,7 +92,8 @@ enum HTMLDocumentStructureLevelEnum {
 	documentElement = 2,
 	head = 3,
 	additionalHeadWithoutBody = 4,
-	body = 5
+	body = 5,
+	afterBody = 6
 }
 
 interface IHTMLDocumentStructure {
@@ -287,7 +288,7 @@ export default class HTMLParser {
 					: text;
 
 			if (htmlText) {
-				const textNode = document.createTextNode(XMLEncodeUtility.decodeTextContent(htmlText));
+				const textNode = document.createTextNode(XMLEncodeUtility.decodesHTMLEntities(htmlText));
 				if (
 					this.currentNode === head &&
 					level === HTMLDocumentStructureLevelEnum.additionalHeadWithoutBody
@@ -310,7 +311,7 @@ export default class HTMLParser {
 				}
 			}
 		} else {
-			const textNode = document.createTextNode(XMLEncodeUtility.decodeTextContent(text));
+			const textNode = document.createTextNode(XMLEncodeUtility.decodesHTMLEntities(text));
 			this.currentNode[PropertySymbol.appendChild](textNode, true);
 		}
 	}
@@ -326,7 +327,7 @@ export default class HTMLParser {
 			attributeString &&
 			(!this.documentStructure ||
 				this.nextElement !== this.documentStructure.nodes.head ||
-				this.documentStructure.level !== HTMLDocumentStructureLevelEnum.body)
+				this.documentStructure.level < HTMLDocumentStructureLevelEnum.body)
 		) {
 			const document = this.window.document;
 			const attributeRegexp = new RegExp(ATTRIBUTE_REGEXP, 'gm');
@@ -374,31 +375,53 @@ export default class HTMLParser {
 		}
 
 		const tagName = this.nextElement[PropertySymbol.tagName];
-		const config = HTMLElementConfig[tagName.toLowerCase()];
+		const lowerTagName = tagName.toLowerCase();
+		const config = HTMLElementConfig[lowerTagName];
 
-		// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
-		// Therefore we need to auto-close tags with the same name matching the config, so that it become valid (e.g. "<a></a><a></a>").
-		if (
-			config?.contentModel === HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants &&
-			this.tagNameStack[this.tagNameStack.length - 1] === tagName
-		) {
-			this.nodeStack.pop();
-			this.tagNameStack.pop();
-			this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
-		} else if (
-			config?.contentModel === HTMLElementConfigContentModelEnum.noSelfDescendants &&
-			this.tagNameStack.includes(tagName)
-		) {
-			while (this.currentNode !== this.rootNode) {
-				if ((<Element>this.currentNode)[PropertySymbol.tagName] === tagName) {
-					this.nodeStack.pop();
-					this.tagNameStack.pop();
-					this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
-					break;
-				}
+		while (true) {
+			const parentLowerTagName = this.currentNode[PropertySymbol.tagName]?.toLowerCase();
+			const parentConfig = HTMLElementConfig[parentLowerTagName];
+
+			// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
+			// Therefore we need to auto-close tags with the same name matching the config, so that it become valid (e.g. "<a></a><a></a>").
+			if (
+				(config?.contentModel === HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants &&
+					this.tagNameStack[this.tagNameStack.length - 1] === tagName) ||
+				parentConfig?.contentModel === HTMLElementConfigContentModelEnum.textOrComments ||
+				(parentConfig?.contentModel ===
+					HTMLElementConfigContentModelEnum.noForbiddenFirstLevelDescendants &&
+					parentConfig?.forbiddenDescendants?.includes(lowerTagName)) ||
+				(parentConfig?.contentModel === HTMLElementConfigContentModelEnum.permittedDescendants &&
+					!parentConfig?.permittedDescendants?.includes(lowerTagName))
+			) {
 				this.nodeStack.pop();
 				this.tagNameStack.pop();
 				this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
+			} else if (
+				config?.contentModel === HTMLElementConfigContentModelEnum.noSelfDescendants &&
+				this.tagNameStack.includes(tagName)
+			) {
+				while (this.currentNode !== this.rootNode) {
+					if ((<Element>this.currentNode)[PropertySymbol.tagName] === tagName) {
+						this.nodeStack.pop();
+						this.tagNameStack.pop();
+						this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
+						break;
+					}
+					this.nodeStack.pop();
+					this.tagNameStack.pop();
+					this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
+				}
+			} else if (
+				config?.permittedParents &&
+				!config.permittedParents.includes(parentLowerTagName)
+			) {
+				// <thead>, <tbody> and <tfoot> are only allowed as children of <table>.
+				this.readState = MarkupReadStateEnum.startOrEndTag;
+				this.startTagIndex = this.markupRegExp.lastIndex;
+				return;
+			} else {
+				break;
 			}
 		}
 
@@ -423,6 +446,9 @@ export default class HTMLParser {
 						this.currentNode === documentElement ||
 						(this.currentNode === head && level >= HTMLDocumentStructureLevelEnum.body))
 				) {
+					if (level < HTMLDocumentStructureLevelEnum.body) {
+						this.documentStructure.level = HTMLDocumentStructureLevelEnum.afterBody;
+					}
 					body[PropertySymbol.appendChild](this.nextElement, true);
 				} else {
 					this.currentNode[PropertySymbol.appendChild](this.nextElement, true);
@@ -433,28 +459,41 @@ export default class HTMLParser {
 		}
 
 		// Sets the new element as the current node.
-		this.currentNode = this.nextElement;
-		this.nodeStack.push(this.currentNode);
-		this.tagNameStack.push(tagName);
 
-		// Check if the tag is a void element and should be closed immediately.
-		// Elements in the SVG namespace can be self-closed (e.g. "/>").
-		// "/>" will be ignored in the HTML namespace.
 		if (
-			config?.contentModel === HTMLElementConfigContentModelEnum.noDescendants ||
-			(isSelfClosed &&
-				(<Element>this.currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg)
+			!this.documentStructure ||
+			this.nextElement !== this.documentStructure.nodes.body ||
+			this.documentStructure.level <= HTMLDocumentStructureLevelEnum.body
 		) {
-			this.nodeStack.pop();
-			this.tagNameStack.pop();
-			this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
-			this.readState = MarkupReadStateEnum.startOrEndTag;
+			this.currentNode = this.nextElement;
+			this.nodeStack.push(this.currentNode);
+			this.tagNameStack.push(tagName);
+
+			if (this.documentStructure && this.nextElement === this.documentStructure.nodes.body) {
+				this.documentStructure.level = HTMLDocumentStructureLevelEnum.afterBody;
+			}
+
+			// Check if the tag is a void element and should be closed immediately.
+			// Elements in the SVG namespace can be self-closed (e.g. "/>").
+			// "/>" will be ignored in the HTML namespace.
+			if (
+				config?.contentModel === HTMLElementConfigContentModelEnum.noDescendants ||
+				(isSelfClosed &&
+					(<Element>this.currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg)
+			) {
+				this.nodeStack.pop();
+				this.tagNameStack.pop();
+				this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
+				this.readState = MarkupReadStateEnum.startOrEndTag;
+			} else {
+				// We will set the read state to "rawText" for raw text elements such as <script> and <style> elements.
+				this.readState =
+					config?.contentModel === HTMLElementConfigContentModelEnum.rawText
+						? MarkupReadStateEnum.plainTextContent
+						: MarkupReadStateEnum.startOrEndTag;
+			}
 		} else {
-			// We will set the read state to "rawText" for raw text elements such as <script> and <style> elements.
-			this.readState =
-				config?.contentModel === HTMLElementConfigContentModelEnum.rawText
-					? MarkupReadStateEnum.plainTextContent
-					: MarkupReadStateEnum.startOrEndTag;
+			this.readState = MarkupReadStateEnum.startOrEndTag;
 		}
 
 		this.startTagIndex = this.markupRegExp.lastIndex;
@@ -488,7 +527,7 @@ export default class HTMLParser {
 	 */
 	private parseComment(comment: string): void {
 		const document = this.window.document;
-		const commentNode = document.createComment(XMLEncodeUtility.decodeTextContent(comment));
+		const commentNode = document.createComment(XMLEncodeUtility.decodesHTMLEntities(comment));
 
 		if (this.documentStructure) {
 			const level = this.documentStructure.level;
@@ -522,7 +561,7 @@ export default class HTMLParser {
 	 * @param text Text.
 	 */
 	private parseDocumentType(text: string): void {
-		const decodedText = XMLEncodeUtility.decodeTextContent(text);
+		const decodedText = XMLEncodeUtility.decodesHTMLEntities(text);
 
 		if (this.documentStructure) {
 			const { doctype } = this.documentStructure.nodes;
@@ -576,7 +615,7 @@ export default class HTMLParser {
 
 		// Plain text elements such as <script> and <style> should only contain text.
 		this.currentNode[PropertySymbol.appendChild](
-			document.createTextNode(XMLEncodeUtility.decodeTextContent(text)),
+			document.createTextNode(XMLEncodeUtility.decodesHTMLEntities(text)),
 			true
 		);
 

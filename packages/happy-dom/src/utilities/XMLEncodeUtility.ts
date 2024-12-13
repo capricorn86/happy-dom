@@ -70,4 +70,18 @@ export default class XMLEncodeUtility {
 
 		return text.replace(/&amp;/gu, '&').replace(/&lt;/gu, '<').replace(/&gt;/gu, '>');
 	}
+
+	/**
+	 * Decodes HTML entities.
+	 *
+	 * @param value Value.
+	 * @returns Decoded value.
+	 */
+	public static decodesHTMLEntities(value: string): string {
+		return value
+			.replace(/&amp;/gu, '&')
+			.replace(/&lt;/gu, '<')
+			.replace(/&gt;/gu, '>')
+			.replace(/&#(\d+);/gu, (_match, dec) => String.fromCharCode(parseInt(dec, 10)));
+	}
 }
