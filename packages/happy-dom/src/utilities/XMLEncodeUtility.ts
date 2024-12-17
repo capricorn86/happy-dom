@@ -54,7 +54,11 @@ export default class XMLEncodeUtility {
 			return '';
 		}
 
-		return text.replace(/&/gu, '&amp;').replace(/</gu, '&lt;').replace(/>/gu, '&gt;');
+		return text
+			.replace(/&/gu, '&amp;')
+			.replace(/\xA0/gu, '&nbsp;')
+			.replace(/</gu, '&lt;')
+			.replace(/>/gu, '&gt;');
 	}
 
 	/**
@@ -68,7 +72,11 @@ export default class XMLEncodeUtility {
 			return '';
 		}
 
-		return text.replace(/&amp;/gu, '&').replace(/&lt;/gu, '<').replace(/&gt;/gu, '>');
+		return text
+			.replace(/&amp;/gu, '&')
+			.replace(/&nbsp;/gu, String.fromCharCode(160))
+			.replace(/&lt;/gu, '<')
+			.replace(/&gt;/gu, '>');
 	}
 
 	/**
@@ -77,11 +85,43 @@ export default class XMLEncodeUtility {
 	 * @param value Value.
 	 * @returns Decoded value.
 	 */
-	public static decodesHTMLEntities(value: string): string {
+	public static decodeHTMLEntities(value: string): string {
+		if (value === null) {
+			return '';
+		}
+
 		return value
 			.replace(/&amp;/gu, '&')
 			.replace(/&lt;/gu, '<')
 			.replace(/&gt;/gu, '>')
-			.replace(/&#(\d+);/gu, (_match, dec) => String.fromCharCode(parseInt(dec, 10)));
+			.replace(/&nbsp;/gu, String.fromCharCode(160))
+			.replace(/&quot;/gu, '"')
+			.replace(/&apos;/gu, "'")
+			.replace(/&#(\d+);/gu, (_match, dec) => String.fromCharCode(parseInt(dec, 10)))
+			.replace(/&#x([A-Fa-f\d]+);/gu, (_match, hex) => String.fromCharCode(parseInt(hex, 16)));
+	}
+
+	/**
+	 * Decodes XML entities.
+	 *
+	 * @param value Value.
+	 * @returns Decoded value.
+	 */
+	public static decodeXMLEntities(value: string): string {
+		if (value === null) {
+			return '';
+		}
+
+		return (
+			value
+				.replace(/&amp;/gu, '&')
+				.replace(/&lt;/gu, '<')
+				.replace(/&gt;/gu, '>')
+				// .replace(/&nbsp;/gu, String.fromCharCode(160))
+				.replace(/&quot;/gu, '"')
+				.replace(/&apos;/gu, "'")
+				.replace(/&#(\d+);/gu, (_match, dec) => String.fromCharCode(parseInt(dec, 10)))
+				.replace(/&#x([A-Fa-f\d]+);/gu, (_match, hex) => String.fromCharCode(parseInt(hex, 16)))
+		);
 	}
 }

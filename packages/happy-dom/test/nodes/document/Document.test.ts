@@ -894,18 +894,24 @@ describe('Document', () => {
 			`;
 			document.write(html);
 			document.write(html);
-			expect(document.documentElement.outerHTML.replace(/[\s]/gm, '')).toBe(
-				`
-				<html>
-					<head>
+			expect(document.documentElement.outerHTML).toBe(
+				`<html><head>
 						<title>Title</title>
 					</head>
 					<body>
 						<span>Body</span>
+					
+				
+			
+				
+					
+						<title>Title</title>
+					
+					
 						<span>Body</span>
-					</body>
-				</html>
-				`.replace(/[\s]/gm, '')
+					
+				
+			</body></html>`
 			);
 		});
 
@@ -1091,7 +1097,7 @@ describe('Document', () => {
 			const element = <HTMLElement>(
 				document.createElementNS(<string>(<unknown>null), <string>(<unknown>true))
 			);
-			expect(element.tagName).toBe('TRUE');
+			expect(element.tagName).toBe('true');
 		});
 
 		it("Returns HTMLUnknownElement when case doesn't match for an HTML element.", () => {

@@ -47,9 +47,7 @@ describe('XMLParser', () => {
 			expect(
 				(<HTMLElement>result.childNodes[0]).attributes[0].ownerElement === result.childNodes[0]
 			).toBe(true);
-			expect((<HTMLElement>result.childNodes[0]).attributes[0].ownerDocument === document).toBe(
-				true
-			);
+			expect((<HTMLElement>result.childNodes[0]).attributes[0].ownerDocument === result).toBe(true);
 
 			expect((<HTMLElement>result.childNodes[0]).attributes[1].name).toBe('id');
 			expect((<HTMLElement>result.childNodes[0]).attributes[1].value).toBe('id');
@@ -58,9 +56,7 @@ describe('XMLParser', () => {
 			expect(
 				(<HTMLElement>result.childNodes[0]).attributes[1].ownerElement === result.childNodes[0]
 			).toBe(true);
-			expect((<HTMLElement>result.childNodes[0]).attributes[1].ownerDocument === document).toBe(
-				true
-			);
+			expect((<HTMLElement>result.childNodes[0]).attributes[1].ownerDocument === result).toBe(true);
 
 			expect((<HTMLElement>result.childNodes[0]).attributes[2].name).toBe('data-no-value');
 			expect((<HTMLElement>result.childNodes[0]).attributes[2].value).toBe('');
@@ -69,9 +65,7 @@ describe('XMLParser', () => {
 			expect(
 				(<HTMLElement>result.childNodes[0]).attributes[2].ownerElement === result.childNodes[0]
 			).toBe(true);
-			expect((<HTMLElement>result.childNodes[0]).attributes[2].ownerDocument === document).toBe(
-				true
-			);
+			expect((<HTMLElement>result.childNodes[0]).attributes[2].ownerDocument === result).toBe(true);
 
 			expect((<HTMLElement>result.childNodes[0]).attributes['class'].name).toBe('class');
 			expect((<HTMLElement>result.childNodes[0]).attributes['class'].value).toBe('class1 class2');
@@ -81,9 +75,9 @@ describe('XMLParser', () => {
 				(<HTMLElement>result.childNodes[0]).attributes['class'].ownerElement ===
 					result.childNodes[0]
 			).toBe(true);
-			expect(
-				(<HTMLElement>result.childNodes[0]).attributes['class'].ownerDocument === document
-			).toBe(true);
+			expect((<HTMLElement>result.childNodes[0]).attributes['class'].ownerDocument === result).toBe(
+				true
+			);
 
 			expect((<HTMLElement>result.childNodes[0]).attributes['id'].name).toBe('id');
 			expect((<HTMLElement>result.childNodes[0]).attributes['id'].value).toBe('id');
@@ -92,7 +86,7 @@ describe('XMLParser', () => {
 			expect(
 				(<HTMLElement>result.childNodes[0]).attributes['id'].ownerElement === result.childNodes[0]
 			).toBe(true);
-			expect((<HTMLElement>result.childNodes[0]).attributes['id'].ownerDocument === document).toBe(
+			expect((<HTMLElement>result.childNodes[0]).attributes['id'].ownerDocument === result).toBe(
 				true
 			);
 
@@ -109,7 +103,7 @@ describe('XMLParser', () => {
 					result.childNodes[0]
 			).toBe(true);
 			expect(
-				(<HTMLElement>result.childNodes[0]).attributes['data-no-value'].ownerDocument === document
+				(<HTMLElement>result.childNodes[0]).attributes['data-no-value'].ownerDocument === result
 			).toBe(true);
 		});
 
@@ -255,56 +249,56 @@ describe('XMLParser', () => {
 			expect(svg.attributes[0].namespaceURI).toBe(null);
 			expect(svg.attributes[0].specified).toBe(true);
 			expect(svg.attributes[0].ownerElement === svg).toBe(true);
-			expect(svg.attributes[0].ownerDocument === document).toBe(true);
+			expect(svg.attributes[0].ownerDocument === result).toBe(true);
 
 			expect(svg.attributes[1].name).toBe('stroke');
 			expect(svg.attributes[1].value).toBe('red');
 			expect(svg.attributes[1].namespaceURI).toBe(null);
 			expect(svg.attributes[1].specified).toBe(true);
 			expect(svg.attributes[1].ownerElement === svg).toBe(true);
-			expect(svg.attributes[1].ownerDocument === document).toBe(true);
+			expect(svg.attributes[1].ownerDocument === result).toBe(true);
 
 			expect(svg.attributes[2].name).toBe('fill');
 			expect(svg.attributes[2].value).toBe('grey');
 			expect(svg.attributes[2].namespaceURI).toBe(null);
 			expect(svg.attributes[2].specified).toBe(true);
 			expect(svg.attributes[2].ownerElement === svg).toBe(true);
-			expect(svg.attributes[2].ownerDocument === document).toBe(true);
+			expect(svg.attributes[2].ownerDocument === result).toBe(true);
 
 			expect(svg.attributes[3].name).toBe('xmlns');
 			expect(svg.attributes[3].value).toBe(NamespaceURI.svg);
 			expect(svg.attributes[3].namespaceURI).toBe(NamespaceURI.xmlns);
 			expect(svg.attributes[3].specified).toBe(true);
 			expect(svg.attributes[3].ownerElement === svg).toBe(true);
-			expect(svg.attributes[3].ownerDocument === document).toBe(true);
+			expect(svg.attributes[3].ownerDocument === result).toBe(true);
 
 			expect(svg.attributes['viewBox'].name).toBe('viewBox');
 			expect(svg.attributes['viewBox'].value).toBe('0 0 300 100');
 			expect(svg.attributes['viewBox'].namespaceURI).toBe(null);
 			expect(svg.attributes['viewBox'].specified).toBe(true);
 			expect(svg.attributes['viewBox'].ownerElement === svg).toBe(true);
-			expect(svg.attributes['viewBox'].ownerDocument === document).toBe(true);
+			expect(svg.attributes['viewBox'].ownerDocument === result).toBe(true);
 
 			expect(svg.attributes['stroke'].name).toBe('stroke');
 			expect(svg.attributes['stroke'].value).toBe('red');
 			expect(svg.attributes['stroke'].namespaceURI).toBe(null);
 			expect(svg.attributes['stroke'].specified).toBe(true);
 			expect(svg.attributes['stroke'].ownerElement === svg).toBe(true);
-			expect(svg.attributes['stroke'].ownerDocument === document).toBe(true);
+			expect(svg.attributes['stroke'].ownerDocument === result).toBe(true);
 
 			expect(svg.attributes['fill'].name).toBe('fill');
 			expect(svg.attributes['fill'].value).toBe('grey');
 			expect(svg.attributes['fill'].namespaceURI).toBe(null);
 			expect(svg.attributes['fill'].specified).toBe(true);
 			expect(svg.attributes['fill'].ownerElement === svg).toBe(true);
-			expect(svg.attributes['fill'].ownerDocument === document).toBe(true);
+			expect(svg.attributes['fill'].ownerDocument === result).toBe(true);
 
 			expect(svg.attributes['xmlns'].name).toBe('xmlns');
 			expect(svg.attributes['xmlns'].value).toBe(NamespaceURI.svg);
 			expect(svg.attributes['xmlns'].namespaceURI).toBe(NamespaceURI.xmlns);
 			expect(svg.attributes['xmlns'].specified).toBe(true);
 			expect(svg.attributes['xmlns'].ownerElement === svg).toBe(true);
-			expect(svg.attributes['xmlns'].ownerDocument === document).toBe(true);
+			expect(svg.attributes['xmlns'].ownerDocument === result).toBe(true);
 		});
 
 		it('Parses an SVG with "xmlns" set to HTML.', () => {
@@ -356,56 +350,56 @@ describe('XMLParser', () => {
 			expect(svg.attributes[0].namespaceURI).toBe(null);
 			expect(svg.attributes[0].specified).toBe(true);
 			expect(svg.attributes[0].ownerElement === svg).toBe(true);
-			expect(svg.attributes[0].ownerDocument === document).toBe(true);
+			expect(svg.attributes[0].ownerDocument === result).toBe(true);
 
 			expect(svg.attributes[1].name).toBe('stroke');
 			expect(svg.attributes[1].value).toBe('red');
 			expect(svg.attributes[1].namespaceURI).toBe(null);
 			expect(svg.attributes[1].specified).toBe(true);
 			expect(svg.attributes[1].ownerElement === svg).toBe(true);
-			expect(svg.attributes[1].ownerDocument === document).toBe(true);
+			expect(svg.attributes[1].ownerDocument === result).toBe(true);
 
 			expect(svg.attributes[2].name).toBe('fill');
 			expect(svg.attributes[2].value).toBe('grey');
 			expect(svg.attributes[2].namespaceURI).toBe(null);
 			expect(svg.attributes[2].specified).toBe(true);
 			expect(svg.attributes[2].ownerElement === svg).toBe(true);
-			expect(svg.attributes[2].ownerDocument === document).toBe(true);
+			expect(svg.attributes[2].ownerDocument === result).toBe(true);
 
 			expect(svg.attributes[3].name).toBe('xmlns');
 			expect(svg.attributes[3].value).toBe(NamespaceURI.html);
 			expect(svg.attributes[3].namespaceURI).toBe(NamespaceURI.xmlns);
 			expect(svg.attributes[3].specified).toBe(true);
 			expect(svg.attributes[3].ownerElement === svg).toBe(true);
-			expect(svg.attributes[3].ownerDocument === document).toBe(true);
+			expect(svg.attributes[3].ownerDocument === result).toBe(true);
 
 			expect(svg.attributes['viewBox'].name).toBe('viewBox');
 			expect(svg.attributes['viewBox'].value).toBe('0 0 300 100');
 			expect(svg.attributes['viewBox'].namespaceURI).toBe(null);
 			expect(svg.attributes['viewBox'].specified).toBe(true);
 			expect(svg.attributes['viewBox'].ownerElement === svg).toBe(true);
-			expect(svg.attributes['viewBox'].ownerDocument === document).toBe(true);
+			expect(svg.attributes['viewBox'].ownerDocument === result).toBe(true);
 
 			expect(svg.attributes['stroke'].name).toBe('stroke');
 			expect(svg.attributes['stroke'].value).toBe('red');
 			expect(svg.attributes['stroke'].namespaceURI).toBe(null);
 			expect(svg.attributes['stroke'].specified).toBe(true);
 			expect(svg.attributes['stroke'].ownerElement === svg).toBe(true);
-			expect(svg.attributes['stroke'].ownerDocument === document).toBe(true);
+			expect(svg.attributes['stroke'].ownerDocument === result).toBe(true);
 
 			expect(svg.attributes['fill'].name).toBe('fill');
 			expect(svg.attributes['fill'].value).toBe('grey');
 			expect(svg.attributes['fill'].namespaceURI).toBe(null);
 			expect(svg.attributes['fill'].specified).toBe(true);
 			expect(svg.attributes['fill'].ownerElement === svg).toBe(true);
-			expect(svg.attributes['fill'].ownerDocument === document).toBe(true);
+			expect(svg.attributes['fill'].ownerDocument === result).toBe(true);
 
 			expect(svg.attributes['xmlns'].name).toBe('xmlns');
 			expect(svg.attributes['xmlns'].value).toBe(NamespaceURI.html);
 			expect(svg.attributes['xmlns'].namespaceURI).toBe(NamespaceURI.xmlns);
 			expect(svg.attributes['xmlns'].specified).toBe(true);
 			expect(svg.attributes['xmlns'].ownerElement === svg).toBe(true);
-			expect(svg.attributes['xmlns'].ownerDocument === document).toBe(true);
+			expect(svg.attributes['xmlns'].ownerDocument === result).toBe(true);
 		});
 
 		it('Outputs error for a malformed SVG.', () => {
@@ -1007,6 +1001,48 @@ part2" data-testid="button"
 				`<html xmlns="http://www.w3.org/1999/xhtml"><body><parsererror style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 1 at column 7: Malformed declaration expecting version
 </div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></body></html>`
 			);
+		});
+
+		it('Encodes HTML entities encoded.', () => {
+			const result = new XMLParser(window).parse(
+				`<root>
+                    <div>&gt;</div>
+                    <div id="testnode">&gt;howdy</div>
+                    <div>&gt;&lt;&amp;&quot;&apos;</div>
+                    <div>&#x3C;div&#x3E;Hello, world!&#x3C;/div&#x3E;</div>
+                </root>`
+			);
+
+			const div1 = result.documentElement.children[0];
+			expect(div1.textContent).toBe('>');
+
+			const div2 = result.documentElement.children[1];
+			expect(div2.textContent).toBe('>howdy');
+
+			const div3 = result.documentElement.children[2];
+			expect(div3.textContent).toBe('><&"\'');
+
+			const div4 = result.documentElement.children[3];
+			expect(div4.textContent).toBe('<div>Hello, world!</div>');
+
+			expect(new XMLSerializer().serializeToString(result)).toBe(
+				`<root>
+                    <div>&gt;</div>
+                    <div id="testnode">&gt;howdy</div>
+                    <div>&gt;&lt;&amp;"'</div>
+                    <div>&lt;div&gt;Hello, world!&lt;/div&gt;</div>
+                </root>`
+			);
+		});
+
+		it('Outputs error for the "&nbsp;" entity.', () => {
+			const result = new XMLParser(window).parse(`<div>
+                Hello&nbsp;World!
+            </div>`);
+
+			expect(new XMLSerializer().serializeToString(result))
+				.toBe(`<div><parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 2 at column 28: Entity 'nbsp' not defined
+</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></div>`);
 		});
 	});
 });

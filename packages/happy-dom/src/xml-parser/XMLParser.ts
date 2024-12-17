@@ -249,8 +249,6 @@ export default class XMLParser {
 	 * @param text Text.
 	 */
 	private parsePlainText(text: string): void {
-		const document = this.window.document;
-
 		if (this.currentNode === this.rootNode) {
 			const xmlText = text.replace(SPACE_REGEXP, '');
 			if (xmlText) {
@@ -258,9 +256,13 @@ export default class XMLParser {
 				this.errorIndex = this.lastIndex;
 				this.readState = MarkupReadStateEnum.error;
 			}
+		} else if (text.includes('&nbsp;')) {
+			this.errorMessage = `Entity 'nbsp' not defined\n`;
+			this.errorIndex = this.lastIndex + text.indexOf('&nbsp;') + 6;
+			this.readState = MarkupReadStateEnum.error;
 		} else {
 			this.currentNode[PropertySymbol.appendChild](
-				document.createTextNode(XMLEncodeUtility.decodeTextContent(text)),
+				this.rootNode.createTextNode(XMLEncodeUtility.decodeXMLEntities(text)),
 				true
 			);
 		}
@@ -313,7 +315,7 @@ export default class XMLParser {
 				// We need to remove the ending "?".
 				const content = parts.slice(1).join(' ').slice(0, -1);
 				this.currentNode[PropertySymbol.appendChild](
-					this.window.document.createProcessingInstruction(name, content),
+					this.rootNode.createProcessingInstruction(name, content),
 					true
 				);
 			}
@@ -326,12 +328,10 @@ export default class XMLParser {
 	 * @param comment Comment.
 	 */
 	private parseComment(comment: string): void {
-		const document = this.window.document;
-
 		// Comments are not allowed in the root when parsing XML.
 		if (this.currentNode !== this.rootNode) {
 			this.currentNode[PropertySymbol.appendChild](
-				document.createComment(XMLEncodeUtility.decodeTextContent(comment)),
+				this.rootNode.createComment(XMLEncodeUtility.decodeXMLEntities(comment)),
 				true
 			);
 		}
@@ -347,7 +347,7 @@ export default class XMLParser {
 			this.currentNode === this.rootNode &&
 			this.rootNode[PropertySymbol.nodeArray].length === 0
 		) {
-			const documentType = this.getDocumentType(XMLEncodeUtility.decodeTextContent(text));
+			const documentType = this.getDocumentType(XMLEncodeUtility.decodeXMLEntities(text));
 
 			if (documentType?.name) {
 				this.rootNode[PropertySymbol.appendChild](
@@ -390,12 +390,12 @@ export default class XMLParser {
 		const parts = tagName.split(':');
 
 		if (parts.length > 1) {
-			this.nextElement = this.window.document.createElementNS(
+			this.nextElement = this.rootNode.createElementNS(
 				this.namespacePrefixStack[this.namespacePrefixStack.length - 1]?.get(parts[0]) || null,
 				tagName
 			);
 		} else {
-			this.nextElement = this.window.document.createElementNS(
+			this.nextElement = this.rootNode.createElementNS(
 				this.defaultNamespaceStack[this.defaultNamespaceStack.length - 1] || null,
 				tagName
 			);
@@ -418,7 +418,6 @@ export default class XMLParser {
 	 * @param isSelfClosed Is self closed.
 	 */
 	private parseEndOfStartTag(attributeString: string, isSelfClosed: boolean): void {
-		const document = this.window.document;
 		const namespacePrefix = this.namespacePrefixStack[this.namespacePrefixStack.length - 1];
 
 		if (attributeString) {
@@ -473,7 +472,7 @@ export default class XMLParser {
 					const namespaceURI = nameParts[0] === 'xmlns' ? NamespaceURI.xmlns : null;
 
 					if (!attributes.getNamedItemNS(namespaceURI, name)) {
-						const attributeItem = document.createAttributeNS(namespaceURI, name);
+						const attributeItem = this.rootNode.createAttributeNS(namespaceURI, name);
 						attributeItem[PropertySymbol.value] = value;
 						attributes[PropertySymbol.setNamedItem](attributeItem);
 
@@ -493,13 +492,13 @@ export default class XMLParser {
 						else if (name === 'xmlns' && !this.nextElement[PropertySymbol.prefix]) {
 							// We only need to create a new instance if it is a known namespace URI.
 							if (NAMESPACE_URIS.includes(value)) {
-								this.nextElement = this.window.document.createElementNS(
+								this.nextElement = this.rootNode.createElementNS(
 									value,
 									this.nextElement[PropertySymbol.tagName]
 								);
 								this.nextElement[PropertySymbol.attributes] = attributes;
 								attributes[PropertySymbol.ownerElement] = this.nextElement;
-								for (const attr of attributes[PropertySymbol.namedItems].values()) {
+								for (const attr of attributes[PropertySymbol.namespaceItems].values()) {
 									attr[PropertySymbol.ownerElement] = this.nextElement;
 								}
 							} else {
@@ -615,13 +614,11 @@ export default class XMLParser {
 	 * @param errorMessage Error message.
 	 */
 	private parseError(readXML: string, errorMessage: string): void {
-		const document = this.window.document;
-
 		let errorRoot: Element = (<XMLDocument>this.rootNode).documentElement;
 
 		if (!errorRoot) {
-			const documentElement = document.createElementNS(NamespaceURI.html, 'html');
-			const body = document.createElementNS(NamespaceURI.html, 'body');
+			const documentElement = this.rootNode.createElementNS(NamespaceURI.html, 'html');
+			const body = this.rootNode.createElementNS(NamespaceURI.html, 'body');
 			documentElement.appendChild(body);
 			errorRoot = body;
 			this.rootNode[PropertySymbol.appendChild](documentElement, true);
@@ -630,7 +627,7 @@ export default class XMLParser {
 		const rows = readXML.split('\n');
 		const column = rows[rows.length - 1].length + 1;
 		const error = `error on line ${rows.length} at column ${column}: ${errorMessage}`;
-		const errorElement = document.createElementNS(NamespaceURI.html, 'parsererror');
+		const errorElement = this.rootNode.createElementNS(NamespaceURI.html, 'parsererror');
 
 		errorElement.setAttribute(
 			'style',

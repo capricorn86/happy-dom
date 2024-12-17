@@ -167,10 +167,21 @@ describe('HTMLParser', () => {
 		
 	
 </body></html>`;
-			const result = new HTMLParser(window).parse(
-				html,
-				document.implementation.createHTMLDocument()
+			const result = <Document>(
+				new HTMLParser(window).parse(html, document.implementation.createHTMLDocument())
 			);
+			expect(result.childNodes[0].ownerDocument).toBe(result);
+			expect(result.childNodes[1].ownerDocument).toBe(result);
+			expect(result.body.children[0].childNodes[0].ownerDocument).toBe(result);
+			expect(result.body.children[0].childNodes[1].ownerDocument).toBe(result);
+			expect(result.body.children[0].childNodes[2].ownerDocument).toBe(result);
+			expect(result.body.children[0].childNodes[3].ownerDocument).toBe(result);
+			expect(result.body.children[0].childNodes[4].ownerDocument).toBe(result);
+			expect(result.body.children[0].childNodes[5].ownerDocument).toBe(result);
+			expect(result.body.children[0].childNodes[6].ownerDocument).toBe(result);
+			expect(result.body.children[0].childNodes[7].ownerDocument).toBe(result);
+			expect(result.body.children[0].childNodes[8].ownerDocument).toBe(result);
+
 			expect(new HTMLSerializer().serializeToString(result)).toBe(expected);
 		});
 
@@ -1747,6 +1758,114 @@ describe('HTMLParser', () => {
                     
                 
                 `
+			);
+		});
+
+		it('Handles <tr> without table as parent', () => {
+			const result = new HTMLParser(window).parse(
+				`<tr>
+                    <th>Test 1</th>
+                    <td>Test 2</td>
+                    <td>Test 3</td>
+                </tr>`
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`
+                    Test 1
+                    Test 2
+                    Test 3
+                `
+			);
+		});
+
+		it('Always adds <tbody> when parsing <tr> elements', () => {
+			const result = new HTMLParser(window).parse(
+				`<table>
+                    <tr>
+                        <th>Test 1</th>
+                        <td>Test 2</td>
+                        <td>Test 3</td>
+                    </tr>
+                </table>`
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`<table>
+                    <tbody><tr>
+                        <th>Test 1</th>
+                        <td>Test 2</td>
+                        <td>Test 3</td>
+                    </tr>
+                </tbody></table>`
+			);
+		});
+
+		it('Adds multiple <tbody> when parsing <tr> elements', () => {
+			debugger;
+			const result = new HTMLParser(window).parse(
+				`<table>
+                    <tr>
+                        <th>Test 1</th>
+                        <td>Test 2</td>
+                        <td>Test 3</td>
+                    </tr>
+                    <tbody>
+                        <tr>
+                            <th>Test 1</th>
+                            <td>Test 2</td>
+                            <td>Test 3</td>
+                        </tr>
+                    </tbody>
+                </table>`
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`<table>
+                    <tbody><tr>
+                        <th>Test 1</th>
+                        <td>Test 2</td>
+                        <td>Test 3</td>
+                    </tr>
+                    </tbody><tbody>
+                        <tr>
+                            <th>Test 1</th>
+                            <td>Test 2</td>
+                            <td>Test 3</td>
+                        </tr>
+                    </tbody>
+                </table>`
+			);
+		});
+
+		it('Moves invalid elements inside <table> as elements before table', () => {
+			const result = new HTMLParser(window).parse(
+				`<table><div><tr><th>Test 1</th><td>Test 2</td><td>Test 3</td></tr></div></table>`
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`<div></div><table><tbody><tr><th>Test 1</th><td>Test 2</td><td>Test 3</td></tr></tbody></table>`
+			);
+		});
+
+		it('Moves invalid elements inside <tbody> as elements before table', () => {
+			const result = new HTMLParser(window).parse(
+				`<table><tbody><div><tr><th>Test 1</th><td>Test 2</td><td>Test 3</td></tr></div></tbody></table>`
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`<div></div><table><tbody><tr><th>Test 1</th><td>Test 2</td><td>Test 3</td></tr></tbody></table>`
+			);
+		});
+
+		it('Closes invalid elements inside table if there is no parent to move them to', () => {
+			const result = new HTMLParser(window).parse(
+				`<div><tr><th>Test 1</th><td>Test 2</td><td>Test 3</td></tr></div>`,
+				document.createElement('table')
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`<table><div></div><tbody><tr><th>Test 1</th><td>Test 2</td><td>Test 3</td></tr></tbody></table>`
 			);
 		});
 	});

@@ -79,6 +79,7 @@ export default class Document extends Node {
 		string,
 		{ htmlCollection: HTMLCollection<Element> | null; elements: Element[] }
 	> = new Map();
+	public [PropertySymbol.contentType]: string = 'text/html';
 	public [PropertySymbol.hasXMLProcessingInstruction] = false;
 	public declare cloneNode: (deep?: boolean) => Document;
 
@@ -601,6 +602,15 @@ export default class Document extends Node {
 	 */
 	public get currentScript(): HTMLScriptElement {
 		return this[PropertySymbol.currentScript];
+	}
+
+	/**
+	 * Returns content type.
+	 *
+	 * @returns Content type.
+	 */
+	public get contentType(): string {
+		return this[PropertySymbol.contentType];
 	}
 
 	/**

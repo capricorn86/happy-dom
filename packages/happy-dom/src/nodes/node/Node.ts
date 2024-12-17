@@ -1108,13 +1108,13 @@ export default class Node extends EventTarget {
 				/**
 				 * 5.2.1. For each attr in node2’s attribute list:
 				 */
-				for (const attr of Array.from(
+				for (const attributes of Array.from(
 					(<Element>node2)[PropertySymbol.attributes][PropertySymbol.namedItems].values()
 				)) {
 					/**
 					 * 5.2.1.1. If attr equals attr1, then return the result of adding DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC and DOCUMENT_POSITION_PRECEDING.
 					 */
-					if (NodeUtility.isEqualNode(<Attr>attr, attr1)) {
+					if (NodeUtility.isEqualNode(attributes[0], attr1)) {
 						return (
 							Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | Node.DOCUMENT_POSITION_PRECEDING
 						);
@@ -1123,7 +1123,7 @@ export default class Node extends EventTarget {
 					/**
 					 * 5.2.1.2. If attr equals attr2, then return the result of adding DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC and DOCUMENT_POSITION_FOLLOWING.
 					 */
-					if (NodeUtility.isEqualNode(<Attr>attr, attr2)) {
+					if (NodeUtility.isEqualNode(attributes[0], attr2)) {
 						return (
 							Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | Node.DOCUMENT_POSITION_FOLLOWING
 						);

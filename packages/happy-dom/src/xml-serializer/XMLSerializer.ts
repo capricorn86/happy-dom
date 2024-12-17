@@ -137,12 +137,15 @@ export default class XMLSerializer {
 		const namespacePrefixes = new Map<string, string>(inheritedNamespacePrefixes);
 		const namedItems = (<Element>element)[PropertySymbol.attributes][PropertySymbol.namedItems];
 
-		for (const attribute of namedItems.values()) {
+		for (const attributes of namedItems.values()) {
 			if (
-				attribute[PropertySymbol.namespaceURI] === NamespaceURI.xmlns &&
-				attribute[PropertySymbol.prefix]
+				attributes[0][PropertySymbol.namespaceURI] === NamespaceURI.xmlns &&
+				attributes[0][PropertySymbol.prefix]
 			) {
-				namespacePrefixes.set(attribute[PropertySymbol.value], attribute[PropertySymbol.localName]);
+				namespacePrefixes.set(
+					attributes[0][PropertySymbol.value],
+					attributes[0][PropertySymbol.localName]
+				);
 			}
 		}
 
@@ -211,7 +214,9 @@ export default class XMLSerializer {
 		const namedItems = (<Element>element)[PropertySymbol.attributes][PropertySymbol.namedItems];
 		const handledNamespaces = new Set();
 
-		for (const attribute of namedItems.values()) {
+		for (const attributes of namedItems.values()) {
+			const attribute = attributes[0];
+
 			// Namespace attributes should be in the beginning of the string.
 			if (attribute[PropertySymbol.namespaceURI] === NamespaceURI.xmlns) {
 				if (

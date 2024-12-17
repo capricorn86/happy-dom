@@ -1,6 +1,6 @@
 import Window from '../../../src/window/Window.js';
-import XMLSerializer from '../../../src/xml-serializer/XMLSerializer.js';
-import XMLParser from '../../../src/xml-parser/XMLParser.js';
+import HTMLSerializer from '../../../src/html-serializer/HTMLSerializer.js';
+import HTMLParser from '../../../src/html-parser/HTMLParser.js';
 import CustomElement from '../../CustomElement.js';
 import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
 import Document from '../../../src/nodes/document/Document.js';
@@ -263,7 +263,7 @@ describe('Element', () => {
 
 			element.appendChild(div);
 
-			vi.spyOn(XMLSerializer.prototype, 'serializeToString').mockImplementation((rootElement) => {
+			vi.spyOn(HTMLSerializer.prototype, 'serializeToString').mockImplementation((rootElement) => {
 				expect(rootElement).toBe(div);
 				return 'EXPECTED_HTML';
 			});
@@ -295,10 +295,10 @@ describe('Element', () => {
 			element.appendChild(document.createElement('div'));
 			div.appendChild(textNode);
 
-			vi.spyOn(XMLParser, 'parse').mockImplementation(function (ownerDocument, xml, options) {
-				expect(ownerDocument).toBe(document);
-				expect(xml).toBe('SOME_HTML');
-				expect(options).toEqual({ rootNode: element });
+			vi.spyOn(HTMLParser.prototype, 'parse').mockImplementation(function (html, rootNode) {
+				expect(this.window).toBe(window);
+				expect(html).toBe('SOME_HTML');
+				expect(rootNode).toBe(element);
 				element.appendChild(div);
 				return element;
 			});
@@ -456,7 +456,7 @@ describe('Element', () => {
 
 			element.appendChild(div);
 
-			vi.spyOn(XMLSerializer.prototype, 'serializeToString').mockImplementation((rootElement) => {
+			vi.spyOn(HTMLSerializer.prototype, 'serializeToString').mockImplementation((rootElement) => {
 				expect(rootElement === div).toBe(true);
 				return 'EXPECTED_HTML';
 			});
@@ -479,7 +479,7 @@ describe('Element', () => {
 
 			element.appendChild(div);
 
-			vi.spyOn(XMLSerializer.prototype, 'serializeToString').mockImplementation((rootElement) => {
+			vi.spyOn(HTMLSerializer.prototype, 'serializeToString').mockImplementation((rootElement) => {
 				expect(rootElement === div).toBe(true);
 				return 'EXPECTED_HTML';
 			});

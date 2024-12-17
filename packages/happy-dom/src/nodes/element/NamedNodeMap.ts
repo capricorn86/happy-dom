@@ -18,7 +18,7 @@ export default class NamedNodeMap {
 	public [PropertySymbol.namespaceItems]: Map<string, Attr> = new Map();
 
 	// Items without namespaceURI as prefix, where the HTML namespace is the default namespace
-	public [PropertySymbol.namedItems]: Map<string, Attr> = new Map();
+	public [PropertySymbol.namedItems]: Map<string, Attr[]> = new Map();
 
 	public declare [PropertySymbol.ownerElement]: Element;
 
@@ -84,10 +84,15 @@ export default class NamedNodeMap {
 	 * @returns Item.
 	 */
 	public getNamedItem(name: string): Attr | null {
-		if (this[PropertySymbol.ownerElement][PropertySymbol.namespaceURI] === NamespaceURI.html) {
-			return this[PropertySymbol.namedItems].get(StringUtility.asciiLowerCase(name)) || null;
+		if (
+			this[PropertySymbol.ownerElement][PropertySymbol.namespaceURI] === NamespaceURI.html &&
+			this[PropertySymbol.ownerElement][PropertySymbol.ownerDocument][
+				PropertySymbol.contentType
+			] === 'text/html'
+		) {
+			return this[PropertySymbol.namedItems].get(StringUtility.asciiLowerCase(name))?.[0] || null;
 		}
-		return this[PropertySymbol.namedItems].get(name) || null;
+		return this[PropertySymbol.namedItems].get(name)?.[0] || null;
 	}
 
 	/**
@@ -102,7 +107,7 @@ export default class NamedNodeMap {
 			namespace = null;
 		}
 
-		return this[PropertySymbol.namespaceItems].get(`${namespace || ''}:${localName}`);
+		return this[PropertySymbol.namespaceItems].get(`${namespace || ''}:${localName}`) || null;
 	}
 
 	/**
@@ -194,6 +199,8 @@ export default class NamedNodeMap {
 			this.getNamedItemNS(item[PropertySymbol.namespaceURI], item[PropertySymbol.localName]) ||
 			null;
 
+		const namedItems = this[PropertySymbol.namedItems].get(item[PropertySymbol.name]);
+
 		if (replacedItem === item) {
 			return item;
 		}
@@ -203,7 +210,15 @@ export default class NamedNodeMap {
 			item
 		);
 
-		this[PropertySymbol.namedItems].set(item[PropertySymbol.name], item);
+		if (!namedItems?.length) {
+			this[PropertySymbol.namedItems].set(item[PropertySymbol.name], [item]);
+		} else {
+			const index = namedItems.indexOf(replacedItem);
+			if (index !== -1) {
+				namedItems.splice(index, 1);
+			}
+			namedItems.push(item);
+		}
 
 		if (!ignoreListeners) {
 			this[PropertySymbol.ownerElement][PropertySymbol.onSetAttribute](item, replacedItem);
@@ -224,7 +239,18 @@ export default class NamedNodeMap {
 		this[PropertySymbol.namespaceItems].delete(
 			`${item[PropertySymbol.namespaceURI] || ''}:${item[PropertySymbol.localName]}`
 		);
-		this[PropertySymbol.namedItems].delete(item[PropertySymbol.name]);
+
+		const namedItems = this[PropertySymbol.namedItems].get(item[PropertySymbol.name]);
+
+		if (namedItems?.length) {
+			const index = namedItems.indexOf(item);
+			if (index !== -1) {
+				namedItems.splice(index, 1);
+			}
+			if (!namedItems.length) {
+				this[PropertySymbol.namedItems].delete(item[PropertySymbol.name]);
+			}
+		}
 
 		if (!ignoreListeners) {
 			this[PropertySymbol.ownerElement][PropertySymbol.onRemoveAttribute](item);

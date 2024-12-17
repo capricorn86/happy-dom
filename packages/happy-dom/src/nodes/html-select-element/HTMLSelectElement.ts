@@ -493,10 +493,7 @@ export default class HTMLSelectElement extends HTMLElement {
 		if (this[PropertySymbol.formNode]) {
 			return this[PropertySymbol.formNode];
 		}
-		const id =
-			this[PropertySymbol.attributes][PropertySymbol.namedItems].get('form')?.[
-				PropertySymbol.value
-			];
+		const id = this.getAttribute('form');
 		if (!id || !this[PropertySymbol.isConnected]) {
 			return null;
 		}

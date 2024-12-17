@@ -8,12 +8,12 @@ import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 describe('HTMLSerializer', () => {
 	let window: Window;
 	let document: Document;
-	let xmlSerializer: HTMLSerializer;
+	let serializer: HTMLSerializer;
 
 	beforeEach(() => {
 		window = new Window();
 		document = window.document;
-		xmlSerializer = new HTMLSerializer();
+		serializer = new HTMLSerializer();
 
 		window.customElements.define('custom-element', CustomElement);
 	});
@@ -36,7 +36,7 @@ describe('HTMLSerializer', () => {
 			div.setAttribute('attr3', '');
 			div.appendChild(span);
 
-			expect(xmlSerializer.serializeToString(div)).toBe(
+			expect(serializer.serializeToString(div)).toBe(
 				'<div attr1="value1" attr2="value2" attr3=""><span attr1="value1" attr2="value2" attr3=""></span></div>'
 			);
 		});
@@ -49,7 +49,7 @@ describe('HTMLSerializer', () => {
 
 			div.appendChild(img);
 
-			expect(xmlSerializer.serializeToString(div)).toBe(
+			expect(serializer.serializeToString(div)).toBe(
 				'<div><img src="https://localhost/img.jpg"></div>'
 			);
 		});
@@ -62,7 +62,7 @@ describe('HTMLSerializer', () => {
 
 			div.appendChild(comment);
 
-			expect(xmlSerializer.serializeToString(div)).toBe('<div><!--Some comment.--></div>');
+			expect(serializer.serializeToString(div)).toBe('<div><!--Some comment.--></div>');
 		});
 
 		it('Serializes a text nodes.', () => {
@@ -73,15 +73,13 @@ describe('HTMLSerializer', () => {
 			div.appendChild(text1);
 			div.appendChild(text2);
 
-			expect(xmlSerializer.serializeToString(div)).toBe('<div>Text 1.Text 2.</div>');
+			expect(serializer.serializeToString(div)).toBe('<div>Text 1.Text 2.</div>');
 		});
 
 		it('Serializes a template node.', () => {
 			const template = document.createElement('template');
 			template.innerHTML = '<div>Test</div>';
-			expect(xmlSerializer.serializeToString(template)).toBe(
-				'<template><div>Test</div></template>'
-			);
+			expect(serializer.serializeToString(template)).toBe('<template><div>Test</div></template>');
 		});
 
 		it('Serializes a mix of nodes.', () => {
@@ -108,7 +106,7 @@ describe('HTMLSerializer', () => {
 			div.appendChild(text2);
 			div.appendChild(span1);
 
-			expect(xmlSerializer.serializeToString(div)).toBe(
+			expect(serializer.serializeToString(div)).toBe(
 				'<div><!--Comment 1.-->Text 1.<!--Comment 2.-->Text 2.<span attr1="value1" attr2="value2" attr3=""><span attr1="value1">Text 3.</span></span></div>'
 			);
 		});
@@ -126,7 +124,7 @@ describe('HTMLSerializer', () => {
 			// Connects the custom element to DOM which will trigger connectedCallback() on it
 			document.body.appendChild(div);
 
-			expect(xmlSerializer.serializeToString(div)).toBe(
+			expect(serializer.serializeToString(div)).toBe(
 				'<div><custom-element attr1="value1" attr2="value2" attr3=""></custom-element></div>'
 			);
 		});
@@ -152,11 +150,9 @@ describe('HTMLSerializer', () => {
 			// Connects the custom element to DOM which will trigger connectedCallback() on it
 			document.body.appendChild(div);
 
-			const xmlSerializer = new HTMLSerializer();
+			const serializer = new HTMLSerializer({ allShadowRoots: true });
 
-			xmlSerializer[PropertySymbol.options].allShadowRoots = true;
-
-			expect(xmlSerializer.serializeToString(div).replace(/[\s]/gm, '')).toBe(
+			expect(serializer.serializeToString(div).replace(/[\s]/gm, '')).toBe(
 				`
 					<div>
 						<custom-element key1="value1" key2="value2">
@@ -258,29 +254,29 @@ describe('HTMLSerializer', () => {
 			div.setAttribute('attr2', '<span> test');
 			div.setAttribute('attr3', '');
 
-			expect(xmlSerializer.serializeToString(div)).toBe(
-				'<div attr1="Hello ⁨John⁩" attr2="<span> test" attr3=""></div>'
+			expect(serializer.serializeToString(div)).toBe(
+				'<div attr1="Hello ⁨John⁩" attr2="&lt;span&gt; test" attr3=""></div>'
 			);
 		});
 
 		it('Serializes the is value.', () => {
 			const div = document.createElement('div', { is: 'custom-element' });
 
-			expect(xmlSerializer.serializeToString(div)).toBe('<div is="custom-element"></div>');
+			expect(serializer.serializeToString(div)).toBe('<div is="custom-element"></div>');
 		});
 
 		it('Ignores the is value if the is attribute is present.', () => {
 			const div = document.createElement('div', { is: 'custom-element' });
 			div.setAttribute('is', 'custom-replacement');
 
-			expect(xmlSerializer.serializeToString(div)).toBe('<div is="custom-replacement"></div>');
+			expect(serializer.serializeToString(div)).toBe('<div is="custom-replacement"></div>');
 		});
 
 		it('Serializes text content.', () => {
 			const div = document.createElement('div');
 
 			div.innerText = '<b>a</b>';
-			expect(xmlSerializer.serializeToString(div)).toBe('<div>&lt;b&gt;a&lt;/b&gt;</div>');
+			expect(serializer.serializeToString(div)).toBe('<div>&lt;b&gt;a&lt;/b&gt;</div>');
 		});
 
 		it('Serializes attributes to prevent injection attacks.', () => {
@@ -291,8 +287,8 @@ describe('HTMLSerializer', () => {
 			a.href = 'https://example.com" style="font-size: 500%;';
 			a.textContent = "I'm a link!";
 
-			expect(xmlSerializer.serializeToString(a)).toBe(
-				`<a xmlns="http://www.w3.org/1999/xhtml" href="https://example.com&quot; style=&quot;font-size: 500%;">I'm a link!</a>`
+			expect(serializer.serializeToString(a)).toBe(
+				`<a href="https://example.com&quot; style=&quot;font-size: 500%;">I'm a link!</a>`
 			);
 
 			document.body.innerHTML = `<a href="https://www.com/" style="background-image: url(&quot;https://cdn.cookie.org/image.svg&quot;);"></a>`;

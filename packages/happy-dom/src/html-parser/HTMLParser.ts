@@ -113,6 +113,7 @@ export default class HTMLParser {
 	private window: BrowserWindow;
 	private evaluateScripts: boolean = false;
 	private rootNode: Element | DocumentFragment | Document | null = null;
+	private rootDocument: Document | null = null;
 	private nodeStack: Node[] = [];
 	private tagNameStack: string[] = [];
 	private documentStructure: IHTMLDocumentStructure | null = null;
@@ -153,6 +154,7 @@ export default class HTMLParser {
 		rootNode?: Element | DocumentFragment | Document
 	): Element | DocumentFragment | Document {
 		this.rootNode = rootNode || this.window.document.createDocumentFragment();
+		this.rootDocument = this.rootNode instanceof Document ? this.rootNode : this.window.document;
 		this.nodeStack = [this.rootNode];
 		this.tagNameStack = [null];
 		this.currentNode = this.rootNode;
@@ -273,8 +275,6 @@ export default class HTMLParser {
 	 * @param text Text.
 	 */
 	private parsePlainText(text: string): void {
-		const document = this.window.document;
-
 		if (this.documentStructure) {
 			const level = this.documentStructure.level;
 			const { documentElement, head, body } = this.documentStructure.nodes;
@@ -288,7 +288,9 @@ export default class HTMLParser {
 					: text;
 
 			if (htmlText) {
-				const textNode = document.createTextNode(XMLEncodeUtility.decodesHTMLEntities(htmlText));
+				const textNode = this.rootDocument.createTextNode(
+					XMLEncodeUtility.decodeHTMLEntities(htmlText)
+				);
 				if (
 					this.currentNode === head &&
 					level === HTMLDocumentStructureLevelEnum.additionalHeadWithoutBody
@@ -311,7 +313,7 @@ export default class HTMLParser {
 				}
 			}
 		} else {
-			const textNode = document.createTextNode(XMLEncodeUtility.decodesHTMLEntities(text));
+			const textNode = this.rootDocument.createTextNode(XMLEncodeUtility.decodeHTMLEntities(text));
 			this.currentNode[PropertySymbol.appendChild](textNode, true);
 		}
 	}
@@ -329,7 +331,6 @@ export default class HTMLParser {
 				this.nextElement !== this.documentStructure.nodes.head ||
 				this.documentStructure.level < HTMLDocumentStructureLevelEnum.body)
 		) {
-			const document = this.window.document;
 			const attributeRegexp = new RegExp(ATTRIBUTE_REGEXP, 'gm');
 			let attributeMatch: RegExpExecArray;
 
@@ -352,12 +353,12 @@ export default class HTMLParser {
 						const namespaceURI = name === 'xmlns' ? NamespaceURI.xmlns : null;
 
 						if (!attributes.getNamedItemNS(namespaceURI, name)) {
-							const attributeItem = document.createAttributeNS(namespaceURI, name);
+							const attributeItem = this.rootDocument.createAttributeNS(namespaceURI, name);
 							attributeItem[PropertySymbol.value] = value;
 							attributes[PropertySymbol.setNamedItem](attributeItem);
 						}
 					} else if (!attributes.getNamedItem(name)) {
-						const attributeItem = document.createAttribute(name);
+						const attributeItem = this.rootDocument.createAttribute(name);
 						attributeItem[PropertySymbol.value] = value;
 						attributes[PropertySymbol.setNamedItem](attributeItem);
 					}
@@ -377,10 +378,19 @@ export default class HTMLParser {
 		const tagName = this.nextElement[PropertySymbol.tagName];
 		const lowerTagName = tagName.toLowerCase();
 		const config = HTMLElementConfig[lowerTagName];
+		let previousCurrentNode: Node | null = null;
 
-		while (true) {
+		while (previousCurrentNode !== this.rootNode) {
 			const parentLowerTagName = this.currentNode[PropertySymbol.tagName]?.toLowerCase();
 			const parentConfig = HTMLElementConfig[parentLowerTagName];
+
+			if (previousCurrentNode === this.currentNode) {
+				throw new Error(
+					'Failed to parse HTML: The parser is stuck in an infinite loop. Please report this issue.'
+				);
+			}
+
+			previousCurrentNode = this.currentNode;
 
 			// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
 			// Therefore we need to auto-close tags with the same name matching the config, so that it become valid (e.g. "<a></a><a></a>").
@@ -392,8 +402,49 @@ export default class HTMLParser {
 					HTMLElementConfigContentModelEnum.noForbiddenFirstLevelDescendants &&
 					parentConfig?.forbiddenDescendants?.includes(lowerTagName)) ||
 				(parentConfig?.contentModel === HTMLElementConfigContentModelEnum.permittedDescendants &&
-					!parentConfig?.permittedDescendants?.includes(lowerTagName))
+					!parentConfig?.permittedDescendants?.includes(lowerTagName) &&
+					(!config.addPermittedParent ||
+						(HTMLElementConfig[config.addPermittedParent].permittedParents &&
+							!HTMLElementConfig[config.addPermittedParent].permittedParents.includes(
+								parentLowerTagName
+							)) ||
+						(HTMLElementConfig[config.addPermittedParent].permittedDescendants &&
+							!HTMLElementConfig[config.addPermittedParent].permittedDescendants.includes(
+								lowerTagName
+							))))
 			) {
+				// We need to move forbidden elements inside <table> outside of the table if possible.
+				// E.g. "<table><div><tr><td></td></tr></div></table>"" should become "<div></div><table><tbody><tr><td></td></tr></tbody></table>" (<tbody> is added as <tr> has addPermittedParent as config).
+				if (
+					parentConfig?.contentModel === HTMLElementConfigContentModelEnum.permittedDescendants &&
+					parentConfig.moveForbiddenDescendant
+				) {
+					let before: Node | null = this.currentNode;
+					while (before) {
+						if (
+							!before.parentNode ||
+							!HTMLElementConfig[before.parentNode[PropertySymbol.localName]]
+								?.permittedDescendants ||
+							HTMLElementConfig[
+								before.parentNode[PropertySymbol.localName]
+							]?.permittedDescendants?.includes(lowerTagName)
+						) {
+							break;
+						} else {
+							before = before.parentNode;
+						}
+					}
+					if (before && before.parentNode) {
+						before.parentNode.insertBefore(this.nextElement, before);
+					} else {
+						before.appendChild(this.nextElement);
+					}
+					this.startTagIndex = this.markupRegExp.lastIndex;
+					this.readState = MarkupReadStateEnum.startOrEndTag;
+					return;
+				}
+				// This will close the current node
+				// E.g. "<a><a></a></a>" will become "<a></a><a></a>"
 				this.nodeStack.pop();
 				this.tagNameStack.pop();
 				this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
@@ -417,9 +468,30 @@ export default class HTMLParser {
 				!config.permittedParents.includes(parentLowerTagName)
 			) {
 				// <thead>, <tbody> and <tfoot> are only allowed as children of <table>.
-				this.readState = MarkupReadStateEnum.startOrEndTag;
-				this.startTagIndex = this.markupRegExp.lastIndex;
-				return;
+				// <tr> is only allowed as a child of <table>, <thead>, <tbody> and <tfoot>.
+				// <tbody> should be added automatically when <tr> is added directly to the table.
+				if (
+					!config.addPermittedParent ||
+					(HTMLElementConfig[config.addPermittedParent].permittedParents &&
+						!HTMLElementConfig[config.addPermittedParent].permittedParents.includes(
+							parentLowerTagName
+						)) ||
+					(HTMLElementConfig[config.addPermittedParent].permittedDescendants &&
+						!HTMLElementConfig[config.addPermittedParent].permittedDescendants.includes(
+							lowerTagName
+						))
+				) {
+					this.readState = MarkupReadStateEnum.startOrEndTag;
+					this.startTagIndex = this.markupRegExp.lastIndex;
+					return;
+				}
+
+				const permittedParent = this.rootDocument.createElement(config.addPermittedParent);
+
+				this.currentNode[PropertySymbol.appendChild](permittedParent, true);
+				this.nodeStack.push(permittedParent);
+				this.tagNameStack.push(permittedParent[PropertySymbol.tagName]);
+				this.currentNode = permittedParent;
 			} else {
 				break;
 			}
@@ -526,8 +598,9 @@ export default class HTMLParser {
 	 * @param comment Comment.
 	 */
 	private parseComment(comment: string): void {
-		const document = this.window.document;
-		const commentNode = document.createComment(XMLEncodeUtility.decodesHTMLEntities(comment));
+		const commentNode = this.rootDocument.createComment(
+			XMLEncodeUtility.decodeHTMLEntities(comment)
+		);
 
 		if (this.documentStructure) {
 			const level = this.documentStructure.level;
@@ -561,7 +634,7 @@ export default class HTMLParser {
 	 * @param text Text.
 	 */
 	private parseDocumentType(text: string): void {
-		const decodedText = XMLEncodeUtility.decodesHTMLEntities(text);
+		const decodedText = XMLEncodeUtility.decodeHTMLEntities(text);
 
 		if (this.documentStructure) {
 			const { doctype } = this.documentStructure.nodes;
@@ -596,7 +669,6 @@ export default class HTMLParser {
 	 * @param text Text.
 	 */
 	private parseRawTextElementContent(tagName: string, text: string): void {
-		const document = this.window.document;
 		const upperTagName = StringUtility.asciiUpperCase(tagName);
 
 		if (upperTagName !== this.currentNode[PropertySymbol.tagName]) {
@@ -615,7 +687,7 @@ export default class HTMLParser {
 
 		// Plain text elements such as <script> and <style> should only contain text.
 		this.currentNode[PropertySymbol.appendChild](
-			document.createTextNode(XMLEncodeUtility.decodesHTMLEntities(text)),
+			this.rootDocument.createTextNode(XMLEncodeUtility.decodeHTMLEntities(text)),
 			true
 		);
 
@@ -651,7 +723,6 @@ export default class HTMLParser {
 	 * @param tagName Tag name.
 	 */
 	private getStartTagElement(tagName: string): Element {
-		const document = this.window.document;
 		const lowerTagName = StringUtility.asciiLowerCase(tagName);
 
 		// NamespaceURI is inherited from the parent element.
@@ -659,11 +730,11 @@ export default class HTMLParser {
 
 		// NamespaceURI should be SVG when the tag name is "svg" (even in XML mode).
 		if (lowerTagName === 'svg') {
-			return document.createElementNS(NamespaceURI.svg, 'svg');
+			return this.rootDocument.createElementNS(NamespaceURI.svg, 'svg');
 		}
 
 		if (namespaceURI === NamespaceURI.svg) {
-			return document.createElementNS(
+			return this.rootDocument.createElementNS(
 				NamespaceURI.svg,
 				SVGElementConfig[lowerTagName]?.localName || tagName
 			);
@@ -698,7 +769,7 @@ export default class HTMLParser {
 				}
 				return this.documentStructure.nodes.body ?? null;
 			default:
-				return document.createElementNS(NamespaceURI.html, lowerTagName);
+				return this.rootDocument.createElementNS(NamespaceURI.html, lowerTagName);
 		}
 	}
 

@@ -16,14 +16,12 @@ export default class NamedNodeMapProxyFactory {
 	 * @param namedNodeMap
 	 */
 	public static createProxy(namedNodeMap: NamedNodeMap): NamedNodeMap {
-		const namedItems = namedNodeMap[PropertySymbol.namedItems];
-
 		const methodBinder = new ClassMethodBinder(this, [NamedNodeMap]);
 
 		return new Proxy<NamedNodeMap>(namedNodeMap, {
 			get: (target, property) => {
 				if (property === 'length') {
-					return namedItems.size;
+					return namedNodeMap[PropertySymbol.namedItems].size;
 				}
 				if (property in target || typeof property === 'symbol') {
 					methodBinder.bind(property);
@@ -31,9 +29,9 @@ export default class NamedNodeMapProxyFactory {
 				}
 				const index = Number(property);
 				if (!isNaN(index)) {
-					return Array.from(namedItems.values())[index];
+					return Array.from(namedNodeMap[PropertySymbol.namedItems].values())[index]?.[0];
 				}
-				return namedItems.get(<string>property) || undefined;
+				return target.getNamedItem(<string>property) || undefined;
 			},
 			set(target, property, newValue): boolean {
 				methodBinder.bind(property);
@@ -59,8 +57,8 @@ export default class NamedNodeMapProxyFactory {
 				return true;
 			},
 			ownKeys(): string[] {
-				const keys = Array.from(namedItems.keys());
-				for (let i = 0, max = namedItems.size; i < max; i++) {
+				const keys = Array.from(namedNodeMap[PropertySymbol.namedItems].keys());
+				for (let i = 0, max = namedNodeMap[PropertySymbol.namedItems].size; i < max; i++) {
 					keys.push(String(i));
 				}
 				return keys;
@@ -70,13 +68,13 @@ export default class NamedNodeMapProxyFactory {
 					return false;
 				}
 
-				if (property in target || namedItems.has(property)) {
+				if (property in target || namedNodeMap[PropertySymbol.namedItems].has(property)) {
 					return true;
 				}
 
 				const index = Number(property);
 
-				if (!isNaN(index) && index >= 0 && index < namedItems.size) {
+				if (!isNaN(index) && index >= 0 && index < namedNodeMap[PropertySymbol.namedItems].size) {
 					return true;
 				}
 
@@ -99,20 +97,20 @@ export default class NamedNodeMapProxyFactory {
 
 				const index = Number(property);
 
-				if (!isNaN(index) && index >= 0 && index < namedItems.size) {
+				if (!isNaN(index) && index >= 0 && index < namedNodeMap[PropertySymbol.namedItems].size) {
 					return {
-						value: Array.from(namedItems.values())[index],
+						value: Array.from(namedNodeMap[PropertySymbol.namedItems].values())[index][0],
 						writable: false,
 						enumerable: true,
 						configurable: true
 					};
 				}
 
-				const namedItem = namedItems.get(<string>property);
+				const namedItems = namedNodeMap[PropertySymbol.namedItems].get(<string>property);
 
-				if (namedItem) {
+				if (namedItems) {
 					return {
-						value: namedItem,
+						value: namedItems[0],
 						writable: false,
 						enumerable: true,
 						configurable: true

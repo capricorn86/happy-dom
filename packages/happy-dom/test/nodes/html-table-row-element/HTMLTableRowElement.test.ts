@@ -69,9 +69,20 @@ describe('HTMLTableRowElement', () => {
 		it('Inserts a new cell at the end', () => {
 			const cell = element.insertCell();
 			expect(element.childNodes[0]).toBe(cell);
+			expect(element.innerHTML).toBe('<td></td>');
+
+			debugger;
 			element.innerHTML = '<div><td>test</td></div>';
+			expect(element.innerHTML).toBe('<div></div><td>test</td>');
 			const cell2 = element.insertCell();
-			expect(element.childNodes[1]).toBe(cell2);
+			expect(element.childNodes[2]).toBe(cell2);
+			expect(element.innerHTML).toBe('<div></div><td>test</td><td></td>');
+
+			element.innerHTML = '<th>test</th>';
+			expect(element.innerHTML).toBe('<th>test</th>');
+			const cell3 = element.insertCell();
+			expect(element.childNodes[1]).toBe(cell3);
+			expect(element.innerHTML).toBe('<th></th><td></td>');
 		});
 
 		it('Inserts a new cell at the given index', () => {

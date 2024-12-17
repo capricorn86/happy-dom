@@ -4,7 +4,6 @@ import ShadowRoot from '../shadow-root/ShadowRoot.js';
 import DOMRect from '../../dom/DOMRect.js';
 import DOMTokenList from '../../dom/DOMTokenList.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
-import XMLParser from '../../xml-parser/XMLParser.js';
 import ChildNodeUtility from '../child-node/ChildNodeUtility.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtility.js';
@@ -685,7 +684,8 @@ export default class Element
 		const namespaceURI = this[PropertySymbol.namespaceURI];
 		// TODO: Is it correct to check for namespaceURI === NamespaceURI.svg?
 		const attribute =
-			namespaceURI === NamespaceURI.html
+			namespaceURI === NamespaceURI.html &&
+			this[PropertySymbol.ownerDocument][PropertySymbol.contentType] === 'text/html'
 				? this[PropertySymbol.ownerDocument].createAttribute(name)
 				: this[PropertySymbol.ownerDocument].createAttributeNS(null, name);
 		attribute[PropertySymbol.value] = String(value);
@@ -712,7 +712,7 @@ export default class Element
 	 */
 	public getAttributeNames(): string[] {
 		const names = [];
-		for (const item of this[PropertySymbol.attributes][PropertySymbol.namedItems].values()) {
+		for (const item of this[PropertySymbol.attributes][PropertySymbol.namespaceItems].values()) {
 			names.push(item[PropertySymbol.name]);
 		}
 		return names;
@@ -1438,8 +1438,7 @@ export default class Element
 	public override [PropertySymbol.connectedToDocument](): void {
 		super[PropertySymbol.connectedToDocument]();
 
-		const id =
-			this[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[PropertySymbol.value];
+		const id = this.getAttribute('id');
 		if (id) {
 			this.#addIdentifierToWindow(id);
 		}
@@ -1451,12 +1450,9 @@ export default class Element
 	public override [PropertySymbol.disconnectedFromDocument](): void {
 		super[PropertySymbol.disconnectedFromDocument]();
 
-		const id =
-			this[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[PropertySymbol.value];
+		const id = this.getAttribute('id');
 		if (id) {
-			this.#removeIdentifierFromWindow(
-				this[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[PropertySymbol.value]
-			);
+			this.#removeIdentifierFromWindow(id);
 		}
 	}
 
@@ -1564,10 +1560,9 @@ export default class Element
 			return;
 		}
 
-		const slotName =
-			addedOrRemovedNode[PropertySymbol.attributes]?.[PropertySymbol.namedItems].get('slot')?.[
-				PropertySymbol.value
-			];
+		const slotName = addedOrRemovedNode['getAttribute']
+			? (<Element>addedOrRemovedNode).getAttribute('slot')
+			: null;
 		if (slotName) {
 			const slot = shadowRoot.querySelector(`slot[name="${slotName}"]`);
 			if (slot) {
