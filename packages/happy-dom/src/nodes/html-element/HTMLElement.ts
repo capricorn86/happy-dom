@@ -619,7 +619,9 @@ export default class HTMLElement extends Element {
 		newElement[PropertySymbol.attributes][PropertySymbol.namespaceItems] =
 			this[PropertySymbol.attributes][PropertySymbol.namespaceItems];
 
-		for (const attr of newElement[PropertySymbol.attributes][PropertySymbol.namedItems].values()) {
+		for (const attr of newElement[PropertySymbol.attributes][
+			PropertySymbol.namespaceItems
+		].values()) {
 			attr[PropertySymbol.ownerElement] = newElement;
 		}
 

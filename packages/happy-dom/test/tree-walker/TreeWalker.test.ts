@@ -6,7 +6,6 @@ import Comment from '../../src/nodes/comment/Comment.js';
 import Node from '../../src/nodes/node/Node.js';
 import TreeWalkerHTML from './data/TreeWalkerHTML.js';
 import { beforeEach, describe, it, expect } from 'vitest';
-import Node from '../../src/nodes/node/Node.js';
 
 const NODE_TO_STRING = (node: Node): string => {
 	if (node instanceof Element) {
@@ -62,7 +61,7 @@ describe('TreeWalker', () => {
 				'\n\t\t\t\t',
 				'<!-- Comment 2 !-->',
 				'\n\t\t\t',
-				'\n\t\t'
+				'\n\t\t\n\t'
 			]);
 		});
 
@@ -159,7 +158,8 @@ describe('TreeWalker', () => {
 				'\n\t\t\t\t',
 				'<!-- Comment 2 !-->',
 				'\n\t\t\t',
-				'\n\t\t'
+				'\n\t\t',
+				'\n\t'
 			]);
 		});
 	});

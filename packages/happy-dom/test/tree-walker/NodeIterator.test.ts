@@ -6,7 +6,6 @@ import Comment from '../../src/nodes/comment/Comment.js';
 import Node from '../../src/nodes/node/Node.js';
 import TreeWalkerHTML from './data/TreeWalkerHTML.js';
 import { beforeEach, describe, it, expect } from 'vitest';
-import Node from '../../src/nodes/node/Node.js';
 
 const NODE_TO_STRING = (node: Node): string => {
 	if (node instanceof Element) {
@@ -38,6 +37,7 @@ describe('NodeIterator', () => {
 			}
 
 			expect(html).toEqual([
+				'<body>\n\t\t\t<div class="class1 class2" id="id">\n\t\t\t\t<!-- Comment 1 !-->\n\t\t\t\t<b>Bold</b>\n\t\t\t\t<!-- Comment 2 !-->\n\t\t\t\t<span>Span</span>\n\t\t\t</div>\n\t\t\t<article class="class1 class2" id="id">\n\t\t\t\t<!-- Comment 1 !-->\n\t\t\t\t<b>Bold</b>\n\t\t\t\t<!-- Comment 2 !-->\n\t\t\t</article>\n\t\t\n\t</body>',
 				'\n\t\t\t',
 				'<div class="class1 class2" id="id">\n\t\t\t\t<!-- Comment 1 !-->\n\t\t\t\t<b>Bold</b>\n\t\t\t\t<!-- Comment 2 !-->\n\t\t\t\t<span>Span</span>\n\t\t\t</div>',
 				'\n\t\t\t\t',
@@ -61,7 +61,7 @@ describe('NodeIterator', () => {
 				'\n\t\t\t\t',
 				'<!-- Comment 2 !-->',
 				'\n\t\t\t',
-				'\n\t\t'
+				'\n\t\t\n\t'
 			]);
 		});
 
@@ -158,7 +158,8 @@ describe('NodeIterator', () => {
 				'\n\t\t\t\t',
 				'<!-- Comment 2 !-->',
 				'\n\t\t\t',
-				'\n\t\t'
+				'\n\t\t',
+				'\n\t'
 			]);
 		});
 	});

@@ -1382,7 +1382,7 @@ describe('QuerySelector', () => {
 			const headline = document.createElement('h2');
 			headline.id = 'id';
 			section.appendChild(headline);
-			document.appendChild(section);
+			document.body.appendChild(section);
 
 			window.location.hash = '#id';
 			expect(section.querySelector(':target') === headline).toBe(true);

@@ -236,8 +236,7 @@ export default class SelectorItem {
 					? { priorityWeight: 10 }
 					: null;
 			case 'disabled':
-				return 'disabled' in element &&
-					element[PropertySymbol.attributes][PropertySymbol.namedItems].has('disabled')
+				return 'disabled' in element && element.hasAttribute('disabled')
 					? { priorityWeight: 10 }
 					: null;
 			case 'empty':

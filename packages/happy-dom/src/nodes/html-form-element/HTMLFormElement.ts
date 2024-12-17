@@ -13,7 +13,7 @@ import THTMLFormControlElement from './THTMLFormControlElement.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import RadioNodeList from './RadioNodeList.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
-import ClassMethodBinder from '../../ClassMethodBinder.js';
+import ClassMethodBinder from '../../utilities/ClassMethodBinder.js';
 import Node from '../node/Node.js';
 import Element from '../element/Element.js';
 import EventTarget from '../../event/EventTarget.js';
@@ -112,13 +112,7 @@ export default class HTMLFormElement extends HTMLElement {
 
 				for (let i = 0; i < items.length; i++) {
 					const item = items[i];
-					const name =
-						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
-							PropertySymbol.value
-						] ||
-						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('name')?.[
-							PropertySymbol.value
-						];
+					const name = item.getAttribute('id') || item.getAttribute('name');
 
 					if (name && name === property) {
 						return true;
@@ -162,13 +156,7 @@ export default class HTMLFormElement extends HTMLElement {
 
 				for (let i = 0; i < items.length; i++) {
 					const item = items[i];
-					const name =
-						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
-							PropertySymbol.value
-						] ||
-						item[PropertySymbol.attributes][PropertySymbol.namedItems].get('name')?.[
-							PropertySymbol.value
-						];
+					const name = item.getAttribute('id') || item.getAttribute('name');
 
 					if (name && name === property) {
 						return {
@@ -503,10 +491,7 @@ export default class HTMLFormElement extends HTMLElement {
 		);
 
 		if (this[PropertySymbol.isConnected]) {
-			const id =
-				this[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
-					PropertySymbol.value
-				];
+			const id = this.getAttribute('id');
 			if (id) {
 				for (const element of <THTMLFormControlElement[]>(
 					QuerySelector.querySelectorAll(
@@ -539,14 +524,7 @@ export default class HTMLFormElement extends HTMLElement {
 		name = String(name);
 
 		for (const item of items) {
-			if (
-				item[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
-					PropertySymbol.value
-				] === name ||
-				item[PropertySymbol.attributes][PropertySymbol.namedItems].get('name')?.[
-					PropertySymbol.value
-				] === name
-			) {
+			if (item.getAttribute('id') === name || item.getAttribute('name') === name) {
 				namedItems.push(item);
 			}
 		}

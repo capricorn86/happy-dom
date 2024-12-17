@@ -267,7 +267,7 @@ export default class HTMLIFrameElement extends HTMLElement {
 		if (
 			attribute[PropertySymbol.name] === 'src' &&
 			attribute[PropertySymbol.value] &&
-			!this[PropertySymbol.attributes][PropertySymbol.namedItems].has('srcdoc') &&
+			!this.hasAttribute('srcdoc') &&
 			attribute[PropertySymbol.value] !== replacedAttribute?.[PropertySymbol.value]
 		) {
 			this.#loadPage();

@@ -4,6 +4,7 @@ import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import Element from './Element.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
+import StringUtility from '../../utilities/StringUtility.js';
 
 /**
  * Named Node Map.
@@ -17,7 +18,7 @@ export default class NamedNodeMap {
 	public [PropertySymbol.namespaceItems]: Map<string, Attr> = new Map();
 
 	// Items without namespaceURI as prefix, where the HTML namespace is the default namespace
-	public [PropertySymbol.namedItems]: Map<string, Attr> = new Map();
+	public [PropertySymbol.namedItems]: Map<string, Attr[]> = new Map();
 
 	public declare [PropertySymbol.ownerElement]: Element;
 
@@ -83,14 +84,15 @@ export default class NamedNodeMap {
 	 * @returns Item.
 	 */
 	public getNamedItem(name: string): Attr | null {
-		return (
-			this[PropertySymbol.namedItems].get(
-				this[PropertySymbol.getNamedItemKey](
-					this[PropertySymbol.ownerElement][PropertySymbol.namespaceURI],
-					name
-				)
-			) || null
-		);
+		if (
+			this[PropertySymbol.ownerElement][PropertySymbol.namespaceURI] === NamespaceURI.html &&
+			this[PropertySymbol.ownerElement][PropertySymbol.ownerDocument][
+				PropertySymbol.contentType
+			] === 'text/html'
+		) {
+			return this[PropertySymbol.namedItems].get(StringUtility.asciiLowerCase(name))?.[0] || null;
+		}
+		return this[PropertySymbol.namedItems].get(name)?.[0] || null;
 	}
 
 	/**
@@ -101,15 +103,11 @@ export default class NamedNodeMap {
 	 * @returns Item.
 	 */
 	public getNamedItemNS(namespace: string, localName: string): Attr | null {
-		for (const item of this[PropertySymbol.namespaceItems].values()) {
-			if (
-				item[PropertySymbol.namespaceURI] === namespace &&
-				item[PropertySymbol.localName] === localName
-			) {
-				return item;
-			}
+		if (namespace === '') {
+			namespace = null;
 		}
-		return null;
+
+		return this[PropertySymbol.namespaceItems].get(`${namespace || ''}:${localName}`) || null;
 	}
 
 	/**
@@ -185,32 +183,41 @@ export default class NamedNodeMap {
 	 * @returns Replaced item.
 	 */
 	public [PropertySymbol.setNamedItem](item: Attr, ignoreListeners = false): Attr {
-		if (!item[PropertySymbol.name]) {
-			return null;
+		if (
+			item[PropertySymbol.ownerElement] !== null &&
+			item[PropertySymbol.ownerElement] !== this[PropertySymbol.ownerElement]
+		) {
+			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].DOMException(
+				'The attribute is in use.',
+				DOMExceptionNameEnum.inUseAttributeError
+			);
 		}
 
 		item[PropertySymbol.ownerElement] = this[PropertySymbol.ownerElement];
 
-		const namespaceItemKey = this[PropertySymbol.getNamespaceItemKey](item);
-		const replacedItem = this[PropertySymbol.namespaceItems].get(namespaceItemKey) || null;
-		const replacedNamedItem =
-			this[PropertySymbol.namedItems].get(item[PropertySymbol.name]) || null;
+		const replacedItem =
+			this.getNamedItemNS(item[PropertySymbol.namespaceURI], item[PropertySymbol.localName]) ||
+			null;
 
-		this[PropertySymbol.namespaceItems].set(namespaceItemKey, item);
+		const namedItems = this[PropertySymbol.namedItems].get(item[PropertySymbol.name]);
 
-		// The HTML namespace should be prioritized over other namespaces in the namedItems map
-		// The HTML namespace is the default namespace
-		if (
-			(!replacedNamedItem ||
-				(replacedNamedItem[PropertySymbol.namespaceURI] &&
-					replacedNamedItem[PropertySymbol.namespaceURI] !== NamespaceURI.html) ||
-				!item[PropertySymbol.namespaceURI] ||
-				item[PropertySymbol.namespaceURI] === NamespaceURI.html) &&
-			// Only lower case names should be stored in the namedItems map
-			(this[PropertySymbol.ownerElement][PropertySymbol.namespaceURI] !== NamespaceURI.html ||
-				item[PropertySymbol.name].toLowerCase() === item[PropertySymbol.name])
-		) {
-			this[PropertySymbol.namedItems].set(item[PropertySymbol.name], item);
+		if (replacedItem === item) {
+			return item;
+		}
+
+		this[PropertySymbol.namespaceItems].set(
+			`${item[PropertySymbol.namespaceURI] || ''}:${item[PropertySymbol.localName]}`,
+			item
+		);
+
+		if (!namedItems?.length) {
+			this[PropertySymbol.namedItems].set(item[PropertySymbol.name], [item]);
+		} else {
+			const index = namedItems.indexOf(replacedItem);
+			if (index !== -1) {
+				namedItems.splice(index, 1);
+			}
+			namedItems.push(item);
 		}
 
 		if (!ignoreListeners) {
@@ -228,46 +235,25 @@ export default class NamedNodeMap {
 	 */
 	public [PropertySymbol.removeNamedItem](item: Attr, ignoreListeners = false): void {
 		item[PropertySymbol.ownerElement] = null;
-		this[PropertySymbol.namespaceItems].delete(this[PropertySymbol.getNamespaceItemKey](item));
-		this[PropertySymbol.namedItems].delete(
-			this[PropertySymbol.getNamedItemKey](
-				this[PropertySymbol.ownerElement][PropertySymbol.namespaceURI],
-				item[PropertySymbol.name]
-			)
+
+		this[PropertySymbol.namespaceItems].delete(
+			`${item[PropertySymbol.namespaceURI] || ''}:${item[PropertySymbol.localName]}`
 		);
+
+		const namedItems = this[PropertySymbol.namedItems].get(item[PropertySymbol.name]);
+
+		if (namedItems?.length) {
+			const index = namedItems.indexOf(item);
+			if (index !== -1) {
+				namedItems.splice(index, 1);
+			}
+			if (!namedItems.length) {
+				this[PropertySymbol.namedItems].delete(item[PropertySymbol.name]);
+			}
+		}
 
 		if (!ignoreListeners) {
 			this[PropertySymbol.ownerElement][PropertySymbol.onRemoveAttribute](item);
 		}
-	}
-
-	/**
-	 * Returns item name based on namespace.
-	 *
-	 * @param namespaceURI Namespace.
-	 * @param name Name.
-	 * @returns Item name based on namespace.
-	 */
-	private [PropertySymbol.getNamedItemKey](namespaceURI: string, name: string): string {
-		if (!namespaceURI || namespaceURI === NamespaceURI.html) {
-			return name.toLowerCase();
-		}
-		return name;
-	}
-
-	/**
-	 * Returns item key.
-	 *
-	 * @param item Item.
-	 * @returns Key.
-	 */
-	private [PropertySymbol.getNamespaceItemKey](item: Attr): string {
-		if (
-			!item[PropertySymbol.namespaceURI] ||
-			item[PropertySymbol.namespaceURI] === NamespaceURI.html
-		) {
-			return item[PropertySymbol.name].toLowerCase();
-		}
-		return `${item[PropertySymbol.namespaceURI] || ''}:${item[PropertySymbol.name]}`;
 	}
 }

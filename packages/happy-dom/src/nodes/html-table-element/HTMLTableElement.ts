@@ -286,7 +286,14 @@ export default class HTMLTableElement extends HTMLElement {
 		const row = this[PropertySymbol.ownerDocument].createElement('tr');
 
 		if (index === -1 || index === rows.length) {
-			this.appendChild(row);
+			const tbody = QuerySelector.querySelector(this, 'tbody');
+			if (tbody) {
+				tbody.appendChild(row);
+			} else {
+				const tbody = this[PropertySymbol.ownerDocument].createElement('tbody');
+				tbody.appendChild(row);
+				this.appendChild(tbody);
+			}
 			return row;
 		}
 

@@ -207,12 +207,10 @@ export default class CSSStyleDeclarationComputedStyle {
 				elementCSSText += cssText.cssText;
 			}
 
-			const elementStyleAttribute = (<Element>parentElement.element)[PropertySymbol.attributes][
-				PropertySymbol.namedItems
-			].get('style');
+			const elementStyleAttribute = (<Element>parentElement.element).getAttribute('style');
 
 			if (elementStyleAttribute) {
-				elementCSSText += elementStyleAttribute[PropertySymbol.value];
+				elementCSSText += elementStyleAttribute;
 			}
 
 			const rulesAndProperties = CSSStyleDeclarationCSSParser.parse(elementCSSText);

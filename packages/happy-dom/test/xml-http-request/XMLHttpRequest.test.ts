@@ -199,7 +199,7 @@ describe('XMLHttpRequest', () => {
 
 		it('Returns Document when "responseType" is set to "document".', async () => {
 			await new Promise((resolve) => {
-				const responseText = 'Test';
+				const responseText = '<root>Test</root>';
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
@@ -218,9 +218,7 @@ describe('XMLHttpRequest', () => {
 				request.open('GET', REQUEST_URL, true);
 
 				request.addEventListener('load', () => {
-					expect((<Document>request.response).documentElement.outerHTML).toBe(
-						'<html><head></head><body>Test</body></html>'
-					);
+					expect((<Document>request.response).documentElement.outerHTML).toBe('<root>Test</root>');
 					resolve(null);
 				});
 
