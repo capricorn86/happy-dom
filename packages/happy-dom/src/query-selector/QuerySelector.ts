@@ -205,12 +205,6 @@ export default class QuerySelector {
 			);
 		}
 
-		if (typeof selector === 'function' || typeof selector === 'symbol') {
-			throw new window.DOMException(
-				`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`
-			);
-		}
-
 		if (typeof selector === 'function') {
 			throw new window.DOMException(
 				`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`
