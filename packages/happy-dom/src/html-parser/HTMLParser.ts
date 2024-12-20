@@ -16,21 +16,21 @@ import HTMLHeadElement from '../nodes/html-head-element/HTMLHeadElement.js';
 import HTMLBodyElement from '../nodes/html-body-element/HTMLBodyElement.js';
 import HTMLHtmlElement from '../nodes/html-html-element/HTMLHtmlElement.js';
 import XMLEncodeUtility from '../utilities/XMLEncodeUtility.js';
+import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 
 /**
  * Markup RegExp.
  *
  * Group 1: Beginning of start tag (e.g. "div" in "<div").
  * Group 2: End tag (e.g. "div" in "</div>").
- * Group 3: Comment with ending "--" (e.g. " Comment 1 " in "<!-- Comment 1 -->").
- * Group 4: Comment without ending "--" (e.g. " Comment 1 " in "<!-- Comment 1 >").
- * Group 5: Exclamation mark comment (e.g. "DOCTYPE html" in "<!DOCTYPE html>").
- * Group 6: Processing instruction (e.g. "xml version="1.0"?" in "<?xml version="1.0"?>").
+ * Group 3: Comment start tag "<!--"
+ * Group 4: Comment end tag "-->"
+ * Group 5: Document type start tag "<!"
+ * Group 6: Processing instruction start tag "<?"
  * Group 7: End of self closing start tag (e.g. "/>" in "<img/>").
- * Group 8: End of start tag (e.g. ">" in "<div>").
+ * Group 8: End of start tag or comment tag (e.g. ">" in "<div>").
  */
-const MARKUP_REGEXP =
-	/<([^\s/!>?]+)|<\/([^\s/!>?]+)\s*>|<!--([^-]+)-->|<!--([^>]+)>|<!([^>]*)>|<\?([^>]+)>|(\/>)|(>)/gm;
+const MARKUP_REGEXP = /<([^\s/!>?]+)|<\/([^\s/!>?]+)\s*>|(<!--)|(-->)|(<!)|(<\?)|(\/>)|(>)/gm;
 
 /**
  * Attribute RegExp.
@@ -46,7 +46,7 @@ const MARKUP_REGEXP =
  * Group 9: Attribute name when the attribute has no value (e.g. "disabled" in "<div disabled>").
  */
 const ATTRIBUTE_REGEXP =
-	/\s*([a-zA-Z0-9-_:.$@?\\<]+)\s*=\s*([a-zA-Z0-9-_:.$@?{}/<]+)|\s*([a-zA-Z0-9-_:.$@?\\<]+)\s*=\s*"([^"]*)("{0,1})|\s*([a-zA-Z0-9-_:.$@?\\<]+)\s*=\s*'([^']*)('{0,1})|\s*([a-zA-Z0-9-_:.$@?\\<]+)/gm;
+	/\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)\s*=\s*([a-zA-Z0-9-_:.$@?{}/<]+)|\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)\s*=\s*"([^"]*)("{0,1})|\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)\s*=\s*'([^']*)('{0,1})|\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)/gm;
 
 /**
  * Document type attribute RegExp.
@@ -69,9 +69,12 @@ const SPACE_IN_BEGINNING_REGEXP = /^\s+/;
  * Markup read state (which state the parser is in).
  */
 enum MarkupReadStateEnum {
-	startOrEndTag = 'startOrEndTag',
-	endOfStartTag = 'endOfStartTag',
-	plainTextContent = 'plainTextContent'
+	any = 'any',
+	startTag = 'startTag',
+	comment = 'comment',
+	documentType = 'documentType',
+	processingInstruction = 'processingInstruction',
+	rawTextElement = 'rawTextElement'
 }
 
 /**
@@ -121,7 +124,7 @@ export default class HTMLParser {
 	private markupRegExp: RegExp | null = null;
 	private nextElement: Element | null = null;
 	private currentNode: Node | null = null;
-	private readState: MarkupReadStateEnum = MarkupReadStateEnum.startOrEndTag;
+	private readState: MarkupReadStateEnum = MarkupReadStateEnum.any;
 
 	/**
 	 * Constructor.
@@ -158,7 +161,7 @@ export default class HTMLParser {
 		this.nodeStack = [this.rootNode];
 		this.tagNameStack = [null];
 		this.currentNode = this.rootNode;
-		this.readState = <MarkupReadStateEnum>MarkupReadStateEnum.startOrEndTag;
+		this.readState = <MarkupReadStateEnum>MarkupReadStateEnum.any;
 		this.documentStructure = null;
 		this.startTagIndex = 0;
 		this.markupRegExp = new RegExp(MARKUP_REGEXP, 'gm');
@@ -168,7 +171,7 @@ export default class HTMLParser {
 
 			if (!doctype || !documentElement || !head || !body) {
 				throw new Error(
-					'Failed to parse HTML: The root node must have "doctype", "documentElement", "head" and "body".'
+					'Failed to parse HTML: The root node must have "doctype", "documentElement", "head" and "body".\n\nWe should not end up here and it is therefore a bug in Happy DOM. Please report this issue.'
 				);
 			}
 
@@ -190,12 +193,12 @@ export default class HTMLParser {
 
 		while ((match = this.markupRegExp.exec(html))) {
 			switch (this.readState) {
-				case MarkupReadStateEnum.startOrEndTag:
+				case MarkupReadStateEnum.any:
+					// Plain text between tags.
 					if (
 						match.index !== lastIndex &&
 						(match[1] || match[2] || match[3] || match[4] || match[5] !== undefined || match[6])
 					) {
-						// Plain text between tags.
 						this.parsePlainText(html.substring(lastIndex, match.index));
 					}
 
@@ -204,32 +207,34 @@ export default class HTMLParser {
 						this.nextElement = this.getStartTagElement(match[1]);
 
 						this.startTagIndex = this.markupRegExp.lastIndex;
-						this.readState = MarkupReadStateEnum.endOfStartTag;
+						this.readState = MarkupReadStateEnum.startTag;
 					} else if (match[2]) {
 						// End tag.
 						this.parseEndTag(match[2]);
-					} else if (match[3] || match[4]) {
+					} else if (match[3]) {
 						// Comment.
-						this.parseComment(
-							match[3] ?? (match[4]?.endsWith('--') ? match[4].slice(0, -2) : match[4])
-						);
+						this.startTagIndex = this.markupRegExp.lastIndex;
+						this.readState = MarkupReadStateEnum.comment;
 					} else if (match[5] !== undefined) {
-						// Document type comment.
-						this.parseDocumentType(match[5]);
+						// Document type.
+						this.startTagIndex = this.markupRegExp.lastIndex;
+						this.readState = MarkupReadStateEnum.documentType;
 					} else if (match[6]) {
 						// Processing instruction.
-						// Should become a comment in HTML as it is not supported.
-						this.parseComment('?' + match[6]);
+						this.startTagIndex = this.markupRegExp.lastIndex;
+						this.readState = MarkupReadStateEnum.processingInstruction;
 					} else {
 						// Plain text between tags, including the matched tag as it is not a valid start or end tag.
 						this.parsePlainText(html.substring(lastIndex, this.markupRegExp.lastIndex));
 					}
 
 					break;
-				case MarkupReadStateEnum.endOfStartTag:
+				case MarkupReadStateEnum.startTag:
 					// End of start tag
 
 					// match[2] is matching an end tag in case the start tag wasn't closed (e.g. "<div\n</ul>" instead of "<div>\n</ul>").
+					// match[7] is matching "/>" (e.g. "<img/>").
+					// match[8] is matching ">" (e.g. "<div>").
 					if (match[7] || match[8] || match[2]) {
 						if (this.nextElement) {
 							const attributeString = html.substring(
@@ -241,13 +246,39 @@ export default class HTMLParser {
 							this.parseEndOfStartTag(attributeString, isSelfClosed);
 						} else {
 							// If "nextElement" is set to null, the tag is not allowed (<html>, <head> and <body> are not allowed in an HTML fragment or to be nested).
-							this.currentNode = this.rootNode;
-							this.readState = MarkupReadStateEnum.startOrEndTag;
+							this.readState = MarkupReadStateEnum.any;
 						}
 					}
 					break;
-				case MarkupReadStateEnum.plainTextContent:
+				case MarkupReadStateEnum.comment:
+					// Comment end tag.
+
+					if (match[4]) {
+						this.parseComment(html.substring(this.startTagIndex, match.index));
+						this.readState = MarkupReadStateEnum.any;
+					}
+					break;
+				case MarkupReadStateEnum.documentType:
+					// Document type end tag.
+
+					if (match[7] || match[8]) {
+						this.parseDocumentType(html.substring(this.startTagIndex, match.index));
+						this.readState = MarkupReadStateEnum.any;
+					}
+					break;
+				case MarkupReadStateEnum.processingInstruction:
+					// Processing instruction end tag.
+
+					if (match[7] || match[8]) {
+						// Processing instructions are not supported in HTML and are rendered as comments.
+						this.parseComment('?' + html.substring(this.startTagIndex, match.index));
+						this.readState = MarkupReadStateEnum.any;
+					}
+				case MarkupReadStateEnum.rawTextElement:
 					// End tag of raw text content.
+
+					// <script> and <style> elements are raw text elements.
+
 					if (match[2]) {
 						this.parseRawTextElementContent(
 							match[2],
@@ -304,6 +335,9 @@ export default class HTMLParser {
 					if (level === HTMLDocumentStructureLevelEnum.head) {
 						// Space between <head> and <body> is allowed
 						documentElement[PropertySymbol.insertBefore](textNode, body, true);
+					} else if (body.lastChild?.[PropertySymbol.nodeType] === NodeTypeEnum.textNode) {
+						// If the last child of the body is a text node, we should append the text to it.
+						body.lastChild[PropertySymbol.data] += text;
 					} else {
 						// Nodes outside <html>, <head> and <body> should be appended to the body
 						body[PropertySymbol.appendChild](textNode, true);
@@ -417,7 +451,8 @@ export default class HTMLParser {
 				// E.g. "<table><div><tr><td></td></tr></div></table>"" should become "<div></div><table><tbody><tr><td></td></tr></tbody></table>" (<tbody> is added as <tr> has addPermittedParent as config).
 				if (
 					parentConfig?.contentModel === HTMLElementConfigContentModelEnum.permittedDescendants &&
-					parentConfig.moveForbiddenDescendant
+					parentConfig.moveForbiddenDescendant &&
+					!parentConfig.moveForbiddenDescendant.exclude.includes(lowerTagName)
 				) {
 					let before: Node | null = this.currentNode;
 					while (before) {
@@ -440,7 +475,7 @@ export default class HTMLParser {
 						before.appendChild(this.nextElement);
 					}
 					this.startTagIndex = this.markupRegExp.lastIndex;
-					this.readState = MarkupReadStateEnum.startOrEndTag;
+					this.readState = MarkupReadStateEnum.any;
 					return;
 				}
 				// This will close the current node
@@ -481,7 +516,7 @@ export default class HTMLParser {
 							lowerTagName
 						))
 				) {
-					this.readState = MarkupReadStateEnum.startOrEndTag;
+					this.readState = MarkupReadStateEnum.any;
 					this.startTagIndex = this.markupRegExp.lastIndex;
 					return;
 				}
@@ -556,16 +591,16 @@ export default class HTMLParser {
 				this.nodeStack.pop();
 				this.tagNameStack.pop();
 				this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
-				this.readState = MarkupReadStateEnum.startOrEndTag;
+				this.readState = MarkupReadStateEnum.any;
 			} else {
 				// We will set the read state to "rawText" for raw text elements such as <script> and <style> elements.
 				this.readState =
 					config?.contentModel === HTMLElementConfigContentModelEnum.rawText
-						? MarkupReadStateEnum.plainTextContent
-						: MarkupReadStateEnum.startOrEndTag;
+						? MarkupReadStateEnum.rawTextElement
+						: MarkupReadStateEnum.any;
 			}
 		} else {
-			this.readState = MarkupReadStateEnum.startOrEndTag;
+			this.readState = MarkupReadStateEnum.any;
 		}
 
 		this.startTagIndex = this.markupRegExp.lastIndex;
@@ -696,7 +731,7 @@ export default class HTMLParser {
 		this.nodeStack.pop();
 		this.tagNameStack.pop();
 		this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
-		this.readState = MarkupReadStateEnum.startOrEndTag;
+		this.readState = MarkupReadStateEnum.any;
 
 		// Appends the raw text element to its parent.
 

@@ -26,10 +26,11 @@ describe('HTMLTableRowElement', () => {
 			expect(element.cells).instanceOf(HTMLCollection);
 			expect(element.cells.length).toBe(0);
 			element.innerHTML = '<div><th></th><td></td><th></th></div>';
+			expect(element.innerHTML).toBe('<div></div><th></th><td></td><th></th>');
 			expect(element.cells.length).toBe(3);
-			expect(element.cells[0]).toBe(element.children[0].children[0]);
-			expect(element.cells[1]).toBe(element.children[0].children[1]);
-			expect(element.cells[2]).toBe(element.children[0].children[2]);
+			expect(element.cells[0]).toBe(element.children[1]);
+			expect(element.cells[1]).toBe(element.children[2]);
+			expect(element.cells[2]).toBe(element.children[3]);
 		});
 	});
 
@@ -71,7 +72,6 @@ describe('HTMLTableRowElement', () => {
 			expect(element.childNodes[0]).toBe(cell);
 			expect(element.innerHTML).toBe('<td></td>');
 
-			debugger;
 			element.innerHTML = '<div><td>test</td></div>';
 			expect(element.innerHTML).toBe('<div></div><td>test</td>');
 			const cell2 = element.insertCell();
@@ -82,13 +82,14 @@ describe('HTMLTableRowElement', () => {
 			expect(element.innerHTML).toBe('<th>test</th>');
 			const cell3 = element.insertCell();
 			expect(element.childNodes[1]).toBe(cell3);
-			expect(element.innerHTML).toBe('<th></th><td></td>');
+			expect(element.innerHTML).toBe('<th>test</th><td></td>');
 		});
 
 		it('Inserts a new cell at the given index', () => {
 			element.innerHTML = '<div><td>test</td><td>test</td></div>';
 			const cell = element.insertCell(1);
-			expect(element.childNodes[0].childNodes[1]).toBe(cell);
+			expect(element.childNodes[2]).toBe(cell);
+			expect(element.innerHTML).toBe('<div></div><td>test</td><td></td><td>test</td>');
 		});
 
 		it('Inserts a new cell at the end if the index is -1', () => {

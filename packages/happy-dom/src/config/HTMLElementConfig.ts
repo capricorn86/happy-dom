@@ -12,7 +12,7 @@ export default <
 			permittedDescendants?: string[];
 			permittedParents?: string[];
 			addPermittedParent?: string;
-			moveForbiddenDescendant?: boolean;
+			moveForbiddenDescendant?: { exclude: string[] };
 		};
 	}
 >{
@@ -423,14 +423,14 @@ export default <
 		className: 'HTMLTableElement',
 		contentModel: HTMLElementConfigContentModelEnum.permittedDescendants,
 		permittedDescendants: ['caption', 'colgroup', 'thead', 'tfoot', 'tbody'],
-		moveForbiddenDescendant: true
+		moveForbiddenDescendant: { exclude: [] }
 	},
 	tbody: {
 		className: 'HTMLTableSectionElement',
 		contentModel: HTMLElementConfigContentModelEnum.permittedDescendants,
 		permittedDescendants: ['tr'],
 		permittedParents: ['table'],
-		moveForbiddenDescendant: true
+		moveForbiddenDescendant: { exclude: ['caption', 'colgroup', 'thead', 'tfoot', 'tbody'] }
 	},
 	td: {
 		className: 'HTMLTableCellElement',
@@ -443,7 +443,7 @@ export default <
 		contentModel: HTMLElementConfigContentModelEnum.permittedDescendants,
 		permittedDescendants: ['tr'],
 		permittedParents: ['table'],
-		moveForbiddenDescendant: true
+		moveForbiddenDescendant: { exclude: ['caption', 'colgroup', 'thead', 'tfoot', 'tbody'] }
 	},
 	th: {
 		className: 'HTMLTableCellElement',
@@ -456,7 +456,7 @@ export default <
 		contentModel: HTMLElementConfigContentModelEnum.permittedDescendants,
 		permittedDescendants: ['tr'],
 		permittedParents: ['table'],
-		moveForbiddenDescendant: true
+		moveForbiddenDescendant: { exclude: ['caption', 'colgroup', 'thead', 'tfoot', 'tbody'] }
 	},
 	time: {
 		className: 'HTMLTimeElement',
@@ -472,7 +472,7 @@ export default <
 		permittedDescendants: ['td', 'th'],
 		permittedParents: ['tbody', 'tfoot', 'thead'],
 		addPermittedParent: 'tbody',
-		moveForbiddenDescendant: true
+		moveForbiddenDescendant: { exclude: ['caption', 'colgroup', 'thead', 'tfoot', 'tbody', 'tr'] }
 	},
 	track: {
 		className: 'HTMLTrackElement',

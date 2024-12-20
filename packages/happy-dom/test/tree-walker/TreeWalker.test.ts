@@ -158,8 +158,7 @@ describe('TreeWalker', () => {
 				'\n\t\t\t\t',
 				'<!-- Comment 2 !-->',
 				'\n\t\t\t',
-				'\n\t\t',
-				'\n\t'
+				'\n\t\t\n\t'
 			]);
 		});
 	});

@@ -376,3 +376,5 @@ export const currentScale = Symbol('currentScale');
 export const rotate = Symbol('rotate');
 export const bindMethods = Symbol('bindMethods');
 export const hasXMLProcessingInstruction = Symbol('hasXMLProcessingInstruction');
+export const root = Symbol('root');
+export const filterNode = Symbol('filterNode');

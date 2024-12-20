@@ -75,6 +75,7 @@ describe('NodeIterator', () => {
 			}
 
 			expect(html).toEqual([
+				'<body>\n\t\t\t<div class="class1 class2" id="id">\n\t\t\t\t<!-- Comment 1 !-->\n\t\t\t\t<b>Bold</b>\n\t\t\t\t<!-- Comment 2 !-->\n\t\t\t\t<span>Span</span>\n\t\t\t</div>\n\t\t\t<article class="class1 class2" id="id">\n\t\t\t\t<!-- Comment 1 !-->\n\t\t\t\t<b>Bold</b>\n\t\t\t\t<!-- Comment 2 !-->\n\t\t\t</article>\n\t\t\n\t</body>',
 				'<div class="class1 class2" id="id">\n\t\t\t\t<!-- Comment 1 !-->\n\t\t\t\t<b>Bold</b>\n\t\t\t\t<!-- Comment 2 !-->\n\t\t\t\t<span>Span</span>\n\t\t\t</div>',
 				'<b>Bold</b>',
 				'<span>Span</span>',
@@ -96,6 +97,7 @@ describe('NodeIterator', () => {
 			}
 
 			expect(html).toEqual([
+				'<body>\n\t\t\t<div class="class1 class2" id="id">\n\t\t\t\t<!-- Comment 1 !-->\n\t\t\t\t<b>Bold</b>\n\t\t\t\t<!-- Comment 2 !-->\n\t\t\t\t<span>Span</span>\n\t\t\t</div>\n\t\t\t<article class="class1 class2" id="id">\n\t\t\t\t<!-- Comment 1 !-->\n\t\t\t\t<b>Bold</b>\n\t\t\t\t<!-- Comment 2 !-->\n\t\t\t</article>\n\t\t\n\t</body>',
 				'<div class="class1 class2" id="id">\n\t\t\t\t<!-- Comment 1 !-->\n\t\t\t\t<b>Bold</b>\n\t\t\t\t<!-- Comment 2 !-->\n\t\t\t\t<span>Span</span>\n\t\t\t</div>',
 				'<!-- Comment 1 !-->',
 				'<b>Bold</b>',
@@ -121,6 +123,7 @@ describe('NodeIterator', () => {
 			}
 
 			expect(html).toEqual([
+				'<body>\n\t\t\t<div class="class1 class2" id="id">\n\t\t\t\t<!-- Comment 1 !-->\n\t\t\t\t<b>Bold</b>\n\t\t\t\t<!-- Comment 2 !-->\n\t\t\t\t<span>Span</span>\n\t\t\t</div>\n\t\t\t<article class="class1 class2" id="id">\n\t\t\t\t<!-- Comment 1 !-->\n\t\t\t\t<b>Bold</b>\n\t\t\t\t<!-- Comment 2 !-->\n\t\t\t</article>\n\t\t\n\t</body>',
 				'<div class="class1 class2" id="id">\n\t\t\t\t<!-- Comment 1 !-->\n\t\t\t\t<b>Bold</b>\n\t\t\t\t<!-- Comment 2 !-->\n\t\t\t\t<span>Span</span>\n\t\t\t</div>',
 				'<b>Bold</b>',
 				'<span>Span</span>',
@@ -131,7 +134,7 @@ describe('NodeIterator', () => {
 
 		it('Rejects the two first nodes when provided filter function returns NodeFilter.FILTER_REJECT on the two first nodes.', () => {
 			let rejected = 0;
-			const NodeIterator = document.createNodeIterator(document.body, NodeFilter.SHOW_ALL, {
+			const nodeIterator = document.createNodeIterator(document.body, NodeFilter.SHOW_ALL, {
 				acceptNode: () => {
 					if (rejected < 2) {
 						rejected++;
@@ -143,11 +146,23 @@ describe('NodeIterator', () => {
 			const html: string[] = [];
 			let currentNode;
 
-			while ((currentNode = NodeIterator.nextNode())) {
+			while ((currentNode = nodeIterator.nextNode())) {
 				html.push(NODE_TO_STRING(currentNode));
 			}
 
 			expect(html).toEqual([
+				'<div class="class1 class2" id="id">\n\t\t\t\t<!-- Comment 1 !-->\n\t\t\t\t<b>Bold</b>\n\t\t\t\t<!-- Comment 2 !-->\n\t\t\t\t<span>Span</span>\n\t\t\t</div>',
+				'\n\t\t\t\t',
+				'<!-- Comment 1 !-->',
+				'\n\t\t\t\t',
+				'<b>Bold</b>',
+				'Bold',
+				'\n\t\t\t\t',
+				'<!-- Comment 2 !-->',
+				'\n\t\t\t\t',
+				'<span>Span</span>',
+				'Span',
+				'\n\t\t\t',
 				'\n\t\t\t',
 				'<article class="class1 class2" id="id">\n\t\t\t\t<!-- Comment 1 !-->\n\t\t\t\t<b>Bold</b>\n\t\t\t\t<!-- Comment 2 !-->\n\t\t\t</article>',
 				'\n\t\t\t\t',
@@ -158,24 +173,23 @@ describe('NodeIterator', () => {
 				'\n\t\t\t\t',
 				'<!-- Comment 2 !-->',
 				'\n\t\t\t',
-				'\n\t\t',
-				'\n\t'
+				'\n\t\t\n\t'
 			]);
 		});
 	});
 
 	describe('previousNode()', () => {
 		it('Returns the previous node when executed after a nextNode() call.', () => {
-			const NodeIterator = document.createNodeIterator(document.body);
+			const nodeIterator = document.createNodeIterator(document.body);
 			let expectedPreviousNode: Node | null = null;
 			let previousNode: Node | null = null;
 			let currentNode: Node | null = null;
 
-			while ((currentNode = NodeIterator.nextNode())) {
+			while ((currentNode = nodeIterator.nextNode())) {
 				if (previousNode) {
-					previousNode = NodeIterator.previousNode();
+					previousNode = nodeIterator.previousNode();
 					expect(previousNode === expectedPreviousNode).toBe(true);
-					NodeIterator.nextNode();
+					nodeIterator.nextNode();
 				}
 				expectedPreviousNode = currentNode;
 			}

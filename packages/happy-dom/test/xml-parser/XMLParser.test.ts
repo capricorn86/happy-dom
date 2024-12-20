@@ -1044,5 +1044,75 @@ part2" data-testid="button"
 				.toBe(`<div><parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 2 at column 28: Entity 'nbsp' not defined
 </div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></div>`);
 		});
+
+		it('Handles XML in #282', () => {
+			const result = new XMLParser(window).parse(
+				`<?xml version="1.0" encoding="UTF-8"?>
+                <!DOCTYPE start SYSTEM "http://xml.start.com/pub/start.dtd">
+                <start>
+                <div style="--en-clipped-content:fullPage; --en-clipped-source-url:https://l3pro.netlify.app/; --en-clipped-source-title:https://l3pro.netlify.app/;">
+                <div><br></br></div><div style="; font-size: 16px; display:inline-block; min-width: 100%; position: relative;"> <span><div>
+                <div>
+                    <h1 title="H1 " style="text-align:center;color:#006600;text-decoration:underline;"> This is a test </h1>
+                    <h2></h2>
+
+                    <p title="P " style="color:#660000;font-family:sans-serif;">This has some dynamic generated content</p>
+                    <p title="P " style="color:#660000;font-family:sans-serif;">This should be enought to test</p>
+                    <hr></hr>
+
+                    <p title="P " style="color:#660000;font-family:sans-serif;">Absolute paths</p>
+                    <img src="https://l3pro.netlify.app/celes.jpeg" width="50" height="100"></img>
+                    <img src="https://l3pro.netlify.app/img/guitar.jpeg" width="50" height="100"></img>
+                        <img src="https://l3pro.netlify.app/img/mk2.jpg" width="50" height="100"></img>
+                            <img src="https://l3pro.netlify.app/img/yo.png" width="50" height="100"></img>
+
+                <p title="P " style="color:#660000;font-family:sans-serif;">Relative paths</p>
+                    <img src="celes.jpeg" width="50" height="100"></img>
+                    <img src="img/guitar.jpeg" width="50" height="100"></img>
+                    <img src="img/mk2.jpg" width="50" height="100"></img>
+                                <img src="img/yo.png" width="50" height="100"></img>
+
+
+                    
+                
+
+                </div></div></span></div>
+                </div>
+                </start>`
+			);
+
+			expect(new XMLSerializer().serializeToString(result)).toBe(
+				`<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE start SYSTEM "http://xml.start.com/pub/start.dtd"><start>
+                <div style="--en-clipped-content:fullPage; --en-clipped-source-url:https://l3pro.netlify.app/; --en-clipped-source-title:https://l3pro.netlify.app/;">
+                <div><br/></div><div style="; font-size: 16px; display:inline-block; min-width: 100%; position: relative;"> <span><div>
+                <div>
+                    <h1 title="H1 " style="text-align:center;color:#006600;text-decoration:underline;"> This is a test </h1>
+                    <h2/>
+
+                    <p title="P " style="color:#660000;font-family:sans-serif;">This has some dynamic generated content</p>
+                    <p title="P " style="color:#660000;font-family:sans-serif;">This should be enought to test</p>
+                    <hr/>
+
+                    <p title="P " style="color:#660000;font-family:sans-serif;">Absolute paths</p>
+                    <img src="https://l3pro.netlify.app/celes.jpeg" width="50" height="100"/>
+                    <img src="https://l3pro.netlify.app/img/guitar.jpeg" width="50" height="100"/>
+                        <img src="https://l3pro.netlify.app/img/mk2.jpg" width="50" height="100"/>
+                            <img src="https://l3pro.netlify.app/img/yo.png" width="50" height="100"/>
+
+                <p title="P " style="color:#660000;font-family:sans-serif;">Relative paths</p>
+                    <img src="celes.jpeg" width="50" height="100"/>
+                    <img src="img/guitar.jpeg" width="50" height="100"/>
+                    <img src="img/mk2.jpg" width="50" height="100"/>
+                                <img src="img/yo.png" width="50" height="100"/>
+
+
+                    
+                
+
+                </div></div></span></div>
+                </div>
+                </start>`
+			);
+		});
 	});
 });

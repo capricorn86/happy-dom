@@ -12,6 +12,7 @@ import { beforeEach, describe, it, expect } from 'vitest';
 import CustomElement from '../CustomElement.js';
 import HTMLHtmlElement from '../../src/nodes/html-html-element/HTMLHtmlElement.js';
 import XMLSerializer from '../../src/xml-serializer/XMLSerializer.js';
+import TreeWalkerHTML from '../tree-walker/data/TreeWalkerHTML.js';
 
 describe('HTMLParser', () => {
 	let window: Window;
@@ -1802,7 +1803,6 @@ describe('HTMLParser', () => {
 		});
 
 		it('Adds multiple <tbody> when parsing <tr> elements', () => {
-			debugger;
 			const result = new HTMLParser(window).parse(
 				`<table>
                     <tr>
@@ -1867,6 +1867,200 @@ describe('HTMLParser', () => {
 			expect(new HTMLSerializer().serializeToString(result)).toBe(
 				`<table><div></div><tbody><tr><th>Test 1</th><td>Test 2</td><td>Test 3</td></tr></tbody></table>`
 			);
+		});
+
+		it('Handles HTML used for TreeWalker test', () => {
+			const result = <Document>(
+				new HTMLParser(window).parse(TreeWalkerHTML, document.implementation.createHTMLDocument())
+			);
+
+			expect(result.body.childNodes.length).toBe(5);
+			expect(result.body.childNodes[0].textContent).toBe('\n\t\t\t');
+			expect(result.body.childNodes[1].textContent).toBe(
+				'\n\t\t\t\t\n\t\t\t\tBold\n\t\t\t\t\n\t\t\t\tSpan\n\t\t\t'
+			);
+			expect(result.body.childNodes[2].textContent).toBe('\n\t\t\t');
+			expect(result.body.childNodes[3].textContent).toBe(
+				'\n\t\t\t\t\n\t\t\t\tBold\n\t\t\t\t\n\t\t\t'
+			);
+			expect(result.body.childNodes[4].textContent).toBe('\n\t\t\n\t');
+
+			expect(result.documentElement.outerHTML).toBe(`<html><head>
+			<title>Title</title>
+		</head>
+		<body>
+			<div class="class1 class2" id="id">
+				<!-- Comment 1 !-->
+				<b>Bold</b>
+				<!-- Comment 2 !-->
+				<span>Span</span>
+			</div>
+			<article class="class1 class2" id="id">
+				<!-- Comment 1 !-->
+				<b>Bold</b>
+				<!-- Comment 2 !-->
+			</article>
+		
+	</body></html>`);
+		});
+
+		it('Handles HTML entities correctly for #1494', () => {
+			const div = document.createElement('div');
+
+			div.innerText = '<b>a</b>';
+
+			expect(div.innerHTML).toBe('&lt;b&gt;a&lt;/b&gt;');
+			expect(div.outerHTML).toBe('<div>&lt;b&gt;a&lt;/b&gt;</div>');
+		});
+
+		it('Handles HTML entities correctly for #1498', () => {
+			const result = <Document>(
+				new HTMLParser(window).parse(
+					'<html test="1"><body>Test></body></html>',
+					document.implementation.createHTMLDocument()
+				)
+			);
+
+			expect(result.documentElement.outerHTML).toBe(
+				'<html test="1"><head></head><body>Test&gt;</body></html>'
+			);
+		});
+
+		it('Handles attributes with [] in the name for #1638', () => {
+			const result = new HTMLParser(window).parse(`<div [innerHTML]="'TEST'"></div>`);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`<div [innerhtml]="'TEST'"></div>`
+			);
+		});
+
+		it('Handles HTML for table tags in #1126', () => {
+			const result = new HTMLParser(window).parse(
+				`
+                <div class="test" disabled>
+                    <dl>
+                        <dt>Test
+                        <dd>Test</dt></dt></dt></dt>
+                        <dt>Test</dt>
+                        <dd>Test
+                    </dl>
+                    <select>
+                        <option>Test 1
+                        <optgroup>
+                            <option>Test 2
+                            <option>Test 3</option>
+                            <option>Test 4
+                        <optgroup>
+                            <option>Test 5
+                            <option>Test 6
+                    </select>
+                    <ruby>明日
+                        <rp>(
+                        <rt>Ashita
+                        <rp>)
+                    </ruby>
+                    <table>
+                        <caption>Test
+                        <colgroup>
+                            <col>
+                            <col>
+                            <col>
+                        <thead>
+                            <tr>
+                                <th>Test 1</th><td>Test 2<td>Test 3
+                            <tr>
+                                <th>Test 4<td>Test 5<td>Test 6</th></th></th>
+                        <tbody>
+                            <tr>
+                                <th>Test 7<td>Test 8<td>Test 9</td>
+                            </tr>
+                            <tr>
+                                <th></td></td></td></td></td></td>Test 10<td>Test 11<td>Test 12
+                        <tfoot>
+                            <tr>
+                                <th>Test 13<td>Test 14<td>Test 15
+                    </table>
+                </div>
+                `
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`
+                <div class="test" disabled="">
+                    <dl>
+                        <dt>Test
+                        </dt><dd>Test
+                        </dd><dt>Test</dt>
+                        <dd>Test
+                    </dd></dl>
+                    <select>
+                        <option>Test 1
+                        </option><optgroup>
+                            <option>Test 2
+                            </option><option>Test 3</option>
+                            <option>Test 4
+                        </option></optgroup><optgroup>
+                            <option>Test 5
+                            </option><option>Test 6
+                    </option></optgroup></select>
+                    <ruby>明日
+                        <rp>(
+                        </rp><rt>Ashita
+                        </rt><rp>)
+                    </rp></ruby>
+                    <table>
+                        <caption>Test
+                        </caption><colgroup>
+                            <col>
+                            <col>
+                            <col>
+                        </colgroup><thead>
+                            <tr>
+                                <th>Test 1</th><td>Test 2</td><td>Test 3
+                            </td></tr><tr>
+                                <th>Test 4</th><td>Test 5</td><td>Test 6
+                        </td></tr></thead><tbody>
+                            <tr>
+                                <th>Test 7</th><td>Test 8</td><td>Test 9</td>
+                            </tr>
+                            <tr>
+                                <th>Test 10</th><td>Test 11</td><td>Test 12
+                        </td></tr></tbody><tfoot>
+                            <tr>
+                                <th>Test 13</th><td>Test 14</td><td>Test 15
+                    </td></tr></tfoot></table>
+                </div>
+                `
+			);
+		});
+
+		it('Handles comment with HTML for #1630', () => {
+			const result = <Document>new HTMLParser(window).parse(
+				`<!DOCTYPE html>
+                <html lang="en">
+                <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Document</title>
+                <!-- <link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin /> -->
+                </head>
+                <body>
+                
+                </body>
+                </html>`,
+				document.implementation.createHTMLDocument()
+			);
+
+			expect(result.documentElement.outerHTML).toBe(`<html lang="en"><head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Document</title>
+                <!-- <link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin /> -->
+                </head>
+                <body>
+                
+                
+                </body></html>`);
 		});
 	});
 });
