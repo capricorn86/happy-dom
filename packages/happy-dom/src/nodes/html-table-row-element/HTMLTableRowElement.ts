@@ -95,7 +95,7 @@ export default class HTMLTableRowElement extends HTMLElement {
 			);
 		}
 
-		const cell = this[PropertySymbol.ownerDocument].createElement('th');
+		const cell = this[PropertySymbol.ownerDocument].createElement('td');
 
 		if (index === -1 || index === cells.length) {
 			this.appendChild(cell);

@@ -59,7 +59,7 @@ export default class WindowErrorUtility {
 		} else {
 			(<Element>elementOrWindow)[PropertySymbol.ownerDocument][
 				PropertySymbol.defaultView
-			].console.error(error);
+			]?.console.error(error);
 			(<Element>elementOrWindow).dispatchEvent(
 				new ErrorEvent('error', { message: error.message, error })
 			);

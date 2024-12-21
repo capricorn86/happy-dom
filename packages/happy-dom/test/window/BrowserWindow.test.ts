@@ -81,6 +81,17 @@ describe('BrowserWindow', () => {
 		});
 	});
 
+	describe('get document()', () => {
+		it('Returns the document.', () => {
+			expect(window.document).toBeInstanceOf(Document);
+			expect(window.document.isConnected).toBe(true);
+			expect(window.document.doctype.ownerDocument).toBe(window.document);
+			expect(window.document.documentElement.ownerDocument).toBe(window.document);
+			expect(window.document.head.ownerDocument).toBe(window.document);
+			expect(window.document.body.ownerDocument).toBe(window.document);
+		});
+	});
+
 	describe('get Object()', () => {
 		it('Is not the same as {}.constructor when inside the VM.', () => {
 			expect(typeof window.Object).toBe('function');

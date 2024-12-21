@@ -833,6 +833,15 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		// Document
 		this.document = new this.HTMLDocument();
 		this.document[PropertySymbol.defaultView] = this;
+		this.document[PropertySymbol.isConnected] = true;
+		this.document[PropertySymbol.nodeArray][0][PropertySymbol.isConnected] = true;
+		this.document[PropertySymbol.nodeArray][1][PropertySymbol.isConnected] = true;
+		this.document[PropertySymbol.nodeArray][1][PropertySymbol.nodeArray][0][
+			PropertySymbol.isConnected
+		] = true;
+		this.document[PropertySymbol.nodeArray][1][PropertySymbol.nodeArray][1][
+			PropertySymbol.isConnected
+		] = true;
 
 		// Ready state manager
 		this[PropertySymbol.readyStateManager].waitUntilComplete().then(() => {
@@ -1669,14 +1678,14 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this[PropertySymbol.mutationObservers] = [];
 
 		// Disconnects nodes from the document, so that they can be garbage collected.
-		const childNodes = this.document[PropertySymbol.nodeArray];
+		const childNodes = this.document.body[PropertySymbol.nodeArray];
 
 		while (childNodes.length > 0) {
 			// Makes sure that something won't be triggered by the disconnect.
 			if (childNodes[0].disconnectedCallback) {
 				delete childNodes[0].disconnectedCallback;
 			}
-			this.document.removeChild(childNodes[0]);
+			this.document.body.removeChild(childNodes[0]);
 		}
 
 		// Create some empty elements for scripts that are still running.
@@ -1685,7 +1694,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		const bodyElement = this.document.createElement('body');
 		htmlElement.appendChild(headElement);
 		htmlElement.appendChild(bodyElement);
-		this.document.appendChild(htmlElement);
+		this.document.body.appendChild(htmlElement);
 
 		if (this.location[PropertySymbol.destroy]) {
 			this.location[PropertySymbol.destroy]();

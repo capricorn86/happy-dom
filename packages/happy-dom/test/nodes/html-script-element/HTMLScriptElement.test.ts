@@ -261,7 +261,7 @@ describe('HTMLScriptElement', () => {
 				loadEventCurrentTarget = event.currentTarget;
 			});
 
-			document.body.appendChild(script);
+			window.document.body.appendChild(script);
 
 			expect((<Event>(<unknown>loadEvent)).target).toBe(null);
 			expect(loadEventTarget).toBe(script);
@@ -287,7 +287,7 @@ describe('HTMLScriptElement', () => {
 				errorEvent = <ErrorEvent>event;
 			});
 
-			document.body.appendChild(script);
+			window.document.body.appendChild(script);
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe('error');
 			expect((<ErrorEvent>(<unknown>errorEvent)).error).toBe(thrownError);
@@ -329,10 +329,15 @@ describe('HTMLScriptElement', () => {
 			expect(window['test']).toBe('test');
 		});
 
-		it('Evaluates the text content as code when using DOMParser.parseFromString().', () => {
+		it("Doesn't evaluate the text content as code when using DOMParser.parseFromString().", () => {
 			const domParser = new window.DOMParser();
-			domParser.parseFromString('<script>globalThis.test = "test";</script>', 'text/html');
-			expect(window['test']).toBe('test');
+			const result = domParser.parseFromString(
+				'<script>globalThis.test = "test";</script>',
+				'text/html'
+			);
+			expect(window['test']).toBe(undefined);
+			document.body.appendChild(result);
+			expect(window['test']).toBe(undefined);
 		});
 
 		it('Loads and evaluates an external script when "src" attribute has been set, but does not evaluate text content.', () => {

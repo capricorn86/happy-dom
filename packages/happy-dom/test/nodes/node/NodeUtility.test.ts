@@ -123,11 +123,12 @@ describe('NodeUtility', () => {
 		it('Returns false if lists does not have same length', () => {
 			const element1 = document.createElement('div');
 			const element2 = document.createElement('div');
-			const attrFoo = document.createAttribute('data-foo');
+			const attrFoo1 = document.createAttribute('data-foo');
+			const attrFoo2 = document.createAttribute('data-foo');
 			const attrBar = document.createAttribute('data-bar');
 
-			element1.setAttributeNode(attrFoo);
-			element2.setAttributeNode(attrFoo);
+			element1.setAttributeNode(attrFoo1);
+			element2.setAttributeNode(attrFoo2);
 			element1.setAttributeNode(attrBar);
 
 			expect(NodeUtility.attributeListsEqual(element1, element2)).toEqual(false);
@@ -136,13 +137,14 @@ describe('NodeUtility', () => {
 		it('Returns false if lists are not equal', () => {
 			const element1 = document.createElement('div');
 			const element2 = document.createElement('div');
-			const attrFoo = document.createAttribute('data-foo');
+			const attrFoo1 = document.createAttribute('data-foo');
+			const attrFoo2 = document.createAttribute('data-foo');
 			const attrBar = document.createAttribute('data-bar');
 			const attrLorem = document.createAttribute('data-lorem');
 
-			element1.setAttributeNode(attrFoo);
+			element1.setAttributeNode(attrFoo1);
 			element1.setAttributeNode(attrBar);
-			element2.setAttributeNode(attrFoo);
+			element2.setAttributeNode(attrFoo2);
 			element2.setAttributeNode(attrLorem);
 
 			expect(NodeUtility.attributeListsEqual(element1, element2)).toEqual(false);
@@ -151,10 +153,11 @@ describe('NodeUtility', () => {
 		it('Returns true if attribute lists are equal', () => {
 			const element1 = document.createElement('div');
 			const element2 = document.createElement('div');
-			const attrFoo = document.createAttribute('data-foo');
+			const attrFoo1 = document.createAttribute('data-foo');
+			const attrFoo2 = document.createAttribute('data-foo');
 
-			element1.setAttributeNode(attrFoo);
-			element2.setAttributeNode(attrFoo);
+			element1.setAttributeNode(attrFoo1);
+			element2.setAttributeNode(attrFoo2);
 
 			expect(NodeUtility.attributeListsEqual(element1, element2)).toEqual(true);
 		});

@@ -77,8 +77,8 @@ export default class NodeUtility {
 			parent = parent[PropertySymbol.parentNode]
 				? parent[PropertySymbol.parentNode]
 				: includeShadowRoots && (<ShadowRoot>parent).host
-					? (<ShadowRoot>parent).host
-					: null;
+				? (<ShadowRoot>parent).host
+				: null;
 		}
 
 		return false;
@@ -209,9 +209,10 @@ export default class NodeUtility {
 			let found = false;
 			for (const attributeB of attributesB) {
 				if (
-					attributeA[PropertySymbol.namespaceURI] === attributeB[PropertySymbol.namespaceURI] &&
-					attributeA.localName === attributeB.localName &&
-					attributeA[PropertySymbol.value] === attributeB[PropertySymbol.value]
+					attributeA[0][PropertySymbol.namespaceURI] ===
+						attributeB[0][PropertySymbol.namespaceURI] &&
+					attributeA[0].localName === attributeB[0].localName &&
+					attributeA[0][PropertySymbol.value] === attributeB[0][PropertySymbol.value]
 				) {
 					found = true;
 					break;

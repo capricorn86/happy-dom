@@ -1,7 +1,7 @@
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
-import XMLSerializer from '../../../src/xml-serializer/XMLSerializer.js';
+import HTMLSerializer from '../../../src/html-serializer/HTMLSerializer.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import CustomElement from '../../CustomElement.js';
 
@@ -40,7 +40,7 @@ describe('HTMLTemplateElement', () => {
 
 			expect(element.childNodes.length).toBe(0);
 			expect(element.innerHTML).toBe('<div>Test</div>');
-			expect(new XMLSerializer().serializeToString(element.content)).toBe('<div>Test</div>');
+			expect(new HTMLSerializer().serializeToString(element.content)).toBe('<div>Test</div>');
 
 			element.removeChild(div);
 
@@ -58,7 +58,7 @@ describe('HTMLTemplateElement', () => {
 
 			expect(element.childNodes.length).toBe(0);
 			expect(element.innerHTML).toBe('<div>Test</div>');
-			expect(new XMLSerializer().serializeToString(element.content)).toBe('<div>Test</div>');
+			expect(new HTMLSerializer().serializeToString(element.content)).toBe('<div>Test</div>');
 
 			element.innerHTML = '';
 
@@ -130,7 +130,7 @@ describe('HTMLTemplateElement', () => {
 
 			expect(element.childNodes.length).toBe(0);
 			expect(element.getInnerHTML()).toBe('<div>Test</div>');
-			expect(new XMLSerializer().serializeToString(element.content)).toBe('<div>Test</div>');
+			expect(new HTMLSerializer().serializeToString(element.content)).toBe('<div>Test</div>');
 
 			element.removeChild(div);
 
@@ -162,7 +162,7 @@ describe('HTMLTemplateElement', () => {
 
 			expect(element.childNodes.length).toBe(0);
 			expect(element.getHTML()).toBe('<div>Test</div>');
-			expect(new XMLSerializer().serializeToString(element.content)).toBe('<div>Test</div>');
+			expect(new HTMLSerializer().serializeToString(element.content)).toBe('<div>Test</div>');
 
 			element.removeChild(div);
 

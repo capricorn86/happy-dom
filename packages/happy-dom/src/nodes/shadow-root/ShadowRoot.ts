@@ -1,13 +1,13 @@
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import XMLParser from '../../xml-parser/XMLParser.js';
-import XMLSerializer from '../../xml-serializer/XMLSerializer.js';
 import Element from '../element/Element.js';
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import HTMLElement from '../../nodes/html-element/HTMLElement.js';
 import Event from '../../event/Event.js';
 import SVGElement from '../svg-element/SVGElement.js';
 import Document from '../document/Document.js';
+import HTMLSerializer from '../../html-serializer/HTMLSerializer.js';
+import HTMLParser from '../../html-parser/HTMLParser.js';
 
 /**
  * ShadowRoot.
@@ -119,12 +119,12 @@ export default class ShadowRoot extends DocumentFragment {
 	 * @returns HTML.
 	 */
 	public get innerHTML(): string {
-		const xmlSerializer = new XMLSerializer();
-		let xml = '';
+		const serializer = new HTMLSerializer();
+		let html = '';
 		for (const node of this[PropertySymbol.nodeArray]) {
-			xml += xmlSerializer.serializeToString(node);
+			html += serializer.serializeToString(node);
 		}
-		return xml;
+		return html;
 	}
 
 	/**
@@ -139,7 +139,7 @@ export default class ShadowRoot extends DocumentFragment {
 			this.removeChild(childNodes[0]);
 		}
 
-		XMLParser.parse(this[PropertySymbol.ownerDocument], html, { rootNode: this });
+		new HTMLParser(this[PropertySymbol.window]).parse(html, this);
 	}
 
 	/**
@@ -211,7 +211,7 @@ export default class ShadowRoot extends DocumentFragment {
 			this.removeChild(childNodes[0]);
 		}
 
-		XMLParser.parse(this[PropertySymbol.ownerDocument], html, { rootNode: this });
+		new HTMLParser(this[PropertySymbol.window]).parse(html, this);
 	}
 
 	/**

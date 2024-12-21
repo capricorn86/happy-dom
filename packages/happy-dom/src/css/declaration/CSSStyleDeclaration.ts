@@ -4963,10 +4963,7 @@ export default class CSSStyleDeclaration {
 			return new CSSStyleDeclarationComputedStyle(element).getComputedStyle();
 		}
 
-		const attributeValue =
-			element[PropertySymbol.attributes][PropertySymbol.namedItems].get('style')?.[
-				PropertySymbol.value
-			];
+		const attributeValue = element.getAttribute('style') || '';
 
 		if (cache.attributeValue !== attributeValue) {
 			cache.propertyManager = new CSSStyleDeclarationPropertyManager({ cssText: attributeValue });

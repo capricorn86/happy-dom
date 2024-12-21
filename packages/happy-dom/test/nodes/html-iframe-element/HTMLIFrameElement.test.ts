@@ -178,7 +178,7 @@ describe('HTMLIFrameElement', () => {
 				element.addEventListener('load', () => {
 					resolve(page.mainFrame.childFrames[0].url);
 				});
-				document.appendChild(element);
+				document.body.appendChild(element);
 			});
 			expect(url).toBe('about:srcdoc');
 		});

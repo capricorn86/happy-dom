@@ -8,12 +8,12 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import RangeUtility from './RangeUtility.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import NodeUtility from '../nodes/node/NodeUtility.js';
-import XMLParser from '../xml-parser/XMLParser.js';
 import Comment from '../nodes/comment/Comment.js';
 import Text from '../nodes/text/Text.js';
 import DOMRectList from '../dom/DOMRectList.js';
 import IRangeBoundaryPoint from './IRangeBoundaryPoint.js';
 import BrowserWindow from '../window/BrowserWindow.js';
+import HTMLParser from '../html-parser/HTMLParser.js';
 
 /**
  * Range.
@@ -433,8 +433,8 @@ export default class Range {
 	 * @returns Document fragment.
 	 */
 	public createContextualFragment(tagString: string): DocumentFragment {
-		// TODO: We only have support for HTML in the parser currently, so it is not necessary to check which context it is
-		return <DocumentFragment>XMLParser.parse(this[PropertySymbol.ownerDocument], tagString);
+		// TODO: Implement support for checking which context to use
+		return <DocumentFragment>new HTMLParser(this[PropertySymbol.window]).parse(tagString);
 	}
 
 	/**

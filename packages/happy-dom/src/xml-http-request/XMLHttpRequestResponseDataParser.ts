@@ -48,7 +48,7 @@ export default class XMLHttpRequestResponseDataParser {
 				const domParser = new window.DOMParser();
 
 				try {
-					return domParser.parseFromString(options.data.toString(), 'text/xml');
+					return domParser.parseFromString(options.data.toString(), 'application/xml');
 				} catch (e) {
 					// Ignore error.
 				}
