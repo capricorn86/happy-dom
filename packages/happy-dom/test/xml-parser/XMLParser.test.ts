@@ -1128,5 +1128,15 @@ part2" data-testid="button"
                 <!-- <div>Test</div> -->
             </root>`);
 		});
+
+		it('Outputs error for unclosed comment', () => {
+			const result = new XMLParser(window).parse(`<root>
+                <!-- <div>Test</div>
+            </root>`);
+
+			expect(new XMLSerializer().serializeToString(result))
+				.toBe(`<root><parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 3 at column 20: Comment not terminated
+</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></root>`);
+		});
 	});
 });

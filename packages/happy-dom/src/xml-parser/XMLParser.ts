@@ -239,6 +239,12 @@ export default class XMLParser {
 			return this.rootNode;
 		}
 
+		if (this.readState === MarkupReadStateEnum.comment) {
+			this.parseError(xml, 'Comment not terminated\n');
+			this.removeOverflowingTextNodes();
+			return this.rootNode;
+		}
+
 		// Missing start tag (e.g. when parsing just a string like "Test").
 		if (this.rootNode[PropertySymbol.elementArray].length === 0) {
 			this.parseError('', `Start tag expected, '&lt;' not found`);
