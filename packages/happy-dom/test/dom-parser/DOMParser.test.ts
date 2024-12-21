@@ -4,10 +4,13 @@ import DOMParser from '../../src/dom-parser/DOMParser.js';
 import DOMParserHTML from './data/DOMParserHTML.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import XMLSerializer from '../../src/xml-serializer/XMLSerializer.js';
+import HTMLElement from '../../src/nodes/html-element/HTMLElement.js';
+import Document from '../../src/nodes/document/Document.js';
 
 describe('DOMParser', () => {
 	let domParser: DOMParser;
 	let window: Window;
+	let document: Document;
 
 	beforeEach(() => {
 		window = new Window({
@@ -18,6 +21,7 @@ describe('DOMParser', () => {
 				enableFileSystemHttpRequests: false
 			}
 		});
+		document = window.document;
 		domParser = new window.DOMParser();
 	});
 
@@ -191,6 +195,8 @@ describe('DOMParser', () => {
 				'application/xml'
 			);
 
+			expect(newDocument.defaultView).toBe(window);
+
 			expect(new XMLSerializer().serializeToString(newDocument))
 				.toBe(`<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE start SYSTEM "http://xml.start.com/pub/start.dtd"><start>
                 <div style="--en-clipped-content:fullPage; --en-clipped-source-url:https://l3pro.netlify.app/; --en-clipped-source-title:https://l3pro.netlify.app/;">
@@ -222,6 +228,49 @@ describe('DOMParser', () => {
                 </div></div></span></div>
                 </div>
                 </start>`);
+		});
+
+		it('Does not call connectedCallback on custom elements as they are not connected to the main document', () => {
+			/* eslint-disable jsdoc/require-jsdoc */
+			class CustomElement extends HTMLElement {
+				public connectedCount = 0;
+				public disconnectedCount = 0;
+
+				constructor() {
+					super();
+					this.attachShadow({ mode: 'open' });
+				}
+
+				public connectedCallback(): void {
+					this.connectedCount++;
+				}
+
+				public disconnectedCallback(): void {
+					this.disconnectedCount++;
+				}
+			}
+
+			window.customElements.define('custom-element', CustomElement);
+
+			/* eslint-enable jsdoc/require-jsdoc */
+
+			const newDocument = domParser.parseFromString(
+				'<custom-element></custom-element>',
+				'text/html'
+			);
+
+			expect(newDocument.isConnected).toBe(false);
+			expect(newDocument.defaultView).toBe(window);
+
+			const customElement = <CustomElement>newDocument.querySelector('custom-element');
+
+			expect(customElement.connectedCount).toBe(0);
+			expect(customElement.disconnectedCount).toBe(0);
+
+			document.body.appendChild(customElement);
+
+			expect(customElement.connectedCount).toBe(1);
+			expect(customElement.disconnectedCount).toBe(0);
 		});
 	});
 });

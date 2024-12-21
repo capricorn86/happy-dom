@@ -32,9 +32,9 @@ export default class DOMParser {
 
 		switch (mimeType) {
 			case 'text/html':
-				return <Document>(
-					new HTMLParser(this[PropertySymbol.window]).parse(string, new window.HTMLDocument())
-				);
+				const newDocument = new window.HTMLDocument();
+				newDocument[PropertySymbol.defaultView] = window;
+				return <Document>new HTMLParser(this[PropertySymbol.window]).parse(string, newDocument);
 			case 'image/svg+xml':
 			case 'text/xml':
 			case 'application/xml':

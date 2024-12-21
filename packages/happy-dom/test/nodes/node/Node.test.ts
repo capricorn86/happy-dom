@@ -537,6 +537,19 @@ describe('Node', () => {
 			expect(parent.childNodes.length).toBe(1);
 			expect(parent.childNodes[0]).toBe(child);
 		});
+
+		it('Sets ownerDocument on the child node.', () => {
+			const parent = document.createElement('div');
+			const domParser = new window.DOMParser();
+			const newDocument = domParser.parseFromString('<span></span>', 'text/html');
+			const span = <Node>newDocument.querySelector('span');
+
+			expect(span.ownerDocument === newDocument).toBe(true);
+
+			parent.appendChild(span);
+
+			expect(span.ownerDocument === document).toBe(true);
+		});
 	});
 
 	describe('removeChild()', () => {
@@ -754,6 +767,21 @@ describe('Node', () => {
 			expect(parent.childNodes.length).toBe(2);
 			expect(parent.childNodes[0]).toBe(newNode);
 			expect(parent.childNodes[1]).toBe(referenceNode);
+		});
+
+		it('Sets ownerDocument on the child node.', () => {
+			const parent = document.createElement('div');
+			const article = document.createElement('article');
+			const domParser = new window.DOMParser();
+			const newDocument = domParser.parseFromString('<span></span>', 'text/html');
+			const span = <Node>newDocument.querySelector('span');
+
+			expect(span.ownerDocument === newDocument).toBe(true);
+
+			parent.appendChild(article);
+			parent.insertBefore(span, article);
+
+			expect(span.ownerDocument === document).toBe(true);
 		});
 	});
 

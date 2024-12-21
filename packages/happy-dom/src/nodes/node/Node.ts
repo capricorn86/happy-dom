@@ -922,6 +922,15 @@ export default class Node extends EventTarget {
 		const parent = parentNode || this[PropertySymbol.host];
 
 		if (parentNode) {
+			this[PropertySymbol.ownerDocument] =
+				parentNode[PropertySymbol.ownerDocument] || <Document>parentNode;
+			this[PropertySymbol.window] =
+				parentNode[PropertySymbol.window] || parentNode[PropertySymbol.defaultView];
+
+			if (this[PropertySymbol.nodeType] !== NodeTypeEnum.documentFragmentNode) {
+				this[PropertySymbol.rootNode] = this[PropertySymbol.parentNode][PropertySymbol.rootNode];
+			}
+
 			if (parentNode[PropertySymbol.styleNode] && this[PropertySymbol.tagName] !== 'STYLE') {
 				this[PropertySymbol.styleNode] = parentNode[PropertySymbol.styleNode];
 			}
@@ -998,10 +1007,6 @@ export default class Node extends EventTarget {
 	 */
 	public [PropertySymbol.connectedToDocument](): void {
 		this[PropertySymbol.isConnected] = true;
-
-		if (this[PropertySymbol.nodeType] !== NodeTypeEnum.documentFragmentNode) {
-			this[PropertySymbol.rootNode] = this[PropertySymbol.parentNode][PropertySymbol.rootNode];
-		}
 
 		// eslint-disable-next-line
 		if ((<any>this)[PropertySymbol.shadowRoot]) {

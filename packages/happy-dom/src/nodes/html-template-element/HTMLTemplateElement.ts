@@ -2,7 +2,6 @@ import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import Node from '../node/Node.js';
-import XMLParser from '../../xml-parser/XMLParser.js';
 import ShadowRoot from '../shadow-root/ShadowRoot.js';
 import HTMLSerializer from '../../html-serializer/HTMLSerializer.js';
 import HTMLParser from '../../html-parser/HTMLParser.js';

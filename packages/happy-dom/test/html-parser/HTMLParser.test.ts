@@ -2043,6 +2043,7 @@ describe('HTMLParser', () => {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Document</title>
                 <!-- <link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin /> -->
+                <!-- <link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin /> --!>
                 </head>
                 <body>
                 
@@ -2056,11 +2057,30 @@ describe('HTMLParser', () => {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Document</title>
                 <!-- <link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin /> -->
+                <!-- <link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin /> -->
                 </head>
                 <body>
                 
                 
                 </body></html>`);
+		});
+
+		it('Handles unknown element child without a config inside a known parent element with a config', () => {
+			const result = new HTMLParser(window).parse(
+				`<div>
+                    <table>
+                        <unknown-element></unknown-element>
+                    </table>
+                </div>`
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`<div>
+                    <unknown-element></unknown-element><table>
+                        
+                    </table>
+                </div>`
+			);
 		});
 	});
 });

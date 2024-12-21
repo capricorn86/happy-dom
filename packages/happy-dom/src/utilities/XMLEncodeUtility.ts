@@ -34,13 +34,13 @@ export default class XMLEncodeUtility {
 		}
 
 		return value
-			.replace(/&amp;/gu, '&')
 			.replace(/&quot;/gu, '"')
 			.replace(/&lt;/gu, '<')
 			.replace(/&gt;/gu, '>')
 			.replace(/&#x9;/gu, '\t')
 			.replace(/&#xA;/gu, '\n')
-			.replace(/&#xD;/gu, '\r');
+			.replace(/&#xD;/gu, '\r')
+			.replace(/&amp;/gu, '&');
 	}
 
 	/**
@@ -73,10 +73,10 @@ export default class XMLEncodeUtility {
 		}
 
 		return text
-			.replace(/&amp;/gu, '&')
 			.replace(/&nbsp;/gu, String.fromCharCode(160))
 			.replace(/&lt;/gu, '<')
-			.replace(/&gt;/gu, '>');
+			.replace(/&gt;/gu, '>')
+			.replace(/&amp;/gu, '&');
 	}
 
 	/**
@@ -91,14 +91,14 @@ export default class XMLEncodeUtility {
 		}
 
 		return value
-			.replace(/&amp;/gu, '&')
 			.replace(/&lt;/gu, '<')
 			.replace(/&gt;/gu, '>')
 			.replace(/&nbsp;/gu, String.fromCharCode(160))
 			.replace(/&quot;/gu, '"')
 			.replace(/&apos;/gu, "'")
 			.replace(/&#(\d+);/gu, (_match, dec) => String.fromCharCode(parseInt(dec, 10)))
-			.replace(/&#x([A-Fa-f\d]+);/gu, (_match, hex) => String.fromCharCode(parseInt(hex, 16)));
+			.replace(/&#x([A-Fa-f\d]+);/gu, (_match, hex) => String.fromCharCode(parseInt(hex, 16)))
+			.replace(/&amp;/gu, '&');
 	}
 
 	/**
@@ -114,14 +114,14 @@ export default class XMLEncodeUtility {
 
 		return (
 			value
-				.replace(/&amp;/gu, '&')
 				.replace(/&lt;/gu, '<')
 				.replace(/&gt;/gu, '>')
-				// .replace(/&nbsp;/gu, String.fromCharCode(160))
+				// "&nbsp;" Should not be supported in XML.
 				.replace(/&quot;/gu, '"')
 				.replace(/&apos;/gu, "'")
 				.replace(/&#(\d+);/gu, (_match, dec) => String.fromCharCode(parseInt(dec, 10)))
 				.replace(/&#x([A-Fa-f\d]+);/gu, (_match, hex) => String.fromCharCode(parseInt(hex, 16)))
+				.replace(/&amp;/gu, '&')
 		);
 	}
 }

@@ -261,7 +261,7 @@ describe('HTMLScriptElement', () => {
 				loadEventCurrentTarget = event.currentTarget;
 			});
 
-			document.body.appendChild(script);
+			window.document.body.appendChild(script);
 
 			expect((<Event>(<unknown>loadEvent)).target).toBe(null);
 			expect(loadEventTarget).toBe(script);
@@ -287,7 +287,7 @@ describe('HTMLScriptElement', () => {
 				errorEvent = <ErrorEvent>event;
 			});
 
-			document.body.appendChild(script);
+			window.document.body.appendChild(script);
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe('error');
 			expect((<ErrorEvent>(<unknown>errorEvent)).error).toBe(thrownError);

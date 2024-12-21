@@ -5,7 +5,6 @@ import Node from '../node/Node.js';
 import NodeIterator from '../../tree-walker/NodeIterator.js';
 import TreeWalker from '../../tree-walker/TreeWalker.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
-import XMLParser from '../../xml-parser/XMLParser.js';
 import Event from '../../event/Event.js';
 import DOMImplementation from '../../dom-implementation/DOMImplementation.js';
 import INodeFilter from '../../tree-walker/INodeFilter.js';
@@ -66,7 +65,7 @@ export default class Document extends Node {
 	public [PropertySymbol.isFirstWrite] = true;
 	public [PropertySymbol.isFirstWriteAfterOpen] = false;
 	public [PropertySymbol.nodeType] = NodeTypeEnum.documentNode;
-	public [PropertySymbol.isConnected] = true;
+	public [PropertySymbol.isConnected] = false;
 	public [PropertySymbol.adoptedStyleSheets]: CSSStyleSheet[] = [];
 	public [PropertySymbol.implementation] = new DOMImplementation(this);
 	public [PropertySymbol.readyState] = DocumentReadyStateEnum.interactive;

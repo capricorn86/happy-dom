@@ -1,6 +1,5 @@
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import XMLParser from '../../xml-parser/XMLParser.js';
 import Element from '../element/Element.js';
 import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import HTMLElement from '../../nodes/html-element/HTMLElement.js';

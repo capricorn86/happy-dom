@@ -18,8 +18,7 @@ import XMLEncodeUtility from '../utilities/XMLEncodeUtility.js';
  * Group 7: End of self closing start tag (e.g. "/>" in "<img/>").
  * Group 8: End of start tag (e.g. ">" in "<div>").
  */
-const MARKUP_REGEXP =
-	/<([^\s/!>?]+)|<\/([^\s/!>?]+)\s*>|<!--([^-]+)-->|<!--([^>]+)>|<!([^>]*)>|<\?([^>]+)>|(\/>)|(>)/gm;
+const MARKUP_REGEXP = /<([^\s/!>?]+)|<\/([^\s/!>?]+)\s*>|(<!--)|(-->)|(<!)|(<\?)|(\/>)|(>)/gm;
 
 /**
  * Attribute RegExp.
@@ -66,8 +65,11 @@ const NEW_LINE_REGEXP = /\n/g;
  * Markup read state (which state the parser is in).
  */
 enum MarkupReadStateEnum {
-	startOrEndTag = 'startOrEndTag',
-	endOfStartTag = 'endOfStartTag',
+	any = 'any',
+	startTag = 'startTag',
+	comment = 'comment',
+	documentType = 'documentType',
+	processingInstruction = 'processingInstruction',
 	error = 'error'
 }
 
@@ -99,7 +101,7 @@ export default class XMLParser {
 	private nextElement: Element | null = null;
 	private nextTagName: string | null = null;
 	private currentNode: Node | null = null;
-	private readState: MarkupReadStateEnum = MarkupReadStateEnum.startOrEndTag;
+	private readState: MarkupReadStateEnum = MarkupReadStateEnum.any;
 	private errorMessage: string | null = null;
 
 	/**
@@ -124,7 +126,7 @@ export default class XMLParser {
 		this.nodeStack = [this.rootNode];
 		this.tagNameStack = [null];
 		this.currentNode = this.rootNode;
-		this.readState = <MarkupReadStateEnum>MarkupReadStateEnum.startOrEndTag;
+		this.readState = <MarkupReadStateEnum>MarkupReadStateEnum.any;
 		this.defaultNamespaceStack = [null];
 		this.namespacePrefixStack = [null];
 		this.startTagIndex = 0;
@@ -134,11 +136,13 @@ export default class XMLParser {
 		this.lastIndex = 0;
 		let match: RegExpExecArray;
 
+		this.rootNode[PropertySymbol.defaultView] = this.window;
+
 		xml = String(xml);
 
 		while ((match = this.markupRegExp.exec(xml))) {
 			switch (this.readState) {
-				case MarkupReadStateEnum.startOrEndTag:
+				case MarkupReadStateEnum.any:
 					if (
 						match.index !== this.lastIndex &&
 						(match[1] || match[2] || match[3] || match[4] || match[5] !== undefined || match[6])
@@ -160,33 +164,29 @@ export default class XMLParser {
 							this.readState = MarkupReadStateEnum.error;
 							this.removeOverflowingTextNodes();
 						}
-					} else if (
-						match[3] ||
-						match[4] ||
-						(match[6] &&
-							(<Element>this.currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.html)
-					) {
+					} else if (match[3]) {
 						// Comment.
-						this.parseComment(
-							match[3] ??
-								(match[4]?.endsWith('--') ? match[4].slice(0, -2) : match[4] ?? null) ??
-								match[6]
-						);
+						this.startTagIndex = this.markupRegExp.lastIndex;
+						this.readState = MarkupReadStateEnum.comment;
 					} else if (match[5] !== undefined) {
 						// Document type
-						this.parseDocumentType(match[5]);
+						this.startTagIndex = this.markupRegExp.lastIndex;
+						this.readState = MarkupReadStateEnum.documentType;
 					} else if (match[6]) {
 						// Processing instruction.
-						this.parseProcessingInstruction(match[6]);
+						this.startTagIndex = this.markupRegExp.lastIndex;
+						this.readState = MarkupReadStateEnum.processingInstruction;
 					} else {
 						// Plain text between tags, including the matched tag as it is not a valid start or end tag.
 						this.parsePlainText(xml.substring(this.lastIndex, this.markupRegExp.lastIndex));
 					}
 
 					break;
-				case MarkupReadStateEnum.endOfStartTag:
+				case MarkupReadStateEnum.startTag:
 					// End of start tag
 
+					// match[7] is matching "/>" (e.g. "<img/>").
+					// match[8] is matching ">" (e.g. "<div>").
 					if (match[7] || match[8]) {
 						const attributeString = xml.substring(
 							this.startTagIndex,
@@ -203,6 +203,27 @@ export default class XMLParser {
 						this.errorIndex = match.index;
 						this.readState = MarkupReadStateEnum.error;
 						this.removeOverflowingTextNodes();
+					}
+					break;
+				case MarkupReadStateEnum.comment:
+					// Comment end tag.
+
+					if (match[4]) {
+						this.parseComment(xml.substring(this.startTagIndex, match.index));
+					}
+					break;
+				case MarkupReadStateEnum.documentType:
+					// Document type end tag.
+
+					if (match[7] || match[8]) {
+						this.parseDocumentType(xml.substring(this.startTagIndex, match.index));
+					}
+					break;
+				case MarkupReadStateEnum.processingInstruction:
+					// Processing instruction end tag.
+
+					if (match[7] || match[8]) {
+						this.parseProcessingInstruction(xml.substring(this.startTagIndex, match.index));
 					}
 					break;
 				case MarkupReadStateEnum.error:
@@ -300,6 +321,7 @@ export default class XMLParser {
 				// Instead we will store the state on the root node, so that it is added when serializing the document with XMLSerializer.
 				// TODO: We need to handle validation of version and encoding.
 				this.rootNode[PropertySymbol.hasXMLProcessingInstruction] = true;
+				this.readState = MarkupReadStateEnum.any;
 			}
 		} else {
 			if (parts.length === 1 && !endsWithQuestionMark) {
@@ -318,6 +340,7 @@ export default class XMLParser {
 					this.rootNode.createProcessingInstruction(name, content),
 					true
 				);
+				this.readState = MarkupReadStateEnum.any;
 			}
 		}
 	}
@@ -335,6 +358,7 @@ export default class XMLParser {
 				true
 			);
 		}
+		this.readState = MarkupReadStateEnum.any;
 	}
 
 	/**
@@ -358,6 +382,7 @@ export default class XMLParser {
 					),
 					true
 				);
+				this.readState = MarkupReadStateEnum.any;
 			} else if (documentType) {
 				this.errorMessage = 'xmlParseDocTypeDecl : no DOCTYPE name\n';
 				this.errorIndex = this.markupRegExp.lastIndex - text.length - 2;
@@ -408,7 +433,7 @@ export default class XMLParser {
 		this.nextTagName = tagName;
 
 		this.startTagIndex = this.markupRegExp.lastIndex;
-		this.readState = MarkupReadStateEnum.endOfStartTag;
+		this.readState = MarkupReadStateEnum.startTag;
 	}
 
 	/**
@@ -585,7 +610,7 @@ export default class XMLParser {
 
 		this.nextElement = null;
 		this.nextTagName = null;
-		this.readState = MarkupReadStateEnum.startOrEndTag;
+		this.readState = MarkupReadStateEnum.any;
 		this.startTagIndex = this.markupRegExp.lastIndex;
 	}
 

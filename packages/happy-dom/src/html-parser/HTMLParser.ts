@@ -30,7 +30,7 @@ import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
  * Group 7: End of self closing start tag (e.g. "/>" in "<img/>").
  * Group 8: End of start tag or comment tag (e.g. ">" in "<div>").
  */
-const MARKUP_REGEXP = /<([^\s/!>?]+)|<\/([^\s/!>?]+)\s*>|(<!--)|(-->)|(<!)|(<\?)|(\/>)|(>)/gm;
+const MARKUP_REGEXP = /<([^\s/!>?]+)|<\/([^\s/!>?]+)\s*>|(<!--)|(-->|--!>)|(<!)|(<\?)|(\/>)|(>)/gm;
 
 /**
  * Attribute RegExp.
@@ -255,7 +255,6 @@ export default class HTMLParser {
 
 					if (match[4]) {
 						this.parseComment(html.substring(this.startTagIndex, match.index));
-						this.readState = MarkupReadStateEnum.any;
 					}
 					break;
 				case MarkupReadStateEnum.documentType:
@@ -263,7 +262,6 @@ export default class HTMLParser {
 
 					if (match[7] || match[8]) {
 						this.parseDocumentType(html.substring(this.startTagIndex, match.index));
-						this.readState = MarkupReadStateEnum.any;
 					}
 					break;
 				case MarkupReadStateEnum.processingInstruction:
@@ -272,8 +270,8 @@ export default class HTMLParser {
 					if (match[7] || match[8]) {
 						// Processing instructions are not supported in HTML and are rendered as comments.
 						this.parseComment('?' + html.substring(this.startTagIndex, match.index));
-						this.readState = MarkupReadStateEnum.any;
 					}
+					break;
 				case MarkupReadStateEnum.rawTextElement:
 					// End tag of raw text content.
 
@@ -437,7 +435,8 @@ export default class HTMLParser {
 					parentConfig?.forbiddenDescendants?.includes(lowerTagName)) ||
 				(parentConfig?.contentModel === HTMLElementConfigContentModelEnum.permittedDescendants &&
 					!parentConfig?.permittedDescendants?.includes(lowerTagName) &&
-					(!config.addPermittedParent ||
+					(!config ||
+						!config.addPermittedParent ||
 						(HTMLElementConfig[config.addPermittedParent].permittedParents &&
 							!HTMLElementConfig[config.addPermittedParent].permittedParents.includes(
 								parentLowerTagName
@@ -661,6 +660,8 @@ export default class HTMLParser {
 		} else {
 			this.currentNode[PropertySymbol.appendChild](commentNode, true);
 		}
+
+		this.readState = MarkupReadStateEnum.any;
 	}
 
 	/**
@@ -695,6 +696,8 @@ export default class HTMLParser {
 				this.parseComment(decodedText);
 			}
 		}
+
+		this.readState = MarkupReadStateEnum.any;
 	}
 
 	/**

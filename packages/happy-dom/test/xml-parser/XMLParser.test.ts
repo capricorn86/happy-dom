@@ -1114,5 +1114,19 @@ part2" data-testid="button"
                 </start>`
 			);
 		});
+
+		it('Supports comments with XML content.', () => {
+			const result = new XMLParser(window).parse(`<root>
+                <!-- <div>Test</div> -->
+            </root>`);
+
+			expect(result.childNodes[0].nodeType).toBe(NodeTypeEnum.elementNode);
+			expect(result.childNodes[0].childNodes[1].nodeType).toBe(NodeTypeEnum.commentNode);
+			expect(result.childNodes[0].childNodes[1].textContent).toBe(' <div>Test</div> ');
+
+			expect(new XMLSerializer().serializeToString(result)).toBe(`<root>
+                <!-- <div>Test</div> -->
+            </root>`);
+		});
 	});
 });
