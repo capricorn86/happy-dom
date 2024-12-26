@@ -305,6 +305,7 @@ import SVGTransformList from '../svg/SVGTransformList.js';
 import SVGUnitTypes from '../svg/SVGUnitTypes.js';
 import DOMPoint from '../dom/DOMPoint.js';
 import SVGAnimatedLengthList from '../svg/SVGAnimatedLengthList.js';
+import CustomElementReactionStack from '../custom-element/CustomElementReactionStack.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -792,6 +793,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.parent]: BrowserWindow = this;
 	public [PropertySymbol.window]: BrowserWindow = this;
 	public [PropertySymbol.internalId]: number = -1;
+	public [PropertySymbol.customElementReactionStack] = new CustomElementReactionStack(this);
 
 	// Private properties
 	#browserFrame: IBrowserFrame;
@@ -834,14 +836,26 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this.document = new this.HTMLDocument();
 		this.document[PropertySymbol.defaultView] = this;
 		this.document[PropertySymbol.isConnected] = true;
+
 		this.document[PropertySymbol.nodeArray][0][PropertySymbol.isConnected] = true;
+		this.document[PropertySymbol.nodeArray][0][PropertySymbol.rootNode] = this.document;
+
 		this.document[PropertySymbol.nodeArray][1][PropertySymbol.isConnected] = true;
+		this.document[PropertySymbol.nodeArray][1][PropertySymbol.rootNode] = this.document;
+
 		this.document[PropertySymbol.nodeArray][1][PropertySymbol.nodeArray][0][
 			PropertySymbol.isConnected
 		] = true;
+		this.document[PropertySymbol.nodeArray][1][PropertySymbol.nodeArray][0][
+			PropertySymbol.rootNode
+		] = this.document;
+
 		this.document[PropertySymbol.nodeArray][1][PropertySymbol.nodeArray][1][
 			PropertySymbol.isConnected
 		] = true;
+		this.document[PropertySymbol.nodeArray][1][PropertySymbol.nodeArray][1][
+			PropertySymbol.rootNode
+		] = this.document;
 
 		// Ready state manager
 		this[PropertySymbol.readyStateManager].waitUntilComplete().then(() => {
@@ -1682,8 +1696,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 
 		while (childNodes.length > 0) {
 			// Makes sure that something won't be triggered by the disconnect.
-			if (childNodes[0].disconnectedCallback) {
-				delete childNodes[0].disconnectedCallback;
+			if ((<HTMLElement>childNodes[0]).disconnectedCallback) {
+				delete (<HTMLElement>childNodes[0]).disconnectedCallback;
 			}
 			this.document.body.removeChild(childNodes[0]);
 		}

@@ -24,7 +24,6 @@ import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
 import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
 import HTMLSlotElement from '../html-slot-element/HTMLSlotElement.js';
-import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import NodeFactory from '../NodeFactory.js';
 import SVGStyleElement from '../svg-style-element/SVGStyleElement.js';
 
@@ -314,16 +313,6 @@ export default class Node extends EventTarget {
 		}
 		return this[PropertySymbol.window].location.href;
 	}
-
-	/**
-	 * Connected callback.
-	 */
-	public connectedCallback?(): void;
-
-	/**
-	 * Disconnected callback.
-	 */
-	public disconnectedCallback?(): void;
 
 	/**
 	 * Returns "true" if the node has child nodes.
@@ -920,15 +909,27 @@ export default class Node extends EventTarget {
 	public [PropertySymbol.connectedToNode](): void {
 		const parentNode = this[PropertySymbol.parentNode];
 		const parent = parentNode || this[PropertySymbol.host];
+		let isConnected = false;
+		let isDisconnected = false;
+
+		if (!this[PropertySymbol.isConnected] && parent[PropertySymbol.isConnected]) {
+			this[PropertySymbol.isConnected] = true;
+			isConnected = true;
+		} else if (this[PropertySymbol.isConnected] && !parent[PropertySymbol.isConnected]) {
+			this[PropertySymbol.isConnected] = false;
+			isDisconnected = true;
+		}
+
+		this[PropertySymbol.ownerDocument] = parent[PropertySymbol.ownerDocument] || <Document>parent;
+		this[PropertySymbol.window] =
+			parent[PropertySymbol.window] || parent[PropertySymbol.defaultView];
 
 		if (parentNode) {
-			this[PropertySymbol.ownerDocument] =
-				parentNode[PropertySymbol.ownerDocument] || <Document>parentNode;
-			this[PropertySymbol.window] =
-				parentNode[PropertySymbol.window] || parentNode[PropertySymbol.defaultView];
-
-			if (this[PropertySymbol.nodeType] !== NodeTypeEnum.documentFragmentNode) {
-				this[PropertySymbol.rootNode] = this[PropertySymbol.parentNode][PropertySymbol.rootNode];
+			if (
+				this[PropertySymbol.isConnected] &&
+				this[PropertySymbol.nodeType] !== NodeTypeEnum.documentFragmentNode
+			) {
+				this[PropertySymbol.rootNode] = parentNode[PropertySymbol.rootNode];
 			}
 
 			if (parentNode[PropertySymbol.styleNode] && this[PropertySymbol.tagName] !== 'STYLE') {
@@ -948,14 +949,9 @@ export default class Node extends EventTarget {
 			}
 		}
 
-		if (!this[PropertySymbol.isConnected] && parent[PropertySymbol.isConnected]) {
-			this[PropertySymbol.connectedToDocument]();
-		} else if (this[PropertySymbol.isConnected] && !parent[PropertySymbol.isConnected]) {
-			this[PropertySymbol.disconnectedFromDocument]();
-		}
-
 		const childNodes = this[PropertySymbol.nodeArray];
 		for (let i = 0, max = childNodes.length; i < max; i++) {
+			childNodes[i][PropertySymbol.parentNode] = this;
 			childNodes[i][PropertySymbol.connectedToNode]();
 		}
 
@@ -964,16 +960,18 @@ export default class Node extends EventTarget {
 			// eslint-disable-next-line
 			(<any>this)[PropertySymbol.shadowRoot][PropertySymbol.connectedToNode]();
 		}
+
+		if (isConnected) {
+			this[PropertySymbol.connectedToDocument]();
+		} else if (isDisconnected) {
+			this[PropertySymbol.disconnectedFromDocument]();
+		}
 	}
 
 	/**
 	 * Called when disconnected from a node.
 	 */
 	public [PropertySymbol.disconnectedFromNode](): void {
-		if (this[PropertySymbol.isConnected]) {
-			this[PropertySymbol.disconnectedFromDocument]();
-		}
-
 		if (this[PropertySymbol.tagName] !== 'STYLE') {
 			this[PropertySymbol.styleNode] = null;
 		}
@@ -990,9 +988,14 @@ export default class Node extends EventTarget {
 			this[PropertySymbol.selectNode] = null;
 		}
 
+		if (this[PropertySymbol.isConnected]) {
+			this[PropertySymbol.isConnected] = false;
+			this[PropertySymbol.disconnectedFromDocument]();
+		}
+
 		const childNodes = this[PropertySymbol.nodeArray];
 		for (let i = 0, max = childNodes.length; i < max; i++) {
-			childNodes[i][PropertySymbol.disconnectedFromNode]();
+			childNodes[i][PropertySymbol.connectedToNode]();
 		}
 
 		// eslint-disable-next-line
@@ -1006,44 +1009,17 @@ export default class Node extends EventTarget {
 	 * Called when connected to document.
 	 */
 	public [PropertySymbol.connectedToDocument](): void {
-		this[PropertySymbol.isConnected] = true;
-
 		// eslint-disable-next-line
 		if ((<any>this)[PropertySymbol.shadowRoot]) {
 			// eslint-disable-next-line
 			(<any>this)[PropertySymbol.shadowRoot][PropertySymbol.connectedToDocument]();
 		}
-
-		if (this.connectedCallback) {
-			const result = <void | Promise<void>>this.connectedCallback();
-
-			/**
-			 * It is common to import dependencies in the connectedCallback() method of web components.
-			 * As Happy DOM doesn't have support for dynamic imports yet, this is a temporary solution to wait for imports in connectedCallback().
-			 *
-			 * @see https://github.com/capricorn86/happy-dom/issues/1442
-			 */
-			if (result instanceof Promise) {
-				const asyncTaskManager = new WindowBrowserContext(
-					this[PropertySymbol.window]
-				).getAsyncTaskManager();
-				if (asyncTaskManager) {
-					const taskID = asyncTaskManager.startTask();
-					result
-						.then(() => asyncTaskManager.endTask(taskID))
-						.catch(() => asyncTaskManager.endTask(taskID));
-				}
-			}
-		}
 	}
 
 	/**
 	 * Called when disconnected from document.
-	 * @param e
 	 */
 	public [PropertySymbol.disconnectedFromDocument](): void {
-		this[PropertySymbol.isConnected] = false;
-
 		if (this[PropertySymbol.nodeType] !== NodeTypeEnum.documentFragmentNode) {
 			this[PropertySymbol.rootNode] = null;
 		}
@@ -1057,10 +1033,6 @@ export default class Node extends EventTarget {
 		if ((<any>this)[PropertySymbol.shadowRoot]) {
 			// eslint-disable-next-line
 			(<any>this)[PropertySymbol.shadowRoot][PropertySymbol.disconnectedFromDocument]();
-		}
-
-		if (this.disconnectedCallback) {
-			this.disconnectedCallback();
 		}
 	}
 

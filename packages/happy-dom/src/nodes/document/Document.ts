@@ -1067,13 +1067,13 @@ export default class Document extends Node {
 				return svgElement;
 			case NamespaceURI.html:
 				// Custom HTML element
-				const customElement =
-					window.customElements[PropertySymbol.registry]?.[
-						options && options.is ? String(options.is) : qualifiedName
-					];
+				// If a polyfill is used, [PropertySymbol.registry] may be undefined
+				const customElementDefinition = window.customElements[PropertySymbol.registry]?.get(
+					options && options.is ? String(options.is) : qualifiedName
+				);
 
-				if (customElement) {
-					const element = new customElement.elementClass();
+				if (customElementDefinition) {
+					const element = new customElementDefinition.elementClass();
 					element[PropertySymbol.tagName] = StringUtility.asciiUpperCase(qualifiedName);
 					element[PropertySymbol.localName] = localName;
 					element[PropertySymbol.prefix] = prefix;

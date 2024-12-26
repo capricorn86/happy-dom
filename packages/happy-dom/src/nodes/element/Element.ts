@@ -42,13 +42,9 @@ export default class Element
 	extends Node
 	implements IChildNode, INonDocumentTypeChildNode, IParentNode
 {
-	// ObservedAttributes should only be called once by CustomElementRegistry (see #117)
-	// CustomElementRegistry will therefore populate "[PropertySymbol.observedAttributes]" when CustomElementRegistry.define() is called
-	public static [PropertySymbol.observedAttributes]: string[];
 	public static [PropertySymbol.tagName]: string | null = null;
 	public static [PropertySymbol.localName]: string | null = null;
 	public static [PropertySymbol.namespaceURI]: string | null = null;
-	public static observedAttributes: string[];
 	public declare cloneNode: (deep?: boolean) => Element;
 
 	// Events
@@ -475,15 +471,6 @@ export default class Element
 	public set slot(title: string) {
 		this.setAttribute('slot', title);
 	}
-
-	/**
-	 * Attribute changed callback.
-	 *
-	 * @param name Name.
-	 * @param oldValue Old value.
-	 * @param newValue New value.
-	 */
-	public attributeChangedCallback?(name: string, oldValue: string, newValue: string): void;
 
 	/**
 	 * Returns inner HTML and optionally the content of shadow roots.
@@ -1273,8 +1260,8 @@ export default class Element
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.appendChild](node: Node, isDuringParsing = false): Node {
-		const returnValue = super[PropertySymbol.appendChild](node, isDuringParsing);
+	public override [PropertySymbol.appendChild](node: Node, disableValidations = false): Node {
+		const returnValue = super[PropertySymbol.appendChild](node, disableValidations);
 		this.#onSlotChange(node);
 		return returnValue;
 	}
@@ -1356,20 +1343,6 @@ export default class Element
 			this.#addIdentifierToWindow(attribute[PropertySymbol.value]);
 		}
 
-		if (
-			this.attributeChangedCallback &&
-			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes] &&
-			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes].includes(
-				attribute[PropertySymbol.name].toLowerCase()
-			)
-		) {
-			this.attributeChangedCallback(
-				attribute[PropertySymbol.name],
-				oldValue,
-				attribute[PropertySymbol.value]
-			);
-		}
-
 		this[PropertySymbol.reportMutation](
 			new MutationRecord({
 				target: this,
@@ -1408,20 +1381,6 @@ export default class Element
 			this.#removeIdentifierFromWindow(removedAttribute[PropertySymbol.value]);
 		}
 
-		if (
-			this.attributeChangedCallback &&
-			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes] &&
-			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes].includes(
-				removedAttribute[PropertySymbol.name].toLowerCase()
-			)
-		) {
-			this.attributeChangedCallback(
-				removedAttribute[PropertySymbol.name],
-				removedAttribute[PropertySymbol.value],
-				null
-			);
-		}
-
 		this[PropertySymbol.reportMutation](
 			new MutationRecord({
 				type: MutationTypeEnum.attributes,
@@ -1436,12 +1395,12 @@ export default class Element
 	 * @override
 	 */
 	public override [PropertySymbol.connectedToDocument](): void {
-		super[PropertySymbol.connectedToDocument]();
-
 		const id = this.getAttribute('id');
 		if (id) {
 			this.#addIdentifierToWindow(id);
 		}
+
+		super[PropertySymbol.connectedToDocument]();
 	}
 
 	/**

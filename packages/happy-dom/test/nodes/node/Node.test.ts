@@ -306,13 +306,13 @@ describe('Node', () => {
 			};
 
 			document.body.appendChild(customElement);
-
-			expect(isConnected).toBe(true);
-			expect(isDisconnected).toBe(false);
-
 			document.body.removeChild(customElement);
 
-			expect(isDisconnected).toBe(true);
+			// Should not be called as the callbacks are stored in the definition when the element is defined
+			expect(isConnected).toBe(false);
+			expect(isDisconnected).toBe(false);
+
+			expect(customElementOutput).toEqual(['Counter:connected', 'Counter:disconnected']);
 		});
 	});
 

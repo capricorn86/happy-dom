@@ -107,8 +107,8 @@ export default class HTMLTemplateElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.appendChild](node: Node, isDuringParsing = false): Node {
-		return this[PropertySymbol.content][PropertySymbol.appendChild](node, isDuringParsing);
+	public override [PropertySymbol.appendChild](node: Node, disableValidations = false): Node {
+		return this[PropertySymbol.content][PropertySymbol.appendChild](node, disableValidations);
 	}
 
 	/**

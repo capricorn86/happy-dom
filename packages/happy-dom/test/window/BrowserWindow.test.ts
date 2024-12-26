@@ -84,11 +84,25 @@ describe('BrowserWindow', () => {
 	describe('get document()', () => {
 		it('Returns the document.', () => {
 			expect(window.document).toBeInstanceOf(Document);
+
 			expect(window.document.isConnected).toBe(true);
+			expect(window.document.defaultView).toBe(window);
+
 			expect(window.document.doctype.ownerDocument).toBe(window.document);
+			expect(window.document.doctype.isConnected).toBe(true);
+			expect(window.document.doctype.getRootNode()).toBe(window.document);
+
 			expect(window.document.documentElement.ownerDocument).toBe(window.document);
+			expect(window.document.documentElement.isConnected).toBe(true);
+			expect(window.document.documentElement.getRootNode()).toBe(window.document);
+
 			expect(window.document.head.ownerDocument).toBe(window.document);
+			expect(window.document.head.isConnected).toBe(true);
+			expect(window.document.head.getRootNode()).toBe(window.document);
+
 			expect(window.document.body.ownerDocument).toBe(window.document);
+			expect(window.document.body.isConnected).toBe(true);
+			expect(window.document.body.getRootNode()).toBe(window.document);
 		});
 	});
 

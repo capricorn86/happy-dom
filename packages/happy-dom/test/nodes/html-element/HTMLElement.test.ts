@@ -565,17 +565,18 @@ describe('HTMLElement', () => {
 			element.appendChild(child1);
 			element.appendChild(child2);
 
+			const rootNode = (document.body[PropertySymbol.rootNode] = document.createElement('div'));
+			const formNode = (document.body[PropertySymbol.formNode] = document.createElement('form'));
+			const selectNode = (document.body[PropertySymbol.selectNode] =
+				document.createElement('select'));
+			const textAreaNode = (document.body[PropertySymbol.textAreaNode] =
+				document.createElement('textarea'));
+
 			document.body.appendChild(element);
 
 			const attribute1 = document.createAttribute('test');
 			attribute1.value = 'test';
 			element.attributes.setNamedItem(attribute1);
-
-			const rootNode = (element[PropertySymbol.rootNode] = document.createElement('div'));
-			const formNode = (element[PropertySymbol.formNode] = document.createElement('form'));
-			const selectNode = (element[PropertySymbol.selectNode] = document.createElement('select'));
-			const textAreaNode = (element[PropertySymbol.textAreaNode] =
-				document.createElement('textarea'));
 			const mutationListeners = element[PropertySymbol.mutationListeners];
 			const isValue = (element[PropertySymbol.isValue] = 'test');
 

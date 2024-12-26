@@ -3,14 +3,15 @@ import HTMLElement from '../nodes/html-element/HTMLElement.js';
 import Node from '../nodes/node/Node.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import NamespaceURI from '../config/NamespaceURI.js';
+import StringUtility from '../utilities/StringUtility.js';
+import CustomElementUtility from './CustomElementUtility.js';
+import ICustomElementDefinition from './ICustomElementDefinition.js';
 
 /**
  * Custom elements registry.
  */
 export default class CustomElementRegistry {
-	public [PropertySymbol.registry]: {
-		[k: string]: { elementClass: typeof HTMLElement; extends: string };
-	} = {};
+	public [PropertySymbol.registry]: Map<string, ICustomElementDefinition> = new Map();
 	public [PropertySymbol.classRegistry]: Map<typeof HTMLElement, string> = new Map();
 	public [PropertySymbol.callbacks]: Map<string, Array<() => void>> = new Map();
 	public [PropertySymbol.destroyed]: boolean = false;
@@ -45,13 +46,13 @@ export default class CustomElementRegistry {
 			return;
 		}
 
-		if (!this.#isValidCustomElementName(name)) {
+		if (!CustomElementUtility.isValidCustomElementName(name)) {
 			throw new this.#window.DOMException(
 				`Failed to execute 'define' on 'CustomElementRegistry': "${name}" is not a valid custom element name`
 			);
 		}
 
-		if (this[PropertySymbol.registry][name]) {
+		if (this[PropertySymbol.registry].has(name)) {
 			throw new this.#window.DOMException(
 				`Failed to execute 'define' on 'CustomElementRegistry': the name "${name}" has already been used with this registry`
 			);
@@ -63,7 +64,7 @@ export default class CustomElementRegistry {
 			);
 		}
 
-		const tagName = name.toUpperCase();
+		const tagName = StringUtility.asciiUpperCase(name);
 
 		elementClass.prototype[PropertySymbol.window] = this.#window;
 		elementClass.prototype[PropertySymbol.ownerDocument] = this.#window.document;
@@ -71,16 +72,27 @@ export default class CustomElementRegistry {
 		elementClass.prototype[PropertySymbol.localName] = name;
 		elementClass.prototype[PropertySymbol.namespaceURI] = NamespaceURI.html;
 
-		this[PropertySymbol.registry][name] = {
-			elementClass,
-			extends: options && options.extends ? options.extends.toLowerCase() : null
-		};
-		this[PropertySymbol.classRegistry].set(elementClass, name);
-
 		// ObservedAttributes should only be called once by CustomElementRegistry (see #117)
-		elementClass[PropertySymbol.observedAttributes] = (elementClass.observedAttributes || []).map(
-			(name) => String(name).toLowerCase()
-		);
+		const observedAttributes: Set<string> = new Set();
+		const elementObservervedAttributes = elementClass.observedAttributes;
+
+		if (Array.isArray(elementObservervedAttributes)) {
+			for (const attribute of elementObservervedAttributes) {
+				observedAttributes.add(String(attribute).toLowerCase());
+			}
+		}
+
+		this[PropertySymbol.registry].set(name, {
+			elementClass,
+			extends: options && options.extends ? options.extends.toLowerCase() : null,
+			observedAttributes,
+			livecycleCallbacks: {
+				connectedCallback: elementClass.prototype.connectedCallback,
+				disconnectedCallback: elementClass.prototype.disconnectedCallback,
+				attributeChangedCallback: elementClass.prototype.attributeChangedCallback
+			}
+		});
+		this[PropertySymbol.classRegistry].set(elementClass, name);
 
 		const callbacks = this[PropertySymbol.callbacks].get(name);
 		if (callbacks) {
@@ -98,7 +110,7 @@ export default class CustomElementRegistry {
 	 * @returns HTMLElement Class defined or undefined.
 	 */
 	public get(name: string): typeof HTMLElement | undefined {
-		return this[PropertySymbol.registry][name]?.elementClass;
+		return this[PropertySymbol.registry].get(name)?.elementClass;
 	}
 
 	/**
@@ -125,7 +137,7 @@ export default class CustomElementRegistry {
 				)
 			);
 		}
-		if (!this.#isValidCustomElementName(name)) {
+		if (!CustomElementUtility.isValidCustomElementName(name)) {
 			return Promise.reject(
 				new this.#window.DOMException(
 					`Failed to execute 'whenDefined' on 'CustomElementRegistry': Invalid custom element name: "${name}"`
@@ -160,46 +172,15 @@ export default class CustomElementRegistry {
 	 */
 	public [PropertySymbol.destroy](): void {
 		this[PropertySymbol.destroyed] = true;
-		for (const entity of Object.values(this[PropertySymbol.registry])) {
-			entity.elementClass.prototype[PropertySymbol.window] = null;
-			entity.elementClass.prototype[PropertySymbol.ownerDocument] = null;
-			entity.elementClass.prototype[PropertySymbol.tagName] = null;
-			entity.elementClass.prototype[PropertySymbol.localName] = null;
-			entity.elementClass.prototype[PropertySymbol.namespaceURI] = null;
+		for (const definition of this[PropertySymbol.registry].values()) {
+			definition.elementClass.prototype[PropertySymbol.window] = null;
+			definition.elementClass.prototype[PropertySymbol.ownerDocument] = null;
+			definition.elementClass.prototype[PropertySymbol.tagName] = null;
+			definition.elementClass.prototype[PropertySymbol.localName] = null;
+			definition.elementClass.prototype[PropertySymbol.namespaceURI] = null;
 		}
-		this[PropertySymbol.registry] = {};
+		this[PropertySymbol.registry] = new Map();
 		this[PropertySymbol.classRegistry] = new Map();
 		this[PropertySymbol.callbacks] = new Map();
-	}
-
-	/**
-	 * Validates the correctness of custom element tag names.
-	 *
-	 * @param name Custom element tag name.
-	 * @returns True, if tag name is standard compliant.
-	 */
-	#isValidCustomElementName(name: string): boolean {
-		// Validation criteria based on:
-		// https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name
-		const PCENChar =
-			'[-_.]|[0-9]|[a-z]|\u{B7}|[\u{C0}-\u{D6}]|[\u{D8}-\u{F6}]' +
-			'|[\u{F8}-\u{37D}]|[\u{37F}-\u{1FFF}]' +
-			'|[\u{200C}-\u{200D}]|[\u{203F}-\u{2040}]|[\u{2070}-\u{218F}]' +
-			'|[\u{2C00}-\u{2FEF}]|[\u{3001}-\u{D7FF}]' +
-			'|[\u{F900}-\u{FDCF}]|[\u{FDF0}-\u{FFFD}]|[\u{10000}-\u{EFFFF}]';
-
-		const PCEN = new RegExp(`^[a-z](${PCENChar})*-(${PCENChar})*$`, 'u');
-
-		const reservedNames = [
-			'annotation-xml',
-			'color-profile',
-			'font-face',
-			'font-face-src',
-			'font-face-uri',
-			'font-face-format',
-			'font-face-name',
-			'missing-glyph'
-		];
-		return PCEN.test(name) && !reservedNames.includes(name);
 	}
 }
