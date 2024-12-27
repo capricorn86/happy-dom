@@ -2081,7 +2081,7 @@ describe('HTMLParser', () => {
 			);
 		});
 
-		it('Handles document wirhout doctype', () => {
+		it('Handles document without doctype', () => {
 			const result = <Document>new HTMLParser(window).parse(
 				`<html lang="en">
                     <head>
