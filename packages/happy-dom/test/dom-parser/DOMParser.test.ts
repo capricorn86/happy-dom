@@ -235,6 +235,7 @@ describe('DOMParser', () => {
 			class CustomElement extends HTMLElement {
 				public connectedCount = 0;
 				public disconnectedCount = 0;
+				public changedAttributes = 0;
 
 				constructor() {
 					super();
@@ -247,6 +248,10 @@ describe('DOMParser', () => {
 
 				public disconnectedCallback(): void {
 					this.disconnectedCount++;
+				}
+
+				public attributeChangedCallback(): void {
+					this.changedAttributes++;
 				}
 			}
 
@@ -266,6 +271,7 @@ describe('DOMParser', () => {
 
 			expect(customElement.connectedCount).toBe(0);
 			expect(customElement.disconnectedCount).toBe(0);
+			expect(customElement.changedAttributes).toBe(0);
 
 			document.body.appendChild(customElement);
 

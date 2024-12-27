@@ -37,6 +37,11 @@ export default class CustomElementReactionStack {
 			return;
 		}
 
+		// If the element is not connected to the main document, we should not invoke the callback.
+		if (element[PropertySymbol.ownerDocument] !== this.window.document) {
+			return;
+		}
+
 		// According to the spec, we should use a queue for each element and then invoke the reactions in the order they were enqueued asynchronously.
 		// However, the browser seem to always invoke the reactions synchronously.
 		// TODO: Can we find an example where the reactions are invoked asynchronously? In that case we should use a queue for those cases.
