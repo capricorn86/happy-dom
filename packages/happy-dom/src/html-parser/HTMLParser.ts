@@ -171,7 +171,7 @@ export default class HTMLParser {
 
 			if (!documentElement || !head || !body) {
 				throw new Error(
-					'Failed to parse HTML: The root node must have "doctype", "documentElement", "head" and "body".\n\nWe should not end up here and it is therefore a bug in Happy DOM. Please report this issue.'
+					'Failed to parse HTML: The root node must have "documentElement", "head" and "body".\n\nWe should not end up here and it is therefore a bug in Happy DOM. Please report this issue.'
 				);
 			}
 
