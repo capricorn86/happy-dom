@@ -453,6 +453,7 @@ export default class HTMLParser {
 					parentConfig.moveForbiddenDescendant &&
 					!parentConfig.moveForbiddenDescendant.exclude.includes(lowerTagName)
 				) {
+					// We add the element before the first element that is not forbidden.
 					let before: Node | null = this.currentNode;
 					while (before) {
 						if (
@@ -471,6 +472,7 @@ export default class HTMLParser {
 					if (before && before.parentNode) {
 						before.parentNode.insertBefore(this.nextElement, before);
 					} else {
+						// If there is no element that is not forbidden, we append the element
 						before.appendChild(this.nextElement);
 					}
 					this.startTagIndex = this.markupRegExp.lastIndex;
