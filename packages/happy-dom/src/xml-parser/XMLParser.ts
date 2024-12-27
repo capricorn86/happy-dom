@@ -325,8 +325,12 @@ export default class XMLParser {
 			} else {
 				// When the processing instruction has "xml" as target, we should not add it as a child node.
 				// Instead we will store the state on the root node, so that it is added when serializing the document with XMLSerializer.
-				// TODO: We need to handle validation of version and encoding.
-				this.rootNode[PropertySymbol.hasXMLProcessingInstruction] = true;
+				// TODO: We need to handle validation of encoding.
+				const name = parts[0];
+				// We need to remove the ending "?".
+				const content = parts.slice(1).join(' ').slice(0, -1);
+				this.rootNode[PropertySymbol.xmlProcessingInstruction] =
+					this.rootNode.createProcessingInstruction(name, content);
 				this.readState = MarkupReadStateEnum.any;
 			}
 		} else {

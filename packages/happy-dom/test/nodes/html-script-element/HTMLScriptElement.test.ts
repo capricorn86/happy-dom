@@ -175,69 +175,75 @@ describe('HTMLScriptElement', () => {
 			expect(window['currentScript']).toBe(element);
 		});
 
-		it('Loads external script asynchronously.', async () => {
-			let fetchedURL: string | null = null;
-			let loadEvent: Event | null = null;
-			let loadEventTarget: EventTarget | null = null;
-			let loadEventCurrentTarget: EventTarget | null = null;
+		for (const attribute of [
+			{ name: 'async', value: '' },
+			{ name: 'defer', value: '' },
+			{ name: 'type', value: 'module' }
+		]) {
+			it(`Loads external script asynchronously when the attribute "${attribute.name}" is set to "${attribute.value}".`, async () => {
+				let fetchedURL: string | null = null;
+				let loadEvent: Event | null = null;
+				let loadEventTarget: EventTarget | null = null;
+				let loadEventCurrentTarget: EventTarget | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
-				fetchedURL = this.request.url;
-				return <Response>{
-					text: async () =>
-						'globalThis.test = "test";globalThis.currentScript = document.currentScript;',
-					ok: true
-				};
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+					fetchedURL = this.request.url;
+					return <Response>{
+						text: async () =>
+							'globalThis.test = "test";globalThis.currentScript = document.currentScript;',
+						ok: true
+					};
+				});
+
+				const script = <HTMLScriptElement>window.document.createElement('script');
+				script.src = 'https://localhost:8080/path/to/script.js';
+				script.setAttribute(attribute.name, attribute.value);
+				script.addEventListener('load', (event) => {
+					loadEvent = event;
+					loadEventTarget = event.target;
+					loadEventCurrentTarget = event.currentTarget;
+				});
+
+				document.body.appendChild(script);
+
+				await window.happyDOM?.waitUntilComplete();
+
+				expect((<Event>(<unknown>loadEvent)).target).toBe(null);
+				expect(loadEventTarget).toBe(script);
+				expect(loadEventCurrentTarget).toBe(script);
+				expect(fetchedURL).toBe('https://localhost:8080/path/to/script.js');
+				expect(window['test']).toBe('test');
+				expect(window['currentScript']).toBe(script);
 			});
 
-			const script = <HTMLScriptElement>window.document.createElement('script');
-			script.src = 'https://localhost:8080/path/to/script.js';
-			script.async = true;
-			script.addEventListener('load', (event) => {
-				loadEvent = event;
-				loadEventTarget = event.target;
-				loadEventCurrentTarget = event.currentTarget;
+			it(`Triggers error event when loading external script asynchronously when the attribute "${attribute.name}" is set to "${attribute.value}".`, async () => {
+				let errorEvent: ErrorEvent | null = null;
+
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+					async () => <Response>(<unknown>{
+							text: () => null,
+							ok: false,
+							status: 404,
+							statusText: 'Not Found'
+						})
+				);
+
+				const script = <HTMLScriptElement>window.document.createElement('script');
+				script.src = 'https://localhost:8080/path/to/script.js';
+				script.setAttribute(attribute.name, attribute.value);
+				script.addEventListener('error', (event) => {
+					errorEvent = <ErrorEvent>event;
+				});
+
+				document.body.appendChild(script);
+
+				await window.happyDOM?.waitUntilComplete();
+
+				expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
+					'Failed to perform request to "https://localhost:8080/path/to/script.js". Status 404 Not Found.'
+				);
 			});
-
-			document.body.appendChild(script);
-
-			await window.happyDOM?.waitUntilComplete();
-
-			expect((<Event>(<unknown>loadEvent)).target).toBe(null);
-			expect(loadEventTarget).toBe(script);
-			expect(loadEventCurrentTarget).toBe(script);
-			expect(fetchedURL).toBe('https://localhost:8080/path/to/script.js');
-			expect(window['test']).toBe('test');
-			expect(window['currentScript']).toBe(script);
-		});
-
-		it('Triggers error event when loading external script asynchronously.', async () => {
-			let errorEvent: ErrorEvent | null = null;
-
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
-				async () => <Response>(<unknown>{
-						text: () => null,
-						ok: false,
-						status: 404,
-						statusText: 'Not Found'
-					})
-			);
-
-			const script = <HTMLScriptElement>window.document.createElement('script');
-			script.src = 'https://localhost:8080/path/to/script.js';
-			script.async = true;
-			script.addEventListener('error', (event) => {
-				errorEvent = <ErrorEvent>event;
-			});
-
-			document.body.appendChild(script);
-
-			await window.happyDOM?.waitUntilComplete();
-
-			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
-				'Failed to perform request to "https://localhost:8080/path/to/script.js". Status 404 Not Found.'
-			);
-		});
+		}
 
 		it('Loads external script synchronously with relative URL.', async () => {
 			const window = new Window({ url: 'https://localhost:8080/base/' });

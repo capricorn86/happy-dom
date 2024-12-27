@@ -79,7 +79,7 @@ export default class Document extends Node {
 		{ htmlCollection: HTMLCollection<Element> | null; elements: Element[] }
 	> = new Map();
 	public [PropertySymbol.contentType]: string = 'text/html';
-	public [PropertySymbol.hasXMLProcessingInstruction] = false;
+	public [PropertySymbol.xmlProcessingInstruction]: ProcessingInstruction | null = null;
 	public declare cloneNode: (deep?: boolean) => Document;
 
 	// Private properties

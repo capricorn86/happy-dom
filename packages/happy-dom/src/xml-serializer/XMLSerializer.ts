@@ -88,9 +88,14 @@ export default class XMLSerializer {
 				return `<${tagName}${attributes}>${innerHTML}</${tagName}>`;
 			case Node.DOCUMENT_FRAGMENT_NODE:
 			case Node.DOCUMENT_NODE:
-				let html = root[PropertySymbol.hasXMLProcessingInstruction]
-					? '<?xml version="1.0" encoding="UTF-8"?>'
-					: '';
+				let html = '';
+				if (root[PropertySymbol.xmlProcessingInstruction]) {
+					html += this.#serializeToString(
+						root[PropertySymbol.xmlProcessingInstruction],
+						inheritedDefaultNamespace,
+						new Map(inheritedNamespacePrefixes)
+					);
+				}
 				for (const node of (<Node>root)[PropertySymbol.nodeArray]) {
 					html += this.#serializeToString(
 						node,
