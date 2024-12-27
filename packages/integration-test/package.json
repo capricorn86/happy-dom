@@ -14,7 +14,7 @@
 		"test:debug": "node --inspect-brk ./test/index.js"
 	},
 	"dependencies": {
-		"happy-dom": "^0.0.0"
+		"happy-dom": "^15.11.7"
 	},
 	"devDependencies": {
 		"@typescript-eslint/eslint-plugin": "^5.16.0",
