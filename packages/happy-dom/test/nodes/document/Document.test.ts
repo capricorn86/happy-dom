@@ -951,6 +951,20 @@ describe('Document', () => {
 				'<html test="1"><head></head><body>Test&gt;</body></html>'
 			);
 		});
+
+		it('Adds <html>, <head>, and <body> tags if they are missing.', () => {
+			const html = `<div>Test</div>`;
+
+			while (document.firstChild) {
+				document.removeChild(document.firstChild);
+			}
+
+			document.write(html);
+
+			expect(document.documentElement.outerHTML).toBe(
+				'<html><head></head><body><div>Test</div></body></html>'
+			);
+		});
 	});
 
 	describe('open()', () => {

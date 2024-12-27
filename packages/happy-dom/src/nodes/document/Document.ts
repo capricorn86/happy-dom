@@ -856,6 +856,13 @@ export default class Document extends Node {
 				this[PropertySymbol.isFirstWrite] = false;
 			}
 
+			const { documentElement, head, body } = this;
+
+			if (!documentElement || !head || !body) {
+				this.open();
+			}
+
+			this[PropertySymbol.isFirstWrite] = false;
 			this[PropertySymbol.isFirstWriteAfterOpen] = false;
 
 			new HTMLParser(this[PropertySymbol.window], {
