@@ -169,7 +169,7 @@ export default class HTMLParser {
 		if (this.rootNode instanceof Document) {
 			const { doctype, documentElement, head, body } = <Document>this.rootNode;
 
-			if (!doctype || !documentElement || !head || !body) {
+			if (!documentElement || !head || !body) {
 				throw new Error(
 					'Failed to parse HTML: The root node must have "doctype", "documentElement", "head" and "body".\n\nWe should not end up here and it is therefore a bug in Happy DOM. Please report this issue.'
 				);
@@ -177,7 +177,7 @@ export default class HTMLParser {
 
 			this.documentStructure = {
 				nodes: {
-					doctype,
+					doctype: doctype || null,
 					documentElement,
 					head,
 					body
@@ -673,7 +673,7 @@ export default class HTMLParser {
 		const decodedText = XMLEncodeUtility.decodeHTMLEntities(text);
 
 		if (this.documentStructure) {
-			const { doctype } = this.documentStructure.nodes;
+			let { doctype } = this.documentStructure.nodes;
 			const documentType = this.getDocumentType(decodedText);
 			// Document type nodes are only allowed at the beginning of the document.
 			if (documentType) {
@@ -681,9 +681,21 @@ export default class HTMLParser {
 					this.currentNode === this.rootNode &&
 					this.documentStructure.level === HTMLDocumentStructureLevelEnum.root
 				) {
-					doctype[PropertySymbol.name] = documentType.name;
-					doctype[PropertySymbol.publicId] = documentType.publicId;
-					doctype[PropertySymbol.systemId] = documentType.systemId;
+					if (doctype) {
+						doctype[PropertySymbol.name] = documentType.name;
+						doctype[PropertySymbol.publicId] = documentType.publicId;
+						doctype[PropertySymbol.systemId] = documentType.systemId;
+					} else {
+						doctype = (<Document>this.rootNode).implementation.createDocumentType(
+							documentType.name,
+							documentType.publicId,
+							documentType.systemId
+						);
+						(<Document>this.rootNode).insertBefore(
+							doctype,
+							(<Document>this.rootNode).documentElement
+						);
+					}
 
 					this.documentStructure.level = HTMLDocumentStructureLevelEnum.doctype;
 				}

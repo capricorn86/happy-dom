@@ -925,10 +925,7 @@ export default class Node extends EventTarget {
 			parent[PropertySymbol.window] || parent[PropertySymbol.defaultView];
 
 		if (parentNode) {
-			if (
-				this[PropertySymbol.isConnected] &&
-				this[PropertySymbol.nodeType] !== NodeTypeEnum.documentFragmentNode
-			) {
+			if (this[PropertySymbol.nodeType] !== NodeTypeEnum.documentFragmentNode) {
 				this[PropertySymbol.rootNode] = parentNode[PropertySymbol.rootNode];
 			}
 
@@ -972,6 +969,10 @@ export default class Node extends EventTarget {
 	 * Called when disconnected from a node.
 	 */
 	public [PropertySymbol.disconnectedFromNode](): void {
+		if (this[PropertySymbol.nodeType] !== NodeTypeEnum.documentFragmentNode) {
+			this[PropertySymbol.rootNode] = null;
+		}
+
 		if (this[PropertySymbol.tagName] !== 'STYLE') {
 			this[PropertySymbol.styleNode] = null;
 		}
@@ -1020,10 +1021,6 @@ export default class Node extends EventTarget {
 	 * Called when disconnected from document.
 	 */
 	public [PropertySymbol.disconnectedFromDocument](): void {
-		if (this[PropertySymbol.nodeType] !== NodeTypeEnum.documentFragmentNode) {
-			this[PropertySymbol.rootNode] = null;
-		}
-
 		if (this[PropertySymbol.ownerDocument][PropertySymbol.activeElement] === <unknown>this) {
 			this[PropertySymbol.ownerDocument][PropertySymbol.clearCache]();
 			this[PropertySymbol.ownerDocument][PropertySymbol.activeElement] = null;

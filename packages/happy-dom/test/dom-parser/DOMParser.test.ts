@@ -36,7 +36,7 @@ describe('DOMParser', () => {
 		it('Parses HTML with just a string and returns a new document with <html>, <head> and <body> tags.', () => {
 			const newDocument = domParser.parseFromString('Test', 'text/html');
 			expect(new HTMLSerializer().serializeToString(newDocument)).toBe(
-				'<!DOCTYPE html><html><head></head><body>Test</body></html>'
+				'<html><head></head><body>Test</body></html>'
 			);
 		});
 
@@ -56,7 +56,7 @@ describe('DOMParser', () => {
 				'text/html'
 			);
 			expect(new HTMLSerializer().serializeToString(newDocument)).toBe(
-				`<!DOCTYPE html><html><head>
+				`<html><head>
 						<title>Title</title>
 					</head>
 					<body>
@@ -81,7 +81,7 @@ describe('DOMParser', () => {
 			);
 			// Spurious comment `<!--[a-z]/,end:/-->` should be solved
 			expect(new HTMLSerializer().serializeToString(newDocument)).toBe(
-				`<!DOCTYPE html><html><head></head><body>
+				`<html><head></head><body>
 						<script>
 							var test = {className:"meta",begin:/<![a-z]/,end:/>/,contains:[t,i,l,c]};
 						</script>

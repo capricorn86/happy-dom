@@ -1216,7 +1216,7 @@ describe('HTMLParser', () => {
 			);
 
 			expect(new HTMLSerializer().serializeToString(result)).toBe(
-				`<!DOCTYPE html><html style="color: red"><head></head>
+				`<html style="color: red"><head></head>
                     <body><div>Test</div>
                 
                 
@@ -1237,8 +1237,7 @@ describe('HTMLParser', () => {
 				document.implementation.createHTMLDocument()
 			);
 
-			expect(new HTMLSerializer().serializeToString(result))
-				.toBe(`<!DOCTYPE html><html><head style="color: red">
+			expect(new HTMLSerializer().serializeToString(result)).toBe(`<html><head style="color: red">
                     <title>Title 1</title>
                 <title>Title 2</title></head>
                 
@@ -1258,7 +1257,7 @@ describe('HTMLParser', () => {
 				document.implementation.createHTMLDocument()
 			);
 
-			expect(new HTMLSerializer().serializeToString(result)).toBe(`<!DOCTYPE html><html><head>
+			expect(new HTMLSerializer().serializeToString(result)).toBe(`<html><head>
                     <title>Title 1</title>
                 </head>
                 <body>
@@ -1279,7 +1278,7 @@ describe('HTMLParser', () => {
 			);
 
 			expect(new HTMLSerializer().serializeToString(root1))
-				.toBe(`<!DOCTYPE html><html><head></head><body style="color: red">
+				.toBe(`<html><head></head><body style="color: red">
                     <div>Test 1</div>
                 
                 
@@ -1301,7 +1300,7 @@ describe('HTMLParser', () => {
 				document.implementation.createHTMLDocument()
 			);
 
-			expect(new HTMLSerializer().serializeToString(root2)).toBe(`<!DOCTYPE html><html><head>
+			expect(new HTMLSerializer().serializeToString(root2)).toBe(`<html><head>
                         <title>Title</title>
                     </head>
                     <body style="color: red">
@@ -1323,7 +1322,7 @@ describe('HTMLParser', () => {
 				document.implementation.createHTMLDocument()
 			);
 
-			expect(new HTMLSerializer().serializeToString(result)).toBe(`<!DOCTYPE html><html><head>
+			expect(new HTMLSerializer().serializeToString(result)).toBe(`<html><head>
                     </head><body>
                         <div>Test</div>
                     
@@ -1340,8 +1339,7 @@ describe('HTMLParser', () => {
 				document.implementation.createHTMLDocument()
 			);
 
-			expect(new HTMLSerializer().serializeToString(result))
-				.toBe(`<!DOCTYPE html><html><head></head><body>
+			expect(new HTMLSerializer().serializeToString(result)).toBe(`<html><head></head><body>
                     
                         <div>Test</div>
                     
@@ -1470,7 +1468,7 @@ describe('HTMLParser', () => {
 			expect(result.children[0].namespaceURI).toBe('http://www.w3.org/1999/xhtml');
 
 			expect(new HTMLSerializer().serializeToString(result)).toBe(
-				`<!DOCTYPE html><!--?xml version="1.0" encoding="UTF-8"?--><html><head></head><body><personxml:person xmlns:personxml="http://www.your.example.com/xml/person" xmlns:cityxml="http://www.my.example.com/xml/cities">
+				`<!--?xml version="1.0" encoding="UTF-8"?--><html><head></head><body><personxml:person xmlns:personxml="http://www.your.example.com/xml/person" xmlns:cityxml="http://www.my.example.com/xml/cities">
                 <personxml:name>Rob</personxml:name>
                 <personxml:age>37</personxml:age>
                 <cityxml:homecity>
@@ -1482,7 +1480,7 @@ describe('HTMLParser', () => {
 			);
 
 			expect(new XMLSerializer().serializeToString(result)).toBe(
-				`<!DOCTYPE html><!--?xml version="1.0" encoding="UTF-8"?--><html xmlns="http://www.w3.org/1999/xhtml"><head></head><body><personxml:person xmlns:personxml="http://www.your.example.com/xml/person" xmlns:cityxml="http://www.my.example.com/xml/cities">
+				`<!--?xml version="1.0" encoding="UTF-8"?--><html xmlns="http://www.w3.org/1999/xhtml"><head></head><body><personxml:person xmlns:personxml="http://www.your.example.com/xml/person" xmlns:cityxml="http://www.my.example.com/xml/cities">
                 <personxml:name>Rob</personxml:name>
                 <personxml:age>37</personxml:age>
                 <cityxml:homecity>
@@ -2080,6 +2078,30 @@ describe('HTMLParser', () => {
                         
                     </table>
                 </div>`
+			);
+		});
+
+		it('Handles document wirhout doctype', () => {
+			const result = <Document>new HTMLParser(window).parse(
+				`<html lang="en">
+                    <head>
+                        <title>Document</title>
+                    </head>
+                    <body>
+                        <div>Test</div>
+                    </body>
+                </html>`,
+				document.implementation.createHTMLDocument()
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`<html lang="en"><head>
+                        <title>Document</title>
+                    </head>
+                    <body>
+                        <div>Test</div>
+                    
+                </body></html>`
 			);
 		});
 	});

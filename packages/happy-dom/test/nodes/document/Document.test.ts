@@ -381,6 +381,7 @@ describe('Document', () => {
 
 	describe('get doctype()', () => {
 		it('Returns DocumentType element.', () => {
+			document.write('<!DOCTYPE html>');
 			expect(document.doctype === document.childNodes[0]).toBe(true);
 		});
 	});

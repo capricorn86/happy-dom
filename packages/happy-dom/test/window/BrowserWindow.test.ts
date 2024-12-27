@@ -88,10 +88,6 @@ describe('BrowserWindow', () => {
 			expect(window.document.isConnected).toBe(true);
 			expect(window.document.defaultView).toBe(window);
 
-			expect(window.document.doctype.ownerDocument).toBe(window.document);
-			expect(window.document.doctype.isConnected).toBe(true);
-			expect(window.document.doctype.getRootNode()).toBe(window.document);
-
 			expect(window.document.documentElement.ownerDocument).toBe(window.document);
 			expect(window.document.documentElement.isConnected).toBe(true);
 			expect(window.document.documentElement.getRootNode()).toBe(window.document);
