@@ -65,7 +65,7 @@ export default class Document extends Node {
 	public [PropertySymbol.isFirstWrite] = true;
 	public [PropertySymbol.isFirstWriteAfterOpen] = false;
 	public [PropertySymbol.nodeType] = NodeTypeEnum.documentNode;
-	public [PropertySymbol.isConnected] = false;
+	public [PropertySymbol.isConnected] = true;
 	public [PropertySymbol.adoptedStyleSheets]: CSSStyleSheet[] = [];
 	public [PropertySymbol.implementation] = new DOMImplementation(this);
 	public [PropertySymbol.readyState] = DocumentReadyStateEnum.interactive;

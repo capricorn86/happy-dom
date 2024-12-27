@@ -235,6 +235,7 @@ describe('DOMParser', () => {
 			class CustomElement extends HTMLElement {
 				public connectedCount = 0;
 				public disconnectedCount = 0;
+				public changedAttributes = 0;
 
 				constructor() {
 					super();
@@ -248,6 +249,10 @@ describe('DOMParser', () => {
 				public disconnectedCallback(): void {
 					this.disconnectedCount++;
 				}
+
+				public attributeChangedCallback(): void {
+					this.changedAttributes++;
+				}
 			}
 
 			window.customElements.define('custom-element', CustomElement);
@@ -259,13 +264,14 @@ describe('DOMParser', () => {
 				'text/html'
 			);
 
-			expect(newDocument.isConnected).toBe(false);
+			expect(newDocument.isConnected).toBe(true);
 			expect(newDocument.defaultView).toBe(window);
 
 			const customElement = <CustomElement>newDocument.querySelector('custom-element');
 
 			expect(customElement.connectedCount).toBe(0);
 			expect(customElement.disconnectedCount).toBe(0);
+			expect(customElement.changedAttributes).toBe(0);
 
 			document.body.appendChild(customElement);
 
