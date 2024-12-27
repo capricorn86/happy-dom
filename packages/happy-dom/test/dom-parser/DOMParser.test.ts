@@ -259,7 +259,7 @@ describe('DOMParser', () => {
 				'text/html'
 			);
 
-			expect(newDocument.isConnected).toBe(false);
+			expect(newDocument.isConnected).toBe(true);
 			expect(newDocument.defaultView).toBe(window);
 
 			const customElement = <CustomElement>newDocument.querySelector('custom-element');

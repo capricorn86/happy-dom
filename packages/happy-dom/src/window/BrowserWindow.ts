@@ -835,17 +835,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		// Document
 		this.document = new this.HTMLDocument();
 		this.document[PropertySymbol.defaultView] = this;
-		this.document[PropertySymbol.isConnected] = true;
-
-		this.document[PropertySymbol.nodeArray][0][PropertySymbol.isConnected] = true;
-
-		this.document[PropertySymbol.nodeArray][0][PropertySymbol.nodeArray][0][
-			PropertySymbol.isConnected
-		] = true;
-
-		this.document[PropertySymbol.nodeArray][0][PropertySymbol.nodeArray][1][
-			PropertySymbol.isConnected
-		] = true;
 
 		// Ready state manager
 		this[PropertySymbol.readyStateManager].waitUntilComplete().then(() => {
