@@ -5,7 +5,6 @@ import Node from '../node/Node.js';
 import NodeIterator from '../../tree-walker/NodeIterator.js';
 import TreeWalker from '../../tree-walker/TreeWalker.js';
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
-import XMLParser from '../../xml-parser/XMLParser.js';
 import Event from '../../event/Event.js';
 import DOMImplementation from '../../dom-implementation/DOMImplementation.js';
 import INodeFilter from '../../tree-walker/INodeFilter.js';
@@ -48,7 +47,8 @@ import HTMLTitleElement from '../html-title-element/HTMLTitleElement.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import NodeFactory from '../NodeFactory.js';
 import SVGElementConfig from '../../config/SVGElementConfig.js';
-import StringUtility from '../../StringUtility.js';
+import StringUtility from '../../utilities/StringUtility.js';
+import HTMLParser from '../../html-parser/HTMLParser.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -65,7 +65,7 @@ export default class Document extends Node {
 	public [PropertySymbol.isFirstWrite] = true;
 	public [PropertySymbol.isFirstWriteAfterOpen] = false;
 	public [PropertySymbol.nodeType] = NodeTypeEnum.documentNode;
-	public [PropertySymbol.isConnected] = true;
+	public [PropertySymbol.isConnected] = false;
 	public [PropertySymbol.adoptedStyleSheets]: CSSStyleSheet[] = [];
 	public [PropertySymbol.implementation] = new DOMImplementation(this);
 	public [PropertySymbol.readyState] = DocumentReadyStateEnum.interactive;
@@ -78,6 +78,8 @@ export default class Document extends Node {
 		string,
 		{ htmlCollection: HTMLCollection<Element> | null; elements: Element[] }
 	> = new Map();
+	public [PropertySymbol.contentType]: string = 'text/html';
+	public [PropertySymbol.xmlProcessingInstruction]: ProcessingInstruction | null = null;
 	public declare cloneNode: (deep?: boolean) => Document;
 
 	// Private properties
@@ -408,7 +410,7 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public get documentElement(): HTMLHtmlElement {
-		return <HTMLHtmlElement>ParentNodeUtility.getElementByTagName(this, 'html');
+		return <HTMLHtmlElement>this[PropertySymbol.elementArray][0] ?? null;
 	}
 
 	/**
@@ -431,7 +433,10 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public get body(): HTMLBodyElement {
-		return <HTMLBodyElement>ParentNodeUtility.getElementByTagName(this, 'body');
+		const documentElement = this.documentElement;
+		return documentElement
+			? <HTMLBodyElement>ParentNodeUtility.getElementByTagName(documentElement, 'body')
+			: null;
 	}
 
 	/**
@@ -440,7 +445,10 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public get head(): HTMLHeadElement {
-		return <HTMLHeadElement>ParentNodeUtility.getElementByTagName(this, 'head');
+		const documentElement = this.documentElement;
+		return documentElement
+			? <HTMLHeadElement>ParentNodeUtility.getElementByTagName(documentElement, 'head')
+			: null;
 	}
 
 	/**
@@ -593,6 +601,15 @@ export default class Document extends Node {
 	 */
 	public get currentScript(): HTMLScriptElement {
 		return this[PropertySymbol.currentScript];
+	}
+
+	/**
+	 * Returns content type.
+	 *
+	 * @returns Content type.
+	 */
+	public get contentType(): string {
+		return this[PropertySymbol.contentType];
 	}
 
 	/**
@@ -830,8 +847,6 @@ export default class Document extends Node {
 	 * @param html HTML.
 	 */
 	public write(html: string): void {
-		const root = <DocumentFragment>XMLParser.parse(this, html, { evaluateScripts: true });
-
 		if (this[PropertySymbol.isFirstWrite] || this[PropertySymbol.isFirstWriteAfterOpen]) {
 			if (this[PropertySymbol.isFirstWrite]) {
 				if (!this[PropertySymbol.isFirstWriteAfterOpen]) {
@@ -841,88 +856,22 @@ export default class Document extends Node {
 				this[PropertySymbol.isFirstWrite] = false;
 			}
 
+			const { documentElement, head, body } = this;
+
+			if (!documentElement || !head || !body) {
+				this.open();
+			}
+
+			this[PropertySymbol.isFirstWrite] = false;
 			this[PropertySymbol.isFirstWriteAfterOpen] = false;
-			let documentElement = null;
-			let documentTypeNode = null;
 
-			for (const node of root[PropertySymbol.nodeArray]) {
-				if (node['tagName'] === 'HTML') {
-					documentElement = node;
-				} else if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentTypeNode) {
-					documentTypeNode = node;
-				}
-
-				if (documentElement && documentTypeNode) {
-					break;
-				}
-			}
-
-			if (documentElement) {
-				if (!this.documentElement) {
-					if (documentTypeNode) {
-						this.appendChild(documentTypeNode);
-					}
-
-					this.appendChild(documentElement);
-
-					const head = ParentNodeUtility.getElementByTagName(this, 'head');
-					let body = ParentNodeUtility.getElementByTagName(this, 'body');
-
-					if (!body) {
-						body = this.createElement('body');
-						documentElement.appendChild(this.createElement('body'));
-					}
-
-					if (!head) {
-						documentElement.insertBefore(this.createElement('head'), body);
-					}
-				} else {
-					const rootBody = ParentNodeUtility.getElementByTagName(root, 'body');
-					const body = ParentNodeUtility.getElementByTagName(this, 'body');
-					if (rootBody && body) {
-						const childNodes = rootBody[PropertySymbol.nodeArray];
-						while (childNodes.length) {
-							body.appendChild(childNodes[0]);
-						}
-					}
-				}
-
-				// Remaining nodes outside the <html> element are added to the <body> element.
-				const body = ParentNodeUtility.getElementByTagName(this, 'body');
-				if (body) {
-					const childNodes = root[PropertySymbol.nodeArray];
-					while (childNodes.length) {
-						const child = childNodes[0];
-						if (
-							child['tagName'] !== 'HTML' &&
-							child[PropertySymbol.nodeType] !== NodeTypeEnum.documentTypeNode
-						) {
-							body.appendChild(child);
-						}
-					}
-				}
-			} else {
-				const documentElement = this.createElement('html');
-				const bodyElement = this.createElement('body');
-				const headElement = this.createElement('head');
-				const childNodes = root[PropertySymbol.nodeArray];
-
-				while (childNodes.length) {
-					bodyElement.appendChild(childNodes[0]);
-				}
-
-				documentElement.appendChild(headElement);
-				documentElement.appendChild(bodyElement);
-
-				this.appendChild(documentElement);
-			}
+			new HTMLParser(this[PropertySymbol.window], {
+				evaluateScripts: true
+			}).parse(html, this);
 		} else {
-			const bodyNode = ParentNodeUtility.getElementByTagName(root, 'body');
-			const body = ParentNodeUtility.getElementByTagName(this, 'body');
-			const childNodes = (<Element>(bodyNode || root))[PropertySymbol.nodeArray];
-			while (childNodes.length) {
-				body.appendChild(childNodes[0]);
-			}
+			new HTMLParser(this[PropertySymbol.window], {
+				evaluateScripts: true
+			}).parse(html, this.body);
 		}
 	}
 
@@ -956,6 +905,18 @@ export default class Document extends Node {
 		while (childNodes.length) {
 			this.removeChild(childNodes[0]);
 		}
+
+		// Default document elements
+		const doctype = this[PropertySymbol.implementation].createDocumentType('html', '', '');
+		const documentElement = this.createElement('html');
+		const bodyElement = this.createElement('body');
+		const headElement = this.createElement('head');
+
+		this.appendChild(doctype);
+		this.appendChild(documentElement);
+
+		documentElement.appendChild(headElement);
+		documentElement.appendChild(bodyElement);
 
 		return this;
 	}
@@ -1090,66 +1051,86 @@ export default class Document extends Node {
 			);
 		}
 
-		// SVG element
-		if (namespaceURI === NamespaceURI.svg) {
-			const config = SVGElementConfig[qualifiedName.toLowerCase()];
-			const elementClass =
-				config && config.localName === qualifiedName ? window[config.className] : window.SVGElement;
+		const parts = qualifiedName.split(':');
+		const localName = parts[1] ?? parts[0];
+		const prefix = parts[1] ? parts[0] : null;
 
-			const element = NodeFactory.createNode<SVGElement>(this, elementClass);
+		switch (namespaceURI) {
+			case NamespaceURI.svg:
+				const config = SVGElementConfig[qualifiedName.toLowerCase()];
+				const svgElementClass =
+					config && config.localName === qualifiedName
+						? window[config.className]
+						: window.SVGElement;
 
-			element[PropertySymbol.tagName] = qualifiedName;
-			element[PropertySymbol.localName] = qualifiedName;
-			element[PropertySymbol.namespaceURI] = namespaceURI;
-			element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
+				const svgElement = NodeFactory.createNode<SVGElement>(this, svgElementClass);
 
-			return element;
+				svgElement[PropertySymbol.tagName] = qualifiedName;
+				svgElement[PropertySymbol.localName] = localName;
+				svgElement[PropertySymbol.prefix] = prefix;
+				svgElement[PropertySymbol.namespaceURI] = namespaceURI;
+				svgElement[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
+
+				return svgElement;
+			case NamespaceURI.html:
+				// Custom HTML element
+				// If a polyfill is used, [PropertySymbol.registry] may be undefined
+				const customElementDefinition = window.customElements[PropertySymbol.registry]?.get(
+					options && options.is ? String(options.is) : qualifiedName
+				);
+
+				if (customElementDefinition) {
+					const element = new customElementDefinition.elementClass();
+					element[PropertySymbol.tagName] = StringUtility.asciiUpperCase(qualifiedName);
+					element[PropertySymbol.localName] = localName;
+					element[PropertySymbol.prefix] = prefix;
+					element[PropertySymbol.namespaceURI] = namespaceURI;
+					element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
+					return element;
+				}
+
+				const elementClass = HTMLElementConfig[qualifiedName]
+					? window[HTMLElementConfig[qualifiedName].className]
+					: null;
+
+				// Known HTML element
+				if (elementClass) {
+					const element = NodeFactory.createNode<Element>(this, elementClass);
+
+					element[PropertySymbol.tagName] = StringUtility.asciiUpperCase(qualifiedName);
+					element[PropertySymbol.localName] = localName;
+					element[PropertySymbol.prefix] = prefix;
+					element[PropertySymbol.namespaceURI] = namespaceURI;
+					element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
+
+					return element;
+				}
+
+				// Unknown HTML element (if it has an hyphen in the name, it is a custom element that hasn't been defined yet)
+				const unknownElementClass = qualifiedName.includes('-')
+					? window.HTMLElement
+					: window.HTMLUnknownElement;
+
+				const unknownElement = NodeFactory.createNode<Element>(this, unknownElementClass);
+
+				unknownElement[PropertySymbol.tagName] = StringUtility.asciiUpperCase(qualifiedName);
+				unknownElement[PropertySymbol.localName] = localName;
+				unknownElement[PropertySymbol.prefix] = prefix;
+				unknownElement[PropertySymbol.namespaceURI] = namespaceURI;
+				unknownElement[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
+
+				return unknownElement;
+			default:
+				const element = NodeFactory.createNode<Element>(this, Element);
+
+				element[PropertySymbol.tagName] = qualifiedName;
+				element[PropertySymbol.localName] = localName;
+				element[PropertySymbol.prefix] = prefix;
+				element[PropertySymbol.namespaceURI] = namespaceURI;
+				element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
+
+				return element;
 		}
-
-		// Custom HTML element
-		const customElement =
-			window.customElements[PropertySymbol.registry]?.[
-				options && options.is ? String(options.is) : qualifiedName
-			];
-
-		if (customElement) {
-			const element = new customElement.elementClass();
-			element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
-			element[PropertySymbol.localName] = qualifiedName;
-			element[PropertySymbol.namespaceURI] = namespaceURI;
-			element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
-			return element;
-		}
-
-		const elementClass = HTMLElementConfig[qualifiedName]
-			? window[HTMLElementConfig[qualifiedName].className]
-			: null;
-
-		// Known HTML element
-		if (elementClass) {
-			const element = NodeFactory.createNode<Element>(this, elementClass);
-
-			element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
-			element[PropertySymbol.localName] = qualifiedName;
-			element[PropertySymbol.namespaceURI] = namespaceURI;
-			element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
-
-			return element;
-		}
-
-		// Unknown HTML element (if it has an hyphen in the name, it is a custom element that hasn't been defined yet)
-		const unknownElementClass = qualifiedName.includes('-')
-			? window.HTMLElement
-			: window.HTMLUnknownElement;
-
-		const element = NodeFactory.createNode<Element>(this, unknownElementClass);
-
-		element[PropertySymbol.tagName] = qualifiedName.toUpperCase();
-		element[PropertySymbol.localName] = qualifiedName;
-		element[PropertySymbol.namespaceURI] = namespaceURI;
-		element[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
-
-		return element;
 	}
 
 	/* eslint-enable jsdoc/valid-types */
@@ -1239,7 +1220,7 @@ export default class Document extends Node {
 	 * @returns Attribute.
 	 */
 	public createAttribute(qualifiedName: string): Attr {
-		return this.createAttributeNS(null, qualifiedName.toLowerCase());
+		return this.createAttributeNS(null, StringUtility.asciiLowerCase(qualifiedName));
 	}
 
 	/**
@@ -1257,7 +1238,7 @@ export default class Document extends Node {
 		attribute[PropertySymbol.namespaceURI] = namespaceURI;
 		attribute[PropertySymbol.name] = qualifiedName;
 		attribute[PropertySymbol.localName] = parts[1] ?? qualifiedName;
-		attribute[PropertySymbol.prefix] = parts[0] ?? null;
+		attribute[PropertySymbol.prefix] = parts[1] ? parts[0] : null;
 
 		return attribute;
 	}

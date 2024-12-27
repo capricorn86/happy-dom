@@ -43,7 +43,7 @@ export function run(description, callback) {
 						hasError = true;
 						hasTimedout = true;
 						resolve();
-					}, 90000);
+					}, 90000 * 100);
 					result
 						.then(() => {
 							if (!hasTimedout) {

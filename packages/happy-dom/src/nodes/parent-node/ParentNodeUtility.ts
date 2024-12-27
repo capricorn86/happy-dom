@@ -161,7 +161,11 @@ export default class ParentNodeUtility {
 		tagName: string
 	): HTMLCollection<Element> {
 		// When the namespace is HTML, the tag name is case-insensitive.
-		const formattedTagName = namespaceURI === NamespaceURI.html ? tagName.toUpperCase() : tagName;
+		const formattedTagName =
+			namespaceURI === NamespaceURI.html &&
+			parentNode[PropertySymbol.ownerDocument][PropertySymbol.contentType] === 'text/html'
+				? tagName.toUpperCase()
+				: tagName;
 		const includeAll = tagName === '*';
 
 		const find = (
@@ -292,11 +296,7 @@ export default class ParentNodeUtility {
 			for (const element of (<DocumentFragment>parent)[PropertySymbol.elementArray]) {
 				element[PropertySymbol.affectsCache].push(cachedResult);
 
-				if (
-					element[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[
-						PropertySymbol.value
-					] === id
-				) {
+				if (element.getAttribute('id') === id) {
 					return <Element>element;
 				}
 

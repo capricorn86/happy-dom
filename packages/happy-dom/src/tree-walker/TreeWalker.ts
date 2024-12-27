@@ -69,7 +69,7 @@ export default class TreeWalker {
 		) {
 			this.currentNode = this.currentNode[PropertySymbol.parentNode];
 
-			if (this.filterNode(this.currentNode) === NodeFilter.FILTER_ACCEPT) {
+			if (this[PropertySymbol.filterNode](this.currentNode) === NodeFilter.FILTER_ACCEPT) {
 				return this.currentNode;
 			}
 
@@ -92,7 +92,7 @@ export default class TreeWalker {
 		if (childNodes.length > 0) {
 			this.currentNode = childNodes[0];
 
-			if (this.filterNode(this.currentNode) === NodeFilter.FILTER_ACCEPT) {
+			if (this[PropertySymbol.filterNode](this.currentNode) === NodeFilter.FILTER_ACCEPT) {
 				return this.currentNode;
 			}
 
@@ -113,7 +113,7 @@ export default class TreeWalker {
 		if (childNodes.length > 0) {
 			this.currentNode = childNodes[childNodes.length - 1];
 
-			if (this.filterNode(this.currentNode) === NodeFilter.FILTER_ACCEPT) {
+			if (this[PropertySymbol.filterNode](this.currentNode) === NodeFilter.FILTER_ACCEPT) {
 				return this.currentNode;
 			}
 
@@ -142,7 +142,7 @@ export default class TreeWalker {
 			if (index > 0) {
 				this.currentNode = siblings[index - 1];
 
-				if (this.filterNode(this.currentNode) === NodeFilter.FILTER_ACCEPT) {
+				if (this[PropertySymbol.filterNode](this.currentNode) === NodeFilter.FILTER_ACCEPT) {
 					return this.currentNode;
 				}
 
@@ -172,7 +172,7 @@ export default class TreeWalker {
 			if (index + 1 < siblings.length) {
 				this.currentNode = siblings[index + 1];
 
-				if (this.filterNode(this.currentNode) === NodeFilter.FILTER_ACCEPT) {
+				if (this[PropertySymbol.filterNode](this.currentNode) === NodeFilter.FILTER_ACCEPT) {
 					return this.currentNode;
 				}
 
@@ -192,7 +192,7 @@ export default class TreeWalker {
 	 * @param node Node.
 	 * @returns Child nodes.
 	 */
-	private filterNode(node: Node): number {
+	public [PropertySymbol.filterNode](node: Node): number {
 		const mask = NodeFilterMask[node.nodeType];
 
 		if (mask && (this.whatToShow & mask) == 0) {

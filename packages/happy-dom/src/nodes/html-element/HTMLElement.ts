@@ -6,7 +6,7 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import Event from '../../event/Event.js';
 import HTMLElementUtility from './HTMLElementUtility.js';
 import DOMStringMap from '../../dom/DOMStringMap.js';
-import WindowBrowserContext from '../../window/WindowBrowserContext.js';
+import Attr from '../attr/Attr.js';
 
 /**
  * HTML Element.
@@ -17,6 +17,7 @@ import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 export default class HTMLElement extends Element {
 	// Public properties
 	public declare cloneNode: (deep?: boolean) => HTMLElement;
+	public static observedAttributes?: string[];
 
 	// Events
 	public oncopy: (event: Event) => void | null = null;
@@ -493,6 +494,25 @@ export default class HTMLElement extends Element {
 	}
 
 	/**
+	 * Connected callback.
+	 */
+	public connectedCallback?(): void;
+
+	/**
+	 * Disconnected callback.
+	 */
+	public disconnectedCallback?(): void;
+
+	/**
+	 * Attribute changed callback.
+	 *
+	 * @param name Name.
+	 * @param oldValue Old value.
+	 * @param newValue New value.
+	 */
+	public attributeChangedCallback?(name: string, oldValue: string, newValue: string): void;
+
+	/**
 	 * Triggers a click event.
 	 */
 	public click(): void {
@@ -548,7 +568,7 @@ export default class HTMLElement extends Element {
 				const callback = this.#onCustomElementConnected.bind(this);
 				const callbacks = allCallbacks.get(localName);
 				if (callbacks) {
-					callbacks.push(callback);
+					callbacks.unshift(callback);
 				} else {
 					allCallbacks.set(localName, [callback]);
 				}
@@ -588,6 +608,59 @@ export default class HTMLElement extends Element {
 	}
 
 	/**
+	 * @override
+	 */
+	public override [PropertySymbol.connectedToDocument](): void {
+		super[PropertySymbol.connectedToDocument]();
+
+		this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
+			this,
+			'connectedCallback'
+		);
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.disconnectedFromDocument](): void {
+		super[PropertySymbol.disconnectedFromDocument]();
+
+		this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
+			this,
+			'disconnectedCallback'
+		);
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.onSetAttribute](
+		attribute: Attr,
+		replacedAttribute: Attr | null
+	): void {
+		super[PropertySymbol.onSetAttribute](attribute, replacedAttribute);
+
+		this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
+			this,
+			'attributeChangedCallback',
+			[attribute.name, replacedAttribute?.value ?? null, attribute.value]
+		);
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.onRemoveAttribute](removedAttribute: Attr): void {
+		super[PropertySymbol.onRemoveAttribute](removedAttribute);
+
+		this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
+			this,
+			'attributeChangedCallback',
+			[removedAttribute.name, removedAttribute.value, null]
+		);
+	}
+
+	/**
 	 * Triggered when a custom element is connected to the DOM.
 	 */
 	#onCustomElementConnected(): void {
@@ -595,6 +668,7 @@ export default class HTMLElement extends Element {
 			return;
 		}
 
+		const window = this[PropertySymbol.window];
 		const localName = this[PropertySymbol.localName];
 		const newElement = <HTMLElement>this[PropertySymbol.ownerDocument].createElement(localName);
 		const newCache = newElement[PropertySymbol.cache];
@@ -604,7 +678,6 @@ export default class HTMLElement extends Element {
 		newElement[PropertySymbol.childNodes] = null;
 		newElement[PropertySymbol.children] = null;
 		newElement[PropertySymbol.isConnected] = this[PropertySymbol.isConnected];
-
 		newElement[PropertySymbol.rootNode] = this[PropertySymbol.rootNode];
 		newElement[PropertySymbol.formNode] = this[PropertySymbol.formNode];
 		newElement[PropertySymbol.parentNode] = this[PropertySymbol.parentNode];
@@ -619,19 +692,25 @@ export default class HTMLElement extends Element {
 		newElement[PropertySymbol.attributes][PropertySymbol.namespaceItems] =
 			this[PropertySymbol.attributes][PropertySymbol.namespaceItems];
 
-		for (const attr of newElement[PropertySymbol.attributes][PropertySymbol.namedItems].values()) {
+		for (const attr of newElement[PropertySymbol.attributes][
+			PropertySymbol.namespaceItems
+		].values()) {
 			attr[PropertySymbol.ownerElement] = newElement;
 		}
+
+		this[PropertySymbol.clearCache]();
 
 		this[PropertySymbol.nodeArray] = [];
 		this[PropertySymbol.elementArray] = [];
 		this[PropertySymbol.childNodes] = null;
 		this[PropertySymbol.children] = null;
 
+		this[PropertySymbol.parentNode] = null;
 		this[PropertySymbol.rootNode] = null;
 		this[PropertySymbol.formNode] = null;
 		this[PropertySymbol.selectNode] = null;
 		this[PropertySymbol.textAreaNode] = null;
+
 		this[PropertySymbol.mutationListeners] = [];
 		this[PropertySymbol.isValue] = null;
 		this[PropertySymbol.cache] = newCache;
@@ -639,32 +718,35 @@ export default class HTMLElement extends Element {
 		this[PropertySymbol.attributes][PropertySymbol.namedItems] = new Map();
 		this[PropertySymbol.attributes][PropertySymbol.namespaceItems] = new Map();
 
-		const parentChildNodes = this[PropertySymbol.parentNode][PropertySymbol.nodeArray];
-		const parentChildElements = this[PropertySymbol.parentNode][PropertySymbol.elementArray];
+		for (const node of newElement[PropertySymbol.nodeArray]) {
+			node[PropertySymbol.parentNode] = newElement;
+		}
+
+		const parentChildNodes = newElement[PropertySymbol.parentNode][PropertySymbol.nodeArray];
+		const parentChildElements = newElement[PropertySymbol.parentNode][PropertySymbol.elementArray];
+
 		parentChildNodes[parentChildNodes.indexOf(this)] = newElement;
 		parentChildElements[parentChildElements.indexOf(this)] = newElement;
 
-		if (newElement[PropertySymbol.isConnected] && newElement.connectedCallback) {
-			const result = <void | Promise<void>>newElement.connectedCallback();
-			/**
-			 * It is common to import dependencies in the connectedCallback() method of web components.
-			 * As Happy DOM doesn't have support for dynamic imports yet, this is a temporary solution to wait for imports in connectedCallback().
-			 *
-			 * @see https://github.com/capricorn86/happy-dom/issues/1442
-			 */
-			if (result instanceof Promise) {
-				const asyncTaskManager = new WindowBrowserContext(
-					this[PropertySymbol.window]
-				).getAsyncTaskManager();
-				if (asyncTaskManager) {
-					const taskID = asyncTaskManager.startTask();
-					result
-						.then(() => asyncTaskManager.endTask(taskID))
-						.catch(() => asyncTaskManager.endTask(taskID));
-				}
+		const allCallbacks = window.customElements[PropertySymbol.callbacks];
+		const callbacks = allCallbacks.get(localName);
+
+		if (callbacks && this.#customElementDefineCallback) {
+			const index = callbacks.indexOf(this.#customElementDefineCallback);
+
+			if (index !== -1) {
+				callbacks.splice(index, 1);
 			}
+
+			if (!callbacks.length) {
+				allCallbacks.delete(localName);
+			}
+
+			this.#customElementDefineCallback = null;
 		}
 
-		this[PropertySymbol.disconnectedFromDocument]();
+		if (newElement[PropertySymbol.isConnected]) {
+			newElement[PropertySymbol.connectedToDocument]();
+		}
 	}
 }
