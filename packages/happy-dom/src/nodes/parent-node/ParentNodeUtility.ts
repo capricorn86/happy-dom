@@ -83,14 +83,12 @@ export default class ParentNodeUtility {
 		parentNode: Element | DocumentFragment | Document,
 		className: string
 	): HTMLCollection<Element> {
-		const classNames = className
-			// classNames can be whitespace separated, as many spaces as you want
-			.split(/\s+/)
-			.map((className) => `.${className}`)
-			.join('');
 		return new HTMLCollection(
 			PropertySymbol.illegalConstructor,
-			() => QuerySelector.querySelectorAll(parentNode, classNames)[PropertySymbol.items]
+			() =>
+				QuerySelector.querySelectorAll(parentNode, `.${className.replace(/\s+/gm, '.')}`)[
+					PropertySymbol.items
+				]
 		);
 	}
 
