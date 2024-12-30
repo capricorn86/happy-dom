@@ -107,7 +107,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 		if (!this.window) {
 			throw new Error('The frame has been destroyed, the "window" property is not set.');
 		}
-		this.window.location[PropertySymbol.setURL](
+		this.window[PropertySymbol.location][PropertySymbol.setURL](
 			this,
 			BrowserFrameURL.getRelativeURL(this, url).href
 		);

@@ -746,6 +746,26 @@ describe('BrowserFrame', () => {
 			expect(page.mainFrame.url).toBe('http://localhost:9999/');
 			expect(page.mainFrame.window === oldWindow).toBe(false);
 		});
+
+		it('Sets the correct location after being redirected.', async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>{
+					status: 200,
+					url: 'http://localhost:3000/redirected/',
+					text: () => Promise.resolve('<b>Redirected</b>')
+				});
+			});
+
+			const browser = new Browser();
+			const page = browser.newPage();
+
+			await page.mainFrame.goto('http://localhost:3000');
+
+			expect(page.mainFrame.content).toBe(
+				'<html><head></head><body><b>Redirected</b></body></html>'
+			);
+			expect(page.mainFrame.url).toBe('http://localhost:3000/redirected/');
+		});
 	});
 
 	describe('goBack()', () => {

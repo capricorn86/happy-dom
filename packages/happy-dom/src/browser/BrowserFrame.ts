@@ -91,7 +91,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	 * @param url URL.
 	 */
 	public set url(url) {
-		this.window.location[PropertySymbol.setURL](
+		this.window[PropertySymbol.location][PropertySymbol.setURL](
 			this,
 			BrowserFrameURL.getRelativeURL(this, url).href
 		);
