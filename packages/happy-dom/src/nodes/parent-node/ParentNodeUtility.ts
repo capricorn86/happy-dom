@@ -85,7 +85,10 @@ export default class ParentNodeUtility {
 	): HTMLCollection<Element> {
 		return new HTMLCollection(
 			PropertySymbol.illegalConstructor,
-			() => QuerySelector.querySelectorAll(parentNode, `.${className}`)[PropertySymbol.items]
+			() =>
+				QuerySelector.querySelectorAll(parentNode, `.${className.replace(/\s+/gm, '.')}`)[
+					PropertySymbol.items
+				]
 		);
 	}
 
