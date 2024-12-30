@@ -92,7 +92,9 @@ export default class QuerySelector {
 		}
 
 		if (typeof selector === 'symbol') {
-			throw new window.TypeError(`Cannot convert a Symbol value to a string`);
+			throw new window.TypeError(
+				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': Cannot convert a Symbol value to a string`
+			);
 		}
 
 		selector = String(selector);
@@ -205,12 +207,6 @@ export default class QuerySelector {
 			);
 		}
 
-		if (typeof selector === 'function' || typeof selector === 'symbol') {
-			throw new window.DOMException(
-				`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`
-			);
-		}
-
 		if (typeof selector === 'function') {
 			throw new window.DOMException(
 				`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`
@@ -218,7 +214,9 @@ export default class QuerySelector {
 		}
 
 		if (typeof selector === 'symbol') {
-			throw new window.TypeError(`Cannot convert a Symbol value to a string`);
+			throw new window.TypeError(
+				`Failed to execute 'querySelector' on '${node.constructor.name}': Cannot convert a Symbol value to a string`
+			);
 		}
 
 		selector = String(selector);

@@ -34,7 +34,9 @@ describe('QuerySelector', () => {
 				)
 			);
 			expect(() => container.querySelectorAll(<string>(<unknown>Symbol('test')))).toThrow(
-				new Error(`Cannot convert a Symbol value to a string`)
+				new TypeError(
+					`Failed to execute 'querySelectorAll' on 'HTMLDivElement': Cannot convert a Symbol value to a string`
+				)
 			);
 			expect(() => container.querySelectorAll(<string>(<unknown>true))).not.toThrow();
 		});
@@ -1225,7 +1227,9 @@ describe('QuerySelector', () => {
 				)
 			);
 			expect(() => container.querySelector(<string>(<unknown>Symbol('test')))).toThrow(
-				new Error(`Cannot convert a Symbol value to a string`)
+				new TypeError(
+					`Failed to execute 'querySelector' on 'HTMLDivElement': Cannot convert a Symbol value to a string`
+				)
 			);
 			expect(() => container.querySelector(<string>(<unknown>true))).not.toThrow();
 		});
