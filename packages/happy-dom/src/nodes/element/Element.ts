@@ -35,6 +35,12 @@ import HTMLParser from '../../html-parser/HTMLParser.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
+interface IScrollToOptions {
+	top?: number;
+	left?: number;
+	behavior?: 'auto' | 'smooth';
+}
+
 /**
  * Element.
  */
@@ -1168,28 +1174,35 @@ export default class Element
 	 * @param x X position or options object.
 	 * @param y Y position.
 	 */
-	public scroll(x: { top?: number; left?: number; behavior?: string } | number, y?: number): void {
-		if (typeof x === 'object') {
-			if (x.behavior === 'smooth') {
-				this[PropertySymbol.window].setTimeout(() => {
-					if (x.top !== undefined) {
-						(<number>this.scrollTop) = x.top;
-					}
-					if (x.left !== undefined) {
-						(<number>this.scrollLeft) = x.left;
-					}
-				});
-			} else {
-				if (x.top !== undefined) {
-					(<number>this.scrollTop) = x.top;
+	public scroll(x: IScrollToOptions | number, y?: number): void {
+		if (typeof x !== 'object' && arguments.length === 1) {
+			throw new this[PropertySymbol.window].TypeError(
+				"Failed to execute 'scroll' on 'Element': The provided value is not of type 'ScrollToOptions'."
+			);
+		}
+
+		const options = typeof x === 'object' ? x : { left: x, top: y };
+
+		if (options.behavior === 'smooth') {
+			this[PropertySymbol.window].setTimeout(() => {
+				if (options.top !== undefined) {
+					const top = Number(options.top);
+					(<number>this.scrollTop) = isNaN(top) ? 0 : top;
 				}
-				if (x.left !== undefined) {
-					(<number>this.scrollLeft) = x.left;
+				if (options.left !== undefined) {
+					const left = Number(options.left);
+					(<number>this.scrollLeft) = isNaN(left) ? 0 : left;
 				}
+			});
+		} else {
+			if (options.top !== undefined) {
+				const top = Number(options.top);
+				(<number>this.scrollTop) = isNaN(top) ? 0 : top;
 			}
-		} else if (x !== undefined && y !== undefined) {
-			(<number>this.scrollLeft) = x;
-			(<number>this.scrollTop) = y;
+			if (options.left !== undefined) {
+				const left = Number(options.left);
+				(<number>this.scrollLeft) = isNaN(left) ? 0 : left;
+			}
 		}
 	}
 
@@ -1199,29 +1212,28 @@ export default class Element
 	 * @param x X position or options object.
 	 * @param y Y position.
 	 */
-	public scrollTo(
-		x: { top?: number; left?: number; behavior?: string } | number,
-		y?: number
-	): void {
+	public scrollTo(x: IScrollToOptions | number, y?: number): void {
+		if (typeof x !== 'object' && arguments.length === 1) {
+			throw new this[PropertySymbol.window].TypeError(
+				"Failed to execute 'scrollTo' on 'Element': The provided value is not of type 'ScrollToOptions'."
+			);
+		}
 		this.scroll(x, y);
 	}
 
 	/**
 	 * Scrolls by a relative amount from the current position.
 	 *
-	 * @param topOrOptions pixels to scroll by from top or scroll options object.
-	 * @param left pixels to scroll by from left.
+	 * @param x Pixels to scroll by from top or scroll options object.
+	 * @param y Pixels to scroll by from left.
 	 */
-	public scrollBy(
-		topOrOptions: { top?: number; left?: number; behavior?: string } | number,
-		left?: number
-	): void {
-		if (typeof topOrOptions !== 'object' && arguments.length === 1) {
-			throw new TypeError(
+	public scrollBy(x: IScrollToOptions | number, y?: number): void {
+		if (typeof x !== 'object' && arguments.length === 1) {
+			throw new this[PropertySymbol.window].TypeError(
 				"Failed to execute 'scrollBy' on 'Element': The provided value is not of type 'ScrollToOptions'."
 			);
 		}
-		const options = typeof topOrOptions === 'object' ? topOrOptions : { left, top: topOrOptions };
+		const options = typeof x === 'object' ? x : { left: x, top: y };
 		this.scroll({
 			left: this.scrollLeft + (options.left ?? 0),
 			top: this.scrollTop + (options.top ?? 0),

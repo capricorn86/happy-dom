@@ -2060,12 +2060,109 @@ describe('Element', () => {
 		});
 	});
 
-	describe('scroll()', () => {
-		it('Sets the properties "scrollTop" and "scrollLeft".', () => {
+	for (const functionName of ['scroll', 'scrollTo']) {
+		describe(`${functionName}()`, () => {
+			it('Sets the properties "scrollTop" and "scrollLeft".', () => {
+				const div = document.createElement('div');
+
+				div.scrollLeft = 10;
+				div.scrollTop = 15;
+
+				div[functionName](20, 30);
+
+				expect(div.scrollLeft).toBe(20);
+				expect(div.scrollTop).toBe(30);
+			});
+
+			it('Sets the properties "scrollTop" and "scrollLeft" using an object.', () => {
+				const div = document.createElement('div');
+
+				div.scrollLeft = 10;
+				div.scrollTop = 15;
+
+				div[functionName]({ left: 20, top: 30 });
+
+				expect(div.scrollLeft).toBe(20);
+				expect(div.scrollTop).toBe(30);
+			});
+
+			it('Supports smooth scrolling.', async () => {
+				const div = document.createElement('div');
+
+				div.scrollLeft = 10;
+				div.scrollTop = 15;
+
+				div[functionName]({ left: 20, top: 30, behavior: 'smooth' });
+
+				expect(div.scrollLeft).toBe(10);
+				expect(div.scrollTop).toBe(15);
+
+				await new Promise((resolve) => setTimeout(resolve, 100));
+
+				expect(div.scrollLeft).toBe(20);
+				expect(div.scrollTop).toBe(30);
+			});
+
+			it('Throws an exception if the there is only one argument and it is not an object.', () => {
+				const div = document.createElement('div');
+				expect(() => div[functionName](10)).toThrow(
+					new TypeError(
+						`Failed to execute '${functionName}' on 'Element': The provided value is not of type 'ScrollToOptions'.`
+					)
+				);
+			});
+		});
+	}
+
+	describe('scrollBy()', () => {
+		it('Appends to the properties "scrollTop" and "scrollLeft" using numbers.', () => {
 			const div = document.createElement('div');
-			div.scroll(10, 15);
+
+			div.scrollLeft = 10;
+			div.scrollTop = 15;
+
+			div.scrollBy(10, 15);
+
+			expect(div.scrollLeft).toBe(20);
+			expect(div.scrollTop).toBe(30);
+		});
+
+		it('Appends to the properties "scrollTop" and "scrollLeft" using an object.', () => {
+			const div = document.createElement('div');
+
+			div.scrollLeft = 10;
+			div.scrollTop = 15;
+
+			div.scrollBy({ left: 10, top: 15 });
+
+			expect(div.scrollLeft).toBe(20);
+			expect(div.scrollTop).toBe(30);
+		});
+
+		it('Supports smooth scrolling.', async () => {
+			const div = document.createElement('div');
+
+			div.scrollLeft = 10;
+			div.scrollTop = 15;
+
+			div.scrollBy({ left: 10, top: 15, behavior: 'smooth' });
+
 			expect(div.scrollLeft).toBe(10);
 			expect(div.scrollTop).toBe(15);
+
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			expect(div.scrollLeft).toBe(20);
+			expect(div.scrollTop).toBe(30);
+		});
+
+		it('Throws an exception if the there is only one argument and it is not an object.', () => {
+			const div = document.createElement('div');
+			expect(() => div.scrollBy(10)).toThrow(
+				new TypeError(
+					"Failed to execute 'scrollBy' on 'Element': The provided value is not of type 'ScrollToOptions'."
+				)
+			);
 		});
 	});
 
