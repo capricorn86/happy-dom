@@ -95,15 +95,27 @@ describe('HTMLTableCellElement', () => {
 	});
 
 	describe('get headers()', () => {
-		it('Should return a DOMTokenList describing a list of id of <th> elements', () => {
-			expect(element.headers).instanceOf(DOMTokenList);
-			expect(element.headers).toBe(element.headers);
+		it('Should return an empty string by default', () => {
+			expect(element.headers).toBe('');
+		});
 
-			element.setAttribute('headers', 'id1 id2');
+		it('Should return the attribute value', () => {
+			element.setAttribute('headers', 'header1 header2');
+			expect(element.headers).toBe('header1 header2');
+		});
+	});
 
-			expect(element.headers.length).toBe(2);
-			expect(element.headers[0]).toBe('id1');
-			expect(element.headers[1]).toBe('id2');
+	describe('set headers()', () => {
+		it('Should set the attribute value', () => {
+			element.headers = 'header1 header2';
+			expect(element.getAttribute('headers')).toBe('header1 header2');
+		});
+
+		it('Should stringify the value', () => {
+			element.headers = <string>(<unknown>1);
+			expect(element.getAttribute('headers')).toBe('1');
+			element.headers = <string>(<unknown>null);
+			expect(element.getAttribute('headers')).toBe('null');
 		});
 	});
 

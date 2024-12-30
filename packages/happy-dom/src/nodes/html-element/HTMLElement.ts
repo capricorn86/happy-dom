@@ -613,15 +613,10 @@ export default class HTMLElement extends Element {
 	public override [PropertySymbol.connectedToDocument](): void {
 		super[PropertySymbol.connectedToDocument]();
 
-		if (
-			this[PropertySymbol.ownerDocument][PropertySymbol.window].document ===
-			this[PropertySymbol.ownerDocument]
-		) {
-			this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
-				this,
-				'connectedCallback'
-			);
-		}
+		this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
+			this,
+			'connectedCallback'
+		);
 	}
 
 	/**
@@ -630,15 +625,10 @@ export default class HTMLElement extends Element {
 	public override [PropertySymbol.disconnectedFromDocument](): void {
 		super[PropertySymbol.disconnectedFromDocument]();
 
-		if (
-			this[PropertySymbol.ownerDocument][PropertySymbol.window].document ===
-			this[PropertySymbol.ownerDocument]
-		) {
-			this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
-				this,
-				'disconnectedCallback'
-			);
-		}
+		this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
+			this,
+			'disconnectedCallback'
+		);
 	}
 
 	/**
