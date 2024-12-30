@@ -32,14 +32,9 @@ import NamedNodeMapProxyFactory from './NamedNodeMapProxyFactory.js';
 import NodeFactory from '../NodeFactory.js';
 import HTMLSerializer from '../../html-serializer/HTMLSerializer.js';
 import HTMLParser from '../../html-parser/HTMLParser.js';
+import IScrollToOptions from '../../window/IScrollToOptions.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
-
-interface IScrollToOptions {
-	top?: number;
-	left?: number;
-	behavior?: 'auto' | 'smooth';
-}
 
 /**
  * Element.

@@ -2086,7 +2086,7 @@ describe('Element', () => {
 				expect(div.scrollTop).toBe(30);
 			});
 
-			it('Supports smooth scrolling.', async () => {
+			it('Supports smooth behavior.', async () => {
 				const div = document.createElement('div');
 
 				div.scrollLeft = 10;
@@ -2139,7 +2139,7 @@ describe('Element', () => {
 			expect(div.scrollTop).toBe(30);
 		});
 
-		it('Supports smooth scrolling.', async () => {
+		it('Supports smooth behavior.', async () => {
 			const div = document.createElement('div');
 
 			div.scrollLeft = 10;
