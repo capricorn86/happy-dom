@@ -591,10 +591,14 @@ describe('HTMLElement', () => {
 
 			expect(customElement.childNodes.length).toBe(2);
 			expect(customElement.childNodes[0]).toBe(child1);
+			expect(customElement.childNodes[0].parentNode).toBe(customElement);
 			expect(customElement.childNodes[1]).toBe(child2);
+			expect(customElement.childNodes[1].parentNode).toBe(customElement);
 			expect(customElement.children.length).toBe(2);
 			expect(customElement.children[0]).toBe(child1);
+			expect(customElement.children[0].parentNode).toBe(customElement);
 			expect(customElement.children[1]).toBe(child2);
+			expect(customElement.children[1].parentNode).toBe(customElement);
 			expect(customElement[PropertySymbol.rootNode] === rootNode).toBe(true);
 			expect(customElement[PropertySymbol.formNode] === formNode).toBe(true);
 			expect(customElement[PropertySymbol.selectNode] === selectNode).toBe(true);

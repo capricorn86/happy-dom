@@ -6,6 +6,7 @@ import DOMException from '../../src/exception/DOMException.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import NamespaceURI from '../../src/config/NamespaceURI.js';
+import ICustomElementDefinition from '../../src/custom-element/ICustomElementDefinition.js';
 
 describe('CustomElementRegistry', () => {
 	let customElements;
@@ -34,7 +35,7 @@ describe('CustomElementRegistry', () => {
 				extends: 'ul'
 			});
 			expect(customElements.get('custom-element')).toBe(CustomElement);
-			expect(customElements[PropertySymbol.registry]['custom-element'].extends).toBe('ul');
+			expect(customElements[PropertySymbol.registry].get('custom-element').extends).toBe('ul');
 		});
 
 		it('Can construct CustomElement instance using "new".', () => {
@@ -95,10 +96,28 @@ describe('CustomElementRegistry', () => {
 			});
 		}
 
-		it('Calls observed attributes and set "[PropertySymbol.observedAttributes]" as a property on the element class.', () => {
+		it('Calls observed attributes only once and stores a defintion in the registry.', () => {
 			customElements.define('custom-element', CustomElement);
 			expect(CustomElement.observedAttributesCallCount).toBe(1);
-			expect(CustomElement[PropertySymbol.observedAttributes]).toEqual(['key1', 'key2']);
+
+			const definition = <ICustomElementDefinition>(
+				customElements[PropertySymbol.registry].get('custom-element')
+			);
+			const observedAttributes: string[] = [];
+
+			for (const attribute of definition.observedAttributes.values()) {
+				observedAttributes.push(attribute);
+			}
+
+			expect(observedAttributes).toEqual(['key1', 'key2']);
+
+			const element = new CustomElement();
+
+			expect(definition.livecycleCallbacks.connectedCallback).toBe(element.connectedCallback);
+			expect(definition.livecycleCallbacks.disconnectedCallback).toBe(element.disconnectedCallback);
+			expect(definition.livecycleCallbacks.attributeChangedCallback).toBe(
+				element.attributeChangedCallback
+			);
 		});
 
 		it('Non-ASCII capital letter in localName.', () => {

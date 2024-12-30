@@ -47,7 +47,7 @@ export default class History {
 	 * @returns History length.
 	 */
 	public get length(): number {
-		return this.#browserFrame[PropertySymbol.history].length;
+		return this.#browserFrame?.[PropertySymbol.history].length || 0;
 	}
 
 	/**
@@ -87,7 +87,7 @@ export default class History {
 	 */
 	public back(): void {
 		if (!this.#window.closed) {
-			this.#browserFrame.goBack();
+			this.#browserFrame?.goBack();
 		}
 	}
 
@@ -96,7 +96,7 @@ export default class History {
 	 */
 	public forward(): void {
 		if (!this.#window.closed) {
-			this.#browserFrame.goForward();
+			this.#browserFrame?.goForward();
 		}
 	}
 
@@ -108,7 +108,7 @@ export default class History {
 	 */
 	public go(delta: number): void {
 		if (!this.#window.closed) {
-			this.#browserFrame.goSteps(delta);
+			this.#browserFrame?.goSteps(delta);
 		}
 	}
 
@@ -124,7 +124,7 @@ export default class History {
 			return;
 		}
 
-		const history = this.#browserFrame[PropertySymbol.history];
+		const history = this.#browserFrame?.[PropertySymbol.history];
 
 		if (!history) {
 			return;
@@ -182,7 +182,7 @@ export default class History {
 			return;
 		}
 
-		const history = this.#browserFrame[PropertySymbol.history];
+		const history = this.#browserFrame?.[PropertySymbol.history];
 
 		if (!history) {
 			return;
