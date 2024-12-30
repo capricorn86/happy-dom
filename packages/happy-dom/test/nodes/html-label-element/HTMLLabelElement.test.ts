@@ -43,8 +43,8 @@ describe('HTMLLabelElement', () => {
 			const input = document.createElement('input');
 			input.id = 'inputId';
 			element.htmlFor = 'inputId';
-			document.appendChild(input);
-			document.appendChild(element);
+			document.body.appendChild(input);
+			document.body.appendChild(element);
 			expect(element.control === input).toBe(true);
 		});
 

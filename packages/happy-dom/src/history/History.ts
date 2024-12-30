@@ -47,7 +47,7 @@ export default class History {
 	 * @returns History length.
 	 */
 	public get length(): number {
-		return this.#browserFrame[PropertySymbol.history].length;
+		return this.#browserFrame?.[PropertySymbol.history].length || 0;
 	}
 
 	/**
@@ -87,7 +87,7 @@ export default class History {
 	 */
 	public back(): void {
 		if (!this.#window.closed) {
-			this.#browserFrame.goBack();
+			this.#browserFrame?.goBack();
 		}
 	}
 
@@ -96,7 +96,7 @@ export default class History {
 	 */
 	public forward(): void {
 		if (!this.#window.closed) {
-			this.#browserFrame.goForward();
+			this.#browserFrame?.goForward();
 		}
 	}
 
@@ -108,7 +108,7 @@ export default class History {
 	 */
 	public go(delta: number): void {
 		if (!this.#window.closed) {
-			this.#browserFrame.goSteps(delta);
+			this.#browserFrame?.goSteps(delta);
 		}
 	}
 
@@ -119,12 +119,12 @@ export default class History {
 	 * @param title Title.
 	 * @param [url] URL.
 	 */
-	public pushState(state: object, title, url?: string): void {
+	public pushState(state: object, title, url?: string | URL): void {
 		if (this.#window.closed) {
 			return;
 		}
 
-		const history = this.#browserFrame[PropertySymbol.history];
+		const history = this.#browserFrame?.[PropertySymbol.history];
 
 		if (!history) {
 			return;
@@ -135,7 +135,7 @@ export default class History {
 
 		if (url && newURL.origin !== location.origin) {
 			throw new this.#window.DOMException(
-				`Failed to execute 'pushState' on 'History': A history state object with URL '${url}' cannot be created in a document with origin '${location.origin}' and URL '${location.href}'.`,
+				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${location.origin}' and URL '${location.href}'.`,
 				DOMExceptionNameEnum.securityError
 			);
 		}
@@ -177,12 +177,12 @@ export default class History {
 	 * @param title Title.
 	 * @param [url] URL.
 	 */
-	public replaceState(state: object, title, url?: string): void {
+	public replaceState(state: object, title, url?: string | URL): void {
 		if (this.#window.closed) {
 			return;
 		}
 
-		const history = this.#browserFrame[PropertySymbol.history];
+		const history = this.#browserFrame?.[PropertySymbol.history];
 
 		if (!history) {
 			return;
@@ -193,7 +193,7 @@ export default class History {
 
 		if (url && newURL.origin !== location.origin) {
 			throw new this.#window.DOMException(
-				`Failed to execute 'pushState' on 'History': A history state object with URL '${url}' cannot be created in a document with origin '${location.origin}' and URL '${location.href}'.`,
+				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${location.origin}' and URL '${location.href}'.`,
 				DOMExceptionNameEnum.securityError
 			);
 		}

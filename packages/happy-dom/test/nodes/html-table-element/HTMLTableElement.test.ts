@@ -231,10 +231,13 @@ describe('HTMLTableElement', () => {
 		it('Returns an HTMLCollection of <tr> elements', () => {
 			expect(element.rows).instanceOf(HTMLCollection);
 			expect(element.rows.length).toBe(0);
-			element.innerHTML = '<div><tr><td>test</td></tr><tr><td>test</td></tr></div>';
-			expect(element.rows.length).toBe(2);
+			element.innerHTML =
+				'<tbody><tr><td>test</td></tr><tr><td>test</td></tr></tbody><tbody><tr><td>test</td></tr><tr><td>test</td></tr></tbody>';
+			expect(element.rows.length).toBe(4);
 			expect(element.rows[0]).toBe(element.children[0].children[0]);
 			expect(element.rows[1]).toBe(element.children[0].children[1]);
+			expect(element.rows[2]).toBe(element.children[1].children[0]);
+			expect(element.rows[3]).toBe(element.children[1].children[1]);
 		});
 	});
 
@@ -243,10 +246,10 @@ describe('HTMLTableElement', () => {
 			expect(element.tBodies).instanceOf(HTMLCollection);
 			expect(element.tBodies.length).toBe(0);
 			element.innerHTML =
-				'<div><tbody><tr><td>test</td></tr></tbody><tbody><tr><td>test</td></tr></tbody></div>';
+				'<tbody><tr><td>test</td></tr></tbody><tbody><tr><td>test</td></tr></tbody>';
 			expect(element.tBodies.length).toBe(2);
-			expect(element.tBodies[0]).toBe(element.children[0].children[0]);
-			expect(element.tBodies[1]).toBe(element.children[0].children[1]);
+			expect(element.tBodies[0]).toBe(element.children[0]);
+			expect(element.tBodies[1]).toBe(element.children[1]);
 		});
 	});
 
@@ -319,7 +322,10 @@ describe('HTMLTableElement', () => {
 			element.innerHTML =
 				'<div><tbody><tr><td>test</td></tr></tbody><tbody><tr><td>test</td></tr></tbody></div>';
 			const tbody = element.createTBody();
-			expect(element.childNodes[0].childNodes[2]).toBe(tbody);
+			expect(element.children[3]).toBe(tbody);
+			expect(element.innerHTML).toBe(
+				'<div></div><tbody><tr><td>test</td></tr></tbody><tbody><tr><td>test</td></tr></tbody><tbody></tbody>'
+			);
 		});
 
 		it('Inserts the tbody as the last child if there are no <tbody>', () => {
@@ -355,34 +361,47 @@ describe('HTMLTableElement', () => {
 	describe('insertRow()', () => {
 		it('Inserts a new row at the end', () => {
 			const row = element.insertRow();
-			expect(element.childNodes[0]).toBe(row);
-			element.innerHTML = '<div><tr><td>test</td></tr></div>';
+			expect(element.children[0].children[0]).toBe(row);
+			expect(element.innerHTML).toBe('<tbody><tr></tr></tbody>');
 			const row2 = element.insertRow();
-			expect(element.childNodes[1]).toBe(row2);
+			expect(element.children[0].children[1]).toBe(row2);
+			expect(element.innerHTML).toBe('<tbody><tr></tr><tr></tr></tbody>');
 		});
 
 		it('Inserts a new row at the given index', () => {
 			element.innerHTML = '<div><tr><td>test</td></tr><tr><td>test</td></tr></div>';
 			const row = element.insertRow(1);
-			expect(element.childNodes[0].childNodes[1]).toBe(row);
+			expect(element.children[1].children[1]).toBe(row);
+			expect(element.innerHTML).toBe(
+				'<div></div><tbody><tr><td>test</td></tr><tr></tr><tr><td>test</td></tr></tbody>'
+			);
 		});
 
 		it('Inserts a new row at the end if the index is -1', () => {
 			element.innerHTML = '<tr><td>test</td></tr><tr><td>test</td></tr>';
 			const row = element.insertRow(-1);
-			expect(element.childNodes[2]).toBe(row);
+			expect(element.children[0].children[2]).toBe(row);
+			expect(element.innerHTML).toBe(
+				'<tbody><tr><td>test</td></tr><tr><td>test</td></tr><tr></tr></tbody>'
+			);
 		});
 
 		it('Inserts a new row at the end if the index is not a number', () => {
 			element.innerHTML = '<tr><td>test</td></tr><tr><td>test</td></tr>';
 			const row = element.insertRow(<number>(<unknown>'test'));
-			expect(element.childNodes[2]).toBe(row);
+			expect(element.children[0].children[2]).toBe(row);
+			expect(element.innerHTML).toBe(
+				'<tbody><tr><td>test</td></tr><tr><td>test</td></tr><tr></tr></tbody>'
+			);
 		});
 
 		it('Inserts a new row at the end if the index is equal to the length of rows', () => {
-			element.innerHTML = '<tr><td>test</td></tr><tr><td>test</td></tr>';
+			element.innerHTML = '<tbody><tr><td>test</td></tr><tr><td>test</td></tr></tbody>';
 			const row = element.insertRow(2);
-			expect(element.childNodes[2]).toBe(row);
+			expect(element.children[0].children[2]).toBe(row);
+			expect(element.innerHTML).toBe(
+				'<tbody><tr><td>test</td></tr><tr><td>test</td></tr><tr></tr></tbody>'
+			);
 		});
 
 		it('Throws an error if the index is less than -1', () => {
@@ -407,22 +426,28 @@ describe('HTMLTableElement', () => {
 		it('Removes the row at the given index', () => {
 			element.innerHTML = '<tr><td>Row 1</td></tr><tr><td>Row 2</td></tr><tr><td>Row 3</td></tr>';
 			element.deleteRow(1);
-			expect(element.childNodes.length).toBe(2);
-			expect(element.innerHTML).toBe('<tr><td>Row 1</td></tr><tr><td>Row 3</td></tr>');
+			expect(element.children[0].children.length).toBe(2);
+			expect(element.innerHTML).toBe(
+				'<tbody><tr><td>Row 1</td></tr><tr><td>Row 3</td></tr></tbody>'
+			);
 		});
 
 		it('Removes the last row if the index is -1', () => {
 			element.innerHTML = '<tr><td>Row 1</td></tr><tr><td>Row 2</td></tr><tr><td>Row 3</td></tr>';
 			element.deleteRow(-1);
-			expect(element.childNodes.length).toBe(2);
-			expect(element.innerHTML).toBe('<tr><td>Row 1</td></tr><tr><td>Row 2</td></tr>');
+			expect(element.children[0].children.length).toBe(2);
+			expect(element.innerHTML).toBe(
+				'<tbody><tr><td>Row 1</td></tr><tr><td>Row 2</td></tr></tbody>'
+			);
 		});
 
 		it('Removes the last row if the index is not a number', () => {
 			element.innerHTML = '<tr><td>Row 1</td></tr><tr><td>Row 2</td></tr><tr><td>Row 3</td></tr>';
 			element.deleteRow(<number>(<unknown>'test'));
-			expect(element.childNodes.length).toBe(2);
-			expect(element.innerHTML).toBe('<tr><td>Row 1</td></tr><tr><td>Row 2</td></tr>');
+			expect(element.children[0].children.length).toBe(2);
+			expect(element.innerHTML).toBe(
+				'<tbody><tr><td>Row 1</td></tr><tr><td>Row 2</td></tr></tbody>'
+			);
 		});
 
 		it('Throws an error if the index is less than -1', () => {
