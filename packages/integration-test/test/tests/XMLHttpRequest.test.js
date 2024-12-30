@@ -36,6 +36,42 @@ describe('XMLHttpRequest', () => {
 		});
 	});
 
+	it('Send Authorization header in case of same origin request', async () => {
+		await new Promise((resolve) => {
+			const window = new Window({
+				url: 'http://localhost:3000/'
+			});
+			const express = Express();
+
+			express.get('/get/json', (req, res) => {
+				if (req.get('Authorization') === 'Basic test') {
+					res.sendStatus(200);
+				} else {
+					res.sendStatus(401);
+				}
+			});
+
+			const server = express.listen(3000);
+			const request = new window.XMLHttpRequest();
+
+			request.open('GET', 'http://localhost:3000/get/json', true);
+
+			request.setRequestHeader('Authorization', 'Basic test');
+
+			request.addEventListener('load', () => {
+				expect(request.status).toBe(200);
+				expect(request.statusText).toBe('OK');
+				expect(request.responseURL).toBe('http://localhost:3000/get/json');
+
+				server.close();
+
+				resolve(null);
+			});
+
+			request.send();
+		});
+	});
+
 	it('Can perform a real synchronous XMLHttpRequest request to Github.com', () => {
 		const window = new Window({
 			url: 'https://raw.githubusercontent.com/'
