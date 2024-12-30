@@ -1,4 +1,4 @@
-import ClassMethodBinder from '../ClassMethodBinder.js';
+import ClassMethodBinder from '../utilities/ClassMethodBinder.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import BrowserWindow from '../window/BrowserWindow.js';

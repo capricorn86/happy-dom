@@ -3,6 +3,8 @@ import Document from '../../../src/nodes/document/Document.js';
 import HTMLStyleElement from '../../../src/nodes/html-style-element/HTMLStyleElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import DOMImplementation from '../../../src/dom-implementation/DOMImplementation.js';
+import CSSStyleRule from '../../../src/css/rules/CSSStyleRule.js';
 
 describe('HTMLStyleElement', () => {
 	let window: Window;
@@ -184,6 +186,74 @@ describe('HTMLStyleElement', () => {
 			expect(element.sheet.cssRules[0].cssText).toBe('html { background-color: blue; }');
 
 			expect(documentElementComputedStyle.backgroundColor).toBe('blue');
+		});
+
+		it('Returns an CSSStyleSheet instance with its text content as style rules for #1647.', () => {
+			const StyleTagRegexp = /<style[^>]*>(?<content>.*?)<\/style>/gis;
+
+			function getScopedCssRules(html: string, scope: string, dom?: DOMImplementation): string {
+				const css = Array.from(html.matchAll(StyleTagRegexp))
+					.map(({ groups }) => groups?.content ?? '')
+					.join('\n');
+
+				if (!css) {
+					return '';
+				}
+
+				// Use the browser's CSSOM to parse CSS
+				const doc = (dom ?? document.implementation).createHTMLDocument();
+				const styleElement = doc.createElement('style');
+				styleElement.textContent = css;
+				doc.body.appendChild(styleElement);
+
+				return Array.from(styleElement.sheet?.cssRules ?? [])
+					.map((rule) => {
+						if (rule instanceof CSSStyleRule) {
+							rule.selectorText = rule.selectorText
+								.split(',')
+								.map((selector) => `${scope} ${selector}`)
+								.join(',');
+						}
+
+						return rule.cssText;
+					})
+					.join('\n');
+			}
+
+			function scopeCssSelectors(html: string, scope: string, dom?: DOMImplementation): string {
+				const scopedCss = getScopedCssRules(html, scope, dom);
+
+				return `${scopedCss ? `<style>${scopedCss}</style>` : ''}${html.replace(
+					StyleTagRegexp,
+					''
+				)}`;
+			}
+
+			const html = `
+                <style>
+                #document h1, #document h2 {
+                    background: red;
+                }
+                </style>
+        
+                <h1>I love this</h1>
+        
+                <STYLE type="text/css">
+                h3 {
+                    color: white;
+                }
+                </STYLE>
+            `;
+
+			expect(scopeCssSelectors(html, '.scope'))
+				.toEqual(`<style>.scope #document h1,.scope  #document h2 { background: red; }
+.scope h3 { color: white; }</style>
+                
+        
+                <h1>I love this</h1>
+        
+                
+            `);
 		});
 	});
 });

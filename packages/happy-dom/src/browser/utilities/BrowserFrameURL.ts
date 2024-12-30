@@ -12,8 +12,8 @@ export default class BrowserFrameURL {
 	 * @param url URL.
 	 * @returns Relative URL.
 	 */
-	public static getRelativeURL(frame: IBrowserFrame, url: string): URL {
-		url = url || 'about:blank';
+	public static getRelativeURL(frame: IBrowserFrame, url: string | URL): URL {
+		url = (url instanceof URL ? url.toString() : url) || 'about:blank';
 
 		if (url.startsWith('about:') || url.startsWith('javascript:')) {
 			return new URL(url);

@@ -250,6 +250,7 @@ describe('Node', () => {
 
 		it('Returns null if parent node is not an element.', () => {
 			const htmlElement = document.createElement('html');
+			document.removeChild(document.children[0]);
 			document.appendChild(htmlElement);
 
 			expect(htmlElement.parentNode).toBe(document);
@@ -305,13 +306,13 @@ describe('Node', () => {
 			};
 
 			document.body.appendChild(customElement);
-
-			expect(isConnected).toBe(true);
-			expect(isDisconnected).toBe(false);
-
 			document.body.removeChild(customElement);
 
-			expect(isDisconnected).toBe(true);
+			// Should not be called as the callbacks are stored in the definition when the element is defined
+			expect(isConnected).toBe(false);
+			expect(isDisconnected).toBe(false);
+
+			expect(customElementOutput).toEqual(['Counter:connected', 'Counter:disconnected']);
 		});
 	});
 
@@ -536,6 +537,19 @@ describe('Node', () => {
 			expect(parent.childNodes.length).toBe(1);
 			expect(parent.childNodes[0]).toBe(child);
 		});
+
+		it('Sets ownerDocument on the child node.', () => {
+			const parent = document.createElement('div');
+			const domParser = new window.DOMParser();
+			const newDocument = domParser.parseFromString('<span></span>', 'text/html');
+			const span = <Node>newDocument.querySelector('span');
+
+			expect(span.ownerDocument === newDocument).toBe(true);
+
+			parent.appendChild(span);
+
+			expect(span.ownerDocument === document).toBe(true);
+		});
 	});
 
 	describe('removeChild()', () => {
@@ -753,6 +767,21 @@ describe('Node', () => {
 			expect(parent.childNodes.length).toBe(2);
 			expect(parent.childNodes[0]).toBe(newNode);
 			expect(parent.childNodes[1]).toBe(referenceNode);
+		});
+
+		it('Sets ownerDocument on the child node.', () => {
+			const parent = document.createElement('div');
+			const article = document.createElement('article');
+			const domParser = new window.DOMParser();
+			const newDocument = domParser.parseFromString('<span></span>', 'text/html');
+			const span = <Node>newDocument.querySelector('span');
+
+			expect(span.ownerDocument === newDocument).toBe(true);
+
+			parent.appendChild(article);
+			parent.insertBefore(span, article);
+
+			expect(span.ownerDocument === document).toBe(true);
 		});
 	});
 
@@ -1232,12 +1261,12 @@ describe('Node', () => {
 			expect(b.childNodes).toHaveLength(0);
 		});
 
-		it('Normalizes the document.', () => {
-			const count = document.childNodes.length;
-			document.append(document.createTextNode(''));
-			expect(document.childNodes).toHaveLength(count + 1);
-			document.normalize();
-			expect(document.childNodes).toHaveLength(count);
+		it('Normalizes the child nodes.', () => {
+			const count = document.body.childNodes.length;
+			document.body.append(document.createTextNode(''));
+			expect(document.body.childNodes).toHaveLength(count + 1);
+			document.body.normalize();
+			expect(document.body.childNodes).toHaveLength(count);
 		});
 
 		it('Does nothing on a text node.', () => {

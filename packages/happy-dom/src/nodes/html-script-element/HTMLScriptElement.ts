@@ -249,7 +249,10 @@ export default class HTMLScriptElement extends HTMLElement {
 	async #loadScript(url: string): Promise<void> {
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
-		const async = this.getAttribute('async') !== null;
+		const async =
+			this.getAttribute('async') !== null ||
+			this.getAttribute('defer') !== null ||
+			this.getAttribute('type') === 'module';
 
 		if (!browserFrame) {
 			return;
