@@ -225,6 +225,10 @@ export default class BrowserFrameNavigator {
 			throw error;
 		}
 
+		if (response.url) {
+			frame.window[PropertySymbol.location][PropertySymbol.setURL](frame, response.url);
+		}
+
 		if (!response.ok) {
 			frame.page.console.error(`GET ${targetURL.href} ${response.status} (${response.statusText})`);
 		}
