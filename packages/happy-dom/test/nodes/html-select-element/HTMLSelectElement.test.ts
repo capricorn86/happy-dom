@@ -6,6 +6,7 @@ import ValidityState from '../../../src/validity-state/ValidityState.js';
 import Event from '../../../src/event/Event.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import HTMLCollection from '../../../src/nodes/element/HTMLCollection.js';
+import EventTarget from '../../../src/event/EventTarget.js';
 
 describe('HTMLSelectElement', () => {
 	let window: Window;
@@ -772,4 +773,22 @@ describe('HTMLSelectElement', () => {
 			});
 		});
 	}
+
+	describe('dispatchEvent()', () => {
+		it('Dispatches events using the proxy as the target.', () => {
+			const event = new Event('test');
+			let target: EventTarget | null = null;
+			let currentTarget: EventTarget | null = null;
+
+			element.addEventListener('test', (event: Event) => {
+				target = event.target;
+				currentTarget = event.currentTarget;
+			});
+
+			element.dispatchEvent(event);
+
+			expect(target).toBe(element);
+			expect(currentTarget).toBe(element);
+		});
+	});
 });

@@ -20,6 +20,7 @@ import { beforeEach, describe, it, expect, vi } from 'vitest';
 import THTMLFormControlElement from '../../../src/nodes/html-form-element/THTMLFormControlElement.js';
 import HTMLOutputElement from '../../../src/nodes/html-output-element/HTMLOutputElement.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
+import EventTarget from '../../../src/event/EventTarget.js';
 
 describe('HTMLFormElement', () => {
 	let window: Window;
@@ -1352,4 +1353,22 @@ describe('HTMLFormElement', () => {
 			});
 		});
 	}
+
+	describe('dispatchEvent()', () => {
+		it('Dispatches events using the proxy as the target.', () => {
+			const event = new Event('test');
+			let target: EventTarget | null = null;
+			let currentTarget: EventTarget | null = null;
+
+			element.addEventListener('test', (event: Event) => {
+				target = event.target;
+				currentTarget = event.currentTarget;
+			});
+
+			element.dispatchEvent(event);
+
+			expect(target).toBe(element);
+			expect(currentTarget).toBe(element);
+		});
+	});
 });
