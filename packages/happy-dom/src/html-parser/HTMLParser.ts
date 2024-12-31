@@ -738,10 +738,8 @@ export default class HTMLParser {
 		}
 
 		// Plain text elements such as <script> and <style> should only contain text.
-		this.currentNode[PropertySymbol.appendChild](
-			this.rootDocument.createTextNode(XMLEncodeUtility.decodeHTMLEntities(text)),
-			true
-		);
+		// Plain text elements should not decode entities. See #1564.
+		this.currentNode[PropertySymbol.appendChild](this.rootDocument.createTextNode(text), true);
 
 		const rawTextElement = this.currentNode;
 

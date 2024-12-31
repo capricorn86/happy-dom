@@ -456,5 +456,20 @@ describe('XMLSerializer', () => {
                 </root>`
 			);
 		});
+
+		it("Doesn't escape text in <script> and <style> elements for #1564.", () => {
+			expect(
+				new XMLSerializer().serializeToString(
+					(<Document>(
+						new window.DOMParser().parseFromString(
+							'<div><script>//<>&lt;&gt;</script><style>//<>&lt;&gt;</style></div>',
+							'text/html'
+						)
+					)).body
+				)
+			).toBe(
+				'<body xmlns="http://www.w3.org/1999/xhtml"><div><script>//<>&lt;&gt;</script><style>//<>&lt;&gt;</style></div></body>'
+			);
+		});
 	});
 });
