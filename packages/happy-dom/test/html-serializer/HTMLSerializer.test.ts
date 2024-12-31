@@ -2,7 +2,6 @@ import HTMLSerializer from '../../src/html-serializer/HTMLSerializer.js';
 import Window from '../../src/window/Window.js';
 import Document from '../../src/nodes/document/Document.js';
 import CustomElement from '../CustomElement.js';
-import * as PropertySymbol from '../../src/PropertySymbol.js';
 import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 
 describe('HTMLSerializer', () => {
@@ -296,6 +295,19 @@ describe('HTMLSerializer', () => {
 			expect(document.body.innerHTML).toBe(
 				`<a href="https://www.com/" style="background-image: url(&quot;https://cdn.cookie.org/image.svg&quot;);"></a>`
 			);
+		});
+
+		it("Doesn't escape text in <script> and <style> elements for #1564.", () => {
+			expect(
+				serializer.serializeToString(
+					(<Document>(
+						new window.DOMParser().parseFromString(
+							'<div><script>//<>&lt;&gt;</script><style>//<>&lt;&gt;</style></div>',
+							'text/html'
+						)
+					)).body
+				)
+			).toBe('<body><div><script>//<>&lt;&gt;</script><style>//<>&lt;&gt;</style></div></body>');
 		});
 	});
 });
