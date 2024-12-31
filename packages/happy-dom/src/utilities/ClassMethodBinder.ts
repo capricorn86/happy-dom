@@ -24,7 +24,7 @@ export default class ClassMethodBinder {
 	 */
 	public bind(name: string | symbol): void {
 		// We should never bind the Symbol.iterator method as it can cause problems with Array.from()
-		if (this.cache.has(name) || name === Symbol.iterator) {
+		if (this.cache.has(name) || name === Symbol.iterator || name === 'constructor') {
 			return;
 		}
 
@@ -40,6 +40,10 @@ export default class ClassMethodBinder {
 			const descriptor = Object.getOwnPropertyDescriptor(_class.prototype, name);
 			if (descriptor) {
 				if (typeof descriptor.value === 'function') {
+					if (descriptor.value.toString().startsWith('class ')) {
+						// Do not bind classes
+						return;
+					}
 					Object.defineProperty(target, name, {
 						...descriptor,
 						value: descriptor.value.bind(target)

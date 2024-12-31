@@ -24,6 +24,13 @@ describe('HTMLSelectElement', () => {
 		});
 	});
 
+	describe('constructor()', () => {
+		it('Matches snapshot.', () => {
+			element.innerHTML = '<option>Option 1</option><option>Option 2</option>';
+			expect(element).toMatchSnapshot();
+		});
+	});
+
 	describe('get options()', () => {
 		it('Reflects changes as options elements are added and removed from the DOM.', () => {
 			const option1 = <HTMLOptionElement>document.createElement('option');

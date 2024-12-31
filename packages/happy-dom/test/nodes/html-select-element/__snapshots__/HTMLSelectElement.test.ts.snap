@@ -1,0 +1,12 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`HTMLSelectElement > constructor() > Matches snapshot. 1`] = `
+<select>
+  <option>
+    Option 1
+  </option>
+  <option>
+    Option 2
+  </option>
+</select>
+`;

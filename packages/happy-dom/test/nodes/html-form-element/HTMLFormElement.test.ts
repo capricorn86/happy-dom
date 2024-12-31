@@ -38,6 +38,22 @@ describe('HTMLFormElement', () => {
 		});
 	});
 
+	describe('constructor()', () => {
+		it('Matches snapshot.', () => {
+			element.innerHTML = `
+                <input type="text" name="text1" value="value1">
+                <input type="hidden" name="text2" value="value2">
+                <input type="checkbox" name="checkbox1" value="value1" checked>
+                <input type="checkbox" name="checkbox2" value="value2">
+                <input type="radio" name="radio1" value="value1">
+                <input type="radio" name="radio1" value="value2" checked>
+                <input type="radio" name="radio1" value="value3">
+                <input type="submit" name="button1">
+            `;
+			expect(element).toMatchSnapshot();
+		});
+	});
+
 	for (const property of [
 		'name',
 		'target',
