@@ -606,6 +606,105 @@ describe('HTMLSelectElement', () => {
 		});
 	});
 
+	describe('remove()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><select><option>Option 1</option></select></section>';
+
+			const select = <HTMLSelectElement>document.querySelector('select');
+
+			select.remove();
+
+			expect(document.body.children[0].children.length).toBe(0);
+		});
+	});
+
+	describe('replaceWith()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><select><option>Option 1</option></select></section>';
+
+			const select = <HTMLSelectElement>document.querySelector('select');
+
+			select.replaceWith(document.createElement('div'));
+
+			expect(document.body.children[0].children[0].tagName).toBe('DIV');
+		});
+	});
+
+	describe('before()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><select><option>Option 1</option></select></section>';
+
+			const select = <HTMLSelectElement>document.querySelector('select');
+
+			select.before(document.createElement('div'));
+
+			expect(document.body.children[0].children[0].tagName).toBe('DIV');
+		});
+	});
+
+	describe('after()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><select><option>Option 1</option></select></section>';
+
+			const select = <HTMLSelectElement>document.querySelector('select');
+
+			select.after(document.createElement('div'));
+
+			expect(document.body.children[0].children[1].tagName).toBe('DIV');
+		});
+	});
+
+	describe('append()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><select><option>Option 1</option></select></section>';
+
+			const select = <HTMLSelectElement>document.querySelector('select');
+			const newOption = document.createElement('option');
+
+			select.append(newOption);
+
+			expect(select.children[1]).toBe(newOption);
+		});
+	});
+
+	describe('prepend()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><select><option>Option 1</option></select></section>';
+
+			const select = <HTMLSelectElement>document.querySelector('select');
+			const newOption = document.createElement('option');
+
+			select.prepend(newOption);
+
+			expect(select.children[0]).toBe(newOption);
+		});
+	});
+
+	describe('replaceChildren()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><select><option>Option 1</option></select></section>';
+
+			const select = <HTMLSelectElement>document.querySelector('select');
+			const newOption = document.createElement('option');
+
+			select.replaceChildren(newOption);
+
+			expect(select.children[0]).toBe(newOption);
+		});
+	});
+
+	describe('insertAdjacentElement()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><select><option>Option 1</option></select></section>';
+
+			const select = <HTMLSelectElement>document.querySelector('select');
+
+			select.insertAdjacentElement('beforebegin', document.createElement('div'));
+
+			expect(document.body.children[0].children[0].tagName).toBe('DIV');
+		});
+	});
+
 	describe('setCustomValidity()', () => {
 		it('Returns validation message.', () => {
 			element.setCustomValidity('Error message');
