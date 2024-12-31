@@ -1065,6 +1065,23 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
+	describe('get defaultChecked()', () => {
+		it('Returns true if the attribute "checked" has been set.', () => {
+			expect(element.defaultChecked).toBe(false);
+			element.setAttribute('checked', '');
+			expect(element.defaultChecked).toBe(true);
+		});
+	});
+
+	describe('set defaultChecked()', () => {
+		it('Sets the attribute "checked".', () => {
+			element.defaultChecked = true;
+			expect(element.getAttribute('checked')).toBe('');
+			element.defaultChecked = false;
+			expect(element.getAttribute('checked')).toBe(null);
+		});
+	});
+
 	describe('setCustomValidity()', () => {
 		it('Returns validation message.', () => {
 			element.setCustomValidity('Error message');

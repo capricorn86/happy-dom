@@ -41,7 +41,6 @@ export default class HTMLInputElement extends HTMLElement {
 	public [PropertySymbol.value] = null;
 	public [PropertySymbol.height] = 0;
 	public [PropertySymbol.width] = 0;
-	public [PropertySymbol.defaultChecked] = false;
 	public [PropertySymbol.checked]: boolean | null = null;
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
@@ -62,7 +61,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @returns Default checked.
 	 */
 	public get defaultChecked(): boolean {
-		return this[PropertySymbol.defaultChecked];
+		return this.hasAttribute('checked');
 	}
 
 	/**
@@ -71,7 +70,11 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @param defaultChecked Default checked.
 	 */
 	public set defaultChecked(defaultChecked: boolean) {
-		this[PropertySymbol.defaultChecked] = defaultChecked;
+		if (defaultChecked) {
+			this.setAttribute('checked', '');
+		} else {
+			this.removeAttribute('checked');
+		}
 	}
 
 	/**
@@ -1341,7 +1344,6 @@ export default class HTMLInputElement extends HTMLElement {
 		clone[PropertySymbol.value] = this[PropertySymbol.value];
 		clone[PropertySymbol.height] = this[PropertySymbol.height];
 		clone[PropertySymbol.width] = this[PropertySymbol.width];
-		clone[PropertySymbol.defaultChecked] = this[PropertySymbol.defaultChecked];
 		clone[PropertySymbol.files] = <FileList>this[PropertySymbol.files].slice();
 		clone.#selectionStart = this.#selectionStart;
 		clone.#selectionEnd = this.#selectionEnd;
