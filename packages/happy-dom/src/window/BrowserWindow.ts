@@ -305,6 +305,8 @@ import SVGTransformList from '../svg/SVGTransformList.js';
 import SVGUnitTypes from '../svg/SVGUnitTypes.js';
 import DOMPoint from '../dom/DOMPoint.js';
 import SVGAnimatedLengthList from '../svg/SVGAnimatedLengthList.js';
+import CustomElementReactionStack from '../custom-element/CustomElementReactionStack.js';
+import IScrollToOptions from './IScrollToOptions.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -792,6 +794,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.parent]: BrowserWindow = this;
 	public [PropertySymbol.window]: BrowserWindow = this;
 	public [PropertySymbol.internalId]: number = -1;
+	public [PropertySymbol.customElementReactionStack] = new CustomElementReactionStack(this);
 
 	// Private properties
 	#browserFrame: IBrowserFrame;
@@ -1142,28 +1145,35 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * @param x X position or options object.
 	 * @param y Y position.
 	 */
-	public scroll(x: { top?: number; left?: number; behavior?: string } | number, y?: number): void {
-		if (typeof x === 'object') {
-			if (x.behavior === 'smooth') {
-				this.setTimeout(() => {
-					if (x.top !== undefined) {
-						(<number>this.document.documentElement.scrollTop) = x.top;
-					}
-					if (x.left !== undefined) {
-						(<number>this.document.documentElement.scrollLeft) = x.left;
-					}
-				});
-			} else {
-				if (x.top !== undefined) {
-					(<number>this.document.documentElement.scrollTop) = x.top;
+	public scroll(x: IScrollToOptions | number, y?: number): void {
+		if (typeof x !== 'object' && arguments.length === 1) {
+			throw new this.TypeError(
+				"Failed to execute 'scroll' on 'Window': The provided value is not of type 'ScrollToOptions'."
+			);
+		}
+
+		const options = typeof x === 'object' ? x : { left: x, top: y };
+
+		if (options.behavior === 'smooth') {
+			this.setTimeout(() => {
+				if (options.top !== undefined) {
+					const top = Number(options.top);
+					this.document.documentElement.scrollTop = isNaN(top) ? 0 : top;
 				}
-				if (x.left !== undefined) {
-					(<number>this.document.documentElement.scrollLeft) = x.left;
+				if (options.left !== undefined) {
+					const left = Number(options.left);
+					this.document.documentElement.scrollLeft = isNaN(left) ? 0 : left;
 				}
+			});
+		} else {
+			if (options.top !== undefined) {
+				const top = Number(options.top);
+				this.document.documentElement.scrollTop = isNaN(top) ? 0 : top;
 			}
-		} else if (x !== undefined && y !== undefined) {
-			(<number>this.document.documentElement.scrollLeft) = x;
-			(<number>this.document.documentElement.scrollTop) = y;
+			if (options.left !== undefined) {
+				const left = Number(options.left);
+				this.document.documentElement.scrollLeft = isNaN(left) ? 0 : left;
+			}
 		}
 	}
 
@@ -1173,11 +1183,33 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * @param x X position or options object.
 	 * @param y Y position.
 	 */
-	public scrollTo(
-		x: { top?: number; left?: number; behavior?: string } | number,
-		y?: number
-	): void {
+	public scrollTo(x: IScrollToOptions | number, y?: number): void {
+		if (typeof x !== 'object' && arguments.length === 1) {
+			throw new this.TypeError(
+				"Failed to execute 'scrollTo' on 'Window': The provided value is not of type 'ScrollToOptions'."
+			);
+		}
 		this.scroll(x, y);
+	}
+
+	/**
+	 * Scrolls by a relative amount from the current position.
+	 *
+	 * @param x Pixels to scroll by from top or scroll options object.
+	 * @param y Pixels to scroll by from left.
+	 */
+	public scrollBy(x: IScrollToOptions | number, y?: number): void {
+		if (typeof x !== 'object' && arguments.length === 1) {
+			throw new this.TypeError(
+				"Failed to execute 'scrollBy' on 'Window': The provided value is not of type 'ScrollToOptions'."
+			);
+		}
+		const options = typeof x === 'object' ? x : { left: x, top: y };
+		this.scroll({
+			left: this.document.documentElement.scrollLeft + (options.left ?? 0),
+			top: this.document.documentElement.scrollTop + (options.top ?? 0),
+			behavior: options.behavior
+		});
 	}
 
 	/**
@@ -1669,14 +1701,14 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this[PropertySymbol.mutationObservers] = [];
 
 		// Disconnects nodes from the document, so that they can be garbage collected.
-		const childNodes = this.document[PropertySymbol.nodeArray];
+		const childNodes = this.document.body[PropertySymbol.nodeArray];
 
 		while (childNodes.length > 0) {
 			// Makes sure that something won't be triggered by the disconnect.
-			if (childNodes[0].disconnectedCallback) {
-				delete childNodes[0].disconnectedCallback;
+			if ((<HTMLElement>childNodes[0]).disconnectedCallback) {
+				delete (<HTMLElement>childNodes[0]).disconnectedCallback;
 			}
-			this.document.removeChild(childNodes[0]);
+			this.document.body.removeChild(childNodes[0]);
 		}
 
 		// Create some empty elements for scripts that are still running.
@@ -1685,7 +1717,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		const bodyElement = this.document.createElement('body');
 		htmlElement.appendChild(headElement);
 		htmlElement.appendChild(bodyElement);
-		this.document.appendChild(htmlElement);
+		this.document.body.appendChild(htmlElement);
 
 		if (this.location[PropertySymbol.destroy]) {
 			this.location[PropertySymbol.destroy]();

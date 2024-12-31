@@ -199,7 +199,7 @@ describe('XMLHttpRequest', () => {
 
 		it('Returns Document when "responseType" is set to "document".', async () => {
 			await new Promise((resolve) => {
-				const responseText = 'Test';
+				const responseText = '<root>Test</root>';
 
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
@@ -218,9 +218,7 @@ describe('XMLHttpRequest', () => {
 				request.open('GET', REQUEST_URL, true);
 
 				request.addEventListener('load', () => {
-					expect((<Document>request.response).documentElement.outerHTML).toBe(
-						'<html><head></head><body>Test</body></html>'
-					);
+					expect((<Document>request.response).documentElement.outerHTML).toBe('<root>Test</root>');
 					resolve(null);
 				});
 
@@ -515,6 +513,36 @@ describe('XMLHttpRequest', () => {
 					expect(requestArgs).toEqual({
 						headers: {
 							'test-header': 'test'
+						}
+					});
+					resolve(null);
+				});
+				request.send();
+			});
+		});
+
+		it('Sets credentials to same-origin if withCredentials is false to emulate xmlhttprequest behaviour', async () => {
+			await new Promise((resolve) => {
+				let requestArgs: { headers: { [name: string]: string } } | null = null;
+
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+					requestArgs = {
+						headers: {
+							Authorization:
+								this.request.credentials === 'same-origin'
+									? this.request.headers.get('Authorization')
+									: undefined
+						}
+					};
+					return <Response>{ headers: <Headers>new Headers() };
+				});
+
+				request.open('GET', REQUEST_URL, true);
+				expect(request.setRequestHeader('Authorization', 'Basic test')).toBe(true);
+				request.addEventListener('load', () => {
+					expect(requestArgs).toEqual({
+						headers: {
+							Authorization: 'Basic test'
 						}
 					});
 					resolve(null);

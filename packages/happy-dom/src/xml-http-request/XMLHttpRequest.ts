@@ -216,7 +216,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			method,
 			headers,
 			signal: this.#abortController.signal,
-			credentials: this.withCredentials ? 'include' : 'omit'
+			credentials: this.withCredentials ? 'include' : 'same-origin'
 		});
 
 		this.#readyState = XMLHttpRequestReadyStateEnum.opened;
@@ -285,6 +285,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @param body Optional data to send as request body.
 	 */
 	public send(body?: Document | IRequestBody): void {
+		const window = this[PropertySymbol.window];
+
 		if (this.readyState != XMLHttpRequestReadyStateEnum.opened) {
 			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'send' on 'XMLHttpRequest': Connection must be opened before send() is called.`,
@@ -298,7 +300,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			body !== null &&
 			(<Document>body)[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
 		) {
-			body = (<Document>body).documentElement.outerHTML;
+			body = new window.XMLSerializer().serializeToString(<Document>body);
 		}
 
 		if (this.#async) {

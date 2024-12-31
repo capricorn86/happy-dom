@@ -81,6 +81,27 @@ describe('BrowserWindow', () => {
 		});
 	});
 
+	describe('get document()', () => {
+		it('Returns the document.', () => {
+			expect(window.document).toBeInstanceOf(Document);
+
+			expect(window.document.isConnected).toBe(true);
+			expect(window.document.defaultView).toBe(window);
+
+			expect(window.document.documentElement.ownerDocument).toBe(window.document);
+			expect(window.document.documentElement.isConnected).toBe(true);
+			expect(window.document.documentElement.getRootNode()).toBe(window.document);
+
+			expect(window.document.head.ownerDocument).toBe(window.document);
+			expect(window.document.head.isConnected).toBe(true);
+			expect(window.document.head.getRootNode()).toBe(window.document);
+
+			expect(window.document.body.ownerDocument).toBe(window.document);
+			expect(window.document.body.isConnected).toBe(true);
+			expect(window.document.body.getRootNode()).toBe(window.document);
+		});
+	});
+
 	describe('get Object()', () => {
 		it('Is not the same as {}.constructor when inside the VM.', () => {
 			expect(typeof window.Object).toBe('function');
@@ -1454,8 +1475,66 @@ describe('BrowserWindow', () => {
 				expect(window.scrollX).toBe(50);
 				expect(window.scrollY).toBe(60);
 			});
+
+			it('Throws an exception if the there is only one argument and it is not an object.', () => {
+				expect(() => window[functionName](10)).toThrow(
+					new TypeError(
+						`Failed to execute '${functionName}' on 'Window': The provided value is not of type 'ScrollToOptions'.`
+					)
+				);
+			});
 		});
 	}
+
+	describe('scrollBy()', () => {
+		it('Append the values to the current scroll position.', () => {
+			window.scroll(50, 60);
+			window.scrollBy(10, 20);
+			expect(window.document.documentElement.scrollLeft).toBe(60);
+			expect(window.document.documentElement.scrollTop).toBe(80);
+			expect(window.pageXOffset).toBe(60);
+			expect(window.pageYOffset).toBe(80);
+			expect(window.scrollX).toBe(60);
+			expect(window.scrollY).toBe(80);
+		});
+
+		it('Append the values to the current scroll position with object.', () => {
+			window.scroll(50, 60);
+			window.scrollBy({ left: 10, top: 20 });
+			expect(window.document.documentElement.scrollLeft).toBe(60);
+			expect(window.document.documentElement.scrollTop).toBe(80);
+			expect(window.pageXOffset).toBe(60);
+			expect(window.pageYOffset).toBe(80);
+			expect(window.scrollX).toBe(60);
+			expect(window.scrollY).toBe(80);
+		});
+
+		it('Supports smooth behavior.', async () => {
+			window.scroll(50, 60);
+			window.scrollBy({ left: 10, top: 20, behavior: 'smooth' });
+			expect(window.document.documentElement.scrollLeft).toBe(50);
+			expect(window.document.documentElement.scrollTop).toBe(60);
+			expect(window.pageXOffset).toBe(50);
+			expect(window.pageYOffset).toBe(60);
+			expect(window.scrollX).toBe(50);
+			expect(window.scrollY).toBe(60);
+			await browserFrame.waitUntilComplete();
+			expect(window.document.documentElement.scrollLeft).toBe(60);
+			expect(window.document.documentElement.scrollTop).toBe(80);
+			expect(window.pageXOffset).toBe(60);
+			expect(window.pageYOffset).toBe(80);
+			expect(window.scrollX).toBe(60);
+			expect(window.scrollY).toBe(80);
+		});
+
+		it('Throws an exception if the there is only one argument and it is not an object.', () => {
+			expect(() => window.scrollBy(10)).toThrow(
+				new TypeError(
+					"Failed to execute 'scrollBy' on 'Window': The provided value is not of type 'ScrollToOptions'."
+				)
+			);
+		});
+	});
 
 	describe('getSelection()', () => {
 		it('Returns selection.', () => {

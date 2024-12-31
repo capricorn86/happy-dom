@@ -4,8 +4,6 @@ import ShadowRoot from '../shadow-root/ShadowRoot.js';
 import DOMRect from '../../dom/DOMRect.js';
 import DOMTokenList from '../../dom/DOMTokenList.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
-import XMLParser from '../../xml-parser/XMLParser.js';
-import XMLSerializer from '../../xml-serializer/XMLSerializer.js';
 import ChildNodeUtility from '../child-node/ChildNodeUtility.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtility.js';
@@ -16,7 +14,6 @@ import Attr from '../attr/Attr.js';
 import NamedNodeMap from './NamedNodeMap.js';
 import Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
-import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
@@ -33,6 +30,9 @@ import NodeList from '../node/NodeList.js';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import NamedNodeMapProxyFactory from './NamedNodeMapProxyFactory.js';
 import NodeFactory from '../NodeFactory.js';
+import HTMLSerializer from '../../html-serializer/HTMLSerializer.js';
+import HTMLParser from '../../html-parser/HTMLParser.js';
+import IScrollToOptions from '../../window/IScrollToOptions.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -43,13 +43,9 @@ export default class Element
 	extends Node
 	implements IChildNode, INonDocumentTypeChildNode, IParentNode
 {
-	// ObservedAttributes should only be called once by CustomElementRegistry (see #117)
-	// CustomElementRegistry will therefore populate "[PropertySymbol.observedAttributes]" when CustomElementRegistry.define() is called
-	public static [PropertySymbol.observedAttributes]: string[];
 	public static [PropertySymbol.tagName]: string | null = null;
 	public static [PropertySymbol.localName]: string | null = null;
 	public static [PropertySymbol.namespaceURI]: string | null = null;
-	public static observedAttributes: string[];
 	public declare cloneNode: (deep?: boolean) => Element;
 
 	// Events
@@ -407,7 +403,7 @@ export default class Element
 			this.removeChild(childNodes[0]);
 		}
 
-		XMLParser.parse(this[PropertySymbol.ownerDocument], html, { rootNode: this });
+		new HTMLParser(this[PropertySymbol.window]).parse(html, this);
 	}
 
 	/**
@@ -416,7 +412,7 @@ export default class Element
 	 * @returns HTML.
 	 */
 	public get outerHTML(): string {
-		return new XMLSerializer().serializeToString(this);
+		return new HTMLSerializer().serializeToString(this);
 	}
 
 	/**
@@ -425,9 +421,9 @@ export default class Element
 	 * @param html HTML.
 	 */
 	public set outerHTML(html: string) {
-		const childNodes = (<DocumentFragment>(
-			XMLParser.parse(this[PropertySymbol.ownerDocument], html)
-		))[PropertySymbol.nodeArray];
+		const childNodes = new HTMLParser(this[PropertySymbol.window]).parse(html)[
+			PropertySymbol.nodeArray
+		];
 		this.replaceWith(...childNodes);
 	}
 
@@ -478,15 +474,6 @@ export default class Element
 	}
 
 	/**
-	 * Attribute changed callback.
-	 *
-	 * @param name Name.
-	 * @param oldValue Old value.
-	 * @param newValue New value.
-	 */
-	public attributeChangedCallback?(name: string, oldValue: string, newValue: string): void;
-
-	/**
 	 * Returns inner HTML and optionally the content of shadow roots.
 	 *
 	 * @deprecated
@@ -495,19 +482,17 @@ export default class Element
 	 * @returns HTML.
 	 */
 	public getInnerHTML(options?: { includeShadowRoots?: boolean }): string {
-		const xmlSerializer = new XMLSerializer();
+		const serializer = new HTMLSerializer({
+			allShadowRoots: !!options?.includeShadowRoots
+		});
 
-		if (options?.includeShadowRoots) {
-			xmlSerializer[PropertySymbol.options].allShadowRoots = true;
-		}
-
-		let xml = '';
+		let html = '';
 
 		for (const node of this[PropertySymbol.nodeArray]) {
-			xml += xmlSerializer.serializeToString(node);
+			html += serializer.serializeToString(node);
 		}
 
-		return xml;
+		return html;
 	}
 
 	/**
@@ -522,25 +507,18 @@ export default class Element
 		serializableShadowRoots?: boolean;
 		shadowRoots?: ShadowRoot[];
 	}): string {
-		const xmlSerializer = new XMLSerializer();
+		const serializer = new HTMLSerializer({
+			serializableShadowRoots: !!options?.serializableShadowRoots,
+			shadowRoots: options?.shadowRoots ?? null
+		});
 
-		if (options) {
-			if (options.serializableShadowRoots) {
-				xmlSerializer[PropertySymbol.options].serializableShadowRoots =
-					options.serializableShadowRoots;
-			}
-			if (options.shadowRoots) {
-				xmlSerializer[PropertySymbol.options].shadowRoots = options.shadowRoots;
-			}
-		}
-
-		let xml = '';
+		let html = '';
 
 		for (const node of this[PropertySymbol.nodeArray]) {
-			xml += xmlSerializer.serializeToString(node);
+			html += serializer.serializeToString(node);
 		}
 
-		return xml;
+		return html;
 	}
 
 	/**
@@ -662,9 +640,9 @@ export default class Element
 	 * @param text HTML string to insert.
 	 */
 	public insertAdjacentHTML(position: InsertAdjacentPosition, text: string): void {
-		const childNodes = (<DocumentFragment>(
-			XMLParser.parse(this[PropertySymbol.ownerDocument], text)
-		))[PropertySymbol.nodeArray];
+		const childNodes = new HTMLParser(this[PropertySymbol.window]).parse(text)[
+			PropertySymbol.nodeArray
+		];
 		while (childNodes.length) {
 			this.insertAdjacentElement(position, childNodes[0]);
 		}
@@ -694,9 +672,10 @@ export default class Element
 		const namespaceURI = this[PropertySymbol.namespaceURI];
 		// TODO: Is it correct to check for namespaceURI === NamespaceURI.svg?
 		const attribute =
-			namespaceURI === NamespaceURI.svg
-				? this[PropertySymbol.ownerDocument].createAttributeNS(null, name)
-				: this[PropertySymbol.ownerDocument].createAttribute(name);
+			namespaceURI === NamespaceURI.html &&
+			this[PropertySymbol.ownerDocument][PropertySymbol.contentType] === 'text/html'
+				? this[PropertySymbol.ownerDocument].createAttribute(name)
+				: this[PropertySymbol.ownerDocument].createAttributeNS(null, name);
 		attribute[PropertySymbol.value] = String(value);
 		this[PropertySymbol.attributes].setNamedItem(attribute);
 	}
@@ -721,7 +700,7 @@ export default class Element
 	 */
 	public getAttributeNames(): string[] {
 		const names = [];
-		for (const item of this[PropertySymbol.attributes][PropertySymbol.namedItems].values()) {
+		for (const item of this[PropertySymbol.attributes][PropertySymbol.namespaceItems].values()) {
 			names.push(item[PropertySymbol.name]);
 		}
 		return names;
@@ -1190,28 +1169,35 @@ export default class Element
 	 * @param x X position or options object.
 	 * @param y Y position.
 	 */
-	public scroll(x: { top?: number; left?: number; behavior?: string } | number, y?: number): void {
-		if (typeof x === 'object') {
-			if (x.behavior === 'smooth') {
-				this[PropertySymbol.window].setTimeout(() => {
-					if (x.top !== undefined) {
-						(<number>this.scrollTop) = x.top;
-					}
-					if (x.left !== undefined) {
-						(<number>this.scrollLeft) = x.left;
-					}
-				});
-			} else {
-				if (x.top !== undefined) {
-					(<number>this.scrollTop) = x.top;
+	public scroll(x: IScrollToOptions | number, y?: number): void {
+		if (typeof x !== 'object' && arguments.length === 1) {
+			throw new this[PropertySymbol.window].TypeError(
+				"Failed to execute 'scroll' on 'Element': The provided value is not of type 'ScrollToOptions'."
+			);
+		}
+
+		const options = typeof x === 'object' ? x : { left: x, top: y };
+
+		if (options.behavior === 'smooth') {
+			this[PropertySymbol.window].setTimeout(() => {
+				if (options.top !== undefined) {
+					const top = Number(options.top);
+					(<number>this.scrollTop) = isNaN(top) ? 0 : top;
 				}
-				if (x.left !== undefined) {
-					(<number>this.scrollLeft) = x.left;
+				if (options.left !== undefined) {
+					const left = Number(options.left);
+					(<number>this.scrollLeft) = isNaN(left) ? 0 : left;
 				}
+			});
+		} else {
+			if (options.top !== undefined) {
+				const top = Number(options.top);
+				(<number>this.scrollTop) = isNaN(top) ? 0 : top;
 			}
-		} else if (x !== undefined && y !== undefined) {
-			(<number>this.scrollLeft) = x;
-			(<number>this.scrollTop) = y;
+			if (options.left !== undefined) {
+				const left = Number(options.left);
+				(<number>this.scrollLeft) = isNaN(left) ? 0 : left;
+			}
 		}
 	}
 
@@ -1221,11 +1207,33 @@ export default class Element
 	 * @param x X position or options object.
 	 * @param y Y position.
 	 */
-	public scrollTo(
-		x: { top?: number; left?: number; behavior?: string } | number,
-		y?: number
-	): void {
+	public scrollTo(x: IScrollToOptions | number, y?: number): void {
+		if (typeof x !== 'object' && arguments.length === 1) {
+			throw new this[PropertySymbol.window].TypeError(
+				"Failed to execute 'scrollTo' on 'Element': The provided value is not of type 'ScrollToOptions'."
+			);
+		}
 		this.scroll(x, y);
+	}
+
+	/**
+	 * Scrolls by a relative amount from the current position.
+	 *
+	 * @param x Pixels to scroll by from top or scroll options object.
+	 * @param y Pixels to scroll by from left.
+	 */
+	public scrollBy(x: IScrollToOptions | number, y?: number): void {
+		if (typeof x !== 'object' && arguments.length === 1) {
+			throw new this[PropertySymbol.window].TypeError(
+				"Failed to execute 'scrollBy' on 'Element': The provided value is not of type 'ScrollToOptions'."
+			);
+		}
+		const options = typeof x === 'object' ? x : { left: x, top: y };
+		this.scroll({
+			left: this.scrollLeft + (options.left ?? 0),
+			top: this.scrollTop + (options.top ?? 0),
+			behavior: options.behavior
+		});
 	}
 
 	/**
@@ -1282,8 +1290,8 @@ export default class Element
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.appendChild](node: Node, isDuringParsing = false): Node {
-		const returnValue = super[PropertySymbol.appendChild](node, isDuringParsing);
+	public override [PropertySymbol.appendChild](node: Node, disableValidations = false): Node {
+		const returnValue = super[PropertySymbol.appendChild](node, disableValidations);
 		this.#onSlotChange(node);
 		return returnValue;
 	}
@@ -1300,8 +1308,16 @@ export default class Element
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
-		const returnValue = super[PropertySymbol.insertBefore](newNode, referenceNode);
+	public override [PropertySymbol.insertBefore](
+		newNode: Node,
+		referenceNode: Node | null,
+		disableValidations = false
+	): Node {
+		const returnValue = super[PropertySymbol.insertBefore](
+			newNode,
+			referenceNode,
+			disableValidations
+		);
 		this.#onSlotChange(newNode);
 		return returnValue;
 	}
@@ -1357,20 +1373,6 @@ export default class Element
 			this.#addIdentifierToWindow(attribute[PropertySymbol.value]);
 		}
 
-		if (
-			this.attributeChangedCallback &&
-			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes] &&
-			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes].includes(
-				attribute[PropertySymbol.name].toLowerCase()
-			)
-		) {
-			this.attributeChangedCallback(
-				attribute[PropertySymbol.name],
-				oldValue,
-				attribute[PropertySymbol.value]
-			);
-		}
-
 		this[PropertySymbol.reportMutation](
 			new MutationRecord({
 				target: this,
@@ -1409,20 +1411,6 @@ export default class Element
 			this.#removeIdentifierFromWindow(removedAttribute[PropertySymbol.value]);
 		}
 
-		if (
-			this.attributeChangedCallback &&
-			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes] &&
-			(<typeof Element>this.constructor)[PropertySymbol.observedAttributes].includes(
-				removedAttribute[PropertySymbol.name].toLowerCase()
-			)
-		) {
-			this.attributeChangedCallback(
-				removedAttribute[PropertySymbol.name],
-				removedAttribute[PropertySymbol.value],
-				null
-			);
-		}
-
 		this[PropertySymbol.reportMutation](
 			new MutationRecord({
 				type: MutationTypeEnum.attributes,
@@ -1437,13 +1425,12 @@ export default class Element
 	 * @override
 	 */
 	public override [PropertySymbol.connectedToDocument](): void {
-		super[PropertySymbol.connectedToDocument]();
-
-		const id =
-			this[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[PropertySymbol.value];
+		const id = this.getAttribute('id');
 		if (id) {
 			this.#addIdentifierToWindow(id);
 		}
+
+		super[PropertySymbol.connectedToDocument]();
 	}
 
 	/**
@@ -1452,12 +1439,9 @@ export default class Element
 	public override [PropertySymbol.disconnectedFromDocument](): void {
 		super[PropertySymbol.disconnectedFromDocument]();
 
-		const id =
-			this[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[PropertySymbol.value];
+		const id = this.getAttribute('id');
 		if (id) {
-			this.#removeIdentifierFromWindow(
-				this[PropertySymbol.attributes][PropertySymbol.namedItems].get('id')?.[PropertySymbol.value]
-			);
+			this.#removeIdentifierFromWindow(id);
 		}
 	}
 
@@ -1565,10 +1549,9 @@ export default class Element
 			return;
 		}
 
-		const slotName =
-			addedOrRemovedNode[PropertySymbol.attributes]?.[PropertySymbol.namedItems].get('slot')?.[
-				PropertySymbol.value
-			];
+		const slotName = addedOrRemovedNode['getAttribute']
+			? (<Element>addedOrRemovedNode).getAttribute('slot')
+			: null;
 		if (slotName) {
 			const slot = shadowRoot.querySelector(`slot[name="${slotName}"]`);
 			if (slot) {

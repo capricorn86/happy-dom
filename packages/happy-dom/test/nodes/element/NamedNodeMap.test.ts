@@ -170,6 +170,27 @@ describe('NamedNodeMap', () => {
 			expect(element.getAttribute('key')).toBe(null);
 		});
 
+		it('Uses the last attribute when multiple attributes have the same name.', () => {
+			element.setAttributeNS('namespace', 'key', 'value1');
+			element.setAttributeNS('namespace', 'key', 'value2');
+			element.setAttributeNS('namespace2', 'key', 'value3');
+			element.setAttributeNS('namespace3', 'key', 'value4');
+
+			expect(element.attributes.getNamedItem('key')?.value).toBe('value2');
+
+			expect(element.attributes.removeNamedItem('key')?.value).toBe('value2');
+
+			expect(element.attributes.getNamedItem('key')?.value).toBe('value3');
+
+			expect(element.attributes.removeNamedItem('key')?.value).toBe('value3');
+
+			expect(element.attributes.getNamedItem('key')?.value).toBe('value4');
+
+			expect(element.attributes.removeNamedItem('key')?.value).toBe('value4');
+
+			expect(element.attributes.getNamedItem('key')).toBe(null);
+		});
+
 		it('Throws a NotFoundError on a missing attribute.', () => {
 			let error: Error | null = null;
 			try {

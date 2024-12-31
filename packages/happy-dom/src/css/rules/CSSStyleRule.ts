@@ -7,8 +7,8 @@ import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration.js';
  */
 export default class CSSStyleRule extends CSSRule {
 	public readonly type = CSSRule.STYLE_RULE;
-	public readonly selectorText = '';
 	public readonly styleMap = new Map();
+	public selectorText = '';
 	public [PropertySymbol.cssText] = '';
 	#style: CSSStyleDeclaration | null = null;
 

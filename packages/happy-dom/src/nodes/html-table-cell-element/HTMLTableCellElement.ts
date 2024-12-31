@@ -69,19 +69,22 @@ export default class HTMLTableCellElement extends HTMLElement {
 	}
 
 	/**
-	 * A DOMTokenList describing a list of id of <th> elements that represent headers associated with the cell. It reflects the headers attribute.
+	 * Returns headers.
 	 *
-	 * @returns Headers.
+	 * @returns headers.
 	 */
-	public get headers(): DOMTokenList {
-		if (!this[PropertySymbol.headers]) {
-			this[PropertySymbol.headers] = new DOMTokenList(
-				PropertySymbol.illegalConstructor,
-				this,
-				'headers'
-			);
-		}
-		return <DOMTokenList>this[PropertySymbol.headers];
+	public get headers(): string {
+		return this.getAttribute('headers') || '';
+	}
+
+	/**
+	 * Sets headers.
+	 *
+	 * @param value headers.
+	 */
+	public set headers(value: string) {
+		this.setAttribute('headers', String(value));
+		// TODO: implement metadata update if needed.
 	}
 
 	/**

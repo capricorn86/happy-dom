@@ -24,7 +24,6 @@ import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
 import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
 import HTMLSlotElement from '../html-slot-element/HTMLSlotElement.js';
-import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import NodeFactory from '../NodeFactory.js';
 import SVGStyleElement from '../svg-style-element/SVGStyleElement.js';
 
@@ -316,16 +315,6 @@ export default class Node extends EventTarget {
 	}
 
 	/**
-	 * Connected callback.
-	 */
-	public connectedCallback?(): void;
-
-	/**
-	 * Disconnected callback.
-	 */
-	public disconnectedCallback?(): void;
-
-	/**
 	 * Returns "true" if the node has child nodes.
 	 *
 	 * @returns "true" if the node has child nodes.
@@ -482,14 +471,20 @@ export default class Node extends EventTarget {
 	 * @returns Appended node.
 	 */
 	public [PropertySymbol.appendChild](node: Node, disableValidations = false): Node {
+		if (node[PropertySymbol.proxy]) {
+			node = node[PropertySymbol.proxy];
+		}
+
+		const self = this[PropertySymbol.proxy] || this;
+
 		if (!disableValidations) {
-			if (node === this) {
+			if (node === self) {
 				throw new this[PropertySymbol.window].DOMException(
 					"Failed to execute 'appendChild' on 'Node': Not possible to append a node as a child of itself."
 				);
 			}
 
-			if (NodeUtility.isInclusiveAncestor(node, this, true)) {
+			if (NodeUtility.isInclusiveAncestor(node, self, true)) {
 				throw new this[PropertySymbol.window].DOMException(
 					"Failed to execute 'appendChild' on 'Node': The new node is a parent of the node to insert to.",
 					DOMExceptionNameEnum.domException
@@ -512,7 +507,7 @@ export default class Node extends EventTarget {
 			node[PropertySymbol.parentNode][PropertySymbol.removeChild](node);
 		}
 
-		node[PropertySymbol.parentNode] = this[PropertySymbol.proxy] || this;
+		node[PropertySymbol.parentNode] = self;
 
 		node[PropertySymbol.clearCache]();
 
@@ -533,7 +528,7 @@ export default class Node extends EventTarget {
 
 		this[PropertySymbol.reportMutation](
 			new MutationRecord({
-				target: this,
+				target: self,
 				type: MutationTypeEnum.childList,
 				addedNodes: [node]
 			})
@@ -549,6 +544,10 @@ export default class Node extends EventTarget {
 	 * @returns Removed node.
 	 */
 	public [PropertySymbol.removeChild](node: Node): Node {
+		if (node[PropertySymbol.proxy]) {
+			node = node[PropertySymbol.proxy];
+		}
+
 		node[PropertySymbol.parentNode] = null;
 
 		node[PropertySymbol.clearCache]();
@@ -589,7 +588,7 @@ export default class Node extends EventTarget {
 
 		this[PropertySymbol.reportMutation](
 			new MutationRecord({
-				target: this,
+				target: this[PropertySymbol.proxy] || this,
 				type: MutationTypeEnum.childList,
 				removedNodes: [node]
 			})
@@ -603,18 +602,41 @@ export default class Node extends EventTarget {
 	 *
 	 * @param newNode Node to insert.
 	 * @param referenceNode Node to insert before.
+	 * @param [disableValidations=false] "true" to disable validations.
 	 * @returns Inserted node.
 	 */
-	public [PropertySymbol.insertBefore](newNode: Node, referenceNode: Node | null): Node {
+	public [PropertySymbol.insertBefore](
+		newNode: Node,
+		referenceNode: Node | null,
+		disableValidations = false
+	): Node {
+		if (newNode[PropertySymbol.proxy]) {
+			newNode = newNode[PropertySymbol.proxy];
+		}
+
+		if (referenceNode && referenceNode[PropertySymbol.proxy]) {
+			referenceNode = referenceNode[PropertySymbol.proxy];
+		}
+
 		if (newNode === referenceNode) {
 			return newNode;
 		}
 
-		if (NodeUtility.isInclusiveAncestor(newNode, this, true)) {
-			throw new this[PropertySymbol.window].DOMException(
-				"Failed to execute 'insertBefore' on 'Node': The new node is a parent of the node to insert to.",
-				DOMExceptionNameEnum.domException
-			);
+		const self = this[PropertySymbol.proxy] || this;
+
+		if (!disableValidations) {
+			if (newNode === self) {
+				throw new this[PropertySymbol.window].DOMException(
+					"Failed to execute 'insertBefore' on 'Node': Not possible to insert a node as a child of itself."
+				);
+			}
+
+			if (NodeUtility.isInclusiveAncestor(newNode, self, true)) {
+				throw new this[PropertySymbol.window].DOMException(
+					"Failed to execute 'insertBefore' on 'Node': The new node is a parent of the node to insert to.",
+					DOMExceptionNameEnum.domException
+				);
+			}
 		}
 
 		// If the type is DocumentFragment, then the child nodes of if it should be moved instead of the actual node.
@@ -622,7 +644,7 @@ export default class Node extends EventTarget {
 		if (newNode[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode) {
 			const childNodes = (<Node>newNode)[PropertySymbol.nodeArray];
 			while (childNodes.length > 0) {
-				this.insertBefore(childNodes[0], referenceNode);
+				this[PropertySymbol.insertBefore](childNodes[0], referenceNode, true);
 			}
 			return newNode;
 		}
@@ -630,7 +652,7 @@ export default class Node extends EventTarget {
 		// If the referenceNode is null or undefined, then the newNode should be appended to the ancestorNode.
 		// According to spec only null is valid, but browsers support undefined as well.
 		if (!referenceNode) {
-			this.appendChild(newNode);
+			this[PropertySymbol.appendChild](newNode, true);
 			return newNode;
 		}
 
@@ -647,7 +669,7 @@ export default class Node extends EventTarget {
 			newNode[PropertySymbol.parentNode][PropertySymbol.removeChild](newNode);
 		}
 
-		newNode[PropertySymbol.parentNode] = this[PropertySymbol.proxy] || this;
+		newNode[PropertySymbol.parentNode] = self;
 
 		newNode[PropertySymbol.clearCache]();
 
@@ -685,7 +707,7 @@ export default class Node extends EventTarget {
 
 		this[PropertySymbol.reportMutation](
 			new MutationRecord({
-				target: this,
+				target: self,
 				type: MutationTypeEnum.childList,
 				addedNodes: [newNode]
 			})
@@ -907,8 +929,26 @@ export default class Node extends EventTarget {
 	public [PropertySymbol.connectedToNode](): void {
 		const parentNode = this[PropertySymbol.parentNode];
 		const parent = parentNode || this[PropertySymbol.host];
+		let isConnected = false;
+		let isDisconnected = false;
+
+		if (!this[PropertySymbol.isConnected] && parent[PropertySymbol.isConnected]) {
+			this[PropertySymbol.isConnected] = true;
+			isConnected = true;
+		} else if (this[PropertySymbol.isConnected] && !parent[PropertySymbol.isConnected]) {
+			this[PropertySymbol.isConnected] = false;
+			isDisconnected = true;
+		}
+
+		this[PropertySymbol.ownerDocument] = parent[PropertySymbol.ownerDocument] || <Document>parent;
+		this[PropertySymbol.window] =
+			parent[PropertySymbol.window] || parent[PropertySymbol.defaultView];
 
 		if (parentNode) {
+			if (this[PropertySymbol.nodeType] !== NodeTypeEnum.documentFragmentNode) {
+				this[PropertySymbol.rootNode] = parentNode[PropertySymbol.rootNode];
+			}
+
 			if (parentNode[PropertySymbol.styleNode] && this[PropertySymbol.tagName] !== 'STYLE') {
 				this[PropertySymbol.styleNode] = parentNode[PropertySymbol.styleNode];
 			}
@@ -926,14 +966,9 @@ export default class Node extends EventTarget {
 			}
 		}
 
-		if (!this[PropertySymbol.isConnected] && parent[PropertySymbol.isConnected]) {
-			this[PropertySymbol.connectedToDocument]();
-		} else if (this[PropertySymbol.isConnected] && !parent[PropertySymbol.isConnected]) {
-			this[PropertySymbol.disconnectedFromDocument]();
-		}
-
 		const childNodes = this[PropertySymbol.nodeArray];
 		for (let i = 0, max = childNodes.length; i < max; i++) {
+			childNodes[i][PropertySymbol.parentNode] = this;
 			childNodes[i][PropertySymbol.connectedToNode]();
 		}
 
@@ -942,14 +977,20 @@ export default class Node extends EventTarget {
 			// eslint-disable-next-line
 			(<any>this)[PropertySymbol.shadowRoot][PropertySymbol.connectedToNode]();
 		}
+
+		if (isConnected) {
+			this[PropertySymbol.connectedToDocument]();
+		} else if (isDisconnected) {
+			this[PropertySymbol.disconnectedFromDocument]();
+		}
 	}
 
 	/**
 	 * Called when disconnected from a node.
 	 */
 	public [PropertySymbol.disconnectedFromNode](): void {
-		if (this[PropertySymbol.isConnected]) {
-			this[PropertySymbol.disconnectedFromDocument]();
+		if (this[PropertySymbol.nodeType] !== NodeTypeEnum.documentFragmentNode) {
+			this[PropertySymbol.rootNode] = null;
 		}
 
 		if (this[PropertySymbol.tagName] !== 'STYLE') {
@@ -968,9 +1009,14 @@ export default class Node extends EventTarget {
 			this[PropertySymbol.selectNode] = null;
 		}
 
+		if (this[PropertySymbol.isConnected]) {
+			this[PropertySymbol.isConnected] = false;
+			this[PropertySymbol.disconnectedFromDocument]();
+		}
+
 		const childNodes = this[PropertySymbol.nodeArray];
 		for (let i = 0, max = childNodes.length; i < max; i++) {
-			childNodes[i][PropertySymbol.disconnectedFromNode]();
+			childNodes[i][PropertySymbol.connectedToNode]();
 		}
 
 		// eslint-disable-next-line
@@ -984,52 +1030,17 @@ export default class Node extends EventTarget {
 	 * Called when connected to document.
 	 */
 	public [PropertySymbol.connectedToDocument](): void {
-		this[PropertySymbol.isConnected] = true;
-
-		if (this[PropertySymbol.nodeType] !== NodeTypeEnum.documentFragmentNode) {
-			this[PropertySymbol.rootNode] = this[PropertySymbol.parentNode][PropertySymbol.rootNode];
-		}
-
 		// eslint-disable-next-line
 		if ((<any>this)[PropertySymbol.shadowRoot]) {
 			// eslint-disable-next-line
 			(<any>this)[PropertySymbol.shadowRoot][PropertySymbol.connectedToDocument]();
 		}
-
-		if (this.connectedCallback) {
-			const result = <void | Promise<void>>this.connectedCallback();
-
-			/**
-			 * It is common to import dependencies in the connectedCallback() method of web components.
-			 * As Happy DOM doesn't have support for dynamic imports yet, this is a temporary solution to wait for imports in connectedCallback().
-			 *
-			 * @see https://github.com/capricorn86/happy-dom/issues/1442
-			 */
-			if (result instanceof Promise) {
-				const asyncTaskManager = new WindowBrowserContext(
-					this[PropertySymbol.window]
-				).getAsyncTaskManager();
-				if (asyncTaskManager) {
-					const taskID = asyncTaskManager.startTask();
-					result
-						.then(() => asyncTaskManager.endTask(taskID))
-						.catch(() => asyncTaskManager.endTask(taskID));
-				}
-			}
-		}
 	}
 
 	/**
 	 * Called when disconnected from document.
-	 * @param e
 	 */
 	public [PropertySymbol.disconnectedFromDocument](): void {
-		this[PropertySymbol.isConnected] = false;
-
-		if (this[PropertySymbol.nodeType] !== NodeTypeEnum.documentFragmentNode) {
-			this[PropertySymbol.rootNode] = null;
-		}
-
 		if (this[PropertySymbol.ownerDocument][PropertySymbol.activeElement] === <unknown>this) {
 			this[PropertySymbol.ownerDocument][PropertySymbol.clearCache]();
 			this[PropertySymbol.ownerDocument][PropertySymbol.activeElement] = null;
@@ -1039,10 +1050,6 @@ export default class Node extends EventTarget {
 		if ((<any>this)[PropertySymbol.shadowRoot]) {
 			// eslint-disable-next-line
 			(<any>this)[PropertySymbol.shadowRoot][PropertySymbol.disconnectedFromDocument]();
-		}
-
-		if (this.disconnectedCallback) {
-			this.disconnectedCallback();
 		}
 	}
 
@@ -1095,13 +1102,13 @@ export default class Node extends EventTarget {
 				/**
 				 * 5.2.1. For each attr in node2’s attribute list:
 				 */
-				for (const attr of Array.from(
+				for (const attributes of Array.from(
 					(<Element>node2)[PropertySymbol.attributes][PropertySymbol.namedItems].values()
 				)) {
 					/**
 					 * 5.2.1.1. If attr equals attr1, then return the result of adding DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC and DOCUMENT_POSITION_PRECEDING.
 					 */
-					if (NodeUtility.isEqualNode(<Attr>attr, attr1)) {
+					if (NodeUtility.isEqualNode(attributes[0], attr1)) {
 						return (
 							Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | Node.DOCUMENT_POSITION_PRECEDING
 						);
@@ -1110,7 +1117,7 @@ export default class Node extends EventTarget {
 					/**
 					 * 5.2.1.2. If attr equals attr2, then return the result of adding DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC and DOCUMENT_POSITION_FOLLOWING.
 					 */
-					if (NodeUtility.isEqualNode(<Attr>attr, attr2)) {
+					if (NodeUtility.isEqualNode(attributes[0], attr2)) {
 						return (
 							Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | Node.DOCUMENT_POSITION_FOLLOWING
 						);

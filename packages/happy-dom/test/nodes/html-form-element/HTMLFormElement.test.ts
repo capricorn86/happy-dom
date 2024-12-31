@@ -38,6 +38,22 @@ describe('HTMLFormElement', () => {
 		});
 	});
 
+	describe('constructor()', () => {
+		it('Matches snapshot.', () => {
+			element.innerHTML = `
+                <input type="text" name="text1" value="value1">
+                <input type="hidden" name="text2" value="value2">
+                <input type="checkbox" name="checkbox1" value="value1" checked>
+                <input type="checkbox" name="checkbox2" value="value2">
+                <input type="radio" name="radio1" value="value1">
+                <input type="radio" name="radio1" value="value2" checked>
+                <input type="radio" name="radio1" value="value3">
+                <input type="submit" name="button1">
+            `;
+			expect(element).toMatchSnapshot();
+		});
+	});
+
 	for (const property of [
 		'name',
 		'target',
@@ -1194,6 +1210,102 @@ describe('HTMLFormElement', () => {
 			expect(child.parentElement).toBe(element);
 			expect(child2.parentElement).toBe(element);
 			expect(child3.parentElement).toBe(element);
+		});
+	});
+
+	describe('remove()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><form>Foo</form></section>';
+
+			const form = <HTMLFormElement>document.querySelector('form');
+
+			form.remove();
+
+			expect(document.body.children[0].children.length).toBe(0);
+		});
+	});
+
+	describe('replaceWith()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><form>Foo</form></section>';
+
+			const form = <HTMLFormElement>document.querySelector('form');
+
+			form.replaceWith(document.createElement('div'));
+
+			expect(document.body.children[0].children[0].tagName).toBe('DIV');
+		});
+	});
+
+	describe('before()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><form>Foo</form></section>';
+
+			const form = <HTMLFormElement>document.querySelector('form');
+
+			form.before(document.createElement('div'));
+
+			expect(document.body.children[0].children[0].tagName).toBe('DIV');
+		});
+	});
+
+	describe('after()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><form>Foo</form></section>';
+
+			const form = <HTMLFormElement>document.querySelector('form');
+
+			form.after(document.createElement('div'));
+
+			expect(document.body.children[0].children[1].tagName).toBe('DIV');
+		});
+	});
+
+	describe('append()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><form>Foo</form></section>';
+
+			const form = <HTMLFormElement>document.querySelector('form');
+
+			form.append(document.createElement('div'));
+
+			expect(form.children[0].tagName).toBe('DIV');
+		});
+	});
+
+	describe('prepend()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><form>Foo</form></section>';
+
+			const form = <HTMLFormElement>document.querySelector('form');
+
+			form.prepend(document.createElement('div'));
+
+			expect(form.children[0].tagName).toBe('DIV');
+		});
+	});
+
+	describe('replaceChildren()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><form>Foo</form></section>';
+
+			const form = <HTMLFormElement>document.querySelector('form');
+
+			form.replaceChildren(document.createElement('div'));
+
+			expect(form.children[0].tagName).toBe('DIV');
+		});
+	});
+
+	describe('insertAdjacentElement()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><form>Foo</form></section>';
+
+			const form = <HTMLFormElement>document.querySelector('form');
+
+			form.insertAdjacentElement('beforebegin', document.createElement('div'));
+
+			expect(document.body.children[0].children[0].tagName).toBe('DIV');
 		});
 	});
 

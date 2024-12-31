@@ -13,6 +13,7 @@ export default class CustomElement extends HTMLElement {
 		oldValue: string | null;
 		newValue: string | null;
 	}> = [];
+	public isDisconnected = false;
 	private internalShadowRoot: ShadowRoot;
 
 	/**
@@ -78,5 +79,12 @@ export default class CustomElement extends HTMLElement {
                 <span><slot></slot></span>
             </div>
         `;
+	}
+
+	/**
+	 * @override
+	 */
+	public disconnectedCallback(): void {
+		this.isDisconnected = true;
 	}
 }
