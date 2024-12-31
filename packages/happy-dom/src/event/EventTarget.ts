@@ -111,7 +111,7 @@ export default class EventTarget {
 	 */
 	public dispatchEvent(event: Event): boolean {
 		if (!event[PropertySymbol.target]) {
-			event[PropertySymbol.target] = this;
+			event[PropertySymbol.target] = this[PropertySymbol.proxy] || this;
 
 			this.#goThroughDispatchEventPhases(event);
 
@@ -180,7 +180,7 @@ export default class EventTarget {
 
 		// At target phase
 		event[PropertySymbol.eventPhase] = EventPhaseEnum.atTarget;
-		event[PropertySymbol.currentTarget] = this;
+		event[PropertySymbol.currentTarget] = this[PropertySymbol.proxy] || this;
 		event[PropertySymbol.target].dispatchEvent(event);
 
 		// Bubbling phase
