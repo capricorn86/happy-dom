@@ -1,0 +1,65 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`HTMLFormElement > constructor() > Matches snapshot. 1`] = `
+<form>
+  
+                
+  <input
+    name="text1"
+    type="text"
+    value="value1"
+  />
+  
+                
+  <input
+    name="text2"
+    type="hidden"
+    value="value2"
+  />
+  
+                
+  <input
+    checked=""
+    name="checkbox1"
+    type="checkbox"
+    value="value1"
+  />
+  
+                
+  <input
+    name="checkbox2"
+    type="checkbox"
+    value="value2"
+  />
+  
+                
+  <input
+    name="radio1"
+    type="radio"
+    value="value1"
+  />
+  
+                
+  <input
+    checked=""
+    name="radio1"
+    type="radio"
+    value="value2"
+  />
+  
+                
+  <input
+    name="radio1"
+    type="radio"
+    value="value3"
+  />
+  
+                
+  <input
+    name="button1"
+    type="submit"
+  />
+  
+            
+</form>
+`;
