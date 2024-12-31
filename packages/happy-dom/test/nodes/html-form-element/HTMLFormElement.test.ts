@@ -1197,6 +1197,102 @@ describe('HTMLFormElement', () => {
 		});
 	});
 
+	describe('remove()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><form>Foo</form></section>';
+
+			const form = <HTMLFormElement>document.querySelector('form');
+
+			form.remove();
+
+			expect(document.body.children[0].children.length).toBe(0);
+		});
+	});
+
+	describe('replaceWith()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><form>Foo</form></section>';
+
+			const form = <HTMLFormElement>document.querySelector('form');
+
+			form.replaceWith(document.createElement('div'));
+
+			expect(document.body.children[0].children[0].tagName).toBe('DIV');
+		});
+	});
+
+	describe('before()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><form>Foo</form></section>';
+
+			const form = <HTMLFormElement>document.querySelector('form');
+
+			form.before(document.createElement('div'));
+
+			expect(document.body.children[0].children[0].tagName).toBe('DIV');
+		});
+	});
+
+	describe('after()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><form>Foo</form></section>';
+
+			const form = <HTMLFormElement>document.querySelector('form');
+
+			form.after(document.createElement('div'));
+
+			expect(document.body.children[0].children[1].tagName).toBe('DIV');
+		});
+	});
+
+	describe('append()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><form>Foo</form></section>';
+
+			const form = <HTMLFormElement>document.querySelector('form');
+
+			form.append(document.createElement('div'));
+
+			expect(form.children[0].tagName).toBe('DIV');
+		});
+	});
+
+	describe('prepend()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><form>Foo</form></section>';
+
+			const form = <HTMLFormElement>document.querySelector('form');
+
+			form.prepend(document.createElement('div'));
+
+			expect(form.children[0].tagName).toBe('DIV');
+		});
+	});
+
+	describe('replaceChildren()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><form>Foo</form></section>';
+
+			const form = <HTMLFormElement>document.querySelector('form');
+
+			form.replaceChildren(document.createElement('div'));
+
+			expect(form.children[0].tagName).toBe('DIV');
+		});
+	});
+
+	describe('insertAdjacentElement()', () => {
+		it('Sets "parentNode" of child elements to the proxy and not the original element.', () => {
+			document.body.innerHTML = '<section><form>Foo</form></section>';
+
+			const form = <HTMLFormElement>document.querySelector('form');
+
+			form.insertAdjacentElement('beforebegin', document.createElement('div'));
+
+			expect(document.body.children[0].children[0].tagName).toBe('DIV');
+		});
+	});
+
 	for (const method of ['checkValidity', 'reportValidity']) {
 		describe(`${method}()`, () => {
 			it('Validates the form.', () => {

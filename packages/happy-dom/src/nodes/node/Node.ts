@@ -471,14 +471,20 @@ export default class Node extends EventTarget {
 	 * @returns Appended node.
 	 */
 	public [PropertySymbol.appendChild](node: Node, disableValidations = false): Node {
+		if (node[PropertySymbol.proxy]) {
+			node = node[PropertySymbol.proxy];
+		}
+
+		const self = this[PropertySymbol.proxy] || this;
+
 		if (!disableValidations) {
-			if (node === this) {
+			if (node === self) {
 				throw new this[PropertySymbol.window].DOMException(
 					"Failed to execute 'appendChild' on 'Node': Not possible to append a node as a child of itself."
 				);
 			}
 
-			if (NodeUtility.isInclusiveAncestor(node, this, true)) {
+			if (NodeUtility.isInclusiveAncestor(node, self, true)) {
 				throw new this[PropertySymbol.window].DOMException(
 					"Failed to execute 'appendChild' on 'Node': The new node is a parent of the node to insert to.",
 					DOMExceptionNameEnum.domException
@@ -501,7 +507,7 @@ export default class Node extends EventTarget {
 			node[PropertySymbol.parentNode][PropertySymbol.removeChild](node);
 		}
 
-		node[PropertySymbol.parentNode] = this[PropertySymbol.proxy] || this;
+		node[PropertySymbol.parentNode] = self;
 
 		node[PropertySymbol.clearCache]();
 
@@ -522,7 +528,7 @@ export default class Node extends EventTarget {
 
 		this[PropertySymbol.reportMutation](
 			new MutationRecord({
-				target: this,
+				target: self,
 				type: MutationTypeEnum.childList,
 				addedNodes: [node]
 			})
@@ -538,6 +544,10 @@ export default class Node extends EventTarget {
 	 * @returns Removed node.
 	 */
 	public [PropertySymbol.removeChild](node: Node): Node {
+		if (node[PropertySymbol.proxy]) {
+			node = node[PropertySymbol.proxy];
+		}
+
 		node[PropertySymbol.parentNode] = null;
 
 		node[PropertySymbol.clearCache]();
@@ -578,7 +588,7 @@ export default class Node extends EventTarget {
 
 		this[PropertySymbol.reportMutation](
 			new MutationRecord({
-				target: this,
+				target: this[PropertySymbol.proxy] || this,
 				type: MutationTypeEnum.childList,
 				removedNodes: [node]
 			})
@@ -600,18 +610,28 @@ export default class Node extends EventTarget {
 		referenceNode: Node | null,
 		disableValidations = false
 	): Node {
+		if (newNode[PropertySymbol.proxy]) {
+			newNode = newNode[PropertySymbol.proxy];
+		}
+
+		if (referenceNode && referenceNode[PropertySymbol.proxy]) {
+			referenceNode = referenceNode[PropertySymbol.proxy];
+		}
+
 		if (newNode === referenceNode) {
 			return newNode;
 		}
 
+		const self = this[PropertySymbol.proxy] || this;
+
 		if (!disableValidations) {
-			if (newNode === this) {
+			if (newNode === self) {
 				throw new this[PropertySymbol.window].DOMException(
 					"Failed to execute 'insertBefore' on 'Node': Not possible to insert a node as a child of itself."
 				);
 			}
 
-			if (NodeUtility.isInclusiveAncestor(newNode, this, true)) {
+			if (NodeUtility.isInclusiveAncestor(newNode, self, true)) {
 				throw new this[PropertySymbol.window].DOMException(
 					"Failed to execute 'insertBefore' on 'Node': The new node is a parent of the node to insert to.",
 					DOMExceptionNameEnum.domException
@@ -649,7 +669,7 @@ export default class Node extends EventTarget {
 			newNode[PropertySymbol.parentNode][PropertySymbol.removeChild](newNode);
 		}
 
-		newNode[PropertySymbol.parentNode] = this[PropertySymbol.proxy] || this;
+		newNode[PropertySymbol.parentNode] = self;
 
 		newNode[PropertySymbol.clearCache]();
 
@@ -687,7 +707,7 @@ export default class Node extends EventTarget {
 
 		this[PropertySymbol.reportMutation](
 			new MutationRecord({
-				target: this,
+				target: self,
 				type: MutationTypeEnum.childList,
 				addedNodes: [newNode]
 			})
