@@ -61,7 +61,7 @@ And much more..
 <p align="center">
     <a href="https://sourcegraph.com/"><img alt="Sourcegraph" src="https://images.weserv.nl/?url=avatars.githubusercontent.com/u/3979584?v=4&h=40&w=40&fit=cover&mask=circle&maxage=7d"></a>
     &nbsp;&nbsp;
-    <a href="https://unlike.dev/"><img alt="andykenward" src="https://images.weserv.nl/?url=avatars.githubusercontent.com/u/4893048?v=4&h=40&w=40&fit=cover&mask=circle&maxage=7d"></a>
+    <a href="https://github.com/andykenward"><img alt="andykenward" src="https://images.weserv.nl/?url=avatars.githubusercontent.com/u/4893048?v=4&h=40&w=40&fit=cover&mask=circle&maxage=7d"></a>
 </p>
 
 ## Contributing
