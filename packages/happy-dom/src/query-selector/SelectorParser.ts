@@ -277,6 +277,10 @@ export default class SelectorParser {
 	): ISelectorPseudo {
 		const lowerName = name.toLowerCase();
 
+		if (args) {
+			args = args.trim();
+		}
+
 		if (!args) {
 			return { name: lowerName, arguments: null, selectorItems: null, nthFunction: null };
 		}
@@ -328,10 +332,13 @@ export default class SelectorParser {
 
 				// The ":has()" pseudo selector doesn't allow for it to be nested inside another ":has()" pseudo selector, as it can lead to cyclic querying.
 				if (!args.includes(':has(')) {
-					for (const group of this.getSelectorGroups(
-						args[0] === '+' ? args.replace('+', '') : args,
-						options
-					)) {
+					let newArgs = args;
+					if (args[0] === '+') {
+						newArgs = args.replace('+', '');
+					} else if (args[0] === '>') {
+						newArgs = args.replace('>', '');
+					}
+					for (const group of this.getSelectorGroups(newArgs, options)) {
 						hasSelectorItems.push(group[0]);
 					}
 				}
