@@ -340,6 +340,16 @@ export default class SelectorItem {
 							priorityWeightForHas = match.priorityWeight;
 						}
 					}
+				} else if (pseudo.arguments[0] === '>') {
+					for (const selectorItem of pseudo.selectorItems) {
+						for (const child of element[PropertySymbol.elementArray]) {
+							const match = selectorItem.match(child);
+							if (match && priorityWeightForHas < match.priorityWeight) {
+								priorityWeightForHas = match.priorityWeight;
+								break;
+							}
+						}
+					}
 				} else {
 					for (const selectorItem of pseudo.selectorItems) {
 						const match = this.matchChildOfElement(selectorItem, element);

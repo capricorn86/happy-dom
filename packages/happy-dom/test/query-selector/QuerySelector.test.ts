@@ -1205,8 +1205,11 @@ describe('QuerySelector', () => {
 			expect(Array.from(container.querySelectorAll('span:has(+video)'))).toEqual([
 				container.children[1]
 			]);
-			expect(Array.from(container.querySelectorAll('h1:has(+h2)'))).toEqual([
+			expect(Array.from(container.querySelectorAll('h1:has( +h2)'))).toEqual([
 				container.children[3]
+			]);
+			expect(Array.from(container.querySelectorAll('span:has(> video)'))).toEqual([
+				container.children[0]
 			]);
 		});
 	});
