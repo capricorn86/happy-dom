@@ -1,5 +1,6 @@
 import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
 import BrowserNavigationCrossOriginPolicyEnum from '../enums/BrowserNavigationCrossOriginPolicyEnum.js';
+import IAsyncRequestInterceptor from '../../fetch/types/IAsyncRequestInterceptor.js';
 
 export default interface IOptionalBrowserSettings {
 	/** Disables JavaScript evaluation. */
@@ -34,6 +35,10 @@ export default interface IOptionalBrowserSettings {
 		 * @see https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy
 		 */
 		disableSameOriginPolicy?: boolean;
+
+		intercept?: {
+			asyncFetch?: IAsyncRequestInterceptor;
+		};
 	};
 
 	/**
