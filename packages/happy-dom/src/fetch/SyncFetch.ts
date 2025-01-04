@@ -20,6 +20,7 @@ import Zlib from 'zlib';
 import FetchResponseRedirectUtility from './utilities/FetchResponseRedirectUtility.js';
 import FetchCORSUtility from './utilities/FetchCORSUtility.js';
 import Fetch from './Fetch.js';
+import IFetchInterceptor from './types/IFetchInterceptor.js';
 
 interface ISyncHTTPResponse {
 	error: string;
@@ -39,6 +40,7 @@ export default class SyncFetch {
 	private redirectCount = 0;
 	private disableCache: boolean;
 	private disableSameOriginPolicy: boolean;
+	private interceptor?: IFetchInterceptor;
 	#browserFrame: IBrowserFrame;
 	#window: BrowserWindow;
 	#unfilteredHeaders: Headers | null = null;
@@ -84,6 +86,7 @@ export default class SyncFetch {
 			options.disableSameOriginPolicy ??
 			this.#browserFrame.page.context.browser.settings.fetch.disableSameOriginPolicy ??
 			false;
+		this.interceptor = this.#browserFrame.page.context.browser.settings.fetch.interceptor;
 	}
 
 	/**
@@ -93,6 +96,15 @@ export default class SyncFetch {
 	 */
 	public send(): ISyncResponse {
 		FetchRequestReferrerUtility.prepareRequest(new URL(this.#window.location.href), this.request);
+		const beforeRequestResponse = this.interceptor?.beforeSyncRequest
+			? this.interceptor.beforeSyncRequest({
+					request: this.request,
+					window: this.#window
+				})
+			: undefined;
+		if (typeof beforeRequestResponse === 'object') {
+			return beforeRequestResponse;
+		}
 		FetchRequestValidationUtility.validateSchema(this.request);
 
 		if (this.request.signal.aborted) {

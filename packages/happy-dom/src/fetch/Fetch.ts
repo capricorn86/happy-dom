@@ -26,7 +26,7 @@ import FetchResponseHeaderUtility from './utilities/FetchResponseHeaderUtility.j
 import FetchHTTPSCertificate from './certificate/FetchHTTPSCertificate.js';
 import { Buffer } from 'buffer';
 import FetchBodyUtility from './utilities/FetchBodyUtility.js';
-import IAsyncRequestInterceptor from './types/IAsyncRequestInterceptor.js';
+import IFetchInterceptor from './types/IFetchInterceptor.js';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -51,7 +51,7 @@ export default class Fetch {
 	private nodeResponse: IncomingMessage | null = null;
 	private response: Response | null = null;
 	private responseHeaders: Headers | null = null;
-	private requestInterceptor?: IAsyncRequestInterceptor;
+	private interceptor?: IFetchInterceptor;
 	private request: Request;
 	private redirectCount = 0;
 	private disableCache: boolean;
@@ -101,8 +101,7 @@ export default class Fetch {
 			options.disableSameOriginPolicy ??
 			this.#browserFrame.page.context.browser.settings.fetch.disableSameOriginPolicy ??
 			false;
-		this.requestInterceptor =
-			this.#browserFrame.page.context.browser.settings.fetch.intercept?.asyncFetch;
+		this.interceptor = this.#browserFrame.page.context.browser.settings.fetch.interceptor;
 	}
 
 	/**
@@ -112,11 +111,14 @@ export default class Fetch {
 	 */
 	public async send(): Promise<Response> {
 		FetchRequestReferrerUtility.prepareRequest(new URL(this.#window.location.href), this.request);
-		const beforeSendResponse = this.requestInterceptor?.beforeSend
-			? await this.requestInterceptor?.beforeSend(this.request, this.#window)
+		const beforeRequestResponse = this.interceptor?.beforeAsyncRequest
+			? await this.interceptor.beforeAsyncRequest({
+					request: this.request,
+					window: this.#window
+				})
 			: undefined;
-		if (beforeSendResponse instanceof Response) {
-			return beforeSendResponse;
+		if (beforeRequestResponse instanceof Response) {
+			return beforeRequestResponse;
 		}
 		FetchRequestValidationUtility.validateSchema(this.request);
 

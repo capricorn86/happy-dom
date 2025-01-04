@@ -1364,18 +1364,15 @@ describe('Fetch', () => {
 			);
 		});
 
-		it('Uses intercepted response when beforeSend returns a Response', async () => {
+		it('Should use intercepted response and not send the request when beforeAsyncRequest returns a Response', async () => {
 			const originURL = 'https://localhost:8080/';
-			const responseText = 'some text';
 			const window = new Window({
 				url: originURL,
 				settings: {
 					fetch: {
-						intercept: {
-							asyncFetch: {
-								async beforeSend(_request, window) {
-									return new window.Response('intercepted text');
-								}
+						interceptor: {
+							async beforeAsyncRequest({ window }) {
+								return new window.Response('intercepted text');
 							}
 						}
 					}
@@ -1385,31 +1382,7 @@ describe('Fetch', () => {
 
 			mockModule('https', {
 				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {
-									yield responseText;
-								}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.statusMessage = 'OK';
-								response.headers = {};
-								response.rawHeaders = [
-									'content-type',
-									'text/html',
-									'content-length',
-									String(responseText.length)
-								];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
+					fail('No request should be made when beforeAsyncRequest returns a Response');
 				}
 			});
 
@@ -1418,18 +1391,16 @@ describe('Fetch', () => {
 			expect(await response.text()).toBe('intercepted text');
 		});
 
-		it('Makes a normal request when before does not return a Response', async () => {
+		it('Should make a normal request when before does not return a Response', async () => {
 			const originURL = 'https://localhost:8080/';
 			const responseText = 'some text';
 			const window = new Window({
 				url: originURL,
 				settings: {
 					fetch: {
-						intercept: {
-							asyncFetch: {
-								async beforeSend() {
-									return undefined;
-								}
+						interceptor: {
+							async beforeAsyncRequest() {
+								return undefined;
 							}
 						}
 					}

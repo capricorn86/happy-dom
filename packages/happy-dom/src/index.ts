@@ -57,7 +57,7 @@ import AbortSignal from './fetch/AbortSignal.js';
 import Headers from './fetch/Headers.js';
 import Request from './fetch/Request.js';
 import Response from './fetch/Response.js';
-import IAsyncRequestInterceptor from './fetch/types/IAsyncRequestInterceptor.js';
+import IFetchInterceptor from './fetch/types/IFetchInterceptor.js';
 import Blob from './file/Blob.js';
 import File from './file/File.js';
 import FileReader from './file/FileReader.js';
@@ -207,7 +207,7 @@ import type ITouchEventInit from './event/events/ITouchEventInit.js';
 import type IWheelEventInit from './event/events/IWheelEventInit.js';
 
 export type {
-	IAsyncRequestInterceptor,
+	IFetchInterceptor,
 	IAnimationEventInit,
 	IBrowser,
 	IBrowserContext,
