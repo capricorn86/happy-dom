@@ -54,7 +54,7 @@ export default interface IFetchInterceptor {
 	 */
 	afterSyncResponse?: (context: {
 		request: Request;
-		response: Response;
+		response: ISyncResponse;
 		window: BrowserWindow;
-	}) => Promise<Response | void>;
+	}) => ISyncResponse | void;
 }
