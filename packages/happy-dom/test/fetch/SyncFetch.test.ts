@@ -329,6 +329,199 @@ describe('SyncFetch', () => {
 			});
 		});
 
+		it('Should return the intercepted response when afterSyncRequest returns a response', () => {
+			const url = 'https://localhost:8080/some/path';
+			const browser = new Browser({
+				settings: {
+					fetch: {
+						interceptor: {
+							afterSyncResponse() {
+								return {
+									status: 200,
+									statusText: 'OK',
+									ok: true,
+									url,
+									redirected: false,
+									headers: new Headers({ 'Content-Type': 'text/plain' }),
+									body: Buffer.from('intercepted text')
+								};
+							}
+						}
+					}
+				}
+			});
+			const page = browser.newPage();
+
+			const browserFrame = page.mainFrame;
+			const window = page.mainFrame.window;
+			browserFrame.url = 'https://localhost:8080/';
+
+			const responseText = 'some text';
+
+			mockModule('child_process', {
+				execFileSync: (
+					command: string,
+					args: string[],
+					options: { encoding: string; maxBuffer: number }
+				) => {
+					expect(command).toEqual(process.argv[0]);
+					expect(args[0]).toBe('-e');
+					expect(args[1]).toBe(
+						SyncFetchScriptBuilder.getScript({
+							url: new URL(url),
+							method: 'GET',
+							headers: {
+								Accept: '*/*',
+								Connection: 'close',
+								Referer: 'https://localhost:8080/',
+								'User-Agent': window.navigator.userAgent,
+								'Accept-Encoding': 'gzip, deflate, br'
+							},
+							body: null
+						})
+					);
+					expect(options).toEqual({
+						encoding: 'buffer',
+						maxBuffer: 1024 * 1024 * 1024
+					});
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							rawHeaders: [
+								'content-type',
+								'text/plain',
+								'content-length',
+								String(responseText.length)
+							],
+							data: Buffer.from(responseText).toString('base64')
+						}
+					});
+				}
+			});
+
+			const response = new SyncFetch({
+				browserFrame,
+				window,
+				url,
+				init: {
+					method: 'GET'
+				}
+			}).send();
+
+			expect(response.url).toBe(url);
+			expect(response.ok).toBe(true);
+			expect(response.redirected).toBe(false);
+			expect(response.status).toBe(200);
+			expect(response.statusText).toBe('OK');
+			expect(response.body.toString()).toBe('intercepted text');
+			expect(response.headers instanceof Headers).toBe(true);
+
+			const headers = {};
+			for (const [key, value] of response.headers) {
+				headers[key] = value;
+			}
+
+			expect(headers).toEqual({
+				'Content-Type': 'text/plain'
+			});
+		});
+
+		it('Should return the original response when afterSyncRequest does not return a response', () => {
+			const url = 'https://localhost:8080/some/path';
+			const browser = new Browser({
+				settings: {
+					fetch: {
+						interceptor: {
+							afterSyncResponse({ response }) {
+								return {
+									...response,
+									headers: new Headers({ 'Content-Type': 'text/plain' })
+								};
+							}
+						}
+					}
+				}
+			});
+			const page = browser.newPage();
+
+			const browserFrame = page.mainFrame;
+			const window = page.mainFrame.window;
+			browserFrame.url = 'https://localhost:8080/';
+
+			const responseText = 'some text';
+
+			mockModule('child_process', {
+				execFileSync: (
+					command: string,
+					args: string[],
+					options: { encoding: string; maxBuffer: number }
+				) => {
+					expect(command).toEqual(process.argv[0]);
+					expect(args[0]).toBe('-e');
+					expect(args[1]).toBe(
+						SyncFetchScriptBuilder.getScript({
+							url: new URL(url),
+							method: 'GET',
+							headers: {
+								Accept: '*/*',
+								Connection: 'close',
+								Referer: 'https://localhost:8080/',
+								'User-Agent': window.navigator.userAgent,
+								'Accept-Encoding': 'gzip, deflate, br'
+							},
+							body: null
+						})
+					);
+					expect(options).toEqual({
+						encoding: 'buffer',
+						maxBuffer: 1024 * 1024 * 1024
+					});
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							rawHeaders: [
+								'content-type',
+								'text/html',
+								'content-length',
+								String(responseText.length)
+							],
+							data: Buffer.from(responseText).toString('base64')
+						}
+					});
+				}
+			});
+
+			const response = new SyncFetch({
+				browserFrame,
+				window,
+				url,
+				init: {
+					method: 'GET'
+				}
+			}).send();
+
+			expect(response.url).toBe(url);
+			expect(response.ok).toBe(true);
+			expect(response.redirected).toBe(false);
+			expect(response.status).toBe(200);
+			expect(response.statusText).toBe('OK');
+			expect(response.body.toString()).toBe(responseText);
+			expect(response.headers instanceof Headers).toBe(true);
+
+			const headers = {};
+			for (const [key, value] of response.headers) {
+				headers[key] = value;
+			}
+
+			expect(headers).toEqual({
+				'Content-Type': 'text/plain'
+			});
+		});
+
 		it('Performs a request with a relative URL and adds the "Referer" header set to the window location.', () => {
 			const baseUrl = 'https://localhost:8080/base/';
 

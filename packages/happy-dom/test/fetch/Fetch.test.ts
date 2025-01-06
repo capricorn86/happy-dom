@@ -1443,6 +1443,112 @@ describe('Fetch', () => {
 			expect(await response.text()).toBe('some text');
 		});
 
+		it('Should use intercepted response when given', async () => {
+			const originURL = 'https://localhost:8080/';
+			const responseText = 'some text';
+			const window = new Window({
+				url: originURL,
+				settings: {
+					fetch: {
+						interceptor: {
+							async afterAsyncResponse({ window }) {
+								return new window.Response('intercepted text');
+							}
+						}
+					}
+				}
+			});
+			const url = 'https://localhost:8080/some/path';
+
+			mockModule('https', {
+				request: () => {
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText;
+								}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.statusCode = 200;
+								response.statusMessage = 'OK';
+								response.headers = {};
+								response.rawHeaders = [
+									'content-type',
+									'text/html',
+									'content-length',
+									String(responseText.length)
+								];
+
+								callback(response);
+							}
+						},
+						setTimeout: () => {}
+					};
+				}
+			});
+
+			const response = await window.fetch(url);
+
+			expect(await response.text()).toBe('intercepted text');
+		});
+
+		it('Should use original response when no response is given', async () => {
+			const originURL = 'https://localhost:8080/';
+			const responseText = 'some text';
+			const window = new Window({
+				url: originURL,
+				settings: {
+					fetch: {
+						interceptor: {
+							async afterAsyncResponse({ response }) {
+								response.headers.set('x-test', 'yes');
+								return undefined;
+							}
+						}
+					}
+				}
+			});
+			const url = 'https://localhost:8080/some/path';
+
+			mockModule('https', {
+				request: () => {
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText;
+								}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.statusCode = 200;
+								response.statusMessage = 'OK';
+								response.headers = {};
+								response.rawHeaders = [
+									'content-type',
+									'text/html',
+									'content-length',
+									String(responseText.length)
+								];
+
+								callback(response);
+							}
+						},
+						setTimeout: () => {}
+					};
+				}
+			});
+
+			const response = await window.fetch(url);
+
+			expect(await response.text()).toBe(responseText);
+			expect(response.headers.get('x-test')).toBe('yes');
+		});
+
 		it('Forwards "cookie", "authorization" or "www-authenticate" if request credentials are set to "same-origin" and the request goes to the same origin as the document.', async () => {
 			const originURL = 'https://localhost:8080';
 			const window = new Window({ url: originURL });

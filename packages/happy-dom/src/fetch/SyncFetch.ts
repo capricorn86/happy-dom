@@ -116,7 +116,7 @@ export default class SyncFetch {
 
 		if (this.request[PropertySymbol.url].protocol === 'data:') {
 			const result = DataURIParser.parse(this.request.url);
-			return {
+			const response = {
 				status: 200,
 				statusText: 'OK',
 				ok: true,
@@ -125,6 +125,14 @@ export default class SyncFetch {
 				headers: new Headers({ 'Content-Type': result.type }),
 				body: result.buffer
 			};
+			const interceptedResponse = this.interceptor.afterSyncResponse
+				? this.interceptor.afterSyncResponse({
+						window: this.#window,
+						response,
+						request: this.request
+					})
+				: undefined;
+			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
 
 		// Security check for "https" to "http" requests.
@@ -428,7 +436,14 @@ export default class SyncFetch {
 			});
 		}
 
-		return redirectedResponse;
+		const interceptedResponse = this.interceptor.afterSyncResponse
+			? this.interceptor.afterSyncResponse({
+					window: this.#window,
+					response: redirectedResponse,
+					request: this.request
+				})
+			: undefined;
+		return typeof interceptedResponse === 'object' ? interceptedResponse : redirectedResponse;
 	}
 
 	/**

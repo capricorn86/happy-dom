@@ -40,7 +40,7 @@ const LAST_CHUNK = Buffer.from('0\r\n\r\n');
  */
 export default class Fetch {
 	private reject: (reason: Error) => void | null = null;
-	private resolve: (value: Response | Promise<Response>) => void | null = null;
+	private resolve: (value: Response | Promise<Response>) => Promise<void> = null;
 	private listeners = {
 		onSignalAbort: this.onSignalAbort.bind(this)
 	};
@@ -134,7 +134,14 @@ export default class Fetch {
 			this.response = new this.#window.Response(result.buffer, {
 				headers: { 'Content-Type': result.type }
 			});
-			return this.response;
+			const interceptedResponse = this.interceptor.afterAsyncResponse
+				? await this.interceptor.afterAsyncResponse({
+						window: this.#window,
+						response: this.response,
+						request: this.request
+					})
+				: undefined;
+			return interceptedResponse instanceof Response ? interceptedResponse : this.response;
 		}
 
 		// Security check for "https" to "http" requests.
@@ -377,9 +384,9 @@ export default class Fetch {
 				throw new this.#window.Error('Fetch already sent.');
 			}
 
-			this.resolve = (response: Response | Promise<Response>): void => {
+			this.resolve = async (response: Response | Promise<Response>): Promise<void> => {
 				// We can end up here when closing down the browser frame and there is an ongoing request.
-				// Therefore we need to check if browserFrame.page.context is still available.
+				// Therefore, we need to check if browserFrame.page.context is still available.
 				if (
 					!this.disableCache &&
 					response instanceof Response &&
@@ -395,7 +402,14 @@ export default class Fetch {
 						});
 				}
 				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
-				resolve(response);
+				const interceptedResponse = this.interceptor.afterAsyncResponse
+					? await this.interceptor.afterAsyncResponse({
+							window: this.#window,
+							response: await response,
+							request: this.request
+						})
+					: undefined;
+				resolve(interceptedResponse instanceof Response ? interceptedResponse : response);
 			};
 			this.reject = (error: Error): void => {
 				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
