@@ -127,6 +127,9 @@ describe('BrowserPage', () => {
 			const frame1 = BrowserFrameFactory.createChildFrame(page.mainFrame);
 			const frame2 = BrowserFrameFactory.createChildFrame(page.mainFrame);
 
+			// Should work even if the body is removed.
+			frame2.document.body.remove();
+
 			await page.close();
 
 			expect(browser.defaultContext.pages.length).toBe(0);
