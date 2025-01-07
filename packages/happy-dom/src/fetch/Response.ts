@@ -105,6 +105,12 @@ export default class Response implements Response {
 		}
 
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+
+		// No browser frame means that the browser is being teared down.
+		if (!browserFrame) {
+			return new ArrayBuffer(0);
+		}
+
 		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
 
 		(<boolean>this.bodyUsed) = true;
@@ -161,6 +167,12 @@ export default class Response implements Response {
 		}
 
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+
+		// No browser frame means that the browser is being teared down.
+		if (!browserFrame) {
+			return Buffer.alloc(0);
+		}
+
 		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
 
 		(<boolean>this.bodyUsed) = true;
@@ -203,6 +215,12 @@ export default class Response implements Response {
 		}
 
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+
+		// No browser frame means that the browser is being teared down.
+		if (!browserFrame) {
+			return '';
+		}
+
 		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
 
 		(<boolean>this.bodyUsed) = true;
@@ -247,6 +265,12 @@ export default class Response implements Response {
 	public async formData(): Promise<FormData> {
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+
+		// No browser frame means that the browser is being teared down.
+		if (!browserFrame) {
+			return new window.FormData();
+		}
+
 		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
 		const contentType = this.headers.get('Content-Type');
 
