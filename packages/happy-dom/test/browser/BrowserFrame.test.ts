@@ -113,8 +113,14 @@ describe('BrowserFrame', () => {
 		it('Sets the document URL.', () => {
 			const browser = new Browser();
 			const page = browser.defaultContext.newPage();
-			const location = page.mainFrame.window.location;
 			page.mainFrame.url = 'http://localhost:3000';
+			expect(page.mainFrame.window.location.href).toBe('http://localhost:3000/');
+		});
+
+		it(`Supports URL as an object.`, async () => {
+			const browser = new Browser();
+			const page = browser.defaultContext.newPage();
+			page.mainFrame.url = <string>(<unknown>{ toString: () => 'http://localhost:3000' });
 			expect(page.mainFrame.window.location.href).toBe('http://localhost:3000/');
 		});
 	});

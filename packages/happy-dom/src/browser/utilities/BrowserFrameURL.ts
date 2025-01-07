@@ -13,7 +13,7 @@ export default class BrowserFrameURL {
 	 * @returns Relative URL.
 	 */
 	public static getRelativeURL(frame: IBrowserFrame, url: string | URL): URL {
-		url = (url instanceof URL ? url.toString() : url) || 'about:blank';
+		url = url ? String(url) : 'about:blank';
 
 		if (url.startsWith('about:') || url.startsWith('javascript:')) {
 			return new URL(url);
