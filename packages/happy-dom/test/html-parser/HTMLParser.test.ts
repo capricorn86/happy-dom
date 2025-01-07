@@ -2104,5 +2104,23 @@ describe('HTMLParser', () => {
                 </body></html>`
 			);
 		});
+
+		it('Handles setting documentElement.innerHTML for #1663', () => {
+			document.documentElement.innerHTML = '<head></head><body></body>';
+			expect(document.documentElement.outerHTML).toBe('<html><head></head><body></body></html>');
+
+			document.documentElement.innerHTML = '<head></head><body>Test</body>';
+			expect(document.documentElement.outerHTML).toBe(
+				'<html><head></head><body>Test</body></html>'
+			);
+
+			document.documentElement.innerHTML = '';
+			expect(document.documentElement.outerHTML).toBe('<html><head></head><body></body></html>');
+
+			document.documentElement.innerHTML = '<body>Test</body>';
+			expect(document.documentElement.outerHTML).toBe(
+				'<html><head></head><body>Test</body></html>'
+			);
+		});
 	});
 });

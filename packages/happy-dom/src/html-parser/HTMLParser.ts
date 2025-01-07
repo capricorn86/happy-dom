@@ -186,6 +186,31 @@ export default class HTMLParser {
 			};
 		}
 
+		if (this.rootNode instanceof this.window.HTMLHtmlElement) {
+			const head = this.rootDocument.createElement('head');
+			const body = this.rootDocument.createElement('body');
+			while (this.rootNode[PropertySymbol.nodeArray].length > 0) {
+				this.rootNode[PropertySymbol.removeChild](
+					this.rootNode[PropertySymbol.nodeArray][
+						this.rootNode[PropertySymbol.nodeArray].length - 1
+					]
+				);
+			}
+
+			this.rootNode[PropertySymbol.appendChild](head);
+			this.rootNode[PropertySymbol.appendChild](body);
+
+			this.documentStructure = {
+				nodes: {
+					doctype: null,
+					documentElement: this.rootNode,
+					head,
+					body
+				},
+				level: HTMLDocumentStructureLevelEnum.documentElement
+			};
+		}
+
 		let match: RegExpExecArray;
 		let lastIndex = 0;
 
