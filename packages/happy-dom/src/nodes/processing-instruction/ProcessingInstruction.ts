@@ -12,6 +12,13 @@ export default class ProcessingInstruction extends CharacterData {
 	public [PropertySymbol.target]: string;
 
 	/**
+	 * @override
+	 */
+	public override get nodeName(): string {
+		return this[PropertySymbol.target];
+	}
+
+	/**
 	 * Returns target.
 	 *
 	 * @returns Target.

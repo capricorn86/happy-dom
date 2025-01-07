@@ -22,6 +22,13 @@ export default class Attr extends Node implements Attr {
 	public [PropertySymbol.ownerElement]: Element | null = null;
 
 	/**
+	 * @override
+	 */
+	public override get nodeName(): string {
+		return this[PropertySymbol.name];
+	}
+
+	/**
 	 * Returns specified.
 	 *
 	 * @returns Specified.

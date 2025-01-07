@@ -65,6 +65,30 @@ describe('TreeWalker', () => {
 			]);
 		});
 
+		it('Walks into each node in the DOM tree while an element is removed.', () => {
+			const treeWalker = document.createTreeWalker(document.body);
+			const html: string[] = [];
+			let currentNode;
+
+			while ((currentNode = treeWalker.nextNode())) {
+				if (currentNode.tagName === 'B') {
+					currentNode.remove();
+				}
+
+				html.push(NODE_TO_STRING(currentNode));
+			}
+
+			expect(html).toEqual([
+				'\n\t\t\t',
+				'<div class="class1 class2" id="id">\n\t\t\t\t<!-- Comment 1 !-->\n\t\t\t\t<b>Bold</b>\n\t\t\t\t<!-- Comment 2 !-->\n\t\t\t\t<span>Span</span>\n\t\t\t</div>',
+				'\n\t\t\t\t',
+				'<!-- Comment 1 !-->',
+				'\n\t\t\t\t',
+				'<b>Bold</b>',
+				'Bold'
+			]);
+		});
+
 		it('Walks into each HTMLElement in the DOM tree when whatToShow is set to NodeFilter.SHOW_ELEMENT.', () => {
 			const treeWalker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
 			const html: string[] = [];

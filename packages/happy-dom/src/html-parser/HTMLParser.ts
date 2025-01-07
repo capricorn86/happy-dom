@@ -17,6 +17,7 @@ import HTMLBodyElement from '../nodes/html-body-element/HTMLBodyElement.js';
 import HTMLHtmlElement from '../nodes/html-html-element/HTMLHtmlElement.js';
 import XMLEncodeUtility from '../utilities/XMLEncodeUtility.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
+import MathMLElementConfig from '../config/MathMLElementConfig.js';
 
 /**
  * Markup RegExp.
@@ -377,7 +378,7 @@ export default class HTMLParser {
 					const name =
 						attributeMatch[1] || attributeMatch[3] || attributeMatch[6] || attributeMatch[9] || '';
 					const rawValue = attributeMatch[2] || attributeMatch[4] || attributeMatch[7] || '';
-					const value = rawValue ? XMLEncodeUtility.decodeAttributeValue(rawValue) : '';
+					const value = rawValue ? XMLEncodeUtility.decodeHTMLAttributeValue(rawValue) : '';
 					const attributes = this.nextElement[PropertySymbol.attributes];
 
 					if (this.nextElement[PropertySymbol.namespaceURI] === NamespaceURI.svg) {
@@ -409,12 +410,18 @@ export default class HTMLParser {
 
 		const tagName = this.nextElement[PropertySymbol.tagName];
 		const lowerTagName = tagName.toLowerCase();
-		const config = HTMLElementConfig[lowerTagName];
+		const config =
+			this.nextElement[PropertySymbol.namespaceURI] === NamespaceURI.html
+				? HTMLElementConfig[lowerTagName]
+				: null;
 		let previousCurrentNode: Node | null = null;
 
 		while (previousCurrentNode !== this.rootNode) {
 			const parentLowerTagName = this.currentNode[PropertySymbol.tagName]?.toLowerCase();
-			const parentConfig = HTMLElementConfig[parentLowerTagName];
+			const parentConfig =
+				this.currentNode[PropertySymbol.namespaceURI] === NamespaceURI.html
+					? HTMLElementConfig[parentLowerTagName]
+					: null;
 
 			if (previousCurrentNode === this.currentNode) {
 				throw new Error(
@@ -488,17 +495,7 @@ export default class HTMLParser {
 				config?.contentModel === HTMLElementConfigContentModelEnum.noSelfDescendants &&
 				this.tagNameStack.includes(tagName)
 			) {
-				while (this.currentNode !== this.rootNode) {
-					if ((<Element>this.currentNode)[PropertySymbol.tagName] === tagName) {
-						this.nodeStack.pop();
-						this.tagNameStack.pop();
-						this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
-						break;
-					}
-					this.nodeStack.pop();
-					this.tagNameStack.pop();
-					this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
-				}
+				this.parseEndTag(tagName);
 			} else if (
 				config?.permittedParents &&
 				!config.permittedParents.includes(parentLowerTagName)
@@ -721,7 +718,10 @@ export default class HTMLParser {
 	 * @param text Text.
 	 */
 	private parseRawTextElementContent(tagName: string, text: string): void {
-		const upperTagName = StringUtility.asciiUpperCase(tagName);
+		const upperTagName =
+			this.currentNode[PropertySymbol.namespaceURI] === NamespaceURI.html
+				? StringUtility.asciiUpperCase(tagName)
+				: tagName;
 
 		if (upperTagName !== this.currentNode[PropertySymbol.tagName]) {
 			return;
@@ -775,19 +775,43 @@ export default class HTMLParser {
 	private getStartTagElement(tagName: string): Element {
 		const lowerTagName = StringUtility.asciiLowerCase(tagName);
 
-		// NamespaceURI is inherited from the parent element.
+		// Namespace URI is inherited from the parent element.
 		const namespaceURI = this.currentNode[PropertySymbol.namespaceURI];
 
-		// NamespaceURI should be SVG when the tag name is "svg" (even in XML mode).
+		// Namespace URI should be MathML when the tag name is "math".
+		if (lowerTagName === 'math' || namespaceURI === NamespaceURI.mathML) {
+			// <mi> is a special case where children of it can escape the Math ML namespace if it isn't a known Math ML element.
+			if (this.currentNode[PropertySymbol.tagName] === 'mi' && !MathMLElementConfig[lowerTagName]) {
+				if (lowerTagName === 'svg') {
+					return this.rootDocument.createElementNS(NamespaceURI.svg, 'svg');
+				}
+				return this.rootDocument.createElementNS(NamespaceURI.html, lowerTagName);
+			}
+			return this.rootDocument.createElementNS(NamespaceURI.mathML, tagName);
+		}
+
+		// Namespace URI should be SVG when the tag name is "svg".
 		if (lowerTagName === 'svg') {
 			return this.rootDocument.createElementNS(NamespaceURI.svg, 'svg');
 		}
 
 		if (namespaceURI === NamespaceURI.svg) {
-			return this.rootDocument.createElementNS(
-				NamespaceURI.svg,
-				SVGElementConfig[lowerTagName]?.localName || tagName
-			);
+			// <foreignObject> is a special case where children of it escapes the SVG namespace.
+			// @see https://developer.mozilla.org/en-US/docs/Web/SVG/Element/foreignObject
+			if (this.currentNode[PropertySymbol.tagName] === 'foreignObject') {
+				return this.rootDocument.createElementNS(NamespaceURI.html, lowerTagName);
+			}
+			const config = SVGElementConfig[lowerTagName];
+			if (config) {
+				return this.rootDocument.createElementNS(NamespaceURI.svg, config.localName);
+			}
+			// Some HTML tags escapes the SVG namespace
+			// We should then end all SVG elements up to the first matching <svg> tag
+			if (HTMLElementConfig[lowerTagName]?.escapesSVGNamespace) {
+				this.parseEndTag('svg');
+			} else {
+				return this.rootDocument.createElementNS(NamespaceURI.svg, tagName);
+			}
 		}
 
 		// New element.

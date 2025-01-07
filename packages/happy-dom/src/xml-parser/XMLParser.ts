@@ -487,7 +487,7 @@ export default class XMLParser {
 
 					// In XML, new line characters should be replaced with a space.
 					const value = rawValue
-						? XMLEncodeUtility.decodeAttributeValue(rawValue.replace(NEW_LINE_REGEXP, ' '))
+						? XMLEncodeUtility.decodeXMLAttributeValue(rawValue.replace(NEW_LINE_REGEXP, ' '))
 						: '';
 					const attributes = this.nextElement[PropertySymbol.attributes];
 					const nameParts = name.split(':');

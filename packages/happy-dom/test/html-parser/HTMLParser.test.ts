@@ -13,6 +13,11 @@ import CustomElement from '../CustomElement.js';
 import HTMLHtmlElement from '../../src/nodes/html-html-element/HTMLHtmlElement.js';
 import XMLSerializer from '../../src/xml-serializer/XMLSerializer.js';
 import TreeWalkerHTML from '../tree-walker/data/TreeWalkerHTML.js';
+import MathMLElementConfig from '../../src/config/MathMLElementConfig.js';
+import SVGSVGElement from '../../src/nodes/svg-svg-element/SVGSVGElement.js';
+import HTMLElementConfig from '../../src/config/HTMLElementConfig.js';
+import SVGElementConfig from '../../src/config/SVGElementConfig.js';
+import HTMLElementConfigContentModelEnum from '../../src/config/HTMLElementConfigContentModelEnum.js';
 
 describe('HTMLParser', () => {
 	let window: Window;
@@ -728,6 +733,143 @@ describe('HTMLParser', () => {
 					</polygon></path></line></ellipse></svg>
 				</div>
 			`
+			);
+		});
+
+		it('Parses malformed SVG elements with style and comments.', () => {
+			const result = new HTMLParser(window).parse(
+				`<svg><annotation-xml><foreignobject><style><!--</style><p id=\"--><img src='x' onerror='alert(1)'>\">`,
+				document.implementation.createHTMLDocument()
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`<html><head></head><body><svg><annotation-xml><foreignObject><style><!--</style><p id="--><img src='x' onerror='alert(1)'>"></p></foreignObject></annotation-xml></svg></body></html>`
+			);
+		});
+
+		it('Children of SVGForeignObjectElement should escape the SVG namespace', () => {
+			const result = new HTMLParser(window).parse(
+				`<svg><foreignobject><div><style></style></div><svg></foreignobject></svg>`,
+				document.implementation.createHTMLDocument()
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`<html><head></head><body><svg><foreignObject><div><style></style></div><svg></svg></foreignObject></svg></body></html>`
+			);
+
+			expect((<HTMLElement>result.querySelector('div')).namespaceURI).toBe(NamespaceURI.html);
+			expect((<HTMLElement>result.querySelector('style')).namespaceURI).toBe(NamespaceURI.html);
+			expect((<SVGSVGElement>result.querySelector('svg')).namespaceURI).toBe(NamespaceURI.svg);
+		});
+
+		it('It handles SVG element with unicode characters in tag name.', () => {
+			const result = new HTMLParser(window).parse(
+				`<svg><blocKquote>foo</blocKquote>`,
+				document.implementation.createHTMLDocument()
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`<html><head></head><body><svg></svg><blockquote>foo</blockquote></body></html>`
+			);
+		});
+
+		it('Handles HTML elements that should escape the SVG namespace.', () => {
+			for (const tag of Object.keys(HTMLElementConfig)) {
+				const config = HTMLElementConfig[tag];
+				if (config.escapesSVGNamespace) {
+					const result = new HTMLParser(window).parse(`<svg><${tag}></${tag}>Test</svg>`);
+					if (tag === 'body' || tag === 'head' || tag === 'html') {
+						expect(new HTMLSerializer().serializeToString(result)).toBe(`<svg></svg>Test`);
+					} else if (config.contentModel === HTMLElementConfigContentModelEnum.noDescendants) {
+						expect(new HTMLSerializer().serializeToString(result)).toBe(`<svg></svg><${tag}>Test`);
+					} else {
+						expect(new HTMLSerializer().serializeToString(result)).toBe(
+							`<svg></svg><${tag}></${tag}>Test`
+						);
+					}
+				} else {
+					const result = new HTMLParser(window).parse(`<svg><${tag}></${tag}>Test</svg>`);
+					expect(new HTMLSerializer().serializeToString(result)).toBe(
+						`<svg><${tag}></${tag}>Test</svg>`
+					);
+				}
+			}
+		});
+
+		it('Parses MathML elements.', () => {
+			const result = new HTMLParser(window).parse(
+				`<div>
+                    <math>
+                        <mi>
+                            <mglyph>x</mglyph>
+                        </mi>
+                    </math>
+                </div>`
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`<div>
+                    <math>
+                        <mi>
+                            <mglyph>x</mglyph>
+                        </mi>
+                    </math>
+                </div>`
+			);
+
+			expect(result.children[0].children[0]).toBeInstanceOf(window.MathMLElement);
+			expect(result.children[0].children[0].namespaceURI).toBe(NamespaceURI.mathML);
+			expect(result.children[0].children[0].children[0]).toBeInstanceOf(window.MathMLElement);
+			expect(result.children[0].children[0].children[0].namespaceURI).toBe(NamespaceURI.mathML);
+			expect(result.children[0].children[0].children[0].children[0]).toBeInstanceOf(
+				window.MathMLElement
+			);
+			expect(result.children[0].children[0].children[0].children[0].namespaceURI).toBe(
+				NamespaceURI.mathML
+			);
+			expect(result.children[0].children[0].children[0].children[0].textContent).toBe('x');
+		});
+
+		it("Escapes the MathML namespace in <mi> elements if it isn't a known Math ML element", () => {
+			const result = new HTMLParser(window).parse(
+				`<div>
+                    <math>
+                        <mi>
+                            ${Object.keys(MathMLElementConfig)
+															.map((key) => `<${key}></${key}>`)
+															.join('')}
+                        </mi>
+                        <mi>
+                            <svg></svg>
+                            <canvas></canvas>
+                        </mi>
+                    </math>
+                </div>`
+			);
+
+			const mi1 = result.children[0].children[0].children[0];
+
+			expect(mi1.children.length).toBe(Object.keys(MathMLElementConfig).length);
+
+			for (const child of mi1.children) {
+				expect(child.namespaceURI).toBe(NamespaceURI.mathML);
+			}
+
+			const mi2 = result.children[0].children[0].children[1];
+
+			expect(mi2.children.length).toBe(2);
+			expect(mi2.children[0].namespaceURI).toBe(NamespaceURI.svg);
+			expect(mi2.children[1].namespaceURI).toBe(NamespaceURI.html);
+		});
+
+		it('Parses malformed MathML elements.', () => {
+			const result = new HTMLParser(window).parse(
+				`<form><math><mi><mglyph></form><form>`,
+				document.implementation.createHTMLDocument()
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`<html><head></head><body><form><math><mi><mglyph><form></form></mglyph></mi></math></form></body></html>`
 			);
 		});
 
