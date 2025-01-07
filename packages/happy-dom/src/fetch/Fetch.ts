@@ -26,6 +26,7 @@ import FetchResponseHeaderUtility from './utilities/FetchResponseHeaderUtility.j
 import FetchHTTPSCertificate from './certificate/FetchHTTPSCertificate.js';
 import { Buffer } from 'buffer';
 import FetchBodyUtility from './utilities/FetchBodyUtility.js';
+import IFetchInterceptor from './types/IFetchInterceptor.js';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -39,7 +40,7 @@ const LAST_CHUNK = Buffer.from('0\r\n\r\n');
  */
 export default class Fetch {
 	private reject: (reason: Error) => void | null = null;
-	private resolve: (value: Response | Promise<Response>) => void | null = null;
+	private resolve: (value: Response | Promise<Response>) => Promise<void> = null;
 	private listeners = {
 		onSignalAbort: this.onSignalAbort.bind(this)
 	};
@@ -50,6 +51,7 @@ export default class Fetch {
 	private nodeResponse: IncomingMessage | null = null;
 	private response: Response | null = null;
 	private responseHeaders: Headers | null = null;
+	private interceptor?: IFetchInterceptor;
 	private request: Request;
 	private redirectCount = 0;
 	private disableCache: boolean;
@@ -99,6 +101,7 @@ export default class Fetch {
 			options.disableSameOriginPolicy ??
 			this.#browserFrame.page.context.browser.settings.fetch.disableSameOriginPolicy ??
 			false;
+		this.interceptor = this.#browserFrame.page.context.browser.settings.fetch.interceptor;
 	}
 
 	/**
@@ -108,6 +111,15 @@ export default class Fetch {
 	 */
 	public async send(): Promise<Response> {
 		FetchRequestReferrerUtility.prepareRequest(new URL(this.#window.location.href), this.request);
+		const beforeRequestResponse = this.interceptor?.beforeAsyncRequest
+			? await this.interceptor.beforeAsyncRequest({
+					request: this.request,
+					window: this.#window
+				})
+			: undefined;
+		if (beforeRequestResponse instanceof Response) {
+			return beforeRequestResponse;
+		}
 		FetchRequestValidationUtility.validateSchema(this.request);
 
 		if (this.request.signal.aborted) {
@@ -122,7 +134,14 @@ export default class Fetch {
 			this.response = new this.#window.Response(result.buffer, {
 				headers: { 'Content-Type': result.type }
 			});
-			return this.response;
+			const interceptedResponse = this.interceptor?.afterAsyncResponse
+				? await this.interceptor.afterAsyncResponse({
+						window: this.#window,
+						response: this.response,
+						request: this.request
+					})
+				: undefined;
+			return interceptedResponse instanceof Response ? interceptedResponse : this.response;
 		}
 
 		// Security check for "https" to "http" requests.
@@ -365,9 +384,9 @@ export default class Fetch {
 				throw new this.#window.Error('Fetch already sent.');
 			}
 
-			this.resolve = (response: Response | Promise<Response>): void => {
+			this.resolve = async (response: Response | Promise<Response>): Promise<void> => {
 				// We can end up here when closing down the browser frame and there is an ongoing request.
-				// Therefore we need to check if browserFrame.page.context is still available.
+				// Therefore, we need to check if browserFrame.page.context is still available.
 				if (
 					!this.disableCache &&
 					response instanceof Response &&
@@ -382,8 +401,16 @@ export default class Fetch {
 							waitingForBody: !response[PropertySymbol.buffer] && !!response.body
 						});
 				}
+
+				const interceptedResponse = this.interceptor?.afterAsyncResponse
+					? await this.interceptor.afterAsyncResponse({
+							window: this.#window,
+							response: await response,
+							request: this.request
+						})
+					: undefined;
 				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
-				resolve(response);
+				resolve(interceptedResponse instanceof Response ? interceptedResponse : response);
 			};
 			this.reject = (error: Error): void => {
 				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
