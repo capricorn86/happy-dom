@@ -401,7 +401,7 @@ export default class Fetch {
 							waitingForBody: !response[PropertySymbol.buffer] && !!response.body
 						});
 				}
-				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+
 				const interceptedResponse = this.interceptor.afterAsyncResponse
 					? await this.interceptor.afterAsyncResponse({
 							window: this.#window,
@@ -409,6 +409,7 @@ export default class Fetch {
 							request: this.request
 						})
 					: undefined;
+				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 				resolve(interceptedResponse instanceof Response ? interceptedResponse : response);
 			};
 			this.reject = (error: Error): void => {
