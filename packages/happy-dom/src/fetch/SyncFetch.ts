@@ -125,7 +125,7 @@ export default class SyncFetch {
 				headers: new Headers({ 'Content-Type': result.type }),
 				body: result.buffer
 			};
-			const interceptedResponse = this.interceptor.afterSyncResponse
+			const interceptedResponse = this.interceptor?.afterSyncResponse
 				? this.interceptor.afterSyncResponse({
 						window: this.#window,
 						response,
@@ -436,7 +436,7 @@ export default class SyncFetch {
 			});
 		}
 
-		const interceptedResponse = this.interceptor.afterSyncResponse
+		const interceptedResponse = this.interceptor?.afterSyncResponse
 			? this.interceptor.afterSyncResponse({
 					window: this.#window,
 					response: redirectedResponse,

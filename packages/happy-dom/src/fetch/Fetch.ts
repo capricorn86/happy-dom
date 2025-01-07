@@ -134,7 +134,7 @@ export default class Fetch {
 			this.response = new this.#window.Response(result.buffer, {
 				headers: { 'Content-Type': result.type }
 			});
-			const interceptedResponse = this.interceptor.afterAsyncResponse
+			const interceptedResponse = this.interceptor?.afterAsyncResponse
 				? await this.interceptor.afterAsyncResponse({
 						window: this.#window,
 						response: this.response,
@@ -402,7 +402,7 @@ export default class Fetch {
 						});
 				}
 
-				const interceptedResponse = this.interceptor.afterAsyncResponse
+				const interceptedResponse = this.interceptor?.afterAsyncResponse
 					? await this.interceptor.afterAsyncResponse({
 							window: this.#window,
 							response: await response,
