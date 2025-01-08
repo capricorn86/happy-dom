@@ -16,7 +16,7 @@ export default class AsyncTaskManager {
 	private runningTaskCount = 0;
 	private runningTimers: NodeJS.Timeout[] = [];
 	private runningImmediates: NodeJS.Immediate[] = [];
-	private waitUntilCompleteTimer: NodeJS.Immediate | null = null;
+	private waitUntilCompleteTimer: NodeJS.Timeout | null = null;
 	private waitUntilCompleteResolvers: Array<() => void> = [];
 	private aborted = false;
 	private destroyed = false;

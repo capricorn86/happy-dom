@@ -41,8 +41,8 @@ export default class HTMLIFrameElement extends HTMLElement {
 	public declare cloneNode: (deep?: boolean) => HTMLIFrameElement;
 
 	// Events
-	public onload: (event: Event) => void | null = null;
-	public onerror: (event: Event) => void | null = null;
+	public onload: ((event: Event) => void) | null = null;
+	public onerror: ((event: Event) => void) | null = null;
 
 	// Internal properties
 	public [PropertySymbol.sandbox]: DOMTokenList | null = null;

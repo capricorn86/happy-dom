@@ -33,14 +33,15 @@ export default class VirtualConsole implements Console {
 	 * Writes an error message to the console if the assertion is false. If the assertion is true, nothing happens.
 	 *
 	 * @param assertion Assertion.
+	 * @param message Message.
 	 * @param args Arguments.
 	 */
-	public assert(assertion: boolean, ...args: Array<object | string>): void {
+	public assert(assertion: boolean, message?: any, ...args: Array<object | string>): void {
 		if (!assertion) {
 			this.#printer.print({
 				type: VirtualConsoleLogTypeEnum.assert,
 				level: VirtualConsoleLogLevelEnum.error,
-				message: ['Assertion failed:', ...args],
+				message: ['Assertion failed:', ...(message ? [message, ...args] : args)],
 				group: this.#groups[this.#groups.length - 1] || null
 			});
 		}
@@ -92,13 +93,14 @@ export default class VirtualConsole implements Console {
 	/**
 	 * Outputs a message to the web console at the "debug" log level.
 	 *
+	 * @param message Message.
 	 * @param args Arguments.
 	 */
-	public debug(...args: Array<object | string>): void {
+	public debug(message?: any, ...args: Array<object | string>): void {
 		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.debug,
 			level: VirtualConsoleLogLevelEnum.log,
-			message: args,
+			message: message ? [message, ...args] : args,
 			group: this.#groups[this.#groups.length - 1] || null
 		});
 	}
@@ -108,7 +110,7 @@ export default class VirtualConsole implements Console {
 	 *
 	 * @param data Data.
 	 */
-	public dir(data: object): void {
+	public dir(data: any): void {
 		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.dir,
 			level: VirtualConsoleLogLevelEnum.log,
@@ -122,7 +124,7 @@ export default class VirtualConsole implements Console {
 	 *
 	 * @param data Data.
 	 */
-	public dirxml(data: object): void {
+	public dirxml(data: any[]): void {
 		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.dirxml,
 			level: VirtualConsoleLogLevelEnum.log,
@@ -134,13 +136,14 @@ export default class VirtualConsole implements Console {
 	/**
 	 * Outputs an error message to the console.
 	 *
+	 * @param message Message.
 	 * @param args Arguments.
 	 */
-	public error(...args: Array<object | string>): void {
+	public error(message?: any, ...args: Array<object | string>): void {
 		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.error,
 			level: VirtualConsoleLogLevelEnum.error,
-			message: args,
+			message: message ? [message, ...args] : args,
 			group: this.#groups[this.#groups.length - 1] || null
 		});
 	}
@@ -211,14 +214,16 @@ export default class VirtualConsole implements Console {
 	}
 
 	/**
+	 * Outputs an informational message to the console.
 	 *
-	 * @param args
+	 * @param message Message.
+	 * @param args Arguments.
 	 */
-	public info(...args: Array<object | string>): void {
+	public info(message?: any, ...args: Array<object | string>): void {
 		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.info,
 			level: VirtualConsoleLogLevelEnum.info,
-			message: args,
+			message: message ? [message, ...args] : args,
 			group: this.#groups[this.#groups.length - 1] || null
 		});
 	}
@@ -226,13 +231,14 @@ export default class VirtualConsole implements Console {
 	/**
 	 * Outputs a message to the console.
 	 *
+	 * @param message Message.
 	 * @param args Arguments.
 	 */
-	public log(...args: Array<object | string>): void {
+	public log(message?: any, ...args: Array<object | string>): void {
 		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.log,
 			level: VirtualConsoleLogLevelEnum.log,
-			message: args,
+			message: message ? [message, ...args] : args,
 			group: this.#groups[this.#groups.length - 1] || null
 		});
 	}
@@ -329,13 +335,17 @@ export default class VirtualConsole implements Console {
 	/**
 	 * Outputs a stack trace to the console.
 	 *
+	 * @param message Message.
 	 * @param args Arguments.
 	 */
-	public trace(...args: Array<object | string>): void {
+	public trace(message?: any, ...args: Array<object | string>): void {
 		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.trace,
 			level: VirtualConsoleLogLevelEnum.log,
-			message: [...args, new Error('stack').stack.replace('Error: stack', '')],
+			message: [
+				...(message ? [message, ...args] : args),
+				new Error('stack').stack!.replace('Error: stack', '')
+			],
 			group: this.#groups[this.#groups.length - 1] || null
 		});
 	}
@@ -343,13 +353,14 @@ export default class VirtualConsole implements Console {
 	/**
 	 * Outputs a warning message to the console.
 	 *
+	 * @param message Message.
 	 * @param args Arguments.
 	 */
-	public warn(...args: Array<object | string>): void {
+	public warn(message?: any, ...args: Array<object | string>): void {
 		this.#printer.print({
 			type: VirtualConsoleLogTypeEnum.warn,
 			level: VirtualConsoleLogLevelEnum.warn,
-			message: args,
+			message: message ? [message, ...args] : args,
 			group: this.#groups[this.#groups.length - 1] || null
 		});
 	}

@@ -32,8 +32,8 @@ export default class HTMLSelectElement extends HTMLElement {
 	public [PropertySymbol.proxy]: HTMLSelectElement;
 
 	// Events
-	public onchange: (event: Event) => void | null = null;
-	public oninput: (event: Event) => void | null = null;
+	public onchange: ((event: Event) => void) | null = null;
+	public oninput: ((event: Event) => void) | null = null;
 
 	/**
 	 * Constructor.

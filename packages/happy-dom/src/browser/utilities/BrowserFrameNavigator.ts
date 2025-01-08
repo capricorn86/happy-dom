@@ -34,12 +34,12 @@ export default class BrowserFrameNavigator {
 		windowClass: new (
 			browserFrame: IBrowserFrame,
 			options?: { url?: string; width?: number; height?: number }
-		) => BrowserWindow;
+		) => BrowserWindow | null;
 		frame: IBrowserFrame;
 		url: string;
 		goToOptions?: IGoToOptions;
 		method?: string;
-		formData?: FormData;
+		formData?: FormData | null;
 		disableHistory?: boolean;
 	}): Promise<Response | null> {
 		const { windowClass, frame, url, formData, method, goToOptions, disableHistory } = options;
@@ -235,7 +235,7 @@ export default class BrowserFrameNavigator {
 
 		// The frame may be destroyed during teardown.
 		if (!frame.window) {
-			return;
+			return null;
 		}
 
 		// Fixes issue where evaluating the response can throw an error.
@@ -265,7 +265,7 @@ export default class BrowserFrameNavigator {
 		windowClass: new (
 			browserFrame: IBrowserFrame,
 			options?: { url?: string; width?: number; height?: number }
-		) => BrowserWindow;
+		) => BrowserWindow | null;
 		frame: IBrowserFrame;
 		goToOptions?: IGoToOptions;
 	}): Promise<Response | null> {
@@ -324,7 +324,7 @@ export default class BrowserFrameNavigator {
 		windowClass: new (
 			browserFrame: IBrowserFrame,
 			options?: { url?: string; width?: number; height?: number }
-		) => BrowserWindow;
+		) => BrowserWindow | null;
 		frame: IBrowserFrame;
 		goToOptions?: IGoToOptions;
 	}): Promise<Response | null> {
@@ -384,7 +384,7 @@ export default class BrowserFrameNavigator {
 		windowClass: new (
 			browserFrame: IBrowserFrame,
 			options?: { url?: string; width?: number; height?: number }
-		) => BrowserWindow;
+		) => BrowserWindow | null;
 		frame: IBrowserFrame;
 		goToOptions?: IGoToOptions;
 		steps?: number;
@@ -448,7 +448,7 @@ export default class BrowserFrameNavigator {
 		windowClass: new (
 			browserFrame: IBrowserFrame,
 			options?: { url?: string; width?: number; height?: number }
-		) => BrowserWindow;
+		) => BrowserWindow | null;
 		frame: IBrowserFrame;
 		goToOptions?: IGoToOptions;
 	}): Promise<Response | null> {

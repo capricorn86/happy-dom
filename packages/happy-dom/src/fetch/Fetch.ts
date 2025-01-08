@@ -39,8 +39,8 @@ const LAST_CHUNK = Buffer.from('0\r\n\r\n');
  * @see https://fetch.spec.whatwg.org/#http-network-fetch
  */
 export default class Fetch {
-	private reject: (reason: Error) => void | null = null;
-	private resolve: (value: Response | Promise<Response>) => Promise<void> = null;
+	private reject: ((reason: Error) => void) | null = null;
+	private resolve: ((value: Response | Promise<Response>) => Promise<void>) | null = null;
 	private listeners = {
 		onSignalAbort: this.onSignalAbort.bind(this)
 	};

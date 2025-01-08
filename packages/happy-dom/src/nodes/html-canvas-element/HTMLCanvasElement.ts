@@ -14,11 +14,11 @@ const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+
  */
 export default class HTMLCanvasElement extends HTMLElement {
 	// Events
-	public oncontextlost: (event: Event) => void | null = null;
-	public oncontextrestored: (event: Event) => void | null = null;
-	public onwebglcontextcreationerror: (event: Event) => void | null = null;
-	public onwebglcontextlost: (event: Event) => void | null = null;
-	public onwebglcontextrestored: (event: Event) => void | null = null;
+	public oncontextlost: ((event: Event) => void) | null = null;
+	public oncontextrestored: ((event: Event) => void) | null = null;
+	public onwebglcontextcreationerror: ((event: Event) => void) | null = null;
+	public onwebglcontextlost: ((event: Event) => void) | null = null;
+	public onwebglcontextrestored: ((event: Event) => void) | null = null;
 
 	/**
 	 * Returns width.
