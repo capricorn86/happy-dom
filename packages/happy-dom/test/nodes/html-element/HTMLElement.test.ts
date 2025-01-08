@@ -470,7 +470,7 @@ describe('HTMLElement', () => {
 			expect((<PointerEvent>(<unknown>event)).composed).toBe(true);
 			expect((<PointerEvent>(<unknown>event)).width).toBe(1);
 			expect((<PointerEvent>(<unknown>event)).height).toBe(1);
-			expect((<PointerEvent>(<unknown>event)).target).toBe(null);
+			expect((<PointerEvent>(<unknown>event)).target).toBe(element);
 			expect((<PointerEvent>(<unknown>event)).currentTarget).toBe(null);
 			expect(target).toBe(element);
 			expect(currentTarget).toBe(element);

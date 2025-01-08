@@ -110,10 +110,17 @@ export default class EventTarget {
 	 * @returns The return value is false if event is cancelable and at least one of the event handlers which handled this event called Event.preventDefault().
 	 */
 	public dispatchEvent(event: Event): boolean {
-		if (!event[PropertySymbol.target]) {
+		// The "load" event is a special case. It should not bubble up to the window from the document.
+		if (
+			!event[PropertySymbol.dispatching] &&
+			(event[PropertySymbol.type] !== 'load' || !event[PropertySymbol.target])
+		) {
+			event[PropertySymbol.dispatching] = true;
 			event[PropertySymbol.target] = this[PropertySymbol.proxy] || this;
 
 			this.#goThroughDispatchEventPhases(event);
+
+			event[PropertySymbol.dispatching] = false;
 
 			return !(event[PropertySymbol.cancelable] && event[PropertySymbol.defaultPrevented]);
 		}
@@ -172,7 +179,6 @@ export default class EventTarget {
 				event[PropertySymbol.immediatePropagationStopped]
 			) {
 				event[PropertySymbol.eventPhase] = EventPhaseEnum.none;
-				event[PropertySymbol.target] = null;
 				event[PropertySymbol.currentTarget] = null;
 				return;
 			}
@@ -201,7 +207,6 @@ export default class EventTarget {
 					event[PropertySymbol.immediatePropagationStopped]
 				) {
 					event[PropertySymbol.eventPhase] = EventPhaseEnum.none;
-					event[PropertySymbol.target] = null;
 					event[PropertySymbol.currentTarget] = null;
 					return;
 				}
@@ -210,7 +215,6 @@ export default class EventTarget {
 
 		// None phase (done)
 		event[PropertySymbol.eventPhase] = EventPhaseEnum.none;
-		event[PropertySymbol.target] = null;
 		event[PropertySymbol.currentTarget] = null;
 	}
 

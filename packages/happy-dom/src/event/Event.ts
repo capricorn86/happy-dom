@@ -25,6 +25,7 @@ export default class Event {
 	public [PropertySymbol.timeStamp] = performance.now();
 	public [PropertySymbol.type]: string;
 
+	public [PropertySymbol.dispatching] = false;
 	public [PropertySymbol.immediatePropagationStopped] = false;
 	public [PropertySymbol.propagationStopped] = false;
 	public [PropertySymbol.target]: EventTarget = null;

@@ -208,7 +208,7 @@ describe('HTMLScriptElement', () => {
 
 				await window.happyDOM?.waitUntilComplete();
 
-				expect((<Event>(<unknown>loadEvent)).target).toBe(null);
+				expect((<Event>(<unknown>loadEvent)).target).toBe(script);
 				expect(loadEventTarget).toBe(script);
 				expect(loadEventCurrentTarget).toBe(script);
 				expect(fetchedURL).toBe('https://localhost:8080/path/to/script.js');
@@ -269,7 +269,7 @@ describe('HTMLScriptElement', () => {
 
 			window.document.body.appendChild(script);
 
-			expect((<Event>(<unknown>loadEvent)).target).toBe(null);
+			expect((<Event>(<unknown>loadEvent)).target).toBe(script);
 			expect(loadEventTarget).toBe(script);
 			expect(loadEventCurrentTarget).toBe(script);
 			expect(fetchedWindow).toBe(window);

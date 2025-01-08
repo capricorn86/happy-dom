@@ -1397,7 +1397,7 @@ describe('Document', () => {
 				expect(document.readyState).toBe(DocumentReadyStateEnum.interactive);
 
 				setTimeout(() => {
-					expect((<Event>event).target).toBe(null);
+					expect((<Event>event).target).toBe(document);
 					expect(target).toBe(document);
 					expect(currentTarget).toBe(document);
 					expect(document.readyState).toBe(DocumentReadyStateEnum.complete);
@@ -1456,7 +1456,7 @@ describe('Document', () => {
 					expect(resourceFetchCSSURL).toBe(cssURL);
 					expect(resourceFetchJSWindow).toBe(window);
 					expect(resourceFetchJSURL).toBe(jsURL);
-					expect((<Event>event).target).toBe(null);
+					expect((<Event>event).target).toBe(document);
 					expect(target).toBe(document);
 					expect(currentTarget).toBe(document);
 					expect(document.readyState).toBe(DocumentReadyStateEnum.complete);

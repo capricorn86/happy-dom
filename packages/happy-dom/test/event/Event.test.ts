@@ -36,7 +36,7 @@ describe('Event', () => {
 			});
 			span.dispatchEvent(event);
 
-			expect(event.target).toBe(null);
+			expect(event.target).toBe(span);
 			expect(target).toBe(span);
 		});
 	});
