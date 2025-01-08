@@ -147,11 +147,11 @@ export default class HTMLSerializer {
 
 		if (!namedItems.has('is') && element[PropertySymbol.isValue]) {
 			attributeString +=
-				' is="' + XMLEncodeUtility.encodeAttributeValue(element[PropertySymbol.isValue]) + '"';
+				' is="' + XMLEncodeUtility.encodeHTMLAttributeValue(element[PropertySymbol.isValue]) + '"';
 		}
 
 		for (const attributes of namedItems.values()) {
-			const escapedValue = XMLEncodeUtility.encodeAttributeValue(
+			const escapedValue = XMLEncodeUtility.encodeHTMLAttributeValue(
 				attributes[0][PropertySymbol.value]
 			);
 			attributeString += ' ' + attributes[0][PropertySymbol.name] + '="' + escapedValue + '"';

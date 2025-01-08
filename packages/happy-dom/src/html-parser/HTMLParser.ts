@@ -402,7 +402,7 @@ export default class HTMLParser {
 					const name =
 						attributeMatch[1] || attributeMatch[3] || attributeMatch[6] || attributeMatch[9] || '';
 					const rawValue = attributeMatch[2] || attributeMatch[4] || attributeMatch[7] || '';
-					const value = rawValue ? XMLEncodeUtility.decodeAttributeValue(rawValue) : '';
+					const value = rawValue ? XMLEncodeUtility.decodeHTMLAttributeValue(rawValue) : '';
 					const attributes = this.nextElement[PropertySymbol.attributes];
 
 					if (this.nextElement[PropertySymbol.namespaceURI] === NamespaceURI.svg) {

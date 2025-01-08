@@ -2122,5 +2122,21 @@ describe('HTMLParser', () => {
 				'<html><head></head><body>Test</body></html>'
 			);
 		});
+
+		it('Handles line breaks in attributes for #1678', () => {
+			const result = new HTMLParser(window).parse(
+				`            <div>
+                <button class="btn btn-secondary comment_reply" data-id="{{id}}" type="button">{{message_gui_reply}}</button> <button class="btn btn-secondary comment_collapse
+                 visually-hidden" type="button">{{message_gui_replies}}</button>
+            </div>`
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`            <div>
+                <button class="btn btn-secondary comment_reply" data-id="{{id}}" type="button">{{message_gui_reply}}</button> <button class="btn btn-secondary comment_collapse
+                 visually-hidden" type="button">{{message_gui_replies}}</button>
+            </div>`
+			);
+		});
 	});
 });

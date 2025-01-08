@@ -254,7 +254,7 @@ describe('HTMLSerializer', () => {
 			div.setAttribute('attr3', '');
 
 			expect(serializer.serializeToString(div)).toBe(
-				'<div attr1="Hello ⁨John⁩" attr2="&lt;span&gt; test" attr3=""></div>'
+				'<div attr1="Hello ⁨John⁩" attr2="<span> test" attr3=""></div>'
 			);
 		});
 
