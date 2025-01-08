@@ -1135,6 +1135,48 @@ describe('Node', () => {
 				true
 			);
 		});
+
+		it('Handles bubbling events correctly for issue #1661', () => {
+			window.document.body.innerHTML = '<div><button>Click Me!</button></div>';
+
+			const div = <HTMLElement>window.document.querySelector('div');
+			const button = <HTMLElement>window.document.querySelector('button');
+			const outputs: string[] = [];
+
+			for (const node of [div, button]) {
+				node.addEventListener('click', () => {
+					outputs.push('click:' + node.nodeName);
+				});
+
+				node.addEventListener('a', () => {
+					outputs.push('a:' + node.nodeName);
+				});
+
+				node.addEventListener('b', () => {
+					outputs.push('b:' + node.nodeName);
+				});
+
+				node.addEventListener('c', () => {
+					outputs.push('c:' + node.nodeName);
+				});
+			}
+
+			button.click();
+			button.dispatchEvent(new Event('a', { bubbles: true }));
+			button.dispatchEvent(new Event('b', { bubbles: true }));
+			button.dispatchEvent(new Event('c', { bubbles: true }));
+
+			expect(outputs).toEqual([
+				'click:BUTTON',
+				'click:DIV',
+				'a:BUTTON',
+				'a:DIV',
+				'b:BUTTON',
+				'b:DIV',
+				'c:BUTTON',
+				'c:DIV'
+			]);
+		});
 	});
 
 	describe('compareDocumentPosition()', () => {
