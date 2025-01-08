@@ -7,7 +7,16 @@ const IGNORE_LIST = ['constructor', 'undefined', 'NaN', 'global', 'globalThis'];
  *
  */
 export default class GlobalRegistrator {
-	private static registered: { [key: string | symbol]: PropertyDescriptor } | null = null;
+	static #registered: { [key: string | symbol]: PropertyDescriptor } | null = null;
+
+	/**
+	 * Returns the registered state.
+	 *
+	 * @returns Registered state.
+	 */
+	public static get isRegistered(): boolean {
+		return this.#registered !== null;
+	}
 
 	/**
 	 * Registers Happy DOM globally.
@@ -24,13 +33,13 @@ export default class GlobalRegistrator {
 		url?: string;
 		settings?: IOptionalBrowserSettings;
 	}): void {
-		if (this.registered !== null) {
+		if (this.#registered !== null) {
 			throw new Error('Failed to register. Happy DOM has already been globally registered.');
 		}
 
 		const window = new GlobalWindow({ ...options, console: globalThis.console });
 
-		this.registered = {};
+		this.#registered = {};
 
 		// Define properties on the global object
 		const propertyDescriptors = Object.getOwnPropertyDescriptors(window);
@@ -44,7 +53,7 @@ export default class GlobalRegistrator {
 					globalPropertyDescriptor?.value === undefined ||
 					globalPropertyDescriptor?.value !== windowPropertyDescriptor.value
 				) {
-					this.registered[key] = globalPropertyDescriptor || null;
+					this.#registered[key] = globalPropertyDescriptor || null;
 
 					// If the property is the window object, replace it with the global object
 					if (windowPropertyDescriptor.value === window) {
@@ -65,7 +74,7 @@ export default class GlobalRegistrator {
 
 		for (const key of propertySymbols) {
 			const propertyDescriptor = Object.getOwnPropertyDescriptor(window, key);
-			this.registered[key] = null;
+			this.#registered[key] = null;
 
 			// If the property is the window object, replace it with the global object
 			if (propertyDescriptor.value === window) {
@@ -87,7 +96,7 @@ export default class GlobalRegistrator {
 	 * Closes the window and unregisters Happy DOM from being global.
 	 */
 	public static async unregister(): Promise<void> {
-		if (this.registered === null) {
+		if (this.#registered === null) {
 			throw new Error(
 				'Failed to unregister. Happy DOM has not previously been globally registered.'
 			);
@@ -95,15 +104,15 @@ export default class GlobalRegistrator {
 
 		const happyDOM = globalThis.happyDOM;
 
-		for (const key of Object.keys(this.registered)) {
-			if (this.registered[key] !== null) {
-				Object.defineProperty(globalThis, key, this.registered[key]);
+		for (const key of Object.keys(this.#registered)) {
+			if (this.#registered[key] !== null) {
+				Object.defineProperty(globalThis, key, this.#registered[key]);
 			} else {
 				delete globalThis[key];
 			}
 		}
 
-		this.registered = null;
+		this.#registered = null;
 
 		if (happyDOM) {
 			await happyDOM.close();

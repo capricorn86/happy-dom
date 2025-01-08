@@ -232,6 +232,25 @@ async function main(): Promise<void> {
 	}
 
 	testWindowOptions();
+
+	/**
+	 * Test is registered property.
+	 */
+	function testIsRegisteredProperty(): void {
+		GlobalRegistrator.register();
+
+		if (!GlobalRegistrator.isRegistered) {
+			throw Error('The "isRegistered" property is incorrect.');
+		}
+
+		GlobalRegistrator.unregister();
+
+		if (GlobalRegistrator.isRegistered) {
+			throw Error('The "isRegistered" property is incorrect.');
+		}
+	}
+
+	testIsRegisteredProperty();
 }
 
 main();
