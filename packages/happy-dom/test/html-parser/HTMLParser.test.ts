@@ -2137,6 +2137,10 @@ describe('HTMLParser', () => {
                  visually-hidden" type="button">{{message_gui_replies}}</button>
             </div>`
 			);
+
+			const element = result.querySelector('div > .comment_collapse');
+
+			expect(element).toBe(result.children[0].children[1]);
 		});
 	});
 });
