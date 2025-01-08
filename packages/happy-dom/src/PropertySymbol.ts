@@ -378,3 +378,4 @@ export const root = Symbol('root');
 export const customElementReactionStack = Symbol('customElementReactionStack');
 export const isRemoved = Symbol('isRemoved');
 export const currentNode = Symbol('currentNode');
+export const dispatching = Symbol('dispatching');

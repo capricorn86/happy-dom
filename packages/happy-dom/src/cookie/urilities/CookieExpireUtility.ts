@@ -10,7 +10,7 @@ export default class CookieExpireUtility {
 	 * @param cookie Cookie.
 	 * @returns "true" if cookie has expired.
 	 */
-	public static hasExpired(cookie: ICookie): boolean {
+	public static hasExpired(cookie: ICookie): boolean | null {
 		return cookie.expires && cookie.expires.getTime() < Date.now();
 	}
 }

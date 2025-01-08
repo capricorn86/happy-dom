@@ -1556,11 +1556,11 @@ describe('BrowserWindow', () => {
 				});
 
 				setTimeout(() => {
-					expect((<Event>event).target).toBe(null);
+					expect((<Event>event).target).toBe(document);
 					expect((<Event>event).currentTarget).toBe(null);
 					expect((<Event>event).eventPhase).toBe(EventPhaseEnum.none);
 					expect(target).toBe(document);
-					expect(currentTarget).toBe(document);
+					expect(currentTarget).toBe(window);
 					resolve(null);
 				}, 20);
 			});
@@ -1614,11 +1614,11 @@ describe('BrowserWindow', () => {
 					expect(resourceFetchCSSURL).toBe(cssURL);
 					expect(resourceFetchJSWindow === window).toBe(true);
 					expect(resourceFetchJSURL).toBe(jsURL);
-					expect((<Event>loadEvent).target).toBe(null);
+					expect((<Event>loadEvent).target).toBe(document);
 					expect((<Event>loadEvent).currentTarget).toBe(null);
 					expect((<Event>loadEvent).eventPhase).toBe(EventPhaseEnum.none);
 					expect(loadEventTarget).toBe(document);
-					expect(loadEventCurrentTarget).toBe(document);
+					expect(loadEventCurrentTarget).toBe(window);
 					expect(document.styleSheets.length).toBe(1);
 					expect(document.styleSheets[0].cssRules[0].cssText).toBe(cssResponse);
 
@@ -1648,9 +1648,9 @@ describe('BrowserWindow', () => {
 
 				setTimeout(() => {
 					expect(errorEvents.length).toBe(2);
-					expect(errorEvents[0].target).toBe(null);
+					expect(errorEvents[0].target).toBe(window);
 					expect((<Error>errorEvents[0].error).message).toBe('Script error');
-					expect(errorEvents[1].target).toBe(null);
+					expect(errorEvents[1].target).toBe(window);
 					expect((<Error>errorEvents[1].error).message).toBe('Timeout error');
 
 					resolve(null);

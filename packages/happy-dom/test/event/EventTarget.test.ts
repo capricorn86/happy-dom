@@ -3,6 +3,7 @@ import Window from '../../src/window/Window.js';
 import EventTarget from '../../src/event/EventTarget.js';
 import Event from '../../src/event/Event.js';
 import CustomEvent from '../../src/event/events/CustomEvent.js';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 const EVENT_TYPE = 'click';
@@ -160,6 +161,10 @@ describe('EventTarget', () => {
 			expect(recievedEvent).toBe(dispatchedEvent);
 			expect(recievedTarget).toBe(eventTarget);
 			expect(recievedCurrentTarget).toBe(eventTarget);
+			expect(dispatchedEvent.target).toBe(eventTarget);
+			expect(dispatchedEvent.currentTarget).toBe(null);
+			expect(dispatchedEvent.defaultPrevented).toBe(false);
+			expect(dispatchedEvent[PropertySymbol.dispatching]).toBe(false);
 		});
 
 		it('Triggers all listeners, even though listeners are removed while dispatching.', () => {
@@ -196,6 +201,11 @@ describe('EventTarget', () => {
 			expect(recievedCurrentTarget1).toBe(eventTarget);
 			expect(recievedTarget2).toBe(eventTarget);
 			expect(recievedCurrentTarget2).toBe(eventTarget);
+
+			expect(dispatchedEvent.target).toBe(eventTarget);
+			expect(dispatchedEvent.currentTarget).toBe(null);
+			expect(dispatchedEvent.defaultPrevented).toBe(false);
+			expect(dispatchedEvent[PropertySymbol.dispatching]).toBe(false);
 		});
 	});
 

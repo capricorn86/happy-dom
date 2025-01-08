@@ -18,7 +18,7 @@ describe('QuerySelector', () => {
 		document = window.document;
 	});
 
-	describe('querySelectorAll', () => {
+	describe('querySelectorAll()', () => {
 		it('Throws an error for invalid selectors.', () => {
 			const container = document.createElement('div');
 			expect(() => container.querySelectorAll(<string>(<unknown>12))).toThrow(
@@ -1214,7 +1214,7 @@ describe('QuerySelector', () => {
 		});
 	});
 
-	describe('querySelector', () => {
+	describe('querySelector()', () => {
 		it('Throws an error for invalid selectors.', () => {
 			const container = document.createElement('div');
 			expect(() => container.querySelector(<string>(<unknown>12))).toThrow(
@@ -1627,6 +1627,16 @@ describe('QuerySelector', () => {
 
 			expect(document.querySelector(':focus')).toBe(div);
 			expect(document.querySelector(':focus-visible')).toBe(div);
+		});
+
+		it('Handles class names with line breaks', () => {
+			const div = document.createElement('div');
+			div.innerHTML = `
+                <div class="class1
+                class2"></div>
+            `;
+
+			expect(div.querySelector('.class1.class2')).toBe(div.children[0]);
 		});
 	});
 

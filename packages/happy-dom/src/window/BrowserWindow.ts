@@ -849,15 +849,15 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			// Not sure why target is set to document here, but this is how it works in the browser
 			const loadEvent = new Event('load');
 
-			loadEvent[PropertySymbol.currentTarget] = this.document;
+			loadEvent[PropertySymbol.currentTarget] = this;
 			loadEvent[PropertySymbol.target] = this.document;
 			loadEvent[PropertySymbol.eventPhase] = EventPhaseEnum.atTarget;
 
 			this.dispatchEvent(loadEvent);
 
-			loadEvent[PropertySymbol.target] = null;
 			loadEvent[PropertySymbol.currentTarget] = null;
 			loadEvent[PropertySymbol.eventPhase] = EventPhaseEnum.none;
+			loadEvent[PropertySymbol.dispatching] = false;
 		});
 
 		this[PropertySymbol.bindMethods]();
@@ -1705,14 +1705,14 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this[PropertySymbol.mutationObservers] = [];
 
 		// Disconnects nodes from the document, so that they can be garbage collected.
-		const childNodes = this.document.body[PropertySymbol.nodeArray];
+		const childNodes = this.document[PropertySymbol.nodeArray];
 
 		while (childNodes.length > 0) {
 			// Makes sure that something won't be triggered by the disconnect.
 			if ((<HTMLElement>childNodes[0]).disconnectedCallback) {
 				delete (<HTMLElement>childNodes[0]).disconnectedCallback;
 			}
-			this.document.body.removeChild(childNodes[0]);
+			this.document[PropertySymbol.removeChild](childNodes[0]);
 		}
 
 		// Create some empty elements for scripts that are still running.
@@ -1721,7 +1721,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		const bodyElement = this.document.createElement('body');
 		htmlElement.appendChild(headElement);
 		htmlElement.appendChild(bodyElement);
-		this.document.body.appendChild(htmlElement);
+		this.document[PropertySymbol.appendChild](htmlElement);
 
 		if (this.location[PropertySymbol.destroy]) {
 			this.location[PropertySymbol.destroy]();

@@ -11,8 +11,8 @@ const ATTRIBUTE_SEPARATOR_REGEXP = /[\t\f\n\r, ]+/;
 export default class SVGPoint {
 	// Internal properties
 	public [PropertySymbol.window]: BrowserWindow;
-	public [PropertySymbol.getAttribute]: () => string | null = null;
-	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
+	public [PropertySymbol.getAttribute]: (() => string | null) | null = null;
+	public [PropertySymbol.setAttribute]: ((value: string) => void) | null = null;
 	public [PropertySymbol.attributeValue]: string | null = null;
 	public [PropertySymbol.readOnly]: boolean = false;
 

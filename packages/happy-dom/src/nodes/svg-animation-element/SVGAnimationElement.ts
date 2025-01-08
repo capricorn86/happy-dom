@@ -14,9 +14,9 @@ export default class SVGAnimationElement extends SVGElement {
 	public [PropertySymbol.systemLanguage]: SVGStringList | null = null;
 
 	// Events
-	public onbegin: (event: Event) => void | null = null;
-	public onend: (event: Event) => void | null = null;
-	public onrepeat: (event: Event) => void | null = null;
+	public onbegin: ((event: Event) => void) | null = null;
+	public onend: ((event: Event) => void) | null = null;
+	public onrepeat: ((event: Event) => void) | null = null;
 
 	/**
 	 * Returns required extensions.

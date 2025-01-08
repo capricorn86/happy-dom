@@ -15,8 +15,8 @@ export default class SVGNumberList {
 	[index: number]: SVGNumber;
 
 	public [PropertySymbol.window]: BrowserWindow;
-	public [PropertySymbol.getAttribute]: () => string | null = null;
-	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
+	public [PropertySymbol.getAttribute]: (() => string | null) | null = null;
+	public [PropertySymbol.setAttribute]: ((value: string) => void) | null = null;
 	public [PropertySymbol.readOnly]: boolean = false;
 	private [PropertySymbol.cache]: { items: SVGNumber[]; attributeValue: string } = {
 		items: [],

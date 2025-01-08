@@ -2246,5 +2246,43 @@ describe('HTMLParser', () => {
                 </body></html>`
 			);
 		});
+
+		it('Handles setting documentElement.innerHTML for #1663', () => {
+			document.documentElement.innerHTML = '<head></head><body></body>';
+			expect(document.documentElement.outerHTML).toBe('<html><head></head><body></body></html>');
+
+			document.documentElement.innerHTML = '<head></head><body>Test</body>';
+			expect(document.documentElement.outerHTML).toBe(
+				'<html><head></head><body>Test</body></html>'
+			);
+
+			document.documentElement.innerHTML = '';
+			expect(document.documentElement.outerHTML).toBe('<html><head></head><body></body></html>');
+
+			document.documentElement.innerHTML = '<body>Test</body>';
+			expect(document.documentElement.outerHTML).toBe(
+				'<html><head></head><body>Test</body></html>'
+			);
+		});
+
+		it('Handles line breaks in attributes for #1678', () => {
+			const result = new HTMLParser(window).parse(
+				`            <div>
+                <button class="btn btn-secondary comment_reply" data-id="{{id}}" type="button">{{message_gui_reply}}</button> <button class="btn btn-secondary comment_collapse
+                 visually-hidden" type="button">{{message_gui_replies}}</button>
+            </div>`
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`            <div>
+                <button class="btn btn-secondary comment_reply" data-id="{{id}}" type="button">{{message_gui_reply}}</button> <button class="btn btn-secondary comment_collapse
+                 visually-hidden" type="button">{{message_gui_replies}}</button>
+            </div>`
+			);
+
+			const element = result.querySelector('div > .comment_collapse');
+
+			expect(element).toBe(result.children[0].children[1]);
+		});
 	});
 });

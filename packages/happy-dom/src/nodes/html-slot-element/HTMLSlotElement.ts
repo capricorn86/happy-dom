@@ -22,7 +22,7 @@ export default class HTMLSlotElement extends HTMLElement {
 	public [PropertySymbol.assignedNodes]: Node[] = [];
 
 	// Events
-	public onslotchange: (event: Event) => void | null = null;
+	public onslotchange: ((event: Event) => void) | null = null;
 
 	/**
 	 * Returns name.

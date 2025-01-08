@@ -22,8 +22,8 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	public readonly type = 'textarea';
 
 	// Events
-	public oninput: (event: Event) => void | null = null;
-	public onselectionchange: (event: Event) => void | null = null;
+	public oninput: ((event: Event) => void) | null = null;
+	public onselectionchange: ((event: Event) => void) | null = null;
 
 	// Internal properties
 	public [PropertySymbol.validationMessage] = '';

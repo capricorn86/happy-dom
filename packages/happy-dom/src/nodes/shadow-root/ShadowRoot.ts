@@ -17,7 +17,7 @@ export default class ShadowRoot extends DocumentFragment {
 	public declare cloneNode: (deep?: boolean) => ShadowRoot;
 
 	// Events
-	public onslotchange: (event: Event) => void | null = null;
+	public onslotchange: ((event: Event) => void) | null = null;
 
 	// Internal properties
 	public [PropertySymbol.adoptedStyleSheets]: CSSStyleSheet[] = [];

@@ -34,9 +34,9 @@ export default class HTMLInputElement extends HTMLElement {
 	public declare cloneNode: (deep?: boolean) => HTMLInputElement;
 
 	// Events
-	public oninput: (event: Event) => void | null = null;
-	public oninvalid: (event: Event) => void | null = null;
-	public onselectionchange: (event: Event) => void | null = null;
+	public oninput: ((event: Event) => void) | null = null;
+	public oninvalid: ((event: Event) => void) | null = null;
+	public onselectionchange: ((event: Event) => void) | null = null;
 
 	public [PropertySymbol.value] = null;
 	public [PropertySymbol.height] = 0;

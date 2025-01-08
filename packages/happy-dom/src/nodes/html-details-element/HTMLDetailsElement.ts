@@ -12,7 +12,7 @@ import MouseEvent from '../../event/events/MouseEvent.js';
  */
 export default class HTMLDetailsElement extends HTMLElement {
 	// Events
-	public ontoggle: (event: Event) => void | null = null;
+	public ontoggle: ((event: Event) => void) | null = null;
 
 	/**
 	 * Returns the open attribute.

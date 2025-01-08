@@ -6,11 +6,10 @@ import BrowserWindow from '../../window/BrowserWindow.js';
 export default class BrowserExceptionObserver {
 	private static listenerCount = 0;
 	private observedWindows: BrowserWindow[] = [];
-	private uncaughtExceptionListener: (
-		error: Error,
-		origin: 'uncaughtException' | 'unhandledRejection'
-	) => void | null;
-	private uncaughtRejectionListener: (error: Error) => void | null;
+	private uncaughtExceptionListener:
+		| ((error: Error, origin: 'uncaughtException' | 'unhandledRejection') => void)
+		| null = null;
+	private uncaughtRejectionListener: ((error: Error) => void) | null = null;
 
 	/**
 	 * Observes the Node process for uncaught exceptions.
@@ -117,7 +116,9 @@ export default class BrowserExceptionObserver {
 		if (this.observedWindows.length === 0 && this.uncaughtExceptionListener) {
 			(<typeof BrowserExceptionObserver>this.constructor).listenerCount--;
 			process.off('uncaughtException', this.uncaughtExceptionListener);
-			process.off('unhandledRejection', this.uncaughtRejectionListener);
+			if (this.uncaughtRejectionListener) {
+				process.off('unhandledRejection', this.uncaughtRejectionListener);
+			}
 			this.uncaughtExceptionListener = null;
 			this.uncaughtRejectionListener = null;
 		}

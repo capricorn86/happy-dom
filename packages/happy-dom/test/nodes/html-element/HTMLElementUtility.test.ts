@@ -48,14 +48,14 @@ describe('HTMLElementUtility', () => {
 				expect((<FocusEvent>(<unknown>blurEvent)).type).toBe('blur');
 				expect((<FocusEvent>(<unknown>blurEvent)).bubbles).toBe(false);
 				expect((<FocusEvent>(<unknown>blurEvent)).composed).toBe(true);
-				expect((<FocusEvent>(<unknown>blurEvent)).target).toBe(null);
+				expect((<FocusEvent>(<unknown>blurEvent)).target).toBe(element);
 				expect(blurTarget).toBe(element);
 				expect(blurCurrentTarget).toBe(element);
 
 				expect((<FocusEvent>(<unknown>focusOutEvent)).type).toBe('focusout');
 				expect((<FocusEvent>(<unknown>focusOutEvent)).bubbles).toBe(true);
 				expect((<FocusEvent>(<unknown>focusOutEvent)).composed).toBe(true);
-				expect((<FocusEvent>(<unknown>focusOutEvent)).target).toBe(null);
+				expect((<FocusEvent>(<unknown>focusOutEvent)).target).toBe(element);
 				expect(focusOutTarget).toBe(element);
 				expect(focusOutCurrentTarget).toBe(element);
 
@@ -133,14 +133,14 @@ describe('HTMLElementUtility', () => {
 				expect((<FocusEvent>(<unknown>focusEvent)).type).toBe('focus');
 				expect((<FocusEvent>(<unknown>focusEvent)).bubbles).toBe(false);
 				expect((<FocusEvent>(<unknown>focusEvent)).composed).toBe(true);
-				expect((<FocusEvent>(<unknown>focusEvent)).target).toBe(null);
+				expect((<FocusEvent>(<unknown>focusEvent)).target).toBe(element);
 				expect(focusTarget).toBe(element);
 				expect(focusCurrentTarget).toBe(element);
 
 				expect((<FocusEvent>(<unknown>focusInEvent)).type).toBe('focusin');
 				expect((<FocusEvent>(<unknown>focusInEvent)).bubbles).toBe(true);
 				expect((<FocusEvent>(<unknown>focusInEvent)).composed).toBe(true);
-				expect((<FocusEvent>(<unknown>focusInEvent)).target).toBe(null);
+				expect((<FocusEvent>(<unknown>focusInEvent)).target).toBe(element);
 				expect(focusInTarget).toBe(element);
 				expect(focusInCurrentTarget).toBe(element);
 
@@ -212,7 +212,7 @@ describe('HTMLElementUtility', () => {
 				expect((<FocusEvent>(<unknown>event)).type).toBe('blur');
 				expect((<FocusEvent>(<unknown>event)).bubbles).toBe(false);
 				expect((<FocusEvent>(<unknown>event)).composed).toBe(true);
-				expect((<FocusEvent>(<unknown>event)).target).toBe(null);
+				expect((<FocusEvent>(<unknown>event)).target).toBe(previousElement);
 				expect(target).toBe(previousElement);
 				expect(currentTarget).toBe(previousElement);
 			}

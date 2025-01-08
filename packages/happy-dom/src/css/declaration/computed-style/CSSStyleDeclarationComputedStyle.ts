@@ -287,8 +287,8 @@ export default class CSSStyleDeclarationComputedStyle {
 	private parseCSSRules(options: {
 		cssRules: CSSRule[];
 		elements: IStyleAndElement[];
-		rootElement?: IStyleAndElement;
-		hostElement?: IStyleAndElement;
+		rootElement?: IStyleAndElement | null;
+		hostElement?: IStyleAndElement | null;
 	}): void {
 		if (!options.elements.length) {
 			return;

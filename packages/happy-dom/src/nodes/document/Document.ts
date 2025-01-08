@@ -1156,7 +1156,7 @@ export default class Document extends Node {
 			);
 		}
 		// We should use the NodeFactory and not the class constructor, so that owner document will be this document
-		return NodeFactory.createNode(this, Text, String(data));
+		return NodeFactory.createNode(this, this[PropertySymbol.window].Text, String(data));
 	}
 
 	/**
@@ -1172,7 +1172,7 @@ export default class Document extends Node {
 			);
 		}
 		// We should use the NodeFactory and not the class constructor, so that owner document will be this document
-		return NodeFactory.createNode(this, Comment, String(data));
+		return NodeFactory.createNode(this, this[PropertySymbol.window].Comment, String(data));
 	}
 
 	/**
@@ -1182,7 +1182,7 @@ export default class Document extends Node {
 	 */
 	public createDocumentFragment(): DocumentFragment {
 		// We should use the NodeFactory and not the class constructor, so that owner document will be this document
-		return NodeFactory.createNode(this, DocumentFragment);
+		return NodeFactory.createNode(this, this[PropertySymbol.window].DocumentFragment);
 	}
 
 	/**
@@ -1240,7 +1240,7 @@ export default class Document extends Node {
 	 */
 	public createAttributeNS(namespaceURI: string, qualifiedName: string): Attr {
 		// We should use the NodeFactory and not the class constructor, so that owner document will be this document
-		const attribute = NodeFactory.createNode(this, Attr);
+		const attribute = NodeFactory.createNode(this, this[PropertySymbol.window].Attr);
 
 		const parts = qualifiedName.split(':');
 		attribute[PropertySymbol.namespaceURI] = namespaceURI;
@@ -1343,7 +1343,7 @@ export default class Document extends Node {
 			);
 		}
 		// We should use the NodeFactory and not the class constructor, so that owner document will be this document
-		const element = NodeFactory.createNode(this, ProcessingInstruction);
+		const element = NodeFactory.createNode(this, this[PropertySymbol.window].ProcessingInstruction);
 
 		element[PropertySymbol.data] = data;
 		element[PropertySymbol.target] = target;

@@ -137,8 +137,17 @@ describe('DetachedBrowserFrame', () => {
 				browser.defaultContext.pages[0].mainFrame
 			);
 			const page = browser.defaultContext.pages[0];
-			const location = page.mainFrame.window.location;
 			page.mainFrame.url = 'http://localhost:3000';
+			expect(page.mainFrame.window.location.href).toBe('http://localhost:3000/');
+		});
+
+		it(`Supports URL as an object.`, async () => {
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new BrowserWindow(
+				browser.defaultContext.pages[0].mainFrame
+			);
+			const page = browser.defaultContext.pages[0];
+			page.mainFrame.url = <string>(<unknown>{ toString: () => 'http://localhost:3000' });
 			expect(page.mainFrame.window.location.href).toBe('http://localhost:3000/');
 		});
 	});

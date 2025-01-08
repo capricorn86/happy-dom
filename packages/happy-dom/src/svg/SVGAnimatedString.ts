@@ -9,8 +9,8 @@ import BrowserWindow from '../window/BrowserWindow.js';
 export default class SVGAnimatedString {
 	// Internal properties
 	public [PropertySymbol.window]: BrowserWindow;
-	public [PropertySymbol.getAttribute]: () => string | null = null;
-	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
+	public [PropertySymbol.getAttribute]: (() => string | null) | null = null;
+	public [PropertySymbol.setAttribute]: ((value: string) => void) | null = null;
 
 	/**
 	 * Constructor.

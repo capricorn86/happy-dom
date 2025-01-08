@@ -1,5 +1,6 @@
 import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
 import BrowserNavigationCrossOriginPolicyEnum from '../enums/BrowserNavigationCrossOriginPolicyEnum.js';
+import IFetchInterceptor from '../../fetch/types/IFetchInterceptor.js';
 
 /**
  * Browser settings.
@@ -40,6 +41,8 @@ export default interface IBrowserSettings {
 		 * @see https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy
 		 */
 		disableSameOriginPolicy: boolean;
+
+		interceptor?: IFetchInterceptor;
 	};
 
 	/**

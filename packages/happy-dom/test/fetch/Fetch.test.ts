@@ -18,6 +18,7 @@ import { afterEach, describe, it, expect, vi } from 'vitest';
 import FetchHTTPSCertificate from '../../src/fetch/certificate/FetchHTTPSCertificate.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import Event from '../../src/event/Event.js';
+import Fetch from '../../lib/fetch/Fetch';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -1343,7 +1344,7 @@ describe('Fetch', () => {
 			});
 		});
 
-		it("Does'nt allow requests to HTTP from HTTPS (mixed content).", async () => {
+		it("Doesn't allow requests to HTTP from HTTPS (mixed content).", async () => {
 			const originURL = 'https://localhost:8080/';
 			const window = new Window({ url: originURL });
 			const url = 'http://localhost:8080/some/path';
@@ -1361,6 +1362,191 @@ describe('Fetch', () => {
 					DOMExceptionNameEnum.securityError
 				)
 			);
+		});
+
+		it('Should use intercepted response and not send the request when beforeAsyncRequest returns a Response', async () => {
+			const originURL = 'https://localhost:8080/';
+			const window = new Window({
+				url: originURL,
+				settings: {
+					fetch: {
+						interceptor: {
+							async beforeAsyncRequest({ window }) {
+								return new window.Response('intercepted text');
+							}
+						}
+					}
+				}
+			});
+			const url = 'https://localhost:8080/some/path';
+
+			mockModule('https', {
+				request: () => {
+					fail('No request should be made when beforeAsyncRequest returns a Response');
+				}
+			});
+
+			const response = await window.fetch(url);
+
+			expect(await response.text()).toBe('intercepted text');
+		});
+
+		it('Should make a normal request when before does not return a Response', async () => {
+			const originURL = 'https://localhost:8080/';
+			const responseText = 'some text';
+			const window = new Window({
+				url: originURL,
+				settings: {
+					fetch: {
+						interceptor: {
+							async beforeAsyncRequest() {
+								return undefined;
+							}
+						}
+					}
+				}
+			});
+			const url = 'https://localhost:8080/some/path';
+
+			mockModule('https', {
+				request: () => {
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText;
+								}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.statusCode = 200;
+								response.statusMessage = 'OK';
+								response.headers = {};
+								response.rawHeaders = [
+									'content-type',
+									'text/html',
+									'content-length',
+									String(responseText.length)
+								];
+
+								callback(response);
+							}
+						},
+						setTimeout: () => {}
+					};
+				}
+			});
+
+			const response = await window.fetch(url);
+
+			expect(await response.text()).toBe('some text');
+		});
+
+		it('Should use intercepted response when given', async () => {
+			const originURL = 'https://localhost:8080/';
+			const responseText = 'some text';
+			const window = new Window({
+				url: originURL,
+				settings: {
+					fetch: {
+						interceptor: {
+							async afterAsyncResponse({ window }) {
+								return new window.Response('intercepted text');
+							}
+						}
+					}
+				}
+			});
+			const url = 'https://localhost:8080/some/path';
+
+			mockModule('https', {
+				request: () => {
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText;
+								}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.statusCode = 200;
+								response.statusMessage = 'OK';
+								response.headers = {};
+								response.rawHeaders = [
+									'content-type',
+									'text/html',
+									'content-length',
+									String(responseText.length)
+								];
+
+								callback(response);
+							}
+						},
+						setTimeout: () => {}
+					};
+				}
+			});
+
+			const response = await window.fetch(url);
+
+			expect(await response.text()).toBe('intercepted text');
+		});
+
+		it('Should use original response when no response is given', async () => {
+			const originURL = 'https://localhost:8080/';
+			const responseText = 'some text';
+			const window = new Window({
+				url: originURL,
+				settings: {
+					fetch: {
+						interceptor: {
+							async afterAsyncResponse({ response }) {
+								response.headers.set('x-test', 'yes');
+								return undefined;
+							}
+						}
+					}
+				}
+			});
+			const url = 'https://localhost:8080/some/path';
+
+			mockModule('https', {
+				request: () => {
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText;
+								}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.statusCode = 200;
+								response.statusMessage = 'OK';
+								response.headers = {};
+								response.rawHeaders = [
+									'content-type',
+									'text/html',
+									'content-length',
+									String(responseText.length)
+								];
+
+								callback(response);
+							}
+						},
+						setTimeout: () => {}
+					};
+				}
+			});
+
+			const response = await window.fetch(url);
+
+			expect(await response.text()).toBe(responseText);
+			expect(response.headers.get('x-test')).toBe('yes');
 		});
 
 		it('Forwards "cookie", "authorization" or "www-authenticate" if request credentials are set to "same-origin" and the request goes to the same origin as the document.', async () => {

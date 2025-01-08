@@ -14,12 +14,12 @@ import DOMStringMap from '../../dom/DOMStringMap.js';
  */
 export default class SVGElement extends Element {
 	// Events
-	public onabort: (event: Event) => void | null = null;
-	public onerror: (event: Event) => void | null = null;
-	public onload: (event: Event) => void | null = null;
-	public onresize: (event: Event) => void | null = null;
-	public onscroll: (event: Event) => void | null = null;
-	public onunload: (event: Event) => void | null = null;
+	public onabort: ((event: Event) => void) | null = null;
+	public onerror: ((event: Event) => void) | null = null;
+	public onload: ((event: Event) => void) | null = null;
+	public onresize: ((event: Event) => void) | null = null;
+	public onscroll: ((event: Event) => void) | null = null;
+	public onunload: ((event: Event) => void) | null = null;
 
 	// Internal properties
 	public [PropertySymbol.style]: CSSStyleDeclaration | null = null;
