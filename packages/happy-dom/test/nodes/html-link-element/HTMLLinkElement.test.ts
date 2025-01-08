@@ -117,7 +117,7 @@ describe('HTMLLinkElement', () => {
 			expect(loadedURL).toBe('https://localhost:8080/test/path/file.css');
 			expect(element.sheet.cssRules.length).toBe(1);
 			expect(element.sheet.cssRules[0].cssText).toBe('div { background: red; }');
-			expect((<Event>(<unknown>loadEvent)).target).toBe(null);
+			expect((<Event>(<unknown>loadEvent)).target).toBe(element);
 			expect(loadEventTarget).toBe(element);
 			expect(loadEventCurrentTarget).toBe(element);
 		});
@@ -198,7 +198,7 @@ describe('HTMLLinkElement', () => {
 			expect(loadedURL).toBe('https://localhost:8080/test/path/file.css');
 			expect(element.sheet.cssRules.length).toBe(1);
 			expect(element.sheet.cssRules[0].cssText).toBe('div { background: red; }');
-			expect((<Event>(<unknown>loadEvent)).target).toBe(null);
+			expect((<Event>(<unknown>loadEvent)).target).toBe(element);
 			expect(loadEventTarget).toBe(element);
 			expect(loadEventCurrentTarget).toBe(element);
 		});

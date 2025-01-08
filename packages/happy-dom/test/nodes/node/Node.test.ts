@@ -887,7 +887,7 @@ describe('Node', () => {
 			expect(child.dispatchEvent(event)).toBe(true);
 
 			expect(childEvent).toBe(event);
-			expect((<Event>(<unknown>childEvent)).target).toBe(null);
+			expect((<Event>(<unknown>childEvent)).target).toBe(child);
 			expect((<Event>(<unknown>childEvent)).currentTarget).toBe(null);
 			expect(childEventTarget).toBe(child);
 			expect(childEventCurrentTarget).toBe(child);
@@ -922,7 +922,7 @@ describe('Node', () => {
 
 			expect(childEvent).toBe(event);
 			expect(parentEvent).toBe(event);
-			expect((<Event>(<unknown>parentEvent)).target).toBe(null);
+			expect((<Event>(<unknown>parentEvent)).target).toBe(child);
 			expect((<Event>(<unknown>parentEvent)).currentTarget).toBe(null);
 			expect(childEventTarget).toBe(child);
 			expect(childEventCurrentTarget).toBe(child);

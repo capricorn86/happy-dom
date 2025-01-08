@@ -378,3 +378,4 @@ export const xmlProcessingInstruction = Symbol('xmlProcessingInstruction');
 export const root = Symbol('root');
 export const filterNode = Symbol('filterNode');
 export const customElementReactionStack = Symbol('customElementReactionStack');
+export const dispatching = Symbol('dispatching');

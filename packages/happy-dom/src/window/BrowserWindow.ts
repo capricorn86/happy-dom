@@ -845,15 +845,15 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			// Not sure why target is set to document here, but this is how it works in the browser
 			const loadEvent = new Event('load');
 
-			loadEvent[PropertySymbol.currentTarget] = this.document;
+			loadEvent[PropertySymbol.currentTarget] = this;
 			loadEvent[PropertySymbol.target] = this.document;
 			loadEvent[PropertySymbol.eventPhase] = EventPhaseEnum.atTarget;
 
 			this.dispatchEvent(loadEvent);
 
-			loadEvent[PropertySymbol.target] = null;
 			loadEvent[PropertySymbol.currentTarget] = null;
 			loadEvent[PropertySymbol.eventPhase] = EventPhaseEnum.none;
+			loadEvent[PropertySymbol.dispatching] = false;
 		});
 
 		this[PropertySymbol.bindMethods]();
