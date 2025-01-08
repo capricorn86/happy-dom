@@ -8,7 +8,7 @@ export default class XMLEncodeUtility {
 	 * @param value Value.
 	 * @returns Escaped value.
 	 */
-	public static encodeAttributeValue(value: string | null): string {
+	public static encodeXMLAttributeValue(value: string | null): string {
 		if (value === null) {
 			return '';
 		}
@@ -28,7 +28,7 @@ export default class XMLEncodeUtility {
 	 * @param value Value.
 	 * @returns Decoded value.
 	 */
-	public static decodeAttributeValue(value: string | null): string {
+	public static decodeXMLAttributeValue(value: string | null): string {
 		if (value === null) {
 			return '';
 		}
@@ -41,6 +41,33 @@ export default class XMLEncodeUtility {
 			.replace(/&#xA;/gu, '\n')
 			.replace(/&#xD;/gu, '\r')
 			.replace(/&amp;/gu, '&');
+	}
+
+	/**
+	 * Encodes attribute value.
+	 *
+	 * @param value Value.
+	 * @returns Escaped value.
+	 */
+	public static encodeHTMLAttributeValue(value: string | null): string {
+		if (value === null) {
+			return '';
+		}
+		return value.replace(/&/gu, '&amp;').replace(/"/gu, '&quot;');
+	}
+
+	/**
+	 * Decodes attribute value.
+	 *
+	 * @param value Value.
+	 * @returns Decoded value.
+	 */
+	public static decodeHTMLAttributeValue(value: string | null): string {
+		if (value === null) {
+			return '';
+		}
+
+		return value.replace(/&quot;/gu, '"').replace(/&amp;/gu, '&');
 	}
 
 	/**

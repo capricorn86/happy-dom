@@ -229,7 +229,7 @@ export default class XMLSerializer {
 					attribute[PropertySymbol.localName] === elementPrefix &&
 					element[PropertySymbol.namespaceURI]
 				) {
-					namespaceString += ` xmlns:${elementPrefix}="${XMLEncodeUtility.encodeAttributeValue(
+					namespaceString += ` xmlns:${elementPrefix}="${XMLEncodeUtility.encodeXMLAttributeValue(
 						element[PropertySymbol.namespaceURI]
 					)}"`;
 					handledNamespaces.add(element[PropertySymbol.namespaceURI]);
@@ -238,20 +238,20 @@ export default class XMLSerializer {
 					attribute[PropertySymbol.name] === 'xmlns' &&
 					element[PropertySymbol.namespaceURI]
 				) {
-					namespaceString += ` xmlns="${XMLEncodeUtility.encodeAttributeValue(
+					namespaceString += ` xmlns="${XMLEncodeUtility.encodeXMLAttributeValue(
 						element[PropertySymbol.namespaceURI]
 					)}"`;
 					handledNamespaces.add(element[PropertySymbol.namespaceURI]);
 				} else {
 					namespaceString += ` ${
 						attribute[PropertySymbol.name]
-					}="${XMLEncodeUtility.encodeAttributeValue(attribute[PropertySymbol.value])}"`;
+					}="${XMLEncodeUtility.encodeXMLAttributeValue(attribute[PropertySymbol.value])}"`;
 					handledNamespaces.add(attribute[PropertySymbol.value]);
 				}
 			} else {
 				attributeString += ` ${
 					attribute[PropertySymbol.name]
-				}="${XMLEncodeUtility.encodeAttributeValue(attribute[PropertySymbol.value])}"`;
+				}="${XMLEncodeUtility.encodeXMLAttributeValue(attribute[PropertySymbol.value])}"`;
 			}
 		}
 
@@ -262,14 +262,14 @@ export default class XMLSerializer {
 			!handledNamespaces.has(element[PropertySymbol.namespaceURI])
 		) {
 			if (elementPrefix && !inheritedNamespacePrefixes.has(element[PropertySymbol.namespaceURI])) {
-				namespaceString += ` xmlns:${elementPrefix}="${XMLEncodeUtility.encodeAttributeValue(
+				namespaceString += ` xmlns:${elementPrefix}="${XMLEncodeUtility.encodeXMLAttributeValue(
 					element[PropertySymbol.namespaceURI]
 				)}"`;
 			} else if (
 				!elementPrefix &&
 				inheritedDefaultNamespace !== element[PropertySymbol.namespaceURI]
 			) {
-				namespaceString += ` xmlns="${XMLEncodeUtility.encodeAttributeValue(
+				namespaceString += ` xmlns="${XMLEncodeUtility.encodeXMLAttributeValue(
 					element[PropertySymbol.namespaceURI]
 				)}"`;
 			}
