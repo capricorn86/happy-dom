@@ -1136,7 +1136,7 @@ describe('Document', () => {
 		it('Creates an Attr node.', () => {
 			const attribute = document.createAttribute('KEY1');
 
-			expect(attribute instanceof Attr).toBe(true);
+			expect(attribute instanceof window.Attr).toBe(true);
 
 			expect(attribute.value).toBe(null);
 			expect(attribute.name).toBe('key1');
@@ -1179,7 +1179,7 @@ describe('Document', () => {
 			const textContent = 'text';
 			const textNode = document.createTextNode(textContent);
 			expect(textNode.textContent).toBe(textContent);
-			expect(textNode instanceof Text).toBe(true);
+			expect(textNode instanceof window.Text).toBe(true);
 		});
 
 		it('Creates a text node without content.', () => {
@@ -1206,9 +1206,9 @@ describe('Document', () => {
 	describe('createComment()', () => {
 		it('Creates a comment node.', () => {
 			const commentContent = 'comment';
-			const commentNode = document.createTextNode(commentContent);
+			const commentNode = document.createComment(commentContent);
 			expect(commentNode.textContent).toBe(commentContent);
-			expect(commentNode instanceof Text).toBe(true);
+			expect(commentNode instanceof window.Comment).toBe(true);
 		});
 
 		it('Creates a comment node without content.', () => {
@@ -1236,7 +1236,7 @@ describe('Document', () => {
 		it('Creates a document fragment.', () => {
 			const documentFragment = document.createDocumentFragment();
 			expect(documentFragment.ownerDocument).toBe(document);
-			expect(documentFragment instanceof DocumentFragment).toBe(true);
+			expect(documentFragment instanceof window.DocumentFragment).toBe(true);
 		});
 	});
 
@@ -1524,7 +1524,7 @@ describe('Document', () => {
 	describe('createProcessingInstruction()', () => {
 		it('Creates a Processing Instruction node with target & data.', () => {
 			const instruction = document.createProcessingInstruction('foo', 'bar');
-			expect(instruction instanceof ProcessingInstruction).toBe(true);
+			expect(instruction instanceof window.ProcessingInstruction).toBe(true);
 			expect(instruction.target).toBe('foo');
 			expect(instruction.data).toBe('bar');
 			expect(instruction.ownerDocument).toBe(document);
