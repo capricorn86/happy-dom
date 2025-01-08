@@ -13,7 +13,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 */
 	public static getMargin(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue {
+	}): ICSSStyleDeclarationPropertyValue | null {
 		return this.getPaddingLikeProperty(
 			['margin-top', 'margin-right', 'margin-bottom', 'margin-left'],
 			properties
@@ -28,7 +28,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 */
 	public static getPadding(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue {
+	}): ICSSStyleDeclarationPropertyValue | null {
 		return this.getPaddingLikeProperty(
 			['padding-top', 'padding-right', 'padding-bottom', 'padding-left'],
 			properties
@@ -43,7 +43,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 */
 	public static getOutline(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue {
+	}): ICSSStyleDeclarationPropertyValue | null {
 		if (
 			!properties['outline-color']?.value ||
 			!properties['outline-style']?.value ||
@@ -94,7 +94,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 */
 	public static getBorder(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue {
+	}): ICSSStyleDeclarationPropertyValue | null {
 		if (
 			!properties['border-top-width']?.value ||
 			properties['border-top-width']?.value !== properties['border-right-width']?.value ||
@@ -200,7 +200,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 */
 	public static getBorderTop(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue {
+	}): ICSSStyleDeclarationPropertyValue | null {
 		return this.getBorderTopRightBottomLeft('top', properties);
 	}
 
@@ -212,7 +212,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 */
 	public static getBorderRight(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue {
+	}): ICSSStyleDeclarationPropertyValue | null {
 		return this.getBorderTopRightBottomLeft('right', properties);
 	}
 
@@ -224,7 +224,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 */
 	public static getBorderBottom(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue {
+	}): ICSSStyleDeclarationPropertyValue | null {
 		return this.getBorderTopRightBottomLeft('bottom', properties);
 	}
 
@@ -236,7 +236,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 */
 	public static getBorderLeft(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue {
+	}): ICSSStyleDeclarationPropertyValue | null {
 		return this.getBorderTopRightBottomLeft('left', properties);
 	}
 
@@ -248,7 +248,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 */
 	public static getBorderColor(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue {
+	}): ICSSStyleDeclarationPropertyValue | null {
 		return this.getPaddingLikeProperty(
 			['border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color'],
 			properties
@@ -263,7 +263,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 */
 	public static getBorderWidth(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue {
+	}): ICSSStyleDeclarationPropertyValue | null {
 		return this.getPaddingLikeProperty(
 			['border-top-width', 'border-right-width', 'border-bottom-width', 'border-left-width'],
 			properties
@@ -278,7 +278,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 */
 	public static getBorderStyle(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue {
+	}): ICSSStyleDeclarationPropertyValue | null {
 		return this.getPaddingLikeProperty(
 			['border-top-style', 'border-right-style', 'border-bottom-style', 'border-left-style'],
 			properties
@@ -293,7 +293,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 */
 	public static getBorderRadius(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue {
+	}): ICSSStyleDeclarationPropertyValue | null {
 		return this.getPaddingLikeProperty(
 			[
 				'border-top-left-radius',
@@ -313,7 +313,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 */
 	public static getBorderImage(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue {
+	}): ICSSStyleDeclarationPropertyValue | null {
 		if (
 			!properties['border-image-source']?.value ||
 			!properties['border-image-slice']?.value ||
@@ -366,7 +366,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 */
 	public static getBackground(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue {
+	}): ICSSStyleDeclarationPropertyValue | null {
 		if (
 			!properties['background-image']?.value ||
 			!properties['background-repeat']?.value ||
@@ -489,7 +489,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 */
 	public static getBackgroundPosition(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue {
+	}): ICSSStyleDeclarationPropertyValue | null {
 		if (
 			!properties['background-position-x']?.value ||
 			!properties['background-position-y']?.value
@@ -536,7 +536,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 */
 	public static getFlex(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue {
+	}): ICSSStyleDeclarationPropertyValue | null {
 		if (
 			!properties['flex-grow']?.value ||
 			!properties['flex-shrink']?.value ||
@@ -582,7 +582,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 */
 	public static getFont(properties: {
 		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue {
+	}): ICSSStyleDeclarationPropertyValue | null {
 		if (
 			!properties['font-size']?.value ||
 			!properties['font-family']?.value ||
@@ -671,7 +671,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 		properties: {
 			[k: string]: ICSSStyleDeclarationPropertyValue;
 		}
-	): ICSSStyleDeclarationPropertyValue {
+	): ICSSStyleDeclarationPropertyValue | null {
 		if (
 			!properties[`border-${position}-width`]?.value ||
 			!properties[`border-${position}-style`]?.value ||
@@ -730,7 +730,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 		properties: {
 			[k: string]: ICSSStyleDeclarationPropertyValue;
 		}
-	): ICSSStyleDeclarationPropertyValue {
+	): ICSSStyleDeclarationPropertyValue | null {
 		if (
 			!properties[propertyNames[0]]?.value ||
 			!properties[propertyNames[1]]?.value ||

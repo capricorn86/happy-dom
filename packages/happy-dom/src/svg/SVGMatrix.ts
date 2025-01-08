@@ -13,8 +13,8 @@ const TRANSFORM_PARAMETER_SPLIT_REGEXP = /[\s,]+/;
 export default class SVGMatrix {
 	// Internal properties
 	public [PropertySymbol.window]: BrowserWindow;
-	public [PropertySymbol.getAttribute]: () => string | null = null;
-	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
+	public [PropertySymbol.getAttribute]: (() => string | null) | null = null;
+	public [PropertySymbol.setAttribute]: ((value: string) => void) | null = null;
 	public [PropertySymbol.attributeValue]: string | null = null;
 	public [PropertySymbol.readOnly]: boolean = false;
 

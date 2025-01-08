@@ -15,8 +15,8 @@ export default class SVGPointList {
 	[index: number]: SVGPoint;
 
 	public [PropertySymbol.window]: BrowserWindow;
-	public [PropertySymbol.getAttribute]: () => string | null = null;
-	public [PropertySymbol.setAttribute]: (value: string) => void | null = null;
+	public [PropertySymbol.getAttribute]: (() => string | null) | null = null;
+	public [PropertySymbol.setAttribute]: ((value: string) => void) | null = null;
 	public [PropertySymbol.readOnly]: boolean = false;
 	private [PropertySymbol.cache]: { items: SVGPoint[]; attributeValue: string } = {
 		items: [],

@@ -69,7 +69,7 @@ export default class DetachedBrowser implements IBrowser {
 		await Promise.all(this.contexts.slice().map((context) => context.close()));
 		(<DetachedBrowserContext[]>this.contexts) = [];
 		(<Console | null>this.console) = null;
-		(<new (browserFrame: IBrowserFrame) => BrowserWindow | null>this.windowClass) = null;
+		(<(new (browserFrame: IBrowserFrame) => BrowserWindow) | null>this.windowClass) = null;
 	}
 
 	/**

@@ -18,9 +18,9 @@ export default class SVGGraphicsElement extends SVGElement {
 	public [PropertySymbol.transform]: SVGAnimatedTransformList | null = null;
 
 	// Events
-	public oncopy: (event: Event) => void | null = null;
-	public oncut: (event: Event) => void | null = null;
-	public onpaste: (event: Event) => void | null = null;
+	public oncopy: ((event: Event) => void) | null = null;
+	public oncut: ((event: Event) => void) | null = null;
+	public onpaste: ((event: Event) => void) | null = null;
 
 	/**
 	 * Returns required extensions.

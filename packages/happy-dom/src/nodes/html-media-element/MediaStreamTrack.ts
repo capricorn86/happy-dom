@@ -59,9 +59,9 @@ export default class MediaStreamTrack extends EventTarget {
 	public [PropertySymbol.settings]: IMediaTrackSettings = JSON.parse(JSON.stringify(SETTINGS));
 
 	// Events
-	public onended: (event: Event) => void | null = null;
-	public onmute: (event: Event) => void | null = null;
-	public onunmute: (event: Event) => void | null = null;
+	public onended: ((event: Event) => void) | null = null;
+	public onmute: ((event: Event) => void) | null = null;
+	public onunmute: ((event: Event) => void) | null = null;
 
 	/**
 	 * Constructor.

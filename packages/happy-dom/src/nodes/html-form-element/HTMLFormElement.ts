@@ -33,9 +33,9 @@ export default class HTMLFormElement extends HTMLElement {
 	public [PropertySymbol.proxy]: HTMLFormElement;
 
 	// Events
-	public onformdata: (event: Event) => void | null = null;
-	public onreset: (event: Event) => void | null = null;
-	public onsubmit: (event: Event) => void | null = null;
+	public onformdata: ((event: Event) => void) | null = null;
+	public onreset: ((event: Event) => void) | null = null;
+	public onsubmit: ((event: Event) => void) | null = null;
 
 	/**
 	 * Constructor.

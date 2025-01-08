@@ -12,8 +12,8 @@ export default class HTMLDialogElement extends HTMLElement {
 	public [PropertySymbol.returnValue] = '';
 
 	// Events
-	public oncancel: (event: Event) => void | null = null;
-	public onclose: (event: Event) => void | null = null;
+	public oncancel: ((event: Event) => void) | null = null;
+	public onclose: ((event: Event) => void) | null = null;
 
 	/**
 	 * Returns return value.

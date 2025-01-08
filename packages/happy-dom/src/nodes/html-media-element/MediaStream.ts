@@ -15,8 +15,8 @@ export default class MediaStream extends EventTarget {
 	public id: string = Crypto.randomUUID();
 
 	// Events
-	public onaddtrack: (event: MediaStreamTrackEvent) => void | null = null;
-	public onremovetrack: (event: MediaStreamTrackEvent) => void | null = null;
+	public onaddtrack: ((event: MediaStreamTrackEvent) => void) | null = null;
+	public onremovetrack: ((event: MediaStreamTrackEvent) => void) | null = null;
 
 	// Internal properties
 	public [PropertySymbol.tracks]: MediaStreamTrack[] = [];
