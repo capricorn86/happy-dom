@@ -386,6 +386,29 @@ describe('QuerySelector', () => {
 			expect(firstDivC === null).toBe(true);
 		});
 
+		it('subsequentSibling combinator should select subsequent siblings', () => {
+			const div = document.createElement('div');
+
+			div.innerHTML = `
+				<div class="a">a1</div>
+				<div class="b">b1</div>
+				<div class="c">c1</div>
+				<div class="a">a2</div>
+				<div class="b">b2</div>
+				<div class="a">a3</div>
+			`;
+			const firstDivB = div.querySelector('.a ~ .b');
+			const secondChildren = div.children[1];
+
+			expect(secondChildren === firstDivB).toBe(true);
+			expect(firstDivB?.textContent).toBe('b1');
+
+			const allSubsequentSiblingsA = QuerySelector.querySelectorAll(div, '.a ~ .a');
+			expect(allSubsequentSiblingsA.length).toBe(2);
+			expect(allSubsequentSiblingsA[0].textContent).toBe('a2');
+			expect(allSubsequentSiblingsA[1].textContent).toBe('a3');
+		});
+
 		it('Returns all elements with matching attributes using "[attr1="value1"]".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;

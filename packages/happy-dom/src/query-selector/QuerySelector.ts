@@ -501,6 +501,15 @@ export default class QuerySelector {
 								)
 							);
 							break;
+						case SelectorCombinatorEnum.subsequentSibling:
+							let sibling = child.nextElementSibling;
+							while (sibling) {
+								matched = matched.concat(
+									this.findAll(rootElement, [sibling], selectorItems.slice(1), cachedItem, position)
+								);
+								sibling = sibling.nextElementSibling;
+							}
+							break;
 					}
 				}
 			}
@@ -568,6 +577,21 @@ export default class QuerySelector {
 							);
 							if (match) {
 								return match;
+							}
+							break;
+						case SelectorCombinatorEnum.subsequentSibling:
+							let sibling = child.nextElementSibling;
+							while (sibling) {
+								const match = this.findFirst(
+									rootElement,
+									[sibling],
+									selectorItems.slice(1),
+									cachedItem
+								);
+								if (match) {
+									return match;
+								}
+								sibling = sibling.nextElementSibling;
 							}
 							break;
 					}
