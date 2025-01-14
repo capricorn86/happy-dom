@@ -2284,5 +2284,32 @@ describe('HTMLParser', () => {
 
 			expect(element).toBe(result.children[0].children[1]);
 		});
+
+		it('Appends "p" element if only an end tag for it is present', () => {
+			const result = new HTMLParser(window).parse('<div></p><span></span></div>');
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				'<div><p></p><span></span></div>'
+			);
+		});
+
+		it('Auto-closes "p" element if a direct descendent is  address, article, aside, blockquote, details, dialog, div, dl, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, main, menu, nav, ol, p, pre, search, section, table, or ul element', () => {
+			for (const tagName of <string[]>HTMLElementConfig.p.forbiddenDescendants) {
+				const result = new HTMLParser(window).parse(`<div><p><${tagName}></${tagName}></p></div>`);
+
+				if (
+					HTMLElementConfig[tagName]?.contentModel ===
+					HTMLElementConfigContentModelEnum.noDescendants
+				) {
+					expect(new HTMLSerializer().serializeToString(result)).toBe(
+						`<div><p></p><${tagName}></div>`
+					);
+				} else {
+					expect(new HTMLSerializer().serializeToString(result)).toBe(
+						`<div><p></p><${tagName}></${tagName}></div>`
+					);
+				}
+			}
+		});
 	});
 });

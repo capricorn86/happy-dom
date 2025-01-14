@@ -9,10 +9,6 @@ export default <
 			className: string;
 			contentModel: HTMLElementConfigContentModelEnum;
 			forbiddenDescendants?: string[];
-			permittedDescendants?: string[];
-			permittedParents?: string[];
-			addPermittedParent?: string;
-			moveForbiddenDescendant?: { exclude: string[] };
 			escapesSVGNamespace?: boolean;
 		};
 	}
@@ -133,7 +129,7 @@ export default <
 	},
 	caption: {
 		className: 'HTMLTableCaptionElement',
-		contentModel: HTMLElementConfigContentModelEnum.textOrComments
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	cite: {
 		className: 'HTMLElement',
@@ -146,13 +142,11 @@ export default <
 	},
 	col: {
 		className: 'HTMLTableColElement',
-		contentModel: HTMLElementConfigContentModelEnum.noDescendants,
-		permittedParents: ['colgroup']
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	colgroup: {
 		className: 'HTMLTableColElement',
-		contentModel: HTMLElementConfigContentModelEnum.permittedDescendants,
-		permittedDescendants: ['col']
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	data: {
 		className: 'HTMLDataElement',
@@ -357,7 +351,41 @@ export default <
 	},
 	p: {
 		className: 'HTMLParagraphElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		contentModel: HTMLElementConfigContentModelEnum.noForbiddenFirstLevelDescendants,
+		forbiddenDescendants: [
+			'address',
+			'article',
+			'aside',
+			'blockquote',
+			'details',
+			'div',
+			'dl',
+			'fieldset',
+			'figcaption',
+			'figure',
+			'footer',
+			'form',
+			'h1',
+			'h2',
+			'h3',
+			'h4',
+			'h5',
+			'h6',
+			'header',
+			'hgroup',
+			'hr',
+			'main',
+			'menu',
+			'nav',
+			'ol',
+			'pre',
+			'search',
+			'section',
+			'table',
+			'ul',
+			'p'
+		],
+		appendElementForNonMatchingEndTag: true,
 		escapesSVGNamespace: true
 	},
 	param: {
@@ -456,43 +484,28 @@ export default <
 	},
 	table: {
 		className: 'HTMLTableElement',
-		contentModel: HTMLElementConfigContentModelEnum.permittedDescendants,
-		permittedDescendants: ['caption', 'colgroup', 'thead', 'tfoot', 'tbody'],
-		moveForbiddenDescendant: { exclude: [] },
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
 		escapesSVGNamespace: true
 	},
 	tbody: {
 		className: 'HTMLTableSectionElement',
-		contentModel: HTMLElementConfigContentModelEnum.permittedDescendants,
-		permittedDescendants: ['tr'],
-		permittedParents: ['table'],
-		moveForbiddenDescendant: { exclude: ['caption', 'colgroup', 'thead', 'tfoot', 'tbody'] }
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	td: {
 		className: 'HTMLTableCellElement',
-		contentModel: HTMLElementConfigContentModelEnum.noForbiddenFirstLevelDescendants,
-		forbiddenDescendants: ['td', 'th', 'tr', 'tbody', 'tfoot', 'thead'],
-		permittedParents: ['tr']
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	tfoot: {
 		className: 'HTMLTableSectionElement',
-		contentModel: HTMLElementConfigContentModelEnum.permittedDescendants,
-		permittedDescendants: ['tr'],
-		permittedParents: ['table'],
-		moveForbiddenDescendant: { exclude: ['caption', 'colgroup', 'thead', 'tfoot', 'tbody'] }
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	th: {
 		className: 'HTMLTableCellElement',
-		contentModel: HTMLElementConfigContentModelEnum.noForbiddenFirstLevelDescendants,
-		forbiddenDescendants: ['td', 'th', 'tr', 'tbody', 'tfoot', 'thead'],
-		permittedParents: ['tr']
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	thead: {
 		className: 'HTMLTableSectionElement',
-		contentModel: HTMLElementConfigContentModelEnum.permittedDescendants,
-		permittedDescendants: ['tr'],
-		permittedParents: ['table'],
-		moveForbiddenDescendant: { exclude: ['caption', 'colgroup', 'thead', 'tfoot', 'tbody'] }
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	time: {
 		className: 'HTMLTimeElement',
@@ -504,11 +517,7 @@ export default <
 	},
 	tr: {
 		className: 'HTMLTableRowElement',
-		contentModel: HTMLElementConfigContentModelEnum.permittedDescendants,
-		permittedDescendants: ['td', 'th'],
-		permittedParents: ['tbody', 'tfoot', 'thead'],
-		addPermittedParent: 'tbody',
-		moveForbiddenDescendant: { exclude: ['caption', 'colgroup', 'thead', 'tfoot', 'tbody', 'tr'] }
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	track: {
 		className: 'HTMLTrackElement',
