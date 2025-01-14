@@ -387,6 +387,7 @@ export default class QuerySelector {
 					const previousElementSibling = element.previousElementSibling;
 					if (previousElementSibling) {
 						previousElementSibling[PropertySymbol.affectsCache].push(cachedItem);
+
 						const match = this.matchSelector(
 							previousElementSibling,
 							selectorItems.slice(1),
@@ -416,6 +417,33 @@ export default class QuerySelector {
 
 						if (match) {
 							return match;
+						}
+					}
+					break;
+				case SelectorCombinatorEnum.subsequentSibling:
+					const siblingParentElement = element.parentElement;
+					if (siblingParentElement) {
+						const siblings = siblingParentElement[PropertySymbol.elementArray];
+						const index = siblings.indexOf(element);
+
+						siblingParentElement[PropertySymbol.affectsCache].push(cachedItem);
+
+						for (let i = index - 1; i >= 0; i--) {
+							const sibling = siblings[i];
+
+							sibling[PropertySymbol.affectsCache].push(cachedItem);
+
+							const match = this.matchSelector(
+								sibling,
+								selectorItems.slice(1),
+								cachedItem,
+								selectorItem,
+								priorityWeight + result.priorityWeight
+							);
+
+							if (match) {
+								return match;
+							}
 						}
 					}
 					break;
@@ -477,11 +505,12 @@ export default class QuerySelector {
 				} else {
 					switch (nextSelectorItem.combinator) {
 						case SelectorCombinatorEnum.adjacentSibling:
-							if (child.nextElementSibling) {
+							const nextElementSibling = child.nextElementSibling;
+							if (nextElementSibling) {
 								matched = matched.concat(
 									this.findAll(
 										rootElement,
-										[child.nextElementSibling],
+										[nextElementSibling],
 										selectorItems.slice(1),
 										cachedItem,
 										position
@@ -502,12 +531,12 @@ export default class QuerySelector {
 							);
 							break;
 						case SelectorCombinatorEnum.subsequentSibling:
-							let sibling = child.nextElementSibling;
-							while (sibling) {
+							const index = children.indexOf(child);
+							for (let j = index + 1; j < children.length; j++) {
+								const sibling = children[j];
 								matched = matched.concat(
 									this.findAll(rootElement, [sibling], selectorItems.slice(1), cachedItem, position)
 								);
-								sibling = sibling.nextElementSibling;
 							}
 							break;
 					}
@@ -555,10 +584,11 @@ export default class QuerySelector {
 				} else {
 					switch (nextSelectorItem.combinator) {
 						case SelectorCombinatorEnum.adjacentSibling:
-							if (child.nextElementSibling) {
+							const nextElementSibling = child.nextElementSibling;
+							if (nextElementSibling) {
 								const match = this.findFirst(
 									rootElement,
-									[child.nextElementSibling],
+									[nextElementSibling],
 									selectorItems.slice(1),
 									cachedItem
 								);
@@ -580,8 +610,9 @@ export default class QuerySelector {
 							}
 							break;
 						case SelectorCombinatorEnum.subsequentSibling:
-							let sibling = child.nextElementSibling;
-							while (sibling) {
+							const index = children.indexOf(child);
+							for (let i = index + 1; i < children.length; i++) {
+								const sibling = children[i];
 								const match = this.findFirst(
 									rootElement,
 									[sibling],
@@ -591,7 +622,6 @@ export default class QuerySelector {
 								if (match) {
 									return match;
 								}
-								sibling = sibling.nextElementSibling;
 							}
 							break;
 					}
