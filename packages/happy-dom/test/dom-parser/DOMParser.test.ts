@@ -142,7 +142,8 @@ describe('DOMParser', () => {
                 `,
 				'application/xml'
 			);
-			expect(new HTMLSerializer().serializeToString(newDocument)).toBe(`<breakfast_menu>
+			expect(new XMLSerializer().serializeToString(newDocument))
+				.toBe(`<?xml version="1.0" encoding="UTF-8"?><breakfast_menu>
                     <food>
                         <name>Belgian Waffles</name>
                         <price>$5.95</price>

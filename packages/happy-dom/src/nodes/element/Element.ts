@@ -28,7 +28,6 @@ import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
 import NodeList from '../node/NodeList.js';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
-import NamedNodeMapProxyFactory from './NamedNodeMapProxyFactory.js';
 import NodeFactory from '../NodeFactory.js';
 import HTMLSerializer from '../../html-serializer/HTMLSerializer.js';
 import HTMLParser from '../../html-parser/HTMLParser.js';
@@ -95,7 +94,6 @@ export default class Element
 	public [PropertySymbol.scrollTop] = 0;
 	public [PropertySymbol.scrollLeft] = 0;
 	public [PropertySymbol.attributes] = new NamedNodeMap(this);
-	public [PropertySymbol.attributesProxy]: NamedNodeMap | null = null;
 	public [PropertySymbol.children]: HTMLCollection<Element> | null = null;
 	public [PropertySymbol.computedStyle]: CSSStyleDeclaration | null = null;
 	public declare [PropertySymbol.tagName]: string | null;
@@ -212,12 +210,7 @@ export default class Element
 	 * @returns Attributes.
 	 */
 	public get attributes(): NamedNodeMap {
-		if (!this[PropertySymbol.attributesProxy]) {
-			this[PropertySymbol.attributesProxy] = NamedNodeMapProxyFactory.createProxy(
-				this[PropertySymbol.attributes]
-			);
-		}
-		return this[PropertySymbol.attributesProxy];
+		return this[PropertySymbol.attributes];
 	}
 
 	/**
@@ -296,9 +289,7 @@ export default class Element
 	}
 
 	/**
-	 * Node name.
-	 *
-	 * @returns Node name.
+	 * @override
 	 */
 	public get nodeName(): string {
 		return this[PropertySymbol.tagName];

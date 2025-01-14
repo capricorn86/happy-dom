@@ -45,7 +45,6 @@ import FileReaderImplementation from '../file/FileReader.js';
 import MediaStreamImplementation from '../nodes/html-media-element/MediaStream.js';
 import MediaStreamTrackImplementation from '../nodes/html-media-element/MediaStreamTrack.js';
 import CanvasCaptureMediaStreamTrackImplementation from '../nodes/html-canvas-element/CanvasCaptureMediaStreamTrack.js';
-import NamedNodeMapImplementation from '../nodes/element/NamedNodeMap.js';
 
 /**
  * Extends classes with a "window" property, so that they internally can access it's Window context.
@@ -283,11 +282,6 @@ export default class WindowContextClassExtender {
 		CanvasCaptureMediaStreamTrack.prototype[PropertySymbol.window] = window;
 		(<typeof CanvasCaptureMediaStreamTrack>window.CanvasCaptureMediaStreamTrack) =
 			CanvasCaptureMediaStreamTrack;
-
-		// NamedNodeMap
-		class NamedNodeMap extends NamedNodeMapImplementation {}
-		NamedNodeMap.prototype[PropertySymbol.window] = window;
-		(<typeof NamedNodeMap>window.NamedNodeMap) = NamedNodeMap;
 
 		/* eslint-enable jsdoc/require-jsdoc */
 	}

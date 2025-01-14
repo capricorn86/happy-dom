@@ -9,10 +9,7 @@ export default <
 			className: string;
 			contentModel: HTMLElementConfigContentModelEnum;
 			forbiddenDescendants?: string[];
-			permittedDescendants?: string[];
-			permittedParents?: string[];
-			addPermittedParent?: string;
-			moveForbiddenDescendant?: { exclude: string[] };
+			escapesSVGNamespace?: boolean;
 		};
 	}
 >{
@@ -46,7 +43,8 @@ export default <
 	},
 	b: {
 		className: 'HTMLElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	base: {
 		className: 'HTMLBaseElement',
@@ -62,7 +60,8 @@ export default <
 	},
 	body: {
 		className: 'HTMLBodyElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	template: {
 		className: 'HTMLTemplateElement',
@@ -86,7 +85,8 @@ export default <
 	},
 	img: {
 		className: 'HTMLImageElement',
-		contentModel: HTMLElementConfigContentModelEnum.noDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants,
+		escapesSVGNamespace: true
 	},
 	link: {
 		className: 'HTMLLinkElement',
@@ -106,15 +106,18 @@ export default <
 	},
 	meta: {
 		className: 'HTMLMetaElement',
-		contentModel: HTMLElementConfigContentModelEnum.noDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants,
+		escapesSVGNamespace: true
 	},
 	blockquote: {
 		className: 'HTMLQuoteElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	br: {
 		className: 'HTMLBRElement',
-		contentModel: HTMLElementConfigContentModelEnum.noDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants,
+		escapesSVGNamespace: true
 	},
 	button: {
 		className: 'HTMLButtonElement',
@@ -126,7 +129,7 @@ export default <
 	},
 	caption: {
 		className: 'HTMLTableCaptionElement',
-		contentModel: HTMLElementConfigContentModelEnum.textOrComments
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	cite: {
 		className: 'HTMLElement',
@@ -134,17 +137,16 @@ export default <
 	},
 	code: {
 		className: 'HTMLElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	col: {
 		className: 'HTMLTableColElement',
-		contentModel: HTMLElementConfigContentModelEnum.noDescendants,
-		permittedParents: ['colgroup']
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants
 	},
 	colgroup: {
 		className: 'HTMLTableColElement',
-		contentModel: HTMLElementConfigContentModelEnum.permittedDescendants,
-		permittedDescendants: ['col']
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	data: {
 		className: 'HTMLDataElement',
@@ -157,7 +159,8 @@ export default <
 	dd: {
 		className: 'HTMLElement',
 		contentModel: HTMLElementConfigContentModelEnum.noForbiddenFirstLevelDescendants,
-		forbiddenDescendants: ['dt', 'dd']
+		forbiddenDescendants: ['dt', 'dd'],
+		escapesSVGNamespace: true
 	},
 	del: {
 		className: 'HTMLModElement',
@@ -177,24 +180,29 @@ export default <
 	},
 	div: {
 		className: 'HTMLDivElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	dl: {
 		className: 'HTMLDListElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	dt: {
 		className: 'HTMLElement',
 		contentModel: HTMLElementConfigContentModelEnum.noForbiddenFirstLevelDescendants,
-		forbiddenDescendants: ['dt', 'dd']
+		forbiddenDescendants: ['dt', 'dd'],
+		escapesSVGNamespace: true
 	},
 	em: {
 		className: 'HTMLElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	embed: {
 		className: 'HTMLEmbedElement',
-		contentModel: HTMLElementConfigContentModelEnum.noDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants,
+		escapesSVGNamespace: true
 	},
 	fieldset: {
 		className: 'HTMLFieldSetElement',
@@ -214,31 +222,38 @@ export default <
 	},
 	h1: {
 		className: 'HTMLHeadingElement',
-		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants,
+		escapesSVGNamespace: true
 	},
 	h2: {
 		className: 'HTMLHeadingElement',
-		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants,
+		escapesSVGNamespace: true
 	},
 	h3: {
 		className: 'HTMLHeadingElement',
-		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants,
+		escapesSVGNamespace: true
 	},
 	h4: {
 		className: 'HTMLHeadingElement',
-		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants,
+		escapesSVGNamespace: true
 	},
 	h5: {
 		className: 'HTMLHeadingElement',
-		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants,
+		escapesSVGNamespace: true
 	},
 	h6: {
 		className: 'HTMLHeadingElement',
-		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants,
+		escapesSVGNamespace: true
 	},
 	head: {
 		className: 'HTMLHeadElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	header: {
 		className: 'HTMLElement',
@@ -250,7 +265,8 @@ export default <
 	},
 	hr: {
 		className: 'HTMLHRElement',
-		contentModel: HTMLElementConfigContentModelEnum.noDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noDescendants,
+		escapesSVGNamespace: true
 	},
 	html: {
 		className: 'HTMLHtmlElement',
@@ -258,7 +274,8 @@ export default <
 	},
 	i: {
 		className: 'HTMLElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	iframe: {
 		className: 'HTMLIFrameElement',
@@ -278,7 +295,8 @@ export default <
 	},
 	li: {
 		className: 'HTMLLIElement',
-		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants,
+		escapesSVGNamespace: true
 	},
 	main: {
 		className: 'HTMLElement',
@@ -294,7 +312,8 @@ export default <
 	},
 	menu: {
 		className: 'HTMLMenuElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	meter: {
 		className: 'HTMLMeterElement',
@@ -314,7 +333,8 @@ export default <
 	},
 	ol: {
 		className: 'HTMLOListElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	optgroup: {
 		className: 'HTMLOptGroupElement',
@@ -331,7 +351,42 @@ export default <
 	},
 	p: {
 		className: 'HTMLParagraphElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noForbiddenFirstLevelDescendants,
+		forbiddenDescendants: [
+			'address',
+			'article',
+			'aside',
+			'blockquote',
+			'details',
+			'div',
+			'dl',
+			'fieldset',
+			'figcaption',
+			'figure',
+			'footer',
+			'form',
+			'h1',
+			'h2',
+			'h3',
+			'h4',
+			'h5',
+			'h6',
+			'header',
+			'hgroup',
+			'hr',
+			'main',
+			'menu',
+			'nav',
+			'ol',
+			'pre',
+			'search',
+			'section',
+			'table',
+			'ul',
+			'p'
+		],
+		appendElementForNonMatchingEndTag: true,
+		escapesSVGNamespace: true
 	},
 	param: {
 		className: 'HTMLParamElement',
@@ -343,7 +398,8 @@ export default <
 	},
 	pre: {
 		className: 'HTMLPreElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	progress: {
 		className: 'HTMLProgressElement',
@@ -373,11 +429,13 @@ export default <
 	},
 	ruby: {
 		className: 'HTMLElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	s: {
 		className: 'HTMLElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	samp: {
 		className: 'HTMLElement',
@@ -393,7 +451,8 @@ export default <
 	},
 	small: {
 		className: 'HTMLElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	source: {
 		className: 'HTMLSourceElement',
@@ -401,15 +460,18 @@ export default <
 	},
 	span: {
 		className: 'HTMLSpanElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	strong: {
 		className: 'HTMLElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	sub: {
 		className: 'HTMLElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	summary: {
 		className: 'HTMLElement',
@@ -417,46 +479,33 @@ export default <
 	},
 	sup: {
 		className: 'HTMLElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	table: {
 		className: 'HTMLTableElement',
-		contentModel: HTMLElementConfigContentModelEnum.permittedDescendants,
-		permittedDescendants: ['caption', 'colgroup', 'thead', 'tfoot', 'tbody'],
-		moveForbiddenDescendant: { exclude: [] }
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	tbody: {
 		className: 'HTMLTableSectionElement',
-		contentModel: HTMLElementConfigContentModelEnum.permittedDescendants,
-		permittedDescendants: ['tr'],
-		permittedParents: ['table'],
-		moveForbiddenDescendant: { exclude: ['caption', 'colgroup', 'thead', 'tfoot', 'tbody'] }
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	td: {
 		className: 'HTMLTableCellElement',
-		contentModel: HTMLElementConfigContentModelEnum.noForbiddenFirstLevelDescendants,
-		forbiddenDescendants: ['td', 'th', 'tr', 'tbody', 'tfoot', 'thead'],
-		permittedParents: ['tr']
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	tfoot: {
 		className: 'HTMLTableSectionElement',
-		contentModel: HTMLElementConfigContentModelEnum.permittedDescendants,
-		permittedDescendants: ['tr'],
-		permittedParents: ['table'],
-		moveForbiddenDescendant: { exclude: ['caption', 'colgroup', 'thead', 'tfoot', 'tbody'] }
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	th: {
 		className: 'HTMLTableCellElement',
-		contentModel: HTMLElementConfigContentModelEnum.noForbiddenFirstLevelDescendants,
-		forbiddenDescendants: ['td', 'th', 'tr', 'tbody', 'tfoot', 'thead'],
-		permittedParents: ['tr']
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	thead: {
 		className: 'HTMLTableSectionElement',
-		contentModel: HTMLElementConfigContentModelEnum.permittedDescendants,
-		permittedDescendants: ['tr'],
-		permittedParents: ['table'],
-		moveForbiddenDescendant: { exclude: ['caption', 'colgroup', 'thead', 'tfoot', 'tbody'] }
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	time: {
 		className: 'HTMLTimeElement',
@@ -468,11 +517,7 @@ export default <
 	},
 	tr: {
 		className: 'HTMLTableRowElement',
-		contentModel: HTMLElementConfigContentModelEnum.permittedDescendants,
-		permittedDescendants: ['td', 'th'],
-		permittedParents: ['tbody', 'tfoot', 'thead'],
-		addPermittedParent: 'tbody',
-		moveForbiddenDescendant: { exclude: ['caption', 'colgroup', 'thead', 'tfoot', 'tbody', 'tr'] }
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
 	},
 	track: {
 		className: 'HTMLTrackElement',
@@ -480,15 +525,18 @@ export default <
 	},
 	u: {
 		className: 'HTMLElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	ul: {
 		className: 'HTMLUListElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	var: {
 		className: 'HTMLElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.anyDescendants,
+		escapesSVGNamespace: true
 	},
 	video: {
 		className: 'HTMLVideoElement',

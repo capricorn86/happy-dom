@@ -1130,6 +1130,18 @@ describe('Document', () => {
 			expect(element).toBeInstanceOf(SVGElement);
 			expect(element.constructor.name).toBe('SVGElement');
 		});
+
+		it('Returns MathMLElement when namespace is MathML.', () => {
+			const element = document.createElementNS(NamespaceURI.mathML, 'math');
+			expect(element.tagName).toBe('math');
+			expect(element.localName).toBe('math');
+			expect(element).toBeInstanceOf(window.MathMLElement);
+
+			const element2 = document.createElementNS(NamespaceURI.mathML, 'mglyph');
+			expect(element2.tagName).toBe('mglyph');
+			expect(element2.localName).toBe('mglyph');
+			expect(element2).toBeInstanceOf(window.MathMLElement);
+		});
 	});
 
 	describe('createAttribute()', () => {

@@ -10,6 +10,8 @@ import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
 import HTMLElementConfig from '../config/HTMLElementConfig.js';
 import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigContentModelEnum.js';
 import XMLEncodeUtility from '../utilities/XMLEncodeUtility.js';
+import XMLSerializer from '../xml-serializer/XMLSerializer.js';
+import NamespaceURI from '../config/NamespaceURI.js';
 
 /**
  * Serializes a node into HTML.
@@ -60,6 +62,10 @@ export default class HTMLSerializer {
 	 * @returns Result.
 	 */
 	public serializeToString(root: Node): string {
+		const document = root[PropertySymbol.ownerDocument] || root;
+		if (document[PropertySymbol.contentType] !== 'text/html') {
+			return new XMLSerializer().serializeToString(root);
+		}
 		switch (root[PropertySymbol.nodeType]) {
 			case NodeTypeEnum.elementNode:
 				const element = <Element>root;
@@ -68,7 +74,10 @@ export default class HTMLSerializer {
 				const config = HTMLElementConfig[element[PropertySymbol.localName]];
 				const tagName = prefix ? `${prefix}:${localName}` : localName;
 
-				if (config?.contentModel === HTMLElementConfigContentModelEnum.noDescendants) {
+				if (
+					element[PropertySymbol.namespaceURI] === NamespaceURI.html &&
+					config?.contentModel === HTMLElementConfigContentModelEnum.noDescendants
+				) {
 					return `<${tagName}${this.getAttributes(element)}>`;
 				}
 
@@ -94,7 +103,7 @@ export default class HTMLSerializer {
 				}
 
 				const childNodes =
-					tagName === 'template'
+					element[PropertySymbol.namespaceURI] === NamespaceURI.html && tagName === 'template'
 						? (<DocumentFragment>(<HTMLTemplateElement>root).content)[PropertySymbol.nodeArray]
 						: (<DocumentFragment>root)[PropertySymbol.nodeArray];
 

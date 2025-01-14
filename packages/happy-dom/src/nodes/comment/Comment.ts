@@ -10,11 +10,9 @@ export default class Comment extends CharacterData {
 	public declare cloneNode: (deep?: boolean) => Comment;
 
 	/**
-	 * Node name.
-	 *
-	 * @returns Node name.
+	 * @override
 	 */
-	public get nodeName(): string {
+	public override get nodeName(): string {
 		return '#comment';
 	}
 

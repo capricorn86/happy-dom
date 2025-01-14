@@ -94,6 +94,13 @@ export default class DocumentFragment extends Node {
 	}
 
 	/**
+	 * @override
+	 */
+	public override get nodeName(): string {
+		return '#document-fragment';
+	}
+
+	/**
 	 * Inserts a set of Node objects or DOMString objects after the last child of the ParentNode. DOMString objects are inserted as equivalent Text nodes.
 	 *
 	 * @param nodes List of Node or DOMString.
