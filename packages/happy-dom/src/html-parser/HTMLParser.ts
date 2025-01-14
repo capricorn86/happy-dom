@@ -148,6 +148,7 @@ export default class HTMLParser {
 	private rootDocument: Document | null = null;
 	private nodeStack: Node[] = [];
 	private tagNameStack: string[] = [];
+    private impliedEndTags: string[] = [];
 	private startTagIndex = 0;
 	private markupRegExp: RegExp | null = null;
 	private readState: MarkupReadStateEnum = MarkupReadStateEnum.data;
@@ -712,7 +713,14 @@ export default class HTMLParser {
 								break;
 							case 'li':
 								this.framesetOk = false;
+                                for(let i = this.nodeStack.length - 1; i >= 0; i--){
+                                    const node = this.nodeStack[i];
+                                    if(node[PropertySymbol.tagName] === 'LI'){
+                                        this.popTagName('li');
+                                    }
+                                }
 								this.popTagName('li');
+                                if()
 						}
 						break;
 				}
