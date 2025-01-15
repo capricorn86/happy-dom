@@ -3,22 +3,18 @@ import Response from '../../src/fetch/Response.js';
 import Headers from '../../src/fetch/Headers.js';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
-import AbortController from '../../src/fetch/AbortController.js';
 import HTTP, { ClientRequest } from 'http';
 import Net from 'net';
 import Stream from 'stream';
 import Zlib from 'zlib';
 import { TextEncoder } from 'util';
 import Blob from '../../src/file/Blob.js';
-import FormData from '../../src/form-data/FormData.js';
 import { URLSearchParams } from 'url';
 import '../types.d.js';
 import { ReadableStream } from 'stream/web';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import FetchHTTPSCertificate from '../../src/fetch/certificate/FetchHTTPSCertificate.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
-import Event from '../../src/event/Event.js';
-import Fetch from '../../lib/fetch/Fetch';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -30,6 +26,42 @@ const PLATFORM =
 	process.arch;
 
 describe('Fetch', () => {
+	async function mockNetwork(
+		schema: 'http' | 'https',
+		responseText: string | string[],
+		extra: Record<string, unknown>
+	): Promise<{ url: string; options: HTTP.RequestOptions }> {
+		return new Promise((resolve) => {
+			mockModule(schema, {
+				request: (url: string, options: HTTP.RequestOptions) => {
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							async function* generate(): AsyncGenerator<string> {
+								if (typeof responseText === 'string') {
+									yield responseText;
+								} else {
+									for (const text of responseText) {
+										yield text;
+									}
+								}
+							}
+
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+							Object.assign(response, extra);
+							if (event === 'response') {
+								callback(response);
+							}
+							resolve({ url, options });
+						},
+						setTimeout: () => {},
+						destroy: () => {}
+					};
+				}
+			});
+		});
+	}
+
 	afterEach(() => {
 		resetMockedModules();
 		vi.restoreAllMocks();
@@ -97,46 +129,17 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'some text';
-			let requestArgs: {
-				url: string;
-				options: { method: string; headers: { [k: string]: string } };
-			} | null = null;
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
-
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {
-									yield responseText;
-								}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.statusMessage = 'OK';
-								response.headers = {};
-								response.rawHeaders = [
-									'content-type',
-									'text/html',
-									'content-length',
-									String(responseText.length)
-								];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
+			const requestArgsPromise = mockNetwork('https', responseText, {
+				statusCode: 200,
+				statusMessage: 'OK',
+				headers: {},
+				rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
 			});
 
 			const response = await window.fetch(url);
 
-			expect(requestArgs).toEqual({
+			expect(await requestArgsPromise).toEqual({
 				url,
 				options: {
 					method: 'GET',
@@ -185,46 +188,22 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'http://localhost:8080/' });
 			const url = 'http://localhost:8080/some/path';
 			const responseText = '{ "test": "test" }';
-			let requestArgs: {
-				url: string;
-				options: { method: string; headers: { [k: string]: string } };
-			} | null = null;
 
-			mockModule('http', {
-				request: (url, options) => {
-					requestArgs = { url, options };
-
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {
-									yield responseText;
-								}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.statusMessage = 'OK';
-								response.headers = {};
-								response.rawHeaders = [
-									'content-type',
-									'application/json',
-									'content-length',
-									String(responseText.length)
-								];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
+			const requestArgsPromise = mockNetwork('http', responseText, {
+				statusCode: 200,
+				statusMessage: 'OK',
+				headers: {},
+				rawHeaders: [
+					'content-type',
+					'application/json',
+					'content-length',
+					String(responseText.length)
+				]
 			});
 
 			const response = await window.fetch(url);
 
-			expect(requestArgs).toEqual({
+			expect(await requestArgsPromise).toEqual({
 				url,
 				options: {
 					method: 'GET',
@@ -276,46 +255,17 @@ describe('Fetch', () => {
 				method: `POST`,
 				body: ''
 			});
-			let requestArgs: {
-				url: string;
-				options: { method: string; headers: { [k: string]: string } };
-			} | null = null;
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
-
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {
-									yield responseText;
-								}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.statusMessage = 'OK';
-								response.headers = {};
-								response.rawHeaders = [
-									'content-type',
-									'text/html',
-									'content-length',
-									String(responseText.length)
-								];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
+			const requestArgsPromise = mockNetwork('https', responseText, {
+				statusCode: 200,
+				statusMessage: 'OK',
+				headers: {},
+				rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
 			});
 
 			const response = await window.fetch(requestObject);
 
-			expect(requestArgs).toEqual({
+			expect(await requestArgsPromise).toEqual({
 				url,
 				options: {
 					method: 'POST',
@@ -365,44 +315,22 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'http://localhost:8080/' });
 			const url = 'http://localhost:8080/some/path';
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
+			const chunksLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
 
-			mockModule('http', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {
-									yield chunks[0];
-									yield chunks[1];
-									yield chunks[2];
-								}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.rawHeaders = [
-									'Content-Length',
-									String(chunks[0].length + chunks[1].length + chunks[2].length)
-								];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
+			mockNetwork('http', chunks, {
+				statusCode: 200,
+				statusMessage: 'OK',
+				headers: {},
+				rawHeaders: ['content-length', String(chunksLength)]
 			});
 
 			const response = await window.fetch(url);
 
-			expect(response.headers.get('Content-Length')).toBe(
-				String(chunks[0].length + chunks[1].length + chunks[2].length)
-			);
+			expect(response.headers.get('Content-Length')).toBe(String(chunksLength));
 
 			const text = await response.text();
 
-			expect(text).toEqual(chunks[0] + chunks[1] + chunks[2]);
+			expect(text).toEqual(chunks.join(''));
 
 			expect(response.bodyUsed).toBe(true);
 		});
@@ -412,41 +340,19 @@ describe('Fetch', () => {
 			const path = 'some/path';
 			const responseText = 'test';
 			const baseUrl = 'https://localhost:8080/base/';
-			let requestArgs: {
-				url: string;
-				options: { method: string; headers: { [k: string]: string } };
-			} | null = null;
 
 			window.happyDOM?.setURL(baseUrl);
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
-
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {
-									yield responseText;
-								}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.rawHeaders = [];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
+			const responseArgsPromise = mockNetwork('https', responseText, {
+				statusCode: 200,
+				statusMessage: 'OK',
+				headers: {},
+				rawHeaders: []
 			});
 
 			await window.fetch(path);
 
-			expect(requestArgs).toEqual({
+			expect(await responseArgsPromise).toEqual({
 				url: `${baseUrl}${path}`,
 				options: {
 					method: 'GET',
@@ -469,34 +375,12 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'test';
-			let requestArgs: {
-				url: string;
-				options: { method: string; headers: { [k: string]: string } };
-			} | null = null;
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
-
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {
-									yield responseText;
-								}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.rawHeaders = [];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
+			const responseArgsPromise = mockNetwork('https', responseText, {
+				statusCode: 200,
+				statusMessage: 'OK',
+				headers: {},
+				rawHeaders: []
 			});
 
 			await window.fetch(url, {
@@ -506,7 +390,7 @@ describe('Fetch', () => {
 				}
 			});
 
-			expect(requestArgs).toEqual({
+			expect(await responseArgsPromise).toEqual({
 				url,
 				options: {
 					method: 'GET',
@@ -531,34 +415,12 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'test';
-			let requestArgs: {
-				url: string;
-				options: { method: string; headers: { [k: string]: string } };
-			} | null = null;
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
-
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {
-									yield responseText;
-								}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.rawHeaders = [];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
+			const responseArgsPromise = mockNetwork('https', responseText, {
+				statusCode: 200,
+				statusMessage: 'OK',
+				headers: {},
+				rawHeaders: []
 			});
 
 			const headers = new Headers({
@@ -571,7 +433,7 @@ describe('Fetch', () => {
 
 			await window.fetch(url, { headers });
 
-			expect(requestArgs).toEqual({
+			expect(await responseArgsPromise).toEqual({
 				url,
 				options: {
 					method: 'GET',
@@ -940,25 +802,11 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const redirectURL = 'https://localhost:8080/redirect/';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.statusCode = 301;
-								response.rawHeaders = ['Location', redirectURL];
-								callback(response);
-							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
+			mockNetwork('https', undefined, {
+				statusCode: 301,
+				statusMessage: 'Moved Permanently',
+				headers: {},
+				rawHeaders: ['Location', redirectURL]
 			});
 
 			const response = await window.fetch(url, { method: 'GET', redirect: 'manual' });
@@ -972,25 +820,10 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const redirectURL = '<>';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.statusCode = 301;
-								response.rawHeaders = ['Location', redirectURL];
-								callback(response);
-							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
+			mockNetwork('https', undefined, {
+				statusCode: 301,
+				headers: {},
+				rawHeaders: ['Location', redirectURL]
 			});
 
 			const response = await window.fetch(url, { method: 'GET', redirect: 'manual' });
@@ -1004,25 +837,10 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const redirectURL = 'https://example.com/redirect/';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.statusCode = 301;
-								response.rawHeaders = ['Location', redirectURL];
-								callback(response);
-							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
+			mockNetwork('https', undefined, {
+				statusCode: 301,
+				headers: {},
+				rawHeaders: ['Location', redirectURL]
 			});
 
 			const response = await window.fetch(url, { method: 'GET', redirect: 'manual' });
@@ -1035,25 +853,10 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.statusCode = 301;
-								response.rawHeaders = [];
-								callback(response);
-							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
+			mockNetwork('https', undefined, {
+				statusCode: 301,
+				headers: {},
+				rawHeaders: []
 			});
 
 			const response = await window.fetch(url, { method: 'GET', redirect: 'manual' });
@@ -1067,25 +870,10 @@ describe('Fetch', () => {
 			const redirectURL = 'https://localhost:8080/redirect/';
 			let error: Error | null = null;
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.statusCode = 301;
-								response.rawHeaders = ['Location', redirectURL];
-								callback(response);
-							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
+			mockNetwork('https', undefined, {
+				statusCode: 301,
+				headers: {},
+				rawHeaders: ['Location', redirectURL]
 			});
 
 			try {
@@ -1108,25 +896,10 @@ describe('Fetch', () => {
 			const redirectURL = '//super:invalid:url%/';
 			let error: Error | null = null;
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.statusCode = 301;
-								response.rawHeaders = ['Location', redirectURL];
-								callback(response);
-							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
+			mockNetwork('https', undefined, {
+				statusCode: 301,
+				headers: {},
+				rawHeaders: ['Location', redirectURL]
 			});
 
 			try {
@@ -1143,34 +916,13 @@ describe('Fetch', () => {
 			);
 		});
 
-		it("Does'nt forward unsafe headers.", async () => {
+		it("Doesn't forward unsafe headers.", async () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/some/path';
-			let requestArgs: {
-				url: string;
-				options: { method: string; headers: { [k: string]: string } };
-			} | null = null;
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
-
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.rawHeaders = [];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
+			const requestArgsPromise = mockNetwork('https', undefined, {
+				headers: {},
+				rawHeaders: []
 			});
 
 			await window.fetch(url, {
@@ -1201,7 +953,7 @@ describe('Fetch', () => {
 				}
 			});
 
-			expect(requestArgs).toEqual({
+			expect(await requestArgsPromise).toEqual({
 				url,
 				options: {
 					method: 'GET',
@@ -1221,37 +973,15 @@ describe('Fetch', () => {
 			});
 		});
 
-		it('Does\'nt forward the headers "cookie", "authorization" or "www-authenticate" if request credentials are set to "omit".', async () => {
+		it(`Doesn't forward the headers "cookie", "authorization" or "www-authenticate" if request credentials are set to "omit".`, async () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/some/path';
-			let requestArgs: {
-				url: string;
-				options: { method: string; headers: { [k: string]: string } };
-			} | null = null;
 
 			window.document.cookie = 'test=cookie';
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
-
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.rawHeaders = [];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
+			const requestArgsPromise = mockNetwork('https', undefined, {
+				headers: {},
+				rawHeaders: []
 			});
 
 			await window.fetch(url, {
@@ -1262,7 +992,7 @@ describe('Fetch', () => {
 				credentials: 'omit'
 			});
 
-			expect(requestArgs).toEqual({
+			expect(await requestArgsPromise).toEqual({
 				url,
 				options: {
 					method: 'GET',
@@ -1408,34 +1138,11 @@ describe('Fetch', () => {
 			});
 			const url = 'https://localhost:8080/some/path';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {
-									yield responseText;
-								}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.statusMessage = 'OK';
-								response.headers = {};
-								response.rawHeaders = [
-									'content-type',
-									'text/html',
-									'content-length',
-									String(responseText.length)
-								];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
+			mockNetwork('https', 'some text', {
+				statusCode: 200,
+				statusMessage: 'OK',
+				headers: {},
+				rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
 			});
 
 			const response = await window.fetch(url);
@@ -1460,34 +1167,11 @@ describe('Fetch', () => {
 			});
 			const url = 'https://localhost:8080/some/path';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {
-									yield responseText;
-								}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.statusMessage = 'OK';
-								response.headers = {};
-								response.rawHeaders = [
-									'content-type',
-									'text/html',
-									'content-length',
-									String(responseText.length)
-								];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
+			mockNetwork('https', 'some text', {
+				statusCode: 200,
+				statusMessage: 'OK',
+				headers: {},
+				rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
 			});
 
 			const response = await window.fetch(url);
@@ -1513,34 +1197,11 @@ describe('Fetch', () => {
 			});
 			const url = 'https://localhost:8080/some/path';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {
-									yield responseText;
-								}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.statusMessage = 'OK';
-								response.headers = {};
-								response.rawHeaders = [
-									'content-type',
-									'text/html',
-									'content-length',
-									String(responseText.length)
-								];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
+			mockNetwork('https', 'some text', {
+				statusCode: 200,
+				statusMessage: 'OK',
+				headers: {},
+				rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
 			});
 
 			const response = await window.fetch(url);
