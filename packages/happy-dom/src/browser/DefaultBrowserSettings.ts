@@ -19,7 +19,9 @@ export default <IBrowserSettings>{
 		preventTimerLoops: false
 	},
 	fetch: {
-		disableSameOriginPolicy: false
+		disableSameOriginPolicy: false,
+		interceptor: null,
+		virtualServers: null
 	},
 	navigation: {
 		disableMainFrameNavigation: false,

@@ -8,6 +8,7 @@ import HTTP, { IncomingMessage } from 'http';
 import HTTPS from 'https';
 import Zlib from 'zlib';
 import URL from '../url/URL.js';
+import FS from 'fs';
 import { Socket } from 'net';
 import Stream from 'stream';
 import DataURIParser from './data-uri/DataURIParser.js';
@@ -27,6 +28,7 @@ import FetchHTTPSCertificate from './certificate/FetchHTTPSCertificate.js';
 import { Buffer } from 'buffer';
 import FetchBodyUtility from './utilities/FetchBodyUtility.js';
 import IFetchInterceptor from './types/IFetchInterceptor.js';
+import VirtualServerUtility from './utilities/VirtualServerUtility.js';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -51,7 +53,7 @@ export default class Fetch {
 	private nodeResponse: IncomingMessage | null = null;
 	private response: Response | null = null;
 	private responseHeaders: Headers | null = null;
-	private interceptor?: IFetchInterceptor;
+	private interceptor: IFetchInterceptor | null;
 	private request: Request;
 	private redirectCount = 0;
 	private disableCache: boolean;
@@ -111,16 +113,24 @@ export default class Fetch {
 	 */
 	public async send(): Promise<Response> {
 		FetchRequestReferrerUtility.prepareRequest(new URL(this.#window.location.href), this.request);
+
 		const beforeRequestResponse = this.interceptor?.beforeAsyncRequest
 			? await this.interceptor.beforeAsyncRequest({
 					request: this.request,
 					window: this.#window
-				})
+			  })
 			: undefined;
 		if (beforeRequestResponse instanceof Response) {
 			return beforeRequestResponse;
 		}
+
 		FetchRequestValidationUtility.validateSchema(this.request);
+
+		const virtualServerResponse = await this.getVirtualServerResponse();
+
+		if (virtualServerResponse) {
+			return virtualServerResponse;
+		}
 
 		if (this.request.signal.aborted) {
 			throw new this.#window.DOMException(
@@ -139,7 +149,7 @@ export default class Fetch {
 						window: this.#window,
 						response: this.response,
 						request: this.request
-					})
+				  })
 				: undefined;
 			return interceptedResponse instanceof Response ? interceptedResponse : this.response;
 		}
@@ -266,6 +276,36 @@ export default class Fetch {
 		});
 		(<string>response.url) = cachedResponse.response.url;
 		response[PropertySymbol.cachedResponse] = cachedResponse;
+
+		return response;
+	}
+
+	/**
+	 * Returns virtual server response.
+	 *
+	 * @returns Response.
+	 */
+	private async getVirtualServerResponse(): Promise<Response | null> {
+		const filePath = VirtualServerUtility.getFilepath(this.#window, this.request.url);
+
+		if (!filePath) {
+			return null;
+		}
+
+		const buffer = await FS.promises.readFile(filePath);
+		const body = new this.#window.ReadableStream({
+			start(controller) {
+				setTimeout(() => {
+					controller.enqueue(buffer);
+					controller.close();
+				});
+			}
+		});
+
+		const response = new this.#window.Response(body);
+
+		response[PropertySymbol.buffer] = buffer;
+		(<string>response.url) = this.request.url;
 
 		return response;
 	}
@@ -407,7 +447,7 @@ export default class Fetch {
 							window: this.#window,
 							response: await response,
 							request: this.request
-						})
+					  })
 					: undefined;
 				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 				resolve(interceptedResponse instanceof Response ? interceptedResponse : response);
