@@ -77,8 +77,8 @@ export default class NodeUtility {
 			parent = parent[PropertySymbol.parentNode]
 				? parent[PropertySymbol.parentNode]
 				: includeShadowRoots && (<ShadowRoot>parent).host
-					? (<ShadowRoot>parent).host
-					: null;
+				? (<ShadowRoot>parent).host
+				: null;
 		}
 
 		return false;
@@ -139,7 +139,38 @@ export default class NodeUtility {
 	}
 
 	/**
-	 * Returns boolean indicating if nodeB is following nodeA in the document tree.
+	 * Returns preceding node.
+	 *
+	 * Based on:
+	 * https://github.com/jsdom/js-symbol-tree/blob/master/lib/SymbolTree.js#L185
+	 *
+	 * @param node Node.
+	 * @param [root] Root.
+	 * @returns Following node.
+	 */
+	public static preceding(node: Node, root?: Node): Node {
+		if (node === root) {
+			return null;
+		}
+
+		const previousSibling = node.previousSibling;
+
+		if (previousSibling) {
+			let lastChild;
+			let current = node;
+
+			while ((lastChild = node.lastChild)) {
+				current = lastChild;
+			}
+
+			return current;
+		}
+
+		return node[PropertySymbol.parentNode];
+	}
+
+	/**
+	 * Returns following node.
 	 *
 	 * Based on:
 	 * https://github.com/jsdom/js-symbol-tree/blob/master/lib/SymbolTree.js#L220

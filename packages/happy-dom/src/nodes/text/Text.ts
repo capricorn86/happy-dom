@@ -15,11 +15,9 @@ export default class Text extends CharacterData {
 	public override [PropertySymbol.styleNode]: HTMLStyleElement | null = null;
 
 	/**
-	 * Node name.
-	 *
-	 * @returns Node name.
+	 * @override
 	 */
-	public get nodeName(): string {
+	public override get nodeName(): string {
 		return '#text';
 	}
 

@@ -65,6 +65,47 @@ describe('NodeIterator', () => {
 			]);
 		});
 
+		it('Walks into each node in the DOM tree when elements are removed while iterating.', () => {
+			const nodeIterator = document.createNodeIterator(document.body);
+			const html: string[] = [];
+			let currentNode;
+
+			while ((currentNode = nodeIterator.nextNode())) {
+				if (currentNode.tagName === 'B') {
+					currentNode.remove();
+				}
+				html.push(NODE_TO_STRING(currentNode));
+			}
+
+			// We expect that the text inside the <b> tag is skipped as it is not connected to the DOM tree.
+
+			expect(html).toEqual([
+				'<body>\n\t\t\t<div class="class1 class2" id="id">\n\t\t\t\t<!-- Comment 1 !-->\n\t\t\t\t<b>Bold</b>\n\t\t\t\t<!-- Comment 2 !-->\n\t\t\t\t<span>Span</span>\n\t\t\t</div>\n\t\t\t<article class="class1 class2" id="id">\n\t\t\t\t<!-- Comment 1 !-->\n\t\t\t\t<b>Bold</b>\n\t\t\t\t<!-- Comment 2 !-->\n\t\t\t</article>\n\t\t\n\t</body>',
+				'\n\t\t\t',
+				'<div class="class1 class2" id="id">\n\t\t\t\t<!-- Comment 1 !-->\n\t\t\t\t<b>Bold</b>\n\t\t\t\t<!-- Comment 2 !-->\n\t\t\t\t<span>Span</span>\n\t\t\t</div>',
+				'\n\t\t\t\t',
+				'<!-- Comment 1 !-->',
+				'\n\t\t\t\t',
+				'<b>Bold</b>',
+				'\n\t\t\t\t',
+				'<!-- Comment 2 !-->',
+				'\n\t\t\t\t',
+				'<span>Span</span>',
+				'Span',
+				'\n\t\t\t',
+				'\n\t\t\t',
+				'<article class="class1 class2" id="id">\n\t\t\t\t<!-- Comment 1 !-->\n\t\t\t\t<b>Bold</b>\n\t\t\t\t<!-- Comment 2 !-->\n\t\t\t</article>',
+				'\n\t\t\t\t',
+				'<!-- Comment 1 !-->',
+				'\n\t\t\t\t',
+				'<b>Bold</b>',
+				'\n\t\t\t\t',
+				'<!-- Comment 2 !-->',
+				'\n\t\t\t',
+				'\n\t\t\n\t'
+			]);
+		});
+
 		it('Walks into each HTMLElement in the DOM tree when whatToShow is set to NodeFilter.SHOW_ELEMENT.', () => {
 			const nodeIterator = document.createNodeIterator(document.body, NodeFilter.SHOW_ELEMENT);
 			const html: string[] = [];

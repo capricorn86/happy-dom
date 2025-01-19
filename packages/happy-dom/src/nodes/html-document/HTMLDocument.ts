@@ -2,6 +2,9 @@ import Document from '../document/Document.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Node from '../node/Node.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
+import HTMLBodyElement from '../html-body-element/HTMLBodyElement.js';
+import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
+import HTMLHeadElement from '../html-head-element/HTMLHeadElement.js';
 
 /**
  * Document.
@@ -22,6 +25,30 @@ export default class HTMLDocument extends Document {
 
 		documentElement.appendChild(headElement);
 		documentElement.appendChild(bodyElement);
+	}
+
+	/**
+	 * Returns <body> element.
+	 *
+	 * @returns Element.
+	 */
+	public get body(): HTMLBodyElement {
+		const documentElement = this.documentElement;
+		return documentElement
+			? <HTMLBodyElement>ParentNodeUtility.getElementByTagName(documentElement, 'body')
+			: null;
+	}
+
+	/**
+	 * Returns <head> element.
+	 *
+	 * @returns Element.
+	 */
+	public get head(): HTMLHeadElement {
+		const documentElement = this.documentElement;
+		return documentElement
+			? <HTMLHeadElement>ParentNodeUtility.getElementByTagName(documentElement, 'head')
+			: null;
 	}
 
 	/**

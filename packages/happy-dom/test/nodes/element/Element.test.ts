@@ -349,7 +349,11 @@ describe('Element', () => {
 	});
 
 	describe('get attributes()', () => {
-		it('Returns all attributes as an object.', () => {
+		it('Returns a NamedNodeMap object.', () => {
+			expect(element.attributes).toBeInstanceOf(window.NamedNodeMap);
+		});
+
+		it('Returns all attributes.', () => {
 			element.setAttribute('key1', 'value1');
 			element.setAttribute('key2', 'value2');
 			element.setAttribute('key3', 'value3');

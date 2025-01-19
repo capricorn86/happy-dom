@@ -1,18 +1,26 @@
 import Node from '../nodes/node/Node.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import INodeFilter from './INodeFilter.js';
-import NodeFilterMask from './NodeFilterMask.js';
 import DOMException from '../exception/DOMException.js';
 import NodeFilter from './NodeFilter.js';
+import NodeFilterUtility from './NodeFilterUtility.js';
 
 /**
  * The TreeWalker object represents the nodes of a document subtree and a position within them.
  */
 export default class TreeWalker {
-	public root: Node = null;
-	public whatToShow = -1;
-	public filter: INodeFilter = null;
-	public currentNode: Node = null;
+	// Internal properties.
+	public [PropertySymbol.currentNode]: Node | null = null;
+
+	// Private properties.
+	#root: Node;
+	#filterOptions: {
+		whatToShow: number;
+		filter: INodeFilter | null;
+	} = {
+		whatToShow: -1,
+		filter: null
+	};
 
 	/**
 	 * Constructor.
@@ -26,10 +34,46 @@ export default class TreeWalker {
 			throw new DOMException('Parameter 1 was not of type Node.');
 		}
 
-		this.root = root;
-		this.whatToShow = whatToShow;
-		this.filter = filter;
-		this.currentNode = root;
+		this.#root = root;
+		this.#filterOptions.whatToShow = whatToShow;
+		this.#filterOptions.filter = filter;
+		this[PropertySymbol.currentNode] = root;
+	}
+
+	/**
+	 * Returns root.
+	 *
+	 * @returns Root.
+	 */
+	public get root(): Node | null {
+		return this.#root;
+	}
+
+	/**
+	 * Returns what to show.
+	 *
+	 * @returns What to show.
+	 */
+	public get whatToShow(): number {
+		return this.#filterOptions.whatToShow;
+	}
+
+	/**
+	 * Returns filter.
+	 *
+	 * @returns Filter.
+	 */
+	public get filter(): INodeFilter {
+		return this.#filterOptions.filter;
+	}
+
+	/**
+	 * Returns current node.
+	 *
+	 * @returns Current node.
+	 */
+	public get currentNode(): Node {
+		return this[PropertySymbol.currentNode];
 	}
 
 	/**
@@ -40,7 +84,8 @@ export default class TreeWalker {
 	public nextNode(): Node {
 		if (!this.firstChild()) {
 			while (!this.nextSibling() && this.parentNode()) {}
-			this.currentNode = this.currentNode === this.root ? null : this.currentNode || null;
+			this[PropertySymbol.currentNode] =
+				this.currentNode === this.root ? null : this.currentNode || null;
 		}
 		return this.currentNode;
 	}
@@ -52,7 +97,8 @@ export default class TreeWalker {
 	 */
 	public previousNode(): Node {
 		while (!this.previousSibling() && this.parentNode()) {}
-		this.currentNode = this.currentNode === this.root ? null : this.currentNode || null;
+		this[PropertySymbol.currentNode] =
+			this.currentNode === this.root ? null : this.currentNode || null;
 		return this.currentNode;
 	}
 
@@ -67,16 +113,19 @@ export default class TreeWalker {
 			this.currentNode &&
 			this.currentNode[PropertySymbol.parentNode]
 		) {
-			this.currentNode = this.currentNode[PropertySymbol.parentNode];
+			this[PropertySymbol.currentNode] = this.currentNode[PropertySymbol.parentNode];
 
-			if (this[PropertySymbol.filterNode](this.currentNode) === NodeFilter.FILTER_ACCEPT) {
+			if (
+				NodeFilterUtility.filterNode(this.currentNode, this.#filterOptions) ===
+				NodeFilter.FILTER_ACCEPT
+			) {
 				return this.currentNode;
 			}
 
 			this.parentNode();
 		}
 
-		this.currentNode = null;
+		this[PropertySymbol.currentNode] = null;
 
 		return null;
 	}
@@ -90,9 +139,12 @@ export default class TreeWalker {
 		const childNodes = this.currentNode ? (<Node>this.currentNode)[PropertySymbol.nodeArray] : [];
 
 		if (childNodes.length > 0) {
-			this.currentNode = childNodes[0];
+			this[PropertySymbol.currentNode] = childNodes[0];
 
-			if (this[PropertySymbol.filterNode](this.currentNode) === NodeFilter.FILTER_ACCEPT) {
+			if (
+				NodeFilterUtility.filterNode(this.currentNode, this.#filterOptions) ===
+				NodeFilter.FILTER_ACCEPT
+			) {
 				return this.currentNode;
 			}
 
@@ -111,9 +163,12 @@ export default class TreeWalker {
 		const childNodes = this.currentNode ? (<Node>this.currentNode)[PropertySymbol.nodeArray] : [];
 
 		if (childNodes.length > 0) {
-			this.currentNode = childNodes[childNodes.length - 1];
+			this[PropertySymbol.currentNode] = childNodes[childNodes.length - 1];
 
-			if (this[PropertySymbol.filterNode](this.currentNode) === NodeFilter.FILTER_ACCEPT) {
+			if (
+				NodeFilterUtility.filterNode(this.currentNode, this.#filterOptions) ===
+				NodeFilter.FILTER_ACCEPT
+			) {
 				return this.currentNode;
 			}
 
@@ -140,9 +195,12 @@ export default class TreeWalker {
 			const index = siblings.indexOf(this.currentNode);
 
 			if (index > 0) {
-				this.currentNode = siblings[index - 1];
+				this[PropertySymbol.currentNode] = siblings[index - 1];
 
-				if (this[PropertySymbol.filterNode](this.currentNode) === NodeFilter.FILTER_ACCEPT) {
+				if (
+					NodeFilterUtility.filterNode(this.currentNode, this.#filterOptions) ===
+					NodeFilter.FILTER_ACCEPT
+				) {
 					return this.currentNode;
 				}
 
@@ -170,9 +228,12 @@ export default class TreeWalker {
 			const index = siblings.indexOf(this.currentNode);
 
 			if (index + 1 < siblings.length) {
-				this.currentNode = siblings[index + 1];
+				this[PropertySymbol.currentNode] = siblings[index + 1];
 
-				if (this[PropertySymbol.filterNode](this.currentNode) === NodeFilter.FILTER_ACCEPT) {
+				if (
+					NodeFilterUtility.filterNode(this.currentNode, this.#filterOptions) ===
+					NodeFilter.FILTER_ACCEPT
+				) {
 					return this.currentNode;
 				}
 
@@ -181,30 +242,5 @@ export default class TreeWalker {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Filters a node.
-	 *
-	 * Based on solution:
-	 * https://gist.github.com/shawndumas/1132009.
-	 *
-	 * @param node Node.
-	 * @returns Child nodes.
-	 */
-	public [PropertySymbol.filterNode](node: Node): number {
-		const mask = NodeFilterMask[node.nodeType];
-
-		if (mask && (this.whatToShow & mask) == 0) {
-			return NodeFilter.FILTER_SKIP;
-		}
-		if (typeof this.filter === 'function') {
-			return this.filter(node);
-		}
-		if (this.filter) {
-			return this.filter.acceptNode(node);
-		}
-
-		return NodeFilter.FILTER_ACCEPT;
 	}
 }

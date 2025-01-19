@@ -307,6 +307,7 @@ import DOMPoint from '../dom/DOMPoint.js';
 import SVGAnimatedLengthList from '../svg/SVGAnimatedLengthList.js';
 import CustomElementReactionStack from '../custom-element/CustomElementReactionStack.js';
 import IScrollToOptions from './IScrollToOptions.js';
+import MathMLElement from '../nodes/math-ml-element/MathMLElement.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -438,6 +439,9 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly HTMLBRElement = HTMLBRElement;
 	public readonly HTMLBodyElement = HTMLBodyElement;
 	public readonly HTMLAreaElement = HTMLAreaElement;
+
+	// MathML Element classes
+	public readonly MathMLElement = MathMLElement;
 
 	// SVG Element classes
 	public readonly SVGSVGElement = SVGSVGElement;
@@ -573,6 +577,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly UserProximityEvent = Event;
 	public readonly WebGLContextEvent = Event;
 	public readonly TextEvent = Event;
+	public readonly NamedNodeMap = NamedNodeMap;
 
 	// Other classes that has to be bound to the Window context (populated by WindowContextClassExtender)
 	public declare readonly NodeIterator: typeof NodeIterator;
@@ -606,7 +611,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare readonly MediaStream: typeof MediaStream;
 	public declare readonly MediaStreamTrack: typeof MediaStreamTrack;
 	public declare readonly CanvasCaptureMediaStreamTrack: typeof CanvasCaptureMediaStreamTrack;
-	public declare readonly NamedNodeMap: typeof NamedNodeMap;
 	public declare readonly TextTrack: typeof TextTrack;
 	public declare readonly TextTrackList: typeof TextTrackList;
 	public declare readonly TextTrackCue: typeof TextTrackCue;

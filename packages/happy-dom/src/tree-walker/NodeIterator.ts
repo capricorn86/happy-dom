@@ -1,8 +1,8 @@
 import INodeFilter from './INodeFilter.js';
-import TreeWalker from './TreeWalker.js';
 import Node from '../nodes/node/Node.js';
-import * as PropertySymbol from '../PropertySymbol.js';
 import NodeFilter from './NodeFilter.js';
+import NodeFilterUtility from './NodeFilterUtility.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 
 /**
  * The NodeIterator object represents the nodes of a document subtree and a position within them.
@@ -11,11 +11,17 @@ import NodeFilter from './NodeFilter.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/NodeIterator
  */
 export default class NodeIterator {
-	#root: Node = null;
-	#whatToShow = -1;
-	#filter: INodeFilter = null;
-	#walker: TreeWalker;
-	#atRoot = true;
+	#root: Node;
+	#referenceNode: Node;
+	#filterOptions: {
+		whatToShow: number;
+		filter: INodeFilter | null;
+	} = {
+		whatToShow: -1,
+		filter: null
+	};
+	#index = -1;
+	#pointerBeforeReferenceNode = true;
 
 	/**
 	 * Constructor.
@@ -26,9 +32,9 @@ export default class NodeIterator {
 	 */
 	constructor(root: Node, whatToShow = -1, filter: INodeFilter = null) {
 		this.#root = root;
-		this.#whatToShow = whatToShow;
-		this.#filter = filter;
-		this.#walker = new TreeWalker(root, whatToShow, filter);
+		this.#referenceNode = root;
+		this.#filterOptions.whatToShow = whatToShow;
+		this.#filterOptions.filter = filter;
 	}
 
 	/**
@@ -46,7 +52,7 @@ export default class NodeIterator {
 	 * @returns What to show.
 	 */
 	public get whatToShow(): number {
-		return this.#whatToShow;
+		return this.#filterOptions.whatToShow;
 	}
 
 	/**
@@ -55,7 +61,25 @@ export default class NodeIterator {
 	 * @returns Filter.
 	 */
 	public get filter(): INodeFilter {
-		return this.#filter;
+		return this.#filterOptions.filter;
+	}
+
+	/**
+	 * Returns reference node.
+	 *
+	 * @returns Reference node.
+	 */
+	public get referenceNode(): Node | null {
+		return this.#referenceNode || null;
+	}
+
+	/**
+	 * Returns pointer before reference node.
+	 *
+	 * @returns Pointer before reference node.
+	 */
+	public get pointerBeforeReferenceNode(): boolean {
+		return this.#pointerBeforeReferenceNode;
 	}
 
 	/**
@@ -64,14 +88,27 @@ export default class NodeIterator {
 	 * @returns Current node.
 	 */
 	public nextNode(): Node {
-		if (this.#atRoot) {
-			this.#atRoot = false;
-			if (this.#walker[PropertySymbol.filterNode](this.#root) !== NodeFilter.FILTER_ACCEPT) {
-				return this.#walker.nextNode();
-			}
-			return this.#root;
+		const nodes = this.#getNodes(this.#root);
+
+		// If the current node has been removed we need to step back one node.
+		if (this.#index !== -1 && this.#referenceNode !== nodes[this.#index]) {
+			this.#index--;
 		}
-		return this.#walker.nextNode();
+
+		this.#pointerBeforeReferenceNode = false;
+
+		while (this.#index < nodes.length - 1) {
+			this.#index++;
+
+			const node = nodes[this.#index];
+
+			if (NodeFilterUtility.filterNode(node, this.#filterOptions) === NodeFilter.FILTER_ACCEPT) {
+				this.#referenceNode = node;
+				return node;
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -80,6 +117,51 @@ export default class NodeIterator {
 	 * @returns Current node.
 	 */
 	public previousNode(): Node {
-		return this.#walker.previousNode();
+		const nodes = this.#getNodes(this.#root);
+
+		if (this.#index !== -1 && this.#referenceNode !== nodes[this.#index]) {
+			this.#index++;
+		}
+
+		this.#pointerBeforeReferenceNode = true;
+
+		while (this.#index > 0) {
+			this.#index--;
+
+			const node = nodes[this.#index];
+
+			if (NodeFilterUtility.filterNode(node, this.#filterOptions) === NodeFilter.FILTER_ACCEPT) {
+				this.#referenceNode = node;
+				return node;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * This is a legacy method, and no longer has any effect.
+	 *
+	 * Previously it served to mark a NodeIterator as disposed, so it could be reclaimed by garbage collection.
+	 */
+	public detach(): void {
+		// Do nothing as per the spec.
+	}
+
+	/**
+	 * Returns the nodes of the iterator.
+	 *
+	 * @param root Root.
+	 * @param [nodes] Nodes.
+	 */
+	#getNodes(root: Node, nodes?: Node[]): Node[] {
+		nodes = nodes || [root];
+
+		for (const node of root[PropertySymbol.nodeArray]) {
+			nodes.push(node);
+			this.#getNodes(node, nodes);
+		}
+
+		return nodes;
 	}
 }

@@ -1,6 +1,7 @@
 import FocusEvent from '../../event/events/FocusEvent.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
+import MathMLElement from '../math-ml-element/MathMLElement.js';
 import SVGElement from '../svg-element/SVGElement.js';
 
 /**
@@ -12,7 +13,7 @@ export default class HTMLElementUtility {
 	 *
 	 * @param element Element.
 	 */
-	public static blur(element: HTMLElement | SVGElement): void {
+	public static blur(element: HTMLElement | SVGElement | MathMLElement): void {
 		const target = element[PropertySymbol.proxy] || element;
 		const document = target[PropertySymbol.ownerDocument];
 
@@ -49,7 +50,7 @@ export default class HTMLElementUtility {
 	 *
 	 * @param element Element.
 	 */
-	public static focus(element: HTMLElement | SVGElement): void {
+	public static focus(element: HTMLElement | SVGElement | MathMLElement): void {
 		const target = element[PropertySymbol.proxy] || element;
 		const document = target[PropertySymbol.ownerDocument];
 
