@@ -1,6 +1,11 @@
 import BrowserWindow from '../../window/BrowserWindow.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import Path from 'path';
+import Response from '../Response.js';
+import ISyncResponse from '../types/ISyncResponse.js';
+
+const NOT_FOUND_HTML =
+	'<html><head><title>Happy DOM Virtual Server - 404 Not Found</title></head><body><h1>Happy DOM Virtual Server - 404 Not Found</h1></body></html>';
 
 /**
  * Virtual server utility.
@@ -39,7 +44,7 @@ export default class VirtualServerUtility {
 				}
 			}
 			if (baseURL) {
-				const basePath = requestURL.slice(baseURL.href.length);
+				const basePath = requestURL.slice(baseURL.href.length).split('?')[0].split('#')[0];
 				const parts = basePath.split('/');
 				const isDirectory = !parts[parts.length - 1].includes('.');
 				const path = isDirectory ? basePath + '/index.html' : basePath;
@@ -48,5 +53,41 @@ export default class VirtualServerUtility {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Returns a 404 response.
+	 *
+	 * @param window Window.
+	 * @returns 404 response.
+	 */
+	public static getNotFoundResponse(window: BrowserWindow): Response {
+		return new window.Response(NOT_FOUND_HTML, {
+			status: 404,
+			statusText: 'Not Found',
+			headers: {
+				'Content-Type': 'text/html'
+			}
+		});
+	}
+
+	/**
+	 * Returns a 404 response.
+	 *
+	 * @param window Window.
+	 * @returns 404 response.
+	 */
+	public static getNotFoundSyncResponse(window: BrowserWindow): ISyncResponse {
+		return <ISyncResponse>{
+			status: 404,
+			statusText: 'Not Found',
+			ok: false,
+			url: null,
+			redirected: false,
+			headers: new window.Headers({
+				'Content-Type': 'text/html'
+			}),
+			body: Buffer.from(NOT_FOUND_HTML)
+		};
 	}
 }

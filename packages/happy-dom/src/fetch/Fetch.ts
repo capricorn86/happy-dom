@@ -118,7 +118,7 @@ export default class Fetch {
 			? await this.interceptor.beforeAsyncRequest({
 					request: this.request,
 					window: this.#window
-			  })
+				})
 			: undefined;
 		if (beforeRequestResponse instanceof Response) {
 			return beforeRequestResponse;
@@ -149,7 +149,7 @@ export default class Fetch {
 						window: this.#window,
 						response: this.response,
 						request: this.request
-				  })
+					})
 				: undefined;
 			return interceptedResponse instanceof Response ? interceptedResponse : this.response;
 		}
@@ -181,7 +181,7 @@ export default class Fetch {
 			const compliesWithCrossOriginPolicy = await this.compliesWithCrossOriginPolicy();
 
 			if (!compliesWithCrossOriginPolicy) {
-				this.#window.console.warn(
+				this.#browserFrame?.page?.console.warn(
 					`Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at "${this.request.url}".`
 				);
 				throw new this.#window.DOMException(
@@ -292,7 +292,22 @@ export default class Fetch {
 			return null;
 		}
 
-		const buffer = await FS.promises.readFile(filePath);
+		if (this.request.method !== 'GET') {
+			this.#browserFrame?.page?.console.error(
+				`${this.request.method} ${this.request.url} 404 (Not Found)`
+			);
+			return VirtualServerUtility.getNotFoundResponse(this.#window);
+		}
+
+		let buffer: Buffer;
+		try {
+			buffer = await FS.promises.readFile(filePath);
+		} catch (error) {
+			this.#browserFrame?.page?.console.error(
+				`${this.request.method} ${this.request.url} 404 (Not Found)`
+			);
+			return VirtualServerUtility.getNotFoundResponse(this.#window);
+		}
 		const body = new this.#window.ReadableStream({
 			start(controller) {
 				setTimeout(() => {
@@ -447,10 +462,20 @@ export default class Fetch {
 							window: this.#window,
 							response: await response,
 							request: this.request
-					  })
+						})
 					: undefined;
 				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
-				resolve(interceptedResponse instanceof Response ? interceptedResponse : response);
+				const returnResponse =
+					interceptedResponse instanceof Response ? interceptedResponse : response;
+
+				// The browser outputs errors to the console when the response is not ok.
+				if (returnResponse instanceof Response && !returnResponse.ok) {
+					this.#browserFrame?.page?.console.error(
+						`${this.request.method} ${this.request.url} ${returnResponse.status} (${returnResponse.statusText})`
+					);
+				}
+
+				resolve(returnResponse);
 			};
 			this.reject = (error: Error): void => {
 				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
@@ -557,7 +582,7 @@ export default class Fetch {
 	 */
 	private onError(error: Error): void {
 		this.finalizeRequest();
-		this.#window.console.error(error);
+		this.#browserFrame?.page?.console.error(error);
 		this.reject(
 			new this.#window.DOMException(
 				`Failed to execute "fetch()" on "Window" with URL "${this.request.url}": ${error.message}`,

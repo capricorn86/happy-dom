@@ -12,6 +12,8 @@ import SyncFetchScriptBuilder from '../../src/fetch/utilities/SyncFetchScriptBui
 import SyncFetch from '../../src/fetch/SyncFetch.js';
 import IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
 import Browser from '../../src/browser/Browser.js';
+import FS from 'fs';
+import Path from 'path';
 import '../types.d.js';
 import { fail } from 'node:assert';
 
@@ -3505,6 +3507,354 @@ describe('SyncFetch', () => {
 					body: null
 				})
 			]);
+		});
+
+		it('Handles virtual server defined as a string with origin', async () => {
+			const browser = new Browser({
+				settings: {
+					fetch: {
+						virtualServers: [
+							{
+								url: 'https://example.com',
+								directory: './test/fetch/virtual-server'
+							}
+						]
+					}
+				}
+			});
+			const page = browser.newPage();
+
+			page.mainFrame.url = 'http://localhost:8080/';
+
+			const htmlFileContent = await FS.promises.readFile(
+				Path.resolve('./test/fetch/virtual-server/index.html')
+			);
+			const cssFileContent = await FS.promises.readFile(
+				Path.resolve('./test/fetch/virtual-server/css/style.css')
+			);
+
+			const response = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'https://example.com'
+			}).send();
+
+			expect(response.body.toString()).toBe(htmlFileContent.toString());
+
+			const response2 = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'https://example.com/index.html'
+			}).send();
+
+			expect(response2.body.toString()).toBe(htmlFileContent.toString());
+
+			const response3 = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'https://example.com/index.html?query=value'
+			}).send();
+
+			expect(response3.body.toString()).toBe(htmlFileContent.toString());
+
+			const response4 = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'https://example.com/css/style.css'
+			}).send();
+
+			expect(response4.body.toString()).toBe(cssFileContent.toString());
+
+			const response5 = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'https://example.com/not_found.js'
+			}).send();
+
+			expect(response5.ok).toBe(false);
+			expect(response5.status).toBe(404);
+			expect(response5.statusText).toBe('Not Found');
+			expect(page.virtualConsolePrinter.readAsString()).toBe(
+				`GET https://example.com/not_found.js 404 (Not Found)\n`
+			);
+			expect(response5.body.toString()).toBe(
+				'<html><head><title>Happy DOM Virtual Server - 404 Not Found</title></head><body><h1>Happy DOM Virtual Server - 404 Not Found</h1></body></html>'
+			);
+
+			mockModule('child_process', {
+				execFileSync: () => {
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: 404,
+							statusMessage: 'Not Found',
+							rawHeaders: [],
+							data: Buffer.from('404 not found').toString('base64')
+						}
+					});
+				}
+			});
+
+			const response6 = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'http://localhost:8080/404/'
+			}).send();
+
+			expect(response6.ok).toBe(false);
+			expect(response6.status).toBe(404);
+			expect(response6.statusText).toBe('Not Found');
+			expect(page.virtualConsolePrinter.readAsString()).toBe(
+				`GET http://localhost:8080/404/ 404 (Not Found)\n`
+			);
+			expect(response6.body.toString()).toBe('404 not found');
+		});
+
+		it('Handles relative virtual server defined as a string without origin', async () => {
+			const browser = new Browser({
+				settings: {
+					fetch: {
+						virtualServers: [
+							{
+								url: '/path/to/virtual-server/',
+								directory: './test/fetch/virtual-server'
+							}
+						]
+					}
+				}
+			});
+			const page = browser.newPage();
+
+			page.mainFrame.url = 'http://localhost:8080/';
+
+			const htmlFileContent = await FS.promises.readFile(
+				Path.resolve('./test/fetch/virtual-server/index.html')
+			);
+			const cssFileContent = await FS.promises.readFile(
+				Path.resolve('./test/fetch/virtual-server/css/style.css')
+			);
+
+			const response = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'http://localhost:8080/path/to/virtual-server/'
+			}).send();
+
+			expect(response.body.toString()).toBe(htmlFileContent.toString());
+
+			const response2 = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'http://localhost:8080/path/to/virtual-server/index.html'
+			}).send();
+
+			expect(response2.body.toString()).toBe(htmlFileContent.toString());
+
+			const response3 = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'http://localhost:8080/path/to/virtual-server/index.html?query=value'
+			}).send();
+
+			expect(response3.body.toString()).toBe(htmlFileContent.toString());
+
+			const response4 = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'http://localhost:8080/path/to/virtual-server/css/style.css'
+			}).send();
+
+			expect(response4.body.toString()).toBe(cssFileContent.toString());
+
+			const response5 = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'http://localhost:8080/path/to/virtual-server/not_found.js'
+			}).send();
+
+			expect(response5.ok).toBe(false);
+			expect(response5.status).toBe(404);
+			expect(response5.statusText).toBe('Not Found');
+			expect(page.virtualConsolePrinter.readAsString()).toBe(
+				`GET http://localhost:8080/path/to/virtual-server/not_found.js 404 (Not Found)\n`
+			);
+			expect(response5.body.toString()).toBe(
+				'<html><head><title>Happy DOM Virtual Server - 404 Not Found</title></head><body><h1>Happy DOM Virtual Server - 404 Not Found</h1></body></html>'
+			);
+		});
+
+		it('Handles virtual server defined as a RegExp with origin', async () => {
+			const browser = new Browser({
+				settings: {
+					fetch: {
+						virtualServers: [
+							{
+								url: /https:\/\/example\.com\/[a-z]{2}\/[a-z]{2}\//,
+								directory: './test/fetch/virtual-server'
+							}
+						]
+					}
+				}
+			});
+			const page = browser.newPage();
+
+			page.mainFrame.url = 'http://localhost:8080/';
+
+			const htmlFileContent = await FS.promises.readFile(
+				Path.resolve('./test/fetch/virtual-server/index.html')
+			);
+			const cssFileContent = await FS.promises.readFile(
+				Path.resolve('./test/fetch/virtual-server/css/style.css')
+			);
+
+			const response = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'https://example.com/gb/en/'
+			}).send();
+
+			expect(response.body.toString()).toBe(htmlFileContent.toString());
+
+			const response2 = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'https://example.com/se/sv/index.html'
+			}).send();
+
+			expect(response2.body.toString()).toBe(htmlFileContent.toString());
+
+			const response3 = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'https://example.com/se/sv/index.html?query=value'
+			}).send();
+
+			expect(response3.body.toString()).toBe(htmlFileContent.toString());
+
+			const response4 = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'https://example.com/fi/fi/css/style.css'
+			}).send();
+
+			expect(response4.body.toString()).toBe(cssFileContent.toString());
+
+			const response5 = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'https://example.com/gb/en/not_found.js'
+			}).send();
+
+			expect(response5.ok).toBe(false);
+			expect(response5.status).toBe(404);
+			expect(response5.statusText).toBe('Not Found');
+			expect(page.virtualConsolePrinter.readAsString()).toBe(
+				`GET https://example.com/gb/en/not_found.js 404 (Not Found)\n`
+			);
+			expect(response5.body.toString()).toBe(
+				'<html><head><title>Happy DOM Virtual Server - 404 Not Found</title></head><body><h1>Happy DOM Virtual Server - 404 Not Found</h1></body></html>'
+			);
+
+			mockModule('child_process', {
+				execFileSync: () => {
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: 404,
+							statusMessage: 'Not Found',
+							rawHeaders: [],
+							data: Buffer.from('404 not found').toString('base64')
+						}
+					});
+				}
+			});
+
+			const response6 = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'http://localhost:8080/404/'
+			}).send();
+
+			expect(response6.ok).toBe(false);
+			expect(response6.status).toBe(404);
+			expect(response6.statusText).toBe('Not Found');
+			expect(page.virtualConsolePrinter.readAsString()).toBe(
+				`GET http://localhost:8080/404/ 404 (Not Found)\n`
+			);
+			expect(response6.body.toString()).toBe('404 not found');
+		});
+
+		it('Handles relative virtual server defined as a RegExp without origin', async () => {
+			const browser = new Browser({
+				settings: {
+					fetch: {
+						virtualServers: [
+							{
+								url: /path\/to\/virtual-server\/[a-z]{2}\/[a-z]{2}\//,
+								directory: './test/fetch/virtual-server'
+							}
+						]
+					}
+				}
+			});
+			const page = browser.newPage();
+
+			page.mainFrame.url = 'http://localhost:8080/';
+
+			const htmlFileContent = await FS.promises.readFile(
+				Path.resolve('./test/fetch/virtual-server/index.html')
+			);
+			const cssFileContent = await FS.promises.readFile(
+				Path.resolve('./test/fetch/virtual-server/css/style.css')
+			);
+
+			const response = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'http://localhost:8080/path/to/virtual-server/gb/en/'
+			}).send();
+
+			expect(response.body.toString()).toBe(htmlFileContent.toString());
+
+			const response2 = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'http://localhost:8080/path/to/virtual-server/se/sv/index.html'
+			}).send();
+
+			expect(response2.body.toString()).toBe(htmlFileContent.toString());
+
+			const response3 = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'http://localhost:8080/path/to/virtual-server/se/sv/index.html?query=value'
+			}).send();
+
+			expect(response3.body.toString()).toBe(htmlFileContent.toString());
+
+			const response4 = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'http://localhost:8080/path/to/virtual-server/fi/fi/css/style.css'
+			}).send();
+
+			expect(response4.body.toString()).toBe(cssFileContent.toString());
+
+			const response5 = new SyncFetch({
+				browserFrame: page.mainFrame,
+				window: page.mainFrame.window,
+				url: 'http://localhost:8080/path/to/virtual-server/gb/en/not_found.js'
+			}).send();
+
+			expect(response5.ok).toBe(false);
+			expect(response5.status).toBe(404);
+			expect(response5.statusText).toBe('Not Found');
+			expect(page.virtualConsolePrinter.readAsString()).toBe(
+				`GET http://localhost:8080/path/to/virtual-server/gb/en/not_found.js 404 (Not Found)\n`
+			);
+			expect(response5.body.toString()).toBe(
+				'<html><head><title>Happy DOM Virtual Server - 404 Not Found</title></head><body><h1>Happy DOM Virtual Server - 404 Not Found</h1></body></html>'
+			);
 		});
 	});
 });

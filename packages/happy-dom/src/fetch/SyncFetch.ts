@@ -103,7 +103,7 @@ export default class SyncFetch {
 			? this.interceptor.beforeSyncRequest({
 					request: this.request,
 					window: this.#window
-			  })
+				})
 			: undefined;
 		if (typeof beforeRequestResponse === 'object') {
 			return beforeRequestResponse;
@@ -140,7 +140,7 @@ export default class SyncFetch {
 						window: this.#window,
 						response,
 						request: this.request
-				  })
+					})
 				: undefined;
 			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
@@ -278,7 +278,22 @@ export default class SyncFetch {
 			return null;
 		}
 
-		const buffer = FS.readFileSync(filePath);
+		if (this.request.method !== 'GET') {
+			this.#browserFrame?.page?.console.error(
+				`${this.request.method} ${this.request.url} 404 (Not Found)`
+			);
+			return VirtualServerUtility.getNotFoundSyncResponse(this.#window);
+		}
+
+		let buffer: Buffer;
+		try {
+			buffer = FS.readFileSync(filePath);
+		} catch {
+			this.#browserFrame?.page?.console.error(
+				`${this.request.method} ${this.request.url} 404 (Not Found)`
+			);
+			return VirtualServerUtility.getNotFoundSyncResponse(this.#window);
+		}
 
 		return {
 			status: 200,
@@ -476,9 +491,16 @@ export default class SyncFetch {
 					window: this.#window,
 					response: redirectedResponse,
 					request: this.request
-			  })
+				})
 			: undefined;
-		return typeof interceptedResponse === 'object' ? interceptedResponse : redirectedResponse;
+		const returnResponse =
+			typeof interceptedResponse === 'object' ? interceptedResponse : redirectedResponse;
+		if (!returnResponse.ok) {
+			this.#browserFrame?.page?.console.error(
+				`${this.request.method} ${this.request.url} ${returnResponse.status} (${returnResponse.statusText})`
+			);
+		}
+		return returnResponse;
 	}
 
 	/**
