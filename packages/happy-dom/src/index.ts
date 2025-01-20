@@ -16,6 +16,7 @@ import VirtualConsole from './console/VirtualConsole.js';
 import VirtualConsolePrinter from './console/VirtualConsolePrinter.js';
 import VirtualConsoleLogLevelEnum from './console/enums/VirtualConsoleLogLevelEnum.js';
 import VirtualConsoleLogTypeEnum from './console/enums/VirtualConsoleLogTypeEnum.js';
+import CookieSameSiteEnum from './cookie/enums/CookieSameSiteEnum.js';
 import CSSRule from './css/CSSRule.js';
 import CSSStyleSheet from './css/CSSStyleSheet.js';
 import CSSStyleDeclaration from './css/declaration/CSSStyleDeclaration.js';
@@ -28,6 +29,8 @@ import CSSStyleRule from './css/rules/CSSStyleRule.js';
 import CSSSupportsRule from './css/rules/CSSSupportsRule.js';
 import CustomElementRegistry from './custom-element/CustomElementRegistry.js';
 import DOMParser from './dom-parser/DOMParser.js';
+import DOMRect from './dom/DOMRect.js';
+import DOMRectReadOnly from './dom/DOMRectReadOnly.js';
 import DataTransfer from './event/DataTransfer.js';
 import DataTransferItem from './event/DataTransferItem.js';
 import DataTransferItemList from './event/DataTransferItemList.js';
@@ -74,8 +77,6 @@ import Comment from './nodes/comment/Comment.js';
 import DocumentFragment from './nodes/document-fragment/DocumentFragment.js';
 import DocumentType from './nodes/document-type/DocumentType.js';
 import Document from './nodes/document/Document.js';
-import DOMRect from './dom/DOMRect.js';
-import DOMRectReadOnly from './dom/DOMRectReadOnly.js';
 import Element from './nodes/element/Element.js';
 import HTMLCollection from './nodes/element/HTMLCollection.js';
 import HTMLAnchorElement from './nodes/html-anchor-element/HTMLAnchorElement.js';
@@ -189,9 +190,9 @@ import type IBrowserPage from './browser/types/IBrowserPage.js';
 import type IBrowserSettings from './browser/types/IBrowserSettings.js';
 import type IOptionalBrowserSettings from './browser/types/IOptionalBrowserSettings.js';
 import type IEventInit from './event/IEventInit.js';
-import type TEventListener from './event/TEventListener.js';
 import type ITouchInit from './event/ITouchInit.js';
 import type IUIEventInit from './event/IUIEventInit.js';
+import type TEventListener from './event/TEventListener.js';
 import type IAnimationEventInit from './event/events/IAnimationEventInit.js';
 import type IClipboardEventInit from './event/events/IClipboardEventInit.js';
 import type ICustomEventInit from './event/events/ICustomEventInit.js';
@@ -206,10 +207,9 @@ import type IProgressEventInit from './event/events/IProgressEventInit.js';
 import type ISubmitEventInit from './event/events/ISubmitEventInit.js';
 import type ITouchEventInit from './event/events/ITouchEventInit.js';
 import type IWheelEventInit from './event/events/IWheelEventInit.js';
+import type IVirtualServer from './fetch/types/IVirtualServer.js';
 
 export type {
-	IFetchInterceptor,
-	ISyncResponse,
 	IAnimationEventInit,
 	IBrowser,
 	IBrowserContext,
@@ -220,7 +220,7 @@ export type {
 	ICustomEventInit,
 	IErrorEventInit,
 	IEventInit,
-	TEventListener,
+	IFetchInterceptor,
 	IFocusEventInit,
 	IHashChangeEventInit,
 	IInputEventInit,
@@ -230,10 +230,13 @@ export type {
 	IOptionalBrowserSettings,
 	IProgressEventInit,
 	ISubmitEventInit,
+	ISyncResponse,
 	ITouchEventInit,
 	ITouchInit,
 	IUIEventInit,
-	IWheelEventInit
+	IVirtualServer,
+	IWheelEventInit,
+	TEventListener
 };
 
 export {
@@ -253,6 +256,7 @@ export {
 	ClipboardEvent,
 	ClipboardItem,
 	Comment,
+	CookieSameSiteEnum,
 	CSSContainerRule,
 	CSSFontFaceRule,
 	CSSKeyframeRule,

@@ -7,10 +7,10 @@ export default interface ICookie {
 	originURL: URL;
 
 	// Optional
-	domain: string;
-	path: string;
-	expires: Date | null;
-	httpOnly: boolean;
-	secure: boolean;
-	sameSite: CookieSameSiteEnum;
+	domain?: string;
+	path?: string;
+	expires?: Date | null;
+	httpOnly?: boolean;
+	secure?: boolean;
+	sameSite?: CookieSameSiteEnum;
 }
