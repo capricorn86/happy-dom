@@ -9,6 +9,7 @@ import HTTPS from 'https';
 import Zlib from 'zlib';
 import URL from '../url/URL.js';
 import FS from 'fs';
+import Path from 'path';
 import { Socket } from 'net';
 import Stream from 'stream';
 import DataURIParser from './data-uri/DataURIParser.js';
@@ -305,7 +306,10 @@ export default class Fetch {
 		let buffer: Buffer;
 
 		try {
-			buffer = await FS.promises.readFile(filePath);
+			const stat = await FS.promises.stat(filePath);
+			buffer = await FS.promises.readFile(
+				stat.isDirectory() ? Path.join(filePath, 'index.html') : filePath
+			);
 		} catch (error) {
 			this.#browserFrame?.page?.console.error(
 				`${this.request.method} ${this.request.url} 404 (Not Found)`

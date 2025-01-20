@@ -44,11 +44,7 @@ export default class VirtualServerUtility {
 				}
 			}
 			if (baseURL) {
-				const basePath = requestURL.slice(baseURL.href.length).split('?')[0].split('#')[0];
-				const parts = basePath.split('/');
-				const isDirectory = !parts[parts.length - 1].includes('.');
-				const path = isDirectory ? basePath + '/index.html' : basePath;
-
+				const path = requestURL.slice(baseURL.href.length).split('?')[0].split('#')[0];
 				return Path.join(Path.resolve(virtualServer.directory), path);
 			}
 		}

@@ -4,6 +4,7 @@ import IRequestInfo from './types/IRequestInfo.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import URL from '../url/URL.js';
 import FS from 'fs';
+import Path from 'path';
 import Request from './Request.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import BrowserWindow from '../window/BrowserWindow.js';
@@ -103,7 +104,7 @@ export default class SyncFetch {
 			? this.interceptor.beforeSyncRequest({
 					request: this.request,
 					window: this.#window
-				})
+			  })
 			: undefined;
 		if (typeof beforeRequestResponse === 'object') {
 			return beforeRequestResponse;
@@ -140,7 +141,7 @@ export default class SyncFetch {
 						window: this.#window,
 						response,
 						request: this.request
-					})
+				  })
 				: undefined;
 			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
@@ -287,7 +288,8 @@ export default class SyncFetch {
 
 		let buffer: Buffer;
 		try {
-			buffer = FS.readFileSync(filePath);
+			const stat = FS.statSync(filePath);
+			buffer = FS.readFileSync(stat.isDirectory() ? Path.join(filePath, 'index.html') : filePath);
 		} catch {
 			this.#browserFrame?.page?.console.error(
 				`${this.request.method} ${this.request.url} 404 (Not Found)`
@@ -491,7 +493,7 @@ export default class SyncFetch {
 					window: this.#window,
 					response: redirectedResponse,
 					request: this.request
-				})
+			  })
 			: undefined;
 		const returnResponse =
 			typeof interceptedResponse === 'object' ? interceptedResponse : redirectedResponse;
