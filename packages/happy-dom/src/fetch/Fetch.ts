@@ -114,14 +114,16 @@ export default class Fetch {
 	public async send(): Promise<Response> {
 		FetchRequestReferrerUtility.prepareRequest(new URL(this.#window.location.href), this.request);
 
-		const beforeRequestResponse = this.interceptor?.beforeAsyncRequest
-			? await this.interceptor.beforeAsyncRequest({
-					request: this.request,
-					window: this.#window
-				})
-			: undefined;
-		if (beforeRequestResponse instanceof Response) {
-			return beforeRequestResponse;
+		if (this.interceptor?.beforeAsyncRequest) {
+			const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
+			const response = await this.interceptor.beforeAsyncRequest({
+				request: this.request,
+				window: this.#window
+			});
+			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+			if (response instanceof Response) {
+				return response;
+			}
 		}
 
 		FetchRequestValidationUtility.validateSchema(this.request);
@@ -149,7 +151,7 @@ export default class Fetch {
 						window: this.#window,
 						response: this.response,
 						request: this.request
-					})
+				  })
 				: undefined;
 			return interceptedResponse instanceof Response ? interceptedResponse : this.response;
 		}
@@ -299,15 +301,23 @@ export default class Fetch {
 			return VirtualServerUtility.getNotFoundResponse(this.#window);
 		}
 
+		const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
 		let buffer: Buffer;
+
 		try {
 			buffer = await FS.promises.readFile(filePath);
 		} catch (error) {
 			this.#browserFrame?.page?.console.error(
 				`${this.request.method} ${this.request.url} 404 (Not Found)`
 			);
+
+			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+
 			return VirtualServerUtility.getNotFoundResponse(this.#window);
 		}
+
+		this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+
 		const body = new this.#window.ReadableStream({
 			start(controller) {
 				setTimeout(() => {
@@ -462,7 +472,7 @@ export default class Fetch {
 							window: this.#window,
 							response: await response,
 							request: this.request
-						})
+					  })
 					: undefined;
 				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 				const returnResponse =
