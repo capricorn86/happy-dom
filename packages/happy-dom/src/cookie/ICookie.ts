@@ -7,8 +7,8 @@ export default interface ICookie {
 
 	// Optional
 	value?: string | null;
-	domain?: string | null;
-	path?: string | null;
+	domain?: string;
+	path?: string;
 	expires?: Date | null;
 	httpOnly?: boolean;
 	secure?: boolean;
