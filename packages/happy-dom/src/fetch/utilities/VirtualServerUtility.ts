@@ -45,7 +45,7 @@ export default class VirtualServerUtility {
 			}
 			if (baseURL) {
 				const path = requestURL.slice(baseURL.href.length).split('?')[0].split('#')[0];
-				return Path.join(Path.resolve(virtualServer.directory), path);
+				return Path.join(Path.resolve(virtualServer.directory), path.replaceAll('/', Path.sep));
 			}
 		}
 		return null;
