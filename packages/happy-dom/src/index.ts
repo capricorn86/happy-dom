@@ -189,6 +189,8 @@ import type IBrowserFrame from './browser/types/IBrowserFrame.js';
 import type IBrowserPage from './browser/types/IBrowserPage.js';
 import type IBrowserSettings from './browser/types/IBrowserSettings.js';
 import type IOptionalBrowserSettings from './browser/types/IOptionalBrowserSettings.js';
+import type ICookie from './cookie/ICookie.js';
+import type IOptionalCookie from './cookie/IOptionalCookie.js';
 import type IEventInit from './event/IEventInit.js';
 import type ITouchInit from './event/ITouchInit.js';
 import type IUIEventInit from './event/IUIEventInit.js';
@@ -217,6 +219,7 @@ export type {
 	IBrowserPage,
 	IBrowserSettings,
 	IClipboardEventInit,
+	ICookie,
 	ICustomEventInit,
 	IErrorEventInit,
 	IEventInit,
@@ -228,6 +231,7 @@ export type {
 	IMediaQueryListInit,
 	IMouseEventInit,
 	IOptionalBrowserSettings,
+	IOptionalCookie,
 	IProgressEventInit,
 	ISubmitEventInit,
 	ISyncResponse,

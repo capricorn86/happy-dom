@@ -4,13 +4,11 @@ export default interface ICookie {
 	// Required
 	key: string;
 	originURL: URL;
-
-	// Optional
-	value?: string | null;
-	domain?: string;
-	path?: string;
-	expires?: Date | null;
-	httpOnly?: boolean;
-	secure?: boolean;
-	sameSite?: CookieSameSiteEnum;
+	value: string | null;
+	domain: string;
+	path: string;
+	expires: Date | null;
+	httpOnly: boolean;
+	secure: boolean;
+	sameSite: CookieSameSiteEnum;
 }
