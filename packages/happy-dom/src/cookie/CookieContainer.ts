@@ -1,6 +1,8 @@
 import URL from '../url/URL.js';
+import DefaultCookie from './DefaultCookie.js';
 import ICookie from './ICookie.js';
 import ICookieContainer from './ICookieContainer.js';
+import IOptionalCookie from './IOptionalCookie.js';
 import CookieExpireUtility from './urilities/CookieExpireUtility.js';
 import CookieURLUtility from './urilities/CookieURLUtility.js';
 
@@ -18,7 +20,7 @@ export default class CookieContainer implements ICookieContainer {
 	 *
 	 * @param cookies Cookies.
 	 */
-	public addCookies(cookies: ICookie[]): void {
+	public addCookies(cookies: IOptionalCookie[]): void {
 		const indexMap: { [k: string]: number } = {};
 		const getKey = (cookie: ICookie): string =>
 			`${cookie.key}-${cookie.originURL.hostname}-${cookie.path}-${typeof cookie.value}`;
@@ -29,18 +31,24 @@ export default class CookieContainer implements ICookieContainer {
 		}
 
 		for (const cookie of cookies) {
-			if (cookie?.key) {
-				// Remove existing cookie with same name, domain and path.
-				const index = indexMap[getKey(cookie)];
+			const newCookie = Object.assign({}, DefaultCookie, cookie);
 
-				if (index !== undefined) {
-					this.#cookies.splice(index, 1);
-				}
+			if (!newCookie || !newCookie.key || !newCookie.originURL) {
+				throw new Error(
+					"Failed to execute 'addCookies' on 'CookieContainer': The properties 'key' and 'originURL' are required."
+				);
+			}
 
-				if (!CookieExpireUtility.hasExpired(cookie)) {
-					indexMap[getKey(cookie)] = this.#cookies.length;
-					this.#cookies.push(cookie);
-				}
+			// Remove existing cookie with same name, domain and path.
+			const index = indexMap[getKey(newCookie)];
+
+			if (index !== undefined) {
+				this.#cookies.splice(index, 1);
+			}
+
+			if (!CookieExpireUtility.hasExpired(newCookie)) {
+				indexMap[getKey(newCookie)] = this.#cookies.length;
+				this.#cookies.push(newCookie);
 			}
 		}
 	}

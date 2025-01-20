@@ -1,4 +1,5 @@
 import CookieContainer from '../../src/cookie/CookieContainer.js';
+import CookieSameSiteEnum from '../../src/cookie/enums/CookieSameSiteEnum.js';
 import ICookie from '../../src/cookie/ICookie.js';
 import ICookieContainer from '../../src/cookie/ICookieContainer.js';
 import CookieStringUtility from '../../src/cookie/urilities/CookieStringUtility.js';
@@ -151,13 +152,7 @@ describe('CookieContainer', () => {
 			const originURL = new URL('https://example.com/path/to/page/');
 			const targetURL = new URL('https://example.com/path/to/page/');
 
-			cookieContainer.addCookies([
-				<ICookie>CookieStringUtility.stringToCookie(originURL, `__secure-key=value`)
-			]);
-
-			expect(
-				CookieStringUtility.cookiesToString(cookieContainer.getCookies(targetURL, false))
-			).toBe('');
+			expect(CookieStringUtility.stringToCookie(originURL, `__secure-key=value`)).toBe(null);
 
 			cookieContainer.addCookies([
 				<ICookie>CookieStringUtility.stringToCookie(originURL, `__secure-key=value; Secure;`)
@@ -172,47 +167,23 @@ describe('CookieContainer', () => {
 			const originURL = new URL('https://example.com/path/to/page/');
 			const targetURL = new URL('https://example.com/path/to/page/');
 
-			cookieContainer.addCookies([
-				<ICookie>CookieStringUtility.stringToCookie(originURL, `__host-key=value`)
-			]);
+			expect(CookieStringUtility.stringToCookie(originURL, `__host-key=value`)).toBe(null);
+
+			expect(CookieStringUtility.stringToCookie(originURL, `__host-key=value; Secure;`)).toBe(null);
 
 			expect(
-				CookieStringUtility.cookiesToString(cookieContainer.getCookies(targetURL, false))
-			).toBe('');
-
-			cookieContainer.addCookies([
-				<ICookie>CookieStringUtility.stringToCookie(originURL, `__host-key=value; Secure;`)
-			]);
-
-			expect(
-				CookieStringUtility.cookiesToString(cookieContainer.getCookies(targetURL, false))
-			).toBe('');
-
-			cookieContainer.addCookies([
-				<ICookie>(
-					CookieStringUtility.stringToCookie(
-						originURL,
-						`__host-key=value; Secure; Path=/path/to/page/;`
-					)
+				CookieStringUtility.stringToCookie(
+					originURL,
+					`__host-key=value; Secure; Path=/path/to/page/;`
 				)
-			]);
+			).toBe(null);
 
 			expect(
-				CookieStringUtility.cookiesToString(cookieContainer.getCookies(targetURL, false))
-			).toBe('');
-
-			cookieContainer.addCookies([
-				<ICookie>(
-					CookieStringUtility.stringToCookie(
-						originURL,
-						`__host-key=value; Secure; Domain=example.com; Path=/;`
-					)
+				CookieStringUtility.stringToCookie(
+					originURL,
+					`__host-key=value; Secure; Domain=example.com; Path=/;`
 				)
-			]);
-
-			expect(
-				CookieStringUtility.cookiesToString(cookieContainer.getCookies(targetURL, false))
-			).toBe('');
+			).toBe(null);
 
 			cookieContainer.addCookies([
 				<ICookie>CookieStringUtility.stringToCookie(originURL, `__host-key=value; Secure; Path=/;`)
@@ -221,6 +192,73 @@ describe('CookieContainer', () => {
 			expect(
 				CookieStringUtility.cookiesToString(cookieContainer.getCookies(targetURL, false))
 			).toBe('__host-key=value');
+		});
+
+		it('Throws an error if the cookie "key" is missing.', () => {
+			const originURL = new URL('https://example.com/path/to/page/');
+			expect(() => {
+				cookieContainer.addCookies([<ICookie>{ originURL }]);
+			}).toThrowError(
+				"Failed to execute 'addCookies' on 'CookieContainer': The properties 'key' and 'originURL' are required."
+			);
+		});
+
+		it('Throws an error if the cookie "originURL" is missing.', () => {
+			expect(() => {
+				cookieContainer.addCookies([<ICookie>{ key: 'key' }]);
+			}).toThrowError(
+				"Failed to execute 'addCookies' on 'CookieContainer': The properties 'key' and 'originURL' are required."
+			);
+		});
+	});
+
+	describe('getCookies()', () => {
+		it('Returns cookies.', () => {
+			const originURL = new URL('https://example.com/path/to/page/');
+			const expires = new Date(60 * 1000 + Date.now());
+
+			cookieContainer.addCookies([
+				{
+					key: 'key1',
+					originURL
+				},
+				{
+					key: 'key2',
+					originURL,
+					value: 'value2',
+					domain: 'example.com',
+					path: '/path/to/page/',
+					expires,
+					httpOnly: true,
+					secure: true,
+					sameSite: CookieSameSiteEnum.strict
+				}
+			]);
+
+			expect(cookieContainer.getCookies(originURL)).toEqual([
+				{
+					key: 'key1',
+					originURL,
+					value: null,
+					domain: '',
+					path: '',
+					expires: null,
+					httpOnly: false,
+					secure: false,
+					sameSite: CookieSameSiteEnum.lax
+				},
+				{
+					key: 'key2',
+					originURL,
+					value: 'value2',
+					domain: 'example.com',
+					path: '/path/to/page/',
+					expires,
+					httpOnly: true,
+					secure: true,
+					sameSite: CookieSameSiteEnum.strict
+				}
+			]);
 		});
 	});
 });
