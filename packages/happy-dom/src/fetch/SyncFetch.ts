@@ -3,6 +3,8 @@ import * as PropertySymbol from '../PropertySymbol.js';
 import IRequestInfo from './types/IRequestInfo.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import URL from '../url/URL.js';
+import FS from 'fs';
+import Path from 'path';
 import Request from './Request.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import BrowserWindow from '../window/BrowserWindow.js';
@@ -21,6 +23,7 @@ import FetchResponseRedirectUtility from './utilities/FetchResponseRedirectUtili
 import FetchCORSUtility from './utilities/FetchCORSUtility.js';
 import Fetch from './Fetch.js';
 import IFetchInterceptor from './types/IFetchInterceptor.js';
+import VirtualServerUtility from './utilities/VirtualServerUtility.js';
 
 interface ISyncHTTPResponse {
 	error: string;
@@ -96,6 +99,7 @@ export default class SyncFetch {
 	 */
 	public send(): ISyncResponse {
 		FetchRequestReferrerUtility.prepareRequest(new URL(this.#window.location.href), this.request);
+
 		const beforeRequestResponse = this.interceptor?.beforeSyncRequest
 			? this.interceptor.beforeSyncRequest({
 					request: this.request,
@@ -105,7 +109,14 @@ export default class SyncFetch {
 		if (typeof beforeRequestResponse === 'object') {
 			return beforeRequestResponse;
 		}
+
 		FetchRequestValidationUtility.validateSchema(this.request);
+
+		const virtualServerResponse = this.getVirtualServerResponse();
+
+		if (virtualServerResponse) {
+			return virtualServerResponse;
+		}
 
 		if (this.request.signal.aborted) {
 			throw new this.#window.DOMException(
@@ -253,6 +264,47 @@ export default class SyncFetch {
 			redirected: false,
 			headers: cachedResponse.response.headers,
 			body: cachedResponse.response.body
+		};
+	}
+
+	/**
+	 * Returns virtual server response.
+	 *
+	 * @returns Response.
+	 */
+	private getVirtualServerResponse(): ISyncResponse | null {
+		const filePath = VirtualServerUtility.getFilepath(this.#window, this.request.url);
+
+		if (!filePath) {
+			return null;
+		}
+
+		if (this.request.method !== 'GET') {
+			this.#browserFrame?.page?.console.error(
+				`${this.request.method} ${this.request.url} 404 (Not Found)`
+			);
+			return VirtualServerUtility.getNotFoundSyncResponse(this.#window);
+		}
+
+		let buffer: Buffer;
+		try {
+			const stat = FS.statSync(filePath);
+			buffer = FS.readFileSync(stat.isDirectory() ? Path.join(filePath, 'index.html') : filePath);
+		} catch {
+			this.#browserFrame?.page?.console.error(
+				`${this.request.method} ${this.request.url} 404 (Not Found)`
+			);
+			return VirtualServerUtility.getNotFoundSyncResponse(this.#window);
+		}
+
+		return {
+			status: 200,
+			statusText: '',
+			ok: true,
+			url: this.request.url,
+			redirected: false,
+			headers: new this.#window.Headers(),
+			body: buffer
 		};
 	}
 
@@ -443,7 +495,14 @@ export default class SyncFetch {
 					request: this.request
 				})
 			: undefined;
-		return typeof interceptedResponse === 'object' ? interceptedResponse : redirectedResponse;
+		const returnResponse =
+			typeof interceptedResponse === 'object' ? interceptedResponse : redirectedResponse;
+		if (!returnResponse.ok) {
+			this.#browserFrame?.page?.console.error(
+				`${this.request.method} ${this.request.url} ${returnResponse.status} (${returnResponse.statusText})`
+			);
+		}
+		return returnResponse;
 	}
 
 	/**

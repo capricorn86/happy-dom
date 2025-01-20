@@ -8,6 +8,8 @@ import HTTP, { IncomingMessage } from 'http';
 import HTTPS from 'https';
 import Zlib from 'zlib';
 import URL from '../url/URL.js';
+import FS from 'fs';
+import Path from 'path';
 import { Socket } from 'net';
 import Stream from 'stream';
 import DataURIParser from './data-uri/DataURIParser.js';
@@ -27,6 +29,7 @@ import FetchHTTPSCertificate from './certificate/FetchHTTPSCertificate.js';
 import { Buffer } from 'buffer';
 import FetchBodyUtility from './utilities/FetchBodyUtility.js';
 import IFetchInterceptor from './types/IFetchInterceptor.js';
+import VirtualServerUtility from './utilities/VirtualServerUtility.js';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -51,7 +54,7 @@ export default class Fetch {
 	private nodeResponse: IncomingMessage | null = null;
 	private response: Response | null = null;
 	private responseHeaders: Headers | null = null;
-	private interceptor?: IFetchInterceptor;
+	private interceptor: IFetchInterceptor | null;
 	private request: Request;
 	private redirectCount = 0;
 	private disableCache: boolean;
@@ -111,16 +114,26 @@ export default class Fetch {
 	 */
 	public async send(): Promise<Response> {
 		FetchRequestReferrerUtility.prepareRequest(new URL(this.#window.location.href), this.request);
-		const beforeRequestResponse = this.interceptor?.beforeAsyncRequest
-			? await this.interceptor.beforeAsyncRequest({
-					request: this.request,
-					window: this.#window
-				})
-			: undefined;
-		if (beforeRequestResponse instanceof Response) {
-			return beforeRequestResponse;
+
+		if (this.interceptor?.beforeAsyncRequest) {
+			const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
+			const response = await this.interceptor.beforeAsyncRequest({
+				request: this.request,
+				window: this.#window
+			});
+			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+			if (response instanceof Response) {
+				return response;
+			}
 		}
+
 		FetchRequestValidationUtility.validateSchema(this.request);
+
+		const virtualServerResponse = await this.getVirtualServerResponse();
+
+		if (virtualServerResponse) {
+			return virtualServerResponse;
+		}
 
 		if (this.request.signal.aborted) {
 			throw new this.#window.DOMException(
@@ -171,7 +184,7 @@ export default class Fetch {
 			const compliesWithCrossOriginPolicy = await this.compliesWithCrossOriginPolicy();
 
 			if (!compliesWithCrossOriginPolicy) {
-				this.#window.console.warn(
+				this.#browserFrame?.page?.console.warn(
 					`Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at "${this.request.url}".`
 				);
 				throw new this.#window.DOMException(
@@ -266,6 +279,62 @@ export default class Fetch {
 		});
 		(<string>response.url) = cachedResponse.response.url;
 		response[PropertySymbol.cachedResponse] = cachedResponse;
+
+		return response;
+	}
+
+	/**
+	 * Returns virtual server response.
+	 *
+	 * @returns Response.
+	 */
+	private async getVirtualServerResponse(): Promise<Response | null> {
+		const filePath = VirtualServerUtility.getFilepath(this.#window, this.request.url);
+
+		if (!filePath) {
+			return null;
+		}
+
+		if (this.request.method !== 'GET') {
+			this.#browserFrame?.page?.console.error(
+				`${this.request.method} ${this.request.url} 404 (Not Found)`
+			);
+			return VirtualServerUtility.getNotFoundResponse(this.#window);
+		}
+
+		const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
+		let buffer: Buffer;
+
+		try {
+			const stat = await FS.promises.stat(filePath);
+			buffer = await FS.promises.readFile(
+				stat.isDirectory() ? Path.join(filePath, 'index.html') : filePath
+			);
+		} catch (error) {
+			this.#browserFrame?.page?.console.error(
+				`${this.request.method} ${this.request.url} 404 (Not Found)`
+			);
+
+			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+
+			return VirtualServerUtility.getNotFoundResponse(this.#window);
+		}
+
+		this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+
+		const body = new this.#window.ReadableStream({
+			start(controller) {
+				setTimeout(() => {
+					controller.enqueue(buffer);
+					controller.close();
+				});
+			}
+		});
+
+		const response = new this.#window.Response(body);
+
+		response[PropertySymbol.buffer] = buffer;
+		(<string>response.url) = this.request.url;
 
 		return response;
 	}
@@ -410,7 +479,17 @@ export default class Fetch {
 						})
 					: undefined;
 				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
-				resolve(interceptedResponse instanceof Response ? interceptedResponse : response);
+				const returnResponse =
+					interceptedResponse instanceof Response ? interceptedResponse : response;
+
+				// The browser outputs errors to the console when the response is not ok.
+				if (returnResponse instanceof Response && !returnResponse.ok) {
+					this.#browserFrame?.page?.console.error(
+						`${this.request.method} ${this.request.url} ${returnResponse.status} (${returnResponse.statusText})`
+					);
+				}
+
+				resolve(returnResponse);
 			};
 			this.reject = (error: Error): void => {
 				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
@@ -517,7 +596,7 @@ export default class Fetch {
 	 */
 	private onError(error: Error): void {
 		this.finalizeRequest();
-		this.#window.console.error(error);
+		this.#browserFrame?.page?.console.error(error);
 		this.reject(
 			new this.#window.DOMException(
 				`Failed to execute "fetch()" on "Window" with URL "${this.request.url}": ${error.message}`,

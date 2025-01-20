@@ -1,6 +1,7 @@
 import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
 import BrowserNavigationCrossOriginPolicyEnum from '../enums/BrowserNavigationCrossOriginPolicyEnum.js';
 import IFetchInterceptor from '../../fetch/types/IFetchInterceptor.js';
+import IVirtualServer from '../../fetch/types/IVirtualServer.js';
 
 /**
  * Browser settings.
@@ -42,7 +43,15 @@ export default interface IBrowserSettings {
 		 */
 		disableSameOriginPolicy: boolean;
 
-		interceptor?: IFetchInterceptor;
+		/**
+		 * Fetch interceptor.
+		 */
+		interceptor: IFetchInterceptor | null;
+
+		/**
+		 * Virtual servers used for simulating a server that reads from the file system.
+		 */
+		virtualServers: IVirtualServer[] | null;
 	};
 
 	/**
