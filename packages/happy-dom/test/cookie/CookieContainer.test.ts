@@ -194,21 +194,15 @@ describe('CookieContainer', () => {
 			).toBe('__host-key=value');
 		});
 
-		it('Throws an error if the cookie "key" is missing.', () => {
+		it('Ignores invalid cookies.', () => {
 			const originURL = new URL('https://example.com/path/to/page/');
-			expect(() => {
-				cookieContainer.addCookies([<ICookie>{ originURL }]);
-			}).toThrowError(
-				"Failed to execute 'addCookies' on 'CookieContainer': The properties 'key' and 'originURL' are required."
-			);
-		});
+			cookieContainer.addCookies([
+				<ICookie>{ originURL },
+				<ICookie>{ key: 'key' },
+				<ICookie>(<unknown>null)
+			]);
 
-		it('Throws an error if the cookie "originURL" is missing.', () => {
-			expect(() => {
-				cookieContainer.addCookies([<ICookie>{ key: 'key' }]);
-			}).toThrowError(
-				"Failed to execute 'addCookies' on 'CookieContainer': The properties 'key' and 'originURL' are required."
-			);
+			expect(cookieContainer.getCookies(originURL)).toEqual([]);
 		});
 	});
 

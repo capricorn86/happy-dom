@@ -1,5 +1,6 @@
 import URL from '../url/URL.js';
 import ICookie from './ICookie.js';
+import IOptionalCookie from './IOptionalCookie.js';
 
 /**
  * Cookie Container.
@@ -13,7 +14,7 @@ export default interface ICookieContainer {
 	 *
 	 * @param cookies Cookies.
 	 */
-	addCookies(cookies: ICookie[]): void;
+	addCookies(cookies: IOptionalCookie[]): void;
 
 	/**
 	 * Returns cookies.
