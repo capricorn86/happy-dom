@@ -850,7 +850,7 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/test/';
 
 			mockNetwork('https', undefined, {
-				statusCode: 301,
+				statusCode: 301
 			});
 
 			const response = await window.fetch(url, { method: 'GET', redirect: 'manual' });
