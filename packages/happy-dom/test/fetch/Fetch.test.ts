@@ -759,26 +759,10 @@ describe('Fetch', () => {
 			let error: Error | null = null;
 			let tryCount = 0;
 
-			mockModule('https', {
-				request: (requestURL) => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.statusCode = 302;
-								response.rawHeaders = requestURL === url1 ? ['Location', url2] : ['Location', url1];
-								tryCount++;
-								callback(response);
-							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
+			const network = mockNetwork('https', undefined, { statusCode: 302 });
+			network.beforeResponse(({ request, response }) => {
+				response.rawHeaders = request.url === url1 ? ['Location', url2] : ['Location', url1];
+				tryCount++;
 			});
 
 			try {
@@ -1104,11 +1088,10 @@ describe('Fetch', () => {
 			});
 			const url = 'https://localhost:8080/some/path';
 
-			mockModule('https', {
-				request: () => {
-					fail('No request should be made when beforeAsyncRequest returns a Response');
-				}
-			});
+			const network = mockNetwork('https');
+			network.beforeResponse(() =>
+				fail('No request should be made when beforeAsyncRequest returns a Response')
+			);
 
 			const response = await window.fetch(url);
 
@@ -1209,10 +1192,6 @@ describe('Fetch', () => {
 			const window = new Window({ url: originURL });
 			const url = 'https://localhost:8080/some/path';
 			const cookies = 'key1=value1; key2=value2';
-			let requestArgs: {
-				url: string;
-				options: { method: string; headers: { [k: string]: string } };
-			} | null = null;
 
 			window.happyDOM?.setURL(originURL);
 
@@ -1220,28 +1199,7 @@ describe('Fetch', () => {
 				window.document.cookie = cookie.trim();
 			}
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
-
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.rawHeaders = [];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
-			});
+			const network = mockNetwork('https');
 
 			await window.fetch(url, {
 				headers: {
@@ -1251,26 +1209,28 @@ describe('Fetch', () => {
 				credentials: 'same-origin'
 			});
 
-			expect(requestArgs).toEqual({
-				url,
-				options: {
-					method: 'GET',
-					headers: {
-						Accept: '*/*',
-						Connection: 'close',
-						'User-Agent': window.navigator.userAgent,
-						'Accept-Encoding': 'gzip, deflate, br',
-						Referer: originURL + '/',
-						Cookie: cookies,
-						authorization: 'authorization',
-						'www-authenticate': 'www-authenticate'
-					},
-					agent: false,
-					rejectUnauthorized: true,
-					key: FetchHTTPSCertificate.key,
-					cert: FetchHTTPSCertificate.cert
+			expect(network.requestHistory).toEqual([
+				{
+					url,
+					options: {
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Referer: originURL + '/',
+							Cookie: cookies,
+							authorization: 'authorization',
+							'www-authenticate': 'www-authenticate'
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
+					}
 				}
-			});
+			]);
 		});
 
 		it('Forwards "cookie", "authorization" or "www-authenticate" if request credentials are set to "include".', async () => {
@@ -1278,38 +1238,15 @@ describe('Fetch', () => {
 			const window = new Window({ url: originURL });
 			const url = 'https://other.origin.com/some/path';
 			const cookies = 'key1=value1; key2=value2';
-			let requestArgs: {
-				url: string;
-				options: { method: string; headers: { [k: string]: string } };
-			} | null = null;
 
 			for (const cookie of cookies.split(';')) {
 				window.document.cookie = cookie.trim();
 			}
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
-
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.statusCode = 200;
-								response.rawHeaders =
-									options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : [];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
+			const network = mockNetwork('https');
+			network.beforeResponse(({ request, response }) => {
+				response.rawHeaders =
+					request.options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : [];
 			});
 
 			await window.fetch(url, {
@@ -1320,49 +1257,55 @@ describe('Fetch', () => {
 				credentials: 'include'
 			});
 
-			expect(requestArgs).toEqual({
-				url,
-				options: {
-					method: 'GET',
-					headers: {
-						Accept: '*/*',
-						Connection: 'close',
-						'User-Agent': window.navigator.userAgent,
-						'Accept-Encoding': 'gzip, deflate, br',
-						Origin: originURL,
-						Referer: originURL + '/',
-						Cookie: cookies,
-						authorization: 'authorization',
-						'www-authenticate': 'www-authenticate'
-					},
-					agent: false,
-					rejectUnauthorized: true,
-					key: FetchHTTPSCertificate.key,
-					cert: FetchHTTPSCertificate.cert
+			expect(network.requestHistory).toEqual([
+				{
+					url,
+					options: {
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert,
+						method: 'OPTIONS',
+						headers: {
+							Accept: '*/*',
+							'Access-Control-Request-Method': 'GET',
+							'Access-Control-Request-Headers': 'authorization,www-authenticate',
+							Connection: 'close',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Origin: originURL,
+							Referer: originURL + '/'
+						}
+					}
+				},
+				{
+					url,
+					options: {
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Origin: originURL,
+							Referer: originURL + '/',
+							Cookie: cookies,
+							authorization: 'authorization',
+							'www-authenticate': 'www-authenticate'
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
+					}
 				}
-			});
+			]);
 		});
 
 		it('Sets document cookie string if the response contains a "Set-Cookie" header if request cridentials are set to "include".', async () => {
 			const window = new Window({ url: 'https://localhost:8080' });
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.rawHeaders = ['Set-Cookie', 'key1=value1', 'Set-Cookie', 'key2=value2'];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
+			mockNetwork('https', undefined, {
+				rawHeaders: ['Set-Cookie', 'key1=value1', 'Set-Cookie', 'key2=value2']
 			});
 
 			const response = await window.fetch('https://localhost:8080/some/path', {
@@ -1376,34 +1319,8 @@ describe('Fetch', () => {
 		it('Allows setting the headers "User-Agent" and "Accept".', async () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
-			let requestArgs: {
-				url: string;
-				options: { method: string; headers: { [k: string]: string } };
-			} | null = null;
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
-
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.headers = {};
-								response.rawHeaders = [];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+			const network = mockNetwork('https');
 
 			await window.fetch(url, {
 				method: 'GET',
@@ -1413,23 +1330,25 @@ describe('Fetch', () => {
 				}
 			});
 
-			expect(requestArgs).toEqual({
-				url,
-				options: {
-					method: 'GET',
-					headers: {
-						'Accept-Encoding': 'gzip, deflate, br',
-						'User-Agent': 'user-agent',
-						Accept: 'accept',
-						Connection: 'close',
-						Referer: 'https://localhost:8080/'
-					},
-					agent: false,
-					rejectUnauthorized: true,
-					key: FetchHTTPSCertificate.key,
-					cert: FetchHTTPSCertificate.cert
+			expect(network.requestHistory).toEqual([
+				{
+					url,
+					options: {
+						method: 'GET',
+						headers: {
+							'Accept-Encoding': 'gzip, deflate, br',
+							'User-Agent': 'user-agent',
+							Accept: 'accept',
+							Connection: 'close',
+							Referer: 'https://localhost:8080/'
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
+					}
 				}
-			});
+			]);
 		});
 
 		for (const errorCode of [400, 401, 403, 404, 500]) {
@@ -1437,28 +1356,12 @@ describe('Fetch', () => {
 				const window = new Window({ url: 'https://localhost:8080/' });
 				const responseText = 'some response text';
 
-				mockModule('https', {
-					request: () => {
-						return {
-							end: () => {},
-							on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-								if (event === 'response') {
-									async function* generate(): AsyncGenerator<string> {
-										yield responseText;
-									}
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-									response.statusMessage = 'Bad Request';
-									response.statusCode = errorCode;
-									response.headers = {};
-									response.rawHeaders = ['Content-Type', 'text/plain'];
-
-									callback(response);
-								}
-							},
-							setTimeout: () => {}
-						};
-					}
+				const network = mockNetwork('https', responseText, {
+					statusMessage: 'Bad Request',
+					rawHeaders: ['Content-Type', 'text/plain']
+				});
+				network.beforeResponse(({ response }) => {
+					response.statusCode = errorCode;
 				});
 
 				const response = await window.fetch('https://localhost:8080/some/path');
@@ -1793,26 +1696,9 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.headers = {};
-								response.rawHeaders = ['Content-Encoding', 'gzip'];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
+			mockNetwork('https', undefined, {
+				statusCode: 200,
+				rawHeaders: ['Content-Encoding', 'gzip']
 			});
 
 			const response = await window.fetch(url, { method: 'GET' });
