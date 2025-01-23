@@ -31,45 +31,49 @@ interface IRequestHistoryEntry {
 	url: string;
 	options: HTTP.RequestOptions;
 }
-type IBeforeResponseHook = (context: {
+type IBeforeResponse = (context: {
 	request: IRequestHistoryEntry;
 	response: HTTP.IncomingMessage;
 }) => void;
 interface IMockNetwork {
 	requestHistory: IRequestHistoryEntry[];
-	beforeResponse: (hook: IBeforeResponseHook) => void;
 }
 
 describe('Fetch', () => {
 	function mockNetwork(
 		schema: 'http' | 'https',
-		responseText: string | string[] | undefined = undefined,
-		extra: Record<string, unknown> = {}
+		specification?: {
+			responseText?: string | string[];
+			beforeResponse: IBeforeResponse;
+		}
 	): IMockNetwork {
-		let requestHistory: IRequestHistoryEntry[] = [];
-		let beforeResponse: IBeforeResponseHook;
+		const requestHistory: IRequestHistoryEntry[] = [];
 		mockModule(schema, {
 			request: (url: string, options: HTTP.RequestOptions) => {
 				const request = { url, options };
-				requestHistory = [...requestHistory, request];
+				requestHistory.push(request);
 				return {
 					end: () => {},
 					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
 						async function* generate(): AsyncGenerator<string> {
-							if (typeof responseText === 'string') {
-								yield responseText;
-							} else if (Array.isArray(responseText)) {
-								for (const text of responseText) {
+							if (typeof specification?.responseText === 'string') {
+								yield specification?.responseText;
+							} else if (Array.isArray(specification?.responseText)) {
+								for (const text of specification?.responseText) {
 									yield text;
 								}
 							}
 						}
 
 						const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-						Object.assign(response, { headers: {}, rawHeaders: [] }, extra);
+						response.statusCode = 200;
+						response.statusMessage = 'OK';
+						response.headers = {};
+						response.rawHeaders = [];
+
 						if (event === 'response') {
-							if (beforeResponse) {
-								beforeResponse({ request, response });
+							if (specification?.beforeResponse) {
+								specification.beforeResponse({ request, response });
 							}
 							callback(response);
 						}
@@ -82,10 +86,6 @@ describe('Fetch', () => {
 		return {
 			get requestHistory() {
 				return requestHistory;
-			},
-
-			beforeResponse(hook: IBeforeResponseHook) {
-				beforeResponse = hook;
 			}
 		};
 	}
@@ -158,10 +158,16 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'some text';
 
-			const network = mockNetwork('https', responseText, {
-				statusCode: 200,
-				statusMessage: 'OK',
-				rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
+			const network = mockNetwork('https', {
+				responseText,
+				beforeResponse({ response }) {
+					response.rawHeaders = [
+						'content-type',
+						'text/html',
+						'content-length',
+						String(responseText.length)
+					];
+				}
 			});
 
 			const response = await window.fetch(url);
@@ -218,15 +224,16 @@ describe('Fetch', () => {
 			const url = 'http://localhost:8080/some/path';
 			const responseText = '{ "test": "test" }';
 
-			const network = mockNetwork('http', responseText, {
-				statusCode: 200,
-				statusMessage: 'OK',
-				rawHeaders: [
-					'content-type',
-					'application/json',
-					'content-length',
-					String(responseText.length)
-				]
+			const network = mockNetwork('http', {
+				responseText,
+				beforeResponse({ response }) {
+					response.rawHeaders = [
+						'content-type',
+						'application/json',
+						'content-length',
+						String(responseText.length)
+					];
+				}
 			});
 
 			const response = await window.fetch(url);
@@ -286,10 +293,16 @@ describe('Fetch', () => {
 				body: ''
 			});
 
-			const network = mockNetwork('https', responseText, {
-				statusCode: 200,
-				statusMessage: 'OK',
-				rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
+			const network = mockNetwork('https', {
+				responseText,
+				beforeResponse({ response }) {
+					response.rawHeaders = [
+						'content-type',
+						'text/html',
+						'content-length',
+						String(responseText.length)
+					];
+				}
 			});
 
 			const response = await window.fetch(requestObject);
@@ -346,11 +359,11 @@ describe('Fetch', () => {
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
 			const chunksLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
 
-			mockNetwork('http', chunks, {
-				statusCode: 200,
-				statusMessage: 'OK',
-				headers: {},
-				rawHeaders: ['content-length', String(chunksLength)]
+			mockNetwork('http', {
+				responseText: chunks,
+				beforeResponse({ response }) {
+					response.rawHeaders = ['content-length', String(chunksLength)];
+				}
 			});
 
 			const response = await window.fetch(url);
@@ -370,10 +383,7 @@ describe('Fetch', () => {
 
 			window.happyDOM?.setURL(baseUrl);
 
-			const network = mockNetwork('https', responseText, {
-				statusCode: 200,
-				statusMessage: 'OK'
-			});
+			const network = mockNetwork('https', { responseText });
 
 			await window.fetch(path);
 
@@ -403,10 +413,7 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'test';
 
-			const network = mockNetwork('https', responseText, {
-				statusCode: 200,
-				statusMessage: 'OK'
-			});
+			const network = mockNetwork('https', { responseText });
 
 			await window.fetch(url, {
 				headers: {
@@ -443,10 +450,7 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'test';
 
-			const network = mockNetwork('https', responseText, {
-				statusCode: 200,
-				statusMessage: 'OK'
-			});
+			const network = mockNetwork('https', { responseText });
 
 			const headers = new Headers({
 				key1: 'value1',
@@ -487,10 +491,11 @@ describe('Fetch', () => {
 			const window = new Window({ url: originURL });
 			const url = 'http://other.origin.com/some/path';
 
-			const network = mockNetwork('http');
-			network.beforeResponse(({ request, response }) => {
-				response.rawHeaders =
-					request.options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : [];
+			const network = mockNetwork('http', {
+				beforeResponse({ request, response }) {
+					response.rawHeaders =
+						request.options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : [];
+				}
 			});
 
 			await window.fetch(url, {
@@ -759,10 +764,12 @@ describe('Fetch', () => {
 			let error: Error | null = null;
 			let tryCount = 0;
 
-			const network = mockNetwork('https', undefined, { statusCode: 302 });
-			network.beforeResponse(({ request, response }) => {
-				response.rawHeaders = request.url === url1 ? ['Location', url2] : ['Location', url1];
-				tryCount++;
+			mockNetwork('https', {
+				beforeResponse({ request, response }) {
+					response.statusCode = 302;
+					response.rawHeaders = request.url === url1 ? ['Location', url2] : ['Location', url1];
+					tryCount++;
+				}
 			});
 
 			try {
@@ -784,11 +791,14 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const redirectURL = 'https://localhost:8080/redirect/';
 
-			mockNetwork('https', undefined, {
-				statusCode: 301,
-				statusMessage: 'Moved Permanently',
-				headers: {},
-				rawHeaders: ['Location', redirectURL]
+			mockNetwork('https', {
+				beforeResponse({ response }) {
+					Object.assign(response, {
+						statusCode: 301,
+						statusMessage: 'Moved Permanently',
+						rawHeaders: ['Location', redirectURL]
+					});
+				}
 			});
 
 			const response = await window.fetch(url, { method: 'GET', redirect: 'manual' });
@@ -802,10 +812,13 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const redirectURL = '<>';
 
-			mockNetwork('https', undefined, {
-				statusCode: 301,
-				headers: {},
-				rawHeaders: ['Location', redirectURL]
+			mockNetwork('https', {
+				beforeResponse({ response }) {
+					Object.assign(response, {
+						statusCode: 301,
+						rawHeaders: ['Location', redirectURL]
+					});
+				}
 			});
 
 			const response = await window.fetch(url, { method: 'GET', redirect: 'manual' });
@@ -819,10 +832,13 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const redirectURL = 'https://example.com/redirect/';
 
-			mockNetwork('https', undefined, {
-				statusCode: 301,
-				headers: {},
-				rawHeaders: ['Location', redirectURL]
+			mockNetwork('https', {
+				beforeResponse({ response }) {
+					Object.assign(response, {
+						statusCode: 301,
+						rawHeaders: ['Location', redirectURL]
+					});
+				}
 			});
 
 			const response = await window.fetch(url, { method: 'GET', redirect: 'manual' });
@@ -835,8 +851,12 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
-			mockNetwork('https', undefined, {
-				statusCode: 301
+			mockNetwork('https', {
+				beforeResponse({ response }) {
+					Object.assign(response, {
+						statusCode: 301
+					});
+				}
 			});
 
 			const response = await window.fetch(url, { method: 'GET', redirect: 'manual' });
@@ -850,10 +870,13 @@ describe('Fetch', () => {
 			const redirectURL = 'https://localhost:8080/redirect/';
 			let error: Error | null = null;
 
-			mockNetwork('https', undefined, {
-				statusCode: 301,
-				headers: {},
-				rawHeaders: ['Location', redirectURL]
+			mockNetwork('https', {
+				beforeResponse({ response }) {
+					Object.assign(response, {
+						statusCode: 301,
+						rawHeaders: ['Location', redirectURL]
+					});
+				}
 			});
 
 			try {
@@ -876,10 +899,13 @@ describe('Fetch', () => {
 			const redirectURL = '//super:invalid:url%/';
 			let error: Error | null = null;
 
-			mockNetwork('https', undefined, {
-				statusCode: 301,
-				headers: {},
-				rawHeaders: ['Location', redirectURL]
+			mockNetwork('https', {
+				beforeResponse({ response }) {
+					Object.assign(response, {
+						statusCode: 301,
+						rawHeaders: ['Location', redirectURL]
+					});
+				}
 			});
 
 			try {
@@ -996,10 +1022,13 @@ describe('Fetch', () => {
 
 			window.document.cookie = 'test=cookie';
 
-			const network = mockNetwork('https');
-			network.beforeResponse(({ request, response }) => {
-				response.rawHeaders =
-					request.options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : [];
+			const network = mockNetwork('https', {
+				beforeResponse({ request, response }) {
+					Object.assign(response, {
+						rawHeaders:
+							request.options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : []
+					});
+				}
 			});
 
 			await window.fetch(url, {
@@ -1088,10 +1117,11 @@ describe('Fetch', () => {
 			});
 			const url = 'https://localhost:8080/some/path';
 
-			const network = mockNetwork('https');
-			network.beforeResponse(() =>
-				fail('No request should be made when beforeAsyncRequest returns a Response')
-			);
+			const network = mockNetwork('https', {
+				beforeResponse() {
+					fail('No request should be made when beforeAsyncRequest returns a Response');
+				}
+			});
 
 			const response = await window.fetch(url);
 
@@ -1115,11 +1145,13 @@ describe('Fetch', () => {
 			});
 			const url = 'https://localhost:8080/some/path';
 
-			mockNetwork('https', 'some text', {
-				statusCode: 200,
-				statusMessage: 'OK',
-				headers: {},
-				rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
+			mockNetwork('https', {
+				responseText,
+				beforeResponse({ response }) {
+					Object.assign(response, {
+						rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
+					});
+				}
 			});
 
 			const response = await window.fetch(url);
@@ -1174,11 +1206,13 @@ describe('Fetch', () => {
 			});
 			const url = 'https://localhost:8080/some/path';
 
-			mockNetwork('https', 'some text', {
-				statusCode: 200,
-				statusMessage: 'OK',
-				headers: {},
-				rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
+			mockNetwork('https', {
+				responseText,
+				beforeResponse({ response }) {
+					Object.assign(response, {
+						rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
+					});
+				}
 			});
 
 			const response = await window.fetch(url);
@@ -1243,10 +1277,13 @@ describe('Fetch', () => {
 				window.document.cookie = cookie.trim();
 			}
 
-			const network = mockNetwork('https');
-			network.beforeResponse(({ request, response }) => {
-				response.rawHeaders =
-					request.options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : [];
+			const network = mockNetwork('https', {
+				beforeResponse({ request, response }) {
+					Object.assign(response, {
+						rawHeaders:
+							request.options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : []
+					});
+				}
 			});
 
 			await window.fetch(url, {
@@ -1304,8 +1341,12 @@ describe('Fetch', () => {
 
 		it('Sets document cookie string if the response contains a "Set-Cookie" header if request cridentials are set to "include".', async () => {
 			const window = new Window({ url: 'https://localhost:8080' });
-			mockNetwork('https', undefined, {
-				rawHeaders: ['Set-Cookie', 'key1=value1', 'Set-Cookie', 'key2=value2']
+			mockNetwork('https', {
+				beforeResponse({ request, response }) {
+					Object.assign(response, {
+						rawHeaders: ['Set-Cookie', 'key1=value1', 'Set-Cookie', 'key2=value2']
+					});
+				}
 			});
 
 			const response = await window.fetch('https://localhost:8080/some/path', {
@@ -1356,12 +1397,15 @@ describe('Fetch', () => {
 				const window = new Window({ url: 'https://localhost:8080/' });
 				const responseText = 'some response text';
 
-				const network = mockNetwork('https', responseText, {
-					statusMessage: 'Bad Request',
-					rawHeaders: ['Content-Type', 'text/plain']
-				});
-				network.beforeResponse(({ response }) => {
-					response.statusCode = errorCode;
+				const network = mockNetwork('https', {
+					responseText,
+					beforeResponse({ response }) {
+						Object.assign(response, {
+							statusCode: errorCode,
+							statusMessage: 'Bad Request',
+							rawHeaders: ['Content-Type', 'text/plain']
+						});
+					}
 				});
 
 				const response = await window.fetch('https://localhost:8080/some/path');
@@ -4456,10 +4500,14 @@ describe('Fetch', () => {
 				'<html><head><title>Happy DOM Virtual Server - 404 Not Found</title></head><body><h1>Happy DOM Virtual Server - 404 Not Found</h1></body></html>'
 			);
 
-			const promise = mockNetwork('http', '404 not found', {
-				statusCode: 404,
-				statusMessage: 'Not Found',
-				headers: {}
+			const promise = mockNetwork('http', {
+				responseText: '404 not found',
+				beforeResponse({ response }) {
+					Object.assign(response, {
+						statusCode: 404,
+						statusMessage: 'Not Found'
+					});
+				}
 			});
 
 			const response6 = await window.fetch('http://localhost:8080/404/');
@@ -4582,10 +4630,14 @@ describe('Fetch', () => {
 				'<html><head><title>Happy DOM Virtual Server - 404 Not Found</title></head><body><h1>Happy DOM Virtual Server - 404 Not Found</h1></body></html>'
 			);
 
-			const promise = mockNetwork('http', '404 not found', {
-				statusCode: 404,
-				statusMessage: 'Not Found',
-				headers: {}
+			const promise = mockNetwork('http', {
+				responseText: '404 not found',
+				beforeResponse({ response }) {
+					Object.assign(response, {
+						statusCode: 404,
+						statusMessage: 'Not Found'
+					});
+				}
 			});
 
 			const response6 = await window.fetch('http://localhost:8080/404/');
