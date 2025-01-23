@@ -1,6 +1,7 @@
 import CookieSameSiteEnum from '../enums/CookieSameSiteEnum.js';
 import URL from '../../url/URL.js';
 import ICookie from '../ICookie.js';
+import DefaultCookie from '../DefaultCookie.js';
 
 /**
  * Cookie string.
@@ -20,20 +21,12 @@ export default class CookieStringUtility {
 		const key = index !== -1 ? part.slice(0, index).trim() : part.trim();
 		const value = index !== -1 ? part.slice(index + 1).trim() : null;
 
-		const cookie: ICookie = {
+		const cookie: ICookie = Object.assign({}, DefaultCookie, {
 			// Required
 			key,
 			value,
-			originURL,
-
-			// Optional
-			domain: '',
-			path: '',
-			expires: null,
-			httpOnly: false,
-			secure: false,
-			sameSite: CookieSameSiteEnum.lax
-		};
+			originURL
+		});
 
 		// Invalid if key is empty.
 		if (!cookie.key) {

@@ -9,6 +9,8 @@ import Stream from 'stream';
 import Zlib from 'zlib';
 import { TextEncoder } from 'util';
 import Blob from '../../src/file/Blob.js';
+import FS from 'fs';
+import Path from 'path';
 import { URLSearchParams } from 'url';
 import '../types.d.js';
 import { ReadableStream } from 'stream/web';
@@ -4517,6 +4519,258 @@ describe('Fetch', () => {
 					url: 'https://localhost:8080/some/path'
 				}
 			]);
+		});
+
+		it('Handles virtual server defined as a string with origin', async () => {
+			const window = new Window({
+				url: 'http://localhost:8080/',
+				settings: {
+					fetch: {
+						virtualServers: [
+							{
+								url: 'https://example.com',
+								directory: './test/fetch/virtual-server'
+							}
+						]
+					}
+				}
+			});
+			const htmlFileContent = await FS.promises.readFile(
+				Path.resolve('./test/fetch/virtual-server/index.html')
+			);
+			const cssFileContent = await FS.promises.readFile(
+				Path.resolve('./test/fetch/virtual-server/css/style.css')
+			);
+
+			const response = await window.fetch('https://example.com');
+
+			expect(await response.text()).toBe(htmlFileContent.toString());
+
+			const response2 = await window.fetch('https://example.com/index.html');
+
+			expect(await response2.text()).toBe(htmlFileContent.toString());
+
+			const response3 = await window.fetch('https://example.com/index.html?query=value');
+
+			expect(await response3.text()).toBe(htmlFileContent.toString());
+
+			const response4 = await window.fetch('https://example.com/css/style.css');
+
+			expect(await response4.text()).toBe(cssFileContent.toString());
+
+			const response5 = await window.fetch('https://example.com/not_found.js');
+
+			expect(response5.ok).toBe(false);
+			expect(response5.status).toBe(404);
+			expect(response5.statusText).toBe('Not Found');
+			expect(window.happyDOM.virtualConsolePrinter.readAsString()).toBe(
+				`GET https://example.com/not_found.js 404 (Not Found)\n`
+			);
+			expect(await response5.text()).toBe(
+				'<html><head><title>Happy DOM Virtual Server - 404 Not Found</title></head><body><h1>Happy DOM Virtual Server - 404 Not Found</h1></body></html>'
+			);
+
+			const promise = mockNetwork('http', '404 not found', {
+				statusCode: 404,
+				statusMessage: 'Not Found',
+				headers: {}
+			});
+
+			const response6 = await window.fetch('http://localhost:8080/404/');
+
+			await promise;
+
+			expect(response6.ok).toBe(false);
+			expect(response6.status).toBe(404);
+			expect(response6.statusText).toBe('Not Found');
+			expect(window.happyDOM.virtualConsolePrinter.readAsString()).toBe(
+				`GET http://localhost:8080/404/ 404 (Not Found)\n`
+			);
+			expect(await response6.text()).toBe('404 not found');
+		});
+
+		it('Handles relative virtual server defined as a string without origin', async () => {
+			const window = new Window({
+				url: 'http://localhost:8080/',
+				settings: {
+					fetch: {
+						virtualServers: [
+							{
+								url: '/path/to/virtual-server/',
+								directory: './test/fetch/virtual-server'
+							}
+						]
+					}
+				}
+			});
+			const htmlFileContent = await FS.promises.readFile(
+				Path.resolve('./test/fetch/virtual-server/index.html')
+			);
+			const cssFileContent = await FS.promises.readFile(
+				Path.resolve('./test/fetch/virtual-server/css/style.css')
+			);
+
+			const response = await window.fetch('http://localhost:8080/path/to/virtual-server/');
+
+			expect(await response.text()).toBe(htmlFileContent.toString());
+
+			const response2 = await window.fetch(
+				'http://localhost:8080/path/to/virtual-server/index.html'
+			);
+
+			expect(await response2.text()).toBe(htmlFileContent.toString());
+
+			const response3 = await window.fetch(
+				'http://localhost:8080/path/to/virtual-server/index.html?query=value'
+			);
+
+			expect(await response3.text()).toBe(htmlFileContent.toString());
+
+			const response4 = await window.fetch(
+				'http://localhost:8080/path/to/virtual-server/css/style.css'
+			);
+
+			expect(await response4.text()).toBe(cssFileContent.toString());
+
+			const response5 = await window.fetch(
+				'http://localhost:8080/path/to/virtual-server/not_found.js'
+			);
+
+			expect(response5.ok).toBe(false);
+			expect(response5.status).toBe(404);
+			expect(response5.statusText).toBe('Not Found');
+			expect(window.happyDOM.virtualConsolePrinter.readAsString()).toBe(
+				`GET http://localhost:8080/path/to/virtual-server/not_found.js 404 (Not Found)\n`
+			);
+			expect(await response5.text()).toBe(
+				'<html><head><title>Happy DOM Virtual Server - 404 Not Found</title></head><body><h1>Happy DOM Virtual Server - 404 Not Found</h1></body></html>'
+			);
+		});
+
+		it('Handles virtual server defined as a RegExp with origin', async () => {
+			const window = new Window({
+				url: 'http://localhost:8080/',
+				settings: {
+					fetch: {
+						virtualServers: [
+							{
+								url: /https:\/\/example\.com\/[a-z]{2}\/[a-z]{2}\//,
+								directory: './test/fetch/virtual-server'
+							}
+						]
+					}
+				}
+			});
+			const htmlFileContent = await FS.promises.readFile(
+				Path.resolve('./test/fetch/virtual-server/index.html')
+			);
+			const cssFileContent = await FS.promises.readFile(
+				Path.resolve('./test/fetch/virtual-server/css/style.css')
+			);
+
+			const response = await window.fetch('https://example.com/gb/en/');
+
+			expect(await response.text()).toBe(htmlFileContent.toString());
+
+			const response2 = await window.fetch('https://example.com/se/sv/index.html');
+
+			expect(await response2.text()).toBe(htmlFileContent.toString());
+
+			const response3 = await window.fetch('https://example.com/se/sv/index.html?query=value');
+
+			expect(await response3.text()).toBe(htmlFileContent.toString());
+
+			const response4 = await window.fetch('https://example.com/fi/fi/css/style.css');
+
+			expect(await response4.text()).toBe(cssFileContent.toString());
+
+			const response5 = await window.fetch('https://example.com/gb/en/not_found.js');
+
+			expect(response5.ok).toBe(false);
+			expect(response5.status).toBe(404);
+			expect(response5.statusText).toBe('Not Found');
+			expect(window.happyDOM.virtualConsolePrinter.readAsString()).toBe(
+				`GET https://example.com/gb/en/not_found.js 404 (Not Found)\n`
+			);
+			expect(await response5.text()).toBe(
+				'<html><head><title>Happy DOM Virtual Server - 404 Not Found</title></head><body><h1>Happy DOM Virtual Server - 404 Not Found</h1></body></html>'
+			);
+
+			const promise = mockNetwork('http', '404 not found', {
+				statusCode: 404,
+				statusMessage: 'Not Found',
+				headers: {}
+			});
+
+			const response6 = await window.fetch('http://localhost:8080/404/');
+
+			await promise;
+
+			expect(response6.ok).toBe(false);
+			expect(response6.status).toBe(404);
+			expect(response6.statusText).toBe('Not Found');
+			expect(window.happyDOM.virtualConsolePrinter.readAsString()).toBe(
+				`GET http://localhost:8080/404/ 404 (Not Found)\n`
+			);
+			expect(await response6.text()).toBe('404 not found');
+		});
+
+		it('Handles relative virtual server defined as a RegExp without origin', async () => {
+			const window = new Window({
+				url: 'http://localhost:8080/',
+				settings: {
+					fetch: {
+						virtualServers: [
+							{
+								url: /path\/to\/virtual-server\/[a-z]{2}\/[a-z]{2}\//,
+								directory: './test/fetch/virtual-server'
+							}
+						]
+					}
+				}
+			});
+			const htmlFileContent = await FS.promises.readFile(
+				Path.resolve('./test/fetch/virtual-server/index.html')
+			);
+			const cssFileContent = await FS.promises.readFile(
+				Path.resolve('./test/fetch/virtual-server/css/style.css')
+			);
+
+			const response = await window.fetch('http://localhost:8080/path/to/virtual-server/gb/en/');
+
+			expect(await response.text()).toBe(htmlFileContent.toString());
+
+			const response2 = await window.fetch(
+				'http://localhost:8080/path/to/virtual-server/se/sv/index.html'
+			);
+
+			expect(await response2.text()).toBe(htmlFileContent.toString());
+
+			const response3 = await window.fetch(
+				'http://localhost:8080/path/to/virtual-server/se/sv/index.html?query=value'
+			);
+
+			expect(await response3.text()).toBe(htmlFileContent.toString());
+
+			const response4 = await window.fetch(
+				'http://localhost:8080/path/to/virtual-server/fi/fi/css/style.css'
+			);
+
+			expect(await response4.text()).toBe(cssFileContent.toString());
+
+			const response5 = await window.fetch(
+				'http://localhost:8080/path/to/virtual-server/gb/en/not_found.js'
+			);
+
+			expect(response5.ok).toBe(false);
+			expect(response5.status).toBe(404);
+			expect(response5.statusText).toBe('Not Found');
+			expect(window.happyDOM.virtualConsolePrinter.readAsString()).toBe(
+				`GET http://localhost:8080/path/to/virtual-server/gb/en/not_found.js 404 (Not Found)\n`
+			);
+			expect(await response5.text()).toBe(
+				'<html><head><title>Happy DOM Virtual Server - 404 Not Found</title></head><body><h1>Happy DOM Virtual Server - 404 Not Found</h1></body></html>'
+			);
 		});
 	});
 });

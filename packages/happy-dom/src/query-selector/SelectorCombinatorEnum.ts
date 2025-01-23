@@ -1,7 +1,8 @@
 enum SelectorCombinatorEnum {
 	descendant = 'descendant',
 	child = 'child',
-	adjacentSibling = 'adjacentSibling'
+	adjacentSibling = 'adjacentSibling',
+	subsequentSibling = 'subsequentSibling'
 }
 
 export default SelectorCombinatorEnum;

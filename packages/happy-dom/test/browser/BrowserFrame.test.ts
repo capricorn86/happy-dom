@@ -772,6 +772,45 @@ describe('BrowserFrame', () => {
 			);
 			expect(page.mainFrame.url).toBe('http://localhost:3000/redirected/');
 		});
+
+		it('Navigates to a virtual server page.', async () => {
+			const browser = new Browser({
+				settings: {
+					fetch: {
+						virtualServers: [
+							{
+								url: /https:\/\/example\.com\/[a-z]{2}\/[a-z]{2}\//,
+								directory: './test/fetch/virtual-server'
+							}
+						]
+					}
+				}
+			});
+			const page = browser.newPage();
+
+			await page.mainFrame.goto('https://example.com/sv/se/');
+
+			await page.mainFrame.waitUntilComplete();
+
+			expect(page.mainFrame.url).toBe('https://example.com/sv/se/');
+			expect(page.mainFrame.content).toBe(`<html><head>
+    <title>Virtual Server</title>
+    <script src="js/async.js" async=""></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div id="async-1">true</div>
+    <div id="async-2">true</div>
+    <div id="sync">true</div>
+    <script src="js/sync.js"></script>
+
+
+</body></html>`);
+			expect(
+				page.mainFrame.window.getComputedStyle(page.mainFrame.document.body).backgroundColor
+			).toBe('red');
+		});
 	});
 
 	describe('goBack()', () => {

@@ -1212,6 +1212,45 @@ describe('QuerySelector', () => {
 				container.children[0]
 			]);
 		});
+
+		it('Returns all elements for subsequent sibling selector using ".a ~ .a"', () => {
+			const div = document.createElement('div');
+
+			div.innerHTML = `
+				<div class="a">a1</div>
+				<div class="b">b1</div>
+				<div class="c">c1</div>
+				<div class="a">a2</div>
+				<div class="b">b2</div>
+				<div class="a">a3</div>
+			`;
+
+			const subsequentSiblings = QuerySelector.querySelectorAll(div, '.a ~ .a');
+			expect(subsequentSiblings.length).toBe(2);
+			expect(subsequentSiblings[0].textContent).toBe('a2');
+			expect(subsequentSiblings[1].textContent).toBe('a3');
+
+			// Test cache 1
+			subsequentSiblings[0].className = 'z';
+
+			const subsequentSiblings2 = QuerySelector.querySelectorAll(div, '.a ~ .a');
+			expect(subsequentSiblings2.length).toBe(1);
+			expect(subsequentSiblings2[0].textContent).toBe('a3');
+
+			// Test cache 2
+			div.innerHTML = `
+                <div class="a">a1</div>
+                <div class="b">b1</div>
+                <div class="c">c1</div>
+                <div class="a">a2</div>
+                <div class="b">b2</div>
+                <div class="a">a3</div>
+            `;
+			const subsequentSiblings3 = QuerySelector.querySelectorAll(div, '.a ~ .a');
+			expect(subsequentSiblings3.length).toBe(2);
+			expect(subsequentSiblings3[0].textContent).toBe('a2');
+			expect(subsequentSiblings3[1].textContent).toBe('a3');
+		});
 	});
 
 	describe('querySelector()', () => {
@@ -1638,6 +1677,42 @@ describe('QuerySelector', () => {
 
 			expect(div.querySelector('.class1.class2')).toBe(div.children[0]);
 		});
+
+		it('Returns element matching subsequent sibling selector using ".a ~ .b"', () => {
+			const div = document.createElement('div');
+
+			div.innerHTML = `
+				<div class="a">a1</div>
+				<div class="b">b1</div>
+				<div class="c">c1</div>
+				<div class="a">a2</div>
+				<div class="b">b2</div>
+				<div class="a">a3</div>
+			`;
+
+			const sibling = <HTMLElement>div.querySelector('.a ~ .b');
+			const secondChild = div.children[1];
+
+			expect(secondChild === sibling).toBe(true);
+			expect(sibling.textContent).toBe('b1');
+
+			// Test cache 1
+			sibling.setAttribute('class', 'z');
+
+			expect(div.querySelector('.a ~ .b')).toBe(div.children[4]);
+
+			// Test cache 2
+			div.innerHTML = `
+                <div class="a">a1</div>
+                <div class="b">b1</div>
+                <div class="c">c1</div>
+                <div class="a">a2</div>
+                <div class="b">b2</div>
+                <div class="a">a3</div>
+            `;
+
+			expect(div.querySelector('.a ~ .b')).toBe(div.children[1]);
+		});
 	});
 
 	describe('matches()', () => {
@@ -1816,6 +1891,45 @@ describe('QuerySelector', () => {
 			expect(QuerySelector.matches(element, ':is', { ignoreErrors: true })).toBe(null);
 			expect(QuerySelector.matches(element, ':where', { ignoreErrors: true })).toBe(null);
 			expect(QuerySelector.matches(element, 'div:not', { ignoreErrors: true })).toBe(null);
+		});
+
+		it('Returns element matching subsequent sibling selector using ".a ~ .b"', () => {
+			const div = document.createElement('div');
+
+			div.innerHTML = `
+				<div class="a">a1</div>
+				<div class="b">b1</div>
+				<div class="c">c1</div>
+				<div class="a">a2</div>
+				<div class="b">b2</div>
+				<div class="a">a3</div>
+			`;
+
+			const sibling = <HTMLElement>div.querySelector('.a ~ .b');
+
+			expect(sibling.matches('.a ~ .b')).toBe(true);
+			expect(sibling.matches('.a ~ .z')).toBe(false);
+
+			// Test cache 1
+			sibling.setAttribute('class', 'z');
+
+			expect(sibling.matches('.a ~ .b')).toBe(false);
+			expect(sibling.matches('.a ~ .z')).toBe(true);
+
+			// Test cache 2
+			div.innerHTML = `
+                <div class="a">a1</div>
+                <div class="b">b1</div>
+                <div class="c">c1</div>
+                <div class="a">a2</div>
+                <div class="b">b2</div>
+                <div class="a">a3</div>
+            `;
+
+			const sibling2 = <HTMLElement>div.querySelector('.a ~ .b');
+
+			expect(sibling2.matches('.a ~ .b')).toBe(true);
+			expect(sibling2.matches('.a ~ .z')).toBe(false);
 		});
 	});
 });

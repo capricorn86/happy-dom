@@ -3,10 +3,8 @@ import CookieSameSiteEnum from './enums/CookieSameSiteEnum.js';
 export default interface ICookie {
 	// Required
 	key: string;
-	value: string | null;
 	originURL: URL;
-
-	// Optional
+	value: string | null;
 	domain: string;
 	path: string;
 	expires: Date | null;
