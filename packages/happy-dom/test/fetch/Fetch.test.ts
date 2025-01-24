@@ -44,7 +44,8 @@ describe('Fetch', () => {
 		schema: 'http' | 'https',
 		specification?: {
 			responseText?: string | string[];
-			beforeResponse: IBeforeResponse;
+			responseProperties?: Record<string, unknown>;
+			beforeResponse?: IBeforeResponse;
 		}
 	): IMockNetwork {
 		const requestHistory: IRequestHistoryEntry[] = [];
@@ -65,11 +66,11 @@ describe('Fetch', () => {
 							}
 						}
 
-						const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-						response.statusCode = 200;
-						response.statusMessage = 'OK';
-						response.headers = {};
-						response.rawHeaders = [];
+						const response = Object.assign(
+							<HTTP.IncomingMessage>Stream.Readable.from(generate()),
+							{ statusCode: 200, statusMessage: 'OK', headers: {}, rawHeaders: [] },
+							specification?.responseProperties ?? {}
+						);
 
 						if (event === 'response') {
 							if (specification?.beforeResponse) {
@@ -160,13 +161,8 @@ describe('Fetch', () => {
 
 			const network = mockNetwork('https', {
 				responseText,
-				beforeResponse({ response }) {
-					response.rawHeaders = [
-						'content-type',
-						'text/html',
-						'content-length',
-						String(responseText.length)
-					];
+				responseProperties: {
+					rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
 				}
 			});
 
@@ -226,13 +222,13 @@ describe('Fetch', () => {
 
 			const network = mockNetwork('http', {
 				responseText,
-				beforeResponse({ response }) {
-					response.rawHeaders = [
+				responseProperties: {
+					rawHeaders: [
 						'content-type',
 						'application/json',
 						'content-length',
 						String(responseText.length)
-					];
+					]
 				}
 			});
 
@@ -295,13 +291,8 @@ describe('Fetch', () => {
 
 			const network = mockNetwork('https', {
 				responseText,
-				beforeResponse({ response }) {
-					response.rawHeaders = [
-						'content-type',
-						'text/html',
-						'content-length',
-						String(responseText.length)
-					];
+				responseProperties: {
+					rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
 				}
 			});
 
@@ -361,8 +352,8 @@ describe('Fetch', () => {
 
 			mockNetwork('http', {
 				responseText: chunks,
-				beforeResponse({ response }) {
-					response.rawHeaders = ['content-length', String(chunksLength)];
+				responseProperties: {
+					rawHeaders: ['content-length', String(chunksLength)]
 				}
 			});
 
@@ -792,12 +783,10 @@ describe('Fetch', () => {
 			const redirectURL = 'https://localhost:8080/redirect/';
 
 			mockNetwork('https', {
-				beforeResponse({ response }) {
-					Object.assign(response, {
-						statusCode: 301,
-						statusMessage: 'Moved Permanently',
-						rawHeaders: ['Location', redirectURL]
-					});
+				responseProperties: {
+					statusCode: 301,
+					statusMessage: 'Moved Permanently',
+					rawHeaders: ['Location', redirectURL]
 				}
 			});
 
@@ -813,11 +802,9 @@ describe('Fetch', () => {
 			const redirectURL = '<>';
 
 			mockNetwork('https', {
-				beforeResponse({ response }) {
-					Object.assign(response, {
-						statusCode: 301,
-						rawHeaders: ['Location', redirectURL]
-					});
+				responseProperties: {
+					statusCode: 301,
+					rawHeaders: ['Location', redirectURL]
 				}
 			});
 
@@ -833,11 +820,9 @@ describe('Fetch', () => {
 			const redirectURL = 'https://example.com/redirect/';
 
 			mockNetwork('https', {
-				beforeResponse({ response }) {
-					Object.assign(response, {
-						statusCode: 301,
-						rawHeaders: ['Location', redirectURL]
-					});
+				responseProperties: {
+					statusCode: 301,
+					rawHeaders: ['Location', redirectURL]
 				}
 			});
 
@@ -852,10 +837,8 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/test/';
 
 			mockNetwork('https', {
-				beforeResponse({ response }) {
-					Object.assign(response, {
-						statusCode: 301
-					});
+				responseProperties: {
+					statusCode: 301
 				}
 			});
 
@@ -871,11 +854,9 @@ describe('Fetch', () => {
 			let error: Error | null = null;
 
 			mockNetwork('https', {
-				beforeResponse({ response }) {
-					Object.assign(response, {
-						statusCode: 301,
-						rawHeaders: ['Location', redirectURL]
-					});
+				responseProperties: {
+					statusCode: 301,
+					rawHeaders: ['Location', redirectURL]
 				}
 			});
 
@@ -900,11 +881,9 @@ describe('Fetch', () => {
 			let error: Error | null = null;
 
 			mockNetwork('https', {
-				beforeResponse({ response }) {
-					Object.assign(response, {
-						statusCode: 301,
-						rawHeaders: ['Location', redirectURL]
-					});
+				responseProperties: {
+					statusCode: 301,
+					rawHeaders: ['Location', redirectURL]
 				}
 			});
 
@@ -1024,10 +1003,8 @@ describe('Fetch', () => {
 
 			const network = mockNetwork('https', {
 				beforeResponse({ request, response }) {
-					Object.assign(response, {
-						rawHeaders:
-							request.options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : []
-					});
+					response.rawHeaders =
+						request.options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : [];
 				}
 			});
 
@@ -1147,10 +1124,8 @@ describe('Fetch', () => {
 
 			mockNetwork('https', {
 				responseText,
-				beforeResponse({ response }) {
-					Object.assign(response, {
-						rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
-					});
+				responseProperties: {
+					rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
 				}
 			});
 
@@ -1176,11 +1151,11 @@ describe('Fetch', () => {
 			});
 			const url = 'https://localhost:8080/some/path';
 
-			mockNetwork('https', 'some text', {
-				statusCode: 200,
-				statusMessage: 'OK',
-				headers: {},
-				rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
+			mockNetwork('https', {
+				responseText: 'some text',
+				responseProperties: {
+					rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
+				}
 			});
 
 			const response = await window.fetch(url);
@@ -1208,10 +1183,8 @@ describe('Fetch', () => {
 
 			mockNetwork('https', {
 				responseText,
-				beforeResponse({ response }) {
-					Object.assign(response, {
-						rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
-					});
+				responseProperties: {
+					rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
 				}
 			});
 
@@ -1279,10 +1252,8 @@ describe('Fetch', () => {
 
 			const network = mockNetwork('https', {
 				beforeResponse({ request, response }) {
-					Object.assign(response, {
-						rawHeaders:
-							request.options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : []
-					});
+					response.rawHeaders =
+						request.options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : [];
 				}
 			});
 
@@ -1342,10 +1313,8 @@ describe('Fetch', () => {
 		it('Sets document cookie string if the response contains a "Set-Cookie" header if request cridentials are set to "include".', async () => {
 			const window = new Window({ url: 'https://localhost:8080' });
 			mockNetwork('https', {
-				beforeResponse({ request, response }) {
-					Object.assign(response, {
-						rawHeaders: ['Set-Cookie', 'key1=value1', 'Set-Cookie', 'key2=value2']
-					});
+				responseProperties: {
+					rawHeaders: ['Set-Cookie', 'key1=value1', 'Set-Cookie', 'key2=value2']
 				}
 			});
 
@@ -1397,14 +1366,12 @@ describe('Fetch', () => {
 				const window = new Window({ url: 'https://localhost:8080/' });
 				const responseText = 'some response text';
 
-				const network = mockNetwork('https', {
+				mockNetwork('https', {
 					responseText,
-					beforeResponse({ response }) {
-						Object.assign(response, {
-							statusCode: errorCode,
-							statusMessage: 'Bad Request',
-							rawHeaders: ['Content-Type', 'text/plain']
-						});
+					responseProperties: {
+						statusCode: errorCode,
+						statusMessage: 'Bad Request',
+						rawHeaders: ['Content-Type', 'text/plain']
 					}
 				});
 
@@ -1740,10 +1707,7 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
-			mockNetwork('https', undefined, {
-				statusCode: 200,
-				rawHeaders: ['Content-Encoding', 'gzip']
-			});
+			mockNetwork('https', { responseProperties: { rawHeaders: ['Content-Encoding', 'gzip'] } });
 
 			const response = await window.fetch(url, { method: 'GET' });
 			const text = await response.text();
@@ -1901,25 +1865,10 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 204;
-								response.headers = {};
-								response.rawHeaders = ['Content-Encoding', 'deflate'];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
+			mockNetwork('https', {
+				responseProperties: {
+					statusCode: 204,
+					rawHeaders: ['Content-Encoding', 'deflate']
 				}
 			});
 
@@ -4502,11 +4451,9 @@ describe('Fetch', () => {
 
 			const promise = mockNetwork('http', {
 				responseText: '404 not found',
-				beforeResponse({ response }) {
-					Object.assign(response, {
-						statusCode: 404,
-						statusMessage: 'Not Found'
-					});
+				responseProperties: {
+					statusCode: 404,
+					statusMessage: 'Not Found'
 				}
 			});
 
@@ -4632,11 +4579,9 @@ describe('Fetch', () => {
 
 			const promise = mockNetwork('http', {
 				responseText: '404 not found',
-				beforeResponse({ response }) {
-					Object.assign(response, {
-						statusCode: 404,
-						statusMessage: 'Not Found'
-					});
+				responseProperties: {
+					statusCode: 404,
+					statusMessage: 'Not Found'
 				}
 			});
 
