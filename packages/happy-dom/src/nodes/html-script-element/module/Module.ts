@@ -1,12 +1,15 @@
-import BrowserWindow from '../window/BrowserWindow.js';
+import BrowserWindow from '../../../window/BrowserWindow.js';
 import { URL } from 'url';
 
 /**
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import
+ * Module.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import
  */
 export default class Module {
 	public readonly window: BrowserWindow;
 	public readonly url: URL;
+	public type: 'javascript' | 'json' | 'css' = 'javascript';
 	public exports: { [k: string]: any } = {};
 	public imports: Map<string, Module> = new Map();
 

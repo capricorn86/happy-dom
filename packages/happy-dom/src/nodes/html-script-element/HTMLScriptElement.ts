@@ -9,6 +9,7 @@ import Attr from '../attr/Attr.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import ResourceFetch from '../../fetch/ResourceFetch.js';
 import DocumentReadyStateManager from '../document/DocumentReadyStateManager.js';
+import DynamicImport from '../../dynamic-import/DynamicImport.js';
 
 /**
  * HTML Script Element.
@@ -195,29 +196,34 @@ export default class HTMLScriptElement extends HTMLElement {
 			} else if (browserSettings && !browserSettings.disableJavaScriptEvaluation) {
 				const textContent = this.textContent;
 				const type = this.getAttribute('type');
-				if (
-					textContent &&
-					(type === null ||
+
+				if (textContent) {
+					if (type === 'module') {
+						this.#parseModule(new URL(this[PropertySymbol.window].location.href), textContent);
+					} else if (
+						type === null ||
 						type === 'application/x-ecmascript' ||
 						type === 'application/x-javascript' ||
-						type.startsWith('text/javascript'))
-				) {
-					this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = this;
-
-					const code = `//# sourceURL=${this[PropertySymbol.window].location.href}\n` + textContent;
-
-					if (
-						browserSettings.disableErrorCapturing ||
-						browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
+						type.startsWith('text/javascript')
 					) {
-						this[PropertySymbol.window].eval(code);
-					} else {
-						WindowErrorUtility.captureError(this[PropertySymbol.window], () =>
-							this[PropertySymbol.window].eval(code)
-						);
-					}
+						this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = this;
 
-					this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = null;
+						const code =
+							`//# sourceURL=${this[PropertySymbol.window].location.href}\n` + textContent;
+
+						if (
+							browserSettings.disableErrorCapturing ||
+							browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
+						) {
+							this[PropertySymbol.window].eval(code);
+						} else {
+							WindowErrorUtility.captureError(this[PropertySymbol.window], () =>
+								this[PropertySymbol.window].eval(code)
+							);
+						}
+
+						this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = null;
+					}
 				}
 			}
 		}
@@ -242,6 +248,38 @@ export default class HTMLScriptElement extends HTMLElement {
 	}
 
 	/**
+	 * Parses a module.
+	 *
+	 * @param url URL.
+	 * @param source Source.
+	 */
+	async #parseModule(url: URL, source: string): Promise<void> {
+		const browserSettings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
+		const dynamicImport = new DynamicImport(this[PropertySymbol.window]);
+		const readyStateManager = (<{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }>(
+			(<unknown>this[PropertySymbol.window])
+		))[PropertySymbol.readyStateManager];
+		readyStateManager.startTask();
+
+		if (
+			browserSettings.disableErrorCapturing ||
+			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
+		) {
+			await dynamicImport.parseModule(url, 'javascript', source);
+		} else {
+			try {
+				await dynamicImport.parseModule(url, 'javascript', source);
+			} catch (error) {
+				WindowErrorUtility.dispatchError(this, error);
+			}
+		}
+
+		readyStateManager.endTask();
+
+		this.dispatchEvent(new Event('load'));
+	}
+
+	/**
 	 * Returns a URL relative to the given Location object.
 	 *
 	 * @param url URL.
@@ -249,10 +287,6 @@ export default class HTMLScriptElement extends HTMLElement {
 	async #loadScript(url: string): Promise<void> {
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
-		const async =
-			this.getAttribute('async') !== null ||
-			this.getAttribute('defer') !== null ||
-			this.getAttribute('type') === 'module';
 
 		if (!browserFrame) {
 			return;
@@ -293,14 +327,42 @@ export default class HTMLScriptElement extends HTMLElement {
 			return;
 		}
 
+		this.#loadedScriptURL = absoluteURL;
+
+		if (this.getAttribute('type') === 'module') {
+			const readyStateManager = (<
+				{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }
+			>(<unknown>this[PropertySymbol.window]))[PropertySymbol.readyStateManager];
+			const dynamicImport = new DynamicImport(this[PropertySymbol.window]);
+
+			readyStateManager.startTask();
+
+			if (
+				browserSettings.disableErrorCapturing ||
+				browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
+			) {
+				await dynamicImport.import(absoluteURL);
+			} else {
+				try {
+					await dynamicImport.import(absoluteURL);
+				} catch (error) {
+					WindowErrorUtility.dispatchError(this, error);
+				}
+			}
+
+			readyStateManager.endTask();
+
+			this.dispatchEvent(new Event('load'));
+			return;
+		}
+
 		const resourceFetch = new ResourceFetch({
 			browserFrame,
 			window: this[PropertySymbol.window]
 		});
+		const async = this.getAttribute('async') !== null || this.getAttribute('defer') !== null;
 		let code: string | null = null;
 		let error: Error | null = null;
-
-		this.#loadedScriptURL = absoluteURL;
 
 		if (async) {
 			const readyStateManager = (<
