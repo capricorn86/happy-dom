@@ -1580,15 +1580,17 @@ describe('BrowserWindow', () => {
 				let loadEventTarget: EventTarget | null = null;
 				let loadEventCurrentTarget: EventTarget | null = null;
 
-				vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
-					if (url.endsWith('.css')) {
+				vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (
+					url: string | URL
+				) {
+					if ((<string>url).endsWith('.css')) {
 						resourceFetchCSSWindow = this.window;
-						resourceFetchCSSURL = url;
+						resourceFetchCSSURL = <string>url;
 						return cssResponse;
 					}
 
 					resourceFetchJSWindow = this.window;
-					resourceFetchJSURL = url;
+					resourceFetchJSURL = <string>url;
 					return jsResponse;
 				});
 

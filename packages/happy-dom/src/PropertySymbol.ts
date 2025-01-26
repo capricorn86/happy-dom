@@ -379,4 +379,5 @@ export const root = Symbol('root');
 export const filterNode = Symbol('filterNode');
 export const customElementReactionStack = Symbol('customElementReactionStack');
 export const dispatching = Symbol('dispatching');
-export const modules = Symbol('modules');
+export const moduleCache = Symbol('moduleCache');
+export const preloadCache = Symbol('preloadCache');

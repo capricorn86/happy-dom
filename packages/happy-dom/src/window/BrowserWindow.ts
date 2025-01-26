@@ -307,7 +307,8 @@ import DOMPoint from '../dom/DOMPoint.js';
 import SVGAnimatedLengthList from '../svg/SVGAnimatedLengthList.js';
 import CustomElementReactionStack from '../custom-element/CustomElementReactionStack.js';
 import IScrollToOptions from './IScrollToOptions.js';
-import Module from '../dynamic-import/Module.js';
+import IModule from '../module/IModule.js';
+import PreloadedResponse from '../fetch/PreloadedResponse.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -796,15 +797,16 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.window]: BrowserWindow = this;
 	public [PropertySymbol.internalId]: number = -1;
 	public [PropertySymbol.customElementReactionStack] = new CustomElementReactionStack(this);
-	public [PropertySymbol.modules]: {
-		json: Map<string, Module>;
-		css: Map<string, Module>;
-		javascript: Map<string, Module>;
+	public [PropertySymbol.moduleCache]: {
+		json: Map<string, IModule>;
+		css: Map<string, IModule>;
+		esm: Map<string, IModule>;
 	} = {
 		json: new Map(),
 		css: new Map(),
-		javascript: new Map()
+		esm: new Map()
 	};
+	public [PropertySymbol.preloadCache]: Map<string, PreloadedResponse> = new Map();
 
 	// Private properties
 	#browserFrame: IBrowserFrame;
@@ -1740,6 +1742,12 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		if (this.history[PropertySymbol.destroy]) {
 			this.history[PropertySymbol.destroy]();
 		}
+
+		this[PropertySymbol.moduleCache].json.clear();
+		this[PropertySymbol.moduleCache].css.clear();
+		this[PropertySymbol.moduleCache].esm.clear();
+
+		this[PropertySymbol.preloadCache].clear();
 
 		this.document[PropertySymbol.activeElement] = null;
 		this.document[PropertySymbol.nextActiveElement] = null;

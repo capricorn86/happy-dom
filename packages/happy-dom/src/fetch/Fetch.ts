@@ -7,7 +7,7 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import HTTP, { IncomingMessage } from 'http';
 import HTTPS from 'https';
 import Zlib from 'zlib';
-import URL from '../url/URL.js';
+import { URL } from 'url';
 import FS from 'fs';
 import Path from 'path';
 import { Socket } from 'net';
@@ -30,6 +30,7 @@ import { Buffer } from 'buffer';
 import FetchBodyUtility from './utilities/FetchBodyUtility.js';
 import IFetchInterceptor from './types/IFetchInterceptor.js';
 import VirtualServerUtility from './utilities/VirtualServerUtility.js';
+import PreloadedResponseStateEnum from './PreloadedResponseStateEnum.js';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -129,12 +130,6 @@ export default class Fetch {
 
 		FetchRequestValidationUtility.validateSchema(this.request);
 
-		const virtualServerResponse = await this.getVirtualServerResponse();
-
-		if (virtualServerResponse) {
-			return virtualServerResponse;
-		}
-
 		if (this.request.signal.aborted) {
 			throw new this.#window.DOMException(
 				'The operation was aborted.',
@@ -152,7 +147,7 @@ export default class Fetch {
 						window: this.#window,
 						response: this.response,
 						request: this.request
-					})
+				  })
 				: undefined;
 			return interceptedResponse instanceof Response ? interceptedResponse : this.response;
 		}
@@ -172,12 +167,45 @@ export default class Fetch {
 			);
 		}
 
+		const preloadedResponse = this.#window[PropertySymbol.preloadCache].get(
+			this.request[PropertySymbol.url].href
+		);
+
+		if (
+			preloadedResponse &&
+			(preloadedResponse.state === PreloadedResponseStateEnum.loaded ||
+				preloadedResponse.state === PreloadedResponseStateEnum.loading)
+		) {
+			if (
+				preloadedResponse.options.crossOrigin === 'use-credentials' &&
+				this.request.credentials !== 'include'
+			) {
+				this.#browserFrame?.page?.console.warn(
+					`A preload for '${this.request.url}' is found, but is not used because the request credentials mode does not match. Consider taking a look at crossorigin attribute.`
+				);
+			} else {
+				const response = await preloadedResponse.consume();
+				this.#window[PropertySymbol.preloadCache].delete(this.request[PropertySymbol.url].href);
+				if (response) {
+					return response;
+				}
+			}
+		} else if (preloadedResponse && preloadedResponse.state === PreloadedResponseStateEnum.intial) {
+			preloadedResponse.state = PreloadedResponseStateEnum.loading;
+		}
+
 		if (!this.disableCache) {
 			const cachedResponse = await this.getCachedResponse();
 
 			if (cachedResponse) {
 				return cachedResponse;
 			}
+		}
+
+		const virtualServerResponse = await this.getVirtualServerResponse();
+
+		if (virtualServerResponse) {
+			return virtualServerResponse;
 		}
 
 		if (!this.disableSameOriginPolicy) {
@@ -320,8 +348,6 @@ export default class Fetch {
 			return VirtualServerUtility.getNotFoundResponse(this.#window);
 		}
 
-		this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
-
 		const body = new this.#window.ReadableStream({
 			start(controller) {
 				setTimeout(() => {
@@ -332,11 +358,30 @@ export default class Fetch {
 		});
 
 		const response = new this.#window.Response(body);
-
 		response[PropertySymbol.buffer] = buffer;
 		(<string>response.url) = this.request.url;
+		response[PropertySymbol.cachedResponse] = this.#browserFrame.page?.context?.responseCache.add(
+			this.request,
+			{
+				...response,
+				body: response[PropertySymbol.buffer],
+				waitingForBody: false
+			}
+		);
 
-		return response;
+		const interceptedResponse = this.interceptor?.afterAsyncResponse
+			? await this.interceptor.afterAsyncResponse({
+					window: this.#window,
+					response: await response,
+					request: this.request
+			  })
+			: undefined;
+
+		this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+
+		const returnResponse = interceptedResponse instanceof Response ? interceptedResponse : response;
+
+		return returnResponse;
 	}
 
 	/**
@@ -476,7 +521,7 @@ export default class Fetch {
 							window: this.#window,
 							response: await response,
 							request: this.request
-						})
+					  })
 					: undefined;
 				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 				const returnResponse =

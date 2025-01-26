@@ -10,6 +10,12 @@ import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import ResourceFetch from '../../fetch/ResourceFetch.js';
 import DocumentReadyStateManager from '../document/DocumentReadyStateManager.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
+import ECMAScriptModule from '../../module/ECMAScriptModule.js';
+import PreloadedResponse from '../../fetch/PreloadedResponse.js';
+import PreloadedResponseStateEnum from '../../fetch/PreloadedResponseStateEnum.js';
+import Fetch from '../../fetch/Fetch.js';
+import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
+import ModuleFactory from '../../module/ModuleFactory.js';
 
 /**
  * HTML Link Element.
@@ -209,8 +215,22 @@ export default class HTMLLinkElement extends HTMLElement {
 	 */
 	public override [PropertySymbol.connectedToDocument](): void {
 		super[PropertySymbol.connectedToDocument]();
-		if (this[PropertySymbol.evaluateCSS]) {
-			this.#loadStyleSheet(this.getAttribute('href'), this.getAttribute('rel'));
+
+		const rel = this.getAttribute('rel');
+		const href = this.getAttribute('href');
+
+		if (rel && href) {
+			switch (rel) {
+				case 'stylesheet':
+					this.#loadStyleSheet(href);
+					break;
+				case 'modulepreload':
+					this.#preloadModule(href);
+					break;
+				case 'preload':
+					this.#preloadResource(href);
+					break;
+			}
 		}
 	}
 
@@ -223,11 +243,109 @@ export default class HTMLLinkElement extends HTMLElement {
 	): void {
 		super[PropertySymbol.onSetAttribute](attribute, replacedAttribute);
 
-		if (attribute[PropertySymbol.name] === 'rel') {
-			this.#loadStyleSheet(this.getAttribute('href'), attribute[PropertySymbol.value]);
-		} else if (attribute[PropertySymbol.name] === 'href') {
-			this.#loadStyleSheet(attribute[PropertySymbol.value], this.getAttribute('rel'));
+		if (attribute[PropertySymbol.name] === 'rel' || attribute[PropertySymbol.name] === 'href') {
+			const rel = this.getAttribute('rel');
+			const href = this.getAttribute('href');
+
+			if (rel && href) {
+				switch (rel) {
+					case 'stylesheet':
+						this.#loadStyleSheet(href);
+						break;
+					case 'modulepreload':
+						this.#preloadModule(href);
+						break;
+					case 'preload':
+						this.#preloadResource(href);
+						break;
+				}
+			}
 		}
+	}
+
+	/**
+	 * Preloads a module.
+	 *
+	 * @param url URL.
+	 */
+	async #preloadModule(url: string): Promise<void> {
+		const absoluteURL = new URL(url, this[PropertySymbol.ownerDocument].location.href);
+		const window = this[PropertySymbol.window];
+		const browserSettings = new WindowBrowserContext(window).getSettings();
+
+		if (!browserSettings || !this[PropertySymbol.isConnected]) {
+			return;
+		}
+
+		if (
+			browserSettings.disableErrorCapturing ||
+			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
+		) {
+			const module = await ModuleFactory.getModule(window, absoluteURL, url);
+			await module.preload();
+		} else {
+			try {
+				const module = await ModuleFactory.getModule(window, absoluteURL, url);
+				await module.preload();
+			} catch (error) {
+				WindowErrorUtility.dispatchError(this[PropertySymbol.window], error);
+				return;
+			}
+		}
+	}
+
+	/**
+	 * Preloads a resource.
+	 *
+	 * @param url URL.
+	 */
+	async #preloadResource(url: string): Promise<void> {
+		const window = this[PropertySymbol.window];
+		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+
+		if (!browserFrame || !this[PropertySymbol.isConnected]) {
+			return;
+		}
+
+		const absoluteURL = new URL(url, window.location.href).href;
+		const as = this.as;
+		const cached = window[PropertySymbol.preloadCache].get(absoluteURL);
+
+		if (
+			cached &&
+			cached.state !== PreloadedResponseStateEnum.consumed &&
+			cached.state === PreloadedResponseStateEnum.invalid
+		) {
+			return;
+		}
+
+		const preloadedResponse = new PreloadedResponse({
+			crossOrigin: this.crossOrigin
+		});
+
+		window[PropertySymbol.preloadCache].set(absoluteURL, preloadedResponse);
+
+		const fetch = new Fetch({
+			browserFrame,
+			window,
+			url: absoluteURL,
+			disableSameOriginPolicy: as === 'style' || as === 'script' || as === 'image',
+			init: {
+				credentials: this.crossOrigin === 'use-credentials' ? 'include' : 'same-origin'
+			}
+		});
+		const response = await fetch.send();
+
+		if (!response.ok) {
+			preloadedResponse.invalidate();
+			return;
+		}
+
+		if (!response[PropertySymbol.buffer]) {
+			await response.buffer();
+		}
+
+		preloadedResponse.setResponse(response);
 	}
 
 	/**
@@ -236,7 +354,7 @@ export default class HTMLLinkElement extends HTMLElement {
 	 * @param url URL.
 	 * @param rel Rel.
 	 */
-	async #loadStyleSheet(url: string | null, rel: string | null): Promise<void> {
+	async #loadStyleSheet(url: string | null): Promise<void> {
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
 
@@ -246,7 +364,7 @@ export default class HTMLLinkElement extends HTMLElement {
 
 		const browserSettings = browserFrame.page?.context?.browser?.settings;
 
-		if (!url || !rel || rel.toLowerCase() !== 'stylesheet' || !this[PropertySymbol.isConnected]) {
+		if (!this[PropertySymbol.evaluateCSS] || !this[PropertySymbol.isConnected]) {
 			return;
 		}
 

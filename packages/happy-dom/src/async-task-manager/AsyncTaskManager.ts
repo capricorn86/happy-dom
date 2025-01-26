@@ -16,11 +16,13 @@ export default class AsyncTaskManager {
 	private runningTaskCount = 0;
 	private runningTimers: NodeJS.Timeout[] = [];
 	private runningImmediates: NodeJS.Immediate[] = [];
+	private debugTrace: Map<number | NodeJS.Timeout | NodeJS.Immediate, string> = new Map();
 	private waitUntilCompleteTimer: NodeJS.Timeout | null = null;
 	private waitUntilCompleteResolvers: Array<() => void> = [];
 	private aborted = false;
 	private destroyed = false;
 	#browserFrame: IBrowserFrame;
+	#debugTimeout: NodeJS.Timeout | null;
 
 	/**
 	 * Constructor.
@@ -84,6 +86,9 @@ export default class AsyncTaskManager {
 			this.waitUntilCompleteTimer = null;
 		}
 		this.runningTimers.push(timerID);
+		if (this.#browserFrame.page?.context?.browser?.settings?.debug?.traceWaitUntilComplete > 0) {
+			this.debugTrace.set(timerID, new Error().stack);
+		}
 	}
 
 	/**
@@ -99,9 +104,10 @@ export default class AsyncTaskManager {
 		const index = this.runningTimers.indexOf(timerID);
 		if (index !== -1) {
 			this.runningTimers.splice(index, 1);
-			if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
-				this.resolveWhenComplete();
-			}
+			this.resolveWhenComplete();
+		}
+		if (this.#browserFrame.page?.context?.browser?.settings?.debug?.traceWaitUntilComplete > 0) {
+			this.debugTrace.delete(timerID);
 		}
 	}
 
@@ -120,6 +126,9 @@ export default class AsyncTaskManager {
 			this.waitUntilCompleteTimer = null;
 		}
 		this.runningImmediates.push(immediateID);
+		if (this.#browserFrame.page?.context?.browser?.settings?.debug?.traceWaitUntilComplete > 0) {
+			this.debugTrace.set(immediateID, new Error().stack);
+		}
 	}
 
 	/**
@@ -135,9 +144,10 @@ export default class AsyncTaskManager {
 		const index = this.runningImmediates.indexOf(immediateID);
 		if (index !== -1) {
 			this.runningImmediates.splice(index, 1);
-			if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
-				this.resolveWhenComplete();
-			}
+			this.resolveWhenComplete();
+		}
+		if (this.#browserFrame.page?.context?.browser?.settings?.debug?.traceWaitUntilComplete > 0) {
+			this.debugTrace.delete(immediateID);
 		}
 	}
 
@@ -163,6 +173,9 @@ export default class AsyncTaskManager {
 		const taskID = this.newTaskID();
 		this.runningTasks[taskID] = abortHandler ? abortHandler : () => {};
 		this.runningTaskCount++;
+		if (this.#browserFrame.page?.context?.browser?.settings?.debug?.traceWaitUntilComplete > 0) {
+			this.debugTrace.set(taskID, new Error().stack);
+		}
 		return taskID;
 	}
 
@@ -178,9 +191,10 @@ export default class AsyncTaskManager {
 		if (this.runningTasks[taskID]) {
 			delete this.runningTasks[taskID];
 			this.runningTaskCount--;
-			if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
-				this.resolveWhenComplete();
-			}
+			this.resolveWhenComplete();
+		}
+		if (this.#browserFrame.page?.context?.browser?.settings?.debug?.traceWaitUntilComplete > 0) {
+			this.debugTrace.delete(taskID);
 		}
 	}
 
@@ -208,7 +222,12 @@ export default class AsyncTaskManager {
 	 */
 	private resolveWhenComplete(): void {
 		if (this.runningTaskCount || this.runningTimers.length || this.runningImmediates.length) {
+			this.applyDebugging();
 			return;
+		}
+
+		if (this.#debugTimeout) {
+			TIMER.clearTimeout(this.#debugTimeout);
 		}
 
 		if (this.waitUntilCompleteTimer) {
@@ -228,8 +247,39 @@ export default class AsyncTaskManager {
 					resolver();
 				}
 				this.aborted = false;
+			} else {
+				this.applyDebugging();
 			}
 		}, 1);
+	}
+
+	/**
+	 * Applies debugging.
+	 */
+	private applyDebugging(): void {
+		const debug = this.#browserFrame.page?.context?.browser?.settings?.debug;
+		if (!debug?.traceWaitUntilComplete || debug.traceWaitUntilComplete < 1) {
+			return;
+		}
+		if (this.#debugTimeout) {
+			TIMER.clearTimeout(this.#debugTimeout);
+		}
+		this.#debugTimeout = TIMER.setTimeout(() => {
+			this.#debugTimeout = null;
+
+			let error = `The maximum time was reached for "waitUntilComplete()".\n\n${
+				this.debugTrace.size
+			} task${
+				this.debugTrace.size === 1 ? '' : 's'
+			} did not end in time.\n\nThe following traces were recorded:\n\n`;
+
+			for (const [key, value] of this.debugTrace.entries()) {
+				const type = typeof key === 'number' ? 'Task' : 'Timer';
+				error += `${type} #${key}\n______________________________________\n${value}\n\n`;
+			}
+
+			throw new Error(error);
+		}, debug.traceWaitUntilComplete);
 	}
 
 	/**
@@ -248,6 +298,7 @@ export default class AsyncTaskManager {
 		this.runningTaskCount = 0;
 		this.runningImmediates = [];
 		this.runningTimers = [];
+		this.debugTrace = new Map();
 
 		if (this.waitUntilCompleteTimer) {
 			TIMER.clearTimeout(this.waitUntilCompleteTimer);

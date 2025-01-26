@@ -7,6 +7,7 @@ import Event from '../../../src/event/Event.js';
 import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import EventTarget from '../../../src/event/EventTarget.js';
+import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCaptureEnum.js';
 
 describe('HTMLLinkElement', () => {
 	let window: Window;
@@ -94,9 +95,11 @@ describe('HTMLLinkElement', () => {
 			let loadEventTarget: EventTarget | null = null;
 			let loadEventCurrentTarget: EventTarget | null = null;
 
-			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
+			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (
+				url: string | URL
+			) {
 				loadedWindow = this.window;
-				loadedURL = url;
+				loadedURL = <string>url;
 				return css;
 			});
 
@@ -152,9 +155,11 @@ describe('HTMLLinkElement', () => {
 			let loadedWindow: BrowserWindow | null = null;
 			let loadedURL: string | null = null;
 
-			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
+			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (
+				url: string | URL
+			) {
 				loadedWindow = this.window;
-				loadedURL = url;
+				loadedURL = <string>url;
 				return css;
 			});
 
@@ -176,9 +181,11 @@ describe('HTMLLinkElement', () => {
 			let loadedWindow: BrowserWindow | null = null;
 			let loadedURL: string | null = null;
 
-			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
+			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (
+				url: string | URL
+			) {
 				loadedWindow = this.window;
-				loadedURL = url;
+				loadedURL = <string>url;
 				return css;
 			});
 
@@ -232,9 +239,11 @@ describe('HTMLLinkElement', () => {
 			let loadedWindow: BrowserWindow | null = null;
 			let loadedURL: string | null = null;
 
-			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
+			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (
+				url: string | URL
+			) {
 				loadedWindow = this.window;
-				loadedURL = url;
+				loadedURL = <string>url;
 				return css;
 			});
 
@@ -284,6 +293,77 @@ describe('HTMLLinkElement', () => {
 
 			expect(element.sheet).toBe(null);
 			expect((<Event>(<unknown>loadEvent)).type).toBe('load');
+		});
+
+		it('Preloads modules when "rel" is set to "modulepreload" and only fetches once when preload is ongoing', async () => {
+			const requests: string[] = [];
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					errorCapture: BrowserErrorCaptureEnum.disabled,
+					fetch: {
+						interceptor: {
+							afterAsyncResponse: async ({ request }) => {
+								requests.push(request.url);
+							}
+						},
+						virtualServers: [
+							{
+								url: 'https://localhost:8080/base/js/',
+								directory: './test/nodes/html-script-element/modules/'
+							}
+						]
+					}
+				},
+				console
+			});
+			const document = window.document;
+			const link = document.createElement('link');
+
+			link.rel = 'modulepreload';
+			link.href = '/base/js/TestModuleElement.js';
+
+			document.head.appendChild(link);
+
+			const script = document.createElement('script');
+
+			script.src = '/base/js/TestModuleElement.js';
+			script.type = 'module';
+
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			const testModule = document.createElement('test-module');
+
+			document.body.appendChild(testModule);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(requests.sort()).toEqual([
+				'https://localhost:8080/base/js/TestModuleElement.js',
+				'https://localhost:8080/base/js/css/style.css',
+				'https://localhost:8080/base/js/json/data.json',
+				'https://localhost:8080/base/js/utilities/StringUtilityClass.js',
+				'https://localhost:8080/base/js/utilities/apostrophWrapper.js',
+				'https://localhost:8080/base/js/utilities/lazyload.js',
+				'https://localhost:8080/base/js/utilities/stringUtility.js'
+			]);
+
+			expect(window['moduleLoadOrder']).toEqual([
+				'apostrophWrapper.js',
+				'StringUtilityClass.js',
+				'stringUtility.js',
+				'TestModuleElement.js',
+				'lazyload.js'
+			]);
+
+			expect(testModule.shadowRoot?.innerHTML).toBe(`<div>
+            Expect lower case: "value"
+            Expect upper case: "VALUE"
+            Expect lower case. "value"
+            Expect trimmed lower case: "value"
+        </div><div>Lazy-loaded module: true</div>`);
 		});
 	});
 });

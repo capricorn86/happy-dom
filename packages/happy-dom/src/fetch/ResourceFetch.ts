@@ -29,7 +29,7 @@ export default class ResourceFetch {
 	 * @param url URL.
 	 * @returns Response.
 	 */
-	public async fetch(url: string): Promise<string> {
+	public async fetch(url: string | URL): Promise<string> {
 		const fetch = new Fetch({
 			browserFrame: this.#browserFrame,
 			window: this.window,

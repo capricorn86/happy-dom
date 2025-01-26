@@ -1,17 +1,17 @@
 import { beforeEach, describe, it, expect } from 'vitest';
-import ModuleParser from '../../src/dynamic-import/ModuleParser.js';
+import ECMAScriptModuleCompiler from '../../src/module/ECMAScriptModuleCompiler.js';
 import BrowserWindow from '../../src/window/BrowserWindow.js';
 import Window from '../../src/window/Window.js';
 
-describe('ModuleParser', () => {
+describe('ECMAScriptModuleCompiler', () => {
 	let window: BrowserWindow;
 
 	beforeEach(() => {
 		window = new Window();
 	});
 
-	describe('parse()', () => {
-		it('Parses imports and exports of a basic module.', () => {
+	describe('compile()', () => {
+		it('Handles imports and exports of a basic module.', () => {
 			const code = `
                 import StringUtility from "../utilities/StringUtility.js";
                 import { default as DefaultImageUtility } from "../utilities/ImageUtility.js";
@@ -27,15 +27,17 @@ describe('ModuleParser', () => {
                     }
                 }
             `;
-			const parser = new ModuleParser(window);
-			const result = parser.parse('http://localhost:8080/js/app/main.js', code);
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
 
 			expect(result.imports).toEqual([
-				{ url: 'http://localhost:8080/js/utilities/StringUtility.js', type: 'javascript' },
-				{ url: 'http://localhost:8080/js/utilities/ImageUtility.js', type: 'javascript' },
-				{ url: 'http://localhost:8080/js/utilities/NumberUtility.js', type: 'javascript' }
+				{ url: 'http://localhost:8080/js/utilities/StringUtility.js', type: 'esm' },
+				{ url: 'http://localhost:8080/js/utilities/ImageUtility.js', type: 'esm' },
+				{ url: 'http://localhost:8080/js/utilities/NumberUtility.js', type: 'esm' }
 			]);
-			expect(result.code).toBe(`
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
+//# sourceURL=http://localhost:8080/js/app/main.js
+
                 const StringUtility = $happy_dom.imports.get('http://localhost:8080/js/utilities/StringUtility.js').default;
                 const { default: DefaultImageUtility } = $happy_dom.imports.get('http://localhost:8080/js/utilities/ImageUtility.js');
                 const NumberUtility = $happy_dom.imports.get('http://localhost:8080/js/utilities/NumberUtility.js');
@@ -49,50 +51,38 @@ describe('ModuleParser', () => {
                         console.log('Hello World');
                     }
                 }
-            `);
+            
+}`);
 		});
 
-		it('Ignores statements ending with "import" or "export".', () => {
+		it('Ignores function suffixed with import().', () => {
 			const code = `
-                testImport StringUtility from "../utilities/StringUtility.js";
-                testImport { default as DefaultImageUtility } from "../utilities/ImageUtility.js";
-                testImport * as NumberUtility from "../utilities/NumberUtility.js";
-
-                const result = await testImport('http://localhost:8080/js/utilities/StringUtility.js');
-
-                testExport const variable = 'hello';
-
-                testExport default class TestClass {
-                    constructor() {
-                        console.log('Hello World');
-                    }
+                async function test_import(url) {
+                    return '"' + url + '"';
                 }
+                
+                const result = await test_import('http://localhost:8080/js/utilities/StringUtility.js');
             `;
-			const parser = new ModuleParser(window);
-			const result = parser.parse('http://localhost:8080/js/app/main.js', code);
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
 
 			expect(result.imports).toEqual([]);
 
-			expect(result.code).toBe(`
-                testImport StringUtility from "../utilities/StringUtility.js";
-                testImport { default as DefaultImageUtility } from "../utilities/ImageUtility.js";
-                testImport * as NumberUtility from "../utilities/NumberUtility.js";
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
+//# sourceURL=http://localhost:8080/js/app/main.js
 
-                const result = await testImport('http://localhost:8080/js/utilities/StringUtility.js');
-
-                testExport const variable = 'hello';
-
-                testExport default class TestClass {
-                    constructor() {
-                        console.log('Hello World');
-                    }
+                async function test_import(url) {
+                    return '"' + url + '"';
                 }
-            `);
+                
+                const result = await test_import('http://localhost:8080/js/utilities/StringUtility.js');
+            
+}`);
 		});
 
 		it('Handles import and export with a various combinations.', () => {
 			const code = `
-                import defaultExport from "stuff/defaultExport.js";
+                import defaultExport1 from "stuff/defaultExport.js";
                 import * as name from "stuff/name.js";
                 import { export1 } from "stuff/export1.js";
                 import { export2 as alias1 } from "stuff/export2.js";
@@ -100,8 +90,8 @@ describe('ModuleParser', () => {
                 import { export3, export4 } from "stuff/export3.js";
                 import { export5, export6 as alias3, /* … */ } from "stuff/export4.js";
                 import { "string name" as alias } from "stuff/stringName.js";
-                import defaultExport, { export7, /* … */ } from "stuff/defaultExport2.js";
-                import defaultExport, * as name from "stuff/defaultExport3.js";
+                import defaultExport2, { export7, /* … */ } from "stuff/defaultExport2.js";
+                import defaultExport3, * as name2 from "stuff/defaultExport3.js";
                 import JSON from 'json/data.json' with { type: "json" };
                 import CSS from '../css/data.css' with { type: "css" };
                 import "../run.js";
@@ -112,14 +102,19 @@ describe('ModuleParser', () => {
                 /* Comment */
                 /**
                  *Comment import data from 'data'
+                 '
+                 {
+                 [
+                 /
                 */
+                const variable = \`"'\\\`{[/\`;
                 const regexp = /import \\/data from 'data'/gm;
                 export default class TestClass {
                     constructor() {
                         console.log('export const variable = "\\'";');
                     }
 
-                    print() {
+                    async print() {
                         const data = await import('data/data.json', { with: { type: 'json' } });
                         console.log(data);
 
@@ -134,9 +129,9 @@ describe('ModuleParser', () => {
                 }
 
                 export const variable = 'hello';
-                export const variable2 = "he\"ll\"o";
+                export const variable2 = "he\\"ll\\"o";
                 export const variable3 = \`export const variable = 'hello';\`;
-                export const arr = ['hello', "he\"ll\"o", \`hello\`];
+                export const arr = ['hello', "he\\"ll\\"o", \`hello\`];
 
                 // Exporting declarations
                 export let name1, name2; // also var
@@ -162,34 +157,36 @@ describe('ModuleParser', () => {
                 export { default as name1 } from "../aggregated6.js";
             `;
 
-			const parser = new ModuleParser(window);
-			const result = parser.parse('http://localhost:8080/js/app/main.js', code);
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
 
 			expect(result.imports).toEqual([
-				{ url: 'http://localhost:8080/js/app/stuff/defaultExport.js', type: 'javascript' },
-				{ url: 'http://localhost:8080/js/app/stuff/name.js', type: 'javascript' },
-				{ url: 'http://localhost:8080/js/app/stuff/export1.js', type: 'javascript' },
-				{ url: 'http://localhost:8080/js/app/stuff/export2.js', type: 'javascript' },
-				{ url: 'http://localhost:8080/js/app/stuff/default.js', type: 'javascript' },
-				{ url: 'http://localhost:8080/js/app/stuff/export3.js', type: 'javascript' },
-				{ url: 'http://localhost:8080/js/app/stuff/export4.js', type: 'javascript' },
-				{ url: 'http://localhost:8080/js/app/stuff/stringName.js', type: 'javascript' },
-				{ url: 'http://localhost:8080/js/app/stuff/defaultExport2.js', type: 'javascript' },
-				{ url: 'http://localhost:8080/js/app/stuff/defaultExport3.js', type: 'javascript' },
+				{ url: 'http://localhost:8080/js/app/stuff/defaultExport.js', type: 'esm' },
+				{ url: 'http://localhost:8080/js/app/stuff/name.js', type: 'esm' },
+				{ url: 'http://localhost:8080/js/app/stuff/export1.js', type: 'esm' },
+				{ url: 'http://localhost:8080/js/app/stuff/export2.js', type: 'esm' },
+				{ url: 'http://localhost:8080/js/app/stuff/default.js', type: 'esm' },
+				{ url: 'http://localhost:8080/js/app/stuff/export3.js', type: 'esm' },
+				{ url: 'http://localhost:8080/js/app/stuff/export4.js', type: 'esm' },
+				{ url: 'http://localhost:8080/js/app/stuff/stringName.js', type: 'esm' },
+				{ url: 'http://localhost:8080/js/app/stuff/defaultExport2.js', type: 'esm' },
+				{ url: 'http://localhost:8080/js/app/stuff/defaultExport3.js', type: 'esm' },
 				{ url: 'http://localhost:8080/js/app/json/data.json', type: 'json' },
 				{ url: 'http://localhost:8080/js/css/data.css', type: 'css' },
-				{ url: 'http://localhost:8080/js/run.js', type: 'javascript' },
-				{ url: 'http://localhost:8080/js/app/stuff/export5.js', type: 'javascript' },
-				{ url: 'http://localhost:8080/js/aggregated1.js', type: 'javascript' },
-				{ url: 'http://localhost:8080/js/aggregated2.js', type: 'javascript' },
-				{ url: 'http://localhost:8080/js/aggregated3.js', type: 'javascript' },
-				{ url: 'http://localhost:8080/js/aggregated4.js', type: 'javascript' },
-				{ url: 'http://localhost:8080/js/aggregated5.js', type: 'javascript' },
-				{ url: 'http://localhost:8080/js/aggregated6.js', type: 'javascript' }
+				{ url: 'http://localhost:8080/js/run.js', type: 'esm' },
+				{ url: 'http://localhost:8080/js/app/stuff/export5.js', type: 'esm' },
+				{ url: 'http://localhost:8080/js/aggregated1.js', type: 'esm' },
+				{ url: 'http://localhost:8080/js/aggregated2.js', type: 'esm' },
+				{ url: 'http://localhost:8080/js/aggregated3.js', type: 'esm' },
+				{ url: 'http://localhost:8080/js/aggregated4.js', type: 'esm' },
+				{ url: 'http://localhost:8080/js/aggregated5.js', type: 'esm' },
+				{ url: 'http://localhost:8080/js/aggregated6.js', type: 'esm' }
 			]);
 
-			expect(result.code).toBe(`
-                const defaultExport = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport.js').default;
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
+//# sourceURL=http://localhost:8080/js/app/main.js
+
+                const defaultExport1 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport.js').default;
                 const name = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/name.js');
                 const { export1 } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export1.js');
                 const { export2: alias1 } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export2.js');
@@ -197,10 +194,10 @@ describe('ModuleParser', () => {
                 const { export3, export4 } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export3.js');
                 const { export5, export6: alias3, /* … */ } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export4.js');
                 const { "string name": alias } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/stringName.js');
-                const defaultExport = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport2.js').default;
+                const defaultExport2 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport2.js').default;
 const { export7, /* … */ } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport2.js');
-                const defaultExport = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport3.js').default;
-const name = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport3.js');
+                const defaultExport3 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport3.js').default;
+const name2 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport3.js');
                 const JSON = $happy_dom.imports.get('http://localhost:8080/js/app/json/data.json').default;
                 const CSS = $happy_dom.imports.get('http://localhost:8080/js/css/data.css').default;
                 
@@ -211,14 +208,19 @@ const name = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultE
                 /* Comment */
                 /**
                  *Comment import data from 'data'
+                 '
+                 {
+                 [
+                 /
                 */
+                const variable = \`"'\\\`{[/\`;
                 const regexp = /import \\/data from 'data'/gm;
                 $happy_dom.exports.default = class TestClass {
                     constructor() {
                         console.log('export const variable = "\\'";');
                     }
 
-                    print() {
+                    async print() {
                         const data = await $happy_dom.dynamicImport('data/data.json', { with: { type: 'json' } });
                         console.log(data);
 
@@ -233,9 +235,9 @@ const name = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultE
                 }
 
                 $happy_dom.exports['variable'] = 'hello';
-                $happy_dom.exports['variable2'] = "he"ll"o";
+                $happy_dom.exports['variable2'] = "he\\"ll\\"o";
                 $happy_dom.exports['variable3'] = \`export const variable = 'hello';\`;
-                $happy_dom.exports['arr'] = ['hello', "he"ll"o", \`hello\`];
+                $happy_dom.exports['arr'] = ['hello', "he\\"ll\\"o", \`hello\`];
 
                 // Exporting declarations
                 /*Unknown export: export let name1, name2;*/ // also var
@@ -271,7 +273,8 @@ $happy_dom.exports['name5'] = $happy_dom_export_0['name5'];
 $happy_dom.exports['bar'] = $happy_dom_export_0['name6'];
 $happy_dom.exports['name7'] = $happy_dom_export_1['name7'];
 $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
-`);
+
+}`);
 		});
 
 		it('Handles export default function.', () => {
@@ -282,17 +285,20 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
                 }
             `;
 
-			const parser = new ModuleParser(window);
-			const result = parser.parse('http://localhost:8080/js/app/main.js', code);
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
 
 			expect(result.imports).toEqual([]);
 
-			expect(result.code).toBe(`
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
+//# sourceURL=http://localhost:8080/js/app/main.js
+
                 $happy_dom.exports['variable'] = /my-regexp/;
                 $happy_dom.exports.default = function () {
                     console.log('Hello World');
                 }
-            `);
+            
+}`);
 		});
 
 		it('Handles export default class.', () => {
@@ -304,18 +310,21 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
                 }
             `;
 
-			const parser = new ModuleParser(window);
-			const result = parser.parse('http://localhost:8080/js/app/main.js', code);
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
 
 			expect(result.imports).toEqual([]);
 
-			expect(result.code).toBe(`
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
+//# sourceURL=http://localhost:8080/js/app/main.js
+
                 $happy_dom.exports.default = class TestClass {
                     constructor() {
                         console.log('Hello World');
                     }
                 }
-            `);
+            
+}`);
 		});
 
 		it('Handles export default generator function.', () => {
@@ -326,17 +335,20 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
                 }
             `;
 
-			const parser = new ModuleParser(window);
-			const result = parser.parse('http://localhost:8080/js/app/main.js', code);
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
 
 			expect(result.imports).toEqual([]);
 
-			expect(result.code).toBe(`
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
+//# sourceURL=http://localhost:8080/js/app/main.js
+
                 $happy_dom.exports.default = function* () {
                     yield i;
                     yield i + 10;
                 }
-            `);
+            
+}`);
 		});
 
 		it('Handles export default object.', () => {
@@ -346,16 +358,19 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
                 };
             `;
 
-			const parser = new ModuleParser(window);
-			const result = parser.parse('http://localhost:8080/js/app/main.js', code);
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
 
 			expect(result.imports).toEqual([]);
 
-			expect(result.code).toBe(`
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
+//# sourceURL=http://localhost:8080/js/app/main.js
+
                 $happy_dom.exports.default = {
                     test: 'test'
                 };
-            `);
+            
+}`);
 		});
 
 		it('Handles export default expression.', () => {
@@ -367,18 +382,21 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
                 })();
             `;
 
-			const parser = new ModuleParser(window);
-			const result = parser.parse('http://localhost:8080/js/app/main.js', code);
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
 
 			expect(result.imports).toEqual([]);
 
-			expect(result.code).toBe(`
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
+//# sourceURL=http://localhost:8080/js/app/main.js
+
                 $happy_dom.exports.default = (function () {
                     return {
                         test: 'test'
                     }
                 })();
-            `);
+            
+}`);
 		});
 	});
 });

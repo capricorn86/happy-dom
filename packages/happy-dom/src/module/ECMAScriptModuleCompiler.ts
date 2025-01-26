@@ -1,4 +1,6 @@
-import BrowserWindow from '../../../window/BrowserWindow.js';
+import BrowserWindow from '../window/BrowserWindow.js';
+import IECMAScriptModuleCompiledResult from './IECMAScriptModuleCompiledResult.js';
+import IECMAScriptModuleImport from './IECMAScriptModuleImport.js';
 
 /**
  * Code regexp.
@@ -48,18 +50,10 @@ const PRECEDING_STATEMENT_TOKEN_REGEXP = /['"`(){}\s;]/;
  */
 const MULTILINE_COMMENT_REGEXP = /\/\*|\*\//gm;
 
-interface IModuleImport {
-	url: string;
-	type: string;
-}
-
 /**
- * Module parser.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/export
+ * ECMAScript module compiler.
  */
-export default class EcmaScriptModuleParser {
+export default class ECMAScriptModuleCompiler {
 	public readonly window: BrowserWindow;
 
 	/**
@@ -73,15 +67,15 @@ export default class EcmaScriptModuleParser {
 	}
 
 	/**
-	 * Parse a module.
+	 * Compiles code and returns imports and compiled code.
 	 *
 	 * @param moduleURL Module URL.
 	 * @param code Code.
 	 * @returns Result.
 	 */
-	public parse(moduleURL: string, code: string): { imports: IModuleImport[]; code: string } {
+	public compile(moduleURL: string, code: string): IECMAScriptModuleCompiledResult {
 		const regExp = new RegExp(CODE_REGEXP);
-		const imports: IModuleImport[] = [];
+		const imports: IECMAScriptModuleImport[] = [];
 		const count = {
 			comment: 0,
 			parantheses: 0,
@@ -90,7 +84,7 @@ export default class EcmaScriptModuleParser {
 			regExp: 0
 		};
 		const exportSpreadVariables: Array<Map<string, string>> = [];
-		let newCode = `//# sourceURL=${moduleURL}\n`;
+		let newCode = `(async function anonymous($happy_dom) {\n//# sourceURL=${moduleURL}\n`;
 		let match: RegExpExecArray;
 		let precedingToken: string;
 		let stringCharacter: string | null = null;
@@ -115,7 +109,7 @@ export default class EcmaScriptModuleParser {
 			) {
 				if (match[1] && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
 					// Import without exported properties
-					imports.push({ url: new URL(match[1], moduleURL).href, type: 'ecmascript' });
+					imports.push({ url: new URL(match[1], moduleURL).href, type: 'esm' });
 					skipMatchedCode = true;
 				} else if (match[3] && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
 					// Import statement start
@@ -155,7 +149,7 @@ export default class EcmaScriptModuleParser {
 						}
 						newCode += importCode.join(';\n');
 						importStartIndex = -1;
-						imports.push({ url, type: match[6] || 'ecmascript' });
+						imports.push({ url, type: match[6] || 'esm' });
 						skipMatchedCode = true;
 					}
 				} else if (match[7] && match[8] && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
@@ -166,13 +160,13 @@ export default class EcmaScriptModuleParser {
 
 					if (imported === '*') {
 						newCode += `Object.assign($happy_dom.exports, $happy_dom.imports.get('${url}'))`;
-						imports.push({ url, type: 'ecmascript' });
+						imports.push({ url, type: 'esm' });
 					} else if (imported[0] === '*') {
 						const parts = imported.split(/\s+as\s+/);
 						if (parts.length === 2) {
 							const exportName = parts[1].replace(/["']/g, '');
 							newCode += `$happy_dom.exports['${exportName}'] = $happy_dom.imports.get('${url}')`;
-							imports.push({ url, type: 'ecmascript' });
+							imports.push({ url, type: 'esm' });
 						}
 					} else if (imported[0] === '{') {
 						const parts = this.removeMultilineComments(imported)
@@ -190,7 +184,7 @@ export default class EcmaScriptModuleParser {
 							}
 						}
 						newCode += exportCode.join(';\n');
-						imports.push({ url, type: 'ecmascript' });
+						imports.push({ url, type: 'esm' });
 					}
 					skipMatchedCode = true;
 				} else if (match[9] && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
@@ -254,34 +248,56 @@ export default class EcmaScriptModuleParser {
 				}
 			}
 
-			if (stringCharacter === null && count.comment === 0 && count.regExp === 0) {
+			if (match[2]) {
+				// Dynamic import function call
 				if (
-					match[2] &&
+					stringCharacter === null &&
 					count.comment === 0 &&
 					count.regExp === 0 &&
 					PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)
 				) {
-					// Dynamic import function call
 					newCode += `$happy_dom.dynamicImport(${match[2]})`;
 					skipMatchedCode = true;
-				} else if (match[19] && count.regExp === 0 && count.comment === 0) {
-					// Parentheses
+				}
+			} else if (match[16]) {
+				// Ignore single line comment
+			} else if (match[17]) {
+				// Multi line comment
+				if (stringCharacter === null && count.regExp === 0) {
+					if (match[17] === '/*') {
+						count.comment++;
+					} else if (match[17] === '*/' && count.comment > 0) {
+						count.comment--;
+					}
+				}
+			} else if (match[18]) {
+				// Slash (RegExp)
+				if (stringCharacter === null && count.comment === 0 && precedingToken !== '\\') {
+					count.regExp = count.regExp === 0 ? 1 : 0;
+				}
+			} else if (match[19]) {
+				// Parentheses
+				if (stringCharacter === null && count.regExp === 0 && count.comment === 0) {
 					if (match[19] === '(') {
 						count.parantheses++;
 					}
 					if (match[19] === ')' && count.parantheses > 0) {
 						count.parantheses--;
 					}
-				} else if (match[20] && count.regExp === 0 && count.comment === 0) {
-					// Curly braces
+				}
+			} else if (match[20]) {
+				// Curly braces
+				if (stringCharacter === null && count.regExp === 0 && count.comment === 0) {
 					if (match[20] === '{') {
 						count.curlyBraces++;
 					}
 					if (match[20] === '}' && count.curlyBraces > 0) {
 						count.curlyBraces--;
 					}
-				} else if (match[21] && count.regExp === 0 && count.comment === 0) {
-					// Square brackets
+				}
+			} else if (match[21]) {
+				// Square brackets
+				if (stringCharacter === null && count.regExp === 0 && count.comment === 0) {
 					if (match[21] === '[') {
 						count.squareBrackets++;
 					}
@@ -289,27 +305,9 @@ export default class EcmaScriptModuleParser {
 						count.squareBrackets--;
 					}
 				}
-			} else if (stringCharacter === null && count.comment === 0) {
-				if (match[18]) {
-					// Slash (RegExp)
-					if (precedingToken !== '\\') {
-						count.regExp = count.regExp === 0 ? 1 : 0;
-					}
-				}
-			} else if (stringCharacter === null && count.regExp === 0) {
-				if (match[16]) {
-					// Ignore single line comment
-				} else if (match[17]) {
-					// Multi line comment
-					if (match[17] === '/*') {
-						count.comment++;
-					} else if (match[17] === '*/' && count.comment > 0) {
-						count.comment--;
-					}
-				}
-			} else if (match[22] && count.regExp === 0) {
+			} else if (match[22]) {
 				// String
-				if (precedingToken !== '\\') {
+				if (count.comment === 0 && count.regExp === 0 && precedingToken !== '\\') {
 					if (stringCharacter === null) {
 						stringCharacter = match[22];
 					} else if (stringCharacter === match[22]) {
@@ -328,6 +326,8 @@ export default class EcmaScriptModuleParser {
 		}
 
 		if (importStartIndex !== -1) {
+			// We will end up here if there is an import statement without a valid "from" part
+			// E.g. "import defaultExport from invalid;" or just "import defaultExport;"
 			throw new this.window.TypeError(
 				`Failed to parse module: Unexpected import statement in "${moduleURL}"`
 			);
@@ -345,7 +345,11 @@ export default class EcmaScriptModuleParser {
 			}
 		}
 
-		return { imports, code: newCode };
+		newCode += '\n})';
+
+		const execute = this.window.eval(newCode);
+
+		return { imports, execute };
 	}
 
 	/**

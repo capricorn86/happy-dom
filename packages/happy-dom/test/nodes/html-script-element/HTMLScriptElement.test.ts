@@ -10,6 +10,7 @@ import BrowserWindow from '../../../src/window/BrowserWindow.js';
 import Fetch from '../../../src/fetch/Fetch.js';
 import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCaptureEnum.js';
 import EventTarget from '../../../src/event/EventTarget.js';
+import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 
 describe('HTMLScriptElement', () => {
 	let window: Window;
@@ -177,8 +178,7 @@ describe('HTMLScriptElement', () => {
 
 		for (const attribute of [
 			{ name: 'async', value: '' },
-			{ name: 'defer', value: '' },
-			{ name: 'type', value: 'module' }
+			{ name: 'defer', value: '' }
 		]) {
 			it(`Loads external script asynchronously when the attribute "${attribute.name}" is set to "${attribute.value}".`, async () => {
 				let fetchedURL: string | null = null;
@@ -394,7 +394,7 @@ describe('HTMLScriptElement', () => {
 			document.body.appendChild(script);
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
-				'Failed to load external script "https://localhost:8080/path/to/script.js". JavaScript file loading is disabled.'
+				'Failed to load script "https://localhost:8080/path/to/script.js". JavaScript file loading is disabled.'
 			);
 		});
 
@@ -435,7 +435,7 @@ describe('HTMLScriptElement', () => {
 			document.body.appendChild(script);
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
-				'Failed to load external script "https://localhost:8080/path/to/script.js". JavaScript file loading is disabled.'
+				'Failed to load script "https://localhost:8080/path/to/script.js". JavaScript file loading is disabled.'
 			);
 		});
 
@@ -457,7 +457,7 @@ describe('HTMLScriptElement', () => {
 			document.body.appendChild(script);
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
-				'Failed to load external script "https://localhost:8080/path/to/script.js". JavaScript file loading is disabled.'
+				'Failed to load script "https://localhost:8080/path/to/script.js". JavaScript file loading is disabled.'
 			);
 		});
 
@@ -478,7 +478,7 @@ describe('HTMLScriptElement', () => {
 			document.body.appendChild(script);
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
-				'Failed to load external script "https://localhost:8080/path/to/script.js". JavaScript file loading is disabled.'
+				'Failed to load script "https://localhost:8080/path/to/script.js". JavaScript file loading is disabled.'
 			);
 		});
 
@@ -585,6 +585,77 @@ describe('HTMLScriptElement', () => {
 			expect(() => {
 				document.body.appendChild(element);
 			}).toThrow(new TypeError('Invalid regular expression: missing /'));
+		});
+
+		it('Handles loading of a modules.', async () => {
+			const requests: string[] = [];
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					fetch: {
+						interceptor: {
+							beforeAsyncRequest: async ({ request }) => {
+								requests.push(request.url);
+							}
+						},
+						virtualServers: [
+							{
+								url: 'https://localhost:8080/base/js/',
+								directory: './test/nodes/html-script-element/modules/'
+							}
+						]
+					}
+				},
+				console
+			});
+			const document = window.document;
+			const script = document.createElement('script');
+
+			script.src = 'https://localhost:8080/base/js/TestModuleElement.js';
+			script.type = 'module';
+
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			const testModule = document.createElement('test-module');
+
+			document.body.appendChild(testModule);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(requests).toEqual([
+				'https://localhost:8080/base/js/TestModuleElement.js',
+				'https://localhost:8080/base/js/utilities/StringUtilityClass.js',
+				'https://localhost:8080/base/js/utilities/stringUtility.js',
+				'https://localhost:8080/base/js/json/data.json',
+				'https://localhost:8080/base/js/css/style.css',
+				'https://localhost:8080/base/js/utilities/apostrophWrapper.js',
+				'https://localhost:8080/base/js/utilities/lazyload.js'
+			]);
+
+			expect(window['moduleLoadOrder']).toEqual([
+				'apostrophWrapper.js',
+				'StringUtilityClass.js',
+				'stringUtility.js',
+				'TestModuleElement.js',
+				'lazyload.js'
+			]);
+
+			expect(testModule.shadowRoot?.innerHTML).toBe(`<div>
+            Expect lower case: "value"
+            Expect upper case: "VALUE"
+            Expect lower case. "value"
+            Expect trimmed lower case: "value"
+        </div><div>Lazy-loaded module: true</div>`);
+
+			expect(testModule.shadowRoot?.adoptedStyleSheets[0].cssRules[0].cssText).toBe(
+				'div { background: red; }'
+			);
+			expect(
+				window.getComputedStyle(<HTMLElement>testModule.shadowRoot?.querySelector('div'))
+					.backgroundColor
+			).toBe('red');
 		});
 	});
 });
