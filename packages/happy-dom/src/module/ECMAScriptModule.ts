@@ -6,7 +6,6 @@ import * as PropertySymbol from '../PropertySymbol.js';
 import Location from '../location/Location.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import IECMAScriptModuleCompiledResult from './IECMAScriptModuleCompiledResult.js';
-import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
 import ModuleFactory from './ModuleFactory.js';
 
 /**
@@ -46,11 +45,13 @@ export default class ECMAScriptModule implements IModule {
 		const modulePromises: Promise<IModule>[] = [];
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
-		const browserSettings = new WindowBrowserContext(window).getSettings();
 
 		if (!browserFrame) {
 			return {};
 		}
+
+		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
+		const taskID = asyncTaskManager.startTask();
 
 		for (const moduleImport of compiled.imports) {
 			modulePromises.push(
@@ -60,8 +61,6 @@ export default class ECMAScriptModule implements IModule {
 			);
 		}
 
-		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
-		const taskID = asyncTaskManager.startTask();
 		const modules = await Promise.all(modulePromises);
 		const imports = new Map<string, { [key: string]: any }>();
 
@@ -69,32 +68,17 @@ export default class ECMAScriptModule implements IModule {
 			imports.set(module.url.href, await module.evaluate());
 		}
 
+		asyncTaskManager.endTask(taskID);
+
 		const exports = {};
 
-		if (
-			browserSettings.disableErrorCapturing ||
-			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
-		) {
-			compiled.execute.call(window, {
-				dynamicImport: this.#import.bind(this),
-				imports,
-				exports
-			});
-		} else {
-			try {
-				compiled.execute.call(window, {
-					dynamicImport: this.#import.bind(this),
-					imports,
-					exports
-				});
-			} catch (error) {
-				window[PropertySymbol.dispatchError](error);
-			}
-		}
+		compiled.execute.call(window, {
+			dynamicImport: this.#import.bind(this),
+			imports,
+			exports
+		});
 
 		this.#exports = exports;
-
-		asyncTaskManager.endTask(taskID);
 
 		return exports;
 	}
@@ -114,6 +98,9 @@ export default class ECMAScriptModule implements IModule {
 			return;
 		}
 
+		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
+		const taskID = asyncTaskManager?.startTask();
+
 		for (const moduleImport of compiled.imports) {
 			modulePromises.push(
 				ModuleFactory.getModule(window, this.url, moduleImport.url, {
@@ -122,8 +109,6 @@ export default class ECMAScriptModule implements IModule {
 			);
 		}
 
-		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
-		const taskID = asyncTaskManager?.startTask();
 		const modules = await Promise.all(modulePromises);
 
 		const promises: Promise<void>[] = [];
