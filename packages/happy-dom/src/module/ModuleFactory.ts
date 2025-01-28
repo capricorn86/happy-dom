@@ -30,7 +30,7 @@ export default class ModuleFactory {
 		url: string,
 		options?: { with?: { type?: string } }
 	): Promise<IModule> {
-		const absoluteURL = new URL(url, parentURL.href);
+		const absoluteURL = this.getURL(window, parentURL, url);
 		const absoluteURLString = absoluteURL.href;
 		const type = options?.with?.type || 'esm';
 
@@ -40,14 +40,14 @@ export default class ModuleFactory {
 			);
 		}
 
-		const cached = <IModule>window[PropertySymbol.moduleCache][type].get(absoluteURLString);
+		const cached = <IModule>window[PropertySymbol.modules][type].get(absoluteURLString);
 
 		if (cached) {
 			if (cached instanceof UnresolvedModule) {
 				await new Promise((resolve, reject) => {
-					cached.addHook(resolve, reject);
+					cached.addResolveListener(resolve, reject);
 				});
-				return <IModule>window[PropertySymbol.moduleCache][type].get(absoluteURLString);
+				return <IModule>window[PropertySymbol.modules][type].get(absoluteURLString);
 			}
 			return cached;
 		}
@@ -61,15 +61,12 @@ export default class ModuleFactory {
 
 		const unresolvedModule = new UnresolvedModule(window, absoluteURL);
 
-		window[PropertySymbol.moduleCache][type].set(absoluteURLString, unresolvedModule);
+		window[PropertySymbol.modules][type].set(absoluteURLString, unresolvedModule);
 
-		const resourceFetch = new ResourceFetch({
-			browserFrame,
-			window: window
-		});
+		const resourceFetch = new ResourceFetch(window);
 		let source: string;
 		try {
-			source = await resourceFetch.fetch(absoluteURL);
+			source = await resourceFetch.fetch(absoluteURL, 'module');
 		} catch (error) {
 			unresolvedModule.resolve(error);
 			throw error;
@@ -88,10 +85,50 @@ export default class ModuleFactory {
 				break;
 		}
 
-		window[PropertySymbol.moduleCache][type].set(absoluteURLString, module);
+		window[PropertySymbol.modules][type].set(absoluteURLString, module);
 
 		unresolvedModule.resolve();
 
 		return module;
+	}
+
+	/**
+	 * Returns module URL based on parent URL and the import map.
+	 *
+	 * @param window Window.
+	 * @param parentURL Parent URL.
+	 * @param url Module URL.
+	 */
+	private static getURL(window: BrowserWindow, parentURL: URL | Location, url: string): URL {
+		const parentURLString = parentURL.href;
+		const absoluteURL = new URL(url, parentURLString);
+		const absoluteURLString = absoluteURL.href;
+		const importMap = window[PropertySymbol.moduleImportMap];
+
+		if (!importMap) {
+			return absoluteURL;
+		}
+
+		if (importMap.scopes) {
+			for (const scope of importMap.scopes) {
+				if (parentURLString.includes(scope.scope)) {
+					for (const rule of scope.rules) {
+						if (absoluteURLString.startsWith(rule.from)) {
+							return new URL(rule.to + absoluteURLString.replace(rule.from, ''));
+						}
+					}
+				}
+			}
+		}
+
+		if (importMap.imports) {
+			for (const rule of importMap.imports) {
+				if (absoluteURLString.startsWith(rule.from)) {
+					return new URL(rule.to + absoluteURLString.replace(rule.from, ''));
+				}
+			}
+		}
+
+		return absoluteURL;
 	}
 }

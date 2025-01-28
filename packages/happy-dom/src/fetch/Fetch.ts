@@ -30,7 +30,7 @@ import { Buffer } from 'buffer';
 import FetchBodyUtility from './utilities/FetchBodyUtility.js';
 import IFetchInterceptor from './types/IFetchInterceptor.js';
 import VirtualServerUtility from './utilities/VirtualServerUtility.js';
-import PreloadedResponseStateEnum from './PreloadedResponseStateEnum.js';
+import PreloadUtility from './preload/PreloadUtility.js';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -60,6 +60,7 @@ export default class Fetch {
 	private redirectCount = 0;
 	private disableCache: boolean;
 	private disableSameOriginPolicy: boolean;
+	private disablePreload: boolean;
 	#browserFrame: IBrowserFrame;
 	#window: BrowserWindow;
 	#unfilteredHeaders: Headers | null = null;
@@ -77,6 +78,7 @@ export default class Fetch {
 	 * @param [options.disableCache] Disables the use of cached responses. It will still store the response in the cache.
 	 * @param [options.disableSameOriginPolicy] Disables the Same-Origin policy.
 	 * @param [options.unfilteredHeaders] Unfiltered headers - necessary for preflight requests.
+	 * @param [options.disablePreload] Disables the use of preloaded responses.
 	 */
 	constructor(options: {
 		browserFrame: IBrowserFrame;
@@ -88,6 +90,7 @@ export default class Fetch {
 		disableCache?: boolean;
 		disableSameOriginPolicy?: boolean;
 		unfilteredHeaders?: Headers;
+		disablePreload?: boolean;
 	}) {
 		this.#browserFrame = options.browserFrame;
 		this.#window = options.window;
@@ -106,6 +109,7 @@ export default class Fetch {
 			this.#browserFrame.page.context.browser.settings.fetch.disableSameOriginPolicy ??
 			false;
 		this.interceptor = this.#browserFrame.page.context.browser.settings.fetch.interceptor;
+		this.disablePreload = options.disablePreload ?? false;
 	}
 
 	/**
@@ -167,38 +171,37 @@ export default class Fetch {
 			);
 		}
 
-		const preloadedResponse = this.#window[PropertySymbol.preloadCache].get(
-			this.request[PropertySymbol.url].href
-		);
-
-		if (
-			preloadedResponse &&
-			(preloadedResponse.state === PreloadedResponseStateEnum.loaded ||
-				preloadedResponse.state === PreloadedResponseStateEnum.loading)
-		) {
-			if (
-				preloadedResponse.options.crossOrigin === 'use-credentials' &&
-				this.request.credentials !== 'include'
-			) {
-				this.#browserFrame?.page?.console.warn(
-					`A preload for '${this.request.url}' is found, but is not used because the request credentials mode does not match. Consider taking a look at crossorigin attribute.`
-				);
-			} else {
-				const response = await preloadedResponse.consume();
-				this.#window[PropertySymbol.preloadCache].delete(this.request[PropertySymbol.url].href);
-				if (response) {
-					return response;
-				}
-			}
-		} else if (preloadedResponse && preloadedResponse.state === PreloadedResponseStateEnum.intial) {
-			preloadedResponse.state = PreloadedResponseStateEnum.loading;
-		}
-
 		if (!this.disableCache) {
 			const cachedResponse = await this.getCachedResponse();
 
 			if (cachedResponse) {
 				return cachedResponse;
+			}
+		}
+
+		if (!this.disablePreload) {
+			const preloadKey = PreloadUtility.getKey({
+				url: this.request.url,
+				destination: 'fetch',
+				mode: this.request.mode,
+				credentialsMode: this.request.credentials
+			});
+
+			const preloadEntry = this.#window.document[PropertySymbol.preloads].get(preloadKey);
+
+			if (preloadEntry) {
+				this.#window.document[PropertySymbol.preloads].delete(preloadKey);
+
+				if (preloadEntry.response) {
+					return preloadEntry.response;
+				}
+
+				const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
+				const response = await preloadEntry.onResponseAvailable();
+
+				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+
+				return response;
 			}
 		}
 

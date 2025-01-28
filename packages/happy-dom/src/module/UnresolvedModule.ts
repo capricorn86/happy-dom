@@ -46,7 +46,10 @@ export default class UnresolvedModule implements IModule {
 	 * @param resolve Resolve.
 	 * @param reject Reject.
 	 */
-	public addHook(resolve: (value: unknown) => void, reject: (error: Error) => void): void {
+	public addResolveListener(
+		resolve: (value: unknown) => void,
+		reject: (error: Error) => void
+	): void {
 		if (this.#error) {
 			reject(this.#error);
 			return;

@@ -7,7 +7,6 @@ import Location from '../location/Location.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import IECMAScriptModuleCompiledResult from './IECMAScriptModuleCompiledResult.js';
 import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
-import WindowErrorUtility from '../window/WindowErrorUtility.js';
 import ModuleFactory from './ModuleFactory.js';
 
 /**
@@ -89,7 +88,7 @@ export default class ECMAScriptModule implements IModule {
 					exports
 				});
 			} catch (error) {
-				WindowErrorUtility.dispatchError(window, error);
+				window[PropertySymbol.dispatchError](error);
 			}
 		}
 

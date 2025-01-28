@@ -9,7 +9,6 @@ import DOMTokenList from '../../dom/DOMTokenList.js';
 import Attr from '../attr/Attr.js';
 import BrowserFrameFactory from '../../browser/utilities/BrowserFrameFactory.js';
 import BrowserFrameURL from '../../browser/utilities/BrowserFrameURL.js';
-import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import IRequestReferrerPolicy from '../../fetch/types/IRequestReferrerPolicy.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
@@ -375,13 +374,12 @@ export default class HTMLIFrameElement extends HTMLElement {
 		}
 
 		if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
-			WindowErrorUtility.dispatchError(
-				this,
-				new window.DOMException(
-					`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`,
-					DOMExceptionNameEnum.notSupportedError
-				)
+			const error = new window.DOMException(
+				`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`,
+				DOMExceptionNameEnum.notSupportedError
 			);
+			browserFrame.page?.console.error(error);
+			this.dispatchEvent(new Event('error'));
 			return;
 		}
 
@@ -400,7 +398,10 @@ export default class HTMLIFrameElement extends HTMLElement {
 				referrerPolicy: <IRequestReferrerPolicy>this.referrerPolicy
 			})
 			.then(() => this.dispatchEvent(new Event('load')))
-			.catch((error) => WindowErrorUtility.dispatchError(this, error));
+			.catch((error) => {
+				browserFrame.page?.console.error(error);
+				this.dispatchEvent(new Event('error'));
+			});
 
 		this.#contentWindowContainer.window = isSameOrigin
 			? this.#iframe.window

@@ -196,7 +196,6 @@ import XMLSerializer from '../xml-serializer/XMLSerializer.js';
 import CrossOriginBrowserWindow from './CrossOriginBrowserWindow.js';
 import INodeJSGlobal from './INodeJSGlobal.js';
 import VMGlobalPropertyScript from './VMGlobalPropertyScript.js';
-import WindowErrorUtility from './WindowErrorUtility.js';
 import WindowPageOpenUtility from './WindowPageOpenUtility.js';
 import {
 	PerformanceObserver,
@@ -308,7 +307,7 @@ import SVGAnimatedLengthList from '../svg/SVGAnimatedLengthList.js';
 import CustomElementReactionStack from '../custom-element/CustomElementReactionStack.js';
 import IScrollToOptions from './IScrollToOptions.js';
 import IModule from '../module/IModule.js';
-import PreloadedResponse from '../fetch/PreloadedResponse.js';
+import IModuleImportMap from '../module/IModuleImportMap.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -797,7 +796,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.window]: BrowserWindow = this;
 	public [PropertySymbol.internalId]: number = -1;
 	public [PropertySymbol.customElementReactionStack] = new CustomElementReactionStack(this);
-	public [PropertySymbol.moduleCache]: {
+	public [PropertySymbol.modules]: {
 		json: Map<string, IModule>;
 		css: Map<string, IModule>;
 		esm: Map<string, IModule>;
@@ -806,7 +805,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		css: new Map(),
 		esm: new Map()
 	};
-	public [PropertySymbol.preloadCache]: Map<string, PreloadedResponse> = new Map();
+	public [PropertySymbol.moduleImportMap]: IModuleImportMap | null = null;
 
 	// Private properties
 	#browserFrame: IBrowserFrame;
@@ -1323,7 +1322,15 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 					zeroDelayTimeout.timeouts = null;
 					for (const timeout of timeouts) {
 						if (useTryCatch) {
-							WindowErrorUtility.captureError(this, () => timeout.callback());
+							let result: any;
+							try {
+								result = timeout.callback();
+							} catch (error) {
+								this[PropertySymbol.dispatchError](error);
+							}
+							if (result instanceof Promise) {
+								result.catch((error: Error) => this[PropertySymbol.dispatchError](error));
+							}
 						} else {
 							timeout.callback();
 						}
@@ -1351,7 +1358,15 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 				// We need to call endTimer() before the callback as the callback might throw an error.
 				this.#browserFrame[PropertySymbol.asyncTaskManager].endTimer(id);
 				if (useTryCatch) {
-					WindowErrorUtility.captureError(this, () => callback(...args));
+					let result: any;
+					try {
+						result = callback(...args);
+					} catch (error) {
+						this[PropertySymbol.dispatchError](error);
+					}
+					if (result instanceof Promise) {
+						result.catch((error: Error) => this[PropertySymbol.dispatchError](error));
+					}
 				} else {
 					callback(...args);
 				}
@@ -1411,11 +1426,19 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		const id = TIMER.setInterval(
 			() => {
 				if (useTryCatch) {
-					WindowErrorUtility.captureError(
-						this,
-						() => callback(...args),
-						() => this.clearInterval(id)
-					);
+					let result: any;
+					try {
+						result = callback(...args);
+					} catch (error) {
+						this.clearInterval(id);
+						this[PropertySymbol.dispatchError](error);
+					}
+					if (result instanceof Promise) {
+						result.catch((error: Error) => {
+							this.clearInterval(id);
+							this[PropertySymbol.dispatchError](error);
+						});
+					}
 				} else {
 					callback(...args);
 				}
@@ -1478,7 +1501,15 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			// We need to call endImmediate() before the callback as the callback might throw an error.
 			this.#browserFrame[PropertySymbol.asyncTaskManager].endImmediate(id);
 			if (useTryCatch) {
-				WindowErrorUtility.captureError(this, () => callback(this.performance.now()));
+				let result: any;
+				try {
+					result = callback(this.performance.now());
+				} catch (error) {
+					this[PropertySymbol.dispatchError](error);
+				}
+				if (result instanceof Promise) {
+					result.catch((error: Error) => this[PropertySymbol.dispatchError](error));
+				}
 			} else {
 				callback(this.performance.now());
 			}
@@ -1525,7 +1556,15 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 				// We need to call endTask() before the callback as the callback might throw an error.
 				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskId);
 				if (useTryCatch) {
-					WindowErrorUtility.captureError(this, <() => unknown>callback);
+					let result: any;
+					try {
+						result = callback();
+					} catch (error) {
+						this[PropertySymbol.dispatchError](error);
+					}
+					if (result instanceof Promise) {
+						result.catch((error: Error) => this[PropertySymbol.dispatchError](error));
+					}
 				} else {
 					callback();
 				}
@@ -1678,6 +1717,16 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	}
 
 	/**
+	 * Dispatches an error event and outputs the error to the console.
+	 *
+	 * @param error Error.
+	 */
+	public [PropertySymbol.dispatchError](error: Error): void {
+		this.#browserFrame?.page?.console.error(error);
+		this.dispatchEvent(new ErrorEvent('error', { message: error.message, error }));
+	}
+
+	/**
 	 * Setup of VM context.
 	 */
 	protected [PropertySymbol.setupVMContext](): void {
@@ -1743,11 +1792,11 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			this.history[PropertySymbol.destroy]();
 		}
 
-		this[PropertySymbol.moduleCache].json.clear();
-		this[PropertySymbol.moduleCache].css.clear();
-		this[PropertySymbol.moduleCache].esm.clear();
+		this[PropertySymbol.modules].json.clear();
+		this[PropertySymbol.modules].css.clear();
+		this[PropertySymbol.modules].esm.clear();
 
-		this[PropertySymbol.preloadCache].clear();
+		this.document[PropertySymbol.preloads].clear();
 
 		this.document[PropertySymbol.activeElement] = null;
 		this.document[PropertySymbol.nextActiveElement] = null;

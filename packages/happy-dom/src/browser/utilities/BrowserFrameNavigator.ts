@@ -61,9 +61,7 @@ export default class BrowserFrameNavigator {
 		// Javascript protocol
 		if (targetURL.protocol === 'javascript:') {
 			if (frame && !frame.page.context.browser.settings.disableJavaScriptEvaluation) {
-				const readyStateManager = (<
-					{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }
-				>(<unknown>frame.window))[PropertySymbol.readyStateManager];
+				const readyStateManager = frame.window[PropertySymbol.readyStateManager];
 
 				readyStateManager.startTask();
 				const code =
@@ -178,9 +176,7 @@ export default class BrowserFrameNavigator {
 		}
 
 		// Start navigation
-		const readyStateManager = (<{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }>(
-			(<unknown>frame.window)
-		))[PropertySymbol.readyStateManager];
+		const readyStateManager = frame.window[PropertySymbol.readyStateManager];
 		const abortController = new frame.window.AbortController();
 		const timeout = frame.window.setTimeout(
 			() => abortController.abort(new Error('Request timed out.')),

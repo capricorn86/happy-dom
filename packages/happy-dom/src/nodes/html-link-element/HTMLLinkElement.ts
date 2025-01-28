@@ -5,17 +5,14 @@ import Event from '../../event/Event.js';
 import ErrorEvent from '../../event/events/ErrorEvent.js';
 import DOMTokenList from '../../dom/DOMTokenList.js';
 import Attr from '../attr/Attr.js';
-import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import ResourceFetch from '../../fetch/ResourceFetch.js';
-import DocumentReadyStateManager from '../document/DocumentReadyStateManager.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
-import ECMAScriptModule from '../../module/ECMAScriptModule.js';
-import PreloadedResponse from '../../fetch/PreloadedResponse.js';
-import PreloadedResponseStateEnum from '../../fetch/PreloadedResponseStateEnum.js';
 import Fetch from '../../fetch/Fetch.js';
 import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
 import ModuleFactory from '../../module/ModuleFactory.js';
+import PreloadUtility from '../../fetch/preload/PreloadUtility.js';
+import PreloadEntry from '../../fetch/preload/PreloadEntry.js';
 
 /**
  * HTML Link Element.
@@ -58,6 +55,15 @@ export default class HTMLLinkElement extends HTMLElement {
 	}
 
 	/**
+	 * Sets rel list.
+	 *
+	 * @param value Value.
+	 */
+	public set relList(value: string) {
+		this.setAttribute('rel', value);
+	}
+
+	/**
 	 * Returns as.
 	 *
 	 * @returns As.
@@ -67,9 +73,9 @@ export default class HTMLLinkElement extends HTMLElement {
 	}
 
 	/**
-	 * Sets crossOrigin.
+	 * Sets as.
 	 *
-	 * @param crossOrigin CrossOrigin.
+	 * @param as As.
 	 */
 	public set as(as: string) {
 		this.setAttribute('as', as);
@@ -271,9 +277,15 @@ export default class HTMLLinkElement extends HTMLElement {
 	async #preloadModule(url: string): Promise<void> {
 		const absoluteURL = new URL(url, this[PropertySymbol.ownerDocument].location.href);
 		const window = this[PropertySymbol.window];
+		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
 		const browserSettings = new WindowBrowserContext(window).getSettings();
 
-		if (!browserSettings || !this[PropertySymbol.isConnected]) {
+		if (
+			!browserSettings ||
+			!this[PropertySymbol.isConnected] ||
+			browserSettings.disableJavaScriptFileLoading ||
+			browserSettings.disableJavaScriptEvaluation
+		) {
 			return;
 		}
 
@@ -288,7 +300,8 @@ export default class HTMLLinkElement extends HTMLElement {
 				const module = await ModuleFactory.getModule(window, absoluteURL, url);
 				await module.preload();
 			} catch (error) {
-				WindowErrorUtility.dispatchError(this[PropertySymbol.window], error);
+				browserFrame.page?.console.error(error);
+				window[PropertySymbol.dispatchError](error);
 				return;
 			}
 		}
@@ -302,50 +315,68 @@ export default class HTMLLinkElement extends HTMLElement {
 	async #preloadResource(url: string): Promise<void> {
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+		const browserSettings = browserFrame.page?.context?.browser?.settings;
+		const as = this.as;
 
 		if (!browserFrame || !this[PropertySymbol.isConnected]) {
 			return;
 		}
 
-		const absoluteURL = new URL(url, window.location.href).href;
-		const as = this.as;
-		const cached = window[PropertySymbol.preloadCache].get(absoluteURL);
-
 		if (
-			cached &&
-			cached.state !== PreloadedResponseStateEnum.consumed &&
-			cached.state === PreloadedResponseStateEnum.invalid
+			as === 'script' &&
+			(browserSettings.disableJavaScriptFileLoading || browserSettings.disableJavaScriptEvaluation)
 		) {
 			return;
 		}
 
-		const preloadedResponse = new PreloadedResponse({
-			crossOrigin: this.crossOrigin
+		if (as === 'style' && browserSettings.disableCSSFileLoading) {
+			return;
+		}
+
+		const absoluteURL = new URL(url, window.location.href).href;
+
+		const preloadKey = PreloadUtility.getKey({
+			url: absoluteURL,
+			destination: as,
+			mode: 'cors',
+			credentialsMode: this.crossOrigin === 'use-credentials' ? 'include' : 'same-origin'
 		});
 
-		window[PropertySymbol.preloadCache].set(absoluteURL, preloadedResponse);
+		if (window.document[PropertySymbol.preloads].has(preloadKey)) {
+			return;
+		}
+
+		const preloadEntry = new PreloadEntry();
+
+		window.document[PropertySymbol.preloads].set(preloadKey, preloadEntry);
 
 		const fetch = new Fetch({
 			browserFrame,
 			window,
 			url: absoluteURL,
-			disableSameOriginPolicy: as === 'style' || as === 'script' || as === 'image',
+			disableSameOriginPolicy: as === 'script' || as === 'style',
+			disablePreload: true,
 			init: {
 				credentials: this.crossOrigin === 'use-credentials' ? 'include' : 'same-origin'
 			}
 		});
-		const response = await fetch.send();
 
-		if (!response.ok) {
-			preloadedResponse.invalidate();
-			return;
+		try {
+			const response = await fetch.send();
+
+			if (!response[PropertySymbol.buffer]) {
+				await response.buffer();
+			}
+
+			preloadEntry.responseAvailable(null, response);
+		} catch (error) {
+			preloadEntry.responseAvailable(error, null);
+			window.document[PropertySymbol.preloads].delete(preloadKey);
+
+			browserFrame.page?.console?.error(
+				`Failed to preload resource "${absoluteURL}": ${error.message}`
+			);
 		}
-
-		if (!response[PropertySymbol.buffer]) {
-			await response.buffer();
-		}
-
-		preloadedResponse.setResponse(response);
 	}
 
 	/**
@@ -383,24 +414,19 @@ export default class HTMLLinkElement extends HTMLElement {
 			if (browserSettings.handleDisabledFileLoadingAsSuccess) {
 				this.dispatchEvent(new Event('load'));
 			} else {
-				WindowErrorUtility.dispatchError(
-					this,
-					new window.DOMException(
-						`Failed to load external stylesheet "${absoluteURL}". CSS file loading is disabled.`,
-						DOMExceptionNameEnum.notSupportedError
-					)
+				const error = new window.DOMException(
+					`Failed to load external stylesheet "${absoluteURL}". CSS file loading is disabled.`,
+					DOMExceptionNameEnum.notSupportedError
 				);
+
+				browserFrame.page?.console.error(error);
+				this.dispatchEvent(new Event('error'));
 			}
 			return;
 		}
 
-		const resourceFetch = new ResourceFetch({
-			browserFrame,
-			window: window
-		});
-		const readyStateManager = (<{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }>(
-			(<unknown>window)
-		))[PropertySymbol.readyStateManager];
+		const resourceFetch = new ResourceFetch(window);
+		const readyStateManager = window[PropertySymbol.readyStateManager];
 
 		this.#loadedStyleSheetURL = absoluteURL;
 
@@ -410,7 +436,9 @@ export default class HTMLLinkElement extends HTMLElement {
 		let error: Error | null = null;
 
 		try {
-			code = await resourceFetch.fetch(absoluteURL);
+			code = await resourceFetch.fetch(absoluteURL, 'style', {
+				credentials: this.crossOrigin === 'use-credentials' ? 'include' : 'same-origin'
+			});
 		} catch (e) {
 			error = e;
 		}
@@ -418,7 +446,8 @@ export default class HTMLLinkElement extends HTMLElement {
 		readyStateManager.endTask();
 
 		if (error) {
-			WindowErrorUtility.dispatchError(this, error);
+			browserFrame.page?.console.error(error);
+			this.dispatchEvent(new Event('error'));
 		} else {
 			const styleSheet = new CSSStyleSheet();
 			styleSheet.replaceSync(code);

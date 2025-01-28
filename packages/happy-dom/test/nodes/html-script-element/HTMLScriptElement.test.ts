@@ -239,9 +239,15 @@ describe('HTMLScriptElement', () => {
 
 				await window.happyDOM?.waitUntilComplete();
 
-				expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
-					'Failed to perform request to "https://localhost:8080/path/to/script.js". Status 404 Not Found.'
-				);
+				expect((<ErrorEvent>(<unknown>errorEvent)).type).toBe('error');
+
+				expect(
+					window.happyDOM?.virtualConsolePrinter
+						.readAsString()
+						.startsWith(
+							'DOMException: Failed to perform request to "https://localhost:8080/path/to/script.js". Status 404 Not Found.'
+						)
+				).toBe(true);
 			});
 		}
 
@@ -281,7 +287,7 @@ describe('HTMLScriptElement', () => {
 		it('Triggers error event when loading external script synchronously with relative URL.', () => {
 			const window = new Window({ url: 'https://localhost:8080/base/' });
 			const thrownError = new Error('error');
-			let errorEvent: ErrorEvent | null = null;
+			let errorEvent: Event | null = null;
 
 			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(() => {
 				throw thrownError;
@@ -290,13 +296,16 @@ describe('HTMLScriptElement', () => {
 			const script = <HTMLScriptElement>window.document.createElement('script');
 			script.src = 'path/to/script.js';
 			script.addEventListener('error', (event) => {
-				errorEvent = <ErrorEvent>event;
+				errorEvent = <Event>event;
 			});
 
 			window.document.body.appendChild(script);
 
-			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe('error');
-			expect((<ErrorEvent>(<unknown>errorEvent)).error).toBe(thrownError);
+			expect((<Event>(<unknown>errorEvent)).type).toBe('error');
+
+			expect(window.happyDOM?.virtualConsolePrinter.readAsString().startsWith('Error: error')).toBe(
+				true
+			);
 		});
 
 		it('Does not evaluate types that are not supported.', () => {
@@ -393,9 +402,15 @@ describe('HTMLScriptElement', () => {
 
 			document.body.appendChild(script);
 
-			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
-				'Failed to load script "https://localhost:8080/path/to/script.js". JavaScript file loading is disabled.'
-			);
+			expect((<ErrorEvent>(<unknown>errorEvent)).type).toBe('error');
+
+			expect(
+				window.happyDOM?.virtualConsolePrinter
+					.readAsString()
+					.startsWith(
+						'NotSupportedError: Failed to load script "https://localhost:8080/path/to/script.js". JavaScript file loading is disabled.'
+					)
+			).toBe(true);
 		});
 
 		it('Triggers a load event when attempting to perform an asynchrounous request and the Happy DOM setting "disableJavaScriptFileLoading" and "handleDisabledFileLoadingAsSuccess" is set to "true".', () => {
@@ -434,9 +449,15 @@ describe('HTMLScriptElement', () => {
 
 			document.body.appendChild(script);
 
-			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
-				'Failed to load script "https://localhost:8080/path/to/script.js". JavaScript file loading is disabled.'
-			);
+			expect((<ErrorEvent>(<unknown>errorEvent)).type).toBe('error');
+
+			expect(
+				window.happyDOM?.virtualConsolePrinter
+					.readAsString()
+					.startsWith(
+						'NotSupportedError: Failed to load script "https://localhost:8080/path/to/script.js". JavaScript file loading is disabled.'
+					)
+			).toBe(true);
 		});
 
 		it('Triggers an error event when attempting to perform an asynchrounous request and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true".', () => {
@@ -456,9 +477,15 @@ describe('HTMLScriptElement', () => {
 
 			document.body.appendChild(script);
 
-			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
-				'Failed to load script "https://localhost:8080/path/to/script.js". JavaScript file loading is disabled.'
-			);
+			expect((<ErrorEvent>(<unknown>errorEvent)).type).toBe('error');
+
+			expect(
+				window.happyDOM?.virtualConsolePrinter
+					.readAsString()
+					.startsWith(
+						'NotSupportedError: Failed to load script "https://localhost:8080/path/to/script.js". JavaScript file loading is disabled.'
+					)
+			).toBe(true);
 		});
 
 		it('Triggers an error event when attempting to perform a synchrounous request and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true".', () => {
@@ -477,9 +504,14 @@ describe('HTMLScriptElement', () => {
 
 			document.body.appendChild(script);
 
-			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
-				'Failed to load script "https://localhost:8080/path/to/script.js". JavaScript file loading is disabled.'
-			);
+			expect((<ErrorEvent>(<unknown>errorEvent)).type).toBe('error');
+			expect(
+				window.happyDOM?.virtualConsolePrinter
+					.readAsString()
+					.startsWith(
+						'NotSupportedError: Failed to load script "https://localhost:8080/path/to/script.js". JavaScript file loading is disabled.'
+					)
+			).toBe(true);
 		});
 
 		it('Triggers an error event on Window when attempting to perform an asynchrounous request containing invalid JavaScript.', async () => {
