@@ -1648,6 +1648,14 @@ describe('Element', () => {
 		});
 	});
 
+	describe('should ignore removeAttribute() when passed a non string attribute', () => {
+		it('Should stringify the attribute and remove it', () => {
+			element.setAttribute('undefined', 'value1');
+			element.removeAttribute(undefined);
+			expect(element.attributes.length).toBe(0);
+		});
+	});
+
 	describe('removeAttributeNS()', () => {
 		it('Removes a namespace attribute.', () => {
 			element.setAttributeNS(NAMESPACE_URI, 'global:local', 'value');
