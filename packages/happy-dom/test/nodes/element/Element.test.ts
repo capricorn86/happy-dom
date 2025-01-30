@@ -19,6 +19,7 @@ import NodeList from '../../../src/nodes/node/NodeList.js';
 import Event from '../../../src/event/Event.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
+import DOMExceptionNameEnum from '../../../lib/exception/DOMExceptionNameEnum';
 
 const NAMESPACE_URI = 'https://test.test';
 
@@ -1565,6 +1566,54 @@ describe('Element', () => {
 			expect(element.attributes['key2'].specified).toBe(true);
 			expect(element.attributes['key2'].ownerElement === element).toBe(true);
 			expect(element.attributes['key2'].ownerDocument === document).toBe(true);
+		});
+
+		it('Throws an error when given an invalid character in the attribute name', () => {
+			try {
+				element.setAttribute('☺', '1');
+			} catch (error) {
+				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+			}
+			try {
+				element.setAttribute('=', '1');
+			} catch (error) {
+				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+			}
+			try {
+				element.setAttribute(' ', '1');
+			} catch (error) {
+				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+			}
+			try {
+				element.setAttribute('"', '1');
+			} catch (error) {
+				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+			}
+			try {
+				element.setAttribute(`'`, '1');
+			} catch (error) {
+				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+			}
+			try {
+				element.setAttribute(`>`, '1');
+			} catch (error) {
+				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+			}
+			try {
+				element.setAttribute(`\/`, '1');
+			} catch (error) {
+				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+			}
+			try {
+				element.setAttribute(`\u007F`, '1'); // control character delete
+			} catch (error) {
+				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+			}
+			try {
+				element.setAttribute(`\u9FFFE`, '1'); // control character delete
+			} catch (error) {
+				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+			}
 		});
 	});
 
