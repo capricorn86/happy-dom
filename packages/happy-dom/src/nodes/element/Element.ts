@@ -34,8 +34,6 @@ import HTMLSerializer from '../../html-serializer/HTMLSerializer.js';
 import HTMLParser from '../../html-parser/HTMLParser.js';
 import IScrollToOptions from '../../window/IScrollToOptions.js';
 import { AttributeUtility } from '../../utilities/AttributeUtility.js';
-import DOMException from '../../exception/DOMException.js';
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -672,12 +670,11 @@ export default class Element
 	 * @param value Value.
 	 */
 	public setAttribute(name: string, value: string): void {
-		if (AttributeUtility.isValidAttributeName(name)) {
-			throw new DOMException(
-				`Uncaught InvalidCharacterError: Failed to execute 'setAttribute' on 'Element': '${name}' is not a valid attribute name.`,
-				DOMExceptionNameEnum.invalidCharacterError
-			);
-		}
+		AttributeUtility.validateAttributeName(
+			name,
+			this[PropertySymbol.ownerDocument][PropertySymbol.contentType],
+			{ method: 'setAttribute', instance: 'Element' }
+		);
 		name = String(name);
 		const namespaceURI = this[PropertySymbol.namespaceURI];
 		// TODO: Is it correct to check for namespaceURI === NamespaceURI.svg?

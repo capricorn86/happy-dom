@@ -1568,9 +1568,111 @@ describe('Element', () => {
 			expect(element.attributes['key2'].ownerDocument === document).toBe(true);
 		});
 
+		it('Sets valid attribute names', () => {
+			// ✅ Basic letters (lowercase & uppercase)
+			element.setAttribute(`abc`, '1');
+			expect(element.getAttribute('abc')).toBe('1'); // lowercase letters
+
+			element.setAttribute(`ABC`, '1');
+			expect(element.getAttribute('ABC')).toBe('1'); // uppercase letters
+
+			element.setAttribute(`AbC`, '1');
+			expect(element.getAttribute('AbC')).toBe('1'); // mixed case
+
+			// ✅ Length variations
+			element.setAttribute(`a`, '1');
+			expect(element.getAttribute('a')).toBe('1'); // single character
+
+			element.setAttribute(`ab`, '1');
+			expect(element.getAttribute('ab')).toBe('1'); // two characters
+
+			element.setAttribute(`attribute`, '1');
+			expect(element.getAttribute('attribute')).toBe('1'); // common length
+
+			element.setAttribute(`averyverylongattributenamethatisvalid`, '1');
+			expect(element.getAttribute('averyverylongattributenamethatisvalid')).toBe('1'); // long attribute name
+
+			// ✅ Attribute names with digits
+			element.setAttribute(`attr1`, '1');
+			expect(element.getAttribute('attr1')).toBe('1'); // digit at the end
+
+			element.setAttribute(`a123`, '1');
+			expect(element.getAttribute('a123')).toBe('1'); // multiple digits at the end
+
+			element.setAttribute(`x9y`, '1');
+			expect(element.getAttribute('x9y')).toBe('1'); // digit in the middle
+
+			// ✅ Attribute names with allowed special characters
+			element.setAttribute(`_underscore`, '1');
+			expect(element.getAttribute('_underscore')).toBe('1'); // starts with underscore
+
+			element.setAttribute(`under_score`, '1');
+			expect(element.getAttribute('under_score')).toBe('1'); // contains underscore
+
+			element.setAttribute(`hyphen-ated`, '1');
+			expect(element.getAttribute('hyphen-ated')).toBe('1'); // contains hyphen
+
+			element.setAttribute(`ns:attribute`, '1');
+			expect(element.getAttribute('ns:attribute')).toBe('1'); // namespace-style (colon allowed)
+
+			// ✅ Unicode-based attribute names
+			element.setAttribute(`ö`, '1');
+			expect(element.getAttribute('ö')).toBe('1'); // Latin extended
+
+			element.setAttribute(`ñ`, '1');
+			expect(element.getAttribute('ñ')).toBe('1'); // Spanish tilde-n
+
+			element.setAttribute(`名`, '1');
+			expect(element.getAttribute('名')).toBe('1'); // Chinese character
+
+			element.setAttribute(`имя`, '1');
+			expect(element.getAttribute('имя')).toBe('1'); // Cyrillic (Russian)
+
+			element.setAttribute(`أسم`, '1');
+			expect(element.getAttribute('أسم')).toBe('1'); // Arabic script
+
+			element.setAttribute(`𝒜𝒷𝒸`, '1');
+			expect(element.getAttribute('𝒜𝒷𝒸')).toBe('1'); // Unicode math letters
+
+			element.setAttribute(`ⓐⓑⓒ`, '1');
+			expect(element.getAttribute('ⓐⓑⓒ')).toBe('1'); // Enclosed alphanumerics
+
+			element.setAttribute(`Ωμέγα`, '1');
+			expect(element.getAttribute('Ωμέγα')).toBe('1'); // Greek letters
+
+			// ✅ Edge cases
+			element.setAttribute(`a`, '1');
+			expect(element.getAttribute('a')).toBe('1'); // single lowercase letter
+
+			element.setAttribute(`Z`, '1');
+			expect(element.getAttribute('Z')).toBe('1'); // single uppercase letter
+
+			element.setAttribute(`_`, '1');
+			expect(element.getAttribute('_')).toBe('1'); // single underscore (valid but unusual)
+
+			// TODO: retest in XML content type
+			// element.setAttribute(`:`, '1');
+			// expect(element.getAttribute(':')).toBe('1'); // single colon (valid in XML namespaces)
+			// element.setAttribute(`-`, '1');
+			// expect(element.getAttribute('-')).toBe('1'); // single hyphen (valid in XML but discouraged in HTML)
+			// element.setAttribute(`-hyphen`, '1');
+			// expect(element.getAttribute('-hyphen')).toBe('1'); // starts with hyphen (allowed in XML)
+
+			element.setAttribute(`valid-attribute-name-123`, '1');
+			expect(element.getAttribute('valid-attribute-name-123')).toBe('1'); // mixed with hyphens and digits
+
+			element.setAttribute(`data-custom`, '1');
+			expect(element.getAttribute('data-custom')).toBe('1'); // common custom attribute pattern
+		});
+
 		it('Throws an error when given an invalid character in the attribute name', () => {
 			try {
 				element.setAttribute('☺', '1');
+			} catch (error) {
+				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+			}
+			try {
+				element.setAttribute('', '1');
 			} catch (error) {
 				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
 			}
