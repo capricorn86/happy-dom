@@ -1672,6 +1672,12 @@ describe('Element', () => {
 				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
 			}
 			try {
+				// eslint-disable-next-line
+				element.setAttribute({} as string, '1');
+			} catch (error) {
+				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+			}
+			try {
 				element.setAttribute('', '1');
 			} catch (error) {
 				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
