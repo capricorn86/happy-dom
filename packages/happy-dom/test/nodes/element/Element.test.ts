@@ -1610,7 +1610,7 @@ describe('Element', () => {
 				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
 			}
 			try {
-				element.setAttribute(`\u9FFFE`, '1'); // control character delete
+				element.setAttribute(`\u9FFFE`, '1'); // non character
 			} catch (error) {
 				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
 			}
