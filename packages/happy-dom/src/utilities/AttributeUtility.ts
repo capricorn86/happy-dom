@@ -10,6 +10,6 @@ export class AttributeUtility {
 	 * @param name the attribute name
 	 */
 	public static isValidAttributeName(name: unknown): boolean {
-		return INVALID_CHARACTER_REGEX.test(String(name));
+		return INVALID_CHARACTER_REGEX.test(String(name).toLowerCase());
 	}
 }
