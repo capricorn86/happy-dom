@@ -33,6 +33,7 @@ import NodeFactory from '../NodeFactory.js';
 import HTMLSerializer from '../../html-serializer/HTMLSerializer.js';
 import HTMLParser from '../../html-parser/HTMLParser.js';
 import IScrollToOptions from '../../window/IScrollToOptions.js';
+import { AttributeUtility } from '../../utilities/AttributeUtility.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -669,6 +670,12 @@ export default class Element
 	 * @param value Value.
 	 */
 	public setAttribute(name: string, value: string): void {
+		AttributeUtility.validateAttributeName(
+			name,
+			this[PropertySymbol.ownerDocument][PropertySymbol.contentType],
+			{ method: 'setAttribute', instance: 'Element' }
+		);
+		name = String(name);
 		const namespaceURI = this[PropertySymbol.namespaceURI];
 		// TODO: Is it correct to check for namespaceURI === NamespaceURI.svg?
 		const attribute =
