@@ -450,6 +450,15 @@ describe('HTMLTableElement', () => {
 			);
 		});
 
+		it('Throws an error if there are no arguments', () => {
+			expect(() => {
+				// @ts-expect-error -- We are intentionally calling this in an unsupported way (no arguments) for this test
+				element.deleteRow();
+			}).toThrow(
+				"Failed to execute 'deleteRow' on 'HTMLTableElement': 1 argument required, but only 0 present."
+			);
+		});
+
 		it('Throws an error if the index is less than -1', () => {
 			expect(() => {
 				element.deleteRow(-2);
