@@ -129,6 +129,11 @@ describe('NamedNodeMap', () => {
 			expect(element.getAttribute('key')).toBe('value1');
 			expect(element.getAttributeNS('namespace', 'key')).toBe('value2');
 		});
+
+		it('Handles non string keys as strings', () => {
+			element.setAttribute('undefined', 'value1');
+			expect(element.getAttribute(undefined)).toBe('value1');
+		});
 	});
 
 	describe('setNamedItemNS()', () => {
