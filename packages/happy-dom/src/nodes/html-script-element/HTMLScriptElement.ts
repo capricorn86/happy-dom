@@ -427,7 +427,6 @@ export default class HTMLScriptElement extends HTMLElement {
 	 * @param source Source.
 	 */
 	async #evaluateImportMap(source: string): Promise<void> {
-		const locationURL = this[PropertySymbol.ownerDocument].location.href;
 		const window = this[PropertySymbol.window];
 		const browserSettings = new WindowBrowserContext(window).getSettings();
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
@@ -458,25 +457,25 @@ export default class HTMLScriptElement extends HTMLElement {
 			};
 
 			if (json.imports) {
-				for (const key in Object.keys(json.imports)) {
+				for (const key of Object.keys(json.imports)) {
 					importMap.imports.push({
-						from: new URL(key, locationURL).href,
-						to: new URL(json.imports[key], locationURL).href
+						from: key,
+						to: json.imports[key]
 					});
 				}
 			}
 
 			if (json.scopes) {
-				for (const scopeKey in Object.keys(json.scopes)) {
+				for (const scopeKey of Object.keys(json.scopes)) {
 					const scope = {
 						scope: scopeKey,
 						rules: []
 					};
-					for (const importKey in json.scopes[scopeKey]) {
+					for (const importKey of Object.keys(json.scopes[scopeKey])) {
 						const value = json.scopes[scopeKey][importKey];
 						scope.rules.push({
-							from: new URL(importKey, locationURL).href,
-							to: new URL(value, locationURL).href
+							from: importKey,
+							to: value
 						});
 					}
 					importMap.scopes.push(scope);
@@ -671,7 +670,10 @@ export default class HTMLScriptElement extends HTMLElement {
 			readyStateManager.endTask();
 		} else {
 			try {
-				code = resourceFetch.fetchSync(absoluteURLString);
+				code = resourceFetch.fetchSync(absoluteURLString, 'script', {
+					credentials: this.crossOrigin === 'use-credentials' ? 'include' : 'same-origin',
+					referrerPolicy: this.referrerPolicy
+				});
 			} catch (error) {
 				browserFrame.page?.console.error(error);
 				this.dispatchEvent(new Event('error'));

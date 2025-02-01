@@ -104,19 +104,14 @@ export default class SyncFetch {
 			? this.interceptor.beforeSyncRequest({
 					request: this.request,
 					window: this.#window
-				})
+			  })
 			: undefined;
+
 		if (typeof beforeRequestResponse === 'object') {
 			return beforeRequestResponse;
 		}
 
 		FetchRequestValidationUtility.validateSchema(this.request);
-
-		const virtualServerResponse = this.getVirtualServerResponse();
-
-		if (virtualServerResponse) {
-			return virtualServerResponse;
-		}
 
 		if (this.request.signal.aborted) {
 			throw new this.#window.DOMException(
@@ -141,7 +136,7 @@ export default class SyncFetch {
 						window: this.#window,
 						response,
 						request: this.request
-					})
+				  })
 				: undefined;
 			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
@@ -165,6 +160,12 @@ export default class SyncFetch {
 
 		if (cachedResponse) {
 			return cachedResponse;
+		}
+
+		const virtualServerResponse = this.getVirtualServerResponse();
+
+		if (virtualServerResponse) {
+			return virtualServerResponse;
 		}
 
 		if (!this.compliesWithCrossOriginPolicy()) {
@@ -283,7 +284,15 @@ export default class SyncFetch {
 			this.#browserFrame?.page?.console.error(
 				`${this.request.method} ${this.request.url} 404 (Not Found)`
 			);
-			return VirtualServerUtility.getNotFoundSyncResponse(this.#window);
+			const response = VirtualServerUtility.getNotFoundSyncResponse(this.#window);
+			const interceptedResponse = this.interceptor?.afterSyncResponse
+				? this.interceptor.afterSyncResponse({
+						window: this.#window,
+						response,
+						request: this.request
+				  })
+				: undefined;
+			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
 
 		let buffer: Buffer;
@@ -294,10 +303,18 @@ export default class SyncFetch {
 			this.#browserFrame?.page?.console.error(
 				`${this.request.method} ${this.request.url} 404 (Not Found)`
 			);
-			return VirtualServerUtility.getNotFoundSyncResponse(this.#window);
+			const response = VirtualServerUtility.getNotFoundSyncResponse(this.#window);
+			const interceptedResponse = this.interceptor?.afterSyncResponse
+				? this.interceptor.afterSyncResponse({
+						window: this.#window,
+						response,
+						request: this.request
+				  })
+				: undefined;
+			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
 
-		return {
+		const response = {
 			status: 200,
 			statusText: '',
 			ok: true,
@@ -306,6 +323,21 @@ export default class SyncFetch {
 			headers: new this.#window.Headers(),
 			body: buffer
 		};
+		const interceptedResponse = this.interceptor?.afterSyncResponse
+			? this.interceptor.afterSyncResponse({
+					window: this.#window,
+					response,
+					request: this.request
+			  })
+			: undefined;
+		const returnResponse = typeof interceptedResponse === 'object' ? interceptedResponse : response;
+
+		this.#browserFrame.page.context.responseCache.add(this.request, {
+			...returnResponse,
+			waitingForBody: false
+		});
+
+		return returnResponse;
 	}
 
 	/**
@@ -493,7 +525,7 @@ export default class SyncFetch {
 					window: this.#window,
 					response: redirectedResponse,
 					request: this.request
-				})
+			  })
 			: undefined;
 		const returnResponse =
 			typeof interceptedResponse === 'object' ? interceptedResponse : redirectedResponse;

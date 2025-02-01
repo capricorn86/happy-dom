@@ -1,6 +1,7 @@
 import BrowserWindow from '../window/BrowserWindow.js';
 import IECMAScriptModuleCompiledResult from './IECMAScriptModuleCompiledResult.js';
 import IECMAScriptModuleImport from './IECMAScriptModuleImport.js';
+import ModuleURLUtility from './ModuleURLUtility.js';
 
 /**
  * Code regexp.
@@ -109,7 +110,10 @@ export default class ECMAScriptModuleCompiler {
 			) {
 				if (match[1] && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
 					// Import without exported properties
-					imports.push({ url: new URL(match[1], moduleURL).href, type: 'esm' });
+					imports.push({
+						url: ModuleURLUtility.getURL(this.window, moduleURL, match[1]).href,
+						type: 'esm'
+					});
 					skipMatchedCode = true;
 				} else if (match[3] && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
 					// Import statement start
@@ -123,7 +127,7 @@ export default class ECMAScriptModuleCompiler {
 				} else if (match[4]) {
 					// Import statement end
 					if (importStartIndex !== -1) {
-						const url = new URL(match[4], moduleURL).href;
+						const url = ModuleURLUtility.getURL(this.window, moduleURL, match[4]).href;
 						const variables = code.substring(importStartIndex, match.index);
 						const importRegExp = new RegExp(IMPORT_REGEXP);
 						const importCode: string[] = [];
@@ -155,7 +159,7 @@ export default class ECMAScriptModuleCompiler {
 				} else if (match[7] && match[8] && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
 					// Export from module statement
 
-					const url = new URL(match[8], moduleURL).href;
+					const url = ModuleURLUtility.getURL(this.window, moduleURL, match[8]).href;
 					const imported = match[7];
 
 					if (imported === '*') {

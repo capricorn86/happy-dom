@@ -318,7 +318,12 @@ export default class HTMLLinkElement extends HTMLElement {
 		const browserSettings = browserFrame.page?.context?.browser?.settings;
 		const as = this.as;
 
-		if (!browserFrame || !this[PropertySymbol.isConnected]) {
+		// Only "script", "style" and "fetch" are supported for now.
+		if (
+			!browserFrame ||
+			!this[PropertySymbol.isConnected] ||
+			(as !== 'script' && as !== 'style' && as !== 'fetch')
+		) {
 			return;
 		}
 

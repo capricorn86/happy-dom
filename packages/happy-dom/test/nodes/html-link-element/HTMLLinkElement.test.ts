@@ -376,5 +376,202 @@ describe('HTMLLinkElement', () => {
             Expect trimmed lower case: "value"
         </div><div>Lazy-loaded module: true</div>`);
 		});
+
+		it('Preloads style and async script when "rel" is set to "preload"', async () => {
+			const requests: string[] = [];
+			const window = new Window({
+				url: 'https://localhost:8080/',
+				settings: {
+					errorCapture: BrowserErrorCaptureEnum.disabled,
+					fetch: {
+						interceptor: {
+							afterAsyncResponse: async ({ request }) => {
+								requests.push(request.url);
+							},
+							afterSyncResponse: ({ request }) => {
+								requests.push(request.url);
+							}
+						},
+						virtualServers: [
+							{
+								url: '/preload/',
+								directory: './test/nodes/html-link-element/preload-resources/'
+							}
+						]
+					}
+				}
+			});
+			const document = window.document;
+			const link1 = document.createElement('link');
+
+			link1.rel = 'preload';
+			link1.as = 'script';
+			link1.href = '/preload/main.js';
+
+			document.head.appendChild(link1);
+
+			const link2 = document.createElement('link');
+
+			link2.rel = 'preload';
+			link2.as = 'style';
+			link2.href = '/preload/style.css';
+
+			document.head.appendChild(link2);
+
+			const link3 = document.createElement('link');
+
+			link3.rel = 'preload';
+			link3.as = 'fetch';
+			link3.href = '/preload/data.json';
+
+			document.head.appendChild(link3);
+
+			const script = document.createElement('script');
+
+			script.src = '/preload/main.js';
+			script.async = true;
+
+			document.body.appendChild(script);
+
+			const style = document.createElement('link');
+
+			style.rel = 'stylesheet';
+			style.href = '/preload/style.css';
+
+			document.head.appendChild(style);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(requests.sort()).toEqual([
+				'https://localhost:8080/preload/data.json',
+				'https://localhost:8080/preload/main.js',
+				'https://localhost:8080/preload/style.css'
+			]);
+
+			expect(window.getComputedStyle(document.body).getPropertyValue('background-color')).toBe(
+				'red'
+			);
+			expect(window.happyDOM?.virtualConsolePrinter.readAsString()).toBe(
+				'Resource loaded\n{"data":"loaded"}\n'
+			);
+		});
+
+		it('Preloads style and sync script when "rel" is set to "preload"', async () => {
+			const requests: string[] = [];
+			const window = new Window({
+				url: 'https://localhost:8080/',
+				settings: {
+					errorCapture: BrowserErrorCaptureEnum.disabled,
+					fetch: {
+						interceptor: {
+							afterAsyncResponse: async ({ request }) => {
+								requests.push(request.url);
+							},
+							afterSyncResponse: ({ request }) => {
+								requests.push(request.url);
+							}
+						},
+						virtualServers: [
+							{
+								url: '/preload/',
+								directory: './test/nodes/html-link-element/preload-resources/'
+							}
+						]
+					}
+				}
+			});
+			const document = window.document;
+			const link1 = document.createElement('link');
+
+			link1.rel = 'preload';
+			link1.as = 'script';
+			link1.href = '/preload/main.js';
+
+			document.head.appendChild(link1);
+
+			const link2 = document.createElement('link');
+
+			link2.rel = 'preload';
+			link2.as = 'style';
+			link2.href = '/preload/style.css';
+
+			document.head.appendChild(link2);
+
+			const link3 = document.createElement('link');
+
+			link3.rel = 'preload';
+			link3.as = 'fetch';
+			link3.href = '/preload/data.json';
+
+			document.head.appendChild(link3);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			const script = document.createElement('script');
+
+			script.src = '/preload/main.js';
+
+			document.body.appendChild(script);
+
+			const style = document.createElement('link');
+
+			style.rel = 'stylesheet';
+			style.href = '/preload/style.css';
+
+			document.head.appendChild(style);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(requests.sort()).toEqual([
+				'https://localhost:8080/preload/data.json',
+				'https://localhost:8080/preload/main.js',
+				'https://localhost:8080/preload/style.css'
+			]);
+
+			expect(window.getComputedStyle(document.body).getPropertyValue('background-color')).toBe(
+				'red'
+			);
+			expect(window.happyDOM?.virtualConsolePrinter.readAsString()).toBe(
+				'Resource loaded\n{"data":"loaded"}\n'
+			);
+		});
+
+		it('Ignores unsupported "as" attribute values when "rel" is set to "preload"', async () => {
+			const requests: string[] = [];
+			const window = new Window({
+				url: 'https://localhost:8080/',
+				settings: {
+					errorCapture: BrowserErrorCaptureEnum.disabled,
+					fetch: {
+						interceptor: {
+							beforeAsyncRequest: async ({ request }) => {
+								requests.push(request.url);
+							},
+							beforeSyncRequest: ({ request }) => {
+								requests.push(request.url);
+							}
+						},
+						virtualServers: [
+							{
+								url: '/preload/',
+								directory: './test/nodes/html-link-element/preload-resources/'
+							}
+						]
+					}
+				}
+			});
+			const document = window.document;
+
+			const link = document.createElement('link');
+
+			link.rel = 'preload';
+			link.as = 'image';
+
+			document.head.appendChild(link);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(requests).toEqual([]);
+		});
 	});
 });

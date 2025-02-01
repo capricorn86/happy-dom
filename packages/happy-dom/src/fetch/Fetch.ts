@@ -326,14 +326,23 @@ export default class Fetch {
 			return null;
 		}
 
+		const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
+
 		if (this.request.method !== 'GET') {
 			this.#browserFrame?.page?.console.error(
 				`${this.request.method} ${this.request.url} 404 (Not Found)`
 			);
-			return VirtualServerUtility.getNotFoundResponse(this.#window);
+			const response = VirtualServerUtility.getNotFoundResponse(this.#window);
+			const interceptedResponse = this.interceptor?.afterAsyncResponse
+				? await this.interceptor.afterAsyncResponse({
+						window: this.#window,
+						response: await response,
+						request: this.request
+				  })
+				: undefined;
+			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+			return interceptedResponse instanceof Response ? interceptedResponse : response;
 		}
-
-		const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
 		let buffer: Buffer;
 
 		try {
@@ -346,9 +355,16 @@ export default class Fetch {
 				`${this.request.method} ${this.request.url} 404 (Not Found)`
 			);
 
+			const response = VirtualServerUtility.getNotFoundResponse(this.#window);
+			const interceptedResponse = this.interceptor?.afterAsyncResponse
+				? await this.interceptor.afterAsyncResponse({
+						window: this.#window,
+						response: await response,
+						request: this.request
+				  })
+				: undefined;
 			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
-
-			return VirtualServerUtility.getNotFoundResponse(this.#window);
+			return interceptedResponse instanceof Response ? interceptedResponse : response;
 		}
 
 		const body = new this.#window.ReadableStream({
@@ -363,14 +379,6 @@ export default class Fetch {
 		const response = new this.#window.Response(body);
 		response[PropertySymbol.buffer] = buffer;
 		(<string>response.url) = this.request.url;
-		response[PropertySymbol.cachedResponse] = this.#browserFrame.page?.context?.responseCache.add(
-			this.request,
-			{
-				...response,
-				body: response[PropertySymbol.buffer],
-				waitingForBody: false
-			}
-		);
 
 		const interceptedResponse = this.interceptor?.afterAsyncResponse
 			? await this.interceptor.afterAsyncResponse({
@@ -383,6 +391,16 @@ export default class Fetch {
 		this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 
 		const returnResponse = interceptedResponse instanceof Response ? interceptedResponse : response;
+		const cachedResponse = {
+			...returnResponse,
+			body: buffer,
+			waitingForBody: false
+		};
+
+		response[PropertySymbol.cachedResponse] = this.#browserFrame.page?.context?.responseCache.add(
+			this.request,
+			cachedResponse
+		);
 
 		return returnResponse;
 	}

@@ -40,6 +40,7 @@ export default class ResourceFetch {
 	): Promise<string> {
 		const browserFrame = new WindowBrowserContext(this.window).getBrowserFrame();
 
+		// Preloaded resource
 		if (destination === 'script' || destination === 'style') {
 			const preloadKey = PreloadUtility.getKey({
 				url: String(url),
@@ -95,15 +96,56 @@ export default class ResourceFetch {
 	 * Returns resource data synchronously.
 	 *
 	 * @param url URL.
+	 * @param destination Destination.
+	 * @param [options] Options.
+	 * @param [options.credentials] Credentials.
+	 * @param [options.referrerPolicy] Referrer policy.
 	 * @returns Response.
 	 */
-	public fetchSync(url: string): string {
+	public fetchSync(
+		url: string,
+		destination: 'script' | 'style' | 'module',
+		options?: { credentials?: IRequestCredentials; referrerPolicy?: IRequestReferrerPolicy }
+	): string {
 		const browserFrame = new WindowBrowserContext(this.window).getBrowserFrame();
+
+		// Preloaded resource
+		if (destination === 'script' || destination === 'style') {
+			const preloadKey = PreloadUtility.getKey({
+				url: String(url),
+				destination,
+				mode: 'cors',
+				credentialsMode: options.credentials || 'same-origin'
+			});
+			const preloadEntry = this.window.document[PropertySymbol.preloads].get(preloadKey);
+
+			// We will only use this if the fetch for the resource is complete as it is async and this request is sync.
+			if (preloadEntry && preloadEntry.response) {
+				this.window.document[PropertySymbol.preloads].delete(preloadKey);
+
+				const response = preloadEntry.response;
+
+				if (!response.ok) {
+					throw new this.window.DOMException(
+						`Failed to perform request to "${
+							new URL(url, this.window.location.href).href
+						}". Status ${preloadEntry.response.status} ${preloadEntry.response.statusText}.`
+					);
+				}
+
+				return preloadEntry.response[PropertySymbol.buffer].toString();
+			}
+		}
+
 		const fetch = new SyncFetch({
 			browserFrame,
 			window: this.window,
 			url,
-			disableSameOriginPolicy: true
+			disableSameOriginPolicy: true,
+			init: {
+				credentials: options?.credentials,
+				referrerPolicy: options?.referrerPolicy
+			}
 		});
 
 		const response = fetch.send();

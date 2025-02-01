@@ -689,5 +689,109 @@ describe('HTMLScriptElement', () => {
 					.backgroundColor
 			).toBe('red');
 		});
+
+		it('Handles modules using an import map.', async () => {
+			const requests: string[] = [];
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					fetch: {
+						interceptor: {
+							beforeAsyncRequest: async ({ request }) => {
+								requests.push(request.url);
+							}
+						},
+						virtualServers: [
+							{
+								url: 'https://localhost:8080/base/js/',
+								directory: './test/nodes/html-script-element/modules-with-import-map/default/'
+							},
+							{
+								url: 'https://external-scripts.com/js/',
+								directory:
+									'./test/nodes/html-script-element/modules-with-import-map/external-scripts/'
+							},
+							{
+								url: 'https://external-resources.com/',
+								directory:
+									'./test/nodes/html-script-element/modules-with-import-map/external-resources/'
+							}
+						]
+					}
+				},
+				console
+			});
+			const document = window.document;
+			const importMap = document.createElement('script');
+
+			importMap.type = 'importmap';
+			importMap.textContent = JSON.stringify({
+				imports: {
+					'external-scripts/': 'https://external-scripts.com/js/'
+				},
+				scopes: {
+					'base/': {
+						'external-resources/': 'https://external-resources.com/'
+					},
+					'https://external-scripts.com': {
+						'second-external-resources/': 'https://external-resources.com/'
+					},
+					'invalid/': {
+						'external-resources/': 'https://wrong.com'
+					}
+				}
+			});
+
+			document.body.appendChild(importMap);
+
+			const script = document.createElement('script');
+
+			script.src = '/base/js/TestModuleElement.js';
+			script.type = 'module';
+
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			const testModule = document.createElement('test-module');
+
+			document.body.appendChild(testModule);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(requests).toEqual([
+				'https://localhost:8080/base/js/TestModuleElement.js',
+				'https://localhost:8080/base/js/utilities/StringUtilityClass.js',
+				'https://external-scripts.com/js/utilities/stringUtility.js',
+				'https://external-resources.com/json/data.json',
+				'https://external-resources.com/css/style.css',
+				'https://external-scripts.com/js/utilities/apostrophWrapper.js',
+				'https://localhost:8080/base/js/utilities/lazyload.js'
+			]);
+
+			expect(window['moduleLoadOrder']).toEqual([
+				'apostrophWrapper.js',
+				'StringUtilityClass.js',
+				'stringUtility.js',
+				'TestModuleElement.js',
+				'lazyload.js'
+			]);
+
+			expect(testModule.shadowRoot?.innerHTML).toBe(`<div>
+            Expect lower case: "value"
+            Expect upper case: "VALUE"
+            Expect lower case. "value"
+            Expect trimmed lower case: "value"
+            Additional expect lower case. "value"
+        </div><div>Lazy-loaded module: true</div>`);
+
+			expect(testModule.shadowRoot?.adoptedStyleSheets[0].cssRules[0].cssText).toBe(
+				'div { background: red; }'
+			);
+			expect(
+				window.getComputedStyle(<HTMLElement>testModule.shadowRoot?.querySelector('div'))
+					.backgroundColor
+			).toBe('red');
+		});
 	});
 });
