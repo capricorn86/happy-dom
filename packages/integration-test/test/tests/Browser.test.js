@@ -9,7 +9,7 @@ describe('Browser', () => {
 
 				// Github.com has a timer that is very long (hours) and a timer loop that never ends.
 				timer: {
-					maxTimeout: 500,
+					maxTimeout: 1000,
 					maxInterval: 100,
 					maxIntervalIterations: 1,
 					preventTimerLoops: true
