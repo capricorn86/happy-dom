@@ -1803,6 +1803,12 @@ describe('Element', () => {
 			element.removeAttribute('key1');
 			expect(element.attributes.length).toBe(0);
 		});
+
+		it('Should stringify a non string attribute and remove it', () => {
+			element.setAttribute('undefined', 'value1');
+			element.removeAttribute(undefined);
+			expect(element.attributes.length).toBe(0);
+		});
 	});
 
 	describe('removeAttributeNS()', () => {
