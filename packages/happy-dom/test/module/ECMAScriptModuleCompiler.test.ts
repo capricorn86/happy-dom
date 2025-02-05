@@ -163,7 +163,6 @@ describe('ECMAScriptModuleCompiler', () => {
             `;
 
 			const compiler = new ECMAScriptModuleCompiler(window);
-			debugger;
 			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
 
 			expect(result.imports).toEqual([
@@ -443,13 +442,13 @@ try {
                 const string3 = \`/\`;
                 const regexp1 = /[[[[[[[[[[]]/;
                 const regexp2 = /\\//i;
-                const regexp3 = /[/][/]/;
+                const regexp3 = /.*/i;
+                const regexp4 = /[/][/]/;
 
                 export { regexp1, match, regexpes, templateString };
             `;
 
 			const compiler = new ECMAScriptModuleCompiler(window);
-			debugger;
 			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
 
 			expect(result.imports).toEqual([]);
@@ -466,12 +465,48 @@ try {
                 const string3 = \`/\`;
                 const regexp1 = /[[[[[[[[[[]]/;
                 const regexp2 = /\\//i;
-                const regexp3 = /[/][/]/;
+                const regexp3 = /.*/i;
+                const regexp4 = /[/][/]/;
 
                 $happy_dom.exports['regexp1'] = regexp1;
 $happy_dom.exports['match'] = match;
 $happy_dom.exports['regexpes'] = regexpes;
 $happy_dom.exports['templateString'] = templateString;
+            
+}`);
+		});
+
+		it('Handles string with escape character.', () => {
+			const code = `
+                const string = "\\"";
+                const string2 = "\\\\";
+                const string3 = '\\'';
+                const string4 = '\\\\';
+                const string5 = \`\\\`\`;
+                const string6 = \`\\\\\`;
+                export { string, string2, string3, string4, string5, string6 };
+            `;
+
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
+
+			expect(result.imports).toEqual([]);
+
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
+//# sourceURL=http://localhost:8080/js/app/main.js
+
+                const string = "\\"";
+                const string2 = "\\\\";
+                const string3 = '\\'';
+                const string4 = '\\\\';
+                const string5 = \`\\\`\`;
+                const string6 = \`\\\\\`;
+                $happy_dom.exports['string'] = string;
+$happy_dom.exports['string2'] = string2;
+$happy_dom.exports['string3'] = string3;
+$happy_dom.exports['string4'] = string4;
+$happy_dom.exports['string5'] = string5;
+$happy_dom.exports['string6'] = string6;
             
 }`);
 		});
@@ -520,7 +555,6 @@ const {_: c} = $happy_dom.imports.get('http://localhost:8080/js/app/preload-help
 			const code = `(function(){const i=document.createElement("link").relList;if(i&&i.supports&&i.supports("modulepreload"))return;for(const e of document.querySelectorAll('link[rel="modulepreload"]'))a(e);new MutationObserver(e=>{for(const r of e)if(r.type==="childList")for(const t of r.addedNodes)t.tagName==="LINK"&&t.rel==="modulepreload"&&a(t)}).observe(document,{childList:!0,subtree:!0});function c(e){const r={};return e.integrity&&(r.integrity=e.integrity),e.referrerPolicy&&(r.referrerPolicy=e.referrerPolicy),e.crossOrigin==="use-credentials"?r.credentials="include":e.crossOrigin==="anonymous"?r.credentials="omit":r.credentials="same-origin",r}function a(e){if(e.ep)return;e.ep=!0;const r=c(e);fetch(e.href,r)}})();const h="modulepreload",y=function(u){return"/test/path/"+u},d={},g=function(i,c,a){let e=Promise.resolve();if(c&&c.length>0){document.getElementsByTagName("link");const t=document.querySelector("meta[property=csp-nonce]"),o=(t==null?void 0:t.nonce)||(t==null?void 0:t.getAttribute("nonce"));e=Promise.allSettled(c.map(n=>{if(n=y(n),n in d)return;d[n]=!0;const l=n.endsWith(".css"),f=l?'[rel="stylemodal"]':"";if(document.querySelector('link[href="'+n+'"]'+f+''))return;const s=document.createElement("link");if(s.rel=l?"stylemodal":h,l||(s.as="script"),s.crossOrigin="",s.href=n,o&&s.setAttribute("nonce",o),document.head.appendChild(s),l)return new Promise((m,p)=>{s.addEventListener("load",m),s.addEventListener("error",()=>p(new Error('Unable to preload CSS for ' + n)))})}))}function r(t){const o=new Event("vite:preloadError",{cancelable:!0});if(o.payload=t,window.dispatchEvent(o),!o.defaultPrevented)throw t}return e.then(t=>{for(const o of t||[])o.status==="rejected"&&r(o.reason);return i().catch(r)})};export{g as _};`;
 
 			const compiler = new ECMAScriptModuleCompiler(window);
-			debugger;
 			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
 
 			expect(result.imports).toEqual([]);

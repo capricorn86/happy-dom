@@ -24,19 +24,18 @@ import * as PropertySymbol from '../PropertySymbol.js';
  * Group 13: Export variable type (var, let or const).
  * Group 14: Export variable name.
  * Group 15: Export variable name end character (= or ;).
- * Group 16: Multi line comment.
- * Group 17: Slash (RegExp).
- * Group 18: Parentheses.
- * Group 19: Curly braces.
- * Group 20: Square brackets.
- * Group 21: Escape template string (${).
- * Group 22: Template string apostrophe (`).
- * Group 23: String apostrophe (').
- * Group 24: String apostrophe (").
- * Group 25: Line feed character.
+ * Group 16: Slash (RegExp or comment).
+ * Group 17: Parentheses.
+ * Group 18: Curly braces.
+ * Group 19: Square brackets.
+ * Group 20: Escape template string (${).
+ * Group 21: Template string apostrophe (`).
+ * Group 22: String apostrophe (').
+ * Group 23: String apostrophe (").
+ * Group 24: Line feed character.
  */
 const CODE_REGEXP =
-	/import\s*["']([^"']+)["'];{0,1}|import\s*\(([^)]+)\)|(import[\s{])|[\s}]from\s*["']([^"']+)["'](\s+with\s*{\s*type\s*:\s*["']([^"']+)["']\s*}){0,1}|export\s([a-zA-Z0-9-_$]+|\*|\*\s+as\s+["'a-zA-Z0-9-_$]+|{[^}]+})\s*from\s["']([^"']+)["']|(export\s*default\s*)|export\s*(function\*{0,1}|class)\s*([^({\s]+)|export\s*{([^}]+)}|export\s+(var|let|const)\s+([^=;]+)(=|;)|(\/\*|\*\/)|(\/)|(\(|\))|({|})|(\[|\])|(\${)|(`)|(')|(")|(\n)/gm;
+	/import\s*["']([^"']+)["'];{0,1}|import\s*\(([^)]+)\)|(import[\s{])|[\s}]from\s*["']([^"']+)["'](\s+with\s*{\s*type\s*:\s*["']([^"']+)["']\s*}){0,1}|export\s([a-zA-Z0-9-_$]+|\*|\*\s+as\s+["'a-zA-Z0-9-_$]+|{[^}]+})\s*from\s["']([^"']+)["']|(export\s*default\s*)|export\s*(function\*{0,1}|class)\s*([^({\s]+)|export\s*{([^}]+)}|export\s+(var|let|const)\s+([^=;]+)(=|;)|(\/)|(\(|\))|({|})|(\[|\])|(\${)|(`)|(')|(")|(\n)/gm;
 
 /**
  * Import regexp.
@@ -101,11 +100,15 @@ export default class ECMAScriptModuleCompiler {
 			simpleString: 0,
 			doubleString: 0
 		};
+		const stack: { templateString: { index: number | null; code: string[] } } = {
+			templateString: { index: null, code: [] }
+		};
 		const templateString: number[] = [];
 		const exportSpreadVariables: Array<Map<string, string>> = [];
 		let newCode = `(async function anonymous($happy_dom) {\n//# sourceURL=${moduleURL}\n`;
 		let match: RegExpExecArray;
 		let precedingToken: string;
+		let isEscaped: boolean;
 		let lastIndex = 0;
 		let importStartIndex = -1;
 		let skipMatchedCode = false;
@@ -122,6 +125,7 @@ export default class ECMAScriptModuleCompiler {
 				newCode += code.substring(lastIndex, match.index);
 			}
 			precedingToken = code[match.index - 1] || ' ';
+			isEscaped = precedingToken === '\\' && code[match.index - 2] !== '\\';
 
 			// Imports and exports are only valid outside any statement, string or comment at the top level
 			if (
@@ -294,53 +298,45 @@ export default class ECMAScriptModuleCompiler {
 					skipMatchedCode = true;
 				}
 			} else if (match[16]) {
-				// Multi line comment
+				// Slash (RegExp or Comment)
 				if (
 					count.simpleString === 0 &&
 					count.doubleString === 0 &&
-					count.singleLineComment === 0 &&
-					count.regExp === 0 &&
-					(templateString.length === 0 || templateString[0] > 0)
-				) {
-					if (match[16] === '/*') {
-						count.comment = 1;
-					} else if (match[16] === '*/') {
-						count.comment = 0;
-					}
-				}
-			} else if (match[17]) {
-				// Slash (RegExp or Single line comment)
-				if (
-					count.simpleString === 0 &&
-					count.doubleString === 0 &&
-					count.comment === 0 &&
 					count.singleLineComment === 0 &&
 					count.regExpSquareBrackets === 0 &&
 					(templateString.length === 0 || templateString[0] > 0)
 				) {
-					if (count.regExp === 0) {
-						if (code[match.index + 1] === '/') {
-							count.singleLineComment = 1;
-						} else {
-							if (precedingToken !== '\\') {
-								let index = match.index - 1;
-								let nonSpacePrecedingToken = code[index];
+					if (count.comment === 1) {
+						if (precedingToken === '*') {
+							count.comment = 0;
+						}
+					} else {
+						if (count.regExp === 0) {
+							if (code[match.index + 1] === '*') {
+								count.comment = 1;
+							} else if (code[match.index + 1] === '/') {
+								count.singleLineComment = 1;
+							} else {
+								if (!isEscaped) {
+									let index = match.index - 1;
+									let nonSpacePrecedingToken = code[index];
 
-								while (nonSpacePrecedingToken === ' ' || nonSpacePrecedingToken === '\n') {
-									index--;
-									nonSpacePrecedingToken = code[index];
-								}
+									while (nonSpacePrecedingToken === ' ' || nonSpacePrecedingToken === '\n') {
+										index--;
+										nonSpacePrecedingToken = code[index];
+									}
 
-								if (PRECEDING_REGEXP_TOKEN_REGEXP.test(nonSpacePrecedingToken)) {
-									count.regExp = 1;
+									if (PRECEDING_REGEXP_TOKEN_REGEXP.test(nonSpacePrecedingToken)) {
+										count.regExp = 1;
+									}
 								}
 							}
+						} else if (!isEscaped) {
+							count.regExp = 0;
 						}
-					} else if (precedingToken !== '\\') {
-						count.regExp = 0;
 					}
 				}
-			} else if (match[18]) {
+			} else if (match[17]) {
 				// Parentheses
 				if (
 					count.simpleString === 0 &&
@@ -350,13 +346,13 @@ export default class ECMAScriptModuleCompiler {
 					count.singleLineComment === 0 &&
 					(templateString.length === 0 || templateString[0] > 0)
 				) {
-					if (match[18] === '(') {
+					if (match[17] === '(') {
 						count.parantheses++;
-					} else if (match[18] === ')' && count.parantheses > 0) {
+					} else if (match[17] === ')' && count.parantheses > 0) {
 						count.parantheses--;
 					}
 				}
-			} else if (match[19]) {
+			} else if (match[18]) {
 				// Curly braces
 				if (
 					count.simpleString === 0 &&
@@ -366,12 +362,12 @@ export default class ECMAScriptModuleCompiler {
 					count.singleLineComment === 0 &&
 					(templateString.length === 0 || templateString[0] > 0)
 				) {
-					if (match[19] === '{') {
+					if (match[18] === '{') {
 						if (templateString.length) {
 							templateString[0]++;
 						}
 						count.curlyBraces++;
-					} else if (match[19] === '}') {
+					} else if (match[18] === '}') {
 						if (templateString.length && templateString[0] > 0) {
 							templateString[0]--;
 						}
@@ -380,7 +376,7 @@ export default class ECMAScriptModuleCompiler {
 						}
 					}
 				}
-			} else if (match[20]) {
+			} else if (match[19]) {
 				// Square brackets
 				if (
 					count.simpleString === 0 &&
@@ -391,22 +387,22 @@ export default class ECMAScriptModuleCompiler {
 				) {
 					// We need to check for square brackets in RegExp as well to know when the RegExp ends
 					if (count.regExp === 1) {
-						if (precedingToken !== '\\') {
-							if (match[20] === '[' && count.regExpSquareBrackets === 0) {
+						if (!isEscaped) {
+							if (match[19] === '[' && count.regExpSquareBrackets === 0) {
 								count.regExpSquareBrackets = 1;
-							} else if (match[20] === ']' && count.regExpSquareBrackets === 1) {
+							} else if (match[19] === ']' && count.regExpSquareBrackets === 1) {
 								count.regExpSquareBrackets = 0;
 							}
 						}
 					} else {
-						if (match[20] === '[') {
+						if (match[19] === '[') {
 							count.squareBrackets++;
-						} else if (match[20] === ']' && count.squareBrackets > 0) {
+						} else if (match[19] === ']' && count.squareBrackets > 0) {
 							count.squareBrackets--;
 						}
 					}
 				}
-			} else if (match[21]) {
+			} else if (match[20]) {
 				// Escape template string (${)
 				if (
 					count.simpleString === 0 &&
@@ -414,13 +410,14 @@ export default class ECMAScriptModuleCompiler {
 					count.comment === 0 &&
 					count.singleLineComment === 0 &&
 					count.regExp === 0 &&
-					templateString.length > 0 &&
-					precedingToken !== '\\'
+					!isEscaped
 				) {
-					templateString[0]++;
+					if (templateString.length > 0) {
+						templateString[0]++;
+					}
 					count.curlyBraces++;
 				}
-			} else if (match[22]) {
+			} else if (match[21]) {
 				// Template string
 				if (
 					count.simpleString === 0 &&
@@ -428,22 +425,26 @@ export default class ECMAScriptModuleCompiler {
 					count.comment === 0 &&
 					count.singleLineComment === 0 &&
 					count.regExp === 0 &&
-					precedingToken !== '\\'
+					!isEscaped
 				) {
 					if (templateString?.[0] == 0) {
 						templateString.shift();
+						stack.templateString.code.push(
+							code.substring(stack.templateString.index, match.index + 1)
+						);
 					} else {
 						templateString.unshift(0);
+						stack.templateString.index = match.index;
 					}
 				}
-			} else if (match[23]) {
+			} else if (match[22]) {
 				// String apostrophe (')
 				if (
 					count.doubleString === 0 &&
 					count.comment === 0 &&
 					count.singleLineComment === 0 &&
 					count.regExp === 0 &&
-					precedingToken !== '\\' &&
+					!isEscaped &&
 					(templateString.length === 0 || templateString[0] > 0)
 				) {
 					if (count.simpleString === 0) {
@@ -452,14 +453,14 @@ export default class ECMAScriptModuleCompiler {
 						count.simpleString = 0;
 					}
 				}
-			} else if (match[24]) {
+			} else if (match[23]) {
 				// String apostrophe (")
 				if (
 					count.simpleString === 0 &&
 					count.comment === 0 &&
 					count.singleLineComment === 0 &&
 					count.regExp === 0 &&
-					precedingToken !== '\\' &&
+					!isEscaped &&
 					(templateString.length === 0 || templateString[0] > 0)
 				) {
 					if (count.doubleString === 0) {
@@ -468,7 +469,7 @@ export default class ECMAScriptModuleCompiler {
 						count.doubleString = 0;
 					}
 				}
-			} else if (match[25]) {
+			} else if (match[24]) {
 				// Line feed character
 				count.singleLineComment = 0;
 			}
