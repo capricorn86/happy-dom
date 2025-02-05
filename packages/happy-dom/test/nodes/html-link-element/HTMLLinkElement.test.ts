@@ -64,6 +64,11 @@ describe('HTMLLinkElement', () => {
 			expect(element.relList.length).toBe(2);
 			expect(element.relList[0]).toBe('value1');
 			expect(element.relList[1]).toBe('value2');
+
+			expect(element.relList.supports('stylesheet')).toBe(true);
+			expect(element.relList.supports('modulepreload')).toBe(true);
+			expect(element.relList.supports('preload')).toBe(true);
+			expect(element.relList.supports('unsupported')).toBe(false);
 		});
 	});
 

@@ -3,6 +3,7 @@ import Document from '../../src/nodes/document/Document.js';
 import Element from '../../src/nodes/element/Element.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import DOMTokenList from '../../src/dom/DOMTokenList.js';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 
 describe('DOMTokenList', () => {
 	let window: Window;
@@ -218,6 +219,18 @@ describe('DOMTokenList', () => {
 		it('Returns list value as string', () => {
 			element.className = 'class1 class2  class3';
 			expect(element.classList.toString()).toEqual('class1 class2  class3');
+		});
+	});
+
+	describe('supports()', () => {
+		it('Returns true if the token is in the list', () => {
+			const domTokenList = new DOMTokenList(PropertySymbol.illegalConstructor, element, 'rel', [
+				'stylesheet',
+				'modulepreload'
+			]);
+			expect(domTokenList.supports('stylesheet')).toBe(true);
+			expect(domTokenList.supports('modulepreload')).toBe(true);
+			expect(domTokenList.supports('unsupported')).toBe(false);
 		});
 	});
 
