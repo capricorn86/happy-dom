@@ -13,6 +13,7 @@ import IRequestInfo from '../../../src/fetch/types/IRequestInfo.js';
 import Headers from '../../../src/fetch/Headers.js';
 import Browser from '../../../src/browser/Browser.js';
 import DOMTokenList from '../../../src/dom/DOMTokenList.js';
+import Event from '../../../src/event/Event.js';
 
 describe('HTMLIFrameElement', () => {
 	let window: Window;
@@ -256,17 +257,18 @@ describe('HTMLIFrameElement', () => {
 		});
 
 		it('Returns content window for "javascript:scroll(10, 20)".', async () => {
-			await new Promise((resolve) => {
-				element.src = 'javascript:scroll(10, 20)';
-				document.body.appendChild(element);
-				expect(element.contentWindow === element.contentDocument?.defaultView).toBe(true);
+			element.src = 'javascript:scroll(10, 20)';
+			document.body.appendChild(element);
+			expect(element.contentWindow === element.contentDocument?.defaultView).toBe(true);
 
-				element.addEventListener('load', () => {
-					expect(element.contentDocument?.documentElement.scrollLeft).toBe(10);
-					expect(element.contentDocument?.documentElement.scrollTop).toBe(20);
-					resolve(null);
+			await new Promise((resolve) => {
+				element.addEventListener('load', (event) => {
+					resolve(event);
 				});
 			});
+
+			expect(element.contentDocument?.documentElement.scrollLeft).toBe(10);
+			expect(element.contentDocument?.documentElement.scrollTop).toBe(20);
 		});
 
 		it(`Doesn't load anything if the Happy DOM setting "disableIframePageLoading" is set to true.`, () => {
@@ -283,175 +285,201 @@ describe('HTMLIFrameElement', () => {
 		});
 
 		it(`Dispatches an error event if the response of the iframe page has an "x-frame-options" header set to "deny".`, async () => {
-			await new Promise((resolve) => {
-				const responseHTML = '<html><head></head><body>Test</body></html>';
+			const responseHTML = '<html><head></head><body>Test</body></html>';
 
-				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
-					return new Promise((resolve) => {
-						setTimeout(() => {
-							resolve(<Response>(<unknown>{
-								text: () => Promise.resolve(responseHTML),
-								ok: true,
-								headers: new Headers({ 'x-frame-options': 'deny' })
-							}));
-						}, 1);
-					});
+			vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
+				return new Promise((resolve) => {
+					setTimeout(() => {
+						resolve(<Response>(<unknown>{
+							text: () => Promise.resolve(responseHTML),
+							ok: true,
+							headers: new Headers({ 'x-frame-options': 'deny' })
+						}));
+					}, 1);
 				});
-
-				window.happyDOM?.setURL('https://localhost:8080');
-				element.src = 'https://localhost:8080/iframe.html';
-				element.addEventListener('error', (event) => {
-					expect((<ErrorEvent>event).message).toBe(
-						`Refused to display 'https://localhost:8080/iframe.html' in a frame because it set 'X-Frame-Options' to 'deny'.`
-					);
-					expect((<ErrorEvent>event).message === (<ErrorEvent>event).error?.message).toBe(true);
-					resolve(null);
-				});
-				document.body.appendChild(element);
 			});
+
+			window.happyDOM?.setURL('https://localhost:8080');
+			element.src = 'https://localhost:8080/iframe.html';
+
+			document.body.appendChild(element);
+
+			const event: Event = await new Promise((resolve) => {
+				element.addEventListener('error', (event) => {
+					resolve(event);
+				});
+			});
+
+			expect(event.type).toBe('error');
+
+			expect(
+				window.happyDOM.virtualConsolePrinter
+					.readAsString()
+					.startsWith(
+						`Error: Refused to display 'https://localhost:8080/iframe.html' in a frame because it set 'X-Frame-Options' to 'deny'.`
+					)
+			).toBe(true);
 		});
 
 		it(`Dispatches an error event if the response of the iframe page has an "x-frame-options" header set to "sameorigin" when the origin is different.`, async () => {
-			await new Promise((resolve) => {
-				const responseHTML = '<html><head></head><body>Test</body></html>';
+			const responseHTML = '<html><head></head><body>Test</body></html>';
 
-				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
-					return new Promise((resolve) => {
-						setTimeout(() => {
-							resolve(<Response>(<unknown>{
-								text: () => Promise.resolve(responseHTML),
-								ok: true,
-								headers: new Headers({ 'x-frame-options': 'sameorigin' })
-							}));
-						}, 1);
-					});
+			vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
+				return new Promise((resolve) => {
+					setTimeout(() => {
+						resolve(<Response>(<unknown>{
+							text: () => Promise.resolve(responseHTML),
+							ok: true,
+							headers: new Headers({ 'x-frame-options': 'sameorigin' })
+						}));
+					}, 1);
 				});
-
-				window.happyDOM?.setURL('https://localhost:3000');
-				element.src = 'https://localhost:8080/iframe.html';
-				element.addEventListener('error', (event) => {
-					expect((<ErrorEvent>event).message).toBe(
-						`Refused to display 'https://localhost:8080/iframe.html' in a frame because it set 'X-Frame-Options' to 'sameorigin'.`
-					);
-					expect((<ErrorEvent>event).message === (<ErrorEvent>event).error?.message).toBe(true);
-					resolve(null);
-				});
-				document.body.appendChild(element);
 			});
+
+			window.happyDOM?.setURL('https://localhost:3000');
+			element.src = 'https://localhost:8080/iframe.html';
+
+			document.body.appendChild(element);
+
+			const event: Event = await new Promise((resolve) => {
+				element.addEventListener('error', (event) => {
+					resolve(event);
+				});
+			});
+
+			expect(event.type).toBe('error');
+
+			expect(
+				window.happyDOM.virtualConsolePrinter
+					.readAsString()
+					.startsWith(
+						`Error: Refused to display 'https://localhost:8080/iframe.html' in a frame because it set 'X-Frame-Options' to 'sameorigin'.`
+					)
+			).toBe(true);
 		});
 
 		it('Returns content window for URL with same origin when the response has an "x-frame-options" set to "sameorigin".', async () => {
-			await new Promise((resolve) => {
-				const responseHTML = '<html><head></head><body>Test</body></html>';
-				let fetchedURL: string | null = null;
+			const responseHTML = '<html><head></head><body>Test</body></html>';
+			let fetchedURL: string | null = null;
 
-				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
-					fetchedURL = <string>url;
-					return new Promise((resolve) => {
-						setTimeout(() => {
-							resolve(<Response>(<unknown>{
-								text: () => Promise.resolve(responseHTML),
-								ok: true,
-								headers: new Headers({ 'x-frame-options': 'sameorigin' })
-							}));
-						}, 1);
-					});
+			vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
+				fetchedURL = <string>url;
+				return new Promise((resolve) => {
+					setTimeout(() => {
+						resolve(<Response>(<unknown>{
+							text: () => Promise.resolve(responseHTML),
+							ok: true,
+							headers: new Headers({ 'x-frame-options': 'sameorigin' })
+						}));
+					}, 1);
 				});
+			});
 
-				window.happyDOM?.setURL('https://localhost:8080');
-				element.src = 'https://localhost:8080/iframe.html';
+			window.happyDOM?.setURL('https://localhost:8080');
+			element.src = 'https://localhost:8080/iframe.html';
+
+			document.body.appendChild(element);
+
+			await new Promise((resolve) => {
 				element.addEventListener('load', () => {
-					expect(element.contentDocument?.location.href).toBe('https://localhost:8080/iframe.html');
-					expect(fetchedURL).toBe('https://localhost:8080/iframe.html');
-					expect(element.contentWindow === element.contentDocument?.defaultView).toBe(true);
-					expect(`<html>${element.contentDocument?.documentElement.innerHTML}</html>`).toBe(
-						responseHTML
-					);
 					resolve(null);
 				});
-
-				document.body.appendChild(element);
 			});
+
+			expect(element.contentDocument?.location.href).toBe('https://localhost:8080/iframe.html');
+			expect(fetchedURL).toBe('https://localhost:8080/iframe.html');
+			expect(element.contentWindow === element.contentDocument?.defaultView).toBe(true);
+			expect(`<html>${element.contentDocument?.documentElement.innerHTML}</html>`).toBe(
+				responseHTML
+			);
 		});
 
 		it('Returns content window for URL with same origin.', async () => {
+			const responseHTML = '<html><head></head><body>Test</body></html>';
+			let fetchedURL: string | null = null;
+
+			vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
+				fetchedURL = <string>url;
+				return Promise.resolve(<Response>(<unknown>{
+					text: () => Promise.resolve(responseHTML),
+					ok: true,
+					headers: new Headers()
+				}));
+			});
+
+			window.happyDOM?.setURL('https://localhost:8080');
+			element.src = 'https://localhost:8080/iframe.html';
+
+			document.body.appendChild(element);
+
 			await new Promise((resolve) => {
-				const responseHTML = '<html><head></head><body>Test</body></html>';
-				let fetchedURL: string | null = null;
-
-				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
-					fetchedURL = <string>url;
-					return Promise.resolve(<Response>(<unknown>{
-						text: () => Promise.resolve(responseHTML),
-						ok: true,
-						headers: new Headers()
-					}));
-				});
-
-				window.happyDOM?.setURL('https://localhost:8080');
-				element.src = 'https://localhost:8080/iframe.html';
 				element.addEventListener('load', () => {
-					expect(element.contentDocument?.location.href).toBe('https://localhost:8080/iframe.html');
-					expect(fetchedURL).toBe('https://localhost:8080/iframe.html');
-					expect(element.contentWindow === element.contentDocument?.defaultView).toBe(true);
-					expect(`<html>${element.contentDocument?.documentElement.innerHTML}</html>`).toBe(
-						responseHTML
-					);
 					resolve(null);
 				});
-				document.body.appendChild(element);
 			});
+
+			expect(element.contentDocument?.location.href).toBe('https://localhost:8080/iframe.html');
+			expect(fetchedURL).toBe('https://localhost:8080/iframe.html');
+			expect(element.contentWindow === element.contentDocument?.defaultView).toBe(true);
+			expect(`<html>${element.contentDocument?.documentElement.innerHTML}</html>`).toBe(
+				responseHTML
+			);
 		});
 
 		it('Returns content window for relative URL.', async () => {
+			const responseHTML = '<html><head></head><body>Test</body></html>';
+
+			vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
+				return Promise.resolve(<Response>(<unknown>{
+					text: () => Promise.resolve(responseHTML),
+					ok: true,
+					headers: new Headers()
+				}));
+			});
+
+			window.happyDOM?.setURL('https://localhost:8080');
+			element.src = '/iframe.html';
+
+			document.body.appendChild(element);
+
 			await new Promise((resolve) => {
-				const responseHTML = '<html><head></head><body>Test</body></html>';
-
-				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
-					return Promise.resolve(<Response>(<unknown>{
-						text: () => Promise.resolve(responseHTML),
-						ok: true,
-						headers: new Headers()
-					}));
-				});
-
-				window.happyDOM?.setURL('https://localhost:8080');
-				element.src = '/iframe.html';
 				element.addEventListener('load', () => {
-					expect(element.contentDocument?.location.href).toBe('https://localhost:8080/iframe.html');
 					resolve(null);
 				});
-				document.body.appendChild(element);
 			});
+
+			expect(element.contentDocument?.location.href).toBe('https://localhost:8080/iframe.html');
 		});
 
 		it('Returns content window for URL without protocol.', async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			const window = page.mainFrame.window;
+			const document = window.document;
+			const element = <HTMLIFrameElement>document.createElement('iframe');
+			const responseHTML = '<html><head></head><body>Test</body></html>';
+
+			page.mainFrame.url = 'https://localhost:8080';
+
+			vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
+				return Promise.resolve(<Response>(<unknown>{
+					text: () => Promise.resolve(responseHTML),
+					ok: true,
+					headers: new Headers()
+				}));
+			});
+
+			element.src = '//www.github.com/iframe.html';
+
+			document.body.appendChild(element);
+
 			await new Promise((resolve) => {
-				const browser = new Browser();
-				const page = browser.newPage();
-				const window = page.mainFrame.window;
-				const document = window.document;
-				const element = <HTMLIFrameElement>document.createElement('iframe');
-				const responseHTML = '<html><head></head><body>Test</body></html>';
-
-				page.mainFrame.url = 'https://localhost:8080';
-
-				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation((url: IRequestInfo) => {
-					return Promise.resolve(<Response>(<unknown>{
-						text: () => Promise.resolve(responseHTML),
-						ok: true,
-						headers: new Headers()
-					}));
-				});
-
-				element.src = '//www.github.com/iframe.html';
 				element.addEventListener('load', () => {
-					expect(page.mainFrame.childFrames[0].url).toBe('https://www.github.com/iframe.html');
 					resolve(null);
 				});
-
-				document.body.appendChild(element);
 			});
+
+			expect(page.mainFrame.childFrames[0].url).toBe('https://www.github.com/iframe.html');
 		});
 
 		it('Returns instance of CrossOriginBrowserWindow for URL with different origin.', async () => {
@@ -520,25 +548,30 @@ describe('HTMLIFrameElement', () => {
 		});
 
 		it('Dispatches an error event when the page fails to load.', async () => {
-			await new Promise((resolve) => {
-				const error = new Error('Error');
+			const error = new Error('error');
 
-				vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation(() => {
-					return Promise.resolve(<Response>(<unknown>{
-						text: () => Promise.reject(error),
-						ok: true,
-						headers: new Headers()
-					}));
-				});
-
-				element.src = 'https://localhost:8080/iframe.html';
-				element.addEventListener('error', (event) => {
-					expect((<ErrorEvent>event).message).toBe(error.message);
-					expect((<ErrorEvent>event).error).toBe(error);
-					resolve(null);
-				});
-				document.body.appendChild(element);
+			vi.spyOn(BrowserWindow.prototype, 'fetch').mockImplementation(() => {
+				return Promise.resolve(<Response>(<unknown>{
+					text: () => Promise.reject(error),
+					ok: true,
+					headers: new Headers()
+				}));
 			});
+
+			element.src = 'https://localhost:8080/iframe.html';
+			document.body.appendChild(element);
+
+			const event: Event = await new Promise((resolve) => {
+				element.addEventListener('error', (event) => {
+					resolve(event);
+				});
+			});
+
+			expect(event.type).toBe('error');
+
+			expect(
+				window.happyDOM.virtualConsolePrinter.readAsString().startsWith(`Error: error\n`)
+			).toBe(true);
 		});
 
 		it('Remain at the initial about:blank page when none of the srcdoc/src attributes are set', async () => {

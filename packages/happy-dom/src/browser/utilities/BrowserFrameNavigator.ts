@@ -2,7 +2,6 @@ import IBrowserFrame from '../types/IBrowserFrame.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import IGoToOptions from '../types/IGoToOptions.js';
 import Response from '../../fetch/Response.js';
-import DocumentReadyStateManager from '../../nodes/document/DocumentReadyStateManager.js';
 import BrowserWindow from '../../window/BrowserWindow.js';
 import BrowserFrameFactory from './BrowserFrameFactory.js';
 import BrowserFrameURL from './BrowserFrameURL.js';
@@ -61,9 +60,7 @@ export default class BrowserFrameNavigator {
 		// Javascript protocol
 		if (targetURL.protocol === 'javascript:') {
 			if (frame && !frame.page.context.browser.settings.disableJavaScriptEvaluation) {
-				const readyStateManager = (<
-					{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }
-				>(<unknown>frame.window))[PropertySymbol.readyStateManager];
+				const readyStateManager = frame.window[PropertySymbol.readyStateManager];
 
 				readyStateManager.startTask();
 				const code =
@@ -178,9 +175,7 @@ export default class BrowserFrameNavigator {
 		}
 
 		// Start navigation
-		const readyStateManager = (<{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }>(
-			(<unknown>frame.window)
-		))[PropertySymbol.readyStateManager];
+		const readyStateManager = frame.window[PropertySymbol.readyStateManager];
 		const abortController = new frame.window.AbortController();
 		const timeout = frame.window.setTimeout(
 			() => abortController.abort(new Error('Request timed out.')),

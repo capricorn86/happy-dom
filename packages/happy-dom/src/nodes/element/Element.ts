@@ -14,7 +14,6 @@ import Attr from '../attr/Attr.js';
 import NamedNodeMap from './NamedNodeMap.js';
 import Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
-import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
@@ -258,6 +257,15 @@ export default class Element
 			);
 		}
 		return <DOMTokenList>this[PropertySymbol.classList];
+	}
+
+	/**
+	 * Sets class list.
+	 *
+	 * @param value Class list.
+	 */
+	public set classList(value: string) {
+		this.setAttribute('class', value);
 	}
 
 	/**
@@ -1265,7 +1273,8 @@ export default class Element
 	 */
 	public override dispatchEvent(event: Event): boolean {
 		const returnValue = super.dispatchEvent(event);
-		const browserSettings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
+		const window = this[PropertySymbol.window];
+		const browserSettings = new WindowBrowserContext(window).getSettings();
 
 		if (
 			browserSettings &&
@@ -1276,17 +1285,19 @@ export default class Element
 			const attribute = this.getAttribute('on' + event.type);
 
 			if (attribute && !event[PropertySymbol.immediatePropagationStopped]) {
-				const code = `//# sourceURL=${this[PropertySymbol.window].location.href}\n${attribute}`;
+				const code = `//# sourceURL=${window.location.href}\n${attribute}`;
 
 				if (
 					browserSettings.disableErrorCapturing ||
 					browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
 				) {
-					this[PropertySymbol.window].eval(code);
+					window.eval(code);
 				} else {
-					WindowErrorUtility.captureError(this[PropertySymbol.window], () =>
-						this[PropertySymbol.window].eval(code)
-					);
+					try {
+						window.eval(code);
+					} catch (error) {
+						window[PropertySymbol.dispatchError](error);
+					}
 				}
 			}
 		}

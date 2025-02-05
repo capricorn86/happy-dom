@@ -111,4 +111,11 @@ export default interface IBrowserSettings {
 		prefersColorScheme: string;
 		mediaType: string;
 	};
+
+	/**
+	 * Debug settings.
+	 */
+	debug: {
+		traceWaitUntilComplete: number;
+	};
 }

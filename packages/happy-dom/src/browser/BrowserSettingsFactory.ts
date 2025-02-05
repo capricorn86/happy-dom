@@ -36,6 +36,10 @@ export default class BrowserSettingsFactory {
 			device: {
 				...DefaultBrowserSettings.device,
 				...settings?.device
+			},
+			debug: {
+				...DefaultBrowserSettings.debug,
+				...settings?.debug
 			}
 		};
 	}
