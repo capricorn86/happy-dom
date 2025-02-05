@@ -159,6 +159,15 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	}
 
 	/**
+	 * Sets rel list.
+	 *
+	 * @param value Value.
+	 */
+	public set relList(value: string) {
+		this.setAttribute('rel', value);
+	}
+
+	/**
 	 * Returns target.
 	 *
 	 * @returns target.

@@ -1,12 +1,12 @@
 import Window from '../../../src/window/Window.js';
 import BrowserWindow from '../../../src/window/BrowserWindow.js';
 import Document from '../../../src/nodes/document/Document.js';
-import HTMLLinkElement from '../../../src/nodes/html-link-element/HTMLLinkElement.js';
 import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
 import Event from '../../../src/event/Event.js';
-import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import EventTarget from '../../../src/event/EventTarget.js';
+import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCaptureEnum.js';
+import DOMTokenList from '../../../src/dom/DOMTokenList.js';
 
 describe('HTMLLinkElement', () => {
 	let window: Window;
@@ -59,7 +59,24 @@ describe('HTMLLinkElement', () => {
 		it('Returns a DOMTokenList object.', () => {
 			const element = document.createElement('link');
 			element.setAttribute('rel', 'value1 value2');
+			expect(element.relList).toBeInstanceOf(DOMTokenList);
 			expect(element.relList.value).toBe('value1 value2');
+			expect(element.relList.length).toBe(2);
+			expect(element.relList[0]).toBe('value1');
+			expect(element.relList[1]).toBe('value2');
+
+			expect(element.relList.supports('stylesheet')).toBe(true);
+			expect(element.relList.supports('modulepreload')).toBe(true);
+			expect(element.relList.supports('preload')).toBe(true);
+			expect(element.relList.supports('unsupported')).toBe(false);
+		});
+	});
+
+	describe('set relList()', () => {
+		it('Sets the attribute "rel".', () => {
+			const element = document.createElement('link');
+			element.relList = 'value1 value2';
+			expect(element.getAttribute('rel')).toBe('value1 value2');
 		});
 	});
 
@@ -94,9 +111,11 @@ describe('HTMLLinkElement', () => {
 			let loadEventTarget: EventTarget | null = null;
 			let loadEventCurrentTarget: EventTarget | null = null;
 
-			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
+			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (
+				url: string | URL
+			) {
 				loadedWindow = this.window;
-				loadedURL = url;
+				loadedURL = <string>url;
 				return css;
 			});
 
@@ -125,7 +144,7 @@ describe('HTMLLinkElement', () => {
 		it('Triggers error event when fetching a CSS file fails during setting the "href" and "rel" attributes.', async () => {
 			const element = document.createElement('link');
 			const thrownError = new Error('error');
-			let errorEvent: ErrorEvent | null = null;
+			let errorEvent: Event | null = null;
 
 			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function () {
 				throw thrownError;
@@ -134,7 +153,7 @@ describe('HTMLLinkElement', () => {
 			document.body.appendChild(element);
 
 			element.addEventListener('error', (event) => {
-				errorEvent = <ErrorEvent>event;
+				errorEvent = <Event>event;
 			});
 
 			element.rel = 'stylesheet';
@@ -142,8 +161,11 @@ describe('HTMLLinkElement', () => {
 
 			await window.happyDOM?.waitUntilComplete();
 
-			expect((<ErrorEvent>(<unknown>errorEvent)).error).toEqual(thrownError);
-			expect((<ErrorEvent>(<unknown>errorEvent)).message).toEqual('error');
+			expect((<Event>(<unknown>errorEvent)).type).toBe('error');
+
+			expect(window.happyDOM?.virtualConsolePrinter.readAsString().startsWith('Error: error')).toBe(
+				true
+			);
 		});
 
 		it('Does not load and evaluate external CSS files if the element is not connected to DOM.', () => {
@@ -152,9 +174,11 @@ describe('HTMLLinkElement', () => {
 			let loadedWindow: BrowserWindow | null = null;
 			let loadedURL: string | null = null;
 
-			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
+			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (
+				url: string | URL
+			) {
 				loadedWindow = this.window;
-				loadedURL = url;
+				loadedURL = <string>url;
 				return css;
 			});
 
@@ -176,9 +200,11 @@ describe('HTMLLinkElement', () => {
 			let loadedWindow: BrowserWindow | null = null;
 			let loadedURL: string | null = null;
 
-			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
+			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (
+				url: string | URL
+			) {
 				loadedWindow = this.window;
-				loadedURL = url;
+				loadedURL = <string>url;
 				return css;
 			});
 
@@ -206,7 +232,7 @@ describe('HTMLLinkElement', () => {
 		it('Triggers error event when fetching a CSS file fails while appending the element to the document.', async () => {
 			const element = document.createElement('link');
 			const thrownError = new Error('error');
-			let errorEvent: ErrorEvent | null = null;
+			let errorEvent: Event | null = null;
 
 			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function () {
 				throw thrownError;
@@ -215,15 +241,18 @@ describe('HTMLLinkElement', () => {
 			element.rel = 'stylesheet';
 			element.href = 'https://localhost:8080/test/path/file.css';
 			element.addEventListener('error', (event) => {
-				errorEvent = <ErrorEvent>event;
+				errorEvent = <Event>event;
 			});
 
 			document.body.appendChild(element);
 
 			await window.happyDOM?.waitUntilComplete();
 
-			expect((<ErrorEvent>(<unknown>errorEvent)).error).toEqual(thrownError);
-			expect((<ErrorEvent>(<unknown>errorEvent)).message).toEqual('error');
+			expect((<Event>(<unknown>errorEvent)).type).toBe('error');
+
+			expect(window.happyDOM?.virtualConsolePrinter.readAsString().startsWith('Error: error')).toBe(
+				true
+			);
 		});
 
 		it('Does not load external CSS file when "href" attribute has been set if the element is not connected to DOM.', () => {
@@ -232,9 +261,11 @@ describe('HTMLLinkElement', () => {
 			let loadedWindow: BrowserWindow | null = null;
 			let loadedURL: string | null = null;
 
-			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (url: string) {
+			vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (
+				url: string | URL
+			) {
 				loadedWindow = this.window;
-				loadedURL = url;
+				loadedURL = <string>url;
 				return css;
 			});
 
@@ -253,18 +284,25 @@ describe('HTMLLinkElement', () => {
 			document = window.document;
 
 			const element = document.createElement('link');
-			let errorEvent: ErrorEvent | null = null;
+			let errorEvent: Event | null = null;
 
 			element.rel = 'stylesheet';
 			element.href = 'https://localhost:8080/test/path/file.css';
-			element.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
+			element.addEventListener('error', (event) => (errorEvent = <Event>event));
 
 			document.body.appendChild(element);
 
 			expect(element.sheet).toBe(null);
-			expect((<ErrorEvent>(<unknown>errorEvent)).message).toBe(
-				'Failed to load external stylesheet "https://localhost:8080/test/path/file.css". CSS file loading is disabled.'
-			);
+
+			expect((<Event>(<unknown>errorEvent)).type).toBe('error');
+
+			expect(
+				window.happyDOM?.virtualConsolePrinter
+					.readAsString()
+					.startsWith(
+						'NotSupportedError: Failed to load external stylesheet "https://localhost:8080/test/path/file.css". CSS file loading is disabled.'
+					)
+			).toBe(true);
 		});
 
 		it('Triggers a load event when the Happy DOM setting "disableCSSFileLoading" and "handleDisabledFileLoadingAsSuccess" is set to "true".', async () => {
@@ -284,6 +322,274 @@ describe('HTMLLinkElement', () => {
 
 			expect(element.sheet).toBe(null);
 			expect((<Event>(<unknown>loadEvent)).type).toBe('load');
+		});
+
+		it('Preloads modules when "rel" is set to "modulepreload" and only fetches once when preload is ongoing', async () => {
+			const requests: string[] = [];
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					errorCapture: BrowserErrorCaptureEnum.disabled,
+					fetch: {
+						interceptor: {
+							afterAsyncResponse: async ({ request }) => {
+								requests.push(request.url);
+							}
+						},
+						virtualServers: [
+							{
+								url: 'https://localhost:8080/base/js/',
+								directory: './test/nodes/html-script-element/modules/'
+							}
+						]
+					}
+				},
+				console
+			});
+			const document = window.document;
+			const link = document.createElement('link');
+
+			link.rel = 'modulepreload';
+			link.href = '/base/js/TestModuleElement.js';
+
+			document.head.appendChild(link);
+
+			const script = document.createElement('script');
+
+			script.src = '/base/js/TestModuleElement.js';
+			script.type = 'module';
+
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			const testModule = document.createElement('test-module');
+
+			document.body.appendChild(testModule);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(requests.sort()).toEqual([
+				'https://localhost:8080/base/js/TestModuleElement.js',
+				'https://localhost:8080/base/js/css/style.css',
+				'https://localhost:8080/base/js/json/data.json',
+				'https://localhost:8080/base/js/utilities/StringUtilityClass.js',
+				'https://localhost:8080/base/js/utilities/apostrophWrapper.js',
+				'https://localhost:8080/base/js/utilities/lazyload.js',
+				'https://localhost:8080/base/js/utilities/stringUtility.js'
+			]);
+
+			expect(window['moduleLoadOrder']).toEqual([
+				'apostrophWrapper.js',
+				'StringUtilityClass.js',
+				'stringUtility.js',
+				'TestModuleElement.js',
+				'lazyload.js'
+			]);
+
+			expect(testModule.shadowRoot?.innerHTML).toBe(`<div>
+            Expect lower case: "value"
+            Expect upper case: "VALUE"
+            Expect lower case. "value"
+            Expect trimmed lower case: "value"
+        </div><div>Lazy-loaded module: true</div>`);
+		});
+
+		it('Preloads style and async script when "rel" is set to "preload"', async () => {
+			const requests: string[] = [];
+			const window = new Window({
+				url: 'https://localhost:8080/',
+				settings: {
+					errorCapture: BrowserErrorCaptureEnum.disabled,
+					fetch: {
+						interceptor: {
+							afterAsyncResponse: async ({ request }) => {
+								requests.push(request.url);
+							},
+							afterSyncResponse: ({ request }) => {
+								requests.push(request.url);
+							}
+						},
+						virtualServers: [
+							{
+								url: '/preload/',
+								directory: './test/nodes/html-link-element/preload-resources/'
+							}
+						]
+					}
+				}
+			});
+			const document = window.document;
+			const link1 = document.createElement('link');
+
+			link1.rel = 'preload';
+			link1.as = 'script';
+			link1.href = '/preload/main.js';
+
+			document.head.appendChild(link1);
+
+			const link2 = document.createElement('link');
+
+			link2.rel = 'preload';
+			link2.as = 'style';
+			link2.href = '/preload/style.css';
+
+			document.head.appendChild(link2);
+
+			const link3 = document.createElement('link');
+
+			link3.rel = 'preload';
+			link3.as = 'fetch';
+			link3.href = '/preload/data.json';
+
+			document.head.appendChild(link3);
+
+			const script = document.createElement('script');
+
+			script.src = '/preload/main.js';
+			script.async = true;
+
+			document.body.appendChild(script);
+
+			const style = document.createElement('link');
+
+			style.rel = 'stylesheet';
+			style.href = '/preload/style.css';
+
+			document.head.appendChild(style);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(requests.sort()).toEqual([
+				'https://localhost:8080/preload/data.json',
+				'https://localhost:8080/preload/main.js',
+				'https://localhost:8080/preload/style.css'
+			]);
+
+			expect(window.getComputedStyle(document.body).getPropertyValue('background-color')).toBe(
+				'red'
+			);
+			expect(window.happyDOM?.virtualConsolePrinter.readAsString()).toBe(
+				'Resource loaded\n{"data":"loaded"}\n'
+			);
+		});
+
+		it('Preloads style and sync script when "rel" is set to "preload"', async () => {
+			const requests: string[] = [];
+			const window = new Window({
+				url: 'https://localhost:8080/',
+				settings: {
+					errorCapture: BrowserErrorCaptureEnum.disabled,
+					fetch: {
+						interceptor: {
+							afterAsyncResponse: async ({ request }) => {
+								requests.push(request.url);
+							},
+							afterSyncResponse: ({ request }) => {
+								requests.push(request.url);
+							}
+						},
+						virtualServers: [
+							{
+								url: '/preload/',
+								directory: './test/nodes/html-link-element/preload-resources/'
+							}
+						]
+					}
+				}
+			});
+			const document = window.document;
+			const link1 = document.createElement('link');
+
+			link1.rel = 'preload';
+			link1.as = 'script';
+			link1.href = '/preload/main.js';
+
+			document.head.appendChild(link1);
+
+			const link2 = document.createElement('link');
+
+			link2.rel = 'preload';
+			link2.as = 'style';
+			link2.href = '/preload/style.css';
+
+			document.head.appendChild(link2);
+
+			const link3 = document.createElement('link');
+
+			link3.rel = 'preload';
+			link3.as = 'fetch';
+			link3.href = '/preload/data.json';
+
+			document.head.appendChild(link3);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			const script = document.createElement('script');
+
+			script.src = '/preload/main.js';
+
+			document.body.appendChild(script);
+
+			const style = document.createElement('link');
+
+			style.rel = 'stylesheet';
+			style.href = '/preload/style.css';
+
+			document.head.appendChild(style);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(requests.sort()).toEqual([
+				'https://localhost:8080/preload/data.json',
+				'https://localhost:8080/preload/main.js',
+				'https://localhost:8080/preload/style.css'
+			]);
+
+			expect(window.getComputedStyle(document.body).getPropertyValue('background-color')).toBe(
+				'red'
+			);
+			expect(window.happyDOM?.virtualConsolePrinter.readAsString()).toBe(
+				'Resource loaded\n{"data":"loaded"}\n'
+			);
+		});
+
+		it('Ignores unsupported "as" attribute values when "rel" is set to "preload"', async () => {
+			const requests: string[] = [];
+			const window = new Window({
+				url: 'https://localhost:8080/',
+				settings: {
+					errorCapture: BrowserErrorCaptureEnum.disabled,
+					fetch: {
+						interceptor: {
+							beforeAsyncRequest: async ({ request }) => {
+								requests.push(request.url);
+							},
+							beforeSyncRequest: ({ request }) => {
+								requests.push(request.url);
+							}
+						},
+						virtualServers: [
+							{
+								url: '/preload/',
+								directory: './test/nodes/html-link-element/preload-resources/'
+							}
+						]
+					}
+				}
+			});
+			const document = window.document;
+
+			const link = document.createElement('link');
+
+			link.rel = 'preload';
+			link.as = 'image';
+
+			document.head.appendChild(link);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(requests).toEqual([]);
 		});
 	});
 });

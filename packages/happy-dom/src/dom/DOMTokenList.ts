@@ -19,6 +19,7 @@ export default class DOMTokenList {
 		items: [],
 		attributeValue: ''
 	};
+	private [PropertySymbol.supports]: string[];
 
 	/**
 	 * Constructor.
@@ -26,14 +27,21 @@ export default class DOMTokenList {
 	 * @param illegalConstructorSymbol Illegal constructor symbol.
 	 * @param ownerElement Owner element.
 	 * @param attributeName Attribute name.
+	 * @param [supports] Supports.
 	 */
-	constructor(illegalConstructorSymbol: symbol, ownerElement: Element, attributeName: string) {
+	constructor(
+		illegalConstructorSymbol: symbol,
+		ownerElement: Element,
+		attributeName: string,
+		supports?: string[]
+	) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}
 
 		this[PropertySymbol.ownerElement] = ownerElement;
 		this[PropertySymbol.attributeName] = attributeName;
+		this[PropertySymbol.supports] = supports || [];
 
 		const methodBinder = new ClassMethodBinder(this, [DOMTokenList]);
 
@@ -189,10 +197,10 @@ export default class DOMTokenList {
 	/**
 	 * Supports.
 	 *
-	 * @param _token Token.
+	 * @param token Token.
 	 */
-	public supports(_token: string): boolean {
-		return false;
+	public supports(token: string): boolean {
+		return this[PropertySymbol.supports].includes(token);
 	}
 
 	/**

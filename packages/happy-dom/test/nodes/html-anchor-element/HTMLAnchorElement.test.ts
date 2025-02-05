@@ -9,6 +9,7 @@ import Fetch from '../../../src/fetch/Fetch.js';
 import Browser from '../../../src/browser/Browser.js';
 import MouseEvent from '../../../src/event/events/MouseEvent.js';
 import BrowserWindow from '../../../src/window/BrowserWindow.js';
+import DOMTokenList from '../../../src/dom/DOMTokenList.js';
 
 describe('HTMLAnchorElement', () => {
 	let window: Window;
@@ -80,6 +81,26 @@ describe('HTMLAnchorElement', () => {
 		it('Returns empty string if "href" attribute is empty.', () => {
 			const element = document.createElement('a');
 			expect(element.href).toBe('');
+		});
+	});
+
+	describe('get relList()', () => {
+		it('Returns a DOMTokenList object.', () => {
+			const element = document.createElement('a');
+			element.setAttribute('rel', 'value1 value2');
+			expect(element.relList).toBeInstanceOf(DOMTokenList);
+			expect(element.relList.value).toBe('value1 value2');
+			expect(element.relList.length).toBe(2);
+			expect(element.relList[0]).toBe('value1');
+			expect(element.relList[1]).toBe('value2');
+		});
+	});
+
+	describe('set relList()', () => {
+		it('Sets the attribute "rel".', () => {
+			const element = document.createElement('a');
+			element.relList = 'value1 value2';
+			expect(element.getAttribute('rel')).toBe('value1 value2');
 		});
 	});
 

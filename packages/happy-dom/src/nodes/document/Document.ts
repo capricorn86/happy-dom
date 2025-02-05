@@ -49,6 +49,7 @@ import NodeFactory from '../NodeFactory.js';
 import SVGElementConfig from '../../config/SVGElementConfig.js';
 import StringUtility from '../../utilities/StringUtility.js';
 import HTMLParser from '../../html-parser/HTMLParser.js';
+import PreloadEntry from '../../fetch/preload/PreloadEntry.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -80,6 +81,7 @@ export default class Document extends Node {
 	> = new Map();
 	public [PropertySymbol.contentType]: string = 'text/html';
 	public [PropertySymbol.xmlProcessingInstruction]: ProcessingInstruction | null = null;
+	public [PropertySymbol.preloads]: Map<string, PreloadEntry> = new Map();
 	public declare cloneNode: (deep?: boolean) => Document;
 
 	// Private properties

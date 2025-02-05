@@ -2,7 +2,6 @@ import * as PropertySymbol from '../PropertySymbol.js';
 import Event from './Event.js';
 import IEventListenerOptions from './IEventListenerOptions.js';
 import EventPhaseEnum from './EventPhaseEnum.js';
-import WindowErrorUtility from '../window/WindowErrorUtility.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
 import TEventListener from './TEventListener.js';
@@ -239,7 +238,16 @@ export default class EventTarget {
 					!browserSettings?.disableErrorCapturing &&
 					browserSettings?.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
 				) {
-					WindowErrorUtility.captureError(window, this[onEventName].bind(this, event));
+					let result: any;
+					try {
+						result = this[onEventName].call(this, event);
+					} catch (error) {
+						window[PropertySymbol.dispatchError](error);
+					}
+
+					if (result instanceof Promise) {
+						result.catch((error) => window[PropertySymbol.dispatchError](error));
+					}
 				} else {
 					this[onEventName].call(this, event);
 				}
@@ -273,19 +281,31 @@ export default class EventTarget {
 				browserSettings?.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
 			) {
 				if ((<TEventListenerObject>listener).handleEvent) {
-					WindowErrorUtility.captureError(
-						window,
-						(<TEventListenerObject>listener).handleEvent.bind(listener, event)
-					);
+					let result: any;
+					try {
+						result = (<TEventListenerObject>listener).handleEvent.call(listener, event);
+					} catch (error) {
+						window[PropertySymbol.dispatchError](error);
+					}
+
+					if (result instanceof Promise) {
+						result.catch((error) => window[PropertySymbol.dispatchError](error));
+					}
 				} else {
-					WindowErrorUtility.captureError(
-						window,
-						(<TEventListenerFunction>listener).bind(this, event)
-					);
+					let result: any;
+					try {
+						result = (<TEventListenerFunction>listener).call(this, event);
+					} catch (error) {
+						window[PropertySymbol.dispatchError](error);
+					}
+
+					if (result instanceof Promise) {
+						result.catch((error) => window[PropertySymbol.dispatchError](error));
+					}
 				}
 			} else {
 				if ((<TEventListenerObject>listener).handleEvent) {
-					(<TEventListenerObject>listener).handleEvent(event);
+					(<TEventListenerObject>listener).handleEvent.call(this, event);
 				} else {
 					(<TEventListenerFunction>listener).call(this, event);
 				}

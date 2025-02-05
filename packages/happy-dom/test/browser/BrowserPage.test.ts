@@ -9,6 +9,7 @@ import IGoToOptions from '../../src/browser/types/IGoToOptions';
 import BrowserFrameFactory from '../../src/browser/utilities/BrowserFrameFactory';
 import Event from '../../src/event/Event';
 import DefaultBrowserPageViewport from '../../src/browser/DefaultBrowserPageViewport';
+import * as PropertySymbol from '../../src/PropertySymbol';
 
 describe('BrowserPage', () => {
 	afterEach(() => {
@@ -140,6 +141,61 @@ describe('BrowserPage', () => {
 			expect(mainFrame.window).toBe(null);
 			expect(frame1.window).toBe(null);
 			expect(frame2.window).toBe(null);
+		});
+
+		it('Clears modules when closing.', async () => {
+			const browser = new Browser({
+				settings: {
+					fetch: {
+						virtualServers: [
+							{
+								url: 'https://localhost:8080/base/js/',
+								directory: './test/nodes/html-script-element/modules/'
+							}
+						]
+					}
+				},
+				console
+			});
+			const page = browser.defaultContext.newPage();
+			const mainFrame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const frame1 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+
+			mainFrame.url = 'https://localhost:8080/';
+
+			const mainFrameWindow = mainFrame.window;
+			const script = mainFrame.document.createElement('script');
+
+			script.src = 'https://localhost:8080/base/js/TestModuleElement.js';
+			script.type = 'module';
+			script.onload = () => {
+				mainFrame.document.body.appendChild(mainFrame.document.createElement('test-module'));
+			};
+
+			mainFrame.document.body.appendChild(script);
+
+			await page.waitUntilComplete();
+
+			expect(mainFrameWindow[PropertySymbol.modules].esm.size).toBe(5);
+			expect(mainFrameWindow[PropertySymbol.modules].css.size).toBe(1);
+			expect(mainFrameWindow[PropertySymbol.modules].json.size).toBe(1);
+
+			await page.close();
+
+			expect(browser.defaultContext.pages.length).toBe(0);
+
+			expect(page.virtualConsolePrinter).toBe(null);
+			expect(page.context).toBe(null);
+			expect(page.mainFrame).toBe(null);
+			expect(mainFrame.window).toBe(null);
+			expect(frame1.window).toBe(null);
+			expect(frame2.window).toBe(null);
+
+			expect(mainFrameWindow.closed).toBe(true);
+			expect(mainFrameWindow[PropertySymbol.modules].esm.size).toBe(0);
+			expect(mainFrameWindow[PropertySymbol.modules].css.size).toBe(0);
+			expect(mainFrameWindow[PropertySymbol.modules].json.size).toBe(0);
 		});
 	});
 

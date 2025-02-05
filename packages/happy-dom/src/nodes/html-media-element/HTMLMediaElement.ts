@@ -310,6 +310,15 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	/**
+	 * Sets controlsList.
+	 *
+	 * @param value Value.
+	 */
+	public set controlsList(value: string) {
+		this.setAttribute('controlslist', value);
+	}
+
+	/**
 	 * Returns mediaKeys.
 	 *
 	 * @returns MediaKeys.

@@ -746,6 +746,9 @@ export default class HTMLElement extends Element {
 		}
 
 		if (newElement[PropertySymbol.isConnected]) {
+			if (newElement[PropertySymbol.shadowRoot]) {
+				newElement[PropertySymbol.shadowRoot][PropertySymbol.isConnected] = true;
+			}
 			newElement[PropertySymbol.connectedToDocument]();
 		}
 	}

@@ -14,6 +14,8 @@ import BrowserErrorCaptureEnum from '../../src/browser/enums/BrowserErrorCapture
 import Headers from '../../src/fetch/Headers';
 import * as PropertySymbol from '../../src/PropertySymbol';
 
+const STACK_TRACE_REGEXP = />.+$\s*/gm;
+
 describe('BrowserFrame', () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
@@ -138,6 +140,78 @@ describe('BrowserFrame', () => {
 			expect(page.mainFrame.window['test']).toBe(1);
 			expect(frame1.window['test']).toBe(2);
 			expect(frame2.window['test']).toBe(3);
+		});
+
+		it('Traces never ending timeout when calling waitUntilComplete() with the setting "debug.traceWaitUntilComplete" set to a time in ms.', async () => {
+			const browser = new Browser({
+				settings: {
+					debug: {
+						traceWaitUntilComplete: 100
+					}
+				}
+			});
+			const page = browser.newPage();
+			const frame1 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			page.mainFrame.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
+			frame1.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
+			frame2.evaluate(
+				'function neverEndingTimeout() { setTimeout(neverEndingTimeout, 10); } neverEndingTimeout();'
+			);
+			let error: Error | null = null;
+			try {
+				await page.waitUntilComplete();
+			} catch (e) {
+				error = e;
+			}
+			expect(
+				error
+					?.toString()
+					.replace(STACK_TRACE_REGEXP, '')
+					.replace(/Timer #[0-9]+/, 'Timer #1000') + '> testFunction (test.js:1:1)\n'
+			).toBe(`Error: The maximum time was reached for "waitUntilComplete()".
+
+1 task did not end in time.
+
+The following traces were recorded:
+
+Timer #1000
+‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+> testFunction (test.js:1:1)
+`);
+		});
+
+		it('Traces never ending task when calling waitUntilComplete() with the setting "debug.traceWaitUntilComplete" set to a time in ms.', async () => {
+			const browser = new Browser({
+				settings: {
+					debug: {
+						traceWaitUntilComplete: 100
+					}
+				}
+			});
+			const page = browser.newPage();
+			const frame1 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			page.mainFrame.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
+			frame1.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
+			frame2[PropertySymbol.asyncTaskManager].startTask();
+			let error: Error | null = null;
+			try {
+				await page.waitUntilComplete();
+			} catch (e) {
+				error = e;
+			}
+			expect(error?.toString().replace(STACK_TRACE_REGEXP, '') + '> testFunction (test.js:1:1)\n')
+				.toBe(`Error: The maximum time was reached for "waitUntilComplete()".
+
+1 task did not end in time.
+
+The following traces were recorded:
+
+Task #1
+‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+> testFunction (test.js:1:1)
+`);
 		});
 	});
 

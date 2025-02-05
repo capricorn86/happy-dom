@@ -19,10 +19,7 @@ describe('ResourceFetch', () => {
 		const page = browser.newPage();
 		window = page.mainFrame.window;
 		page.mainFrame.url = URL;
-		resourceFetch = new ResourceFetch({
-			browserFrame: page.mainFrame,
-			window
-		});
+		resourceFetch = new ResourceFetch(window);
 	});
 
 	afterEach(() => {
