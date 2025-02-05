@@ -1818,7 +1818,7 @@ describe('Element', () => {
 
 		it('Should stringify a non string attribute and remove it', () => {
 			element.setAttribute('undefined', 'value1');
-			element.removeAttribute(<string><unknown>undefined);
+			element.removeAttribute(<string>(<unknown>undefined));
 			expect(element.attributes.length).toBe(0);
 		});
 	});
