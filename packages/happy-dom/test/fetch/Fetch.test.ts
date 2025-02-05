@@ -27,50 +27,68 @@ const PLATFORM =
 	' ' +
 	process.arch;
 
+interface IRequestHistoryEntry {
+	url: string;
+	options: HTTP.RequestOptions;
+}
+type IBeforeResponse = (context: {
+	request: IRequestHistoryEntry;
+	response: HTTP.IncomingMessage;
+}) => void;
+interface IMockNetwork {
+	requestHistory: IRequestHistoryEntry[];
+}
+
 describe('Fetch', () => {
-	async function mockNetwork(
+	function mockNetwork(
 		schema: 'http' | 'https',
-		responseText: string | string[] = '',
-		extra?: Record<string, unknown>
-	): Promise<{ url: string; options: HTTP.RequestOptions }> {
-		return new Promise((resolve) => {
-			mockModule(schema, {
-				request: (url: string, options: HTTP.RequestOptions) => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							async function* generate(): AsyncGenerator<string> {
-								if (typeof responseText === 'string') {
-									yield responseText;
-								} else {
-									for (const text of responseText) {
-										yield text;
-									}
+		specification?: {
+			responseText?: string | string[];
+			responseProperties?: Record<string, unknown>;
+			beforeResponse?: IBeforeResponse;
+		}
+	): IMockNetwork {
+		const requestHistory: IRequestHistoryEntry[] = [];
+		mockModule(schema, {
+			request: (url: string, options: HTTP.RequestOptions) => {
+				const request = { url, options };
+				requestHistory.push(request);
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						async function* generate(): AsyncGenerator<string> {
+							if (typeof specification?.responseText === 'string') {
+								yield specification?.responseText;
+							} else if (Array.isArray(specification?.responseText)) {
+								for (const text of specification?.responseText) {
+									yield text;
 								}
 							}
+						}
 
-							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-							Object.assign(
-								response,
-								{
-									statusCode: 200,
-									statusMessage: 'OK',
-									headers: {},
-									rawHeaders: []
-								},
-								extra
-							);
-							if (event === 'response') {
-								callback(response);
+						const response = Object.assign(
+							<HTTP.IncomingMessage>Stream.Readable.from(generate()),
+							{ statusCode: 200, statusMessage: 'OK', headers: {}, rawHeaders: [] },
+							specification?.responseProperties ?? {}
+						);
+
+						if (event === 'response') {
+							if (specification?.beforeResponse) {
+								specification.beforeResponse({ request, response });
 							}
-							resolve({ url, options });
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+							callback(response);
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}
 		});
+		return {
+			get requestHistory() {
+				return requestHistory;
+			}
+		};
 	}
 
 	afterEach(() => {
@@ -141,32 +159,34 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'some text';
 
-			const requestArgsPromise = mockNetwork('https', responseText, {
-				statusCode: 200,
-				statusMessage: 'OK',
-				headers: {},
-				rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
+			const network = mockNetwork('https', {
+				responseText,
+				responseProperties: {
+					rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
+				}
 			});
 
 			const response = await window.fetch(url);
 
-			expect(await requestArgsPromise).toEqual({
-				url,
-				options: {
-					method: 'GET',
-					headers: {
-						Accept: '*/*',
-						Connection: 'close',
-						Referer: 'https://localhost:8080/',
-						'User-Agent': window.navigator.userAgent,
-						'Accept-Encoding': 'gzip, deflate, br'
-					},
-					agent: false,
-					rejectUnauthorized: true,
-					key: FetchHTTPSCertificate.key,
-					cert: FetchHTTPSCertificate.cert
+			expect(network.requestHistory).toEqual([
+				{
+					url,
+					options: {
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							Referer: 'https://localhost:8080/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br'
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
+					}
 				}
-			});
+			]);
 
 			expect(response instanceof Response).toBe(true);
 			expect(response.url).toBe(url);
@@ -200,37 +220,39 @@ describe('Fetch', () => {
 			const url = 'http://localhost:8080/some/path';
 			const responseText = '{ "test": "test" }';
 
-			const requestArgsPromise = mockNetwork('http', responseText, {
-				statusCode: 200,
-				statusMessage: 'OK',
-				headers: {},
-				rawHeaders: [
-					'content-type',
-					'application/json',
-					'content-length',
-					String(responseText.length)
-				]
+			const network = mockNetwork('http', {
+				responseText,
+				responseProperties: {
+					rawHeaders: [
+						'content-type',
+						'application/json',
+						'content-length',
+						String(responseText.length)
+					]
+				}
 			});
 
 			const response = await window.fetch(url);
 
-			expect(await requestArgsPromise).toEqual({
-				url,
-				options: {
-					method: 'GET',
-					headers: {
-						Accept: '*/*',
-						Connection: 'close',
-						Referer: 'http://localhost:8080/',
-						'User-Agent': window.navigator.userAgent,
-						'Accept-Encoding': 'gzip, deflate, br'
-					},
-					agent: false,
-					rejectUnauthorized: true,
-					key: undefined,
-					cert: undefined
+			expect(network.requestHistory).toEqual([
+				{
+					url,
+					options: {
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							Referer: 'http://localhost:8080/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br'
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: undefined,
+						cert: undefined
+					}
 				}
-			});
+			]);
 
 			expect(response instanceof Response).toBe(true);
 			expect(response.url).toBe(url);
@@ -267,33 +289,35 @@ describe('Fetch', () => {
 				body: ''
 			});
 
-			const requestArgsPromise = mockNetwork('https', responseText, {
-				statusCode: 200,
-				statusMessage: 'OK',
-				headers: {},
-				rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
+			const network = mockNetwork('https', {
+				responseText,
+				responseProperties: {
+					rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
+				}
 			});
 
 			const response = await window.fetch(requestObject);
 
-			expect(await requestArgsPromise).toEqual({
-				url,
-				options: {
-					method: 'POST',
-					headers: {
-						Accept: '*/*',
-						Connection: 'close',
-						'Content-Type': 'text/plain;charset=UTF-8',
-						Referer: 'https://localhost:8080/',
-						'User-Agent': window.navigator.userAgent,
-						'Accept-Encoding': 'gzip, deflate, br'
-					},
-					agent: false,
-					rejectUnauthorized: true,
-					key: FetchHTTPSCertificate.key,
-					cert: FetchHTTPSCertificate.cert
+			expect(network.requestHistory).toEqual([
+				{
+					url,
+					options: {
+						method: 'POST',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							'Content-Type': 'text/plain;charset=UTF-8',
+							Referer: 'https://localhost:8080/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br'
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
+					}
 				}
-			});
+			]);
 
 			expect(response instanceof Response).toBe(true);
 			expect(response.url).toBe(url);
@@ -315,9 +339,7 @@ describe('Fetch', () => {
 				'content-length': String(responseText.length)
 			});
 
-			const text = await response.text();
-
-			expect(text).toBe(responseText);
+			expect(await response.text()).toBe(responseText);
 
 			expect(response.bodyUsed).toBe(true);
 		});
@@ -328,20 +350,18 @@ describe('Fetch', () => {
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
 			const chunksLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
 
-			mockNetwork('http', chunks, {
-				statusCode: 200,
-				statusMessage: 'OK',
-				headers: {},
-				rawHeaders: ['content-length', String(chunksLength)]
+			mockNetwork('http', {
+				responseText: chunks,
+				responseProperties: {
+					rawHeaders: ['content-length', String(chunksLength)]
+				}
 			});
 
 			const response = await window.fetch(url);
 
 			expect(response.headers.get('Content-Length')).toBe(String(chunksLength));
 
-			const text = await response.text();
-
-			expect(text).toEqual(chunks.join(''));
+			expect(await response.text()).toEqual(chunks.join(''));
 
 			expect(response.bodyUsed).toBe(true);
 		});
@@ -354,32 +374,29 @@ describe('Fetch', () => {
 
 			window.happyDOM?.setURL(baseUrl);
 
-			const responseArgsPromise = mockNetwork('https', responseText, {
-				statusCode: 200,
-				statusMessage: 'OK',
-				headers: {},
-				rawHeaders: []
-			});
+			const network = mockNetwork('https', { responseText });
 
 			await window.fetch(path);
 
-			expect(await responseArgsPromise).toEqual({
-				url: `${baseUrl}${path}`,
-				options: {
-					method: 'GET',
-					headers: {
-						Accept: '*/*',
-						Connection: 'close',
-						'User-Agent': window.navigator.userAgent,
-						'Accept-Encoding': 'gzip, deflate, br',
-						Referer: baseUrl
-					},
-					agent: false,
-					rejectUnauthorized: true,
-					key: FetchHTTPSCertificate.key,
-					cert: FetchHTTPSCertificate.cert
+			expect(network.requestHistory).toEqual([
+				{
+					url: `${baseUrl}${path}`,
+					options: {
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Referer: baseUrl
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
+					}
 				}
-			});
+			]);
 		});
 
 		it('Should send custom key/value object request headers.', async () => {
@@ -387,12 +404,7 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'test';
 
-			const responseArgsPromise = mockNetwork('https', responseText, {
-				statusCode: 200,
-				statusMessage: 'OK',
-				headers: {},
-				rawHeaders: []
-			});
+			const network = mockNetwork('https', { responseText });
 
 			await window.fetch(url, {
 				headers: {
@@ -401,25 +413,27 @@ describe('Fetch', () => {
 				}
 			});
 
-			expect(await responseArgsPromise).toEqual({
-				url,
-				options: {
-					method: 'GET',
-					headers: {
-						key1: 'value1',
-						KeY2: 'Value2',
-						Accept: '*/*',
-						Connection: 'close',
-						Referer: 'https://localhost:8080/',
-						'User-Agent': window.navigator.userAgent,
-						'Accept-Encoding': 'gzip, deflate, br'
-					},
-					agent: false,
-					rejectUnauthorized: true,
-					key: FetchHTTPSCertificate.key,
-					cert: FetchHTTPSCertificate.cert
+			expect(network.requestHistory).toEqual([
+				{
+					url,
+					options: {
+						method: 'GET',
+						headers: {
+							key1: 'value1',
+							KeY2: 'Value2',
+							Accept: '*/*',
+							Connection: 'close',
+							Referer: 'https://localhost:8080/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br'
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
+					}
 				}
-			});
+			]);
 		});
 
 		it('Should send custom "Headers" instance request headers.', async () => {
@@ -427,12 +441,7 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'test';
 
-			const responseArgsPromise = mockNetwork('https', responseText, {
-				statusCode: 200,
-				statusMessage: 'OK',
-				headers: {},
-				rawHeaders: []
-			});
+			const network = mockNetwork('https', { responseText });
 
 			const headers = new Headers({
 				key1: 'value1',
@@ -444,26 +453,28 @@ describe('Fetch', () => {
 
 			await window.fetch(url, { headers });
 
-			expect(await responseArgsPromise).toEqual({
-				url,
-				options: {
-					method: 'GET',
-					headers: {
-						key1: 'value1',
-						KeY2: 'Value2',
-						key3: 'value3, value4',
-						Accept: '*/*',
-						Connection: 'close',
-						Referer: 'https://localhost:8080/',
-						'User-Agent': window.navigator.userAgent,
-						'Accept-Encoding': 'gzip, deflate, br'
-					},
-					agent: false,
-					rejectUnauthorized: true,
-					key: FetchHTTPSCertificate.key,
-					cert: FetchHTTPSCertificate.cert
+			expect(network.requestHistory).toEqual([
+				{
+					url,
+					options: {
+						method: 'GET',
+						headers: {
+							key1: 'value1',
+							KeY2: 'Value2',
+							key3: 'value3, value4',
+							Accept: '*/*',
+							Connection: 'close',
+							Referer: 'https://localhost:8080/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br'
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
+					}
 				}
-			});
+			]);
 		});
 
 		it('Includes Origin + Access-Control headers on cross-origin requests.', async () => {
@@ -471,36 +482,10 @@ describe('Fetch', () => {
 			const window = new Window({ url: originURL });
 			const url = 'http://other.origin.com/some/path';
 
-			let requestedUrl: string | null = null;
-			let postRequestHeaders: { [k: string]: string } | null = null;
-			let optionsRequestHeaders: { [k: string]: string } | null = null;
-
-			mockModule('http', {
-				request: (url, options) => {
-					requestedUrl = url;
-					if (options.method === 'OPTIONS') {
-						optionsRequestHeaders = options.headers;
-					} else if (options.method === 'POST') {
-						postRequestHeaders = options.headers;
-					}
-
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.rawHeaders =
-									options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : [];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
+			const network = mockNetwork('http', {
+				beforeResponse({ request, response }) {
+					response.rawHeaders =
+						request.options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : [];
 				}
 			});
 
@@ -513,29 +498,49 @@ describe('Fetch', () => {
 				}
 			});
 
-			expect(requestedUrl).toBe(url);
-			expect(optionsRequestHeaders).toEqual({
-				Accept: '*/*',
-				'Access-Control-Request-Method': 'POST',
-				'Access-Control-Request-Headers': 'content-type,x-custom-header',
-				Connection: 'close',
-				'User-Agent': window.navigator.userAgent,
-				'Accept-Encoding': 'gzip, deflate, br',
-				Origin: originURL,
-				Referer: originURL + '/'
-			});
-
-			expect(postRequestHeaders).toEqual({
-				Accept: '*/*',
-				Connection: 'close',
-				'Content-Type': 'application/json',
-				'Content-Length': '14',
-				'User-Agent': window.navigator.userAgent,
-				'Accept-Encoding': 'gzip, deflate, br',
-				Origin: originURL,
-				Referer: originURL + '/',
-				'X-Custom-Header': 'yes'
-			});
+			expect(network.requestHistory).toEqual([
+				{
+					url,
+					options: {
+						agent: false,
+						cert: undefined,
+						key: undefined,
+						method: 'OPTIONS',
+						rejectUnauthorized: true,
+						headers: {
+							Accept: '*/*',
+							'Access-Control-Request-Method': 'POST',
+							'Access-Control-Request-Headers': 'content-type,x-custom-header',
+							Connection: 'close',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Origin: originURL,
+							Referer: originURL + '/'
+						}
+					}
+				},
+				{
+					url,
+					options: {
+						agent: false,
+						cert: undefined,
+						key: undefined,
+						method: 'POST',
+						rejectUnauthorized: true,
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							'Content-Type': 'application/json',
+							'Content-Length': '14',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Origin: originURL,
+							Referer: originURL + '/',
+							'X-Custom-Header': 'yes'
+						}
+					}
+				}
+			]);
 		});
 
 		it('Allows cross-origin request if "Browser.settings.fetch.disableSameOriginPolicy" is set to "true".', async () => {
@@ -544,38 +549,7 @@ describe('Fetch', () => {
 			const url = 'http://other.origin.com/some/path';
 
 			window.happyDOM.settings.fetch.disableSameOriginPolicy = true;
-
-			let requestedUrl: string | null = null;
-			let postRequestHeaders: { [k: string]: string } | null = null;
-			let optionsRequestHeaders: { [k: string]: string } | null = null;
-
-			mockModule('http', {
-				request: (url, options) => {
-					requestedUrl = url;
-					if (options.method === 'OPTIONS') {
-						optionsRequestHeaders = options.headers;
-					} else if (options.method === 'POST') {
-						postRequestHeaders = options.headers;
-					}
-
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.rawHeaders = [];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
-			});
+			const network = mockNetwork('http');
 
 			await window.fetch(url, {
 				method: 'POST',
@@ -586,20 +560,29 @@ describe('Fetch', () => {
 				}
 			});
 
-			expect(requestedUrl).toBe(url);
-			expect(optionsRequestHeaders).toBeNull();
-
-			expect(postRequestHeaders).toEqual({
-				Accept: '*/*',
-				Connection: 'close',
-				'Content-Type': 'application/json',
-				'Content-Length': '14',
-				'User-Agent': window.navigator.userAgent,
-				'Accept-Encoding': 'gzip, deflate, br',
-				Origin: originURL,
-				Referer: originURL + '/',
-				'X-Custom-Header': 'yes'
-			});
+			expect(network.requestHistory).toEqual([
+				{
+					url,
+					options: {
+						agent: false,
+						cert: undefined,
+						key: undefined,
+						method: 'POST',
+						rejectUnauthorized: true,
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							'Content-Type': 'application/json',
+							'Content-Length': '14',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Origin: originURL,
+							Referer: originURL + '/',
+							'X-Custom-Header': 'yes'
+						}
+					}
+				}
+			]);
 		});
 
 		for (const httpCode of [301, 302, 303, 307, 308]) {
@@ -772,25 +755,11 @@ describe('Fetch', () => {
 			let error: Error | null = null;
 			let tryCount = 0;
 
-			mockModule('https', {
-				request: (requestURL) => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.statusCode = 302;
-								response.rawHeaders = requestURL === url1 ? ['Location', url2] : ['Location', url1];
-								tryCount++;
-								callback(response);
-							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
+			mockNetwork('https', {
+				beforeResponse({ request, response }) {
+					response.statusCode = 302;
+					response.rawHeaders = request.url === url1 ? ['Location', url2] : ['Location', url1];
+					tryCount++;
 				}
 			});
 
@@ -813,11 +782,12 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const redirectURL = 'https://localhost:8080/redirect/';
 
-			mockNetwork('https', undefined, {
-				statusCode: 301,
-				statusMessage: 'Moved Permanently',
-				headers: {},
-				rawHeaders: ['Location', redirectURL]
+			mockNetwork('https', {
+				responseProperties: {
+					statusCode: 301,
+					statusMessage: 'Moved Permanently',
+					rawHeaders: ['Location', redirectURL]
+				}
 			});
 
 			const response = await window.fetch(url, { method: 'GET', redirect: 'manual' });
@@ -831,10 +801,11 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const redirectURL = '<>';
 
-			mockNetwork('https', undefined, {
-				statusCode: 301,
-				headers: {},
-				rawHeaders: ['Location', redirectURL]
+			mockNetwork('https', {
+				responseProperties: {
+					statusCode: 301,
+					rawHeaders: ['Location', redirectURL]
+				}
 			});
 
 			const response = await window.fetch(url, { method: 'GET', redirect: 'manual' });
@@ -848,10 +819,11 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const redirectURL = 'https://example.com/redirect/';
 
-			mockNetwork('https', undefined, {
-				statusCode: 301,
-				headers: {},
-				rawHeaders: ['Location', redirectURL]
+			mockNetwork('https', {
+				responseProperties: {
+					statusCode: 301,
+					rawHeaders: ['Location', redirectURL]
+				}
 			});
 
 			const response = await window.fetch(url, { method: 'GET', redirect: 'manual' });
@@ -864,10 +836,10 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
-			mockNetwork('https', undefined, {
-				statusCode: 301,
-				headers: {},
-				rawHeaders: []
+			mockNetwork('https', {
+				responseProperties: {
+					statusCode: 301
+				}
 			});
 
 			const response = await window.fetch(url, { method: 'GET', redirect: 'manual' });
@@ -881,10 +853,11 @@ describe('Fetch', () => {
 			const redirectURL = 'https://localhost:8080/redirect/';
 			let error: Error | null = null;
 
-			mockNetwork('https', undefined, {
-				statusCode: 301,
-				headers: {},
-				rawHeaders: ['Location', redirectURL]
+			mockNetwork('https', {
+				responseProperties: {
+					statusCode: 301,
+					rawHeaders: ['Location', redirectURL]
+				}
 			});
 
 			try {
@@ -907,10 +880,11 @@ describe('Fetch', () => {
 			const redirectURL = '//super:invalid:url%/';
 			let error: Error | null = null;
 
-			mockNetwork('https', undefined, {
-				statusCode: 301,
-				headers: {},
-				rawHeaders: ['Location', redirectURL]
+			mockNetwork('https', {
+				responseProperties: {
+					statusCode: 301,
+					rawHeaders: ['Location', redirectURL]
+				}
 			});
 
 			try {
@@ -931,10 +905,7 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/some/path';
 
-			const requestArgsPromise = mockNetwork('https', undefined, {
-				headers: {},
-				rawHeaders: []
-			});
+			const network = mockNetwork('https');
 
 			await window.fetch(url, {
 				headers: {
@@ -964,24 +935,26 @@ describe('Fetch', () => {
 				}
 			});
 
-			expect(await requestArgsPromise).toEqual({
-				url,
-				options: {
-					method: 'GET',
-					headers: {
-						Accept: '*/*',
-						Connection: 'close',
-						Referer: 'https://localhost:8080/',
-						'User-Agent': window.navigator.userAgent,
-						'Accept-Encoding': 'gzip, deflate, br',
-						'safe-header': 'safe'
-					},
-					agent: false,
-					rejectUnauthorized: true,
-					key: FetchHTTPSCertificate.key,
-					cert: FetchHTTPSCertificate.cert
+			expect(network.requestHistory).toEqual([
+				{
+					url,
+					options: {
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							Referer: 'https://localhost:8080/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							'safe-header': 'safe'
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
+					}
 				}
-			});
+			]);
 		});
 
 		it(`Doesn't forward the headers "cookie", "authorization" or "www-authenticate" if request credentials are set to "omit".`, async () => {
@@ -990,10 +963,7 @@ describe('Fetch', () => {
 
 			window.document.cookie = 'test=cookie';
 
-			const requestArgsPromise = mockNetwork('https', undefined, {
-				headers: {},
-				rawHeaders: []
-			});
+			const network = mockNetwork('https');
 
 			await window.fetch(url, {
 				headers: {
@@ -1003,57 +973,38 @@ describe('Fetch', () => {
 				credentials: 'omit'
 			});
 
-			expect(await requestArgsPromise).toEqual({
-				url,
-				options: {
-					method: 'GET',
-					headers: {
-						Accept: '*/*',
-						Connection: 'close',
-						Referer: 'https://localhost:8080/',
-						'User-Agent': window.navigator.userAgent,
-						'Accept-Encoding': 'gzip, deflate, br'
-					},
-					agent: false,
-					rejectUnauthorized: true,
-					key: FetchHTTPSCertificate.key,
-					cert: FetchHTTPSCertificate.cert
+			expect(network.requestHistory).toEqual([
+				{
+					url,
+					options: {
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							Referer: 'https://localhost:8080/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br'
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
+					}
 				}
-			});
+			]);
 		});
 
-		it('Does\'nt forward the headers "cookie", "authorization" or "www-authenticate" if request credentials are set to "same-origin" and the request goes do a different origin than the document.', async () => {
+		it('Does not forward the headers "cookie", "authorization" or "www-authenticate" if request credentials are set to "same-origin" and the request goes do a different origin than the document.', async () => {
 			const originURL = 'https://localhost:8080';
 			const window = new Window({ url: originURL });
 			const url = 'https://other.origin.com/some/path';
-			let requestArgs: {
-				url: string;
-				options: { method: string; headers: { [k: string]: string } };
-			} | null = null;
 
 			window.document.cookie = 'test=cookie';
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
-
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.rawHeaders =
-									options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : [];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
+			const network = mockNetwork('https', {
+				beforeResponse({ request, response }) {
+					response.rawHeaders =
+						request.options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : [];
 				}
 			});
 
@@ -1065,24 +1016,46 @@ describe('Fetch', () => {
 				credentials: 'same-origin'
 			});
 
-			expect(requestArgs).toEqual({
-				url,
-				options: {
-					method: 'GET',
-					headers: {
-						Accept: '*/*',
-						Connection: 'close',
-						'User-Agent': window.navigator.userAgent,
-						'Accept-Encoding': 'gzip, deflate, br',
-						Origin: originURL,
-						Referer: originURL + '/'
-					},
-					agent: false,
-					rejectUnauthorized: true,
-					key: FetchHTTPSCertificate.key,
-					cert: FetchHTTPSCertificate.cert
+			expect(network.requestHistory).toEqual([
+				{
+					url,
+					options: {
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert,
+						method: 'OPTIONS',
+						headers: {
+							Accept: '*/*',
+							'Access-Control-Request-Method': 'GET',
+							'Access-Control-Request-Headers': 'authorization,www-authenticate',
+							Connection: 'close',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Origin: originURL,
+							Referer: originURL + '/'
+						}
+					}
+				},
+				{
+					url,
+					options: {
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Origin: originURL,
+							Referer: originURL + '/'
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
+					}
 				}
-			});
+			]);
 		});
 
 		it("Doesn't allow requests to HTTP from HTTPS (mixed content).", async () => {
@@ -1121,8 +1094,8 @@ describe('Fetch', () => {
 			});
 			const url = 'https://localhost:8080/some/path';
 
-			mockModule('https', {
-				request: () => {
+			const network = mockNetwork('https', {
+				beforeResponse() {
 					fail('No request should be made when beforeAsyncRequest returns a Response');
 				}
 			});
@@ -1149,11 +1122,11 @@ describe('Fetch', () => {
 			});
 			const url = 'https://localhost:8080/some/path';
 
-			mockNetwork('https', 'some text', {
-				statusCode: 200,
-				statusMessage: 'OK',
-				headers: {},
-				rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
+			mockNetwork('https', {
+				responseText,
+				responseProperties: {
+					rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
+				}
 			});
 
 			const response = await window.fetch(url);
@@ -1178,11 +1151,11 @@ describe('Fetch', () => {
 			});
 			const url = 'https://localhost:8080/some/path';
 
-			mockNetwork('https', 'some text', {
-				statusCode: 200,
-				statusMessage: 'OK',
-				headers: {},
-				rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
+			mockNetwork('https', {
+				responseText: 'some text',
+				responseProperties: {
+					rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
+				}
 			});
 
 			const response = await window.fetch(url);
@@ -1208,11 +1181,11 @@ describe('Fetch', () => {
 			});
 			const url = 'https://localhost:8080/some/path';
 
-			mockNetwork('https', 'some text', {
-				statusCode: 200,
-				statusMessage: 'OK',
-				headers: {},
-				rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
+			mockNetwork('https', {
+				responseText,
+				responseProperties: {
+					rawHeaders: ['content-type', 'text/html', 'content-length', String(responseText.length)]
+				}
 			});
 
 			const response = await window.fetch(url);
@@ -1226,10 +1199,6 @@ describe('Fetch', () => {
 			const window = new Window({ url: originURL });
 			const url = 'https://localhost:8080/some/path';
 			const cookies = 'key1=value1; key2=value2';
-			let requestArgs: {
-				url: string;
-				options: { method: string; headers: { [k: string]: string } };
-			} | null = null;
 
 			window.happyDOM?.setURL(originURL);
 
@@ -1237,28 +1206,7 @@ describe('Fetch', () => {
 				window.document.cookie = cookie.trim();
 			}
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
-
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.rawHeaders = [];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
-				}
-			});
+			const network = mockNetwork('https');
 
 			await window.fetch(url, {
 				headers: {
@@ -1268,26 +1216,28 @@ describe('Fetch', () => {
 				credentials: 'same-origin'
 			});
 
-			expect(requestArgs).toEqual({
-				url,
-				options: {
-					method: 'GET',
-					headers: {
-						Accept: '*/*',
-						Connection: 'close',
-						'User-Agent': window.navigator.userAgent,
-						'Accept-Encoding': 'gzip, deflate, br',
-						Referer: originURL + '/',
-						Cookie: cookies,
-						authorization: 'authorization',
-						'www-authenticate': 'www-authenticate'
-					},
-					agent: false,
-					rejectUnauthorized: true,
-					key: FetchHTTPSCertificate.key,
-					cert: FetchHTTPSCertificate.cert
+			expect(network.requestHistory).toEqual([
+				{
+					url,
+					options: {
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Referer: originURL + '/',
+							Cookie: cookies,
+							authorization: 'authorization',
+							'www-authenticate': 'www-authenticate'
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
+					}
 				}
-			});
+			]);
 		});
 
 		it('Forwards "cookie", "authorization" or "www-authenticate" if request credentials are set to "include".', async () => {
@@ -1295,37 +1245,15 @@ describe('Fetch', () => {
 			const window = new Window({ url: originURL });
 			const url = 'https://other.origin.com/some/path';
 			const cookies = 'key1=value1; key2=value2';
-			let requestArgs: {
-				url: string;
-				options: { method: string; headers: { [k: string]: string } };
-			} | null = null;
 
 			for (const cookie of cookies.split(';')) {
 				window.document.cookie = cookie.trim();
 			}
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
-
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.statusCode = 200;
-								response.rawHeaders =
-									options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : [];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
+			const network = mockNetwork('https', {
+				beforeResponse({ request, response }) {
+					response.rawHeaders =
+						request.options.method === 'OPTIONS' ? ['Access-Control-Allow-Origin', '*'] : [];
 				}
 			});
 
@@ -1337,48 +1265,56 @@ describe('Fetch', () => {
 				credentials: 'include'
 			});
 
-			expect(requestArgs).toEqual({
-				url,
-				options: {
-					method: 'GET',
-					headers: {
-						Accept: '*/*',
-						Connection: 'close',
-						'User-Agent': window.navigator.userAgent,
-						'Accept-Encoding': 'gzip, deflate, br',
-						Origin: originURL,
-						Referer: originURL + '/',
-						Cookie: cookies,
-						authorization: 'authorization',
-						'www-authenticate': 'www-authenticate'
-					},
-					agent: false,
-					rejectUnauthorized: true,
-					key: FetchHTTPSCertificate.key,
-					cert: FetchHTTPSCertificate.cert
+			expect(network.requestHistory).toEqual([
+				{
+					url,
+					options: {
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert,
+						method: 'OPTIONS',
+						headers: {
+							Accept: '*/*',
+							'Access-Control-Request-Method': 'GET',
+							'Access-Control-Request-Headers': 'authorization,www-authenticate',
+							Connection: 'close',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Origin: originURL,
+							Referer: originURL + '/'
+						}
+					}
+				},
+				{
+					url,
+					options: {
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Origin: originURL,
+							Referer: originURL + '/',
+							Cookie: cookies,
+							authorization: 'authorization',
+							'www-authenticate': 'www-authenticate'
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
+					}
 				}
-			});
+			]);
 		});
 
 		it('Sets document cookie string if the response contains a "Set-Cookie" header if request cridentials are set to "include".', async () => {
 			const window = new Window({ url: 'https://localhost:8080' });
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.rawHeaders = ['Set-Cookie', 'key1=value1', 'Set-Cookie', 'key2=value2'];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {}
-					};
+			mockNetwork('https', {
+				responseProperties: {
+					rawHeaders: ['Set-Cookie', 'key1=value1', 'Set-Cookie', 'key2=value2']
 				}
 			});
 
@@ -1393,34 +1329,8 @@ describe('Fetch', () => {
 		it('Allows setting the headers "User-Agent" and "Accept".', async () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
-			let requestArgs: {
-				url: string;
-				options: { method: string; headers: { [k: string]: string } };
-			} | null = null;
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
-
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.headers = {};
-								response.rawHeaders = [];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+			const network = mockNetwork('https');
 
 			await window.fetch(url, {
 				method: 'GET',
@@ -1430,23 +1340,25 @@ describe('Fetch', () => {
 				}
 			});
 
-			expect(requestArgs).toEqual({
-				url,
-				options: {
-					method: 'GET',
-					headers: {
-						'Accept-Encoding': 'gzip, deflate, br',
-						'User-Agent': 'user-agent',
-						Accept: 'accept',
-						Connection: 'close',
-						Referer: 'https://localhost:8080/'
-					},
-					agent: false,
-					rejectUnauthorized: true,
-					key: FetchHTTPSCertificate.key,
-					cert: FetchHTTPSCertificate.cert
+			expect(network.requestHistory).toEqual([
+				{
+					url,
+					options: {
+						method: 'GET',
+						headers: {
+							'Accept-Encoding': 'gzip, deflate, br',
+							'User-Agent': 'user-agent',
+							Accept: 'accept',
+							Connection: 'close',
+							Referer: 'https://localhost:8080/'
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
+					}
 				}
-			});
+			]);
 		});
 
 		for (const errorCode of [400, 401, 403, 404, 500]) {
@@ -1454,27 +1366,12 @@ describe('Fetch', () => {
 				const window = new Window({ url: 'https://localhost:8080/' });
 				const responseText = 'some response text';
 
-				mockModule('https', {
-					request: () => {
-						return {
-							end: () => {},
-							on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-								if (event === 'response') {
-									async function* generate(): AsyncGenerator<string> {
-										yield responseText;
-									}
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-									response.statusMessage = 'Bad Request';
-									response.statusCode = errorCode;
-									response.headers = {};
-									response.rawHeaders = ['Content-Type', 'text/plain'];
-
-									callback(response);
-								}
-							},
-							setTimeout: () => {}
-						};
+				mockNetwork('https', {
+					responseText,
+					responseProperties: {
+						statusCode: errorCode,
+						statusMessage: 'Bad Request',
+						rawHeaders: ['Content-Type', 'text/plain']
 					}
 				});
 
@@ -1810,27 +1707,7 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.headers = {};
-								response.rawHeaders = ['Content-Encoding', 'gzip'];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+			mockNetwork('https', { responseProperties: { rawHeaders: ['Content-Encoding', 'gzip'] } });
 
 			const response = await window.fetch(url, { method: 'GET' });
 			const text = await response.text();
@@ -1988,25 +1865,10 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 204;
-								response.headers = {};
-								response.rawHeaders = ['Content-Encoding', 'deflate'];
-
-								callback(response);
-							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
+			mockNetwork('https', {
+				responseProperties: {
+					statusCode: 204,
+					rawHeaders: ['Content-Encoding', 'deflate']
 				}
 			});
 
@@ -4587,10 +4449,12 @@ describe('Fetch', () => {
 				'<html><head><title>Happy DOM Virtual Server - 404 Not Found</title></head><body><h1>Happy DOM Virtual Server - 404 Not Found</h1></body></html>'
 			);
 
-			const promise = mockNetwork('http', '404 not found', {
-				statusCode: 404,
-				statusMessage: 'Not Found',
-				headers: {}
+			const promise = mockNetwork('http', {
+				responseText: '404 not found',
+				responseProperties: {
+					statusCode: 404,
+					statusMessage: 'Not Found'
+				}
 			});
 
 			const response6 = await window.fetch('http://localhost:8080/404/');
@@ -4713,10 +4577,12 @@ describe('Fetch', () => {
 				'<html><head><title>Happy DOM Virtual Server - 404 Not Found</title></head><body><h1>Happy DOM Virtual Server - 404 Not Found</h1></body></html>'
 			);
 
-			const promise = mockNetwork('http', '404 not found', {
-				statusCode: 404,
-				statusMessage: 'Not Found',
-				headers: {}
+			const promise = mockNetwork('http', {
+				responseText: '404 not found',
+				responseProperties: {
+					statusCode: 404,
+					statusMessage: 'Not Found'
+				}
 			});
 
 			const response6 = await window.fetch('http://localhost:8080/404/');
