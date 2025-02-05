@@ -82,7 +82,7 @@ export default class Document extends Node {
 	public [PropertySymbol.contentType]: string = 'text/html';
 	public [PropertySymbol.xmlProcessingInstruction]: ProcessingInstruction | null = null;
 	public [PropertySymbol.preloads]: Map<string, PreloadEntry> = new Map();
-	public declare cloneNode: (deep?: boolean) => Document;
+	declare public cloneNode: (deep?: boolean) => Document;
 
 	// Private properties
 	#selection: Selection = null;

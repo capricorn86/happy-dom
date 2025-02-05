@@ -104,7 +104,7 @@ export default class SyncFetch {
 			? this.interceptor.beforeSyncRequest({
 					request: this.request,
 					window: this.#window
-			  })
+				})
 			: undefined;
 
 		if (typeof beforeRequestResponse === 'object') {
@@ -136,7 +136,7 @@ export default class SyncFetch {
 						window: this.#window,
 						response,
 						request: this.request
-				  })
+					})
 				: undefined;
 			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
@@ -290,7 +290,7 @@ export default class SyncFetch {
 						window: this.#window,
 						response,
 						request: this.request
-				  })
+					})
 				: undefined;
 			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
@@ -309,7 +309,7 @@ export default class SyncFetch {
 						window: this.#window,
 						response,
 						request: this.request
-				  })
+					})
 				: undefined;
 			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
@@ -328,7 +328,7 @@ export default class SyncFetch {
 					window: this.#window,
 					response,
 					request: this.request
-			  })
+				})
 			: undefined;
 		const returnResponse = typeof interceptedResponse === 'object' ? interceptedResponse : response;
 
@@ -525,7 +525,7 @@ export default class SyncFetch {
 					window: this.#window,
 					response: redirectedResponse,
 					request: this.request
-			  })
+				})
 			: undefined;
 		const returnResponse =
 			typeof interceptedResponse === 'object' ? interceptedResponse : redirectedResponse;

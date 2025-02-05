@@ -17,8 +17,8 @@ export default class CrossOriginBrowserWindow
 
 	// Internal properties
 	public [PropertySymbol.self]: BrowserWindow | CrossOriginBrowserWindow = this;
-	public declare [PropertySymbol.top]: BrowserWindow | CrossOriginBrowserWindow;
-	public declare [PropertySymbol.parent]: BrowserWindow | CrossOriginBrowserWindow;
+	declare public [PropertySymbol.top]: BrowserWindow | CrossOriginBrowserWindow;
+	declare public [PropertySymbol.parent]: BrowserWindow | CrossOriginBrowserWindow;
 
 	// Private properties
 	#targetWindow: BrowserWindow;

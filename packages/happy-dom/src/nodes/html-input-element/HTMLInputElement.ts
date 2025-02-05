@@ -31,7 +31,7 @@ import NodeList from '../node/NodeList.js';
  */
 export default class HTMLInputElement extends HTMLElement {
 	// Public properties
-	public declare cloneNode: (deep?: boolean) => HTMLInputElement;
+	declare public cloneNode: (deep?: boolean) => HTMLInputElement;
 
 	// Events
 	public oninput: ((event: Event) => void) | null = null;

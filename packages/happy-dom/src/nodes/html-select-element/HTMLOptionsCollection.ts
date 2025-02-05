@@ -11,7 +11,7 @@ import QuerySelector from '../../query-selector/QuerySelector.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptionsCollection.
  */
 export default class HTMLOptionsCollection extends HTMLCollection<HTMLOptionElement> {
-	private declare [PropertySymbol.ownerElement]: HTMLSelectElement;
+	declare private [PropertySymbol.ownerElement]: HTMLSelectElement;
 
 	/**
 	 * Constructor.

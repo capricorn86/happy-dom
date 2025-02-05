@@ -12,7 +12,7 @@ import MutationRecord from './MutationRecord.js';
  */
 export default class MutationObserver {
 	// Injected by WindowContextClassExtender
-	protected declare [PropertySymbol.window]: BrowserWindow;
+	declare protected [PropertySymbol.window]: BrowserWindow;
 	#callback: (records: MutationRecord[], observer: MutationObserver) => void;
 	#listeners: MutationObserverListener[] = [];
 	#destroyed: boolean = false;

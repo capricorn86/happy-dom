@@ -21,7 +21,7 @@ import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.j
  */
 export default class HTMLLabelElement extends HTMLElement {
 	// Public properties
-	public declare cloneNode: (deep?: boolean) => HTMLLabelElement;
+	declare public cloneNode: (deep?: boolean) => HTMLLabelElement;
 
 	/**
 	 * Returns a string containing the ID of the labeled control. This reflects the "for" attribute.

@@ -14,7 +14,7 @@ import HTMLParser from '../../html-parser/HTMLParser.js';
  */
 export default class HTMLTemplateElement extends HTMLElement {
 	// Public properties
-	public declare cloneNode: (deep?: boolean) => HTMLTemplateElement;
+	declare public cloneNode: (deep?: boolean) => HTMLTemplateElement;
 
 	// Internal properties
 	public [PropertySymbol.content]: DocumentFragment =

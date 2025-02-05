@@ -18,7 +18,7 @@ import NodeList from '../node/NodeList.js';
  */
 export default class HTMLTextAreaElement extends HTMLElement {
 	// Public properties
-	public declare cloneNode: (deep?: boolean) => HTMLTextAreaElement;
+	declare public cloneNode: (deep?: boolean) => HTMLTextAreaElement;
 	public readonly type = 'textarea';
 
 	// Events

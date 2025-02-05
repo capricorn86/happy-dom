@@ -1023,7 +1023,7 @@ DOMException: Failed to perform request to "https://localhost:8080/base/js/utili
 			expect(
 				window.happyDOM?.virtualConsolePrinter.readAsString()
 					.startsWith(`ReferenceError: notFound is not defined
-    at eval (https://localhost:8080/base/js/utilities/stringUtility.js:10:14)`)
+    at eval (https://localhost:8080/base/js/utilities/stringUtility.js:12:14)`)
 			).toBe(true);
 		});
 	});

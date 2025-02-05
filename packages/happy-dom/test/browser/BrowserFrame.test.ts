@@ -14,7 +14,7 @@ import BrowserErrorCaptureEnum from '../../src/browser/enums/BrowserErrorCapture
 import Headers from '../../src/fetch/Headers';
 import * as PropertySymbol from '../../src/PropertySymbol';
 
-const STACK_TRACE_REGEXP = /\s*at.+$\s*/gm;
+const STACK_TRACE_REGEXP = />.+$\s*/gm;
 
 describe('BrowserFrame', () => {
 	afterEach(() => {
@@ -168,7 +168,7 @@ describe('BrowserFrame', () => {
 				error
 					?.toString()
 					.replace(STACK_TRACE_REGEXP, '')
-					.replace(/Timer #[0-9]+/, 'Timer #1000')
+					.replace(/Timer #[0-9]+/, 'Timer #1000') + '> testFunction (test.js:1:1)\n'
 			).toBe(`Error: The maximum time was reached for "waitUntilComplete()".
 
 1 task did not end in time.
@@ -176,8 +176,9 @@ describe('BrowserFrame', () => {
 The following traces were recorded:
 
 Timer #1000
-______________________________________
-Error:`);
+‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+> testFunction (test.js:1:1)
+`);
 		});
 
 		it('Traces never ending task when calling waitUntilComplete() with the setting "debug.traceWaitUntilComplete" set to a time in ms.', async () => {
@@ -200,7 +201,7 @@ Error:`);
 			} catch (e) {
 				error = e;
 			}
-			expect(error?.toString().replace(STACK_TRACE_REGEXP, ''))
+			expect(error?.toString().replace(STACK_TRACE_REGEXP, '') + '> testFunction (test.js:1:1)\n')
 				.toBe(`Error: The maximum time was reached for "waitUntilComplete()".
 
 1 task did not end in time.
@@ -208,8 +209,9 @@ Error:`);
 The following traces were recorded:
 
 Task #1
-______________________________________
-Error:`);
+‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+> testFunction (test.js:1:1)
+`);
 		});
 	});
 

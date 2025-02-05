@@ -10,7 +10,7 @@ export default class DocumentType extends Node {
 	public [PropertySymbol.name] = '';
 	public [PropertySymbol.publicId] = '';
 	public [PropertySymbol.systemId] = '';
-	public declare cloneNode: (deep?: boolean) => DocumentType;
+	declare public cloneNode: (deep?: boolean) => DocumentType;
 
 	/**
 	 * Returns name.

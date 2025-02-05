@@ -16,7 +16,7 @@ import Attr from '../attr/Attr.js';
  */
 export default class HTMLElement extends Element {
 	// Public properties
-	public declare cloneNode: (deep?: boolean) => HTMLElement;
+	declare public cloneNode: (deep?: boolean) => HTMLElement;
 	public static observedAttributes?: string[];
 
 	// Events

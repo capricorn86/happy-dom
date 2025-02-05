@@ -26,7 +26,7 @@ import EventTarget from '../../event/EventTarget.js';
  */
 export default class HTMLFormElement extends HTMLElement {
 	// Public properties
-	public declare cloneNode: (deep?: boolean) => HTMLFormElement;
+	declare public cloneNode: (deep?: boolean) => HTMLFormElement;
 
 	// Internal properties.
 	public [PropertySymbol.elements]: HTMLFormControlsCollection | null = null;

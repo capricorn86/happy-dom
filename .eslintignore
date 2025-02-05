@@ -3,3 +3,4 @@
 **/lib
 **/cjs
 **/tmp
+**/test/**/modules-with-compilation-error

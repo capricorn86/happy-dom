@@ -8,7 +8,7 @@ import * as PropertySymbol from '../../PropertySymbol.js';
  * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base.
  */
 export default class HTMLBaseElement extends HTMLElement {
-	public declare cloneNode: (deep?: boolean) => HTMLBaseElement;
+	declare public cloneNode: (deep?: boolean) => HTMLBaseElement;
 
 	/**
 	 * Returns href.

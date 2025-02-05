@@ -12,7 +12,7 @@ export default class StringUtilityClass {
 	/**
 	 * Converts a string to lower case.
 	 *
-	 * @param value Value.
+	 * @param {string} value Value.
 	 * @returns {string} Lower case value.
 	 */
 	static toLowerCase(value) {

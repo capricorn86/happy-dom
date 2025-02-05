@@ -11,8 +11,8 @@ import BrowserWindow from '../window/BrowserWindow.js';
  */
 export default class AbortSignal extends EventTarget {
 	// Injected by WindowContextClassExtender
-	protected declare static [PropertySymbol.window]: BrowserWindow;
-	protected declare [PropertySymbol.window]: BrowserWindow;
+	declare protected static [PropertySymbol.window]: BrowserWindow;
+	declare protected [PropertySymbol.window]: BrowserWindow;
 
 	// Public properties
 	public readonly aborted: boolean = false;

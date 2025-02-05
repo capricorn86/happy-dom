@@ -21,7 +21,7 @@ type THTMLFieldSetElement =
  */
 export default class HTMLFieldSetElement extends HTMLElement {
 	// Public properties
-	public declare cloneNode: (deep?: boolean) => HTMLFieldSetElement;
+	declare public cloneNode: (deep?: boolean) => HTMLFieldSetElement;
 
 	// Internal properties
 	public [PropertySymbol.elements]: HTMLCollection<THTMLFieldSetElement> | null = null;

@@ -363,14 +363,14 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly DocumentType = DocumentType;
 
 	// Nodes that can be created using "new" keyword (populated by WindowContextClassExtender)
-	public declare readonly Document: typeof Document;
-	public declare readonly HTMLDocument: typeof HTMLDocument;
-	public declare readonly XMLDocument: typeof XMLDocument;
-	public declare readonly DocumentFragment: typeof DocumentFragment;
-	public declare readonly Text: typeof Text;
-	public declare readonly Comment: typeof Comment;
-	public declare readonly Image: typeof Image;
-	public declare readonly Audio: typeof Audio;
+	declare public readonly Document: typeof Document;
+	declare public readonly HTMLDocument: typeof HTMLDocument;
+	declare public readonly XMLDocument: typeof XMLDocument;
+	declare public readonly DocumentFragment: typeof DocumentFragment;
+	declare public readonly Text: typeof Text;
+	declare public readonly Comment: typeof Comment;
+	declare public readonly Image: typeof Image;
+	declare public readonly Audio: typeof Audio;
 
 	// HTML Element classes
 	public readonly HTMLAnchorElement = HTMLAnchorElement;
@@ -576,42 +576,42 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly TextEvent = Event;
 
 	// Other classes that has to be bound to the Window context (populated by WindowContextClassExtender)
-	public declare readonly NodeIterator: typeof NodeIterator;
-	public declare readonly TreeWalker: typeof TreeWalker;
-	public declare readonly MutationObserver: typeof MutationObserver;
-	public declare readonly MessagePort: typeof MessagePort;
-	public declare readonly DataTransfer: typeof DataTransfer;
-	public declare readonly DataTransferItem: typeof DataTransferItem;
-	public declare readonly DataTransferItemList: typeof DataTransferItemList;
-	public declare readonly XMLSerializer: typeof XMLSerializer;
-	public declare readonly CSSStyleSheet: typeof CSSStyleSheet;
-	public declare readonly DOMException: typeof DOMException;
-	public declare readonly CSSUnitValue: typeof CSSUnitValue;
-	public declare readonly Selection: typeof Selection;
-	public declare readonly Headers: typeof Headers;
-	public declare readonly Request: typeof Request;
-	public declare readonly Response: typeof Response;
-	public declare readonly EventTarget: typeof EventTarget;
-	public declare readonly XMLHttpRequestUpload: typeof XMLHttpRequestUpload;
-	public declare readonly XMLHttpRequestEventTarget: typeof XMLHttpRequestEventTarget;
-	public declare readonly AbortController: typeof AbortController;
-	public declare readonly AbortSignal: typeof AbortSignal;
-	public declare readonly FormData: typeof FormData;
-	public declare readonly PermissionStatus: typeof PermissionStatus;
-	public declare readonly ClipboardItem: typeof ClipboardItem;
-	public declare readonly XMLHttpRequest: typeof XMLHttpRequest;
-	public declare readonly DOMParser: typeof DOMParser;
-	public declare readonly Range: typeof Range;
-	public declare readonly VTTCue: typeof VTTCue;
-	public declare readonly FileReader: typeof FileReader;
-	public declare readonly MediaStream: typeof MediaStream;
-	public declare readonly MediaStreamTrack: typeof MediaStreamTrack;
-	public declare readonly CanvasCaptureMediaStreamTrack: typeof CanvasCaptureMediaStreamTrack;
-	public declare readonly NamedNodeMap: typeof NamedNodeMap;
-	public declare readonly TextTrack: typeof TextTrack;
-	public declare readonly TextTrackList: typeof TextTrackList;
-	public declare readonly TextTrackCue: typeof TextTrackCue;
-	public declare readonly RemotePlayback: typeof RemotePlayback;
+	declare public readonly NodeIterator: typeof NodeIterator;
+	declare public readonly TreeWalker: typeof TreeWalker;
+	declare public readonly MutationObserver: typeof MutationObserver;
+	declare public readonly MessagePort: typeof MessagePort;
+	declare public readonly DataTransfer: typeof DataTransfer;
+	declare public readonly DataTransferItem: typeof DataTransferItem;
+	declare public readonly DataTransferItemList: typeof DataTransferItemList;
+	declare public readonly XMLSerializer: typeof XMLSerializer;
+	declare public readonly CSSStyleSheet: typeof CSSStyleSheet;
+	declare public readonly DOMException: typeof DOMException;
+	declare public readonly CSSUnitValue: typeof CSSUnitValue;
+	declare public readonly Selection: typeof Selection;
+	declare public readonly Headers: typeof Headers;
+	declare public readonly Request: typeof Request;
+	declare public readonly Response: typeof Response;
+	declare public readonly EventTarget: typeof EventTarget;
+	declare public readonly XMLHttpRequestUpload: typeof XMLHttpRequestUpload;
+	declare public readonly XMLHttpRequestEventTarget: typeof XMLHttpRequestEventTarget;
+	declare public readonly AbortController: typeof AbortController;
+	declare public readonly AbortSignal: typeof AbortSignal;
+	declare public readonly FormData: typeof FormData;
+	declare public readonly PermissionStatus: typeof PermissionStatus;
+	declare public readonly ClipboardItem: typeof ClipboardItem;
+	declare public readonly XMLHttpRequest: typeof XMLHttpRequest;
+	declare public readonly DOMParser: typeof DOMParser;
+	declare public readonly Range: typeof Range;
+	declare public readonly VTTCue: typeof VTTCue;
+	declare public readonly FileReader: typeof FileReader;
+	declare public readonly MediaStream: typeof MediaStream;
+	declare public readonly MediaStreamTrack: typeof MediaStreamTrack;
+	declare public readonly CanvasCaptureMediaStreamTrack: typeof CanvasCaptureMediaStreamTrack;
+	declare public readonly NamedNodeMap: typeof NamedNodeMap;
+	declare public readonly TextTrack: typeof TextTrack;
+	declare public readonly TextTrackList: typeof TextTrackList;
+	declare public readonly TextTrackCue: typeof TextTrackCue;
+	declare public readonly RemotePlayback: typeof RemotePlayback;
 
 	// Other classes that don't have to be bound to the Window context
 	public readonly Permissions = Permissions;
@@ -718,65 +718,65 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public name = '';
 
 	// Node.js Globals (populated by VMGlobalPropertyScript)
-	public declare Array: typeof Array;
-	public declare ArrayBuffer: typeof ArrayBuffer;
-	public declare Boolean: typeof Boolean;
+	declare public Array: typeof Array;
+	declare public ArrayBuffer: typeof ArrayBuffer;
+	declare public Boolean: typeof Boolean;
 	public Buffer: typeof Buffer = Buffer;
-	public declare DataView: typeof DataView;
-	public declare Date: typeof Date;
-	public declare Error: typeof Error;
-	public declare EvalError: typeof EvalError;
-	public declare Float32Array: typeof Float32Array;
-	public declare Float64Array: typeof Float64Array;
-	public declare Function: typeof Function;
-	public declare Infinity: typeof Infinity;
-	public declare Int16Array: typeof Int16Array;
-	public declare Int32Array: typeof Int32Array;
-	public declare Int8Array: typeof Int8Array;
-	public declare Intl: typeof Intl;
-	public declare JSON: typeof JSON;
-	public declare Map: MapConstructor;
-	public declare Math: typeof Math;
-	public declare NaN: typeof NaN;
-	public declare Number: typeof Number;
-	public declare Object: typeof Object;
-	public declare Promise: typeof Promise;
-	public declare RangeError: typeof RangeError;
-	public declare ReferenceError: typeof ReferenceError;
-	public declare RegExp: typeof RegExp;
-	public declare Set: SetConstructor;
-	public declare String: typeof String;
-	public declare Symbol: Function;
-	public declare SyntaxError: typeof SyntaxError;
-	public declare TypeError: typeof TypeError;
-	public declare URIError: typeof URIError;
-	public declare Uint16Array: typeof Uint16Array;
-	public declare Uint32Array: typeof Uint32Array;
-	public declare Uint8Array: typeof Uint8Array;
-	public declare Uint8ClampedArray: typeof Uint8ClampedArray;
-	public declare WeakMap: WeakMapConstructor;
-	public declare WeakSet: WeakSetConstructor;
-	public declare decodeURI: typeof decodeURI;
-	public declare decodeURIComponent: typeof decodeURIComponent;
-	public declare encodeURI: typeof encodeURI;
-	public declare encodeURIComponent: typeof encodeURIComponent;
-	public declare eval: typeof eval;
+	declare public DataView: typeof DataView;
+	declare public Date: typeof Date;
+	declare public Error: typeof Error;
+	declare public EvalError: typeof EvalError;
+	declare public Float32Array: typeof Float32Array;
+	declare public Float64Array: typeof Float64Array;
+	declare public Function: typeof Function;
+	declare public Infinity: typeof Infinity;
+	declare public Int16Array: typeof Int16Array;
+	declare public Int32Array: typeof Int32Array;
+	declare public Int8Array: typeof Int8Array;
+	declare public Intl: typeof Intl;
+	declare public JSON: typeof JSON;
+	declare public Map: MapConstructor;
+	declare public Math: typeof Math;
+	declare public NaN: typeof NaN;
+	declare public Number: typeof Number;
+	declare public Object: typeof Object;
+	declare public Promise: typeof Promise;
+	declare public RangeError: typeof RangeError;
+	declare public ReferenceError: typeof ReferenceError;
+	declare public RegExp: typeof RegExp;
+	declare public Set: SetConstructor;
+	declare public String: typeof String;
+	declare public Symbol: Function;
+	declare public SyntaxError: typeof SyntaxError;
+	declare public TypeError: typeof TypeError;
+	declare public URIError: typeof URIError;
+	declare public Uint16Array: typeof Uint16Array;
+	declare public Uint32Array: typeof Uint32Array;
+	declare public Uint8Array: typeof Uint8Array;
+	declare public Uint8ClampedArray: typeof Uint8ClampedArray;
+	declare public WeakMap: WeakMapConstructor;
+	declare public WeakSet: WeakSetConstructor;
+	declare public decodeURI: typeof decodeURI;
+	declare public decodeURIComponent: typeof decodeURIComponent;
+	declare public encodeURI: typeof encodeURI;
+	declare public encodeURIComponent: typeof encodeURIComponent;
+	declare public eval: typeof eval;
 	/**
 	 * @deprecated
 	 */
-	public declare escape: (str: string) => string;
-	public declare global: typeof globalThis;
-	public declare isFinite: typeof isFinite;
-	public declare isNaN: typeof isNaN;
-	public declare parseFloat: typeof parseFloat;
-	public declare parseInt: typeof parseInt;
-	public declare undefined: typeof undefined;
+	declare public escape: (str: string) => string;
+	declare public global: typeof globalThis;
+	declare public isFinite: typeof isFinite;
+	declare public isNaN: typeof isNaN;
+	declare public parseFloat: typeof parseFloat;
+	declare public parseInt: typeof parseInt;
+	declare public undefined: typeof undefined;
 	/**
 	 * @deprecated
 	 */
-	public declare unescape: (str: string) => string;
-	public declare gc: () => void;
-	public declare v8debug?: unknown;
+	declare public unescape: (str: string) => string;
+	declare public gc: () => void;
+	declare public v8debug?: unknown;
 
 	// Public internal properties
 
