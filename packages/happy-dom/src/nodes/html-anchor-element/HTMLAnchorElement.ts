@@ -295,6 +295,15 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	}
 
 	/**
+	 * Sets rel list.
+	 *
+	 * @param value Value.
+	 */
+	public set relList(value: string) {
+		this.setAttribute('rel', value);
+	}
+
+	/**
 	 * Returns search.
 	 *
 	 * @returns Search.

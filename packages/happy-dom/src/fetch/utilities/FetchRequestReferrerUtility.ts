@@ -31,7 +31,7 @@ export default class FetchRequestReferrerUtility {
 	 */
 	public static prepareRequest(originURL: URL, request: Request): void {
 		if (!request.referrerPolicy) {
-			(<string>request.referrerPolicy) = 'strict-origin-when-cross-origin';
+			request[PropertySymbol.referrerPolicy] = 'strict-origin-when-cross-origin';
 		}
 
 		if (request.referrer && request.referrer !== 'no-referrer') {

@@ -2,13 +2,16 @@ import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Event from '../../event/Event.js';
 import ErrorEvent from '../../event/events/ErrorEvent.js';
-import WindowErrorUtility from '../../window/WindowErrorUtility.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
 import Attr from '../attr/Attr.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import ResourceFetch from '../../fetch/ResourceFetch.js';
-import DocumentReadyStateManager from '../document/DocumentReadyStateManager.js';
+import ECMAScriptModule from '../../module/ECMAScriptModule.js';
+import ModuleFactory from '../../module/ModuleFactory.js';
+import DOMTokenList from '../../dom/DOMTokenList.js';
+import IModuleImportMap from '../../module/IModuleImportMap.js';
+import IRequestReferrerPolicy from '../../fetch/types/IRequestReferrerPolicy.js';
 
 /**
  * HTML Script Element.
@@ -26,9 +29,11 @@ export default class HTMLScriptElement extends HTMLElement {
 
 	// Internal properties
 	public [PropertySymbol.evaluateScript] = true;
+	public [PropertySymbol.blocking]: DOMTokenList | null = null;
 
 	// Private properties
 	#loadedScriptURL: string | null = null;
+
 	/**
 	 * Returns type.
 	 *
@@ -45,6 +50,144 @@ export default class HTMLScriptElement extends HTMLElement {
 	 */
 	public set type(type: string) {
 		this.setAttribute('type', type);
+	}
+
+	/**
+	 * Returns blocking.
+	 */
+	public get blocking(): DOMTokenList {
+		if (!this[PropertySymbol.blocking]) {
+			this[PropertySymbol.blocking] = new DOMTokenList(
+				PropertySymbol.illegalConstructor,
+				this,
+				'blocking'
+			);
+		}
+		return this[PropertySymbol.blocking];
+	}
+
+	/**
+	 * Sets blocking.
+	 *
+	 * @param value Value.
+	 */
+	public set blocking(value: string) {
+		this.setAttribute('blocking', value);
+	}
+
+	/**
+	 * Returns crossOrigin.
+	 *
+	 * @returns CrossOrigin.
+	 */
+	public get crossOrigin(): string {
+		return this.getAttribute('crossorigin') || '';
+	}
+
+	/**
+	 * Sets crossOrigin.
+	 *
+	 * @param crossOrigin CrossOrigin.
+	 */
+	public set crossOrigin(crossOrigin: string) {
+		this.setAttribute('crossorigin', crossOrigin);
+	}
+
+	/**
+	 * Returns fetch priority.
+	 *
+	 * @returns Fetch priority.
+	 */
+	public get fetchPriority(): 'auto' | 'high' | 'low' | 'normal' {
+		const fetchPriority = this.getAttribute('fetchpriority');
+		switch (fetchPriority) {
+			case 'high':
+			case 'low':
+			case 'normal':
+				return fetchPriority;
+			default:
+				return 'auto';
+		}
+	}
+
+	/**
+	 * Sets fetch priority.
+	 *
+	 * @param fetchPriority Fetch priority.
+	 */
+	public set fetchPriority(fetchPriority: 'auto' | 'high' | 'low' | 'normal') {
+		this.setAttribute('fetchpriority', fetchPriority);
+	}
+
+	/**
+	 * Returns noModule.
+	 *
+	 * @returns NoModule.
+	 */
+	public get noModule(): boolean {
+		return this.getAttribute('nomodule') !== null;
+	}
+
+	/**
+	 * Sets noModule.
+	 *
+	 * @param noModule NoModule.
+	 */
+	public set noModule(noModule: boolean) {
+		if (noModule) {
+			this.setAttribute('nomodule', '');
+		} else {
+			this.removeAttribute('nomodule');
+		}
+	}
+
+	/**
+	 * Returns integrity.
+	 *
+	 * @returns Integrity.
+	 */
+	public get integrity(): string {
+		return this.getAttribute('integrity') || '';
+	}
+
+	/**
+	 * Sets integrity.
+	 *
+	 * @param integrity Integrity.
+	 */
+	public set integrity(integrity: string) {
+		this.setAttribute('integrity', integrity);
+	}
+
+	/**
+	 * Returns referrerPolicy.
+	 *
+	 * @returns ReferrerPolicy.
+	 */
+	public get referrerPolicy(): IRequestReferrerPolicy {
+		const referrerPolicy = this.getAttribute('referrerpolicy');
+		switch (referrerPolicy) {
+			case 'no-referrer':
+			case 'no-referrer-when-downgrade':
+			case 'same-origin':
+			case 'origin':
+			case 'strict-origin':
+			case 'origin-when-cross-origin':
+			case 'strict-origin-when-cross-origin':
+			case 'unsafe-url':
+				return referrerPolicy;
+			default:
+				return '';
+		}
+	}
+
+	/**
+	 * Sets referrerPolicy.
+	 *
+	 * @param referrerPolicy ReferrerPolicy.
+	 */
+	public set referrerPolicy(referrerPolicy: string) {
+		this.setAttribute('referrerpolicy', referrerPolicy);
 	}
 
 	/**
@@ -191,33 +334,28 @@ export default class HTMLScriptElement extends HTMLElement {
 			const src = this.getAttribute('src');
 
 			if (src !== null) {
-				this.#loadScript(src);
+				if (this.getAttribute('type') === 'module') {
+					this.#loadModule(src);
+				} else {
+					this.#loadScript(src);
+				}
 			} else if (browserSettings && !browserSettings.disableJavaScriptEvaluation) {
-				const textContent = this.textContent;
+				const source = this.textContent;
 				const type = this.getAttribute('type');
-				if (
-					textContent &&
-					(type === null ||
+
+				if (source) {
+					if (type === 'module') {
+						this.#evaluateModule(source);
+					} else if (type === 'importmap') {
+						this.#evaluateImportMap(source);
+					} else if (
+						type === null ||
 						type === 'application/x-ecmascript' ||
 						type === 'application/x-javascript' ||
-						type.startsWith('text/javascript'))
-				) {
-					this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = this;
-
-					const code = `//# sourceURL=${this[PropertySymbol.window].location.href}\n` + textContent;
-
-					if (
-						browserSettings.disableErrorCapturing ||
-						browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
+						type.startsWith('text/javascript')
 					) {
-						this[PropertySymbol.window].eval(code);
-					} else {
-						WindowErrorUtility.captureError(this[PropertySymbol.window], () =>
-							this[PropertySymbol.window].eval(code)
-						);
+						this.#evaluateScript(source);
 					}
-
-					this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = null;
 				}
 			}
 		}
@@ -237,41 +375,166 @@ export default class HTMLScriptElement extends HTMLElement {
 			attribute[PropertySymbol.value] !== null &&
 			this[PropertySymbol.isConnected]
 		) {
-			this.#loadScript(attribute[PropertySymbol.value]);
+			if (this.getAttribute('type') === 'module') {
+				this.#loadModule(attribute[PropertySymbol.value]);
+			} else {
+				this.#loadScript(attribute[PropertySymbol.value]);
+			}
 		}
 	}
 
 	/**
-	 * Returns a URL relative to the given Location object.
+	 * Evaluates a module.
 	 *
-	 * @param url URL.
+	 * @param source Source.
 	 */
-	async #loadScript(url: string): Promise<void> {
+	async #evaluateModule(source: string): Promise<void> {
+		const url = this[PropertySymbol.ownerDocument].location;
 		const window = this[PropertySymbol.window];
+		const browserSettings = new WindowBrowserContext(window).getSettings();
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
-		const async =
-			this.getAttribute('async') !== null ||
-			this.getAttribute('defer') !== null ||
-			this.getAttribute('type') === 'module';
 
 		if (!browserFrame) {
 			return;
 		}
 
-		const browserSettings = browserFrame.page?.context?.browser?.settings;
+		const module = new ECMAScriptModule(window, url, source);
+		const readyStateManager = window[PropertySymbol.readyStateManager];
 
-		if (!url || !this[PropertySymbol.isConnected]) {
+		readyStateManager.startTask();
+
+		if (
+			browserSettings.disableErrorCapturing ||
+			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
+		) {
+			await module.evaluate();
+		} else {
+			try {
+				await module.evaluate();
+			} catch (error) {
+				window[PropertySymbol.dispatchError](error);
+				return;
+			}
+		}
+
+		readyStateManager.endTask();
+
+		this.dispatchEvent(new Event('load'));
+	}
+
+	/**
+	 * Evaluates an import map.
+	 *
+	 * @param source Source.
+	 */
+	async #evaluateImportMap(source: string): Promise<void> {
+		const window = this[PropertySymbol.window];
+		const browserSettings = new WindowBrowserContext(window).getSettings();
+		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+
+		if (!browserFrame || window[PropertySymbol.moduleImportMap]) {
 			return;
 		}
 
-		let absoluteURL: string;
-		try {
-			absoluteURL = new URL(url, this[PropertySymbol.window].location.href).href;
-		} catch (error) {
+		let json: any;
+		if (
+			browserSettings.disableErrorCapturing ||
+			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
+		) {
+			json = JSON.parse(source);
+		} else {
+			try {
+				json = JSON.parse(source);
+			} catch (error) {
+				window[PropertySymbol.dispatchError](error);
+				return;
+			}
+		}
+
+		if (json.imports || json.scopes) {
+			const importMap: IModuleImportMap = {
+				imports: [],
+				scopes: []
+			};
+
+			if (json.imports) {
+				for (const key of Object.keys(json.imports)) {
+					importMap.imports.push({
+						from: key,
+						to: json.imports[key]
+					});
+				}
+			}
+
+			if (json.scopes) {
+				for (const scopeKey of Object.keys(json.scopes)) {
+					const scope = {
+						scope: scopeKey,
+						rules: []
+					};
+					for (const importKey of Object.keys(json.scopes[scopeKey])) {
+						const value = json.scopes[scopeKey][importKey];
+						scope.rules.push({
+							from: importKey,
+							to: value
+						});
+					}
+					importMap.scopes.push(scope);
+				}
+			}
+
+			window[PropertySymbol.moduleImportMap] = importMap;
+		}
+	}
+
+	/**
+	 * Evaluates a script.
+	 *
+	 * @param source Source.
+	 */
+	#evaluateScript(source: string): Promise<void> {
+		const window = this[PropertySymbol.window];
+		const browserSettings = new WindowBrowserContext(window).getSettings();
+
+		if (!browserSettings) {
 			return;
 		}
 
-		if (this.#loadedScriptURL === absoluteURL) {
+		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = this;
+
+		const code = `//# sourceURL=${this[PropertySymbol.ownerDocument].location.href}\n` + source;
+
+		if (
+			browserSettings.disableErrorCapturing ||
+			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
+		) {
+			window.eval(code);
+		} else {
+			try {
+				window.eval(code);
+			} catch (error) {
+				window[PropertySymbol.dispatchError](error);
+			}
+		}
+
+		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = null;
+	}
+
+	/**
+	 * Loads a module.
+	 *
+	 * @param url URL.
+	 */
+	async #loadModule(url: string): Promise<void> {
+		const window = this[PropertySymbol.window];
+		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+		const browserSettings = new WindowBrowserContext(window).getSettings();
+
+		if (!browserSettings) {
+			return;
+		}
+
+		if (!url || !this[PropertySymbol.isConnected] || this.getAttribute('type') !== 'module') {
 			return;
 		}
 
@@ -282,66 +545,175 @@ export default class HTMLScriptElement extends HTMLElement {
 			if (browserSettings.handleDisabledFileLoadingAsSuccess) {
 				this.dispatchEvent(new Event('load'));
 			} else {
-				WindowErrorUtility.dispatchError(
-					this,
-					new window.DOMException(
-						`Failed to load external script "${absoluteURL}". JavaScript file loading is disabled.`,
-						DOMExceptionNameEnum.notSupportedError
-					)
+				const error = new window.DOMException(
+					`Failed to load module "${url}". JavaScript file loading is disabled.`,
+					DOMExceptionNameEnum.notSupportedError
 				);
+				browserFrame.page?.console.error(error);
+				this.dispatchEvent(new Event('error'));
 			}
 			return;
 		}
 
-		const resourceFetch = new ResourceFetch({
-			browserFrame,
-			window: this[PropertySymbol.window]
-		});
-		let code: string | null = null;
-		let error: Error | null = null;
+		const readyStateManager = window[PropertySymbol.readyStateManager];
 
-		this.#loadedScriptURL = absoluteURL;
+		readyStateManager.startTask();
+
+		// TODO: What to do with "referrerPolicy" and "crossOrigin" for modules?
+		// @see https://github.com/w3c/webappsec-referrer-policy/issues/111
+
+		if (
+			browserSettings.disableErrorCapturing ||
+			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
+		) {
+			const module = await ModuleFactory.getModule(window, window.location, url);
+			await module.evaluate();
+		} else {
+			try {
+				const module = await ModuleFactory.getModule(window, window.location, url);
+				await module.evaluate();
+			} catch (error) {
+				browserFrame.page?.console.error(error);
+				this.dispatchEvent(new Event('error'));
+				readyStateManager.endTask();
+				return;
+			}
+		}
+
+		readyStateManager.endTask();
+		this.dispatchEvent(new Event('load'));
+	}
+
+	/**
+	 * Returns a URL relative to the given Location object.
+	 *
+	 * @param url URL.
+	 */
+	async #loadScript(url: string): Promise<void> {
+		const window = this[PropertySymbol.window];
+		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+
+		if (!browserFrame) {
+			return;
+		}
+
+		const browserSettings = browserFrame.page?.context?.browser?.settings;
+		const type = this.getAttribute('type');
+
+		if (
+			!url ||
+			!this[PropertySymbol.isConnected] ||
+			(type !== null &&
+				type !== 'application/x-ecmascript' &&
+				type !== 'application/x-javascript' &&
+				!type.startsWith('text/javascript'))
+		) {
+			return;
+		}
+
+		let absoluteURL: URL;
+		try {
+			absoluteURL = new URL(url, window.location.href);
+		} catch (error) {
+			return;
+		}
+
+		const absoluteURLString = absoluteURL.toString();
+		if (this.#loadedScriptURL === absoluteURLString) {
+			return;
+		}
+
+		if (
+			browserSettings &&
+			(browserSettings.disableJavaScriptFileLoading || browserSettings.disableJavaScriptEvaluation)
+		) {
+			if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+				this.dispatchEvent(new Event('load'));
+			} else {
+				const error = new window.DOMException(
+					`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`,
+					DOMExceptionNameEnum.notSupportedError
+				);
+				browserFrame.page?.console.error(error);
+				this.dispatchEvent(new Event('error'));
+			}
+			return;
+		}
+
+		this.#loadedScriptURL = absoluteURLString;
+
+		const resourceFetch = new ResourceFetch(window);
+		const async = this.getAttribute('async') !== null || this.getAttribute('defer') !== null;
+		let code: string | null = null;
 
 		if (async) {
-			const readyStateManager = (<
-				{ [PropertySymbol.readyStateManager]: DocumentReadyStateManager }
-			>(<unknown>this[PropertySymbol.window]))[PropertySymbol.readyStateManager];
+			const readyStateManager = window[PropertySymbol.readyStateManager];
 
 			readyStateManager.startTask();
 
 			try {
-				code = await resourceFetch.fetch(absoluteURL);
-			} catch (e) {
-				error = e;
+				code = await resourceFetch.fetch(absoluteURLString, 'script', {
+					credentials: this.crossOrigin === 'use-credentials' ? 'include' : 'same-origin',
+					referrerPolicy: this.referrerPolicy
+				});
+			} catch (error) {
+				browserFrame.page?.console.error(error);
+				this.dispatchEvent(new Event('error'));
+				return;
 			}
 
 			readyStateManager.endTask();
 		} else {
 			try {
-				code = resourceFetch.fetchSync(absoluteURL);
-			} catch (e) {
-				error = e;
+				code = resourceFetch.fetchSync(absoluteURLString, 'script', {
+					credentials: this.crossOrigin === 'use-credentials' ? 'include' : 'same-origin',
+					referrerPolicy: this.referrerPolicy
+				});
+			} catch (error) {
+				browserFrame.page?.console.error(error);
+				this.dispatchEvent(new Event('error'));
+				return;
 			}
 		}
 
-		if (error) {
-			WindowErrorUtility.dispatchError(this, error);
-		} else {
-			this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = this;
-			code = '//# sourceURL=' + absoluteURL + '\n' + code;
+		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = this;
 
-			if (
-				browserSettings.disableErrorCapturing ||
-				browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
-			) {
+		code = '//# sourceURL=' + absoluteURL + '\n' + code;
+
+		if (
+			browserSettings.disableErrorCapturing ||
+			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
+		) {
+			this[PropertySymbol.window].eval(code);
+		} else {
+			try {
 				this[PropertySymbol.window].eval(code);
-			} else {
-				WindowErrorUtility.captureError(this[PropertySymbol.window], () =>
-					this[PropertySymbol.window].eval(code)
-				);
+			} catch (error) {
+				this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = null;
+				window[PropertySymbol.dispatchError](error);
+				return;
 			}
-			this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = null;
-			this.dispatchEvent(new Event('load'));
+		}
+
+		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = null;
+		this.dispatchEvent(new Event('load'));
+	}
+
+	/**
+	 * Returns true if the given type is supported.
+	 *
+	 * @param type Type.
+	 * @returns True if the given type is supported.
+	 */
+	public static supports(type: string): boolean {
+		switch (type) {
+			case 'classic':
+			case 'module':
+			case 'importmap':
+				return true;
+			case 'speculationrules':
+			default:
+				return false;
 		}
 	}
 }

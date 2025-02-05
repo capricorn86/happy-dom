@@ -7,7 +7,7 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import HTTP, { IncomingMessage } from 'http';
 import HTTPS from 'https';
 import Zlib from 'zlib';
-import URL from '../url/URL.js';
+import { URL } from 'url';
 import FS from 'fs';
 import Path from 'path';
 import { Socket } from 'net';
@@ -30,6 +30,7 @@ import { Buffer } from 'buffer';
 import FetchBodyUtility from './utilities/FetchBodyUtility.js';
 import IFetchInterceptor from './types/IFetchInterceptor.js';
 import VirtualServerUtility from './utilities/VirtualServerUtility.js';
+import PreloadUtility from './preload/PreloadUtility.js';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -59,6 +60,7 @@ export default class Fetch {
 	private redirectCount = 0;
 	private disableCache: boolean;
 	private disableSameOriginPolicy: boolean;
+	private disablePreload: boolean;
 	#browserFrame: IBrowserFrame;
 	#window: BrowserWindow;
 	#unfilteredHeaders: Headers | null = null;
@@ -76,6 +78,7 @@ export default class Fetch {
 	 * @param [options.disableCache] Disables the use of cached responses. It will still store the response in the cache.
 	 * @param [options.disableSameOriginPolicy] Disables the Same-Origin policy.
 	 * @param [options.unfilteredHeaders] Unfiltered headers - necessary for preflight requests.
+	 * @param [options.disablePreload] Disables the use of preloaded responses.
 	 */
 	constructor(options: {
 		browserFrame: IBrowserFrame;
@@ -87,6 +90,7 @@ export default class Fetch {
 		disableCache?: boolean;
 		disableSameOriginPolicy?: boolean;
 		unfilteredHeaders?: Headers;
+		disablePreload?: boolean;
 	}) {
 		this.#browserFrame = options.browserFrame;
 		this.#window = options.window;
@@ -105,6 +109,7 @@ export default class Fetch {
 			this.#browserFrame.page.context.browser.settings.fetch.disableSameOriginPolicy ??
 			false;
 		this.interceptor = this.#browserFrame.page.context.browser.settings.fetch.interceptor;
+		this.disablePreload = options.disablePreload ?? false;
 	}
 
 	/**
@@ -128,12 +133,6 @@ export default class Fetch {
 		}
 
 		FetchRequestValidationUtility.validateSchema(this.request);
-
-		const virtualServerResponse = await this.getVirtualServerResponse();
-
-		if (virtualServerResponse) {
-			return virtualServerResponse;
-		}
 
 		if (this.request.signal.aborted) {
 			throw new this.#window.DOMException(
@@ -178,6 +177,38 @@ export default class Fetch {
 			if (cachedResponse) {
 				return cachedResponse;
 			}
+		}
+
+		if (!this.disablePreload) {
+			const preloadKey = PreloadUtility.getKey({
+				url: this.request.url,
+				destination: 'fetch',
+				mode: this.request.mode,
+				credentialsMode: this.request.credentials
+			});
+
+			const preloadEntry = this.#window.document[PropertySymbol.preloads].get(preloadKey);
+
+			if (preloadEntry) {
+				this.#window.document[PropertySymbol.preloads].delete(preloadKey);
+
+				if (preloadEntry.response) {
+					return preloadEntry.response;
+				}
+
+				const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
+				const response = await preloadEntry.onResponseAvailable();
+
+				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+
+				return response;
+			}
+		}
+
+		const virtualServerResponse = await this.getVirtualServerResponse();
+
+		if (virtualServerResponse) {
+			return virtualServerResponse;
 		}
 
 		if (!this.disableSameOriginPolicy) {
@@ -295,14 +326,23 @@ export default class Fetch {
 			return null;
 		}
 
+		const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
+
 		if (this.request.method !== 'GET') {
 			this.#browserFrame?.page?.console.error(
 				`${this.request.method} ${this.request.url} 404 (Not Found)`
 			);
-			return VirtualServerUtility.getNotFoundResponse(this.#window);
+			const response = VirtualServerUtility.getNotFoundResponse(this.#window);
+			const interceptedResponse = this.interceptor?.afterAsyncResponse
+				? await this.interceptor.afterAsyncResponse({
+						window: this.#window,
+						response: await response,
+						request: this.request
+					})
+				: undefined;
+			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+			return interceptedResponse instanceof Response ? interceptedResponse : response;
 		}
-
-		const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
 		let buffer: Buffer;
 
 		try {
@@ -315,12 +355,17 @@ export default class Fetch {
 				`${this.request.method} ${this.request.url} 404 (Not Found)`
 			);
 
+			const response = VirtualServerUtility.getNotFoundResponse(this.#window);
+			const interceptedResponse = this.interceptor?.afterAsyncResponse
+				? await this.interceptor.afterAsyncResponse({
+						window: this.#window,
+						response: await response,
+						request: this.request
+					})
+				: undefined;
 			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
-
-			return VirtualServerUtility.getNotFoundResponse(this.#window);
+			return interceptedResponse instanceof Response ? interceptedResponse : response;
 		}
-
-		this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 
 		const body = new this.#window.ReadableStream({
 			start(controller) {
@@ -332,11 +377,32 @@ export default class Fetch {
 		});
 
 		const response = new this.#window.Response(body);
-
 		response[PropertySymbol.buffer] = buffer;
 		(<string>response.url) = this.request.url;
 
-		return response;
+		const interceptedResponse = this.interceptor?.afterAsyncResponse
+			? await this.interceptor.afterAsyncResponse({
+					window: this.#window,
+					response: await response,
+					request: this.request
+				})
+			: undefined;
+
+		this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+
+		const returnResponse = interceptedResponse instanceof Response ? interceptedResponse : response;
+		const cachedResponse = {
+			...returnResponse,
+			body: buffer,
+			waitingForBody: false
+		};
+
+		response[PropertySymbol.cachedResponse] = this.#browserFrame.page?.context?.responseCache.add(
+			this.request,
+			cachedResponse
+		);
+
+		return returnResponse;
 	}
 
 	/**

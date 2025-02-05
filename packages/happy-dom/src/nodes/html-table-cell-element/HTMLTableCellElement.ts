@@ -1,7 +1,6 @@
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import DOMTokenList from '../../dom/DOMTokenList.js';
 
 /**
  * HTMLTableCellElement
@@ -9,8 +8,6 @@ import DOMTokenList from '../../dom/DOMTokenList.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableCellElement
  */
 export default class HTMLTableCellElement extends HTMLElement {
-	public [PropertySymbol.headers]: DOMTokenList | null = null;
-
 	/**
 	 * Returns abbr.
 	 *

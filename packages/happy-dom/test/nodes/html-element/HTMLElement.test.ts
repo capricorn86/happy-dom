@@ -587,6 +587,7 @@ describe('HTMLElement', () => {
 			expect(customElement instanceof CustomElement).toBe(true);
 
 			expect(customElement.isConnected).toBe(true);
+			expect(customElement.shadowRoot?.isConnected).toBe(true);
 			expect(customElement.shadowRoot?.children.length).toBe(2);
 
 			expect(customElement.childNodes.length).toBe(2);
@@ -607,6 +608,39 @@ describe('HTMLElement', () => {
 			expect(customElement[PropertySymbol.isValue] === isValue).toBe(true);
 			expect(customElement.attributes.length).toBe(1);
 			expect(customElement.attributes[0] === attribute1).toBe(true);
+		});
+
+		it('Renders child component inside the new instance of the custom element.', () => {
+			const element = <HTMLElement>document.createElement('parent-element');
+
+			document.body.appendChild(element);
+
+			/* eslint-disable jsdoc/require-jsdoc */
+			class ParentElement extends HTMLElement {
+				constructor() {
+					super();
+					this.attachShadow({ mode: 'open' });
+				}
+
+				public connectedCallback(): void {
+					(<any>this.shadowRoot).innerHTML =
+						'<div><custom-element key1="value1" key2="value2"></custom-element></div>';
+				}
+			}
+
+			/* eslint-enable jsdoc/require-jsdoc */
+
+			window.customElements.define('custom-element', CustomElement);
+			window.customElements.define('parent-element', ParentElement);
+
+			const parentElement = <ParentElement>document.body.children[0];
+
+			expect(
+				parentElement.shadowRoot?.children[0].children[0].shadowRoot?.querySelector('.propKey')
+					?.textContent
+			).toBe(`
+                    key1 is "value1" and key2 is "value2".
+                `);
 		});
 
 		it('Does nothing if the property "_callback" doesn\'t exist on Window.customElements.', () => {
