@@ -4,8 +4,6 @@ enum HTMLElementConfigContentModelEnum {
 	noFirstLevelSelfDescendants = 'noFirstLevelSelfDescendants',
 	noForbiddenFirstLevelDescendants = 'noForbiddenFirstLevelDescendants',
 	noDescendants = 'noDescendants',
-	permittedDescendants = 'permittedDescendants',
-	textOrComments = 'textOrComments',
 	anyDescendants = 'anyDescendants'
 }
 

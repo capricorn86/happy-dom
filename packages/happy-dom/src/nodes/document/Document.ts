@@ -197,6 +197,13 @@ export default class Document extends Node {
 	public onbeforematch: (event: Event) => void = null;
 
 	/**
+	 * @override
+	 */
+	public override get nodeName(): string {
+		return '#document';
+	}
+
+	/**
 	 * Returns adopted style sheets.
 	 *
 	 * @returns Adopted style sheets.
@@ -396,15 +403,6 @@ export default class Document extends Node {
 	}
 
 	/**
-	 * Node name.
-	 *
-	 * @returns Node name.
-	 */
-	public get nodeName(): string {
-		return '#document';
-	}
-
-	/**
 	 * Returns <html> element.
 	 *
 	 * @returns Element.
@@ -433,10 +431,8 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public get body(): HTMLBodyElement {
-		const documentElement = this.documentElement;
-		return documentElement
-			? <HTMLBodyElement>ParentNodeUtility.getElementByTagName(documentElement, 'body')
-			: null;
+		// Returns null for XMLDocument.
+		return null;
 	}
 
 	/**
@@ -445,10 +441,8 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public get head(): HTMLHeadElement {
-		const documentElement = this.documentElement;
-		return documentElement
-			? <HTMLHeadElement>ParentNodeUtility.getElementByTagName(documentElement, 'head')
-			: null;
+		// Returns null for XMLDocument.
+		return null;
 	}
 
 	/**
@@ -1072,16 +1066,30 @@ export default class Document extends Node {
 				svgElement[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
 
 				return svgElement;
+			case NamespaceURI.mathML:
+				const mathMLElement = NodeFactory.createNode<Element>(this, window.MathMLElement);
+
+				mathMLElement[PropertySymbol.tagName] = qualifiedName;
+				mathMLElement[PropertySymbol.localName] = localName;
+				mathMLElement[PropertySymbol.prefix] = prefix;
+				mathMLElement[PropertySymbol.namespaceURI] = namespaceURI;
+				mathMLElement[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
+
+				return mathMLElement;
 			case NamespaceURI.html:
 				// Custom HTML element
 				// If a polyfill is used, [PropertySymbol.registry] may be undefined
 				const customElementDefinition = window.customElements[PropertySymbol.registry]?.get(
 					options && options.is ? String(options.is) : qualifiedName
 				);
+				const tagName =
+					this[PropertySymbol.contentType] === 'text/html'
+						? StringUtility.asciiUpperCase(qualifiedName)
+						: qualifiedName;
 
 				if (customElementDefinition) {
 					const element = new customElementDefinition.elementClass();
-					element[PropertySymbol.tagName] = StringUtility.asciiUpperCase(qualifiedName);
+					element[PropertySymbol.tagName] = tagName;
 					element[PropertySymbol.localName] = localName;
 					element[PropertySymbol.prefix] = prefix;
 					element[PropertySymbol.namespaceURI] = namespaceURI;
@@ -1097,7 +1105,7 @@ export default class Document extends Node {
 				if (elementClass) {
 					const element = NodeFactory.createNode<Element>(this, elementClass);
 
-					element[PropertySymbol.tagName] = StringUtility.asciiUpperCase(qualifiedName);
+					element[PropertySymbol.tagName] = tagName;
 					element[PropertySymbol.localName] = localName;
 					element[PropertySymbol.prefix] = prefix;
 					element[PropertySymbol.namespaceURI] = namespaceURI;
@@ -1113,7 +1121,7 @@ export default class Document extends Node {
 
 				const unknownElement = NodeFactory.createNode<Element>(this, unknownElementClass);
 
-				unknownElement[PropertySymbol.tagName] = StringUtility.asciiUpperCase(qualifiedName);
+				unknownElement[PropertySymbol.tagName] = tagName;
 				unknownElement[PropertySymbol.localName] = localName;
 				unknownElement[PropertySymbol.prefix] = prefix;
 				unknownElement[PropertySymbol.namespaceURI] = namespaceURI;

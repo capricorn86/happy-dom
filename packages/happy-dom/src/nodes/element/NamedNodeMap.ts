@@ -5,6 +5,7 @@ import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import Element from './Element.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
 import StringUtility from '../../utilities/StringUtility.js';
+import ClassMethodBinder from '../../utilities/ClassMethodBinder.js';
 
 /**
  * Named Node Map.
@@ -29,6 +30,109 @@ export default class NamedNodeMap {
 	 */
 	constructor(ownerElement: Element) {
 		this[PropertySymbol.ownerElement] = ownerElement;
+
+		const methodBinder = new ClassMethodBinder(this, [NamedNodeMap]);
+
+		return new Proxy<NamedNodeMap>(this, {
+			get: (target, property) => {
+				if (property === 'length') {
+					return target[PropertySymbol.namedItems].size;
+				}
+				if (property in target || typeof property === 'symbol') {
+					methodBinder.bind(property);
+					return target[property];
+				}
+				const index = Number(property);
+				if (!isNaN(index)) {
+					return Array.from(target[PropertySymbol.namedItems].values())[index]?.[0];
+				}
+				return target.getNamedItem(<string>property) || undefined;
+			},
+			set(target, property, newValue): boolean {
+				methodBinder.bind(property);
+				if (typeof property === 'symbol') {
+					target[property] = newValue;
+					return true;
+				}
+				const index = Number(property);
+				if (isNaN(index)) {
+					target[property] = newValue;
+				}
+				return true;
+			},
+			deleteProperty(target, property): boolean {
+				if (typeof property === 'symbol') {
+					delete target[property];
+					return true;
+				}
+				const index = Number(property);
+				if (isNaN(index)) {
+					delete target[property];
+				}
+				return true;
+			},
+			ownKeys(target): string[] {
+				const keys = Array.from(target[PropertySymbol.namedItems].keys());
+				for (let i = 0, max = target[PropertySymbol.namedItems].size; i < max; i++) {
+					keys.push(String(i));
+				}
+				return keys;
+			},
+			has(target, property): boolean {
+				if (typeof property === 'symbol') {
+					return false;
+				}
+
+				if (property in target || target[PropertySymbol.namedItems].has(property)) {
+					return true;
+				}
+
+				const index = Number(property);
+
+				if (!isNaN(index) && index >= 0 && index < target[PropertySymbol.namedItems].size) {
+					return true;
+				}
+
+				return false;
+			},
+			defineProperty(target, property, descriptor): boolean {
+				methodBinder.preventBinding(property);
+
+				if (property in target) {
+					Object.defineProperty(target, property, descriptor);
+					return true;
+				}
+
+				return false;
+			},
+			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
+				if (property in target || typeof property === 'symbol') {
+					return;
+				}
+
+				const index = Number(property);
+
+				if (!isNaN(index) && index >= 0 && index < target[PropertySymbol.namedItems].size) {
+					return {
+						value: Array.from(target[PropertySymbol.namedItems].values())[index][0],
+						writable: false,
+						enumerable: true,
+						configurable: true
+					};
+				}
+
+				const namedItems = target[PropertySymbol.namedItems].get(<string>property);
+
+				if (namedItems) {
+					return {
+						value: namedItems[0],
+						writable: false,
+						enumerable: true,
+						configurable: true
+					};
+				}
+			}
+		});
 	}
 
 	/**

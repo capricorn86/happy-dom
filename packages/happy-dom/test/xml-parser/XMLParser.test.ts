@@ -187,8 +187,8 @@ describe('XMLParser', () => {
 
 			expect((<HTMLElement>result.children[0].children[0]).textContent).toBe('');
 			expect((<HTMLElement>result.children[0].children[1]).textContent).toBe('');
-			expect((<HTMLElement>result.children[0].children[0]).innerHTML).toBe('<b></b>');
-			expect((<HTMLElement>result.children[0].children[1]).innerHTML).toBe('<b></b>');
+			expect((<HTMLElement>result.children[0].children[0]).innerHTML).toBe('<b/>');
+			expect((<HTMLElement>result.children[0].children[1]).innerHTML).toBe('<b/>');
 		});
 
 		it('Outputs error for incomplete end tag.', () => {

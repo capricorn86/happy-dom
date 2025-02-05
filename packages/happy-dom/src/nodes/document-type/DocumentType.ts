@@ -40,12 +40,10 @@ export default class DocumentType extends Node {
 	}
 
 	/**
-	 * Node name.
-	 *
-	 * @returns Node name.
+	 * @override
 	 */
-	public get nodeName(): string {
-		return this.name;
+	public override get nodeName(): string {
+		return this[PropertySymbol.name];
 	}
 
 	/**

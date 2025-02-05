@@ -17,6 +17,13 @@ import HTMLBodyElement from '../nodes/html-body-element/HTMLBodyElement.js';
 import HTMLHtmlElement from '../nodes/html-html-element/HTMLHtmlElement.js';
 import XMLEncodeUtility from '../utilities/XMLEncodeUtility.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
+import MathMLElementConfig from '../config/MathMLElementConfig.js';
+import Attr from '../nodes/attr/Attr.js';
+import ForeignAttributeConfig from '../config/ForeignAttributeConfig.js';
+import SVGAttributeConfig from '../config/SVGAttributeConfig.js';
+import MathMLAttributeConfig from '../config/MathMLAttributeConfig.js';
+import HTMLParserErrorCodeEnum from './HTMLParserErrorCodeEnum.js';
+import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
 
 /**
  * Markup RegExp.
@@ -46,7 +53,7 @@ const MARKUP_REGEXP = /<([^\s/!>?]+)|<\/([^\s/!>?]+)\s*>|(<!--)|(-->|--!>)|(<!)|
  * Group 9: Attribute name when the attribute has no value (e.g. "disabled" in "<div disabled>").
  */
 const ATTRIBUTE_REGEXP =
-	/\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)\s*=\s*([a-zA-Z0-9-_:.$@?{}/<]+)|\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)\s*=\s*"([^"]*)("{0,1})|\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)\s*=\s*'([^']*)('{0,1})|\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)/gm;
+	/\s*([^="'\/\s]+)\s*=\s*([^"'\s]+)|([^="'\/\s]+)\s*=\s*"([^"]+)("){0,1}|\s*([^="'\/\s]+)\s*=\s*'([^']+)('){0,1}|\s*([^="'\/\s]+)/gm;
 
 /**
  * Document type attribute RegExp.
@@ -67,14 +74,45 @@ const SPACE_IN_BEGINNING_REGEXP = /^\s+/;
 
 /**
  * Markup read state (which state the parser is in).
+ *
+ * @see https://html.spec.whatwg.org/multipage/parsing.html#tokenization
  */
 enum MarkupReadStateEnum {
-	any = 'any',
-	startTag = 'startTag',
+	data = 'data',
+	tagName = 'tagName',
 	comment = 'comment',
 	documentType = 'documentType',
 	processingInstruction = 'processingInstruction',
-	rawTextElement = 'rawTextElement'
+	rawText = 'rawText'
+}
+
+/**
+ * Insertion mode.
+ *
+ * @see https://html.spec.whatwg.org/multipage/parsing.html#insertion-mode
+ */
+enum InsertionModeEnum {
+	initial = 'initial',
+	beforeHTML = 'beforeHTML',
+	beforeHead = 'beforeHead',
+	inHead = 'inHead',
+	inHeadNoscript = 'inHeadNoscript',
+	afterHead = 'afterHead',
+	inBody = 'inBody',
+	inTable = 'inTable',
+	inCaption = 'inCaption',
+	inColumnGroup = 'inColumnGroup',
+	inTableBody = 'inTableBody',
+	inRow = 'inRow',
+	inCell = 'inCell',
+	inSelect = 'inSelect',
+	inSelectInTable = 'inSelectInTable',
+	inTemplate = 'inTemplate',
+	afterBody = 'afterBody',
+	inFrameset = 'inFrameset',
+	afterFrameset = 'afterFrameset',
+	afterAfterBody = 'afterAfterBody',
+	afterAfterFrameset = 'afterAfterFrameset'
 }
 
 /**
@@ -87,62 +125,52 @@ interface IDocumentType {
 }
 
 /**
- * How much of the HTML document that has been parsed (where the parser level is).
- */
-enum HTMLDocumentStructureLevelEnum {
-	root = 0,
-	doctype = 1,
-	documentElement = 2,
-	head = 3,
-	additionalHeadWithoutBody = 4,
-	body = 5,
-	afterBody = 6
-}
-
-interface IHTMLDocumentStructure {
-	nodes: {
-		doctype: DocumentType;
-		documentElement: HTMLHtmlElement;
-		head: HTMLHeadElement;
-		body: HTMLBodyElement;
-	};
-	level: HTMLDocumentStructureLevelEnum;
-}
-
-/**
  * HTML parser.
+ *
+ * @see https://html.spec.whatwg.org/multipage/parsing.html
  */
 export default class HTMLParser {
 	private window: BrowserWindow;
-	private evaluateScripts: boolean = false;
+	private enableScripts: boolean = false;
+	private framesetOk: boolean = true;
+	private elementPointer: {
+		html: HTMLHtmlElement | null;
+		head: HTMLHeadElement | null;
+		body: HTMLBodyElement | null;
+		form: HTMLFormElement | null;
+	} = {
+		html: null,
+		head: null,
+		body: null,
+		form: null
+	};
 	private rootNode: Element | DocumentFragment | Document | null = null;
 	private rootDocument: Document | null = null;
 	private nodeStack: Node[] = [];
 	private tagNameStack: string[] = [];
-	private documentStructure: IHTMLDocumentStructure | null = null;
+    private impliedEndTags: string[] = [];
 	private startTagIndex = 0;
 	private markupRegExp: RegExp | null = null;
-	private nextElement: Element | null = null;
-	private currentNode: Node | null = null;
-	private readState: MarkupReadStateEnum = MarkupReadStateEnum.any;
+	private readState: MarkupReadStateEnum = MarkupReadStateEnum.data;
+	private insertionMode: InsertionModeEnum = InsertionModeEnum.initial;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param window Window.
 	 * @param [options] Options.
-	 * @param [options.evaluateScripts] Set to "true" to enable script execution
+	 * @param [options.enableScripts] Set to "true" to enable script execution
 	 */
 	constructor(
 		window: BrowserWindow,
 		options?: {
-			evaluateScripts?: boolean;
+			enableScripts?: boolean;
 		}
 	) {
 		this.window = window;
 
-		if (options?.evaluateScripts) {
-			this.evaluateScripts = true;
+		if (options?.enableScripts) {
+			this.enableScripts = true;
 		}
 	}
 	/**
@@ -159,66 +187,30 @@ export default class HTMLParser {
 		this.rootNode = rootNode || this.window.document.createDocumentFragment();
 		this.rootDocument = this.rootNode instanceof Document ? this.rootNode : this.window.document;
 		this.nodeStack = [this.rootNode];
-		this.tagNameStack = [null];
-		this.currentNode = this.rootNode;
-		this.readState = <MarkupReadStateEnum>MarkupReadStateEnum.any;
-		this.documentStructure = null;
+		this.readState = <MarkupReadStateEnum>MarkupReadStateEnum.data;
 		this.startTagIndex = 0;
 		this.markupRegExp = new RegExp(MARKUP_REGEXP, 'gm');
+		this.insertionMode = this.getInitialInsertionMode(this.rootNode);
 
-		if (this.rootNode instanceof Document) {
-			const { doctype, documentElement, head, body } = <Document>this.rootNode;
-
-			if (!documentElement || !head || !body) {
-				throw new Error(
-					'Failed to parse HTML: The root node must have "documentElement", "head" and "body".\n\nWe should not end up here and it is therefore a bug in Happy DOM. Please report this issue.'
-				);
-			}
-
-			this.documentStructure = {
-				nodes: {
-					doctype: doctype || null,
-					documentElement,
-					head,
-					body
-				},
-				level: HTMLDocumentStructureLevelEnum.root
-			};
-		}
-
-		if (this.rootNode instanceof this.window.HTMLHtmlElement) {
-			const head = this.rootDocument.createElement('head');
-			const body = this.rootDocument.createElement('body');
-			while (this.rootNode[PropertySymbol.nodeArray].length > 0) {
-				this.rootNode[PropertySymbol.removeChild](
-					this.rootNode[PropertySymbol.nodeArray][
-						this.rootNode[PropertySymbol.nodeArray].length - 1
-					]
-				);
-			}
-
-			this.rootNode[PropertySymbol.appendChild](head);
-			this.rootNode[PropertySymbol.appendChild](body);
-
-			this.documentStructure = {
-				nodes: {
-					doctype: null,
-					documentElement: this.rootNode,
-					head,
-					body
-				},
-				level: HTMLDocumentStructureLevelEnum.documentElement
-			};
+		if (rootNode instanceof Element || rootNode instanceof DocumentFragment) {
+			this.elementPointer.html = this.rootNode[PropertySymbol.ownerDocument].documentElement;
+			this.elementPointer.head = this.rootNode[PropertySymbol.ownerDocument].head;
+			this.elementPointer.body = this.rootNode[PropertySymbol.ownerDocument].body;
+		} else {
+			this.elementPointer.html = null;
+			this.elementPointer.head = null;
+			this.elementPointer.body = null;
 		}
 
 		let match: RegExpExecArray;
 		let lastIndex = 0;
+		let tagName: string | null = null;
 
 		html = String(html);
 
 		while ((match = this.markupRegExp.exec(html))) {
 			switch (this.readState) {
-				case MarkupReadStateEnum.any:
+				case MarkupReadStateEnum.data:
 					// Plain text between tags.
 					if (
 						match.index !== lastIndex &&
@@ -229,10 +221,9 @@ export default class HTMLParser {
 
 					if (match[1]) {
 						// Start tag.
-						this.nextElement = this.getStartTagElement(match[1]);
-
+						tagName = StringUtility.asciiUpperCase(match[1]);
 						this.startTagIndex = this.markupRegExp.lastIndex;
-						this.readState = MarkupReadStateEnum.startTag;
+						this.readState = MarkupReadStateEnum.tagName;
 					} else if (match[2]) {
 						// End tag.
 						this.parseEndTag(match[2]);
@@ -254,24 +245,24 @@ export default class HTMLParser {
 					}
 
 					break;
-				case MarkupReadStateEnum.startTag:
+				case MarkupReadStateEnum.tagName:
 					// End of start tag
 
 					// match[2] is matching an end tag in case the start tag wasn't closed (e.g. "<div\n</ul>" instead of "<div>\n</ul>").
 					// match[7] is matching "/>" (e.g. "<img/>").
 					// match[8] is matching ">" (e.g. "<div>").
 					if (match[7] || match[8] || match[2]) {
-						if (this.nextElement) {
-							const attributeString = html.substring(
+						const attributes = this.parseAttributes(
+							html.substring(
 								this.startTagIndex,
 								match[2] ? this.markupRegExp.lastIndex - 1 : match.index
-							);
-							const isSelfClosed = !!match[7];
+							)
+						);
 
-							this.parseEndOfStartTag(attributeString, isSelfClosed);
-						} else {
-							// If "nextElement" is set to null, the tag is not allowed (<html>, <head> and <body> are not allowed in an HTML fragment or to be nested).
-							this.readState = MarkupReadStateEnum.any;
+						// If attributes are null, the attribute string wasn't complete.
+						// We should continue parsing until the next end of start tag.
+						if (attributes !== null) {
+							this.parseStartTag(tagName, attributes, !!match[7]);
 						}
 					}
 					break;
@@ -297,16 +288,11 @@ export default class HTMLParser {
 						this.parseComment('?' + html.substring(this.startTagIndex, match.index));
 					}
 					break;
-				case MarkupReadStateEnum.rawTextElement:
-					// End tag of raw text content.
-
-					// <script> and <style> elements are raw text elements.
+				case MarkupReadStateEnum.rawText:
+					// Raw text content of <script> and <style> elements.
 
 					if (match[2]) {
-						this.parseRawTextElementContent(
-							match[2],
-							html.substring(this.startTagIndex, match.index)
-						);
+						this.parseRawText(match[2], html.substring(this.startTagIndex, match.index));
 					}
 					break;
 			}
@@ -316,7 +302,7 @@ export default class HTMLParser {
 
 		// Plain text after tags.
 
-		if (lastIndex !== html.length && this.currentNode) {
+		if (lastIndex !== html.length && this.nodeStack.length > 1) {
 			this.parsePlainText(html.substring(lastIndex));
 		}
 
@@ -376,185 +362,461 @@ export default class HTMLParser {
 	}
 
 	/**
-	 * Parses end of start tag.
+	 * Returns attributes.
 	 *
 	 * @param attributeString Attribute string.
-	 * @param isSelfClosed Is self closed.
+	 * @returns Attributes or null if the string wasn't complete.
 	 */
-	private parseEndOfStartTag(attributeString: string, isSelfClosed: boolean): void {
-		if (
-			attributeString &&
-			(!this.documentStructure ||
-				this.nextElement !== this.documentStructure.nodes.head ||
-				this.documentStructure.level < HTMLDocumentStructureLevelEnum.body)
-		) {
-			const attributeRegexp = new RegExp(ATTRIBUTE_REGEXP, 'gm');
-			let attributeMatch: RegExpExecArray;
+	private parseAttributes(attributeString: string): Map<string, string> | null {
+		const attributes: Map<string, string> = new Map();
+		let match: RegExpExecArray;
 
-			while ((attributeMatch = attributeRegexp.exec(attributeString))) {
-				if (
-					(attributeMatch[1] && attributeMatch[2]) ||
-					(attributeMatch[3] && attributeMatch[5] === '"') ||
-					(attributeMatch[6] && attributeMatch[8] === "'") ||
-					attributeMatch[9]
-				) {
-					// Valid attribute name and value.
-					const name =
-						attributeMatch[1] || attributeMatch[3] || attributeMatch[6] || attributeMatch[9] || '';
-					const rawValue = attributeMatch[2] || attributeMatch[4] || attributeMatch[7] || '';
-					const value = rawValue ? XMLEncodeUtility.decodeHTMLAttributeValue(rawValue) : '';
-					const attributes = this.nextElement[PropertySymbol.attributes];
+		if (attributeString.length === 0) {
+			return attributes;
+		}
 
-					if (this.nextElement[PropertySymbol.namespaceURI] === NamespaceURI.svg) {
-						// In the SVG namespace, the attribute "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
-						const namespaceURI = name === 'xmlns' ? NamespaceURI.xmlns : null;
+		while ((match = ATTRIBUTE_REGEXP.exec(attributeString))) {
+			const name = StringUtility.asciiLowerCase(match[1] || match[3] || match[6] || match[9]);
+			const value = match[2] || match[4] || match[7] || '';
 
-						if (!attributes.getNamedItemNS(namespaceURI, name)) {
-							const attributeItem = this.rootDocument.createAttributeNS(namespaceURI, name);
-							attributeItem[PropertySymbol.value] = value;
-							attributes[PropertySymbol.setNamedItem](attributeItem);
-						}
-					} else if (!attributes.getNamedItem(name)) {
-						const attributeItem = this.rootDocument.createAttribute(name);
-						attributeItem[PropertySymbol.value] = value;
-						attributes[PropertySymbol.setNamedItem](attributeItem);
-					}
+			// Missing end apostrophe, e.g. <div name="value>
+			// We should ignore the attribute string and read until the next end of start tag.
+			if ((match[3] && !match[5]) || (match[6] && !match[8])) {
+				return null;
+			}
 
-					this.startTagIndex += attributeMatch[0].length;
-				} else if (
-					!attributeMatch[1] &&
-					((attributeMatch[3] && !attributeMatch[5]) || (attributeMatch[6] && !attributeMatch[8]))
-				) {
-					// End attribute apostrophe is missing (e.g. "attr='value" or 'attr="value').
-					// We should continue to the next end of start tag match.
-					return;
-				}
+			if (!attributes.has(name)) {
+				attributes.set(name, value);
 			}
 		}
 
-		const tagName = this.nextElement[PropertySymbol.tagName];
-		const lowerTagName = tagName.toLowerCase();
-		const config = HTMLElementConfig[lowerTagName];
-		let previousCurrentNode: Node | null = null;
+		return attributes;
+	}
 
-		while (previousCurrentNode !== this.rootNode) {
-			const parentLowerTagName = this.currentNode[PropertySymbol.tagName]?.toLowerCase();
-			const parentConfig = HTMLElementConfig[parentLowerTagName];
+	/**
+	 * Parses a start tag.
+	 *
+	 * @param name Tag name.
+	 * @param attributes Attributes.
+	 * @param isSelfClosed Is self closed.
+	 */
+	private parseStartTag(
+		name: string,
+		attributes: Map<string, string>,
+		isSelfClosed: boolean
+	): void {
+		const tagName = StringUtility.asciiLowerCase(name);
+		const currentNode = this.getCurrentNode();
 
-			if (previousCurrentNode === this.currentNode) {
-				throw new Error(
-					'Failed to parse HTML: The parser is stuck in an infinite loop. Please report this issue.'
-				);
-			}
-
-			previousCurrentNode = this.currentNode;
-
-			// Some elements are not allowed to be nested (e.g. "<a><a></a></a>" is not allowed.).
-			// Therefore we need to auto-close tags with the same name matching the config, so that it become valid (e.g. "<a></a><a></a>").
-			if (
-				(config?.contentModel === HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants &&
-					this.tagNameStack[this.tagNameStack.length - 1] === tagName) ||
-				parentConfig?.contentModel === HTMLElementConfigContentModelEnum.textOrComments ||
-				(parentConfig?.contentModel ===
-					HTMLElementConfigContentModelEnum.noForbiddenFirstLevelDescendants &&
-					parentConfig?.forbiddenDescendants?.includes(lowerTagName)) ||
-				(parentConfig?.contentModel === HTMLElementConfigContentModelEnum.permittedDescendants &&
-					!parentConfig?.permittedDescendants?.includes(lowerTagName) &&
-					(!config ||
-						!config.addPermittedParent ||
-						(HTMLElementConfig[config.addPermittedParent].permittedParents &&
-							!HTMLElementConfig[config.addPermittedParent].permittedParents.includes(
-								parentLowerTagName
-							)) ||
-						(HTMLElementConfig[config.addPermittedParent].permittedDescendants &&
-							!HTMLElementConfig[config.addPermittedParent].permittedDescendants.includes(
-								lowerTagName
-							))))
-			) {
-				// We need to move forbidden elements inside <table> outside of the table if possible.
-				// E.g. "<table><div><tr><td></td></tr></div></table>"" should become "<div></div><table><tbody><tr><td></td></tr></tbody></table>" (<tbody> is added as <tr> has addPermittedParent as config).
-				if (
-					parentConfig?.contentModel === HTMLElementConfigContentModelEnum.permittedDescendants &&
-					parentConfig.moveForbiddenDescendant &&
-					!parentConfig.moveForbiddenDescendant.exclude.includes(lowerTagName)
-				) {
-					// We add the element before the first element that is not forbidden.
-					let before: Node | null = this.currentNode;
-					while (before) {
-						if (
-							!before.parentNode ||
-							!HTMLElementConfig[before.parentNode[PropertySymbol.localName]]
-								?.permittedDescendants ||
-							HTMLElementConfig[
-								before.parentNode[PropertySymbol.localName]
-							]?.permittedDescendants?.includes(lowerTagName)
-						) {
-							break;
-						} else {
-							before = before.parentNode;
+		switch (currentNode[PropertySymbol.namespaceURI]) {
+			case NamespaceURI.html:
+				switch (this.insertionMode) {
+					// https://html.spec.whatwg.org/multipage/parsing.html#the-before-html-insertion-mode
+					case InsertionModeEnum.beforeHTML:
+						switch (tagName) {
+							case 'html':
+								this.appendElement(tagName, attributes);
+								this.insertionMode = InsertionModeEnum.beforeHead;
+								break;
+							default:
+								this.appendElement('html');
+								this.insertionMode = InsertionModeEnum.beforeHead;
+								this.parseStartTag(tagName, attributes, isSelfClosed);
+								break;
 						}
-					}
-					if (before && before.parentNode) {
-						before.parentNode.insertBefore(this.nextElement, before);
-					} else {
-						// If there is no element that is not forbidden, we append the element
-						before.appendChild(this.nextElement);
-					}
-					this.startTagIndex = this.markupRegExp.lastIndex;
-					this.readState = MarkupReadStateEnum.any;
-					return;
-				}
-				// This will close the current node
-				// E.g. "<a><a></a></a>" will become "<a></a><a></a>"
-				this.nodeStack.pop();
-				this.tagNameStack.pop();
-				this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
-			} else if (
-				config?.contentModel === HTMLElementConfigContentModelEnum.noSelfDescendants &&
-				this.tagNameStack.includes(tagName)
-			) {
-				while (this.currentNode !== this.rootNode) {
-					if ((<Element>this.currentNode)[PropertySymbol.tagName] === tagName) {
-						this.nodeStack.pop();
-						this.tagNameStack.pop();
-						this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
 						break;
-					}
-					this.nodeStack.pop();
-					this.tagNameStack.pop();
-					this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
-				}
-			} else if (
-				config?.permittedParents &&
-				!config.permittedParents.includes(parentLowerTagName)
-			) {
-				// <thead>, <tbody> and <tfoot> are only allowed as children of <table>.
-				// <tr> is only allowed as a child of <table>, <thead>, <tbody> and <tfoot>.
-				// <tbody> should be added automatically when <tr> is added directly to the table.
-				if (
-					!config.addPermittedParent ||
-					(HTMLElementConfig[config.addPermittedParent].permittedParents &&
-						!HTMLElementConfig[config.addPermittedParent].permittedParents.includes(
-							parentLowerTagName
-						)) ||
-					(HTMLElementConfig[config.addPermittedParent].permittedDescendants &&
-						!HTMLElementConfig[config.addPermittedParent].permittedDescendants.includes(
-							lowerTagName
-						))
-				) {
-					this.readState = MarkupReadStateEnum.any;
-					this.startTagIndex = this.markupRegExp.lastIndex;
-					return;
-				}
+					// https://html.spec.whatwg.org/multipage/parsing.html#the-before-head-insertion-mode
+					case InsertionModeEnum.beforeHead:
+						switch (tagName) {
+							case 'head':
+								this.appendElement(tagName, attributes);
+								this.insertionMode = InsertionModeEnum.inHead;
+								break;
+							default:
+								this.appendElement('head');
+								this.insertionMode = InsertionModeEnum.inHead;
+								this.parseStartTag(tagName, attributes, isSelfClosed);
+								break;
+						}
+						break;
+					// https://html.spec.whatwg.org/multipage/parsing.html#the-in-head-insertion-mode
+					case InsertionModeEnum.inHead:
+						switch (tagName) {
+							case 'html':
+								this.insertionMode = InsertionModeEnum.inBody;
+								this.parseStartTag(tagName, attributes, isSelfClosed);
+								break;
+							case 'base':
+							case 'basefont':
+							case 'bgsound':
+							case 'link':
+								this.appendElement(tagName, attributes);
+								this.popCurrentNode();
+								break;
+							case 'meta':
+								/**
+								 * TODO: If the element has a charset attribute, and getting an encoding from its value results in an encoding, and the confidence is currently tentative, then change the encoding to the resulting encoding.
+								 */
+								this.appendElement('meta', attributes);
+								this.popCurrentNode();
+								break;
+							case 'title':
+								this.appendElement(tagName, attributes);
+								break;
+							case 'noscript':
+								if (this.enableScripts) {
+									this.appendElement('noscript', attributes);
+									this.readState = MarkupReadStateEnum.rawText;
+								} else {
+									this.appendElement('noscript', attributes);
+									this.insertionMode = InsertionModeEnum.inHeadNoscript;
+									this.parseStartTag(tagName, attributes, isSelfClosed);
+								}
+								break;
+							case 'noframes':
+							case 'style':
+							case 'script':
+								this.appendElement(tagName, attributes);
+								this.readState = MarkupReadStateEnum.rawText;
+								break;
+							case 'template':
+								this.appendElement('template', attributes);
+								break;
+							default:
+								this.insertionMode = InsertionModeEnum.afterHead;
+								this.popCurrentNode();
+								this.parseStartTag(tagName, attributes, isSelfClosed);
+								break;
+						}
+						break;
+					// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-inheadnoscript
+					case InsertionModeEnum.inHeadNoscript:
+						switch (tagName) {
+							case 'html':
+								this.insertionMode = InsertionModeEnum.inBody;
+								this.parseStartTag(tagName, attributes, isSelfClosed);
+								break;
+							case 'base':
+							case 'basefont':
+							case 'bgsound':
+							case 'link':
+							case 'meta':
+							case 'noframes':
+							case 'style':
+								this.appendElement(tagName, attributes);
+								this.popCurrentNode();
+								break;
+							case 'head':
+							case 'noscript':
+								// Parse error
+								break;
+							default:
+								// Parse error
+								this.popCurrentNode();
+								this.insertionMode = InsertionModeEnum.inHead;
+								this.parseStartTag(tagName, attributes, isSelfClosed);
+								break;
+						}
+						break;
+					// https://html.spec.whatwg.org/multipage/parsing.html#the-after-head-insertion-mode
+					case InsertionModeEnum.afterHead:
+						switch (tagName) {
+							case 'html':
+								this.insertionMode = InsertionModeEnum.inBody;
+								this.parseStartTag(tagName, attributes, isSelfClosed);
+								break;
+							case 'body':
+								this.appendElement('body', attributes);
+								this.framesetOk = false;
+								this.insertionMode = InsertionModeEnum.inBody;
+								break;
+							case 'frameset':
+								this.appendElement('frameset', attributes);
+								this.insertionMode = InsertionModeEnum.inFrameset;
+								break;
+							case 'base':
+							case 'basefont':
+							case 'bgsound':
+							case 'link':
+							case 'meta':
+							case 'noframes':
+							case 'script':
+							case 'style':
+							case 'template':
+							case 'title':
+								// Parse error
 
-				const permittedParent = this.rootDocument.createElement(config.addPermittedParent);
+								// The head element pointer cannot be null at this point.
+								if (this.elementPointer.head) {
+									// Push the node pointed to by the head element pointer onto the stack of open elements.
+									this.nodeStack.push(this.elementPointer.head);
+									this.insertionMode = InsertionModeEnum.inHead;
+									this.parseStartTag(tagName, attributes, isSelfClosed);
 
-				this.currentNode[PropertySymbol.appendChild](permittedParent, true);
-				this.nodeStack.push(permittedParent);
-				this.tagNameStack.push(permittedParent[PropertySymbol.tagName]);
-				this.currentNode = permittedParent;
-			} else {
+									// Remove the node pointed to by the head element pointer from the stack of open elements. (It might not be the current node at this point.)
+									const index = this.nodeStack.indexOf(this.elementPointer.head);
+									if (index !== -1) {
+										this.nodeStack.splice(index, 1);
+									}
+								}
+								break;
+							case 'head':
+								// Parse error
+								// Ignore the token
+								break;
+							default:
+								this.appendElement('body');
+								this.insertionMode = InsertionModeEnum.inBody;
+								this.parseStartTag(tagName, attributes, isSelfClosed);
+								break;
+						}
+						break;
+					// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-inbody
+					case InsertionModeEnum.inBody:
+						switch (tagName) {
+							case 'html':
+								// Parse error
+								// If there is a template element on the stack of open elements, then ignore the token.
+								// Otherwise, for each attribute on the token, check to see if the attribute is already present on the top element of the stack of open elements. If it is not, add the attribute and its corresponding value to that element.
+
+								if (this.elementPointer.html && !this.tagNameStack.includes('template')) {
+									this.applyElementAttributes(this.elementPointer.html, attributes);
+								}
+								break;
+							case 'base':
+							case 'basefont':
+							case 'bgsound':
+							case 'link':
+							case 'meta':
+							case 'noframes':
+							case 'script':
+							case 'style':
+							case 'template':
+							case 'title':
+								this.appendElement(tagName, attributes);
+								break;
+							case 'body':
+								// Parse error
+								// If the stack of open elements has only one node on it, if the second element on the stack of open elements is not a body element, or if there is a template element on the stack of open elements, then ignore the token. (fragment case or there is a template element on the stack)
+								// Otherwise, set the frameset-ok flag to "not ok"; then, for each attribute on the token, check to see if the attribute is already present on the body element (the second element) on the stack of open elements, and if it is not, add the attribute and its corresponding value to that element.
+								if (
+									this.elementPointer.body &&
+									this.nodeStack[1] === this.elementPointer.body &&
+									!this.tagNameStack.includes('template')
+								) {
+									this.framesetOk = false;
+									this.applyElementAttributes(this.elementPointer.body, attributes);
+								}
+								break;
+							case 'frameset':
+								// Parse error
+								// If the stack of open elements has only one node on it, or if the second element on the stack of open elements is not a body element, then ignore the token. (fragment case or there is a template element on the stack)
+								// If the frameset-ok flag is set to "not ok", ignore the token.
+
+								if (
+									this.nodeStack.length !== 1 &&
+									this.nodeStack[1] === this.elementPointer.body &&
+									!this.tagNameStack.includes('template') &&
+									this.framesetOk
+								) {
+									// Otherwise, run the following steps:
+
+									// 1. Remove the second element on the stack of open elements from its parent node, if it has one.
+									this.elementPointer.body.remove();
+
+									// 2. Pop all the nodes from the bottom of the stack of open elements, from the current node up to, but not including, the root html element.
+									this.nodeStack.splice(1);
+									this.tagNameStack.splice(1);
+									this.elementPointer.body = null;
+									this.elementPointer.html = null;
+									this.elementPointer.head = null;
+
+									// 3. Insert an HTML element for the token.
+									this.appendElement('frameset', attributes);
+
+									// 4. Switch the insertion mode to "in frameset".
+									this.insertionMode = InsertionModeEnum.inFrameset;
+								}
+								break;
+							case 'address':
+							case 'article':
+							case 'aside':
+							case 'blockquote':
+							case 'center':
+							case 'details':
+							case 'dialog':
+							case 'dir':
+							case 'div':
+							case 'dl':
+							case 'fieldset':
+							case 'figcaption':
+							case 'figure':
+							case 'footer':
+							case 'header':
+							case 'hgroup':
+							case 'main':
+							case 'menu':
+							case 'nav':
+							case 'ol':
+							case 'p':
+							case 'search':
+							case 'section':
+							case 'summary':
+							case 'ul':
+								// If the stack of open elements has a p element in button scope, then close a p element.
+								this.popTagName('p');
+								this.appendElement(tagName, attributes);
+								break;
+							case 'h1':
+							case 'h2':
+							case 'h3':
+							case 'h4':
+							case 'h5':
+							case 'h6':
+								// If the stack of open elements has a p element in button scope, then close a p element.
+								this.popTagName('p');
+								// If the current node is an HTML element whose tag name is one of "h1", "h2", "h3", "h4", "h5", or "h6", then this is a parse error; pop the current node off the stack of open elements.
+								switch (currentNode[PropertySymbol.tagName]) {
+									case 'H1':
+									case 'H2':
+									case 'H3':
+									case 'H4':
+									case 'H5':
+									case 'H6':
+										// Parse error
+										this.popCurrentNode();
+										break;
+								}
+								this.appendElement(tagName, attributes);
+								break;
+							case 'pre':
+							case 'listing':
+								// If the stack of open elements has a p element in button scope, then close a p element.
+								this.popTagName('p');
+								this.appendElement(tagName, attributes);
+								// Ignore the next line feed (LF) character token that would otherwise be appended to the current node.
+								this.framesetOk = false;
+								break;
+							case 'form':
+								// If the form element pointer is not null, and there is no template element on the stack of open elements, then this is a parse error; ignore the token.
+								if (this.tagNameStack.includes('template')) {
+									// If the stack of open elements has a p element in button scope, then close a p element.
+									this.popTagName('p');
+									this.appendElement(tagName, attributes);
+								} else if (!this.elementPointer.form) {
+									// If the stack of open elements has a p element in button scope, then close a p element.
+									this.popTagName('p');
+									this.elementPointer.form = <HTMLFormElement>(
+										this.appendElement(tagName, attributes)
+									);
+								}
+								break;
+							case 'li':
+								this.framesetOk = false;
+                                for(let i = this.nodeStack.length - 1; i >= 0; i--){
+                                    const node = this.nodeStack[i];
+                                    if(node[PropertySymbol.tagName] === 'LI'){
+                                        this.popTagName('li');
+                                    }
+                                }
+								this.popTagName('li');
+                                if()
+						}
+						break;
+				}
 				break;
+			case NamespaceURI.svg:
+				break;
+		}
+
+		if (tagName === 'SVG' || this.currentNode[PropertySymbol.namespaceURI] === NamespaceURI.svg) {
+		}
+
+		// New element content model
+		if (config) {
+			switch (config.contentModel) {
+				case HTMLElementConfigContentModelEnum.noFirstLevelSelfDescendants:
+					if (this.tagNameStack[this.tagNameStack.length - 1] === tagName) {
+						this.ignoredTagNameStack.push(this.currentNode[PropertySymbol.tagName]);
+						this.parseEndTag(tagName);
+					}
+					break;
+				case HTMLElementConfigContentModelEnum.noSelfDescendants:
+					if (this.tagNameStack.includes(tagName)) {
+						this.ignoredTagNameStack.push(this.currentNode[PropertySymbol.tagName]);
+						this.parseEndTag(tagName);
+					}
+					break;
+			}
+		}
+
+		// Parent content model
+		const parentConfig =
+			this.currentNode[PropertySymbol.namespaceURI] === NamespaceURI.html
+				? HTMLElementConfig[this.currentNode[PropertySymbol.tagName]?.toLowerCase()]
+				: null;
+		if (parentConfig) {
+			switch (parentConfig.contentModel) {
+				case HTMLElementConfigContentModelEnum.noForbiddenFirstLevelDescendants:
+					if (parentConfig.forbiddenDescendants?.includes(lowerTagName)) {
+						this.ignoredTagNameStack.push(this.currentNode[PropertySymbol.tagName]);
+						this.parseEndTag(this.currentNode[PropertySymbol.tagName]);
+					}
+					break;
+			}
+		}
+
+		if (this.nextElement[PropertySymbol.namespaceURI] === NamespaceURI.html) {
+			switch (this.insertionMode) {
+				case InsertionModeEnum.default:
+					switch (tagName) {
+						case 'TABLE':
+							this.insertionMode = InsertionModeEnum.inTable;
+							break;
+					}
+					break;
+				// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intable
+				case InsertionModeEnum.inTable:
+					switch (tagName) {
+						case 'CAPTION':
+							this.insertionMode = InsertionModeEnum.inCaption;
+							break;
+						case 'COLGROUP':
+							this.insertionMode = InsertionModeEnum.inColumnGroup;
+							return;
+						case 'COL':
+							this.currentNode[PropertySymbol.appendChild](
+								this.rootDocument.createElementNS(NamespaceURI.html, 'colgroup'),
+								true
+							);
+							this.currentNode = this.currentNode.lastChild;
+							this.insertionMode = InsertionModeEnum.inColumnGroup;
+							break;
+						case 'TBODY':
+						case 'TFOOT':
+						case 'THEAD':
+							this.insertionMode = InsertionModeEnum.inTableBody;
+							break;
+						case 'TD':
+						case 'TH':
+						case 'TR':
+							this.currentNode[PropertySymbol.appendChild](
+								this.rootDocument.createElementNS(NamespaceURI.html, 'tbody'),
+								true
+							);
+							this.currentNode = this.currentNode.lastChild;
+							this.insertionMode = InsertionModeEnum.inTableBody;
+							break;
+						case 'TABLE':
+							this.parseEndTag('TABLE');
+							this.insertionMode = InsertionModeEnum.default;
+							break;
+						case 'FORM':
+						case 'INPUT':
+							break;
+						default:
+					}
+					break;
 			}
 		}
 
@@ -642,7 +904,7 @@ export default class HTMLParser {
 		const name =
 			this.currentNode[PropertySymbol.namespaceURI] === NamespaceURI.html
 				? StringUtility.asciiUpperCase(tagName)
-				: SVGElementConfig[StringUtility.asciiLowerCase(tagName)]?.localName || tagName;
+				: SVGElementConfig[tagName.toLowerCase()]?.localName || tagName;
 		const index = this.tagNameStack.lastIndexOf(name);
 
 		// We close all tags up until the first tag that matches the end tag.
@@ -650,6 +912,22 @@ export default class HTMLParser {
 			this.nodeStack.splice(index, this.nodeStack.length - index);
 			this.tagNameStack.splice(index, this.tagNameStack.length - index);
 			this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
+		} else if (this.currentNode[PropertySymbol.namespaceURI] === NamespaceURI.html) {
+			const lowerName = StringUtility.asciiLowerCase(tagName);
+			// An end tag whose tag name is "p"
+			// If the stack of open elements does not have a p element in button scope, then this is a parse error; insert an HTML element for a "p" start tag token with no attributes.
+			// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-inbody:close-a-p-element-8
+			if (HTMLElementConfig[lowerName]?.appendElementForNonMatchingEndTag) {
+				const index = this.ignoredTagNameStack.lastIndexOf(name);
+				if (index !== -1) {
+					this.ignoredTagNameStack.splice(index, 1);
+				} else {
+					this.currentNode[PropertySymbol.appendChild](
+						this.rootDocument.createElementNS(NamespaceURI.html, lowerName),
+						true
+					);
+				}
+			}
 		}
 	}
 
@@ -745,8 +1023,11 @@ export default class HTMLParser {
 	 * @param tagName End tag name.
 	 * @param text Text.
 	 */
-	private parseRawTextElementContent(tagName: string, text: string): void {
-		const upperTagName = StringUtility.asciiUpperCase(tagName);
+	private parseRawText(tagName: string, text: string): void {
+		const upperTagName =
+			this.currentNode[PropertySymbol.namespaceURI] === NamespaceURI.html
+				? StringUtility.asciiUpperCase(tagName)
+				: tagName;
 
 		if (upperTagName !== this.currentNode[PropertySymbol.tagName]) {
 			return;
@@ -756,10 +1037,10 @@ export default class HTMLParser {
 		// However, they are allowed to be executed when document.write() is used.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement
 		if (upperTagName === 'SCRIPT') {
-			(<HTMLScriptElement>this.currentNode)[PropertySymbol.evaluateScript] = this.evaluateScripts;
+			(<HTMLScriptElement>this.currentNode)[PropertySymbol.evaluateScript] = this.enableScripts;
 		} else if (upperTagName === 'LINK') {
 			// An assumption that the same rule should be applied for the HTMLLinkElement is made here.
-			(<HTMLLinkElement>this.currentNode)[PropertySymbol.evaluateCSS] = this.evaluateScripts;
+			(<HTMLLinkElement>this.currentNode)[PropertySymbol.evaluateCSS] = this.enableScripts;
 		}
 
 		// Plain text elements such as <script> and <style> should only contain text.
@@ -800,19 +1081,43 @@ export default class HTMLParser {
 	private getStartTagElement(tagName: string): Element {
 		const lowerTagName = StringUtility.asciiLowerCase(tagName);
 
-		// NamespaceURI is inherited from the parent element.
+		// Namespace URI is inherited from the parent element.
 		const namespaceURI = this.currentNode[PropertySymbol.namespaceURI];
 
-		// NamespaceURI should be SVG when the tag name is "svg" (even in XML mode).
+		// Namespace URI should be MathML when the tag name is "math".
+		if (lowerTagName === 'math' || namespaceURI === NamespaceURI.mathML) {
+			// <mi> is a special case where children of it can escape the Math ML namespace if it isn't a known Math ML element.
+			if (this.currentNode[PropertySymbol.tagName] === 'mi' && !MathMLElementConfig[lowerTagName]) {
+				if (lowerTagName === 'svg') {
+					return this.rootDocument.createElementNS(NamespaceURI.svg, 'svg');
+				}
+				return this.rootDocument.createElementNS(NamespaceURI.html, lowerTagName);
+			}
+			return this.rootDocument.createElementNS(NamespaceURI.mathML, tagName);
+		}
+
+		// Namespace URI should be SVG when the tag name is "svg".
 		if (lowerTagName === 'svg') {
 			return this.rootDocument.createElementNS(NamespaceURI.svg, 'svg');
 		}
 
 		if (namespaceURI === NamespaceURI.svg) {
-			return this.rootDocument.createElementNS(
-				NamespaceURI.svg,
-				SVGElementConfig[lowerTagName]?.localName || tagName
-			);
+			// <foreignObject> is a special case where children of it escapes the SVG namespace.
+			// @see https://developer.mozilla.org/en-US/docs/Web/SVG/Element/foreignObject
+			if (this.currentNode[PropertySymbol.tagName] === 'foreignObject') {
+				return this.rootDocument.createElementNS(NamespaceURI.html, lowerTagName);
+			}
+			const config = SVGElementConfig[lowerTagName];
+			if (config) {
+				return this.rootDocument.createElementNS(NamespaceURI.svg, config.localName);
+			}
+			// Some HTML tags escapes the SVG namespace
+			// We should then end all SVG elements up to the first matching <svg> tag
+			if (HTMLElementConfig[lowerTagName]?.escapesSVGNamespace) {
+				this.parseEndTag('svg');
+			} else {
+				return this.rootDocument.createElementNS(NamespaceURI.svg, tagName);
+			}
 		}
 
 		// New element.
@@ -883,5 +1188,230 @@ export default class HTMLParser {
 			publicId,
 			systemId
 		};
+	}
+
+	/**
+	 * Applies attributes to an element.
+	 *
+	 * @param element Element.
+	 * @param attributes Attributes.
+	 */
+	private applyElementAttributes(element: Element, attributes: Map<string, string> | null): void {
+		if (!attributes) {
+			return;
+		}
+
+		switch (element[PropertySymbol.namespaceURI]) {
+			case NamespaceURI.html:
+				for (const [name, value] of attributes) {
+					if (!element.hasAttribute(name)) {
+						element.setAttribute(name, value);
+					}
+				}
+				break;
+			case NamespaceURI.svg:
+				for (const [name, value] of attributes) {
+					// @see https://html.spec.whatwg.org/multipage/parsing.html#adjust-svg-attributes
+					if (!element.hasAttribute(name)) {
+						if (ForeignAttributeConfig[name]) {
+							element.setAttributeNS(ForeignAttributeConfig[name], name, value);
+						} else if (SVGAttributeConfig[name]) {
+							element.setAttributeNS(null, SVGAttributeConfig[name], value);
+						} else {
+							element.setAttribute(name, value);
+						}
+					}
+				}
+				break;
+			case NamespaceURI.mathML:
+				for (const [name, value] of attributes) {
+					// @see https://html.spec.whatwg.org/multipage/parsing.html#adjust-mathml-attributes
+					if (!element.hasAttribute(name)) {
+						if (ForeignAttributeConfig[name]) {
+							element.setAttributeNS(ForeignAttributeConfig[name], name, value);
+						} else if (MathMLAttributeConfig[name]) {
+							element.setAttributeNS(null, MathMLAttributeConfig[name], value);
+						} else {
+							element.setAttribute(name, value);
+						}
+					}
+				}
+				break;
+		}
+	}
+
+	/**
+	 * Creates an element in the current namespace.
+	 *
+	 * @param tagName Tag name.
+	 * @param attributes Attributes.
+	 * @returns Element.
+	 */
+	private createElementInCurrentNamespace(
+		tagName: string,
+		attributes: Map<string, string> | null = null
+	): Element {
+		const currentNode = this.getCurrentNode();
+		let newElement: Element;
+
+		switch (currentNode[PropertySymbol.namespaceURI]) {
+			case NamespaceURI.html:
+				switch (tagName) {
+					case 'svg':
+						newElement = this.rootDocument.createElementNS(NamespaceURI.svg, tagName);
+						this.applyElementAttributes(newElement, attributes);
+						break;
+					case 'math':
+						newElement = this.rootDocument.createElementNS(NamespaceURI.mathML, tagName);
+						this.applyElementAttributes(newElement, attributes);
+						break;
+					case 'html':
+						if (this.elementPointer.html) {
+							newElement = this.elementPointer.html;
+						} else {
+							newElement = this.rootDocument.createElementNS(NamespaceURI.html, tagName);
+							this.elementPointer.html = <HTMLHtmlElement>newElement;
+							this.applyElementAttributes(newElement, attributes);
+						}
+						break;
+					case 'head':
+						if (this.elementPointer.head) {
+							newElement = this.elementPointer.head;
+						} else {
+							newElement = this.rootDocument.createElementNS(NamespaceURI.html, tagName);
+							this.elementPointer.head = <HTMLHeadElement>newElement;
+							this.applyElementAttributes(newElement, attributes);
+						}
+						break;
+					case 'body':
+						if (this.elementPointer.body) {
+							newElement = this.elementPointer.body;
+						} else {
+							newElement = this.rootDocument.createElementNS(NamespaceURI.html, tagName);
+							this.elementPointer.body = <HTMLBodyElement>newElement;
+							this.applyElementAttributes(newElement, attributes);
+						}
+						break;
+					default:
+						newElement = this.rootDocument.createElementNS(NamespaceURI.html, tagName);
+						this.applyElementAttributes(newElement, attributes);
+						break;
+				}
+				break;
+			case NamespaceURI.svg:
+				newElement = this.rootDocument.createElementNS(NamespaceURI.svg, tagName);
+				this.applyElementAttributes(newElement, attributes);
+				break;
+			case NamespaceURI.mathML:
+				newElement = this.rootDocument.createElementNS(NamespaceURI.mathML, tagName);
+				this.applyElementAttributes(newElement, attributes);
+				break;
+		}
+
+		return newElement;
+	}
+
+	/**
+	 * Creates an element and appends it to the current node.
+	 *
+	 * Sets the new element as the current node.
+	 *
+	 * @param tagName Tag name.
+	 * @param attributes Attributes.
+	 * @returns Element.
+	 */
+	private appendElement(tagName: string, attributes: Map<string, string> | null = null): Element {
+		const currentNode = this.getCurrentNode();
+		const newElement = this.createElementInCurrentNamespace(tagName, attributes);
+
+		currentNode[PropertySymbol.appendChild](newElement, true);
+
+		this.nodeStack.push(newElement);
+		this.tagNameStack.push(tagName);
+
+		return newElement;
+	}
+
+	/**
+	 * Pops the current node from the stack.
+	 */
+	private popCurrentNode(): void {
+		this.tagNameStack.pop();
+		this.nodeStack.pop();
+	}
+
+	/**
+	 * If a tag name is found in the stack, nodes will be popped until that tag name is found.
+	 *
+	 * @param tagName Tag name.
+	 */
+	private popTagName(tagName: string): void {
+		const index = this.tagNameStack.lastIndexOf(tagName);
+
+		if (index === -1) {
+			return;
+		}
+
+		this.tagNameStack.splice(index);
+		this.nodeStack.splice(index);
+	}
+
+	/**
+	 * Returns the current node.
+	 *
+	 * @returns Current node.
+	 */
+	private getCurrentNode(): Node {
+		return this.nodeStack[this.nodeStack.length - 1];
+	}
+
+	/**
+	 * Returns the initial insertion mode.
+	 *
+	 * @param rootNode Root node.
+	 * @returns Insertion mode.
+	 */
+	private getInitialInsertionMode(
+		rootNode: Element | DocumentFragment | Document
+	): InsertionModeEnum {
+		if (rootNode instanceof Document) {
+			return InsertionModeEnum.initial;
+		}
+
+		if (rootNode instanceof DocumentFragment) {
+			return InsertionModeEnum.inBody;
+		}
+
+		switch (rootNode[PropertySymbol.tagName]) {
+			case 'HTML':
+				return InsertionModeEnum.beforeHTML;
+			case 'HEAD':
+				return InsertionModeEnum.inHead;
+			case 'BODY':
+				return InsertionModeEnum.inBody;
+			case 'FRAMESET':
+				return InsertionModeEnum.inFrameset;
+			case 'SELECT':
+				return InsertionModeEnum.inSelect;
+			case 'TABLE':
+				return InsertionModeEnum.inTable;
+			case 'CAPTION':
+				return InsertionModeEnum.inCaption;
+			case 'COLGROUP':
+				return InsertionModeEnum.inColumnGroup;
+			case 'TBODY':
+			case 'TFOOT':
+			case 'THEAD':
+				return InsertionModeEnum.inTableBody;
+			case 'TR':
+				return InsertionModeEnum.inRow;
+			case 'TD':
+			case 'TH':
+				return InsertionModeEnum.inCell;
+			case 'TEMPLATE':
+				return InsertionModeEnum.inTemplate;
+			default:
+				return InsertionModeEnum.inBody;
+		}
 	}
 }
