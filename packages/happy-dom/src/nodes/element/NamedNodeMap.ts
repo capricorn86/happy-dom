@@ -84,6 +84,7 @@ export default class NamedNodeMap {
 	 * @returns Item.
 	 */
 	public getNamedItem(name: string): Attr | null {
+		name = String(name);
 		if (
 			this[PropertySymbol.ownerElement][PropertySymbol.namespaceURI] === NamespaceURI.html &&
 			this[PropertySymbol.ownerElement][PropertySymbol.ownerDocument][

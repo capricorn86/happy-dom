@@ -33,22 +33,18 @@ export default class CookieContainer implements ICookieContainer {
 		for (const cookie of cookies) {
 			const newCookie = Object.assign({}, DefaultCookie, cookie);
 
-			if (!newCookie || !newCookie.key || !newCookie.originURL) {
-				throw new Error(
-					"Failed to execute 'addCookies' on 'CookieContainer': The properties 'key' and 'originURL' are required."
-				);
-			}
+			if (newCookie && newCookie.key && newCookie.originURL) {
+				// Remove existing cookie with same name, domain and path.
+				const index = indexMap[getKey(newCookie)];
 
-			// Remove existing cookie with same name, domain and path.
-			const index = indexMap[getKey(newCookie)];
+				if (index !== undefined) {
+					this.#cookies.splice(index, 1);
+				}
 
-			if (index !== undefined) {
-				this.#cookies.splice(index, 1);
-			}
-
-			if (!CookieExpireUtility.hasExpired(newCookie)) {
-				indexMap[getKey(newCookie)] = this.#cookies.length;
-				this.#cookies.push(newCookie);
+				if (!CookieExpireUtility.hasExpired(newCookie)) {
+					indexMap[getKey(newCookie)] = this.#cookies.length;
+					this.#cookies.push(newCookie);
+				}
 			}
 		}
 	}
