@@ -7,7 +7,7 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
  */
 export default class Comment extends CharacterData {
 	public [PropertySymbol.nodeType] = NodeTypeEnum.commentNode;
-	declare public cloneNode: (deep?: boolean) => Comment;
+	public declare cloneNode: (deep?: boolean) => Comment;
 
 	/**
 	 * Node name.

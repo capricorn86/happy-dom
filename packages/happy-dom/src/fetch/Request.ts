@@ -30,7 +30,7 @@ import IRequestMode from './types/IRequestMode.js';
  */
 export default class Request implements Request {
 	// Injected by WindowContextClassExtender
-	declare protected [PropertySymbol.window]: BrowserWindow;
+	protected declare [PropertySymbol.window]: BrowserWindow;
 
 	// Public properties
 	public [PropertySymbol.method]: string;

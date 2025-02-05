@@ -16,7 +16,7 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
  */
 export default class HTMLSlotElement extends HTMLElement {
 	// Public properties
-	declare public cloneNode: (deep?: boolean) => HTMLSlotElement;
+	public declare cloneNode: (deep?: boolean) => HTMLSlotElement;
 
 	// Internal properties
 	public [PropertySymbol.assignedNodes]: Node[] = [];

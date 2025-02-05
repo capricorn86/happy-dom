@@ -32,7 +32,7 @@ import SVGStyleElement from '../svg-style-element/SVGStyleElement.js';
  */
 export default class Node extends EventTarget {
 	// Can be injected by CustomElementRegistry or a sub-class
-	declare public [PropertySymbol.ownerDocument]: Document;
+	public declare [PropertySymbol.ownerDocument]: Document;
 
 	// Public properties
 	public static readonly ELEMENT_NODE = NodeTypeEnum.elementNode;
@@ -53,21 +53,21 @@ export default class Node extends EventTarget {
 	public static readonly DOCUMENT_POSITION_PRECEDING = NodeDocumentPositionEnum.preceding;
 
 	// Defined on the prototype
-	declare public readonly ELEMENT_NODE;
-	declare public readonly ATTRIBUTE_NODE;
-	declare public readonly TEXT_NODE;
-	declare public readonly CDATA_SECTION_NODE;
-	declare public readonly COMMENT_NODE;
-	declare public readonly DOCUMENT_NODE;
-	declare public readonly DOCUMENT_TYPE_NODE;
-	declare public readonly DOCUMENT_FRAGMENT_NODE;
-	declare public readonly PROCESSING_INSTRUCTION_NODE;
-	declare public readonly DOCUMENT_POSITION_CONTAINED_BY;
-	declare public readonly DOCUMENT_POSITION_CONTAINS;
-	declare public readonly DOCUMENT_POSITION_DISCONNECTED;
-	declare public readonly DOCUMENT_POSITION_FOLLOWING;
-	declare public readonly DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
-	declare public readonly DOCUMENT_POSITION_PRECEDING;
+	public declare readonly ELEMENT_NODE;
+	public declare readonly ATTRIBUTE_NODE;
+	public declare readonly TEXT_NODE;
+	public declare readonly CDATA_SECTION_NODE;
+	public declare readonly COMMENT_NODE;
+	public declare readonly DOCUMENT_NODE;
+	public declare readonly DOCUMENT_TYPE_NODE;
+	public declare readonly DOCUMENT_FRAGMENT_NODE;
+	public declare readonly PROCESSING_INSTRUCTION_NODE;
+	public declare readonly DOCUMENT_POSITION_CONTAINED_BY;
+	public declare readonly DOCUMENT_POSITION_CONTAINS;
+	public declare readonly DOCUMENT_POSITION_DISCONNECTED;
+	public declare readonly DOCUMENT_POSITION_FOLLOWING;
+	public declare readonly DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
+	public declare readonly DOCUMENT_POSITION_PRECEDING;
 
 	// Internal properties
 	public [PropertySymbol.isConnected] = false;

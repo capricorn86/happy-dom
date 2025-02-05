@@ -13,7 +13,7 @@ export default class HTMLFormControlsCollection extends HTMLCollection<
 	THTMLFormControlElement,
 	THTMLFormControlElement | RadioNodeList
 > {
-	declare private [PropertySymbol.ownerElement]: HTMLFormElement;
+	private declare [PropertySymbol.ownerElement]: HTMLFormElement;
 
 	/**
 	 * Constructor.

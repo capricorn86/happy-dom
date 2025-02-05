@@ -14,7 +14,7 @@ import HTMLParser from '../../html-parser/HTMLParser.js';
  */
 export default class ShadowRoot extends DocumentFragment {
 	// Public properties
-	declare public cloneNode: (deep?: boolean) => ShadowRoot;
+	public declare cloneNode: (deep?: boolean) => ShadowRoot;
 
 	// Events
 	public onslotchange: ((event: Event) => void) | null = null;

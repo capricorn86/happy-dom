@@ -26,7 +26,7 @@ import HTMLParser from '../html-parser/HTMLParser.js';
  */
 export default class Range {
 	// Injected by WindowContextClassExtender
-	declare protected [PropertySymbol.window]: BrowserWindow;
+	protected declare [PropertySymbol.window]: BrowserWindow;
 
 	public static readonly END_TO_END: number = RangeHowEnum.endToEnd;
 	public static readonly END_TO_START: number = RangeHowEnum.endToStart;

@@ -13,7 +13,7 @@ import * as PropertySymbol from '../PropertySymbol.js';
  */
 export default class CSSStyleSheet {
 	// Injected by WindowContextClassExtender
-	declare protected [PropertySymbol.window]: BrowserWindow;
+	protected declare [PropertySymbol.window]: BrowserWindow;
 
 	public value: string = null;
 	public name: string = null;

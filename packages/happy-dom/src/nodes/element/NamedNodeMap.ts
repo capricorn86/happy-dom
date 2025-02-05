@@ -20,7 +20,7 @@ export default class NamedNodeMap {
 	// Items without namespaceURI as prefix, where the HTML namespace is the default namespace
 	public [PropertySymbol.namedItems]: Map<string, Attr[]> = new Map();
 
-	declare public [PropertySymbol.ownerElement]: Element;
+	public declare [PropertySymbol.ownerElement]: Element;
 
 	/**
 	 * Constructor.

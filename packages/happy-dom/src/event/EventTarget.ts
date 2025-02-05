@@ -14,7 +14,7 @@ import BrowserWindow from '../window/BrowserWindow.js';
  */
 export default class EventTarget {
 	// Injected by WindowContextClassExtender
-	declare protected [PropertySymbol.window]: BrowserWindow;
+	protected declare [PropertySymbol.window]: BrowserWindow;
 
 	public readonly [PropertySymbol.listeners]: {
 		capturing: Map<string, TEventListener[]>;

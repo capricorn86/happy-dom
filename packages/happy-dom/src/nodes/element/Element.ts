@@ -45,7 +45,7 @@ export default class Element
 	public static [PropertySymbol.tagName]: string | null = null;
 	public static [PropertySymbol.localName]: string | null = null;
 	public static [PropertySymbol.namespaceURI]: string | null = null;
-	declare public cloneNode: (deep?: boolean) => Element;
+	public declare cloneNode: (deep?: boolean) => Element;
 
 	// Events
 	public oncancel: ((event: Event) => void) | null = null;
@@ -97,9 +97,9 @@ export default class Element
 	public [PropertySymbol.attributesProxy]: NamedNodeMap | null = null;
 	public [PropertySymbol.children]: HTMLCollection<Element> | null = null;
 	public [PropertySymbol.computedStyle]: CSSStyleDeclaration | null = null;
-	declare public [PropertySymbol.tagName]: string | null;
-	declare public [PropertySymbol.localName]: string | null;
-	declare public [PropertySymbol.namespaceURI]: string | null;
+	public declare [PropertySymbol.tagName]: string | null;
+	public declare [PropertySymbol.localName]: string | null;
+	public declare [PropertySymbol.namespaceURI]: string | null;
 
 	/**
 	 * Constructor.

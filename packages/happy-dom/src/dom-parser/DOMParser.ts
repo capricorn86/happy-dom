@@ -12,7 +12,7 @@ import HTMLParser from '../html-parser/HTMLParser.js';
  */
 export default class DOMParser {
 	// Injected by WindowContextClassExtender
-	declare protected [PropertySymbol.window]: BrowserWindow;
+	protected declare [PropertySymbol.window]: BrowserWindow;
 
 	/**
 	 * Parses HTML and returns a root element.

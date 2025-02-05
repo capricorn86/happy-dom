@@ -9,7 +9,7 @@ import BrowserWindow from '../window/BrowserWindow.js';
  */
 export default class AbortController {
 	// Injected by WindowContextClassExtender
-	declare protected [PropertySymbol.window]: BrowserWindow;
+	protected declare [PropertySymbol.window]: BrowserWindow;
 
 	// Public properties
 	public readonly signal: AbortSignal = new this[PropertySymbol.window].AbortSignal();

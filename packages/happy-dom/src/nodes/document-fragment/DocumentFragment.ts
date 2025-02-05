@@ -16,7 +16,7 @@ export default class DocumentFragment extends Node {
 	public [PropertySymbol.children]: HTMLCollection<Element> | null = null;
 	public [PropertySymbol.rootNode]: Node = this;
 	public [PropertySymbol.nodeType] = NodeTypeEnum.documentFragmentNode;
-	declare public cloneNode: (deep?: boolean) => DocumentFragment;
+	public declare cloneNode: (deep?: boolean) => DocumentFragment;
 
 	/**
 	 * Returns the document fragment children.

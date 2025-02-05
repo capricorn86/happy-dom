@@ -35,7 +35,7 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	public [PropertySymbol.viewBox]: SVGAnimatedRect | null = null;
 
 	// Public properties
-	declare public cloneNode: (deep?: boolean) => SVGSVGElement;
+	public declare cloneNode: (deep?: boolean) => SVGSVGElement;
 
 	// Events
 	public onafterprint: ((event: Event) => void) | null = null;

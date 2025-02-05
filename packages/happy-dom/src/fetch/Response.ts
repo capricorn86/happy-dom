@@ -27,8 +27,8 @@ const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
  */
 export default class Response implements Response {
 	// Injected by WindowContextClassExtender
-	declare protected static [PropertySymbol.window]: BrowserWindow;
-	declare protected [PropertySymbol.window]: BrowserWindow;
+	protected declare static [PropertySymbol.window]: BrowserWindow;
+	protected declare [PropertySymbol.window]: BrowserWindow;
 
 	// Public properties
 	public readonly body: ReadableStream | null = null;

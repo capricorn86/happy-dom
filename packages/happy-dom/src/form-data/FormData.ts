@@ -17,7 +17,7 @@ type FormDataEntry = {
  */
 export default class FormData implements Iterable<[string, string | File]> {
 	// Injected by WindowContextClassExtender
-	declare protected [PropertySymbol.window]: BrowserWindow;
+	protected declare [PropertySymbol.window]: BrowserWindow;
 
 	#entries: FormDataEntry[] = [];
 

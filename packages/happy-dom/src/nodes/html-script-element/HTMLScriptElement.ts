@@ -21,7 +21,7 @@ import IRequestReferrerPolicy from '../../fetch/types/IRequestReferrerPolicy.js'
  */
 export default class HTMLScriptElement extends HTMLElement {
 	// Public properties
-	declare public cloneNode: (deep?: boolean) => HTMLScriptElement;
+	public declare cloneNode: (deep?: boolean) => HTMLScriptElement;
 
 	// Events
 	public onerror: (event: ErrorEvent) => void = null;
