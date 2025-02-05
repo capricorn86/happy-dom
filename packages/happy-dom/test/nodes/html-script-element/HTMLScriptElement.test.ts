@@ -11,6 +11,7 @@ import Fetch from '../../../src/fetch/Fetch.js';
 import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCaptureEnum.js';
 import EventTarget from '../../../src/event/EventTarget.js';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import DOMTokenList from '../../../src/dom/DOMTokenList.js';
 
 describe('HTMLScriptElement', () => {
 	let window: Window;
@@ -32,7 +33,7 @@ describe('HTMLScriptElement', () => {
 		});
 	});
 
-	for (const property of ['type', 'charset', 'lang']) {
+	for (const property of ['type', 'charset', 'lang', 'crossOrigin', 'integrity']) {
 		describe(`get ${property}()`, () => {
 			it(`Returns the "${property}" attribute.`, () => {
 				const element = document.createElement('script');
@@ -50,7 +51,7 @@ describe('HTMLScriptElement', () => {
 		});
 	}
 
-	for (const property of ['async', 'defer']) {
+	for (const property of ['async', 'defer', 'noModule']) {
 		describe(`get ${property}()`, () => {
 			it(`Returns "true" if the "${property}" attribute is defined.`, () => {
 				const element = document.createElement('script');
@@ -67,6 +68,108 @@ describe('HTMLScriptElement', () => {
 			});
 		});
 	}
+
+	describe('get blocking()', () => {
+		it('Returns a DOMTokenList object.', () => {
+			const element = document.createElement('script');
+			element.setAttribute('blocking', 'value1 value2');
+			expect(element.blocking).toBeInstanceOf(DOMTokenList);
+			expect(element.blocking.value).toBe('value1 value2');
+			expect(element.blocking.length).toBe(2);
+			expect(element.blocking[0]).toBe('value1');
+			expect(element.blocking[1]).toBe('value2');
+		});
+	});
+
+	describe('set blocking()', () => {
+		it('Sets the attribute "class".', () => {
+			const element = document.createElement('script');
+			element.blocking = 'value1 value2';
+			expect(element.getAttribute('blocking')).toBe('value1 value2');
+		});
+	});
+
+	describe('get fetchPriority()', () => {
+		it('Returns valid fetch priority value.', () => {
+			const element = document.createElement('script');
+
+			expect(element.fetchPriority).toBe('auto');
+
+			element.setAttribute('fetchpriority', 'high');
+			expect(element.fetchPriority).toBe('high');
+
+			element.setAttribute('fetchpriority', 'low');
+			expect(element.fetchPriority).toBe('low');
+
+			element.setAttribute('fetchpriority', 'normal');
+			expect(element.fetchPriority).toBe('normal');
+
+			element.setAttribute('fetchpriority', 'auto');
+			expect(element.fetchPriority).toBe('auto');
+
+			element.setAttribute('fetchpriority', 'invalid');
+			expect(element.fetchPriority).toBe('auto');
+		});
+	});
+
+	describe('set fetchPriority()', () => {
+		it('Sets the attribute "fetchpriority".', () => {
+			const element = document.createElement('script');
+
+			element.fetchPriority = 'high';
+			expect(element.getAttribute('fetchpriority')).toBe('high');
+
+			element.fetchPriority = <'high'>'invalid';
+			expect(element.getAttribute('fetchpriority')).toBe('invalid');
+		});
+	});
+
+	describe('get referrerPolicy()', () => {
+		it('Returns valid referrer policy value.', () => {
+			const element = document.createElement('script');
+
+			expect(element.referrerPolicy).toBe('');
+
+			element.setAttribute('referrerpolicy', 'no-referrer');
+			expect(element.referrerPolicy).toBe('no-referrer');
+
+			element.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+			expect(element.referrerPolicy).toBe('no-referrer-when-downgrade');
+
+			element.setAttribute('referrerpolicy', 'same-origin');
+			expect(element.referrerPolicy).toBe('same-origin');
+
+			element.setAttribute('referrerpolicy', 'origin');
+			expect(element.referrerPolicy).toBe('origin');
+
+			element.setAttribute('referrerpolicy', 'strict-origin');
+			expect(element.referrerPolicy).toBe('strict-origin');
+
+			element.setAttribute('referrerpolicy', 'origin-when-cross-origin');
+			expect(element.referrerPolicy).toBe('origin-when-cross-origin');
+
+			element.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+			expect(element.referrerPolicy).toBe('strict-origin-when-cross-origin');
+
+			element.setAttribute('referrerpolicy', 'unsafe-url');
+			expect(element.referrerPolicy).toBe('unsafe-url');
+
+			element.setAttribute('referrerpolicy', 'invalid');
+			expect(element.referrerPolicy).toBe('');
+		});
+	});
+
+	describe('set referrerPolicy()', () => {
+		it('Sets the attribute "referrerpolicy".', () => {
+			const element = document.createElement('script');
+
+			element.referrerPolicy = 'no-referrer';
+			expect(element.getAttribute('referrerpolicy')).toBe('no-referrer');
+
+			element.referrerPolicy = <'no-referrer'>'invalid';
+			expect(element.getAttribute('referrerpolicy')).toBe('invalid');
+		});
+	});
 
 	describe('get src()', () => {
 		it('Returns the "src" attribute.', () => {
@@ -642,9 +745,13 @@ describe('HTMLScriptElement', () => {
 			});
 			const document = window.document;
 			const script = document.createElement('script');
+			let modulesLoadedAfterLoadEvent: string[] | null = null;
 
 			script.src = 'https://localhost:8080/base/js/TestModuleElement.js';
 			script.type = 'module';
+			script.addEventListener('load', () => {
+				modulesLoadedAfterLoadEvent = window['moduleLoadOrder'].slice();
+			});
 
 			document.body.appendChild(script);
 
@@ -672,6 +779,13 @@ describe('HTMLScriptElement', () => {
 				'stringUtility.js',
 				'TestModuleElement.js',
 				'lazyload.js'
+			]);
+
+			expect(modulesLoadedAfterLoadEvent).toEqual([
+				'apostrophWrapper.js',
+				'StringUtilityClass.js',
+				'stringUtility.js',
+				'TestModuleElement.js'
 			]);
 
 			expect(testModule.shadowRoot?.innerHTML).toBe(`<div>
@@ -792,6 +906,137 @@ describe('HTMLScriptElement', () => {
 				window.getComputedStyle(<HTMLElement>testModule.shadowRoot?.querySelector('div'))
 					.backgroundColor
 			).toBe('red');
+		});
+
+		it('Dispatches "error" event on script element when a module is not found', async () => {
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					fetch: {
+						virtualServers: [
+							{
+								url: 'https://localhost:8080/base/js/',
+								directory: './test/nodes/html-script-element/modules-with-not-found-error/'
+							}
+						]
+					}
+				}
+			});
+			const document = window.document;
+
+			const script = document.createElement('script');
+			let errorEvent: Event | null = null;
+
+			script.src = '/base/js/TestModuleElement.js';
+			script.type = 'module';
+			script.addEventListener('error', (event) => {
+				errorEvent = event;
+			});
+
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect((<ErrorEvent>(<unknown>errorEvent)).type).toBe('error');
+			expect((<ErrorEvent>(<unknown>errorEvent)).bubbles).toBe(false);
+			expect(
+				window.happyDOM?.virtualConsolePrinter.readAsString().startsWith(
+					`GET https://localhost:8080/base/js/utilities/notFound.js 404 (Not Found)
+DOMException: Failed to perform request to "https://localhost:8080/base/js/utilities/notFound.js". Status 404 Not Found.`
+				)
+			).toBe(true);
+		});
+
+		it('Dispatches "error" event on Window when compilation of module failed', async () => {
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					fetch: {
+						virtualServers: [
+							{
+								url: 'https://localhost:8080/base/js/',
+								directory: './test/nodes/html-script-element/modules-with-compilation-error/'
+							}
+						]
+					}
+				}
+			});
+			const document = window.document;
+			let errorEvent: Event | null = null;
+
+			window.addEventListener('error', (event) => {
+				errorEvent = event;
+			});
+
+			const script = document.createElement('script');
+
+			script.src = '/base/js/TestModuleElement.js';
+			script.type = 'module';
+
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect((<ErrorEvent>(<unknown>errorEvent)).type).toBe('error');
+			expect((<ErrorEvent>(<unknown>errorEvent)).bubbles).toBe(false);
+			expect(
+				window.happyDOM?.virtualConsolePrinter
+					.readAsString()
+					.startsWith(
+						`SyntaxError: Failed to parse module 'https://localhost:8080/base/js/utilities/stringUtility.js': Unexpected token 'export'`
+					)
+			).toBe(true);
+		});
+
+		it('Dispatches "error" event on Window when evaluation of module failed', async () => {
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					fetch: {
+						virtualServers: [
+							{
+								url: 'https://localhost:8080/base/js/',
+								directory: './test/nodes/html-script-element/modules-with-evaluation-error/'
+							}
+						]
+					}
+				}
+			});
+			const document = window.document;
+			let errorEvent: Event | null = null;
+
+			window.addEventListener('error', (event) => {
+				errorEvent = event;
+			});
+
+			const script = document.createElement('script');
+
+			script.src = '/base/js/TestModuleElement.js';
+			script.type = 'module';
+
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect((<ErrorEvent>(<unknown>errorEvent)).type).toBe('error');
+			expect((<ErrorEvent>(<unknown>errorEvent)).bubbles).toBe(false);
+			expect(
+				window.happyDOM?.virtualConsolePrinter.readAsString()
+					.startsWith(`ReferenceError: notFound is not defined
+    at eval (https://localhost:8080/base/js/utilities/stringUtility.js:10:14)`)
+			).toBe(true);
+		});
+	});
+
+	describe('static supports()', () => {
+		it('Returns true for supported types.', () => {
+			expect(window.HTMLScriptElement.supports('classic')).toBe(true);
+			expect(window.HTMLScriptElement.supports('module')).toBe(true);
+			expect(window.HTMLScriptElement.supports('importmap')).toBe(true);
+
+			expect(window.HTMLScriptElement.supports('speculationrules')).toBe(false);
+			expect(window.HTMLScriptElement.supports('text/javascript')).toBe(false);
+			expect(window.HTMLScriptElement.supports('invalid')).toBe(false);
 		});
 	});
 });

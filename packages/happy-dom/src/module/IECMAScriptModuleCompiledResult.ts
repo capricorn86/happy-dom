@@ -3,6 +3,7 @@ import IECMAScriptModuleImport from './IECMAScriptModuleImport.js';
 export default interface IECMAScriptModuleCompiledResult {
 	imports: IECMAScriptModuleImport[];
 	execute: (options: {
+		dispatchError: (error: Error) => void;
 		dynamicImport: (
 			url: string,
 			options?: { with?: { type?: string } }

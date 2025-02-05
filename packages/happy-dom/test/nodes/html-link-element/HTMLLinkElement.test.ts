@@ -6,6 +6,7 @@ import Event from '../../../src/event/Event.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import EventTarget from '../../../src/event/EventTarget.js';
 import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCaptureEnum.js';
+import DOMTokenList from '../../../src/dom/DOMTokenList.js';
 
 describe('HTMLLinkElement', () => {
 	let window: Window;
@@ -58,7 +59,19 @@ describe('HTMLLinkElement', () => {
 		it('Returns a DOMTokenList object.', () => {
 			const element = document.createElement('link');
 			element.setAttribute('rel', 'value1 value2');
+			expect(element.relList).toBeInstanceOf(DOMTokenList);
 			expect(element.relList.value).toBe('value1 value2');
+			expect(element.relList.length).toBe(2);
+			expect(element.relList[0]).toBe('value1');
+			expect(element.relList[1]).toBe('value2');
+		});
+	});
+
+	describe('set relList()', () => {
+		it('Sets the attribute "rel".', () => {
+			const element = document.createElement('link');
+			element.relList = 'value1 value2';
+			expect(element.getAttribute('rel')).toBe('value1 value2');
 		});
 	});
 

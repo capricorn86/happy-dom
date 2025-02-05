@@ -2,7 +2,6 @@ import IBrowserFrame from '../types/IBrowserFrame.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import IGoToOptions from '../types/IGoToOptions.js';
 import Response from '../../fetch/Response.js';
-import DocumentReadyStateManager from '../../nodes/document/DocumentReadyStateManager.js';
 import BrowserWindow from '../../window/BrowserWindow.js';
 import BrowserFrameFactory from './BrowserFrameFactory.js';
 import BrowserFrameURL from './BrowserFrameURL.js';

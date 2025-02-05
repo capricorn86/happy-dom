@@ -8,6 +8,8 @@ import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import IECMAScriptModuleCompiledResult from './IECMAScriptModuleCompiledResult.js';
 import ModuleFactory from './ModuleFactory.js';
 
+const EMPTY_COMPILED_RESULT = { imports: [], execute: () => {} };
+
 /**
  * ECMAScript module.
  */
@@ -15,6 +17,7 @@ export default class ECMAScriptModule implements IModule {
 	public readonly url: URL;
 	public readonly [PropertySymbol.window]: BrowserWindow;
 	readonly #source: string;
+	#preloaded: boolean = false;
 	#compiled: IECMAScriptModuleCompiledResult | null = null;
 	#exports: { [k: string]: any } | null = null;
 
@@ -36,7 +39,7 @@ export default class ECMAScriptModule implements IModule {
 	 *
 	 * @returns Module exports.
 	 */
-	public async evaluate(): Promise<{ [key: string]: any }> {
+	public async evaluate(): Promise<{ [key: string]: any } | null> {
 		if (this.#exports) {
 			return this.#exports;
 		}
@@ -50,9 +53,6 @@ export default class ECMAScriptModule implements IModule {
 			return {};
 		}
 
-		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
-		const taskID = asyncTaskManager.startTask();
-
 		for (const moduleImport of compiled.imports) {
 			modulePromises.push(
 				ModuleFactory.getModule(window, this.url, moduleImport.url, {
@@ -62,23 +62,23 @@ export default class ECMAScriptModule implements IModule {
 		}
 
 		const modules = await Promise.all(modulePromises);
+
 		const imports = new Map<string, { [key: string]: any }>();
 
 		for (const module of modules) {
 			imports.set(module.url.href, await module.evaluate());
 		}
 
-		asyncTaskManager.endTask(taskID);
-
 		const exports = {};
 
-		compiled.execute.call(window, {
+		this.#exports = exports;
+
+		compiled.execute({
+			dispatchError: window[PropertySymbol.dispatchError].bind(window),
 			dynamicImport: this.#import.bind(this),
 			imports,
 			exports
 		});
-
-		this.#exports = exports;
 
 		return exports;
 	}
@@ -89,6 +89,12 @@ export default class ECMAScriptModule implements IModule {
 	 * @returns Promise.
 	 */
 	public async preload(): Promise<void> {
+		if (this.#preloaded) {
+			return;
+		}
+
+		this.#preloaded = true;
+
 		const compiled = this.#compile();
 		const modulePromises: Promise<IModule>[] = [];
 		const window = this[PropertySymbol.window];
@@ -97,9 +103,6 @@ export default class ECMAScriptModule implements IModule {
 		if (!browserFrame) {
 			return;
 		}
-
-		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
-		const taskID = asyncTaskManager?.startTask();
 
 		for (const moduleImport of compiled.imports) {
 			modulePromises.push(
@@ -117,8 +120,6 @@ export default class ECMAScriptModule implements IModule {
 		}
 
 		await Promise.all(promises);
-
-		asyncTaskManager.endTask(taskID);
 	}
 
 	/**
@@ -128,6 +129,9 @@ export default class ECMAScriptModule implements IModule {
 		if (this.#compiled) {
 			return this.#compiled;
 		}
+
+		// In case of an error, the compiled module will be empty.
+		this.#compiled = EMPTY_COMPILED_RESULT;
 
 		const compiler = new ECMAScriptModuleCompiler(this[PropertySymbol.window]);
 

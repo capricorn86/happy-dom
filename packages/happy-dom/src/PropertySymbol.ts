@@ -390,3 +390,4 @@ export const credentials = Symbol('credentials');
 export const blocking = Symbol('blocking');
 export const moduleImportMap = Symbol('moduleImportMap');
 export const dispatchError = Symbol('dispatchError');
+export const supports = Symbol('supports');

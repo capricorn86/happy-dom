@@ -48,7 +48,8 @@ export default class HTMLLinkElement extends HTMLElement {
 			this[PropertySymbol.relList] = new DOMTokenList(
 				PropertySymbol.illegalConstructor,
 				this,
-				'rel'
+				'rel',
+				['stylesheet', 'modulepreload', 'preload']
 			);
 		}
 		return <DOMTokenList>this[PropertySymbol.relList];

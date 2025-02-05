@@ -77,13 +77,9 @@ export default class Request implements Request {
 		if (init?.mode) {
 			switch (init.mode) {
 				case 'navigate':
-					throw new window.DOMException(
-						`Failed to construct 'Request': Cannot construct a Request with a RequestInit whose mode member is set as 'navigate'.`,
-						DOMExceptionNameEnum.securityError
-					);
 				case 'websocket':
 					throw new window.DOMException(
-						`Failed to construct 'Request': Cannot construct a Request with a RequestInit whose mode member is set as 'websocket'.`,
+						`Failed to construct 'Request': Cannot construct a Request with a RequestInit whose mode member is set as '${init.mode}'.`,
 						DOMExceptionNameEnum.securityError
 					);
 				case 'same-origin':
@@ -91,6 +87,11 @@ export default class Request implements Request {
 				case 'cors':
 					this[PropertySymbol.mode] = init.mode;
 					break;
+				default:
+					throw new window.DOMException(
+						`Failed to construct 'Request': The provided value '${init.mode}' is not a valid enum value of type RequestMode.`,
+						DOMExceptionNameEnum.syntaxError
+					);
 			}
 		} else if (input instanceof Request) {
 			this[PropertySymbol.mode] = input.mode;

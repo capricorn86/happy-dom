@@ -1,7 +1,10 @@
+import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
 import BrowserWindow from '../window/BrowserWindow.js';
+import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import IECMAScriptModuleCompiledResult from './IECMAScriptModuleCompiledResult.js';
 import IECMAScriptModuleImport from './IECMAScriptModuleImport.js';
 import ModuleURLUtility from './ModuleURLUtility.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 
 /**
  * Code regexp.
@@ -21,16 +24,19 @@ import ModuleURLUtility from './ModuleURLUtility.js';
  * Group 13: Export variable type (var, let or const).
  * Group 14: Export variable name.
  * Group 15: Export variable name end character (= or ;).
- * Group 16: Single line comment.
- * Group 17: Multi line comment.
- * Group 18: Slash (RegExp).
- * Group 19: Parentheses.
- * Group 20: Curly braces.
- * Group 21: Square brackets.
- * Group 22: String apostrophe (', " or `).
+ * Group 16: Multi line comment.
+ * Group 17: Slash (RegExp).
+ * Group 18: Parentheses.
+ * Group 19: Curly braces.
+ * Group 20: Square brackets.
+ * Group 21: Escape template string (${).
+ * Group 22: Template string apostrophe (`).
+ * Group 23: String apostrophe (').
+ * Group 24: String apostrophe (").
+ * Group 25: Line feed character.
  */
 const CODE_REGEXP =
-	/import\s["']([^"']+)["'];{0,1}|import\s*\(([^)]+)\)|(import\s+)|\sfrom\s["']([^"']+)["'](\s+with\s*{\s*type\s*:\s*["']([^"']+)["']\s*}){0,1}|export\s([a-zA-Z0-9-_$]+|\*|\*\s+as\s+["'a-zA-Z0-9-_$]+|{[^}]+})\sfrom\s["']([^"']+)["']|(export\sdefault\s)|export\s(function\*{0,1}|class)\s([^({\s]+)|export\s{([^}]+)}|export\s(var|let|const)\s+([^=;]+)(=|;)|(\/\/.*$)|(\/\*|\*\/)|(\/)|(\(|\))|({|})|(\[|\])|('|"|`)/gm;
+	/import\s*["']([^"']+)["'];{0,1}|import\s*\(([^)]+)\)|(import[\s{])|[\s}]from\s*["']([^"']+)["'](\s+with\s*{\s*type\s*:\s*["']([^"']+)["']\s*}){0,1}|export\s([a-zA-Z0-9-_$]+|\*|\*\s+as\s+["'a-zA-Z0-9-_$]+|{[^}]+})\s*from\s["']([^"']+)["']|(export\s*default\s*)|export\s*(function\*{0,1}|class)\s*([^({\s]+)|export\s*{([^}]+)}|export\s+(var|let|const)\s+([^=;]+)(=|;)|(\/\*|\*\/)|(\/)|(\(|\))|({|})|(\[|\])|(\${)|(`)|(')|(")|(\n)/gm;
 
 /**
  * Import regexp.
@@ -42,9 +48,14 @@ const CODE_REGEXP =
 const IMPORT_REGEXP = /{([^}]+)}|\*\s+as\s+([a-zA-Z0-9-_$]+)|([a-zA-Z0-9-_$]+)/gm;
 
 /**
- * Valid preceding token before a statement regexp.
+ * Valid preceding token before a statement.
  */
-const PRECEDING_STATEMENT_TOKEN_REGEXP = /['"`(){}\s;]/;
+const PRECEDING_STATEMENT_TOKEN_REGEXP = /['"`(){}\s;=>]/;
+
+/**
+ * Valid preceding token before a regexp.
+ */
+const PRECEDING_REGEXP_TOKEN_REGEXP = /[([=\{\},;"'+-]/;
 
 /**
  * Multiline comment regexp.
@@ -75,23 +86,36 @@ export default class ECMAScriptModuleCompiler {
 	 * @returns Result.
 	 */
 	public compile(moduleURL: string, code: string): IECMAScriptModuleCompiledResult {
+		const browserSettings = new WindowBrowserContext(this.window).getSettings();
 		const regExp = new RegExp(CODE_REGEXP);
 		const imports: IECMAScriptModuleImport[] = [];
 		const count = {
 			comment: 0,
+			singleLineComment: 0,
 			parantheses: 0,
 			curlyBraces: 0,
 			squareBrackets: 0,
-			regExp: 0
+			regExp: 0,
+			regExpSquareBrackets: 0,
+			escapeTemplateString: 0,
+			simpleString: 0,
+			doubleString: 0
 		};
+		const templateString: number[] = [];
 		const exportSpreadVariables: Array<Map<string, string>> = [];
 		let newCode = `(async function anonymous($happy_dom) {\n//# sourceURL=${moduleURL}\n`;
 		let match: RegExpExecArray;
 		let precedingToken: string;
-		let stringCharacter: string | null = null;
 		let lastIndex = 0;
 		let importStartIndex = -1;
 		let skipMatchedCode = false;
+
+		if (
+			!browserSettings.disableErrorCapturing &&
+			browserSettings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
+		) {
+			newCode += 'try {\n';
+		}
 
 		while ((match = regExp.exec(code))) {
 			if (importStartIndex === -1) {
@@ -102,11 +126,14 @@ export default class ECMAScriptModuleCompiler {
 			// Imports and exports are only valid outside any statement, string or comment at the top level
 			if (
 				count.comment === 0 &&
+				count.singleLineComment === 0 &&
 				count.parantheses === 0 &&
 				count.curlyBraces === 0 &&
 				count.squareBrackets === 0 &&
 				count.regExp === 0 &&
-				!stringCharacter
+				count.simpleString === 0 &&
+				count.doubleString === 0 &&
+				templateString.length === 0
 			) {
 				if (match[1] && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
 					// Import without exported properties
@@ -122,13 +149,13 @@ export default class ECMAScriptModuleCompiler {
 							`Failed to parse module: Unexpected import statement in "${moduleURL}"`
 						);
 					}
-					importStartIndex = match.index + match[0].length;
+					importStartIndex = match.index + match[0].length - 1;
 					skipMatchedCode = true;
 				} else if (match[4]) {
 					// Import statement end
 					if (importStartIndex !== -1) {
 						const url = ModuleURLUtility.getURL(this.window, moduleURL, match[4]).href;
-						const variables = code.substring(importStartIndex, match.index);
+						const variables = code.substring(importStartIndex, match.index + 1);
 						const importRegExp = new RegExp(IMPORT_REGEXP);
 						const importCode: string[] = [];
 						let importMatch: RegExpExecArray;
@@ -255,69 +282,195 @@ export default class ECMAScriptModuleCompiler {
 			if (match[2]) {
 				// Dynamic import function call
 				if (
-					stringCharacter === null &&
+					count.simpleString === 0 &&
+					count.doubleString === 0 &&
 					count.comment === 0 &&
+					count.singleLineComment === 0 &&
 					count.regExp === 0 &&
+					(templateString.length === 0 || templateString[0] > 0) &&
 					PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)
 				) {
 					newCode += `$happy_dom.dynamicImport(${match[2]})`;
 					skipMatchedCode = true;
 				}
 			} else if (match[16]) {
-				// Ignore single line comment
-			} else if (match[17]) {
 				// Multi line comment
-				if (stringCharacter === null && count.regExp === 0) {
-					if (match[17] === '/*') {
-						count.comment++;
-					} else if (match[17] === '*/' && count.comment > 0) {
-						count.comment--;
+				if (
+					count.simpleString === 0 &&
+					count.doubleString === 0 &&
+					count.singleLineComment === 0 &&
+					count.regExp === 0 &&
+					(templateString.length === 0 || templateString[0] > 0)
+				) {
+					if (match[16] === '/*') {
+						count.comment = 1;
+					} else if (match[16] === '*/') {
+						count.comment = 0;
+					}
+				}
+			} else if (match[17]) {
+				// Slash (RegExp or Single line comment)
+				if (
+					count.simpleString === 0 &&
+					count.doubleString === 0 &&
+					count.comment === 0 &&
+					count.singleLineComment === 0 &&
+					count.regExpSquareBrackets === 0 &&
+					(templateString.length === 0 || templateString[0] > 0)
+				) {
+					if (count.regExp === 0) {
+						if (code[match.index + 1] === '/') {
+							count.singleLineComment = 1;
+						} else {
+							if (precedingToken !== '\\') {
+								let index = match.index - 1;
+								let nonSpacePrecedingToken = code[index];
+
+								while (nonSpacePrecedingToken === ' ' || nonSpacePrecedingToken === '\n') {
+									index--;
+									nonSpacePrecedingToken = code[index];
+								}
+
+								if (PRECEDING_REGEXP_TOKEN_REGEXP.test(nonSpacePrecedingToken)) {
+									count.regExp = 1;
+								}
+							}
+						}
+					} else if (precedingToken !== '\\') {
+						count.regExp = 0;
 					}
 				}
 			} else if (match[18]) {
-				// Slash (RegExp)
-				if (stringCharacter === null && count.comment === 0 && precedingToken !== '\\') {
-					count.regExp = count.regExp === 0 ? 1 : 0;
-				}
-			} else if (match[19]) {
 				// Parentheses
-				if (stringCharacter === null && count.regExp === 0 && count.comment === 0) {
-					if (match[19] === '(') {
+				if (
+					count.simpleString === 0 &&
+					count.doubleString === 0 &&
+					count.regExp === 0 &&
+					count.comment === 0 &&
+					count.singleLineComment === 0 &&
+					(templateString.length === 0 || templateString[0] > 0)
+				) {
+					if (match[18] === '(') {
 						count.parantheses++;
-					}
-					if (match[19] === ')' && count.parantheses > 0) {
+					} else if (match[18] === ')' && count.parantheses > 0) {
 						count.parantheses--;
 					}
 				}
-			} else if (match[20]) {
+			} else if (match[19]) {
 				// Curly braces
-				if (stringCharacter === null && count.regExp === 0 && count.comment === 0) {
-					if (match[20] === '{') {
+				if (
+					count.simpleString === 0 &&
+					count.doubleString === 0 &&
+					count.regExp === 0 &&
+					count.comment === 0 &&
+					count.singleLineComment === 0 &&
+					(templateString.length === 0 || templateString[0] > 0)
+				) {
+					if (match[19] === '{') {
+						if (templateString.length) {
+							templateString[0]++;
+						}
 						count.curlyBraces++;
+					} else if (match[19] === '}') {
+						if (templateString.length && templateString[0] > 0) {
+							templateString[0]--;
+						}
+						if (count.curlyBraces > 0) {
+							count.curlyBraces--;
+						}
 					}
-					if (match[20] === '}' && count.curlyBraces > 0) {
-						count.curlyBraces--;
+				}
+			} else if (match[20]) {
+				// Square brackets
+				if (
+					count.simpleString === 0 &&
+					count.doubleString === 0 &&
+					count.comment === 0 &&
+					count.singleLineComment === 0 &&
+					(templateString.length === 0 || templateString[0] > 0)
+				) {
+					// We need to check for square brackets in RegExp as well to know when the RegExp ends
+					if (count.regExp === 1) {
+						if (precedingToken !== '\\') {
+							if (match[20] === '[' && count.regExpSquareBrackets === 0) {
+								count.regExpSquareBrackets = 1;
+							} else if (match[20] === ']' && count.regExpSquareBrackets === 1) {
+								count.regExpSquareBrackets = 0;
+							}
+						}
+					} else {
+						if (match[20] === '[') {
+							count.squareBrackets++;
+						} else if (match[20] === ']' && count.squareBrackets > 0) {
+							count.squareBrackets--;
+						}
 					}
 				}
 			} else if (match[21]) {
-				// Square brackets
-				if (stringCharacter === null && count.regExp === 0 && count.comment === 0) {
-					if (match[21] === '[') {
-						count.squareBrackets++;
-					}
-					if (match[21] === ']' && count.squareBrackets > 0) {
-						count.squareBrackets--;
-					}
+				// Escape template string (${)
+				if (
+					count.simpleString === 0 &&
+					count.doubleString === 0 &&
+					count.comment === 0 &&
+					count.singleLineComment === 0 &&
+					count.regExp === 0 &&
+					templateString.length > 0 &&
+					precedingToken !== '\\'
+				) {
+					templateString[0]++;
+					count.curlyBraces++;
 				}
 			} else if (match[22]) {
-				// String
-				if (count.comment === 0 && count.regExp === 0 && precedingToken !== '\\') {
-					if (stringCharacter === null) {
-						stringCharacter = match[22];
-					} else if (stringCharacter === match[22]) {
-						stringCharacter = null;
+				// Template string
+				if (
+					count.simpleString === 0 &&
+					count.doubleString === 0 &&
+					count.comment === 0 &&
+					count.singleLineComment === 0 &&
+					count.regExp === 0 &&
+					precedingToken !== '\\'
+				) {
+					if (templateString?.[0] == 0) {
+						templateString.shift();
+					} else {
+						templateString.unshift(0);
 					}
 				}
+			} else if (match[23]) {
+				// String apostrophe (')
+				if (
+					count.doubleString === 0 &&
+					count.comment === 0 &&
+					count.singleLineComment === 0 &&
+					count.regExp === 0 &&
+					precedingToken !== '\\' &&
+					(templateString.length === 0 || templateString[0] > 0)
+				) {
+					if (count.simpleString === 0) {
+						count.simpleString = 1;
+					} else {
+						count.simpleString = 0;
+					}
+				}
+			} else if (match[24]) {
+				// String apostrophe (")
+				if (
+					count.simpleString === 0 &&
+					count.comment === 0 &&
+					count.singleLineComment === 0 &&
+					count.regExp === 0 &&
+					precedingToken !== '\\' &&
+					(templateString.length === 0 || templateString[0] > 0)
+				) {
+					if (count.doubleString === 0) {
+						count.doubleString = 1;
+					} else {
+						count.doubleString = 0;
+					}
+				}
+			} else if (match[25]) {
+				// Line feed character
+				count.singleLineComment = 0;
 			}
 
 			// Unless the code has been handled by transforming imports or exports, we add it to the new code
@@ -349,11 +502,34 @@ export default class ECMAScriptModuleCompiler {
 			}
 		}
 
+		if (
+			!browserSettings.disableErrorCapturing &&
+			browserSettings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
+		) {
+			newCode += `\n} catch(e) {\n   $happy_dom.dispatchError(e);\n}`;
+		}
+
 		newCode += '\n})';
 
-		const execute = this.window.eval(newCode);
-
-		return { imports, execute };
+		try {
+			return { imports, execute: this.window.eval(newCode) };
+		} catch (e) {
+			const error = new this.window.SyntaxError(
+				`Failed to parse module '${moduleURL}': ${e.message}`
+			);
+			if (
+				browserSettings.disableErrorCapturing ||
+				browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
+			) {
+				throw error;
+			} else {
+				this.window[PropertySymbol.dispatchError](error);
+				return {
+					imports,
+					execute: () => {}
+				};
+			}
+		}
 	}
 
 	/**

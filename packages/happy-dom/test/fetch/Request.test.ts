@@ -53,6 +53,7 @@ describe('Request', () => {
 			expect(request.referrerPolicy).toBe('');
 			expect(request.credentials).toBe('same-origin');
 			expect(request.referrer).toBe('about:client');
+			expect(request.mode).toBe('cors');
 		});
 
 		it('Supports URL as string from Request object.', () => {
@@ -110,6 +111,40 @@ describe('Request', () => {
 		it('Supports method from init object.', () => {
 			const request = new window.Request(TEST_URL, { method: 'POST' });
 			expect(request.method).toBe('POST');
+		});
+
+		it('Supports mode from init object.', () => {
+			const request = new window.Request(TEST_URL, { mode: 'same-origin' });
+			expect(request.mode).toBe('same-origin');
+		});
+
+		it('Throws for invalid mode.', () => {
+			expect(() => {
+				new window.Request(TEST_URL, { mode: <'cors'>'invalid' });
+			}).toThrow(
+				new window.DOMException(
+					`Failed to construct 'Request': The provided value 'invalid' is not a valid enum value of type RequestMode.`,
+					DOMExceptionNameEnum.syntaxError
+				)
+			);
+
+			expect(() => {
+				new window.Request(TEST_URL, { mode: 'navigate' });
+			}).toThrow(
+				new window.DOMException(
+					`Failed to construct 'Request': Cannot construct a Request with a RequestInit whose mode member is set as 'navigate'.`,
+					DOMExceptionNameEnum.securityError
+				)
+			);
+
+			expect(() => {
+				new window.Request(TEST_URL, { mode: 'websocket' });
+			}).toThrow(
+				new window.DOMException(
+					`Failed to construct 'Request': Cannot construct a Request with a RequestInit whose mode member is set as 'websocket'.`,
+					DOMExceptionNameEnum.securityError
+				)
+			);
 		});
 
 		it('Supports body from Request object.', async () => {

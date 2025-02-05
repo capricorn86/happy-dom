@@ -33,6 +33,7 @@ export default class HTMLScriptElement extends HTMLElement {
 
 	// Private properties
 	#loadedScriptURL: string | null = null;
+
 	/**
 	 * Returns type.
 	 *
@@ -572,14 +573,8 @@ export default class HTMLScriptElement extends HTMLElement {
 				const module = await ModuleFactory.getModule(window, window.location, url);
 				await module.evaluate();
 			} catch (error) {
-				// Fetch errors should be dispatched as an Event with type "error" on the element.
-				// Syntax errors or unknown errors should be dispatched as an ErrorEvent on the window.
-				if (error instanceof window.DOMException) {
-					browserFrame.page?.console.error(error);
-					this.dispatchEvent(new Event('error'));
-				} else {
-					window[PropertySymbol.dispatchError](error);
-				}
+				browserFrame.page?.console.error(error);
+				this.dispatchEvent(new Event('error'));
 				readyStateManager.endTask();
 				return;
 			}

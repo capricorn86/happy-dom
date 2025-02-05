@@ -19,6 +19,7 @@ import NodeList from '../../../src/nodes/node/NodeList.js';
 import Event from '../../../src/event/Event.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
+import DOMTokenList from '../../../src/dom/DOMTokenList.js';
 
 const NAMESPACE_URI = 'https://test.test';
 
@@ -173,8 +174,19 @@ describe('Element', () => {
 
 	describe('get classList()', () => {
 		it('Returns a DOMTokenList object.', () => {
-			element.setAttribute('class', 'class1');
-			expect(element.classList.value).toBe('class1');
+			element.setAttribute('class', 'value1 value2');
+			expect(element.classList).toBeInstanceOf(DOMTokenList);
+			expect(element.classList.value).toBe('value1 value2');
+			expect(element.classList.length).toBe(2);
+			expect(element.classList[0]).toBe('value1');
+			expect(element.classList[1]).toBe('value2');
+		});
+	});
+
+	describe('set classList()', () => {
+		it('Sets the attribute "class".', () => {
+			element.classList = 'value1 value2';
+			expect(element.getAttribute('class')).toBe('value1 value2');
 		});
 	});
 

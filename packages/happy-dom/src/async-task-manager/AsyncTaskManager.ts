@@ -18,7 +18,10 @@ export default class AsyncTaskManager {
 	private runningImmediates: NodeJS.Immediate[] = [];
 	private debugTrace: Map<number | NodeJS.Timeout | NodeJS.Immediate, string> = new Map();
 	private waitUntilCompleteTimer: NodeJS.Timeout | null = null;
-	private waitUntilCompleteResolvers: Array<() => void> = [];
+	private waitUntilCompleteResolvers: Array<{
+		resolve: () => void;
+		reject: (error: Error) => void;
+	}> = [];
 	private aborted = false;
 	private destroyed = false;
 	#browserFrame: IBrowserFrame;
@@ -39,8 +42,8 @@ export default class AsyncTaskManager {
 	 * @returns Promise.
 	 */
 	public waitUntilComplete(): Promise<void> {
-		return new Promise((resolve) => {
-			this.waitUntilCompleteResolvers.push(resolve);
+		return new Promise((resolve, reject) => {
+			this.waitUntilCompleteResolvers.push({ resolve, reject });
 			this.resolveWhenComplete();
 		});
 	}
@@ -50,8 +53,8 @@ export default class AsyncTaskManager {
 	 */
 	public abort(): Promise<void> {
 		if (this.aborted) {
-			return new Promise((resolve) => {
-				this.waitUntilCompleteResolvers.push(resolve);
+			return new Promise((resolve, reject) => {
+				this.waitUntilCompleteResolvers.push({ resolve, reject });
 				this.resolveWhenComplete();
 			});
 		}
@@ -63,8 +66,8 @@ export default class AsyncTaskManager {
 	 */
 	public destroy(): Promise<void> {
 		if (this.aborted) {
-			return new Promise((resolve) => {
-				this.waitUntilCompleteResolvers.push(resolve);
+			return new Promise((resolve, reject) => {
+				this.waitUntilCompleteResolvers.push({ resolve, reject });
 				this.resolveWhenComplete();
 			});
 		}
@@ -221,13 +224,10 @@ export default class AsyncTaskManager {
 	 * Resolves when complete.
 	 */
 	private resolveWhenComplete(): void {
-		if (this.runningTaskCount || this.runningTimers.length || this.runningImmediates.length) {
-			this.applyDebugging();
-			return;
-		}
+		this.applyDebugging();
 
-		if (this.#debugTimeout) {
-			TIMER.clearTimeout(this.#debugTimeout);
+		if (this.runningTaskCount || this.runningTimers.length || this.runningImmediates.length) {
+			return;
 		}
 
 		if (this.waitUntilCompleteTimer) {
@@ -241,10 +241,13 @@ export default class AsyncTaskManager {
 		this.waitUntilCompleteTimer = TIMER.setTimeout(() => {
 			this.waitUntilCompleteTimer = null;
 			if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
+				if (this.#debugTimeout) {
+					TIMER.clearTimeout(this.#debugTimeout);
+				}
 				const resolvers = this.waitUntilCompleteResolvers;
 				this.waitUntilCompleteResolvers = [];
 				for (const resolver of resolvers) {
-					resolver();
+					resolver.resolve();
 				}
 				this.aborted = false;
 			} else {
@@ -262,12 +265,12 @@ export default class AsyncTaskManager {
 			return;
 		}
 		if (this.#debugTimeout) {
-			TIMER.clearTimeout(this.#debugTimeout);
+			return;
 		}
 		this.#debugTimeout = TIMER.setTimeout(() => {
 			this.#debugTimeout = null;
 
-			let error = `The maximum time was reached for "waitUntilComplete()".\n\n${
+			let errorMessage = `The maximum time was reached for "waitUntilComplete()".\n\n${
 				this.debugTrace.size
 			} task${
 				this.debugTrace.size === 1 ? '' : 's'
@@ -275,10 +278,18 @@ export default class AsyncTaskManager {
 
 			for (const [key, value] of this.debugTrace.entries()) {
 				const type = typeof key === 'number' ? 'Task' : 'Timer';
-				error += `${type} #${key}\n______________________________________\n${value}\n\n`;
+				errorMessage += `${type} #${key}\n‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾${value
+					.replace(/Error:/, '')
+					.replace(/\s+at /gm, '\n> ')}\n\n`;
 			}
 
-			throw new Error(error);
+			const error = new Error(errorMessage);
+
+			for (const resolver of this.waitUntilCompleteResolvers) {
+				resolver.reject(error);
+			}
+
+			this.abortAll(true);
 		}, debug.traceWaitUntilComplete);
 	}
 
@@ -318,8 +329,8 @@ export default class AsyncTaskManager {
 		}
 
 		// We need to wait for microtasks to complete before resolving.
-		return new Promise((resolve) => {
-			this.waitUntilCompleteResolvers.push(resolve);
+		return new Promise((resolve, reject) => {
+			this.waitUntilCompleteResolvers.push({ resolve, reject });
 			this.resolveWhenComplete();
 		});
 	}

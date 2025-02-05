@@ -208,6 +208,13 @@ describe('HTMLMediaElement', () => {
 		});
 	});
 
+	describe('set controlsList()', () => {
+		it('Sets the attribute "controlslist".', () => {
+			element.controlsList = 'value1 value2';
+			expect(element.getAttribute('controlslist')).toBe('value1 value2');
+		});
+	});
+
 	describe('get mediaKeys()', () => {
 		it('Returns null by default', () => {
 			expect(element.mediaKeys).toBeNull();
