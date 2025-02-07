@@ -257,10 +257,10 @@ export default class QuerySelector {
 					? this.findFirst(<Element>node, [<Element>node], items, cachedItem)
 					: this.findFirst(null, (<Element>node)[PropertySymbol.elementArray], items, cachedItem);
 
-				if (match && !matchesMap.has(match.documentPosition)) {
-					matchesMap.set(match.documentPosition, match.element);
-					matchedPositions.push(match.documentPosition);
-				}
+			if (match && !matchesMap.has(match.documentPosition)) {
+				matchesMap.set(match.documentPosition, match.element);
+				matchedPositions.push(match.documentPosition);
+			}
 		}
 
 		if (matchedPositions.length > 0) {
@@ -568,7 +568,7 @@ export default class QuerySelector {
 	 * @param selectorItems Selector items.
 	 * @param cachedItem Cached item.
 	 * @param [documentPosition] Document position of the element.
-	* @returns Document position and element map.
+	 * @returns Document position and element map.
 	 */
 	private static findFirst(
 		rootElement: Element,
@@ -590,7 +590,7 @@ export default class QuerySelector {
 			if (selectorItem.match(child)) {
 				if (!nextSelectorItem) {
 					if (rootElement !== child) {
-						return {documentPosition: position, element: child};
+						return { documentPosition: position, element: child };
 					}
 				} else {
 					switch (nextSelectorItem.combinator) {
