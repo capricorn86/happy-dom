@@ -298,6 +298,25 @@ export default class HTMLButtonElement extends HTMLElement {
 	}
 
 	/**
+	 * @override
+	 */
+	public override get tabIndex(): number {
+		const tabIndex = this.getAttribute('tabindex');
+		if (tabIndex !== null) {
+			const parsed = Number(tabIndex);
+			return isNaN(parsed) ? 0 : parsed;
+		}
+		return 0;
+	}
+
+	/**
+	 * @override
+	 */
+	public override set tabIndex(tabIndex: number) {
+		super.tabIndex = tabIndex;
+	}
+
+	/**
 	 * Checks validity.
 	 *
 	 * @returns "true" if the field is valid.

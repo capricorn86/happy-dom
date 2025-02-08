@@ -71,25 +71,33 @@ describe('HTMLElement', () => {
 	});
 
 	describe('get tabIndex()', () => {
+		it('Returns "-1" by default.', () => {
+			const element = document.createElement('div');
+			expect(element.tabIndex).toBe(-1);
+		});
+
 		it('Returns the attribute "tabindex" as a number.', () => {
-			const div = <HTMLElement>document.createElement('div');
-			div.setAttribute('tabindex', '5');
-			expect(div.tabIndex).toBe(5);
+			const element = document.createElement('div');
+			element.setAttribute('tabindex', '5');
+			expect(element.tabIndex).toBe(5);
+		});
+
+		it('Returns "-1" for NaN numbers.', () => {
+			const element = document.createElement('div');
+			element.setAttribute('tabindex', 'invalid');
+			expect(element.tabIndex).toBe(-1);
 		});
 	});
 
 	describe('set tabIndex()', () => {
 		it('Sets the attribute "tabindex".', () => {
-			const div = <HTMLElement>document.createElement('div');
-			div.tabIndex = 5;
-			expect(div.getAttribute('tabindex')).toBe('5');
-		});
-
-		it('Removes the attribute "tabindex" when set to "-1".', () => {
-			const div = <HTMLElement>document.createElement('div');
-			div.tabIndex = 5;
-			div.tabIndex = -1;
-			expect(div.getAttribute('tabindex')).toBe(null);
+			const element = document.createElement('div');
+			element.tabIndex = 5;
+			expect(element.getAttribute('tabindex')).toBe('5');
+			element.tabIndex = -1;
+			expect(element.getAttribute('tabindex')).toBe('-1');
+			element.tabIndex = <number>(<unknown>'invalid');
+			expect(element.getAttribute('tabindex')).toBe('0');
 		});
 	});
 

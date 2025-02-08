@@ -274,7 +274,7 @@ export default class ECMAScriptModuleCompiler {
 							newCode += `$happy_dom.exports['${exportName}'] =`;
 						}
 					} else {
-						// TODO: If there is no =, we should ignore until we know what is is useful for
+						// TODO: If there is no =, we should ignore until we know what it is useful for
 						// Example: export let name1, name2, name3;
 						newCode += `/*Unknown export: ${match[0]}*/`;
 						this.window.console.warn(`Unknown export in "${moduleURL}": ${match[0]}`);

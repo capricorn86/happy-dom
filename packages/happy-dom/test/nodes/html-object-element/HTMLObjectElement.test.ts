@@ -129,6 +129,37 @@ describe('HTMLObjectElement', () => {
 		});
 	});
 
+	describe('get tabIndex()', () => {
+		it('Returns "0" by default.', () => {
+			const element = document.createElement('object');
+			expect(element.tabIndex).toBe(0);
+		});
+
+		it('Returns the attribute "tabindex" as a number.', () => {
+			const element = document.createElement('object');
+			element.setAttribute('tabindex', '5');
+			expect(element.tabIndex).toBe(5);
+		});
+
+		it('Returns "0" for NaN numbers.', () => {
+			const element = document.createElement('object');
+			element.setAttribute('tabindex', 'invalid');
+			expect(element.tabIndex).toBe(0);
+		});
+	});
+
+	describe('set tabIndex()', () => {
+		it('Sets the attribute "tabindex".', () => {
+			const element = document.createElement('object');
+			element.tabIndex = 5;
+			expect(element.getAttribute('tabindex')).toBe('5');
+			element.tabIndex = -1;
+			expect(element.getAttribute('tabindex')).toBe('-1');
+			element.tabIndex = <number>(<unknown>'invalid');
+			expect(element.getAttribute('tabindex')).toBe('0');
+		});
+	});
+
 	describe('checkValidity()', () => {
 		it('Always returns true.', () => {
 			expect(element.checkValidity()).toBe(true);

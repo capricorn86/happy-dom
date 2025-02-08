@@ -188,7 +188,11 @@ export default class HTMLElement extends Element {
 	 */
 	public get tabIndex(): number {
 		const tabIndex = this.getAttribute('tabindex');
-		return tabIndex !== null ? Number(tabIndex) : -1;
+		if (tabIndex !== null) {
+			const parsed = Number(tabIndex);
+			return isNaN(parsed) ? -1 : parsed;
+		}
+		return -1;
 	}
 
 	/**
@@ -197,10 +201,11 @@ export default class HTMLElement extends Element {
 	 * @param tabIndex Tab index.
 	 */
 	public set tabIndex(tabIndex: number) {
-		if (tabIndex === -1) {
-			this.removeAttribute('tabindex');
+		const parsed = Number(tabIndex);
+		if (isNaN(parsed)) {
+			this.setAttribute('tabindex', '0');
 		} else {
-			this.setAttribute('tabindex', String(tabIndex));
+			this.setAttribute('tabindex', String(parsed));
 		}
 	}
 
