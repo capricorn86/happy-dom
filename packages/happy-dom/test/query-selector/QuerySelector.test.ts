@@ -1931,5 +1931,20 @@ describe('QuerySelector', () => {
 			expect(sibling2.matches('.a ~ .b')).toBe(true);
 			expect(sibling2.matches('.a ~ .z')).toBe(false);
 		});
+
+		it('Matches grouped selectors in the right order', () => {
+			const div = document.createElement('div');
+
+			div.innerHTML = `
+				<div class>
+            		<h1><span>Here is a heading</span></h1>
+            		<div class="a">
+              			<span>With a child span</span>
+            		</div>
+          		</div>
+			`;
+
+			expect(div.querySelector('.a,h1')).toBe(div.children[0].children[0]);
+		});
 	});
 });

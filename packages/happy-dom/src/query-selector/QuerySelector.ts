@@ -249,16 +249,23 @@ export default class QuerySelector {
 			(node[PropertySymbol.ownerDocument] || node)[PropertySymbol.affectsCache].push(cachedItem);
 		}
 
+		const matchesMap: Map<string, Element> = new Map();
+		const matchedPositions: string[] = [];
 		for (const items of SelectorParser.getSelectorGroups(selector)) {
 			const match =
 				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
 					? this.findFirst(<Element>node, [<Element>node], items, cachedItem)
 					: this.findFirst(null, (<Element>node)[PropertySymbol.elementArray], items, cachedItem);
 
-			if (match) {
-				cachedItem.result = new WeakRef(match);
-				return match;
+			if (match && !matchesMap.has(match.documentPosition)) {
+				matchesMap.set(match.documentPosition, match.element);
+				matchedPositions.push(match.documentPosition);
 			}
+		}
+
+		if (matchedPositions.length > 0) {
+			const keys = matchedPositions.sort();
+			return matchesMap.get(keys[0]);
 		}
 
 		return null;
@@ -560,26 +567,30 @@ export default class QuerySelector {
 	 * @param children Child elements.
 	 * @param selectorItems Selector items.
 	 * @param cachedItem Cached item.
-	 * @returns HTML element.
+	 * @param [documentPosition] Document position of the element.
+	 * @returns Document position and element map.
 	 */
 	private static findFirst(
 		rootElement: Element,
 		children: Element[],
 		selectorItems: SelectorItem[],
-		cachedItem: ICachedQuerySelectorItem
-	): Element {
+		cachedItem: ICachedQuerySelectorItem,
+		documentPosition?: string
+	): DocumentPositionAndElement | null {
 		const selectorItem = selectorItems[0];
 		const nextSelectorItem = selectorItems[1];
 
-		for (const child of children) {
+		for (let i = 0, max = children.length; i < max; i++) {
+			const child = children[i];
 			const childrenOfChild = (<Element>child)[PropertySymbol.elementArray];
+			const position = (documentPosition ? documentPosition + '>' : '') + String.fromCharCode(i);
 
 			child[PropertySymbol.affectsCache].push(cachedItem);
 
 			if (selectorItem.match(child)) {
 				if (!nextSelectorItem) {
 					if (rootElement !== child) {
-						return child;
+						return { documentPosition: position, element: child };
 					}
 				} else {
 					switch (nextSelectorItem.combinator) {
