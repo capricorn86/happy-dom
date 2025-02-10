@@ -601,7 +601,8 @@ export default class QuerySelector {
 									rootElement,
 									[nextElementSibling],
 									selectorItems.slice(1),
-									cachedItem
+									cachedItem,
+									position
 								);
 								if (match) {
 									return match;
@@ -614,7 +615,8 @@ export default class QuerySelector {
 								rootElement,
 								childrenOfChild,
 								selectorItems.slice(1),
-								cachedItem
+								cachedItem,
+								position
 							);
 							if (match) {
 								return match;
@@ -628,7 +630,8 @@ export default class QuerySelector {
 									rootElement,
 									[sibling],
 									selectorItems.slice(1),
-									cachedItem
+									cachedItem,
+									position
 								);
 								if (match) {
 									return match;
@@ -640,7 +643,13 @@ export default class QuerySelector {
 			}
 
 			if (selectorItem.combinator === SelectorCombinatorEnum.descendant && childrenOfChild.length) {
-				const match = this.findFirst(rootElement, childrenOfChild, selectorItems, cachedItem);
+				const match = this.findFirst(
+					rootElement,
+					childrenOfChild,
+					selectorItems,
+					cachedItem,
+					position
+				);
 
 				if (match) {
 					return match;

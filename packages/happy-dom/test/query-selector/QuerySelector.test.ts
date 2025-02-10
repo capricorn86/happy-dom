@@ -1946,5 +1946,24 @@ describe('QuerySelector', () => {
 
 			expect(div.querySelector('.a,h1')).toBe(div.children[0].children[0]);
 		});
+
+		it('Matches grouped selectors with nesting', () => {
+			const div = document.createElement('div');
+
+			div.innerHTML = `
+			 <div>
+              <blockquote>
+                <div class="a">
+                  <ul>
+                    <li><span>Item 1</span></li>
+                    <li><span>Item 2</span></li>
+                  </ul>
+                </div>
+              </blockquote>
+            </div>
+			`;
+
+			expect(div.querySelector('.a,BLOCKQUOTE')).toBe(div.children[0].children[0]);
+		});
 	});
 });
