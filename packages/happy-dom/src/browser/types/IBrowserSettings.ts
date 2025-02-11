@@ -109,6 +109,7 @@ export default interface IBrowserSettings {
 	 */
 	device: {
 		prefersColorScheme: string;
+		prefersReducedMotion: string;
 		mediaType: string;
 	};
 

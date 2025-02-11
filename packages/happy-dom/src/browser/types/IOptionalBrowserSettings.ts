@@ -103,6 +103,7 @@ export default interface IOptionalBrowserSettings {
 	 */
 	device?: {
 		prefersColorScheme?: string;
+		prefersReducedMotion?: string;
 		mediaType?: string;
 	};
 

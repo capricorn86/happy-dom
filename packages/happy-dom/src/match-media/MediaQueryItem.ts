@@ -218,6 +218,12 @@ export default class MediaQueryItem {
 				case 'max-aspect-ratio':
 				case 'aspect-ratio':
 					return true;
+
+				case 'prefers-reduced-motion':
+					return (
+						new WindowBrowserContext(this.window).getSettings().device.prefersReducedMotion ===
+						'reduce'
+					);
 			}
 			return false;
 		}
@@ -249,6 +255,11 @@ export default class MediaQueryItem {
 				return (
 					rule.value ===
 					new WindowBrowserContext(this.window).getSettings().device.prefersColorScheme
+				);
+			case 'prefers-reduced-motion':
+				return (
+					rule.value ===
+					new WindowBrowserContext(this.window).getSettings().device.prefersReducedMotion
 				);
 			case 'any-hover':
 			case 'hover':
