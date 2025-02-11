@@ -499,25 +499,6 @@ export default class HTMLElement extends Element {
 	}
 
 	/**
-	 * Connected callback.
-	 */
-	public connectedCallback?(): void;
-
-	/**
-	 * Disconnected callback.
-	 */
-	public disconnectedCallback?(): void;
-
-	/**
-	 * Attribute changed callback.
-	 *
-	 * @param name Name.
-	 * @param oldValue Old value.
-	 * @param newValue New value.
-	 */
-	public attributeChangedCallback?(name: string, oldValue: string, newValue: string): void;
-
-	/**
 	 * Triggers a click event.
 	 */
 	public click(): void {
@@ -610,30 +591,6 @@ export default class HTMLElement extends Element {
 		}
 
 		super[PropertySymbol.disconnectedFromNode]();
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.connectedToDocument](): void {
-		super[PropertySymbol.connectedToDocument]();
-
-		this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
-			this,
-			'connectedCallback'
-		);
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.disconnectedFromDocument](): void {
-		super[PropertySymbol.disconnectedFromDocument]();
-
-		this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
-			this,
-			'disconnectedCallback'
-		);
 	}
 
 	/**

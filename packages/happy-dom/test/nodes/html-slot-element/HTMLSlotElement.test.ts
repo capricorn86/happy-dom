@@ -462,5 +462,43 @@ describe('HTMLSlotElement', () => {
 			expect(dispatchedEvent2).toBe(null);
 			expect(dispatchedEvent3).toBe(null);
 		});
+
+		it('Fires slotchange after the element is connected to the document', () => {
+			const lifecycle: string[] = [];
+			/* eslint-disable jsdoc/require-jsdoc */
+			class CustomElement extends HTMLElement {
+				constructor() {
+					super();
+					this.attachShadow({
+						mode: 'open'
+					});
+
+					(<ShadowRoot>this.shadowRoot).innerHTML = `<div><slot name="image"></slot></div>`;
+					const slot = (<ShadowRoot>this.shadowRoot).children[0].children[0];
+					slot.addEventListener('slotchange', () => {
+						lifecycle.push('slotchange.' + this.isConnected);
+					});
+				}
+
+				public connectedCallback(): void {
+					lifecycle.push('connected');
+				}
+
+				public disconnectedCallback(): void {
+					lifecycle.push('disconnected');
+				}
+			}
+			/* eslint-enable jsdoc/require-jsdoc */
+
+			window.customElements.define('custom-element', CustomElement);
+
+			const customElement = document.createElement('custom-element');
+
+			customElement.innerHTML = '<img slot="image" src="test.jpg" />';
+
+			document.body.appendChild(customElement);
+
+			expect(lifecycle).toEqual(['connected', 'slotchange.true']);
+		});
 	});
 });

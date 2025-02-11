@@ -954,6 +954,25 @@ export default class Element
 	}
 
 	/**
+	 * Connected callback.
+	 */
+	public connectedCallback?(): void;
+
+	/**
+	 * Disconnected callback.
+	 */
+	public disconnectedCallback?(): void;
+
+	/**
+	 * Attribute changed callback.
+	 *
+	 * @param name Name.
+	 * @param oldValue Old value.
+	 * @param newValue New value.
+	 */
+	public attributeChangedCallback?(name: string, oldValue: string, newValue: string): void;
+
+	/**
 	 * Query CSS selector to find matching nodes.
 	 *
 	 * @param selector CSS selector.
@@ -1449,6 +1468,17 @@ export default class Element
 		}
 
 		super[PropertySymbol.connectedToDocument]();
+
+		this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
+			this,
+			'connectedCallback'
+		);
+
+		if (this[PropertySymbol.shadowRoot]) {
+			for (const childNode of this[PropertySymbol.nodeArray]) {
+				this.#onSlotChange(childNode);
+			}
+		}
 	}
 
 	/**
@@ -1461,6 +1491,11 @@ export default class Element
 		if (id) {
 			this.#removeIdentifierFromWindow(id);
 		}
+
+		this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
+			this,
+			'disconnectedCallback'
+		);
 	}
 
 	/**
@@ -1563,7 +1598,7 @@ export default class Element
 	#onSlotChange(addedOrRemovedNode: Node): void {
 		const shadowRoot = this[PropertySymbol.shadowRoot];
 
-		if (!shadowRoot) {
+		if (!shadowRoot || !this[PropertySymbol.isConnected]) {
 			return;
 		}
 
