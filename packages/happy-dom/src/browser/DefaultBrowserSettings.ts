@@ -38,6 +38,7 @@ export default <IBrowserSettings>{
 	},
 	device: {
 		prefersColorScheme: 'light',
+		prefersReducedMotion: 'no-preference',
 		mediaType: 'screen'
 	},
 	debug: {

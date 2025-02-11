@@ -21,6 +21,9 @@ describe('MediaQueryList', () => {
 			expect(
 				new MediaQueryList({ window: window, media: 'NOT all AND (prefers-COLOR-scheme)' }).media
 			).toBe('not all and (prefers-color-scheme)');
+			expect(
+				new MediaQueryList({ window: window, media: 'NOT all AND (prefers-REDUCED-motion)' }).media
+			).toBe('not all and (prefers-reduced-motion)');
 			expect(new MediaQueryList({ window: window, media: 'all and (hover: none' }).media).toBe(
 				'all and (hover: none)'
 			);
@@ -45,6 +48,15 @@ describe('MediaQueryList', () => {
 			);
 			expect(new MediaQueryList({ window: window, media: '(prefers-color-scheme)' }).media).toBe(
 				'(prefers-color-scheme)'
+			);
+			expect(new MediaQueryList({ window: window, media: 'prefers-reduced-motion' }).media).toBe(
+				''
+			);
+			expect(new MediaQueryList({ window: window, media: '(prefers-reduced-motion' }).media).toBe(
+				'not all'
+			);
+			expect(new MediaQueryList({ window: window, media: '(prefers-reduced-motion)' }).media).toBe(
+				'(prefers-reduced-motion)'
 			);
 		});
 	});
@@ -265,6 +277,36 @@ describe('MediaQueryList', () => {
 			).toBe(true);
 			expect(
 				new MediaQueryList({ window: window, media: '(prefers-color-scheme: light)' }).matches
+			).toBe(false);
+		});
+
+		it('Handles "prefers-reduced-motion".', () => {
+			expect(
+				new MediaQueryList({ window: window, media: '(prefers-reduced-motion)' }).matches
+			).toBe(false);
+			expect(
+				new MediaQueryList({ window: window, media: '(prefers-reduced-motion: reduce)' }).matches
+			).toBe(false);
+			expect(
+				new MediaQueryList({ window: window, media: '(prefers-reduced-motion: no-preference)' })
+					.matches
+			).toBe(true);
+
+			window = new Window({
+				width: 1024,
+				height: 768,
+				settings: { device: { prefersReducedMotion: 'reduce' } }
+			});
+
+			expect(
+				new MediaQueryList({ window: window, media: '(prefers-reduced-motion)' }).matches
+			).toBe(true);
+			expect(
+				new MediaQueryList({ window: window, media: '(prefers-reduced-motion: reduce)' }).matches
+			).toBe(true);
+			expect(
+				new MediaQueryList({ window: window, media: '(prefers-reduced-motion: no-preference)' })
+					.matches
 			).toBe(false);
 		});
 
