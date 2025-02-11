@@ -199,6 +199,12 @@ export default class MediaQueryItem {
 	 * @returns "true" if the rule matches.
 	 */
 	private matchesRule(rule: IMediaQueryRule): boolean {
+		const settings = new WindowBrowserContext(this.window).getSettings();
+
+		if (!settings) {
+			return false;
+		}
+
 		if (!rule.value) {
 			switch (rule.name) {
 				case 'min-width':
@@ -218,12 +224,8 @@ export default class MediaQueryItem {
 				case 'max-aspect-ratio':
 				case 'aspect-ratio':
 					return true;
-
 				case 'prefers-reduced-motion':
-					return (
-						new WindowBrowserContext(this.window).getSettings().device.prefersReducedMotion ===
-						'reduce'
-					);
+					return settings.device.prefersReducedMotion === 'reduce';
 			}
 			return false;
 		}
@@ -252,15 +254,9 @@ export default class MediaQueryItem {
 					? this.window.innerWidth > this.window.innerHeight
 					: this.window.innerWidth < this.window.innerHeight;
 			case 'prefers-color-scheme':
-				return (
-					rule.value ===
-					new WindowBrowserContext(this.window).getSettings().device.prefersColorScheme
-				);
+				return rule.value === settings.device.prefersColorScheme;
 			case 'prefers-reduced-motion':
-				return (
-					rule.value ===
-					new WindowBrowserContext(this.window).getSettings().device.prefersReducedMotion
-				);
+				return rule.value === settings.device.prefersReducedMotion;
 			case 'any-hover':
 			case 'hover':
 				if (rule.value === 'none') {
