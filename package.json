@@ -33,7 +33,7 @@
 		"semver": "^7.3.5",
 		"turbo": "^1.11.3",
 		"typescript": "^5.0.4",
-		"vitest": "^2.1.4"
+		"vitest": "^2.1.9"
 	},
 	"happyLintChanged": {
 		"rules": [
