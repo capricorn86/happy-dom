@@ -1,5 +1,5 @@
 import Event from '../../src/event/Event.js';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import BrowserWindow from '../../src/window/BrowserWindow.js';
 import Window from '../../src/window/Window.js';
@@ -63,6 +63,17 @@ describe('AbortSignal', () => {
 			expect(signal.reason).toBeInstanceOf(DOMException);
 			expect(signal.reason?.name).toBe('TimeoutError');
 		});
+
+		it('After Abortsignal timeout, sending a request with the wrong name still being "TimeoutError" ', async () => {
+			try {
+				const signal = AbortSignal.timeout(20)
+				const now = Date.now()
+				await vi.waitUntil(() => Date.now() - now > 100)
+				await fetch('https://example.com', { signal })
+			} catch (e) {
+				expect((e as Error).name).toStrictEqual('TimeoutError')
+			}
+		})
 	});
 
 	describe('AbortSignal.any()', () => {
