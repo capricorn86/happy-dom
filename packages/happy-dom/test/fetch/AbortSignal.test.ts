@@ -49,6 +49,30 @@ describe('AbortSignal', () => {
 			expect(signal.aborted).toBe(true);
 			expect(signal.reason).toBe(reason);
 		});
+
+		it('Returns a new instance of AbortSignal with a default reason if no reason is provided.', () => {
+			const signal = window.AbortSignal.abort();
+
+			expect(signal.aborted).toBe(true);
+			expect(signal.reason instanceof Error).toBe(true);
+			expect(signal.reason.name).toBe('AbortError');
+		});
+
+		it('Returns a new instance of AbortSignal with a custom reason 1.', () => {
+			const signal = window.AbortSignal.abort(1);
+
+			expect(signal.aborted).toBe(true);
+			expect(signal.reason instanceof Error).toBe(false);
+			expect(signal.reason).toBe(1);
+		});
+
+		it('Returns a new instance of AbortSignal with a custom reason null.', () => {
+			const signal = window.AbortSignal.abort(null);
+
+			expect(signal.aborted).toBe(true);
+			expect(signal.reason instanceof Error).toBe(false);
+			expect(signal.reason).toBe(null);
+		});
 	});
 
 	describe('AbortSignal.timeout()', () => {

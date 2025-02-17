@@ -16,7 +16,7 @@ export default class AbortSignal extends EventTarget {
 
 	// Public properties
 	public readonly aborted: boolean = false;
-	public readonly reason: Error | null = null;
+	public reason: any = null;
 
 	// Events
 	public onabort: ((this: AbortSignal, event: Event) => void) | null = null;
@@ -46,16 +46,17 @@ export default class AbortSignal extends EventTarget {
 	 *
 	 * @param [reason] Reason.
 	 */
-	public [PropertySymbol.abort](reason?: Error): void {
+	public [PropertySymbol.abort](reason?: any): void {
 		if (this.aborted) {
 			return;
 		}
-		(<Error>this.reason) =
-			reason ||
-			new this[PropertySymbol.window].DOMException(
-				'signal is aborted without reason',
-				DOMExceptionNameEnum.abortError
-			);
+		this.reason =
+			reason !== undefined
+				? reason
+				: new this[PropertySymbol.window].DOMException(
+						'signal is aborted without reason',
+						DOMExceptionNameEnum.abortError
+					);
 		(<boolean>this.aborted) = true;
 		this.dispatchEvent(new Event('abort'));
 	}
@@ -75,14 +76,15 @@ export default class AbortSignal extends EventTarget {
 	 * @param [reason] Reason.
 	 * @returns AbortSignal instance.
 	 */
-	public static abort(reason?: Error): AbortSignal {
+	public static abort(reason?: any): AbortSignal {
 		const signal = new this();
-		(<Error>signal.reason) =
-			reason ||
-			new this[PropertySymbol.window].DOMException(
-				'signal is aborted without reason',
-				DOMExceptionNameEnum.abortError
-			);
+		signal.reason =
+			reason !== undefined
+				? reason
+				: new this[PropertySymbol.window].DOMException(
+						'signal is aborted without reason',
+						DOMExceptionNameEnum.abortError
+					);
 		(<boolean>signal.aborted) = true;
 		return signal;
 	}

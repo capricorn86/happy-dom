@@ -135,10 +135,13 @@ export default class Fetch {
 		FetchRequestValidationUtility.validateSchema(this.request);
 
 		if (this.request.signal.aborted) {
-			throw new this.#window.DOMException(
-				'The operation was aborted.',
-				this.request.signal.reason.name || DOMExceptionNameEnum.abortError
-			);
+			if (this.request.signal.reason instanceof Error) {
+				throw new this.#window.DOMException(
+					this.request.signal.reason.message || 'The operation was aborted.',
+					this.request.signal.reason.name || DOMExceptionNameEnum.abortError
+				);
+			}
+			throw this.request.signal.reason;
 		}
 
 		if (this.request[PropertySymbol.url].protocol === 'data:') {
