@@ -66,14 +66,14 @@ describe('AbortSignal', () => {
 
 		it('After Abortsignal timeout, sending a request with the wrong name still being "TimeoutError" ', async () => {
 			try {
-				const signal = AbortSignal.timeout(20)
-				const now = Date.now()
-				await vi.waitUntil(() => Date.now() - now > 100)
-				await fetch('https://example.com', { signal })
+				const signal = AbortSignal.timeout(20);
+				const now = Date.now();
+				await vi.waitUntil(() => Date.now() - now > 100);
+				await fetch('https://example.com', { signal });
 			} catch (e) {
-				expect((e as Error).name).toStrictEqual('TimeoutError')
+				expect((e as Error).name).toStrictEqual('TimeoutError');
 			}
-		})
+		});
 	});
 
 	describe('AbortSignal.any()', () => {

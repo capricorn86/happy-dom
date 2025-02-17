@@ -137,8 +137,7 @@ export default class Fetch {
 		if (this.request.signal.aborted) {
 			throw new this.#window.DOMException(
 				'The operation was aborted.',
-				this.request.signal.reason.name ||
-				DOMExceptionNameEnum.abortError
+				this.request.signal.reason.name || DOMExceptionNameEnum.abortError
 			);
 		}
 
