@@ -71,7 +71,7 @@ describe('AbortSignal', () => {
 				await vi.waitUntil(() => Date.now() - now > 100);
 				await fetch('https://example.com', { signal });
 			} catch (e) {
-				expect((e as Error).name).toStrictEqual('TimeoutError');
+				expect((<Error>e).name).toStrictEqual('TimeoutError');
 			}
 		});
 	});
