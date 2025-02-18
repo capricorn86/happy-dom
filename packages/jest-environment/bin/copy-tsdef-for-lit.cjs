@@ -24,9 +24,9 @@ async function copyTsDefFiles(lib) {
 
 	const files = await fsp.readdir(srcDir);
 
-	const tsDefFiles = files.filter(file => file.endsWith('.d.ts'));
+	const tsDefFiles = files.filter((file) => file.endsWith('.d.ts'));
 
-	const copyPromises = tsDefFiles.map(file => {
+	const copyPromises = tsDefFiles.map((file) => {
 		const srcFile = Path.join(srcDir, file);
 		const destFile = Path.join(destDir, file);
 		return fsp.copyFile(srcFile, destFile);
@@ -35,9 +35,7 @@ async function copyTsDefFiles(lib) {
 }
 
 async function main() {
-	await Promise.all(
-		LIBS.map(lib => copyTsDefFiles(lib))
-	);
+	await Promise.all(LIBS.map((lib) => copyTsDefFiles(lib)));
 }
 
 process.on('unhandledRejection', (reason) => {
