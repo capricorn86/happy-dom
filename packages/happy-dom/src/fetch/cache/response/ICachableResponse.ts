@@ -7,4 +7,5 @@ export default interface ICachableResponse {
 	headers: Headers;
 	body: Buffer | null;
 	waitingForBody: boolean;
+	virtual?: boolean;
 }

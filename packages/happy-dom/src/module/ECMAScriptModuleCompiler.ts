@@ -86,6 +86,11 @@ export default class ECMAScriptModuleCompiler {
 	 */
 	public compile(moduleURL: string, code: string): IECMAScriptModuleCompiledResult {
 		const browserSettings = new WindowBrowserContext(this.window).getSettings();
+
+		if (!browserSettings) {
+			return { imports: [], execute: () => {} };
+		}
+
 		const regExp = new RegExp(CODE_REGEXP);
 		const imports: IECMAScriptModuleImport[] = [];
 		const count = {

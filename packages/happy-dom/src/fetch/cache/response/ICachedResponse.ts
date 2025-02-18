@@ -33,4 +33,6 @@ export default interface ICachedResponse {
 	staleWhileRevalidate: boolean;
 	/** Used when "mustRevalidate" or "staleWhileRevalidate" is true. */
 	state: CachedResponseStateEnum;
+	/** Virtual server response */
+	virtual: boolean;
 }

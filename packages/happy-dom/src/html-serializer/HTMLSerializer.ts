@@ -19,10 +19,12 @@ export default class HTMLSerializer {
 		serializableShadowRoots: boolean;
 		shadowRoots: ShadowRoot[] | null;
 		allShadowRoots: boolean;
+		excludeShadowRootTags: string[] | null;
 	} = {
 		serializableShadowRoots: false,
 		shadowRoots: null,
-		allShadowRoots: false
+		allShadowRoots: false,
+		excludeShadowRootTags: null
 	};
 
 	/**
@@ -32,11 +34,13 @@ export default class HTMLSerializer {
 	 * @param [options.serializableShadowRoots] If shadow roots should be serialized.
 	 * @param [options.shadowRoots] Shadow roots to serialize.
 	 * @param [options.allShadowRoots] If all shadow roots should be serialized.
+	 * @param [options.excludeShadowRootTags] Tags to exclude from serialization.
 	 */
 	constructor(options?: {
 		serializableShadowRoots?: boolean;
 		shadowRoots?: ShadowRoot[] | null;
 		allShadowRoots?: boolean;
+		excludeShadowRootTags?: string[] | null;
 	}) {
 		if (options) {
 			if (options.serializableShadowRoots) {
@@ -49,6 +53,10 @@ export default class HTMLSerializer {
 
 			if (options.allShadowRoots) {
 				this.options.allShadowRoots = options.allShadowRoots;
+			}
+
+			if (options.excludeShadowRootTags) {
+				this.options.excludeShadowRootTags = options.excludeShadowRootTags;
 			}
 		}
 	}
@@ -80,7 +88,9 @@ export default class HTMLSerializer {
 					(this.options.allShadowRoots ||
 						(this.options.serializableShadowRoots &&
 							element.shadowRoot[PropertySymbol.serializable]) ||
-						this.options.shadowRoots?.includes(element.shadowRoot))
+						this.options.shadowRoots?.includes(element.shadowRoot)) &&
+					(!this.options.excludeShadowRootTags ||
+						!this.options.excludeShadowRootTags.includes(tagName))
 				) {
 					innerHTML += `<template shadowrootmode="${element.shadowRoot[PropertySymbol.mode]}"${
 						element.shadowRoot[PropertySymbol.serializable] ? ' shadowrootserializable=""' : ''

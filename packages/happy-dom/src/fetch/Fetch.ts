@@ -391,15 +391,16 @@ export default class Fetch {
 		this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 
 		const returnResponse = interceptedResponse instanceof Response ? interceptedResponse : response;
-		const cachedResponse = {
+		const cachableResponse = {
 			...returnResponse,
 			body: buffer,
-			waitingForBody: false
+			waitingForBody: false,
+			virtual: true
 		};
 
 		response[PropertySymbol.cachedResponse] = this.#browserFrame.page?.context?.responseCache.add(
 			this.request,
-			cachedResponse
+			cachableResponse
 		);
 
 		return returnResponse;
