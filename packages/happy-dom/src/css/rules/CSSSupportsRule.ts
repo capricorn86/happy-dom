@@ -1,10 +1,11 @@
 import CSSRule from '../CSSRule.js';
+import CSSRuleTypeEnum from '../CSSRuleTypeEnum.js';
 
 /**
  * CSSRule interface.
  */
 export default class CSSSupportsRule extends CSSRule {
-	public readonly type = CSSRule.SUPPORTS_RULE;
+	public readonly type = CSSRuleTypeEnum.supportsRule;
 	public readonly cssRules: CSSRule[] = [];
 	public readonly conditionText = '';
 

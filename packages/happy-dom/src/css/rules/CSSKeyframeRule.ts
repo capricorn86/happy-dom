@@ -1,12 +1,13 @@
 import CSSRule from '../CSSRule.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration.js';
+import CSSRuleTypeEnum from '../CSSRuleTypeEnum.js';
 
 /**
  * CSSRule interface.
  */
 export default class CSSKeyframeRule extends CSSRule {
-	public readonly type = CSSRule.KEYFRAME_RULE;
+	public readonly type = CSSRuleTypeEnum.keyframeRule;
 	public readonly keyText: string;
 	public [PropertySymbol.cssText] = '';
 	#style: CSSStyleDeclaration | null = null;

@@ -29,7 +29,7 @@ export default class CSSRule {
 	// Public properties
 	public parentRule: CSSRule = null;
 	public parentStyleSheet: CSSStyleSheet = null;
-	public type: number = null;
+	public type: CSSRuleTypeEnum | null = null;
 
 	/**
 	 * Constructor.

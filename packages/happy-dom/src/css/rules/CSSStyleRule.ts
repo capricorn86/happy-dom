@@ -1,12 +1,13 @@
 import CSSRule from '../CSSRule.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration.js';
+import CSSRuleTypeEnum from '../CSSRuleTypeEnum.js';
 
 /**
  * CSSRule interface.
  */
 export default class CSSStyleRule extends CSSRule {
-	public readonly type = CSSRule.STYLE_RULE;
+	public readonly type = CSSRuleTypeEnum.styleRule;
 	public readonly styleMap = new Map();
 	public selectorText = '';
 	public [PropertySymbol.cssText] = '';
