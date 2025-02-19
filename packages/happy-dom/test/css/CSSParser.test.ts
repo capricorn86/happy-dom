@@ -239,5 +239,211 @@ describe('CSSParser', () => {
 				'url("~react-native-vector-icons/Fonts/Ionicons.ttf")'
 			);
 		});
+
+		it('Supports @media (forced-colors: active).', () => {
+			const css = `
+                @media (forced-colors: active) {
+                    .foo { color: red; }
+                }
+            `;
+
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSMediaRule>cssRules[0]).media.length).toBe(1);
+			expect((<CSSMediaRule>cssRules[0]).media[0]).toBe('(forced-colors: active)');
+			expect((<CSSMediaRule>cssRules[0]).media.mediaText).toBe('(forced-colors: active)');
+			expect((<CSSStyleRule>(<CSSMediaRule>cssRules[0]).cssRules[0]).selectorText).toBe('.foo');
+			expect((<CSSStyleRule>(<CSSMediaRule>cssRules[0]).cssRules[0]).style.color).toBe('red');
+			expect((<CSSMediaRule>cssRules[0]).cssText).toBe(
+				'@media (forced-colors: active) { .foo { color: red; } }'
+			);
+		});
+
+		it('Supports @media rule inside a @media rule', () => {
+			const css =
+				'@media (forced-colors: active) { @media screen and (max-width: 36rem) { .foo { height: 0.5rem; } } }';
+
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSMediaRule>cssRules[0]).cssText).toBe(
+				'@media (forced-colors: active) { @media screen and (max-width: 36rem) { .foo { height: 0.5rem; } } }'
+			);
+		});
+
+		it('Supports @media rule inside a @container rule', () => {
+			const css =
+				'@container (min-width: 36rem) { @media screen and (max-width: 36rem) { .foo { height: 0.5rem; } } }';
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSContainerRule>cssRules[0]).cssText).toBe(
+				'@container (min-width: 36rem) { @media screen and (max-width: 36rem) { .foo { height: 0.5rem; } } }'
+			);
+		});
+
+		it('Supports @media rule inside a @supports rule', () => {
+			const css =
+				'@supports (display: flex) { @media screen and (max-width: 36rem) { .foo { height: 0.5rem; } } }';
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSSupportsRule>cssRules[0]).cssText).toBe(
+				'@supports (display: flex) { @media screen and (max-width: 36rem) { .foo { height: 0.5rem; } } }'
+			);
+		});
+
+		it('Ignores @media rule inside a @keyframes rule', () => {
+			const css =
+				'@keyframes keyframes1 { @media screen and (max-width: 36rem) { .foo { height: 0.5rem; } } }';
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSKeyframesRule>cssRules[0]).cssText).toBe('@keyframes keyframes1 { }');
+		});
+
+		it('Supports @container rule inside a @container rule', () => {
+			const css =
+				'@container containerName (min-width: 36rem) { @container containerName (min-width: 36rem) { .foo { height: 0.5rem; } } }';
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSContainerRule>cssRules[0]).cssText).toBe(
+				'@container containerName (min-width: 36rem) { @container containerName (min-width: 36rem) { .foo { height: 0.5rem; } } }'
+			);
+		});
+
+		it('Supports @container rule inside a @supports rule', () => {
+			const css =
+				'@supports (display: flex) { @container (min-width: 36rem) { .foo { height: 0.5rem; } } }';
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSSupportsRule>cssRules[0]).cssText).toBe(
+				'@supports (display: flex) { @container (min-width: 36rem) { .foo { height: 0.5rem; } } }'
+			);
+		});
+
+		it('Supports @container rule inside a @media rule', () => {
+			const css =
+				'@media screen and (max-width: 36rem) { @container (min-width: 36rem) { .foo { height: 0.5rem; } } }';
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSMediaRule>cssRules[0]).cssText).toBe(
+				'@media screen and (max-width: 36rem) { @container (min-width: 36rem) { .foo { height: 0.5rem; } } }'
+			);
+		});
+
+		it('Ignores @container rule inside a @keyframes rule', () => {
+			const css =
+				'@keyframes keyframes1 { @container (min-width: 36rem) { .foo { height: 0.5rem; } } }';
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSKeyframesRule>cssRules[0]).cssText).toBe('@keyframes keyframes1 { }');
+		});
+
+		it('Supports @supports rule inside a @supports rule', () => {
+			const css =
+				'@supports (display: flex) { @supports (display: grid) { .foo { height: 0.5rem; } } }';
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSSupportsRule>cssRules[0]).cssText).toBe(
+				'@supports (display: flex) { @supports (display: grid) { .foo { height: 0.5rem; } } }'
+			);
+		});
+
+		it('Supports @supports rule inside a @media rule', () => {
+			const css =
+				'@media screen and (max-width: 36rem) { @supports (display: grid) { .foo { height: 0.5rem; } } }';
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSMediaRule>cssRules[0]).cssText).toBe(
+				'@media screen and (max-width: 36rem) { @supports (display: grid) { .foo { height: 0.5rem; } } }'
+			);
+		});
+
+		it('Supports @supports rule inside a @container rule', () => {
+			const css =
+				'@container (min-width: 36rem) { @supports (display: grid) { .foo { height: 0.5rem; } } }';
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSContainerRule>cssRules[0]).cssText).toBe(
+				'@container (min-width: 36rem) { @supports (display: grid) { .foo { height: 0.5rem; } } }'
+			);
+		});
+
+		it('Ignores @supports rule inside a @keyframes rule', () => {
+			const css =
+				'@keyframes keyframes1 { @supports (display: grid) { .foo { height: 0.5rem; } } }';
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSKeyframesRule>cssRules[0]).cssText).toBe('@keyframes keyframes1 { }');
+		});
+
+		it('Supports @keyframes rule inside a @supports rule', () => {
+			const css =
+				'@supports (display: flex) { @keyframes keyframes1 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } }';
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSSupportsRule>cssRules[0]).cssText).toBe(
+				'@supports (display: flex) { @keyframes keyframes1 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } }'
+			);
+		});
+
+		it('Supports @keyframes rule inside a @media rule', () => {
+			const css =
+				'@media screen and (max-width: 36rem) { @keyframes keyframes1 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } }';
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSMediaRule>cssRules[0]).cssText).toBe(
+				'@media screen and (max-width: 36rem) { @keyframes keyframes1 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } }'
+			);
+		});
+
+		it('Supports @keyframes rule inside a @container rule', () => {
+			const css =
+				'@container (min-width: 36rem) { @keyframes keyframes1 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } }';
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSContainerRule>cssRules[0]).cssText).toBe(
+				'@container (min-width: 36rem) { @keyframes keyframes1 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } }'
+			);
+		});
+
+		it('Ignores @keyframes rule inside a @keyframes rule', () => {
+			const css =
+				'@keyframes keyframes1 { @keyframes keyframes2 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } }';
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSKeyframesRule>cssRules[0]).cssText).toBe('@keyframes keyframes1 { }');
+		});
 	});
 });

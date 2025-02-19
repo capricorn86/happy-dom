@@ -1,10 +1,11 @@
 import CSSRule from '../CSSRule.js';
+import CSSRuleTypeEnum from '../CSSRuleTypeEnum.js';
 
 /**
  * CSSRule interface.
  */
 export default class CSSContainerRule extends CSSRule {
-	public readonly type = CSSRule.CONTAINER_RULE;
+	public readonly type = CSSRuleTypeEnum.containerRule;
 	public readonly cssRules: CSSRule[] = [];
 	public readonly conditionText = '';
 

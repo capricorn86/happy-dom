@@ -57,18 +57,17 @@ export default class CSSStyleSheet {
 	 * @returns The newly inserterted rule's index.
 	 */
 	public insertRule(rule: string, index?: number): number {
-		const rules = CSSParser.parseFromString(this, rule);
-
-		if (rules.length === 0) {
-			throw new this[PropertySymbol.window].DOMException(
-				'Invalid CSS rule.',
-				DOMExceptionNameEnum.hierarchyRequestError
+		if (arguments.length === 0) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'insertRule' on 'CSSStyleSheet': 1 argument required, but only 0 present.`
 			);
 		}
 
-		if (rules.length > 1) {
+		const rules = CSSParser.parseFromString(this, rule);
+
+		if (rules.length === 0 || rules.length > 1) {
 			throw new this[PropertySymbol.window].DOMException(
-				'Only one rule is allowed to be added.',
+				`Failed to execute 'insertRule' on 'CSSStyleSheet': Failed to parse the rule '${rule}'.`,
 				DOMExceptionNameEnum.syntaxError
 			);
 		}
@@ -76,7 +75,9 @@ export default class CSSStyleSheet {
 		if (index !== undefined) {
 			if (index > this.cssRules.length) {
 				throw new this[PropertySymbol.window].DOMException(
-					'Index is more than the length of CSSRuleList.',
+					`Failed to execute 'insertRule' on 'CSSStyleSheet': The index provided (${index}) is larger than the maximum index (${
+						this.cssRules.length - 1
+					}).`,
 					DOMExceptionNameEnum.indexSizeError
 				);
 			}
@@ -98,7 +99,12 @@ export default class CSSStyleSheet {
 	 * @param index Index.
 	 */
 	public deleteRule(index: number): void {
-		delete this.cssRules[index];
+		if (arguments.length === 0) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'deleteRule' on 'CSSStyleSheet': 1 argument required, but only 0 present.`
+			);
+		}
+		this.cssRules.splice(index, 1);
 	}
 
 	/**
@@ -109,6 +115,11 @@ export default class CSSStyleSheet {
 	 * @returns Promise.
 	 */
 	public async replace(text: string): Promise<void> {
+		if (arguments.length === 0) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'replace' on 'CSSStyleSheet': 1 argument required, but only 0 present.`
+			);
+		}
 		this.replaceSync(text);
 	}
 
@@ -119,6 +130,11 @@ export default class CSSStyleSheet {
 	 * @param text CSS text.
 	 */
 	public replaceSync(text: string): void {
+		if (arguments.length === 0) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'replaceSync' on 'CSSStyleSheet': 1 argument required, but only 0 present.`
+			);
+		}
 		if (this.#currentText !== text) {
 			this.#currentText = text;
 			(<CSSRule[]>this.cssRules) = CSSParser.parseFromString(this, text);

@@ -1,12 +1,13 @@
 import CSSRule from '../CSSRule.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration.js';
+import CSSRuleTypeEnum from '../CSSRuleTypeEnum.js';
 
 /**
  * CSSRule interface.
  */
 export default class CSSFontFaceRule extends CSSRule {
-	public readonly type = CSSRule.FONT_FACE_RULE;
+	public readonly type = CSSRuleTypeEnum.fontFaceRule;
 	public [PropertySymbol.cssText] = '';
 	#style: CSSStyleDeclaration | null = null;
 
