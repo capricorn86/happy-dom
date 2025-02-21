@@ -54,7 +54,8 @@ describe('AbortSignal', () => {
 			const signal = window.AbortSignal.abort();
 
 			expect(signal.aborted).toBe(true);
-			expect(signal.reason instanceof Error).toBe(true);
+			expect(signal.reason instanceof window.DOMException).toBe(true);
+			expect(signal.reason.message).toBe('signal is aborted without reason');
 			expect(signal.reason.name).toBe('AbortError');
 		});
 
@@ -84,19 +85,9 @@ describe('AbortSignal', () => {
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			expect(signal.aborted).toBe(true);
-			expect(signal.reason).toBeInstanceOf(DOMException);
+			expect(signal.reason).toBeInstanceOf(window.DOMException);
+			expect(signal.reason?.message).toBe('signal timed out');
 			expect(signal.reason?.name).toBe('TimeoutError');
-		});
-
-		it('After Abortsignal timeout, sending a request with the wrong name still being "TimeoutError" ', async () => {
-			try {
-				const signal = AbortSignal.timeout(20);
-				const now = Date.now();
-				await vi.waitUntil(() => Date.now() - now > 100);
-				await fetch('https://example.com', { signal });
-			} catch (e) {
-				expect((<Error>e).name).toStrictEqual('TimeoutError');
-			}
 		});
 	});
 

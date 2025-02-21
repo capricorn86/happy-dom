@@ -104,7 +104,7 @@ export default class SyncFetch {
 			? this.interceptor.beforeSyncRequest({
 					request: this.request,
 					window: this.#window
-				})
+			  })
 			: undefined;
 
 		if (typeof beforeRequestResponse === 'object') {
@@ -113,9 +113,12 @@ export default class SyncFetch {
 
 		FetchRequestValidationUtility.validateSchema(this.request);
 
-		if (this.request.signal.aborted) {
-			throw new this.#window.DOMException(
-				'The operation was aborted.',
+		if (this.request.signal[PropertySymbol.aborted]) {
+			if (this.request.signal[PropertySymbol.reason] !== undefined) {
+				throw this.request.signal[PropertySymbol.reason];
+			}
+			throw new this[PropertySymbol.window].DOMException(
+				'signal is aborted without reason',
 				DOMExceptionNameEnum.abortError
 			);
 		}
@@ -136,7 +139,7 @@ export default class SyncFetch {
 						window: this.#window,
 						response,
 						request: this.request
-					})
+				  })
 				: undefined;
 			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
@@ -290,7 +293,7 @@ export default class SyncFetch {
 						window: this.#window,
 						response,
 						request: this.request
-					})
+				  })
 				: undefined;
 			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
@@ -309,7 +312,7 @@ export default class SyncFetch {
 						window: this.#window,
 						response,
 						request: this.request
-					})
+				  })
 				: undefined;
 			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
@@ -328,7 +331,7 @@ export default class SyncFetch {
 					window: this.#window,
 					response,
 					request: this.request
-				})
+			  })
 			: undefined;
 		const returnResponse = typeof interceptedResponse === 'object' ? interceptedResponse : response;
 
@@ -525,7 +528,7 @@ export default class SyncFetch {
 					window: this.#window,
 					response: redirectedResponse,
 					request: this.request
-				})
+			  })
 			: undefined;
 		const returnResponse =
 			typeof interceptedResponse === 'object' ? interceptedResponse : redirectedResponse;

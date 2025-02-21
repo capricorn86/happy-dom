@@ -10,6 +10,7 @@ import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
 import FormData from '../../form-data/FormData.js';
 import HistoryScrollRestorationEnum from '../../history/HistoryScrollRestorationEnum.js';
 import IHistoryItem from '../../history/IHistoryItem.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 
 /**
  * Browser frame navigation utility.
@@ -178,7 +179,13 @@ export default class BrowserFrameNavigator {
 		const readyStateManager = frame.window[PropertySymbol.readyStateManager];
 		const abortController = new frame.window.AbortController();
 		const timeout = frame.window.setTimeout(
-			() => abortController.abort(new Error('Request timed out.')),
+			() =>
+				abortController.abort(
+					new frame.window.DOMException(
+						'The operation was aborted. Request timed out.',
+						DOMExceptionNameEnum.timeoutError
+					)
+				),
 			goToOptions?.timeout ?? 30000
 		);
 		const finalize = (): void => {
