@@ -455,7 +455,9 @@ export default class HTMLLinkElement extends HTMLElement {
 			browserFrame.page?.console.error(error);
 			this.dispatchEvent(new Event('error'));
 		} else {
-			const styleSheet = new CSSStyleSheet();
+			const styleSheet = new this[PropertySymbol.ownerDocument][
+				PropertySymbol.window
+			].CSSStyleSheet();
 			styleSheet.replaceSync(code);
 			this[PropertySymbol.sheet] = styleSheet;
 

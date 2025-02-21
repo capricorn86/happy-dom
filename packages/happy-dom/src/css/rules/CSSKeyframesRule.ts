@@ -2,6 +2,7 @@ import CSSRule from '../CSSRule.js';
 import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration.js';
 import CSSKeyframeRule from './CSSKeyframeRule.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
+import CSSRuleTypeEnum from '../CSSRuleTypeEnum.js';
 
 const CSS_RULE_REGEXP = /([^{]+){([^}]+)}/;
 
@@ -9,7 +10,7 @@ const CSS_RULE_REGEXP = /([^{]+){([^}]+)}/;
  * CSSRule interface.
  */
 export default class CSSKeyframesRule extends CSSRule {
-	public readonly type = CSSRule.KEYFRAMES_RULE;
+	public readonly type = CSSRuleTypeEnum.keyframesRule;
 	public readonly cssRules: CSSKeyframeRule[] = [];
 	public readonly name: string = null;
 

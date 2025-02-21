@@ -226,6 +226,8 @@ export default class MediaQueryItem {
 					return true;
 				case 'prefers-reduced-motion':
 					return settings.device.prefersReducedMotion === 'reduce';
+				case 'forced-colors':
+					return settings.device.forcedColors === 'active';
 			}
 			return false;
 		}
@@ -257,6 +259,11 @@ export default class MediaQueryItem {
 				return rule.value === settings.device.prefersColorScheme;
 			case 'prefers-reduced-motion':
 				return rule.value === settings.device.prefersReducedMotion;
+			case 'forced-colors':
+				return (
+					(rule.value === 'none' || rule.value === 'active') &&
+					rule.value === settings.device.forcedColors
+				);
 			case 'any-hover':
 			case 'hover':
 				if (rule.value === 'none') {

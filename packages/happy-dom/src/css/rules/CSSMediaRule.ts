@@ -1,11 +1,12 @@
 import CSSRule from '../CSSRule.js';
+import CSSRuleTypeEnum from '../CSSRuleTypeEnum.js';
 import MediaList from '../MediaList.js';
 
 /**
  * CSSRule interface.
  */
 export default class CSSMediaRule extends CSSRule {
-	public readonly type = CSSRule.MEDIA_RULE;
+	public readonly type = CSSRuleTypeEnum.mediaRule;
 	public readonly cssRules: CSSRule[] = [];
 	public readonly media = new MediaList();
 
