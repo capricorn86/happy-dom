@@ -113,9 +113,12 @@ export default class SyncFetch {
 
 		FetchRequestValidationUtility.validateSchema(this.request);
 
-		if (this.request.signal.aborted) {
-			throw new this.#window.DOMException(
-				'The operation was aborted.',
+		if (this.request.signal[PropertySymbol.aborted]) {
+			if (this.request.signal[PropertySymbol.reason] !== undefined) {
+				throw this.request.signal[PropertySymbol.reason];
+			}
+			throw new this[PropertySymbol.window].DOMException(
+				'signal is aborted without reason',
 				DOMExceptionNameEnum.abortError
 			);
 		}

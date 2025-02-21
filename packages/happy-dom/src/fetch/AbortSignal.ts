@@ -14,9 +14,9 @@ export default class AbortSignal extends EventTarget {
 	protected declare static [PropertySymbol.window]: BrowserWindow;
 	protected declare [PropertySymbol.window]: BrowserWindow;
 
-	// Public properties
-	public readonly aborted: boolean = false;
-	public readonly reason: Error | null = null;
+	// Internal properties
+	public [PropertySymbol.aborted]: boolean = false;
+	public [PropertySymbol.reason]: any = undefined;
 
 	// Events
 	public onabort: ((this: AbortSignal, event: Event) => void) | null = null;
@@ -28,9 +28,7 @@ export default class AbortSignal extends EventTarget {
 		super();
 
 		if (!this[PropertySymbol.window]) {
-			throw new TypeError(
-				`Failed to construct '${this.constructor.name}': '${this.constructor.name}' was constructed outside a Window context.`
-			);
+			throw new TypeError(`Failed to construct 'AbortSignal': Illegal constructor`);
 		}
 	}
 
@@ -42,21 +40,58 @@ export default class AbortSignal extends EventTarget {
 	}
 
 	/**
+	 * Returns true if the signal has been aborted.
+	 *
+	 * @returns True if the signal has been aborted.
+	 */
+	public get aborted(): boolean {
+		return this[PropertySymbol.aborted];
+	}
+
+	/**
+	 * Setter for aborted. Value will be ignored as the property is read-only.
+	 *
+	 * @param _value Aborted.
+	 */
+	public set aborted(_value: boolean) {
+		// Do nothing
+	}
+
+	/**
+	 * Returns the reason the signal was aborted.
+	 *
+	 * @returns Reason.
+	 */
+	public get reason(): any {
+		return this[PropertySymbol.reason];
+	}
+
+	/**
+	 * Setter for reason. Value will be ignored as the property is read-only.
+	 *
+	 * @param _value Reason.
+	 */
+	public set reason(_value: any) {
+		// Do nothing
+	}
+
+	/**
 	 * Aborts the signal.
 	 *
 	 * @param [reason] Reason.
 	 */
-	public [PropertySymbol.abort](reason?: Error): void {
+	public [PropertySymbol.abort](reason?: any): void {
 		if (this.aborted) {
 			return;
 		}
-		(<Error>this.reason) =
-			reason ||
-			new this[PropertySymbol.window].DOMException(
-				'signal is aborted without reason',
-				DOMExceptionNameEnum.abortError
-			);
-		(<boolean>this.aborted) = true;
+		this[PropertySymbol.reason] =
+			reason !== undefined
+				? reason
+				: new this[PropertySymbol.window].DOMException(
+						'signal is aborted without reason',
+						DOMExceptionNameEnum.abortError
+					);
+		this[PropertySymbol.aborted] = true;
 		this.dispatchEvent(new Event('abort'));
 	}
 
@@ -75,15 +110,16 @@ export default class AbortSignal extends EventTarget {
 	 * @param [reason] Reason.
 	 * @returns AbortSignal instance.
 	 */
-	public static abort(reason?: Error): AbortSignal {
+	public static abort(reason?: any): AbortSignal {
 		const signal = new this();
-		(<Error>signal.reason) =
-			reason ||
-			new this[PropertySymbol.window].DOMException(
-				'signal is aborted without reason',
-				DOMExceptionNameEnum.abortError
-			);
-		(<boolean>signal.aborted) = true;
+		signal[PropertySymbol.reason] =
+			reason !== undefined
+				? reason
+				: new this[PropertySymbol.window].DOMException(
+						'signal is aborted without reason',
+						DOMExceptionNameEnum.abortError
+					);
+		signal[PropertySymbol.aborted] = true;
 		return signal;
 	}
 
@@ -118,8 +154,8 @@ export default class AbortSignal extends EventTarget {
 	 */
 	public static any(signals: AbortSignal[]): AbortSignal {
 		for (const signal of signals) {
-			if (signal.aborted) {
-				return this.abort(signal.reason);
+			if (signal[PropertySymbol.aborted]) {
+				return this.abort(signal[PropertySymbol.reason]);
 			}
 		}
 
@@ -135,7 +171,7 @@ export default class AbortSignal extends EventTarget {
 		for (const signal of signals) {
 			const handler = (): void => {
 				stopListening();
-				anySignal[PropertySymbol.abort](signal.reason);
+				anySignal[PropertySymbol.abort](signal[PropertySymbol.reason]);
 			};
 			handlers.set(signal, handler);
 			signal.addEventListener('abort', handler);

@@ -391,3 +391,4 @@ export const blocking = Symbol('blocking');
 export const moduleImportMap = Symbol('moduleImportMap');
 export const dispatchError = Symbol('dispatchError');
 export const supports = Symbol('supports');
+export const reason = Symbol('reason');
