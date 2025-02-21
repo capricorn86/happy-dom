@@ -90,7 +90,7 @@ export default class AbortSignal extends EventTarget {
 				: new this[PropertySymbol.window].DOMException(
 						'signal is aborted without reason',
 						DOMExceptionNameEnum.abortError
-				  );
+					);
 		this[PropertySymbol.aborted] = true;
 		this.dispatchEvent(new Event('abort'));
 	}
@@ -118,7 +118,7 @@ export default class AbortSignal extends EventTarget {
 				: new this[PropertySymbol.window].DOMException(
 						'signal is aborted without reason',
 						DOMExceptionNameEnum.abortError
-				  );
+					);
 		signal[PropertySymbol.aborted] = true;
 		return signal;
 	}

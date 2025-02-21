@@ -17,7 +17,6 @@ import { ReadableStream } from 'stream/web';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import FetchHTTPSCertificate from '../../src/fetch/certificate/FetchHTTPSCertificate.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
-import { abort } from 'process';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
