@@ -1,5 +1,5 @@
 import Event from '../../src/event/Event.js';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import BrowserWindow from '../../src/window/BrowserWindow.js';
 import Window from '../../src/window/Window.js';
@@ -49,6 +49,31 @@ describe('AbortSignal', () => {
 			expect(signal.aborted).toBe(true);
 			expect(signal.reason).toBe(reason);
 		});
+
+		it('Returns a new instance of AbortSignal with a default reason if no reason is provided.', () => {
+			const signal = window.AbortSignal.abort();
+
+			expect(signal.aborted).toBe(true);
+			expect(signal.reason instanceof window.DOMException).toBe(true);
+			expect(signal.reason.message).toBe('signal is aborted without reason');
+			expect(signal.reason.name).toBe('AbortError');
+		});
+
+		it('Returns a new instance of AbortSignal with a custom reason 1.', () => {
+			const signal = window.AbortSignal.abort(1);
+
+			expect(signal.aborted).toBe(true);
+			expect(signal.reason instanceof Error).toBe(false);
+			expect(signal.reason).toBe(1);
+		});
+
+		it('Returns a new instance of AbortSignal with a custom reason null.', () => {
+			const signal = window.AbortSignal.abort(null);
+
+			expect(signal.aborted).toBe(true);
+			expect(signal.reason instanceof Error).toBe(false);
+			expect(signal.reason).toBe(null);
+		});
 	});
 
 	describe('AbortSignal.timeout()', () => {
@@ -60,7 +85,8 @@ describe('AbortSignal', () => {
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			expect(signal.aborted).toBe(true);
-			expect(signal.reason).toBeInstanceOf(DOMException);
+			expect(signal.reason).toBeInstanceOf(window.DOMException);
+			expect(signal.reason?.message).toBe('signal timed out');
 			expect(signal.reason?.name).toBe('TimeoutError');
 		});
 	});

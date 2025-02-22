@@ -2062,28 +2062,12 @@ describe('Fetch', () => {
 		it('Supports aborting a request using AbortController and AbortSignal.', async () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
-			const responseText = 'some response text';
 
 			mockModule('https', {
 				request: () => {
 					return {
 						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								setTimeout(() => {
-									async function* generate(): AsyncGenerator<Buffer> {
-										yield Buffer.from(responseText);
-									}
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-									response.statusCode = 200;
-									response.headers = {};
-									response.rawHeaders = [];
-
-									callback(response);
-								}, 20);
-							}
-						},
+						on: () => {},
 						setTimeout: () => {},
 						destroy: () => {}
 					};
@@ -2105,11 +2089,76 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
-					'The operation was aborted. AbortError: signal is aborted without reason',
-					DOMExceptionNameEnum.abortError
-				)
+				new DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
 			);
+		});
+
+		it('Supports aborting a request using AbortSignal.timeout()', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
+
+			mockModule('https', {
+				request: () => {
+					return {
+						end: () => {},
+						on: () => {},
+						setTimeout: () => {},
+						destroy: () => {}
+					};
+				}
+			});
+
+			const signal = window.AbortSignal.timeout(10);
+
+			let error: Error | null = null;
+
+			try {
+				await window.fetch('https://localhost:8080/test/', { signal });
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error).toBeInstanceOf(window.DOMException);
+			expect((<Error>error).name).toBe('TimeoutError');
+			expect((<Error>error).message).toBe('signal timed out');
+		});
+
+		it('Supports an already aborted signal using a custom reason', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
+			const abortController = new window.AbortController();
+			const abortSignal = abortController.signal;
+
+			abortController.abort(1);
+
+			let error: Error | null = null;
+
+			try {
+				await window.fetch('https://example.com', { signal: abortSignal });
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error).toBe(1);
+		});
+
+		it('Supports aborting a request using AbortController and AbortSignal with a custom reason', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
+
+			const abortController = new window.AbortController();
+			const abortSignal = abortController.signal;
+
+			setTimeout(() => {
+				abortController.abort(1);
+			}, 10);
+
+			let error: Error | null = null;
+
+			try {
+				await window.fetch('https://localhost:8080/test/', { signal: abortSignal });
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error).toBe(1);
 		});
 
 		it('Supports aborting a redirect request using AbortController and AbortSignal.', async () => {
@@ -2154,7 +2203,7 @@ describe('Fetch', () => {
 
 			setTimeout(() => {
 				abortController.abort();
-			}, 20);
+			}, 15);
 
 			try {
 				await window.fetch(url1, { method: 'GET', signal: abortSignal });
@@ -2163,10 +2212,7 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
-					'The operation was aborted. AbortError: signal is aborted without reason',
-					DOMExceptionNameEnum.abortError
-				)
+				new DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
 			);
 		});
 		it('Supports aborting multiple ongoing requests using AbortController.', async () => {
@@ -2213,16 +2259,10 @@ describe('Fetch', () => {
 				const onFetchCatch = (): void => {
 					if (error1 && error2) {
 						expect(error1).toEqual(
-							new DOMException(
-								'The operation was aborted. AbortError: signal is aborted without reason',
-								DOMExceptionNameEnum.abortError
-							)
+							new DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
 						);
 						expect(error2).toEqual(
-							new DOMException(
-								'The operation was aborted. AbortError: signal is aborted without reason',
-								DOMExceptionNameEnum.abortError
-							)
+							new DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
 						);
 						resolve(null);
 					}
@@ -2256,7 +2296,7 @@ describe('Fetch', () => {
 				error = e;
 			}
 			expect(error).toEqual(
-				new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+				new DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
 			);
 		});
 
@@ -2443,10 +2483,7 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
-					'The operation was aborted. AbortError: signal is aborted without reason',
-					DOMExceptionNameEnum.abortError
-				)
+				new DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
 			);
 		});
 

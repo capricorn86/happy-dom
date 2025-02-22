@@ -105,6 +105,7 @@ export default interface IOptionalBrowserSettings {
 		prefersColorScheme?: string;
 		prefersReducedMotion?: string;
 		mediaType?: string;
+		forcedColors?: string;
 	};
 
 	/**

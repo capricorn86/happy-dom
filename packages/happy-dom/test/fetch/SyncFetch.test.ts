@@ -2103,8 +2103,34 @@ describe('SyncFetch', () => {
 				error = e;
 			}
 			expect(error).toEqual(
-				new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+				new DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
 			);
+		});
+
+		it('Rejects immediately if signal has already been aborted using a custom reason.', () => {
+			browserFrame.url = 'https://localhost:8080/';
+
+			const url = 'https://localhost:8080/test/';
+
+			const abortController = new window.AbortController();
+			const abortSignal = abortController.signal;
+
+			abortController.abort(1);
+
+			let error: Error | null = null;
+			try {
+				new SyncFetch({
+					browserFrame,
+					window,
+					url,
+					init: {
+						signal: abortSignal
+					}
+				}).send();
+			} catch (e) {
+				error = e;
+			}
+			expect(error).toBe(1);
 		});
 
 		it('Supports POST request with body as string.', () => {

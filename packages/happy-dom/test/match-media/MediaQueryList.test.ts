@@ -58,6 +58,10 @@ describe('MediaQueryList', () => {
 			expect(new MediaQueryList({ window: window, media: '(prefers-reduced-motion)' }).media).toBe(
 				'(prefers-reduced-motion)'
 			);
+
+			expect(
+				new MediaQueryList({ window: window, media: '(forced-colors:      active)' }).media
+			).toBe('(forced-colors: active)');
 		});
 	});
 
@@ -278,6 +282,28 @@ describe('MediaQueryList', () => {
 			expect(
 				new MediaQueryList({ window: window, media: '(prefers-color-scheme: light)' }).matches
 			).toBe(false);
+		});
+
+		it('Handles "forced-colors".', () => {
+			expect(new MediaQueryList({ window: window, media: '(forced-colors)' }).matches).toBe(false);
+			expect(new MediaQueryList({ window: window, media: '(forced-colors: active)' }).matches).toBe(
+				false
+			);
+			expect(new MediaQueryList({ window: window, media: '(forced-colors: none)' }).matches).toBe(
+				true
+			);
+
+			window = new Window({
+				settings: { device: { forcedColors: 'active' } }
+			});
+
+			expect(new MediaQueryList({ window: window, media: '(forced-colors)' }).matches).toBe(true);
+			expect(new MediaQueryList({ window: window, media: '(forced-colors: active)' }).matches).toBe(
+				true
+			);
+			expect(new MediaQueryList({ window: window, media: '(forced-colors: none)' }).matches).toBe(
+				false
+			);
 		});
 
 		it('Handles "prefers-reduced-motion".', () => {
