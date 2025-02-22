@@ -731,9 +731,7 @@ export default class Element
 	public getAttributeNames(): string[] {
 		const names = [];
 		for (const item of this[PropertySymbol.attributes][PropertySymbol.items].values()) {
-			if (item) {
-				names.push(item[PropertySymbol.name]);
-			}
+			names.push(item[PropertySymbol.name]);
 		}
 		return names;
 	}
