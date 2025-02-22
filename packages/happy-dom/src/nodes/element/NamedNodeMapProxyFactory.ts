@@ -21,7 +21,7 @@ export default class NamedNodeMapProxyFactory {
 		return new Proxy<NamedNodeMap>(namedNodeMap, {
 			get: (target, property) => {
 				if (property === 'length') {
-					return namedNodeMap[PropertySymbol.namedItems].size;
+					return namedNodeMap[PropertySymbol.items].size;
 				}
 				if (property in target || typeof property === 'symbol') {
 					methodBinder.bind(property);
@@ -29,7 +29,7 @@ export default class NamedNodeMapProxyFactory {
 				}
 				const index = Number(property);
 				if (!isNaN(index)) {
-					return Array.from(namedNodeMap[PropertySymbol.namedItems].values())[index]?.[0];
+					return target.item(index);
 				}
 				return target.getNamedItem(<string>property) || undefined;
 			},
@@ -57,8 +57,8 @@ export default class NamedNodeMapProxyFactory {
 				return true;
 			},
 			ownKeys(): string[] {
-				const keys = Array.from(namedNodeMap[PropertySymbol.namedItems].keys());
-				for (let i = 0, max = namedNodeMap[PropertySymbol.namedItems].size; i < max; i++) {
+				const keys = Array.from(namedNodeMap[PropertySymbol.items].keys());
+				for (let i = 0, max = namedNodeMap[PropertySymbol.items].size; i < max; i++) {
 					keys.push(String(i));
 				}
 				return keys;
@@ -68,13 +68,13 @@ export default class NamedNodeMapProxyFactory {
 					return false;
 				}
 
-				if (property in target || namedNodeMap[PropertySymbol.namedItems].has(property)) {
+				if (property in target || namedNodeMap[PropertySymbol.items].has(property)) {
 					return true;
 				}
 
 				const index = Number(property);
 
-				if (!isNaN(index) && index >= 0 && index < namedNodeMap[PropertySymbol.namedItems].size) {
+				if (!isNaN(index) && index >= 0 && index < namedNodeMap[PropertySymbol.items].size) {
 					return true;
 				}
 
@@ -96,21 +96,26 @@ export default class NamedNodeMapProxyFactory {
 				}
 
 				const index = Number(property);
-
-				if (!isNaN(index) && index >= 0 && index < namedNodeMap[PropertySymbol.namedItems].size) {
-					return {
-						value: Array.from(namedNodeMap[PropertySymbol.namedItems].values())[index][0],
-						writable: false,
-						enumerable: true,
-						configurable: true
-					};
+				if (!isNaN(index)) {
+					if (index >= 0) {
+						const itemByIndex = target.item(index);
+						if (itemByIndex) {
+							return {
+								value: itemByIndex,
+								writable: false,
+								enumerable: true,
+								configurable: true
+							};
+						}
+					}
+					return;
 				}
 
-				const namedItems = namedNodeMap[PropertySymbol.namedItems].get(<string>property);
+				const items = namedNodeMap[PropertySymbol.items].get(<string>property);
 
-				if (namedItems) {
+				if (items) {
 					return {
-						value: namedItems[0],
+						value: items,
 						writable: false,
 						enumerable: true,
 						configurable: true
