@@ -649,14 +649,14 @@ export default class HTMLElement extends Element {
 		newElement[PropertySymbol.isValue] = this[PropertySymbol.isValue];
 		newElement[PropertySymbol.cache] = this[PropertySymbol.cache];
 		newElement[PropertySymbol.affectsCache] = this[PropertySymbol.affectsCache];
-		newElement[PropertySymbol.attributes][PropertySymbol.namedItems] =
-			this[PropertySymbol.attributes][PropertySymbol.namedItems];
-		newElement[PropertySymbol.attributes][PropertySymbol.namespaceItems] =
-			this[PropertySymbol.attributes][PropertySymbol.namespaceItems];
+		newElement[PropertySymbol.attributes][PropertySymbol.itemsByNamespaceURI] =
+			this[PropertySymbol.attributes][PropertySymbol.itemsByNamespaceURI];
+		newElement[PropertySymbol.attributes][PropertySymbol.itemsByName] =
+			this[PropertySymbol.attributes][PropertySymbol.itemsByName];
+		newElement[PropertySymbol.attributes][PropertySymbol.items] =
+			this[PropertySymbol.attributes][PropertySymbol.items];
 
-		for (const attr of newElement[PropertySymbol.attributes][
-			PropertySymbol.namespaceItems
-		].values()) {
+		for (const attr of newElement[PropertySymbol.attributes][PropertySymbol.items].values()) {
 			attr[PropertySymbol.ownerElement] = newElement;
 		}
 
@@ -677,8 +677,9 @@ export default class HTMLElement extends Element {
 		this[PropertySymbol.isValue] = null;
 		this[PropertySymbol.cache] = newCache;
 		this[PropertySymbol.affectsCache] = [];
-		this[PropertySymbol.attributes][PropertySymbol.namedItems] = new Map();
-		this[PropertySymbol.attributes][PropertySymbol.namespaceItems] = new Map();
+		this[PropertySymbol.attributes][PropertySymbol.itemsByNamespaceURI] = new Map();
+		this[PropertySymbol.attributes][PropertySymbol.itemsByName] = new Map();
+		this[PropertySymbol.attributes][PropertySymbol.items] = new Map();
 
 		for (const node of newElement[PropertySymbol.nodeArray]) {
 			node[PropertySymbol.parentNode] = newElement;

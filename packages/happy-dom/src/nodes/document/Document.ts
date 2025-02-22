@@ -50,6 +50,7 @@ import SVGElementConfig from '../../config/SVGElementConfig.js';
 import StringUtility from '../../utilities/StringUtility.js';
 import HTMLParser from '../../html-parser/HTMLParser.js';
 import PreloadEntry from '../../fetch/preload/PreloadEntry.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -1222,7 +1223,17 @@ export default class Document extends Node {
 	 * @returns Attribute.
 	 */
 	public createAttribute(qualifiedName: string): Attr {
-		return this.createAttributeNS(null, StringUtility.asciiLowerCase(qualifiedName));
+		// We should use the NodeFactory and not the class constructor, so that owner document will be this document
+		const attribute = NodeFactory.createNode(this, this[PropertySymbol.window].Attr);
+
+		const name = StringUtility.asciiLowerCase(qualifiedName);
+		const parts = name.split(':');
+
+		attribute[PropertySymbol.name] = name;
+		attribute[PropertySymbol.localName] = parts[1] ?? name;
+		attribute[PropertySymbol.prefix] = parts[1] ? parts[0] : null;
+
+		return attribute;
 	}
 
 	/**
@@ -1237,10 +1248,20 @@ export default class Document extends Node {
 		const attribute = NodeFactory.createNode(this, this[PropertySymbol.window].Attr);
 
 		const parts = qualifiedName.split(':');
+
 		attribute[PropertySymbol.namespaceURI] = namespaceURI;
 		attribute[PropertySymbol.name] = qualifiedName;
 		attribute[PropertySymbol.localName] = parts[1] ?? qualifiedName;
 		attribute[PropertySymbol.prefix] = parts[1] ? parts[0] : null;
+
+		if (!namespaceURI && attribute[PropertySymbol.prefix]) {
+			throw new this[PropertySymbol.window].DOMException(
+				`Failed to execute 'createAttributeNS' on 'Document': The namespace URI provided ('${
+					namespaceURI || ''
+				}') is not valid for the qualified name provided ('${qualifiedName}').`,
+				DOMExceptionNameEnum.namespaceError
+			);
+		}
 
 		return attribute;
 	}

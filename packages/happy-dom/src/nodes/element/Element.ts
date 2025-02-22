@@ -33,6 +33,7 @@ import HTMLSerializer from '../../html-serializer/HTMLSerializer.js';
 import HTMLParser from '../../html-parser/HTMLParser.js';
 import IScrollToOptions from '../../window/IScrollToOptions.js';
 import { AttributeUtility } from '../../utilities/AttributeUtility.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -545,9 +546,17 @@ export default class Element
 			clone[PropertySymbol.shadowRoot][PropertySymbol.host] = clone;
 		}
 
-		for (const item of this[PropertySymbol.attributes][PropertySymbol.namespaceItems].values()) {
-			clone[PropertySymbol.attributes].setNamedItem(item.cloneNode());
-		}
+		clone[PropertySymbol.attributes][PropertySymbol.itemsByNamespaceURI] = new Map(
+			this[PropertySymbol.attributes][PropertySymbol.itemsByNamespaceURI]
+		);
+
+		clone[PropertySymbol.attributes][PropertySymbol.itemsByName] = new Map(
+			this[PropertySymbol.attributes][PropertySymbol.itemsByName]
+		);
+
+		clone[PropertySymbol.attributes][PropertySymbol.items] = new Map(
+			this[PropertySymbol.attributes][PropertySymbol.items]
+		);
 
 		return <Element>clone;
 	}
@@ -704,6 +713,12 @@ export default class Element
 	 */
 	public setAttributeNS(namespaceURI: string, name: string, value: string): void {
 		const attribute = this[PropertySymbol.ownerDocument].createAttributeNS(namespaceURI, name);
+		if (!namespaceURI && attribute[PropertySymbol.prefix]) {
+			throw new this[PropertySymbol.window].DOMException(
+				`Failed to execute 'setAttributeNS' on 'Element': '' is an invalid namespace for attributes.`,
+				DOMExceptionNameEnum.namespaceError
+			);
+		}
 		attribute[PropertySymbol.value] = String(value);
 		this[PropertySymbol.attributes].setNamedItemNS(attribute);
 	}
@@ -715,7 +730,7 @@ export default class Element
 	 */
 	public getAttributeNames(): string[] {
 		const names = [];
-		for (const item of this[PropertySymbol.attributes][PropertySymbol.namespaceItems].values()) {
+		for (const item of this[PropertySymbol.attributes][PropertySymbol.items].values()) {
 			names.push(item[PropertySymbol.name]);
 		}
 		return names;
@@ -799,7 +814,7 @@ export default class Element
 	 * @returns "true" if the element has attributes.
 	 */
 	public hasAttributes(): boolean {
-		return this[PropertySymbol.attributes][PropertySymbol.namespaceItems].size > 0;
+		return this[PropertySymbol.attributes][PropertySymbol.items].size > 0;
 	}
 
 	/**

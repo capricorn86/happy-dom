@@ -309,5 +309,31 @@ describe('HTMLSerializer', () => {
 				)
 			).toBe('<body><div><script>//<>&lt;&gt;</script><style>//<>&lt;&gt;</style></div></body>');
 		});
+
+		it('Serializes attributes with different namespace and the same key.', () => {
+			const div = document.createElement('div');
+
+			div.setAttributeNS('namespace', 'key', 'value1');
+			div.setAttributeNS('namespace', 'key', 'value2');
+			div.setAttributeNS('namespace2', 'key', 'value3');
+			div.setAttributeNS('namespace3', 'key', 'value4');
+
+			expect(serializer.serializeToString(div)).toBe(
+				`<div key="value2" key="value3" key="value4"></div>`
+			);
+		});
+
+		it('Serializes attributes with different namespace and the same key.', () => {
+			const div = document.createElement('div');
+
+			div.setAttribute('ns1:key', 'value1');
+			div.setAttribute('ns2:key', 'value1');
+			div.setAttribute('key1', 'value1');
+			div.setAttribute('key2', '');
+
+			expect(serializer.serializeToString(div)).toBe(
+				`<div ns1:key="value1" ns2:key="value1" key1="value1" key2=""></div>`
+			);
+		});
 	});
 });

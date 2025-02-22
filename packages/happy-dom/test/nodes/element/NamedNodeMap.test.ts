@@ -51,6 +51,54 @@ describe('NamedNodeMap', () => {
 
 			expect(element.attributes.length).toBe(3);
 		});
+
+		it('Returns iterator using the same local name with different prefix.', () => {
+			element.setAttribute('ns1:key', 'value1');
+			element.setAttribute('ns2:key', 'value1');
+			element.setAttribute('key1', 'value1');
+			element.setAttribute('key2', '');
+
+			const attributeList: Attr[] = [];
+
+			for (const attribute of element.attributes) {
+				attributeList.push(attribute);
+			}
+
+			// 'ns2:key=value1', 'key1=value1', 'key2='
+
+			expect(attributeList.length).toBe(4);
+
+			expect(attributeList[0].name).toBe('ns1:key');
+			expect(attributeList[0].value).toBe('value1');
+
+			expect(attributeList[1].name).toBe('ns2:key');
+			expect(attributeList[1].value).toBe('value1');
+
+			expect(attributeList[2].name).toBe('key1');
+			expect(attributeList[2].value).toBe('value1');
+
+			expect(attributeList[3].name).toBe('key2');
+			expect(attributeList[3].value).toBe('');
+		});
+
+		it('Returns iterator when using namespaces.', () => {
+			element.setAttributeNS('namespace', 'key', 'value1');
+			element.setAttributeNS('namespace', 'key', 'value2');
+			element.setAttributeNS('namespace2', 'key', 'value3');
+			element.setAttributeNS('namespace3', 'key', 'value4');
+
+			const attributeList: Attr[] = [];
+
+			for (const attribute of element.attributes) {
+				attributeList.push(attribute);
+			}
+
+			expect(attributeList.length).toBe(3);
+
+			expect(attributeList[0].value).toBe('value2');
+			expect(attributeList[1].value).toBe('value3');
+			expect(attributeList[2].value).toBe('value4');
+		});
 	});
 
 	describe('item()', () => {
@@ -62,6 +110,39 @@ describe('NamedNodeMap', () => {
 			expect(element.attributes.item(0)?.value).toBe('value1');
 			expect(element.attributes.item(1)?.name).toBe('key2');
 			expect(element.attributes.item(1)?.value).toBe('value2');
+		});
+
+		it('Returns item by index using the same local name with different prefix.', () => {
+			element.setAttribute('ns1:key', 'value1');
+			element.setAttribute('ns2:key', 'value1');
+			element.setAttribute('key1', 'value1');
+			element.setAttribute('key2', '');
+
+			expect(element.attributes.item(0)?.name).toBe('ns1:key');
+			expect(element.attributes.item(0)?.value).toBe('value1');
+
+			expect(element.attributes.item(1)?.name).toBe('ns2:key');
+			expect(element.attributes.item(1)?.value).toBe('value1');
+
+			expect(element.attributes.item(2)?.name).toBe('key1');
+			expect(element.attributes.item(2)?.value).toBe('value1');
+
+			expect(element.attributes.item(3)?.name).toBe('key2');
+			expect(element.attributes.item(3)?.value).toBe('');
+
+			expect(element.attributes.item(4)).toBe(null);
+		});
+
+		it('Returns item by index when using namespaces.', () => {
+			element.setAttributeNS('namespace', 'key', 'value1');
+			element.setAttributeNS('namespace', 'key', 'value2');
+			element.setAttributeNS('namespace2', 'key', 'value3');
+			element.setAttributeNS('namespace3', 'key', 'value4');
+
+			expect(element.attributes.item(0)?.value).toBe('value2');
+			expect(element.attributes.item(1)?.value).toBe('value3');
+			expect(element.attributes.item(2)?.value).toBe('value4');
+			expect(element.attributes.item(3)).toBe(null);
 		});
 	});
 
@@ -132,7 +213,7 @@ describe('NamedNodeMap', () => {
 
 		it('Handles non string keys as strings', () => {
 			element.setAttribute('undefined', 'value1');
-			expect(element.getAttribute(undefined)).toBe('value1');
+			expect(element.getAttribute(<string>(<unknown>undefined))).toBe('value1');
 		});
 	});
 

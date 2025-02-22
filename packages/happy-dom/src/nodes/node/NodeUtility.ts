@@ -200,19 +200,18 @@ export default class NodeUtility {
 	 */
 	public static attributeListsEqual(elementA: Element, elementB: Element): boolean {
 		const attributesA = Array.from(
-			elementA[PropertySymbol.attributes][PropertySymbol.namedItems].values()
+			elementA[PropertySymbol.attributes][PropertySymbol.items].values()
 		);
 		const attributesB = Array.from(
-			elementB[PropertySymbol.attributes][PropertySymbol.namedItems].values()
+			elementB[PropertySymbol.attributes][PropertySymbol.items].values()
 		);
 		for (const attributeA of attributesA) {
 			let found = false;
 			for (const attributeB of attributesB) {
 				if (
-					attributeA[0][PropertySymbol.namespaceURI] ===
-						attributeB[0][PropertySymbol.namespaceURI] &&
-					attributeA[0].localName === attributeB[0].localName &&
-					attributeA[0][PropertySymbol.value] === attributeB[0][PropertySymbol.value]
+					attributeA[PropertySymbol.namespaceURI] === attributeB[PropertySymbol.namespaceURI] &&
+					attributeA.localName === attributeB.localName &&
+					attributeA[PropertySymbol.value] === attributeB[PropertySymbol.value]
 				) {
 					found = true;
 					break;
@@ -258,8 +257,8 @@ export default class NodeUtility {
 					elementA[PropertySymbol.namespaceURI] !== elementB[PropertySymbol.namespaceURI] ||
 					elementA[PropertySymbol.prefix] !== elementB[PropertySymbol.prefix] ||
 					elementA[PropertySymbol.localName] !== elementB[PropertySymbol.localName] ||
-					elementA[PropertySymbol.attributes][PropertySymbol.namespaceItems].size !==
-						elementB[PropertySymbol.attributes][PropertySymbol.namespaceItems].size
+					elementA[PropertySymbol.attributes][PropertySymbol.items].size !==
+						elementB[PropertySymbol.attributes][PropertySymbol.items].size
 				) {
 					return false;
 				}
