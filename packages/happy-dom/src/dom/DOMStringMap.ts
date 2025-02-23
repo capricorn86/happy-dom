@@ -25,11 +25,11 @@ export default class DOMStringMap {
 		// Documentation for Proxy:
 		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy
 		return new Proxy(this, {
-			get(_target, property: string): string {
+			get(_target, property: string): string | void {
 				const attribute = element.getAttribute(
 					'data-' + DOMStringMapUtility.camelCaseToKebab(property)
 				);
-				if (attribute) {
+				if (attribute !== null) {
 					return attribute;
 				}
 			},
