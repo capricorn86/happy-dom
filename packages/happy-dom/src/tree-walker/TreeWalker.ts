@@ -5,8 +5,21 @@ import NodeFilterMask from './NodeFilterMask.js';
 import DOMException from '../exception/DOMException.js';
 import NodeFilter from './NodeFilter.js';
 
+enum TraverseChildrenTypeEnum {
+	first = 'first',
+	last = 'last'
+}
+
+enum TraverseSiblingsTypeEnum {
+	next = 'next',
+	previous = 'previous'
+}
+
 /**
  * The TreeWalker object represents the nodes of a document subtree and a position within them.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/TreeWalker
+ * @see https://dom.spec.whatwg.org/#interface-treewalker
  */
 export default class TreeWalker {
 	public root: Node = null;
@@ -33,51 +46,19 @@ export default class TreeWalker {
 	}
 
 	/**
-	 * Moves the current Node to the next visible node in the document order.
-	 *
-	 * @returns Current node.
-	 */
-	public nextNode(): Node {
-		if (!this.firstChild()) {
-			while (!this.nextSibling() && this.parentNode()) {}
-			this.currentNode = this.currentNode === this.root ? null : this.currentNode || null;
-		}
-		return this.currentNode;
-	}
-
-	/**
-	 * Moves the current Node to the previous visible node in the document order, and returns the found node. It also moves the current node to this one. If no such node exists, or if it is before that the root node defined at the object construction, returns null and the current node is not changed.
-	 *
-	 * @returns Current node.
-	 */
-	public previousNode(): Node {
-		while (!this.previousSibling() && this.parentNode()) {}
-		this.currentNode = this.currentNode === this.root ? null : this.currentNode || null;
-		return this.currentNode;
-	}
-
-	/**
 	 * Moves the current Node to the first visible ancestor node in the document order, and returns the found node. It also moves the current node to this one. If no such node exists, or if it is before that the root node defined at the object construction, returns null and the current node is not changed.
 	 *
 	 * @returns Current node.
 	 */
 	public parentNode(): Node {
-		if (
-			this.currentNode !== this.root &&
-			this.currentNode &&
-			this.currentNode[PropertySymbol.parentNode]
-		) {
-			this.currentNode = this.currentNode[PropertySymbol.parentNode];
-
-			if (this[PropertySymbol.filterNode](this.currentNode) === NodeFilter.FILTER_ACCEPT) {
+		let node = this.currentNode;
+		while (node !== null && node !== this.root) {
+			node = node.parentNode;
+			if (node !== null && this[PropertySymbol.filterNode](node) === NodeFilter.FILTER_ACCEPT) {
+				this.currentNode = node;
 				return this.currentNode;
 			}
-
-			this.parentNode();
 		}
-
-		this.currentNode = null;
-
 		return null;
 	}
 
@@ -87,19 +68,7 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public firstChild(): Node {
-		const childNodes = this.currentNode ? (<Node>this.currentNode)[PropertySymbol.nodeArray] : [];
-
-		if (childNodes.length > 0) {
-			this.currentNode = childNodes[0];
-
-			if (this[PropertySymbol.filterNode](this.currentNode) === NodeFilter.FILTER_ACCEPT) {
-				return this.currentNode;
-			}
-
-			return this.nextSibling();
-		}
-
-		return null;
+		return this.#traverseChildren(TraverseChildrenTypeEnum.first);
 	}
 
 	/**
@@ -108,49 +77,7 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public lastChild(): Node {
-		const childNodes = this.currentNode ? (<Node>this.currentNode)[PropertySymbol.nodeArray] : [];
-
-		if (childNodes.length > 0) {
-			this.currentNode = childNodes[childNodes.length - 1];
-
-			if (this[PropertySymbol.filterNode](this.currentNode) === NodeFilter.FILTER_ACCEPT) {
-				return this.currentNode;
-			}
-
-			return this.previousSibling();
-		}
-
-		return null;
-	}
-
-	/**
-	 * Moves the current Node to its previous sibling, if any, and returns the found sibling. If there is no such node, return null and the current node is not changed.
-	 *
-	 * @returns Current node.
-	 */
-	public previousSibling(): Node {
-		if (
-			this.currentNode !== this.root &&
-			this.currentNode &&
-			this.currentNode[PropertySymbol.parentNode]
-		) {
-			const siblings = (<Node>this.currentNode[PropertySymbol.parentNode])[
-				PropertySymbol.nodeArray
-			];
-			const index = siblings.indexOf(this.currentNode);
-
-			if (index > 0) {
-				this.currentNode = siblings[index - 1];
-
-				if (this[PropertySymbol.filterNode](this.currentNode) === NodeFilter.FILTER_ACCEPT) {
-					return this.currentNode;
-				}
-
-				return this.previousSibling();
-			}
-		}
-
-		return null;
+		return this.#traverseChildren(TraverseChildrenTypeEnum.last);
 	}
 
 	/**
@@ -159,28 +86,106 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public nextSibling(): Node {
-		if (
-			this.currentNode !== this.root &&
-			this.currentNode &&
-			this.currentNode[PropertySymbol.parentNode]
-		) {
-			const siblings = (<Node>this.currentNode[PropertySymbol.parentNode])[
-				PropertySymbol.nodeArray
-			];
-			const index = siblings.indexOf(this.currentNode);
+		return this.#traverseSiblings(TraverseSiblingsTypeEnum.next);
+	}
 
-			if (index + 1 < siblings.length) {
-				this.currentNode = siblings[index + 1];
+	/**
+	 * Moves the current Node to its previous sibling, if any, and returns the found sibling. If there is no such node, return null and the current node is not changed.
+	 *
+	 * @returns Current node.
+	 */
+	public previousSibling(): Node {
+		return this.#traverseSiblings(TraverseSiblingsTypeEnum.previous);
+	}
 
-				if (this[PropertySymbol.filterNode](this.currentNode) === NodeFilter.FILTER_ACCEPT) {
-					return this.currentNode;
+	/**
+	 * Moves the current Node to the previous visible node in the document order, and returns the found node. It also moves the current node to this one. If no such node exists, or if it is before that the root node defined at the object construction, returns null and the current node is not changed.
+	 *
+	 * @returns Current node.
+	 */
+	public previousNode(): Node {
+		let node = this.currentNode;
+
+		while (node !== this.root) {
+			let sibling = node.previousSibling;
+
+			while (sibling !== null) {
+				let node = sibling;
+				let result = this[PropertySymbol.filterNode](node);
+
+				while (result !== NodeFilter.FILTER_REJECT && node[PropertySymbol.nodeArray].length) {
+					node = node.lastChild;
+					result = this[PropertySymbol.filterNode](node);
 				}
 
-				return this.nextSibling();
+				if (result === NodeFilter.FILTER_ACCEPT) {
+					this.currentNode = node;
+					return node;
+				}
+
+				sibling = node.previousSibling;
+			}
+
+			if (node === this.root || node.parentNode === null) {
+				return null;
+			}
+
+			node = node.parentNode;
+
+			if (this[PropertySymbol.filterNode](node) === NodeFilter.FILTER_ACCEPT) {
+				this.currentNode = node;
+				return node;
 			}
 		}
 
 		return null;
+	}
+
+	/**
+	 * Moves the current Node to the next visible node in the document order.
+	 *
+	 * @returns Current node.
+	 */
+	public nextNode(): Node | null {
+		let node = this.currentNode;
+		let result = NodeFilter.FILTER_ACCEPT;
+
+		while (true) {
+			while (result !== NodeFilter.FILTER_REJECT && node[PropertySymbol.nodeArray].length) {
+				node = node.firstChild;
+				result = this[PropertySymbol.filterNode](node);
+
+				if (result === NodeFilter.FILTER_ACCEPT) {
+					this.currentNode = node;
+					return node;
+				}
+			}
+
+			let sibling: Node | null = null;
+			let temporary = node;
+
+			while (temporary !== null) {
+				if (temporary === this.root) {
+					return null;
+				}
+
+				sibling = temporary.nextSibling;
+
+				if (sibling !== null) {
+					node = sibling;
+					break;
+				}
+
+				temporary = temporary.parentNode;
+			}
+
+			result = this[PropertySymbol.filterNode](node);
+
+			if (result === NodeFilter.FILTER_ACCEPT) {
+				this.currentNode = node;
+				return node;
+			}
+		}
 	}
 
 	/**
@@ -206,5 +211,96 @@ export default class TreeWalker {
 		}
 
 		return NodeFilter.FILTER_ACCEPT;
+	}
+
+	/**
+	 * Traverses children.
+	 *
+	 * @param type Type.
+	 * @returns Node.
+	 */
+	#traverseChildren(type: TraverseChildrenTypeEnum): Node | null {
+		let node: Node = this.currentNode;
+		node = type === TraverseChildrenTypeEnum.first ? node.firstChild : node.lastChild;
+
+		while (node !== null) {
+			const result = this[PropertySymbol.filterNode](node);
+
+			if (result === NodeFilter.FILTER_ACCEPT) {
+				this.currentNode = node;
+				return node;
+			}
+
+			if (result === NodeFilter.FILTER_SKIP) {
+				const child = type === TraverseChildrenTypeEnum.first ? node.firstChild : node.lastChild;
+
+				if (child !== null) {
+					node = child;
+					continue;
+				}
+			}
+
+			while (node !== null) {
+				const sibling =
+					type === TraverseChildrenTypeEnum.first ? node.nextSibling : node.previousSibling;
+				if (sibling !== null) {
+					node = sibling;
+					break;
+				}
+				const parent = node.parentNode;
+				if (parent === null || parent === this.root || parent === this.currentNode) {
+					return null;
+				}
+				node = parent;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Traverses siblings.
+	 *
+	 * @param type Type.
+	 * @returns Node.
+	 */
+	#traverseSiblings(type: TraverseSiblingsTypeEnum): Node | null {
+		let node: Node = this.currentNode;
+
+		if (node === this.root) {
+			return null;
+		}
+
+		while (true) {
+			let sibling =
+				type === TraverseSiblingsTypeEnum.next ? node.nextSibling : node.previousSibling;
+
+			while (sibling !== null) {
+				const node = sibling;
+				const result = this[PropertySymbol.filterNode](node);
+
+				if (result === NodeFilter.FILTER_ACCEPT) {
+					this.currentNode = node;
+					return node;
+				}
+
+				sibling = type === TraverseSiblingsTypeEnum.next ? node.firstChild : node.lastChild;
+
+				if (result === NodeFilter.FILTER_REJECT || sibling === null) {
+					sibling =
+						type === TraverseSiblingsTypeEnum.next ? node.nextSibling : node.previousSibling;
+				}
+			}
+
+			node = node.parentNode;
+
+			if (node === null || node === this.root) {
+				return null;
+			}
+
+			if (this[PropertySymbol.filterNode](node) === NodeFilter.FILTER_ACCEPT) {
+				return null;
+			}
+		}
 	}
 }
