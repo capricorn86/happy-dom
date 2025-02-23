@@ -161,22 +161,23 @@ export default class TreeWalker {
 				}
 			}
 
-			let sibling: Node | null = null;
-			let temporary = node;
-
-			while (temporary !== null) {
-				if (temporary === this.root) {
+			while (node !== null) {
+				if (node === this.root) {
 					return null;
 				}
 
-				sibling = temporary.nextSibling;
+				const sibling = node.nextSibling;
 
 				if (sibling !== null) {
 					node = sibling;
 					break;
 				}
 
-				temporary = temporary.parentNode;
+				node = node.parentNode;
+			}
+
+			if (node === null) {
+				return null;
 			}
 
 			result = this[PropertySymbol.filterNode](node);
