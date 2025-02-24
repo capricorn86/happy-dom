@@ -171,5 +171,25 @@ describe('HTMLLabelElement', () => {
 			expect(input.checked).toBe(false);
 			expect(inputClickCount).toBe(0);
 		});
+
+		it('It triggers "change" event on the control element when clicking on a span inside the label.', () => {
+			const div = document.createElement('div');
+			div.innerHTML = `
+                <label>
+                  <input type="checkbox">
+                  <span>Description</span>
+                </label>
+            `;
+			let isChangeFired = false;
+
+			document.body.appendChild(div);
+
+			div.querySelector('input')?.addEventListener('change', () => (isChangeFired = true));
+
+			debugger;
+			div.querySelector('span')?.click();
+
+			expect(isChangeFired).toBe(true);
+		});
 	});
 });
