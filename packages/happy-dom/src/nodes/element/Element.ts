@@ -741,7 +741,7 @@ export default class Element
 	 *
 	 * @param name Name.
 	 */
-	public getAttribute(name: string): string {
+	public getAttribute(name: string): string | null {
 		const attribute = this[PropertySymbol.attributes].getNamedItem(name);
 		if (attribute) {
 			return attribute[PropertySymbol.value];
