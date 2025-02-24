@@ -1,9 +1,8 @@
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import File from '../../file/File.js';
 import FormData from '../../form-data/FormData.js';
 import BrowserWindow from '../../window/BrowserWindow.js';
 
-enum MultiparParserStateEnum {
+enum MultipartParserStateEnum {
 	boundary = 0,
 	headerStart = 2,
 	header = 3,
@@ -25,7 +24,7 @@ export default class MultipartReader {
 	private formData: FormData;
 	private boundary: Uint8Array;
 	private boundaryIndex = 0;
-	private state = MultiparParserStateEnum.boundary;
+	private state = MultipartParserStateEnum.boundary;
 	private data: {
 		contentDisposition: { [key: string]: string } | null;
 		value: number[];
@@ -37,7 +36,6 @@ export default class MultipartReader {
 		contentType: null,
 		header: ''
 	};
-	private window: BrowserWindow;
 
 	/**
 	 * Constructor.
@@ -48,7 +46,6 @@ export default class MultipartReader {
 	 */
 	constructor(window: BrowserWindow, boundary: string) {
 		const boundaryHeader = `--${boundary}`;
-		this.window = window;
 		this.boundary = new Uint8Array(boundaryHeader.length);
 		this.formData = new window.FormData();
 
@@ -71,7 +68,7 @@ export default class MultipartReader {
 			nextChar = data[i + 1];
 
 			switch (this.state) {
-				case MultiparParserStateEnum.boundary:
+				case MultipartParserStateEnum.boundary:
 					if (char === this.boundary[this.boundaryIndex]) {
 						this.boundaryIndex++;
 					} else {
@@ -79,48 +76,50 @@ export default class MultipartReader {
 					}
 
 					if (this.boundaryIndex === this.boundary.length) {
-						this.state = MultiparParserStateEnum.headerStart;
+						this.state = MultipartParserStateEnum.headerStart;
 						this.boundaryIndex = 0;
 					}
 
 					break;
 
-				case MultiparParserStateEnum.headerStart:
+				case MultipartParserStateEnum.headerStart:
 					if (nextChar !== CHARACTER_CODE.cr && nextChar !== CHARACTER_CODE.lf) {
 						this.data.header = '';
 						this.state =
 							data[i - 2] === CHARACTER_CODE.lf
-								? MultiparParserStateEnum.data
-								: MultiparParserStateEnum.header;
+								? MultipartParserStateEnum.data
+								: MultipartParserStateEnum.header;
 					}
 
 					break;
 
-				case MultiparParserStateEnum.header:
+				case MultipartParserStateEnum.header:
 					if (char === CHARACTER_CODE.cr) {
 						if (this.data.header) {
 							const headerParts = this.data.header.split(':');
-							const headerName = headerParts[0].toLowerCase();
-							const headerValue = headerParts[1].trim();
+							if (headerParts.length > 1) {
+								const headerName = headerParts[0].toLowerCase();
+								const headerValue = headerParts[1].trim();
 
-							switch (headerName) {
-								case 'content-disposition':
-									this.data.contentDisposition = this.getContentDisposition(headerValue);
-									break;
-								case 'content-type':
-									this.data.contentType = headerValue;
-									break;
+								switch (headerName) {
+									case 'content-disposition':
+										this.data.contentDisposition = this.getContentDisposition(headerValue);
+										break;
+									case 'content-type':
+										this.data.contentType = headerValue;
+										break;
+								}
 							}
 						}
 
-						this.state = MultiparParserStateEnum.headerStart;
+						this.state = MultipartParserStateEnum.headerStart;
 					} else {
 						this.data.header += String.fromCharCode(char);
 					}
 
 					break;
 
-				case MultiparParserStateEnum.data:
+				case MultipartParserStateEnum.data:
 					if (char === this.boundary[this.boundaryIndex]) {
 						this.boundaryIndex++;
 					} else {
@@ -128,7 +127,7 @@ export default class MultipartReader {
 					}
 
 					if (this.boundaryIndex === this.boundary.length) {
-						this.state = MultiparParserStateEnum.headerStart;
+						this.state = MultipartParserStateEnum.headerStart;
 
 						if (this.data.value.length) {
 							this.appendFormData(
@@ -159,19 +158,15 @@ export default class MultipartReader {
 	 * @returns Form data.
 	 */
 	public end(): FormData {
-		if (this.state !== MultiparParserStateEnum.data) {
-			throw new this.window.DOMException(
-				`Unexpected end of multipart stream. Expected state to be "${MultiparParserStateEnum.data}" but got "${this.state}".`,
-				DOMExceptionNameEnum.invalidStateError
+		// If we are missing an end boundary, but we have data, we should append it.
+		if (this.data.contentDisposition && this.data.value.length) {
+			this.appendFormData(
+				this.data.contentDisposition.name,
+				Buffer.from(this.data.value.slice(0, -2)),
+				this.data.contentDisposition.filename,
+				this.data.contentType
 			);
 		}
-
-		this.appendFormData(
-			this.data.contentDisposition.name,
-			Buffer.from(this.data.value.slice(0, -2)),
-			this.data.contentDisposition.filename,
-			this.data.contentType
-		);
 
 		return this.formData;
 	}

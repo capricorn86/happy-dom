@@ -120,6 +120,9 @@ export default class MultipartFormDataParser {
 			}
 		}
 
+		// add end boundary
+		chunks.push(Buffer.from(`--${boundary}--\r\n`));
+
 		const buffer = Buffer.concat(chunks);
 
 		return {
