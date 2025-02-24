@@ -1,4 +1,3 @@
-import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import File from '../../file/File.js';
 import FormData from '../../form-data/FormData.js';
 import BrowserWindow from '../../window/BrowserWindow.js';
@@ -37,7 +36,6 @@ export default class MultipartReader {
 		contentType: null,
 		header: ''
 	};
-	private window: BrowserWindow;
 
 	/**
 	 * Constructor.
@@ -48,7 +46,6 @@ export default class MultipartReader {
 	 */
 	constructor(window: BrowserWindow, boundary: string) {
 		const boundaryHeader = `--${boundary}`;
-		this.window = window;
 		this.boundary = new Uint8Array(boundaryHeader.length);
 		this.formData = new window.FormData();
 
