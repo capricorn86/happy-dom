@@ -2,7 +2,6 @@ import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import HTMLLabelElement from '../../../src/nodes/html-label-element/HTMLLabelElement.js';
 import HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement.js';
-import PointerEvent from '../../../src/event/events/PointerEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import MouseEvent from '../../../src/event/events/MouseEvent.js';
 
@@ -186,10 +185,29 @@ describe('HTMLLabelElement', () => {
 
 			div.querySelector('input')?.addEventListener('change', () => (isChangeFired = true));
 
-			debugger;
 			div.querySelector('span')?.click();
 
 			expect(isChangeFired).toBe(true);
+		});
+
+		it('Doesn\'t trigger "change" event a second time when clicking on control element inside of a label.', () => {
+			const div = document.createElement('div');
+			div.innerHTML = `
+                <label>
+                  <input type="checkbox">
+                  <span>Description</span>
+                </label>
+            `;
+			let changeFiredCount = 0;
+
+			document.body.appendChild(div);
+
+			div.querySelector('input')?.addEventListener('change', () => changeFiredCount++);
+
+			div.querySelector('input')?.click();
+
+			expect(changeFiredCount).toBe(1);
+			expect(div.querySelector('input')?.checked).toBe(true);
 		});
 	});
 });
