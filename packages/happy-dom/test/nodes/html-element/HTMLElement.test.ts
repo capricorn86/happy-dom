@@ -334,6 +334,15 @@ describe('HTMLElement', () => {
 			const button = <HTMLElement>main.querySelector('button');
 			expect(button.closest('[data-test]')).toBe(div);
 		});
+
+		it('Handles empty string values correctly', () => {
+			element.setAttribute('data-test-empty', '');
+			const dataset = element.dataset;
+			expect(dataset.testEmpty).toBe('');
+			expect(dataset.nonExistentKey).toBeUndefined();
+			dataset.testEmptyAlso = '';
+			expect(dataset.testEmptyAlso).toBe('');
+		});
 	});
 
 	describe('get dir()', () => {

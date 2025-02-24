@@ -3339,7 +3339,7 @@ describe('Fetch', () => {
 						'Accept-Encoding': 'gzip, deflate, br',
 						'Content-Type':
 							'multipart/form-data; boundary=----HappyDOMFormDataBoundary0.ssssssssst',
-						'Content-Length': '198'
+						'Content-Length': '244'
 					},
 					agent: false,
 					rejectUnauthorized: true,
@@ -3349,7 +3349,7 @@ describe('Fetch', () => {
 			});
 			expect(destroyCount).toBe(1);
 			expect(writtenBodyData).toBe(
-				'------HappyDOMFormDataBoundary0.ssssssssst\r\nContent-Disposition: form-data; name="key1"\r\n\r\nvalue1\r\n------HappyDOMFormDataBoundary0.ssssssssst\r\nContent-Disposition: form-data; name="key2"\r\n\r\nvalue2\r\n'
+				'------HappyDOMFormDataBoundary0.ssssssssst\r\nContent-Disposition: form-data; name="key1"\r\n\r\nvalue1\r\n------HappyDOMFormDataBoundary0.ssssssssst\r\nContent-Disposition: form-data; name="key2"\r\n\r\nvalue2\r\n------HappyDOMFormDataBoundary0.ssssssssst--\r\n'
 			);
 			expect(response.status).toBe(200);
 		});
@@ -3627,7 +3627,7 @@ describe('Fetch', () => {
 										'content-length',
 										String(responseText.length),
 										'cache-control',
-										'max-age=0.001',
+										'max-age=0.0001',
 										'last-modified',
 										'Mon, 11 Dec 2023 01:00:00 GMT'
 									];
@@ -3672,7 +3672,7 @@ describe('Fetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'cache-control': `max-age=0.001`,
+				'cache-control': `max-age=0.0001`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
 			});
 
@@ -3786,7 +3786,7 @@ describe('Fetch', () => {
 										'content-length',
 										String(responseText1.length),
 										'cache-control',
-										'max-age=0.001',
+										'max-age=0.0001',
 										'last-modified',
 										'Mon, 11 Dec 2023 01:00:00 GMT'
 									];
@@ -3839,7 +3839,7 @@ describe('Fetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText1.length),
-				'cache-control': `max-age=0.001`,
+				'cache-control': `max-age=0.0001`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
 			});
 
@@ -3954,7 +3954,7 @@ describe('Fetch', () => {
 										'content-length',
 										String(responseText.length),
 										'cache-control',
-										'max-age=0.001',
+										'max-age=0.0001',
 										'last-modified',
 										'Mon, 11 Dec 2023 01:00:00 GMT',
 										'etag',
@@ -4004,7 +4004,7 @@ describe('Fetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'cache-control': `max-age=0.001`,
+				'cache-control': `max-age=0.0001`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
 				etag: etag1
 			});
@@ -4018,7 +4018,7 @@ describe('Fetch', () => {
 			expect(headers2).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'cache-control': `max-age=0.001`,
+				'cache-control': `max-age=0.0001`,
 				'Last-Modified': 'Mon, 11 Dec 2023 02:00:00 GMT',
 				ETag: etag2
 			});
@@ -4124,7 +4124,7 @@ describe('Fetch', () => {
 										'content-length',
 										String(responseText1.length),
 										'cache-control',
-										'max-age=0.001',
+										'max-age=0.0001',
 										'last-modified',
 										'Mon, 11 Dec 2023 01:00:00 GMT',
 										'etag',
@@ -4171,7 +4171,7 @@ describe('Fetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText1.length),
-				'cache-control': `max-age=0.001`,
+				'cache-control': `max-age=0.0001`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
 				etag: etag1
 			});

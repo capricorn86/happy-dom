@@ -1774,6 +1774,13 @@ describe('Element', () => {
 		});
 	});
 
+	describe('getAttribute()', () => {
+		it('Returns null when cannot find attribute.', () => {
+			element.setAttribute('key2', '');
+			expect(element.getAttribute('random')).toEqual(null);
+		});
+	});
+
 	describe('getAttributeNames()', () => {
 		it('Returns attribute names.', () => {
 			element.setAttributeNS(NAMESPACE_URI, 'global:local1', 'value1');

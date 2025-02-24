@@ -45,6 +45,7 @@ export default class EventTarget {
 	 * @param listener Listener.
 	 * @param options An object that specifies characteristics about the event listener.(currently only once)
 	 * @param options.once
+	 * @param options.signal An AbortSignal. The listener will be removed when the given AbortSignal object's abort() method is called.
 	 */
 	public addEventListener(
 		type: string,
@@ -71,6 +72,12 @@ export default class EventTarget {
 
 		listeners.push(listener);
 		listenerOptions.push(options);
+
+		if (options.signal && !options.signal.aborted) {
+			options.signal.addEventListener('abort', () => {
+				this.removeEventListener(type, listener);
+			});
+		}
 	}
 
 	/**
