@@ -1,0 +1,65 @@
+{
+	"name": "@happy-dom/ssr",
+	"version": "0.0.0",
+	"license": "MIT",
+	"homepage": "https://github.com/capricorn86/happy-dom/tree/master/packages/server-side-rendering",
+	"repository": "https://github.com/capricorn86/happy-dom",
+	"author": "David Ortner",
+	"description": "Use Happy DOM for server-side rendering.",
+	"main": "lib/index.js",
+	"type": "module",
+	"exports": {
+		".": {
+			"import": "./lib/index.js",
+			"default": "./lib/index.js"
+		},
+		"./lib/*.js": {
+			"import": "./lib/*.js",
+			"default": "./lib/*.js"
+		},
+		"./lib/*.ts": {
+			"import": "./lib/*.ts",
+			"default": "./lib/*.ts"
+		},
+		"./lib/*.map": {
+			"import": "./lib/*.map",
+			"default": "./lib/*.map"
+		},
+		"./src/*.ts": "./src/*.ts",
+		"./package.json": "./package.json",
+		"./.eslintrc": "./.eslintrc.js"
+	},
+	"keywords": [
+		"jsdom",
+		"happy",
+		"dom",
+		"webcomponents",
+		"web",
+		"component",
+		"custom",
+		"elements",
+		"server-side",
+		"rendering",
+		"ssr"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"compile": "tsc",
+		"watch": "npm run compile && tsc -w --preserveWatchOutput"
+	},
+	"dependencies": {
+		"happy-dom": "^0.0.0"
+	},
+	"devDependencies": {
+		"@typescript-eslint/eslint-plugin": "^5.16.0",
+		"@typescript-eslint/parser": "^5.16.0",
+		"@types/node": "^16.11.7",
+		"prettier": "^2.6.0",
+		"typescript": "^5.0.4"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	}
+}
