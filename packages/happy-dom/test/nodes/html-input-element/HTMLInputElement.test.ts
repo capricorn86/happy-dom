@@ -1158,6 +1158,30 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
+	describe('disabled input', () => {
+		it("doesn't focus the input when it's disabled", () => {
+			document.body.appendChild(element);
+			element.focus();
+			expect(element).toBe(document.activeElement);
+			element.blur();
+			expect(element).not.toBe(document.activeElement);
+			element.disabled = true;
+			element.focus();
+			expect(element).not.toBe(document.activeElement);
+		});
+
+		it("doesn't blur the input when it's disabled", () => {
+			document.body.appendChild(element);
+			element.focus();
+			expect(element).toBe(document.activeElement);
+			element.blur();
+			expect(element).not.toBe(document.activeElement);
+			element.disabled = true;
+			element.blur();
+			expect(element).not.toBe(document.activeElement);
+		});
+	});
+
 	describe('setRangeText()', () => {
 		it('Sets a range text with selection mode set to "preserve".', () => {
 			element.value = 'TEST_VALUE';
