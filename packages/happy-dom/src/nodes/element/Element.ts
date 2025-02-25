@@ -546,17 +546,11 @@ export default class Element
 			clone[PropertySymbol.shadowRoot][PropertySymbol.host] = clone;
 		}
 
-		clone[PropertySymbol.attributes][PropertySymbol.itemsByNamespaceURI] = new Map(
-			this[PropertySymbol.attributes][PropertySymbol.itemsByNamespaceURI]
-		);
+		clone[PropertySymbol.attributes] = new NamedNodeMap(clone);
 
-		clone[PropertySymbol.attributes][PropertySymbol.itemsByName] = new Map(
-			this[PropertySymbol.attributes][PropertySymbol.itemsByName]
-		);
-
-		clone[PropertySymbol.attributes][PropertySymbol.items] = new Map(
-			this[PropertySymbol.attributes][PropertySymbol.items]
-		);
+		Array.from(this[PropertySymbol.attributes][PropertySymbol.items]).forEach(([_, attr]) => {
+			clone[PropertySymbol.attributes].setNamedItem(attr.cloneNode(deep));
+		});
 
 		return <Element>clone;
 	}

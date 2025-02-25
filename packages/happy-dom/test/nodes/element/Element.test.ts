@@ -1982,6 +1982,19 @@ describe('Element', () => {
 			expect(clone2.children[0].outerHTML).toBe('<div class="className"></div>');
 		});
 
+		it('Sets the properties of the cloned element.', () => {
+			const div1 = document.createElement('div');
+			div1.className = 'div1';
+			const cloned = div1.cloneNode(true);
+			cloned.className = 'cloned';
+
+			expect(div1.className).toBe('div1');
+			expect(cloned.className).toBe('cloned');
+
+			expect(div1.outerHTML).toBe('<div class="div1"></div>');
+			expect(cloned.outerHTML).toBe('<div class="cloned"></div>');
+		});
+
 		it('Clones shadow root when it is "clonable".', () => {
 			/* eslint-disable jsdoc/require-jsdoc */
 			class CustomElementA extends window.HTMLElement {
