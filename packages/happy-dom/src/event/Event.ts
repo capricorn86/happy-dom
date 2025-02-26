@@ -12,10 +12,15 @@ import Document from '../nodes/document/Document.js';
  * Event.
  */
 export default class Event {
-	public NONE = EventPhaseEnum.none;
-	public CAPTURING_PHASE = EventPhaseEnum.capturing;
-	public AT_TARGET = EventPhaseEnum.atTarget;
-	public BUBBLING_PHASE = EventPhaseEnum.bubbling;
+	public static NONE = EventPhaseEnum.none;
+	public static CAPTURING_PHASE = EventPhaseEnum.capturing;
+	public static AT_TARGET = EventPhaseEnum.atTarget;
+	public static BUBBLING_PHASE = EventPhaseEnum.bubbling;
+
+	public NONE = Event.NONE;
+	public CAPTURING_PHASE = Event.CAPTURING_PHASE;
+	public AT_TARGET = Event.AT_TARGET;
+	public BUBBLING_PHASE = Event.BUBBLING_PHASE;
 
 	public [PropertySymbol.composed] = false;
 	public [PropertySymbol.bubbles] = false;
