@@ -901,6 +901,20 @@ describe('QuerySelector', () => {
 			expect(elements[0] === container.children[1]).toBe(true);
 		});
 
+		it('Supports :not with multiple selectors within', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `<ul class="list">
+				<li class="list-item"></li>
+				<li class="list-item"></li>
+				<li class="list-item"></li>
+				<li class="other-item"></li>
+				<li></li>
+			</ul>`;
+
+			const lastItem = container.querySelectorAll('ul > li:not(.list-item, .other-item)');
+			expect(lastItem.length).toBe(1);
+		});
+
 		it('Returns all elements matching ".bar:not(.foo)".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = `

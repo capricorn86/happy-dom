@@ -316,10 +316,14 @@ export default class SelectorParser {
 					nthFunction: this.getPseudoNthFunction(args)
 				};
 			case 'not':
+				const notSelectorItems = [];
+				for (const group of this.getSelectorGroups(args, options)) {
+					notSelectorItems.push(group[0]);
+				}
 				return {
 					name: lowerName,
 					arguments: args,
-					selectorItems: [this.getSelectorItem(args, options)],
+					selectorItems: notSelectorItems,
 					nthFunction: null
 				};
 			case 'is':
