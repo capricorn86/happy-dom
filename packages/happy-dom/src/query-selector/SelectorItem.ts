@@ -248,7 +248,12 @@ export default class SelectorItem {
 			case 'root':
 				return element[PropertySymbol.tagName] === 'HTML' ? { priorityWeight: 10 } : null;
 			case 'not':
-				return !pseudo.selectorItems[0].match(element) ? { priorityWeight: 10 } : null;
+				for (const selectorItem of pseudo.selectorItems) {
+					if (selectorItem.match(element)) {
+						return null;
+					}
+				}
+				return { priorityWeight: 10 };
 			case 'nth-child':
 				let nthChildIndex = -1;
 				if (pseudo.selectorItems[0] && !pseudo.selectorItems[0].match(element)) {
