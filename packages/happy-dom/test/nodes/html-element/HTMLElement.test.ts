@@ -124,7 +124,7 @@ describe('HTMLElement', () => {
 		it('Returns rendered text with line breaks between block and flex elements and without hidden elements being rendered if element is connected to the document.', () => {
 			document.body.appendChild(element);
 
-			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><script>var key = "value";</script><style>button { background: red; }</style><div>Jumped over the lazy dog</div>`;
+			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><script>var key = "value";</script><style>button { background: red; }</style><div><svg></svg>Jumped over the lazy dog</div>`;
 			expect(element.innerText).toBe('The quick brown fox\nJumped over the lazy dog');
 
 			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><span style="display: flex">Jumped over the lazy dog</span><div>.</div>`;
@@ -142,6 +142,12 @@ describe('HTMLElement', () => {
 
 			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><span>jumped over the lazy dog</span><style>span { text-transform: capitalize; display: block; }</style>`;
 			expect(element.innerText).toBe('The quick brown fox\nJumped Over The Lazy Dog');
+		});
+
+		it('It skips svg elements when innerText is used', () => {
+			document.body.appendChild(element);
+			element.innerHTML = '<div><span><svg></svg></span>123</div>';
+			expect(element.innerText).toBe('123');
 		});
 	});
 

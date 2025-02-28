@@ -229,12 +229,16 @@ export default class HTMLElement extends Element {
 
 				if (
 					childElement[PropertySymbol.tagName] !== 'SCRIPT' &&
-					childElement[PropertySymbol.tagName] !== 'STYLE'
+					childElement[PropertySymbol.tagName] !== 'STYLE' &&
+					// TODO: svg element should return an uppercase SVG tag in html document context
+					// ref. https://developer.mozilla.org/en-US/docs/Web/API/Element/tagName#value
+					childElement[PropertySymbol.tagName] !== 'svg'
 				) {
 					const display = computedStyle.display;
 					if (display !== 'none') {
 						const textTransform = computedStyle.textTransform;
 
+						// Only add newline if it's a block/flex element and there's more content coming after
 						if ((display === 'block' || display === 'flex') && result) {
 							result += '\n';
 						}
