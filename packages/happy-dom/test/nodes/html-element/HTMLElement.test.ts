@@ -144,9 +144,10 @@ describe('HTMLElement', () => {
 			expect(element.innerText).toBe('The quick brown fox\nJumped Over The Lazy Dog');
 		});
 
-		it('It skips svg elements when innerText is used', () => {
+		it("It skips svg elements when innerText is used and add a newline only if there's more content coming after", () => {
 			document.body.appendChild(element);
-			element.innerHTML = '<div><span><svg></svg></span>123</div>';
+			// notice the lack of closing div tag
+			element.innerHTML = '<div><span><svg></svg></span>123<div>';
 			expect(element.innerText).toBe('123');
 		});
 	});

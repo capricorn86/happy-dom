@@ -239,7 +239,7 @@ export default class HTMLElement extends Element {
 						const textTransform = computedStyle.textTransform;
 
 						// Only add newline if it's a block/flex element and there's more content coming after
-						if ((display === 'block' || display === 'flex') && result) {
+						if ((display === 'block' || display === 'flex') && result && childElement.innerText) {
 							result += '\n';
 						}
 
