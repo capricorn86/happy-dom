@@ -48,7 +48,7 @@ export default class NodeUtility {
 			return true;
 		}
 
-		if (!(<Node>ancestorNode)[PropertySymbol.nodeArray].length) {
+		if (!(<Node>ancestorNode)[PropertySymbol.nodeArray]?.length) {
 			return false;
 		}
 
