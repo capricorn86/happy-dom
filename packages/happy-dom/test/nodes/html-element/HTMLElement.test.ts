@@ -61,6 +61,21 @@ describe('HTMLElement', () => {
 			const div = <HTMLElement>document.createElement('div');
 			expect(div.contentEditable).toBe('inherit');
 		});
+		it('Returns contenteditable attribute value when contentEditable setter is invoked', () => {
+			const div = <HTMLElement>document.createElement('div');
+			div.contentEditable = 'true';
+			expect(div.getAttribute('contenteditable')).toBe('true');
+		});
+		it('Throws an error when unsuporrted value is provided to contentEditable setter', () => {
+			const div = <HTMLElement>document.createElement('div');
+			expect(() => {
+				div.contentEditable = '';
+			}).toThrowError(
+				new SyntaxError(
+					`Failed to set the 'contentEditable' property on 'HTMLElement': The value provided ('') is not one of 'inherit, false, true, plaintext-only'.`
+				)
+			);
+		});
 	});
 
 	describe('isContentEditable', () => {

@@ -97,6 +97,16 @@ export default class HTMLElement extends Element {
 	 * @param contentEditable Content editable.
 	 */
 	public set contentEditable(contentEditable: string) {
+		const allowedValues = ['inherit', 'false', 'true', 'plaintext-only'];
+		if (!allowedValues.includes(contentEditable)) {
+			throw new SyntaxError(
+				`Failed to set the 'contentEditable' property on 'HTMLElement': The value provided ('${contentEditable}') is not one of '${allowedValues.join(
+					', '
+				)}'.`
+			);
+		}
+
+		this.setAttribute('contenteditable', contentEditable);
 		this[PropertySymbol.contentEditable] = contentEditable;
 	}
 
