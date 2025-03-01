@@ -930,6 +930,37 @@ describe('HTMLFormElement', () => {
 
 			expect(page.mainFrame.url).toBe('about:blank#blocked');
 		});
+
+		it('Preserves the data of a method="dialog" form when a parent dialog is closed after the form submission', () => {
+			const container = document.body;
+			container.innerHTML = `<dialog>
+										<form method="dialog">
+											<input name="test123" value="">
+											<button>Close</button>
+										</form>
+									</dialog>`;
+			const dialog = container.querySelector('dialog')!;
+			expect(dialog.open).toBe(false);
+
+			const input = dialog.querySelector('input')!;
+			input.value = 'test';
+
+			dialog.showModal();
+			expect(dialog.open).toBe(true);
+
+			const button = dialog.querySelector('button')!;
+			button.click();
+			expect(dialog.open).toBe(false);
+
+			dialog.showModal();
+			expect(dialog.open).toBe(true);
+
+			const form = dialog.querySelector('form')!;
+			form.submit();
+			expect(dialog.open).toBe(false);
+
+			expect(input.value).toBe('test');
+		});
 	});
 
 	describe('requestSubmit()', () => {

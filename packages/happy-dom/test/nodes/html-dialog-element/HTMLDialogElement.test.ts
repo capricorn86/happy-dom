@@ -3,6 +3,7 @@ import HTMLDialogElement from '../../../src/nodes/html-dialog-element/HTMLDialog
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect } from 'vitest';
+import KeyboardEvent from '../../../src/event/events/KeyboardEvent.js';
 
 describe('HTMLDialogElement', () => {
 	let window: Window;
@@ -114,6 +115,21 @@ describe('HTMLDialogElement', () => {
 			element.close();
 			expect((<Event>(<unknown>dispatched)).cancelable).toBe(false);
 			expect((<Event>(<unknown>dispatched)).bubbles).toBe(false);
+		});
+
+		it('Should close a modal on pressing ESC key', () => {
+			element.showModal();
+			expect(element.open).toBe(true);
+			document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+			expect(element.open).toBe(false);
+			expect(element.getAttribute('open')).toBe(null);
+		});
+
+		it('Should not close a dialog on pressing ESC key', () => {
+			element.show();
+			expect(element.open).toBe(true);
+			document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+			expect(element.open).toBe(true);
 		});
 	});
 
