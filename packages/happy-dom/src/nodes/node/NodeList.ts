@@ -38,6 +38,9 @@ class NodeList<T extends Node> {
 					methodBinder.bind(property);
 					return target[property];
 				}
+				if (property === '') {
+					return undefined;
+				}
 				const index = Number(property);
 				if (!isNaN(index)) {
 					return items[index];
