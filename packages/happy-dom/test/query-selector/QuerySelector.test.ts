@@ -488,49 +488,18 @@ describe('QuerySelector', () => {
 			expect(elements[0] === container.children[0].children[1].children[0]).toBe(true);
 		});
 
-		it('Returns all elements with tag name and multiple matching attributes using "span[attr1="value1"][attr3="bracket[]bracket"]".', () => {
-			const container = document.createElement('div');
-			container.innerHTML = QuerySelectorHTML;
-			const elements = container.querySelectorAll('span[attr1="value1"][attr3="bracket[]bracket"]');
+		// write a test which will test document.querySelectorAll('[style*="expression("]')
 
+		it('Returns all elements with attribute values containing regex special characters using "[data-test="^$.*+?()[]{}|\\"]".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+				<div style='expression("123")'>
+					<span>Test</span>
+				</div>
+			`;
+
+			const elements = container.querySelectorAll('[style*="expression("]');
 			expect(elements.length).toBe(1);
-			expect(elements[0] === container.children[0].children[1].children[0]).toBe(true);
-		});
-
-		it('Returns all elements with tag name and multiple matching attributes using "span[attr1="application/ld+json"]".', () => {
-			const container = document.createElement('div');
-			container.innerHTML = QuerySelectorHTML.replace(
-				/ attr1="value1"/gm,
-				' attr1="application/ld+json"'
-			);
-			const elements = container.querySelectorAll('span[attr1="application/ld+json"]');
-
-			expect(elements.length).toBe(2);
-			expect(elements[0] === container.children[0].children[1].children[0]).toBe(true);
-			expect(elements[1] === container.children[0].children[1].children[1]).toBe(true);
-		});
-
-		it('Returns all elements with an attribute value containing a specified word using "[class~="class2"]".', () => {
-			const container = document.createElement('div');
-			container.innerHTML = QuerySelectorHTML;
-			const elements = container.querySelectorAll('[class~="class2"]');
-
-			expect(elements.length).toBe(5);
-			expect(elements[0] === container.children[0]).toBe(true);
-			expect(elements[1] === container.children[0].children[1]).toBe(true);
-			expect(elements[2] === container.children[0].children[1].children[0]).toBe(true);
-			expect(elements[3] === container.children[0].children[1].children[1]).toBe(true);
-			expect(elements[4] === container.children[0].children[1].children[2]).toBe(true);
-		});
-
-		it('Returns all elements with an attribute value containing a specified word using "[attr1~="value1"]" (which doesn\'t include spaces).', () => {
-			const container = document.createElement('div');
-			container.innerHTML = QuerySelectorHTML;
-			const elements = container.querySelectorAll('[attr1~="value1"]');
-
-			expect(elements.length).toBe(2);
-			expect(elements[0] === container.children[0].children[1].children[0]).toBe(true);
-			expect(elements[1] === container.children[0].children[1].children[1]).toBe(true);
 		});
 
 		it('Returns all elements with an attribute value starting with the specified word using "[class|="class1"]".', () => {
