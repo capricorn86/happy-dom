@@ -5,6 +5,7 @@ import SVGStringList from '../../svg/SVGStringList.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import SVGAnimatedTransformList from '../../svg/SVGAnimatedTransformList.js';
 import Event from '../../event/Event.js';
+import ElementAttributeEventUtility from '../element/ElementAttributeEventUtility.js';
 
 /**
  * SVG Graphics Element.
@@ -18,9 +19,34 @@ export default class SVGGraphicsElement extends SVGElement {
 	public [PropertySymbol.transform]: SVGAnimatedTransformList | null = null;
 
 	// Events
-	public oncopy: ((event: Event) => void) | null = null;
-	public oncut: ((event: Event) => void) | null = null;
-	public onpaste: ((event: Event) => void) | null = null;
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get oncopy(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'oncopy');
+	}
+
+	public set oncopy(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncopy', value);
+	}
+
+	public get oncut(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'oncut');
+	}
+
+	public set oncut(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncut', value);
+	}
+
+	public get onpaste(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onpaste');
+	}
+
+	public set onpaste(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpaste', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Returns required extensions.

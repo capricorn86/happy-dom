@@ -12,6 +12,7 @@ import BrowserFrameURL from '../../browser/utilities/BrowserFrameURL.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import IRequestReferrerPolicy from '../../fetch/types/IRequestReferrerPolicy.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
+import ElementAttributeEventUtility from '../element/ElementAttributeEventUtility.js';
 
 const SANDBOX_FLAGS = [
 	'allow-downloads',
@@ -39,10 +40,6 @@ export default class HTMLIFrameElement extends HTMLElement {
 	// Public properties
 	public declare cloneNode: (deep?: boolean) => HTMLIFrameElement;
 
-	// Events
-	public onload: ((event: Event) => void) | null = null;
-	public onerror: ((event: Event) => void) | null = null;
-
 	// Internal properties
 	public [PropertySymbol.sandbox]: DOMTokenList | null = null;
 
@@ -52,6 +49,28 @@ export default class HTMLIFrameElement extends HTMLElement {
 	};
 	#iframe: IBrowserFrame;
 	#loadedSrcdoc: string | null = null;
+
+	// Events
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get onload(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onload');
+	}
+
+	public set onload(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onload', value);
+	}
+
+	public get onerror(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onerror');
+	}
+
+	public set onerror(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onerror', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Returns source.

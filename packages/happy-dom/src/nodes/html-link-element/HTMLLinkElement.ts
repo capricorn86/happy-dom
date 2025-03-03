@@ -2,7 +2,6 @@ import CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import Event from '../../event/Event.js';
-import ErrorEvent from '../../event/events/ErrorEvent.js';
 import DOMTokenList from '../../dom/DOMTokenList.js';
 import Attr from '../attr/Attr.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
@@ -13,6 +12,7 @@ import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum
 import ModuleFactory from '../../module/ModuleFactory.js';
 import PreloadUtility from '../../fetch/preload/PreloadUtility.js';
 import PreloadEntry from '../../fetch/preload/PreloadEntry.js';
+import ElementAttributeEventUtility from '../element/ElementAttributeEventUtility.js';
 
 /**
  * HTML Link Element.
@@ -21,15 +21,33 @@ import PreloadEntry from '../../fetch/preload/PreloadEntry.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLLinkElement.
  */
 export default class HTMLLinkElement extends HTMLElement {
-	// Events
-	public onerror: (event: ErrorEvent) => void = null;
-	public onload: (event: Event) => void = null;
-
 	// Internal properties
 	public [PropertySymbol.sheet]: CSSStyleSheet = null;
 	public [PropertySymbol.evaluateCSS] = true;
 	public [PropertySymbol.relList]: DOMTokenList | null = null;
 	#loadedStyleSheetURL: string | null = null;
+
+	// Events
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get onerror(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onerror');
+	}
+
+	public set onerror(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onerror', value);
+	}
+
+	public get onload(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onload');
+	}
+
+	public set onload(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onload', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Returns sheet.

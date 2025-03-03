@@ -10,6 +10,7 @@ import TextTrackList from './TextTrackList.js';
 import TextTrack from './TextTrack.js';
 import TextTrackKindEnum from './TextTrackKindEnum.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
+import ElementAttributeEventUtility from '../element/ElementAttributeEventUtility.js';
 
 interface IMediaError {
 	code: number;
@@ -26,31 +27,6 @@ interface IMediaError {
 export default class HTMLMediaElement extends HTMLElement {
 	// Public properties
 	public declare cloneNode: (deep?: boolean) => HTMLMediaElement;
-
-	// Events
-	public onabort: ((event: Event) => void) | null = null;
-	public oncanplay: ((event: Event) => void) | null = null;
-	public oncanplaythrough: ((event: Event) => void) | null = null;
-	public ondurationchange: ((event: Event) => void) | null = null;
-	public onemptied: ((event: Event) => void) | null = null;
-	public onended: ((event: Event) => void) | null = null;
-	public onerror: ((event: ErrorEvent) => void) | null = null;
-	public onloadeddata: ((event: Event) => void) | null = null;
-	public onloadedmetadata: ((event: Event) => void) | null = null;
-	public onloadstart: ((event: Event) => void) | null = null;
-	public onpause: ((event: Event) => void) | null = null;
-	public onplay: ((event: Event) => void) | null = null;
-	public onplaying: ((event: Event) => void) | null = null;
-	public onprogress: ((event: Event) => void) | null = null;
-	public onratechange: ((event: Event) => void) | null = null;
-	public onresize: ((event: Event) => void) | null = null;
-	public onseeked: ((event: Event) => void) | null = null;
-	public onseeking: ((event: Event) => void) | null = null;
-	public onstalled: ((event: Event) => void) | null = null;
-	public onsuspend: ((event: Event) => void) | null = null;
-	public ontimeupdate: ((event: Event) => void) | null = null;
-	public onvolumechange: ((event: Event) => void) | null = null;
-	public onwaiting: ((event: Event) => void) | null = null;
 
 	// Internal Properties
 	public [PropertySymbol.volume] = 1;
@@ -76,6 +52,196 @@ export default class HTMLMediaElement extends HTMLElement {
 	public [PropertySymbol.mediaKeys]: object | null = null;
 	public [PropertySymbol.srcObject]: MediaStream | null = null;
 	public [PropertySymbol.textTracks]: TextTrack[] = [];
+
+	// Events
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get onabort(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onabort');
+	}
+
+	public set onabort(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onabort', value);
+	}
+
+	public get oncanplay(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'oncanplay');
+	}
+
+	public set oncanplay(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncanplay', value);
+	}
+
+	public get oncanplaythrough(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'oncanplaythrough');
+	}
+
+	public set oncanplaythrough(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncanplaythrough', value);
+	}
+
+	public get ondurationchange(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'ondurationchange');
+	}
+
+	public set ondurationchange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ondurationchange', value);
+	}
+
+	public get onemptied(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onemptied');
+	}
+
+	public set onemptied(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onemptied', value);
+	}
+
+	public get onended(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onended');
+	}
+
+	public set onended(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onended', value);
+	}
+
+	public get onerror(): ((event: ErrorEvent) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onerror');
+	}
+
+	public set onerror(value: ((event: ErrorEvent) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onerror', value);
+	}
+
+	public get onloadeddata(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onloadeddata');
+	}
+
+	public set onloadeddata(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onloadeddata', value);
+	}
+
+	public get onloadedmetadata(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onloadedmetadata');
+	}
+
+	public set onloadedmetadata(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onloadedmetadata', value);
+	}
+
+	public get onloadstart(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onloadstart');
+	}
+
+	public set onloadstart(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onloadstart', value);
+	}
+
+	public get onpause(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onpause');
+	}
+
+	public set onpause(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpause', value);
+	}
+
+	public get onplay(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onplay');
+	}
+
+	public set onplay(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onplay', value);
+	}
+
+	public get onplaying(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onplaying');
+	}
+
+	public set onplaying(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onplaying', value);
+	}
+
+	public get onprogress(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onprogress');
+	}
+
+	public set onprogress(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onprogress', value);
+	}
+
+	public get onratechange(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onratechange');
+	}
+
+	public set onratechange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onratechange', value);
+	}
+
+	public get onresize(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onresize');
+	}
+
+	public set onresize(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onresize', value);
+	}
+
+	public get onseeked(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onseeked');
+	}
+
+	public set onseeked(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onseeked', value);
+	}
+
+	public get onseeking(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onseeking');
+	}
+
+	public set onseeking(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onseeking', value);
+	}
+
+	public get onstalled(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onstalled');
+	}
+
+	public set onstalled(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onstalled', value);
+	}
+
+	public get onsuspend(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onsuspend');
+	}
+
+	public set onsuspend(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onsuspend', value);
+	}
+
+	public get ontimeupdate(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'ontimeupdate');
+	}
+
+	public set ontimeupdate(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ontimeupdate', value);
+	}
+
+	public get onvolumechange(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onvolumechange');
+	}
+
+	public set onvolumechange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onvolumechange', value);
+	}
+
+	public get onwaiting(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onwaiting');
+	}
+
+	public set onwaiting(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onwaiting', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Returns buffered.

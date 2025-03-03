@@ -18,6 +18,7 @@ import HTMLCollection from '../element/HTMLCollection.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
+import ElementAttributeEventUtility from '../element/ElementAttributeEventUtility.js';
 
 /**
  * SVGSVGElement.
@@ -38,24 +39,154 @@ export default class SVGSVGElement extends SVGGraphicsElement {
 	public declare cloneNode: (deep?: boolean) => SVGSVGElement;
 
 	// Events
-	public onafterprint: ((event: Event) => void) | null = null;
-	public onbeforeprint: ((event: Event) => void) | null = null;
-	public onbeforeunload: ((event: Event) => void) | null = null;
-	public ongamepadconnected: ((event: Event) => void) | null = null;
-	public ongamepaddisconnected: ((event: Event) => void) | null = null;
-	public onhashchange: ((event: Event) => void) | null = null;
-	public onlanguagechange: ((event: Event) => void) | null = null;
-	public onmessage: ((event: Event) => void) | null = null;
-	public onmessageerror: ((event: Event) => void) | null = null;
-	public onoffline: ((event: Event) => void) | null = null;
-	public ononline: ((event: Event) => void) | null = null;
-	public onpagehide: ((event: Event) => void) | null = null;
-	public onpageshow: ((event: Event) => void) | null = null;
-	public onpopstate: ((event: Event) => void) | null = null;
-	public onrejectionhandled: ((event: Event) => void) | null = null;
-	public onstorage: ((event: Event) => void) | null = null;
-	public onunhandledrejection: ((event: Event) => void) | null = null;
-	public onunload: ((event: Event) => void) | null = null;
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get onafterprint(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onafterprint');
+	}
+
+	public set onafterprint(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onafterprint', value);
+	}
+
+	public get onbeforeprint(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onbeforeprint');
+	}
+
+	public set onbeforeprint(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onbeforeprint', value);
+	}
+
+	public get onbeforeunload(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onbeforeunload');
+	}
+
+	public set onbeforeunload(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onbeforeunload', value);
+	}
+
+	public get ongamepadconnected(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'ongamepadconnected');
+	}
+
+	public set ongamepadconnected(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ongamepadconnected', value);
+	}
+
+	public get ongamepaddisconnected(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'ongamepaddisconnected');
+	}
+
+	public set ongamepaddisconnected(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ongamepaddisconnected', value);
+	}
+
+	public get onhashchange(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onhashchange');
+	}
+
+	public set onhashchange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onhashchange', value);
+	}
+
+	public get onlanguagechange(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onlanguagechange');
+	}
+
+	public set onlanguagechange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onlanguagechange', value);
+	}
+
+	public get onmessage(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onmessage');
+	}
+
+	public set onmessage(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onmessage', value);
+	}
+
+	public get onmessageerror(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onmessageerror');
+	}
+
+	public set onmessageerror(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onmessageerror', value);
+	}
+
+	public get onoffline(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onoffline');
+	}
+
+	public set onoffline(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onoffline', value);
+	}
+
+	public get ononline(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'ononline');
+	}
+
+	public set ononline(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ononline', value);
+	}
+
+	public get onpagehide(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onpagehide');
+	}
+
+	public set onpagehide(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpagehide', value);
+	}
+
+	public get onpageshow(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onpageshow');
+	}
+
+	public set onpageshow(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpageshow', value);
+	}
+
+	public get onpopstate(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onpopstate');
+	}
+
+	public set onpopstate(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpopstate', value);
+	}
+
+	public get onrejectionhandled(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onrejectionhandled');
+	}
+
+	public set onrejectionhandled(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onrejectionhandled', value);
+	}
+
+	public get onstorage(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onstorage');
+	}
+
+	public set onstorage(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onstorage', value);
+	}
+
+	public get onunhandledrejection(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onunhandledrejection');
+	}
+
+	public set onunhandledrejection(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onunhandledrejection', value);
+	}
+
+	public get onunload(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onunload');
+	}
+
+	public set onunload(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onunload', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Returns preserve aspect ratio.

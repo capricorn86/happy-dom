@@ -1,6 +1,7 @@
 import Event from '../../event/Event.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
+import ElementAttributeEventUtility from '../element/ElementAttributeEventUtility.js';
 
 /**
  * HTML Dialog Element.
@@ -12,8 +13,26 @@ export default class HTMLDialogElement extends HTMLElement {
 	public [PropertySymbol.returnValue] = '';
 
 	// Events
-	public oncancel: ((event: Event) => void) | null = null;
-	public onclose: ((event: Event) => void) | null = null;
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get oncancel(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'oncancel');
+	}
+
+	public set oncancel(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncancel', value);
+	}
+
+	public get onclose(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onclose');
+	}
+
+	public set onclose(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onclose', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Returns return value.

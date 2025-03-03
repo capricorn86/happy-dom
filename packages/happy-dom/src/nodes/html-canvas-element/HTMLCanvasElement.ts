@@ -4,6 +4,7 @@ import Blob from '../../file/Blob.js';
 import OffscreenCanvas from './OffscreenCanvas.js';
 import Event from '../../event/Event.js';
 import MediaStream from '../html-media-element/MediaStream.js';
+import ElementAttributeEventUtility from '../element/ElementAttributeEventUtility.js';
 
 const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+ab12C3+1aBCdEf==';
 
@@ -14,11 +15,50 @@ const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+
  */
 export default class HTMLCanvasElement extends HTMLElement {
 	// Events
-	public oncontextlost: ((event: Event) => void) | null = null;
-	public oncontextrestored: ((event: Event) => void) | null = null;
-	public onwebglcontextcreationerror: ((event: Event) => void) | null = null;
-	public onwebglcontextlost: ((event: Event) => void) | null = null;
-	public onwebglcontextrestored: ((event: Event) => void) | null = null;
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get oncontextlost(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'oncontextlost');
+	}
+
+	public set oncontextlost(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncontextlost', value);
+	}
+
+	public get oncontextrestored(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'oncontextrestored');
+	}
+
+	public set oncontextrestored(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncontextrestored', value);
+	}
+
+	public get onwebglcontextcreationerror(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onwebglcontextcreationerror');
+	}
+
+	public set onwebglcontextcreationerror(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onwebglcontextcreationerror', value);
+	}
+
+	public get onwebglcontextlost(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onwebglcontextlost');
+	}
+
+	public set onwebglcontextlost(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onwebglcontextlost', value);
+	}
+
+	public get onwebglcontextrestored(): ((event: Event) => void) | null {
+		return ElementAttributeEventUtility.getEventListener(this, 'onwebglcontextrestored');
+	}
+
+	public set onwebglcontextrestored(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onwebglcontextrestored', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Returns width.
