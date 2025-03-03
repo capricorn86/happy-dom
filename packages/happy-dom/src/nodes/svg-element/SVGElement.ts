@@ -5,7 +5,7 @@ import SVGSVGElement from '../svg-svg-element/SVGSVGElement.js';
 import Event from '../../event/Event.js';
 import HTMLElementUtility from '../html-element/HTMLElementUtility.js';
 import DOMStringMap from '../../dom/DOMStringMap.js';
-import ElementAttributeEventUtility from '../element/ElementAttributeEventUtility.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**
  * SVG Element.
@@ -25,7 +25,7 @@ export default class SVGElement extends Element {
 	/* eslint-disable jsdoc/require-jsdoc */
 
 	public get onabort(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onabort');
+		return ElementEventAttributeUtility.getEventListener(this, 'onabort');
 	}
 
 	public set onabort(value: ((event: Event) => void) | null) {
@@ -33,7 +33,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onanimationend(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onanimationend');
+		return ElementEventAttributeUtility.getEventListener(this, 'onanimationend');
 	}
 
 	public set onanimationend(value: ((event: Event) => void) | null) {
@@ -41,7 +41,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onanimationiteration(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onanimationiteration');
+		return ElementEventAttributeUtility.getEventListener(this, 'onanimationiteration');
 	}
 
 	public set onanimationiteration(value: ((event: Event) => void) | null) {
@@ -49,7 +49,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onanimationstart(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onanimationstart');
+		return ElementEventAttributeUtility.getEventListener(this, 'onanimationstart');
 	}
 
 	public set onanimationstart(value: ((event: Event) => void) | null) {
@@ -57,7 +57,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onauxclick(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onauxclick');
+		return ElementEventAttributeUtility.getEventListener(this, 'onauxclick');
 	}
 
 	public set onauxclick(value: ((event: Event) => void) | null) {
@@ -65,7 +65,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onblur(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onblur');
+		return ElementEventAttributeUtility.getEventListener(this, 'onblur');
 	}
 
 	public set onblur(value: ((event: Event) => void) | null) {
@@ -73,7 +73,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get oncancel(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncancel');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncancel');
 	}
 
 	public set oncancel(value: ((event: Event) => void) | null) {
@@ -81,7 +81,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get oncanplay(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncanplay');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncanplay');
 	}
 
 	public set oncanplay(value: ((event: Event) => void) | null) {
@@ -89,7 +89,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get oncanplaythrough(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncanplaythrough');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncanplaythrough');
 	}
 
 	public set oncanplaythrough(value: ((event: Event) => void) | null) {
@@ -97,7 +97,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onchange(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onchange');
+		return ElementEventAttributeUtility.getEventListener(this, 'onchange');
 	}
 
 	public set onchange(value: ((event: Event) => void) | null) {
@@ -105,7 +105,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onclick(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onclick');
+		return ElementEventAttributeUtility.getEventListener(this, 'onclick');
 	}
 
 	public set onclick(value: ((event: Event) => void) | null) {
@@ -113,7 +113,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onclose(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onclose');
+		return ElementEventAttributeUtility.getEventListener(this, 'onclose');
 	}
 
 	public set onclose(value: ((event: Event) => void) | null) {
@@ -121,7 +121,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get oncontextmenu(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncontextmenu');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncontextmenu');
 	}
 
 	public set oncontextmenu(value: ((event: Event) => void) | null) {
@@ -129,7 +129,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get oncopy(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncopy');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncopy');
 	}
 
 	public set oncopy(value: ((event: Event) => void) | null) {
@@ -137,7 +137,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get oncuechange(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncuechange');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncuechange');
 	}
 
 	public set oncuechange(value: ((event: Event) => void) | null) {
@@ -145,7 +145,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get oncut(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncut');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncut');
 	}
 
 	public set oncut(value: ((event: Event) => void) | null) {
@@ -153,7 +153,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get ondblclick(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ondblclick');
+		return ElementEventAttributeUtility.getEventListener(this, 'ondblclick');
 	}
 
 	public set ondblclick(value: ((event: Event) => void) | null) {
@@ -161,7 +161,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get ondrag(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ondrag');
+		return ElementEventAttributeUtility.getEventListener(this, 'ondrag');
 	}
 
 	public set ondrag(value: ((event: Event) => void) | null) {
@@ -169,7 +169,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get ondragend(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ondragend');
+		return ElementEventAttributeUtility.getEventListener(this, 'ondragend');
 	}
 
 	public set ondragend(value: ((event: Event) => void) | null) {
@@ -177,7 +177,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get ondragenter(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ondragenter');
+		return ElementEventAttributeUtility.getEventListener(this, 'ondragenter');
 	}
 
 	public set ondragenter(value: ((event: Event) => void) | null) {
@@ -185,7 +185,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get ondragleave(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ondragleave');
+		return ElementEventAttributeUtility.getEventListener(this, 'ondragleave');
 	}
 
 	public set ondragleave(value: ((event: Event) => void) | null) {
@@ -193,7 +193,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get ondragover(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ondragover');
+		return ElementEventAttributeUtility.getEventListener(this, 'ondragover');
 	}
 
 	public set ondragover(value: ((event: Event) => void) | null) {
@@ -201,7 +201,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get ondragstart(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ondragstart');
+		return ElementEventAttributeUtility.getEventListener(this, 'ondragstart');
 	}
 
 	public set ondragstart(value: ((event: Event) => void) | null) {
@@ -209,7 +209,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get ondrop(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ondrop');
+		return ElementEventAttributeUtility.getEventListener(this, 'ondrop');
 	}
 
 	public set ondrop(value: ((event: Event) => void) | null) {
@@ -217,7 +217,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get ondurationchange(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ondurationchange');
+		return ElementEventAttributeUtility.getEventListener(this, 'ondurationchange');
 	}
 
 	public set ondurationchange(value: ((event: Event) => void) | null) {
@@ -225,7 +225,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onemptied(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onemptied');
+		return ElementEventAttributeUtility.getEventListener(this, 'onemptied');
 	}
 
 	public set onemptied(value: ((event: Event) => void) | null) {
@@ -233,7 +233,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onended(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onended');
+		return ElementEventAttributeUtility.getEventListener(this, 'onended');
 	}
 
 	public set onended(value: ((event: Event) => void) | null) {
@@ -241,7 +241,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onerror(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onerror');
+		return ElementEventAttributeUtility.getEventListener(this, 'onerror');
 	}
 
 	public set onerror(value: ((event: Event) => void) | null) {
@@ -249,7 +249,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onfocus(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onfocus');
+		return ElementEventAttributeUtility.getEventListener(this, 'onfocus');
 	}
 
 	public set onfocus(value: ((event: Event) => void) | null) {
@@ -257,7 +257,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onformdata(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onformdata');
+		return ElementEventAttributeUtility.getEventListener(this, 'onformdata');
 	}
 
 	public set onformdata(value: ((event: Event) => void) | null) {
@@ -265,7 +265,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get ongotpointercapture(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ongotpointercapture');
+		return ElementEventAttributeUtility.getEventListener(this, 'ongotpointercapture');
 	}
 
 	public set ongotpointercapture(value: ((event: Event) => void) | null) {
@@ -273,7 +273,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get oninput(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oninput');
+		return ElementEventAttributeUtility.getEventListener(this, 'oninput');
 	}
 
 	public set oninput(value: ((event: Event) => void) | null) {
@@ -281,7 +281,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get oninvalid(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oninvalid');
+		return ElementEventAttributeUtility.getEventListener(this, 'oninvalid');
 	}
 
 	public set oninvalid(value: ((event: Event) => void) | null) {
@@ -289,7 +289,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onkeydown(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onkeydown');
+		return ElementEventAttributeUtility.getEventListener(this, 'onkeydown');
 	}
 
 	public set onkeydown(value: ((event: Event) => void) | null) {
@@ -297,7 +297,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onkeypress(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onkeypress');
+		return ElementEventAttributeUtility.getEventListener(this, 'onkeypress');
 	}
 
 	public set onkeypress(value: ((event: Event) => void) | null) {
@@ -305,7 +305,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onkeyup(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onkeyup');
+		return ElementEventAttributeUtility.getEventListener(this, 'onkeyup');
 	}
 
 	public set onkeyup(value: ((event: Event) => void) | null) {
@@ -313,7 +313,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onload(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onload');
+		return ElementEventAttributeUtility.getEventListener(this, 'onload');
 	}
 
 	public set onload(value: ((event: Event) => void) | null) {
@@ -321,7 +321,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onloadeddata(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onloadeddata');
+		return ElementEventAttributeUtility.getEventListener(this, 'onloadeddata');
 	}
 
 	public set onloadeddata(value: ((event: Event) => void) | null) {
@@ -329,7 +329,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onloadedmetadata(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onloadedmetadata');
+		return ElementEventAttributeUtility.getEventListener(this, 'onloadedmetadata');
 	}
 
 	public set onloadedmetadata(value: ((event: Event) => void) | null) {
@@ -337,7 +337,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onloadstart(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onloadstart');
+		return ElementEventAttributeUtility.getEventListener(this, 'onloadstart');
 	}
 
 	public set onloadstart(value: ((event: Event) => void) | null) {
@@ -345,7 +345,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onlostpointercapture(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onlostpointercapture');
+		return ElementEventAttributeUtility.getEventListener(this, 'onlostpointercapture');
 	}
 
 	public set onlostpointercapture(value: ((event: Event) => void) | null) {
@@ -353,7 +353,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onmousedown(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onmousedown');
+		return ElementEventAttributeUtility.getEventListener(this, 'onmousedown');
 	}
 
 	public set onmousedown(value: ((event: Event) => void) | null) {
@@ -361,7 +361,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onmouseenter(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onmouseenter');
+		return ElementEventAttributeUtility.getEventListener(this, 'onmouseenter');
 	}
 
 	public set onmouseenter(value: ((event: Event) => void) | null) {
@@ -369,7 +369,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onmouseleave(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onmouseleave');
+		return ElementEventAttributeUtility.getEventListener(this, 'onmouseleave');
 	}
 
 	public set onmouseleave(value: ((event: Event) => void) | null) {
@@ -377,7 +377,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onmousemove(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onmousemove');
+		return ElementEventAttributeUtility.getEventListener(this, 'onmousemove');
 	}
 
 	public set onmousemove(value: ((event: Event) => void) | null) {
@@ -385,7 +385,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onmouseout(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onmouseout');
+		return ElementEventAttributeUtility.getEventListener(this, 'onmouseout');
 	}
 
 	public set onmouseout(value: ((event: Event) => void) | null) {
@@ -393,7 +393,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onmouseover(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onmouseover');
+		return ElementEventAttributeUtility.getEventListener(this, 'onmouseover');
 	}
 
 	public set onmouseover(value: ((event: Event) => void) | null) {
@@ -401,7 +401,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onmouseup(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onmouseup');
+		return ElementEventAttributeUtility.getEventListener(this, 'onmouseup');
 	}
 
 	public set onmouseup(value: ((event: Event) => void) | null) {
@@ -409,7 +409,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onmousewheel(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onmousewheel');
+		return ElementEventAttributeUtility.getEventListener(this, 'onmousewheel');
 	}
 
 	public set onmousewheel(value: ((event: Event) => void) | null) {
@@ -417,7 +417,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onpaste(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpaste');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpaste');
 	}
 
 	public set onpaste(value: ((event: Event) => void) | null) {
@@ -425,7 +425,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onpause(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpause');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpause');
 	}
 
 	public set onpause(value: ((event: Event) => void) | null) {
@@ -433,7 +433,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onplay(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onplay');
+		return ElementEventAttributeUtility.getEventListener(this, 'onplay');
 	}
 
 	public set onplay(value: ((event: Event) => void) | null) {
@@ -441,7 +441,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onplaying(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onplaying');
+		return ElementEventAttributeUtility.getEventListener(this, 'onplaying');
 	}
 
 	public set onplaying(value: ((event: Event) => void) | null) {
@@ -449,7 +449,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onpointercancel(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpointercancel');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointercancel');
 	}
 
 	public set onpointercancel(value: ((event: Event) => void) | null) {
@@ -457,7 +457,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onpointerdown(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpointerdown');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointerdown');
 	}
 
 	public set onpointerdown(value: ((event: Event) => void) | null) {
@@ -465,7 +465,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onpointerenter(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpointerenter');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointerenter');
 	}
 
 	public set onpointerenter(value: ((event: Event) => void) | null) {
@@ -473,7 +473,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onpointerleave(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpointerleave');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointerleave');
 	}
 
 	public set onpointerleave(value: ((event: Event) => void) | null) {
@@ -481,7 +481,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onpointermove(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpointermove');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointermove');
 	}
 
 	public set onpointermove(value: ((event: Event) => void) | null) {
@@ -489,7 +489,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onpointerout(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpointerout');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointerout');
 	}
 
 	public set onpointerout(value: ((event: Event) => void) | null) {
@@ -497,7 +497,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onpointerover(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpointerover');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointerover');
 	}
 
 	public set onpointerover(value: ((event: Event) => void) | null) {
@@ -505,7 +505,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onpointerrawupdate(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpointerrawupdate');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointerrawupdate');
 	}
 
 	public set onpointerrawupdate(value: ((event: Event) => void) | null) {
@@ -513,7 +513,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onpointerup(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpointerup');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointerup');
 	}
 
 	public set onpointerup(value: ((event: Event) => void) | null) {
@@ -521,7 +521,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onprogress(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onprogress');
+		return ElementEventAttributeUtility.getEventListener(this, 'onprogress');
 	}
 
 	public set onprogress(value: ((event: Event) => void) | null) {
@@ -529,7 +529,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onratechange(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onratechange');
+		return ElementEventAttributeUtility.getEventListener(this, 'onratechange');
 	}
 
 	public set onratechange(value: ((event: Event) => void) | null) {
@@ -537,7 +537,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onreset(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onreset');
+		return ElementEventAttributeUtility.getEventListener(this, 'onreset');
 	}
 
 	public set onreset(value: ((event: Event) => void) | null) {
@@ -545,7 +545,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onresize(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onresize');
+		return ElementEventAttributeUtility.getEventListener(this, 'onresize');
 	}
 
 	public set onresize(value: ((event: Event) => void) | null) {
@@ -553,7 +553,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onscroll(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onscroll');
+		return ElementEventAttributeUtility.getEventListener(this, 'onscroll');
 	}
 
 	public set onscroll(value: ((event: Event) => void) | null) {
@@ -561,7 +561,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onscrollend(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onscrollend');
+		return ElementEventAttributeUtility.getEventListener(this, 'onscrollend');
 	}
 
 	public set onscrollend(value: ((event: Event) => void) | null) {
@@ -569,7 +569,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onscrollsnapchange(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onscrollsnapchange');
+		return ElementEventAttributeUtility.getEventListener(this, 'onscrollsnapchange');
 	}
 
 	public set onscrollsnapchange(value: ((event: Event) => void) | null) {
@@ -577,7 +577,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onscrollsnapchanging(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onscrollsnapchanging');
+		return ElementEventAttributeUtility.getEventListener(this, 'onscrollsnapchanging');
 	}
 
 	public set onscrollsnapchanging(value: ((event: Event) => void) | null) {
@@ -585,7 +585,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onsecuritypolicyviolation(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onsecuritypolicyviolation');
+		return ElementEventAttributeUtility.getEventListener(this, 'onsecuritypolicyviolation');
 	}
 
 	public set onsecuritypolicyviolation(value: ((event: Event) => void) | null) {
@@ -593,7 +593,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onseeked(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onseeked');
+		return ElementEventAttributeUtility.getEventListener(this, 'onseeked');
 	}
 
 	public set onseeked(value: ((event: Event) => void) | null) {
@@ -601,7 +601,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onseeking(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onseeking');
+		return ElementEventAttributeUtility.getEventListener(this, 'onseeking');
 	}
 
 	public set onseeking(value: ((event: Event) => void) | null) {
@@ -609,7 +609,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onselect(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onselect');
+		return ElementEventAttributeUtility.getEventListener(this, 'onselect');
 	}
 
 	public set onselect(value: ((event: Event) => void) | null) {
@@ -617,7 +617,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onselectionchange(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onselectionchange');
+		return ElementEventAttributeUtility.getEventListener(this, 'onselectionchange');
 	}
 
 	public set onselectionchange(value: ((event: Event) => void) | null) {
@@ -625,7 +625,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onselectstart(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onselectstart');
+		return ElementEventAttributeUtility.getEventListener(this, 'onselectstart');
 	}
 
 	public set onselectstart(value: ((event: Event) => void) | null) {
@@ -633,7 +633,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onslotchange(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onslotchange');
+		return ElementEventAttributeUtility.getEventListener(this, 'onslotchange');
 	}
 
 	public set onslotchange(value: ((event: Event) => void) | null) {
@@ -641,7 +641,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onstalled(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onstalled');
+		return ElementEventAttributeUtility.getEventListener(this, 'onstalled');
 	}
 
 	public set onstalled(value: ((event: Event) => void) | null) {
@@ -649,7 +649,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onsubmit(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onsubmit');
+		return ElementEventAttributeUtility.getEventListener(this, 'onsubmit');
 	}
 
 	public set onsubmit(value: ((event: Event) => void) | null) {
@@ -657,7 +657,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onsuspend(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onsuspend');
+		return ElementEventAttributeUtility.getEventListener(this, 'onsuspend');
 	}
 
 	public set onsuspend(value: ((event: Event) => void) | null) {
@@ -665,7 +665,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get ontimeupdate(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ontimeupdate');
+		return ElementEventAttributeUtility.getEventListener(this, 'ontimeupdate');
 	}
 
 	public set ontimeupdate(value: ((event: Event) => void) | null) {
@@ -673,7 +673,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get ontoggle(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ontoggle');
+		return ElementEventAttributeUtility.getEventListener(this, 'ontoggle');
 	}
 
 	public set ontoggle(value: ((event: Event) => void) | null) {
@@ -681,7 +681,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get ontransitioncancel(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ontransitioncancel');
+		return ElementEventAttributeUtility.getEventListener(this, 'ontransitioncancel');
 	}
 
 	public set ontransitioncancel(value: ((event: Event) => void) | null) {
@@ -689,7 +689,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get ontransitionend(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ontransitionend');
+		return ElementEventAttributeUtility.getEventListener(this, 'ontransitionend');
 	}
 
 	public set ontransitionend(value: ((event: Event) => void) | null) {
@@ -697,7 +697,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get ontransitionrun(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ontransitionrun');
+		return ElementEventAttributeUtility.getEventListener(this, 'ontransitionrun');
 	}
 
 	public set ontransitionrun(value: ((event: Event) => void) | null) {
@@ -705,7 +705,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get ontransitionstart(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ontransitionstart');
+		return ElementEventAttributeUtility.getEventListener(this, 'ontransitionstart');
 	}
 
 	public set ontransitionstart(value: ((event: Event) => void) | null) {
@@ -713,7 +713,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onvolumechange(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onvolumechange');
+		return ElementEventAttributeUtility.getEventListener(this, 'onvolumechange');
 	}
 
 	public set onvolumechange(value: ((event: Event) => void) | null) {
@@ -721,7 +721,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onwaiting(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onwaiting');
+		return ElementEventAttributeUtility.getEventListener(this, 'onwaiting');
 	}
 
 	public set onwaiting(value: ((event: Event) => void) | null) {
@@ -729,7 +729,7 @@ export default class SVGElement extends Element {
 	}
 
 	public get onwheel(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onwheel');
+		return ElementEventAttributeUtility.getEventListener(this, 'onwheel');
 	}
 
 	public set onwheel(value: ((event: Event) => void) | null) {

@@ -1,5 +1,5 @@
 import Event from '../../event/Event.js';
-import ElementAttributeEventUtility from '../element/ElementAttributeEventUtility.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
@@ -14,7 +14,7 @@ export default class HTMLBodyElement extends HTMLElement {
 	/* eslint-disable jsdoc/require-jsdoc */
 
 	public get onafterprint(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onafterprint');
+		return ElementEventAttributeUtility.getEventListener(this, 'onafterprint');
 	}
 
 	public set onafterprint(value: ((event: Event) => void) | null) {
@@ -22,7 +22,7 @@ export default class HTMLBodyElement extends HTMLElement {
 	}
 
 	public get onbeforeprint(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onbeforeprint');
+		return ElementEventAttributeUtility.getEventListener(this, 'onbeforeprint');
 	}
 
 	public set onbeforeprint(value: ((event: Event) => void) | null) {
@@ -30,7 +30,7 @@ export default class HTMLBodyElement extends HTMLElement {
 	}
 
 	public get onbeforeunload(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onbeforeunload');
+		return ElementEventAttributeUtility.getEventListener(this, 'onbeforeunload');
 	}
 
 	public set onbeforeunload(value: ((event: Event) => void) | null) {
@@ -38,7 +38,7 @@ export default class HTMLBodyElement extends HTMLElement {
 	}
 
 	public get ongamepadconnected(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ongamepadconnected');
+		return ElementEventAttributeUtility.getEventListener(this, 'ongamepadconnected');
 	}
 
 	public set ongamepadconnected(value: ((event: Event) => void) | null) {
@@ -46,7 +46,7 @@ export default class HTMLBodyElement extends HTMLElement {
 	}
 
 	public get ongamepaddisconnected(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ongamepaddisconnected');
+		return ElementEventAttributeUtility.getEventListener(this, 'ongamepaddisconnected');
 	}
 
 	public set ongamepaddisconnected(value: ((event: Event) => void) | null) {
@@ -54,7 +54,7 @@ export default class HTMLBodyElement extends HTMLElement {
 	}
 
 	public get onhashchange(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onhashchange');
+		return ElementEventAttributeUtility.getEventListener(this, 'onhashchange');
 	}
 
 	public set onhashchange(value: ((event: Event) => void) | null) {
@@ -62,7 +62,7 @@ export default class HTMLBodyElement extends HTMLElement {
 	}
 
 	public get onlanguagechange(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onlanguagechange');
+		return ElementEventAttributeUtility.getEventListener(this, 'onlanguagechange');
 	}
 
 	public set onlanguagechange(value: ((event: Event) => void) | null) {
@@ -70,7 +70,7 @@ export default class HTMLBodyElement extends HTMLElement {
 	}
 
 	public get onmessage(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onmessage');
+		return ElementEventAttributeUtility.getEventListener(this, 'onmessage');
 	}
 
 	public set onmessage(value: ((event: Event) => void) | null) {
@@ -78,7 +78,7 @@ export default class HTMLBodyElement extends HTMLElement {
 	}
 
 	public get onmessageerror(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onmessageerror');
+		return ElementEventAttributeUtility.getEventListener(this, 'onmessageerror');
 	}
 
 	public set onmessageerror(value: ((event: Event) => void) | null) {
@@ -86,7 +86,7 @@ export default class HTMLBodyElement extends HTMLElement {
 	}
 
 	public get onoffline(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onoffline');
+		return ElementEventAttributeUtility.getEventListener(this, 'onoffline');
 	}
 
 	public set onoffline(value: ((event: Event) => void) | null) {
@@ -94,7 +94,7 @@ export default class HTMLBodyElement extends HTMLElement {
 	}
 
 	public get ononline(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ononline');
+		return ElementEventAttributeUtility.getEventListener(this, 'ononline');
 	}
 
 	public set ononline(value: ((event: Event) => void) | null) {
@@ -102,7 +102,7 @@ export default class HTMLBodyElement extends HTMLElement {
 	}
 
 	public get onpagehide(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpagehide');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpagehide');
 	}
 
 	public set onpagehide(value: ((event: Event) => void) | null) {
@@ -110,7 +110,7 @@ export default class HTMLBodyElement extends HTMLElement {
 	}
 
 	public get onpageshow(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpageshow');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpageshow');
 	}
 
 	public set onpageshow(value: ((event: Event) => void) | null) {
@@ -118,7 +118,7 @@ export default class HTMLBodyElement extends HTMLElement {
 	}
 
 	public get onpopstate(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpopstate');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpopstate');
 	}
 
 	public set onpopstate(value: ((event: Event) => void) | null) {
@@ -126,7 +126,7 @@ export default class HTMLBodyElement extends HTMLElement {
 	}
 
 	public get onrejectionhandled(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onrejectionhandled');
+		return ElementEventAttributeUtility.getEventListener(this, 'onrejectionhandled');
 	}
 
 	public set onrejectionhandled(value: ((event: Event) => void) | null) {
@@ -134,7 +134,7 @@ export default class HTMLBodyElement extends HTMLElement {
 	}
 
 	public get onstorage(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onstorage');
+		return ElementEventAttributeUtility.getEventListener(this, 'onstorage');
 	}
 
 	public set onstorage(value: ((event: Event) => void) | null) {
@@ -142,7 +142,7 @@ export default class HTMLBodyElement extends HTMLElement {
 	}
 
 	public get onunhandledrejection(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onunhandledrejection');
+		return ElementEventAttributeUtility.getEventListener(this, 'onunhandledrejection');
 	}
 
 	public set onunhandledrejection(value: ((event: Event) => void) | null) {
@@ -150,7 +150,7 @@ export default class HTMLBodyElement extends HTMLElement {
 	}
 
 	public get onunload(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onunload');
+		return ElementEventAttributeUtility.getEventListener(this, 'onunload');
 	}
 
 	public set onunload(value: ((event: Event) => void) | null) {

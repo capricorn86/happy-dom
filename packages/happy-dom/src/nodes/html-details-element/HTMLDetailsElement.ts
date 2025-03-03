@@ -4,7 +4,7 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import Attr from '../attr/Attr.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import MouseEvent from '../../event/events/MouseEvent.js';
-import ElementAttributeEventUtility from '../element/ElementAttributeEventUtility.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**
  * HTMLDetailsElement
@@ -17,7 +17,7 @@ export default class HTMLDetailsElement extends HTMLElement {
 	/* eslint-disable jsdoc/require-jsdoc */
 
 	public get ontoggle(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ontoggle');
+		return ElementEventAttributeUtility.getEventListener(this, 'ontoggle');
 	}
 
 	public set ontoggle(value: ((event: Event) => void) | null) {

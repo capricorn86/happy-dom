@@ -13,8 +13,6 @@ import DOMRectList from '../../dom/DOMRectList.js';
 import Attr from '../attr/Attr.js';
 import NamedNodeMap from './NamedNodeMap.js';
 import Event from '../../event/Event.js';
-import WindowBrowserContext from '../../window/WindowBrowserContext.js';
-import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
@@ -33,7 +31,7 @@ import HTMLParser from '../../html-parser/HTMLParser.js';
 import IScrollToOptions from '../../window/IScrollToOptions.js';
 import { AttributeUtility } from '../../utilities/AttributeUtility.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
-import ElementAttributeEventUtility from './ElementAttributeEventUtility.js';
+import ElementEventAttributeUtility from './ElementEventAttributeUtility.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -95,7 +93,7 @@ export default class Element
 	/* eslint-disable jsdoc/require-jsdoc */
 
 	public get onfullscreenerror(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onfullscreenerror');
+		return ElementEventAttributeUtility.getEventListener(this, 'onfullscreenerror');
 	}
 
 	public set onfullscreenerror(value: ((event: Event) => void) | null) {
@@ -103,7 +101,7 @@ export default class Element
 	}
 
 	public get onfullscreenchange(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onfullscreenchange');
+		return ElementEventAttributeUtility.getEventListener(this, 'onfullscreenchange');
 	}
 
 	public set onfullscreenchange(value: ((event: Event) => void) | null) {
@@ -111,7 +109,7 @@ export default class Element
 	}
 
 	public get onbeforecopy(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onbeforecopy');
+		return ElementEventAttributeUtility.getEventListener(this, 'onbeforecopy');
 	}
 
 	public set onbeforecopy(value: ((event: Event) => void) | null) {
@@ -119,7 +117,7 @@ export default class Element
 	}
 
 	public get onbeforecut(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onbeforecut');
+		return ElementEventAttributeUtility.getEventListener(this, 'onbeforecut');
 	}
 
 	public set onbeforecut(value: ((event: Event) => void) | null) {
@@ -127,7 +125,7 @@ export default class Element
 	}
 
 	public get onbeforepaste(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onbeforepaste');
+		return ElementEventAttributeUtility.getEventListener(this, 'onbeforepaste');
 	}
 
 	public set onbeforepaste(value: ((event: Event) => void) | null) {
@@ -135,7 +133,7 @@ export default class Element
 	}
 
 	public get onsearch(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onsearch');
+		return ElementEventAttributeUtility.getEventListener(this, 'onsearch');
 	}
 
 	public set onsearch(value: ((event: Event) => void) | null) {

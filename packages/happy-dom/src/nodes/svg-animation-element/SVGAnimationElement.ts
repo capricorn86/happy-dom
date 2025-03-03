@@ -2,7 +2,7 @@ import SVGElement from '../svg-element/SVGElement.js';
 import SVGStringList from '../../svg/SVGStringList.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Event from '../../event/Event.js';
-import ElementAttributeEventUtility from '../element/ElementAttributeEventUtility.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**
  * SVG Animation Element.
@@ -19,7 +19,7 @@ export default class SVGAnimationElement extends SVGElement {
 	/* eslint-disable jsdoc/require-jsdoc */
 
 	public get onbegin(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onbegin');
+		return ElementEventAttributeUtility.getEventListener(this, 'onbegin');
 	}
 
 	public set onbegin(value: ((event: Event) => void) | null) {
@@ -27,7 +27,7 @@ export default class SVGAnimationElement extends SVGElement {
 	}
 
 	public get onend(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onend');
+		return ElementEventAttributeUtility.getEventListener(this, 'onend');
 	}
 
 	public set onend(value: ((event: Event) => void) | null) {
@@ -35,7 +35,7 @@ export default class SVGAnimationElement extends SVGElement {
 	}
 
 	public get onrepeat(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onrepeat');
+		return ElementEventAttributeUtility.getEventListener(this, 'onrepeat');
 	}
 
 	public set onrepeat(value: ((event: Event) => void) | null) {

@@ -7,7 +7,7 @@ import Event from '../../event/Event.js';
 import HTMLElementUtility from './HTMLElementUtility.js';
 import DOMStringMap from '../../dom/DOMStringMap.js';
 import Attr from '../attr/Attr.js';
-import ElementAttributeEventUtility from '../element/ElementAttributeEventUtility.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**
  * HTML Element.
@@ -43,7 +43,7 @@ export default class HTMLElement extends Element {
 	/* eslint-disable jsdoc/require-jsdoc */
 
 	public get oncancel(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncancel');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncancel');
 	}
 
 	public set oncancel(value: ((event: Event) => void) | null) {
@@ -51,7 +51,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onerror(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onerror');
+		return ElementEventAttributeUtility.getEventListener(this, 'onerror');
 	}
 
 	public set onerror(value: ((event: Event) => void) | null) {
@@ -59,7 +59,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onscroll(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onscroll');
+		return ElementEventAttributeUtility.getEventListener(this, 'onscroll');
 	}
 
 	public set onscroll(value: ((event: Event) => void) | null) {
@@ -67,7 +67,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onselect(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onselect');
+		return ElementEventAttributeUtility.getEventListener(this, 'onselect');
 	}
 
 	public set onselect(value: ((event: Event) => void) | null) {
@@ -75,7 +75,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onwheel(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onwheel');
+		return ElementEventAttributeUtility.getEventListener(this, 'onwheel');
 	}
 
 	public set onwheel(value: ((event: Event) => void) | null) {
@@ -83,7 +83,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get oncopy(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncopy');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncopy');
 	}
 
 	public set oncopy(value: ((event: Event) => void) | null) {
@@ -91,7 +91,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get oncut(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncut');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncut');
 	}
 
 	public set oncut(value: ((event: Event) => void) | null) {
@@ -99,7 +99,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onpaste(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpaste');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpaste');
 	}
 
 	public set onpaste(value: ((event: Event) => void) | null) {
@@ -107,7 +107,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get oncompositionend(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncompositionend');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncompositionend');
 	}
 
 	public set oncompositionend(value: ((event: Event) => void) | null) {
@@ -115,7 +115,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get oncompositionstart(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncompositionstart');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncompositionstart');
 	}
 
 	public set oncompositionstart(value: ((event: Event) => void) | null) {
@@ -123,7 +123,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get oncompositionupdate(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncompositionupdate');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncompositionupdate');
 	}
 
 	public set oncompositionupdate(value: ((event: Event) => void) | null) {
@@ -131,7 +131,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onblur(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onblur');
+		return ElementEventAttributeUtility.getEventListener(this, 'onblur');
 	}
 
 	public set onblur(value: ((event: Event) => void) | null) {
@@ -139,7 +139,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onfocus(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onfocus');
+		return ElementEventAttributeUtility.getEventListener(this, 'onfocus');
 	}
 
 	public set onfocus(value: ((event: Event) => void) | null) {
@@ -147,7 +147,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onfocusin(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onfocusin');
+		return ElementEventAttributeUtility.getEventListener(this, 'onfocusin');
 	}
 
 	public set onfocusin(value: ((event: Event) => void) | null) {
@@ -155,7 +155,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onfocusout(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onfocusout');
+		return ElementEventAttributeUtility.getEventListener(this, 'onfocusout');
 	}
 
 	public set onfocusout(value: ((event: Event) => void) | null) {
@@ -163,7 +163,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onkeydown(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onkeydown');
+		return ElementEventAttributeUtility.getEventListener(this, 'onkeydown');
 	}
 
 	public set onkeydown(value: ((event: Event) => void) | null) {
@@ -171,7 +171,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onkeyup(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onkeyup');
+		return ElementEventAttributeUtility.getEventListener(this, 'onkeyup');
 	}
 
 	public set onkeyup(value: ((event: Event) => void) | null) {
@@ -179,7 +179,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onauxclick(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onauxclick');
+		return ElementEventAttributeUtility.getEventListener(this, 'onauxclick');
 	}
 
 	public set onauxclick(value: ((event: Event) => void) | null) {
@@ -187,7 +187,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onclick(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onclick');
+		return ElementEventAttributeUtility.getEventListener(this, 'onclick');
 	}
 
 	public set onclick(value: ((event: Event) => void) | null) {
@@ -195,7 +195,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get oncontextmenu(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncontextmenu');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncontextmenu');
 	}
 
 	public set oncontextmenu(value: ((event: Event) => void) | null) {
@@ -203,7 +203,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get ondblclick(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ondblclick');
+		return ElementEventAttributeUtility.getEventListener(this, 'ondblclick');
 	}
 
 	public set ondblclick(value: ((event: Event) => void) | null) {
@@ -211,7 +211,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onmousedown(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onmousedown');
+		return ElementEventAttributeUtility.getEventListener(this, 'onmousedown');
 	}
 
 	public set onmousedown(value: ((event: Event) => void) | null) {
@@ -219,7 +219,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onmouseenter(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onmouseenter');
+		return ElementEventAttributeUtility.getEventListener(this, 'onmouseenter');
 	}
 
 	public set onmouseenter(value: ((event: Event) => void) | null) {
@@ -227,7 +227,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onmouseleave(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onmouseleave');
+		return ElementEventAttributeUtility.getEventListener(this, 'onmouseleave');
 	}
 
 	public set onmouseleave(value: ((event: Event) => void) | null) {
@@ -235,7 +235,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onmousemove(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onmousemove');
+		return ElementEventAttributeUtility.getEventListener(this, 'onmousemove');
 	}
 
 	public set onmousemove(value: ((event: Event) => void) | null) {
@@ -243,7 +243,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onmouseout(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onmouseout');
+		return ElementEventAttributeUtility.getEventListener(this, 'onmouseout');
 	}
 
 	public set onmouseout(value: ((event: Event) => void) | null) {
@@ -251,7 +251,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onmouseover(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onmouseover');
+		return ElementEventAttributeUtility.getEventListener(this, 'onmouseover');
 	}
 
 	public set onmouseover(value: ((event: Event) => void) | null) {
@@ -259,7 +259,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onmouseup(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onmouseup');
+		return ElementEventAttributeUtility.getEventListener(this, 'onmouseup');
 	}
 
 	public set onmouseup(value: ((event: Event) => void) | null) {
@@ -267,7 +267,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get ontouchcancel(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ontouchcancel');
+		return ElementEventAttributeUtility.getEventListener(this, 'ontouchcancel');
 	}
 
 	public set ontouchcancel(value: ((event: Event) => void) | null) {
@@ -275,7 +275,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get ontouchend(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ontouchend');
+		return ElementEventAttributeUtility.getEventListener(this, 'ontouchend');
 	}
 
 	public set ontouchend(value: ((event: Event) => void) | null) {
@@ -283,7 +283,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get ontouchmove(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ontouchmove');
+		return ElementEventAttributeUtility.getEventListener(this, 'ontouchmove');
 	}
 
 	public set ontouchmove(value: ((event: Event) => void) | null) {
@@ -291,7 +291,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get ontouchstart(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ontouchstart');
+		return ElementEventAttributeUtility.getEventListener(this, 'ontouchstart');
 	}
 
 	public set ontouchstart(value: ((event: Event) => void) | null) {
@@ -299,7 +299,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get oninvalid(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oninvalid');
+		return ElementEventAttributeUtility.getEventListener(this, 'oninvalid');
 	}
 
 	public set oninvalid(value: ((event: Event) => void) | null) {
@@ -307,7 +307,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onanimationcancel(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onanimationcancel');
+		return ElementEventAttributeUtility.getEventListener(this, 'onanimationcancel');
 	}
 
 	public set onanimationcancel(value: ((event: Event) => void) | null) {
@@ -315,7 +315,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onanimationend(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onanimationend');
+		return ElementEventAttributeUtility.getEventListener(this, 'onanimationend');
 	}
 
 	public set onanimationend(value: ((event: Event) => void) | null) {
@@ -323,7 +323,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onanimationiteration(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onanimationiteration');
+		return ElementEventAttributeUtility.getEventListener(this, 'onanimationiteration');
 	}
 
 	public set onanimationiteration(value: ((event: Event) => void) | null) {
@@ -331,7 +331,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onanimationstart(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onanimationstart');
+		return ElementEventAttributeUtility.getEventListener(this, 'onanimationstart');
 	}
 
 	public set onanimationstart(value: ((event: Event) => void) | null) {
@@ -339,7 +339,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onbeforeinput(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onbeforeinput');
+		return ElementEventAttributeUtility.getEventListener(this, 'onbeforeinput');
 	}
 
 	public set onbeforeinput(value: ((event: Event) => void) | null) {
@@ -347,7 +347,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get oninput(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oninput');
+		return ElementEventAttributeUtility.getEventListener(this, 'oninput');
 	}
 
 	public set oninput(value: ((event: Event) => void) | null) {
@@ -355,7 +355,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onchange(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onchange');
+		return ElementEventAttributeUtility.getEventListener(this, 'onchange');
 	}
 
 	public set onchange(value: ((event: Event) => void) | null) {
@@ -363,7 +363,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get ongotpointercapture(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ongotpointercapture');
+		return ElementEventAttributeUtility.getEventListener(this, 'ongotpointercapture');
 	}
 
 	public set ongotpointercapture(value: ((event: Event) => void) | null) {
@@ -371,7 +371,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onlostpointercapture(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onlostpointercapture');
+		return ElementEventAttributeUtility.getEventListener(this, 'onlostpointercapture');
 	}
 
 	public set onlostpointercapture(value: ((event: Event) => void) | null) {
@@ -379,7 +379,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onpointercancel(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpointercancel');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointercancel');
 	}
 
 	public set onpointercancel(value: ((event: Event) => void) | null) {
@@ -387,7 +387,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onpointerdown(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpointerdown');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointerdown');
 	}
 
 	public set onpointerdown(value: ((event: Event) => void) | null) {
@@ -395,7 +395,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onpointerenter(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpointerenter');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointerenter');
 	}
 
 	public set onpointerenter(value: ((event: Event) => void) | null) {
@@ -403,7 +403,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onpointerleave(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpointerleave');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointerleave');
 	}
 
 	public set onpointerleave(value: ((event: Event) => void) | null) {
@@ -411,7 +411,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onpointermove(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpointermove');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointermove');
 	}
 
 	public set onpointermove(value: ((event: Event) => void) | null) {
@@ -419,7 +419,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onpointerout(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpointerout');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointerout');
 	}
 
 	public set onpointerout(value: ((event: Event) => void) | null) {
@@ -427,7 +427,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onpointerover(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpointerover');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointerover');
 	}
 
 	public set onpointerover(value: ((event: Event) => void) | null) {
@@ -435,7 +435,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get onpointerup(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpointerup');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointerup');
 	}
 
 	public set onpointerup(value: ((event: Event) => void) | null) {
@@ -443,7 +443,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get ontransitioncancel(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ontransitioncancel');
+		return ElementEventAttributeUtility.getEventListener(this, 'ontransitioncancel');
 	}
 
 	public set ontransitioncancel(value: ((event: Event) => void) | null) {
@@ -451,7 +451,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get ontransitionend(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ontransitionend');
+		return ElementEventAttributeUtility.getEventListener(this, 'ontransitionend');
 	}
 
 	public set ontransitionend(value: ((event: Event) => void) | null) {
@@ -459,7 +459,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get ontransitionrun(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ontransitionrun');
+		return ElementEventAttributeUtility.getEventListener(this, 'ontransitionrun');
 	}
 
 	public set ontransitionrun(value: ((event: Event) => void) | null) {
@@ -467,7 +467,7 @@ export default class HTMLElement extends Element {
 	}
 
 	public get ontransitionstart(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ontransitionstart');
+		return ElementEventAttributeUtility.getEventListener(this, 'ontransitionstart');
 	}
 
 	public set ontransitionstart(value: ((event: Event) => void) | null) {

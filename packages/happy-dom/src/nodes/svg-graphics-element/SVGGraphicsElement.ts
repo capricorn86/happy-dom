@@ -5,7 +5,7 @@ import SVGStringList from '../../svg/SVGStringList.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import SVGAnimatedTransformList from '../../svg/SVGAnimatedTransformList.js';
 import Event from '../../event/Event.js';
-import ElementAttributeEventUtility from '../element/ElementAttributeEventUtility.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**
  * SVG Graphics Element.
@@ -23,7 +23,7 @@ export default class SVGGraphicsElement extends SVGElement {
 	/* eslint-disable jsdoc/require-jsdoc */
 
 	public get oncopy(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncopy');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncopy');
 	}
 
 	public set oncopy(value: ((event: Event) => void) | null) {
@@ -31,7 +31,7 @@ export default class SVGGraphicsElement extends SVGElement {
 	}
 
 	public get oncut(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncut');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncut');
 	}
 
 	public set oncut(value: ((event: Event) => void) | null) {
@@ -39,7 +39,7 @@ export default class SVGGraphicsElement extends SVGElement {
 	}
 
 	public get onpaste(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpaste');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpaste');
 	}
 
 	public set onpaste(value: ((event: Event) => void) | null) {

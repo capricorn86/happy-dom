@@ -2,7 +2,7 @@ import HTMLElement from '../html-element/HTMLElement.js';
 import TextTrack from '../html-media-element/TextTrack.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import TextTrackKindEnum from '../html-media-element/TextTrackKindEnum.js';
-import ElementAttributeEventUtility from '../element/ElementAttributeEventUtility.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 import Event from '../../event/Event.js';
 
 /**
@@ -16,7 +16,7 @@ export default class HTMLTrackElement extends HTMLElement {
 	/* eslint-disable jsdoc/require-jsdoc */
 
 	public get oncuechange(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncuechange');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncuechange');
 	}
 
 	public set oncuechange(value: ((event: Event) => void) | null) {

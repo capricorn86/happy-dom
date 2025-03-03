@@ -10,7 +10,7 @@ import TextTrackList from './TextTrackList.js';
 import TextTrack from './TextTrack.js';
 import TextTrackKindEnum from './TextTrackKindEnum.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import ElementAttributeEventUtility from '../element/ElementAttributeEventUtility.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 interface IMediaError {
 	code: number;
@@ -58,7 +58,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	/* eslint-disable jsdoc/require-jsdoc */
 
 	public get onabort(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onabort');
+		return ElementEventAttributeUtility.getEventListener(this, 'onabort');
 	}
 
 	public set onabort(value: ((event: Event) => void) | null) {
@@ -66,7 +66,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get oncanplay(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncanplay');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncanplay');
 	}
 
 	public set oncanplay(value: ((event: Event) => void) | null) {
@@ -74,7 +74,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get oncanplaythrough(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncanplaythrough');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncanplaythrough');
 	}
 
 	public set oncanplaythrough(value: ((event: Event) => void) | null) {
@@ -82,7 +82,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get ondurationchange(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ondurationchange');
+		return ElementEventAttributeUtility.getEventListener(this, 'ondurationchange');
 	}
 
 	public set ondurationchange(value: ((event: Event) => void) | null) {
@@ -90,7 +90,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get onemptied(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onemptied');
+		return ElementEventAttributeUtility.getEventListener(this, 'onemptied');
 	}
 
 	public set onemptied(value: ((event: Event) => void) | null) {
@@ -98,7 +98,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get onended(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onended');
+		return ElementEventAttributeUtility.getEventListener(this, 'onended');
 	}
 
 	public set onended(value: ((event: Event) => void) | null) {
@@ -106,7 +106,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get onerror(): ((event: ErrorEvent) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onerror');
+		return ElementEventAttributeUtility.getEventListener(this, 'onerror');
 	}
 
 	public set onerror(value: ((event: ErrorEvent) => void) | null) {
@@ -114,7 +114,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get onloadeddata(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onloadeddata');
+		return ElementEventAttributeUtility.getEventListener(this, 'onloadeddata');
 	}
 
 	public set onloadeddata(value: ((event: Event) => void) | null) {
@@ -122,7 +122,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get onloadedmetadata(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onloadedmetadata');
+		return ElementEventAttributeUtility.getEventListener(this, 'onloadedmetadata');
 	}
 
 	public set onloadedmetadata(value: ((event: Event) => void) | null) {
@@ -130,7 +130,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get onloadstart(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onloadstart');
+		return ElementEventAttributeUtility.getEventListener(this, 'onloadstart');
 	}
 
 	public set onloadstart(value: ((event: Event) => void) | null) {
@@ -138,7 +138,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get onpause(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onpause');
+		return ElementEventAttributeUtility.getEventListener(this, 'onpause');
 	}
 
 	public set onpause(value: ((event: Event) => void) | null) {
@@ -146,7 +146,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get onplay(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onplay');
+		return ElementEventAttributeUtility.getEventListener(this, 'onplay');
 	}
 
 	public set onplay(value: ((event: Event) => void) | null) {
@@ -154,7 +154,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get onplaying(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onplaying');
+		return ElementEventAttributeUtility.getEventListener(this, 'onplaying');
 	}
 
 	public set onplaying(value: ((event: Event) => void) | null) {
@@ -162,7 +162,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get onprogress(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onprogress');
+		return ElementEventAttributeUtility.getEventListener(this, 'onprogress');
 	}
 
 	public set onprogress(value: ((event: Event) => void) | null) {
@@ -170,7 +170,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get onratechange(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onratechange');
+		return ElementEventAttributeUtility.getEventListener(this, 'onratechange');
 	}
 
 	public set onratechange(value: ((event: Event) => void) | null) {
@@ -178,7 +178,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get onresize(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onresize');
+		return ElementEventAttributeUtility.getEventListener(this, 'onresize');
 	}
 
 	public set onresize(value: ((event: Event) => void) | null) {
@@ -186,7 +186,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get onseeked(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onseeked');
+		return ElementEventAttributeUtility.getEventListener(this, 'onseeked');
 	}
 
 	public set onseeked(value: ((event: Event) => void) | null) {
@@ -194,7 +194,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get onseeking(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onseeking');
+		return ElementEventAttributeUtility.getEventListener(this, 'onseeking');
 	}
 
 	public set onseeking(value: ((event: Event) => void) | null) {
@@ -202,7 +202,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get onstalled(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onstalled');
+		return ElementEventAttributeUtility.getEventListener(this, 'onstalled');
 	}
 
 	public set onstalled(value: ((event: Event) => void) | null) {
@@ -210,7 +210,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get onsuspend(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onsuspend');
+		return ElementEventAttributeUtility.getEventListener(this, 'onsuspend');
 	}
 
 	public set onsuspend(value: ((event: Event) => void) | null) {
@@ -218,7 +218,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get ontimeupdate(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'ontimeupdate');
+		return ElementEventAttributeUtility.getEventListener(this, 'ontimeupdate');
 	}
 
 	public set ontimeupdate(value: ((event: Event) => void) | null) {
@@ -226,7 +226,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get onvolumechange(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onvolumechange');
+		return ElementEventAttributeUtility.getEventListener(this, 'onvolumechange');
 	}
 
 	public set onvolumechange(value: ((event: Event) => void) | null) {
@@ -234,7 +234,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	}
 
 	public get onwaiting(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onwaiting');
+		return ElementEventAttributeUtility.getEventListener(this, 'onwaiting');
 	}
 
 	public set onwaiting(value: ((event: Event) => void) | null) {

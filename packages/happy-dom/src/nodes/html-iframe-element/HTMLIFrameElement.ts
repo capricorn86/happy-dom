@@ -12,7 +12,7 @@ import BrowserFrameURL from '../../browser/utilities/BrowserFrameURL.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import IRequestReferrerPolicy from '../../fetch/types/IRequestReferrerPolicy.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
-import ElementAttributeEventUtility from '../element/ElementAttributeEventUtility.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 const SANDBOX_FLAGS = [
 	'allow-downloads',
@@ -55,7 +55,7 @@ export default class HTMLIFrameElement extends HTMLElement {
 	/* eslint-disable jsdoc/require-jsdoc */
 
 	public get onload(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onload');
+		return ElementEventAttributeUtility.getEventListener(this, 'onload');
 	}
 
 	public set onload(value: ((event: Event) => void) | null) {
@@ -63,7 +63,7 @@ export default class HTMLIFrameElement extends HTMLElement {
 	}
 
 	public get onerror(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onerror');
+		return ElementEventAttributeUtility.getEventListener(this, 'onerror');
 	}
 
 	public set onerror(value: ((event: Event) => void) | null) {

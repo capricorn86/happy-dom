@@ -4,7 +4,7 @@ import Blob from '../../file/Blob.js';
 import OffscreenCanvas from './OffscreenCanvas.js';
 import Event from '../../event/Event.js';
 import MediaStream from '../html-media-element/MediaStream.js';
-import ElementAttributeEventUtility from '../element/ElementAttributeEventUtility.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+ab12C3+1aBCdEf==';
 
@@ -19,7 +19,7 @@ export default class HTMLCanvasElement extends HTMLElement {
 	/* eslint-disable jsdoc/require-jsdoc */
 
 	public get oncontextlost(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncontextlost');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncontextlost');
 	}
 
 	public set oncontextlost(value: ((event: Event) => void) | null) {
@@ -27,7 +27,7 @@ export default class HTMLCanvasElement extends HTMLElement {
 	}
 
 	public get oncontextrestored(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oncontextrestored');
+		return ElementEventAttributeUtility.getEventListener(this, 'oncontextrestored');
 	}
 
 	public set oncontextrestored(value: ((event: Event) => void) | null) {
@@ -35,7 +35,7 @@ export default class HTMLCanvasElement extends HTMLElement {
 	}
 
 	public get onwebglcontextcreationerror(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onwebglcontextcreationerror');
+		return ElementEventAttributeUtility.getEventListener(this, 'onwebglcontextcreationerror');
 	}
 
 	public set onwebglcontextcreationerror(value: ((event: Event) => void) | null) {
@@ -43,7 +43,7 @@ export default class HTMLCanvasElement extends HTMLElement {
 	}
 
 	public get onwebglcontextlost(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onwebglcontextlost');
+		return ElementEventAttributeUtility.getEventListener(this, 'onwebglcontextlost');
 	}
 
 	public set onwebglcontextlost(value: ((event: Event) => void) | null) {
@@ -51,7 +51,7 @@ export default class HTMLCanvasElement extends HTMLElement {
 	}
 
 	public get onwebglcontextrestored(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onwebglcontextrestored');
+		return ElementEventAttributeUtility.getEventListener(this, 'onwebglcontextrestored');
 	}
 
 	public set onwebglcontextrestored(value: ((event: Event) => void) | null) {

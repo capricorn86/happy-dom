@@ -7,7 +7,7 @@ import Element from './Element.js';
 /**
  * ECMAScript module compiler.
  */
-export default class ElementAttributeEventUtility {
+export default class ElementEventAttributeUtility {
 	/**
 	 * Evaluates code in attribute and returns event listener.
 	 *

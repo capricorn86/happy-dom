@@ -15,7 +15,7 @@ import ClassMethodBinder from '../../utilities/ClassMethodBinder.js';
 import Node from '../node/Node.js';
 import Element from '../element/Element.js';
 import EventTarget from '../../event/EventTarget.js';
-import ElementAttributeEventUtility from '../element/ElementAttributeEventUtility.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**
  * HTML Select Element.
@@ -204,7 +204,7 @@ export default class HTMLSelectElement extends HTMLElement {
 	/* eslint-disable jsdoc/require-jsdoc */
 
 	public get onchange(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onchange');
+		return ElementEventAttributeUtility.getEventListener(this, 'onchange');
 	}
 
 	public set onchange(value: ((event: Event) => void) | null) {
@@ -212,7 +212,7 @@ export default class HTMLSelectElement extends HTMLElement {
 	}
 
 	public get oninput(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'oninput');
+		return ElementEventAttributeUtility.getEventListener(this, 'oninput');
 	}
 
 	public set oninput(value: ((event: Event) => void) | null) {

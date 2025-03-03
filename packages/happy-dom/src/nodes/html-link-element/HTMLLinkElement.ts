@@ -12,7 +12,7 @@ import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum
 import ModuleFactory from '../../module/ModuleFactory.js';
 import PreloadUtility from '../../fetch/preload/PreloadUtility.js';
 import PreloadEntry from '../../fetch/preload/PreloadEntry.js';
-import ElementAttributeEventUtility from '../element/ElementAttributeEventUtility.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**
  * HTML Link Element.
@@ -32,7 +32,7 @@ export default class HTMLLinkElement extends HTMLElement {
 	/* eslint-disable jsdoc/require-jsdoc */
 
 	public get onerror(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onerror');
+		return ElementEventAttributeUtility.getEventListener(this, 'onerror');
 	}
 
 	public set onerror(value: ((event: Event) => void) | null) {
@@ -40,7 +40,7 @@ export default class HTMLLinkElement extends HTMLElement {
 	}
 
 	public get onload(): ((event: Event) => void) | null {
-		return ElementAttributeEventUtility.getEventListener(this, 'onload');
+		return ElementEventAttributeUtility.getEventListener(this, 'onload');
 	}
 
 	public set onload(value: ((event: Event) => void) | null) {
