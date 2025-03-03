@@ -32,6 +32,30 @@ describe('HTMLSlotElement', () => {
 		document.body.appendChild(customElementWithSlot);
 	});
 
+	for (const event of ['slotchange']) {
+		describe(`get on${event}()`, () => {
+			it('Returns the event listener.', () => {
+				const element = <HTMLSlotElement>customElementWithSlot.shadowRoot?.querySelector('slot');
+				element.setAttribute(`on${event}`, 'window.test = 1');
+				expect(element[`on${event}`]).toBeTypeOf('function');
+				element[`on${event}`](new Event(event));
+				expect(window['test']).toBe(1);
+			});
+		});
+
+		describe(`set on${event}()`, () => {
+			it('Sets the event listener.', () => {
+				const element = <HTMLSlotElement>customElementWithSlot.shadowRoot?.querySelector('slot');
+				element[`on${event}`] = () => {
+					window['test'] = 1;
+				};
+				element.dispatchEvent(new Event(event));
+				expect(element.getAttribute(`on${event}`)).toBe(null);
+				expect(window['test']).toBe(1);
+			});
+		});
+	}
+
 	describe('get name()', () => {
 		it('Returns attribute value.', () => {
 			const slot = <HTMLSlotElement>customElementWithSlot.shadowRoot?.querySelector('slot');
