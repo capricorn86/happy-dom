@@ -41,7 +41,36 @@ describe('Element', () => {
 		vi.restoreAllMocks();
 	});
 
-	describe('children', () => {
+	for (const event of [
+		'fullscreenerror',
+		'fullscreenchange',
+		'beforecopy',
+		'beforecut',
+		'beforepaste',
+		'search'
+	]) {
+		describe(`get on${event}()`, () => {
+			it('Returns the event listener.', () => {
+				element.setAttribute(`on${event}`, 'window.test = 1');
+				expect(element[`on${event}`]).toBeTypeOf('function');
+				element[`on${event}`](new Event(event));
+				expect(window['test']).toBe(1);
+			});
+		});
+
+		describe(`set on${event}()`, () => {
+			it('Sets the event listener.', () => {
+				element[`on${event}`] = () => {
+					window['test'] = 1;
+				};
+				element.dispatchEvent(new Event(event));
+				expect(element.getAttribute(`on${event}`)).toBe(null);
+				expect(window['test']).toBe(1);
+			});
+		});
+	}
+
+	describe('get children()', () => {
 		it('Returns nodes of type Element.', () => {
 			const div1 = document.createElement('div');
 			const div2 = document.createElement('div');
@@ -1980,6 +2009,19 @@ describe('Element', () => {
 			expect(clone.children.length).toEqual(0);
 			expect(clone2.children.length).toBe(1);
 			expect(clone2.children[0].outerHTML).toBe('<div class="className"></div>');
+		});
+
+		it('Sets the properties of the cloned element.', () => {
+			const div1 = document.createElement('div');
+			div1.className = 'div1';
+			const cloned = div1.cloneNode(true);
+			cloned.className = 'cloned';
+
+			expect(div1.className).toBe('div1');
+			expect(cloned.className).toBe('cloned');
+
+			expect(div1.outerHTML).toBe('<div class="div1"></div>');
+			expect(cloned.outerHTML).toBe('<div class="cloned"></div>');
 		});
 
 		it('Clones shadow root when it is "clonable".', () => {
