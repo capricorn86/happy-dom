@@ -16,7 +16,11 @@ export default class HTMLElementUtility {
 		const target = element[PropertySymbol.proxy] || element;
 		const document = target[PropertySymbol.ownerDocument];
 
-		if (document[PropertySymbol.activeElement] !== target || !target[PropertySymbol.isConnected]) {
+		if (
+			document[PropertySymbol.activeElement] !== target ||
+			!target[PropertySymbol.isConnected] ||
+			target.disabled
+		) {
 			return;
 		}
 
@@ -53,7 +57,11 @@ export default class HTMLElementUtility {
 		const target = element[PropertySymbol.proxy] || element;
 		const document = target[PropertySymbol.ownerDocument];
 
-		if (document[PropertySymbol.activeElement] === target || !target[PropertySymbol.isConnected]) {
+		if (
+			document[PropertySymbol.activeElement] === target ||
+			!target[PropertySymbol.isConnected] ||
+			target.disabled
+		) {
 			return;
 		}
 
