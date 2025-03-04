@@ -5,6 +5,7 @@ import SVGGraphicsElement from '../../../src/nodes/svg-graphics-element/SVGGraph
 import SVGTransformTypeEnum from '../../../src/svg/SVGTransformTypeEnum.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
+import Event from '../../../src/event/Event.js';
 
 describe('SVGGraphicsElement', () => {
 	let window: Window;
@@ -26,6 +27,28 @@ describe('SVGGraphicsElement', () => {
 			expect(element instanceof SVGElement).toBe(true);
 		});
 	});
+
+	for (const event of ['copy', 'cut', 'paste']) {
+		describe(`get on${event}()`, () => {
+			it('Returns the event listener.', () => {
+				element.setAttribute(`on${event}`, 'window.test = 1');
+				expect(element[`on${event}`]).toBeTypeOf('function');
+				element[`on${event}`](new Event(event));
+				expect(window['test']).toBe(1);
+			});
+		});
+
+		describe(`set on${event}()`, () => {
+			it('Sets the event listener.', () => {
+				element[`on${event}`] = () => {
+					window['test'] = 1;
+				};
+				element.dispatchEvent(new Event(event));
+				expect(element.getAttribute(`on${event}`)).toBe(null);
+				expect(window['test']).toBe(1);
+			});
+		});
+	}
 
 	describe('get requiredExtensions()', () => {
 		it('Should return an instance of SVGStringList', () => {

@@ -13,9 +13,6 @@ import DOMRectList from '../../dom/DOMRectList.js';
 import Attr from '../attr/Attr.js';
 import NamedNodeMap from './NamedNodeMap.js';
 import Event from '../../event/Event.js';
-import EventPhaseEnum from '../../event/EventPhaseEnum.js';
-import WindowBrowserContext from '../../window/WindowBrowserContext.js';
-import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
@@ -34,6 +31,7 @@ import HTMLParser from '../../html-parser/HTMLParser.js';
 import IScrollToOptions from '../../window/IScrollToOptions.js';
 import { AttributeUtility } from '../../utilities/AttributeUtility.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import ElementEventAttributeUtility from './ElementEventAttributeUtility.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -49,42 +47,6 @@ export default class Element
 	public static [PropertySymbol.namespaceURI]: string | null = null;
 	public declare cloneNode: (deep?: boolean) => Element;
 
-	// Events
-	public oncancel: ((event: Event) => void) | null = null;
-	public onerror: ((event: Event) => void) | null = null;
-	public onscroll: ((event: Event) => void) | null = null;
-	public onselect: ((event: Event) => void) | null = null;
-	public onwheel: ((event: Event) => void) | null = null;
-	public oncopy: ((event: Event) => void) | null = null;
-	public oncut: ((event: Event) => void) | null = null;
-	public onpaste: ((event: Event) => void) | null = null;
-	public oncompositionend: ((event: Event) => void) | null = null;
-	public oncompositionstart: ((event: Event) => void) | null = null;
-	public oncompositionupdate: ((event: Event) => void) | null = null;
-	public onblur: ((event: Event) => void) | null = null;
-	public onfocus: ((event: Event) => void) | null = null;
-	public onfocusin: ((event: Event) => void) | null = null;
-	public onfocusout: ((event: Event) => void) | null = null;
-	public onfullscreenchange: ((event: Event) => void) | null = null;
-	public onfullscreenerror: ((event: Event) => void) | null = null;
-	public onkeydown: ((event: Event) => void) | null = null;
-	public onkeyup: ((event: Event) => void) | null = null;
-	public onauxclick: ((event: Event) => void) | null = null;
-	public onclick: ((event: Event) => void) | null = null;
-	public oncontextmenu: ((event: Event) => void) | null = null;
-	public ondblclick: ((event: Event) => void) | null = null;
-	public onmousedown: ((event: Event) => void) | null = null;
-	public onmouseenter: ((event: Event) => void) | null = null;
-	public onmouseleave: ((event: Event) => void) | null = null;
-	public onmousemove: ((event: Event) => void) | null = null;
-	public onmouseout: ((event: Event) => void) | null = null;
-	public onmouseover: ((event: Event) => void) | null = null;
-	public onmouseup: ((event: Event) => void) | null = null;
-	public ontouchcancel: ((event: Event) => void) | null = null;
-	public ontouchend: ((event: Event) => void) | null = null;
-	public ontouchmove: ((event: Event) => void) | null = null;
-	public ontouchstart: ((event: Event) => void) | null = null;
-
 	// Internal properties
 	public [PropertySymbol.classList]: DOMTokenList | null = null;
 	public [PropertySymbol.isValue]: string | null = null;
@@ -99,6 +61,7 @@ export default class Element
 	public [PropertySymbol.attributesProxy]: NamedNodeMap | null = null;
 	public [PropertySymbol.children]: HTMLCollection<Element> | null = null;
 	public [PropertySymbol.computedStyle]: CSSStyleDeclaration | null = null;
+	public [PropertySymbol.propertyEventListeners]: Map<string, (event: Event) => void> = new Map();
 	public declare [PropertySymbol.tagName]: string | null;
 	public declare [PropertySymbol.localName]: string | null;
 	public declare [PropertySymbol.namespaceURI]: string | null;
@@ -124,6 +87,60 @@ export default class Element
 			this[PropertySymbol.namespaceURI] = null;
 		}
 	}
+
+	// Events
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get onfullscreenerror(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onfullscreenerror');
+	}
+
+	public set onfullscreenerror(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onfullscreenerror', value);
+	}
+
+	public get onfullscreenchange(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onfullscreenchange');
+	}
+
+	public set onfullscreenchange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onfullscreenchange', value);
+	}
+
+	public get onbeforecopy(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onbeforecopy');
+	}
+
+	public set onbeforecopy(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onbeforecopy', value);
+	}
+
+	public get onbeforecut(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onbeforecut');
+	}
+
+	public set onbeforecut(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onbeforecut', value);
+	}
+
+	public get onbeforepaste(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onbeforepaste');
+	}
+
+	public set onbeforepaste(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onbeforepaste', value);
+	}
+
+	public get onsearch(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onsearch');
+	}
+
+	public set onsearch(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onsearch', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Returns tag name.
@@ -992,7 +1009,7 @@ export default class Element
 	): NodeList<IHTMLElementTagNameMap[K]>;
 
 	/**
-	 * Query CSS selector to find matching elments.
+	 * Query CSS selector to find matching elements.
 	 *
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
@@ -1002,7 +1019,7 @@ export default class Element
 	): NodeList<ISVGElementTagNameMap[K]>;
 
 	/**
-	 * Query CSS selector to find matching elments.
+	 * Query CSS selector to find matching elements.
 	 *
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
@@ -1010,7 +1027,7 @@ export default class Element
 	public querySelectorAll(selector: string): NodeList<Element>;
 
 	/**
-	 * Query CSS selector to find matching elments.
+	 * Query CSS selector to find matching elements.
 	 *
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
@@ -1299,43 +1316,6 @@ export default class Element
 	/**
 	 * @override
 	 */
-	public override dispatchEvent(event: Event): boolean {
-		const returnValue = super.dispatchEvent(event);
-		const window = this[PropertySymbol.window];
-		const browserSettings = new WindowBrowserContext(window).getSettings();
-
-		if (
-			browserSettings &&
-			!browserSettings.disableJavaScriptEvaluation &&
-			event.eventPhase === EventPhaseEnum.none &&
-			!event[PropertySymbol.immediatePropagationStopped]
-		) {
-			const attribute = this.getAttribute('on' + event.type);
-
-			if (attribute && !event[PropertySymbol.immediatePropagationStopped]) {
-				const code = `//# sourceURL=${window.location.href}\n${attribute}`;
-
-				if (
-					browserSettings.disableErrorCapturing ||
-					browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
-				) {
-					window.eval(code);
-				} else {
-					try {
-						window.eval(code);
-					} catch (error) {
-						window[PropertySymbol.dispatchError](error);
-					}
-				}
-			}
-		}
-
-		return returnValue;
-	}
-
-	/**
-	 * @override
-	 */
 	public override [PropertySymbol.appendChild](node: Node, disableValidations = false): Node {
 		const returnValue = super[PropertySymbol.appendChild](node, disableValidations);
 		this.#onSlotChange(node);
@@ -1410,6 +1390,14 @@ export default class Element
 					slot.dispatchEvent(new Event('slotchange', { bubbles: true }));
 				}
 			}
+		}
+
+		if (
+			this[attribute[PropertySymbol.name]] !== undefined &&
+			attribute[PropertySymbol.name][0] === 'o' &&
+			attribute[PropertySymbol.name][1] === 'n'
+		) {
+			this[PropertySymbol.propertyEventListeners].delete(attribute[PropertySymbol.name]);
 		}
 
 		if (attribute[PropertySymbol.name] === 'id' && this[PropertySymbol.isConnected]) {

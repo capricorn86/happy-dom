@@ -32,6 +32,28 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
+	for (const event of ['input', 'invalid', 'selectionchange']) {
+		describe(`get on${event}()`, () => {
+			it('Returns the event listener.', () => {
+				element.setAttribute(`on${event}`, 'window.test = 1');
+				expect(element[`on${event}`]).toBeTypeOf('function');
+				element[`on${event}`](new Event(event));
+				expect(window['test']).toBe(1);
+			});
+		});
+
+		describe(`set on${event}()`, () => {
+			it('Sets the event listener.', () => {
+				element[`on${event}`] = () => {
+					window['test'] = 1;
+				};
+				element.dispatchEvent(new Event(event));
+				expect(element.getAttribute(`on${event}`)).toBe(null);
+				expect(window['test']).toBe(1);
+			});
+		});
+	}
+
 	describe('get value()', () => {
 		for (const type of ['hidden', 'submit', 'image', 'reset', 'button']) {
 			it(`Returns the attribute "value" if type is "${type}".`, () => {
@@ -1155,6 +1177,30 @@ describe('HTMLInputElement', () => {
 			expect(element.selectionStart).toBe(1);
 			expect(element.selectionEnd).toBe(10);
 			expect(element.selectionDirection).toBe('backward');
+		});
+	});
+
+	describe('disabled input', () => {
+		it("doesn't focus the input when it's disabled", () => {
+			document.body.appendChild(element);
+			element.focus();
+			expect(element).toBe(document.activeElement);
+			element.blur();
+			expect(element).not.toBe(document.activeElement);
+			element.disabled = true;
+			element.focus();
+			expect(element).not.toBe(document.activeElement);
+		});
+
+		it("doesn't blur the input when it's disabled", () => {
+			document.body.appendChild(element);
+			element.focus();
+			expect(element).toBe(document.activeElement);
+			element.blur();
+			expect(element).not.toBe(document.activeElement);
+			element.disabled = true;
+			element.blur();
+			expect(element).not.toBe(document.activeElement);
 		});
 	});
 
