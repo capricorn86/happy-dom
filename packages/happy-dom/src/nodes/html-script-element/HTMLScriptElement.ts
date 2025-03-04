@@ -1,7 +1,6 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Event from '../../event/Event.js';
-import ErrorEvent from '../../event/events/ErrorEvent.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
 import Attr from '../attr/Attr.js';
@@ -12,6 +11,7 @@ import ModuleFactory from '../../module/ModuleFactory.js';
 import DOMTokenList from '../../dom/DOMTokenList.js';
 import IModuleImportMap from '../../module/IModuleImportMap.js';
 import IRequestReferrerPolicy from '../../fetch/types/IRequestReferrerPolicy.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**
  * HTML Script Element.
@@ -23,16 +23,34 @@ export default class HTMLScriptElement extends HTMLElement {
 	// Public properties
 	public declare cloneNode: (deep?: boolean) => HTMLScriptElement;
 
-	// Events
-	public onerror: (event: ErrorEvent) => void = null;
-	public onload: (event: Event) => void = null;
-
 	// Internal properties
 	public [PropertySymbol.evaluateScript] = true;
 	public [PropertySymbol.blocking]: DOMTokenList | null = null;
 
 	// Private properties
 	#loadedScriptURL: string | null = null;
+
+	// Events
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get onerror(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onerror');
+	}
+
+	public set onerror(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onerror', value);
+	}
+
+	public get onload(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onload');
+	}
+
+	public set onload(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onload', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Returns type.

@@ -15,6 +15,7 @@ import ClassMethodBinder from '../../utilities/ClassMethodBinder.js';
 import Node from '../node/Node.js';
 import Element from '../element/Element.js';
 import EventTarget from '../../event/EventTarget.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**
  * HTML Select Element.
@@ -30,10 +31,6 @@ export default class HTMLSelectElement extends HTMLElement {
 	public [PropertySymbol.selectedOptions]: HTMLCollection<HTMLOptionElement> | null = null;
 	public [PropertySymbol.selectedIndex]: number = -1;
 	public [PropertySymbol.proxy]: HTMLSelectElement;
-
-	// Events
-	public onchange: ((event: Event) => void) | null = null;
-	public oninput: ((event: Event) => void) | null = null;
 
 	/**
 	 * Constructor.
@@ -201,6 +198,28 @@ export default class HTMLSelectElement extends HTMLElement {
 
 		return proxy;
 	}
+
+	// Events
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get onchange(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onchange');
+	}
+
+	public set onchange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onchange', value);
+	}
+
+	public get oninput(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'oninput');
+	}
+
+	public set oninput(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oninput', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Returns length.
