@@ -548,9 +548,9 @@ export default class Element
 
 		clone[PropertySymbol.attributes] = new NamedNodeMap(clone);
 
-		Array.from(this[PropertySymbol.attributes][PropertySymbol.items]).forEach(([_, attr]) => {
-			clone[PropertySymbol.attributes].setNamedItem(attr.cloneNode(deep));
-		});
+        for(const attr of this[PropertySymbol.attributes][PropertySymbol.items].values()) {
+            clone[PropertySymbol.attributes].setNamedItem(attr.cloneNode(deep));
+        }
 
 		return <Element>clone;
 	}
