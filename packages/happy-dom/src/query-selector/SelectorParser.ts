@@ -244,25 +244,25 @@ export default class SelectorParser {
 			return null;
 		}
 
+		// Escape special regex characters in the value
+		const escapedValue = attribute.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 		switch (attribute.operator) {
 			// [attribute~="value"] - Contains a specified word.
 			case '~':
-				return new RegExp(
-					`[- ]${attribute.value}|${attribute.value}[- ]|^${attribute.value}$`,
-					modifier
-				);
+				return new RegExp(`[- ]${escapedValue}|${escapedValue}[- ]|^${escapedValue}$`, modifier);
 			// [attribute|="value"] - Starts with the specified word.
 			case '|':
-				return new RegExp(`^${attribute.value}[- ]|^${attribute.value}$`, modifier);
+				return new RegExp(`^${escapedValue}[- ]|^${escapedValue}$`, modifier);
 			// [attribute^="value"] - Begins with a specified value.
 			case '^':
-				return new RegExp(`^${attribute.value}`, modifier);
+				return new RegExp(`^${escapedValue}`, modifier);
 			// [attribute$="value"] - Ends with a specified value.
 			case '$':
-				return new RegExp(`${attribute.value}$`, modifier);
+				return new RegExp(`${escapedValue}$`, modifier);
 			// [attribute*="value"] - Contains a specified value.
 			case '*':
-				return new RegExp(`${attribute.value}`, modifier);
+				return new RegExp(`${escapedValue}`, modifier);
 			default:
 				return null;
 		}
