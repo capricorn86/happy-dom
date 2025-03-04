@@ -1265,6 +1265,21 @@ describe('QuerySelector', () => {
 			expect(subsequentSiblings3[0].textContent).toBe('a2');
 			expect(subsequentSiblings3[1].textContent).toBe('a3');
 		});
+
+		it('Returns all elements for attribute selector with round brackets within', () => {
+			const div = document.createElement('div');
+
+			div.innerHTML = `
+				<span>loremipsum</span>
+				<a href="/123">normal link</a>                        
+				<a href="javascript:void(0)">void</a>
+			`;
+
+			const voidLinks = div.querySelectorAll('a[href="javascript:void(0)"]');
+			expect(voidLinks.length).toBe(1);
+			const normalLinks = div.querySelectorAll('a[href]:not([href="javascript:void(0)"])');
+			expect(normalLinks.length).toBe(1);
+		});
 	});
 
 	describe('querySelector()', () => {
