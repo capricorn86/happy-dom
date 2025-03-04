@@ -41,7 +41,36 @@ describe('Element', () => {
 		vi.restoreAllMocks();
 	});
 
-	describe('children', () => {
+	for (const event of [
+		'fullscreenerror',
+		'fullscreenchange',
+		'beforecopy',
+		'beforecut',
+		'beforepaste',
+		'search'
+	]) {
+		describe(`get on${event}()`, () => {
+			it('Returns the event listener.', () => {
+				element.setAttribute(`on${event}`, 'window.test = 1');
+				expect(element[`on${event}`]).toBeTypeOf('function');
+				element[`on${event}`](new Event(event));
+				expect(window['test']).toBe(1);
+			});
+		});
+
+		describe(`set on${event}()`, () => {
+			it('Sets the event listener.', () => {
+				element[`on${event}`] = () => {
+					window['test'] = 1;
+				};
+				element.dispatchEvent(new Event(event));
+				expect(element.getAttribute(`on${event}`)).toBe(null);
+				expect(window['test']).toBe(1);
+			});
+		});
+	}
+
+	describe('get children()', () => {
 		it('Returns nodes of type Element.', () => {
 			const div1 = document.createElement('div');
 			const div2 = document.createElement('div');
