@@ -1,0 +1,20 @@
+{
+    "version": "0.2",
+    "ignorePaths": [],
+    "dictionaryDefinitions": [],
+    "dictionaries": [],
+    "words": [
+        "clonable",
+        "ISVG",
+        "oncompositionend",
+        "oncompositionstart",
+        "oncompositionupdate",
+        "oncontentvisibilityautostatechange",
+        "onpointerrawupdate",
+        "onscrollsnapchange",
+        "onscrollsnapchanging",
+        "onsearch"
+    ],
+    "ignoreWords": [],
+    "import": []
+}

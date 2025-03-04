@@ -32,6 +32,30 @@ describe('HTMLSelectElement', () => {
 		});
 	});
 
+	for (const event of ['change', 'input']) {
+		describe(`get on${event}()`, () => {
+			it('Returns the event listener.', () => {
+				const element = document.createElement('script');
+				element.setAttribute(`on${event}`, 'window.test = 1');
+				expect(element[`on${event}`]).toBeTypeOf('function');
+				element[`on${event}`](new Event(event));
+				expect(window['test']).toBe(1);
+			});
+		});
+
+		describe(`set on${event}()`, () => {
+			it('Sets the event listener.', () => {
+				const element = document.createElement('script');
+				element[`on${event}`] = () => {
+					window['test'] = 1;
+				};
+				element.dispatchEvent(new Event(event));
+				expect(element.getAttribute(`on${event}`)).toBe(null);
+				expect(window['test']).toBe(1);
+			});
+		});
+	}
+
 	describe('get options()', () => {
 		it('Reflects changes as options elements are added and removed from the DOM.', () => {
 			const option1 = <HTMLOptionElement>document.createElement('option');

@@ -9,6 +9,7 @@ import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import CustomElementRegistry from '../../../src/custom-element/CustomElementRegistry.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import EventTarget from '../../../src/event/EventTarget.js';
+import Event from '../../../src/event/Event.js';
 
 describe('HTMLElement', () => {
 	let window: Window;
@@ -30,6 +31,83 @@ describe('HTMLElement', () => {
 			expect(Object.prototype.toString.call(element)).toBe('[object HTMLDivElement]');
 		});
 	});
+
+	for (const event of [
+		'cancel',
+		'error',
+		'scroll',
+		'select',
+		'wheel',
+		'copy',
+		'cut',
+		'paste',
+		'compositionend',
+		'compositionstart',
+		'compositionupdate',
+		'blur',
+		'focus',
+		'focusin',
+		'focusout',
+		'keydown',
+		'keyup',
+		'auxclick',
+		'click',
+		'contextmenu',
+		'dblclick',
+		'mousedown',
+		'mouseenter',
+		'mouseleave',
+		'mousemove',
+		'mouseout',
+		'mouseover',
+		'mouseup',
+		'touchcancel',
+		'touchend',
+		'touchmove',
+		'touchstart',
+		'invalid',
+		'animationcancel',
+		'animationend',
+		'animationiteration',
+		'animationstart',
+		'beforeinput',
+		'input',
+		'change',
+		'gotpointercapture',
+		'lostpointercapture',
+		'pointercancel',
+		'pointerdown',
+		'pointerenter',
+		'pointerleave',
+		'pointermove',
+		'pointerout',
+		'pointerover',
+		'pointerup',
+		'transitioncancel',
+		'transitionend',
+		'transitionrun',
+		'transitionstart'
+	]) {
+		describe(`get on${event}()`, () => {
+			it('Returns the event listener.', () => {
+				element.setAttribute(`on${event}`, 'window.test = 1');
+				expect(element[`on${event}`]).toBeTypeOf('function');
+				element[`on${event}`](new Event(event));
+				expect(window['test']).toBe(1);
+			});
+		});
+
+		describe(`set on${event}()`, () => {
+			it('Sets the event listener.', () => {
+				element[`on${event}`] = () => {
+					window['test'] = 1;
+				};
+				element.dispatchEvent(new Event(event));
+				expect(element.getAttribute(`on${event}`)).toBe(null);
+				expect(window['test']).toBe(1);
+			});
+		});
+	}
 
 	describe('get accessKey()', () => {
 		it('Returns "".', () => {
