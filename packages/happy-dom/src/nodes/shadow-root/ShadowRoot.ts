@@ -16,9 +16,6 @@ export default class ShadowRoot extends DocumentFragment {
 	// Public properties
 	public declare cloneNode: (deep?: boolean) => ShadowRoot;
 
-	// Events
-	public onslotchange: ((event: Event) => void) | null = null;
-
 	// Internal properties
 	public [PropertySymbol.adoptedStyleSheets]: CSSStyleSheet[] = [];
 	public [PropertySymbol.mode] = 'open';
@@ -27,6 +24,21 @@ export default class ShadowRoot extends DocumentFragment {
 	public [PropertySymbol.delegatesFocus]: boolean = false;
 	public [PropertySymbol.serializable]: boolean = false;
 	public [PropertySymbol.slotAssignment]: 'named' | 'manual' = 'named';
+	public [PropertySymbol.propertyEventListeners]: Map<string, (event: Event) => void> = new Map();
+
+	// Events
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get onslotchange(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onslotchange') ?? null;
+	}
+
+	public set onslotchange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onslotchange', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Returns mode.

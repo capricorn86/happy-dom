@@ -3,6 +3,7 @@ import Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import SVGAnimationElement from '../../../src/nodes/svg-animation-element/SVGAnimationElement.js';
 import SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
+import Event from '../../../src/event/Event.js';
 
 describe('SVGAnimationElement', () => {
 	let window: Window;
@@ -24,6 +25,28 @@ describe('SVGAnimationElement', () => {
 			expect(element instanceof SVGElement).toBe(true);
 		});
 	});
+
+	for (const event of ['begin', 'end', 'repeat']) {
+		describe(`get on${event}()`, () => {
+			it('Returns the event listener.', () => {
+				element.setAttribute(`on${event}`, 'window.test = 1');
+				expect(element[`on${event}`]).toBeTypeOf('function');
+				element[`on${event}`](new Event(event));
+				expect(window['test']).toBe(1);
+			});
+		});
+
+		describe(`set on${event}()`, () => {
+			it('Sets the event listener.', () => {
+				element[`on${event}`] = () => {
+					window['test'] = 1;
+				};
+				element.dispatchEvent(new Event(event));
+				expect(element.getAttribute(`on${event}`)).toBe(null);
+				expect(window['test']).toBe(1);
+			});
+		});
+	}
 
 	describe('get requiredExtensions()', () => {
 		it('Should return an instance of SVGStringList', () => {

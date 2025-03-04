@@ -163,6 +163,21 @@ describe('CookieContainer', () => {
 			).toBe('__secure-key=value');
 		});
 
+		it('Validates secure cookie keys for localhost', () => {
+			const originURL = new URL('http://localhost');
+			const targetURL = new URL('http://localhost');
+
+			expect(CookieStringUtility.stringToCookie(originURL, `__secure-key=value`)).toBe(null);
+
+			cookieContainer.addCookies([
+				<ICookie>CookieStringUtility.stringToCookie(originURL, `__secure-key=value; Secure;`)
+			]);
+
+			expect(
+				CookieStringUtility.cookiesToString(cookieContainer.getCookies(targetURL, false))
+			).toBe('__secure-key=value');
+		});
+
 		it('Validates host cookie keys.', () => {
 			const originURL = new URL('https://example.com/path/to/page/');
 			const targetURL = new URL('https://example.com/path/to/page/');
