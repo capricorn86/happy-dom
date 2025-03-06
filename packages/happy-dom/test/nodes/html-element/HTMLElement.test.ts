@@ -227,6 +227,8 @@ describe('HTMLElement', () => {
 			// notice the lack of closing div tag
 			element.innerHTML = '<div><span><svg></svg></span>123<div>';
 			expect(element.innerText).toBe('123');
+			element.innerHTML = '<div><span><svg>Test</svg></span>123<div>';
+			expect(element.innerText).toBe('123');
 		});
 	});
 
