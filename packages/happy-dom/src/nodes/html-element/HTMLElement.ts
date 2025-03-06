@@ -22,8 +22,6 @@ export default class HTMLElement extends Element {
 
 	// Internal properties
 	public [PropertySymbol.accessKey] = '';
-	public [PropertySymbol.contentEditable] = 'inherit';
-	public [PropertySymbol.isContentEditable] = false;
 	public [PropertySymbol.offsetHeight] = 0;
 	public [PropertySymbol.offsetWidth] = 0;
 	public [PropertySymbol.offsetLeft] = 0;
@@ -500,7 +498,16 @@ export default class HTMLElement extends Element {
 	 * @returns Content editable.
 	 */
 	public get contentEditable(): string {
-		return this[PropertySymbol.contentEditable];
+		const contentEditable = String(this.getAttribute('contentEditable')).toLowerCase();
+
+		switch (contentEditable) {
+			case 'false':
+			case 'true':
+			case 'plaintext-only':
+				return contentEditable;
+			default:
+				return 'inherit';
+		}
 	}
 
 	/**
@@ -509,7 +516,20 @@ export default class HTMLElement extends Element {
 	 * @param contentEditable Content editable.
 	 */
 	public set contentEditable(contentEditable: string) {
-		this[PropertySymbol.contentEditable] = contentEditable;
+		contentEditable = String(contentEditable).toLowerCase();
+
+		switch (contentEditable) {
+			case 'false':
+			case 'true':
+			case 'plaintext-only':
+			case 'inherit':
+				this.setAttribute('contentEditable', contentEditable);
+				break;
+			default:
+				throw new this[PropertySymbol.window].SyntaxError(
+					`Failed to set the 'contentEditable' property on 'HTMLElement': The value provided ('${contentEditable}') is not one of 'true', 'false', 'plaintext-only', or 'inherit'.`
+				);
+		}
 	}
 
 	/**
@@ -518,7 +538,17 @@ export default class HTMLElement extends Element {
 	 * @returns Is content editable.
 	 */
 	public get isContentEditable(): boolean {
-		return this[PropertySymbol.isContentEditable];
+		const contentEditable = this.contentEditable;
+
+		if (contentEditable === 'true' || contentEditable === 'plaintext-only') {
+			return true;
+		}
+
+		if (contentEditable === 'inherit') {
+			return (<HTMLElement>this[PropertySymbol.parentNode])?.isContentEditable ?? false;
+		}
+
+		return false;
 	}
 
 	/**
@@ -944,8 +974,6 @@ export default class HTMLElement extends Element {
 		const clone = <HTMLElement>super[PropertySymbol.cloneNode](deep);
 
 		clone[PropertySymbol.accessKey] = this[PropertySymbol.accessKey];
-		clone[PropertySymbol.contentEditable] = this[PropertySymbol.contentEditable];
-		clone[PropertySymbol.isContentEditable] = this[PropertySymbol.isContentEditable];
 
 		return clone;
 	}
