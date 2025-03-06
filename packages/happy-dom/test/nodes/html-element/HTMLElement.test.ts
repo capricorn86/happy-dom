@@ -134,17 +134,95 @@ describe('HTMLElement', () => {
 		});
 	}
 
-	describe('contentEditable', () => {
-		it('Returns "inherit".', () => {
-			const div = <HTMLElement>document.createElement('div');
+	describe('get contentEditable()', () => {
+		it('Returns "inherit" by default.', () => {
+			const div = document.createElement('div');
+			expect(div.contentEditable).toBe('inherit');
+		});
+
+		it('Returns the "contenteditable" attribute value.', () => {
+			for (const value of [
+				'true',
+				'false',
+				'plaintext-only',
+				'inherit',
+				'TRUE',
+				'FALSE',
+				'PLAINTEXT-ONLY',
+				'INHERIT'
+			]) {
+				const div = document.createElement('div');
+				div.setAttribute('contenteditable', value);
+				expect(div.contentEditable).toBe(value.toLowerCase());
+			}
+		});
+
+		it('Returns "inherit" when the "contenteditable" attribute is set to an invalid value.', () => {
+			const div = document.createElement('div');
+			div.setAttribute('contenteditable', 'invalid');
 			expect(div.contentEditable).toBe('inherit');
 		});
 	});
 
-	describe('isContentEditable', () => {
-		it('Returns "false".', () => {
+	describe('set contentEditable()', () => {
+		it('Sets the "contenteditable" attribute.', () => {
+			const div = document.createElement('div');
+			div.contentEditable = 'true';
+			expect(div.getAttribute('contenteditable')).toBe('true');
+			div.contentEditable = 'false';
+			expect(div.getAttribute('contenteditable')).toBe('false');
+			div.contentEditable = 'plaintext-only';
+			expect(div.getAttribute('contenteditable')).toBe('plaintext-only');
+			div.contentEditable = 'inherit';
+			expect(div.getAttribute('contenteditable')).toBe('inherit');
+			div.contentEditable = <string>(<unknown>true);
+			expect(div.getAttribute('contenteditable')).toBe('true');
+			div.contentEditable = <string>(<unknown>false);
+			expect(div.getAttribute('contenteditable')).toBe('false');
+			div.contentEditable = 'TRUE';
+			expect(div.getAttribute('contenteditable')).toBe('true');
+			div.contentEditable = 'FALSE';
+			expect(div.getAttribute('contenteditable')).toBe('false');
+			div.contentEditable = 'PLAINTEXT-ONLY';
+			expect(div.getAttribute('contenteditable')).toBe('plaintext-only');
+			div.contentEditable = 'INHERIT';
+			expect(div.getAttribute('contenteditable')).toBe('inherit');
+		});
+
+		it('Throws an error when an invalid value is provided.', () => {
+			const div = document.createElement('div');
+			expect(() => {
+				div.contentEditable = 'invalid';
+			}).toThrowError(
+				new SyntaxError(
+					`Failed to set the 'contentEditable' property on 'HTMLElement': The value provided ('invalid') is not one of 'true', 'false', 'plaintext-only', or 'inherit'.`
+				)
+			);
+		});
+	});
+
+	describe('get isContentEditable()', () => {
+		it('Returns "false" by default.', () => {
 			const div = <HTMLElement>document.createElement('div');
 			expect(div.isContentEditable).toBe(false);
+		});
+
+		it('Returns "true" when the "contenteditable" attribute is set to "true" or "plaintext-only".', () => {
+			const div = <HTMLElement>document.createElement('div');
+			div.setAttribute('contenteditable', 'true');
+			expect(div.isContentEditable).toBe(true);
+			div.setAttribute('contenteditable', 'plaintext-only');
+			expect(div.isContentEditable).toBe(true);
+			div.setAttribute('contenteditable', 'false');
+			expect(div.isContentEditable).toBe(false);
+		});
+
+		it('Returns "true" when parent element is content editable and value is "inherit".', () => {
+			const parent = <HTMLElement>document.createElement('div');
+			const div = <HTMLElement>document.createElement('div');
+			parent.setAttribute('contenteditable', 'true');
+			parent.appendChild(div);
+			expect(div.isContentEditable).toBe(true);
 		});
 	});
 
