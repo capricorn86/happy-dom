@@ -671,17 +671,20 @@ export default class HTMLElement extends Element {
 
 				if (
 					childElement[PropertySymbol.tagName] !== 'SCRIPT' &&
-					childElement[PropertySymbol.tagName] !== 'STYLE'
+					childElement[PropertySymbol.tagName] !== 'STYLE' &&
+					childElement[PropertySymbol.tagName] !== 'svg'
 				) {
 					const display = computedStyle.display;
 					if (display !== 'none') {
 						const textTransform = computedStyle.textTransform;
+						const innerText = childElement.innerText;
 
-						if ((display === 'block' || display === 'flex') && result) {
+						// Only add newline if it's a block/flex element and there's more content coming after
+						if ((display === 'block' || display === 'flex') && result && innerText) {
 							result += '\n';
 						}
 
-						let text = childElement.innerText;
+						let text = innerText;
 
 						switch (textTransform) {
 							case 'uppercase':
