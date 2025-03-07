@@ -49,7 +49,7 @@ export default class HTMLDialogElement extends HTMLElement {
 	 * @param value Return value.
 	 */
 	public set returnValue(value: string) {
-		this[PropertySymbol.returnValue] = value;
+		this[PropertySymbol.returnValue] = String(value);
 	}
 
 	/**
@@ -79,10 +79,10 @@ export default class HTMLDialogElement extends HTMLElement {
 	 *
 	 * @param [returnValue] ReturnValue.
 	 */
-	public close(returnValue = ''): void {
+	public close(returnValue?: string): void {
 		const wasOpen = this.open;
 		this.removeAttribute('open');
-		this.returnValue = returnValue;
+		this.returnValue = returnValue !== undefined ? String(returnValue) : '';
 		if (wasOpen) {
 			this.dispatchEvent(new Event('close'));
 		}

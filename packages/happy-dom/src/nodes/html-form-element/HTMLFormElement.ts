@@ -17,6 +17,7 @@ import ClassMethodBinder from '../../utilities/ClassMethodBinder.js';
 import Node from '../node/Node.js';
 import Element from '../element/Element.js';
 import EventTarget from '../../event/EventTarget.js';
+import HTMLDialogElement from '../html-dialog-element/HTMLDialogElement.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**
@@ -573,6 +574,26 @@ export default class HTMLFormElement extends HTMLElement {
 	 * @param [submitter] Submitter.
 	 */
 	#submit(submitter?: HTMLInputElement | HTMLButtonElement): void {
+		const method = submitter?.formMethod || this.method;
+
+		if (method === 'dialog') {
+			let dialog: HTMLDialogElement | null = null;
+			let parent: Element = this;
+
+			while (parent) {
+				if (parent[PropertySymbol.tagName] === 'DIALOG') {
+					dialog = <HTMLDialogElement>parent;
+					break;
+				}
+				parent = parent.parentElement;
+			}
+
+			if (dialog) {
+				dialog.close(submitter?.value);
+				return;
+			}
+		}
+
 		const action = submitter?.hasAttribute('formaction')
 			? submitter?.formAction || this.action
 			: this.action;
@@ -589,7 +610,6 @@ export default class HTMLFormElement extends HTMLElement {
 			return;
 		}
 
-		const method = submitter?.formMethod || this.method;
 		const formData = new this[PropertySymbol.window].FormData(this);
 		let targetFrame: IBrowserFrame;
 
