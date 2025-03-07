@@ -116,21 +116,6 @@ describe('HTMLDialogElement', () => {
 			expect((<Event>(<unknown>dispatched)).cancelable).toBe(false);
 			expect((<Event>(<unknown>dispatched)).bubbles).toBe(false);
 		});
-
-		it('Should close a modal on pressing ESC key', () => {
-			element.showModal();
-			expect(element.open).toBe(true);
-			document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-			expect(element.open).toBe(false);
-			expect(element.getAttribute('open')).toBe(null);
-		});
-
-		it('Should not close a dialog on pressing ESC key', () => {
-			element.show();
-			expect(element.open).toBe(true);
-			document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-			expect(element.open).toBe(true);
-		});
 	});
 
 	describe('showModal()', () => {

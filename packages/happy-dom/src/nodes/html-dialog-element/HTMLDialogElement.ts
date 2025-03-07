@@ -1,7 +1,6 @@
 import Event from '../../event/Event.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import KeyboardEvent from 'src/event/events/KeyboardEvent.js';
 
 /**
  * HTML Dialog Element.
@@ -31,7 +30,7 @@ export default class HTMLDialogElement extends HTMLElement {
 	 * @param value Return value.
 	 */
 	public set returnValue(value: string) {
-		this[PropertySymbol.returnValue] = value;
+		this[PropertySymbol.returnValue] = String(value);
 	}
 
 	/**
@@ -61,36 +60,20 @@ export default class HTMLDialogElement extends HTMLElement {
 	 *
 	 * @param [returnValue] ReturnValue.
 	 */
-	public close(returnValue = ''): void {
+	public close(returnValue?: string): void {
 		const wasOpen = this.open;
 		this.removeAttribute('open');
-		this.returnValue = returnValue;
+		this.returnValue = returnValue !== undefined ? String(returnValue) : '';
 		if (wasOpen) {
-			this.#removeKeydownListener();
 			this.dispatchEvent(new Event('close'));
 		}
 	}
-
-	#keydownHandler = (event: KeyboardEvent): void => {
-		if (event.key === 'Escape') {
-			this.close();
-		}
-	};
-
-	#addKeydownListener = (): void => {
-		this[PropertySymbol.ownerDocument].addEventListener('keydown', this.#keydownHandler);
-	};
-
-	#removeKeydownListener = (): void => {
-		this[PropertySymbol.ownerDocument].removeEventListener('keydown', this.#keydownHandler);
-	};
 
 	/**
 	 * Shows the modal.
 	 */
 	public showModal(): void {
 		this.setAttribute('open', '');
-		this.#addKeydownListener();
 	}
 
 	/**

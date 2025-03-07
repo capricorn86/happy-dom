@@ -931,33 +931,42 @@ describe('HTMLFormElement', () => {
 			expect(page.mainFrame.url).toBe('about:blank#blocked');
 		});
 
-		it('Preserves the data of a method="dialog" form when a parent dialog is closed after the form submission', () => {
+		it('Supports form method "dialog"', () => {
 			const container = document.body;
 			container.innerHTML = `<dialog>
 										<form method="dialog">
 											<input name="test123" value="">
-											<button>Close</button>
+											<button value="buttonValue">Close</button>
 										</form>
 									</dialog>`;
 			const dialog = container.querySelector('dialog')!;
-			expect(dialog.open).toBe(false);
-
+			const form = dialog.querySelector('form')!;
+			const button = dialog.querySelector('button')!;
 			const input = dialog.querySelector('input')!;
+
 			input.value = 'test';
 
+			expect(dialog.returnValue).toBe('');
+			expect(dialog.open).toBe(false);
+
 			dialog.showModal();
+
 			expect(dialog.open).toBe(true);
 
-			const button = dialog.querySelector('button')!;
+			let submitEvent: SubmitEvent | null = null;
+			dialog.addEventListener('submit', (event) => (submitEvent = <SubmitEvent>event));
 			button.click();
 			expect(dialog.open).toBe(false);
+			expect((<SubmitEvent>(<unknown>submitEvent)).submitter).toBe(button);
+			expect((<SubmitEvent>(<unknown>submitEvent)).target).toBe(form);
+			expect(dialog.returnValue).toBe('buttonValue');
 
 			dialog.showModal();
 			expect(dialog.open).toBe(true);
 
-			const form = dialog.querySelector('form')!;
 			form.submit();
 			expect(dialog.open).toBe(false);
+			expect(dialog.returnValue).toBe('');
 
 			expect(input.value).toBe('test');
 		});

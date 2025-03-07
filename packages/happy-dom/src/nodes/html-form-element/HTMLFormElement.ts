@@ -551,9 +551,19 @@ export default class HTMLFormElement extends HTMLElement {
 		const method = submitter?.formMethod || this.method;
 
 		if (method === 'dialog') {
-			const dialog = <HTMLDialogElement>this.closest('dialog');
+			let dialog: HTMLDialogElement | null = null;
+			let parent: Element = this;
+
+			while (parent) {
+				if (parent[PropertySymbol.tagName] === 'DIALOG') {
+					dialog = <HTMLDialogElement>parent;
+					break;
+				}
+				parent = parent.parentElement;
+			}
+
 			if (dialog) {
-				dialog.close();
+				dialog.close(submitter?.value);
 				return;
 			}
 		}
