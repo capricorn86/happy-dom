@@ -17,6 +17,8 @@ import ClassMethodBinder from '../../utilities/ClassMethodBinder.js';
 import Node from '../node/Node.js';
 import Element from '../element/Element.js';
 import EventTarget from '../../event/EventTarget.js';
+import HTMLDialogElement from '../html-dialog-element/HTMLDialogElement.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**
  * HTML Form Element.
@@ -32,10 +34,7 @@ export default class HTMLFormElement extends HTMLElement {
 	public [PropertySymbol.elements]: HTMLFormControlsCollection | null = null;
 	public [PropertySymbol.proxy]: HTMLFormElement;
 
-	// Events
-	public onformdata: ((event: Event) => void) | null = null;
-	public onreset: ((event: Event) => void) | null = null;
-	public onsubmit: ((event: Event) => void) | null = null;
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Constructor.
@@ -172,6 +171,34 @@ export default class HTMLFormElement extends HTMLElement {
 		this[PropertySymbol.proxy] = proxy;
 		this[PropertySymbol.formNode] = proxy;
 		return proxy;
+	}
+
+	// Events
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get onformdata(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onformdata');
+	}
+
+	public set onformdata(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onformdata', value);
+	}
+
+	public get onreset(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onreset');
+	}
+
+	public set onreset(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onreset', value);
+	}
+
+	public get onsubmit(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onsubmit');
+	}
+
+	public set onsubmit(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onsubmit', value);
 	}
 
 	/**
@@ -547,6 +574,26 @@ export default class HTMLFormElement extends HTMLElement {
 	 * @param [submitter] Submitter.
 	 */
 	#submit(submitter?: HTMLInputElement | HTMLButtonElement): void {
+		const method = submitter?.formMethod || this.method;
+
+		if (method === 'dialog') {
+			let dialog: HTMLDialogElement | null = null;
+			let parent: Element = this;
+
+			while (parent) {
+				if (parent[PropertySymbol.tagName] === 'DIALOG') {
+					dialog = <HTMLDialogElement>parent;
+					break;
+				}
+				parent = parent.parentElement;
+			}
+
+			if (dialog) {
+				dialog.close(submitter?.value);
+				return;
+			}
+		}
+
 		const action = submitter?.hasAttribute('formaction')
 			? submitter?.formAction || this.action
 			: this.action;
@@ -563,7 +610,6 @@ export default class HTMLFormElement extends HTMLElement {
 			return;
 		}
 
-		const method = submitter?.formMethod || this.method;
 		const formData = new this[PropertySymbol.window].FormData(this);
 		let targetFrame: IBrowserFrame;
 

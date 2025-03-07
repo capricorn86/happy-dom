@@ -2,6 +2,8 @@ import HTMLElement from '../html-element/HTMLElement.js';
 import TextTrack from '../html-media-element/TextTrack.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import TextTrackKindEnum from '../html-media-element/TextTrackKindEnum.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
+import Event from '../../event/Event.js';
 
 /**
  * HTMLTrackElement
@@ -10,7 +12,18 @@ import TextTrackKindEnum from '../html-media-element/TextTrackKindEnum.js';
  */
 export default class HTMLTrackElement extends HTMLElement {
 	// Events
-	public oncuechange: (event: Event) => void = null;
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get oncuechange(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'oncuechange');
+	}
+
+	public set oncuechange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncuechange', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Returns kind.

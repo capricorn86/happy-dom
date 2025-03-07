@@ -7,6 +7,7 @@ import Event from '../../event/Event.js';
 import HTMLElementUtility from './HTMLElementUtility.js';
 import DOMStringMap from '../../dom/DOMStringMap.js';
 import Attr from '../attr/Attr.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**
  * HTML Element.
@@ -19,37 +20,8 @@ export default class HTMLElement extends Element {
 	public declare cloneNode: (deep?: boolean) => HTMLElement;
 	public static observedAttributes?: string[];
 
-	// Events
-	public oncopy: ((event: Event) => void) | null = null;
-	public oncut: ((event: Event) => void) | null = null;
-	public onpaste: ((event: Event) => void) | null = null;
-	public oninvalid: ((event: Event) => void) | null = null;
-	public onanimationcancel: ((event: Event) => void) | null = null;
-	public onanimationend: ((event: Event) => void) | null = null;
-	public onanimationiteration: ((event: Event) => void) | null = null;
-	public onanimationstart: ((event: Event) => void) | null = null;
-	public onbeforeinput: ((event: Event) => void) | null = null;
-	public oninput: ((event: Event) => void) | null = null;
-	public onchange: ((event: Event) => void) | null = null;
-	public ongotpointercapture: ((event: Event) => void) | null = null;
-	public onlostpointercapture: ((event: Event) => void) | null = null;
-	public onpointercancel: ((event: Event) => void) | null = null;
-	public onpointerdown: ((event: Event) => void) | null = null;
-	public onpointerenter: ((event: Event) => void) | null = null;
-	public onpointerleave: ((event: Event) => void) | null = null;
-	public onpointermove: ((event: Event) => void) | null = null;
-	public onpointerout: ((event: Event) => void) | null = null;
-	public onpointerover: ((event: Event) => void) | null = null;
-	public onpointerup: ((event: Event) => void) | null = null;
-	public ontransitioncancel: ((event: Event) => void) | null = null;
-	public ontransitionend: ((event: Event) => void) | null = null;
-	public ontransitionrun: ((event: Event) => void) | null = null;
-	public ontransitionstart: ((event: Event) => void) | null = null;
-
 	// Internal properties
 	public [PropertySymbol.accessKey] = '';
-	public [PropertySymbol.contentEditable] = 'inherit';
-	public [PropertySymbol.isContentEditable] = false;
 	public [PropertySymbol.offsetHeight] = 0;
 	public [PropertySymbol.offsetWidth] = 0;
 	public [PropertySymbol.offsetLeft] = 0;
@@ -63,6 +35,444 @@ export default class HTMLElement extends Element {
 
 	// Private properties
 	#customElementDefineCallback: () => void = null;
+
+	// Events
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get oncancel(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'oncancel');
+	}
+
+	public set oncancel(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncancel', value);
+	}
+
+	public get onerror(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onerror');
+	}
+
+	public set onerror(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onerror', value);
+	}
+
+	public get onscroll(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onscroll');
+	}
+
+	public set onscroll(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onscroll', value);
+	}
+
+	public get onselect(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onselect');
+	}
+
+	public set onselect(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onselect', value);
+	}
+
+	public get onwheel(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onwheel');
+	}
+
+	public set onwheel(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onwheel', value);
+	}
+
+	public get oncopy(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'oncopy');
+	}
+
+	public set oncopy(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncopy', value);
+	}
+
+	public get oncut(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'oncut');
+	}
+
+	public set oncut(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncut', value);
+	}
+
+	public get onpaste(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onpaste');
+	}
+
+	public set onpaste(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpaste', value);
+	}
+
+	public get oncompositionend(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'oncompositionend');
+	}
+
+	public set oncompositionend(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncompositionend', value);
+	}
+
+	public get oncompositionstart(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'oncompositionstart');
+	}
+
+	public set oncompositionstart(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncompositionstart', value);
+	}
+
+	public get oncompositionupdate(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'oncompositionupdate');
+	}
+
+	public set oncompositionupdate(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncompositionupdate', value);
+	}
+
+	public get onblur(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onblur');
+	}
+
+	public set onblur(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onblur', value);
+	}
+
+	public get onfocus(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onfocus');
+	}
+
+	public set onfocus(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onfocus', value);
+	}
+
+	public get onfocusin(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onfocusin');
+	}
+
+	public set onfocusin(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onfocusin', value);
+	}
+
+	public get onfocusout(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onfocusout');
+	}
+
+	public set onfocusout(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onfocusout', value);
+	}
+
+	public get onkeydown(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onkeydown');
+	}
+
+	public set onkeydown(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onkeydown', value);
+	}
+
+	public get onkeyup(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onkeyup');
+	}
+
+	public set onkeyup(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onkeyup', value);
+	}
+
+	public get onauxclick(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onauxclick');
+	}
+
+	public set onauxclick(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onauxclick', value);
+	}
+
+	public get onclick(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onclick');
+	}
+
+	public set onclick(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onclick', value);
+	}
+
+	public get oncontextmenu(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'oncontextmenu');
+	}
+
+	public set oncontextmenu(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncontextmenu', value);
+	}
+
+	public get ondblclick(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'ondblclick');
+	}
+
+	public set ondblclick(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ondblclick', value);
+	}
+
+	public get onmousedown(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onmousedown');
+	}
+
+	public set onmousedown(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onmousedown', value);
+	}
+
+	public get onmouseenter(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onmouseenter');
+	}
+
+	public set onmouseenter(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onmouseenter', value);
+	}
+
+	public get onmouseleave(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onmouseleave');
+	}
+
+	public set onmouseleave(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onmouseleave', value);
+	}
+
+	public get onmousemove(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onmousemove');
+	}
+
+	public set onmousemove(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onmousemove', value);
+	}
+
+	public get onmouseout(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onmouseout');
+	}
+
+	public set onmouseout(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onmouseout', value);
+	}
+
+	public get onmouseover(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onmouseover');
+	}
+
+	public set onmouseover(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onmouseover', value);
+	}
+
+	public get onmouseup(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onmouseup');
+	}
+
+	public set onmouseup(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onmouseup', value);
+	}
+
+	public get ontouchcancel(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'ontouchcancel');
+	}
+
+	public set ontouchcancel(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ontouchcancel', value);
+	}
+
+	public get ontouchend(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'ontouchend');
+	}
+
+	public set ontouchend(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ontouchend', value);
+	}
+
+	public get ontouchmove(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'ontouchmove');
+	}
+
+	public set ontouchmove(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ontouchmove', value);
+	}
+
+	public get ontouchstart(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'ontouchstart');
+	}
+
+	public set ontouchstart(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ontouchstart', value);
+	}
+
+	public get oninvalid(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'oninvalid');
+	}
+
+	public set oninvalid(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oninvalid', value);
+	}
+
+	public get onanimationcancel(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onanimationcancel');
+	}
+
+	public set onanimationcancel(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onanimationcancel', value);
+	}
+
+	public get onanimationend(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onanimationend');
+	}
+
+	public set onanimationend(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onanimationend', value);
+	}
+
+	public get onanimationiteration(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onanimationiteration');
+	}
+
+	public set onanimationiteration(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onanimationiteration', value);
+	}
+
+	public get onanimationstart(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onanimationstart');
+	}
+
+	public set onanimationstart(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onanimationstart', value);
+	}
+
+	public get onbeforeinput(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onbeforeinput');
+	}
+
+	public set onbeforeinput(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onbeforeinput', value);
+	}
+
+	public get oninput(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'oninput');
+	}
+
+	public set oninput(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oninput', value);
+	}
+
+	public get onchange(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onchange');
+	}
+
+	public set onchange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onchange', value);
+	}
+
+	public get ongotpointercapture(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'ongotpointercapture');
+	}
+
+	public set ongotpointercapture(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ongotpointercapture', value);
+	}
+
+	public get onlostpointercapture(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onlostpointercapture');
+	}
+
+	public set onlostpointercapture(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onlostpointercapture', value);
+	}
+
+	public get onpointercancel(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointercancel');
+	}
+
+	public set onpointercancel(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpointercancel', value);
+	}
+
+	public get onpointerdown(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointerdown');
+	}
+
+	public set onpointerdown(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpointerdown', value);
+	}
+
+	public get onpointerenter(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointerenter');
+	}
+
+	public set onpointerenter(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpointerenter', value);
+	}
+
+	public get onpointerleave(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointerleave');
+	}
+
+	public set onpointerleave(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpointerleave', value);
+	}
+
+	public get onpointermove(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointermove');
+	}
+
+	public set onpointermove(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpointermove', value);
+	}
+
+	public get onpointerout(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointerout');
+	}
+
+	public set onpointerout(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpointerout', value);
+	}
+
+	public get onpointerover(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointerover');
+	}
+
+	public set onpointerover(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpointerover', value);
+	}
+
+	public get onpointerup(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onpointerup');
+	}
+
+	public set onpointerup(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpointerup', value);
+	}
+
+	public get ontransitioncancel(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'ontransitioncancel');
+	}
+
+	public set ontransitioncancel(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ontransitioncancel', value);
+	}
+
+	public get ontransitionend(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'ontransitionend');
+	}
+
+	public set ontransitionend(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ontransitionend', value);
+	}
+
+	public get ontransitionrun(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'ontransitionrun');
+	}
+
+	public set ontransitionrun(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ontransitionrun', value);
+	}
+
+	public get ontransitionstart(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'ontransitionstart');
+	}
+
+	public set ontransitionstart(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ontransitionstart', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Returns access key.
@@ -88,7 +498,16 @@ export default class HTMLElement extends Element {
 	 * @returns Content editable.
 	 */
 	public get contentEditable(): string {
-		return this[PropertySymbol.contentEditable];
+		const contentEditable = String(this.getAttribute('contentEditable')).toLowerCase();
+
+		switch (contentEditable) {
+			case 'false':
+			case 'true':
+			case 'plaintext-only':
+				return contentEditable;
+			default:
+				return 'inherit';
+		}
 	}
 
 	/**
@@ -97,7 +516,20 @@ export default class HTMLElement extends Element {
 	 * @param contentEditable Content editable.
 	 */
 	public set contentEditable(contentEditable: string) {
-		this[PropertySymbol.contentEditable] = contentEditable;
+		contentEditable = String(contentEditable).toLowerCase();
+
+		switch (contentEditable) {
+			case 'false':
+			case 'true':
+			case 'plaintext-only':
+			case 'inherit':
+				this.setAttribute('contentEditable', contentEditable);
+				break;
+			default:
+				throw new this[PropertySymbol.window].SyntaxError(
+					`Failed to set the 'contentEditable' property on 'HTMLElement': The value provided ('${contentEditable}') is not one of 'true', 'false', 'plaintext-only', or 'inherit'.`
+				);
+		}
 	}
 
 	/**
@@ -106,7 +538,17 @@ export default class HTMLElement extends Element {
 	 * @returns Is content editable.
 	 */
 	public get isContentEditable(): boolean {
-		return this[PropertySymbol.isContentEditable];
+		const contentEditable = this.contentEditable;
+
+		if (contentEditable === 'true' || contentEditable === 'plaintext-only') {
+			return true;
+		}
+
+		if (contentEditable === 'inherit') {
+			return (<HTMLElement>this[PropertySymbol.parentNode])?.isContentEditable ?? false;
+		}
+
+		return false;
 	}
 
 	/**
@@ -229,17 +671,20 @@ export default class HTMLElement extends Element {
 
 				if (
 					childElement[PropertySymbol.tagName] !== 'SCRIPT' &&
-					childElement[PropertySymbol.tagName] !== 'STYLE'
+					childElement[PropertySymbol.tagName] !== 'STYLE' &&
+					childElement[PropertySymbol.tagName] !== 'svg'
 				) {
 					const display = computedStyle.display;
 					if (display !== 'none') {
 						const textTransform = computedStyle.textTransform;
+						const innerText = childElement.innerText;
 
-						if ((display === 'block' || display === 'flex') && result) {
+						// Only add newline if it's a block/flex element and there's more content coming after
+						if ((display === 'block' || display === 'flex') && result && innerText) {
 							result += '\n';
 						}
 
-						let text = childElement.innerText;
+						let text = innerText;
 
 						switch (textTransform) {
 							case 'uppercase':
@@ -532,8 +977,6 @@ export default class HTMLElement extends Element {
 		const clone = <HTMLElement>super[PropertySymbol.cloneNode](deep);
 
 		clone[PropertySymbol.accessKey] = this[PropertySymbol.accessKey];
-		clone[PropertySymbol.contentEditable] = this[PropertySymbol.contentEditable];
-		clone[PropertySymbol.isContentEditable] = this[PropertySymbol.isContentEditable];
 
 		return clone;
 	}
