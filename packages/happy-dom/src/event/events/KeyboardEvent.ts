@@ -44,4 +44,31 @@ export default class KeyboardEvent extends UIEvent {
 		this.shiftKey = eventInit?.shiftKey ?? false;
 		this.keyCode = eventInit?.keyCode ?? 0;
 	}
+
+	/**
+	 * Returns the state of a modifier key.
+	 *
+	 * @param key A modifier key value.
+	 * @returns True if it's pressed, false otherwise.
+	 */
+	public getModifierState(key: string): boolean {
+		if (arguments.length < 1) {
+			throw new TypeError(
+				"Failed to execute 'getModifierState' on 'KeyboardEvent': 1 argument required, but only 0 present."
+			);
+		}
+		switch (String(key).toLowerCase()) {
+			case 'alt':
+			case 'altgraph':
+				return this.altKey;
+			case 'control':
+				return this.ctrlKey;
+			case 'meta':
+				return this.metaKey;
+			case 'shift':
+				return this.shiftKey;
+			default:
+				return false;
+		}
+	}
 }
