@@ -22,6 +22,21 @@ describe('NodeList', () => {
 		it('Should not throw an error if the "illegalConstructor" symbol is provided', () => {
 			expect(() => new NodeList(PropertySymbol.illegalConstructor)).not.toThrow();
 		});
+
+		it('Should return undefined when accessing invalid index on childNodes', () => {
+			document.body.innerHTML =
+				'<div class="container">' +
+				'<div class="tab" data-track-id="one"></div>' +
+				'<div class="tab" data-track-id="two"></div>' +
+				'</div>';
+			const container = document.querySelector('.container')!;
+			expect(container.childNodes[{}]).toBe(undefined);
+			expect(container.childNodes[[]]).toBe(undefined);
+			expect(container.childNodes[-1]).toBe(undefined);
+			expect(container.childNodes[999]).toBe(undefined);
+			expect(container.childNodes[null]).toBe(undefined);
+			expect(container.childNodes[undefined]).toBe(undefined);
+		});
 	});
 
 	describe('item()', () => {

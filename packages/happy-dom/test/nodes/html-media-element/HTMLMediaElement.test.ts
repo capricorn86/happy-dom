@@ -52,6 +52,52 @@ describe('HTMLMediaElement', () => {
 		});
 	});
 
+	for (const event of [
+		'abort',
+		'canplay',
+		'canplaythrough',
+		'durationchange',
+		'emptied',
+		'ended',
+		'error',
+		'loadeddata',
+		'loadedmetadata',
+		'loadstart',
+		'pause',
+		'play',
+		'playing',
+		'progress',
+		'ratechange',
+		'resize',
+		'seeked',
+		'seeking',
+		'stalled',
+		'suspend',
+		'timeupdate',
+		'volumechange',
+		'waiting'
+	]) {
+		describe(`get on${event}()`, () => {
+			it('Returns the event listener.', () => {
+				element.setAttribute(`on${event}`, 'window.test = 1');
+				expect(element[`on${event}`]).toBeTypeOf('function');
+				element[`on${event}`](new Event(event));
+				expect(window['test']).toBe(1);
+			});
+		});
+
+		describe(`set on${event}()`, () => {
+			it('Sets the event listener.', () => {
+				element[`on${event}`] = () => {
+					window['test'] = 1;
+				};
+				element.dispatchEvent(new Event(event));
+				expect(element.getAttribute(`on${event}`)).toBe(null);
+				expect(window['test']).toBe(1);
+			});
+		});
+	}
+
 	describe('get buffered()', () => {
 		it('Returns TimeRanges object.', () => {
 			expect(element.buffered).toBeInstanceOf(TimeRanges);

@@ -6,6 +6,7 @@ import CanvasCaptureMediaStreamTrack from '../../../src/nodes/html-canvas-elemen
 import Blob from '../../../src/file/Blob.js';
 import OffscreenCanvas from '../../../src/nodes/html-canvas-element/OffscreenCanvas.js';
 import MediaStream from '../../../src/nodes/html-media-element/MediaStream.js';
+import Event from '../../../src/event/Event.js';
 
 const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+ab12C3+1aBCdEf==';
 
@@ -25,6 +26,34 @@ describe('HTMLCanvasElement', () => {
 			expect(element instanceof HTMLCanvasElement).toBe(true);
 		});
 	});
+
+	for (const event of [
+		'contextlost',
+		'contextrestored',
+		'webglcontextcreationerror',
+		'webglcontextlost',
+		'webglcontextrestored'
+	]) {
+		describe(`get on${event}()`, () => {
+			it('Returns the event listener.', () => {
+				element.setAttribute(`on${event}`, 'window.test = 1');
+				expect(element[`on${event}`]).toBeTypeOf('function');
+				element[`on${event}`](new Event(event));
+				expect(window['test']).toBe(1);
+			});
+		});
+
+		describe(`set on${event}()`, () => {
+			it('Sets the event listener.', () => {
+				element[`on${event}`] = () => {
+					window['test'] = 1;
+				};
+				element.dispatchEvent(new Event(event));
+				expect(element.getAttribute(`on${event}`)).toBe(null);
+				expect(window['test']).toBe(1);
+			});
+		});
+	}
 
 	describe('get width()', () => {
 		it('Returns the "width" attribute.', () => {
