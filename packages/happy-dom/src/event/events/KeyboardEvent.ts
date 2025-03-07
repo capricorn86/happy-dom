@@ -52,7 +52,12 @@ export default class KeyboardEvent extends UIEvent {
 	 * @returns True if it's pressed, false otherwise.
 	 */
 	public getModifierState(key: string): boolean {
-		switch (key.toLowerCase()) {
+		if (arguments.length < 1) {
+			throw new TypeError(
+				"Failed to execute 'getModifierState' on 'KeyboardEvent': 1 argument required, but only 0 present."
+			);
+		}
+		switch (String(key).toLowerCase()) {
 			case 'alt':
 			case 'altgraph':
 				return this.altKey;
