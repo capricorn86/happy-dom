@@ -14,8 +14,9 @@ export default class CookieURLUtility {
 	 * @returns "true" if cookie matches URL.
 	 */
 	public static cookieMatchesURL(cookie: ICookie, url: URL): boolean {
+		const isLocalhost = url.hostname === 'localhost' || url.hostname.endsWith('.localhost');
 		return (
-			(!cookie.secure || url.protocol === 'https:') &&
+			(!cookie.secure || url.protocol === 'https:' || isLocalhost) &&
 			(!cookie.domain || url.hostname.endsWith(cookie.domain)) &&
 			(!cookie.path || url.pathname.startsWith(cookie.path)) &&
 			// @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#samesitesamesite-value

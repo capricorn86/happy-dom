@@ -497,6 +497,21 @@ describe('QuerySelector', () => {
 			expect(elements[0] === container.children[0].children[1].children[0]).toBe(true);
 		});
 
+		it(`Returns all elements for attribute value '[style*="expression("]'`, () => {
+			const container = document.createElement('div');
+
+			container.innerHTML = `
+				<div style='expression("123")'>
+					<span>Test</span>
+				</div>
+			`;
+
+			const elements = container.querySelectorAll('[style*="expression("]');
+
+			expect(elements.length).toBe(1);
+			expect(elements[0] === container.children[0]).toBe(true);
+		});
+
 		it('Returns all elements with tag name and multiple matching attributes using "span[attr1="application/ld+json"]".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML.replace(
@@ -901,6 +916,20 @@ describe('QuerySelector', () => {
 			expect(elements[0] === container.children[1]).toBe(true);
 		});
 
+		it('Supports :not with multiple selectors within', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `<ul class="list">
+				<li class="list-item"></li>
+				<li class="list-item"></li>
+				<li class="list-item"></li>
+				<li class="other-item"></li>
+				<li></li>
+			</ul>`;
+
+			const lastItem = container.querySelectorAll('ul > li:not(.list-item, .other-item)');
+			expect(lastItem.length).toBe(1);
+		});
+
 		it('Returns all elements matching ".bar:not(.foo)".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = `
@@ -1250,6 +1279,21 @@ describe('QuerySelector', () => {
 			expect(subsequentSiblings3.length).toBe(2);
 			expect(subsequentSiblings3[0].textContent).toBe('a2');
 			expect(subsequentSiblings3[1].textContent).toBe('a3');
+		});
+
+		it('Returns all elements for attribute selector with round brackets within', () => {
+			const div = document.createElement('div');
+
+			div.innerHTML = `
+				<span>loremipsum</span>
+				<a href="/123">normal link</a>                        
+				<a href="javascript:void(0)">void</a>
+			`;
+
+			const voidLinks = div.querySelectorAll('a[href="javascript:void(0)"]');
+			expect(voidLinks.length).toBe(1);
+			const normalLinks = div.querySelectorAll('a[href]:not([href="javascript:void(0)"])');
+			expect(normalLinks.length).toBe(1);
 		});
 	});
 
