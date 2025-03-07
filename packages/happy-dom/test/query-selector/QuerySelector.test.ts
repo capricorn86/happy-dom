@@ -488,10 +488,18 @@ describe('QuerySelector', () => {
 			expect(elements[0] === container.children[0].children[1].children[0]).toBe(true);
 		});
 
-		// write a test which will test document.querySelectorAll('[style*="expression("]')
-
-		it('Returns all elements with attribute values containing regex special characters using "[data-test="^$.*+?()[]{}|\\"]".', () => {
+		it('Returns all elements with tag name and multiple matching attributes using "span[attr1="value1"][attr3="bracket[]bracket"]".', () => {
 			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const elements = container.querySelectorAll('span[attr1="value1"][attr3="bracket[]bracket"]');
+
+			expect(elements.length).toBe(1);
+			expect(elements[0] === container.children[0].children[1].children[0]).toBe(true);
+		});
+
+		it(`Returns all elements for attribute value '[style*="expression("]'`, () => {
+			const container = document.createElement('div');
+
 			container.innerHTML = `
 				<div style='expression("123")'>
 					<span>Test</span>
@@ -499,7 +507,45 @@ describe('QuerySelector', () => {
 			`;
 
 			const elements = container.querySelectorAll('[style*="expression("]');
+
 			expect(elements.length).toBe(1);
+			expect(elements[0] === container.children[0]).toBe(true);
+		});
+
+		it('Returns all elements with tag name and multiple matching attributes using "span[attr1="application/ld+json"]".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML.replace(
+				/ attr1="value1"/gm,
+				' attr1="application/ld+json"'
+			);
+			const elements = container.querySelectorAll('span[attr1="application/ld+json"]');
+
+			expect(elements.length).toBe(2);
+			expect(elements[0] === container.children[0].children[1].children[0]).toBe(true);
+			expect(elements[1] === container.children[0].children[1].children[1]).toBe(true);
+		});
+
+		it('Returns all elements with an attribute value containing a specified word using "[class~="class2"]".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const elements = container.querySelectorAll('[class~="class2"]');
+
+			expect(elements.length).toBe(5);
+			expect(elements[0] === container.children[0]).toBe(true);
+			expect(elements[1] === container.children[0].children[1]).toBe(true);
+			expect(elements[2] === container.children[0].children[1].children[0]).toBe(true);
+			expect(elements[3] === container.children[0].children[1].children[1]).toBe(true);
+			expect(elements[4] === container.children[0].children[1].children[2]).toBe(true);
+		});
+
+		it('Returns all elements with an attribute value containing a specified word using "[attr1~="value1"]" (which doesn\'t include spaces).', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const elements = container.querySelectorAll('[attr1~="value1"]');
+
+			expect(elements.length).toBe(2);
+			expect(elements[0] === container.children[0].children[1].children[0]).toBe(true);
+			expect(elements[1] === container.children[0].children[1].children[1]).toBe(true);
 		});
 
 		it('Returns all elements with an attribute value starting with the specified word using "[class|="class1"]".', () => {
@@ -870,6 +916,20 @@ describe('QuerySelector', () => {
 			expect(elements[0] === container.children[1]).toBe(true);
 		});
 
+		it('Supports :not with multiple selectors within', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `<ul class="list">
+				<li class="list-item"></li>
+				<li class="list-item"></li>
+				<li class="list-item"></li>
+				<li class="other-item"></li>
+				<li></li>
+			</ul>`;
+
+			const lastItem = container.querySelectorAll('ul > li:not(.list-item, .other-item)');
+			expect(lastItem.length).toBe(1);
+		});
+
 		it('Returns all elements matching ".bar:not(.foo)".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = `
@@ -1219,6 +1279,21 @@ describe('QuerySelector', () => {
 			expect(subsequentSiblings3.length).toBe(2);
 			expect(subsequentSiblings3[0].textContent).toBe('a2');
 			expect(subsequentSiblings3[1].textContent).toBe('a3');
+		});
+
+		it('Returns all elements for attribute selector with round brackets within', () => {
+			const div = document.createElement('div');
+
+			div.innerHTML = `
+				<span>loremipsum</span>
+				<a href="/123">normal link</a>                        
+				<a href="javascript:void(0)">void</a>
+			`;
+
+			const voidLinks = div.querySelectorAll('a[href="javascript:void(0)"]');
+			expect(voidLinks.length).toBe(1);
+			const normalLinks = div.querySelectorAll('a[href]:not([href="javascript:void(0)"])');
+			expect(normalLinks.length).toBe(1);
 		});
 	});
 
