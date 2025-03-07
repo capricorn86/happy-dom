@@ -5,6 +5,7 @@
     "dictionaries": [],
     "words": [
         "clonable",
+        "Contoso",
         "ISVG",
         "oncompositionend",
         "oncompositionstart",
@@ -13,7 +14,9 @@
         "onpointerrawupdate",
         "onscrollsnapchange",
         "onscrollsnapchanging",
-        "onsearch"
+        "onsearch",
+        "unnestable",
+        "xlink"
     ],
     "ignoreWords": [],
     "import": []
