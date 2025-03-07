@@ -62,6 +62,8 @@ describe('HTMLDialogElement', () => {
 		it('Should be possible to set manually', () => {
 			element.returnValue = 'foo';
 			expect(element.returnValue).toBe('foo');
+			element.returnValue = <string>(<unknown>undefined);
+			expect(element.returnValue).toBe('undefined');
 		});
 	});
 
@@ -84,6 +86,12 @@ describe('HTMLDialogElement', () => {
 			element.show();
 			element.close('foo');
 			expect(element.returnValue).toBe('foo');
+			element.show();
+			element.close(undefined);
+			expect(element.returnValue).toBe('');
+			element.show();
+			element.close(<string>(<unknown>null));
+			expect(element.returnValue).toBe('null');
 		});
 
 		it('Should be possible to close the modal dialog with a return value', () => {
@@ -101,7 +109,7 @@ describe('HTMLDialogElement', () => {
 			expect((<Event>(<unknown>dispatched)).bubbles).toBe(false);
 		});
 
-		it('Should only dispatch a close event when dialog wasnt already closed', () => {
+		it("Should only dispatch a close event when dialog wasn't already closed", () => {
 			let dispatched: Event | null = null;
 			element.addEventListener('close', (event: Event) => (dispatched = event));
 			element.close();
