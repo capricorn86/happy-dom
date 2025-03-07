@@ -19,6 +19,7 @@ import ShadowRoot from '../shadow-root/ShadowRoot.js';
 import { URL } from 'url';
 import MouseEvent from '../../event/events/MouseEvent.js';
 import NodeList from '../node/NodeList.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**
  * HTML Input Element.
@@ -32,11 +33,6 @@ import NodeList from '../node/NodeList.js';
 export default class HTMLInputElement extends HTMLElement {
 	// Public properties
 	public declare cloneNode: (deep?: boolean) => HTMLInputElement;
-
-	// Events
-	public oninput: ((event: Event) => void) | null = null;
-	public oninvalid: ((event: Event) => void) | null = null;
-	public onselectionchange: ((event: Event) => void) | null = null;
 
 	public [PropertySymbol.value] = null;
 	public [PropertySymbol.height] = 0;
@@ -54,6 +50,36 @@ export default class HTMLInputElement extends HTMLElement {
 	#selectionEnd: number = null;
 	#selectionDirection: HTMLInputElementSelectionDirectionEnum =
 		HTMLInputElementSelectionDirectionEnum.none;
+
+	// Events
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get oninput(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'oninput');
+	}
+
+	public set oninput(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oninput', value);
+	}
+
+	public get oninvalid(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'oninvalid');
+	}
+
+	public set oninvalid(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oninvalid', value);
+	}
+
+	public get onselectionchange(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onselectionchange');
+	}
+
+	public set onselectionchange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onselectionchange', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Returns default checked.

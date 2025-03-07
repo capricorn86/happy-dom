@@ -17,6 +17,7 @@ import HTMLCollection from '../../../src/nodes/element/HTMLCollection.js';
 import Element from '../../../src/nodes/element/Element.js';
 import NodeList from '../../../src/nodes/node/NodeList.js';
 import SVGMatrix from '../../../src/svg/SVGMatrix.js';
+import Event from '../../../src/event/Event.js';
 
 describe('SVGSVGElement', () => {
 	let window: Window;
@@ -28,6 +29,47 @@ describe('SVGSVGElement', () => {
 		document = window.document;
 		element = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 	});
+
+	for (const event of [
+		'afterprint',
+		'beforeprint',
+		'beforeunload',
+		'gamepadconnected',
+		'gamepaddisconnected',
+		'hashchange',
+		'languagechange',
+		'message',
+		'messageerror',
+		'offline',
+		'online',
+		'pagehide',
+		'pageshow',
+		'popstate',
+		'rejectionhandled',
+		'storage',
+		'unhandledrejection',
+		'unload'
+	]) {
+		describe(`get on${event}()`, () => {
+			it('Returns the event listener.', () => {
+				element.setAttribute(`on${event}`, 'window.test = 1');
+				expect(element[`on${event}`]).toBeTypeOf('function');
+				element[`on${event}`](new Event(event));
+				expect(window['test']).toBe(1);
+			});
+		});
+
+		describe(`set on${event}()`, () => {
+			it('Sets the event listener.', () => {
+				element[`on${event}`] = () => {
+					window['test'] = 1;
+				};
+				element.dispatchEvent(new Event(event));
+				expect(element.getAttribute(`on${event}`)).toBe(null);
+				expect(window['test']).toBe(1);
+			});
+		});
+	}
 
 	describe('get preserveAspectRatio()', () => {
 		it('Should return an instance of SVGAnimatedPreserveAspectRatio', () => {

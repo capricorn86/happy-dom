@@ -25,7 +25,7 @@ import ISelectorPseudo from './ISelectorPseudo.js';
  * Group 17: Combinator.
  */
 const SELECTOR_REGEXP =
-	/(\*)|([a-zA-Z0-9-]+)|#((?:[a-zA-Z0-9-_]|\\.)+)|\.((?:[a-zA-Z0-9-_]|\\.)+)|\[([a-zA-Z0-9-_\\:]+)\]|\[([a-zA-Z0-9-_\\:]+)\s*([~|^$*]{0,1})\s*=\s*["']{1}([^"']*)["']{1}\s*(s|i){0,1}\]|\[([a-zA-Z0-9-_]+)\s*([~|^$*]{0,1})\s*=\s*([^\]]*)\]|:([a-zA-Z-]+)\s*\(([^)]+)\){0,1}|:([a-zA-Z-]+)|::([a-zA-Z-]+)|([\s,+>~]*)/gm;
+	/(\*)|([a-zA-Z0-9-]+)|#((?:[a-zA-Z0-9-_]|\\.)+)|\.((?:[a-zA-Z0-9-_]|\\.)+)|\[([a-zA-Z0-9-_\\:]+)\]|\[([a-zA-Z0-9-_\\:]+)\s*([~|^$*]{0,1})\s*=\s*["']{1}([^"']*)["']{1}\s*(s|i){0,1}\]|\[([a-zA-Z0-9-_]+)\s*([~|^$*]{0,1})\s*=\s*([^\]]*)\]|:([a-zA-Z-]+)\s*\(((?:[^()]|\[[^\]]*\]|\([^()]*\))*)\){0,1}|:([a-zA-Z-]+)|::([a-zA-Z-]+)|([\s,+>~]*)/gm;
 
 /**
  * Escaped Character RegExp.
@@ -316,10 +316,14 @@ export default class SelectorParser {
 					nthFunction: this.getPseudoNthFunction(args)
 				};
 			case 'not':
+				const notSelectorItems = [];
+				for (const group of this.getSelectorGroups(args, options)) {
+					notSelectorItems.push(group[0]);
+				}
 				return {
 					name: lowerName,
 					arguments: args,
-					selectorItems: [this.getSelectorItem(args, options)],
+					selectorItems: notSelectorItems,
 					nthFunction: null
 				};
 			case 'is':

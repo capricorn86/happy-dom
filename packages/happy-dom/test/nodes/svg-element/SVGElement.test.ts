@@ -7,6 +7,7 @@ import HTMLElementUtility from '../../../src/nodes/html-element/HTMLElementUtili
 import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import Element from '../../../src/nodes/element/Element.js';
+import Event from '../../../src/event/Event.js';
 
 describe('SVGElement', () => {
 	let window: Window;
@@ -32,6 +33,116 @@ describe('SVGElement', () => {
 			expect(element instanceof Element).toBe(true);
 		});
 	});
+
+	for (const event of [
+		'abort',
+		'animationend',
+		'animationiteration',
+		'animationstart',
+		'blur',
+		'canplay',
+		'canplaythrough',
+		'change',
+		'click',
+		'close',
+		'contextmenu',
+		'copy',
+		'cuechange',
+		'cut',
+		'dblclick',
+		'drag',
+		'dragend',
+		'dragenter',
+		'dragleave',
+		'dragover',
+		'dragstart',
+		'drop',
+		'durationchange',
+		'emptied',
+		'ended',
+		'error',
+		'focus',
+		'formdata',
+		'gotpointercapture',
+		'input',
+		'invalid',
+		'keydown',
+		'keypress',
+		'keyup',
+		'load',
+		'loadeddata',
+		'loadedmetadata',
+		'loadstart',
+		'lostpointercapture',
+		'mousedown',
+		'mouseenter',
+		'mouseleave',
+		'mousemove',
+		'mouseout',
+		'mouseover',
+		'mouseup',
+		'mousewheel',
+		'paste',
+		'pause',
+		'play',
+		'playing',
+		'pointercancel',
+		'pointerdown',
+		'pointerenter',
+		'pointerleave',
+		'pointermove',
+		'pointerout',
+		'pointerover',
+		'pointerrawupdate',
+		'pointerup',
+		'progress',
+		'ratechange',
+		'reset',
+		'resize',
+		'scroll',
+		'scrollend',
+		'scrollsnapchange',
+		'scrollsnapchanging',
+		'securitypolicyviolation',
+		'seeked',
+		'seeking',
+		'select',
+		'selectionchange',
+		'selectstart',
+		'slotchange',
+		'stalled',
+		'submit',
+		'suspend',
+		'timeupdate',
+		'toggle',
+		'transitioncancel',
+		'transitionend',
+		'transitionrun',
+		'transitionstart',
+		'volumechange',
+		'waiting',
+		'wheel'
+	]) {
+		describe(`get on${event}()`, () => {
+			it('Returns the event listener.', () => {
+				element.setAttribute(`on${event}`, 'window.test = 1');
+				expect(element[`on${event}`]).toBeTypeOf('function');
+				element[`on${event}`](new Event(event));
+				expect(window['test']).toBe(1);
+			});
+		});
+
+		describe(`set on${event}()`, () => {
+			it('Sets the event listener.', () => {
+				element[`on${event}`] = () => {
+					window['test'] = 1;
+				};
+				element.dispatchEvent(new Event(event));
+				expect(element.getAttribute(`on${event}`)).toBe(null);
+				expect(window['test']).toBe(1);
+			});
+		});
+	}
 
 	describe('get ownerSVGElement()', () => {
 		it('Returns the owner SVG element.', () => {
