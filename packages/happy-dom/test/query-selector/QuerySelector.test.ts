@@ -497,6 +497,21 @@ describe('QuerySelector', () => {
 			expect(elements[0] === container.children[0].children[1].children[0]).toBe(true);
 		});
 
+		it(`Returns all elements for attribute value '[style*="expression("]'`, () => {
+			const container = document.createElement('div');
+
+			container.innerHTML = `
+				<div style='expression("123")'>
+					<span>Test</span>
+				</div>
+			`;
+
+			const elements = container.querySelectorAll('[style*="expression("]');
+
+			expect(elements.length).toBe(1);
+			expect(elements[0] === container.children[0]).toBe(true);
+		});
+
 		it('Returns all elements with tag name and multiple matching attributes using "span[attr1="application/ld+json"]".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML.replace(
