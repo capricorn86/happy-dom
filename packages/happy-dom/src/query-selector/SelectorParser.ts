@@ -33,6 +33,11 @@ const SELECTOR_REGEXP =
 const ESCAPED_CHARACTER_REGEXP = /\\/g;
 
 /**
+ * Attribute Escape RegExp.
+ */
+const ATTRIBUTE_ESCAPE_REGEXP = /[.*+?^${}()|[\]\\]/g;
+
+/**
  * Nth Function.
  */
 const NTH_FUNCTION = {
@@ -245,7 +250,7 @@ export default class SelectorParser {
 		}
 
 		// Escape special regex characters in the value
-		const escapedValue = attribute.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		const escapedValue = attribute.value.replace(ATTRIBUTE_ESCAPE_REGEXP, '\\$&');
 
 		switch (attribute.operator) {
 			// [attribute~="value"] - Contains a specified word.
