@@ -12,8 +12,6 @@ import BrowserExceptionObserver from '../utilities/BrowserExceptionObserver.js';
 
 /**
  * Detached browser used when constructing a Window instance without a browser.
- *
- * Much of the interface for the browser has been taken from Puppeteer and Playwright, so that the API is familiar.
  */
 export default class DetachedBrowser implements IBrowser {
 	public readonly contexts: DetachedBrowserContext[];

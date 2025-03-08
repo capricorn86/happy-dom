@@ -731,14 +731,45 @@ describe('HTMLParser', () => {
 			);
 		});
 
-		it('Parses XML with "xmlns:link" defined as attribute.', () => {
+		it('Parses XML with "xmlns:xlink" defined as attribute.', () => {
 			const result = new HTMLParser(window).parse(
-				`<svg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'></svg>`,
+				`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="#a"/></svg>`,
 				document.body
 			);
 
+			expect(result.children[0].getAttributeNode('xmlns:xlink')?.namespaceURI).toBe(
+				NamespaceURI.xmlns
+			);
+
+			expect(result.children[0].children[0].getAttributeNode('xlink:href')?.namespaceURI).toBe(
+				NamespaceURI.xlink
+			);
+
 			expect(new HTMLSerializer().serializeToString(result)).toBe(
-				`<body><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"></svg></body>`
+				`<body><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="#a"></use></svg></body>`
+			);
+		});
+
+		it('Parses XML with unknown suffix "xmlns:unknown".', () => {
+			const result = new HTMLParser(window).parse(
+				`<svg xmlns="http://www.w3.org/2000/svg" xmlns:unknown="http://test.com"><use unknown:href="#a"/></svg>`,
+				document.body
+			);
+
+			expect(result.children[0].getAttributeNode('xmlns:unknown')?.namespaceURI).toBe(null);
+			expect(result.children[0].getAttributeNode('xmlns:unknown')?.localName).toBe('xmlns:unknown');
+			expect(result.children[0].getAttributeNode('xmlns:unknown')?.prefix).toBe(null);
+
+			expect(result.children[0].children[0].getAttributeNode('unknown:href')?.namespaceURI).toBe(
+				null
+			);
+			expect(result.children[0].children[0].getAttributeNode('unknown:href')?.localName).toBe(
+				'unknown:href'
+			);
+			expect(result.children[0].children[0].getAttributeNode('unknown:href')?.prefix).toBe(null);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`<body><svg xmlns="http://www.w3.org/2000/svg" xmlns:unknown="http://test.com"><use unknown:href="#a"></use></svg></body>`
 			);
 		});
 
