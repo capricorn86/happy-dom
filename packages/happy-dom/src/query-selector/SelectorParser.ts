@@ -25,12 +25,17 @@ import ISelectorPseudo from './ISelectorPseudo.js';
  * Group 17: Combinator.
  */
 const SELECTOR_REGEXP =
-	/(\*)|([a-zA-Z0-9-]+)|#((?:[a-zA-Z0-9-_]|\\.)+)|\.((?:[a-zA-Z0-9-_]|\\.)+)|\[([a-zA-Z0-9-_\\:]+)\]|\[([a-zA-Z0-9-_\\:]+)\s*([~|^$*]{0,1})\s*=\s*["']{1}([^"']*)["']{1}\s*(s|i){0,1}\]|\[([a-zA-Z0-9-_]+)\s*([~|^$*]{0,1})\s*=\s*([^\]]*)\]|:([a-zA-Z-]+)\s*\(([^)]+)\){0,1}|:([a-zA-Z-]+)|::([a-zA-Z-]+)|([\s,+>~]*)/gm;
+	/(\*)|([a-zA-Z0-9-]+)|#((?:[a-zA-Z0-9-_]|\\.)+)|\.((?:[a-zA-Z0-9-_]|\\.)+)|\[([a-zA-Z0-9-_\\:]+)\]|\[([a-zA-Z0-9-_\\:]+)\s*([~|^$*]{0,1})\s*=\s*["']{1}([^"']*)["']{1}\s*(s|i){0,1}\]|\[([a-zA-Z0-9-_]+)\s*([~|^$*]{0,1})\s*=\s*([^\]]*)\]|:([a-zA-Z-]+)\s*\(((?:[^()]|\[[^\]]*\]|\([^()]*\))*)\){0,1}|:([a-zA-Z-]+)|::([a-zA-Z-]+)|([\s,+>~]*)/gm;
 
 /**
  * Escaped Character RegExp.
  */
 const ESCAPED_CHARACTER_REGEXP = /\\/g;
+
+/**
+ * Attribute Escape RegExp.
+ */
+const ATTRIBUTE_ESCAPE_REGEXP = /[.*+?^${}()|[\]\\]/g;
 
 /**
  * Nth Function.
@@ -244,25 +249,25 @@ export default class SelectorParser {
 			return null;
 		}
 
+		// Escape special regex characters in the value
+		const escapedValue = attribute.value.replace(ATTRIBUTE_ESCAPE_REGEXP, '\\$&');
+
 		switch (attribute.operator) {
 			// [attribute~="value"] - Contains a specified word.
 			case '~':
-				return new RegExp(
-					`[- ]${attribute.value}|${attribute.value}[- ]|^${attribute.value}$`,
-					modifier
-				);
+				return new RegExp(`[- ]${escapedValue}|${escapedValue}[- ]|^${escapedValue}$`, modifier);
 			// [attribute|="value"] - Starts with the specified word.
 			case '|':
-				return new RegExp(`^${attribute.value}[- ]|^${attribute.value}$`, modifier);
+				return new RegExp(`^${escapedValue}[- ]|^${escapedValue}$`, modifier);
 			// [attribute^="value"] - Begins with a specified value.
 			case '^':
-				return new RegExp(`^${attribute.value}`, modifier);
+				return new RegExp(`^${escapedValue}`, modifier);
 			// [attribute$="value"] - Ends with a specified value.
 			case '$':
-				return new RegExp(`${attribute.value}$`, modifier);
+				return new RegExp(`${escapedValue}$`, modifier);
 			// [attribute*="value"] - Contains a specified value.
 			case '*':
-				return new RegExp(`${attribute.value}`, modifier);
+				return new RegExp(`${escapedValue}`, modifier);
 			default:
 				return null;
 		}
@@ -316,10 +321,14 @@ export default class SelectorParser {
 					nthFunction: this.getPseudoNthFunction(args)
 				};
 			case 'not':
+				const notSelectorItems = [];
+				for (const group of this.getSelectorGroups(args, options)) {
+					notSelectorItems.push(group[0]);
+				}
 				return {
 					name: lowerName,
 					arguments: args,
-					selectorItems: [this.getSelectorItem(args, options)],
+					selectorItems: notSelectorItems,
 					nthFunction: null
 				};
 			case 'is':

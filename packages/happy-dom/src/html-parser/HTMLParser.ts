@@ -407,7 +407,7 @@ export default class HTMLParser {
 
 					if (this.nextElement[PropertySymbol.namespaceURI] === NamespaceURI.svg) {
 						// In the SVG namespace, the attribute "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
-						const namespaceURI = name === 'xmlns' ? NamespaceURI.xmlns : null;
+						const namespaceURI = name.split(':')[0] === 'xmlns' ? NamespaceURI.xmlns : null;
 
 						if (!attributes.getNamedItemNS(namespaceURI, name)) {
 							const attributeItem = this.rootDocument.createAttributeNS(namespaceURI, name);

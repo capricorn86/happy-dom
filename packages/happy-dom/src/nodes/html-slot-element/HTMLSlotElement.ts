@@ -7,6 +7,7 @@ import Node from '../node/Node.js';
 import Event from '../../event/Event.js';
 import Attr from '../attr/Attr.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**
  * HTML Slot Element.
@@ -22,7 +23,18 @@ export default class HTMLSlotElement extends HTMLElement {
 	public [PropertySymbol.assignedNodes]: Node[] = [];
 
 	// Events
-	public onslotchange: ((event: Event) => void) | null = null;
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get onslotchange(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onslotchange');
+	}
+
+	public set onslotchange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onslotchange', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Returns name.

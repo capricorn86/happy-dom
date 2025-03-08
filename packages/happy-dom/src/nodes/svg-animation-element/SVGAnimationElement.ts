@@ -2,6 +2,7 @@ import SVGElement from '../svg-element/SVGElement.js';
 import SVGStringList from '../../svg/SVGStringList.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Event from '../../event/Event.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**
  * SVG Animation Element.
@@ -14,9 +15,34 @@ export default class SVGAnimationElement extends SVGElement {
 	public [PropertySymbol.systemLanguage]: SVGStringList | null = null;
 
 	// Events
-	public onbegin: ((event: Event) => void) | null = null;
-	public onend: ((event: Event) => void) | null = null;
-	public onrepeat: ((event: Event) => void) | null = null;
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get onbegin(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onbegin');
+	}
+
+	public set onbegin(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onbegin', value);
+	}
+
+	public get onend(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onend');
+	}
+
+	public set onend(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onend', value);
+	}
+
+	public get onrepeat(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onrepeat');
+	}
+
+	public set onrepeat(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onrepeat', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Returns required extensions.
