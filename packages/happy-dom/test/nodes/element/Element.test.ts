@@ -1706,6 +1706,16 @@ describe('Element', () => {
 			expect(element.getAttribute('data-custom')).toBe('1'); // common custom attribute pattern
 		});
 
+		it('Sets SVG attribute "xmlns:xlink" on an element.', () => {
+			const div = document.createElement('div');
+
+			div.innerHTML =
+				'<svg xmlns="http://www.w3.org/2000/svg"><path xmlns:unknown="http://test.com"><use unknown:href="#a"/></path></svg>';
+			div.children[0].setAttribute('xmlns:xlink', 'test');
+
+			expect(div.children[0].getAttribute('xmlns:xlink')).toBe('test');
+		});
+
 		it('Throws an error when given an invalid character in the attribute name', () => {
 			try {
 				element.setAttribute('☺', '1');

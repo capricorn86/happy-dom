@@ -704,15 +704,41 @@ export default class Element
 			{ method: 'setAttribute', instance: 'Element' }
 		);
 		name = String(name);
+
 		const namespaceURI = this[PropertySymbol.namespaceURI];
-		// TODO: Is it correct to check for namespaceURI === NamespaceURI.svg?
-		const attribute =
-			namespaceURI === NamespaceURI.html &&
-			this[PropertySymbol.ownerDocument][PropertySymbol.contentType] === 'text/html'
-				? this[PropertySymbol.ownerDocument].createAttribute(name)
-				: this[PropertySymbol.ownerDocument].createAttributeNS(null, name);
-		attribute[PropertySymbol.value] = String(value);
-		this[PropertySymbol.attributes].setNamedItem(attribute);
+
+		if (namespaceURI === NamespaceURI.html) {
+			const attribute = this[PropertySymbol.ownerDocument].createAttribute(name);
+			attribute[PropertySymbol.value] = String(value);
+			this[PropertySymbol.attributes][PropertySymbol.setNamedItem](attribute);
+		} else {
+			const nameParts = name.split(':');
+			let attributeNamespaceURI = null;
+
+			// In the XML namespace, the attribute "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace and "xlink" to the "http://www.w3.org/1999/xlink" namespace.
+			switch (nameParts[0]) {
+				case 'xmlns':
+					attributeNamespaceURI =
+						!nameParts[1] || nameParts[1] === 'xlink' ? NamespaceURI.xmlns : null;
+					break;
+				case 'xlink':
+					attributeNamespaceURI = NamespaceURI.xlink;
+					break;
+			}
+
+			const attribute = NodeFactory.createNode(
+				this[PropertySymbol.ownerDocument],
+				this[PropertySymbol.window].Attr
+			);
+
+			attribute[PropertySymbol.namespaceURI] = namespaceURI;
+			attribute[PropertySymbol.name] = name;
+			attribute[PropertySymbol.localName] = namespaceURI && nameParts[1] ? nameParts[1] : name;
+			attribute[PropertySymbol.prefix] = namespaceURI && nameParts[1] ? nameParts[0] : null;
+			attribute[PropertySymbol.value] = String(value);
+
+			this[PropertySymbol.attributes][PropertySymbol.setNamedItem](attribute);
+		}
 	}
 
 	/**
