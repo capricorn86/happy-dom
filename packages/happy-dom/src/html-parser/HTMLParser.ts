@@ -17,6 +17,7 @@ import HTMLBodyElement from '../nodes/html-body-element/HTMLBodyElement.js';
 import HTMLHtmlElement from '../nodes/html-html-element/HTMLHtmlElement.js';
 import XMLEncodeUtility from '../utilities/XMLEncodeUtility.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
+import NodeFactory from '../nodes/NodeFactory.js';
 
 /**
  * Markup RegExp.
@@ -406,13 +407,31 @@ export default class HTMLParser {
 					const attributes = this.nextElement[PropertySymbol.attributes];
 
 					if (this.nextElement[PropertySymbol.namespaceURI] === NamespaceURI.svg) {
-						// In the SVG namespace, the attribute "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
-						const namespaceURI = name.split(':')[0] === 'xmlns' ? NamespaceURI.xmlns : null;
+						const nameParts = name.split(':');
+						let namespaceURI = null;
 
-						if (!attributes.getNamedItemNS(namespaceURI, name)) {
-							const attributeItem = this.rootDocument.createAttributeNS(namespaceURI, name);
-							attributeItem[PropertySymbol.value] = value;
-							attributes[PropertySymbol.setNamedItem](attributeItem);
+						// In the SVG namespace, the attribute "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace and "xlink" to the "http://www.w3.org/1999/xlink" namespace.
+						switch (nameParts[0]) {
+							case 'xmlns':
+								namespaceURI =
+									!nameParts[1] || nameParts[1] === 'xlink' ? NamespaceURI.xmlns : null;
+								break;
+							case 'xlink':
+								namespaceURI = NamespaceURI.xlink;
+								break;
+						}
+
+						if (!attributes.getNamedItemNS(namespaceURI, nameParts[1] ?? name)) {
+							const attribute = NodeFactory.createNode(this.rootDocument, this.window.Attr);
+
+							attribute[PropertySymbol.namespaceURI] = namespaceURI;
+							attribute[PropertySymbol.name] = name;
+							attribute[PropertySymbol.localName] =
+								namespaceURI && nameParts[1] ? nameParts[1] : name;
+							attribute[PropertySymbol.prefix] = namespaceURI && nameParts[1] ? nameParts[0] : null;
+							attribute[PropertySymbol.value] = value;
+
+							attributes[PropertySymbol.setNamedItem](attribute);
 						}
 					} else if (!attributes.getNamedItem(name)) {
 						const attributeItem = this.rootDocument.createAttribute(name);

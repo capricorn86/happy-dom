@@ -10,8 +10,6 @@ import BrowserErrorCaptureEnum from './enums/BrowserErrorCaptureEnum.js';
 
 /**
  * Browser.
- *
- * Much of the interface for the browser has been taken from Puppeteer and Playwright, so that the API is familiar.
  */
 export default class Browser implements IBrowser {
 	public readonly contexts: BrowserContext[];
