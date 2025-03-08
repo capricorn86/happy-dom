@@ -731,10 +731,12 @@ export default class Element
 				this[PropertySymbol.window].Attr
 			);
 
-			attribute[PropertySymbol.namespaceURI] = namespaceURI;
+			attribute[PropertySymbol.namespaceURI] = attributeNamespaceURI;
 			attribute[PropertySymbol.name] = name;
-			attribute[PropertySymbol.localName] = namespaceURI && nameParts[1] ? nameParts[1] : name;
-			attribute[PropertySymbol.prefix] = namespaceURI && nameParts[1] ? nameParts[0] : null;
+			attribute[PropertySymbol.localName] =
+				attributeNamespaceURI && nameParts[1] ? nameParts[1] : name;
+			attribute[PropertySymbol.prefix] =
+				attributeNamespaceURI && nameParts[1] ? nameParts[0] : null;
 			attribute[PropertySymbol.value] = String(value);
 
 			this[PropertySymbol.attributes][PropertySymbol.setNamedItem](attribute);

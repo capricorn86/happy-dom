@@ -1710,10 +1710,20 @@ describe('Element', () => {
 			const div = document.createElement('div');
 
 			div.innerHTML =
-				'<svg xmlns="http://www.w3.org/2000/svg"><path xmlns:unknown="http://test.com"><use unknown:href="#a"/></path></svg>';
-			div.children[0].setAttribute('xmlns:xlink', 'test');
+				'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use/></svg>';
 
+			div.children[0].setAttribute('xmlns:xlink', 'test');
+			div.children[0].children[0].setAttribute('xlink:href', '#a');
+
+			expect(div.children[0].getAttributeNode('xmlns:xlink')?.namespaceURI).toBe(
+				NamespaceURI.xmlns
+			);
 			expect(div.children[0].getAttribute('xmlns:xlink')).toBe('test');
+
+			expect(div.children[0].children[0].getAttributeNode('xlink:href')?.namespaceURI).toBe(
+				NamespaceURI.xlink
+			);
+			expect(div.children[0].children[0].getAttribute('xlink:href')).toBe('#a');
 		});
 
 		it('Throws an error when given an invalid character in the attribute name', () => {
