@@ -1,15 +1,15 @@
-import BrowserWindow from '../../src/window/BrowserWindow.js';
 import Window from '../../src/window/Window.js';
 import EventTarget from '../../src/event/EventTarget.js';
 import Event from '../../src/event/Event.js';
 import CustomEvent from '../../src/event/events/CustomEvent.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import { beforeEach, describe, it, expect } from 'vitest';
+import BrowserErrorCaptureEnum from '../../src/browser/enums/BrowserErrorCaptureEnum.js';
 
 const EVENT_TYPE = 'click';
 
 describe('EventTarget', () => {
-	let window: BrowserWindow;
+	let window: Window;
 	let eventTarget: EventTarget;
 
 	beforeEach(() => {
@@ -117,7 +117,21 @@ describe('EventTarget', () => {
 			expect(scope).toBe(eventTarget);
 		});
 
-		it('Event listener with handleEvent is called in the scope of the listener when calling dispatchEvent().', () => {
+		it('Event listener with handleEvent is called in the scope of the listener when calling dispatchEvent() when browser settings error capture is set to "tryAndCatch".', () => {
+			let scope = null;
+			const listener = {
+				handleEvent(): void {
+					scope = this;
+				}
+			};
+			const dispatchedEvent = new Event(EVENT_TYPE);
+			eventTarget.addEventListener(EVENT_TYPE, listener);
+			eventTarget.dispatchEvent(dispatchedEvent);
+			expect(scope).toBe(listener);
+		});
+
+		it('Event listener with handleEvent is called in the scope of the listener when calling dispatchEvent() when browser settings error capture is not set to "tryAndCatch".', () => {
+			window.happyDOM.settings.errorCapture = BrowserErrorCaptureEnum.disabled;
 			let scope = null;
 			const listener = {
 				handleEvent(): void {
