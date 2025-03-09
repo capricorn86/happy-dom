@@ -282,7 +282,7 @@ export default class EventTarget {
 					}
 				} else {
 					if ((<TEventListenerObject>listener).handleEvent) {
-						(<TEventListenerObject>listener).handleEvent.call(this, event);
+						(<TEventListenerObject>listener).handleEvent.call(listener, event);
 					} else {
 						(<TEventListenerFunction>listener).call(this, event);
 					}
