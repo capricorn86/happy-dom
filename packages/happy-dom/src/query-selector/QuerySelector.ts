@@ -115,7 +115,7 @@ export default class QuerySelector {
 			}
 		}
 
-		const groups = SelectorParser.getSelectorGroups(selector);
+		const groups = SelectorParser.getSelectorGroups(selector, { scope: node });
 		const items: Element[] = [];
 		const nodeList = new NodeList<Element>(PropertySymbol.illegalConstructor, items);
 		const matchesMap: Map<string, Element> = new Map();
@@ -251,7 +251,7 @@ export default class QuerySelector {
 
 		const matchesMap: Map<string, Element> = new Map();
 		const matchedPositions: string[] = [];
-		for (const items of SelectorParser.getSelectorGroups(selector)) {
+		for (const items of SelectorParser.getSelectorGroups(selector, { scope: node })) {
 			const match =
 				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
 					? this.findFirst(<Element>node, [<Element>node], items, cachedItem)
@@ -349,7 +349,10 @@ export default class QuerySelector {
 			);
 		}
 
-		for (const items of SelectorParser.getSelectorGroups(selector, options)) {
+		for (const items of SelectorParser.getSelectorGroups(selector, {
+			...options,
+			scope: element
+		})) {
 			const result = this.matchSelector(element, items.reverse(), cachedItem);
 
 			if (result) {
