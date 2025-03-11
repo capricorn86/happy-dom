@@ -1335,7 +1335,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 							timeout.callback();
 						}
 					}
-				});
+				}, 0);
 
 				zeroDelayTimeout.timeouts = [];
 				this.#browserFrame[PropertySymbol.asyncTaskManager].startTimer(id);
