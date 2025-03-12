@@ -1807,7 +1807,7 @@ describe('QuerySelector', () => {
 		});
 
 		it('Return element for pseudo selector ":root"', () => {
-			expect(document.querySelectorAll(':root')).toBe(document.documentElement);
+			expect(document.querySelectorAll(':root')[0]).toBe(document.documentElement);
 		});
 	});
 

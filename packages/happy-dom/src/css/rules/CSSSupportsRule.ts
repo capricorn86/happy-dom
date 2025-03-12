@@ -1,13 +1,12 @@
-import CSSRule from '../CSSRule.js';
 import CSSRuleTypeEnum from '../CSSRuleTypeEnum.js';
+import CSSConditionRule from './CSSConditionRule.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * CSSRule interface.
  */
-export default class CSSSupportsRule extends CSSRule {
-	public readonly type = CSSRuleTypeEnum.supportsRule;
-	public readonly cssRules: CSSRule[] = [];
-	public readonly conditionText = '';
+export default class CSSSupportsRule extends CSSConditionRule {
+	public [PropertySymbol.type] = CSSRuleTypeEnum.supportsRule;
 
 	/**
 	 * Returns css text.

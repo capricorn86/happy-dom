@@ -1,13 +1,14 @@
-import CSSRule from '../CSSRule.js';
 import CSSRuleTypeEnum from '../CSSRuleTypeEnum.js';
+import CSSConditionRule from './CSSConditionRule.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
- * CSSRule interface.
+ * CSSContainerRule interface.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/CSSContainerRule
  */
-export default class CSSContainerRule extends CSSRule {
-	public readonly type = CSSRuleTypeEnum.containerRule;
-	public readonly cssRules: CSSRule[] = [];
-	public readonly conditionText = '';
+export default class CSSContainerRule extends CSSConditionRule {
+	public [PropertySymbol.type] = CSSRuleTypeEnum.containerRule;
 
 	/**
 	 * Returns css text.
@@ -16,7 +17,7 @@ export default class CSSContainerRule extends CSSRule {
 	 */
 	public get cssText(): string {
 		let cssText = '';
-		for (const cssRule of this.cssRules) {
+		for (const cssRule of this[PropertySymbol.cssRules]) {
 			cssText += cssRule.cssText;
 		}
 		return `@container ${this.conditionText} { ${cssText} }`;

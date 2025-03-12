@@ -1,14 +1,25 @@
-import CSSRule from '../CSSRule.js';
 import CSSRuleTypeEnum from '../CSSRuleTypeEnum.js';
 import MediaList from '../MediaList.js';
+import CSSConditionRule from './CSSConditionRule.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
- * CSSRule interface.
+ * CSSMediaRule interface.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/CSSMediaRule
  */
-export default class CSSMediaRule extends CSSRule {
-	public readonly type = CSSRuleTypeEnum.mediaRule;
-	public readonly cssRules: CSSRule[] = [];
-	public readonly media = new MediaList();
+export default class CSSMediaRule extends CSSConditionRule {
+	public [PropertySymbol.type] = CSSRuleTypeEnum.mediaRule;
+	public [PropertySymbol.media] = new MediaList();
+
+	/**
+	 * Returns media.
+	 *
+	 * @returns Media.
+	 */
+	public get media(): MediaList {
+		return this[PropertySymbol.media];
+	}
 
 	/**
 	 * Returns css text.

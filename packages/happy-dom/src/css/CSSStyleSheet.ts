@@ -63,7 +63,8 @@ export default class CSSStyleSheet {
 			);
 		}
 
-		const rules = CSSParser.parseFromString(this, rule);
+		const parser = new CSSParser(this);
+		const rules = parser.parseFromString(rule);
 
 		if (rules.length === 0 || rules.length > 1) {
 			throw new this[PropertySymbol.window].DOMException(
@@ -137,7 +138,7 @@ export default class CSSStyleSheet {
 		}
 		if (this.#currentText !== text) {
 			this.#currentText = text;
-			(<CSSRule[]>this.cssRules) = CSSParser.parseFromString(this, text);
+			(<CSSRule[]>this.cssRules) = new CSSParser(this).parseFromString(text);
 		}
 	}
 }
