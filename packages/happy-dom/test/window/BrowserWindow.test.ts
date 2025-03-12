@@ -943,7 +943,122 @@ describe('BrowserWindow', () => {
 			expect(window.getComputedStyle(div).getPropertyValue('border-color')).toBe('pink');
 		});
 
-		it('Ingores invalid selectors in parsed CSS.', () => {
+		it('Handles CSS in root pseudo element (:root).', () => {
+			const div = document.createElement('div');
+			const style = document.createElement('style');
+
+			style.textContent = `
+              :root {
+                border-color: pink;
+                font-size: 20px;
+              }
+            `;
+
+			document.head.appendChild(style);
+			document.body.appendChild(div);
+
+			expect(
+				window.getComputedStyle(document.documentElement).getPropertyValue('border-color')
+			).toBe('pink');
+
+			expect(window.getComputedStyle(div).getPropertyValue('font-size')).toBe('20px');
+		});
+
+		it('Handles CSS in scope pseudo element (:scope).', () => {
+			const div = document.createElement('div');
+			const style = document.createElement('style');
+
+			style.textContent = `
+              :scope {
+                border-color: pink;
+                font-size: 20px;
+              }
+            `;
+
+			document.head.appendChild(style);
+			document.body.appendChild(div);
+
+			expect(
+				window.getComputedStyle(document.documentElement).getPropertyValue('border-color')
+			).toBe('pink');
+
+			expect(window.getComputedStyle(div).getPropertyValue('font-size')).toBe('20px');
+		});
+
+		it('Handles CSS in a defined scope pseudo element (@scope).', () => {
+			const div = document.createElement('div');
+			const style = document.createElement('style');
+
+			div.innerHTML = `
+                <div class="light-scheme">
+                    <p>
+                        Happy DOM
+                        <a href="https://github.com/capricorn86/happy-dom">Link</a>,
+                    </p>
+                </div>
+
+                <div class="dark-scheme">
+                    <p>
+                        Happy DOM
+                        <a href="https://github.com/capricorn86/happy-dom">Link</a>,
+                    </p>
+                </div>
+            `;
+
+			style.textContent = `
+              @scope (.light-scheme) {
+                :scope {
+                    background-color: plum;
+                }
+
+                a {
+                    color: darkmagenta;
+                }
+              }
+
+              @scope (.dark-scheme) {
+                :scope {
+                    background-color: darkmagenta;
+                    color: antiquewhite;
+                }
+
+                a {
+                    color: plum;
+                }
+              }
+            `;
+
+			document.head.appendChild(style);
+			document.body.appendChild(div);
+
+			expect(
+				window
+					.getComputedStyle(document.querySelector('.light-scheme')!)
+					.getPropertyValue('background-color')
+			).toBe('plum');
+
+			expect(
+				window
+					.getComputedStyle(document.querySelector('.light-scheme a')!)
+					.getPropertyValue('color')
+			).toBe('darkmagenta');
+
+			expect(
+				window
+					.getComputedStyle(document.querySelector('.dark-scheme')!)
+					.getPropertyValue('background-color')
+			).toBe('darkmagenta');
+
+			expect(
+				window.getComputedStyle(document.querySelector('.dark-scheme')!).getPropertyValue('color')
+			).toBe('antiquewhite');
+
+			expect(
+				window.getComputedStyle(document.querySelector('.dark-scheme a')!).getPropertyValue('color')
+			).toBe('plum');
+		});
+
+		it('Ignores invalid selectors in parsed CSS.', () => {
 			const parent = document.createElement('div');
 			const element = document.createElement('span');
 			const computedStyle = window.getComputedStyle(element);

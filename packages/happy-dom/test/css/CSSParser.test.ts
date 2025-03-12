@@ -13,7 +13,7 @@ describe('CSSParser', () => {
 	describe('parseFromString()', () => {
 		it('Parses CSS into an Array of CSSRule.', () => {
 			const cssStyleSheet = new CSSStyleSheet();
-			const cssRules = CSSParser.parseFromString(cssStyleSheet, CSSParserInput);
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(CSSParserInput);
 
 			expect(cssRules.length).toBe(11);
 
@@ -228,7 +228,7 @@ describe('CSSParser', () => {
                 }
             `;
 			const cssStyleSheet = new CSSStyleSheet();
-			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSStyleRule>cssRules[0]).cssText).toBe(
@@ -248,7 +248,7 @@ describe('CSSParser', () => {
             `;
 
 			const cssStyleSheet = new CSSStyleSheet();
-			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSMediaRule>cssRules[0]).media.length).toBe(1);
@@ -266,7 +266,7 @@ describe('CSSParser', () => {
 				'@media (forced-colors: active) { @media screen and (max-width: 36rem) { .foo { height: 0.5rem; } } }';
 
 			const cssStyleSheet = new CSSStyleSheet();
-			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSMediaRule>cssRules[0]).cssText).toBe(
@@ -278,7 +278,7 @@ describe('CSSParser', () => {
 			const css =
 				'@container (min-width: 36rem) { @media screen and (max-width: 36rem) { .foo { height: 0.5rem; } } }';
 			const cssStyleSheet = new CSSStyleSheet();
-			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSContainerRule>cssRules[0]).cssText).toBe(
@@ -290,7 +290,7 @@ describe('CSSParser', () => {
 			const css =
 				'@supports (display: flex) { @media screen and (max-width: 36rem) { .foo { height: 0.5rem; } } }';
 			const cssStyleSheet = new CSSStyleSheet();
-			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSSupportsRule>cssRules[0]).cssText).toBe(
@@ -302,7 +302,7 @@ describe('CSSParser', () => {
 			const css =
 				'@keyframes keyframes1 { @media screen and (max-width: 36rem) { .foo { height: 0.5rem; } } }';
 			const cssStyleSheet = new CSSStyleSheet();
-			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSKeyframesRule>cssRules[0]).cssText).toBe('@keyframes keyframes1 { }');
@@ -312,7 +312,7 @@ describe('CSSParser', () => {
 			const css =
 				'@container containerName (min-width: 36rem) { @container containerName (min-width: 36rem) { .foo { height: 0.5rem; } } }';
 			const cssStyleSheet = new CSSStyleSheet();
-			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSContainerRule>cssRules[0]).cssText).toBe(
@@ -324,7 +324,7 @@ describe('CSSParser', () => {
 			const css =
 				'@supports (display: flex) { @container (min-width: 36rem) { .foo { height: 0.5rem; } } }';
 			const cssStyleSheet = new CSSStyleSheet();
-			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSSupportsRule>cssRules[0]).cssText).toBe(
@@ -336,7 +336,7 @@ describe('CSSParser', () => {
 			const css =
 				'@media screen and (max-width: 36rem) { @container (min-width: 36rem) { .foo { height: 0.5rem; } } }';
 			const cssStyleSheet = new CSSStyleSheet();
-			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSMediaRule>cssRules[0]).cssText).toBe(
@@ -348,7 +348,7 @@ describe('CSSParser', () => {
 			const css =
 				'@keyframes keyframes1 { @container (min-width: 36rem) { .foo { height: 0.5rem; } } }';
 			const cssStyleSheet = new CSSStyleSheet();
-			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSKeyframesRule>cssRules[0]).cssText).toBe('@keyframes keyframes1 { }');
@@ -358,7 +358,7 @@ describe('CSSParser', () => {
 			const css =
 				'@supports (display: flex) { @supports (display: grid) { .foo { height: 0.5rem; } } }';
 			const cssStyleSheet = new CSSStyleSheet();
-			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSSupportsRule>cssRules[0]).cssText).toBe(
@@ -370,7 +370,7 @@ describe('CSSParser', () => {
 			const css =
 				'@media screen and (max-width: 36rem) { @supports (display: grid) { .foo { height: 0.5rem; } } }';
 			const cssStyleSheet = new CSSStyleSheet();
-			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSMediaRule>cssRules[0]).cssText).toBe(
@@ -382,7 +382,7 @@ describe('CSSParser', () => {
 			const css =
 				'@container (min-width: 36rem) { @supports (display: grid) { .foo { height: 0.5rem; } } }';
 			const cssStyleSheet = new CSSStyleSheet();
-			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSContainerRule>cssRules[0]).cssText).toBe(
@@ -394,7 +394,7 @@ describe('CSSParser', () => {
 			const css =
 				'@keyframes keyframes1 { @supports (display: grid) { .foo { height: 0.5rem; } } }';
 			const cssStyleSheet = new CSSStyleSheet();
-			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSKeyframesRule>cssRules[0]).cssText).toBe('@keyframes keyframes1 { }');
@@ -404,7 +404,7 @@ describe('CSSParser', () => {
 			const css =
 				'@supports (display: flex) { @keyframes keyframes1 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } }';
 			const cssStyleSheet = new CSSStyleSheet();
-			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSSupportsRule>cssRules[0]).cssText).toBe(
@@ -416,7 +416,7 @@ describe('CSSParser', () => {
 			const css =
 				'@media screen and (max-width: 36rem) { @keyframes keyframes1 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } }';
 			const cssStyleSheet = new CSSStyleSheet();
-			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSMediaRule>cssRules[0]).cssText).toBe(
@@ -428,7 +428,7 @@ describe('CSSParser', () => {
 			const css =
 				'@container (min-width: 36rem) { @keyframes keyframes1 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } }';
 			const cssStyleSheet = new CSSStyleSheet();
-			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSContainerRule>cssRules[0]).cssText).toBe(
@@ -440,7 +440,7 @@ describe('CSSParser', () => {
 			const css =
 				'@keyframes keyframes1 { @keyframes keyframes2 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } }';
 			const cssStyleSheet = new CSSStyleSheet();
-			const cssRules = CSSParser.parseFromString(cssStyleSheet, css);
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSKeyframesRule>cssRules[0]).cssText).toBe('@keyframes keyframes1 { }');

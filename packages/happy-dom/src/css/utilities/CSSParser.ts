@@ -17,14 +17,24 @@ const COMMENT_REGEXP = /\/\*[\s\S]*?\*\//gm;
  * CSS parser.
  */
 export default class CSSParser {
+	#parentStyleSheet: CSSStyleSheet;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param parentStyleSheet Parent style sheet.
+	 */
+	constructor(parentStyleSheet: CSSStyleSheet) {
+		this.#parentStyleSheet = parentStyleSheet;
+	}
 	/**
 	 * Parses HTML and returns a root element.
 	 *
-	 * @param parentStyleSheet Parent style sheet.
 	 * @param cssText CSS code.
-	 * @returns Root element.
+	 * @returns CSS rules.
 	 */
-	public static parseFromString(parentStyleSheet: CSSStyleSheet, cssText: string): CSSRule[] {
+	public parseFromString(cssText: string): CSSRule[] {
+		const parentStyleSheet = this.#parentStyleSheet;
 		const window = parentStyleSheet[PropertySymbol.window];
 		const css = cssText.replace(COMMENT_REGEXP, '');
 		const cssRules = [];
@@ -46,10 +56,14 @@ export default class CSSParser {
 					switch (ruleType) {
 						case '@keyframes':
 						case '@-webkit-keyframes':
-							const keyframesRule = new CSSKeyframesRule(PropertySymbol.illegalConstructor, window);
+							const keyframesRule = new CSSKeyframesRule(
+								PropertySymbol.illegalConstructor,
+								window,
+								this
+							);
 
-							(<string>keyframesRule.name) = ruleParameters;
-							keyframesRule.parentStyleSheet = parentStyleSheet;
+							keyframesRule[PropertySymbol.name] = ruleParameters;
+							keyframesRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
 							if (parentRule) {
 								if (
 									parentRule.type === CSSRuleTypeEnum.mediaRule ||
@@ -65,13 +79,13 @@ export default class CSSParser {
 							break;
 						case '@media':
 							const mediums = ruleParameters.split(',');
-							const mediaRule = new CSSMediaRule(PropertySymbol.illegalConstructor, window);
+							const mediaRule = new CSSMediaRule(PropertySymbol.illegalConstructor, window, this);
 
 							for (const medium of mediums) {
 								mediaRule.media.appendMedium(medium.trim());
 							}
 
-							mediaRule.parentStyleSheet = parentStyleSheet;
+							mediaRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
 							if (parentRule) {
 								if (
 									parentRule.type === CSSRuleTypeEnum.mediaRule ||
@@ -87,10 +101,14 @@ export default class CSSParser {
 							break;
 						case '@container':
 						case '@-webkit-container':
-							const containerRule = new CSSContainerRule(PropertySymbol.illegalConstructor, window);
+							const containerRule = new CSSContainerRule(
+								PropertySymbol.illegalConstructor,
+								window,
+								this
+							);
 
-							(<string>containerRule.conditionText) = ruleParameters;
-							containerRule.parentStyleSheet = parentStyleSheet;
+							containerRule[PropertySymbol.conditionText] = ruleParameters;
+							containerRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
 
 							if (parentRule) {
 								if (
@@ -108,10 +126,14 @@ export default class CSSParser {
 							break;
 						case '@supports':
 						case '@-webkit-supports':
-							const supportsRule = new CSSSupportsRule(PropertySymbol.illegalConstructor, window);
+							const supportsRule = new CSSSupportsRule(
+								PropertySymbol.illegalConstructor,
+								window,
+								this
+							);
 
-							(<string>supportsRule.conditionText) = ruleParameters;
-							supportsRule.parentStyleSheet = parentStyleSheet;
+							supportsRule[PropertySymbol.conditionText] = ruleParameters;
+							supportsRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
 							if (parentRule) {
 								if (
 									parentRule.type === CSSRuleTypeEnum.mediaRule ||
@@ -126,10 +148,14 @@ export default class CSSParser {
 							parentRule = supportsRule;
 							break;
 						case '@font-face':
-							const fontFaceRule = new CSSFontFaceRule(PropertySymbol.illegalConstructor, window);
+							const fontFaceRule = new CSSFontFaceRule(
+								PropertySymbol.illegalConstructor,
+								window,
+								this
+							);
 
 							fontFaceRule[PropertySymbol.cssText] = ruleParameters;
-							fontFaceRule.parentStyleSheet = parentStyleSheet;
+							fontFaceRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
 							if (parentRule) {
 								if (
 									parentRule.type === CSSRuleTypeEnum.mediaRule ||
@@ -146,16 +172,16 @@ export default class CSSParser {
 						default:
 							// Unknown rule.
 							// We will create a new rule to let it grab its content, but we will not add it to the cssRules array.
-							const newRule = new CSSRule(PropertySymbol.illegalConstructor, window);
-							newRule.parentStyleSheet = parentStyleSheet;
+							const newRule = new CSSStyleRule(PropertySymbol.illegalConstructor, window, this);
+							newRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
 							parentRule = newRule;
 							break;
 					}
 				} else if (parentRule && parentRule.type === CSSRuleTypeEnum.keyframesRule) {
-					const newRule = new CSSKeyframeRule(PropertySymbol.illegalConstructor, window);
-					(<string>newRule.keyText) = selectorText.trim();
-					newRule.parentStyleSheet = parentStyleSheet;
-					newRule.parentRule = parentRule;
+					const newRule = new CSSKeyframeRule(PropertySymbol.illegalConstructor, window, this);
+					newRule[PropertySymbol.keyText] = selectorText.trim();
+					newRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
+					newRule[PropertySymbol.parentRule] = parentRule;
 
 					(<CSSKeyframesRule>parentRule).cssRules.push(<CSSKeyframeRule>newRule);
 					parentRule = newRule;
@@ -166,19 +192,19 @@ export default class CSSParser {
 						parentRule.type === CSSRuleTypeEnum.supportsRule)
 				) {
 					if (this.validateSelectorText(selectorText)) {
-						const newRule = new CSSStyleRule(PropertySymbol.illegalConstructor, window);
-						(<string>newRule.selectorText) = selectorText;
-						newRule.parentStyleSheet = parentStyleSheet;
-						newRule.parentRule = parentRule;
+						const newRule = new CSSStyleRule(PropertySymbol.illegalConstructor, window, this);
+						newRule[PropertySymbol.selectorText] = selectorText;
+						newRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
+						newRule[PropertySymbol.parentRule] = parentRule;
 						(<CSSMediaRule>parentRule).cssRules.push(newRule);
 						parentRule = newRule;
 					}
 				} else {
 					if (this.validateSelectorText(selectorText)) {
-						const newRule = new CSSStyleRule(PropertySymbol.illegalConstructor, window);
-						(<string>newRule.selectorText) = selectorText;
-						newRule.parentStyleSheet = parentStyleSheet;
-						newRule.parentRule = parentRule;
+						const newRule = new CSSStyleRule(PropertySymbol.illegalConstructor, window, this);
+						newRule[PropertySymbol.selectorText] = selectorText;
+						newRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
+						newRule[PropertySymbol.parentRule] = parentRule;
 
 						if (!parentRule) {
 							cssRules.push(newRule);
@@ -221,7 +247,7 @@ export default class CSSParser {
 	 * @param selectorText Selector text.
 	 * @returns True if valid, false otherwise.
 	 */
-	private static validateSelectorText(selectorText: string): boolean {
+	private validateSelectorText(selectorText: string): boolean {
 		try {
 			SelectorParser.getSelectorGroups(selectorText);
 		} catch (e) {
