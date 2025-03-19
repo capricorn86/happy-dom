@@ -31,10 +31,8 @@ export default abstract class CSSRule {
 	public [PropertySymbol.cssParser]: CSSParser;
 
 	// Public properties
-	public abstract [PropertySymbol.type]: CSSRuleTypeEnum;
 	public [PropertySymbol.parentRule]: CSSRule = null;
 	public [PropertySymbol.parentStyleSheet]: CSSStyleSheet = null;
-	public [PropertySymbol.cssText] = '';
 
 	/**
 	 * Constructor.
@@ -75,9 +73,7 @@ export default abstract class CSSRule {
 	 *
 	 * @returns Type.
 	 */
-	public get type(): CSSRuleTypeEnum {
-		return this[PropertySymbol.type];
-	}
+	public abstract get type(): CSSRuleTypeEnum;
 
 	/**
 	 * Returns CSS text.

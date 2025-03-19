@@ -43,13 +43,10 @@ export default abstract class CSSGroupingRule extends CSSRule {
 		}
 
 		if (index !== undefined) {
-			if (index > this.cssRules.length) {
+			index = Number(index);
+			if (isNaN(index) || index > this.cssRules.length) {
 				throw new this[PropertySymbol.window].DOMException(
-					`Failed to execute 'insertRule' on '${
-						this.constructor.name
-					}': The index provided (${index}) is larger than the maximum index (${
-						this.cssRules.length - 1
-					}).`,
+					`Failed to execute 'insertRule' on '${this.constructor.name}': The index provided (${index}) is larger than the maximum index (${this.cssRules.length}).`,
 					DOMExceptionNameEnum.indexSizeError
 				);
 			}
@@ -59,7 +56,7 @@ export default abstract class CSSGroupingRule extends CSSRule {
 
 		const newIndex = this.cssRules.length;
 
-		this.cssRules.push(rules[0]);
+		this.cssRules.unshift(rules[0]);
 
 		return newIndex;
 	}

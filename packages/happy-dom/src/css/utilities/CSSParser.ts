@@ -10,6 +10,7 @@ import CSSSupportsRule from '../rules/CSSSupportsRule.js';
 import CSSFontFaceRule from '../rules/CSSFontFaceRule.js';
 import SelectorParser from '../../query-selector/SelectorParser.js';
 import CSSRuleTypeEnum from '../CSSRuleTypeEnum.js';
+import CSSScopeRule from '../rules/CSSScopeRule.js';
 
 const COMMENT_REGEXP = /\/\*[\s\S]*?\*\//gm;
 
@@ -62,6 +63,8 @@ export default class CSSParser {
 								this
 							);
 
+							keyframesRule[PropertySymbol.rulePrefix] =
+								ruleType === '@-webkit-keyframes' ? '-webkit-' : '';
 							keyframesRule[PropertySymbol.name] = ruleParameters;
 							keyframesRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
 							if (parentRule) {
@@ -106,7 +109,8 @@ export default class CSSParser {
 								window,
 								this
 							);
-
+							containerRule[PropertySymbol.rulePrefix] =
+								ruleType === '@-webkit-container' ? '-webkit-' : '';
 							containerRule[PropertySymbol.conditionText] = ruleParameters;
 							containerRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
 
@@ -132,6 +136,8 @@ export default class CSSParser {
 								this
 							);
 
+							supportsRule[PropertySymbol.rulePrefix] =
+								ruleType === '@-webkit-supports' ? '-webkit-' : '';
 							supportsRule[PropertySymbol.conditionText] = ruleParameters;
 							supportsRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
 							if (parentRule) {
@@ -169,6 +175,45 @@ export default class CSSParser {
 							}
 							parentRule = fontFaceRule;
 							break;
+						case '@scope':
+						case '@-webkit-scope':
+							const scopeRule = new CSSScopeRule(PropertySymbol.illegalConstructor, window, this);
+
+							scopeRule[PropertySymbol.rulePrefix] =
+								ruleType === '@-webkit-scope' ? '-webkit-' : '';
+							scopeRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
+
+							if (ruleParameters) {
+								const scopeRuleParts = ruleParameters.split(/\s+to\s+/);
+								if (
+									scopeRuleParts[0] &&
+									scopeRuleParts[0][0] === '(' &&
+									scopeRuleParts[0][scopeRuleParts[0].length - 1] === ')'
+								) {
+									scopeRule[PropertySymbol.start] = scopeRuleParts[0].slice(1, -1);
+								}
+								if (
+									scopeRuleParts[1] &&
+									scopeRuleParts[1][0] === '(' &&
+									scopeRuleParts[1][scopeRuleParts[1].length - 1] === ')'
+								) {
+									scopeRule[PropertySymbol.end] = scopeRuleParts[1].slice(1, -1);
+								}
+							}
+
+							if (parentRule) {
+								if (
+									parentRule.type === CSSRuleTypeEnum.mediaRule ||
+									parentRule.type === CSSRuleTypeEnum.containerRule ||
+									parentRule.type === CSSRuleTypeEnum.supportsRule
+								) {
+									(<CSSMediaRule>parentRule).cssRules.push(scopeRule);
+								}
+							} else {
+								cssRules.push(scopeRule);
+							}
+							parentRule = scopeRule;
+							break;
 						default:
 							// Unknown rule.
 							// We will create a new rule to let it grab its content, but we will not add it to the cssRules array.
@@ -179,7 +224,13 @@ export default class CSSParser {
 					}
 				} else if (parentRule && parentRule.type === CSSRuleTypeEnum.keyframesRule) {
 					const newRule = new CSSKeyframeRule(PropertySymbol.illegalConstructor, window, this);
-					newRule[PropertySymbol.keyText] = selectorText.trim();
+					let keyText = selectorText.trim();
+					if (keyText === 'from') {
+						keyText = '0%';
+					} else if (keyText === 'to') {
+						keyText = '100%';
+					}
+					newRule[PropertySymbol.keyText] = keyText;
 					newRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
 					newRule[PropertySymbol.parentRule] = parentRule;
 

@@ -9,17 +9,26 @@ import * as PropertySymbol from '../../PropertySymbol.js';
  */
 export default class CSSContainerRule extends CSSConditionRule {
 	public [PropertySymbol.type] = CSSRuleTypeEnum.containerRule;
+	public [PropertySymbol.rulePrefix] = '';
 
 	/**
-	 * Returns css text.
-	 *
-	 * @returns CSS text.
+	 * @override
 	 */
-	public get cssText(): string {
+	public override get type(): CSSRuleTypeEnum {
+		return CSSRuleTypeEnum.containerRule;
+	}
+
+	/**
+	 * @override
+	 */
+	public override get cssText(): string {
 		let cssText = '';
 		for (const cssRule of this[PropertySymbol.cssRules]) {
-			cssText += cssRule.cssText;
+			cssText += '\n  ' + cssRule.cssText;
 		}
-		return `@container ${this.conditionText} { ${cssText} }`;
+		cssText += '\n';
+		return `@${this[PropertySymbol.rulePrefix]}container ${
+			this[PropertySymbol.conditionText]
+		} {${cssText}}`;
 	}
 }

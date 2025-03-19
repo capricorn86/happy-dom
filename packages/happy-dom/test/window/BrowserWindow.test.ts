@@ -990,14 +990,21 @@ describe('BrowserWindow', () => {
 			const style = document.createElement('style');
 
 			div.innerHTML = `
-                <div class="light-scheme">
+                <div class="light-theme">
                     <p>
                         Happy DOM
                         <a href="https://github.com/capricorn86/happy-dom">Link</a>,
                     </p>
                 </div>
 
-                <div class="dark-scheme">
+                <div class="dark-theme">
+                    <p>
+                        Happy DOM
+                        <a href="https://github.com/capricorn86/happy-dom">Link</a>,
+                    </p>
+                </div>
+
+                <div class="cool-theme">
                     <p>
                         Happy DOM
                         <a href="https://github.com/capricorn86/happy-dom">Link</a>,
@@ -1006,7 +1013,7 @@ describe('BrowserWindow', () => {
             `;
 
 			style.textContent = `
-              @scope (.light-scheme) {
+              @scope (.light-theme) {
                 :scope {
                     background-color: plum;
                 }
@@ -1016,7 +1023,7 @@ describe('BrowserWindow', () => {
                 }
               }
 
-              @scope (.dark-scheme) {
+              @scope (.dark-theme) {
                 :scope {
                     background-color: darkmagenta;
                     color: antiquewhite;
@@ -1026,6 +1033,20 @@ describe('BrowserWindow', () => {
                     color: plum;
                 }
               }
+
+              @scope (.cool-theme) to (a) {
+                :scope {
+                    background-color: lightblue;
+                }
+
+                p {
+                    font-size: 20px;
+                }
+
+                a {
+                    color: blue;
+                }
+              }
             `;
 
 			document.head.appendChild(style);
@@ -1033,29 +1054,161 @@ describe('BrowserWindow', () => {
 
 			expect(
 				window
-					.getComputedStyle(document.querySelector('.light-scheme')!)
+					.getComputedStyle(document.querySelector('.light-theme')!)
 					.getPropertyValue('background-color')
 			).toBe('plum');
 
 			expect(
-				window
-					.getComputedStyle(document.querySelector('.light-scheme a')!)
-					.getPropertyValue('color')
+				window.getComputedStyle(document.querySelector('.light-theme a')!).getPropertyValue('color')
 			).toBe('darkmagenta');
 
 			expect(
 				window
-					.getComputedStyle(document.querySelector('.dark-scheme')!)
+					.getComputedStyle(document.querySelector('.dark-theme')!)
 					.getPropertyValue('background-color')
 			).toBe('darkmagenta');
 
 			expect(
-				window.getComputedStyle(document.querySelector('.dark-scheme')!).getPropertyValue('color')
+				window.getComputedStyle(document.querySelector('.dark-theme')!).getPropertyValue('color')
 			).toBe('antiquewhite');
 
 			expect(
-				window.getComputedStyle(document.querySelector('.dark-scheme a')!).getPropertyValue('color')
+				window.getComputedStyle(document.querySelector('.dark-theme a')!).getPropertyValue('color')
 			).toBe('plum');
+
+			expect(
+				window
+					.getComputedStyle(document.querySelector('.cool-theme')!)
+					.getPropertyValue('background-color')
+			).toBe('lightblue');
+
+			// Should be empty as "a" ends the scope
+			expect(
+				window.getComputedStyle(document.querySelector('.cool-theme a')!).getPropertyValue('color')
+			).toBe('');
+
+			expect(
+				window
+					.getComputedStyle(document.querySelector('.cool-theme a')!)
+					.getPropertyValue('font-size')
+			).toBe('20px');
+		});
+
+		it('Handles CSS in a defined :host element with selector (":host(:root .class1.class2)").', () => {
+			/**
+			 *
+			 */
+			class TestElement extends HTMLElement {
+				/**
+				 *
+				 */
+				constructor() {
+					super();
+					const shadow = this.attachShadow({ mode: 'open' });
+					shadow.innerHTML = `
+                        <style>
+                            :host(:root .class1.class2) {
+                                background-color: pink;
+                            }
+                        </style>
+                        <span>Test</span>
+                    `;
+				}
+			}
+
+			window.customElements.define('test-element', TestElement);
+
+			const div = document.createElement('div');
+			const testElement = document.createElement('test-element');
+
+			div.appendChild(testElement);
+			document.body.appendChild(div);
+
+			const computedStyle = window.getComputedStyle(testElement);
+
+			expect(computedStyle.getPropertyValue('background-color')).toBe('');
+
+			testElement.className = 'class1 class2';
+
+			expect(computedStyle.getPropertyValue('background-color')).toBe('pink');
+		});
+
+		it('Handles CSS in a defined :host-context element with selector (":host-context(:root .class1.class2)").', () => {
+			/**
+			 *
+			 */
+			class TestElement extends HTMLElement {
+				/**
+				 *
+				 */
+				constructor() {
+					super();
+					const shadow = this.attachShadow({ mode: 'open' });
+					shadow.innerHTML = `
+                        <style>
+                            :host-context(:root .class1.class2) {
+                                background-color: pink;
+                            }
+                        </style>
+                        <span>Test</span>
+                    `;
+				}
+			}
+
+			window.customElements.define('test-element', TestElement);
+
+			const div = document.createElement('div');
+			const testElement = document.createElement('test-element');
+
+			div.appendChild(testElement);
+			document.body.appendChild(div);
+
+			const computedStyle = window.getComputedStyle(testElement);
+
+			expect(computedStyle.getPropertyValue('background-color')).toBe('');
+
+			testElement.className = 'class1 class2';
+
+			expect(computedStyle.getPropertyValue('background-color')).toBe('pink');
+		});
+
+		it('Handles CSS in a defined :host-context element with selector (":host-context(:root .class1.class2) span").', () => {
+			/**
+			 *
+			 */
+			class TestElement extends HTMLElement {
+				/**
+				 *
+				 */
+				constructor() {
+					super();
+					const shadow = this.attachShadow({ mode: 'open' });
+					shadow.innerHTML = `
+                        <style>
+                            :host-context(:root .class1.class2) span {
+                                background-color: pink;
+                            }
+                        </style>
+                        <span>Test</span>
+                    `;
+				}
+			}
+
+			window.customElements.define('test-element', TestElement);
+
+			const div = document.createElement('div');
+			const testElement = document.createElement('test-element');
+
+			div.appendChild(testElement);
+			document.body.appendChild(div);
+
+			const computedStyle = window.getComputedStyle(testElement.shadowRoot!.querySelector('span')!);
+
+			expect(computedStyle.getPropertyValue('background-color')).toBe('');
+
+			testElement.className = 'class1 class2';
+
+			expect(computedStyle.getPropertyValue('background-color')).toBe('pink');
 		});
 
 		it('Ignores invalid selectors in parsed CSS.', () => {

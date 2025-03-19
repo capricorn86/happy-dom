@@ -1,4 +1,5 @@
 import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * CSSStyleValue interface.
@@ -12,10 +13,15 @@ export default class CSSStyleValue {
 	/**
 	 * Constructor.
 	 *
+	 * @param illegalConstructorSymbol
 	 * @param style Style.
 	 * @param property Property.
 	 */
-	constructor(style: CSSStyleDeclaration, property: string) {
+	constructor(illegalConstructorSymbol: Symbol, style: CSSStyleDeclaration, property: string) {
+		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
+			throw new TypeError('Illegal constructor');
+		}
+
 		this.#style = style;
 		this.#property = property;
 	}

@@ -70,7 +70,7 @@ describe('CSSParser', () => {
 			expect((<CSSMediaRule>cssRules[2]).media[0]).toBe('screen and (max-width: 36rem)');
 			expect((<CSSMediaRule>cssRules[2]).media.mediaText).toBe('screen and (max-width: 36rem)');
 			expect((<CSSMediaRule>cssRules[2]).cssText).toBe(
-				'@media screen and (max-width: 36rem) { .container { height: 0.5rem; animation: keyframes2 2s linear infinite; } }'
+				'@media screen and (max-width: 36rem) {\n  .container { height: 0.5rem; animation: keyframes2 2s linear infinite; }\n}'
 			);
 			expect((<CSSMediaRule>cssRules[2]).cssRules.length).toBe(1);
 			const children1 = <CSSStyleRule[]>(<CSSMediaRule>cssRules[2]).cssRules;
@@ -92,32 +92,32 @@ describe('CSSParser', () => {
 			expect((<CSSKeyframesRule>cssRules[3]).parentStyleSheet).toBe(cssStyleSheet);
 			expect((<CSSKeyframesRule>cssRules[3]).name).toBe('keyframes1');
 			expect((<CSSKeyframesRule>cssRules[3]).cssText).toBe(
-				'@keyframes keyframes1 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }'
+				'@keyframes keyframes1 { \n  0% { transform: rotate(0deg); }\n  100% { transform: rotate(360deg); }\n}'
 			);
 			expect((<CSSMediaRule>cssRules[3]).cssRules.length).toBe(2);
 			const children2 = <CSSKeyframeRule[]>(<CSSKeyframesRule>cssRules[3]).cssRules;
 			expect(children2[0].parentRule).toBe(cssRules[3]);
 			expect(children2[0].parentStyleSheet).toBe(cssStyleSheet);
-			expect(children2[0].keyText).toBe('from');
+			expect(children2[0].keyText).toBe('0%');
 			expect(children2[0].style.length).toBe(1);
 			expect(children2[0].style.parentRule).toBe(children2[0]);
 			expect(children2[0].style[0]).toBe('transform');
 			expect(children2[0].style.transform).toBe('rotate(0deg)');
-			expect(children2[0].cssText).toBe('from { transform: rotate(0deg); }');
+			expect(children2[0].cssText).toBe('0% { transform: rotate(0deg); }');
 			expect(children2[1].parentRule).toBe(cssRules[3]);
 			expect(children2[1].parentStyleSheet).toBe(cssStyleSheet);
-			expect(children2[1].keyText).toBe('to');
+			expect(children2[1].keyText).toBe('100%');
 			expect(children2[1].style.length).toBe(1);
 			expect(children2[1].style[0]).toBe('transform');
 			expect(children2[1].style.transform).toBe('rotate(360deg)');
-			expect(children2[1].cssText).toBe('to { transform: rotate(360deg); }');
+			expect(children2[1].cssText).toBe('100% { transform: rotate(360deg); }');
 
 			// CSSKeyframesRule
 			expect((<CSSKeyframesRule>cssRules[4]).parentRule).toBe(null);
 			expect((<CSSKeyframesRule>cssRules[4]).parentStyleSheet).toBe(cssStyleSheet);
 			expect((<CSSKeyframesRule>cssRules[4]).name).toBe('keyframes2');
 			expect((<CSSKeyframesRule>cssRules[4]).cssText).toBe(
-				'@keyframes keyframes2 { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }'
+				'@-webkit-keyframes keyframes2 { \n  0% { transform: rotate(0deg); }\n  100% { transform: rotate(360deg); }\n}'
 			);
 			expect((<CSSMediaRule>cssRules[4]).cssRules.length).toBe(2);
 			const children3 = <CSSKeyframeRule[]>(<CSSKeyframesRule>cssRules[4]).cssRules;
@@ -142,7 +142,7 @@ describe('CSSParser', () => {
 			expect((<CSSContainerRule>cssRules[5]).parentStyleSheet).toBe(cssStyleSheet);
 			expect((<CSSContainerRule>cssRules[5]).conditionText).toBe('(min-width: 36rem)');
 			expect((<CSSContainerRule>cssRules[5]).cssText).toBe(
-				'@container (min-width: 36rem) { .container { color: red; } }'
+				'@container (min-width: 36rem) {\n  .container { color: red; }\n}'
 			);
 			expect((<CSSMediaRule>cssRules[5]).cssRules.length).toBe(1);
 			const children4 = <CSSStyleRule[]>(<CSSContainerRule>cssRules[5]).cssRules;
@@ -162,7 +162,7 @@ describe('CSSParser', () => {
 				'containerName (min-width: 36rem)'
 			);
 			expect((<CSSContainerRule>cssRules[6]).cssText).toBe(
-				'@container containerName (min-width: 36rem) { .container { color: red; } }'
+				'@container containerName (min-width: 36rem) {\n  .container { color: red; }\n}'
 			);
 			expect((<CSSMediaRule>cssRules[6]).cssRules.length).toBe(1);
 			const children5 = <CSSStyleRule[]>(<CSSContainerRule>cssRules[6]).cssRules;
@@ -180,7 +180,7 @@ describe('CSSParser', () => {
 			expect((<CSSSupportsRule>cssRules[7]).parentStyleSheet).toBe(cssStyleSheet);
 			expect((<CSSSupportsRule>cssRules[7]).conditionText).toBe('(display: flex)');
 			expect((<CSSSupportsRule>cssRules[7]).cssText).toBe(
-				'@supports (display: flex) { .container { color: green; } }'
+				'@supports (display: flex) {\n  .container { color: green; }\n}'
 			);
 			expect((<CSSSupportsRule>cssRules[7]).cssRules.length).toBe(1);
 			const children6 = <CSSStyleRule[]>(<CSSSupportsRule>cssRules[7]).cssRules;
@@ -257,7 +257,7 @@ describe('CSSParser', () => {
 			expect((<CSSStyleRule>(<CSSMediaRule>cssRules[0]).cssRules[0]).selectorText).toBe('.foo');
 			expect((<CSSStyleRule>(<CSSMediaRule>cssRules[0]).cssRules[0]).style.color).toBe('red');
 			expect((<CSSMediaRule>cssRules[0]).cssText).toBe(
-				'@media (forced-colors: active) { .foo { color: red; } }'
+				'@media (forced-colors: active) {\n  .foo { color: red; }\n}'
 			);
 		});
 
@@ -270,7 +270,7 @@ describe('CSSParser', () => {
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSMediaRule>cssRules[0]).cssText).toBe(
-				'@media (forced-colors: active) { @media screen and (max-width: 36rem) { .foo { height: 0.5rem; } } }'
+				'@media (forced-colors: active) {\n  @media screen and (max-width: 36rem) {\n  .foo { height: 0.5rem; }\n}\n}'
 			);
 		});
 
@@ -282,7 +282,7 @@ describe('CSSParser', () => {
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSContainerRule>cssRules[0]).cssText).toBe(
-				'@container (min-width: 36rem) { @media screen and (max-width: 36rem) { .foo { height: 0.5rem; } } }'
+				'@container (min-width: 36rem) {\n  @media screen and (max-width: 36rem) {\n  .foo { height: 0.5rem; }\n}\n}'
 			);
 		});
 
@@ -294,7 +294,7 @@ describe('CSSParser', () => {
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSSupportsRule>cssRules[0]).cssText).toBe(
-				'@supports (display: flex) { @media screen and (max-width: 36rem) { .foo { height: 0.5rem; } } }'
+				'@supports (display: flex) {\n  @media screen and (max-width: 36rem) {\n  .foo { height: 0.5rem; }\n}\n}'
 			);
 		});
 
@@ -305,7 +305,7 @@ describe('CSSParser', () => {
 			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
-			expect((<CSSKeyframesRule>cssRules[0]).cssText).toBe('@keyframes keyframes1 { }');
+			expect((<CSSKeyframesRule>cssRules[0]).cssText).toBe('@keyframes keyframes1 { \n}');
 		});
 
 		it('Supports @container rule inside a @container rule', () => {
@@ -316,7 +316,7 @@ describe('CSSParser', () => {
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSContainerRule>cssRules[0]).cssText).toBe(
-				'@container containerName (min-width: 36rem) { @container containerName (min-width: 36rem) { .foo { height: 0.5rem; } } }'
+				'@container containerName (min-width: 36rem) {\n  @container containerName (min-width: 36rem) {\n  .foo { height: 0.5rem; }\n}\n}'
 			);
 		});
 
@@ -328,7 +328,7 @@ describe('CSSParser', () => {
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSSupportsRule>cssRules[0]).cssText).toBe(
-				'@supports (display: flex) { @container (min-width: 36rem) { .foo { height: 0.5rem; } } }'
+				'@supports (display: flex) {\n  @container (min-width: 36rem) {\n  .foo { height: 0.5rem; }\n}\n}'
 			);
 		});
 
@@ -340,7 +340,7 @@ describe('CSSParser', () => {
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSMediaRule>cssRules[0]).cssText).toBe(
-				'@media screen and (max-width: 36rem) { @container (min-width: 36rem) { .foo { height: 0.5rem; } } }'
+				'@media screen and (max-width: 36rem) {\n  @container (min-width: 36rem) {\n  .foo { height: 0.5rem; }\n}\n}'
 			);
 		});
 
@@ -351,7 +351,7 @@ describe('CSSParser', () => {
 			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
-			expect((<CSSKeyframesRule>cssRules[0]).cssText).toBe('@keyframes keyframes1 { }');
+			expect((<CSSKeyframesRule>cssRules[0]).cssText).toBe('@keyframes keyframes1 { \n}');
 		});
 
 		it('Supports @supports rule inside a @supports rule', () => {
@@ -362,7 +362,7 @@ describe('CSSParser', () => {
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSSupportsRule>cssRules[0]).cssText).toBe(
-				'@supports (display: flex) { @supports (display: grid) { .foo { height: 0.5rem; } } }'
+				'@supports (display: flex) {\n  @supports (display: grid) {\n  .foo { height: 0.5rem; }\n}\n}'
 			);
 		});
 
@@ -374,7 +374,7 @@ describe('CSSParser', () => {
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSMediaRule>cssRules[0]).cssText).toBe(
-				'@media screen and (max-width: 36rem) { @supports (display: grid) { .foo { height: 0.5rem; } } }'
+				'@media screen and (max-width: 36rem) {\n  @supports (display: grid) {\n  .foo { height: 0.5rem; }\n}\n}'
 			);
 		});
 
@@ -386,7 +386,7 @@ describe('CSSParser', () => {
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSContainerRule>cssRules[0]).cssText).toBe(
-				'@container (min-width: 36rem) { @supports (display: grid) { .foo { height: 0.5rem; } } }'
+				'@container (min-width: 36rem) {\n  @supports (display: grid) {\n  .foo { height: 0.5rem; }\n}\n}'
 			);
 		});
 
@@ -397,7 +397,7 @@ describe('CSSParser', () => {
 			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
-			expect((<CSSKeyframesRule>cssRules[0]).cssText).toBe('@keyframes keyframes1 { }');
+			expect((<CSSKeyframesRule>cssRules[0]).cssText).toBe('@keyframes keyframes1 { \n}');
 		});
 
 		it('Supports @keyframes rule inside a @supports rule', () => {
@@ -408,7 +408,7 @@ describe('CSSParser', () => {
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSSupportsRule>cssRules[0]).cssText).toBe(
-				'@supports (display: flex) { @keyframes keyframes1 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } }'
+				'@supports (display: flex) {\n  @keyframes keyframes1 { \n  0% { transform: rotate(0deg); }\n  100% { transform: rotate(360deg); }\n}\n}'
 			);
 		});
 
@@ -420,7 +420,7 @@ describe('CSSParser', () => {
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSMediaRule>cssRules[0]).cssText).toBe(
-				'@media screen and (max-width: 36rem) { @keyframes keyframes1 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } }'
+				'@media screen and (max-width: 36rem) {\n  @keyframes keyframes1 { \n  0% { transform: rotate(0deg); }\n  100% { transform: rotate(360deg); }\n}\n}'
 			);
 		});
 
@@ -432,7 +432,7 @@ describe('CSSParser', () => {
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSContainerRule>cssRules[0]).cssText).toBe(
-				'@container (min-width: 36rem) { @keyframes keyframes1 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } }'
+				'@container (min-width: 36rem) {\n  @keyframes keyframes1 { \n  0% { transform: rotate(0deg); }\n  100% { transform: rotate(360deg); }\n}\n}'
 			);
 		});
 
@@ -443,7 +443,109 @@ describe('CSSParser', () => {
 			const cssRules = new CSSParser(cssStyleSheet).parseFromString(css);
 
 			expect(cssRules.length).toBe(1);
-			expect((<CSSKeyframesRule>cssRules[0]).cssText).toBe('@keyframes keyframes1 { }');
+			expect((<CSSKeyframesRule>cssRules[0]).cssText).toBe('@keyframes keyframes1 { \n}');
+		});
+
+		it('Supports @scope rule', () => {
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(`
+                @scope {
+                    .foo { color: red; }
+                }
+            `);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSContainerRule>cssRules[0]).cssText).toBe('@scope {\n  .foo { color: red; }\n}');
+
+			const cssRules2 = new CSSParser(cssStyleSheet).parseFromString(`
+                @scope (.start div) to (.end div) {
+                    .foo { color: red; }
+                }
+            `);
+
+			expect(cssRules2.length).toBe(1);
+
+			expect((<CSSContainerRule>cssRules2[0]).cssText).toBe(
+				'@scope (.start div) to (.end div) {\n  .foo { color: red; }\n}'
+			);
+		});
+
+		it('Supports @scope rule inside a @scope rule', () => {
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(`
+                @scope {
+                    @scope {
+                        .foo { color: red; }
+                    }
+                }
+            `);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSContainerRule>cssRules[0]).cssText).toBe(
+				'@scope {\n  @scope {\n  .foo { color: red; }\n}\n}'
+			);
+		});
+
+		it('Supports @scope rule inside a @container rule', () => {
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(`
+                @container (min-width: 36rem) {
+                    @scope {
+                        .foo { color: red; }
+                    }
+                }
+            `);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSContainerRule>cssRules[0]).cssText).toBe(
+				'@container (min-width: 36rem) {\n  @scope {\n  .foo { color: red; }\n}\n}'
+			);
+		});
+
+		it('Supports @scope rule inside a @media rule', () => {
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(`
+                @media screen and (max-width: 36rem) {
+                    @scope {
+                        .foo { color: red; }
+                    }
+                }
+            `);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSMediaRule>cssRules[0]).cssText).toBe(
+				'@media screen and (max-width: 36rem) {\n  @scope {\n  .foo { color: red; }\n}\n}'
+			);
+		});
+
+		it('Supports @scope rule inside a @supports rule', () => {
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(`
+                @supports (display: flex) {
+                    @scope {
+                        .foo { color: red; }
+                    }
+                }
+            `);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSSupportsRule>cssRules[0]).cssText).toBe(
+				'@supports (display: flex) {\n  @scope {\n  .foo { color: red; }\n}\n}'
+			);
+		});
+
+		it('Ignores @scope rule inside a @keyframes rule', () => {
+			const cssStyleSheet = new CSSStyleSheet();
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(`
+                @keyframes keyframes1 {
+                    @scope {
+                        .foo { color: red; }
+                    }
+                }
+            `);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSKeyframesRule>cssRules[0]).cssText).toBe('@keyframes keyframes1 { \n}');
 		});
 	});
 });

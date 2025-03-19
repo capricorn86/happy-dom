@@ -9,8 +9,26 @@ import * as PropertySymbol from '../../PropertySymbol.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/CSSMediaRule
  */
 export default class CSSMediaRule extends CSSConditionRule {
-	public [PropertySymbol.type] = CSSRuleTypeEnum.mediaRule;
-	public [PropertySymbol.media] = new MediaList();
+	public [PropertySymbol.media] = new MediaList(PropertySymbol.illegalConstructor, this);
+
+	/**
+	 * @override
+	 */
+	public override get type(): CSSRuleTypeEnum {
+		return CSSRuleTypeEnum.mediaRule;
+	}
+
+	/**
+	 * @override
+	 */
+	public override get cssText(): string {
+		let cssText = '';
+		for (const cssRule of this[PropertySymbol.cssRules]) {
+			cssText += '\n  ' + cssRule.cssText;
+		}
+		cssText += cssText ? '\n' : '  ';
+		return `@media ${this.conditionText} {${cssText}}`;
+	}
 
 	/**
 	 * Returns media.
@@ -19,19 +37,6 @@ export default class CSSMediaRule extends CSSConditionRule {
 	 */
 	public get media(): MediaList {
 		return this[PropertySymbol.media];
-	}
-
-	/**
-	 * Returns css text.
-	 *
-	 * @returns CSS text.
-	 */
-	public get cssText(): string {
-		let cssText = '';
-		for (const cssRule of this.cssRules) {
-			cssText += cssRule.cssText;
-		}
-		return `@media ${this.conditionText} { ${cssText} }`;
 	}
 
 	/**

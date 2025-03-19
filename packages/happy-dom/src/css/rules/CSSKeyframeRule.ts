@@ -7,9 +7,23 @@ import CSSRuleTypeEnum from '../CSSRuleTypeEnum.js';
  * CSSKeyframeRule interface.
  */
 export default class CSSKeyframeRule extends CSSRule {
-	public [PropertySymbol.type] = CSSRuleTypeEnum.keyframeRule;
 	public [PropertySymbol.keyText] = '';
+	public [PropertySymbol.cssText] = '';
 	#style: CSSStyleDeclaration | null = null;
+
+	/**
+	 * @override
+	 */
+	public override get type(): CSSRuleTypeEnum {
+		return CSSRuleTypeEnum.keyframeRule;
+	}
+
+	/**
+	 * @override
+	 */
+	public override get cssText(): string {
+		return `${this[PropertySymbol.keyText]} { ${this.style.cssText} }`;
+	}
 
 	/**
 	 * Returns style.
@@ -26,15 +40,6 @@ export default class CSSKeyframeRule extends CSSRule {
 			this.#style.cssText = this[PropertySymbol.cssText];
 		}
 		return this.#style;
-	}
-
-	/**
-	 * Returns css text.
-	 *
-	 * @returns CSS text.
-	 */
-	public get cssText(): string {
-		return `${this[PropertySymbol.keyText]} { ${this.style.cssText} }`;
 	}
 
 	/**

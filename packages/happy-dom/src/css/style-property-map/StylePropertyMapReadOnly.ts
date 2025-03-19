@@ -14,9 +14,14 @@ export default class StylePropertyMapReadOnly {
 	/**
 	 * Constructor.
 	 *
+	 * @param illegalConstructorSymbol Illegal constructor symbol.
 	 * @param style Style.
 	 */
-	constructor(style: CSSStyleDeclaration) {
+	constructor(illegalConstructorSymbol: Symbol, style: CSSStyleDeclaration) {
+		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
+			throw new TypeError('Illegal constructor');
+		}
+
 		this[PropertySymbol.style] = style;
 	}
 
@@ -92,7 +97,11 @@ export default class StylePropertyMapReadOnly {
 	 * @returns Value.
 	 */
 	public get(property: string): CSSStyleValue {
-		return new CSSStyleValue(this[PropertySymbol.style], property);
+		return new CSSStyleValue(
+			PropertySymbol.illegalConstructor,
+			this[PropertySymbol.style],
+			property
+		);
 	}
 
 	/**
@@ -102,7 +111,9 @@ export default class StylePropertyMapReadOnly {
 	 * @returns Values.
 	 */
 	public getAll(property: string): CSSStyleValue[] {
-		return [new CSSStyleValue(this[PropertySymbol.style], property)];
+		return [
+			new CSSStyleValue(PropertySymbol.illegalConstructor, this[PropertySymbol.style], property)
+		];
 	}
 
 	/**
@@ -112,6 +123,6 @@ export default class StylePropertyMapReadOnly {
 	 * @returns True if the property is present.
 	 */
 	public has(property: string): boolean {
-		return this[PropertySymbol.style][property] !== undefined;
+		return !!this[PropertySymbol.style].getPropertyValue(property);
 	}
 }

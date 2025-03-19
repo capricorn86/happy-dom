@@ -7,17 +7,24 @@ import * as PropertySymbol from '../../PropertySymbol.js';
  */
 export default class CSSSupportsRule extends CSSConditionRule {
 	public [PropertySymbol.type] = CSSRuleTypeEnum.supportsRule;
+	public [PropertySymbol.rulePrefix] = '';
 
 	/**
-	 * Returns css text.
-	 *
-	 * @returns CSS text.
+	 * @override
 	 */
-	public get cssText(): string {
+	public override get type(): CSSRuleTypeEnum {
+		return CSSRuleTypeEnum.supportsRule;
+	}
+
+	/**
+	 * @override
+	 */
+	public override get cssText(): string {
 		let cssText = '';
-		for (const cssRule of this.cssRules) {
-			cssText += cssRule.cssText;
+		for (const cssRule of this[PropertySymbol.cssRules]) {
+			cssText += '\n  ' + cssRule.cssText;
 		}
-		return `@supports ${this.conditionText} { ${cssText} }`;
+		cssText += '\n';
+		return `@${this[PropertySymbol.rulePrefix]}supports ${this.conditionText} {${cssText}}`;
 	}
 }

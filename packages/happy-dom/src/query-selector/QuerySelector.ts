@@ -277,13 +277,14 @@ export default class QuerySelector {
 	 * @param element Element to match.
 	 * @param selector Selector to match with.
 	 * @param [options] Options.
+	 * @param [options.scope] Scope.
 	 * @param [options.ignoreErrors] Ignores errors.
 	 * @returns Result.
 	 */
 	public static matches(
 		element: Element,
 		selector: string,
-		options?: { ignoreErrors?: boolean }
+		options?: { scope?: Element | Document | DocumentFragment; ignoreErrors?: boolean }
 	): ISelectorMatch | null {
 		const ignoreErrors = options?.ignoreErrors;
 		const window = element[PropertySymbol.window];
@@ -351,7 +352,7 @@ export default class QuerySelector {
 
 		for (const items of SelectorParser.getSelectorGroups(selector, {
 			...options,
-			scope: element
+			scope: options?.scope || element
 		})) {
 			const result = this.matchSelector(element, items.reverse(), cachedItem);
 

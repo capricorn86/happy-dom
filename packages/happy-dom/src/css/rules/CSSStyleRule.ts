@@ -11,10 +11,24 @@ import StylePropertyMap from '../style-property-map/StylePropertyMap.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleRule
  */
 export default class CSSStyleRule extends CSSGroupingRule {
-	public [PropertySymbol.type] = CSSRuleTypeEnum.styleRule;
 	public [PropertySymbol.styleMap]: StylePropertyMap | null = null;
 	public [PropertySymbol.selectorText] = '';
+	public [PropertySymbol.cssText] = '';
 	#style: CSSStyleDeclaration | null = null;
+
+	/**
+	 * @override
+	 */
+	public override get type(): CSSRuleTypeEnum {
+		return CSSRuleTypeEnum.styleRule;
+	}
+
+	/**
+	 * @override
+	 */
+	public override get cssText(): string {
+		return `${this[PropertySymbol.selectorText]} { ${this.style.cssText} }`;
+	}
 
 	/**
 	 * Returns style map.
@@ -23,7 +37,10 @@ export default class CSSStyleRule extends CSSGroupingRule {
 	 */
 	public get styleMap(): StylePropertyMap {
 		if (!this[PropertySymbol.styleMap]) {
-			this[PropertySymbol.styleMap] = new StylePropertyMap(this.style);
+			this[PropertySymbol.styleMap] = new StylePropertyMap(
+				PropertySymbol.illegalConstructor,
+				this.style
+			);
 		}
 		return this[PropertySymbol.styleMap];
 	}
@@ -35,15 +52,6 @@ export default class CSSStyleRule extends CSSGroupingRule {
 	 */
 	public get selectorText(): string {
 		return this[PropertySymbol.selectorText];
-	}
-
-	/**
-	 * Returns css text.
-	 *
-	 * @returns CSS text.
-	 */
-	public get cssText(): string {
-		return `${this[PropertySymbol.selectorText]} { ${this.style.cssText} }`;
 	}
 
 	/**

@@ -400,3 +400,5 @@ export const media = Symbol('media');
 export const styleMap = Symbol('styleMap');
 export const selectorText = Symbol('selectorText');
 export const cssParser = Symbol('cssParser');
+export const cssRule = Symbol('cssRule');
+export const rulePrefix = Symbol('rulePrefix');
