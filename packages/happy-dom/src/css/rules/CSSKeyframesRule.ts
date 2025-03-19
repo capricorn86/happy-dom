@@ -4,7 +4,7 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import CSSRuleTypeEnum from '../CSSRuleTypeEnum.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 
-const CSS_RULE_REGEXP = /(from|to|[0-9]+%)\s*{([^}]+)}/;
+const CSS_RULE_REGEXP = /^(from|to|[0-9]{1,3}%)\s*{([^}]*)}$/;
 
 /**
  * CSSKeyframesRule interface.
@@ -74,7 +74,7 @@ export default class CSSKeyframesRule extends CSSRule {
 			);
 		}
 
-		const match = rule.match(CSS_RULE_REGEXP);
+		const match = String(rule).trim().match(CSS_RULE_REGEXP);
 
 		if (!match) {
 			throw new this[PropertySymbol.window].DOMException(
