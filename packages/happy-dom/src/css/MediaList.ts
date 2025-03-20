@@ -32,7 +32,7 @@ export default class MediaList {
 				}
 				const index = Number(property);
 				if (!isNaN(index)) {
-					return cssRule[PropertySymbol.conditionText].split(MEDIUM_REGEXP)[index];
+					return target[PropertySymbol.getItemList]()[index];
 				}
 			},
 			set(target, property, newValue): boolean {
@@ -50,8 +50,8 @@ export default class MediaList {
 				}
 				return true;
 			},
-			ownKeys(): string[] {
-				return Object.keys(cssRule[PropertySymbol.conditionText].split(MEDIUM_REGEXP));
+			ownKeys(target): string[] {
+				return Object.keys(target[PropertySymbol.getItemList]());
 			},
 			has(target, property): boolean {
 				if (typeof property === 'symbol') {
@@ -63,11 +63,7 @@ export default class MediaList {
 				}
 
 				const index = Number(property);
-				return (
-					!isNaN(index) &&
-					index >= 0 &&
-					index < cssRule[PropertySymbol.conditionText].split(MEDIUM_REGEXP).length
-				);
+				return !isNaN(index) && index >= 0 && index < target[PropertySymbol.getItemList]().length;
 			},
 			defineProperty(target, property, descriptor): boolean {
 				methodBinder.preventBinding(property);
@@ -85,7 +81,7 @@ export default class MediaList {
 				}
 
 				const index = Number(property);
-				const items = cssRule[PropertySymbol.conditionText].split(MEDIUM_REGEXP);
+				const items = target[PropertySymbol.getItemList]();
 
 				if (!isNaN(index) && items[index]) {
 					return {
@@ -105,7 +101,7 @@ export default class MediaList {
 	 * @returns Length.
 	 */
 	public get length(): number {
-		return this[PropertySymbol.cssRule][PropertySymbol.conditionText].split(MEDIUM_REGEXP).length;
+		return this[PropertySymbol.getItemList]().length;
 	}
 
 	/**
@@ -122,8 +118,9 @@ export default class MediaList {
 	 *
 	 * @param mediaText Media text.
 	 */
-	public set mediaText(mediaText: string) {
-		this[PropertySymbol.cssRule][PropertySymbol.conditionText] = mediaText;
+	public set mediaText(mediaText: string | null) {
+		this[PropertySymbol.cssRule][PropertySymbol.conditionText] =
+			mediaText === null ? '' : String(mediaText).split(MEDIUM_REGEXP).join(', ');
 	}
 
 	/**
@@ -133,9 +130,8 @@ export default class MediaList {
 	 * @returns Item.
 	 */
 	public item(index: number): string {
-		return (
-			this[PropertySymbol.cssRule][PropertySymbol.conditionText].split(MEDIUM_REGEXP)[index] || null
-		);
+		const items = this[PropertySymbol.getItemList]();
+		return items[Number(index)] || null;
 	}
 
 	/**
@@ -144,12 +140,10 @@ export default class MediaList {
 	 * @param medium Medium.
 	 */
 	public appendMedium(medium: string): void {
-		const media = this[PropertySymbol.cssRule][PropertySymbol.conditionText].trim()
-			? this[PropertySymbol.cssRule][PropertySymbol.conditionText].split(MEDIUM_REGEXP)
-			: [];
-		if (media.indexOf(medium) === -1) {
-			media.push(medium);
-			this[PropertySymbol.cssRule][PropertySymbol.conditionText] = media.join(', ');
+		const items = this[PropertySymbol.getItemList]();
+		if (items.indexOf(medium) === -1) {
+			items.push(medium);
+			this[PropertySymbol.cssRule][PropertySymbol.conditionText] = items.join(', ');
 		}
 	}
 
@@ -159,11 +153,24 @@ export default class MediaList {
 	 * @param medium Medium.
 	 */
 	public deleteMedium(medium: string): void {
-		const media = this[PropertySymbol.cssRule][PropertySymbol.conditionText].split(MEDIUM_REGEXP);
-		const index = media.indexOf(medium);
+		const items = this[PropertySymbol.getItemList]();
+		const index = items.indexOf(medium);
 		if (index !== -1) {
-			media.splice(index, 1);
-			this[PropertySymbol.cssRule][PropertySymbol.conditionText] = media.join(', ');
+			items.splice(index, 1);
+			this[PropertySymbol.cssRule][PropertySymbol.conditionText] = items.join(', ');
 		}
+	}
+
+	/**
+	 * Returns item list.
+	 *
+	 * @returns Item list.
+	 */
+	public [PropertySymbol.getItemList](): string[] {
+		const text = this[PropertySymbol.cssRule][PropertySymbol.conditionText].trim();
+		const media = text
+			? this[PropertySymbol.cssRule][PropertySymbol.conditionText].split(MEDIUM_REGEXP)
+			: [];
+		return media;
 	}
 }

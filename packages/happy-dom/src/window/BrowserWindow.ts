@@ -310,6 +310,12 @@ import IModule from '../module/IModule.js';
 import IModuleImportMap from '../module/IModuleImportMap.js';
 import StylePropertyMapReadOnly from '../css/style-property-map/StylePropertyMapReadOnly.js';
 import StylePropertyMap from '../css/style-property-map/StylePropertyMap.js';
+import MediaList from '../css/MediaList.js';
+import CSSKeywordValue from '../css/style-property-map/CSSKeywordValue.js';
+import CSSStyleValue from '../css/style-property-map/CSSStyleValue.js';
+import CSSConditionRule from '../css/rules/CSSConditionRule.js';
+import CSSGroupingRule from '../css/rules/CSSGroupingRule.js';
+import CSSScopeRule from '../css/rules/CSSScopeRule.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -635,6 +641,9 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly CSSMediaRule = CSSMediaRule;
 	public readonly CSSStyleRule = CSSStyleRule;
 	public readonly CSSSupportsRule = CSSSupportsRule;
+	public readonly CSSConditionRule = CSSConditionRule;
+	public readonly CSSGroupingRule = CSSGroupingRule;
+	public readonly CSSScopeRule = CSSScopeRule;
 	public readonly DOMRect = DOMRect;
 	public readonly DOMRectReadOnly = DOMRectReadOnly;
 	public readonly Plugin = Plugin;
@@ -687,6 +696,9 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly DOMPoint = DOMPoint;
 	public readonly StylePropertyMap = StylePropertyMap;
 	public readonly StylePropertyMapReadOnly = StylePropertyMapReadOnly;
+	public readonly MediaList = MediaList;
+	public readonly CSSKeywordValue = CSSKeywordValue;
+	public readonly CSSStyleValue = CSSStyleValue;
 	public readonly Window = <typeof BrowserWindow>this.constructor;
 
 	// Node.js Classes

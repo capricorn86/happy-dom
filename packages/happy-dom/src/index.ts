@@ -1,4 +1,12 @@
 import { URLSearchParams } from 'url';
+import MediaList from './css/MediaList.js';
+import CSSConditionRule from './css/rules/CSSConditionRule.js';
+import CSSGroupingRule from './css/rules/CSSGroupingRule.js';
+import CSSScopeRule from './css/rules/CSSScopeRule.js';
+import CSSKeywordValue from './css/style-property-map/CSSKeywordValue.js';
+import CSSStyleValue from './css/style-property-map/CSSStyleValue.js';
+import StylePropertyMap from './css/style-property-map/StylePropertyMap.js';
+import StylePropertyMapReadOnly from './css/style-property-map/StylePropertyMapReadOnly.js';
 import * as PropertySymbol from './PropertySymbol.js';
 import Browser from './browser/Browser.js';
 import BrowserContext from './browser/BrowserContext.js';
@@ -265,15 +273,20 @@ export {
 	ClipboardItem,
 	Comment,
 	CookieSameSiteEnum,
+	CSSConditionRule,
 	CSSContainerRule,
 	CSSFontFaceRule,
+	CSSGroupingRule,
 	CSSKeyframeRule,
 	CSSKeyframesRule,
+	CSSKeywordValue,
 	CSSMediaRule,
 	CSSRule,
+	CSSScopeRule,
 	CSSStyleDeclaration,
 	CSSStyleRule,
 	CSSStyleSheet,
+	CSSStyleValue,
 	CSSSupportsRule,
 	CustomElementRegistry,
 	CustomEvent,
@@ -381,6 +394,7 @@ export {
 	IntersectionObserverEntry,
 	KeyboardEvent,
 	Location,
+	MediaList,
 	MediaQueryListEvent,
 	MediaStream,
 	MediaStreamTrack,
@@ -405,6 +419,8 @@ export {
 	Selection,
 	ShadowRoot,
 	Storage,
+	StylePropertyMap,
+	StylePropertyMapReadOnly,
 	SubmitEvent,
 	SVGElement,
 	SVGGraphicsElement,
