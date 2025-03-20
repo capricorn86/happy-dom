@@ -4,12 +4,27 @@ import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration.js';
 import CSSRuleTypeEnum from '../CSSRuleTypeEnum.js';
 
 /**
- * CSSRule interface.
+ * CSSFontFaceRule interface.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/CSSFontFaceRule
  */
 export default class CSSFontFaceRule extends CSSRule {
-	public readonly type = CSSRuleTypeEnum.fontFaceRule;
 	public [PropertySymbol.cssText] = '';
 	#style: CSSStyleDeclaration | null = null;
+
+	/**
+	 * @override
+	 */
+	public override get type(): CSSRuleTypeEnum {
+		return CSSRuleTypeEnum.fontFaceRule;
+	}
+
+	/**
+	 * @override
+	 */
+	public get cssText(): string {
+		return `@font-face { ${this.style.cssText} }`;
+	}
 
 	/**
 	 * Returns style.
@@ -26,14 +41,5 @@ export default class CSSFontFaceRule extends CSSRule {
 			this.#style.cssText = this[PropertySymbol.cssText];
 		}
 		return this.#style;
-	}
-
-	/**
-	 * Returns css text.
-	 *
-	 * @returns CSS text.
-	 */
-	public get cssText(): string {
-		return `@font-face { ${this.style.cssText} }`;
 	}
 }
