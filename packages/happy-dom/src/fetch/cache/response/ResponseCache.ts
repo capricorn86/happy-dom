@@ -14,7 +14,7 @@ const UPDATE_RESPONSE_HEADERS = ['Cache-Control', 'Last-Modified', 'Vary', 'ETag
  * @see https://www.mnot.net/cache_docs/
  */
 export default class ResponseCache implements IResponseCache {
-	#entries: { [url: string]: ICachedResponse[] } = {};
+	public readonly entries: Map<string, ICachedResponse[]> = new Map();
 
 	/**
 	 * Returns cached response.
@@ -28,10 +28,11 @@ export default class ResponseCache implements IResponseCache {
 		}
 
 		const url = request.url;
+		const entries = this.entries.get(url);
 
-		if (this.#entries[url]) {
-			for (let i = 0, max = this.#entries[url].length; i < max; i++) {
-				const entry = this.#entries[url][i];
+		if (entries) {
+			for (let i = 0, max = entries.length; i < max; i++) {
+				const entry = entries[i];
 				let isMatch = entry.request.method === request.method;
 				if (isMatch) {
 					for (const header of Object.keys(entry.vary)) {
@@ -47,7 +48,7 @@ export default class ResponseCache implements IResponseCache {
 						if (entry.lastModified) {
 							entry.state = CachedResponseStateEnum.stale;
 						} else if (!entry.etag) {
-							this.#entries[url].splice(i, 1);
+							entries.splice(i, 1);
 							return null;
 						}
 					}
@@ -92,9 +93,10 @@ export default class ResponseCache implements IResponseCache {
 			cachedResponse.state = CachedResponseStateEnum.fresh;
 		} else {
 			if (cachedResponse) {
-				const index = this.#entries[url].indexOf(cachedResponse);
+				const entries = this.entries.get(url);
+				const index = entries.indexOf(cachedResponse);
 				if (index !== -1) {
-					this.#entries[url].splice(index, 1);
+					entries.splice(index, 1);
 				}
 			}
 
@@ -119,11 +121,18 @@ export default class ResponseCache implements IResponseCache {
 				lastModified: null,
 				mustRevalidate: false,
 				staleWhileRevalidate: false,
-				state: CachedResponseStateEnum.fresh
+				state: CachedResponseStateEnum.fresh,
+				virtual: response.virtual ?? false
 			};
 
-			this.#entries[url] = this.#entries[url] || [];
-			this.#entries[url].push(cachedResponse);
+			let entries = this.entries.get(url);
+
+			if (!entries) {
+				entries = [];
+				this.entries.set(url, entries);
+			}
+
+			entries.push(cachedResponse);
 		}
 
 		if (response.headers.has('Cache-Control')) {
@@ -138,9 +147,10 @@ export default class ResponseCache implements IResponseCache {
 						break;
 					case 'no-cache':
 					case 'no-store':
-						const index = this.#entries[url].indexOf(cachedResponse);
+						const entries = this.entries.get(url);
+						const index = entries.indexOf(cachedResponse);
 						if (index !== -1) {
-							this.#entries[url].splice(index, 1);
+							entries.splice(index, 1);
 						}
 						return null;
 					case 'must-revalidate':
@@ -180,9 +190,10 @@ export default class ResponseCache implements IResponseCache {
 
 		// Cache is invalid if it has expired and doesn't have an ETag.
 		if (!cachedResponse.etag && (!cachedResponse.expires || cachedResponse.expires < Date.now())) {
-			const index = this.#entries[url].indexOf(cachedResponse);
+			const entries = this.entries.get(url);
+			const index = entries.indexOf(cachedResponse);
 			if (index !== -1) {
-				this.#entries[url].splice(index, 1);
+				entries.splice(index, 1);
 			}
 			return null;
 		}
@@ -200,11 +211,11 @@ export default class ResponseCache implements IResponseCache {
 	public clear(options?: { url?: string; toTime?: number }): void {
 		if (options) {
 			if (options.toTime) {
-				for (const key of options.url ? [options.url] : Object.keys(this.#entries)) {
-					if (this.#entries[key]) {
-						for (let i = 0, max = this.#entries[key].length; i < max; i++) {
-							if (this.#entries[key][i].cacheUpdateTime < options.toTime) {
-								this.#entries[key].splice(i, 1);
+				for (const key of options.url ? [options.url] : this.entries.keys()) {
+					if (this.entries[key]) {
+						for (let i = 0, max = this.entries[key].length; i < max; i++) {
+							if (this.entries[key][i].cacheUpdateTime < options.toTime) {
+								this.entries[key].splice(i, 1);
 								i--;
 								max--;
 							}
@@ -212,10 +223,10 @@ export default class ResponseCache implements IResponseCache {
 					}
 				}
 			} else if (options.url) {
-				delete this.#entries[options.url];
+				this.entries.delete(options.url);
 			}
 		} else {
-			this.#entries = {};
+			this.entries.clear();
 		}
 	}
 }

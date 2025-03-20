@@ -195,7 +195,9 @@ import type IBrowser from './browser/types/IBrowser.js';
 import type IBrowserContext from './browser/types/IBrowserContext.js';
 import type IBrowserFrame from './browser/types/IBrowserFrame.js';
 import type IBrowserPage from './browser/types/IBrowserPage.js';
+import type IBrowserPageViewport from './browser/types/IBrowserPageViewport.js';
 import type IBrowserSettings from './browser/types/IBrowserSettings.js';
+import type IOptionalBrowserPageViewport from './browser/types/IOptionalBrowserPageViewport.js';
 import type IOptionalBrowserSettings from './browser/types/IOptionalBrowserSettings.js';
 import type ICookie from './cookie/ICookie.js';
 import type IOptionalCookie from './cookie/IOptionalCookie.js';
@@ -225,6 +227,7 @@ export type {
 	IBrowserContext,
 	IBrowserFrame,
 	IBrowserPage,
+	IBrowserPageViewport,
 	IBrowserSettings,
 	IClipboardEventInit,
 	ICookie,
@@ -238,6 +241,7 @@ export type {
 	IKeyboardEventInit,
 	IMediaQueryListInit,
 	IMouseEventInit,
+	IOptionalBrowserPageViewport,
 	IOptionalBrowserSettings,
 	IOptionalCookie,
 	IProgressEventInit,
