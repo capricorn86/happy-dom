@@ -38,7 +38,9 @@ export default <IBrowserSettings>{
 	},
 	device: {
 		prefersColorScheme: 'light',
-		mediaType: 'screen'
+		prefersReducedMotion: 'no-preference',
+		mediaType: 'screen',
+		forcedColors: 'none'
 	},
 	debug: {
 		traceWaitUntilComplete: -1

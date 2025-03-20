@@ -329,7 +329,7 @@ describe('DetachedBrowserFrame', () => {
 
 			expect(error).toEqual(
 				new DOMException(
-					'The operation was aborted. Error: Request timed out.',
+					'The operation was aborted. Request timed out.',
 					DOMExceptionNameEnum.abortError
 				)
 			);

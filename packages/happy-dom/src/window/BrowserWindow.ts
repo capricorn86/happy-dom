@@ -308,6 +308,8 @@ import CustomElementReactionStack from '../custom-element/CustomElementReactionS
 import IScrollToOptions from './IScrollToOptions.js';
 import IModule from '../module/IModule.js';
 import IModuleImportMap from '../module/IModuleImportMap.js';
+import StylePropertyMapReadOnly from '../css/style-property-map/StylePropertyMapReadOnly.js';
+import StylePropertyMap from '../css/style-property-map/StylePropertyMap.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -683,6 +685,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly SVGAnimatedLengthList = SVGAnimatedLengthList;
 	public readonly SVGUnitTypes = SVGUnitTypes;
 	public readonly DOMPoint = DOMPoint;
+	public readonly StylePropertyMap = StylePropertyMap;
+	public readonly StylePropertyMapReadOnly = StylePropertyMapReadOnly;
 	public readonly Window = <typeof BrowserWindow>this.constructor;
 
 	// Node.js Classes
@@ -1335,7 +1339,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 							timeout.callback();
 						}
 					}
-				});
+				}, 0);
 
 				zeroDelayTimeout.timeouts = [];
 				this.#browserFrame[PropertySymbol.asyncTaskManager].startTimer(id);

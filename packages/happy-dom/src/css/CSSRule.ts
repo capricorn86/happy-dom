@@ -2,11 +2,14 @@ import CSSStyleSheet from './CSSStyleSheet.js';
 import CSSRuleTypeEnum from './CSSRuleTypeEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import BrowserWindow from '../window/BrowserWindow.js';
+import CSSParser from './utilities/CSSParser.js';
 
 /**
  * CSSRule interface.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/CSSRule
  */
-export default class CSSRule {
+export default abstract class CSSRule {
 	// Static properties
 	public static CONTAINER_RULE = CSSRuleTypeEnum.containerRule;
 	public static STYLE_RULE = CSSRuleTypeEnum.styleRule;
@@ -25,32 +28,57 @@ export default class CSSRule {
 
 	// Internal properties
 	public [PropertySymbol.window]: BrowserWindow;
+	public [PropertySymbol.cssParser]: CSSParser;
 
 	// Public properties
-	public parentRule: CSSRule = null;
-	public parentStyleSheet: CSSStyleSheet = null;
-	public type: number = null;
+	public [PropertySymbol.parentRule]: CSSRule = null;
+	public [PropertySymbol.parentStyleSheet]: CSSStyleSheet = null;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param illegalConstructorSymbol Illegal constructor symbol.
 	 * @param window Window.
+	 * @param cssParser CSS parser.
 	 */
-	constructor(illegalConstructorSymbol: Symbol, window: BrowserWindow) {
+	constructor(illegalConstructorSymbol: Symbol, window: BrowserWindow, cssParser: CSSParser) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}
 
 		this[PropertySymbol.window] = window;
+		this[PropertySymbol.cssParser] = cssParser;
 	}
 
 	/**
-	 * Returns selector text.
+	 * Returns parent rule.
 	 *
-	 * @returns Selector text.
+	 * @returns Parent rule.
 	 */
-	public get cssText(): string {
-		return '';
+	public get parentRule(): CSSRule {
+		return this[PropertySymbol.parentRule];
 	}
+
+	/**
+	 * Returns parent style sheet.
+	 *
+	 * @returns Parent style sheet.
+	 */
+	public get parentStyleSheet(): CSSStyleSheet {
+		return this[PropertySymbol.parentStyleSheet];
+	}
+
+	/**
+	 * Returns type.
+	 *
+	 * @returns Type.
+	 */
+	public abstract get type(): CSSRuleTypeEnum;
+
+	/**
+	 * Returns CSS text.
+	 *
+	 * @returns CSS text.
+	 */
+	public abstract get cssText(): string;
 }

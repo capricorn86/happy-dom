@@ -78,7 +78,7 @@ describe('Fetch', () => {
 				'----HappyDOMFormDataBoundary0.noRandom'
 			)
 		).toBe(
-			'header:\nmultipart/form-data; boundary=----HappyDOMFormDataBoundary0.noRandom\n\nbody:\n------HappyDOMFormDataBoundary0.noRandom\r\nContent-Disposition: form-data; name="key1"\r\n\r\nvalue1\r\n------HappyDOMFormDataBoundary0.noRandom\r\nContent-Disposition: form-data; name="key2"\r\n\r\nvalue2\r\n'
+			'header:\nmultipart/form-data; boundary=----HappyDOMFormDataBoundary0.noRandom\n\nbody:\n------HappyDOMFormDataBoundary0.noRandom\r\nContent-Disposition: form-data; name="key1"\r\n\r\nvalue1\r\n------HappyDOMFormDataBoundary0.noRandom\r\nContent-Disposition: form-data; name="key2"\r\n\r\nvalue2\r\n------HappyDOMFormDataBoundary0.noRandom--\r\n'
 		);
 	});
 });

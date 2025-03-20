@@ -45,6 +45,7 @@ export default class EventTarget {
 	 * @param listener Listener.
 	 * @param options An object that specifies characteristics about the event listener.(currently only once)
 	 * @param options.once
+	 * @param options.signal An AbortSignal. The listener will be removed when the given AbortSignal object's abort() method is called.
 	 */
 	public addEventListener(
 		type: string,
@@ -71,6 +72,12 @@ export default class EventTarget {
 
 		listeners.push(listener);
 		listenerOptions.push(options);
+
+		if (options.signal && !options.signal.aborted) {
+			options.signal.addEventListener('abort', () => {
+				this.removeEventListener(type, listener);
+			});
+		}
 	}
 
 	/**
@@ -227,10 +234,83 @@ export default class EventTarget {
 		const browserSettings = window ? new WindowBrowserContext(window).getSettings() : null;
 		const eventPhase = event.eventPhase === EventPhaseEnum.capturing ? 'capturing' : 'bubbling';
 
+		// We need to clone the arrays because the listeners may remove themselves while we are iterating.
+		const listeners = this[PropertySymbol.listeners][eventPhase].get(event.type)?.slice();
+
+		if (listeners && listeners.length) {
+			const listenerOptions = this[PropertySymbol.listenerOptions][eventPhase]
+				.get(event.type)
+				?.slice();
+
+			for (let i = 0, max = listeners.length; i < max; i++) {
+				const listener = listeners[i];
+				const options = listenerOptions[i];
+
+				if (options?.passive) {
+					event[PropertySymbol.isInPassiveEventListener] = true;
+				}
+
+				// We can end up in a never ending loop if the listener for the error event on Window also throws an error.
+				if (
+					window &&
+					(this !== <EventTarget>window || event.type !== 'error') &&
+					!browserSettings?.disableErrorCapturing &&
+					browserSettings?.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
+				) {
+					if ((<TEventListenerObject>listener).handleEvent) {
+						let result: any;
+						try {
+							result = (<TEventListenerObject>listener).handleEvent.call(listener, event);
+						} catch (error) {
+							window[PropertySymbol.dispatchError](error);
+						}
+
+						if (result instanceof Promise) {
+							result.catch((error) => window[PropertySymbol.dispatchError](error));
+						}
+					} else {
+						let result: any;
+						try {
+							result = (<TEventListenerFunction>listener).call(this, event);
+						} catch (error) {
+							window[PropertySymbol.dispatchError](error);
+						}
+
+						if (result instanceof Promise) {
+							result.catch((error) => window[PropertySymbol.dispatchError](error));
+						}
+					}
+				} else {
+					if ((<TEventListenerObject>listener).handleEvent) {
+						(<TEventListenerObject>listener).handleEvent.call(listener, event);
+					} else {
+						(<TEventListenerFunction>listener).call(this, event);
+					}
+				}
+
+				event[PropertySymbol.isInPassiveEventListener] = false;
+
+				if (options?.once) {
+					// At this time, listeners and listenersOptions are cloned arrays. When the original value is deleted,
+					// The value corresponding to the cloned array is not deleted. So we need to delete the value in the cloned array.
+					listeners.splice(i, 1);
+					listenerOptions.splice(i, 1);
+					this.removeEventListener(event.type, listener);
+					i--;
+					max--;
+				}
+
+				if (event[PropertySymbol.immediatePropagationStopped]) {
+					return;
+				}
+			}
+		}
+
 		if (event.eventPhase !== EventPhaseEnum.capturing) {
 			const onEventName = 'on' + event.type.toLowerCase();
+			const eventListener = this[onEventName];
 
-			if (typeof this[onEventName] === 'function') {
+			if (typeof eventListener === 'function') {
 				// We can end up in a never ending loop if the listener for the error event on Window also throws an error.
 				if (
 					window &&
@@ -240,7 +320,7 @@ export default class EventTarget {
 				) {
 					let result: any;
 					try {
-						result = this[onEventName].call(this, event);
+						result = eventListener(event);
 					} catch (error) {
 						window[PropertySymbol.dispatchError](error);
 					}
@@ -249,82 +329,8 @@ export default class EventTarget {
 						result.catch((error) => window[PropertySymbol.dispatchError](error));
 					}
 				} else {
-					this[onEventName].call(this, event);
+					eventListener(event);
 				}
-			}
-		}
-
-		// We need to clone the arrays because the listeners may remove themselves while we are iterating.
-		const listeners = this[PropertySymbol.listeners][eventPhase].get(event.type)?.slice();
-
-		if (!listeners) {
-			return;
-		}
-
-		const listenerOptions = this[PropertySymbol.listenerOptions][eventPhase]
-			.get(event.type)
-			?.slice();
-
-		for (let i = 0, max = listeners.length; i < max; i++) {
-			const listener = listeners[i];
-			const options = listenerOptions[i];
-
-			if (options?.passive) {
-				event[PropertySymbol.isInPassiveEventListener] = true;
-			}
-
-			// We can end up in a never ending loop if the listener for the error event on Window also throws an error.
-			if (
-				window &&
-				(this !== <EventTarget>window || event.type !== 'error') &&
-				!browserSettings?.disableErrorCapturing &&
-				browserSettings?.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
-			) {
-				if ((<TEventListenerObject>listener).handleEvent) {
-					let result: any;
-					try {
-						result = (<TEventListenerObject>listener).handleEvent.call(listener, event);
-					} catch (error) {
-						window[PropertySymbol.dispatchError](error);
-					}
-
-					if (result instanceof Promise) {
-						result.catch((error) => window[PropertySymbol.dispatchError](error));
-					}
-				} else {
-					let result: any;
-					try {
-						result = (<TEventListenerFunction>listener).call(this, event);
-					} catch (error) {
-						window[PropertySymbol.dispatchError](error);
-					}
-
-					if (result instanceof Promise) {
-						result.catch((error) => window[PropertySymbol.dispatchError](error));
-					}
-				}
-			} else {
-				if ((<TEventListenerObject>listener).handleEvent) {
-					(<TEventListenerObject>listener).handleEvent.call(this, event);
-				} else {
-					(<TEventListenerFunction>listener).call(this, event);
-				}
-			}
-
-			event[PropertySymbol.isInPassiveEventListener] = false;
-
-			if (options?.once) {
-				// At this time, listeners and listenersOptions are cloned arrays. When the original value is deleted,
-				// The value corresponding to the cloned array is not deleted. So we need to delete the value in the cloned array.
-				listeners.splice(i, 1);
-				listenerOptions.splice(i, 1);
-				this.removeEventListener(event.type, listener);
-				i--;
-				max--;
-			}
-
-			if (event[PropertySymbol.immediatePropagationStopped]) {
-				return;
 			}
 		}
 	}

@@ -153,18 +153,18 @@ export default class HTMLSerializer {
 	private getAttributes(element: Element): string {
 		let attributeString = '';
 
-		const namedItems = (<Element>element)[PropertySymbol.attributes][PropertySymbol.namedItems];
+		const attributes = (<Element>element)[PropertySymbol.attributes][PropertySymbol.items];
 
-		if (!namedItems.has('is') && element[PropertySymbol.isValue]) {
+		if (!attributes.has(':is') && element[PropertySymbol.isValue]) {
 			attributeString +=
 				' is="' + XMLEncodeUtility.encodeHTMLAttributeValue(element[PropertySymbol.isValue]) + '"';
 		}
 
-		for (const attributes of namedItems.values()) {
+		for (const attribute of attributes.values()) {
 			const escapedValue = XMLEncodeUtility.encodeHTMLAttributeValue(
-				attributes[0][PropertySymbol.value]
+				attribute[PropertySymbol.value]
 			);
-			attributeString += ' ' + attributes[0][PropertySymbol.name] + '="' + escapedValue + '"';
+			attributeString += ' ' + attribute[PropertySymbol.name] + '="' + escapedValue + '"';
 		}
 
 		return attributeString;

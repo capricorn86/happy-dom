@@ -1,7 +1,7 @@
-import HTMLElement from '../nodes/html-element/HTMLElement.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
+import Element from '../nodes/element/Element.js';
 
 /**
  * Custom element reaction stack.
@@ -29,7 +29,7 @@ export default class CustomElementReactionStack {
 	 * @param callbackName Callback name.
 	 * @param [args] Arguments.
 	 */
-	public enqueueReaction(element: HTMLElement, callbackName: string, args?: any[]): void {
+	public enqueueReaction(element: Element, callbackName: string, args?: any[]): void {
 		// If a polyfill is used, [PropertySymbol.registry] may be undefined
 		const definition = this.window.customElements[PropertySymbol.registry]?.get(element.localName);
 

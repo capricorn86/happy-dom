@@ -113,7 +113,8 @@ export default class HTMLLabelElement extends HTMLElement {
 		if (
 			!event[PropertySymbol.defaultPrevented] &&
 			event.type === 'click' &&
-			event.eventPhase === EventPhaseEnum.none &&
+			(event.eventPhase === EventPhaseEnum.atTarget ||
+				event.eventPhase === EventPhaseEnum.bubbling) &&
 			event instanceof MouseEvent
 		) {
 			const control = this.control;

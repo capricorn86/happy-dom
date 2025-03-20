@@ -134,9 +134,12 @@ export default class Fetch {
 
 		FetchRequestValidationUtility.validateSchema(this.request);
 
-		if (this.request.signal.aborted) {
-			throw new this.#window.DOMException(
-				'The operation was aborted.',
+		if (this.request.signal[PropertySymbol.aborted]) {
+			if (this.request.signal[PropertySymbol.reason] !== undefined) {
+				throw this.request.signal[PropertySymbol.reason];
+			}
+			throw new this[PropertySymbol.window].DOMException(
+				'signal is aborted without reason',
 				DOMExceptionNameEnum.abortError
 			);
 		}
@@ -948,8 +951,8 @@ export default class Fetch {
 					headers.delete('cookie2');
 				}
 
-				if (this.request.signal.aborted) {
-					this.abort();
+				if (this.request.signal[PropertySymbol.aborted]) {
+					this.abort(this.request.signal[PropertySymbol.reason]);
 					return true;
 				}
 
@@ -1007,7 +1010,7 @@ export default class Fetch {
 	 *
 	 * @param reason Reason.
 	 */
-	private abort(reason?: Error): void {
+	private abort(reason?: any): void {
 		const error = new this.#window.DOMException(
 			'The operation was aborted.' + (reason ? ' ' + reason.toString() : ''),
 			DOMExceptionNameEnum.abortError
@@ -1035,7 +1038,7 @@ export default class Fetch {
 		}
 
 		if (this.reject) {
-			this.reject(error);
+			this.reject(reason !== undefined ? reason : error);
 		}
 	}
 }

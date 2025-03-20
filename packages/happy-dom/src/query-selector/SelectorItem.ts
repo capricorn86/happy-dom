@@ -6,6 +6,8 @@ import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
 import ISelectorAttribute from './ISelectorAttribute.js';
 import ISelectorMatch from './ISelectorMatch.js';
 import ISelectorPseudo from './ISelectorPseudo.js';
+import Document from '../nodes/document/Document.js';
+import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 
 const SPACE_REGEXP = /\s+/;
 
@@ -13,6 +15,7 @@ const SPACE_REGEXP = /\s+/;
  * Selector item.
  */
 export default class SelectorItem {
+	public scope: Element | Document | DocumentFragment | null;
 	public tagName: string | null;
 	public id: string | null;
 	public classNames: string[] | null;
@@ -26,6 +29,7 @@ export default class SelectorItem {
 	 * Constructor.
 	 *
 	 * @param [options] Options.
+	 * @param [options.scope] Scope.
 	 * @param [options.combinator] Combinator.
 	 * @param [options.tagName] Tag name.
 	 * @param [options.id] ID.
@@ -36,6 +40,7 @@ export default class SelectorItem {
 	 * @param [options.ignoreErrors] Ignore errors.
 	 */
 	constructor(options?: {
+		scope?: Element | Document | DocumentFragment;
 		tagName?: string;
 		id?: string;
 		classNames?: string[];
@@ -45,6 +50,7 @@ export default class SelectorItem {
 		combinator?: SelectorCombinatorEnum;
 		ignoreErrors?: boolean;
 	}) {
+		this.scope = options?.scope || null;
 		this.tagName = options?.tagName || null;
 		this.id = options?.id || null;
 		this.classNames = options?.classNames || null;
@@ -248,7 +254,12 @@ export default class SelectorItem {
 			case 'root':
 				return element[PropertySymbol.tagName] === 'HTML' ? { priorityWeight: 10 } : null;
 			case 'not':
-				return !pseudo.selectorItems[0].match(element) ? { priorityWeight: 10 } : null;
+				for (const selectorItem of pseudo.selectorItems) {
+					if (selectorItem.match(element)) {
+						return null;
+					}
+				}
+				return { priorityWeight: 10 };
 			case 'nth-child':
 				let nthChildIndex = -1;
 				if (pseudo.selectorItems[0] && !pseudo.selectorItems[0].match(element)) {
@@ -366,6 +377,8 @@ export default class SelectorItem {
 				return element[PropertySymbol.ownerDocument].activeElement === element
 					? { priorityWeight: 10 }
 					: null;
+			case 'scope':
+				return this.scope === element ? { priorityWeight: 10 } : null;
 			default:
 				return null;
 		}

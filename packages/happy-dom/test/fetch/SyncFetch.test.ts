@@ -2103,8 +2103,34 @@ describe('SyncFetch', () => {
 				error = e;
 			}
 			expect(error).toEqual(
-				new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+				new DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
 			);
+		});
+
+		it('Rejects immediately if signal has already been aborted using a custom reason.', () => {
+			browserFrame.url = 'https://localhost:8080/';
+
+			const url = 'https://localhost:8080/test/';
+
+			const abortController = new window.AbortController();
+			const abortSignal = abortController.signal;
+
+			abortController.abort(1);
+
+			let error: Error | null = null;
+			try {
+				new SyncFetch({
+					browserFrame,
+					window,
+					url,
+					init: {
+						signal: abortSignal
+					}
+				}).send();
+			} catch (e) {
+				error = e;
+			}
+			expect(error).toBe(1);
 		});
 
 		it('Supports POST request with body as string.', () => {
@@ -2564,7 +2590,7 @@ describe('SyncFetch', () => {
 			browserFrame.url = 'https://localhost:8080/';
 
 			const body =
-				'------HappyDOMFormDataBoundary0.ssssssssst\r\nContent-Disposition: form-data; name="key1"\r\n\r\nvalue1\r\n------HappyDOMFormDataBoundary0.ssssssssst\r\nContent-Disposition: form-data; name="key2"\r\n\r\nvalue2\r\n';
+				'------HappyDOMFormDataBoundary0.ssssssssst\r\nContent-Disposition: form-data; name="key1"\r\n\r\nvalue1\r\n------HappyDOMFormDataBoundary0.ssssssssst\r\nContent-Disposition: form-data; name="key2"\r\n\r\nvalue2\r\n------HappyDOMFormDataBoundary0.ssssssssst--\r\n';
 			const formData = new window.FormData();
 			let requestArgs: string | null = null;
 
@@ -2777,7 +2803,7 @@ describe('SyncFetch', () => {
 								'content-length',
 								String(responseText.length),
 								'cache-control',
-								'max-age=0.001',
+								'max-age=0.0001',
 								'last-modified',
 								'Mon, 11 Dec 2023 01:00:00 GMT'
 							],
@@ -2823,7 +2849,7 @@ describe('SyncFetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'cache-control': `max-age=0.001`,
+				'cache-control': `max-age=0.0001`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
 			});
 
@@ -2914,7 +2940,7 @@ describe('SyncFetch', () => {
 								'content-length',
 								String(responseText1.length),
 								'cache-control',
-								'max-age=0.001',
+								'max-age=0.0001',
 								'last-modified',
 								'Mon, 11 Dec 2023 01:00:00 GMT'
 							],
@@ -2968,7 +2994,7 @@ describe('SyncFetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText1.length),
-				'cache-control': `max-age=0.001`,
+				'cache-control': `max-age=0.0001`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
 			});
 
@@ -3059,7 +3085,7 @@ describe('SyncFetch', () => {
 								'content-length',
 								String(responseText.length),
 								'cache-control',
-								'max-age=0.001',
+								'max-age=0.0001',
 								'last-modified',
 								'Mon, 11 Dec 2023 01:00:00 GMT',
 								'etag',
@@ -3115,7 +3141,7 @@ describe('SyncFetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'cache-control': `max-age=0.001`,
+				'cache-control': `max-age=0.0001`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
 				etag: etag1
 			});
@@ -3129,7 +3155,7 @@ describe('SyncFetch', () => {
 			expect(headers2).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'cache-control': `max-age=0.001`,
+				'cache-control': `max-age=0.0001`,
 				'Last-Modified': 'Mon, 11 Dec 2023 02:00:00 GMT',
 				ETag: etag2
 			});
@@ -3212,7 +3238,7 @@ describe('SyncFetch', () => {
 								'content-length',
 								String(responseText1.length),
 								'cache-control',
-								'max-age=0.001',
+								'max-age=0.0001',
 								'last-modified',
 								'Mon, 11 Dec 2023 01:00:00 GMT',
 								'etag',
@@ -3260,7 +3286,7 @@ describe('SyncFetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText1.length),
-				'cache-control': `max-age=0.001`,
+				'cache-control': `max-age=0.0001`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
 				etag: etag1
 			});

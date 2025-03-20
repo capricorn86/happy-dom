@@ -41,7 +41,36 @@ describe('Element', () => {
 		vi.restoreAllMocks();
 	});
 
-	describe('children', () => {
+	for (const event of [
+		'fullscreenerror',
+		'fullscreenchange',
+		'beforecopy',
+		'beforecut',
+		'beforepaste',
+		'search'
+	]) {
+		describe(`get on${event}()`, () => {
+			it('Returns the event listener.', () => {
+				element.setAttribute(`on${event}`, 'window.test = 1');
+				expect(element[`on${event}`]).toBeTypeOf('function');
+				element[`on${event}`](new Event(event));
+				expect(window['test']).toBe(1);
+			});
+		});
+
+		describe(`set on${event}()`, () => {
+			it('Sets the event listener.', () => {
+				element[`on${event}`] = () => {
+					window['test'] = 1;
+				};
+				element.dispatchEvent(new Event(event));
+				expect(element.getAttribute(`on${event}`)).toBe(null);
+				expect(window['test']).toBe(1);
+			});
+		});
+	}
+
+	describe('get children()', () => {
 		it('Returns nodes of type Element.', () => {
 			const div1 = document.createElement('div');
 			const div2 = document.createElement('div');
@@ -1677,6 +1706,26 @@ describe('Element', () => {
 			expect(element.getAttribute('data-custom')).toBe('1'); // common custom attribute pattern
 		});
 
+		it('Sets SVG attribute "xmlns:xlink" on an element.', () => {
+			const div = document.createElement('div');
+
+			div.innerHTML =
+				'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use/></svg>';
+
+			div.children[0].setAttribute('xmlns:xlink', 'test');
+			div.children[0].children[0].setAttribute('xlink:href', '#a');
+
+			expect(div.children[0].getAttributeNode('xmlns:xlink')?.namespaceURI).toBe(
+				NamespaceURI.xmlns
+			);
+			expect(div.children[0].getAttribute('xmlns:xlink')).toBe('test');
+
+			expect(div.children[0].children[0].getAttributeNode('xlink:href')?.namespaceURI).toBe(
+				NamespaceURI.xlink
+			);
+			expect(div.children[0].children[0].getAttribute('xlink:href')).toBe('#a');
+		});
+
 		it('Throws an error when given an invalid character in the attribute name', () => {
 			try {
 				element.setAttribute('☺', '1');
@@ -1774,12 +1823,36 @@ describe('Element', () => {
 		});
 	});
 
+	describe('getAttribute()', () => {
+		it('Returns null when cannot find attribute.', () => {
+			element.setAttribute('key2', '');
+			expect(element.getAttribute('random')).toEqual(null);
+		});
+	});
+
 	describe('getAttributeNames()', () => {
 		it('Returns attribute names.', () => {
 			element.setAttributeNS(NAMESPACE_URI, 'global:local1', 'value1');
 			element.setAttribute('key1', 'value1');
 			element.setAttribute('key2', '');
 			expect(element.getAttributeNames()).toEqual(['global:local1', 'key1', 'key2']);
+		});
+
+		it('Returns attribute names using the same local name with different prefix.', () => {
+			element.setAttribute('ns1:key', 'value1');
+			element.setAttribute('ns2:key', 'value1');
+			element.setAttribute('key1', 'value1');
+			element.setAttribute('key2', '');
+			expect(element.getAttributeNames()).toEqual(['ns1:key', 'ns2:key', 'key1', 'key2']);
+		});
+
+		it('Returns attribute names when using namespaces.', () => {
+			element.setAttributeNS('namespace', 'key', 'value1');
+			element.setAttributeNS('namespace', 'key', 'value2');
+			element.setAttributeNS('namespace2', 'key', 'value3');
+			element.setAttributeNS('namespace3', 'key', 'value4');
+
+			expect(element.getAttributeNames()).toEqual(['key', 'key', 'key']);
 		});
 	});
 
@@ -1956,6 +2029,19 @@ describe('Element', () => {
 			expect(clone.children.length).toEqual(0);
 			expect(clone2.children.length).toBe(1);
 			expect(clone2.children[0].outerHTML).toBe('<div class="className"></div>');
+		});
+
+		it('Sets the properties of the cloned element.', () => {
+			const div1 = document.createElement('div');
+			div1.className = 'div1';
+			const cloned = div1.cloneNode(true);
+			cloned.className = 'cloned';
+
+			expect(div1.className).toBe('div1');
+			expect(cloned.className).toBe('cloned');
+
+			expect(div1.outerHTML).toBe('<div class="div1"></div>');
+			expect(cloned.outerHTML).toBe('<div class="cloned"></div>');
 		});
 
 		it('Clones shadow root when it is "clonable".', () => {

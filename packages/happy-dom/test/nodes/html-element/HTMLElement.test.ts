@@ -9,6 +9,7 @@ import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import CustomElementRegistry from '../../../src/custom-element/CustomElementRegistry.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import EventTarget from '../../../src/event/EventTarget.js';
+import Event from '../../../src/event/Event.js';
 
 describe('HTMLElement', () => {
 	let window: Window;
@@ -30,6 +31,83 @@ describe('HTMLElement', () => {
 			expect(Object.prototype.toString.call(element)).toBe('[object HTMLDivElement]');
 		});
 	});
+
+	for (const event of [
+		'cancel',
+		'error',
+		'scroll',
+		'select',
+		'wheel',
+		'copy',
+		'cut',
+		'paste',
+		'compositionend',
+		'compositionstart',
+		'compositionupdate',
+		'blur',
+		'focus',
+		'focusin',
+		'focusout',
+		'keydown',
+		'keyup',
+		'auxclick',
+		'click',
+		'contextmenu',
+		'dblclick',
+		'mousedown',
+		'mouseenter',
+		'mouseleave',
+		'mousemove',
+		'mouseout',
+		'mouseover',
+		'mouseup',
+		'touchcancel',
+		'touchend',
+		'touchmove',
+		'touchstart',
+		'invalid',
+		'animationcancel',
+		'animationend',
+		'animationiteration',
+		'animationstart',
+		'beforeinput',
+		'input',
+		'change',
+		'gotpointercapture',
+		'lostpointercapture',
+		'pointercancel',
+		'pointerdown',
+		'pointerenter',
+		'pointerleave',
+		'pointermove',
+		'pointerout',
+		'pointerover',
+		'pointerup',
+		'transitioncancel',
+		'transitionend',
+		'transitionrun',
+		'transitionstart'
+	]) {
+		describe(`get on${event}()`, () => {
+			it('Returns the event listener.', () => {
+				element.setAttribute(`on${event}`, 'window.test = 1');
+				expect(element[`on${event}`]).toBeTypeOf('function');
+				element[`on${event}`](new Event(event));
+				expect(window['test']).toBe(1);
+			});
+		});
+
+		describe(`set on${event}()`, () => {
+			it('Sets the event listener.', () => {
+				element[`on${event}`] = () => {
+					window['test'] = 1;
+				};
+				element.dispatchEvent(new Event(event));
+				expect(element.getAttribute(`on${event}`)).toBe(null);
+				expect(window['test']).toBe(1);
+			});
+		});
+	}
 
 	describe('get accessKey()', () => {
 		it('Returns "".', () => {
@@ -56,17 +134,95 @@ describe('HTMLElement', () => {
 		});
 	}
 
-	describe('contentEditable', () => {
-		it('Returns "inherit".', () => {
-			const div = <HTMLElement>document.createElement('div');
+	describe('get contentEditable()', () => {
+		it('Returns "inherit" by default.', () => {
+			const div = document.createElement('div');
+			expect(div.contentEditable).toBe('inherit');
+		});
+
+		it('Returns the "contenteditable" attribute value.', () => {
+			for (const value of [
+				'true',
+				'false',
+				'plaintext-only',
+				'inherit',
+				'TRUE',
+				'FALSE',
+				'PLAINTEXT-ONLY',
+				'INHERIT'
+			]) {
+				const div = document.createElement('div');
+				div.setAttribute('contenteditable', value);
+				expect(div.contentEditable).toBe(value.toLowerCase());
+			}
+		});
+
+		it('Returns "inherit" when the "contenteditable" attribute is set to an invalid value.', () => {
+			const div = document.createElement('div');
+			div.setAttribute('contenteditable', 'invalid');
 			expect(div.contentEditable).toBe('inherit');
 		});
 	});
 
-	describe('isContentEditable', () => {
-		it('Returns "false".', () => {
+	describe('set contentEditable()', () => {
+		it('Sets the "contenteditable" attribute.', () => {
+			const div = document.createElement('div');
+			div.contentEditable = 'true';
+			expect(div.getAttribute('contenteditable')).toBe('true');
+			div.contentEditable = 'false';
+			expect(div.getAttribute('contenteditable')).toBe('false');
+			div.contentEditable = 'plaintext-only';
+			expect(div.getAttribute('contenteditable')).toBe('plaintext-only');
+			div.contentEditable = 'inherit';
+			expect(div.getAttribute('contenteditable')).toBe('inherit');
+			div.contentEditable = <string>(<unknown>true);
+			expect(div.getAttribute('contenteditable')).toBe('true');
+			div.contentEditable = <string>(<unknown>false);
+			expect(div.getAttribute('contenteditable')).toBe('false');
+			div.contentEditable = 'TRUE';
+			expect(div.getAttribute('contenteditable')).toBe('true');
+			div.contentEditable = 'FALSE';
+			expect(div.getAttribute('contenteditable')).toBe('false');
+			div.contentEditable = 'PLAINTEXT-ONLY';
+			expect(div.getAttribute('contenteditable')).toBe('plaintext-only');
+			div.contentEditable = 'INHERIT';
+			expect(div.getAttribute('contenteditable')).toBe('inherit');
+		});
+
+		it('Throws an error when an invalid value is provided.', () => {
+			const div = document.createElement('div');
+			expect(() => {
+				div.contentEditable = 'invalid';
+			}).toThrowError(
+				new SyntaxError(
+					`Failed to set the 'contentEditable' property on 'HTMLElement': The value provided ('invalid') is not one of 'true', 'false', 'plaintext-only', or 'inherit'.`
+				)
+			);
+		});
+	});
+
+	describe('get isContentEditable()', () => {
+		it('Returns "false" by default.', () => {
 			const div = <HTMLElement>document.createElement('div');
 			expect(div.isContentEditable).toBe(false);
+		});
+
+		it('Returns "true" when the "contenteditable" attribute is set to "true" or "plaintext-only".', () => {
+			const div = <HTMLElement>document.createElement('div');
+			div.setAttribute('contenteditable', 'true');
+			expect(div.isContentEditable).toBe(true);
+			div.setAttribute('contenteditable', 'plaintext-only');
+			expect(div.isContentEditable).toBe(true);
+			div.setAttribute('contenteditable', 'false');
+			expect(div.isContentEditable).toBe(false);
+		});
+
+		it('Returns "true" when parent element is content editable and value is "inherit".', () => {
+			const parent = <HTMLElement>document.createElement('div');
+			const div = <HTMLElement>document.createElement('div');
+			parent.setAttribute('contenteditable', 'true');
+			parent.appendChild(div);
+			expect(div.isContentEditable).toBe(true);
 		});
 	});
 
@@ -124,7 +280,7 @@ describe('HTMLElement', () => {
 		it('Returns rendered text with line breaks between block and flex elements and without hidden elements being rendered if element is connected to the document.', () => {
 			document.body.appendChild(element);
 
-			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><script>var key = "value";</script><style>button { background: red; }</style><div>Jumped over the lazy dog</div>`;
+			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><script>var key = "value";</script><style>button { background: red; }</style><div><svg></svg>Jumped over the lazy dog</div>`;
 			expect(element.innerText).toBe('The quick brown fox\nJumped over the lazy dog');
 
 			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><span style="display: flex">Jumped over the lazy dog</span><div>.</div>`;
@@ -142,6 +298,15 @@ describe('HTMLElement', () => {
 
 			element.innerHTML = `<div>The <strong>quick</strong> brown fox</div><span>jumped over the lazy dog</span><style>span { text-transform: capitalize; display: block; }</style>`;
 			expect(element.innerText).toBe('The quick brown fox\nJumped Over The Lazy Dog');
+		});
+
+		it("It skips svg elements when innerText is used and add a newline only if there's more content coming after", () => {
+			document.body.appendChild(element);
+			// notice the lack of closing div tag
+			element.innerHTML = '<div><span><svg></svg></span>123<div>';
+			expect(element.innerText).toBe('123');
+			element.innerHTML = '<div><span><svg>Test</svg></span>123<div>';
+			expect(element.innerText).toBe('123');
 		});
 	});
 
@@ -333,6 +498,15 @@ describe('HTMLElement', () => {
 			main.append(div);
 			const button = <HTMLElement>main.querySelector('button');
 			expect(button.closest('[data-test]')).toBe(div);
+		});
+
+		it('Handles empty string values correctly', () => {
+			element.setAttribute('data-test-empty', '');
+			const dataset = element.dataset;
+			expect(dataset.testEmpty).toBe('');
+			expect(dataset.nonExistentKey).toBeUndefined();
+			dataset.testEmptyAlso = '';
+			expect(dataset.testEmptyAlso).toBe('');
 		});
 	});
 

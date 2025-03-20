@@ -18,9 +18,13 @@ import QuerySelector from '../../../query-selector/QuerySelector.js';
 import CSSMeasurementConverter from '../measurement-converter/CSSMeasurementConverter.js';
 import MediaQueryList from '../../../match-media/MediaQueryList.js';
 import WindowBrowserContext from '../../../window/WindowBrowserContext.js';
+import CSSSupportsRule from '../../rules/CSSSupportsRule.js';
+import CSSScopeRule from '../../rules/CSSScopeRule.js';
+import CSSStyleSheet from '../../CSSStyleSheet.js';
 
 const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
 const CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+)\)|var\( *(--[^), ]+), *(.+)\)/;
+const HOST_REGEXP = /:host\s*\(([^)]+)\)|:host-context\s*\(([^)]+)\)/;
 
 type IStyleAndElement = {
 	element: Element | ShadowRoot | Document;
@@ -57,6 +61,7 @@ export default class CSSStyleDeclarationComputedStyle {
 			cssTexts: []
 		};
 		let shadowRootElements: Array<IStyleAndElement> = [];
+		let customElements: IStyleAndElement[] = [];
 
 		if (!this.element[PropertySymbol.isConnected]) {
 			return new CSSStyleDeclarationPropertyManager();
@@ -80,39 +85,32 @@ export default class CSSStyleDeclarationComputedStyle {
 				} else {
 					shadowRootElements.unshift(styleAndElement);
 				}
+				if ((<Element>styleAndElement.element).shadowRoot) {
+					customElements.push(styleAndElement);
+				}
 				parentElements.unshift(styleAndElement);
 			}
 
 			if (styleAndElement.element === this.element[PropertySymbol.ownerDocument]) {
-				const styleSheets = <NodeList<HTMLStyleElement>>(
-					this.element[PropertySymbol.ownerDocument].querySelectorAll(
-						'style,link[rel="stylesheet"]'
-					)
-				);
+				const styleSheets = this.getStyleSheets(this.element[PropertySymbol.ownerDocument]);
 
 				for (const styleSheet of styleSheets) {
-					const sheet = styleSheet.sheet;
-					if (sheet) {
-						this.parseCSSRules({
-							elements: documentElements,
-							rootElement:
-								documentElements[0].element[PropertySymbol.tagName] === 'HTML'
-									? documentElements[0]
-									: null,
-							cssRules: sheet.cssRules
-						});
-					}
-				}
-
-				for (const sheet of this.element[PropertySymbol.ownerDocument].adoptedStyleSheets) {
 					this.parseCSSRules({
 						elements: documentElements,
-						rootElement:
-							documentElements[0].element[PropertySymbol.tagName] === 'HTML'
-								? documentElements[0]
-								: null,
-						cssRules: sheet.cssRules
+						cssRules: styleSheet.cssRules
 					});
+				}
+
+				// We need to parse ":host" and ":host-context" rules for custom elements.
+				for (const customElement of customElements) {
+					const styleSheets = this.getStyleSheets((<Element>customElement.element).shadowRoot);
+					for (const styleSheet of styleSheets) {
+						this.parseCSSRules({
+							elements: [],
+							cssRules: styleSheet.cssRules,
+							hostElement: customElement
+						});
+					}
 				}
 
 				styleAndElement = { element: null, cssTexts: [] };
@@ -121,9 +119,7 @@ export default class CSSStyleDeclarationComputedStyle {
 				(<ShadowRoot>styleAndElement.element).host
 			) {
 				const shadowRoot = <ShadowRoot>styleAndElement.element;
-				const styleSheets = <NodeList<HTMLStyleElement>>(
-					shadowRoot.querySelectorAll('style,link[rel="stylesheet"]')
-				);
+				const styleSheets = this.getStyleSheets(shadowRoot);
 
 				styleAndElement = {
 					element: <Element>shadowRoot.host,
@@ -131,24 +127,26 @@ export default class CSSStyleDeclarationComputedStyle {
 				};
 
 				for (const styleSheet of styleSheets) {
-					const sheet = styleSheet.sheet;
-					if (sheet) {
-						this.parseCSSRules({
-							elements: shadowRootElements,
-							cssRules: sheet.cssRules,
-							hostElement: styleAndElement
-						});
-					}
-				}
-
-				for (const sheet of shadowRoot.adoptedStyleSheets) {
 					this.parseCSSRules({
 						elements: shadowRootElements,
-						cssRules: sheet.cssRules,
+						cssRules: styleSheet.cssRules,
 						hostElement: styleAndElement
 					});
 				}
 
+				// We need to parse ":host" and ":host-context" rules for custom elements.
+				for (const customElement of customElements) {
+					const styleSheets = this.getStyleSheets((<Element>customElement.element).shadowRoot);
+					for (const styleSheet of styleSheets) {
+						this.parseCSSRules({
+							elements: [],
+							cssRules: styleSheet.cssRules,
+							hostElement: customElement
+						});
+					}
+				}
+
+				customElements = [];
 				shadowRootElements = [];
 			} else {
 				styleAndElement = {
@@ -276,21 +274,47 @@ export default class CSSStyleDeclarationComputedStyle {
 	}
 
 	/**
+	 * Returns style sheets.
+	 *
+	 * @param root Root element.
+	 * @returns Style sheets.
+	 */
+	private getStyleSheets(root: Document | ShadowRoot): CSSStyleSheet[] {
+		const styleElements = <NodeList<HTMLStyleElement>>(
+			root.querySelectorAll('style,link[rel="stylesheet"]')
+		);
+		let styleSheets: CSSStyleSheet[] = [];
+
+		for (const styleElement of styleElements) {
+			const sheet = styleElement.sheet;
+			if (sheet) {
+				styleSheets.push(sheet);
+			}
+		}
+
+		if ((<Document | ShadowRoot>root).adoptedStyleSheets) {
+			styleSheets = styleSheets.concat((<Document | ShadowRoot>root).adoptedStyleSheets);
+		}
+
+		return styleSheets;
+	}
+
+	/**
 	 * Applies CSS text to elements.
 	 *
 	 * @param options Options.
 	 * @param options.elements Elements.
 	 * @param options.cssRules CSS rules.
-	 * @param options.rootElement Root element.
 	 * @param [options.hostElement] Host element.
+	 * @param [options.scopeElement] Scope element.
 	 */
 	private parseCSSRules(options: {
 		cssRules: CSSRule[];
 		elements: IStyleAndElement[];
-		rootElement?: IStyleAndElement | null;
 		hostElement?: IStyleAndElement | null;
+		scopeElement?: IStyleAndElement | null;
 	}): void {
-		if (!options.elements.length) {
+		if (!options.hostElement && !options.elements.length) {
 			return;
 		}
 
@@ -300,24 +324,62 @@ export default class CSSStyleDeclarationComputedStyle {
 			if (rule.type === CSSRuleTypeEnum.styleRule) {
 				const selectorText: string = (<CSSStyleRule>rule).selectorText;
 				if (selectorText) {
-					if (selectorText.startsWith(':host')) {
+					if (selectorText[0] === ':' && selectorText.startsWith(':host')) {
 						if (options.hostElement) {
-							options.hostElement.cssTexts.push({
-								cssText: (<CSSStyleRule>rule)[PropertySymbol.cssText],
-								priorityWeight: 0
-							});
-						}
-					} else if (selectorText.startsWith(':root')) {
-						if (options.rootElement) {
-							options.rootElement.cssTexts.push({
-								cssText: (<CSSStyleRule>rule)[PropertySymbol.cssText],
-								priorityWeight: 0
-							});
+							let isTargetHost = true;
+
+							if (selectorText !== ':host') {
+								const selectorMatch = selectorText.match(HOST_REGEXP);
+								if (selectorMatch) {
+									const match = QuerySelector.matches(
+										<Element>options.hostElement.element,
+										selectorMatch[1] || selectorMatch[2],
+										{
+											ignoreErrors: true,
+											scope: options.scopeElement?.element
+										}
+									);
+									if (match) {
+										const hostContextSelectorText = selectorText?.replace(HOST_REGEXP, '').trim();
+
+										if (hostContextSelectorText && hostContextSelectorText[0] !== ':') {
+											isTargetHost = false;
+
+											for (const element of options.elements) {
+												const match = QuerySelector.matches(
+													<Element>element.element,
+													hostContextSelectorText,
+													{
+														ignoreErrors: true,
+														scope: options.scopeElement?.element
+													}
+												);
+												if (match) {
+													element.cssTexts.push({
+														cssText: (<CSSStyleRule>rule)[PropertySymbol.cssText],
+														priorityWeight: 10 + match.priorityWeight
+													});
+												}
+											}
+										}
+									} else {
+										isTargetHost = false;
+									}
+								}
+							}
+
+							if (isTargetHost) {
+								options.hostElement.cssTexts.push({
+									cssText: (<CSSStyleRule>rule)[PropertySymbol.cssText],
+									priorityWeight: 10
+								});
+							}
 						}
 					} else {
 						for (const element of options.elements) {
 							const match = QuerySelector.matches(<Element>element.element, selectorText, {
-								ignoreErrors: true
+								ignoreErrors: true,
+								scope: options.scopeElement?.element
 							});
 							if (match) {
 								element.cssTexts.push({
@@ -330,7 +392,7 @@ export default class CSSStyleDeclarationComputedStyle {
 				}
 			} else if (
 				rule.type === CSSRuleTypeEnum.mediaRule &&
-				// TODO: We need to send in a predfined root font size as it will otherwise be calculated using Window.getComputedStyle(), which will cause a never ending loop. Is there another solution?
+				// TODO: We need to send in a predefined root font size as it will otherwise be calculated using Window.getComputedStyle(), which will cause a never ending loop. Is there another solution?
 				new MediaQueryList({
 					window,
 					media: (<CSSMediaRule>rule).conditionText,
@@ -340,8 +402,64 @@ export default class CSSStyleDeclarationComputedStyle {
 				this.parseCSSRules({
 					elements: options.elements,
 					cssRules: (<CSSMediaRule>rule).cssRules,
-					hostElement: options.hostElement
+					hostElement: options.hostElement,
+					scopeElement: options.scopeElement
 				});
+			} else if (rule.type === CSSRuleTypeEnum.supportsRule) {
+				if (window.CSS.supports((<CSSSupportsRule>rule).conditionText)) {
+					this.parseCSSRules({
+						elements: options.elements,
+						cssRules: (<CSSSupportsRule>rule).cssRules,
+						hostElement: options.hostElement,
+						scopeElement: options.scopeElement
+					});
+				}
+			} else if (rule.type === CSSRuleTypeEnum.containerRule) {
+				if (rule instanceof CSSScopeRule) {
+					const scopedElements: IStyleAndElement[] = [];
+					let scope: IStyleAndElement | null = null;
+
+					for (const element of options.elements) {
+						if (scope) {
+							if (rule[PropertySymbol.end]) {
+								const match = QuerySelector.matches(
+									<Element>element.element,
+									rule[PropertySymbol.end],
+									{
+										ignoreErrors: true,
+										scope: scope.element
+									}
+								);
+								if (match) {
+									break;
+								}
+							}
+							scopedElements.push(element);
+						} else {
+							const match = QuerySelector.matches(
+								<Element>element.element,
+								rule[PropertySymbol.start] || ':root',
+								{
+									ignoreErrors: true
+								}
+							);
+							if (match) {
+								scope = element;
+								scopedElements.push(element);
+							}
+						}
+					}
+
+					if (scopedElements.length) {
+						this.parseCSSRules({
+							elements: scopedElements,
+							cssRules: (<CSSScopeRule>rule).cssRules,
+							hostElement: options.hostElement,
+							scopeElement: scope
+						});
+					}
+				}
+				// TODO: Add support for CSSContainerRule, which would require element sizes to be measured.
 			}
 		}
 	}

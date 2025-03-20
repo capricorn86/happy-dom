@@ -5,6 +5,7 @@ import Node from '../nodes/node/Node.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import XMLDocument from '../nodes/xml-document/XMLDocument.js';
 import XMLEncodeUtility from '../utilities/XMLEncodeUtility.js';
+import NodeFactory from '../nodes/NodeFactory.js';
 
 /**
  * Markup RegExp.
@@ -503,23 +504,37 @@ export default class XMLParser {
 						return;
 					}
 
-					// In XML, attributes prefixed with "xmlns:" or named "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace.
-					const namespaceURI = nameParts[0] === 'xmlns' ? NamespaceURI.xmlns : null;
+					let namespaceURI = null;
 
-					if (!attributes.getNamedItemNS(namespaceURI, name)) {
-						const attributeItem = this.rootNode.createAttributeNS(namespaceURI, name);
-						attributeItem[PropertySymbol.value] = value;
-						attributes[PropertySymbol.setNamedItem](attributeItem);
+					// In the SVG namespace, the attribute "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace and "xlink" to the "http://www.w3.org/1999/xlink" namespace.
+					switch (nameParts[0]) {
+						case 'xmlns':
+							namespaceURI = NamespaceURI.xmlns;
+							break;
+						case 'xlink':
+							namespaceURI = NamespaceURI.xlink;
+							break;
+					}
+
+					if (!attributes.getNamedItemNS(namespaceURI, nameParts[1] ?? name)) {
+						const attribute = NodeFactory.createNode(this.rootNode, this.window.Attr);
+
+						attribute[PropertySymbol.namespaceURI] = namespaceURI;
+						attribute[PropertySymbol.name] = name;
+						attribute[PropertySymbol.localName] =
+							namespaceURI && nameParts[1] ? nameParts[1] : name;
+						attribute[PropertySymbol.prefix] = namespaceURI && nameParts[1] ? nameParts[0] : null;
+						attribute[PropertySymbol.value] = value;
+
+						attributes[PropertySymbol.setNamedItem](attribute);
 
 						// Attributes prefixed with "xmlns:" should be added to the namespace prefix map, so that the prefix can be added as namespaceURI to elements using the prefix.
-						if (attributeItem[PropertySymbol.prefix] === 'xmlns') {
-							namespacePrefix.set(attributeItem[PropertySymbol.localName], value);
+						if (attribute[PropertySymbol.prefix] === 'xmlns') {
+							namespacePrefix.set(attribute[PropertySymbol.localName], value);
 
 							// If the prefix matches the current element, we should set the namespace URI of the element to the value of the attribute.
 							// We don't need to upgrade the element, as there are no defined element types using a prefix.
-							if (
-								this.nextElement[PropertySymbol.prefix] === attributeItem[PropertySymbol.localName]
-							) {
+							if (this.nextElement[PropertySymbol.prefix] === attribute[PropertySymbol.localName]) {
 								this.nextElement[PropertySymbol.namespaceURI] = value;
 							}
 						}
@@ -533,8 +548,8 @@ export default class XMLParser {
 								);
 								this.nextElement[PropertySymbol.attributes] = attributes;
 								attributes[PropertySymbol.ownerElement] = this.nextElement;
-								for (const attr of attributes[PropertySymbol.namespaceItems].values()) {
-									attr[PropertySymbol.ownerElement] = this.nextElement;
+								for (const item of attributes[PropertySymbol.items].values()) {
+									item[PropertySymbol.ownerElement] = this.nextElement;
 								}
 							} else {
 								this.nextElement[PropertySymbol.namespaceURI] = value;

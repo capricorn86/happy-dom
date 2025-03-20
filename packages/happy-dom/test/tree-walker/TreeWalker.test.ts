@@ -185,16 +185,64 @@ describe('TreeWalker', () => {
 		it('Returns the parent node.', () => {
 			const treeWalker = document.createTreeWalker(document.body);
 			const node = treeWalker.nextNode();
-			expect(treeWalker.parentNode() === node.parentNode).toBe(true);
+			expect(treeWalker.parentNode() === node?.parentNode).toBe(true);
 		});
-	});
 
-	describe('parentNode()', () => {
 		it('Returns null if there is no parent.', () => {
 			const treeWalker = document.createTreeWalker(document.body);
 			treeWalker.nextNode();
 			treeWalker.parentNode();
 			expect(treeWalker.parentNode() === null).toBe(true);
+		});
+
+		it('Returns parent node in a hierarchy', () => {
+			const div = document.createElement('div');
+			div.innerHTML = `
+                <span>
+                    <!-- Comment 1 -->
+                    <div>
+                        <span>Span</span>
+                        <b>B1</b>
+                    </div>
+                    <article>
+                        <b>B2</b>
+                    </article>
+                </span>
+            `;
+			const treeWalker = document.createTreeWalker(div, NodeFilter.SHOW_ELEMENT);
+
+			treeWalker.currentNode = <Node>div.querySelector('b');
+
+			expect(treeWalker.parentNode()).toBe(div.querySelector('div'));
+			expect(treeWalker.parentNode()).toBe(div.querySelector('span'));
+			expect(treeWalker.parentNode()).toBe(div);
+			expect(treeWalker.parentNode()).toBe(null);
+		});
+
+		it('Returns parent node in a hierarchy using filtering', () => {
+			const div = document.createElement('div');
+			div.innerHTML = `
+                <span>
+                    <!-- Comment 1 -->
+                    <div>
+                        <span>Span</span>
+                        <b>B1</b>
+                    </div>
+                    <article>
+                        <b>B2</b>
+                    </article>
+                </span>
+            `;
+			const treeWalker = document.createTreeWalker(div, NodeFilter.SHOW_ELEMENT, {
+				acceptNode: (node: Node) =>
+					(<Element>node).tagName === 'DIV' ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP
+			});
+
+			treeWalker.currentNode = <Node>div.querySelector('b');
+
+			expect(treeWalker.parentNode()).toBe(div.querySelector('div'));
+			expect(treeWalker.parentNode()).toBe(div);
+			expect(treeWalker.parentNode()).toBe(null);
 		});
 	});
 
@@ -204,6 +252,76 @@ describe('TreeWalker', () => {
 			const node = treeWalker.nextNode();
 			expect(node).toBeInstanceOf(Element);
 			expect(treeWalker.firstChild()).toBe((<Element>node).firstElementChild);
+		});
+
+		it('Returns first sibling when it matches', () => {
+			const div = document.createElement('div');
+			div.innerHTML = `
+                <span>
+                    <!-- Comment 1 -->
+                    <div>
+                        <span>Span</span>
+                        <b>B1</b>
+                    </div>
+                    <article>
+                        <b>B2</b>
+                    </article>
+                </span>
+            `;
+			const treeWalker = document.createTreeWalker(div, NodeFilter.SHOW_ALL, {
+				acceptNode: (node: Node) =>
+					node.nodeType === Node.ELEMENT_NODE &&
+					((<Element>node).tagName === 'ARTICLE' || (<Element>node).tagName === 'B')
+						? NodeFilter.FILTER_ACCEPT
+						: NodeFilter.FILTER_SKIP
+			});
+
+			const firstChild = <Element>treeWalker.firstChild();
+
+			expect(firstChild.tagName).toBe('B');
+			expect(firstChild.textContent).toBe('B1');
+
+			expect(treeWalker.firstChild()).toBe(null);
+
+			const nextSibling = <Element>treeWalker.nextSibling();
+
+			expect(nextSibling.tagName).toBe('ARTICLE');
+			expect(nextSibling.textContent.trim()).toBe('B2');
+		});
+	});
+
+	describe('lastChild()', () => {
+		it('Returns last sibling when it matches', () => {
+			const div = document.createElement('div');
+			div.innerHTML = `
+                <span>
+                    <!-- Comment 1 -->
+                    <div>
+                        <span>Span</span>
+                        <b>B1</b>
+                    </div>
+                    <article>
+                        <b>B2</b>
+                    </article>
+                </span>
+            `;
+			const treeWalker = document.createTreeWalker(div, NodeFilter.SHOW_ALL, {
+				acceptNode: (node: Node) =>
+					node.nodeType === Node.ELEMENT_NODE &&
+					((<Element>node).tagName === 'ARTICLE' || (<Element>node).tagName === 'B')
+						? NodeFilter.FILTER_ACCEPT
+						: NodeFilter.FILTER_SKIP
+			});
+
+			const lastChild = <Element>treeWalker.lastChild();
+
+			expect(lastChild.tagName).toBe('ARTICLE');
+			expect(lastChild.textContent.trim()).toBe('B2');
+
+			const previousSibling = <Element>treeWalker.previousSibling();
+
+			expect(previousSibling.tagName).toBe('B');
+			expect(previousSibling.textContent.trim()).toBe('B1');
 		});
 	});
 });

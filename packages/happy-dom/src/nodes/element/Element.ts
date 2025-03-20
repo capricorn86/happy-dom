@@ -13,9 +13,6 @@ import DOMRectList from '../../dom/DOMRectList.js';
 import Attr from '../attr/Attr.js';
 import NamedNodeMap from './NamedNodeMap.js';
 import Event from '../../event/Event.js';
-import EventPhaseEnum from '../../event/EventPhaseEnum.js';
-import WindowBrowserContext from '../../window/WindowBrowserContext.js';
-import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
 import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
@@ -33,6 +30,8 @@ import HTMLSerializer from '../../html-serializer/HTMLSerializer.js';
 import HTMLParser from '../../html-parser/HTMLParser.js';
 import IScrollToOptions from '../../window/IScrollToOptions.js';
 import { AttributeUtility } from '../../utilities/AttributeUtility.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import ElementEventAttributeUtility from './ElementEventAttributeUtility.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -48,42 +47,6 @@ export default class Element
 	public static [PropertySymbol.namespaceURI]: string | null = null;
 	public declare cloneNode: (deep?: boolean) => Element;
 
-	// Events
-	public oncancel: ((event: Event) => void) | null = null;
-	public onerror: ((event: Event) => void) | null = null;
-	public onscroll: ((event: Event) => void) | null = null;
-	public onselect: ((event: Event) => void) | null = null;
-	public onwheel: ((event: Event) => void) | null = null;
-	public oncopy: ((event: Event) => void) | null = null;
-	public oncut: ((event: Event) => void) | null = null;
-	public onpaste: ((event: Event) => void) | null = null;
-	public oncompositionend: ((event: Event) => void) | null = null;
-	public oncompositionstart: ((event: Event) => void) | null = null;
-	public oncompositionupdate: ((event: Event) => void) | null = null;
-	public onblur: ((event: Event) => void) | null = null;
-	public onfocus: ((event: Event) => void) | null = null;
-	public onfocusin: ((event: Event) => void) | null = null;
-	public onfocusout: ((event: Event) => void) | null = null;
-	public onfullscreenchange: ((event: Event) => void) | null = null;
-	public onfullscreenerror: ((event: Event) => void) | null = null;
-	public onkeydown: ((event: Event) => void) | null = null;
-	public onkeyup: ((event: Event) => void) | null = null;
-	public onauxclick: ((event: Event) => void) | null = null;
-	public onclick: ((event: Event) => void) | null = null;
-	public oncontextmenu: ((event: Event) => void) | null = null;
-	public ondblclick: ((event: Event) => void) | null = null;
-	public onmousedown: ((event: Event) => void) | null = null;
-	public onmouseenter: ((event: Event) => void) | null = null;
-	public onmouseleave: ((event: Event) => void) | null = null;
-	public onmousemove: ((event: Event) => void) | null = null;
-	public onmouseout: ((event: Event) => void) | null = null;
-	public onmouseover: ((event: Event) => void) | null = null;
-	public onmouseup: ((event: Event) => void) | null = null;
-	public ontouchcancel: ((event: Event) => void) | null = null;
-	public ontouchend: ((event: Event) => void) | null = null;
-	public ontouchmove: ((event: Event) => void) | null = null;
-	public ontouchstart: ((event: Event) => void) | null = null;
-
 	// Internal properties
 	public [PropertySymbol.classList]: DOMTokenList | null = null;
 	public [PropertySymbol.isValue]: string | null = null;
@@ -98,6 +61,7 @@ export default class Element
 	public [PropertySymbol.attributesProxy]: NamedNodeMap | null = null;
 	public [PropertySymbol.children]: HTMLCollection<Element> | null = null;
 	public [PropertySymbol.computedStyle]: CSSStyleDeclaration | null = null;
+	public [PropertySymbol.propertyEventListeners]: Map<string, (event: Event) => void> = new Map();
 	public declare [PropertySymbol.tagName]: string | null;
 	public declare [PropertySymbol.localName]: string | null;
 	public declare [PropertySymbol.namespaceURI]: string | null;
@@ -123,6 +87,60 @@ export default class Element
 			this[PropertySymbol.namespaceURI] = null;
 		}
 	}
+
+	// Events
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get onfullscreenerror(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onfullscreenerror');
+	}
+
+	public set onfullscreenerror(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onfullscreenerror', value);
+	}
+
+	public get onfullscreenchange(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onfullscreenchange');
+	}
+
+	public set onfullscreenchange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onfullscreenchange', value);
+	}
+
+	public get onbeforecopy(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onbeforecopy');
+	}
+
+	public set onbeforecopy(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onbeforecopy', value);
+	}
+
+	public get onbeforecut(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onbeforecut');
+	}
+
+	public set onbeforecut(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onbeforecut', value);
+	}
+
+	public get onbeforepaste(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onbeforepaste');
+	}
+
+	public set onbeforepaste(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onbeforepaste', value);
+	}
+
+	public get onsearch(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onsearch');
+	}
+
+	public set onsearch(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onsearch', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Returns tag name.
@@ -545,8 +563,10 @@ export default class Element
 			clone[PropertySymbol.shadowRoot][PropertySymbol.host] = clone;
 		}
 
-		for (const item of this[PropertySymbol.attributes][PropertySymbol.namespaceItems].values()) {
-			clone[PropertySymbol.attributes].setNamedItem(item.cloneNode());
+		clone[PropertySymbol.attributes] = new NamedNodeMap(clone);
+
+		for (const attr of this[PropertySymbol.attributes][PropertySymbol.items].values()) {
+			clone[PropertySymbol.attributes].setNamedItem(attr.cloneNode(deep));
 		}
 
 		return <Element>clone;
@@ -684,15 +704,43 @@ export default class Element
 			{ method: 'setAttribute', instance: 'Element' }
 		);
 		name = String(name);
+
 		const namespaceURI = this[PropertySymbol.namespaceURI];
-		// TODO: Is it correct to check for namespaceURI === NamespaceURI.svg?
-		const attribute =
-			namespaceURI === NamespaceURI.html &&
-			this[PropertySymbol.ownerDocument][PropertySymbol.contentType] === 'text/html'
-				? this[PropertySymbol.ownerDocument].createAttribute(name)
-				: this[PropertySymbol.ownerDocument].createAttributeNS(null, name);
-		attribute[PropertySymbol.value] = String(value);
-		this[PropertySymbol.attributes].setNamedItem(attribute);
+
+		if (namespaceURI === NamespaceURI.html) {
+			const attribute = this[PropertySymbol.ownerDocument].createAttribute(name);
+			attribute[PropertySymbol.value] = String(value);
+			this[PropertySymbol.attributes][PropertySymbol.setNamedItem](attribute);
+		} else {
+			const nameParts = name.split(':');
+			let attributeNamespaceURI = null;
+
+			// In the XML namespace, the attribute "xmlns" should be set to the "http://www.w3.org/2000/xmlns/" namespace and "xlink" to the "http://www.w3.org/1999/xlink" namespace.
+			switch (nameParts[0]) {
+				case 'xmlns':
+					attributeNamespaceURI =
+						!nameParts[1] || nameParts[1] === 'xlink' ? NamespaceURI.xmlns : null;
+					break;
+				case 'xlink':
+					attributeNamespaceURI = NamespaceURI.xlink;
+					break;
+			}
+
+			const attribute = NodeFactory.createNode(
+				this[PropertySymbol.ownerDocument],
+				this[PropertySymbol.window].Attr
+			);
+
+			attribute[PropertySymbol.namespaceURI] = attributeNamespaceURI;
+			attribute[PropertySymbol.name] = name;
+			attribute[PropertySymbol.localName] =
+				attributeNamespaceURI && nameParts[1] ? nameParts[1] : name;
+			attribute[PropertySymbol.prefix] =
+				attributeNamespaceURI && nameParts[1] ? nameParts[0] : null;
+			attribute[PropertySymbol.value] = String(value);
+
+			this[PropertySymbol.attributes][PropertySymbol.setNamedItem](attribute);
+		}
 	}
 
 	/**
@@ -704,6 +752,12 @@ export default class Element
 	 */
 	public setAttributeNS(namespaceURI: string, name: string, value: string): void {
 		const attribute = this[PropertySymbol.ownerDocument].createAttributeNS(namespaceURI, name);
+		if (!namespaceURI && attribute[PropertySymbol.prefix]) {
+			throw new this[PropertySymbol.window].DOMException(
+				`Failed to execute 'setAttributeNS' on 'Element': '' is an invalid namespace for attributes.`,
+				DOMExceptionNameEnum.namespaceError
+			);
+		}
 		attribute[PropertySymbol.value] = String(value);
 		this[PropertySymbol.attributes].setNamedItemNS(attribute);
 	}
@@ -715,7 +769,7 @@ export default class Element
 	 */
 	public getAttributeNames(): string[] {
 		const names = [];
-		for (const item of this[PropertySymbol.attributes][PropertySymbol.namespaceItems].values()) {
+		for (const item of this[PropertySymbol.attributes][PropertySymbol.items].values()) {
 			names.push(item[PropertySymbol.name]);
 		}
 		return names;
@@ -726,7 +780,7 @@ export default class Element
 	 *
 	 * @param name Name.
 	 */
-	public getAttribute(name: string): string {
+	public getAttribute(name: string): string | null {
 		const attribute = this[PropertySymbol.attributes].getNamedItem(name);
 		if (attribute) {
 			return attribute[PropertySymbol.value];
@@ -799,7 +853,7 @@ export default class Element
 	 * @returns "true" if the element has attributes.
 	 */
 	public hasAttributes(): boolean {
-		return this[PropertySymbol.attributes][PropertySymbol.namespaceItems].size > 0;
+		return this[PropertySymbol.attributes][PropertySymbol.items].size > 0;
 	}
 
 	/**
@@ -954,6 +1008,25 @@ export default class Element
 	}
 
 	/**
+	 * Connected callback.
+	 */
+	public connectedCallback?(): void;
+
+	/**
+	 * Disconnected callback.
+	 */
+	public disconnectedCallback?(): void;
+
+	/**
+	 * Attribute changed callback.
+	 *
+	 * @param name Name.
+	 * @param oldValue Old value.
+	 * @param newValue New value.
+	 */
+	public attributeChangedCallback?(name: string, oldValue: string, newValue: string): void;
+
+	/**
 	 * Query CSS selector to find matching nodes.
 	 *
 	 * @param selector CSS selector.
@@ -964,7 +1037,7 @@ export default class Element
 	): NodeList<IHTMLElementTagNameMap[K]>;
 
 	/**
-	 * Query CSS selector to find matching elments.
+	 * Query CSS selector to find matching elements.
 	 *
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
@@ -974,7 +1047,7 @@ export default class Element
 	): NodeList<ISVGElementTagNameMap[K]>;
 
 	/**
-	 * Query CSS selector to find matching elments.
+	 * Query CSS selector to find matching elements.
 	 *
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
@@ -982,7 +1055,7 @@ export default class Element
 	public querySelectorAll(selector: string): NodeList<Element>;
 
 	/**
-	 * Query CSS selector to find matching elments.
+	 * Query CSS selector to find matching elements.
 	 *
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
@@ -1271,43 +1344,6 @@ export default class Element
 	/**
 	 * @override
 	 */
-	public override dispatchEvent(event: Event): boolean {
-		const returnValue = super.dispatchEvent(event);
-		const window = this[PropertySymbol.window];
-		const browserSettings = new WindowBrowserContext(window).getSettings();
-
-		if (
-			browserSettings &&
-			!browserSettings.disableJavaScriptEvaluation &&
-			event.eventPhase === EventPhaseEnum.none &&
-			!event[PropertySymbol.immediatePropagationStopped]
-		) {
-			const attribute = this.getAttribute('on' + event.type);
-
-			if (attribute && !event[PropertySymbol.immediatePropagationStopped]) {
-				const code = `//# sourceURL=${window.location.href}\n${attribute}`;
-
-				if (
-					browserSettings.disableErrorCapturing ||
-					browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
-				) {
-					window.eval(code);
-				} else {
-					try {
-						window.eval(code);
-					} catch (error) {
-						window[PropertySymbol.dispatchError](error);
-					}
-				}
-			}
-		}
-
-		return returnValue;
-	}
-
-	/**
-	 * @override
-	 */
 	public override [PropertySymbol.appendChild](node: Node, disableValidations = false): Node {
 		const returnValue = super[PropertySymbol.appendChild](node, disableValidations);
 		this.#onSlotChange(node);
@@ -1384,6 +1420,14 @@ export default class Element
 			}
 		}
 
+		if (
+			this[attribute[PropertySymbol.name]] !== undefined &&
+			attribute[PropertySymbol.name][0] === 'o' &&
+			attribute[PropertySymbol.name][1] === 'n'
+		) {
+			this[PropertySymbol.propertyEventListeners].delete(attribute[PropertySymbol.name]);
+		}
+
 		if (attribute[PropertySymbol.name] === 'id' && this[PropertySymbol.isConnected]) {
 			if (replacedAttribute?.[PropertySymbol.value]) {
 				this.#removeIdentifierFromWindow(replacedAttribute[PropertySymbol.value]);
@@ -1449,6 +1493,17 @@ export default class Element
 		}
 
 		super[PropertySymbol.connectedToDocument]();
+
+		this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
+			this,
+			'connectedCallback'
+		);
+
+		if (this[PropertySymbol.shadowRoot]) {
+			for (const childNode of this[PropertySymbol.nodeArray]) {
+				this.#onSlotChange(childNode);
+			}
+		}
 	}
 
 	/**
@@ -1461,6 +1516,11 @@ export default class Element
 		if (id) {
 			this.#removeIdentifierFromWindow(id);
 		}
+
+		this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
+			this,
+			'disconnectedCallback'
+		);
 	}
 
 	/**
@@ -1563,7 +1623,7 @@ export default class Element
 	#onSlotChange(addedOrRemovedNode: Node): void {
 		const shadowRoot = this[PropertySymbol.shadowRoot];
 
-		if (!shadowRoot) {
+		if (!shadowRoot || !this[PropertySymbol.isConnected]) {
 			return;
 		}
 

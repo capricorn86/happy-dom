@@ -731,6 +731,48 @@ describe('HTMLParser', () => {
 			);
 		});
 
+		it('Parses XML with "xmlns:xlink" defined as attribute.', () => {
+			const result = new HTMLParser(window).parse(
+				`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="#a"/></svg>`,
+				document.body
+			);
+
+			expect(result.children[0].getAttributeNode('xmlns:xlink')?.namespaceURI).toBe(
+				NamespaceURI.xmlns
+			);
+
+			expect(result.children[0].children[0].getAttributeNode('xlink:href')?.namespaceURI).toBe(
+				NamespaceURI.xlink
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`<body><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="#a"></use></svg></body>`
+			);
+		});
+
+		it('Parses XML with unknown suffix "xmlns:unknown".', () => {
+			const result = new HTMLParser(window).parse(
+				`<svg xmlns="http://www.w3.org/2000/svg" xmlns:unknown="http://test.com"><use unknown:href="#a"/></svg>`,
+				document.body
+			);
+
+			expect(result.children[0].getAttributeNode('xmlns:unknown')?.namespaceURI).toBe(null);
+			expect(result.children[0].getAttributeNode('xmlns:unknown')?.localName).toBe('xmlns:unknown');
+			expect(result.children[0].getAttributeNode('xmlns:unknown')?.prefix).toBe(null);
+
+			expect(result.children[0].children[0].getAttributeNode('unknown:href')?.namespaceURI).toBe(
+				null
+			);
+			expect(result.children[0].children[0].getAttributeNode('unknown:href')?.localName).toBe(
+				'unknown:href'
+			);
+			expect(result.children[0].children[0].getAttributeNode('unknown:href')?.prefix).toBe(null);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				`<body><svg xmlns="http://www.w3.org/2000/svg" xmlns:unknown="http://test.com"><use unknown:href="#a"></use></svg></body>`
+			);
+		});
+
 		it('Parses childless elements with start and end tag names in different case', () => {
 			const result = new HTMLParser(window).parse(
 				`
@@ -988,7 +1030,7 @@ describe('HTMLParser', () => {
 			expect(result.querySelector('article')?.getAttribute('?checked')).toBe('{{lit-33333}}');
 		});
 
-		it('Parses attributes without apostrophs.', () => {
+		it('Parses attributes without apostrophes.', () => {
 			const result = new HTMLParser(window).parse(
 				`<div .theme$lit$={{lit-12345}} key1="value1">Test</div>`
 			);
@@ -998,7 +1040,7 @@ describe('HTMLParser', () => {
 			);
 		});
 
-		it('Parses attributes with URL without apostrophs.', () => {
+		it('Parses attributes with URL without apostrophes.', () => {
 			const result = new HTMLParser(window).parse(
 				`<a href=http://www.github.com/path>Click me</a>`
 			);
@@ -1008,7 +1050,7 @@ describe('HTMLParser', () => {
 			);
 		});
 
-		it('Parses attributes with single apostrophs.', () => {
+		it('Parses attributes with single apostrophes.', () => {
 			const result = new HTMLParser(window).parse(`<div key1='value1' key2='value2'>Test</div>`);
 
 			expect(new HTMLSerializer().serializeToString(result)).toBe(
@@ -1100,7 +1142,7 @@ describe('HTMLParser', () => {
                         <input class="slider" type="range" step="1" min="0" max="100">
                             
                         <div class="value">
-                            <kompis-text-0-0-0 data-element-name="kompis-text"><!---->0<!----></kompis-text-0-0-0>
+                            <custom-text-0-0-0 data-element-name="custom-text"><!---->0<!----></custom-text-0-0-0>
                         </div>
 		
 					    <div class="sliderBackground" style="background: linear-gradient(to right, rgb(17, 17, 17) 0%, rgb(17, 17, 17) 0.75rem, rgb(223, 223, 223) 0.75rem, rgb(223, 223, 223) 100%);"></div>
@@ -1114,7 +1156,7 @@ describe('HTMLParser', () => {
                         <input class="slider" type="range" step="1" min="0" max="100">
                             
                         <div class="value">
-                            <kompis-text-0-0-0 data-element-name="kompis-text"><!---->0<!----></kompis-text-0-0-0>
+                            <custom-text-0-0-0 data-element-name="custom-text"><!---->0<!----></custom-text-0-0-0>
                         </div>
 		
 					    <div class="sliderBackground" style="background: linear-gradient(to right, rgb(17, 17, 17) 0%, rgb(17, 17, 17) 0.75rem, rgb(223, 223, 223) 0.75rem, rgb(223, 223, 223) 100%);"></div>

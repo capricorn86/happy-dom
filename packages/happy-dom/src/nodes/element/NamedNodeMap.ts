@@ -14,11 +14,14 @@ import StringUtility from '../../utilities/StringUtility.js';
 export default class NamedNodeMap {
 	[index: number]: Attr;
 
-	// All items with the namespaceURI as prefix
-	public [PropertySymbol.namespaceItems]: Map<string, Attr> = new Map();
+	// Items by attribute namespaceURI
+	public [PropertySymbol.itemsByNamespaceURI]: Map<string, Attr> = new Map();
 
-	// Items without namespaceURI as prefix, where the HTML namespace is the default namespace
-	public [PropertySymbol.namedItems]: Map<string, Attr[]> = new Map();
+	// Items by attribute name
+	public [PropertySymbol.itemsByName]: Map<string, Attr[]> = new Map();
+
+	// All items
+	public [PropertySymbol.items]: Map<string, Attr> = new Map();
 
 	public declare [PropertySymbol.ownerElement]: Element;
 
@@ -37,7 +40,7 @@ export default class NamedNodeMap {
 	 * @returns Length.
 	 */
 	public get length(): number {
-		return this[PropertySymbol.namespaceItems].size;
+		return this[PropertySymbol.items].size;
 	}
 
 	/**
@@ -64,7 +67,7 @@ export default class NamedNodeMap {
 	 * @returns Iterator.
 	 */
 	public [Symbol.iterator](): IterableIterator<Attr> {
-		return this[PropertySymbol.namespaceItems].values();
+		return this[PropertySymbol.items].values();
 	}
 
 	/**
@@ -73,7 +76,7 @@ export default class NamedNodeMap {
 	 * @param index Index.
 	 */
 	public item(index: number): Attr | null {
-		const items = Array.from(this[PropertySymbol.namespaceItems].values());
+		const items = Array.from(this[PropertySymbol.items].values());
 		return index >= 0 && items[index] ? items[index] : null;
 	}
 
@@ -91,9 +94,9 @@ export default class NamedNodeMap {
 				PropertySymbol.contentType
 			] === 'text/html'
 		) {
-			return this[PropertySymbol.namedItems].get(StringUtility.asciiLowerCase(name))?.[0] || null;
+			return this[PropertySymbol.itemsByName].get(StringUtility.asciiLowerCase(name))?.[0] || null;
 		}
-		return this[PropertySymbol.namedItems].get(name)?.[0] || null;
+		return this[PropertySymbol.itemsByName].get(name)?.[0] || null;
 	}
 
 	/**
@@ -104,11 +107,17 @@ export default class NamedNodeMap {
 	 * @returns Item.
 	 */
 	public getNamedItemNS(namespace: string, localName: string): Attr | null {
-		if (namespace === '') {
-			namespace = null;
+		const item = this[PropertySymbol.itemsByNamespaceURI].get(`${namespace || ''}:${localName}`);
+
+		// It seems like an item cant have a prefix without a namespaceURI
+		// E.g. element.setAttribute('ns1:key', 'value1');
+		// expect(element.attributes.getNamedItemNS(null, 'key')).toBeNull();
+
+		if (item && (!item[PropertySymbol.prefix] || item[PropertySymbol.namespaceURI])) {
+			return item;
 		}
 
-		return this[PropertySymbol.namespaceItems].get(`${namespace || ''}:${localName}`) || null;
+		return null;
 	}
 
 	/**
@@ -199,26 +208,29 @@ export default class NamedNodeMap {
 		const replacedItem =
 			this.getNamedItemNS(item[PropertySymbol.namespaceURI], item[PropertySymbol.localName]) ||
 			null;
-
-		const namedItems = this[PropertySymbol.namedItems].get(item[PropertySymbol.name]);
+		const itemsByName = this[PropertySymbol.itemsByName].get(item[PropertySymbol.name]);
 
 		if (replacedItem === item) {
 			return item;
 		}
 
-		this[PropertySymbol.namespaceItems].set(
+		this[PropertySymbol.itemsByNamespaceURI].set(
 			`${item[PropertySymbol.namespaceURI] || ''}:${item[PropertySymbol.localName]}`,
 			item
 		);
+		this[PropertySymbol.items].set(
+			`${item[PropertySymbol.namespaceURI] || ''}:${item[PropertySymbol.name]}`,
+			item
+		);
 
-		if (!namedItems?.length) {
-			this[PropertySymbol.namedItems].set(item[PropertySymbol.name], [item]);
+		if (!itemsByName?.length) {
+			this[PropertySymbol.itemsByName].set(item[PropertySymbol.name], [item]);
 		} else {
-			const index = namedItems.indexOf(replacedItem);
+			const index = itemsByName.indexOf(replacedItem);
 			if (index !== -1) {
-				namedItems.splice(index, 1);
+				itemsByName.splice(index, 1);
 			}
-			namedItems.push(item);
+			itemsByName.push(item);
 		}
 
 		if (!ignoreListeners) {
@@ -237,19 +249,22 @@ export default class NamedNodeMap {
 	public [PropertySymbol.removeNamedItem](item: Attr, ignoreListeners = false): void {
 		item[PropertySymbol.ownerElement] = null;
 
-		this[PropertySymbol.namespaceItems].delete(
+		this[PropertySymbol.itemsByNamespaceURI].delete(
 			`${item[PropertySymbol.namespaceURI] || ''}:${item[PropertySymbol.localName]}`
 		);
+		this[PropertySymbol.items].delete(
+			`${item[PropertySymbol.namespaceURI] || ''}:${item[PropertySymbol.name]}`
+		);
 
-		const namedItems = this[PropertySymbol.namedItems].get(item[PropertySymbol.name]);
+		const itemsByName = this[PropertySymbol.itemsByName].get(item[PropertySymbol.name]);
 
-		if (namedItems?.length) {
-			const index = namedItems.indexOf(item);
+		if (itemsByName?.length) {
+			const index = itemsByName.indexOf(item);
 			if (index !== -1) {
-				namedItems.splice(index, 1);
+				itemsByName.splice(index, 1);
 			}
-			if (!namedItems.length) {
-				this[PropertySymbol.namedItems].delete(item[PropertySymbol.name]);
+			if (!itemsByName.length) {
+				this[PropertySymbol.itemsByName].delete(item[PropertySymbol.name]);
 			}
 		}
 
