@@ -1,34 +1,13 @@
 {
-	"name": "@happy-dom/ssr",
+	"name": "@happy-dom/server-renderer",
 	"version": "0.0.0",
 	"license": "MIT",
-	"homepage": "https://github.com/capricorn86/happy-dom/tree/master/packages/server-side-rendering",
+	"homepage": "https://github.com/capricorn86/happy-dom/tree/master/packages/server-renderer",
 	"repository": "https://github.com/capricorn86/happy-dom",
 	"author": "David Ortner",
-	"description": "Use Happy DOM for server-side rendering.",
+	"description": "Use Happy DOM for server-side rendering (SSR).",
 	"main": "lib/index.js",
 	"type": "module",
-	"exports": {
-		".": {
-			"import": "./lib/index.js",
-			"default": "./lib/index.js"
-		},
-		"./lib/*.js": {
-			"import": "./lib/*.js",
-			"default": "./lib/*.js"
-		},
-		"./lib/*.ts": {
-			"import": "./lib/*.ts",
-			"default": "./lib/*.ts"
-		},
-		"./lib/*.map": {
-			"import": "./lib/*.map",
-			"default": "./lib/*.map"
-		},
-		"./src/*.ts": "./src/*.ts",
-		"./package.json": "./package.json",
-		"./.eslintrc": "./.eslintrc.js"
-	},
 	"keywords": [
 		"jsdom",
 		"happy",
@@ -40,6 +19,8 @@
 		"elements",
 		"server-side",
 		"rendering",
+        "server",
+        "renderer",
 		"ssr"
 	],
 	"publishConfig": {
@@ -50,7 +31,7 @@
 		"watch": "npm run compile && tsc -w --preserveWatchOutput"
 	},
 	"dependencies": {
-		"happy-dom": "^0.0.0"
+		"happy-dom-bundle": "^0.0.0"
 	},
 	"devDependencies": {
 		"@typescript-eslint/eslint-plugin": "^5.16.0",

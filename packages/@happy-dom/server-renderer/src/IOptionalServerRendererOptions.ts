@@ -1,6 +1,6 @@
-import { IOptionalBrowserSettings, IOptionalBrowserPageViewport } from 'happy-dom';
+import { IOptionalBrowserSettings, IOptionalBrowserPageViewport } from 'happy-dom-bundle';
 
-export default interface IOptionalServerSideRenderOptions {
+export default interface IOptionalServerRendererOptions {
 	viewport?: IOptionalBrowserPageViewport;
 	settings?: IOptionalBrowserSettings;
 	cacheDirectory?: string;

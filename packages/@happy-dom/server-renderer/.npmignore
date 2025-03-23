@@ -1,7 +1,6 @@
 node_modules
 tmp
 test
-bin
 .turbo
 npm-shrinkwrap.json
 vitest.config.test

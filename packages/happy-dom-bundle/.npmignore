@@ -9,3 +9,4 @@ tsconfig.json
 .prettierrc.cjs
 .gitignore
 .editorconfig
+rollup.config.js

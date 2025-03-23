@@ -2,7 +2,8 @@
 	"name": "root",
 	"private": true,
 	"workspaces": [
-		"packages/*"
+		"packages/*",
+		"integration-test/*"
 	],
 	"scripts": {
 		"compile": "turbo run compile --cache-dir=.turbo",

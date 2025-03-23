@@ -1,24 +1,24 @@
-import { Browser, Headers } from 'happy-dom';
-import IServerSideRenderOptions from './IOptionalServerSideRenderOptions.js';
+import { Browser, Headers } from 'happy-dom-bundle';
+import IServerRendererOptions from './IOptionalServerRendererOptions.js';
 import FS from 'fs';
 import Path from 'path';
-import HTMLSerializer from 'happy-dom/lib/html-serializer/HTMLSerializer.js';
-import IServerSideRenderItem from './IServerSideRenderItem.js';
+import HTMLSerializer from 'happy-dom-bundle/lib/html-serializer/HTMLSerializer.js';
+import IServerRendererItem from './IServerRendererItem.js';
 import Crypto from 'crypto';
-import ICachedResponse from 'happy-dom/lib/fetch/cache/response/ICachedResponse.js';
+import ICachedResponse from 'happy-dom-bundle/lib/fetch/cache/response/ICachedResponse.js';
 
 /**
- * Server-side rendering worker.
+ * Server-side rendering browser.
  */
-export default class ServerSideRenderBrowser {
-	#options: IServerSideRenderOptions;
+export default class ServerRendererBrowser {
+	#options: IServerRendererOptions;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param options Options.
 	 */
-	constructor(options: IServerSideRenderOptions) {
+	constructor(options: IServerRendererOptions) {
 		this.#options = options;
 	}
 
@@ -28,7 +28,7 @@ export default class ServerSideRenderBrowser {
 	 * @param items Items.
 	 * @param [isCacheWarmup] Indicates that this is a cache warmup.
 	 */
-	public async render(items: IServerSideRenderItem[], isCacheWarmup?: boolean): Promise<void> {
+	public async render(items: IServerRendererItem[], isCacheWarmup?: boolean): Promise<void> {
 		const options = this.#options;
 		const settings = { ...options.settings };
 
@@ -79,7 +79,7 @@ export default class ServerSideRenderBrowser {
 	 * @param browser Browser.
 	 * @param item Item.
 	 */
-	async #renderURL(browser: Browser, item: IServerSideRenderItem): Promise<void> {
+	async #renderURL(browser: Browser, item: IServerRendererItem): Promise<void> {
 		const page = await browser.newPage();
 
 		page.setViewport(this.#options.viewport);

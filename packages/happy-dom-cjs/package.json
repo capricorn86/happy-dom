@@ -1,5 +1,5 @@
 {
-	"name": "happy-dom",
+	"name": "happy-dom-cjs",
 	"version": "0.0.0",
 	"license": "MIT",
 	"homepage": "https://github.com/capricorn86/happy-dom",
@@ -7,7 +7,7 @@
 	"author": "David Ortner",
 	"description": "Happy DOM is a JavaScript implementation of a web browser without its graphical user interface. It includes many web standards from WHATWG DOM and HTML.",
 	"main": "lib/index.js",
-	"type": "module",
+	"type": "commonjs",
 	"keywords": [
 		"jsdom",
 		"dom",
@@ -24,13 +24,9 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "tsc && npm run compile:build-version-file",
-		"compile:build-version-file": "node ./bin/build-version-file.cjs",
-		"watch": "tsc -w --preserveWatchOutput",
-		"test": "vitest run",
-		"test:ui": "vitest --ui",
-		"test:watch": "vitest",
-		"test:debug": "vitest run --inspect-brk --no-file-parallelism"
+		"compile": "npm run compile:copy-src && tsc && npm run compile:build-version-file",
+		"compile:copy-src": "node -e \"fs.rmSync('./src', { recursive: true, force: true }); fs.cpSync('../happy-dom/src', './src', { recursive: true, force: true });\"",
+		"compile:build-version-file": "node ./bin/build-version-file.cjs"
 	},
 	"dependencies": {
 		"webidl-conversions": "^7.0.0",
@@ -38,11 +34,9 @@
 	},
 	"devDependencies": {
 		"@types/node": "^16.11.7",
-		"@vitest/ui": "^2.1.4",
 		"@webref/css": "6.6.2",
 		"prettier": "^2.6.0",
-		"typescript": "^5.0.4",
-		"vitest": "^2.1.4"
+		"typescript": "^5.0.4"
 	},
 	"engines": {
 		"node": ">=18.0.0"

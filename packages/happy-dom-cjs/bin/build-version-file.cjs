@@ -7,7 +7,7 @@ const packageJson = require('../package.json');
 async function main() {
 	await FS.promises.writeFile(
 		Path.resolve(Path.join('.', 'lib', 'version.js')),
-		`export default { version: '${packageJson.version}' };`
+		`module.exports = { default: { version: '${packageJson.version}' } };`
 	);
 }
 
