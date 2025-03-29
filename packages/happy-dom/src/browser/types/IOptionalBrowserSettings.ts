@@ -2,6 +2,8 @@ import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
 import BrowserNavigationCrossOriginPolicyEnum from '../enums/BrowserNavigationCrossOriginPolicyEnum.js';
 import IFetchInterceptor from '../../fetch/types/IFetchInterceptor.js';
 import IVirtualServer from '../../fetch/types/IVirtualServer.js';
+import IFetchRequestHeaders from '../../fetch/types/IFetchRequestHeaders.js';
+import IOptionalBrowserPageViewport from './IOptionalBrowserPageViewport.js';
 
 export default interface IOptionalBrowserSettings {
 	/** Disables JavaScript evaluation. */
@@ -24,6 +26,7 @@ export default interface IOptionalBrowserSettings {
 		maxTimeout?: number;
 		maxIntervalTime?: number;
 		maxIntervalIterations?: number;
+		preventTimerLoops?: boolean;
 	};
 
 	/**
@@ -41,6 +44,11 @@ export default interface IOptionalBrowserSettings {
 		 * Fetch interceptor.
 		 */
 		interceptor?: IFetchInterceptor | null;
+
+		/**
+		 * Add request headers to specific URLs.
+		 */
+		requestHeaders?: IFetchRequestHeaders[] | null;
 
 		/**
 		 * Virtual servers used for simulating a server that reads from the file system.
@@ -114,4 +122,9 @@ export default interface IOptionalBrowserSettings {
 	debug?: {
 		traceWaitUntilComplete?: number;
 	};
+
+	/**
+	 * Default page viewport.
+	 */
+	viewport?: IOptionalBrowserPageViewport;
 }

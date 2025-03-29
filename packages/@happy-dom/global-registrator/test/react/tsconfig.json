@@ -4,12 +4,10 @@
 		"outDir": "../../tmp",
 		"rootDir": "../../test",
 		"jsx": "react",
-        "module": "CommonJS",
-		"moduleResolution": "Node",
+        "module": "Node16",
+		"moduleResolution": "Node16",
 		"lib": [
-			"es2015",
-			"es2016",
-			"es2017",
+			"es2022",
             "dom"
 		]
 	},

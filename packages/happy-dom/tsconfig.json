@@ -20,6 +20,7 @@
 		"baseUrl": ".",
 		"composite": true,
 		"incremental": true,
+        "tsBuildInfoFile": ".turbo/.tsbuildinfo",
 		"lib": [
 			"ES2022"
 		],

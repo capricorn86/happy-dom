@@ -21,18 +21,16 @@
 		"composite": true,
 		"incremental": true,
 		"jsx": "react",
+        "tsBuildInfoFile": ".turbo/.tsbuildinfo",
 		"types": [
 			"node"
 		],
 		"lib": [
-			"es2015",
-			"es2016",
-			"es2017"
+			"es2022"
 		]
 	},
 	"include": [
 		"@types/node",
-		"src",
-		"src/**/*.json"
+		"src"
 	]
 }

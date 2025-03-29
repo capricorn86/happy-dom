@@ -24,6 +24,7 @@ import FetchCORSUtility from './utilities/FetchCORSUtility.js';
 import Fetch from './Fetch.js';
 import IFetchInterceptor from './types/IFetchInterceptor.js';
 import VirtualServerUtility from './utilities/VirtualServerUtility.js';
+import IFetchRequestHeaders from './types/IFetchRequestHeaders.js';
 
 interface ISyncHTTPResponse {
 	error: string;
@@ -43,7 +44,8 @@ export default class SyncFetch {
 	private redirectCount = 0;
 	private disableCache: boolean;
 	private disableSameOriginPolicy: boolean;
-	private interceptor?: IFetchInterceptor;
+	private interceptor: IFetchInterceptor | null;
+	private requestHeaders: IFetchRequestHeaders[] | null;
 	#browserFrame: IBrowserFrame;
 	#window: BrowserWindow;
 	#unfilteredHeaders: Headers | null = null;
@@ -90,6 +92,7 @@ export default class SyncFetch {
 			this.#browserFrame.page.context.browser.settings.fetch.disableSameOriginPolicy ??
 			false;
 		this.interceptor = this.#browserFrame.page.context.browser.settings.fetch.interceptor;
+		this.requestHeaders = this.#browserFrame.page.context.browser.settings.fetch.requestHeaders;
 	}
 
 	/**
@@ -100,15 +103,29 @@ export default class SyncFetch {
 	public send(): ISyncResponse {
 		FetchRequestReferrerUtility.prepareRequest(new URL(this.#window.location.href), this.request);
 
-		const beforeRequestResponse = this.interceptor?.beforeSyncRequest
-			? this.interceptor.beforeSyncRequest({
-					request: this.request,
-					window: this.#window
-				})
-			: undefined;
+		if (this.requestHeaders) {
+			for (const header of this.requestHeaders) {
+				if (
+					typeof header.url === 'string'
+						? header.url.startsWith(this.request.url)
+						: this.request.url.match(header.url)
+				) {
+					for (const [key, value] of Object.entries(header.headers)) {
+						this.request.headers.set(key, value);
+					}
+				}
+			}
+		}
 
-		if (typeof beforeRequestResponse === 'object') {
-			return beforeRequestResponse;
+		if (this.interceptor?.beforeSyncRequest) {
+			const beforeRequestResponse = this.interceptor.beforeSyncRequest({
+				request: this.request,
+				window: this.#window
+			});
+
+			if (typeof beforeRequestResponse === 'object') {
+				return beforeRequestResponse;
+			}
 		}
 
 		FetchRequestValidationUtility.validateSchema(this.request);
@@ -139,7 +156,7 @@ export default class SyncFetch {
 						window: this.#window,
 						response,
 						request: this.request
-					})
+				  })
 				: undefined;
 			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
@@ -293,7 +310,7 @@ export default class SyncFetch {
 						window: this.#window,
 						response,
 						request: this.request
-					})
+				  })
 				: undefined;
 			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
@@ -312,7 +329,7 @@ export default class SyncFetch {
 						window: this.#window,
 						response,
 						request: this.request
-					})
+				  })
 				: undefined;
 			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
@@ -331,7 +348,7 @@ export default class SyncFetch {
 					window: this.#window,
 					response,
 					request: this.request
-				})
+			  })
 			: undefined;
 		const returnResponse = typeof interceptedResponse === 'object' ? interceptedResponse : response;
 
@@ -528,7 +545,7 @@ export default class SyncFetch {
 					window: this.#window,
 					response: redirectedResponse,
 					request: this.request
-				})
+			  })
 			: undefined;
 		const returnResponse =
 			typeof interceptedResponse === 'object' ? interceptedResponse : redirectedResponse;

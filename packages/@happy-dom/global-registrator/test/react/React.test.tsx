@@ -1,4 +1,4 @@
-import GlobalRegistrator from '../../cjs/GlobalRegistrator.cjs';
+import GlobalRegistrator from '../../lib/GlobalRegistrator.js';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { act } from 'react-dom/test-utils';

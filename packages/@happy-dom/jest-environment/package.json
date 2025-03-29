@@ -2,7 +2,7 @@
 	"name": "@happy-dom/jest-environment",
 	"version": "0.0.0",
 	"license": "MIT",
-	"homepage": "https://github.com/capricorn86/happy-dom/tree/master/packages/jest-environment",
+	"homepage": "https://github.com/capricorn86/happy-dom/tree/master/packages/@happy-dom/jest-environment",
 	"repository": "https://github.com/capricorn86/happy-dom",
 	"author": "David Ortner",
 	"description": "Use Happy DOM as environment in Jest.",
@@ -47,7 +47,7 @@
 		"testEnvironment": "./lib"
 	},
 	"dependencies": {
-		"happy-dom": "^0.0.0"
+		"happy-dom-cjs": "^0.0.0"
 	},
 	"devDependencies": {
 		"@jest/environment": "^29.4.0",

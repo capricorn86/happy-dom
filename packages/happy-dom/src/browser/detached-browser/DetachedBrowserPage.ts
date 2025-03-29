@@ -8,7 +8,6 @@ import IGoToOptions from '../types/IGoToOptions.js';
 import Response from '../../fetch/Response.js';
 import BrowserPageUtility from '../utilities/BrowserPageUtility.js';
 import IReloadOptions from '../types/IReloadOptions.js';
-import DefaultBrowserPageViewport from '../DefaultBrowserPageViewport.js';
 import IOptionalBrowserPageViewport from '../types/IOptionalBrowserPageViewport.js';
 import IBrowserPageViewport from '../types/IBrowserPageViewport.js';
 import Event from '../../event/Event.js';
@@ -21,7 +20,7 @@ export default class DetachedBrowserPage implements IBrowserPage {
 	public readonly mainFrame: DetachedBrowserFrame;
 	public readonly context: DetachedBrowserContext;
 	public readonly console: Console;
-	public readonly viewport: IBrowserPageViewport = Object.assign({}, DefaultBrowserPageViewport);
+	public readonly viewport: IBrowserPageViewport;
 
 	/**
 	 * Constructor.
@@ -32,6 +31,11 @@ export default class DetachedBrowserPage implements IBrowserPage {
 		this.context = context;
 		this.console = context.browser.console ?? new VirtualConsole(this.virtualConsolePrinter);
 		this.mainFrame = new DetachedBrowserFrame(this);
+		this.viewport = {
+			width: context.browser.settings.viewport.width,
+			height: context.browser.settings.viewport.height,
+			devicePixelRatio: context.browser.settings.viewport.devicePixelRatio
+		};
 	}
 
 	/**

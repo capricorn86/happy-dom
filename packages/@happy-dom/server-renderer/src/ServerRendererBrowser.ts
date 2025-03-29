@@ -1,17 +1,18 @@
-import { Browser, Headers } from 'happy-dom-bundle';
+import { Browser, Headers, HTMLSerializer } from 'happy-dom-bundle';
+import type { ICachedResponse } from 'happy-dom-bundle';
 import IServerRendererOptions from './IOptionalServerRendererOptions.js';
 import FS from 'fs';
 import Path from 'path';
-import HTMLSerializer from 'happy-dom-bundle/lib/html-serializer/HTMLSerializer.js';
 import IServerRendererItem from './IServerRendererItem.js';
 import Crypto from 'crypto';
-import ICachedResponse from 'happy-dom-bundle/lib/fetch/cache/response/ICachedResponse.js';
+import IServerRendererResult from './IServerRendererResult.js';
 
 /**
  * Server-side rendering browser.
  */
 export default class ServerRendererBrowser {
 	#options: IServerRendererOptions;
+    #browser: Browser;
 
 	/**
 	 * Constructor.
@@ -20,6 +21,7 @@ export default class ServerRendererBrowser {
 	 */
 	constructor(options: IServerRendererOptions) {
 		this.#options = options;
+		this.#browser = new Browser({ settings: options.settings });
 	}
 
 	/**
@@ -28,40 +30,25 @@ export default class ServerRendererBrowser {
 	 * @param items Items.
 	 * @param [isCacheWarmup] Indicates that this is a cache warmup.
 	 */
-	public async render(items: IServerRendererItem[], isCacheWarmup?: boolean): Promise<void> {
-		const options = this.#options;
-		const settings = { ...options.settings };
-
-		if (options.requestHeaders) {
-			settings.fetch.interceptor = {
-				async beforeAsyncRequest({ request }) {
-					for (const header of options.requestHeaders) {
-						if (
-							typeof header.url === 'string'
-								? header.url.startsWith(request.url)
-								: request.url.match(header.url)
-						) {
-							for (const [key, value] of Object.entries(header.headers)) {
-								request.headers.set(key, value);
-							}
-						}
-					}
-				}
-			};
-		}
-
-		const browser = new Browser({ settings });
+	public async render(items: IServerRendererItem[], isCacheWarmup?: boolean): Promise<IServerRendererResult[]> {
+		const browser = this.#browser
 
 		if (!isCacheWarmup) {
 			this.#loadCache(browser);
 		}
+
+        let results: IServerRendererResult[] = [];
 
 		// We should not render too many pages at once, as it can affect performance and cause timing issues
 		while (items.length) {
 			const chunk = items.splice(0, this.#options.render.maxConcurrency);
 			const promises = [];
 			for (const url of chunk) {
-				promises.push(this.#renderURL(browser, url));
+				promises.push(this.#renderURL(browser, url).then((result) => {
+                    results.push(result);
+                }).catch((error) => {
+                    results.push({ url: url.url, content: null, outputFile: url.outputFile  ?? null, error: `${error.message}\${error.stack}` });
+                }));
 			}
 			await Promise.all(promises);
 		}
@@ -71,6 +58,8 @@ export default class ServerRendererBrowser {
 		}
 
 		await browser.close();
+
+        return results;
 	}
 
 	/**
@@ -79,10 +68,16 @@ export default class ServerRendererBrowser {
 	 * @param browser Browser.
 	 * @param item Item.
 	 */
-	async #renderURL(browser: Browser, item: IServerRendererItem): Promise<void> {
-		const page = await browser.newPage();
+	async #renderURL(browser: Browser, item: IServerRendererItem): Promise<IServerRendererResult> {
+        const responseCache = browser.defaultContext.responseCache;
+        const preflightResponseCache = browser.defaultContext.preflightResponseCache;
+        const context = this.#options.render.incognitoContext ? browser.newIncognitoContext() : browser.defaultContext;
+		const page = context.newPage();
 
-		page.setViewport(this.#options.viewport);
+        // @ts-ignore
+        context.responseCache = responseCache;
+        // @ts-ignore
+        context.preflightResponseCache = preflightResponseCache;
 
 		const response = await page.goto(item.url);
 
@@ -112,6 +107,10 @@ export default class ServerRendererBrowser {
 
 		await page.close();
 
+        if(!item.outputFile) {
+            return { url: item.url, content: result, outputFile: null, error: null };
+        }
+
 		try {
 			await FS.promises.mkdir(Path.dirname(item.outputFile), {
 				recursive: true
@@ -121,6 +120,8 @@ export default class ServerRendererBrowser {
 		}
 
 		await FS.promises.writeFile(item.outputFile, result);
+
+        return { url: item.url, content: null, outputFile: item.outputFile, error: null };
 	}
 
 	/**

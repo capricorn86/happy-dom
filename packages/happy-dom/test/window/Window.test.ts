@@ -217,6 +217,22 @@ describe('Window', () => {
 			expect(window.outerWidth).toBe(1920);
 			expect(window.outerHeight).toBe(1080);
 		});
+
+		it('Uses viewport browser setting by default', () => {
+			const window = new Window({ settings: { viewport: { width: 1920, height: 1080 } } });
+			expect(window.innerWidth).toBe(1920);
+			expect(window.innerHeight).toBe(1080);
+		});
+
+		it('It is possible to override viewport browser setting', () => {
+			const window = new Window({
+				width: 800,
+				height: 600,
+				settings: { viewport: { width: 1920, height: 1080 } }
+			});
+			expect(window.innerWidth).toBe(800);
+			expect(window.innerHeight).toBe(600);
+		});
 	});
 
 	describe('get happyDOM()', () => {

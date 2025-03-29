@@ -2,6 +2,8 @@ import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
 import BrowserNavigationCrossOriginPolicyEnum from '../enums/BrowserNavigationCrossOriginPolicyEnum.js';
 import IFetchInterceptor from '../../fetch/types/IFetchInterceptor.js';
 import IVirtualServer from '../../fetch/types/IVirtualServer.js';
+import IFetchRequestHeaders from '../../fetch/types/IFetchRequestHeaders.js';
+import IBrowserPageViewport from './IBrowserPageViewport.js';
 
 /**
  * Browser settings.
@@ -47,6 +49,11 @@ export default interface IBrowserSettings {
 		 * Fetch interceptor.
 		 */
 		interceptor: IFetchInterceptor | null;
+
+		/**
+		 * Add request headers to specific URLs.
+		 */
+		requestHeaders: IFetchRequestHeaders[] | null;
 
 		/**
 		 * Virtual servers used for simulating a server that reads from the file system.
@@ -120,4 +127,9 @@ export default interface IBrowserSettings {
 	debug: {
 		traceWaitUntilComplete: number;
 	};
+
+	/**
+	 * Default page viewport.
+	 */
+	viewport: IBrowserPageViewport;
 }

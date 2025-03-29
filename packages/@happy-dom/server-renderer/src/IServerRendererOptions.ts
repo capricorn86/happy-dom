@@ -1,18 +1,11 @@
-import { IOptionalBrowserSettings, IOptionalBrowserPageViewport } from 'happy-dom-bundle';
+import { IOptionalBrowserSettings } from 'happy-dom-bundle';
+import ServerRendererLogLevelEnum from './ServerRendererLogLevelEnum.js';
 
 export default interface IServerRendererOptions {
-	viewport: IOptionalBrowserPageViewport;
 	settings: IOptionalBrowserSettings;
 	cacheDirectory: string;
 	disableCache: boolean;
-	requestHeaders: [
-		{
-			url: string | RegExp;
-			headers: {
-				[key: string]: string;
-			};
-		}
-	];
+    logLevel: ServerRendererLogLevelEnum;
 	worker: {
 		disable: boolean;
 		maxConcurrency: number;
@@ -21,6 +14,6 @@ export default interface IServerRendererOptions {
 		maxConcurrency: number;
 		serializableShadowRoots: boolean;
 		allShadowRoots: boolean;
-		excludeShadowRootTags: string[];
+		excludeShadowRootTags: string[] | null;
 	};
 }

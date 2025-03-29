@@ -1,18 +1,20 @@
 {
 	"name": "root",
 	"private": true,
+	"packageManager": "npm@10.9.2",
 	"workspaces": [
 		"packages/*",
+		"packages/@happy-dom/*",
 		"integration-test/*"
 	],
 	"scripts": {
-		"compile": "turbo run compile --cache-dir=.turbo",
-		"watch": "turbo run watch --parallel",
+		"compile": "DO_NOT_TRACK=1 turbo run compile",
+		"watch": "DO_NOT_TRACK=1 turbo run watch --parallel",
 		"clean": "git clean -Xdfq",
-		"lint": "eslint --max-warnings 0 --cache --cache-location ./.turbo/eslint.cache .",
-		"lint:fix": "eslint --max-warnings 0 --cache --cache-location ./.turbo/eslint.cache --fix .",
-		"test": "turbo run test --cache-dir=.turbo",
-		"test:watch": "turbo run test:watch --parallel",
+		"lint": "eslint --max-warnings 0 --cache --cache-location ./.turbo/eslint.turbo .",
+		"lint:fix": "eslint --max-warnings 0 --cache --cache-location ./.turbo/eslint.turbo --fix .",
+		"test": "DO_NOT_TRACK=1 turbo run test",
+		"test:watch": "DO_NOT_TRACK=1 turbo run test:watch --parallel",
 		"prepare": "husky"
 	},
 	"devDependencies": {
@@ -32,14 +34,14 @@
 		"husky": "^9.0.6",
 		"prettier": "^3.2.4",
 		"semver": "^7.3.5",
-		"turbo": "^1.11.3",
+		"turbo": "^2.4.4",
 		"typescript": "^5.0.4",
 		"vitest": "^2.1.4"
 	},
 	"happyLintChanged": {
 		"rules": [
 			{
-				"command": "eslint --max-warnings 0 --cache --cache-location ./.turbo/eslint.cache --fix",
+				"command": "eslint --max-warnings 0 --cache --cache-location ./.turbo/eslint.turbo --fix",
 				"regexp": "^[a-zA-Z0-9_].*\\.(cjs|mjs|js|jsx|ts|tsx|json)$"
 			}
 		]

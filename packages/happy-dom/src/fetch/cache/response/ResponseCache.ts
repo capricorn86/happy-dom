@@ -212,10 +212,11 @@ export default class ResponseCache implements IResponseCache {
 		if (options) {
 			if (options.toTime) {
 				for (const key of options.url ? [options.url] : this.entries.keys()) {
-					if (this.entries[key]) {
-						for (let i = 0, max = this.entries[key].length; i < max; i++) {
-							if (this.entries[key][i].cacheUpdateTime < options.toTime) {
-								this.entries[key].splice(i, 1);
+					const entry = this.entries.get(key);
+					if (entry) {
+						for (let i = 0, max = entry.length; i < max; i++) {
+							if (entry[i].cacheUpdateTime < options.toTime) {
+								entry.splice(i, 1);
 								i--;
 								max--;
 							}

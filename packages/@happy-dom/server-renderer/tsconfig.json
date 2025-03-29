@@ -21,6 +21,7 @@
 		"composite": true,
 		"incremental": true,
 		"jsx": "react",
+        "tsBuildInfoFile": ".turbo/.tsbuildinfo",
 		"types": [
 			"node"
 		],
@@ -32,7 +33,6 @@
 	},
 	"include": [
 		"@types/node",
-		"src",
-		"src/**/*.json"
+		"src"
 	]
 }

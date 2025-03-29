@@ -40,6 +40,10 @@ export default class BrowserSettingsFactory {
 			debug: {
 				...DefaultBrowserSettings.debug,
 				...settings?.debug
+			},
+			viewport: {
+				...DefaultBrowserSettings.viewport,
+				...settings?.viewport
 			}
 		};
 	}

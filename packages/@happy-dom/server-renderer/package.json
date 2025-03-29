@@ -2,7 +2,7 @@
 	"name": "@happy-dom/server-renderer",
 	"version": "0.0.0",
 	"license": "MIT",
-	"homepage": "https://github.com/capricorn86/happy-dom/tree/master/packages/server-renderer",
+	"homepage": "https://github.com/capricorn86/happy-dom/tree/master/packages/@happy-dom/server-renderer",
 	"repository": "https://github.com/capricorn86/happy-dom",
 	"author": "David Ortner",
 	"description": "Use Happy DOM for server-side rendering (SSR).",
@@ -26,8 +26,11 @@
 	"publishConfig": {
 		"access": "public"
 	},
+    "bin": {
+        "happy-dom-ssr": "bin/lib/happy-dom-ssr.js"
+    },
 	"scripts": {
-		"compile": "tsc",
+		"compile": "tsc && tsc --project ./bin",
 		"watch": "npm run compile && tsc -w --preserveWatchOutput"
 	},
 	"dependencies": {

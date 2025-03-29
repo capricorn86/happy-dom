@@ -31,6 +31,7 @@ import FetchBodyUtility from './utilities/FetchBodyUtility.js';
 import IFetchInterceptor from './types/IFetchInterceptor.js';
 import VirtualServerUtility from './utilities/VirtualServerUtility.js';
 import PreloadUtility from './preload/PreloadUtility.js';
+import IFetchRequestHeaders from './types/IFetchRequestHeaders.js';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -56,6 +57,7 @@ export default class Fetch {
 	private response: Response | null = null;
 	private responseHeaders: Headers | null = null;
 	private interceptor: IFetchInterceptor | null;
+	private requestHeaders: IFetchRequestHeaders[] | null;
 	private request: Request;
 	private redirectCount = 0;
 	private disableCache: boolean;
@@ -109,6 +111,7 @@ export default class Fetch {
 			this.#browserFrame.page.context.browser.settings.fetch.disableSameOriginPolicy ??
 			false;
 		this.interceptor = this.#browserFrame.page.context.browser.settings.fetch.interceptor;
+		this.requestHeaders = this.#browserFrame.page.context.browser.settings.fetch.requestHeaders;
 		this.disablePreload = options.disablePreload ?? false;
 	}
 
@@ -119,6 +122,20 @@ export default class Fetch {
 	 */
 	public async send(): Promise<Response> {
 		FetchRequestReferrerUtility.prepareRequest(new URL(this.#window.location.href), this.request);
+
+		if (this.requestHeaders) {
+			for (const header of this.requestHeaders) {
+				if (
+					typeof header.url === 'string'
+						? header.url.startsWith(this.request.url)
+						: this.request.url.match(header.url)
+				) {
+					for (const [key, value] of Object.entries(header.headers)) {
+						this.request.headers.set(key, value);
+					}
+				}
+			}
+		}
 
 		if (this.interceptor?.beforeAsyncRequest) {
 			const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
@@ -154,7 +171,7 @@ export default class Fetch {
 						window: this.#window,
 						response: this.response,
 						request: this.request
-					})
+				  })
 				: undefined;
 			return interceptedResponse instanceof Response ? interceptedResponse : this.response;
 		}
@@ -341,7 +358,7 @@ export default class Fetch {
 						window: this.#window,
 						response: await response,
 						request: this.request
-					})
+				  })
 				: undefined;
 			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 			return interceptedResponse instanceof Response ? interceptedResponse : response;
@@ -364,7 +381,7 @@ export default class Fetch {
 						window: this.#window,
 						response: await response,
 						request: this.request
-					})
+				  })
 				: undefined;
 			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 			return interceptedResponse instanceof Response ? interceptedResponse : response;
@@ -388,7 +405,7 @@ export default class Fetch {
 					window: this.#window,
 					response: await response,
 					request: this.request
-				})
+			  })
 			: undefined;
 
 		this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
@@ -546,7 +563,7 @@ export default class Fetch {
 							window: this.#window,
 							response: await response,
 							request: this.request
-						})
+					  })
 					: undefined;
 				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 				const returnResponse =
