@@ -606,6 +606,39 @@ describe('HTMLFormElement', () => {
 			expect(page.mainFrame.window.document.body.innerHTML).toBe('Test');
 		});
 
+		it('Overwrites existing URL query string on form submit when method is "GET".', async () => {
+			let request: Request | null = null;
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				request = this.request;
+				return Promise.resolve(<Response>{
+					url: request?.url,
+					text: () =>
+						new Promise((resolve) => setTimeout(() => resolve('<html><body>Test</body></html>'), 2))
+				});
+			});
+
+			const browser = new Browser();
+			const page = browser.newPage();
+			page.url = 'http://example.com/?text1=value1&text2=value1';
+
+			page.mainFrame.document.write(`
+                <form method="get">
+                    <input type="text" name="text1" value="value2">
+                    <input type="text" name="text2" value="value2">
+                    <input type="text" name="text2" value="value3">
+                    <input type="submit" name="button1">
+                </form>
+            `);
+
+			page.mainFrame.document.body.children[0]['button1'].click();
+
+			await page.mainFrame.waitForNavigation();
+
+			expect(page.mainFrame.url).toBe('http://example.com/?text1=value2&text2=value2&text2=value3');
+			expect(page.mainFrame.window.document.body.innerHTML).toBe('Test');
+		});
+
 		for (const method of ['POST', 'PUT', 'DELETE', 'PATCH']) {
 			it(`Submits form as form data when method is "${method}".`, async () => {
 				let request: Request | null = null;
