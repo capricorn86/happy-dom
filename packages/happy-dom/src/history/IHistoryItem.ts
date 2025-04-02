@@ -7,6 +7,6 @@ export default interface IHistoryItem {
 	state: any | null;
 	scrollRestoration: HistoryScrollRestorationEnum;
 	method: string;
-	formData: FormData | null;
+	formData: FormData | URLSearchParams | null;
 	isCurrent: boolean;
 }
