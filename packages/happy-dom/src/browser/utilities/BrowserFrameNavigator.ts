@@ -39,7 +39,7 @@ export default class BrowserFrameNavigator {
 		url: string;
 		goToOptions?: IGoToOptions;
 		method?: string;
-		formData?: FormData | null;
+		formData?: FormData | URLSearchParams | null;
 		disableHistory?: boolean;
 	}): Promise<Response | null> {
 		const { windowClass, frame, url, formData, method, goToOptions, disableHistory } = options;
