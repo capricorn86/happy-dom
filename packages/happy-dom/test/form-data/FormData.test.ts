@@ -127,6 +127,7 @@ describe('FormData', () => {
 
 		it('Supports disabled input elements.', () => {
 			const form = document.createElement('form');
+
 			const file = new File([Buffer.from('fileContent')], 'file.txt', { type: 'text/plain' });
 			const textInput = document.createElement('input');
 			const hiddenInput = document.createElement('input');
