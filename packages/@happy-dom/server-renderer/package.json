@@ -5,7 +5,7 @@
 	"homepage": "https://github.com/capricorn86/happy-dom/tree/master/packages/@happy-dom/server-renderer",
 	"repository": "https://github.com/capricorn86/happy-dom",
 	"author": "David Ortner",
-	"description": "Use Happy DOM for server-side rendering (SSR).",
+	"description": "Use Happy DOM for server-side rendering (SSR) or as a static site generator (SSG).",
 	"main": "lib/index.js",
 	"type": "module",
 	"keywords": [
@@ -21,20 +21,24 @@
 		"rendering",
         "server",
         "renderer",
-		"ssr"
+		"ssr",
+        "static",
+        "site",
+        "generator",
+        "ssg"
 	],
 	"publishConfig": {
 		"access": "public"
 	},
     "bin": {
-        "happy-dom-ssr": "bin/lib/happy-dom-ssr.js"
+        "happy-dom-sr": "bin/lib/happy-dom-sr.js"
     },
 	"scripts": {
 		"compile": "tsc && tsc --project ./bin",
 		"watch": "npm run compile && tsc -w --preserveWatchOutput"
 	},
 	"dependencies": {
-		"happy-dom-bundle": "^0.0.0"
+		"happy-dom": "^0.0.0"
 	},
 	"devDependencies": {
 		"@typescript-eslint/eslint-plugin": "^5.16.0",

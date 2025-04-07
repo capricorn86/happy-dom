@@ -1,41 +1,83 @@
 ![Happy DOM Logo](https://github.com/capricorn86/happy-dom/raw/master/docs/happy-dom-logo.jpg)
 
-This package makes it possible to register [Happy DOM](https://github.com/capricorn86/happy-dom) in the global scope, e.g. for testing purposes.
+Use Happy DOM for server-side rendering (SSR) or as a static site generator (SSG).
+
+The server rendering module uses a worker pool by default to render multiple pages in parallel. Each worker can also render multiple pages in parallel.
+
+The benefit of using this server rendering module is that it is not tied to a specific framework. For example, you can use React, Vue, and Angular on the same page. The server rendering module will render the page as a whole and return the HTML.
 
 ## Installation
 
 ```bash
-npm install @happy-dom/global-registrator --save-dev
+npm install @happy-dom/server-rendering --save-dev
 ```
 
 ## Usage
 
-#### Register
+### Command Line
 
-```javascript
-import { GlobalRegistrator } from '@happy-dom/global-registrator';
+#### Basic Usage
 
-GlobalRegistrator.register({ url: 'http://localhost:3000', width: 1920, height: 1080 });
+This will output the result to the file `./happy-dom-sr/output/gb/en/index.html`.
 
-document.body.innerHTML = `<button>My button</button>`;
-
-const button = document.querySelector('button');
-
-// Outputs: "My button"
-console.log(button.innerText);
+```bash
+happy-dom-sr --config=<path-to-config-file> "https://example.com/gb/en/"
 ```
 
-#### Unregister
+#### Virtual Server
+This will setup a virtual server that serves the content from the directory "./build" for requests towards "https://example.com/{cc}/{lc}/".
+
+The result will be saved to the files "./happy-dom-sr/output/gb/en/index.html" and "./happy-dom-sr/output/us/en/index.html".
+
+This is useful for static site generation (SSG) (e.g. after a Vite or Webpack build).
+
+```bash
+happy-dom-sr --browser.fetch.virtualServer="https:\/\/example\.com\/[a-z]{2}\/[a-z]{2}\/">"./build" "https://example.com/gb/en/" "https://example.com/us/en/"
+```
+
+### JavaScript
+
+#### Basic Usage
+```javascript
+import { ServerRenderer } from '@happy-dom/server-rendering';
+
+const renderer = new ServerRenderer({
+  // Your configuration options
+});
+
+const result = await renderer.render([{ url: 'https://example.com/gb/en/' }]);
+
+// The rendered HTML
+console.log(result[0].url);
+console.log(result[0].content);
+```
+
+#### Virtual Server
+
+This will setup a virtual server that serves the content from the directory "./build" for requests towards "https://example.com/{cc}/{lc}/".
+
+The result will be saved to the files "./index_gb.html" and "./index_us.html".
+
+This is useful for static site generation (SSG) (e.g. after a Vite or Webpack build).
 
 ```javascript
-import { GlobalRegistrator } from '@happy-dom/global-registrator';
+import { ServerRenderer } from '@happy-dom/server-rendering';
 
-GlobalRegistrator.register();
+const renderer = new ServerRenderer({
+  browser: {
+    fetch: {
+      virtualServers: [{
+        url: /https:\/\/example\.com\/[a-z]{2}\/[a-z]{2}\//,
+        directory: './build',
+      }]
+    },
+  }
+});
 
-await GlobalRegistrator.unregister();
-
-// Outputs: "undefined"
-console.log(global.document);
+await renderer.render([
+    { url: 'https://example.com/gb/en/', outputFile: './index_gb.html' },
+    { url: 'https://example.com/us/en/', outputFile: './index_us.html' },
+]);
 ```
 
 ## Happy DOM

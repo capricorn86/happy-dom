@@ -4,7 +4,6 @@ import Browser from './browser/Browser.js';
 import BrowserContext from './browser/BrowserContext.js';
 import BrowserFrame from './browser/BrowserFrame.js';
 import BrowserPage from './browser/BrowserPage.js';
-import DefaultBrowserSettings from './browser/DefaultBrowserSettings.js';
 import DetachedBrowser from './browser/detached-browser/DetachedBrowser.js';
 import DetachedBrowserContext from './browser/detached-browser/DetachedBrowserContext.js';
 import DetachedBrowserFrame from './browser/detached-browser/DetachedBrowserFrame.js';
@@ -76,7 +75,6 @@ import File from './file/File.js';
 import FileReader from './file/FileReader.js';
 import FormData from './form-data/FormData.js';
 import History from './history/History.js';
-import HTMLSerializer from './html-serializer/HTMLSerializer.js';
 import IntersectionObserver from './intersection-observer/IntersectionObserver.js';
 import IntersectionObserverEntry from './intersection-observer/IntersectionObserverEntry.js';
 import Location from './location/Location.js';
@@ -197,9 +195,7 @@ import type IBrowser from './browser/types/IBrowser.js';
 import type IBrowserContext from './browser/types/IBrowserContext.js';
 import type IBrowserFrame from './browser/types/IBrowserFrame.js';
 import type IBrowserPage from './browser/types/IBrowserPage.js';
-import type IBrowserPageViewport from './browser/types/IBrowserPageViewport.js';
 import type IBrowserSettings from './browser/types/IBrowserSettings.js';
-import type IOptionalBrowserPageViewport from './browser/types/IOptionalBrowserPageViewport.js';
 import type IOptionalBrowserSettings from './browser/types/IOptionalBrowserSettings.js';
 import type ICookie from './cookie/ICookie.js';
 import type IOptionalCookie from './cookie/IOptionalCookie.js';
@@ -221,7 +217,6 @@ import type IProgressEventInit from './event/events/IProgressEventInit.js';
 import type ISubmitEventInit from './event/events/ISubmitEventInit.js';
 import type ITouchEventInit from './event/events/ITouchEventInit.js';
 import type IWheelEventInit from './event/events/IWheelEventInit.js';
-import type ICachedResponse from './fetch/cache/response/ICachedResponse.js';
 import type IVirtualServer from './fetch/types/IVirtualServer.js';
 
 export type {
@@ -230,9 +225,7 @@ export type {
 	IBrowserContext,
 	IBrowserFrame,
 	IBrowserPage,
-	IBrowserPageViewport,
 	IBrowserSettings,
-	ICachedResponse,
 	IClipboardEventInit,
 	ICookie,
 	ICustomEventInit,
@@ -245,7 +238,6 @@ export type {
 	IKeyboardEventInit,
 	IMediaQueryListInit,
 	IMouseEventInit,
-	IOptionalBrowserPageViewport,
 	IOptionalBrowserSettings,
 	IOptionalCookie,
 	IProgressEventInit,
@@ -297,7 +289,6 @@ export {
 	DataTransfer,
 	DataTransferItem,
 	DataTransferItemList,
-	DefaultBrowserSettings,
 	DetachedBrowser,
 	DetachedBrowserContext,
 	DetachedBrowserFrame,
@@ -375,7 +366,6 @@ export {
 	HTMLQuoteElement,
 	HTMLScriptElement,
 	HTMLSelectElement,
-	HTMLSerializer,
 	HTMLSlotElement,
 	HTMLSourceElement,
 	HTMLSpanElement,

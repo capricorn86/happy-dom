@@ -10,7 +10,6 @@ export default class BrowserSettingsFactory {
 	 * Returns browser settings.
 	 *
 	 * @param [settings] Browser settings.
-	 * @param [freezeObject] "true" to freeze the object.
 	 * @returns Settings.
 	 */
 	public static createSettings(settings?: IOptionalBrowserSettings): IBrowserSettings {

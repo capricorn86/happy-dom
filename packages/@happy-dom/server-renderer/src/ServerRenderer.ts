@@ -1,8 +1,12 @@
-import IOptionalServerRendererOptions from './IOptionalServerRendererOptions.js';
+import IOptionalServerRendererConfiguration from './IOptionalServerRendererConfiguration.js';
 import IServerRendererItem from './IServerRendererItem.js';
 import { Worker } from 'worker_threads';
 import IServerRendererResult from './IServerRendererResult.js';
 import ServerRendererLogLevelEnum from './ServerRendererLogLevelEnum.js';
+import IServerRendererConfiguration from './IServerRendererConfiguration.js';
+import ServerRendererConfigurationFactory from './ServerRendererConfigurationFactory.js';
+import Path from 'path';
+import Inspector from 'node:inspector'
 
 interface IWorkerWaitingItem {
     items: IServerRendererItem[];
@@ -12,19 +16,24 @@ interface IWorkerWaitingItem {
 }
 
 /**
- * Server-side rendering.
+ * Server renderer.
  */
 export default class ServerRenderer {
-	#options: IOptionalServerRendererOptions;
+	#configuration: IServerRendererConfiguration;
     #workerPool: { busy: Worker[]; free: Worker[], waiting: IWorkerWaitingItem[] } = { busy: [], free: [], waiting: [] };
 
 	/**
 	 * Constructor.
 	 *
-	 * @param options Options.
+	 * @param configuration Configuration.
 	 */
-	constructor(options?: IOptionalServerRendererOptions) {
-		this.#options = options;
+	constructor(configuration?: IOptionalServerRendererConfiguration) {
+		this.#configuration = ServerRendererConfigurationFactory.createConfiguration(configuration);
+        
+        if(this.#configuration.worker.disable && this.#configuration.inspect) {
+            Inspector.open();
+            Inspector.waitForDebugger();
+        }
 	}
 
 	/**
@@ -33,34 +42,60 @@ export default class ServerRenderer {
 	 * @param items Items.
 	 */
 	public async render(items: Array<string | IServerRendererItem>): Promise<IServerRendererResult[]> {
+        const startTime = performance.now();
         const parsedItems: IServerRendererItem[] = [];
 
         for (const item of items) {
             if (typeof item === 'string') {
                 parsedItems.push({ url: item });
             } else {
-                parsedItems.push(item);
+                parsedItems.push({ url: item.url, outputFile: item.outputFile ? Path.join(this.#configuration.outputDirectory, item.outputFile) : null });
             }
         }
 
-        if(!this.#options.disableCache) {
+        if(this.#configuration.logLevel >= ServerRendererLogLevelEnum.info) {
+            // eslint-disable-next-line no-console
+            console.log(`Rendering ${parsedItems.length} page${parsedItems.length > 1 ? 's' : ''}`);
+        }
+
+        let results: IServerRendererResult[] = [];
+        if(!this.#configuration.cache.disable) {
             const item = parsedItems.shift();
             if(item) {
-                await this.#runInWorker([item], true);
+                results = results.concat(await this.#runInWorker([item], true));
             }
         }
 
         const promises = [];
-        let results: IServerRendererResult[] = [];
         
         while (parsedItems.length) {
-            const chunk = parsedItems.splice(0, this.#options.render.maxConcurrency);
+            const chunk = parsedItems.splice(0, this.#configuration.render.maxConcurrency);
             promises.push(this.#runInWorker(chunk).then((chunkResults) => {
                 results = results.concat(chunkResults);
             }));
         }
 
         await Promise.all(promises);
+
+        for(const worker of this.#workerPool.busy) {
+            worker.terminate();
+        }
+        
+        for(const worker of this.#workerPool.free) {
+            worker.terminate();
+        }
+
+        this.#workerPool.busy = [];
+        this.#workerPool.free = [];
+        this.#workerPool.waiting = [];
+
+        if(this.#configuration.logLevel >= ServerRendererLogLevelEnum.info) {
+            const time = Math.round((performance.now() - startTime) / 1000);
+            const minutes = Math.floor(time / 60);
+            const seconds = time % 60;
+            // eslint-disable-next-line no-console
+            console.log(`Rendered ${items.length} pages in ${minutes} minutes and ${seconds} seconds`);
+        }
 
         return results;
     }
@@ -72,15 +107,28 @@ export default class ServerRenderer {
      * @param isCacheWarmup Is cache warmup.
 	 */
 	async #runInWorker(items: IServerRendererItem[], isCacheWarmup?: boolean): Promise<IServerRendererResult[]> {
-		if (this.#options.worker.disable) {
+		if (this.#configuration.worker.disable) {
 			const Browser = await import('./ServerRendererBrowser.js');
-            const browser = new Browser.default(this.#options);
-			await browser.render(items, isCacheWarmup);
-			return;
+            const browser = new Browser.default(this.#configuration);
+			const results = await browser.render(items, isCacheWarmup);
+            for (const result of results) {
+                if(result.error) {
+                    if(this.#configuration.logLevel >= ServerRendererLogLevelEnum.error) {
+                        // eslint-disable-next-line no-console
+                        console.error(` - Failed to render page "${result.url}": ${result.error}`);
+                    }
+                } else {
+                    if(this.#configuration.logLevel >= ServerRendererLogLevelEnum.info) {
+                        // eslint-disable-next-line no-console
+                        console.log(' - Rendered page "' + result.url);
+                    }
+                }
+            }
+            return results;
 		}
 		return new Promise((resolve, reject) => {
             if(this.#workerPool.free.length === 0) {
-                if(this.#workerPool.busy.length >= this.#options.worker.maxConcurrency) {
+                if(this.#workerPool.busy.length >= this.#configuration.worker.maxConcurrency) {
                     this.#workerPool.waiting.push({ items, isCacheWarmup, resolve, reject });
                     return;
                 }
@@ -88,7 +136,7 @@ export default class ServerRenderer {
                     new URL('ServerRendererWorker.js', import.meta.url),
                     {
                         workerData: {
-                            options: this.#options
+                            configuration: this.#configuration
                         }
                     }
                 );
@@ -119,20 +167,20 @@ export default class ServerRenderer {
                     error: (error: Error) => void;
                     exit: (code: number) => void;
                 } = {
-                    message: (event) => {
-                        const results = <IServerRendererResult[]>event.data.results;
+                    message: (data) => {
+                        const results = <IServerRendererResult[]>data.results;
 
-                        if(this.#options.logLevel !== ServerRendererLogLevelEnum.none) {
+                        if(this.#configuration.logLevel !== ServerRendererLogLevelEnum.none) {
                             for (const result of results) {
                                 if(result.error) {
-                                    if(this.#options.logLevel === ServerRendererLogLevelEnum.error) {
+                                    if(this.#configuration.logLevel >= ServerRendererLogLevelEnum.error) {
                                         // eslint-disable-next-line no-console
                                         console.error(` - Failed to render page "${result.url}": ${result.error}`);
                                     }
                                 } else {
-                                    if(this.#options.logLevel >= ServerRendererLogLevelEnum.info) {
+                                    if(this.#configuration.logLevel >= ServerRendererLogLevelEnum.info) {
                                         // eslint-disable-next-line no-console
-                                        console.log(' - Rendered page "' + result.url);
+                                        console.log(` - Rendered page "${result.url}"`);
                                     }
                                 }
                             }
@@ -142,7 +190,8 @@ export default class ServerRenderer {
                         resolve(results);
                     },
                     error: (error: Error) => {
-                        if(this.#options.logLevel === ServerRendererLogLevelEnum.error) {
+                        console.log('Error')
+                        if(this.#configuration.logLevel >= ServerRendererLogLevelEnum.error) {
                             for (const item of items) {
                                 // eslint-disable-next-line no-console
                                 console.error(` - Failed to render page "${item.url}": ${error}`);

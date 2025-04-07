@@ -1,19 +1,25 @@
 import ServerRendererBrowser from './ServerRendererBrowser.js';
 import { parentPort, workerData } from 'worker_threads';
+import Inspector from 'node:inspector'
 
 /**
- * Server-side rendering worker.
+ * Server renderer worker.
  */
 export default class ServerRendererWorker {
 	/**
 	 * Connects to the worker.
 	 */
 	public static async connect(): Promise<void> {
-        const { options } = workerData;
+        const { configuration } = workerData;
 
-        parentPort.on('message', async (event) => {
-            const { items, isCacheWarmup } = event.value;
-            const browser = new ServerRendererBrowser(options);
+        if(configuration.inspect) {
+            Inspector.open();
+            Inspector.waitForDebugger();
+        }
+        
+        const browser = new ServerRendererBrowser(configuration);
+
+        parentPort.on('message', async ({ items, isCacheWarmup }) => {
             const results = await browser.render(items, isCacheWarmup);
             parentPort.postMessage({ status: 'done', results });
         });

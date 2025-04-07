@@ -47,7 +47,7 @@
 		"testEnvironment": "./lib"
 	},
 	"dependencies": {
-		"happy-dom-cjs": "^0.0.0"
+		"happy-dom": "^0.0.0"
 	},
 	"devDependencies": {
 		"@jest/environment": "^29.4.0",

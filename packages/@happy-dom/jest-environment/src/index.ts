@@ -5,7 +5,7 @@ import * as JestUtil from 'jest-util';
 import { ModuleMocker } from 'jest-mock';
 import { LegacyFakeTimers, ModernFakeTimers } from '@jest/fake-timers';
 import { JestEnvironment, EnvironmentContext } from '@jest/environment';
-import { Window, BrowserErrorCaptureEnum, IOptionalBrowserSettings } from 'happy-dom-cjs';
+import { Window, BrowserErrorCaptureEnum, IOptionalBrowserSettings } from 'happy-dom';
 import { Script } from 'vm';
 import { Global, Config } from '@jest/types';
 
