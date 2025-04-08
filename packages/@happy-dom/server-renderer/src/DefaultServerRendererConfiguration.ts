@@ -7,22 +7,22 @@ import { BrowserErrorCaptureEnum } from 'happy-dom';
 export default <IServerRendererConfiguration>{
 	browser: { ...DefaultBrowserSettings, errorCapture: BrowserErrorCaptureEnum.processLevel },
 	outputDirectory: './happy-dom-sr/output',
-    logLevel: ServerRendererLogLevelEnum.info,
-    debug: false,
-    cache: {
-        directory: './happy-dom-sr/cache',
-        disable: false,
-    },
+	logLevel: ServerRendererLogLevelEnum.info,
+	debug: false,
+	cache: {
+		directory: './happy-dom-sr/cache',
+		disable: false
+	},
 	worker: {
 		disable: false,
-		maxConcurrency: Math.max(1, Math.floor(OS.cpus().length / 2)),
+		maxConcurrency: Math.max(1, Math.floor(OS.cpus().length / 2))
 	},
 	render: {
 		maxConcurrency: 10,
-        timeout: 30000,
-        incognitoContext: false,
+		timeout: 30000,
+		incognitoContext: false,
 		serializableShadowRoots: false,
 		allShadowRoots: false,
 		excludeShadowRootTags: null
 	}
-}
+};

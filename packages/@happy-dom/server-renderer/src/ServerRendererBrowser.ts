@@ -14,8 +14,8 @@ import IServerRendererResult from './IServerRendererResult.js';
  */
 export default class ServerRendererBrowser {
 	#configuration: IServerRendererConfiguration;
-    #browser: Browser;
-    #isCacheLoaded: boolean = false;
+	#browser: Browser;
+	#isCacheLoaded: boolean = false;
 
 	/**
 	 * Constructor.
@@ -24,13 +24,15 @@ export default class ServerRendererBrowser {
 	 */
 	constructor(configuration: IServerRendererConfiguration) {
 		this.#configuration = configuration;
-        const settings = configuration.debug ? {
-            ...configuration.browser,
-            debug: {
-                ...configuration.browser.debug,
-                traceWaitUntilComplete: configuration.render.timeout
-            }
-        } : configuration.browser;
+		const settings = configuration.debug
+			? {
+					...configuration.browser,
+					debug: {
+						...configuration.browser.debug,
+						traceWaitUntilComplete: configuration.render.timeout
+					}
+				}
+			: configuration.browser;
 		this.#browser = new Browser({ settings });
 	}
 
@@ -40,21 +42,26 @@ export default class ServerRendererBrowser {
 	 * @param items Items.
 	 * @param [isCacheWarmup] Indicates that this is a cache warmup.
 	 */
-	public async render(items: IServerRendererItem[], isCacheWarmup?: boolean): Promise<IServerRendererResult[]> {
-		const browser = this.#browser
+	public async render(
+		items: IServerRendererItem[],
+		isCacheWarmup?: boolean
+	): Promise<IServerRendererResult[]> {
+		const browser = this.#browser;
 
-        await this.#loadCache(browser);
+		await this.#loadCache(browser);
 
-        let results: IServerRendererResult[] = [];
+		const results: IServerRendererResult[] = [];
 
 		// We should not render too many pages at once, as it can affect performance and cause timing issues
 		while (items.length) {
 			const chunk = items.splice(0, this.#configuration.render.maxConcurrency);
 			const promises = [];
 			for (const url of chunk) {
-				promises.push(this.#renderURL(browser, url).then((result) => {
-                    results.push(result);
-                }));
+				promises.push(
+					this.#renderURL(browser, url).then((result) => {
+						results.push(result);
+					})
+				);
 			}
 			await Promise.all(promises);
 		}
@@ -63,7 +70,7 @@ export default class ServerRendererBrowser {
 			await this.#storeCache(browser);
 		}
 
-        return results;
+		return results;
 	}
 
 	/**
@@ -73,35 +80,49 @@ export default class ServerRendererBrowser {
 	 * @param item Item.
 	 */
 	async #renderURL(browser: Browser, item: IServerRendererItem): Promise<IServerRendererResult> {
-        const responseCache = browser.defaultContext.responseCache;
-        const preflightResponseCache = browser.defaultContext.preflightResponseCache;
-        const context = this.#configuration.render.incognitoContext ? browser.newIncognitoContext() : browser.defaultContext;
+		const responseCache = browser.defaultContext.responseCache;
+		const preflightResponseCache = browser.defaultContext.preflightResponseCache;
+		const context = this.#configuration.render.incognitoContext
+			? browser.newIncognitoContext()
+			: browser.defaultContext;
 		const page = context.newPage();
 
-        // @ts-ignore
-        context.responseCache = responseCache;
-        // @ts-ignore
-        context.preflightResponseCache = preflightResponseCache;
+		// @ts-ignore
+		context.responseCache = responseCache;
+		// @ts-ignore
+		context.preflightResponseCache = preflightResponseCache;
 
-        const response = await page.goto(item.url, { timeout: this.#configuration.render.timeout});
+		const response = await page.goto(item.url, { timeout: this.#configuration.render.timeout });
 
 		if (!response.ok) {
-            await page.close();
-            return { url: item.url, content: null, outputFile: item.outputFile, error: `Failed to render page ${item.url} (${response.status} ${response.statusText})` };
+			await page.close();
+			return {
+				url: item.url,
+				content: null,
+				outputFile: item.outputFile,
+				error: `Failed to render page ${item.url} (${response.status} ${response.statusText})`
+			};
 		}
 
-        let timeout = !this.#browser.settings.debug.traceWaitUntilComplete ? setTimeout(() => {
-            page.abort();
-        }, this.#configuration.render.timeout) : null;
+		const timeout = !this.#browser.settings.debug.traceWaitUntilComplete
+			? setTimeout(() => {
+					page.abort();
+				}, this.#configuration.render.timeout)
+			: null;
 
 		try {
 			await page.waitUntilComplete();
 		} catch (error) {
-            await page.close();
-            return { url: item.url, content: null, outputFile: item.outputFile, error: `${error.message}\n${error.stack}\n\n  Console:\n\n${page.virtualConsolePrinter.readAsString()}` };
+			await page.close();
+			return {
+				url: item.url,
+				content: null,
+				outputFile: item.outputFile,
+				error: `${error.message}\n${error.stack}\n\n  Console:\n\n${page.virtualConsolePrinter.readAsString()}`
+			};
 		}
 
-        clearTimeout(timeout);
+		clearTimeout(timeout);
 
 		const serializer = new HTMLSerializer({
 			allShadowRoots: this.#configuration.render.allShadowRoots,
@@ -113,9 +134,9 @@ export default class ServerRendererBrowser {
 
 		await page.close();
 
-        if(!item.outputFile) {
-            return { url: item.url, content: result, outputFile: null, error: null };
-        }
+		if (!item.outputFile) {
+			return { url: item.url, content: result, outputFile: null, error: null };
+		}
 
 		try {
 			await FS.promises.mkdir(Path.dirname(item.outputFile), {
@@ -127,7 +148,7 @@ export default class ServerRendererBrowser {
 
 		await FS.promises.writeFile(item.outputFile, result);
 
-        return { url: item.url, content: null, outputFile: item.outputFile, error: null };
+		return { url: item.url, content: null, outputFile: item.outputFile, error: null };
 	}
 
 	/**
@@ -136,20 +157,24 @@ export default class ServerRendererBrowser {
 	 * @param browser Browser.
 	 */
 	async #loadCache(browser: Browser): Promise<void> {
-		if (this.#configuration.cache.disable || !this.#configuration.cache.directory || this.#isCacheLoaded) {
+		if (
+			this.#configuration.cache.disable ||
+			!this.#configuration.cache.directory ||
+			this.#isCacheLoaded
+		) {
 			return;
 		}
 
-        this.#isCacheLoaded = true;
+		this.#isCacheLoaded = true;
 
-        let files: string[] = [];
+		let files: string[] = [];
 
-        try {
-            files = await FS.promises.readdir(this.#configuration.cache.directory);
-        } catch (error) {
-            // If the directory does not exist, we have no cache and we can ignore it
-            return;
-        }
+		try {
+			files = await FS.promises.readdir(this.#configuration.cache.directory);
+		} catch (error) {
+			// If the directory does not exist, we have no cache and we can ignore it
+			return;
+		}
 
 		const promises = [];
 
@@ -164,7 +189,9 @@ export default class ServerRendererBrowser {
 							entry.request.headers = new Headers(entry.request.headers);
 
 							return FS.promises
-								.readFile(Path.join(this.#configuration.cache.directory, file.split('.')[0] + '.data'))
+								.readFile(
+									Path.join(this.#configuration.cache.directory, file.split('.')[0] + '.data')
+								)
 								.then((body) => {
 									entry.response.body = body;
 									let entries = browser.defaultContext.responseCache.entries.get(
@@ -196,13 +223,13 @@ export default class ServerRendererBrowser {
 			return;
 		}
 
-        try {
-            await FS.promises.mkdir(this.#configuration.cache.directory, {
-                recursive: true
-            });
-        } catch (error) {
-            // Ignore if the directory already exists
-        }
+		try {
+			await FS.promises.mkdir(this.#configuration.cache.directory, {
+				recursive: true
+			});
+		} catch (error) {
+			// Ignore if the directory already exists
+		}
 
 		const groupedEntries = browser.defaultContext.responseCache.entries;
 		const entryPromises = [];
@@ -210,54 +237,51 @@ export default class ServerRendererBrowser {
 
 		for (const entries of groupedEntries.values()) {
 			for (const entry of entries) {
-                if(entry.response.body && !entry.virtual) {
-                    const responseHeaders = {};
-                    const requestHeaders = {};
+				if (entry.response.body && !entry.virtual) {
+					const responseHeaders = {};
+					const requestHeaders = {};
 
-                    for (const [key, value] of entry.response.headers.entries()) {
-                        responseHeaders[key] = value;
-                    }
+					for (const [key, value] of entry.response.headers.entries()) {
+						responseHeaders[key] = value;
+					}
 
-                    for (const [key, value] of entry.request.headers.entries()) {
-                        requestHeaders[key] = value;
-                    }
+					for (const [key, value] of entry.request.headers.entries()) {
+						requestHeaders[key] = value;
+					}
 
-                    const cacheableEntry = {
-                        ...entry,
-                        response: {
-                            ...entry.response,
-                            headers: responseHeaders,
-                            body: null
-                        },
-                        request: {
-                            ...entry.request,
-                            headers: requestHeaders
-                        }
-                    };
+					const cacheableEntry = {
+						...entry,
+						response: {
+							...entry.response,
+							headers: responseHeaders,
+							body: null
+						},
+						request: {
+							...entry.request,
+							headers: requestHeaders
+						}
+					};
 
-                    const json = JSON.stringify(cacheableEntry, null, 3);
-                    const hash = Crypto.createHash('md5').update(json).digest('hex');
+					const json = JSON.stringify(cacheableEntry, null, 3);
+					const hash = Crypto.createHash('md5').update(json).digest('hex');
 
-                    entryPromises.push(
-                        FS.promises.writeFile(
-                            Path.join(this.#configuration.cache.directory, `${hash}.json`),
-                            json
-                        )
-                    );
+					entryPromises.push(
+						FS.promises.writeFile(
+							Path.join(this.#configuration.cache.directory, `${hash}.json`),
+							json
+						)
+					);
 
-                    bodyPromises.push(
-                        FS.promises.writeFile(
-                            Path.join(this.#configuration.cache.directory, `${hash}.data`),
-                            entry.response.body
-                        )
-                    );
-                }
+					bodyPromises.push(
+						FS.promises.writeFile(
+							Path.join(this.#configuration.cache.directory, `${hash}.data`),
+							entry.response.body
+						)
+					);
+				}
 			}
 		}
 
-        await Promise.all([
-            Promise.all(entryPromises),
-            Promise.all(bodyPromises)
-        ]);
+		await Promise.all([Promise.all(entryPromises), Promise.all(bodyPromises)]);
 	}
 }

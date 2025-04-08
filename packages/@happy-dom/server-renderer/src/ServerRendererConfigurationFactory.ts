@@ -14,27 +14,29 @@ export default class ServerRendererConfigurationFactory {
 	 * @param [configuration] Configuration.
 	 * @returns Configuration.
 	 */
-	public static createConfiguration(configuration?: IOptionalServerRendererConfiguration): IServerRendererConfiguration {
-        const config = {
+	public static createConfiguration(
+		configuration?: IOptionalServerRendererConfiguration
+	): IServerRendererConfiguration {
+		const config = {
 			...DefaultServerRendererConfiguration,
-            ...configuration,
-            browser: BrowserSettingsFactory.createSettings(configuration?.browser),
-            cache: {
-                ...DefaultServerRendererConfiguration.cache,
-                ...configuration?.cache
-            },
-            worker: {
-                ...DefaultServerRendererConfiguration.worker,
-                ...configuration?.worker
-            },
-            render: {
-                ...DefaultServerRendererConfiguration.render,
-                ...configuration?.render,
-            }
+			...configuration,
+			browser: BrowserSettingsFactory.createSettings(configuration?.browser),
+			cache: {
+				...DefaultServerRendererConfiguration.cache,
+				...configuration?.cache
+			},
+			worker: {
+				...DefaultServerRendererConfiguration.worker,
+				...configuration?.worker
+			},
+			render: {
+				...DefaultServerRendererConfiguration.render,
+				...configuration?.render
+			}
 		};
 
-        config.outputDirectory = Path.resolve(config.outputDirectory);
-        config.cache.directory = Path.resolve(config.cache.directory);
+		config.outputDirectory = Path.resolve(config.outputDirectory);
+		config.cache.directory = Path.resolve(config.cache.directory);
 
 		return config;
 	}

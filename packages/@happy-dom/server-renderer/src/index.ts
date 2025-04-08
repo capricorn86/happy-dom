@@ -4,4 +4,10 @@ import IServerRendererResult from './IServerRendererResult.js';
 import IServerRendererConfiguration from './IServerRendererConfiguration.js';
 import IOptionalServerRendererConfiguration from './IOptionalServerRendererConfiguration.js';
 
-export { ServerRenderer, IServerRendererItem, IServerRendererResult, IServerRendererConfiguration, IOptionalServerRendererConfiguration };
+export {
+	ServerRenderer,
+	IServerRendererItem,
+	IServerRendererResult,
+	IServerRendererConfiguration,
+	IOptionalServerRendererConfiguration
+};
