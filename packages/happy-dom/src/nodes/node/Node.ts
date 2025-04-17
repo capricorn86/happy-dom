@@ -548,6 +548,9 @@ export default class Node extends EventTarget {
 			node = node[PropertySymbol.proxy];
 		}
 
+		const previousSibling = node.previousSibling;
+		const nextSibling = node.nextSibling;
+
 		node[PropertySymbol.parentNode] = null;
 
 		node[PropertySymbol.clearCache]();
@@ -590,7 +593,9 @@ export default class Node extends EventTarget {
 			new MutationRecord({
 				target: this[PropertySymbol.proxy] || this,
 				type: MutationTypeEnum.childList,
-				removedNodes: [node]
+				removedNodes: [node],
+				previousSibling,
+				nextSibling
 			})
 		);
 
