@@ -21,6 +21,7 @@ export default <IBrowserSettings>{
 	fetch: {
 		disableSameOriginPolicy: false,
 		interceptor: null,
+		requestHeaders: null,
 		virtualServers: null
 	},
 	navigation: {
@@ -44,5 +45,10 @@ export default <IBrowserSettings>{
 	},
 	debug: {
 		traceWaitUntilComplete: -1
+	},
+	viewport: {
+		width: 1024,
+		height: 768,
+		devicePixelRatio: 1
 	}
 };

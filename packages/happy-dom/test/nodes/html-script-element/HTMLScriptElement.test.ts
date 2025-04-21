@@ -817,6 +817,8 @@ describe('HTMLScriptElement', () => {
             Expect upper case: "VALUE"
             Expect lower case. "value"
             Expect trimmed lower case: "value"
+            Import URL: https://localhost:8080/base/js/TestModuleElement.js
+            Resolved URL: https://localhost:8080/base/js/Resolved.js
         </div><div>Lazy-loaded module: true</div>`);
 
 			expect(testModule.shadowRoot?.adoptedStyleSheets[0].cssRules[0].cssText).toBe(

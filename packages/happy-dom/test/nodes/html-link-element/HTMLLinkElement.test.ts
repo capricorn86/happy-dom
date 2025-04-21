@@ -416,6 +416,8 @@ describe('HTMLLinkElement', () => {
             Expect upper case: "VALUE"
             Expect lower case. "value"
             Expect trimmed lower case: "value"
+            Import URL: https://localhost:8080/base/js/TestModuleElement.js
+            Resolved URL: https://localhost:8080/base/js/Resolved.js
         </div><div>Lazy-loaded module: true</div>`);
 		});
 
