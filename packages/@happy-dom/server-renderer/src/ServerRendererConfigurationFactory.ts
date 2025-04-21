@@ -20,7 +20,10 @@ export default class ServerRendererConfigurationFactory {
 		const config = {
 			...DefaultServerRendererConfiguration,
 			...configuration,
-			browser: BrowserSettingsFactory.createSettings(configuration?.browser),
+			browser: BrowserSettingsFactory.createSettings({
+				...DefaultServerRendererConfiguration.browser,
+				...configuration?.browser
+			}),
 			cache: {
 				...DefaultServerRendererConfiguration.cache,
 				...configuration?.cache

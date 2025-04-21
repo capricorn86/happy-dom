@@ -11,7 +11,8 @@ export default <IServerRendererConfiguration>{
 	debug: false,
 	cache: {
 		directory: './happy-dom-sr/cache',
-		disable: false
+		disable: false,
+		forceResponseCacheTime: -1
 	},
 	worker: {
 		disable: false,

@@ -8,6 +8,7 @@ import Path from 'path';
 import IServerRendererItem from './IServerRendererItem.js';
 import Crypto from 'crypto';
 import IServerRendererResult from './IServerRendererResult.js';
+import { ErrorEvent } from 'happy-dom';
 
 /**
  * Server renderer browser.
@@ -31,7 +32,7 @@ export default class ServerRendererBrowser {
 						...configuration.browser.debug,
 						traceWaitUntilComplete: configuration.render.timeout
 					}
-				}
+			  }
 			: configuration.browser;
 		this.#browser = new Browser({ settings });
 	}
@@ -50,20 +51,28 @@ export default class ServerRendererBrowser {
 
 		await this.#loadCache(browser);
 
-		const results: IServerRendererResult[] = [];
+		let results: IServerRendererResult[];
 
-		// We should not render too many pages at once, as it can affect performance and cause timing issues
-		while (items.length) {
-			const chunk = items.splice(0, this.#configuration.render.maxConcurrency);
-			const promises = [];
-			for (const url of chunk) {
-				promises.push(
-					this.#renderURL(browser, url).then((result) => {
-						results.push(result);
-					})
-				);
+		if (items.length > this.#configuration.render.maxConcurrency) {
+			results = [];
+			while (items.length) {
+				const chunk = items.splice(0, this.#configuration.render.maxConcurrency);
+				const promises = [];
+				for (const url of chunk) {
+					promises.push(
+						this.#renderURL(browser, url).then((result) => {
+							results.push(result);
+						})
+					);
+				}
+				await Promise.all(promises);
 			}
-			await Promise.all(promises);
+		} else {
+			const promises = [];
+			for (const url of items) {
+				promises.push(this.#renderURL(browser, url));
+			}
+			results = await Promise.all(promises);
 		}
 
 		if (isCacheWarmup) {
@@ -92,33 +101,49 @@ export default class ServerRendererBrowser {
 		// @ts-ignore
 		context.preflightResponseCache = preflightResponseCache;
 
-		const response = await page.goto(item.url, { timeout: this.#configuration.render.timeout });
+		const pageErrors: string[] = [];
+		const response = await page.goto(item.url, {
+			timeout: this.#configuration.render.timeout,
+			beforeContentCallback(window) {
+				window.addEventListener('error', (event: ErrorEvent) => {
+					if (event.error) {
+						pageErrors.push(`${event.error.message}\n${event.error.stack}`);
+					}
+				});
+			}
+		});
 
 		if (!response.ok) {
+			const pageConsole = page.virtualConsolePrinter.readAsString();
 			await page.close();
 			return {
 				url: item.url,
 				content: null,
 				outputFile: item.outputFile,
-				error: `Failed to render page ${item.url} (${response.status} ${response.statusText})`
+				error: `Failed to render page ${item.url} (${response.status} ${response.statusText})`,
+				pageConsole,
+				pageErrors
 			};
 		}
 
 		const timeout = !this.#browser.settings.debug.traceWaitUntilComplete
 			? setTimeout(() => {
 					page.abort();
-				}, this.#configuration.render.timeout)
+			  }, this.#configuration.render.timeout)
 			: null;
 
 		try {
 			await page.waitUntilComplete();
 		} catch (error) {
+			const pageConsole = page.virtualConsolePrinter.readAsString();
 			await page.close();
 			return {
 				url: item.url,
 				content: null,
 				outputFile: item.outputFile,
-				error: `${error.message}\n${error.stack}\n\n  Console:\n\n${page.virtualConsolePrinter.readAsString()}`
+				error: `${error.message}\n${error.stack}\n\n  Console:\n\n${pageConsole}`,
+				pageConsole,
+				pageErrors
 			};
 		}
 
@@ -131,11 +156,19 @@ export default class ServerRendererBrowser {
 		});
 
 		const result = serializer.serializeToString(page.mainFrame.document);
+		const pageConsole = page.virtualConsolePrinter.readAsString();
 
 		await page.close();
 
 		if (!item.outputFile) {
-			return { url: item.url, content: result, outputFile: null, error: null };
+			return {
+				url: item.url,
+				content: result,
+				outputFile: null,
+				error: null,
+				pageConsole,
+				pageErrors
+			};
 		}
 
 		try {
@@ -148,7 +181,14 @@ export default class ServerRendererBrowser {
 
 		await FS.promises.writeFile(item.outputFile, result);
 
-		return { url: item.url, content: null, outputFile: item.outputFile, error: null };
+		return {
+			url: item.url,
+			content: null,
+			outputFile: item.outputFile,
+			error: null,
+			pageConsole,
+			pageErrors
+		};
 	}
 
 	/**
@@ -184,9 +224,18 @@ export default class ServerRendererBrowser {
 					.readFile(Path.join(this.#configuration.cache.directory, file), 'utf8')
 					.then((content) => {
 						const entry = <ICachedResponse>JSON.parse(content);
-						if (entry.response && entry.request) {
+						if (entry.response && entry.request && !entry.virtual) {
 							entry.response.headers = new Headers(entry.response.headers);
 							entry.request.headers = new Headers(entry.request.headers);
+
+							if (this.#configuration.cache.forceResponseCacheTime > 0) {
+								entry.lastModified = null;
+								entry.expires = Date.now() + this.#configuration.cache.forceResponseCacheTime;
+								entry.etag = null;
+								entry.mustRevalidate = false;
+								entry.staleWhileRevalidate = false;
+								entry.virtual = true;
+							}
 
 							return FS.promises
 								.readFile(
@@ -278,6 +327,15 @@ export default class ServerRendererBrowser {
 							entry.response.body
 						)
 					);
+
+					if (this.#configuration.cache.forceResponseCacheTime > 0) {
+						entry.lastModified = null;
+						entry.expires = Date.now() + this.#configuration.cache.forceResponseCacheTime;
+						entry.etag = null;
+						entry.mustRevalidate = false;
+						entry.staleWhileRevalidate = false;
+						entry.virtual = true;
+					}
 				}
 			}
 		}

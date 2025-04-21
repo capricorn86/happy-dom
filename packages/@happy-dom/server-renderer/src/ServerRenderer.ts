@@ -7,6 +7,7 @@ import IServerRendererConfiguration from './IServerRendererConfiguration.js';
 import ServerRendererConfigurationFactory from './ServerRendererConfigurationFactory.js';
 import Path from 'path';
 import Inspector from 'node:inspector';
+import Chalk from 'chalk';
 
 interface IWorkerWaitingItem {
 	items: IServerRendererItem[];
@@ -144,7 +145,10 @@ export default class ServerRenderer {
 		}
 		return new Promise((resolve, reject) => {
 			if (this.#workerPool.free.length === 0) {
-				if (this.#workerPool.busy.length >= this.#configuration.worker.maxConcurrency) {
+				const maxConcurrency = this.#configuration.inspect
+					? 1
+					: this.#configuration.worker.maxConcurrency;
+				if (this.#workerPool.busy.length >= maxConcurrency) {
 					this.#workerPool.waiting.push({ items, isCacheWarmup, resolve, reject });
 					return;
 				}
@@ -161,7 +165,7 @@ export default class ServerRenderer {
 
 				this.#workerPool.busy.push(worker);
 
-				const done = () => {
+				const done = (): void => {
 					worker.off('message', listeners.message);
 					worker.off('error', listeners.error);
 					worker.off('exit', listeners.exit);
@@ -190,13 +194,26 @@ export default class ServerRenderer {
 								if (result.error) {
 									if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.error) {
 										// eslint-disable-next-line no-console
-										console.error(` - Failed to render page "${result.url}": ${result.error}`);
+										console.error(
+											Chalk.red(`❌ Failed to render page "${result.url}"\n   ${result.error}`)
+										);
+									}
+								} else if (result.pageErrors.length) {
+									if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.warn) {
+										// eslint-disable-next-line no-console
+										console.log(Chalk.bold(`• Rendered page "${result.url}"`));
+										// eslint-disable-next-line no-console
+										console.log(Chalk.red(result.pageErrors.join('\n   ')));
 									}
 								} else {
 									if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.info) {
 										// eslint-disable-next-line no-console
-										console.log(` - Rendered page "${result.url}"`);
+										console.log(Chalk.bold(`• Rendered page "${result.url}"`));
 									}
+								}
+								if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.debug) {
+									// eslint-disable-next-line no-console
+									console.log(Chalk.gray(result.pageConsole));
 								}
 							}
 						}
@@ -205,11 +222,10 @@ export default class ServerRenderer {
 						resolve(results);
 					},
 					error: (error: Error) => {
-						console.log('Error');
 						if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.error) {
 							for (const item of items) {
 								// eslint-disable-next-line no-console
-								console.error(` - Failed to render page "${item.url}": ${error}`);
+								console.error(Chalk.red(`❌ Failed to render page "${item.url}"\n   ${error}`));
 							}
 						}
 
@@ -219,7 +235,9 @@ export default class ServerRenderer {
 								url: item.url,
 								content: null,
 								outputFile: item.outputFile ?? null,
-								error: `${error.message}\n${error.stack}`
+								error: `${error.message}\n${error.stack}`,
+								pageConsole: '',
+								pageErrors: []
 							}))
 						);
 					},

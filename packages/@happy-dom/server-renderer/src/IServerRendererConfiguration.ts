@@ -34,6 +34,12 @@ export default interface IServerRendererConfiguration {
 		 * Disables caching.
 		 */
 		disable: boolean;
+		/**
+		 * Forces a cache time in ms for responses.
+		 *
+		 * This may speed up the rendering process as responses that would otherwise have a short cache time are cached.
+		 */
+		forceResponseCacheTime: number;
 	};
 	/**
 	 * Settings for the worker.

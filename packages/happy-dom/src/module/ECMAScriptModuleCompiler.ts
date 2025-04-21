@@ -9,33 +9,49 @@ import * as PropertySymbol from '../PropertySymbol.js';
 /**
  * Code regexp.
  *
- * Group 1: Import without exported properties.
- * Group 2: Dynamic import function call.
- * Group 3: Import exported variables.
- * Group 4: Import exported url.
- * Group 5: Import with group.
- * Group 6: Import with type.
- * Group 7: Modules in export from module statement.
- * Group 8: Import in export from module statement.
- * Group 9: Export default statement.
- * Group 10: Export function or class type.
- * Group 11: Export function or class name.
- * Group 12: Export object.
- * Group 13: Export variable type (var, let or const).
- * Group 14: Export variable name.
- * Group 15: Export variable name end character (= or ;).
- * Group 16: Slash (RegExp or comment).
- * Group 17: Parentheses.
- * Group 18: Curly braces.
- * Group 19: Square brackets.
- * Group 20: Escape template string (${).
- * Group 21: Template string apostrophe (`).
- * Group 22: String apostrophe (').
- * Group 23: String apostrophe (").
- * Group 24: Line feed character.
+ * Group 1: Import meta.
+ * Group 2: Import without exported properties.
+ * Group 3: Dynamic import function call.
+ * Group 4: Import exported variables.
+ * Group 5: Import exported url.
+ * Group 6: Import with group.
+ * Group 7: Import with type.
+ * Group 8: Modules in export from module statement.
+ * Group 9: Import in export from module statement.
+ * Group 10: Export default statement.
+ * Group 11: Export function or class type.
+ * Group 12: Export function or class name.
+ * Group 13: Export object.
+ * Group 14: Export variable type (var, let or const).
+ * Group 15: Export variable name.
+ * Group 16: Export variable name end character (= or ;).
+ * Group 17: Slash (RegExp or comment).
+ * Group 18: Parentheses.
+ * Group 19: Curly braces.
+ * Group 20: Square brackets.
+ * Group 21: Escape template string (${).
+ * Group 22: Template string apostrophe (`).
+ * Group 23: String apostrophe (').
+ * Group 24: String apostrophe (").
+ * Group 25: Line feed character.
  */
 const CODE_REGEXP =
-	/import\s*["']([^"']+)["'];{0,1}|import\s*\(([^)]+)\)|(import[\s{])|[\s}]from\s*["']([^"']+)["'](\s+with\s*{\s*type\s*:\s*["']([^"']+)["']\s*}){0,1}|export\s([a-zA-Z0-9-_$]+|\*|\*\s+as\s+["'a-zA-Z0-9-_$]+|{[^}]+})\s*from\s["']([^"']+)["']|(export\s*default\s*)|export\s*(function\*{0,1}|class)\s*([^({\s]+)|export\s*{([^}]+)}|export\s+(var|let|const)\s+([^=;]+)(=|;)|(\/)|(\(|\))|({|})|(\[|\])|(\${)|(`)|(')|(")|(\n)/gm;
+	/import\.meta\.(url|resolve)|import\s*["']([^"'()\s]+)["'];{0,1}|import\s*\(([^)]+)\)|(import[\s{])|[\s}]from\s*["']([^"'()\s]+)["'](\s+with\s*{\s*type\s*:\s*["']([^"']+)["']\s*}){0,1}|export\s([a-zA-Z0-9-_$]+|\*|\*\s+as\s+["'a-zA-Z0-9-_$]+|{[^}]+})\s*from\s["']([^"'()\s]+)["']|(export\s*default\s*)|export\s*(function\*{0,1}|class)\s*([^({\s]+)|export\s*{([^}]+)}|export\s+(var|let|const)\s+([^=;]+)(=|;)|(\/)|(\(|\))|({|})|(\[|\])|(\${)|(`)|(')|(")|(\n)/gm;
+
+/**
+ * Code without imports and exports regexp.
+ *
+ * Group 1: Slash (RegExp or comment).
+ * Group 2: Parentheses.
+ * Group 3: Curly braces.
+ * Group 4: Square brackets.
+ * Group 5: Escape template string (${).
+ * Group 6: Template string apostrophe (`).
+ * Group 7: String apostrophe (').
+ * Group 8: String apostrophe (").
+ * Group 9: Line feed character.
+ */
+// const CODE_WITHOUT_IMPORTS_REGEXP = /(\/)|(\(|\))|({|})|(\[|\])|(\${)|(`)|(')|(")|(\n)/gm;
 
 /**
  * Import regexp.
@@ -54,7 +70,7 @@ const PRECEDING_STATEMENT_TOKEN_REGEXP = /['"`(){}\s;=>]/;
 /**
  * Valid preceding token before a regexp.
  */
-const PRECEDING_REGEXP_TOKEN_REGEXP = /[([=\{\},;"'+-]/;
+const PRECEDING_REGEXP_TOKEN_REGEXP = /[([={},;"'+-]/;
 
 /**
  * Multiline comment regexp.
@@ -96,7 +112,7 @@ export default class ECMAScriptModuleCompiler {
 		const count = {
 			comment: 0,
 			singleLineComment: 0,
-			parantheses: 0,
+			parentheses: 0,
 			curlyBraces: 0,
 			squareBrackets: 0,
 			regExp: 0,
@@ -136,7 +152,7 @@ export default class ECMAScriptModuleCompiler {
 			if (
 				count.comment === 0 &&
 				count.singleLineComment === 0 &&
-				count.parantheses === 0 &&
+				count.parentheses === 0 &&
 				count.curlyBraces === 0 &&
 				count.squareBrackets === 0 &&
 				count.regExp === 0 &&
@@ -144,14 +160,14 @@ export default class ECMAScriptModuleCompiler {
 				count.doubleString === 0 &&
 				templateString.length === 0
 			) {
-				if (match[1] && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
+				if (match[2] && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
 					// Import without exported properties
 					imports.push({
-						url: ModuleURLUtility.getURL(this.window, moduleURL, match[1]).href,
+						url: ModuleURLUtility.getURL(this.window, moduleURL, match[2]).href,
 						type: 'esm'
 					});
 					skipMatchedCode = true;
-				} else if (match[3] && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
+				} else if (match[4] && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
 					// Import statement start
 					if (importStartIndex !== -1) {
 						throw new this.window.TypeError(
@@ -160,10 +176,10 @@ export default class ECMAScriptModuleCompiler {
 					}
 					importStartIndex = match.index + match[0].length - 1;
 					skipMatchedCode = true;
-				} else if (match[4]) {
+				} else if (match[5]) {
 					// Import statement end
 					if (importStartIndex !== -1) {
-						const url = ModuleURLUtility.getURL(this.window, moduleURL, match[4]).href;
+						const url = ModuleURLUtility.getURL(this.window, moduleURL, match[5]).href;
 						const variables = code.substring(importStartIndex, match.index + 1);
 						const importRegExp = new RegExp(IMPORT_REGEXP);
 						const importCode: string[] = [];
@@ -189,14 +205,14 @@ export default class ECMAScriptModuleCompiler {
 						}
 						newCode += importCode.join(';\n');
 						importStartIndex = -1;
-						imports.push({ url, type: match[6] || 'esm' });
+						imports.push({ url, type: match[7] || 'esm' });
 						skipMatchedCode = true;
 					}
-				} else if (match[7] && match[8] && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
+				} else if (match[8] && match[9] && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
 					// Export from module statement
 
-					const url = ModuleURLUtility.getURL(this.window, moduleURL, match[8]).href;
-					const imported = match[7];
+					const url = ModuleURLUtility.getURL(this.window, moduleURL, match[9]).href;
+					const imported = match[8];
 
 					if (imported === '*') {
 						newCode += `Object.assign($happy_dom.exports, $happy_dom.imports.get('${url}'))`;
@@ -227,21 +243,21 @@ export default class ECMAScriptModuleCompiler {
 						imports.push({ url, type: 'esm' });
 					}
 					skipMatchedCode = true;
-				} else if (match[9] && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
+				} else if (match[10] && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
 					// Export default statement
 					newCode += '$happy_dom.exports.default = ';
 					skipMatchedCode = true;
 				} else if (
-					match[10] &&
 					match[11] &&
+					match[12] &&
 					PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)
 				) {
 					// Export function or class type
-					newCode += `$happy_dom.exports['${match[11]}'] = ${match[10]} ${match[11]}`;
+					newCode += `$happy_dom.exports['${match[12]}'] = ${match[11]} ${match[12]}`;
 					skipMatchedCode = true;
-				} else if (match[12] && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
+				} else if (match[13] && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
 					// Export object
-					const parts = this.removeMultilineComments(match[12]).split(/\s*,\s*/);
+					const parts = this.removeMultilineComments(match[13]).split(/\s*,\s*/);
 					const exportCode: string[] = [];
 					for (const part of parts) {
 						const nameParts = part.trim().split(/\s+as\s+/);
@@ -253,10 +269,10 @@ export default class ECMAScriptModuleCompiler {
 					}
 					newCode += exportCode.join(';\n');
 					skipMatchedCode = true;
-				} else if (match[13] && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
+				} else if (match[14] && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
 					// Export variable
-					if (match[15] === '=') {
-						const exportName = this.removeMultilineComments(match[14]).trim();
+					if (match[16] === '=') {
+						const exportName = this.removeMultilineComments(match[15]).trim();
 						if (
 							(exportName[0] === '{' && exportName[exportName.length - 1] === '}') ||
 							(exportName[0] === '[' && exportName[exportName.length - 1] === ']')
@@ -288,7 +304,25 @@ export default class ECMAScriptModuleCompiler {
 				}
 			}
 
-			if (match[2]) {
+			if (match[1]) {
+				// Import meta
+				if (
+					count.simpleString === 0 &&
+					count.doubleString === 0 &&
+					count.comment === 0 &&
+					count.singleLineComment === 0 &&
+					count.regExp === 0 &&
+					(templateString.length === 0 || templateString[0] > 0) &&
+					PRECEDING_REGEXP_TOKEN_REGEXP.test(this.getNonSpacePrecedingToken(code, match.index))
+				) {
+					if (match[1] === 'url') {
+						newCode += `$happy_dom.importMeta.url`;
+					} else {
+						newCode += `$happy_dom.importMeta.resolve`;
+					}
+					skipMatchedCode = true;
+				}
+			} else if (match[3]) {
 				// Dynamic import function call
 				if (
 					count.simpleString === 0 &&
@@ -299,10 +333,10 @@ export default class ECMAScriptModuleCompiler {
 					(templateString.length === 0 || templateString[0] > 0) &&
 					PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)
 				) {
-					newCode += `$happy_dom.dynamicImport(${match[2]})`;
+					newCode += `$happy_dom.dynamicImport(${match[3]})`;
 					skipMatchedCode = true;
 				}
-			} else if (match[16]) {
+			} else if (match[17]) {
 				// Slash (RegExp or Comment)
 				if (
 					count.simpleString === 0 &&
@@ -323,15 +357,11 @@ export default class ECMAScriptModuleCompiler {
 								count.singleLineComment = 1;
 							} else {
 								if (!isEscaped) {
-									let index = match.index - 1;
-									let nonSpacePrecedingToken = code[index];
-
-									while (nonSpacePrecedingToken === ' ' || nonSpacePrecedingToken === '\n') {
-										index--;
-										nonSpacePrecedingToken = code[index];
-									}
-
-									if (PRECEDING_REGEXP_TOKEN_REGEXP.test(nonSpacePrecedingToken)) {
+									if (
+										PRECEDING_REGEXP_TOKEN_REGEXP.test(
+											this.getNonSpacePrecedingToken(code, match.index)
+										)
+									) {
 										count.regExp = 1;
 									}
 								}
@@ -341,7 +371,7 @@ export default class ECMAScriptModuleCompiler {
 						}
 					}
 				}
-			} else if (match[17]) {
+			} else if (match[18]) {
 				// Parentheses
 				if (
 					count.simpleString === 0 &&
@@ -351,13 +381,13 @@ export default class ECMAScriptModuleCompiler {
 					count.singleLineComment === 0 &&
 					(templateString.length === 0 || templateString[0] > 0)
 				) {
-					if (match[17] === '(') {
-						count.parantheses++;
-					} else if (match[17] === ')' && count.parantheses > 0) {
-						count.parantheses--;
+					if (match[18] === '(') {
+						count.parentheses++;
+					} else if (match[18] === ')' && count.parentheses > 0) {
+						count.parentheses--;
 					}
 				}
-			} else if (match[18]) {
+			} else if (match[19]) {
 				// Curly braces
 				if (
 					count.simpleString === 0 &&
@@ -367,12 +397,12 @@ export default class ECMAScriptModuleCompiler {
 					count.singleLineComment === 0 &&
 					(templateString.length === 0 || templateString[0] > 0)
 				) {
-					if (match[18] === '{') {
+					if (match[19] === '{') {
 						if (templateString.length) {
 							templateString[0]++;
 						}
 						count.curlyBraces++;
-					} else if (match[18] === '}') {
+					} else if (match[19] === '}') {
 						if (templateString.length && templateString[0] > 0) {
 							templateString[0]--;
 						}
@@ -381,7 +411,7 @@ export default class ECMAScriptModuleCompiler {
 						}
 					}
 				}
-			} else if (match[19]) {
+			} else if (match[20]) {
 				// Square brackets
 				if (
 					count.simpleString === 0 &&
@@ -393,21 +423,21 @@ export default class ECMAScriptModuleCompiler {
 					// We need to check for square brackets in RegExp as well to know when the RegExp ends
 					if (count.regExp === 1) {
 						if (!isEscaped) {
-							if (match[19] === '[' && count.regExpSquareBrackets === 0) {
+							if (match[20] === '[' && count.regExpSquareBrackets === 0) {
 								count.regExpSquareBrackets = 1;
-							} else if (match[19] === ']' && count.regExpSquareBrackets === 1) {
+							} else if (match[20] === ']' && count.regExpSquareBrackets === 1) {
 								count.regExpSquareBrackets = 0;
 							}
 						}
 					} else {
-						if (match[19] === '[') {
+						if (match[20] === '[') {
 							count.squareBrackets++;
-						} else if (match[19] === ']' && count.squareBrackets > 0) {
+						} else if (match[20] === ']' && count.squareBrackets > 0) {
 							count.squareBrackets--;
 						}
 					}
 				}
-			} else if (match[20]) {
+			} else if (match[21]) {
 				// Escape template string (${)
 				if (
 					count.simpleString === 0 &&
@@ -422,7 +452,7 @@ export default class ECMAScriptModuleCompiler {
 					}
 					count.curlyBraces++;
 				}
-			} else if (match[21]) {
+			} else if (match[22]) {
 				// Template string
 				if (
 					count.simpleString === 0 &&
@@ -442,7 +472,7 @@ export default class ECMAScriptModuleCompiler {
 						stack.templateString.index = match.index;
 					}
 				}
-			} else if (match[22]) {
+			} else if (match[23]) {
 				// String apostrophe (')
 				if (
 					count.doubleString === 0 &&
@@ -458,7 +488,7 @@ export default class ECMAScriptModuleCompiler {
 						count.simpleString = 0;
 					}
 				}
-			} else if (match[23]) {
+			} else if (match[24]) {
 				// String apostrophe (")
 				if (
 					count.simpleString === 0 &&
@@ -474,7 +504,7 @@ export default class ECMAScriptModuleCompiler {
 						count.doubleString = 0;
 					}
 				}
-			} else if (match[24]) {
+			} else if (match[25]) {
 				// Line feed character
 				count.singleLineComment = 0;
 			}
@@ -520,8 +550,9 @@ export default class ECMAScriptModuleCompiler {
 		try {
 			return { imports, execute: this.window.eval(newCode) };
 		} catch (e) {
+			const errorMessage = this.getUnmatchedError(count) || e.message;
 			const error = new this.window.SyntaxError(
-				`Failed to parse module '${moduleURL}': ${e.message}`
+				`Failed to parse module '${moduleURL}': ${errorMessage}`
 			);
 			if (
 				browserSettings.disableErrorCapturing ||
@@ -536,6 +567,74 @@ export default class ECMAScriptModuleCompiler {
 				};
 			}
 		}
+	}
+
+	/**
+	 * Returns unmatched error.
+	 *
+	 * @param count Count.
+	 * @param count.comment Comment.
+	 * @param count.parentheses Parentheses.
+	 * @param count.curlyBraces Curly braces.
+	 * @param count.squareBrackets Square brackets.
+	 * @param count.regExp Regular expression.
+	 * @param count.regExpSquareBrackets Regular expression square brackets.
+	 * @param count.escapeTemplateString Escape template string.
+	 * @param count.simpleString Simple string.
+	 * @param count.doubleString Double string.
+	 * @returns Unmatched error.
+	 */
+	private getUnmatchedError(count: {
+		comment: number;
+		parentheses: number;
+		curlyBraces: number;
+		squareBrackets: number;
+		regExp: number;
+		regExpSquareBrackets: number;
+		escapeTemplateString: number;
+		simpleString: number;
+		doubleString: number;
+	}): string | null {
+		if (count.comment > 0) {
+			return `Missing end of comment (*/)`;
+		} else if (count.regExp > 0) {
+			return 'Missing end of regular expression (/)';
+		} else if (count.regExpSquareBrackets > 0) {
+			return 'Missing end of regular expression square brackets (])';
+		} else if (count.simpleString > 0) {
+			return "Missing end of single quote string (')";
+		} else if (count.doubleString > 0) {
+			return 'Missing end of double quote string (")';
+		} else if (count.parentheses > 0) {
+			return 'Missing end of parentheses';
+		} else if (count.curlyBraces > 0) {
+			return 'Missing end of curly braces (})';
+		} else if (count.squareBrackets > 0) {
+			return 'Missing end of square brackets (])';
+		} else if (count.escapeTemplateString > 0) {
+			return 'Missing end of escaped template string (`)';
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get the non-space preceding token.
+	 *
+	 * @param code Code.
+	 * @param index Index.
+	 * @returns Non-space preceding token.
+	 */
+	private getNonSpacePrecedingToken(code: string, index: number): string {
+		index--;
+		let nonSpacePrecedingToken = code[index];
+
+		while (nonSpacePrecedingToken === ' ' || nonSpacePrecedingToken === '\n') {
+			index--;
+			nonSpacePrecedingToken = code[index];
+		}
+
+		return nonSpacePrecedingToken;
 	}
 
 	/**

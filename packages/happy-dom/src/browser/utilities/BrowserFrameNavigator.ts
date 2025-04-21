@@ -170,6 +170,9 @@ export default class BrowserFrameNavigator {
 
 		// About protocol
 		if (targetURL.protocol === 'about:') {
+			if (goToOptions?.beforeContentCallback) {
+				goToOptions.beforeContentCallback(frame.window);
+			}
 			await new Promise((resolve) => frame.page.mainFrame.window.requestAnimationFrame(resolve));
 			resolveNavigationListeners();
 			return null;
@@ -238,6 +241,10 @@ export default class BrowserFrameNavigator {
 		// The frame may be destroyed during teardown.
 		if (!frame.window) {
 			return null;
+		}
+
+		if (goToOptions?.beforeContentCallback) {
+			goToOptions.beforeContentCallback(frame.window);
 		}
 
 		// Fixes issue where evaluating the response can throw an error.

@@ -70,12 +70,17 @@ export default class ECMAScriptModule implements IModule {
 		}
 
 		const exports = {};
+		const href = this.url.href;
 
 		this.#exports = exports;
 
 		compiled.execute({
 			dispatchError: window[PropertySymbol.dispatchError].bind(window),
 			dynamicImport: this.#import.bind(this),
+			importMeta: {
+				url: href,
+				resolve: (url: string) => new URL(url, href).href
+			},
 			imports,
 			exports
 		});

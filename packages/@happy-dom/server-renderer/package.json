@@ -19,33 +19,40 @@
 		"elements",
 		"server-side",
 		"rendering",
-        "server",
-        "renderer",
+		"server",
+		"renderer",
 		"ssr",
-        "static",
-        "site",
-        "generator",
-        "ssg"
+		"static",
+		"site",
+		"generator",
+		"ssg"
 	],
 	"publishConfig": {
 		"access": "public"
 	},
-    "bin": {
-        "happy-dom-sr": "bin/lib/happy-dom-sr.js"
-    },
+	"bin": {
+		"happy-dom-sr": "bin/lib/happy-dom-sr.js"
+	},
 	"scripts": {
 		"compile": "tsc && tsc --project ./bin",
-		"watch": "npm run compile && tsc -w --preserveWatchOutput"
+		"watch": "npm run compile && tsc -w --preserveWatchOutput",
+		"test": "vitest run",
+		"test:ui": "vitest --ui",
+		"test:watch": "vitest",
+		"test:debug": "vitest run --inspect-brk --no-file-parallelism"
 	},
 	"dependencies": {
-		"happy-dom": "^0.0.0"
+		"happy-dom": "^0.0.0",
+		"chalk": "^5.4.1"
 	},
 	"devDependencies": {
 		"@typescript-eslint/eslint-plugin": "^5.16.0",
 		"@typescript-eslint/parser": "^5.16.0",
+		"@vitest/ui": "^2.1.4",
 		"@types/node": "^16.11.7",
 		"prettier": "^2.6.0",
-		"typescript": "^5.0.4"
+		"typescript": "^5.0.4",
+		"vitest": "^2.1.4"
 	},
 	"engines": {
 		"node": ">=18.0.0"
