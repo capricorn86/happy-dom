@@ -89,15 +89,26 @@ describe('ECMAScriptModuleCompiler', () => {
 
 		it('Handles import in string', () => {
 			const code = `
+                const hexLookUp=Array.from({length:127},(n,e)=>/[^!"$&'()*+,\-.;=_\`a-z{}~]/u.test(String.fromCharCode(e)))
+                class R{constructor(){this.lastTime=Date.now(),this.lastValue=0,this.__speed=0}set value(e){this.__speed=(e-this.lastValue)/(Date.now()-this.lastTime),this.lastValue=e,this.lastTime=Date.now()}}
                 const n=["@import",\`url(\${JSON.stringify(t.href)})\`];const t="";
+                function log(){return console.log('To use the debugger you must import "@package/debugger"')}
+                var i = "test";
+                import("@package/debugger");
             `;
 			const compiler = new ECMAScriptModuleCompiler(window);
+
 			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
 
 			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
 //# sourceURL=http://localhost:8080/js/app/main.js
 
+                const hexLookUp=Array.from({length:127},(n,e)=>/[^!"$&'()*+,-.;=_\`a-z{}~]/u.test(String.fromCharCode(e)))
+                class R{constructor(){this.lastTime=Date.now(),this.lastValue=0,this.__speed=0}set value(e){this.__speed=(e-this.lastValue)/(Date.now()-this.lastTime),this.lastValue=e,this.lastTime=Date.now()}}
                 const n=["@import",\`url(\${JSON.stringify(t.href)})\`];const t="";
+                function log(){return console.log('To use the debugger you must import "@package/debugger"')}
+                var i = "test";
+                $happy_dom.dynamicImport("@package/debugger");
             
 }`);
 		});

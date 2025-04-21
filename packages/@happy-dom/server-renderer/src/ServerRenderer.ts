@@ -203,7 +203,9 @@ export default class ServerRenderer {
 										// eslint-disable-next-line no-console
 										console.log(Chalk.bold(`• Rendered page "${result.url}"`));
 										// eslint-disable-next-line no-console
-										console.log(Chalk.red(result.pageErrors.join('\n   ')));
+										console.log(Chalk.yellow(`⚠️ Warning! Errors where outputted in the browser.`));
+										// eslint-disable-next-line no-console
+										console.log(Chalk.yellow(result.pageErrors.join('\n   ')));
 									}
 								} else {
 									if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.info) {

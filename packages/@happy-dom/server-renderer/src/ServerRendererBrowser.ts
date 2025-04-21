@@ -217,6 +217,7 @@ export default class ServerRendererBrowser {
 		}
 
 		const promises = [];
+		const now = Date.now();
 
 		for (const file of files) {
 			promises.push(
@@ -229,11 +230,12 @@ export default class ServerRendererBrowser {
 							entry.request.headers = new Headers(entry.request.headers);
 
 							if (this.#configuration.cache.forceResponseCacheTime > 0) {
-								entry.lastModified = null;
+								entry.lastModified = now;
 								entry.expires = Date.now() + this.#configuration.cache.forceResponseCacheTime;
 								entry.etag = null;
 								entry.mustRevalidate = false;
 								entry.staleWhileRevalidate = false;
+								entry.vary = {};
 								entry.virtual = true;
 							}
 
@@ -283,6 +285,7 @@ export default class ServerRendererBrowser {
 		const groupedEntries = browser.defaultContext.responseCache.entries;
 		const entryPromises = [];
 		const bodyPromises = [];
+		const now = Date.now();
 
 		for (const entries of groupedEntries.values()) {
 			for (const entry of entries) {
@@ -329,11 +332,12 @@ export default class ServerRendererBrowser {
 					);
 
 					if (this.#configuration.cache.forceResponseCacheTime > 0) {
-						entry.lastModified = null;
+						entry.lastModified = now;
 						entry.expires = Date.now() + this.#configuration.cache.forceResponseCacheTime;
 						entry.etag = null;
 						entry.mustRevalidate = false;
 						entry.staleWhileRevalidate = false;
+						entry.vary = {};
 						entry.virtual = true;
 					}
 				}
