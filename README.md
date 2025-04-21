@@ -40,7 +40,7 @@ And much more..
  - [Vue](https://vuejs.org/)
  - [React](https://reactjs.org)
  - [Svelte](https://svelte.dev/)
- - [Angular](https://angular.io/)
+ - [Angular](https://angular.dev/)
 
 ## Sponsors
 
