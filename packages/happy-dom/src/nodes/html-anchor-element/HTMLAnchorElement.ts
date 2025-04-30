@@ -411,7 +411,7 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 			!event[PropertySymbol.defaultPrevented] &&
 			event.type === 'click' &&
 			event instanceof MouseEvent &&
-			event.eventPhase === EventPhaseEnum.none
+			(event.eventPhase === EventPhaseEnum.none || event.eventPhase === EventPhaseEnum.bubbling)
 		) {
 			const href = this.href;
 
