@@ -4,6 +4,9 @@ import File from '../file/File.js';
 import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
 import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
 import BrowserWindow from '../window/BrowserWindow.js';
+import HTMLElement from '../nodes/html-element/HTMLElement.js';
+import DOMException from '../exception/DOMException.js';
+import HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js';
 
 type FormDataEntry = {
 	name: string;
@@ -25,10 +28,43 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * Constructor.
 	 *
 	 * @param [form] Form.
+	 * @param [submitter] A submit button that is a member of the form.
 	 */
-	constructor(form?: HTMLFormElement) {
+	constructor(form?: HTMLFormElement, submitter?: HTMLInputElement | HTMLButtonElement) {
 		if (!form) {
 			return;
+		}
+
+		if (submitter && submitter instanceof HTMLElement) {
+			const isInTheForm = submitter.form === form;
+			const formId = form.getAttribute('id');
+			const submitterFormAttr = submitter.getAttribute('form');
+			const isRefferingToTheForm = formId && submitterFormAttr === formId;
+
+			if (!isInTheForm && !isRefferingToTheForm) {
+				throw new DOMException(
+					"Failed to construct 'FormData': The specified element is not owned by this form element.",
+					'NotFoundError'
+				);
+			}
+
+			const isSubmitButton =
+				submitter[PropertySymbol.tagName] === 'BUTTON' && submitter.type === 'submit';
+			const isSubmitInput =
+				submitter[PropertySymbol.tagName] === 'INPUT' &&
+				['submit', 'image'].includes(submitter.type);
+
+			if (!isSubmitButton && !isSubmitInput) {
+				throw new TypeError(
+					"Failed to construct 'FormData': The specified element is not a submit button."
+				);
+			}
+
+			const submitterName = submitter.name;
+			if (submitterName) {
+				const submitterValue = submitter.value;
+				this.append(submitterName, submitterValue);
+			}
 		}
 
 		const items = form[PropertySymbol.getFormControlItems]();
@@ -56,6 +92,8 @@ export default class FormData implements Iterable<[string, string | File]> {
 								}
 								break;
 							case 'submit':
+							case 'image':
+								break;
 							case 'reset':
 							case 'button':
 								if ((<HTMLInputElement>item).value) {
@@ -65,11 +103,6 @@ export default class FormData implements Iterable<[string, string | File]> {
 							default:
 								this.append(name, (<HTMLInputElement>item).value);
 								break;
-						}
-						break;
-					case 'BUTTON':
-						if ((<HTMLInputElement>item).value) {
-							this.append(name, (<HTMLInputElement>item).value);
 						}
 						break;
 					case 'TEXTAREA':
