@@ -19,6 +19,7 @@ import Element from '../element/Element.js';
 import EventTarget from '../../event/EventTarget.js';
 import HTMLDialogElement from '../html-dialog-element/HTMLDialogElement.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
+import type FormData from '../../form-data/FormData.js';
 
 /**
  * HTML Form Element.
@@ -597,6 +598,9 @@ export default class HTMLFormElement extends HTMLElement {
 		const action = submitter?.hasAttribute('formaction')
 			? submitter?.formAction || this.action
 			: this.action;
+		const enctype = submitter?.hasAttribute('formenctype')
+			? submitter.formEnctype || this.enctype
+			: this.enctype;
 		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
 
 		if (!browserFrame) {
@@ -654,6 +658,18 @@ export default class HTMLFormElement extends HTMLElement {
 			return;
 		}
 
+		let navigateBody: FormData | URLSearchParams;
+		if (enctype === 'multipart/form-data') {
+			navigateBody = formData;
+		} else {
+			navigateBody = new URLSearchParams();
+			for (const [key, value] of formData) {
+				if (typeof value === 'string') {
+					navigateBody.append(key, value);
+				}
+			}
+		}
+
 		BrowserFrameNavigator.navigate({
 			windowClass: <typeof BrowserWindow>(
 				this[PropertySymbol.ownerDocument][PropertySymbol.defaultView].constructor
@@ -661,7 +677,7 @@ export default class HTMLFormElement extends HTMLElement {
 			frame: targetFrame,
 			method: method,
 			url: action,
-			formData,
+			formData: navigateBody,
 			goToOptions: {
 				referrer: browserFrame.page.mainFrame.window.location.origin
 			}
