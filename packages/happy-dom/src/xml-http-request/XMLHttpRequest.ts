@@ -50,6 +50,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	#responseType: XMLHttpResponseTypeEnum | '' = '';
 	#responseBody: ArrayBuffer | Blob | Document | object | string | null = null;
 	#readyState: XMLHttpRequestReadyStateEnum = XMLHttpRequestReadyStateEnum.unsent;
+	#overriddenMimeType: string | null = null;
 
 	/**
 	 * Constructor.
@@ -324,6 +325,27 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Overrides the MIME type returned by the server.
+	 * This method must be called before send().
+	 *
+	 * @param mimeType The MIME type to use instead of the one specified by the server.
+	 * @throws {DOMException} If the request state is LOADING or DONE.
+	 */
+	public overrideMimeType(mimeType: string): void {
+		if (
+			this.readyState === XMLHttpRequestReadyStateEnum.loading ||
+			this.readyState === XMLHttpRequestReadyStateEnum.done
+		) {
+			throw new this[PropertySymbol.window].DOMException(
+				`Failed to execute 'overrideMimeType' on 'XMLHttpRequest': MIME type cannot be overridden when the request state is LOADING or DONE.`,
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
+		this.#overriddenMimeType = mimeType;
+	}
+
+	/**
 	 * Sends the request to the server asynchronously.
 	 *
 	 * @param body Optional data to send as request body.
@@ -432,7 +454,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			responseType: this.#responseType,
 			data,
 			contentType:
-				this.#response.headers.get('Content-Type') || this.#request.headers.get('Content-Type')
+				this.#overriddenMimeType ||
+				this.#response.headers.get('Content-Type') ||
+				this.#request.headers.get('Content-Type')
 		});
 		this.#readyState = XMLHttpRequestReadyStateEnum.done;
 
@@ -488,7 +512,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			responseType: this.#responseType,
 			data: this.#response.body,
 			contentType:
-				this.#response.headers.get('Content-Type') || this.#request.headers.get('Content-Type')
+				this.#overriddenMimeType ||
+				this.#response.headers.get('Content-Type') ||
+				this.#request.headers.get('Content-Type')
 		});
 
 		this.#readyState = XMLHttpRequestReadyStateEnum.done;
