@@ -124,6 +124,91 @@ describe('FormData', () => {
 
 			expect(formData.get('textInput')).toBe('');
 		});
+
+		it('Supports disabled input elements.', () => {
+			const form = document.createElement('form');
+
+			const file = new File([Buffer.from('fileContent')], 'file.txt', { type: 'text/plain' });
+			const textInput = document.createElement('input');
+			const hiddenInput = document.createElement('input');
+			const hiddenInput2 = document.createElement('input');
+			const fileInput = document.createElement('input');
+			const radioInput1 = document.createElement('input');
+			const radioInput2 = document.createElement('input');
+			const checkboxInput1 = document.createElement('input');
+			const checkboxInput2 = document.createElement('input');
+			const button1 = document.createElement('button');
+			const button2 = document.createElement('input');
+			const button3 = document.createElement('button');
+			const button4 = document.createElement('input');
+
+			textInput.type = 'text';
+			textInput.name = 'textInput';
+			textInput.value = 'text value';
+			textInput.disabled = true;
+
+			hiddenInput.type = 'hidden';
+			hiddenInput.name = 'hiddenInput';
+			hiddenInput.value = 'hidden value 1';
+			hiddenInput.disabled = true;
+
+			hiddenInput2.type = 'hidden';
+			hiddenInput2.name = 'hiddenInput';
+			hiddenInput2.value = 'hidden value 2';
+			hiddenInput2.disabled = true;
+
+			fileInput.type = 'file';
+			fileInput.name = 'fileInput';
+			fileInput.files.push(file);
+			fileInput.disabled = true;
+
+			radioInput1.type = 'radio';
+			radioInput1.name = 'radioInput';
+			radioInput1.value = 'radio value 1';
+			radioInput1.checked = false;
+			radioInput1.disabled = true;
+
+			radioInput2.type = 'radio';
+			radioInput2.name = 'radioInput';
+			radioInput2.value = 'radio value 2';
+			radioInput2.checked = true;
+			radioInput2.disabled = true;
+
+			checkboxInput1.type = 'checkbox';
+			checkboxInput1.name = 'checkboxInput';
+			checkboxInput1.value = 'checkbox value 1';
+			checkboxInput1.disabled = true;
+
+			checkboxInput2.type = 'checkbox';
+			checkboxInput2.name = 'checkboxInput';
+			checkboxInput2.value = 'checkbox value 2';
+			checkboxInput2.checked = true;
+			checkboxInput2.disabled = true;
+
+			form.appendChild(textInput);
+			form.appendChild(hiddenInput);
+			form.appendChild(hiddenInput2);
+			form.appendChild(fileInput);
+			form.appendChild(radioInput1);
+			form.appendChild(radioInput2);
+			form.appendChild(checkboxInput1);
+			form.appendChild(checkboxInput2);
+			form.appendChild(button1);
+			form.appendChild(button2);
+			form.appendChild(button3);
+			form.appendChild(button4);
+
+			const formData = new window.FormData(form);
+
+			expect(formData.get('textInput')).toBe(null);
+			expect(formData.get('hiddenInput')).toBe(null);
+			expect(formData.get('fileInput')).toBe(null);
+			expect(formData.get('radioInput')).toBe(null);
+			expect(formData.get('checkboxInput')).toBe(null);
+			expect(formData.getAll('hiddenInput')).toEqual([]);
+			expect(formData.getAll('radioInput')).toEqual([]);
+			expect(formData.getAll('checkboxInput')).toEqual([]);
+		});
 	});
 
 	describe('forEach()', () => {

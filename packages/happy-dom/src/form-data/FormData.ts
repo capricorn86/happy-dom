@@ -39,6 +39,10 @@ export default class FormData implements Iterable<[string, string | File]> {
 			if (name) {
 				switch (item[PropertySymbol.tagName]) {
 					case 'INPUT':
+						if ((<HTMLInputElement>item).disabled) {
+							break;
+						}
+
 						switch ((<HTMLInputElement>item).type) {
 							case 'file':
 								if ((<HTMLInputElement>item)[PropertySymbol.files].length === 0) {
