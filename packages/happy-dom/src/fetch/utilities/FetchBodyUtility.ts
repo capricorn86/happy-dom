@@ -145,7 +145,7 @@ export default class FetchBodyUtility {
 
 		// Sets the body of the cloned request to the first pass through stream.
 		// TODO: check id this is required as request should be read only object
-		<ReadableStream>requestOrResponse.body == stream1;
+		requestOrResponse.body = stream1;
 
 		// Returns the other stream as the clone
 		return stream2;
