@@ -72,8 +72,9 @@ describe('Request', () => {
 		});
 
 		it('Supports URL as empty string from init object.', () => {
+			window.happyDOM?.setURL('https://example.com/other/path/');
 			const request = new window.Request('');
-			expect(request.url).toBe('');
+			expect(request.url).toBe('https://example.com/other/path/');
 		});
 
 		it('Supports URL as URL object from init object.', () => {
