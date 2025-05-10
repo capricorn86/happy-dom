@@ -238,6 +238,25 @@ describe('QuerySelector', () => {
 			expect(elements[4] === container.children[0].children[1].children[2]).toBe(true);
 		});
 
+		it('Returns all elements with unicode class name "«unicode-class1»".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const elements = container.querySelectorAll('.«unicode-class1»');
+			expect(elements.length).toBe(5);
+			expect(elements[0] === container.children[0]).toBe(true);
+			expect(elements[1] === container.children[0].children[1]).toBe(true);
+			expect(elements[2] === container.children[0].children[1].children[0]).toBe(true);
+			expect(elements[3] === container.children[0].children[1].children[1]).toBe(true);
+			expect(elements[4] === container.children[0].children[1].children[2]).toBe(true);
+		});
+
+		it('Returns element with unicode ID "«r1»".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = QuerySelectorHTML;
+			const element = container.querySelector('#«r1»');
+			expect(element === container.children[0]).toBe(true);
+		});
+
 		it('Returns all elements with class name "before:after".', () => {
 			const container = document.createElement('div');
 			const element1 = document.createElement('div');
