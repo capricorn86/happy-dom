@@ -135,7 +135,9 @@ export default class History {
 
 		if (url && newURL.origin !== location.origin) {
 			throw new this.#window.DOMException(
-				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${location.origin}' and URL '${location.href}'.`,
+				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${
+					location.origin
+				}' and URL '${location.href}'.`,
 				DOMExceptionNameEnum.securityError
 			);
 		}
@@ -157,6 +159,7 @@ export default class History {
 			title: title || this.#window.document.title,
 			href: newURL.href,
 			state: JSON.parse(JSON.stringify(state)),
+			navigation: false,
 			scrollRestoration: this.#currentHistoryItem.scrollRestoration,
 			method: previousHistoryItem?.method || 'GET',
 			formData: previousHistoryItem?.formData || null,
@@ -193,7 +196,9 @@ export default class History {
 
 		if (url && newURL.origin !== location.origin) {
 			throw new this.#window.DOMException(
-				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${location.origin}' and URL '${location.href}'.`,
+				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${
+					location.origin
+				}' and URL '${location.href}'.`,
 				DOMExceptionNameEnum.securityError
 			);
 		}
@@ -204,6 +209,7 @@ export default class History {
 					title: title || this.#window.document.title,
 					href: newURL.href,
 					state: JSON.parse(JSON.stringify(state)),
+					navigation: false,
 					scrollRestoration: history[i].scrollRestoration,
 					method: history[i].method,
 					formData: history[i].formData,

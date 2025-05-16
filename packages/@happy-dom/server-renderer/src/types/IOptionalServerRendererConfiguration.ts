@@ -1,5 +1,6 @@
 import type IOptionalBrowserSettings from 'happy-dom/lib/browser/types/IOptionalBrowserSettings.js';
 import ServerRendererLogLevelEnum from './ServerRendererLogLevelEnum.js';
+import IServerRendererItem from './IServerRendererItem.js';
 
 export default interface IOptionalServerRendererConfiguration {
 	/**
@@ -34,12 +35,6 @@ export default interface IOptionalServerRendererConfiguration {
 		 * Disables caching.
 		 */
 		disable?: boolean;
-		/**
-		 * Forces a cache time in ms for responses.
-		 *
-		 * This may speed up the rendering process as responses that would otherwise have a short cache time are cached.
-		 */
-		forceResponseCacheTime?: number;
 	};
 	/**
 	 * Settings for the worker.
@@ -82,5 +77,21 @@ export default interface IOptionalServerRendererConfiguration {
 		 * Tags to exclude from shadow root rendering.
 		 */
 		excludeShadowRootTags?: string[] | null;
+		/**
+		 * Disable polyfills used for unimplemented functionality.
+		 */
+		disablePolyfills?: boolean;
+	};
+	/**
+	 * List of URLs to render.
+	 */
+	urls?: Array<string | IServerRendererItem> | null;
+	/**
+	 * Proxy server settings.
+	 */
+	server?: {
+		serverURL?: string | null;
+		targetOrigin?: string | null;
+		renderCacheTime?: number;
 	};
 }

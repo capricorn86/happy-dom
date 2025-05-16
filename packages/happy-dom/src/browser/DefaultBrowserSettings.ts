@@ -9,6 +9,7 @@ export default <IBrowserSettings>{
 	disableCSSFileLoading: false,
 	disableIframePageLoading: false,
 	disableComputedStyleRendering: false,
+	handleDisabledFileLoadingAsSuccess: false,
 	disableErrorCapturing: false,
 	errorCapture: BrowserErrorCaptureEnum.tryAndCatch,
 	enableFileSystemHttpRequests: false,

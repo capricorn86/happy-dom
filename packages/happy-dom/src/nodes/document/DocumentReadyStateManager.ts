@@ -1,22 +1,19 @@
-import BrowserWindow from '../../window/BrowserWindow.js';
+import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
+import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 
 /**
  * Document ready state manager.
  */
 export default class DocumentReadyStateManager {
-	private totalTasks = 0;
-	private readyStateCallbacks: (() => void)[] = [];
-	private window: BrowserWindow = null;
-	private immediate: NodeJS.Immediate | null = null;
-	private isComplete = false;
+	#asyncTaskManager: AsyncTaskManager;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param window
+	 * @param browserFrame Browser frame.
 	 */
-	constructor(window: BrowserWindow) {
-		this.window = window;
+	constructor(browserFrame: IBrowserFrame) {
+		this.#asyncTaskManager = new AsyncTaskManager(browserFrame);
 	}
 
 	/**
@@ -25,61 +22,31 @@ export default class DocumentReadyStateManager {
 	 * @returns Promise.
 	 */
 	public waitUntilComplete(): Promise<void> {
-		return new Promise((resolve) => {
-			if (this.isComplete) {
-				resolve();
-			} else {
-				this.readyStateCallbacks.push(resolve);
-				this.startTask();
-				this.endTask();
-			}
-		});
+		return this.#asyncTaskManager.waitUntilComplete();
 	}
 
 	/**
 	 * Starts a task.
+	 *
+	 * @returns Task ID.
 	 */
-	public startTask(): void {
-		if (this.isComplete) {
-			return;
-		}
-
-		if (this.immediate) {
-			this.window.cancelAnimationFrame(this.immediate);
-			this.immediate = null;
-		}
-
-		this.totalTasks++;
+	public startTask(): number {
+		return this.#asyncTaskManager.startTask();
 	}
 
 	/**
 	 * Ends a task.
+	 *
+	 * @param taskID Task ID.
 	 */
-	public endTask(): void {
-		if (this.isComplete) {
-			return;
-		}
+	public endTask(taskID: number): void {
+		this.#asyncTaskManager.endTask(taskID);
+	}
 
-		if (this.immediate) {
-			this.window.cancelAnimationFrame(this.immediate);
-			this.immediate = null;
-		}
-
-		this.totalTasks--;
-
-		this.immediate = this.window.requestAnimationFrame(() => {
-			this.immediate = null;
-
-			if (this.totalTasks <= 0) {
-				const callbacks = this.readyStateCallbacks;
-
-				this.readyStateCallbacks = [];
-				this.isComplete = true;
-
-				for (const callback of callbacks) {
-					callback();
-				}
-			}
-		});
+	/**
+	 * Destroys the manager.
+	 */
+	public destroy(): Promise<void> {
+		return this.#asyncTaskManager.destroy();
 	}
 }

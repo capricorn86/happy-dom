@@ -27,7 +27,7 @@ import * as PropertySymbol from '../PropertySymbol.js';
  * Group 16: Export variable name end character (= or ;).
  */
 const STATEMENT_REGEXP =
-	/import\.meta\.(url|resolve)|import\s*["']([^"']+)["'];{0,1}|import\s*\(([^)]+)\)|(import[\s{])|[\s}]from\s*["']([^"']+)["'](\s+with\s*{\s*type\s*:\s*["']([^"']+)["']\s*}){0,1}|export\s([a-zA-Z0-9-_$]+|\*|\*\s+as\s+["'a-zA-Z0-9-_$]+|{[^}]+})\s*from\s["']([^"']+)["']|(export\s*default\s*)|export\s*(function\*{0,1}|class)\s*([^({\s]+)|export\s*{([^}]+)}|export\s+(var|let|const)\s+([^=;]+)(=|;)/gm;
+	/import\.meta\.(url|resolve)|import\s*["']([^"']+)["'];{0,1}|import\s*\(([^)]+)\)|(import[\s{])|[\s}]from\s*["']([^"']+)["'](\s+with\s*{\s*type\s*:\s*["']([^"']+)["']\s*}){0,1}|export(\s+[a-zA-Z0-9-_$]+\s+|\s+\*\s+|\s+\*\s+as\s+["'a-zA-Z0-9-_$]+\s+|\s*{[^}]+}\s*)from\s*["']([^"']+)["']|(export\s*default\s*)|export\s*(function\*{0,1}|class)\s*([^({\s]+)|export\s*{([^}]+)}|export\s+(var|let|const)\s+([^=;]+)(=|;)/gm;
 
 /**
  * Syntax regexp.
@@ -56,12 +56,12 @@ const IMPORT_REGEXP = /{([^}]+)}|\*\s+as\s+([a-zA-Z0-9-_$]+)|([a-zA-Z0-9-_$]+)/g
 /**
  * Valid preceding token before a statement.
  */
-const PRECEDING_STATEMENT_TOKEN_REGEXP = /['"`(){}\s;=><\[\]+-,]/;
+const PRECEDING_STATEMENT_TOKEN_REGEXP = /['"`(){}\s;=><\[\]+-,:&]/;
 
 /**
  * Valid preceding token before a regexp.
  */
-const PRECEDING_REGEXP_TOKEN_REGEXP = /['"`({};=>\[+-,]/;
+const PRECEDING_REGEXP_TOKEN_REGEXP = /['"`({};=><\[+-,:&]/;
 
 /**
  * Multiline comment regexp.
@@ -98,9 +98,6 @@ export default class ECMAScriptModuleCompiler {
 		simpleString: [],
 		doubleString: []
 	};
-	private stack: { templateString: { index: number | null; code: string[] } } = {
-		templateString: { index: null, code: [] }
-	};
 	private templateString: number[] = [];
 
 	/**
@@ -118,13 +115,18 @@ export default class ECMAScriptModuleCompiler {
 	 *
 	 * @param moduleURL Module URL.
 	 * @param code Code.
+	 * @param sourceURL Source URL.
 	 * @returns Result.
 	 */
-	public compile(moduleURL: string, code: string): IECMAScriptModuleCompiledResult {
+	public compile(
+		moduleURL: string,
+		code: string,
+		sourceURL: string | null = null
+	): IECMAScriptModuleCompiledResult {
 		const browserSettings = new WindowBrowserContext(this.window).getSettings();
 
 		if (!browserSettings) {
-			return { imports: [], execute: () => {} };
+			return { imports: [], execute: async () => {} };
 		}
 
 		this.reset();
@@ -133,7 +135,7 @@ export default class ECMAScriptModuleCompiler {
 		const imports: IECMAScriptModuleImport[] = [];
 		const exportSpreadVariables: Array<Map<string, string>> = [];
 		const count = this.count;
-		let newCode = `(async function anonymous($happy_dom) {\n//# sourceURL=${moduleURL}\n`;
+		let newCode = `(async function anonymous($happy_dom) {`;
 		let match: RegExpExecArray;
 		let precedingToken: string;
 		let textBetweenStatements: string;
@@ -252,7 +254,7 @@ export default class ECMAScriptModuleCompiler {
 				// Export from module statement
 
 				const url = ModuleURLUtility.getURL(this.window, moduleURL, match[9]).href;
-				const imported = match[8];
+				const imported = match[8].trim();
 
 				if (imported === '*') {
 					newCode += `Object.assign($happy_dom.exports, $happy_dom.imports.get('${url}'))`;
@@ -381,15 +383,16 @@ export default class ECMAScriptModuleCompiler {
 			!browserSettings.disableErrorCapturing &&
 			browserSettings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
 		) {
-			newCode += `\n} catch(e) {\n   $happy_dom.dispatchError(e);\n}`;
+			newCode += `} catch(e) { $happy_dom.dispatchError(e); }`;
 		}
 
-		newCode += '\n})';
+		newCode += '})';
+		newCode += `\n//# sourceURL=${sourceURL || moduleURL}`;
 
 		try {
 			return { imports, execute: this.window.eval(newCode) };
 		} catch (e) {
-			const errorMessage = this.getError(moduleURL, code) || e.message;
+			const errorMessage = this.getError(moduleURL, code, sourceURL) || e.message;
 			const error = new this.window.SyntaxError(
 				`Failed to parse module '${moduleURL}': ${errorMessage}`
 			);
@@ -402,7 +405,7 @@ export default class ECMAScriptModuleCompiler {
 				this.window[PropertySymbol.dispatchError](error);
 				return {
 					imports,
-					execute: () => {}
+					execute: async () => {}
 				};
 			}
 		}
@@ -590,13 +593,12 @@ export default class ECMAScriptModuleCompiler {
 					count.regExp === 0 &&
 					!isEscaped
 				) {
-					if (this.templateString.length > 0) {
-						this.templateString[0]++;
-					}
-					count.curlyBraces++;
-
-					if (debug) {
-						debugCount.curlyBraces.push(index + match.index);
+					if (this.templateString[0] === 0) {
+						this.templateString[0] = 1;
+						count.curlyBraces++;
+						if (debug) {
+							debugCount.curlyBraces.push(index + match.index);
+						}
 					}
 				}
 			} else if (match[6]) {
@@ -609,14 +611,10 @@ export default class ECMAScriptModuleCompiler {
 					count.regExp === 0 &&
 					!isEscaped
 				) {
-					if (this.templateString?.[0] == 0) {
+					if (this.templateString?.[0] === 0) {
 						this.templateString.shift();
-						this.stack.templateString.code.push(
-							code.substring(this.stack.templateString.index, match.index + 1)
-						);
 					} else {
 						this.templateString.unshift(0);
-						this.stack.templateString.index = match.index;
 					}
 				}
 			} else if (match[7]) {
@@ -683,12 +681,13 @@ export default class ECMAScriptModuleCompiler {
 	 *
 	 * @param moduleURL Module URL.
 	 * @param code Code.
+	 * @param sourceURL Source URL.
 	 * @returns Error.
 	 */
-	private getError(moduleURL: string, code: string): string | null {
+	private getError(moduleURL: string, code: string, sourceURL: string | null): string | null {
 		if (!this.debug) {
 			this.debug = true;
-			this.compile(moduleURL, code);
+			this.compile(moduleURL, code, sourceURL);
 		}
 
 		const debugCount = this.debugCount;
@@ -817,9 +816,6 @@ export default class ECMAScriptModuleCompiler {
 			escapeTemplateString: [],
 			simpleString: [],
 			doubleString: []
-		};
-		this.stack = {
-			templateString: { index: null, code: [] }
 		};
 		this.templateString = [];
 	}

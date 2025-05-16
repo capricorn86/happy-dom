@@ -2,13 +2,14 @@ import Browser from 'happy-dom/lib/browser/Browser.js';
 import Headers from 'happy-dom/lib/fetch/Headers.js';
 import HTMLSerializer from 'happy-dom/lib/html-serializer/HTMLSerializer.js';
 import type ICachedResponse from 'happy-dom/lib/fetch/cache/response/ICachedResponse.js';
-import IServerRendererConfiguration from './IServerRendererConfiguration.js';
+import IServerRendererConfiguration from './types/IServerRendererConfiguration.js';
 import FS from 'fs';
 import Path from 'path';
-import IServerRendererItem from './IServerRendererItem.js';
+import IServerRendererItem from './types/IServerRendererItem.js';
 import Crypto from 'crypto';
-import IServerRendererResult from './IServerRendererResult.js';
+import IServerRendererResult from './types/IServerRendererResult.js';
 import { ErrorEvent } from 'happy-dom';
+import WindowPolyfillUtility from './utilities/WindowPolyfillUtility.js';
 
 /**
  * Server renderer browser.
@@ -91,7 +92,8 @@ export default class ServerRendererBrowser {
 	async #renderURL(browser: Browser, item: IServerRendererItem): Promise<IServerRendererResult> {
 		const responseCache = browser.defaultContext.responseCache;
 		const preflightResponseCache = browser.defaultContext.preflightResponseCache;
-		const context = this.#configuration.render.incognitoContext
+		const configuration = this.#configuration;
+		const context = configuration.render.incognitoContext
 			? browser.newIncognitoContext()
 			: browser.defaultContext;
 		const page = context.newPage();
@@ -101,17 +103,33 @@ export default class ServerRendererBrowser {
 		// @ts-ignore
 		context.preflightResponseCache = preflightResponseCache;
 
+		page.virtualConsolePrinter.addEventListener('print', () => {
+			console.log(page.virtualConsolePrinter.readAsString());
+		});
+
 		const pageErrors: string[] = [];
 		const response = await page.goto(item.url, {
-			timeout: this.#configuration.render.timeout,
+			timeout: configuration.render.timeout,
+			headers: item.headers,
 			beforeContentCallback(window) {
 				window.addEventListener('error', (event: ErrorEvent) => {
 					if (event.error) {
-						pageErrors.push(`${event.error.message}\n${event.error.stack}`);
+						pageErrors.push(event.error.stack);
 					}
 				});
+				if (!configuration.render.disablePolyfills) {
+					WindowPolyfillUtility.applyPolyfills(window);
+				}
 			}
 		});
+
+		const headers = {};
+
+		for (const [key, value] of response.headers) {
+			if (key !== 'content-encoding') {
+				headers[key] = value;
+			}
+		}
 
 		if (!response.ok) {
 			const pageConsole = page.virtualConsolePrinter.readAsString();
@@ -119,6 +137,9 @@ export default class ServerRendererBrowser {
 			return {
 				url: item.url,
 				content: null,
+				status: response.status,
+				statusText: response.statusText,
+				headers,
 				outputFile: item.outputFile,
 				error: `Failed to render page ${item.url} (${response.status} ${response.statusText})`,
 				pageConsole,
@@ -126,11 +147,14 @@ export default class ServerRendererBrowser {
 			};
 		}
 
-		const timeout = !this.#browser.settings.debug.traceWaitUntilComplete
-			? setTimeout(() => {
-					page.abort();
-			  }, this.#configuration.render.timeout)
-			: null;
+		let timeoutError: string | null = null;
+		const timeout =
+			this.#browser.settings.debug.traceWaitUntilComplete === -1
+				? setTimeout(() => {
+						timeoutError = `The page was not rendered within the defined time of ${configuration.render.timeout}ms and the operation was aborted. You can increase this value with the "render.timeout" setting.\n\nThe page may contain scripts with timer loops that prevent it from completing. You can debug open handles by setting "debug" to true, or prevent timer loops by setting "browser.timer.preventTimerLoops" to true. Read more about this in the documentation.`;
+						page.abort();
+				  }, configuration.render.timeout)
+				: null;
 
 		try {
 			await page.waitUntilComplete();
@@ -140,23 +164,46 @@ export default class ServerRendererBrowser {
 			return {
 				url: item.url,
 				content: null,
+				status: response.status,
+				statusText: response.statusText,
+				headers,
 				outputFile: item.outputFile,
-				error: `${error.message}\n${error.stack}\n\n  Console:\n\n${pageConsole}`,
+				error: error.stack,
 				pageConsole,
 				pageErrors
 			};
 		}
 
+		// Wait for errors to be printed
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
 		clearTimeout(timeout);
 
+		const pageConsole = page.virtualConsolePrinter.readAsString();
+
+		if (timeoutError) {
+			page.close();
+
+			return {
+				url: item.url,
+				content: null,
+				status: response.status,
+				statusText: response.statusText,
+				headers,
+				outputFile: null,
+				error: timeoutError,
+				pageConsole,
+				pageErrors
+			};
+		}
+
 		const serializer = new HTMLSerializer({
-			allShadowRoots: this.#configuration.render.allShadowRoots,
-			serializableShadowRoots: this.#configuration.render.serializableShadowRoots,
-			excludeShadowRootTags: this.#configuration.render.excludeShadowRootTags
+			allShadowRoots: configuration.render.allShadowRoots,
+			serializableShadowRoots: configuration.render.serializableShadowRoots,
+			excludeShadowRootTags: configuration.render.excludeShadowRootTags
 		});
 
 		const result = serializer.serializeToString(page.mainFrame.document);
-		const pageConsole = page.virtualConsolePrinter.readAsString();
 
 		await page.close();
 
@@ -164,6 +211,9 @@ export default class ServerRendererBrowser {
 			return {
 				url: item.url,
 				content: result,
+				status: response.status,
+				statusText: response.statusText,
+				headers,
 				outputFile: null,
 				error: null,
 				pageConsole,
@@ -184,6 +234,9 @@ export default class ServerRendererBrowser {
 		return {
 			url: item.url,
 			content: null,
+			status: response.status,
+			statusText: response.statusText,
+			headers,
 			outputFile: item.outputFile,
 			error: null,
 			pageConsole,
@@ -217,48 +270,39 @@ export default class ServerRendererBrowser {
 		}
 
 		const promises = [];
-		const now = Date.now();
 
 		for (const file of files) {
-			promises.push(
-				FS.promises
-					.readFile(Path.join(this.#configuration.cache.directory, file), 'utf8')
-					.then((content) => {
-						const entry = <ICachedResponse>JSON.parse(content);
-						if (entry.response && entry.request && !entry.virtual) {
-							entry.response.headers = new Headers(entry.response.headers);
-							entry.request.headers = new Headers(entry.request.headers);
+			if (file.endsWith('.json')) {
+				promises.push(
+					FS.promises
+						.readFile(Path.join(this.#configuration.cache.directory, file), 'utf8')
+						.then((content) => {
+							const entry = <ICachedResponse>JSON.parse(content);
+							if (entry.response && entry.request && !entry.virtual) {
+								entry.response.headers = new Headers(entry.response.headers);
+								entry.request.headers = new Headers(entry.request.headers);
 
-							if (this.#configuration.cache.forceResponseCacheTime > 0) {
-								entry.lastModified = now;
-								entry.expires = Date.now() + this.#configuration.cache.forceResponseCacheTime;
-								entry.etag = null;
-								entry.mustRevalidate = false;
-								entry.staleWhileRevalidate = false;
-								entry.vary = {};
-								entry.virtual = true;
+								return FS.promises
+									.readFile(
+										Path.join(this.#configuration.cache.directory, file.split('.')[0] + '.data')
+									)
+									.then((body) => {
+										entry.response.body = body;
+										let entries = browser.defaultContext.responseCache.entries.get(
+											entry.response.url
+										);
+										if (!entries) {
+											entries = [];
+											browser.defaultContext.responseCache.entries.set(entry.response.url, entries);
+										}
+										entries.push(entry);
+									})
+									.catch(() => {});
 							}
-
-							return FS.promises
-								.readFile(
-									Path.join(this.#configuration.cache.directory, file.split('.')[0] + '.data')
-								)
-								.then((body) => {
-									entry.response.body = body;
-									let entries = browser.defaultContext.responseCache.entries.get(
-										entry.response.url
-									);
-									if (!entries) {
-										entries = [];
-										browser.defaultContext.responseCache.entries.set(entry.response.url, entries);
-									}
-									entries.push(entry);
-								})
-								.catch(() => {});
-						}
-					})
-					.catch(() => {})
-			);
+						})
+						.catch(() => {})
+				);
+			}
 		}
 
 		await Promise.all(promises);
@@ -285,7 +329,6 @@ export default class ServerRendererBrowser {
 		const groupedEntries = browser.defaultContext.responseCache.entries;
 		const entryPromises = [];
 		const bodyPromises = [];
-		const now = Date.now();
 
 		for (const entries of groupedEntries.values()) {
 			for (const entry of entries) {
@@ -330,16 +373,6 @@ export default class ServerRendererBrowser {
 							entry.response.body
 						)
 					);
-
-					if (this.#configuration.cache.forceResponseCacheTime > 0) {
-						entry.lastModified = now;
-						entry.expires = Date.now() + this.#configuration.cache.forceResponseCacheTime;
-						entry.etag = null;
-						entry.mustRevalidate = false;
-						entry.staleWhileRevalidate = false;
-						entry.vary = {};
-						entry.virtual = true;
-					}
 				}
 			}
 		}

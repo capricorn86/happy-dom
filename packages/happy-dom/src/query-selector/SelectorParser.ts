@@ -380,7 +380,7 @@ export default class SelectorParser {
 
 				return {
 					name: lowerName,
-					arguments: args,
+					arguments: args || '',
 					selectorItems: hasSelectorItems,
 					nthFunction: null
 				};

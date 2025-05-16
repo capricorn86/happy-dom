@@ -8,7 +8,7 @@ import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import IECMAScriptModuleCompiledResult from './IECMAScriptModuleCompiledResult.js';
 import ModuleFactory from './ModuleFactory.js';
 
-const EMPTY_COMPILED_RESULT = { imports: [], execute: () => {} };
+const EMPTY_COMPILED_RESULT = { imports: [], execute: async () => {} };
 
 /**
  * ECMAScript module.
@@ -17,6 +17,7 @@ export default class ECMAScriptModule implements IModule {
 	public readonly url: URL;
 	public readonly [PropertySymbol.window]: BrowserWindow;
 	readonly #source: string;
+	readonly #sourceURL: string | null;
 	#preloaded: boolean = false;
 	#compiled: IECMAScriptModuleCompiledResult | null = null;
 	#exports: { [k: string]: any } | null = null;
@@ -27,11 +28,18 @@ export default class ECMAScriptModule implements IModule {
 	 * @param window Window.
 	 * @param url Module URL.
 	 * @param source Source code.
+	 * @param [sourceURL] Source URL.
 	 */
-	constructor(window: BrowserWindow, url: URL | Location, source: string) {
+	constructor(
+		window: BrowserWindow,
+		url: URL | Location,
+		source: string,
+		sourceURL?: string | null
+	) {
 		this[PropertySymbol.window] = window;
 		this.url = <URL>url;
 		this.#source = source;
+		this.#sourceURL = sourceURL || null;
 	}
 
 	/**
@@ -140,7 +148,7 @@ export default class ECMAScriptModule implements IModule {
 
 		const compiler = new ECMAScriptModuleCompiler(this[PropertySymbol.window]);
 
-		this.#compiled = compiler.compile(this.url.href, this.#source);
+		this.#compiled = compiler.compile(this.url.href, this.#source, this.#sourceURL);
 
 		return this.#compiled;
 	}

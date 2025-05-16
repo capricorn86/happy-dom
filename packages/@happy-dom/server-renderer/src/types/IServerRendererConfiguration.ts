@@ -1,5 +1,6 @@
 import type IBrowserSettings from 'happy-dom/lib/browser/types/IBrowserSettings.js';
 import ServerRendererLogLevelEnum from './ServerRendererLogLevelEnum.js';
+import IServerRendererItem from './IServerRendererItem.js';
 
 export default interface IServerRendererConfiguration {
 	/**
@@ -82,5 +83,21 @@ export default interface IServerRendererConfiguration {
 		 * Tags to exclude from shadow root rendering.
 		 */
 		excludeShadowRootTags: string[] | null;
+		/**
+		 * Disable polyfills used for unimplemented functionality.
+		 */
+		disablePolyfills: boolean;
+	};
+	/**
+	 * List of URLs to render.
+	 */
+	urls: Array<string | IServerRendererItem> | null;
+	/**
+	 * Proxy server settings.
+	 */
+	server: {
+		serverURL: string | null;
+		targetOrigin: string | null;
+		renderCacheTime: number;
 	};
 }

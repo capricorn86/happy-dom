@@ -1,3 +1,4 @@
+import { PropertySymbol } from '../../index.js';
 import Headers from '../Headers.js';
 
 /**
@@ -13,4 +14,5 @@ export default interface ISyncResponse {
 	redirected: boolean;
 	headers: Headers;
 	body: Buffer;
+	[PropertySymbol.virtualServerFile]?: string;
 }

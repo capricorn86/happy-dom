@@ -14,5 +14,5 @@ export default interface IECMAScriptModuleCompiledResult {
 		};
 		imports: Map<string, { [key: string]: any }>;
 		exports: { [key: string]: any };
-	}) => void;
+	}) => Promise<void>;
 }

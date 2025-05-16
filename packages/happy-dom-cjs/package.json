@@ -33,12 +33,12 @@
 		"whatwg-mimetype": "^3.0.0"
 	},
 	"devDependencies": {
-		"@types/node": "^16.11.7",
+		"@types/node": "^20.0.0",
 		"@webref/css": "6.6.2",
 		"prettier": "^2.6.0",
 		"typescript": "^5.0.4"
 	},
 	"engines": {
-		"node": ">=18.0.0"
+		"node": ">=20.0.0"
 	}
 }

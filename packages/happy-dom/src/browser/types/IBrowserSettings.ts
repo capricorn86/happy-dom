@@ -4,6 +4,7 @@ import IFetchInterceptor from '../../fetch/types/IFetchInterceptor.js';
 import IVirtualServer from '../../fetch/types/IVirtualServer.js';
 import IFetchRequestHeaders from '../../fetch/types/IFetchRequestHeaders.js';
 import IBrowserPageViewport from './IBrowserPageViewport.js';
+import IOptionalTimerLoopsLimit from '../../window/IOptionalTimerLoopsLimit.js';
 
 /**
  * Browser settings.
@@ -31,7 +32,7 @@ export default interface IBrowserSettings {
 		maxTimeout: number;
 		maxIntervalTime: number;
 		maxIntervalIterations: number;
-		preventTimerLoops: boolean;
+		preventTimerLoops: boolean | IOptionalTimerLoopsLimit;
 	};
 
 	/**

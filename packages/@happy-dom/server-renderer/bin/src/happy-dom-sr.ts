@@ -15,16 +15,18 @@ main();
 /**
  * Main method.
  */
-async function main() {
-	const { configuration, items } = await getConfiguration();
+async function main(): Promise<void> {
+	const { configuration, items, startServer } = await getConfiguration();
 
-	if (!items.length) {
-		console.error('No URL:s to render');
-		process.exit(1);
+	if (startServer) {
+		const server = new (await import('../../lib/ServerRendererServer.js')).default(configuration);
+
+		server.start();
+	} else {
+		const renderer = new ServerRenderer(configuration);
+
+		await renderer.render(items);
 	}
-
-	const renderer = new ServerRenderer(configuration);
-	await renderer.render(items);
 }
 
 /**
@@ -35,9 +37,11 @@ async function main() {
 async function getConfiguration(): Promise<{
 	configuration: IOptionalServerRendererConfiguration;
 	items: IServerRendererItem[];
+	startServer: boolean;
 }> {
 	const items: IServerRendererItem[] = [];
 	let config: IOptionalServerRendererConfiguration = DefaultServerRendererConfiguration;
+	let startServer = false;
 
 	for (const arg of process.argv) {
 		if (arg[0] === '-') {
@@ -209,6 +213,8 @@ async function getConfiguration(): Promise<{
 				config.outputDirectory = stripQuotes(arg.split('=')[1]);
 			} else if (arg.startsWith('--config=')) {
 				config = (await import(Path.resolve(stripQuotes(arg.split('=')[1])))).default;
+			} else if (arg === '--server') {
+				startServer = true;
 			}
 		} else if (arg) {
 			const item: IServerRendererItem = { url: null, outputFile: null };
@@ -250,7 +256,7 @@ async function getConfiguration(): Promise<{
 		}
 	}
 
-	return { configuration: config, items };
+	return { configuration: config, items, startServer };
 }
 
 function stripQuotes(value: string): string {

@@ -1,13 +1,15 @@
 import ServerRenderer from './ServerRenderer.js';
-import IServerRendererItem from './IServerRendererItem.js';
-import IServerRendererResult from './IServerRendererResult.js';
-import IServerRendererConfiguration from './IServerRendererConfiguration.js';
-import IOptionalServerRendererConfiguration from './IOptionalServerRendererConfiguration.js';
+import IServerRendererItem from './types/IServerRendererItem.js';
+import IServerRendererResult from './types/IServerRendererResult.js';
+import IServerRendererConfiguration from './types/IServerRendererConfiguration.js';
+import IOptionalServerRendererConfiguration from './types/IOptionalServerRendererConfiguration.js';
+import ServerRendererLogLevelEnum from './types/ServerRendererLogLevelEnum.js';
 
 export {
 	ServerRenderer,
 	IServerRendererItem,
 	IServerRendererResult,
 	IServerRendererConfiguration,
-	IOptionalServerRendererConfiguration
+	IOptionalServerRendererConfiguration,
+	ServerRendererLogLevelEnum
 };

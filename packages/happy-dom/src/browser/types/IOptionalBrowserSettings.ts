@@ -4,6 +4,7 @@ import IFetchInterceptor from '../../fetch/types/IFetchInterceptor.js';
 import IVirtualServer from '../../fetch/types/IVirtualServer.js';
 import IFetchRequestHeaders from '../../fetch/types/IFetchRequestHeaders.js';
 import IOptionalBrowserPageViewport from './IOptionalBrowserPageViewport.js';
+import IOptionalTimerLoopsLimit from '../../window/IOptionalTimerLoopsLimit.js';
 
 export default interface IOptionalBrowserSettings {
 	/** Disables JavaScript evaluation. */
@@ -26,7 +27,7 @@ export default interface IOptionalBrowserSettings {
 		maxTimeout?: number;
 		maxIntervalTime?: number;
 		maxIntervalIterations?: number;
-		preventTimerLoops?: boolean;
+		preventTimerLoops?: boolean | IOptionalTimerLoopsLimit;
 	};
 
 	/**

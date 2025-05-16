@@ -121,6 +121,13 @@ export default class Fetch {
 	 * @returns Response.
 	 */
 	public async send(): Promise<Response> {
+		if (!(this.request instanceof Request) || !(this.request[PropertySymbol.url] instanceof URL)) {
+			throw new this.#window.DOMException(
+				'Unknown request object. Request object must be an instance of Request.',
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
 		FetchRequestReferrerUtility.prepareRequest(new URL(this.#window.location.href), this.request);
 
 		if (this.requestHeaders) {
@@ -398,6 +405,7 @@ export default class Fetch {
 
 		const response = new this.#window.Response(body);
 		response[PropertySymbol.buffer] = buffer;
+		response[PropertySymbol.virtualServerFile] = filePath;
 		(<string>response.url) = this.request.url;
 
 		const interceptedResponse = this.interceptor?.afterAsyncResponse

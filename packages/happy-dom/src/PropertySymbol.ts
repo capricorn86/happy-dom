@@ -402,3 +402,5 @@ export const selectorText = Symbol('selectorText');
 export const cssParser = Symbol('cssParser');
 export const cssRule = Symbol('cssRule');
 export const rulePrefix = Symbol('rulePrefix');
+export const virtualServerFile = Symbol('virtualServerFile');
+export const frames = Symbol('frames');

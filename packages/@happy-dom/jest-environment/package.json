@@ -66,7 +66,7 @@
 		"@testing-library/user-event": "^14.5.1",
 		"@vue/test-utils": "^2.4.6",
 		"@types/jest": "29.5.2",
-		"@types/node": "^16.11.7",
+		"@types/node": "^20.0.0",
 		"@types/react": "^18.2.0",
 		"@types/react-dom": "^18.2.0",
 		"@typescript-eslint/eslint-plugin": "^5.16.0",
@@ -87,14 +87,14 @@
 		"vue": "^3.5.12",
 		"zone.js": "^0.10.3"
 	},
-    "peerDependencies": {
+	"peerDependencies": {
 		"@jest/environment": "=>25.0.0",
 		"@jest/fake-timers": "=>25.0.0",
 		"@jest/types": "=>25.0.0",
 		"jest-mock": "=>25.0.0",
 		"jest-util": "=>25.0.0"
-    },
+	},
 	"engines": {
-		"node": ">=18.0.0"
+		"node": ">=20.0.0"
 	}
 }

@@ -38,13 +38,13 @@
 	"devDependencies": {
 		"@typescript-eslint/eslint-plugin": "^5.16.0",
 		"@typescript-eslint/parser": "^5.16.0",
-		"@types/node": "^16.11.7",
+		"@types/node": "^20.0.0",
 		"prettier": "^2.6.0",
 		"typescript": "^5.0.4",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0"
 	},
 	"engines": {
-		"node": ">=18.0.0"
+		"node": ">=20.0.0"
 	}
 }

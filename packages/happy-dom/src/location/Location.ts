@@ -13,6 +13,7 @@ export default class Location {
 	// Private properties
 	#browserFrame: IBrowserFrame;
 	#url: URL;
+	#hashChangeTimeout: NodeJS.Timeout | null = null;
 
 	/**
 	 * Constructor.
@@ -43,19 +44,9 @@ export default class Location {
 	 * @param hash Value.
 	 */
 	public set hash(hash: string) {
-		if (!this.#browserFrame) {
-			return;
-		}
-
-		const oldURL = this.#url.href;
-		this.#url.hash = hash;
-		const newURL = this.#url.href;
-		if (newURL !== oldURL) {
-			this.#browserFrame.window?.dispatchEvent(
-				new HashChangeEvent('hashchange', { oldURL, newURL })
-			);
-			this.#browserFrame.window?.document?.[PropertySymbol.clearCache]();
-		}
+		const url = new URL(this.#url.href);
+		url.hash = hash;
+		this.href = url.href;
 	}
 
 	/**
@@ -114,7 +105,7 @@ export default class Location {
 		}
 
 		this.#browserFrame.goto(url).catch((error) => {
-			if (this.#browserFrame.page?.console) {
+			if (this.#browserFrame?.page?.console) {
 				this.#browserFrame.page.console.error(error);
 			} else {
 				throw error;
@@ -261,13 +252,32 @@ export default class Location {
 			throw new Error('Failed to set URL. Browser frame mismatch.');
 		}
 
+		const hash = this.#url.hash;
+
 		this.#url.href = url;
+
+		if (this.#url.hash !== hash) {
+			const oldURL = this.#url.href;
+			const newURL = this.#url.href;
+			if (this.#hashChangeTimeout) {
+				this.#browserFrame.window?.clearTimeout(this.#hashChangeTimeout);
+			}
+			this.#hashChangeTimeout = this.#browserFrame.window?.setTimeout(() => {
+				this.#browserFrame?.window?.dispatchEvent(
+					new HashChangeEvent('hashchange', { oldURL, newURL })
+				);
+				this.#browserFrame?.window?.document?.[PropertySymbol.clearCache]();
+			});
+		}
 	}
 
 	/**
 	 * Destroys the location.
 	 */
 	public [PropertySymbol.destroy](): void {
+		if (this.#hashChangeTimeout) {
+			this.#browserFrame?.window?.clearTimeout(this.#hashChangeTimeout);
+		}
 		this.#browserFrame = null;
 	}
 

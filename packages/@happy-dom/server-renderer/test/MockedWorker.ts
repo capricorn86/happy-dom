@@ -1,3 +1,7 @@
+import IServerRendererConfiguration from '../src/IServerRendererConfiguration';
+import IServerRendererItem from '../src/IServerRendererItem';
+import IServerRendererResult from '../src/IServerRendererResult';
+
 /**
  *
  */
@@ -5,9 +9,11 @@ export default class MockedWorker {
 	public static openWorkers: MockedWorker[] = [];
 	public static terminatedWorkers: MockedWorker[] = [];
 	public scriptPath: string;
-	public workerData: any;
+	public workerData: {
+		configuration: IServerRendererConfiguration;
+	};
 	public listeners: {
-		message: Array<(data: any) => void>;
+		message: Array<(data: { results: IServerRendererResult[] }) => void>;
 		error: Array<(error: Error) => void>;
 		exit: Array<(code: number) => void>;
 	} = {
@@ -15,7 +21,7 @@ export default class MockedWorker {
 		error: [],
 		exit: []
 	};
-	public postedData: any[] = [];
+	public postedData: Array<{ items: IServerRendererItem[]; isCacheWarmup: boolean }> = [];
 	public isTerminated: boolean = false;
 
 	/**

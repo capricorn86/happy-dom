@@ -336,8 +336,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		this.#readyState = XMLHttpRequestReadyStateEnum.loading;
 
-		this.dispatchEvent(new Event('readystatechange'));
-		this.dispatchEvent(new Event('loadstart'));
+		this.#dispatchEventWithTryCatch(new Event('readystatechange'));
+		this.#dispatchEventWithTryCatch(new Event('loadstart'));
 
 		if (body) {
 			this.#request = new window.Request(this.#request.url, {
@@ -352,9 +352,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#abortController.signal.addEventListener('abort', () => {
 			this.#aborted = true;
 			this.#readyState = XMLHttpRequestReadyStateEnum.unsent;
-			this.dispatchEvent(new Event('abort'));
-			this.dispatchEvent(new Event('loadend'));
-			this.dispatchEvent(new Event('readystatechange'));
+			this.#dispatchEventWithTryCatch(new Event('abort'));
+			this.#dispatchEventWithTryCatch(new Event('loadend'));
+			this.#dispatchEventWithTryCatch(new Event('readystatechange'));
 			asyncTaskManager.endTask(taskID);
 		});
 
@@ -364,13 +364,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 					return;
 				}
 				this.#readyState = XMLHttpRequestReadyStateEnum.unsent;
-				this.dispatchEvent(new Event('abort'));
+				this.#dispatchEventWithTryCatch(new Event('abort'));
 			} else {
 				this.#readyState = XMLHttpRequestReadyStateEnum.done;
-				this.dispatchEvent(new ErrorEvent('error', { error, message: error.message }));
+				this.#dispatchEventWithTryCatch(new ErrorEvent('error', { error, message: error.message }));
 			}
-			this.dispatchEvent(new Event('loadend'));
-			this.dispatchEvent(new Event('readystatechange'));
+			this.#dispatchEventWithTryCatch(new Event('loadend'));
+			this.#dispatchEventWithTryCatch(new Event('readystatechange'));
 			asyncTaskManager.endTask(taskID);
 		};
 
@@ -390,7 +390,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		this.#readyState = XMLHttpRequestReadyStateEnum.headersRecieved;
 
-		this.dispatchEvent(new Event('readystatechange'));
+		this.#dispatchEventWithTryCatch(new Event('readystatechange'));
 
 		const contentLength = this.#response.headers.get('Content-Length');
 		const contentLengthNumber =
@@ -406,7 +406,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 					loaded += chunk.length;
 					// We need to re-throw the error as we don't want it to be caught by the try/catch.
 					try {
-						this.dispatchEvent(
+						this.#dispatchEventWithTryCatch(
 							new ProgressEvent('progress', {
 								lengthComputable: contentLengthNumber !== null,
 								loaded,
@@ -438,9 +438,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		asyncTaskManager.endTask(taskID);
 
-		this.dispatchEvent(new Event('readystatechange'));
-		this.dispatchEvent(new Event('load'));
-		this.dispatchEvent(new Event('loadend'));
+		this.#dispatchEventWithTryCatch(new Event('readystatechange'));
+		this.#dispatchEventWithTryCatch(new Event('load'));
+		this.#dispatchEventWithTryCatch(new Event('loadend'));
 	}
 
 	/**
@@ -475,9 +475,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.#response = fetch.send();
 		} catch (error) {
 			this.#readyState = XMLHttpRequestReadyStateEnum.done;
-			this.dispatchEvent(new ErrorEvent('error', { error, message: error.message }));
-			this.dispatchEvent(new Event('loadend'));
-			this.dispatchEvent(new Event('readystatechange'));
+			this.#dispatchEventWithTryCatch(new ErrorEvent('error', { error, message: error.message }));
+			this.#dispatchEventWithTryCatch(new Event('loadend'));
+			this.#dispatchEventWithTryCatch(new Event('readystatechange'));
 			return;
 		}
 
@@ -493,8 +493,23 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		this.#readyState = XMLHttpRequestReadyStateEnum.done;
 
-		this.dispatchEvent(new Event('readystatechange'));
-		this.dispatchEvent(new Event('load'));
-		this.dispatchEvent(new Event('loadend'));
+		this.#dispatchEventWithTryCatch(new Event('readystatechange'));
+		this.#dispatchEventWithTryCatch(new Event('load'));
+		this.#dispatchEventWithTryCatch(new Event('loadend'));
+	}
+
+	/**
+	 * Dispatches an event with try/catch.
+	 *
+	 * This is necessary to prevent errors from setting XMLHttpRequest in an invalid state.
+	 *
+	 * @param event Event.
+	 */
+	#dispatchEventWithTryCatch(event: Event): void {
+		try {
+			this.dispatchEvent(event);
+		} catch (error) {
+			this[PropertySymbol.window][PropertySymbol.dispatchError](error);
+		}
 	}
 }

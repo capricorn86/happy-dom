@@ -1,6 +1,6 @@
 import DefaultBrowserSettings from 'happy-dom/lib/browser/DefaultBrowserSettings.js';
-import ServerRendererLogLevelEnum from './ServerRendererLogLevelEnum.js';
-import IServerRendererConfiguration from './IServerRendererConfiguration.js';
+import ServerRendererLogLevelEnum from '../types/ServerRendererLogLevelEnum.js';
+import IServerRendererConfiguration from '../types/IServerRendererConfiguration.js';
 import OS from 'os';
 import { BrowserErrorCaptureEnum } from 'happy-dom';
 
@@ -9,10 +9,10 @@ export default <IServerRendererConfiguration>{
 	outputDirectory: './happy-dom-sr/output',
 	logLevel: ServerRendererLogLevelEnum.info,
 	debug: false,
+	inspect: false,
 	cache: {
 		directory: './happy-dom-sr/cache',
-		disable: false,
-		forceResponseCacheTime: -1
+		disable: false
 	},
 	worker: {
 		disable: false,
@@ -24,6 +24,13 @@ export default <IServerRendererConfiguration>{
 		incognitoContext: false,
 		serializableShadowRoots: false,
 		allShadowRoots: false,
-		excludeShadowRootTags: null
+		excludeShadowRootTags: null,
+		disablePolyfills: null
+	},
+	urls: null,
+	server: {
+		serverURL: 'https://localhost:3000',
+		targetOrigin: null,
+		renderCacheTime: 1000 * 30 // 30 seconds
 	}
 };

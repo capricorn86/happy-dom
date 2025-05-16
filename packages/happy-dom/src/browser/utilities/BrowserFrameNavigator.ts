@@ -46,6 +46,8 @@ export default class BrowserFrameNavigator {
 		const exceptionObserver = frame.page.context.browser[PropertySymbol.exceptionObserver];
 		const referrer = goToOptions?.referrer || frame.window.location.origin;
 		const targetURL = BrowserFrameURL.getRelativeURL(frame, url);
+		const targetURLWithoutHash = new URL(targetURL.href.split('#')[0]);
+		const currentURLWithoutHash = new URL(frame.url.split('#')[0]);
 		const resolveNavigationListeners = (): void => {
 			const listeners = frame[PropertySymbol.listeners].navigation;
 			frame[PropertySymbol.listeners].navigation = [];
@@ -58,14 +60,56 @@ export default class BrowserFrameNavigator {
 			throw new Error('The frame has been destroyed, the "window" property is not set.');
 		}
 
+		// Hash navigation
+		if (
+			targetURLWithoutHash.href === currentURLWithoutHash.href &&
+			targetURL.hash &&
+			targetURL.hash !== frame.window?.location.hash
+		) {
+			const history = frame[PropertySymbol.history];
+
+			for (let i = history.length - 1; i >= 0; i--) {
+				if (history[i].isCurrent) {
+					history[i].isCurrent = false;
+
+					// We need to remove all history items after the current one.
+					history.length = i + 1;
+					break;
+				}
+			}
+
+			const historyItem = {
+				title: '',
+				href: targetURL.href,
+				state: history[history.length - 1]?.state ?? null,
+				navigation: false,
+				scrollRestoration: HistoryScrollRestorationEnum.auto,
+				method: method || (formData ? 'POST' : 'GET'),
+				formData: formData || null,
+				isCurrent: true
+			};
+
+			history.push(historyItem);
+
+			frame.window.location[PropertySymbol.setURL](frame, targetURL.href);
+
+			frame.window.dispatchEvent(
+				new frame.window.PopStateEvent('popstate', {
+					state: historyItem.state ?? null,
+					hasUAVisualTransition: false
+				})
+			);
+
+			return null;
+		}
+
 		// Javascript protocol
 		if (targetURL.protocol === 'javascript:') {
 			if (frame && !frame.page.context.browser.settings.disableJavaScriptEvaluation) {
 				const readyStateManager = frame.window[PropertySymbol.readyStateManager];
 
-				readyStateManager.startTask();
-				const code =
-					'//# sourceURL=' + frame.url + '\n' + targetURL.href.replace('javascript:', '');
+				const taskID = readyStateManager.startTask();
+				const code = `${targetURL.href.replace('javascript:', '')}\n//# sourceURL=${frame.url}`;
 
 				// The browser will wait for the next tick before executing the script.
 				// Fixes issue where evaluating the response can throw an error.
@@ -78,7 +122,7 @@ export default class BrowserFrameNavigator {
 					});
 				});
 
-				readyStateManager.endTask();
+				readyStateManager.endTask(taskID);
 				resolveNavigationListeners();
 			}
 
@@ -116,6 +160,7 @@ export default class BrowserFrameNavigator {
 				title: '',
 				href: targetURL.href,
 				state: null,
+				navigation: true,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: method || (formData ? 'POST' : 'GET'),
 				formData: formData || null,
@@ -180,26 +225,33 @@ export default class BrowserFrameNavigator {
 
 		// Start navigation
 		const readyStateManager = frame.window[PropertySymbol.readyStateManager];
+		const asyncTaskManager = frame[PropertySymbol.asyncTaskManager];
 		const abortController = new frame.window.AbortController();
-		const timeout = frame.window.setTimeout(
-			() =>
-				abortController.abort(
-					new frame.window.DOMException(
-						'The operation was aborted. Request timed out.',
-						DOMExceptionNameEnum.timeoutError
-					)
-				),
-			goToOptions?.timeout ?? 30000
-		);
+		const timeout = setTimeout(() => {
+			asyncTaskManager.endTimer(timeout);
+			abortController.abort(
+				new frame.window.DOMException(
+					'The operation was aborted. Request timed out.',
+					DOMExceptionNameEnum.timeoutError
+				)
+			);
+		}, goToOptions?.timeout ?? 30000);
+		asyncTaskManager.startTimer(timeout);
+
+		const taskID = readyStateManager.startTask();
 		const finalize = (): void => {
-			frame.window.clearTimeout(timeout);
-			readyStateManager.endTask();
+			clearTimeout(timeout);
+			asyncTaskManager.endTimer(timeout);
+			readyStateManager.endTask(taskID);
 			resolveNavigationListeners();
 		};
+		const headers = new frame.window.Headers(goToOptions?.headers);
 		let response: Response;
 		let responseText: string;
 
-		readyStateManager.startTask();
+		if (goToOptions?.hard) {
+			headers.set('Cache-Control', 'no-cache');
+		}
 
 		try {
 			response = await frame.window.fetch(targetURL.href, {
@@ -207,7 +259,7 @@ export default class BrowserFrameNavigator {
 				referrerPolicy: goToOptions?.referrerPolicy || 'origin',
 				signal: abortController.signal,
 				method: method || (formData ? 'POST' : 'GET'),
-				headers: goToOptions?.hard ? { 'Cache-Control': 'no-cache' } : undefined,
+				headers,
 				body: formData
 			});
 
@@ -230,17 +282,17 @@ export default class BrowserFrameNavigator {
 			throw error;
 		}
 
+		// The frame may be destroyed during teardown.
+		if (!frame.window) {
+			return null;
+		}
+
 		if (response.url) {
 			frame.window[PropertySymbol.location][PropertySymbol.setURL](frame, response.url);
 		}
 
 		if (!response.ok) {
 			frame.page.console.error(`GET ${targetURL.href} ${response.status} (${response.statusText})`);
-		}
-
-		// The frame may be destroyed during teardown.
-		if (!frame.window) {
-			return null;
 		}
 
 		if (goToOptions?.beforeContentCallback) {
@@ -307,18 +359,28 @@ export default class BrowserFrameNavigator {
 
 		historyItem.isCurrent = true;
 
-		return BrowserFrameNavigator.navigate({
-			windowClass,
-			frame,
-			goToOptions: {
-				...goToOptions,
-				referrer: frame.url
-			},
-			url: historyItem.href,
-			method: historyItem.method,
-			formData: historyItem.formData,
-			disableHistory: true
-		});
+		if (historyItem.navigation) {
+			return BrowserFrameNavigator.navigate({
+				windowClass,
+				frame,
+				goToOptions: {
+					...goToOptions,
+					referrer: frame.url
+				},
+				url: historyItem.href,
+				method: historyItem.method,
+				formData: historyItem.formData,
+				disableHistory: true
+			});
+		}
+
+		frame.window.location[PropertySymbol.setURL](frame, historyItem.href);
+		frame.window.dispatchEvent(
+			new frame.window.PopStateEvent('popstate', {
+				state: historyItem.state,
+				hasUAVisualTransition: false
+			})
+		);
 	}
 
 	/**
@@ -366,18 +428,28 @@ export default class BrowserFrameNavigator {
 
 		historyItem.isCurrent = true;
 
-		return BrowserFrameNavigator.navigate({
-			windowClass,
-			frame,
-			goToOptions: {
-				...goToOptions,
-				referrer: frame.url
-			},
-			url: historyItem.href,
-			method: historyItem.method,
-			formData: historyItem.formData,
-			disableHistory: true
-		});
+		if (historyItem.navigation) {
+			return BrowserFrameNavigator.navigate({
+				windowClass,
+				frame,
+				goToOptions: {
+					...goToOptions,
+					referrer: frame.url
+				},
+				url: historyItem.href,
+				method: historyItem.method,
+				formData: historyItem.formData,
+				disableHistory: true
+			});
+		}
+
+		frame.window.location[PropertySymbol.setURL](frame, historyItem.href);
+		frame.window.dispatchEvent(
+			new frame.window.PopStateEvent('popstate', {
+				state: historyItem.state,
+				hasUAVisualTransition: false
+			})
+		);
 	}
 
 	/**
@@ -431,18 +503,28 @@ export default class BrowserFrameNavigator {
 
 		historyItem.isCurrent = true;
 
-		return BrowserFrameNavigator.navigate({
-			windowClass,
-			frame,
-			goToOptions: {
-				...goToOptions,
-				referrer: frame.url
-			},
-			url: historyItem.href,
-			method: historyItem.method,
-			formData: historyItem.formData,
-			disableHistory: true
-		});
+		if (historyItem.navigation) {
+			return BrowserFrameNavigator.navigate({
+				windowClass,
+				frame,
+				goToOptions: {
+					...goToOptions,
+					referrer: frame.url
+				},
+				url: historyItem.href,
+				method: historyItem.method,
+				formData: historyItem.formData,
+				disableHistory: true
+			});
+		}
+
+		frame.window.location[PropertySymbol.setURL](frame, historyItem.href);
+		frame.window.dispatchEvent(
+			new frame.window.PopStateEvent('popstate', {
+				state: historyItem.state,
+				hasUAVisualTransition: false
+			})
+		);
 	}
 
 	/**

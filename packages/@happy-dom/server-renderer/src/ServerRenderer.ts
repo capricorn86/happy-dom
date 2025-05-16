@@ -1,13 +1,14 @@
-import IOptionalServerRendererConfiguration from './IOptionalServerRendererConfiguration.js';
-import IServerRendererItem from './IServerRendererItem.js';
+import IOptionalServerRendererConfiguration from './types/IOptionalServerRendererConfiguration.js';
+import IServerRendererItem from './types/IServerRendererItem.js';
 import { Worker } from 'worker_threads';
-import IServerRendererResult from './IServerRendererResult.js';
-import ServerRendererLogLevelEnum from './ServerRendererLogLevelEnum.js';
-import IServerRendererConfiguration from './IServerRendererConfiguration.js';
-import ServerRendererConfigurationFactory from './ServerRendererConfigurationFactory.js';
+import IServerRendererResult from './types/IServerRendererResult.js';
+import ServerRendererLogLevelEnum from './types/ServerRendererLogLevelEnum.js';
+import IServerRendererConfiguration from './types/IServerRendererConfiguration.js';
+import ServerRendererConfigurationFactory from './utilities/ServerRendererConfigurationFactory.js';
 import Path from 'path';
 import Inspector from 'node:inspector';
 import Chalk from 'chalk';
+import ServerRendererBrowser from './ServerRendererBrowser.js';
 
 interface IWorkerWaitingItem {
 	items: IServerRendererItem[];
@@ -26,6 +27,7 @@ export default class ServerRenderer {
 		free: [],
 		waiting: []
 	};
+	#browser: ServerRendererBrowser | null = null;
 
 	/**
 	 * Constructor.
@@ -44,52 +46,74 @@ export default class ServerRenderer {
 	/**
 	 * Renders URLs.
 	 *
-	 * @param items Items.
+	 * @param [urls] URLs to render.
+	 * @param [options] Options.
+	 * @param [options.headers] Headers.
 	 */
 	public async render(
-		items: Array<string | IServerRendererItem>
+		urls?: Array<string | IServerRendererItem> | null
 	): Promise<IServerRendererResult[]> {
 		const startTime = performance.now();
+		const configuration = this.#configuration;
+		const items = urls || configuration.urls;
 		const parsedItems: IServerRendererItem[] = [];
 
-		for (const item of items) {
+		if (!items || !items.length) {
+			if (configuration.logLevel >= ServerRendererLogLevelEnum.info) {
+				// eslint-disable-next-line no-console
+				console.log(Chalk.bold(`\nNo URLs to render\n`));
+			}
+			return [];
+		}
+
+		for (const item of urls) {
 			if (typeof item === 'string') {
 				parsedItems.push({ url: item });
 			} else {
 				parsedItems.push({
 					url: item.url,
 					outputFile: item.outputFile
-						? Path.join(this.#configuration.outputDirectory, item.outputFile)
-						: null
+						? Path.join(configuration.outputDirectory, item.outputFile)
+						: null,
+					headers: item.headers ?? null
 				});
 			}
 		}
 
-		if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.info) {
+		if (configuration.logLevel >= ServerRendererLogLevelEnum.info) {
+			if (configuration.debug) {
+				// eslint-disable-next-line no-console
+				console.log(Chalk.blue(Chalk.bold(`🔨 Debug mode enabled\n`)));
+			}
+
 			// eslint-disable-next-line no-console
-			console.log(`Rendering ${parsedItems.length} page${parsedItems.length > 1 ? 's' : ''}`);
+			console.log(
+				Chalk.bold(`Rendering ${parsedItems.length} page${parsedItems.length > 1 ? 's' : ''}...\n`)
+			);
 		}
 
 		let results: IServerRendererResult[] = [];
-		if (!this.#configuration.cache.disable) {
+		if (!configuration.cache.disable) {
 			const item = parsedItems.shift();
 			if (item) {
 				results = results.concat(await this.#runInWorker([item], true));
 			}
 		}
 
-		const promises = [];
+		if (parsedItems.length) {
+			const promises = [];
 
-		while (parsedItems.length) {
-			const chunk = parsedItems.splice(0, this.#configuration.render.maxConcurrency);
-			promises.push(
-				this.#runInWorker(chunk).then((chunkResults) => {
-					results = results.concat(chunkResults);
-				})
-			);
+			while (parsedItems.length) {
+				const chunk = parsedItems.splice(0, configuration.render.maxConcurrency);
+				promises.push(
+					this.#runInWorker(chunk).then((chunkResults) => {
+						results = results.concat(chunkResults);
+					})
+				);
+			}
+
+			await Promise.all(promises);
 		}
-
-		await Promise.all(promises);
 
 		for (const worker of this.#workerPool.busy) {
 			worker.terminate();
@@ -103,12 +127,18 @@ export default class ServerRenderer {
 		this.#workerPool.free = [];
 		this.#workerPool.waiting = [];
 
-		if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.info) {
+		if (configuration.logLevel >= ServerRendererLogLevelEnum.info) {
 			const time = Math.round((performance.now() - startTime) / 1000);
 			const minutes = Math.floor(time / 60);
 			const seconds = time % 60;
 			// eslint-disable-next-line no-console
-			console.log(`Rendered ${items.length} pages in ${minutes} minutes and ${seconds} seconds`);
+			console.log(
+				Chalk.bold(
+					`\nRendered ${items.length} page${items.length > 1 ? 's' : ''} in ${
+						minutes ? `${minutes} minutes and ` : ''
+					}${seconds} seconds\n`
+				)
+			);
 		}
 
 		return results;
@@ -122,39 +152,31 @@ export default class ServerRenderer {
 	 */
 	async #runInWorker(
 		items: IServerRendererItem[],
-		isCacheWarmup?: boolean
+		isCacheWarmup = false
 	): Promise<IServerRendererResult[]> {
-		if (this.#configuration.worker.disable) {
-			const Browser = await import('./ServerRendererBrowser.js');
-			const browser = new Browser.default(this.#configuration);
-			const results = await browser.render(items, isCacheWarmup);
-			for (const result of results) {
-				if (result.error) {
-					if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.error) {
-						// eslint-disable-next-line no-console
-						console.error(` - Failed to render page "${result.url}": ${result.error}`);
-					}
-				} else {
-					if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.info) {
-						// eslint-disable-next-line no-console
-						console.log(' - Rendered page "' + result.url);
-					}
-				}
+		const configuration = this.#configuration;
+
+		if (configuration.worker.disable) {
+			if (!this.#browser) {
+				this.#browser = new ServerRendererBrowser(configuration);
 			}
+
+			const results = await this.#browser.render(items, isCacheWarmup);
+
+			this.outputResults(results);
+
 			return results;
 		}
 		return new Promise((resolve, reject) => {
 			if (this.#workerPool.free.length === 0) {
-				const maxConcurrency = this.#configuration.inspect
-					? 1
-					: this.#configuration.worker.maxConcurrency;
+				const maxConcurrency = configuration.inspect ? 1 : configuration.worker.maxConcurrency;
 				if (this.#workerPool.busy.length >= maxConcurrency) {
 					this.#workerPool.waiting.push({ items, isCacheWarmup, resolve, reject });
 					return;
 				}
 				const worker = new Worker(new URL('ServerRendererWorker.js', import.meta.url), {
 					workerData: {
-						configuration: this.#configuration
+						configuration: configuration
 					}
 				});
 				this.#workerPool.free.push(worker);
@@ -188,46 +210,17 @@ export default class ServerRenderer {
 				} = {
 					message: (data) => {
 						const results = <IServerRendererResult[]>data.results;
-
-						if (this.#configuration.logLevel !== ServerRendererLogLevelEnum.none) {
-							for (const result of results) {
-								if (result.error) {
-									if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.error) {
-										// eslint-disable-next-line no-console
-										console.error(
-											Chalk.red(`❌ Failed to render page "${result.url}"\n   ${result.error}`)
-										);
-									}
-								} else if (result.pageErrors.length) {
-									if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.warn) {
-										// eslint-disable-next-line no-console
-										console.log(Chalk.bold(`• Rendered page "${result.url}"`));
-										// eslint-disable-next-line no-console
-										console.log(Chalk.yellow(`⚠️ Warning! Errors where outputted in the browser.`));
-										// eslint-disable-next-line no-console
-										console.log(Chalk.yellow(result.pageErrors.join('\n   ')));
-									}
-								} else {
-									if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.info) {
-										// eslint-disable-next-line no-console
-										console.log(Chalk.bold(`• Rendered page "${result.url}"`));
-									}
-								}
-								if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.debug) {
-									// eslint-disable-next-line no-console
-									console.log(Chalk.gray(result.pageConsole));
-								}
-							}
-						}
-
+						this.outputResults(results);
 						done();
 						resolve(results);
 					},
 					error: (error: Error) => {
-						if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.error) {
+						if (configuration.logLevel >= ServerRendererLogLevelEnum.error) {
 							for (const item of items) {
 								// eslint-disable-next-line no-console
-								console.error(Chalk.red(`❌ Failed to render page "${item.url}"\n   ${error}`));
+								console.error(Chalk.bold(Chalk.red(`\n❌ Failed to render page "${item.url}"\n`)));
+								// eslint-disable-next-line no-console
+								console.error(Chalk.red(error + '\n'));
 							}
 						}
 
@@ -236,6 +229,9 @@ export default class ServerRenderer {
 							items.map((item) => ({
 								url: item.url,
 								content: null,
+								status: 500,
+								statusText: 'Internal Server Error',
+								headers: {},
 								outputFile: item.outputFile ?? null,
 								error: `${error.message}\n${error.stack}`,
 								pageConsole: '',
@@ -244,19 +240,26 @@ export default class ServerRenderer {
 						);
 					},
 					exit: (code: number) => {
-						if (code !== 0) {
-							this.#workerPool.busy.splice(this.#workerPool.busy.indexOf(worker), 1);
-
-							for (const worker of this.#workerPool.busy) {
-								worker.terminate();
-							}
-
-							this.#workerPool.busy = [];
-							this.#workerPool.free = [];
-							this.#workerPool.waiting = [];
-
-							reject(new Error(`Worker stopped with exit code ${code}`));
+						// Closed intentionally, either by the user or with terminate()
+						if (code === 0) {
+							return;
 						}
+
+						this.#workerPool.busy.splice(this.#workerPool.busy.indexOf(worker), 1);
+
+						for (const worker of this.#workerPool.free) {
+							worker.terminate();
+						}
+
+						for (const worker of this.#workerPool.busy) {
+							worker.terminate();
+						}
+
+						this.#workerPool.busy = [];
+						this.#workerPool.free = [];
+						this.#workerPool.waiting = [];
+
+						reject(new Error(`Worker stopped with exit code ${code}`));
 					}
 				};
 
@@ -267,5 +270,56 @@ export default class ServerRenderer {
 				worker.postMessage({ items, isCacheWarmup });
 			}
 		});
+	}
+
+	/**
+	 * Outputs results to the console.
+	 *
+	 * @param results Results.
+	 */
+	private outputResults(results: IServerRendererResult[]): void {
+		const configuration = this.#configuration;
+
+		if (configuration.logLevel === ServerRendererLogLevelEnum.none) {
+			return;
+		}
+
+		for (const result of results) {
+			if (result.error) {
+				if (configuration.logLevel >= ServerRendererLogLevelEnum.error) {
+					// eslint-disable-next-line no-console
+					console.error(Chalk.bold(Chalk.red(`\n❌ Failed to render page "${result.url}"\n`)));
+					// eslint-disable-next-line no-console
+					console.error(Chalk.red(result.error + '\n'));
+				}
+			} else if (result.pageErrors.length) {
+				if (configuration.logLevel >= ServerRendererLogLevelEnum.warn) {
+					// eslint-disable-next-line no-console
+					console.log(Chalk.bold(`• Rendered page "${result.url}"`));
+					// eslint-disable-next-line no-console
+					console.log(
+						Chalk.bold(
+							Chalk.yellow(
+								`\n⚠️ Warning! Errors where outputted to the browser when the page was rendered.\n`
+							)
+						)
+					);
+					// eslint-disable-next-line no-console
+					for (const error of result.pageErrors) {
+						// eslint-disable-next-line no-console
+						console.log(Chalk.red(error + '\n'));
+					}
+				}
+			} else {
+				if (configuration.logLevel >= ServerRendererLogLevelEnum.info) {
+					// eslint-disable-next-line no-console
+					console.log(Chalk.bold(`• Rendered page "${result.url}"`));
+				}
+			}
+			if (configuration.logLevel >= ServerRendererLogLevelEnum.debug && result.pageConsole) {
+				// eslint-disable-next-line no-console
+				console.log(Chalk.gray(result.pageConsole));
+			}
+		}
 	}
 }

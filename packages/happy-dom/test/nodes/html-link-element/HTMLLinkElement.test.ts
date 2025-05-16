@@ -140,7 +140,7 @@ describe('HTMLLinkElement', () => {
 			) {
 				loadedWindow = this.window;
 				loadedURL = <string>url;
-				return css;
+				return { content: css, virtualServerFile: null };
 			});
 
 			document.body.appendChild(element);
@@ -203,7 +203,7 @@ describe('HTMLLinkElement', () => {
 			) {
 				loadedWindow = this.window;
 				loadedURL = <string>url;
-				return css;
+				return { content: css, virtualServerFile: null };
 			});
 
 			element.rel = 'stylesheet';
@@ -229,7 +229,7 @@ describe('HTMLLinkElement', () => {
 			) {
 				loadedWindow = this.window;
 				loadedURL = <string>url;
-				return css;
+				return { content: css, virtualServerFile: null };
 			});
 
 			element.rel = 'stylesheet';
@@ -290,7 +290,7 @@ describe('HTMLLinkElement', () => {
 			) {
 				loadedWindow = this.window;
 				loadedURL = <string>url;
-				return css;
+				return { content: css, virtualServerFile: null };
 			});
 
 			element.rel = 'stylesheet';

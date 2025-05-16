@@ -341,7 +341,8 @@ export default class SyncFetch {
 			url: this.request.url,
 			redirected: false,
 			headers: new this.#window.Headers(),
-			body: buffer
+			body: buffer,
+			[PropertySymbol.virtualServerFile]: filePath
 		};
 		const interceptedResponse = this.interceptor?.afterSyncResponse
 			? this.interceptor.afterSyncResponse({
@@ -354,7 +355,8 @@ export default class SyncFetch {
 
 		this.#browserFrame.page.context.responseCache.add(this.request, {
 			...returnResponse,
-			waitingForBody: false
+			waitingForBody: false,
+			virtual: true
 		});
 
 		return returnResponse;
