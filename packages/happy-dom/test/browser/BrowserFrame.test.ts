@@ -313,6 +313,33 @@ Task #1
 			expect(page.mainFrame.window.document.body.innerHTML).toBe('Test');
 		});
 
+		it('Triggers "beforeContentCallback" before content is loaded into the document', async () => {
+			let request: Request | null = null;
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				request = this.request;
+				return Promise.resolve(<Response>{
+					url: request?.url,
+					text: () =>
+						new Promise((resolve) => setTimeout(() => resolve('<html><body>Test</body></html>'), 1))
+				});
+			});
+
+			const browser = new Browser();
+			const page = browser.newPage();
+			let loadedWindow: BrowserWindow | null = null;
+			await page.mainFrame.goto('http://localhost:3000', {
+				beforeContentCallback: (window: BrowserWindow) => {
+					expect(window.document.body.children.length).toBe(0);
+					loadedWindow = window;
+				}
+			});
+
+			expect(page.mainFrame.url).toBe('http://localhost:3000/');
+			expect(page.mainFrame.window.location.href).toBe('http://localhost:3000/');
+			expect(page.mainFrame.window.document.body.innerHTML).toBe('Test');
+			expect(loadedWindow).toBe(page.mainFrame.window);
+		});
+
 		it('Navigates to a URL with "javascript:" as protocol.', async () => {
 			const browser = new Browser();
 			const page = browser.newPage();

@@ -524,6 +524,82 @@ describe('SyncFetch', () => {
 			});
 		});
 
+		it('Should append request headers when "settings.fetch.requestHeaders" is defined', () => {
+			const url = 'https://localhost:8080/some/path';
+			const browser = new Browser({
+				settings: {
+					fetch: {
+						requestHeaders: [
+							{
+								url: 'https://localhost:8080/some/path',
+								headers: {
+									'x-test-1': '1'
+								}
+							},
+							{
+								url: /\/some\/path/,
+								headers: {
+									'x-test-2': '2'
+								}
+							},
+							{
+								url: /\/not\/\/some\/path/,
+								headers: {
+									'x-test-3': '3'
+								}
+							}
+						]
+					}
+				}
+			});
+			const page = browser.newPage();
+
+			const browserFrame = page.mainFrame;
+			const window = page.mainFrame.window;
+			browserFrame.url = 'https://localhost:8080/';
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					expect(args[1]).toBe(
+						SyncFetchScriptBuilder.getScript({
+							url: new URL('https://localhost:8080/some/path'),
+							method: 'GET',
+							headers: {
+								Accept: '*/*',
+								Connection: 'close',
+								'User-Agent': window.navigator.userAgent,
+								'Accept-Encoding': 'gzip, deflate, br',
+								Referer: 'https://localhost:8080/',
+								'x-test-1': '1',
+								'x-test-2': '2'
+							},
+							body: null
+						})
+					);
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							rawHeaders: [],
+							data: Buffer.from('test').toString('base64')
+						}
+					});
+				}
+			});
+
+			const response = new SyncFetch({
+				browserFrame,
+				window,
+				url,
+				init: {
+					method: 'GET'
+				}
+			}).send();
+
+			expect(response.body.toString()).toBe('test');
+		});
+
 		it('Performs a request with a relative URL and adds the "Referer" header set to the window location.', () => {
 			const baseUrl = 'https://localhost:8080/base/';
 

@@ -316,6 +316,8 @@ import CSSStyleValue from '../css/style-property-map/CSSStyleValue.js';
 import CSSConditionRule from '../css/rules/CSSConditionRule.js';
 import CSSGroupingRule from '../css/rules/CSSGroupingRule.js';
 import CSSScopeRule from '../css/rules/CSSScopeRule.js';
+import PopStateEvent from '../event/events/PopStateEvent.js';
+import ITimerLoopsLimit from './ITimerLoopsLimit.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -541,6 +543,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly HashChangeEvent = HashChangeEvent;
 	public readonly ClipboardEvent = ClipboardEvent;
 	public readonly TouchEvent = TouchEvent;
+	public readonly PopStateEvent = PopStateEvent;
 	public readonly Touch = Touch;
 
 	// Non-implemented event classes
@@ -567,7 +570,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly OverconstrainedError = Event;
 	public readonly PageTransitionEvent = Event;
 	public readonly PaymentRequestUpdateEvent = Event;
-	public readonly PopStateEvent = Event;
 	public readonly RelatedEvent = Event;
 	public readonly RTCDataChannelEvent = Event;
 	public readonly RTCIdentityErrorEvent = Event;
@@ -620,6 +622,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare readonly TextTrackList: typeof TextTrackList;
 	public declare readonly TextTrackCue: typeof TextTrackCue;
 	public declare readonly RemotePlayback: typeof RemotePlayback;
+	public readonly URL: typeof URL;
 
 	// Other classes that don't have to be bound to the Window context
 	public readonly Permissions = Permissions;
@@ -651,7 +654,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly Location = Location;
 	public readonly CustomElementRegistry = CustomElementRegistry;
 	public readonly ResizeObserver = ResizeObserver;
-	public readonly URL = URL;
 	public readonly Blob = Blob;
 	public readonly File = File;
 	public readonly Storage = Storage;
@@ -799,7 +801,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	// Used for tracking capture event listeners to improve performance when they are not used.
 	// See EventTarget class.
 	public [PropertySymbol.mutationObservers]: MutationObserver[] = [];
-	public readonly [PropertySymbol.readyStateManager] = new DocumentReadyStateManager(this);
+	public readonly [PropertySymbol.readyStateManager]: DocumentReadyStateManager;
 	public [PropertySymbol.location]: Location;
 	public [PropertySymbol.history]: History;
 	public [PropertySymbol.navigator]: Navigator;
@@ -810,6 +812,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.top]: BrowserWindow = this;
 	public [PropertySymbol.parent]: BrowserWindow = this;
 	public [PropertySymbol.window]: BrowserWindow = this;
+	public [PropertySymbol.frames]: BrowserWindow = this;
 	public [PropertySymbol.internalId]: number = -1;
 	public [PropertySymbol.customElementReactionStack] = new CustomElementReactionStack(this);
 	public [PropertySymbol.modules]: {
@@ -832,6 +835,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	#devicePixelRatio: number | null = null;
 	#zeroDelayTimeout: { timeouts: Array<Timeout> | null } = { timeouts: null };
 	#timerLoopStacks: string[] = [];
+	#timerLoopLimits: ITimerLoopsLimit[] = [];
 
 	/**
 	 * Constructor.
@@ -847,6 +851,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 
 		this.console = browserFrame.page.console;
 
+		this[PropertySymbol.readyStateManager] = new DocumentReadyStateManager(browserFrame);
 		this[PropertySymbol.navigator] = new Navigator(this);
 		this[PropertySymbol.screen] = new Screen();
 		this[PropertySymbol.sessionStorage] = new Storage();
@@ -865,13 +870,18 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this.document[PropertySymbol.defaultView] = this;
 
 		// Ready state manager
+		const taskID = browserFrame[PropertySymbol.asyncTaskManager].startTask(() =>
+			this[PropertySymbol.readyStateManager].destroy()
+		);
 		this[PropertySymbol.readyStateManager].waitUntilComplete().then(() => {
+			browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+
 			this.document[PropertySymbol.readyState] = DocumentReadyStateEnum.complete;
 			this.document.dispatchEvent(new Event('readystatechange'));
 
-			// Not sure why target is set to document here, but this is how it works in the browser
 			const loadEvent = new Event('load');
 
+			// Not sure why target is set to document here, but this is how it seem to work in the browser
 			loadEvent[PropertySymbol.currentTarget] = this;
 			loadEvent[PropertySymbol.target] = this.document;
 			loadEvent[PropertySymbol.eventPhase] = EventPhaseEnum.atTarget;
@@ -884,6 +894,24 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		});
 
 		this[PropertySymbol.bindMethods]();
+
+		// Promise.allSettled polyfill
+		if (!this.Promise.allSettled) {
+			this.Promise.allSettled = (promises) =>
+				this.Promise.all(
+					promises.map((p) =>
+						p
+							.then((value) => ({
+								status: 'fulfilled',
+								value
+							}))
+							.catch((reason) => ({
+								status: 'rejected',
+								reason
+							}))
+					)
+				);
+		}
 	}
 
 	/**
@@ -896,7 +924,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	}
 
 	/**
-	 * Returns self.
+	 * Sets self.
 	 *
 	 * @param self Self.
 	 */
@@ -923,12 +951,30 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	}
 
 	/**
-	 * Returns parent.
+	 * Sets parent.
 	 *
 	 * @param parent Parent.
 	 */
 	public set parent(parent: BrowserWindow | null) {
 		this[PropertySymbol.parent] = parent;
+	}
+
+	/**
+	 * Returns frames.
+	 *
+	 * @returns Frames.
+	 */
+	public get frames(): BrowserWindow {
+		return this[PropertySymbol.frames];
+	}
+
+	/**
+	 * Sets frames.
+	 *
+	 * @param frames Frames.
+	 */
+	public set frames(frames: BrowserWindow | null) {
+		this[PropertySymbol.parent] = frames;
 	}
 
 	/**
@@ -1313,10 +1359,25 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		if (settings.timer.preventTimerLoops) {
 			const stack = new Error().stack;
 			const timerLoopStacks = this.#timerLoopStacks;
-			if (timerLoopStacks.includes(stack)) {
-				return;
+			const timerLoopLimits = this.#timerLoopLimits;
+			const index = timerLoopStacks.indexOf(stack);
+			if (index !== -1) {
+				timerLoopLimits[index].timeout++;
+				if (
+					timerLoopLimits[index].timeout >=
+					(settings.timer.preventTimerLoops === true
+						? 1
+						: settings.timer.preventTimerLoops.timeout ?? 1)
+				) {
+					return;
+				}
+			} else {
+				timerLoopStacks.push(stack);
+				timerLoopLimits.push({
+					timeout: 0,
+					requestAnimationFrame: 0
+				});
 			}
-			timerLoopStacks.push(stack);
 		}
 
 		// We can group timeouts with a delay of 0 into one timeout to improve performance.
@@ -1503,10 +1564,25 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		if (settings.timer.preventTimerLoops) {
 			const stack = new Error().stack;
 			const timerLoopStacks = this.#timerLoopStacks;
-			if (timerLoopStacks.includes(stack)) {
-				return;
+			const timerLoopLimits = this.#timerLoopLimits;
+			const index = timerLoopStacks.indexOf(stack);
+			if (index !== -1) {
+				timerLoopLimits[index].requestAnimationFrame++;
+				if (
+					timerLoopLimits[index].requestAnimationFrame >=
+					(settings.timer.preventTimerLoops === true
+						? 1
+						: settings.timer.preventTimerLoops.requestAnimationFrame ?? 1)
+				) {
+					return;
+				}
+			} else {
+				timerLoopStacks.push(stack);
+				timerLoopLimits.push({
+					timeout: 0,
+					requestAnimationFrame: 0
+				});
 			}
-			timerLoopStacks.push(stack);
 		}
 
 		const useTryCatch =

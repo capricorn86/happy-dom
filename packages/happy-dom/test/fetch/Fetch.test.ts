@@ -17,6 +17,7 @@ import { ReadableStream } from 'stream/web';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import FetchHTTPSCertificate from '../../src/fetch/certificate/FetchHTTPSCertificate.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
+import { fail } from 'assert';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -1094,7 +1095,7 @@ describe('Fetch', () => {
 			});
 			const url = 'https://localhost:8080/some/path';
 
-			const network = mockNetwork('https', {
+			mockNetwork('https', {
 				beforeResponse() {
 					fail('No request should be made when beforeAsyncRequest returns a Response');
 				}
@@ -1163,7 +1164,7 @@ describe('Fetch', () => {
 			expect(await response.text()).toBe('intercepted text');
 		});
 
-		it('Should use original response when no response is given', async () => {
+		it('Should use original response when no response is given when intercepted', async () => {
 			const originURL = 'https://localhost:8080/';
 			const responseText = 'some text';
 			const window = new Window({
@@ -1192,6 +1193,66 @@ describe('Fetch', () => {
 
 			expect(await response.text()).toBe(responseText);
 			expect(response.headers.get('x-test')).toBe('yes');
+		});
+
+		it('Should append request headers when "settings.fetch.requestHeaders" is defined', async () => {
+			const originURL = 'https://localhost:8080/';
+			const window = new Window({
+				url: originURL,
+				settings: {
+					fetch: {
+						requestHeaders: [
+							{
+								url: 'https://localhost:8080/some/path',
+								headers: {
+									'x-test-1': '1'
+								}
+							},
+							{
+								url: /\/some\/path/,
+								headers: {
+									'x-test-2': '2'
+								}
+							},
+							{
+								url: /\/not\/\/some\/path/,
+								headers: {
+									'x-test-3': '3'
+								}
+							}
+						]
+					}
+				}
+			});
+			const url = 'https://localhost:8080/some/path';
+
+			const network = mockNetwork('https', {
+				responseText: 'some text'
+			});
+
+			await window.fetch(url);
+
+			expect(network.requestHistory).toEqual([
+				{
+					url,
+					options: {
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							Referer: 'https://localhost:8080/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							'x-test-1': '1',
+							'x-test-2': '2'
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
+					}
+				}
+			]);
 		});
 
 		it('Forwards "cookie", "authorization" or "www-authenticate" if request credentials are set to "same-origin" and the request goes to the same origin as the document.', async () => {

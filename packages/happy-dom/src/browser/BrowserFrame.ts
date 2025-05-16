@@ -33,6 +33,7 @@ export default class BrowserFrame implements IBrowserFrame {
 			title: '',
 			href: 'about:blank',
 			state: null,
+			navigation: true,
 			scrollRestoration: HistoryScrollRestorationEnum.auto,
 			method: 'GET',
 			formData: null,

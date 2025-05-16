@@ -66,7 +66,7 @@ export default class Request implements Request {
 			);
 		}
 
-		if (!input) {
+		if (typeof input !== `string` && !input) {
 			throw new window.TypeError(
 				`Failed to contruct 'Request': 1 argument required, only 0 present.`
 			);

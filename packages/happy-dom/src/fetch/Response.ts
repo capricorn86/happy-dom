@@ -43,6 +43,7 @@ export default class Response implements Response {
 	public readonly headers: Headers;
 	public [PropertySymbol.cachedResponse]: ICachedResponse | null = null;
 	public [PropertySymbol.buffer]: Buffer | null = null;
+	public [PropertySymbol.virtualServerFile]: string | null = null;
 
 	/**
 	 * Constructor.

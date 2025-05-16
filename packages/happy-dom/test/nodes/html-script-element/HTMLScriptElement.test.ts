@@ -389,7 +389,10 @@ describe('HTMLScriptElement', () => {
 			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(function (url: string) {
 				fetchedWindow = this.window;
 				fetchedURL = url;
-				return 'globalThis.test = "test";globalThis.currentScript = document.currentScript;';
+				return {
+					content: 'globalThis.test = "test";globalThis.currentScript = document.currentScript;',
+					virtualServerFile: null
+				};
 			});
 
 			const script = <HTMLScriptElement>window.document.createElement('script');
@@ -485,9 +488,10 @@ describe('HTMLScriptElement', () => {
 		it('Loads and evaluates an external script when "src" attribute has been set, but does not evaluate text content.', () => {
 			const element = document.createElement('script');
 
-			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(
-				() => 'globalThis.testFetch = "test";'
-			);
+			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(() => ({
+				content: 'globalThis.testFetch = "test";',
+				virtualServerFile: null
+			}));
 
 			element.src = 'https://localhost:8080/path/to/script.js';
 			element.text = 'globalThis.testContent = "test";';
@@ -501,9 +505,10 @@ describe('HTMLScriptElement', () => {
 		it('Does not load external scripts when "src" attribute has been set if the element is not connected to DOM.', () => {
 			const element = document.createElement('script');
 
-			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(
-				() => 'globalThis.testFetch = "test";'
-			);
+			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(() => ({
+				content: 'globalThis.testFetch = "test";',
+				virtualServerFile: null
+			}));
 
 			element.src = 'https://localhost:8080/path/to/script.js';
 			element.text = 'globalThis.test = "test";';
@@ -675,9 +680,10 @@ describe('HTMLScriptElement', () => {
 		it('Triggers an error event on Window when attempting to perform a synchrounous request containing invalid JavaScript.', () => {
 			let errorEvent: ErrorEvent | null = null;
 
-			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(
-				() => 'globalThis.test = /;'
-			);
+			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(() => ({
+				content: 'globalThis.test = /;',
+				virtualServerFile: null
+			}));
 
 			window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
 
@@ -817,6 +823,8 @@ describe('HTMLScriptElement', () => {
             Expect upper case: "VALUE"
             Expect lower case. "value"
             Expect trimmed lower case: "value"
+            Import URL: https://localhost:8080/base/js/TestModuleElement.js
+            Resolved URL: https://localhost:8080/base/js/Resolved.js
         </div><div>Lazy-loaded module: true</div>`);
 
 			expect(testModule.shadowRoot?.adoptedStyleSheets[0].cssRules[0].cssText).toBe(
@@ -1045,9 +1053,9 @@ DOMException: Failed to perform request to "https://localhost:8080/base/js/utili
 			expect((<ErrorEvent>(<unknown>errorEvent)).type).toBe('error');
 			expect((<ErrorEvent>(<unknown>errorEvent)).bubbles).toBe(false);
 			expect(
-				window.happyDOM?.virtualConsolePrinter.readAsString()
-					.startsWith(`ReferenceError: notFound is not defined
-    at eval (https://localhost:8080/base/js/utilities/stringUtility.js:12:14)`)
+				/^ReferenceError: notFound is not defined\n    at eval \((.+?)\/nodes\/html-script-element\/modules-with-evaluation-error\/utilities\/stringUtility.js:10:14\)/.test(
+					window.happyDOM?.virtualConsolePrinter.readAsString()
+				)
 			).toBe(true);
 		});
 	});
