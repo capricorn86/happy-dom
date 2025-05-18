@@ -16,6 +16,7 @@ import FS from 'fs';
 import Path from 'path';
 import '../types.d.js';
 import { fail } from 'node:assert';
+import { PropertySymbol } from '../../src/index.js';
 
 const PLATFORM =
 	'X11; ' +
@@ -3815,6 +3816,9 @@ describe('SyncFetch', () => {
 				url: 'https://example.com/gb/en/'
 			}).send();
 
+			expect(response[PropertySymbol.virtualServerFile]).toBe(
+				Path.resolve('./test/fetch/virtual-server/index.html')
+			);
 			expect(response.body.toString()).toBe(htmlFileContent.toString());
 
 			const response2 = new SyncFetch({
@@ -3823,6 +3827,9 @@ describe('SyncFetch', () => {
 				url: 'https://example.com/se/sv/index.html'
 			}).send();
 
+			expect(response2[PropertySymbol.virtualServerFile]).toBe(
+				Path.resolve('./test/fetch/virtual-server/index.html')
+			);
 			expect(response2.body.toString()).toBe(htmlFileContent.toString());
 
 			const response3 = new SyncFetch({
@@ -3831,6 +3838,9 @@ describe('SyncFetch', () => {
 				url: 'https://example.com/se/sv/index.html?query=value'
 			}).send();
 
+			expect(response3[PropertySymbol.virtualServerFile]).toBe(
+				Path.resolve('./test/fetch/virtual-server/index.html')
+			);
 			expect(response3.body.toString()).toBe(htmlFileContent.toString());
 
 			const response4 = new SyncFetch({
@@ -3839,6 +3849,9 @@ describe('SyncFetch', () => {
 				url: 'https://example.com/fi/fi/css/style.css'
 			}).send();
 
+			expect(response4[PropertySymbol.virtualServerFile]).toBe(
+				Path.resolve('./test/fetch/virtual-server/css/style.css')
+			);
 			expect(response4.body.toString()).toBe(cssFileContent.toString());
 
 			const response5 = new SyncFetch({
@@ -3847,6 +3860,7 @@ describe('SyncFetch', () => {
 				url: 'https://example.com/gb/en/not_found.js'
 			}).send();
 
+			expect(response5[PropertySymbol.virtualServerFile]).toBe(null);
 			expect(response5.ok).toBe(false);
 			expect(response5.status).toBe(404);
 			expect(response5.statusText).toBe('Not Found');

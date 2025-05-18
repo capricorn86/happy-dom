@@ -149,7 +149,8 @@ export default class SyncFetch {
 				url: this.request.url,
 				redirected: false,
 				headers: new Headers({ 'Content-Type': result.type }),
-				body: result.buffer
+				body: result.buffer,
+				[PropertySymbol.virtualServerFile]: null
 			};
 			const interceptedResponse = this.interceptor?.afterSyncResponse
 				? this.interceptor.afterSyncResponse({
@@ -284,7 +285,9 @@ export default class SyncFetch {
 			// TODO: Do we need to add support for redirected responses to the cache?
 			redirected: false,
 			headers: cachedResponse.response.headers,
-			body: cachedResponse.response.body
+			body: cachedResponse.response.body,
+			[PropertySymbol.virtualServerFile]:
+				cachedResponse.response[PropertySymbol.virtualServerFile] || null
 		};
 	}
 
@@ -294,7 +297,7 @@ export default class SyncFetch {
 	 * @returns Response.
 	 */
 	private getVirtualServerResponse(): ISyncResponse | null {
-		const filePath = VirtualServerUtility.getFilepath(this.#window, this.request.url);
+		let filePath = VirtualServerUtility.getFilepath(this.#window, this.request.url);
 
 		if (!filePath) {
 			return null;
@@ -318,7 +321,8 @@ export default class SyncFetch {
 		let buffer: Buffer;
 		try {
 			const stat = FS.statSync(filePath);
-			buffer = FS.readFileSync(stat.isDirectory() ? Path.join(filePath, 'index.html') : filePath);
+			filePath = stat.isDirectory() ? Path.join(filePath, 'index.html') : filePath;
+			buffer = FS.readFileSync(filePath);
 		} catch {
 			this.#browserFrame?.page?.console.error(
 				`${this.request.method} ${this.request.url} 404 (Not Found)`

@@ -347,7 +347,7 @@ export default class Fetch {
 	 * @returns Response.
 	 */
 	private async getVirtualServerResponse(): Promise<Response | null> {
-		const filePath = VirtualServerUtility.getFilepath(this.#window, this.request.url);
+		let filePath = VirtualServerUtility.getFilepath(this.#window, this.request.url);
 
 		if (!filePath) {
 			return null;
@@ -374,9 +374,8 @@ export default class Fetch {
 
 		try {
 			const stat = await FS.promises.stat(filePath);
-			buffer = await FS.promises.readFile(
-				stat.isDirectory() ? Path.join(filePath, 'index.html') : filePath
-			);
+			filePath = stat.isDirectory() ? Path.join(filePath, 'index.html') : filePath;
+			buffer = await FS.promises.readFile(filePath);
 		} catch (error) {
 			this.#browserFrame?.page?.console.error(
 				`${this.request.method} ${this.request.url} 404 (Not Found)`
@@ -419,7 +418,7 @@ export default class Fetch {
 		this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 
 		const returnResponse = interceptedResponse instanceof Response ? interceptedResponse : response;
-		const cachableResponse = {
+		const cacheableResponse = {
 			...returnResponse,
 			body: buffer,
 			waitingForBody: false,
@@ -428,7 +427,7 @@ export default class Fetch {
 
 		response[PropertySymbol.cachedResponse] = this.#browserFrame.page?.context?.responseCache.add(
 			this.request,
-			cachableResponse
+			cacheableResponse
 		);
 
 		return returnResponse;

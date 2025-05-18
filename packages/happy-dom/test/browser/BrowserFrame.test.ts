@@ -13,6 +13,7 @@ import BrowserFrameFactory from '../../src/browser/utilities/BrowserFrameFactory
 import BrowserErrorCaptureEnum from '../../src/browser/enums/BrowserErrorCaptureEnum';
 import Headers from '../../src/fetch/Headers';
 import * as PropertySymbol from '../../src/PropertySymbol';
+import HashChangeEvent from '../../src/event/events/HashChangeEvent';
 
 const STACK_TRACE_REGEXP = />.+$\s*/gm;
 
@@ -938,6 +939,37 @@ Task #1
 			expect(
 				page.mainFrame.window.getComputedStyle(page.mainFrame.document.body).backgroundColor
 			).toBe('red');
+		});
+
+		it('Navigates using hash.', async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>{
+					text: () =>
+						new Promise((resolve) => setTimeout(() => resolve('<html><body>Test</body></html>'), 1))
+				});
+			});
+
+			await page.mainFrame.goto('http://localhost:3000');
+
+			expect(page.mainFrame.url).toBe('http://localhost:3000/');
+
+			const window = page.mainFrame.window;
+			let hashChangeEvent: HashChangeEvent | null = null;
+
+			window.addEventListener('hashchange', (event) => {
+				hashChangeEvent = <HashChangeEvent>event;
+			});
+
+			await page.mainFrame.goto('http://localhost:3000/#test');
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(hashChangeEvent!.oldURL).toBe('http://localhost:3000/');
+			expect(hashChangeEvent!.newURL).toBe('http://localhost:3000/#test');
+			expect(page.mainFrame.url).toBe('http://localhost:3000/#test');
+			expect(window).toBe(page.mainFrame.window);
 		});
 	});
 

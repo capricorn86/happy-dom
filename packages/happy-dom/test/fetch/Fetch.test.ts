@@ -4719,30 +4719,43 @@ describe('Fetch', () => {
 
 			const response = await window.fetch('http://localhost:8080/path/to/virtual-server/gb/en/');
 
+			expect(response[PropertySymbol.virtualServerFile]).toBe(
+				Path.resolve('./test/fetch/virtual-server/index.html')
+			);
 			expect(await response.text()).toBe(htmlFileContent.toString());
 
 			const response2 = await window.fetch(
 				'http://localhost:8080/path/to/virtual-server/se/sv/index.html'
 			);
 
+			expect(response2[PropertySymbol.virtualServerFile]).toBe(
+				Path.resolve('./test/fetch/virtual-server/index.html')
+			);
 			expect(await response2.text()).toBe(htmlFileContent.toString());
 
 			const response3 = await window.fetch(
 				'http://localhost:8080/path/to/virtual-server/se/sv/index.html?query=value'
 			);
 
+			expect(response3[PropertySymbol.virtualServerFile]).toBe(
+				Path.resolve('./test/fetch/virtual-server/index.html')
+			);
 			expect(await response3.text()).toBe(htmlFileContent.toString());
 
 			const response4 = await window.fetch(
 				'http://localhost:8080/path/to/virtual-server/fi/fi/css/style.css'
 			);
 
+			expect(response4[PropertySymbol.virtualServerFile]).toBe(
+				Path.resolve('./test/fetch/virtual-server/css/style.css')
+			);
 			expect(await response4.text()).toBe(cssFileContent.toString());
 
 			const response5 = await window.fetch(
 				'http://localhost:8080/path/to/virtual-server/gb/en/not_found.js'
 			);
 
+			expect(response5[PropertySymbol.virtualServerFile]).toBe(null);
 			expect(response5.ok).toBe(false);
 			expect(response5.status).toBe(404);
 			expect(response5.statusText).toBe('Not Found');

@@ -22,6 +22,8 @@ import XMLHttpRequestResponseDataParser from './XMLHttpRequestResponseDataParser
 import FetchRequestHeaderUtility from '../fetch/utilities/FetchRequestHeaderUtility.js';
 import Response from '../fetch/Response.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
+import BrowserWindow from '../window/BrowserWindow.js';
+import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
 
 /**
  * XMLHttpRequest.
@@ -30,10 +32,13 @@ import WindowBrowserContext from '../window/WindowBrowserContext.js';
  * https://github.com/mjwwit/node-XMLHttpRequest/blob/master/lib/XMLHttpRequest.js
  */
 export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
+	// Injected by WindowContextClassExtender
+	protected declare [PropertySymbol.window]: BrowserWindow;
+
 	// Constants
 	public static UNSENT = XMLHttpRequestReadyStateEnum.unsent;
 	public static OPENED = XMLHttpRequestReadyStateEnum.opened;
-	public static HEADERS_RECEIVED = XMLHttpRequestReadyStateEnum.headersRecieved;
+	public static HEADERS_RECEIVED = XMLHttpRequestReadyStateEnum.headersReceived;
 	public static LOADING = XMLHttpRequestReadyStateEnum.loading;
 	public static DONE = XMLHttpRequestReadyStateEnum.done;
 
@@ -336,8 +341,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		this.#readyState = XMLHttpRequestReadyStateEnum.loading;
 
-		this.#dispatchEventWithTryCatch(new Event('readystatechange'));
-		this.#dispatchEventWithTryCatch(new Event('loadstart'));
+		this.#dispatchEvent(new Event('readystatechange'));
+		this.#dispatchEvent(new Event('loadstart'));
 
 		if (body) {
 			this.#request = new window.Request(this.#request.url, {
@@ -352,9 +357,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#abortController.signal.addEventListener('abort', () => {
 			this.#aborted = true;
 			this.#readyState = XMLHttpRequestReadyStateEnum.unsent;
-			this.#dispatchEventWithTryCatch(new Event('abort'));
-			this.#dispatchEventWithTryCatch(new Event('loadend'));
-			this.#dispatchEventWithTryCatch(new Event('readystatechange'));
+			this.#dispatchEvent(new Event('abort'));
+			this.#dispatchEvent(new Event('loadend'));
+			this.#dispatchEvent(new Event('readystatechange'));
 			asyncTaskManager.endTask(taskID);
 		});
 
@@ -364,13 +369,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 					return;
 				}
 				this.#readyState = XMLHttpRequestReadyStateEnum.unsent;
-				this.#dispatchEventWithTryCatch(new Event('abort'));
+				this.#dispatchEvent(new Event('abort'));
 			} else {
 				this.#readyState = XMLHttpRequestReadyStateEnum.done;
-				this.#dispatchEventWithTryCatch(new ErrorEvent('error', { error, message: error.message }));
+				this.#dispatchEvent(new ErrorEvent('error', { error, message: error.message }));
 			}
-			this.#dispatchEventWithTryCatch(new Event('loadend'));
-			this.#dispatchEventWithTryCatch(new Event('readystatechange'));
+			this.#dispatchEvent(new Event('loadend'));
+			this.#dispatchEvent(new Event('readystatechange'));
 			asyncTaskManager.endTask(taskID);
 		};
 
@@ -388,9 +393,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			return;
 		}
 
-		this.#readyState = XMLHttpRequestReadyStateEnum.headersRecieved;
+		this.#readyState = XMLHttpRequestReadyStateEnum.headersReceived;
 
-		this.#dispatchEventWithTryCatch(new Event('readystatechange'));
+		this.#dispatchEvent(new Event('readystatechange'));
 
 		const contentLength = this.#response.headers.get('Content-Length');
 		const contentLengthNumber =
@@ -406,7 +411,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 					loaded += chunk.length;
 					// We need to re-throw the error as we don't want it to be caught by the try/catch.
 					try {
-						this.#dispatchEventWithTryCatch(
+						this.#dispatchEvent(
 							new ProgressEvent('progress', {
 								lengthComputable: contentLengthNumber !== null,
 								loaded,
@@ -438,9 +443,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		asyncTaskManager.endTask(taskID);
 
-		this.#dispatchEventWithTryCatch(new Event('readystatechange'));
-		this.#dispatchEventWithTryCatch(new Event('load'));
-		this.#dispatchEventWithTryCatch(new Event('loadend'));
+		this.#dispatchEvent(new Event('readystatechange'));
+		this.#dispatchEvent(new Event('load'));
+		this.#dispatchEvent(new Event('loadend'));
 	}
 
 	/**
@@ -475,13 +480,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.#response = fetch.send();
 		} catch (error) {
 			this.#readyState = XMLHttpRequestReadyStateEnum.done;
-			this.#dispatchEventWithTryCatch(new ErrorEvent('error', { error, message: error.message }));
-			this.#dispatchEventWithTryCatch(new Event('loadend'));
-			this.#dispatchEventWithTryCatch(new Event('readystatechange'));
+			this.#dispatchEvent(new ErrorEvent('error', { error, message: error.message }));
+			this.#dispatchEvent(new Event('loadend'));
+			this.#dispatchEvent(new Event('readystatechange'));
 			return;
 		}
 
-		this.#readyState = XMLHttpRequestReadyStateEnum.headersRecieved;
+		this.#readyState = XMLHttpRequestReadyStateEnum.headersReceived;
 
 		this.#responseBody = XMLHttpRequestResponseDataParser.parse({
 			window: window,
@@ -493,9 +498,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		this.#readyState = XMLHttpRequestReadyStateEnum.done;
 
-		this.#dispatchEventWithTryCatch(new Event('readystatechange'));
-		this.#dispatchEventWithTryCatch(new Event('load'));
-		this.#dispatchEventWithTryCatch(new Event('loadend'));
+		this.#dispatchEvent(new Event('readystatechange'));
+		this.#dispatchEvent(new Event('load'));
+		this.#dispatchEvent(new Event('loadend'));
 	}
 
 	/**
@@ -505,11 +510,15 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 * @param event Event.
 	 */
-	#dispatchEventWithTryCatch(event: Event): void {
-		try {
-			this.dispatchEvent(event);
-		} catch (error) {
-			this[PropertySymbol.window][PropertySymbol.dispatchError](error);
+	#dispatchEvent(event: Event): void {
+		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
+		if (!browserFrame?.page?.context?.browser?.settings?.errorCapture) {
+			return;
 		}
+		const settings = browserFrame.page.context.browser.settings;
+		const errorCapture = settings.errorCapture;
+		settings.errorCapture = BrowserErrorCaptureEnum.tryAndCatch;
+		this.dispatchEvent(event);
+		settings.errorCapture = errorCapture;
 	}
 }
