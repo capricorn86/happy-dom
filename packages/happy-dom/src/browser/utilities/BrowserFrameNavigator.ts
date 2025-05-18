@@ -9,7 +9,6 @@ import BrowserFrameValidator from './BrowserFrameValidator.js';
 import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
 import FormData from '../../form-data/FormData.js';
 import HistoryScrollRestorationEnum from '../../history/HistoryScrollRestorationEnum.js';
-import IHistoryItem from '../../history/IHistoryItem.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 
 /**
@@ -68,34 +67,23 @@ export default class BrowserFrameNavigator {
 		) {
 			const history = frame[PropertySymbol.history];
 
-			for (let i = history.length - 1; i >= 0; i--) {
-				if (history[i].isCurrent) {
-					history[i].isCurrent = false;
-
-					// We need to remove all history items after the current one.
-					history.length = i + 1;
-					break;
-				}
+			if (!disableHistory) {
+				history.push({
+					title: '',
+					href: targetURL.href,
+					state: history.currentItem.state,
+					navigation: false,
+					scrollRestoration: HistoryScrollRestorationEnum.auto,
+					method: method || (formData ? 'POST' : 'GET'),
+					formData: formData || null
+				});
 			}
-
-			const historyItem = {
-				title: '',
-				href: targetURL.href,
-				state: history[history.length - 1]?.state ?? null,
-				navigation: false,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: method || (formData ? 'POST' : 'GET'),
-				formData: formData || null,
-				isCurrent: true
-			};
-
-			history.push(historyItem);
 
 			frame.window.location[PropertySymbol.setURL](frame, targetURL.href);
 
 			frame.window.dispatchEvent(
 				new frame.window.PopStateEvent('popstate', {
-					state: historyItem.state ?? null,
+					state: history.currentItem.state ?? null,
 					hasUAVisualTransition: false
 				})
 			);
@@ -146,16 +134,6 @@ export default class BrowserFrameNavigator {
 		if (!disableHistory) {
 			const history = frame[PropertySymbol.history];
 
-			for (let i = history.length - 1; i >= 0; i--) {
-				if (history[i].isCurrent) {
-					history[i].isCurrent = false;
-
-					// We need to remove all history items after the current one.
-					history.length = i + 1;
-					break;
-				}
-			}
-
 			history.push({
 				title: '',
 				href: targetURL.href,
@@ -163,8 +141,7 @@ export default class BrowserFrameNavigator {
 				navigation: true,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: method || (formData ? 'POST' : 'GET'),
-				formData: formData || null,
-				isCurrent: true
+				formData: formData || null
 			});
 		}
 
@@ -332,17 +309,7 @@ export default class BrowserFrameNavigator {
 	}): Promise<Response | null> {
 		const { windowClass, frame, goToOptions } = options;
 		const history = frame[PropertySymbol.history];
-		let historyItem: IHistoryItem;
-
-		for (let i = history.length - 1; i >= 0; i--) {
-			if (history[i].isCurrent) {
-				if (i > 0) {
-					history[i].isCurrent = false;
-					historyItem = history[i - 1];
-				}
-				break;
-			}
-		}
+		const historyItem = history.items[history.items.indexOf(history.currentItem) - 1];
 
 		if (!historyItem) {
 			return new Promise((resolve) => {
@@ -357,7 +324,7 @@ export default class BrowserFrameNavigator {
 			});
 		}
 
-		historyItem.isCurrent = true;
+		history.currentItem = historyItem;
 
 		if (historyItem.navigation) {
 			return BrowserFrameNavigator.navigate({
@@ -401,17 +368,7 @@ export default class BrowserFrameNavigator {
 	}): Promise<Response | null> {
 		const { windowClass, frame, goToOptions } = options;
 		const history = frame[PropertySymbol.history];
-		let historyItem: IHistoryItem;
-
-		for (let i = history.length - 1; i >= 0; i--) {
-			if (history[i].isCurrent) {
-				if (i < history.length - 1) {
-					history[i].isCurrent = false;
-					historyItem = history[i + 1];
-				}
-				break;
-			}
-		}
+		const historyItem = history.items[history.items.indexOf(history.currentItem) + 1];
 
 		if (!historyItem) {
 			return new Promise((resolve) => {
@@ -426,7 +383,7 @@ export default class BrowserFrameNavigator {
 			});
 		}
 
-		historyItem.isCurrent = true;
+		history.currentItem = historyItem;
 
 		if (historyItem.navigation) {
 			return BrowserFrameNavigator.navigate({
@@ -476,17 +433,7 @@ export default class BrowserFrameNavigator {
 
 		const { windowClass, frame, goToOptions, steps } = options;
 		const history = frame[PropertySymbol.history];
-		let historyItem: IHistoryItem;
-
-		for (let i = history.length - 1; i >= 0; i--) {
-			if (history[i].isCurrent) {
-				if (history[i + steps]) {
-					history[i].isCurrent = false;
-					historyItem = history[i + steps];
-				}
-				break;
-			}
-		}
+		const historyItem = history.items[history.items.indexOf(history.currentItem) + steps];
 
 		if (!historyItem) {
 			return new Promise((resolve) => {
@@ -501,7 +448,7 @@ export default class BrowserFrameNavigator {
 			});
 		}
 
-		historyItem.isCurrent = true;
+		history.currentItem = historyItem;
 
 		if (historyItem.navigation) {
 			return BrowserFrameNavigator.navigate({
@@ -545,27 +492,6 @@ export default class BrowserFrameNavigator {
 	}): Promise<Response | null> {
 		const { windowClass, frame, goToOptions } = options;
 		const history = frame[PropertySymbol.history];
-		let historyItem: IHistoryItem;
-
-		for (let i = history.length - 1; i >= 0; i--) {
-			if (history[i].isCurrent) {
-				historyItem = history[i];
-				break;
-			}
-		}
-
-		if (!historyItem) {
-			return new Promise((resolve) => {
-				frame.window.requestAnimationFrame(() => {
-					const listeners = frame[PropertySymbol.listeners].navigation;
-					frame[PropertySymbol.listeners].navigation = [];
-					for (const listener of listeners) {
-						listener();
-					}
-					resolve(null);
-				});
-			});
-		}
 
 		return BrowserFrameNavigator.navigate({
 			windowClass,
@@ -574,9 +500,9 @@ export default class BrowserFrameNavigator {
 				...goToOptions,
 				referrer: frame.url
 			},
-			url: historyItem.href,
-			method: historyItem.method,
-			formData: historyItem.formData,
+			url: history.currentItem.href,
+			method: history.currentItem.method,
+			formData: history.currentItem.formData,
 			disableHistory: true
 		});
 	}

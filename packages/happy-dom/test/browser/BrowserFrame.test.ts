@@ -164,18 +164,14 @@ describe('BrowserFrame', () => {
 			} catch (e) {
 				error = e;
 			}
-			expect(
-				error
-					?.toString()
-					.replace(STACK_TRACE_REGEXP, '')
-					.replace(/Timer #[0-9]+/, 'Timer #1000') + '> testFunction (test.js:1:1)\n'
-			).toBe(`Error: The maximum time was reached for "waitUntilComplete()".
+			expect(error?.toString().replace(STACK_TRACE_REGEXP, '') + '> testFunction (test.js:1:1)\n')
+				.toBe(`Error: The maximum time was reached for "waitUntilComplete()".
 
 1 task did not end in time.
 
 The following traces were recorded:
 
-Timer #1000
+Timer #1
 ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 > testFunction (test.js:1:1)
 `);

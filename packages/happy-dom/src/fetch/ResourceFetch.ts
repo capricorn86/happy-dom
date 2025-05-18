@@ -47,7 +47,7 @@ export default class ResourceFetch {
 				url: String(url),
 				destination,
 				mode: 'cors',
-				credentialsMode: options.credentials || 'same-origin'
+				credentialsMode: options?.credentials || 'same-origin'
 			});
 			const preloadEntry = this.window.document[PropertySymbol.preloads].get(preloadKey);
 
@@ -122,7 +122,7 @@ export default class ResourceFetch {
 				url: String(url),
 				destination,
 				mode: 'cors',
-				credentialsMode: options.credentials || 'same-origin'
+				credentialsMode: options?.credentials || 'same-origin'
 			});
 			const preloadEntry = this.window.document[PropertySymbol.preloads].get(preloadKey);
 

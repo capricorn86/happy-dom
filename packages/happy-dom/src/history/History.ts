@@ -1,7 +1,6 @@
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import HistoryScrollRestorationEnum from './HistoryScrollRestorationEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import IHistoryItem from './IHistoryItem.js';
 import BrowserFrameURL from '../browser/utilities/BrowserFrameURL.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import BrowserWindow from '../window/BrowserWindow.js';
@@ -15,7 +14,6 @@ import BrowserWindow from '../window/BrowserWindow.js';
 export default class History {
 	#browserFrame: IBrowserFrame;
 	#window: BrowserWindow;
-	#currentHistoryItem: IHistoryItem;
 
 	/**
 	 * Constructor.
@@ -30,15 +28,6 @@ export default class History {
 
 		this.#browserFrame = browserFrame;
 		this.#window = window;
-
-		const history = browserFrame[PropertySymbol.history];
-
-		for (let i = history.length - 1; i >= 0; i--) {
-			if (history[i].isCurrent) {
-				this.#currentHistoryItem = history[i];
-				break;
-			}
-		}
 	}
 
 	/**
@@ -47,7 +36,7 @@ export default class History {
 	 * @returns History length.
 	 */
 	public get length(): number {
-		return this.#browserFrame?.[PropertySymbol.history].length || 0;
+		return this.#browserFrame?.[PropertySymbol.history].items.length || 0;
 	}
 
 	/**
@@ -56,7 +45,7 @@ export default class History {
 	 * @returns State.
 	 */
 	public get state(): object | null {
-		return this.#currentHistoryItem.state;
+		return this.#browserFrame?.[PropertySymbol.history].currentItem.state || null;
 	}
 
 	/**
@@ -65,7 +54,10 @@ export default class History {
 	 * @returns Sroll restoration.
 	 */
 	public get scrollRestoration(): HistoryScrollRestorationEnum {
-		return this.#currentHistoryItem.scrollRestoration;
+		return (
+			this.#browserFrame?.[PropertySymbol.history].currentItem.scrollRestoration ||
+			HistoryScrollRestorationEnum.auto
+		);
 	}
 
 	/**
@@ -77,7 +69,10 @@ export default class History {
 		switch (scrollRestoration) {
 			case HistoryScrollRestorationEnum.auto:
 			case HistoryScrollRestorationEnum.manual:
-				this.#currentHistoryItem.scrollRestoration = scrollRestoration;
+				const currentItem = this.#browserFrame?.[PropertySymbol.history].currentItem;
+				if (currentItem) {
+					currentItem.scrollRestoration = scrollRestoration;
+				}
 				break;
 		}
 	}
@@ -142,35 +137,17 @@ export default class History {
 			);
 		}
 
-		let previousHistoryItem;
-
-		for (let i = history.length - 1; i >= 0; i--) {
-			if (history[i].isCurrent) {
-				previousHistoryItem = history[i];
-				previousHistoryItem.isCurrent = false;
-
-				// We need to remove all history items after the current one.
-				history.length = i + 1;
-				break;
-			}
-		}
-
-		const newHistoryItem: IHistoryItem = {
+		history.push({
 			title: title || this.#window.document.title,
 			href: newURL.href,
 			state: JSON.parse(JSON.stringify(state)),
 			navigation: false,
-			scrollRestoration: this.#currentHistoryItem.scrollRestoration,
-			method: previousHistoryItem?.method || 'GET',
-			formData: previousHistoryItem?.formData || null,
-			isCurrent: true
-		};
+			scrollRestoration: history.currentItem.scrollRestoration,
+			method: history.currentItem.method || 'GET',
+			formData: history.currentItem.formData || null
+		});
 
-		history.push(newHistoryItem);
-
-		location[PropertySymbol.setURL](this.#browserFrame, newHistoryItem.href);
-
-		this.#currentHistoryItem = newHistoryItem;
+		location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.href);
 	}
 
 	/**
@@ -203,28 +180,18 @@ export default class History {
 			);
 		}
 
-		for (let i = history.length - 1; i >= 0; i--) {
-			if (history[i].isCurrent) {
-				const newHistoryItem = {
-					title: title || this.#window.document.title,
-					href: newURL.href,
-					state: JSON.parse(JSON.stringify(state)),
-					navigation: false,
-					scrollRestoration: history[i].scrollRestoration,
-					method: history[i].method,
-					formData: history[i].formData,
-					isCurrent: true
-				};
-
-				history[i] = newHistoryItem;
-				this.#currentHistoryItem = newHistoryItem;
-
-				break;
-			}
-		}
+		history.replace({
+			title: title || this.#window.document.title,
+			href: newURL.href,
+			state: JSON.parse(JSON.stringify(state)),
+			navigation: false,
+			scrollRestoration: history.currentItem.scrollRestoration,
+			method: history.currentItem.method,
+			formData: history.currentItem.formData
+		});
 
 		if (url) {
-			location[PropertySymbol.setURL](this.#browserFrame, this.#currentHistoryItem.href);
+			location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.href);
 		}
 	}
 

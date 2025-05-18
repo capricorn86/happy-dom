@@ -16,24 +16,24 @@ describe('History', () => {
 
 	describe('get length()', () => {
 		it('Returns the length of the page history.', () => {
-			browserFrame[PropertySymbol.history].push({
+			browserFrame[PropertySymbol.history].items.push({
 				title: 'Example',
 				href: 'https://example.com',
 				state: null,
+				navigation: true,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
-				formData: null,
-				isCurrent: false
+				formData: null
 			});
 
-			browserFrame[PropertySymbol.history].push({
+			browserFrame[PropertySymbol.history].items.push({
 				title: 'Example2',
 				href: 'https://example2.com',
 				state: null,
+				navigation: true,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
-				formData: null,
-				isCurrent: false
+				formData: null
 			});
 
 			// 3 as the first item is added as "about:blank" in the constructor.
@@ -98,46 +98,34 @@ describe('History', () => {
 				});
 			});
 
-			browserFrame[PropertySymbol.history].length = 0;
-
-			browserFrame[PropertySymbol.history].push({
-				title: '',
-				href: 'about:blank',
-				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null,
-				isCurrent: false
-			});
-
 			browserFrame[PropertySymbol.history].push({
 				title: 'Github',
 				href: 'https://www.github.com',
 				state: null,
+				navigation: true,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
-				formData: null,
-				isCurrent: false
+				formData: null
 			});
 
 			browserFrame[PropertySymbol.history].push({
 				title: 'Example',
 				href: 'https://www.example.com',
 				state: null,
+				navigation: true,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
-				formData: null,
-				isCurrent: false
+				formData: null
 			});
 
 			browserFrame[PropertySymbol.history].push({
 				title: '',
 				href: 'https://localhost:3000/',
 				state: null,
+				navigation: true,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
-				formData: null,
-				isCurrent: true
+				formData: null
 			});
 
 			browserFrame.window.history.back();
@@ -178,46 +166,34 @@ describe('History', () => {
 				});
 			});
 
-			browserFrame[PropertySymbol.history].length = 0;
-
-			browserFrame[PropertySymbol.history].push({
-				title: '',
-				href: 'about:blank',
-				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null,
-				isCurrent: false
-			});
-
 			browserFrame[PropertySymbol.history].push({
 				title: 'Github',
 				href: 'https://www.github.com',
 				state: null,
+				navigation: true,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
-				formData: null,
-				isCurrent: false
+				formData: null
 			});
 
 			browserFrame[PropertySymbol.history].push({
 				title: 'Example',
 				href: 'https://www.example.com',
 				state: null,
+				navigation: true,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
-				formData: null,
-				isCurrent: false
+				formData: null
 			});
 
 			browserFrame[PropertySymbol.history].push({
 				title: '',
 				href: 'https://localhost:3000/',
 				state: null,
+				navigation: true,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
-				formData: null,
-				isCurrent: true
+				formData: null
 			});
 
 			browserFrame.window.history.back();
@@ -265,46 +241,34 @@ describe('History', () => {
 				});
 			});
 
-			browserFrame[PropertySymbol.history].length = 0;
-
-			browserFrame[PropertySymbol.history].push({
-				title: '',
-				href: 'about:blank',
-				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null,
-				isCurrent: false
-			});
-
 			browserFrame[PropertySymbol.history].push({
 				title: 'Github',
 				href: 'https://www.github.com',
 				state: null,
+				navigation: true,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
-				formData: null,
-				isCurrent: false
+				formData: null
 			});
 
 			browserFrame[PropertySymbol.history].push({
 				title: 'Example',
 				href: 'https://www.example.com',
 				state: null,
+				navigation: true,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
-				formData: null,
-				isCurrent: false
+				formData: null
 			});
 
 			browserFrame[PropertySymbol.history].push({
 				title: '',
 				href: 'https://localhost:3000/',
 				state: null,
+				navigation: true,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
-				formData: null,
-				isCurrent: true
+				formData: null
 			});
 
 			browserFrame.window.history.go(-2);
@@ -340,15 +304,15 @@ describe('History', () => {
 
 			expect(browserFrame.window.history.state).toEqual({ key: 'value' });
 
-			expect(browserFrame[PropertySymbol.history]).toEqual([
+			expect(browserFrame[PropertySymbol.history].items).toEqual([
 				{
 					title: '',
 					href: 'about:blank',
 					state: null,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
-					formData: null,
-					isCurrent: false
+					navigation: true,
+					formData: null
 				},
 				{
 					title: '',
@@ -356,8 +320,8 @@ describe('History', () => {
 					state: { key: 'value' },
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
-					formData: null,
-					isCurrent: true
+					navigation: false,
+					formData: null
 				}
 			]);
 		});
@@ -369,15 +333,15 @@ describe('History', () => {
 
 			expect(browserFrame.window.history.state).toEqual({ key: 'value' });
 
-			expect(browserFrame[PropertySymbol.history]).toEqual([
+			expect(browserFrame[PropertySymbol.history].items).toEqual([
 				{
 					title: '',
 					href: 'about:blank',
 					state: null,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
-					formData: null,
-					isCurrent: false
+					navigation: true,
+					formData: null
 				},
 				{
 					title: '',
@@ -385,8 +349,8 @@ describe('History', () => {
 					state: { key: 'value' },
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
-					formData: null,
-					isCurrent: true
+					navigation: false,
+					formData: null
 				}
 			]);
 
@@ -394,15 +358,15 @@ describe('History', () => {
 
 			expect(browserFrame.window.history.state).toEqual({ key: 'value2' });
 
-			expect(browserFrame[PropertySymbol.history]).toEqual([
+			expect(browserFrame[PropertySymbol.history].items).toEqual([
 				{
 					title: '',
 					href: 'about:blank',
 					state: null,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
-					formData: null,
-					isCurrent: false
+					navigation: true,
+					formData: null
 				},
 				{
 					title: '',
@@ -410,8 +374,8 @@ describe('History', () => {
 					state: { key: 'value2' },
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
-					formData: null,
-					isCurrent: true
+					navigation: false,
+					formData: null
 				}
 			]);
 		});

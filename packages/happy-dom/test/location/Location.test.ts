@@ -28,7 +28,7 @@ describe('Location', () => {
 	});
 
 	describe('set hash()', () => {
-		it('Sets the hash of the URL.', () => {
+		it('Sets the hash of the URL.', async () => {
 			const events: HashChangeEvent[] = [];
 
 			browserFrame.window.addEventListener('hashchange', (event) => {
@@ -53,6 +53,8 @@ describe('Location', () => {
 			expect(location.href).toBe(
 				'https://localhost:8080/some-path/?key=value&key2=value2#new-hash2'
 			);
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
 
 			expect(events.length).toBe(2);
 			expect(events[0].oldURL).toBe('https://localhost:8080/some-path/?key=value&key2=value2');

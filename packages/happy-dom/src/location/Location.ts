@@ -1,7 +1,7 @@
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import HashChangeEvent from '../event/events/HashChangeEvent.js';
+import HistoryScrollRestorationEnum from '../history/HistoryScrollRestorationEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import { URL } from 'url';
 
 /**
  * Location.
@@ -14,6 +14,7 @@ export default class Location {
 	#browserFrame: IBrowserFrame;
 	#url: URL;
 	#hashChangeTimeout: NodeJS.Timeout | null = null;
+	#hashChangeEvents: HashChangeEvent[] = [];
 
 	/**
 	 * Constructor.
@@ -44,9 +45,37 @@ export default class Location {
 	 * @param hash Value.
 	 */
 	public set hash(hash: string) {
+		const history = this.#browserFrame?.[PropertySymbol.history];
+
+		if (!history) {
+			return;
+		}
+
 		const url = new URL(this.#url.href);
+		const oldHash = this.#url.hash;
+
 		url.hash = hash;
-		this.href = url.href;
+
+		if (url.hash !== oldHash) {
+			history.push({
+				title: '',
+				href: url.href,
+				state: history.currentItem.state,
+				navigation: false,
+				scrollRestoration: HistoryScrollRestorationEnum.manual,
+				method: history.currentItem.method,
+				formData: history.currentItem.formData || null
+			});
+
+			this[PropertySymbol.setURL](this.#browserFrame, url.href);
+
+			this.#browserFrame.window.dispatchEvent(
+				new this.#browserFrame.window.PopStateEvent('popstate', {
+					state: history.currentItem.state ?? null,
+					hasUAVisualTransition: false
+				})
+			);
+		}
 	}
 
 	/**
@@ -252,20 +281,23 @@ export default class Location {
 			throw new Error('Failed to set URL. Browser frame mismatch.');
 		}
 
-		const hash = this.#url.hash;
+		const oldURL = this.#url.href;
+		const oldHash = this.#url.hash;
 
 		this.#url.href = url;
 
-		if (this.#url.hash !== hash) {
-			const oldURL = this.#url.href;
+		if (this.#url.hash !== oldHash) {
 			const newURL = this.#url.href;
+			this.#hashChangeEvents.push(new HashChangeEvent('hashchange', { oldURL, newURL }));
 			if (this.#hashChangeTimeout) {
 				this.#browserFrame.window?.clearTimeout(this.#hashChangeTimeout);
 			}
 			this.#hashChangeTimeout = this.#browserFrame.window?.setTimeout(() => {
-				this.#browserFrame?.window?.dispatchEvent(
-					new HashChangeEvent('hashchange', { oldURL, newURL })
-				);
+				const hashChangeEvents = this.#hashChangeEvents;
+				this.#hashChangeEvents = [];
+				for (const event of hashChangeEvents) {
+					this.#browserFrame?.window?.dispatchEvent(event);
+				}
 				this.#browserFrame?.window?.document?.[PropertySymbol.clearCache]();
 			});
 		}

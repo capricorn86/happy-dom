@@ -8,6 +8,8 @@ import SyncFetch from '../../src/fetch/SyncFetch.js';
 import ISyncResponse from '../../src/fetch/types/ISyncResponse.js';
 import DOMException from '../../src/exception/DOMException.js';
 import { PropertySymbol } from '../../src/index.js';
+import PreloadUtility from '../../src/fetch/preload/PreloadUtility.js';
+import PreloadEntry from '../../src/fetch/preload/PreloadEntry.js';
 
 const URL = 'https://localhost:8080/base/';
 
@@ -75,6 +77,34 @@ describe('ResourceFetch', () => {
 			});
 			expect(response.content).toBe('test');
 			expect(response.virtualServerFile).toBe('virtual-server-file.js');
+		});
+
+		it('Handles preloaded assets asynchronously.', async () => {
+			const url = 'https://localhost:8080/base/path/to/script.js';
+			const key = PreloadUtility.getKey({
+				url,
+				destination: 'script',
+				mode: 'cors',
+				credentialsMode: 'same-origin'
+			});
+			const preloadEntry = new PreloadEntry();
+			preloadEntry.response = <Response>{
+				ok: true,
+				[PropertySymbol.buffer]: Buffer.from('test'),
+				[PropertySymbol.virtualServerFile]: '/path/virtual-server-file.js'
+			};
+			window.document[PropertySymbol.preloads].set(key, preloadEntry);
+
+			const response = await resourceFetch.fetch(
+				'https://localhost:8080/base/path/to/script.js',
+				'script',
+				{
+					credentials: 'same-origin'
+				}
+			);
+
+			expect(response.content).toBe('test');
+			expect(response.virtualServerFile).toBe('/path/virtual-server-file.js');
 		});
 
 		it('Handles error when resource is fetched asynchronously.', async () => {
@@ -151,6 +181,34 @@ describe('ResourceFetch', () => {
 			});
 			expect(response.content).toBe(expectedResponse);
 			expect(response.virtualServerFile).toBe('virtual-server-file.js');
+		});
+
+		it('Handles preloaded assets synchronously.', async () => {
+			const url = 'https://localhost:8080/base/path/to/script.js';
+			const key = PreloadUtility.getKey({
+				url,
+				destination: 'script',
+				mode: 'cors',
+				credentialsMode: 'same-origin'
+			});
+			const preloadEntry = new PreloadEntry();
+			preloadEntry.response = <Response>{
+				ok: true,
+				[PropertySymbol.buffer]: Buffer.from('test'),
+				[PropertySymbol.virtualServerFile]: '/path/virtual-server-file.js'
+			};
+			window.document[PropertySymbol.preloads].set(key, preloadEntry);
+
+			const response = resourceFetch.fetchSync(
+				'https://localhost:8080/base/path/to/script.js',
+				'script',
+				{
+					credentials: 'same-origin'
+				}
+			);
+
+			expect(response.content).toBe('test');
+			expect(response.virtualServerFile).toBe('/path/virtual-server-file.js');
 		});
 
 		it('Handles error when resource is fetched synchronously.', () => {

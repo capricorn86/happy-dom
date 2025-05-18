@@ -859,6 +859,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this[PropertySymbol.location] = new Location(this.#browserFrame, options?.url ?? 'about:blank');
 		this[PropertySymbol.history] = new History(this.#browserFrame, this);
 
+		browserFrame[PropertySymbol.history].currentItem.href = options?.url ?? 'about:blank';
+
 		WindowBrowserContext.setWindowBrowserFrameRelation(this, this.#browserFrame);
 
 		this[PropertySymbol.setupVMContext]();
@@ -894,24 +896,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		});
 
 		this[PropertySymbol.bindMethods]();
-
-		// Promise.allSettled polyfill
-		if (!this.Promise.allSettled) {
-			this.Promise.allSettled = (promises) =>
-				this.Promise.all(
-					promises.map((p) =>
-						p
-							.then((value) => ({
-								status: 'fulfilled',
-								value
-							}))
-							.catch((reason) => ({
-								status: 'rejected',
-								reason
-							}))
-					)
-				);
-		}
 	}
 
 	/**

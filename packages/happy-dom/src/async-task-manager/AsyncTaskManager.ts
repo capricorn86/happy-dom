@@ -167,7 +167,7 @@ export default class AsyncTaskManager {
 				abortHandler(this.destroyed);
 			}
 			throw new this.#browserFrame.window.Error(
-				`Failed to execute 'startTask()' on 'AsyncTaskManager': The asynchrounous task manager has been aborted.`
+				`Failed to execute 'startTask()' on 'AsyncTaskManager': The asynchronous task manager has been aborted.`
 			);
 		}
 		if (this.waitUntilCompleteTimer) {
@@ -277,13 +277,13 @@ export default class AsyncTaskManager {
 				this.debugTrace.size === 1 ? '' : 's'
 			} did not end in time.\n\nThe following traces were recorded:\n\n`;
 
-			let index = 0;
+			let number = 1;
 			for (const [key, value] of this.debugTrace.entries()) {
 				const type = typeof key === 'number' ? 'Task' : 'Timer';
-				errorMessage += `${type} #${index}\n‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾${value
+				errorMessage += `${type} #${number}\n‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾${value
 					.replace(/AsyncTaskManagerDebugError:{0,1}/, '')
 					.replace(/\s+at /gm, '\n> ')}\n\n`;
-				index++;
+				number++;
 			}
 
 			const error = new Error(errorMessage);

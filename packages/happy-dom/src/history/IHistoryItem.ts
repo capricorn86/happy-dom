@@ -9,5 +9,4 @@ export default interface IHistoryItem {
 	scrollRestoration: HistoryScrollRestorationEnum;
 	method: string;
 	formData: FormData | null;
-	isCurrent: boolean;
 }
