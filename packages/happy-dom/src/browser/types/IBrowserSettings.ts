@@ -5,6 +5,7 @@ import IVirtualServer from '../../fetch/types/IVirtualServer.js';
 import IFetchRequestHeaders from '../../fetch/types/IFetchRequestHeaders.js';
 import IBrowserPageViewport from './IBrowserPageViewport.js';
 import IOptionalTimerLoopsLimit from '../../window/IOptionalTimerLoopsLimit.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 
 /**
  * Browser settings.
@@ -102,6 +103,9 @@ export default interface IBrowserSettings {
 
 		/** Sets the policy for cross-origin navigation. */
 		crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum;
+
+		/** Triggered before content is loaded into the document */
+		beforeContentCallback: (window: BrowserWindow) => void | null;
 	};
 
 	/**

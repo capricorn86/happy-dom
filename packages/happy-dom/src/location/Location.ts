@@ -57,24 +57,19 @@ export default class Location {
 		url.hash = hash;
 
 		if (url.hash !== oldHash) {
+			history.currentItem.popState = true;
+
 			history.push({
 				title: '',
 				href: url.href,
 				state: history.currentItem.state,
-				navigation: false,
+				popState: true,
 				scrollRestoration: HistoryScrollRestorationEnum.manual,
 				method: history.currentItem.method,
 				formData: history.currentItem.formData || null
 			});
 
 			this[PropertySymbol.setURL](this.#browserFrame, url.href);
-
-			this.#browserFrame.window.dispatchEvent(
-				new this.#browserFrame.window.PopStateEvent('popstate', {
-					state: history.currentItem.state ?? null,
-					hasUAVisualTransition: false
-				})
-			);
 		}
 	}
 

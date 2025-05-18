@@ -13,7 +13,7 @@ describe('HistoryItemList', () => {
 				title: '',
 				href: 'about:blank',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -22,7 +22,7 @@ describe('HistoryItemList', () => {
 				title: 'Example',
 				href: 'https://example.com',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -31,7 +31,7 @@ describe('HistoryItemList', () => {
 				title: 'Example',
 				href: 'https://example.com',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -47,7 +47,7 @@ describe('HistoryItemList', () => {
 					title: '',
 					href: 'about:blank',
 					state: null,
-					navigation: true,
+					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
 					formData: null
@@ -57,7 +57,7 @@ describe('HistoryItemList', () => {
 				title: 'Example',
 				href: 'https://example.com',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -67,7 +67,7 @@ describe('HistoryItemList', () => {
 					title: '',
 					href: 'about:blank',
 					state: null,
-					navigation: true,
+					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
 					formData: null
@@ -76,7 +76,7 @@ describe('HistoryItemList', () => {
 					title: 'Example',
 					href: 'https://example.com',
 					state: null,
-					navigation: true,
+					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
 					formData: null
@@ -92,7 +92,7 @@ describe('HistoryItemList', () => {
 				title: 'Example',
 				href: 'https://example.com',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -102,7 +102,7 @@ describe('HistoryItemList', () => {
 					title: '',
 					href: 'about:blank',
 					state: null,
-					navigation: true,
+					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
 					formData: null
@@ -111,7 +111,7 @@ describe('HistoryItemList', () => {
 					title: 'Example',
 					href: 'https://example.com',
 					state: null,
-					navigation: true,
+					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
 					formData: null
@@ -121,7 +121,7 @@ describe('HistoryItemList', () => {
 				title: 'Example',
 				href: 'https://example.com',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -130,7 +130,7 @@ describe('HistoryItemList', () => {
 				title: 'Example 2',
 				href: 'https://example2.com',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.manual,
 				method: 'POST',
 				formData: null
@@ -139,7 +139,7 @@ describe('HistoryItemList', () => {
 				title: 'Example 2',
 				href: 'https://example2.com',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.manual,
 				method: 'POST',
 				formData: null
@@ -154,7 +154,7 @@ describe('HistoryItemList', () => {
 				title: 'Example',
 				href: 'https://example.com',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -163,7 +163,7 @@ describe('HistoryItemList', () => {
 				title: 'Example 2',
 				href: 'https://example2.com',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.manual,
 				method: 'POST',
 				formData: null
@@ -173,7 +173,7 @@ describe('HistoryItemList', () => {
 					title: '',
 					href: 'about:blank',
 					state: null,
-					navigation: true,
+					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
 					formData: null
@@ -182,7 +182,7 @@ describe('HistoryItemList', () => {
 					title: 'Example 2',
 					href: 'https://example2.com',
 					state: null,
-					navigation: true,
+					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.manual,
 					method: 'POST',
 					formData: null
@@ -192,7 +192,7 @@ describe('HistoryItemList', () => {
 				title: 'Example 2',
 				href: 'https://example2.com',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.manual,
 				method: 'POST',
 				formData: null
@@ -207,7 +207,7 @@ describe('HistoryItemList', () => {
 				title: 'Example',
 				href: 'https://example.com',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -216,7 +216,7 @@ describe('HistoryItemList', () => {
 				title: 'Example 2',
 				href: 'https://example2.com',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.manual,
 				method: 'POST',
 				formData: null
@@ -227,7 +227,7 @@ describe('HistoryItemList', () => {
 					title: '',
 					href: 'about:blank',
 					state: null,
-					navigation: true,
+					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
 					formData: null
@@ -237,7 +237,7 @@ describe('HistoryItemList', () => {
 				title: '',
 				href: 'about:blank',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null

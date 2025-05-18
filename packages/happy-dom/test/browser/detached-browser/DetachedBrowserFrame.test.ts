@@ -311,6 +311,40 @@ describe('DetachedBrowserFrame', () => {
 			expect(loadedWindow).toBe(page.mainFrame.window);
 		});
 
+		it('Triggers "browser.settings.navigation.beforeContentCallback" before content is loaded into the document', async () => {
+			let request: Request | null = null;
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				request = this.request;
+				return Promise.resolve(<Response>{
+					url: request?.url,
+					text: () =>
+						new Promise((resolve) => setTimeout(() => resolve('<html><body>Test</body></html>'), 1))
+				});
+			});
+
+			let loadedWindow: BrowserWindow | null = null;
+			const browser = new DetachedBrowser(BrowserWindow, {
+				settings: {
+					navigation: {
+						beforeContentCallback: (window: BrowserWindow) => {
+							expect(window.document.body.children.length).toBe(0);
+							loadedWindow = window;
+						}
+					}
+				}
+			});
+			browser.defaultContext.pages[0].mainFrame.window = new BrowserWindow(
+				browser.defaultContext.pages[0].mainFrame
+			);
+			const page = browser.newPage();
+			await page.mainFrame.goto('http://localhost:3000');
+
+			expect(page.mainFrame.url).toBe('http://localhost:3000/');
+			expect(page.mainFrame.window.location.href).toBe('http://localhost:3000/');
+			expect(page.mainFrame.window.document.body.innerHTML).toBe('Test');
+			expect(loadedWindow).toBe(page.mainFrame.window);
+		});
+
 		it('Navigates to a URL with "javascript:" as protocol.', async () => {
 			const browser = new DetachedBrowser(BrowserWindow);
 			browser.defaultContext.pages[0].mainFrame.window = new BrowserWindow(

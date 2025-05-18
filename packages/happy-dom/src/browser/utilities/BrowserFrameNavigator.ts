@@ -68,25 +68,20 @@ export default class BrowserFrameNavigator {
 			const history = frame[PropertySymbol.history];
 
 			if (!disableHistory) {
+				history.currentItem.popState = true;
+
 				history.push({
 					title: '',
 					href: targetURL.href,
-					state: history.currentItem.state,
-					navigation: false,
-					scrollRestoration: HistoryScrollRestorationEnum.auto,
+					state: null,
+					popState: true,
+					scrollRestoration: HistoryScrollRestorationEnum.manual,
 					method: method || (formData ? 'POST' : 'GET'),
 					formData: formData || null
 				});
 			}
 
 			frame.window.location[PropertySymbol.setURL](frame, targetURL.href);
-
-			frame.window.dispatchEvent(
-				new frame.window.PopStateEvent('popstate', {
-					state: history.currentItem.state ?? null,
-					hasUAVisualTransition: false
-				})
-			);
 
 			return null;
 		}
@@ -138,7 +133,7 @@ export default class BrowserFrameNavigator {
 				title: '',
 				href: targetURL.href,
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: method || (formData ? 'POST' : 'GET'),
 				formData: formData || null
@@ -194,6 +189,9 @@ export default class BrowserFrameNavigator {
 		if (targetURL.protocol === 'about:') {
 			if (goToOptions?.beforeContentCallback) {
 				goToOptions.beforeContentCallback(frame.window);
+			}
+			if (frame.page.context.browser.settings.navigation.beforeContentCallback) {
+				frame.page.context.browser.settings.navigation.beforeContentCallback(frame.window);
 			}
 			await new Promise((resolve) => frame.page.mainFrame.window.requestAnimationFrame(resolve));
 			resolveNavigationListeners();
@@ -276,6 +274,10 @@ export default class BrowserFrameNavigator {
 			goToOptions.beforeContentCallback(frame.window);
 		}
 
+		if (frame.page.context.browser.settings.navigation.beforeContentCallback) {
+			frame.page.context.browser.settings.navigation.beforeContentCallback(frame.window);
+		}
+
 		// Fixes issue where evaluating the response can throw an error.
 		// By using requestAnimationFrame() the error will not reject the promise.
 		// The error will be caught by process error level listener or a try and catch in the requestAnimationFrame().
@@ -324,9 +326,12 @@ export default class BrowserFrameNavigator {
 			});
 		}
 
+		const fromOrigin = new URL(history.currentItem.href).origin;
+		const toOrigin = new URL(historyItem.href).origin;
+
 		history.currentItem = historyItem;
 
-		if (historyItem.navigation) {
+		if (!historyItem.popState || fromOrigin !== toOrigin) {
 			return BrowserFrameNavigator.navigate({
 				windowClass,
 				frame,
@@ -342,6 +347,7 @@ export default class BrowserFrameNavigator {
 		}
 
 		frame.window.location[PropertySymbol.setURL](frame, historyItem.href);
+
 		frame.window.dispatchEvent(
 			new frame.window.PopStateEvent('popstate', {
 				state: historyItem.state,
@@ -383,9 +389,12 @@ export default class BrowserFrameNavigator {
 			});
 		}
 
+		const fromOrigin = new URL(history.currentItem.href).origin;
+		const toOrigin = new URL(historyItem.href).origin;
+
 		history.currentItem = historyItem;
 
-		if (historyItem.navigation) {
+		if (!historyItem.popState || fromOrigin !== toOrigin) {
 			return BrowserFrameNavigator.navigate({
 				windowClass,
 				frame,
@@ -401,6 +410,7 @@ export default class BrowserFrameNavigator {
 		}
 
 		frame.window.location[PropertySymbol.setURL](frame, historyItem.href);
+
 		frame.window.dispatchEvent(
 			new frame.window.PopStateEvent('popstate', {
 				state: historyItem.state,
@@ -433,7 +443,9 @@ export default class BrowserFrameNavigator {
 
 		const { windowClass, frame, goToOptions, steps } = options;
 		const history = frame[PropertySymbol.history];
-		const historyItem = history.items[history.items.indexOf(history.currentItem) + steps];
+		const fromIndex = history.items.indexOf(history.currentItem);
+		const toIndex = fromIndex + steps;
+		const historyItem = history.items[toIndex];
 
 		if (!historyItem) {
 			return new Promise((resolve) => {
@@ -448,9 +460,28 @@ export default class BrowserFrameNavigator {
 			});
 		}
 
+		const fromOrigin = new URL(history.currentItem.href).origin;
+		let isPopState = true;
+
+		if (steps < 0) {
+			for (let i = fromIndex; i > toIndex; i--) {
+				if (!history.items[i].popState || fromOrigin !== new URL(history.items[i].href).origin) {
+					isPopState = false;
+					break;
+				}
+			}
+		} else {
+			for (let i = fromIndex; i < toIndex; i++) {
+				if (!history.items[i].popState || fromOrigin !== new URL(history.items[i].href).origin) {
+					isPopState = false;
+					break;
+				}
+			}
+		}
+
 		history.currentItem = historyItem;
 
-		if (historyItem.navigation) {
+		if (!isPopState) {
 			return BrowserFrameNavigator.navigate({
 				windowClass,
 				frame,
@@ -466,6 +497,7 @@ export default class BrowserFrameNavigator {
 		}
 
 		frame.window.location[PropertySymbol.setURL](frame, historyItem.href);
+
 		frame.window.dispatchEvent(
 			new frame.window.PopStateEvent('popstate', {
 				state: historyItem.state,

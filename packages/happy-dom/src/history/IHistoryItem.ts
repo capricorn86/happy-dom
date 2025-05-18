@@ -5,7 +5,7 @@ export default interface IHistoryItem {
 	title: string | null;
 	href: string;
 	state: any | null;
-	navigation: boolean;
+	popState: boolean;
 	scrollRestoration: HistoryScrollRestorationEnum;
 	method: string;
 	formData: FormData | null;

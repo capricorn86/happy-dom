@@ -40,7 +40,7 @@ export default class History {
 	}
 
 	/**
-	 * Returns an any value representing the state at the top of the history stack. This is a way to look at the state without having to wait for a popstate event.
+	 * Returns an any value representing the state at the top of the history stack. This is a way to look at the state without having to wait for a popState event.
 	 *
 	 * @returns State.
 	 */
@@ -111,10 +111,10 @@ export default class History {
 	 * Pushes the given data onto the session history stack.
 	 *
 	 * @param state State.
-	 * @param title Title.
+	 * @param _unused Unused.
 	 * @param [url] URL.
 	 */
-	public pushState(state: object, title, url?: string | URL): void {
+	public pushState(state: any, _unused: any, url?: string | URL): void {
 		if (this.#window.closed) {
 			return;
 		}
@@ -123,6 +123,12 @@ export default class History {
 
 		if (!history) {
 			return;
+		}
+
+		if (arguments.length < 2) {
+			throw new this.#window.TypeError(
+				`Failed to execute 'pushState' on 'History': 2 arguments required, but only ${arguments.length} present.`
+			);
 		}
 
 		const location = this.#window[PropertySymbol.location];
@@ -137,11 +143,13 @@ export default class History {
 			);
 		}
 
+		history.currentItem.popState = true;
+
 		history.push({
-			title: title || this.#window.document.title,
+			title: this.#window.document.title,
 			href: newURL.href,
-			state: JSON.parse(JSON.stringify(state)),
-			navigation: false,
+			state,
+			popState: true,
 			scrollRestoration: history.currentItem.scrollRestoration,
 			method: history.currentItem.method || 'GET',
 			formData: history.currentItem.formData || null
@@ -154,10 +162,10 @@ export default class History {
 	 * This method modifies the current history entry, replacing it with a new state.
 	 *
 	 * @param state State.
-	 * @param title Title.
+	 * @param _unused Unused.
 	 * @param [url] URL.
 	 */
-	public replaceState(state: object, title, url?: string | URL): void {
+	public replaceState(state: any, _unused: any, url?: string | URL): void {
 		if (this.#window.closed) {
 			return;
 		}
@@ -166,6 +174,12 @@ export default class History {
 
 		if (!history) {
 			return;
+		}
+
+		if (arguments.length < 2) {
+			throw new this.#window.TypeError(
+				`Failed to execute 'pushState' on 'History': 2 arguments required, but only ${arguments.length} present.`
+			);
 		}
 
 		const location = this.#window[PropertySymbol.location];
@@ -181,10 +195,10 @@ export default class History {
 		}
 
 		history.replace({
-			title: title || this.#window.document.title,
+			title: this.#window.document.title,
 			href: newURL.href,
-			state: JSON.parse(JSON.stringify(state)),
-			navigation: false,
+			state,
+			popState: history.currentItem.popState,
 			scrollRestoration: history.currentItem.scrollRestoration,
 			method: history.currentItem.method,
 			formData: history.currentItem.formData

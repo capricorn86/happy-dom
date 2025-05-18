@@ -1373,6 +1373,37 @@ describe('BrowserWindow', () => {
 
 			expect(loopCount).toBe(3);
 		});
+
+		it('Supports preventing timeout loops when the setting "preventTimerLoops" is set to an object with a limit.', async () => {
+			let loopCount = 0;
+
+			browser.settings.timer.preventTimerLoops = false;
+
+			const timeoutLoop = (): void => {
+				if (loopCount < 10) {
+					loopCount++;
+					window.setTimeout(timeoutLoop, loopCount < 3 ? 1 : 0);
+				}
+			};
+
+			timeoutLoop();
+
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			expect(loopCount).toBe(10);
+
+			browser.settings.timer.preventTimerLoops = {
+				timeout: 3
+			};
+
+			loopCount = 0;
+
+			timeoutLoop();
+
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			expect(loopCount).toBe(7);
+		});
 	});
 
 	describe('queueMicrotask()', () => {
@@ -1625,6 +1656,37 @@ describe('BrowserWindow', () => {
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			expect(loopCount).toBe(3);
+		});
+
+		it('Supports preventing timeout loops when the setting "preventTimerLoops" is set to an object with a limit.', async () => {
+			let loopCount = 0;
+
+			browser.settings.timer.preventTimerLoops = false;
+
+			const timeoutLoop = (): void => {
+				if (loopCount < 10) {
+					loopCount++;
+					window.requestAnimationFrame(timeoutLoop);
+				}
+			};
+
+			timeoutLoop();
+
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			expect(loopCount).toBe(10);
+
+			browser.settings.timer.preventTimerLoops = {
+				requestAnimationFrame: 3
+			};
+
+			loopCount = 0;
+
+			timeoutLoop();
+
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			expect(loopCount).toBe(5);
 		});
 	});
 

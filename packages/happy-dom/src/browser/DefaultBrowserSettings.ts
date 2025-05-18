@@ -30,7 +30,8 @@ export default <IBrowserSettings>{
 		disableChildFrameNavigation: false,
 		disableChildPageNavigation: false,
 		disableFallbackToSetURL: false,
-		crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.anyOrigin
+		crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.anyOrigin,
+		beforeContentCallback: null
 	},
 	navigator: {
 		userAgent: `Mozilla/5.0 (X11; ${

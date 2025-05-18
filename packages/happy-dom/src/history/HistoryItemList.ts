@@ -9,7 +9,7 @@ export default class HistoryItemList {
 		title: '',
 		href: 'about:blank',
 		state: null,
-		navigation: true,
+		popState: false,
 		scrollRestoration: HistoryScrollRestorationEnum.auto,
 		method: 'GET',
 		formData: null
@@ -62,7 +62,7 @@ export default class HistoryItemList {
 			title: '',
 			href: 'about:blank',
 			state: null,
-			navigation: true,
+			popState: false,
 			scrollRestoration: HistoryScrollRestorationEnum.auto,
 			method: 'GET',
 			formData: null

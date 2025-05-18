@@ -1164,7 +1164,7 @@ describe('Fetch', () => {
 			expect(await response.text()).toBe('intercepted text');
 		});
 
-		it('Should use original response when no response is given when intercepted', async () => {
+		it('Should use original response when no response is returned from interceptor', async () => {
 			const originURL = 'https://localhost:8080/';
 			const responseText = 'some text';
 			const window = new Window({

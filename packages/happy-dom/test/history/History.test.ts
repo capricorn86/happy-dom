@@ -6,6 +6,7 @@ import * as PropertySymbol from '../../src/PropertySymbol.js';
 import Fetch from '../../src/fetch/Fetch.js';
 import Request from '../../src/fetch/Request';
 import Response from '../../src/fetch/Response';
+import PopStateEvent from '../../src/event/events/PopStateEvent.js';
 
 describe('History', () => {
 	let browserFrame: IBrowserFrame;
@@ -20,7 +21,7 @@ describe('History', () => {
 				title: 'Example',
 				href: 'https://example.com',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -30,7 +31,7 @@ describe('History', () => {
 				title: 'Example2',
 				href: 'https://example2.com',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -86,7 +87,7 @@ describe('History', () => {
 	});
 
 	describe('back()', () => {
-		it('Navigates back in history', async () => {
+		it('Navigates back in history for navigated history items', async () => {
 			let request: Request | null = null;
 
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
@@ -102,7 +103,7 @@ describe('History', () => {
 				title: 'Github',
 				href: 'https://www.github.com',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -112,7 +113,7 @@ describe('History', () => {
 				title: 'Example',
 				href: 'https://www.example.com',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -122,7 +123,7 @@ describe('History', () => {
 				title: '',
 				href: 'https://localhost:3000/',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -151,6 +152,79 @@ describe('History', () => {
 
 			expect(browserFrame.window.location.href).toBe('about:blank');
 		});
+
+		it('Navigates back in history for pushed state', async () => {
+			let request: Request | null = null;
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				request = this.request;
+				return Promise.resolve(<Response>{
+					url: request?.url,
+					text: () =>
+						new Promise((resolve) => setTimeout(() => resolve('<html><body>Test</body></html>'), 1))
+				});
+			});
+
+			browserFrame.goto('https://www.example.com/');
+
+			await browserFrame.waitForNavigation();
+
+			const popStates: Array<{ url: string; state: any }> = [];
+
+			browserFrame.window.addEventListener('popstate', (event) => {
+				popStates.push({
+					url: browserFrame.window.location.href,
+					state: (<PopStateEvent>event).state
+				});
+			});
+
+			browserFrame.window.history.pushState(
+				{ test: 'value' },
+				null,
+				'https://www.example.com/test/'
+			);
+			browserFrame.window.history.pushState(null, null, 'https://www.example.com/test2/');
+			browserFrame.window.history.pushState(null, null, 'https://www.example.com/test3/');
+
+			browserFrame.window.location.hash = '#test';
+
+			browserFrame.window.history.back();
+
+			expect(browserFrame.window.location.href).toBe('https://www.example.com/test3/');
+			expect(browserFrame.window.document.body.textContent).toBe('Test');
+
+			browserFrame.window.history.back();
+
+			expect(browserFrame.window.location.href).toBe('https://www.example.com/test2/');
+			expect(browserFrame.window.document.body.textContent).toBe('Test');
+
+			browserFrame.window.history.back();
+
+			expect(browserFrame.window.location.href).toBe('https://www.example.com/test/');
+			expect(browserFrame.window.document.body.textContent).toBe('Test');
+
+			browserFrame.window.history.back();
+
+			expect(browserFrame.window.location.href).toBe('https://www.example.com/');
+			expect(browserFrame.window.document.body.textContent).toBe('Test');
+
+			browserFrame.window.history.back();
+
+			await browserFrame.waitForNavigation();
+
+			expect(browserFrame.window.location.href).toBe('about:blank');
+			expect(browserFrame.window.document.body.textContent).toBe('');
+
+			expect(popStates.length).toBe(4);
+			expect(popStates[0].url).toBe('https://www.example.com/test3/');
+			expect(popStates[0].state).toBe(null);
+			expect(popStates[1].url).toBe('https://www.example.com/test2/');
+			expect(popStates[1].state).toBe(null);
+			expect(popStates[2].url).toBe('https://www.example.com/test/');
+			expect(popStates[2].state).toEqual({ test: 'value' });
+			expect(popStates[3].url).toBe('https://www.example.com/');
+			expect(popStates[3].state).toBe(null);
+		});
 	});
 
 	describe('forward()', () => {
@@ -170,7 +244,7 @@ describe('History', () => {
 				title: 'Github',
 				href: 'https://www.github.com',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -180,7 +254,7 @@ describe('History', () => {
 				title: 'Example',
 				href: 'https://www.example.com',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -190,7 +264,7 @@ describe('History', () => {
 				title: '',
 				href: 'https://localhost:3000/',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -245,7 +319,7 @@ describe('History', () => {
 				title: 'Github',
 				href: 'https://www.github.com',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -255,7 +329,7 @@ describe('History', () => {
 				title: 'Example',
 				href: 'https://www.example.com',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -265,7 +339,7 @@ describe('History', () => {
 				title: '',
 				href: 'https://localhost:3000/',
 				state: null,
-				navigation: true,
+				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -277,6 +351,7 @@ describe('History', () => {
 
 			expect(browserFrame.window.location.href).toBe('https://www.github.com/');
 
+			debugger;
 			browserFrame.window.history.go(1);
 
 			await browserFrame.waitForNavigation();
@@ -311,7 +386,7 @@ describe('History', () => {
 					state: null,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
-					navigation: true,
+					popState: true,
 					formData: null
 				},
 				{
@@ -320,7 +395,7 @@ describe('History', () => {
 					state: { key: 'value' },
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
-					navigation: false,
+					popState: true,
 					formData: null
 				}
 			]);
@@ -340,7 +415,7 @@ describe('History', () => {
 					state: null,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
-					navigation: true,
+					popState: true,
 					formData: null
 				},
 				{
@@ -349,7 +424,7 @@ describe('History', () => {
 					state: { key: 'value' },
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
-					navigation: false,
+					popState: true,
 					formData: null
 				}
 			]);
@@ -365,7 +440,7 @@ describe('History', () => {
 					state: null,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
-					navigation: true,
+					popState: true,
 					formData: null
 				},
 				{
@@ -374,7 +449,7 @@ describe('History', () => {
 					state: { key: 'value2' },
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
-					navigation: false,
+					popState: true,
 					formData: null
 				}
 			]);
