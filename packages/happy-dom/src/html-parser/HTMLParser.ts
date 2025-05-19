@@ -47,7 +47,7 @@ const MARKUP_REGEXP = /<([^\s/!>?]+)|<\/([^\s/!>?]+)\s*>|(<!--)|(-->|--!>)|(<!)|
  * Group 9: Attribute name when the attribute has no value (e.g. "disabled" in "<div disabled>").
  */
 const ATTRIBUTE_REGEXP =
-	/\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)\s*=\s*([a-zA-Z0-9-_:.$@?{}/<]+)|\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)\s*=\s*"([^"]*)("{0,1})|\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)\s*=\s*'([^']*)('{0,1})|\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)/gm;
+	/\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)\s*=\s*([^"'=<>\\`\s]+)|\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)\s*=\s*"([^"]*)("{0,1})|\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)\s*=\s*'([^']*)('{0,1})|\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)/gm;
 
 /**
  * Document type attribute RegExp.
