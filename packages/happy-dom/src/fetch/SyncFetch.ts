@@ -24,6 +24,7 @@ import FetchCORSUtility from './utilities/FetchCORSUtility.js';
 import Fetch from './Fetch.js';
 import IFetchInterceptor from './types/IFetchInterceptor.js';
 import VirtualServerUtility from './utilities/VirtualServerUtility.js';
+import IFetchRequestHeaders from './types/IFetchRequestHeaders.js';
 
 interface ISyncHTTPResponse {
 	error: string;
@@ -43,7 +44,8 @@ export default class SyncFetch {
 	private redirectCount = 0;
 	private disableCache: boolean;
 	private disableSameOriginPolicy: boolean;
-	private interceptor?: IFetchInterceptor;
+	private interceptor: IFetchInterceptor | null;
+	private requestHeaders: IFetchRequestHeaders[] | null;
 	#browserFrame: IBrowserFrame;
 	#window: BrowserWindow;
 	#unfilteredHeaders: Headers | null = null;
@@ -90,6 +92,7 @@ export default class SyncFetch {
 			this.#browserFrame.page.context.browser.settings.fetch.disableSameOriginPolicy ??
 			false;
 		this.interceptor = this.#browserFrame.page.context.browser.settings.fetch.interceptor;
+		this.requestHeaders = this.#browserFrame.page.context.browser.settings.fetch.requestHeaders;
 	}
 
 	/**
@@ -100,15 +103,29 @@ export default class SyncFetch {
 	public send(): ISyncResponse {
 		FetchRequestReferrerUtility.prepareRequest(new URL(this.#window.location.href), this.request);
 
-		const beforeRequestResponse = this.interceptor?.beforeSyncRequest
-			? this.interceptor.beforeSyncRequest({
-					request: this.request,
-					window: this.#window
-				})
-			: undefined;
+		if (this.requestHeaders) {
+			for (const header of this.requestHeaders) {
+				if (
+					typeof header.url === 'string'
+						? header.url.startsWith(this.request.url)
+						: this.request.url.match(header.url)
+				) {
+					for (const [key, value] of Object.entries(header.headers)) {
+						this.request.headers.set(key, value);
+					}
+				}
+			}
+		}
 
-		if (typeof beforeRequestResponse === 'object') {
-			return beforeRequestResponse;
+		if (this.interceptor?.beforeSyncRequest) {
+			const beforeRequestResponse = this.interceptor.beforeSyncRequest({
+				request: this.request,
+				window: this.#window
+			});
+
+			if (typeof beforeRequestResponse === 'object') {
+				return beforeRequestResponse;
+			}
 		}
 
 		FetchRequestValidationUtility.validateSchema(this.request);
@@ -132,14 +149,15 @@ export default class SyncFetch {
 				url: this.request.url,
 				redirected: false,
 				headers: new Headers({ 'Content-Type': result.type }),
-				body: result.buffer
+				body: result.buffer,
+				[PropertySymbol.virtualServerFile]: null
 			};
 			const interceptedResponse = this.interceptor?.afterSyncResponse
 				? this.interceptor.afterSyncResponse({
 						window: this.#window,
 						response,
 						request: this.request
-					})
+				  })
 				: undefined;
 			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
@@ -267,7 +285,9 @@ export default class SyncFetch {
 			// TODO: Do we need to add support for redirected responses to the cache?
 			redirected: false,
 			headers: cachedResponse.response.headers,
-			body: cachedResponse.response.body
+			body: cachedResponse.response.body,
+			[PropertySymbol.virtualServerFile]:
+				cachedResponse.response[PropertySymbol.virtualServerFile] || null
 		};
 	}
 
@@ -277,7 +297,7 @@ export default class SyncFetch {
 	 * @returns Response.
 	 */
 	private getVirtualServerResponse(): ISyncResponse | null {
-		const filePath = VirtualServerUtility.getFilepath(this.#window, this.request.url);
+		let filePath = VirtualServerUtility.getFilepath(this.#window, this.request.url);
 
 		if (!filePath) {
 			return null;
@@ -293,7 +313,7 @@ export default class SyncFetch {
 						window: this.#window,
 						response,
 						request: this.request
-					})
+				  })
 				: undefined;
 			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
@@ -301,7 +321,8 @@ export default class SyncFetch {
 		let buffer: Buffer;
 		try {
 			const stat = FS.statSync(filePath);
-			buffer = FS.readFileSync(stat.isDirectory() ? Path.join(filePath, 'index.html') : filePath);
+			filePath = stat.isDirectory() ? Path.join(filePath, 'index.html') : filePath;
+			buffer = FS.readFileSync(filePath);
 		} catch {
 			this.#browserFrame?.page?.console.error(
 				`${this.request.method} ${this.request.url} 404 (Not Found)`
@@ -312,7 +333,7 @@ export default class SyncFetch {
 						window: this.#window,
 						response,
 						request: this.request
-					})
+				  })
 				: undefined;
 			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
@@ -324,20 +345,22 @@ export default class SyncFetch {
 			url: this.request.url,
 			redirected: false,
 			headers: new this.#window.Headers(),
-			body: buffer
+			body: buffer,
+			[PropertySymbol.virtualServerFile]: filePath
 		};
 		const interceptedResponse = this.interceptor?.afterSyncResponse
 			? this.interceptor.afterSyncResponse({
 					window: this.#window,
 					response,
 					request: this.request
-				})
+			  })
 			: undefined;
 		const returnResponse = typeof interceptedResponse === 'object' ? interceptedResponse : response;
 
 		this.#browserFrame.page.context.responseCache.add(this.request, {
 			...returnResponse,
-			waitingForBody: false
+			waitingForBody: false,
+			virtual: true
 		});
 
 		return returnResponse;
@@ -528,7 +551,7 @@ export default class SyncFetch {
 					window: this.#window,
 					response: redirectedResponse,
 					request: this.request
-				})
+			  })
 			: undefined;
 		const returnResponse =
 			typeof interceptedResponse === 'object' ? interceptedResponse : redirectedResponse;

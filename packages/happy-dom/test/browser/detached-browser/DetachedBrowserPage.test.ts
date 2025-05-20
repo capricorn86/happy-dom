@@ -9,7 +9,6 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import IGoToOptions from '../../../src/browser/types/IGoToOptions';
 import BrowserFrameFactory from '../../../src/browser/utilities/BrowserFrameFactory';
 import Event from '../../../src/event/Event';
-import DefaultBrowserPageViewport from '../../../src/browser/DefaultBrowserPageViewport';
 
 describe('DetachedBrowserPage', () => {
 	afterEach(() => {
@@ -62,7 +61,15 @@ describe('DetachedBrowserPage', () => {
 		it('Returns a default viewport.', () => {
 			const browser = new DetachedBrowser(BrowserWindow);
 			const page = browser.defaultContext.newPage();
-			expect(page.viewport).toEqual(DefaultBrowserPageViewport);
+			expect(page.viewport).toEqual({ width: 1024, height: 768, devicePixelRatio: 1 });
+		});
+
+		it('Returns viewport set in browser settings.', () => {
+			const browser = new DetachedBrowser(BrowserWindow, {
+				settings: { viewport: { width: 100, height: 100, devicePixelRatio: 2 } }
+			});
+			const page = browser.defaultContext.newPage();
+			expect(page.viewport).toEqual({ width: 100, height: 100, devicePixelRatio: 2 });
 		});
 
 		it('Returns defined viewport.', () => {

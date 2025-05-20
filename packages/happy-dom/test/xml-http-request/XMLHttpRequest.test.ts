@@ -17,6 +17,7 @@ import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 import { ReadableStream } from 'stream/web';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
+import { BrowserErrorCaptureEnum } from '../../src/index.js';
 
 const WINDOW_URL = 'https://localhost:8080';
 const WINDOW_ORIGIN = new URL(WINDOW_URL).origin;
@@ -63,7 +64,7 @@ describe('XMLHttpRequest', () => {
 	});
 
 	describe('get status()', () => {
-		it('Returns status for synchrounous requests.', () => {
+		it('Returns status for synchronous requests.', () => {
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
 				() =>
 					<ISyncResponse>{
@@ -80,7 +81,7 @@ describe('XMLHttpRequest', () => {
 			expect(request.status).toBe(201);
 		});
 
-		it('Returns status for asynchrounous requests.', async () => {
+		it('Returns status for asynchronous requests.', async () => {
 			await new Promise((resolve) => {
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () => <Response>{ headers: <Headers>new Headers(), status: 201 }
@@ -101,7 +102,7 @@ describe('XMLHttpRequest', () => {
 	});
 
 	describe('get statusText()', () => {
-		it('Returns status text for synchrounous requests.', () => {
+		it('Returns status text for synchronous requests.', () => {
 			const statusText = 'Test';
 
 			expect(request.statusText).toBe('');
@@ -116,7 +117,7 @@ describe('XMLHttpRequest', () => {
 			expect(request.statusText).toBe(statusText);
 		});
 
-		it('Returns status text for asynchrounous requests.', async () => {
+		it('Returns status text for asynchronous requests.', async () => {
 			await new Promise((resolve) => {
 				const statusText = 'Test';
 
@@ -285,7 +286,7 @@ describe('XMLHttpRequest', () => {
 	});
 
 	describe('get responseURL()', () => {
-		it('Returns response URL for synchrounous requests.', () => {
+		it('Returns response URL for synchronous requests.', () => {
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
 				() => <ISyncResponse>{ headers: <Headers>new Headers(), url: WINDOW_URL + REQUEST_URL }
 			);
@@ -298,7 +299,7 @@ describe('XMLHttpRequest', () => {
 			expect(request.responseURL).toBe(WINDOW_URL + REQUEST_URL);
 		});
 
-		it('Returns response URL for asynchrounous requests.', async () => {
+		it('Returns response URL for asynchronous requests.', async () => {
 			await new Promise((resolve) => {
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () => <Response>{ headers: <Headers>new Headers(), url: WINDOW_URL + REQUEST_URL }
@@ -319,7 +320,7 @@ describe('XMLHttpRequest', () => {
 	});
 
 	describe('get readyState()', () => {
-		it('Returns ready state for synchrounous requests.', () => {
+		it('Returns ready state for synchronous requests.', () => {
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
 				() => <ISyncResponse>{ headers: <Headers>new Headers() }
 			);
@@ -332,7 +333,7 @@ describe('XMLHttpRequest', () => {
 			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
 		});
 
-		it('Returns ready state for asynchrounous requests.', async () => {
+		it('Returns ready state for asynchronous requests.', async () => {
 			await new Promise((resolve) => {
 				const responseText = 'test';
 
@@ -357,7 +358,7 @@ describe('XMLHttpRequest', () => {
 
 				request.addEventListener('progress', () => {
 					isProgressTriggered = true;
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersReceived);
 				});
 
 				request.addEventListener('load', () => {
@@ -372,7 +373,7 @@ describe('XMLHttpRequest', () => {
 	});
 
 	describe('get responseText()', () => {
-		it('Returns response text for synchrounous requests.', () => {
+		it('Returns response text for synchronous requests.', () => {
 			const responseText = 'test';
 
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
@@ -384,7 +385,7 @@ describe('XMLHttpRequest', () => {
 			expect(request.responseText).toBe(responseText);
 		});
 
-		it('Returns response text for asynchrounous requests.', async () => {
+		it('Returns response text for asynchronous requests.', async () => {
 			await new Promise((resolve) => {
 				const responseText = 'test';
 
@@ -441,7 +442,7 @@ describe('XMLHttpRequest', () => {
 			});
 		});
 
-		it(`Throws an exception if the request is synchrounous.`, () => {
+		it(`Throws an exception if the request is synchronous.`, () => {
 			request.open('GET', REQUEST_URL, false);
 			expect(() => (request.responseType = XMLHttpResponseTypeEnum.json)).toThrowError(
 				`Failed to set the 'responseType' property on 'XMLHttpRequest': The response type cannot be changed for synchronous requests made from a document.`
@@ -494,7 +495,7 @@ describe('XMLHttpRequest', () => {
 			});
 		});
 
-		it('Sets a request header on an asynchrounous request.', async () => {
+		it('Sets a request header on an asynchronous request.', async () => {
 			await new Promise((resolve) => {
 				let requestArgs: { headers: { [name: string]: string } } | null = null;
 
@@ -566,7 +567,7 @@ describe('XMLHttpRequest', () => {
 	});
 
 	describe('getResponseHeader()', () => {
-		it('Returns response header for a synchrounous request.', () => {
+		it('Returns response header for a synchronous request.', () => {
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
 				() =>
 					<ISyncResponse>{
@@ -585,7 +586,7 @@ describe('XMLHttpRequest', () => {
 			expect(request.getResponseHeader('key3')).toBe(null);
 		});
 
-		it('Returns response header for an asynchrounous request.', async () => {
+		it('Returns response header for an asynchronous request.', async () => {
 			await new Promise((resolve) => {
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
@@ -617,7 +618,7 @@ describe('XMLHttpRequest', () => {
 	});
 
 	describe('getAllResponseHeaders()', () => {
-		it('Returns all response headers for a synchrounous request.', () => {
+		it('Returns all response headers for a synchronous request.', () => {
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
 				() =>
 					<ISyncResponse>{
@@ -634,7 +635,7 @@ describe('XMLHttpRequest', () => {
 			expect(request.getAllResponseHeaders()).toBe('key1: value1\r\nkey2: value2');
 		});
 
-		it('Returns all response headers for an asynchrounous request.', async () => {
+		it('Returns all response headers for an asynchronous request.', async () => {
 			await new Promise((resolve) => {
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
 					async () =>
@@ -743,7 +744,7 @@ describe('XMLHttpRequest', () => {
 					expect((<ProgressEvent>event).lengthComputable).toBe(true);
 					expect((<ProgressEvent>event).loaded).toBe(responseText.length);
 					expect((<ProgressEvent>event).total).toBe(responseText.length);
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersReceived);
 				});
 
 				request.addEventListener('loadend', () => {
@@ -796,7 +797,7 @@ describe('XMLHttpRequest', () => {
 					expect((<ProgressEvent>event).lengthComputable).toBe(true);
 					expect((<ProgressEvent>event).loaded).toBe(responseText.length);
 					expect((<ProgressEvent>event).total).toBe(responseText.length);
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersReceived);
 				});
 
 				request.addEventListener('load', () => {
@@ -878,7 +879,7 @@ describe('XMLHttpRequest', () => {
 					expect((<ProgressEvent>event).lengthComputable).toBe(true);
 					expect((<ProgressEvent>event).loaded).toBe(responseText.length);
 					expect((<ProgressEvent>event).total).toBe(responseText.length);
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersReceived);
 				});
 
 				request.addEventListener('load', () => {
@@ -935,7 +936,7 @@ describe('XMLHttpRequest', () => {
 					expect((<ProgressEvent>event).lengthComputable).toBe(true);
 					expect((<ProgressEvent>event).loaded).toBe(responseText.length);
 					expect((<ProgressEvent>event).total).toBe(responseText.length);
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersReceived);
 				});
 
 				request.addEventListener('load', () => {
@@ -1041,7 +1042,7 @@ describe('XMLHttpRequest', () => {
 					expect((<ProgressEvent>event).lengthComputable).toBe(true);
 					expect((<ProgressEvent>event).loaded).toBe(responseText.length);
 					expect((<ProgressEvent>event).total).toBe(responseText.length);
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersReceived);
 				});
 
 				request.addEventListener('load', () => {
@@ -1114,7 +1115,7 @@ describe('XMLHttpRequest', () => {
 					expect((<ProgressEvent>event).lengthComputable).toBe(true);
 					expect((<ProgressEvent>event).loaded).toBe(responseText.length);
 					expect((<ProgressEvent>event).total).toBe(responseText.length);
-					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersRecieved);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.headersReceived);
 				});
 
 				request.addEventListener('load', () => {
@@ -1194,7 +1195,7 @@ describe('XMLHttpRequest', () => {
 			});
 		});
 
-		it('Handles Happy DOM asynchrounous tasks.', async () => {
+		it('Handles Happy DOM asynchronous tasks.', async () => {
 			const responseText = 'responseText';
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
 				await new Promise((resolve) => setTimeout(resolve, 2));
@@ -1216,10 +1217,63 @@ describe('XMLHttpRequest', () => {
 
 			expect(request.responseText).toBe(responseText);
 		});
+
+		it('Handles errors thrown in event listeners.', async () => {
+			const responseText = 'test';
+			const windowURL = 'http://localhost:8080';
+			const window = new Window({
+				url: windowURL,
+				settings: {
+					errorCapture: BrowserErrorCaptureEnum.disabled
+				}
+			});
+			const request = new window.XMLHttpRequest();
+			let requestArgs: { method: string; url: string };
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+				requestArgs = {
+					method: this.request.method,
+					url: this.request.url
+				};
+				return <Response>{
+					headers: <Headers>new Headers({
+						'Content-Length': String(responseText.length),
+						'Content-Type': 'text/html'
+					}),
+					body: new ReadableStream({
+						start(controller) {
+							controller.enqueue(responseText);
+							controller.close();
+						}
+					})
+				};
+			});
+
+			request.open('GET', REQUEST_URL, true);
+
+			let triggeredEvents = 0;
+
+			for (const event of ['loadstart', 'progress', 'load', 'loadend']) {
+				request[`on${event}`] = () => {
+					triggeredEvents++;
+					throw new Error('Error in event listener');
+				};
+				request.addEventListener(event, () => {
+					triggeredEvents++;
+					throw new Error('Error in event listener');
+				});
+			}
+
+			request.send();
+
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			expect(triggeredEvents).toBe(8);
+		});
 	});
 
 	describe('abort()', () => {
-		it('Aborts an asynchrounous request.', async () => {
+		it('Aborts an asynchronous request.', async () => {
 			return await new Promise((resolve) => {
 				let isAborted = false;
 
@@ -1266,7 +1320,7 @@ describe('XMLHttpRequest', () => {
 			});
 		});
 
-		it('Waits for ongoing Happy DOM asynchrounous task.', async () => {
+		it('Waits for ongoing Happy DOM asynchronous task.', async () => {
 			const responseText = 'responseText';
 
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
@@ -1291,7 +1345,7 @@ describe('XMLHttpRequest', () => {
 			expect(request.responseText).toBe(responseText);
 		});
 
-		it('Aborts an ongoing request when cancelling all Happy DOM asynchrounous tasks.', async () => {
+		it('Aborts an ongoing request when cancelling all Happy DOM asynchronous tasks.', async () => {
 			let isAborted = false;
 
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {

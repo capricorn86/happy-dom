@@ -1,10 +1,11 @@
 {
 	"$schema": "https://turbo.build/schema.json",
-	"pipeline": {
+	"cacheDir": ".turbo/turbo",
+	"tasks": {
 		"compile": {
 			"dependsOn": ["^compile"],
 			"inputs": ["src/**", "tsconfig.json", "package.json"],
-			"outputs": ["lib/**", "cjs/**", "tmp/**"]
+			"outputs": ["lib/**", "tmp/**"]
 		},
 		"global-registrator#compile": {
 			"dependsOn": ["happy-dom#compile"]
@@ -32,10 +33,6 @@
 		},
 		"integration-test#test": {
 			"dependsOn": ["happy-dom#compile", "^compile"]
-		},
-		"uncaught-exception-observer#test": {
-			"dependsOn": ["happy-dom#compile", "uncaught-exception-observer#compile"],
-			"outputs": ["tmp/**"]
 		},
 		"test": {
 			"inputs": ["test/**"]

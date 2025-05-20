@@ -40,7 +40,7 @@ And much more..
  - [Vue](https://vuejs.org/)
  - [React](https://reactjs.org)
  - [Svelte](https://svelte.dev/)
- - [Angular](https://angular.io/)
+ - [Angular](https://angular.dev/)
 
 ## Sponsors
 
@@ -54,7 +54,11 @@ And much more..
 
 <p align="center"><b>Sponsors</b></p>
 
-<p align="center"><a href="https://sentry.io/"><img alt="Sentry" width="50px" src="https://avatars.githubusercontent.com/u/1396951?s=200&v=4"></a></p>
+<p align="center">
+    <a href="https://sentry.io/"><img alt="Sentry" width="50px" src="https://avatars.githubusercontent.com/u/1396951?s=200&v=4"></a>
+    &nbsp;&nbsp;
+    <a href="https://canonical.com/"><img alt="Canonical" width="50px" src="https://avatars.githubusercontent.com/u/53057619?s=200&v=4"></a>
+</p>
 
 <p align="center"><b>Backers</b></p>
 

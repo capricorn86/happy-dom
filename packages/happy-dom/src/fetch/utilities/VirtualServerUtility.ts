@@ -3,6 +3,7 @@ import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import Path from 'path';
 import Response from '../Response.js';
 import ISyncResponse from '../types/ISyncResponse.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 const NOT_FOUND_HTML =
 	'<html><head><title>Happy DOM Virtual Server - 404 Not Found</title></head><body><h1>Happy DOM Virtual Server - 404 Not Found</h1></body></html>';
@@ -83,7 +84,8 @@ export default class VirtualServerUtility {
 			headers: new window.Headers({
 				'Content-Type': 'text/html'
 			}),
-			body: Buffer.from(NOT_FOUND_HTML)
+			body: Buffer.from(NOT_FOUND_HTML),
+			[PropertySymbol.virtualServerFile]: null
 		};
 	}
 }

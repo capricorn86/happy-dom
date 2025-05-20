@@ -1,4 +1,5 @@
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import AsyncTaskManagerDebugError from './AsyncTaskManagerDebugError.js';
 
 // We need to set this as a global constant, so that using fake timers in Jest and Vitest won't override this on the global object.
 const TIMER = {
@@ -90,7 +91,7 @@ export default class AsyncTaskManager {
 		}
 		this.runningTimers.push(timerID);
 		if (this.#browserFrame.page?.context?.browser?.settings?.debug?.traceWaitUntilComplete > 0) {
-			this.debugTrace.set(timerID, new Error().stack);
+			this.debugTrace.set(timerID, new AsyncTaskManagerDebugError().stack);
 		}
 	}
 
@@ -130,7 +131,7 @@ export default class AsyncTaskManager {
 		}
 		this.runningImmediates.push(immediateID);
 		if (this.#browserFrame.page?.context?.browser?.settings?.debug?.traceWaitUntilComplete > 0) {
-			this.debugTrace.set(immediateID, new Error().stack);
+			this.debugTrace.set(immediateID, new AsyncTaskManagerDebugError().stack);
 		}
 	}
 
@@ -166,7 +167,7 @@ export default class AsyncTaskManager {
 				abortHandler(this.destroyed);
 			}
 			throw new this.#browserFrame.window.Error(
-				`Failed to execute 'startTask()' on 'AsyncTaskManager': The asynchrounous task manager has been aborted.`
+				`Failed to execute 'startTask()' on 'AsyncTaskManager': The asynchronous task manager has been aborted.`
 			);
 		}
 		if (this.waitUntilCompleteTimer) {
@@ -177,7 +178,7 @@ export default class AsyncTaskManager {
 		this.runningTasks[taskID] = abortHandler ? abortHandler : () => {};
 		this.runningTaskCount++;
 		if (this.#browserFrame.page?.context?.browser?.settings?.debug?.traceWaitUntilComplete > 0) {
-			this.debugTrace.set(taskID, new Error().stack);
+			this.debugTrace.set(taskID, new AsyncTaskManagerDebugError().stack);
 		}
 		return taskID;
 	}
@@ -276,11 +277,13 @@ export default class AsyncTaskManager {
 				this.debugTrace.size === 1 ? '' : 's'
 			} did not end in time.\n\nThe following traces were recorded:\n\n`;
 
+			let number = 1;
 			for (const [key, value] of this.debugTrace.entries()) {
 				const type = typeof key === 'number' ? 'Task' : 'Timer';
-				errorMessage += `${type} #${key}\n‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾${value
-					.replace(/Error:/, '')
+				errorMessage += `${type} #${number}\n‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾${value
+					.replace(/AsyncTaskManagerDebugError:{0,1}/, '')
 					.replace(/\s+at /gm, '\n> ')}\n\n`;
+				number++;
 			}
 
 			const error = new Error(errorMessage);
