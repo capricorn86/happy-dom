@@ -1,7 +1,7 @@
 import BrowserSettingsFactory from 'happy-dom/lib/browser/BrowserSettingsFactory.js';
 import IOptionalServerRendererConfiguration from '../types/IOptionalServerRendererConfiguration.js';
 import IServerRendererConfiguration from '../types/IServerRendererConfiguration.js';
-import DefaultServerRendererConfiguration from './DefaultServerRendererConfiguration.js';
+import DefaultServerRendererConfiguration from '../config/DefaultServerRendererConfiguration.js';
 import Path from 'path';
 
 /**
@@ -30,7 +30,11 @@ export default class ServerRendererConfigurationFactory {
 			}),
 			cache: {
 				...DefaultServerRendererConfiguration.cache,
-				...configuration?.cache
+				...configuration?.cache,
+				fileSystem: {
+					...DefaultServerRendererConfiguration.cache.fileSystem,
+					...configuration?.cache?.fileSystem
+				}
 			},
 			worker: {
 				...DefaultServerRendererConfiguration.worker,
@@ -48,7 +52,7 @@ export default class ServerRendererConfigurationFactory {
 		};
 
 		config.outputDirectory = Path.resolve(config.outputDirectory);
-		config.cache.directory = Path.resolve(config.cache.directory);
+		config.cache.fileSystem.directory = Path.resolve(config.cache.fileSystem.directory);
 
 		return config;
 	}

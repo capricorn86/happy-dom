@@ -1,5 +1,5 @@
 import type IBrowserSettings from 'happy-dom/lib/browser/types/IBrowserSettings.js';
-import ServerRendererLogLevelEnum from './ServerRendererLogLevelEnum.js';
+import ServerRendererLogLevelEnum from '../enums/ServerRendererLogLevelEnum.js';
 import IServerRendererItem from './IServerRendererItem.js';
 
 export default interface IServerRendererConfiguration {
@@ -28,19 +28,26 @@ export default interface IServerRendererConfiguration {
 	 */
 	cache: {
 		/**
-		 * Directory for caching files.
-		 */
-		directory: string;
-		/**
-		 * Disables caching.
+		 * Disables all caching.
 		 */
 		disable: boolean;
 		/**
-		 * Forces a cache time in ms for responses.
-		 *
-		 * This may speed up the rendering process as responses that would otherwise have a short cache time are cached.
+		 * File system cache settings.
 		 */
-		forceResponseCacheTime: number;
+		fileSystem: {
+			/**
+			 * Directory for caching files.
+			 */
+			directory: string;
+			/**
+			 * Disables file system caching.
+			 */
+			disable: boolean;
+			/**
+			 * Warm up by rendering the first item before rendering the rest.
+			 */
+			warmup: boolean;
+		};
 	};
 	/**
 	 * Settings for the worker.

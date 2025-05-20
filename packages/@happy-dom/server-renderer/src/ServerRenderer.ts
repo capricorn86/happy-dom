@@ -2,7 +2,7 @@ import IOptionalServerRendererConfiguration from './types/IOptionalServerRendere
 import IServerRendererItem from './types/IServerRendererItem.js';
 import { Worker } from 'worker_threads';
 import IServerRendererResult from './types/IServerRendererResult.js';
-import ServerRendererLogLevelEnum from './types/ServerRendererLogLevelEnum.js';
+import ServerRendererLogLevelEnum from './enums/ServerRendererLogLevelEnum.js';
 import IServerRendererConfiguration from './types/IServerRendererConfiguration.js';
 import ServerRendererConfigurationFactory from './utilities/ServerRendererConfigurationFactory.js';
 import Path from 'path';
@@ -12,7 +12,6 @@ import ServerRendererBrowser from './ServerRendererBrowser.js';
 
 interface IWorkerWaitingItem {
 	items: IServerRendererItem[];
-	isCacheWarmup?: boolean;
 	resolve: (results: IServerRendererResult[]) => void;
 	reject: (error: Error) => void;
 }
@@ -48,10 +47,11 @@ export default class ServerRenderer {
 	 *
 	 * @param [urls] URLs to render.
 	 * @param [options] Options.
-	 * @param [options.headers] Headers.
+	 * @param [options.keepAlive] Keep the workers and browser alive. This is useful when using the renderer in a server. The workers can be closed with the `close()` method.
 	 */
 	public async render(
-		urls?: Array<string | IServerRendererItem> | null
+		urls?: Array<string | IServerRendererItem> | null,
+		options?: { keepAlive?: boolean }
 	): Promise<IServerRendererResult[]> {
 		const startTime = performance.now();
 		const configuration = this.#configuration;
@@ -93,10 +93,14 @@ export default class ServerRenderer {
 		}
 
 		let results: IServerRendererResult[] = [];
-		if (!configuration.cache.disable) {
+		if (
+			!configuration.cache.disable &&
+			!configuration.cache.fileSystem.disable &&
+			configuration.cache.fileSystem.warmup
+		) {
 			const item = parsedItems.shift();
 			if (item) {
-				results = results.concat(await this.#runInWorker([item], true));
+				results = results.concat(await this.#runInWorker([item]));
 			}
 		}
 
@@ -115,18 +119,6 @@ export default class ServerRenderer {
 			await Promise.all(promises);
 		}
 
-		for (const worker of this.#workerPool.busy) {
-			worker.terminate();
-		}
-
-		for (const worker of this.#workerPool.free) {
-			worker.terminate();
-		}
-
-		this.#workerPool.busy = [];
-		this.#workerPool.free = [];
-		this.#workerPool.waiting = [];
-
 		if (configuration.logLevel >= ServerRendererLogLevelEnum.info) {
 			const time = Math.round((performance.now() - startTime) / 1000);
 			const minutes = Math.floor(time / 60);
@@ -141,19 +133,41 @@ export default class ServerRenderer {
 			);
 		}
 
+		if (!options?.keepAlive) {
+			await this.close();
+		}
+
 		return results;
+	}
+
+	/**
+	 * Closes the workers and browser.
+	 */
+	public async close(): Promise<void> {
+		for (const worker of this.#workerPool.busy) {
+			worker.terminate();
+		}
+
+		for (const worker of this.#workerPool.free) {
+			worker.terminate();
+		}
+
+		this.#workerPool.busy = [];
+		this.#workerPool.free = [];
+		this.#workerPool.waiting = [];
+
+		if (this.#browser) {
+			await this.#browser.close();
+			this.#browser = null;
+		}
 	}
 
 	/**
 	 * Runs in a worker.
 	 *
 	 * @param items Items.
-	 * @param isCacheWarmup Is cache warmup.
 	 */
-	async #runInWorker(
-		items: IServerRendererItem[],
-		isCacheWarmup = false
-	): Promise<IServerRendererResult[]> {
+	async #runInWorker(items: IServerRendererItem[]): Promise<IServerRendererResult[]> {
 		const configuration = this.#configuration;
 
 		if (configuration.worker.disable) {
@@ -161,17 +175,18 @@ export default class ServerRenderer {
 				this.#browser = new ServerRendererBrowser(configuration);
 			}
 
-			const results = await this.#browser.render(items, isCacheWarmup);
+			const results = await this.#browser.render(items);
 
 			this.outputResults(results);
 
 			return results;
 		}
+
 		return new Promise((resolve, reject) => {
 			if (this.#workerPool.free.length === 0) {
 				const maxConcurrency = configuration.inspect ? 1 : configuration.worker.maxConcurrency;
 				if (this.#workerPool.busy.length >= maxConcurrency) {
-					this.#workerPool.waiting.push({ items, isCacheWarmup, resolve, reject });
+					this.#workerPool.waiting.push({ items, resolve, reject });
 					return;
 				}
 				const worker = new Worker(new URL('ServerRendererWorker.js', import.meta.url), {
@@ -198,9 +213,7 @@ export default class ServerRenderer {
 					const waiting = this.#workerPool.waiting.shift();
 
 					if (waiting) {
-						this.#runInWorker(waiting.items, waiting.isCacheWarmup)
-							.then(waiting.resolve)
-							.catch(waiting.reject);
+						this.#runInWorker(waiting.items).then(waiting.resolve).catch(waiting.reject);
 					}
 				};
 				const listeners: {
@@ -267,7 +280,7 @@ export default class ServerRenderer {
 				worker.on('error', listeners.error);
 				worker.on('exit', listeners.exit);
 
-				worker.postMessage({ items, isCacheWarmup });
+				worker.postMessage({ items });
 			}
 		});
 	}

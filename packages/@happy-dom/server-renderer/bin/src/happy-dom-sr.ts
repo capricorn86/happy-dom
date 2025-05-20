@@ -2,13 +2,13 @@
 'use strict';
 
 import { BrowserNavigationCrossOriginPolicyEnum, IVirtualServer } from 'happy-dom';
-import IOptionalServerRendererConfiguration from '../../lib/IOptionalServerRendererConfiguration.js';
-import ServerRendererLogLevelEnum from '../../lib/ServerRendererLogLevelEnum.js';
-import type IServerRendererItem from '../../lib/IServerRendererItem.js';
+import IOptionalServerRendererConfiguration from '../../lib/types/IOptionalServerRendererConfiguration.js';
+import ServerRendererLogLevelEnum from '../../lib/enums/ServerRendererLogLevelEnum.js';
+import type IServerRendererItem from '../../lib/types/IServerRendererItem.js';
 import ServerRenderer from '../../lib/ServerRenderer.js';
 import Path from 'path';
 import IFetchRequestHeaders from 'happy-dom/lib/fetch/types/IFetchRequestHeaders.js';
-import DefaultServerRendererConfiguration from '../../lib/DefaultServerRendererConfiguration.js';
+import DefaultServerRendererConfiguration from '../../lib/utilities/DefaultServerRendererConfiguration.js';
 
 main();
 
@@ -172,10 +172,14 @@ async function getConfiguration(): Promise<{
 					throw new Error(`Invalid value for ${arg.split('=')[0]}`);
 				}
 				config.browser.viewport.devicePixelRatio = value;
-			} else if (arg.startsWith('--cache.directory=')) {
-				config.cache.directory = stripQuotes(arg.split('=')[1]);
-			} else if (arg.startsWith('--cache.disable')) {
+			} else if (arg.startsWith('--cache.disable=')) {
 				config.cache.disable = true;
+			} else if (arg.startsWith('--cache.fileSystem.directory=')) {
+				config.cache.fileSystem.directory = stripQuotes(arg.split('=')[1]);
+			} else if (arg.startsWith('--cache.fileSystem.disable')) {
+				config.cache.fileSystem.disable = true;
+			} else if (arg.startsWith('--cache.fileSystem.warmup')) {
+				config.cache.fileSystem.warmup = true;
 			} else if (arg.startsWith('--logLevel=')) {
 				const value = Number(arg.split('=')[1]);
 				if (isNaN(value) || ServerRendererLogLevelEnum[value] === undefined) {

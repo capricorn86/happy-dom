@@ -40,7 +40,7 @@ export default class ServerRendererServer {
 	}
 
 	/**
-	 * Start it the server.
+	 * Starts the server.
 	 */
 	public async start(): Promise<void> {
 		let url: URL;
@@ -87,7 +87,7 @@ export default class ServerRendererServer {
 			case 'http:':
 				this.#server = Http2.createServer(
 					(request: Http2.Http2ServerRequest, response: Http2.Http2ServerResponse) =>
-						this.onIncomingRequest(request, response)
+						this.#onIncomingRequest(request, response)
 				);
 				break;
 			case 'https:':
@@ -97,7 +97,7 @@ export default class ServerRendererServer {
 						cert: FetchHTTPSCertificate.cert
 					},
 					(request: Http2.Http2ServerRequest, response: Http2.Http2ServerResponse) =>
-						this.onIncomingRequest(request, response)
+						this.#onIncomingRequest(request, response)
 				);
 				break;
 		}
@@ -105,14 +105,14 @@ export default class ServerRendererServer {
 		this.#server.listen(url.port ? Number(url.port) : url.protocol === 'https:' ? 443 : 80);
 
 		// eslint-disable-next-line no-console
-		console.log(Chalk.green(`\nHappy DOM Proxy Server ${await this.getVersion()}\n`));
+		console.log(Chalk.green(`\nHappy DOM Proxy Server ${await this.#getVersion()}\n`));
 
 		// eslint-disable-next-line no-console
 		console.log(
 			`  ${Chalk.green('➜')}  ${Chalk.bold('Local:')}   ${Chalk.cyan(
 				`${url.protocol}//localhost:${url.port}/`
 			)}\n  ${Chalk.green('➜')}  ${Chalk.bold('Network:')} ${Chalk.cyan(
-				`${url.protocol}//${this.getNetworkIP()}:${url.port}/`
+				`${url.protocol}//${this.#getNetworkIP()}:${url.port}/`
 			)}\n  ${Chalk.green('➜')}  ${Chalk.bold('Target:')}  ${Chalk.cyan(
 				`${targetOrigin}`
 			)}\n\n  ${Chalk.green('➜')}  ${Chalk.bold('URL:')}     ${Chalk.cyan(
@@ -122,11 +122,14 @@ export default class ServerRendererServer {
 	}
 
 	/**
-	 * Stop the server.
+	 * Stops the server.
 	 */
-	public stop(): void {
+	public async stop(): Promise<void> {
 		if (this.#server) {
 			this.#server.close();
+		}
+		if (this.#serverRenderer) {
+			await this.#serverRenderer.close();
 		}
 	}
 
@@ -137,7 +140,7 @@ export default class ServerRendererServer {
 	 * @param response Response.
 	 * @returns Promise.
 	 */
-	private async onIncomingRequest(
+	async #onIncomingRequest(
 		request: Http2.Http2ServerRequest,
 		response: Http2.Http2ServerResponse
 	): Promise<void> {
@@ -191,7 +194,9 @@ export default class ServerRendererServer {
 			}
 
 			if (!result) {
-				result = (await this.#serverRenderer.render([{ url: url.href, headers }]))[0];
+				result = (
+					await this.#serverRenderer.render([{ url: url.href, headers }], { keepAlive: true })
+				)[0];
 
 				const cacheQueue = this.#cacheQueue.get(url.href);
 
@@ -285,7 +290,7 @@ export default class ServerRendererServer {
 	 *
 	 * @returns The network IP address.
 	 */
-	private getNetworkIP(): string {
+	#getNetworkIP(): string {
 		const interfaces = OS.networkInterfaces();
 		for (const interfaceName in interfaces) {
 			const networkInterface = interfaces[interfaceName];
@@ -305,7 +310,7 @@ export default class ServerRendererServer {
 	 *
 	 * @returns The version of the package.
 	 */
-	private async getVersion(): Promise<string> {
+	async #getVersion(): Promise<string> {
 		const packageJson = await import('../package.json', { with: { type: 'json' } });
 		return packageJson.default['version'];
 	}

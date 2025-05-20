@@ -18,6 +18,9 @@ export default class ServerRendererBrowser {
 	#configuration: IServerRendererConfiguration;
 	#browser: Browser;
 	#isCacheLoaded: boolean = false;
+	#isCacheDirectoryCreated: boolean = false;
+	#cacheEntries: Set<ICachedResponse> = new Set();
+	#cacheHashes: Set<string> = new Set();
 
 	/**
 	 * Constructor.
@@ -42,12 +45,8 @@ export default class ServerRendererBrowser {
 	 * Renders URLs.
 	 *
 	 * @param items Items.
-	 * @param [isCacheWarmup] Indicates that this is a cache warmup.
 	 */
-	public async render(
-		items: IServerRendererItem[],
-		isCacheWarmup?: boolean
-	): Promise<IServerRendererResult[]> {
+	public async render(items: IServerRendererItem[]): Promise<IServerRendererResult[]> {
 		const browser = this.#browser;
 
 		await this.#loadCache(browser);
@@ -76,11 +75,21 @@ export default class ServerRendererBrowser {
 			results = await Promise.all(promises);
 		}
 
-		if (isCacheWarmup) {
-			await this.#storeCache(browser);
-		}
+		await this.#storeCache(browser);
 
 		return results;
+	}
+
+	/**
+	 * Closes the browser.
+	 */
+	public async close(): Promise<void> {
+		await this.#browser.close();
+		this.#browser = null;
+		this.#isCacheLoaded = false;
+		this.#isCacheDirectoryCreated = false;
+		this.#cacheEntries.clear();
+		this.#cacheHashes.clear();
 	}
 
 	/**
@@ -98,14 +107,14 @@ export default class ServerRendererBrowser {
 			: browser.defaultContext;
 		const page = context.newPage();
 
-		// @ts-ignore
-		context.responseCache = responseCache;
-		// @ts-ignore
-		context.preflightResponseCache = preflightResponseCache;
-
-		page.virtualConsolePrinter.addEventListener('print', () => {
-			console.log(page.virtualConsolePrinter.readAsString());
-		});
+		if (configuration.cache.disable) {
+			context.responseCache.clear();
+		} else {
+			// @ts-ignore
+			context.responseCache = responseCache;
+			// @ts-ignore
+			context.preflightResponseCache = preflightResponseCache;
+		}
 
 		const pageErrors: string[] = [];
 		const response = await page.goto(item.url, {
@@ -252,7 +261,8 @@ export default class ServerRendererBrowser {
 	async #loadCache(browser: Browser): Promise<void> {
 		if (
 			this.#configuration.cache.disable ||
-			!this.#configuration.cache.directory ||
+			this.#configuration.cache.fileSystem.disable ||
+			!this.#configuration.cache.fileSystem.directory ||
 			this.#isCacheLoaded
 		) {
 			return;
@@ -263,7 +273,7 @@ export default class ServerRendererBrowser {
 		let files: string[] = [];
 
 		try {
-			files = await FS.promises.readdir(this.#configuration.cache.directory);
+			files = await FS.promises.readdir(this.#configuration.cache.fileSystem.directory);
 		} catch (error) {
 			// If the directory does not exist, we have no cache and we can ignore it
 			return;
@@ -275,7 +285,7 @@ export default class ServerRendererBrowser {
 			if (file.endsWith('.json')) {
 				promises.push(
 					FS.promises
-						.readFile(Path.join(this.#configuration.cache.directory, file), 'utf8')
+						.readFile(Path.join(this.#configuration.cache.fileSystem.directory, file), 'utf8')
 						.then((content) => {
 							const entry = <ICachedResponse>JSON.parse(content);
 							if (entry.response && entry.request && !entry.virtual) {
@@ -284,7 +294,10 @@ export default class ServerRendererBrowser {
 
 								return FS.promises
 									.readFile(
-										Path.join(this.#configuration.cache.directory, file.split('.')[0] + '.data')
+										Path.join(
+											this.#configuration.cache.fileSystem.directory,
+											file.split('.')[0] + '.data'
+										)
 									)
 									.then((body) => {
 										entry.response.body = body;
@@ -314,16 +327,23 @@ export default class ServerRendererBrowser {
 	 * @param browser Browser.
 	 */
 	async #storeCache(browser: Browser): Promise<void> {
-		if (this.#configuration.cache.disable || !this.#configuration.cache.directory) {
+		if (
+			this.#configuration.cache.disable ||
+			this.#configuration.cache.fileSystem.disable ||
+			!this.#configuration.cache.fileSystem.directory
+		) {
 			return;
 		}
 
-		try {
-			await FS.promises.mkdir(this.#configuration.cache.directory, {
-				recursive: true
-			});
-		} catch (error) {
-			// Ignore if the directory already exists
+		if (!this.#isCacheDirectoryCreated) {
+			this.#isCacheDirectoryCreated = true;
+			try {
+				await FS.promises.mkdir(this.#configuration.cache.fileSystem.directory, {
+					recursive: true
+				});
+			} catch (error) {
+				// Ignore if the directory already exists
+			}
 		}
 
 		const groupedEntries = browser.defaultContext.responseCache.entries;
@@ -332,9 +352,11 @@ export default class ServerRendererBrowser {
 
 		for (const entries of groupedEntries.values()) {
 			for (const entry of entries) {
-				if (entry.response.body && !entry.virtual) {
+				if (entry.response.body && !entry.virtual && this.#cacheEntries.has(entry)) {
 					const responseHeaders = {};
 					const requestHeaders = {};
+
+					this.#cacheEntries.add(entry);
 
 					for (const [key, value] of entry.response.headers.entries()) {
 						responseHeaders[key] = value;
@@ -360,19 +382,23 @@ export default class ServerRendererBrowser {
 					const json = JSON.stringify(cacheableEntry, null, 3);
 					const hash = Crypto.createHash('md5').update(json).digest('hex');
 
-					entryPromises.push(
-						FS.promises.writeFile(
-							Path.join(this.#configuration.cache.directory, `${hash}.json`),
-							json
-						)
-					);
+					if (!this.#cacheHashes.has(hash)) {
+						this.#cacheHashes.add(hash);
 
-					bodyPromises.push(
-						FS.promises.writeFile(
-							Path.join(this.#configuration.cache.directory, `${hash}.data`),
-							entry.response.body
-						)
-					);
+						entryPromises.push(
+							FS.promises.writeFile(
+								Path.join(this.#configuration.cache.fileSystem.directory, `${hash}.json`),
+								json
+							)
+						);
+
+						bodyPromises.push(
+							FS.promises.writeFile(
+								Path.join(this.#configuration.cache.fileSystem.directory, `${hash}.data`),
+								entry.response.body
+							)
+						);
+					}
 				}
 			}
 		}

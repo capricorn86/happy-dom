@@ -1,5 +1,5 @@
 import DefaultBrowserSettings from 'happy-dom/lib/browser/DefaultBrowserSettings.js';
-import ServerRendererLogLevelEnum from '../types/ServerRendererLogLevelEnum.js';
+import ServerRendererLogLevelEnum from '../enums/ServerRendererLogLevelEnum.js';
 import IServerRendererConfiguration from '../types/IServerRendererConfiguration.js';
 import OS from 'os';
 import { BrowserErrorCaptureEnum } from 'happy-dom';
@@ -11,8 +11,12 @@ export default <IServerRendererConfiguration>{
 	debug: false,
 	inspect: false,
 	cache: {
-		directory: './happy-dom-sr/cache',
-		disable: false
+		disable: false,
+		fileSystem: {
+			directory: './happy-dom-sr/cache',
+			disable: false,
+			warmup: false
+		}
 	},
 	worker: {
 		disable: false,

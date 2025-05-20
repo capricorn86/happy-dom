@@ -19,8 +19,8 @@ export default class ServerRendererWorker {
 
 		const browser = new ServerRendererBrowser(configuration);
 
-		parentPort.on('message', async ({ items, isCacheWarmup }) => {
-			const results = await browser.render(items, isCacheWarmup);
+		parentPort.on('message', async ({ items }) => {
+			const results = await browser.render(items);
 			parentPort.postMessage({ status: 'done', results });
 		});
 	}

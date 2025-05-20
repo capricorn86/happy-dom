@@ -1,5 +1,5 @@
 import type IOptionalBrowserSettings from 'happy-dom/lib/browser/types/IOptionalBrowserSettings.js';
-import ServerRendererLogLevelEnum from './ServerRendererLogLevelEnum.js';
+import ServerRendererLogLevelEnum from '../enums/ServerRendererLogLevelEnum.js';
 import IServerRendererItem from './IServerRendererItem.js';
 
 export default interface IOptionalServerRendererConfiguration {
@@ -28,13 +28,26 @@ export default interface IOptionalServerRendererConfiguration {
 	 */
 	cache?: {
 		/**
-		 * Directory for caching files.
-		 */
-		directory?: string;
-		/**
-		 * Disables caching.
+		 * Disables all caching.
 		 */
 		disable?: boolean;
+		/**
+		 * File system cache settings.
+		 */
+		fileSystem?: {
+			/**
+			 * Directory for caching files.
+			 */
+			directory?: string;
+			/**
+			 * Disables file system caching.
+			 */
+			disable?: boolean;
+			/**
+			 * Warm up by rendering the first item before rendering the rest.
+			 */
+			warmup?: boolean;
+		};
 	};
 	/**
 	 * Settings for the worker.

@@ -1,6 +1,6 @@
-import IServerRendererConfiguration from '../src/IServerRendererConfiguration';
-import IServerRendererItem from '../src/IServerRendererItem';
-import IServerRendererResult from '../src/IServerRendererResult';
+import IServerRendererConfiguration from '../src/types/IServerRendererConfiguration';
+import IServerRendererItem from '../src/types/IServerRendererItem';
+import IServerRendererResult from '../src/types/IServerRendererResult';
 
 /**
  *

@@ -1,12 +1,12 @@
 import { describe, it, expect, afterEach, vi, beforeEach } from 'vitest';
 import ServerRenderer from '../src/ServerRenderer.js';
 import MockedURLList from './MockedURLList.js';
-import IServerRendererResult from '../src/IServerRendererResult.js';
+import IServerRendererResult from '../src/types/IServerRendererResult.js';
 import MockedWorker from './MockedWorker.js';
-import DefaultServerRendererConfiguration from '../src/DefaultServerRendererConfiguration.js';
+import DefaultServerRendererConfiguration from '../src/config/DefaultServerRendererConfiguration.js';
 import Chalk from 'chalk';
 import Path from 'path';
-import ServerRendererLogLevelEnum from '../src/ServerRendererLogLevelEnum.js';
+import ServerRendererLogLevelEnum from '../src/enums/ServerRendererLogLevelEnum.js';
 
 vi.mock('worker_threads', async () => {
 	const MockedWorker = await import('./MockedWorker.js');
@@ -47,84 +47,47 @@ describe('ServerRenderer', () => {
 				results = r;
 			});
 
-			// Cache warmup
-			// 1 worker is created
-
-			const worker = MockedWorker.openWorkers[0];
-			expect(worker.listeners.message.length).toBe(1);
-			expect(worker.postedData.length).toBe(1);
-
-			expect(
-				worker.scriptPath
-					.toString()
-					.endsWith('packages/@happy-dom/server-renderer/src/ServerRendererWorker.js')
-			).toBe(true);
-
-			expect(
-				worker.workerData.configuration.cache.directory.endsWith(
-					'packages/@happy-dom/server-renderer/happy-dom-sr/cache'
-				)
-			).toBe(true);
-			expect(
-				worker.workerData.configuration.outputDirectory.endsWith(
-					'packages/@happy-dom/server-renderer/happy-dom-sr/output'
-				)
-			).toBe(true);
-
-			worker.workerData.configuration.cache.directory =
-				DefaultServerRendererConfiguration.cache.directory;
-			worker.workerData.configuration.outputDirectory =
-				DefaultServerRendererConfiguration.outputDirectory;
-
-			expect(worker.workerData.configuration).toEqual({
-				...DefaultServerRendererConfiguration,
-				worker: {
-					...DefaultServerRendererConfiguration.worker,
-					maxConcurrency: 10
-				}
-			});
-
-			const postedData = worker.postedData[0];
-			worker.postedData = [];
-
-			expect(postedData.isCacheWarmup).toBe(true);
-			worker.listeners.message[0]({
-				results: postedData.items.map((item) => ({
-					url: item.url,
-					content: '<html></html>',
-					outputFile: null,
-					error: null,
-					pageConsole: '',
-					pageErrors: []
-				}))
-			});
-
-			await new Promise((resolve) => setTimeout(resolve));
-
-			// 9 more workers are created and are waiting for post message
 			expect(MockedWorker.openWorkers.length).toBe(10);
 
 			for (const worker of MockedWorker.openWorkers) {
 				expect(worker.listeners.message.length).toBe(1);
 				expect(worker.postedData.length).toBe(1);
 
-				expect(
-					worker.scriptPath
-						.toString()
-						.endsWith('packages/@happy-dom/server-renderer/src/ServerRendererWorker.js')
-				).toBe(true);
+				expect(worker.scriptPath.toString()).toBe(
+					'file://' + Path.resolve(Path.join('src', 'ServerRendererWorker.js'))
+				);
+
+				expect(worker.workerData.configuration.cache.fileSystem.directory).toBe(
+					Path.resolve(Path.join('happy-dom-sr', 'cache'))
+				);
+				expect(worker.workerData.configuration.outputDirectory).toBe(
+					Path.resolve(Path.join('happy-dom-sr', 'output'))
+				);
 
 				expect(worker.workerData.configuration).toEqual({
 					...DefaultServerRendererConfiguration,
+					outputDirectory: Path.resolve(Path.join('happy-dom-sr', 'output')),
+					cache: {
+						...DefaultServerRendererConfiguration.cache,
+						fileSystem: {
+							...DefaultServerRendererConfiguration.cache.fileSystem,
+							directory: Path.resolve(Path.join('happy-dom-sr', 'cache'))
+						}
+					},
 					worker: {
 						...DefaultServerRendererConfiguration.worker,
 						maxConcurrency: 10
 					}
 				});
 
+				expect(worker.listeners.message.length).toBe(1);
+				expect(worker.listeners.error.length).toBe(1);
+				expect(worker.listeners.exit.length).toBe(1);
+				expect(worker.postedData.length).toBe(1);
+
 				const postedData = worker.postedData[0];
 				worker.postedData = [];
-				expect(postedData.isCacheWarmup).toBe(false);
+
 				worker.listeners.message[0]({
 					results: postedData.items.map((item) => ({
 						url: item.url,
@@ -132,7 +95,12 @@ describe('ServerRenderer', () => {
 						outputFile: null,
 						error: null,
 						pageConsole: '',
-						pageErrors: []
+						pageErrors: [],
+						status: 200,
+						statusText: 'OK',
+						headers: {
+							test: 'value'
+						}
 					}))
 				});
 			}
@@ -148,7 +116,6 @@ describe('ServerRenderer', () => {
 				expect(worker.postedData.length).toBe(1);
 				const postedData = worker.postedData[0];
 				worker.postedData = [];
-				expect(postedData.isCacheWarmup).toBe(false);
 				worker.listeners.message[0]({
 					results: postedData.items.map((item) => ({
 						url: item.url,
@@ -156,7 +123,12 @@ describe('ServerRenderer', () => {
 						outputFile: null,
 						error: null,
 						pageConsole: '',
-						pageErrors: []
+						pageErrors: [],
+						status: 200,
+						statusText: 'OK',
+						headers: {
+							test: 'value'
+						}
 					}))
 				});
 			}
@@ -173,9 +145,9 @@ describe('ServerRenderer', () => {
 			expect(MockedWorker.terminatedWorkers.length).toBe(10);
 
 			expect(log).toEqual([
-				`Rendering ${MockedURLList.length} pages`,
+				Chalk.bold(`Rendering ${MockedURLList.length} pages...\n`),
 				...MockedURLList.map((url) => Chalk.bold(`• Rendered page "${url}"`)),
-				`Rendered ${MockedURLList.length} pages in 0 minutes and 0 seconds`
+				Chalk.bold(`\nRendered ${MockedURLList.length} pages in 0 seconds\n`)
 			]);
 
 			expect(results!).toEqual(
@@ -185,7 +157,12 @@ describe('ServerRenderer', () => {
 					outputFile: null,
 					error: null,
 					pageErrors: [],
-					pageConsole: ''
+					pageConsole: '',
+					status: 200,
+					statusText: 'OK',
+					headers: {
+						test: 'value'
+					}
 				}))
 			);
 		});
@@ -216,7 +193,12 @@ describe('ServerRenderer', () => {
 					outputFile: null,
 					error: null,
 					pageConsole: '',
-					pageErrors: []
+					pageErrors: [],
+					status: 200,
+					statusText: 'OK',
+					headers: {
+						test: 'value'
+					}
 				}))
 			});
 
@@ -236,7 +218,12 @@ describe('ServerRenderer', () => {
 					outputFile: null,
 					error: index === 1 ? 'Error' : null,
 					pageConsole: '',
-					pageErrors: []
+					pageErrors: [],
+					status: 200,
+					statusText: 'OK',
+					headers: {
+						test: 'value'
+					}
 				}))
 			});
 
@@ -263,7 +250,12 @@ describe('ServerRenderer', () => {
 					content: index === 2 ? null : '<html></html>',
 					error: index === 2 ? 'Error' : null,
 					pageConsole: '',
-					pageErrors: []
+					pageErrors: [],
+					status: 200,
+					statusText: 'OK',
+					headers: {
+						test: 'value'
+					}
 				}))
 			);
 		});
@@ -300,7 +292,12 @@ describe('ServerRenderer', () => {
 					outputFile: null,
 					error: null,
 					pageConsole: '',
-					pageErrors: []
+					pageErrors: [],
+					status: 200,
+					statusText: 'OK',
+					headers: {
+						test: 'value'
+					}
 				}))
 			});
 
@@ -350,7 +347,12 @@ describe('ServerRenderer', () => {
 					outputFile: null,
 					error: null,
 					pageConsole: '',
-					pageErrors: []
+					pageErrors: [],
+					status: 200,
+					statusText: 'OK',
+					headers: {
+						test: 'value'
+					}
 				}))
 			});
 
@@ -388,7 +390,12 @@ describe('ServerRenderer', () => {
 					outputFile: null,
 					error: null,
 					pageConsole: '',
-					pageErrors: []
+					pageErrors: [],
+					status: 200,
+					statusText: 'OK',
+					headers: {
+						test: 'value'
+					}
 				},
 				...mockedURLList.slice(1).map((url) => ({
 					url,
@@ -396,7 +403,12 @@ describe('ServerRenderer', () => {
 					outputFile: null,
 					error: `${error.message}\n${error.stack}`,
 					pageConsole: '',
-					pageErrors: []
+					pageErrors: [],
+					status: 200,
+					statusText: 'OK',
+					headers: {
+						test: 'value'
+					}
 				}))
 			]);
 		});
@@ -427,7 +439,12 @@ describe('ServerRenderer', () => {
 					outputFile: null,
 					error: null,
 					pageConsole: '',
-					pageErrors: []
+					pageErrors: [],
+					status: 200,
+					statusText: 'OK',
+					headers: {
+						test: 'value'
+					}
 				}))
 			});
 
@@ -447,7 +464,12 @@ describe('ServerRenderer', () => {
 					outputFile: null,
 					error: null,
 					pageConsole: '',
-					pageErrors: index === 1 ? ['Error 1', 'Error 2'] : []
+					pageErrors: index === 1 ? ['Error 1', 'Error 2'] : [],
+					status: 200,
+					statusText: 'OK',
+					headers: {
+						test: 'value'
+					}
 				}))
 			});
 
@@ -512,7 +534,12 @@ describe('ServerRenderer', () => {
 					outputFile: null,
 					error: null,
 					pageConsole: 'Page console 1',
-					pageErrors: []
+					pageErrors: [],
+					status: 200,
+					statusText: 'OK',
+					headers: {
+						test: 'value'
+					}
 				}))
 			});
 
@@ -532,7 +559,12 @@ describe('ServerRenderer', () => {
 					outputFile: null,
 					error: null,
 					pageConsole: index === 1 ? 'Page console 2' : '',
-					pageErrors: []
+					pageErrors: [],
+					status: 200,
+					statusText: 'OK',
+					headers: {
+						test: 'value'
+					}
 				}))
 			});
 
@@ -592,14 +624,19 @@ describe('ServerRenderer', () => {
 					outputFile: null,
 					error: null,
 					pageConsole: '',
-					pageErrors: []
+					pageErrors: [],
+					status: 200,
+					statusText: 'OK',
+					headers: {
+						test: 'value'
+					}
 				}))
 			});
 
 			await new Promise((resolve) => setTimeout(resolve));
 
 			// 1 worker remains open to handle the remaining pages
-			expect(MockedWorker.openWorkers.length).toBe(1);
+			expect(MockedWorker.openWorkers.length).toBe(0);
 
 			// Error worker
 			const errorWorker = MockedWorker.openWorkers[0];
@@ -612,7 +649,12 @@ describe('ServerRenderer', () => {
 					outputFile: null,
 					error: index === 1 ? 'Error' : null,
 					pageConsole: index === 1 ? 'Page console' : '',
-					pageErrors: index === 1 ? ['Error 1'] : []
+					pageErrors: index === 1 ? ['Error 1'] : [],
+					status: 200,
+					statusText: 'OK',
+					headers: {
+						test: 'value'
+					}
 				}))
 			});
 
@@ -631,7 +673,12 @@ describe('ServerRenderer', () => {
 					content: '<html></html>',
 					error: index === 2 ? 'Error' : null,
 					pageConsole: index === 2 ? `Page console` : '',
-					pageErrors: index === 2 ? ['Error 1'] : []
+					pageErrors: index === 2 ? ['Error 1'] : [],
+					status: 200,
+					statusText: 'OK',
+					headers: {
+						test: 'value'
+					}
 				}))
 			);
 		});
@@ -668,14 +715,19 @@ describe('ServerRenderer', () => {
 					outputFile: item.outputFile!,
 					error: null,
 					pageConsole: '',
-					pageErrors: []
+					pageErrors: [],
+					status: 200,
+					statusText: 'OK',
+					headers: {
+						test: 'value'
+					}
 				}))
 			});
 
 			await new Promise((resolve) => setTimeout(resolve));
 
 			// 1 worker remains open to handle the remaining pages
-			expect(MockedWorker.openWorkers.length).toBe(1);
+			expect(MockedWorker.openWorkers.length).toBe(0);
 
 			// Error worker
 			const secondWorker = MockedWorker.openWorkers[0];
@@ -688,7 +740,12 @@ describe('ServerRenderer', () => {
 					outputFile: item.outputFile!,
 					error: null,
 					pageConsole: '',
-					pageErrors: []
+					pageErrors: [],
+					status: 200,
+					statusText: 'OK',
+					headers: {
+						test: 'value'
+					}
 				}))
 			});
 
@@ -714,7 +771,12 @@ describe('ServerRenderer', () => {
 					content: '<html></html>',
 					error: null,
 					pageConsole: '',
-					pageErrors: []
+					pageErrors: [],
+					status: 200,
+					statusText: 'OK',
+					headers: {
+						test: 'value'
+					}
 				}))
 			);
 		});
