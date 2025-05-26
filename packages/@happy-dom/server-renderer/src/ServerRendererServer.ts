@@ -219,7 +219,7 @@ export default class ServerRendererServer {
 				}
 			}
 
-			response.statusCode = result.status;
+			response.statusCode = result.error ? 500 : result.status;
 
 			if (result.error) {
 				response.end(`<h1>Internal Server Error</h1>${result.error.replace(/\n/gm, '<br>')}`);

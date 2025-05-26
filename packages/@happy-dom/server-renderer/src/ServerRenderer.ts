@@ -242,8 +242,8 @@ export default class ServerRenderer {
 							items.map((item) => ({
 								url: item.url,
 								content: null,
-								status: 500,
-								statusText: 'Internal Server Error',
+								status: 200,
+								statusText: 'OK',
 								headers: {},
 								outputFile: item.outputFile ?? null,
 								error: `${error.message}\n${error.stack}`,

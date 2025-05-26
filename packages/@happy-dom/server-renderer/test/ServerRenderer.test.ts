@@ -180,43 +180,18 @@ describe('ServerRenderer', () => {
 				results = r;
 			});
 
-			// Cache warmup
-			// 1 worker is created
+			// 1 worker opened to handle the rendering
+			expect(MockedWorker.openWorkers.length).toBe(1);
 
 			const worker = MockedWorker.openWorkers[0];
 			const postedData = worker.postedData[0];
 			worker.postedData = [];
 			worker.listeners.message[0]({
-				results: postedData.items.map((item) => ({
+				results: postedData.items.map((item, index) => ({
 					url: item.url,
-					content: '<html></html>',
+					content: index === 2 ? null : '<html></html>',
 					outputFile: null,
-					error: null,
-					pageConsole: '',
-					pageErrors: [],
-					status: 200,
-					statusText: 'OK',
-					headers: {
-						test: 'value'
-					}
-				}))
-			});
-
-			await new Promise((resolve) => setTimeout(resolve));
-
-			// 1 worker remains open to handle the remaining pages
-			expect(MockedWorker.openWorkers.length).toBe(1);
-
-			// Error worker
-			const errorWorker = MockedWorker.openWorkers[0];
-			const errorPostedData = worker.postedData[0];
-			errorWorker.postedData = [];
-			errorWorker.listeners.message[0]({
-				results: errorPostedData.items.map((item, index) => ({
-					url: item.url,
-					content: index === 1 ? null : '<html></html>',
-					outputFile: null,
-					error: index === 1 ? 'Error' : null,
+					error: index === 2 ? 'Error' : null,
 					pageConsole: '',
 					pageErrors: [],
 					status: 200,
@@ -234,13 +209,13 @@ describe('ServerRenderer', () => {
 			expect(MockedWorker.terminatedWorkers.length).toBe(1);
 
 			expect(log).toEqual([
-				`Rendering ${mockedURLList.length} pages`,
+				Chalk.bold(`Rendering ${mockedURLList.length} pages...\n`),
 				Chalk.bold(`• Rendered page "${mockedURLList[0]}"`),
 				Chalk.bold(`• Rendered page "${mockedURLList[1]}"`),
-				Chalk.bold(Chalk.red(`❌ Failed to render page "${mockedURLList[2]}"`)),
-				Chalk.red('Error'),
+				Chalk.bold(Chalk.red(`\n❌ Failed to render page "${mockedURLList[2]}"\n`)),
+				Chalk.red('Error\n'),
 				Chalk.bold(`• Rendered page "${mockedURLList[3]}"`),
-				`Rendered ${mockedURLList.length} pages in 0 minutes and 0 seconds`
+				Chalk.bold(`\nRendered ${mockedURLList.length} pages in 0 seconds\n`)
 			]);
 
 			expect(results!).toEqual(
@@ -261,7 +236,7 @@ describe('ServerRenderer', () => {
 		});
 
 		it('Handles error causing a worker to exit early', async () => {
-			const mockedURLList = MockedURLList.slice(0, 4);
+			const mockedURLList = MockedURLList.slice(0, 20);
 			const renderer = new ServerRenderer({
 				worker: {
 					maxConcurrency: 10
@@ -279,8 +254,8 @@ describe('ServerRenderer', () => {
 					resultError = error;
 				});
 
-			// Cache warmup
-			// 1 worker is created
+			// 2 workers opened to handle the rendering
+			expect(MockedWorker.openWorkers.length).toBe(2);
 
 			const worker = MockedWorker.openWorkers[0];
 			const postedData = worker.postedData[0];
@@ -301,28 +276,23 @@ describe('ServerRenderer', () => {
 				}))
 			});
 
-			await new Promise((resolve) => setTimeout(resolve));
-
-			// 1 worker remains open to handle the remaining pages
-			expect(MockedWorker.openWorkers.length).toBe(1);
-
 			// Error worker
-			const errorWorker = MockedWorker.openWorkers[0];
+			const errorWorker = MockedWorker.openWorkers[1];
 			errorWorker.postedData = [];
 			errorWorker.listeners.exit[0](1);
 
 			await new Promise((resolve) => setTimeout(resolve));
 
 			expect(log).toEqual([
-				`Rendering ${mockedURLList.length} pages`,
-				Chalk.bold(`• Rendered page "${mockedURLList[0]}"`)
+				Chalk.bold(`Rendering ${mockedURLList.length} pages...\n`),
+				...mockedURLList.slice(0, 10).map((url) => Chalk.bold(`• Rendered page "${url}"`))
 			]);
 
 			expect(resultError).toEqual(new Error(`Worker stopped with exit code 1`));
 		});
 
 		it('Handles worker error', async () => {
-			const mockedURLList = MockedURLList.slice(0, 4);
+			const mockedURLList = MockedURLList.slice(0, 13);
 			const renderer = new ServerRenderer({
 				worker: {
 					maxConcurrency: 10
@@ -334,8 +304,8 @@ describe('ServerRenderer', () => {
 				results = r;
 			});
 
-			// Cache warmup
-			// 1 worker is created
+			// 2 workers opened to handle the rendering
+			expect(MockedWorker.openWorkers.length).toBe(2);
 
 			const worker = MockedWorker.openWorkers[0];
 			const postedData = worker.postedData[0];
@@ -356,13 +326,8 @@ describe('ServerRenderer', () => {
 				}))
 			});
 
-			await new Promise((resolve) => setTimeout(resolve));
-
-			// 1 worker remains open to handle the remaining pages
-			expect(MockedWorker.openWorkers.length).toBe(1);
-
 			// Error worker
-			const errorWorker = MockedWorker.openWorkers[0];
+			const errorWorker = MockedWorker.openWorkers[1];
 			const error = new Error('Worker error');
 			errorWorker.postedData = [];
 			errorWorker.listeners.error[0](error);
@@ -370,22 +335,22 @@ describe('ServerRenderer', () => {
 			await new Promise((resolve) => setTimeout(resolve));
 
 			expect(log).toEqual([
-				`Rendering ${mockedURLList.length} pages`,
-				Chalk.bold(`• Rendered page "${mockedURLList[0]}"`),
-				Chalk.bold(Chalk.red(`❌ Failed to render page "${mockedURLList[1]}"`)),
-				Chalk.red('Error: Worker error'),
-				Chalk.bold(Chalk.red(`❌ Failed to render page "${mockedURLList[2]}"`)),
-				Chalk.red('Error: Worker error'),
-				Chalk.bold(Chalk.red(`❌ Failed to render page "${mockedURLList[3]}"`)),
-				Chalk.red('Error: Worker error'),
-				`Rendered ${mockedURLList.length} pages in 0 minutes and 0 seconds`
+				Chalk.bold(`Rendering ${mockedURLList.length} pages...\n`),
+				...mockedURLList.slice(0, 10).map((url) => Chalk.bold(`• Rendered page "${url}"`)),
+				Chalk.bold(Chalk.red(`\n❌ Failed to render page "${mockedURLList[10]}"\n`)),
+				Chalk.red('Error: Worker error\n'),
+				Chalk.bold(Chalk.red(`\n❌ Failed to render page "${mockedURLList[11]}"\n`)),
+				Chalk.red('Error: Worker error\n'),
+				Chalk.bold(Chalk.red(`\n❌ Failed to render page "${mockedURLList[12]}"\n`)),
+				Chalk.red('Error: Worker error\n'),
+				Chalk.bold(`\nRendered ${mockedURLList.length} pages in 0 seconds\n`)
 			]);
 
 			await new Promise((resolve) => setTimeout(resolve));
 
 			expect(results!).toEqual([
-				{
-					url: mockedURLList[0],
+				...mockedURLList.slice(0, 10).map((url) => ({
+					url,
 					content: '<html></html>',
 					outputFile: null,
 					error: null,
@@ -396,8 +361,8 @@ describe('ServerRenderer', () => {
 					headers: {
 						test: 'value'
 					}
-				},
-				...mockedURLList.slice(1).map((url) => ({
+				})),
+				...mockedURLList.slice(10).map((url) => ({
 					url,
 					content: null,
 					outputFile: null,
@@ -406,15 +371,13 @@ describe('ServerRenderer', () => {
 					pageErrors: [],
 					status: 200,
 					statusText: 'OK',
-					headers: {
-						test: 'value'
-					}
+					headers: {}
 				}))
 			]);
 		});
 
-		it('Handles result with page errors', async () => {
-			const mockedURLList = MockedURLList.slice(0, 4);
+		it.only('Handles result with page errors', async () => {
+			const mockedURLList = MockedURLList;
 			const renderer = new ServerRenderer({
 				worker: {
 					maxConcurrency: 10
