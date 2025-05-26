@@ -7,6 +7,11 @@ import ICachableResponse from './ICachableResponse.js';
  */
 export default interface IResponseCache {
 	/**
+	 * Cache entries where the key is the URL.
+	 */
+	readonly entries: Map<string, ICachedResponse[]>;
+
+	/**
 	 * Returns cached response.
 	 *
 	 * @param request Request.

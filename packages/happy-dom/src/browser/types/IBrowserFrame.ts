@@ -8,7 +8,7 @@ import IGoToOptions from './IGoToOptions.js';
 import { Script } from 'vm';
 import IReloadOptions from './IReloadOptions.js';
 import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
-import IHistoryItem from '../../history/IHistoryItem.js';
+import HistoryItemList from '../../history/HistoryItemList.js';
 
 /**
  * Browser frame.
@@ -21,7 +21,7 @@ export default interface IBrowserFrame {
 	readonly document: Document;
 	content: string;
 	url: string;
-	[PropertySymbol.history]: IHistoryItem[];
+	[PropertySymbol.history]: HistoryItemList;
 	[PropertySymbol.asyncTaskManager]: AsyncTaskManager;
 	[PropertySymbol.listeners]: { navigation: Array<() => void> };
 	[PropertySymbol.openerFrame]: IBrowserFrame | null;

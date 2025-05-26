@@ -37,7 +37,7 @@ export default class ElementEventAttributeUtility {
 			return null;
 		}
 
-		let newCode = `(function anonymous($happy_dom, event) {\n//# sourceURL=${window.location.href}\n`;
+		let newCode = `(function anonymous($happy_dom, event) {`;
 
 		if (
 			browserSettings &&
@@ -54,10 +54,11 @@ export default class ElementEventAttributeUtility {
 			!browserSettings.disableErrorCapturing &&
 			browserSettings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
 		) {
-			newCode += '\n} catch(e) { $happy_dom.dispatchError(e); }\n';
+			newCode += '} catch(e) { $happy_dom.dispatchError(e); }';
 		}
 
 		newCode += '})';
+		newCode += `\n//# sourceURL=${window.location.href}`;
 
 		let listener: ((event: Event) => void) | null = null;
 

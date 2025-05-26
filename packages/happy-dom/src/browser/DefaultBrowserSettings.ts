@@ -9,6 +9,7 @@ export default <IBrowserSettings>{
 	disableCSSFileLoading: false,
 	disableIframePageLoading: false,
 	disableComputedStyleRendering: false,
+	handleDisabledFileLoadingAsSuccess: false,
 	disableErrorCapturing: false,
 	errorCapture: BrowserErrorCaptureEnum.tryAndCatch,
 	enableFileSystemHttpRequests: false,
@@ -21,6 +22,7 @@ export default <IBrowserSettings>{
 	fetch: {
 		disableSameOriginPolicy: false,
 		interceptor: null,
+		requestHeaders: null,
 		virtualServers: null
 	},
 	navigation: {
@@ -28,7 +30,8 @@ export default <IBrowserSettings>{
 		disableChildFrameNavigation: false,
 		disableChildPageNavigation: false,
 		disableFallbackToSetURL: false,
-		crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.anyOrigin
+		crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.anyOrigin,
+		beforeContentCallback: null
 	},
 	navigator: {
 		userAgent: `Mozilla/5.0 (X11; ${
@@ -44,5 +47,10 @@ export default <IBrowserSettings>{
 	},
 	debug: {
 		traceWaitUntilComplete: -1
+	},
+	viewport: {
+		width: 1024,
+		height: 768,
+		devicePixelRatio: 1
 	}
 };
