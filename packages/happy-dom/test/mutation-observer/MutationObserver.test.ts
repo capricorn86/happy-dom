@@ -196,6 +196,10 @@ describe('MutationObserver', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 			const article = document.createElement('article');
+			const h1 = document.createElement('h1');
+			const h2 = document.createElement('h2');
+			const h3 = document.createElement('h3');
+			const h4 = document.createElement('h4');
 			const text = document.createTextNode('old');
 			const observer = new window.MutationObserver((mutationRecords) => {
 				records.push(mutationRecords);
@@ -203,7 +207,14 @@ describe('MutationObserver', () => {
 			observer.observe(div, { subtree: true, childList: true });
 			div.appendChild(text);
 			div.appendChild(span);
+			article.appendChild(h1);
+			article.appendChild(h2);
+			article.appendChild(h3);
+			article.appendChild(h4);
 			span.appendChild(article);
+			article.removeChild(h2);
+			article.removeChild(h4);
+			article.removeChild(h1);
 			span.removeChild(article);
 
 			await new Promise((resolve) => setTimeout(resolve, 1));
@@ -241,6 +252,39 @@ describe('MutationObserver', () => {
 						previousSibling: null,
 						removedNodes: [],
 						target: span,
+						type: 'childList'
+					},
+					{
+						addedNodes: [],
+						attributeName: null,
+						attributeNamespace: null,
+						nextSibling: h3,
+						oldValue: null,
+						previousSibling: h1,
+						removedNodes: [h2],
+						target: article,
+						type: 'childList'
+					},
+					{
+						addedNodes: [],
+						attributeName: null,
+						attributeNamespace: null,
+						nextSibling: null,
+						oldValue: null,
+						previousSibling: h3,
+						removedNodes: [h4],
+						target: article,
+						type: 'childList'
+					},
+					{
+						addedNodes: [],
+						attributeName: null,
+						attributeNamespace: null,
+						nextSibling: h3,
+						oldValue: null,
+						previousSibling: null,
+						removedNodes: [h1],
+						target: article,
 						type: 'childList'
 					},
 					{
