@@ -2,7 +2,6 @@ import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement.js';
 import HTMLInputElementValueSanitizer from '../../../src/nodes/html-input-element/HTMLInputElementValueSanitizer.js';
-import HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLInputElementValueSanitizer', () => {
