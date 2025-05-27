@@ -43,7 +43,9 @@ describe('HTMLInputElementValueSanitizer', () => {
 				{ value: '2020-13-01', want: '' },
 				{ value: '2020-01-1', want: '' },
 				{ value: '2020-01-01', want: '', attributes: { min: '2020-01-02' } },
-				{ value: '2020-01-01', want: '', attributes: { max: '2019-12-31' } }
+				{ value: '2020-01-01', want: '', attributes: { max: '2019-12-31' } },
+				{ value: '2020-01-02', want: '2020-01-02', attributes: { min: '2020-01-01' } },
+				{ value: '2020-01-01', want: '2020-01-01', attributes: { max: '2020-01-02' } }
 			],
 			'datetime-local': [
 				{ value: '2020-01-01T00:00', want: '2020-01-01T00:00' },

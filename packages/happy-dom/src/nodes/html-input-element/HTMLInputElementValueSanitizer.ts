@@ -58,7 +58,14 @@ export default class HTMLInputElementValueSanitizer {
 			case 'date':
 				// https://html.spec.whatwg.org/multipage/input.html#date-state-(type=date):value-sanitization-algorithm
 				value = this.sanitizeDate(value);
-				return value && this.checkBoundaries(value, input.min, input.max) ? value : '';
+				return value &&
+					this.checkBoundaries<Date>(
+						new Date(value),
+						input.min ? new Date(input.min) : null,
+						input.max ? new Date(input.max) : null
+					)
+					? value
+					: '';
 			case 'datetime-local': {
 				// https://html.spec.whatwg.org/multipage/input.html#local-date-and-time-state-(type=datetime-local):value-sanitization-algorithm
 				const match = value.match(
