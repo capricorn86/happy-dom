@@ -238,6 +238,57 @@ describe('QuerySelector', () => {
 			expect(elements[4] === container.children[0].children[1].children[2]).toBe(true);
 		});
 
+		it('Returns all elements with unicode class name "«unicode-class1»".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+                <div class="class1 «unicode-class1» class2" id="«r1»">
+                    <!-- Comment 1 !-->
+                    <h1>Heading1</h1>
+                    <!-- Comment 2 !-->
+                    <div class="class1 «unicode-class1» class2">
+                        <span class="class1 «unicode-class1» class2" attr1="value1" attr2="word1 word2" attr3="bracket[]bracket" type="hidden">Span1</span>
+                        <span class="class1 «unicode-class1» class2" attr1="value1">Span2</span>
+                        <span class="class1 «unicode-class1» class2" attr1="word1.word2">Span3</span>
+                    </div>
+                </div>
+                <div>
+                    <!-- Comment 1 !-->
+                    <h1>Heading1</h1>
+                    <!-- Comment 2 !-->
+                </div>
+            `;
+			const elements = container.querySelectorAll('.«unicode-class1»');
+			expect(elements.length).toBe(5);
+			expect(elements[0] === container.children[0]).toBe(true);
+			expect(elements[1] === container.children[0].children[1]).toBe(true);
+			expect(elements[2] === container.children[0].children[1].children[0]).toBe(true);
+			expect(elements[3] === container.children[0].children[1].children[1]).toBe(true);
+			expect(elements[4] === container.children[0].children[1].children[2]).toBe(true);
+		});
+
+		it('Returns element with unicode ID "«r1»".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+                <div class="class1 «unicode-class1» class2" id="«r1»">
+                    <!-- Comment 1 !-->
+                    <h1>Heading1</h1>
+                    <!-- Comment 2 !-->
+                    <div class="class1 «unicode-class1» class2">
+                        <span class="class1 «unicode-class1» class2" attr1="value1" attr2="word1 word2" attr3="bracket[]bracket" type="hidden">Span1</span>
+                        <span class="class1 «unicode-class1» class2" attr1="value1">Span2</span>
+                        <span class="class1 «unicode-class1» class2" attr1="word1.word2">Span3</span>
+                    </div>
+                </div>
+                <div>
+                    <!-- Comment 1 !-->
+                    <h1>Heading1</h1>
+                    <!-- Comment 2 !-->
+                </div>
+            `;
+			const element = container.querySelector('#«r1»');
+			expect(element === container.children[0]).toBe(true);
+		});
+
 		it('Returns all elements with class name "before:after".', () => {
 			const container = document.createElement('div');
 			const element1 = document.createElement('div');
