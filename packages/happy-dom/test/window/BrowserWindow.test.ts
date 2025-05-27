@@ -770,6 +770,25 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.getPropertyValue('--case2-result4')).toBe('blue');
 		});
 
+		it('Resolves rgb values defined by a CSS variable in head when used in a rgb color.', () => {
+			const div = document.createElement('div');
+			div.style.cssText = 'background: rgb(var(--my-var1))';
+
+			const rootStyle = document.createElement('style');
+
+			rootStyle.innerHTML = `
+				:root {
+					--my-var1: 255 255 255;
+				}
+			`;
+
+			document.head.appendChild(rootStyle);
+			document.body.appendChild(div);
+
+			const computedStyle = window.getComputedStyle(div);
+			expect(computedStyle.backgroundColor).toBe('rgb(255 255 255)');
+		});
+
 		it('Returns a CSSStyleDeclaration object with computed styles containing "rem" and "em" measurement values converted to pixels.', () => {
 			const parent = document.createElement('div');
 			const element = document.createElement('span');
