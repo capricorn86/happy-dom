@@ -683,7 +683,7 @@ describe('HTMLFormElement', () => {
 				expect(
 					(<Request>(<unknown>request)).headers
 						.get('Content-Type')
-						?.startsWith('multipart/form-data; boundary=----HappyDOMFormDataBoundary')
+						?.startsWith('application/x-www-form-urlencoded')
 				).toBe(true);
 
 				const requestFormData = await (<Request>(<unknown>request)).formData();
@@ -707,6 +707,54 @@ describe('HTMLFormElement', () => {
 				expect(page.mainFrame.window.document.body.innerHTML).toBe('Test');
 			});
 		}
+
+		it(`Supports enctype`, async () => {
+			const documentBody = `
+                    <button form="form-id" formenctype="multipart/form-data">Submit</button>
+                    <form id="form-id" action="http://example.com" method="post" enctype="application/x-www-form-urlencoded">
+                        <input type="text" name="text1" value="value1">
+		                    <input type="submit" name="button1" formenctype="multipart/form-data">
+                    </form>
+                `;
+			let request: Request | null = null;
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				request = this.request;
+				return Promise.resolve(<Response>{
+					url: request?.url,
+					text: () => Promise.resolve(documentBody)
+				});
+			});
+
+			const browser = new Browser();
+			const page = browser.newPage();
+
+			page.mainFrame.window.document.write(documentBody);
+
+			(<HTMLElement>page.mainFrame.window.document.body.children[0]).click();
+			await page.mainFrame.waitForNavigation();
+			expect(
+				(<Request>(<unknown>request)).headers
+					.get('Content-Type')
+					?.startsWith('multipart/form-data; boundary=----HappyDOMFormDataBoundary')
+			).toBe(true);
+
+			(<HTMLFormElement>page.mainFrame.window.document.body.children[1]).submit();
+			await page.mainFrame.waitForNavigation();
+			expect(
+				(<Request>(<unknown>request)).headers
+					.get('Content-Type')
+					?.startsWith('application/x-www-form-urlencoded')
+			).toBe(true);
+
+			(<HTMLElement>page.mainFrame.window.document.body.children[1]['button1']).click();
+			await page.mainFrame.waitForNavigation();
+			expect(
+				(<Request>(<unknown>request)).headers
+					.get('Content-Type')
+					?.startsWith('multipart/form-data; boundary=----HappyDOMFormDataBoundary')
+			).toBe(true);
+		});
 
 		it(`Supports "_self" as target.`, async () => {
 			let request: Request | null = null;
