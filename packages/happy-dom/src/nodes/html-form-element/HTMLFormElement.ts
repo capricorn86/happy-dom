@@ -633,6 +633,7 @@ export default class HTMLFormElement extends HTMLElement {
 
 		if (method === 'get') {
 			const url = new URL(action);
+			url.search = '';
 
 			for (const [key, value] of formData) {
 				if (typeof value === 'string') {

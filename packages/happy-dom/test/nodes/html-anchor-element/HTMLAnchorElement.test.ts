@@ -417,6 +417,39 @@ describe('HTMLAnchorElement', () => {
 			expect(newWindow.closed).toBe(true);
 		});
 
+		it('Navigates the browser when a "click" event bubbles up to an element.', async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			const window = page.mainFrame.window;
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>{
+					text: () => Promise.resolve('Test')
+				});
+			});
+
+			const divElement = window.document.createElement('div');
+			const anchorElement = <HTMLAnchorElement>window.document.createElement('a');
+			anchorElement.href = 'https://www.example.com';
+			anchorElement.appendChild(divElement);
+			window.document.body.appendChild(anchorElement);
+
+			divElement.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+			const newWindow = page.mainFrame.window;
+
+			expect(newWindow === window).toBe(false);
+			expect(newWindow.location.href).toBe('https://www.example.com/');
+
+			await browser.waitUntilComplete();
+
+			expect(newWindow.document.body.innerHTML).toBe('Test');
+
+			newWindow.close();
+
+			expect(newWindow.closed).toBe(true);
+		});
+
 		it('Navigates the browser when a "click" event is dispatched on an element with target "_blank".', async () => {
 			const browser = new Browser();
 			const page = browser.newPage();

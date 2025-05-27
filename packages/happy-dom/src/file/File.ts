@@ -37,7 +37,7 @@ export default class File extends Blob {
 
 		super(bits, options);
 
-		this.name = name.replace(/\//g, ':');
+		this.name = name;
 		this.lastModified = options && options.lastModified ? options.lastModified : Date.now();
 	}
 }
