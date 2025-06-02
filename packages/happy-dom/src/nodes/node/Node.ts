@@ -548,10 +548,6 @@ export default class Node extends EventTarget {
 			node = node[PropertySymbol.proxy];
 		}
 
-		node[PropertySymbol.parentNode] = null;
-
-		node[PropertySymbol.clearCache]();
-
 		const index = this[PropertySymbol.nodeArray].indexOf(node);
 
 		if (index === -1) {
@@ -559,6 +555,13 @@ export default class Node extends EventTarget {
 				`Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.`
 			);
 		}
+
+		const previousSibling = node.previousSibling;
+		const nextSibling = node.nextSibling;
+
+		node[PropertySymbol.parentNode] = null;
+
+		node[PropertySymbol.clearCache]();
 
 		this[PropertySymbol.nodeArray].splice(index, 1);
 
@@ -590,7 +593,9 @@ export default class Node extends EventTarget {
 			new MutationRecord({
 				target: this[PropertySymbol.proxy] || this,
 				type: MutationTypeEnum.childList,
-				removedNodes: [node]
+				removedNodes: [node],
+				previousSibling,
+				nextSibling
 			})
 		);
 
