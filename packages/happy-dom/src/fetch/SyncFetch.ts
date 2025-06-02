@@ -36,7 +36,7 @@ interface ISyncHTTPResponse {
 }
 
 /**
- * Handles synchrounous fetch requests.
+ * Handles synchronous fetch requests.
  */
 export default class SyncFetch {
 	private request: Request;
@@ -104,7 +104,7 @@ export default class SyncFetch {
 			? this.interceptor.beforeSyncRequest({
 					request: this.request,
 					window: this.#window
-				})
+			  })
 			: undefined;
 
 		if (typeof beforeRequestResponse === 'object') {
@@ -139,7 +139,7 @@ export default class SyncFetch {
 						window: this.#window,
 						response,
 						request: this.request
-					})
+				  })
 				: undefined;
 			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
@@ -293,7 +293,7 @@ export default class SyncFetch {
 						window: this.#window,
 						response,
 						request: this.request
-					})
+				  })
 				: undefined;
 			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
@@ -312,7 +312,7 @@ export default class SyncFetch {
 						window: this.#window,
 						response,
 						request: this.request
-					})
+				  })
 				: undefined;
 			return typeof interceptedResponse === 'object' ? interceptedResponse : response;
 		}
@@ -331,7 +331,7 @@ export default class SyncFetch {
 					window: this.#window,
 					response,
 					request: this.request
-				})
+			  })
 			: undefined;
 		const returnResponse = typeof interceptedResponse === 'object' ? interceptedResponse : response;
 
@@ -450,7 +450,7 @@ export default class SyncFetch {
 	public sendRequest(): ISyncResponse {
 		if (!this.request[PropertySymbol.bodyBuffer] && this.request.body) {
 			throw new this.#window.DOMException(
-				`Streams are not supported as request body for synchrounous requests.`,
+				`Streams are not supported as request body for synchronous requests.`,
 				DOMExceptionNameEnum.notSupportedError
 			);
 		}
@@ -464,6 +464,7 @@ export default class SyncFetch {
 				request: this.request,
 				baseHeaders: this.#unfilteredHeaders
 			}),
+			disableStrictSSL: this.#browserFrame.page.context.browser.settings.fetch.disableStrictSSL,
 			body: this.request[PropertySymbol.bodyBuffer]
 		});
 
@@ -528,7 +529,7 @@ export default class SyncFetch {
 					window: this.#window,
 					response: redirectedResponse,
 					request: this.request
-				})
+			  })
 			: undefined;
 		const returnResponse =
 			typeof interceptedResponse === 'object' ? interceptedResponse : redirectedResponse;

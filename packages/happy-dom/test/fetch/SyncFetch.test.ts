@@ -914,6 +914,55 @@ describe('SyncFetch', () => {
 			);
 		});
 
+		it('Disables validation of certificates if "Browser.settings.fetch.disableStrictSSL" is set to "true".', async () => {
+			const originURL = 'https://localhost:8080';
+
+			browserFrame.url = originURL;
+			browserFrame.page.context.browser.settings.fetch.disableStrictSSL = true;
+
+			const url = 'https://localhost/some/path';
+
+			const requestArgs: string[] = [];
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					requestArgs.push(args[1]);
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							rawHeaders: [],
+							data: ''
+						}
+					});
+				}
+			});
+
+			new SyncFetch({
+				browserFrame,
+				window,
+				url
+			}).send();
+
+			expect(requestArgs.length).toBe(1);
+
+			expect(requestArgs[0]).toBe(
+				SyncFetchScriptBuilder.getScript({
+					url: new URL(url),
+					method: 'GET',
+					headers: {
+						Accept: '*/*',
+						Connection: 'close',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br',
+						Referer: originURL + '/'
+					},
+					disableStrictSSL: true
+				})
+			);
+		});
+
 		for (const httpCode of [301, 302, 303, 307, 308]) {
 			for (const method of ['GET', 'POST', 'PATCH']) {
 				it(`Should follow ${method} request redirect code ${httpCode}.`, () => {
@@ -2580,7 +2629,7 @@ describe('SyncFetch', () => {
 
 			expect(error).toEqual(
 				new DOMException(
-					`Streams are not supported as request body for synchrounous requests.`,
+					`Streams are not supported as request body for synchronous requests.`,
 					DOMExceptionNameEnum.notSupportedError
 				)
 			);
