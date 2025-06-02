@@ -20,6 +20,7 @@ export default <IBrowserSettings>{
 	},
 	fetch: {
 		disableSameOriginPolicy: false,
+		disableStrictSSL: false,
 		interceptor: null,
 		virtualServers: null
 	},
