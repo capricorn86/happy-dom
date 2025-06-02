@@ -211,6 +211,18 @@ describe('Element', () => {
 			expect(element.classList[0]).toBe('value1');
 			expect(element.classList[1]).toBe('value2');
 		});
+
+		it('Handles cache correctly (#1812)', () => {
+			element.classList.add('foo', 'bar', 'baz');
+			expect(element.outerHTML).toEqual('<div class="foo bar baz"></div>');
+			element.className = '';
+			element.classList.add('bar', 'baz');
+			expect(element.outerHTML).toEqual('<div class="bar baz"></div>');
+			element.classList.remove('baz');
+			expect(element.outerHTML).toEqual('<div class="bar"></div>');
+			element.classList.replace('bar', 'foo');
+			expect(element.outerHTML).toEqual('<div class="foo"></div>');
+		});
 	});
 
 	describe('set classList()', () => {

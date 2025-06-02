@@ -181,7 +181,7 @@ export default class DOMTokenList {
 	 * @param newToken NewToken.
 	 */
 	public replace(token: string, newToken: string): boolean {
-		const list = this[PropertySymbol.getTokenList]();
+		const list = this[PropertySymbol.getTokenList]().slice();
 		const index = list.indexOf(token);
 		if (index === -1) {
 			return false;
@@ -241,14 +241,12 @@ export default class DOMTokenList {
 	 * @param tokens Tokens.
 	 */
 	public add(...tokens: string[]): void {
-		const list = this[PropertySymbol.getTokenList]();
+		const list = this[PropertySymbol.getTokenList]().slice();
 
 		for (const token of tokens) {
 			const index = list.indexOf(token);
 			if (index === -1) {
 				list.push(token);
-			} else {
-				list[index] = token;
 			}
 		}
 
@@ -264,7 +262,7 @@ export default class DOMTokenList {
 	 * @param tokens Tokens.
 	 */
 	public remove(...tokens: string[]): void {
-		const list = this[PropertySymbol.getTokenList]();
+		const list = this[PropertySymbol.getTokenList]().slice();
 
 		for (const token of tokens) {
 			const index = list.indexOf(token);
