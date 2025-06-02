@@ -585,6 +585,38 @@ describe('Fetch', () => {
 			]);
 		});
 
+		it('Disables validation of certificates if "Browser.settings.fetch.disableStrictSSL" is set to "true".', async () => {
+			const originURL = 'https://localhost:8080';
+			const window = new Window({ url: originURL });
+			const url = 'https://localhost:8080/some/path';
+
+			window.happyDOM.settings.fetch.disableStrictSSL = true;
+
+			const network = mockNetwork('https');
+
+			await window.fetch(url);
+
+			expect(network.requestHistory).toEqual([
+				{
+					url,
+					options: {
+						agent: false,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert,
+						method: 'GET',
+						rejectUnauthorized: false,
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Referer: originURL + '/'
+						}
+					}
+				}
+			]);
+		});
+
 		for (const httpCode of [301, 302, 303, 307, 308]) {
 			for (const method of ['GET', 'POST', 'PATCH']) {
 				it(`Should follow ${method} request redirect code ${httpCode}.`, async () => {

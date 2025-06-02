@@ -577,7 +577,8 @@ export default class Fetch {
 					baseHeaders: this.#unfilteredHeaders
 				}),
 				agent: false,
-				rejectUnauthorized: true,
+				rejectUnauthorized:
+					!this.#browserFrame.page.context.browser.settings.fetch.disableStrictSSL,
 				key:
 					this.request[PropertySymbol.url].protocol === 'https:'
 						? FetchHTTPSCertificate.key

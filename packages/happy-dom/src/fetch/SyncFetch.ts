@@ -36,7 +36,7 @@ interface ISyncHTTPResponse {
 }
 
 /**
- * Handles synchrounous fetch requests.
+ * Handles synchronous fetch requests.
  */
 export default class SyncFetch {
 	private request: Request;
@@ -450,7 +450,7 @@ export default class SyncFetch {
 	public sendRequest(): ISyncResponse {
 		if (!this.request[PropertySymbol.bodyBuffer] && this.request.body) {
 			throw new this.#window.DOMException(
-				`Streams are not supported as request body for synchrounous requests.`,
+				`Streams are not supported as request body for synchronous requests.`,
 				DOMExceptionNameEnum.notSupportedError
 			);
 		}
@@ -464,6 +464,7 @@ export default class SyncFetch {
 				request: this.request,
 				baseHeaders: this.#unfilteredHeaders
 			}),
+			disableStrictSSL: this.#browserFrame.page.context.browser.settings.fetch.disableStrictSSL,
 			body: this.request[PropertySymbol.bodyBuffer]
 		});
 
