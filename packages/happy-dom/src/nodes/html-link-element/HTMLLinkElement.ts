@@ -334,7 +334,6 @@ export default class HTMLLinkElement extends HTMLElement {
 	async #preloadResource(url: string): Promise<void> {
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
-		const browserSettings = browserFrame.page?.context?.browser?.settings;
 		const as = this.as;
 
 		// Only "script", "style" and "fetch" are supported for now.
@@ -345,6 +344,8 @@ export default class HTMLLinkElement extends HTMLElement {
 		) {
 			return;
 		}
+
+		const browserSettings = browserFrame.page?.context?.browser?.settings;
 
 		if (
 			as === 'script' &&
