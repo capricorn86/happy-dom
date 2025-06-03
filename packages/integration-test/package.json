@@ -10,8 +10,8 @@
 		"access": "restricted"
 	},
 	"scripts": {
-		"test": "node --test ./test/*.test.{js,cjs} && node ./test/browser-exception-observer/BrowserExceptionObserver.test.js",
-		"test:debug": "node --inspect-brk --test ./test/*.test.{js,cjs}"
+		"test": "node --test ./test/*.test.js --test ./test/*.test.cjs && node ./test/browser-exception-observer/BrowserExceptionObserver.test.js",
+		"test:debug": "node --inspect-brk --test ./test/*.test.js --test ./test/*.test.cjs"
 	},
 	"dependencies": {
 		"happy-dom": "^0.0.0"
