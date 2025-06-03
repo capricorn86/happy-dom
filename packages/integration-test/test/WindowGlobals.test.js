@@ -1,5 +1,6 @@
-import { describe, it, expect } from '../utilities/TestFunctions.js';
 import { Window } from 'happy-dom';
+import assert from 'node:assert';
+import { describe, it } from 'node:test';
 
 describe('WindowGlobals', () => {
 	it('Functions should have the constructor global.Function.', () => {
@@ -13,7 +14,7 @@ describe('WindowGlobals', () => {
                 }
             </script>
         `);
-		expect(error).toBe(null);
+		assert.strictEqual(error, null);
 	});
 
 	it('Object should have the constructor global.Object.', () => {
@@ -27,7 +28,7 @@ describe('WindowGlobals', () => {
                 }
             </script>
         `);
-		expect(error).toBe(null);
+		assert.strictEqual(error, null);
 	});
 
 	it('Binds global methods to the Window context.', () => {
@@ -42,6 +43,6 @@ describe('WindowGlobals', () => {
                 clearTimeout(setTimeout(eventListener));
             </script>
         `);
-		expect(error).toBe(null);
+		assert.strictEqual(error, null);
 	});
 });

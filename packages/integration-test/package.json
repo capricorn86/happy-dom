@@ -10,8 +10,8 @@
 		"access": "restricted"
 	},
 	"scripts": {
-		"test": "node ./test/index.js",
-		"test:debug": "node --inspect-brk ./test/index.js"
+		"test": "node --test ./test/*.test.{js,cjs} && node ./test/browser-exception-observer/BrowserExceptionObserver.test.js",
+		"test:debug": "node --inspect-brk --test ./test/*.test.{js,cjs}"
 	},
 	"dependencies": {
 		"happy-dom": "^0.0.0"
@@ -19,8 +19,7 @@
 	"devDependencies": {
 		"@typescript-eslint/eslint-plugin": "^5.16.0",
 		"@typescript-eslint/parser": "^5.16.0",
-		"@types/node": "^16.11.7",
-		"chalk": "^5.3.0",
+		"@types/node": "^20.0.0",
 		"prettier": "^2.6.0",
 		"express": "^4.20.0"
 	}
