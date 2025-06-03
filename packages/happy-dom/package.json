@@ -84,7 +84,6 @@
 		"@types/node": "^20.0.0",
 		"@vitest/ui": "^2.1.4",
 		"@webref/css": "6.6.2",
-		"prettier": "^2.6.0",
 		"typescript": "^5.8.3",
 		"vitest": "^2.1.9"
 	},
