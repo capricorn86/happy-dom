@@ -71,8 +71,8 @@
 		"compile:change-cjs-file-extension": "node ../happy-dom/bin/change-file-extension.cjs --dir=./cjs --fromExt=.js --toExt=.cjs",
 		"watch": "npm run compile && tsc -w --preserveWatchOutput",
 		"test": "npm run test:node && npm run test:bun",
-		"test:debug": "tsc --project ./test/node && node --inspect-brk --test ./tmp/node/*.test.js --test ./tmp/node/**/*.test.js",
-		"test:node": "tsc --project ./test/node && node --test ./tmp/node/*.test.js --test ./tmp/node/**/*.test.js",
+		"test:debug": "tsc --project ./test/node && cd ./tmp && ls | node --inspect-brk --test",
+		"test:node": "tsc --project ./test/node && cd ./tmp && ls | node --test",
 		"test:bun": "bun test ./test/bun/Bun.test.js"
 	},
 	"dependencies": {
