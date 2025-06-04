@@ -1,4 +1,3 @@
-import ErrorEvent from '../../event/events/ErrorEvent.js';
 import Event from '../../event/Event.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import HTMLElement from '../html-element/HTMLElement.js';
@@ -103,14 +102,6 @@ export default class HTMLMediaElement extends HTMLElement {
 
 	public set onended(value: ((event: Event) => void) | null) {
 		this[PropertySymbol.propertyEventListeners].set('onended', value);
-	}
-
-	public get onerror(): ((event: ErrorEvent) => void) | null {
-		return ElementEventAttributeUtility.getEventListener(this, 'onerror');
-	}
-
-	public set onerror(value: ((event: ErrorEvent) => void) | null) {
-		this[PropertySymbol.propertyEventListeners].set('onerror', value);
 	}
 
 	public get onloadeddata(): ((event: Event) => void) | null {

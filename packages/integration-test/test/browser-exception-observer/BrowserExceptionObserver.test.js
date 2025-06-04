@@ -1,9 +1,25 @@
-import { describe, it, expect } from '../utilities/TestFunctions.js';
 import { Browser, BrowserErrorCaptureEnum } from 'happy-dom';
+import assert from 'node:assert';
 
-describe('BrowserExceptionObserver', () => {
-	describe('observe()', () => {
-		it('Observes unhandles fetch rejections.', async () => {
+let description = '';
+
+/* eslint-disable no-console */
+
+// We can't use the node testing framework here, because it will collide with the Browser error capturing.
+
+async function describe(name, fn) {
+	description = name;
+	await fn(fn);
+}
+
+async function it(name, fn) {
+	console.log('> ' + description + ' ' + name);
+	await fn();
+}
+
+await describe('BrowserExceptionObserver', async () => {
+	await describe('observe()', async () => {
+		await it('Observes unhandled fetch rejections.', async () => {
 			const browser = new Browser({
 				settings: { errorCapture: BrowserErrorCaptureEnum.processLevel }
 			});
@@ -33,14 +49,14 @@ describe('BrowserExceptionObserver', () => {
 
 			await new Promise((resolve) => setTimeout(resolve, 10));
 
-			expect(errorEvent instanceof window.ErrorEvent).toBe(true);
-			expect(errorEvent.error.message).toBe('Test error');
-			expect(errorEvent.message).toBe('Test error');
+			assert.strictEqual(errorEvent instanceof window.ErrorEvent, true);
+			assert.strictEqual(errorEvent.error.message, 'Test error');
+			assert.strictEqual(errorEvent.message, 'Test error');
 
 			await browser.close();
 		});
 
-		it('Observes uncaught exceptions.', async () => {
+		await it('Observes uncaught exceptions.', async () => {
 			const browser = new Browser({
 				settings: { errorCapture: BrowserErrorCaptureEnum.processLevel }
 			});
@@ -70,19 +86,19 @@ describe('BrowserExceptionObserver', () => {
 
 			const consoleOutput = page.virtualConsolePrinter.readAsString();
 
-			expect(consoleOutput.startsWith('Error: Test error\n    at Timeout.eval')).toBe(true);
-			expect(errorEvent instanceof window.ErrorEvent).toBe(true);
-			expect(errorEvent.error.message).toBe('Test error');
-			expect(errorEvent.message).toBe('Test error');
+			assert.strictEqual(consoleOutput.startsWith('Error: Test error\n    at Timeout.eval'), true);
+			assert.strictEqual(errorEvent instanceof window.ErrorEvent, true);
+			assert.strictEqual(errorEvent.error.message, 'Test error');
+			assert.strictEqual(errorEvent.message, 'Test error');
 
 			await browser.close();
 		});
 	});
 
-	describe('disconnect()', () => {
+	await describe('disconnect()', () => {
 		it('Disconnects the observer.', async () => {
-			expect(process.listenerCount('uncaughtException')).toBe(0);
-			expect(process.listenerCount('unhandledRejection')).toBe(0);
+			assert.strictEqual(process.listenerCount('uncaughtException'), 0);
+			assert.strictEqual(process.listenerCount('unhandledRejection'), 0);
 		});
 	});
 });

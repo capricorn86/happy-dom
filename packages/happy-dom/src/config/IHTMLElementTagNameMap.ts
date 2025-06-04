@@ -63,16 +63,7 @@ import HTMLTrackElement from '../nodes/html-track-element/HTMLTrackElement.js';
 import HTMLUListElement from '../nodes/html-u-list-element/HTMLUListElement.js';
 import HTMLVideoElement from '../nodes/html-video-element/HTMLVideoElement.js';
 
-// Makes it work with custom elements when they declare their own interface.
-declare global {
-	/* eslint-disable @typescript-eslint/naming-convention */
-	/* eslint-disable @typescript-eslint/no-empty-interface */
-	interface HTMLElementTagNameMap {}
-	/* eslint-enable @typescript-eslint/naming-convention */
-	/* eslint-enable @typescript-eslint/no-empty-interface */
-}
-
-export default interface IHTMLElementTagNameMap extends HTMLElementTagNameMap {
+export default interface IHTMLElementTagNameMap {
 	a: HTMLAnchorElement;
 	abbr: HTMLElement;
 	address: HTMLElement;
