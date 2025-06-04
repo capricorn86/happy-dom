@@ -1,4 +1,4 @@
-import AbortSignal from 'src/fetch/AbortSignal.js';
+import AbortSignal from '../fetch/AbortSignal.js';
 
 export default interface IEventListenerOptions {
 	once?: boolean;
