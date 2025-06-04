@@ -237,7 +237,7 @@ export default class QuerySelector {
 		}
 
 		const cachedItem: ICachedQuerySelectorItem = {
-			result: <WeakRef<Element | null>>{
+			result: <WeakRef<Element>>{
 				deref: () => null
 			}
 		};
