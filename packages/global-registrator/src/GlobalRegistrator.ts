@@ -7,7 +7,7 @@ const IGNORE_LIST = ['constructor', 'undefined', 'NaN', 'global', 'globalThis'];
  *
  */
 export default class GlobalRegistrator {
-	static #registered: { [key: string | symbol]: PropertyDescriptor } | null = null;
+	static #registered: { [key: string | symbol]: PropertyDescriptor | null } | null = null;
 
 	/**
 	 * Returns the registered state.
@@ -57,7 +57,7 @@ export default class GlobalRegistrator {
 
 					// If the property is the window object, replace it with the global object
 					if (windowPropertyDescriptor.value === window) {
-						window[key] = globalThis;
+						(<any>window)[key] = globalThis;
 						windowPropertyDescriptor.value = globalThis;
 					}
 
@@ -77,9 +77,9 @@ export default class GlobalRegistrator {
 			this.#registered[key] = null;
 
 			// If the property is the window object, replace it with the global object
-			if (propertyDescriptor.value === window) {
-				window[key] = globalThis;
-				propertyDescriptor.value = globalThis;
+			if (propertyDescriptor!.value === window) {
+				(<any>window)[key] = globalThis;
+				propertyDescriptor!.value = globalThis;
 			}
 
 			Object.defineProperty(globalThis, key, {
@@ -89,7 +89,7 @@ export default class GlobalRegistrator {
 		}
 
 		// Set owner window on document to global
-		globalThis.document[PropertySymbol.defaultView] = globalThis;
+		(<any>globalThis).document[PropertySymbol.defaultView] = globalThis;
 	}
 
 	/**
@@ -102,13 +102,13 @@ export default class GlobalRegistrator {
 			);
 		}
 
-		const happyDOM = globalThis.happyDOM;
+		const happyDOM = (<any>globalThis).happyDOM;
 
 		for (const key of Object.keys(this.#registered)) {
 			if (this.#registered[key] !== null) {
 				Object.defineProperty(globalThis, key, this.#registered[key]);
 			} else {
-				delete globalThis[key];
+				delete (<any>globalThis)[key];
 			}
 		}
 
