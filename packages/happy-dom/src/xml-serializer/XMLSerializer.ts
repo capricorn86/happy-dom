@@ -38,12 +38,12 @@ export default class XMLSerializer {
 	#serializeToString(
 		root: Node,
 		inheritedDefaultNamespace: string | null = null,
-		inheritedNamespacePrefixes: Map<string, string> = null
+		inheritedNamespacePrefixes: Map<string, string> | null = null
 	): string {
 		switch (root[PropertySymbol.nodeType]) {
 			case NodeTypeEnum.elementNode:
 				const element = <Element>root;
-				const localName = element[PropertySymbol.localName];
+				const localName = element[PropertySymbol.localName]!;
 
 				let innerHTML = '';
 
@@ -89,9 +89,9 @@ export default class XMLSerializer {
 			case Node.DOCUMENT_FRAGMENT_NODE:
 			case Node.DOCUMENT_NODE:
 				let html = '';
-				if (root[PropertySymbol.xmlProcessingInstruction]) {
+				if ((<any>root)[PropertySymbol.xmlProcessingInstruction]) {
 					html += this.#serializeToString(
-						root[PropertySymbol.xmlProcessingInstruction],
+						(<any>root)[PropertySymbol.xmlProcessingInstruction]!,
 						inheritedDefaultNamespace,
 						new Map(inheritedNamespacePrefixes)
 					);
@@ -111,7 +111,7 @@ export default class XMLSerializer {
 			case NodeTypeEnum.textNode:
 				const parentElement = root.parentElement;
 				if (parentElement) {
-					const parentConfig = HTMLElementConfig[parentElement[PropertySymbol.localName]];
+					const parentConfig = HTMLElementConfig[parentElement[PropertySymbol.localName]!];
 					if (parentConfig?.contentModel === HTMLElementConfigContentModelEnum.rawText) {
 						return root.textContent;
 					}
@@ -148,7 +148,10 @@ export default class XMLSerializer {
 				attribute[PropertySymbol.namespaceURI] === NamespaceURI.xmlns &&
 				attribute[PropertySymbol.prefix]
 			) {
-				namespacePrefixes.set(attribute[PropertySymbol.value], attribute[PropertySymbol.localName]);
+				namespacePrefixes.set(
+					attribute[PropertySymbol.value]!,
+					attribute[PropertySymbol.localName]!
+				);
 			}
 		}
 
@@ -170,11 +173,11 @@ export default class XMLSerializer {
 			throw new Error('Element has a prefix but no namespace.');
 		}
 
-		if (!element[PropertySymbol.prefix]) {
+		if (!element[PropertySymbol.prefix] || !namespacePrefixes) {
 			return null;
 		}
 
-		const elementPrefix = namespacePrefixes.get(element[PropertySymbol.namespaceURI]);
+		const elementPrefix = namespacePrefixes.get(element[PropertySymbol.namespaceURI]!);
 
 		if (elementPrefix) {
 			return elementPrefix;
@@ -187,11 +190,11 @@ export default class XMLSerializer {
 			while (existingPrefixes.has('n' + i)) {
 				i++;
 			}
-			namespacePrefixes.set(element[PropertySymbol.namespaceURI], 'n' + i);
+			namespacePrefixes.set(element[PropertySymbol.namespaceURI]!, 'n' + i);
 			return 'n' + i;
 		}
 
-		namespacePrefixes.set(element[PropertySymbol.namespaceURI], element[PropertySymbol.prefix]);
+		namespacePrefixes.set(element[PropertySymbol.namespaceURI]!, element[PropertySymbol.prefix]);
 
 		return element[PropertySymbol.prefix];
 	}
@@ -258,7 +261,7 @@ export default class XMLSerializer {
 			inheritedDefaultNamespace !== element[PropertySymbol.namespaceURI] &&
 			!handledNamespaces.has(element[PropertySymbol.namespaceURI])
 		) {
-			if (elementPrefix && !inheritedNamespacePrefixes.has(element[PropertySymbol.namespaceURI])) {
+			if (elementPrefix && !inheritedNamespacePrefixes?.has(element[PropertySymbol.namespaceURI])) {
 				namespaceString += ` xmlns:${elementPrefix}="${XMLEncodeUtility.encodeXMLAttributeValue(
 					element[PropertySymbol.namespaceURI]
 				)}"`;

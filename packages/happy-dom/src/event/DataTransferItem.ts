@@ -9,7 +9,7 @@ import File from '../file/File.js';
 export default class DataTransferItem {
 	public readonly kind: 'string' | 'file';
 	public readonly type: string;
-	#item: string | File = null;
+	#item: string | File | null = null;
 
 	/**
 	 * Constructor.
@@ -26,7 +26,7 @@ export default class DataTransferItem {
 	/**
 	 * Returns file.
 	 */
-	public getAsFile(): File {
+	public getAsFile(): File | null {
 		if (this.kind === 'string') {
 			return null;
 		}

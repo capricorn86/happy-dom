@@ -1,6 +1,7 @@
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
+import Element from '../element/Element.js';
 
 /**
  * HTMLTableCellElement
@@ -34,7 +35,7 @@ export default class HTMLTableCellElement extends HTMLElement {
 	public get cellIndex(): number {
 		let parent = this.parentNode;
 		while (parent) {
-			if (parent[PropertySymbol.tagName] === 'TR') {
+			if ((<Element>parent)[PropertySymbol.tagName] === 'TR') {
 				const cells = QuerySelector.querySelectorAll(<HTMLElement>parent, 'td,th')[
 					PropertySymbol.items
 				];

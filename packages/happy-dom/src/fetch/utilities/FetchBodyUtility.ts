@@ -26,7 +26,7 @@ export default class FetchBodyUtility {
 	 * @returns Stream and type.
 	 */
 	public static getBodyStream(body: IRequestBody | IResponseBody): {
-		contentType: string;
+		contentType: string | null;
 		contentLength: number | null;
 		stream: ReadableStream | null;
 		buffer: Buffer | null;
@@ -107,10 +107,11 @@ export default class FetchBodyUtility {
 	public static cloneBodyStream(
 		window: BrowserWindow,
 		requestOrResponse: {
+			[PropertySymbol.buffer]?: Buffer | null;
 			body: ReadableStream | null;
 			bodyUsed: boolean;
 		}
-	): ReadableStream {
+	): ReadableStream | null {
 		if (requestOrResponse.bodyUsed) {
 			throw new window.DOMException(
 				`Failed to clone body stream of request: Request body is already used.`,
@@ -128,11 +129,11 @@ export default class FetchBodyUtility {
 		}
 
 		// Pipe underlying node stream if it exists.
-		if (requestOrResponse.body[PropertySymbol.nodeStream]) {
+		if ((<any>requestOrResponse.body)[PropertySymbol.nodeStream]) {
 			const stream1 = new Stream.PassThrough();
 			const stream2 = new Stream.PassThrough();
-			requestOrResponse.body[PropertySymbol.nodeStream].pipe(stream1);
-			requestOrResponse.body[PropertySymbol.nodeStream].pipe(stream2);
+			(<any>requestOrResponse.body)[PropertySymbol.nodeStream].pipe(stream1);
+			(<any>requestOrResponse.body)[PropertySymbol.nodeStream].pipe(stream2);
 			// Sets the body of the cloned request/response to the first pass through stream.
 			requestOrResponse.body = this.nodeToWebStream(stream1);
 			// Returns the clone.
@@ -159,19 +160,27 @@ export default class FetchBodyUtility {
 	 *
 	 * @see https://fetch.spec.whatwg.org/#concept-body-consume-body
 	 * @param window Window.
+	 * @param requestOrResponse
+	 * @param requestOrResponse.body
 	 * @param body Body stream.
 	 * @returns Promise.
 	 */
 	public static async consumeBodyStream(
 		window: BrowserWindow,
-		body: ReadableStream | null
+		requestOrResponse: {
+			body: ReadableStream | null;
+			[PropertySymbol.aborted]: boolean;
+			[PropertySymbol.error]: Error | null;
+		}
 	): Promise<Buffer> {
+		const body = requestOrResponse.body;
+
 		if (body === null || !(body instanceof ReadableStream)) {
 			return Buffer.alloc(0);
 		}
 
-		if (body[PropertySymbol.error]) {
-			throw body[PropertySymbol.error];
+		if (requestOrResponse[PropertySymbol.error]) {
+			throw requestOrResponse[PropertySymbol.error];
 		}
 
 		const reader = body.getReader();
@@ -181,10 +190,10 @@ export default class FetchBodyUtility {
 		try {
 			let readResult = await reader.read();
 			while (!readResult.done) {
-				if (body[PropertySymbol.error]) {
-					throw body[PropertySymbol.error];
+				if (requestOrResponse[PropertySymbol.error]) {
+					throw requestOrResponse[PropertySymbol.error];
 				}
-				if (body[PropertySymbol.aborted]) {
+				if (requestOrResponse[PropertySymbol.aborted]) {
 					throw new window.DOMException(
 						'Failed to read response body: The stream was aborted.',
 						DOMExceptionNameEnum.abortError
@@ -200,7 +209,7 @@ export default class FetchBodyUtility {
 				throw error;
 			}
 			throw new window.DOMException(
-				`Failed to read response body. Error: ${error.message}.`,
+				`Failed to read response body. Error: ${(<Error>error).message}.`,
 				DOMExceptionNameEnum.encodingError
 			);
 		}
@@ -213,7 +222,7 @@ export default class FetchBodyUtility {
 			return Buffer.concat(chunks, bytes);
 		} catch (error) {
 			throw new window.DOMException(
-				`Could not create Buffer from response body. Error: ${error.message}.`,
+				`Could not create Buffer from response body. Error: ${(<Error>error).message}.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
@@ -227,7 +236,7 @@ export default class FetchBodyUtility {
 	 * @param value The value to be wrapped in a ReadableStream.
 	 * @returns ReadableStream
 	 */
-	public static toReadableStream(value): ReadableStream {
+	public static toReadableStream(value: any): ReadableStream {
 		return new ReadableStream({
 			start(controller) {
 				controller.enqueue(value);
@@ -261,7 +270,7 @@ export default class FetchBodyUtility {
 				});
 			}
 		});
-		readableStream[PropertySymbol.nodeStream] = nodeStream;
+		(<any>readableStream)[PropertySymbol.nodeStream] = nodeStream;
 		return readableStream;
 	}
 }

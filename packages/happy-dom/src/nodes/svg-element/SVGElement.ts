@@ -746,7 +746,7 @@ export default class SVGElement extends Element {
 	public get ownerSVGElement(): SVGSVGElement | null {
 		let parent = this[PropertySymbol.parentNode];
 		while (parent) {
-			if (parent[PropertySymbol.localName] === 'svg') {
+			if ((<Element>parent)[PropertySymbol.localName] === 'svg') {
 				return <SVGSVGElement>parent;
 			}
 

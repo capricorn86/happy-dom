@@ -25,7 +25,22 @@ describe('Browser', () => {
 			expect(browser.contexts.length).toBe(1);
 			expect(browser.contexts[0]).toBe(browser.defaultContext);
 
-			await browser.defaultContext.close();
+			let error: Error | null = null;
+
+			try {
+				await browser.defaultContext.close();
+			} catch (e) {
+				error = <Error>e;
+			}
+
+			expect(error).toEqual(
+				new Error(
+					'Cannot close the default context. Use `browser.close()` to close the browser instead.'
+				)
+			);
+			expect(browser.contexts.length).toBe(1);
+
+			await browser.close();
 
 			expect(browser.contexts.length).toBe(0);
 		});
@@ -83,12 +98,13 @@ describe('Browser', () => {
 	describe('close()', () => {
 		it('Closes the browser.', async () => {
 			const browser = new Browser();
-			const originalClose = browser.defaultContext.close;
+			const defaultContext = browser.defaultContext;
+			const originalClose = defaultContext.close;
 			let isContextClosed = false;
 
-			vi.spyOn(browser.defaultContext, 'close').mockImplementation(() => {
+			vi.spyOn(defaultContext, 'close').mockImplementation(() => {
 				isContextClosed = true;
-				return originalClose.call(browser.defaultContext);
+				return originalClose.call(defaultContext);
 			});
 
 			await browser.close();

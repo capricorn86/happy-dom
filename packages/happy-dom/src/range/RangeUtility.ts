@@ -47,7 +47,7 @@ export default class RangeUtility {
 			let child = pointB.node;
 
 			while (child[PropertySymbol.parentNode] !== pointA.node) {
-				child = child[PropertySymbol.parentNode];
+				child = child[PropertySymbol.parentNode]!;
 			}
 
 			if (

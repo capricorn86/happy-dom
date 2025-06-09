@@ -47,7 +47,7 @@ export default class HTMLIFrameElement extends HTMLElement {
 	#contentWindowContainer: { window: BrowserWindow | CrossOriginBrowserWindow | null } = {
 		window: null
 	};
-	#iframe: IBrowserFrame;
+	#iframe: IBrowserFrame | null = null;
 	#loadedSrcdoc: string | null = null;
 
 	// Events
@@ -83,10 +83,10 @@ export default class HTMLIFrameElement extends HTMLElement {
 		}
 
 		try {
-			return new URL(this.getAttribute('src'), this[PropertySymbol.ownerDocument].location.href)
+			return new URL(this.getAttribute('src')!, this[PropertySymbol.ownerDocument].location.href)
 				.href;
 		} catch (e) {
-			return this.getAttribute('src');
+			return this.getAttribute('src')!;
 		}
 	}
 
@@ -416,7 +416,7 @@ export default class HTMLIFrameElement extends HTMLElement {
 				`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`,
 				DOMExceptionNameEnum.notSupportedError
 			);
-			browserFrame.page?.console.error(error);
+			browserFrame.page.console.error(error);
 			this.dispatchEvent(new Event('error'));
 			return;
 		}
@@ -437,7 +437,7 @@ export default class HTMLIFrameElement extends HTMLElement {
 			})
 			.then(() => this.dispatchEvent(new Event('load')))
 			.catch((error) => {
-				browserFrame.page?.console.error(error);
+				browserFrame.page.console.error(error);
 				this.dispatchEvent(new Event('error'));
 			});
 

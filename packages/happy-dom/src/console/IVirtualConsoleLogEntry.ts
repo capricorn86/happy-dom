@@ -5,6 +5,6 @@ import VirtualConsoleLogTypeEnum from './enums/VirtualConsoleLogTypeEnum.js';
 export default interface IVirtualConsoleLogEntry {
 	type: VirtualConsoleLogTypeEnum;
 	level: VirtualConsoleLogLevelEnum;
-	message: Array<string | object>;
+	message: Array<string | any>;
 	group: IVirtualConsoleLogGroup | null;
 }

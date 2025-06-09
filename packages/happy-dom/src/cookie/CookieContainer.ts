@@ -4,6 +4,7 @@ import ICookie from './ICookie.js';
 import ICookieContainer from './ICookieContainer.js';
 import IOptionalCookie from './IOptionalCookie.js';
 import CookieExpireUtility from './urilities/CookieExpireUtility.js';
+import CookieStringUtility from './urilities/CookieStringUtility.js';
 import CookieURLUtility from './urilities/CookieURLUtility.js';
 
 /**
@@ -14,6 +15,21 @@ import CookieURLUtility from './urilities/CookieURLUtility.js';
  */
 export default class CookieContainer implements ICookieContainer {
 	#cookies: ICookie[] = [];
+
+	/**
+	 * Adds a cookie string in the format "key=value; expires=...; path=...; domain=...".
+	 *
+	 * @param url URL.
+	 * @param cookieString Cookie string.
+	 * @returns Cookie or null if the cookie string is invalid.
+	 */
+	public addCookieString(url: URL, cookieString: string): ICookie | null {
+		const cookie = CookieStringUtility.stringToCookie(url, cookieString);
+		if (cookie) {
+			this.addCookies([cookie]);
+		}
+		return cookie;
+	}
 
 	/**
 	 * Adds cookies.
@@ -70,5 +86,12 @@ export default class CookieContainer implements ICookieContainer {
 		}
 
 		return cookies;
+	}
+
+	/**
+	 * Clears all cookies.
+	 */
+	public clearCookies(): void {
+		this.#cookies = [];
 	}
 }

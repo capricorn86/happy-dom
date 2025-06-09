@@ -1677,7 +1677,7 @@ describe('Document', () => {
 				document.createProcessingInstruction('-foo', 'bar');
 			} catch (e) {
 				expect(e).toEqual(
-					new DOMException(
+					new window.DOMException(
 						`Failed to execute 'createProcessingInstruction' on 'Document': The target provided ('-foo') is not a valid name.`
 					)
 				);
@@ -1690,7 +1690,7 @@ describe('Document', () => {
 				document.createProcessingInstruction('foo', 'bar?>');
 			} catch (e) {
 				expect(e).toEqual(
-					new DOMException(
+					new window.DOMException(
 						`Failed to execute 'createProcessingInstruction' on 'Document': The data provided ('?>') contains '?>'`
 					)
 				);

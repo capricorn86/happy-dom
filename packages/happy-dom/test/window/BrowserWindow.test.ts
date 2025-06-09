@@ -1801,7 +1801,7 @@ describe('BrowserWindow', () => {
 
 		it("Throws an exception if the provided object can't be serialized.", function () {
 			expect(() => window.postMessage(window)).toThrowError(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'postMessage' on 'Window': The provided message cannot be serialized.`,
 					DOMExceptionNameEnum.invalidStateError
 				)
@@ -1816,7 +1816,7 @@ describe('BrowserWindow', () => {
 			browserFrame.url = documentOrigin;
 
 			expect(() => window.postMessage(message, targetOrigin)).toThrowError(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'postMessage' on 'Window': The target origin provided ('${targetOrigin}') does not match the recipient window\'s origin ('${documentOrigin}').`,
 					DOMExceptionNameEnum.securityError
 				)

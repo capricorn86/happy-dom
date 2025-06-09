@@ -14,7 +14,7 @@ export default class RadioNodeList extends NodeList<THTMLFormControlElement> {
 	 *
 	 * @returns Value.
 	 */
-	public get value(): string {
+	public get value(): string | null {
 		for (const node of this[PropertySymbol.items]) {
 			if ((<HTMLInputElement>node).checked) {
 				return (<HTMLInputElement>node).value;

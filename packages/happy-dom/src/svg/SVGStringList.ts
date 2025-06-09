@@ -14,10 +14,10 @@ export default class SVGStringList {
 	[index: number]: string;
 
 	public [PropertySymbol.window]: BrowserWindow;
-	public [PropertySymbol.getAttribute]: (() => string | null) | null = null;
-	public [PropertySymbol.setAttribute]: ((value: string) => void) | null = null;
+	public [PropertySymbol.getAttribute]: () => string | null;
+	public [PropertySymbol.setAttribute]: (value: string) => void;
 	public [PropertySymbol.readOnly]: boolean = false;
-	private [PropertySymbol.cache]: { items: string[]; attributeValue: string } = {
+	private [PropertySymbol.cache]: { items: string[]; attributeValue: string | null } = {
 		items: [],
 		attributeValue: ''
 	};
@@ -47,8 +47,8 @@ export default class SVGStringList {
 
 		this[PropertySymbol.window] = window;
 		this[PropertySymbol.readOnly] = !!options.readOnly;
-		this[PropertySymbol.getAttribute] = options.getAttribute || null;
-		this[PropertySymbol.setAttribute] = options.setAttribute || null;
+		this[PropertySymbol.getAttribute] = options.getAttribute;
+		this[PropertySymbol.setAttribute] = options.setAttribute;
 
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
@@ -63,7 +63,7 @@ export default class SVGStringList {
 				}
 				if (property in target || typeof property === 'symbol') {
 					methodBinder.bind(property);
-					return target[property];
+					return (<any>target)[property];
 				}
 				const index = Number(property);
 				if (!isNaN(index)) {
@@ -73,23 +73,23 @@ export default class SVGStringList {
 			set(target, property, newValue): boolean {
 				methodBinder.bind(property);
 				if (typeof property === 'symbol') {
-					target[property] = newValue;
+					(<any>target)[property] = newValue;
 					return true;
 				}
 				const index = Number(property);
 				if (isNaN(index)) {
-					target[property] = newValue;
+					(<any>target)[property] = newValue;
 				}
 				return true;
 			},
 			deleteProperty(target, property): boolean {
 				if (typeof property === 'symbol') {
-					delete target[property];
+					delete (<any>target)[property];
 					return true;
 				}
 				const index = Number(property);
 				if (isNaN(index)) {
-					delete target[property];
+					delete (<any>target)[property];
 				}
 				return true;
 			},
@@ -118,7 +118,7 @@ export default class SVGStringList {
 
 				return false;
 			},
-			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
+			getOwnPropertyDescriptor(target, property): PropertyDescriptor | undefined {
 				if (property in target || typeof property === 'symbol') {
 					return;
 				}
@@ -178,7 +178,7 @@ export default class SVGStringList {
 	 * @param newItem New item.
 	 * @returns The item being replaced.
 	 */
-	public initialize(newItem: string): string {
+	public initialize(newItem: string): string | undefined {
 		if (this[PropertySymbol.readOnly]) {
 			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'initialize' on 'SVGStringList': The object is read-only.`
@@ -204,7 +204,7 @@ export default class SVGStringList {
 	 * @param index Index.
 	 * @returns The item at the index.
 	 **/
-	public getItem(index: number | string): string {
+	public getItem(index: number | string): string | null {
 		const items = this[PropertySymbol.getItemList]();
 		if (typeof index === 'number') {
 			return items[index] ? items[index] : null;
@@ -403,7 +403,7 @@ export default class SVGStringList {
 		}
 
 		// It is possible to make this statement shorter by using Array.from() and Set, but this is faster when comparing using a bench test.
-		const items = [];
+		const items: string[] = [];
 		const trimmed = attributeValue.trim();
 
 		if (trimmed) {

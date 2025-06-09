@@ -158,7 +158,7 @@ export default class MutationObserver {
 	 * @returns Records.
 	 */
 	public takeRecords(): MutationRecord[] {
-		let records = [];
+		let records: MutationRecord[] = [];
 		for (const listener of this.#listeners) {
 			records = records.concat(listener.takeRecords());
 		}

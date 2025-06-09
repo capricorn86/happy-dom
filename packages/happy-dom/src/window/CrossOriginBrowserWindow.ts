@@ -16,9 +16,9 @@ export default class CrossOriginBrowserWindow
 	public readonly location: Location;
 
 	// Internal properties
-	public [PropertySymbol.self]: BrowserWindow | CrossOriginBrowserWindow = this;
-	public declare [PropertySymbol.top]: BrowserWindow | CrossOriginBrowserWindow;
-	public declare [PropertySymbol.parent]: BrowserWindow | CrossOriginBrowserWindow;
+	public [PropertySymbol.self]: CrossOriginBrowserWindow | null = this;
+	public declare [PropertySymbol.top]: BrowserWindow | CrossOriginBrowserWindow | null;
+	public declare [PropertySymbol.parent]: BrowserWindow | CrossOriginBrowserWindow | null;
 
 	// Private properties
 	#targetWindow: BrowserWindow;
@@ -60,8 +60,8 @@ export default class CrossOriginBrowserWindow
 	 *
 	 * @returns Self.
 	 */
-	public get self(): BrowserWindow | CrossOriginBrowserWindow {
-		return this[PropertySymbol.self];
+	public get self(): CrossOriginBrowserWindow {
+		return <CrossOriginBrowserWindow>this[PropertySymbol.self];
 	}
 
 	/**
@@ -69,7 +69,7 @@ export default class CrossOriginBrowserWindow
 	 *
 	 * @param self Self.
 	 */
-	public set self(self: BrowserWindow | CrossOriginBrowserWindow | null) {
+	public set self(self: CrossOriginBrowserWindow | null) {
 		this[PropertySymbol.self] = self;
 	}
 
@@ -79,7 +79,7 @@ export default class CrossOriginBrowserWindow
 	 * @returns Top.
 	 */
 	public get top(): BrowserWindow | CrossOriginBrowserWindow {
-		return this[PropertySymbol.top];
+		return <BrowserWindow | CrossOriginBrowserWindow>this[PropertySymbol.top];
 	}
 
 	/**
@@ -88,7 +88,7 @@ export default class CrossOriginBrowserWindow
 	 * @returns Parent.
 	 */
 	public get parent(): BrowserWindow | CrossOriginBrowserWindow {
-		return this[PropertySymbol.parent];
+		return <BrowserWindow | CrossOriginBrowserWindow>this[PropertySymbol.parent];
 	}
 
 	/**

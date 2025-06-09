@@ -12,7 +12,7 @@ const CSS_RULE_REGEXP = /([^{]+){([^}]+)}/;
 export default class CSSKeyframesRule extends CSSRule {
 	public readonly type = CSSRuleTypeEnum.keyframesRule;
 	public readonly cssRules: CSSKeyframeRule[] = [];
-	public readonly name: string = null;
+	public readonly name: string | null = null;
 
 	/**
 	 * Returns css text.

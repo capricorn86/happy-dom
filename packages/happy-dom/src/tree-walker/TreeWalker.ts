@@ -22,10 +22,10 @@ enum TraverseSiblingsTypeEnum {
  * @see https://dom.spec.whatwg.org/#interface-treewalker
  */
 export default class TreeWalker {
-	public root: Node = null;
+	public root: Node;
 	public whatToShow = -1;
-	public filter: INodeFilter = null;
-	public currentNode: Node = null;
+	public filter: INodeFilter | null = null;
+	public currentNode: Node | null = null;
 
 	/**
 	 * Constructor.
@@ -34,7 +34,7 @@ export default class TreeWalker {
 	 * @param [whatToShow] What to show.
 	 * @param [filter] Filter.
 	 */
-	constructor(root: Node, whatToShow = -1, filter: INodeFilter = null) {
+	constructor(root: Node, whatToShow = -1, filter: INodeFilter | null = null) {
 		if (!(root instanceof Node)) {
 			throw new DOMException('Parameter 1 was not of type Node.');
 		}
@@ -50,7 +50,7 @@ export default class TreeWalker {
 	 *
 	 * @returns Current node.
 	 */
-	public parentNode(): Node {
+	public parentNode(): Node | null {
 		let node = this.currentNode;
 		while (node !== null && node !== this.root) {
 			node = node.parentNode;
@@ -67,7 +67,7 @@ export default class TreeWalker {
 	 *
 	 * @returns Current node.
 	 */
-	public firstChild(): Node {
+	public firstChild(): Node | null {
 		return this.#traverseChildren(TraverseChildrenTypeEnum.first);
 	}
 
@@ -76,7 +76,7 @@ export default class TreeWalker {
 	 *
 	 * @returns Current node.
 	 */
-	public lastChild(): Node {
+	public lastChild(): Node | null {
 		return this.#traverseChildren(TraverseChildrenTypeEnum.last);
 	}
 
@@ -85,7 +85,7 @@ export default class TreeWalker {
 	 *
 	 * @returns Current node.
 	 */
-	public nextSibling(): Node {
+	public nextSibling(): Node | null {
 		return this.#traverseSiblings(TraverseSiblingsTypeEnum.next);
 	}
 
@@ -94,7 +94,7 @@ export default class TreeWalker {
 	 *
 	 * @returns Current node.
 	 */
-	public previousSibling(): Node {
+	public previousSibling(): Node | null {
 		return this.#traverseSiblings(TraverseSiblingsTypeEnum.previous);
 	}
 
@@ -103,18 +103,18 @@ export default class TreeWalker {
 	 *
 	 * @returns Current node.
 	 */
-	public previousNode(): Node {
+	public previousNode(): Node | null {
 		let node = this.currentNode;
 
 		while (node !== this.root) {
-			let sibling = node.previousSibling;
+			let sibling = node?.previousSibling || null;
 
 			while (sibling !== null) {
 				let node = sibling;
 				let result = this[PropertySymbol.filterNode](node);
 
 				while (result !== NodeFilter.FILTER_REJECT && node[PropertySymbol.nodeArray].length) {
-					node = node.lastChild;
+					node = node.lastChild!;
 					result = this[PropertySymbol.filterNode](node);
 				}
 
@@ -126,11 +126,11 @@ export default class TreeWalker {
 				sibling = node.previousSibling;
 			}
 
-			if (node === this.root || node.parentNode === null) {
+			if (node === this.root || node!.parentNode === null) {
 				return null;
 			}
 
-			node = node.parentNode;
+			node = node!.parentNode;
 
 			if (this[PropertySymbol.filterNode](node) === NodeFilter.FILTER_ACCEPT) {
 				this.currentNode = node;
@@ -147,13 +147,17 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public nextNode(): Node | null {
-		let node = this.currentNode;
+		let node: Node | null = this.currentNode;
 		let result = NodeFilter.FILTER_ACCEPT;
 
+		if (node === null) {
+			return null;
+		}
+
 		while (true) {
-			while (result !== NodeFilter.FILTER_REJECT && node[PropertySymbol.nodeArray].length) {
-				node = node.firstChild;
-				result = this[PropertySymbol.filterNode](node);
+			while (result !== NodeFilter.FILTER_REJECT && node![PropertySymbol.nodeArray].length) {
+				node = node!.firstChild;
+				result = this[PropertySymbol.filterNode](node!);
 
 				if (result === NodeFilter.FILTER_ACCEPT) {
 					this.currentNode = node;
@@ -166,7 +170,7 @@ export default class TreeWalker {
 					return null;
 				}
 
-				const sibling = node.nextSibling;
+				const sibling: Node | null = node.nextSibling;
 
 				if (sibling !== null) {
 					node = sibling;
@@ -199,7 +203,7 @@ export default class TreeWalker {
 	 * @returns Child nodes.
 	 */
 	public [PropertySymbol.filterNode](node: Node): number {
-		const mask = NodeFilterMask[node.nodeType];
+		const mask = NodeFilterMask[<1>node.nodeType];
 
 		if (mask && (this.whatToShow & mask) == 0) {
 			return NodeFilter.FILTER_SKIP;
@@ -221,7 +225,12 @@ export default class TreeWalker {
 	 * @returns Node.
 	 */
 	#traverseChildren(type: TraverseChildrenTypeEnum): Node | null {
-		let node: Node = this.currentNode;
+		let node = this.currentNode;
+
+		if (!node) {
+			return null;
+		}
+
 		node = type === TraverseChildrenTypeEnum.first ? node.firstChild : node.lastChild;
 
 		while (node !== null) {
@@ -248,7 +257,7 @@ export default class TreeWalker {
 					node = sibling;
 					break;
 				}
-				const parent = node.parentNode;
+				const parent: Node | null = node.parentNode;
 				if (parent === null || parent === this.root || parent === this.currentNode) {
 					return null;
 				}
@@ -266,9 +275,9 @@ export default class TreeWalker {
 	 * @returns Node.
 	 */
 	#traverseSiblings(type: TraverseSiblingsTypeEnum): Node | null {
-		let node: Node = this.currentNode;
+		let node: Node | null = this.currentNode;
 
-		if (node === this.root) {
+		if (!node || node === this.root) {
 			return null;
 		}
 

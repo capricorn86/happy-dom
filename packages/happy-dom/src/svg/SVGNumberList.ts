@@ -15,8 +15,8 @@ export default class SVGNumberList {
 	[index: number]: SVGNumber;
 
 	public [PropertySymbol.window]: BrowserWindow;
-	public [PropertySymbol.getAttribute]: (() => string | null) | null = null;
-	public [PropertySymbol.setAttribute]: ((value: string) => void) | null = null;
+	public [PropertySymbol.getAttribute]: () => string | null;
+	public [PropertySymbol.setAttribute]: (value: string) => void;
 	public [PropertySymbol.readOnly]: boolean = false;
 	private [PropertySymbol.cache]: { items: SVGNumber[]; attributeValue: string } = {
 		items: [],
@@ -48,8 +48,8 @@ export default class SVGNumberList {
 
 		this[PropertySymbol.window] = window;
 		this[PropertySymbol.readOnly] = !!options.readOnly;
-		this[PropertySymbol.getAttribute] = options.getAttribute || null;
-		this[PropertySymbol.setAttribute] = options.setAttribute || null;
+		this[PropertySymbol.getAttribute] = options.getAttribute;
+		this[PropertySymbol.setAttribute] = options.setAttribute;
 
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
@@ -64,7 +64,7 @@ export default class SVGNumberList {
 				}
 				if (property in target || typeof property === 'symbol') {
 					methodBinder.bind(property);
-					return target[property];
+					return (<any>target)[property];
 				}
 				const index = Number(property);
 				if (!isNaN(index)) {
@@ -74,23 +74,23 @@ export default class SVGNumberList {
 			set(target, property, newValue): boolean {
 				methodBinder.bind(property);
 				if (typeof property === 'symbol') {
-					target[property] = newValue;
+					(<any>target)[property] = newValue;
 					return true;
 				}
 				const index = Number(property);
 				if (isNaN(index)) {
-					target[property] = newValue;
+					(<any>target)[property] = newValue;
 				}
 				return true;
 			},
 			deleteProperty(target, property): boolean {
 				if (typeof property === 'symbol') {
-					delete target[property];
+					delete (<any>target)[property];
 					return true;
 				}
 				const index = Number(property);
 				if (isNaN(index)) {
-					delete target[property];
+					delete (<any>target)[property];
 				}
 				return true;
 			},
@@ -119,7 +119,7 @@ export default class SVGNumberList {
 
 				return false;
 			},
-			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
+			getOwnPropertyDescriptor(target, property): PropertyDescriptor | undefined {
 				if (property in target || typeof property === 'symbol') {
 					return;
 				}
@@ -217,8 +217,8 @@ export default class SVGNumberList {
 		};
 
 		this[PropertySymbol.cache].items = [newItem];
-		this[PropertySymbol.cache].attributeValue = newItem[PropertySymbol.attributeValue];
-		this[PropertySymbol.setAttribute](newItem[PropertySymbol.attributeValue]);
+		this[PropertySymbol.cache].attributeValue = newItem[PropertySymbol.attributeValue]!;
+		this[PropertySymbol.setAttribute](newItem[PropertySymbol.attributeValue] || '');
 
 		return newItem;
 	}
@@ -229,7 +229,7 @@ export default class SVGNumberList {
 	 * @param index Index.
 	 * @returns The item at the index.
 	 **/
-	public getItem(index: number | string): SVGNumber {
+	public getItem(index: number | string): SVGNumber | null {
 		const items = this[PropertySymbol.getItemList]();
 		if (typeof index === 'number') {
 			return items[index] ? items[index] : null;
@@ -501,7 +501,7 @@ export default class SVGNumberList {
 			for (let i = 0, max = parts.length; i < max; i++) {
 				const item = new SVGNumber(PropertySymbol.illegalConstructor, this[PropertySymbol.window], {
 					readOnly: this[PropertySymbol.readOnly],
-					getAttribute: () => item[PropertySymbol.attributeValue],
+					getAttribute: (): string | null => item[PropertySymbol.attributeValue],
 					setAttribute: () => {
 						this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
 							.map((item) => item[PropertySymbol.attributeValue] || '0')

@@ -113,7 +113,7 @@ export default class ParentNodeUtility {
 			const elements: T[] = [];
 
 			for (const element of (<DocumentFragment>parent)[PropertySymbol.elementArray]) {
-				if (includeAll || element[PropertySymbol.tagName].toUpperCase() === upperTagName) {
+				if (includeAll || element[PropertySymbol.tagName]!.toUpperCase() === upperTagName) {
 					elements.push(<T>element);
 				}
 
@@ -138,7 +138,7 @@ export default class ParentNodeUtility {
 				}
 			}
 
-			const cachedResult = { result: null };
+			const cachedResult: ICachedResult = { result: null };
 			const items = find(parentNode, cachedResult);
 
 			cachedResult.result = new WeakRef(items);
@@ -206,7 +206,7 @@ export default class ParentNodeUtility {
 				}
 			}
 
-			const cachedResult = { result: null };
+			const cachedResult: ICachedResult = { result: null };
 			const items = find(parentNode, cachedResult);
 
 			cachedResult.result = new WeakRef(items);
@@ -229,7 +229,7 @@ export default class ParentNodeUtility {
 	public static getElementByTagName(
 		parentNode: Element | DocumentFragment | Document,
 		tagName: string
-	): Element {
+	): Element | null {
 		const upperTagName = tagName.toUpperCase();
 
 		const find = (
@@ -262,7 +262,7 @@ export default class ParentNodeUtility {
 			}
 		}
 
-		const cachedResult = { result: null };
+		const cachedResult: ICachedResult = { result: null };
 		const item = find(parentNode, cachedResult);
 
 		cachedResult.result = item ? new WeakRef(item) : { deref: () => null };
@@ -286,7 +286,7 @@ export default class ParentNodeUtility {
 
 		if (parentNode instanceof Document) {
 			const entry = parentNode[PropertySymbol.elementIdMap].get(id);
-			if (entry?.elements.length > 0) {
+			if (entry && entry.elements.length > 0) {
 				return entry.elements[0];
 			}
 			return null;
@@ -323,7 +323,7 @@ export default class ParentNodeUtility {
 			}
 		}
 
-		const cachedResult = { result: null };
+		const cachedResult: ICachedResult = { result: null };
 		const item = find(parentNode, cachedResult);
 
 		cachedResult.result = item ? new WeakRef(item) : { deref: () => null };

@@ -164,7 +164,7 @@ export default class AbortSignal extends EventTarget {
 
 		const stopListening = (): void => {
 			for (const signal of signals) {
-				signal.removeEventListener('abort', handlers.get(signal));
+				signal.removeEventListener('abort', handlers.get(signal)!);
 			}
 		};
 

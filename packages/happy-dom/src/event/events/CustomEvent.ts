@@ -43,7 +43,7 @@ export default class CustomEvent extends Event {
 		type: string,
 		bubbles = false,
 		cancelable = false,
-		detail: object = null
+		detail: object | null = null
 	): void {
 		this[PropertySymbol.type] = type;
 		this[PropertySymbol.bubbles] = bubbles;

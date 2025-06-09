@@ -11,7 +11,7 @@ import * as PropertySymbol from '../PropertySymbol.js';
  */
 export default class Blob {
 	public readonly type: string = '';
-	public [PropertySymbol.buffer]: Buffer = null;
+	public [PropertySymbol.buffer]: Buffer;
 
 	/**
 	 * Constructor.
@@ -70,7 +70,7 @@ export default class Blob {
 	 * @param contentType Content type.
 	 * @returns New Blob.
 	 */
-	public slice(start = 0, end: number = null, contentType = ''): Blob {
+	public slice(start = 0, end: number | null = null, contentType = ''): Blob {
 		const size = this.size;
 
 		let relativeStart;

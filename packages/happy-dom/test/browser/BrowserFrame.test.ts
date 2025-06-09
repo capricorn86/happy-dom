@@ -351,9 +351,9 @@ Task #1
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new page.mainFrame.window.DOMException(
 					'The operation was aborted. Request timed out.',
-					DOMExceptionNameEnum.abortError
+					DOMExceptionNameEnum.timeoutError
 				)
 			);
 

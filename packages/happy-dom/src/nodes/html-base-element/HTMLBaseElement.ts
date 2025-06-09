@@ -21,10 +21,10 @@ export default class HTMLBaseElement extends HTMLElement {
 		}
 
 		try {
-			return new URL(this.getAttribute('href'), this[PropertySymbol.ownerDocument].location.href)
+			return new URL(this.getAttribute('href')!, this[PropertySymbol.ownerDocument].location.href)
 				.href;
 		} catch (e) {
-			return this.getAttribute('href');
+			return this.getAttribute('href')!;
 		}
 	}
 

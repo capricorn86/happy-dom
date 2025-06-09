@@ -150,7 +150,7 @@ export default class SelectorParser {
 						name: match[6].toLowerCase(),
 						operator: match[7] || null,
 						value: match[8].replace(ESCAPED_CHARACTER_REGEXP, ''),
-						modifier: match[9] || null,
+						modifier: <'s'>match[9] || null,
 						regExp: this.getAttributeRegExp({
 							operator: match[7],
 							value: match[8],
@@ -284,7 +284,7 @@ export default class SelectorParser {
 	 */
 	private static getPseudo(
 		name: string,
-		args?: string,
+		args?: string | null,
 		options?: { ignoreErrors?: boolean }
 	): ISelectorPseudo {
 		const lowerName = name.toLowerCase();
@@ -309,7 +309,7 @@ export default class SelectorParser {
 				return {
 					name: lowerName,
 					arguments: args,
-					selectorItems: [selectorItem],
+					selectorItems: selectorItem ? [selectorItem] : null,
 					nthFunction: this.getPseudoNthFunction(nthFunction)
 				};
 			case 'nth-of-type':
@@ -380,6 +380,10 @@ export default class SelectorParser {
 	 * @returns Pseudo nth function.
 	 */
 	private static getPseudoNthFunction(args?: string): ((n: number) => boolean) | null {
+		if (!args) {
+			return null;
+		}
+
 		if (args === 'odd') {
 			return NTH_FUNCTION.odd;
 		} else if (args === 'even') {

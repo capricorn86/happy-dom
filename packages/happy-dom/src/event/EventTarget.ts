@@ -55,11 +55,13 @@ export default class EventTarget {
 		options = typeof options === 'boolean' ? { capture: options } : options || {};
 		const eventPhase = options.capture ? 'capturing' : 'bubbling';
 
-		let listeners: TEventListener[] = this[PropertySymbol.listeners][eventPhase].get(type);
-		let listenerOptions: IEventListenerOptions[] =
-			this[PropertySymbol.listenerOptions][eventPhase].get(type);
+		let listeners: TEventListener[] | undefined =
+			this[PropertySymbol.listeners][eventPhase].get(type);
+		let listenerOptions: IEventListenerOptions[];
 
-		if (!listeners) {
+		if (listeners) {
+			listenerOptions = this[PropertySymbol.listenerOptions][eventPhase].get(type)!;
+		} else {
 			listeners = [];
 			listenerOptions = [];
 			this[PropertySymbol.listeners][eventPhase].set(type, listeners);
@@ -92,7 +94,7 @@ export default class EventTarget {
 			const index = bubblingListeners.indexOf(listener);
 			if (index !== -1) {
 				bubblingListeners.splice(index, 1);
-				this[PropertySymbol.listenerOptions].bubbling.get(type).splice(index, 1);
+				this[PropertySymbol.listenerOptions].bubbling.get(type)!.splice(index, 1);
 				return;
 			}
 		}
@@ -102,7 +104,7 @@ export default class EventTarget {
 			const index = capturingListeners.indexOf(listener);
 			if (index !== -1) {
 				capturingListeners.splice(index, 1);
-				this[PropertySymbol.listenerOptions].capturing.get(type).splice(index, 1);
+				this[PropertySymbol.listenerOptions].capturing.get(type)!.splice(index, 1);
 			}
 		}
 	}
@@ -122,7 +124,7 @@ export default class EventTarget {
 			(event[PropertySymbol.type] !== 'load' || !event[PropertySymbol.target])
 		) {
 			event[PropertySymbol.dispatching] = true;
-			event[PropertySymbol.target] = this[PropertySymbol.proxy] || this;
+			event[PropertySymbol.target] = (<any>this)[PropertySymbol.proxy] || this;
 
 			this.#goThroughDispatchEventPhases(event);
 
@@ -192,8 +194,8 @@ export default class EventTarget {
 
 		// At target phase
 		event[PropertySymbol.eventPhase] = EventPhaseEnum.atTarget;
-		event[PropertySymbol.currentTarget] = this[PropertySymbol.proxy] || this;
-		event[PropertySymbol.target].dispatchEvent(event);
+		event[PropertySymbol.currentTarget] = (<any>this)[PropertySymbol.proxy] || this;
+		event[PropertySymbol.target]!.dispatchEvent(event);
 
 		// Bubbling phase
 		event[PropertySymbol.eventPhase] = EventPhaseEnum.bubbling;
@@ -239,8 +241,8 @@ export default class EventTarget {
 
 		if (listeners && listeners.length) {
 			const listenerOptions = this[PropertySymbol.listenerOptions][eventPhase]
-				.get(event.type)
-				?.slice();
+				.get(event.type)!
+				.slice();
 
 			for (let i = 0, max = listeners.length; i < max; i++) {
 				const listener = listeners[i];
@@ -262,7 +264,7 @@ export default class EventTarget {
 						try {
 							result = (<TEventListenerObject>listener).handleEvent.call(listener, event);
 						} catch (error) {
-							window[PropertySymbol.dispatchError](error);
+							window[PropertySymbol.dispatchError](<Error>error);
 						}
 
 						if (result instanceof Promise) {
@@ -273,7 +275,7 @@ export default class EventTarget {
 						try {
 							result = (<TEventListenerFunction>listener).call(this, event);
 						} catch (error) {
-							window[PropertySymbol.dispatchError](error);
+							window[PropertySymbol.dispatchError](<Error>error);
 						}
 
 						if (result instanceof Promise) {
@@ -308,7 +310,7 @@ export default class EventTarget {
 
 		if (event.eventPhase !== EventPhaseEnum.capturing) {
 			const onEventName = 'on' + event.type.toLowerCase();
-			const eventListener = this[onEventName];
+			const eventListener = (<any>this)[onEventName];
 
 			if (typeof eventListener === 'function') {
 				// We can end up in a never ending loop if the listener for the error event on Window also throws an error.
@@ -322,7 +324,7 @@ export default class EventTarget {
 					try {
 						result = eventListener(event);
 					} catch (error) {
-						window[PropertySymbol.dispatchError](error);
+						window[PropertySymbol.dispatchError](<Error>error);
 					}
 
 					if (result instanceof Promise) {

@@ -17,6 +17,11 @@ export default class CookieStringUtility {
 	public static stringToCookie(originURL: URL, cookieString: string): ICookie | null {
 		const parts = cookieString.split(';');
 		const part = parts.shift();
+
+		if (!part) {
+			return null;
+		}
+
 		const index = part.indexOf('=');
 		const key = index !== -1 ? part.slice(0, index).trim() : part.trim();
 		const value = index !== -1 ? part.slice(index + 1).trim() : null;

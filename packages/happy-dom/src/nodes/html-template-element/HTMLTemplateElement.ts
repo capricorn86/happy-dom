@@ -53,14 +53,14 @@ export default class HTMLTemplateElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public override get firstChild(): Node {
+	public override get firstChild(): Node | null {
 		return this[PropertySymbol.content].firstChild;
 	}
 
 	/**
 	 * @override
 	 */
-	public override get lastChild(): Node {
+	public override get lastChild(): Node | null {
 		return this[PropertySymbol.content].lastChild;
 	}
 

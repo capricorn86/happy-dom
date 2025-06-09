@@ -23,7 +23,7 @@ export default class VirtualServerUtility {
 			return null;
 		}
 		for (const virtualServer of browserSettings.fetch.virtualServers) {
-			let baseURL: URL;
+			let baseURL: URL | null = null;
 			if (typeof virtualServer.url === 'string') {
 				const url = new URL(
 					virtualServer.url[virtualServer.url.length - 1] === '/'
@@ -78,7 +78,7 @@ export default class VirtualServerUtility {
 			status: 404,
 			statusText: 'Not Found',
 			ok: false,
-			url: null,
+			url: '',
 			redirected: false,
 			headers: new window.Headers({
 				'Content-Type': 'text/html'

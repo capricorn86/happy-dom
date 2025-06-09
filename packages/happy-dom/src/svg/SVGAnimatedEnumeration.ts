@@ -9,7 +9,7 @@ import BrowserWindow from '../window/BrowserWindow.js';
 export default class SVGAnimatedEnumeration {
 	// Internal properties
 	public [PropertySymbol.window]: BrowserWindow;
-	public [PropertySymbol.getAttribute]: () => string;
+	public [PropertySymbol.getAttribute]: () => string | null;
 	public [PropertySymbol.setAttribute]: (value: string) => void;
 	public [PropertySymbol.values]: Array<string | null>;
 	public [PropertySymbol.defaultValue]: string;
@@ -113,7 +113,7 @@ export default class SVGAnimatedEnumeration {
 			(isAnyValue && this[PropertySymbol.values].includes(currentValue)) ||
 			(!isAnyValue && currentValue !== newValue)
 		) {
-			this[PropertySymbol.setAttribute](newValue);
+			this[PropertySymbol.setAttribute](newValue || '');
 		}
 	}
 }

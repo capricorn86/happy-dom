@@ -92,7 +92,7 @@ export default class SVGStyleElement extends SVGElement {
 	 *
 	 * @returns Style.
 	 */
-	public get sheet(): CSSStyleSheet {
+	public get sheet(): CSSStyleSheet | null {
 		if (!this[PropertySymbol.isConnected]) {
 			return null;
 		}

@@ -5,6 +5,7 @@ import Attr from '../attr/Attr.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import MouseEvent from '../../event/events/MouseEvent.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
+import Element from '../element/Element.js';
 
 /**
  * HTMLDetailsElement
@@ -79,7 +80,7 @@ export default class HTMLDetailsElement extends HTMLElement {
 
 		if (
 			!event[PropertySymbol.defaultPrevented] &&
-			event[PropertySymbol.target]?.[PropertySymbol.localName] === 'summary' &&
+			(<Element | null>event[PropertySymbol.target])?.[PropertySymbol.localName] === 'summary' &&
 			event.type === 'click' &&
 			event.eventPhase === EventPhaseEnum.bubbling &&
 			event instanceof MouseEvent

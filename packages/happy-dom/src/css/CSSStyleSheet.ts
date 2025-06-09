@@ -15,9 +15,6 @@ export default class CSSStyleSheet {
 	// Injected by WindowContextClassExtender
 	protected declare [PropertySymbol.window]: BrowserWindow;
 
-	public value: string = null;
-	public name: string = null;
-	public namespaceURI: string = null;
 	public readonly cssRules: CSSRule[] = [];
 
 	// TODO: MediaList is not fully implemented.
@@ -25,7 +22,7 @@ export default class CSSStyleSheet {
 	public title: string;
 	public alternate: boolean;
 	public disabled: boolean;
-	#currentText: string = null;
+	#currentText: string | null = null;
 
 	/**
 	 * Constructor.

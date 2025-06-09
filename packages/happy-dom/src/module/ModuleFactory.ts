@@ -68,7 +68,7 @@ export default class ModuleFactory {
 		try {
 			source = await resourceFetch.fetch(absoluteURL, 'module');
 		} catch (error) {
-			unresolvedModule.resolve(error);
+			unresolvedModule.resolve(<Error>error);
 			throw error;
 		}
 		let module: IModule;

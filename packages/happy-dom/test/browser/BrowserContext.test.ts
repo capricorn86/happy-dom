@@ -28,11 +28,17 @@ describe('BrowserContext', () => {
 		it('Closes the context.', async () => {
 			const browser = new Browser();
 			const context = browser.defaultContext;
+			const incognitoContext = browser.newIncognitoContext();
 			const page1 = context.newPage();
 			const page2 = context.newPage();
+			const incognitoPage1 = incognitoContext.newPage();
+			const incognitoPage2 = incognitoContext.newPage();
 			const originalClose1 = page1.close;
 			const originalClose2 = page2.close;
+			const originalIncognitoClose1 = incognitoPage1.close;
+			const originalIncognitoClose2 = incognitoPage2.close;
 			let pagesClosed = 0;
+
 			vi.spyOn(page1, 'close').mockImplementation(() => {
 				pagesClosed++;
 				return originalClose1.call(page1);
@@ -41,10 +47,40 @@ describe('BrowserContext', () => {
 				pagesClosed++;
 				return originalClose2.call(page2);
 			});
+			vi.spyOn(incognitoPage1, 'close').mockImplementation(() => {
+				pagesClosed++;
+				return originalIncognitoClose1.call(incognitoPage1);
+			});
+			vi.spyOn(incognitoPage2, 'close').mockImplementation(() => {
+				pagesClosed++;
+				return originalIncognitoClose2.call(incognitoPage2);
+			});
+
+			expect(browser.contexts.length).toBe(2);
+
+			await incognitoContext.close();
+
 			expect(browser.contexts.length).toBe(1);
-			await context.close();
-			expect(browser.contexts.length).toBe(0);
 			expect(pagesClosed).toBe(2);
+
+			let error: Error | null = null;
+			try {
+				await context.close();
+			} catch (e) {
+				error = <Error>e;
+			}
+			expect(browser.contexts.length).toBe(1);
+			expect(pagesClosed).toBe(2);
+			expect(error).toEqual(
+				new Error(
+					'Cannot close the default context. Use `browser.close()` to close the browser instead.'
+				)
+			);
+
+			await browser.close();
+
+			expect(browser.contexts.length).toBe(0);
+			expect(pagesClosed).toBe(4);
 		});
 	});
 

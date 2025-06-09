@@ -49,7 +49,7 @@ export default class CustomElementReactionStack {
 		switch (callbackName) {
 			case 'connectedCallback':
 				if (definition.livecycleCallbacks.connectedCallback) {
-					const returnValue = definition.livecycleCallbacks.connectedCallback.call(element);
+					const returnValue: any = definition.livecycleCallbacks.connectedCallback?.call(element);
 
 					/**
 					 * It is common to import dependencies in the connectedCallback() method of web components.
@@ -76,9 +76,10 @@ export default class CustomElementReactionStack {
 			case 'attributeChangedCallback':
 				if (
 					definition.livecycleCallbacks.attributeChangedCallback &&
+					args?.length &&
 					definition.observedAttributes.has(args[0])
 				) {
-					definition.livecycleCallbacks.attributeChangedCallback.apply(element, args);
+					definition.livecycleCallbacks.attributeChangedCallback.apply(element, <any>args);
 				}
 				break;
 		}

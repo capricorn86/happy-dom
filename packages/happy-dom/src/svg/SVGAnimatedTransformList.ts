@@ -10,7 +10,7 @@ import BrowserWindow from '../window/BrowserWindow.js';
 export default class SVGAnimatedTransformList {
 	// Internal properties
 	public [PropertySymbol.window]: BrowserWindow;
-	public [PropertySymbol.getAttribute]: () => string;
+	public [PropertySymbol.getAttribute]: () => string | null;
 	public [PropertySymbol.setAttribute]: (value: string) => void;
 	public [PropertySymbol.baseVal]: SVGTransformList | null = null;
 	public [PropertySymbol.animVal]: SVGTransformList | null = null;

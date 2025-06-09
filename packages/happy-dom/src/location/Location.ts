@@ -11,7 +11,7 @@ export default class Location {
 	public [Symbol.toStringTag] = 'Location';
 
 	// Private properties
-	#browserFrame: IBrowserFrame;
+	#browserFrame: IBrowserFrame | null;
 	#url: URL;
 
 	/**
@@ -114,7 +114,7 @@ export default class Location {
 		}
 
 		this.#browserFrame.goto(url).catch((error) => {
-			if (this.#browserFrame.page?.console) {
+			if (this.#browserFrame?.page.console) {
 				this.#browserFrame.page.console.error(error);
 			} else {
 				throw error;
@@ -238,7 +238,7 @@ export default class Location {
 		}
 
 		this.#browserFrame.goto(this.href).catch((error) => {
-			if (this.#browserFrame.page?.console) {
+			if (this.#browserFrame?.page.console) {
 				this.#browserFrame.page.console.error(error);
 			} else {
 				throw error;

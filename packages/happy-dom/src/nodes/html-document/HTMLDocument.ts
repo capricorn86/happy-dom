@@ -35,7 +35,7 @@ export default class HTMLDocument extends Document {
 		}
 
 		if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode) {
-			return;
+			return node;
 		}
 
 		if (
@@ -65,7 +65,7 @@ export default class HTMLDocument extends Document {
 		}
 
 		if (newNode[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode) {
-			return;
+			return newNode;
 		}
 
 		if (

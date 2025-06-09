@@ -30,11 +30,11 @@ export default class HTMLElement extends Element {
 	public [PropertySymbol.clientWidth] = 0;
 	public [PropertySymbol.clientLeft] = 0;
 	public [PropertySymbol.clientTop] = 0;
-	public [PropertySymbol.style]: CSSStyleDeclaration = null;
+	public [PropertySymbol.style]: CSSStyleDeclaration | null = null;
 	public [PropertySymbol.dataset]: DOMStringMap | null = null;
 
 	// Private properties
-	#customElementDefineCallback: () => void = null;
+	#customElementDefineCallback: (() => void) | null = null;
 
 	// Events
 
@@ -987,7 +987,7 @@ export default class HTMLElement extends Element {
 	 */
 	public override [PropertySymbol.connectedToNode](): void {
 		const window = this[PropertySymbol.window];
-		const localName = this[PropertySymbol.localName];
+		const localName = this[PropertySymbol.localName]!;
 		const allCallbacks = window.customElements[PropertySymbol.callbacks];
 
 		// This element can potentially be a custom element that has not been defined yet
@@ -1013,7 +1013,7 @@ export default class HTMLElement extends Element {
 	 */
 	public override [PropertySymbol.disconnectedFromNode](): void {
 		const window = this[PropertySymbol.window];
-		const localName = this[PropertySymbol.localName];
+		const localName = this[PropertySymbol.localName]!;
 		const allCallbacks = window.customElements[PropertySymbol.callbacks];
 
 		// This element can potentially be a custom element that has not been defined yet
@@ -1074,7 +1074,7 @@ export default class HTMLElement extends Element {
 		}
 
 		const window = this[PropertySymbol.window];
-		const localName = this[PropertySymbol.localName];
+		const localName = this[PropertySymbol.localName]!;
 		const newElement = <HTMLElement>this[PropertySymbol.ownerDocument].createElement(localName);
 		const newCache = newElement[PropertySymbol.cache];
 

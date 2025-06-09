@@ -279,6 +279,7 @@ export const textLength = Symbol('textLength');
 export const lengthAdjust = Symbol('lengthAdjust');
 export const getAttribute = Symbol('getAttribute');
 export const setAttribute = Symbol('setAttribute');
+export const removeAttribute = Symbol('removeAttribute');
 export const z = Symbol('z');
 export const w = Symbol('w');
 export const toArray = Symbol('toArray');

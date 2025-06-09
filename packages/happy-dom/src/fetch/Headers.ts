@@ -16,7 +16,7 @@ export default class Headers {
 	 *
 	 * @param init Headers init.
 	 */
-	constructor(init?: IHeadersInit) {
+	constructor(init?: IHeadersInit | null) {
 		if (init) {
 			if (init instanceof Headers) {
 				this[PropertySymbol.entries] = JSON.parse(JSON.stringify(init[PropertySymbol.entries]));

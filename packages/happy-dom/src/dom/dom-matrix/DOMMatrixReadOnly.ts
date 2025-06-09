@@ -582,7 +582,7 @@ export default class DOMMatrixReadOnly {
 	 * @param source A `DOMMatrix`, `Float32Array`, `Float64Array`, `Array`, or DOMMatrix compatible object to set the matrix values from.
 	 */
 	public [PropertySymbol.setMatrixValue](source?: TDOMMatrixInit): void {
-		let matrix: DOMMatrixReadOnly;
+		let matrix: DOMMatrixReadOnly | null = null;
 
 		// String
 		if (typeof source === 'string' && source.length && source !== 'none') {
@@ -601,6 +601,8 @@ export default class DOMMatrixReadOnly {
 			matrix = (<typeof DOMMatrixReadOnly>this.constructor).fromMatrix(
 				<IDOMMatrixCompatibleObject>source
 			);
+		} else {
+			return;
 		}
 
 		this[PropertySymbol.m11] = matrix[PropertySymbol.m11];
@@ -624,9 +626,11 @@ export default class DOMMatrixReadOnly {
 	/**
 	 * Applies a multiply operation to the current matrix.
 	 *
-	 * @param matrix Second matrix.
+	 * @param matrixCompatibleObject Second matrix.
 	 */
-	public [PropertySymbol.multiplySelf](matrix: IDOMMatrixCompatibleObject): void {
+	public [PropertySymbol.multiplySelf](matrixCompatibleObject: IDOMMatrixCompatibleObject): void {
+		let matrix: IDOMMatrixJSON = <IDOMMatrixJSON>matrixCompatibleObject;
+
 		if (!(matrix instanceof DOMMatrixReadOnly)) {
 			if (matrix?.m11 === undefined && matrix?.a !== undefined) {
 				matrix = Object.assign({}, DEFAULT_MATRIX_JSON, matrix);

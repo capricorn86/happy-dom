@@ -6,7 +6,7 @@ import BrowserWindow from '../../window/BrowserWindow.js';
 export default class DocumentReadyStateManager {
 	private totalTasks = 0;
 	private readyStateCallbacks: (() => void)[] = [];
-	private window: BrowserWindow = null;
+	private window: BrowserWindow;
 	private immediate: NodeJS.Immediate | null = null;
 	private isComplete = false;
 

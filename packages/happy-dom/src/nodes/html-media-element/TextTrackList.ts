@@ -13,9 +13,9 @@ export default class TextTrackList extends EventTarget {
 	public [PropertySymbol.items]: TextTrack[] = [];
 
 	// Events
-	public onaddtrack: (event: Event) => void = null;
-	public onchange: (event: Event) => void = null;
-	public onremovetrack: (event: Event) => void = null;
+	public onaddtrack: ((event: Event) => void) | null = null;
+	public onchange: ((event: Event) => void) | null = null;
+	public onremovetrack: ((event: Event) => void) | null = null;
 
 	/**
 	 * Constructor.
@@ -41,7 +41,7 @@ export default class TextTrackList extends EventTarget {
 				}
 				if (property in target || typeof property === 'symbol') {
 					methodBinder.bind(property);
-					return target[property];
+					return (<any>target)[property];
 				}
 				const index = Number(property);
 				if (!isNaN(index)) {
@@ -51,24 +51,24 @@ export default class TextTrackList extends EventTarget {
 			set(target, property, newValue): boolean {
 				methodBinder.bind(property);
 				if (typeof property === 'symbol') {
-					target[property] = newValue;
+					(<any>target)[property] = newValue;
 					return true;
 				}
 
 				const index = Number(property);
 				if (isNaN(index)) {
-					target[property] = newValue;
+					(<any>target)[property] = newValue;
 				}
 				return true;
 			},
 			deleteProperty(target, property): boolean {
 				if (typeof property === 'symbol') {
-					delete target[property];
+					delete (<any>target)[property];
 					return true;
 				}
 				const index = Number(property);
 				if (isNaN(index)) {
-					delete target[property];
+					delete (<any>target)[property];
 				}
 				return true;
 			},
@@ -97,7 +97,7 @@ export default class TextTrackList extends EventTarget {
 
 				return false;
 			},
-			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
+			getOwnPropertyDescriptor(target, property): PropertyDescriptor | undefined {
 				if (property in target || typeof property === 'symbol') {
 					return;
 				}

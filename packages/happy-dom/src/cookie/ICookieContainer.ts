@@ -10,6 +10,15 @@ import IOptionalCookie from './IOptionalCookie.js';
  */
 export default interface ICookieContainer {
 	/**
+	 * Adds a cookie string in the format "key=value; expires=...; path=...; domain=...".
+	 *
+	 * @param url URL.
+	 * @param cookieString Cookie string.
+	 * @returns Cookie or null if the cookie string is invalid.
+	 */
+	addCookieString(url: URL, cookieString: string): ICookie | null;
+
+	/**
 	 * Adds cookies.
 	 *
 	 * @param cookies Cookies.
@@ -24,4 +33,9 @@ export default interface ICookieContainer {
 	 * @returns Cookies.
 	 */
 	getCookies(url: URL | null, httpOnly?: boolean): ICookie[];
+
+	/**
+	 * Clears all cookies.
+	 */
+	clearCookies(): void;
 }

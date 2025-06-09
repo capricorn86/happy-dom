@@ -1398,7 +1398,7 @@ describe('XMLHttpRequest', () => {
 			await window.happyDOM?.waitUntilComplete();
 
 			expect(() => request.overrideMimeType('application/xml')).toThrowError(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'overrideMimeType' on 'XMLHttpRequest': MIME type cannot be overridden when the request state is LOADING or DONE.`,
 					DOMExceptionNameEnum.invalidStateError
 				)

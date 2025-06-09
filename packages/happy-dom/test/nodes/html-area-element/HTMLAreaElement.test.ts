@@ -8,6 +8,7 @@ import Response from '../../../src/fetch/Response.js';
 import Browser from '../../../src/browser/Browser.js';
 import Fetch from '../../../src/fetch/Fetch.js';
 import DOMTokenList from '../../../src/dom/DOMTokenList.js';
+import BrowserWindow from '../../../src/window/BrowserWindow.js';
 
 describe('HTMLAreaElement', () => {
 	let window: Window;
@@ -418,9 +419,22 @@ describe('HTMLAreaElement', () => {
 
 			expect(newWindow.document.body.innerHTML).toBe('Test');
 
+			// Nothing happens as the main window can't be closed with a script
 			newWindow.close();
 
-			expect(newWindow.closed).toBe(true);
+			expect(newWindow.closed).toBe(false);
+
+			const childWindow = <BrowserWindow>newWindow.open('https://www.example.com/child');
+
+			expect(childWindow).toBeInstanceOf(BrowserWindow);
+			expect(childWindow.location.href).toBe('https://www.example.com/child');
+
+			await browser.waitUntilComplete();
+
+			expect(childWindow.document.body.innerHTML).toBe('Test');
+			childWindow.close();
+
+			expect(childWindow.closed).toBe(true);
 		});
 
 		it('Navigates the browser when a "click" event is dispatched on an element with target "_blank".', async () => {

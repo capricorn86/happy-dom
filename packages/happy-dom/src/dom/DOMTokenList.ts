@@ -52,7 +52,7 @@ export default class DOMTokenList {
 				}
 				if (property in target || typeof property === 'symbol') {
 					methodBinder.bind(property);
-					return target[property];
+					return (<any>target)[property];
 				}
 				const index = Number(property);
 				if (!isNaN(index)) {
@@ -62,23 +62,23 @@ export default class DOMTokenList {
 			set(target, property, newValue): boolean {
 				methodBinder.bind(property);
 				if (typeof property === 'symbol') {
-					target[property] = newValue;
+					(<any>target)[property] = newValue;
 					return true;
 				}
 				const index = Number(property);
 				if (isNaN(index)) {
-					target[property] = newValue;
+					(<any>target)[property] = newValue;
 				}
 				return true;
 			},
 			deleteProperty(target, property): boolean {
 				if (typeof property === 'symbol') {
-					delete target[property];
+					delete (<any>target)[property];
 					return true;
 				}
 				const index = Number(property);
 				if (isNaN(index)) {
-					delete target[property];
+					delete (<any>target)[property];
 				}
 				return true;
 			},
@@ -107,7 +107,7 @@ export default class DOMTokenList {
 
 				return false;
 			},
-			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
+			getOwnPropertyDescriptor(target, property): PropertyDescriptor | undefined {
 				if (property in target || typeof property === 'symbol') {
 					return;
 				}
@@ -149,7 +149,7 @@ export default class DOMTokenList {
 	 * Get value.
 	 */
 	public get value(): string {
-		return this[PropertySymbol.ownerElement].getAttribute(this[PropertySymbol.attributeName]);
+		return this[PropertySymbol.ownerElement].getAttribute(this[PropertySymbol.attributeName]) || '';
 	}
 
 	/**
@@ -164,7 +164,7 @@ export default class DOMTokenList {
 	 *
 	 * @param index Index.
 	 * */
-	public item(index: number | string): string {
+	public item(index: number | string): string | null {
 		const items = this[PropertySymbol.getTokenList]();
 		if (typeof index === 'number') {
 			return items[index] ? items[index] : null;
@@ -223,7 +223,10 @@ export default class DOMTokenList {
 	 * @param callback
 	 * @param thisArg
 	 */
-	public forEach(callback: (currentValue, currentIndex, listObj) => void, thisArg?: this): void {
+	public forEach(
+		callback: (currentValue: string, currentIndex: number, listObj: string[]) => void,
+		thisArg?: this
+	): void {
 		return this[PropertySymbol.getTokenList]().forEach(callback, thisArg);
 	}
 
@@ -329,7 +332,7 @@ export default class DOMTokenList {
 		}
 
 		// It is possible to make this statement shorter by using Array.from() and Set, but this is faster when comparing using a bench test.
-		const items = [];
+		const items: string[] = [];
 		const trimmed = attributeValue.trim();
 
 		if (trimmed) {

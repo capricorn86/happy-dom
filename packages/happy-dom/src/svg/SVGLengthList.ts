@@ -15,8 +15,8 @@ export default class SVGLengthList {
 	[index: number]: SVGLength;
 
 	public [PropertySymbol.window]: BrowserWindow;
-	public [PropertySymbol.getAttribute]: (() => string | null) | null = null;
-	public [PropertySymbol.setAttribute]: ((value: string) => void) | null = null;
+	public [PropertySymbol.getAttribute]: () => string | null;
+	public [PropertySymbol.setAttribute]: (value: string) => void;
 	public [PropertySymbol.readOnly]: boolean = false;
 	private [PropertySymbol.cache]: { items: SVGLength[]; attributeValue: string } = {
 		items: [],
@@ -60,7 +60,7 @@ export default class SVGLengthList {
 				}
 				if (property in target || typeof property === 'symbol') {
 					methodBinder.bind(property);
-					return target[property];
+					return (<any>target)[property];
 				}
 				const index = Number(property);
 				if (!isNaN(index)) {
@@ -70,23 +70,23 @@ export default class SVGLengthList {
 			set(target, property, newValue): boolean {
 				methodBinder.bind(property);
 				if (typeof property === 'symbol') {
-					target[property] = newValue;
+					(<any>target)[property] = newValue;
 					return true;
 				}
 				const index = Number(property);
 				if (isNaN(index)) {
-					target[property] = newValue;
+					(<any>target)[property] = newValue;
 				}
 				return true;
 			},
 			deleteProperty(target, property): boolean {
 				if (typeof property === 'symbol') {
-					delete target[property];
+					delete (<any>target)[property];
 					return true;
 				}
 				const index = Number(property);
 				if (isNaN(index)) {
-					delete target[property];
+					delete (<any>target)[property];
 				}
 				return true;
 			},
@@ -115,7 +115,7 @@ export default class SVGLengthList {
 
 				return false;
 			},
-			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
+			getOwnPropertyDescriptor(target, property): PropertyDescriptor | undefined {
 				if (property in target || typeof property === 'symbol') {
 					return;
 				}
@@ -200,8 +200,8 @@ export default class SVGLengthList {
 		};
 
 		this[PropertySymbol.cache].items = [newItem];
-		this[PropertySymbol.cache].attributeValue = newItem[PropertySymbol.attributeValue];
-		this[PropertySymbol.setAttribute](newItem[PropertySymbol.attributeValue]);
+		this[PropertySymbol.cache].attributeValue = newItem[PropertySymbol.attributeValue]!;
+		this[PropertySymbol.setAttribute](newItem[PropertySymbol.attributeValue] || '');
 
 		return newItem;
 	}
@@ -212,7 +212,7 @@ export default class SVGLengthList {
 	 * @param index Index.
 	 * @returns The item at the index.
 	 **/
-	public getItem(index: number | string): SVGLength {
+	public getItem(index: number | string): SVGLength | null {
 		const items = this[PropertySymbol.getItemList]();
 		if (typeof index === 'number') {
 			return items[index] ? items[index] : null;
@@ -466,7 +466,7 @@ export default class SVGLengthList {
 			for (let i = 0, max = parts.length; i < max; i++) {
 				const item = new SVGLength(PropertySymbol.illegalConstructor, this[PropertySymbol.window], {
 					readOnly: this[PropertySymbol.readOnly],
-					getAttribute: () => item[PropertySymbol.attributeValue],
+					getAttribute: (): string | null => item[PropertySymbol.attributeValue],
 					setAttribute: (value: string) => {
 						item[PropertySymbol.attributeValue] = value;
 						const newAttributeValue = items

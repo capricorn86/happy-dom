@@ -283,8 +283,8 @@ describe('SVGImageElement', () => {
 	});
 
 	describe('decode()', () => {
-		it('Should return a promise', () => {
-			expect(element.decode()).resolves.toBe(undefined);
+		it('Should return a promise', async () => {
+			await expect(element.decode()).resolves.toBe(undefined);
 		});
 	});
 });

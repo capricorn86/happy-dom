@@ -9,8 +9,10 @@ export default class PreloadEntry {
 	public integrityMetadata: string | null = null;
 	public response: Response | null = null;
 	public error: Error | null = null;
-	#callback: { resolve: (response: Response) => void; reject: (error: Error) => void } | null =
-		null;
+	#callback: {
+		resolve: (response: Response) => void;
+		reject: (error: Error) => void;
+	} | null = null;
 
 	/**
 	 * On response available.
@@ -29,7 +31,7 @@ export default class PreloadEntry {
 	 * @param error
 	 * @param response
 	 */
-	public responseAvailable(error: Error | null, response: Response): void {
+	public responseAvailable(error: Error | null, response: Response | null): void {
 		this.response = response;
 		this.error = error;
 
@@ -39,6 +41,8 @@ export default class PreloadEntry {
 
 		if (error) {
 			this.#callback.reject(error);
+		} else if (!response) {
+			this.#callback.reject(new Error('Response is null'));
 		} else {
 			this.#callback.resolve(response);
 		}

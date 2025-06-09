@@ -21,7 +21,7 @@ describe('DetachedBrowser', () => {
 			expect(browser.contexts.length).toBe(1);
 			expect(browser.contexts[0]).toBe(browser.defaultContext);
 
-			await browser.defaultContext.close();
+			await browser.close();
 
 			expect(browser.contexts.length).toBe(0);
 		});
@@ -79,14 +79,15 @@ describe('DetachedBrowser', () => {
 	describe('close()', () => {
 		it('Closes the browser.', async () => {
 			const browser = new DetachedBrowser(BrowserWindow);
-			const originalClose = browser.defaultContext.close;
+			const defaultContext = browser.defaultContext;
+			const originalClose = defaultContext.close;
 			let isContextClosed = false;
 
-			browser.defaultContext.pages[0].mainFrame.window = new Window();
+			defaultContext.pages[0].mainFrame.window = new Window();
 
-			vi.spyOn(browser.defaultContext, 'close').mockImplementation(() => {
+			vi.spyOn(defaultContext, 'close').mockImplementation(() => {
 				isContextClosed = true;
-				return originalClose.call(browser.defaultContext);
+				return originalClose.call(defaultContext);
 			});
 
 			await browser.close();

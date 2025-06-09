@@ -3,8 +3,8 @@ import ICookie from './ICookie.js';
 
 export default <ICookie>{
 	// Required
-	key: null,
-	originURL: null,
+	key: null!,
+	originURL: null!,
 
 	// Optional
 	value: null,

@@ -24,7 +24,8 @@ export default class ShadowRoot extends DocumentFragment {
 	public [PropertySymbol.delegatesFocus]: boolean = false;
 	public [PropertySymbol.serializable]: boolean = false;
 	public [PropertySymbol.slotAssignment]: 'named' | 'manual' = 'named';
-	public [PropertySymbol.propertyEventListeners]: Map<string, (event: Event) => void> = new Map();
+	public [PropertySymbol.propertyEventListeners]: Map<string, ((event: Event) => void) | null> =
+		new Map();
 
 	// Events
 
@@ -54,7 +55,7 @@ export default class ShadowRoot extends DocumentFragment {
 	 *
 	 * @returns Host.
 	 */
-	public get host(): Element {
+	public get host(): Element | null {
 		return this[PropertySymbol.host];
 	}
 
@@ -178,7 +179,7 @@ export default class ShadowRoot extends DocumentFragment {
 	 * @returns Active element.
 	 */
 	public get activeElement(): HTMLElement | SVGElement | null {
-		let activeElement: HTMLElement | SVGElement =
+		let activeElement: HTMLElement | SVGElement | null =
 			this[PropertySymbol.ownerDocument][PropertySymbol.activeElement];
 
 		let rootNode: ShadowRoot | Document = <ShadowRoot | Document>activeElement?.getRootNode();

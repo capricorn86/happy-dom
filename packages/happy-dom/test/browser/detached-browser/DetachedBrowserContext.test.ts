@@ -40,16 +40,37 @@ describe('DetachedBrowserContext', () => {
 			const originalClose1 = page1.close;
 			const originalClose2 = page2.close;
 			let pagesClosed = 0;
+
 			vi.spyOn(page1, 'close').mockImplementation(() => {
 				pagesClosed++;
 				return originalClose1.call(page1);
 			});
+
 			vi.spyOn(page2, 'close').mockImplementation(() => {
 				pagesClosed++;
 				return originalClose2.call(page2);
 			});
+
 			expect(browser.contexts.length).toBe(1);
-			await context.close();
+			expect(pagesClosed).toBe(0);
+
+			let error: Error | null = null;
+			try {
+				await context.close();
+			} catch (e) {
+				error = <Error>e;
+			}
+
+			expect(browser.contexts.length).toBe(1);
+			expect(pagesClosed).toBe(0);
+			expect(error).toEqual(
+				new Error(
+					'Cannot close the default context. Use `browser.close()` to close the browser instead.'
+				)
+			);
+
+			await browser.close();
+
 			expect(browser.contexts.length).toBe(0);
 			expect(pagesClosed).toBe(2);
 		});

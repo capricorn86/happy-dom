@@ -13,6 +13,7 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 		print: Array<(event: Event) => void>;
 		clear: Array<(event: Event) => void>;
 	} = { print: [], clear: [] };
+	#isClosed = false;
 
 	/**
 	 * Writes to the output.
@@ -20,6 +21,9 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * @param logEntry Log entry.
 	 */
 	public print(logEntry: IVirtualConsoleLogEntry): void {
+		if (this.#isClosed) {
+			return;
+		}
 		this.#logEntries.push(logEntry);
 		this.dispatchEvent(new Event('print'));
 	}
@@ -28,8 +32,24 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * Clears the output.
 	 */
 	public clear(): void {
+		if (this.#isClosed) {
+			return;
+		}
 		this.#logEntries = [];
 		this.dispatchEvent(new Event('clear'));
+	}
+
+	/**
+	 * Clears and closes the virtual console printer.
+	 */
+	public close(): void {
+		if (this.#isClosed) {
+			return;
+		}
+		this.dispatchEvent(new Event('clear'));
+		this.#logEntries = [];
+		this.#listeners = { print: [], clear: [] };
+		this.#isClosed = true;
 	}
 
 	/**
@@ -39,6 +59,9 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * @param listener Listener.
 	 */
 	public addEventListener(eventType: 'print' | 'clear', listener: (event: Event) => void): void {
+		if (this.#isClosed) {
+			return;
+		}
 		if (!this.#listeners[eventType]) {
 			throw new Error(`Event type "${eventType}" is not supported.`);
 		}
@@ -52,6 +75,9 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * @param listener Listener.
 	 */
 	public removeEventListener(eventType: 'print' | 'clear', listener: (event: Event) => void): void {
+		if (this.#isClosed) {
+			return;
+		}
 		if (!this.#listeners[eventType]) {
 			throw new Error(`Event type "${eventType}" is not supported.`);
 		}
@@ -67,11 +93,18 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * @param event Event.
 	 */
 	public dispatchEvent(event: Event): void {
-		if (!this.#listeners[event.type]) {
-			throw new Error(`Event type "${event.type}" is not supported.`);
+		if (this.#isClosed) {
+			return;
 		}
-		for (const listener of this.#listeners[event.type]) {
-			listener(event);
+		switch (event.type) {
+			case 'print':
+			case 'clear':
+				for (const listener of this.#listeners[event.type]) {
+					listener(event);
+				}
+				break;
+			default:
+				throw new Error(`Event type "${event.type}" is not supported.`);
 		}
 	}
 
