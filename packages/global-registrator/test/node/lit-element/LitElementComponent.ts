@@ -13,7 +13,7 @@ export default class LitElementComponent extends LitElement {
 	`;
 
 	@property({ type: String })
-	public prop1: string = null;
+	public prop1: string | null = null;
 
 	/**
 	 * Renders the component.

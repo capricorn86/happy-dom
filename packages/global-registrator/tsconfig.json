@@ -35,7 +35,6 @@
 	},
 	"include": [
 		"@types/node",
-		"src",
-		"src/**/*.json"
+		"src"
 	]
 }
