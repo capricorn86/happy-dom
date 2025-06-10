@@ -13,7 +13,16 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 		print: Array<(event: Event) => void>;
 		clear: Array<(event: Event) => void>;
 	} = { print: [], clear: [] };
-	#isClosed = false;
+	#closed = false;
+
+	/**
+	 * Returns closed state.
+	 *
+	 * @returns True if the printer is closed.
+	 */
+	public get closed(): boolean {
+		return this.#closed;
+	}
 
 	/**
 	 * Writes to the output.
@@ -21,7 +30,7 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * @param logEntry Log entry.
 	 */
 	public print(logEntry: IVirtualConsoleLogEntry): void {
-		if (this.#isClosed) {
+		if (this.#closed) {
 			return;
 		}
 		this.#logEntries.push(logEntry);
@@ -32,7 +41,7 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * Clears the output.
 	 */
 	public clear(): void {
-		if (this.#isClosed) {
+		if (this.#closed) {
 			return;
 		}
 		this.#logEntries = [];
@@ -43,13 +52,12 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * Clears and closes the virtual console printer.
 	 */
 	public close(): void {
-		if (this.#isClosed) {
+		if (this.#closed) {
 			return;
 		}
-		this.dispatchEvent(new Event('clear'));
 		this.#logEntries = [];
 		this.#listeners = { print: [], clear: [] };
-		this.#isClosed = true;
+		this.#closed = true;
 	}
 
 	/**
@@ -59,7 +67,7 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * @param listener Listener.
 	 */
 	public addEventListener(eventType: 'print' | 'clear', listener: (event: Event) => void): void {
-		if (this.#isClosed) {
+		if (this.#closed) {
 			return;
 		}
 		if (!this.#listeners[eventType]) {
@@ -75,7 +83,7 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * @param listener Listener.
 	 */
 	public removeEventListener(eventType: 'print' | 'clear', listener: (event: Event) => void): void {
-		if (this.#isClosed) {
+		if (this.#closed) {
 			return;
 		}
 		if (!this.#listeners[eventType]) {
@@ -93,7 +101,7 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * @param event Event.
 	 */
 	public dispatchEvent(event: Event): void {
-		if (this.#isClosed) {
+		if (this.#closed) {
 			return;
 		}
 		switch (event.type) {

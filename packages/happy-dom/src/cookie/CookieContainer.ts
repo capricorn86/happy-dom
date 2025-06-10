@@ -4,7 +4,6 @@ import ICookie from './ICookie.js';
 import ICookieContainer from './ICookieContainer.js';
 import IOptionalCookie from './IOptionalCookie.js';
 import CookieExpireUtility from './urilities/CookieExpireUtility.js';
-import CookieStringUtility from './urilities/CookieStringUtility.js';
 import CookieURLUtility from './urilities/CookieURLUtility.js';
 
 /**
@@ -17,33 +16,18 @@ export default class CookieContainer implements ICookieContainer {
 	#cookies: ICookie[] = [];
 
 	/**
-	 * Adds a cookie string in the format "key=value; expires=...; path=...; domain=...".
-	 *
-	 * @param url URL.
-	 * @param cookieString Cookie string.
-	 * @returns Cookie or null if the cookie string is invalid.
-	 */
-	public addCookieString(url: URL, cookieString: string): ICookie | null {
-		const cookie = CookieStringUtility.stringToCookie(url, cookieString);
-		if (cookie) {
-			this.addCookies([cookie]);
-		}
-		return cookie;
-	}
-
-	/**
 	 * Adds cookies.
 	 *
 	 * @param cookies Cookies.
 	 */
 	public addCookies(cookies: IOptionalCookie[]): void {
-		const indexMap: { [k: string]: number } = {};
+		const indexMap: Map<string, number> = new Map();
 		const getKey = (cookie: ICookie): string =>
 			`${cookie.key}-${cookie.originURL.hostname}-${cookie.path}-${typeof cookie.value}`;
 
 		// Creates a map of cookie key, domain, path and value to index.
 		for (let i = 0, max = this.#cookies.length; i < max; i++) {
-			indexMap[getKey(this.#cookies[i])] = i;
+			indexMap.set(getKey(this.#cookies[i]), i);
 		}
 
 		for (const cookie of cookies) {
@@ -51,14 +35,14 @@ export default class CookieContainer implements ICookieContainer {
 
 			if (newCookie && newCookie.key && newCookie.originURL) {
 				// Remove existing cookie with same name, domain and path.
-				const index = indexMap[getKey(newCookie)];
+				const index = indexMap.get(getKey(newCookie));
 
 				if (index !== undefined) {
 					this.#cookies.splice(index, 1);
 				}
 
 				if (!CookieExpireUtility.hasExpired(newCookie)) {
-					indexMap[getKey(newCookie)] = this.#cookies.length;
+					indexMap.set(getKey(newCookie), this.#cookies.length);
 					this.#cookies.push(newCookie);
 				}
 			}

@@ -1,4 +1,5 @@
 import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
+import CookieStringUtility from '../../cookie/urilities/CookieStringUtility.js';
 import Headers from '../Headers.js';
 
 /**
@@ -31,10 +32,10 @@ export default class FetchResponseHeaderUtility {
 				// Handles setting cookie headers to the document.
 				// "Set-Cookie" and "Set-Cookie2" are not allowed in response headers according to spec.
 				if (lowerName === 'set-cookie' || lowerName === 'set-cookie2') {
-					options.browserFrame.page.context.cookieContainer.addCookieString(
-						options.requestURL,
-						header
-					);
+					const cookie = CookieStringUtility.stringToCookie(options.requestURL, header);
+					if (cookie) {
+						options.browserFrame.page.context.cookieContainer.addCookies([cookie]);
+					}
 				} else {
 					headers.append(key, header);
 				}

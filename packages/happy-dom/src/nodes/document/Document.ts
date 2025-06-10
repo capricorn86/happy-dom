@@ -1195,7 +1195,7 @@ export default class Document extends Node {
 		}
 		return CookieStringUtility.cookiesToString(
 			browserFrame.page.context.cookieContainer.getCookies(
-				new URL(this[PropertySymbol.window].location.href),
+				<URL>(<unknown>this[PropertySymbol.window].location),
 				true
 			)
 		);
@@ -1206,15 +1206,15 @@ export default class Document extends Node {
 	 *
 	 * @param cookie Cookie string.
 	 */
-	public set cookie(cookie: string) {
+	public set cookie(value: string) {
 		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
 		if (!browserFrame) {
 			return;
 		}
-		browserFrame.page.context.cookieContainer.addCookieString(
-			new URL(this[PropertySymbol.window].location.href),
-			cookie
-		);
+		const cookie = CookieStringUtility.stringToCookie(this[PropertySymbol.window].location, value);
+		if (cookie) {
+			browserFrame.page.context.cookieContainer.addCookies([cookie]);
+		}
 	}
 
 	/**

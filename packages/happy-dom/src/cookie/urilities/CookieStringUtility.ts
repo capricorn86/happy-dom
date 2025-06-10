@@ -2,6 +2,7 @@ import CookieSameSiteEnum from '../enums/CookieSameSiteEnum.js';
 import URL from '../../url/URL.js';
 import ICookie from '../ICookie.js';
 import DefaultCookie from '../DefaultCookie.js';
+import Location from '../../location/Location.js';
 
 /**
  * Cookie string.
@@ -14,7 +15,7 @@ export default class CookieStringUtility {
 	 * @param cookieString Cookie string.
 	 * @returns Cookie.
 	 */
-	public static stringToCookie(originURL: URL, cookieString: string): ICookie | null {
+	public static stringToCookie(originURL: URL | Location, cookieString: string): ICookie | null {
 		const parts = cookieString.split(';');
 		const part = parts.shift();
 
