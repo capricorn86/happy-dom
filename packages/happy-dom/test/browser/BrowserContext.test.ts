@@ -56,12 +56,20 @@ describe('BrowserContext', () => {
 				return originalIncognitoClose2.call(incognitoPage2);
 			});
 
+			incognitoPage1.console.log('Incognito Page 1');
+			incognitoPage1.mainFrame.document.cookie = 'test=1';
+
+			expect(incognitoContext.cookieContainer.getCookies().length).toBe(1);
+
 			expect(browser.contexts.length).toBe(2);
 
 			await incognitoContext.close();
 
 			expect(browser.contexts.length).toBe(1);
 			expect(pagesClosed).toBe(2);
+			expect(incognitoContext.cookieContainer.getCookies().length).toBe(0);
+			expect(incognitoPage1.virtualConsolePrinter.readAsString()).toBe('');
+			expect(incognitoPage1.virtualConsolePrinter.closed).toBe(true);
 
 			let error: Error | null = null;
 			try {

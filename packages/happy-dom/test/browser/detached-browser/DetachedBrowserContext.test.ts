@@ -51,6 +51,11 @@ describe('DetachedBrowserContext', () => {
 				return originalClose2.call(page2);
 			});
 
+			page1.console.log('Incognito Page 1');
+			page1.mainFrame.document.cookie = 'test=1';
+
+			expect(context.cookieContainer.getCookies().length).toBe(1);
+
 			expect(browser.contexts.length).toBe(1);
 			expect(pagesClosed).toBe(0);
 
@@ -73,6 +78,9 @@ describe('DetachedBrowserContext', () => {
 
 			expect(browser.contexts.length).toBe(0);
 			expect(pagesClosed).toBe(2);
+			expect(context.cookieContainer.getCookies().length).toBe(0);
+			expect(page1.virtualConsolePrinter.readAsString()).toBe('');
+			expect(page1.virtualConsolePrinter.closed).toBe(true);
 		});
 	});
 
