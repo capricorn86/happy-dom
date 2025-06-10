@@ -1573,7 +1573,10 @@ export default class Element
 			if (!(id in window) || (<any>window)[id] === entry.elements[0]) {
 				(<any>window)[id] = entry.htmlCollection;
 			}
-		} else if (!(id in window) || (<any>window)[id] === entry.htmlCollection) {
+		} else if (
+			!(id in window) ||
+			(entry.htmlCollection !== null && (<any>window)[id] === entry.htmlCollection)
+		) {
 			(<any>window)[id] = element;
 		}
 	}
