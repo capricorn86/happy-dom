@@ -71,14 +71,15 @@ export default class VirtualServerUtility {
 	 * Returns a 404 response.
 	 *
 	 * @param window Window.
+	 * @param requestURL Request URL.
 	 * @returns 404 response.
 	 */
-	public static getNotFoundSyncResponse(window: BrowserWindow): ISyncResponse {
+	public static getNotFoundSyncResponse(window: BrowserWindow, requestURL: string): ISyncResponse {
 		return <ISyncResponse>{
 			status: 404,
 			statusText: 'Not Found',
 			ok: false,
-			url: '',
+			url: requestURL,
 			redirected: false,
 			headers: new window.Headers({
 				'Content-Type': 'text/html'

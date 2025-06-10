@@ -3825,6 +3825,7 @@ describe('SyncFetch', () => {
 
 			expect(response5.ok).toBe(false);
 			expect(response5.status).toBe(404);
+			expect(response5.url).toBe('https://example.com/gb/en/not_found.js');
 			expect(response5.statusText).toBe('Not Found');
 			expect(page.virtualConsolePrinter.readAsString()).toBe(
 				`GET https://example.com/gb/en/not_found.js 404 (Not Found)\n`

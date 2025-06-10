@@ -287,7 +287,7 @@ export default class SyncFetch {
 			this.#browserFrame.page.console.error(
 				`${this.request.method} ${this.request.url} 404 (Not Found)`
 			);
-			const response = VirtualServerUtility.getNotFoundSyncResponse(this.#window);
+			const response = VirtualServerUtility.getNotFoundSyncResponse(this.#window, this.request.url);
 			const interceptedResponse = this.interceptor?.afterSyncResponse
 				? this.interceptor.afterSyncResponse({
 						window: this.#window,
@@ -306,7 +306,7 @@ export default class SyncFetch {
 			this.#browserFrame.page.console.error(
 				`${this.request.method} ${this.request.url} 404 (Not Found)`
 			);
-			const response = VirtualServerUtility.getNotFoundSyncResponse(this.#window);
+			const response = VirtualServerUtility.getNotFoundSyncResponse(this.#window, this.request.url);
 			const interceptedResponse = this.interceptor?.afterSyncResponse
 				? this.interceptor.afterSyncResponse({
 						window: this.#window,
