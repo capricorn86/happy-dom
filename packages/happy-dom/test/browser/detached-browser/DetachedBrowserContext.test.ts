@@ -30,6 +30,20 @@ describe('DetachedBrowserContext', () => {
 		});
 	});
 
+	describe('get closed()', () => {
+		it('Returns "false" if the context is not closed.', () => {
+			const browser = new DetachedBrowser(BrowserWindow);
+			expect(browser.defaultContext.closed).toBe(false);
+		});
+
+		it('Returns "true" if the default context is closed.', async () => {
+			const browser = new DetachedBrowser(BrowserWindow);
+			const defaultContext = browser.defaultContext;
+			await browser.close();
+			expect(defaultContext.closed).toBe(true);
+		});
+	});
+
 	describe('close()', () => {
 		it('Closes the context.', async () => {
 			const browser = new DetachedBrowser(BrowserWindow);

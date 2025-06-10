@@ -24,6 +24,27 @@ describe('BrowserContext', () => {
 		});
 	});
 
+	describe('get closed()', () => {
+		it('Returns "false" if the context is not closed.', () => {
+			const browser = new Browser();
+			expect(browser.defaultContext.closed).toBe(false);
+		});
+
+		it('Returns "true" if the default context is closed.', async () => {
+			const browser = new Browser();
+			const defaultContext = browser.defaultContext;
+			await browser.close();
+			expect(defaultContext.closed).toBe(true);
+		});
+
+		it('Returns "true" if the inkognito context is closed.', async () => {
+			const browser = new Browser();
+			const incognitoContext = browser.newIncognitoContext();
+			await incognitoContext.close();
+			expect(incognitoContext.closed).toBe(true);
+		});
+	});
+
 	describe('close()', () => {
 		it('Closes the context.', async () => {
 			const browser = new Browser();

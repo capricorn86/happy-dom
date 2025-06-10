@@ -27,6 +27,18 @@ describe('DetachedBrowser', () => {
 		});
 	});
 
+	describe('get closed()', () => {
+		it('Returns "false" if the browser is not closed.', () => {
+			expect(new DetachedBrowser(BrowserWindow).closed).toBe(false);
+		});
+
+		it('Returns "true" if the browser is closed.', async () => {
+			const browser = new DetachedBrowser(BrowserWindow);
+			await browser.close();
+			expect(browser.closed).toBe(true);
+		});
+	});
+
 	describe('get settings()', () => {
 		it('Returns the settings.', () => {
 			expect(new DetachedBrowser(BrowserWindow).settings).toEqual(DefaultBrowserSettings);

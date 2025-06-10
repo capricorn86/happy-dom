@@ -46,6 +46,18 @@ describe('Browser', () => {
 		});
 	});
 
+	describe('get closed()', () => {
+		it('Returns "false" if the browser is not closed.', () => {
+			expect(new Browser().closed).toBe(false);
+		});
+
+		it('Returns "true" if the browser is closed.', async () => {
+			const browser = new Browser();
+			await browser.close();
+			expect(browser.closed).toBe(true);
+		});
+	});
+
 	describe('get settings()', () => {
 		it('Returns the settings.', () => {
 			expect(new Browser().settings).toEqual(DefaultBrowserSettings);
