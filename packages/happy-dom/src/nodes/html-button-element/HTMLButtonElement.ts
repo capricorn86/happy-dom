@@ -66,7 +66,7 @@ export default class HTMLButtonElement extends HTMLElement {
 	 * @returns Value.
 	 */
 	public get value(): string {
-		return this.getAttribute('value');
+		return this.getAttribute('value') || '';
 	}
 
 	/**
@@ -134,7 +134,7 @@ export default class HTMLButtonElement extends HTMLElement {
 
 		try {
 			return new URL(
-				this.getAttribute('formaction'),
+				this.getAttribute('formaction')!,
 				this[PropertySymbol.ownerDocument].location.href
 			).href;
 		} catch (e) {
@@ -232,7 +232,7 @@ export default class HTMLButtonElement extends HTMLElement {
 	 *
 	 * @returns Form.
 	 */
-	public get form(): HTMLFormElement {
+	public get form(): HTMLFormElement | null {
 		if (this[PropertySymbol.formNode]) {
 			return this[PropertySymbol.formNode];
 		}

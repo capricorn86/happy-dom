@@ -19,6 +19,7 @@ export default interface IBrowserFrame {
 	readonly page: IBrowserPage;
 	readonly window: BrowserWindow;
 	readonly document: Document;
+	readonly closed: boolean;
 	content: string;
 	url: string;
 	[PropertySymbol.history]: IHistoryItem[];

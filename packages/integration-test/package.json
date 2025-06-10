@@ -13,12 +13,8 @@
 		"test": "cd ./test && ls | node --test && node ./browser-exception-observer/BrowserExceptionObserver.test.js",
 		"test:debug": "cd ./test && ls | node --inspect-brk"
 	},
-	"dependencies": {
-		"happy-dom": "^0.0.0"
-	},
 	"devDependencies": {
-		"@typescript-eslint/eslint-plugin": "^5.16.0",
-		"@typescript-eslint/parser": "^5.16.0",
+		"happy-dom": "^0.0.0",
 		"@types/node": "^20.0.0",
 		"express": "^4.20.0"
 	},

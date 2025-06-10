@@ -25,7 +25,7 @@ export default class SVGFEImageElement extends SVGElement {
 	 *
 	 * @returns Cross origin.
 	 */
-	public get crossOrigin(): string {
+	public get crossOrigin(): string | null {
 		return this.getAttribute('crossorigin');
 	}
 

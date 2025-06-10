@@ -12,6 +12,8 @@ export default interface IMouseEventInit extends IUIEventInit {
 	metaKey?: boolean;
 	movementX?: number;
 	movementY?: number;
+	offsetX?: number;
+	offsetY?: number;
 	button?: number;
 	buttons?: number;
 	relatedTarget?: EventTarget;

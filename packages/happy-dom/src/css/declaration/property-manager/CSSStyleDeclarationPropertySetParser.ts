@@ -110,7 +110,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-collapse': { value: variable, important } };
@@ -137,7 +137,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { display: { value: variable, important } };
@@ -161,7 +161,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { direction: { value: variable, important } };
@@ -189,7 +189,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const parsedValue =
 			CSSStyleDeclarationValueParser.getVariable(value) ||
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
@@ -209,7 +209,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const parsedValue =
 			CSSStyleDeclarationValueParser.getVariable(value) ||
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
@@ -229,7 +229,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const parsedValue =
 			CSSStyleDeclarationValueParser.getVariable(value) ||
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
@@ -249,7 +249,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const parsedValue =
 			CSSStyleDeclarationValueParser.getVariable(value) ||
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
@@ -269,7 +269,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const parsedValue =
 			CSSStyleDeclarationValueParser.getVariable(value) ||
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
@@ -289,7 +289,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const parsedValue =
 			CSSStyleDeclarationValueParser.getVariable(value) ||
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
@@ -309,7 +309,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const parsedValue =
 			CSSStyleDeclarationValueParser.getVariable(value) ||
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
@@ -329,7 +329,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const parsedValue =
 			CSSStyleDeclarationValueParser.getVariable(value) ||
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
@@ -349,7 +349,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const parsedValue =
 			CSSStyleDeclarationValueParser.getVariable(value) ||
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
@@ -369,7 +369,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { clear: { value: variable, important } };
@@ -396,7 +396,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { clip: { value: variable, important } };
@@ -433,7 +433,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { float: { value: variable, important } };
@@ -457,7 +457,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'css-float': { value: variable, important } };
@@ -476,7 +476,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getOutline(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { outline: { value: variable, important } };
@@ -527,7 +527,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const color =
 			CSSStyleDeclarationValueParser.getVariable(value) ||
 			CSSStyleDeclarationValueParser.getGlobal(value) ||
@@ -551,7 +551,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const parsedValue =
 			CSSStyleDeclarationValueParser.getVariable(value) ||
 			CSSStyleDeclarationValueParser.getLength(value);
@@ -570,7 +570,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'outline-style': { value: variable, important } };
@@ -597,7 +597,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'outline-width': { value: variable, important } };
@@ -626,7 +626,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getBorder(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { border: { value: variable, important } };
@@ -681,7 +681,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-width': { value: variable, important } };
@@ -727,7 +727,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-style': { value: variable, important } };
@@ -774,7 +774,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-color': { value: variable, important } };
@@ -821,7 +821,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-image': { value: variable, important } };
@@ -907,7 +907,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-image-source': { value: variable, important } };
@@ -952,7 +952,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-image-slice': { value: variable, important } };
@@ -1024,7 +1024,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-image-width': { value: variable, important } };
@@ -1076,7 +1076,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		if (value === '0') {
 			return {
 				'border-image-outset': {
@@ -1140,7 +1140,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-image-repeat': { value: variable, important } };
@@ -1189,7 +1189,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-top-width': { value: variable, important } };
@@ -1220,7 +1220,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-right-width': { value: variable, important } };
@@ -1251,7 +1251,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-bottom-width': { value: variable, important } };
@@ -1282,7 +1282,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-left-width': { value: variable, important } };
@@ -1313,7 +1313,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-top-style': { value: variable, important } };
@@ -1340,7 +1340,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-right-style': { value: variable, important } };
@@ -1367,7 +1367,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-bottom-style': { value: variable, important } };
@@ -1394,7 +1394,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-left-style': { value: variable, important } };
@@ -1421,7 +1421,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-top-color': { value: variable, important } };
@@ -1449,7 +1449,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-right-color': { value: variable, important } };
@@ -1477,7 +1477,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-bottom-color': { value: variable, important } };
@@ -1505,7 +1505,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-left-color': { value: variable, important } };
@@ -1531,7 +1531,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getBorderRadius(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-radius': { value: variable, important } };
@@ -1576,7 +1576,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getBorderTopLeftRadius(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-top-left-radius': { value: variable, important } };
@@ -1598,7 +1598,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getBorderTopRightRadius(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-top-right-radius': { value: variable, important } };
@@ -1620,7 +1620,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getBorderBottomRightRadius(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-bottom-right-radius': { value: variable, important } };
@@ -1642,7 +1642,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getBorderBottomLeftRadius(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-bottom-left-radius': { value: variable, important } };
@@ -1664,7 +1664,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getBorderTop(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-top': { value: variable, important } };
@@ -1713,7 +1713,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getBorderRight(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-right': { value: variable, important } };
@@ -1762,7 +1762,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getBorderBottom(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-bottom': { value: variable, important } };
@@ -1811,7 +1811,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getBorderLeft(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'border-left': { value: variable, important } };
@@ -1859,7 +1859,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getPadding(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { padding: { value: variable, important } };
@@ -1904,7 +1904,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getPaddingTop(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'padding-top': { value: variable, important } };
@@ -1926,7 +1926,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getPaddingRight(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'padding-right': { value: variable, important } };
@@ -1948,7 +1948,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getPaddingBottom(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'padding-bottom': { value: variable, important } };
@@ -1970,7 +1970,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getPaddingLeft(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'padding-left': { value: variable, important } };
@@ -1992,7 +1992,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getMargin(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { margin: { value: variable, important } };
@@ -2037,7 +2037,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getMarginTop(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'margin-top': { value: variable, important } };
@@ -2059,7 +2059,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getMarginRight(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'margin-right': { value: variable, important } };
@@ -2081,7 +2081,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getMarginBottom(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'margin-bottom': { value: variable, important } };
@@ -2103,7 +2103,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getMarginLeft(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'margin-left': { value: variable, important } };
@@ -2125,7 +2125,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getFlex(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { flex: { value: variable, important } };
@@ -2195,7 +2195,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'flex-basis': { value: variable, important } };
@@ -2221,7 +2221,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'flex-shrink': { value: variable, important } };
@@ -2245,7 +2245,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'flex-grow': { value: variable, important } };
@@ -2268,7 +2268,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getBackground(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { background: { value: variable, important } };
@@ -2389,7 +2389,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'background-size': { value: variable, important } };
@@ -2445,7 +2445,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'background-origin': { value: variable, important } };
@@ -2473,7 +2473,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'background-clip': { value: variable, important } };
@@ -2501,7 +2501,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'background-repeat': { value: variable, important } };
@@ -2529,7 +2529,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'background-attachment': { value: variable, important } };
@@ -2557,7 +2557,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'background-position': { value: variable, important } };
@@ -2672,7 +2672,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'background-position-x': { value: variable, important } };
@@ -2723,7 +2723,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'background-position-y': { value: variable, important } };
@@ -2772,7 +2772,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getBackgroundColor(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'background-color': { value: variable, important } };
@@ -2799,7 +2799,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getBackgroundImage(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'background-image': { value: variable, important } };
@@ -2841,7 +2841,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getColor(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { color: { value: variable, important } };
@@ -2864,7 +2864,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 	public static getFloodColor(
 		value: string,
 		important: boolean
-	): { [key: string]: ICSSStyleDeclarationPropertyValue } {
+	): { [key: string]: ICSSStyleDeclarationPropertyValue } | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'flood-color': { value: variable, important } };
@@ -2888,7 +2888,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { font: { value: variable, important } };
@@ -2980,7 +2980,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'font-style': { value: variable, important } };
@@ -3010,7 +3010,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'font-variant': { value: variable, important } };
@@ -3036,7 +3036,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'font-stretch': { value: variable, important } };
@@ -3062,7 +3062,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'font-weight': { value: variable, important } };
@@ -3088,7 +3088,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'font-size': { value: variable, important } };
@@ -3114,7 +3114,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'line-height': { value: variable, important } };
@@ -3142,7 +3142,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'font-family': { value: variable, important } };
@@ -3214,7 +3214,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'text-transform': { value: variable, important } };
@@ -3244,7 +3244,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { visibility: { value: variable, important } };
@@ -3274,7 +3274,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 		important: boolean
 	): {
 		[key: string]: ICSSStyleDeclarationPropertyValue;
-	} {
+	} | null {
 		const variable = CSSStyleDeclarationValueParser.getVariable(value);
 		if (variable) {
 			return { 'aspect-ratio': { value: variable, important } };

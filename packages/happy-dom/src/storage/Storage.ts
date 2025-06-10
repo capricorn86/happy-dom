@@ -21,7 +21,7 @@ export default class Storage {
 			get: (target, property) => {
 				if (property in target || typeof property === 'symbol') {
 					methodBinder.bind(property);
-					return target[property];
+					return (<any>target)[property];
 				}
 				if (property in data) {
 					return data[property];
@@ -69,7 +69,7 @@ export default class Storage {
 
 				return false;
 			},
-			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
+			getOwnPropertyDescriptor(target, property): PropertyDescriptor | undefined {
 				if (property in target) {
 					return;
 				}

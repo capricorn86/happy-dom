@@ -40,22 +40,20 @@ export default class Permissions {
 		userVisibleOnly?: boolean;
 		sysex?: boolean;
 	}): Promise<PermissionStatus> {
-		if (this.#permissionStatus[permissionDescriptor.name]) {
-			return this.#permissionStatus[permissionDescriptor.name];
+		const name = <PermissionNameEnum>permissionDescriptor?.name;
+
+		if (name && this.#permissionStatus[name]) {
+			return this.#permissionStatus[name];
 		}
 
-		if (
-			!Object.values(PermissionNameEnum).includes(<PermissionNameEnum>permissionDescriptor.name)
-		) {
+		if (!Object.values(PermissionNameEnum).includes(name)) {
 			throw new Error(
-				`Failed to execute 'query' on 'Permissions': Failed to read the 'name' property from 'PermissionDescriptor': The provided value '${permissionDescriptor.name}' is not a valid enum value of type PermissionName.`
+				`Failed to execute 'query' on 'Permissions': Failed to read the 'name' property from 'PermissionDescriptor': The provided value '${name}' is not a valid enum value of type PermissionName.`
 			);
 		}
 
-		this.#permissionStatus[permissionDescriptor.name] = new this.#window.PermissionStatus(
-			'granted'
-		);
+		this.#permissionStatus[name] = new this.#window.PermissionStatus('granted');
 
-		return this.#permissionStatus[permissionDescriptor.name];
+		return this.#permissionStatus[name];
 	}
 }

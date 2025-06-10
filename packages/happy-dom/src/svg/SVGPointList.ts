@@ -15,8 +15,8 @@ export default class SVGPointList {
 	[index: number]: SVGPoint;
 
 	public [PropertySymbol.window]: BrowserWindow;
-	public [PropertySymbol.getAttribute]: (() => string | null) | null = null;
-	public [PropertySymbol.setAttribute]: ((value: string) => void) | null = null;
+	public [PropertySymbol.getAttribute]: () => string | null;
+	public [PropertySymbol.setAttribute]: (value: string) => void;
 	public [PropertySymbol.readOnly]: boolean = false;
 	private [PropertySymbol.cache]: { items: SVGPoint[]; attributeValue: string } = {
 		items: [],
@@ -48,8 +48,8 @@ export default class SVGPointList {
 
 		this[PropertySymbol.window] = window;
 		this[PropertySymbol.readOnly] = !!options.readOnly;
-		this[PropertySymbol.getAttribute] = options.getAttribute || null;
-		this[PropertySymbol.setAttribute] = options.setAttribute || null;
+		this[PropertySymbol.getAttribute] = options.getAttribute;
+		this[PropertySymbol.setAttribute] = options.setAttribute;
 
 		const methodBinder = new ClassMethodBinder(this, [SVGPointList]);
 
@@ -60,7 +60,7 @@ export default class SVGPointList {
 				}
 				if (property in target || typeof property === 'symbol') {
 					methodBinder.bind(property);
-					return target[property];
+					return (<any>target)[property];
 				}
 				const index = Number(property);
 				if (!isNaN(index)) {
@@ -70,23 +70,23 @@ export default class SVGPointList {
 			set(target, property, newValue): boolean {
 				methodBinder.bind(property);
 				if (typeof property === 'symbol') {
-					target[property] = newValue;
+					(<any>target)[property] = newValue;
 					return true;
 				}
 				const index = Number(property);
 				if (isNaN(index)) {
-					target[property] = newValue;
+					(<any>target)[property] = newValue;
 				}
 				return true;
 			},
 			deleteProperty(target, property): boolean {
 				if (typeof property === 'symbol') {
-					delete target[property];
+					delete (<any>target)[property];
 					return true;
 				}
 				const index = Number(property);
 				if (isNaN(index)) {
-					delete target[property];
+					delete (<any>target)[property];
 				}
 				return true;
 			},
@@ -115,7 +115,7 @@ export default class SVGPointList {
 
 				return false;
 			},
-			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
+			getOwnPropertyDescriptor(target, property): PropertyDescriptor | undefined {
 				if (property in target || typeof property === 'symbol') {
 					return;
 				}
@@ -219,8 +219,8 @@ export default class SVGPointList {
 		};
 
 		this[PropertySymbol.cache].items = [newItem];
-		this[PropertySymbol.cache].attributeValue = newItem[PropertySymbol.attributeValue];
-		this[PropertySymbol.setAttribute](newItem[PropertySymbol.attributeValue]);
+		this[PropertySymbol.cache].attributeValue = newItem[PropertySymbol.attributeValue]!;
+		this[PropertySymbol.setAttribute](newItem[PropertySymbol.attributeValue] || '');
 
 		return newItem;
 	}
@@ -231,7 +231,7 @@ export default class SVGPointList {
 	 * @param index Index.
 	 * @returns The item at the index.
 	 **/
-	public getItem(index: number | string): SVGPoint {
+	public getItem(index: number | string): SVGPoint | null {
 		const items = this[PropertySymbol.getItemList]();
 		if (typeof index === 'number') {
 			return items[index] ? items[index] : null;
@@ -505,7 +505,7 @@ export default class SVGPointList {
 				const y = parts[i + 1] !== undefined ? ' ' + parseFloat(parts[i + 1]) : '';
 				const item = new SVGPoint(PropertySymbol.illegalConstructor, this[PropertySymbol.window], {
 					readOnly: this[PropertySymbol.readOnly],
-					getAttribute: () => item[PropertySymbol.attributeValue],
+					getAttribute: (): string | null => item[PropertySymbol.attributeValue],
 					setAttribute: () => {
 						this[PropertySymbol.cache].attributeValue = this[PropertySymbol.getItemList]()
 							.map((item) => item[PropertySymbol.attributeValue] || '0 0')

@@ -2,6 +2,7 @@ import DetachedWindowAPI from './DetachedWindowAPI.js';
 import IOptionalBrowserSettings from '../browser/types/IOptionalBrowserSettings.js';
 import BrowserWindow from './BrowserWindow.js';
 import DetachedBrowser from '../browser/detached-browser/DetachedBrowser.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 
 /**
  * Window.
@@ -55,6 +56,10 @@ export default class Window extends BrowserWindow {
 		});
 
 		browserFrame.window = this;
+
+		if (browserFrame.page.context.browser[PropertySymbol.exceptionObserver]) {
+			browserFrame.page.context.browser[PropertySymbol.exceptionObserver].observe(this);
+		}
 
 		this.happyDOM = new DetachedWindowAPI(browserFrame);
 	}

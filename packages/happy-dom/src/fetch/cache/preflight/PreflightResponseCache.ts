@@ -41,7 +41,7 @@ export default class PreflightResponseCache implements IPreflightResponseCache {
 	public add(
 		request: ICachablePreflightRequest,
 		response: ICachablePreflightResponse
-	): ICachedPreflightResponse {
+	): ICachedPreflightResponse | null {
 		delete this.#entries[request.url];
 
 		if (request.headers.get('Cache-Control')?.includes('no-cache')) {
@@ -64,7 +64,7 @@ export default class PreflightResponseCache implements IPreflightResponseCache {
 		if (response.headers.has('Access-Control-Allow-Methods')) {
 			const allowMethodsHeader = response.headers.get('Access-Control-Allow-Methods');
 			if (allowMethodsHeader !== '*') {
-				for (const method of response.headers.get('Access-Control-Allow-Methods').split(',')) {
+				for (const method of response.headers.get('Access-Control-Allow-Methods')!.split(',')) {
 					allowMethods.push(method.trim().toUpperCase());
 				}
 			}

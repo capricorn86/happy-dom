@@ -9,8 +9,8 @@ import { Buffer } from 'buffer';
  * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/file-api/File-impl.js (MIT licensed).
  */
 export default class File extends Blob {
-	public readonly lastModified: number = null;
-	public readonly name: string = null;
+	public readonly lastModified: number;
+	public readonly name: string;
 
 	/**
 	 * Constructor.

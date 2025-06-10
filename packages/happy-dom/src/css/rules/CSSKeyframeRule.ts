@@ -8,7 +8,7 @@ import CSSRuleTypeEnum from '../CSSRuleTypeEnum.js';
  */
 export default class CSSKeyframeRule extends CSSRule {
 	public readonly type = CSSRuleTypeEnum.keyframeRule;
-	public readonly keyText: string;
+	public readonly keyText: string = '';
 	public [PropertySymbol.cssText] = '';
 	#style: CSSStyleDeclaration | null = null;
 

@@ -10,7 +10,7 @@ import BrowserWindow from '../window/BrowserWindow.js';
 export default class SVGAnimatedLength {
 	// Internal properties
 	public [PropertySymbol.window]: BrowserWindow;
-	public [PropertySymbol.getAttribute]: () => string;
+	public [PropertySymbol.getAttribute]: () => string | null;
 	public [PropertySymbol.setAttribute]: (value: string) => void;
 	public [PropertySymbol.baseVal]: SVGLength | null = null;
 	public [PropertySymbol.animVal]: SVGLength | null = null;

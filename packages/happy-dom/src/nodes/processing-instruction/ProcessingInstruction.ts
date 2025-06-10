@@ -9,7 +9,7 @@ import * as PropertySymbol from '../../PropertySymbol.js';
  */
 export default class ProcessingInstruction extends CharacterData {
 	public [PropertySymbol.nodeType] = NodeTypeEnum.processingInstructionNode;
-	public [PropertySymbol.target]: string;
+	public [PropertySymbol.target]: string = '';
 
 	/**
 	 * Returns target.

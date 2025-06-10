@@ -39,7 +39,7 @@ export default class ECMAScriptModule implements IModule {
 	 *
 	 * @returns Module exports.
 	 */
-	public async evaluate(): Promise<{ [key: string]: any } | null> {
+	public async evaluate(): Promise<{ [key: string]: any }> {
 		if (this.#exports) {
 			return this.#exports;
 		}
@@ -156,7 +156,7 @@ export default class ECMAScriptModule implements IModule {
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
 
 		if (!browserFrame) {
-			return;
+			return {};
 		}
 
 		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];

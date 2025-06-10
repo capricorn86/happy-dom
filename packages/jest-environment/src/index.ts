@@ -13,8 +13,8 @@ import { Global, Config } from '@jest/types';
  * Happy DOM Jest Environment.
  */
 export default class HappyDOMEnvironment implements JestEnvironment {
-	public fakeTimers: LegacyFakeTimers<number> = null;
-	public fakeTimersModern: ModernFakeTimers = null;
+	public fakeTimers: LegacyFakeTimers<number> | null = null;
+	public fakeTimersModern: ModernFakeTimers | null = null;
 	public window: Window;
 	public global: Global.Global;
 	public moduleMocker: ModuleMocker;
@@ -57,6 +57,8 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 			throw new Error('Unsupported jest version.');
 		}
 
+		this._configuredExportConditions = [];
+
 		if ('customExportConditions' in projectConfig.testEnvironmentOptions) {
 			const { customExportConditions } = projectConfig.testEnvironmentOptions;
 			if (
@@ -73,7 +75,7 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 		this.window = new Window({
 			url: 'http://localhost/',
 			...projectConfig.testEnvironmentOptions,
-			console: options.console || console,
+			console: options?.console || console,
 			settings: {
 				...(<IOptionalBrowserSettings>projectConfig.testEnvironmentOptions?.settings),
 				errorCapture: BrowserErrorCaptureEnum.disabled
@@ -115,9 +117,11 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 		// Hopefully Jest can fix this in the future as this fix is not very pretty.
 		const happyDOMSetTimeout = this.global.setTimeout;
 		(<(...args: unknown[]) => number>this.global.setTimeout) = (...args: unknown[]): number => {
-			if (new Error('stack').stack.includes('/jest-jasmine')) {
+			if (new Error('stack').stack!.includes('/jest-jasmine')) {
+				// @ts-ignore
 				return global.setTimeout.call(global, ...args);
 			}
+			// @ts-ignore
 			return happyDOMSetTimeout.call(this.global, ...args);
 		};
 	}
@@ -142,14 +146,14 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 	 * @returns Promise.
 	 */
 	public async teardown(): Promise<void> {
-		this.fakeTimers.dispose();
-		this.fakeTimersModern.dispose();
+		this.fakeTimers!.dispose();
+		this.fakeTimersModern!.dispose();
 
 		await (<Window>(<unknown>this.global)).happyDOM.abort();
 		(<Window>(<unknown>this.global)).close();
 
-		this.global = null;
-		this.moduleMocker = null;
+		this.global = null!;
+		this.moduleMocker = null!;
 		this.fakeTimers = null;
 		this.fakeTimersModern = null;
 	}

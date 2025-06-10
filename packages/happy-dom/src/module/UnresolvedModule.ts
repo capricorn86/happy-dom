@@ -27,7 +27,7 @@ export default class UnresolvedModule implements IModule {
 	 *
 	 * @returns Module exports.
 	 */
-	public async evaluate(): Promise<null> {
+	public async evaluate(): Promise<any> {
 		throw new this.#window.TypeError('Unresolved module. We should never end up here.');
 	}
 

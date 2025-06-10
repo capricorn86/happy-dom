@@ -151,8 +151,8 @@ describe('Range', () => {
 			container.appendChild(span);
 			container.appendChild(span2);
 
-			range.setStart(span.firstChild, 1);
-			range.setEnd(span2.firstChild, 2);
+			range.setStart(span.firstChild!, 1);
+			range.setEnd(span2.firstChild!, 2);
 
 			range.collapse(true);
 
@@ -204,8 +204,8 @@ describe('Range', () => {
 				<div>This is the Range 2 Content</div>
 			`;
 
-			range.setStart(container.children[0].firstChild, 1);
-			sourceRange.setEnd(container.children[1].firstChild, 10);
+			range.setStart(container.children[0].firstChild!, 1);
+			sourceRange.setEnd(container.children[1].firstChild!, 10);
 
 			expect(range.compareBoundaryPoints(Range.START_TO_END, sourceRange)).toBe(-1);
 		});
@@ -219,10 +219,10 @@ describe('Range', () => {
 				<div>This is the Range 2 Content</div>
 			`;
 
-			range.setStart(container.children[0].firstChild, 1);
-			range.setEnd(container.children[1].firstChild, 10);
-			sourceRange.setStart(container.children[0].firstChild, 1);
-			sourceRange.setEnd(container.children[1].firstChild, 10);
+			range.setStart(container.children[0].firstChild!, 1);
+			range.setEnd(container.children[1].firstChild!, 10);
+			sourceRange.setStart(container.children[0].firstChild!, 1);
+			sourceRange.setEnd(container.children[1].firstChild!, 10);
 
 			expect(range.compareBoundaryPoints(Range.START_TO_END, sourceRange)).toBe(1);
 		});
@@ -262,7 +262,7 @@ describe('Range', () => {
 
 			paragraph.innerHTML = 'My text';
 
-			const referenceNode = paragraph.firstChild;
+			const referenceNode = paragraph.firstChild!;
 
 			range.selectNode(referenceNode);
 
@@ -270,7 +270,7 @@ describe('Range', () => {
 
 			expect(documentFragment.nodeType).toBe(NodeTypeEnum.documentFragmentNode);
 			expect(documentFragment.childNodes.length).toBe(1);
-			expect(documentFragment.firstChild.nodeType).toBe(NodeTypeEnum.textNode);
+			expect(documentFragment.firstChild!.nodeType).toBe(NodeTypeEnum.textNode);
 			expect((<Text>documentFragment.firstChild).data).toBe('My text');
 
 			document.body.appendChild(documentFragment);
@@ -283,8 +283,8 @@ describe('Range', () => {
 
 			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
 
-			range.setStart(paragraph.firstChild, 2);
-			range.setEnd((<Node>paragraph.querySelector('b')).firstChild, 3);
+			range.setStart(paragraph.firstChild!, 2);
+			range.setEnd((<Node>paragraph.querySelector('b')).firstChild!, 3);
 
 			const documentFragment = range.cloneContents();
 
@@ -299,8 +299,8 @@ describe('Range', () => {
 
 			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
 
-			range.setStart((<Node>paragraph.querySelector('i')).firstChild, 2);
-			range.setEnd((<Node>paragraph.querySelector('b')).firstChild, 3);
+			range.setStart((<Node>paragraph.querySelector('i')).firstChild!, 2);
+			range.setEnd((<Node>paragraph.querySelector('b')).firstChild!, 3);
 
 			const documentFragment = range.cloneContents();
 
@@ -316,8 +316,8 @@ describe('Range', () => {
 
 			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
 
-			range.setStart(paragraph.firstChild, 2);
-			range.setEnd((<Node>paragraph.querySelector('b')).firstChild, 3);
+			range.setStart(paragraph.firstChild!, 2);
+			range.setEnd((<Node>paragraph.querySelector('b')).firstChild!, 3);
 
 			const clone = range.cloneRange();
 
@@ -350,8 +350,8 @@ describe('Range', () => {
 
 			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
 
-			range.setStart(paragraph.firstChild, 2);
-			range.setEnd((<Node>paragraph.querySelector('b')).firstChild, 3);
+			range.setStart(paragraph.firstChild!, 2);
+			range.setEnd((<Node>paragraph.querySelector('b')).firstChild!, 3);
 
 			range.deleteContents();
 
@@ -373,8 +373,8 @@ describe('Range', () => {
 
 			document.body.appendChild(paragraph);
 
-			range.setStart(paragraph.firstChild, 2);
-			range.setEnd((<Node>paragraph.querySelector('b')).firstChild, 3);
+			range.setStart(paragraph.firstChild!, 2);
+			range.setEnd((<Node>paragraph.querySelector('b')).firstChild!, 3);
 
 			const documentFragment = range.extractContents();
 
@@ -405,12 +405,12 @@ describe('Range', () => {
 
 			const paragraph = document.body.children[0];
 
-			range.setStart(paragraph.firstChild, 2);
-			range.setEnd((<Node>paragraph.querySelector('b')).firstChild, 3);
+			range.setStart(paragraph.firstChild!, 2);
+			range.setEnd((<Node>paragraph.querySelector('b')).firstChild!, 3);
 
-			expect(range.isPointInRange((<Node>paragraph.querySelector('i')).firstChild, 2)).toBe(true);
+			expect(range.isPointInRange((<Node>paragraph.querySelector('i')).firstChild!, 2)).toBe(true);
 			expect(range.isPointInRange(document.body.children[1], 1)).toBe(false);
-			expect(range.isPointInRange(document.body.children[1].firstChild, 2)).toBe(false);
+			expect(range.isPointInRange(document.body.children[1].firstChild!, 2)).toBe(false);
 		});
 	});
 
@@ -420,8 +420,8 @@ describe('Range', () => {
 
 			const paragraph = document.body.children[0];
 
-			range.setStart(paragraph.firstChild, 2);
-			range.setEnd((<Node>paragraph.querySelector('b')).firstChild, 3);
+			range.setStart(paragraph.firstChild!, 2);
+			range.setEnd((<Node>paragraph.querySelector('b')).firstChild!, 3);
 
 			const newNode = document.createElement('u');
 			newNode.innerHTML = 'New node';
@@ -440,13 +440,13 @@ describe('Range', () => {
 
 			const paragraph = document.body.children[0];
 
-			range.setStart(paragraph.firstChild, 2);
-			range.setEnd((<Node>paragraph.querySelector('b')).firstChild, 3);
+			range.setStart(paragraph.firstChild!, 2);
+			range.setEnd((<Node>paragraph.querySelector('b')).firstChild!, 3);
 
 			expect(range.intersectsNode(<Node>paragraph.querySelector('i'))).toBe(true);
-			expect(range.intersectsNode((<Node>paragraph.querySelector('i')).firstChild)).toBe(true);
+			expect(range.intersectsNode((<Node>paragraph.querySelector('i')).firstChild!)).toBe(true);
 			expect(range.intersectsNode(document.body.children[1])).toBe(false);
-			expect(range.intersectsNode(document.body.children[1].firstChild)).toBe(false);
+			expect(range.intersectsNode(document.body.children[1].firstChild!)).toBe(false);
 		});
 	});
 
@@ -488,7 +488,7 @@ describe('Range', () => {
 
 			paragraph.innerHTML = 'Example: <i>italic</i> and <b>bold</b>';
 
-			const text = (<Node>paragraph.querySelector('i')).firstChild;
+			const text = (<Node>paragraph.querySelector('i')).firstChild!;
 
 			range.selectNodeContents(text);
 

@@ -19,7 +19,7 @@ export default class HTMLElementUtility {
 		if (
 			document[PropertySymbol.activeElement] !== target ||
 			!target[PropertySymbol.isConnected] ||
-			target.disabled
+			(<any>target).disabled
 		) {
 			return;
 		}
@@ -60,13 +60,13 @@ export default class HTMLElementUtility {
 		if (
 			document[PropertySymbol.activeElement] === target ||
 			!target[PropertySymbol.isConnected] ||
-			target.disabled
+			(<any>target).disabled
 		) {
 			return;
 		}
 
 		// Set the next active element so `blur` can use it for `relatedTarget`.
-		document[PropertySymbol.nextActiveElement] = target;
+		document[PropertySymbol.nextActiveElement] = <HTMLElement>target;
 
 		const relatedTarget = document[PropertySymbol.activeElement];
 
@@ -77,7 +77,7 @@ export default class HTMLElementUtility {
 		// Clean up after blur, so it does not affect next blur call.
 		document[PropertySymbol.nextActiveElement] = null;
 
-		document[PropertySymbol.activeElement] = target;
+		document[PropertySymbol.activeElement] = <HTMLElement>target;
 
 		document[PropertySymbol.clearCache]();
 

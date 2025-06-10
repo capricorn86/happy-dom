@@ -22,8 +22,8 @@ export default class SVGTransform {
 
 	// Internal properties
 	public [PropertySymbol.window]: BrowserWindow;
-	public [PropertySymbol.getAttribute]: () => string;
-	public [PropertySymbol.setAttribute]: (value: string) => void;
+	public [PropertySymbol.getAttribute]: (() => string | null) | null = null;
+	public [PropertySymbol.setAttribute]: ((value: string) => void) | null = null;
 	public [PropertySymbol.attributeValue]: string | null = null;
 	public [PropertySymbol.readOnly]: boolean = false;
 	public [PropertySymbol.matrix]: SVGMatrix | null = null;
@@ -199,7 +199,7 @@ export default class SVGTransform {
 			this[PropertySymbol.attributeValue] = matrix[PropertySymbol.attributeValue];
 
 			if (this[PropertySymbol.setAttribute]) {
-				this[PropertySymbol.setAttribute](this[PropertySymbol.attributeValue]);
+				this[PropertySymbol.setAttribute](this[PropertySymbol.attributeValue] || '');
 			}
 		}
 	}

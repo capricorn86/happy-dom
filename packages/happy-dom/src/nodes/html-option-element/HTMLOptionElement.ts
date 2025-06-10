@@ -44,7 +44,7 @@ export default class HTMLOptionElement extends HTMLElement {
 			return 0;
 		}
 		const options = QuerySelector.querySelectorAll(this[PropertySymbol.selectNode], 'option')[
-			PropertySymbol.elements
+			PropertySymbol.items
 		];
 		return options.indexOf(this);
 	}
@@ -54,7 +54,7 @@ export default class HTMLOptionElement extends HTMLElement {
 	 *
 	 * @returns Form.
 	 */
-	public get form(): HTMLFormElement {
+	public get form(): HTMLFormElement | null {
 		return (<HTMLSelectElement>this[PropertySymbol.selectNode])?.form || null;
 	}
 

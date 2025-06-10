@@ -68,6 +68,10 @@ export default class HTMLSlotElement extends HTMLElement {
 
 		const host = shadowRoot.host;
 
+		if (!host) {
+			return;
+		}
+
 		for (const node of nodes) {
 			if (node instanceof Node) {
 				if (
@@ -167,7 +171,7 @@ export default class HTMLSlotElement extends HTMLElement {
 	 * @param [options.flatten] A boolean value indicating whether to return the assigned nodes of any available child <slot> elements (true) or not (false). Defaults to false.
 	 * @returns Nodes.
 	 */
-	#assignedNodes(name?: string, options?: { flatten?: boolean }): Node[] {
+	#assignedNodes(name?: string | null, options?: { flatten?: boolean }): Node[] {
 		const shadowRoot = <ShadowRoot>this.getRootNode();
 
 		if (!shadowRoot?.host) {
@@ -183,7 +187,7 @@ export default class HTMLSlotElement extends HTMLElement {
 		const assigned = [];
 
 		for (const slotNode of (<HTMLElement>host)[PropertySymbol.nodeArray]) {
-			const slotName = slotNode['slot'];
+			const slotName = (<HTMLElement>slotNode).slot;
 			if ((name && slotName && slotName === name) || (!name && !slotName)) {
 				if (flatten && slotNode instanceof HTMLSlotElement) {
 					for (const slotChild of slotNode.assignedNodes(options)) {

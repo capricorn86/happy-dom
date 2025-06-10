@@ -65,7 +65,7 @@ export default class ResponseCache implements IResponseCache {
 	 * @param response Response.
 	 * @returns Cached response.
 	 */
-	public add(request: ICachableRequest, response: ICachableResponse): ICachedResponse {
+	public add(request: ICachableRequest, response: ICachableResponse): ICachedResponse | null {
 		// We should only cache GET and HEAD requests.
 		if (
 			(request.method !== 'GET' && request.method !== 'HEAD') ||
@@ -84,7 +84,7 @@ export default class ResponseCache implements IResponseCache {
 
 			for (const name of UPDATE_RESPONSE_HEADERS) {
 				if (response.headers.has(name)) {
-					cachedResponse.response.headers.set(name, response.headers.get(name));
+					cachedResponse.response.headers.set(name, response.headers.get(name)!);
 				}
 			}
 
@@ -129,7 +129,7 @@ export default class ResponseCache implements IResponseCache {
 		if (response.headers.has('Cache-Control')) {
 			const age = response.headers.get('Age');
 
-			for (const part of response.headers.get('Cache-Control').split(',')) {
+			for (const part of response.headers.get('Cache-Control')!.split(',')) {
 				const [key, value] = part.trim().split('=');
 				switch (key) {
 					case 'max-age':
@@ -154,11 +154,11 @@ export default class ResponseCache implements IResponseCache {
 		}
 
 		if (response.headers.has('Last-Modified')) {
-			cachedResponse.lastModified = Date.parse(response.headers.get('Last-Modified'));
+			cachedResponse.lastModified = Date.parse(response.headers.get('Last-Modified')!);
 		}
 
 		if (response.headers.has('Vary')) {
-			for (const header of response.headers.get('Vary').split(',')) {
+			for (const header of response.headers.get('Vary')!.split(',')) {
 				const name = header.trim();
 				const value = request.headers.get(name);
 				if (value) {

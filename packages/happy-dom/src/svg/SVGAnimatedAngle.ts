@@ -10,7 +10,7 @@ import BrowserWindow from '../window/BrowserWindow.js';
 export default class SVGAnimatedAngle {
 	// Internal properties
 	public [PropertySymbol.window]: BrowserWindow;
-	public [PropertySymbol.getAttribute]: () => string;
+	public [PropertySymbol.getAttribute]: () => string | null;
 	public [PropertySymbol.setAttribute]: (value: string) => void;
 	public [PropertySymbol.baseVal]: SVGAngle | null = null;
 	public [PropertySymbol.animVal]: SVGAngle | null = null;

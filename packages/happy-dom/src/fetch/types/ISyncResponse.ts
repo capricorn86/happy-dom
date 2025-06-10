@@ -12,5 +12,5 @@ export default interface ISyncResponse {
 	url: string;
 	redirected: boolean;
 	headers: Headers;
-	body: Buffer;
+	body: Buffer | null;
 }

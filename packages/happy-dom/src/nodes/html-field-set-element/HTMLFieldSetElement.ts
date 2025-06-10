@@ -52,7 +52,7 @@ export default class HTMLFieldSetElement extends HTMLElement {
 	 *
 	 * @returns Form.
 	 */
-	public get form(): HTMLFormElement {
+	public get form(): HTMLFormElement | null {
 		if (this[PropertySymbol.formNode]) {
 			return this[PropertySymbol.formNode];
 		}

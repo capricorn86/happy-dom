@@ -17,6 +17,7 @@ export default class DetachedBrowserContext implements IBrowserContext {
 	public readonly cookieContainer: ICookieContainer = new CookieContainer();
 	public readonly responseCache: IResponseCache = new ResponseCache();
 	public readonly preflightResponseCache: IPreflightResponseCache = new PreflightResponseCache();
+	public readonly closed: boolean = false;
 
 	/**
 	 * Constructor.
@@ -33,25 +34,31 @@ export default class DetachedBrowserContext implements IBrowserContext {
 	 * Aborts all ongoing operations and destroys the context.
 	 */
 	public async close(): Promise<void> {
-		if (!this.browser) {
+		if (this.closed) {
 			return;
 		}
+
+		if (this.browser.contexts[0] === this) {
+			throw new Error(
+				'Cannot close the default context. Use `browser.close()` to close the browser instead.'
+			);
+		}
+
+		(<boolean>this.closed) = true;
+
 		await Promise.all(this.pages.slice().map((page) => page.close()));
+
 		const browser = this.browser;
 		const index = browser.contexts.indexOf(this);
+
 		if (index !== -1) {
 			browser.contexts.splice(index, 1);
 		}
+
 		(<DetachedBrowserPage[]>this.pages) = [];
-		(<DetachedBrowser | null>this.browser) = null;
-		(<ICookieContainer | null>this.cookieContainer) = null;
+		this.cookieContainer.clearCookies();
 		this.responseCache.clear();
 		this.preflightResponseCache.clear();
-		(<ResponseCache | null>this.responseCache) = null;
-		(<PreflightResponseCache | null>this.preflightResponseCache) = null;
-		if (browser.contexts.length === 0) {
-			browser.close();
-		}
 	}
 
 	/**

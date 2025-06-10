@@ -76,12 +76,10 @@
 		"test:bun": "bun test ./test/bun/Bun.test.js"
 	},
 	"dependencies": {
-		"happy-dom": "^0.0.0"
+		"happy-dom": "^0.0.0",
+		"@types/node": "^20.0.0"
 	},
 	"devDependencies": {
-		"@typescript-eslint/eslint-plugin": "^5.16.0",
-		"@typescript-eslint/parser": "^5.16.0",
-		"@types/node": "^20.0.0",
 		"typescript": "^5.8.3",
 		"lit": "^3.3.0",
 		"react": "^18.2.0",

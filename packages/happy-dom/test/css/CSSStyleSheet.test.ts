@@ -44,9 +44,9 @@ describe('CSSStyleSheet', () => {
 			expect(() => {
 				cssStyleSheet.insertRule('background-color: green');
 			}).toThrowError(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'insertRule' on 'CSSStyleSheet': Failed to parse the rule 'background-color: green'.`,
-					DOMExceptionNameEnum.hierarchyRequestError
+					DOMExceptionNameEnum.syntaxError
 				)
 			);
 		});
@@ -57,7 +57,7 @@ describe('CSSStyleSheet', () => {
 					'div { background-color: green } span { background-color: green }'
 				);
 			}).toThrowError(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'insertRule' on 'CSSStyleSheet': Failed to parse the rule 'div { background-color: green } span { background-color: green }'.`,
 					DOMExceptionNameEnum.syntaxError
 				)
@@ -70,7 +70,7 @@ describe('CSSStyleSheet', () => {
 			expect(() => {
 				cssStyleSheet.insertRule('button { background-color: green }', 2);
 			}).toThrowError(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'insertRule' on 'CSSStyleSheet': The index provided (2) is larger than the maximum index (0).`,
 					DOMExceptionNameEnum.indexSizeError
 				)

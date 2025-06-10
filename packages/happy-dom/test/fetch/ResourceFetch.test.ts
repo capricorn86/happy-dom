@@ -6,7 +6,6 @@ import Browser from '../../src/browser/Browser.js';
 import Fetch from '../../src/fetch/Fetch.js';
 import SyncFetch from '../../src/fetch/SyncFetch.js';
 import ISyncResponse from '../../src/fetch/types/ISyncResponse.js';
-import DOMException from '../../src/exception/DOMException.js';
 
 const URL = 'https://localhost:8080/base/';
 
@@ -41,7 +40,7 @@ describe('ResourceFetch', () => {
 				};
 			});
 
-			const test = await resourceFetch.fetch('path/to/script/');
+			const test = await resourceFetch.fetch('path/to/script/', 'script');
 
 			expect(requestArgs).toEqual({
 				url: 'https://localhost:8080/base/path/to/script/',
@@ -61,13 +60,13 @@ describe('ResourceFetch', () => {
 
 			let error: Error | null = null;
 			try {
-				await resourceFetch.fetch('path/to/script/');
+				await resourceFetch.fetch('path/to/script/', 'script');
 			} catch (e) {
 				error = e;
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					`Failed to perform request to "${URL}path/to/script/". Status 404 Not Found.`
 				)
 			);
@@ -90,7 +89,7 @@ describe('ResourceFetch', () => {
 				};
 			});
 
-			const response = resourceFetch.fetchSync('path/to/script/');
+			const response = resourceFetch.fetchSync('path/to/script/', 'script');
 
 			expect(requestArgs).toEqual({
 				url: 'https://localhost:8080/base/path/to/script/',
@@ -111,13 +110,13 @@ describe('ResourceFetch', () => {
 			let error: Error | null = null;
 
 			try {
-				resourceFetch.fetchSync('path/to/script/');
+				resourceFetch.fetchSync('path/to/script/', 'script');
 			} catch (e) {
 				error = e;
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					`Failed to perform request to "${URL}path/to/script/". Status 404 Not Found.`
 				)
 			);
