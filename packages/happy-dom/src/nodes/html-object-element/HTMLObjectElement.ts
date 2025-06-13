@@ -44,10 +44,10 @@ export default class HTMLObjectElement extends HTMLElement {
 		}
 
 		try {
-			return new URL(this.getAttribute('data'), this[PropertySymbol.ownerDocument].location.href)
+			return new URL(this.getAttribute('data')!, this[PropertySymbol.ownerDocument].location.href)
 				.href;
 		} catch (e) {
-			return this.getAttribute('data');
+			return this.getAttribute('data')!;
 		}
 	}
 
@@ -65,7 +65,7 @@ export default class HTMLObjectElement extends HTMLElement {
 	 *
 	 * @returns Form.
 	 */
-	public get form(): HTMLFormElement {
+	public get form(): HTMLFormElement | null {
 		if (this[PropertySymbol.formNode]) {
 			return this[PropertySymbol.formNode];
 		}

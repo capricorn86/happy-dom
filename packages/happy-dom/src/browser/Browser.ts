@@ -34,6 +34,15 @@ export default class Browser implements IBrowser {
 	}
 
 	/**
+	 * Returns true if the browser is closed.
+	 *
+	 * @returns True if the browser is closed.
+	 */
+	public get closed(): boolean {
+		return this.contexts.length === 0;
+	}
+
+	/**
 	 * Returns the default context.
 	 *
 	 * @returns Default context.
@@ -49,8 +58,12 @@ export default class Browser implements IBrowser {
 	 * Aborts all ongoing operations and destroys the browser.
 	 */
 	public async close(): Promise<void> {
-		await Promise.all(this.contexts.slice().map((context) => context.close()));
+		if (this.contexts.length === 0) {
+			return;
+		}
+		const contexts = this.contexts;
 		(<BrowserContext[]>this.contexts) = [];
+		await Promise.all(contexts.map((context) => context.close()));
 	}
 
 	/**

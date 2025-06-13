@@ -131,10 +131,10 @@ export default class MultipartReader {
 
 						if (this.data.value.length) {
 							this.appendFormData(
-								this.data.contentDisposition.name,
+								this.data.contentDisposition!.name,
 								Buffer.from(this.data.value.slice(0, -(this.boundary.length + 1))),
-								this.data.contentDisposition.filename,
-								this.data.contentType
+								this.data.contentDisposition!.filename,
+								this.data.contentType!
 							);
 
 							this.data.value = [];
@@ -164,7 +164,7 @@ export default class MultipartReader {
 				this.data.contentDisposition.name,
 				Buffer.from(this.data.value.slice(0, -2)),
 				this.data.contentDisposition.filename,
-				this.data.contentType
+				this.data.contentType!
 			);
 		}
 
@@ -205,7 +205,7 @@ export default class MultipartReader {
 	private getContentDisposition(headerValue: string): { [key: string]: string } {
 		const regex = /([a-z]+) *= *"([^"]+)"/g;
 		const contentDisposition: { [key: string]: string } = {};
-		let match: RegExpExecArray;
+		let match: RegExpExecArray | null;
 
 		while ((match = regex.exec(headerValue))) {
 			contentDisposition[match[1]] = match[2];

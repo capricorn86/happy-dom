@@ -15,7 +15,7 @@ export default class PluginArray {
 	constructor(plugins: Plugin[]) {
 		for (let i = 0, max = plugins.length; i < max; i++) {
 			this[i] = plugins[i];
-			this[plugins[i].name] = plugins[i];
+			(<any>this)[plugins[i].name] = plugins[i];
 		}
 		this.length = plugins.length;
 	}
@@ -37,7 +37,7 @@ export default class PluginArray {
 	 * @returns Plugin.
 	 */
 	public namedItem(name: string): Plugin {
-		return this[name] || null;
+		return (<any>this)[name] || null;
 	}
 
 	/**

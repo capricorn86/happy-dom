@@ -48,7 +48,7 @@ describe('GlobalRegistrator', () => {
 			GlobalRegistrator.register();
 
 			for (const property of SELF_REFERRING_PROPERTIES) {
-				assert.strictEqual(global[property], global);
+				assert.strictEqual((<any>global)[property], global);
 			}
 
 			GlobalRegistrator.unregister();

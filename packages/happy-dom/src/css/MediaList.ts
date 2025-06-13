@@ -2,6 +2,7 @@
  * MediaList interface.
  */
 export default class MediaList {
+	[index: number]: string;
 	public readonly length = 0;
 
 	/**

@@ -109,7 +109,7 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					`Failed to construct 'Request': Invalid URL "${url}" on document location 'about:blank'. Relative URLs are not permitted on current document location.`,
 					DOMExceptionNameEnum.notSupportedError
 				)
@@ -128,7 +128,7 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					`Failed to construct 'Request': Invalid URL "${url}" on document location 'about:blank'. Relative URLs are not permitted on current document location.`,
 					DOMExceptionNameEnum.notSupportedError
 				)
@@ -802,7 +802,10 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(`Maximum redirects reached at: ${url1}`, DOMExceptionNameEnum.networkError)
+				new window.DOMException(
+					`Maximum redirects reached at: ${url1}`,
+					DOMExceptionNameEnum.networkError
+				)
 			);
 
 			// One more as the request is completed before it reaches the 20th try.
@@ -899,7 +902,7 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					`URI requested responds with a redirect, redirect mode is set to "error": ${url}`,
 					DOMExceptionNameEnum.abortError
 				)
@@ -926,7 +929,7 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					`URI requested responds with an invalid redirect URL: ${redirectURL}`,
 					DOMExceptionNameEnum.uriMismatchError
 				)
@@ -1103,7 +1106,7 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					`Mixed Content: The page at '${originURL}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${url}'. This request has been blocked; the content must be served over HTTPS.`,
 					DOMExceptionNameEnum.securityError
 				)
@@ -1444,7 +1447,7 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute "fetch()" on "Window" with URL "${url}": connect ECONNREFUSED ::1:8080`,
 					DOMExceptionNameEnum.networkError
 				)
@@ -1594,7 +1597,7 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException('Premature close.', DOMExceptionNameEnum.networkError)
+				new window.DOMException('Premature close.', DOMExceptionNameEnum.networkError)
 			);
 		});
 
@@ -1651,7 +1654,7 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					'Failed to read response body. Error: Error.',
 					DOMExceptionNameEnum.encodingError
 				)
@@ -2084,7 +2087,7 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					'Failed to read response body. Error: incorrect header check.',
 					DOMExceptionNameEnum.encodingError
 				)
@@ -2121,7 +2124,7 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
+				new window.DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
 			);
 		});
 
@@ -2244,7 +2247,7 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
+				new window.DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
 			);
 		});
 		it('Supports aborting multiple ongoing requests using AbortController.', async () => {
@@ -2291,10 +2294,16 @@ describe('Fetch', () => {
 				const onFetchCatch = (): void => {
 					if (error1 && error2) {
 						expect(error1).toEqual(
-							new DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
+							new window.DOMException(
+								'signal is aborted without reason',
+								DOMExceptionNameEnum.abortError
+							)
 						);
 						expect(error2).toEqual(
-							new DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
+							new window.DOMException(
+								'signal is aborted without reason',
+								DOMExceptionNameEnum.abortError
+							)
 						);
 						resolve(null);
 					}
@@ -2328,7 +2337,7 @@ describe('Fetch', () => {
 				error = e;
 			}
 			expect(error).toEqual(
-				new DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
+				new window.DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
 			);
 		});
 
@@ -2376,7 +2385,7 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					'The operation was aborted. AbortError: signal is aborted without reason',
 					DOMExceptionNameEnum.abortError
 				)
@@ -2442,7 +2451,7 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					'The operation was aborted. AbortError: signal is aborted without reason',
 					DOMExceptionNameEnum.abortError
 				)
@@ -2515,7 +2524,7 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
+				new window.DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
 			);
 		});
 
@@ -3296,7 +3305,7 @@ describe('Fetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute "fetch()" on "Window" with URL "https://localhost:8080/test/": test`,
 					DOMExceptionNameEnum.networkError
 				)

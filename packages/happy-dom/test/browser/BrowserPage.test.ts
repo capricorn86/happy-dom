@@ -120,13 +120,33 @@ describe('BrowserPage', () => {
 		});
 	});
 
+	describe('get closed()', () => {
+		it('Returns false by default.', () => {
+			const browser = new Browser();
+			const page = browser.defaultContext.newPage();
+			expect(page.mainFrame.closed).toBe(false);
+			expect(page.closed).toBe(false);
+		});
+
+		it('Returns true after the page has been closed.', () => {
+			const browser = new Browser();
+			const page = browser.defaultContext.newPage();
+			page.close();
+			expect(page.closed).toBe(true);
+			expect(page.mainFrame.closed).toBe(true);
+		});
+	});
+
 	describe('close()', () => {
 		it('Closes the page.', async () => {
 			const browser = new Browser();
 			const page = browser.defaultContext.newPage();
-			const mainFrame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const mainFrame = page.mainFrame;
 			const frame1 = BrowserFrameFactory.createChildFrame(page.mainFrame);
 			const frame2 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const frame3 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const virtualConsolePrinter = page.virtualConsolePrinter;
+			const context = page.context;
 
 			// Should work even if the body is removed.
 			frame2.document.body.remove();
@@ -135,12 +155,23 @@ describe('BrowserPage', () => {
 
 			expect(browser.defaultContext.pages.length).toBe(0);
 
-			expect(page.virtualConsolePrinter).toBe(null);
-			expect(page.context).toBe(null);
-			expect(page.mainFrame).toBe(null);
-			expect(mainFrame.window).toBe(null);
-			expect(frame1.window).toBe(null);
-			expect(frame2.window).toBe(null);
+			// Sets the closed property to true.
+			expect(page.closed).toBe(true);
+			expect(mainFrame.closed).toBe(true);
+			expect(frame1.closed).toBe(true);
+			expect(frame2.closed).toBe(true);
+
+			// We should keep the references to the page, context, and frames.
+			expect(page.virtualConsolePrinter).toBe(virtualConsolePrinter);
+			expect(page.context).toBe(context);
+			expect(page.mainFrame).toBe(mainFrame);
+			expect(page.frames).toEqual([mainFrame]);
+
+			// Window is replaced by an object with closed property.
+			expect(mainFrame.window).toEqual({ closed: true });
+			expect(frame1.window).toEqual({ closed: true });
+			expect(frame2.window).toEqual({ closed: true });
+			expect(frame3.window).toEqual({ closed: true });
 		});
 
 		it('Clears modules when closing.', async () => {
@@ -158,9 +189,11 @@ describe('BrowserPage', () => {
 				console
 			});
 			const page = browser.defaultContext.newPage();
-			const mainFrame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const mainFrame = page.mainFrame;
 			const frame1 = BrowserFrameFactory.createChildFrame(page.mainFrame);
 			const frame2 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const virtualConsolePrinter = page.virtualConsolePrinter;
+			const context = page.context;
 
 			mainFrame.url = 'https://localhost:8080/';
 
@@ -185,13 +218,16 @@ describe('BrowserPage', () => {
 
 			expect(browser.defaultContext.pages.length).toBe(0);
 
-			expect(page.virtualConsolePrinter).toBe(null);
-			expect(page.context).toBe(null);
-			expect(page.mainFrame).toBe(null);
-			expect(mainFrame.window).toBe(null);
-			expect(frame1.window).toBe(null);
-			expect(frame2.window).toBe(null);
+			// We should keep the references to the page, context, and frames.
+			expect(page.virtualConsolePrinter).toBe(virtualConsolePrinter);
+			expect(page.context).toBe(context);
+			expect(page.mainFrame).toBe(mainFrame);
+			expect(page.frames).toEqual([mainFrame]);
+			expect(mainFrame.window).toEqual({ closed: true });
+			expect(frame1.window).toEqual({ closed: true });
+			expect(frame2.window).toEqual({ closed: true });
 
+			// Window is replaced by an object with closed property.
 			expect(mainFrameWindow.closed).toBe(true);
 			expect(mainFrameWindow[PropertySymbol.modules].esm.size).toBe(0);
 			expect(mainFrameWindow[PropertySymbol.modules].css.size).toBe(0);

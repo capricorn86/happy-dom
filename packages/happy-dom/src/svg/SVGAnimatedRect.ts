@@ -10,7 +10,7 @@ import BrowserWindow from '../window/BrowserWindow.js';
 export default class SVGAnimatedRect {
 	// Internal properties
 	public [PropertySymbol.window]: BrowserWindow;
-	public [PropertySymbol.getAttribute]: () => string;
+	public [PropertySymbol.getAttribute]: () => string | null;
 	public [PropertySymbol.setAttribute]: (value: string) => void;
 	public [PropertySymbol.baseVal]: SVGRect | null = null;
 	public [PropertySymbol.animVal]: SVGRect | null = null;

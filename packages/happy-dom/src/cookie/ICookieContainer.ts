@@ -23,5 +23,10 @@ export default interface ICookieContainer {
 	 * @param [httpOnly] "true" if only http cookies should be returned.
 	 * @returns Cookies.
 	 */
-	getCookies(url: URL | null, httpOnly?: boolean): ICookie[];
+	getCookies(url?: URL | null, httpOnly?: boolean): ICookie[];
+
+	/**
+	 * Clears all cookies.
+	 */
+	clearCookies(): void;
 }

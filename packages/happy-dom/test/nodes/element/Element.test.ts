@@ -153,10 +153,16 @@ describe('Element', () => {
 			expect(window['element2']).toBe(undefined);
 		});
 
-		it(`Doesn't the "id" attribute as a property to Window if it collides with Window properties.`, () => {
+		it(`Doesn't add the "id" attribute as a property to Window if it collides with Window properties.`, () => {
 			element.setAttribute('id', 'document');
 			document.body.appendChild(element);
 			expect(window['document']).toBe(document);
+		});
+
+		it(`Doesn't add the "opener" attribute as a property to Window when the property value is null (#1841).`, () => {
+			document.body.appendChild(element);
+			element.id = 'opener';
+			expect(window['opener']).toBe(null);
 		});
 	});
 

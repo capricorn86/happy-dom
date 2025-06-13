@@ -412,9 +412,22 @@ describe('HTMLAnchorElement', () => {
 
 			expect(newWindow.document.body.innerHTML).toBe('Test');
 
+			// Nothing happens as the main window can't be closed with a script
 			newWindow.close();
 
-			expect(newWindow.closed).toBe(true);
+			expect(newWindow.closed).toBe(false);
+
+			const childWindow = <BrowserWindow>newWindow.open('https://www.example.com/child');
+
+			expect(childWindow).toBeInstanceOf(BrowserWindow);
+			expect(childWindow.location.href).toBe('https://www.example.com/child');
+
+			await browser.waitUntilComplete();
+
+			expect(childWindow.document.body.innerHTML).toBe('Test');
+			childWindow.close();
+
+			expect(childWindow.closed).toBe(true);
 		});
 
 		it('Navigates the browser when a "click" event bubbles up to an element.', async () => {
@@ -445,7 +458,12 @@ describe('HTMLAnchorElement', () => {
 
 			expect(newWindow.document.body.innerHTML).toBe('Test');
 
+			// Nothing happens as the main window can't be closed with a script
 			newWindow.close();
+
+			expect(newWindow.closed).toBe(false);
+
+			await page.close();
 
 			expect(newWindow.closed).toBe(true);
 		});

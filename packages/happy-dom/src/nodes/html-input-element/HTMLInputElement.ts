@@ -34,20 +34,20 @@ export default class HTMLInputElement extends HTMLElement {
 	// Public properties
 	public declare cloneNode: (deep?: boolean) => HTMLInputElement;
 
-	public [PropertySymbol.value] = null;
+	public [PropertySymbol.value]: string | null = null;
 	public [PropertySymbol.height] = 0;
 	public [PropertySymbol.width] = 0;
 	public [PropertySymbol.checked]: boolean | null = null;
 	public [PropertySymbol.validationMessage] = '';
-	public [PropertySymbol.validity] = new ValidityState(this);
+	public [PropertySymbol.validity]: ValidityState = new ValidityState(this);
 	public [PropertySymbol.files]: FileList = new FileList();
 	public [PropertySymbol.indeterminate]: boolean = false;
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
 	public [PropertySymbol.popoverTargetElement]: HTMLElement | null = null;
 
 	// Private properties
-	#selectionStart: number = null;
-	#selectionEnd: number = null;
+	#selectionStart: number | null = null;
+	#selectionEnd: number | null = null;
 	#selectionDirection: HTMLInputElementSelectionDirectionEnum =
 		HTMLInputElementSelectionDirectionEnum.none;
 
@@ -133,7 +133,7 @@ export default class HTMLInputElement extends HTMLElement {
 
 		try {
 			return new URL(
-				this.getAttribute('formaction'),
+				this.getAttribute('formaction')!,
 				this[PropertySymbol.ownerDocument].location.href
 			).href;
 		} catch (e) {
@@ -231,7 +231,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 *
 	 * @returns Form.
 	 */
-	public get form(): HTMLFormElement {
+	public get form(): HTMLFormElement | null {
 		if (this[PropertySymbol.formNode]) {
 			return this[PropertySymbol.formNode];
 		}
@@ -841,7 +841,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 *
 	 * @returns Selection start.
 	 */
-	public get selectionStart(): number {
+	public get selectionStart(): number | null {
 		if (!this.#isSelectionSupported()) {
 			return null;
 		}
@@ -866,7 +866,7 @@ export default class HTMLInputElement extends HTMLElement {
 			);
 		}
 
-		this.setSelectionRange(start, Math.max(start, this.selectionEnd), this.#selectionDirection);
+		this.setSelectionRange(start, Math.max(start, this.selectionEnd!), this.#selectionDirection);
 	}
 
 	/**
@@ -874,7 +874,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 *
 	 * @returns Selection end.
 	 */
-	public get selectionEnd(): number {
+	public get selectionEnd(): number | null {
 		if (!this.#isSelectionSupported()) {
 			return null;
 		}
@@ -899,7 +899,7 @@ export default class HTMLInputElement extends HTMLElement {
 			);
 		}
 
-		this.setSelectionRange(this.selectionStart, end, this.#selectionDirection);
+		this.setSelectionRange(this.selectionStart!, end, this.#selectionDirection);
 	}
 
 	/**
@@ -907,7 +907,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 *
 	 * @returns Selection direction.
 	 */
-	public get selectionDirection(): string {
+	public get selectionDirection(): string | null {
 		if (!this.#isSelectionSupported()) {
 			return null;
 		}
@@ -928,7 +928,7 @@ export default class HTMLInputElement extends HTMLElement {
 			);
 		}
 
-		this.setSelectionRange(this.#selectionStart, this.#selectionEnd, direction);
+		this.setSelectionRange(this.#selectionStart!, this.#selectionEnd!, direction);
 	}
 
 	/**
@@ -951,7 +951,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 *
 	 * @returns Date.
 	 */
-	public get valueAsDate(): Date {
+	public get valueAsDate(): Date | null {
 		switch (this.type) {
 			case 'date':
 			case 'month':
@@ -1057,6 +1057,8 @@ export default class HTMLInputElement extends HTMLElement {
 				const diff = ((day === 0 ? -6 : 1) - day) * 86400000 + parseInt(match[2], 10) * 604800000;
 				return d.getTime() + diff;
 			}
+			default:
+				return NaN;
 		}
 	}
 
@@ -1217,7 +1219,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 */
 	public select(): void {
 		if (!this.#isSelectionSupported()) {
-			return null;
+			return;
 		}
 
 		this.#selectionStart = 0;
@@ -1263,8 +1265,8 @@ export default class HTMLInputElement extends HTMLElement {
 	 */
 	public setRangeText(
 		replacement: string,
-		start: number = null,
-		end: number = null,
+		start: number | null = null,
+		end: number | null = null,
 		selectionMode = HTMLInputElementSelectionModeEnum.preserve
 	): void {
 		if (!this.#isSelectionSupported()) {
@@ -1275,10 +1277,10 @@ export default class HTMLInputElement extends HTMLElement {
 		}
 
 		if (start === null) {
-			start = this.#selectionStart;
+			start = this.#selectionStart!;
 		}
 		if (end === null) {
-			end = this.#selectionEnd;
+			end = this.#selectionEnd!;
 		}
 
 		if (start > end) {
@@ -1292,8 +1294,8 @@ export default class HTMLInputElement extends HTMLElement {
 		end = Math.min(end, this.value.length);
 
 		const val = this.value;
-		let selectionStart = this.#selectionStart;
-		let selectionEnd = this.#selectionEnd;
+		let selectionStart = this.#selectionStart!;
+		let selectionEnd = this.#selectionEnd!;
 
 		this.value = val.slice(0, start) + replacement + val.slice(end);
 
@@ -1499,7 +1501,9 @@ export default class HTMLInputElement extends HTMLElement {
 			const root = <HTMLElement>(
 				(<HTMLFormElement>this[PropertySymbol.formNode] || this.getRootNode())
 			);
-			const radioButtons = root.querySelectorAll(`input[type="radio"][name="${this.name}"]`);
+			const radioButtons = <NodeList<HTMLInputElement>>(
+				root.querySelectorAll(`input[type="radio"][name="${this.name}"]`)
+			);
 
 			for (const radioButton of radioButtons) {
 				if (radioButton !== this) {

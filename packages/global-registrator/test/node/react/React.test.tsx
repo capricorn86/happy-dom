@@ -1,4 +1,4 @@
-import GlobalRegistrator from '../../../cjs/GlobalRegistrator.cjs';
+import GlobalRegistrator from '../../../lib/GlobalRegistrator.js';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { act } from 'react-dom/test-utils';
@@ -8,10 +8,10 @@ import assert from 'node:assert';
 
 describe('React', () => {
 	it('Tests integration.', async () => {
-		GlobalRegistrator.default.register();
+		GlobalRegistrator.register();
 
 		const appElement = document.createElement('app');
-		let root;
+		let root: ReactDOM.Root | null = null;
 		document.body.appendChild(appElement);
 
 		async function mountReactComponent(): Promise<void> {
@@ -27,7 +27,7 @@ describe('React', () => {
 
 		function unmountReactComponent(): void {
 			act(() => {
-				root.unmount();
+				root!.unmount();
 			});
 
 			assert.strictEqual(appElement.innerHTML, '');
@@ -36,6 +36,6 @@ describe('React', () => {
 		await mountReactComponent();
 		unmountReactComponent();
 
-		GlobalRegistrator.default.unregister();
+		GlobalRegistrator.unregister();
 	});
 });

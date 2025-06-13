@@ -86,6 +86,11 @@ export default class ECMAScriptModuleCompiler {
 	 */
 	public compile(moduleURL: string, code: string): IECMAScriptModuleCompiledResult {
 		const browserSettings = new WindowBrowserContext(this.window).getSettings();
+
+		if (!browserSettings) {
+			return <IECMAScriptModuleCompiledResult>{};
+		}
+
 		const regExp = new RegExp(CODE_REGEXP);
 		const imports: IECMAScriptModuleImport[] = [];
 		const count = {
@@ -106,7 +111,7 @@ export default class ECMAScriptModuleCompiler {
 		const templateString: number[] = [];
 		const exportSpreadVariables: Array<Map<string, string>> = [];
 		let newCode = `(async function anonymous($happy_dom) {\n//# sourceURL=${moduleURL}\n`;
-		let match: RegExpExecArray;
+		let match: RegExpExecArray | null;
 		let precedingToken: string;
 		let isEscaped: boolean;
 		let lastIndex = 0;
@@ -162,7 +167,7 @@ export default class ECMAScriptModuleCompiler {
 						const variables = code.substring(importStartIndex, match.index + 1);
 						const importRegExp = new RegExp(IMPORT_REGEXP);
 						const importCode: string[] = [];
-						let importMatch: RegExpExecArray;
+						let importMatch: RegExpExecArray | null;
 						while ((importMatch = importRegExp.exec(variables))) {
 							if (importMatch[1]) {
 								// Import braces
@@ -430,7 +435,7 @@ export default class ECMAScriptModuleCompiler {
 					if (templateString?.[0] == 0) {
 						templateString.shift();
 						stack.templateString.code.push(
-							code.substring(stack.templateString.index, match.index + 1)
+							code.substring(stack.templateString.index || 0, match.index + 1)
 						);
 					} else {
 						templateString.unshift(0);
@@ -516,7 +521,7 @@ export default class ECMAScriptModuleCompiler {
 			return { imports, execute: this.window.eval(newCode) };
 		} catch (e) {
 			const error = new this.window.SyntaxError(
-				`Failed to parse module '${moduleURL}': ${e.message}`
+				`Failed to parse module '${moduleURL}': ${(<Error>e).message}`
 			);
 			if (
 				browserSettings.disableErrorCapturing ||
@@ -541,7 +546,7 @@ export default class ECMAScriptModuleCompiler {
 	 */
 	private removeMultilineComments(code: string): string {
 		const regexp = new RegExp(MULTILINE_COMMENT_REGEXP);
-		let match: RegExpExecArray;
+		let match: RegExpExecArray | null;
 		let count = 0;
 		let lastIndex = 0;
 		let newCode = '';

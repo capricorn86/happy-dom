@@ -14,6 +14,7 @@
 	"include": [
 		"@types/node",
 		".",
-		"../../lib"
+		"../../lib",
+		"../../cjs"
 	]
 }

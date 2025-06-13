@@ -13,7 +13,7 @@ export default class DOMException extends Error {
 	 * @param message Message.
 	 * @param name Name.
 	 */
-	constructor(message: string, name: string = null) {
+	constructor(message: string, name: string | null = null) {
 		super(message);
 
 		this.name = name || DOMExceptionNameEnum.domException;

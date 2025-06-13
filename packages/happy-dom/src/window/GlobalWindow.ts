@@ -67,8 +67,6 @@ export default class GlobalWindow extends Window {
 	 * @deprecated
 	 */
 	public unescape: (str: string) => string = globalThis.unescape;
-	public gc: () => void = globalThis.gc;
-	public v8debug?: unknown = globalThis.v8debug;
 
 	/**
 	 * Setup of VM context.

@@ -19,7 +19,7 @@ export default class Image extends HTMLImageElement {
 	 * @param [width] Width.
 	 * @param [height] Height.
 	 */
-	constructor(width: number = null, height: number = null) {
+	constructor(width: number | null = null, height: number | null = null) {
 		super();
 
 		if (width !== null) {

@@ -18,7 +18,7 @@ export default class Audio extends HTMLAudioElement {
 	 *
 	 * @param [url] source URL.
 	 */
-	constructor(url: string = null) {
+	constructor(url: string | null = null) {
 		super();
 
 		if (url !== null) {

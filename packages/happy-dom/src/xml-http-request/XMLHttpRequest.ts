@@ -118,7 +118,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @throws {DOMException} If the response type is not text or empty.
 	 * @returns Response XML.
 	 */
-	public get responseXML(): Document {
+	public get responseXML(): Document | null {
 		if (this.responseType !== XMLHttpResponseTypeEnum.document && this.responseType !== '') {
 			throw new this[PropertySymbol.window].DOMException(
 				`Failed to read the 'responseXML' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'document' (was '${this.responseType}').`,
@@ -243,7 +243,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			return false;
 		}
 
-		this.#request.headers.set(name, value);
+		this.#request!.headers.set(name, value);
 
 		return true;
 	}
@@ -321,7 +321,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			return;
 		}
 		this.#aborted = true;
-		this.#abortController.abort();
+		this.#abortController!.abort();
 	}
 
 	/**
@@ -353,6 +353,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	async #sendAsync(body?: IRequestBody): Promise<void> {
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+
+		if (!browserFrame) {
+			return;
+		}
+
 		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
 		const taskID = asyncTaskManager.startTask(() => this.abort());
 
@@ -362,16 +367,16 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.dispatchEvent(new Event('loadstart'));
 
 		if (body) {
-			this.#request = new window.Request(this.#request.url, {
-				method: this.#request.method,
-				headers: this.#request.headers,
-				signal: this.#abortController.signal,
-				credentials: this.#request.credentials,
+			this.#request = new window.Request(this.#request!.url, {
+				method: this.#request!.method,
+				headers: this.#request!.headers,
+				signal: this.#abortController!.signal,
+				credentials: this.#request!.credentials,
 				body
 			});
 		}
 
-		this.#abortController.signal.addEventListener('abort', () => {
+		this.#abortController!.signal.addEventListener('abort', () => {
 			this.#aborted = true;
 			this.#readyState = XMLHttpRequestReadyStateEnum.unsent;
 			this.dispatchEvent(new Event('abort'));
@@ -399,14 +404,14 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		const fetch = new Fetch({
 			browserFrame: browserFrame,
 			window: window,
-			url: this.#request.url,
-			init: this.#request
+			url: this.#request!.url,
+			init: this.#request!
 		});
 
 		try {
 			this.#response = await fetch.send();
 		} catch (error) {
-			onError(error);
+			onError(<Error>error);
 			return;
 		}
 
@@ -436,15 +441,15 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 							})
 						);
 					} catch (error) {
-						eventError = error;
+						eventError = <Error>error;
 						throw error;
 					}
 				}
 			} catch (error) {
-				if (error === eventError) {
+				if (<Error>error === eventError!) {
 					throw error;
 				}
-				onError(error);
+				onError(<Error>error);
 				return;
 			}
 		}
@@ -456,7 +461,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			contentType:
 				this.#overriddenMimeType ||
 				this.#response.headers.get('Content-Type') ||
-				this.#request.headers.get('Content-Type')
+				this.#request!.headers.get('Content-Type')
 		});
 		this.#readyState = XMLHttpRequestReadyStateEnum.done;
 
@@ -476,12 +481,16 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
 
+		if (!browserFrame) {
+			return;
+		}
+
 		if (body) {
-			this.#request = new window.Request(this.#request.url, {
-				method: this.#request.method,
-				headers: this.#request.headers,
-				signal: this.#abortController.signal,
-				credentials: this.#request.credentials,
+			this.#request = new window.Request(this.#request!.url, {
+				method: this.#request!.method,
+				headers: this.#request!.headers,
+				signal: this.#abortController!.signal,
+				credentials: this.#request!.credentials,
 				body
 			});
 		}
@@ -491,15 +500,17 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		const fetch = new SyncFetch({
 			browserFrame,
 			window: window,
-			url: this.#request.url,
-			init: this.#request
+			url: this.#request!.url,
+			init: this.#request!
 		});
 
 		try {
 			this.#response = fetch.send();
 		} catch (error) {
 			this.#readyState = XMLHttpRequestReadyStateEnum.done;
-			this.dispatchEvent(new ErrorEvent('error', { error, message: error.message }));
+			this.dispatchEvent(
+				new ErrorEvent('error', { error: <Error>error, message: (<Error>error).message })
+			);
 			this.dispatchEvent(new Event('loadend'));
 			this.dispatchEvent(new Event('readystatechange'));
 			return;
@@ -514,7 +525,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			contentType:
 				this.#overriddenMimeType ||
 				this.#response.headers.get('Content-Type') ||
-				this.#request.headers.get('Content-Type')
+				this.#request!.headers.get('Content-Type')
 		});
 
 		this.#readyState = XMLHttpRequestReadyStateEnum.done;

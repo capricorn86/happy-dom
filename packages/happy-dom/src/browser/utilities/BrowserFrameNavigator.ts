@@ -34,7 +34,7 @@ export default class BrowserFrameNavigator {
 		windowClass: new (
 			browserFrame: IBrowserFrame,
 			options?: { url?: string; width?: number; height?: number }
-		) => BrowserWindow | null;
+		) => BrowserWindow;
 		frame: IBrowserFrame;
 		url: string;
 		goToOptions?: IGoToOptions;
@@ -267,13 +267,13 @@ export default class BrowserFrameNavigator {
 		windowClass: new (
 			browserFrame: IBrowserFrame,
 			options?: { url?: string; width?: number; height?: number }
-		) => BrowserWindow | null;
+		) => BrowserWindow;
 		frame: IBrowserFrame;
 		goToOptions?: IGoToOptions;
 	}): Promise<Response | null> {
 		const { windowClass, frame, goToOptions } = options;
 		const history = frame[PropertySymbol.history];
-		let historyItem: IHistoryItem;
+		let historyItem: IHistoryItem | null = null;
 
 		for (let i = history.length - 1; i >= 0; i--) {
 			if (history[i].isCurrent) {
@@ -326,13 +326,13 @@ export default class BrowserFrameNavigator {
 		windowClass: new (
 			browserFrame: IBrowserFrame,
 			options?: { url?: string; width?: number; height?: number }
-		) => BrowserWindow | null;
+		) => BrowserWindow;
 		frame: IBrowserFrame;
 		goToOptions?: IGoToOptions;
 	}): Promise<Response | null> {
 		const { windowClass, frame, goToOptions } = options;
 		const history = frame[PropertySymbol.history];
-		let historyItem: IHistoryItem;
+		let historyItem: IHistoryItem | null = null;
 
 		for (let i = history.length - 1; i >= 0; i--) {
 			if (history[i].isCurrent) {
@@ -386,7 +386,7 @@ export default class BrowserFrameNavigator {
 		windowClass: new (
 			browserFrame: IBrowserFrame,
 			options?: { url?: string; width?: number; height?: number }
-		) => BrowserWindow | null;
+		) => BrowserWindow;
 		frame: IBrowserFrame;
 		goToOptions?: IGoToOptions;
 		steps?: number;
@@ -397,7 +397,7 @@ export default class BrowserFrameNavigator {
 
 		const { windowClass, frame, goToOptions, steps } = options;
 		const history = frame[PropertySymbol.history];
-		let historyItem: IHistoryItem;
+		let historyItem: IHistoryItem | null = null;
 
 		for (let i = history.length - 1; i >= 0; i--) {
 			if (history[i].isCurrent) {
@@ -450,13 +450,13 @@ export default class BrowserFrameNavigator {
 		windowClass: new (
 			browserFrame: IBrowserFrame,
 			options?: { url?: string; width?: number; height?: number }
-		) => BrowserWindow | null;
+		) => BrowserWindow;
 		frame: IBrowserFrame;
 		goToOptions?: IGoToOptions;
 	}): Promise<Response | null> {
 		const { windowClass, frame, goToOptions } = options;
 		const history = frame[PropertySymbol.history];
-		let historyItem: IHistoryItem;
+		let historyItem: IHistoryItem | null = null;
 
 		for (let i = history.length - 1; i >= 0; i--) {
 			if (history[i].isCurrent) {

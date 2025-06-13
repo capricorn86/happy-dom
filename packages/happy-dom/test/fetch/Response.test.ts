@@ -666,7 +666,7 @@ describe('Response', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					'Failed to create redirect response: Invalid redirect status code.',
 					DOMExceptionNameEnum.invalidStateError
 				)

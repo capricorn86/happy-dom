@@ -17,18 +17,34 @@ export default class MultipartFormDataParser {
 	 * Returns form data.
 	 *
 	 * @param window Window.
-	 * @param body Body.
+	 * @param response Response object containing a body stream.
+	 * @param response.body Body stream.
+	 * @param requestOrResponse
+	 * @param requestOrResponse.body
 	 * @param contentType Content type header value.
 	 * @returns Form data.
 	 */
 	public static async streamToFormData(
 		window: BrowserWindow,
-		body: ReadableStream,
+		requestOrResponse: {
+			body: ReadableStream<Uint8Array> | null;
+			[PropertySymbol.error]: Error | null;
+			[PropertySymbol.aborted]: boolean;
+		},
 		contentType: string
 	): Promise<{ formData: FormData; buffer: Buffer }> {
 		if (!/multipart/i.test(contentType)) {
 			throw new window.DOMException(
 				`Failed to build FormData object: The "content-type" header isn't of type "multipart/form-data".`,
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
+		const body = requestOrResponse.body;
+
+		if (!body) {
+			throw new window.DOMException(
+				'Failed to build FormData object: The response body is null.',
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
@@ -44,17 +60,17 @@ export default class MultipartFormDataParser {
 
 		const bodyReader = body.getReader();
 		const reader = new MultipartReader(window, match[1] || match[2]);
-		const chunks = [];
+		const chunks: any[] = [];
 		let buffer: Buffer;
 		const bytes = 0;
 
 		let readResult = await bodyReader.read();
 
 		while (!readResult.done) {
-			if (body[PropertySymbol.error]) {
-				throw body[PropertySymbol.error];
+			if (requestOrResponse[PropertySymbol.error]) {
+				throw requestOrResponse[PropertySymbol.error];
 			}
-			if (body[PropertySymbol.aborted]) {
+			if (requestOrResponse[PropertySymbol.aborted]) {
 				throw new window.DOMException(
 					'Failed to read response body: The stream was aborted.',
 					DOMExceptionNameEnum.abortError
@@ -69,7 +85,7 @@ export default class MultipartFormDataParser {
 				typeof chunks[0] === 'string' ? Buffer.from(chunks.join('')) : Buffer.concat(chunks, bytes);
 		} catch (error) {
 			throw new window.DOMException(
-				`Could not create Buffer from response body. Error: ${error.message}.`,
+				`Could not create Buffer from response body. Error: ${(<Error>error).message}.`,
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}

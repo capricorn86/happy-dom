@@ -24,8 +24,8 @@ export default class AsyncTaskManager {
 	}> = [];
 	private aborted = false;
 	private destroyed = false;
+	#debugTimeout: NodeJS.Timeout | null = null;
 	#browserFrame: IBrowserFrame;
-	#debugTimeout: NodeJS.Timeout | null;
 
 	/**
 	 * Constructor.
@@ -89,8 +89,8 @@ export default class AsyncTaskManager {
 			this.waitUntilCompleteTimer = null;
 		}
 		this.runningTimers.push(timerID);
-		if (this.#browserFrame.page?.context?.browser?.settings?.debug?.traceWaitUntilComplete > 0) {
-			this.debugTrace.set(timerID, new Error().stack);
+		if (this.#browserFrame.page.context.browser.settings.debug.traceWaitUntilComplete > 0) {
+			this.debugTrace.set(timerID, new Error().stack!);
 		}
 	}
 
@@ -109,7 +109,7 @@ export default class AsyncTaskManager {
 			this.runningTimers.splice(index, 1);
 			this.resolveWhenComplete();
 		}
-		if (this.#browserFrame.page?.context?.browser?.settings?.debug?.traceWaitUntilComplete > 0) {
+		if (this.#browserFrame.page.context.browser.settings.debug.traceWaitUntilComplete > 0) {
 			this.debugTrace.delete(timerID);
 		}
 	}
@@ -129,8 +129,8 @@ export default class AsyncTaskManager {
 			this.waitUntilCompleteTimer = null;
 		}
 		this.runningImmediates.push(immediateID);
-		if (this.#browserFrame.page?.context?.browser?.settings?.debug?.traceWaitUntilComplete > 0) {
-			this.debugTrace.set(immediateID, new Error().stack);
+		if (this.#browserFrame.page.context.browser.settings.debug.traceWaitUntilComplete > 0) {
+			this.debugTrace.set(immediateID, new Error().stack!);
 		}
 	}
 
@@ -149,7 +149,7 @@ export default class AsyncTaskManager {
 			this.runningImmediates.splice(index, 1);
 			this.resolveWhenComplete();
 		}
-		if (this.#browserFrame.page?.context?.browser?.settings?.debug?.traceWaitUntilComplete > 0) {
+		if (this.#browserFrame.page.context.browser.settings.debug.traceWaitUntilComplete > 0) {
 			this.debugTrace.delete(immediateID);
 		}
 	}
@@ -176,8 +176,8 @@ export default class AsyncTaskManager {
 		const taskID = this.newTaskID();
 		this.runningTasks[taskID] = abortHandler ? abortHandler : () => {};
 		this.runningTaskCount++;
-		if (this.#browserFrame.page?.context?.browser?.settings?.debug?.traceWaitUntilComplete > 0) {
-			this.debugTrace.set(taskID, new Error().stack);
+		if (this.#browserFrame.page.context.browser.settings.debug.traceWaitUntilComplete > 0) {
+			this.debugTrace.set(taskID, new Error().stack!);
 		}
 		return taskID;
 	}
@@ -196,7 +196,7 @@ export default class AsyncTaskManager {
 			this.runningTaskCount--;
 			this.resolveWhenComplete();
 		}
-		if (this.#browserFrame.page?.context?.browser?.settings?.debug?.traceWaitUntilComplete > 0) {
+		if (this.#browserFrame.page.context.browser.settings.debug.traceWaitUntilComplete > 0) {
 			this.debugTrace.delete(taskID);
 		}
 	}
@@ -260,7 +260,7 @@ export default class AsyncTaskManager {
 	 * Applies debugging.
 	 */
 	private applyDebugging(): void {
-		const debug = this.#browserFrame.page?.context?.browser?.settings?.debug;
+		const debug = this.#browserFrame.page.context.browser.settings.debug;
 		if (!debug?.traceWaitUntilComplete || debug.traceWaitUntilComplete < 1) {
 			return;
 		}

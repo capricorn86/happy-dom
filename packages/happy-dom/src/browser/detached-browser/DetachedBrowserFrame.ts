@@ -19,12 +19,14 @@ import HistoryScrollRestorationEnum from '../../history/HistoryScrollRestoration
  * Browser frame used when constructing a Window instance without a browser.
  */
 export default class DetachedBrowserFrame implements IBrowserFrame {
+	// When constructing a detached Window instance, it needs to inject the window into the frame.
+	public declare window: BrowserWindow;
+
 	public readonly childFrames: DetachedBrowserFrame[] = [];
 	public readonly parentFrame: DetachedBrowserFrame | null = null;
 	public readonly page: DetachedBrowserPage;
-	// Needs to be injected from the outside when the browser frame is constructed.
-	public window: BrowserWindow;
-	public [PropertySymbol.asyncTaskManager] = new AsyncTaskManager(this);
+	public readonly closed: boolean = false;
+	public [PropertySymbol.asyncTaskManager]: AsyncTaskManager = new AsyncTaskManager(this);
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
 	public [PropertySymbol.openerFrame]: IBrowserFrame | null = null;
 	public [PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
@@ -49,13 +51,14 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 */
 	constructor(page: DetachedBrowserPage) {
 		this.page = page;
+
 		if (page.context.browser.contexts[0]?.pages[0]?.mainFrame) {
 			this.window = new this.page.context.browser.windowClass(this);
-		}
 
-		// Attach process level error capturing.
-		if (page.context.browser[PropertySymbol.exceptionObserver]) {
-			page.context.browser[PropertySymbol.exceptionObserver].observe(this.window);
+			// Attach process level error capturing.
+			if (page.context.browser[PropertySymbol.exceptionObserver]) {
+				page.context.browser[PropertySymbol.exceptionObserver].observe(this.window);
+			}
 		}
 	}
 

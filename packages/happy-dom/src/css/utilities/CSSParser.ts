@@ -32,7 +32,7 @@ export default class CSSParser {
 		const stack: CSSRule[] = [];
 		let parentRule: CSSRule | null = null;
 		let lastIndex = 0;
-		let match: RegExpMatchArray;
+		let match: RegExpMatchArray | null;
 
 		while ((match = regExp.exec(css))) {
 			if (match[0] === '{') {
@@ -188,7 +188,9 @@ export default class CSSParser {
 					}
 				}
 
-				stack.push(parentRule);
+				if (parentRule) {
+					stack.push(parentRule);
+				}
 			} else {
 				if (parentRule) {
 					const cssText = css
@@ -208,7 +210,7 @@ export default class CSSParser {
 				parentRule = stack[stack.length - 1] || null;
 			}
 
-			lastIndex = match.index + 1;
+			lastIndex = match.index! + 1;
 		}
 
 		return cssRules;

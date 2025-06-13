@@ -61,7 +61,8 @@ export default class Element
 	public [PropertySymbol.attributesProxy]: NamedNodeMap | null = null;
 	public [PropertySymbol.children]: HTMLCollection<Element> | null = null;
 	public [PropertySymbol.computedStyle]: CSSStyleDeclaration | null = null;
-	public [PropertySymbol.propertyEventListeners]: Map<string, (event: Event) => void> = new Map();
+	public [PropertySymbol.propertyEventListeners]: Map<string, ((event: Event) => void) | null> =
+		new Map();
 	public declare [PropertySymbol.tagName]: string | null;
 	public declare [PropertySymbol.localName]: string | null;
 	public declare [PropertySymbol.namespaceURI]: string | null;
@@ -328,7 +329,7 @@ export default class Element
 	 * @returns Node name.
 	 */
 	public get nodeName(): string {
-		return this[PropertySymbol.tagName];
+		return this[PropertySymbol.tagName]!;
 	}
 
 	/**
@@ -337,7 +338,7 @@ export default class Element
 	 * @returns Local name.
 	 */
 	public get localName(): string {
-		return this[PropertySymbol.localName];
+		return this[PropertySymbol.localName]!;
 	}
 
 	/**
@@ -770,7 +771,7 @@ export default class Element
 	public getAttributeNames(): string[] {
 		const names = [];
 		for (const item of this[PropertySymbol.attributes][PropertySymbol.items].values()) {
-			names.push(item[PropertySymbol.name]);
+			names.push(item[PropertySymbol.name]!);
 		}
 		return names;
 	}
@@ -818,7 +819,7 @@ export default class Element
 	 * @param namespace Namespace URI.
 	 * @param localName Local name.
 	 */
-	public getAttributeNS(namespace: string | null, localName: string): string {
+	public getAttributeNS(namespace: string | null, localName: string): string | null {
 		const attribute = this.getAttributeNodeNS(namespace, localName);
 		if (attribute) {
 			return attribute[PropertySymbol.value];
@@ -993,9 +994,9 @@ export default class Element
 	 * @param selector Selector.
 	 * @returns Closest matching element.
 	 */
-	public closest(selector: string): Element {
+	public closest(selector: string): Element | null {
 		// eslint-disable-next-line
-		let parent: Element = this;
+		let parent: Element | null = this;
 
 		while (parent) {
 			if (QuerySelector.matches(parent, selector)) {
@@ -1024,7 +1025,11 @@ export default class Element
 	 * @param oldValue Old value.
 	 * @param newValue New value.
 	 */
-	public attributeChangedCallback?(name: string, oldValue: string, newValue: string): void;
+	public attributeChangedCallback?(
+		name: string,
+		oldValue: string | null,
+		newValue: string | null
+	): void;
 
 	/**
 	 * Query CSS selector to find matching nodes.
@@ -1384,7 +1389,7 @@ export default class Element
 	 */
 	public [PropertySymbol.onSetAttribute](attribute: Attr, replacedAttribute: Attr | null): void {
 		if (!attribute[PropertySymbol.name]) {
-			return null;
+			return;
 		}
 
 		const oldValue = replacedAttribute ? replacedAttribute[PropertySymbol.value] : null;
@@ -1392,13 +1397,13 @@ export default class Element
 		if (
 			attribute[PropertySymbol.name] === 'slot' &&
 			this[PropertySymbol.parentNode] &&
-			this[PropertySymbol.parentNode][PropertySymbol.shadowRoot]
+			(<Element>this[PropertySymbol.parentNode])[PropertySymbol.shadowRoot]
 		) {
-			const shadowRoot = this[PropertySymbol.parentNode][PropertySymbol.shadowRoot];
+			const shadowRoot = (<Element>this[PropertySymbol.parentNode])[PropertySymbol.shadowRoot];
 
-			if (attribute[PropertySymbol.value] !== oldValue) {
+			if (shadowRoot && attribute[PropertySymbol.value] !== oldValue) {
 				// Previous slot
-				if (oldValue !== null) {
+				if (oldValue !== null && replacedAttribute) {
 					const slot = shadowRoot.querySelector(
 						`slot[name="${replacedAttribute[PropertySymbol.value]}"]`
 					);
@@ -1421,7 +1426,7 @@ export default class Element
 		}
 
 		if (
-			this[attribute[PropertySymbol.name]] !== undefined &&
+			this[<'constructor'>attribute[PropertySymbol.name]] !== undefined &&
 			attribute[PropertySymbol.name][0] === 'o' &&
 			attribute[PropertySymbol.name][1] === 'n'
 		) {
@@ -1437,8 +1442,8 @@ export default class Element
 
 		this[PropertySymbol.reportMutation](
 			new MutationRecord({
-				target: this,
 				type: MutationTypeEnum.attributes,
+				target: this,
 				attributeName: attribute[PropertySymbol.name],
 				oldValue
 			})
@@ -1454,9 +1459,9 @@ export default class Element
 		if (
 			removedAttribute[PropertySymbol.name] === 'slot' &&
 			this[PropertySymbol.parentNode] &&
-			this[PropertySymbol.parentNode][PropertySymbol.shadowRoot]
+			(<Element>this[PropertySymbol.parentNode])[PropertySymbol.shadowRoot]
 		) {
-			const shadowRoot = this[PropertySymbol.parentNode][PropertySymbol.shadowRoot];
+			const shadowRoot = (<Element>this[PropertySymbol.parentNode])[PropertySymbol.shadowRoot]!;
 			const namedSlot = shadowRoot.querySelector(
 				`slot[name="${removedAttribute[PropertySymbol.value]}"]`
 			);
@@ -1528,7 +1533,7 @@ export default class Element
 	 *
 	 * @param id Identifier.
 	 */
-	#addIdentifierToWindow(id: string): void {
+	#addIdentifierToWindow(id: string | null): void {
 		if (!id) {
 			return;
 		}
@@ -1547,6 +1552,10 @@ export default class Element
 
 		const entry = document[PropertySymbol.elementIdMap].get(id);
 
+		if (!entry) {
+			return;
+		}
+
 		// HTMLFormElement and HTMLSelectElement can be a proxy, but the scope can be the target and not the actual proxy
 		// To make sure we use the proxy we can check for the proxy property
 		const element = this[PropertySymbol.proxy] || this;
@@ -1561,11 +1570,14 @@ export default class Element
 				);
 			}
 
-			if (!(id in window) || window[id] === entry.elements[0]) {
-				window[id] = entry.htmlCollection;
+			if (!(id in window) || (<any>window)[id] === entry.elements[0]) {
+				(<any>window)[id] = entry.htmlCollection;
 			}
-		} else if (!(id in window) || window[id] === entry.htmlCollection) {
-			window[id] = element;
+		} else if (
+			!(id in window) ||
+			(entry.htmlCollection !== null && (<any>window)[id] === entry.htmlCollection)
+		) {
+			(<any>window)[id] = element;
 		}
 	}
 
@@ -1574,7 +1586,7 @@ export default class Element
 	 *
 	 * @param id Identifier.
 	 */
-	#removeIdentifierFromWindow(id: string): void {
+	#removeIdentifierFromWindow(id: string | null): void {
 		if (!id) {
 			return;
 		}
@@ -1589,28 +1601,30 @@ export default class Element
 
 		const entry = document[PropertySymbol.elementIdMap].get(id);
 
-		if (entry) {
-			// HTMLFormElement and HTMLSelectElement can be a proxy, but the scope can be the target and not the actual proxy
-			// To make sure we use the proxy we can check for the proxy property
-			const element = this[PropertySymbol.proxy] || this;
-			const index = entry.elements.indexOf(element);
+		if (!entry) {
+			return;
+		}
 
-			if (index !== -1) {
-				entry.elements.splice(index, 1);
+		// HTMLFormElement and HTMLSelectElement can be a proxy, but the scope can be the target and not the actual proxy
+		// To make sure we use the proxy we can check for the proxy property
+		const element = this[PropertySymbol.proxy] || this;
+		const index = entry.elements.indexOf(element);
+
+		if (index !== -1) {
+			entry.elements.splice(index, 1);
+		}
+
+		if (entry.elements.length === 1) {
+			if ((<any>window)[id] === entry.htmlCollection) {
+				(<any>window)[id] = entry.elements[0];
 			}
 
-			if (entry.elements.length === 1) {
-				if (window[id] === entry.htmlCollection) {
-					window[id] = entry.elements[0];
-				}
+			entry.htmlCollection = null;
+		} else if (!entry.elements.length) {
+			document[PropertySymbol.elementIdMap].delete(id);
 
-				entry.htmlCollection = null;
-			} else if (!entry.elements.length) {
-				document[PropertySymbol.elementIdMap].delete(id);
-
-				if (window[id] === element || window[id] === entry.htmlCollection) {
-					delete window[id];
-				}
+			if ((<any>window)[id] === element || (<any>window)[id] === entry.htmlCollection) {
+				delete (<any>window)[id];
 			}
 		}
 	}
@@ -1627,7 +1641,7 @@ export default class Element
 			return;
 		}
 
-		const slotName = addedOrRemovedNode['getAttribute']
+		const slotName = (<Element>addedOrRemovedNode)['getAttribute']
 			? (<Element>addedOrRemovedNode).getAttribute('slot')
 			: null;
 		if (slotName) {

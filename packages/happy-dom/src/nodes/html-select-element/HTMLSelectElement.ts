@@ -16,6 +16,7 @@ import Node from '../node/Node.js';
 import Element from '../element/Element.js';
 import EventTarget from '../../event/EventTarget.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 
 /**
  * HTML Select Element.
@@ -24,6 +25,9 @@ import ElementEventAttributeUtility from '../element/ElementEventAttributeUtilit
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLSelectElement.
  */
 export default class HTMLSelectElement extends HTMLElement {
+	// Injected by WindowContextClassExtender
+	protected declare [PropertySymbol.window]: BrowserWindow;
+
 	// Internal properties.
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
@@ -50,7 +54,7 @@ export default class HTMLSelectElement extends HTMLElement {
 			get: (target, property) => {
 				if (property in target || typeof property === 'symbol') {
 					methodBinder.bind(property);
-					return target[property];
+					return (<any>target)[property];
 				}
 				const index = Number(property);
 				if (!isNaN(index)) {
@@ -61,19 +65,19 @@ export default class HTMLSelectElement extends HTMLElement {
 				methodBinder.bind(property);
 
 				if (typeof property === 'symbol') {
-					target[property] = newValue;
+					(<any>target)[property] = newValue;
 					return true;
 				}
 
 				const index = Number(property);
 
 				if (isNaN(index)) {
-					target[property] = newValue;
+					(<any>target)[property] = newValue;
 					return true;
 				}
 
 				if (!newValue || !(newValue instanceof HTMLOptionElement)) {
-					throw new this[PropertySymbol.window].Error(
+					throw new target[PropertySymbol.window].Error(
 						`TypeError: Failed to set an indexed property [${index}] on 'HTMLSelectElement': parameter 2 is not of type 'HTMLOptionElement'.`
 					);
 				}
@@ -101,12 +105,12 @@ export default class HTMLSelectElement extends HTMLElement {
 			},
 			deleteProperty(target, property): boolean {
 				if (typeof property === 'symbol') {
-					delete target[property];
+					delete (<any>target)[property];
 					return true;
 				}
 				const index = Number(property);
 				if (isNaN(index)) {
-					delete target[property];
+					delete (<any>target)[property];
 				}
 				return true;
 			},
@@ -141,7 +145,7 @@ export default class HTMLSelectElement extends HTMLElement {
 				}
 
 				if (!descriptor.value || !(descriptor.value instanceof HTMLOptionElement)) {
-					throw new this[PropertySymbol.window].Error(
+					throw new target[PropertySymbol.window].Error(
 						`TypeError: Failed to set an indexed property [${index}] on 'HTMLSelectElement': parameter 2 is not of type 'HTMLOptionElement'.`
 					);
 				}
@@ -167,7 +171,7 @@ export default class HTMLSelectElement extends HTMLElement {
 
 				return true;
 			},
-			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
+			getOwnPropertyDescriptor(target, property): PropertyDescriptor | undefined {
 				if (property in target) {
 					return Object.getOwnPropertyDescriptor(target, property);
 				}
@@ -471,8 +475,8 @@ export default class HTMLSelectElement extends HTMLElement {
 					const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
 
 					// If we hit the cache, we should recieve the same Array instance as before, which will then contain the selected options.
-					if (options[PropertySymbol.selectedOptions]) {
-						return options[PropertySymbol.selectedOptions];
+					if ((<any>options)[PropertySymbol.selectedOptions]) {
+						return (<any>options)[PropertySymbol.selectedOptions];
 					}
 
 					const selectedOptions = [];
@@ -484,7 +488,7 @@ export default class HTMLSelectElement extends HTMLElement {
 						}
 					}
 
-					options[PropertySymbol.selectedOptions] = selectedOptions;
+					(<any>options)[PropertySymbol.selectedOptions] = selectedOptions;
 
 					return selectedOptions;
 				}
@@ -508,7 +512,7 @@ export default class HTMLSelectElement extends HTMLElement {
 	 *
 	 * @returns Form.
 	 */
-	public get form(): HTMLFormElement {
+	public get form(): HTMLFormElement | null {
 		if (this[PropertySymbol.formNode]) {
 			return this[PropertySymbol.formNode];
 		}
@@ -526,11 +530,7 @@ export default class HTMLSelectElement extends HTMLElement {
 	 */
 	public get willValidate(): boolean {
 		return (
-			this.type !== 'hidden' &&
-			this.type !== 'reset' &&
-			this.type !== 'button' &&
-			!this.disabled &&
-			!this['readOnly']
+			this.type !== 'hidden' && this.type !== 'reset' && this.type !== 'button' && !this.disabled
 		);
 	}
 
@@ -558,8 +558,8 @@ export default class HTMLSelectElement extends HTMLElement {
 	 *
 	 * @param index Index.
 	 */
-	public item(index: number): HTMLOptionElement {
-		return this[PropertySymbol.options].item(index);
+	public item(index: number): HTMLOptionElement | null {
+		return this.options.item(index);
 	}
 
 	/**
@@ -690,7 +690,7 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @see https://html.spec.whatwg.org/multipage/form-elements.html#selectedness-setting-algorithm
 	 * @param [selectedOption] Selected option.
 	 */
-	public [PropertySymbol.updateSelectedness](selectedOption?: HTMLOptionElement): void {
+	public [PropertySymbol.updateSelectedness](selectedOption?: HTMLOptionElement | null): void {
 		const isMultiple = this.hasAttribute('multiple');
 		const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
 		const selected: HTMLOptionElement[] = [];
@@ -761,7 +761,7 @@ export default class HTMLSelectElement extends HTMLElement {
 	 */
 	#getDisplaySize(): number {
 		if (this.hasAttributeNS(null, 'size')) {
-			const size = parseInt(this.getAttribute('size'));
+			const size = parseInt(this.getAttribute('size')!);
 			if (!isNaN(size) && size >= 0) {
 				return size;
 			}

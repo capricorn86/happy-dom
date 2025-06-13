@@ -25,7 +25,7 @@ export default class TextTrack extends EventTarget {
 	);
 
 	// Events
-	public oncuechange: (event: Event) => void = null;
+	public oncuechange: ((event: Event) => void) | null = null;
 
 	/**
 	 * Constructor.

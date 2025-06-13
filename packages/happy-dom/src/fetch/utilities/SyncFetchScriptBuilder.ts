@@ -23,7 +23,7 @@ export default class SyncFetchScriptBuilder {
 		disableStrictSSL?: boolean;
 		body?: Buffer | null;
 	}): string {
-		const sortedHeaders = {};
+		const sortedHeaders: { [name: string]: string } = {};
 		const headerNames = Object.keys(request.headers).sort();
 
 		for (const name of headerNames) {

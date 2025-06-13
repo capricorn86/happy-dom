@@ -14,7 +14,7 @@ import MediaQueryParser from './MediaQueryParser.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/MediaQueryList.
  */
 export default class MediaQueryList extends EventTarget {
-	public onchange: (event: Event) => void = null;
+	public onchange: ((event: Event) => void) | null = null;
 	#window: BrowserWindow;
 	#items: IMediaQueryItem[] | null = null;
 	#media: string;
@@ -28,7 +28,11 @@ export default class MediaQueryList extends EventTarget {
 	 * @param options.media Media.
 	 * @param [options.rootFontSize] Root font size.
 	 */
-	constructor(options: { window: BrowserWindow; media: string; rootFontSize?: string | number }) {
+	constructor(options: {
+		window: BrowserWindow;
+		media: string;
+		rootFontSize?: string | number | null;
+	}) {
 		super();
 		this.#window = options.window;
 		this.#media = options.media;
@@ -109,7 +113,7 @@ export default class MediaQueryList extends EventTarget {
 					this.dispatchEvent(new MediaQueryListEvent('change', { matches, media: this.media }));
 				}
 			};
-			listener[PropertySymbol.windowResizeListener] = resizeListener;
+			(<any>listener)[PropertySymbol.windowResizeListener] = resizeListener;
 			this.#window.addEventListener('resize', resizeListener);
 		}
 	}
@@ -119,8 +123,11 @@ export default class MediaQueryList extends EventTarget {
 	 */
 	public removeEventListener(type: string, listener: TEventListener): void {
 		super.removeEventListener(type, listener);
-		if (type === 'change' && listener[PropertySymbol.windowResizeListener]) {
-			this.#window.removeEventListener('resize', listener[PropertySymbol.windowResizeListener]);
+		if (type === 'change' && (<any>listener)[PropertySymbol.windowResizeListener]) {
+			this.#window.removeEventListener(
+				'resize',
+				(<any>listener)[PropertySymbol.windowResizeListener]
+			);
 		}
 	}
 }

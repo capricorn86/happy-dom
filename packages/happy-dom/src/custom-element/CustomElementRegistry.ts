@@ -148,7 +148,7 @@ export default class CustomElementRegistry {
 			return Promise.resolve();
 		}
 		return new Promise((resolve) => {
-			const callbacks: Array<() => void> = this[PropertySymbol.callbacks].get(name);
+			const callbacks: Array<() => void> | undefined = this[PropertySymbol.callbacks].get(name);
 			if (callbacks) {
 				callbacks.push(resolve);
 			} else {
@@ -173,8 +173,8 @@ export default class CustomElementRegistry {
 	public [PropertySymbol.destroy](): void {
 		this[PropertySymbol.destroyed] = true;
 		for (const definition of this[PropertySymbol.registry].values()) {
-			definition.elementClass.prototype[PropertySymbol.window] = null;
-			definition.elementClass.prototype[PropertySymbol.ownerDocument] = null;
+			definition.elementClass.prototype[PropertySymbol.window] = null!;
+			definition.elementClass.prototype[PropertySymbol.ownerDocument] = null!;
 			definition.elementClass.prototype[PropertySymbol.tagName] = null;
 			definition.elementClass.prototype[PropertySymbol.localName] = null;
 			definition.elementClass.prototype[PropertySymbol.namespaceURI] = null;

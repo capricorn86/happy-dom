@@ -28,10 +28,13 @@ export default class DataTransfer {
 	 * @returns Files.
 	 */
 	public get files(): File[] {
-		const files = [];
+		const files: File[] = [];
 		for (const item of this.items) {
 			if (item.kind === 'file') {
-				files.push(item.getAsFile());
+				const file = item.getAsFile();
+				if (file) {
+					files.push(file);
+				}
 			}
 		}
 		return files;

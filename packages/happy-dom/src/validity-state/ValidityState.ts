@@ -80,7 +80,7 @@ export default class ValidityState {
 			this.element instanceof HTMLInputElement &&
 			this.element.hasAttribute('pattern') &&
 			this.element.value.length > 0 &&
-			this.element.value.replace(new RegExp(this.element.getAttribute('pattern')), '').length > 0
+			this.element.value.replace(new RegExp(this.element.getAttribute('pattern')!), '').length > 0
 		);
 	}
 

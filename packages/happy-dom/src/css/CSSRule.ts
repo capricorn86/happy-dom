@@ -27,8 +27,8 @@ export default class CSSRule {
 	public [PropertySymbol.window]: BrowserWindow;
 
 	// Public properties
-	public parentRule: CSSRule = null;
-	public parentStyleSheet: CSSStyleSheet = null;
+	public parentRule: CSSRule | null = null;
+	public parentStyleSheet: CSSStyleSheet | null = null;
 	public type: CSSRuleTypeEnum | null = null;
 
 	/**

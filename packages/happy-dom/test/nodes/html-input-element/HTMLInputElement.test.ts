@@ -347,7 +347,7 @@ describe('HTMLInputElement', () => {
 			])('Of type %s.', (type) => {
 				element.type = type;
 				expect(() => (element.valueAsNumber = 0)).toThrowError(
-					new DOMException(
+					new window.DOMException(
 						"Failed to set the 'valueAsNumber' property on 'HTMLInputElement': This input element does not support Number values.",
 						DOMExceptionNameEnum.invalidStateError
 					)
@@ -474,7 +474,7 @@ describe('HTMLInputElement', () => {
 			expect(() => {
 				element.valueAsDate = new Date();
 			}).toThrow(
-				new DOMException(
+				new window.DOMException(
 					"Failed to set the 'valueAsDate' property on 'HTMLInputElement': This input element does not support Date values.",
 					DOMExceptionNameEnum.invalidStateError
 				)

@@ -227,7 +227,7 @@ export default class HTMLTableElement extends HTMLElement {
 
 		if (tBodies.length > 0) {
 			const lastTBody = tBodies[tBodies.length - 1];
-			lastTBody.parentNode.insertBefore(tBody, lastTBody.nextSibling);
+			lastTBody.parentNode?.insertBefore(tBody, lastTBody.nextSibling);
 			return tBody;
 		}
 
@@ -297,7 +297,7 @@ export default class HTMLTableElement extends HTMLElement {
 			return row;
 		}
 
-		rows[index].parentNode.insertBefore(row, rows[index]);
+		rows[index].parentNode?.insertBefore(row, rows[index]);
 
 		return row;
 	}
