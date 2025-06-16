@@ -8,7 +8,7 @@ import type IServerRendererItem from '../../lib/types/IServerRendererItem.js';
 import ServerRenderer from '../../lib/ServerRenderer.js';
 import Path from 'path';
 import IFetchRequestHeaders from 'happy-dom/lib/fetch/types/IFetchRequestHeaders.js';
-import DefaultServerRendererConfiguration from '../../lib/utilities/DefaultServerRendererConfiguration.js';
+import DefaultServerRendererConfiguration from '../../lib/config/DefaultServerRendererConfiguration.js';
 
 main();
 
