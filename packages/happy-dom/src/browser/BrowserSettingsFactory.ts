@@ -57,7 +57,7 @@ export default class BrowserSettingsFactory {
 	 * @param source Source.
 	 * @param [parentNamespace] Parent namespace.
 	 */
-	private static validate(target: object, source: object, parentNamespace?: string): void {
+	private static validate(target: any, source: any, parentNamespace?: string): void {
 		for (const key of Object.keys(source)) {
 			if (target[key] === undefined) {
 				const namespace = parentNamespace ? parentNamespace + '.' + key : key;

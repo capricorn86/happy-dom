@@ -52,7 +52,7 @@ export default class StylePropertyMapReadOnly {
 		const length = this[PropertySymbol.style].length;
 		const array = new Array(length);
 		for (let i = 0; i < length; i++) {
-			const property = this[PropertySymbol.style][i];
+			const property = (<any>this[PropertySymbol.style])[i];
 			array[i] = [
 				property,
 				[new CSSKeywordValue(this[PropertySymbol.style].getPropertyValue(property))]
@@ -70,7 +70,7 @@ export default class StylePropertyMapReadOnly {
 		const length = this[PropertySymbol.style].length;
 		const array = new Array(length);
 		for (let i = 0; i < length; i++) {
-			const property = this[PropertySymbol.style][i];
+			const property = (<any>this[PropertySymbol.style])[i];
 			array[i] = [new CSSKeywordValue(this[PropertySymbol.style].getPropertyValue(property))];
 		}
 		return array.values();
@@ -85,7 +85,7 @@ export default class StylePropertyMapReadOnly {
 		const length = this[PropertySymbol.style].length;
 		const array = new Array(length);
 		for (let i = 0; i < length; i++) {
-			array[i] = this[PropertySymbol.style][i];
+			array[i] = (<any>this[PropertySymbol.style])[i];
 		}
 		return array.values();
 	}

@@ -183,7 +183,7 @@ export default class ResourceFetch {
 		}
 
 		return {
-			content: response.body.toString(),
+			content: response.body?.toString() || '',
 			virtualServerFile: response[PropertySymbol.virtualServerFile] || null
 		};
 	}

@@ -72,7 +72,7 @@ export default class HTMLSerializer {
 			case NodeTypeEnum.elementNode:
 				const element = <Element>root;
 				const prefix = element[PropertySymbol.prefix];
-				const localName = element[PropertySymbol.localName];
+				const localName = element[PropertySymbol.localName]!;
 				const config = HTMLElementConfig[<'a'>element[PropertySymbol.localName]];
 				const tagName = prefix ? `${prefix}:${localName}` : localName;
 

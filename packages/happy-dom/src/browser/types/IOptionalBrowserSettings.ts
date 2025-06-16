@@ -107,7 +107,7 @@ export default interface IOptionalBrowserSettings {
 		crossOriginPolicy?: BrowserNavigationCrossOriginPolicyEnum;
 
 		/** Triggered before content is loaded into the document */
-		beforeContentCallback?: (window: BrowserWindow) => void | null;
+		beforeContentCallback?: ((window: BrowserWindow) => void) | null;
 	};
 
 	/**

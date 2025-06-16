@@ -94,9 +94,11 @@ export default class ResponseCache implements IResponseCache {
 		} else {
 			if (cachedResponse) {
 				const entries = this.entries.get(url);
-				const index = entries.indexOf(cachedResponse);
-				if (index !== -1) {
-					entries.splice(index, 1);
+				if (entries) {
+					const index = entries.indexOf(cachedResponse);
+					if (index !== -1) {
+						entries.splice(index, 1);
+					}
 				}
 			}
 
@@ -148,9 +150,11 @@ export default class ResponseCache implements IResponseCache {
 					case 'no-cache':
 					case 'no-store':
 						const entries = this.entries.get(url);
-						const index = entries.indexOf(cachedResponse);
-						if (index !== -1) {
-							entries.splice(index, 1);
+						if (entries) {
+							const index = entries.indexOf(cachedResponse);
+							if (index !== -1) {
+								entries.splice(index, 1);
+							}
 						}
 						return null;
 					case 'must-revalidate':
@@ -191,9 +195,11 @@ export default class ResponseCache implements IResponseCache {
 		// Cache is invalid if it has expired and doesn't have an ETag.
 		if (!cachedResponse.etag && (!cachedResponse.expires || cachedResponse.expires < Date.now())) {
 			const entries = this.entries.get(url);
-			const index = entries.indexOf(cachedResponse);
-			if (index !== -1) {
-				entries.splice(index, 1);
+			if (entries) {
+				const index = entries.indexOf(cachedResponse);
+				if (index !== -1) {
+					entries.splice(index, 1);
+				}
 			}
 			return null;
 		}

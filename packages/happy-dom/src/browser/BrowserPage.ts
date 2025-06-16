@@ -21,6 +21,7 @@ export default class BrowserPage implements IBrowserPage {
 	public readonly context: BrowserContext;
 	public readonly console: Console;
 	public readonly viewport: IBrowserPageViewport;
+	public readonly closed: boolean = false;
 
 	/**
 	 * Constructor.

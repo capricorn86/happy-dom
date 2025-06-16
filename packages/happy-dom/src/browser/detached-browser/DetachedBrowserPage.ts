@@ -21,6 +21,7 @@ export default class DetachedBrowserPage implements IBrowserPage {
 	public readonly context: DetachedBrowserContext;
 	public readonly console: Console;
 	public readonly viewport: IBrowserPageViewport;
+	public readonly closed: boolean = false;
 
 	/**
 	 * Constructor.
