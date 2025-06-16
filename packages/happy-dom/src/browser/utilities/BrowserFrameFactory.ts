@@ -1,6 +1,5 @@
 import IBrowserFrame from '../types/IBrowserFrame.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import BrowserWindow from '../../window/BrowserWindow.js';
 import IBrowserPage from '../types/IBrowserPage.js';
 
 /**
@@ -28,7 +27,13 @@ export default class BrowserFrameFactory {
 	 * @param frame Frame.
 	 */
 	public static destroyFrame(frame: IBrowserFrame): Promise<void> {
-		const exceptionObserver = frame.page?.context?.browser?.[PropertySymbol.exceptionObserver];
+		const exceptionObserver = frame.page.context.browser[PropertySymbol.exceptionObserver];
+
+		if (frame.closed) {
+			return Promise.resolve();
+		}
+
+		(<boolean>frame.closed) = true;
 
 		// Using Promise instead of async/await to prevent usage of a microtask
 		return new Promise((resolve, reject) => {
@@ -52,8 +57,7 @@ export default class BrowserFrameFactory {
 							exceptionObserver.disconnect(frame.window);
 						}
 
-						(<IBrowserPage | null>frame.page) = null;
-						(<BrowserWindow | null>frame.window) = null;
+						(<object>frame.window) = { closed: true };
 						frame[PropertySymbol.openerFrame] = null;
 						frame[PropertySymbol.openerWindow] = null;
 
@@ -75,8 +79,7 @@ export default class BrowserFrameFactory {
 								exceptionObserver.disconnect(frame.window);
 							}
 
-							(<IBrowserPage | null>frame.page) = null;
-							(<BrowserWindow | null>frame.window) = null;
+							(<object>frame.window) = { closed: true };
 							frame[PropertySymbol.openerFrame] = null;
 							frame[PropertySymbol.openerWindow] = null;
 

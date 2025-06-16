@@ -30,7 +30,7 @@ export default class WindowPageOpenUtility {
 		const features = this.getWindowFeatures(options?.features || '');
 		const target = options?.target !== undefined ? String(options.target) : null;
 		const originURL = new URL(browserFrame.window.location.href);
-		const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, options.url);
+		const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, options?.url);
 		const oldWindow = browserFrame.window;
 		let targetFrame: IBrowserFrame;
 
@@ -62,11 +62,7 @@ export default class WindowPageOpenUtility {
 				referrerPolicy: features.noreferrer ? 'no-referrer' : undefined
 			})
 			.catch((error) => {
-				if (targetFrame.page?.console) {
-					targetFrame.page.console.error(error);
-				} else {
-					throw error;
-				}
+				targetFrame.page.console.error(error);
 			});
 
 		if (targetURL.protocol === 'javascript:') {

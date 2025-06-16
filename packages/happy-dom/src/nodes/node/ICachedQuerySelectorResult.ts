@@ -2,5 +2,5 @@ import Element from '../element/Element.js';
 import ICachedResult from './ICachedResult.js';
 
 export default interface ICachedQuerySelectorResult extends ICachedResult {
-	result: WeakRef<Element | null> | null;
+	result: WeakRef<Element> | null;
 }

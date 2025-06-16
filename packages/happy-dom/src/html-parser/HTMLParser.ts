@@ -18,6 +18,7 @@ import HTMLHtmlElement from '../nodes/html-html-element/HTMLHtmlElement.js';
 import XMLEncodeUtility from '../utilities/XMLEncodeUtility.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import NodeFactory from '../nodes/NodeFactory.js';
+import Text from '../nodes/text/Text.js';
 
 /**
  * Markup RegExp.
@@ -47,7 +48,7 @@ const MARKUP_REGEXP = /<([^\s/!>?]+)|<\/([^\s/!>?]+)\s*>|(<!--)|(-->|--!>)|(<!)|
  * Group 9: Attribute name when the attribute has no value (e.g. "disabled" in "<div disabled>").
  */
 const ATTRIBUTE_REGEXP =
-	/\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)\s*=\s*([a-zA-Z0-9-_:.$@?{}/<]+)|\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)\s*=\s*"([^"]*)("{0,1})|\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)\s*=\s*'([^']*)('{0,1})|\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)/gm;
+	/\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)\s*=\s*([^"'=<>\\`\s]+)|\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)\s*=\s*"([^"]*)("{0,1})|\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)\s*=\s*'([^']*)('{0,1})|\s*([a-zA-Z0-9-_:.$@?\\<\[\]]+)/gm;
 
 /**
  * Document type attribute RegExp.
@@ -102,7 +103,7 @@ enum HTMLDocumentStructureLevelEnum {
 
 interface IHTMLDocumentStructure {
 	nodes: {
-		doctype: DocumentType;
+		doctype: DocumentType | null;
 		documentElement: HTMLHtmlElement;
 		head: HTMLHeadElement;
 		body: HTMLBodyElement;
@@ -119,7 +120,7 @@ export default class HTMLParser {
 	private rootNode: Element | DocumentFragment | Document | null = null;
 	private rootDocument: Document | null = null;
 	private nodeStack: Node[] = [];
-	private tagNameStack: string[] = [];
+	private tagNameStack: Array<string | null> = [];
 	private documentStructure: IHTMLDocumentStructure | null = null;
 	private startTagIndex = 0;
 	private markupRegExp: RegExp | null = null;
@@ -212,7 +213,7 @@ export default class HTMLParser {
 			};
 		}
 
-		let match: RegExpExecArray;
+		let match: RegExpExecArray | null;
 		let lastIndex = 0;
 
 		html = String(html);
@@ -343,7 +344,7 @@ export default class HTMLParser {
 					: text;
 
 			if (htmlText) {
-				const textNode = this.rootDocument.createTextNode(
+				const textNode = this.rootDocument!.createTextNode(
 					XMLEncodeUtility.decodeHTMLEntities(htmlText)
 				);
 				if (
@@ -361,18 +362,18 @@ export default class HTMLParser {
 						documentElement[PropertySymbol.insertBefore](textNode, body, true);
 					} else if (body.lastChild?.[PropertySymbol.nodeType] === NodeTypeEnum.textNode) {
 						// If the last child of the body is a text node, we should append the text to it.
-						body.lastChild[PropertySymbol.data] += text;
+						(<Text>body.lastChild)[PropertySymbol.data] += text;
 					} else {
 						// Nodes outside <html>, <head> and <body> should be appended to the body
 						body[PropertySymbol.appendChild](textNode, true);
 					}
 				} else {
-					this.currentNode[PropertySymbol.appendChild](textNode, true);
+					this.currentNode![PropertySymbol.appendChild](textNode, true);
 				}
 			}
 		} else {
-			const textNode = this.rootDocument.createTextNode(XMLEncodeUtility.decodeHTMLEntities(text));
-			this.currentNode[PropertySymbol.appendChild](textNode, true);
+			const textNode = this.rootDocument!.createTextNode(XMLEncodeUtility.decodeHTMLEntities(text));
+			this.currentNode![PropertySymbol.appendChild](textNode, true);
 		}
 	}
 
@@ -390,7 +391,7 @@ export default class HTMLParser {
 				this.documentStructure.level < HTMLDocumentStructureLevelEnum.body)
 		) {
 			const attributeRegexp = new RegExp(ATTRIBUTE_REGEXP, 'gm');
-			let attributeMatch: RegExpExecArray;
+			let attributeMatch: RegExpExecArray | null;
 
 			while ((attributeMatch = attributeRegexp.exec(attributeString))) {
 				if (
@@ -404,9 +405,9 @@ export default class HTMLParser {
 						attributeMatch[1] || attributeMatch[3] || attributeMatch[6] || attributeMatch[9] || '';
 					const rawValue = attributeMatch[2] || attributeMatch[4] || attributeMatch[7] || '';
 					const value = rawValue ? XMLEncodeUtility.decodeHTMLAttributeValue(rawValue) : '';
-					const attributes = this.nextElement[PropertySymbol.attributes];
+					const attributes = this.nextElement![PropertySymbol.attributes];
 
-					if (this.nextElement[PropertySymbol.namespaceURI] === NamespaceURI.svg) {
+					if (this.nextElement![PropertySymbol.namespaceURI] === NamespaceURI.svg) {
 						const nameParts = name.split(':');
 						let namespaceURI = null;
 
@@ -422,7 +423,7 @@ export default class HTMLParser {
 						}
 
 						if (!attributes.getNamedItemNS(namespaceURI, nameParts[1] ?? name)) {
-							const attribute = NodeFactory.createNode(this.rootDocument, this.window.Attr);
+							const attribute = NodeFactory.createNode(this.rootDocument!, this.window.Attr);
 
 							attribute[PropertySymbol.namespaceURI] = namespaceURI;
 							attribute[PropertySymbol.name] = name;
@@ -434,7 +435,7 @@ export default class HTMLParser {
 							attributes[PropertySymbol.setNamedItem](attribute);
 						}
 					} else if (!attributes.getNamedItem(name)) {
-						const attributeItem = this.rootDocument.createAttribute(name);
+						const attributeItem = this.rootDocument!.createAttribute(name);
 						attributeItem[PropertySymbol.value] = value;
 						attributes[PropertySymbol.setNamedItem](attributeItem);
 					}
@@ -451,14 +452,14 @@ export default class HTMLParser {
 			}
 		}
 
-		const tagName = this.nextElement[PropertySymbol.tagName];
+		const tagName = this.nextElement![PropertySymbol.tagName]!;
 		const lowerTagName = tagName.toLowerCase();
 		const config = HTMLElementConfig[lowerTagName];
 		let previousCurrentNode: Node | null = null;
 
 		while (previousCurrentNode !== this.rootNode) {
-			const parentLowerTagName = this.currentNode[PropertySymbol.tagName]?.toLowerCase();
-			const parentConfig = HTMLElementConfig[parentLowerTagName];
+			const parentLowerTagName = (<Element>this.currentNode)[PropertySymbol.tagName]?.toLowerCase();
+			const parentConfig = parentLowerTagName ? HTMLElementConfig[parentLowerTagName] : null;
 
 			if (previousCurrentNode === this.currentNode) {
 				throw new Error(
@@ -482,11 +483,11 @@ export default class HTMLParser {
 					(!config ||
 						!config.addPermittedParent ||
 						(HTMLElementConfig[config.addPermittedParent].permittedParents &&
-							!HTMLElementConfig[config.addPermittedParent].permittedParents.includes(
-								parentLowerTagName
+							!HTMLElementConfig[config.addPermittedParent!].permittedParents!.includes(
+								parentLowerTagName!
 							)) ||
 						(HTMLElementConfig[config.addPermittedParent].permittedDescendants &&
-							!HTMLElementConfig[config.addPermittedParent].permittedDescendants.includes(
+							!HTMLElementConfig[config.addPermittedParent!].permittedDescendants!.includes(
 								lowerTagName
 							))))
 			) {
@@ -502,10 +503,10 @@ export default class HTMLParser {
 					while (before) {
 						if (
 							!before.parentNode ||
-							!HTMLElementConfig[before.parentNode[PropertySymbol.localName]]
+							!HTMLElementConfig[(<Element>before.parentNode)[PropertySymbol.localName]!]
 								?.permittedDescendants ||
 							HTMLElementConfig[
-								before.parentNode[PropertySymbol.localName]
+								(<Element>before.parentNode)[PropertySymbol.localName]!
 							]?.permittedDescendants?.includes(lowerTagName)
 						) {
 							break;
@@ -514,12 +515,12 @@ export default class HTMLParser {
 						}
 					}
 					if (before && before.parentNode) {
-						before.parentNode.insertBefore(this.nextElement, before);
+						before.parentNode.insertBefore(this.nextElement!, before);
 					} else {
 						// If there is no element that is not forbidden, we append the element
-						before.appendChild(this.nextElement);
+						before!.appendChild(this.nextElement!);
 					}
-					this.startTagIndex = this.markupRegExp.lastIndex;
+					this.startTagIndex = this.markupRegExp!.lastIndex;
 					this.readState = MarkupReadStateEnum.any;
 					return;
 				}
@@ -545,7 +546,7 @@ export default class HTMLParser {
 				}
 			} else if (
 				config?.permittedParents &&
-				!config.permittedParents.includes(parentLowerTagName)
+				!config.permittedParents.includes(parentLowerTagName!)
 			) {
 				// <thead>, <tbody> and <tfoot> are only allowed as children of <table>.
 				// <tr> is only allowed as a child of <table>, <thead>, <tbody> and <tfoot>.
@@ -553,22 +554,22 @@ export default class HTMLParser {
 				if (
 					!config.addPermittedParent ||
 					(HTMLElementConfig[config.addPermittedParent].permittedParents &&
-						!HTMLElementConfig[config.addPermittedParent].permittedParents.includes(
-							parentLowerTagName
+						!HTMLElementConfig[config.addPermittedParent].permittedParents!.includes(
+							parentLowerTagName!
 						)) ||
 					(HTMLElementConfig[config.addPermittedParent].permittedDescendants &&
-						!HTMLElementConfig[config.addPermittedParent].permittedDescendants.includes(
+						!HTMLElementConfig[config.addPermittedParent].permittedDescendants!.includes(
 							lowerTagName
 						))
 				) {
 					this.readState = MarkupReadStateEnum.any;
-					this.startTagIndex = this.markupRegExp.lastIndex;
+					this.startTagIndex = this.markupRegExp!.lastIndex;
 					return;
 				}
 
-				const permittedParent = this.rootDocument.createElement(config.addPermittedParent);
+				const permittedParent = this.rootDocument!.createElement(config.addPermittedParent);
 
-				this.currentNode[PropertySymbol.appendChild](permittedParent, true);
+				this.currentNode![PropertySymbol.appendChild](permittedParent, true);
 				this.nodeStack.push(permittedParent);
 				this.tagNameStack.push(permittedParent[PropertySymbol.tagName]);
 				this.currentNode = permittedParent;
@@ -601,13 +602,13 @@ export default class HTMLParser {
 					if (level < HTMLDocumentStructureLevelEnum.body) {
 						this.documentStructure.level = HTMLDocumentStructureLevelEnum.afterBody;
 					}
-					body[PropertySymbol.appendChild](this.nextElement, true);
+					body[PropertySymbol.appendChild](this.nextElement!, true);
 				} else {
-					this.currentNode[PropertySymbol.appendChild](this.nextElement, true);
+					this.currentNode![PropertySymbol.appendChild](this.nextElement!, true);
 				}
 			}
 		} else {
-			this.currentNode[PropertySymbol.appendChild](this.nextElement, true);
+			this.currentNode![PropertySymbol.appendChild](this.nextElement!, true);
 		}
 
 		// Sets the new element as the current node.
@@ -618,7 +619,7 @@ export default class HTMLParser {
 			this.documentStructure.level <= HTMLDocumentStructureLevelEnum.body
 		) {
 			this.currentNode = this.nextElement;
-			this.nodeStack.push(this.currentNode);
+			this.nodeStack.push(this.currentNode!);
 			this.tagNameStack.push(tagName);
 
 			if (this.documentStructure && this.nextElement === this.documentStructure.nodes.body) {
@@ -648,7 +649,7 @@ export default class HTMLParser {
 			this.readState = MarkupReadStateEnum.any;
 		}
 
-		this.startTagIndex = this.markupRegExp.lastIndex;
+		this.startTagIndex = this.markupRegExp!.lastIndex;
 	}
 
 	/**
@@ -659,7 +660,7 @@ export default class HTMLParser {
 	private parseEndTag(tagName: string): void {
 		// SVG elements are case-sensitive.
 		const name =
-			this.currentNode[PropertySymbol.namespaceURI] === NamespaceURI.html
+			(<Element>this.currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.html
 				? StringUtility.asciiUpperCase(tagName)
 				: SVGElementConfig[StringUtility.asciiLowerCase(tagName)]?.localName || tagName;
 		const index = this.tagNameStack.lastIndexOf(name);
@@ -678,7 +679,7 @@ export default class HTMLParser {
 	 * @param comment Comment.
 	 */
 	private parseComment(comment: string): void {
-		const commentNode = this.rootDocument.createComment(
+		const commentNode = this.rootDocument!.createComment(
 			XMLEncodeUtility.decodeHTMLEntities(comment)
 		);
 
@@ -702,9 +703,9 @@ export default class HTMLParser {
 				beforeNode = body;
 			}
 
-			this.currentNode[PropertySymbol.insertBefore](commentNode, beforeNode, true);
+			this.currentNode![PropertySymbol.insertBefore](commentNode, beforeNode, true);
 		} else {
-			this.currentNode[PropertySymbol.appendChild](commentNode, true);
+			this.currentNode![PropertySymbol.appendChild](commentNode, true);
 		}
 
 		this.readState = MarkupReadStateEnum.any;
@@ -767,7 +768,7 @@ export default class HTMLParser {
 	private parseRawTextElementContent(tagName: string, text: string): void {
 		const upperTagName = StringUtility.asciiUpperCase(tagName);
 
-		if (upperTagName !== this.currentNode[PropertySymbol.tagName]) {
+		if (upperTagName !== (<Element>this.currentNode)[PropertySymbol.tagName]) {
 			return;
 		}
 
@@ -783,7 +784,7 @@ export default class HTMLParser {
 
 		// Plain text elements such as <script> and <style> should only contain text.
 		// Plain text elements should not decode entities. See #1564.
-		this.currentNode[PropertySymbol.appendChild](this.rootDocument.createTextNode(text), true);
+		this.currentNode![PropertySymbol.appendChild](this.rootDocument!.createTextNode(text), true);
 
 		const rawTextElement = this.currentNode;
 
@@ -802,12 +803,12 @@ export default class HTMLParser {
 				documentElement &&
 				(this.currentNode === this.rootNode || this.currentNode === documentElement)
 			) {
-				body[PropertySymbol.appendChild](rawTextElement, true);
+				body[PropertySymbol.appendChild](rawTextElement!, true);
 			} else {
-				this.currentNode[PropertySymbol.appendChild](rawTextElement, true);
+				this.currentNode[PropertySymbol.appendChild](rawTextElement!, true);
 			}
 		} else {
-			this.currentNode[PropertySymbol.appendChild](rawTextElement, true);
+			this.currentNode[PropertySymbol.appendChild](rawTextElement!, true);
 		}
 	}
 
@@ -816,19 +817,19 @@ export default class HTMLParser {
 	 *
 	 * @param tagName Tag name.
 	 */
-	private getStartTagElement(tagName: string): Element {
+	private getStartTagElement(tagName: string): Element | null {
 		const lowerTagName = StringUtility.asciiLowerCase(tagName);
 
 		// NamespaceURI is inherited from the parent element.
-		const namespaceURI = this.currentNode[PropertySymbol.namespaceURI];
+		const namespaceURI = (<Element>this.currentNode)[PropertySymbol.namespaceURI];
 
 		// NamespaceURI should be SVG when the tag name is "svg" (even in XML mode).
 		if (lowerTagName === 'svg') {
-			return this.rootDocument.createElementNS(NamespaceURI.svg, 'svg');
+			return this.rootDocument!.createElementNS(NamespaceURI.svg, 'svg');
 		}
 
 		if (namespaceURI === NamespaceURI.svg) {
-			return this.rootDocument.createElementNS(
+			return this.rootDocument!.createElementNS(
 				NamespaceURI.svg,
 				SVGElementConfig[lowerTagName]?.localName || tagName
 			);
@@ -863,7 +864,7 @@ export default class HTMLParser {
 				}
 				return this.documentStructure.nodes.body ?? null;
 			default:
-				return this.rootDocument.createElementNS(NamespaceURI.html, lowerTagName);
+				return this.rootDocument!.createElementNS(NamespaceURI.html, lowerTagName);
 		}
 	}
 
@@ -873,7 +874,7 @@ export default class HTMLParser {
 	 * @param value Value.
 	 * @returns Document type.
 	 */
-	private getDocumentType(value: string): IDocumentType {
+	private getDocumentType(value: string): IDocumentType | null {
 		if (!value.toUpperCase().startsWith('DOCTYPE')) {
 			return null;
 		}

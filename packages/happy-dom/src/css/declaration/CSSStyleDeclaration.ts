@@ -13,13 +13,13 @@ import CSSStyleDeclarationComputedStyle from './computed-style/CSSStyleDeclarati
  */
 export default class CSSStyleDeclaration {
 	// Public properties
-	public readonly parentRule: CSSRule = null;
+	public readonly parentRule: CSSRule | null = null;
 
 	// Internal properties
 	public [PropertySymbol.window]: BrowserWindow;
 
 	// Private properties
-	#element: Element;
+	#element: Element | null;
 	#computed: boolean;
 	#cache: {
 		attributeValue: string | null;
@@ -50,7 +50,7 @@ export default class CSSStyleDeclaration {
 			throw new TypeError('Illegal constructor');
 		}
 		this[PropertySymbol.window] = window;
-		this.#element = options?.element;
+		this.#element = options?.element || null;
 		this.#computed = options?.element ? !!options?.computed : false;
 	}
 
@@ -60,1578 +60,1578 @@ export default class CSSStyleDeclaration {
 
 	/* eslint-disable jsdoc/require-jsdoc */
 
-	public get 0(): string {
+	public get 0(): string | undefined {
 		return this.item(0) || undefined;
 	}
 
-	public get 1(): string {
+	public get 1(): string | undefined {
 		return this.item(1) || undefined;
 	}
 
-	public get 2(): string {
+	public get 2(): string | undefined {
 		return this.item(2) || undefined;
 	}
 
-	public get 3(): string {
+	public get 3(): string | undefined {
 		return this.item(3) || undefined;
 	}
 
-	public get 4(): string {
+	public get 4(): string | undefined {
 		return this.item(4) || undefined;
 	}
 
-	public get 5(): string {
+	public get 5(): string | undefined {
 		return this.item(5) || undefined;
 	}
 
-	public get 6(): string {
+	public get 6(): string | undefined {
 		return this.item(6) || undefined;
 	}
 
-	public get 7(): string {
+	public get 7(): string | undefined {
 		return this.item(7) || undefined;
 	}
 
-	public get 8(): string {
+	public get 8(): string | undefined {
 		return this.item(8) || undefined;
 	}
 
-	public get 9(): string {
+	public get 9(): string | undefined {
 		return this.item(9) || undefined;
 	}
 
-	public get 10(): string {
+	public get 10(): string | undefined {
 		return this.item(10) || undefined;
 	}
 
-	public get 11(): string {
+	public get 11(): string | undefined {
 		return this.item(11) || undefined;
 	}
 
-	public get 12(): string {
+	public get 12(): string | undefined {
 		return this.item(12) || undefined;
 	}
 
-	public get 13(): string {
+	public get 13(): string | undefined {
 		return this.item(13) || undefined;
 	}
 
-	public get 14(): string {
+	public get 14(): string | undefined {
 		return this.item(14) || undefined;
 	}
 
-	public get 15(): string {
+	public get 15(): string | undefined {
 		return this.item(15) || undefined;
 	}
 
-	public get 16(): string {
+	public get 16(): string | undefined {
 		return this.item(16) || undefined;
 	}
 
-	public get 17(): string {
+	public get 17(): string | undefined {
 		return this.item(17) || undefined;
 	}
 
-	public get 18(): string {
+	public get 18(): string | undefined {
 		return this.item(18) || undefined;
 	}
 
-	public get 19(): string {
+	public get 19(): string | undefined {
 		return this.item(19) || undefined;
 	}
 
-	public get 20(): string {
+	public get 20(): string | undefined {
 		return this.item(20) || undefined;
 	}
 
-	public get 21(): string {
+	public get 21(): string | undefined {
 		return this.item(21) || undefined;
 	}
 
-	public get 22(): string {
+	public get 22(): string | undefined {
 		return this.item(22) || undefined;
 	}
 
-	public get 23(): string {
+	public get 23(): string | undefined {
 		return this.item(23) || undefined;
 	}
 
-	public get 24(): string {
+	public get 24(): string | undefined {
 		return this.item(24) || undefined;
 	}
 
-	public get 25(): string {
+	public get 25(): string | undefined {
 		return this.item(25) || undefined;
 	}
 
-	public get 26(): string {
+	public get 26(): string | undefined {
 		return this.item(26) || undefined;
 	}
 
-	public get 27(): string {
+	public get 27(): string | undefined {
 		return this.item(27) || undefined;
 	}
 
-	public get 28(): string {
+	public get 28(): string | undefined {
 		return this.item(28) || undefined;
 	}
 
-	public get 29(): string {
+	public get 29(): string | undefined {
 		return this.item(29) || undefined;
 	}
 
-	public get 30(): string {
+	public get 30(): string | undefined {
 		return this.item(30) || undefined;
 	}
 
-	public get 31(): string {
+	public get 31(): string | undefined {
 		return this.item(31) || undefined;
 	}
 
-	public get 32(): string {
+	public get 32(): string | undefined {
 		return this.item(32) || undefined;
 	}
 
-	public get 33(): string {
+	public get 33(): string | undefined {
 		return this.item(33) || undefined;
 	}
 
-	public get 34(): string {
+	public get 34(): string | undefined {
 		return this.item(34) || undefined;
 	}
 
-	public get 35(): string {
+	public get 35(): string | undefined {
 		return this.item(35) || undefined;
 	}
 
-	public get 36(): string {
+	public get 36(): string | undefined {
 		return this.item(36) || undefined;
 	}
 
-	public get 37(): string {
+	public get 37(): string | undefined {
 		return this.item(37) || undefined;
 	}
 
-	public get 38(): string {
+	public get 38(): string | undefined {
 		return this.item(38) || undefined;
 	}
 
-	public get 39(): string {
+	public get 39(): string | undefined {
 		return this.item(39) || undefined;
 	}
 
-	public get 40(): string {
+	public get 40(): string | undefined {
 		return this.item(40) || undefined;
 	}
 
-	public get 41(): string {
+	public get 41(): string | undefined {
 		return this.item(41) || undefined;
 	}
 
-	public get 42(): string {
+	public get 42(): string | undefined {
 		return this.item(42) || undefined;
 	}
 
-	public get 43(): string {
+	public get 43(): string | undefined {
 		return this.item(43) || undefined;
 	}
 
-	public get 44(): string {
+	public get 44(): string | undefined {
 		return this.item(44) || undefined;
 	}
 
-	public get 45(): string {
+	public get 45(): string | undefined {
 		return this.item(45) || undefined;
 	}
 
-	public get 46(): string {
+	public get 46(): string | undefined {
 		return this.item(46) || undefined;
 	}
 
-	public get 47(): string {
+	public get 47(): string | undefined {
 		return this.item(47) || undefined;
 	}
 
-	public get 48(): string {
+	public get 48(): string | undefined {
 		return this.item(48) || undefined;
 	}
 
-	public get 49(): string {
+	public get 49(): string | undefined {
 		return this.item(49) || undefined;
 	}
 
-	public get 50(): string {
+	public get 50(): string | undefined {
 		return this.item(50) || undefined;
 	}
 
-	public get 51(): string {
+	public get 51(): string | undefined {
 		return this.item(51) || undefined;
 	}
 
-	public get 52(): string {
+	public get 52(): string | undefined {
 		return this.item(52) || undefined;
 	}
 
-	public get 53(): string {
+	public get 53(): string | undefined {
 		return this.item(53) || undefined;
 	}
 
-	public get 54(): string {
+	public get 54(): string | undefined {
 		return this.item(54) || undefined;
 	}
 
-	public get 55(): string {
+	public get 55(): string | undefined {
 		return this.item(55) || undefined;
 	}
 
-	public get 56(): string {
+	public get 56(): string | undefined {
 		return this.item(56) || undefined;
 	}
 
-	public get 57(): string {
+	public get 57(): string | undefined {
 		return this.item(57) || undefined;
 	}
 
-	public get 58(): string {
+	public get 58(): string | undefined {
 		return this.item(58) || undefined;
 	}
 
-	public get 59(): string {
+	public get 59(): string | undefined {
 		return this.item(59) || undefined;
 	}
 
-	public get 60(): string {
+	public get 60(): string | undefined {
 		return this.item(60) || undefined;
 	}
 
-	public get 61(): string {
+	public get 61(): string | undefined {
 		return this.item(61) || undefined;
 	}
 
-	public get 62(): string {
+	public get 62(): string | undefined {
 		return this.item(62) || undefined;
 	}
 
-	public get 63(): string {
+	public get 63(): string | undefined {
 		return this.item(63) || undefined;
 	}
 
-	public get 64(): string {
+	public get 64(): string | undefined {
 		return this.item(64) || undefined;
 	}
 
-	public get 65(): string {
+	public get 65(): string | undefined {
 		return this.item(65) || undefined;
 	}
 
-	public get 66(): string {
+	public get 66(): string | undefined {
 		return this.item(66) || undefined;
 	}
 
-	public get 67(): string {
+	public get 67(): string | undefined {
 		return this.item(67) || undefined;
 	}
 
-	public get 68(): string {
+	public get 68(): string | undefined {
 		return this.item(68) || undefined;
 	}
 
-	public get 69(): string {
+	public get 69(): string | undefined {
 		return this.item(69) || undefined;
 	}
 
-	public get 70(): string {
+	public get 70(): string | undefined {
 		return this.item(70) || undefined;
 	}
 
-	public get 71(): string {
+	public get 71(): string | undefined {
 		return this.item(71) || undefined;
 	}
 
-	public get 72(): string {
+	public get 72(): string | undefined {
 		return this.item(72) || undefined;
 	}
 
-	public get 73(): string {
+	public get 73(): string | undefined {
 		return this.item(73) || undefined;
 	}
 
-	public get 74(): string {
+	public get 74(): string | undefined {
 		return this.item(74) || undefined;
 	}
 
-	public get 75(): string {
+	public get 75(): string | undefined {
 		return this.item(75) || undefined;
 	}
 
-	public get 76(): string {
+	public get 76(): string | undefined {
 		return this.item(76) || undefined;
 	}
 
-	public get 77(): string {
+	public get 77(): string | undefined {
 		return this.item(77) || undefined;
 	}
 
-	public get 78(): string {
+	public get 78(): string | undefined {
 		return this.item(78) || undefined;
 	}
 
-	public get 79(): string {
+	public get 79(): string | undefined {
 		return this.item(79) || undefined;
 	}
 
-	public get 80(): string {
+	public get 80(): string | undefined {
 		return this.item(80) || undefined;
 	}
 
-	public get 81(): string {
+	public get 81(): string | undefined {
 		return this.item(81) || undefined;
 	}
 
-	public get 82(): string {
+	public get 82(): string | undefined {
 		return this.item(82) || undefined;
 	}
 
-	public get 83(): string {
+	public get 83(): string | undefined {
 		return this.item(83) || undefined;
 	}
 
-	public get 84(): string {
+	public get 84(): string | undefined {
 		return this.item(84) || undefined;
 	}
 
-	public get 85(): string {
+	public get 85(): string | undefined {
 		return this.item(85) || undefined;
 	}
 
-	public get 86(): string {
+	public get 86(): string | undefined {
 		return this.item(86) || undefined;
 	}
 
-	public get 87(): string {
+	public get 87(): string | undefined {
 		return this.item(87) || undefined;
 	}
 
-	public get 88(): string {
+	public get 88(): string | undefined {
 		return this.item(88) || undefined;
 	}
 
-	public get 89(): string {
+	public get 89(): string | undefined {
 		return this.item(89) || undefined;
 	}
 
-	public get 90(): string {
+	public get 90(): string | undefined {
 		return this.item(90) || undefined;
 	}
 
-	public get 91(): string {
+	public get 91(): string | undefined {
 		return this.item(91) || undefined;
 	}
 
-	public get 92(): string {
+	public get 92(): string | undefined {
 		return this.item(92) || undefined;
 	}
 
-	public get 93(): string {
+	public get 93(): string | undefined {
 		return this.item(93) || undefined;
 	}
 
-	public get 94(): string {
+	public get 94(): string | undefined {
 		return this.item(94) || undefined;
 	}
 
-	public get 95(): string {
+	public get 95(): string | undefined {
 		return this.item(95) || undefined;
 	}
 
-	public get 96(): string {
+	public get 96(): string | undefined {
 		return this.item(96) || undefined;
 	}
 
-	public get 97(): string {
+	public get 97(): string | undefined {
 		return this.item(97) || undefined;
 	}
 
-	public get 98(): string {
+	public get 98(): string | undefined {
 		return this.item(98) || undefined;
 	}
 
-	public get 99(): string {
+	public get 99(): string | undefined {
 		return this.item(99) || undefined;
 	}
 
-	public get 100(): string {
+	public get 100(): string | undefined {
 		return this.item(100) || undefined;
 	}
 
-	public get 101(): string {
+	public get 101(): string | undefined {
 		return this.item(101) || undefined;
 	}
 
-	public get 102(): string {
+	public get 102(): string | undefined {
 		return this.item(102) || undefined;
 	}
 
-	public get 103(): string {
+	public get 103(): string | undefined {
 		return this.item(103) || undefined;
 	}
 
-	public get 104(): string {
+	public get 104(): string | undefined {
 		return this.item(104) || undefined;
 	}
 
-	public get 105(): string {
+	public get 105(): string | undefined {
 		return this.item(105) || undefined;
 	}
 
-	public get 106(): string {
+	public get 106(): string | undefined {
 		return this.item(106) || undefined;
 	}
 
-	public get 107(): string {
+	public get 107(): string | undefined {
 		return this.item(107) || undefined;
 	}
 
-	public get 108(): string {
+	public get 108(): string | undefined {
 		return this.item(108) || undefined;
 	}
 
-	public get 109(): string {
+	public get 109(): string | undefined {
 		return this.item(109) || undefined;
 	}
 
-	public get 110(): string {
+	public get 110(): string | undefined {
 		return this.item(110) || undefined;
 	}
 
-	public get 111(): string {
+	public get 111(): string | undefined {
 		return this.item(111) || undefined;
 	}
 
-	public get 112(): string {
+	public get 112(): string | undefined {
 		return this.item(112) || undefined;
 	}
 
-	public get 113(): string {
+	public get 113(): string | undefined {
 		return this.item(113) || undefined;
 	}
 
-	public get 114(): string {
+	public get 114(): string | undefined {
 		return this.item(114) || undefined;
 	}
 
-	public get 115(): string {
+	public get 115(): string | undefined {
 		return this.item(115) || undefined;
 	}
 
-	public get 116(): string {
+	public get 116(): string | undefined {
 		return this.item(116) || undefined;
 	}
 
-	public get 117(): string {
+	public get 117(): string | undefined {
 		return this.item(117) || undefined;
 	}
 
-	public get 118(): string {
+	public get 118(): string | undefined {
 		return this.item(118) || undefined;
 	}
 
-	public get 119(): string {
+	public get 119(): string | undefined {
 		return this.item(119) || undefined;
 	}
 
-	public get 120(): string {
+	public get 120(): string | undefined {
 		return this.item(120) || undefined;
 	}
 
-	public get 121(): string {
+	public get 121(): string | undefined {
 		return this.item(121) || undefined;
 	}
 
-	public get 122(): string {
+	public get 122(): string | undefined {
 		return this.item(122) || undefined;
 	}
 
-	public get 123(): string {
+	public get 123(): string | undefined {
 		return this.item(123) || undefined;
 	}
 
-	public get 124(): string {
+	public get 124(): string | undefined {
 		return this.item(124) || undefined;
 	}
 
-	public get 125(): string {
+	public get 125(): string | undefined {
 		return this.item(125) || undefined;
 	}
 
-	public get 126(): string {
+	public get 126(): string | undefined {
 		return this.item(126) || undefined;
 	}
 
-	public get 127(): string {
+	public get 127(): string | undefined {
 		return this.item(127) || undefined;
 	}
 
-	public get 128(): string {
+	public get 128(): string | undefined {
 		return this.item(128) || undefined;
 	}
 
-	public get 129(): string {
+	public get 129(): string | undefined {
 		return this.item(129) || undefined;
 	}
 
-	public get 130(): string {
+	public get 130(): string | undefined {
 		return this.item(130) || undefined;
 	}
 
-	public get 131(): string {
+	public get 131(): string | undefined {
 		return this.item(131) || undefined;
 	}
 
-	public get 132(): string {
+	public get 132(): string | undefined {
 		return this.item(132) || undefined;
 	}
 
-	public get 133(): string {
+	public get 133(): string | undefined {
 		return this.item(133) || undefined;
 	}
 
-	public get 134(): string {
+	public get 134(): string | undefined {
 		return this.item(134) || undefined;
 	}
 
-	public get 135(): string {
+	public get 135(): string | undefined {
 		return this.item(135) || undefined;
 	}
 
-	public get 136(): string {
+	public get 136(): string | undefined {
 		return this.item(136) || undefined;
 	}
 
-	public get 137(): string {
+	public get 137(): string | undefined {
 		return this.item(137) || undefined;
 	}
 
-	public get 138(): string {
+	public get 138(): string | undefined {
 		return this.item(138) || undefined;
 	}
 
-	public get 139(): string {
+	public get 139(): string | undefined {
 		return this.item(139) || undefined;
 	}
 
-	public get 140(): string {
+	public get 140(): string | undefined {
 		return this.item(140) || undefined;
 	}
 
-	public get 141(): string {
+	public get 141(): string | undefined {
 		return this.item(141) || undefined;
 	}
 
-	public get 142(): string {
+	public get 142(): string | undefined {
 		return this.item(142) || undefined;
 	}
 
-	public get 143(): string {
+	public get 143(): string | undefined {
 		return this.item(143) || undefined;
 	}
 
-	public get 144(): string {
+	public get 144(): string | undefined {
 		return this.item(144) || undefined;
 	}
 
-	public get 145(): string {
+	public get 145(): string | undefined {
 		return this.item(145) || undefined;
 	}
 
-	public get 146(): string {
+	public get 146(): string | undefined {
 		return this.item(146) || undefined;
 	}
 
-	public get 147(): string {
+	public get 147(): string | undefined {
 		return this.item(147) || undefined;
 	}
 
-	public get 148(): string {
+	public get 148(): string | undefined {
 		return this.item(148) || undefined;
 	}
 
-	public get 149(): string {
+	public get 149(): string | undefined {
 		return this.item(149) || undefined;
 	}
 
-	public get 150(): string {
+	public get 150(): string | undefined {
 		return this.item(150) || undefined;
 	}
 
-	public get 151(): string {
+	public get 151(): string | undefined {
 		return this.item(151) || undefined;
 	}
 
-	public get 152(): string {
+	public get 152(): string | undefined {
 		return this.item(152) || undefined;
 	}
 
-	public get 153(): string {
+	public get 153(): string | undefined {
 		return this.item(153) || undefined;
 	}
 
-	public get 154(): string {
+	public get 154(): string | undefined {
 		return this.item(154) || undefined;
 	}
 
-	public get 155(): string {
+	public get 155(): string | undefined {
 		return this.item(155) || undefined;
 	}
 
-	public get 156(): string {
+	public get 156(): string | undefined {
 		return this.item(156) || undefined;
 	}
 
-	public get 157(): string {
+	public get 157(): string | undefined {
 		return this.item(157) || undefined;
 	}
 
-	public get 158(): string {
+	public get 158(): string | undefined {
 		return this.item(158) || undefined;
 	}
 
-	public get 159(): string {
+	public get 159(): string | undefined {
 		return this.item(159) || undefined;
 	}
 
-	public get 160(): string {
+	public get 160(): string | undefined {
 		return this.item(160) || undefined;
 	}
 
-	public get 161(): string {
+	public get 161(): string | undefined {
 		return this.item(161) || undefined;
 	}
 
-	public get 162(): string {
+	public get 162(): string | undefined {
 		return this.item(162) || undefined;
 	}
 
-	public get 163(): string {
+	public get 163(): string | undefined {
 		return this.item(163) || undefined;
 	}
 
-	public get 164(): string {
+	public get 164(): string | undefined {
 		return this.item(164) || undefined;
 	}
 
-	public get 165(): string {
+	public get 165(): string | undefined {
 		return this.item(165) || undefined;
 	}
 
-	public get 166(): string {
+	public get 166(): string | undefined {
 		return this.item(166) || undefined;
 	}
 
-	public get 167(): string {
+	public get 167(): string | undefined {
 		return this.item(167) || undefined;
 	}
 
-	public get 168(): string {
+	public get 168(): string | undefined {
 		return this.item(168) || undefined;
 	}
 
-	public get 169(): string {
+	public get 169(): string | undefined {
 		return this.item(169) || undefined;
 	}
 
-	public get 170(): string {
+	public get 170(): string | undefined {
 		return this.item(170) || undefined;
 	}
 
-	public get 171(): string {
+	public get 171(): string | undefined {
 		return this.item(171) || undefined;
 	}
 
-	public get 172(): string {
+	public get 172(): string | undefined {
 		return this.item(172) || undefined;
 	}
 
-	public get 173(): string {
+	public get 173(): string | undefined {
 		return this.item(173) || undefined;
 	}
 
-	public get 174(): string {
+	public get 174(): string | undefined {
 		return this.item(174) || undefined;
 	}
 
-	public get 175(): string {
+	public get 175(): string | undefined {
 		return this.item(175) || undefined;
 	}
 
-	public get 176(): string {
+	public get 176(): string | undefined {
 		return this.item(176) || undefined;
 	}
 
-	public get 177(): string {
+	public get 177(): string | undefined {
 		return this.item(177) || undefined;
 	}
 
-	public get 178(): string {
+	public get 178(): string | undefined {
 		return this.item(178) || undefined;
 	}
 
-	public get 179(): string {
+	public get 179(): string | undefined {
 		return this.item(179) || undefined;
 	}
 
-	public get 180(): string {
+	public get 180(): string | undefined {
 		return this.item(180) || undefined;
 	}
 
-	public get 181(): string {
+	public get 181(): string | undefined {
 		return this.item(181) || undefined;
 	}
 
-	public get 182(): string {
+	public get 182(): string | undefined {
 		return this.item(182) || undefined;
 	}
 
-	public get 183(): string {
+	public get 183(): string | undefined {
 		return this.item(183) || undefined;
 	}
 
-	public get 184(): string {
+	public get 184(): string | undefined {
 		return this.item(184) || undefined;
 	}
 
-	public get 185(): string {
+	public get 185(): string | undefined {
 		return this.item(185) || undefined;
 	}
 
-	public get 186(): string {
+	public get 186(): string | undefined {
 		return this.item(186) || undefined;
 	}
 
-	public get 187(): string {
+	public get 187(): string | undefined {
 		return this.item(187) || undefined;
 	}
 
-	public get 188(): string {
+	public get 188(): string | undefined {
 		return this.item(188) || undefined;
 	}
 
-	public get 189(): string {
+	public get 189(): string | undefined {
 		return this.item(189) || undefined;
 	}
 
-	public get 190(): string {
+	public get 190(): string | undefined {
 		return this.item(190) || undefined;
 	}
 
-	public get 191(): string {
+	public get 191(): string | undefined {
 		return this.item(191) || undefined;
 	}
 
-	public get 192(): string {
+	public get 192(): string | undefined {
 		return this.item(192) || undefined;
 	}
 
-	public get 193(): string {
+	public get 193(): string | undefined {
 		return this.item(193) || undefined;
 	}
 
-	public get 194(): string {
+	public get 194(): string | undefined {
 		return this.item(194) || undefined;
 	}
 
-	public get 195(): string {
+	public get 195(): string | undefined {
 		return this.item(195) || undefined;
 	}
 
-	public get 196(): string {
+	public get 196(): string | undefined {
 		return this.item(196) || undefined;
 	}
 
-	public get 197(): string {
+	public get 197(): string | undefined {
 		return this.item(197) || undefined;
 	}
 
-	public get 198(): string {
+	public get 198(): string | undefined {
 		return this.item(198) || undefined;
 	}
 
-	public get 199(): string {
+	public get 199(): string | undefined {
 		return this.item(199) || undefined;
 	}
 
-	public get 200(): string {
+	public get 200(): string | undefined {
 		return this.item(200) || undefined;
 	}
 
-	public get 201(): string {
+	public get 201(): string | undefined {
 		return this.item(201) || undefined;
 	}
 
-	public get 202(): string {
+	public get 202(): string | undefined {
 		return this.item(202) || undefined;
 	}
 
-	public get 203(): string {
+	public get 203(): string | undefined {
 		return this.item(203) || undefined;
 	}
 
-	public get 204(): string {
+	public get 204(): string | undefined {
 		return this.item(204) || undefined;
 	}
 
-	public get 205(): string {
+	public get 205(): string | undefined {
 		return this.item(205) || undefined;
 	}
 
-	public get 206(): string {
+	public get 206(): string | undefined {
 		return this.item(206) || undefined;
 	}
 
-	public get 207(): string {
+	public get 207(): string | undefined {
 		return this.item(207) || undefined;
 	}
 
-	public get 208(): string {
+	public get 208(): string | undefined {
 		return this.item(208) || undefined;
 	}
 
-	public get 209(): string {
+	public get 209(): string | undefined {
 		return this.item(209) || undefined;
 	}
 
-	public get 210(): string {
+	public get 210(): string | undefined {
 		return this.item(210) || undefined;
 	}
 
-	public get 211(): string {
+	public get 211(): string | undefined {
 		return this.item(211) || undefined;
 	}
 
-	public get 212(): string {
+	public get 212(): string | undefined {
 		return this.item(212) || undefined;
 	}
 
-	public get 213(): string {
+	public get 213(): string | undefined {
 		return this.item(213) || undefined;
 	}
 
-	public get 214(): string {
+	public get 214(): string | undefined {
 		return this.item(214) || undefined;
 	}
 
-	public get 215(): string {
+	public get 215(): string | undefined {
 		return this.item(215) || undefined;
 	}
 
-	public get 216(): string {
+	public get 216(): string | undefined {
 		return this.item(216) || undefined;
 	}
 
-	public get 217(): string {
+	public get 217(): string | undefined {
 		return this.item(217) || undefined;
 	}
 
-	public get 218(): string {
+	public get 218(): string | undefined {
 		return this.item(218) || undefined;
 	}
 
-	public get 219(): string {
+	public get 219(): string | undefined {
 		return this.item(219) || undefined;
 	}
 
-	public get 220(): string {
+	public get 220(): string | undefined {
 		return this.item(220) || undefined;
 	}
 
-	public get 221(): string {
+	public get 221(): string | undefined {
 		return this.item(221) || undefined;
 	}
 
-	public get 222(): string {
+	public get 222(): string | undefined {
 		return this.item(222) || undefined;
 	}
 
-	public get 223(): string {
+	public get 223(): string | undefined {
 		return this.item(223) || undefined;
 	}
 
-	public get 224(): string {
+	public get 224(): string | undefined {
 		return this.item(224) || undefined;
 	}
 
-	public get 225(): string {
+	public get 225(): string | undefined {
 		return this.item(225) || undefined;
 	}
 
-	public get 226(): string {
+	public get 226(): string | undefined {
 		return this.item(226) || undefined;
 	}
 
-	public get 227(): string {
+	public get 227(): string | undefined {
 		return this.item(227) || undefined;
 	}
 
-	public get 228(): string {
+	public get 228(): string | undefined {
 		return this.item(228) || undefined;
 	}
 
-	public get 229(): string {
+	public get 229(): string | undefined {
 		return this.item(229) || undefined;
 	}
 
-	public get 230(): string {
+	public get 230(): string | undefined {
 		return this.item(230) || undefined;
 	}
 
-	public get 231(): string {
+	public get 231(): string | undefined {
 		return this.item(231) || undefined;
 	}
 
-	public get 232(): string {
+	public get 232(): string | undefined {
 		return this.item(232) || undefined;
 	}
 
-	public get 233(): string {
+	public get 233(): string | undefined {
 		return this.item(233) || undefined;
 	}
 
-	public get 234(): string {
+	public get 234(): string | undefined {
 		return this.item(234) || undefined;
 	}
 
-	public get 235(): string {
+	public get 235(): string | undefined {
 		return this.item(235) || undefined;
 	}
 
-	public get 236(): string {
+	public get 236(): string | undefined {
 		return this.item(236) || undefined;
 	}
 
-	public get 237(): string {
+	public get 237(): string | undefined {
 		return this.item(237) || undefined;
 	}
 
-	public get 238(): string {
+	public get 238(): string | undefined {
 		return this.item(238) || undefined;
 	}
 
-	public get 239(): string {
+	public get 239(): string | undefined {
 		return this.item(239) || undefined;
 	}
 
-	public get 240(): string {
+	public get 240(): string | undefined {
 		return this.item(240) || undefined;
 	}
 
-	public get 241(): string {
+	public get 241(): string | undefined {
 		return this.item(241) || undefined;
 	}
 
-	public get 242(): string {
+	public get 242(): string | undefined {
 		return this.item(242) || undefined;
 	}
 
-	public get 243(): string {
+	public get 243(): string | undefined {
 		return this.item(243) || undefined;
 	}
 
-	public get 244(): string {
+	public get 244(): string | undefined {
 		return this.item(244) || undefined;
 	}
 
-	public get 245(): string {
+	public get 245(): string | undefined {
 		return this.item(245) || undefined;
 	}
 
-	public get 246(): string {
+	public get 246(): string | undefined {
 		return this.item(246) || undefined;
 	}
 
-	public get 247(): string {
+	public get 247(): string | undefined {
 		return this.item(247) || undefined;
 	}
 
-	public get 248(): string {
+	public get 248(): string | undefined {
 		return this.item(248) || undefined;
 	}
 
-	public get 249(): string {
+	public get 249(): string | undefined {
 		return this.item(249) || undefined;
 	}
 
-	public get 250(): string {
+	public get 250(): string | undefined {
 		return this.item(250) || undefined;
 	}
 
-	public get 251(): string {
+	public get 251(): string | undefined {
 		return this.item(251) || undefined;
 	}
 
-	public get 252(): string {
+	public get 252(): string | undefined {
 		return this.item(252) || undefined;
 	}
 
-	public get 253(): string {
+	public get 253(): string | undefined {
 		return this.item(253) || undefined;
 	}
 
-	public get 254(): string {
+	public get 254(): string | undefined {
 		return this.item(254) || undefined;
 	}
 
-	public get 255(): string {
+	public get 255(): string | undefined {
 		return this.item(255) || undefined;
 	}
 
-	public get 256(): string {
+	public get 256(): string | undefined {
 		return this.item(256) || undefined;
 	}
 
-	public get 257(): string {
+	public get 257(): string | undefined {
 		return this.item(257) || undefined;
 	}
 
-	public get 258(): string {
+	public get 258(): string | undefined {
 		return this.item(258) || undefined;
 	}
 
-	public get 259(): string {
+	public get 259(): string | undefined {
 		return this.item(259) || undefined;
 	}
 
-	public get 260(): string {
+	public get 260(): string | undefined {
 		return this.item(260) || undefined;
 	}
 
-	public get 261(): string {
+	public get 261(): string | undefined {
 		return this.item(261) || undefined;
 	}
 
-	public get 262(): string {
+	public get 262(): string | undefined {
 		return this.item(262) || undefined;
 	}
 
-	public get 263(): string {
+	public get 263(): string | undefined {
 		return this.item(263) || undefined;
 	}
 
-	public get 264(): string {
+	public get 264(): string | undefined {
 		return this.item(264) || undefined;
 	}
 
-	public get 265(): string {
+	public get 265(): string | undefined {
 		return this.item(265) || undefined;
 	}
 
-	public get 266(): string {
+	public get 266(): string | undefined {
 		return this.item(266) || undefined;
 	}
 
-	public get 267(): string {
+	public get 267(): string | undefined {
 		return this.item(267) || undefined;
 	}
 
-	public get 268(): string {
+	public get 268(): string | undefined {
 		return this.item(268) || undefined;
 	}
 
-	public get 269(): string {
+	public get 269(): string | undefined {
 		return this.item(269) || undefined;
 	}
 
-	public get 270(): string {
+	public get 270(): string | undefined {
 		return this.item(270) || undefined;
 	}
 
-	public get 271(): string {
+	public get 271(): string | undefined {
 		return this.item(271) || undefined;
 	}
 
-	public get 272(): string {
+	public get 272(): string | undefined {
 		return this.item(272) || undefined;
 	}
 
-	public get 273(): string {
+	public get 273(): string | undefined {
 		return this.item(273) || undefined;
 	}
 
-	public get 274(): string {
+	public get 274(): string | undefined {
 		return this.item(274) || undefined;
 	}
 
-	public get 275(): string {
+	public get 275(): string | undefined {
 		return this.item(275) || undefined;
 	}
 
-	public get 276(): string {
+	public get 276(): string | undefined {
 		return this.item(276) || undefined;
 	}
 
-	public get 277(): string {
+	public get 277(): string | undefined {
 		return this.item(277) || undefined;
 	}
 
-	public get 278(): string {
+	public get 278(): string | undefined {
 		return this.item(278) || undefined;
 	}
 
-	public get 279(): string {
+	public get 279(): string | undefined {
 		return this.item(279) || undefined;
 	}
 
-	public get 280(): string {
+	public get 280(): string | undefined {
 		return this.item(280) || undefined;
 	}
 
-	public get 281(): string {
+	public get 281(): string | undefined {
 		return this.item(281) || undefined;
 	}
 
-	public get 282(): string {
+	public get 282(): string | undefined {
 		return this.item(282) || undefined;
 	}
 
-	public get 283(): string {
+	public get 283(): string | undefined {
 		return this.item(283) || undefined;
 	}
 
-	public get 284(): string {
+	public get 284(): string | undefined {
 		return this.item(284) || undefined;
 	}
 
-	public get 285(): string {
+	public get 285(): string | undefined {
 		return this.item(285) || undefined;
 	}
 
-	public get 286(): string {
+	public get 286(): string | undefined {
 		return this.item(286) || undefined;
 	}
 
-	public get 287(): string {
+	public get 287(): string | undefined {
 		return this.item(287) || undefined;
 	}
 
-	public get 288(): string {
+	public get 288(): string | undefined {
 		return this.item(288) || undefined;
 	}
 
-	public get 289(): string {
+	public get 289(): string | undefined {
 		return this.item(289) || undefined;
 	}
 
-	public get 290(): string {
+	public get 290(): string | undefined {
 		return this.item(290) || undefined;
 	}
 
-	public get 291(): string {
+	public get 291(): string | undefined {
 		return this.item(291) || undefined;
 	}
 
-	public get 292(): string {
+	public get 292(): string | undefined {
 		return this.item(292) || undefined;
 	}
 
-	public get 293(): string {
+	public get 293(): string | undefined {
 		return this.item(293) || undefined;
 	}
 
-	public get 294(): string {
+	public get 294(): string | undefined {
 		return this.item(294) || undefined;
 	}
 
-	public get 295(): string {
+	public get 295(): string | undefined {
 		return this.item(295) || undefined;
 	}
 
-	public get 296(): string {
+	public get 296(): string | undefined {
 		return this.item(296) || undefined;
 	}
 
-	public get 297(): string {
+	public get 297(): string | undefined {
 		return this.item(297) || undefined;
 	}
 
-	public get 298(): string {
+	public get 298(): string | undefined {
 		return this.item(298) || undefined;
 	}
 
-	public get 299(): string {
+	public get 299(): string | undefined {
 		return this.item(299) || undefined;
 	}
 
-	public get 300(): string {
+	public get 300(): string | undefined {
 		return this.item(300) || undefined;
 	}
 
-	public get 301(): string {
+	public get 301(): string | undefined {
 		return this.item(301) || undefined;
 	}
 
-	public get 302(): string {
+	public get 302(): string | undefined {
 		return this.item(302) || undefined;
 	}
 
-	public get 303(): string {
+	public get 303(): string | undefined {
 		return this.item(303) || undefined;
 	}
 
-	public get 304(): string {
+	public get 304(): string | undefined {
 		return this.item(304) || undefined;
 	}
 
-	public get 305(): string {
+	public get 305(): string | undefined {
 		return this.item(305) || undefined;
 	}
 
-	public get 306(): string {
+	public get 306(): string | undefined {
 		return this.item(306) || undefined;
 	}
 
-	public get 307(): string {
+	public get 307(): string | undefined {
 		return this.item(307) || undefined;
 	}
 
-	public get 308(): string {
+	public get 308(): string | undefined {
 		return this.item(308) || undefined;
 	}
 
-	public get 309(): string {
+	public get 309(): string | undefined {
 		return this.item(309) || undefined;
 	}
 
-	public get 310(): string {
+	public get 310(): string | undefined {
 		return this.item(310) || undefined;
 	}
 
-	public get 311(): string {
+	public get 311(): string | undefined {
 		return this.item(311) || undefined;
 	}
 
-	public get 312(): string {
+	public get 312(): string | undefined {
 		return this.item(312) || undefined;
 	}
 
-	public get 313(): string {
+	public get 313(): string | undefined {
 		return this.item(313) || undefined;
 	}
 
-	public get 314(): string {
+	public get 314(): string | undefined {
 		return this.item(314) || undefined;
 	}
 
-	public get 315(): string {
+	public get 315(): string | undefined {
 		return this.item(315) || undefined;
 	}
 
-	public get 316(): string {
+	public get 316(): string | undefined {
 		return this.item(316) || undefined;
 	}
 
-	public get 317(): string {
+	public get 317(): string | undefined {
 		return this.item(317) || undefined;
 	}
 
-	public get 318(): string {
+	public get 318(): string | undefined {
 		return this.item(318) || undefined;
 	}
 
-	public get 319(): string {
+	public get 319(): string | undefined {
 		return this.item(319) || undefined;
 	}
 
-	public get 320(): string {
+	public get 320(): string | undefined {
 		return this.item(320) || undefined;
 	}
 
-	public get 321(): string {
+	public get 321(): string | undefined {
 		return this.item(321) || undefined;
 	}
 
-	public get 322(): string {
+	public get 322(): string | undefined {
 		return this.item(322) || undefined;
 	}
 
-	public get 323(): string {
+	public get 323(): string | undefined {
 		return this.item(323) || undefined;
 	}
 
-	public get 324(): string {
+	public get 324(): string | undefined {
 		return this.item(324) || undefined;
 	}
 
-	public get 325(): string {
+	public get 325(): string | undefined {
 		return this.item(325) || undefined;
 	}
 
-	public get 326(): string {
+	public get 326(): string | undefined {
 		return this.item(326) || undefined;
 	}
 
-	public get 327(): string {
+	public get 327(): string | undefined {
 		return this.item(327) || undefined;
 	}
 
-	public get 328(): string {
+	public get 328(): string | undefined {
 		return this.item(328) || undefined;
 	}
 
-	public get 329(): string {
+	public get 329(): string | undefined {
 		return this.item(329) || undefined;
 	}
 
-	public get 330(): string {
+	public get 330(): string | undefined {
 		return this.item(330) || undefined;
 	}
 
-	public get 331(): string {
+	public get 331(): string | undefined {
 		return this.item(331) || undefined;
 	}
 
-	public get 332(): string {
+	public get 332(): string | undefined {
 		return this.item(332) || undefined;
 	}
 
-	public get 333(): string {
+	public get 333(): string | undefined {
 		return this.item(333) || undefined;
 	}
 
-	public get 334(): string {
+	public get 334(): string | undefined {
 		return this.item(334) || undefined;
 	}
 
-	public get 335(): string {
+	public get 335(): string | undefined {
 		return this.item(335) || undefined;
 	}
 
-	public get 336(): string {
+	public get 336(): string | undefined {
 		return this.item(336) || undefined;
 	}
 
-	public get 337(): string {
+	public get 337(): string | undefined {
 		return this.item(337) || undefined;
 	}
 
-	public get 338(): string {
+	public get 338(): string | undefined {
 		return this.item(338) || undefined;
 	}
 
-	public get 339(): string {
+	public get 339(): string | undefined {
 		return this.item(339) || undefined;
 	}
 
-	public get 340(): string {
+	public get 340(): string | undefined {
 		return this.item(340) || undefined;
 	}
 
-	public get 341(): string {
+	public get 341(): string | undefined {
 		return this.item(341) || undefined;
 	}
 
-	public get 342(): string {
+	public get 342(): string | undefined {
 		return this.item(342) || undefined;
 	}
 
-	public get 343(): string {
+	public get 343(): string | undefined {
 		return this.item(343) || undefined;
 	}
 
-	public get 344(): string {
+	public get 344(): string | undefined {
 		return this.item(344) || undefined;
 	}
 
-	public get 345(): string {
+	public get 345(): string | undefined {
 		return this.item(345) || undefined;
 	}
 
-	public get 346(): string {
+	public get 346(): string | undefined {
 		return this.item(346) || undefined;
 	}
 
-	public get 347(): string {
+	public get 347(): string | undefined {
 		return this.item(347) || undefined;
 	}
 
-	public get 348(): string {
+	public get 348(): string | undefined {
 		return this.item(348) || undefined;
 	}
 
-	public get 349(): string {
+	public get 349(): string | undefined {
 		return this.item(349) || undefined;
 	}
 
-	public get 350(): string {
+	public get 350(): string | undefined {
 		return this.item(350) || undefined;
 	}
 
-	public get 351(): string {
+	public get 351(): string | undefined {
 		return this.item(351) || undefined;
 	}
 
-	public get 352(): string {
+	public get 352(): string | undefined {
 		return this.item(352) || undefined;
 	}
 
-	public get 353(): string {
+	public get 353(): string | undefined {
 		return this.item(353) || undefined;
 	}
 
-	public get 354(): string {
+	public get 354(): string | undefined {
 		return this.item(354) || undefined;
 	}
 
-	public get 355(): string {
+	public get 355(): string | undefined {
 		return this.item(355) || undefined;
 	}
 
-	public get 356(): string {
+	public get 356(): string | undefined {
 		return this.item(356) || undefined;
 	}
 
-	public get 357(): string {
+	public get 357(): string | undefined {
 		return this.item(357) || undefined;
 	}
 
-	public get 358(): string {
+	public get 358(): string | undefined {
 		return this.item(358) || undefined;
 	}
 
-	public get 359(): string {
+	public get 359(): string | undefined {
 		return this.item(359) || undefined;
 	}
 
-	public get 360(): string {
+	public get 360(): string | undefined {
 		return this.item(360) || undefined;
 	}
 
-	public get 361(): string {
+	public get 361(): string | undefined {
 		return this.item(361) || undefined;
 	}
 
-	public get 362(): string {
+	public get 362(): string | undefined {
 		return this.item(362) || undefined;
 	}
 
-	public get 363(): string {
+	public get 363(): string | undefined {
 		return this.item(363) || undefined;
 	}
 
-	public get 364(): string {
+	public get 364(): string | undefined {
 		return this.item(364) || undefined;
 	}
 
-	public get 365(): string {
+	public get 365(): string | undefined {
 		return this.item(365) || undefined;
 	}
 
-	public get 366(): string {
+	public get 366(): string | undefined {
 		return this.item(366) || undefined;
 	}
 
-	public get 367(): string {
+	public get 367(): string | undefined {
 		return this.item(367) || undefined;
 	}
 
-	public get 368(): string {
+	public get 368(): string | undefined {
 		return this.item(368) || undefined;
 	}
-	public get 369(): string {
+	public get 369(): string | undefined {
 		return this.item(369) || undefined;
 	}
 
-	public get 370(): string {
+	public get 370(): string | undefined {
 		return this.item(370) || undefined;
 	}
 
-	public get 371(): string {
+	public get 371(): string | undefined {
 		return this.item(371) || undefined;
 	}
 
-	public get 372(): string {
+	public get 372(): string | undefined {
 		return this.item(372) || undefined;
 	}
 
-	public get 373(): string {
+	public get 373(): string | undefined {
 		return this.item(373) || undefined;
 	}
 
-	public get 374(): string {
+	public get 374(): string | undefined {
 		return this.item(374) || undefined;
 	}
 
-	public get 375(): string {
+	public get 375(): string | undefined {
 		return this.item(375) || undefined;
 	}
 
-	public get 376(): string {
+	public get 376(): string | undefined {
 		return this.item(376) || undefined;
 	}
 
-	public get 377(): string {
+	public get 377(): string | undefined {
 		return this.item(377) || undefined;
 	}
 
-	public get 378(): string {
+	public get 378(): string | undefined {
 		return this.item(378) || undefined;
 	}
 
-	public get 379(): string {
+	public get 379(): string | undefined {
 		return this.item(379) || undefined;
 	}
 
-	public get 380(): string {
+	public get 380(): string | undefined {
 		return this.item(380) || undefined;
 	}
 
-	public get 381(): string {
+	public get 381(): string | undefined {
 		return this.item(381) || undefined;
 	}
 
-	public get 382(): string {
+	public get 382(): string | undefined {
 		return this.item(382) || undefined;
 	}
 
-	public get 383(): string {
+	public get 383(): string | undefined {
 		return this.item(383) || undefined;
 	}
 
-	public get 384(): string {
+	public get 384(): string | undefined {
 		return this.item(384) || undefined;
 	}
 
-	public get 385(): string {
+	public get 385(): string | undefined {
 		return this.item(385) || undefined;
 	}
 
-	public get 386(): string {
+	public get 386(): string | undefined {
 		return this.item(386) || undefined;
 	}
 
-	public get 387(): string {
+	public get 387(): string | undefined {
 		return this.item(387) || undefined;
 	}
 
-	public get 388(): string {
+	public get 388(): string | undefined {
 		return this.item(388) || undefined;
 	}
 
-	public get 389(): string {
+	public get 389(): string | undefined {
 		return this.item(389) || undefined;
 	}
 
-	public get 390(): string {
+	public get 390(): string | undefined {
 		return this.item(390) || undefined;
 	}
 
-	public get 391(): string {
+	public get 391(): string | undefined {
 		return this.item(391) || undefined;
 	}
 
-	public get 392(): string {
+	public get 392(): string | undefined {
 		return this.item(392) || undefined;
 	}
 
-	public get 393(): string {
+	public get 393(): string | undefined {
 		return this.item(393) || undefined;
 	}
 
@@ -4969,6 +4969,6 @@ export default class CSSStyleDeclaration {
 			cache.propertyManager = new CSSStyleDeclarationPropertyManager({ cssText: attributeValue });
 		}
 
-		return cache.propertyManager;
+		return <CSSStyleDeclarationPropertyManager>cache.propertyManager;
 	}
 }

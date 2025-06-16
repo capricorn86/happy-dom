@@ -12,7 +12,7 @@ import { ConsoleConstructor } from 'console';
 export default class VirtualConsole implements Console {
 	// This is needed as the interface for the NodeJS Console also have a reference to the ConsoleConstructor class as a property for some reason.
 	// This is not part of the browser specs.
-	public Console: ConsoleConstructor;
+	public declare Console: ConsoleConstructor;
 
 	#printer: IVirtualConsolePrinter;
 	#count: { [label: string]: number } = {};

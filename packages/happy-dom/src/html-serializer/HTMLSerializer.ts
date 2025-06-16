@@ -73,7 +73,7 @@ export default class HTMLSerializer {
 				const element = <Element>root;
 				const prefix = element[PropertySymbol.prefix];
 				const localName = element[PropertySymbol.localName];
-				const config = HTMLElementConfig[element[PropertySymbol.localName]];
+				const config = HTMLElementConfig[<'a'>element[PropertySymbol.localName]];
 				const tagName = prefix ? `${prefix}:${localName}` : localName;
 
 				if (config?.contentModel === HTMLElementConfigContentModelEnum.noDescendants) {
@@ -127,7 +127,7 @@ export default class HTMLSerializer {
 			case NodeTypeEnum.textNode:
 				const parentElement = root.parentElement;
 				if (parentElement) {
-					const parentConfig = HTMLElementConfig[parentElement[PropertySymbol.localName]];
+					const parentConfig = HTMLElementConfig[<'a'>parentElement[PropertySymbol.localName]];
 					if (parentConfig?.contentModel === HTMLElementConfigContentModelEnum.rawText) {
 						return root.textContent;
 					}

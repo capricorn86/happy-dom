@@ -18,10 +18,10 @@ export default class HTMLModElement extends HTMLElement {
 		}
 
 		try {
-			return new URL(this.getAttribute('cite'), this[PropertySymbol.ownerDocument].location.href)
+			return new URL(this.getAttribute('cite')!, this[PropertySymbol.ownerDocument].location.href)
 				.href;
 		} catch (e) {
-			return this.getAttribute('cite');
+			return this.getAttribute('cite')!;
 		}
 	}
 

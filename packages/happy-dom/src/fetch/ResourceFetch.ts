@@ -41,6 +41,13 @@ export default class ResourceFetch {
 	): Promise<IResourceFetchResponse> {
 		const browserFrame = new WindowBrowserContext(this.window).getBrowserFrame();
 
+		if (!browserFrame) {
+			return {
+				content: '',
+				virtualServerFile: null
+			};
+		}
+
 		// Preloaded resource
 		if (destination === 'script' || destination === 'style') {
 			const preloadKey = PreloadUtility.getKey({
@@ -56,17 +63,17 @@ export default class ResourceFetch {
 
 				const response = preloadEntry.response || (await preloadEntry.onResponseAvailable());
 
-				if (!response.ok) {
+				if (response && !response.ok) {
 					throw new this.window.DOMException(
 						`Failed to perform request to "${
 							new URL(url, this.window.location.href).href
-						}". Status ${preloadEntry.response.status} ${preloadEntry.response.statusText}.`
+						}". Status ${preloadEntry.response?.status || '0'} ${preloadEntry.response?.statusText || 'Unknown'}.`
 					);
 				}
 
 				return {
-					content: preloadEntry.response[PropertySymbol.buffer].toString(),
-					virtualServerFile: preloadEntry.response[PropertySymbol.virtualServerFile] || null
+					content: preloadEntry.response?.[PropertySymbol.buffer]?.toString() || '',
+					virtualServerFile: preloadEntry.response?.[PropertySymbol.virtualServerFile] || null
 				};
 			}
 		}
@@ -116,6 +123,13 @@ export default class ResourceFetch {
 	): IResourceFetchResponse {
 		const browserFrame = new WindowBrowserContext(this.window).getBrowserFrame();
 
+		if (!browserFrame) {
+			return {
+				content: '',
+				virtualServerFile: null
+			};
+		}
+
 		// Preloaded resource
 		if (destination === 'script' || destination === 'style') {
 			const preloadKey = PreloadUtility.getKey({
@@ -141,8 +155,8 @@ export default class ResourceFetch {
 				}
 
 				return {
-					content: preloadEntry.response[PropertySymbol.buffer].toString(),
-					virtualServerFile: preloadEntry.response[PropertySymbol.virtualServerFile] || null
+					content: preloadEntry.response?.[PropertySymbol.buffer]?.toString() || '',
+					virtualServerFile: preloadEntry.response?.[PropertySymbol.virtualServerFile] || null
 				};
 			}
 		}

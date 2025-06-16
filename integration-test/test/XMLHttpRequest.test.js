@@ -1,6 +1,7 @@
-import { describe, it, expect } from '../utilities/TestFunctions.js';
 import { Window } from 'happy-dom';
 import Express from 'express';
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
 
 describe('XMLHttpRequest', () => {
 	it('Can perform a real asynchronous XMLHttpRequest request', async () => {
@@ -21,11 +22,14 @@ describe('XMLHttpRequest', () => {
 			request.open('GET', 'http://localhost:3000/get/json', true);
 
 			request.addEventListener('load', () => {
-				expect(request.getResponseHeader('content-type')).toBe('application/json; charset=utf-8');
-				expect(request.responseText).toBe('{ "key1": "value1" }');
-				expect(request.status).toBe(200);
-				expect(request.statusText).toBe('OK');
-				expect(request.responseURL).toBe('http://localhost:3000/get/json');
+				assert.strictEqual(
+					request.getResponseHeader('content-type'),
+					'application/json; charset=utf-8'
+				);
+				assert.strictEqual(request.responseText, '{ "key1": "value1" }');
+				assert.strictEqual(request.status, 200);
+				assert.strictEqual(request.statusText, 'OK');
+				assert.strictEqual(request.responseURL, 'http://localhost:3000/get/json');
 
 				server.close();
 
@@ -59,9 +63,9 @@ describe('XMLHttpRequest', () => {
 			request.setRequestHeader('Authorization', 'Basic test');
 
 			request.addEventListener('load', () => {
-				expect(request.status).toBe(200);
-				expect(request.statusText).toBe('OK');
-				expect(request.responseURL).toBe('http://localhost:3000/get/json');
+				assert.strictEqual(request.status, 200);
+				assert.strictEqual(request.statusText, 'OK');
+				assert.strictEqual(request.responseURL, 'http://localhost:3000/get/json');
 
 				server.close();
 
@@ -86,11 +90,12 @@ describe('XMLHttpRequest', () => {
 
 		request.send();
 
-		expect(request.getResponseHeader('content-type')).toBe('text/plain; charset=utf-8');
-		expect(request.responseText.includes('node_modules')).toBe(true);
-		expect(request.status).toBe(200);
-		expect(request.statusText).toBe('OK');
-		expect(request.responseURL).toBe(
+		assert.strictEqual(request.getResponseHeader('content-type'), 'text/plain; charset=utf-8');
+		assert.strictEqual(request.responseText.includes('node_modules'), true);
+		assert.strictEqual(request.status, 200);
+		assert.strictEqual(request.statusText, 'OK');
+		assert.strictEqual(
+			request.responseURL,
 			'https://raw.githubusercontent.com/capricorn86/happy-dom/master/.gitignore'
 		);
 	});

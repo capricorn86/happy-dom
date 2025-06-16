@@ -1,4 +1,3 @@
-import ErrorEvent from '../../event/events/ErrorEvent.js';
 import Event from '../../event/Event.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import HTMLElement from '../html-element/HTMLElement.js';
@@ -39,7 +38,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	public [PropertySymbol.preservesPitch] = true;
 	public [PropertySymbol.buffered] = new TimeRanges(PropertySymbol.illegalConstructor);
 	public [PropertySymbol.duration] = NaN;
-	public [PropertySymbol.error]: IMediaError = null;
+	public [PropertySymbol.error]: IMediaError | null = null;
 	public [PropertySymbol.ended] = false;
 	public [PropertySymbol.networkState] = 0;
 	public [PropertySymbol.readyState] = 0;
@@ -103,14 +102,6 @@ export default class HTMLMediaElement extends HTMLElement {
 
 	public set onended(value: ((event: Event) => void) | null) {
 		this[PropertySymbol.propertyEventListeners].set('onended', value);
-	}
-
-	public get onerror(): ((event: ErrorEvent) => void) | null {
-		return ElementEventAttributeUtility.getEventListener(this, 'onerror');
-	}
-
-	public set onerror(value: ((event: ErrorEvent) => void) | null) {
-		this[PropertySymbol.propertyEventListeners].set('onerror', value);
 	}
 
 	public get onloadeddata(): ((event: Event) => void) | null {
@@ -266,7 +257,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	 *
 	 * @returns Error.
 	 */
-	public get error(): IMediaError {
+	public get error(): IMediaError | null {
 		return this[PropertySymbol.error];
 	}
 
@@ -437,10 +428,10 @@ export default class HTMLMediaElement extends HTMLElement {
 		}
 
 		try {
-			return new URL(this.getAttribute('src'), this[PropertySymbol.ownerDocument].location.href)
+			return new URL(this.getAttribute('src')!, this[PropertySymbol.ownerDocument].location.href)
 				.href;
 		} catch (e) {
-			return this.getAttribute('src');
+			return this.getAttribute('src')!;
 		}
 	}
 
@@ -659,7 +650,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	 *
 	 * @returns CrossOrigin.
 	 */
-	public get crossOrigin(): string {
+	public get crossOrigin(): string | null {
 		const crossOrigin = this.getAttribute('crossorigin');
 		if (crossOrigin === 'use-credentials') {
 			return 'use-credentials';
@@ -675,7 +666,7 @@ export default class HTMLMediaElement extends HTMLElement {
 	 *
 	 * @param crossOrigin CrossOrigin.
 	 */
-	public set crossOrigin(crossOrigin: string | null) {
+	public set crossOrigin(crossOrigin: string) {
 		this.setAttribute('crossorigin', crossOrigin);
 	}
 

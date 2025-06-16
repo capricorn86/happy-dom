@@ -1,5 +1,5 @@
 const COLOR_REGEXP =
-	/^#([0-9a-fA-F]{3,4}){1,2}$|^rgb\(([^)]*)\)$|^rgba\(([^)]*)\)$|^hsla?\(\s*(-?\d+|-?\d*.\d+)\s*,\s*(-?\d+|-?\d*.\d+)%\s*,\s*(-?\d+|-?\d*.\d+)%\s*(,\s*(-?\d+|-?\d*.\d+)\s*)?\)/;
+	/^#([0-9a-fA-F]{3,4}){1,2}$|^rgb\(([^)]*)\)$|^rgba\(([^)]*)\)$|^hsla?\(\s*(-?\d+|-?\d*.\d+)\s*,\s*(-?\d+|-?\d*.\d+)%\s*,\s*(-?\d+|-?\d*.\d+)%\s*(,\s*(-?\d+|-?\d*.\d+)\s*)?\)|(?:(rgba?|hsla?)\((var\(\s*(--[^)\s]+)\))\))/;
 
 const LENGTH_REGEXP =
 	/^(0|[-+]?[0-9]*\.?[0-9]+)(in|cm|em|mm|pt|pc|px|ex|rem|vh|vw|ch|vw|vh|vmin|vmax|Q)$/;
@@ -178,7 +178,7 @@ export default class CSSStyleDeclarationValueParser {
 	 * @param value Value.
 	 * @returns Parsed value.
 	 */
-	public static getLength(value: string): string {
+	public static getLength(value: string): string | null {
 		if (value === '0') {
 			return '0px';
 		}
@@ -200,7 +200,7 @@ export default class CSSStyleDeclarationValueParser {
 	 * @param value Value.
 	 * @returns Parsed value.
 	 */
-	public static getPercentage(value: string): string {
+	public static getPercentage(value: string): string | null {
 		if (value === '0') {
 			return '0%';
 		}
@@ -216,7 +216,7 @@ export default class CSSStyleDeclarationValueParser {
 	 * @param value Value.
 	 * @returns Parsed value.
 	 */
-	public static getDegree(value: string): string {
+	public static getDegree(value: string): string | null {
 		if (value === '0') {
 			return '0deg';
 		}
@@ -232,7 +232,7 @@ export default class CSSStyleDeclarationValueParser {
 	 * @param value Value.
 	 * @returns Parsed value.
 	 */
-	public static getCalc(value: string): string {
+	public static getCalc(value: string): string | null {
 		if (CALC_REGEXP.test(value)) {
 			return value;
 		}
@@ -245,7 +245,7 @@ export default class CSSStyleDeclarationValueParser {
 	 * @param value Value.
 	 * @returns Parsed value.
 	 */
-	public static getFitContent(value: string): string {
+	public static getFitContent(value: string): string | null {
 		const lowerValue = value.toLowerCase();
 		if (
 			lowerValue === 'auto' ||
@@ -267,7 +267,7 @@ export default class CSSStyleDeclarationValueParser {
 	 * @param value Value.
 	 * @returns Parsed value.
 	 */
-	public static getMeasurement(value: string): string {
+	public static getMeasurement(value: string): string | null {
 		return this.getLength(value) || this.getPercentage(value) || this.getCalc(value);
 	}
 
@@ -277,7 +277,7 @@ export default class CSSStyleDeclarationValueParser {
 	 * @param value Value.
 	 * @returns Parsed value.
 	 */
-	public static getContentMeasurement(value: string): string {
+	public static getContentMeasurement(value: string): string | null {
 		return this.getFitContent(value) || this.getMeasurement(value);
 	}
 
@@ -287,7 +287,7 @@ export default class CSSStyleDeclarationValueParser {
 	 * @param value Value.
 	 * @returns Parsed value.
 	 */
-	public static getAutoMeasurement(value: string): string {
+	public static getAutoMeasurement(value: string): string | null {
 		if (value.toLocaleLowerCase() === 'auto') {
 			return 'auto';
 		}
@@ -300,7 +300,7 @@ export default class CSSStyleDeclarationValueParser {
 	 * @param value Value.
 	 * @returns Parsed value.
 	 */
-	public static getInteger(value: string): string {
+	public static getInteger(value: string): string | null {
 		if (INTEGER_REGEXP.test(value)) {
 			return value;
 		}
@@ -313,7 +313,7 @@ export default class CSSStyleDeclarationValueParser {
 	 * @param value Value.
 	 * @returns Parsed value.
 	 */
-	public static getFloat(value: string): string {
+	public static getFloat(value: string): string | null {
 		if (FLOAT_REGEXP.test(value)) {
 			const number = parseFloat(value);
 			if (isNaN(number)) {
@@ -330,7 +330,7 @@ export default class CSSStyleDeclarationValueParser {
 	 * @param value Value.
 	 * @returns Parsed value.
 	 */
-	public static getGradient(value: string): string {
+	public static getGradient(value: string): string | null {
 		const match = value.match(GRADIENT_REGEXP);
 		if (match) {
 			return `${match[1]}(${match[3]
@@ -347,7 +347,7 @@ export default class CSSStyleDeclarationValueParser {
 	 * @param value Value.
 	 * @returns Parsed value.
 	 */
-	public static getColor(value: string): string {
+	public static getColor(value: string): string | null {
 		const lowerValue = value.toLowerCase();
 		if (COLORS.includes(lowerValue)) {
 			return lowerValue;
@@ -367,7 +367,7 @@ export default class CSSStyleDeclarationValueParser {
 	 * @param value Value.
 	 * @returns Parsed value.
 	 */
-	public static getURL(value: string): string {
+	public static getURL(value: string): string | null {
 		if (!value) {
 			return null;
 		}
@@ -417,7 +417,7 @@ export default class CSSStyleDeclarationValueParser {
 	 * @param value Value.
 	 * @returns Parsed value.
 	 */
-	public static getInitial(value: string): string {
+	public static getInitial(value: string): string | null {
 		return value.toLowerCase() === 'initial' ? 'initial' : null;
 	}
 
@@ -427,7 +427,7 @@ export default class CSSStyleDeclarationValueParser {
 	 * @param value Value.
 	 * @returns Parsed value.
 	 */
-	public static getVariable(value: string): string {
+	public static getVariable(value: string): string | null {
 		const cssVariableMatch = value.match(CSS_VARIABLE_REGEXP);
 		if (cssVariableMatch) {
 			return `var(${cssVariableMatch[1]})`;
@@ -441,7 +441,7 @@ export default class CSSStyleDeclarationValueParser {
 	 * @param value Value.
 	 * @returns Parsed value.
 	 */
-	public static getGlobal(value: string): string {
+	public static getGlobal(value: string): string | null {
 		const lowerValue = value.toLowerCase();
 		return GLOBALS.includes(lowerValue) ? lowerValue : null;
 	}
@@ -452,7 +452,7 @@ export default class CSSStyleDeclarationValueParser {
 	 * @param value Value.
 	 * @returns Parsed value.
 	 */
-	public static getGlobalExceptInitial(value: string): string {
+	public static getGlobalExceptInitial(value: string): string | null {
 		const lowerValue = value.toLowerCase();
 		return lowerValue !== 'initial' && GLOBALS.includes(lowerValue) ? lowerValue : null;
 	}

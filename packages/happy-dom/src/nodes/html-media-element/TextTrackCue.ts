@@ -19,8 +19,8 @@ export default abstract class TextTrackCue extends EventTarget {
 	public [PropertySymbol.track]: TextTrack | null = null;
 
 	// Events
-	public onenter: (event: Event) => void = null;
-	public onexit: (event: Event) => void = null;
+	public onenter: ((event: Event) => void) | null = null;
+	public onexit: ((event: Event) => void) | null = null;
 
 	/**
 	 * Constructor.
@@ -45,7 +45,7 @@ export default abstract class TextTrackCue extends EventTarget {
 	 *
 	 * @returns TextTrack.
 	 */
-	public get track(): TextTrack {
+	public get track(): TextTrack | null {
 		return this[PropertySymbol.track];
 	}
 }

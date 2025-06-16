@@ -23,7 +23,7 @@ export default class SVGImageElement extends SVGGraphicsElement {
 	 *
 	 * @returns Cross origin.
 	 */
-	public get crossOrigin(): string {
+	public get crossOrigin(): string | null {
 		return this.getAttribute('crossorigin');
 	}
 

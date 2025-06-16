@@ -76,7 +76,7 @@ export default class FetchRequestHeaderUtility {
 		browserFrame: IBrowserFrame;
 		window: BrowserWindow;
 		request: Request;
-		baseHeaders?: Headers;
+		baseHeaders?: Headers | null;
 	}): { [key: string]: string } {
 		const headers = new Headers(options.baseHeaders);
 		options.request.headers.forEach((value, key) => {
@@ -136,7 +136,7 @@ export default class FetchRequestHeaderUtility {
 		}
 
 		// We need to convert the headers to Node request headers.
-		const httpRequestHeaders = {};
+		const httpRequestHeaders: { [name: string]: string } = {};
 
 		for (const header of Object.values(headers[PropertySymbol.entries])) {
 			httpRequestHeaders[header.name] = header.value.join(', ');

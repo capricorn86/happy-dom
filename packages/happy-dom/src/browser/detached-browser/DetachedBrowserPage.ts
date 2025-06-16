@@ -90,7 +90,7 @@ export default class DetachedBrowserPage implements IBrowserPage {
 				.then(() => {
 					// As we are in a detached page, a context or browser should not exist without a page as there are no references to them.
 					if (context.pages[0] === this) {
-						context.close().then(resolve).catch(reject);
+						context.browser.close().then(resolve).catch(reject);
 					} else {
 						resolve();
 					}

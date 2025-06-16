@@ -1,4 +1,4 @@
-import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import HTMLElementConfig from '../src/config/HTMLElementConfig.js';
 import * as Index from '../src/index.js';
 

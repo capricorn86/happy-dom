@@ -31,8 +31,8 @@ export default abstract class CSSRule {
 	public [PropertySymbol.cssParser]: CSSParser;
 
 	// Public properties
-	public [PropertySymbol.parentRule]: CSSRule = null;
-	public [PropertySymbol.parentStyleSheet]: CSSStyleSheet = null;
+	public [PropertySymbol.parentRule]: CSSRule | null = null;
+	public [PropertySymbol.parentStyleSheet]: CSSStyleSheet | null = null;
 
 	/**
 	 * Constructor.
@@ -55,7 +55,7 @@ export default abstract class CSSRule {
 	 *
 	 * @returns Parent rule.
 	 */
-	public get parentRule(): CSSRule {
+	public get parentRule(): CSSRule | null {
 		return this[PropertySymbol.parentRule];
 	}
 
@@ -64,7 +64,7 @@ export default abstract class CSSRule {
 	 *
 	 * @returns Parent style sheet.
 	 */
-	public get parentStyleSheet(): CSSStyleSheet {
+	public get parentStyleSheet(): CSSStyleSheet | null {
 		return this[PropertySymbol.parentStyleSheet];
 	}
 

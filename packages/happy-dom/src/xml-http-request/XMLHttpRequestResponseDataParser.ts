@@ -21,8 +21,8 @@ export default class XMLHttpRequestResponseDataParser {
 	public static parse(options: {
 		window: BrowserWindow;
 		responseType: string;
-		data?: Buffer;
-		contentType?: string;
+		data?: Buffer | null;
+		contentType?: string | null;
 	}): ArrayBuffer | Blob | Document | object | string | null {
 		if (!options.data) {
 			return '';

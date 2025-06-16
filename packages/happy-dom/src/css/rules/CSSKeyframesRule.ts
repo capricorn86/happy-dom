@@ -11,7 +11,7 @@ const CSS_RULE_REGEXP = /^(from|to|[0-9]{1,3}%)\s*{([^}]*)}$/;
  */
 export default class CSSKeyframesRule extends CSSRule {
 	public [PropertySymbol.cssRules]: CSSKeyframeRule[] = [];
-	public [PropertySymbol.name]: string = null;
+	public [PropertySymbol.name]: string = '';
 	public [PropertySymbol.rulePrefix] = '';
 
 	/**
@@ -130,7 +130,7 @@ export default class CSSKeyframesRule extends CSSRule {
 	 * @param rule Rule. E.g. "0%".
 	 * @returns Rule.
 	 */
-	public findRule(rule: string): CSSKeyframeRule {
+	public findRule(rule: string): CSSKeyframeRule | null {
 		if (arguments.length === 0) {
 			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'findRule' on 'CSSKeyframesRule': 1 argument required, but only 0 present.`

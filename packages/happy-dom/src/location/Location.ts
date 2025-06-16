@@ -11,7 +11,7 @@ export default class Location {
 	public [Symbol.toStringTag] = 'Location';
 
 	// Private properties
-	#browserFrame: IBrowserFrame;
+	#browserFrame: IBrowserFrame | null;
 	#url: URL;
 	#hashChangeTimeout: NodeJS.Timeout | null = null;
 	#hashChangeEvents: HashChangeEvent[] = [];
@@ -47,7 +47,7 @@ export default class Location {
 	public set hash(hash: string) {
 		const history = this.#browserFrame?.[PropertySymbol.history];
 
-		if (!history) {
+		if (!history || !this.#browserFrame) {
 			return;
 		}
 
@@ -253,7 +253,7 @@ export default class Location {
 		}
 
 		this.#browserFrame.goto(this.href).catch((error) => {
-			if (this.#browserFrame.page?.console) {
+			if (this.#browserFrame?.page.console) {
 				this.#browserFrame.page.console.error(error);
 			} else {
 				throw error;

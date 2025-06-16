@@ -32,7 +32,7 @@ export default class WindowBrowserContext {
 	 * @returns Browser settings.
 	 */
 	public getSettings(): IBrowserSettings | null {
-		return this.getBrowserFrame()?.page?.context?.browser?.settings || null;
+		return this.getBrowserFrame()?.page.context.browser.settings || null;
 	}
 
 	/**
@@ -41,7 +41,7 @@ export default class WindowBrowserContext {
 	 * @returns Browser.
 	 */
 	public getBrowser(): IBrowser | null {
-		return this.getBrowserFrame()?.page?.context?.browser || null;
+		return this.getBrowserFrame()?.page.context.browser || null;
 	}
 
 	/**
@@ -59,7 +59,7 @@ export default class WindowBrowserContext {
 	 * @returns Browser context.
 	 */
 	public getBrowserContext(): IBrowserContext | null {
-		return this.getBrowserFrame()?.page?.context || null;
+		return this.getBrowserFrame()?.page.context || null;
 	}
 
 	/**

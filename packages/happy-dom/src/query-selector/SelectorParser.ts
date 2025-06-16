@@ -28,7 +28,7 @@ import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
  * Group 17: Combinator.
  */
 const SELECTOR_REGEXP =
-	/(\*)|([a-zA-Z0-9-]+)|#((?:[a-zA-Z0-9-_]|\\.)+)|\.((?:[a-zA-Z0-9-_]|\\.)+)|\[([a-zA-Z0-9-_\\:]+)\]|\[([a-zA-Z0-9-_\\:]+)\s*([~|^$*]{0,1})\s*=\s*["']{1}([^"']*)["']{1}\s*(s|i){0,1}\]|\[([a-zA-Z0-9-_]+)\s*([~|^$*]{0,1})\s*=\s*([^\]]*)\]|:([a-zA-Z-]+)\s*\(((?:[^()]|\[[^\]]*\]|\([^()]*\))*)\){0,1}|:([a-zA-Z-]+)|::([a-zA-Z-]+)|([\s,+>~]*)/gm;
+	/(\*)|([a-zA-Z0-9-]+)|#((?:[a-zA-Z0-9-_«»]|\\.)+)|\.((?:[a-zA-Z0-9-_«»]|\\.)+)|\[([a-zA-Z0-9-_\\:]+)\]|\[([a-zA-Z0-9-_\\:]+)\s*([~|^$*]{0,1})\s*=\s*["']{1}([^"']*)["']{1}\s*(s|i){0,1}\]|\[([a-zA-Z0-9-_]+)\s*([~|^$*]{0,1})\s*=\s*([^\]]*)\]|:([a-zA-Z-]+)\s*\(((?:[^()]|\[[^\]]*\]|\([^()]*\))*)\){0,1}|:([a-zA-Z-]+)|::([a-zA-Z-]+)|([\s,+>~]*)/gm;
 
 /**
  * Escaped Character RegExp.
@@ -163,7 +163,7 @@ export default class SelectorParser {
 						name: match[6].toLowerCase(),
 						operator: match[7] || null,
 						value: match[8].replace(ESCAPED_CHARACTER_REGEXP, ''),
-						modifier: match[9] || null,
+						modifier: <'s'>match[9] || null,
 						regExp: this.getAttributeRegExp({
 							operator: match[7],
 							value: match[8],
@@ -328,7 +328,7 @@ export default class SelectorParser {
 				return {
 					name: lowerName,
 					arguments: args,
-					selectorItems: [selectorItem],
+					selectorItems: selectorItem ? [selectorItem] : null,
 					nthFunction: this.getPseudoNthFunction(nthFunction)
 				};
 			case 'nth-of-type':
@@ -401,6 +401,10 @@ export default class SelectorParser {
 	 * @returns Pseudo nth function.
 	 */
 	private static getPseudoNthFunction(args?: string): ((n: number) => boolean) | null {
+		if (!args) {
+			return null;
+		}
+
 		if (args === 'odd') {
 			return NTH_FUNCTION.odd;
 		} else if (args === 'even') {

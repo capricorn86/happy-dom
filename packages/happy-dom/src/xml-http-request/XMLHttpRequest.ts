@@ -55,6 +55,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	#responseType: XMLHttpResponseTypeEnum | '' = '';
 	#responseBody: ArrayBuffer | Blob | Document | object | string | null = null;
 	#readyState: XMLHttpRequestReadyStateEnum = XMLHttpRequestReadyStateEnum.unsent;
+	#overriddenMimeType: string | null = null;
 
 	/**
 	 * Constructor.
@@ -122,7 +123,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * @throws {DOMException} If the response type is not text or empty.
 	 * @returns Response XML.
 	 */
-	public get responseXML(): Document {
+	public get responseXML(): Document | null {
 		if (this.responseType !== XMLHttpResponseTypeEnum.document && this.responseType !== '') {
 			throw new this[PropertySymbol.window].DOMException(
 				`Failed to read the 'responseXML' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'document' (was '${this.responseType}').`,
@@ -247,7 +248,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			return false;
 		}
 
-		this.#request.headers.set(name, value);
+		this.#request!.headers.set(name, value);
 
 		return true;
 	}
@@ -325,7 +326,28 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			return;
 		}
 		this.#aborted = true;
-		this.#abortController.abort();
+		this.#abortController!.abort();
+	}
+
+	/**
+	 * Overrides the MIME type returned by the server.
+	 * This method must be called before send().
+	 *
+	 * @param mimeType The MIME type to use instead of the one specified by the server.
+	 * @throws {DOMException} If the request state is LOADING or DONE.
+	 */
+	public overrideMimeType(mimeType: string): void {
+		if (
+			this.readyState === XMLHttpRequestReadyStateEnum.loading ||
+			this.readyState === XMLHttpRequestReadyStateEnum.done
+		) {
+			throw new this[PropertySymbol.window].DOMException(
+				`Failed to execute 'overrideMimeType' on 'XMLHttpRequest': MIME type cannot be overridden when the request state is LOADING or DONE.`,
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
+		this.#overriddenMimeType = mimeType;
 	}
 
 	/**
@@ -336,6 +358,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	async #sendAsync(body?: IRequestBody): Promise<void> {
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+
+		if (!browserFrame) {
+			return;
+		}
+
 		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
 		const taskID = asyncTaskManager.startTask(() => this.abort());
 
@@ -345,16 +372,16 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#dispatchEvent(new Event('loadstart'));
 
 		if (body) {
-			this.#request = new window.Request(this.#request.url, {
-				method: this.#request.method,
-				headers: this.#request.headers,
-				signal: this.#abortController.signal,
-				credentials: this.#request.credentials,
+			this.#request = new window.Request(this.#request!.url, {
+				method: this.#request!.method,
+				headers: this.#request!.headers,
+				signal: this.#abortController!.signal,
+				credentials: this.#request!.credentials,
 				body
 			});
 		}
 
-		this.#abortController.signal.addEventListener('abort', () => {
+		this.#abortController!.signal.addEventListener('abort', () => {
 			this.#aborted = true;
 			this.#readyState = XMLHttpRequestReadyStateEnum.unsent;
 			this.#dispatchEvent(new Event('abort'));
@@ -382,14 +409,14 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		const fetch = new Fetch({
 			browserFrame: browserFrame,
 			window: window,
-			url: this.#request.url,
-			init: this.#request
+			url: this.#request!.url,
+			init: this.#request!
 		});
 
 		try {
 			this.#response = await fetch.send();
 		} catch (error) {
-			onError(error);
+			onError(<Error>error);
 			return;
 		}
 
@@ -419,15 +446,15 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 							})
 						);
 					} catch (error) {
-						eventError = error;
+						eventError = <Error>error;
 						throw error;
 					}
 				}
 			} catch (error) {
-				if (error === eventError) {
+				if (<Error>error === eventError!) {
 					throw error;
 				}
-				onError(error);
+				onError(<Error>error);
 				return;
 			}
 		}
@@ -437,7 +464,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			responseType: this.#responseType,
 			data,
 			contentType:
-				this.#response.headers.get('Content-Type') || this.#request.headers.get('Content-Type')
+				this.#overriddenMimeType ||
+				this.#response.headers.get('Content-Type') ||
+				this.#request!.headers.get('Content-Type')
 		});
 		this.#readyState = XMLHttpRequestReadyStateEnum.done;
 
@@ -457,12 +486,16 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
 
+		if (!browserFrame) {
+			return;
+		}
+
 		if (body) {
-			this.#request = new window.Request(this.#request.url, {
-				method: this.#request.method,
-				headers: this.#request.headers,
-				signal: this.#abortController.signal,
-				credentials: this.#request.credentials,
+			this.#request = new window.Request(this.#request!.url, {
+				method: this.#request!.method,
+				headers: this.#request!.headers,
+				signal: this.#abortController!.signal,
+				credentials: this.#request!.credentials,
 				body
 			});
 		}
@@ -472,15 +505,17 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		const fetch = new SyncFetch({
 			browserFrame,
 			window: window,
-			url: this.#request.url,
-			init: this.#request
+			url: this.#request!.url,
+			init: this.#request!
 		});
 
 		try {
 			this.#response = fetch.send();
 		} catch (error) {
 			this.#readyState = XMLHttpRequestReadyStateEnum.done;
-			this.#dispatchEvent(new ErrorEvent('error', { error, message: error.message }));
+			this.#dispatchEvent(
+				new ErrorEvent('error', { error: <Error>error, message: (<Error>error).message })
+			);
 			this.#dispatchEvent(new Event('loadend'));
 			this.#dispatchEvent(new Event('readystatechange'));
 			return;
@@ -493,7 +528,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			responseType: this.#responseType,
 			data: this.#response.body,
 			contentType:
-				this.#response.headers.get('Content-Type') || this.#request.headers.get('Content-Type')
+				this.#overriddenMimeType ||
+				this.#response.headers.get('Content-Type') ||
+				this.#request!.headers.get('Content-Type')
 		});
 
 		this.#readyState = XMLHttpRequestReadyStateEnum.done;

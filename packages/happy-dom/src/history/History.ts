@@ -12,7 +12,7 @@ import BrowserWindow from '../window/BrowserWindow.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/History.
  */
 export default class History {
-	#browserFrame: IBrowserFrame;
+	#browserFrame: IBrowserFrame | null;
 	#window: BrowserWindow;
 
 	/**
@@ -115,7 +115,7 @@ export default class History {
 	 * @param [url] URL.
 	 */
 	public pushState(state: any, _unused: any, url?: string | URL): void {
-		if (this.#window.closed) {
+		if (!this.#browserFrame || this.#window.closed) {
 			return;
 		}
 
@@ -166,7 +166,7 @@ export default class History {
 	 * @param [url] URL.
 	 */
 	public replaceState(state: any, _unused: any, url?: string | URL): void {
-		if (this.#window.closed) {
+		if (!this.#browserFrame || this.#window.closed) {
 			return;
 		}
 

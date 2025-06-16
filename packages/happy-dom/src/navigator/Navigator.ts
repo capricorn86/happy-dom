@@ -45,14 +45,14 @@ export default class Navigator {
 	/**
 	 * TODO: Not implemented.
 	 */
-	public get credentials(): string {
+	public get credentials(): any {
 		return null;
 	}
 
 	/**
 	 * TODO: Not implemented.
 	 */
-	public get geolocation(): string {
+	public get geolocation(): any {
 		return null;
 	}
 
@@ -73,7 +73,7 @@ export default class Navigator {
 	/**
 	 * TODO: Not implemented.
 	 */
-	public get locks(): string {
+	public get locks(): any {
 		return null;
 	}
 

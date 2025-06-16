@@ -25,6 +25,11 @@ export default class ElementEventAttributeUtility {
 		}
 
 		const window = element[PropertySymbol.ownerDocument][PropertySymbol.defaultView];
+
+		if (!window) {
+			return null;
+		}
+
 		const browserSettings = new WindowBrowserContext(window).getSettings();
 
 		if (!browserSettings) {
@@ -68,7 +73,7 @@ export default class ElementEventAttributeUtility {
 			});
 		} catch (e) {
 			const error = new window.SyntaxError(
-				`Failed to read the '${property}' property from '${element.constructor.name}': ${e.message}`
+				`Failed to read the '${property}' property from '${element.constructor.name}': ${(<Error>e).message}`
 			);
 			if (
 				browserSettings.disableErrorCapturing ||

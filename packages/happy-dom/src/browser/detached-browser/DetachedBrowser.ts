@@ -9,6 +9,7 @@ import BrowserWindow from '../../window/BrowserWindow.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
 import BrowserExceptionObserver from '../utilities/BrowserExceptionObserver.js';
+import BrowserContext from '../BrowserContext.js';
 
 /**
  * Detached browser used when constructing a Window instance without a browser.
@@ -20,7 +21,7 @@ export default class DetachedBrowser implements IBrowser {
 	public readonly windowClass: new (
 		browserFrame: IBrowserFrame,
 		options?: { url?: string; width?: number; height?: number }
-	) => BrowserWindow | null;
+	) => BrowserWindow;
 	public [PropertySymbol.exceptionObserver]: BrowserExceptionObserver | null = null;
 
 	/**
@@ -49,6 +50,15 @@ export default class DetachedBrowser implements IBrowser {
 	}
 
 	/**
+	 * Returns true if the browser is closed.
+	 *
+	 * @returns True if the browser is closed.
+	 */
+	public get closed(): boolean {
+		return this.contexts.length === 0;
+	}
+
+	/**
 	 * Returns the default context.
 	 *
 	 * @returns Default context.
@@ -64,10 +74,12 @@ export default class DetachedBrowser implements IBrowser {
 	 * Aborts all ongoing operations and destroys the browser.
 	 */
 	public async close(): Promise<void> {
-		await Promise.all(this.contexts.slice().map((context) => context.close()));
-		(<DetachedBrowserContext[]>this.contexts) = [];
-		(<Console | null>this.console) = null;
-		(<(new (browserFrame: IBrowserFrame) => BrowserWindow) | null>this.windowClass) = null;
+		if (this.contexts.length === 0) {
+			return;
+		}
+		const contexts = this.contexts;
+		(<BrowserContext[]>this.contexts) = [];
+		await Promise.all(contexts.map((context) => context.close()));
 	}
 
 	/**

@@ -22,7 +22,8 @@ export default class BrowserFrame implements IBrowserFrame {
 	public readonly parentFrame: BrowserFrame | null = null;
 	public readonly page: BrowserPage;
 	public readonly window: BrowserWindow;
-	public [PropertySymbol.asyncTaskManager] = new AsyncTaskManager(this);
+	public readonly closed: boolean = false;
+	public [PropertySymbol.asyncTaskManager]: AsyncTaskManager = new AsyncTaskManager(this);
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
 	public [PropertySymbol.openerFrame]: IBrowserFrame | null = null;
 	public [PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;

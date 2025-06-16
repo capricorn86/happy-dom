@@ -67,7 +67,7 @@ export default class NodeUtility {
 			return true;
 		}
 
-		let parent: Node = referenceNode[PropertySymbol.parentNode];
+		let parent: Node | null = referenceNode[PropertySymbol.parentNode];
 
 		while (parent) {
 			if (ancestorNode === parent) {
@@ -100,7 +100,7 @@ export default class NodeUtility {
 			return false;
 		}
 
-		let current: Node = nodeB;
+		let current: Node | null = nodeB;
 
 		while (current) {
 			current = this.following(current);
@@ -148,14 +148,14 @@ export default class NodeUtility {
 	 * @param [root] Root.
 	 * @returns Following node.
 	 */
-	public static following(node: Node, root?: Node): Node {
+	public static following(node: Node, root?: Node): Node | null {
 		const firstChild = node.firstChild;
 
 		if (firstChild) {
 			return firstChild;
 		}
 
-		let current = node;
+		let current: Node | null = node;
 
 		while (current) {
 			if (current === root) {
@@ -180,7 +180,7 @@ export default class NodeUtility {
 	 * @param node Node.
 	 * @returns Next descendant node.
 	 */
-	public static nextDescendantNode(node: Node): Node {
+	public static nextDescendantNode(node: Node | null): Node | null {
 		while (node && !node.nextSibling) {
 			node = node[PropertySymbol.parentNode];
 		}

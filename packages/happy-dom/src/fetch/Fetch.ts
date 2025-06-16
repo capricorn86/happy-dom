@@ -88,7 +88,7 @@ export default class Fetch {
 		url: IRequestInfo;
 		init?: IRequestInit;
 		redirectCount?: number;
-		contentType?: string;
+		contentType?: string | null;
 		disableCache?: boolean;
 		disableSameOriginPolicy?: boolean;
 		unfilteredHeaders?: Headers;
@@ -162,7 +162,7 @@ export default class Fetch {
 			if (this.request.signal[PropertySymbol.reason] !== undefined) {
 				throw this.request.signal[PropertySymbol.reason];
 			}
-			throw new this[PropertySymbol.window].DOMException(
+			throw new this.#window.DOMException(
 				'signal is aborted without reason',
 				DOMExceptionNameEnum.abortError
 			);
@@ -242,7 +242,7 @@ export default class Fetch {
 			const compliesWithCrossOriginPolicy = await this.compliesWithCrossOriginPolicy();
 
 			if (!compliesWithCrossOriginPolicy) {
-				this.#browserFrame?.page?.console.warn(
+				this.#browserFrame.page.console.warn(
 					`Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at "${this.request.url}".`
 				);
 				throw new this.#window.DOMException(
@@ -356,7 +356,7 @@ export default class Fetch {
 		const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
 
 		if (this.request.method !== 'GET') {
-			this.#browserFrame?.page?.console.error(
+			this.#browserFrame.page.console.error(
 				`${this.request.method} ${this.request.url} 404 (Not Found)`
 			);
 			const response = VirtualServerUtility.getNotFoundResponse(this.#window);
@@ -377,7 +377,7 @@ export default class Fetch {
 			filePath = stat.isDirectory() ? Path.join(filePath, 'index.html') : filePath;
 			buffer = await FS.promises.readFile(filePath);
 		} catch (error) {
-			this.#browserFrame?.page?.console.error(
+			this.#browserFrame.page.console.error(
 				`${this.request.method} ${this.request.url} 404 (Not Found)`
 			);
 
@@ -425,7 +425,7 @@ export default class Fetch {
 			virtual: true
 		};
 
-		response[PropertySymbol.cachedResponse] = this.#browserFrame.page?.context?.responseCache.add(
+		response[PropertySymbol.cachedResponse] = this.#browserFrame.page.context.responseCache.add(
 			this.request,
 			cacheableResponse
 		);
@@ -515,7 +515,7 @@ export default class Fetch {
 		const allowMethods: string[] = [];
 
 		if (response.headers.has('Access-Control-Allow-Methods')) {
-			const allowMethodsHeader = response.headers.get('Access-Control-Allow-Methods');
+			const allowMethodsHeader = response.headers.get('Access-Control-Allow-Methods')!;
 			if (allowMethodsHeader !== '*') {
 				for (const method of allowMethodsHeader.split(',')) {
 					allowMethods.push(method.trim().toUpperCase());
@@ -559,7 +559,7 @@ export default class Fetch {
 					response[PropertySymbol.cachedResponse] =
 						this.#browserFrame.page.context.responseCache.add(this.request, {
 							...response,
-							headers: this.responseHeaders,
+							headers: this.responseHeaders!,
 							body: response[PropertySymbol.buffer],
 							waitingForBody: !response[PropertySymbol.buffer] && !!response.body
 						});
@@ -578,7 +578,7 @@ export default class Fetch {
 
 				// The browser outputs errors to the console when the response is not ok.
 				if (returnResponse instanceof Response && !returnResponse.ok) {
-					this.#browserFrame?.page?.console.error(
+					this.#browserFrame.page.console.error(
 						`${this.request.method} ${this.request.url} ${returnResponse.status} (${returnResponse.statusText})`
 					);
 				}
@@ -602,7 +602,8 @@ export default class Fetch {
 					baseHeaders: this.#unfilteredHeaders
 				}),
 				agent: false,
-				rejectUnauthorized: true,
+				rejectUnauthorized:
+					!this.#browserFrame.page.context.browser.settings.fetch.disableStrictSSL,
 				key:
 					this.request[PropertySymbol.url].protocol === 'https:'
 						? FetchHTTPSCertificate.key
@@ -642,9 +643,11 @@ export default class Fetch {
 					DOMExceptionNameEnum.networkError
 				);
 
-				if (this.response && this.response.body) {
-					this.response.body[PropertySymbol.error] = error;
-					if (!this.response.body.locked) {
+				this.request[PropertySymbol.error] = error;
+
+				if (this.response) {
+					this.response[PropertySymbol.error] = error;
+					if (this.response.body && !this.response.body.locked) {
 						this.response.body.cancel(error);
 					}
 				}
@@ -667,7 +670,7 @@ export default class Fetch {
 		socket.prependListener('close', onSocketClose);
 		socket.on('data', onData);
 
-		this.nodeRequest.on('close', () => {
+		this.nodeRequest!.on('close', () => {
 			socket.removeListener('close', onSocketClose);
 			socket.removeListener('data', onData);
 		});
@@ -690,8 +693,8 @@ export default class Fetch {
 	 */
 	private onError(error: Error): void {
 		this.finalizeRequest();
-		this.#browserFrame?.page?.console.error(error);
-		this.reject(
+		this.#browserFrame.page.console.error(error);
+		this.reject!(
 			new this.#window.DOMException(
 				`Failed to execute "fetch()" on "Window" with URL "${this.request.url}": ${error.message}`,
 				DOMExceptionNameEnum.networkError
@@ -709,9 +712,11 @@ export default class Fetch {
 		);
 
 		this.request[PropertySymbol.aborted] = true;
+		this.request[PropertySymbol.error] = error;
 
-		if (this.request.body) {
-			this.request.body[PropertySymbol.error] = error;
+		if (this.response) {
+			this.response[PropertySymbol.aborted] = true;
+			this.response[PropertySymbol.error] = error;
 		}
 
 		if (this.listeners.onSignalAbort) {
@@ -727,7 +732,6 @@ export default class Fetch {
 		}
 
 		if (this.response && this.response.body) {
-			this.response.body[PropertySymbol.error] = error;
 			if (!this.response.body.locked) {
 				this.response.body.cancel(error);
 			}
@@ -745,7 +749,7 @@ export default class Fetch {
 			nodeResponse.headers['transfer-encoding'] === 'chunked' &&
 			!nodeResponse.headers['content-length'];
 
-		this.nodeRequest.setTimeout(0);
+		this.nodeRequest!.setTimeout(0);
 		this.responseHeaders = FetchResponseHeaderUtility.parseResponseHeaders({
 			browserFrame: this.#browserFrame,
 			requestURL: this.request[PropertySymbol.url],
@@ -760,7 +764,7 @@ export default class Fetch {
 			this.request.signal.removeEventListener('abort', this.listeners.onSignalAbort)
 		);
 
-		let body = Stream.pipeline(nodeResponse, new Stream.PassThrough(), (error: Error) => {
+		let body = Stream.pipeline(nodeResponse, new Stream.PassThrough(), (error) => {
 			if (error) {
 				// Ignore error as it is forwarded to the response body.
 			}
@@ -786,7 +790,7 @@ export default class Fetch {
 			);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
-			this.resolve(this.response);
+			this.resolve!(this.response);
 			return;
 		}
 
@@ -800,7 +804,7 @@ export default class Fetch {
 				finishFlush: Zlib.constants.Z_SYNC_FLUSH
 			};
 
-			body = Stream.pipeline(body, Zlib.createGunzip(zlibOptions), (error: Error) => {
+			body = Stream.pipeline(body, Zlib.createGunzip(zlibOptions), (error) => {
 				if (error) {
 					// Ignore error as it is forwarded to the response body.
 				}
@@ -811,7 +815,7 @@ export default class Fetch {
 			);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
-			this.resolve(this.response);
+			this.resolve!(this.response);
 			return;
 		}
 
@@ -846,7 +850,7 @@ export default class Fetch {
 				);
 				(<boolean>this.response.redirected) = this.redirectCount > 0;
 				(<string>this.response.url) = this.request.url;
-				this.resolve(this.response);
+				this.resolve!(this.response);
 			});
 			raw.on('end', () => {
 				// Some old IIS servers return zero-length OK deflate responses, so 'data' is never emitted.
@@ -857,7 +861,7 @@ export default class Fetch {
 					);
 					(<boolean>this.response.redirected) = this.redirectCount > 0;
 					(<string>this.response.url) = this.request.url;
-					this.resolve(this.response);
+					this.resolve!(this.response);
 				}
 			});
 			return;
@@ -876,7 +880,7 @@ export default class Fetch {
 			);
 			(<boolean>this.response.redirected) = this.redirectCount > 0;
 			(<string>this.response.url) = this.request.url;
-			this.resolve(this.response);
+			this.resolve!(this.response);
 			return;
 		}
 
@@ -887,7 +891,7 @@ export default class Fetch {
 		);
 		(<boolean>this.response.redirected) = this.redirectCount > 0;
 		(<string>this.response.url) = this.request.url;
-		this.resolve(this.response);
+		this.resolve!(this.response);
 	}
 
 	/**
@@ -898,14 +902,14 @@ export default class Fetch {
 	 * @returns True if redirect response was handled, false otherwise.
 	 */
 	private handleRedirectResponse(nodeResponse: IncomingMessage, responseHeaders: Headers): boolean {
-		if (!FetchResponseRedirectUtility.isRedirect(nodeResponse.statusCode)) {
+		if (!FetchResponseRedirectUtility.isRedirect(nodeResponse.statusCode!)) {
 			return false;
 		}
 
 		switch (this.request.redirect) {
 			case 'error':
 				this.finalizeRequest();
-				this.reject(
+				this.reject!(
 					new this.#window.DOMException(
 						`URI requested responds with a redirect, redirect mode is set to "error": ${this.request.url}`,
 						DOMExceptionNameEnum.abortError
@@ -921,14 +925,14 @@ export default class Fetch {
 					nodeResponse.statusCode === 303 ||
 					((nodeResponse.statusCode === 301 || nodeResponse.statusCode === 302) &&
 						this.request.method === 'POST');
-				let locationURL: URL = null;
+				let locationURL: URL | null = null;
 
 				if (locationHeader !== null) {
 					try {
 						locationURL = new URL(locationHeader, this.request.url);
 					} catch {
 						this.finalizeRequest();
-						this.reject(
+						this.reject!(
 							new this.#window.DOMException(
 								`URI requested responds with an invalid redirect URL: ${locationHeader}`,
 								DOMExceptionNameEnum.uriMismatchError
@@ -944,7 +948,7 @@ export default class Fetch {
 
 				if (FetchResponseRedirectUtility.isMaxRedirectsReached(this.redirectCount)) {
 					this.finalizeRequest();
-					this.reject(
+					this.reject!(
 						new this.#window.DOMException(
 							`Maximum redirects reached at: ${this.request.url}`,
 							DOMExceptionNameEnum.networkError
@@ -999,20 +1003,18 @@ export default class Fetch {
 					url: locationURL,
 					init: requestInit,
 					redirectCount: this.redirectCount + 1,
-					contentType: !shouldBecomeGetRequest
-						? this.request[PropertySymbol.contentType]
-						: undefined
+					contentType: !shouldBecomeGetRequest ? this.request[PropertySymbol.contentType] : null
 				});
 
 				this.finalizeRequest();
 				fetch
 					.send()
-					.then((response) => this.resolve(response))
-					.catch((error) => this.reject(error));
+					.then((response) => this.resolve!(response))
+					.catch((error) => this.reject!(error));
 				return true;
 			default:
 				this.finalizeRequest();
-				this.reject(
+				this.reject!(
 					new this.#window.DOMException(
 						`Redirect option '${this.request.redirect}' is not a valid value of IRequestRedirect`
 					)
@@ -1026,7 +1028,7 @@ export default class Fetch {
 	 */
 	private finalizeRequest(): void {
 		this.request.signal.removeEventListener('abort', this.listeners.onSignalAbort);
-		this.nodeRequest.destroy();
+		this.nodeRequest?.destroy();
 	}
 
 	/**
@@ -1041,9 +1043,11 @@ export default class Fetch {
 		);
 
 		this.request[PropertySymbol.aborted] = true;
+		this.request[PropertySymbol.error] = error;
 
-		if (this.request.body) {
-			this.request.body[PropertySymbol.error] = error;
+		if (this.response) {
+			this.response[PropertySymbol.aborted] = true;
+			this.response[PropertySymbol.error] = error;
 		}
 
 		if (this.nodeRequest && !this.nodeRequest.destroyed) {
@@ -1055,7 +1059,6 @@ export default class Fetch {
 		}
 
 		if (this.response && this.response.body) {
-			this.response.body[PropertySymbol.error] = error;
 			if (!this.response.body.locked) {
 				this.response.body.cancel(error);
 			}

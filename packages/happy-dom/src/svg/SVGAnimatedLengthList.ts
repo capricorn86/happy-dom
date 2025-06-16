@@ -10,7 +10,7 @@ import SVGLengthList from './SVGLengthList.js';
 export default class SVGAnimatedLengthList {
 	// Internal properties
 	public [PropertySymbol.window]: BrowserWindow;
-	public [PropertySymbol.getAttribute]: () => string;
+	public [PropertySymbol.getAttribute]: () => string | null;
 	public [PropertySymbol.setAttribute]: (value: string) => void;
 	public [PropertySymbol.baseVal]: SVGLengthList | null = null;
 	public [PropertySymbol.animVal]: SVGLengthList | null = null;

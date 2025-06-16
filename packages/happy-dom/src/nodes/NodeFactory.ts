@@ -18,7 +18,7 @@ export default class NodeFactory {
 	 */
 	public static createNode<T extends Node>(
 		ownerDocument: Document,
-		nodeClass: new (...args) => T,
+		nodeClass: new (...args: any[]) => T,
 		...args: any[]
 	): T {
 		if (!nodeClass.prototype[PropertySymbol.window]) {
@@ -32,7 +32,7 @@ export default class NodeFactory {
 	 *
 	 * @returns Document.
 	 */
-	public static pullOwnerDocument(): Document {
-		return this.ownerDocuments.pop();
+	public static pullOwnerDocument(): Document | null {
+		return this.ownerDocuments.pop() || null;
 	}
 }

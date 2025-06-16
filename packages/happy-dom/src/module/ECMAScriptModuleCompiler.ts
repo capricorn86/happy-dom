@@ -86,7 +86,18 @@ export default class ECMAScriptModuleCompiler {
 		simpleString: 0,
 		doubleString: 0
 	};
-	private debugCount = {
+	private debugCount: {
+		comment: number[];
+		singleLineComment: number[];
+		parentheses: number[];
+		curlyBraces: number[];
+		squareBrackets: number[];
+		regExp: number[];
+		regExpSquareBrackets: number[];
+		escapeTemplateString: number[];
+		simpleString: number[];
+		doubleString: number[];
+	} = {
 		comment: [],
 		singleLineComment: [],
 		parentheses: [],
@@ -136,7 +147,7 @@ export default class ECMAScriptModuleCompiler {
 		const exportSpreadVariables: Array<Map<string, string>> = [];
 		const count = this.count;
 		let newCode = `(async function anonymous($happy_dom) {`;
-		let match: RegExpExecArray;
+		let match: RegExpExecArray | null = null;
 		let precedingToken: string;
 		let textBetweenStatements: string;
 		let isTopLevel = true;
@@ -224,7 +235,7 @@ export default class ECMAScriptModuleCompiler {
 				const variables = code.substring(importStartIndex, match.index + 1);
 				const importRegExp = new RegExp(IMPORT_REGEXP);
 				const importCode: string[] = [];
-				let importMatch: RegExpExecArray;
+				let importMatch: RegExpExecArray | null = null;
 				while ((importMatch = importRegExp.exec(variables))) {
 					if (importMatch[1]) {
 						// Import braces
@@ -364,7 +375,10 @@ export default class ECMAScriptModuleCompiler {
 
 		// In debug mode we don't want to execute the code, just take information from it
 		if (this.debug) {
-			return null;
+			return {
+				imports,
+				execute: async () => {}
+			};
 		}
 
 		newCode += code.substring(lastIndex);
@@ -392,7 +406,7 @@ export default class ECMAScriptModuleCompiler {
 		try {
 			return { imports, execute: this.window.eval(newCode) };
 		} catch (e) {
-			const errorMessage = this.getError(moduleURL, code, sourceURL) || e.message;
+			const errorMessage = this.getError(moduleURL, code, sourceURL) || (<Error>e).message;
 			const error = new this.window.SyntaxError(
 				`Failed to parse module '${moduleURL}': ${errorMessage}`
 			);
@@ -422,7 +436,7 @@ export default class ECMAScriptModuleCompiler {
 		const count = this.count;
 		const debug = this.debug;
 		const debugCount = this.debugCount;
-		let match: RegExpExecArray;
+		let match: RegExpExecArray | null = null;
 		let precedingToken: string;
 		let isEscaped: boolean;
 
@@ -765,7 +779,7 @@ export default class ECMAScriptModuleCompiler {
 	 */
 	private removeMultilineComments(code: string): string {
 		const regexp = new RegExp(MULTILINE_COMMENT_REGEXP);
-		let match: RegExpExecArray;
+		let match: RegExpExecArray | null;
 		let count = 0;
 		let lastIndex = 0;
 		let newCode = '';

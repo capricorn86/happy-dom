@@ -44,6 +44,8 @@ export default class Response implements Response {
 	public [PropertySymbol.cachedResponse]: ICachedResponse | null = null;
 	public [PropertySymbol.buffer]: Buffer | null = null;
 	public [PropertySymbol.virtualServerFile]: string | null = null;
+	public [PropertySymbol.aborted]: boolean = false;
+	public [PropertySymbol.error]: Error | null = null;
 
 	/**
 	 * Constructor.
@@ -120,13 +122,11 @@ export default class Response implements Response {
 
 		if (!buffer) {
 			const taskID = asyncTaskManager.startTask(() => {
-				if (this.body) {
-					this.body[PropertySymbol.aborted] = true;
-				}
+				this[PropertySymbol.aborted] = true;
 			});
 
 			try {
-				buffer = await FetchBodyUtility.consumeBodyStream(window, this.body);
+				buffer = await FetchBodyUtility.consumeBodyStream(window, this);
 			} catch (error) {
 				asyncTaskManager.endTask(taskID);
 				throw error;
@@ -182,12 +182,10 @@ export default class Response implements Response {
 
 		if (!buffer) {
 			const taskID = asyncTaskManager.startTask(() => {
-				if (this.body) {
-					this.body[PropertySymbol.aborted] = true;
-				}
+				this[PropertySymbol.aborted] = true;
 			});
 			try {
-				buffer = await FetchBodyUtility.consumeBodyStream(window, this.body);
+				buffer = await FetchBodyUtility.consumeBodyStream(window, this);
 			} catch (error) {
 				asyncTaskManager.endTask(taskID);
 				throw error;
@@ -230,12 +228,10 @@ export default class Response implements Response {
 
 		if (!buffer) {
 			const taskID = asyncTaskManager.startTask(() => {
-				if (this.body) {
-					this.body[PropertySymbol.aborted] = true;
-				}
+				this[PropertySymbol.aborted] = true;
 			});
 			try {
-				buffer = await FetchBodyUtility.consumeBodyStream(window, this.body);
+				buffer = await FetchBodyUtility.consumeBodyStream(window, this);
 			} catch (error) {
 				asyncTaskManager.endTask(taskID);
 				throw error;
@@ -275,7 +271,7 @@ export default class Response implements Response {
 		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
 		const contentType = this.headers.get('Content-Type');
 
-		if (/multipart/i.test(contentType)) {
+		if (contentType && this.body && /multipart/i.test(contentType)) {
 			if (this.bodyUsed) {
 				throw new window.DOMException(
 					`Body has already been used for "${this.url}".`,
@@ -286,19 +282,13 @@ export default class Response implements Response {
 			(<boolean>this.bodyUsed) = true;
 
 			const taskID = browserFrame[PropertySymbol.asyncTaskManager].startTask(() => {
-				if (this.body) {
-					this.body[PropertySymbol.aborted] = true;
-				}
+				this[PropertySymbol.aborted] = true;
 			});
 			let formData: FormData;
 			let buffer: Buffer;
 
 			try {
-				const result = await MultipartFormDataParser.streamToFormData(
-					window,
-					this.body,
-					contentType
-				);
+				const result = await MultipartFormDataParser.streamToFormData(window, this, contentType);
 				formData = result.formData;
 				buffer = result.buffer;
 			} catch (error) {

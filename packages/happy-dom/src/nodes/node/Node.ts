@@ -53,27 +53,26 @@ export default class Node extends EventTarget {
 	public static readonly DOCUMENT_POSITION_PRECEDING = NodeDocumentPositionEnum.preceding;
 
 	// Defined on the prototype
-	public declare readonly ELEMENT_NODE;
-	public declare readonly ATTRIBUTE_NODE;
-	public declare readonly TEXT_NODE;
-	public declare readonly CDATA_SECTION_NODE;
-	public declare readonly COMMENT_NODE;
-	public declare readonly DOCUMENT_NODE;
-	public declare readonly DOCUMENT_TYPE_NODE;
-	public declare readonly DOCUMENT_FRAGMENT_NODE;
-	public declare readonly PROCESSING_INSTRUCTION_NODE;
-	public declare readonly DOCUMENT_POSITION_CONTAINED_BY;
-	public declare readonly DOCUMENT_POSITION_CONTAINS;
-	public declare readonly DOCUMENT_POSITION_DISCONNECTED;
-	public declare readonly DOCUMENT_POSITION_FOLLOWING;
-	public declare readonly DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
-	public declare readonly DOCUMENT_POSITION_PRECEDING;
+	public declare readonly ELEMENT_NODE: NodeTypeEnum;
+	public declare readonly ATTRIBUTE_NODE: NodeTypeEnum;
+	public declare readonly TEXT_NODE: NodeTypeEnum;
+	public declare readonly CDATA_SECTION_NODE: NodeTypeEnum;
+	public declare readonly COMMENT_NODE: NodeTypeEnum;
+	public declare readonly DOCUMENT_NODE: NodeTypeEnum;
+	public declare readonly DOCUMENT_TYPE_NODE: NodeTypeEnum;
+	public declare readonly DOCUMENT_FRAGMENT_NODE: NodeTypeEnum;
+	public declare readonly PROCESSING_INSTRUCTION_NODE: NodeTypeEnum;
+	public declare readonly DOCUMENT_POSITION_CONTAINED_BY: NodeDocumentPositionEnum;
+	public declare readonly DOCUMENT_POSITION_CONTAINS: NodeDocumentPositionEnum;
+	public declare readonly DOCUMENT_POSITION_DISCONNECTED: NodeDocumentPositionEnum;
+	public declare readonly DOCUMENT_POSITION_FOLLOWING: NodeDocumentPositionEnum;
+	public declare readonly DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC: NodeDocumentPositionEnum;
+	public declare readonly DOCUMENT_POSITION_PRECEDING: NodeDocumentPositionEnum;
 
 	// Internal properties
 	public [PropertySymbol.isConnected] = false;
 	public [PropertySymbol.parentNode]: Node | null = null;
-	public [PropertySymbol.nodeType]: NodeTypeEnum;
-	public [PropertySymbol.rootNode]: Node = null;
+	public [PropertySymbol.rootNode]: Node | null = null;
 	public [PropertySymbol.styleNode]: HTMLStyleElement | SVGStyleElement | null = null;
 	public [PropertySymbol.textAreaNode]: HTMLTextAreaElement | null = null;
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
@@ -103,6 +102,10 @@ export default class Node extends EventTarget {
 		computedStyle: null
 	};
 	public [PropertySymbol.affectsCache]: ICachedResult[] = [];
+
+	// Needs to be implemented by the sub-class
+	public declare [PropertySymbol.proxy]: Element | null;
+	public declare [PropertySymbol.nodeType]: NodeTypeEnum;
 
 	/**
 	 * Constructor.
@@ -192,7 +195,7 @@ export default class Node extends EventTarget {
 	 */
 	public get textContent(): string {
 		// Sub-classes should implement this method.
-		return null;
+		return '';
 	}
 
 	/**
@@ -210,7 +213,7 @@ export default class Node extends EventTarget {
 	 *
 	 * @returns Node value.
 	 */
-	public get nodeValue(): string {
+	public get nodeValue(): string | null {
 		return null;
 	}
 
@@ -235,7 +238,7 @@ export default class Node extends EventTarget {
 	 *
 	 * @returns Node.
 	 */
-	public get previousSibling(): Node {
+	public get previousSibling(): Node | null {
 		if (this[PropertySymbol.parentNode]) {
 			const nodeArray = this[PropertySymbol.parentNode][PropertySymbol.nodeArray];
 			const index = nodeArray.indexOf(this);
@@ -251,7 +254,7 @@ export default class Node extends EventTarget {
 	 *
 	 * @returns Node.
 	 */
-	public get nextSibling(): Node {
+	public get nextSibling(): Node | null {
 		if (this[PropertySymbol.parentNode]) {
 			const nodeArray = this[PropertySymbol.parentNode][PropertySymbol.nodeArray];
 			const index = nodeArray.indexOf(this);
@@ -267,7 +270,7 @@ export default class Node extends EventTarget {
 	 *
 	 * @returns Node.
 	 */
-	public get firstChild(): Node {
+	public get firstChild(): Node | null {
 		const nodeArray = this[PropertySymbol.nodeArray];
 		if (nodeArray.length > 0) {
 			return nodeArray[0];
@@ -280,7 +283,7 @@ export default class Node extends EventTarget {
 	 *
 	 * @returns Node.
 	 */
-	public get lastChild(): Node {
+	public get lastChild(): Node | null {
 		const nodeArray = this[PropertySymbol.nodeArray];
 		if (nodeArray.length > 0) {
 			return nodeArray[nodeArray.length - 1];
@@ -548,10 +551,6 @@ export default class Node extends EventTarget {
 			node = node[PropertySymbol.proxy];
 		}
 
-		node[PropertySymbol.parentNode] = null;
-
-		node[PropertySymbol.clearCache]();
-
 		const index = this[PropertySymbol.nodeArray].indexOf(node);
 
 		if (index === -1) {
@@ -559,6 +558,13 @@ export default class Node extends EventTarget {
 				`Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.`
 			);
 		}
+
+		const previousSibling = node.previousSibling;
+		const nextSibling = node.nextSibling;
+
+		node[PropertySymbol.parentNode] = null;
+
+		node[PropertySymbol.clearCache]();
 
 		this[PropertySymbol.nodeArray].splice(index, 1);
 
@@ -590,7 +596,9 @@ export default class Node extends EventTarget {
 			new MutationRecord({
 				target: this[PropertySymbol.proxy] || this,
 				type: MutationTypeEnum.childList,
-				removedNodes: [node]
+				removedNodes: [node],
+				previousSibling,
+				nextSibling
 			})
 		);
 
@@ -815,7 +823,7 @@ export default class Node extends EventTarget {
 						if (
 							mutationListener.options.attributes &&
 							(!mutationListener.options.attributeFilter ||
-								mutationListener.options.attributeFilter.includes(record.attributeName))
+								mutationListener.options.attributeFilter.includes(record.attributeName!))
 						) {
 							callback(record);
 						}
@@ -928,7 +936,7 @@ export default class Node extends EventTarget {
 	 */
 	public [PropertySymbol.connectedToNode](): void {
 		const parentNode = this[PropertySymbol.parentNode];
-		const parent = parentNode || this[PropertySymbol.host];
+		const parent = parentNode || (<any>this)[PropertySymbol.host];
 		let isConnected = false;
 		let isDisconnected = false;
 
@@ -949,19 +957,21 @@ export default class Node extends EventTarget {
 				this[PropertySymbol.rootNode] = parentNode[PropertySymbol.rootNode];
 			}
 
-			if (parentNode[PropertySymbol.styleNode] && this[PropertySymbol.tagName] !== 'STYLE') {
+			const tagName = (<any>this)[PropertySymbol.tagName];
+
+			if (parentNode[PropertySymbol.styleNode] && tagName !== 'STYLE') {
 				this[PropertySymbol.styleNode] = parentNode[PropertySymbol.styleNode];
 			}
 
-			if (parentNode[PropertySymbol.textAreaNode] && this[PropertySymbol.tagName] !== 'TEXTAREA') {
+			if (parentNode[PropertySymbol.textAreaNode] && tagName !== 'TEXTAREA') {
 				this[PropertySymbol.textAreaNode] = parentNode[PropertySymbol.textAreaNode];
 			}
 
-			if (parentNode[PropertySymbol.formNode] && this[PropertySymbol.tagName] !== 'FORM') {
+			if (parentNode[PropertySymbol.formNode] && tagName !== 'FORM') {
 				this[PropertySymbol.formNode] = parentNode[PropertySymbol.formNode];
 			}
 
-			if (parentNode[PropertySymbol.selectNode] && this[PropertySymbol.tagName] !== 'SELECT') {
+			if (parentNode[PropertySymbol.selectNode] && tagName !== 'SELECT') {
 				this[PropertySymbol.selectNode] = parentNode[PropertySymbol.selectNode];
 			}
 		}
@@ -993,19 +1003,21 @@ export default class Node extends EventTarget {
 			this[PropertySymbol.rootNode] = null;
 		}
 
-		if (this[PropertySymbol.tagName] !== 'STYLE') {
+		const tagName = (<any>this)[PropertySymbol.tagName];
+
+		if (tagName !== 'STYLE') {
 			this[PropertySymbol.styleNode] = null;
 		}
 
-		if (this[PropertySymbol.tagName] !== 'TEXTAREA') {
+		if (tagName !== 'TEXTAREA') {
 			this[PropertySymbol.textAreaNode] = null;
 		}
 
-		if (this[PropertySymbol.tagName] !== 'FORM') {
+		if (tagName !== 'FORM') {
 			this[PropertySymbol.formNode] = null;
 		}
 
-		if (this[PropertySymbol.tagName] !== 'SELECT') {
+		if (tagName !== 'SELECT') {
 			this[PropertySymbol.selectNode] = null;
 		}
 
@@ -1084,7 +1096,7 @@ export default class Node extends EventTarget {
 		 */
 		if (node1[PropertySymbol.nodeType] === NodeTypeEnum.attributeNode) {
 			attr1 = node1;
-			node1 = (<Attr>attr1)[PropertySymbol.ownerElement];
+			node1 = (<Attr>attr1)[PropertySymbol.ownerElement]!;
 		}
 
 		/**
@@ -1093,7 +1105,7 @@ export default class Node extends EventTarget {
 		 */
 		if (node2[PropertySymbol.nodeType] === NodeTypeEnum.attributeNode) {
 			attr2 = node2;
-			node2 = (<Attr>attr2)[PropertySymbol.ownerElement];
+			node2 = (<Attr>attr2)[PropertySymbol.ownerElement]!;
 
 			/**
 			 * 5.2. If attr1 and node1 are non-null, and node2 is node1, then:
@@ -1138,7 +1150,7 @@ export default class Node extends EventTarget {
 			}
 
 			node2Ancestors.push(node2Ancestor);
-			node2Ancestor = node2Ancestor[PropertySymbol.parentNode];
+			node2Ancestor = node2Ancestor[PropertySymbol.parentNode]!;
 		}
 
 		const node1Ancestors: Node[] = [];
@@ -1153,7 +1165,7 @@ export default class Node extends EventTarget {
 			}
 
 			node1Ancestors.push(node1Ancestor);
-			node1Ancestor = node1Ancestor[PropertySymbol.parentNode];
+			node1Ancestor = node1Ancestor[PropertySymbol.parentNode]!;
 		}
 
 		const reverseArrayIndex = (array: Node[], reverseIndex: number): Node => {

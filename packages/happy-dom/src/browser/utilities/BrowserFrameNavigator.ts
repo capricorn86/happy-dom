@@ -33,7 +33,7 @@ export default class BrowserFrameNavigator {
 		windowClass: new (
 			browserFrame: IBrowserFrame,
 			options?: { url?: string; width?: number; height?: number }
-		) => BrowserWindow | null;
+		) => BrowserWindow;
 		frame: IBrowserFrame;
 		url: string;
 		goToOptions?: IGoToOptions;
@@ -305,7 +305,7 @@ export default class BrowserFrameNavigator {
 		windowClass: new (
 			browserFrame: IBrowserFrame,
 			options?: { url?: string; width?: number; height?: number }
-		) => BrowserWindow | null;
+		) => BrowserWindow;
 		frame: IBrowserFrame;
 		goToOptions?: IGoToOptions;
 	}): Promise<Response | null> {
@@ -354,6 +354,8 @@ export default class BrowserFrameNavigator {
 				hasUAVisualTransition: false
 			})
 		);
+
+		return Promise.resolve(null);
 	}
 
 	/**
@@ -368,7 +370,7 @@ export default class BrowserFrameNavigator {
 		windowClass: new (
 			browserFrame: IBrowserFrame,
 			options?: { url?: string; width?: number; height?: number }
-		) => BrowserWindow | null;
+		) => BrowserWindow;
 		frame: IBrowserFrame;
 		goToOptions?: IGoToOptions;
 	}): Promise<Response | null> {
@@ -417,6 +419,8 @@ export default class BrowserFrameNavigator {
 				hasUAVisualTransition: false
 			})
 		);
+
+		return Promise.resolve(null);
 	}
 
 	/**
@@ -432,7 +436,7 @@ export default class BrowserFrameNavigator {
 		windowClass: new (
 			browserFrame: IBrowserFrame,
 			options?: { url?: string; width?: number; height?: number }
-		) => BrowserWindow | null;
+		) => BrowserWindow;
 		frame: IBrowserFrame;
 		goToOptions?: IGoToOptions;
 		steps?: number;
@@ -504,6 +508,8 @@ export default class BrowserFrameNavigator {
 				hasUAVisualTransition: false
 			})
 		);
+
+		return Promise.resolve(null);
 	}
 
 	/**
@@ -518,7 +524,7 @@ export default class BrowserFrameNavigator {
 		windowClass: new (
 			browserFrame: IBrowserFrame,
 			options?: { url?: string; width?: number; height?: number }
-		) => BrowserWindow | null;
+		) => BrowserWindow;
 		frame: IBrowserFrame;
 		goToOptions?: IGoToOptions;
 	}): Promise<Response | null> {

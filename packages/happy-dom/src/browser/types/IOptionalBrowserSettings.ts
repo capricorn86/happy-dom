@@ -43,6 +43,13 @@ export default interface IOptionalBrowserSettings {
 		disableSameOriginPolicy?: boolean;
 
 		/**
+		 * Disables validation of certificates against the list of supplied CAs.
+		 *
+		 * Disabling this feature makes it possible to use self-signed certificates or certificates that are not signed by a trusted CA.
+		 */
+		disableStrictSSL?: boolean;
+
+		/**
 		 * Fetch interceptor.
 		 */
 		interceptor?: IFetchInterceptor | null;

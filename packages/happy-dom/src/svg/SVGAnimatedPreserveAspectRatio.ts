@@ -10,7 +10,7 @@ import SVGPreserveAspectRatio from './SVGPreserveAspectRatio.js';
 export default class SVGAnimatedPreserveAspectRatio {
 	// Internal properties
 	public [PropertySymbol.window]: BrowserWindow;
-	public [PropertySymbol.getAttribute]: () => string;
+	public [PropertySymbol.getAttribute]: () => string | null;
 	public [PropertySymbol.setAttribute]: (value: string) => void;
 	public [PropertySymbol.baseVal]: SVGPreserveAspectRatio | null = null;
 	public [PropertySymbol.animVal]: SVGPreserveAspectRatio | null = null;

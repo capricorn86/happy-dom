@@ -2,12 +2,52 @@
 	"name": "@happy-dom/global-registrator",
 	"version": "0.0.0",
 	"license": "MIT",
-	"homepage": "https://github.com/capricorn86/happy-dom/tree/master/packages/@happy-dom/global",
+	"homepage": "https://github.com/capricorn86/happy-dom/tree/master/packages/global-registrator",
 	"repository": "https://github.com/capricorn86/happy-dom",
 	"author": "David Ortner",
 	"description": "Use Happy DOM globally in a Node.js environment for testing.",
 	"main": "lib/index.js",
 	"type": "module",
+	"exports": {
+		".": {
+			"import": "./lib/index.js",
+			"require": "./cjs/index.cjs",
+			"default": "./lib/index.js"
+		},
+		"./lib/*.js": {
+			"import": "./lib/*.js",
+			"require": "./cjs/*.cjs",
+			"default": "./lib/*.js"
+		},
+		"./lib/*.ts": {
+			"import": "./lib/*.ts",
+			"require": "./cjs/*.ts",
+			"default": "./lib/*.ts"
+		},
+		"./lib/*.map": {
+			"import": "./lib/*.map",
+			"require": "./cjs/*.map",
+			"default": "./lib/*.map"
+		},
+		"./cjs/*.cjs": {
+			"import": "./cjs/*.cjs",
+			"require": "./cjs/*.cjs",
+			"default": "./cjs/*.cjs"
+		},
+		"./cjs/*.ts": {
+			"import": "./cjs/*.ts",
+			"require": "./cjs/*.ts",
+			"default": "./cjs/*.ts"
+		},
+		"./cjs/*.map": {
+			"import": "./cjs/*.map",
+			"require": "./cjs/*.map",
+			"default": "./cjs/*.map"
+		},
+		"./src/*.ts": "./src/*.ts",
+		"./package.json": "./package.json",
+		"./.eslintrc": "./.eslintrc.js"
+	},
 	"keywords": [
 		"jsdom",
 		"happy",
@@ -25,22 +65,23 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "tsc",
+		"compile": "npm run compile:esm && npm run compile:cjs",
+		"compile:esm": "tsc",
+		"compile:cjs": "node -e \"fs.rmSync('./cjs', { recursive: true, force: true })\" && tsc --moduleResolution Node --module CommonJS --outDir cjs && npm run compile:change-cjs-file-extension",
+		"compile:change-cjs-file-extension": "node ../happy-dom/bin/change-file-extension.cjs --dir=./cjs --fromExt=.js --toExt=.cjs",
 		"watch": "npm run compile && tsc -w --preserveWatchOutput",
-		"test": "npm run compile && npm run test:react && npm run test:bun",
-		"test:debug": "npm run compile && tsc --project ./test/react && node --inspect-brk ./tmp/react/React.test.js",
-		"test:react": "tsc --project ./test/react && node ./tmp/react/React.test.js",
+		"test": "npm run test:node && npm run test:bun",
+		"test:debug": "tsc --project ./test/node && cd ./tmp && ls | node --inspect-brk --test",
+		"test:node": "tsc --project ./test/node && cd ./tmp && ls | node --test",
 		"test:bun": "bun test ./test/bun/Bun.test.js"
 	},
 	"dependencies": {
-		"happy-dom": "^0.0.0"
+		"happy-dom": "^0.0.0",
+		"@types/node": "^20.0.0"
 	},
 	"devDependencies": {
-		"@typescript-eslint/eslint-plugin": "^5.16.0",
-		"@typescript-eslint/parser": "^5.16.0",
-		"@types/node": "^20.0.0",
-		"prettier": "^2.6.0",
-		"typescript": "^5.0.4",
+		"typescript": "^5.8.3",
+		"lit": "^3.3.0",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0"
 	},

@@ -11,9 +11,9 @@ export default class RemotePlayback extends EventTarget {
 	public [PropertySymbol.state]: 'connecting' | 'connected' | 'disconnected' = 'disconnected';
 
 	// Events
-	public onconnecting: (event: Event) => void = null;
-	public onconnect: (event: Event) => void = null;
-	public ondisconnect: (event: Event) => void = null;
+	public onconnecting: ((event: Event) => void) | null = null;
+	public onconnect: ((event: Event) => void) | null = null;
+	public ondisconnect: ((event: Event) => void) | null = null;
 
 	/**
 	 * Returns the state of the remote playback.

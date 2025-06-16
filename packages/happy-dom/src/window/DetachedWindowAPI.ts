@@ -7,7 +7,7 @@ import IBrowserSettings from '../browser/types/IBrowserSettings.js';
  * API for detached windows to be able to access features of the browser.
  */
 export default class DetachedWindowAPI {
-	#browserFrame?: IBrowserFrame;
+	#browserFrame: IBrowserFrame;
 
 	/**
 	 * Constructor.

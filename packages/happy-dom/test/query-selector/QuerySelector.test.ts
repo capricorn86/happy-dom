@@ -7,7 +7,6 @@ import HTMLInputElement from '../../src/nodes/html-input-element/HTMLInputElemen
 import { beforeEach, describe, it, expect } from 'vitest';
 import QuerySelector from '../../src/query-selector/QuerySelector.js';
 import DOMException from '../../src/exception/DOMException.js';
-import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 
 describe('QuerySelector', () => {
 	let window: Window;
@@ -22,15 +21,13 @@ describe('QuerySelector', () => {
 		it('Throws an error for invalid selectors.', () => {
 			const container = document.createElement('div');
 			expect(() => container.querySelectorAll(<string>(<unknown>12))).toThrow(
-				new DOMException(
-					`Failed to execute 'querySelectorAll' on 'HTMLDivElement': '12' is not a valid selector.`,
-					DOMExceptionNameEnum.syntaxError
+				new window.DOMException(
+					`Failed to execute 'querySelectorAll' on 'HTMLDivElement': '12' is not a valid selector.`
 				)
 			);
 			expect(() => container.querySelectorAll(<string>(<unknown>(() => {})))).toThrow(
-				new DOMException(
-					`Failed to execute 'querySelectorAll' on 'HTMLDivElement': '() => {\n      }' is not a valid selector.`,
-					DOMExceptionNameEnum.syntaxError
+				new window.DOMException(
+					`Failed to execute 'querySelectorAll' on 'HTMLDivElement': '() => {\n      }' is not a valid selector.`
 				)
 			);
 			expect(() => container.querySelectorAll(<string>(<unknown>Symbol('test')))).toThrow(
@@ -236,6 +233,57 @@ describe('QuerySelector', () => {
 			expect(elements[2] === container.children[0].children[1].children[0]).toBe(true);
 			expect(elements[3] === container.children[0].children[1].children[1]).toBe(true);
 			expect(elements[4] === container.children[0].children[1].children[2]).toBe(true);
+		});
+
+		it('Returns all elements with unicode class name "«unicode-class1»".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+                <div class="class1 «unicode-class1» class2" id="«r1»">
+                    <!-- Comment 1 !-->
+                    <h1>Heading1</h1>
+                    <!-- Comment 2 !-->
+                    <div class="class1 «unicode-class1» class2">
+                        <span class="class1 «unicode-class1» class2" attr1="value1" attr2="word1 word2" attr3="bracket[]bracket" type="hidden">Span1</span>
+                        <span class="class1 «unicode-class1» class2" attr1="value1">Span2</span>
+                        <span class="class1 «unicode-class1» class2" attr1="word1.word2">Span3</span>
+                    </div>
+                </div>
+                <div>
+                    <!-- Comment 1 !-->
+                    <h1>Heading1</h1>
+                    <!-- Comment 2 !-->
+                </div>
+            `;
+			const elements = container.querySelectorAll('.«unicode-class1»');
+			expect(elements.length).toBe(5);
+			expect(elements[0] === container.children[0]).toBe(true);
+			expect(elements[1] === container.children[0].children[1]).toBe(true);
+			expect(elements[2] === container.children[0].children[1].children[0]).toBe(true);
+			expect(elements[3] === container.children[0].children[1].children[1]).toBe(true);
+			expect(elements[4] === container.children[0].children[1].children[2]).toBe(true);
+		});
+
+		it('Returns element with unicode ID "«r1»".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+                <div class="class1 «unicode-class1» class2" id="«r1»">
+                    <!-- Comment 1 !-->
+                    <h1>Heading1</h1>
+                    <!-- Comment 2 !-->
+                    <div class="class1 «unicode-class1» class2">
+                        <span class="class1 «unicode-class1» class2" attr1="value1" attr2="word1 word2" attr3="bracket[]bracket" type="hidden">Span1</span>
+                        <span class="class1 «unicode-class1» class2" attr1="value1">Span2</span>
+                        <span class="class1 «unicode-class1» class2" attr1="word1.word2">Span3</span>
+                    </div>
+                </div>
+                <div>
+                    <!-- Comment 1 !-->
+                    <h1>Heading1</h1>
+                    <!-- Comment 2 !-->
+                </div>
+            `;
+			const element = container.querySelector('#«r1»');
+			expect(element === container.children[0]).toBe(true);
 		});
 
 		it('Returns all elements with class name "before:after".', () => {
@@ -1332,15 +1380,13 @@ describe('QuerySelector', () => {
 		it('Throws an error for invalid selectors.', () => {
 			const container = document.createElement('div');
 			expect(() => container.querySelector(<string>(<unknown>12))).toThrow(
-				new DOMException(
-					`Failed to execute 'querySelector' on 'HTMLDivElement': '12' is not a valid selector.`,
-					DOMExceptionNameEnum.syntaxError
+				new window.DOMException(
+					`Failed to execute 'querySelector' on 'HTMLDivElement': '12' is not a valid selector.`
 				)
 			);
 			expect(() => container.querySelector(<string>(<unknown>(() => {})))).toThrow(
-				new DOMException(
-					`Failed to execute 'querySelector' on 'HTMLDivElement': '() => {\n      }' is not a valid selector.`,
-					DOMExceptionNameEnum.syntaxError
+				new window.DOMException(
+					`Failed to execute 'querySelector' on 'HTMLDivElement': '() => {\n      }' is not a valid selector.`
 				)
 			);
 			expect(() => container.querySelector(<string>(<unknown>Symbol('test')))).toThrow(
@@ -1815,19 +1861,17 @@ describe('QuerySelector', () => {
 		it('Throws an error for invalid selectors.', () => {
 			const container = document.createElement('div');
 			expect(() => container.matches(<string>(<unknown>12))).toThrow(
-				new DOMException(
-					`Failed to execute 'matches' on 'HTMLDivElement': '12' is not a valid selector.`,
-					DOMExceptionNameEnum.syntaxError
+				new window.DOMException(
+					`Failed to execute 'matches' on 'HTMLDivElement': '12' is not a valid selector.`
 				)
 			);
 			expect(() => container.matches(<string>(<unknown>(() => {})))).toThrow(
-				new DOMException(
-					`Failed to execute 'matches' on 'HTMLDivElement': '() => {\n      }' is not a valid selector.`,
-					DOMExceptionNameEnum.syntaxError
+				new window.DOMException(
+					`Failed to execute 'matches' on 'HTMLDivElement': '() => {\n      }' is not a valid selector.`
 				)
 			);
 			expect(() => container.matches(<string>(<unknown>Symbol('test')))).toThrow(
-				new Error(`Cannot convert a Symbol value to a string`)
+				new SyntaxError(`Cannot convert a Symbol value to a string`)
 			);
 			expect(() => container.matches(<string>(<unknown>true))).not.toThrow();
 		});
@@ -1956,23 +2000,27 @@ describe('QuerySelector', () => {
 			div.innerHTML = '<div class="foo"></div>';
 			const element = div.children[0];
 			expect(() => element.matches('1')).toThrow(
-				new Error(`Failed to execute 'matches' on 'HTMLDivElement': '1' is not a valid selector.`)
+				new window.DOMException(
+					`Failed to execute 'matches' on 'HTMLDivElement': '1' is not a valid selector.`
+				)
 			);
 			expect(() => element.matches(':not')).toThrow(
-				new Error(
+				new DOMException(
 					`Failed to execute 'matches' on 'HTMLDivElement': ':not' is not a valid selector.`
 				)
 			);
 			expect(() => element.matches(':is')).toThrow(
-				new Error(`Failed to execute 'matches' on 'HTMLDivElement': ':is' is not a valid selector.`)
+				new DOMException(
+					`Failed to execute 'matches' on 'HTMLDivElement': ':is' is not a valid selector.`
+				)
 			);
 			expect(() => element.matches(':where')).toThrow(
-				new Error(
+				new DOMException(
 					`Failed to execute 'matches' on 'HTMLDivElement': ':where' is not a valid selector.`
 				)
 			);
 			expect(() => element.matches('div:not')).toThrow(
-				new Error(
+				new DOMException(
 					`Failed to execute 'matches' on 'HTMLDivElement': 'div:not' is not a valid selector.`
 				)
 			);

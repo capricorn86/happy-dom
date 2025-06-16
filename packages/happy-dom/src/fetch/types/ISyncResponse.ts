@@ -13,6 +13,6 @@ export default interface ISyncResponse {
 	url: string;
 	redirected: boolean;
 	headers: Headers;
-	body: Buffer;
-	[PropertySymbol.virtualServerFile]?: string;
+	body: Buffer | null;
+	[PropertySymbol.virtualServerFile]?: string | null;
 }

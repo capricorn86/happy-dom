@@ -4,8 +4,11 @@
 		"outDir": "../../tmp",
 		"rootDir": "../../test",
 		"jsx": "react",
+<<<<<<<< HEAD:packages/@happy-dom/global-registrator/test/react/tsconfig.json
         "module": "Node16",
 		"moduleResolution": "Node16",
+========
+>>>>>>>> 5da0ff605f34c57375ff45f5741104e860337533:packages/global-registrator/test/node/tsconfig.json
 		"lib": [
 			"es2022",
             "dom"
@@ -14,6 +17,7 @@
 	"include": [
 		"@types/node",
 		".",
-		"../../lib"
+		"../../lib",
+		"../../cjs"
 	]
 }

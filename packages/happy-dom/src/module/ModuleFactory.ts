@@ -73,7 +73,7 @@ export default class ModuleFactory {
 			response = await resourceFetch.fetch(absoluteURL, 'module');
 		} catch (error) {
 			readyStateManager.endTask(taskID);
-			unresolvedModule.resolve(error);
+			unresolvedModule.resolve(<Error>error);
 			throw error;
 		}
 

@@ -36,8 +36,8 @@ export default class Range {
 	public readonly END_TO_START: number = RangeHowEnum.endToStart;
 	public readonly START_TO_END: number = RangeHowEnum.startToEnd;
 	public readonly START_TO_START: number = RangeHowEnum.startToStart;
-	public [PropertySymbol.start]: IRangeBoundaryPoint | null = null;
-	public [PropertySymbol.end]: IRangeBoundaryPoint | null = null;
+	public [PropertySymbol.start]: IRangeBoundaryPoint;
+	public [PropertySymbol.end]: IRangeBoundaryPoint;
 	public readonly [PropertySymbol.ownerDocument]: Document;
 
 	/**
@@ -132,8 +132,8 @@ export default class Range {
 	 * @see https://dom.spec.whatwg.org/#dom-range-commonancestorcontainer
 	 * @returns Node.
 	 */
-	public get commonAncestorContainer(): Node {
-		let container = this[PropertySymbol.start].node;
+	public get commonAncestorContainer(): Node | null {
+		let container: Node | null = this[PropertySymbol.start].node;
 
 		while (container) {
 			if (NodeUtility.isInclusiveAncestor(container, this[PropertySymbol.end].node)) {
@@ -187,11 +187,11 @@ export default class Range {
 			);
 		}
 
-		const thisPoint: { node: Node; offset: number } = {
+		const thisPoint: { node: Node | null; offset: number } = {
 			node: null,
 			offset: 0
 		};
-		const sourcePoint: { node: Node; offset: number } = {
+		const sourcePoint: { node: Node | null; offset: number } = {
 			node: null,
 			offset: 0
 		};
@@ -223,7 +223,10 @@ export default class Range {
 				break;
 		}
 
-		return RangeUtility.compareBoundaryPointsPosition(thisPoint, sourcePoint);
+		return RangeUtility.compareBoundaryPointsPosition(
+			<IRangeBoundaryPoint>thisPoint,
+			<IRangeBoundaryPoint>sourcePoint
+		);
 	}
 
 	/**
@@ -234,7 +237,7 @@ export default class Range {
 	 * @param offset Offset.
 	 * @returns -1,0, or 1.
 	 */
-	public comparePoint(node: Node, offset): number {
+	public comparePoint(node: Node, offset: number): number {
 		if (node[PropertySymbol.ownerDocument] !== this[PropertySymbol.ownerDocument]) {
 			throw new this[PropertySymbol.window].DOMException(
 				`The two Ranges are not in the same tree.`,
@@ -296,7 +299,7 @@ export default class Range {
 
 		let commonAncestor = this[PropertySymbol.start].node;
 		while (!NodeUtility.isInclusiveAncestor(commonAncestor, this[PropertySymbol.end].node)) {
-			commonAncestor = commonAncestor[PropertySymbol.parentNode];
+			commonAncestor = commonAncestor[PropertySymbol.parentNode]!;
 		}
 
 		let firstPartialContainedChild = null;
@@ -306,13 +309,13 @@ export default class Range {
 				this[PropertySymbol.end].node
 			)
 		) {
-			let candidate = commonAncestor.firstChild;
+			let candidate = commonAncestor.firstChild!;
 			while (!firstPartialContainedChild) {
 				if (RangeUtility.isPartiallyContained(candidate, this)) {
 					firstPartialContainedChild = candidate;
 				}
 
-				candidate = candidate.nextSibling;
+				candidate = candidate.nextSibling!;
 			}
 		}
 
@@ -323,13 +326,13 @@ export default class Range {
 				this[PropertySymbol.start].node
 			)
 		) {
-			let candidate = commonAncestor.lastChild;
+			let candidate = commonAncestor.lastChild!;
 			while (!lastPartiallyContainedChild) {
 				if (RangeUtility.isPartiallyContained(candidate, this)) {
 					lastPartiallyContainedChild = candidate;
 				}
 
-				candidate = candidate.previousSibling;
+				candidate = candidate.previousSibling!;
 			}
 		}
 
@@ -466,12 +469,12 @@ export default class Range {
 		}
 
 		const nodesToRemove = [];
-		let currentNode = this[PropertySymbol.start].node;
+		let currentNode: Node | null = this[PropertySymbol.start].node;
 		const endNode = NodeUtility.nextDescendantNode(this[PropertySymbol.end].node);
 		while (currentNode && currentNode !== endNode) {
 			if (
 				RangeUtility.isContained(currentNode, this) &&
-				!RangeUtility.isContained(currentNode[PropertySymbol.parentNode], this)
+				!RangeUtility.isContained(currentNode[PropertySymbol.parentNode]!, this)
 			) {
 				nodesToRemove.push(currentNode);
 			}
@@ -499,10 +502,10 @@ export default class Range {
 					this[PropertySymbol.end].node
 				)
 			) {
-				referenceNode = referenceNode[PropertySymbol.parentNode];
+				referenceNode = referenceNode[PropertySymbol.parentNode]!;
 			}
 
-			newNode = referenceNode[PropertySymbol.parentNode];
+			newNode = referenceNode[PropertySymbol.parentNode]!;
 			newOffset =
 				(<Node>referenceNode[PropertySymbol.parentNode])[PropertySymbol.nodeArray].indexOf(
 					referenceNode
@@ -523,7 +526,7 @@ export default class Range {
 		}
 
 		for (const node of nodesToRemove) {
-			const parent = node[PropertySymbol.parentNode];
+			const parent = node[PropertySymbol.parentNode]!;
 			parent.removeChild(node);
 		}
 
@@ -590,7 +593,7 @@ export default class Range {
 
 		let commonAncestor = this[PropertySymbol.start].node;
 		while (!NodeUtility.isInclusiveAncestor(commonAncestor, this[PropertySymbol.end].node)) {
-			commonAncestor = commonAncestor[PropertySymbol.parentNode];
+			commonAncestor = commonAncestor[PropertySymbol.parentNode]!;
 		}
 
 		let firstPartialContainedChild = null;
@@ -600,13 +603,13 @@ export default class Range {
 				this[PropertySymbol.end].node
 			)
 		) {
-			let candidate = commonAncestor.firstChild;
+			let candidate = commonAncestor.firstChild!;
 			while (!firstPartialContainedChild) {
 				if (RangeUtility.isPartiallyContained(candidate, this)) {
 					firstPartialContainedChild = candidate;
 				}
 
-				candidate = candidate.nextSibling;
+				candidate = candidate.nextSibling!;
 			}
 		}
 
@@ -617,13 +620,13 @@ export default class Range {
 				this[PropertySymbol.start].node
 			)
 		) {
-			let candidate = commonAncestor.lastChild;
+			let candidate = commonAncestor.lastChild!;
 			while (!lastPartiallyContainedChild) {
 				if (RangeUtility.isPartiallyContained(candidate, this)) {
 					lastPartiallyContainedChild = candidate;
 				}
 
-				candidate = candidate.previousSibling;
+				candidate = candidate.previousSibling!;
 			}
 		}
 
@@ -661,10 +664,10 @@ export default class Range {
 					this[PropertySymbol.end].node
 				)
 			) {
-				referenceNode = referenceNode[PropertySymbol.parentNode];
+				referenceNode = referenceNode[PropertySymbol.parentNode]!;
 			}
 
-			newNode = referenceNode[PropertySymbol.parentNode];
+			newNode = referenceNode[PropertySymbol.parentNode]!;
 			newOffset =
 				(<Node>referenceNode[PropertySymbol.parentNode])[PropertySymbol.nodeArray].indexOf(
 					referenceNode
@@ -825,14 +828,14 @@ export default class Range {
 					null;
 		const parent = !referenceNode
 			? this[PropertySymbol.start].node
-			: referenceNode[PropertySymbol.parentNode];
+			: referenceNode[PropertySymbol.parentNode]!;
 
 		if (this[PropertySymbol.start].node[PropertySymbol.nodeType] === NodeTypeEnum.textNode) {
 			referenceNode = (<Text>this[PropertySymbol.start].node).splitText(this.startOffset);
 		}
 
 		if (newNode === referenceNode) {
-			referenceNode = referenceNode.nextSibling;
+			referenceNode = referenceNode.nextSibling!;
 		}
 
 		const nodeParent = newNode[PropertySymbol.parentNode];
@@ -1070,8 +1073,13 @@ export default class Range {
 	 */
 	public surroundContents(newParent: Node): void {
 		let node = this.commonAncestorContainer;
+
+		if (!node) {
+			return;
+		}
+
 		const endNode = NodeUtility.nextDescendantNode(node);
-		while (node !== endNode) {
+		while (node && node !== endNode) {
 			if (
 				node[PropertySymbol.nodeType] !== NodeTypeEnum.textNode &&
 				RangeUtility.isPartiallyContained(node, this)
@@ -1131,7 +1139,7 @@ export default class Range {
 		}
 
 		const endNode = NodeUtility.nextDescendantNode(this[PropertySymbol.end].node);
-		let currentNode = this[PropertySymbol.start].node;
+		let currentNode: Node | null = this[PropertySymbol.start].node;
 
 		while (currentNode && currentNode !== endNode) {
 			if (

@@ -13,15 +13,17 @@ export default class SyncFetchScriptBuilder {
 	 * @param request.method
 	 * @param request.headers
 	 * @param request.body
+	 * @param request.disableStrictSSL
 	 * @returns Script.
 	 */
 	public static getScript(request: {
 		url: URL;
 		method: string;
 		headers: { [name: string]: string };
+		disableStrictSSL?: boolean;
 		body?: Buffer | null;
 	}): string {
-		const sortedHeaders = {};
+		const sortedHeaders: { [name: string]: string } = {};
 		const headerNames = Object.keys(request.headers).sort();
 
 		for (const name of headerNames) {
@@ -37,7 +39,7 @@ export default class SyncFetchScriptBuilder {
 										method: request.method,
 										headers: sortedHeaders,
 										agent: false,
-										rejectUnauthorized: true,
+										rejectUnauthorized: !request.disableStrictSSL,
 										key: request.url.protocol === 'https:' ? FetchHTTPSCertificate.key : undefined,
 										cert: request.url.protocol === 'https:' ? FetchHTTPSCertificate.cert : undefined
 									},

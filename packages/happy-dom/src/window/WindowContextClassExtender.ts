@@ -9,19 +9,10 @@ import TextImplementation from '../nodes/text/Text.js';
 import CommentImplementation from '../nodes/comment/Comment.js';
 import ImageImplementation from '../nodes/html-image-element/Image.js';
 import AudioImplementation from '../nodes/html-audio-element/Audio.js';
-import NodeIteratorImplementation from '../tree-walker/NodeIterator.js';
-import TreeWalkerImplementation from '../tree-walker/TreeWalker.js';
 import MutationObserverImplementation from '../mutation-observer/MutationObserver.js';
 import MessagePortImplementation from '../event/MessagePort.js';
-import DataTransferImplementation from '../event/DataTransfer.js';
-import DataTransferItemImplementation from '../event/DataTransferItem.js';
-import DataTransferItemListImplementation from '../event/DataTransferItemList.js';
-import XMLSerializerImplementation from '../xml-serializer/XMLSerializer.js';
 import CSSStyleSheetImplementation from '../css/CSSStyleSheet.js';
 import DOMExceptionImplementation from '../exception/DOMException.js';
-import CSSUnitValueImplementation from '../css/CSSUnitValue.js';
-import SelectionImplementation from '../selection/Selection.js';
-import HeadersImplementation from '../fetch/Headers.js';
 import RequestImplementation from '../fetch/Request.js';
 import ResponseImplementation from '../fetch/Response.js';
 import EventTargetImplementation from '../event/EventTarget.js';
@@ -30,9 +21,7 @@ import XMLHttpRequestEventTargetImplementation from '../xml-http-request/XMLHttp
 import AbortControllerImplementation from '../fetch/AbortController.js';
 import AbortSignalImplementation from '../fetch/AbortSignal.js';
 import FormDataImplementation from '../form-data/FormData.js';
-import PermissionsImplementation from '../permissions/Permissions.js';
 import PermissionStatusImplementation from '../permissions/PermissionStatus.js';
-import ClipboardItemImplementation from '../clipboard/ClipboardItem.js';
 import XMLHttpRequestImplementation from '../xml-http-request/XMLHttpRequest.js';
 import DOMParserImplementation from '../dom-parser/DOMParser.js';
 import RangeImplementation from '../range/Range.js';
@@ -45,7 +34,6 @@ import FileReaderImplementation from '../file/FileReader.js';
 import MediaStreamImplementation from '../nodes/html-media-element/MediaStream.js';
 import MediaStreamTrackImplementation from '../nodes/html-media-element/MediaStreamTrack.js';
 import CanvasCaptureMediaStreamTrackImplementation from '../nodes/html-canvas-element/CanvasCaptureMediaStreamTrack.js';
-import NamedNodeMapImplementation from '../nodes/element/NamedNodeMap.js';
 import URLImplementation from '../url/URL.js';
 
 /**
@@ -102,16 +90,6 @@ export default class WindowContextClassExtender {
 		Audio.prototype[PropertySymbol.window] = window;
 		(<typeof Audio>window.Audio) = Audio;
 
-		// NodeIterator
-		class NodeIterator extends NodeIteratorImplementation {}
-		NodeIterator.prototype[PropertySymbol.window] = window;
-		(<typeof NodeIterator>window.NodeIterator) = NodeIterator;
-
-		// TreeWalker
-		class TreeWalker extends TreeWalkerImplementation {}
-		TreeWalker.prototype[PropertySymbol.window] = window;
-		(<typeof TreeWalker>window.TreeWalker) = TreeWalker;
-
 		// MutationObserver
 		class MutationObserver extends MutationObserverImplementation {}
 		MutationObserver.prototype[PropertySymbol.window] = window;
@@ -122,26 +100,6 @@ export default class WindowContextClassExtender {
 		MessagePort.prototype[PropertySymbol.window] = window;
 		(<typeof MessagePort>window.MessagePort) = MessagePort;
 
-		// DataTransfer
-		class DataTransfer extends DataTransferImplementation {}
-		DataTransfer.prototype[PropertySymbol.window] = window;
-		(<typeof DataTransfer>window.DataTransfer) = DataTransfer;
-
-		// DataTransferItem
-		class DataTransferItem extends DataTransferItemImplementation {}
-		DataTransferItem.prototype[PropertySymbol.window] = window;
-		(<typeof DataTransferItem>window.DataTransferItem) = DataTransferItem;
-
-		// DataTransferItemList
-		class DataTransferItemList extends DataTransferItemListImplementation {}
-		DataTransferItemList.prototype[PropertySymbol.window] = window;
-		(<typeof DataTransferItemList>window.DataTransferItemList) = DataTransferItemList;
-
-		// XMLSerializer
-		class XMLSerializer extends XMLSerializerImplementation {}
-		XMLSerializer.prototype[PropertySymbol.window] = window;
-		(<typeof XMLSerializer>window.XMLSerializer) = XMLSerializer;
-
 		// CSSStyleSheet
 		class CSSStyleSheet extends CSSStyleSheetImplementation {}
 		CSSStyleSheet.prototype[PropertySymbol.window] = window;
@@ -150,21 +108,6 @@ export default class WindowContextClassExtender {
 		// DOMException
 		class DOMException extends DOMExceptionImplementation {}
 		(<typeof DOMException>window.DOMException) = DOMException;
-
-		// CSSUnitValue
-		class CSSUnitValue extends CSSUnitValueImplementation {}
-		CSSUnitValue.prototype[PropertySymbol.window] = window;
-		(<typeof CSSUnitValue>window.CSSUnitValue) = CSSUnitValue;
-
-		// Selection
-		class Selection extends SelectionImplementation {}
-		Selection.prototype[PropertySymbol.window] = window;
-		(<typeof Selection>window.Selection) = Selection;
-
-		// Headers
-		class Headers extends HeadersImplementation {}
-		Headers.prototype[PropertySymbol.window] = window;
-		(<typeof Headers>window.Headers) = Headers;
 
 		// Request
 		class Request extends RequestImplementation {}
@@ -209,20 +152,10 @@ export default class WindowContextClassExtender {
 		FormData.prototype[PropertySymbol.window] = window;
 		(<typeof FormData>window.FormData) = FormData;
 
-		// Permissions
-		class Permissions extends PermissionsImplementation {}
-		Permissions.prototype[PropertySymbol.window] = window;
-		(<typeof Permissions>window.Permissions) = Permissions;
-
 		// PermissionStatus
 		class PermissionStatus extends PermissionStatusImplementation {}
 		PermissionStatus.prototype[PropertySymbol.window] = window;
 		(<typeof PermissionStatus>window.PermissionStatus) = PermissionStatus;
-
-		// ClipboardItem
-		class ClipboardItem extends ClipboardItemImplementation {}
-		ClipboardItem.prototype[PropertySymbol.window] = window;
-		(<typeof ClipboardItem>window.ClipboardItem) = ClipboardItem;
 
 		// XMLHttpRequest
 		class XMLHttpRequest extends XMLHttpRequestImplementation {}
@@ -284,11 +217,6 @@ export default class WindowContextClassExtender {
 		CanvasCaptureMediaStreamTrack.prototype[PropertySymbol.window] = window;
 		(<typeof CanvasCaptureMediaStreamTrack>window.CanvasCaptureMediaStreamTrack) =
 			CanvasCaptureMediaStreamTrack;
-
-		// NamedNodeMap
-		class NamedNodeMap extends NamedNodeMapImplementation {}
-		NamedNodeMap.prototype[PropertySymbol.window] = window;
-		(<typeof NamedNodeMap>window.NamedNodeMap) = NamedNodeMap;
 
 		// URL
 		class URL extends URLImplementation {}

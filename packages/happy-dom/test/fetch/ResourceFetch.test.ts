@@ -6,7 +6,6 @@ import Browser from '../../src/browser/Browser.js';
 import Fetch from '../../src/fetch/Fetch.js';
 import SyncFetch from '../../src/fetch/SyncFetch.js';
 import ISyncResponse from '../../src/fetch/types/ISyncResponse.js';
-import DOMException from '../../src/exception/DOMException.js';
 import { PropertySymbol } from '../../src/index.js';
 import PreloadUtility from '../../src/fetch/preload/PreloadUtility.js';
 import PreloadEntry from '../../src/fetch/preload/PreloadEntry.js';
@@ -124,7 +123,7 @@ describe('ResourceFetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					`Failed to perform request to "${URL}path/to/script/". Status 404 Not Found.`
 				)
 			);
@@ -229,7 +228,7 @@ describe('ResourceFetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					`Failed to perform request to "${URL}path/to/script/". Status 404 Not Found.`
 				)
 			);

@@ -1,5 +1,6 @@
-import { describe, it, expect } from '../utilities/TestFunctions.js';
 import { Browser, BrowserErrorCaptureEnum } from 'happy-dom';
+import assert from 'node:assert';
+import { describe, it } from 'node:test';
 
 describe('Browser', () => {
 	it('Goes to a "github.com".', async () => {
@@ -30,11 +31,15 @@ describe('Browser', () => {
 		// We need to wait for Hydro to load the page.
 		await page.waitUntilComplete();
 
-		expect(page.mainFrame.url).toBe('https://github.com/capricorn86/happy-dom');
-		expect(page.mainFrame.document.title.startsWith('GitHub - capricorn86/happy-dom')).toBe(true);
-		expect(
-			page.mainFrame.document.querySelector('a[href="/capricorn86/happy-dom"]').textContent.trim()
-		).toBe('happy-dom');
+		assert.strictEqual(page.mainFrame.url, 'https://github.com/capricorn86/happy-dom');
+		assert.strictEqual(
+			page.mainFrame.document.title.startsWith('GitHub - capricorn86/happy-dom'),
+			true
+		);
+		assert.strictEqual(
+			page.mainFrame.document.querySelector('a[href="/capricorn86/happy-dom"]').textContent.trim(),
+			'happy-dom'
+		);
 
 		await browser.close();
 	});
@@ -57,8 +62,8 @@ describe('Browser', () => {
 
 		await page.waitForNavigation();
 
-		expect(page.mainFrame.url).toBe('https://github.com/capricorn86/happy-dom/wiki/');
-		expect(page.mainFrame.document.title).toBe('Home · capricorn86/happy-dom Wiki · GitHub');
+		assert.strictEqual(page.mainFrame.url, 'https://github.com/capricorn86/happy-dom/wiki/');
+		assert.strictEqual(page.mainFrame.document.title, 'Home · capricorn86/happy-dom Wiki · GitHub');
 
 		await browser.close();
 	});
