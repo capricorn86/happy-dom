@@ -598,7 +598,7 @@ describe('SyncFetch', () => {
 				}
 			}).send();
 
-			expect(response.body.toString()).toBe('test');
+			expect(response.body!.toString()).toBe('test');
 		});
 
 		it('Performs a request with a relative URL and adds the "Referer" header set to the window location.', () => {
@@ -3871,7 +3871,7 @@ describe('SyncFetch', () => {
 			expect(response[PropertySymbol.virtualServerFile]).toBe(
 				Path.resolve('./test/fetch/virtual-server/index.html')
 			);
-			expect(response.body.toString()).toBe(htmlFileContent.toString());
+			expect(response.body!.toString()).toBe(htmlFileContent.toString());
 
 			const response2 = new SyncFetch({
 				browserFrame: page.mainFrame,
@@ -3882,7 +3882,7 @@ describe('SyncFetch', () => {
 			expect(response2[PropertySymbol.virtualServerFile]).toBe(
 				Path.resolve('./test/fetch/virtual-server/index.html')
 			);
-			expect(response2.body.toString()).toBe(htmlFileContent.toString());
+			expect(response2.body!.toString()).toBe(htmlFileContent.toString());
 
 			const response3 = new SyncFetch({
 				browserFrame: page.mainFrame,
@@ -3893,7 +3893,7 @@ describe('SyncFetch', () => {
 			expect(response3[PropertySymbol.virtualServerFile]).toBe(
 				Path.resolve('./test/fetch/virtual-server/index.html')
 			);
-			expect(response3.body.toString()).toBe(htmlFileContent.toString());
+			expect(response3.body!.toString()).toBe(htmlFileContent.toString());
 
 			const response4 = new SyncFetch({
 				browserFrame: page.mainFrame,
@@ -3904,7 +3904,7 @@ describe('SyncFetch', () => {
 			expect(response4[PropertySymbol.virtualServerFile]).toBe(
 				Path.resolve('./test/fetch/virtual-server/css/style.css')
 			);
-			expect(response4.body.toString()).toBe(cssFileContent.toString());
+			expect(response4.body!.toString()).toBe(cssFileContent.toString());
 
 			const response5 = new SyncFetch({
 				browserFrame: page.mainFrame,
