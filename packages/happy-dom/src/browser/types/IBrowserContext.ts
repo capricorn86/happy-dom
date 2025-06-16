@@ -13,6 +13,7 @@ export default interface IBrowserContext {
 	readonly cookieContainer: ICookieContainer;
 	readonly responseCache: IResponseCache;
 	readonly preflightResponseCache: IPreflightResponseCache;
+	readonly closed: boolean;
 
 	/**
 	 * Aborts all ongoing operations and destroys the context.

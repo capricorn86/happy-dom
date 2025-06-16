@@ -1,7 +1,5 @@
 import IBrowserFrame from '../types/IBrowserFrame.js';
 import IBrowserPage from '../types/IBrowserPage.js';
-import IVirtualConsolePrinter from '../../console/IVirtualConsolePrinter.js';
-import IBrowserContext from '../types/IBrowserContext.js';
 import BrowserFrameFactory from './BrowserFrameFactory.js';
 
 /**
@@ -24,27 +22,22 @@ export default class BrowserPageUtility {
 	 * @param page Page.
 	 */
 	public static closePage(page: IBrowserPage): Promise<void> {
+		if (page.closed) {
+			return Promise.resolve();
+		}
+
+		(<boolean>page.closed) = true;
+
+		const index = page.context.pages.indexOf(page);
+
+		if (index !== -1) {
+			page.context.pages.splice(index, 1);
+		}
+
+		page.virtualConsolePrinter.close();
+
 		// Using Promise instead of async/await to prevent microtask
-		return new Promise((resolve, reject) => {
-			if (!page.mainFrame) {
-				resolve();
-				return;
-			}
-
-			const index = page.context.pages.indexOf(page);
-			if (index !== -1) {
-				page.context.pages.splice(index, 1);
-			}
-
-			BrowserFrameFactory.destroyFrame(page.mainFrame)
-				.then(() => {
-					(<IVirtualConsolePrinter | null>page.virtualConsolePrinter) = null;
-					(<IBrowserFrame | null>page.mainFrame) = null;
-					(<IBrowserContext | null>page.context) = null;
-					resolve();
-				})
-				.catch((error) => reject(error));
-		});
+		return BrowserFrameFactory.destroyFrame(page.mainFrame);
 	}
 
 	/**

@@ -41,6 +41,8 @@ export default class MouseEvent extends UIEvent {
 		this.metaKey = eventInit?.metaKey ?? false;
 		this.movementX = eventInit?.movementX ?? 0;
 		this.movementY = eventInit?.movementY ?? 0;
+		this.offsetX = eventInit?.offsetX ?? 0;
+		this.offsetY = eventInit?.offsetY ?? 0;
 		this.region = eventInit?.region ?? '';
 		this.relatedTarget = eventInit?.relatedTarget ?? null;
 		this.screenX = eventInit?.screenX ?? 0;

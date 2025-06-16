@@ -17,6 +17,17 @@ describe('VirtualConsolePrinter', () => {
 		virtualConsole = new VirtualConsole(virtualConsolePrinter);
 	});
 
+	describe('get closed()', () => {
+		it('Returns false when the printer is not closed.', () => {
+			expect(virtualConsolePrinter.closed).toBe(false);
+		});
+
+		it('Returns true when the printer is closed.', () => {
+			virtualConsolePrinter.close();
+			expect(virtualConsolePrinter.closed).toBe(true);
+		});
+	});
+
 	describe('print()', () => {
 		it('Prints log entries.', () => {
 			virtualConsolePrinter.print({
@@ -64,6 +75,53 @@ describe('VirtualConsolePrinter', () => {
 			virtualConsolePrinter.clear();
 
 			expect(virtualConsolePrinter.read()).toEqual([]);
+		});
+	});
+
+	describe('close()', () => {
+		it('Closes the printer.', () => {
+			virtualConsolePrinter.print({
+				type: VirtualConsoleLogTypeEnum.log,
+				level: VirtualConsoleLogLevelEnum.log,
+				message: ['Test 1', { test: 'test' }],
+				group: null
+			});
+
+			virtualConsolePrinter.print({
+				type: VirtualConsoleLogTypeEnum.warn,
+				level: VirtualConsoleLogLevelEnum.warn,
+				message: ['Test 2', { test: 'test' }],
+				group: null
+			});
+
+			let printEvent: Event | null = null;
+			let clearEvent: Event | null = null;
+
+			virtualConsolePrinter.addEventListener('print', (event) => (printEvent = <Event>event));
+			virtualConsolePrinter.addEventListener('clear', (event) => (clearEvent = <Event>event));
+
+			virtualConsolePrinter.close();
+
+			expect(virtualConsolePrinter.closed).toBe(true);
+			expect(virtualConsolePrinter.read()).toEqual([]);
+			expect(virtualConsolePrinter.readAsString()).toEqual('');
+
+			virtualConsolePrinter.print({
+				type: VirtualConsoleLogTypeEnum.log,
+				level: VirtualConsoleLogLevelEnum.log,
+				message: ['Test 1', { test: 'test' }],
+				group: null
+			});
+
+			expect(printEvent).toBe(null);
+			expect(clearEvent).toBe(null);
+			expect(virtualConsolePrinter.read()).toEqual([]);
+			expect(virtualConsolePrinter.readAsString()).toEqual('');
+
+			virtualConsolePrinter.dispatchEvent(new Event('print'));
+			expect(printEvent).toBe(null);
+			virtualConsolePrinter.dispatchEvent(new Event('clear'));
+			expect(clearEvent).toBe(null);
 		});
 	});
 

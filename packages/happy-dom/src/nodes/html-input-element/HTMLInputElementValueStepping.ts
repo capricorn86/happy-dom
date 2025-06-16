@@ -13,7 +13,12 @@ export default class HTMLInputElementValueStepping {
 	 * @param [increment] Increment.
 	 * @returns New value.
 	 */
-	public static step(type: string, value: string, direction: -1 | 1, increment?: number): string {
+	public static step(
+		type: string,
+		value: string,
+		direction: -1 | 1,
+		increment?: number
+	): string | null {
 		switch (type) {
 			case 'number':
 				return String(

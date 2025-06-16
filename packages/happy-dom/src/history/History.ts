@@ -13,7 +13,7 @@ import BrowserWindow from '../window/BrowserWindow.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/History.
  */
 export default class History {
-	#browserFrame: IBrowserFrame;
+	#browserFrame: IBrowserFrame | null;
 	#window: BrowserWindow;
 	#currentHistoryItem: IHistoryItem;
 
@@ -32,13 +32,20 @@ export default class History {
 		this.#window = window;
 
 		const history = browserFrame[PropertySymbol.history];
+		let currentHistoryItem: IHistoryItem | null = null;
 
 		for (let i = history.length - 1; i >= 0; i--) {
 			if (history[i].isCurrent) {
-				this.#currentHistoryItem = history[i];
+				currentHistoryItem = history[i];
 				break;
 			}
 		}
+
+		if (!currentHistoryItem) {
+			throw new Error('No current history item found.');
+		}
+
+		this.#currentHistoryItem = currentHistoryItem;
 	}
 
 	/**
@@ -116,11 +123,11 @@ export default class History {
 	 * Pushes the given data onto the session history stack.
 	 *
 	 * @param state State.
-	 * @param title Title.
+	 * @param _unused Unused.
 	 * @param [url] URL.
 	 */
-	public pushState(state: object, title, url?: string | URL): void {
-		if (this.#window.closed) {
+	public pushState(state: object, _unused: any, url?: string | URL): void {
+		if (this.#window.closed || !this.#browserFrame) {
 			return;
 		}
 
@@ -154,7 +161,7 @@ export default class History {
 		}
 
 		const newHistoryItem: IHistoryItem = {
-			title: title || this.#window.document.title,
+			title: this.#window.document.title,
 			href: newURL.href,
 			state: JSON.parse(JSON.stringify(state)),
 			scrollRestoration: this.#currentHistoryItem.scrollRestoration,
@@ -174,11 +181,11 @@ export default class History {
 	 * This method modifies the current history entry, replacing it with a new state.
 	 *
 	 * @param state State.
-	 * @param title Title.
+	 * @param _unused Unused.
 	 * @param [url] URL.
 	 */
-	public replaceState(state: object, title, url?: string | URL): void {
-		if (this.#window.closed) {
+	public replaceState(state: object, _unused: any, url?: string | URL): void {
+		if (!this.#browserFrame || this.#window.closed) {
 			return;
 		}
 
@@ -201,7 +208,7 @@ export default class History {
 		for (let i = history.length - 1; i >= 0; i--) {
 			if (history[i].isCurrent) {
 				const newHistoryItem = {
-					title: title || this.#window.document.title,
+					title: this.#window.document.title,
 					href: newURL.href,
 					state: JSON.parse(JSON.stringify(state)),
 					scrollRestoration: history[i].scrollRestoration,

@@ -1335,4 +1335,74 @@ describe('XMLHttpRequest', () => {
 			expect(isAborted).toBe(true);
 		});
 	});
+
+	describe('overrideMimeType()', () => {
+		it('Overrides the MIME type when the server returns a different content type', async () => {
+			const responseText = '<root>Test</root>';
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+				async () =>
+					<Response>{
+						headers: new Headers({
+							'Content-Type': 'text/plain'
+						}),
+						body: new ReadableStream({
+							start(controller) {
+								controller.enqueue(responseText);
+								controller.close();
+							}
+						})
+					}
+			);
+
+			request.responseType = XMLHttpResponseTypeEnum.blob;
+			request.open('GET', REQUEST_URL, true);
+			request.overrideMimeType('application/xml');
+
+			request.send();
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
+			expect(request.response).toBeInstanceOf(Blob);
+			expect((<Blob>request.response).type).toBe('application/xml');
+		});
+
+		it('Throws an exception if called when the ready state is loading', async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+				async () => <Response>{ headers: <Headers>new Headers() }
+			);
+
+			request.open('GET', REQUEST_URL, true);
+			request.addEventListener('progress', () => {
+				expect(() => request.overrideMimeType('application/xml')).toThrowError(
+					new DOMException(
+						`Failed to execute 'overrideMimeType' on 'XMLHttpRequest': MIME type cannot be overridden when the request state is LOADING or DONE.`,
+						DOMExceptionNameEnum.invalidStateError
+					)
+				);
+			});
+			request.send();
+
+			await window.happyDOM?.waitUntilComplete();
+		});
+
+		it('Throws an exception if called when the ready state is done', async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+				async () => <Response>{ headers: <Headers>new Headers() }
+			);
+
+			request.open('GET', REQUEST_URL, true);
+			request.send();
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(() => request.overrideMimeType('application/xml')).toThrowError(
+				new window.DOMException(
+					`Failed to execute 'overrideMimeType' on 'XMLHttpRequest': MIME type cannot be overridden when the request state is LOADING or DONE.`,
+					DOMExceptionNameEnum.invalidStateError
+				)
+			);
+		});
+	});
 });

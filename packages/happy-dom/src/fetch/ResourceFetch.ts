@@ -40,13 +40,17 @@ export default class ResourceFetch {
 	): Promise<string> {
 		const browserFrame = new WindowBrowserContext(this.window).getBrowserFrame();
 
+		if (!browserFrame) {
+			return '';
+		}
+
 		// Preloaded resource
 		if (destination === 'script' || destination === 'style') {
 			const preloadKey = PreloadUtility.getKey({
 				url: String(url),
 				destination,
 				mode: 'cors',
-				credentialsMode: options.credentials || 'same-origin'
+				credentialsMode: options?.credentials || 'same-origin'
 			});
 			const preloadEntry = this.window.document[PropertySymbol.preloads].get(preloadKey);
 
@@ -55,15 +59,15 @@ export default class ResourceFetch {
 
 				const response = preloadEntry.response || (await preloadEntry.onResponseAvailable());
 
-				if (!response.ok) {
+				if (response && !response.ok) {
 					throw new this.window.DOMException(
 						`Failed to perform request to "${
 							new URL(url, this.window.location.href).href
-						}". Status ${preloadEntry.response.status} ${preloadEntry.response.statusText}.`
+						}". Status ${preloadEntry.response?.status || '0'} ${preloadEntry.response?.statusText || 'Unknown'}.`
 					);
 				}
 
-				return preloadEntry.response[PropertySymbol.buffer].toString();
+				return preloadEntry.response?.[PropertySymbol.buffer]?.toString() || '';
 			}
 		}
 
@@ -109,13 +113,17 @@ export default class ResourceFetch {
 	): string {
 		const browserFrame = new WindowBrowserContext(this.window).getBrowserFrame();
 
+		if (!browserFrame) {
+			return '';
+		}
+
 		// Preloaded resource
 		if (destination === 'script' || destination === 'style') {
 			const preloadKey = PreloadUtility.getKey({
 				url: String(url),
 				destination,
 				mode: 'cors',
-				credentialsMode: options.credentials || 'same-origin'
+				credentialsMode: options?.credentials || 'same-origin'
 			});
 			const preloadEntry = this.window.document[PropertySymbol.preloads].get(preloadKey);
 
@@ -130,6 +138,12 @@ export default class ResourceFetch {
 						`Failed to perform request to "${
 							new URL(url, this.window.location.href).href
 						}". Status ${preloadEntry.response.status} ${preloadEntry.response.statusText}.`
+					);
+				}
+
+				if (!preloadEntry.response[PropertySymbol.buffer]) {
+					throw new this.window.DOMException(
+						`Failed to perform request to "${new URL(url, this.window.location.href).href}". Response buffer is not available.`
 					);
 				}
 
@@ -158,6 +172,6 @@ export default class ResourceFetch {
 			);
 		}
 
-		return response.body.toString();
+		return response.body?.toString() || '';
 	}
 }

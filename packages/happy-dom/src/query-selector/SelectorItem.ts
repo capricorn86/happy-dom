@@ -76,7 +76,7 @@ export default class SelectorItem {
 
 		// Tag name match
 		if (this.tagName) {
-			if (this.tagName !== '*' && this.tagName !== element[PropertySymbol.tagName].toUpperCase()) {
+			if (this.tagName !== '*' && this.tagName !== element[PropertySymbol.tagName]!.toUpperCase()) {
 				return null;
 			}
 			priorityWeight += 1;
@@ -254,7 +254,7 @@ export default class SelectorItem {
 			case 'root':
 				return element[PropertySymbol.tagName] === 'HTML' ? { priorityWeight: 10 } : null;
 			case 'not':
-				for (const selectorItem of pseudo.selectorItems) {
+				for (const selectorItem of pseudo.selectorItems!) {
 					if (selectorItem.match(element)) {
 						return null;
 					}
@@ -262,15 +262,15 @@ export default class SelectorItem {
 				return { priorityWeight: 10 };
 			case 'nth-child':
 				let nthChildIndex = -1;
-				if (pseudo.selectorItems[0] && !pseudo.selectorItems[0].match(element)) {
+				if (pseudo.selectorItems?.[0] && !pseudo.selectorItems[0].match(element)) {
 					return null;
 				}
 				for (let i = 0, max = parentChildren.length; i < max; i++) {
-					if (!pseudo.selectorItems[0] || pseudo.selectorItems[0].match(parentChildren[i])) {
+					if (!pseudo.selectorItems?.[0] || pseudo.selectorItems![0].match(parentChildren[i])) {
 						nthChildIndex++;
 					}
 					if (parentChildren[i] === element) {
-						return nthChildIndex !== -1 && pseudo.nthFunction(nthChildIndex + 1)
+						return nthChildIndex !== -1 && pseudo.nthFunction!(nthChildIndex + 1)
 							? { priorityWeight: 10 }
 							: null;
 					}
@@ -283,7 +283,7 @@ export default class SelectorItem {
 						nthOfTypeIndex++;
 					}
 					if (parentChildren[i] === element) {
-						return nthOfTypeIndex !== -1 && pseudo.nthFunction(nthOfTypeIndex + 1)
+						return nthOfTypeIndex !== -1 && pseudo.nthFunction!(nthOfTypeIndex + 1)
 							? { priorityWeight: 10 }
 							: null;
 					}
@@ -291,15 +291,15 @@ export default class SelectorItem {
 				return null;
 			case 'nth-last-child':
 				let nthLastChildIndex = -1;
-				if (pseudo.selectorItems[0] && !pseudo.selectorItems[0].match(element)) {
+				if (pseudo.selectorItems?.[0] && !pseudo.selectorItems[0].match(element)) {
 					return null;
 				}
 				for (let i = parentChildren.length - 1; i >= 0; i--) {
-					if (!pseudo.selectorItems[0] || pseudo.selectorItems[0].match(parentChildren[i])) {
+					if (!pseudo.selectorItems?.[0] || pseudo.selectorItems![0].match(parentChildren[i])) {
 						nthLastChildIndex++;
 					}
 					if (parentChildren[i] === element) {
-						return nthLastChildIndex !== -1 && pseudo.nthFunction(nthLastChildIndex + 1)
+						return nthLastChildIndex !== -1 && pseudo.nthFunction!(nthLastChildIndex + 1)
 							? { priorityWeight: 10 }
 							: null;
 					}
@@ -312,7 +312,7 @@ export default class SelectorItem {
 						nthLastOfTypeIndex++;
 					}
 					if (parentChildren[i] === element) {
-						return nthLastOfTypeIndex !== -1 && pseudo.nthFunction(nthLastOfTypeIndex + 1)
+						return nthLastOfTypeIndex !== -1 && pseudo.nthFunction!(nthLastOfTypeIndex + 1)
 							? { priorityWeight: 10 }
 							: null;
 					}
@@ -326,6 +326,9 @@ export default class SelectorItem {
 				return element.isConnected && element.id === hash.slice(1) ? { priorityWeight: 10 } : null;
 			case 'is':
 				let priorityWeightForIs = 0;
+				if (!pseudo.selectorItems) {
+					return null;
+				}
 				for (const selectorItem of pseudo.selectorItems) {
 					const match = selectorItem.match(element);
 					if (match && priorityWeightForIs < match.priorityWeight) {
@@ -334,6 +337,9 @@ export default class SelectorItem {
 				}
 				return priorityWeightForIs ? { priorityWeight: priorityWeightForIs } : null;
 			case 'where':
+				if (!pseudo.selectorItems) {
+					return null;
+				}
 				for (const selectorItem of pseudo.selectorItems) {
 					if (selectorItem.match(element)) {
 						return { priorityWeight: 0 };
@@ -342,19 +348,19 @@ export default class SelectorItem {
 				return null;
 			case 'has':
 				let priorityWeightForHas = 0;
-				if (pseudo.arguments[0] === '+') {
+				if (pseudo.arguments![0] === '+') {
 					const nextSibling = element.nextElementSibling;
 					if (!nextSibling) {
 						return null;
 					}
-					for (const selectorItem of pseudo.selectorItems) {
+					for (const selectorItem of pseudo.selectorItems!) {
 						const match = selectorItem.match(nextSibling);
 						if (match && priorityWeightForHas < match.priorityWeight) {
 							priorityWeightForHas = match.priorityWeight;
 						}
 					}
-				} else if (pseudo.arguments[0] === '>') {
-					for (const selectorItem of pseudo.selectorItems) {
+				} else if (pseudo.arguments![0] === '>') {
+					for (const selectorItem of pseudo.selectorItems!) {
 						for (const child of element[PropertySymbol.elementArray]) {
 							const match = selectorItem.match(child);
 							if (match && priorityWeightForHas < match.priorityWeight) {
@@ -364,7 +370,7 @@ export default class SelectorItem {
 						}
 					}
 				} else {
-					for (const selectorItem of pseudo.selectorItems) {
+					for (const selectorItem of pseudo.selectorItems!) {
 						const match = this.matchChildOfElement(selectorItem, element);
 						if (match && priorityWeightForHas < match.priorityWeight) {
 							priorityWeightForHas = match.priorityWeight;
@@ -466,6 +472,7 @@ export default class SelectorItem {
 				return childMatch;
 			}
 		}
+		return null;
 	}
 
 	/**

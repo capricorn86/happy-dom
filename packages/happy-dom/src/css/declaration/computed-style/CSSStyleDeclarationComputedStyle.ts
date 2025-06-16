@@ -27,7 +27,7 @@ const CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+)\)|var\( *(--[^), ]+), *(.+)\)/;
 const HOST_REGEXP = /:host\s*\(([^)]+)\)|:host-context\s*\(([^)]+)\)/;
 
 type IStyleAndElement = {
-	element: Element | ShadowRoot | Document;
+	element: Element | ShadowRoot | Document | null;
 	cssTexts: Array<{ cssText: string; priorityWeight: number }>;
 };
 
@@ -166,39 +166,21 @@ export default class CSSStyleDeclarationComputedStyle {
 		for (const parentElement of parentElements) {
 			parentElement.cssTexts.sort((a, b) => a.priorityWeight - b.priorityWeight);
 
+			const defaultCSS = (<any>CSSStyleDeclarationElementDefaultCSS)[
+				(<Element>parentElement.element)[PropertySymbol.tagName]!
+			];
 			let elementCSSText = '';
-			if (
-				CSSStyleDeclarationElementDefaultCSS[
-					(<Element>parentElement.element)[PropertySymbol.tagName]
-				]
-			) {
-				if (
-					typeof CSSStyleDeclarationElementDefaultCSS[
-						(<Element>parentElement.element)[PropertySymbol.tagName]
-					] === 'string'
-				) {
-					elementCSSText +=
-						CSSStyleDeclarationElementDefaultCSS[
-							(<Element>parentElement.element)[PropertySymbol.tagName]
-						];
+
+			if (defaultCSS) {
+				if (typeof defaultCSS === 'string') {
+					elementCSSText += defaultCSS;
 				} else {
-					for (const key of Object.keys(
-						CSSStyleDeclarationElementDefaultCSS[
-							(<Element>parentElement.element)[PropertySymbol.tagName]
-						]
-					)) {
-						if (key === 'default' || !!parentElement.element[key]) {
-							elementCSSText +=
-								CSSStyleDeclarationElementDefaultCSS[
-									(<Element>parentElement.element)[PropertySymbol.tagName]
-								][key];
+					for (const key of Object.keys(defaultCSS)) {
+						if (key === 'default' || !!(<any>parentElement.element)[key]) {
+							elementCSSText += defaultCSS[key];
 						}
 					}
 				}
-				elementCSSText +=
-					CSSStyleDeclarationElementDefaultCSS[
-						(<Element>parentElement.element)[PropertySymbol.tagName]
-					];
 			}
 
 			for (const cssText of parentElement.cssTexts) {
@@ -218,7 +200,7 @@ export default class CSSStyleDeclarationComputedStyle {
 
 			for (const { name, value, important } of rules) {
 				if (
-					CSSStyleDeclarationElementInheritedProperties[name] ||
+					(<any>CSSStyleDeclarationElementInheritedProperties)[name] ||
 					parentElement === targetElement
 				) {
 					const parsedValue = this.parseCSSVariablesInValue(value.trim(), cssProperties);
@@ -279,7 +261,10 @@ export default class CSSStyleDeclarationComputedStyle {
 	 * @param root Root element.
 	 * @returns Style sheets.
 	 */
-	private getStyleSheets(root: Document | ShadowRoot): CSSStyleSheet[] {
+	private getStyleSheets(root: Document | ShadowRoot | null): CSSStyleSheet[] {
+		if (!root) {
+			return [];
+		}
 		const styleElements = <NodeList<HTMLStyleElement>>(
 			root.querySelectorAll('style,link[rel="stylesheet"]')
 		);

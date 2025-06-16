@@ -36,14 +36,14 @@ interface ISyncHTTPResponse {
 }
 
 /**
- * Handles synchrounous fetch requests.
+ * Handles synchronous fetch requests.
  */
 export default class SyncFetch {
 	private request: Request;
 	private redirectCount = 0;
 	private disableCache: boolean;
 	private disableSameOriginPolicy: boolean;
-	private interceptor?: IFetchInterceptor;
+	private interceptor?: IFetchInterceptor | null;
 	#browserFrame: IBrowserFrame;
 	#window: BrowserWindow;
 	#unfilteredHeaders: Headers | null = null;
@@ -68,7 +68,7 @@ export default class SyncFetch {
 		url: IRequestInfo;
 		init?: IRequestInit;
 		redirectCount?: number;
-		contentType?: string;
+		contentType?: string | null;
 		disableCache?: boolean;
 		disableSameOriginPolicy?: boolean;
 		unfilteredHeaders?: Headers;
@@ -117,7 +117,7 @@ export default class SyncFetch {
 			if (this.request.signal[PropertySymbol.reason] !== undefined) {
 				throw this.request.signal[PropertySymbol.reason];
 			}
-			throw new this[PropertySymbol.window].DOMException(
+			throw new this.#window.DOMException(
 				'signal is aborted without reason',
 				DOMExceptionNameEnum.abortError
 			);
@@ -284,10 +284,10 @@ export default class SyncFetch {
 		}
 
 		if (this.request.method !== 'GET') {
-			this.#browserFrame?.page?.console.error(
+			this.#browserFrame.page.console.error(
 				`${this.request.method} ${this.request.url} 404 (Not Found)`
 			);
-			const response = VirtualServerUtility.getNotFoundSyncResponse(this.#window);
+			const response = VirtualServerUtility.getNotFoundSyncResponse(this.#window, this.request.url);
 			const interceptedResponse = this.interceptor?.afterSyncResponse
 				? this.interceptor.afterSyncResponse({
 						window: this.#window,
@@ -303,10 +303,10 @@ export default class SyncFetch {
 			const stat = FS.statSync(filePath);
 			buffer = FS.readFileSync(stat.isDirectory() ? Path.join(filePath, 'index.html') : filePath);
 		} catch {
-			this.#browserFrame?.page?.console.error(
+			this.#browserFrame.page.console.error(
 				`${this.request.method} ${this.request.url} 404 (Not Found)`
 			);
-			const response = VirtualServerUtility.getNotFoundSyncResponse(this.#window);
+			const response = VirtualServerUtility.getNotFoundSyncResponse(this.#window, this.request.url);
 			const interceptedResponse = this.interceptor?.afterSyncResponse
 				? this.interceptor.afterSyncResponse({
 						window: this.#window,
@@ -425,7 +425,7 @@ export default class SyncFetch {
 		const allowMethods: string[] = [];
 
 		if (response.headers.has('Access-Control-Allow-Methods')) {
-			const allowMethodsHeader = response.headers.get('Access-Control-Allow-Methods');
+			const allowMethodsHeader = response.headers.get('Access-Control-Allow-Methods')!;
 			if (allowMethodsHeader !== '*') {
 				for (const method of allowMethodsHeader.split(',')) {
 					allowMethods.push(method.trim().toUpperCase());
@@ -450,7 +450,7 @@ export default class SyncFetch {
 	public sendRequest(): ISyncResponse {
 		if (!this.request[PropertySymbol.bodyBuffer] && this.request.body) {
 			throw new this.#window.DOMException(
-				`Streams are not supported as request body for synchrounous requests.`,
+				`Streams are not supported as request body for synchronous requests.`,
 				DOMExceptionNameEnum.notSupportedError
 			);
 		}
@@ -464,6 +464,7 @@ export default class SyncFetch {
 				request: this.request,
 				baseHeaders: this.#unfilteredHeaders
 			}),
+			disableStrictSSL: this.#browserFrame.page.context.browser.settings.fetch.disableStrictSSL,
 			body: this.request[PropertySymbol.bodyBuffer]
 		});
 
@@ -533,7 +534,7 @@ export default class SyncFetch {
 		const returnResponse =
 			typeof interceptedResponse === 'object' ? interceptedResponse : redirectedResponse;
 		if (!returnResponse.ok) {
-			this.#browserFrame?.page?.console.error(
+			this.#browserFrame.page.console.error(
 				`${this.request.method} ${this.request.url} ${returnResponse.status} (${returnResponse.statusText})`
 			);
 		}
@@ -584,7 +585,7 @@ export default class SyncFetch {
 			}
 		} catch (error) {
 			throw new this.#window.DOMException(
-				`Failed to read response body. Error: ${error.message}.`,
+				`Failed to read response body. Error: ${(<Error>error).message}.`,
 				DOMExceptionNameEnum.encodingError
 			);
 		}
@@ -616,7 +617,7 @@ export default class SyncFetch {
 				const shouldBecomeGetRequest =
 					response.status === 303 ||
 					((response.status === 301 || response.status === 302) && this.request.method === 'POST');
-				let locationURL: URL = null;
+				let locationURL: URL | null = null;
 
 				if (locationHeader !== null) {
 					try {
@@ -681,9 +682,7 @@ export default class SyncFetch {
 					url: locationURL,
 					init: requestInit,
 					redirectCount: this.redirectCount + 1,
-					contentType: !shouldBecomeGetRequest
-						? this.request[PropertySymbol.contentType]
-						: undefined
+					contentType: !shouldBecomeGetRequest ? this.request[PropertySymbol.contentType] : null
 				});
 
 				return fetch.send();

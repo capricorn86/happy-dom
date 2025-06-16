@@ -17,15 +17,15 @@ import { Buffer } from 'buffer';
  * https://github.com/jsdom/jsdom/blob/master/lib/jsdom/living/file-api/FileReader-impl.js (MIT licensed).
  */
 export default class FileReader extends EventTarget {
-	public readonly error: Error = null;
-	public readonly result: Buffer | ArrayBuffer | string = null;
+	public readonly error: Error | null = null;
+	public readonly result: Buffer | ArrayBuffer | string | null = null;
 	public readonly readyState: number = FileReaderReadyStateEnum.empty;
-	public readonly onabort: (event: ProgressEvent) => void = null;
-	public readonly onerror: (event: ProgressEvent) => void = null;
-	public readonly onload: (event: ProgressEvent) => void = null;
-	public readonly onloadstart: (event: ProgressEvent) => void = null;
-	public readonly onloadend: (event: ProgressEvent) => void = null;
-	public readonly onprogress: (event: ProgressEvent) => void = null;
+	public readonly onabort: ((event: ProgressEvent) => void) | null = null;
+	public readonly onerror: ((event: ProgressEvent) => void) | null = null;
+	public readonly onload: ((event: ProgressEvent) => void) | null = null;
+	public readonly onloadstart: ((event: ProgressEvent) => void) | null = null;
+	public readonly onloadend: ((event: ProgressEvent) => void) | null = null;
+	public readonly onprogress: ((event: ProgressEvent) => void) | null = null;
 	#isTerminated = false;
 	#loadTimeout: NodeJS.Timeout | null = null;
 	#parseTimeout: NodeJS.Timeout | null = null;
@@ -106,20 +106,25 @@ export default class FileReader extends EventTarget {
 	public abort(): void {
 		const window = this[PropertySymbol.window];
 
-		window.clearTimeout(this.#loadTimeout);
-		window.clearTimeout(this.#parseTimeout);
+		if (this.#loadTimeout) {
+			window.clearTimeout(this.#loadTimeout);
+		}
+
+		if (this.#parseTimeout) {
+			window.clearTimeout(this.#parseTimeout);
+		}
 
 		if (
 			this.readyState === FileReaderReadyStateEnum.empty ||
 			this.readyState === FileReaderReadyStateEnum.done
 		) {
-			(<Buffer | ArrayBuffer | string>this.result) = null;
+			(<Buffer | ArrayBuffer | string | null>this.result) = null;
 			return;
 		}
 
 		if (this.readyState === FileReaderReadyStateEnum.loading) {
 			(<number>this.readyState) = FileReaderReadyStateEnum.done;
-			(<Buffer | ArrayBuffer | string>this.result) = null;
+			(<Buffer | ArrayBuffer | string | null>this.result) = null;
 		}
 
 		this.#isTerminated = true;

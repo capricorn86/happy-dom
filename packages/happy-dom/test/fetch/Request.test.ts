@@ -71,6 +71,12 @@ describe('Request', () => {
 			expect(request.url).toBe(TEST_URL);
 		});
 
+		it('Supports URL as empty string from init object.', () => {
+			window.happyDOM?.setURL('https://example.com/other/path/');
+			const request = new window.Request('');
+			expect(request.url).toBe('https://example.com/other/path/');
+		});
+
 		it('Supports URL as URL object from init object.', () => {
 			const request = new window.Request(new URL(TEST_URL));
 			expect(request.url).toBe(TEST_URL);
@@ -91,7 +97,7 @@ describe('Request', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					`Failed to construct 'Request': Invalid URL "/path/" on document location 'about:blank'. Relative URLs are not permitted on current document location.`,
 					DOMExceptionNameEnum.notSupportedError
 				)

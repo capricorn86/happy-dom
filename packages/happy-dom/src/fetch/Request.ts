@@ -45,6 +45,7 @@ export default class Request implements Request {
 
 	// Internal properties
 	public [PropertySymbol.aborted]: boolean = false;
+	public [PropertySymbol.error]: Error | null = null;
 	public [PropertySymbol.contentLength]: number | null = null;
 	public [PropertySymbol.contentType]: string | null = null;
 	public [PropertySymbol.referrer]: '' | 'no-referrer' | 'client' | URL = 'client';
@@ -66,7 +67,7 @@ export default class Request implements Request {
 			);
 		}
 
-		if (!input) {
+		if (typeof input !== `string` && !input) {
 			throw new window.TypeError(
 				`Failed to contruct 'Request': 1 argument required, only 0 present.`
 			);
@@ -100,7 +101,7 @@ export default class Request implements Request {
 		const { stream, buffer, contentType, contentLength } = FetchBodyUtility.getBodyStream(
 			input instanceof Request && (input[PropertySymbol.bodyBuffer] || input.body)
 				? input[PropertySymbol.bodyBuffer] || FetchBodyUtility.cloneBodyStream(window, input)
-				: init?.body
+				: (init?.body ?? null)
 		);
 
 		this[PropertySymbol.bodyBuffer] = buffer;
@@ -300,20 +301,18 @@ export default class Request implements Request {
 			);
 		}
 
-		const asyncTaskManager = new WindowBrowserContext(window).getAsyncTaskManager();
+		const asyncTaskManager = new WindowBrowserContext(window).getAsyncTaskManager()!;
 
 		this[PropertySymbol.bodyUsed] = true;
 
 		const taskID = asyncTaskManager.startTask(() => {
-			if (this.body) {
-				this.body[PropertySymbol.aborted] = true;
-			}
+			this[PropertySymbol.aborted] = true;
 			this.signal[PropertySymbol.abort]();
 		});
 		let buffer: Buffer;
 
 		try {
-			buffer = await FetchBodyUtility.consumeBodyStream(window, this.body);
+			buffer = await FetchBodyUtility.consumeBodyStream(window, this);
 		} catch (error) {
 			asyncTaskManager.endTask(taskID);
 			throw error;
@@ -351,20 +350,18 @@ export default class Request implements Request {
 			);
 		}
 
-		const asyncTaskManager = new WindowBrowserContext(window).getAsyncTaskManager();
+		const asyncTaskManager = new WindowBrowserContext(window).getAsyncTaskManager()!;
 
 		this[PropertySymbol.bodyUsed] = true;
 
 		const taskID = asyncTaskManager.startTask(() => {
-			if (this.body) {
-				this.body[PropertySymbol.aborted] = true;
-			}
+			this[PropertySymbol.aborted] = true;
 			this.signal[PropertySymbol.abort]();
 		});
 		let buffer: Buffer;
 
 		try {
-			buffer = await FetchBodyUtility.consumeBodyStream(window, this.body);
+			buffer = await FetchBodyUtility.consumeBodyStream(window, this);
 		} catch (error) {
 			asyncTaskManager.endTask(taskID);
 			throw error;
@@ -390,20 +387,18 @@ export default class Request implements Request {
 			);
 		}
 
-		const asyncTaskManager = new WindowBrowserContext(window).getAsyncTaskManager();
+		const asyncTaskManager = new WindowBrowserContext(window).getAsyncTaskManager()!;
 
 		this[PropertySymbol.bodyUsed] = true;
 
 		const taskID = asyncTaskManager.startTask(() => {
-			if (this.body) {
-				this.body[PropertySymbol.aborted] = true;
-			}
+			this[PropertySymbol.aborted] = true;
 			this.signal[PropertySymbol.abort]();
 		});
 		let buffer: Buffer;
 
 		try {
-			buffer = await FetchBodyUtility.consumeBodyStream(window, this.body);
+			buffer = await FetchBodyUtility.consumeBodyStream(window, this);
 		} catch (error) {
 			asyncTaskManager.endTask(taskID);
 			throw error;
@@ -431,10 +426,11 @@ export default class Request implements Request {
 	 */
 	public async formData(): Promise<FormData> {
 		const window = this[PropertySymbol.window];
-		const asyncTaskManager = new WindowBrowserContext(window).getAsyncTaskManager();
+		const asyncTaskManager = new WindowBrowserContext(window).getAsyncTaskManager()!;
+
 		const contentType = this[PropertySymbol.contentType];
 
-		if (/multipart/i.test(contentType)) {
+		if (this.body && contentType && /multipart/i.test(contentType)) {
 			if (this[PropertySymbol.bodyUsed]) {
 				throw new window.DOMException(
 					`Body has already been used for "${this.url}".`,
@@ -445,19 +441,13 @@ export default class Request implements Request {
 			this[PropertySymbol.bodyUsed] = true;
 
 			const taskID = asyncTaskManager.startTask(() => {
-				if (this.body) {
-					this.body[PropertySymbol.aborted] = true;
-				}
+				this[PropertySymbol.aborted] = true;
 				this.signal[PropertySymbol.abort]();
 			});
 			let formData: FormData;
 
 			try {
-				const result = await MultipartFormDataParser.streamToFormData(
-					window,
-					this.body,
-					contentType
-				);
+				const result = await MultipartFormDataParser.streamToFormData(window, this, contentType);
 				formData = result.formData;
 			} catch (error) {
 				asyncTaskManager.endTask(taskID);

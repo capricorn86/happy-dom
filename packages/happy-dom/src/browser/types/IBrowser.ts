@@ -14,6 +14,7 @@ export default interface IBrowser {
 	readonly contexts: IBrowserContext[];
 	readonly settings: IBrowserSettings;
 	readonly console: Console | null;
+	readonly closed: boolean;
 	readonly [PropertySymbol.exceptionObserver]: BrowserExceptionObserver | null;
 
 	/**

@@ -4,8 +4,8 @@ import CSSUnits from './CSSUnits.js';
  * CSS unit value.
  */
 export default class CSSUnitValue {
-	public unit: string = null;
-	public value: number = null;
+	public unit: string;
+	public value: number;
 
 	/**
 	 * Constructor.

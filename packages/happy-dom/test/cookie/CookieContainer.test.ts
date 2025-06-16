@@ -270,4 +270,33 @@ describe('CookieContainer', () => {
 			]);
 		});
 	});
+
+	describe('clearCookies()', () => {
+		it('Clears cookies.', () => {
+			const originURL = new URL('https://example.com/path/to/page/');
+			const expires = new Date(60 * 1000 + Date.now());
+
+			cookieContainer.addCookies([
+				{
+					key: 'key1',
+					originURL
+				},
+				{
+					key: 'key2',
+					originURL,
+					value: 'value2',
+					domain: 'example.com',
+					path: '/path/to/page/',
+					expires,
+					httpOnly: true,
+					secure: true,
+					sameSite: CookieSameSiteEnum.strict
+				}
+			]);
+
+			cookieContainer.clearCookies();
+
+			expect(cookieContainer.getCookies(originURL)).toEqual([]);
+		});
+	});
 });

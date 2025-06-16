@@ -8,6 +8,7 @@ const MEDIUM_REGEXP = /\s*,\s*/;
  * MediaList interface.
  */
 export default class MediaList {
+	[index: number]: string;
 	public [PropertySymbol.cssRule]: CSSMediaRule;
 
 	/**
@@ -28,24 +29,24 @@ export default class MediaList {
 			get: (target, property) => {
 				if (property in target || typeof property === 'symbol') {
 					methodBinder.bind(property);
-					return target[property];
+					return (<any>target)[property];
 				}
 				const index = Number(property);
 				if (!isNaN(index)) {
-					return target[PropertySymbol.getItemList]()[index];
+					return (<any>target)[PropertySymbol.getItemList]()[index];
 				}
 			},
 			set(target, property, newValue): boolean {
 				methodBinder.bind(property);
 				if (property in target || typeof property === 'symbol') {
-					target[property] = newValue;
+					(<any>target)[property] = newValue;
 					return true;
 				}
 				return true;
 			},
 			deleteProperty(target, property): boolean {
 				if (property in target || typeof property === 'symbol') {
-					delete target[property];
+					delete (<any>target)[property];
 					return true;
 				}
 				return true;
@@ -75,7 +76,7 @@ export default class MediaList {
 
 				return false;
 			},
-			getOwnPropertyDescriptor(target, property): PropertyDescriptor {
+			getOwnPropertyDescriptor(target, property): PropertyDescriptor | undefined {
 				if (property in target || typeof property === 'symbol') {
 					return;
 				}
@@ -129,7 +130,7 @@ export default class MediaList {
 	 * @param index Index.
 	 * @returns Item.
 	 */
-	public item(index: number): string {
+	public item(index: number): string | null {
 		const items = this[PropertySymbol.getItemList]();
 		return items[Number(index)] || null;
 	}

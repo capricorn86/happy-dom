@@ -584,19 +584,10 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly TextEvent = Event;
 
 	// Other classes that has to be bound to the Window context (populated by WindowContextClassExtender)
-	public declare readonly NodeIterator: typeof NodeIterator;
-	public declare readonly TreeWalker: typeof TreeWalker;
 	public declare readonly MutationObserver: typeof MutationObserver;
 	public declare readonly MessagePort: typeof MessagePort;
-	public declare readonly DataTransfer: typeof DataTransfer;
-	public declare readonly DataTransferItem: typeof DataTransferItem;
-	public declare readonly DataTransferItemList: typeof DataTransferItemList;
-	public declare readonly XMLSerializer: typeof XMLSerializer;
 	public declare readonly CSSStyleSheet: typeof CSSStyleSheet;
 	public declare readonly DOMException: typeof DOMException;
-	public declare readonly CSSUnitValue: typeof CSSUnitValue;
-	public declare readonly Selection: typeof Selection;
-	public declare readonly Headers: typeof Headers;
 	public declare readonly Request: typeof Request;
 	public declare readonly Response: typeof Response;
 	public declare readonly EventTarget: typeof EventTarget;
@@ -606,7 +597,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare readonly AbortSignal: typeof AbortSignal;
 	public declare readonly FormData: typeof FormData;
 	public declare readonly PermissionStatus: typeof PermissionStatus;
-	public declare readonly ClipboardItem: typeof ClipboardItem;
 	public declare readonly XMLHttpRequest: typeof XMLHttpRequest;
 	public declare readonly DOMParser: typeof DOMParser;
 	public declare readonly Range: typeof Range;
@@ -615,7 +605,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare readonly MediaStream: typeof MediaStream;
 	public declare readonly MediaStreamTrack: typeof MediaStreamTrack;
 	public declare readonly CanvasCaptureMediaStreamTrack: typeof CanvasCaptureMediaStreamTrack;
-	public declare readonly NamedNodeMap: typeof NamedNodeMap;
 	public declare readonly TextTrack: typeof TextTrack;
 	public declare readonly TextTrackList: typeof TextTrackList;
 	public declare readonly TextTrackCue: typeof TextTrackCue;
@@ -667,6 +656,17 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly Screen = Screen;
 	public readonly DOMMatrixReadOnly = DOMMatrixReadOnly;
 	public readonly DOMMatrix = DOMMatrix;
+	public readonly NamedNodeMap = NamedNodeMap;
+	public readonly TreeWalker = TreeWalker;
+	public readonly NodeIterator = NodeIterator;
+	public readonly DataTransfer = DataTransfer;
+	public readonly DataTransferItem = DataTransferItem;
+	public readonly DataTransferItemList = DataTransferItemList;
+	public readonly Headers = Headers;
+	public readonly XMLSerializer = XMLSerializer;
+	public readonly ClipboardItem = ClipboardItem;
+	public readonly Selection = Selection;
+	public readonly CSSUnitValue = CSSUnitValue;
 	public readonly SVGAngle = SVGAngle;
 	public readonly SVGAnimatedAngle = SVGAnimatedAngle;
 	public readonly SVGAnimatedBoolean = SVGAnimatedBoolean;
@@ -806,9 +806,9 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.screen]: Screen;
 	public [PropertySymbol.sessionStorage]: Storage;
 	public [PropertySymbol.localStorage]: Storage;
-	public [PropertySymbol.self]: BrowserWindow = this;
-	public [PropertySymbol.top]: BrowserWindow = this;
-	public [PropertySymbol.parent]: BrowserWindow = this;
+	public [PropertySymbol.self]: BrowserWindow | null = this;
+	public [PropertySymbol.top]: BrowserWindow | null = this;
+	public [PropertySymbol.parent]: BrowserWindow | null = this;
 	public [PropertySymbol.window]: BrowserWindow = this;
 	public [PropertySymbol.internalId]: number = -1;
 	public [PropertySymbol.customElementReactionStack] = new CustomElementReactionStack(this);
@@ -892,7 +892,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * @returns Self.
 	 */
 	public get self(): BrowserWindow {
-		return this[PropertySymbol.self];
+		return this[PropertySymbol.self]!;
 	}
 
 	/**
@@ -910,7 +910,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * @returns Top.
 	 */
 	public get top(): BrowserWindow {
-		return this[PropertySymbol.top];
+		return this[PropertySymbol.top]!;
 	}
 
 	/**
@@ -919,7 +919,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * @returns Parent.
 	 */
 	public get parent(): BrowserWindow {
-		return this[PropertySymbol.parent];
+		return this[PropertySymbol.parent]!;
 	}
 
 	/**
@@ -1277,9 +1277,13 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * Closes the window.
 	 */
 	public close(): void {
-		// When using a Window instance directly, the Window instance is the main frame and we will close the page and destroy the browser.
-		// When using the Browser API we should only close the page when the Window instance is connected to the main frame (we should not close child frames such as iframes).
-		if (this.#browserFrame.page?.mainFrame === this.#browserFrame) {
+		// Users can only close the main frame of a page (not child frames such as iframes).
+		if (
+			this.#browserFrame.page.mainFrame === this.#browserFrame &&
+			// Scripts may close only the windows that were opened by them.
+			// In this case, this means windows that have been opened by another window
+			this.#browserFrame[PropertySymbol.openerWindow]
+		) {
 			this[PropertySymbol.destroy]();
 			this.#browserFrame.page.close();
 		}
@@ -1305,16 +1309,16 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 */
 	public setTimeout(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
 		if (this.closed) {
-			return;
+			return <NodeJS.Timeout>{};
 		}
 
-		const settings = this.#browserFrame.page?.context?.browser?.settings;
+		const settings = this.#browserFrame.page.context.browser.settings;
 
 		if (settings.timer.preventTimerLoops) {
-			const stack = new Error().stack;
+			const stack = new Error().stack!;
 			const timerLoopStacks = this.#timerLoopStacks;
 			if (timerLoopStacks.includes(stack)) {
-				return;
+				return <NodeJS.Timeout>{};
 			}
 			timerLoopStacks.push(stack);
 		}
@@ -1334,7 +1338,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 				const id = TIMER.setTimeout(() => {
 					// We need to call endTimer() before the callback as the callback might throw an error.
 					this.#browserFrame[PropertySymbol.asyncTaskManager].endTimer(id);
-					const timeouts = zeroDelayTimeout.timeouts;
+					const timeouts = zeroDelayTimeout.timeouts!;
 					zeroDelayTimeout.timeouts = null;
 					for (const timeout of timeouts) {
 						if (useTryCatch) {
@@ -1342,7 +1346,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 							try {
 								result = timeout.callback();
 							} catch (error) {
-								this[PropertySymbol.dispatchError](error);
+								this[PropertySymbol.dispatchError](<Error>error);
 							}
 							if (result instanceof Promise) {
 								result.catch((error: Error) => this[PropertySymbol.dispatchError](error));
@@ -1378,7 +1382,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 					try {
 						result = callback(...args);
 					} catch (error) {
-						this[PropertySymbol.dispatchError](error);
+						this[PropertySymbol.dispatchError](<Error>error);
 					}
 					if (result instanceof Promise) {
 						result.catch((error: Error) => this[PropertySymbol.dispatchError](error));
@@ -1431,9 +1435,9 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 */
 	public setInterval(callback: Function, delay = 0, ...args: unknown[]): NodeJS.Timeout {
 		if (this.closed) {
-			return;
+			return <NodeJS.Timeout>{};
 		}
-		const settings = this.#browserFrame.page?.context?.browser?.settings;
+		const settings = this.#browserFrame.page.context.browser.settings;
 		const useTryCatch =
 			!settings ||
 			(!settings.disableErrorCapturing &&
@@ -1447,7 +1451,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 						result = callback(...args);
 					} catch (error) {
 						this.clearInterval(id);
-						this[PropertySymbol.dispatchError](error);
+						this[PropertySymbol.dispatchError](<Error>error);
 					}
 					if (result instanceof Promise) {
 						result.catch((error: Error) => {
@@ -1496,15 +1500,15 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 */
 	public requestAnimationFrame(callback: (timestamp: number) => void): NodeJS.Immediate {
 		if (this.closed) {
-			return;
+			return <NodeJS.Immediate>{};
 		}
-		const settings = this.#browserFrame.page?.context?.browser?.settings;
+		const settings = this.#browserFrame.page.context.browser.settings;
 
 		if (settings.timer.preventTimerLoops) {
-			const stack = new Error().stack;
+			const stack = new Error().stack!;
 			const timerLoopStacks = this.#timerLoopStacks;
 			if (timerLoopStacks.includes(stack)) {
-				return;
+				return <NodeJS.Immediate>{};
 			}
 			timerLoopStacks.push(stack);
 		}
@@ -1521,7 +1525,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 				try {
 					result = callback(this.performance.now());
 				} catch (error) {
-					this[PropertySymbol.dispatchError](error);
+					this[PropertySymbol.dispatchError](<Error>error);
 				}
 				if (result instanceof Promise) {
 					result.catch((error: Error) => this[PropertySymbol.dispatchError](error));
@@ -1562,7 +1566,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		const taskId = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask(
 			() => (isAborted = true)
 		);
-		const settings = this.#browserFrame.page?.context?.browser?.settings;
+		const settings = this.#browserFrame.page.context.browser.settings;
 		const useTryCatch =
 			!settings ||
 			(!settings.disableErrorCapturing &&
@@ -1576,7 +1580,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 					try {
 						result = callback();
 					} catch (error) {
-						this[PropertySymbol.dispatchError](error);
+						this[PropertySymbol.dispatchError](<Error>error);
 					}
 					if (result instanceof Promise) {
 						result.catch((error: Error) => this[PropertySymbol.dispatchError](error));
@@ -1738,7 +1742,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * @param error Error.
 	 */
 	public [PropertySymbol.dispatchError](error: Error): void {
-		this.#browserFrame?.page?.console.error(error);
+		this.#browserFrame.page.console.error(error);
 		this.dispatchEvent(new ErrorEvent('error', { message: error.message, error }));
 	}
 
@@ -1759,7 +1763,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * Destroys the window.
 	 */
 	public [PropertySymbol.destroy](): void {
-		if (<boolean>this.closed) {
+		if (this.closed) {
 			return;
 		}
 
@@ -1773,8 +1777,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			}
 		}
 
-		this[PropertySymbol.mutationObservers] = [];
-		this[PropertySymbol.asyncTaskManager] = null;
 		this[PropertySymbol.mutationObservers] = [];
 
 		// Disconnects nodes from the document, so that they can be garbage collected.
@@ -1792,8 +1794,10 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		const htmlElement = this.document.createElement('html');
 		const headElement = this.document.createElement('head');
 		const bodyElement = this.document.createElement('body');
+
 		htmlElement.appendChild(headElement);
 		htmlElement.appendChild(bodyElement);
+
 		this.document[PropertySymbol.appendChild](htmlElement);
 
 		if (this.location[PropertySymbol.destroy]) {

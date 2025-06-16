@@ -200,7 +200,7 @@ describe('Selection', () => {
 
 		it('Throws error if there is no Range added.', () => {
 			expect(() => selection.getRangeAt(0)).toThrowError(
-				new DOMException('Invalid range index.', DOMExceptionNameEnum.indexSizeError)
+				new window.DOMException('Invalid range index.', DOMExceptionNameEnum.indexSizeError)
 			);
 		});
 
@@ -210,7 +210,7 @@ describe('Selection', () => {
 			selection.addRange(range1);
 			selection.addRange(range2);
 			expect(() => selection.getRangeAt(1)).toThrowError(
-				new DOMException('Invalid range index.', DOMExceptionNameEnum.indexSizeError)
+				new window.DOMException('Invalid range index.', DOMExceptionNameEnum.indexSizeError)
 			);
 		});
 	});
@@ -226,7 +226,7 @@ describe('Selection', () => {
 		it('Throws error if there is no Range added.', () => {
 			const range = document.createRange();
 			expect(() => selection.removeRange(range)).toThrowError(
-				new DOMException('Invalid range.', DOMExceptionNameEnum.notFoundError)
+				new window.DOMException('Invalid range.', DOMExceptionNameEnum.notFoundError)
 			);
 		});
 
@@ -235,7 +235,7 @@ describe('Selection', () => {
 			const range2 = document.createRange();
 			selection.addRange(range1);
 			expect(() => selection.removeRange(range2)).toThrowError(
-				new DOMException('Invalid range.', DOMExceptionNameEnum.notFoundError)
+				new window.DOMException('Invalid range.', DOMExceptionNameEnum.notFoundError)
 			);
 		});
 
@@ -284,7 +284,7 @@ describe('Selection', () => {
 				const documentType = document.implementation.createDocumentType('', '', '');
 
 				expect(() => selection[method](documentType, 0)).toThrowError(
-					new DOMException(
+					new window.DOMException(
 						"DocumentType Node can't be used as boundary point.",
 						DOMExceptionNameEnum.invalidNodeTypeError
 					)
@@ -297,7 +297,7 @@ describe('Selection', () => {
 
 				selection.addRange(range);
 				expect(() => selection[method](text, 5)).toThrowError(
-					new DOMException('Invalid range index.', DOMExceptionNameEnum.indexSizeError)
+					new window.DOMException('Invalid range index.', DOMExceptionNameEnum.indexSizeError)
 				);
 			});
 
@@ -359,7 +359,7 @@ describe('Selection', () => {
 
 		it('Throws error if there is no Range added.', () => {
 			expect(() => selection.collapseToEnd()).toThrowError(
-				new DOMException(
+				new window.DOMException(
 					'There is no selection to collapse.',
 					DOMExceptionNameEnum.invalidStateError
 				)
@@ -407,7 +407,7 @@ describe('Selection', () => {
 
 		it('Throws error if there is no Range added.', () => {
 			expect(() => selection.collapseToStart()).toThrowError(
-				new DOMException(
+				new window.DOMException(
 					'There is no selection to collapse.',
 					DOMExceptionNameEnum.invalidStateError
 				)
@@ -540,7 +540,10 @@ describe('Selection', () => {
 		it('Throws error if there is no Range added.', () => {
 			const node = document.createTextNode('after');
 			expect(() => selection.extend(node, 3)).toThrowError(
-				new DOMException('There is no selection to extend.', DOMExceptionNameEnum.invalidStateError)
+				new window.DOMException(
+					'There is no selection to extend.',
+					DOMExceptionNameEnum.invalidStateError
+				)
 			);
 		});
 
@@ -594,7 +597,7 @@ describe('Selection', () => {
 			const documentType = document.implementation.createDocumentType('', '', '');
 
 			expect(() => selection.selectAllChildren(documentType)).toThrowError(
-				new DOMException(
+				new window.DOMException(
 					"DocumentType Node can't be used as boundary point.",
 					DOMExceptionNameEnum.invalidNodeTypeError
 				)
@@ -664,11 +667,17 @@ describe('Selection', () => {
 			document.body.appendChild(end);
 
 			expect(() => selection.setBaseAndExtent(start, 6, end, 2)).toThrowError(
-				new DOMException('Invalid anchor or focus offset.', DOMExceptionNameEnum.indexSizeError)
+				new window.DOMException(
+					'Invalid anchor or focus offset.',
+					DOMExceptionNameEnum.indexSizeError
+				)
 			);
 
 			expect(() => selection.setBaseAndExtent(start, 1, end, 4)).toThrowError(
-				new DOMException('Invalid anchor or focus offset.', DOMExceptionNameEnum.indexSizeError)
+				new window.DOMException(
+					'Invalid anchor or focus offset.',
+					DOMExceptionNameEnum.indexSizeError
+				)
 			);
 		});
 

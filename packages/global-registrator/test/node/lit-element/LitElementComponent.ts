@@ -1,5 +1,5 @@
-import { LitElement, TemplateResult, html, css, CSSResult } from '../../lib/node_modules/lit';
-import { customElement, property } from '../../lib/node_modules/lit/decorators';
+import { LitElement, TemplateResult, html, css, CSSResult } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
 /**
  *
@@ -13,7 +13,7 @@ export default class LitElementComponent extends LitElement {
 	`;
 
 	@property({ type: String })
-	public prop1: string = null;
+	public prop1: string | null = null;
 
 	/**
 	 * Renders the component.

@@ -31,6 +31,11 @@ const SETTINGS: IMediaTrackSettings = {
 	resizeMode: 'none'
 };
 
+type IMediaTrackConstraints = Record<
+	string,
+	string | number | boolean | Record<string, string | number | boolean>
+>;
+
 /**
  * Canvas Capture Media Stream Track.
  *
@@ -52,7 +57,7 @@ export default class MediaStreamTrack extends EventTarget {
 	public label: string = '';
 	public [PropertySymbol.label]: string = '';
 	public [PropertySymbol.kind]: 'audio' | 'video' = 'video';
-	public [PropertySymbol.constraints]: object = {};
+	public [PropertySymbol.constraints]: IMediaTrackConstraints = {};
 	public [PropertySymbol.capabilities]: IMediaTrackCapabilities = JSON.parse(
 		JSON.stringify(CAPABILITIES)
 	);
@@ -97,8 +102,8 @@ export default class MediaStreamTrack extends EventTarget {
 	 * @param _constraints Constraints.
 	 * @param constraints
 	 */
-	public async applyConstraints(constraints: object): Promise<void> {
-		this.#mergeObjects(this[PropertySymbol.constraints], constraints);
+	public async applyConstraints(constraints: IMediaTrackConstraints): Promise<void> {
+		this.#mergeConstraints(this[PropertySymbol.constraints], constraints);
 	}
 
 	/**
@@ -162,13 +167,13 @@ export default class MediaStreamTrack extends EventTarget {
 	 * @param source Target.
 	 * @param target Source.
 	 */
-	#mergeObjects(source: object, target: object): void {
+	#mergeConstraints(source: IMediaTrackConstraints, target: IMediaTrackConstraints): void {
 		for (const key in target) {
 			if (target[key] !== null && typeof target[key] === 'object' && !Array.isArray(target[key])) {
 				if (typeof source[key] !== 'object') {
 					source[key] = {};
 				}
-				this.#mergeObjects(source[key], target[key]);
+				this.#mergeConstraints(source[key], target[key]);
 			} else {
 				source[key] = target[key];
 			}

@@ -146,7 +146,7 @@ export default class QuerySelector {
 		const keys = matchedPositions.sort();
 
 		for (let i = 0, max = keys.length; i < max; i++) {
-			items.push(matchesMap.get(keys[i]));
+			items.push(matchesMap.get(keys[i])!);
 		}
 
 		return nodeList;
@@ -237,7 +237,7 @@ export default class QuerySelector {
 		}
 
 		const cachedItem: ICachedQuerySelectorItem = {
-			result: <WeakRef<Element | null>>{
+			result: <WeakRef<any>>{
 				deref: () => null
 			}
 		};
@@ -265,7 +265,7 @@ export default class QuerySelector {
 
 		if (matchedPositions.length > 0) {
 			const keys = matchedPositions.sort();
-			return matchesMap.get(keys[0]);
+			return matchesMap.get(keys[0])!;
 		}
 
 		return null;
@@ -284,7 +284,7 @@ export default class QuerySelector {
 	public static matches(
 		element: Element,
 		selector: string,
-		options?: { scope?: Element | Document | DocumentFragment; ignoreErrors?: boolean }
+		options?: { scope?: Element | Document | DocumentFragment | null; ignoreErrors?: boolean }
 	): ISelectorMatch | null {
 		const ignoreErrors = options?.ignoreErrors;
 		const window = element[PropertySymbol.window];
@@ -357,7 +357,7 @@ export default class QuerySelector {
 			const result = this.matchSelector(element, items.reverse(), cachedItem);
 
 			if (result) {
-				cachedItem.result.match = result;
+				cachedItem.result!.match = result;
 				return result;
 			}
 		}
@@ -488,7 +488,7 @@ export default class QuerySelector {
 	 * @returns Document position and element map.
 	 */
 	private static findAll(
-		rootElement: Element,
+		rootElement: Element | null,
 		children: Element[],
 		selectorItems: SelectorItem[],
 		cachedItem: ICachedQuerySelectorAllItem,
@@ -575,7 +575,7 @@ export default class QuerySelector {
 	 * @returns Document position and element map.
 	 */
 	private static findFirst(
-		rootElement: Element,
+		rootElement: Element | null,
 		children: Element[],
 		selectorItems: SelectorItem[],
 		cachedItem: ICachedQuerySelectorItem,

@@ -116,6 +116,13 @@ describe('HTMLParser', () => {
 			).toBe(true);
 		});
 
+		it('Parses HTML with unquoted attributes with special characters.', () => {
+			const result = new HTMLParser(window).parse('<div id=æøåÆØÅ></div>');
+			expect(result.childNodes.length).toBe(1);
+			expect((<HTMLElement>result.childNodes[0]).tagName).toBe('DIV');
+			expect((<HTMLElement>result.childNodes[0]).id).toBe('æøåÆØÅ');
+		});
+
 		it('Parses an entire HTML page.', () => {
 			const html = `
 	<!DOCTYPE html>

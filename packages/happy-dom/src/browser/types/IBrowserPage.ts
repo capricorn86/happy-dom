@@ -18,6 +18,7 @@ export default interface IBrowserPage {
 	readonly console: Console;
 	readonly frames: IBrowserFrame[];
 	readonly viewport: IBrowserPageViewport;
+	readonly closed: boolean;
 	content: string;
 	url: string;
 

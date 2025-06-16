@@ -27,7 +27,7 @@ export default class VirtualConsoleLogEntryStringifier {
 				try {
 					output += JSON.stringify(part);
 				} catch (error) {
-					output += new Error('Failed to JSON stringify object in log entry.').stack.replace(
+					output += new Error('Failed to JSON stringify object in log entry.').stack!.replace(
 						/\n    at/gm,
 						'\n    ' + tabbing + 'at'
 					);

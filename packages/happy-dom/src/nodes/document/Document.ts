@@ -51,6 +51,7 @@ import StringUtility from '../../utilities/StringUtility.js';
 import HTMLParser from '../../html-parser/HTMLParser.js';
 import PreloadEntry from '../../fetch/preload/PreloadEntry.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import SVGScriptElement from '../svg-script-element/SVGScriptElement.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -60,9 +61,9 @@ const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 export default class Document extends Node {
 	// Internal properties
 	public [PropertySymbol.children]: HTMLCollection<Element> | null = null;
-	public [PropertySymbol.activeElement]: HTMLElement | SVGElement = null;
-	public [PropertySymbol.nextActiveElement]: HTMLElement | SVGElement = null;
-	public [PropertySymbol.currentScript]: HTMLScriptElement = null;
+	public [PropertySymbol.activeElement]: HTMLElement | SVGElement | null = null;
+	public [PropertySymbol.nextActiveElement]: HTMLElement | SVGElement | null = null;
+	public [PropertySymbol.currentScript]: HTMLScriptElement | null = null;
 	public [PropertySymbol.rootNode] = this;
 	public [PropertySymbol.isFirstWrite] = true;
 	public [PropertySymbol.isFirstWriteAfterOpen] = false;
@@ -83,11 +84,10 @@ export default class Document extends Node {
 	public [PropertySymbol.contentType]: string = 'text/html';
 	public [PropertySymbol.xmlProcessingInstruction]: ProcessingInstruction | null = null;
 	public [PropertySymbol.preloads]: Map<string, PreloadEntry> = new Map();
-	public [PropertySymbol.propertyEventListeners]: Map<string, (event: Event) => void> = new Map();
+	public [PropertySymbol.propertyEventListeners]: Map<string, ((event: Event) => void) | null> =
+		new Map();
+	public [PropertySymbol.selection]: Selection | null = null;
 	public declare cloneNode: (deep?: boolean) => Document;
-
-	// Private properties
-	#selection: Selection = null;
 
 	// Events
 
@@ -1195,7 +1195,7 @@ export default class Document extends Node {
 		}
 		return CookieStringUtility.cookiesToString(
 			browserFrame.page.context.cookieContainer.getCookies(
-				new URL(this[PropertySymbol.window].location.href),
+				<URL>(<unknown>this[PropertySymbol.window].location),
 				true
 			)
 		);
@@ -1206,14 +1206,15 @@ export default class Document extends Node {
 	 *
 	 * @param cookie Cookie string.
 	 */
-	public set cookie(cookie: string) {
+	public set cookie(value: string) {
 		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
 		if (!browserFrame) {
 			return;
 		}
-		browserFrame.page.context.cookieContainer.addCookies([
-			CookieStringUtility.stringToCookie(new URL(this[PropertySymbol.window].location.href), cookie)
-		]);
+		const cookie = CookieStringUtility.stringToCookie(this[PropertySymbol.window].location, value);
+		if (cookie) {
+			browserFrame.page.context.cookieContainer.addCookies([cookie]);
+		}
 	}
 
 	/**
@@ -1245,7 +1246,7 @@ export default class Document extends Node {
 				return node;
 			}
 		}
-		return null;
+		return null!;
 	}
 
 	/**
@@ -1257,7 +1258,7 @@ export default class Document extends Node {
 		const documentElement = this.documentElement;
 		return documentElement
 			? <HTMLBodyElement>ParentNodeUtility.getElementByTagName(documentElement, 'body')
-			: null;
+			: null!;
 	}
 
 	/**
@@ -1269,7 +1270,7 @@ export default class Document extends Node {
 		const documentElement = this.documentElement;
 		return documentElement
 			? <HTMLHeadElement>ParentNodeUtility.getElementByTagName(documentElement, 'head')
-			: null;
+			: null!;
 	}
 
 	/**
@@ -1420,7 +1421,7 @@ export default class Document extends Node {
 	 *
 	 * @returns the currently executing script element.
 	 */
-	public get currentScript(): HTMLScriptElement {
+	public get currentScript(): HTMLScriptElement | SVGScriptElement | null {
 		return this[PropertySymbol.currentScript];
 	}
 
@@ -1843,7 +1844,7 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public createElementNS(
-		namespaceURI: string,
+		namespaceURI: string | null,
 		qualifiedName: string,
 		options?: { is?: string }
 	): Element;
@@ -1858,7 +1859,7 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public createElementNS(
-		namespaceURI: string,
+		namespaceURI: string | null,
 		qualifiedName: string,
 		options?: { is?: string }
 	): Element {
@@ -1879,9 +1880,9 @@ export default class Document extends Node {
 		switch (namespaceURI) {
 			case NamespaceURI.svg:
 				const config = SVGElementConfig[qualifiedName.toLowerCase()];
-				const svgElementClass =
+				const svgElementClass: typeof SVGElement =
 					config && config.localName === qualifiedName
-						? window[config.className]
+						? (<any>window)[config.className]
 						: window.SVGElement;
 
 				const svgElement = NodeFactory.createNode<SVGElement>(this, svgElementClass);
@@ -1910,8 +1911,8 @@ export default class Document extends Node {
 					return element;
 				}
 
-				const elementClass = HTMLElementConfig[qualifiedName]
-					? window[HTMLElementConfig[qualifiedName].className]
+				const elementClass: typeof HTMLElement = HTMLElementConfig[qualifiedName]
+					? (<any>window)[HTMLElementConfig[qualifiedName].className]
 					: null;
 
 				// Known HTML element
@@ -2005,7 +2006,11 @@ export default class Document extends Node {
 	 * @param [whatToShow] What to show.
 	 * @param [filter] Filter.
 	 */
-	public createNodeIterator(root: Node, whatToShow = -1, filter: INodeFilter = null): NodeIterator {
+	public createNodeIterator(
+		root: Node,
+		whatToShow = -1,
+		filter: INodeFilter | null = null
+	): NodeIterator {
 		return new NodeIterator(root, whatToShow, filter);
 	}
 
@@ -2016,7 +2021,11 @@ export default class Document extends Node {
 	 * @param [whatToShow] What to show.
 	 * @param [filter] Filter.
 	 */
-	public createTreeWalker(root: Node, whatToShow = -1, filter: INodeFilter = null): TreeWalker {
+	public createTreeWalker(
+		root: Node,
+		whatToShow = -1,
+		filter: INodeFilter | null = null
+	): TreeWalker {
 		return new TreeWalker(root, whatToShow, filter);
 	}
 
@@ -2028,8 +2037,8 @@ export default class Document extends Node {
 	 * @returns Event.
 	 */
 	public createEvent(type: string): Event {
-		if (typeof this[PropertySymbol.window][type] === 'function') {
-			return new this[PropertySymbol.window][type]('init');
+		if (typeof (<any>this[PropertySymbol.window])[type] === 'function') {
+			return new (<any>this[PropertySymbol.window])[type]('init');
 		}
 		return new Event('init');
 	}
@@ -2061,7 +2070,7 @@ export default class Document extends Node {
 	 * @param qualifiedName Qualified name.
 	 * @returns Element.
 	 */
-	public createAttributeNS(namespaceURI: string, qualifiedName: string): Attr {
+	public createAttributeNS(namespaceURI: string | null, qualifiedName: string): Attr {
 		// We should use the NodeFactory and not the class constructor, so that owner document will be this document
 		const attribute = NodeFactory.createNode(this, this[PropertySymbol.window].Attr);
 
@@ -2133,10 +2142,10 @@ export default class Document extends Node {
 	 * @returns Selection.
 	 */
 	public getSelection(): Selection {
-		if (!this.#selection) {
-			this.#selection = new Selection(this);
+		if (!this[PropertySymbol.selection]) {
+			this[PropertySymbol.selection] = new Selection(this);
 		}
-		return this.#selection;
+		return this[PropertySymbol.selection];
 	}
 
 	/**

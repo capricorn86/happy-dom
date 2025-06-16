@@ -71,6 +71,21 @@ describe('BrowserFrame', () => {
 		});
 	});
 
+	describe('get closed()', () => {
+		it('Returns "false" if the frame is not closed.', () => {
+			const browser = new Browser();
+			const page = browser.defaultContext.newPage();
+			expect(page.mainFrame.closed).toBe(false);
+		});
+
+		it('Returns "true" if the frame is closed.', () => {
+			const browser = new Browser();
+			const page = browser.defaultContext.newPage();
+			page.close();
+			expect(page.mainFrame.closed).toBe(true);
+		});
+	});
+
 	describe('set content()', () => {
 		it('Sets the document HTML content.', () => {
 			const browser = new Browser();
@@ -351,9 +366,9 @@ Task #1
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new page.mainFrame.window.DOMException(
 					'The operation was aborted. Request timed out.',
-					DOMExceptionNameEnum.abortError
+					DOMExceptionNameEnum.timeoutError
 				)
 			);
 

@@ -35,7 +35,7 @@ export default class HTMLTrackElement extends HTMLElement {
 		if (kind === null) {
 			return TextTrackKindEnum.subtitles;
 		}
-		if (!TextTrackKindEnum[kind]) {
+		if (!TextTrackKindEnum[<'subtitles'>kind]) {
 			return TextTrackKindEnum.metadata;
 		}
 		return kind;
@@ -47,7 +47,7 @@ export default class HTMLTrackElement extends HTMLElement {
 	 * @param value Value.
 	 */
 	public set kind(value: string) {
-		if (!TextTrackKindEnum[value]) {
+		if (!TextTrackKindEnum[<'subtitles'>value]) {
 			value = TextTrackKindEnum.metadata;
 		}
 		this.setAttribute('kind', value);
@@ -64,10 +64,10 @@ export default class HTMLTrackElement extends HTMLElement {
 		}
 
 		try {
-			return new URL(this.getAttribute('src'), this[PropertySymbol.ownerDocument].location.href)
+			return new URL(this.getAttribute('src')!, this[PropertySymbol.ownerDocument].location.href)
 				.href;
 		} catch (e) {
-			return this.getAttribute('src');
+			return this.getAttribute('src') || '';
 		}
 	}
 

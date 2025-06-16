@@ -4,8 +4,6 @@
 		"outDir": "../../tmp",
 		"rootDir": "../../test",
 		"jsx": "react",
-        "module": "CommonJS",
-		"moduleResolution": "Node",
 		"lib": [
 			"es2015",
 			"es2016",
@@ -16,6 +14,7 @@
 	"include": [
 		"@types/node",
 		".",
-		"../../lib"
+		"../../lib",
+		"../../cjs"
 	]
 }

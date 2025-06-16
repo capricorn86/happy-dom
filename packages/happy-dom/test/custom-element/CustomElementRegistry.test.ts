@@ -56,7 +56,7 @@ describe('CustomElementRegistry', () => {
 
 		it('Throws an error if tag name does not contain "-".', () => {
 			expect(() => customElements.define('element', CustomElement)).toThrow(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'define' on 'CustomElementRegistry': "element" is not a valid custom element name`
 				)
 			);
@@ -65,7 +65,7 @@ describe('CustomElementRegistry', () => {
 		it('Throws an error if already defined.', () => {
 			customElements.define('custom-element', CustomElement);
 			expect(() => customElements.define('custom-element', CustomElement)).toThrow(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'define' on 'CustomElementRegistry': the name "custom-element" has already been used with this registry`
 				)
 			);
@@ -74,7 +74,7 @@ describe('CustomElementRegistry', () => {
 		it('Throws an error if already registered under a different tag name.', () => {
 			customElements.define('custom-element', CustomElement);
 			expect(() => customElements.define('custom-element2', CustomElement)).toThrow(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'define' on 'CustomElementRegistry': this constructor has already been used with this registry`
 				)
 			);
@@ -83,7 +83,7 @@ describe('CustomElementRegistry', () => {
 		for (const name of ['2a-b', 'A-B', 'aB-c', 'ab', 'font-face']) {
 			it(`Throws an error when using the invalid custom element name "${name}".`, () => {
 				expect(() => customElements.define(name, CustomElement)).toThrow(
-					new DOMException(
+					new window.DOMException(
 						`Failed to execute 'define' on 'CustomElementRegistry': "${name}" is not a valid custom element name`
 					)
 				);
@@ -145,7 +145,7 @@ describe('CustomElementRegistry', () => {
 	describe('whenDefined()', () => {
 		it('Throws an error if tag name looks invalid.', async () => {
 			const tagName = 'element';
-			expect(async () => await customElements.whenDefined(tagName)).rejects.toThrow();
+			await expect(async () => await customElements.whenDefined(tagName)).rejects.toThrow();
 		});
 
 		it('Returns a promise which is fulfilled when an element is defined.', async () => {

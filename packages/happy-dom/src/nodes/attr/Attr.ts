@@ -24,6 +24,7 @@ export default class Attr extends Node implements Attr {
 	/**
 	 * Returns specified.
 	 *
+	 * @deprecated
 	 * @returns Specified.
 	 */
 	public get specified(): boolean {
@@ -44,7 +45,7 @@ export default class Attr extends Node implements Attr {
 	 *
 	 * @returns Value.
 	 */
-	public get value(): string {
+	public get value(): string | null {
 		return this[PropertySymbol.value];
 	}
 
@@ -63,7 +64,7 @@ export default class Attr extends Node implements Attr {
 	 * @returns Name.
 	 */
 	public get name(): string {
-		return this[PropertySymbol.name];
+		return this[PropertySymbol.name] || '';
 	}
 
 	/**
@@ -72,7 +73,7 @@ export default class Attr extends Node implements Attr {
 	 * @returns Local name.
 	 */
 	public get localName(): string {
-		return this[PropertySymbol.localName];
+		return this[PropertySymbol.localName] || '';
 	}
 
 	/**
@@ -80,7 +81,7 @@ export default class Attr extends Node implements Attr {
 	 *
 	 * @returns Prefix.
 	 */
-	public get prefix(): string {
+	public get prefix(): string | null {
 		return this[PropertySymbol.prefix];
 	}
 
@@ -88,7 +89,7 @@ export default class Attr extends Node implements Attr {
 	 * @override
 	 */
 	public get textContent(): string {
-		return this[PropertySymbol.value];
+		return this[PropertySymbol.value] || '';
 	}
 
 	/**

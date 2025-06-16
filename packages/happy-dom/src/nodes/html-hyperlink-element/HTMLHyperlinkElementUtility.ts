@@ -43,11 +43,11 @@ export default class HTMLHyperlinkElementUtility {
 
 		try {
 			return new URL(
-				this.element.getAttribute('href'),
+				this.element.getAttribute('href')!,
 				this.element[PropertySymbol.ownerDocument].location.href
 			).href;
 		} catch (e) {
-			return this.element.getAttribute('href');
+			return this.element.getAttribute('href')!;
 		}
 	}
 
@@ -299,7 +299,7 @@ export default class HTMLHyperlinkElementUtility {
 	 */
 	public getHash(): string {
 		const href = this.element.getAttribute('href');
-		if (href[0] === '#') {
+		if (href?.[0] === '#') {
 			return href;
 		}
 		let url: URL;

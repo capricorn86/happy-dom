@@ -13,6 +13,16 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 		print: Array<(event: Event) => void>;
 		clear: Array<(event: Event) => void>;
 	} = { print: [], clear: [] };
+	#closed = false;
+
+	/**
+	 * Returns closed state.
+	 *
+	 * @returns True if the printer is closed.
+	 */
+	public get closed(): boolean {
+		return this.#closed;
+	}
 
 	/**
 	 * Writes to the output.
@@ -20,6 +30,9 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * @param logEntry Log entry.
 	 */
 	public print(logEntry: IVirtualConsoleLogEntry): void {
+		if (this.#closed) {
+			return;
+		}
 		this.#logEntries.push(logEntry);
 		this.dispatchEvent(new Event('print'));
 	}
@@ -28,8 +41,23 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * Clears the output.
 	 */
 	public clear(): void {
+		if (this.#closed) {
+			return;
+		}
 		this.#logEntries = [];
 		this.dispatchEvent(new Event('clear'));
+	}
+
+	/**
+	 * Clears and closes the virtual console printer.
+	 */
+	public close(): void {
+		if (this.#closed) {
+			return;
+		}
+		this.#logEntries = [];
+		this.#listeners = { print: [], clear: [] };
+		this.#closed = true;
 	}
 
 	/**
@@ -39,6 +67,9 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * @param listener Listener.
 	 */
 	public addEventListener(eventType: 'print' | 'clear', listener: (event: Event) => void): void {
+		if (this.#closed) {
+			return;
+		}
 		if (!this.#listeners[eventType]) {
 			throw new Error(`Event type "${eventType}" is not supported.`);
 		}
@@ -52,6 +83,9 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * @param listener Listener.
 	 */
 	public removeEventListener(eventType: 'print' | 'clear', listener: (event: Event) => void): void {
+		if (this.#closed) {
+			return;
+		}
 		if (!this.#listeners[eventType]) {
 			throw new Error(`Event type "${eventType}" is not supported.`);
 		}
@@ -67,11 +101,18 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 	 * @param event Event.
 	 */
 	public dispatchEvent(event: Event): void {
-		if (!this.#listeners[event.type]) {
-			throw new Error(`Event type "${event.type}" is not supported.`);
+		if (this.#closed) {
+			return;
 		}
-		for (const listener of this.#listeners[event.type]) {
-			listener(event);
+		switch (event.type) {
+			case 'print':
+			case 'clear':
+				for (const listener of this.#listeners[event.type]) {
+					listener(event);
+				}
+				break;
+			default:
+				throw new Error(`Event type "${event.type}" is not supported.`);
 		}
 	}
 

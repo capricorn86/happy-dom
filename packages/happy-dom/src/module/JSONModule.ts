@@ -39,7 +39,7 @@ export default class JSONModule implements IModule {
 			result = JSON.parse(this.#source);
 		} catch (error) {
 			throw new this.#window.TypeError(
-				`Failed to parse module "${this.url.href}": ${error.message}`
+				`Failed to parse module "${this.url.href}": ${(<Error>error).message}`
 			);
 		}
 

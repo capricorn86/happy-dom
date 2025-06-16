@@ -60,7 +60,7 @@ describe('SyncFetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					`Failed to construct 'Request': Invalid URL "${url}" on document location 'about:blank'. Relative URLs are not permitted on current document location.`,
 					DOMExceptionNameEnum.notSupportedError
 				)
@@ -85,7 +85,7 @@ describe('SyncFetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					`Failed to construct 'Request': Invalid URL "${url}" on document location 'about:blank'. Relative URLs are not permitted on current document location.`,
 					DOMExceptionNameEnum.notSupportedError
 				)
@@ -180,7 +180,7 @@ describe('SyncFetch', () => {
 			expect(response.redirected).toBe(false);
 			expect(response.status).toBe(200);
 			expect(response.statusText).toBe('OK');
-			expect(response.body.toString()).toBe(responseText);
+			expect(response.body!.toString()).toBe(responseText);
 			expect(response.headers instanceof Headers).toBe(true);
 
 			const headers = {};
@@ -236,7 +236,7 @@ describe('SyncFetch', () => {
 				}
 			}).send();
 
-			expect(response.body.toString()).toBe('intercepted text');
+			expect(response.body!.toString()).toBe('intercepted text');
 		});
 
 		it('Should perform the http request normally when the beforeSyncRequest does not return a response', () => {
@@ -317,7 +317,7 @@ describe('SyncFetch', () => {
 			expect(response.redirected).toBe(false);
 			expect(response.status).toBe(200);
 			expect(response.statusText).toBe('OK');
-			expect(response.body.toString()).toBe(responseText);
+			expect(response.body!.toString()).toBe(responseText);
 			expect(response.headers instanceof Headers).toBe(true);
 
 			const headers = {};
@@ -417,7 +417,7 @@ describe('SyncFetch', () => {
 			expect(response.redirected).toBe(false);
 			expect(response.status).toBe(200);
 			expect(response.statusText).toBe('OK');
-			expect(response.body.toString()).toBe('intercepted text');
+			expect(response.body!.toString()).toBe('intercepted text');
 			expect(response.headers instanceof Headers).toBe(true);
 
 			const headers = {};
@@ -511,7 +511,7 @@ describe('SyncFetch', () => {
 			expect(response.redirected).toBe(false);
 			expect(response.status).toBe(200);
 			expect(response.statusText).toBe('OK');
-			expect(response.body.toString()).toBe(responseText);
+			expect(response.body!.toString()).toBe(responseText);
 			expect(response.headers instanceof Headers).toBe(true);
 
 			const headers = {};
@@ -579,7 +579,7 @@ describe('SyncFetch', () => {
 				}
 			}).send();
 
-			expect(response.body.toString()).toBe(responseText);
+			expect(response.body!.toString()).toBe(responseText);
 		});
 
 		it('Should not allow to inject code into scripts executed using child_process.execFileSync().', () => {
@@ -642,7 +642,7 @@ describe('SyncFetch', () => {
 				}
 			}).send();
 
-			expect(response.body.toString()).toBe(responseText);
+			expect(response.body!.toString()).toBe(responseText);
 		});
 
 		it('Should send custom key/value object request headers.', () => {
@@ -703,7 +703,7 @@ describe('SyncFetch', () => {
 				}
 			}).send();
 
-			expect(response.body.toString()).toBe(responseText);
+			expect(response.body!.toString()).toBe(responseText);
 		});
 
 		it('Should send custom "Headers" instance request headers.', () => {
@@ -770,7 +770,7 @@ describe('SyncFetch', () => {
 				}
 			}).send();
 
-			expect(response.body.toString()).toBe(responseText);
+			expect(response.body!.toString()).toBe(responseText);
 		});
 
 		it('Includes Origin + Access-Control headers on cross-origin requests.', async () => {
@@ -914,6 +914,55 @@ describe('SyncFetch', () => {
 			);
 		});
 
+		it('Disables validation of certificates if "Browser.settings.fetch.disableStrictSSL" is set to "true".', async () => {
+			const originURL = 'https://localhost:8080';
+
+			browserFrame.url = originURL;
+			browserFrame.page.context.browser.settings.fetch.disableStrictSSL = true;
+
+			const url = 'https://localhost/some/path';
+
+			const requestArgs: string[] = [];
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					requestArgs.push(args[1]);
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							rawHeaders: [],
+							data: ''
+						}
+					});
+				}
+			});
+
+			new SyncFetch({
+				browserFrame,
+				window,
+				url
+			}).send();
+
+			expect(requestArgs.length).toBe(1);
+
+			expect(requestArgs[0]).toBe(
+				SyncFetchScriptBuilder.getScript({
+					url: new URL(url),
+					method: 'GET',
+					headers: {
+						Accept: '*/*',
+						Connection: 'close',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br',
+						Referer: originURL + '/'
+					},
+					disableStrictSSL: true
+				})
+			);
+		});
+
 		for (const httpCode of [301, 302, 303, 307, 308]) {
 			for (const method of ['GET', 'POST', 'PATCH']) {
 				it(`Should follow ${method} request redirect code ${httpCode}.`, () => {
@@ -1040,7 +1089,7 @@ describe('SyncFetch', () => {
 
 					expect(response.status).toBe(200);
 					expect(response.redirected).toBe(true);
-					expect(response.body.toString()).toBe(responseText);
+					expect(response.body!.toString()).toBe(responseText);
 				});
 			}
 		}
@@ -1104,7 +1153,10 @@ describe('SyncFetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(`Maximum redirects reached at: ${url1}`, DOMExceptionNameEnum.networkError)
+				new window.DOMException(
+					`Maximum redirects reached at: ${url1}`,
+					DOMExceptionNameEnum.networkError
+				)
 			);
 
 			// One more as the request is completed before it reaches the 20th try.
@@ -1271,7 +1323,7 @@ describe('SyncFetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					`URI requested responds with a redirect, redirect mode is set to "error": ${url}`,
 					DOMExceptionNameEnum.abortError
 				)
@@ -1309,7 +1361,7 @@ describe('SyncFetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					`URI requested responds with an invalid redirect URL: ${redirectURL}`,
 					DOMExceptionNameEnum.uriMismatchError
 				)
@@ -1515,7 +1567,7 @@ describe('SyncFetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					`Mixed Content: The page at '${originURL}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${url}'. This request has been blocked; the content must be served over HTTPS.`,
 					DOMExceptionNameEnum.securityError
 				)
@@ -1754,7 +1806,7 @@ describe('SyncFetch', () => {
 				expect(response.statusText).toBe('Bad Request');
 				expect(response.headers.get('Content-Type')).toBe('text/plain');
 				expect(response.ok).toBe(false);
-				expect(response.body.toString()).toBe(responseText);
+				expect(response.body!.toString()).toBe(responseText);
 			});
 		}
 
@@ -1784,7 +1836,7 @@ describe('SyncFetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					`Synchronous fetch to "${url}" failed. Error: connect ECONNREFUSED ::1:8080`,
 					DOMExceptionNameEnum.networkError
 				)
@@ -1816,7 +1868,7 @@ describe('SyncFetch', () => {
 				url
 			}).send();
 
-			expect(response.body.toString()).toBe('');
+			expect(response.body!.toString()).toBe('');
 		});
 
 		it('Handles unzipping content with "gzip" encoding.', () => {
@@ -1844,7 +1896,7 @@ describe('SyncFetch', () => {
 				window,
 				url
 			}).send();
-			expect(response.body.toString()).toBe(responseText);
+			expect(response.body!.toString()).toBe(responseText);
 		});
 
 		it('Should unzip content with slightly invalid "gzip" encoding.', () => {
@@ -1872,7 +1924,7 @@ describe('SyncFetch', () => {
 				window,
 				url
 			}).send();
-			expect(response.body.toString()).toBe(responseText);
+			expect(response.body!.toString()).toBe(responseText);
 		});
 
 		it('Handles 204 no content response with "gzip" encoding.', () => {
@@ -1927,7 +1979,7 @@ describe('SyncFetch', () => {
 				window,
 				url
 			}).send();
-			expect(response.body.toString()).toBe(responseText);
+			expect(response.body!.toString()).toBe(responseText);
 		});
 
 		it('Handles 204 no content response with "deflate" encoding.', () => {
@@ -1982,7 +2034,7 @@ describe('SyncFetch', () => {
 				window,
 				url
 			}).send();
-			expect(response.body.toString()).toBe(responseText);
+			expect(response.body!.toString()).toBe(responseText);
 		});
 
 		it('Handles 204 no content response with "br" (brotli) encoding.', () => {
@@ -2037,7 +2089,7 @@ describe('SyncFetch', () => {
 				window,
 				url
 			}).send();
-			expect(response.body.toString()).toBe(responseText);
+			expect(response.body!.toString()).toBe(responseText);
 		});
 
 		it('Rejects with an error if decompression for "gzip" encoding is invalid.', () => {
@@ -2072,7 +2124,7 @@ describe('SyncFetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
+				new window.DOMException(
 					'Failed to read response body. Error: incorrect header check.',
 					DOMExceptionNameEnum.encodingError
 				)
@@ -2103,7 +2155,7 @@ describe('SyncFetch', () => {
 				error = e;
 			}
 			expect(error).toEqual(
-				new DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
+				new window.DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
 			);
 		});
 
@@ -2579,8 +2631,8 @@ describe('SyncFetch', () => {
 			}
 
 			expect(error).toEqual(
-				new DOMException(
-					`Streams are not supported as request body for synchrounous requests.`,
+				new window.DOMException(
+					`Streams are not supported as request body for synchronous requests.`,
 					DOMExceptionNameEnum.notSupportedError
 				)
 			);
@@ -2727,10 +2779,10 @@ describe('SyncFetch', () => {
 			});
 
 			const response1 = new SyncFetch({ browserFrame, window, url }).send();
-			const text1 = response1.body.toString();
+			const text1 = response1.body!.toString();
 
 			const response2 = new SyncFetch({ browserFrame, window, url }).send();
-			const text2 = response2.body.toString();
+			const text2 = response2.body!.toString();
 
 			const headers1 = {};
 			for (const [key, value] of response1.headers) {
@@ -2823,12 +2875,12 @@ describe('SyncFetch', () => {
 					}
 				}
 			}).send();
-			const text1 = response1.body.toString();
+			const text1 = response1.body!.toString();
 
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			const response2 = new SyncFetch({ browserFrame, window, url }).send();
-			const text2 = response2.body.toString();
+			const text2 = response2.body!.toString();
 
 			const headers1 = {};
 			for (const [key, value] of response1.headers) {
@@ -2960,15 +3012,15 @@ describe('SyncFetch', () => {
 					}
 				}
 			}).send();
-			const text1 = response1.body.toString();
+			const text1 = response1.body!.toString();
 
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			const response2 = new SyncFetch({ browserFrame, window, url }).send();
-			const text2 = response2.body.toString();
+			const text2 = response2.body!.toString();
 
 			const response3 = new SyncFetch({ browserFrame, window, url }).send();
-			const text3 = response3.body.toString();
+			const text3 = response3.body!.toString();
 
 			const headers1 = {};
 			for (const [key, value] of response1.headers) {
@@ -3108,7 +3160,7 @@ describe('SyncFetch', () => {
 					}
 				}
 			}).send();
-			const text1 = response1.body.toString();
+			const text1 = response1.body!.toString();
 
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
@@ -3120,7 +3172,7 @@ describe('SyncFetch', () => {
 					method: 'HEAD'
 				}
 			}).send();
-			const text2 = response2.body.toString();
+			const text2 = response2.body!.toString();
 
 			const headers1 = {};
 			for (const [key, value] of response1.headers) {
@@ -3260,12 +3312,12 @@ describe('SyncFetch', () => {
 					}
 				}
 			}).send();
-			const text1 = response1.body.toString();
+			const text1 = response1.body!.toString();
 
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			const response2 = new SyncFetch({ browserFrame, window, url }).send();
-			const text2 = response2.body.toString();
+			const text2 = response2.body!.toString();
 
 			const headers1 = {};
 			for (const [key, value] of response1.headers) {
@@ -3403,7 +3455,7 @@ describe('SyncFetch', () => {
 					}
 				}
 			}).send();
-			const text1 = response1.body.toString();
+			const text1 = response1.body!.toString();
 
 			const response2 = new SyncFetch({
 				browserFrame,
@@ -3415,7 +3467,7 @@ describe('SyncFetch', () => {
 					}
 				}
 			}).send();
-			const text2 = response2.body.toString();
+			const text2 = response2.body!.toString();
 
 			const cachedResponse1 = new SyncFetch({
 				browserFrame,
@@ -3427,7 +3479,7 @@ describe('SyncFetch', () => {
 					}
 				}
 			}).send();
-			const cachedText1 = cachedResponse1.body.toString();
+			const cachedText1 = cachedResponse1.body!.toString();
 
 			const cachedResponse2 = new SyncFetch({
 				browserFrame,
@@ -3439,7 +3491,7 @@ describe('SyncFetch', () => {
 					}
 				}
 			}).send();
-			const cachedText2 = cachedResponse2.body.toString();
+			const cachedText2 = cachedResponse2.body!.toString();
 
 			const headers1 = {};
 			for (const [key, value] of response1.headers) {
@@ -3565,7 +3617,7 @@ describe('SyncFetch', () => {
 				url: 'https://example.com'
 			}).send();
 
-			expect(response.body.toString()).toBe(htmlFileContent.toString());
+			expect(response.body!.toString()).toBe(htmlFileContent.toString());
 
 			const response2 = new SyncFetch({
 				browserFrame: page.mainFrame,
@@ -3573,7 +3625,7 @@ describe('SyncFetch', () => {
 				url: 'https://example.com/index.html'
 			}).send();
 
-			expect(response2.body.toString()).toBe(htmlFileContent.toString());
+			expect(response2.body!.toString()).toBe(htmlFileContent.toString());
 
 			const response3 = new SyncFetch({
 				browserFrame: page.mainFrame,
@@ -3581,7 +3633,7 @@ describe('SyncFetch', () => {
 				url: 'https://example.com/index.html?query=value'
 			}).send();
 
-			expect(response3.body.toString()).toBe(htmlFileContent.toString());
+			expect(response3.body!.toString()).toBe(htmlFileContent.toString());
 
 			const response4 = new SyncFetch({
 				browserFrame: page.mainFrame,
@@ -3589,7 +3641,7 @@ describe('SyncFetch', () => {
 				url: 'https://example.com/css/style.css'
 			}).send();
 
-			expect(response4.body.toString()).toBe(cssFileContent.toString());
+			expect(response4.body!.toString()).toBe(cssFileContent.toString());
 
 			const response5 = new SyncFetch({
 				browserFrame: page.mainFrame,
@@ -3603,7 +3655,7 @@ describe('SyncFetch', () => {
 			expect(page.virtualConsolePrinter.readAsString()).toBe(
 				`GET https://example.com/not_found.js 404 (Not Found)\n`
 			);
-			expect(response5.body.toString()).toBe(
+			expect(response5.body!.toString()).toBe(
 				'<html><head><title>Happy DOM Virtual Server - 404 Not Found</title></head><body><h1>Happy DOM Virtual Server - 404 Not Found</h1></body></html>'
 			);
 
@@ -3633,7 +3685,7 @@ describe('SyncFetch', () => {
 			expect(page.virtualConsolePrinter.readAsString()).toBe(
 				`GET http://localhost:8080/404/ 404 (Not Found)\n`
 			);
-			expect(response6.body.toString()).toBe('404 not found');
+			expect(response6.body!.toString()).toBe('404 not found');
 		});
 
 		it('Handles relative virtual server defined as a string without origin', async () => {
@@ -3666,7 +3718,7 @@ describe('SyncFetch', () => {
 				url: 'http://localhost:8080/path/to/virtual-server/'
 			}).send();
 
-			expect(response.body.toString()).toBe(htmlFileContent.toString());
+			expect(response.body!.toString()).toBe(htmlFileContent.toString());
 
 			const response2 = new SyncFetch({
 				browserFrame: page.mainFrame,
@@ -3674,7 +3726,7 @@ describe('SyncFetch', () => {
 				url: 'http://localhost:8080/path/to/virtual-server/index.html'
 			}).send();
 
-			expect(response2.body.toString()).toBe(htmlFileContent.toString());
+			expect(response2.body!.toString()).toBe(htmlFileContent.toString());
 
 			const response3 = new SyncFetch({
 				browserFrame: page.mainFrame,
@@ -3682,7 +3734,7 @@ describe('SyncFetch', () => {
 				url: 'http://localhost:8080/path/to/virtual-server/index.html?query=value'
 			}).send();
 
-			expect(response3.body.toString()).toBe(htmlFileContent.toString());
+			expect(response3.body!.toString()).toBe(htmlFileContent.toString());
 
 			const response4 = new SyncFetch({
 				browserFrame: page.mainFrame,
@@ -3690,7 +3742,7 @@ describe('SyncFetch', () => {
 				url: 'http://localhost:8080/path/to/virtual-server/css/style.css'
 			}).send();
 
-			expect(response4.body.toString()).toBe(cssFileContent.toString());
+			expect(response4.body!.toString()).toBe(cssFileContent.toString());
 
 			const response5 = new SyncFetch({
 				browserFrame: page.mainFrame,
@@ -3704,7 +3756,7 @@ describe('SyncFetch', () => {
 			expect(page.virtualConsolePrinter.readAsString()).toBe(
 				`GET http://localhost:8080/path/to/virtual-server/not_found.js 404 (Not Found)\n`
 			);
-			expect(response5.body.toString()).toBe(
+			expect(response5.body!.toString()).toBe(
 				'<html><head><title>Happy DOM Virtual Server - 404 Not Found</title></head><body><h1>Happy DOM Virtual Server - 404 Not Found</h1></body></html>'
 			);
 		});
@@ -3739,7 +3791,7 @@ describe('SyncFetch', () => {
 				url: 'https://example.com/gb/en/'
 			}).send();
 
-			expect(response.body.toString()).toBe(htmlFileContent.toString());
+			expect(response.body!.toString()).toBe(htmlFileContent.toString());
 
 			const response2 = new SyncFetch({
 				browserFrame: page.mainFrame,
@@ -3747,7 +3799,7 @@ describe('SyncFetch', () => {
 				url: 'https://example.com/se/sv/index.html'
 			}).send();
 
-			expect(response2.body.toString()).toBe(htmlFileContent.toString());
+			expect(response2.body!.toString()).toBe(htmlFileContent.toString());
 
 			const response3 = new SyncFetch({
 				browserFrame: page.mainFrame,
@@ -3755,7 +3807,7 @@ describe('SyncFetch', () => {
 				url: 'https://example.com/se/sv/index.html?query=value'
 			}).send();
 
-			expect(response3.body.toString()).toBe(htmlFileContent.toString());
+			expect(response3.body!.toString()).toBe(htmlFileContent.toString());
 
 			const response4 = new SyncFetch({
 				browserFrame: page.mainFrame,
@@ -3763,7 +3815,7 @@ describe('SyncFetch', () => {
 				url: 'https://example.com/fi/fi/css/style.css'
 			}).send();
 
-			expect(response4.body.toString()).toBe(cssFileContent.toString());
+			expect(response4.body!.toString()).toBe(cssFileContent.toString());
 
 			const response5 = new SyncFetch({
 				browserFrame: page.mainFrame,
@@ -3773,11 +3825,12 @@ describe('SyncFetch', () => {
 
 			expect(response5.ok).toBe(false);
 			expect(response5.status).toBe(404);
+			expect(response5.url).toBe('https://example.com/gb/en/not_found.js');
 			expect(response5.statusText).toBe('Not Found');
 			expect(page.virtualConsolePrinter.readAsString()).toBe(
 				`GET https://example.com/gb/en/not_found.js 404 (Not Found)\n`
 			);
-			expect(response5.body.toString()).toBe(
+			expect(response5.body!.toString()).toBe(
 				'<html><head><title>Happy DOM Virtual Server - 404 Not Found</title></head><body><h1>Happy DOM Virtual Server - 404 Not Found</h1></body></html>'
 			);
 
@@ -3807,7 +3860,7 @@ describe('SyncFetch', () => {
 			expect(page.virtualConsolePrinter.readAsString()).toBe(
 				`GET http://localhost:8080/404/ 404 (Not Found)\n`
 			);
-			expect(response6.body.toString()).toBe('404 not found');
+			expect(response6.body!.toString()).toBe('404 not found');
 		});
 
 		it('Handles relative virtual server defined as a RegExp without origin', async () => {
@@ -3840,7 +3893,7 @@ describe('SyncFetch', () => {
 				url: 'http://localhost:8080/path/to/virtual-server/gb/en/'
 			}).send();
 
-			expect(response.body.toString()).toBe(htmlFileContent.toString());
+			expect(response.body!.toString()).toBe(htmlFileContent.toString());
 
 			const response2 = new SyncFetch({
 				browserFrame: page.mainFrame,
@@ -3848,7 +3901,7 @@ describe('SyncFetch', () => {
 				url: 'http://localhost:8080/path/to/virtual-server/se/sv/index.html'
 			}).send();
 
-			expect(response2.body.toString()).toBe(htmlFileContent.toString());
+			expect(response2.body!.toString()).toBe(htmlFileContent.toString());
 
 			const response3 = new SyncFetch({
 				browserFrame: page.mainFrame,
@@ -3856,7 +3909,7 @@ describe('SyncFetch', () => {
 				url: 'http://localhost:8080/path/to/virtual-server/se/sv/index.html?query=value'
 			}).send();
 
-			expect(response3.body.toString()).toBe(htmlFileContent.toString());
+			expect(response3.body!.toString()).toBe(htmlFileContent.toString());
 
 			const response4 = new SyncFetch({
 				browserFrame: page.mainFrame,
@@ -3864,7 +3917,7 @@ describe('SyncFetch', () => {
 				url: 'http://localhost:8080/path/to/virtual-server/fi/fi/css/style.css'
 			}).send();
 
-			expect(response4.body.toString()).toBe(cssFileContent.toString());
+			expect(response4.body!.toString()).toBe(cssFileContent.toString());
 
 			const response5 = new SyncFetch({
 				browserFrame: page.mainFrame,
@@ -3878,7 +3931,7 @@ describe('SyncFetch', () => {
 			expect(page.virtualConsolePrinter.readAsString()).toBe(
 				`GET http://localhost:8080/path/to/virtual-server/gb/en/not_found.js 404 (Not Found)\n`
 			);
-			expect(response5.body.toString()).toBe(
+			expect(response5.body!.toString()).toBe(
 				'<html><head><title>Happy DOM Virtual Server - 404 Not Found</title></head><body><h1>Happy DOM Virtual Server - 404 Not Found</h1></body></html>'
 			);
 		});

@@ -153,10 +153,16 @@ describe('Element', () => {
 			expect(window['element2']).toBe(undefined);
 		});
 
-		it(`Doesn't the "id" attribute as a property to Window if it collides with Window properties.`, () => {
+		it(`Doesn't add the "id" attribute as a property to Window if it collides with Window properties.`, () => {
 			element.setAttribute('id', 'document');
 			document.body.appendChild(element);
 			expect(window['document']).toBe(document);
+		});
+
+		it(`Doesn't add the "opener" attribute as a property to Window when the property value is null (#1841).`, () => {
+			document.body.appendChild(element);
+			element.id = 'opener';
+			expect(window['opener']).toBe(null);
 		});
 	});
 
@@ -210,6 +216,18 @@ describe('Element', () => {
 			expect(element.classList.length).toBe(2);
 			expect(element.classList[0]).toBe('value1');
 			expect(element.classList[1]).toBe('value2');
+		});
+
+		it('Handles cache correctly (#1812)', () => {
+			element.classList.add('foo', 'bar', 'baz');
+			expect(element.outerHTML).toEqual('<div class="foo bar baz"></div>');
+			element.className = '';
+			element.classList.add('bar', 'baz');
+			expect(element.outerHTML).toEqual('<div class="bar baz"></div>');
+			element.classList.remove('baz');
+			expect(element.outerHTML).toEqual('<div class="bar"></div>');
+			element.classList.replace('bar', 'foo');
+			expect(element.outerHTML).toEqual('<div class="foo"></div>');
 		});
 	});
 

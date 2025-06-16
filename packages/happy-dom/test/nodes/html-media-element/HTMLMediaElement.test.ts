@@ -160,7 +160,7 @@ describe('HTMLMediaElement', () => {
 		});
 
 		it('Returns set value using setSinkId()', async () => {
-			expect(element.setSinkId('sinkId')).resolves.toBeUndefined();
+			await expect(element.setSinkId('sinkId')).resolves.toBeUndefined();
 			expect(element.sinkId).toBe('sinkId');
 		});
 	});
@@ -268,7 +268,7 @@ describe('HTMLMediaElement', () => {
 
 		it('Returns set value using setMediaKeys()', async () => {
 			const mediaKeys = {};
-			expect(element.setMediaKeys(mediaKeys)).resolves.toBeUndefined();
+			await expect(element.setMediaKeys(mediaKeys)).resolves.toBeUndefined();
 			expect(element.mediaKeys).toBe(mediaKeys);
 		});
 	});
@@ -460,7 +460,7 @@ describe('HTMLMediaElement', () => {
 				expect(() => {
 					element.volume = volume;
 				}).toThrowError(
-					new DOMException(
+					new window.DOMException(
 						`Failed to set the 'volume' property on 'HTMLMediaElement': The volume provided (${volume}) is outside the range [0, 1].`,
 						DOMExceptionNameEnum.indexSizeError
 					)
@@ -791,8 +791,8 @@ describe('HTMLMediaElement', () => {
 	});
 
 	describe('setMediaKeys()', () => {
-		it('Returns a promise', () => {
-			expect(element.setMediaKeys({})).resolves.toBeUndefined();
+		it('Returns a promise', async () => {
+			await expect(element.setMediaKeys({})).resolves.toBeUndefined();
 		});
 
 		it('Sets the mediaKeys property', async () => {
@@ -803,8 +803,8 @@ describe('HTMLMediaElement', () => {
 	});
 
 	describe('setSinkId()', () => {
-		it('Returns a promise', () => {
-			expect(element.setSinkId('sinkId')).resolves.toBeUndefined();
+		it('Returns a promise', async () => {
+			await expect(element.setSinkId('sinkId')).resolves.toBeUndefined();
 		});
 
 		it('Sets the sinkId property', async () => {

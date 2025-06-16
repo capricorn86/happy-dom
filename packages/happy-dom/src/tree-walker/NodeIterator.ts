@@ -11,9 +11,9 @@ import NodeFilter from './NodeFilter.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/NodeIterator
  */
 export default class NodeIterator {
-	#root: Node = null;
+	#root: Node;
 	#whatToShow = -1;
-	#filter: INodeFilter = null;
+	#filter: INodeFilter | null = null;
 	#walker: TreeWalker;
 	#atRoot = true;
 
@@ -24,7 +24,7 @@ export default class NodeIterator {
 	 * @param [whatToShow] What to show.
 	 * @param [filter] Filter.
 	 */
-	constructor(root: Node, whatToShow = -1, filter: INodeFilter = null) {
+	constructor(root: Node, whatToShow = -1, filter: INodeFilter | null = null) {
 		this.#root = root;
 		this.#whatToShow = whatToShow;
 		this.#filter = filter;
@@ -54,7 +54,7 @@ export default class NodeIterator {
 	 *
 	 * @returns Filter.
 	 */
-	public get filter(): INodeFilter {
+	public get filter(): INodeFilter | null {
 		return this.#filter;
 	}
 
@@ -63,7 +63,7 @@ export default class NodeIterator {
 	 *
 	 * @returns Current node.
 	 */
-	public nextNode(): Node {
+	public nextNode(): Node | null {
 		if (this.#atRoot) {
 			this.#atRoot = false;
 			if (this.#walker[PropertySymbol.filterNode](this.#root) !== NodeFilter.FILTER_ACCEPT) {
@@ -79,7 +79,7 @@ export default class NodeIterator {
 	 *
 	 * @returns Current node.
 	 */
-	public previousNode(): Node {
+	public previousNode(): Node | null {
 		return this.#walker.previousNode();
 	}
 }

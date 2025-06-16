@@ -30,6 +30,20 @@ describe('DetachedBrowserContext', () => {
 		});
 	});
 
+	describe('get closed()', () => {
+		it('Returns "false" if the context is not closed.', () => {
+			const browser = new DetachedBrowser(BrowserWindow);
+			expect(browser.defaultContext.closed).toBe(false);
+		});
+
+		it('Returns "true" if the default context is closed.', async () => {
+			const browser = new DetachedBrowser(BrowserWindow);
+			const defaultContext = browser.defaultContext;
+			await browser.close();
+			expect(defaultContext.closed).toBe(true);
+		});
+	});
+
 	describe('close()', () => {
 		it('Closes the context.', async () => {
 			const browser = new DetachedBrowser(BrowserWindow);
@@ -40,18 +54,47 @@ describe('DetachedBrowserContext', () => {
 			const originalClose1 = page1.close;
 			const originalClose2 = page2.close;
 			let pagesClosed = 0;
+
 			vi.spyOn(page1, 'close').mockImplementation(() => {
 				pagesClosed++;
 				return originalClose1.call(page1);
 			});
+
 			vi.spyOn(page2, 'close').mockImplementation(() => {
 				pagesClosed++;
 				return originalClose2.call(page2);
 			});
+
+			page1.console.log('Incognito Page 1');
+			page1.mainFrame.document.cookie = 'test=1';
+
+			expect(context.cookieContainer.getCookies().length).toBe(1);
+
 			expect(browser.contexts.length).toBe(1);
-			await context.close();
+			expect(pagesClosed).toBe(0);
+
+			let error: Error | null = null;
+			try {
+				await context.close();
+			} catch (e) {
+				error = <Error>e;
+			}
+
+			expect(browser.contexts.length).toBe(1);
+			expect(pagesClosed).toBe(0);
+			expect(error).toEqual(
+				new Error(
+					'Cannot close the default context. Use `browser.close()` to close the browser instead.'
+				)
+			);
+
+			await browser.close();
+
 			expect(browser.contexts.length).toBe(0);
 			expect(pagesClosed).toBe(2);
+			expect(context.cookieContainer.getCookies().length).toBe(0);
+			expect(page1.virtualConsolePrinter.readAsString()).toBe('');
+			expect(page1.virtualConsolePrinter.closed).toBe(true);
 		});
 	});
 

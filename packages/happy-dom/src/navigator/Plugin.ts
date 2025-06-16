@@ -25,7 +25,7 @@ export default class Plugin {
 
 		for (let i = 0, max = mimeTypes.length; i < max; i++) {
 			this[i] = mimeTypes[i];
-			this[mimeTypes[i].type] = mimeTypes[i];
+			(<any>this)[mimeTypes[i].type] = mimeTypes[i];
 		}
 		this.length = mimeTypes.length;
 	}
@@ -46,8 +46,8 @@ export default class Plugin {
 	 * @param name String.
 	 * @returns IMimeType.
 	 */
-	public namedItem(name: string): MimeType {
-		return this[name] || null;
+	public namedItem(name: string): MimeType | null {
+		return (<any>this)[name] || null;
 	}
 
 	/**

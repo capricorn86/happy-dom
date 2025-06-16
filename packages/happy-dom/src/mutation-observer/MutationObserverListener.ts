@@ -9,13 +9,14 @@ import IMutationListener from './IMutationListener.js';
  * Mutation Observer Listener.
  */
 export default class MutationObserverListener {
-	public readonly target: Node;
+	public target: Node;
 	public options: IMutationObserverInit;
 	public mutationListener: IMutationListener;
 	#window: BrowserWindow;
 	#observer: MutationObserver;
 	#callback: (record: MutationRecord[], observer: MutationObserver) => void;
-	#records: MutationRecord[] | null = [];
+	#records: MutationRecord[] = [];
+	#destroyed = false;
 	#timeout: NodeJS.Timeout | null = null;
 
 	/**
@@ -52,7 +53,7 @@ export default class MutationObserverListener {
 	 * @param record Record.
 	 */
 	public report(record: MutationRecord): void {
-		if (!this.#records) {
+		if (this.#destroyed) {
 			return;
 		}
 
@@ -63,6 +64,9 @@ export default class MutationObserverListener {
 		}
 
 		this.#timeout = this.#window.setTimeout(() => {
+			if (this.#destroyed) {
+				return;
+			}
 			const records = this.#records;
 			if (records?.length > 0) {
 				this.#records = [];
@@ -78,6 +82,9 @@ export default class MutationObserverListener {
 		if (this.#timeout) {
 			this.#window.clearTimeout(this.#timeout);
 		}
+		if (this.#destroyed) {
+			return [];
+		}
 		const records = this.#records;
 		this.#records = [];
 		return records;
@@ -87,16 +94,20 @@ export default class MutationObserverListener {
 	 * Destroys the listener.
 	 */
 	public destroy(): void {
+		if (this.#destroyed) {
+			return;
+		}
 		if (this.#timeout) {
 			this.#window.clearTimeout(this.#timeout);
 		}
-		(<null>this.options) = null;
-		(<null>this.target) = null;
-		(<null>this.mutationListener) = null;
-		(<null>this.#window) = null;
-		(<null>this.#observer) = null;
-		(<null>this.#callback) = null;
-		(<null>this.#timeout) = null;
-		(<null>this.#records) = null;
+		this.#destroyed = true;
+		this.options = null!;
+		this.target = null!;
+		this.mutationListener = null!;
+		this.#window = null!;
+		this.#observer = null!;
+		this.#callback = null!;
+		this.#timeout = null;
+		this.#records = null!;
 	}
 }

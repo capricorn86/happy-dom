@@ -5,6 +5,7 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import HTMLTableSectionElement from '../html-table-section-element/HTMLTableSectionElement.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import Element from '../element/Element.js';
 
 /**
  * HTMLTableRowElement
@@ -40,7 +41,7 @@ export default class HTMLTableRowElement extends HTMLElement {
 	public get rowIndex(): number {
 		let parent = this.parentNode;
 		while (parent) {
-			if (parent[PropertySymbol.tagName] === 'TABLE') {
+			if ((<Element>parent)[PropertySymbol.tagName] === 'TABLE') {
 				const rows = QuerySelector.querySelectorAll(<HTMLElement>parent, 'tr')[
 					PropertySymbol.items
 				];
@@ -102,7 +103,7 @@ export default class HTMLTableRowElement extends HTMLElement {
 			return cell;
 		}
 
-		cells[index].parentNode.insertBefore(cell, cells[index]);
+		cells[index].parentNode?.insertBefore(cell, cells[index]);
 
 		return cell;
 	}

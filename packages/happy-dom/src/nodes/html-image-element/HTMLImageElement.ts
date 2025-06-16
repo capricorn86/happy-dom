@@ -249,10 +249,10 @@ export default class HTMLImageElement extends HTMLElement {
 		}
 
 		try {
-			return new URL(this.getAttribute('src'), this[PropertySymbol.ownerDocument].location.href)
+			return new URL(this.getAttribute('src')!, this[PropertySymbol.ownerDocument].location.href)
 				.href;
 		} catch (e) {
-			return this.getAttribute('src');
+			return this.getAttribute('src')!;
 		}
 	}
 

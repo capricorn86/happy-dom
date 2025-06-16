@@ -19,8 +19,8 @@ import SelectionDirectionEnum from './SelectionDirectionEnum.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/Selection.
  */
 export default class Selection {
-	readonly #ownerDocument: Document = null;
-	#range: Range = null;
+	readonly #ownerDocument: Document;
+	#range: Range | null = null;
 	#direction: SelectionDirectionEnum = SelectionDirectionEnum.directionless;
 
 	/**
@@ -74,7 +74,7 @@ export default class Selection {
 	 * @see https://w3c.github.io/selection-api/#dom-selection-anchornode
 	 * @returns Node.
 	 */
-	public get anchorNode(): Node {
+	public get anchorNode(): Node | null {
 		if (!this.#range) {
 			return null;
 		}
@@ -105,7 +105,7 @@ export default class Selection {
 	 * @alias anchorNode
 	 * @returns Node.
 	 */
-	public get baseNode(): Node {
+	public get baseNode(): Node | null {
 		return this.anchorNode;
 	}
 
@@ -126,7 +126,7 @@ export default class Selection {
 	 * @see https://w3c.github.io/selection-api/#dom-selection-focusnode
 	 * @returns Node.
 	 */
-	public get focusNode(): Node {
+	public get focusNode(): Node | null {
 		return this.anchorNode;
 	}
 
@@ -147,7 +147,7 @@ export default class Selection {
 	 * @alias focusNode
 	 * @returns Node.
 	 */
-	public get extentNode(): Node {
+	public get extentNode(): Node | null {
 		return this.focusNode;
 	}
 
@@ -389,7 +389,7 @@ export default class Selection {
 			);
 		}
 
-		const anchorNode = this.anchorNode;
+		const anchorNode = this.anchorNode!;
 		const anchorOffset = this.anchorOffset;
 		const newRange = new this.#ownerDocument[PropertySymbol.window].Range();
 		newRange[PropertySymbol.start].node = node;
@@ -521,7 +521,7 @@ export default class Selection {
 	 *
 	 * @param range Range.
 	 */
-	#associateRange(range: Range): void {
+	#associateRange(range: Range | null): void {
 		const oldRange = this.#range;
 		this.#range = range;
 		this.#direction =

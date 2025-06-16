@@ -84,7 +84,7 @@ export default class SVGPreserveAspectRatio {
 			return SVGPreserveAspectRatioAlignEnum.xMidYMid;
 		}
 
-		const align = attributeValue.split(/\s+/)[0];
+		const align = <'unknown'>attributeValue.split(/\s+/)[0];
 
 		if (SVGPreserveAspectRatioAlignEnum[align] === undefined) {
 			return SVGPreserveAspectRatioAlignEnum.xMidYMid;
@@ -136,7 +136,7 @@ export default class SVGPreserveAspectRatio {
 			return SVGPreserveAspectRatioMeetOrSliceEnum.meet;
 		}
 
-		const meetOrSlice = attributeValue.split(/\s+/)[1];
+		const meetOrSlice = <'unknown'>attributeValue.split(/\s+/)[1];
 
 		if (!meetOrSlice || SVGPreserveAspectRatioMeetOrSliceEnum[meetOrSlice] === undefined) {
 			return SVGPreserveAspectRatioMeetOrSliceEnum.meet;

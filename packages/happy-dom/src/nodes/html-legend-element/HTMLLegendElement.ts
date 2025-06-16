@@ -14,7 +14,7 @@ export default class HTMLLegendElement extends HTMLElement {
 	 *
 	 * @returns Form.
 	 */
-	public get form(): HTMLFormElement {
+	public get form(): HTMLFormElement | null {
 		let parent: Node | null = this;
 		while (parent) {
 			if (parent instanceof HTMLFieldSetElement) {

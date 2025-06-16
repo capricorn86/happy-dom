@@ -33,8 +33,8 @@ export default class Event {
 	public [PropertySymbol.dispatching] = false;
 	public [PropertySymbol.immediatePropagationStopped] = false;
 	public [PropertySymbol.propagationStopped] = false;
-	public [PropertySymbol.target]: EventTarget = null;
-	public [PropertySymbol.currentTarget]: EventTarget = null;
+	public [PropertySymbol.target]: EventTarget | null = null;
+	public [PropertySymbol.currentTarget]: EventTarget | null = null;
 	public [PropertySymbol.isInPassiveEventListener] = false;
 
 	/**
@@ -119,7 +119,7 @@ export default class Event {
 	 * @returns Target.
 	 */
 	public get target(): EventTarget {
-		return this[PropertySymbol.target];
+		return this[PropertySymbol.target]!;
 	}
 
 	/**
@@ -128,7 +128,7 @@ export default class Event {
 	 * @returns Target.
 	 */
 	public get currentTarget(): EventTarget {
-		return this[PropertySymbol.currentTarget];
+		return this[PropertySymbol.currentTarget]!;
 	}
 
 	/**
@@ -151,15 +151,15 @@ export default class Event {
 		}
 
 		const composedPath = [];
-		let eventTarget: Node | ShadowRoot | BrowserWindow = <Node | ShadowRoot>(
-			(<unknown>this[PropertySymbol.target])
+		let eventTarget: Node | ShadowRoot | BrowserWindow | null = <Node | ShadowRoot>(
+			this[PropertySymbol.target]
 		);
 
 		while (eventTarget) {
 			composedPath.push(eventTarget);
 
 			if ((<Node>(<unknown>eventTarget)).parentNode) {
-				eventTarget = (<Node>(<unknown>eventTarget)).parentNode;
+				eventTarget = (<Node>(<unknown>eventTarget)).parentNode!;
 			} else if (
 				this[PropertySymbol.composed] &&
 				(<Node>eventTarget)[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode &&

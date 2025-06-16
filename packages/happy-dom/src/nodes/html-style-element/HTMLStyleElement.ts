@@ -74,7 +74,7 @@ export default class HTMLStyleElement extends HTMLElement {
 	 *
 	 * @returns CSS style sheet.
 	 */
-	public get sheet(): CSSStyleSheet {
+	public get sheet(): CSSStyleSheet | null {
 		if (!this[PropertySymbol.isConnected]) {
 			return null;
 		}
