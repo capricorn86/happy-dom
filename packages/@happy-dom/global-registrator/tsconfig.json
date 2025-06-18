@@ -23,13 +23,12 @@
 		"baseUrl": ".",
 		"composite": true,
 		"incremental": true,
-		"jsx": "react",
         "tsBuildInfoFile": ".turbo/.tsbuildinfo",
+		"lib": [
+			"ES2022"
+		],
 		"types": [
 			"node"
-		],
-		"lib": [
-			"es2022"
 		]
 	},
 	"include": [

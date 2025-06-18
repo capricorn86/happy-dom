@@ -23,5 +23,5 @@ export default interface IReloadOptions {
 	/**
 	 * Request headers.
 	 */
-	headers?: IHeadersInit;
+	headers?: IHeadersInit | null;
 }

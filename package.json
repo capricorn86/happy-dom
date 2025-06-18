@@ -34,7 +34,7 @@
 		"husky": "^9.0.6",
 		"prettier": "3.3.3",
 		"semver": "^7.3.5",
-		"turbo": "^1.11.3",
+		"turbo": "^2.5.4",
 		"typescript": "^5.8.3",
 		"vitest": "^3.2.2"
 	},

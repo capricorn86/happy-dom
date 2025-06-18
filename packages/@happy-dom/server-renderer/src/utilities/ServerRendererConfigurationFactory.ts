@@ -64,7 +64,7 @@ export default class ServerRendererConfigurationFactory {
 	 * @param source Source.
 	 * @param [parentNamespace] Parent namespace.
 	 */
-	private static validate(target: object, source: object, parentNamespace?: string): void {
+	private static validate(target: any, source: any, parentNamespace?: string): void {
 		for (const key of Object.keys(source)) {
 			if (key === 'browser') {
 				continue;

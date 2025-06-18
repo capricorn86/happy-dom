@@ -36,7 +36,7 @@ export default class ServerRendererBrowser {
 						...configuration.browser.debug,
 						traceWaitUntilComplete: configuration.render.timeout
 					}
-			  }
+				}
 			: configuration.browser;
 		this.#browser = new Browser({ settings });
 	}
@@ -85,7 +85,7 @@ export default class ServerRendererBrowser {
 	 */
 	public async close(): Promise<void> {
 		await this.#browser.close();
-		this.#browser = null;
+		this.#browser = null!;
 		this.#isCacheLoaded = false;
 		this.#isCacheDirectoryCreated = false;
 		this.#cacheEntries.clear();
@@ -117,22 +117,22 @@ export default class ServerRendererBrowser {
 		}
 
 		const pageErrors: string[] = [];
-		const response = await page.goto(item.url, {
+		const response = (await page.goto(item.url, {
 			timeout: configuration.render.timeout,
 			headers: item.headers,
 			beforeContentCallback(window) {
-				window.addEventListener('error', (event: ErrorEvent) => {
-					if (event.error) {
-						pageErrors.push(event.error.stack);
+				window.addEventListener('error', (event) => {
+					if ((<ErrorEvent>event).error) {
+						pageErrors.push((<ErrorEvent>event).error!.stack!);
 					}
 				});
 				if (!configuration.render.disablePolyfills) {
 					WindowPolyfillUtility.applyPolyfills(window);
 				}
 			}
-		});
+		}))!;
 
-		const headers = {};
+		const headers: { [key: string]: string } = {};
 
 		for (const [key, value] of response.headers) {
 			if (key !== 'content-encoding') {
@@ -149,7 +149,7 @@ export default class ServerRendererBrowser {
 				status: response.status,
 				statusText: response.statusText,
 				headers,
-				outputFile: item.outputFile,
+				outputFile: item.outputFile ?? null,
 				error: `Failed to render page ${item.url} (${response.status} ${response.statusText})`,
 				pageConsole,
 				pageErrors
@@ -162,7 +162,7 @@ export default class ServerRendererBrowser {
 				? setTimeout(() => {
 						timeoutError = `The page was not rendered within the defined time of ${configuration.render.timeout}ms and the operation was aborted. You can increase this value with the "render.timeout" setting.\n\nThe page may contain scripts with timer loops that prevent it from completing. You can debug open handles by setting "debug" to true, or prevent timer loops by setting "browser.timer.preventTimerLoops" to true. Read more about this in the documentation.`;
 						page.abort();
-				  }, configuration.render.timeout)
+					}, configuration.render.timeout)
 				: null;
 
 		try {
@@ -176,8 +176,8 @@ export default class ServerRendererBrowser {
 				status: response.status,
 				statusText: response.statusText,
 				headers,
-				outputFile: item.outputFile,
-				error: error.stack,
+				outputFile: item.outputFile ?? null,
+				error: (<Error>error).stack!,
 				pageConsole,
 				pageErrors
 			};
@@ -186,7 +186,9 @@ export default class ServerRendererBrowser {
 		// Wait for errors to be printed
 		await new Promise((resolve) => setTimeout(resolve, 10));
 
-		clearTimeout(timeout);
+		if (timeout) {
+			clearTimeout(timeout);
+		}
 
 		const pageConsole = page.virtualConsolePrinter.readAsString();
 
@@ -353,8 +355,8 @@ export default class ServerRendererBrowser {
 		for (const entries of groupedEntries.values()) {
 			for (const entry of entries) {
 				if (entry.response.body && !entry.virtual && this.#cacheEntries.has(entry)) {
-					const responseHeaders = {};
-					const requestHeaders = {};
+					const responseHeaders: { [k: string]: string } = {};
+					const requestHeaders: { [k: string]: string } = {};
 
 					this.#cacheEntries.add(entry);
 

@@ -13,20 +13,23 @@
 		"resolveJsonModule": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
+        "noImplicitReturns": false,
+        "noImplicitAny" : true,
 		"removeComments": false,
 		"preserveConstEnums": true,
+        "strict": true,
 		"sourceMap": true,
 		"skipLibCheck": true,
 		"baseUrl": ".",
 		"composite": true,
 		"incremental": true,
         "tsBuildInfoFile": ".turbo/.tsbuildinfo",
-		"types": [
-			"node"
-		],
 		"lib": [
 			"ES2022",
 			"dom"
+		],
+		"types": [
+			"node"
 		]
 	},
 	"include": [

@@ -7,8 +7,9 @@ import IServerRendererConfiguration from './types/IServerRendererConfiguration.j
 import ServerRendererConfigurationFactory from './utilities/ServerRendererConfigurationFactory.js';
 import Path from 'path';
 import Inspector from 'node:inspector';
-import Chalk from 'chalk';
 import ServerRendererBrowser from './ServerRendererBrowser.js';
+// eslint-disable-next-line import/no-named-as-default
+import Chalk from 'chalk';
 
 interface IWorkerWaitingItem {
 	items: IServerRendererItem[];
@@ -66,7 +67,7 @@ export default class ServerRenderer {
 			return [];
 		}
 
-		for (const item of urls) {
+		for (const item of items) {
 			if (typeof item === 'string') {
 				parsedItems.push({ url: item });
 			} else {
@@ -198,7 +199,7 @@ export default class ServerRenderer {
 			}
 
 			if (this.#workerPool.free.length > 0) {
-				const worker = this.#workerPool.free.pop();
+				const worker = this.#workerPool.free.pop()!;
 
 				this.#workerPool.busy.push(worker);
 

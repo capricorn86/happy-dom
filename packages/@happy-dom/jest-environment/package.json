@@ -83,11 +83,11 @@
 		"zone.js": "^0.10.3"
 	},
 	"peerDependencies": {
-		"@jest/environment": "=>25.0.0",
-		"@jest/fake-timers": "=>25.0.0",
-		"@jest/types": "=>25.0.0",
-		"jest-mock": "=>25.0.0",
-		"jest-util": "=>25.0.0"
+		"@jest/environment": ">=25.0.0",
+		"@jest/fake-timers": ">=25.0.0",
+		"@jest/types": ">=25.0.0",
+		"jest-mock": ">=25.0.0",
+		"jest-util": ">=25.0.0"
 	},
 	"engines": {
 		"node": ">=20.0.0"

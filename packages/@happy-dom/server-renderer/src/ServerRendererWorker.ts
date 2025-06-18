@@ -19,9 +19,9 @@ export default class ServerRendererWorker {
 
 		const browser = new ServerRendererBrowser(configuration);
 
-		parentPort.on('message', async ({ items }) => {
+		parentPort?.on('message', async ({ items }) => {
 			const results = await browser.render(items);
-			parentPort.postMessage({ status: 'done', results });
+			parentPort?.postMessage({ status: 'done', results });
 		});
 	}
 }

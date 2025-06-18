@@ -1,4 +1,3 @@
-import Chalk from 'chalk';
 import Http2 from 'http2';
 import IOptionalServerRendererConfiguration from './types/IOptionalServerRendererConfiguration.js';
 import IServerRendererConfiguration from './types/IServerRendererConfiguration.js';
@@ -9,6 +8,8 @@ import { createGzip } from 'node:zlib';
 import { pipeline } from 'node:stream/promises';
 import OS from 'node:os';
 import IServerRendererResult from './types/IServerRendererResult.js';
+// eslint-disable-next-line import/no-named-as-default
+import Chalk from 'chalk';
 
 /**
  * Server renderer proxy HTTP2 server.
@@ -16,7 +17,7 @@ import IServerRendererResult from './types/IServerRendererResult.js';
 export default class ServerRendererServer {
 	#configuration: IServerRendererConfiguration;
 	#serverRenderer: ServerRenderer;
-	#server: Http2.Http2Server = null;
+	#server: Http2.Http2Server | null = null;
 	#cache: Map<
 		string,
 		{
@@ -100,6 +101,10 @@ export default class ServerRendererServer {
 						this.#onIncomingRequest(request, response)
 				);
 				break;
+			default:
+				throw new Error(
+					`Unsupported protocol "${url.protocol}". Only "http:" and "https:" are supported.`
+				);
 		}
 
 		this.#server.listen(url.port ? Number(url.port) : url.protocol === 'https:' ? 443 : 80);
@@ -144,12 +149,14 @@ export default class ServerRendererServer {
 		request: Http2.Http2ServerRequest,
 		response: Http2.Http2ServerResponse
 	): Promise<void> {
-		const url = new URL(request.url, this.#configuration.server.targetOrigin);
-		const headers = {};
+		const url = new URL(request.url, this.#configuration.server.targetOrigin!);
+		const headers: { [name: string]: string } = {};
 
 		for (const name of Object.keys(request.headers)) {
 			if (name[0] !== ':' && name !== 'transfer-encoding') {
-				headers[name] = request.headers[name];
+				headers[name] = Array.isArray(request.headers[name])
+					? request.headers[name].join(', ')
+					: request.headers[name]!;
 			}
 		}
 
@@ -177,7 +184,7 @@ export default class ServerRendererServer {
 				}
 			}
 
-			let result: IServerRendererResult;
+			let result: IServerRendererResult | null = null;
 
 			if (this.#configuration.server.renderCacheTime) {
 				const cacheQueue = this.#cacheQueue.get(url.href);
@@ -229,7 +236,7 @@ export default class ServerRendererServer {
 			if (this.#configuration.server.renderCacheTime) {
 				this.#cache.set(url.href, {
 					timestamp: Date.now(),
-					content: result.content
+					content: result.content!
 				});
 			}
 
@@ -237,10 +244,10 @@ export default class ServerRendererServer {
 			response.setHeader('Content-Type', 'text/html; charset=utf-8');
 
 			try {
-				await pipeline(result.content, createGzip(), response);
+				await pipeline(result.content!, createGzip(), response);
 			} catch (error) {
 				// eslint-disable-next-line no-console
-				console.error(Chalk.red(`\nFailed to send response: ${error.message}\n`));
+				console.error(Chalk.red(`\nFailed to send response: ${(<Error>error).message}\n`));
 				response.statusCode = 500;
 				response.setHeader('Content-Type', 'text/plain; charset=utf-8');
 				response.write('Internal Server Error');
@@ -263,16 +270,16 @@ export default class ServerRendererServer {
 			response.setHeader('Content-Encoding', 'gzip');
 			response.removeHeader('Content-Length');
 			try {
-				await pipeline(fetchResponse.body, createGzip(), response);
+				await pipeline(fetchResponse.body!, createGzip(), response);
 			} catch (error) {
 				// eslint-disable-next-line no-console
-				console.error(Chalk.red(`\nFailed to send response: ${error.message}\n`));
+				console.error(Chalk.red(`\nFailed to send response: ${(<Error>error).message}\n`));
 				response.statusCode = 500;
 				response.setHeader('Content-Type', 'text/plain; charset=utf-8');
 				response.write('Internal Server Error');
 			}
 		} else {
-			const reader = fetchResponse.body.getReader();
+			const reader = fetchResponse.body!.getReader();
 			while (true) {
 				const { done, value } = await reader.read();
 				if (done) {

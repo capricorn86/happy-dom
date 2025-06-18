@@ -103,7 +103,7 @@ export default interface IServerRendererConfiguration {
 	 * Proxy server settings.
 	 */
 	server: {
-		serverURL: string | null;
+		serverURL: string;
 		targetOrigin: string | null;
 		renderCacheTime: number;
 	};

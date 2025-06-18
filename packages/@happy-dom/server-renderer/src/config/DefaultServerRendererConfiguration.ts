@@ -29,7 +29,7 @@ export default <IServerRendererConfiguration>{
 		serializableShadowRoots: false,
 		allShadowRoots: false,
 		excludeShadowRootTags: null,
-		disablePolyfills: null
+		disablePolyfills: false
 	},
 	urls: null,
 	server: {
