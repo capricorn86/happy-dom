@@ -2,6 +2,10 @@ import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
 import BrowserNavigationCrossOriginPolicyEnum from '../enums/BrowserNavigationCrossOriginPolicyEnum.js';
 import IFetchInterceptor from '../../fetch/types/IFetchInterceptor.js';
 import IVirtualServer from '../../fetch/types/IVirtualServer.js';
+import IFetchRequestHeaders from '../../fetch/types/IFetchRequestHeaders.js';
+import IOptionalBrowserPageViewport from './IOptionalBrowserPageViewport.js';
+import IOptionalTimerLoopsLimit from '../../window/IOptionalTimerLoopsLimit.js';
+import BrowserWindow from '../../window/BrowserWindow.js';
 
 export default interface IOptionalBrowserSettings {
 	/** Disables JavaScript evaluation. */
@@ -24,6 +28,7 @@ export default interface IOptionalBrowserSettings {
 		maxTimeout?: number;
 		maxIntervalTime?: number;
 		maxIntervalIterations?: number;
+		preventTimerLoops?: boolean | IOptionalTimerLoopsLimit;
 	};
 
 	/**
@@ -48,6 +53,11 @@ export default interface IOptionalBrowserSettings {
 		 * Fetch interceptor.
 		 */
 		interceptor?: IFetchInterceptor | null;
+
+		/**
+		 * Add request headers to specific URLs.
+		 */
+		requestHeaders?: IFetchRequestHeaders[] | null;
 
 		/**
 		 * Virtual servers used for simulating a server that reads from the file system.
@@ -95,6 +105,9 @@ export default interface IOptionalBrowserSettings {
 
 		/** Sets the policy for cross-origin navigation. */
 		crossOriginPolicy?: BrowserNavigationCrossOriginPolicyEnum;
+
+		/** Triggered before content is loaded into the document */
+		beforeContentCallback?: ((window: BrowserWindow) => void) | null;
 	};
 
 	/**
@@ -121,4 +134,9 @@ export default interface IOptionalBrowserSettings {
 	debug?: {
 		traceWaitUntilComplete?: number;
 	};
+
+	/**
+	 * Default page viewport.
+	 */
+	viewport?: IOptionalBrowserPageViewport;
 }

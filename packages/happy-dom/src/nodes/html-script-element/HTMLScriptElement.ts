@@ -12,6 +12,7 @@ import DOMTokenList from '../../dom/DOMTokenList.js';
 import IModuleImportMap from '../../module/IModuleImportMap.js';
 import IRequestReferrerPolicy from '../../fetch/types/IRequestReferrerPolicy.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
+import IResourceFetchResponse from '../../fetch/types/IResourceFetchResponse.js';
 
 /**
  * HTML Script Element.
@@ -417,9 +418,6 @@ export default class HTMLScriptElement extends HTMLElement {
 		}
 
 		const module = new ECMAScriptModule(window, url, source);
-		const readyStateManager = window[PropertySymbol.readyStateManager];
-
-		readyStateManager.startTask();
 
 		if (
 			browserSettings.disableErrorCapturing ||
@@ -434,8 +432,6 @@ export default class HTMLScriptElement extends HTMLElement {
 				return;
 			}
 		}
-
-		readyStateManager.endTask();
 
 		this.dispatchEvent(new Event('load'));
 	}
@@ -526,7 +522,7 @@ export default class HTMLScriptElement extends HTMLElement {
 
 		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = this;
 
-		const code = `//# sourceURL=${this[PropertySymbol.ownerDocument].location.href}\n` + source;
+		const code = `${source}\n//# sourceURL=${this[PropertySymbol.ownerDocument].location.href}`;
 
 		if (
 			browserSettings.disableErrorCapturing ||
@@ -579,10 +575,6 @@ export default class HTMLScriptElement extends HTMLElement {
 			return;
 		}
 
-		const readyStateManager = window[PropertySymbol.readyStateManager];
-
-		readyStateManager.startTask();
-
 		// TODO: What to do with "referrerPolicy" and "crossOrigin" for modules?
 		// @see https://github.com/w3c/webappsec-referrer-policy/issues/111
 
@@ -599,12 +591,10 @@ export default class HTMLScriptElement extends HTMLElement {
 			} catch (error) {
 				browserFrame.page.console.error(error);
 				this.dispatchEvent(new Event('error'));
-				readyStateManager.endTask();
 				return;
 			}
 		}
 
-		readyStateManager.endTask();
 		this.dispatchEvent(new Event('load'));
 	}
 
@@ -668,28 +658,29 @@ export default class HTMLScriptElement extends HTMLElement {
 
 		const resourceFetch = new ResourceFetch(window);
 		const async = this.getAttribute('async') !== null || this.getAttribute('defer') !== null;
-		let code: string | null = null;
+		let response: IResourceFetchResponse | null = null;
 
 		if (async) {
 			const readyStateManager = window[PropertySymbol.readyStateManager];
 
-			readyStateManager.startTask();
+			const taskID = readyStateManager.startTask();
 
 			try {
-				code = await resourceFetch.fetch(absoluteURLString, 'script', {
+				response = await resourceFetch.fetch(absoluteURLString, 'script', {
 					credentials: this.crossOrigin === 'use-credentials' ? 'include' : 'same-origin',
 					referrerPolicy: this.referrerPolicy
 				});
 			} catch (error) {
 				browserFrame.page.console.error(error);
 				this.dispatchEvent(new Event('error'));
+				readyStateManager.endTask(taskID);
 				return;
 			}
 
-			readyStateManager.endTask();
+			readyStateManager.endTask(taskID);
 		} else {
 			try {
-				code = resourceFetch.fetchSync(absoluteURLString, 'script', {
+				response = resourceFetch.fetchSync(absoluteURLString, 'script', {
 					credentials: this.crossOrigin === 'use-credentials' ? 'include' : 'same-origin',
 					referrerPolicy: this.referrerPolicy
 				});
@@ -702,7 +693,9 @@ export default class HTMLScriptElement extends HTMLElement {
 
 		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = this;
 
-		code = '//# sourceURL=' + absoluteURL + '\n' + code;
+		const code = `${response.content}\n//# sourceURL=${
+			response.virtualServerFile || absoluteURLString
+		}`;
 
 		if (
 			browserSettings.disableErrorCapturing ||

@@ -73,7 +73,7 @@ describe('CSSGroupingRule', () => {
 			expect(() => {
 				cssRule.insertRule('{ color: red; }');
 			}).toThrow(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'insertRule' on 'CSSScopeRule': Failed to parse the rule '{ color: red; }'.`,
 					DOMExceptionNameEnum.syntaxError
 				)
@@ -85,7 +85,7 @@ describe('CSSGroupingRule', () => {
 			expect(() => {
 				cssRule.insertRule('body { color: red; } .test { color: blue; }');
 			}).toThrow(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'insertRule' on 'CSSScopeRule': Failed to parse the rule 'body { color: red; } .test { color: blue; }'.`,
 					DOMExceptionNameEnum.syntaxError
 				)
@@ -98,7 +98,7 @@ describe('CSSGroupingRule', () => {
 				// @ts-expect-error
 				cssRule.insertRule('body { color: red; }', 'invalid');
 			}).toThrow(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'insertRule' on 'CSSScopeRule': The index provided (NaN) is larger than the maximum index (0).`,
 					DOMExceptionNameEnum.indexSizeError
 				)
@@ -107,7 +107,7 @@ describe('CSSGroupingRule', () => {
 			expect(() => {
 				cssRule.insertRule('body { color: red; }', 1);
 			}).toThrow(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'insertRule' on 'CSSScopeRule': The index provided (1) is larger than the maximum index (0).`,
 					DOMExceptionNameEnum.indexSizeError
 				)
@@ -128,6 +128,7 @@ describe('CSSGroupingRule', () => {
 
 		it('Throws error when no arguments are provided', () => {
 			const cssRule = new CSSScopeRule(PropertySymbol.illegalConstructor, window, cssParser);
+
 			expect(() => {
 				// @ts-expect-error
 				cssRule.deleteRule();
@@ -144,7 +145,7 @@ describe('CSSGroupingRule', () => {
 				// @ts-expect-error
 				cssRule.deleteRule('invalid');
 			}).toThrow(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'deleteRule' on 'CSSScopeRule': the index (NaN) is greater than the length of the rule list.`,
 					DOMExceptionNameEnum.indexSizeError
 				)
@@ -153,7 +154,7 @@ describe('CSSGroupingRule', () => {
 			expect(() => {
 				cssRule.deleteRule(1);
 			}).toThrow(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'deleteRule' on 'CSSScopeRule': the index (1) is greater than the length of the rule list.`,
 					DOMExceptionNameEnum.indexSizeError
 				)

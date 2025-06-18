@@ -5,8 +5,8 @@
 		"target": "ES2022",
 		"declaration": true,
 		"declarationMap": true,
-		"module": "Node16",
-		"moduleResolution": "Node16",
+		"module": "CommonJS",
+		"moduleResolution": "node",
 		"esModuleInterop": true,
 		"experimentalDecorators": true,
 		"allowSyntheticDefaultImports": true,
@@ -15,22 +15,21 @@
 		"noUnusedParameters": true,
         "noImplicitReturns": false,
         "noImplicitAny" : true,
-        "removeComments": false,
+		"removeComments": false,
 		"preserveConstEnums": true,
         "strict": true,
 		"sourceMap": true,
 		"skipLibCheck": true,
 		"baseUrl": ".",
-		"composite": false,
-		"incremental": false,
-		"jsx": "react",
+		"composite": true,
+		"incremental": true,
+        "tsBuildInfoFile": ".turbo/.tsbuildinfo",
+		"lib": [
+			"ES2022",
+			"dom"
+		],
 		"types": [
 			"node"
-		],
-		"lib": [
-			"es2015",
-			"es2016",
-			"es2017"
 		]
 	},
 	"include": [

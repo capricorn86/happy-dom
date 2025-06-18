@@ -31,6 +31,8 @@ class TestModule extends HTMLElement {
             Expect upper case: ${toUpperCase(Data.lowerCase)}
             Expect lower case. ${toLowerCase(Data.upperCase)}
             Expect trimmed lower case: ${trim(Data.untrimmed)}
+            Import URL: ${import.meta.url}
+            Resolved URL: ${import.meta.resolve('./Resolved.js')}
         </div>`;
 		this.lazyLoad();
 	}

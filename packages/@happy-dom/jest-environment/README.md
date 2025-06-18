@@ -5,7 +5,7 @@ This package makes it possible to use [Happy DOM](https://github.com/capricorn86
 ## Installation
 
 ```bash
-npm install @happy-dom/jest-environment --save-dev
+npm install @jest/environment @jest/fake-timers @jest/types @jest/mock @jest/util @happy-dom/jest-environment --save-dev
 ```
 
 ## Setup

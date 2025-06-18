@@ -1,0 +1,48 @@
+{
+	"name": "@happy-dom/global-registrator",
+	"version": "0.0.0",
+	"license": "MIT",
+	"homepage": "https://github.com/capricorn86/happy-dom/tree/master/packages/global-registrator",
+	"repository": "https://github.com/capricorn86/happy-dom",
+	"author": "David Ortner",
+	"description": "Use Happy DOM globally in a Node.js environment for testing.",
+	"main": "lib/index.js",
+	"type": "module",
+	"keywords": [
+		"jsdom",
+		"happy",
+		"dom",
+		"webcomponents",
+		"web",
+		"component",
+		"custom",
+		"elements",
+		"global",
+		"register",
+		"registrator"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"compile": "tsc",
+		"watch": "tsc -w --preserveWatchOutput",
+		"test": "npm run test:node && npm run test:bun",
+		"test:debug": "tsc --project ./test/node && cd ./tmp && ls | node --inspect-brk --test",
+		"test:node": "tsc --project ./test/node && cd ./tmp && ls | node --test",
+		"test:bun": "bun test ./test/bun/Bun.test.js"
+	},
+	"dependencies": {
+		"happy-dom": "^0.0.0",
+		"@types/node": "^20.0.0"
+	},
+	"devDependencies": {
+		"typescript": "^5.8.3",
+		"lit": "^3.3.0",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0"
+	},
+	"engines": {
+		"node": ">=20.0.0"
+	}
+}

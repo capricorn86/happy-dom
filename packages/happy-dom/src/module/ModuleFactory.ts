@@ -9,6 +9,7 @@ import ResourceFetch from '../fetch/ResourceFetch.js';
 import ECMAScriptModule from './ECMAScriptModule.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import Location from '../location/Location.js';
+import IResourceFetchResponse from '../fetch/types/IResourceFetchResponse.js';
 
 /**
  * Module factory.
@@ -60,28 +61,40 @@ export default class ModuleFactory {
 		}
 
 		const unresolvedModule = new UnresolvedModule(window, absoluteURL);
+		const readyStateManager = window[PropertySymbol.readyStateManager];
+
+		const taskID = readyStateManager.startTask();
 
 		window[PropertySymbol.modules][type].set(absoluteURLString, unresolvedModule);
 
 		const resourceFetch = new ResourceFetch(window);
-		let source: string;
+		let response: IResourceFetchResponse;
 		try {
-			source = await resourceFetch.fetch(absoluteURL, 'module');
+			response = await resourceFetch.fetch(absoluteURL, 'module');
 		} catch (error) {
+			readyStateManager.endTask(taskID);
 			unresolvedModule.resolve(<Error>error);
 			throw error;
 		}
+
+		readyStateManager.endTask(taskID);
+
 		let module: IModule;
 
 		switch (type) {
 			case 'json':
-				module = new JSONModule(window, absoluteURL, source);
+				module = new JSONModule(window, absoluteURL, response.content);
 				break;
 			case 'css':
-				module = new CSSModule(window, absoluteURL, source);
+				module = new CSSModule(window, absoluteURL, response.content);
 				break;
 			case 'esm':
-				module = new ECMAScriptModule(window, absoluteURL, source);
+				module = new ECMAScriptModule(
+					window,
+					absoluteURL,
+					response.content,
+					response.virtualServerFile
+				);
 				break;
 		}
 

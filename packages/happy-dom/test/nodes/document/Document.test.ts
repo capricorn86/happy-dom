@@ -1565,12 +1565,12 @@ describe('Document', () => {
 					if ((<string>url).endsWith('.css')) {
 						resourceFetchCSSWindow = this.window;
 						resourceFetchCSSURL = <string>url;
-						return cssResponse;
+						return { content: cssResponse, virtualServerFile: null };
 					}
 
 					resourceFetchJSWindow = this.window;
 					resourceFetchJSURL = <string>url;
-					return jsResponse;
+					return { content: jsResponse, virtualServerFile: null };
 				});
 
 				document.addEventListener('readystatechange', (e) => {
