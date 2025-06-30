@@ -348,6 +348,32 @@ describe('HTMLLinkElement', () => {
 			expect((<Event>(<unknown>loadEvent)).type).toBe('load');
 		});
 
+		it('Skips preloading when "rel" is set to "modulepreload" and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true"', async () => {
+			window = new Window({
+				settings: { disableJavaScriptFileLoading: true }
+			});
+			document = window.document;
+			const link = document.createElement('link');
+
+			expect(() => {
+				link.rel = 'modulepreload';
+				link.href = '/base/js/TestModuleElement.js';
+			}).not.toThrow();
+		});
+
+		it('Skips preloading when "rel" is set to "modulepreload" and the Happy DOM setting "disableJavaScriptEvaluation" is set to "true"', async () => {
+			window = new Window({
+				settings: { disableJavaScriptEvaluation: true }
+			});
+			document = window.document;
+			const link = document.createElement('link');
+
+			expect(() => {
+				link.rel = 'modulepreload';
+				link.href = '/base/js/TestModuleElement.js';
+			}).not.toThrow();
+		});
+
 		it('Preloads modules when "rel" is set to "modulepreload" and only fetches once when preload is ongoing', async () => {
 			const requests: string[] = [];
 			const window = new Window({

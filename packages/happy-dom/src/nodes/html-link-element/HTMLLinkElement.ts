@@ -294,7 +294,6 @@ export default class HTMLLinkElement extends HTMLElement {
 	 * @param url URL.
 	 */
 	async #preloadModule(url: string): Promise<void> {
-		const absoluteURL = new URL(url, this[PropertySymbol.ownerDocument].location.href);
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
 		const browserSettings = new WindowBrowserContext(window).getSettings();
@@ -308,6 +307,8 @@ export default class HTMLLinkElement extends HTMLElement {
 		) {
 			return;
 		}
+
+		const absoluteURL = new URL(url, this[PropertySymbol.ownerDocument].location.href);
 
 		if (
 			browserSettings.disableErrorCapturing ||
