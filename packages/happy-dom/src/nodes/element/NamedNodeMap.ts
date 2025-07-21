@@ -66,7 +66,7 @@ export default class NamedNodeMap {
 	 *
 	 * @returns Iterator.
 	 */
-	public [Symbol.iterator](): IterableIterator<Attr> {
+	public [Symbol.iterator](): ArrayIterator<Attr> {
 		return this[PropertySymbol.items].values();
 	}
 

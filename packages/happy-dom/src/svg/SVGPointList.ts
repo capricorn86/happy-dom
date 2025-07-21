@@ -156,7 +156,7 @@ export default class SVGPointList {
 	/**
 	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.
 	 */
-	public [Symbol.iterator](): IterableIterator<SVGPoint> {
+	public [Symbol.iterator](): ArrayIterator<SVGPoint> {
 		return this[PropertySymbol.getItemList]().values();
 	}
 
