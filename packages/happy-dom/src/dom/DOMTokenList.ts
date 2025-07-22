@@ -20,6 +20,7 @@ export default class DOMTokenList {
 		attributeValue: ''
 	};
 	private [PropertySymbol.supports]: string[];
+	private [PropertySymbol.proxy]?: this;
 
 	/**
 	 * Constructor.
@@ -45,7 +46,7 @@ export default class DOMTokenList {
 
 		const methodBinder = new ClassMethodBinder(this, [DOMTokenList]);
 
-		return new Proxy(this, {
+		const proxy = new Proxy(this, {
 			get: (target, property) => {
 				if (property === 'length') {
 					return target[PropertySymbol.getTokenList]().length;
@@ -125,6 +126,9 @@ export default class DOMTokenList {
 				}
 			}
 		});
+		this[PropertySymbol.proxy] = proxy;
+
+		return proxy;
 	}
 
 	/**
@@ -224,10 +228,14 @@ export default class DOMTokenList {
 	 * @param thisArg
 	 */
 	public forEach(
-		callback: (currentValue: string, currentIndex: number, listObj: string[]) => void,
-		thisArg?: this
+		callback: (currentValue: string, currentIndex: number, parent: this) => void,
+		thisArg?: any
 	): void {
-		return this[PropertySymbol.getTokenList]().forEach(callback, thisArg);
+		const items = this[PropertySymbol.getTokenList]();
+		const proxy = this[PropertySymbol.proxy] ?? this;
+		for (const index of items.keys()) {
+			callback.call(thisArg, items[index], index, proxy);
+		}
 	}
 
 	/**
