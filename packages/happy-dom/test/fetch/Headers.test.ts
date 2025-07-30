@@ -182,11 +182,12 @@ describe('Headers', () => {
 				headers.append('Content-Encoding', 'gzip');
 
 				const entries = {};
-
-				headers.forEach((value, key, thisArg) => {
+				const thisArg = {};
+				headers.forEach(function (value, key, parent) {
+					expect(this).toBe(thisArg);
+					expect(parent).toBe(headers);
 					entries[key] = value;
-					expect(thisArg).toBe(headers);
-				});
+				}, thisArg);
 
 				expect(entries).toEqual({
 					'Content-Type': 'application/json, x-www-form-urlencoded',

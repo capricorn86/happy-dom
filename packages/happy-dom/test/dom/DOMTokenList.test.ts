@@ -187,9 +187,12 @@ describe('DOMTokenList', () => {
 
 			element.className = 'class1 class2 class3';
 
-			classList.forEach((token: string, index: number) => {
+			const thisArg = {};
+			classList.forEach(function (token: string, index: number, parent) {
+				expect(this).toBe(thisArg);
+				expect(parent).toBe(classList);
 				items.push({ token, index });
-			});
+			}, thisArg);
 
 			expect(items).toEqual([
 				{
