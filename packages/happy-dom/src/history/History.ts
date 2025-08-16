@@ -90,11 +90,29 @@ export default class History {
 	}
 
 	/**
+	 * Dispatches a popstate event.
+	 *
+	 * @param state State to include in the event.
+	 */
+	#dispatchPopStateEvent(state: object | null): void {
+		if (!this.#window.closed) {
+			const event = new this.#window.PopStateEvent('popstate', {
+				bubbles: false,
+				cancelable: false,
+				// @ts-ignore
+				state: state
+			});
+			this.#window.dispatchEvent(event);
+		}
+	}
+
+	/**
 	 * Goes to the previous page in session history.
 	 */
 	public back(): void {
 		if (!this.#window.closed) {
 			this.#browserFrame?.goBack();
+			this.#dispatchPopStateEvent(this.#currentHistoryItem.state);
 		}
 	}
 
@@ -104,6 +122,7 @@ export default class History {
 	public forward(): void {
 		if (!this.#window.closed) {
 			this.#browserFrame?.goForward();
+			this.#dispatchPopStateEvent(this.#currentHistoryItem.state);
 		}
 	}
 
@@ -116,6 +135,7 @@ export default class History {
 	public go(delta: number): void {
 		if (!this.#window.closed) {
 			this.#browserFrame?.goSteps(delta);
+			this.#dispatchPopStateEvent(this.#currentHistoryItem.state);
 		}
 	}
 
