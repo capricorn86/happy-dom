@@ -7,8 +7,6 @@ import ISelectorAttribute from './ISelectorAttribute.js';
 import ISelectorMatch from './ISelectorMatch.js';
 import ISelectorPseudo from './ISelectorPseudo.js';
 
-const SPACE_REGEXP = /\s+/;
-
 /**
  * Selector item.
  */
@@ -430,11 +428,10 @@ export default class SelectorItem {
 			return null;
 		}
 
-		const classList = element.className.split(SPACE_REGEXP);
 		let priorityWeight = 0;
 
 		for (const className of this.classNames) {
-			if (!classList.includes(className)) {
+			if (!element.classList.contains(className)) {
 				return null;
 			}
 			priorityWeight += 10;
