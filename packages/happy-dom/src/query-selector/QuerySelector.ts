@@ -249,8 +249,9 @@ export default class QuerySelector {
 			(node[PropertySymbol.ownerDocument] || node)[PropertySymbol.affectsCache].push(cachedItem);
 		}
 
-		const matchesMap: Map<string, Element> = new Map();
-		const matchedPositions: string[] = [];
+		let bestMatch: DocumentPositionAndElement | null = null;
+		const matchesMap: Map<string, boolean> = new Map();
+
 		for (const items of SelectorParser.getSelectorGroups(selector)) {
 			const match =
 				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
@@ -258,17 +259,18 @@ export default class QuerySelector {
 					: this.findFirst(null, (<Element>node)[PropertySymbol.elementArray], items, cachedItem);
 
 			if (match && !matchesMap.has(match.documentPosition)) {
-				matchesMap.set(match.documentPosition, match.element);
-				matchedPositions.push(match.documentPosition);
+				matchesMap.set(match.documentPosition, true);
+				if (!bestMatch || match.documentPosition < bestMatch.documentPosition) {
+					bestMatch = match;
+				}
 			}
 		}
 
-		if (matchedPositions.length > 0) {
-			const keys = matchedPositions.sort();
-			return matchesMap.get(keys[0])!;
-		}
+		const element = bestMatch?.element || null;
 
-		return null;
+		cachedItem.result = element ? new WeakRef(element) : null;
+
+		return element;
 	}
 
 	/**
