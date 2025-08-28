@@ -1,5 +1,4 @@
 import Window from '../../../src/window/Window.js';
-import DOMException from '../../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
 import Document from '../../../src/nodes/document/Document.js';
 import HTMLMediaElement from '../../../src/nodes/html-media-element/HTMLMediaElement.js';

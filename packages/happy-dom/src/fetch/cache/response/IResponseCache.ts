@@ -1,15 +1,13 @@
 import ICachedResponse from './ICachedResponse.js';
-import ICachableRequest from './ICachableRequest.js';
-import ICachableResponse from './ICachableResponse.js';
+import ICacheableRequest from './ICacheableRequest.js';
+import ICacheableResponse from './ICacheableResponse.js';
+import IResponseCacheFileSystem from './IResponseCacheFileSystem.js';
 
 /**
  * Fetch response cache.
  */
 export default interface IResponseCache {
-	/**
-	 * Cache entries where the key is the URL.
-	 */
-	readonly entries: Map<string, ICachedResponse[]>;
+	fileSystem: IResponseCacheFileSystem;
 
 	/**
 	 * Returns cached response.
@@ -17,7 +15,7 @@ export default interface IResponseCache {
 	 * @param request Request.
 	 * @returns Cached response.
 	 */
-	get(request: ICachableRequest): ICachedResponse | null;
+	get(request: ICacheableRequest): ICachedResponse | null;
 
 	/**
 	 * Adds a cached response.
@@ -26,7 +24,7 @@ export default interface IResponseCache {
 	 * @param response Response.
 	 * @returns Cached response.
 	 */
-	add(request: ICachableRequest, response: ICachableResponse): ICachedResponse | null;
+	add(request: ICacheableRequest, response: ICacheableResponse): ICachedResponse | null;
 
 	/**
 	 * Clears the cache.

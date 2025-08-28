@@ -1,0 +1,1 @@
+(self.legacyJsonp=self.legacyJsonp||[]).push([[66979],{417689:function(n,_,o){"use strict";_.Z=o(900706).Z},976829:function(n,_,o){(window.__PWS_LOADED_HANDLERS__=window.__PWS_LOADED_HANDLERS__||[]).push(["newsroom/[locale]/[path_part_1]",function(){return o(417689).Z}])}},function(n){n.O(0,[97270,85594,35675,16477,19897,706],function(){return n(n.s=976829)}),n.O()}]);

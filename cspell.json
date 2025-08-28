@@ -21,6 +21,7 @@
         "onscrollsnapchanging",
         "onsearch",
         "Registrator",
+        "steppable",
         "unnestable",
         "vmax",
         "vmin",

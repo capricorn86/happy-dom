@@ -1,4 +1,3 @@
-import DOMException from '../exception/DOMException.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import Element from '../nodes/element/Element.js';
 import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
@@ -152,7 +151,7 @@ export default class SelectorItem {
 						if (this.ignoreErrors) {
 							return null;
 						}
-						throw new DOMException(
+						throw new element[PropertySymbol.window].DOMException(
 							`Failed to execute 'matches' on '${
 								element.constructor.name
 							}': '${this.getSelectorString()}' is not a valid selector.`

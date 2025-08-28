@@ -23,7 +23,6 @@ export default class AsyncTaskManager {
 		resolve: () => void;
 		reject: (error: Error) => void;
 	}> = [];
-	private aborted = false;
 	private destroyed = false;
 	#debugTimeout: NodeJS.Timeout | null = null;
 	#browserFrame: IBrowserFrame;
@@ -53,7 +52,7 @@ export default class AsyncTaskManager {
 	 * Aborts all tasks.
 	 */
 	public abort(): Promise<void> {
-		if (this.aborted) {
+		if (this.destroyed) {
 			return new Promise((resolve, reject) => {
 				this.waitUntilCompleteResolvers.push({ resolve, reject });
 				this.resolveWhenComplete();
@@ -66,7 +65,7 @@ export default class AsyncTaskManager {
 	 * Destroys the manager.
 	 */
 	public destroy(): Promise<void> {
-		if (this.aborted) {
+		if (this.destroyed) {
 			return new Promise((resolve, reject) => {
 				this.waitUntilCompleteResolvers.push({ resolve, reject });
 				this.resolveWhenComplete();
@@ -81,7 +80,7 @@ export default class AsyncTaskManager {
 	 * @param timerID Timer ID.
 	 */
 	public startTimer(timerID: NodeJS.Timeout): void {
-		if (this.aborted) {
+		if (this.destroyed) {
 			TIMER.clearTimeout(timerID);
 			return;
 		}
@@ -101,7 +100,7 @@ export default class AsyncTaskManager {
 	 * @param timerID Timer ID.
 	 */
 	public endTimer(timerID: NodeJS.Timeout): void {
-		if (this.aborted) {
+		if (this.destroyed) {
 			TIMER.clearTimeout(timerID);
 			return;
 		}
@@ -121,7 +120,7 @@ export default class AsyncTaskManager {
 	 * @param immediateID Immediate ID.
 	 */
 	public startImmediate(immediateID: NodeJS.Immediate): void {
-		if (this.aborted) {
+		if (this.destroyed) {
 			TIMER.clearImmediate(immediateID);
 			return;
 		}
@@ -141,7 +140,7 @@ export default class AsyncTaskManager {
 	 * @param immediateID Immediate ID.
 	 */
 	public endImmediate(immediateID: NodeJS.Immediate): void {
-		if (this.aborted) {
+		if (this.destroyed) {
 			TIMER.clearImmediate(immediateID);
 			return;
 		}
@@ -162,12 +161,12 @@ export default class AsyncTaskManager {
 	 * @returns Task ID.
 	 */
 	public startTask(abortHandler?: (destroy?: boolean) => void): number {
-		if (this.aborted) {
+		if (this.destroyed) {
 			if (abortHandler) {
 				abortHandler(this.destroyed);
 			}
 			throw new this.#browserFrame.window.Error(
-				`Failed to execute 'startTask()' on 'AsyncTaskManager': The asynchronous task manager has been aborted.`
+				`Failed to execute 'startTask()' on 'AsyncTaskManager': The asynchronous task manager has been destroyed. This error can be thrown if scripts continue to run while a browser frame is closed.`
 			);
 		}
 		if (this.waitUntilCompleteTimer) {
@@ -189,7 +188,7 @@ export default class AsyncTaskManager {
 	 * @param taskID Task ID.
 	 */
 	public endTask(taskID: number): void {
-		if (this.aborted) {
+		if (this.destroyed) {
 			return;
 		}
 		if (this.runningTasks[taskID]) {
@@ -250,7 +249,7 @@ export default class AsyncTaskManager {
 				for (const resolver of resolvers) {
 					resolver.resolve();
 				}
-				this.aborted = false;
+				this.destroyed = false;
 			} else {
 				this.applyDebugging();
 			}
@@ -306,8 +305,9 @@ export default class AsyncTaskManager {
 		const runningImmediates = this.runningImmediates;
 		const runningTasks = this.runningTasks;
 
-		this.aborted = true;
-		this.destroyed = destroy;
+		if (destroy) {
+			this.destroyed = true;
+		}
 		this.runningTasks = {};
 		this.runningTaskCount = 0;
 		this.runningImmediates = [];

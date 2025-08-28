@@ -1,0 +1,39 @@
+{
+   "response": {
+      "status": 200,
+      "statusText": "OK",
+      "url": "https://s.pinimg.com/webapp/33977-2b3f3f3e5456847a.js",
+      "headers": {
+         "ETag": "\"3a9943507c439f904b66ed7db83ee421\"",
+         "x-amz-server-side-encryption": "AES256",
+         "Cache-Control": "max-age=31536000",
+         "Content-Encoding": "br",
+         "Accept-Ranges": "bytes",
+         "Content-Type": "application/javascript",
+         "Content-Length": "11548",
+         "Connection": "close",
+         "Alt-Svc": "h3=\":443\"; ma=600",
+         "Vary": "Accept-Encoding, Origin",
+         "X-CDN": "akamai",
+         "Access-Control-Max-Age": "86400",
+         "Access-Control-Expose-Headers": "X-CDN",
+         "Access-Control-Allow-Methods": "GET",
+         "Access-Control-Allow-Origin": "*"
+      },
+      "waitingForBody": false,
+      "body": null
+   },
+   "request": {
+      "headers": {},
+      "method": "GET"
+   },
+   "vary": {},
+   "expires": 1787915196329,
+   "etag": "\"3a9943507c439f904b66ed7db83ee421\"",
+   "cacheUpdateTime": 1756379196329,
+   "lastModified": null,
+   "mustRevalidate": false,
+   "staleWhileRevalidate": false,
+   "state": "fresh",
+   "virtual": false
+}

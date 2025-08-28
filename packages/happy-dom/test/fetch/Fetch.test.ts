@@ -2244,7 +2244,7 @@ describe('Fetch', () => {
 
 			setTimeout(() => {
 				abortController.abort(1);
-			}, 10);
+			}, 1);
 
 			let error: Error | null = null;
 

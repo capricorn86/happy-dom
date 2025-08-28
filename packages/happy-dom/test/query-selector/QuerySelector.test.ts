@@ -2005,22 +2005,22 @@ describe('QuerySelector', () => {
 				)
 			);
 			expect(() => element.matches(':not')).toThrow(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'matches' on 'HTMLDivElement': ':not' is not a valid selector.`
 				)
 			);
 			expect(() => element.matches(':is')).toThrow(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'matches' on 'HTMLDivElement': ':is' is not a valid selector.`
 				)
 			);
 			expect(() => element.matches(':where')).toThrow(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'matches' on 'HTMLDivElement': ':where' is not a valid selector.`
 				)
 			);
 			expect(() => element.matches('div:not')).toThrow(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'matches' on 'HTMLDivElement': 'div:not' is not a valid selector.`
 				)
 			);

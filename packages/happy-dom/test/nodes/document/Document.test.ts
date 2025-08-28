@@ -28,8 +28,6 @@ import DocumentReadyStateEnum from '../../../src/nodes/document/DocumentReadySta
 import CustomEvent from '../../../src/event/events/CustomEvent.js';
 import Selection from '../../../src/selection/Selection.js';
 import Range from '../../../src/range/Range.js';
-import ProcessingInstruction from '../../../src/nodes/processing-instruction/ProcessingInstruction.js';
-import DOMException from '../../../src/exception/DOMException.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
 import BrowserWindow from '../../../src/window/BrowserWindow.js';

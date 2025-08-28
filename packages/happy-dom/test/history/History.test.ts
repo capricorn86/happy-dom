@@ -351,7 +351,6 @@ describe('History', () => {
 
 			expect(browserFrame.window.location.href).toBe('https://www.github.com/');
 
-			debugger;
 			browserFrame.window.history.go(1);
 
 			await browserFrame.waitForNavigation();

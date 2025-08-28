@@ -222,39 +222,31 @@ async function getConfiguration(): Promise<{
 			}
 		} else if (arg) {
 			const item: IServerRendererItem = { url: null, outputFile: null };
-			const parts = arg.split(';');
+			const urlString =
+				arg[0] === '"' && arg[arg.length - 1] === '"' ? arg.substring(1, arg.length - 1) : arg;
 
+			let url: URL;
 			try {
-				item.url = new URL(parts[0]).href;
+				url = new URL(urlString);
 			} catch (e) {
 				// Ignore
 			}
 
-			if (parts.length > 1) {
-				item.outputFile = parts[1];
-			}
+			if (url) {
+				// We need to replace the first slash to make the path relative to the current directory
+				item.outputFile = url.pathname.replace('/', '');
 
-			if (!item.outputFile) {
-				let url: URL;
-				try {
-					url = new URL(item.url);
-				} catch (e) {
-					// Ignore
-				}
-				if (url) {
-					// We need to replace the first slash to make the path relative to the current directory
-					item.outputFile = url.pathname.replace('/', '');
-					const parts = item.outputFile.split('/');
-					if (!parts[parts.length - 1].includes('.')) {
-						if (parts[parts.length - 1]) {
-							item.outputFile += '/';
-						}
-						item.outputFile += 'index.html';
+				item.url = url.href;
+
+				const parts = item.outputFile.split('/');
+
+				if (!parts[parts.length - 1].includes('.')) {
+					if (parts[parts.length - 1]) {
+						item.outputFile += '/';
 					}
+					item.outputFile += 'index.html';
 				}
-			}
 
-			if (item.url && item.outputFile) {
 				items.push(item);
 			}
 		}

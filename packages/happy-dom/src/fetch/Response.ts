@@ -350,6 +350,8 @@ export default class Response implements Response {
 	 * @param buffer Buffer.
 	 */
 	#storeBodyInCache(buffer: Buffer): void {
+		this[PropertySymbol.buffer] = buffer;
+
 		if (this[PropertySymbol.cachedResponse]?.response?.waitingForBody) {
 			this[PropertySymbol.cachedResponse].response.body = buffer;
 			this[PropertySymbol.cachedResponse].response.waitingForBody = false;

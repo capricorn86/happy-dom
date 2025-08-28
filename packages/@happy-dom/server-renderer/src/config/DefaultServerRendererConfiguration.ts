@@ -6,14 +6,14 @@ import { BrowserErrorCaptureEnum } from 'happy-dom';
 
 export default <IServerRendererConfiguration>{
 	browser: { ...DefaultBrowserSettings, errorCapture: BrowserErrorCaptureEnum.processLevel },
-	outputDirectory: './happy-dom-sr/output',
+	outputDirectory: './happy-dom/render',
 	logLevel: ServerRendererLogLevelEnum.info,
 	debug: false,
 	inspect: false,
 	cache: {
 		disable: false,
 		fileSystem: {
-			directory: './happy-dom-sr/cache',
+			directory: './happy-dom/cache',
 			disable: false,
 			warmup: false
 		}
@@ -24,7 +24,7 @@ export default <IServerRendererConfiguration>{
 	},
 	render: {
 		maxConcurrency: 10,
-		timeout: 30000,
+		timeout: 30000, // 30 seconds
 		incognitoContext: false,
 		serializableShadowRoots: false,
 		allShadowRoots: false,
@@ -35,6 +35,6 @@ export default <IServerRendererConfiguration>{
 	server: {
 		serverURL: 'https://localhost:3000',
 		targetOrigin: null,
-		renderCacheTime: 1000 * 30 // 30 seconds
+		renderCacheTime: 30000 // 30 seconds
 	}
 };

@@ -1,7 +1,7 @@
 import IPreflightResponseCache from './IPreflightResponseCache.js';
-import ICachablePreflightRequest from './ICachablePreflightRequest.js';
+import ICacheablePreflightRequest from './ICacheablePreflightRequest.js';
 import ICachedPreflightResponse from './ICachedPreflightResponse.js';
-import ICachablePreflightResponse from './ICachablePreflightResponse.js';
+import ICacheablePreflightResponse from './ICacheablePreflightResponse.js';
 
 /**
  * Fetch preflight response cache.
@@ -17,7 +17,7 @@ export default class PreflightResponseCache implements IPreflightResponseCache {
 	 * @param request Request.
 	 * @returns Cached response.
 	 */
-	public get(request: ICachablePreflightRequest): ICachedPreflightResponse | null {
+	public get(request: ICacheablePreflightRequest): ICachedPreflightResponse | null {
 		const cachedResponse = this.entries.get(request.url);
 
 		if (cachedResponse) {
@@ -39,8 +39,8 @@ export default class PreflightResponseCache implements IPreflightResponseCache {
 	 * @returns Cached response.
 	 */
 	public add(
-		request: ICachablePreflightRequest,
-		response: ICachablePreflightResponse
+		request: ICacheablePreflightRequest,
+		response: ICacheablePreflightResponse
 	): ICachedPreflightResponse | null {
 		this.entries.delete(request.url);
 

@@ -169,7 +169,7 @@ export default class ServerRendererServer {
 			fetchResponse.headers.get('content-type')?.startsWith('text/html') &&
 			fetchResponse.status === 200
 		) {
-			if (this.#configuration.server.renderCacheTime) {
+			if (this.#configuration.server.renderCacheTime > 0) {
 				const cached = this.#cache.get(url.href);
 				if (cached && Date.now() - cached.timestamp < this.#configuration.server.renderCacheTime) {
 					// eslint-disable-next-line no-console
@@ -186,7 +186,7 @@ export default class ServerRendererServer {
 
 			let result: IServerRendererResult | null = null;
 
-			if (this.#configuration.server.renderCacheTime) {
+			if (this.#configuration.server.renderCacheTime > 0) {
 				const cacheQueue = this.#cacheQueue.get(url.href);
 				if (cacheQueue) {
 					// eslint-disable-next-line no-console
@@ -233,7 +233,7 @@ export default class ServerRendererServer {
 				return;
 			}
 
-			if (this.#configuration.server.renderCacheTime) {
+			if (this.#configuration.server.renderCacheTime > 0) {
 				this.#cache.set(url.href, {
 					timestamp: Date.now(),
 					content: result.content!

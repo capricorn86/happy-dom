@@ -58,20 +58,20 @@ describe('ServerRenderer', () => {
 				);
 
 				expect(worker.workerData.configuration.cache.fileSystem.directory).toBe(
-					Path.resolve(Path.join('happy-dom-sr', 'cache'))
+					Path.resolve(Path.join('happy-dom', 'cache'))
 				);
 				expect(worker.workerData.configuration.outputDirectory).toBe(
-					Path.resolve(Path.join('happy-dom-sr', 'output'))
+					Path.resolve(Path.join('happy-dom', 'render'))
 				);
 
 				expect(worker.workerData.configuration).toEqual({
 					...DefaultServerRendererConfiguration,
-					outputDirectory: Path.resolve(Path.join('happy-dom-sr', 'output')),
+					outputDirectory: Path.resolve(Path.join('happy-dom', 'render')),
 					cache: {
 						...DefaultServerRendererConfiguration.cache,
 						fileSystem: {
 							...DefaultServerRendererConfiguration.cache.fileSystem,
-							directory: Path.resolve(Path.join('happy-dom-sr', 'cache'))
+							directory: Path.resolve(Path.join('happy-dom', 'cache'))
 						}
 					},
 					worker: {
@@ -376,7 +376,7 @@ describe('ServerRenderer', () => {
 			]);
 		});
 
-		it.only('Handles result with page errors', async () => {
+		it('Handles result with page errors', async () => {
 			const mockedURLList = MockedURLList;
 			const renderer = new ServerRenderer({
 				worker: {
@@ -389,73 +389,95 @@ describe('ServerRenderer', () => {
 				results = r;
 			});
 
-			// Cache warmup
-			// 1 worker is created
+			expect(MockedWorker.openWorkers.length).toBe(10);
 
-			const worker = MockedWorker.openWorkers[0];
-			const postedData = worker.postedData[0];
-			worker.postedData = [];
-			worker.listeners.message[0]({
-				results: postedData.items.map((item) => ({
-					url: item.url,
-					content: '<html></html>',
-					outputFile: null,
-					error: null,
-					pageConsole: '',
-					pageErrors: [],
-					status: 200,
-					statusText: 'OK',
-					headers: {
-						test: 'value'
-					}
-				}))
-			});
+			for (let i = 0; i < MockedWorker.openWorkers.length; i++) {
+				const worker = MockedWorker.openWorkers[i];
+				const postedData = worker.postedData[0];
+
+				worker.postedData = [];
+
+				if (i === 2) {
+					worker.listeners.message[0]({
+						results: postedData.items.map((item, index) => ({
+							url: item.url,
+							content: '<html></html>',
+							outputFile: null,
+							error: null,
+							pageConsole: '',
+							pageErrors: index === 1 ? ['Error 1', 'Error 2'] : [],
+							status: 200,
+							statusText: 'OK',
+							headers: {
+								test: 'value'
+							}
+						}))
+					});
+				} else {
+					worker.listeners.message[0]({
+						results: postedData.items.map((item) => ({
+							url: item.url,
+							content: '<html></html>',
+							outputFile: null,
+							error: null,
+							pageConsole: '',
+							pageErrors: [],
+							status: 200,
+							statusText: 'OK',
+							headers: {
+								test: 'value'
+							}
+						}))
+					});
+				}
+			}
 
 			await new Promise((resolve) => setTimeout(resolve));
 
-			// 1 worker remains open to handle the remaining pages
-			expect(MockedWorker.openWorkers.length).toBe(1);
+			// 10 workers are still open (no workers are terminated)
+			expect(MockedWorker.openWorkers.length).toBe(10);
 
-			// Error worker
-			const errorWorker = MockedWorker.openWorkers[0];
-			const errorPostedData = worker.postedData[0];
-			errorWorker.postedData = [];
-			errorWorker.listeners.message[0]({
-				results: errorPostedData.items.map((item, index) => ({
-					url: item.url,
-					content: '<html></html>',
-					outputFile: null,
-					error: null,
-					pageConsole: '',
-					pageErrors: index === 1 ? ['Error 1', 'Error 2'] : [],
-					status: 200,
-					statusText: 'OK',
-					headers: {
-						test: 'value'
-					}
-				}))
-			});
+			// 4 workers are busy and are waiting for post message
+			for (const worker of MockedWorker.openWorkers.slice(0, 4)) {
+				expect(worker.listeners.message.length).toBe(1);
+				expect(worker.postedData.length).toBe(1);
+				const postedData = worker.postedData[0];
+				worker.postedData = [];
+				worker.listeners.message[0]({
+					results: postedData.items.map((item) => ({
+						url: item.url,
+						content: '<html></html>',
+						outputFile: null,
+						error: null,
+						pageConsole: '',
+						pageErrors: [],
+						status: 200,
+						statusText: 'OK',
+						headers: {
+							test: 'value'
+						}
+					}))
+				});
+			}
 
 			await new Promise((resolve) => setTimeout(resolve));
 
 			// All workers have been terminated
 			expect(MockedWorker.openWorkers.length).toBe(0);
-			expect(MockedWorker.terminatedWorkers.length).toBe(1);
+			expect(MockedWorker.terminatedWorkers.length).toBe(10);
 
 			expect(log).toEqual([
-				`Rendering ${mockedURLList.length} pages`,
-				Chalk.bold(`• Rendered page "${mockedURLList[0]}"`),
-				Chalk.bold(`• Rendered page "${mockedURLList[1]}"`),
-				Chalk.bold(`• Rendered page "${mockedURLList[2]}"`),
+				Chalk.bold(`Rendering ${MockedURLList.length} pages...\n`),
+				...mockedURLList.slice(0, 22).map((url) => Chalk.bold(`• Rendered page "${url}"`)),
 				Chalk.bold(
 					Chalk.yellow(
-						`⚠️ Warning! Errors where outputted to the browser when the page was rendered.`
+						`\n⚠️ Warning! Errors where outputted to the browser when the page was rendered.\n`
 					)
 				),
-				Chalk.red('Error 1'),
-				Chalk.red('Error 2'),
-				Chalk.bold(`• Rendered page "${mockedURLList[3]}"`),
-				`Rendered ${mockedURLList.length} pages in 0 minutes and 0 seconds`
+				Chalk.red('Error 1\n'),
+				Chalk.red('Error 2\n'),
+				...mockedURLList.slice(22).map((url) => Chalk.bold(`• Rendered page "${url}"`)),
+				`\nRendered ${mockedURLList.length} pages in 0 seconds\n`
 			]);
 
 			expect(results!).toEqual(
@@ -465,7 +487,12 @@ describe('ServerRenderer', () => {
 					content: '<html></html>',
 					error: null,
 					pageConsole: '',
-					pageErrors: index === 2 ? ['Error 1', 'Error 2'] : []
+					pageErrors: index === 21 ? ['Error 1', 'Error 2'] : [],
+					status: 200,
+					statusText: 'OK',
+					headers: {
+						test: 'value'
+					}
 				}))
 			);
 		});
@@ -484,52 +511,29 @@ describe('ServerRenderer', () => {
 				results = r;
 			});
 
-			// Cache warmup
-			// 1 worker is created
-
-			const worker = MockedWorker.openWorkers[0];
-			const postedData = worker.postedData[0];
-			worker.postedData = [];
-			worker.listeners.message[0]({
-				results: postedData.items.map((item) => ({
-					url: item.url,
-					content: '<html></html>',
-					outputFile: null,
-					error: null,
-					pageConsole: 'Page console 1',
-					pageErrors: [],
-					status: 200,
-					statusText: 'OK',
-					headers: {
-						test: 'value'
-					}
-				}))
-			});
-
-			await new Promise((resolve) => setTimeout(resolve));
-
-			// 1 worker remains open to handle the remaining pages
+			// 1 worker opened to handle the rendering
 			expect(MockedWorker.openWorkers.length).toBe(1);
 
-			// Error worker
-			const errorWorker = MockedWorker.openWorkers[0];
-			const errorPostedData = worker.postedData[0];
-			errorWorker.postedData = [];
-			errorWorker.listeners.message[0]({
-				results: errorPostedData.items.map((item, index) => ({
-					url: item.url,
-					content: '<html></html>',
-					outputFile: null,
-					error: null,
-					pageConsole: index === 1 ? 'Page console 2' : '',
-					pageErrors: [],
-					status: 200,
-					statusText: 'OK',
-					headers: {
-						test: 'value'
-					}
-				}))
-			});
+			for (let i = 0; i < MockedWorker.openWorkers.length; i++) {
+				const worker = MockedWorker.openWorkers[i];
+				const postedData = worker.postedData[0];
+				worker.postedData = [];
+				worker.listeners.message[0]({
+					results: postedData.items.map((item, index) => ({
+						url: item.url,
+						content: '<html></html>',
+						outputFile: null,
+						error: null,
+						pageConsole: index === 1 || index === 2 ? `Page console ${index + 1}` : '',
+						pageErrors: [],
+						status: 200,
+						statusText: 'OK',
+						headers: {
+							test: 'value'
+						}
+					}))
+				});
+			}
 
 			await new Promise((resolve) => setTimeout(resolve));
 
@@ -538,14 +542,14 @@ describe('ServerRenderer', () => {
 			expect(MockedWorker.terminatedWorkers.length).toBe(1);
 
 			expect(log).toEqual([
-				`Rendering ${mockedURLList.length} pages`,
+				Chalk.bold(`Rendering ${mockedURLList.length} pages...\n`),
 				Chalk.bold(`• Rendered page "${mockedURLList[0]}"`),
-				Chalk.gray('Page console 1'),
 				Chalk.bold(`• Rendered page "${mockedURLList[1]}"`),
-				Chalk.bold(`• Rendered page "${mockedURLList[2]}"`),
 				Chalk.gray('Page console 2'),
+				Chalk.bold(`• Rendered page "${mockedURLList[2]}"`),
+				Chalk.gray('Page console 3'),
 				Chalk.bold(`• Rendered page "${mockedURLList[3]}"`),
-				`Rendered ${mockedURLList.length} pages in 0 minutes and 0 seconds`
+				Chalk.bold(`\nRendered ${mockedURLList.length} pages in 0 seconds\n`)
 			]);
 
 			expect(results!).toEqual(
@@ -554,8 +558,13 @@ describe('ServerRenderer', () => {
 					outputFile: null,
 					content: '<html></html>',
 					error: null,
-					pageConsole: index === 0 || index === 2 ? `Page console ${index === 0 ? '1' : '2'}` : '',
-					pageErrors: []
+					pageConsole: index === 1 || index === 2 ? `Page console ${index + 1}` : '',
+					pageErrors: [],
+					status: 200,
+					statusText: 'OK',
+					headers: {
+						test: 'value'
+					}
 				}))
 			);
 		});
@@ -574,52 +583,29 @@ describe('ServerRenderer', () => {
 				results = r;
 			});
 
-			// Cache warmup
-			// 1 worker is created
+			// 1 worker opened to handle the rendering
+			expect(MockedWorker.openWorkers.length).toBe(1);
 
-			const worker = MockedWorker.openWorkers[0];
-			const postedData = worker.postedData[0];
-			worker.postedData = [];
-			worker.listeners.message[0]({
-				results: postedData.items.map((item) => ({
-					url: item.url,
-					content: '<html></html>',
-					outputFile: null,
-					error: null,
-					pageConsole: '',
-					pageErrors: [],
-					status: 200,
-					statusText: 'OK',
-					headers: {
-						test: 'value'
-					}
-				}))
-			});
-
-			await new Promise((resolve) => setTimeout(resolve));
-
-			// 1 worker remains open to handle the remaining pages
-			expect(MockedWorker.openWorkers.length).toBe(0);
-
-			// Error worker
-			const errorWorker = MockedWorker.openWorkers[0];
-			const errorPostedData = worker.postedData[0];
-			errorWorker.postedData = [];
-			errorWorker.listeners.message[0]({
-				results: errorPostedData.items.map((item, index) => ({
-					url: item.url,
-					content: '<html></html>',
-					outputFile: null,
-					error: index === 1 ? 'Error' : null,
-					pageConsole: index === 1 ? 'Page console' : '',
-					pageErrors: index === 1 ? ['Error 1'] : [],
-					status: 200,
-					statusText: 'OK',
-					headers: {
-						test: 'value'
-					}
-				}))
-			});
+			for (let i = 0; i < MockedWorker.openWorkers.length; i++) {
+				const worker = MockedWorker.openWorkers[i];
+				const postedData = worker.postedData[0];
+				worker.postedData = [];
+				worker.listeners.message[0]({
+					results: postedData.items.map((item, index) => ({
+						url: item.url,
+						content: '<html></html>',
+						outputFile: null,
+						error: index === 2 ? 'Error' : null,
+						pageConsole: index === 2 ? `Page console` : '',
+						pageErrors: index === 2 ? ['Error'] : [],
+						status: 200,
+						statusText: 'OK',
+						headers: {
+							test: 'value'
+						}
+					}))
+				});
+			}
 
 			await new Promise((resolve) => setTimeout(resolve));
 
@@ -636,7 +622,7 @@ describe('ServerRenderer', () => {
 					content: '<html></html>',
 					error: index === 2 ? 'Error' : null,
 					pageConsole: index === 2 ? `Page console` : '',
-					pageErrors: index === 2 ? ['Error 1'] : [],
+					pageErrors: index === 2 ? ['Error'] : [],
 					status: 200,
 					statusText: 'OK',
 					headers: {
@@ -665,52 +651,29 @@ describe('ServerRenderer', () => {
 				results = r;
 			});
 
-			// Cache warmup
-			// 1 worker is created
+			// 1 worker opened to handle the rendering
+			expect(MockedWorker.openWorkers.length).toBe(1);
 
-			const worker = MockedWorker.openWorkers[0];
-			const postedData = worker.postedData[0];
-			worker.postedData = [];
-			worker.listeners.message[0]({
-				results: postedData.items.map((item) => ({
-					url: item.url,
-					content: '<html></html>',
-					outputFile: item.outputFile!,
-					error: null,
-					pageConsole: '',
-					pageErrors: [],
-					status: 200,
-					statusText: 'OK',
-					headers: {
-						test: 'value'
-					}
-				}))
-			});
-
-			await new Promise((resolve) => setTimeout(resolve));
-
-			// 1 worker remains open to handle the remaining pages
-			expect(MockedWorker.openWorkers.length).toBe(0);
-
-			// Error worker
-			const secondWorker = MockedWorker.openWorkers[0];
-			const secondPostedData = worker.postedData[0];
-			secondWorker.postedData = [];
-			secondWorker.listeners.message[0]({
-				results: secondPostedData.items.map((item) => ({
-					url: item.url,
-					content: '<html></html>',
-					outputFile: item.outputFile!,
-					error: null,
-					pageConsole: '',
-					pageErrors: [],
-					status: 200,
-					statusText: 'OK',
-					headers: {
-						test: 'value'
-					}
-				}))
-			});
+			for (let i = 0; i < MockedWorker.openWorkers.length; i++) {
+				const worker = MockedWorker.openWorkers[i];
+				const postedData = worker.postedData[0];
+				worker.postedData = [];
+				worker.listeners.message[0]({
+					results: postedData.items.map((item) => ({
+						url: item.url,
+						content: '<html></html>',
+						outputFile: item.outputFile!,
+						error: null,
+						pageConsole: '',
+						pageErrors: [],
+						status: 200,
+						statusText: 'OK',
+						headers: {
+							test: 'value'
+						}
+					}))
+				});
+			}
 
 			await new Promise((resolve) => setTimeout(resolve));
 
@@ -719,18 +682,18 @@ describe('ServerRenderer', () => {
 			expect(MockedWorker.terminatedWorkers.length).toBe(1);
 
 			expect(log).toEqual([
-				`Rendering ${mockedItems.length} pages`,
+				Chalk.bold(`Rendering ${mockedItems.length} pages...\n`),
 				Chalk.bold(`• Rendered page "${mockedItems[0].url}"`),
 				Chalk.bold(`• Rendered page "${mockedItems[1].url}"`),
 				Chalk.bold(`• Rendered page "${mockedItems[2].url}"`),
 				Chalk.bold(`• Rendered page "${mockedItems[3].url}"`),
-				`Rendered ${mockedItems.length} pages in 0 minutes and 0 seconds`
+				Chalk.bold(`\nRendered ${mockedItems.length} pages in 0 seconds\n`)
 			]);
 
 			expect(results!).toEqual(
 				mockedItems.map((item) => ({
 					url: item.url,
-					outputFile: Path.resolve(Path.join('happy-dom-sr', 'output', item.outputFile)),
+					outputFile: Path.resolve(Path.join('happy-dom', 'render', item.outputFile)),
 					content: '<html></html>',
 					error: null,
 					pageConsole: '',

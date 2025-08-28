@@ -6,7 +6,6 @@ import CSSParser from '../../../src/css/utilities/CSSParser.js';
 import CSSStyleSheet from '../../../src/css/CSSStyleSheet.js';
 import CSSScopeRule from '../../../src/css/rules/CSSScopeRule.js';
 import CSSStyleRule from '../../../src/css/rules/CSSStyleRule.js';
-import DOMException from '../../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
 
 describe('CSSGroupingRule', () => {

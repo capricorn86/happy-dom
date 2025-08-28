@@ -6,7 +6,6 @@ import Request from '../../src/fetch/Request';
 import Response from '../../src/fetch/Response';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import Fetch from '../../src/fetch/Fetch';
-import DOMException from '../../src/exception/DOMException';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
 import BrowserNavigationCrossOriginPolicyEnum from '../../src/browser/enums/BrowserNavigationCrossOriginPolicyEnum';
 import BrowserFrameFactory from '../../src/browser/utilities/BrowserFrameFactory';

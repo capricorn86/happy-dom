@@ -178,7 +178,7 @@ export default class Fetch {
 						window: this.#window,
 						response: this.response,
 						request: this.request
-				  })
+					})
 				: undefined;
 			return interceptedResponse instanceof Response ? interceptedResponse : this.response;
 		}
@@ -365,7 +365,7 @@ export default class Fetch {
 						window: this.#window,
 						response: await response,
 						request: this.request
-				  })
+					})
 				: undefined;
 			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 			return interceptedResponse instanceof Response ? interceptedResponse : response;
@@ -387,7 +387,7 @@ export default class Fetch {
 						window: this.#window,
 						response: await response,
 						request: this.request
-				  })
+					})
 				: undefined;
 			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 			return interceptedResponse instanceof Response ? interceptedResponse : response;
@@ -412,7 +412,7 @@ export default class Fetch {
 					window: this.#window,
 					response: await response,
 					request: this.request
-			  })
+				})
 			: undefined;
 
 		this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
@@ -570,7 +570,7 @@ export default class Fetch {
 							window: this.#window,
 							response: await response,
 							request: this.request
-					  })
+						})
 					: undefined;
 				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 				const returnResponse =
@@ -1003,6 +1003,7 @@ export default class Fetch {
 					url: locationURL,
 					init: requestInit,
 					redirectCount: this.redirectCount + 1,
+					disableSameOriginPolicy: this.disableSameOriginPolicy,
 					contentType: !shouldBecomeGetRequest ? this.request[PropertySymbol.contentType] : null
 				});
 

@@ -1,9 +1,10 @@
 import IResponseCache from './IResponseCache.js';
 import ICachedResponse from './ICachedResponse.js';
 import CachedResponseStateEnum from './CachedResponseStateEnum.js';
-import ICachableRequest from './ICachableRequest.js';
-import ICachableResponse from './ICachableResponse.js';
+import ICacheableRequest from './ICacheableRequest.js';
+import ICacheableResponse from './ICacheableResponse.js';
 import Headers from '../../Headers.js';
+import ResponseCacheFileSystem from './ResponseCacheFileSystem.js';
 
 const UPDATE_RESPONSE_HEADERS = ['Cache-Control', 'Last-Modified', 'Vary', 'ETag'];
 
@@ -14,7 +15,15 @@ const UPDATE_RESPONSE_HEADERS = ['Cache-Control', 'Last-Modified', 'Vary', 'ETag
  * @see https://www.mnot.net/cache_docs/
  */
 export default class ResponseCache implements IResponseCache {
-	public readonly entries: Map<string, ICachedResponse[]> = new Map();
+	public fileSystem: ResponseCacheFileSystem;
+	#entries: Map<string, ICachedResponse[]> = new Map();
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		this.fileSystem = new ResponseCacheFileSystem(this.#entries);
+	}
 
 	/**
 	 * Returns cached response.
@@ -22,13 +31,13 @@ export default class ResponseCache implements IResponseCache {
 	 * @param request Request.
 	 * @returns Cached response.
 	 */
-	public get(request: ICachableRequest): ICachedResponse | null {
+	public get(request: ICacheableRequest): ICachedResponse | null {
 		if (request.headers.get('Cache-Control')?.includes('no-cache')) {
 			return null;
 		}
 
 		const url = request.url;
-		const entries = this.entries.get(url);
+		const entries = this.#entries.get(url);
 
 		if (entries) {
 			for (let i = 0, max = entries.length; i < max; i++) {
@@ -66,7 +75,7 @@ export default class ResponseCache implements IResponseCache {
 	 * @param response Response.
 	 * @returns Cached response.
 	 */
-	public add(request: ICachableRequest, response: ICachableResponse): ICachedResponse | null {
+	public add(request: ICacheableRequest, response: ICacheableResponse): ICachedResponse | null {
 		// We should only cache GET and HEAD requests.
 		if (
 			(request.method !== 'GET' && request.method !== 'HEAD') ||
@@ -93,7 +102,7 @@ export default class ResponseCache implements IResponseCache {
 			cachedResponse.state = CachedResponseStateEnum.fresh;
 		} else {
 			if (cachedResponse) {
-				const entries = this.entries.get(url);
+				const entries = this.#entries.get(url);
 				if (entries) {
 					const index = entries.indexOf(cachedResponse);
 					if (index !== -1) {
@@ -127,11 +136,11 @@ export default class ResponseCache implements IResponseCache {
 				virtual: response.virtual ?? false
 			};
 
-			let entries = this.entries.get(url);
+			let entries = this.#entries.get(url);
 
 			if (!entries) {
 				entries = [];
-				this.entries.set(url, entries);
+				this.#entries.set(url, entries);
 			}
 
 			entries.push(cachedResponse);
@@ -149,7 +158,7 @@ export default class ResponseCache implements IResponseCache {
 						break;
 					case 'no-cache':
 					case 'no-store':
-						const entries = this.entries.get(url);
+						const entries = this.#entries.get(url);
 						if (entries) {
 							const index = entries.indexOf(cachedResponse);
 							if (index !== -1) {
@@ -194,7 +203,7 @@ export default class ResponseCache implements IResponseCache {
 
 		// Cache is invalid if it has expired and doesn't have an ETag.
 		if (!cachedResponse.etag && (!cachedResponse.expires || cachedResponse.expires < Date.now())) {
-			const entries = this.entries.get(url);
+			const entries = this.#entries.get(url);
 			if (entries) {
 				const index = entries.indexOf(cachedResponse);
 				if (index !== -1) {
@@ -217,8 +226,8 @@ export default class ResponseCache implements IResponseCache {
 	public clear(options?: { url?: string; toTime?: number }): void {
 		if (options) {
 			if (options.toTime) {
-				for (const key of options.url ? [options.url] : this.entries.keys()) {
-					const entry = this.entries.get(key);
+				for (const key of options.url ? [options.url] : this.#entries.keys()) {
+					const entry = this.#entries.get(key);
 					if (entry) {
 						for (let i = 0, max = entry.length; i < max; i++) {
 							if (entry[i].cacheUpdateTime < options.toTime) {
@@ -230,10 +239,10 @@ export default class ResponseCache implements IResponseCache {
 					}
 				}
 			} else if (options.url) {
-				this.entries.delete(options.url);
+				this.#entries.delete(options.url);
 			}
 		} else {
-			this.entries.clear();
+			this.#entries.clear();
 		}
 	}
 }

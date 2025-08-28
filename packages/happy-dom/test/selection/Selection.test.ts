@@ -2,7 +2,6 @@ import Window from '../../src/window/Window.js';
 import Document from '../../src/nodes/document/Document.js';
 import Selection from '../../src/selection/Selection.js';
 import SelectionDirectionEnum from '../../src/selection/SelectionDirectionEnum.js';
-import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 import NodeTypeEnum from '../../src/nodes/node/NodeTypeEnum.js';
 import { beforeEach, describe, it, expect } from 'vitest';

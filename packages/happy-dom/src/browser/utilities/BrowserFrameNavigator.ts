@@ -10,6 +10,7 @@ import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
 import FormData from '../../form-data/FormData.js';
 import HistoryScrollRestorationEnum from '../../history/HistoryScrollRestorationEnum.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
+import Fetch from '../../fetch/Fetch.js';
 
 /**
  * Browser frame navigation utility.
@@ -90,6 +91,7 @@ export default class BrowserFrameNavigator {
 		if (targetURL.protocol === 'javascript:') {
 			if (frame && !frame.page.context.browser.settings.disableJavaScriptEvaluation) {
 				const readyStateManager = frame.window[PropertySymbol.readyStateManager];
+				const asyncTaskManager = frame[PropertySymbol.asyncTaskManager];
 
 				const taskID = readyStateManager.startTask();
 				const code = `${targetURL.href.replace('javascript:', '')}\n//# sourceURL=${frame.url}`;
@@ -100,7 +102,14 @@ export default class BrowserFrameNavigator {
 				// The error will be caught by process error level listener or a try and catch in the requestAnimationFrame().
 				await new Promise((resolve) => {
 					frame.window.requestAnimationFrame(() => {
-						frame.window.requestAnimationFrame(resolve);
+						const immediate = setImmediate(() => {
+							asyncTaskManager.endTask(taskID);
+							resolve(null);
+						});
+						const taskID = asyncTaskManager.startTask(() => () => {
+							clearImmediate(immediate);
+							resolve(null);
+						});
 						frame.window.eval(code);
 					});
 				});
@@ -228,15 +237,23 @@ export default class BrowserFrameNavigator {
 			headers.set('Cache-Control', 'no-cache');
 		}
 
-		try {
-			response = await frame.window.fetch(targetURL.href, {
+		const fetch = new Fetch({
+			browserFrame: frame,
+			window: frame.window,
+			url: targetURL.href,
+			disableSameOriginPolicy: true,
+			init: {
 				referrer,
 				referrerPolicy: goToOptions?.referrerPolicy || 'origin',
 				signal: abortController.signal,
 				method: method || (formData ? 'POST' : 'GET'),
 				headers,
 				body: formData
-			});
+			}
+		});
+
+		try {
+			response = await fetch.send();
 
 			// Handles the "X-Frame-Options" header for child frames.
 			if (frame.parentFrame) {
@@ -283,7 +300,14 @@ export default class BrowserFrameNavigator {
 		// The error will be caught by process error level listener or a try and catch in the requestAnimationFrame().
 		await new Promise((resolve) => {
 			frame.window.requestAnimationFrame(() => {
-				frame.window.requestAnimationFrame(resolve);
+				const immediate = setImmediate(() => {
+					asyncTaskManager.endTask(taskID);
+					resolve(null);
+				});
+				const taskID = asyncTaskManager.startTask(() => () => {
+					clearImmediate(immediate);
+					resolve(null);
+				});
 				frame.content = responseText;
 			});
 		});

@@ -1,6 +1,6 @@
 import Headers from '../../Headers.js';
 
-export default interface ICachableResponse {
+export default interface ICacheableResponse {
 	status: number;
 	statusText: string;
 	url: string;
