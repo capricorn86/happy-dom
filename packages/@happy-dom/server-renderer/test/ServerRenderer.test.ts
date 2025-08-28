@@ -4,6 +4,7 @@ import MockedURLList from './MockedURLList.js';
 import IServerRendererResult from '../src/types/IServerRendererResult.js';
 import MockedWorker from './MockedWorker.js';
 import DefaultServerRendererConfiguration from '../src/config/DefaultServerRendererConfiguration.js';
+// eslint-disable-next-line import/no-named-as-default
 import Chalk from 'chalk';
 import Path from 'path';
 import ServerRendererLogLevelEnum from '../src/enums/ServerRendererLogLevelEnum.js';
