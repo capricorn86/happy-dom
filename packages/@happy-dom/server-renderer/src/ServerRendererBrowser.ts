@@ -15,6 +15,7 @@ export default class ServerRendererBrowser {
 	#configuration: IServerRendererConfiguration;
 	#browser: Browser;
 	#isCacheLoaded: boolean = false;
+	#createdDirectories: Set<string> = new Set();
 
 	/**
 	 * Constructor.
@@ -24,14 +25,14 @@ export default class ServerRendererBrowser {
 	constructor(configuration: IServerRendererConfiguration) {
 		this.#configuration = configuration;
 		const settings =
-			configuration.debug && !configuration.browser.debug?.traceWaitUntilComplete
+			configuration.debug && configuration.browser.debug?.traceWaitUntilComplete === -1
 				? {
 						...configuration.browser,
 						debug: {
 							...configuration.browser.debug,
 							traceWaitUntilComplete: configuration.render.timeout
 						}
-					}
+				  }
 				: configuration.browser;
 		this.#browser = new Browser({ settings });
 	}
@@ -100,7 +101,7 @@ export default class ServerRendererBrowser {
 				: browser.defaultContext;
 		const page = context.newPage();
 
-		if (!configuration.cache.disable) {
+		if (configuration.render.incognitoContext && !configuration.cache.disable) {
 			// @ts-ignore
 			context.responseCache = responseCache;
 			// @ts-ignore
@@ -153,7 +154,7 @@ export default class ServerRendererBrowser {
 				? setTimeout(() => {
 						timeoutError = `The page was not rendered within the defined time of ${configuration.render.timeout}ms and the operation was aborted. You can increase this value with the "render.timeout" setting.\n\nThe page may contain scripts with timer loops that prevent it from completing. You can debug open handles by setting "debug" to true, or prevent timer loops by setting "browser.timer.preventTimerLoops" to true. Read more about this in the documentation.`;
 						page.abort();
-					}, configuration.render.timeout)
+				  }, configuration.render.timeout)
 				: null;
 
 		try {
@@ -223,12 +224,17 @@ export default class ServerRendererBrowser {
 			};
 		}
 
-		try {
-			await FS.promises.mkdir(Path.dirname(item.outputFile), {
-				recursive: true
-			});
-		} catch {
-			// Ignore
+		const directory = Path.dirname(item.outputFile);
+
+		if (!this.#createdDirectories.has(directory)) {
+			this.#createdDirectories.add(directory);
+			try {
+				await FS.promises.mkdir(directory, {
+					recursive: true
+				});
+			} catch {
+				// Ignore
+			}
 		}
 
 		await FS.promises.writeFile(item.outputFile, result);

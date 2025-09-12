@@ -101,7 +101,17 @@ export default class ServerRenderer {
 		) {
 			const item = parsedItems.shift();
 			if (item) {
+				if (configuration.logLevel >= ServerRendererLogLevelEnum.info) {
+					// eslint-disable-next-line no-console
+					console.log('Warming up cache...\n');
+				}
+
 				results = results.concat(await this.#runInWorker([item]));
+
+				if (configuration.logLevel >= ServerRendererLogLevelEnum.info) {
+					// eslint-disable-next-line no-console
+					console.log('\nCache warmup complete.\n');
+				}
 			}
 		}
 
