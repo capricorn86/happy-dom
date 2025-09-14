@@ -1,0 +1,21 @@
+{
+	"name": "@happy-dom/benchmark",
+	"version": "1.0.0",
+	"private": true,
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"lint": "eslint --max-warnings 0 --cache --cache-location ../../.turbo/eslint.cache .",
+		"lint:fix": "eslint --max-warnings 0 --cache --cache-location ../../.turbo/eslint.cache --fix .",
+		"benchmark": "NODE_OPTIONS=\"--max-old-space-size=8192\" node append-child.js && NODE_OPTIONS=\"--max-old-space-size=8192\" node query-selector.js && NODE_OPTIONS=\"--max-old-space-size=8192\" node inner-html.js && NODE_OPTIONS=\"--max-old-space-size=8192\" node todo-list.js"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"type": "commonjs",
+	"dependencies": {
+		"benny": "^3.7.1",
+		"happy-dom": "^0.0.0",
+		"jsdom": "^26.1.0"
+	}
+}
