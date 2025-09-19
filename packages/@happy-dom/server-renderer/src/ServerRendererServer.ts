@@ -4,12 +4,13 @@ import IServerRendererConfiguration from './types/IServerRendererConfiguration.j
 import ServerRendererConfigurationFactory from './utilities/ServerRendererConfigurationFactory.js';
 import ServerRenderer from './ServerRenderer.js';
 import FetchHTTPSCertificate from 'happy-dom/lib/fetch/certificate/FetchHTTPSCertificate.js';
-import { createGzip } from 'node:zlib';
-import { pipeline } from 'node:stream/promises';
+import ZLib from 'node:zlib';
+import Stream from 'node:stream/promises';
 import OS from 'node:os';
 import IServerRendererResult from './types/IServerRendererResult.js';
 // eslint-disable-next-line import/no-named-as-default
 import Chalk from 'chalk';
+import ServerRendererLogLevelEnum from './enums/ServerRendererLogLevelEnum.js';
 
 /**
  * Server renderer proxy HTTP2 server.
@@ -22,7 +23,7 @@ export default class ServerRendererServer {
 		string,
 		{
 			timestamp: number;
-			content: string;
+			result: IServerRendererResult;
 		}
 	> = new Map();
 	#cacheQueue: Map<
@@ -48,40 +49,34 @@ export default class ServerRendererServer {
 		try {
 			url = new URL(this.#configuration.server.serverURL);
 		} catch (error) {
-			// eslint-disable-next-line no-console
-			console.error(
+			throw new Error(
 				Chalk.red(
 					Chalk.bold(
 						'\nFailed to start server. The setting "server.serverURL" is not a valid URL.\n'
 					)
 				)
 			);
-			return;
 		}
 
 		if (!this.#configuration.server.targetOrigin) {
-			// eslint-disable-next-line no-console
-			console.error(
+			throw new Error(
 				Chalk.red(
 					Chalk.bold('\nFailed to start server. The setting "server.targetOrigin" is not set.\n')
 				)
 			);
-			return;
 		}
 
 		let targetOrigin: URL;
 		try {
 			targetOrigin = new URL(this.#configuration.server.targetOrigin);
 		} catch (error) {
-			// eslint-disable-next-line no-console
-			console.error(
+			throw new Error(
 				Chalk.red(
 					Chalk.bold(
 						'\nFailed to start server. The setting "server.targetOrigin" is not a valid URL.\n'
 					)
 				)
 			);
-			return;
 		}
 
 		switch (url.protocol) {
@@ -103,7 +98,11 @@ export default class ServerRendererServer {
 				break;
 			default:
 				throw new Error(
-					`Unsupported protocol "${url.protocol}". Only "http:" and "https:" are supported.`
+					Chalk.red(
+						Chalk.bold(
+							`\nUnsupported protocol "${url.protocol}". Only "http:" and "https:" are supported.\n`
+						)
+					)
 				);
 		}
 
@@ -153,7 +152,7 @@ export default class ServerRendererServer {
 		const headers: { [name: string]: string } = {};
 
 		for (const name of Object.keys(request.headers)) {
-			if (name[0] !== ':' && name !== 'transfer-encoding') {
+			if (name[0] !== ':' && name.toLowerCase() !== 'transfer-encoding') {
 				headers[name] = Array.isArray(request.headers[name])
 					? request.headers[name].join(', ')
 					: request.headers[name]!;
@@ -161,6 +160,11 @@ export default class ServerRendererServer {
 		}
 
 		const fetchResponse = await fetch(url.href, { headers });
+		const isCacheEnabled =
+			!this.#configuration.server.disableCache && this.#configuration.server.cacheTime > 0;
+		const isCacheQueueEnabled = isCacheEnabled && !this.#configuration.server.disableCacheQueue;
+		const cacheKey = this.#getCacheKey(url, headers, fetchResponse.status);
+		let result: IServerRendererResult | null = null;
 
 		response.statusCode = fetchResponse.status;
 
@@ -169,34 +173,36 @@ export default class ServerRendererServer {
 			fetchResponse.headers.get('content-type')?.startsWith('text/html') &&
 			fetchResponse.status === 200
 		) {
-			if (this.#configuration.server.renderCacheTime > 0) {
-				const cached = this.#cache.get(url.href);
-				if (cached && Date.now() - cached.timestamp < this.#configuration.server.renderCacheTime) {
-					// eslint-disable-next-line no-console
-					console.log(Chalk.bold(`• Using cached response for ${url.href}`));
+			if (isCacheEnabled) {
+				const cached = this.#cache.get(cacheKey);
+				if (cached && Date.now() - cached.timestamp < this.#configuration.server.cacheTime) {
+					if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.info) {
+						// eslint-disable-next-line no-console
+						console.log(Chalk.bold(`• Using cached response for ${url.href}`));
+					}
 
-					response.setHeader('Content-Type', 'text/html; charset=utf-8');
-					response.setHeader('Content-Encoding', 'gzip');
-
-					await pipeline(cached.content, createGzip(), response);
-
-					return;
+					result = cached.result;
 				}
 			}
 
-			let result: IServerRendererResult | null = null;
-
-			if (this.#configuration.server.renderCacheTime > 0) {
-				const cacheQueue = this.#cacheQueue.get(url.href);
+			if (!result && isCacheQueueEnabled) {
+				const cacheQueue = this.#cacheQueue.get(cacheKey);
 				if (cacheQueue) {
-					// eslint-disable-next-line no-console
-					console.log(Chalk.bold(`• Waiting for ongoing rendering of ${url.href}`));
+					if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.info) {
+						// eslint-disable-next-line no-console
+						console.log(Chalk.bold(`• Waiting for ongoing rendering of ${url.href}`));
+					}
 
 					result = await new Promise((resolve, reject) => {
 						cacheQueue.push({ resolve, reject });
 					});
+
+					if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.info) {
+						// eslint-disable-next-line no-console
+						console.log(Chalk.bold(`• Using cached response for ${url.href}`));
+					}
 				} else {
-					this.#cacheQueue.set(url.href, []);
+					this.#cacheQueue.set(cacheKey, []);
 				}
 			}
 
@@ -205,10 +211,17 @@ export default class ServerRendererServer {
 					await this.#serverRenderer.render([{ url: url.href, headers }], { keepAlive: true })
 				)[0];
 
-				const cacheQueue = this.#cacheQueue.get(url.href);
+				if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.info) {
+					// eslint-disable-next-line no-console
+					console.log(Chalk.bold(`• Rendered ${url.href}`));
+				}
+			}
+
+			if (isCacheQueueEnabled) {
+				const cacheQueue = this.#cacheQueue.get(cacheKey);
 
 				if (cacheQueue) {
-					this.#cacheQueue.delete(url.href);
+					this.#cacheQueue.delete(cacheKey);
 					for (const { resolve } of cacheQueue) {
 						resolve(result);
 					}
@@ -229,14 +242,21 @@ export default class ServerRendererServer {
 			response.statusCode = result.error ? 500 : result.status;
 
 			if (result.error) {
-				response.end(`<h1>Internal Server Error</h1>${result.error.replace(/\n/gm, '<br>')}`);
+				if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.error) {
+					// eslint-disable-next-line no-console
+					console.log(Chalk.red(`\n✖ Failed to render ${url.href}:\n${result.error}\n`));
+				}
+				response.setHeader('Content-Type', 'text/html; charset=utf-8');
+				response.end(
+					`<h1>Internal Server Error</h1><br><p>${result.error.replace(/\n/gm, '<br>')}</p>`
+				);
 				return;
 			}
 
-			if (this.#configuration.server.renderCacheTime > 0) {
-				this.#cache.set(url.href, {
+			if (isCacheEnabled) {
+				this.#cache.set(cacheKey, {
 					timestamp: Date.now(),
-					content: result.content!
+					result
 				});
 			}
 
@@ -244,10 +264,12 @@ export default class ServerRendererServer {
 			response.setHeader('Content-Type', 'text/html; charset=utf-8');
 
 			try {
-				await pipeline(result.content!, createGzip(), response);
+				await Stream.pipeline(result.content!, ZLib.createGzip(), response);
 			} catch (error) {
-				// eslint-disable-next-line no-console
-				console.error(Chalk.red(`\nFailed to send response: ${(<Error>error).message}\n`));
+				if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.error) {
+					// eslint-disable-next-line no-console
+					console.log(Chalk.red(`\n✖ Failed to send response: ${error}\n`));
+				}
 				response.statusCode = 500;
 				response.setHeader('Content-Type', 'text/plain; charset=utf-8');
 				response.write('Internal Server Error');
@@ -270,10 +292,12 @@ export default class ServerRendererServer {
 			response.setHeader('Content-Encoding', 'gzip');
 			response.removeHeader('Content-Length');
 			try {
-				await pipeline(fetchResponse.body!, createGzip(), response);
+				await Stream.pipeline(fetchResponse.body!, ZLib.createGzip(), response);
 			} catch (error) {
-				// eslint-disable-next-line no-console
-				console.error(Chalk.red(`\nFailed to send response: ${(<Error>error).message}\n`));
+				if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.error) {
+					// eslint-disable-next-line no-console
+					console.log(Chalk.red(`\n✖ Failed to send response: ${error}\n`));
+				}
 				response.statusCode = 500;
 				response.setHeader('Content-Type', 'text/plain; charset=utf-8');
 				response.write('Internal Server Error');
@@ -310,6 +334,18 @@ export default class ServerRendererServer {
 			}
 		}
 		return '';
+	}
+
+	/**
+	 * Returns the cache key for the given request.
+	 *
+	 * @param url Request URL.
+	 * @param headers Request headers.
+	 * @param statusCode Response status code.
+	 * @returns The cache key.§
+	 */
+	#getCacheKey(url: URL, headers: { [key: string]: string }, statusCode: number): string {
+		return `${url.href}|${JSON.stringify(headers)}|${statusCode}`;
 	}
 
 	/**

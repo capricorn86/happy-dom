@@ -105,6 +105,8 @@ export default interface IServerRendererConfiguration {
 	server: {
 		serverURL: string;
 		targetOrigin: string | null;
-		renderCacheTime: number;
+		disableCache: boolean;
+		disableCacheQueue: boolean;
+		cacheTime: number;
 	};
 }

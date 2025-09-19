@@ -35,6 +35,8 @@ export default <IServerRendererConfiguration>{
 	server: {
 		serverURL: 'https://localhost:3000',
 		targetOrigin: null,
-		renderCacheTime: 30000 // 30 seconds
+		disableCache: false,
+		disableCacheQueue: false,
+		cacheTime: 30000 // 30 seconds
 	}
 };

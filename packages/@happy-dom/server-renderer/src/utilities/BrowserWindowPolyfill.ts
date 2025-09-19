@@ -1,9 +1,9 @@
 import { BrowserWindow } from 'happy-dom';
 
 /**
- * Window polyfill utility.
+ * Browser window polyfill utility.
  */
-export default class WindowPolyfillUtility {
+export default class BrowserWindowPolyfill {
 	/**
 	 * Applies polyfills to the window object.
 	 *

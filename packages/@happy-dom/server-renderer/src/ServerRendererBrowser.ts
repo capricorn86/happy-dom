@@ -6,7 +6,7 @@ import Path from 'path';
 import IServerRendererItem from './types/IServerRendererItem.js';
 import IServerRendererResult from './types/IServerRendererResult.js';
 import { ErrorEvent } from 'happy-dom';
-import WindowPolyfillUtility from './utilities/WindowPolyfillUtility.js';
+import BrowserWindowPolyfill from './utilities/BrowserWindowPolyfill.js';
 
 /**
  * Server renderer browser.
@@ -32,7 +32,7 @@ export default class ServerRendererBrowser {
 							...configuration.browser.debug,
 							traceWaitUntilComplete: configuration.render.timeout
 						}
-				  }
+					}
 				: configuration.browser;
 		this.#browser = new Browser({ settings });
 	}
@@ -119,7 +119,7 @@ export default class ServerRendererBrowser {
 					}
 				});
 				if (!configuration.render.disablePolyfills) {
-					WindowPolyfillUtility.applyPolyfills(window);
+					BrowserWindowPolyfill.applyPolyfills(window);
 				}
 			}
 		}))!;
@@ -154,7 +154,7 @@ export default class ServerRendererBrowser {
 				? setTimeout(() => {
 						timeoutError = `The page was not rendered within the defined time of ${configuration.render.timeout}ms and the operation was aborted. You can increase this value with the "render.timeout" setting.\n\nThe page may contain scripts with timer loops that prevent it from completing. You can debug open handles by setting "debug" to true, or prevent timer loops by setting "browser.timer.preventTimerLoops" to true. Read more about this in the documentation.`;
 						page.abort();
-				  }, configuration.render.timeout)
+					}, configuration.render.timeout)
 				: null;
 
 		try {

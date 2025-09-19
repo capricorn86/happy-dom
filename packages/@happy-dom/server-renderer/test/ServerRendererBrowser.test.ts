@@ -51,7 +51,7 @@ describe('ServerRendererBrowser', () => {
 					statusText: 'OK'
 				}
 			]);
-			expect(createdDirectories).toEqual([Path.resolve('./happy-dom/cache')]);
+			expect(createdDirectories).toEqual([]);
 		});
 
 		it('Renders multiple items without output file.', async () => {
@@ -87,7 +87,7 @@ describe('ServerRendererBrowser', () => {
 					statusText: 'OK'
 				}))
 			);
-			expect(createdDirectories).toEqual([Path.resolve('./happy-dom/cache')]);
+			expect(createdDirectories).toEqual([]);
 		});
 
 		it('Renders multiple items with output file.', async () => {

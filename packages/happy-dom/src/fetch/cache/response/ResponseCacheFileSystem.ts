@@ -99,6 +99,10 @@ export default class ResponseCacheFileSystem implements IResponseCacheFileSystem
 			);
 		}
 
+		if (!this.#entries.size) {
+			return;
+		}
+
 		const absoluteDirectory = Path.resolve(directory);
 		const isDirectoryCreated = this.#createdDirectories.has(absoluteDirectory);
 
