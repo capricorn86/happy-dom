@@ -610,41 +610,5 @@ Timer #1
 			expect(loadedCacheDirectories).toEqual([]);
 			expect(savedCacheDirectories).toEqual([]);
 		});
-
-		it('Supports disabling file system cache.', async () => {
-			const loadedCacheDirectories: string[] = [];
-			const savedCacheDirectories: string[] = [];
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async () => {
-				return <Response>{
-					ok: true,
-					headers: new Headers({ key1: 'value', 'Cache-Control': 'max-age=3600' }),
-					status: 200,
-					statusText: 'OK',
-					text: async () => MockedPageHTML
-				};
-			});
-			vi.spyOn(ResponseCacheFileSystem.prototype, 'load').mockImplementation(
-				async (directory: string) => {
-					loadedCacheDirectories.push(directory);
-				}
-			);
-			vi.spyOn(ResponseCacheFileSystem.prototype, 'save').mockImplementation(
-				async (directory: string) => {
-					savedCacheDirectories.push(directory);
-				}
-			);
-			const browser = new ServerRendererBrowser(
-				ServerRendererConfigurationFactory.createConfiguration({
-					cache: {
-						fileSystem: {
-							disable: true
-						}
-					}
-				})
-			);
-			await browser.render([{ url: 'https://example.com/gb/en/' }]);
-			expect(loadedCacheDirectories).toEqual([]);
-			expect(savedCacheDirectories).toEqual([]);
-		});
 	});
 });

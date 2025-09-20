@@ -137,7 +137,9 @@ export default class Response implements Response {
 
 		this.#storeBodyInCache(buffer);
 
-		return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+		return <ArrayBuffer>(
+			buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
+		);
 	}
 
 	/**

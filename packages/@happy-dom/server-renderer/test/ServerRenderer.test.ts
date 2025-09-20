@@ -58,7 +58,7 @@ describe('ServerRenderer', () => {
 					'file://' + Path.resolve(Path.join('src', 'ServerRendererWorker.js'))
 				);
 
-				expect(worker.workerData.configuration.cache.fileSystem.directory).toBe(
+				expect(worker.workerData.configuration.cache.directory).toBe(
 					Path.resolve(Path.join('happy-dom', 'cache'))
 				);
 				expect(worker.workerData.configuration.outputDirectory).toBe(
@@ -70,10 +70,7 @@ describe('ServerRenderer', () => {
 					outputDirectory: Path.resolve(Path.join('happy-dom', 'render')),
 					cache: {
 						...DefaultServerRendererConfiguration.cache,
-						fileSystem: {
-							...DefaultServerRendererConfiguration.cache.fileSystem,
-							directory: Path.resolve(Path.join('happy-dom', 'cache'))
-						}
+						directory: Path.resolve(Path.join('happy-dom', 'cache'))
 					},
 					worker: {
 						...DefaultServerRendererConfiguration.worker,
@@ -171,9 +168,7 @@ describe('ServerRenderer', () => {
 		it('Renders pages in workers with cache warmup.', async () => {
 			const renderer = new ServerRenderer({
 				cache: {
-					fileSystem: {
-						warmup: true
-					}
+					warmup: true
 				},
 				worker: {
 					maxConcurrency: 10
@@ -219,7 +214,7 @@ describe('ServerRenderer', () => {
 					'file://' + Path.resolve(Path.join('src', 'ServerRendererWorker.js'))
 				);
 
-				expect(worker.workerData.configuration.cache.fileSystem.directory).toBe(
+				expect(worker.workerData.configuration.cache.directory).toBe(
 					Path.resolve(Path.join('happy-dom', 'cache'))
 				);
 				expect(worker.workerData.configuration.outputDirectory).toBe(
@@ -231,11 +226,8 @@ describe('ServerRenderer', () => {
 					outputDirectory: Path.resolve(Path.join('happy-dom', 'render')),
 					cache: {
 						...DefaultServerRendererConfiguration.cache,
-						fileSystem: {
-							...DefaultServerRendererConfiguration.cache.fileSystem,
-							directory: Path.resolve(Path.join('happy-dom', 'cache')),
-							warmup: true
-						}
+						directory: Path.resolve(Path.join('happy-dom', 'cache')),
+						warmup: true
 					},
 					worker: {
 						...DefaultServerRendererConfiguration.worker,
