@@ -70,8 +70,8 @@ describe('ProcessArgumentsParser', () => {
 					'-s',
 					'-su=http://localhost:8080/',
 					'-st=http://example.com/',
-					'-dc',
-					'-dq'
+					'-sdc',
+					'-sdq'
 				])
 			).toEqual(expectedConfig);
 		});

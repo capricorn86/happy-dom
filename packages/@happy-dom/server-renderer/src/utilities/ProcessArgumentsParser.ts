@@ -221,9 +221,9 @@ export default class ProcessArgumentsParser {
 					config.server.serverURL = this.stripQuotes(arg.split('=')[1]);
 				} else if (arg.startsWith('--server.targetOrigin=') || arg.startsWith('-st=')) {
 					config.server.targetOrigin = this.stripQuotes(arg.split('=')[1]);
-				} else if (arg === '--server.disableCache' || arg === '-dc') {
+				} else if (arg === '--server.disableCache' || arg === '-sdc') {
 					config.server.disableCache = true;
-				} else if (arg === '--server.disableCacheQueue' || arg === '-dq') {
+				} else if (arg === '--server.disableCacheQueue' || arg === '-sdq') {
 					config.server.disableCacheQueue = true;
 				} else if (arg.startsWith('--server.cacheTime=')) {
 					const value = Number(arg.split('=')[1]);

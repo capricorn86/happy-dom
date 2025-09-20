@@ -157,13 +157,17 @@ export default class ServerRendererServer {
 		) {
 			if (isCacheEnabled) {
 				const cached = this.#cache.get(cacheKey);
-				if (cached && Date.now() - cached.timestamp < this.#configuration.server.cacheTime) {
-					if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.info) {
-						// eslint-disable-next-line no-console
-						console.log(Chalk.bold(`• Using cached response for ${url.href}`));
-					}
+				if (cached) {
+					if (Date.now() - cached.timestamp < this.#configuration.server.cacheTime) {
+						if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.info) {
+							// eslint-disable-next-line no-console
+							console.log(Chalk.bold(`• Using cached response for ${url.href}`));
+						}
 
-					result = cached.result;
+						result = cached.result;
+					} else {
+						this.#cache.delete(cacheKey);
+					}
 				}
 			}
 

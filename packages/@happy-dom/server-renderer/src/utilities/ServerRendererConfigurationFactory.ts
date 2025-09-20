@@ -30,11 +30,7 @@ export default class ServerRendererConfigurationFactory {
 			}),
 			cache: {
 				...DefaultServerRendererConfiguration.cache,
-				...configuration?.cache,
-				fileSystem: {
-					...DefaultServerRendererConfiguration.cache.fileSystem,
-					...configuration?.cache?.fileSystem
-				}
+				...configuration?.cache
 			},
 			worker: {
 				...DefaultServerRendererConfiguration.worker,
@@ -52,7 +48,7 @@ export default class ServerRendererConfigurationFactory {
 		};
 
 		config.outputDirectory = Path.resolve(config.outputDirectory);
-		config.cache.fileSystem.directory = Path.resolve(config.cache.fileSystem.directory);
+		config.cache.directory = Path.resolve(config.cache.directory);
 
 		return config;
 	}
