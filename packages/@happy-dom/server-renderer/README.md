@@ -1,10 +1,10 @@
 ![Happy DOM Logo](https://github.com/capricorn86/happy-dom/raw/master/docs/happy-dom-logo.jpg)
 
-Use Happy DOM for server-side rendering (SSR) or as a static site generator (SSG).
+Use Happy DOM for server-side rendering (SSR) or as a static site generation (SSG).
 
-The server rendering module uses a worker pool by default to render multiple pages in parallel. Each worker can also render multiple pages in parallel.
+This tool uses a worker pool by default to render multiple pages in parallel. Each worker can also render multiple pages in parallel that shares resources.
 
-The benefit of using this server rendering module is that it is not tied to a specific framework. For example, you can use React, Vue, and Angular on the same page. The server rendering module will render the page as a whole and return the HTML.
+The benefit of using this tool is that it is not tied to a specific framework. For example, you can use React, Vue, and Angular on the same page. The page is rendered as a whole and outputted as HTML.
 
 ## Installation
 
@@ -18,21 +18,45 @@ npm install @happy-dom/server-rendering --save-dev
 
 #### Basic Usage
 
-This will output the result to the file `./happy-dom-sr/output/gb/en/index.html`.
+This will output the result to the file `./happy-dom/render/gb/en/index.html`.
 
 ```bash
-happy-dom-sr --config=<path-to-config-file> "https://example.com/gb/en/"
+happy-dom "https://example.com/gb/en/"
+```
+
+#### Configuration File
+
+This will output the result to the file `./happy-dom/render/gb/en/index.html`.
+
+```bash
+happy-dom --config=<path-to-config-file> "https://example.com/gb/en/"
 ```
 
 #### Virtual Server
 This will setup a virtual server that serves the content from the directory "./build" for requests towards "https://example.com/{cc}/{lc}/".
 
-The result will be saved to the files "./happy-dom-sr/output/gb/en/index.html" and "./happy-dom-sr/output/us/en/index.html".
-
-This is useful for static site generation (SSG) (e.g. after a Vite or Webpack build).
+The result will be saved to the file "./happy-dom/render/gb/en/index.html".
 
 ```bash
-happy-dom-sr --browser.fetch.virtualServer="https:\/\/example\.com\/[a-z]{2}\/[a-z]{2}\/">"./build" "https://example.com/gb/en/" "https://example.com/us/en/"
+happy-dom --browser.fetch.virtualServer="https:\/\/example\.com\/[a-z]{2}\/[a-z]{2}\/"|"./build" "https://example.com/gb/en/"
+```
+
+#### Proxy Server
+This will start a proxy server that proxies requests from "http://localhost:3000" to "https://example.com".
+
+```bash
+happy-dom --server --server.targetOrigin="https://example.com"
+```
+
+#### Debugging
+Some pages may have never ending timer loops causing the rendering to never complete or there may be other issues preventing the page from rendering correctly. You can enable debugging by adding the flag "--debug".
+
+Setting the log level to 4 (debug) will provide even more information (default is 3).
+
+Note that debug information is collected after the page rendering has timed out. The default rendering timeout is 30 seconds and can be changed using the flag "--render.timeout".
+
+```bash
+happy-dom --debug --logLevel=4 "https://example.com/gb/en/"
 ```
 
 ### JavaScript
@@ -45,7 +69,7 @@ const renderer = new ServerRenderer({
   // Your configuration options
 });
 
-const result = await renderer.render([{ url: 'https://example.com/gb/en/' }]);
+const result = await renderer.render(['https://example.com/gb/en/']);
 
 // The rendered HTML
 console.log(result[0].url);
@@ -57,8 +81,6 @@ console.log(result[0].content);
 This will setup a virtual server that serves the content from the directory "./build" for requests towards "https://example.com/{cc}/{lc}/".
 
 The result will be saved to the files "./index_gb.html" and "./index_us.html".
-
-This is useful for static site generation (SSG) (e.g. after a Vite or Webpack build).
 
 ```javascript
 import { ServerRenderer } from '@happy-dom/server-rendering';
@@ -75,9 +97,31 @@ const renderer = new ServerRenderer({
 });
 
 await renderer.render([
-    { url: 'https://example.com/gb/en/', outputFile: './index_gb.html' },
+    { url: 'https://example.com/gb/en/', outputFile: './index_gb.html', headers: { 'X-Test': 'true' } },
     { url: 'https://example.com/us/en/', outputFile: './index_us.html' },
 ]);
+```
+
+#### Keeping the Workers Alive
+
+When used on a server, you may want to keep the workers alive between renders to avoid the overhead of starting new workers.
+
+```javascript
+import { ServerRenderer } from '@happy-dom/server-rendering';
+
+
+const results = await renderer.render([
+    'https://example.com/gb/en/',
+    'https://example.com/us/en/',
+], { keepAlive: true });
+
+for(const result of results) {
+    console.log(result.url);
+    console.log(result.content);
+}
+
+// When you are done with rendering, close the workers
+await renderer.close();
 ```
 
 ## Happy DOM
