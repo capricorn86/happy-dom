@@ -1763,6 +1763,27 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 
 		this[PropertySymbol.mutationObservers] = [];
 
+		// Clear event listeners from all nodes before removal
+		const clearNodeListeners = (node: any): void => {
+			if (node[PropertySymbol.listeners]) {
+				node[PropertySymbol.listeners].capturing.clear();
+				node[PropertySymbol.listeners].bubbling.clear();
+			}
+			if (node[PropertySymbol.listenerOptions]) {
+				node[PropertySymbol.listenerOptions].capturing.clear();
+				node[PropertySymbol.listenerOptions].bubbling.clear();
+			}
+			// Recursively clear listeners from child nodes
+			if (node[PropertySymbol.nodeArray]) {
+				for (const child of node[PropertySymbol.nodeArray]) {
+					clearNodeListeners(child);
+				}
+			}
+		};
+
+		// Clear listeners from document and all its descendants
+		clearNodeListeners(this.document);
+
 		// Disconnects nodes from the document, so that they can be garbage collected.
 		const childNodes = this.document[PropertySymbol.nodeArray];
 
@@ -1806,6 +1827,28 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this.document[PropertySymbol.nextActiveElement] = null;
 		this.document[PropertySymbol.currentScript] = null;
 		this.document[PropertySymbol.selection] = null;
+
+		// Clear parent/top references to break circular references
+		this[PropertySymbol.parent] = null;
+		this[PropertySymbol.top] = null;
+
+		// Clear event listeners from window and document
+		if (this[PropertySymbol.listeners]) {
+			this[PropertySymbol.listeners].capturing.clear();
+			this[PropertySymbol.listeners].bubbling.clear();
+		}
+		if (this[PropertySymbol.listenerOptions]) {
+			this[PropertySymbol.listenerOptions].capturing.clear();
+			this[PropertySymbol.listenerOptions].bubbling.clear();
+		}
+		if (this.document[PropertySymbol.listeners]) {
+			this.document[PropertySymbol.listeners].capturing.clear();
+			this.document[PropertySymbol.listeners].bubbling.clear();
+		}
+		if (this.document[PropertySymbol.listenerOptions]) {
+			this.document[PropertySymbol.listenerOptions].capturing.clear();
+			this.document[PropertySymbol.listenerOptions].bubbling.clear();
+		}
 
 		WindowBrowserContext.removeWindowBrowserFrameRelation(this);
 	}
