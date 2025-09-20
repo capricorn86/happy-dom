@@ -49,21 +49,11 @@ export default class ServerRendererServer {
 		try {
 			url = new URL(this.#configuration.server.serverURL);
 		} catch (error) {
-			throw new Error(
-				Chalk.red(
-					Chalk.bold(
-						'\nFailed to start server. The setting "server.serverURL" is not a valid URL.\n'
-					)
-				)
-			);
+			throw new Error('Failed to start server. The setting "server.serverURL" is not a valid URL.');
 		}
 
 		if (!this.#configuration.server.targetOrigin) {
-			throw new Error(
-				Chalk.red(
-					Chalk.bold('\nFailed to start server. The setting "server.targetOrigin" is not set.\n')
-				)
-			);
+			throw new Error('Failed to start server. The setting "server.targetOrigin" is not set.');
 		}
 
 		let targetOrigin: URL;
@@ -71,11 +61,7 @@ export default class ServerRendererServer {
 			targetOrigin = new URL(this.#configuration.server.targetOrigin);
 		} catch (error) {
 			throw new Error(
-				Chalk.red(
-					Chalk.bold(
-						'\nFailed to start server. The setting "server.targetOrigin" is not a valid URL.\n'
-					)
-				)
+				'Failed to start server. The setting "server.targetOrigin" is not a valid URL.'
 			);
 		}
 
@@ -98,11 +84,7 @@ export default class ServerRendererServer {
 				break;
 			default:
 				throw new Error(
-					Chalk.red(
-						Chalk.bold(
-							`\nUnsupported protocol "${url.protocol}". Only "http:" and "https:" are supported.\n`
-						)
-					)
+					`Unsupported protocol "${url.protocol}". Only "http:" and "https:" are supported.`
 				);
 		}
 
@@ -118,7 +100,7 @@ export default class ServerRendererServer {
 			)}\n  ${Chalk.green('➜')}  ${Chalk.bold('Network:')} ${Chalk.cyan(
 				`${url.protocol}//${this.#getNetworkIP()}:${url.port}/`
 			)}\n  ${Chalk.green('➜')}  ${Chalk.bold('Target:')}  ${Chalk.cyan(
-				`${targetOrigin}`
+				`${targetOrigin.protocol}//${targetOrigin.host}/`
 			)}\n\n  ${Chalk.green('➜')}  ${Chalk.bold('URL:')}     ${Chalk.cyan(
 				`${url.protocol}//localhost:${url.port}${url.pathname}${url.search}${url.hash}`
 			)}\n`
@@ -302,8 +284,8 @@ export default class ServerRendererServer {
 				response.setHeader('Content-Type', 'text/plain; charset=utf-8');
 				response.write('Internal Server Error');
 			}
-		} else {
-			const reader = fetchResponse.body!.getReader();
+		} else if (fetchResponse.body) {
+			const reader = fetchResponse.body.getReader();
 			while (true) {
 				const { done, value } = await reader.read();
 				if (done) {

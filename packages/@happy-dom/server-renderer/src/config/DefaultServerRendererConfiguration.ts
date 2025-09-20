@@ -12,11 +12,8 @@ export default <IServerRendererConfiguration>{
 	inspect: false,
 	cache: {
 		disable: false,
-		fileSystem: {
-			directory: './happy-dom/cache',
-			disable: false,
-			warmup: false
-		}
+		directory: './happy-dom/cache',
+		warmup: false
 	},
 	worker: {
 		disable: false,
@@ -33,6 +30,7 @@ export default <IServerRendererConfiguration>{
 	},
 	urls: null,
 	server: {
+		start: false,
 		serverURL: 'https://localhost:3000',
 		targetOrigin: null,
 		disableCache: false,

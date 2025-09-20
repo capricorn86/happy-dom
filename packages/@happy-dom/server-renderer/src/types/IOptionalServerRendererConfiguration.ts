@@ -32,22 +32,13 @@ export default interface IOptionalServerRendererConfiguration {
 		 */
 		disable?: boolean;
 		/**
-		 * File system cache settings.
+		 * Directory for caching files.
 		 */
-		fileSystem?: {
-			/**
-			 * Directory for caching files.
-			 */
-			directory?: string;
-			/**
-			 * Disables file system caching.
-			 */
-			disable?: boolean;
-			/**
-			 * Warm up by rendering the first item before rendering the rest.
-			 */
-			warmup?: boolean;
-		};
+		directory?: string;
+		/**
+		 * Warm up by rendering the first item before rendering the rest.
+		 */
+		warmup?: boolean;
 	};
 	/**
 	 * Settings for the worker.
@@ -103,6 +94,7 @@ export default interface IOptionalServerRendererConfiguration {
 	 * Proxy server settings.
 	 */
 	server?: {
+		start?: boolean;
 		serverURL?: string;
 		targetOrigin?: string | null;
 		disableCache?: boolean;

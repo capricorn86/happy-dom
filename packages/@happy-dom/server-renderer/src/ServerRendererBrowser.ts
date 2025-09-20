@@ -32,7 +32,7 @@ export default class ServerRendererBrowser {
 							...configuration.browser.debug,
 							traceWaitUntilComplete: configuration.render.timeout
 						}
-					}
+				  }
 				: configuration.browser;
 		this.#browser = new Browser({ settings });
 	}
@@ -154,7 +154,7 @@ export default class ServerRendererBrowser {
 				? setTimeout(() => {
 						timeoutError = `The page was not rendered within the defined time of ${configuration.render.timeout}ms and the operation was aborted. You can increase this value with the "render.timeout" setting.\n\nThe page may contain scripts with timer loops that prevent it from completing. You can debug open handles by setting "debug" to true, or prevent timer loops by setting "browser.timer.preventTimerLoops" to true. Read more about this in the documentation.`;
 						page.abort();
-					}, configuration.render.timeout)
+				  }, configuration.render.timeout)
 				: null;
 
 		try {
@@ -260,8 +260,7 @@ export default class ServerRendererBrowser {
 	async #loadCache(browser: Browser): Promise<void> {
 		if (
 			this.#configuration.cache.disable ||
-			this.#configuration.cache.fileSystem.disable ||
-			!this.#configuration.cache.fileSystem.directory ||
+			!this.#configuration.cache.directory ||
 			this.#isCacheLoaded
 		) {
 			return;
@@ -269,9 +268,7 @@ export default class ServerRendererBrowser {
 
 		this.#isCacheLoaded = true;
 
-		await browser.defaultContext.responseCache.fileSystem.load(
-			this.#configuration.cache.fileSystem.directory
-		);
+		await browser.defaultContext.responseCache.fileSystem.load(this.#configuration.cache.directory);
 	}
 
 	/**
@@ -280,16 +277,10 @@ export default class ServerRendererBrowser {
 	 * @param browser Browser.
 	 */
 	async #saveCache(browser: Browser): Promise<void> {
-		if (
-			this.#configuration.cache.disable ||
-			this.#configuration.cache.fileSystem.disable ||
-			!this.#configuration.cache.fileSystem.directory
-		) {
+		if (this.#configuration.cache.disable || !this.#configuration.cache.directory) {
 			return;
 		}
 
-		await browser.defaultContext.responseCache.fileSystem.save(
-			this.#configuration.cache.fileSystem.directory
-		);
+		await browser.defaultContext.responseCache.fileSystem.save(this.#configuration.cache.directory);
 	}
 }

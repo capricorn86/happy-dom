@@ -106,9 +106,10 @@ export default class SyncFetch {
 		if (this.requestHeaders) {
 			for (const header of this.requestHeaders) {
 				if (
-					typeof header.url === 'string'
+					!header.url ||
+					(typeof header.url === 'string'
 						? header.url.startsWith(this.request.url)
-						: this.request.url.match(header.url)
+						: this.request.url.match(header.url))
 				) {
 					for (const [key, value] of Object.entries(header.headers)) {
 						this.request.headers.set(key, value);

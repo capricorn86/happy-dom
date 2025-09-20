@@ -94,11 +94,7 @@ export default class ServerRenderer {
 		}
 
 		let results: IServerRendererResult[] = [];
-		if (
-			!configuration.cache.disable &&
-			!configuration.cache.fileSystem.disable &&
-			configuration.cache.fileSystem.warmup
-		) {
+		if (!configuration.cache.disable && configuration.cache.warmup) {
 			const item = parsedItems.shift();
 			if (item) {
 				if (configuration.logLevel >= ServerRendererLogLevelEnum.info) {
