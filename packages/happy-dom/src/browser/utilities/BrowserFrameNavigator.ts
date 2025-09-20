@@ -300,12 +300,15 @@ export default class BrowserFrameNavigator {
 		// The error will be caught by process error level listener or a try and catch in the requestAnimationFrame().
 		await new Promise((resolve) => {
 			frame.window.requestAnimationFrame(() => {
-				const immediate = setImmediate(() => {
-					asyncTaskManager.endTask(taskID);
-					resolve(null);
-				});
+				// "immediate" needs to be assigned before initialization in Node v20
+				// eslint-disable-next-line prefer-const
+				let immediate: NodeJS.Immediate;
 				const taskID = asyncTaskManager.startTask(() => () => {
 					clearImmediate(immediate);
+					resolve(null);
+				});
+				immediate = setImmediate(() => {
+					asyncTaskManager.endTask(taskID);
 					resolve(null);
 				});
 				frame.content = responseText;
