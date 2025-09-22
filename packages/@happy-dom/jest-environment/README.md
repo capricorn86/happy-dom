@@ -2,6 +2,8 @@
 
 This package makes it possible to use [Happy DOM](https://github.com/capricorn86/happy-dom) with [Jest](https://jestjs.io/).
 
+Read more in the Wiki under [Help Packages / Jest Environment](https://github.com/capricorn86/happy-dom/wiki/Jest-Environment).
+
 ## Installation
 
 ```bash

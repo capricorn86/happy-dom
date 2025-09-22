@@ -1,6 +1,8 @@
 ![Happy DOM Logo](https://github.com/capricorn86/happy-dom/raw/master/docs/happy-dom-logo.jpg)
 
-This package makes it possible to register [Happy DOM](https://github.com/capricorn86/happy-dom) in the global scope, e.g. for testing purposes.
+This package makes it possible to register [Happy DOM](https://github.com/capricorn86/happy-dom) and makes it easy to setup your own test environment.
+
+Read more in the Wiki under [Help Packages / Global-Registrator](https://github.com/capricorn86/happy-dom/wiki/Global-Registrator).
 
 ## Installation
 

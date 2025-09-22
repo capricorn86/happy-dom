@@ -6,11 +6,14 @@ This tool uses a worker pool by default to render multiple pages in parallel. Ea
 
 The benefit of using this tool is that it is not tied to a specific framework. For example, you can use React, Vue, and Angular on the same page. The page is rendered as a whole and outputted as HTML.
 
+Read more in the Wiki under [Help Packages / Server-Renderer](https://github.com/capricorn86/happy-dom/wiki/Server-Renderer).
+
 ## Installation
 
 ```bash
 npm install @happy-dom/server-rendering --save-dev
 ```
+
 
 ## Usage
 
@@ -21,15 +24,17 @@ npm install @happy-dom/server-rendering --save-dev
 This will output the result to the file `./happy-dom/render/gb/en/index.html`.
 
 ```bash
-happy-dom "https://example.com/gb/en/"
+happy-dom-sr "https://example.com/gb/en/"
 ```
 
 #### Configuration File
 
 This will output the result to the file `./happy-dom/render/gb/en/index.html`.
 
+Read more about the configuration options in the Wiki under [Help Packages / Server-Renderer / IServerRendererConfiguration](https://github.com/capricorn86/happy-dom/wiki/IServerRendererConfiguration).
+
 ```bash
-happy-dom --config=<path-to-config-file> "https://example.com/gb/en/"
+happy-dom-sr --config=<path-to-config-file> "https://example.com/gb/en/"
 ```
 
 #### Virtual Server
@@ -38,14 +43,14 @@ This will setup a virtual server that serves the content from the directory "./b
 The result will be saved to the file "./happy-dom/render/gb/en/index.html".
 
 ```bash
-happy-dom --browser.fetch.virtualServer="https:\/\/example\.com\/[a-z]{2}\/[a-z]{2}\/"|"./build" "https://example.com/gb/en/"
+happy-dom-sr --browser.fetch.virtualServer="https:\/\/example\.com\/[a-z]{2}\/[a-z]{2}\/"|"./build" "https://example.com/gb/en/"
 ```
 
 #### Proxy Server
 This will start a proxy server that proxies requests from "http://localhost:3000" to "https://example.com".
 
 ```bash
-happy-dom --server --server.targetOrigin="https://example.com"
+happy-dom-sr --server --server.targetOrigin="https://example.com"
 ```
 
 #### Debugging
@@ -56,7 +61,7 @@ Setting the log level to 4 (debug) will provide even more information (default i
 Note that debug information is collected after the page rendering has timed out. The default rendering timeout is 30 seconds and can be changed using the flag "--render.timeout".
 
 ```bash
-happy-dom --debug --logLevel=4 "https://example.com/gb/en/"
+happy-dom-sr --debug --logLevel=4 "https://example.com/gb/en/"
 ```
 
 ### JavaScript
