@@ -40,7 +40,7 @@ export default class History {
 	}
 
 	/**
-	 * Returns an any value representing the state at the top of the history stack. This is a way to look at the state without having to wait for a popState event.
+	 * Returns an any value representing the state at the top of the history stack. This is a way to look at the state without having to wait for a popstate event.
 	 *
 	 * @returns State.
 	 */

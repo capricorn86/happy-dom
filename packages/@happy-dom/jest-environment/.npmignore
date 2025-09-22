@@ -3,3 +3,4 @@ tmp
 test
 .turbo
 npm-shrinkwrap.json
+.gitignore

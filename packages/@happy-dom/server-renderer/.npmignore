@@ -3,8 +3,5 @@ tmp
 test
 .turbo
 npm-shrinkwrap.json
-vitest.config.test
 tsconfig.json
-.prettierrc.cjs
 .gitignore
-.editorconfig

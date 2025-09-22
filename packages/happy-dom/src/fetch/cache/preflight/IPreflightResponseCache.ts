@@ -6,8 +6,6 @@ import ICacheablePreflightResponse from './ICacheablePreflightResponse.js';
  * Fetch response cache.
  */
 export default interface IPreflightResponseCache {
-	readonly entries: Map<string, ICachedPreflightResponse>;
-
 	/**
 	 * Returns cached response.
 	 *

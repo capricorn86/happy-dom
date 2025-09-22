@@ -9,7 +9,7 @@ import ICacheablePreflightResponse from './ICacheablePreflightResponse.js';
  * @see https://developer.mozilla.org/en-US/docs/Glossary/Preflight_request
  */
 export default class PreflightResponseCache implements IPreflightResponseCache {
-	public readonly entries: Map<string, ICachedPreflightResponse> = new Map();
+	#entries: Map<string, ICachedPreflightResponse> = new Map();
 
 	/**
 	 * Returns cached response.
@@ -18,11 +18,11 @@ export default class PreflightResponseCache implements IPreflightResponseCache {
 	 * @returns Cached response.
 	 */
 	public get(request: ICacheablePreflightRequest): ICachedPreflightResponse | null {
-		const cachedResponse = this.entries.get(request.url);
+		const cachedResponse = this.#entries.get(request.url);
 
 		if (cachedResponse) {
 			if (cachedResponse.expires < Date.now()) {
-				this.entries.delete(request.url);
+				this.#entries.delete(request.url);
 				return null;
 			}
 			return cachedResponse;
@@ -42,7 +42,7 @@ export default class PreflightResponseCache implements IPreflightResponseCache {
 		request: ICacheablePreflightRequest,
 		response: ICacheablePreflightResponse
 	): ICachedPreflightResponse | null {
-		this.entries.delete(request.url);
+		this.#entries.delete(request.url);
 
 		if (request.headers.get('Cache-Control')?.includes('no-cache')) {
 			return null;
@@ -80,7 +80,7 @@ export default class PreflightResponseCache implements IPreflightResponseCache {
 			return null;
 		}
 
-		this.entries.set(request.url, cachedResponse);
+		this.#entries.set(request.url, cachedResponse);
 
 		return cachedResponse;
 	}
@@ -89,6 +89,6 @@ export default class PreflightResponseCache implements IPreflightResponseCache {
 	 * Clears the cache.
 	 */
 	public clear(): void {
-		this.entries.clear();
+		this.#entries.clear();
 	}
 }
