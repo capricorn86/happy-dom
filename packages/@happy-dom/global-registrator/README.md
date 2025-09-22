@@ -2,13 +2,15 @@
 
 This package makes it possible to register [Happy DOM](https://github.com/capricorn86/happy-dom) and makes it easy to setup your own test environment.
 
-Read more in the Wiki under [Help Packages / Global-Registrator](https://github.com/capricorn86/happy-dom/wiki/Global-Registrator).
-
 ## Installation
 
 ```bash
 npm install @happy-dom/global-registrator --save-dev
 ```
+
+## Documentation
+
+You will find the documentation in the [Happy DOM Wiki](https://github.com/capricorn86/happy-dom/wiki) under [Global Registrator](https://github.com/capricorn86/happy-dom/wiki/Global-Registrator).
 
 ## Usage
 

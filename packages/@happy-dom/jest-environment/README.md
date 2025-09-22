@@ -2,19 +2,21 @@
 
 This package makes it possible to use [Happy DOM](https://github.com/capricorn86/happy-dom) with [Jest](https://jestjs.io/).
 
-Read more in the Wiki under [Help Packages / Jest Environment](https://github.com/capricorn86/happy-dom/wiki/Jest-Environment).
-
 ## Installation
 
 ```bash
 npm install @jest/environment @jest/fake-timers @jest/types @jest/mock @jest/util @happy-dom/jest-environment --save-dev
 ```
 
+## Documentation
+
+You will find the documentation in the [Happy DOM Wiki](https://github.com/capricorn86/happy-dom/wiki) under [Jest Environment](https://github.com/capricorn86/happy-dom/wiki/Jest-Environment).
+
 ## Setup
 
 Jest uses `node` as test environment by default. In order to tell Jest to use a different environment we will either have to set a CLI attribute, define it in "package.json" or add a property to your Jest config file.
 
-#### CLI
+### CLI
 
 When calling the "jest" command, add `--env=@happy-dom/jest-environment` as an attribute.
 
@@ -22,7 +24,7 @@ When calling the "jest" command, add `--env=@happy-dom/jest-environment` as an a
 jest --env=@happy-dom/jest-environment
 ```
 
-#### Package.json
+### Package.json
 
 It is possible to add your Jest config to your `package.json`.
 
@@ -34,7 +36,7 @@ It is possible to add your Jest config to your `package.json`.
 }
 ```
 
-#### Jest Config File
+### Jest Config File
 
 When using a Jest config file (usually jest.config.js), add the snippet below to it.
 
