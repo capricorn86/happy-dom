@@ -12,6 +12,12 @@ main();
 async function main(): Promise<void> {
 	const configuration = await ProcessArgumentsParser.getConfiguration(process.argv);
 
+	if (configuration.help) {
+		const HelpPrinter = (await import('../../lib/utilities/HelpPrinter.js')).default;
+		HelpPrinter.print();
+		process.exit(0);
+	}
+
 	if (configuration.server.start) {
 		const server = new (await import('../../lib/ServerRendererServer.js')).default(configuration);
 

@@ -20,6 +20,10 @@ export default interface IOptionalServerRendererConfiguration {
 	 */
 	inspect?: boolean;
 	/**
+	 * Shows help information and exits.
+	 */
+	help?: boolean;
+	/**
 	 * Output directory.
 	 */
 	outputDirectory?: string;

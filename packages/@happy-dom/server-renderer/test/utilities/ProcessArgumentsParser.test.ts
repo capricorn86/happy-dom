@@ -16,7 +16,7 @@ describe('ProcessArgumentsParser', () => {
 				...DefaultServerRendererConfiguration,
 				render: {
 					...DefaultServerRendererConfiguration.render,
-					timeout: 60000
+					timeout: 3600
 				},
 				urls: [
 					{
@@ -33,7 +33,16 @@ describe('ProcessArgumentsParser', () => {
 				await ProcessArgumentsParser.getConfiguration([
 					'node',
 					'script.js',
-					'--render.timeout=60000',
+					'--render.timeout=3600',
+					'"https://example.com/path/page1"',
+					'"https://example.com/path/page2/?query=123#hash"'
+				])
+			).toEqual(expectedConfig);
+			expect(
+				await ProcessArgumentsParser.getConfiguration([
+					'node',
+					'script.js',
+					'-rt=3600',
 					'"https://example.com/path/page1"',
 					'"https://example.com/path/page2/?query=123#hash"'
 				])
@@ -49,7 +58,8 @@ describe('ProcessArgumentsParser', () => {
 					serverURL: 'http://localhost:8080/',
 					targetOrigin: 'http://example.com/',
 					disableCache: true,
-					disableCacheQueue: true
+					disableCacheQueue: true,
+					cacheTime: 3600
 				}
 			};
 			expect(
@@ -60,7 +70,8 @@ describe('ProcessArgumentsParser', () => {
 					'--server.serverURL=http://localhost:8080/',
 					'--server.targetOrigin=http://example.com/',
 					'--server.disableCache',
-					'--server.disableCacheQueue'
+					'--server.disableCacheQueue',
+					'--server.cacheTime=3600'
 				])
 			).toEqual(expectedConfig);
 			expect(
@@ -71,7 +82,8 @@ describe('ProcessArgumentsParser', () => {
 					'-su=http://localhost:8080/',
 					'-st=http://example.com/',
 					'-sdc',
-					'-sdq'
+					'-sdq',
+					'-sct=3600'
 				])
 			).toEqual(expectedConfig);
 		});
@@ -294,11 +306,7 @@ describe('ProcessArgumentsParser', () => {
 				'browser.fetch.virtualServers',
 				'urls'
 			];
-			const getArgs = (
-				scope: IServerRendererConfiguration,
-				args: string[] = [],
-				parentKey: string = ''
-			): string[] => {
+			const getArgs = (scope: any, args: string[] = [], parentKey: string = ''): string[] => {
 				for (const key of Object.keys(scope)) {
 					const newKey = `${parentKey}${key}`;
 					if (!specialArguments.includes(newKey) && scope[key] !== null) {

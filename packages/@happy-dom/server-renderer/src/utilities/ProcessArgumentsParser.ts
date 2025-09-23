@@ -23,6 +23,8 @@ export default class ProcessArgumentsParser {
 			if (arg[0] === '-') {
 				if (arg.startsWith('--config=') || arg.startsWith('-c=')) {
 					config = (await import(Path.resolve(this.stripQuotes(arg.split('=')[1])))).default;
+				} else if (arg === '--help' || arg === '-h') {
+					config.help = true;
 				} else if (arg === '--browser.disableJavaScriptEvaluation') {
 					config.browser.disableJavaScriptEvaluation = true;
 				} else if (arg === '--browser.disableJavaScriptFileLoading') {
@@ -194,7 +196,7 @@ export default class ProcessArgumentsParser {
 						throw new Error(`Invalid value for ${arg.split('=')[0]}`);
 					}
 					config.render.maxConcurrency = value;
-				} else if (arg.startsWith('--render.timeout=')) {
+				} else if (arg.startsWith('--render.timeout=') || arg.startsWith('-rt=')) {
 					const value = Number(arg.split('=')[1]);
 					if (isNaN(value)) {
 						throw new Error(`Invalid value for ${arg.split('=')[0]}`);
@@ -225,7 +227,7 @@ export default class ProcessArgumentsParser {
 					config.server.disableCache = true;
 				} else if (arg === '--server.disableCacheQueue' || arg === '-sdq') {
 					config.server.disableCacheQueue = true;
-				} else if (arg.startsWith('--server.cacheTime=')) {
+				} else if (arg.startsWith('--server.cacheTime=') || arg.startsWith('-sct=')) {
 					const value = Number(arg.split('=')[1]);
 					if (isNaN(value)) {
 						throw new Error(`Invalid value for ${arg.split('=')[0]}`);

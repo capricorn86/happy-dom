@@ -10,6 +10,7 @@ export default <IServerRendererConfiguration>{
 	logLevel: ServerRendererLogLevelEnum.info,
 	debug: false,
 	inspect: false,
+	help: false,
 	cache: {
 		disable: false,
 		directory: './happy-dom/cache',
@@ -35,6 +36,6 @@ export default <IServerRendererConfiguration>{
 		targetOrigin: null,
 		disableCache: false,
 		disableCacheQueue: false,
-		cacheTime: 30000 // 30 seconds
+		cacheTime: 60000 // 60 seconds
 	}
 };
