@@ -41,8 +41,6 @@ describe('ECMAScriptModuleCompiler', () => {
 				{ url: 'http://localhost:8080/js/utilities/NumberUtility.js', type: 'esm' }
 			]);
 			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-//# sourceURL=http://localhost:8080/js/app/main.js
-
                 const StringUtility = $happy_dom.imports.get('http://localhost:8080/js/utilities/StringUtility.js').default;
                 const { default: DefaultImageUtility } = $happy_dom.imports.get('http://localhost:8080/js/utilities/ImageUtility.js');
                 const NumberUtility = $happy_dom.imports.get('http://localhost:8080/js/utilities/NumberUtility.js');
@@ -56,8 +54,118 @@ describe('ECMAScriptModuleCompiler', () => {
                         console.log('Hello World');
                     }
                 }
-            
-}`);
+            }`);
+		});
+
+		it('Handles the correct source URL in error stack', async () => {
+			const code = `
+                throw new Error('Test error');
+            `;
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
+			let error: Error | null = null;
+
+			try {
+				await result.execute({
+					dispatchError: () => {},
+					dynamicImport: () => Promise.resolve({}),
+					importMeta: {
+						url: '',
+						resolve: () => ''
+					},
+					imports: new Map(),
+					exports: {}
+				});
+			} catch (e) {
+				error = e;
+			}
+
+			expect(
+				error!.stack!.includes(
+					'at Object.anonymous [as execute] (http://localhost:8080/js/app/main.js:2:23)'
+				)
+			).toBe(true);
+		});
+
+		it('Handles the correct source URL in error stack for virtual server file', async () => {
+			const code = `
+                throw new Error('Test error');
+            `;
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile(
+				'http://localhost:8080/js/app/main.js',
+				code,
+				'/my/virtual/server/file.js'
+			);
+			let error: Error | null = null;
+
+			try {
+				await result.execute({
+					dispatchError: () => {},
+					dynamicImport: () => Promise.resolve({}),
+					importMeta: {
+						url: '',
+						resolve: () => ''
+					},
+					imports: new Map(),
+					exports: {}
+				});
+			} catch (e) {
+				error = e;
+			}
+
+			expect(
+				error!.stack!.includes('at Object.anonymous [as execute] (/my/virtual/server/file.js:2:23)')
+			).toBe(true);
+		});
+
+		it('Handles "import.meta".', () => {
+			const code = `
+                export default class TestClass {
+                    constructor() {
+                        console.log(import.meta.url);
+                        console.log('Import', import.meta.url);
+                        console.log(import.meta.resolve('./test.js'));
+                    }
+                }
+            `;
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
+
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
+                $happy_dom.exports.default = class TestClass {
+                    constructor() {
+                        console.log($happy_dom.importMeta.url);
+                        console.log('Import', $happy_dom.importMeta.url);
+                        console.log($happy_dom.importMeta.resolve('./test.js'));
+                    }
+                }
+            }`);
+		});
+
+		it('Handles import in string', () => {
+			const code = `
+                var r = new RegExp(/^([1-9][0-9]*)(["â€³â€'â€²Â´]?)\s*([1-9][0-9]*\\/[1-9][0-9]*)["â€³â€]?$/);
+                const hexLookUp=Array.from({length:127},(n,e)=>/[^!"$&'()*+,\-.;=_\`a-z{}~]/u.test(String.fromCharCode(e)))
+                class R{constructor(){this.lastTime=Date.now(),this.lastValue=0,this.__speed=0}set value(e){this.__speed=(e-this.lastValue)/(Date.now()-this.lastTime),this.lastValue=e,this.lastTime=Date.now()}}
+                const n=["@import",\`url(\${JSON.stringify(t.href)})\`];const t="";
+                function log(){return console.log('To use the debugger you must import "@package/debugger"')}
+                var i = "test";
+                import("@package/debugger");
+            `;
+			const compiler = new ECMAScriptModuleCompiler(window);
+
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
+
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
+                var r = new RegExp(/^([1-9][0-9]*)(["â€³â€'â€²Â´]?)\s*([1-9][0-9]*\\/[1-9][0-9]*)["â€³â€]?$/);
+                const hexLookUp=Array.from({length:127},(n,e)=>/[^!"$&'()*+,-.;=_\`a-z{}~]/u.test(String.fromCharCode(e)))
+                class R{constructor(){this.lastTime=Date.now(),this.lastValue=0,this.__speed=0}set value(e){this.__speed=(e-this.lastValue)/(Date.now()-this.lastTime),this.lastValue=e,this.lastTime=Date.now()}}
+                const n=["@import",\`url(\${JSON.stringify(t.href)})\`];const t="";
+                function log(){return console.log('To use the debugger you must import "@package/debugger"')}
+                var i = "test";
+                $happy_dom.dynamicImport("@package/debugger");
+            }`);
 		});
 
 		it('Ignores function suffixed with import().', () => {
@@ -74,15 +182,12 @@ describe('ECMAScriptModuleCompiler', () => {
 			expect(result.imports).toEqual([]);
 
 			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-//# sourceURL=http://localhost:8080/js/app/main.js
-
                 async function test_import(url) {
                     return '"' + url + '"';
                 }
                 
                 const result = await test_import('http://localhost:8080/js/utilities/StringUtility.js');
-            
-}`);
+            }`);
 		});
 
 		it('Handles import and export with a various combinations.', () => {
@@ -189,8 +294,6 @@ describe('ECMAScriptModuleCompiler', () => {
 			]);
 
 			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-//# sourceURL=http://localhost:8080/js/app/main.js
-
                 const defaultExport1 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport.js').default;
                 const name = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/name.js');
                 const { export1 } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export1.js');
@@ -278,8 +381,25 @@ $happy_dom.exports['name5'] = $happy_dom_export_0['name5'];
 $happy_dom.exports['bar'] = $happy_dom_export_0['name6'];
 $happy_dom.exports['name7'] = $happy_dom_export_1['name7'];
 $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
-
 }`);
+		});
+
+		it('Handles export from without spacing', () => {
+			const code = `export{x as isBot}from"./agent.js";`;
+
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
+
+			expect(result.imports).toEqual([
+				{
+					type: 'esm',
+					url: 'http://localhost:8080/js/app/agent.js'
+				}
+			]);
+
+			expect(result.execute.toString()).toBe(
+				`async function anonymous($happy_dom) {$happy_dom.exports['isBot'] = $happy_dom.imports.get('http://localhost:8080/js/app/agent.js')['x'];}`
+			);
 		});
 
 		it('Handles export default function.', () => {
@@ -296,14 +416,11 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
 			expect(result.imports).toEqual([]);
 
 			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-//# sourceURL=http://localhost:8080/js/app/main.js
-
                 $happy_dom.exports['variable'] = /my-regexp/;
                 $happy_dom.exports.default = function () {
                     console.log('Hello World');
                 }
-            
-}`);
+            }`);
 		});
 
 		it('Handles export default class.', () => {
@@ -321,15 +438,12 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
 			expect(result.imports).toEqual([]);
 
 			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-//# sourceURL=http://localhost:8080/js/app/main.js
-
                 $happy_dom.exports.default = class TestClass {
                     constructor() {
                         console.log('Hello World');
                     }
                 }
-            
-}`);
+            }`);
 		});
 
 		it('Handles export default generator function.', () => {
@@ -346,14 +460,11 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
 			expect(result.imports).toEqual([]);
 
 			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-//# sourceURL=http://localhost:8080/js/app/main.js
-
                 $happy_dom.exports.default = function* () {
                     yield i;
                     yield i + 10;
                 }
-            
-}`);
+            }`);
 		});
 
 		it('Handles export default object.', () => {
@@ -369,13 +480,10 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
 			expect(result.imports).toEqual([]);
 
 			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-//# sourceURL=http://localhost:8080/js/app/main.js
-
                 $happy_dom.exports.default = {
                     test: 'test'
                 };
-            
-}`);
+            }`);
 		});
 
 		it('Handles export default expression.', () => {
@@ -393,15 +501,12 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
 			expect(result.imports).toEqual([]);
 
 			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-//# sourceURL=http://localhost:8080/js/app/main.js
-
                 $happy_dom.exports.default = (function () {
                     return {
                         test: 'test'
                     }
                 })();
-            
-}`);
+            }`);
 		});
 
 		it('Adds try and catch statement if settings.errorCapture is set to "tryAndCatch".', () => {
@@ -417,18 +522,12 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
 
 			expect(result.imports).toEqual([]);
 
-			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-//# sourceURL=http://localhost:8080/js/app/main.js
-try {
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {try {
 
                 $happy_dom.exports.default = {
                     test: 'test'
                 };
-            
-} catch(e) {
-   $happy_dom.dispatchError(e);
-}
-}`);
+            } catch(e) { $happy_dom.dispatchError(e); }}`);
 		});
 
 		it('Handles special cases of RegExp.', () => {
@@ -454,8 +553,6 @@ try {
 			expect(result.imports).toEqual([]);
 
 			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-//# sourceURL=http://localhost:8080/js/app/main.js
-
                 const match = 'replace'.match(/replace/);
                 /test/.test('test') && (() => {})();
                 const regexpes = [/test/, /test/];
@@ -472,8 +569,7 @@ try {
 $happy_dom.exports['match'] = match;
 $happy_dom.exports['regexpes'] = regexpes;
 $happy_dom.exports['templateString'] = templateString;
-            
-}`);
+            }`);
 		});
 
 		it('Handles string with escape character.', () => {
@@ -493,8 +589,6 @@ $happy_dom.exports['templateString'] = templateString;
 			expect(result.imports).toEqual([]);
 
 			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-//# sourceURL=http://localhost:8080/js/app/main.js
-
                 const string = "\\"";
                 const string2 = "\\\\";
                 const string3 = '\\'';
@@ -507,8 +601,7 @@ $happy_dom.exports['string3'] = string3;
 $happy_dom.exports['string4'] = string4;
 $happy_dom.exports['string5'] = string5;
 $happy_dom.exports['string6'] = string6;
-            
-}`);
+            }`);
 		});
 
 		it('Handles dynamic import inside template string.', () => {
@@ -524,13 +617,10 @@ $happy_dom.exports['string6'] = string6;
 			expect(result.imports).toEqual([]);
 
 			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-//# sourceURL=http://localhost:8080/js/app/main.js
-
                 $happy_dom.exports['func'] = async () => {
                     return \`test = \${({ test: \`\${ (await $happy_dom.dynamicImport('./test.js')) }\` })}\`;
                 };
-            
-}`);
+            }`);
 		});
 
 		it('Handles vite preload library with minimzed import.', () => {
@@ -544,11 +634,9 @@ import{_ as c}from"./preload-helper-BMSd6Up6.js";class r{static connect(){const 
 				{ url: 'http://localhost:8080/js/app/preload-helper-BMSd6Up6.js', type: 'esm' }
 			]);
 
-			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-//# sourceURL=http://localhost:8080/js/app/main.js
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["static/js/Home-CsPrQa7_.js","static/js/preload-helper-BMSd6Up6.js","static/js/Router-yzXgKzu7.js","static/js/_commonjsHelpers-BosuxZz1.js","static/js/sizes-1ww1H62B.js","static/js/Choice-Bixrh5CR.js","static/js/index-OjqIgG3h.js","static/js/arrow-left-DVwQ9ese.js"])))=>i.map(i=>d[i]);
-const {_: c} = $happy_dom.imports.get('http://localhost:8080/js/app/preload-helper-BMSd6Up6.js');class r{static connect(){const n=location.hash.match(/S{0,1}([0-9]{7,})$/);if(n){const a=new URLSearchParams(location.search);a.set("id",n[1]),location.href=new URL('example/?a=b',location.href).href;return}const t=location.hash.match(/\\/([a-zA-Z0-9-]{10,})$/);if(t){const a=new URLSearchParams(location.search);a.set("code",t[1]),location.href=new URL('example/?a=b',location.href).href;return}const o=location.hash.match(/\\/([a-zA-Z0-9]{4,6})$/);if(o){const a=new URLSearchParams(location.search);a.set("code",o[1]),location.href=new URL('example/?a=b',location.href).href;return}}}r.connect();c(()=>$happy_dom.dynamicImport("./Home-CsPrQa7_.js").then(e=>e.a),__vite__mapDeps([0,1,2,3,4,5,6,7,8,9,10,11,12,13]));
-}`);
+			expect(result.execute.toString())
+				.toBe(`async function anonymous($happy_dom) {const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["static/js/Home-CsPrQa7_.js","static/js/preload-helper-BMSd6Up6.js","static/js/Router-yzXgKzu7.js","static/js/_commonjsHelpers-BosuxZz1.js","static/js/sizes-1ww1H62B.js","static/js/Choice-Bixrh5CR.js","static/js/index-OjqIgG3h.js","static/js/arrow-left-DVwQ9ese.js"])))=>i.map(i=>d[i]);
+const {_: c} = $happy_dom.imports.get('http://localhost:8080/js/app/preload-helper-BMSd6Up6.js');class r{static connect(){const n=location.hash.match(/S{0,1}([0-9]{7,})$/);if(n){const a=new URLSearchParams(location.search);a.set("id",n[1]),location.href=new URL('example/?a=b',location.href).href;return}const t=location.hash.match(/\\/([a-zA-Z0-9-]{10,})$/);if(t){const a=new URLSearchParams(location.search);a.set("code",t[1]),location.href=new URL('example/?a=b',location.href).href;return}const o=location.hash.match(/\\/([a-zA-Z0-9]{4,6})$/);if(o){const a=new URLSearchParams(location.search);a.set("code",o[1]),location.href=new URL('example/?a=b',location.href).href;return}}}r.connect();c(()=>$happy_dom.dynamicImport("./Home-CsPrQa7_.js").then(e=>e.a),__vite__mapDeps([0,1,2,3,4,5,6,7,8,9,10,11,12,13]));}`);
 		});
 
 		it('Handles vite with minimized export', () => {
@@ -560,10 +648,7 @@ const {_: c} = $happy_dom.imports.get('http://localhost:8080/js/app/preload-help
 			expect(result.imports).toEqual([]);
 
 			expect(result.execute.toString()).toBe(
-				`async function anonymous($happy_dom) {
-//# sourceURL=http://localhost:8080/js/app/main.js
-(function(){const i=document.createElement("link").relList;if(i&&i.supports&&i.supports("modulepreload"))return;for(const e of document.querySelectorAll('link[rel="modulepreload"]'))a(e);new MutationObserver(e=>{for(const r of e)if(r.type==="childList")for(const t of r.addedNodes)t.tagName==="LINK"&&t.rel==="modulepreload"&&a(t)}).observe(document,{childList:!0,subtree:!0});function c(e){const r={};return e.integrity&&(r.integrity=e.integrity),e.referrerPolicy&&(r.referrerPolicy=e.referrerPolicy),e.crossOrigin==="use-credentials"?r.credentials="include":e.crossOrigin==="anonymous"?r.credentials="omit":r.credentials="same-origin",r}function a(e){if(e.ep)return;e.ep=!0;const r=c(e);fetch(e.href,r)}})();const h="modulepreload",y=function(u){return"/test/path/"+u},d={},g=function(i,c,a){let e=Promise.resolve();if(c&&c.length>0){document.getElementsByTagName("link");const t=document.querySelector("meta[property=csp-nonce]"),o=(t==null?void 0:t.nonce)||(t==null?void 0:t.getAttribute("nonce"));e=Promise.allSettled(c.map(n=>{if(n=y(n),n in d)return;d[n]=!0;const l=n.endsWith(".css"),f=l?'[rel="stylemodal"]':"";if(document.querySelector('link[href="'+n+'"]'+f+''))return;const s=document.createElement("link");if(s.rel=l?"stylemodal":h,l||(s.as="script"),s.crossOrigin="",s.href=n,o&&s.setAttribute("nonce",o),document.head.appendChild(s),l)return new Promise((m,p)=>{s.addEventListener("load",m),s.addEventListener("error",()=>p(new Error('Unable to preload CSS for ' + n)))})}))}function r(t){const o=new Event("vite:preloadError",{cancelable:!0});if(o.payload=t,window.dispatchEvent(o),!o.defaultPrevented)throw t}return e.then(t=>{for(const o of t||[])o.status==="rejected"&&r(o.reason);return i().catch(r)})};$happy_dom.exports['_'] = g;
-}`
+				`async function anonymous($happy_dom) {(function(){const i=document.createElement("link").relList;if(i&&i.supports&&i.supports("modulepreload"))return;for(const e of document.querySelectorAll('link[rel="modulepreload"]'))a(e);new MutationObserver(e=>{for(const r of e)if(r.type==="childList")for(const t of r.addedNodes)t.tagName==="LINK"&&t.rel==="modulepreload"&&a(t)}).observe(document,{childList:!0,subtree:!0});function c(e){const r={};return e.integrity&&(r.integrity=e.integrity),e.referrerPolicy&&(r.referrerPolicy=e.referrerPolicy),e.crossOrigin==="use-credentials"?r.credentials="include":e.crossOrigin==="anonymous"?r.credentials="omit":r.credentials="same-origin",r}function a(e){if(e.ep)return;e.ep=!0;const r=c(e);fetch(e.href,r)}})();const h="modulepreload",y=function(u){return"/test/path/"+u},d={},g=function(i,c,a){let e=Promise.resolve();if(c&&c.length>0){document.getElementsByTagName("link");const t=document.querySelector("meta[property=csp-nonce]"),o=(t==null?void 0:t.nonce)||(t==null?void 0:t.getAttribute("nonce"));e=Promise.allSettled(c.map(n=>{if(n=y(n),n in d)return;d[n]=!0;const l=n.endsWith(".css"),f=l?'[rel="stylemodal"]':"";if(document.querySelector('link[href="'+n+'"]'+f+''))return;const s=document.createElement("link");if(s.rel=l?"stylemodal":h,l||(s.as="script"),s.crossOrigin="",s.href=n,o&&s.setAttribute("nonce",o),document.head.appendChild(s),l)return new Promise((m,p)=>{s.addEventListener("load",m),s.addEventListener("error",()=>p(new Error('Unable to preload CSS for ' + n)))})}))}function r(t){const o=new Event("vite:preloadError",{cancelable:!0});if(o.payload=t,window.dispatchEvent(o),!o.defaultPrevented)throw t}return e.then(t=>{for(const o of t||[])o.status==="rejected"&&r(o.reason);return i().catch(r)})};$happy_dom.exports['_'] = g;}`
 			);
 		});
 
@@ -861,9 +946,8 @@ import{_ as a}from"./preload-helper-BMSd6Up6.js";import{k as g,s as A,r as C,t a
 				}
 			]);
 
-			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-//# sourceURL=http://localhost:8080/js/app/main.js
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["static/js/preload-helper-BMSd6Up6.js","static/js/Router-yzXgKzu7.js","static/js/_commonjsHelpers-BosuxZz1.js","static/js/Choice-Bixrh5CR.js","static/js/index-OjqIgG3h.js","static/js/arrow-left-DVwQ9ese.js","static/js/Image-CMZuFGwN.js","static/js/IdGenerator-BXAguRov.js","static/js/resizeListener-BpJMTz31.js","static/js/menu-BQ9iRMnL.js","static/js/menu-DGNLEQ8L.js"])))=>i.map(i=>d[i]);
+			expect(result.execute.toString())
+				.toBe(`async function anonymous($happy_dom) {const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["static/js/preload-helper-BMSd6Up6.js","static/js/Router-yzXgKzu7.js","static/js/_commonjsHelpers-BosuxZz1.js","static/js/Choice-Bixrh5CR.js","static/js/index-OjqIgG3h.js","static/js/arrow-left-DVwQ9ese.js","static/js/Image-CMZuFGwN.js","static/js/IdGenerator-BXAguRov.js","static/js/resizeListener-BpJMTz31.js","static/js/menu-BQ9iRMnL.js","static/js/menu-DGNLEQ8L.js"])))=>i.map(i=>d[i]);
 const {_: a} = $happy_dom.imports.get('http://localhost:8080/js/app/preload-helper-BMSd6Up6.js');const {k: g,s: A,r: C,t: P,h: o,R: c,m: O,F: V,u: B,n: M,A: f,P: $,v: G,w: _,q: W} = $happy_dom.imports.get('http://localhost:8080/js/app/Router-yzXgKzu7.js');const {s: b} = $happy_dom.imports.get('http://localhost:8080/js/app/sizes-1ww1H62B.js');const {C: F,S: d,r: U,b: I,I: H,s: N,g: j,i: K,d: q,T: E} = $happy_dom.imports.get('http://localhost:8080/js/app/Choice-Bixrh5CR.js');const {K: R,W: Z} = $happy_dom.imports.get('http://localhost:8080/js/app/index-OjqIgG3h.js');const {I: te} = $happy_dom.imports.get('http://localhost:8080/js/app/Image-CMZuFGwN.js');const ie=[["&","&amp"],["<","&lt"],[">","&gt"],['"',"&quot"],["'","&#x27"],["/","&#x2F"]];class ae{static encodeForAttribute(e){for(const t of ie)e=e.replace(new RegExp(t[0],"gm"),t[1]+";");return e}}class ne{static templateToString(e,...t){let i="";for(let n=0,s=e.length;n<s;n++)i+=e[n],n<s-1&&t[n]!==null&&(i.endsWith('="')||i.endsWith("='")?i+=ae.encodeForAttribute(String(t[n])):i+=String(t[n]));return i}}const $e=ne.templateToString,D=F.templateToString,oe=D\`
   *,
   *:before,
@@ -1123,7 +1207,6 @@ const {_: a} = $happy_dom.imports.get('http://localhost:8080/js/app/preload-help
 $happy_dom.exports['a'] = Ee;
 $happy_dom.exports['c'] = D;
 $happy_dom.exports['h'] = $e;
-
 }`);
 		});
 	});

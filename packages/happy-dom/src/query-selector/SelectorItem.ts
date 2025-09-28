@@ -1,4 +1,3 @@
-import DOMException from '../exception/DOMException.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import Element from '../nodes/element/Element.js';
 import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
@@ -152,7 +151,7 @@ export default class SelectorItem {
 						if (this.ignoreErrors) {
 							return null;
 						}
-						throw new DOMException(
+						throw new element[PropertySymbol.window].DOMException(
 							`Failed to execute 'matches' on '${
 								element.constructor.name
 							}': '${this.getSelectorString()}' is not a valid selector.`
@@ -348,32 +347,34 @@ export default class SelectorItem {
 				return null;
 			case 'has':
 				let priorityWeightForHas = 0;
-				if (pseudo.arguments![0] === '+') {
-					const nextSibling = element.nextElementSibling;
-					if (!nextSibling) {
-						return null;
-					}
-					for (const selectorItem of pseudo.selectorItems!) {
-						const match = selectorItem.match(nextSibling);
-						if (match && priorityWeightForHas < match.priorityWeight) {
-							priorityWeightForHas = match.priorityWeight;
+				if (pseudo.arguments && pseudo.selectorItems) {
+					if (pseudo.arguments[0] === '+') {
+						const nextSibling = element.nextElementSibling;
+						if (!nextSibling) {
+							return null;
 						}
-					}
-				} else if (pseudo.arguments![0] === '>') {
-					for (const selectorItem of pseudo.selectorItems!) {
-						for (const child of element[PropertySymbol.elementArray]) {
-							const match = selectorItem.match(child);
+						for (const selectorItem of pseudo.selectorItems) {
+							const match = selectorItem.match(nextSibling);
 							if (match && priorityWeightForHas < match.priorityWeight) {
 								priorityWeightForHas = match.priorityWeight;
-								break;
 							}
 						}
-					}
-				} else {
-					for (const selectorItem of pseudo.selectorItems!) {
-						const match = this.matchChildOfElement(selectorItem, element);
-						if (match && priorityWeightForHas < match.priorityWeight) {
-							priorityWeightForHas = match.priorityWeight;
+					} else if (pseudo.arguments[0] === '>') {
+						for (const selectorItem of pseudo.selectorItems) {
+							for (const child of element[PropertySymbol.elementArray]) {
+								const match = selectorItem.match(child);
+								if (match && priorityWeightForHas < match.priorityWeight) {
+									priorityWeightForHas = match.priorityWeight;
+									break;
+								}
+							}
+						}
+					} else {
+						for (const selectorItem of pseudo.selectorItems) {
+							const match = this.matchChildOfElement(selectorItem, element);
+							if (match && priorityWeightForHas < match.priorityWeight) {
+								priorityWeightForHas = match.priorityWeight;
+							}
 						}
 					}
 				}

@@ -106,13 +106,10 @@ export default class BrowserExceptionObserver {
 	 */
 	public disconnect(window: BrowserWindow): void {
 		const index = this.observedWindows.indexOf(window);
-
 		if (index === -1) {
 			return;
 		}
-
 		this.observedWindows.splice(index, 1);
-
 		if (this.observedWindows.length === 0 && this.uncaughtExceptionListener) {
 			(<typeof BrowserExceptionObserver>this.constructor).listenerCount--;
 			process.off('uncaughtException', this.uncaughtExceptionListener);
