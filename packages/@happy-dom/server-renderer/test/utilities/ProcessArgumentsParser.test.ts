@@ -348,12 +348,31 @@ describe('ProcessArgumentsParser', () => {
 			args.push('--browser.fetch.requestHeaders="X-Custom-Header-1:Value-1"');
 			args.push('--browser.fetch.requestHeaders="https://example.com/|X-Custom-Header-2:Value-2"');
 			args.push('--browser.fetch.virtualServers="https://example.com/path/|./virtual-server/path"');
-			args.push('"https://example.com/page1"', '"https://example.com/page2"');
+			args.push(
+				'"https://example.com/page1"',
+				'"https://example.com/page2"',
+				'"https://example.com/page3"'
+			);
 
 			const config = await ProcessArgumentsParser.getConfiguration(args);
 			const config2 = MockedConfiguration;
 
-			expect(config).toEqual(config2);
+			expect({
+				...config,
+				urls: [
+					{
+						url: 'https://example.com/page1',
+						outputFile: 'page1/index.html',
+						headers: null
+					},
+					{
+						url: 'https://example.com/page2',
+						outputFile: 'page2/index.html',
+						headers: { 'X-Test': 'Value' }
+					},
+					{ url: 'https://example.com/page3', outputFile: 'page3/index.html', headers: null }
+				]
+			}).toEqual(config2);
 		});
 	});
 });
