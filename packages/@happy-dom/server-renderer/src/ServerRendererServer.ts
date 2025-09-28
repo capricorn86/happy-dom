@@ -11,6 +11,7 @@ import IServerRendererResult from './types/IServerRendererResult.js';
 // eslint-disable-next-line import/no-named-as-default
 import Chalk from 'chalk';
 import ServerRendererLogLevelEnum from './enums/ServerRendererLogLevelEnum.js';
+import PackageVersion from './utilities/PackageVersion.js';
 
 /**
  * Server renderer proxy HTTP2 server.
@@ -91,7 +92,7 @@ export default class ServerRendererServer {
 		this.#server.listen(url.port ? Number(url.port) : url.protocol === 'https:' ? 443 : 80);
 
 		// eslint-disable-next-line no-console
-		console.log(Chalk.green(`\nHappy DOM Proxy Server ${await this.#getVersion()}\n`));
+		console.log(Chalk.green(`\nHappy DOM Proxy Server ${await PackageVersion.getVersion()}\n`));
 
 		// eslint-disable-next-line no-console
 		console.log(
@@ -332,15 +333,5 @@ export default class ServerRendererServer {
 	 */
 	#getCacheKey(url: URL, headers: { [key: string]: string }, statusCode: number): string {
 		return `${url.href}|${JSON.stringify(headers)}|${statusCode}`;
-	}
-
-	/**
-	 * Returns the version of the package.
-	 *
-	 * @returns The version of the package.
-	 */
-	async #getVersion(): Promise<string> {
-		const packageJson = await import('../package.json', { with: { type: 'json' } });
-		return packageJson.default['version'];
 	}
 }
