@@ -96,7 +96,12 @@ export default <IServerRendererConfiguration>{
 	},
 	urls: [
 		{ url: 'https://example.com/page1', outputFile: 'page1/index.html' },
-		{ url: 'https://example.com/page2', outputFile: 'page2/index.html' }
+		{
+			url: 'https://example.com/page2',
+			outputFile: 'page2/index.html',
+			headers: { 'X-Test': 'Value' }
+		},
+		'https://example.com/page3'
 	],
 	server: {
 		start: true,

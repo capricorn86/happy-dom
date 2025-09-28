@@ -23,6 +23,20 @@ export default class ProcessArgumentsParser {
 			if (arg[0] === '-') {
 				if (arg.startsWith('--config=') || arg.startsWith('-c=')) {
 					config = (await import(Path.resolve(this.stripQuotes(arg.split('=')[1])))).default;
+
+					if (config.urls) {
+						const newUrls: IServerRendererItem[] = [];
+						for (const urlItem of config.urls) {
+							const isString = typeof urlItem === 'string';
+							const url = new URL(isString ? urlItem : urlItem.url);
+							newUrls.push({
+								url: url.href,
+								outputFile: this.getOutputFile(url),
+								headers: isString ? null : (<IServerRendererItem>urlItem).headers || null
+							});
+						}
+						config.urls = newUrls;
+					}
 				} else if (arg === '--help' || arg === '-h') {
 					config.help = true;
 				} else if (arg === '--browser.disableJavaScriptEvaluation') {
@@ -255,17 +269,8 @@ export default class ProcessArgumentsParser {
 					// We need to replace the first slash to make the path relative to the current directory
 					const item: IServerRendererItem = {
 						url: url.href,
-						outputFile: url.pathname.replace('/', '')
+						outputFile: this.getOutputFile(url)
 					};
-
-					const parts = item.outputFile!.split('/');
-
-					if (!parts[parts.length - 1].includes('.')) {
-						if (parts[parts.length - 1]) {
-							item.outputFile += '/';
-						}
-						item.outputFile += 'index.html';
-					}
 
 					if (!config.urls) {
 						config.urls = [];
@@ -277,6 +282,23 @@ export default class ProcessArgumentsParser {
 		}
 
 		return config;
+	}
+
+	/**
+	 *
+	 * @param url
+	 */
+	private static getOutputFile(url: URL): string {
+		let outputFile = url.pathname.replace('/', '');
+		const parts = outputFile.split('/');
+
+		if (!parts[parts.length - 1].includes('.')) {
+			if (parts[parts.length - 1]) {
+				outputFile += '/';
+			}
+			outputFile += 'index.html';
+		}
+		return outputFile;
 	}
 
 	/**
