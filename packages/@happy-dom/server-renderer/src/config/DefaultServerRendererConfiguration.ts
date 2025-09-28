@@ -1,6 +1,6 @@
 import DefaultBrowserSettings from 'happy-dom/lib/browser/DefaultBrowserSettings.js';
 import ServerRendererLogLevelEnum from '../enums/ServerRendererLogLevelEnum.js';
-import IServerRendererConfiguration from '../types/IServerRendererConfiguration.js';
+import type IServerRendererConfiguration from '../types/IServerRendererConfiguration.js';
 import OS from 'os';
 import { BrowserErrorCaptureEnum } from 'happy-dom';
 

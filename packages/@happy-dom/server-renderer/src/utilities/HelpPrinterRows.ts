@@ -108,6 +108,14 @@ export default [
 		''
 	],
 	['--render.disablePolyfills', '', 'boolean', 'Disables polyfills.', 'false'],
+	['--worker.disable', '', 'boolean', 'Disables workers.', 'false'],
+	[
+		'--worker.maxConcurrency=<number>',
+		'',
+		'number',
+		'Maximum number of concurrent workers. 50% of CPU threads by default.',
+		''
+	],
 	['--browser.viewport.width=<number>', '-vw', 'number', 'Sets the viewport width.', '1024'],
 	['--browser.viewport.height=<number>', '-vh', 'number', 'Sets the viewport height.', '768'],
 	[
