@@ -13,6 +13,7 @@ import ZLib from 'node:zlib';
 import IOptionalServerRendererConfiguration from '../src/types/IOptionalServerRendererConfiguration.js';
 // eslint-disable-next-line import/no-named-as-default
 import Chalk from 'chalk';
+import PackageVersion from '../src/utilities/PackageVersion.js';
 
 const GZIP_TO_STRING = (chunks: Buffer[]): Promise<string> => {
 	return new Promise((resolve, reject) => {
@@ -47,6 +48,8 @@ describe('ServerRendererServer', () => {
 		requestHandler = null;
 		serverPort = null;
 		isServerClosed = false;
+
+		vi.spyOn(PackageVersion, 'getVersion').mockResolvedValue('0.0.0');
 
 		vi.spyOn(Http2, 'createSecureServer').mockImplementation(
 			(options: any, onRequestHandler: any): any => {
@@ -418,13 +421,13 @@ describe('ServerRendererServer', () => {
 						...(cacheMode === 'enabled'
 							? Array(4).fill(
 									Chalk.bold(`• Waiting for ongoing rendering of ${protocol}//example.com/path/`)
-								)
+							  )
 							: []),
 						Chalk.bold(`• Rendered ${protocol}//example.com/path/`),
 						...(cacheMode === 'enabled'
 							? Array(4).fill(
 									Chalk.bold(`• Using cached response for ${protocol}//example.com/path/`)
-								)
+							  )
 							: Array(4).fill(Chalk.bold(`• Rendered ${protocol}//example.com/path/`)))
 					]);
 					expect(consoleError).toEqual([]);
