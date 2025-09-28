@@ -2,6 +2,9 @@ import SelectorItem from './SelectorItem.js';
 import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
 import DOMException from '../exception/DOMException.js';
 import ISelectorPseudo from './ISelectorPseudo.js';
+import Element from '../nodes/element/Element.js';
+import Document from '../nodes/document/Document.js';
+import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 
 /**
  * Selector RegExp.
@@ -68,13 +71,14 @@ export default class SelectorParser {
 	 * Parses a selector string and returns an instance of SelectorItem.
 	 *
 	 * @param selector Selector.
-	 * @param [options] Options.
+	 * @param options Options.
+	 * @param options.scope Scope.
 	 * @param [options.ignoreErrors] Ignores errors.
 	 * @returns Selector item.
 	 */
 	public static getSelectorItem(
 		selector: string,
-		options?: { ignoreErrors?: boolean }
+		options?: { scope?: Element | Document | DocumentFragment; ignoreErrors?: boolean }
 	): SelectorItem {
 		return this.getSelectorGroups(selector, options)[0][0];
 	}
@@ -83,37 +87,46 @@ export default class SelectorParser {
 	 * Parses a selector string and returns groups with SelectorItem instances.
 	 *
 	 * @param selector Selector.
-	 * @param [options] Options.
+	 * @param options Options.
+	 * @param options.scope Scope.
 	 * @param [options.ignoreErrors] Ignores errors.
 	 * @returns Selector groups.
 	 */
 	public static getSelectorGroups(
 		selector: string,
-		options?: { ignoreErrors?: boolean }
+		options?: { scope?: Element | Document | DocumentFragment; ignoreErrors?: boolean }
 	): Array<Array<SelectorItem>> {
 		selector = selector.trim();
 		const ignoreErrors = options?.ignoreErrors;
+		const scope = options?.scope;
 
 		if (selector === '*') {
-			return [[new SelectorItem({ tagName: '*', ignoreErrors })]];
+			return [[new SelectorItem({ scope, tagName: '*', ignoreErrors })]];
 		}
 
 		const simpleMatch = selector.match(SIMPLE_SELECTOR_REGEXP);
 
 		if (simpleMatch) {
 			if (simpleMatch[1]) {
-				return [[new SelectorItem({ tagName: selector.toUpperCase(), ignoreErrors })]];
+				return [[new SelectorItem({ scope, tagName: selector.toUpperCase(), ignoreErrors })]];
 			} else if (simpleMatch[2]) {
 				return [
-					[new SelectorItem({ classNames: selector.replace('.', '').split('.'), ignoreErrors })]
+					[
+						new SelectorItem({
+							scope,
+							classNames: selector.replace('.', '').split('.'),
+							ignoreErrors
+						})
+					]
 				];
 			} else if (simpleMatch[3]) {
-				return [[new SelectorItem({ id: selector.replace('#', ''), ignoreErrors })]];
+				return [[new SelectorItem({ scope, id: selector.replace('#', ''), ignoreErrors })]];
 			}
 		}
 
 		const regexp = new RegExp(SELECTOR_REGEXP);
 		let currentSelectorItem: SelectorItem = new SelectorItem({
+			scope,
 			combinator: SelectorCombinatorEnum.descendant,
 			ignoreErrors
 		});
@@ -178,6 +191,7 @@ export default class SelectorParser {
 					switch (match[17].trim()) {
 						case ',':
 							currentSelectorItem = new SelectorItem({
+								scope,
 								combinator: SelectorCombinatorEnum.descendant,
 								ignoreErrors
 							});
@@ -186,6 +200,7 @@ export default class SelectorParser {
 							break;
 						case '>':
 							currentSelectorItem = new SelectorItem({
+								scope,
 								combinator: SelectorCombinatorEnum.child,
 								ignoreErrors
 							});
@@ -193,6 +208,7 @@ export default class SelectorParser {
 							break;
 						case '+':
 							currentSelectorItem = new SelectorItem({
+								scope,
 								combinator: SelectorCombinatorEnum.adjacentSibling,
 								ignoreErrors
 							});
@@ -200,6 +216,7 @@ export default class SelectorParser {
 							break;
 						case '~':
 							currentSelectorItem = new SelectorItem({
+								scope,
 								combinator: SelectorCombinatorEnum.subsequentSibling,
 								ignoreErrors
 							});
@@ -207,6 +224,7 @@ export default class SelectorParser {
 							break;
 						case '':
 							currentSelectorItem = new SelectorItem({
+								scope,
 								combinator: SelectorCombinatorEnum.descendant,
 								ignoreErrors
 							});
@@ -278,14 +296,15 @@ export default class SelectorParser {
 	 *
 	 * @param name Pseudo name.
 	 * @param args Pseudo arguments.
-	 * @param [options] Options.
+	 * @param options Options.
+	 * @param options.scope Scope.
 	 * @param [options.ignoreErrors] Ignores errors.
 	 * @returns Pseudo.
 	 */
 	private static getPseudo(
 		name: string,
-		args?: string | null,
-		options?: { ignoreErrors?: boolean }
+		args: string | null | undefined,
+		options?: { scope?: Element | Document | DocumentFragment; ignoreErrors?: boolean }
 	): ISelectorPseudo {
 		const lowerName = name.toLowerCase();
 
@@ -361,10 +380,12 @@ export default class SelectorParser {
 
 				return {
 					name: lowerName,
-					arguments: args,
+					arguments: args || '',
 					selectorItems: hasSelectorItems,
 					nthFunction: null
 				};
+			case 'scope':
+			case 'root':
 			default:
 				return { name: lowerName, arguments: args, selectorItems: null, nthFunction: null };
 		}

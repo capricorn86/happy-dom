@@ -962,7 +962,275 @@ describe('BrowserWindow', () => {
 			expect(window.getComputedStyle(div).getPropertyValue('border-color')).toBe('pink');
 		});
 
-		it('Ingores invalid selectors in parsed CSS.', () => {
+		it('Handles CSS in root pseudo element (:root).', () => {
+			const div = document.createElement('div');
+			const style = document.createElement('style');
+
+			style.textContent = `
+              :root {
+                border-color: pink;
+                font-size: 20px;
+              }
+            `;
+
+			document.head.appendChild(style);
+			document.body.appendChild(div);
+
+			expect(
+				window.getComputedStyle(document.documentElement).getPropertyValue('border-color')
+			).toBe('pink');
+
+			expect(window.getComputedStyle(div).getPropertyValue('font-size')).toBe('20px');
+		});
+
+		it('Handles CSS in scope pseudo element (:scope).', () => {
+			const div = document.createElement('div');
+			const style = document.createElement('style');
+
+			style.textContent = `
+              :scope {
+                border-color: pink;
+                font-size: 20px;
+              }
+            `;
+
+			document.head.appendChild(style);
+			document.body.appendChild(div);
+
+			expect(
+				window.getComputedStyle(document.documentElement).getPropertyValue('border-color')
+			).toBe('pink');
+
+			expect(window.getComputedStyle(div).getPropertyValue('font-size')).toBe('20px');
+		});
+
+		it('Handles CSS in a defined scope pseudo element (@scope).', () => {
+			const div = document.createElement('div');
+			const style = document.createElement('style');
+
+			div.innerHTML = `
+                <div class="light-theme">
+                    <p>
+                        Happy DOM
+                        <a href="https://github.com/capricorn86/happy-dom">Link</a>,
+                    </p>
+                </div>
+
+                <div class="dark-theme">
+                    <p>
+                        Happy DOM
+                        <a href="https://github.com/capricorn86/happy-dom">Link</a>,
+                    </p>
+                </div>
+
+                <div class="cool-theme">
+                    <p>
+                        Happy DOM
+                        <a href="https://github.com/capricorn86/happy-dom">Link</a>,
+                    </p>
+                </div>
+            `;
+
+			style.textContent = `
+              @scope (.light-theme) {
+                :scope {
+                    background-color: plum;
+                }
+
+                a {
+                    color: darkmagenta;
+                }
+              }
+
+              @scope (.dark-theme) {
+                :scope {
+                    background-color: darkmagenta;
+                    color: antiquewhite;
+                }
+
+                a {
+                    color: plum;
+                }
+              }
+
+              @scope (.cool-theme) to (a) {
+                :scope {
+                    background-color: lightblue;
+                }
+
+                p {
+                    font-size: 20px;
+                }
+
+                a {
+                    color: blue;
+                }
+              }
+            `;
+
+			document.head.appendChild(style);
+			document.body.appendChild(div);
+
+			expect(
+				window
+					.getComputedStyle(document.querySelector('.light-theme')!)
+					.getPropertyValue('background-color')
+			).toBe('plum');
+
+			expect(
+				window.getComputedStyle(document.querySelector('.light-theme a')!).getPropertyValue('color')
+			).toBe('darkmagenta');
+
+			expect(
+				window
+					.getComputedStyle(document.querySelector('.dark-theme')!)
+					.getPropertyValue('background-color')
+			).toBe('darkmagenta');
+
+			expect(
+				window.getComputedStyle(document.querySelector('.dark-theme')!).getPropertyValue('color')
+			).toBe('antiquewhite');
+
+			expect(
+				window.getComputedStyle(document.querySelector('.dark-theme a')!).getPropertyValue('color')
+			).toBe('plum');
+
+			expect(
+				window
+					.getComputedStyle(document.querySelector('.cool-theme')!)
+					.getPropertyValue('background-color')
+			).toBe('lightblue');
+
+			// Should be empty as "a" ends the scope
+			expect(
+				window.getComputedStyle(document.querySelector('.cool-theme a')!).getPropertyValue('color')
+			).toBe('');
+
+			expect(
+				window
+					.getComputedStyle(document.querySelector('.cool-theme a')!)
+					.getPropertyValue('font-size')
+			).toBe('20px');
+		});
+
+		it('Handles CSS in a defined :host element with selector (":host(:root .class1.class2)").', () => {
+			/**
+			 *
+			 */
+			class TestElement extends HTMLElement {
+				/**
+				 *
+				 */
+				constructor() {
+					super();
+					const shadow = this.attachShadow({ mode: 'open' });
+					shadow.innerHTML = `
+                        <style>
+                            :host(:root .class1.class2) {
+                                background-color: pink;
+                            }
+                        </style>
+                        <span>Test</span>
+                    `;
+				}
+			}
+
+			window.customElements.define('test-element', TestElement);
+
+			const div = document.createElement('div');
+			const testElement = document.createElement('test-element');
+
+			div.appendChild(testElement);
+			document.body.appendChild(div);
+
+			const computedStyle = window.getComputedStyle(testElement);
+
+			expect(computedStyle.getPropertyValue('background-color')).toBe('');
+
+			testElement.className = 'class1 class2';
+
+			expect(computedStyle.getPropertyValue('background-color')).toBe('pink');
+		});
+
+		it('Handles CSS in a defined :host-context element with selector (":host-context(:root .class1.class2)").', () => {
+			/**
+			 *
+			 */
+			class TestElement extends HTMLElement {
+				/**
+				 *
+				 */
+				constructor() {
+					super();
+					const shadow = this.attachShadow({ mode: 'open' });
+					shadow.innerHTML = `
+                        <style>
+                            :host-context(:root .class1.class2) {
+                                background-color: pink;
+                            }
+                        </style>
+                        <span>Test</span>
+                    `;
+				}
+			}
+
+			window.customElements.define('test-element', TestElement);
+
+			const div = document.createElement('div');
+			const testElement = document.createElement('test-element');
+
+			div.appendChild(testElement);
+			document.body.appendChild(div);
+
+			const computedStyle = window.getComputedStyle(testElement);
+
+			expect(computedStyle.getPropertyValue('background-color')).toBe('');
+
+			testElement.className = 'class1 class2';
+
+			expect(computedStyle.getPropertyValue('background-color')).toBe('pink');
+		});
+
+		it('Handles CSS in a defined :host-context element with selector (":host-context(:root .class1.class2) span").', () => {
+			/**
+			 *
+			 */
+			class TestElement extends HTMLElement {
+				/**
+				 *
+				 */
+				constructor() {
+					super();
+					const shadow = this.attachShadow({ mode: 'open' });
+					shadow.innerHTML = `
+                        <style>
+                            :host-context(:root .class1.class2) span {
+                                background-color: pink;
+                            }
+                        </style>
+                        <span>Test</span>
+                    `;
+				}
+			}
+
+			window.customElements.define('test-element', TestElement);
+
+			const div = document.createElement('div');
+			const testElement = document.createElement('test-element');
+
+			div.appendChild(testElement);
+			document.body.appendChild(div);
+
+			const computedStyle = window.getComputedStyle(testElement.shadowRoot!.querySelector('span')!);
+
+			expect(computedStyle.getPropertyValue('background-color')).toBe('');
+
+			testElement.className = 'class1 class2';
+
+			expect(computedStyle.getPropertyValue('background-color')).toBe('pink');
+		});
+
+		it('Ignores invalid selectors in parsed CSS.', () => {
 			const parent = document.createElement('div');
 			const element = document.createElement('span');
 			const computedStyle = window.getComputedStyle(element);
@@ -1123,6 +1391,37 @@ describe('BrowserWindow', () => {
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			expect(loopCount).toBe(3);
+		});
+
+		it('Supports preventing timeout loops when the setting "preventTimerLoops" is set to an object with a limit.', async () => {
+			let loopCount = 0;
+
+			browser.settings.timer.preventTimerLoops = false;
+
+			const timeoutLoop = (): void => {
+				if (loopCount < 10) {
+					loopCount++;
+					window.setTimeout(timeoutLoop, loopCount < 3 ? 1 : 0);
+				}
+			};
+
+			timeoutLoop();
+
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			expect(loopCount).toBe(10);
+
+			browser.settings.timer.preventTimerLoops = {
+				timeout: 3
+			};
+
+			loopCount = 0;
+
+			timeoutLoop();
+
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			expect(loopCount).toBe(7);
 		});
 	});
 
@@ -1377,6 +1676,37 @@ describe('BrowserWindow', () => {
 
 			expect(loopCount).toBe(3);
 		});
+
+		it('Supports preventing timeout loops when the setting "preventTimerLoops" is set to an object with a limit.', async () => {
+			let loopCount = 0;
+
+			browser.settings.timer.preventTimerLoops = false;
+
+			const timeoutLoop = (): void => {
+				if (loopCount < 10) {
+					loopCount++;
+					window.requestAnimationFrame(timeoutLoop);
+				}
+			};
+
+			timeoutLoop();
+
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			expect(loopCount).toBe(10);
+
+			browser.settings.timer.preventTimerLoops = {
+				requestAnimationFrame: 3
+			};
+
+			loopCount = 0;
+
+			timeoutLoop();
+
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			expect(loopCount).toBe(5);
+		});
 	});
 
 	describe('cancelAnimationFrame()', () => {
@@ -1605,12 +1935,12 @@ describe('BrowserWindow', () => {
 					if ((<string>url).endsWith('.css')) {
 						resourceFetchCSSWindow = this.window;
 						resourceFetchCSSURL = <string>url;
-						return cssResponse;
+						return { content: cssResponse, virtualServerFile: null };
 					}
 
 					resourceFetchJSWindow = this.window;
 					resourceFetchJSURL = <string>url;
-					return jsResponse;
+					return { content: jsResponse, virtualServerFile: null };
 				});
 
 				window.addEventListener('load', (event) => {

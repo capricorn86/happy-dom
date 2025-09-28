@@ -13,6 +13,7 @@ import BrowserFrameFactory from '../../../src/browser/utilities/BrowserFrameFact
 import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCaptureEnum';
 import Headers from '../../../src/fetch/Headers';
 import * as PropertySymbol from '../../../src/PropertySymbol';
+import HashChangeEvent from '../../../src/event/events/HashChangeEvent';
 
 describe('DetachedBrowserFrame', () => {
 	afterEach(() => {
@@ -294,6 +295,70 @@ describe('DetachedBrowserFrame', () => {
 			expect(oldWindow.location.href).toBe('about:blank');
 			expect(page.mainFrame.window.location.href).toBe('http://localhost:3000/');
 			expect(page.mainFrame.window.document.body.innerHTML).toBe('Test');
+		});
+
+		it('Triggers "beforeContentCallback" before content is loaded into the document', async () => {
+			let request: Request | null = null;
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				request = this.request;
+				return Promise.resolve(<Response>{
+					url: request?.url,
+					text: () =>
+						new Promise((resolve) => setTimeout(() => resolve('<html><body>Test</body></html>'), 1))
+				});
+			});
+
+			const browser = new DetachedBrowser(BrowserWindow);
+			browser.defaultContext.pages[0].mainFrame.window = new BrowserWindow(
+				browser.defaultContext.pages[0].mainFrame
+			);
+			const page = browser.newPage();
+			let loadedWindow: BrowserWindow | null = null;
+			await page.mainFrame.goto('http://localhost:3000', {
+				beforeContentCallback: (window: BrowserWindow) => {
+					expect(window.document.body.children.length).toBe(0);
+					loadedWindow = window;
+				}
+			});
+
+			expect(page.mainFrame.url).toBe('http://localhost:3000/');
+			expect(page.mainFrame.window.location.href).toBe('http://localhost:3000/');
+			expect(page.mainFrame.window.document.body.innerHTML).toBe('Test');
+			expect(loadedWindow).toBe(page.mainFrame.window);
+		});
+
+		it('Triggers "browser.settings.navigation.beforeContentCallback" before content is loaded into the document', async () => {
+			let request: Request | null = null;
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				request = this.request;
+				return Promise.resolve(<Response>{
+					url: request?.url,
+					text: () =>
+						new Promise((resolve) => setTimeout(() => resolve('<html><body>Test</body></html>'), 1))
+				});
+			});
+
+			let loadedWindow: BrowserWindow | null = null;
+			const browser = new DetachedBrowser(BrowserWindow, {
+				settings: {
+					navigation: {
+						beforeContentCallback: (window: BrowserWindow) => {
+							expect(window.document.body.children.length).toBe(0);
+							loadedWindow = window;
+						}
+					}
+				}
+			});
+			browser.defaultContext.pages[0].mainFrame.window = new BrowserWindow(
+				browser.defaultContext.pages[0].mainFrame
+			);
+			const page = browser.newPage();
+			await page.mainFrame.goto('http://localhost:3000');
+
+			expect(page.mainFrame.url).toBe('http://localhost:3000/');
+			expect(page.mainFrame.window.location.href).toBe('http://localhost:3000/');
+			expect(page.mainFrame.window.document.body.innerHTML).toBe('Test');
+			expect(loadedWindow).toBe(page.mainFrame.window);
 		});
 
 		it('Navigates to a URL with "javascript:" as protocol.', async () => {
@@ -984,6 +1049,37 @@ describe('DetachedBrowserFrame', () => {
 			expect(
 				page.mainFrame.window.getComputedStyle(page.mainFrame.document.body).backgroundColor
 			).toBe('red');
+		});
+
+		it('Navigates using hash.', async () => {
+			const browser = new DetachedBrowser(BrowserWindow);
+			const page = browser.newPage();
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>{
+					text: () =>
+						new Promise((resolve) => setTimeout(() => resolve('<html><body>Test</body></html>'), 1))
+				});
+			});
+
+			await page.mainFrame.goto('http://localhost:3000');
+
+			expect(page.mainFrame.url).toBe('http://localhost:3000/');
+
+			const window = page.mainFrame.window;
+			let hashChangeEvent: HashChangeEvent | null = null;
+
+			window.addEventListener('hashchange', (event) => {
+				hashChangeEvent = <HashChangeEvent>event;
+			});
+
+			await page.mainFrame.goto('http://localhost:3000/#test');
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(hashChangeEvent!.oldURL).toBe('http://localhost:3000/');
+			expect(hashChangeEvent!.newURL).toBe('http://localhost:3000/#test');
+			expect(page.mainFrame.url).toBe('http://localhost:3000/#test');
+			expect(window).toBe(page.mainFrame.window);
 		});
 	});
 
