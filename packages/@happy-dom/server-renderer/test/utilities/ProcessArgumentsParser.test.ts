@@ -49,6 +49,19 @@ describe('ProcessArgumentsParser', () => {
 			).toEqual(expectedConfig);
 		});
 
+		it('Renders configuration with help option.', async () => {
+			const expectedConfig: IServerRendererConfiguration = {
+				...DefaultServerRendererConfiguration,
+				help: true
+			};
+			expect(
+				await ProcessArgumentsParser.getConfiguration(['node', 'script.js', '--help'])
+			).toEqual(expectedConfig);
+			expect(await ProcessArgumentsParser.getConfiguration(['node', 'script.js', '-h'])).toEqual(
+				expectedConfig
+			);
+		});
+
 		it('Returns configuration with server options.', async () => {
 			const expectedConfig: IServerRendererConfiguration = {
 				...DefaultServerRendererConfiguration,

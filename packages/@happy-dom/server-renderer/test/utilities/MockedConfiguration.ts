@@ -73,6 +73,7 @@ export default <IServerRendererConfiguration>{
 	},
 	outputDirectory: './output/render',
 	logLevel: ServerRendererLogLevelEnum.error,
+	help: false,
 	debug: true,
 	inspect: true,
 	cache: {
