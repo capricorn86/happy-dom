@@ -74,7 +74,7 @@ export default class QuerySelector {
 	 * @returns HTML elements.
 	 */
 	public static querySelectorAll(
-		node: Element | DocumentFragment,
+		node: Element | Document | DocumentFragment,
 		selector: string
 	): NodeList<Element> {
 		const window = node[PropertySymbol.window];
@@ -292,7 +292,7 @@ export default class QuerySelector {
 	public static matches(
 		element: Element,
 		selector: string,
-		options?: { scope?: Element | DocumentFragment | null; ignoreErrors?: boolean }
+		options?: { scope?: Element | Document | DocumentFragment | null; ignoreErrors?: boolean }
 	): ISelectorMatch | null {
 		const ignoreErrors = options?.ignoreErrors;
 		const window = element[PropertySymbol.window];
