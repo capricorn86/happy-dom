@@ -74,7 +74,7 @@ export default class QuerySelector {
 	 * @returns HTML elements.
 	 */
 	public static querySelectorAll(
-		node: Element | Document | DocumentFragment,
+		node: Element | DocumentFragment,
 		selector: string
 	): NodeList<Element> {
 		const window = node[PropertySymbol.window];
@@ -115,7 +115,11 @@ export default class QuerySelector {
 			}
 		}
 
-		const groups = SelectorParser.getSelectorGroups(selector, { scope: node });
+		const scope =
+			node[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
+				? (<Document>node).documentElement
+				: node;
+		const groups = SelectorParser.getSelectorGroups(selector, { scope });
 		const items: Element[] = [];
 		const nodeList = new NodeList<Element>(PropertySymbol.illegalConstructor, items);
 		const matchesMap: Map<string, Element> = new Map();
@@ -251,7 +255,11 @@ export default class QuerySelector {
 
 		const matchesMap: Map<string, Element> = new Map();
 		const matchedPositions: string[] = [];
-		for (const items of SelectorParser.getSelectorGroups(selector, { scope: node })) {
+		const scope =
+			node[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
+				? (<Document>node).documentElement
+				: node;
+		for (const items of SelectorParser.getSelectorGroups(selector, { scope })) {
 			const match =
 				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
 					? this.findFirst(<Element>node, [<Element>node], items, cachedItem)
@@ -284,7 +292,7 @@ export default class QuerySelector {
 	public static matches(
 		element: Element,
 		selector: string,
-		options?: { scope?: Element | Document | DocumentFragment | null; ignoreErrors?: boolean }
+		options?: { scope?: Element | DocumentFragment | null; ignoreErrors?: boolean }
 	): ISelectorMatch | null {
 		const ignoreErrors = options?.ignoreErrors;
 		const window = element[PropertySymbol.window];
@@ -350,9 +358,14 @@ export default class QuerySelector {
 			);
 		}
 
+		const scopeOrElement = options?.scope || element;
+		const scope =
+			scopeOrElement[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
+				? (<Document>scopeOrElement).documentElement
+				: scopeOrElement;
 		for (const items of SelectorParser.getSelectorGroups(selector, {
 			...options,
-			scope: options?.scope || element
+			scope
 		})) {
 			const result = this.matchSelector(element, items.reverse(), cachedItem);
 
