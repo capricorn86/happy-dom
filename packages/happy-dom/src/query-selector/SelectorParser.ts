@@ -3,7 +3,6 @@ import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
 import DOMException from '../exception/DOMException.js';
 import ISelectorPseudo from './ISelectorPseudo.js';
 import Element from '../nodes/element/Element.js';
-import Document from '../nodes/document/Document.js';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 
 /**
