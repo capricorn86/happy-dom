@@ -5,7 +5,6 @@ import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
 import ISelectorAttribute from './ISelectorAttribute.js';
 import ISelectorMatch from './ISelectorMatch.js';
 import ISelectorPseudo from './ISelectorPseudo.js';
-import Document from '../nodes/document/Document.js';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 
 const SPACE_REGEXP = /\s+/;
@@ -14,7 +13,8 @@ const SPACE_REGEXP = /\s+/;
  * Selector item.
  */
 export default class SelectorItem {
-	public scope: Element | Document | DocumentFragment | null;
+	public root: Element | DocumentFragment | null;
+	public scope: Element | DocumentFragment | null;
 	public tagName: string | null;
 	public id: string | null;
 	public classNames: string[] | null;
@@ -39,7 +39,7 @@ export default class SelectorItem {
 	 * @param [options.ignoreErrors] Ignore errors.
 	 */
 	constructor(options?: {
-		scope?: Element | Document | DocumentFragment;
+		scope?: Element | DocumentFragment;
 		tagName?: string;
 		id?: string;
 		classNames?: string[];
@@ -49,6 +49,7 @@ export default class SelectorItem {
 		combinator?: SelectorCombinatorEnum;
 		ignoreErrors?: boolean;
 	}) {
+		this.root = options?.scope ? options.scope[PropertySymbol.ownerDocument].documentElement : null;
 		this.scope = options?.scope || null;
 		this.tagName = options?.tagName || null;
 		this.id = options?.id || null;
@@ -251,7 +252,7 @@ export default class SelectorItem {
 					? { priorityWeight: 10 }
 					: null;
 			case 'root':
-				return element[PropertySymbol.tagName] === 'HTML' ? { priorityWeight: 10 } : null;
+				return this.root && element === this.root ? { priorityWeight: 10 } : null;
 			case 'not':
 				for (const selectorItem of pseudo.selectorItems!) {
 					if (selectorItem.match(element)) {
@@ -385,7 +386,7 @@ export default class SelectorItem {
 					? { priorityWeight: 10 }
 					: null;
 			case 'scope':
-				return this.scope === element ? { priorityWeight: 10 } : null;
+				return this.scope && this.scope === element ? { priorityWeight: 10 } : null;
 			default:
 				return null;
 		}

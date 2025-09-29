@@ -3,7 +3,6 @@ import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
 import DOMException from '../exception/DOMException.js';
 import ISelectorPseudo from './ISelectorPseudo.js';
 import Element from '../nodes/element/Element.js';
-import Document from '../nodes/document/Document.js';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 
 /**
@@ -72,13 +71,16 @@ export default class SelectorParser {
 	 *
 	 * @param selector Selector.
 	 * @param options Options.
-	 * @param options.scope Scope.
+	 * @param [options.scope] Scope.
 	 * @param [options.ignoreErrors] Ignores errors.
 	 * @returns Selector item.
 	 */
 	public static getSelectorItem(
 		selector: string,
-		options?: { scope?: Element | Document | DocumentFragment; ignoreErrors?: boolean }
+		options?: {
+			scope?: Element | DocumentFragment;
+			ignoreErrors?: boolean;
+		}
 	): SelectorItem {
 		return this.getSelectorGroups(selector, options)[0][0];
 	}
@@ -88,13 +90,16 @@ export default class SelectorParser {
 	 *
 	 * @param selector Selector.
 	 * @param options Options.
-	 * @param options.scope Scope.
+	 * @param [options.scope] Scope.
 	 * @param [options.ignoreErrors] Ignores errors.
 	 * @returns Selector groups.
 	 */
 	public static getSelectorGroups(
 		selector: string,
-		options?: { scope?: Element | Document | DocumentFragment; ignoreErrors?: boolean }
+		options?: {
+			scope?: Element | DocumentFragment;
+			ignoreErrors?: boolean;
+		}
 	): Array<Array<SelectorItem>> {
 		selector = selector.trim();
 		const ignoreErrors = options?.ignoreErrors;
@@ -296,15 +301,18 @@ export default class SelectorParser {
 	 *
 	 * @param name Pseudo name.
 	 * @param args Pseudo arguments.
-	 * @param options Options.
-	 * @param options.scope Scope.
+	 * @param [options] Options.
+	 * @param [options.scope] Scope.
 	 * @param [options.ignoreErrors] Ignores errors.
 	 * @returns Pseudo.
 	 */
 	private static getPseudo(
 		name: string,
 		args: string | null | undefined,
-		options?: { scope?: Element | Document | DocumentFragment; ignoreErrors?: boolean }
+		options?: {
+			scope?: Element | DocumentFragment;
+			ignoreErrors?: boolean;
+		}
 	): ISelectorPseudo {
 		const lowerName = name.toLowerCase();
 

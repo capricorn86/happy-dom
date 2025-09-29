@@ -1369,6 +1369,14 @@ describe('QuerySelector', () => {
 			expect(links[1].textContent).toBe('Link 2');
 		});
 
+		it('Returns all elements for pseudo selector ":scope > child" in XML document', () => {
+			const xml = '<root><child>Content</child></root>';
+			const parser = new window.DOMParser();
+			const xmlDoc = parser.parseFromString(xml, 'application/xml');
+			expect(xmlDoc.querySelectorAll(':scope > child').length).toBe(1);
+			expect(xmlDoc.querySelectorAll(':root > child').length).toBe(1);
+		});
+
 		it('Returns all elements for pseudo selector ":root"', () => {
 			const root = document.querySelectorAll(':root');
 			expect(root.length).toBe(1);
