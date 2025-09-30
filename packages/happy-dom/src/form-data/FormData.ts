@@ -4,6 +4,7 @@ import File from '../file/File.js';
 import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
 import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
 import BrowserWindow from '../window/BrowserWindow.js';
+import HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js';
 
 type FormDataEntry = {
 	name: string;
@@ -25,8 +26,9 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * Constructor.
 	 *
 	 * @param [form] Form.
+	 * @param [submitter] The element that triggered the submission if this came from a form submit.
 	 */
-	constructor(form?: HTMLFormElement) {
+	constructor(form?: HTMLFormElement, submitter?: HTMLInputElement | HTMLButtonElement) {
 		if (!form) {
 			return;
 		}
@@ -62,7 +64,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 							case 'submit':
 							case 'reset':
 							case 'button':
-								if ((<HTMLInputElement>item).value) {
+								if (item === submitter && (<HTMLInputElement>item).value) {
 									this.append(name, (<HTMLInputElement>item).value);
 								}
 								break;
@@ -72,8 +74,8 @@ export default class FormData implements Iterable<[string, string | File]> {
 						}
 						break;
 					case 'BUTTON':
-						if ((<HTMLInputElement>item).value) {
-							this.append(name, (<HTMLInputElement>item).value);
+						if (item === submitter && (<HTMLButtonElement>item).value) {
+							this.append(name, (<HTMLButtonElement>item).value);
 						}
 						break;
 					case 'TEXTAREA':
