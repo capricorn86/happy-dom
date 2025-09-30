@@ -7,6 +7,9 @@ import NamespaceURI from '../../config/NamespaceURI.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import ICachedResult from '../node/ICachedResult.js';
+import MutationRecord from '../../mutation-observer/MutationRecord.js';
+import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
+import NodeTypeEnum from '../node/NodeTypeEnum.js';
 
 /**
  * Parent node utility.
@@ -63,13 +66,109 @@ export default class ParentNodeUtility {
 		parentNode: Element | Document | DocumentFragment,
 		...nodes: (string | Node)[]
 	): void {
-		const childNodes = (<DocumentFragment>parentNode)[PropertySymbol.nodeArray];
-
-		while (childNodes.length) {
-			parentNode.removeChild(childNodes[0]);
-		}
+		this.clearChildren(parentNode);
 
 		this.append(parentNode, ...nodes);
+	}
+
+	/**
+	 * Removes all children from a node. Equivalent to calling `parentNode.removeChild(child)` for every child.
+	 *
+	 * @param parentNode Parent node.
+	 * @returns Array of removed nodes in removal order.
+	 */
+	public static clearChildren(parentNode: Element | Document | DocumentFragment): Node[] {
+		const nodeArray = (<DocumentFragment>parentNode)[PropertySymbol.nodeArray];
+		if (nodeArray.length === 0) {
+			return [];
+		}
+
+		const removed: Node[] = nodeArray.slice();
+
+		(<DocumentFragment>parentNode)[PropertySymbol.elementArray].length = 0;
+
+		// Track affected slots for shadow DOM to dispatch 'slotchange' once per slot.
+		let defaultSlotAffected = false;
+		const namedSlotsAffected = new Set<string>();
+		const hasShadowRoot =
+			parentNode instanceof Element && !!(<Element>parentNode)[PropertySymbol.shadowRoot];
+		const isConnected = !!(<any>parentNode)[PropertySymbol.isConnected];
+
+		for (let i = 0; i < removed.length; i++) {
+			const node = removed[i];
+
+			node[PropertySymbol.parentNode] = null;
+			node[PropertySymbol.clearCache]();
+			if (node[PropertySymbol.assignedToSlot]) {
+				const slot = node[PropertySymbol.assignedToSlot];
+				const list = slot[PropertySymbol.assignedNodes];
+				const idx = list.indexOf(node);
+				if (idx !== -1) {
+					list.splice(idx, 1);
+				}
+				node[PropertySymbol.assignedToSlot] = null;
+			}
+			node[PropertySymbol.disconnectedFromNode]();
+
+			// Mark affected slots to align with Element.#onSlotChange behavior.
+			if (hasShadowRoot && isConnected) {
+				// Named slot if the removed node has a slot attribute.
+				const slotName = (<any>node)['getAttribute'] ? (<any>node).getAttribute('slot') : null;
+				if (slotName) {
+					namedSlotsAffected.add(slotName);
+				} else if (node[PropertySymbol.nodeType] !== NodeTypeEnum.commentNode) {
+					defaultSlotAffected = true;
+				}
+			}
+		}
+
+		nodeArray.length = 0;
+
+		const mutationListeners = <any[]>(<any>parentNode)[PropertySymbol.mutationListeners];
+		for (let i = 0; i < removed.length; i++) {
+			const node = removed[i];
+
+			if (mutationListeners.length) {
+				for (const mutationListener of mutationListeners) {
+					if (mutationListener.options?.subtree && mutationListener.callback.deref()) {
+						node[PropertySymbol.unobserveMutations](mutationListener);
+					}
+				}
+			}
+
+			(<any>parentNode)[PropertySymbol.reportMutation](
+				new MutationRecord({
+					target: (<any>parentNode)[PropertySymbol.proxy] || <any>parentNode,
+					type: MutationTypeEnum.childList,
+					removedNodes: [node],
+					previousSibling: null,
+					nextSibling: removed[i + 1] ?? null
+				})
+			);
+		}
+
+		// Dispatch 'slotchange' on affected slots (once per slot).
+		if (hasShadowRoot && isConnected) {
+			const shadowRoot = (<Element>parentNode)[PropertySymbol.shadowRoot]!;
+			for (const name of namedSlotsAffected) {
+				const slot = shadowRoot.querySelector(`slot[name="${name}"]`);
+				if (slot) {
+					slot.dispatchEvent(
+						new (<any>parentNode)[PropertySymbol.window].Event('slotchange', { bubbles: true })
+					);
+				}
+			}
+			if (defaultSlotAffected) {
+				const defaultSlot = shadowRoot.querySelector('slot:not([name])');
+				if (defaultSlot) {
+					defaultSlot.dispatchEvent(
+						new (<any>parentNode)[PropertySymbol.window].Event('slotchange', { bubbles: true })
+					);
+				}
+			}
+		}
+
+		return removed;
 	}
 
 	/**
