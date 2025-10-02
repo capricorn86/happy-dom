@@ -18,6 +18,30 @@ describe('FormData', () => {
 	});
 
 	describe('constructor', () => {
+		it('throws TypeError when an invalid submitter type is provided', () => {
+			const form = document.createElement('form');
+			const input = document.createElement('input');
+			input.type = 'text';
+			input.name = 'test';
+			form.appendChild(input);
+
+			expect(() => new window.FormData(form, input)).toThrow(
+				"Failed to construct 'FormData': The specified element is not a submit button."
+			);
+		});
+
+		it('throws NotFoundError when submitter is not owned by the form', () => {
+			const form = document.createElement('form');
+			const button = document.createElement('button');
+			button.type = 'submit';
+			button.name = 'submit-btn';
+
+			// Not appending the button to the form
+			expect(() => new window.FormData(form, button)).toThrow(
+				"Failed to construct 'FormData': The specified element is not owned by this form element."
+			);
+		});
+
 		it('Supports sending in an HTMLFormElement to the contructor.', () => {
 			const form = document.createElement('form');
 			const file = new File([Buffer.from('fileContent')], 'file.txt', { type: 'text/plain' });
@@ -106,8 +130,31 @@ describe('FormData', () => {
 			expect(formData.getAll('checkboxInput')).toEqual(['checkbox value 2']);
 			expect(formData.get('button1')).toBe(null);
 			expect(formData.get('button2')).toBe(null);
-			expect(formData.get('button3')).toBe('button3');
-			expect(formData.get('button4')).toBe('button4');
+			expect(formData.get('button3')).toBe(null);
+			expect(formData.get('button4')).toBe(null);
+		});
+
+		it('Only includes button values when they are passed in as submitter', () => {
+			const form = document.createElement('form');
+			const input = document.createElement('input');
+			const button = document.createElement('button');
+
+			input.name = 'input';
+			input.value = 'testing';
+
+			button.name = 'button';
+			button.value = 'buttonValue';
+
+			form.appendChild(input);
+			form.appendChild(button);
+
+			const formDataWithoutButton = new window.FormData(form);
+			expect(formDataWithoutButton.get('input')).toBe('testing');
+			expect(formDataWithoutButton.get('button')).toBeNull();
+
+			const formDataWithSubmitter = new window.FormData(form, button);
+			expect(formDataWithSubmitter.get('input')).toBe('testing');
+			expect(formDataWithSubmitter.get('button')).toBe('buttonValue');
 		});
 
 		it('Supports input elements with empty values.', () => {
