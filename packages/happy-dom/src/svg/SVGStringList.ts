@@ -159,7 +159,7 @@ export default class SVGStringList {
 	/**
 	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.
 	 */
-	public [Symbol.iterator](): IterableIterator<string> {
+	public [Symbol.iterator](): ArrayIterator<string> {
 		return this[PropertySymbol.getItemList]().values();
 	}
 

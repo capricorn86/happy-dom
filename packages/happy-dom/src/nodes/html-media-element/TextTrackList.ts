@@ -157,7 +157,7 @@ export default class TextTrackList extends EventTarget {
 	 *
 	 * @returns Iterator.
 	 */
-	public [Symbol.iterator](): IterableIterator<TextTrack> {
+	public [Symbol.iterator](): ArrayIterator<TextTrack> {
 		const items = <TextTrack[]>this[PropertySymbol.items];
 		return items[Symbol.iterator]();
 	}
