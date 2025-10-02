@@ -417,6 +417,51 @@ describe('XMLHttpRequest', () => {
 				`Failed to read the 'responseText' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'text' (was '${XMLHttpResponseTypeEnum.json}').`
 			);
 		});
+
+		it('Should return responseText with correct length during streaming in progress event', async () => {
+			await new Promise((resolve, reject) => {
+				const responseText = 'This is a streaming response';
+
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+					async () =>
+						<Response>{
+							headers: <Headers>new Headers({
+								'Content-Length': String(responseText.length)
+							}),
+							body: new ReadableStream({
+								start(controller) {
+									controller.enqueue(responseText);
+									controller.close();
+								}
+							})
+						}
+				);
+
+				request.open('GET', REQUEST_URL, true);
+
+				let progressTriggered = false;
+
+				request.addEventListener('progress', (event) => {
+					progressTriggered = true;
+					const progressEvent = <ProgressEvent>event;
+					try {
+						expect(request.responseText.length).toBe(progressEvent.loaded);
+						expect(request.responseText).toBe(responseText);
+						resolve(null);
+					} catch (error) {
+						reject(error);
+					}
+				});
+
+				request.addEventListener('load', () => {
+					if (!progressTriggered) {
+						reject(new Error('Progress event was never triggered'));
+					}
+				});
+
+				request.send();
+			});
+		});
 	});
 
 	describe('set responseType()', () => {
