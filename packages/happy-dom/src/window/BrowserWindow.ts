@@ -1730,7 +1730,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			);
 		}
 
-		this.setTimeout(() =>
+		this.queueMicrotask(() =>
 			this.dispatchEvent(
 				new MessageEvent('message', {
 					data: message,
