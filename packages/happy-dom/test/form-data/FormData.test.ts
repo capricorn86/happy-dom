@@ -218,7 +218,12 @@ describe('FormData', () => {
 			formData.set('key2', 'value2');
 			const values: Array<{ key: string; value: string | File }> = [];
 
-			formData.forEach((value, key) => values.push({ key, value }));
+			const thisArg = {};
+			formData.forEach(function (value, key, parent) {
+				expect(this).toBe(thisArg);
+				expect(parent).toBe(formData);
+				values.push({ key, value });
+			}, thisArg);
 
 			expect(values).toEqual([
 				{ key: 'key1', value: 'value1' },

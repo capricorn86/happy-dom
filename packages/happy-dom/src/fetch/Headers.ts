@@ -115,10 +115,14 @@ export default class Headers {
 	 * Executes a callback function once per each key/value pair in the Headers object.
 	 *
 	 * @param callback Callback.
+	 * @param thisArg thisArg.
 	 */
-	public forEach(callback: (name: string, value: string, thisArg: Headers) => void): void {
+	public forEach(
+		callback: (value: string, name: string, parent: this) => void,
+		thisArg?: any
+	): void {
 		for (const header of Object.values(this[PropertySymbol.entries])) {
-			callback(header.value.join(', '), header.name, this);
+			callback.call(thisArg, header.value.join(', '), header.name, this);
 		}
 	}
 

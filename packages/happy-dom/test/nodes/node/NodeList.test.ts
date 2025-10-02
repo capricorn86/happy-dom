@@ -86,4 +86,27 @@ describe('NodeList', () => {
 			expect(Array.from(nodeList)).toEqual([node1, node2, node3]);
 		});
 	});
+
+	describe('forEach()', () => {
+		it('Calls a callback for each node with correct thisArg and parent', () => {
+			const parentEl = document.createElement('div');
+			const node1 = document.createTextNode('node1');
+			const node2 = document.createComment('node2');
+			parentEl.appendChild(node1);
+			parentEl.appendChild(node2);
+			const calls: Array<{ node: Node; index: number }> = [];
+			const thisArg = {};
+
+			parentEl.childNodes.forEach(function (current, idx, parentList) {
+				expect(this).toBe(thisArg);
+				expect(parentList).toBe(parentEl.childNodes);
+				calls.push({ node: current, index: idx });
+			}, thisArg);
+
+			expect(calls).toEqual([
+				{ node: node1, index: 0 },
+				{ node: node2, index: 1 }
+			]);
+		});
+	});
 });
