@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi, beforeAll } from 'vitest';
 
 const mockedModuleNames = ['child_process', 'http', 'https'];
 const mockedModuleImplementations = {};
@@ -68,4 +68,8 @@ vi.mock('https', async (importOriginal) => {
 			mockedModuleImplementations['https'].default || mockedModuleImplementations['https'];
 	}
 	return mockedModuleImplementations['https'];
+});
+
+beforeAll(() => {
+	process.env.TZ = 'Etc/GMT-2';
 });
