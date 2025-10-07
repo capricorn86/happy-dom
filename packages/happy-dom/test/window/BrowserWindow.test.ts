@@ -2407,7 +2407,8 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Should create valid PromiseRejectionEvent instances.', () => {
-			const promise = Promise.reject('test error');
+			// Use a resolved promise to avoid unhandled rejections in tests
+			const promise = Promise.resolve('test value');
 			const event = new window.PromiseRejectionEvent('unhandledrejection', {
 				promise: promise,
 				reason: 'test error'
@@ -2427,7 +2428,8 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Should work with TypeScript instanceof checks.', () => {
-			const promise = Promise.reject('test');
+			// Use a resolved promise to avoid unhandled rejections in tests
+			const promise = Promise.resolve('test value');
 			const event = new window.PromiseRejectionEvent('rejectionhandled', {
 				promise: promise,
 				reason: 'test'
