@@ -2399,4 +2399,44 @@ describe('BrowserWindow', () => {
 			expect(included).toEqual(expected);
 		});
 	});
+
+	describe('PromiseRejectionEvent', () => {
+		it('Should be available on window object.', () => {
+			expect(window.PromiseRejectionEvent).toBeDefined();
+			expect(typeof window.PromiseRejectionEvent).toBe('function');
+		});
+
+		it('Should create valid PromiseRejectionEvent instances.', () => {
+			// Use a resolved promise to avoid unhandled rejections in tests
+			const promise = Promise.resolve('test value');
+			const event = new window.PromiseRejectionEvent('unhandledrejection', {
+				promise: promise,
+				reason: 'test error'
+			});
+
+			expect(event).toBeInstanceOf(window.Event);
+			expect(event).toBeInstanceOf(window.PromiseRejectionEvent);
+			expect(event.type).toBe('unhandledrejection');
+			expect(event.promise).toBe(promise);
+			expect(event.reason).toBe('test error');
+		});
+
+		it('Should throw error when promise is not provided.', () => {
+			expect(() => {
+				new window.PromiseRejectionEvent('unhandledrejection');
+			}).toThrow('PromiseRejectionEvent constructor requires a promise in eventInit');
+		});
+
+		it('Should work with TypeScript instanceof checks.', () => {
+			// Use a resolved promise to avoid unhandled rejections in tests
+			const promise = Promise.resolve('test value');
+			const event = new window.PromiseRejectionEvent('rejectionhandled', {
+				promise: promise,
+				reason: 'test'
+			});
+
+			expect(event instanceof window.Event).toBe(true);
+			expect(event instanceof window.PromiseRejectionEvent).toBe(true);
+		});
+	});
 });

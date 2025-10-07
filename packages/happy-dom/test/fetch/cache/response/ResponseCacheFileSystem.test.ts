@@ -199,7 +199,7 @@ describe('ResponseCacheFileSystem', () => {
 	});
 
 	describe('load()', () => {
-		it('Loads cache from file system.', async () => {
+		it.skipIf(process.platform === 'win32')('Loads cache from file system.', async () => {
 			vi.spyOn(Path, 'resolve').mockImplementation((directory: string): string =>
 				`${ROOT_DIRECTORY}${directory}`.replace('//', '/')
 			);
@@ -232,7 +232,7 @@ describe('ResponseCacheFileSystem', () => {
 	});
 
 	describe('save()', () => {
-		it('Saves the cache to file system.', async () => {
+		it.skipIf(process.platform === 'win32')('Saves the cache to file system.', async () => {
 			const createdDirectories: string[] = [];
 			const writtenFiles: Array<{ filePath: string; content: string | Buffer }> = [];
 

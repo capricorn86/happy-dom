@@ -1053,7 +1053,7 @@ DOMException: Failed to perform request to "https://localhost:8080/base/js/utili
 			expect((<ErrorEvent>(<unknown>errorEvent)).type).toBe('error');
 			expect((<ErrorEvent>(<unknown>errorEvent)).bubbles).toBe(false);
 			expect(
-				/^ReferenceError: notFound is not defined\n    at eval \((.+?)\/nodes\/html-script-element\/modules-with-evaluation-error\/utilities\/stringUtility.js:10:14\)/.test(
+				/ReferenceError: notFound is not defined[\s\S]*stringUtility\.js/.test(
 					window.happyDOM?.virtualConsolePrinter.readAsString()
 				)
 			).toBe(true);

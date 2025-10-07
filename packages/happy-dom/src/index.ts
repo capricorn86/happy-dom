@@ -59,6 +59,7 @@ import MediaQueryListEvent from './event/events/MediaQueryListEvent.js';
 import MouseEvent from './event/events/MouseEvent.js';
 import PointerEvent from './event/events/PointerEvent.js';
 import PopStateEvent from './event/events/PopStateEvent.js';
+import PromiseRejectionEvent from './event/events/PromiseRejectionEvent.js';
 import ProgressEvent from './event/events/ProgressEvent.js';
 import SubmitEvent from './event/events/SubmitEvent.js';
 import TouchEvent from './event/events/TouchEvent.js';
@@ -215,6 +216,7 @@ import type IKeyboardEventInit from './event/events/IKeyboardEventInit.js';
 import type IMediaQueryListInit from './event/events/IMediaQueryListInit.js';
 import type IMouseEventInit from './event/events/IMouseEventInit.js';
 import type IProgressEventInit from './event/events/IProgressEventInit.js';
+import type IPromiseRejectionEventInit from './event/events/IPromiseRejectionEventInit.js';
 import type ISubmitEventInit from './event/events/ISubmitEventInit.js';
 import type ITouchEventInit from './event/events/ITouchEventInit.js';
 import type IWheelEventInit from './event/events/IWheelEventInit.js';
@@ -242,6 +244,7 @@ export type {
 	IOptionalBrowserSettings,
 	IOptionalCookie,
 	IProgressEventInit,
+	IPromiseRejectionEventInit,
 	ISubmitEventInit,
 	ISyncResponse,
 	ITouchEventInit,
@@ -407,6 +410,7 @@ export {
 	PopStateEvent,
 	ProcessingInstruction,
 	ProgressEvent,
+	PromiseRejectionEvent,
 	PropertySymbol,
 	Range,
 	RemotePlayback,

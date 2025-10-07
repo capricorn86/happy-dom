@@ -1032,7 +1032,7 @@ describe('DetachedBrowserFrame', () => {
 			await page.mainFrame.waitUntilComplete();
 
 			expect(page.mainFrame.url).toBe('https://example.com/sv/se/');
-			expect(page.mainFrame.content).toBe(`<html><head>
+			expect(page.mainFrame.content.replace(/\r\n/g, '\n')).toBe(`<html><head>
     <title>Virtual Server</title>
     <script src="js/async.js" async=""></script>
     <link rel="stylesheet" href="css/style.css">

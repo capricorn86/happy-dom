@@ -317,6 +317,7 @@ import CSSConditionRule from '../css/rules/CSSConditionRule.js';
 import CSSGroupingRule from '../css/rules/CSSGroupingRule.js';
 import CSSScopeRule from '../css/rules/CSSScopeRule.js';
 import PopStateEvent from '../event/events/PopStateEvent.js';
+import PromiseRejectionEvent from '../event/events/PromiseRejectionEvent.js';
 import ITimerLoopsLimit from './ITimerLoopsLimit.js';
 
 const TIMER = {
@@ -544,6 +545,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly ClipboardEvent = ClipboardEvent;
 	public readonly TouchEvent = TouchEvent;
 	public readonly PopStateEvent = PopStateEvent;
+	public readonly PromiseRejectionEvent = PromiseRejectionEvent;
 	public readonly Touch = Touch;
 
 	// Non-implemented event classes
