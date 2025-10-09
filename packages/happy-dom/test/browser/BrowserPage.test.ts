@@ -184,6 +184,8 @@ describe('BrowserPage', () => {
 		it('Clears modules when closing.', async () => {
 			const browser = new Browser({
 				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
 					fetch: {
 						virtualServers: [
 							{
@@ -251,8 +253,8 @@ describe('BrowserPage', () => {
 			frame1.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
 			frame2.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
 			await page.waitUntilComplete();
-			expect(frame1.window['test']).toBe(1);
-			expect(frame2.window['test']).toBe(2);
+			expect((<any>frame1.window)['test']).toBe(1);
+			expect((<any>frame2.window)['test']).toBe(2);
 		});
 	});
 
@@ -283,8 +285,8 @@ describe('BrowserPage', () => {
 			frame2.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
 			page.abort();
 			await new Promise((resolve) => setTimeout(resolve, 50));
-			expect(frame1.window['test']).toBeUndefined();
-			expect(frame2.window['test']).toBeUndefined();
+			expect((<any>frame1.window)['test']).toBeUndefined();
+			expect((<any>frame2.window)['test']).toBeUndefined();
 		});
 	});
 

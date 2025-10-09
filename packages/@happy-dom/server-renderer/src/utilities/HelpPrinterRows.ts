@@ -126,10 +126,17 @@ export default [
 		'1'
 	],
 	[
-		'--browser.disableJavascriptEvaluation',
+		'--browser.disableJavaScriptEvaluation',
 		'',
 		'boolean',
 		'Disables JavaScript evaluation.',
+		'false'
+	],
+	[
+		'--browser.suppressCodeGenerationFromStringsWarning',
+		'',
+		'boolean',
+		'Suppresses the warning that is printed when code generation from strings is enabled at process level',
 		'false'
 	],
 	[

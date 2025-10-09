@@ -32,7 +32,7 @@ export default class ElementEventAttributeUtility {
 
 		const browserSettings = new WindowBrowserContext(window).getSettings();
 
-		if (!browserSettings) {
+		if (!browserSettings || !browserSettings.enableJavaScriptEvaluation) {
 			return null;
 		}
 
@@ -63,13 +63,14 @@ export default class ElementEventAttributeUtility {
 		}
 
 		newCode += '})';
-		newCode += `\n//# sourceURL=${window.location.href}`;
 
 		let listener: ((event: Event) => void) | null = null;
 
 		try {
-			listener = window.eval(newCode).bind(element, {
-				dispatchError: window[PropertySymbol.dispatchError]
+			listener = window[PropertySymbol.evaluateScript](newCode, {
+				filename: window.location.href
+			}).bind(element, {
+				dispatchError: window[PropertySymbol.dispatchError].bind(window)
 			});
 		} catch (e) {
 			const error = new window.SyntaxError(

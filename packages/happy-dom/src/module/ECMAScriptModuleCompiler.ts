@@ -401,10 +401,14 @@ export default class ECMAScriptModuleCompiler {
 		}
 
 		newCode += '})';
-		newCode += `\n//# sourceURL=${sourceURL || moduleURL}`;
 
 		try {
-			return { imports, execute: this.window.eval(newCode) };
+			return {
+				imports,
+				execute: this.window[PropertySymbol.evaluateScript](newCode, {
+					filename: sourceURL || moduleURL
+				})
+			};
 		} catch (e) {
 			const errorMessage = this.getError(moduleURL, code, sourceURL) || (<Error>e).message;
 			const error = new this.window.SyntaxError(

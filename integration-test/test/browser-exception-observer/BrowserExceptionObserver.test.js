@@ -21,7 +21,10 @@ await describe('BrowserExceptionObserver', async () => {
 	await describe('observe()', async () => {
 		await it('Observes unhandled fetch rejections.', async () => {
 			const browser = new Browser({
-				settings: { errorCapture: BrowserErrorCaptureEnum.processLevel }
+				settings: {
+					errorCapture: BrowserErrorCaptureEnum.processLevel,
+					enableJavaScriptEvaluation: true
+				}
 			});
 			const page = browser.newPage();
 			const window = page.mainFrame.window;
@@ -58,7 +61,10 @@ await describe('BrowserExceptionObserver', async () => {
 
 		await it('Observes uncaught exceptions.', async () => {
 			const browser = new Browser({
-				settings: { errorCapture: BrowserErrorCaptureEnum.processLevel }
+				settings: {
+					errorCapture: BrowserErrorCaptureEnum.processLevel,
+					enableJavaScriptEvaluation: true
+				}
 			});
 			const page = browser.newPage();
 			const window = page.mainFrame.window;

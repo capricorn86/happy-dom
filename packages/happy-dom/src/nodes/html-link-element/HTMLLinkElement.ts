@@ -24,7 +24,7 @@ import IResourceFetchResponse from '../../fetch/types/IResourceFetchResponse.js'
 export default class HTMLLinkElement extends HTMLElement {
 	// Internal properties
 	public [PropertySymbol.sheet]: CSSStyleSheet | null = null;
-	public [PropertySymbol.evaluateCSS] = true;
+	public [PropertySymbol.disableEvaluation] = false;
 	public [PropertySymbol.relList]: DOMTokenList | null = null;
 	#loadedStyleSheetURL: string | null = null;
 
@@ -305,7 +305,7 @@ export default class HTMLLinkElement extends HTMLElement {
 			!browserSettings ||
 			!this[PropertySymbol.isConnected] ||
 			browserSettings.disableJavaScriptFileLoading ||
-			browserSettings.disableJavaScriptEvaluation
+			!browserSettings.enableJavaScriptEvaluation
 		) {
 			return;
 		}
@@ -351,7 +351,7 @@ export default class HTMLLinkElement extends HTMLElement {
 
 		if (
 			as === 'script' &&
-			(browserSettings.disableJavaScriptFileLoading || browserSettings.disableJavaScriptEvaluation)
+			(browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)
 		) {
 			return;
 		}
@@ -422,7 +422,7 @@ export default class HTMLLinkElement extends HTMLElement {
 
 		const browserSettings = browserFrame.page.context.browser.settings;
 
-		if (!this[PropertySymbol.evaluateCSS] || !this[PropertySymbol.isConnected]) {
+		if (this[PropertySymbol.disableEvaluation] || !this[PropertySymbol.isConnected]) {
 			return;
 		}
 

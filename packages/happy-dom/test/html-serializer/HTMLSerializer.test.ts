@@ -10,7 +10,9 @@ describe('HTMLSerializer', () => {
 	let serializer: HTMLSerializer;
 
 	beforeEach(() => {
-		window = new Window();
+		window = new Window({
+			settings: { enableJavaScriptEvaluation: true, suppressCodeGenerationFromStringsWarning: true }
+		});
 		document = window.document;
 		serializer = new HTMLSerializer();
 

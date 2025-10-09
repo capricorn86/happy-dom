@@ -331,6 +331,16 @@ const TIMER = {
 
 const IS_NODE_JS_TIMEOUT_ENVIRONMENT = setTimeout.toString().includes('new Timeout');
 
+const IS_PROCESS_LEVEL_CODE_GENERATION_FROM_STRINGS_ALLOWED = (() => {
+	try {
+		// eslint-disable-next-line no-new-func
+		new Function('return true;')();
+		return true;
+	} catch {
+		return false;
+	}
+})();
+
 /**
  * Class for PerformanceObserverEntryList as it is only available as an interface from Node.js.
  */
@@ -779,6 +789,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare encodeURI: typeof encodeURI;
 	public declare encodeURIComponent: typeof encodeURIComponent;
 	public declare eval: typeof eval;
+
 	/**
 	 * @deprecated
 	 */
@@ -846,6 +857,21 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 */
 	constructor(browserFrame: IBrowserFrame, options?: { url?: string }) {
 		super();
+
+		if (
+			IS_PROCESS_LEVEL_CODE_GENERATION_FROM_STRINGS_ALLOWED &&
+			browserFrame.page.context.browser.settings.enableJavaScriptEvaluation &&
+			!browserFrame.page.context.browser.settings.suppressCodeGenerationFromStringsWarning
+		) {
+			// eslint-disable-next-line no-console
+			console.warn(
+				'\nWarning! Happy DOM has JavaScript evaluation enabled and is running in an environment with code generation from strings (eval) enabled at process level.' +
+					'\n\nA VM Context is not an isolated environment, and if you run untrusted code you are at risk of RCE (Remote Code Execution) attacks. The attacker can use code generation to escape the VM and run code at process level.' +
+					'\n\nIt is recommended to disable code generation at process level by running node with the "--disallow-code-generation-from-strings" flag enabled when Javascript evaluation is enabled in Happy DOM.' +
+					' You can suppress this warning by setting "suppressCodeGenerationFromStringsWarning" to "true" at your own risk.' +
+					'\n\nFor more information, see https://github.com/capricorn86/happy-dom/wiki/Code-Generation-From-Strings-Warning\n\n'
+			);
+		}
 
 		this.#browserFrame = browserFrame;
 
@@ -1804,6 +1830,18 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.dispatchError](error: Error): void {
 		this.#browserFrame.page.console.error(error);
 		this.dispatchEvent(new ErrorEvent('error', { message: error.message, error }));
+	}
+
+	/**
+	 * Evaluates code in a VM context.
+	 *
+	 * @param code Code.
+	 * @param [options] Options.
+	 * @param [options.filename] Filename.
+	 * @returns any.
+	 */
+	public [PropertySymbol.evaluateScript](code: string, options?: { filename?: string }): any {
+		return new VM.Script(code, options).runInContext(this);
 	}
 
 	/**

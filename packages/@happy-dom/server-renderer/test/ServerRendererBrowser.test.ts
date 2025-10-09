@@ -34,7 +34,9 @@ describe('ServerRendererBrowser', () => {
 				return Promise.resolve();
 			});
 			const browser = new ServerRendererBrowser(
-				ServerRendererConfigurationFactory.createConfiguration()
+				ServerRendererConfigurationFactory.createConfiguration({
+					browser: { suppressCodeGenerationFromStringsWarning: true }
+				})
 			);
 			const results = await browser.render([{ url: 'https://example.com/gb/en/' }]);
 
@@ -70,7 +72,9 @@ describe('ServerRendererBrowser', () => {
 				return Promise.resolve();
 			});
 			const browser = new ServerRendererBrowser(
-				ServerRendererConfigurationFactory.createConfiguration()
+				ServerRendererConfigurationFactory.createConfiguration({
+					browser: { suppressCodeGenerationFromStringsWarning: true }
+				})
 			);
 			const results = await browser.render(MockedURLList.slice(0, 15).map((url) => ({ url })));
 
@@ -97,9 +101,9 @@ describe('ServerRendererBrowser', () => {
 			const writtenFiles: { filePath: string; content: string }[] = [];
 			const requestHeaders: Array<{ [key: string]: string }> = [];
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function (this: Fetch) {
 				const headers: { [key: string]: string } = {};
-				for (const [key, value] of this.request.headers) {
+				for (const [key, value] of (<any>this).request.headers) {
 					headers[key] = value;
 				}
 				requestHeaders.push(headers);
@@ -131,7 +135,9 @@ describe('ServerRendererBrowser', () => {
 			);
 
 			const browser = new ServerRendererBrowser(
-				ServerRendererConfigurationFactory.createConfiguration()
+				ServerRendererConfigurationFactory.createConfiguration({
+					browser: { suppressCodeGenerationFromStringsWarning: true }
+				})
 			);
 			const results = await browser.render(
 				MockedURLList.slice(0, 15).map((url, index) => ({
@@ -193,7 +199,9 @@ describe('ServerRendererBrowser', () => {
 				};
 			});
 			const browser = new ServerRendererBrowser(
-				ServerRendererConfigurationFactory.createConfiguration()
+				ServerRendererConfigurationFactory.createConfiguration({
+					browser: { suppressCodeGenerationFromStringsWarning: true }
+				})
 			);
 			const results = await browser.render([{ url: 'https://example.com/gb/en/' }]);
 
@@ -225,6 +233,7 @@ describe('ServerRendererBrowser', () => {
 
 			const browser = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
+					browser: { suppressCodeGenerationFromStringsWarning: true },
 					render: {
 						timeout: 100
 					}
@@ -264,6 +273,7 @@ The page may contain scripts with timer loops that prevent it from completing. Y
 
 			const browser = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
+					browser: { suppressCodeGenerationFromStringsWarning: true },
 					render: {
 						timeout: 100
 					},
@@ -321,7 +331,9 @@ Timer #1
 			});
 
 			const browser = new ServerRendererBrowser(
-				ServerRendererConfigurationFactory.createConfiguration()
+				ServerRendererConfigurationFactory.createConfiguration({
+					browser: { suppressCodeGenerationFromStringsWarning: true }
+				})
 			);
 			const results = await browser.render([{ url: 'https://example.com/gb/en/' }]);
 			(<any>results[0]).pageConsole = results[0].pageConsole
@@ -338,14 +350,14 @@ Timer #1
 					headers: { key1: 'value' },
 					outputFile: null,
 					pageConsole: `Error: Error
-    at eval (https://example.com/gb/en/:0:0)
+    at https://example.com/gb/en/:1:26
     at Timeout._onTimeout (/window/BrowserWindow.ts:0:0)
     at listOnTimeout (node:internal/timers:0:0)
     at processTimers (node:internal/timers:0:0)
 `,
 					pageErrors: [
 						`Error: Error
-    at eval (https://example.com/gb/en/:0:0)
+    at https://example.com/gb/en/:1:26
     at Timeout._onTimeout (/window/BrowserWindow.ts:0:0)
     at listOnTimeout (node:internal/timers:0:0)
     at processTimers (node:internal/timers:0:0)`
@@ -383,6 +395,7 @@ Timer #1
 
 			const browser = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
+					browser: { suppressCodeGenerationFromStringsWarning: true },
 					render: {
 						allShadowRoots: true
 					}
@@ -453,6 +466,7 @@ Timer #1
 
 			const browser = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
+					browser: { suppressCodeGenerationFromStringsWarning: true },
 					render: {
 						serializableShadowRoots: true
 					}
@@ -533,6 +547,7 @@ Timer #1
 
 			const browser = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
+					browser: { suppressCodeGenerationFromStringsWarning: true },
 					render: {
 						allShadowRoots: true,
 						excludeShadowRootTags: ['custom-element']
@@ -601,6 +616,7 @@ Timer #1
 			);
 			const browser = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
+					browser: { suppressCodeGenerationFromStringsWarning: true },
 					cache: {
 						disable: true
 					}

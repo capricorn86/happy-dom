@@ -14,7 +14,9 @@ describe('HTMLSelectElement', () => {
 	let element: HTMLSelectElement;
 
 	beforeEach(() => {
-		window = new Window();
+		window = new Window({
+			settings: { enableJavaScriptEvaluation: true, suppressCodeGenerationFromStringsWarning: true }
+		});
 		document = window.document;
 		element = <HTMLSelectElement>document.createElement('select');
 	});
@@ -37,21 +39,21 @@ describe('HTMLSelectElement', () => {
 			it('Returns the event listener.', () => {
 				const element = document.createElement('script');
 				element.setAttribute(`on${event}`, 'window.test = 1');
-				expect(element[`on${event}`]).toBeTypeOf('function');
-				element[`on${event}`](new Event(event));
-				expect(window['test']).toBe(1);
+				expect((<any>element)[`on${event}`]).toBeTypeOf('function');
+				(<any>element)[`on${event}`](new Event(event));
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 
 		describe(`set on${event}()`, () => {
 			it('Sets the event listener.', () => {
 				const element = document.createElement('script');
-				element[`on${event}`] = () => {
-					window['test'] = 1;
+				(<any>element)[`on${event}`] = () => {
+					(<any>window)['test'] = 1;
 				};
 				element.dispatchEvent(new Event(event));
 				expect(element.getAttribute(`on${event}`)).toBe(null);
-				expect(window['test']).toBe(1);
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 	}
@@ -147,15 +149,15 @@ describe('HTMLSelectElement', () => {
 	for (const property of ['disabled', 'autofocus', 'required', 'multiple']) {
 		describe(`get ${property}()`, () => {
 			it('Returns attribute value.', () => {
-				expect(element[property]).toBe(false);
+				expect((<any>element)[property]).toBe(false);
 				element.setAttribute(property, '');
-				expect(element[property]).toBe(true);
+				expect((<any>element)[property]).toBe(true);
 			});
 		});
 
 		describe(`set ${property}()`, () => {
 			it('Sets attribute value.', () => {
-				element[property] = true;
+				(<any>element)[property] = true;
 				expect(element.getAttribute(property)).toBe('');
 			});
 		});
@@ -268,14 +270,14 @@ describe('HTMLSelectElement', () => {
 	describe('get symbol()', () => {
 		it('returns existing symbol properties', () => {
 			const symbol = Symbol('test');
-			element[symbol] = 'test';
-			expect(element[symbol]).toBe('test');
+			(<any>element)[symbol] = 'test';
+			expect((<any>element)[symbol]).toBe('test');
 		});
 
 		it('ignores missing symbol properties', () => {
 			const symbol = Symbol('other-test');
 
-			expect(element[symbol]).toBe(undefined);
+			expect((<any>element)[symbol]).toBe(undefined);
 
 			// https://github.com/capricorn86/happy-dom/issues/1526
 			expect(symbol in element).toBe(false);
@@ -799,7 +801,7 @@ describe('HTMLSelectElement', () => {
 				element.required = true;
 				element.disabled = true;
 
-				expect(element[method]()).toBe(true);
+				expect((<any>element)[method]()).toBe(true);
 			});
 
 			it('Returns "false" if invalid.', () => {
@@ -809,7 +811,7 @@ describe('HTMLSelectElement', () => {
 
 				element.required = true;
 
-				expect(element[method]()).toBe(false);
+				expect((<any>element)[method]()).toBe(false);
 			});
 
 			it('Triggers an "invalid" event when invalid.', () => {
@@ -822,7 +824,7 @@ describe('HTMLSelectElement', () => {
 				let dispatchedEvent: Event | null = null;
 				element.addEventListener('invalid', (event: Event) => (dispatchedEvent = event));
 
-				element[method]();
+				(<any>element)[method]();
 
 				expect((<Event>(<unknown>dispatchedEvent)).type).toBe('invalid');
 			});

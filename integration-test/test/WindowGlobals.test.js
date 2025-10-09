@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 
 describe('WindowGlobals', () => {
 	it('Functions should have the constructor global.Function.', () => {
-		const window = new Window();
+		const window = new Window({ settings: { enableJavaScriptEvaluation: true } });
 		let error = null;
 		window.addEventListener('error', (event) => (error = event.error));
 		window.document.write(`
@@ -18,7 +18,7 @@ describe('WindowGlobals', () => {
 	});
 
 	it('Object should have the constructor global.Object.', () => {
-		const window = new Window();
+		const window = new Window({ settings: { enableJavaScriptEvaluation: true } });
 		let error = null;
 		window.addEventListener('error', (event) => (error = event.error));
 		window.document.write(`
@@ -32,7 +32,7 @@ describe('WindowGlobals', () => {
 	});
 
 	it('Binds global methods to the Window context.', () => {
-		const window = new Window();
+		const window = new Window({ settings: { enableJavaScriptEvaluation: true } });
 		let error = null;
 		window.addEventListener('error', (event) => (error = event.error));
 		window.document.write(`
