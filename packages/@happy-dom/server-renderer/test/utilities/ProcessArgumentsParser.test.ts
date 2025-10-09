@@ -308,13 +308,49 @@ describe('ProcessArgumentsParser', () => {
 			);
 		});
 
+		it('Returns configuration with javascript evaluation disabled.', async () => {
+			const expectedConfig = {
+				...DefaultServerRendererConfiguration,
+				browser: {
+					...DefaultServerRendererConfiguration.browser,
+					enableJavaScriptEvaluation: false
+				}
+			};
+			expect(
+				await ProcessArgumentsParser.getConfiguration([
+					'node',
+					'script.js',
+					'--browser.disableJavaScriptEvaluation'
+				])
+			).toEqual(expectedConfig);
+		});
+
+		it('Returns configuration with suppressed code generation warning.', async () => {
+			const expectedConfig = {
+				...DefaultServerRendererConfiguration,
+				browser: {
+					...DefaultServerRendererConfiguration.browser,
+					suppressCodeGenerationFromStringsWarning: true
+				}
+			};
+			expect(
+				await ProcessArgumentsParser.getConfiguration([
+					'node',
+					'script.js',
+					'--browser.suppressCodeGenerationFromStringsWarning'
+				])
+			).toEqual(expectedConfig);
+		});
+
 		it('Returns configuration for all options.', async () => {
 			const specialArguments = [
 				// Deprecated
 				'browser.disableErrorCapturing',
 				'browser.enableFileSystemHttpRequests',
 				'browser.disableIframePageLoading',
+				'browser.disableJavaScriptEvaluation',
 				// Special handling
+				'browser.enableJavaScriptEvaluation',
 				'browser.fetch.requestHeaders',
 				'browser.fetch.virtualServers',
 				'urls'
@@ -345,6 +381,7 @@ describe('ProcessArgumentsParser', () => {
 
 			args.unshift('script.js');
 			args.unshift('node');
+			args.push('--browser.disableJavaScriptEvaluation');
 			args.push('--browser.fetch.requestHeaders="X-Custom-Header-1:Value-1"');
 			args.push('--browser.fetch.requestHeaders="https://example.com/|X-Custom-Header-2:Value-2"');
 			args.push('--browser.fetch.virtualServers="https://example.com/path/|./virtual-server/path"');

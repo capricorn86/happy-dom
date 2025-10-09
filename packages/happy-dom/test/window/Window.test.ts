@@ -149,6 +149,7 @@ describe('Window', () => {
 				console: globalThis.console,
 				settings: {
 					disableJavaScriptEvaluation: true,
+					enableJavaScriptEvaluation: true,
 					navigator: {
 						userAgent: 'test'
 					},
@@ -169,6 +170,7 @@ describe('Window', () => {
 				VirtualConsolePrinter
 			);
 			expect(windowWithOptions.happyDOM?.settings.disableJavaScriptEvaluation).toBe(true);
+			expect(windowWithOptions.happyDOM?.settings.enableJavaScriptEvaluation).toBe(true);
 			expect(windowWithOptions.happyDOM?.settings.disableJavaScriptFileLoading).toBe(false);
 			expect(windowWithOptions.happyDOM?.settings.disableCSSFileLoading).toBe(false);
 			expect(windowWithOptions.happyDOM?.settings.disableIframePageLoading).toBe(false);
@@ -191,6 +193,7 @@ describe('Window', () => {
 				VirtualConsolePrinter
 			);
 			expect(windowWithoutOptions.happyDOM?.settings.disableJavaScriptEvaluation).toBe(false);
+			expect(windowWithoutOptions.happyDOM?.settings.enableJavaScriptEvaluation).toBe(false);
 			expect(windowWithoutOptions.happyDOM?.settings.disableJavaScriptFileLoading).toBe(false);
 			expect(windowWithoutOptions.happyDOM?.settings.disableCSSFileLoading).toBe(false);
 			expect(windowWithoutOptions.happyDOM?.settings.disableIframePageLoading).toBe(false);

@@ -4,7 +4,9 @@ import ServerRendererLogLevelEnum from '../../src/enums/ServerRendererLogLevelEn
 
 export default <IServerRendererConfiguration>{
 	browser: {
-		disableJavaScriptEvaluation: true,
+		disableJavaScriptEvaluation: false,
+		enableJavaScriptEvaluation: false,
+		suppressCodeGenerationFromStringsWarning: true,
 		disableJavaScriptFileLoading: true,
 		disableCSSFileLoading: true,
 		disableIframePageLoading: false,

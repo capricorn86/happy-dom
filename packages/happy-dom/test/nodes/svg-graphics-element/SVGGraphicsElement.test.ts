@@ -13,7 +13,9 @@ describe('SVGGraphicsElement', () => {
 	let element: SVGGraphicsElement;
 
 	beforeEach(() => {
-		window = new Window();
+		window = new Window({
+			settings: { enableJavaScriptEvaluation: true, suppressCodeGenerationFromStringsWarning: true }
+		});
 		document = window.document;
 		element = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 	});
@@ -32,20 +34,20 @@ describe('SVGGraphicsElement', () => {
 		describe(`get on${event}()`, () => {
 			it('Returns the event listener.', () => {
 				element.setAttribute(`on${event}`, 'window.test = 1');
-				expect(element[`on${event}`]).toBeTypeOf('function');
-				element[`on${event}`](new Event(event));
-				expect(window['test']).toBe(1);
+				expect((<any>element)[`on${event}`]).toBeTypeOf('function');
+				(<any>element)[`on${event}`](new Event(event));
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 
 		describe(`set on${event}()`, () => {
 			it('Sets the event listener.', () => {
-				element[`on${event}`] = () => {
-					window['test'] = 1;
+				(<any>element)[`on${event}`] = () => {
+					(<any>window)['test'] = 1;
 				};
 				element.dispatchEvent(new Event(event));
 				expect(element.getAttribute(`on${event}`)).toBe(null);
-				expect(window['test']).toBe(1);
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 	}
@@ -129,38 +131,38 @@ describe('SVGGraphicsElement', () => {
 			element.setAttribute('transform', 'matrix(1 2 3 4 5 6) translate(10 20)');
 
 			expect(element.transform.baseVal.numberOfItems).toBe(2);
-			expect(element.transform.baseVal.getItem(0).type).toBe(SVGTransformTypeEnum.matrix);
-			expect(element.transform.baseVal.getItem(0).matrix.a).toBe(1);
-			expect(element.transform.baseVal.getItem(0).matrix.b).toBe(2);
-			expect(element.transform.baseVal.getItem(0).matrix.c).toBe(3);
-			expect(element.transform.baseVal.getItem(0).matrix.d).toBe(4);
-			expect(element.transform.baseVal.getItem(0).matrix.e).toBe(5);
-			expect(element.transform.baseVal.getItem(0).matrix.f).toBe(6);
+			expect(element.transform.baseVal.getItem(0)!.type).toBe(SVGTransformTypeEnum.matrix);
+			expect(element.transform.baseVal.getItem(0)!.matrix.a).toBe(1);
+			expect(element.transform.baseVal.getItem(0)!.matrix.b).toBe(2);
+			expect(element.transform.baseVal.getItem(0)!.matrix.c).toBe(3);
+			expect(element.transform.baseVal.getItem(0)!.matrix.d).toBe(4);
+			expect(element.transform.baseVal.getItem(0)!.matrix.e).toBe(5);
+			expect(element.transform.baseVal.getItem(0)!.matrix.f).toBe(6);
 
-			expect(element.transform.baseVal.getItem(1).type).toBe(SVGTransformTypeEnum.translate);
-			expect(element.transform.baseVal.getItem(1).matrix.a).toBe(1);
-			expect(element.transform.baseVal.getItem(1).matrix.b).toBe(0);
-			expect(element.transform.baseVal.getItem(1).matrix.c).toBe(0);
-			expect(element.transform.baseVal.getItem(1).matrix.d).toBe(1);
-			expect(element.transform.baseVal.getItem(1).matrix.e).toBe(10);
-			expect(element.transform.baseVal.getItem(1).matrix.f).toBe(20);
+			expect(element.transform.baseVal.getItem(1)!.type).toBe(SVGTransformTypeEnum.translate);
+			expect(element.transform.baseVal.getItem(1)!.matrix.a).toBe(1);
+			expect(element.transform.baseVal.getItem(1)!.matrix.b).toBe(0);
+			expect(element.transform.baseVal.getItem(1)!.matrix.c).toBe(0);
+			expect(element.transform.baseVal.getItem(1)!.matrix.d).toBe(1);
+			expect(element.transform.baseVal.getItem(1)!.matrix.e).toBe(10);
+			expect(element.transform.baseVal.getItem(1)!.matrix.f).toBe(20);
 
 			expect(element.transform.animVal.numberOfItems).toBe(2);
-			expect(element.transform.animVal.getItem(0).type).toBe(SVGTransformTypeEnum.matrix);
-			expect(element.transform.animVal.getItem(0).matrix.a).toBe(1);
-			expect(element.transform.animVal.getItem(0).matrix.b).toBe(2);
-			expect(element.transform.animVal.getItem(0).matrix.c).toBe(3);
-			expect(element.transform.animVal.getItem(0).matrix.d).toBe(4);
-			expect(element.transform.animVal.getItem(0).matrix.e).toBe(5);
-			expect(element.transform.animVal.getItem(0).matrix.f).toBe(6);
+			expect(element.transform.animVal.getItem(0)!.type).toBe(SVGTransformTypeEnum.matrix);
+			expect(element.transform.animVal.getItem(0)!.matrix.a).toBe(1);
+			expect(element.transform.animVal.getItem(0)!.matrix.b).toBe(2);
+			expect(element.transform.animVal.getItem(0)!.matrix.c).toBe(3);
+			expect(element.transform.animVal.getItem(0)!.matrix.d).toBe(4);
+			expect(element.transform.animVal.getItem(0)!.matrix.e).toBe(5);
+			expect(element.transform.animVal.getItem(0)!.matrix.f).toBe(6);
 
-			expect(element.transform.animVal.getItem(1).type).toBe(SVGTransformTypeEnum.translate);
-			expect(element.transform.animVal.getItem(1).matrix.a).toBe(1);
-			expect(element.transform.animVal.getItem(1).matrix.b).toBe(0);
-			expect(element.transform.animVal.getItem(1).matrix.c).toBe(0);
-			expect(element.transform.animVal.getItem(1).matrix.d).toBe(1);
-			expect(element.transform.animVal.getItem(1).matrix.e).toBe(10);
-			expect(element.transform.animVal.getItem(1).matrix.f).toBe(20);
+			expect(element.transform.animVal.getItem(1)!.type).toBe(SVGTransformTypeEnum.translate);
+			expect(element.transform.animVal.getItem(1)!.matrix.a).toBe(1);
+			expect(element.transform.animVal.getItem(1)!.matrix.b).toBe(0);
+			expect(element.transform.animVal.getItem(1)!.matrix.c).toBe(0);
+			expect(element.transform.animVal.getItem(1)!.matrix.d).toBe(1);
+			expect(element.transform.animVal.getItem(1)!.matrix.e).toBe(10);
+			expect(element.transform.animVal.getItem(1)!.matrix.f).toBe(20);
 
 			const transform = new window.SVGTransform(PropertySymbol.illegalConstructor, window);
 

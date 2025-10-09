@@ -5,7 +5,13 @@ import OS from 'os';
 import { BrowserErrorCaptureEnum } from 'happy-dom';
 
 export default <IServerRendererConfiguration>{
-	browser: { ...DefaultBrowserSettings, errorCapture: BrowserErrorCaptureEnum.processLevel },
+	browser: {
+		...DefaultBrowserSettings,
+		errorCapture: BrowserErrorCaptureEnum.processLevel,
+		// This is enabled by default as the entire point of this package is to server-render client side JavaScript.
+		// "--disallow-code-generation-from-strings" is enabled on workers to prevent escape of the VM context.
+		enableJavaScriptEvaluation: true
+	},
 	outputDirectory: './happy-dom/render',
 	logLevel: ServerRendererLogLevelEnum.info,
 	debug: false,

@@ -40,7 +40,9 @@ export default class ProcessArgumentsParser {
 				} else if (arg === '--help' || arg === '-h') {
 					config.help = true;
 				} else if (arg === '--browser.disableJavaScriptEvaluation') {
-					config.browser.disableJavaScriptEvaluation = true;
+					config.browser.enableJavaScriptEvaluation = false;
+				} else if (arg === '--browser.suppressCodeGenerationFromStringsWarning') {
+					config.browser.suppressCodeGenerationFromStringsWarning = true;
 				} else if (arg === '--browser.disableJavaScriptFileLoading') {
 					config.browser.disableJavaScriptFileLoading = true;
 				} else if (arg === '--browser.disableCSSFileLoading') {

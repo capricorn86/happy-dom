@@ -58,6 +58,8 @@ describe('ServerRenderer', () => {
 					'file://' + Path.resolve(Path.join('src', 'ServerRendererWorker.js'))
 				);
 
+				expect(worker.execArgv).toEqual(['--disallow-code-generation-from-strings']);
+
 				expect(worker.workerData.configuration.cache.directory).toBe(
 					Path.resolve(Path.join('happy-dom', 'cache'))
 				);
@@ -213,6 +215,8 @@ describe('ServerRenderer', () => {
 				expect(worker.scriptPath.toString()).toBe(
 					'file://' + Path.resolve(Path.join('src', 'ServerRendererWorker.js'))
 				);
+
+				expect(worker.execArgv).toEqual(['--disallow-code-generation-from-strings']);
 
 				expect(worker.workerData.configuration.cache.directory).toBe(
 					Path.resolve(Path.join('happy-dom', 'cache'))
