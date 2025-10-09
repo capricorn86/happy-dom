@@ -90,5 +90,60 @@ describe('HTMLDetailsElement', () => {
 			summary.click();
 			expect(element.open).toBe(false);
 		});
+
+		it('Should toggle the "open" attribute when a click event is dispatched on a child element of a summary element', () => {
+			const summary = document.createElement('summary');
+			const span = document.createElement('span');
+			span.textContent = 'Click me';
+			summary.appendChild(span);
+			element.appendChild(summary);
+
+			span.click();
+			expect(element.open).toBe(true);
+
+			span.click();
+			expect(element.open).toBe(false);
+		});
+
+		it('Should fire the "toggle" event when clicking on child elements of summary', () => {
+			let toggleEventFired = false;
+			element.addEventListener('toggle', () => {
+				toggleEventFired = true;
+			});
+
+			const summary = document.createElement('summary');
+			const span = document.createElement('span');
+			span.textContent = 'Click me';
+			summary.appendChild(span);
+			element.appendChild(summary);
+
+			span.click();
+			expect(toggleEventFired).toBe(true);
+			expect(element.open).toBe(true);
+		});
+
+		it('Should not toggle when clicking on elements outside of summary', () => {
+			const summary = document.createElement('summary');
+			const div = document.createElement('div');
+			div.textContent = 'Content';
+			element.appendChild(summary);
+			element.appendChild(div);
+
+			div.click();
+			expect(element.open).toBe(false);
+		});
+
+		it('Should not toggle when clicking on summary element that is not a direct child', () => {
+			const summary = document.createElement('summary');
+			const nestedDiv = document.createElement('div');
+			const nestedSummary = document.createElement('summary');
+
+			nestedDiv.appendChild(nestedSummary);
+			element.appendChild(summary);
+			element.appendChild(nestedDiv);
+
+			nestedSummary.click();
+			expect(element.open).toBe(false);
+		});
 	});
 });
