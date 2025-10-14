@@ -133,7 +133,7 @@ export default [
 		'false'
 	],
 	[
-		'--browser.suppressCodeGenerationFromStringsWarning',
+		'--browser.suppressInsecureJavaScriptEnvironmentWarning',
 		'',
 		'boolean',
 		'Suppresses the warning that is printed when code generation from strings is enabled at process level',

@@ -35,7 +35,7 @@ describe('ServerRendererBrowser', () => {
 			});
 			const browser = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
-					browser: { suppressCodeGenerationFromStringsWarning: true }
+					browser: { suppressInsecureJavaScriptEnvironmentWarning: true }
 				})
 			);
 			const results = await browser.render([{ url: 'https://example.com/gb/en/' }]);
@@ -73,7 +73,7 @@ describe('ServerRendererBrowser', () => {
 			});
 			const browser = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
-					browser: { suppressCodeGenerationFromStringsWarning: true }
+					browser: { suppressInsecureJavaScriptEnvironmentWarning: true }
 				})
 			);
 			const results = await browser.render(MockedURLList.slice(0, 15).map((url) => ({ url })));
@@ -136,7 +136,7 @@ describe('ServerRendererBrowser', () => {
 
 			const browser = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
-					browser: { suppressCodeGenerationFromStringsWarning: true }
+					browser: { suppressInsecureJavaScriptEnvironmentWarning: true }
 				})
 			);
 			const results = await browser.render(
@@ -200,7 +200,7 @@ describe('ServerRendererBrowser', () => {
 			});
 			const browser = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
-					browser: { suppressCodeGenerationFromStringsWarning: true }
+					browser: { suppressInsecureJavaScriptEnvironmentWarning: true }
 				})
 			);
 			const results = await browser.render([{ url: 'https://example.com/gb/en/' }]);
@@ -233,7 +233,7 @@ describe('ServerRendererBrowser', () => {
 
 			const browser = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
-					browser: { suppressCodeGenerationFromStringsWarning: true },
+					browser: { suppressInsecureJavaScriptEnvironmentWarning: true },
 					render: {
 						timeout: 100
 					}
@@ -273,7 +273,7 @@ The page may contain scripts with timer loops that prevent it from completing. Y
 
 			const browser = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
-					browser: { suppressCodeGenerationFromStringsWarning: true },
+					browser: { suppressInsecureJavaScriptEnvironmentWarning: true },
 					render: {
 						timeout: 100
 					},
@@ -332,7 +332,7 @@ Timer #1
 
 			const browser = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
-					browser: { suppressCodeGenerationFromStringsWarning: true }
+					browser: { suppressInsecureJavaScriptEnvironmentWarning: true }
 				})
 			);
 			const results = await browser.render([{ url: 'https://example.com/gb/en/' }]);
@@ -395,7 +395,7 @@ Timer #1
 
 			const browser = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
-					browser: { suppressCodeGenerationFromStringsWarning: true },
+					browser: { suppressInsecureJavaScriptEnvironmentWarning: true },
 					render: {
 						allShadowRoots: true
 					}
@@ -466,7 +466,7 @@ Timer #1
 
 			const browser = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
-					browser: { suppressCodeGenerationFromStringsWarning: true },
+					browser: { suppressInsecureJavaScriptEnvironmentWarning: true },
 					render: {
 						serializableShadowRoots: true
 					}
@@ -547,7 +547,7 @@ Timer #1
 
 			const browser = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
-					browser: { suppressCodeGenerationFromStringsWarning: true },
+					browser: { suppressInsecureJavaScriptEnvironmentWarning: true },
 					render: {
 						allShadowRoots: true,
 						excludeShadowRootTags: ['custom-element']
@@ -616,7 +616,7 @@ Timer #1
 			);
 			const browser = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
-					browser: { suppressCodeGenerationFromStringsWarning: true },
+					browser: { suppressInsecureJavaScriptEnvironmentWarning: true },
 					cache: {
 						disable: true
 					}
