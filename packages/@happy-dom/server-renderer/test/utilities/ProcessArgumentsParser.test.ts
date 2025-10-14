@@ -325,19 +325,19 @@ describe('ProcessArgumentsParser', () => {
 			).toEqual(expectedConfig);
 		});
 
-		it('Returns configuration with suppressed code generation warning.', async () => {
+		it('Returns configuration with suppressed JavaScript environment warning.', async () => {
 			const expectedConfig = {
 				...DefaultServerRendererConfiguration,
 				browser: {
 					...DefaultServerRendererConfiguration.browser,
-					suppressCodeGenerationFromStringsWarning: true
+					suppressInsecureJavaScriptEnvironmentWarning: true
 				}
 			};
 			expect(
 				await ProcessArgumentsParser.getConfiguration([
 					'node',
 					'script.js',
-					'--browser.suppressCodeGenerationFromStringsWarning'
+					'--browser.suppressInsecureJavaScriptEnvironmentWarning'
 				])
 			).toEqual(expectedConfig);
 		});
@@ -349,6 +349,7 @@ describe('ProcessArgumentsParser', () => {
 				'browser.enableFileSystemHttpRequests',
 				'browser.disableIframePageLoading',
 				'browser.disableJavaScriptEvaluation',
+				'browser.suppressCodeGenerationFromStringsWarning',
 				// Special handling
 				'browser.enableJavaScriptEvaluation',
 				'browser.fetch.requestHeaders',

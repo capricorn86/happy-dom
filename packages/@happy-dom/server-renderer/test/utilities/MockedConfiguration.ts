@@ -6,7 +6,8 @@ export default <IServerRendererConfiguration>{
 	browser: {
 		disableJavaScriptEvaluation: false,
 		enableJavaScriptEvaluation: false,
-		suppressCodeGenerationFromStringsWarning: true,
+		suppressCodeGenerationFromStringsWarning: false,
+		suppressInsecureJavaScriptEnvironmentWarning: true,
 		disableJavaScriptFileLoading: true,
 		disableCSSFileLoading: true,
 		disableIframePageLoading: false,

@@ -41,8 +41,8 @@ export default class ProcessArgumentsParser {
 					config.help = true;
 				} else if (arg === '--browser.disableJavaScriptEvaluation') {
 					config.browser.enableJavaScriptEvaluation = false;
-				} else if (arg === '--browser.suppressCodeGenerationFromStringsWarning') {
-					config.browser.suppressCodeGenerationFromStringsWarning = true;
+				} else if (arg === '--browser.suppressInsecureJavaScriptEnvironmentWarning') {
+					config.browser.suppressInsecureJavaScriptEnvironmentWarning = true;
 				} else if (arg === '--browser.disableJavaScriptFileLoading') {
 					config.browser.disableJavaScriptFileLoading = true;
 				} else if (arg === '--browser.disableCSSFileLoading') {

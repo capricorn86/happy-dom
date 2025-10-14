@@ -88,11 +88,11 @@ describe('BrowserWindow', () => {
 			browser.newPage();
 
 			expect(consoleWarn).toEqual([
-				'\nWarning! Happy DOM has JavaScript evaluation enabled and is running in an environment with code generation from strings (eval) enabled at process level.' +
-					'\n\nA VM Context is not an isolated environment, and if you run untrusted code you are at risk of RCE (Remote Code Execution) attacks. The attacker can use code generation to escape the VM and run code at process level.' +
-					'\n\nIt is recommended to disable code generation at process level by running node with the "--disallow-code-generation-from-strings" flag enabled when Javascript evaluation is enabled in Happy DOM.' +
-					' You can suppress this warning by setting "suppressCodeGenerationFromStringsWarning" to "true" at your own risk.' +
-					'\n\nFor more information, see https://github.com/capricorn86/happy-dom/wiki/Code-Generation-From-Strings-Warning\n\n'
+				'\nWarning! Happy DOM has JavaScript evaluation enabled and is running in an insecure environment.' +
+					'\n\nA VM Context is not an isolated environment, and if you run untrusted code you are at risk of RCE (Remote Code Execution) attacks. The attacker can escape the VM and run code at process level.' +
+					'\n\nIt is recommended to disable code generation and freeze all builtins at process level by running node with the flags "--disallow-code-generation-from-strings" and "--frozen-intrinsics".' +
+					' You can suppress this warning by setting "suppressInsecureJavaScriptEnvironmentWarning" to "true" at your own risk.' +
+					'\n\nFor more information, see https://github.com/capricorn86/happy-dom/wiki/JavaScript-Evaluation-Warning\n\n'
 			]);
 		});
 
@@ -117,6 +117,23 @@ describe('BrowserWindow', () => {
 				settings: {
 					enableJavaScriptEvaluation: true,
 					suppressCodeGenerationFromStringsWarning: true
+				}
+			});
+
+			new BrowserWindow(browser.newPage().mainFrame);
+
+			expect(consoleWarn.length).toBe(0);
+		});
+
+		it('Does not output a warning if "suppressInsecureJavaScriptEnvironmentWarning" is enabled.', () => {
+			const consoleWarn: string[] = [];
+			vi.spyOn(globalThis.console, 'warn').mockImplementation((...args: any[]) =>
+				consoleWarn.push(args.join(' '))
+			);
+			const browser = new Browser({
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressInsecureJavaScriptEnvironmentWarning: true
 				}
 			});
 

@@ -331,10 +331,20 @@ const TIMER = {
 
 const IS_NODE_JS_TIMEOUT_ENVIRONMENT = setTimeout.toString().includes('new Timeout');
 
-const IS_PROCESS_LEVEL_CODE_GENERATION_FROM_STRINGS_ALLOWED = (() => {
+const IS_CODE_GENERATION_FROM_STRINGS_ENVIRONMENT = (() => {
 	try {
 		// eslint-disable-next-line no-new-func
 		new Function('return true;')();
+		return true;
+	} catch {
+		return false;
+	}
+})();
+
+const IS_UNFROZEN_INTRINSICS_ENVIRONMENT = (() => {
+	try {
+		(<any>globalThis.Function)['$UNFROZEN$'] = true;
+		delete (<any>globalThis.Function)['$UNFROZEN$'];
 		return true;
 	} catch {
 		return false;
@@ -858,22 +868,9 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	constructor(browserFrame: IBrowserFrame, options?: { url?: string }) {
 		super();
 
-		if (
-			IS_PROCESS_LEVEL_CODE_GENERATION_FROM_STRINGS_ALLOWED &&
-			browserFrame.page.context.browser.settings.enableJavaScriptEvaluation &&
-			!browserFrame.page.context.browser.settings.suppressCodeGenerationFromStringsWarning
-		) {
-			// eslint-disable-next-line no-console
-			console.warn(
-				'\nWarning! Happy DOM has JavaScript evaluation enabled and is running in an environment with code generation from strings (eval) enabled at process level.' +
-					'\n\nA VM Context is not an isolated environment, and if you run untrusted code you are at risk of RCE (Remote Code Execution) attacks. The attacker can use code generation to escape the VM and run code at process level.' +
-					'\n\nIt is recommended to disable code generation at process level by running node with the "--disallow-code-generation-from-strings" flag enabled when Javascript evaluation is enabled in Happy DOM.' +
-					' You can suppress this warning by setting "suppressCodeGenerationFromStringsWarning" to "true" at your own risk.' +
-					'\n\nFor more information, see https://github.com/capricorn86/happy-dom/wiki/Code-Generation-From-Strings-Warning\n\n'
-			);
-		}
-
 		this.#browserFrame = browserFrame;
+
+		this[PropertySymbol.validateJavaScriptExecutionEnvironment]();
 
 		this.console = browserFrame.page.console;
 
@@ -1854,6 +1851,28 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			// Sets global properties from the VM to the Window object.
 			// Otherwise "this.Array" will be undefined for example.
 			VMGlobalPropertyScript.runInContext(this);
+		}
+	}
+
+	/**
+	 * Checks if the JavaScript execution environment is secure and outputs a warning if not.
+	 */
+	protected [PropertySymbol.validateJavaScriptExecutionEnvironment](): void {
+		const browserFrame = this.#browserFrame;
+		if (
+			(IS_CODE_GENERATION_FROM_STRINGS_ENVIRONMENT || IS_UNFROZEN_INTRINSICS_ENVIRONMENT) &&
+			browserFrame.page.context.browser.settings.enableJavaScriptEvaluation &&
+			!browserFrame.page.context.browser.settings.suppressInsecureJavaScriptEnvironmentWarning &&
+			!browserFrame.page.context.browser.settings.suppressCodeGenerationFromStringsWarning
+		) {
+			// eslint-disable-next-line no-console
+			console.warn(
+				'\nWarning! Happy DOM has JavaScript evaluation enabled and is running in an insecure environment.' +
+					'\n\nA VM Context is not an isolated environment, and if you run untrusted code you are at risk of RCE (Remote Code Execution) attacks. The attacker can escape the VM and run code at process level.' +
+					'\n\nIt is recommended to disable code generation and freeze all builtins at process level by running node with the flags "--disallow-code-generation-from-strings" and "--frozen-intrinsics".' +
+					' You can suppress this warning by setting "suppressInsecureJavaScriptEnvironmentWarning" to "true" at your own risk.' +
+					'\n\nFor more information, see https://github.com/capricorn86/happy-dom/wiki/JavaScript-Evaluation-Warning\n\n'
+			);
 		}
 	}
 

@@ -405,3 +405,6 @@ export const rulePrefix = Symbol('rulePrefix');
 export const virtualServerFile = Symbol('virtualServerFile');
 export const frames = Symbol('frames');
 export const disableEvaluation = Symbol('disableEvaluation');
+export const validateJavaScriptExecutionEnvironment = Symbol(
+	'validateJavaScriptExecutionEnvironment'
+);
