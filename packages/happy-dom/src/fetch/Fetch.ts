@@ -395,8 +395,8 @@ export default class Fetch {
 		}
 
 		const body = new this.#window.ReadableStream({
-			start(controller) {
-				setTimeout(() => {
+			start: (controller) => {
+				this.#window.queueMicrotask(() => {
 					controller.enqueue(buffer);
 					controller.close();
 				});
