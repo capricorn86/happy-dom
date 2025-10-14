@@ -15,6 +15,7 @@ export default <IBrowserSettings>{
 	errorCapture: BrowserErrorCaptureEnum.tryAndCatch,
 	enableFileSystemHttpRequests: false,
 	suppressCodeGenerationFromStringsWarning: false,
+	suppressInsecureJavaScriptEnvironmentWarning: false,
 	timer: {
 		maxTimeout: -1,
 		maxIntervalTime: -1,

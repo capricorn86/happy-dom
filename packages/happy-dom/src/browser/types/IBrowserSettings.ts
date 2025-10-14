@@ -40,8 +40,15 @@ export default interface IBrowserSettings {
 	/** Handle disabled resource loading as success */
 	handleDisabledFileLoadingAsSuccess: boolean;
 
-	/** Suppresses the warning that is printed when code generation from strings is enabled at process level. */
+	/**
+	 * Suppresses the warning that is printed when code generation from strings is enabled at process level.
+	 *
+	 * @deprecated Use "suppressInsecureJavaScriptEnvironmentWarning" instead.
+	 */
 	suppressCodeGenerationFromStringsWarning: boolean;
+
+	/** Suppresses the warning that is printed when the JavaScript execution environment is insecure. */
+	suppressInsecureJavaScriptEnvironmentWarning: boolean;
 
 	/**
 	 * Settings for timers
