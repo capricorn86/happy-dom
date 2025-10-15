@@ -197,7 +197,7 @@ export default class ServerRenderer {
 					return;
 				}
 				const worker = new Worker(new URL('ServerRendererWorker.js', import.meta.url), {
-					execArgv: ['--disallow-code-generation-from-strings'],
+					execArgv: ['--disallow-code-generation-from-strings', '--frozen-intrinsics'],
 					workerData: {
 						configuration: configuration
 					}
