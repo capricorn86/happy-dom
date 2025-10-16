@@ -5,6 +5,7 @@ import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
 import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 
 type FormDataEntry = {
 	name: string;
@@ -31,6 +32,25 @@ export default class FormData implements Iterable<[string, string | File]> {
 	constructor(form?: HTMLFormElement, submitter?: HTMLInputElement | HTMLButtonElement) {
 		if (!form) {
 			return;
+		}
+
+		if (submitter) {
+			const formProxy = form[PropertySymbol.proxy] ? form[PropertySymbol.proxy] : form;
+			if (submitter.form !== formProxy) {
+				throw new this[PropertySymbol.window].DOMException(
+					'The specified element is not owned by this form element',
+					DOMExceptionNameEnum.notFoundError
+				);
+			}
+			const isSubmitButton =
+				(submitter[PropertySymbol.tagName] === 'INPUT' &&
+					(submitter.type === 'submit' || submitter.type === 'image')) ||
+				(submitter[PropertySymbol.tagName] === 'BUTTON' && submitter.type === 'submit');
+			if (!isSubmitButton) {
+				throw new this[PropertySymbol.window].TypeError(
+					'The specified element is not a submit button'
+				);
+			}
 		}
 
 		const items = form[PropertySymbol.getFormControlItems]();
