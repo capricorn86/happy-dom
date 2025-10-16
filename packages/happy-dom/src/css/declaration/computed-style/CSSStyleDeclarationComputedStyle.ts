@@ -24,6 +24,8 @@ import CSSStyleSheet from '../../CSSStyleSheet.js';
 
 const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
 const HOST_REGEXP = /:host\s*\(([^)]+)\)|:host-context\s*\(([^)]+)\)/;
+const SINGLE_CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+)\)/;
+const CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+), *([^), ]+)\)/;
 
 type IStyleAndElement = {
 	element: Element | ShadowRoot | Document | null;
@@ -456,9 +458,6 @@ export default class CSSStyleDeclarationComputedStyle {
 	 * @returns CSS value.
 	 */
 	private parseCSSVariablesInValue(value: string, cssVariables: { [k: string]: string }): string {
-		const SINGLE_CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+)\)/;
-		const CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+), *([^), ]+)\)/;
-
 		let newValue = value;
 		let match: RegExpMatchArray | null;
 
