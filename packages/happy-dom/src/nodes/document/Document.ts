@@ -1472,7 +1472,7 @@ export default class Document extends Node {
 	): NodeList<IHTMLElementTagNameMap[K]>;
 
 	/**
-	 * Query CSS selector to find matching elments.
+	 * Query CSS selector to find matching elements.
 	 *
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
@@ -1482,7 +1482,7 @@ export default class Document extends Node {
 	): NodeList<ISVGElementTagNameMap[K]>;
 
 	/**
-	 * Query CSS selector to find matching elments.
+	 * Query CSS selector to find matching elements.
 	 *
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
@@ -1490,7 +1490,7 @@ export default class Document extends Node {
 	public querySelectorAll(selector: string): NodeList<Element>;
 
 	/**
-	 * Query CSS selector to find matching elments.
+	 * Query CSS selector to find matching elements.
 	 *
 	 * @param selector CSS selector.
 	 * @returns Matching elements.

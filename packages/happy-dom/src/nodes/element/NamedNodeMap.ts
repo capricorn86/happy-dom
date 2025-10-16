@@ -1,6 +1,5 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Attr from '../attr/Attr.js';
-import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import Element from './Element.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
@@ -152,7 +151,7 @@ export default class NamedNodeMap {
 		const item = this.getNamedItem(name);
 
 		if (!item) {
-			throw new DOMException(
+			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].DOMException(
 				`Failed to execute 'removeNamedItem' on 'NamedNodeMap': No item with name '${name}' was found.`,
 				DOMExceptionNameEnum.notFoundError
 			);
@@ -174,7 +173,7 @@ export default class NamedNodeMap {
 		const item = this.getNamedItemNS(namespace, localName);
 
 		if (!item) {
-			throw new DOMException(
+			throw new this[PropertySymbol.ownerElement][PropertySymbol.window].DOMException(
 				`Failed to execute 'removeNamedItemNS' on 'NamedNodeMap': No item with name '${localName}' in namespace '${namespace}' was found.`,
 				DOMExceptionNameEnum.notFoundError
 			);

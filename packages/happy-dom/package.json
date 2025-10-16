@@ -8,47 +8,6 @@
 	"description": "Happy DOM is a JavaScript implementation of a web browser without its graphical user interface. It includes many web standards from WHATWG DOM and HTML.",
 	"main": "lib/index.js",
 	"type": "module",
-	"exports": {
-		".": {
-			"import": "./lib/index.js",
-			"require": "./cjs/index.cjs",
-			"default": "./lib/index.js"
-		},
-		"./lib/*.js": {
-			"import": "./lib/*.js",
-			"require": "./cjs/*.cjs",
-			"default": "./lib/*.js"
-		},
-		"./lib/*.ts": {
-			"import": "./lib/*.ts",
-			"require": "./cjs/*.ts",
-			"default": "./lib/*.ts"
-		},
-		"./lib/*.map": {
-			"import": "./lib/*.map",
-			"require": "./cjs/*.map",
-			"default": "./lib/*.map"
-		},
-		"./cjs/*.cjs": {
-			"import": "./cjs/*.cjs",
-			"require": "./cjs/*.cjs",
-			"default": "./cjs/*.cjs"
-		},
-		"./cjs/*.ts": {
-			"import": "./cjs/*.ts",
-			"require": "./cjs/*.ts",
-			"default": "./cjs/*.ts"
-		},
-		"./cjs/*.map": {
-			"import": "./cjs/*.map",
-			"require": "./cjs/*.map",
-			"default": "./cjs/*.map"
-		},
-		"./src/*.ts": "./src/*.ts",
-		"./package.json": "./package.json",
-		"./.eslintrc.cjs": "./.eslintrc.cjs",
-		"./.prettierrc.cjs": "./.prettierrc.cjs"
-	},
 	"keywords": [
 		"jsdom",
 		"dom",
@@ -65,11 +24,8 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "npm run compile:esm && npm run compile:cjs npm run build-version-file",
-		"compile:esm": "tsc",
-		"compile:cjs": "node -e \"fs.rmSync('./cjs', { recursive: true, force: true })\" && tsc --moduleResolution Node --module CommonJS --outDir cjs && npm run compile:change-cjs-file-extension",
-		"compile:change-cjs-file-extension": "node ./bin/change-file-extension.cjs --dir=./cjs --fromExt=.js --toExt=.cjs",
-		"build-version-file": "node ./bin/build-version-file.cjs",
+		"compile": "tsc && npm run compile:build-version-file",
+		"compile:build-version-file": "node ./bin/build-version-file.cjs",
 		"watch": "tsc -w --preserveWatchOutput",
 		"test": "vitest run",
 		"test:ui": "vitest --ui",
