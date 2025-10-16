@@ -9,6 +9,9 @@ import ClassMethodBinder from '../../utilities/ClassMethodBinder.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/TextTrackList
  */
 export default class TextTrackList extends EventTarget {
+	// Index signature
+	[index: number]: TextTrack | undefined;
+
 	// Internal properties
 	public [PropertySymbol.items]: TextTrack[] = [];
 

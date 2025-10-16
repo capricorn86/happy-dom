@@ -8,7 +8,6 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import IGoToOptions from '../../src/browser/types/IGoToOptions';
 import BrowserFrameFactory from '../../src/browser/utilities/BrowserFrameFactory';
 import Event from '../../src/event/Event';
-import DefaultBrowserPageViewport from '../../src/browser/DefaultBrowserPageViewport';
 import * as PropertySymbol from '../../src/PropertySymbol';
 
 describe('BrowserPage', () => {
@@ -61,7 +60,15 @@ describe('BrowserPage', () => {
 		it('Returns a default viewport.', () => {
 			const browser = new Browser();
 			const page = browser.defaultContext.newPage();
-			expect(page.viewport).toEqual(DefaultBrowserPageViewport);
+			expect(page.viewport).toEqual({ width: 1024, height: 768, devicePixelRatio: 1 });
+		});
+
+		it('Returns viewport set in browser settings.', () => {
+			const browser = new Browser({
+				settings: { viewport: { width: 100, height: 100, devicePixelRatio: 2 } }
+			});
+			const page = browser.defaultContext.newPage();
+			expect(page.viewport).toEqual({ width: 100, height: 100, devicePixelRatio: 2 });
 		});
 
 		it('Returns defined viewport.', () => {
@@ -177,6 +184,8 @@ describe('BrowserPage', () => {
 		it('Clears modules when closing.', async () => {
 			const browser = new Browser({
 				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
 					fetch: {
 						virtualServers: [
 							{
@@ -244,8 +253,8 @@ describe('BrowserPage', () => {
 			frame1.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
 			frame2.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
 			await page.waitUntilComplete();
-			expect(frame1.window['test']).toBe(1);
-			expect(frame2.window['test']).toBe(2);
+			expect((<any>frame1.window)['test']).toBe(1);
+			expect((<any>frame2.window)['test']).toBe(2);
 		});
 	});
 
@@ -276,8 +285,8 @@ describe('BrowserPage', () => {
 			frame2.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
 			page.abort();
 			await new Promise((resolve) => setTimeout(resolve, 50));
-			expect(frame1.window['test']).toBeUndefined();
-			expect(frame2.window['test']).toBeUndefined();
+			expect((<any>frame1.window)['test']).toBeUndefined();
+			expect((<any>frame2.window)['test']).toBeUndefined();
 		});
 	});
 
