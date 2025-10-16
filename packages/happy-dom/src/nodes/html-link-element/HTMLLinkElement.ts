@@ -13,6 +13,7 @@ import ModuleFactory from '../../module/ModuleFactory.js';
 import PreloadUtility from '../../fetch/preload/PreloadUtility.js';
 import PreloadEntry from '../../fetch/preload/PreloadEntry.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
+import IResourceFetchResponse from '../../fetch/types/IResourceFetchResponse.js';
 
 /**
  * HTML Link Element.
@@ -23,7 +24,7 @@ import ElementEventAttributeUtility from '../element/ElementEventAttributeUtilit
 export default class HTMLLinkElement extends HTMLElement {
 	// Internal properties
 	public [PropertySymbol.sheet]: CSSStyleSheet | null = null;
-	public [PropertySymbol.evaluateCSS] = true;
+	public [PropertySymbol.disableEvaluation] = false;
 	public [PropertySymbol.relList]: DOMTokenList | null = null;
 	#loadedStyleSheetURL: string | null = null;
 
@@ -304,7 +305,7 @@ export default class HTMLLinkElement extends HTMLElement {
 			!browserSettings ||
 			!this[PropertySymbol.isConnected] ||
 			browserSettings.disableJavaScriptFileLoading ||
-			browserSettings.disableJavaScriptEvaluation
+			!browserSettings.enableJavaScriptEvaluation
 		) {
 			return;
 		}
@@ -350,7 +351,7 @@ export default class HTMLLinkElement extends HTMLElement {
 
 		if (
 			as === 'script' &&
-			(browserSettings.disableJavaScriptFileLoading || browserSettings.disableJavaScriptEvaluation)
+			(browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)
 		) {
 			return;
 		}
@@ -421,7 +422,7 @@ export default class HTMLLinkElement extends HTMLElement {
 
 		const browserSettings = browserFrame.page.context.browser.settings;
 
-		if (!this[PropertySymbol.evaluateCSS] || !this[PropertySymbol.isConnected]) {
+		if (this[PropertySymbol.disableEvaluation] || !this[PropertySymbol.isConnected]) {
 			return;
 		}
 
@@ -456,20 +457,20 @@ export default class HTMLLinkElement extends HTMLElement {
 
 		this.#loadedStyleSheetURL = absoluteURL;
 
-		readyStateManager.startTask();
+		const taskID = readyStateManager.startTask();
 
-		let code: string | null = null;
+		let response: IResourceFetchResponse | null = null;
 		let error: Error | null = null;
 
 		try {
-			code = await resourceFetch.fetch(absoluteURL, 'style', {
+			response = await resourceFetch.fetch(absoluteURL, 'style', {
 				credentials: this.crossOrigin === 'use-credentials' ? 'include' : 'same-origin'
 			});
 		} catch (e) {
 			error = <Error>e;
 		}
 
-		readyStateManager.endTask();
+		readyStateManager.endTask(taskID);
 
 		if (error) {
 			browserFrame.page.console.error(error);
@@ -478,7 +479,7 @@ export default class HTMLLinkElement extends HTMLElement {
 			const styleSheet = new this[PropertySymbol.ownerDocument][
 				PropertySymbol.window
 			].CSSStyleSheet();
-			styleSheet.replaceSync(code!);
+			styleSheet.replaceSync(response!.content);
 			this[PropertySymbol.sheet] = styleSheet;
 
 			// Computed style cache is affected by all mutations.

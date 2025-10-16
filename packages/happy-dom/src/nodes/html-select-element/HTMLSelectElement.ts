@@ -25,6 +25,9 @@ import BrowserWindow from '../../window/BrowserWindow.js';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLSelectElement.
  */
 export default class HTMLSelectElement extends HTMLElement {
+	// Index signature
+	[index: number]: HTMLOptionElement | undefined;
+
 	// Injected by WindowContextClassExtender
 	protected declare [PropertySymbol.window]: BrowserWindow;
 

@@ -4,7 +4,6 @@ import Node from '../../../src/nodes/node/Node.js';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
 import Event from '../../../src/event/Event.js';
-import DOMException from '../../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
 import Text from '../../../src/nodes/text/Text.js';
 import EventPhaseEnum from '../../../src/event/EventPhaseEnum.js';

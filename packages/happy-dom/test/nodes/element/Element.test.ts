@@ -30,7 +30,9 @@ describe('Element', () => {
 	let element: Element;
 
 	beforeEach(() => {
-		window = new Window();
+		window = new Window({
+			settings: { enableJavaScriptEvaluation: true, suppressCodeGenerationFromStringsWarning: true }
+		});
 		document = window.document;
 		element = <Element>document.createElement('div');
 		window.customElements.define('custom-element', CustomElement);
@@ -52,20 +54,20 @@ describe('Element', () => {
 		describe(`get on${event}()`, () => {
 			it('Returns the event listener.', () => {
 				element.setAttribute(`on${event}`, 'window.test = 1');
-				expect(element[`on${event}`]).toBeTypeOf('function');
-				element[`on${event}`](new Event(event));
-				expect(window['test']).toBe(1);
+				expect((<any>element)[`on${event}`]).toBeTypeOf('function');
+				(<any>element)[`on${event}`](new Event(event));
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 
 		describe(`set on${event}()`, () => {
 			it('Sets the event listener.', () => {
-				element[`on${event}`] = () => {
-					window['test'] = 1;
+				(<any>element)[`on${event}`] = () => {
+					(<any>window)['test'] = 1;
 				};
 				element.dispatchEvent(new Event(event));
 				expect(element.getAttribute(`on${event}`)).toBe(null);
-				expect(window['test']).toBe(1);
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 	}
@@ -106,63 +108,63 @@ describe('Element', () => {
 		it('Adds the "id" attribute as a property to Window.', () => {
 			element.setAttribute('id', 'element1');
 
-			expect(window['element1']).toBeUndefined();
+			expect((<any>window)['element1']).toBeUndefined();
 
 			document.body.appendChild(element);
 
-			expect(window['element1']).toBe(element);
+			expect((<any>window)['element1']).toBe(element);
 
 			document.body.removeChild(element);
 
-			expect(window['element1']).toBeUndefined();
+			expect((<any>window)['element1']).toBeUndefined();
 
 			document.body.appendChild(element);
 
-			expect(window['element1']).toBe(element);
+			expect((<any>window)['element1']).toBe(element);
 
 			element.setAttribute('id', 'element2');
 
-			expect(window['element1']).toBeUndefined();
-			expect(window['element2']).toBe(element);
+			expect((<any>window)['element1']).toBeUndefined();
+			expect((<any>window)['element2']).toBe(element);
 
 			const element2 = document.createElement('div');
 			element2.id = 'element2';
 
 			document.body.appendChild(element2);
 
-			expect(window['element2']).toBeInstanceOf(HTMLCollection);
-			expect(window['element2'].length).toBe(2);
-			expect(window['element2'][0]).toBe(element);
-			expect(window['element2'][1]).toBe(element2);
+			expect((<any>window)['element2']).toBeInstanceOf(HTMLCollection);
+			expect((<any>window)['element2'].length).toBe(2);
+			expect((<any>window)['element2'][0]).toBe(element);
+			expect((<any>window)['element2'][1]).toBe(element2);
 
 			document.body.removeChild(element2);
 
-			expect(window['element2']).toBe(element);
+			expect((<any>window)['element2']).toBe(element);
 
 			document.body.appendChild(element2);
 
-			expect(window['element2']).toBeInstanceOf(HTMLCollection);
-			expect(window['element2'].length).toBe(2);
+			expect((<any>window)['element2']).toBeInstanceOf(HTMLCollection);
+			expect((<any>window)['element2'].length).toBe(2);
 
 			element2.removeAttribute('id');
 
-			expect(window['element2']).toBe(element);
+			expect((<any>window)['element2']).toBe(element);
 
 			element.removeAttribute('id');
 
-			expect(window['element2']).toBe(undefined);
+			expect((<any>window)['element2']).toBe(undefined);
 		});
 
 		it(`Doesn't add the "id" attribute as a property to Window if it collides with Window properties.`, () => {
 			element.setAttribute('id', 'document');
 			document.body.appendChild(element);
-			expect(window['document']).toBe(document);
+			expect((<any>window)['document']).toBe(document);
 		});
 
 		it(`Doesn't add the "opener" attribute as a property to Window when the property value is null (#1841).`, () => {
 			document.body.appendChild(element);
 			element.id = 'opener';
-			expect(window['opener']).toBe(null);
+			expect((<any>window)['opener']).toBe(null);
 		});
 	});
 
@@ -355,8 +357,12 @@ describe('Element', () => {
 			element.appendChild(document.createElement('div'));
 			div.appendChild(textNode);
 
-			vi.spyOn(HTMLParser.prototype, 'parse').mockImplementation(function (html, rootNode) {
-				expect(this.window).toBe(window);
+			vi.spyOn(HTMLParser.prototype, 'parse').mockImplementation(function (
+				this: HTMLParser,
+				html,
+				rootNode
+			) {
+				expect((<any>this).window).toBe(window);
 				expect(html).toBe('SOME_HTML');
 				expect(rootNode).toBe(element);
 				element.appendChild(div);
@@ -437,26 +443,26 @@ describe('Element', () => {
 			expect(element.attributes[2].ownerElement === element).toBe(true);
 			expect(element.attributes[2].ownerDocument === document).toBe(true);
 
-			expect(element.attributes['key1'].name).toBe('key1');
-			expect(element.attributes['key1'].value).toBe('value1');
-			expect(element.attributes['key1'].namespaceURI).toBe(null);
-			expect(element.attributes['key1'].specified).toBe(true);
-			expect(element.attributes['key1'].ownerElement === element).toBe(true);
-			expect(element.attributes['key1'].ownerDocument === document).toBe(true);
+			expect((<any>element).attributes['key1'].name).toBe('key1');
+			expect((<any>element).attributes['key1'].value).toBe('value1');
+			expect((<any>element).attributes['key1'].namespaceURI).toBe(null);
+			expect((<any>element).attributes['key1'].specified).toBe(true);
+			expect((<any>element).attributes['key1'].ownerElement === element).toBe(true);
+			expect((<any>element).attributes['key1'].ownerDocument === document).toBe(true);
 
-			expect(element.attributes['key2'].name).toBe('key2');
-			expect(element.attributes['key2'].value).toBe('value2');
-			expect(element.attributes['key2'].namespaceURI).toBe(null);
-			expect(element.attributes['key2'].specified).toBe(true);
-			expect(element.attributes['key2'].ownerElement === element).toBe(true);
-			expect(element.attributes['key2'].ownerDocument === document).toBe(true);
+			expect((<any>element).attributes['key2'].name).toBe('key2');
+			expect((<any>element).attributes['key2'].value).toBe('value2');
+			expect((<any>element).attributes['key2'].namespaceURI).toBe(null);
+			expect((<any>element).attributes['key2'].specified).toBe(true);
+			expect((<any>element).attributes['key2'].ownerElement === element).toBe(true);
+			expect((<any>element).attributes['key2'].ownerDocument === document).toBe(true);
 
-			expect(element.attributes['key3'].name).toBe('key3');
-			expect(element.attributes['key3'].value).toBe('value3');
-			expect(element.attributes['key3'].namespaceURI).toBe(null);
-			expect(element.attributes['key3'].specified).toBe(true);
-			expect(element.attributes['key3'].ownerElement === element).toBe(true);
-			expect(element.attributes['key3'].ownerDocument === document).toBe(true);
+			expect((<any>element).attributes['key3'].name).toBe('key3');
+			expect((<any>element).attributes['key3'].value).toBe('value3');
+			expect((<any>element).attributes['key3'].namespaceURI).toBe(null);
+			expect((<any>element).attributes['key3'].specified).toBe(true);
+			expect((<any>element).attributes['key3'].ownerElement === element).toBe(true);
+			expect((<any>element).attributes['key3'].ownerDocument === document).toBe(true);
 		});
 	});
 
@@ -1287,10 +1293,10 @@ describe('Element', () => {
 			expect(otherParent.children[0] === otherDiv).toBe(true);
 			expect(otherParent.children[1] === div).toBe(true);
 			expect(otherParent.children[2] === otherSpan).toBe(true);
-			expect(otherParent.children['div1'] === div).toBe(true);
-			expect(otherParent.children['div2'] === div).toBe(true);
-			expect(otherParent.children['otherDiv'] === otherDiv).toBe(true);
-			expect(otherParent.children['otherSpan'] === otherSpan).toBe(true);
+			expect((<any>otherParent.children)['div1'] === div).toBe(true);
+			expect((<any>otherParent.children)['div2'] === div).toBe(true);
+			expect((<any>otherParent.children)['otherDiv'] === otherDiv).toBe(true);
+			expect((<any>otherParent.children)['otherSpan'] === otherSpan).toBe(true);
 
 			element.appendChild(document.createComment('test'));
 			element.appendChild(div);
@@ -1300,17 +1306,17 @@ describe('Element', () => {
 			expect(otherParent.children.length).toBe(2);
 			expect(otherParent.children[0] === otherDiv).toBe(true);
 			expect(otherParent.children[1] === otherSpan).toBe(true);
-			expect(otherParent.children['div1'] === undefined).toBe(true);
-			expect(otherParent.children['div2'] === undefined).toBe(true);
-			expect(otherParent.children['otherDiv'] === otherDiv).toBe(true);
-			expect(otherParent.children['otherSpan'] === otherSpan).toBe(true);
+			expect((<any>otherParent.children)['div1'] === undefined).toBe(true);
+			expect((<any>otherParent.children)['div2'] === undefined).toBe(true);
+			expect((<any>otherParent.children)['otherDiv'] === otherDiv).toBe(true);
+			expect((<any>otherParent.children)['otherSpan'] === otherSpan).toBe(true);
 
 			expect(element.children.length).toBe(2);
 			expect(element.children[0] === div).toBe(true);
 			expect(element.children[1] === span).toBe(true);
-			expect(element.children['div1'] === div).toBe(true);
-			expect(element.children['div2'] === div).toBe(true);
-			expect(element.children['span'] === span).toBe(true);
+			expect((<any>element.children)['div1'] === div).toBe(true);
+			expect((<any>element.children)['div2'] === div).toBe(true);
+			expect((<any>element.children)['span'] === span).toBe(true);
 		});
 	});
 
@@ -1327,15 +1333,15 @@ describe('Element', () => {
 			element.appendChild(document.createComment('test'));
 			element.appendChild(span);
 
-			expect(element.children['div'] === div).toBe(true);
-			expect(element.children['span'] === span).toBe(true);
+			expect((<any>element.children)['div'] === div).toBe(true);
+			expect((<any>element.children)['span'] === span).toBe(true);
 
 			element.removeChild(div);
 
 			expect(element.children.length).toBe(1);
 			expect(element.children[0] === span).toBe(true);
-			expect(element.children['div'] === undefined).toBe(true);
-			expect(element.children['span'] === span).toBe(true);
+			expect((<any>element.children)['div'] === undefined).toBe(true);
+			expect((<any>element.children)['span'] === span).toBe(true);
 		});
 	});
 
@@ -1456,9 +1462,9 @@ describe('Element', () => {
 			expect(otherParent.children[0] === otherSpan1).toBe(true);
 			expect(otherParent.children[1] === div).toBe(true);
 			expect(otherParent.children[2] === otherSpan2).toBe(true);
-			expect(otherParent.children['otherSpan1'] === otherSpan1).toBe(true);
-			expect(otherParent.children['div'] === div).toBe(true);
-			expect(otherParent.children['otherSpan2'] === otherSpan2).toBe(true);
+			expect((<any>otherParent.children)['otherSpan1'] === otherSpan1).toBe(true);
+			expect((<any>otherParent.children)['div'] === div).toBe(true);
+			expect((<any>otherParent.children)['otherSpan2'] === otherSpan2).toBe(true);
 
 			element.appendChild(document.createComment('test'));
 			element.appendChild(span1);
@@ -1472,17 +1478,17 @@ describe('Element', () => {
 			expect(otherParent.children.length).toBe(2);
 			expect(otherParent.children[0] === otherSpan1).toBe(true);
 			expect(otherParent.children[1] === otherSpan2).toBe(true);
-			expect(otherParent.children['div'] === undefined).toBe(true);
-			expect(otherParent.children['otherSpan1'] === otherSpan1).toBe(true);
-			expect(otherParent.children['otherSpan2'] === otherSpan2).toBe(true);
+			expect((<any>otherParent.children)['div'] === undefined).toBe(true);
+			expect((<any>otherParent.children)['otherSpan1'] === otherSpan1).toBe(true);
+			expect((<any>otherParent.children)['otherSpan2'] === otherSpan2).toBe(true);
 
 			expect(element.children.length).toBe(3);
 			expect(element.children[0] === span1).toBe(true);
 			expect(element.children[1] === div).toBe(true);
 			expect(element.children[2] === span2).toBe(true);
-			expect(element.children['span1'] === span1).toBe(true);
-			expect(element.children['div'] === div).toBe(true);
-			expect(element.children['span2'] === span2).toBe(true);
+			expect((<any>element.children)['span1'] === span1).toBe(true);
+			expect((<any>element.children)['div'] === div).toBe(true);
+			expect((<any>element.children)['span2'] === span2).toBe(true);
 		});
 
 		it('Inserts correctly with comment reference node', () => {
@@ -1612,19 +1618,19 @@ describe('Element', () => {
 			expect(element.attributes[1].ownerElement === element).toBe(true);
 			expect(element.attributes[1].ownerDocument === document).toBe(true);
 
-			expect(element.attributes['key1'].name).toBe('key1');
-			expect(element.attributes['key1'].value).toBe('value1');
-			expect(element.attributes['key1'].namespaceURI).toBe(null);
-			expect(element.attributes['key1'].specified).toBe(true);
-			expect(element.attributes['key1'].ownerElement === element).toBe(true);
-			expect(element.attributes['key1'].ownerDocument === document).toBe(true);
+			expect((<any>element).attributes['key1'].name).toBe('key1');
+			expect((<any>element).attributes['key1'].value).toBe('value1');
+			expect((<any>element).attributes['key1'].namespaceURI).toBe(null);
+			expect((<any>element).attributes['key1'].specified).toBe(true);
+			expect((<any>element).attributes['key1'].ownerElement === element).toBe(true);
+			expect((<any>element).attributes['key1'].ownerDocument === document).toBe(true);
 
-			expect(element.attributes['key2'].name).toBe('key2');
-			expect(element.attributes['key2'].value).toBe('');
-			expect(element.attributes['key2'].namespaceURI).toBe(null);
-			expect(element.attributes['key2'].specified).toBe(true);
-			expect(element.attributes['key2'].ownerElement === element).toBe(true);
-			expect(element.attributes['key2'].ownerDocument === document).toBe(true);
+			expect((<any>element).attributes['key2'].name).toBe('key2');
+			expect((<any>element).attributes['key2'].value).toBe('');
+			expect((<any>element).attributes['key2'].namespaceURI).toBe(null);
+			expect((<any>element).attributes['key2'].specified).toBe(true);
+			expect((<any>element).attributes['key2'].ownerElement === element).toBe(true);
+			expect((<any>element).attributes['key2'].ownerDocument === document).toBe(true);
 		});
 
 		it('Sets valid attribute names', () => {
@@ -1748,58 +1754,58 @@ describe('Element', () => {
 			try {
 				element.setAttribute('☺', '1');
 			} catch (error) {
-				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+				expect((<any>error).name).toBe(DOMExceptionNameEnum.invalidCharacterError);
 			}
 			try {
 				// eslint-disable-next-line
 				element.setAttribute({} as string, '1');
 			} catch (error) {
-				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+				expect((<any>error).name).toBe(DOMExceptionNameEnum.invalidCharacterError);
 			}
 			try {
 				element.setAttribute('', '1');
 			} catch (error) {
-				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+				expect((<any>error).name).toBe(DOMExceptionNameEnum.invalidCharacterError);
 			}
 			try {
 				element.setAttribute('=', '1');
 			} catch (error) {
-				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+				expect((<any>error).name).toBe(DOMExceptionNameEnum.invalidCharacterError);
 			}
 			try {
 				element.setAttribute(' ', '1');
 			} catch (error) {
-				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+				expect((<any>error).name).toBe(DOMExceptionNameEnum.invalidCharacterError);
 			}
 			try {
 				element.setAttribute('"', '1');
 			} catch (error) {
-				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+				expect((<any>error).name).toBe(DOMExceptionNameEnum.invalidCharacterError);
 			}
 			try {
 				element.setAttribute(`'`, '1');
 			} catch (error) {
-				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+				expect((<any>error).name).toBe(DOMExceptionNameEnum.invalidCharacterError);
 			}
 			try {
 				element.setAttribute(`>`, '1');
 			} catch (error) {
-				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+				expect((<any>error).name).toBe(DOMExceptionNameEnum.invalidCharacterError);
 			}
 			try {
 				element.setAttribute(`\/`, '1');
 			} catch (error) {
-				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+				expect((<any>error).name).toBe(DOMExceptionNameEnum.invalidCharacterError);
 			}
 			try {
 				element.setAttribute(`\u007F`, '1'); // control character delete
 			} catch (error) {
-				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+				expect((<any>error).name).toBe(DOMExceptionNameEnum.invalidCharacterError);
 			}
 			try {
 				element.setAttribute(`\u9FFFE`, '1'); // non character
 			} catch (error) {
-				expect(error.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+				expect((<any>error).name).toBe(DOMExceptionNameEnum.invalidCharacterError);
 			}
 		});
 	});
@@ -1825,19 +1831,19 @@ describe('Element', () => {
 			expect(element.attributes[1].ownerElement === element).toBe(true);
 			expect(element.attributes[1].ownerDocument === document).toBe(true);
 
-			expect(element.attributes['global:local1'].name).toBe('global:local1');
-			expect(element.attributes['global:local1'].value).toBe('value1');
-			expect(element.attributes['global:local1'].namespaceURI).toBe(NAMESPACE_URI);
-			expect(element.attributes['global:local1'].specified).toBe(true);
-			expect(element.attributes['global:local1'].ownerElement === element).toBe(true);
-			expect(element.attributes['global:local1'].ownerDocument === document).toBe(true);
+			expect((<any>element).attributes['global:local1'].name).toBe('global:local1');
+			expect((<any>element).attributes['global:local1'].value).toBe('value1');
+			expect((<any>element).attributes['global:local1'].namespaceURI).toBe(NAMESPACE_URI);
+			expect((<any>element).attributes['global:local1'].specified).toBe(true);
+			expect((<any>element).attributes['global:local1'].ownerElement === element).toBe(true);
+			expect((<any>element).attributes['global:local1'].ownerDocument === document).toBe(true);
 
-			expect(element.attributes['global:local2'].name).toBe('global:local2');
-			expect(element.attributes['global:local2'].value).toBe('');
-			expect(element.attributes['global:local2'].namespaceURI).toBe(NAMESPACE_URI);
-			expect(element.attributes['global:local2'].specified).toBe(true);
-			expect(element.attributes['global:local2'].ownerElement === element).toBe(true);
-			expect(element.attributes['global:local2'].ownerDocument === document).toBe(true);
+			expect((<any>element).attributes['global:local2'].name).toBe('global:local2');
+			expect((<any>element).attributes['global:local2'].value).toBe('');
+			expect((<any>element).attributes['global:local2'].namespaceURI).toBe(NAMESPACE_URI);
+			expect((<any>element).attributes['global:local2'].specified).toBe(true);
+			expect((<any>element).attributes['global:local2'].ownerElement === element).toBe(true);
+			expect((<any>element).attributes['global:local2'].ownerDocument === document).toBe(true);
 		});
 	});
 
@@ -1962,7 +1968,7 @@ describe('Element', () => {
 	for (const functionName of ['scroll', 'scrollTo']) {
 		describe(`${functionName}()`, () => {
 			it('Sets the properties scrollTop and scrollLeft.', () => {
-				element[functionName](50, 60);
+				(<any>element)[functionName](50, 60);
 				expect(element.scrollLeft).toBe(50);
 				expect(element.scrollTop).toBe(60);
 			});
@@ -1970,7 +1976,7 @@ describe('Element', () => {
 
 		describe(`${functionName}()`, () => {
 			it('Sets the properties scrollTop and scrollLeft using object.', () => {
-				element[functionName]({ left: 50, top: 60 });
+				(<any>element)[functionName]({ left: 50, top: 60 });
 				expect(element.scrollLeft).toBe(50);
 				expect(element.scrollTop).toBe(60);
 			});
@@ -1978,7 +1984,7 @@ describe('Element', () => {
 
 		describe(`${functionName}()`, () => {
 			it('Sets only the property scrollTop.', () => {
-				element[functionName]({ top: 60 });
+				(<any>element)[functionName]({ top: 60 });
 				expect(element.scrollLeft).toBe(0);
 				expect(element.scrollTop).toBe(60);
 			});
@@ -1986,7 +1992,7 @@ describe('Element', () => {
 
 		describe(`${functionName}()`, () => {
 			it('Sets only the property scrollLeft.', () => {
-				element[functionName]({ left: 60 });
+				(<any>element)[functionName]({ left: 60 });
 				expect(element.scrollLeft).toBe(60);
 				expect(element.scrollTop).toBe(0);
 			});
@@ -1994,7 +2000,7 @@ describe('Element', () => {
 
 		describe(`${functionName}()`, () => {
 			it('Sets the properties scrollTop and scrollLeft with animation.', async () => {
-				element[functionName]({ left: 50, top: 60, behavior: 'smooth' });
+				(<any>element)[functionName]({ left: 50, top: 60, behavior: 'smooth' });
 				expect(element.scrollLeft).toBe(0);
 				expect(element.scrollTop).toBe(0);
 				await window.happyDOM?.waitUntilComplete();
@@ -2127,9 +2133,9 @@ describe('Element', () => {
 				attribute2.value = 'value2';
 				attribute3.value = 'value3';
 
-				element[method](attribute1);
-				element[method](attribute2);
-				element[method](attribute3);
+				(<any>element)[method](attribute1);
+				(<any>element)[method](attribute2);
+				(<any>element)[method](attribute3);
 
 				expect(element.attributes.length).toBe(3);
 
@@ -2155,32 +2161,32 @@ describe('Element', () => {
 				expect(element.attributes[2].ownerDocument === document).toBe(true);
 
 				// "undefined" as the key is in upper case which should not be considered as a named item when the element is in the HTML namespace
-				expect(element.attributes['key1']).toBe(undefined);
-				expect(element.attributes['KEY1']).toBe(undefined);
+				expect((<any>element).attributes['key1']).toBe(undefined);
+				expect((<any>element).attributes['KEY1']).toBe(undefined);
 
 				// Lower case SVG namespace key is fine
-				expect(element.attributes['key2'].name).toBe('key2');
-				expect(element.attributes['key2'].namespaceURI).toBe(NamespaceURI.svg);
-				expect(element.attributes['key2'].value).toBe('value2');
-				expect(element.attributes['key2'].specified).toBe(true);
-				expect(element.attributes['key2'].ownerElement === element).toBe(true);
-				expect(element.attributes['key2'].ownerDocument === document).toBe(true);
+				expect((<any>element).attributes['key2'].name).toBe('key2');
+				expect((<any>element).attributes['key2'].namespaceURI).toBe(NamespaceURI.svg);
+				expect((<any>element).attributes['key2'].value).toBe('value2');
+				expect((<any>element).attributes['key2'].specified).toBe(true);
+				expect((<any>element).attributes['key2'].ownerElement === element).toBe(true);
+				expect((<any>element).attributes['key2'].ownerDocument === document).toBe(true);
 
 				// Matches the key in the HTML namespace
-				expect(element.attributes['key3'].name).toBe('key3');
-				expect(element.attributes['key3'].namespaceURI).toBe(null);
-				expect(element.attributes['key3'].value).toBe('value3');
-				expect(element.attributes['key3'].specified).toBe(true);
-				expect(element.attributes['key3'].ownerElement === element).toBe(true);
-				expect(element.attributes['key3'].ownerDocument === document).toBe(true);
+				expect((<any>element).attributes['key3'].name).toBe('key3');
+				expect((<any>element).attributes['key3'].namespaceURI).toBe(null);
+				expect((<any>element).attributes['key3'].value).toBe('value3');
+				expect((<any>element).attributes['key3'].specified).toBe(true);
+				expect((<any>element).attributes['key3'].ownerElement === element).toBe(true);
+				expect((<any>element).attributes['key3'].ownerDocument === document).toBe(true);
 
 				// Is converted to lower case through the Proxy in the HTML namespace
-				expect(element.attributes['KeY3'].name).toBe('key3');
-				expect(element.attributes['KeY3'].namespaceURI).toBe(null);
-				expect(element.attributes['KeY3'].value).toBe('value3');
-				expect(element.attributes['KeY3'].specified).toBe(true);
-				expect(element.attributes['KeY3'].ownerElement === element).toBe(true);
-				expect(element.attributes['KeY3'].ownerDocument === document).toBe(true);
+				expect((<any>element).attributes['KeY3'].name).toBe('key3');
+				expect((<any>element).attributes['KeY3'].namespaceURI).toBe(null);
+				expect((<any>element).attributes['KeY3'].value).toBe('value3');
+				expect((<any>element).attributes['KeY3'].specified).toBe(true);
+				expect((<any>element).attributes['KeY3'].ownerElement === element).toBe(true);
+				expect((<any>element).attributes['KeY3'].ownerDocument === document).toBe(true);
 			});
 
 			it('Sets an Attr node on an <svg> element.', () => {
@@ -2191,47 +2197,47 @@ describe('Element', () => {
 				attribute1.value = 'value1';
 				attribute2.value = 'value2';
 
-				svg[method](attribute1);
-				svg[method](attribute2);
+				(<any>svg)[method](attribute1);
+				(<any>svg)[method](attribute2);
 
 				expect(svg.attributes.length).toBe(2);
 
-				expect(svg.attributes[0].name).toBe('KEY1');
-				expect(svg.attributes[0].namespaceURI).toBe(NamespaceURI.svg);
-				expect(svg.attributes[0].value).toBe('value1');
-				expect(svg.attributes[0].specified).toBe(true);
-				expect(svg.attributes[0].ownerElement === svg).toBe(true);
-				expect(svg.attributes[0].ownerDocument).toBe(document);
+				expect((<any>svg.attributes)[0].name).toBe('KEY1');
+				expect((<any>svg.attributes)[0].namespaceURI).toBe(NamespaceURI.svg);
+				expect((<any>svg.attributes)[0].value).toBe('value1');
+				expect((<any>svg.attributes)[0].specified).toBe(true);
+				expect((<any>svg.attributes)[0].ownerElement === svg).toBe(true);
+				expect((<any>svg.attributes)[0].ownerDocument).toBe(document);
 
-				expect(svg.attributes[1].name).toBe('key2');
-				expect(svg.attributes[1].namespaceURI).toBe(null);
-				expect(svg.attributes[1].value).toBe('value2');
-				expect(svg.attributes[1].specified).toBe(true);
-				expect(svg.attributes[1].ownerElement === svg).toBe(true);
-				expect(svg.attributes[1].ownerDocument).toBe(document);
+				expect((<any>svg.attributes)[1].name).toBe('key2');
+				expect((<any>svg.attributes)[1].namespaceURI).toBe(null);
+				expect((<any>svg.attributes)[1].value).toBe('value2');
+				expect((<any>svg.attributes)[1].specified).toBe(true);
+				expect((<any>svg.attributes)[1].ownerElement === svg).toBe(true);
+				expect((<any>svg.attributes)[1].ownerDocument).toBe(document);
 
 				// "undefined" as the SVG namespace should not lowercase the key
-				expect(svg.attributes['key1']).toBe(undefined);
-				expect(svg.attributes['kEy1']).toBe(undefined);
+				expect((<any>svg.attributes)['key1']).toBe(undefined);
+				expect((<any>svg.attributes)['kEy1']).toBe(undefined);
 
 				// Matching key is fine in the SVG namespace
-				expect(svg.attributes['KEY1'].name).toBe('KEY1');
-				expect(svg.attributes['KEY1'].namespaceURI).toBe(NamespaceURI.svg);
-				expect(svg.attributes['KEY1'].value).toBe('value1');
-				expect(svg.attributes['KEY1'].specified).toBe(true);
-				expect(svg.attributes['KEY1'].ownerElement === svg).toBe(true);
-				expect(svg.attributes['KEY1'].ownerDocument).toBe(document);
+				expect((<any>svg.attributes)['KEY1'].name).toBe('KEY1');
+				expect((<any>svg.attributes)['KEY1'].namespaceURI).toBe(NamespaceURI.svg);
+				expect((<any>svg.attributes)['KEY1'].value).toBe('value1');
+				expect((<any>svg.attributes)['KEY1'].specified).toBe(true);
+				expect((<any>svg.attributes)['KEY1'].ownerElement === svg).toBe(true);
+				expect((<any>svg.attributes)['KEY1'].ownerDocument).toBe(document);
 
 				// "undefined" as the SVG namespace should not lowercase the key
-				expect(svg.attributes['KeY2']).toBe(undefined);
+				expect((<any>svg.attributes)['KeY2']).toBe(undefined);
 
 				// Works when matching in the SVG namespace
-				expect(svg.attributes['key2'].name).toBe('key2');
-				expect(svg.attributes['key2'].namespaceURI).toBe(null);
-				expect(svg.attributes['key2'].value).toBe('value2');
-				expect(svg.attributes['key2'].specified).toBe(true);
-				expect(svg.attributes['key2'].ownerElement === svg).toBe(true);
-				expect(svg.attributes['key2'].ownerDocument).toBe(document);
+				expect((<any>svg.attributes)['key2'].name).toBe('key2');
+				expect((<any>svg.attributes)['key2'].namespaceURI).toBe(null);
+				expect((<any>svg.attributes)['key2'].value).toBe('value2');
+				expect((<any>svg.attributes)['key2'].specified).toBe(true);
+				expect((<any>svg.attributes)['key2'].ownerElement === svg).toBe(true);
+				expect((<any>svg.attributes)['key2'].ownerDocument).toBe(document);
 			});
 		});
 	}
@@ -2347,7 +2353,7 @@ describe('Element', () => {
 				div.scrollLeft = 10;
 				div.scrollTop = 15;
 
-				div[functionName](20, 30);
+				(<any>div)[functionName](20, 30);
 
 				expect(div.scrollLeft).toBe(20);
 				expect(div.scrollTop).toBe(30);
@@ -2359,7 +2365,7 @@ describe('Element', () => {
 				div.scrollLeft = 10;
 				div.scrollTop = 15;
 
-				div[functionName]({ left: 20, top: 30 });
+				(<any>div)[functionName]({ left: 20, top: 30 });
 
 				expect(div.scrollLeft).toBe(20);
 				expect(div.scrollTop).toBe(30);
@@ -2371,7 +2377,7 @@ describe('Element', () => {
 				div.scrollLeft = 10;
 				div.scrollTop = 15;
 
-				div[functionName]({ left: 20, top: 30, behavior: 'smooth' });
+				(<any>div)[functionName]({ left: 20, top: 30, behavior: 'smooth' });
 
 				expect(div.scrollLeft).toBe(10);
 				expect(div.scrollTop).toBe(15);
@@ -2384,7 +2390,7 @@ describe('Element', () => {
 
 			it('Throws an exception if the there is only one argument and it is not an object.', () => {
 				const div = document.createElement('div');
-				expect(() => div[functionName](10)).toThrow(
+				expect(() => (<any>div)[functionName](10)).toThrow(
 					new TypeError(
 						`Failed to execute '${functionName}' on 'Element': The provided value is not of type 'ScrollToOptions'.`
 					)
@@ -2450,7 +2456,7 @@ describe('Element', () => {
 			const div = document.createElement('div');
 			div.setAttribute('onclick', 'divClicked = true');
 			div.dispatchEvent(new Event('click'));
-			expect(window['divClicked']).toBe(true);
+			expect((<any>window)['divClicked']).toBe(true);
 		});
 
 		it("Doesn't evaluate attribute event listener is immediate propagation has been stopped.", () => {
@@ -2458,7 +2464,7 @@ describe('Element', () => {
 			div.addEventListener('click', (e: Event) => e.stopImmediatePropagation());
 			div.setAttribute('onclick', 'divClicked = true');
 			div.dispatchEvent(new Event('click'));
-			expect(window['divClicked']).toBe(undefined);
+			expect((<any>window)['divClicked']).toBe(undefined);
 		});
 	});
 });
