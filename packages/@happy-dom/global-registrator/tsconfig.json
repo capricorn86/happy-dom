@@ -1,0 +1,38 @@
+{
+	"compilerOptions": {
+		"outDir": "lib",
+		"rootDir": "src",
+		"target": "ES2022",
+		"declaration": true,
+		"declarationMap": true,
+		"module": "Node16",
+		"moduleResolution": "Node16",
+		"esModuleInterop": true,
+		"experimentalDecorators": true,
+		"allowSyntheticDefaultImports": true,
+		"resolveJsonModule": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+        "noImplicitReturns": false,
+        "noImplicitAny" : true,
+        "removeComments": false,
+		"preserveConstEnums": true,
+        "strict": true,
+		"sourceMap": true,
+		"skipLibCheck": true,
+		"baseUrl": ".",
+		"composite": true,
+		"incremental": true,
+        "tsBuildInfoFile": ".turbo/.tsbuildinfo",
+		"lib": [
+			"ES2022"
+		],
+		"types": [
+			"node"
+		]
+	},
+	"include": [
+		"@types/node",
+		"src"
+	]
+}

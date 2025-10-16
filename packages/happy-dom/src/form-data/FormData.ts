@@ -220,7 +220,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 *
 	 * @returns Iterator.
 	 */
-	public *keys(): IterableIterator<string> {
+	public *keys(): ArrayIterator<string> {
 		for (const entry of this.#entries) {
 			yield entry.name;
 		}
@@ -231,7 +231,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 *
 	 * @returns Iterator.
 	 */
-	public *values(): IterableIterator<string | File> {
+	public *values(): ArrayIterator<string | File> {
 		for (const entry of this.#entries) {
 			yield entry.value;
 		}
@@ -242,7 +242,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 *
 	 * @returns Iterator.
 	 */
-	public *entries(): IterableIterator<[string, string | File]> {
+	public *entries(): ArrayIterator<[string, string | File]> {
 		for (const entry of this.#entries) {
 			yield [entry.name, entry.value];
 		}
@@ -253,7 +253,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 *
 	 * @returns Iterator.
 	 */
-	public *[Symbol.iterator](): IterableIterator<[string, string | File]> {
+	public *[Symbol.iterator](): ArrayIterator<[string, string | File]> {
 		for (const entry of this.#entries) {
 			yield [entry.name, entry.value];
 		}

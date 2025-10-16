@@ -17,7 +17,9 @@ describe('HTMLElement', () => {
 	let element: HTMLElement;
 
 	beforeEach(() => {
-		window = new Window();
+		window = new Window({
+			settings: { enableJavaScriptEvaluation: true, suppressCodeGenerationFromStringsWarning: true }
+		});
 		document = window.document;
 		element = <HTMLElement>document.createElement('div');
 	});
@@ -91,20 +93,20 @@ describe('HTMLElement', () => {
 		describe(`get on${event}()`, () => {
 			it('Returns the event listener.', () => {
 				element.setAttribute(`on${event}`, 'window.test = 1');
-				expect(element[`on${event}`]).toBeTypeOf('function');
-				element[`on${event}`](new Event(event));
-				expect(window['test']).toBe(1);
+				expect((<any>element)[`on${event}`]).toBeTypeOf('function');
+				(<any>element)[`on${event}`](new Event(event));
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 
 		describe(`set on${event}()`, () => {
 			it('Sets the event listener.', () => {
-				element[`on${event}`] = () => {
-					window['test'] = 1;
+				(<any>element)[`on${event}`] = () => {
+					(<any>window)['test'] = 1;
 				};
 				element.dispatchEvent(new Event(event));
 				expect(element.getAttribute(`on${event}`)).toBe(null);
-				expect(window['test']).toBe(1);
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 	}
@@ -129,7 +131,7 @@ describe('HTMLElement', () => {
 		describe(`get ${property}()`, () => {
 			it('Returns "0".', () => {
 				const div = document.createElement('div');
-				expect(div[property]).toBe(0);
+				expect((<any>div)[property]).toBe(0);
 			});
 		});
 	}
@@ -619,14 +621,14 @@ describe('HTMLElement', () => {
 			it(`Returns the attribute "${property}".`, () => {
 				const div = document.createElement('div');
 				div.setAttribute(property, 'value');
-				expect(div[property]).toBe('value');
+				expect((<any>div)[property]).toBe('value');
 			});
 		});
 
 		describe(`set ${property}()`, () => {
 			it(`Sets the attribute "${property}".`, () => {
 				const div = document.createElement('div');
-				div[property] = 'value';
+				(<any>div)[property] = 'value';
 				expect(div.getAttribute(property)).toBe('value');
 			});
 		});
