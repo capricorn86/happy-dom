@@ -408,3 +408,4 @@ export const disableEvaluation = Symbol('disableEvaluation');
 export const validateJavaScriptExecutionEnvironment = Symbol(
 	'validateJavaScriptExecutionEnvironment'
 );
+export const currentNode = Symbol('currentNode');
