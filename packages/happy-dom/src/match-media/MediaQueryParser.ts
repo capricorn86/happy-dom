@@ -28,7 +28,7 @@ const IS_RESOLUTION_REGEXP = /[<>]/;
  * Group 5: Second resolution value.
  */
 const RESOLUTION_REGEXP =
-	/(?:([0-9]+[a-z]+) *(<|<=|>|=>)){0,1} *(width|height) *(?:(<|<=|>|=>) *([0-9]+[a-z]+)){0,1}/;
+	/(?:([0-9]+[a-z]+) *(<|<=|>|>=)){0,1} *(width|height) *(?:(<|<=|>|>=) *([0-9]+[a-z]+)){0,1}/;
 
 /**
  * Utility for parsing a query string.
