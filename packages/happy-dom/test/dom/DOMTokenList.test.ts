@@ -190,7 +190,9 @@ describe('DOMTokenList', () => {
 				thisArgs.push(this);
 			});
 
-			expect(thisArgs).toEqual([window, window, window]);
+			expect(thisArgs[0]).toBe(window);
+			expect(thisArgs[1]).toBe(window);
+			expect(thisArgs[2]).toBe(window);
 		});
 
 		it('Executes a provided callback function once for each DOMTokenList element.', () => {

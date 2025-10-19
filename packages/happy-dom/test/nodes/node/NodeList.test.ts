@@ -102,7 +102,8 @@ describe('NodeList', () => {
 				thisArgs.push(this);
 			});
 
-			expect(thisArgs).toEqual([window, window]);
+			expect(thisArgs[0]).toBe(window);
+			expect(thisArgs[1]).toBe(window);
 		});
 
 		it('Calls a callback for each node with correct thisArg and parent', () => {

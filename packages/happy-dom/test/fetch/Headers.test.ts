@@ -179,12 +179,17 @@ describe('Headers', () => {
 				const window = new Window();
 				const headers = new window.Headers();
 
+				headers.append('Content-Type', 'application/json');
+				headers.append('Content-Type', 'x-www-form-urlencoded');
+				headers.append('Content-Encoding', 'gzip');
+
 				const thisArgs: Window[] = [];
 				headers.forEach(function (this: Window) {
 					thisArgs.push(this);
 				});
 
-				expect(thisArgs).toEqual([window, window, window]);
+				expect(thisArgs[0]).toBe(window);
+				expect(thisArgs[1]).toBe(window);
 			});
 			it('Calls a callback for each entry.', () => {
 				const headers = new Headers();
