@@ -63,7 +63,7 @@ export default class Response implements Response {
 		this.status = init?.status !== undefined ? init.status : 200;
 		this.statusText = init?.statusText || '';
 		this.ok = this.status >= 200 && this.status < 300;
-		this.headers = new Headers(init?.headers);
+		this.headers = new this[PropertySymbol.window].Headers(init?.headers);
 
 		// "Set-Cookie" and "Set-Cookie2" are not allowed in response headers according to spec.
 		this.headers.delete('Set-Cookie');

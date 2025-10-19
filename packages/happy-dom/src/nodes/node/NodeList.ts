@@ -10,6 +10,7 @@ import Node from './Node.js';
 class NodeList<T extends Node> {
 	[index: number]: T;
 	public [PropertySymbol.items]: T[];
+	public [PropertySymbol.proxy]?: this;
 
 	/**
 	 * Constructor.
@@ -113,6 +114,7 @@ class NodeList<T extends Node> {
 				}
 			}
 		});
+		this[PropertySymbol.proxy] = proxy;
 
 		return proxy;
 	}
@@ -198,10 +200,15 @@ class NodeList<T extends Node> {
 	 * @param thisArg thisArg.
 	 */
 	public forEach(
-		callback: (currentValue: T, currentIndex: number, listObj: T[]) => void,
-		thisArg?: this
+		callback: (currentValue: T, currentIndex: number, parent: this) => void,
+		thisArg?: any
 	): void {
-		return this[PropertySymbol.items].forEach(callback, thisArg);
+		const items = this[PropertySymbol.items];
+		const proxy = this[PropertySymbol.proxy] ?? this;
+		for (let i = 0, max = items.length; i < max; i++) {
+			const item = items[i];
+			callback.call(thisArg ?? item[PropertySymbol.window], item, i, proxy);
+		}
 	}
 
 	/**

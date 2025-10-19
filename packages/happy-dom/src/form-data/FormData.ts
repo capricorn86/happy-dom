@@ -111,10 +111,14 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * For each.
 	 *
 	 * @param callback Callback.
+	 * @param thisArg thisArg.
 	 */
-	public forEach(callback: (value: string | File, key: string, thisArg: FormData) => void): void {
+	public forEach(
+		callback: (value: string | File, key: string, parent: this) => void,
+		thisArg?: any
+	): void {
 		for (const entry of this.#entries) {
-			callback.call(this, entry.value, entry.name, this);
+			callback.call(thisArg, entry.value, entry.name, this);
 		}
 	}
 

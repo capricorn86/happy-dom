@@ -610,6 +610,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare readonly MessagePort: typeof MessagePort;
 	public declare readonly CSSStyleSheet: typeof CSSStyleSheet;
 	public declare readonly DOMException: typeof DOMException;
+	public declare readonly Headers: typeof Headers;
 	public declare readonly Request: typeof Request;
 	public declare readonly Response: typeof Response;
 	public declare readonly EventTarget: typeof EventTarget;
@@ -684,7 +685,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly DataTransfer = DataTransfer;
 	public readonly DataTransferItem = DataTransferItem;
 	public readonly DataTransferItemList = DataTransferItemList;
-	public readonly Headers = Headers;
 	public readonly XMLSerializer = XMLSerializer;
 	public readonly ClipboardItem = ClipboardItem;
 	public readonly Selection = Selection;
