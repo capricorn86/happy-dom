@@ -9,6 +9,9 @@ import ClassMethodBinder from '../../utilities/ClassMethodBinder.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/TextTrackList
  */
 export default class TextTrackList extends EventTarget {
+	// Index signature
+	[index: number]: TextTrack | undefined;
+
 	// Internal properties
 	public [PropertySymbol.items]: TextTrack[] = [];
 
@@ -157,7 +160,7 @@ export default class TextTrackList extends EventTarget {
 	 *
 	 * @returns Iterator.
 	 */
-	public [Symbol.iterator](): IterableIterator<TextTrack> {
+	public [Symbol.iterator](): ArrayIterator<TextTrack> {
 		const items = <TextTrack[]>this[PropertySymbol.items];
 		return items[Symbol.iterator]();
 	}

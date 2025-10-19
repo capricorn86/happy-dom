@@ -7,6 +7,7 @@ import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import PreloadUtility from './preload/PreloadUtility.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import IRequestReferrerPolicy from './types/IRequestReferrerPolicy.js';
+import IResourceFetchResponse from './types/IResourceFetchResponse.js';
 
 /**
  * Helper class for performing fetch of resources.
@@ -37,11 +38,14 @@ export default class ResourceFetch {
 		url: string | URL,
 		destination: 'script' | 'style' | 'module',
 		options?: { credentials?: IRequestCredentials; referrerPolicy?: IRequestReferrerPolicy }
-	): Promise<string> {
+	): Promise<IResourceFetchResponse> {
 		const browserFrame = new WindowBrowserContext(this.window).getBrowserFrame();
 
 		if (!browserFrame) {
-			return '';
+			return {
+				content: '',
+				virtualServerFile: null
+			};
 		}
 
 		// Preloaded resource
@@ -67,7 +71,10 @@ export default class ResourceFetch {
 					);
 				}
 
-				return preloadEntry.response?.[PropertySymbol.buffer]?.toString() || '';
+				return {
+					content: preloadEntry.response?.[PropertySymbol.buffer]?.toString() || '',
+					virtualServerFile: preloadEntry.response?.[PropertySymbol.virtualServerFile] || null
+				};
 			}
 		}
 
@@ -93,7 +100,10 @@ export default class ResourceFetch {
 			);
 		}
 
-		return await response.text();
+		return {
+			content: await response.text(),
+			virtualServerFile: response[PropertySymbol.virtualServerFile] || null
+		};
 	}
 
 	/**
@@ -110,11 +120,14 @@ export default class ResourceFetch {
 		url: string,
 		destination: 'script' | 'style' | 'module',
 		options?: { credentials?: IRequestCredentials; referrerPolicy?: IRequestReferrerPolicy }
-	): string {
+	): IResourceFetchResponse {
 		const browserFrame = new WindowBrowserContext(this.window).getBrowserFrame();
 
 		if (!browserFrame) {
-			return '';
+			return {
+				content: '',
+				virtualServerFile: null
+			};
 		}
 
 		// Preloaded resource
@@ -141,13 +154,10 @@ export default class ResourceFetch {
 					);
 				}
 
-				if (!preloadEntry.response[PropertySymbol.buffer]) {
-					throw new this.window.DOMException(
-						`Failed to perform request to "${new URL(url, this.window.location.href).href}". Response buffer is not available.`
-					);
-				}
-
-				return preloadEntry.response[PropertySymbol.buffer].toString();
+				return {
+					content: preloadEntry.response?.[PropertySymbol.buffer]?.toString() || '',
+					virtualServerFile: preloadEntry.response?.[PropertySymbol.virtualServerFile] || null
+				};
 			}
 		}
 
@@ -172,6 +182,9 @@ export default class ResourceFetch {
 			);
 		}
 
-		return response.body?.toString() || '';
+		return {
+			content: response.body?.toString() || '',
+			virtualServerFile: response[PropertySymbol.virtualServerFile] || null
+		};
 	}
 }

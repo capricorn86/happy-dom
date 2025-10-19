@@ -776,10 +776,11 @@ export default class HTMLParser {
 		// However, they are allowed to be executed when document.write() is used.
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement
 		if (upperTagName === 'SCRIPT') {
-			(<HTMLScriptElement>this.currentNode)[PropertySymbol.evaluateScript] = this.evaluateScripts;
+			(<HTMLScriptElement>this.currentNode)[PropertySymbol.disableEvaluation] =
+				!this.evaluateScripts;
 		} else if (upperTagName === 'LINK') {
 			// An assumption that the same rule should be applied for the HTMLLinkElement is made here.
-			(<HTMLLinkElement>this.currentNode)[PropertySymbol.evaluateCSS] = this.evaluateScripts;
+			(<HTMLLinkElement>this.currentNode)[PropertySymbol.disableEvaluation] = !this.evaluateScripts;
 		}
 
 		// Plain text elements such as <script> and <style> should only contain text.

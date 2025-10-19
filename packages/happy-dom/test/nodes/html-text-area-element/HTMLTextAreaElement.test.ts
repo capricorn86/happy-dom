@@ -14,7 +14,9 @@ describe('HTMLTextAreaElement', () => {
 	let element: HTMLTextAreaElement;
 
 	beforeEach(() => {
-		window = new Window();
+		window = new Window({
+			settings: { enableJavaScriptEvaluation: true, suppressCodeGenerationFromStringsWarning: true }
+		});
 		document = window.document;
 		element = <HTMLTextAreaElement>document.createElement('textarea');
 	});
@@ -29,20 +31,20 @@ describe('HTMLTextAreaElement', () => {
 		describe(`get on${event}()`, () => {
 			it('Returns the event listener.', () => {
 				element.setAttribute(`on${event}`, 'window.test = 1');
-				expect(element[`on${event}`]).toBeTypeOf('function');
-				element[`on${event}`](new Event(event));
-				expect(window['test']).toBe(1);
+				expect((<any>element)[`on${event}`]).toBeTypeOf('function');
+				(<any>element)[`on${event}`](new Event(event));
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 
 		describe(`set on${event}()`, () => {
 			it('Sets the event listener.', () => {
-				element[`on${event}`] = () => {
-					window['test'] = 1;
+				(<any>element)[`on${event}`] = () => {
+					(<any>window)['test'] = 1;
 				};
 				element.dispatchEvent(new Event(event));
 				expect(element.getAttribute(`on${event}`)).toBe(null);
-				expect(window['test']).toBe(1);
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 	}
@@ -169,15 +171,15 @@ describe('HTMLTextAreaElement', () => {
 	for (const property of ['disabled', 'autofocus', 'required', 'readOnly']) {
 		describe(`get ${property}()`, () => {
 			it('Returns attribute value.', () => {
-				expect(element[property]).toBe(false);
+				expect((<any>element)[property]).toBe(false);
 				element.setAttribute(property, '');
-				expect(element[property]).toBe(true);
+				expect((<any>element)[property]).toBe(true);
 			});
 		});
 
 		describe(`set ${property}()`, () => {
 			it('Sets attribute value.', () => {
-				element[property] = true;
+				(<any>element)[property] = true;
 				expect(element.getAttribute(property)).toBe('');
 			});
 		});
@@ -186,15 +188,15 @@ describe('HTMLTextAreaElement', () => {
 	for (const property of ['name', 'autocomplete', 'cols', 'rows', 'placeholder', 'inputMode']) {
 		describe(`get ${property}()`, () => {
 			it('Returns attribute value.', () => {
-				expect(element[property]).toBe('');
+				expect((<any>element)[property]).toBe('');
 				element.setAttribute(property, 'value');
-				expect(element[property]).toBe('value');
+				expect((<any>element)[property]).toBe('value');
 			});
 		});
 
 		describe(`set ${property}()`, () => {
 			it('Sets attribute value.', () => {
-				element[property] = 'value';
+				(<any>element)[property] = 'value';
 				expect(element.getAttribute(property)).toBe('value');
 			});
 		});
@@ -203,16 +205,16 @@ describe('HTMLTextAreaElement', () => {
 	for (const property of ['minLength', 'maxLength']) {
 		describe(`get ${property}()`, () => {
 			it('Returns attribute value.', () => {
-				expect(element[property]).toBe(-1);
+				expect((<any>element)[property]).toBe(-1);
 				element.setAttribute(property, '50');
-				expect(element[property]).toBe(50);
+				expect((<any>element)[property]).toBe(50);
 			});
 		});
 
 		describe(`set ${property}()`, () => {
 			it('Sets attribute value.', () => {
-				element[property] = 50;
-				expect(element[property]).toBe(50);
+				(<any>element)[property] = 50;
+				expect((<any>element)[property]).toBe(50);
 				expect(element.getAttribute(property)).toBe('50');
 			});
 		});
@@ -285,25 +287,25 @@ describe('HTMLTextAreaElement', () => {
 			it('Returns "true" if the field is "disabled".', () => {
 				element.required = true;
 				element.disabled = true;
-				expect(element[method]()).toBe(true);
+				expect((<any>element)[method]()).toBe(true);
 			});
 
 			it('Returns "true" if the field is "readOnly".', () => {
 				element.required = true;
 				element.readOnly = true;
-				expect(element[method]()).toBe(true);
+				expect((<any>element)[method]()).toBe(true);
 			});
 
 			it('Returns "false" if invalid.', () => {
 				element.required = true;
-				expect(element[method]()).toBe(false);
+				expect((<any>element)[method]()).toBe(false);
 			});
 
 			it('Triggers an "invalid" event when invalid.', () => {
 				element.required = true;
 				let triggeredEvent: Event | null = null;
 				element.addEventListener('invalid', (event: Event) => (triggeredEvent = event));
-				element[method]();
+				(<any>element)[method]();
 				expect((<Event>(<unknown>triggeredEvent)).type).toBe('invalid');
 			});
 		});

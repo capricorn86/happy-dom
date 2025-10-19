@@ -4,6 +4,8 @@ import File from '../file/File.js';
 import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
 import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
 import BrowserWindow from '../window/BrowserWindow.js';
+import HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 
 type FormDataEntry = {
 	name: string;
@@ -25,10 +27,30 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * Constructor.
 	 *
 	 * @param [form] Form.
+	 * @param [submitter] The element that triggered the submission if this came from a form submit.
 	 */
-	constructor(form?: HTMLFormElement) {
+	constructor(form?: HTMLFormElement, submitter?: HTMLInputElement | HTMLButtonElement) {
 		if (!form) {
 			return;
+		}
+
+		if (submitter) {
+			const formProxy = form[PropertySymbol.proxy] ? form[PropertySymbol.proxy] : form;
+			if (submitter.form !== formProxy) {
+				throw new this[PropertySymbol.window].DOMException(
+					'The specified element is not owned by this form element',
+					DOMExceptionNameEnum.notFoundError
+				);
+			}
+			const isSubmitButton =
+				(submitter[PropertySymbol.tagName] === 'INPUT' &&
+					(submitter.type === 'submit' || submitter.type === 'image')) ||
+				(submitter[PropertySymbol.tagName] === 'BUTTON' && submitter.type === 'submit');
+			if (!isSubmitButton) {
+				throw new this[PropertySymbol.window].TypeError(
+					'The specified element is not a submit button'
+				);
+			}
 		}
 
 		const items = form[PropertySymbol.getFormControlItems]();
@@ -62,7 +84,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 							case 'submit':
 							case 'reset':
 							case 'button':
-								if ((<HTMLInputElement>item).value) {
+								if (item === submitter && (<HTMLInputElement>item).value) {
 									this.append(name, (<HTMLInputElement>item).value);
 								}
 								break;
@@ -72,8 +94,8 @@ export default class FormData implements Iterable<[string, string | File]> {
 						}
 						break;
 					case 'BUTTON':
-						if ((<HTMLInputElement>item).value) {
-							this.append(name, (<HTMLInputElement>item).value);
+						if (item === submitter && (<HTMLButtonElement>item).value) {
+							this.append(name, (<HTMLButtonElement>item).value);
 						}
 						break;
 					case 'TEXTAREA':
@@ -89,10 +111,14 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 * For each.
 	 *
 	 * @param callback Callback.
+	 * @param thisArg thisArg.
 	 */
-	public forEach(callback: (value: string | File, key: string, thisArg: FormData) => void): void {
+	public forEach(
+		callback: (value: string | File, key: string, parent: this) => void,
+		thisArg?: any
+	): void {
 		for (const entry of this.#entries) {
-			callback.call(this, entry.value, entry.name, this);
+			callback.call(thisArg, entry.value, entry.name, this);
 		}
 	}
 
@@ -198,7 +224,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 *
 	 * @returns Iterator.
 	 */
-	public *keys(): IterableIterator<string> {
+	public *keys(): ArrayIterator<string> {
 		for (const entry of this.#entries) {
 			yield entry.name;
 		}
@@ -209,7 +235,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 *
 	 * @returns Iterator.
 	 */
-	public *values(): IterableIterator<string | File> {
+	public *values(): ArrayIterator<string | File> {
 		for (const entry of this.#entries) {
 			yield entry.value;
 		}
@@ -220,7 +246,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 *
 	 * @returns Iterator.
 	 */
-	public *entries(): IterableIterator<[string, string | File]> {
+	public *entries(): ArrayIterator<[string, string | File]> {
 		for (const entry of this.#entries) {
 			yield [entry.name, entry.value];
 		}
@@ -231,7 +257,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 *
 	 * @returns Iterator.
 	 */
-	public *[Symbol.iterator](): IterableIterator<[string, string | File]> {
+	public *[Symbol.iterator](): ArrayIterator<[string, string | File]> {
 		for (const entry of this.#entries) {
 			yield [entry.name, entry.value];
 		}

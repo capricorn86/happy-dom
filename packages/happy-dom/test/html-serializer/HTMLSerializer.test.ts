@@ -10,7 +10,9 @@ describe('HTMLSerializer', () => {
 	let serializer: HTMLSerializer;
 
 	beforeEach(() => {
-		window = new Window();
+		window = new Window({
+			settings: { enableJavaScriptEvaluation: true, suppressCodeGenerationFromStringsWarning: true }
+		});
 		document = window.document;
 		serializer = new HTMLSerializer();
 
@@ -182,6 +184,67 @@ describe('HTMLSerializer', () => {
 						</custom-element>
 						<custom-element key1="value4" key2="value5"></custom-element>
 					</div>`.replace(/[\s]/gm, '')
+			);
+		});
+
+		it('Excludes shadow roots of custom elements when "excludeShadowRootTags" is set as an option.', () => {
+			window.customElements.define(
+				'custom-element-2',
+				class CustomElement2 extends CustomElement {}
+			);
+
+			const div = document.createElement('div');
+			const customElement1 = document.createElement('custom-element');
+
+			const customElement2 = document.createElement('custom-element-2');
+
+			customElement1.setAttribute('key1', 'value1');
+			customElement1.setAttribute('key2', 'value2');
+			customElement1.innerHTML = '<span>Slotted content</span>';
+
+			customElement2.setAttribute('key1', 'value4');
+			customElement2.setAttribute('key2', 'value5');
+
+			div.appendChild(customElement1);
+			div.appendChild(customElement2);
+
+			// Connects the custom element to DOM which will trigger connectedCallback() on it
+			document.body.appendChild(div);
+
+			const serializer = new HTMLSerializer({
+				allShadowRoots: true,
+				excludeShadowRootTags: ['custom-element-2']
+			});
+
+			expect(serializer.serializeToString(div).replace(/[\s]/gm, '')).toBe(
+				`
+                <div>
+                    <custom-element key1="value1" key2="value2">
+                        <template shadowrootmode="open">
+                            <style>
+                                :host {
+                                    display: block;
+                                    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+                                }
+                                span {
+                                    color: pink;
+                                }
+                                .propKey {
+                                    color: yellow;
+                                }
+                            </style>
+                            <div>
+                                <span class="propKey">
+                                    key1 is "value1" and key2 is "value2".
+                                </span>
+                                <span class="children">#1SPANSlotted content</span>
+                                <span><slot></slot></span>
+                            </div>
+                        </template>
+                        <span>Slotted content</span>
+                    </custom-element>
+                    <custom-element-2 key1="value4" key2="value5"></custom-element-2>
+                </div>`.replace(/[\s]/gm, '')
 			);
 		});
 
