@@ -9,7 +9,6 @@ import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import XMLHttpResponseTypeEnum from './XMLHttpResponseTypeEnum.js';
 import ErrorEvent from '../event/events/ErrorEvent.js';
-import Headers from '../fetch/Headers.js';
 import Fetch from '../fetch/Fetch.js';
 import SyncFetch from '../fetch/SyncFetch.js';
 import Request from '../fetch/Request.js';
