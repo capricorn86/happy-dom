@@ -159,7 +159,7 @@ export default class DOMTokenList {
 	/**
 	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.
 	 */
-	public [Symbol.iterator](): IterableIterator<string> {
+	public [Symbol.iterator](): ArrayIterator<string> {
 		return this[PropertySymbol.getTokenList]().values();
 	}
 
@@ -210,14 +210,14 @@ export default class DOMTokenList {
 	/**
 	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.
 	 */
-	public values(): IterableIterator<string> {
+	public values(): ArrayIterator<string> {
 		return this[PropertySymbol.getTokenList]().values();
 	}
 
 	/**
 	 * Returns an iterator, allowing you to go through all key/value pairs contained in this object.
 	 */
-	public entries(): IterableIterator<[number, string]> {
+	public entries(): ArrayIterator<[number, string]> {
 		return this[PropertySymbol.getTokenList]().entries();
 	}
 
@@ -243,7 +243,7 @@ export default class DOMTokenList {
 	 * Returns an iterator, allowing you to go through all keys of the key/value pairs contained in this object.
 	 *
 	 */
-	public keys(): IterableIterator<number> {
+	public keys(): ArrayIterator<number> {
 		return this[PropertySymbol.getTokenList]().keys();
 	}
 

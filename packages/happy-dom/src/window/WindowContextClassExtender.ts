@@ -35,6 +35,7 @@ import FileReaderImplementation from '../file/FileReader.js';
 import MediaStreamImplementation from '../nodes/html-media-element/MediaStream.js';
 import MediaStreamTrackImplementation from '../nodes/html-media-element/MediaStreamTrack.js';
 import CanvasCaptureMediaStreamTrackImplementation from '../nodes/html-canvas-element/CanvasCaptureMediaStreamTrack.js';
+import URLImplementation from '../url/URL.js';
 
 /**
  * Extends classes with a "window" property, so that they internally can access it's Window context.
@@ -222,6 +223,11 @@ export default class WindowContextClassExtender {
 		CanvasCaptureMediaStreamTrack.prototype[PropertySymbol.window] = window;
 		(<typeof CanvasCaptureMediaStreamTrack>window.CanvasCaptureMediaStreamTrack) =
 			CanvasCaptureMediaStreamTrack;
+
+		// URL
+		class URL extends URLImplementation {}
+		URL.prototype[PropertySymbol.window] = window;
+		(<typeof URL>window.URL) = URL;
 
 		/* eslint-enable jsdoc/require-jsdoc */
 	}

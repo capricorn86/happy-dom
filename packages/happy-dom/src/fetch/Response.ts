@@ -43,6 +43,7 @@ export default class Response implements Response {
 	public readonly headers: Headers;
 	public [PropertySymbol.cachedResponse]: ICachedResponse | null = null;
 	public [PropertySymbol.buffer]: Buffer | null = null;
+	public [PropertySymbol.virtualServerFile]: string | null = null;
 	public [PropertySymbol.aborted]: boolean = false;
 	public [PropertySymbol.error]: Error | null = null;
 
@@ -136,7 +137,9 @@ export default class Response implements Response {
 
 		this.#storeBodyInCache(buffer);
 
-		return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+		return <ArrayBuffer>(
+			buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
+		);
 	}
 
 	/**
@@ -349,6 +352,8 @@ export default class Response implements Response {
 	 * @param buffer Buffer.
 	 */
 	#storeBodyInCache(buffer: Buffer): void {
+		this[PropertySymbol.buffer] = buffer;
+
 		if (this[PropertySymbol.cachedResponse]?.response?.waitingForBody) {
 			this[PropertySymbol.cachedResponse].response.body = buffer;
 			this[PropertySymbol.cachedResponse].response.waitingForBody = false;

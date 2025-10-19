@@ -136,7 +136,7 @@ export default class Headers {
 	 *
 	 * @returns Iterator.
 	 */
-	public *keys(): IterableIterator<string> {
+	public *keys(): ArrayIterator<string> {
 		for (const header of Object.values(this[PropertySymbol.entries])) {
 			yield header.name;
 		}
@@ -147,7 +147,7 @@ export default class Headers {
 	 *
 	 * @returns Iterator.
 	 */
-	public *values(): IterableIterator<string> {
+	public *values(): ArrayIterator<string> {
 		for (const header of Object.values(this[PropertySymbol.entries])) {
 			yield header.value.join(', ');
 		}
@@ -158,7 +158,7 @@ export default class Headers {
 	 *
 	 * @returns Iterator.
 	 */
-	public *entries(): IterableIterator<[string, string]> {
+	public *entries(): ArrayIterator<[string, string]> {
 		for (const header of Object.values(this[PropertySymbol.entries])) {
 			yield [header.name, header.value.join(', ')];
 		}
@@ -169,7 +169,7 @@ export default class Headers {
 	 *
 	 * @returns Iterator.
 	 */
-	public *[Symbol.iterator](): IterableIterator<[string, string]> {
+	public *[Symbol.iterator](): ArrayIterator<[string, string]> {
 		for (const header of Object.values(this[PropertySymbol.entries])) {
 			yield [header.name, header.value.join(', ')];
 		}

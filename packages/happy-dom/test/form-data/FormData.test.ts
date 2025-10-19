@@ -17,8 +17,15 @@ describe('FormData', () => {
 		vi.restoreAllMocks();
 	});
 
+	beforeEach(() => {
+		window = new Window();
+		document = window.document;
+	});
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
 	describe('constructor', () => {
-		it('Supports sending in an HTMLFormElement to the contructor.', () => {
+		it('Supports sending in an HTMLFormElement to the constructor.', () => {
 			const form = document.createElement('form');
 			const file = new File([Buffer.from('fileContent')], 'file.txt', { type: 'text/plain' });
 			const textInput = document.createElement('input');
@@ -37,33 +44,26 @@ describe('FormData', () => {
 			textInput.type = 'text';
 			textInput.name = 'textInput';
 			textInput.value = 'text value';
-
 			hiddenInput.type = 'hidden';
 			hiddenInput.name = 'hiddenInput';
 			hiddenInput.value = 'hidden value 1';
-
 			hiddenInput2.type = 'hidden';
 			hiddenInput2.name = 'hiddenInput';
 			hiddenInput2.value = 'hidden value 2';
-
 			fileInput.type = 'file';
 			fileInput.name = 'fileInput';
 			fileInput.files.push(file);
-
 			radioInput1.type = 'radio';
 			radioInput1.name = 'radioInput';
 			radioInput1.value = 'radio value 1';
 			radioInput1.checked = false;
-
 			radioInput2.type = 'radio';
 			radioInput2.name = 'radioInput';
 			radioInput2.value = 'radio value 2';
 			radioInput2.checked = true;
-
 			checkboxInput1.type = 'checkbox';
 			checkboxInput1.name = 'checkboxInput';
 			checkboxInput1.value = 'checkbox value 1';
-
 			checkboxInput2.type = 'checkbox';
 			checkboxInput2.name = 'checkboxInput';
 			checkboxInput2.value = 'checkbox value 2';
@@ -106,8 +106,106 @@ describe('FormData', () => {
 			expect(formData.getAll('checkboxInput')).toEqual(['checkbox value 2']);
 			expect(formData.get('button1')).toBe(null);
 			expect(formData.get('button2')).toBe(null);
-			expect(formData.get('button3')).toBe('button3');
-			expect(formData.get('button4')).toBe('button4');
+			expect(formData.get('button3')).toBe(null);
+			expect(formData.get('button4')).toBe(null);
+		});
+
+		it('Supports sending in an HTMLFormElement and a submitter to the constructor.', () => {
+			const form = document.createElement('form');
+			const file = new File([Buffer.from('fileContent')], 'file.txt', { type: 'text/plain' });
+			const textInput = document.createElement('input');
+			const hiddenInput = document.createElement('input');
+			const hiddenInput2 = document.createElement('input');
+			const fileInput = document.createElement('input');
+			const radioInput1 = document.createElement('input');
+			const radioInput2 = document.createElement('input');
+			const checkboxInput1 = document.createElement('input');
+			const checkboxInput2 = document.createElement('input');
+			const button = document.createElement('button');
+
+			textInput.type = 'text';
+			textInput.name = 'textInput';
+			textInput.value = 'text value';
+			hiddenInput.type = 'hidden';
+			hiddenInput.name = 'hiddenInput';
+			hiddenInput.value = 'hidden value 1';
+			hiddenInput2.type = 'hidden';
+			hiddenInput2.name = 'hiddenInput';
+			hiddenInput2.value = 'hidden value 2';
+			fileInput.type = 'file';
+			fileInput.name = 'fileInput';
+			fileInput.files.push(file);
+			radioInput1.type = 'radio';
+			radioInput1.name = 'radioInput';
+			radioInput1.value = 'radio value 1';
+			radioInput1.checked = false;
+			radioInput2.type = 'radio';
+			radioInput2.name = 'radioInput';
+			radioInput2.value = 'radio value 2';
+			radioInput2.checked = true;
+			checkboxInput1.type = 'checkbox';
+			checkboxInput1.name = 'checkboxInput';
+			checkboxInput1.value = 'checkbox value 1';
+			checkboxInput2.type = 'checkbox';
+			checkboxInput2.name = 'checkboxInput';
+			checkboxInput2.value = 'checkbox value 2';
+			checkboxInput2.checked = true;
+
+			button.type = 'submit';
+			button.name = 'button1';
+			button.value = 'button';
+
+			form.appendChild(textInput);
+			form.appendChild(hiddenInput);
+			form.appendChild(hiddenInput2);
+			form.appendChild(fileInput);
+			form.appendChild(radioInput1);
+			form.appendChild(radioInput2);
+			form.appendChild(checkboxInput1);
+			form.appendChild(checkboxInput2);
+			form.appendChild(button);
+
+			const formData = new window.FormData(form, button);
+
+			expect(formData.get('textInput')).toBe('text value');
+			expect(formData.get('hiddenInput')).toBe('hidden value 1');
+			expect(formData.get('fileInput')).toBe(file);
+			expect(formData.get('radioInput')).toBe('radio value 2');
+			expect(formData.get('checkboxInput')).toBe('checkbox value 2');
+			expect(formData.getAll('hiddenInput')).toEqual(['hidden value 1', 'hidden value 2']);
+			expect(formData.getAll('radioInput')).toEqual(['radio value 2']);
+			expect(formData.getAll('checkboxInput')).toEqual(['checkbox value 2']);
+			expect(formData.get('button1')).toBe('button');
+		});
+
+		it('Only sends button value if the button has a name and value.', () => {
+			const form = document.createElement('form');
+			const button1 = document.createElement('button');
+			const button2 = document.createElement('input');
+			const button3 = document.createElement('button');
+			const button4 = document.createElement('input');
+
+			button1.name = 'button1';
+
+			button2.type = 'submit';
+			button2.name = 'button2';
+
+			button3.name = 'button3';
+			button3.value = 'button3';
+
+			button4.type = 'submit';
+			button4.name = 'button4';
+			button4.value = 'button4';
+
+			form.appendChild(button1);
+			form.appendChild(button2);
+			form.appendChild(button3);
+			form.appendChild(button4);
+
+			expect(new window.FormData(form, button1).get('button1')).toBe(null);
+			expect(new window.FormData(form, button2).get('button2')).toBe(null);
+			expect(new window.FormData(form, button3).get('button3')).toBe('button3');
+			expect(new window.FormData(form, button4).get('button4')).toBe('button4');
 		});
 
 		it('Supports input elements with empty values.', () => {

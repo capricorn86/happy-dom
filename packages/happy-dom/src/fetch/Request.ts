@@ -322,7 +322,9 @@ export default class Request implements Request {
 
 		asyncTaskManager.endTask(taskID);
 
-		return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+		return <ArrayBuffer>(
+			buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
+		);
 	}
 
 	/**

@@ -162,7 +162,7 @@ class NodeList<T extends Node> {
 	 */
 	public item(index: number): T | null {
 		const nodes = this[PropertySymbol.items];
-		return index >= 0 && nodes[index] ? <T>nodes[index] : null;
+		return index >= 0 && nodes[index] ? nodes[index] : null;
 	}
 
 	/**
@@ -170,8 +170,8 @@ class NodeList<T extends Node> {
 	 *
 	 * @returns Iterator.
 	 */
-	public [Symbol.iterator](): IterableIterator<T> {
-		const items = <T[]>this[PropertySymbol.items];
+	public [Symbol.iterator](): ArrayIterator<T> {
+		const items = this[PropertySymbol.items];
 		return items[Symbol.iterator]();
 	}
 
@@ -180,8 +180,8 @@ class NodeList<T extends Node> {
 	 *
 	 * @returns Iterator.
 	 */
-	public values(): IterableIterator<T> {
-		return (<T[]>this[PropertySymbol.items]).values();
+	public values(): ArrayIterator<T> {
+		return this[PropertySymbol.items].values();
 	}
 
 	/**
@@ -189,8 +189,8 @@ class NodeList<T extends Node> {
 	 *
 	 * @returns Iterator.
 	 */
-	public entries(): IterableIterator<[number, T]> {
-		return (<T[]>this[PropertySymbol.items]).entries();
+	public entries(): ArrayIterator<[number, T]> {
+		return this[PropertySymbol.items].entries();
 	}
 
 	/**
@@ -216,8 +216,8 @@ class NodeList<T extends Node> {
 	 *
 	 * @returns Iterator.
 	 */
-	public keys(): IterableIterator<number> {
-		return (<T[]>this[PropertySymbol.items]).keys();
+	public keys(): ArrayIterator<number> {
+		return this[PropertySymbol.items].keys();
 	}
 }
 

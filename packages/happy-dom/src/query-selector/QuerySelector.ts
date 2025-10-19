@@ -115,7 +115,11 @@ export default class QuerySelector {
 			}
 		}
 
-		const groups = SelectorParser.getSelectorGroups(selector);
+		const scope =
+			node[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
+				? (<Document>node).documentElement
+				: node;
+		const groups = SelectorParser.getSelectorGroups(selector, { scope });
 		const items: Element[] = [];
 		const nodeList = new NodeList<Element>(PropertySymbol.illegalConstructor, items);
 		const matchesMap: Map<string, Element> = new Map();
@@ -251,7 +255,11 @@ export default class QuerySelector {
 
 		const matchesMap: Map<string, Element> = new Map();
 		const matchedPositions: string[] = [];
-		for (const items of SelectorParser.getSelectorGroups(selector)) {
+		const scope =
+			node[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
+				? (<Document>node).documentElement
+				: node;
+		for (const items of SelectorParser.getSelectorGroups(selector, { scope })) {
 			const match =
 				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
 					? this.findFirst(<Element>node, [<Element>node], items, cachedItem)
@@ -277,13 +285,14 @@ export default class QuerySelector {
 	 * @param element Element to match.
 	 * @param selector Selector to match with.
 	 * @param [options] Options.
+	 * @param [options.scope] Scope.
 	 * @param [options.ignoreErrors] Ignores errors.
 	 * @returns Result.
 	 */
 	public static matches(
 		element: Element,
 		selector: string,
-		options?: { ignoreErrors?: boolean }
+		options?: { scope?: Element | Document | DocumentFragment | null; ignoreErrors?: boolean }
 	): ISelectorMatch | null {
 		const ignoreErrors = options?.ignoreErrors;
 		const window = element[PropertySymbol.window];
@@ -349,7 +358,15 @@ export default class QuerySelector {
 			);
 		}
 
-		for (const items of SelectorParser.getSelectorGroups(selector, options)) {
+		const scopeOrElement = options?.scope || element;
+		const scope =
+			scopeOrElement[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
+				? (<Document>scopeOrElement).documentElement
+				: scopeOrElement;
+		for (const items of SelectorParser.getSelectorGroups(selector, {
+			...options,
+			scope
+		})) {
 			const result = this.matchSelector(element, items.reverse(), cachedItem);
 
 			if (result) {

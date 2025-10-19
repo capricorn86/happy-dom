@@ -157,7 +157,7 @@ export default class SVGTransformList {
 	/**
 	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.
 	 */
-	public [Symbol.iterator](): IterableIterator<SVGTransform> {
+	public [Symbol.iterator](): ArrayIterator<SVGTransform> {
 		return this[PropertySymbol.getItemList]().values();
 	}
 

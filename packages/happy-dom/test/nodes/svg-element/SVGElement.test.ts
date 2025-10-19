@@ -1,7 +1,5 @@
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
-import SVGSVGElement from '../../../src/nodes/svg-svg-element/SVGSVGElement.js';
-import NamespaceURI from '../../../src/config/NamespaceURI.js';
 import SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
 import HTMLElementUtility from '../../../src/nodes/html-element/HTMLElementUtility.js';
 import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest';
@@ -15,7 +13,9 @@ describe('SVGElement', () => {
 	let element: SVGElement;
 
 	beforeEach(() => {
-		window = new Window();
+		window = new Window({
+			settings: { enableJavaScriptEvaluation: true, suppressCodeGenerationFromStringsWarning: true }
+		});
 		document = window.document;
 		element = <SVGElement>document.createElementNS('http://www.w3.org/2000/svg', 'unknown');
 	});
@@ -126,20 +126,20 @@ describe('SVGElement', () => {
 		describe(`get on${event}()`, () => {
 			it('Returns the event listener.', () => {
 				element.setAttribute(`on${event}`, 'window.test = 1');
-				expect(element[`on${event}`]).toBeTypeOf('function');
-				element[`on${event}`](new Event(event));
-				expect(window['test']).toBe(1);
+				expect((<any>element)[`on${event}`]).toBeTypeOf('function');
+				(<any>element)[`on${event}`](new Event(event));
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 
 		describe(`set on${event}()`, () => {
 			it('Sets the event listener.', () => {
-				element[`on${event}`] = () => {
-					window['test'] = 1;
+				(<any>element)[`on${event}`] = () => {
+					(<any>window)['test'] = 1;
 				};
 				element.dispatchEvent(new Event(event));
 				expect(element.getAttribute(`on${event}`)).toBe(null);
-				expect(window['test']).toBe(1);
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 	}
