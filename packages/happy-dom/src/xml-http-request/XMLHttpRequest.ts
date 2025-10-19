@@ -202,7 +202,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			);
 		}
 
-		const headers = new Headers();
+		const headers = new this[PropertySymbol.window].Headers();
 		if (user) {
 			const authBuffer = Buffer.from(`${user}:${password || ''}`);
 			headers.set('Authorization', 'Basic ' + authBuffer.toString('base64'));

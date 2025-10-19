@@ -16,10 +16,12 @@ describe('NodeList', () => {
 
 	describe('constructor()', () => {
 		it('Should throw an error if the "illegalConstructor" symbol is not sent to the constructor', () => {
+			// @ts-expect-error
 			expect(() => new NodeList()).toThrow(new TypeError('Illegal constructor'));
 		});
 
 		it('Should not throw an error if the "illegalConstructor" symbol is provided', () => {
+			// @ts-expect-error
 			expect(() => new NodeList(PropertySymbol.illegalConstructor)).not.toThrow();
 		});
 
@@ -30,12 +32,12 @@ describe('NodeList', () => {
 				'<div class="tab" data-track-id="two"></div>' +
 				'</div>';
 			const container = document.querySelector('.container')!;
-			expect(container.childNodes[{}]).toBe(undefined);
-			expect(container.childNodes[[]]).toBe(undefined);
+			expect(container.childNodes[<any>{}]).toBe(undefined);
+			expect(container.childNodes[<any>[]]).toBe(undefined);
 			expect(container.childNodes[-1]).toBe(undefined);
 			expect(container.childNodes[999]).toBe(undefined);
-			expect(container.childNodes[null]).toBe(undefined);
-			expect(container.childNodes[undefined]).toBe(undefined);
+			expect(container.childNodes[<any>null]).toBe(undefined);
+			expect(container.childNodes[<any>undefined]).toBe(undefined);
 		});
 	});
 
@@ -88,6 +90,21 @@ describe('NodeList', () => {
 	});
 
 	describe('forEach()', () => {
+		it('Defaults "thisArg" to the Window instance.', () => {
+			const parentEl = document.createElement('div');
+			const node1 = document.createTextNode('node1');
+			const node2 = document.createComment('node2');
+			parentEl.appendChild(node1);
+			parentEl.appendChild(node2);
+
+			const thisArgs: Window[] = [];
+			parentEl.childNodes.forEach(function (this: Window) {
+				thisArgs.push(this);
+			});
+
+			expect(thisArgs).toEqual([window, window]);
+		});
+
 		it('Calls a callback for each node with correct thisArg and parent', () => {
 			const parentEl = document.createElement('div');
 			const node1 = document.createTextNode('node1');
@@ -97,7 +114,7 @@ describe('NodeList', () => {
 			const calls: Array<{ node: Node; index: number }> = [];
 			const thisArg = {};
 
-			parentEl.childNodes.forEach(function (current, idx, parentList) {
+			parentEl.childNodes.forEach(function (this: any, current, idx, parentList) {
 				expect(this).toBe(thisArg);
 				expect(parentList).toBe(parentEl.childNodes);
 				calls.push({ node: current, index: idx });

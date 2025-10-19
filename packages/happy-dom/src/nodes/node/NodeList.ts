@@ -205,8 +205,9 @@ class NodeList<T extends Node> {
 	): void {
 		const items = this[PropertySymbol.items];
 		const proxy = this[PropertySymbol.proxy] ?? this;
-		for (const index of items.keys()) {
-			callback.call(thisArg, items[index], index, proxy);
+		for (let i = 0, max = items.length; i < max; i++) {
+			const item = items[i];
+			callback.call(thisArg ?? item[PropertySymbol.window], item, i, proxy);
 		}
 	}
 

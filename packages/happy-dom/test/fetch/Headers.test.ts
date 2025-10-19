@@ -1,5 +1,6 @@
 import Headers from '../../src/fetch/Headers.js';
 import { describe, it, expect } from 'vitest';
+import Window from '../../src/window/Window.js';
 
 describe('Headers', () => {
 	describe('constructor()', () => {
@@ -11,7 +12,7 @@ describe('Headers', () => {
 
 			const headers2 = new Headers(headers1);
 
-			const entries = {};
+			const entries: Record<string, string> = {};
 
 			for (const [key, value] of headers2) {
 				entries[key] = value;
@@ -32,7 +33,7 @@ describe('Headers', () => {
 			headers.append('Content-Type', 'x-www-form-urlencoded');
 			headers.append('Content-Encoding', 'gzip');
 
-			const entries = {};
+			const entries: Record<string, string> = {};
 
 			for (const [key, value] of headers) {
 				entries[key] = value;
@@ -55,7 +56,7 @@ describe('Headers', () => {
 
 			headers.delete('Content-Type');
 
-			const entries = {};
+			const entries: Record<string, string> = {};
 
 			for (const [key, value] of headers) {
 				entries[key] = value;
@@ -94,7 +95,7 @@ describe('Headers', () => {
 				headers.set('Content-Type', 'x-www-form-urlencoded');
 				headers.set('Content-Encoding', 'gzip');
 
-				const entries = {};
+				const entries: Record<string, string> = {};
 
 				for (const [key, value] of headers) {
 					entries[key] = value;
@@ -174,6 +175,17 @@ describe('Headers', () => {
 		});
 
 		describe('forEach()', () => {
+			it('Defaults "thisArg" to the Window instance.', () => {
+				const window = new Window();
+				const headers = new window.Headers();
+
+				const thisArgs: Window[] = [];
+				headers.forEach(function (this: Window) {
+					thisArgs.push(this);
+				});
+
+				expect(thisArgs).toEqual([window, window, window]);
+			});
 			it('Calls a callback for each entry.', () => {
 				const headers = new Headers();
 
@@ -181,9 +193,9 @@ describe('Headers', () => {
 				headers.append('Content-Type', 'x-www-form-urlencoded');
 				headers.append('Content-Encoding', 'gzip');
 
-				const entries = {};
+				const entries: Record<string, string> = {};
 				const thisArg = {};
-				headers.forEach(function (value, key, parent) {
+				headers.forEach(function (this: Headers, value, key, parent) {
 					expect(this).toBe(thisArg);
 					expect(parent).toBe(headers);
 					entries[key] = value;
@@ -240,7 +252,7 @@ describe('Headers', () => {
 				headers.set('Content-Type', 'x-www-form-urlencoded');
 				headers.set('Content-Encoding', 'gzip');
 
-				const entries = {};
+				const entries: Record<string, string> = {};
 
 				for (const [key, value] of headers.entries()) {
 					entries[key] = value;
@@ -261,7 +273,7 @@ describe('Headers', () => {
 				headers.set('Content-Type', 'x-www-form-urlencoded');
 				headers.set('Content-Encoding', 'gzip');
 
-				const entries = {};
+				const entries: Record<string, string> = {};
 
 				for (const [key, value] of headers) {
 					entries[key] = value;

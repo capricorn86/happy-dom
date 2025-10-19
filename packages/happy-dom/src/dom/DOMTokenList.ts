@@ -231,10 +231,11 @@ export default class DOMTokenList {
 		callback: (currentValue: string, currentIndex: number, parent: this) => void,
 		thisArg?: any
 	): void {
+		const thisArgValue = thisArg ?? this[PropertySymbol.ownerElement][PropertySymbol.window];
 		const items = this[PropertySymbol.getTokenList]();
 		const proxy = this[PropertySymbol.proxy] ?? this;
-		for (const index of items.keys()) {
-			callback.call(thisArg, items[index], index, proxy);
+		for (let i = 0, max = items.length; i < max; i++) {
+			callback.call(thisArgValue, items[i], i, proxy);
 		}
 	}
 

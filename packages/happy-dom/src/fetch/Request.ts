@@ -108,7 +108,9 @@ export default class Request implements Request {
 		this[PropertySymbol.body] = stream;
 		this[PropertySymbol.credentials] =
 			init?.credentials || (<Request>input).credentials || 'same-origin';
-		this[PropertySymbol.headers] = new Headers(init?.headers || (<Request>input).headers || {});
+		this[PropertySymbol.headers] = new this[PropertySymbol.window].Headers(
+			init?.headers || (<Request>input).headers || {}
+		);
 
 		FetchRequestHeaderUtility.removeForbiddenHeaders(this.headers);
 
