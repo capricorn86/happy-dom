@@ -542,6 +542,34 @@ describe('HTMLFormElement', () => {
 		});
 	});
 
+	describe('get previousSibling()', () => {
+		it('Returns the previous sibling.', () => {
+			const form = document.createElement('form');
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+
+			document.body.appendChild(span1);
+			document.body.appendChild(form);
+			document.body.appendChild(span2);
+
+			expect(form.previousSibling).toBe(span1);
+		});
+	});
+
+	describe('get nextSibling()', () => {
+		it('Returns the next sibling.', () => {
+			const form = document.createElement('form');
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+
+			document.body.appendChild(span1);
+			document.body.appendChild(form);
+			document.body.appendChild(span2);
+
+			expect(form.nextSibling).toBe(span2);
+		});
+	});
+
 	describe('submit()', () => {
 		it('Fallbacks to set location URL when in the main frame of a detached Window.', () => {
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {

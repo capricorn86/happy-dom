@@ -30,7 +30,7 @@
 		"watch": "npm run compile && tsc -w --preserveWatchOutput",
 		"test": "jest",
 		"test:watch": "jest --watch",
-		"test:debug": "node --inspect-brk ../../node_modules/.bin/jest --runInBand --testTimeout 60000"
+		"test:debug": "node --inspect-brk ../../../node_modules/.bin/jest --runInBand --testTimeout 60000"
 	},
 	"jest": {
 		"transform": {

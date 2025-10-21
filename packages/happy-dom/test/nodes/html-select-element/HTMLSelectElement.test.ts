@@ -395,6 +395,34 @@ describe('HTMLSelectElement', () => {
 		});
 	});
 
+	describe('get previousSibling()', () => {
+		it('Returns the previous sibling.', () => {
+			const select1 = document.createElement('select');
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+
+			document.body.appendChild(span1);
+			document.body.appendChild(select1);
+			document.body.appendChild(span2);
+
+			expect(select1.previousSibling).toBe(span1);
+		});
+	});
+
+	describe('get nextSibling()', () => {
+		it('Returns the next sibling.', () => {
+			const select1 = document.createElement('select');
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+
+			document.body.appendChild(span1);
+			document.body.appendChild(select1);
+			document.body.appendChild(span2);
+
+			expect(select1.nextSibling).toBe(span2);
+		});
+	});
+
 	describe(`add()`, () => {
 		it('Appends options.', () => {
 			const option1 = <HTMLOptionElement>document.createElement('option');
