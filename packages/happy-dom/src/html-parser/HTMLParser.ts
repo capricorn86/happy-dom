@@ -117,6 +117,7 @@ interface IHTMLDocumentStructure {
 export default class HTMLParser {
 	private window: BrowserWindow;
 	private evaluateScripts: boolean = false;
+	private isTemplateDocumentFragment: boolean = false;
 	private rootNode: Element | DocumentFragment | Document | null = null;
 	private rootDocument: Document | null = null;
 	private nodeStack: Node[] = [];
@@ -134,17 +135,23 @@ export default class HTMLParser {
 	 * @param window Window.
 	 * @param [options] Options.
 	 * @param [options.evaluateScripts] Set to "true" to enable script execution
+	 * @param [options.isTemplateDocumentFragment] Set to "true" if parsing a template content fragment.
 	 */
 	constructor(
 		window: BrowserWindow,
 		options?: {
 			evaluateScripts?: boolean;
+			isTemplateDocumentFragment?: boolean;
 		}
 	) {
 		this.window = window;
 
 		if (options?.evaluateScripts) {
 			this.evaluateScripts = true;
+		}
+
+		if (options?.isTemplateDocumentFragment) {
+			this.isTemplateDocumentFragment = true;
 		}
 	}
 	/**
@@ -545,6 +552,7 @@ export default class HTMLParser {
 					this.currentNode = this.nodeStack[this.nodeStack.length - 1] || this.rootNode;
 				}
 			} else if (
+				!this.isTemplateDocumentFragment &&
 				config?.permittedParents &&
 				!config.permittedParents.includes(parentLowerTagName!)
 			) {
