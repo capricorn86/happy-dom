@@ -1723,10 +1723,7 @@ export default class Document extends Node {
 			}
 		}
 
-		const childNodes = this[PropertySymbol.nodeArray];
-		while (childNodes.length) {
-			this.removeChild(childNodes[0]);
-		}
+		ParentNodeUtility.clearChildren(this);
 
 		// Default document elements
 		const doctype = this[PropertySymbol.implementation].createDocumentType('html', '', '');
