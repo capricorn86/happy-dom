@@ -1066,6 +1066,41 @@ export default class Node extends EventTarget {
 	}
 
 	/**
+	 * Destroys the node.
+	 */
+	public [PropertySymbol.destroy](): void {
+		super[PropertySymbol.destroy]();
+
+		this[PropertySymbol.isConnected] = false;
+
+		while (this[PropertySymbol.nodeArray].length > 0) {
+			const node = this[PropertySymbol.nodeArray][this[PropertySymbol.nodeArray].length - 1];
+
+			// Makes sure that something won't be triggered by the disconnect.
+			if ((<any>node).disconnectedCallback) {
+				delete (<any>node).disconnectedCallback;
+			}
+
+			this[PropertySymbol.removeChild](node);
+			node[PropertySymbol.destroy]();
+		}
+
+		this[PropertySymbol.parentNode] = null;
+		this[PropertySymbol.rootNode] = null;
+		this[PropertySymbol.styleNode] = null;
+		this[PropertySymbol.textAreaNode] = null;
+		this[PropertySymbol.formNode] = null;
+		this[PropertySymbol.selectNode] = null;
+		this[PropertySymbol.mutationListeners] = [];
+		this[PropertySymbol.nodeArray] = [];
+		this[PropertySymbol.elementArray] = [];
+		this[PropertySymbol.childNodes] = null;
+		this[PropertySymbol.assignedToSlot] = null;
+
+		this[PropertySymbol.clearCache]();
+	}
+
+	/**
 	 * Reports the position of its argument node relative to the node on which it is called.
 	 *
 	 * @see https://dom.spec.whatwg.org/#dom-node-comparedocumentposition

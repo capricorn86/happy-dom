@@ -233,6 +233,48 @@ describe('BrowserPage', () => {
 			expect(mainFrameWindow[PropertySymbol.modules].css.size).toBe(0);
 			expect(mainFrameWindow[PropertySymbol.modules].json.size).toBe(0);
 		});
+
+		it('Clears event listeners of nodes when closing.', async () => {
+			const browser = new Browser({ console });
+			const page = browser.defaultContext.newPage();
+			const mainFrame = page.mainFrame;
+			const frame1 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+
+			const div1 = mainFrame.document.createElement('div');
+			const div2 = frame1.document.createElement('div');
+			const div3 = frame2.document.createElement('div');
+			let mainFrameDivClicked = false;
+			let frame1DivClicked = false;
+			let frame2DivClicked = false;
+
+			div1.addEventListener('click', () => {
+				mainFrameDivClicked = true;
+			});
+
+			div2.addEventListener('click', () => {
+				frame1DivClicked = true;
+			});
+
+			div3.addEventListener('click', () => {
+				frame2DivClicked = true;
+			});
+
+			mainFrame.document.body.appendChild(div1);
+			frame1.document.body.appendChild(div2);
+			frame2.document.body.appendChild(div3);
+
+			await page.close();
+
+			// Simulate clicks after page is closed
+			div1.dispatchEvent(new Event('click'));
+			div2.dispatchEvent(new Event('click'));
+			div3.dispatchEvent(new Event('click'));
+
+			expect(mainFrameDivClicked).toBe(false);
+			expect(frame1DivClicked).toBe(false);
+			expect(frame2DivClicked).toBe(false);
+		});
 	});
 
 	describe('waitUntilComplete()', () => {
