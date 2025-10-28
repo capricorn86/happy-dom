@@ -34,6 +34,7 @@
 	},
 	"dependencies": {
 		"whatwg-mimetype": "^3.0.0",
+		"ws": "^8.18.3",
 		"@types/whatwg-mimetype": "^3.0.2",
 		"@types/node": "^20.0.0"
 	},

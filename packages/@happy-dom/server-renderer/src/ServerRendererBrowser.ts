@@ -5,7 +5,7 @@ import FS from 'fs';
 import Path from 'path';
 import IServerRendererItem from './types/IServerRendererItem.js';
 import IServerRendererResult from './types/IServerRendererResult.js';
-import { ErrorEvent } from 'happy-dom';
+import { ErrorEvent, Response } from 'happy-dom';
 import BrowserWindowPolyfill from './utilities/BrowserWindowPolyfill.js';
 
 /**
@@ -56,7 +56,7 @@ export default class ServerRendererBrowser {
 				const promises = [];
 				for (const url of chunk) {
 					promises.push(
-						this.#renderURL(browser, url).then((result) => {
+						this.#renderPage(browser, url).then((result) => {
 							results.push(result);
 						})
 					);
@@ -66,7 +66,7 @@ export default class ServerRendererBrowser {
 		} else {
 			const promises = [];
 			for (const url of items) {
-				promises.push(this.#renderURL(browser, url));
+				promises.push(this.#renderPage(browser, url));
 			}
 			results = await Promise.all(promises);
 		}
@@ -91,7 +91,7 @@ export default class ServerRendererBrowser {
 	 * @param browser Browser.
 	 * @param item Item.
 	 */
-	async #renderURL(browser: Browser, item: IServerRendererItem): Promise<IServerRendererResult> {
+	async #renderPage(browser: Browser, item: IServerRendererItem): Promise<IServerRendererResult> {
 		const responseCache = browser.defaultContext.responseCache;
 		const preflightResponseCache = browser.defaultContext.preflightResponseCache;
 		const configuration = this.#configuration;
@@ -109,40 +109,66 @@ export default class ServerRendererBrowser {
 		}
 
 		const pageErrors: string[] = [];
-		const response = (await page.goto(item.url, {
-			timeout: configuration.render.timeout,
-			headers: item.headers,
-			beforeContentCallback(window) {
-				window.addEventListener('error', (event) => {
-					if ((<ErrorEvent>event).error) {
-						pageErrors.push((<ErrorEvent>event).error!.stack!);
+		let response: Response | null = null;
+		let headers: { [key: string]: string } | null = null;
+
+		if (item.html) {
+			if (item.url) {
+				page.mainFrame.url = item.url;
+			}
+			if (!configuration.render.disablePolyfills) {
+				BrowserWindowPolyfill.applyPolyfills(page.mainFrame.window);
+			}
+			page.mainFrame.document.write(item.html);
+		} else if (item.url) {
+			headers = {};
+			response = (await page.goto(item.url, {
+				timeout: configuration.render.timeout,
+				headers: item.headers,
+				beforeContentCallback(window) {
+					window.addEventListener('error', (event) => {
+						if ((<ErrorEvent>event).error) {
+							pageErrors.push((<ErrorEvent>event).error!.stack!);
+						}
+					});
+					if (!configuration.render.disablePolyfills) {
+						BrowserWindowPolyfill.applyPolyfills(window);
 					}
-				});
-				if (!configuration.render.disablePolyfills) {
-					BrowserWindowPolyfill.applyPolyfills(window);
+				}
+			}))!;
+
+			for (const [key, value] of response.headers) {
+				if (key !== 'content-encoding') {
+					headers[key] = value;
 				}
 			}
-		}))!;
 
-		const headers: { [key: string]: string } = {};
-
-		for (const [key, value] of response.headers) {
-			if (key !== 'content-encoding') {
-				headers[key] = value;
+			if (!response.ok) {
+				const pageConsole = page.virtualConsolePrinter.readAsString();
+				await page.close();
+				return {
+					url: item.url || page.url,
+					content: null,
+					status: response.status,
+					statusText: response.statusText,
+					headers,
+					outputFile: item.outputFile ?? null,
+					error: `Failed to render page ${item.url} (${response.status} ${response.statusText})`,
+					pageConsole,
+					pageErrors
+				};
 			}
-		}
-
-		if (!response.ok) {
+		} else {
 			const pageConsole = page.virtualConsolePrinter.readAsString();
 			await page.close();
 			return {
-				url: item.url,
+				url: null,
 				content: null,
-				status: response.status,
-				statusText: response.statusText,
-				headers,
+				status: null,
+				statusText: null,
+				headers: null,
 				outputFile: item.outputFile ?? null,
-				error: `Failed to render page ${item.url} (${response.status} ${response.statusText})`,
+				error: `No "url" or "html" provided to render.`,
 				pageConsole,
 				pageErrors
 			};
@@ -161,12 +187,13 @@ export default class ServerRendererBrowser {
 			await page.waitUntilComplete();
 		} catch (error) {
 			const pageConsole = page.virtualConsolePrinter.readAsString();
+			const url = item.url || page.url;
 			await page.close();
 			return {
-				url: item.url,
+				url,
 				content: null,
-				status: response.status,
-				statusText: response.statusText,
+				status: response?.status || null,
+				statusText: response?.statusText || null,
 				headers,
 				outputFile: item.outputFile ?? null,
 				error: (<Error>error).stack!,
@@ -185,13 +212,15 @@ export default class ServerRendererBrowser {
 		const pageConsole = page.virtualConsolePrinter.readAsString();
 
 		if (timeoutError) {
-			page.close();
+			const url = item.url || page.url;
+
+			await page.close();
 
 			return {
-				url: item.url,
+				url,
 				content: null,
-				status: response.status,
-				statusText: response.statusText,
+				status: response?.status || null,
+				statusText: response?.statusText || null,
 				headers,
 				outputFile: null,
 				error: timeoutError,
@@ -207,15 +236,16 @@ export default class ServerRendererBrowser {
 		});
 
 		const result = serializer.serializeToString(page.mainFrame.document);
+		const url = item.url || page.url;
 
 		await page.close();
 
 		if (!item.outputFile) {
 			return {
-				url: item.url,
+				url,
 				content: result,
-				status: response.status,
-				statusText: response.statusText,
+				status: response?.status || null,
+				statusText: response?.statusText || null,
 				headers,
 				outputFile: null,
 				error: null,
@@ -240,10 +270,10 @@ export default class ServerRendererBrowser {
 		await FS.promises.writeFile(item.outputFile, result);
 
 		return {
-			url: item.url,
+			url,
 			content: null,
-			status: response.status,
-			statusText: response.statusText,
+			status: response?.status || null,
+			statusText: response?.statusText || null,
 			headers,
 			outputFile: item.outputFile,
 			error: null,

@@ -366,17 +366,10 @@ export default class HTMLScriptElement extends HTMLElement {
 			const type = this.getAttribute('type');
 
 			if (source) {
-				if (type === 'module') {
-					this.#evaluateModule(source);
-				} else if (type === 'importmap') {
+				if (type === 'importmap') {
 					this.#evaluateImportMap(source);
-				} else if (
-					type === null ||
-					type === 'application/x-ecmascript' ||
-					type === 'application/x-javascript' ||
-					type.startsWith('text/javascript')
-				) {
-					this.#evaluateScript(source);
+				} else {
+					this.#evaluateModule(source);
 				}
 			}
 		}
@@ -402,40 +395,6 @@ export default class HTMLScriptElement extends HTMLElement {
 				this.#loadScript(attribute[PropertySymbol.value]);
 			}
 		}
-	}
-
-	/**
-	 * Evaluates a module.
-	 *
-	 * @param source Source.
-	 */
-	async #evaluateModule(source: string): Promise<void> {
-		const url = this[PropertySymbol.ownerDocument].location;
-		const window = this[PropertySymbol.window];
-		const browserSettings = new WindowBrowserContext(window).getSettings();
-		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
-
-		if (!browserFrame || !browserSettings || !browserSettings.enableJavaScriptEvaluation) {
-			return;
-		}
-
-		const module = new ECMAScriptModule(window, url, source);
-
-		if (
-			browserSettings.disableErrorCapturing ||
-			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
-		) {
-			await module.evaluate();
-		} else {
-			try {
-				await module.evaluate();
-			} catch (error) {
-				window[PropertySymbol.dispatchError](<Error>error);
-				return;
-			}
-		}
-
-		this.dispatchEvent(new Event('load'));
 	}
 
 	/**
@@ -515,38 +474,38 @@ export default class HTMLScriptElement extends HTMLElement {
 	}
 
 	/**
-	 * Evaluates a script.
+	 * Evaluates a module.
 	 *
-	 * @param code Code.
+	 * @param source Source.
 	 */
-	#evaluateScript(code: string): void {
+	#evaluateModule(source: string): void {
+		const url = this[PropertySymbol.ownerDocument].location;
 		const window = this[PropertySymbol.window];
 		const browserSettings = new WindowBrowserContext(window).getSettings();
+		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
 
-		if (!browserSettings) {
+		if (!browserFrame || !browserSettings || !browserSettings.enableJavaScriptEvaluation) {
 			return;
 		}
 
 		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = this;
 
+		const module = new ECMAScriptModule(window, url, source);
+
 		if (
 			browserSettings.disableErrorCapturing ||
 			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
 		) {
-			window[PropertySymbol.evaluateScript](code, {
-				filename: this[PropertySymbol.ownerDocument].location.href
-			});
+			module.evaluate();
 		} else {
-			try {
-				window[PropertySymbol.evaluateScript](code, {
-					filename: this[PropertySymbol.ownerDocument].location.href
-				});
-			} catch (error) {
+			module.evaluate().catch((error) => {
 				window[PropertySymbol.dispatchError](<Error>error);
-			}
+			});
 		}
 
 		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = null;
+
+		this.dispatchEvent(new Event('load'));
 	}
 
 	/**

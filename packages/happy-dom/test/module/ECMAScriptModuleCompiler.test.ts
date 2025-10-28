@@ -54,7 +54,8 @@ describe('ECMAScriptModuleCompiler', () => {
                         console.log('Hello World');
                     }
                 }
-            }`);
+            
+}`);
 		});
 
 		it('Handles the correct source URL in error stack', async () => {
@@ -77,7 +78,7 @@ describe('ECMAScriptModuleCompiler', () => {
 					exports: {}
 				});
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(
@@ -111,7 +112,7 @@ describe('ECMAScriptModuleCompiler', () => {
 					exports: {}
 				});
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(
@@ -140,7 +141,8 @@ describe('ECMAScriptModuleCompiler', () => {
                         console.log($happy_dom.importMeta.resolve('./test.js'));
                     }
                 }
-            }`);
+            
+}`);
 		});
 
 		it('Handles import in string', () => {
@@ -165,7 +167,8 @@ describe('ECMAScriptModuleCompiler', () => {
                 function log(){return console.log('To use the debugger you must import "@package/debugger"')}
                 var i = "test";
                 $happy_dom.dynamicImport("@package/debugger");
-            }`);
+            
+}`);
 		});
 
 		it('Ignores function suffixed with import().', () => {
@@ -187,7 +190,8 @@ describe('ECMAScriptModuleCompiler', () => {
                 }
                 
                 const result = await test_import('http://localhost:8080/js/utilities/StringUtility.js');
-            }`);
+            
+}`);
 		});
 
 		it('Handles import and export with a various combinations.', () => {
@@ -381,6 +385,7 @@ $happy_dom.exports['name5'] = $happy_dom_export_0['name5'];
 $happy_dom.exports['bar'] = $happy_dom_export_0['name6'];
 $happy_dom.exports['name7'] = $happy_dom_export_1['name7'];
 $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
+
 }`);
 		});
 
@@ -398,7 +403,8 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
 			]);
 
 			expect(result.execute.toString()).toBe(
-				`async function anonymous($happy_dom) {$happy_dom.exports['isBot'] = $happy_dom.imports.get('http://localhost:8080/js/app/agent.js')['x'];}`
+				`async function anonymous($happy_dom) {$happy_dom.exports['isBot'] = $happy_dom.imports.get('http://localhost:8080/js/app/agent.js')['x'];
+}`
 			);
 		});
 
@@ -420,7 +426,8 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
                 $happy_dom.exports.default = function () {
                     console.log('Hello World');
                 }
-            }`);
+            
+}`);
 		});
 
 		it('Handles export default class.', () => {
@@ -443,7 +450,8 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
                         console.log('Hello World');
                     }
                 }
-            }`);
+            
+}`);
 		});
 
 		it('Handles export default generator function.', () => {
@@ -464,7 +472,8 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
                     yield i;
                     yield i + 10;
                 }
-            }`);
+            
+}`);
 		});
 
 		it('Handles export default object.', () => {
@@ -483,7 +492,8 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
                 $happy_dom.exports.default = {
                     test: 'test'
                 };
-            }`);
+            
+}`);
 		});
 
 		it('Handles export default expression.', () => {
@@ -506,7 +516,8 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
                         test: 'test'
                     }
                 })();
-            }`);
+            
+}`);
 		});
 
 		it('Adds try and catch statement if settings.errorCapture is set to "tryAndCatch".', () => {
@@ -527,7 +538,9 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
                 $happy_dom.exports.default = {
                     test: 'test'
                 };
-            } catch(e) { $happy_dom.dispatchError(e); }}`);
+            
+} catch(e) { $happy_dom.dispatchError(e); }
+}`);
 		});
 
 		it('Handles special cases of RegExp.', () => {
@@ -569,7 +582,8 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
 $happy_dom.exports['match'] = match;
 $happy_dom.exports['regexpes'] = regexpes;
 $happy_dom.exports['templateString'] = templateString;
-            }`);
+            
+}`);
 		});
 
 		it('Handles string with escape character.', () => {
@@ -601,7 +615,153 @@ $happy_dom.exports['string3'] = string3;
 $happy_dom.exports['string4'] = string4;
 $happy_dom.exports['string5'] = string5;
 $happy_dom.exports['string6'] = string6;
-            }`);
+            
+}`);
+		});
+
+		it('Handles unknown import.meta properties.', () => {
+			const code = `
+                if (import.meta.hot) {
+                   import.meta.hot.on('vite:beforeUpdate', () => {
+                        if (errored) {
+                            location.reload();
+                        }
+                    });
+                }
+            `;
+
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
+
+			expect(result.imports).toEqual([]);
+
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
+                if ($happy_dom.importMeta.hot) {
+                   $happy_dom.importMeta.hot.on('vite:beforeUpdate', () => {
+                        if (errored) {
+                            location.reload();
+                        }
+                    });
+                }
+            
+}`);
+		});
+
+		it('Handles tabs as whitespace.', () => {
+			const code = `
+                function warn(...args) {
+                    if (1 === 1 &&\t\t/<(Layout|Page|Error)>/.test(args[0]) && '/'.length === 1) {
+                        return;
+                    }
+                    console.warn(...args);
+                };
+                if (import.meta.hot) {
+                   import.meta.hot.on('vite:beforeUpdate', () => {
+                        if (errored) {
+                            location.reload();
+                        }
+                    });
+                }
+            `;
+
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
+
+			expect(result.imports).toEqual([]);
+
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
+                function warn(...args) {
+                    if (1 === 1 &&\t\t/<(Layout|Page|Error)>/.test(args[0]) && '/'.length === 1) {
+                        return;
+                    }
+                    console.warn(...args);
+                };
+                if ($happy_dom.importMeta.hot) {
+                   $happy_dom.importMeta.hot.on('vite:beforeUpdate', () => {
+                        if (errored) {
+                            location.reload();
+                        }
+                    });
+                }
+            
+}`);
+		});
+
+		it('Handles exporting RegExp.', () => {
+			const code = `
+                export const SCHEME = /^[a-z][a-z\d+\-.]+:/i;
+                const test = 'template string with \`test\` inside';
+                console.log(import.meta.url);
+            `;
+
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
+
+			expect(result.imports).toEqual([]);
+
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
+                $happy_dom.exports['SCHEME'] = /^[a-z][a-zd+-.]+:/i;
+                const test = 'template string with \`test\` inside';
+                console.log($happy_dom.importMeta.url);
+            
+}`);
+		});
+
+		it('Handles async function export.', () => {
+			const code = `
+                export async function fetchData() {
+                    const response = await fetch('http://localhost:8080/api/data');
+                    const data = await response.json();
+                    return data;
+                }
+            `;
+
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
+
+			expect(result.imports).toEqual([]);
+
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
+                $happy_dom.exports['fetchData'] = async function fetchData() {
+                    const response = await fetch('http://localhost:8080/api/data');
+                    const data = await response.json();
+                    return data;
+                }
+            
+}`);
+		});
+
+		it('Handles string with escape character.', () => {
+			const code = `
+                const string = "\\"";
+                const string2 = "\\\\";
+                const string3 = '\\'';
+                const string4 = '\\\\';
+                const string5 = \`\\\`\`;
+                const string6 = \`\\\\\`;
+                export { string, string2, string3, string4, string5, string6 };
+            `;
+
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
+
+			expect(result.imports).toEqual([]);
+
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
+                const string = "\\"";
+                const string2 = "\\\\";
+                const string3 = '\\'';
+                const string4 = '\\\\';
+                const string5 = \`\\\`\`;
+                const string6 = \`\\\\\`;
+                $happy_dom.exports['string'] = string;
+$happy_dom.exports['string2'] = string2;
+$happy_dom.exports['string3'] = string3;
+$happy_dom.exports['string4'] = string4;
+$happy_dom.exports['string5'] = string5;
+$happy_dom.exports['string6'] = string6;
+            
+}`);
 		});
 
 		it('Handles dynamic import inside template string.', () => {
@@ -620,7 +780,8 @@ $happy_dom.exports['string6'] = string6;
                 $happy_dom.exports['func'] = async () => {
                     return \`test = \${({ test: \`\${ (await $happy_dom.dynamicImport('./test.js')) }\` })}\`;
                 };
-            }`);
+            
+}`);
 		});
 
 		it('Handles vite preload library with minimzed import.', () => {
@@ -636,7 +797,8 @@ import{_ as c}from"./preload-helper-BMSd6Up6.js";class r{static connect(){const 
 
 			expect(result.execute.toString())
 				.toBe(`async function anonymous($happy_dom) {const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["static/js/Home-CsPrQa7_.js","static/js/preload-helper-BMSd6Up6.js","static/js/Router-yzXgKzu7.js","static/js/_commonjsHelpers-BosuxZz1.js","static/js/sizes-1ww1H62B.js","static/js/Choice-Bixrh5CR.js","static/js/index-OjqIgG3h.js","static/js/arrow-left-DVwQ9ese.js"])))=>i.map(i=>d[i]);
-const {_: c} = $happy_dom.imports.get('http://localhost:8080/js/app/preload-helper-BMSd6Up6.js');class r{static connect(){const n=location.hash.match(/S{0,1}([0-9]{7,})$/);if(n){const a=new URLSearchParams(location.search);a.set("id",n[1]),location.href=new URL('example/?a=b',location.href).href;return}const t=location.hash.match(/\\/([a-zA-Z0-9-]{10,})$/);if(t){const a=new URLSearchParams(location.search);a.set("code",t[1]),location.href=new URL('example/?a=b',location.href).href;return}const o=location.hash.match(/\\/([a-zA-Z0-9]{4,6})$/);if(o){const a=new URLSearchParams(location.search);a.set("code",o[1]),location.href=new URL('example/?a=b',location.href).href;return}}}r.connect();c(()=>$happy_dom.dynamicImport("./Home-CsPrQa7_.js").then(e=>e.a),__vite__mapDeps([0,1,2,3,4,5,6,7,8,9,10,11,12,13]));}`);
+const {_: c} = $happy_dom.imports.get('http://localhost:8080/js/app/preload-helper-BMSd6Up6.js');class r{static connect(){const n=location.hash.match(/S{0,1}([0-9]{7,})$/);if(n){const a=new URLSearchParams(location.search);a.set("id",n[1]),location.href=new URL('example/?a=b',location.href).href;return}const t=location.hash.match(/\\/([a-zA-Z0-9-]{10,})$/);if(t){const a=new URLSearchParams(location.search);a.set("code",t[1]),location.href=new URL('example/?a=b',location.href).href;return}const o=location.hash.match(/\\/([a-zA-Z0-9]{4,6})$/);if(o){const a=new URLSearchParams(location.search);a.set("code",o[1]),location.href=new URL('example/?a=b',location.href).href;return}}}r.connect();c(()=>$happy_dom.dynamicImport("./Home-CsPrQa7_.js").then(e=>e.a),__vite__mapDeps([0,1,2,3,4,5,6,7,8,9,10,11,12,13]));
+}`);
 		});
 
 		it('Handles vite with minimized export', () => {
@@ -648,7 +810,8 @@ const {_: c} = $happy_dom.imports.get('http://localhost:8080/js/app/preload-help
 			expect(result.imports).toEqual([]);
 
 			expect(result.execute.toString()).toBe(
-				`async function anonymous($happy_dom) {(function(){const i=document.createElement("link").relList;if(i&&i.supports&&i.supports("modulepreload"))return;for(const e of document.querySelectorAll('link[rel="modulepreload"]'))a(e);new MutationObserver(e=>{for(const r of e)if(r.type==="childList")for(const t of r.addedNodes)t.tagName==="LINK"&&t.rel==="modulepreload"&&a(t)}).observe(document,{childList:!0,subtree:!0});function c(e){const r={};return e.integrity&&(r.integrity=e.integrity),e.referrerPolicy&&(r.referrerPolicy=e.referrerPolicy),e.crossOrigin==="use-credentials"?r.credentials="include":e.crossOrigin==="anonymous"?r.credentials="omit":r.credentials="same-origin",r}function a(e){if(e.ep)return;e.ep=!0;const r=c(e);fetch(e.href,r)}})();const h="modulepreload",y=function(u){return"/test/path/"+u},d={},g=function(i,c,a){let e=Promise.resolve();if(c&&c.length>0){document.getElementsByTagName("link");const t=document.querySelector("meta[property=csp-nonce]"),o=(t==null?void 0:t.nonce)||(t==null?void 0:t.getAttribute("nonce"));e=Promise.allSettled(c.map(n=>{if(n=y(n),n in d)return;d[n]=!0;const l=n.endsWith(".css"),f=l?'[rel="stylemodal"]':"";if(document.querySelector('link[href="'+n+'"]'+f+''))return;const s=document.createElement("link");if(s.rel=l?"stylemodal":h,l||(s.as="script"),s.crossOrigin="",s.href=n,o&&s.setAttribute("nonce",o),document.head.appendChild(s),l)return new Promise((m,p)=>{s.addEventListener("load",m),s.addEventListener("error",()=>p(new Error('Unable to preload CSS for ' + n)))})}))}function r(t){const o=new Event("vite:preloadError",{cancelable:!0});if(o.payload=t,window.dispatchEvent(o),!o.defaultPrevented)throw t}return e.then(t=>{for(const o of t||[])o.status==="rejected"&&r(o.reason);return i().catch(r)})};$happy_dom.exports['_'] = g;}`
+				`async function anonymous($happy_dom) {(function(){const i=document.createElement("link").relList;if(i&&i.supports&&i.supports("modulepreload"))return;for(const e of document.querySelectorAll('link[rel="modulepreload"]'))a(e);new MutationObserver(e=>{for(const r of e)if(r.type==="childList")for(const t of r.addedNodes)t.tagName==="LINK"&&t.rel==="modulepreload"&&a(t)}).observe(document,{childList:!0,subtree:!0});function c(e){const r={};return e.integrity&&(r.integrity=e.integrity),e.referrerPolicy&&(r.referrerPolicy=e.referrerPolicy),e.crossOrigin==="use-credentials"?r.credentials="include":e.crossOrigin==="anonymous"?r.credentials="omit":r.credentials="same-origin",r}function a(e){if(e.ep)return;e.ep=!0;const r=c(e);fetch(e.href,r)}})();const h="modulepreload",y=function(u){return"/test/path/"+u},d={},g=function(i,c,a){let e=Promise.resolve();if(c&&c.length>0){document.getElementsByTagName("link");const t=document.querySelector("meta[property=csp-nonce]"),o=(t==null?void 0:t.nonce)||(t==null?void 0:t.getAttribute("nonce"));e=Promise.allSettled(c.map(n=>{if(n=y(n),n in d)return;d[n]=!0;const l=n.endsWith(".css"),f=l?'[rel="stylemodal"]':"";if(document.querySelector('link[href="'+n+'"]'+f+''))return;const s=document.createElement("link");if(s.rel=l?"stylemodal":h,l||(s.as="script"),s.crossOrigin="",s.href=n,o&&s.setAttribute("nonce",o),document.head.appendChild(s),l)return new Promise((m,p)=>{s.addEventListener("load",m),s.addEventListener("error",()=>p(new Error('Unable to preload CSS for ' + n)))})}))}function r(t){const o=new Event("vite:preloadError",{cancelable:!0});if(o.payload=t,window.dispatchEvent(o),!o.defaultPrevented)throw t}return e.then(t=>{for(const o of t||[])o.status==="rejected"&&r(o.reason);return i().catch(r)})};$happy_dom.exports['_'] = g;
+}`
 			);
 		});
 
@@ -1207,6 +1370,7 @@ const {_: a} = $happy_dom.imports.get('http://localhost:8080/js/app/preload-help
 $happy_dom.exports['a'] = Ee;
 $happy_dom.exports['c'] = D;
 $happy_dom.exports['h'] = $e;
+
 }`);
 		});
 	});

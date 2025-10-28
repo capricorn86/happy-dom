@@ -73,11 +73,22 @@ export default class BrowserWindowPolyfill {
 			bufferSubData: () => {},
 			drawElementsInstanced: () => {}
 		});
-		(<any>window).Worker = class {
+		(<any>window).Worker = class Worker {
 			public postMessage(): any {}
 			public terminate(): any {}
 		};
-		(<any>window).Path2D = class {
+
+		(<any>window).WebSocket = class WebSocket extends EventTarget {
+			public binaryType: string = 'arraybuffer';
+			public bufferedAmount: number = 0;
+			public extensions: string = '';
+			public protocol: string = '';
+			public readyState: number = 1;
+			public url: string = '';
+			public close(): void {}
+			public send(): void {}
+		};
+		(<any>window).Path2D = class Path2D {
 			public addPath(): any {}
 			public addPath2D(): any {}
 			public closePath(): any {}
