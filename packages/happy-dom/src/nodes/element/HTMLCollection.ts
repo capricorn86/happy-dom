@@ -204,7 +204,7 @@ export default class HTMLCollection<T extends Element, NamedItem = T> {
 	 *
 	 * @returns Iterator.
 	 */
-	public [Symbol.iterator](): IterableIterator<T> {
+	public [Symbol.iterator](): ArrayIterator<T> {
 		const items = this[PropertySymbol.query]();
 		return items[Symbol.iterator]();
 	}

@@ -241,7 +241,7 @@ export default class Node extends EventTarget {
 	public get previousSibling(): Node | null {
 		if (this[PropertySymbol.parentNode]) {
 			const nodeArray = this[PropertySymbol.parentNode][PropertySymbol.nodeArray];
-			const index = nodeArray.indexOf(this);
+			const index = nodeArray.indexOf(this[PropertySymbol.proxy] || this);
 			if (index > 0) {
 				return nodeArray[index - 1];
 			}
@@ -257,7 +257,7 @@ export default class Node extends EventTarget {
 	public get nextSibling(): Node | null {
 		if (this[PropertySymbol.parentNode]) {
 			const nodeArray = this[PropertySymbol.parentNode][PropertySymbol.nodeArray];
-			const index = nodeArray.indexOf(this);
+			const index = nodeArray.indexOf(this[PropertySymbol.proxy] || this);
 			if (index > -1 && index + 1 < nodeArray.length) {
 				return nodeArray[index + 1];
 			}

@@ -15,7 +15,9 @@ describe('HTMLSlotElement', () => {
 	let customElementWithSlot: CustomElementWithSlot;
 
 	beforeEach(() => {
-		window = new Window();
+		window = new Window({
+			settings: { enableJavaScriptEvaluation: true, suppressCodeGenerationFromStringsWarning: true }
+		});
 		document = window.document;
 
 		window.customElements.define('custom-element-with-named-slots', CustomElementWithNamedSlots);
@@ -37,21 +39,21 @@ describe('HTMLSlotElement', () => {
 			it('Returns the event listener.', () => {
 				const element = <HTMLSlotElement>customElementWithSlot.shadowRoot?.querySelector('slot');
 				element.setAttribute(`on${event}`, 'window.test = 1');
-				expect(element[`on${event}`]).toBeTypeOf('function');
-				element[`on${event}`](new Event(event));
-				expect(window['test']).toBe(1);
+				expect((<any>element)[`on${event}`]).toBeTypeOf('function');
+				(<any>element)[`on${event}`](new Event(event));
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 
 		describe(`set on${event}()`, () => {
 			it('Sets the event listener.', () => {
 				const element = <HTMLSlotElement>customElementWithSlot.shadowRoot?.querySelector('slot');
-				element[`on${event}`] = () => {
-					window['test'] = 1;
+				(<any>element)[`on${event}`] = () => {
+					(<any>window)['test'] = 1;
 				};
 				element.dispatchEvent(new Event(event));
 				expect(element.getAttribute(`on${event}`)).toBe(null);
-				expect(window['test']).toBe(1);
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 	}

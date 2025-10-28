@@ -75,7 +75,8 @@ describe('ResponseCache', () => {
 				etag: null,
 				mustRevalidate: false,
 				staleWhileRevalidate: false,
-				state: CachedResponseStateEnum.fresh
+				state: CachedResponseStateEnum.fresh,
+				virtual: false
 			});
 		});
 
@@ -146,7 +147,8 @@ describe('ResponseCache', () => {
 				etag: null,
 				mustRevalidate: true,
 				staleWhileRevalidate: true,
-				state: CachedResponseStateEnum.fresh
+				state: CachedResponseStateEnum.fresh,
+				virtual: false
 			});
 		});
 
@@ -280,7 +282,8 @@ describe('ResponseCache', () => {
 				etag: null,
 				mustRevalidate: false,
 				staleWhileRevalidate: false,
-				state: CachedResponseStateEnum.fresh
+				state: CachedResponseStateEnum.fresh,
+				virtual: false
 			});
 		});
 
@@ -327,7 +330,8 @@ describe('ResponseCache', () => {
 				etag: 'test',
 				mustRevalidate: false,
 				staleWhileRevalidate: false,
-				state: CachedResponseStateEnum.fresh
+				state: CachedResponseStateEnum.fresh,
+				virtual: false
 			});
 		});
 
@@ -382,7 +386,8 @@ describe('ResponseCache', () => {
 				etag: null,
 				mustRevalidate: false,
 				staleWhileRevalidate: false,
-				state: CachedResponseStateEnum.fresh
+				state: CachedResponseStateEnum.fresh,
+				virtual: false
 			});
 		});
 	});

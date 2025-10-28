@@ -1,6 +1,7 @@
 import Window from '../../src/window/Window.js';
 import Document from '../../src/nodes/document/Document.js';
 import NodeFilter from '../../src/tree-walker/NodeFilter.js';
+import TreeWalker from '../../src/tree-walker/TreeWalker.js';
 import Element from '../../src/nodes/element/Element.js';
 import Comment from '../../src/nodes/comment/Comment.js';
 import Node from '../../src/nodes/node/Node.js';
@@ -25,6 +26,81 @@ describe('TreeWalker', () => {
 		window = new Window();
 		document = window.document;
 		document.write(TreeWalkerHTML);
+	});
+
+	describe('constructor()', () => {
+		it('Creates a new TreeWalker instance.', () => {
+			const treeWalker = document.createTreeWalker(document.body);
+			expect(treeWalker).toBeInstanceOf(TreeWalker);
+			expect(treeWalker.root).toBe(document.body);
+			expect(treeWalker.whatToShow).toBe(-1);
+			expect(treeWalker.filter).toBeNull();
+			expect(treeWalker.currentNode).toBe(document.body);
+		});
+
+		it('Throws an error when trying to create a TreeWalker with a non-Node root.', () => {
+			expect(() => {
+				// @ts-ignore
+				document.createTreeWalker(123);
+			}).toThrowError('Parameter 1 was not of type Node.');
+			expect(() => {
+				// @ts-ignore
+				document.createTreeWalker('string');
+			}).toThrowError('Parameter 1 was not of type Node.');
+			expect(() => {
+				// @ts-ignore
+				document.createTreeWalker({});
+			}).toThrowError('Parameter 1 was not of type Node.');
+			expect(() => {
+				// @ts-ignore
+				document.createTreeWalker(null);
+			}).toThrowError('Parameter 1 was not of type Node.');
+		});
+	});
+
+	describe('get currentNode()', () => {
+		it('Returns the current node.', () => {
+			const treeWalker = document.createTreeWalker(document.body);
+			expect(treeWalker.currentNode).toBe(document.body);
+		});
+	});
+
+	describe('set currentNode()', () => {
+		it('Sets the current node.', () => {
+			const treeWalker = document.createTreeWalker(document.body);
+			const div = document.createElement('div');
+			document.body.appendChild(div);
+			treeWalker.currentNode = div;
+			expect(treeWalker.currentNode).toBe(div);
+		});
+
+		it('Throws an error when trying to set a non-Node value.', () => {
+			const treeWalker = document.createTreeWalker(document.body);
+			expect(() => {
+				// @ts-ignore
+				treeWalker.currentNode = 123;
+			}).toThrowError(
+				"Failed to set the 'currentNode' property on 'TreeWalker': Failed to convert value to 'Node'."
+			);
+			expect(() => {
+				// @ts-ignore
+				treeWalker.currentNode = undefined;
+			}).toThrowError(
+				"Failed to set the 'currentNode' property on 'TreeWalker': Failed to convert value to 'Node'."
+			);
+			expect(() => {
+				// @ts-ignore
+				treeWalker.currentNode = null;
+			}).toThrowError(
+				"Failed to set the 'currentNode' property on 'TreeWalker': Failed to convert value to 'Node'."
+			);
+			expect(() => {
+				// @ts-ignore
+				treeWalker.currentNode = {};
+			}).toThrowError(
+				"Failed to set the 'currentNode' property on 'TreeWalker': Failed to convert value to 'Node'."
+			);
+		});
 	});
 
 	describe('nextNode()', () => {

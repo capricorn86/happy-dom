@@ -21,7 +21,7 @@ export default class FetchResponseHeaderUtility {
 		requestURL: URL;
 		rawHeaders: string[];
 	}): Headers {
-		const headers = new Headers();
+		const headers = new options.browserFrame.window.Headers();
 		let key = null;
 
 		for (const header of options.rawHeaders) {

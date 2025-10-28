@@ -614,7 +614,7 @@ export default class HTMLFormElement extends HTMLElement {
 			return;
 		}
 
-		const formData = new this[PropertySymbol.window].FormData(this);
+		const formData = new this[PropertySymbol.window].FormData(this, submitter);
 		let targetFrame: IBrowserFrame;
 
 		switch (submitter?.formTarget || this.target) {
