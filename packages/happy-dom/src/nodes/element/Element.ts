@@ -32,6 +32,8 @@ import IScrollToOptions from '../../window/IScrollToOptions.js';
 import { AttributeUtility } from '../../utilities/AttributeUtility.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import ElementEventAttributeUtility from './ElementEventAttributeUtility.js';
+import HTMLSlotElement from '../html-slot-element/HTMLSlotElement.js';
+import CSSEscaper from '../../css/utilities/CSSEscaper.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -66,6 +68,10 @@ export default class Element
 	public declare [PropertySymbol.tagName]: string | null;
 	public declare [PropertySymbol.localName]: string | null;
 	public declare [PropertySymbol.namespaceURI]: string | null;
+	/*
+	 * Indicates whether the shadow tree is being updated.
+	 */
+	public [PropertySymbol.isShadowRootDirty]: boolean = false;
 
 	/**
 	 * Constructor.
@@ -1351,7 +1357,7 @@ export default class Element
 	 */
 	public override [PropertySymbol.appendChild](node: Node, disableValidations = false): Node {
 		const returnValue = super[PropertySymbol.appendChild](node, disableValidations);
-		this.#onSlotChange(node);
+		this.#updateShadowRoot();
 		return returnValue;
 	}
 
@@ -1360,7 +1366,7 @@ export default class Element
 	 */
 	public override [PropertySymbol.removeChild](node: Node): Node {
 		const returnValue = super[PropertySymbol.removeChild](node);
-		this.#onSlotChange(node);
+		this.#updateShadowRoot();
 		return returnValue;
 	}
 
@@ -1377,7 +1383,7 @@ export default class Element
 			referenceNode,
 			disableValidations
 		);
-		this.#onSlotChange(newNode);
+		this.#updateShadowRoot();
 		return returnValue;
 	}
 
@@ -1504,11 +1510,7 @@ export default class Element
 			'connectedCallback'
 		);
 
-		if (this[PropertySymbol.shadowRoot]) {
-			for (const childNode of this[PropertySymbol.nodeArray]) {
-				this.#onSlotChange(childNode);
-			}
-		}
+		this.#updateShadowRoot();
 	}
 
 	/**
@@ -1630,30 +1632,95 @@ export default class Element
 	}
 
 	/**
-	 * Triggered when child nodes are changed.
 	 *
-	 * @param addedOrRemovedNode Changed node.
 	 */
-	#onSlotChange(addedOrRemovedNode: Node): void {
+	public [PropertySymbol.updateShadowRoot](): void {
 		const shadowRoot = this[PropertySymbol.shadowRoot];
 
-		if (!shadowRoot || !this[PropertySymbol.isConnected]) {
+		if (!shadowRoot || shadowRoot[PropertySymbol.slotAssignment] === 'manual') {
+			this[PropertySymbol.isShadowRootDirty] = false;
 			return;
 		}
 
-		const slotName = (<Element>addedOrRemovedNode)['getAttribute']
-			? (<Element>addedOrRemovedNode).getAttribute('slot')
-			: null;
-		if (slotName) {
-			const slot = shadowRoot.querySelector(`slot[name="${slotName}"]`);
-			if (slot) {
-				slot.dispatchEvent(new Event('slotchange', { bubbles: true }));
+		if (!this[PropertySymbol.isShadowRootDirty]) {
+			return;
+		}
+
+		const updateSlot = (nodes: Node[], name?: string): void => {
+			const slot = <HTMLSlotElement | null>(
+				shadowRoot.querySelector(
+					name ? `slot[name="${CSSEscaper.escape(name)}"]` : 'slot:not([name])'
+				)
+			);
+			if (!slot) {
+				return;
 			}
-		} else if (addedOrRemovedNode[PropertySymbol.nodeType] !== NodeTypeEnum.commentNode) {
-			const slot = shadowRoot.querySelector('slot:not([name])');
-			if (slot) {
-				slot.dispatchEvent(new Event('slotchange', { bubbles: true }));
+			const assignedNodes = slot[PropertySymbol.assignedNodes];
+
+			const same =
+				assignedNodes.length === nodes.length &&
+				assignedNodes.every((node, index) => node === nodes[index]);
+
+			if (same) {
+				return;
+			}
+
+			// update nodes
+			for (const node of assignedNodes) {
+				node[PropertySymbol.assignedToSlot] = null;
+			}
+			for (const node of nodes) {
+				node[PropertySymbol.assignedToSlot] = slot;
+			}
+
+			slot[PropertySymbol.assignedNodes] = nodes;
+			slot.dispatchEvent(new Event('slotchange', { bubbles: true }));
+		};
+
+		const defaultAssignedNodes: Node[] = [];
+		const namedAssignedNodes: Map<string, Node[]> = new Map();
+
+		for (const child of this[PropertySymbol.nodeArray]) {
+			const slotName = (<Element>child)['getAttribute']
+				? (<Element>child).getAttribute('slot')
+				: null;
+			if (slotName) {
+				const assignedNodes = namedAssignedNodes.get(slotName) ?? [];
+				assignedNodes.push(child);
+				namedAssignedNodes.set(slotName, assignedNodes);
+			} else if (this[PropertySymbol.nodeType] !== NodeTypeEnum.commentNode) {
+				defaultAssignedNodes.push(child);
 			}
 		}
+
+		for (const node of shadowRoot.querySelectorAll('slot[name]')) {
+			const name = node.getAttribute('name');
+			if (name && !namedAssignedNodes.has(name)) {
+				namedAssignedNodes.set(name, []);
+			}
+		}
+
+		for (const [name, nodes] of namedAssignedNodes) {
+			updateSlot(nodes, name);
+		}
+		updateSlot(defaultAssignedNodes);
+		this[PropertySymbol.isShadowRootDirty] = false;
+	}
+
+	/**
+	 * Triggered when child nodes are changed.
+	 */
+	#updateShadowRoot(): void {
+		// if we are already updating, it will be handled in the current update
+		// if slot assignment is manual, we do not update and that cannot be changed, thus this should never run again
+		if (
+			this[PropertySymbol.isShadowRootDirty] ||
+			this[PropertySymbol.shadowRoot]?.[PropertySymbol.slotAssignment] === 'manual'
+		) {
+			return;
+		}
+		this[PropertySymbol.isShadowRootDirty] = true;
+
+		setImmediate(() => this[PropertySymbol.updateShadowRoot]());
 	}
 }
