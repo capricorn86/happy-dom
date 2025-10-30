@@ -67,7 +67,12 @@ export default class XMLEncodeUtility {
 			return '';
 		}
 
-		return value.replace(/&quot;/gu, '"').replace(/&amp;/gu, '&');
+		return value
+			.replace(/&quot;/gu, '"')
+			.replace(/&amp;/gu, '&')
+			.replace(/&apos;/gu, "'")
+			.replace(/&#(\d+);/gu, (_match, dec) => String.fromCharCode(parseInt(dec, 10)))
+			.replace(/&#x([A-Fa-f\d]+);/gu, (_match, hex) => String.fromCharCode(parseInt(hex, 16)));
 	}
 
 	/**
