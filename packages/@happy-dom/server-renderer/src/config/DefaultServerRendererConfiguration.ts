@@ -35,7 +35,7 @@ export default <IServerRendererConfiguration>{
 		excludeShadowRootTags: null,
 		disablePolyfills: false
 	},
-	urls: null,
+	renderItems: null,
 	server: {
 		start: false,
 		serverURL: 'https://localhost:3000',

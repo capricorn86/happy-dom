@@ -19,15 +19,16 @@ import * as PropertySymbol from '../PropertySymbol.js';
  * Group 8: Modules in export from module statement.
  * Group 9: Import in export from module statement.
  * Group 10: Export default statement.
- * Group 11: Export function or class type.
- * Group 12: Export function or class name.
- * Group 13: Export object.
- * Group 14: Export variable type (var, let or const).
- * Group 15: Export variable name.
- * Group 16: Export variable name end character (= or ;).
+ * Group 11: Export async function indicator.
+ * Group 12: Export function or class type.
+ * Group 13: Export function or class name.
+ * Group 14: Export object.
+ * Group 15: Export variable type (var, let or const).
+ * Group 16: Export variable name.
+ * Group 17: Export variable name end character (= or ;).
  */
 const STATEMENT_REGEXP =
-	/import\.meta\.(url|resolve)|import\s*["']([^"']+)["'];{0,1}|import\s*\(([^)]+)\)|(import[\s{])|[\s}]from\s*["']([^"']+)["'](\s+with\s*{\s*type\s*:\s*["']([^"']+)["']\s*}){0,1}|export(\s+[a-zA-Z0-9-_$]+\s+|\s+\*\s+|\s+\*\s+as\s+["'a-zA-Z0-9-_$]+\s+|\s*{[^}]+}\s*)from\s*["']([^"']+)["']|(export\s*default\s*)|export\s*(function\*{0,1}|class)\s*([^({\s]+)|export\s*{([^}]+)}|export\s+(var|let|const)\s+([^=;]+)(=|;)/gm;
+	/import\.meta\.([a-zA-Z]+)|import\s*["']([^"']+)["'];{0,1}|import\s*\(([^)]+)\)|(import[\s{])|[\s}]from\s*["']([^"']+)["'](\s+with\s*{\s*type\s*:\s*["']([^"']+)["']\s*}){0,1}|export(\s+[a-zA-Z0-9-_$]+\s+|\s+\*\s+|\s+\*\s+as\s+["'a-zA-Z0-9-_$]+\s+|\s*{[^}]+}\s*)from\s*["']([^"']+)["']|(export\s*default\s*)|export\s*(async\s+){0,1}(function\*{0,1}|class)\s*([^({\s]+)|export\s*{([^}]+)}|export\s+(var|let|const)\s+([^=;]+)(=|;)/gm;
 
 /**
  * Syntax regexp.
@@ -194,12 +195,7 @@ export default class ECMAScriptModuleCompiler {
 				PRECEDING_STATEMENT_TOKEN_REGEXP.test(this.getNonSpacePrecedingToken(code, match.index))
 			) {
 				// Import meta
-
-				if (match[1] === 'url') {
-					newCode += `$happy_dom.importMeta.url`;
-				} else {
-					newCode += `$happy_dom.importMeta.resolve`;
-				}
+				newCode += `$happy_dom.importMeta.${match[1]}`;
 			} else if (match[2] && isTopLevel && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
 				// Import without exported properties
 
@@ -300,18 +296,18 @@ export default class ECMAScriptModuleCompiler {
 
 				newCode += '$happy_dom.exports.default = ';
 			} else if (
-				match[11] &&
 				match[12] &&
+				match[13] &&
 				isTopLevel &&
 				PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)
 			) {
 				// Export function or class type
 
-				newCode += `$happy_dom.exports['${match[12]}'] = ${match[11]} ${match[12]}`;
-			} else if (match[13] && isTopLevel && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
+				newCode += `$happy_dom.exports['${match[13]}'] = ${match[11] || ''}${match[12]} ${match[13]}`;
+			} else if (match[14] && isTopLevel && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
 				// Export object
 
-				const parts = this.removeMultilineComments(match[13]).split(/\s*,\s*/);
+				const parts = this.removeMultilineComments(match[14]).split(/\s*,\s*/);
 				const exportCode: string[] = [];
 				for (const part of parts) {
 					const nameParts = part.trim().split(/\s+as\s+/);
@@ -322,11 +318,11 @@ export default class ECMAScriptModuleCompiler {
 					}
 				}
 				newCode += exportCode.join(';\n');
-			} else if (match[14] && isTopLevel && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
+			} else if (match[15] && isTopLevel && PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken)) {
 				// Export variable
 
-				if (match[16] === '=') {
-					const exportName = this.removeMultilineComments(match[15]).trim();
+				if (match[17] === '=') {
+					const exportName = this.removeMultilineComments(match[16]).trim();
 					if (
 						(exportName[0] === '{' && exportName[exportName.length - 1] === '}') ||
 						(exportName[0] === '[' && exportName[exportName.length - 1] === ']')
@@ -397,10 +393,10 @@ export default class ECMAScriptModuleCompiler {
 			!browserSettings.disableErrorCapturing &&
 			browserSettings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
 		) {
-			newCode += `} catch(e) { $happy_dom.dispatchError(e); }`;
+			newCode += `\n} catch(e) { $happy_dom.dispatchError(e); }`;
 		}
 
-		newCode += '})';
+		newCode += '\n})';
 
 		try {
 			return {
@@ -412,7 +408,7 @@ export default class ECMAScriptModuleCompiler {
 		} catch (e) {
 			const errorMessage = this.getError(moduleURL, code, sourceURL) || (<Error>e).message;
 			const error = new this.window.SyntaxError(
-				`Failed to parse module '${moduleURL}': ${errorMessage}`
+				`Failed to parse module '${moduleURL}'. Execution error: ${(<Error>e).message}. Compile error: ${errorMessage}`
 			);
 			if (
 				browserSettings.disableErrorCapturing ||
@@ -767,12 +763,16 @@ export default class ECMAScriptModuleCompiler {
 		index--;
 		let nonSpacePrecedingToken = code[index];
 
-		while (nonSpacePrecedingToken === ' ' || nonSpacePrecedingToken === '\n') {
+		while (
+			nonSpacePrecedingToken === ' ' ||
+			nonSpacePrecedingToken === '\n' ||
+			nonSpacePrecedingToken === '\t'
+		) {
 			index--;
 			nonSpacePrecedingToken = code[index];
 		}
 
-		return nonSpacePrecedingToken;
+		return nonSpacePrecedingToken || ';';
 	}
 
 	/**

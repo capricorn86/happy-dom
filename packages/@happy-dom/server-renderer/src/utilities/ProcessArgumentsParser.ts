@@ -1,9 +1,9 @@
-import DefaultServerRendererConfiguration from '../config/DefaultServerRendererConfiguration.js';
 import IServerRendererConfiguration from '../types/IServerRendererConfiguration.js';
 import IServerRendererItem from '../types/IServerRendererItem.js';
 import Path from 'path';
 import { BrowserNavigationCrossOriginPolicyEnum } from 'happy-dom';
 import ServerRendererLogLevelEnum from '../enums/ServerRendererLogLevelEnum.js';
+import ServerRendererConfigurationFactory from './ServerRendererConfigurationFactory.js';
 
 /**
  * CLI process arguments parser.
@@ -15,27 +15,49 @@ export default class ProcessArgumentsParser {
 	 * @param args Arguments.
 	 */
 	public static async getConfiguration(args: string[]): Promise<IServerRendererConfiguration> {
-		let config: IServerRendererConfiguration = JSON.parse(
-			JSON.stringify(DefaultServerRendererConfiguration)
-		);
+		let config: IServerRendererConfiguration =
+			ServerRendererConfigurationFactory.createConfiguration();
 
 		for (const arg of args) {
 			if (arg[0] === '-') {
 				if (arg.startsWith('--config=') || arg.startsWith('-c=')) {
-					config = (await import(Path.resolve(this.stripQuotes(arg.split('=')[1])))).default;
+					config = ServerRendererConfigurationFactory.createConfiguration(
+						(await import(Path.resolve(this.stripQuotes(arg.split('=')[1])))).default
+					);
 
-					if (config.urls) {
-						const newUrls: IServerRendererItem[] = [];
-						for (const urlItem of config.urls) {
-							const isString = typeof urlItem === 'string';
-							const url = new URL(isString ? urlItem : urlItem.url);
-							newUrls.push({
-								url: url.href,
-								outputFile: this.getOutputFile(url),
-								headers: isString ? null : (<IServerRendererItem>urlItem).headers || null
-							});
+					if (config.renderItems) {
+						const newRenderItems: IServerRendererItem[] = [];
+						for (const renderItem of config.renderItems) {
+							if (typeof renderItem === 'string') {
+								const url = new URL(renderItem);
+								newRenderItems.push({
+									url: url.href,
+									outputFile: this.getOutputFile(url)
+								});
+							} else {
+								if (renderItem.url) {
+									const url = new URL(renderItem.url);
+									newRenderItems.push({
+										url: url.href,
+										html: renderItem.html,
+										outputFile: this.getOutputFile(url),
+										headers: (<IServerRendererItem>url).headers
+									});
+								} else {
+									if (!renderItem.outputFile) {
+										throw new Error(
+											`Missing output file in render item: ${JSON.stringify(renderItem)}`
+										);
+									}
+									newRenderItems.push({
+										html: renderItem.html,
+										outputFile: renderItem.outputFile,
+										headers: renderItem.headers
+									});
+								}
+							}
 						}
-						config.urls = newUrls;
+						config.renderItems = newRenderItems;
 					}
 				} else if (arg === '--help' || arg === '-h') {
 					config.help = true;
@@ -255,6 +277,10 @@ export default class ProcessArgumentsParser {
 					throw new Error(
 						'URLs shouldn\'t be set by "--urls=". Instead set them with quotes without an argument name. E.g. "https://example.com/page" "https://example.com/another/page"'
 					);
+				} else if (arg.startsWith('--renderItems=')) {
+					throw new Error(
+						'Render items shouldn\'t be set by "--renderItems=". Instead set each URL with quotes without an argument name. E.g. "https://example.com/page" "https://example.com/another/page"'
+					);
 				}
 			} else if (arg) {
 				const urlString =
@@ -274,11 +300,11 @@ export default class ProcessArgumentsParser {
 						outputFile: this.getOutputFile(url)
 					};
 
-					if (!config.urls) {
-						config.urls = [];
+					if (!config.renderItems) {
+						config.renderItems = [];
 					}
 
-					config.urls.push(item);
+					config.renderItems.push(item);
 				}
 			}
 		}

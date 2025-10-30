@@ -7,18 +7,22 @@ export default interface IServerRendererConfiguration {
 	 * Settings for the browser.
 	 */
 	browser: IBrowserSettings;
+
 	/**
 	 * Log level for the server renderer.
 	 */
 	logLevel: ServerRendererLogLevelEnum;
+
 	/**
 	 * Enables debugging. This will override "browser.debug.traceWaitUntilComplete".
 	 */
 	debug: boolean;
+
 	/**
 	 * Enables inspector.
 	 */
 	inspect: boolean;
+
 	/**
 	 * Shows help information and exits.
 	 */
@@ -27,6 +31,7 @@ export default interface IServerRendererConfiguration {
 	 * Output directory.
 	 */
 	outputDirectory: string;
+
 	/**
 	 * Cache settings.
 	 */
@@ -44,6 +49,7 @@ export default interface IServerRendererConfiguration {
 		 */
 		warmup: boolean;
 	};
+
 	/**
 	 * Settings for the worker.
 	 */
@@ -57,6 +63,7 @@ export default interface IServerRendererConfiguration {
 		 */
 		maxConcurrency: number;
 	};
+
 	/**
 	 * Settings for rendering.
 	 */
@@ -90,10 +97,12 @@ export default interface IServerRendererConfiguration {
 		 */
 		disablePolyfills: boolean;
 	};
+
 	/**
-	 * List of URLs to render.
+	 * List render items. Each item can be a URL string or an object specifying the URL or HTML string along with additional options.
 	 */
-	urls: Array<string | IServerRendererItem> | null;
+	renderItems: Array<string | IServerRendererItem> | null;
+
 	/**
 	 * Proxy server settings.
 	 */

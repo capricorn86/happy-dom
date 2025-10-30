@@ -215,18 +215,18 @@ export default class ServerRendererServer {
 				}
 			}
 
-			for (const key of Object.keys(result.headers)) {
+			for (const key of Object.keys(result.headers!)) {
 				const lowerKey = key.toLowerCase();
 				if (
 					lowerKey !== 'transfer-encoding' &&
 					lowerKey !== 'content-length' &&
 					lowerKey !== 'content-encoding'
 				) {
-					response.setHeader(key, result.headers[key]);
+					response.setHeader(key, result.headers![key]);
 				}
 			}
 
-			response.statusCode = result.error ? 500 : result.status;
+			response.statusCode = result.error ? 500 : result.status!;
 
 			if (result.error) {
 				if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.error) {

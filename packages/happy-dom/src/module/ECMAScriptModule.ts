@@ -69,12 +69,14 @@ export default class ECMAScriptModule implements IModule {
 			);
 		}
 
-		const modules = await Promise.all(modulePromises);
-
 		const imports = new Map<string, { [key: string]: any }>();
 
-		for (const module of modules) {
-			imports.set(module.url.href, await module.evaluate());
+		if (modulePromises.length) {
+			const modules = await Promise.all(modulePromises);
+
+			for (const module of modules) {
+				imports.set(module.url.href, await module.evaluate());
+			}
 		}
 
 		const exports = {};

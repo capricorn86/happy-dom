@@ -44,19 +44,19 @@ export default class ServerRenderer {
 	}
 
 	/**
-	 * Renders URLs.
+	 * Server renders URLs or HTML strings.
 	 *
-	 * @param [urls] URLs to render.
+	 * @param [renderItems] List render items. Each item can be a URL string or an object specifying the URL or HTML string along with additional options.
 	 * @param [options] Options.
 	 * @param [options.keepAlive] Keep the workers and browser alive. This is useful when using the renderer in a server. The workers can be closed with the `close()` method.
 	 */
 	public async render(
-		urls?: Array<string | IServerRendererItem> | null,
+		renderItems?: Array<string | IServerRendererItem> | null,
 		options?: { keepAlive?: boolean }
 	): Promise<IServerRendererResult[]> {
 		const startTime = performance.now();
 		const configuration = this.#configuration;
-		const items = urls || configuration.urls;
+		const items = renderItems || configuration.renderItems;
 		const parsedItems: IServerRendererItem[] = [];
 
 		if (!items || !items.length) {
@@ -73,6 +73,7 @@ export default class ServerRenderer {
 			} else {
 				parsedItems.push({
 					url: item.url,
+					html: item.html,
 					outputFile: item.outputFile
 						? Path.join(configuration.outputDirectory, item.outputFile)
 						: null,
@@ -197,7 +198,7 @@ export default class ServerRenderer {
 					return;
 				}
 				const worker = new Worker(new URL('ServerRendererWorker.js', import.meta.url), {
-					execArgv: ['--disallow-code-generation-from-strings', '--frozen-intrinsics'],
+					execArgv: ['--frozen-intrinsics'],
 					workerData: {
 						configuration: configuration
 					}
@@ -248,7 +249,7 @@ export default class ServerRenderer {
 						done();
 						resolve(
 							items.map((item) => ({
-								url: item.url,
+								url: item.url || null,
 								content: null,
 								status: 200,
 								statusText: 'OK',

@@ -40,7 +40,7 @@ export default class ServerRendererConfigurationFactory {
 				...DefaultServerRendererConfiguration.render,
 				...configuration?.render
 			},
-			urls: configuration?.urls || null,
+			renderItems: configuration?.renderItems || null,
 			server: {
 				...DefaultServerRendererConfiguration.server,
 				...configuration?.server
