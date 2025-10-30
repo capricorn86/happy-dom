@@ -715,11 +715,16 @@ describe('HTMLElement', () => {
 	});
 
 	describe('[PropertySymbol.connectNode]()', () => {
-		it('Waits for a custom element to be defined and replace it when it is.', () => {
+		it("Waits for a custom element to be defined and replace it when it's connected to document", () => {
 			const element = <HTMLElement>document.createElement('custom-element');
 			const parent = document.createElement('div');
 
 			parent.appendChild(element);
+
+			expect(parent.children[0] instanceof HTMLElement).toBe(true);
+			expect(Object.keys(window.customElements[PropertySymbol.callbacks]).length).toBe(0);
+
+			document.body.appendChild(parent);
 
 			expect(window.customElements[PropertySymbol.callbacks].get('custom-element')?.length).toBe(1);
 
@@ -729,15 +734,13 @@ describe('HTMLElement', () => {
 
 			parent.appendChild(element);
 
+			expect(window.customElements[PropertySymbol.callbacks].get('custom-element')?.length).toBe(1);
+
 			window.customElements.define('custom-element', CustomElement);
 
 			expect(parent.children.length).toBe(1);
 
 			expect(parent.children[0] instanceof CustomElement).toBe(true);
-			expect(parent.children[0].shadowRoot?.children.length).toBe(0);
-
-			document.body.appendChild(parent);
-
 			expect(parent.children[0].shadowRoot?.children.length).toBe(2);
 		});
 

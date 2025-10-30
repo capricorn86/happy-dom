@@ -1884,6 +1884,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			return;
 		}
 
+		super[PropertySymbol.destroy]();
+
 		(<boolean>this.closed) = true;
 
 		const mutationObservers = this[PropertySymbol.mutationObservers];
@@ -1896,16 +1898,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 
 		this[PropertySymbol.mutationObservers] = [];
 
-		// Disconnects nodes from the document, so that they can be garbage collected.
-		const childNodes = this.document[PropertySymbol.nodeArray];
-
-		while (childNodes.length > 0) {
-			// Makes sure that something won't be triggered by the disconnect.
-			if ((<HTMLElement>childNodes[0]).disconnectedCallback) {
-				delete (<HTMLElement>childNodes[0]).disconnectedCallback;
-			}
-			this.document[PropertySymbol.removeChild](childNodes[0]);
-		}
+		this.document[PropertySymbol.destroy]();
 
 		// Create some empty elements for scripts that are still running.
 		const htmlElement = this.document.createElement('html');
@@ -1939,6 +1932,10 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this.document[PropertySymbol.nextActiveElement] = null;
 		this.document[PropertySymbol.currentScript] = null;
 		this.document[PropertySymbol.selection] = null;
+
+		// Clear parent/top references to break circular references
+		this[PropertySymbol.parent] = null;
+		this[PropertySymbol.top] = null;
 
 		WindowBrowserContext.removeWindowBrowserFrameRelation(this);
 	}
