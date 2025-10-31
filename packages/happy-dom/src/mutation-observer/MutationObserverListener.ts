@@ -17,7 +17,7 @@ export default class MutationObserverListener {
 	#callback: (record: MutationRecord[], observer: MutationObserver) => void;
 	#records: MutationRecord[] = [];
 	#destroyed = false;
-	#timeout: NodeJS.Timeout | null = null;
+	#microtaskQueued = false;
 
 	/**
 	 * Constructor.
@@ -59,29 +59,32 @@ export default class MutationObserverListener {
 
 		this.#records.push(record);
 
-		if (this.#timeout) {
-			this.#window.clearTimeout(this.#timeout);
+		if (this.#microtaskQueued) {
+			return;
 		}
 
-		this.#timeout = this.#window.setTimeout(() => {
+		this.#window.queueMicrotask(() => {
 			if (this.#destroyed) {
 				return;
 			}
+
+			this.#microtaskQueued = false;
+
 			const records = this.#records;
+
 			if (records?.length > 0) {
 				this.#records = [];
 				this.#callback(records, this.#observer);
 			}
 		});
+
+		this.#microtaskQueued = true;
 	}
 
 	/**
 	 * Destroys the listener.
 	 */
 	public takeRecords(): MutationRecord[] {
-		if (this.#timeout) {
-			this.#window.clearTimeout(this.#timeout);
-		}
 		if (this.#destroyed) {
 			return [];
 		}
@@ -97,9 +100,6 @@ export default class MutationObserverListener {
 		if (this.#destroyed) {
 			return;
 		}
-		if (this.#timeout) {
-			this.#window.clearTimeout(this.#timeout);
-		}
 		this.#destroyed = true;
 		this.options = null!;
 		this.target = null!;
@@ -107,7 +107,6 @@ export default class MutationObserverListener {
 		this.#window = null!;
 		this.#observer = null!;
 		this.#callback = null!;
-		this.#timeout = null;
 		this.#records = null!;
 	}
 }
