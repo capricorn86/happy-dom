@@ -5,8 +5,12 @@
     "dictionaries": [],
     "words": [
         "altgraph",
+        "antiquewhite",
         "clonable",
         "Contoso",
+        "darkmagenta",
+        "IECMA",
+        "Immediates",
         "ISVG",
         "oncompositionend",
         "oncompositionstart",
@@ -17,7 +21,10 @@
         "onscrollsnapchanging",
         "onsearch",
         "Registrator",
+        "steppable",
         "unnestable",
+        "vmax",
+        "vmin",
         "xlink"
     ],
     "ignoreWords": [],

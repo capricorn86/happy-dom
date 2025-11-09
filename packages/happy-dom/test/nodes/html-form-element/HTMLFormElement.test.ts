@@ -542,6 +542,34 @@ describe('HTMLFormElement', () => {
 		});
 	});
 
+	describe('get previousSibling()', () => {
+		it('Returns the previous sibling.', () => {
+			const form = document.createElement('form');
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+
+			document.body.appendChild(span1);
+			document.body.appendChild(form);
+			document.body.appendChild(span2);
+
+			expect(form.previousSibling).toBe(span1);
+		});
+	});
+
+	describe('get nextSibling()', () => {
+		it('Returns the next sibling.', () => {
+			const form = document.createElement('form');
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+
+			document.body.appendChild(span1);
+			document.body.appendChild(form);
+			document.body.appendChild(span2);
+
+			expect(form.nextSibling).toBe(span2);
+		});
+	});
+
 	describe('submit()', () => {
 		it('Fallbacks to set location URL when in the main frame of a detached Window.', () => {
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
@@ -1067,7 +1095,7 @@ describe('HTMLFormElement', () => {
                     <input type="radio" name="radio1" value="value1" required>
                     <input type="radio" name="radio1" value="value2" required>
                     <input type="radio" name="radio1" value="value3" required>
-					<input type="submit" name="button1"></input>
+					<input type="submit" name="button1">
                 </div>
             `;
 
@@ -1187,6 +1215,40 @@ describe('HTMLFormElement', () => {
 			await new Promise((resolve) => setTimeout(resolve, 10));
 
 			expect(page.mainFrame.url).toBe('about:blank');
+		});
+
+		it('Only includes the button value of the submitting button', async () => {
+			let request: Request | null = null;
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				request = this.request;
+				return Promise.resolve(<Response>{
+					url: request?.url,
+					text: () =>
+						new Promise((resolve) => setTimeout(() => resolve('<html><body>Test</body></html>'), 2))
+				});
+			});
+
+			const browser = new Browser();
+			const page = browser.newPage();
+			const document = page.mainFrame.window.document;
+
+			document.write(`
+                <form method="post" action="http://example.com">
+                    <input type="submit" name="action" value="submitted">
+                    <input type="submit" name="action" value="notSubmitted">
+                    <input type="reset" name="action" value="reset">
+                    <input type="button" name="action" value="inputButton">
+                    <button name="action" value="vanillaButton"></button>
+                </form>
+            `);
+
+			const submitButton = <HTMLInputElement>document.querySelector('input[value="submitted"]');
+			submitButton.click();
+			await page.mainFrame.waitForNavigation();
+
+			const formData = await request!.formData();
+			expect(formData.getAll('action')).toEqual(['submitted']);
 		});
 	});
 

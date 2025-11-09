@@ -1,7 +1,7 @@
 import IPreflightResponseCache from './IPreflightResponseCache.js';
-import ICachablePreflightRequest from './ICachablePreflightRequest.js';
+import ICacheablePreflightRequest from './ICacheablePreflightRequest.js';
 import ICachedPreflightResponse from './ICachedPreflightResponse.js';
-import ICachablePreflightResponse from './ICachablePreflightResponse.js';
+import ICacheablePreflightResponse from './ICacheablePreflightResponse.js';
 
 /**
  * Fetch preflight response cache.
@@ -9,7 +9,7 @@ import ICachablePreflightResponse from './ICachablePreflightResponse.js';
  * @see https://developer.mozilla.org/en-US/docs/Glossary/Preflight_request
  */
 export default class PreflightResponseCache implements IPreflightResponseCache {
-	#entries: { [url: string]: ICachedPreflightResponse } = {};
+	#entries: Map<string, ICachedPreflightResponse> = new Map();
 
 	/**
 	 * Returns cached response.
@@ -17,12 +17,12 @@ export default class PreflightResponseCache implements IPreflightResponseCache {
 	 * @param request Request.
 	 * @returns Cached response.
 	 */
-	public get(request: ICachablePreflightRequest): ICachedPreflightResponse | null {
-		const cachedResponse = this.#entries[request.url];
+	public get(request: ICacheablePreflightRequest): ICachedPreflightResponse | null {
+		const cachedResponse = this.#entries.get(request.url);
 
 		if (cachedResponse) {
 			if (cachedResponse.expires < Date.now()) {
-				delete this.#entries[request.url];
+				this.#entries.delete(request.url);
 				return null;
 			}
 			return cachedResponse;
@@ -39,10 +39,10 @@ export default class PreflightResponseCache implements IPreflightResponseCache {
 	 * @returns Cached response.
 	 */
 	public add(
-		request: ICachablePreflightRequest,
-		response: ICachablePreflightResponse
+		request: ICacheablePreflightRequest,
+		response: ICacheablePreflightResponse
 	): ICachedPreflightResponse | null {
-		delete this.#entries[request.url];
+		this.#entries.delete(request.url);
 
 		if (request.headers.get('Cache-Control')?.includes('no-cache')) {
 			return null;
@@ -80,7 +80,7 @@ export default class PreflightResponseCache implements IPreflightResponseCache {
 			return null;
 		}
 
-		this.#entries[request.url] = cachedResponse;
+		this.#entries.set(request.url, cachedResponse);
 
 		return cachedResponse;
 	}
@@ -89,6 +89,6 @@ export default class PreflightResponseCache implements IPreflightResponseCache {
 	 * Clears the cache.
 	 */
 	public clear(): void {
-		this.#entries = {};
+		this.#entries.clear();
 	}
 }

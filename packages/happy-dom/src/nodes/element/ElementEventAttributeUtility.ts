@@ -32,7 +32,7 @@ export default class ElementEventAttributeUtility {
 
 		const browserSettings = new WindowBrowserContext(window).getSettings();
 
-		if (!browserSettings) {
+		if (!browserSettings || !browserSettings.enableJavaScriptEvaluation) {
 			return null;
 		}
 
@@ -42,7 +42,7 @@ export default class ElementEventAttributeUtility {
 			return null;
 		}
 
-		let newCode = `(function anonymous($happy_dom, event) {\n//# sourceURL=${window.location.href}\n`;
+		let newCode = `(function anonymous($happy_dom, event) {`;
 
 		if (
 			browserSettings &&
@@ -59,7 +59,7 @@ export default class ElementEventAttributeUtility {
 			!browserSettings.disableErrorCapturing &&
 			browserSettings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
 		) {
-			newCode += '\n} catch(e) { $happy_dom.dispatchError(e); }\n';
+			newCode += '} catch(e) { $happy_dom.dispatchError(e); }';
 		}
 
 		newCode += '})';
@@ -67,8 +67,10 @@ export default class ElementEventAttributeUtility {
 		let listener: ((event: Event) => void) | null = null;
 
 		try {
-			listener = window.eval(newCode).bind(element, {
-				dispatchError: window[PropertySymbol.dispatchError]
+			listener = window[PropertySymbol.evaluateScript](newCode, {
+				filename: window.location.href
+			}).bind(element, {
+				dispatchError: window[PropertySymbol.dispatchError].bind(window)
 			});
 		} catch (e) {
 			const error = new window.SyntaxError(

@@ -149,6 +149,7 @@ describe('Window', () => {
 				console: globalThis.console,
 				settings: {
 					disableJavaScriptEvaluation: true,
+					enableJavaScriptEvaluation: true,
 					navigator: {
 						userAgent: 'test'
 					},
@@ -169,6 +170,7 @@ describe('Window', () => {
 				VirtualConsolePrinter
 			);
 			expect(windowWithOptions.happyDOM?.settings.disableJavaScriptEvaluation).toBe(true);
+			expect(windowWithOptions.happyDOM?.settings.enableJavaScriptEvaluation).toBe(true);
 			expect(windowWithOptions.happyDOM?.settings.disableJavaScriptFileLoading).toBe(false);
 			expect(windowWithOptions.happyDOM?.settings.disableCSSFileLoading).toBe(false);
 			expect(windowWithOptions.happyDOM?.settings.disableIframePageLoading).toBe(false);
@@ -191,6 +193,7 @@ describe('Window', () => {
 				VirtualConsolePrinter
 			);
 			expect(windowWithoutOptions.happyDOM?.settings.disableJavaScriptEvaluation).toBe(false);
+			expect(windowWithoutOptions.happyDOM?.settings.enableJavaScriptEvaluation).toBe(false);
 			expect(windowWithoutOptions.happyDOM?.settings.disableJavaScriptFileLoading).toBe(false);
 			expect(windowWithoutOptions.happyDOM?.settings.disableCSSFileLoading).toBe(false);
 			expect(windowWithoutOptions.happyDOM?.settings.disableIframePageLoading).toBe(false);
@@ -216,6 +219,22 @@ describe('Window', () => {
 			expect(window.innerHeight).toBe(1080);
 			expect(window.outerWidth).toBe(1920);
 			expect(window.outerHeight).toBe(1080);
+		});
+
+		it('Uses viewport browser setting by default', () => {
+			const window = new Window({ settings: { viewport: { width: 1920, height: 1080 } } });
+			expect(window.innerWidth).toBe(1920);
+			expect(window.innerHeight).toBe(1080);
+		});
+
+		it('It is possible to override viewport browser setting', () => {
+			const window = new Window({
+				width: 800,
+				height: 600,
+				settings: { viewport: { width: 1920, height: 1080 } }
+			});
+			expect(window.innerWidth).toBe(800);
+			expect(window.innerHeight).toBe(600);
 		});
 	});
 

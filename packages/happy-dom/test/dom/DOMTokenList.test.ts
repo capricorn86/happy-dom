@@ -182,14 +182,30 @@ describe('DOMTokenList', () => {
 	});
 
 	describe('forEach()', () => {
+		it('Defaults "thisArg" to the Window instance.', () => {
+			element.className = 'class1 class2 class3';
+
+			const thisArgs: Window[] = [];
+			classList.forEach(function (this: Window) {
+				thisArgs.push(this);
+			});
+
+			expect(thisArgs[0]).toBe(window);
+			expect(thisArgs[1]).toBe(window);
+			expect(thisArgs[2]).toBe(window);
+		});
+
 		it('Executes a provided callback function once for each DOMTokenList element.', () => {
 			const items: Array<{ token: string; index: number }> = [];
 
 			element.className = 'class1 class2 class3';
 
-			classList.forEach((token: string, index: number) => {
+			const thisArg = {};
+			classList.forEach(function (this: any, token: string, index: number, parent) {
+				expect(this).toBe(thisArg);
+				expect(parent).toBe(classList);
 				items.push({ token, index });
-			});
+			}, thisArg);
 
 			expect(items).toEqual([
 				{
