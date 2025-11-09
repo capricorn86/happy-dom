@@ -264,4 +264,28 @@ describe('EventTarget', () => {
 			expect(eventTarget[Symbol.toStringTag]).toBe(description);
 		});
 	});
+
+	describe('[PropertySymbol.destroy]', () => {
+		it('Destroys the event target', () => {
+			let count = 0;
+			const listener = (): void => {
+				count++;
+			};
+			const dispatchedEvent = new Event(EVENT_TYPE);
+
+			eventTarget.addEventListener(EVENT_TYPE, listener);
+
+			eventTarget.dispatchEvent(dispatchedEvent);
+
+			expect(count).toBe(1);
+
+			count = 0;
+
+			eventTarget[PropertySymbol.destroy]();
+
+			eventTarget.dispatchEvent(dispatchedEvent);
+
+			expect(count).toBe(0);
+		});
+	});
 });

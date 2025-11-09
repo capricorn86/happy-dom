@@ -3,7 +3,7 @@ import Document from '../../../src/nodes/document/Document.js';
 import HTMLSelectElement from '../../../src/nodes/html-select-element/HTMLSelectElement.js';
 import HTMLOptionElement from '../../../src/nodes/html-option-element/HTMLOptionElement.js';
 import DOMException from '../../../src/exception/DOMException.js';
-import { beforeEach, afterEach, describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLOptionsCollection', () => {
 	let window: Window;

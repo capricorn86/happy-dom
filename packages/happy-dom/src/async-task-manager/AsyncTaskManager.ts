@@ -1,4 +1,5 @@
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import AsyncTaskManagerDebugError from './AsyncTaskManagerDebugError.js';
 
 // We need to set this as a global constant, so that using fake timers in Jest and Vitest won't override this on the global object.
 const TIMER = {
@@ -22,7 +23,6 @@ export default class AsyncTaskManager {
 		resolve: () => void;
 		reject: (error: Error) => void;
 	}> = [];
-	private aborted = false;
 	private destroyed = false;
 	#debugTimeout: NodeJS.Timeout | null = null;
 	#browserFrame: IBrowserFrame;
@@ -52,7 +52,7 @@ export default class AsyncTaskManager {
 	 * Aborts all tasks.
 	 */
 	public abort(): Promise<void> {
-		if (this.aborted) {
+		if (this.destroyed) {
 			return new Promise((resolve, reject) => {
 				this.waitUntilCompleteResolvers.push({ resolve, reject });
 				this.resolveWhenComplete();
@@ -65,7 +65,7 @@ export default class AsyncTaskManager {
 	 * Destroys the manager.
 	 */
 	public destroy(): Promise<void> {
-		if (this.aborted) {
+		if (this.destroyed) {
 			return new Promise((resolve, reject) => {
 				this.waitUntilCompleteResolvers.push({ resolve, reject });
 				this.resolveWhenComplete();
@@ -80,7 +80,7 @@ export default class AsyncTaskManager {
 	 * @param timerID Timer ID.
 	 */
 	public startTimer(timerID: NodeJS.Timeout): void {
-		if (this.aborted) {
+		if (this.destroyed) {
 			TIMER.clearTimeout(timerID);
 			return;
 		}
@@ -90,7 +90,7 @@ export default class AsyncTaskManager {
 		}
 		this.runningTimers.push(timerID);
 		if (this.#browserFrame.page.context.browser.settings.debug.traceWaitUntilComplete > 0) {
-			this.debugTrace.set(timerID, new Error().stack!);
+			this.debugTrace.set(timerID, new AsyncTaskManagerDebugError().stack!);
 		}
 	}
 
@@ -100,7 +100,7 @@ export default class AsyncTaskManager {
 	 * @param timerID Timer ID.
 	 */
 	public endTimer(timerID: NodeJS.Timeout): void {
-		if (this.aborted) {
+		if (this.destroyed) {
 			TIMER.clearTimeout(timerID);
 			return;
 		}
@@ -120,7 +120,7 @@ export default class AsyncTaskManager {
 	 * @param immediateID Immediate ID.
 	 */
 	public startImmediate(immediateID: NodeJS.Immediate): void {
-		if (this.aborted) {
+		if (this.destroyed) {
 			TIMER.clearImmediate(immediateID);
 			return;
 		}
@@ -129,8 +129,8 @@ export default class AsyncTaskManager {
 			this.waitUntilCompleteTimer = null;
 		}
 		this.runningImmediates.push(immediateID);
-		if (this.#browserFrame.page.context.browser.settings.debug.traceWaitUntilComplete > 0) {
-			this.debugTrace.set(immediateID, new Error().stack!);
+		if (this.#browserFrame.page?.context?.browser?.settings?.debug?.traceWaitUntilComplete > 0) {
+			this.debugTrace.set(immediateID, new AsyncTaskManagerDebugError().stack!);
 		}
 	}
 
@@ -140,7 +140,7 @@ export default class AsyncTaskManager {
 	 * @param immediateID Immediate ID.
 	 */
 	public endImmediate(immediateID: NodeJS.Immediate): void {
-		if (this.aborted) {
+		if (this.destroyed) {
 			TIMER.clearImmediate(immediateID);
 			return;
 		}
@@ -161,12 +161,12 @@ export default class AsyncTaskManager {
 	 * @returns Task ID.
 	 */
 	public startTask(abortHandler?: (destroy?: boolean) => void): number {
-		if (this.aborted) {
+		if (this.destroyed) {
 			if (abortHandler) {
 				abortHandler(this.destroyed);
 			}
 			throw new this.#browserFrame.window.Error(
-				`Failed to execute 'startTask()' on 'AsyncTaskManager': The asynchrounous task manager has been aborted.`
+				`Failed to execute 'startTask()' on 'AsyncTaskManager': The asynchronous task manager has been destroyed. This error can be thrown if scripts continue to run while a browser frame is closed.`
 			);
 		}
 		if (this.waitUntilCompleteTimer) {
@@ -177,7 +177,7 @@ export default class AsyncTaskManager {
 		this.runningTasks[taskID] = abortHandler ? abortHandler : () => {};
 		this.runningTaskCount++;
 		if (this.#browserFrame.page.context.browser.settings.debug.traceWaitUntilComplete > 0) {
-			this.debugTrace.set(taskID, new Error().stack!);
+			this.debugTrace.set(taskID, new AsyncTaskManagerDebugError().stack!);
 		}
 		return taskID;
 	}
@@ -188,7 +188,7 @@ export default class AsyncTaskManager {
 	 * @param taskID Task ID.
 	 */
 	public endTask(taskID: number): void {
-		if (this.aborted) {
+		if (this.destroyed) {
 			return;
 		}
 		if (this.runningTasks[taskID]) {
@@ -249,7 +249,7 @@ export default class AsyncTaskManager {
 				for (const resolver of resolvers) {
 					resolver.resolve();
 				}
-				this.aborted = false;
+				this.destroyed = false;
 			} else {
 				this.applyDebugging();
 			}
@@ -276,11 +276,13 @@ export default class AsyncTaskManager {
 				this.debugTrace.size === 1 ? '' : 's'
 			} did not end in time.\n\nThe following traces were recorded:\n\n`;
 
+			let number = 1;
 			for (const [key, value] of this.debugTrace.entries()) {
 				const type = typeof key === 'number' ? 'Task' : 'Timer';
-				errorMessage += `${type} #${key}\n‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾${value
-					.replace(/Error:/, '')
+				errorMessage += `${type} #${number}\n‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾${value
+					.replace(/AsyncTaskManagerDebugError:{0,1}/, '')
 					.replace(/\s+at /gm, '\n> ')}\n\n`;
+				number++;
 			}
 
 			const error = new Error(errorMessage);
@@ -303,8 +305,9 @@ export default class AsyncTaskManager {
 		const runningImmediates = this.runningImmediates;
 		const runningTasks = this.runningTasks;
 
-		this.aborted = true;
-		this.destroyed = destroy;
+		if (destroy) {
+			this.destroyed = true;
+		}
 		this.runningTasks = {};
 		this.runningTaskCount = 0;
 		this.runningImmediates = [];

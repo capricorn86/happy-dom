@@ -31,6 +31,7 @@ import FetchBodyUtility from './utilities/FetchBodyUtility.js';
 import IFetchInterceptor from './types/IFetchInterceptor.js';
 import VirtualServerUtility from './utilities/VirtualServerUtility.js';
 import PreloadUtility from './preload/PreloadUtility.js';
+import IFetchRequestHeaders from './types/IFetchRequestHeaders.js';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -56,6 +57,7 @@ export default class Fetch {
 	private response: Response | null = null;
 	private responseHeaders: Headers | null = null;
 	private interceptor: IFetchInterceptor | null;
+	private requestHeaders: IFetchRequestHeaders[] | null;
 	private request: Request;
 	private redirectCount = 0;
 	private disableCache: boolean;
@@ -109,6 +111,7 @@ export default class Fetch {
 			this.#browserFrame.page.context.browser.settings.fetch.disableSameOriginPolicy ??
 			false;
 		this.interceptor = this.#browserFrame.page.context.browser.settings.fetch.interceptor;
+		this.requestHeaders = this.#browserFrame.page.context.browser.settings.fetch.requestHeaders;
 		this.disablePreload = options.disablePreload ?? false;
 	}
 
@@ -118,7 +121,29 @@ export default class Fetch {
 	 * @returns Response.
 	 */
 	public async send(): Promise<Response> {
+		if (!(this.request instanceof Request) || !(this.request[PropertySymbol.url] instanceof URL)) {
+			throw new this.#window.DOMException(
+				'Unknown request object. Request object must be an instance of Request.',
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
 		FetchRequestReferrerUtility.prepareRequest(new URL(this.#window.location.href), this.request);
+
+		if (this.requestHeaders) {
+			for (const header of this.requestHeaders) {
+				if (
+					!header.url ||
+					(typeof header.url === 'string'
+						? header.url.startsWith(this.request.url)
+						: this.request.url.match(header.url))
+				) {
+					for (const [key, value] of Object.entries(header.headers)) {
+						this.request.headers.set(key, value);
+					}
+				}
+			}
+		}
 
 		if (this.interceptor?.beforeAsyncRequest) {
 			const taskID = this.#browserFrame[PropertySymbol.asyncTaskManager].startTask();
@@ -248,7 +273,7 @@ export default class Fetch {
 		}
 
 		if (cachedResponse.state === CachedResponseStateEnum.stale) {
-			const headers = new Headers(cachedResponse.request.headers);
+			const headers = new this.#window.Headers(cachedResponse.request.headers);
 
 			if (cachedResponse.etag) {
 				headers.set('If-None-Match', cachedResponse.etag);
@@ -323,7 +348,7 @@ export default class Fetch {
 	 * @returns Response.
 	 */
 	private async getVirtualServerResponse(): Promise<Response | null> {
-		const filePath = VirtualServerUtility.getFilepath(this.#window, this.request.url);
+		let filePath = VirtualServerUtility.getFilepath(this.#window, this.request.url);
 
 		if (!filePath) {
 			return null;
@@ -350,9 +375,8 @@ export default class Fetch {
 
 		try {
 			const stat = await FS.promises.stat(filePath);
-			buffer = await FS.promises.readFile(
-				stat.isDirectory() ? Path.join(filePath, 'index.html') : filePath
-			);
+			filePath = stat.isDirectory() ? Path.join(filePath, 'index.html') : filePath;
+			buffer = await FS.promises.readFile(filePath);
 		} catch (error) {
 			this.#browserFrame.page.console.error(
 				`${this.request.method} ${this.request.url} 404 (Not Found)`
@@ -381,6 +405,7 @@ export default class Fetch {
 
 		const response = new this.#window.Response(body);
 		response[PropertySymbol.buffer] = buffer;
+		response[PropertySymbol.virtualServerFile] = filePath;
 		(<string>response.url) = this.request.url;
 
 		const interceptedResponse = this.interceptor?.afterAsyncResponse
@@ -394,15 +419,16 @@ export default class Fetch {
 		this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 
 		const returnResponse = interceptedResponse instanceof Response ? interceptedResponse : response;
-		const cachedResponse = {
+		const cacheableResponse = {
 			...returnResponse,
 			body: buffer,
-			waitingForBody: false
+			waitingForBody: false,
+			virtual: true
 		};
 
 		response[PropertySymbol.cachedResponse] = this.#browserFrame.page.context.responseCache.add(
 			this.request,
-			cachedResponse
+			cacheableResponse
 		);
 
 		return returnResponse;
@@ -449,7 +475,7 @@ export default class Fetch {
 			requestHeaders.push(header.toLowerCase());
 		}
 
-		const corsHeaders = new Headers({
+		const corsHeaders = new this.#window.Headers({
 			'Access-Control-Request-Method': this.request.method,
 			Origin: this.#window.location.origin
 		});
@@ -932,7 +958,7 @@ export default class Fetch {
 					return true;
 				}
 
-				const headers = new Headers(this.request.headers);
+				const headers = new this.#window.Headers(this.request.headers);
 				const requestInit: IRequestInit = {
 					method: this.request.method,
 					signal: this.request.signal,
@@ -978,6 +1004,7 @@ export default class Fetch {
 					url: locationURL,
 					init: requestInit,
 					redirectCount: this.redirectCount + 1,
+					disableSameOriginPolicy: this.disableSameOriginPolicy,
 					contentType: !shouldBecomeGetRequest ? this.request[PropertySymbol.contentType] : null
 				});
 

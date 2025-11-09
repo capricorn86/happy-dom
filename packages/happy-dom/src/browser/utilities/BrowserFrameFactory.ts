@@ -61,6 +61,11 @@ export default class BrowserFrameFactory {
 						frame[PropertySymbol.openerFrame] = null;
 						frame[PropertySymbol.openerWindow] = null;
 
+						// Clear navigation listeners
+						if (frame[PropertySymbol.listeners]) {
+							frame[PropertySymbol.listeners].navigation = [];
+						}
+
 						resolve();
 					})
 					.catch((error) => reject(error));
@@ -82,6 +87,11 @@ export default class BrowserFrameFactory {
 							(<object>frame.window) = { closed: true };
 							frame[PropertySymbol.openerFrame] = null;
 							frame[PropertySymbol.openerWindow] = null;
+
+							// Clear navigation listeners
+							if (frame[PropertySymbol.listeners]) {
+								frame[PropertySymbol.listeners].navigation = [];
+							}
 
 							resolve();
 						})
