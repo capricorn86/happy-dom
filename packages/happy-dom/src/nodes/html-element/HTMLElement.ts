@@ -985,7 +985,7 @@ export default class HTMLElement extends Element {
 	 * @override
 	 * @see https://html.spec.whatwg.org/multipage/dom.html#htmlelement
 	 */
-	public override [PropertySymbol.connectedToNode](): void {
+	public override [PropertySymbol.connectedToDocument](): void {
 		const window = this[PropertySymbol.window];
 		const localName = this[PropertySymbol.localName]!;
 		const allCallbacks = window.customElements[PropertySymbol.callbacks];
@@ -1005,13 +1005,13 @@ export default class HTMLElement extends Element {
 			}
 		}
 
-		super[PropertySymbol.connectedToNode]();
+		super[PropertySymbol.connectedToDocument]();
 	}
 
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.disconnectedFromNode](): void {
+	public override [PropertySymbol.disconnectedFromDocument](): void {
 		const window = this[PropertySymbol.window];
 		const localName = this[PropertySymbol.localName]!;
 		const allCallbacks = window.customElements[PropertySymbol.callbacks];
@@ -1033,7 +1033,7 @@ export default class HTMLElement extends Element {
 			}
 		}
 
-		super[PropertySymbol.disconnectedFromNode]();
+		super[PropertySymbol.disconnectedFromDocument]();
 	}
 
 	/**

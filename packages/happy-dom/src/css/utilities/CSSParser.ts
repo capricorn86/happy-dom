@@ -10,6 +10,7 @@ import CSSSupportsRule from '../rules/CSSSupportsRule.js';
 import CSSFontFaceRule from '../rules/CSSFontFaceRule.js';
 import SelectorParser from '../../query-selector/SelectorParser.js';
 import CSSRuleTypeEnum from '../CSSRuleTypeEnum.js';
+import CSSScopeRule from '../rules/CSSScopeRule.js';
 
 const COMMENT_REGEXP = /\/\*[\s\S]*?\*\//gm;
 
@@ -17,14 +18,24 @@ const COMMENT_REGEXP = /\/\*[\s\S]*?\*\//gm;
  * CSS parser.
  */
 export default class CSSParser {
+	#parentStyleSheet: CSSStyleSheet;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param parentStyleSheet Parent style sheet.
+	 */
+	constructor(parentStyleSheet: CSSStyleSheet) {
+		this.#parentStyleSheet = parentStyleSheet;
+	}
 	/**
 	 * Parses HTML and returns a root element.
 	 *
-	 * @param parentStyleSheet Parent style sheet.
 	 * @param cssText CSS code.
-	 * @returns Root element.
+	 * @returns CSS rules.
 	 */
-	public static parseFromString(parentStyleSheet: CSSStyleSheet, cssText: string): CSSRule[] {
+	public parseFromString(cssText: string): CSSRule[] {
+		const parentStyleSheet = this.#parentStyleSheet;
 		const window = parentStyleSheet[PropertySymbol.window];
 		const css = cssText.replace(COMMENT_REGEXP, '');
 		const cssRules = [];
@@ -46,10 +57,16 @@ export default class CSSParser {
 					switch (ruleType) {
 						case '@keyframes':
 						case '@-webkit-keyframes':
-							const keyframesRule = new CSSKeyframesRule(PropertySymbol.illegalConstructor, window);
+							const keyframesRule = new CSSKeyframesRule(
+								PropertySymbol.illegalConstructor,
+								window,
+								this
+							);
 
-							(<string>keyframesRule.name) = ruleParameters;
-							keyframesRule.parentStyleSheet = parentStyleSheet;
+							keyframesRule[PropertySymbol.rulePrefix] =
+								ruleType === '@-webkit-keyframes' ? '-webkit-' : '';
+							keyframesRule[PropertySymbol.name] = ruleParameters;
+							keyframesRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
 							if (parentRule) {
 								if (
 									parentRule.type === CSSRuleTypeEnum.mediaRule ||
@@ -65,13 +82,13 @@ export default class CSSParser {
 							break;
 						case '@media':
 							const mediums = ruleParameters.split(',');
-							const mediaRule = new CSSMediaRule(PropertySymbol.illegalConstructor, window);
+							const mediaRule = new CSSMediaRule(PropertySymbol.illegalConstructor, window, this);
 
 							for (const medium of mediums) {
 								mediaRule.media.appendMedium(medium.trim());
 							}
 
-							mediaRule.parentStyleSheet = parentStyleSheet;
+							mediaRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
 							if (parentRule) {
 								if (
 									parentRule.type === CSSRuleTypeEnum.mediaRule ||
@@ -87,10 +104,15 @@ export default class CSSParser {
 							break;
 						case '@container':
 						case '@-webkit-container':
-							const containerRule = new CSSContainerRule(PropertySymbol.illegalConstructor, window);
-
-							(<string>containerRule.conditionText) = ruleParameters;
-							containerRule.parentStyleSheet = parentStyleSheet;
+							const containerRule = new CSSContainerRule(
+								PropertySymbol.illegalConstructor,
+								window,
+								this
+							);
+							containerRule[PropertySymbol.rulePrefix] =
+								ruleType === '@-webkit-container' ? '-webkit-' : '';
+							containerRule[PropertySymbol.conditionText] = ruleParameters;
+							containerRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
 
 							if (parentRule) {
 								if (
@@ -108,10 +130,16 @@ export default class CSSParser {
 							break;
 						case '@supports':
 						case '@-webkit-supports':
-							const supportsRule = new CSSSupportsRule(PropertySymbol.illegalConstructor, window);
+							const supportsRule = new CSSSupportsRule(
+								PropertySymbol.illegalConstructor,
+								window,
+								this
+							);
 
-							(<string>supportsRule.conditionText) = ruleParameters;
-							supportsRule.parentStyleSheet = parentStyleSheet;
+							supportsRule[PropertySymbol.rulePrefix] =
+								ruleType === '@-webkit-supports' ? '-webkit-' : '';
+							supportsRule[PropertySymbol.conditionText] = ruleParameters;
+							supportsRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
 							if (parentRule) {
 								if (
 									parentRule.type === CSSRuleTypeEnum.mediaRule ||
@@ -126,10 +154,14 @@ export default class CSSParser {
 							parentRule = supportsRule;
 							break;
 						case '@font-face':
-							const fontFaceRule = new CSSFontFaceRule(PropertySymbol.illegalConstructor, window);
+							const fontFaceRule = new CSSFontFaceRule(
+								PropertySymbol.illegalConstructor,
+								window,
+								this
+							);
 
 							fontFaceRule[PropertySymbol.cssText] = ruleParameters;
-							fontFaceRule.parentStyleSheet = parentStyleSheet;
+							fontFaceRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
 							if (parentRule) {
 								if (
 									parentRule.type === CSSRuleTypeEnum.mediaRule ||
@@ -143,19 +175,64 @@ export default class CSSParser {
 							}
 							parentRule = fontFaceRule;
 							break;
+						case '@scope':
+						case '@-webkit-scope':
+							const scopeRule = new CSSScopeRule(PropertySymbol.illegalConstructor, window, this);
+
+							scopeRule[PropertySymbol.rulePrefix] =
+								ruleType === '@-webkit-scope' ? '-webkit-' : '';
+							scopeRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
+
+							if (ruleParameters) {
+								const scopeRuleParts = ruleParameters.split(/\s+to\s+/);
+								if (
+									scopeRuleParts[0] &&
+									scopeRuleParts[0][0] === '(' &&
+									scopeRuleParts[0][scopeRuleParts[0].length - 1] === ')'
+								) {
+									scopeRule[PropertySymbol.start] = scopeRuleParts[0].slice(1, -1);
+								}
+								if (
+									scopeRuleParts[1] &&
+									scopeRuleParts[1][0] === '(' &&
+									scopeRuleParts[1][scopeRuleParts[1].length - 1] === ')'
+								) {
+									scopeRule[PropertySymbol.end] = scopeRuleParts[1].slice(1, -1);
+								}
+							}
+
+							if (parentRule) {
+								if (
+									parentRule.type === CSSRuleTypeEnum.mediaRule ||
+									parentRule.type === CSSRuleTypeEnum.containerRule ||
+									parentRule.type === CSSRuleTypeEnum.supportsRule
+								) {
+									(<CSSMediaRule>parentRule).cssRules.push(scopeRule);
+								}
+							} else {
+								cssRules.push(scopeRule);
+							}
+							parentRule = scopeRule;
+							break;
 						default:
 							// Unknown rule.
 							// We will create a new rule to let it grab its content, but we will not add it to the cssRules array.
-							const newRule = new CSSRule(PropertySymbol.illegalConstructor, window);
-							newRule.parentStyleSheet = parentStyleSheet;
+							const newRule = new CSSStyleRule(PropertySymbol.illegalConstructor, window, this);
+							newRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
 							parentRule = newRule;
 							break;
 					}
 				} else if (parentRule && parentRule.type === CSSRuleTypeEnum.keyframesRule) {
-					const newRule = new CSSKeyframeRule(PropertySymbol.illegalConstructor, window);
-					(<string>newRule.keyText) = selectorText.trim();
-					newRule.parentStyleSheet = parentStyleSheet;
-					newRule.parentRule = parentRule;
+					const newRule = new CSSKeyframeRule(PropertySymbol.illegalConstructor, window, this);
+					let keyText = selectorText.trim();
+					if (keyText === 'from') {
+						keyText = '0%';
+					} else if (keyText === 'to') {
+						keyText = '100%';
+					}
+					newRule[PropertySymbol.keyText] = keyText;
+					newRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
+					newRule[PropertySymbol.parentRule] = parentRule;
 
 					(<CSSKeyframesRule>parentRule).cssRules.push(<CSSKeyframeRule>newRule);
 					parentRule = newRule;
@@ -166,19 +243,19 @@ export default class CSSParser {
 						parentRule.type === CSSRuleTypeEnum.supportsRule)
 				) {
 					if (this.validateSelectorText(selectorText)) {
-						const newRule = new CSSStyleRule(PropertySymbol.illegalConstructor, window);
-						(<string>newRule.selectorText) = selectorText;
-						newRule.parentStyleSheet = parentStyleSheet;
-						newRule.parentRule = parentRule;
+						const newRule = new CSSStyleRule(PropertySymbol.illegalConstructor, window, this);
+						newRule[PropertySymbol.selectorText] = selectorText;
+						newRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
+						newRule[PropertySymbol.parentRule] = parentRule;
 						(<CSSMediaRule>parentRule).cssRules.push(newRule);
 						parentRule = newRule;
 					}
 				} else {
 					if (this.validateSelectorText(selectorText)) {
-						const newRule = new CSSStyleRule(PropertySymbol.illegalConstructor, window);
-						(<string>newRule.selectorText) = selectorText;
-						newRule.parentStyleSheet = parentStyleSheet;
-						newRule.parentRule = parentRule;
+						const newRule = new CSSStyleRule(PropertySymbol.illegalConstructor, window, this);
+						newRule[PropertySymbol.selectorText] = selectorText;
+						newRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
+						newRule[PropertySymbol.parentRule] = parentRule;
 
 						if (!parentRule) {
 							cssRules.push(newRule);
@@ -223,7 +300,7 @@ export default class CSSParser {
 	 * @param selectorText Selector text.
 	 * @returns True if valid, false otherwise.
 	 */
-	private static validateSelectorText(selectorText: string): boolean {
+	private validateSelectorText(selectorText: string): boolean {
 		try {
 			SelectorParser.getSelectorGroups(selectorText);
 		} catch (e) {

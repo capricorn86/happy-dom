@@ -20,6 +20,7 @@ export default class DOMTokenList {
 		attributeValue: ''
 	};
 	private [PropertySymbol.supports]: string[];
+	private [PropertySymbol.proxy]?: this;
 
 	/**
 	 * Constructor.
@@ -45,7 +46,7 @@ export default class DOMTokenList {
 
 		const methodBinder = new ClassMethodBinder(this, [DOMTokenList]);
 
-		return new Proxy(this, {
+		const proxy = new Proxy(this, {
 			get: (target, property) => {
 				if (property === 'length') {
 					return target[PropertySymbol.getTokenList]().length;
@@ -125,6 +126,9 @@ export default class DOMTokenList {
 				}
 			}
 		});
+		this[PropertySymbol.proxy] = proxy;
+
+		return proxy;
 	}
 
 	/**
@@ -155,7 +159,7 @@ export default class DOMTokenList {
 	/**
 	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.
 	 */
-	public [Symbol.iterator](): IterableIterator<string> {
+	public [Symbol.iterator](): ArrayIterator<string> {
 		return this[PropertySymbol.getTokenList]().values();
 	}
 
@@ -206,14 +210,14 @@ export default class DOMTokenList {
 	/**
 	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.
 	 */
-	public values(): IterableIterator<string> {
+	public values(): ArrayIterator<string> {
 		return this[PropertySymbol.getTokenList]().values();
 	}
 
 	/**
 	 * Returns an iterator, allowing you to go through all key/value pairs contained in this object.
 	 */
-	public entries(): IterableIterator<[number, string]> {
+	public entries(): ArrayIterator<[number, string]> {
 		return this[PropertySymbol.getTokenList]().entries();
 	}
 
@@ -224,17 +228,22 @@ export default class DOMTokenList {
 	 * @param thisArg
 	 */
 	public forEach(
-		callback: (currentValue: string, currentIndex: number, listObj: string[]) => void,
-		thisArg?: this
+		callback: (currentValue: string, currentIndex: number, parent: this) => void,
+		thisArg?: any
 	): void {
-		return this[PropertySymbol.getTokenList]().forEach(callback, thisArg);
+		const thisArgValue = thisArg ?? this[PropertySymbol.ownerElement][PropertySymbol.window];
+		const items = this[PropertySymbol.getTokenList]();
+		const proxy = this[PropertySymbol.proxy] ?? this;
+		for (let i = 0, max = items.length; i < max; i++) {
+			callback.call(thisArgValue, items[i], i, proxy);
+		}
 	}
 
 	/**
 	 * Returns an iterator, allowing you to go through all keys of the key/value pairs contained in this object.
 	 *
 	 */
-	public keys(): IterableIterator<number> {
+	public keys(): ArrayIterator<number> {
 		return this[PropertySymbol.getTokenList]().keys();
 	}
 

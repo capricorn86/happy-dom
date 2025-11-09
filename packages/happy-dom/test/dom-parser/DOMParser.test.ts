@@ -16,7 +16,6 @@ describe('DOMParser', () => {
 		window = new Window({
 			settings: {
 				disableJavaScriptFileLoading: true,
-				disableJavaScriptEvaluation: true,
 				disableCSSFileLoading: true,
 				enableFileSystemHttpRequests: false
 			}

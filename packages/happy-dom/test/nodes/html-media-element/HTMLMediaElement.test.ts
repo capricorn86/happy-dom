@@ -1,5 +1,4 @@
 import Window from '../../../src/window/Window.js';
-import DOMException from '../../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
 import Document from '../../../src/nodes/document/Document.js';
 import HTMLMediaElement from '../../../src/nodes/html-media-element/HTMLMediaElement.js';
@@ -22,7 +21,9 @@ describe('HTMLMediaElement', () => {
 	let element: HTMLMediaElement;
 
 	beforeEach(() => {
-		window = new Window();
+		window = new Window({
+			settings: { enableJavaScriptEvaluation: true, suppressCodeGenerationFromStringsWarning: true }
+		});
 		document = window.document;
 		element = <HTMLMediaElement>document.createElement('audio');
 	});
@@ -42,7 +43,7 @@ describe('HTMLMediaElement', () => {
 			expect(audio.localName).toBe('audio');
 			expect(audio.namespaceURI).toBe(NamespaceURI.html);
 
-			expect(window['Video']).toBe(undefined);
+			expect((<any>window)['Video']).toBe(undefined);
 		});
 	});
 
@@ -80,20 +81,20 @@ describe('HTMLMediaElement', () => {
 		describe(`get on${event}()`, () => {
 			it('Returns the event listener.', () => {
 				element.setAttribute(`on${event}`, 'window.test = 1');
-				expect(element[`on${event}`]).toBeTypeOf('function');
-				element[`on${event}`](new Event(event));
-				expect(window['test']).toBe(1);
+				expect((<any>element)[`on${event}`]).toBeTypeOf('function');
+				(<any>element)[`on${event}`](new Event(event));
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 
 		describe(`set on${event}()`, () => {
 			it('Sets the event listener.', () => {
-				element[`on${event}`] = () => {
-					window['test'] = 1;
+				(<any>element)[`on${event}`] = () => {
+					(<any>window)['test'] = 1;
 				};
 				element.dispatchEvent(new Event(event));
 				expect(element.getAttribute(`on${event}`)).toBe(null);
-				expect(window['test']).toBe(1);
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 	}
@@ -175,21 +176,21 @@ describe('HTMLMediaElement', () => {
 	for (const property of ['autoplay', 'controls', 'loop']) {
 		describe(`get ${property}()`, () => {
 			it('Returns attribute value.', () => {
-				expect(element[property]).toBe(false);
+				expect((<any>element)[property]).toBe(false);
 				element.setAttribute(property, '');
-				expect(element[property]).toBe(true);
+				expect((<any>element)[property]).toBe(true);
 			});
 		});
 
 		describe(`set ${property}()`, () => {
 			it('Sets attribute value.', () => {
-				element[property] = true;
+				(<any>element)[property] = true;
 				expect(element.getAttribute(property)).toBe('');
 			});
 
 			it('Remove attribute value.', () => {
 				element.setAttribute(property, '');
-				element[property] = false;
+				(<any>element)[property] = false;
 				expect(element.getAttribute(property)).toBeNull();
 			});
 		});
@@ -393,15 +394,15 @@ describe('HTMLMediaElement', () => {
 
 			expect(element.textTracks.length).toBe(4);
 
-			expect(element.textTracks[2].id).toBe('track1');
-			expect(element.textTracks[2].kind).toBe('captions');
-			expect(element.textTracks[2].label).toBe('English');
-			expect(element.textTracks[2].language).toBe('en');
+			expect(element.textTracks[2]!.id).toBe('track1');
+			expect(element.textTracks[2]!.kind).toBe('captions');
+			expect(element.textTracks[2]!.label).toBe('English');
+			expect(element.textTracks[2]!.language).toBe('en');
 
-			expect(element.textTracks[3].id).toBe('track2');
-			expect(element.textTracks[3].kind).toBe('metadata');
-			expect(element.textTracks[3].label).toBe('French');
-			expect(element.textTracks[3].language).toBe('fr');
+			expect(element.textTracks[3]!.id).toBe('track2');
+			expect(element.textTracks[3]!.kind).toBe('metadata');
+			expect(element.textTracks[3]!.label).toBe('French');
+			expect(element.textTracks[3]!.language).toBe('fr');
 		});
 	});
 

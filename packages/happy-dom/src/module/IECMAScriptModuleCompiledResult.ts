@@ -8,7 +8,11 @@ export default interface IECMAScriptModuleCompiledResult {
 			url: string,
 			options?: { with?: { type?: string } }
 		) => Promise<{ [key: string]: any }>;
+		importMeta: {
+			url: string;
+			resolve: (url: string) => string;
+		};
 		imports: Map<string, { [key: string]: any }>;
 		exports: { [key: string]: any };
-	}) => void;
+	}) => Promise<void>;
 }

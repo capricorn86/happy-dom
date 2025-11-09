@@ -167,6 +167,16 @@ export default class EventTarget {
 	}
 
 	/**
+	 * Destroys the node.
+	 */
+	public [PropertySymbol.destroy](): void {
+		this[PropertySymbol.listeners].capturing.clear();
+		this[PropertySymbol.listeners].bubbling.clear();
+		this[PropertySymbol.listenerOptions].capturing.clear();
+		this[PropertySymbol.listenerOptions].bubbling.clear();
+	}
+
+	/**
 	 * Goes through dispatch event phases.
 	 *
 	 * @param event Event.

@@ -21,7 +21,9 @@ describe('HTMLInputElement', () => {
 	let element: HTMLInputElement;
 
 	beforeEach(() => {
-		window = new Window();
+		window = new Window({
+			settings: { enableJavaScriptEvaluation: true, suppressCodeGenerationFromStringsWarning: true }
+		});
 		document = window.document;
 		element = <HTMLInputElement>document.createElement('input');
 	});
@@ -36,20 +38,20 @@ describe('HTMLInputElement', () => {
 		describe(`get on${event}()`, () => {
 			it('Returns the event listener.', () => {
 				element.setAttribute(`on${event}`, 'window.test = 1');
-				expect(element[`on${event}`]).toBeTypeOf('function');
-				element[`on${event}`](new Event(event));
-				expect(window['test']).toBe(1);
+				expect((<any>element)[`on${event}`]).toBeTypeOf('function');
+				(<any>element)[`on${event}`](new Event(event));
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 
 		describe(`set on${event}()`, () => {
 			it('Sets the event listener.', () => {
-				element[`on${event}`] = () => {
-					window['test'] = 1;
+				(<any>element)[`on${event}`] = () => {
+					(<any>window)['test'] = 1;
 				};
 				element.dispatchEvent(new Event(event));
 				expect(element.getAttribute(`on${event}`)).toBe(null);
-				expect(window['test']).toBe(1);
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 	}
@@ -751,15 +753,15 @@ describe('HTMLInputElement', () => {
 	for (const property of ['disabled', 'autofocus', 'required', 'multiple', 'readOnly']) {
 		describe(`get ${property}()`, () => {
 			it('Returns attribute value.', () => {
-				expect(element[property]).toBe(false);
+				expect((<any>element)[property]).toBe(false);
 				element.setAttribute(property, '');
-				expect(element[property]).toBe(true);
+				expect((<any>element)[property]).toBe(true);
 			});
 		});
 
 		describe(`set ${property}()`, () => {
 			it('Sets attribute value.', () => {
-				element[property] = true;
+				(<any>element)[property] = true;
 				expect(element.getAttribute(property)).toBe('');
 			});
 		});
@@ -781,15 +783,15 @@ describe('HTMLInputElement', () => {
 	]) {
 		describe(`get ${property}()`, () => {
 			it('Returns attribute value.', () => {
-				expect(element[property]).toBe('');
+				expect((<any>element)[property]).toBe('');
 				element.setAttribute(property, 'value');
-				expect(element[property]).toBe('value');
+				expect((<any>element)[property]).toBe('value');
 			});
 		});
 
 		describe(`set ${property}()`, () => {
 			it('Sets attribute value.', () => {
-				element[property] = 'value';
+				(<any>element)[property] = 'value';
 				expect(element.getAttribute(property)).toBe('value');
 			});
 		});
@@ -798,18 +800,18 @@ describe('HTMLInputElement', () => {
 	for (const property of ['height', 'width']) {
 		describe(`get ${property}()`, () => {
 			it('Returns attribute value.', () => {
-				expect(element[property]).toBe(0);
-				element[property] = 20;
-				expect(element[property]).toBe(20);
+				expect((<any>element)[property]).toBe(0);
+				(<any>element)[property] = 20;
+				expect((<any>element)[property]).toBe(20);
 			});
 		});
 
 		describe(`set ${property}()`, () => {
 			it('Sets attribute value.', () => {
 				element.setAttribute(property, '50');
-				expect(element[property]).toBe(0);
-				element[property] = 50;
-				expect(element[property]).toBe(50);
+				expect((<any>element)[property]).toBe(0);
+				(<any>element)[property] = 50;
+				expect((<any>element)[property]).toBe(50);
 				expect(element.getAttribute(property)).toBe('50');
 			});
 		});
@@ -818,16 +820,16 @@ describe('HTMLInputElement', () => {
 	for (const property of ['minLength', 'maxLength']) {
 		describe(`get ${property}()`, () => {
 			it('Returns attribute value.', () => {
-				expect(element[property]).toBe(-1);
+				expect((<any>element)[property]).toBe(-1);
 				element.setAttribute(property, '50');
-				expect(element[property]).toBe(50);
+				expect((<any>element)[property]).toBe(50);
 			});
 		});
 
 		describe(`set ${property}()`, () => {
 			it('Sets attribute value.', () => {
-				element[property] = 50;
-				expect(element[property]).toBe(50);
+				(<any>element)[property] = 50;
+				expect((<any>element)[property]).toBe(50);
 				expect(element.getAttribute(property)).toBe('50');
 			});
 		});
@@ -1243,43 +1245,43 @@ describe('HTMLInputElement', () => {
 			it('Returns "true" if the field is "disabled".', () => {
 				element.required = true;
 				element.disabled = true;
-				expect(element[method]()).toBe(true);
+				expect((<any>element)[method]()).toBe(true);
 			});
 
 			it('Returns "true" if the field is "readOnly".', () => {
 				element.required = true;
 				element.readOnly = true;
-				expect(element[method]()).toBe(true);
+				expect((<any>element)[method]()).toBe(true);
 			});
 
 			it('Returns "true" if the field type is "hidden".', () => {
 				element.required = true;
 				element.type = 'hidden';
-				expect(element[method]()).toBe(true);
+				expect((<any>element)[method]()).toBe(true);
 			});
 
 			it('Returns "true" if the field type is "reset".', () => {
 				element.required = true;
 				element.type = 'reset';
-				expect(element[method]()).toBe(true);
+				expect((<any>element)[method]()).toBe(true);
 			});
 
 			it('Returns "true" if the field type is "button".', () => {
 				element.required = true;
 				element.type = 'button';
-				expect(element[method]()).toBe(true);
+				expect((<any>element)[method]()).toBe(true);
 			});
 
 			it('Returns "false" if invalid.', () => {
 				element.required = true;
-				expect(element[method]()).toBe(false);
+				expect((<any>element)[method]()).toBe(false);
 			});
 
 			it('Triggers an "invalid" event when invalid.', () => {
 				element.required = true;
 				let dispatchedEvent: Event | null = null;
 				element.addEventListener('invalid', (event: Event) => (dispatchedEvent = event));
-				element[method]();
+				(<any>element)[method]();
 				expect((<Event>(<unknown>dispatchedEvent)).type).toBe('invalid');
 			});
 		});

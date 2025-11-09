@@ -58,7 +58,9 @@ describe('BrowserWindow', () => {
 	let document: Document;
 
 	beforeEach(() => {
-		browser = new Browser();
+		browser = new Browser({
+			settings: { enableJavaScriptEvaluation: true, suppressCodeGenerationFromStringsWarning: true }
+		});
 		browserPage = browser.newPage();
 		browserFrame = browserPage.mainFrame;
 		window = browserFrame.window;
@@ -75,9 +77,75 @@ describe('BrowserWindow', () => {
 		vi.restoreAllMocks();
 	});
 
+	describe('constructor()', () => {
+		it('Outputs a warning if "enableJavaScriptEvaluation" is enabled in an environment with code generation enabled.', () => {
+			const consoleWarn: string[] = [];
+			vi.spyOn(globalThis.console, 'warn').mockImplementation((...args: any[]) =>
+				consoleWarn.push(args.join(' '))
+			);
+			const browser = new Browser({ settings: { enableJavaScriptEvaluation: true } });
+
+			browser.newPage();
+
+			expect(consoleWarn).toEqual([
+				'\nWarning! Happy DOM has JavaScript evaluation enabled and is running in an insecure environment.' +
+					'\n\nA VM Context is not an isolated environment, and if you run untrusted code you are at risk of RCE (Remote Code Execution) attacks. The attacker can escape the VM and run code at process level.' +
+					'\n\nIt is recommended to disable code generation and freeze all builtins at process level by running node with the flags "--disallow-code-generation-from-strings" and "--frozen-intrinsics".' +
+					' You can suppress this warning by setting "suppressInsecureJavaScriptEnvironmentWarning" to "true" at your own risk.' +
+					'\n\nFor more information, see https://github.com/capricorn86/happy-dom/wiki/JavaScript-Evaluation-Warning\n\n'
+			]);
+		});
+
+		it('Does not output a warning if "enableJavaScriptEvaluation" is disabled.', () => {
+			const consoleWarn: string[] = [];
+			vi.spyOn(globalThis.console, 'warn').mockImplementation((...args: any[]) =>
+				consoleWarn.push(args.join(' '))
+			);
+			const browser = new Browser();
+
+			new BrowserWindow(browser.newPage().mainFrame);
+
+			expect(consoleWarn.length).toBe(0);
+		});
+
+		it('Does not output a warning if "suppressCodeGenerationFromStringsWarning" is enabled.', () => {
+			const consoleWarn: string[] = [];
+			vi.spyOn(globalThis.console, 'warn').mockImplementation((...args: any[]) =>
+				consoleWarn.push(args.join(' '))
+			);
+			const browser = new Browser({
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true
+				}
+			});
+
+			new BrowserWindow(browser.newPage().mainFrame);
+
+			expect(consoleWarn.length).toBe(0);
+		});
+
+		it('Does not output a warning if "suppressInsecureJavaScriptEnvironmentWarning" is enabled.', () => {
+			const consoleWarn: string[] = [];
+			vi.spyOn(globalThis.console, 'warn').mockImplementation((...args: any[]) =>
+				consoleWarn.push(args.join(' '))
+			);
+			const browser = new Browser({
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressInsecureJavaScriptEnvironmentWarning: true
+				}
+			});
+
+			new BrowserWindow(browser.newPage().mainFrame);
+
+			expect(consoleWarn.length).toBe(0);
+		});
+	});
+
 	describe('get happyDOM()', () => {
 		it('Returns "undefined" for an attached browser.', () => {
-			expect(browserFrame.window['happyDOM']).toBeUndefined();
+			expect((<any>browserFrame.window)['happyDOM']).toBeUndefined();
 		});
 	});
 
@@ -114,18 +182,22 @@ describe('BrowserWindow', () => {
 	});
 
 	describe('get Function()', () => {
-		it('Is not the same as (() => {}).constructorr when inside the VM.', () => {
+		it('Is not the same as (() => {}).constructor when inside the VM.', () => {
 			expect(typeof window.Function).toBe('function');
 			expect((() => {}).constructor).not.toBe(window.Function);
 		});
 
 		it('Is the same as (() => {}).constructor when using eval().', () => {
-			expect(window.eval('(() => {}).constructor === window.Function')).toBe(true);
+			expect(window.Function('return (() => {}).constructor === window.Function')()).toBe(true);
+		});
+
+		it('Does not execute unsafe code using import', () => {
+			expect(() => window.Function('return import("process")')()).rejects.toThrow();
 		});
 	});
 
 	describe('get Array()', () => {
-		it('Is not the same as [].constructorr when inside the VM.', () => {
+		it('Is not the same as [].constructor when inside the VM.', () => {
 			expect(typeof window.Array).toBe('function');
 			expect([].constructor).not.toBe(window.Array);
 		});
@@ -182,7 +254,7 @@ describe('BrowserWindow', () => {
 	describe('get {ElementClass}()', () => {
 		for (const tagName of Object.keys(HTMLElementConfig)) {
 			it(`Exposes the HTML element class "${HTMLElementConfig[tagName].className}" for tag name "${tagName}"`, () => {
-				expect(window[HTMLElementConfig[tagName].className].name).toBe(
+				expect((<any>window)[HTMLElementConfig[tagName].className].name).toBe(
 					HTMLElementConfig[tagName].className
 				);
 			});
@@ -190,7 +262,7 @@ describe('BrowserWindow', () => {
 
 		for (const tagName of Object.keys(SVGElementConfig)) {
 			it(`Exposes the SVG element class "${SVGElementConfig[tagName]}" for tag name "${tagName}"`, () => {
-				expect(window[SVGElementConfig[tagName].className].name).toBe(
+				expect((<any>window)[SVGElementConfig[tagName].className].name).toBe(
 					SVGElementConfig[tagName].className
 				);
 			});
@@ -205,7 +277,7 @@ describe('BrowserWindow', () => {
 
 	describe('get process()', () => {
 		it('Returns undefined.', () => {
-			expect(window['process']).toBeUndefined();
+			expect((<any>window)['process']).toBeUndefined();
 		});
 	});
 
@@ -283,7 +355,7 @@ describe('BrowserWindow', () => {
 			};
 
 			for (const propertyKey in referenceValues) {
-				expect(window.navigator[propertyKey]).toEqual(referenceValues[propertyKey]);
+				expect((<any>window.navigator)[propertyKey]).toEqual((<any>referenceValues)[propertyKey]);
 			}
 		});
 	});
@@ -408,7 +480,7 @@ describe('BrowserWindow', () => {
 				return eval('variable');
 			})()`);
 			expect(result).toBe('locally defined');
-			expect(window['variable']).toBe('globally defined');
+			expect((<any>window)['variable']).toBe('globally defined');
 		});
 
 		it('Respects indirect eval.', () => {
@@ -419,12 +491,12 @@ describe('BrowserWindow', () => {
 				return (0,eval)('variable');
 			})()`);
 			expect(result).toBe('globally defined');
-			expect(window['variable']).toBe('globally defined');
+			expect((<any>window)['variable']).toBe('globally defined');
 		});
 
 		it('Has access to the window and document.', () => {
 			window.eval(`window.variable = document.characterSet;`);
-			expect(window['variable']).toBe('UTF-8');
+			expect((<any>window)['variable']).toBe('UTF-8');
 		});
 	});
 
@@ -962,7 +1034,275 @@ describe('BrowserWindow', () => {
 			expect(window.getComputedStyle(div).getPropertyValue('border-color')).toBe('pink');
 		});
 
-		it('Ingores invalid selectors in parsed CSS.', () => {
+		it('Handles CSS in root pseudo element (:root).', () => {
+			const div = document.createElement('div');
+			const style = document.createElement('style');
+
+			style.textContent = `
+              :root {
+                border-color: pink;
+                font-size: 20px;
+              }
+            `;
+
+			document.head.appendChild(style);
+			document.body.appendChild(div);
+
+			expect(
+				window.getComputedStyle(document.documentElement).getPropertyValue('border-color')
+			).toBe('pink');
+
+			expect(window.getComputedStyle(div).getPropertyValue('font-size')).toBe('20px');
+		});
+
+		it('Handles CSS in scope pseudo element (:scope).', () => {
+			const div = document.createElement('div');
+			const style = document.createElement('style');
+
+			style.textContent = `
+              :scope {
+                border-color: pink;
+                font-size: 20px;
+              }
+            `;
+
+			document.head.appendChild(style);
+			document.body.appendChild(div);
+
+			expect(
+				window.getComputedStyle(document.documentElement).getPropertyValue('border-color')
+			).toBe('pink');
+
+			expect(window.getComputedStyle(div).getPropertyValue('font-size')).toBe('20px');
+		});
+
+		it('Handles CSS in a defined scope pseudo element (@scope).', () => {
+			const div = document.createElement('div');
+			const style = document.createElement('style');
+
+			div.innerHTML = `
+                <div class="light-theme">
+                    <p>
+                        Happy DOM
+                        <a href="https://github.com/capricorn86/happy-dom">Link</a>,
+                    </p>
+                </div>
+
+                <div class="dark-theme">
+                    <p>
+                        Happy DOM
+                        <a href="https://github.com/capricorn86/happy-dom">Link</a>,
+                    </p>
+                </div>
+
+                <div class="cool-theme">
+                    <p>
+                        Happy DOM
+                        <a href="https://github.com/capricorn86/happy-dom">Link</a>,
+                    </p>
+                </div>
+            `;
+
+			style.textContent = `
+              @scope (.light-theme) {
+                :scope {
+                    background-color: plum;
+                }
+
+                a {
+                    color: darkmagenta;
+                }
+              }
+
+              @scope (.dark-theme) {
+                :scope {
+                    background-color: darkmagenta;
+                    color: antiquewhite;
+                }
+
+                a {
+                    color: plum;
+                }
+              }
+
+              @scope (.cool-theme) to (a) {
+                :scope {
+                    background-color: lightblue;
+                }
+
+                p {
+                    font-size: 20px;
+                }
+
+                a {
+                    color: blue;
+                }
+              }
+            `;
+
+			document.head.appendChild(style);
+			document.body.appendChild(div);
+
+			expect(
+				window
+					.getComputedStyle(document.querySelector('.light-theme')!)
+					.getPropertyValue('background-color')
+			).toBe('plum');
+
+			expect(
+				window.getComputedStyle(document.querySelector('.light-theme a')!).getPropertyValue('color')
+			).toBe('darkmagenta');
+
+			expect(
+				window
+					.getComputedStyle(document.querySelector('.dark-theme')!)
+					.getPropertyValue('background-color')
+			).toBe('darkmagenta');
+
+			expect(
+				window.getComputedStyle(document.querySelector('.dark-theme')!).getPropertyValue('color')
+			).toBe('antiquewhite');
+
+			expect(
+				window.getComputedStyle(document.querySelector('.dark-theme a')!).getPropertyValue('color')
+			).toBe('plum');
+
+			expect(
+				window
+					.getComputedStyle(document.querySelector('.cool-theme')!)
+					.getPropertyValue('background-color')
+			).toBe('lightblue');
+
+			// Should be empty as "a" ends the scope
+			expect(
+				window.getComputedStyle(document.querySelector('.cool-theme a')!).getPropertyValue('color')
+			).toBe('');
+
+			expect(
+				window
+					.getComputedStyle(document.querySelector('.cool-theme a')!)
+					.getPropertyValue('font-size')
+			).toBe('20px');
+		});
+
+		it('Handles CSS in a defined :host element with selector (":host(:root .class1.class2)").', () => {
+			/**
+			 *
+			 */
+			class TestElement extends HTMLElement {
+				/**
+				 *
+				 */
+				constructor() {
+					super();
+					const shadow = this.attachShadow({ mode: 'open' });
+					shadow.innerHTML = `
+                        <style>
+                            :host(:root .class1.class2) {
+                                background-color: pink;
+                            }
+                        </style>
+                        <span>Test</span>
+                    `;
+				}
+			}
+
+			window.customElements.define('test-element', TestElement);
+
+			const div = document.createElement('div');
+			const testElement = document.createElement('test-element');
+
+			div.appendChild(testElement);
+			document.body.appendChild(div);
+
+			const computedStyle = window.getComputedStyle(testElement);
+
+			expect(computedStyle.getPropertyValue('background-color')).toBe('');
+
+			testElement.className = 'class1 class2';
+
+			expect(computedStyle.getPropertyValue('background-color')).toBe('pink');
+		});
+
+		it('Handles CSS in a defined :host-context element with selector (":host-context(:root .class1.class2)").', () => {
+			/**
+			 *
+			 */
+			class TestElement extends HTMLElement {
+				/**
+				 *
+				 */
+				constructor() {
+					super();
+					const shadow = this.attachShadow({ mode: 'open' });
+					shadow.innerHTML = `
+                        <style>
+                            :host-context(:root .class1.class2) {
+                                background-color: pink;
+                            }
+                        </style>
+                        <span>Test</span>
+                    `;
+				}
+			}
+
+			window.customElements.define('test-element', TestElement);
+
+			const div = document.createElement('div');
+			const testElement = document.createElement('test-element');
+
+			div.appendChild(testElement);
+			document.body.appendChild(div);
+
+			const computedStyle = window.getComputedStyle(testElement);
+
+			expect(computedStyle.getPropertyValue('background-color')).toBe('');
+
+			testElement.className = 'class1 class2';
+
+			expect(computedStyle.getPropertyValue('background-color')).toBe('pink');
+		});
+
+		it('Handles CSS in a defined :host-context element with selector (":host-context(:root .class1.class2) span").', () => {
+			/**
+			 *
+			 */
+			class TestElement extends HTMLElement {
+				/**
+				 *
+				 */
+				constructor() {
+					super();
+					const shadow = this.attachShadow({ mode: 'open' });
+					shadow.innerHTML = `
+                        <style>
+                            :host-context(:root .class1.class2) span {
+                                background-color: pink;
+                            }
+                        </style>
+                        <span>Test</span>
+                    `;
+				}
+			}
+
+			window.customElements.define('test-element', TestElement);
+
+			const div = document.createElement('div');
+			const testElement = document.createElement('test-element');
+
+			div.appendChild(testElement);
+			document.body.appendChild(div);
+
+			const computedStyle = window.getComputedStyle(testElement.shadowRoot!.querySelector('span')!);
+
+			expect(computedStyle.getPropertyValue('background-color')).toBe('');
+
+			testElement.className = 'class1 class2';
+
+			expect(computedStyle.getPropertyValue('background-color')).toBe('pink');
+		});
+
+		it('Ignores invalid selectors in parsed CSS.', () => {
 			const parent = document.createElement('div');
 			const element = document.createElement('span');
 			const computedStyle = window.getComputedStyle(element);
@@ -1123,6 +1463,37 @@ describe('BrowserWindow', () => {
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			expect(loopCount).toBe(3);
+		});
+
+		it('Supports preventing timeout loops when the setting "preventTimerLoops" is set to an object with a limit.', async () => {
+			let loopCount = 0;
+
+			browser.settings.timer.preventTimerLoops = false;
+
+			const timeoutLoop = (): void => {
+				if (loopCount < 10) {
+					loopCount++;
+					window.setTimeout(timeoutLoop, loopCount < 3 ? 1 : 0);
+				}
+			};
+
+			timeoutLoop();
+
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			expect(loopCount).toBe(10);
+
+			browser.settings.timer.preventTimerLoops = {
+				timeout: 3
+			};
+
+			loopCount = 0;
+
+			timeoutLoop();
+
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			expect(loopCount).toBe(7);
 		});
 	});
 
@@ -1377,6 +1748,37 @@ describe('BrowserWindow', () => {
 
 			expect(loopCount).toBe(3);
 		});
+
+		it('Supports preventing timeout loops when the setting "preventTimerLoops" is set to an object with a limit.', async () => {
+			let loopCount = 0;
+
+			browser.settings.timer.preventTimerLoops = false;
+
+			const timeoutLoop = (): void => {
+				if (loopCount < 10) {
+					loopCount++;
+					window.requestAnimationFrame(timeoutLoop);
+				}
+			};
+
+			timeoutLoop();
+
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			expect(loopCount).toBe(10);
+
+			browser.settings.timer.preventTimerLoops = {
+				requestAnimationFrame: 3
+			};
+
+			loopCount = 0;
+
+			timeoutLoop();
+
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			expect(loopCount).toBe(5);
+		});
 	});
 
 	describe('cancelAnimationFrame()', () => {
@@ -1421,8 +1823,10 @@ describe('BrowserWindow', () => {
 			};
 			let request: Request | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
-				request = <Request>this.request;
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (
+				this: Fetch
+			): Promise<Response> {
+				request = <Request>(<any>this).request;
 				return Promise.resolve(expectedResponse);
 			});
 
@@ -1437,7 +1841,7 @@ describe('BrowserWindow', () => {
 	for (const functionName of ['scroll', 'scrollTo']) {
 		describe(`${functionName}()`, () => {
 			it('Sets the properties scrollTop, scrollLeft, scrollY, scrollX, pageXOffset and pageYOffset', () => {
-				window[functionName](50, 60);
+				(<any>window)[functionName](50, 60);
 				expect(window.document.documentElement.scrollLeft).toBe(50);
 				expect(window.document.documentElement.scrollTop).toBe(60);
 				expect(window.pageXOffset).toBe(50);
@@ -1447,7 +1851,7 @@ describe('BrowserWindow', () => {
 			});
 
 			it('Sets the properties scrollTop, scrollLeft, scrollY, scrollX, pageXOffset and pageYOffset using object.', () => {
-				window[functionName]({ left: 50, top: 60 });
+				(<any>window)[functionName]({ left: 50, top: 60 });
 				expect(window.document.documentElement.scrollLeft).toBe(50);
 				expect(window.document.documentElement.scrollTop).toBe(60);
 				expect(window.pageXOffset).toBe(50);
@@ -1457,7 +1861,7 @@ describe('BrowserWindow', () => {
 			});
 
 			it('Sets only the property scrollTop, pageYOffset, and scrollY', () => {
-				window[functionName]({ top: 60 });
+				(<any>window)[functionName]({ top: 60 });
 				expect(window.document.documentElement.scrollLeft).toBe(0);
 				expect(window.document.documentElement.scrollTop).toBe(60);
 				expect(window.pageXOffset).toBe(0);
@@ -1467,7 +1871,7 @@ describe('BrowserWindow', () => {
 			});
 
 			it('Sets only the property scrollLeft, pageXOffset, and scrollX', () => {
-				window[functionName]({ left: 60 });
+				(<any>window)[functionName]({ left: 60 });
 				expect(window.document.documentElement.scrollLeft).toBe(60);
 				expect(window.document.documentElement.scrollTop).toBe(0);
 				expect(window.document.documentElement.scrollLeft).toBe(60);
@@ -1479,7 +1883,7 @@ describe('BrowserWindow', () => {
 			});
 
 			it('Sets the properties scrollTop, scrollLeft, scrollY, scrollX, pageXOffset and pageYOffset with animation.', async () => {
-				window[functionName]({ left: 50, top: 60, behavior: 'smooth' });
+				(<any>window)[functionName]({ left: 50, top: 60, behavior: 'smooth' });
 				expect(window.document.documentElement.scrollLeft).toBe(0);
 				expect(window.document.documentElement.scrollTop).toBe(0);
 				expect(window.pageXOffset).toBe(0);
@@ -1496,7 +1900,7 @@ describe('BrowserWindow', () => {
 			});
 
 			it('Throws an exception if the there is only one argument and it is not an object.', () => {
-				expect(() => window[functionName](10)).toThrow(
+				expect(() => (<any>window)[functionName](10)).toThrow(
 					new TypeError(
 						`Failed to execute '${functionName}' on 'Window': The provided value is not of type 'ScrollToOptions'.`
 					)
@@ -1600,17 +2004,18 @@ describe('BrowserWindow', () => {
 				let loadEventCurrentTarget: EventTarget | null = null;
 
 				vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (
+					this: ResourceFetch,
 					url: string | URL
 				) {
 					if ((<string>url).endsWith('.css')) {
-						resourceFetchCSSWindow = this.window;
+						resourceFetchCSSWindow = (<any>this).window;
 						resourceFetchCSSURL = <string>url;
-						return cssResponse;
+						return { content: cssResponse, virtualServerFile: null };
 					}
 
-					resourceFetchJSWindow = this.window;
+					resourceFetchJSWindow = (<any>this).window;
 					resourceFetchJSURL = <string>url;
-					return jsResponse;
+					return { content: jsResponse, virtualServerFile: null };
 				});
 
 				window.addEventListener('load', (event) => {
@@ -1643,7 +2048,7 @@ describe('BrowserWindow', () => {
 					expect(document.styleSheets.length).toBe(1);
 					expect(document.styleSheets[0].cssRules[0].cssText).toBe(cssResponse);
 
-					expect(window['test']).toBe('test');
+					expect((<any>window)['test']).toBe('test');
 
 					resolve(null);
 				}, 20);
@@ -1855,8 +2260,10 @@ describe('BrowserWindow', () => {
 			const html = '<html><body>Test</body></html>';
 			let request: Request | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
-				request = <Request>this.request;
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (
+				this: Fetch
+			): Promise<Response> {
+				request = <Request>(<any>this).request;
 				return Promise.resolve(<Response>{
 					text: () => new Promise((resolve) => setTimeout(() => resolve(html)))
 				});
@@ -1937,8 +2344,10 @@ describe('BrowserWindow', () => {
 			const html = '<html><body>Test</body></html>';
 			let request: Request | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
-				request = <Request>this.request;
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (
+				this: Fetch
+			): Promise<Response> {
+				request = <Request>(<any>this).request;
 				return Promise.resolve(<Response>{
 					text: () => new Promise((resolve) => setTimeout(() => resolve(html)))
 				});

@@ -28,5 +28,27 @@ describe('CSSStyleDeclarationElementStyle', () => {
 
 			expect(computedElementStyleDeclaration.getComputedStyle()).not.toBe(computedElementStyle);
 		});
+		it('parses variables correctly.', () => {
+			document.body.appendChild(element);
+			element.setAttribute(
+				'style',
+				`--bg-color: rgb(0 128 0 / 1); background-color: var(--bg-color);`
+			);
+
+			const computedElementStyleDeclaration = new CSSStyleDeclarationElementStyle(element);
+			const computedElementStyle = computedElementStyleDeclaration.getComputedStyle();
+			expect(computedElementStyle.get('background-color').value).toBe('rgb(0 128 0 / 1)');
+		});
+		it('parses nested variables correctly.', () => {
+			document.body.appendChild(element);
+			element.setAttribute(
+				'style',
+				`--bg-color-alpha: 1; background-color: rgb(0 128 0 / var(--bg-color-alpha, 1));`
+			);
+
+			const computedElementStyleDeclaration = new CSSStyleDeclarationElementStyle(element);
+			const computedElementStyle = computedElementStyleDeclaration.getComputedStyle();
+			expect(computedElementStyle.get('background-color').value).toBe('rgb(0 128 0 / 1)');
+		});
 	});
 });

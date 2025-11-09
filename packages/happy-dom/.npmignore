@@ -4,3 +4,6 @@ test
 bin
 .turbo
 npm-shrinkwrap.json
+vitest.config.ts
+tsconfig.json
+.gitignore

@@ -78,7 +78,7 @@ export default class FetchRequestHeaderUtility {
 		request: Request;
 		baseHeaders?: Headers | null;
 	}): { [key: string]: string } {
-		const headers = new Headers(options.baseHeaders);
+		const headers = new options.window.Headers(options.baseHeaders);
 		options.request.headers.forEach((value, key) => {
 			headers.set(key, value);
 		});

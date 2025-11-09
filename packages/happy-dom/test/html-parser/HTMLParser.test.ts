@@ -2191,5 +2191,22 @@ describe('HTMLParser', () => {
 
 			expect(element).toBe(result.children[0].children[1]);
 		});
+
+		it('Ignores rules for tables when inside a <template> element', () => {
+			const template = document.createElement('template');
+			template.innerHTML = `
+                <tr>
+                    <td>Test 1</td>
+                    <td>Test 2</td>
+                </tr>
+            `;
+
+			expect(new HTMLSerializer().serializeToString(template.content)).toBe(`
+                <tr>
+                    <td>Test 1</td>
+                    <td>Test 2</td>
+                </tr>
+            `);
+		});
 	});
 });

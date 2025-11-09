@@ -1343,6 +1343,45 @@ describe('QuerySelector', () => {
 			const normalLinks = div.querySelectorAll('a[href]:not([href="javascript:void(0)"])');
 			expect(normalLinks.length).toBe(1);
 		});
+
+		it('Returns all elements for pseudo selector ":scope"', () => {
+			const div = document.createElement('div');
+
+			div.innerHTML = `
+                <span>Span 1</span>
+                <span>Span 2</span>
+                <a>Link 1</a>                        
+                <a>Link 2</a>
+            `;
+
+			expect(div.querySelectorAll(':scope').length).toBe(0);
+
+			const spans = div.querySelectorAll(':scope > span');
+
+			expect(spans.length).toBe(2);
+			expect(spans[0].textContent).toBe('Span 1');
+			expect(spans[1].textContent).toBe('Span 2');
+
+			const links = div.querySelectorAll(':scope a');
+
+			expect(links.length).toBe(2);
+			expect(links[0].textContent).toBe('Link 1');
+			expect(links[1].textContent).toBe('Link 2');
+		});
+
+		it('Returns all elements for pseudo selector ":scope > child" in XML document', () => {
+			const xml = '<root><child>Content</child></root>';
+			const parser = new window.DOMParser();
+			const xmlDoc = parser.parseFromString(xml, 'application/xml');
+			expect(xmlDoc.querySelectorAll(':scope > child').length).toBe(1);
+			expect(xmlDoc.querySelectorAll(':root > child').length).toBe(1);
+		});
+
+		it('Returns all elements for pseudo selector ":root"', () => {
+			const root = document.querySelectorAll(':root');
+			expect(root.length).toBe(1);
+			expect(root[0]).toBe(document.documentElement);
+		});
 	});
 
 	describe('querySelector()', () => {
@@ -1619,7 +1658,7 @@ describe('QuerySelector', () => {
 			);
 		});
 
-		it('Has support for passing pseudoseletors inside :not', () => {
+		it('Has support for passing pseudo selectors inside :not', () => {
 			const div = document.createElement('div');
 			const child = document.createElement('div');
 			const child2 = document.createElement('div');
@@ -1630,7 +1669,7 @@ describe('QuerySelector', () => {
 			expect(div.querySelector(':not(:nth-child(1))')).toBe(child2);
 		});
 
-		it('Returns null for selector with CSS pseado element ":before".', () => {
+		it('Returns null for selector with CSS pseudo element ":before".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
 			expect(
@@ -1644,7 +1683,7 @@ describe('QuerySelector', () => {
 			expect(container.querySelector('span.class1:first-of-type:before') === null).toBe(true);
 		});
 
-		it('Returns null for selector with CSS pseado element ":after".', () => {
+		it('Returns null for selector with CSS pseudo element ":after".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
 			expect(
@@ -1803,6 +1842,27 @@ describe('QuerySelector', () => {
 
 			expect(div.querySelector('.a ~ .b')).toBe(div.children[1]);
 		});
+
+		it('Returns element for pseudo selector ":scope"', () => {
+			const div = document.createElement('div');
+
+			div.innerHTML = `
+                <span>Span 1</span>
+                <span>Span 2</span>
+                <a>Link 1</a>                        
+                <a>Link 2</a>
+            `;
+
+			expect(div.querySelector(':scope')).toBe(null);
+
+			expect(div.querySelector(':scope > span')!.textContent).toBe('Span 1');
+
+			expect(div.querySelector(':scope a')!.textContent).toBe('Link 1');
+		});
+
+		it('Return element for pseudo selector ":root"', () => {
+			expect(document.querySelectorAll(':root')[0]).toBe(document.documentElement);
+		});
 	});
 
 	describe('matches()', () => {
@@ -1953,22 +2013,22 @@ describe('QuerySelector', () => {
 				)
 			);
 			expect(() => element.matches(':not')).toThrow(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'matches' on 'HTMLDivElement': ':not' is not a valid selector.`
 				)
 			);
 			expect(() => element.matches(':is')).toThrow(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'matches' on 'HTMLDivElement': ':is' is not a valid selector.`
 				)
 			);
 			expect(() => element.matches(':where')).toThrow(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'matches' on 'HTMLDivElement': ':where' is not a valid selector.`
 				)
 			);
 			expect(() => element.matches('div:not')).toThrow(
-				new DOMException(
+				new window.DOMException(
 					`Failed to execute 'matches' on 'HTMLDivElement': 'div:not' is not a valid selector.`
 				)
 			);
@@ -2056,6 +2116,33 @@ describe('QuerySelector', () => {
 			`;
 
 			expect(div.querySelector('.a,BLOCKQUOTE')).toBe(div.children[0].children[0]);
+		});
+
+		it('Matches element for pseudo selector ":scope"', () => {
+			const div = document.createElement('div');
+
+			div.innerHTML = `
+                <span>Span 1</span>
+                <span>Span 2</span>
+                <a>Link 1</a>                        
+                <a>Link 2</a>
+            `;
+
+			expect(div.matches(':scope')).toBe(true);
+			expect(div.matches(':scope > span')).toBe(false);
+
+			expect(div.children[0].matches(':scope')).toBe(true);
+			expect(div.children[0].matches(':scope > span')).toBe(false);
+		});
+
+		it('Matches element for pseudo selector ":root"', () => {
+			expect(document.documentElement.matches(':root')).toBe(true);
+
+			const div = document.createElement('div');
+
+			document.body.appendChild(div);
+
+			expect(div.matches(':root')).toBe(false);
 		});
 	});
 });

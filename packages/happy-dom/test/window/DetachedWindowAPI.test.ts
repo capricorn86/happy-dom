@@ -21,16 +21,16 @@ describe('DetachedWindowAPI', () => {
 
 	describe('get settings()', () => {
 		it('Returns browser settings.', () => {
-			const window = new Window({ settings: { disableJavaScriptEvaluation: true } });
+			const window = new Window({ settings: { enableJavaScriptEvaluation: true } });
 			expect(window.happyDOM?.settings).toEqual({
 				...DefaultBrowserSettings,
-				disableJavaScriptEvaluation: true
+				enableJavaScriptEvaluation: true
 			});
 		});
 
 		it('Supports editing setting properties.', () => {
-			const window = new Window({ settings: { disableJavaScriptEvaluation: true } });
-			(<DetachedWindowAPI>window.happyDOM).settings.disableJavaScriptEvaluation = false;
+			const window = new Window({ settings: { enableJavaScriptEvaluation: true } });
+			(<DetachedWindowAPI>window.happyDOM).settings.enableJavaScriptEvaluation = false;
 			expect(window.happyDOM?.settings).toEqual(DefaultBrowserSettings);
 		});
 	});

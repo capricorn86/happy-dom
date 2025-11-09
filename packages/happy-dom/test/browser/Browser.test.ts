@@ -65,7 +65,7 @@ describe('Browser', () => {
 
 		it('Returns the settings with custom settings.', () => {
 			const settings = {
-				disableJavaScriptEvaluation: true,
+				enableJavaScriptEvaluation: true,
 				navigator: {
 					userAgent: 'test'
 				}
@@ -135,9 +135,9 @@ describe('Browser', () => {
 			page2.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
 			page3.evaluate('setTimeout(() => { globalThis.test = 3; }, 10);');
 			await browser.waitUntilComplete();
-			expect(page1.mainFrame.window['test']).toBe(1);
-			expect(page2.mainFrame.window['test']).toBe(2);
-			expect(page3.mainFrame.window['test']).toBe(3);
+			expect((<any>page1.mainFrame.window)['test']).toBe(1);
+			expect((<any>page2.mainFrame.window)['test']).toBe(2);
+			expect((<any>page3.mainFrame.window)['test']).toBe(3);
 		});
 	});
 
@@ -152,9 +152,9 @@ describe('Browser', () => {
 			page3.evaluate('setTimeout(() => { globalThis.test = 3; }, 10);');
 			browser.abort();
 			await new Promise((resolve) => setTimeout(resolve, 50));
-			expect(page1.mainFrame.window['test']).toBeUndefined();
-			expect(page2.mainFrame.window['test']).toBeUndefined();
-			expect(page3.mainFrame.window['test']).toBeUndefined();
+			expect((<any>page1.mainFrame.window)['test']).toBeUndefined();
+			expect((<any>page2.mainFrame.window)['test']).toBeUndefined();
+			expect((<any>page3.mainFrame.window)['test']).toBeUndefined();
 		});
 	});
 

@@ -1,12 +1,14 @@
 import GlobalWindow from '../../src/window/GlobalWindow.js';
-import Window from '../../src/window/Window.js';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('GlobalWindow', () => {
-	let window: Window;
+	let window: GlobalWindow;
 
 	beforeEach(() => {
-		window = new GlobalWindow();
+		window = new GlobalWindow({
+			settings: { enableJavaScriptEvaluation: true, suppressCodeGenerationFromStringsWarning: true }
+		});
 	});
 
 	describe('get Object()', () => {
@@ -15,9 +17,9 @@ describe('GlobalWindow', () => {
 		});
 
 		it('Is the same as {}.constructor when using eval().', () => {
-			global['globalWindow'] = window;
+			(<any>global)['globalWindow'] = window;
 			expect(window.eval('({}).constructor === globalWindow.Object')).toBe(true);
-			delete global['globalWindow'];
+			delete (<any>global)['globalWindow'];
 		});
 	});
 
@@ -27,9 +29,11 @@ describe('GlobalWindow', () => {
 		});
 
 		it('Is the same as (() => {}).constructor when using eval().', () => {
-			global['globalWindow'] = window;
-			expect(window.eval('(() => {}).constructor === globalWindow.Function')).toBe(true);
-			delete global['globalWindow'];
+			expect(window.Function('return (() => {}).constructor === globalThis.Function')()).toBe(true);
+		});
+
+		it('Does not execute unsafe code using import', () => {
+			expect(() => window.Function('return import("process")')()).rejects.toThrow();
 		});
 	});
 
@@ -39,9 +43,9 @@ describe('GlobalWindow', () => {
 		});
 
 		it('Is the same as [].constructor when using eval().', () => {
-			global['globalWindow'] = window;
+			(<any>global)['globalWindow'] = window;
 			expect(window.eval('[].constructor === globalWindow.Array')).toBe(true);
-			delete global['globalWindow'];
+			delete (<any>global)['globalWindow'];
 		});
 	});
 
@@ -55,9 +59,9 @@ describe('GlobalWindow', () => {
 			})()`);
 
 			expect(result).toBe('locally defined');
-			expect(globalThis['variable']).toBe('globally defined');
+			expect((<any>globalThis)['variable']).toBe('globally defined');
 
-			delete globalThis['variable'];
+			delete (<any>globalThis)['variable'];
 		});
 
 		it('Respects indirect eval.', () => {
@@ -69,9 +73,26 @@ describe('GlobalWindow', () => {
 			})()`);
 
 			expect(result).toBe('globally defined');
-			expect(globalThis['variable']).toBe('globally defined');
+			expect((<any>globalThis)['variable']).toBe('globally defined');
 
-			delete globalThis['variable'];
+			delete (<any>globalThis)['variable'];
+		});
+	});
+
+	describe('[PropertySymbol.evaluateScript]()', () => {
+		it('Evaluates script.', () => {
+			const result = window[PropertySymbol.evaluateScript]('1 + 1;', {
+				filename: 'filename.js'
+			});
+			expect(result).toBe(2);
+		});
+
+		it('Evaluates code from script elements', () => {
+			const script = window.document.createElement('script');
+			script.textContent = 'globalThis["$scriptResult"] = 1 + 1;';
+			window.document.body.appendChild(script);
+			expect((<any>globalThis)['$scriptResult']).toBe(2);
+			delete (<any>globalThis)['$scriptResult'];
 		});
 	});
 

@@ -12,8 +12,7 @@ import BrowserWindow from '../../window/BrowserWindow.js';
 import IReloadOptions from '../types/IReloadOptions.js';
 import Document from '../../nodes/document/Document.js';
 import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
-import IHistoryItem from '../../history/IHistoryItem.js';
-import HistoryScrollRestorationEnum from '../../history/HistoryScrollRestorationEnum.js';
+import HistoryItemList from '../../history/HistoryItemList.js';
 
 /**
  * Browser frame used when constructing a Window instance without a browser.
@@ -31,17 +30,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	public [PropertySymbol.openerFrame]: IBrowserFrame | null = null;
 	public [PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
 	public [PropertySymbol.popup] = false;
-	public [PropertySymbol.history]: IHistoryItem[] = [
-		{
-			title: '',
-			href: 'about:blank',
-			state: null,
-			scrollRestoration: HistoryScrollRestorationEnum.auto,
-			method: 'GET',
-			formData: null,
-			isCurrent: true
-		}
-	];
+	public [PropertySymbol.history] = new HistoryItemList();
 
 	/**
 	 * Constructor.

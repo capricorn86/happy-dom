@@ -160,7 +160,7 @@ export default class SVGNumberList {
 	/**
 	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.
 	 */
-	public [Symbol.iterator](): IterableIterator<SVGNumber> {
+	public [Symbol.iterator](): ArrayIterator<SVGNumber> {
 		return this[PropertySymbol.getItemList]().values();
 	}
 

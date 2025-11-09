@@ -25,7 +25,7 @@ export default class TreeWalker {
 	public root: Node;
 	public whatToShow = -1;
 	public filter: INodeFilter | null = null;
-	public currentNode: Node | null = null;
+	#currentNode: Node | null = null;
 
 	/**
 	 * Constructor.
@@ -42,7 +42,30 @@ export default class TreeWalker {
 		this.root = root;
 		this.whatToShow = whatToShow;
 		this.filter = filter;
-		this.currentNode = root;
+		this.#currentNode = root;
+	}
+
+	/**
+	 * Returns the current Node.
+	 *
+	 * @returns Current node.
+	 */
+	public get currentNode(): Node | null {
+		return this.#currentNode;
+	}
+
+	/**
+	 * Sets the current Node.
+	 *
+	 * @param node Node.
+	 */
+	public set currentNode(node: Node | null) {
+		if (!(node instanceof Node)) {
+			throw new this.root[PropertySymbol.window].TypeError(
+				"Failed to set the 'currentNode' property on 'TreeWalker': Failed to convert value to 'Node'."
+			);
+		}
+		this.#currentNode = node;
 	}
 
 	/**
@@ -51,12 +74,12 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public parentNode(): Node | null {
-		let node = this.currentNode;
+		let node = this.#currentNode;
 		while (node !== null && node !== this.root) {
 			node = node.parentNode;
 			if (node !== null && this[PropertySymbol.filterNode](node) === NodeFilter.FILTER_ACCEPT) {
-				this.currentNode = node;
-				return this.currentNode;
+				this.#currentNode = node;
+				return this.#currentNode;
 			}
 		}
 		return null;
@@ -104,7 +127,7 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public previousNode(): Node | null {
-		let node = this.currentNode;
+		let node = this.#currentNode;
 
 		while (node !== this.root) {
 			let sibling = node?.previousSibling || null;
@@ -119,7 +142,7 @@ export default class TreeWalker {
 				}
 
 				if (result === NodeFilter.FILTER_ACCEPT) {
-					this.currentNode = node;
+					this.#currentNode = node;
 					return node;
 				}
 
@@ -133,7 +156,7 @@ export default class TreeWalker {
 			node = node!.parentNode;
 
 			if (this[PropertySymbol.filterNode](node) === NodeFilter.FILTER_ACCEPT) {
-				this.currentNode = node;
+				this.#currentNode = node;
 				return node;
 			}
 		}
@@ -147,7 +170,7 @@ export default class TreeWalker {
 	 * @returns Current node.
 	 */
 	public nextNode(): Node | null {
-		let node: Node | null = this.currentNode;
+		let node: Node | null = this.#currentNode;
 		let result = NodeFilter.FILTER_ACCEPT;
 
 		if (node === null) {
@@ -160,7 +183,7 @@ export default class TreeWalker {
 				result = this[PropertySymbol.filterNode](node!);
 
 				if (result === NodeFilter.FILTER_ACCEPT) {
-					this.currentNode = node;
+					this.#currentNode = node;
 					return node;
 				}
 			}
@@ -187,7 +210,7 @@ export default class TreeWalker {
 			result = this[PropertySymbol.filterNode](node);
 
 			if (result === NodeFilter.FILTER_ACCEPT) {
-				this.currentNode = node;
+				this.#currentNode = node;
 				return node;
 			}
 		}
@@ -225,7 +248,7 @@ export default class TreeWalker {
 	 * @returns Node.
 	 */
 	#traverseChildren(type: TraverseChildrenTypeEnum): Node | null {
-		let node = this.currentNode;
+		let node = this.#currentNode;
 
 		if (!node) {
 			return null;
@@ -237,7 +260,7 @@ export default class TreeWalker {
 			const result = this[PropertySymbol.filterNode](node);
 
 			if (result === NodeFilter.FILTER_ACCEPT) {
-				this.currentNode = node;
+				this.#currentNode = node;
 				return node;
 			}
 
@@ -258,7 +281,7 @@ export default class TreeWalker {
 					break;
 				}
 				const parent: Node | null = node.parentNode;
-				if (parent === null || parent === this.root || parent === this.currentNode) {
+				if (parent === null || parent === this.root || parent === this.#currentNode) {
 					return null;
 				}
 				node = parent;
@@ -275,7 +298,7 @@ export default class TreeWalker {
 	 * @returns Node.
 	 */
 	#traverseSiblings(type: TraverseSiblingsTypeEnum): Node | null {
-		let node: Node | null = this.currentNode;
+		let node: Node | null = this.#currentNode;
 
 		if (!node || node === this.root) {
 			return null;
@@ -290,7 +313,7 @@ export default class TreeWalker {
 				const result = this[PropertySymbol.filterNode](node);
 
 				if (result === NodeFilter.FILTER_ACCEPT) {
-					this.currentNode = node;
+					this.#currentNode = node;
 					return node;
 				}
 

@@ -5,6 +5,7 @@ import { beforeEach, describe, it, expect } from 'vitest';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import DOMImplementation from '../../../src/dom-implementation/DOMImplementation.js';
 import CSSStyleRule from '../../../src/css/rules/CSSStyleRule.js';
+import * as PropertySymbol from '../../../src/PropertySymbol.js';
 
 describe('HTMLStyleElement', () => {
 	let window: Window;
@@ -209,7 +210,7 @@ describe('HTMLStyleElement', () => {
 				return Array.from(styleElement.sheet?.cssRules ?? [])
 					.map((rule) => {
 						if (rule instanceof CSSStyleRule) {
-							rule.selectorText = rule.selectorText
+							rule[PropertySymbol.selectorText] = rule.selectorText
 								.split(',')
 								.map((selector) => `${scope} ${selector}`)
 								.join(',');

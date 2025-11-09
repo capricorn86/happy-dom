@@ -4,13 +4,26 @@ import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration.js';
 import CSSRuleTypeEnum from '../CSSRuleTypeEnum.js';
 
 /**
- * CSSRule interface.
+ * CSSKeyframeRule interface.
  */
 export default class CSSKeyframeRule extends CSSRule {
-	public readonly type = CSSRuleTypeEnum.keyframeRule;
-	public readonly keyText: string = '';
+	public [PropertySymbol.keyText] = '';
 	public [PropertySymbol.cssText] = '';
 	#style: CSSStyleDeclaration | null = null;
+
+	/**
+	 * @override
+	 */
+	public override get type(): CSSRuleTypeEnum {
+		return CSSRuleTypeEnum.keyframeRule;
+	}
+
+	/**
+	 * @override
+	 */
+	public override get cssText(): string {
+		return `${this[PropertySymbol.keyText]} { ${this.style.cssText} }`;
+	}
 
 	/**
 	 * Returns style.
@@ -30,11 +43,11 @@ export default class CSSKeyframeRule extends CSSRule {
 	}
 
 	/**
-	 * Returns css text.
+	 * Returns key text.
 	 *
-	 * @returns CSS text.
+	 * @returns Key text.
 	 */
-	public get cssText(): string {
-		return `${this.keyText} { ${this.style.cssText} }`;
+	public get keyText(): string {
+		return this[PropertySymbol.keyText];
 	}
 }

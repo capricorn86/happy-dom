@@ -385,6 +385,7 @@ describe('MutationObserver', () => {
 			]);
 
 			text.textContent = 'new3';
+			div.appendChild(span);
 			div.removeChild(span);
 			div.setAttribute('attr', 'value3');
 

@@ -109,9 +109,6 @@ export default class XMLParser {
 	 * Constructor.
 	 *
 	 * @param window Window.
-	 * @param [options] Options.
-	 * @param [options.mode] Mode. Defaults to "htmlFragment".
-	 * @param [options.evaluateScripts] Set to "true" to enable script execution
 	 */
 	constructor(window: BrowserWindow) {
 		this.window = window;
