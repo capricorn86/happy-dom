@@ -90,6 +90,15 @@ export default interface IOptionalBrowserSettings {
 	};
 
 	/**
+	 * Settings for modules
+	 */
+	module?: {
+		urlResolver?:
+			| ((options: { url: string; parentURL: string; window: BrowserWindow }) => string)
+			| null;
+	};
+
+	/**
 	 * Disables error capturing.
 	 *
 	 * @deprecated Use errorCapture instead.

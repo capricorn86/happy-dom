@@ -185,6 +185,7 @@ import NodeFilter from './tree-walker/NodeFilter.js';
 import NodeIterator from './tree-walker/NodeIterator.js';
 import TreeWalker from './tree-walker/TreeWalker.js';
 import URL from './url/URL.js';
+import WebSocket from './web-socket/WebSocket.js';
 import BrowserWindow from './window/BrowserWindow.js';
 import DetachedWindowAPI from './window/DetachedWindowAPI.js';
 import GlobalWindow from './window/GlobalWindow.js';
@@ -439,6 +440,7 @@ export {
 	VirtualConsoleLogTypeEnum,
 	VirtualConsolePrinter,
 	VTTCue,
+	WebSocket,
 	WheelEvent,
 	Window,
 	XMLDocument,

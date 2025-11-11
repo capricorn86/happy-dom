@@ -61,6 +61,9 @@ export default class ECMAScriptModule implements IModule {
 			return {};
 		}
 
+		const exports: { [k: string]: any } = {};
+		this.#exports = exports;
+
 		for (const moduleImport of compiled.imports) {
 			modulePromises.push(
 				ModuleFactory.getModule(window, this.url, moduleImport.url, {
@@ -79,10 +82,7 @@ export default class ECMAScriptModule implements IModule {
 			}
 		}
 
-		const exports = {};
 		const href = this.url.href;
-
-		this.#exports = exports;
 
 		compiled.execute({
 			dispatchError: window[PropertySymbol.dispatchError].bind(window),

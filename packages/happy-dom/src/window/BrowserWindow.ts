@@ -318,6 +318,8 @@ import CSSGroupingRule from '../css/rules/CSSGroupingRule.js';
 import CSSScopeRule from '../css/rules/CSSScopeRule.js';
 import PopStateEvent from '../event/events/PopStateEvent.js';
 import ITimerLoopsLimit from './ITimerLoopsLimit.js';
+import CloseEvent from '../event/events/CloseEvent.js';
+import WebSocket from '../web-socket/WebSocket.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -401,6 +403,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare readonly Comment: typeof Comment;
 	public declare readonly Image: typeof Image;
 	public declare readonly Audio: typeof Audio;
+	public declare readonly WebSocket: typeof WebSocket;
 
 	// HTML Element classes
 	public readonly HTMLAnchorElement = HTMLAnchorElement;
@@ -547,6 +550,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly Event = Event;
 	public readonly UIEvent = UIEvent;
 	public readonly CustomEvent = CustomEvent;
+	public readonly CloseEvent = CloseEvent;
 	public readonly AnimationEvent = AnimationEvent;
 	public readonly KeyboardEvent = KeyboardEvent;
 	public readonly MessageEvent = MessageEvent;
@@ -571,7 +575,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly BeforeInputEvent = Event;
 	public readonly BeforeUnloadEvent = Event;
 	public readonly BlobEvent = Event;
-	public readonly CloseEvent = Event;
 	public readonly CompositionEvent = Event;
 	public readonly CSSFontFaceLoadEvent = Event;
 	public readonly DeviceLightEvent = Event;
@@ -846,6 +849,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		esm: new Map()
 	};
 	public [PropertySymbol.moduleImportMap]: IModuleImportMap | null = null;
+	public [PropertySymbol.openWebSockets]: WebSocket[] = [];
 
 	// Private properties
 	#browserFrame: IBrowserFrame;
@@ -1897,6 +1901,12 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		}
 
 		this[PropertySymbol.mutationObservers] = [];
+
+		for (const webSocket of this[PropertySymbol.openWebSockets]) {
+			webSocket[PropertySymbol.destroy]();
+		}
+
+		this[PropertySymbol.openWebSockets] = [];
 
 		this.document[PropertySymbol.destroy]();
 

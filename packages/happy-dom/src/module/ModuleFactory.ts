@@ -10,6 +10,7 @@ import ECMAScriptModule from './ECMAScriptModule.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import Location from '../location/Location.js';
 import IResourceFetchResponse from '../fetch/types/IResourceFetchResponse.js';
+import ModuleURLUtility from './ModuleURLUtility.js';
 
 /**
  * Module factory.
@@ -31,7 +32,7 @@ export default class ModuleFactory {
 		url: string,
 		options?: { with?: { type?: string } }
 	): Promise<IModule> {
-		const absoluteURL = this.getURL(window, parentURL, url);
+		const absoluteURL = ModuleURLUtility.getURL(window, parentURL, url);
 		const absoluteURLString = absoluteURL.href;
 		const type = options?.with?.type || 'esm';
 
@@ -103,45 +104,5 @@ export default class ModuleFactory {
 		unresolvedModule.resolve();
 
 		return module;
-	}
-
-	/**
-	 * Returns module URL based on parent URL and the import map.
-	 *
-	 * @param window Window.
-	 * @param parentURL Parent URL.
-	 * @param url Module URL.
-	 */
-	private static getURL(window: BrowserWindow, parentURL: URL | Location, url: string): URL {
-		const parentURLString = parentURL.href;
-		const absoluteURL = new URL(url, parentURLString);
-		const absoluteURLString = absoluteURL.href;
-		const importMap = window[PropertySymbol.moduleImportMap];
-
-		if (!importMap) {
-			return absoluteURL;
-		}
-
-		if (importMap.scopes) {
-			for (const scope of importMap.scopes) {
-				if (parentURLString.includes(scope.scope)) {
-					for (const rule of scope.rules) {
-						if (absoluteURLString.startsWith(rule.from)) {
-							return new URL(rule.to + absoluteURLString.replace(rule.from, ''));
-						}
-					}
-				}
-			}
-		}
-
-		if (importMap.imports) {
-			for (const rule of importMap.imports) {
-				if (absoluteURLString.startsWith(rule.from)) {
-					return new URL(rule.to + absoluteURLString.replace(rule.from, ''));
-				}
-			}
-		}
-
-		return absoluteURL;
 	}
 }

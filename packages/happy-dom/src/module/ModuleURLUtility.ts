@@ -2,6 +2,7 @@ import { URL } from 'url';
 import * as PropertySymbol from '../PropertySymbol.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import Location from '../location/Location.js';
+import WindowBrowserContext from '../window/WindowBrowserContext.js';
 
 /**
  * Module URL utility.
@@ -19,19 +20,23 @@ export default class ModuleURLUtility {
 		parentURL: URL | Location | string,
 		url: string
 	): URL {
+		const settings = new WindowBrowserContext(window).getSettings();
 		const parentURLString = typeof parentURL === 'string' ? parentURL : parentURL.href;
 		const importMap = window[PropertySymbol.moduleImportMap];
+		const resolved = settings?.module.urlResolver
+			? settings?.module.urlResolver({ url, parentURL: parentURLString, window })
+			: url;
 
 		if (!importMap) {
-			return new URL(url, parentURLString);
+			return new URL(resolved, parentURLString);
 		}
 
 		if (importMap.scopes.length) {
 			for (const scope of importMap.scopes) {
 				if (parentURLString.includes(scope.scope)) {
 					for (const rule of scope.rules) {
-						if (url.startsWith(rule.from)) {
-							return new URL(rule.to + url.replace(rule.from, ''), parentURLString);
+						if (resolved.startsWith(rule.from)) {
+							return new URL(rule.to + resolved.replace(rule.from, ''), parentURLString);
 						}
 					}
 				}
@@ -40,12 +45,12 @@ export default class ModuleURLUtility {
 
 		if (importMap.imports.length) {
 			for (const rule of importMap.imports) {
-				if (url.startsWith(rule.from)) {
-					return new URL(rule.to + url.replace(rule.from, ''), parentURLString);
+				if (resolved.startsWith(rule.from)) {
+					return new URL(rule.to + resolved.replace(rule.from, ''), parentURLString);
 				}
 			}
 		}
 
-		return new URL(url, parentURLString);
+		return new URL(resolved, parentURLString);
 	}
 }

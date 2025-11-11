@@ -40,21 +40,24 @@ describe('ECMAScriptModuleCompiler', () => {
 				{ url: 'http://localhost:8080/js/utilities/ImageUtility.js', type: 'esm' },
 				{ url: 'http://localhost:8080/js/utilities/NumberUtility.js', type: 'esm' }
 			]);
-			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-                const StringUtility = $happy_dom.imports.get('http://localhost:8080/js/utilities/StringUtility.js').default;
+			expect(result.execute.toString())
+				.toBe(`async function anonymous($happy_dom) {const StringUtility = $happy_dom.imports.get('http://localhost:8080/js/utilities/StringUtility.js').default;
                 const { default: DefaultImageUtility } = $happy_dom.imports.get('http://localhost:8080/js/utilities/ImageUtility.js');
                 const NumberUtility = $happy_dom.imports.get('http://localhost:8080/js/utilities/NumberUtility.js');
 
+                
                 const result = await $happy_dom.dynamicImport('http://localhost:8080/js/utilities/StringUtility.js');
 
-                $happy_dom.exports['variable'] = 'hello';
+                const variable = 'hello';
 
-                $happy_dom.exports.default = class TestClass {
+                class TestClass {
                     constructor() {
                         console.log('Hello World');
                     }
                 }
             
+$happy_dom.exports['variable'] = variable;
+$happy_dom.exports.default = TestClass;
 }`);
 		});
 
@@ -134,7 +137,7 @@ describe('ECMAScriptModuleCompiler', () => {
 			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
 
 			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-                $happy_dom.exports.default = class TestClass {
+                class TestClass {
                     constructor() {
                         console.log($happy_dom.importMeta.url);
                         console.log('Import', $happy_dom.importMeta.url);
@@ -142,6 +145,7 @@ describe('ECMAScriptModuleCompiler', () => {
                     }
                 }
             
+$happy_dom.exports.default = TestClass;
 }`);
 		});
 
@@ -242,13 +246,13 @@ describe('ECMAScriptModuleCompiler', () => {
                     test.print("import data from 'data'");
                 }
 
-                export const variable = 'hello';
+                export const variable1 = 'hello';
                 export const variable2 = "he\\"ll\\"o";
                 export const variable3 = \`export const variable = 'hello';\`;
                 export const arr = ['hello', "he\\"ll\\"o", \`hello\`];
 
                 // Exporting declarations
-                export let name1, name2; // also var
+                export let nameD1, nameD2; // also var
                 export const name3 = 1, name4 = 2; // also var, let
                 export function functionName() { /* … */ }
                 export class ClassName { /* … */ }
@@ -297,8 +301,8 @@ describe('ECMAScriptModuleCompiler', () => {
 				{ url: 'http://localhost:8080/js/aggregated6.js', type: 'esm' }
 			]);
 
-			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-                const defaultExport1 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport.js').default;
+			expect(result.execute.toString())
+				.toBe(`async function anonymous($happy_dom) {const defaultExport1 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport.js').default;
                 const name = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/name.js');
                 const { export1 } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export1.js');
                 const { export2: alias1 } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export2.js');
@@ -307,15 +311,16 @@ describe('ECMAScriptModuleCompiler', () => {
                 const { export5, export6: alias3, /* … */ } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export4.js');
                 const { "string name": alias } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/stringName.js');
                 const defaultExport2 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport2.js').default;
-const { export7, /* … */ } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport2.js');
+                const { export7, /* … */ } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport2.js');
                 const defaultExport3 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport3.js').default;
-const name2 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport3.js');
+                const name2 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport3.js');
                 const JSON = $happy_dom.imports.get('http://localhost:8080/js/app/json/data.json').default;
                 const CSS = $happy_dom.imports.get('http://localhost:8080/js/css/data.css').default;
-                
                 const { export8,
                 export9 } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export5.js');
 
+                
+                
                 // Comment
                 /* Comment */
                 /**
@@ -327,7 +332,7 @@ const name2 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/default
                 */
                 const variable = \`"'\\\`{[/\`;
                 const regexp = /import \\/data from 'data'/gm;
-                $happy_dom.exports.default = class TestClass {
+                class TestClass {
                     constructor() {
                         console.log('export const variable = "\\'";');
                     }
@@ -346,19 +351,19 @@ const name2 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/default
                     test.print("import data from 'data'");
                 }
 
-                $happy_dom.exports['variable'] = 'hello';
-                $happy_dom.exports['variable2'] = "he\\"ll\\"o";
-                $happy_dom.exports['variable3'] = \`export const variable = 'hello';\`;
-                $happy_dom.exports['arr'] = ['hello', "he\\"ll\\"o", \`hello\`];
+                const variable1 = 'hello';
+                const variable2 = "he\\"ll\\"o";
+                const variable3 = \`export const variable = 'hello';\`;
+                const arr = ['hello', "he\\"ll\\"o", \`hello\`];
 
                 // Exporting declarations
-                /*Unknown export: export let name1, name2;*/ // also var
-                $happy_dom.exports['name3'] = 1, name4 = 2; // also var, let
-                $happy_dom.exports['functionName'] = function functionName() { /* … */ }
-                $happy_dom.exports['ClassName'] = class ClassName { /* … */ }
-                $happy_dom.exports['generatorFunctionName'] = function* generatorFunctionName() { /* … */ }
-                const $happy_dom_export_0 = o;
-                const $happy_dom_export_1 = array;
+                let nameD1, nameD2; // also var
+                const name3 = 1, name4 = 2; // also var, let
+                function functionName() { /* … */ }
+                class ClassName { /* … */ }
+                function* generatorFunctionName() { /* … */ }
+                const { name5, name6: bar } = o;
+                const [ name7, name8 ] = array;
 
                 // Export list
                 $happy_dom.exports['name9'] = name9;
@@ -380,12 +385,21 @@ $happy_dom.exports['nameN'] = $happy_dom.imports.get('http://localhost:8080/js/a
                 $happy_dom.exports['default'] = $happy_dom.imports.get('http://localhost:8080/js/aggregated5.js')['default'];
                 $happy_dom.exports['name1'] = $happy_dom.imports.get('http://localhost:8080/js/aggregated6.js')['default'];
             
-
-$happy_dom.exports['name5'] = $happy_dom_export_0['name5'];
-$happy_dom.exports['bar'] = $happy_dom_export_0['name6'];
-$happy_dom.exports['name7'] = $happy_dom_export_1['name7'];
-$happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
-
+$happy_dom.exports.default = TestClass;
+$happy_dom.exports['variable1'] = variable1;
+$happy_dom.exports['variable2'] = variable2;
+$happy_dom.exports['variable3'] = variable3;
+$happy_dom.exports['arr'] = arr;
+$happy_dom.exports['nameD1'] = nameD1;
+$happy_dom.exports['nameD2'] = nameD2;
+$happy_dom.exports['name3'] = name3;
+$happy_dom.exports['functionName'] = functionName;
+$happy_dom.exports['ClassName'] = ClassName;
+$happy_dom.exports['generatorFunctionName'] = generatorFunctionName;
+$happy_dom.exports['name5'] = name5;
+$happy_dom.exports['bar'] = bar;
+$happy_dom.exports['name7'] = name7;
+$happy_dom.exports['name8'] = name8;
 }`);
 		});
 
@@ -422,11 +436,12 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
 			expect(result.imports).toEqual([]);
 
 			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-                $happy_dom.exports['variable'] = /my-regexp/;
+                const variable = /my-regexp/;
                 $happy_dom.exports.default = function () {
                     console.log('Hello World');
                 }
             
+$happy_dom.exports['variable'] = variable;
 }`);
 		});
 
@@ -445,12 +460,13 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
 			expect(result.imports).toEqual([]);
 
 			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-                $happy_dom.exports.default = class TestClass {
+                class TestClass {
                     constructor() {
                         console.log('Hello World');
                     }
                 }
             
+$happy_dom.exports.default = TestClass;
 }`);
 		});
 
@@ -533,14 +549,12 @@ $happy_dom.exports['name8'] = $happy_dom_export_1['name8'];
 
 			expect(result.imports).toEqual([]);
 
-			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {try {
-
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) { try {
                 $happy_dom.exports.default = {
                     test: 'test'
                 };
             
-} catch(e) { $happy_dom.dispatchError(e); }
-}`);
+} catch(e) { $happy_dom.dispatchError(e); }}`);
 		});
 
 		it('Handles special cases of RegExp.', () => {
@@ -700,10 +714,30 @@ $happy_dom.exports['string6'] = string6;
 			expect(result.imports).toEqual([]);
 
 			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-                $happy_dom.exports['SCHEME'] = /^[a-z][a-zd+-.]+:/i;
+                const SCHEME = /^[a-z][a-zd+-.]+:/i;
                 const test = 'template string with \`test\` inside';
                 console.log($happy_dom.importMeta.url);
             
+$happy_dom.exports['SCHEME'] = SCHEME;
+}`);
+		});
+
+		it('Handles export const that is used in the code', () => {
+			const code = `
+                export const MY_CONSTANT = 42;
+                console.log('The constant is:', MY_CONSTANT);
+            `;
+
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
+
+			expect(result.imports).toEqual([]);
+
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
+                const MY_CONSTANT = 42;
+                console.log('The constant is:', MY_CONSTANT);
+            
+$happy_dom.exports['MY_CONSTANT'] = MY_CONSTANT;
 }`);
 		});
 
@@ -722,12 +756,13 @@ $happy_dom.exports['string6'] = string6;
 			expect(result.imports).toEqual([]);
 
 			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-                $happy_dom.exports['fetchData'] = async function fetchData() {
+                async function fetchData() {
                     const response = await fetch('http://localhost:8080/api/data');
                     const data = await response.json();
                     return data;
                 }
             
+$happy_dom.exports['fetchData'] = fetchData;
 }`);
 		});
 
@@ -777,14 +812,15 @@ $happy_dom.exports['string6'] = string6;
 			expect(result.imports).toEqual([]);
 
 			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
-                $happy_dom.exports['func'] = async () => {
+                const func = async () => {
                     return \`test = \${({ test: \`\${ (await $happy_dom.dynamicImport('./test.js')) }\` })}\`;
                 };
             
+$happy_dom.exports['func'] = func;
 }`);
 		});
 
-		it('Handles vite preload library with minimzed import.', () => {
+		it('Handles vite preload library with minimized import.', () => {
 			const code = `const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["static/js/Home-CsPrQa7_.js","static/js/preload-helper-BMSd6Up6.js","static/js/Router-yzXgKzu7.js","static/js/_commonjsHelpers-BosuxZz1.js","static/js/sizes-1ww1H62B.js","static/js/Choice-Bixrh5CR.js","static/js/index-OjqIgG3h.js","static/js/arrow-left-DVwQ9ese.js"])))=>i.map(i=>d[i]);
 import{_ as c}from"./preload-helper-BMSd6Up6.js";class r{static connect(){const n=location.hash.match(/S{0,1}([0-9]{7,})$/);if(n){const a=new URLSearchParams(location.search);a.set("id",n[1]),location.href=new URL('example/?a=b',location.href).href;return}const t=location.hash.match(/\\/([a-zA-Z0-9-]{10,})$/);if(t){const a=new URLSearchParams(location.search);a.set("code",t[1]),location.href=new URL('example/?a=b',location.href).href;return}const o=location.hash.match(/\\/([a-zA-Z0-9]{4,6})$/);if(o){const a=new URLSearchParams(location.search);a.set("code",o[1]),location.href=new URL('example/?a=b',location.href).href;return}}}r.connect();c(()=>import("./Home-CsPrQa7_.js").then(e=>e.a),__vite__mapDeps([0,1,2,3,4,5,6,7,8,9,10,11,12,13]));`;
 
@@ -796,8 +832,8 @@ import{_ as c}from"./preload-helper-BMSd6Up6.js";class r{static connect(){const 
 			]);
 
 			expect(result.execute.toString())
-				.toBe(`async function anonymous($happy_dom) {const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["static/js/Home-CsPrQa7_.js","static/js/preload-helper-BMSd6Up6.js","static/js/Router-yzXgKzu7.js","static/js/_commonjsHelpers-BosuxZz1.js","static/js/sizes-1ww1H62B.js","static/js/Choice-Bixrh5CR.js","static/js/index-OjqIgG3h.js","static/js/arrow-left-DVwQ9ese.js"])))=>i.map(i=>d[i]);
-const {_: c} = $happy_dom.imports.get('http://localhost:8080/js/app/preload-helper-BMSd6Up6.js');class r{static connect(){const n=location.hash.match(/S{0,1}([0-9]{7,})$/);if(n){const a=new URLSearchParams(location.search);a.set("id",n[1]),location.href=new URL('example/?a=b',location.href).href;return}const t=location.hash.match(/\\/([a-zA-Z0-9-]{10,})$/);if(t){const a=new URLSearchParams(location.search);a.set("code",t[1]),location.href=new URL('example/?a=b',location.href).href;return}const o=location.hash.match(/\\/([a-zA-Z0-9]{4,6})$/);if(o){const a=new URLSearchParams(location.search);a.set("code",o[1]),location.href=new URL('example/?a=b',location.href).href;return}}}r.connect();c(()=>$happy_dom.dynamicImport("./Home-CsPrQa7_.js").then(e=>e.a),__vite__mapDeps([0,1,2,3,4,5,6,7,8,9,10,11,12,13]));
+				.toBe(`async function anonymous($happy_dom) {const {_: c} = $happy_dom.imports.get('http://localhost:8080/js/app/preload-helper-BMSd6Up6.js');const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["static/js/Home-CsPrQa7_.js","static/js/preload-helper-BMSd6Up6.js","static/js/Router-yzXgKzu7.js","static/js/_commonjsHelpers-BosuxZz1.js","static/js/sizes-1ww1H62B.js","static/js/Choice-Bixrh5CR.js","static/js/index-OjqIgG3h.js","static/js/arrow-left-DVwQ9ese.js"])))=>i.map(i=>d[i]);
+class r{static connect(){const n=location.hash.match(/S{0,1}([0-9]{7,})$/);if(n){const a=new URLSearchParams(location.search);a.set("id",n[1]),location.href=new URL('example/?a=b',location.href).href;return}const t=location.hash.match(/\\/([a-zA-Z0-9-]{10,})$/);if(t){const a=new URLSearchParams(location.search);a.set("code",t[1]),location.href=new URL('example/?a=b',location.href).href;return}const o=location.hash.match(/\\/([a-zA-Z0-9]{4,6})$/);if(o){const a=new URLSearchParams(location.search);a.set("code",o[1]),location.href=new URL('example/?a=b',location.href).href;return}}}r.connect();c(()=>$happy_dom.dynamicImport("./Home-CsPrQa7_.js").then(e=>e.a),__vite__mapDeps([0,1,2,3,4,5,6,7,8,9,10,11,12,13]));
 }`);
 		});
 
@@ -1110,8 +1146,8 @@ import{_ as a}from"./preload-helper-BMSd6Up6.js";import{k as g,s as A,r as C,t a
 			]);
 
 			expect(result.execute.toString())
-				.toBe(`async function anonymous($happy_dom) {const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["static/js/preload-helper-BMSd6Up6.js","static/js/Router-yzXgKzu7.js","static/js/_commonjsHelpers-BosuxZz1.js","static/js/Choice-Bixrh5CR.js","static/js/index-OjqIgG3h.js","static/js/arrow-left-DVwQ9ese.js","static/js/Image-CMZuFGwN.js","static/js/IdGenerator-BXAguRov.js","static/js/resizeListener-BpJMTz31.js","static/js/menu-BQ9iRMnL.js","static/js/menu-DGNLEQ8L.js"])))=>i.map(i=>d[i]);
-const {_: a} = $happy_dom.imports.get('http://localhost:8080/js/app/preload-helper-BMSd6Up6.js');const {k: g,s: A,r: C,t: P,h: o,R: c,m: O,F: V,u: B,n: M,A: f,P: $,v: G,w: _,q: W} = $happy_dom.imports.get('http://localhost:8080/js/app/Router-yzXgKzu7.js');const {s: b} = $happy_dom.imports.get('http://localhost:8080/js/app/sizes-1ww1H62B.js');const {C: F,S: d,r: U,b: I,I: H,s: N,g: j,i: K,d: q,T: E} = $happy_dom.imports.get('http://localhost:8080/js/app/Choice-Bixrh5CR.js');const {K: R,W: Z} = $happy_dom.imports.get('http://localhost:8080/js/app/index-OjqIgG3h.js');const {I: te} = $happy_dom.imports.get('http://localhost:8080/js/app/Image-CMZuFGwN.js');const ie=[["&","&amp"],["<","&lt"],[">","&gt"],['"',"&quot"],["'","&#x27"],["/","&#x2F"]];class ae{static encodeForAttribute(e){for(const t of ie)e=e.replace(new RegExp(t[0],"gm"),t[1]+";");return e}}class ne{static templateToString(e,...t){let i="";for(let n=0,s=e.length;n<s;n++)i+=e[n],n<s-1&&t[n]!==null&&(i.endsWith('="')||i.endsWith("='")?i+=ae.encodeForAttribute(String(t[n])):i+=String(t[n]));return i}}const $e=ne.templateToString,D=F.templateToString,oe=D\`
+				.toBe(`async function anonymous($happy_dom) {const {_: a} = $happy_dom.imports.get('http://localhost:8080/js/app/preload-helper-BMSd6Up6.js');const {k: g,s: A,r: C,t: P,h: o,R: c,m: O,F: V,u: B,n: M,A: f,P: $,v: G,w: _,q: W} = $happy_dom.imports.get('http://localhost:8080/js/app/Router-yzXgKzu7.js');const {s: b} = $happy_dom.imports.get('http://localhost:8080/js/app/sizes-1ww1H62B.js');const {C: F,S: d,r: U,b: I,I: H,s: N,g: j,i: K,d: q,T: E} = $happy_dom.imports.get('http://localhost:8080/js/app/Choice-Bixrh5CR.js');const {K: R,W: Z} = $happy_dom.imports.get('http://localhost:8080/js/app/index-OjqIgG3h.js');const {I: te} = $happy_dom.imports.get('http://localhost:8080/js/app/Image-CMZuFGwN.js');const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["static/js/preload-helper-BMSd6Up6.js","static/js/Router-yzXgKzu7.js","static/js/_commonjsHelpers-BosuxZz1.js","static/js/Choice-Bixrh5CR.js","static/js/index-OjqIgG3h.js","static/js/arrow-left-DVwQ9ese.js","static/js/Image-CMZuFGwN.js","static/js/IdGenerator-BXAguRov.js","static/js/resizeListener-BpJMTz31.js","static/js/menu-BQ9iRMnL.js","static/js/menu-DGNLEQ8L.js"])))=>i.map(i=>d[i]);
+const ie=[["&","&amp"],["<","&lt"],[">","&gt"],['"',"&quot"],["'","&#x27"],["/","&#x2F"]];class ae{static encodeForAttribute(e){for(const t of ie)e=e.replace(new RegExp(t[0],"gm"),t[1]+";");return e}}class ne{static templateToString(e,...t){let i="";for(let n=0,s=e.length;n<s;n++)i+=e[n],n<s-1&&t[n]!==null&&(i.endsWith('="')||i.endsWith("='")?i+=ae.encodeForAttribute(String(t[n])):i+=String(t[n]));return i}}const $e=ne.templateToString,D=F.templateToString,oe=D\`
   *,
   *:before,
   *:after {

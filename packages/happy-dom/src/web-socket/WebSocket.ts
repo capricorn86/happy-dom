@@ -4,6 +4,7 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import WebSocketReadyStateEnum from './WebSocketReadyStateEnum.js';
+import Blob from '../file/Blob.js';
 import WS from 'ws';
 
 // https://tools.ietf.org/html/rfc7230#section-3.2.6
@@ -22,6 +23,8 @@ export default class WebSocket extends EventTarget {
 	#extensions: string = '';
 	#webSocket: WS | null = null;
 	#binaryType: 'blob' | 'arraybuffer' = 'blob';
+	#error: Error | null = null;
+	#url: URL;
 
 	/**
 	 *
@@ -79,6 +82,8 @@ export default class WebSocket extends EventTarget {
 			protocolSet.add(protocol);
 		}
 
+		this.#url = parsedURL;
+
 		this.#connect(parsedURL, protocolList);
 	}
 
@@ -110,6 +115,93 @@ export default class WebSocket extends EventTarget {
 	}
 
 	/**
+	 * Returns protocol.
+	 */
+	public get protocol(): string {
+		if (!this.#webSocket) {
+			return '';
+		}
+		return this.#webSocket.protocol;
+	}
+
+	/**
+	 * Returns the URL.
+	 *
+	 * @returns The URL.
+	 */
+	public get url(): string {
+		return this.#url.href;
+	}
+
+	/**
+	 * Closes the WebSocket.
+	 *
+	 * @param [code] Code.
+	 * @param [reason] Reason.
+	 */
+	public close(code?: number, reason?: Buffer<ArrayBufferLike>): void {
+		const window = this[PropertySymbol.window];
+
+		if (code !== undefined && code !== 1000 && !(code >= 3000 && code <= 4999)) {
+			throw new window.DOMException(
+				`The code must be either 1000, or between 3000 and 4999. ${code} is neither.`,
+				DOMExceptionNameEnum.invalidAccessError
+			);
+		}
+		if (reason !== undefined && Buffer.byteLength(reason, 'utf8') > 123) {
+			throw new window.DOMException(
+				`The message must not be greater than 123 bytes.`,
+				DOMExceptionNameEnum.syntaxError
+			);
+		}
+
+		this.#close(code, reason);
+	}
+
+	/**
+	 * Sends data through the WebSocket.
+	 *
+	 * @param data Data.
+	 */
+	public send(data: ArrayBuffer | ArrayBufferView | Blob | Buffer | string): void {
+		const window = this[PropertySymbol.window];
+
+		if (this.#readyState === WebSocketReadyStateEnum.connecting) {
+			throw new window.DOMException(
+				'Still in CONNECTING state.',
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+
+		if (this.#readyState !== WebSocketReadyStateEnum.open) {
+			return;
+		}
+
+		let buffer: Buffer;
+		if (data instanceof ArrayBuffer) {
+			buffer = Buffer.from(new Uint8Array(data));
+		} else if (data instanceof Blob) {
+			buffer = data[PropertySymbol.buffer];
+		} else if (data instanceof Buffer) {
+			buffer = data;
+		} else if (ArrayBuffer.isView(data)) {
+			buffer = Buffer.from(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
+		} else {
+			buffer = Buffer.from(typeof data === 'string' ? data : String(data));
+		}
+
+		this.#webSocket?.send(buffer, { binary: typeof data !== 'string' });
+	}
+
+	/**
+	 * Destroys the WebSocket.
+	 */
+	public override [PropertySymbol.destroy](): void {
+		super[PropertySymbol.destroy]();
+		this.#close(1001);
+	}
+
+	/**
 	 * Connects the WebSocket.
 	 *
 	 * @param url URL.
@@ -118,9 +210,11 @@ export default class WebSocket extends EventTarget {
 	#connect(url: URL, protocols: string[]): void {
 		const window = this[PropertySymbol.window];
 		const browserContext = new WindowBrowserContext(window).getBrowserContext();
+
 		if (!browserContext) {
 			return;
 		}
+
 		const originURL = new URL(window.location.href);
 		const cookies = browserContext.cookieContainer.getCookies(originURL, false);
 
@@ -138,27 +232,47 @@ export default class WebSocket extends EventTarget {
 			this.#onConnectionEstablished();
 		});
 		this.#webSocket.on('message', this.#onMessageReceived.bind(this));
-		this.#webSocket.once('close', (...closeArgs) => {
-			this.#onConnectionClosed(...closeArgs);
+		this.#webSocket.once('close', (code: number, reason: Buffer<ArrayBufferLike>) => {
+			this.#onConnectionClosed(code, reason);
 		});
 		this.#webSocket.once('upgrade', ({ headers }) => {
-			if (Array.isArray(headers['set-cookie'])) {
-				for (const cookie of headers['set-cookie']) {
-					this._ownerDocument._cookieJar.setCookieSync(cookie, nodeParsedURL, {
-						http: true,
-						ignoreError: true
-					});
+			if (headers['set-cookie'] !== undefined) {
+				const cookieStrings = Array.isArray(headers['set-cookie'])
+					? headers['set-cookie']
+					: [headers['set-cookie']];
+				for (const cookieString of cookieStrings) {
+					const cookie = CookieStringUtility.stringToCookie(originURL, cookieString);
+					if (cookie) {
+						browserContext.cookieContainer.addCookies([cookie]);
+					}
 				}
-			} else if (headers['set-cookie'] !== undefined) {
-				this._ownerDocument._cookieJar.setCookieSync(headers['set-cookie'], nodeParsedURL, {
-					http: true,
-					ignoreError: true
-				});
 			}
 		});
-		this.#webSocket.once('error', () => {
-			// The exact error is passed into this callback, but it is ignored as we don't really care about it.
+		this.#webSocket.once('error', (error: Error) => {
+			// We only need to store the error for debugging purposes and to know that it wasn't a clean close.
+			// The 'close' event will be emitted afterwards.
+			this.#error = error;
 		});
+		window[PropertySymbol.openWebSockets].push(this);
+	}
+
+	/**
+	 * Closes the WebSocket connection.
+	 *
+	 * @param code Code.
+	 * @param reason Reason.
+	 */
+	#close(code?: number, reason?: Buffer<ArrayBufferLike>): void {
+		if (this.readyState === WebSocketReadyStateEnum.connecting) {
+			if (this.#webSocket) {
+				this.#webSocket.terminate();
+			} else {
+				this.#readyState = WebSocketReadyStateEnum.closing;
+			}
+		} else if (this.#webSocket && this.readyState === WebSocketReadyStateEnum.open) {
+			this.#webSocket.close(code, reason);
+		}
+		this.#webSocket = null;
 	}
 
 	/**
@@ -167,11 +281,36 @@ export default class WebSocket extends EventTarget {
 	 * @see https://html.spec.whatwg.org/multipage/web-sockets.html#feedback-from-the-protocol
 	 */
 	#onConnectionEstablished(): void {
-		if (this.#webSocket!.extensions) {
-			this.#extensions = Object.keys(this.#webSocket.extensions).join(', ');
+		if (this.#webSocket?.extensions) {
+			this.#extensions = Object.keys(this.#webSocket!.extensions).join(', ');
 		}
 		this.#readyState = WebSocketReadyStateEnum.open;
 		this.dispatchEvent(new this[PropertySymbol.window].Event('open'));
+	}
+
+	/**
+	 * Called when the connection has been closed.
+	 *
+	 * @param code Code.
+	 * @param reason Reason.
+	 */
+	#onConnectionClosed(code: number, reason: Buffer<ArrayBufferLike>): void {
+		const window = this[PropertySymbol.window];
+		const index = window[PropertySymbol.openWebSockets].indexOf(this);
+
+		if (index !== -1) {
+			window[PropertySymbol.openWebSockets].splice(index, 1);
+		}
+
+		this.#readyState = WebSocketReadyStateEnum.closed;
+
+		this.dispatchEvent(
+			new this[PropertySymbol.window].CloseEvent('close', {
+				wasClean: this.#error === null,
+				code,
+				reason: reason.toString()
+			})
+		);
 	}
 
 	/**
@@ -184,28 +323,53 @@ export default class WebSocket extends EventTarget {
 		if (this.#readyState !== WebSocketReadyStateEnum.open) {
 			return;
 		}
+
+		const window = this[PropertySymbol.window];
 		let dataForEvent;
-		if (!isBinary) {
-			dataForEvent = data.toString();
-		} else if (this.binaryType === 'arraybuffer') {
-			if (isArrayBuffer(data)) {
-				dataForEvent = data;
-			} else if (Array.isArray(data)) {
-				dataForEvent = copyToArrayBufferInNewRealm(Buffer.concat(data), this._globalObject);
-			} else {
-				dataForEvent = copyToArrayBufferInNewRealm(data, this._globalObject);
+
+		if (isBinary) {
+			switch (this.binaryType) {
+				case 'arraybuffer':
+					if (data instanceof ArrayBuffer) {
+						dataForEvent = data;
+					} else if (Array.isArray(data)) {
+						dataForEvent = this.#convertToArrayBuffer(Buffer.concat(data));
+					} else {
+						dataForEvent = this.#convertToArrayBuffer(data);
+					}
+					break;
+				case 'blob':
+				default:
+					if (!Array.isArray(data)) {
+						data = [data];
+					}
+					dataForEvent = new window.Blob(data);
+					break;
 			}
 		} else {
-			// this.binaryType === "blob"
-			if (!Array.isArray(data)) {
-				data = [data];
-			}
-			dataForEvent = Blob.create(this._globalObject, [data, { type: '' }]);
+			dataForEvent = String(data);
 		}
-		fireAnEvent('message', this, MessageEvent, {
-			data: dataForEvent,
-			origin: serializeURLOrigin(this._urlRecord)
-		});
+
+		this.dispatchEvent(
+			new window.MessageEvent('message', {
+				data: dataForEvent,
+				origin: this.#url.origin
+			})
+		);
+	}
+
+	/**
+	 * Converts a Node.js Buffer to an ArrayBuffer.
+	 *
+	 * @param buffer Node.js Buffer.
+	 * @returns ArrayBuffer.
+	 */
+	#convertToArrayBuffer(buffer: Buffer): ArrayBuffer {
+		const window = this[PropertySymbol.window];
+		const arrayBuffer = new window.ArrayBuffer(buffer.byteLength);
+		const view = new Uint8Array(arrayBuffer);
+		view.set(buffer);
+		return arrayBuffer;
 	}
 
 	/**
