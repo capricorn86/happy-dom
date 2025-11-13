@@ -329,6 +329,19 @@ describe('Selection', () => {
 				expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
 				expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 			});
+
+			it('Accepts Document node.', () => {
+				selection[method](document, 0);
+
+				expect(selection.rangeCount).toBe(1);
+
+				const newRange = selection.getRangeAt(0);
+
+				expect(newRange.startContainer).toBe(document);
+				expect(newRange.startOffset).toBe(0);
+				expect(newRange.endContainer).toBe(document);
+				expect(newRange.endOffset).toBe(0);
+			});
 		});
 	}
 
@@ -569,6 +582,19 @@ describe('Selection', () => {
 			expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
 			expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 		});
+
+		it('Accepts Document node.', () => {
+			const text = document.createTextNode('text');
+
+			document.body.appendChild(text);
+
+			selection.collapse(text, 0);
+			selection.extend(document, 0);
+
+			expect(selection.rangeCount).toBe(1);
+			expect(selection.focusNode).toBe(document);
+			expect(selection.focusOffset).toBe(0);
+		});
 	});
 
 	describe('selectAllChildren()', () => {
@@ -590,6 +616,19 @@ describe('Selection', () => {
 			expect(newRange.startOffset).toBe(0);
 			expect(newRange.endContainer).toBe(container);
 			expect(newRange.endOffset).toBe(3);
+		});
+
+		it('Accepts Document node.', () => {
+			selection.selectAllChildren(document);
+
+			expect(selection.rangeCount).toBe(1);
+
+			const newRange = selection.getRangeAt(0);
+
+			expect(newRange.startContainer).toBe(document);
+			expect(newRange.startOffset).toBe(0);
+			expect(newRange.endContainer).toBe(document);
+			expect(newRange.endOffset).toBe(document.childNodes.length);
 		});
 
 		it(`Throws error if node type is ${NodeTypeEnum.documentTypeNode}.`, () => {
@@ -656,6 +695,21 @@ describe('Selection', () => {
 			expect(newRange.endOffset).toBe(2);
 
 			expect(selection.anchorNode).toBe(newRange.endContainer);
+		});
+
+		it('Accepts Document node as boundary point.', () => {
+			const text = document.createTextNode('text');
+
+			document.body.appendChild(text);
+
+			selection.setBaseAndExtent(document, 0, text, 2);
+
+			expect(selection.rangeCount).toBe(1);
+
+			const newRange = selection.getRangeAt(0);
+
+			expect(newRange.startContainer).toBe(document);
+			expect(newRange.endContainer).toBe(text);
 		});
 
 		it('Throws error if wrong offset.', () => {
