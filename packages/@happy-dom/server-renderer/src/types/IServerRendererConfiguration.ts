@@ -1,6 +1,7 @@
 import type IBrowserSettings from 'happy-dom/lib/browser/types/IBrowserSettings.js';
 import ServerRendererLogLevelEnum from '../enums/ServerRendererLogLevelEnum.js';
 import IServerRendererItem from './IServerRendererItem.js';
+import ServerRendererModeEnum from '../enums/ServerRendererModeEnum.js';
 
 export default interface IServerRendererConfiguration {
 	/**
@@ -96,6 +97,14 @@ export default interface IServerRendererConfiguration {
 		 * Disable polyfills used for unimplemented functionality.
 		 */
 		disablePolyfills: boolean;
+		/**
+		 * Setup script to be injected before rendering.
+		 */
+		setupScript: string | null;
+		/**
+		 * Rendering mode.
+		 */
+		mode: ServerRendererModeEnum;
 	};
 
 	/**

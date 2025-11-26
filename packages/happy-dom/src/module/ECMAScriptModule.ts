@@ -1,12 +1,12 @@
 import BrowserWindow from '../window/BrowserWindow.js';
 import { URL } from 'url';
-import IModule from './IModule.js';
+import IModule from './types/IModule.js';
 import ECMAScriptModuleCompiler from './ECMAScriptModuleCompiler.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import Location from '../location/Location.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
-import IECMAScriptModuleCompiledResult from './IECMAScriptModuleCompiledResult.js';
+import IECMAScriptModuleCompiledResult from './types/IECMAScriptModuleCompiledResult.js';
 import ModuleFactory from './ModuleFactory.js';
+import IECMAScriptModuleInit from './types/IECMAScriptModuleInit.js';
 
 const EMPTY_COMPILED_RESULT = { imports: [], execute: async () => {} };
 
@@ -21,33 +21,45 @@ export default class ECMAScriptModule implements IModule {
 	#preloaded: boolean = false;
 	#compiled: IECMAScriptModuleCompiledResult | null = null;
 	#exports: { [k: string]: any } | null = null;
+	#evaluateQueue: Array<(value: { [key: string]: any }) => void> | null = null;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param window Window.
-	 * @param url Module URL.
-	 * @param source Source code.
-	 * @param [sourceURL] Source URL.
+	 * @param init Initialization options.
 	 */
-	constructor(
-		window: BrowserWindow,
-		url: URL | Location,
-		source: string,
-		sourceURL?: string | null
-	) {
-		this[PropertySymbol.window] = window;
-		this.url = <URL>url;
-		this.#source = source;
-		this.#sourceURL = sourceURL || null;
+	constructor(init: IECMAScriptModuleInit) {
+		this[PropertySymbol.window] = init.window;
+		this.url = <URL>init.url;
+		this.#source = init.source;
+		this.#sourceURL = init.sourceURL || null;
 	}
 
 	/**
 	 * Compiles and evaluates the module.
 	 *
+	 * @param [parentUrls] Parent modules URLs to detect circular imports.
+	 * @param [circularResolver] Resolver for circular imports.
 	 * @returns Module exports.
 	 */
-	public async evaluate(): Promise<{ [key: string]: any }> {
+	public async evaluate(
+		parentUrls: string[] = [],
+		circularResolver: (() => void) | null = null
+	): Promise<{ [key: string]: any }> {
+		if (this.#evaluateQueue) {
+			// Circular import detected
+			if (parentUrls.includes(this.url.href)) {
+				if (circularResolver) {
+					// Reloads imports after circular import is resolved
+					this.#evaluateQueue!.push(circularResolver);
+				}
+				return this.#exports!;
+			}
+			return new Promise<{ [key: string]: any }>((resolve) => {
+				this.#evaluateQueue!.push(resolve);
+			});
+		}
+
 		if (this.#exports) {
 			return this.#exports;
 		}
@@ -63,6 +75,7 @@ export default class ECMAScriptModule implements IModule {
 
 		const exports: { [k: string]: any } = {};
 		this.#exports = exports;
+		this.#evaluateQueue = [];
 
 		for (const moduleImport of compiled.imports) {
 			modulePromises.push(
@@ -73,12 +86,25 @@ export default class ECMAScriptModule implements IModule {
 		}
 
 		const imports = new Map<string, { [key: string]: any }>();
+		let circularImportResolver: (() => void) | null = null;
+		const circularImportResolverCallback = (): void => {
+			if (circularImportResolver) {
+				circularImportResolver();
+			}
+		};
 
 		if (modulePromises.length) {
 			const modules = await Promise.all(modulePromises);
+			const newParentUrls = [...parentUrls, this.url.href];
 
 			for (const module of modules) {
-				imports.set(module.url.href, await module.evaluate());
+				if (module instanceof ECMAScriptModule) {
+					const exports = await module.evaluate(newParentUrls, circularImportResolverCallback);
+					imports.set(module.url.href, exports);
+				} else {
+					const exports = await module.evaluate();
+					imports.set(module.url.href, exports);
+				}
 			}
 		}
 
@@ -92,8 +118,17 @@ export default class ECMAScriptModule implements IModule {
 				resolve: (url: string) => new URL(url, href).href
 			},
 			imports,
-			exports
+			exports,
+			addCircularImportResolver: (resolver: () => void) => (circularImportResolver = resolver)
 		});
+
+		const evaluateQueue = this.#evaluateQueue;
+
+		this.#evaluateQueue = null;
+
+		for (const resolve of evaluateQueue) {
+			resolve(exports);
+		}
 
 		return exports;
 	}
@@ -152,7 +187,7 @@ export default class ECMAScriptModule implements IModule {
 
 		this.#compiled = compiler.compile(this.url.href, this.#source, this.#sourceURL);
 
-		return this.#compiled;
+		return <IECMAScriptModuleCompiledResult>this.#compiled;
 	}
 
 	/**

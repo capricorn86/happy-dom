@@ -30,6 +30,7 @@ export default <IBrowserSettings>{
 		virtualServers: null
 	},
 	module: {
+		resolveNodeModules: null,
 		urlResolver: null
 	},
 	navigation: {

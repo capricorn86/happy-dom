@@ -10,6 +10,7 @@ import Inspector from 'node:inspector';
 import ServerRendererBrowser from './ServerRendererBrowser.js';
 // eslint-disable-next-line import/no-named-as-default
 import Chalk from 'chalk';
+import ServerRendererModeEnum from './enums/ServerRendererModeEnum.js';
 
 interface IWorkerWaitingItem {
 	items: IServerRendererItem[];
@@ -83,24 +84,32 @@ export default class ServerRenderer {
 		}
 
 		if (configuration.logLevel >= ServerRendererLogLevelEnum.info) {
+			if (configuration.inspect) {
+				// eslint-disable-next-line no-console
+				console.log(Chalk.blue(Chalk.bold(`\n🔍 Inspector enabled`)));
+			}
+
 			if (configuration.debug) {
 				// eslint-disable-next-line no-console
-				console.log(Chalk.blue(Chalk.bold(`🔨 Debug mode enabled\n`)));
+				console.log(Chalk.blue(Chalk.bold(`\n🔨 Debug mode enabled`)));
 			}
 
 			// eslint-disable-next-line no-console
 			console.log(
-				Chalk.bold(`Rendering ${parsedItems.length} page${parsedItems.length > 1 ? 's' : ''}...\n`)
+				Chalk.bold(
+					`\nRendering ${parsedItems.length} page${parsedItems.length > 1 ? 's' : ''}...\n`
+				)
 			);
 		}
 
 		let results: IServerRendererResult[] = [];
+
 		if (!configuration.cache.disable && configuration.cache.warmup) {
 			const item = parsedItems.shift();
 			if (item) {
 				if (configuration.logLevel >= ServerRendererLogLevelEnum.info) {
 					// eslint-disable-next-line no-console
-					console.log('Warming up cache...\n');
+					console.log('\nWarming up cache...\n');
 				}
 
 				results = results.concat(await this.#runInWorker([item]));
@@ -116,7 +125,11 @@ export default class ServerRenderer {
 			const promises = [];
 
 			while (parsedItems.length) {
-				const chunk = parsedItems.splice(0, configuration.render.maxConcurrency);
+				const maxConcurrency =
+					configuration.render.mode === ServerRendererModeEnum.page
+						? 1
+						: configuration.render.maxConcurrency;
+				const chunk = parsedItems.splice(0, maxConcurrency);
 				promises.push(
 					this.#runInWorker(chunk).then((chunkResults) => {
 						results = results.concat(chunkResults);
@@ -128,9 +141,9 @@ export default class ServerRenderer {
 		}
 
 		if (configuration.logLevel >= ServerRendererLogLevelEnum.info) {
-			const time = Math.round((performance.now() - startTime) / 1000);
+			const time = (performance.now() - startTime) / 1000;
 			const minutes = Math.floor(time / 60);
-			const seconds = time % 60;
+			const seconds = Math.round((time % 60) * 100) / 100;
 			// eslint-disable-next-line no-console
 			console.log(
 				Chalk.bold(
@@ -179,6 +192,12 @@ export default class ServerRenderer {
 		const configuration = this.#configuration;
 
 		if (configuration.worker.disable) {
+			if (configuration.render.mode === ServerRendererModeEnum.page) {
+				throw new Error(
+					'Page rendering mode cannot be used when worker threads are disabled. Please enable worker threads or use browser rendering mode.'
+				);
+			}
+
 			if (!this.#browser) {
 				this.#browser = new ServerRendererBrowser(configuration);
 			}
@@ -197,8 +216,11 @@ export default class ServerRenderer {
 					this.#workerPool.waiting.push({ items, resolve, reject });
 					return;
 				}
-				const worker = new Worker(new URL('ServerRendererWorker.js', import.meta.url), {
-					execArgv: ['--frozen-intrinsics'],
+				const script =
+					configuration.render.mode === ServerRendererModeEnum.page
+						? 'ServerRendererPageWorker.js'
+						: 'ServerRendererBrowserWorker.js';
+				const worker = new Worker(new URL(script, import.meta.url), {
 					workerData: {
 						configuration: configuration
 					}

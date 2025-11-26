@@ -9,7 +9,7 @@ import ResourceFetch from '../../fetch/ResourceFetch.js';
 import ECMAScriptModule from '../../module/ECMAScriptModule.js';
 import ModuleFactory from '../../module/ModuleFactory.js';
 import DOMTokenList from '../../dom/DOMTokenList.js';
-import IModuleImportMap from '../../module/IModuleImportMap.js';
+import IModuleImportMap from '../../module/types/IModuleImportMap.js';
 import IRequestReferrerPolicy from '../../fetch/types/IRequestReferrerPolicy.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 import IResourceFetchResponse from '../../fetch/types/IResourceFetchResponse.js';
@@ -490,7 +490,7 @@ export default class HTMLScriptElement extends HTMLElement {
 
 		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = this;
 
-		const module = new ECMAScriptModule(window, url, source);
+		const module = new ECMAScriptModule({ window, url, source });
 
 		if (
 			browserSettings.disableErrorCapturing ||

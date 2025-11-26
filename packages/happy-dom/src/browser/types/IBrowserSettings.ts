@@ -6,6 +6,7 @@ import IFetchRequestHeaders from '../../fetch/types/IFetchRequestHeaders.js';
 import IBrowserPageViewport from './IBrowserPageViewport.js';
 import IOptionalTimerLoopsLimit from '../../window/IOptionalTimerLoopsLimit.js';
 import BrowserWindow from '../../window/BrowserWindow.js';
+import IResolveNodeModules from '../../module/types/IResolveNodeModules.js';
 
 /**
  * Browser settings.
@@ -98,6 +99,8 @@ export default interface IBrowserSettings {
 	 * Settings for modules
 	 */
 	module: {
+		/** Resolve node modules to the defined URL */
+		resolveNodeModules: IResolveNodeModules | null;
 		urlResolver:
 			| ((options: { url: string; parentURL: string; window: BrowserWindow }) => string)
 			| null;

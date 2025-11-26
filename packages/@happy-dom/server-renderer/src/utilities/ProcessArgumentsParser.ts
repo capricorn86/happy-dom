@@ -40,7 +40,7 @@ export default class ProcessArgumentsParser {
 									newRenderItems.push({
 										url: url.href,
 										html: renderItem.html,
-										outputFile: this.getOutputFile(url),
+										outputFile: renderItem.outputFile || this.getOutputFile(url),
 										headers: (<IServerRendererItem>url).headers
 									});
 								} else {
@@ -61,9 +61,12 @@ export default class ProcessArgumentsParser {
 					}
 				} else if (arg === '--help' || arg === '-h') {
 					config.help = true;
-				} else if (arg === '--browser.disableJavaScriptEvaluation') {
-					config.browser.enableJavaScriptEvaluation = false;
-				} else if (arg === '--browser.suppressInsecureJavaScriptEnvironmentWarning') {
+				} else if (arg === '--browser.enableJavaScriptEvaluation' || arg === '-j') {
+					config.browser.enableJavaScriptEvaluation = true;
+				} else if (
+					arg === '--browser.suppressInsecureJavaScriptEnvironmentWarning' ||
+					arg === '-sj'
+				) {
 					config.browser.suppressInsecureJavaScriptEnvironmentWarning = true;
 				} else if (arg === '--browser.disableJavaScriptFileLoading') {
 					config.browser.disableJavaScriptFileLoading = true;

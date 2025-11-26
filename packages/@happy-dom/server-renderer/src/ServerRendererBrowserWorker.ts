@@ -5,7 +5,7 @@ import Inspector from 'node:inspector';
 /**
  * Server renderer worker.
  */
-export default class ServerRendererWorker {
+export default class ServerRendererBrowserWorker {
 	/**
 	 * Connects to the worker.
 	 */
@@ -26,4 +26,4 @@ export default class ServerRendererWorker {
 	}
 }
 
-ServerRendererWorker.connect();
+ServerRendererBrowserWorker.connect();

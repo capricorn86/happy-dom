@@ -1,5 +1,4 @@
-import { URL } from 'url';
-import IModule from './IModule.js';
+import IModule from './types/IModule.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import CSSModule from './CSSModule.js';
 import JSONModule from './JSONModule.js';
@@ -8,9 +7,9 @@ import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import ResourceFetch from '../fetch/ResourceFetch.js';
 import ECMAScriptModule from './ECMAScriptModule.js';
 import BrowserWindow from '../window/BrowserWindow.js';
-import Location from '../location/Location.js';
 import IResourceFetchResponse from '../fetch/types/IResourceFetchResponse.js';
 import ModuleURLUtility from './ModuleURLUtility.js';
+import Location from '../location/Location.js';
 
 /**
  * Module factory.
@@ -22,6 +21,7 @@ export default class ModuleFactory {
 	 * @param window Window.
 	 * @param parentURL Parent URL.
 	 * @param url Module URL.
+	 * @param [parent] Parent module.
 	 * @param [options] Options.
 	 * @param [options.with] Options.
 	 * @param [options.with.type] Module type.
@@ -38,7 +38,7 @@ export default class ModuleFactory {
 
 		if (type !== 'esm' && type !== 'css' && type !== 'json') {
 			throw new window.TypeError(
-				`Failed to import module "${absoluteURL}" from "${parentURL}": Unkown type "${type}"`
+				`Failed to import module "${absoluteURL}" from "${parentURL}": Unknown type "${type}"`
 			);
 		}
 
@@ -61,7 +61,7 @@ export default class ModuleFactory {
 			);
 		}
 
-		const unresolvedModule = new UnresolvedModule(window, absoluteURL);
+		const unresolvedModule = new UnresolvedModule({ window, url: absoluteURL });
 		const readyStateManager = window[PropertySymbol.readyStateManager];
 
 		const taskID = readyStateManager.startTask();
@@ -84,18 +84,18 @@ export default class ModuleFactory {
 
 		switch (type) {
 			case 'json':
-				module = new JSONModule(window, absoluteURL, response.content);
+				module = new JSONModule({ window, url: absoluteURL, source: response.content });
 				break;
 			case 'css':
-				module = new CSSModule(window, absoluteURL, response.content);
+				module = new CSSModule({ window, url: absoluteURL, source: response.content });
 				break;
 			case 'esm':
-				module = new ECMAScriptModule(
+				module = new ECMAScriptModule({
 					window,
-					absoluteURL,
-					response.content,
-					response.virtualServerFile
-				);
+					url: absoluteURL,
+					source: response.content,
+					sourceURL: response.virtualServerFile
+				});
 				break;
 		}
 

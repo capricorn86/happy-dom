@@ -197,11 +197,6 @@ export default class ServerRendererServer {
 				result = (
 					await this.#serverRenderer.render([{ url: url.href, headers }], { keepAlive: true })
 				)[0];
-
-				if (this.#configuration.logLevel >= ServerRendererLogLevelEnum.info) {
-					// eslint-disable-next-line no-console
-					console.log(Chalk.bold(`• Rendered ${url.href}`));
-				}
 			}
 
 			if (isCacheQueueEnabled) {

@@ -1,8 +1,8 @@
 import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
-import IECMAScriptModuleCompiledResult from './IECMAScriptModuleCompiledResult.js';
-import IECMAScriptModuleImport from './IECMAScriptModuleImport.js';
+import IECMAScriptModuleCompiledResult from './types/IECMAScriptModuleCompiledResult.js';
+import IECMAScriptModuleImport from './types/IECMAScriptModuleImport.js';
 import ModuleURLUtility from './ModuleURLUtility.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 
@@ -162,6 +162,10 @@ export default class ECMAScriptModuleCompiler {
 
 		const regExp = new RegExp(STATEMENT_REGEXP);
 		const imports: IECMAScriptModuleImport[] = [];
+		const resolvableCircularImports: Array<{
+			url: string;
+			properties: Array<{ name: string; alias?: string }>;
+		}> = [];
 		const count = this.count;
 		let newCode = '';
 		let newCodeStart = '';
@@ -245,10 +249,26 @@ export default class ECMAScriptModuleCompiler {
 				while ((importMatch = importRegExp.exec(variables))) {
 					if (importMatch[1]) {
 						// Import braces
-						newCodeStart += `const {${importMatch[1].replace(
-							/\s+as\s+/gm,
-							': '
-						)}} = $happy_dom.imports.get('${url}')${match[8]}`;
+						const parts = this.removeMultilineComments(importMatch[1])
+							.slice(1, -1)
+							.split(/\s*,\s*/);
+						const properties: Array<{ name: string; alias?: string }> = [];
+						for (const part of parts) {
+							const nameParts = part.trim().split(/\s+as\s+/);
+							const alias = (nameParts[1] || nameParts[0]).replace(/["']/g, '');
+							const name = nameParts[0].replace(/["']/g, '');
+							if (alias && name) {
+								if (name === alias) {
+									properties.push({ name });
+								} else {
+									properties.push({ name, alias });
+								}
+							}
+						}
+						if (!match[7] || match[7] === 'esm') {
+							resolvableCircularImports.push({ url, properties });
+						}
+						newCodeStart += `let {${properties.map((property) => (property.alias ? `"${property.name.replace(/"/g, '\\"')}": ${property.alias}` : property.name)).join(', ')}} = $happy_dom.imports.get('${url}')${match[8]}`;
 					} else if (importMatch[2]) {
 						// Import all as
 						newCodeStart += `const ${importMatch[2]} = $happy_dom.imports.get('${url}')${match[8]}`;
@@ -409,17 +429,23 @@ export default class ECMAScriptModuleCompiler {
 
 		newCode = newCodeStart + newCode;
 
-		// In debug mode we don't want to execute the code, just take information from it
-		if (this.debug) {
-			return {
-				imports,
-				execute: async () => {}
-			};
-		}
-
 		newCode += code.substring(lastIndex);
 
 		newCode += '\n' + newCodeEnd;
+
+		if (resolvableCircularImports.length > 0) {
+			newCode += '$happy_dom.addCircularImportResolver(() => {\n';
+			for (const circularImport of resolvableCircularImports) {
+				for (const property of circularImport.properties) {
+					if (property.alias) {
+						newCode += `${property.alias} = $happy_dom.imports.get('${circularImport.url}')['${property.name}'];\n`;
+					} else {
+						newCode += `${property.name} = $happy_dom.imports.get('${circularImport.url}')['${property.name}'];\n`;
+					}
+				}
+			}
+			newCode += '});';
+		}
 
 		if (
 			!browserSettings.disableErrorCapturing &&
@@ -429,6 +455,14 @@ export default class ECMAScriptModuleCompiler {
 		}
 
 		newCode += '})';
+
+		// In debug mode we don't want to execute the code, just take information from it
+		if (this.debug) {
+			return {
+				imports,
+				execute: async () => {}
+			};
+		}
 
 		try {
 			return {
