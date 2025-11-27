@@ -86,15 +86,6 @@ export default class FetchRequestHeaderUtility {
 		const originURL = new URL(options.window.location.href);
 		const isCORS = FetchCORSUtility.isCORS(originURL, options.request[PropertySymbol.url]);
 
-		// TODO: Maybe we need to add support for OPTIONS request with 'Access-Control-Allow-*' headers?
-		if (
-			options.request.credentials === 'omit' ||
-			(options.request.credentials === 'same-origin' && isCORS)
-		) {
-			headers.delete('authorization');
-			headers.delete('www-authenticate');
-		}
-
 		headers.set('Accept-Encoding', 'gzip, deflate, br');
 		headers.set('Connection', 'close');
 
@@ -117,6 +108,9 @@ export default class FetchRequestHeaderUtility {
 			if (cookies.length > 0) {
 				headers.set('Cookie', CookieStringUtility.cookiesToString(cookies));
 			}
+		} else {
+			headers.delete('Cookie');
+			headers.delete('Cookie2');
 		}
 
 		if (!headers.has('Accept')) {
