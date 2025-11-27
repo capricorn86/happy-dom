@@ -6,6 +6,7 @@ import IServerRendererResult from './types/IServerRendererResult.js';
 import { ErrorEvent, IBrowserPage, Response } from 'happy-dom';
 import BrowserWindowPolyfill from './utilities/BrowserWindowPolyfill.js';
 import IServerRendererConfiguration from './types/IServerRendererConfiguration.js';
+import ServerRendererModeEnum from './enums/ServerRendererModeEnum.js';
 
 const SET_TIMEOUT = setTimeout;
 const CLEAR_TIMEOUT = clearTimeout;
@@ -16,18 +17,15 @@ const CLEAR_TIMEOUT = clearTimeout;
 export default class ServerRendererPage {
 	#configuration: IServerRendererConfiguration;
 	#createdDirectories: Set<string> = new Set();
-	#options: { pageMode: boolean };
 	#initialized: boolean = false;
 
 	/**
+	 * Constructor.
 	 *
-	 * @param configuration
-	 * @param [options] Options.
-	 * @param [options.pageMode] Fetch the page instead of navigating to it.
+	 * @param configuration Configuration.
 	 */
-	constructor(configuration: IServerRendererConfiguration, options?: { pageMode?: boolean }) {
+	constructor(configuration: IServerRendererConfiguration) {
 		this.#configuration = configuration;
-		this.#options = { pageMode: options?.pageMode ?? false };
 	}
 
 	/**
@@ -41,7 +39,6 @@ export default class ServerRendererPage {
 		item: IServerRendererItem
 	): Promise<IServerRendererResult> {
 		const configuration = this.#configuration;
-
 		const pageErrors: string[] = [];
 		const errorListener = (event: any): void => {
 			if ((<ErrorEvent>event).error) {
@@ -60,6 +57,7 @@ export default class ServerRendererPage {
 
 			if (!this.#initialized) {
 				this.#initialized = true;
+
 				if (!configuration.render.disablePolyfills) {
 					BrowserWindowPolyfill.applyPolyfills(page.mainFrame.window);
 				}
@@ -73,7 +71,8 @@ export default class ServerRendererPage {
 			page.mainFrame.document.write(item.html);
 		} else if (item.url) {
 			headers = {};
-			if (this.#options.pageMode) {
+
+			if (configuration.render.mode === ServerRendererModeEnum.page) {
 				response = await page.mainFrame.window.fetch(item.url, {
 					headers: item.headers || {}
 				});
@@ -103,9 +102,11 @@ export default class ServerRendererPage {
 
 			if (!response.ok) {
 				const pageConsole = page.virtualConsolePrinter.readAsString();
-				if (!this.#options.pageMode) {
+
+				if (configuration.render.mode !== ServerRendererModeEnum.page) {
 					await page.close();
 				}
+
 				return {
 					url: item.url,
 					content: null,
@@ -119,8 +120,9 @@ export default class ServerRendererPage {
 				};
 			}
 
-			if (this.#options.pageMode) {
+			if (configuration.render.mode === ServerRendererModeEnum.page) {
 				const text = await response.text();
+
 				page.mainFrame.window.addEventListener('error', errorListener);
 
 				if (!this.#initialized) {
@@ -139,9 +141,11 @@ export default class ServerRendererPage {
 			}
 		} else {
 			const pageConsole = page.virtualConsolePrinter.readAsString();
-			if (!this.#options.pageMode) {
+
+			if (configuration.render.mode !== ServerRendererModeEnum.page) {
 				await page.close();
 			}
+
 			return {
 				url: null,
 				content: null,
@@ -169,9 +173,11 @@ export default class ServerRendererPage {
 		} catch (error) {
 			const pageConsole = page.virtualConsolePrinter.readAsString();
 			const url = item.url || page.url;
-			if (!this.#options.pageMode) {
+
+			if (configuration.render.mode !== ServerRendererModeEnum.page) {
 				await page.close();
 			}
+
 			return {
 				url,
 				content: null,
@@ -199,7 +205,7 @@ export default class ServerRendererPage {
 		if (timeoutError) {
 			const url = item.url || page.url;
 
-			if (!this.#options.pageMode) {
+			if (configuration.render.mode !== ServerRendererModeEnum.page) {
 				await page.close();
 			}
 
@@ -225,7 +231,7 @@ export default class ServerRendererPage {
 		const result = serializer.serializeToString(page.mainFrame.document);
 		const url = item.url || page.url;
 
-		if (!this.#options.pageMode) {
+		if (configuration.render.mode !== ServerRendererModeEnum.page) {
 			await page.close();
 		}
 

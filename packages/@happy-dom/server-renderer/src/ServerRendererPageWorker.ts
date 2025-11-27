@@ -30,7 +30,7 @@ export default class ServerRendererPageWorker {
 			settings: configuration.browser
 		});
 
-		const renderer = new ServerRendererPage(configuration, { pageMode: true });
+		const renderer = new ServerRendererPage(configuration);
 
 		parentPort?.on('message', async ({ items }) => {
 			if (items.length !== 1) {

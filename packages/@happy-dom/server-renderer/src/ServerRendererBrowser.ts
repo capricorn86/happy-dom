@@ -28,7 +28,7 @@ export default class ServerRendererBrowser {
 							...configuration.browser.debug,
 							traceWaitUntilComplete: configuration.render.timeout
 						}
-				  }
+					}
 				: configuration.browser;
 		this.#browser = new Browser({ settings });
 		this.#pageRenderer = new ServerRendererPage(configuration);
