@@ -1365,7 +1365,16 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @param [increment] Increment.
 	 */
 	public stepUp(increment?: number): void {
-		const newValue = HTMLInputElementValueStepping.step(this.type, this.value, 1, increment);
+		const { type, value, min, max, step } = this;
+		const newValue = HTMLInputElementValueStepping.step({
+			type,
+			value,
+			min,
+			max,
+			step,
+			direction: 1,
+			increment
+		});
 		if (newValue !== null) {
 			this.value = newValue;
 		}
@@ -1377,7 +1386,16 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @param [increment] Increment.
 	 */
 	public stepDown(increment?: number): void {
-		const newValue = HTMLInputElementValueStepping.step(this.type, this.value, -1, increment);
+		const { type, value, min, max, step } = this;
+		const newValue = HTMLInputElementValueStepping.step({
+			type,
+			value,
+			min,
+			max,
+			step,
+			direction: -1,
+			increment
+		});
 		if (newValue !== null) {
 			this.value = newValue;
 		}
