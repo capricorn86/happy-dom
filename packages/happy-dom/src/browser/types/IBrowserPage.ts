@@ -48,6 +48,21 @@ export default interface IBrowserPage {
 	evaluate(script: string | Script): any;
 
 	/**
+	 * Evaluates a module in the page's context.
+	 *
+	 * @param options Options.
+	 * @param options.url URL.
+	 * @param options.type Module type.
+	 * @param options.code Code.
+	 * @returns Module exports.
+	 */
+	evaluateModule(options: {
+		url?: string;
+		type?: 'esm' | 'css' | 'json';
+		code?: string;
+	}): Promise<Record<string, any>>;
+
+	/**
 	 * Sets the viewport.
 	 *
 	 * @param viewport Viewport.

@@ -309,17 +309,17 @@ export default class HTMLLinkElement extends HTMLElement {
 			return;
 		}
 
-		const absoluteURL = new URL(url, this[PropertySymbol.ownerDocument].location.href);
+		const moduleFactory = new ModuleFactory(window, window.location);
 
 		if (
 			browserSettings.disableErrorCapturing ||
 			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
 		) {
-			const module = await ModuleFactory.getModule(window, absoluteURL, url);
+			const module = await moduleFactory.getModule(url);
 			await module.preload();
 		} else {
 			try {
-				const module = await ModuleFactory.getModule(window, absoluteURL, url);
+				const module = await moduleFactory.getModule(url);
 				await module.preload();
 			} catch (error) {
 				browserFrame.page.console.error(error);

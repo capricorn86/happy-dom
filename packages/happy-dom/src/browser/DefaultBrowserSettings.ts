@@ -29,6 +29,10 @@ export default <IBrowserSettings>{
 		requestHeaders: null,
 		virtualServers: null
 	},
+	module: {
+		resolveNodeModules: null,
+		urlResolver: null
+	},
 	navigation: {
 		disableMainFrameNavigation: false,
 		disableChildFrameNavigation: false,

@@ -143,6 +143,23 @@ export default class BrowserFrame implements IBrowserFrame {
 	}
 
 	/**
+	 * Evaluates a module in the page's context.
+	 *
+	 * @param options Options.
+	 * @param options.url URL.
+	 * @param options.type Module type.
+	 * @param options.code Code.
+	 * @returns Module exports.
+	 */
+	public evaluateModule(options: {
+		url?: string;
+		type?: 'esm' | 'css' | 'json';
+		code?: string;
+	}): Promise<Record<string, any>> {
+		return BrowserFrameScriptEvaluator.evaluateModule(this, options);
+	}
+
+	/**
 	 * Go to a page.
 	 *
 	 * @param url URL.

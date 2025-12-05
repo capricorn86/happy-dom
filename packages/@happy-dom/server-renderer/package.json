@@ -43,6 +43,7 @@
 	},
 	"dependencies": {
 		"happy-dom": "^0.0.0",
+		"@happy-dom/global-registrator": "^0.0.0",
 		"chalk": "^5.4.1"
 	},
 	"devDependencies": {

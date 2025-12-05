@@ -35,6 +35,10 @@ export default class BrowserSettingsFactory {
 				...DefaultBrowserSettings.fetch,
 				...settings?.fetch
 			},
+			module: {
+				...DefaultBrowserSettings.module,
+				...settings?.module
+			},
 			device: {
 				...DefaultBrowserSettings.device,
 				...settings?.device

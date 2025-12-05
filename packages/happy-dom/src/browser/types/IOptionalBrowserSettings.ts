@@ -6,6 +6,7 @@ import IFetchRequestHeaders from '../../fetch/types/IFetchRequestHeaders.js';
 import IOptionalBrowserPageViewport from './IOptionalBrowserPageViewport.js';
 import IOptionalTimerLoopsLimit from '../../window/IOptionalTimerLoopsLimit.js';
 import BrowserWindow from '../../window/BrowserWindow.js';
+import IResolveNodeModules from '../../module/types/IResolveNodeModules.js';
 
 export default interface IOptionalBrowserSettings {
 	/**
@@ -87,6 +88,18 @@ export default interface IOptionalBrowserSettings {
 		 * Virtual servers used for simulating a server that reads from the file system.
 		 */
 		virtualServers?: IVirtualServer[] | null;
+	};
+
+	/**
+	 * Settings for modules
+	 */
+	module?: {
+		/** Resolve node modules to the defined URL */
+		resolveNodeModules?: IResolveNodeModules | null;
+		/** Sets a custom URL resolver */
+		urlResolver?:
+			| ((options: { url: string; parentURL: string; window: BrowserWindow }) => string)
+			| null;
 	};
 
 	/**

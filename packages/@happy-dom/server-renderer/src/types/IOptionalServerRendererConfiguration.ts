@@ -1,32 +1,39 @@
 import type IOptionalBrowserSettings from 'happy-dom/lib/browser/types/IOptionalBrowserSettings.js';
 import ServerRendererLogLevelEnum from '../enums/ServerRendererLogLevelEnum.js';
 import IServerRendererItem from './IServerRendererItem.js';
+import ServerRendererModeEnum from '../enums/ServerRendererModeEnum.js';
 
 export default interface IOptionalServerRendererConfiguration {
 	/**
 	 * Settings for the browser.
 	 */
 	browser?: IOptionalBrowserSettings;
+
 	/**
 	 * Log level for the server renderer.
 	 */
 	logLevel?: ServerRendererLogLevelEnum;
+
 	/**
 	 * Enables debugging. This will override "browser.debug.traceWaitUntilComplete".
 	 */
 	debug?: boolean;
+
 	/**
 	 * Enables inspector.
 	 */
 	inspect?: boolean;
+
 	/**
 	 * Shows help information and exits.
 	 */
 	help?: boolean;
+
 	/**
 	 * Output directory.
 	 */
 	outputDirectory?: string;
+
 	/**
 	 * Cache settings.
 	 */
@@ -44,6 +51,7 @@ export default interface IOptionalServerRendererConfiguration {
 		 */
 		warmup?: boolean;
 	};
+
 	/**
 	 * Settings for the worker.
 	 */
@@ -57,6 +65,7 @@ export default interface IOptionalServerRendererConfiguration {
 		 */
 		maxConcurrency?: number;
 	};
+
 	/**
 	 * Settings for rendering.
 	 */
@@ -89,11 +98,21 @@ export default interface IOptionalServerRendererConfiguration {
 		 * Disable polyfills used for unimplemented functionality.
 		 */
 		disablePolyfills?: boolean;
+		/**
+		 * Setup script to be injected before rendering.
+		 */
+		setupScript?: string | null;
+		/**
+		 * Rendering mode.
+		 */
+		mode?: ServerRendererModeEnum;
 	};
+
 	/**
-	 * List of URLs to render.
+	 * List render items. Each item can be a URL string or an object specifying the URL or HTML string along with additional options.
 	 */
-	urls?: Array<string | IServerRendererItem> | null;
+	renderItems?: Array<string | IServerRendererItem> | null;
+
 	/**
 	 * Proxy server settings.
 	 */
