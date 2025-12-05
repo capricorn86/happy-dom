@@ -59,7 +59,7 @@ export default class BrowserFrameScriptEvaluator {
 		}
 
 		if (options?.url) {
-			const module = await ModuleFactory.getModule(window, window.location, options.url, {
+			const module = await new ModuleFactory(window, window.location).getModule(options.url, {
 				with: { type: options.type || 'esm' }
 			});
 			return await module.evaluate();

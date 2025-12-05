@@ -15,23 +15,32 @@ import Location from '../location/Location.js';
  * Module factory.
  */
 export default class ModuleFactory {
+	private window: BrowserWindow;
+	private parentURL: URL | Location;
+
 	/**
-	 * Fetches the source code of the module from the given URL and creates a new module instance.
+	 * Constructor.
 	 *
 	 * @param window Window.
 	 * @param parentURL Parent URL.
+	 */
+	constructor(window: BrowserWindow, parentURL: URL | Location) {
+		this.window = window;
+		this.parentURL = parentURL;
+	}
+
+	/**
+	 * Fetches the source code of the module from the given URL and creates a new module instance.
+	 *
 	 * @param url Module URL.
 	 * @param [parent] Parent module.
 	 * @param [options] Options.
 	 * @param [options.with] Options.
 	 * @param [options.with.type] Module type.
 	 */
-	public static async getModule(
-		window: BrowserWindow,
-		parentURL: URL | Location,
-		url: string,
-		options?: { with?: { type?: string } }
-	): Promise<IModule> {
+	public async getModule(url: string, options?: { with?: { type?: string } }): Promise<IModule> {
+		const window = this.window;
+		const parentURL = this.parentURL;
 		const absoluteURL = ModuleURLUtility.getURL(window, parentURL, url);
 		const absoluteURLString = absoluteURL.href;
 		const type = options?.with?.type || 'esm';
@@ -104,5 +113,35 @@ export default class ModuleFactory {
 		unresolvedModule.resolve();
 
 		return module;
+	}
+
+	/**
+	 * Imports a module.
+	 *
+	 * @param window Window.
+	 * @param parentURL Parent URL.
+	 * @param url URL.
+	 * @param [options] Options.
+	 * @param [options.with] With.
+	 * @param [options.with.type] Type.
+	 */
+	public async importModule(
+		url: string,
+		options?: { with?: { type?: string } }
+	): Promise<{ [key: string]: any }> {
+		const browserFrame = new WindowBrowserContext(this.window).getBrowserFrame();
+
+		if (!browserFrame) {
+			return {};
+		}
+
+		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
+		const taskID = asyncTaskManager?.startTask();
+		const module = await this.getModule(url, options);
+		const exports = await module.evaluate();
+
+		asyncTaskManager.endTask(taskID);
+
+		return exports;
 	}
 }

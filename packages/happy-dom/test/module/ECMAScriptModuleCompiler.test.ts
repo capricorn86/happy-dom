@@ -41,8 +41,8 @@ describe('ECMAScriptModuleCompiler', () => {
 				{ url: 'http://localhost:8080/js/utilities/NumberUtility.js', type: 'esm' }
 			]);
 			expect(result.execute.toString())
-				.toBe(`async function anonymous($happy_dom) {const StringUtility = $happy_dom.imports.get('http://localhost:8080/js/utilities/StringUtility.js').default;
-                const { default: DefaultImageUtility } = $happy_dom.imports.get('http://localhost:8080/js/utilities/ImageUtility.js');
+				.toBe(`async function anonymous($happy_dom) {let StringUtility = $happy_dom.imports.get('http://localhost:8080/js/utilities/StringUtility.js').default;
+                let {"default": DefaultImageUtility} = $happy_dom.imports.get('http://localhost:8080/js/utilities/ImageUtility.js');
                 const NumberUtility = $happy_dom.imports.get('http://localhost:8080/js/utilities/NumberUtility.js');
 
                 
@@ -58,7 +58,10 @@ describe('ECMAScriptModuleCompiler', () => {
             
 $happy_dom.exports['variable'] = variable;
 $happy_dom.exports.default = TestClass;
-}`);
+$happy_dom.addCircularImportResolver(() => {
+StringUtility = $happy_dom.imports.get('http://localhost:8080/js/utilities/StringUtility.js')['default'];
+DefaultImageUtility = $happy_dom.imports.get('http://localhost:8080/js/utilities/ImageUtility.js')['default'];
+});}`);
 		});
 
 		it('Handles the correct source URL in error stack', async () => {
@@ -78,7 +81,8 @@ $happy_dom.exports.default = TestClass;
 						resolve: () => ''
 					},
 					imports: new Map(),
-					exports: {}
+					exports: {},
+					addCircularImportResolver: () => {}
 				});
 			} catch (e) {
 				error = <Error>e;
@@ -112,7 +116,8 @@ $happy_dom.exports.default = TestClass;
 						resolve: () => ''
 					},
 					imports: new Map(),
-					exports: {}
+					exports: {},
+					addCircularImportResolver: () => {}
 				});
 			} catch (e) {
 				error = <Error>e;
@@ -302,22 +307,21 @@ $happy_dom.exports.default = TestClass;
 			]);
 
 			expect(result.execute.toString())
-				.toBe(`async function anonymous($happy_dom) {const defaultExport1 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport.js').default;
+				.toBe(`async function anonymous($happy_dom) {let defaultExport1 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport.js').default;
                 const name = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/name.js');
-                const { export1 } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export1.js');
-                const { export2: alias1 } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export2.js');
-                const { default: alias2 } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/default.js');
-                const { export3, export4 } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export3.js');
-                const { export5, export6: alias3, /* … */ } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export4.js');
-                const { "string name": alias } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/stringName.js');
-                const defaultExport2 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport2.js').default;
-                const { export7, /* … */ } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport2.js');
-                const defaultExport3 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport3.js').default;
+                let {export1} = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export1.js');
+                let {"export2": alias1} = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export2.js');
+                let {"default": alias2} = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/default.js');
+                let {export3, export4} = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export3.js');
+                let {export5, "export6": alias3} = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export4.js');
+                let {"string name": alias} = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/stringName.js');
+                let defaultExport2 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport2.js').default;
+                let {export7} = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport2.js');
+                let defaultExport3 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport3.js').default;
                 const name2 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport3.js');
-                const JSON = $happy_dom.imports.get('http://localhost:8080/js/app/json/data.json').default;
-                const CSS = $happy_dom.imports.get('http://localhost:8080/js/css/data.css').default;
-                const { export8,
-                export9 } = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export5.js');
+                let JSON = $happy_dom.imports.get('http://localhost:8080/js/app/json/data.json').default;
+                let CSS = $happy_dom.imports.get('http://localhost:8080/js/css/data.css').default;
+                let {export8, export9} = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export5.js');
 
                 
                 
@@ -400,7 +404,22 @@ $happy_dom.exports['name5'] = name5;
 $happy_dom.exports['bar'] = bar;
 $happy_dom.exports['name7'] = name7;
 $happy_dom.exports['name8'] = name8;
-}`);
+$happy_dom.addCircularImportResolver(() => {
+defaultExport1 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport.js')['default'];
+export1 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export1.js')['export1'];
+alias1 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export2.js')['export2'];
+alias2 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/default.js')['default'];
+export3 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export3.js')['export3'];
+export4 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export3.js')['export4'];
+export5 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export4.js')['export5'];
+alias3 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export4.js')['export6'];
+alias = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/stringName.js')['string name'];
+defaultExport2 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport2.js')['default'];
+export7 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport2.js')['export7'];
+defaultExport3 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/defaultExport3.js')['default'];
+export8 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export5.js')['export8'];
+export9 = $happy_dom.imports.get('http://localhost:8080/js/app/stuff/export5.js')['export9'];
+});}`);
 		});
 
 		it('Handles export from without spacing', () => {
@@ -832,9 +851,11 @@ import{_ as c}from"./preload-helper-BMSd6Up6.js";class r{static connect(){const 
 			]);
 
 			expect(result.execute.toString())
-				.toBe(`async function anonymous($happy_dom) {const {_: c} = $happy_dom.imports.get('http://localhost:8080/js/app/preload-helper-BMSd6Up6.js');const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["static/js/Home-CsPrQa7_.js","static/js/preload-helper-BMSd6Up6.js","static/js/Router-yzXgKzu7.js","static/js/_commonjsHelpers-BosuxZz1.js","static/js/sizes-1ww1H62B.js","static/js/Choice-Bixrh5CR.js","static/js/index-OjqIgG3h.js","static/js/arrow-left-DVwQ9ese.js"])))=>i.map(i=>d[i]);
+				.toBe(`async function anonymous($happy_dom) {let {"_": c} = $happy_dom.imports.get('http://localhost:8080/js/app/preload-helper-BMSd6Up6.js');const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["static/js/Home-CsPrQa7_.js","static/js/preload-helper-BMSd6Up6.js","static/js/Router-yzXgKzu7.js","static/js/_commonjsHelpers-BosuxZz1.js","static/js/sizes-1ww1H62B.js","static/js/Choice-Bixrh5CR.js","static/js/index-OjqIgG3h.js","static/js/arrow-left-DVwQ9ese.js"])))=>i.map(i=>d[i]);
 class r{static connect(){const n=location.hash.match(/S{0,1}([0-9]{7,})$/);if(n){const a=new URLSearchParams(location.search);a.set("id",n[1]),location.href=new URL('example/?a=b',location.href).href;return}const t=location.hash.match(/\\/([a-zA-Z0-9-]{10,})$/);if(t){const a=new URLSearchParams(location.search);a.set("code",t[1]),location.href=new URL('example/?a=b',location.href).href;return}const o=location.hash.match(/\\/([a-zA-Z0-9]{4,6})$/);if(o){const a=new URLSearchParams(location.search);a.set("code",o[1]),location.href=new URL('example/?a=b',location.href).href;return}}}r.connect();c(()=>$happy_dom.dynamicImport("./Home-CsPrQa7_.js").then(e=>e.a),__vite__mapDeps([0,1,2,3,4,5,6,7,8,9,10,11,12,13]));
-}`);
+$happy_dom.addCircularImportResolver(() => {
+c = $happy_dom.imports.get('http://localhost:8080/js/app/preload-helper-BMSd6Up6.js')['_'];
+});}`);
 		});
 
 		it('Handles vite with minimized export', () => {
@@ -1146,7 +1167,7 @@ import{_ as a}from"./preload-helper-BMSd6Up6.js";import{k as g,s as A,r as C,t a
 			]);
 
 			expect(result.execute.toString())
-				.toBe(`async function anonymous($happy_dom) {const {_: a} = $happy_dom.imports.get('http://localhost:8080/js/app/preload-helper-BMSd6Up6.js');const {k: g,s: A,r: C,t: P,h: o,R: c,m: O,F: V,u: B,n: M,A: f,P: $,v: G,w: _,q: W} = $happy_dom.imports.get('http://localhost:8080/js/app/Router-yzXgKzu7.js');const {s: b} = $happy_dom.imports.get('http://localhost:8080/js/app/sizes-1ww1H62B.js');const {C: F,S: d,r: U,b: I,I: H,s: N,g: j,i: K,d: q,T: E} = $happy_dom.imports.get('http://localhost:8080/js/app/Choice-Bixrh5CR.js');const {K: R,W: Z} = $happy_dom.imports.get('http://localhost:8080/js/app/index-OjqIgG3h.js');const {I: te} = $happy_dom.imports.get('http://localhost:8080/js/app/Image-CMZuFGwN.js');const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["static/js/preload-helper-BMSd6Up6.js","static/js/Router-yzXgKzu7.js","static/js/_commonjsHelpers-BosuxZz1.js","static/js/Choice-Bixrh5CR.js","static/js/index-OjqIgG3h.js","static/js/arrow-left-DVwQ9ese.js","static/js/Image-CMZuFGwN.js","static/js/IdGenerator-BXAguRov.js","static/js/resizeListener-BpJMTz31.js","static/js/menu-BQ9iRMnL.js","static/js/menu-DGNLEQ8L.js"])))=>i.map(i=>d[i]);
+				.toBe(`async function anonymous($happy_dom) {let {"_": a} = $happy_dom.imports.get('http://localhost:8080/js/app/preload-helper-BMSd6Up6.js');let {"k": g, "s": A, "r": C, "t": P, "h": o, "R": c, "m": O, "F": V, "u": B, "n": M, "A": f, "P": $, "v": G, "w": _, "q": W} = $happy_dom.imports.get('http://localhost:8080/js/app/Router-yzXgKzu7.js');let {"s": b} = $happy_dom.imports.get('http://localhost:8080/js/app/sizes-1ww1H62B.js');let {"C": F, "S": d, "r": U, "b": I, "I": H, "s": N, "g": j, "i": K, "d": q, "T": E} = $happy_dom.imports.get('http://localhost:8080/js/app/Choice-Bixrh5CR.js');let {"K": R, "W": Z} = $happy_dom.imports.get('http://localhost:8080/js/app/index-OjqIgG3h.js');let {"I": te} = $happy_dom.imports.get('http://localhost:8080/js/app/Image-CMZuFGwN.js');const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["static/js/preload-helper-BMSd6Up6.js","static/js/Router-yzXgKzu7.js","static/js/_commonjsHelpers-BosuxZz1.js","static/js/Choice-Bixrh5CR.js","static/js/index-OjqIgG3h.js","static/js/arrow-left-DVwQ9ese.js","static/js/Image-CMZuFGwN.js","static/js/IdGenerator-BXAguRov.js","static/js/resizeListener-BpJMTz31.js","static/js/menu-BQ9iRMnL.js","static/js/menu-DGNLEQ8L.js"])))=>i.map(i=>d[i]);
 const ie=[["&","&amp"],["<","&lt"],[">","&gt"],['"',"&quot"],["'","&#x27"],["/","&#x2F"]];class ae{static encodeForAttribute(e){for(const t of ie)e=e.replace(new RegExp(t[0],"gm"),t[1]+";");return e}}class ne{static templateToString(e,...t){let i="";for(let n=0,s=e.length;n<s;n++)i+=e[n],n<s-1&&t[n]!==null&&(i.endsWith('="')||i.endsWith("='")?i+=ae.encodeForAttribute(String(t[n])):i+=String(t[n]));return i}}const $e=ne.templateToString,D=F.templateToString,oe=D\`
   *,
   *:before,
@@ -1407,7 +1428,38 @@ $happy_dom.exports['a'] = Ee;
 $happy_dom.exports['c'] = D;
 $happy_dom.exports['h'] = $e;
 
-}`);
+$happy_dom.addCircularImportResolver(() => {
+a = $happy_dom.imports.get('http://localhost:8080/js/app/preload-helper-BMSd6Up6.js')['_'];
+g = $happy_dom.imports.get('http://localhost:8080/js/app/Router-yzXgKzu7.js')['k'];
+A = $happy_dom.imports.get('http://localhost:8080/js/app/Router-yzXgKzu7.js')['s'];
+C = $happy_dom.imports.get('http://localhost:8080/js/app/Router-yzXgKzu7.js')['r'];
+P = $happy_dom.imports.get('http://localhost:8080/js/app/Router-yzXgKzu7.js')['t'];
+o = $happy_dom.imports.get('http://localhost:8080/js/app/Router-yzXgKzu7.js')['h'];
+c = $happy_dom.imports.get('http://localhost:8080/js/app/Router-yzXgKzu7.js')['R'];
+O = $happy_dom.imports.get('http://localhost:8080/js/app/Router-yzXgKzu7.js')['m'];
+V = $happy_dom.imports.get('http://localhost:8080/js/app/Router-yzXgKzu7.js')['F'];
+B = $happy_dom.imports.get('http://localhost:8080/js/app/Router-yzXgKzu7.js')['u'];
+M = $happy_dom.imports.get('http://localhost:8080/js/app/Router-yzXgKzu7.js')['n'];
+f = $happy_dom.imports.get('http://localhost:8080/js/app/Router-yzXgKzu7.js')['A'];
+$ = $happy_dom.imports.get('http://localhost:8080/js/app/Router-yzXgKzu7.js')['P'];
+G = $happy_dom.imports.get('http://localhost:8080/js/app/Router-yzXgKzu7.js')['v'];
+_ = $happy_dom.imports.get('http://localhost:8080/js/app/Router-yzXgKzu7.js')['w'];
+W = $happy_dom.imports.get('http://localhost:8080/js/app/Router-yzXgKzu7.js')['q'];
+b = $happy_dom.imports.get('http://localhost:8080/js/app/sizes-1ww1H62B.js')['s'];
+F = $happy_dom.imports.get('http://localhost:8080/js/app/Choice-Bixrh5CR.js')['C'];
+d = $happy_dom.imports.get('http://localhost:8080/js/app/Choice-Bixrh5CR.js')['S'];
+U = $happy_dom.imports.get('http://localhost:8080/js/app/Choice-Bixrh5CR.js')['r'];
+I = $happy_dom.imports.get('http://localhost:8080/js/app/Choice-Bixrh5CR.js')['b'];
+H = $happy_dom.imports.get('http://localhost:8080/js/app/Choice-Bixrh5CR.js')['I'];
+N = $happy_dom.imports.get('http://localhost:8080/js/app/Choice-Bixrh5CR.js')['s'];
+j = $happy_dom.imports.get('http://localhost:8080/js/app/Choice-Bixrh5CR.js')['g'];
+K = $happy_dom.imports.get('http://localhost:8080/js/app/Choice-Bixrh5CR.js')['i'];
+q = $happy_dom.imports.get('http://localhost:8080/js/app/Choice-Bixrh5CR.js')['d'];
+E = $happy_dom.imports.get('http://localhost:8080/js/app/Choice-Bixrh5CR.js')['T'];
+R = $happy_dom.imports.get('http://localhost:8080/js/app/index-OjqIgG3h.js')['K'];
+Z = $happy_dom.imports.get('http://localhost:8080/js/app/index-OjqIgG3h.js')['W'];
+te = $happy_dom.imports.get('http://localhost:8080/js/app/Image-CMZuFGwN.js')['I'];
+});}`);
 		});
 	});
 });

@@ -68,6 +68,7 @@ export default class ECMAScriptModule implements IModule {
 		const modulePromises: Promise<IModule>[] = [];
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+		const moduleFactory = new ModuleFactory(window, this.url);
 
 		if (!browserFrame) {
 			return {};
@@ -79,7 +80,7 @@ export default class ECMAScriptModule implements IModule {
 
 		for (const moduleImport of compiled.imports) {
 			modulePromises.push(
-				ModuleFactory.getModule(window, this.url, moduleImport.url, {
+				moduleFactory.getModule(moduleImport.url, {
 					with: { type: moduleImport.type }
 				})
 			);
@@ -112,7 +113,7 @@ export default class ECMAScriptModule implements IModule {
 
 		compiled.execute({
 			dispatchError: window[PropertySymbol.dispatchError].bind(window),
-			dynamicImport: this.#import.bind(this),
+			dynamicImport: moduleFactory.importModule.bind(moduleFactory),
 			importMeta: {
 				url: href,
 				resolve: (url: string) => new URL(url, href).href
@@ -149,6 +150,7 @@ export default class ECMAScriptModule implements IModule {
 		const modulePromises: Promise<IModule>[] = [];
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
+		const moduleFactory = new ModuleFactory(window, this.url);
 
 		if (!browserFrame) {
 			return;
@@ -156,7 +158,7 @@ export default class ECMAScriptModule implements IModule {
 
 		for (const moduleImport of compiled.imports) {
 			modulePromises.push(
-				ModuleFactory.getModule(window, this.url, moduleImport.url, {
+				moduleFactory.getModule(moduleImport.url, {
 					with: { type: moduleImport.type }
 				})
 			);
@@ -188,34 +190,5 @@ export default class ECMAScriptModule implements IModule {
 		this.#compiled = compiler.compile(this.url.href, this.#source, this.#sourceURL);
 
 		return <IECMAScriptModuleCompiledResult>this.#compiled;
-	}
-
-	/**
-	 * Imports a module.
-	 *
-	 * @param url URL.
-	 * @param [options] Options.
-	 * @param [options.with] With.
-	 * @param [options.with.type] Type.
-	 */
-	async #import(
-		url: string,
-		options?: { with?: { type?: string } }
-	): Promise<{ [key: string]: any }> {
-		const window = this[PropertySymbol.window];
-		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
-
-		if (!browserFrame) {
-			return {};
-		}
-
-		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
-		const taskID = asyncTaskManager?.startTask();
-		const module = await ModuleFactory.getModule(window, this.url, url, options);
-		const exports = await module.evaluate();
-
-		asyncTaskManager.endTask(taskID);
-
-		return exports;
 	}
 }

@@ -249,9 +249,7 @@ export default class ECMAScriptModuleCompiler {
 				while ((importMatch = importRegExp.exec(variables))) {
 					if (importMatch[1]) {
 						// Import braces
-						const parts = this.removeMultilineComments(importMatch[1])
-							.slice(1, -1)
-							.split(/\s*,\s*/);
+						const parts = this.removeMultilineComments(importMatch[1]).split(/\s*,\s*/);
 						const properties: Array<{ name: string; alias?: string }> = [];
 						for (const part of parts) {
 							const nameParts = part.trim().split(/\s+as\s+/);
@@ -274,7 +272,13 @@ export default class ECMAScriptModuleCompiler {
 						newCodeStart += `const ${importMatch[2]} = $happy_dom.imports.get('${url}')${match[8]}`;
 					} else if (importMatch[3]) {
 						// Import default
-						newCodeStart += `const ${importMatch[3]} = $happy_dom.imports.get('${url}').default${match[8]}`;
+						if (!match[7] || match[7] === 'esm') {
+							resolvableCircularImports.push({
+								url,
+								properties: [{ name: 'default', alias: importMatch[3] }]
+							});
+						}
+						newCodeStart += `let ${importMatch[3]} = $happy_dom.imports.get('${url}').default${match[8]}`;
 					}
 				}
 				importStartIndex = -1;
@@ -415,6 +419,14 @@ export default class ECMAScriptModuleCompiler {
 			lastIndex = regExp.lastIndex;
 		}
 
+		// In debug mode we don't want to execute the code, just take information from it
+		if (this.debug) {
+			return {
+				imports,
+				execute: async () => {}
+			};
+		}
+
 		if (!!newCodeStart && !ENDS_WITH_SEMICOLON_REGEXP.test(newCodeStart)) {
 			newCodeStart = `\n${newCodeStart};`;
 		}
@@ -429,7 +441,11 @@ export default class ECMAScriptModuleCompiler {
 
 		newCode = newCodeStart + newCode;
 
-		newCode += code.substring(lastIndex);
+		if (lastIndex === 0) {
+			newCode += code;
+		} else {
+			newCode += code.substring(lastIndex);
+		}
 
 		newCode += '\n' + newCodeEnd;
 
@@ -456,14 +472,6 @@ export default class ECMAScriptModuleCompiler {
 
 		newCode += '})';
 
-		// In debug mode we don't want to execute the code, just take information from it
-		if (this.debug) {
-			return {
-				imports,
-				execute: async () => {}
-			};
-		}
-
 		try {
 			return {
 				imports,
@@ -472,10 +480,15 @@ export default class ECMAScriptModuleCompiler {
 				})
 			};
 		} catch (e) {
-			const errorMessage = this.getError(moduleURL, code, sourceURL) || (<Error>e).message;
-			const error = new this.window.SyntaxError(
-				`Failed to parse module '${moduleURL}'. Execution error: ${(<Error>e).message}. Compile error: ${errorMessage}`
-			);
+			const compileError = this.getError(moduleURL, code, sourceURL);
+			const error = compileError
+				? new this.window.SyntaxError(
+						`Failed to parse module in '${moduleURL}'. Execution error: ${(<Error>e).message}. Compile error: ${compileError}`
+					)
+				: <Error>e;
+
+			(<Error>e).message = `Failed to parse module in '${sourceURL}': ${(<Error>error).message}`;
+
 			if (
 				browserSettings.disableErrorCapturing ||
 				browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
@@ -765,6 +778,21 @@ export default class ECMAScriptModuleCompiler {
 	 * @returns Error.
 	 */
 	private getError(moduleURL: string, code: string, sourceURL: string | null): string | null {
+		if (
+			this.count.comment === 0 &&
+			this.count.singleLineComment === 0 &&
+			this.count.parentheses === 0 &&
+			this.count.curlyBraces === 0 &&
+			this.count.squareBrackets === 0 &&
+			this.count.regExp === 0 &&
+			this.count.regExpSquareBrackets === 0 &&
+			this.count.simpleString === 0 &&
+			this.count.doubleString === 0
+		) {
+			return null;
+		}
+
+		// Enable debug mode to get error information
 		if (!this.debug) {
 			this.debug = true;
 			this.compile(moduleURL, code, sourceURL);
