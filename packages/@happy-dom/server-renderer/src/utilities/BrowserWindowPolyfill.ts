@@ -78,16 +78,6 @@ export default class BrowserWindowPolyfill {
 			public terminate(): any {}
 		};
 
-		(<any>window).WebSocket = class WebSocket extends EventTarget {
-			public binaryType: string = 'arraybuffer';
-			public bufferedAmount: number = 0;
-			public extensions: string = '';
-			public protocol: string = '';
-			public readyState: number = 1;
-			public url: string = '';
-			public close(): void {}
-			public send(): void {}
-		};
 		(<any>window).Path2D = class Path2D {
 			public addPath(): any {}
 			public addPath2D(): any {}

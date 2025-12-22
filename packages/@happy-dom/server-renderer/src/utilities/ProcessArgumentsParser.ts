@@ -37,23 +37,31 @@ export default class ProcessArgumentsParser {
 							} else {
 								if (renderItem.url) {
 									const url = new URL(renderItem.url);
-									newRenderItems.push({
+									const newRenderItem: IServerRendererItem = {
 										url: url.href,
-										html: renderItem.html,
-										outputFile: renderItem.outputFile || this.getOutputFile(url),
-										headers: (<IServerRendererItem>url).headers
-									});
+										outputFile: renderItem.outputFile || this.getOutputFile(url)
+									};
+									if (renderItem.html) {
+										newRenderItem.html = renderItem.html;
+									}
+									if (renderItem.headers) {
+										newRenderItem.headers = renderItem.headers;
+									}
+									newRenderItems.push(newRenderItem);
 								} else {
 									if (!renderItem.outputFile) {
 										throw new Error(
 											`Missing output file in render item: ${JSON.stringify(renderItem)}`
 										);
 									}
-									newRenderItems.push({
+									const newRenderItem: IServerRendererItem = {
 										html: renderItem.html,
-										outputFile: renderItem.outputFile,
-										headers: renderItem.headers
-									});
+										outputFile: renderItem.outputFile
+									};
+									if (renderItem.headers) {
+										newRenderItem.headers = renderItem.headers;
+									}
+									newRenderItems.push(newRenderItem);
 								}
 							}
 						}
@@ -61,10 +69,16 @@ export default class ProcessArgumentsParser {
 					}
 				} else if (arg === '--help' || arg === '-h') {
 					config.help = true;
-				} else if (arg === '--browser.enableJavaScriptEvaluation' || arg === '-j') {
+				} else if (
+					arg === '--browser.enableJavaScriptEvaluation' ||
+					arg === '--javaScript' ||
+					arg === '--javascript' ||
+					arg === '-j'
+				) {
 					config.browser.enableJavaScriptEvaluation = true;
 				} else if (
 					arg === '--browser.suppressInsecureJavaScriptEnvironmentWarning' ||
+					arg === '--suppressJavaScriptWarning' ||
 					arg === '-sj'
 				) {
 					config.browser.suppressInsecureJavaScriptEnvironmentWarning = true;
@@ -151,6 +165,32 @@ export default class ProcessArgumentsParser {
 						url: new RegExp(parts[0].trim()),
 						directory: parts[1].trim()
 					});
+				} else if (arg.startsWith('--browser.module.resolveNodeModules.url=')) {
+					if (!config.browser.module.resolveNodeModules) {
+						config.browser.module.resolveNodeModules = {
+							url: '',
+							directory: ''
+						};
+					}
+					config.browser.module.resolveNodeModules.url = this.stripQuotes(arg.split('=')[1]);
+				} else if (arg.startsWith('--browser.module.resolveNodeModules.directory=')) {
+					if (!config.browser.module.resolveNodeModules) {
+						config.browser.module.resolveNodeModules = {
+							url: '',
+							directory: ''
+						};
+					}
+					config.browser.module.resolveNodeModules.directory = this.stripQuotes(arg.split('=')[1]);
+				} else if (arg.startsWith('--browser.module.resolveNodeModules.mainFields=')) {
+					if (!config.browser.module.resolveNodeModules) {
+						config.browser.module.resolveNodeModules = {
+							url: '',
+							directory: ''
+						};
+					}
+					config.browser.module.resolveNodeModules.mainFields = this.stripQuotes(
+						arg.split('=')[1]
+					).split(',');
 				} else if (arg === '--browser.navigation.disableMainFrameNavigation') {
 					config.browser.navigation.disableMainFrameNavigation = true;
 				} else if (arg === '--browser.navigation.disableChildFrameNavigation') {
@@ -214,7 +254,7 @@ export default class ProcessArgumentsParser {
 				} else if (arg === '--cache.disable') {
 					config.cache.disable = true;
 				} else if (arg.startsWith('--cache.directory=') || arg.startsWith('-cd=')) {
-					config.cache.directory = this.stripQuotes(arg.split('=')[1]);
+					config.cache.directory = Path.resolve(this.stripQuotes(arg.split('=')[1]));
 				} else if (arg === '--cache.warmup') {
 					config.cache.warmup = true;
 				} else if (arg.startsWith('--logLevel=') || arg.startsWith('-l=')) {
@@ -259,7 +299,7 @@ export default class ProcessArgumentsParser {
 				} else if (arg === '--inspect' || arg === '-i') {
 					config.inspect = true;
 				} else if (arg.startsWith('--outputDirectory=') || arg.startsWith('-o=')) {
-					config.outputDirectory = this.stripQuotes(arg.split('=')[1]);
+					config.outputDirectory = Path.resolve(this.stripQuotes(arg.split('=')[1]));
 				} else if (arg.startsWith('--server.serverURL=') || arg.startsWith('-su=')) {
 					config.server.serverURL = this.stripQuotes(arg.split('=')[1]);
 				} else if (arg.startsWith('--server.targetOrigin=') || arg.startsWith('-st=')) {

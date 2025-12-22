@@ -139,7 +139,7 @@ export default class WebSocket extends EventTarget {
 	 * @param [code] Code.
 	 * @param [reason] Reason.
 	 */
-	public close(code?: number, reason?: Buffer<ArrayBufferLike>): void {
+	public close(code?: number, reason?: string | Buffer<ArrayBufferLike>): void {
 		const window = this[PropertySymbol.window];
 
 		if (code !== undefined && code !== 1000 && !(code >= 3000 && code <= 4999)) {
@@ -155,7 +155,7 @@ export default class WebSocket extends EventTarget {
 			);
 		}
 
-		this.#close(code, reason);
+		this.#close(code, Buffer.from(<string>reason));
 	}
 
 	/**
@@ -262,7 +262,7 @@ export default class WebSocket extends EventTarget {
 	 * @param code Code.
 	 * @param reason Reason.
 	 */
-	#close(code?: number, reason?: Buffer<ArrayBufferLike>): void {
+	#close(code?: number, reason?: string | Buffer<ArrayBufferLike>): void {
 		if (this.readyState === WebSocketReadyStateEnum.connecting) {
 			if (this.#webSocket) {
 				this.#webSocket.terminate();

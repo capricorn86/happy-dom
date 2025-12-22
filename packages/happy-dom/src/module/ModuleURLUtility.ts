@@ -61,6 +61,14 @@ export default class ModuleURLUtility {
 	}
 
 	/**
+	 * Clears the internal caches.
+	 */
+	public static clearCache(): void {
+		this.nodeModuleResolveCache.clear();
+		this.packageJsonCache.clear();
+	}
+
+	/**
 	 * Resolves the module URL using the settings.
 	 *
 	 * @param window Window.

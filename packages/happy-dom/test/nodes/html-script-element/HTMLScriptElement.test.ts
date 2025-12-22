@@ -1127,6 +1127,149 @@ SyntaxError: Invalid regular expression: missing /`)
 			).toBe('red');
 		});
 
+		it('Handles loading of modules with import with custom URL resolver when "settings.module.urlResolver" is defined.', async () => {
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
+					fetch: {
+						virtualServers: [
+							{
+								url: 'https://localhost:8080/base/js/',
+								directory: './test/nodes/html-script-element/modules/'
+							}
+						]
+					},
+					module: {
+						urlResolver: ({ url }) => {
+							if (url === 'resolved-module') {
+								return 'https://localhost:8080/base/js/TestModuleElement.js';
+							}
+							return url;
+						}
+					}
+				},
+				console
+			});
+			const document = window.document;
+			const script = document.createElement('script');
+
+			script.type = 'module';
+			script.textContent = `import 'resolved-module';`;
+
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			const testModule = document.createElement('test-module');
+
+			document.body.appendChild(testModule);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(testModule.shadowRoot?.innerHTML).toBe(`<div>
+            Expect lower case: "value"
+            Expect upper case: "VALUE"
+            Expect lower case. "value"
+            Expect trimmed lower case: "value"
+            Import URL: https://localhost:8080/base/js/TestModuleElement.js
+            Resolved URL: https://localhost:8080/base/js/Resolved.js
+        </div><div>Lazy-loaded module: true</div>`);
+		});
+
+		it('Handles loading of modules dynamically with custom URL resolver when "settings.module.urlResolver" is defined.', async () => {
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
+					fetch: {
+						virtualServers: [
+							{
+								url: 'https://localhost:8080/base/js/',
+								directory: './test/nodes/html-script-element/modules/'
+							}
+						]
+					},
+					module: {
+						urlResolver: ({ url }) => {
+							if (url === 'resolved-module') {
+								return 'https://localhost:8080/base/js/TestModuleElement.js';
+							}
+							return url;
+						}
+					}
+				},
+				console
+			});
+			const document = window.document;
+			const script = document.createElement('script');
+
+			script.type = 'module';
+			script.textContent = `import('resolved-module');`;
+
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			const testModule = document.createElement('test-module');
+
+			document.body.appendChild(testModule);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(testModule.shadowRoot?.innerHTML).toBe(`<div>
+            Expect lower case: "value"
+            Expect upper case: "VALUE"
+            Expect lower case. "value"
+            Expect trimmed lower case: "value"
+            Import URL: https://localhost:8080/base/js/TestModuleElement.js
+            Resolved URL: https://localhost:8080/base/js/Resolved.js
+        </div><div>Lazy-loaded module: true</div>`);
+		});
+
+		it('Handles loading of Node module when "settings.module.resolveNodeModules" is defined.', async () => {
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
+					module: {
+						resolveNodeModules: {
+							url: 'https://localhost:8080/base/js/',
+							directory: './test/nodes/html-script-element/'
+						}
+					}
+				},
+				console
+			});
+			const document = window.document;
+			const script = document.createElement('script');
+
+			script.type = 'module';
+			script.textContent = `import 'modules';`;
+
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			const testModule = document.createElement('test-module');
+
+			document.body.appendChild(testModule);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(testModule.shadowRoot?.innerHTML).toBe(`<div>
+            Expect lower case: "value"
+            Expect upper case: "VALUE"
+            Expect lower case. "value"
+            Expect trimmed lower case: "value"
+            Import URL: https://localhost:8080/base/js/modules/TestModuleElement.js
+            Resolved URL: https://localhost:8080/base/js/modules/Resolved.js
+        </div><div>Lazy-loaded module: true</div>`);
+		});
+
 		it('Handles loading of modules dynamically by code from standard javascript.', async () => {
 			const requests: string[] = [];
 			const window = new Window({

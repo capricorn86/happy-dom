@@ -276,8 +276,7 @@ describe('ServerRendererServer', () => {
 						`${protocol}//example.com/`
 					)}\n\n  ${Chalk.green('➜')}  ${Chalk.bold('URL:')}     ${Chalk.cyan(
 						`${protocol}//localhost:3000/`
-					)}\n`,
-					Chalk.bold(`• Rendered ${protocol}//example.com/path/`)
+					)}\n`
 				]);
 				expect(consoleError).toEqual([]);
 			});
@@ -421,14 +420,13 @@ describe('ServerRendererServer', () => {
 						...(cacheMode === 'enabled'
 							? Array(4).fill(
 									Chalk.bold(`• Waiting for ongoing rendering of ${protocol}//example.com/path/`)
-								)
+							  )
 							: []),
-						Chalk.bold(`• Rendered ${protocol}//example.com/path/`),
 						...(cacheMode === 'enabled'
 							? Array(4).fill(
 									Chalk.bold(`• Using cached response for ${protocol}//example.com/path/`)
-								)
-							: Array(4).fill(Chalk.bold(`• Rendered ${protocol}//example.com/path/`)))
+							  )
+							: [])
 					]);
 					expect(consoleError).toEqual([]);
 				});
@@ -572,10 +570,9 @@ describe('ServerRendererServer', () => {
 						)}\n\n  ${Chalk.green('➜')}  ${Chalk.bold('URL:')}     ${Chalk.cyan(
 							`${protocol}//localhost:3000/`
 						)}\n`,
-						Chalk.bold(`• Rendered ${protocol}//example.com/path/`),
 						...(cacheMode === 'enabled'
 							? [Chalk.bold(`• Using cached response for ${protocol}//example.com/path/`)]
-							: [Chalk.bold(`• Rendered ${protocol}//example.com/path/`)])
+							: [])
 					]);
 					expect(consoleError).toEqual([]);
 				});
@@ -698,7 +695,6 @@ describe('ServerRendererServer', () => {
 					)}\n\n  ${Chalk.green('➜')}  ${Chalk.bold('URL:')}     ${Chalk.cyan(
 						`${protocol}//localhost:3000/`
 					)}\n`,
-					Chalk.bold(`• Rendered ${protocol}//example.com/path/`),
 					Chalk.red(`\n✖ Failed to render ${protocol}//example.com/path/:\nError: Failure\n`)
 				]);
 				expect(consoleError).toEqual([]);
