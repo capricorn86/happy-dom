@@ -29,7 +29,7 @@ export default class ChildNodeUtility {
 		const parent = <IParentNode>childNode[PropertySymbol.parentNode];
 
 		if (!parent) {
-			throw new DOMException('This element has no parent node.');
+			return;
 		}
 
 		for (const node of nodes) {
