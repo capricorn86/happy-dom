@@ -1,4 +1,3 @@
-import DOMException from '../../exception/DOMException.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Node from '../node/Node.js';
 import IParentNode from '../parent-node/IParentNode.js';
