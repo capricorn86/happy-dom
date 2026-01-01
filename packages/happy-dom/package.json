@@ -38,10 +38,10 @@
 		"@types/node": "^20.0.0"
 	},
 	"devDependencies": {
-		"@vitest/ui": "^3.2.3",
+		"@vitest/ui": "^4.0.16",
 		"@webref/css": "6.6.2",
 		"typescript": "^5.8.3",
-		"vitest": "^3.2.2"
+		"vitest": "^4.0.16"
 	},
 	"engines": {
 		"node": ">=20.0.0"
