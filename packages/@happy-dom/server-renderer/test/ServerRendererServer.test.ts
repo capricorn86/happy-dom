@@ -420,12 +420,12 @@ describe('ServerRendererServer', () => {
 						...(cacheMode === 'enabled'
 							? Array(4).fill(
 									Chalk.bold(`• Waiting for ongoing rendering of ${protocol}//example.com/path/`)
-							  )
+								)
 							: []),
 						...(cacheMode === 'enabled'
 							? Array(4).fill(
 									Chalk.bold(`• Using cached response for ${protocol}//example.com/path/`)
-							  )
+								)
 							: [])
 					]);
 					expect(consoleError).toEqual([]);

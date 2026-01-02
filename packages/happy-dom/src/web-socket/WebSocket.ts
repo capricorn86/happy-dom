@@ -19,12 +19,18 @@ const SECURE_PROTOCOL_REGEXP = /^[!#$%&'*+\-.^_`|~\dA-Za-z]+$/;
  * @see https://developer.mozilla.org/en-US/docs/Web/API/WebSocket
  */
 export default class WebSocket extends EventTarget {
+	public static readonly CONNECTING: number = WebSocketReadyStateEnum.connecting;
+	public static readonly OPEN: number = WebSocketReadyStateEnum.open;
+	public static readonly CLOSING: number = WebSocketReadyStateEnum.closing;
+	public static readonly CLOSED: number = WebSocketReadyStateEnum.closed;
+
 	#readyState: WebSocketReadyStateEnum = WebSocketReadyStateEnum.closed;
 	#extensions: string = '';
-	#webSocket: WS | null = null;
 	#binaryType: 'blob' | 'arraybuffer' = 'blob';
 	#error: Error | null = null;
 	#url: URL;
+
+	public [PropertySymbol.webSocket]: WS | null = null;
 
 	/**
 	 *
@@ -110,18 +116,27 @@ export default class WebSocket extends EventTarget {
 	 *
 	 * @returns The binary type.
 	 */
-	public get binaryType(): string {
+	public get binaryType(): 'blob' | 'arraybuffer' {
 		return this.#binaryType;
+	}
+
+	/**
+	 * Sets the binary type.
+	 *
+	 * @param value The binary type.
+	 */
+	public set binaryType(value: 'blob' | 'arraybuffer') {
+		if (value !== 'blob' && value !== 'arraybuffer') {
+			return;
+		}
+		this.#binaryType = value;
 	}
 
 	/**
 	 * Returns protocol.
 	 */
 	public get protocol(): string {
-		if (!this.#webSocket) {
-			return '';
-		}
-		return this.#webSocket.protocol;
+		return this[PropertySymbol.webSocket]?.protocol || '';
 	}
 
 	/**
@@ -155,7 +170,7 @@ export default class WebSocket extends EventTarget {
 			);
 		}
 
-		this.#close(code, Buffer.from(<string>reason));
+		this.#close(code, reason ? Buffer.from(<string>reason) : undefined);
 	}
 
 	/**
@@ -177,7 +192,13 @@ export default class WebSocket extends EventTarget {
 			return;
 		}
 
+		if (typeof data === 'string') {
+			this[PropertySymbol.webSocket]?.send(data, { binary: false });
+			return;
+		}
+
 		let buffer: Buffer;
+
 		if (data instanceof ArrayBuffer) {
 			buffer = Buffer.from(new Uint8Array(data));
 		} else if (data instanceof Blob) {
@@ -187,10 +208,10 @@ export default class WebSocket extends EventTarget {
 		} else if (ArrayBuffer.isView(data)) {
 			buffer = Buffer.from(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
 		} else {
-			buffer = Buffer.from(typeof data === 'string' ? data : String(data));
+			buffer = Buffer.from(String(data));
 		}
 
-		this.#webSocket?.send(buffer, { binary: typeof data !== 'string' });
+		this[PropertySymbol.webSocket]?.send(buffer, { binary: true });
 	}
 
 	/**
@@ -220,7 +241,7 @@ export default class WebSocket extends EventTarget {
 
 		this.#readyState = WebSocketReadyStateEnum.connecting;
 
-		this.#webSocket = new WS(url, protocols, {
+		this[PropertySymbol.webSocket] = new WS(url, protocols, {
 			headers: {
 				'user-agent': window.navigator.userAgent,
 				cookie: CookieStringUtility.cookiesToString(cookies),
@@ -228,14 +249,17 @@ export default class WebSocket extends EventTarget {
 			},
 			rejectUnauthorized: !browserContext.browser.settings.fetch.disableStrictSSL
 		});
-		this.#webSocket.once('open', () => {
+		this[PropertySymbol.webSocket].once('open', () => {
 			this.#onConnectionEstablished();
 		});
-		this.#webSocket.on('message', this.#onMessageReceived.bind(this));
-		this.#webSocket.once('close', (code: number, reason: Buffer<ArrayBufferLike>) => {
-			this.#onConnectionClosed(code, reason);
-		});
-		this.#webSocket.once('upgrade', ({ headers }) => {
+		this[PropertySymbol.webSocket].on('message', this.#onMessageReceived.bind(this));
+		this[PropertySymbol.webSocket].once(
+			'close',
+			(code: number, reason: Buffer<ArrayBufferLike>) => {
+				this.#onConnectionClosed(code, reason);
+			}
+		);
+		this[PropertySymbol.webSocket].once('upgrade', ({ headers }) => {
 			if (headers['set-cookie'] !== undefined) {
 				const cookieStrings = Array.isArray(headers['set-cookie'])
 					? headers['set-cookie']
@@ -248,7 +272,7 @@ export default class WebSocket extends EventTarget {
 				}
 			}
 		});
-		this.#webSocket.once('error', (error: Error) => {
+		this[PropertySymbol.webSocket].once('error', (error: Error) => {
 			// We only need to store the error for debugging purposes and to know that it wasn't a clean close.
 			// The 'close' event will be emitted afterwards.
 			this.#error = error;
@@ -264,15 +288,15 @@ export default class WebSocket extends EventTarget {
 	 */
 	#close(code?: number, reason?: string | Buffer<ArrayBufferLike>): void {
 		if (this.readyState === WebSocketReadyStateEnum.connecting) {
-			if (this.#webSocket) {
-				this.#webSocket.terminate();
+			if (this[PropertySymbol.webSocket]) {
+				this[PropertySymbol.webSocket].terminate();
 			} else {
 				this.#readyState = WebSocketReadyStateEnum.closing;
 			}
-		} else if (this.#webSocket && this.readyState === WebSocketReadyStateEnum.open) {
-			this.#webSocket.close(code, reason);
+		} else if (this[PropertySymbol.webSocket] && this.readyState === WebSocketReadyStateEnum.open) {
+			this[PropertySymbol.webSocket].close(code, reason);
 		}
-		this.#webSocket = null;
+		this[PropertySymbol.webSocket] = null;
 	}
 
 	/**
@@ -281,8 +305,8 @@ export default class WebSocket extends EventTarget {
 	 * @see https://html.spec.whatwg.org/multipage/web-sockets.html#feedback-from-the-protocol
 	 */
 	#onConnectionEstablished(): void {
-		if (this.#webSocket?.extensions) {
-			this.#extensions = Object.keys(this.#webSocket!.extensions).join(', ');
+		if (this[PropertySymbol.webSocket]?.extensions) {
+			this.#extensions = Object.keys(this[PropertySymbol.webSocket]!.extensions).join(', ');
 		}
 		this.#readyState = WebSocketReadyStateEnum.open;
 		this.dispatchEvent(new this[PropertySymbol.window].Event('open'));
@@ -330,7 +354,7 @@ export default class WebSocket extends EventTarget {
 		if (isBinary) {
 			switch (this.binaryType) {
 				case 'arraybuffer':
-					if (data instanceof ArrayBuffer) {
+					if (data instanceof window.ArrayBuffer) {
 						dataForEvent = data;
 					} else if (Array.isArray(data)) {
 						dataForEvent = this.#convertToArrayBuffer(Buffer.concat(data));
