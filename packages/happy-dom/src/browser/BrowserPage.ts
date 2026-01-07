@@ -119,6 +119,23 @@ export default class BrowserPage implements IBrowserPage {
 	}
 
 	/**
+	 * Evaluates a module in the page's context.
+	 *
+	 * @param options Options.
+	 * @param options.url URL.
+	 * @param options.type Module type.
+	 * @param options.code Code.
+	 * @returns Module exports.
+	 */
+	public evaluateModule(options: {
+		url?: string;
+		type?: 'esm' | 'css' | 'json';
+		code?: string;
+	}): Promise<Record<string, any>> {
+		return this.mainFrame.evaluateModule(options);
+	}
+
+	/**
 	 * Sets the viewport.
 	 *
 	 * @param viewport Viewport.

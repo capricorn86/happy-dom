@@ -1,0 +1,5 @@
+{
+	"name": "test-package",
+	"main": "TestModuleElement.js",
+	"type": "module"
+}
