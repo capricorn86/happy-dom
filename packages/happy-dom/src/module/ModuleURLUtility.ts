@@ -165,7 +165,7 @@ export default class ModuleURLUtility {
 					: packageJson.exports[key].import;
 				if (importEntry) {
 					const regExp = new RegExp(
-						`^${key.replace('./', '').replace('.', '\\.').replace('*', '(.*)')}$`
+						`^${key.replace('./', '').replace(/\./g, '\\.').replace(/\*/g, '(.*)')}$`
 					);
 					const match = subPath.match(regExp);
 					if (match) {

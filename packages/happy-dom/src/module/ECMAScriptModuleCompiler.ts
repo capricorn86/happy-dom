@@ -266,7 +266,7 @@ export default class ECMAScriptModuleCompiler {
 						if (!match[7] || match[7] === 'esm') {
 							resolvableCircularImports.push({ url, properties });
 						}
-						newCodeStart += `let {${properties.map((property) => (property.alias ? `"${property.name.replace(/"/g, '\\"')}": ${property.alias}` : property.name)).join(', ')}} = $happy_dom.imports.get('${url}')${match[8]}`;
+						newCodeStart += `let {${properties.map((property) => (property.alias ? `"${property.name}": ${property.alias}` : property.name)).join(', ')}} = $happy_dom.imports.get('${url}')${match[8]}`;
 					} else if (importMatch[2]) {
 						// Import all as
 						newCodeStart += `const ${importMatch[2]} = $happy_dom.imports.get('${url}')${match[8]}`;
