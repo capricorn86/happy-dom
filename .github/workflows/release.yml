@@ -122,7 +122,10 @@ jobs:
           npm whoami
 
       - name: Publish packages
-        run: npm publish --workspaces --otp=${{ github.event.inputs.password }}
+        run: |
+          OTP=$(cat $GITHUB_EVENT_PATH | jq -r '.inputs.password' )
+          echo "::add-mask::$OTP"
+          npm publish --workspaces --otp=${ OTP }
 
   create-release:
     runs-on: ubuntu-latest
