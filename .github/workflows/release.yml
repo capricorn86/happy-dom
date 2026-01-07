@@ -4,13 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       author:
-        description: 'Publish Author (GitHub Username)'
+        description: 'GitHub Author Username'
         required: true
         default: 'capricorn86'
-      password:
-        description: '2FA Password'
-        required: true
-        default: ''
 
 jobs:
   check-next-version:
@@ -122,10 +118,7 @@ jobs:
           npm whoami
 
       - name: Publish packages
-        run: |
-          OTP=$(cat $GITHUB_EVENT_PATH | jq -r '.inputs.password' )
-          echo "::add-mask::$OTP"
-          npm publish --workspaces --otp=${ OTP }
+        run: npm publish --workspaces
 
   create-release:
     runs-on: ubuntu-latest
