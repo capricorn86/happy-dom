@@ -1582,6 +1582,37 @@ DOMException: Failed to perform request to "https://localhost:8080/base/js/utili
 					)
 			).toBe(true);
 		});
+
+		it('Handles circular module dependencies.', async () => {
+			const window = new Window({
+				url: 'https://localhost:8080/',
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
+					fetch: {
+						virtualServers: [
+							{
+								url: 'https://localhost:8080/base/js/',
+								directory: './test/nodes/html-script-element/modules-with-circular-dependency/'
+							}
+						]
+					}
+				}
+			});
+			const document = window.document;
+			const script = document.createElement('script');
+
+			script.type = 'module';
+			script.textContent = `
+                import { circularFunction } from './base/js/TopDependency.js';
+                console.log(circularFunction());
+            `;
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(window.happyDOM.virtualConsolePrinter.readAsString()).toBe('topFunction() called\n');
+		});
 	});
 
 	describe('static supports()', () => {
