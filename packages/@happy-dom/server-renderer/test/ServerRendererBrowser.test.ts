@@ -33,6 +33,9 @@ describe('ServerRendererBrowser', () => {
 				createdDirectories.push(path);
 				return Promise.resolve();
 			});
+			vi.spyOn(FS.promises, 'readdir').mockImplementation(async (): Promise<any> => {
+				return Promise.reject(new Error('Directory does not exist'));
+			});
 			const browserRenderer = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
 					browser: {
@@ -56,7 +59,7 @@ describe('ServerRendererBrowser', () => {
 					statusText: 'OK'
 				}
 			]);
-			expect(createdDirectories).toEqual([Path.resolve('./happy-dom/cache')]);
+			expect(createdDirectories).toEqual([]);
 		});
 
 		it('Renders an item HTML string without output file.', async () => {
@@ -64,6 +67,9 @@ describe('ServerRendererBrowser', () => {
 			vi.spyOn(FS.promises, 'mkdir').mockImplementation(async (path: any): Promise<any> => {
 				createdDirectories.push(path);
 				return Promise.resolve();
+			});
+			vi.spyOn(FS.promises, 'readdir').mockImplementation(async (): Promise<any> => {
+				return Promise.reject(new Error('Directory does not exist'));
 			});
 			const browserRenderer = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
@@ -90,7 +96,7 @@ describe('ServerRendererBrowser', () => {
 					statusText: null
 				}
 			]);
-			expect(createdDirectories).toEqual([Path.resolve('./happy-dom/cache')]);
+			expect(createdDirectories).toEqual([]);
 		});
 
 		it('Renders multiple items without output file.', async () => {
@@ -107,6 +113,9 @@ describe('ServerRendererBrowser', () => {
 			vi.spyOn(FS.promises, 'mkdir').mockImplementation(async (path: any): Promise<any> => {
 				createdDirectories.push(path);
 				return Promise.resolve();
+			});
+			vi.spyOn(FS.promises, 'readdir').mockImplementation(async (): Promise<any> => {
+				return Promise.reject(new Error('Directory does not exist'));
 			});
 			const browserRenderer = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
@@ -133,7 +142,7 @@ describe('ServerRendererBrowser', () => {
 					statusText: 'OK'
 				}))
 			);
-			expect(createdDirectories).toEqual([Path.resolve('./happy-dom/cache')]);
+			expect(createdDirectories).toEqual([]);
 		});
 
 		it('Renders multiple items with output file.', async () => {
@@ -160,6 +169,9 @@ describe('ServerRendererBrowser', () => {
 			vi.spyOn(FS.promises, 'mkdir').mockImplementation(async (path: any): Promise<any> => {
 				createdDirectories.push(path);
 				return Promise.resolve();
+			});
+			vi.spyOn(FS.promises, 'readdir').mockImplementation(async (): Promise<any> => {
+				return Promise.reject(new Error('Directory does not exist'));
 			});
 			vi.spyOn(FS.promises, 'writeFile').mockImplementation(async (filePath: any, content: any) => {
 				writtenFiles.push({ filePath, content });
