@@ -1,9 +1,16 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
+    inputs:
+      author:
+        description: 'Publish Author (GitHub Username)'
+        required: true
+        default: 'capricorn86'
+      password:
+        description: '2FA Password'
+        required: true
+        default: ''
 
 jobs:
   check-next-version:
@@ -115,7 +122,7 @@ jobs:
           npm whoami
 
       - name: Publish packages
-        run: npm publish --workspaces
+        run: npm publish --workspaces --otp=${{ github.event.inputs.password }}
 
   create-release:
     runs-on: ubuntu-latest
@@ -152,7 +159,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Generate release notes
-        run: node ./node_modules/.bin/happy-release-notes --author=githubUsername > ./RELEASE_NOTES.md
+        run: node ./node_modules/.bin/happy-release-notes --authorUsername=${{ github.event.inputs.author }} > ./RELEASE_NOTES.md
 
       - name: Create release
         id: create_release
