@@ -407,14 +407,14 @@ Timer #1
 					headers: { key1: 'value' },
 					outputFile: null,
 					pageConsole: `Error: Error
-    at https://example.com/gb/en/:1:65
+    at https://example.com/gb/en/:1:59
     at Timeout._onTimeout (/window/BrowserWindow.ts:0:0)
     at listOnTimeout (node:internal/timers:0:0)
     at processTimers (node:internal/timers:0:0)
 `,
 					pageErrors: [
 						`Error: Error
-    at https://example.com/gb/en/:1:65
+    at https://example.com/gb/en/:1:59
     at Timeout._onTimeout (/window/BrowserWindow.ts:0:0)
     at listOnTimeout (node:internal/timers:0:0)
     at processTimers (node:internal/timers:0:0)`
