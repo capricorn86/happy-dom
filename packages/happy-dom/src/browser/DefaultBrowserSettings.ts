@@ -5,13 +5,17 @@ import IBrowserSettings from './types/IBrowserSettings.js';
 
 export default <IBrowserSettings>{
 	disableJavaScriptEvaluation: false,
+	enableJavaScriptEvaluation: false,
 	disableJavaScriptFileLoading: false,
 	disableCSSFileLoading: false,
 	disableIframePageLoading: false,
 	disableComputedStyleRendering: false,
+	handleDisabledFileLoadingAsSuccess: false,
 	disableErrorCapturing: false,
 	errorCapture: BrowserErrorCaptureEnum.tryAndCatch,
 	enableFileSystemHttpRequests: false,
+	suppressCodeGenerationFromStringsWarning: false,
+	suppressInsecureJavaScriptEnvironmentWarning: false,
 	timer: {
 		maxTimeout: -1,
 		maxIntervalTime: -1,
@@ -22,14 +26,20 @@ export default <IBrowserSettings>{
 		disableSameOriginPolicy: false,
 		disableStrictSSL: false,
 		interceptor: null,
+		requestHeaders: null,
 		virtualServers: null
+	},
+	module: {
+		resolveNodeModules: null,
+		urlResolver: null
 	},
 	navigation: {
 		disableMainFrameNavigation: false,
 		disableChildFrameNavigation: false,
 		disableChildPageNavigation: false,
 		disableFallbackToSetURL: false,
-		crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.anyOrigin
+		crossOriginPolicy: BrowserNavigationCrossOriginPolicyEnum.anyOrigin,
+		beforeContentCallback: null
 	},
 	navigator: {
 		userAgent: `Mozilla/5.0 (X11; ${
@@ -45,5 +55,10 @@ export default <IBrowserSettings>{
 	},
 	debug: {
 		traceWaitUntilComplete: -1
+	},
+	viewport: {
+		width: 1024,
+		height: 768,
+		devicePixelRatio: 1
 	}
 };

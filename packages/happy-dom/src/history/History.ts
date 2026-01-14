@@ -1,7 +1,6 @@
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import HistoryScrollRestorationEnum from './HistoryScrollRestorationEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import IHistoryItem from './IHistoryItem.js';
 import BrowserFrameURL from '../browser/utilities/BrowserFrameURL.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import BrowserWindow from '../window/BrowserWindow.js';
@@ -15,7 +14,6 @@ import BrowserWindow from '../window/BrowserWindow.js';
 export default class History {
 	#browserFrame: IBrowserFrame | null;
 	#window: BrowserWindow;
-	#currentHistoryItem: IHistoryItem;
 
 	/**
 	 * Constructor.
@@ -30,22 +28,6 @@ export default class History {
 
 		this.#browserFrame = browserFrame;
 		this.#window = window;
-
-		const history = browserFrame[PropertySymbol.history];
-		let currentHistoryItem: IHistoryItem | null = null;
-
-		for (let i = history.length - 1; i >= 0; i--) {
-			if (history[i].isCurrent) {
-				currentHistoryItem = history[i];
-				break;
-			}
-		}
-
-		if (!currentHistoryItem) {
-			throw new Error('No current history item found.');
-		}
-
-		this.#currentHistoryItem = currentHistoryItem;
 	}
 
 	/**
@@ -54,7 +36,7 @@ export default class History {
 	 * @returns History length.
 	 */
 	public get length(): number {
-		return this.#browserFrame?.[PropertySymbol.history].length || 0;
+		return this.#browserFrame?.[PropertySymbol.history].items.length || 0;
 	}
 
 	/**
@@ -63,7 +45,7 @@ export default class History {
 	 * @returns State.
 	 */
 	public get state(): object | null {
-		return this.#currentHistoryItem.state;
+		return this.#browserFrame?.[PropertySymbol.history].currentItem.state || null;
 	}
 
 	/**
@@ -72,7 +54,10 @@ export default class History {
 	 * @returns Sroll restoration.
 	 */
 	public get scrollRestoration(): HistoryScrollRestorationEnum {
-		return this.#currentHistoryItem.scrollRestoration;
+		return (
+			this.#browserFrame?.[PropertySymbol.history].currentItem.scrollRestoration ||
+			HistoryScrollRestorationEnum.auto
+		);
 	}
 
 	/**
@@ -84,7 +69,10 @@ export default class History {
 		switch (scrollRestoration) {
 			case HistoryScrollRestorationEnum.auto:
 			case HistoryScrollRestorationEnum.manual:
-				this.#currentHistoryItem.scrollRestoration = scrollRestoration;
+				const currentItem = this.#browserFrame?.[PropertySymbol.history].currentItem;
+				if (currentItem) {
+					currentItem.scrollRestoration = scrollRestoration;
+				}
 				break;
 		}
 	}
@@ -126,65 +114,7 @@ export default class History {
 	 * @param _unused Unused.
 	 * @param [url] URL.
 	 */
-	public pushState(state: object, _unused: any, url?: string | URL): void {
-		if (this.#window.closed || !this.#browserFrame) {
-			return;
-		}
-
-		const history = this.#browserFrame?.[PropertySymbol.history];
-
-		if (!history) {
-			return;
-		}
-
-		const location = this.#window[PropertySymbol.location];
-		const newURL = url ? BrowserFrameURL.getRelativeURL(this.#browserFrame, url) : location;
-
-		if (url && newURL.origin !== location.origin) {
-			throw new this.#window.DOMException(
-				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${location.origin}' and URL '${location.href}'.`,
-				DOMExceptionNameEnum.securityError
-			);
-		}
-
-		let previousHistoryItem;
-
-		for (let i = history.length - 1; i >= 0; i--) {
-			if (history[i].isCurrent) {
-				previousHistoryItem = history[i];
-				previousHistoryItem.isCurrent = false;
-
-				// We need to remove all history items after the current one.
-				history.length = i + 1;
-				break;
-			}
-		}
-
-		const newHistoryItem: IHistoryItem = {
-			title: this.#window.document.title,
-			href: newURL.href,
-			state: JSON.parse(JSON.stringify(state)),
-			scrollRestoration: this.#currentHistoryItem.scrollRestoration,
-			method: previousHistoryItem?.method || 'GET',
-			formData: previousHistoryItem?.formData || null,
-			isCurrent: true
-		};
-
-		history.push(newHistoryItem);
-
-		location[PropertySymbol.setURL](this.#browserFrame, newHistoryItem.href);
-
-		this.#currentHistoryItem = newHistoryItem;
-	}
-
-	/**
-	 * This method modifies the current history entry, replacing it with a new state.
-	 *
-	 * @param state State.
-	 * @param _unused Unused.
-	 * @param [url] URL.
-	 */
-	public replaceState(state: object, _unused: any, url?: string | URL): void {
+	public pushState(state: any, _unused: any, url?: string | URL): void {
 		if (!this.#browserFrame || this.#window.closed) {
 			return;
 		}
@@ -195,37 +125,87 @@ export default class History {
 			return;
 		}
 
+		if (arguments.length < 2) {
+			throw new this.#window.TypeError(
+				`Failed to execute 'pushState' on 'History': 2 arguments required, but only ${arguments.length} present.`
+			);
+		}
+
 		const location = this.#window[PropertySymbol.location];
 		const newURL = url ? BrowserFrameURL.getRelativeURL(this.#browserFrame, url) : location;
 
 		if (url && newURL.origin !== location.origin) {
 			throw new this.#window.DOMException(
-				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${location.origin}' and URL '${location.href}'.`,
+				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${
+					location.origin
+				}' and URL '${location.href}'.`,
 				DOMExceptionNameEnum.securityError
 			);
 		}
 
-		for (let i = history.length - 1; i >= 0; i--) {
-			if (history[i].isCurrent) {
-				const newHistoryItem = {
-					title: this.#window.document.title,
-					href: newURL.href,
-					state: JSON.parse(JSON.stringify(state)),
-					scrollRestoration: history[i].scrollRestoration,
-					method: history[i].method,
-					formData: history[i].formData,
-					isCurrent: true
-				};
+		history.currentItem.popState = true;
 
-				history[i] = newHistoryItem;
-				this.#currentHistoryItem = newHistoryItem;
+		history.push({
+			title: this.#window.document.title,
+			href: newURL.href,
+			state,
+			popState: true,
+			scrollRestoration: history.currentItem.scrollRestoration,
+			method: history.currentItem.method || 'GET',
+			formData: history.currentItem.formData || null
+		});
 
-				break;
-			}
+		location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.href);
+	}
+
+	/**
+	 * This method modifies the current history entry, replacing it with a new state.
+	 *
+	 * @param state State.
+	 * @param _unused Unused.
+	 * @param [url] URL.
+	 */
+	public replaceState(state: any, _unused: any, url?: string | URL): void {
+		if (!this.#browserFrame || this.#window.closed) {
+			return;
 		}
 
+		const history = this.#browserFrame?.[PropertySymbol.history];
+
+		if (!history) {
+			return;
+		}
+
+		if (arguments.length < 2) {
+			throw new this.#window.TypeError(
+				`Failed to execute 'pushState' on 'History': 2 arguments required, but only ${arguments.length} present.`
+			);
+		}
+
+		const location = this.#window[PropertySymbol.location];
+		const newURL = url ? BrowserFrameURL.getRelativeURL(this.#browserFrame, url) : location;
+
+		if (url && newURL.origin !== location.origin) {
+			throw new this.#window.DOMException(
+				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${
+					location.origin
+				}' and URL '${location.href}'.`,
+				DOMExceptionNameEnum.securityError
+			);
+		}
+
+		history.replace({
+			title: this.#window.document.title,
+			href: newURL.href,
+			state,
+			popState: history.currentItem.popState,
+			scrollRestoration: history.currentItem.scrollRestoration,
+			method: history.currentItem.method,
+			formData: history.currentItem.formData
+		});
+
 		if (url) {
-			location[PropertySymbol.setURL](this.#browserFrame, this.#currentHistoryItem.href);
+			location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.href);
 		}
 	}
 

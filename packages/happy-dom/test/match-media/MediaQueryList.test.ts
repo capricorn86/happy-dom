@@ -431,7 +431,7 @@ describe('MediaQueryList', () => {
 			expect(
 				new MediaQueryList({ window: window, media: '(400px <= width <= 1024px)' }).matches
 			).toBe(true);
-			expect(new MediaQueryList({ window: window, media: '(2000px => width)' }).matches).toBe(true);
+			expect(new MediaQueryList({ window: window, media: '(2000px >= width)' }).matches).toBe(true);
 			expect(new MediaQueryList({ window: window, media: '(2000px > width)' }).matches).toBe(true);
 			expect(new MediaQueryList({ window: window, media: '(700px > width)' }).matches).toBe(false);
 			expect(
@@ -461,7 +461,7 @@ describe('MediaQueryList', () => {
 			expect(
 				new MediaQueryList({ window: window, media: '(400px <= height <= 768px)' }).matches
 			).toBe(true);
-			expect(new MediaQueryList({ window: window, media: '(2000px => height)' }).matches).toBe(
+			expect(new MediaQueryList({ window: window, media: '(2000px >= height)' }).matches).toBe(
 				true
 			);
 			expect(new MediaQueryList({ window: window, media: '(2000px > height)' }).matches).toBe(true);

@@ -69,7 +69,20 @@ export default class GlobalWindow extends Window {
 	public unescape: (str: string) => string = globalThis.unescape;
 
 	/**
-	 * Setup of VM context.
+	 * @override
+	 */
+	public override [PropertySymbol.evaluateScript](
+		code: string,
+		options?: { filename?: string }
+	): any {
+		if (options?.filename) {
+			return this.eval(`${code}\n//# sourceURL=${options.filename}`);
+		}
+		return this.eval(code);
+	}
+
+	/**
+	 * @override
 	 */
 	protected override [PropertySymbol.setupVMContext](): void {
 		// Do nothing

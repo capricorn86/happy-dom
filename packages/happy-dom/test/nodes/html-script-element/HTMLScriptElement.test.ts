@@ -12,13 +12,16 @@ import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCapt
 import EventTarget from '../../../src/event/EventTarget.js';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import DOMTokenList from '../../../src/dom/DOMTokenList.js';
+import Path from 'path';
 
 describe('HTMLScriptElement', () => {
 	let window: Window;
 	let document: Document;
 
 	beforeEach(() => {
-		window = new Window();
+		window = new Window({
+			settings: { enableJavaScriptEvaluation: true, suppressCodeGenerationFromStringsWarning: true }
+		});
 		document = window.document;
 	});
 
@@ -38,21 +41,21 @@ describe('HTMLScriptElement', () => {
 			it('Returns the event listener.', () => {
 				const element = document.createElement('script');
 				element.setAttribute(`on${event}`, 'window.test = 1');
-				expect(element[`on${event}`]).toBeTypeOf('function');
-				element[`on${event}`](new Event(event));
-				expect(window['test']).toBe(1);
+				expect((<any>element)[`on${event}`]).toBeTypeOf('function');
+				(<any>element)[`on${event}`](new Event(event));
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 
 		describe(`set on${event}()`, () => {
 			it('Sets the event listener.', () => {
 				const element = document.createElement('script');
-				element[`on${event}`] = () => {
-					window['test'] = 1;
+				(<any>element)[`on${event}`] = () => {
+					(<any>window)['test'] = 1;
 				};
 				element.dispatchEvent(new Event(event));
 				expect(element.getAttribute(`on${event}`)).toBe(null);
-				expect(window['test']).toBe(1);
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 	}
@@ -62,14 +65,14 @@ describe('HTMLScriptElement', () => {
 			it(`Returns the "${property}" attribute.`, () => {
 				const element = document.createElement('script');
 				element.setAttribute(property, 'test');
-				expect(element[property]).toBe('test');
+				expect((<any>element)[property]).toBe('test');
 			});
 		});
 
 		describe(`set ${property}()`, () => {
 			it(`Sets the attribute "${property}".`, () => {
 				const element = document.createElement('script');
-				element[property] = 'test';
+				(<any>element)[property] = 'test';
 				expect(element.getAttribute(property)).toBe('test');
 			});
 		});
@@ -80,14 +83,14 @@ describe('HTMLScriptElement', () => {
 			it(`Returns "true" if the "${property}" attribute is defined.`, () => {
 				const element = document.createElement('script');
 				element.setAttribute(property, '');
-				expect(element[property]).toBe(true);
+				expect((<any>element)[property]).toBe(true);
 			});
 		});
 
 		describe(`set ${property}()`, () => {
 			it(`Sets the "${property}" attribute to an empty string if set to "true".`, () => {
 				const element = document.createElement('script');
-				element[property] = true;
+				(<any>element)[property] = true;
 				expect(element.getAttribute(property)).toBe('');
 			});
 		});
@@ -211,13 +214,9 @@ describe('HTMLScriptElement', () => {
 	});
 
 	describe('set src()', () => {
-		it('Sets the attribute "src".', () => {
-			const element = document.createElement('script');
-			element.src = 'test';
-			expect(element.getAttribute('src')).toBe('test');
-		});
-
-		it('Loads and evaluates an external script when the attribute "src" is set and the element is connected to DOM.', async () => {
+		it('Does not load external script when JavaScript is disabled.', async () => {
+			const window = new Window();
+			const document = window.document;
 			const element = document.createElement('script');
 
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
@@ -236,7 +235,60 @@ describe('HTMLScriptElement', () => {
 
 			await window.happyDOM?.waitUntilComplete();
 
-			expect(window['test']).toBe('test');
+			expect((<any>window)['test']).toBe(undefined);
+		});
+
+		it('Does not load external module when JavaScript is disabled.', async () => {
+			const window = new Window();
+			const document = window.document;
+			const element = document.createElement('script');
+
+			element.type = 'module';
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+				async () =>
+					<Response>{
+						text: async () => 'globalThis.test = "test";',
+						ok: true,
+						status: 200
+					}
+			);
+
+			document.body.appendChild(element);
+
+			element.src = 'https://localhost:8080/path/to/script.js';
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect((<any>window)['test']).toBe(undefined);
+		});
+
+		it('Sets the attribute "src".', () => {
+			const element = document.createElement('script');
+			element.src = 'test';
+			expect(element.getAttribute('src')).toBe('test');
+		});
+
+		it('Loads and evaluates an external script when the property "src" is set and the element is connected to DOM.', async () => {
+			const element = document.createElement('script');
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+				async () =>
+					<Response>{
+						text: async () => 'globalThis.test = "test";',
+						ok: true,
+						status: 200
+					}
+			);
+
+			document.body.appendChild(element);
+
+			element.async = true;
+			element.src = 'https://localhost:8080/path/to/script.js';
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect((<any>window)['test']).toBe('test');
 		});
 
 		it('Does not evaluate script if the element is not connected to DOM.', async () => {
@@ -256,7 +308,52 @@ describe('HTMLScriptElement', () => {
 
 			await window.happyDOM?.waitUntilComplete();
 
-			expect(window['test']).toBe(undefined);
+			expect((<any>window)['test']).toBe(undefined);
+		});
+
+		it('Loads and evaluates an external script when the attribute "src" is set and the element is connected to DOM.', async () => {
+			const element = document.createElement('script');
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+				async () =>
+					<Response>{
+						text: async () => 'globalThis.test = "test";',
+						ok: true,
+						status: 200
+					}
+			);
+
+			document.body.appendChild(element);
+
+			element.async = true;
+			element.setAttribute('src', 'https://localhost:8080/path/to/script.js');
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect((<any>window)['test']).toBe('test');
+		});
+
+		it('Loads and evaluates an external module script when the attribute "src" is set and the element is connected to DOM.', async () => {
+			const element = document.createElement('script');
+
+			element.type = 'module';
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+				async () =>
+					<Response>{
+						text: async () => 'globalThis.test = "test";',
+						ok: true,
+						status: 200
+					}
+			);
+
+			document.body.appendChild(element);
+
+			element.setAttribute('src', 'https://localhost:8080/path/to/script.js');
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect((<any>window)['test']).toBe('test');
 		});
 	});
 
@@ -278,12 +375,65 @@ describe('HTMLScriptElement', () => {
 	});
 
 	describe('set isConnected()', () => {
+		it('Does not execute script when Javascript is disabled.', () => {
+			const window = new Window();
+			const document = window.document;
+			const element = document.createElement('script');
+			element.text = 'globalThis.test = "test";globalThis.currentScript = document.currentScript;';
+			document.body.appendChild(element);
+			expect((<any>window)['test']).toBe(undefined);
+			expect((<any>window)['currentScript']).toBe(undefined);
+		});
+
+		it('Does not load script when Javascript is disabled.', () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function (this: Fetch) {
+				return <Response>{
+					text: async () => 'globalThis.test = "test";',
+					ok: true
+				};
+			});
+
+			const window = new Window();
+			const document = window.document;
+			const element = document.createElement('script');
+			element.src = 'https://localhost:8080/path/to/script.js';
+			document.body.appendChild(element);
+			expect((<any>window)['test']).toBe(undefined);
+		});
+
+		it('Does not execute module script when Javascript is disabled.', () => {
+			const window = new Window();
+			const document = window.document;
+			const element = document.createElement('script');
+			element.type = 'module';
+			element.text = 'globalThis.test = "test";';
+			document.body.appendChild(element);
+			expect((<any>window)['test']).toBe(undefined);
+		});
+
+		it('Does not load module script when Javascript is disabled.', () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function (this: Fetch) {
+				return <Response>{
+					text: async () => 'globalThis.test = "test";',
+					ok: true
+				};
+			});
+
+			const window = new Window();
+			const document = window.document;
+			const element = document.createElement('script');
+			element.type = 'module';
+			element.src = 'https://localhost:8080/path/to/script.js';
+			document.body.appendChild(element);
+			expect((<any>window)['test']).toBe(undefined);
+		});
+
 		it('Evaluates the text content as code when appended to an element that is connected to the document.', () => {
 			const element = document.createElement('script');
 			element.text = 'globalThis.test = "test";globalThis.currentScript = document.currentScript;';
 			document.body.appendChild(element);
-			expect(window['test']).toBe('test');
-			expect(window['currentScript']).toBe(element);
+			expect((<any>window)['test']).toBe('test');
+			expect((<any>window)['currentScript']).toBe(element);
 		});
 
 		it('Evaluates the text content as code when inserted before an element that is connected to the document.', () => {
@@ -299,8 +449,8 @@ describe('HTMLScriptElement', () => {
 			document.body.insertBefore(div1, div2);
 			document.body.appendChild(element);
 
-			expect(window['test']).toBe('test');
-			expect(window['currentScript']).toBe(element);
+			expect((<any>window)['test']).toBe('test');
+			expect((<any>window)['currentScript']).toBe(element);
 		});
 
 		for (const attribute of [
@@ -313,8 +463,8 @@ describe('HTMLScriptElement', () => {
 				let loadEventTarget: EventTarget | null = null;
 				let loadEventCurrentTarget: EventTarget | null = null;
 
-				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
-					fetchedURL = this.request.url;
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function (this: Fetch) {
+					fetchedURL = (<any>this).request.url;
 					return <Response>{
 						text: async () =>
 							'globalThis.test = "test";globalThis.currentScript = document.currentScript;',
@@ -339,8 +489,8 @@ describe('HTMLScriptElement', () => {
 				expect(loadEventTarget).toBe(script);
 				expect(loadEventCurrentTarget).toBe(script);
 				expect(fetchedURL).toBe('https://localhost:8080/path/to/script.js');
-				expect(window['test']).toBe('test');
-				expect(window['currentScript']).toBe(script);
+				expect((<any>window)['test']).toBe('test');
+				expect((<any>window)['currentScript']).toBe(script);
 			});
 
 			it(`Triggers error event when loading external script asynchronously when the attribute "${attribute.name}" is set to "${attribute.value}".`, async () => {
@@ -379,17 +529,29 @@ describe('HTMLScriptElement', () => {
 		}
 
 		it('Loads external script synchronously with relative URL.', async () => {
-			const window = new Window({ url: 'https://localhost:8080/base/' });
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true
+				}
+			});
 			let fetchedWindow: BrowserWindow | null = null;
 			let fetchedURL: string | null = null;
 			let loadEvent: Event | null = null;
 			let loadEventTarget: EventTarget | null = null;
 			let loadEventCurrentTarget: EventTarget | null = null;
 
-			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(function (url: string) {
-				fetchedWindow = this.window;
+			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(function (
+				this: ResourceFetch,
+				url: string
+			) {
+				fetchedWindow = (<any>this).window;
 				fetchedURL = url;
-				return 'globalThis.test = "test";globalThis.currentScript = document.currentScript;';
+				return {
+					content: 'globalThis.test = "test";globalThis.currentScript = document.currentScript;',
+					virtualServerFile: null
+				};
 			});
 
 			const script = <HTMLScriptElement>window.document.createElement('script');
@@ -407,12 +569,18 @@ describe('HTMLScriptElement', () => {
 			expect(loadEventCurrentTarget).toBe(script);
 			expect(fetchedWindow).toBe(window);
 			expect(fetchedURL).toBe('https://localhost:8080/base/path/to/script.js');
-			expect(window['test']).toBe('test');
-			expect(window['currentScript']).toBe(script);
+			expect((<any>window)['test']).toBe('test');
+			expect((<any>window)['currentScript']).toBe(script);
 		});
 
 		it('Triggers error event when loading external script synchronously with relative URL.', () => {
-			const window = new Window({ url: 'https://localhost:8080/base/' });
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true
+				}
+			});
 			const thrownError = new Error('error');
 			let errorEvent: Event | null = null;
 
@@ -448,14 +616,14 @@ describe('HTMLScriptElement', () => {
 			const div = document.createElement('div');
 			div.innerHTML = '<script>globalThis.test = "test";</script>';
 			document.body.appendChild(div);
-			expect(window['test']).toBe(undefined);
+			expect((<any>window)['test']).toBe(undefined);
 		});
 
 		it('Does not evaluate code when added as outerHTML.', () => {
 			const div = document.createElement('div');
 			document.body.appendChild(div);
 			div.outerHTML = '<script>globalThis.test = "test";</script>';
-			expect(window['test']).toBe(undefined);
+			expect((<any>window)['test']).toBe(undefined);
 		});
 
 		it('Does not evaluate code if the element is not connected to DOM.', () => {
@@ -463,12 +631,12 @@ describe('HTMLScriptElement', () => {
 			const element = document.createElement('script');
 			element.text = 'window.test = "test";';
 			div.appendChild(element);
-			expect(window['test']).toBe(undefined);
+			expect((<any>window)['test']).toBe(undefined);
 		});
 
 		it('Evaluates the text content as code when using document.write().', () => {
 			document.write('<script>globalThis.test = "test";</script>');
-			expect(window['test']).toBe('test');
+			expect((<any>window)['test']).toBe('test');
 		});
 
 		it("Doesn't evaluate the text content as code when using DOMParser.parseFromString().", () => {
@@ -477,44 +645,50 @@ describe('HTMLScriptElement', () => {
 				'<script>globalThis.test = "test";</script>',
 				'text/html'
 			);
-			expect(window['test']).toBe(undefined);
+			expect((<any>window)['test']).toBe(undefined);
 			document.body.appendChild(result);
-			expect(window['test']).toBe(undefined);
+			expect((<any>window)['test']).toBe(undefined);
 		});
 
 		it('Loads and evaluates an external script when "src" attribute has been set, but does not evaluate text content.', () => {
 			const element = document.createElement('script');
 
-			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(
-				() => 'globalThis.testFetch = "test";'
-			);
+			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(() => ({
+				content: 'globalThis.testFetch = "test";',
+				virtualServerFile: null
+			}));
 
 			element.src = 'https://localhost:8080/path/to/script.js';
 			element.text = 'globalThis.testContent = "test";';
 
 			document.body.appendChild(element);
 
-			expect(window['testFetch']).toBe('test');
-			expect(window['testContent']).toBe(undefined);
+			expect((<any>window)['testFetch']).toBe('test');
+			expect((<any>window)['testContent']).toBe(undefined);
 		});
 
 		it('Does not load external scripts when "src" attribute has been set if the element is not connected to DOM.', () => {
 			const element = document.createElement('script');
 
-			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(
-				() => 'globalThis.testFetch = "test";'
-			);
+			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(() => ({
+				content: 'globalThis.testFetch = "test";',
+				virtualServerFile: null
+			}));
 
 			element.src = 'https://localhost:8080/path/to/script.js';
 			element.text = 'globalThis.test = "test";';
 
-			expect(window['testFetch']).toBe(undefined);
-			expect(window['testContent']).toBe(undefined);
+			expect((<any>window)['testFetch']).toBe(undefined);
+			expect((<any>window)['testContent']).toBe(undefined);
 		});
 
-		it('Triggers an error event when attempting to perform an asynchrounous request and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true".', () => {
+		it('Triggers an error event when attempting to perform an asynchronous request and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true".', () => {
 			window = new Window({
-				settings: { disableJavaScriptFileLoading: true }
+				settings: {
+					disableJavaScriptFileLoading: true,
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true
+				}
 			});
 			document = window.document;
 
@@ -540,9 +714,14 @@ describe('HTMLScriptElement', () => {
 			).toBe(true);
 		});
 
-		it('Triggers a load event when attempting to perform an asynchrounous request and the Happy DOM setting "disableJavaScriptFileLoading" and "handleDisabledFileLoadingAsSuccess" is set to "true".', () => {
+		it('Triggers a load event when attempting to perform an asynchronous request and the Happy DOM setting "disableJavaScriptFileLoading" and "handleDisabledFileLoadingAsSuccess" is set to "true".', () => {
 			window = new Window({
-				settings: { disableJavaScriptFileLoading: true, handleDisabledFileLoadingAsSuccess: true }
+				settings: {
+					disableJavaScriptFileLoading: true,
+					handleDisabledFileLoadingAsSuccess: true,
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true
+				}
 			});
 			document = window.document;
 
@@ -560,9 +739,13 @@ describe('HTMLScriptElement', () => {
 			expect((<Event>(<unknown>loadEvent)).type).toBe('load');
 		});
 
-		it('Triggers an error event when attempting to perform a synchrounous request and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true".', () => {
+		it('Triggers an error event when attempting to perform a synchronous request and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true".', () => {
 			window = new Window({
-				settings: { disableJavaScriptFileLoading: true }
+				settings: {
+					disableJavaScriptFileLoading: true,
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true
+				}
 			});
 			document = window.document;
 
@@ -587,9 +770,13 @@ describe('HTMLScriptElement', () => {
 			).toBe(true);
 		});
 
-		it('Triggers an error event when attempting to perform an asynchrounous request and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true".', () => {
+		it('Triggers an error event when attempting to perform an asynchronous request and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true".', () => {
 			window = new Window({
-				settings: { disableJavaScriptFileLoading: true }
+				settings: {
+					disableJavaScriptFileLoading: true,
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true
+				}
 			});
 			document = window.document;
 
@@ -615,9 +802,13 @@ describe('HTMLScriptElement', () => {
 			).toBe(true);
 		});
 
-		it('Triggers an error event when attempting to perform a synchrounous request and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true".', () => {
+		it('Triggers an error event when attempting to perform a synchronous request and the Happy DOM setting "disableJavaScriptFileLoading" is set to "true".', () => {
 			window = new Window({
-				settings: { disableJavaScriptFileLoading: true }
+				settings: {
+					disableJavaScriptFileLoading: true,
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true
+				}
 			});
 			document = window.document;
 
@@ -641,7 +832,7 @@ describe('HTMLScriptElement', () => {
 			).toBe(true);
 		});
 
-		it('Triggers an error event on Window when attempting to perform an asynchrounous request containing invalid JavaScript.', async () => {
+		it('Triggers an error event on Window when attempting to perform an asynchronous request containing invalid JavaScript.', async () => {
 			let errorEvent: ErrorEvent | null = null;
 
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
@@ -663,21 +854,26 @@ describe('HTMLScriptElement', () => {
 			await window.happyDOM?.waitUntilComplete();
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe(
-				'Invalid regular expression: missing /'
+				`Failed to parse JavaScript in 'https://localhost:8080/base/path/to/script/': Invalid regular expression: missing /`
 			);
 
 			const consoleOutput = window.happyDOM?.virtualConsolePrinter.readAsString() || '';
-			expect(consoleOutput.startsWith('SyntaxError: Invalid regular expression: missing /')).toBe(
-				true
-			);
+			expect(
+				consoleOutput.startsWith(`https://localhost:8080/base/path/to/script/:1
+(function anonymous($happy_dom) {try {globalThis.test = /;} catch (error) { $happy_dom.dispatchError(error); }})
+                                                        ^
+
+SyntaxError: Invalid regular expression: missing /`)
+			).toBe(true);
 		});
 
-		it('Triggers an error event on Window when attempting to perform a synchrounous request containing invalid JavaScript.', () => {
+		it('Triggers an error event on Window when attempting to perform a synchronous request containing invalid JavaScript.', () => {
 			let errorEvent: ErrorEvent | null = null;
 
-			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(
-				() => 'globalThis.test = /;'
-			);
+			vi.spyOn(ResourceFetch.prototype, 'fetchSync').mockImplementation(() => ({
+				content: 'globalThis.test = /;',
+				virtualServerFile: null
+			}));
 
 			window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
 
@@ -687,13 +883,17 @@ describe('HTMLScriptElement', () => {
 			document.body.appendChild(script);
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe(
-				'Invalid regular expression: missing /'
+				`Failed to parse JavaScript in 'https://localhost:8080/base/path/to/script/': Invalid regular expression: missing /`
 			);
 
 			const consoleOutput = window.happyDOM?.virtualConsolePrinter.readAsString() || '';
-			expect(consoleOutput.startsWith('SyntaxError: Invalid regular expression: missing /')).toBe(
-				true
-			);
+			expect(
+				consoleOutput.startsWith(`https://localhost:8080/base/path/to/script/:1
+(function anonymous($happy_dom) {try {globalThis.test = /;} catch (error) { $happy_dom.dispatchError(error); }})
+                                                        ^
+
+SyntaxError: Invalid regular expression: missing /`)
+			).toBe(true);
 		});
 
 		it('Triggers an error event on Window when appending an element that contains invalid Javascript.', () => {
@@ -707,18 +907,26 @@ describe('HTMLScriptElement', () => {
 			document.body.appendChild(element);
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe(
-				'Invalid regular expression: missing /'
+				`Failed to parse JavaScript in 'about:blank': Invalid regular expression: missing /`
 			);
 
 			const consoleOutput = window.happyDOM?.virtualConsolePrinter.readAsString() || '';
-			expect(consoleOutput.startsWith('SyntaxError: Invalid regular expression: missing /')).toBe(
-				true
-			);
+			expect(
+				consoleOutput.startsWith(`about:blank:1
+(function anonymous($happy_dom) {try {globalThis.test = /;} catch (error) { $happy_dom.dispatchError(error); }})
+                                                        ^
+
+SyntaxError: Invalid regular expression: missing /`)
+			).toBe(true);
 		});
 
 		it('Throws an exception when appending an element that contains invalid Javascript and the Happy DOM setting "disableErrorCapturing" is set to true.', () => {
 			window = new Window({
-				settings: { disableErrorCapturing: true }
+				settings: {
+					disableErrorCapturing: true,
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true
+				}
 			});
 			document = window.document;
 
@@ -728,12 +936,20 @@ describe('HTMLScriptElement', () => {
 
 			expect(() => {
 				document.body.appendChild(element);
-			}).toThrow(new TypeError('Invalid regular expression: missing /'));
+			}).toThrow(
+				new SyntaxError(
+					`Failed to parse JavaScript in 'about:blank': Invalid regular expression: missing /`
+				)
+			);
 		});
 
 		it('Throws an exception when appending an element that contains invalid Javascript and the Happy DOM setting "errorCapture" is set to "disabled".', () => {
 			window = new Window({
-				settings: { errorCapture: BrowserErrorCaptureEnum.disabled }
+				settings: {
+					errorCapture: BrowserErrorCaptureEnum.disabled,
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true
+				}
 			});
 			document = window.document;
 
@@ -743,14 +959,20 @@ describe('HTMLScriptElement', () => {
 
 			expect(() => {
 				document.body.appendChild(element);
-			}).toThrow(new TypeError('Invalid regular expression: missing /'));
+			}).toThrow(
+				new SyntaxError(
+					`Failed to parse JavaScript in 'about:blank': Invalid regular expression: missing /`
+				)
+			);
 		});
 
-		it('Handles loading of a modules.', async () => {
+		it('Handles loading of a modules with "src" attribute.', async () => {
 			const requests: string[] = [];
 			const window = new Window({
 				url: 'https://localhost:8080/base/',
 				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
 					fetch: {
 						interceptor: {
 							beforeAsyncRequest: async ({ request }) => {
@@ -774,7 +996,7 @@ describe('HTMLScriptElement', () => {
 			script.src = 'https://localhost:8080/base/js/TestModuleElement.js';
 			script.type = 'module';
 			script.addEventListener('load', () => {
-				modulesLoadedAfterLoadEvent = window['moduleLoadOrder'].slice();
+				modulesLoadedAfterLoadEvent = (<any>window)['moduleLoadOrder'].slice();
 			});
 
 			document.body.appendChild(script);
@@ -797,7 +1019,7 @@ describe('HTMLScriptElement', () => {
 				'https://localhost:8080/base/js/utilities/lazyload.js'
 			]);
 
-			expect(window['moduleLoadOrder']).toEqual([
+			expect((<any>window)['moduleLoadOrder']).toEqual([
 				'apostrophWrapper.js',
 				'StringUtilityClass.js',
 				'stringUtility.js',
@@ -817,6 +1039,300 @@ describe('HTMLScriptElement', () => {
             Expect upper case: "VALUE"
             Expect lower case. "value"
             Expect trimmed lower case: "value"
+            Import URL: https://localhost:8080/base/js/TestModuleElement.js
+            Resolved URL: https://localhost:8080/base/js/Resolved.js
+        </div><div>Lazy-loaded module: true</div>`);
+
+			expect(testModule.shadowRoot?.adoptedStyleSheets[0].cssRules[0].cssText).toBe(
+				'div { background: red; }'
+			);
+			expect(
+				window.getComputedStyle(<HTMLElement>testModule.shadowRoot?.querySelector('div'))
+					.backgroundColor
+			).toBe('red');
+		});
+
+		it('Handles loading of modules dynamically by code from a module.', async () => {
+			const requests: string[] = [];
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
+					fetch: {
+						interceptor: {
+							beforeAsyncRequest: async ({ request }) => {
+								requests.push(request.url);
+							}
+						},
+						virtualServers: [
+							{
+								url: 'https://localhost:8080/base/js/',
+								directory: './test/nodes/html-script-element/modules/'
+							}
+						]
+					}
+				},
+				console
+			});
+			const document = window.document;
+			const script = document.createElement('script');
+
+			script.type = 'module';
+			script.textContent = `import('./js/TestModuleElement.js');`;
+
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			const testModule = document.createElement('test-module');
+
+			document.body.appendChild(testModule);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(requests).toEqual([
+				'https://localhost:8080/base/js/TestModuleElement.js',
+				'https://localhost:8080/base/js/utilities/StringUtilityClass.js',
+				'https://localhost:8080/base/js/utilities/stringUtility.js',
+				'https://localhost:8080/base/js/json/data.json',
+				'https://localhost:8080/base/js/css/style.css',
+				'https://localhost:8080/base/js/utilities/apostrophWrapper.js',
+				'https://localhost:8080/base/js/utilities/lazyload.js'
+			]);
+
+			expect((<any>window)['moduleLoadOrder']).toEqual([
+				'apostrophWrapper.js',
+				'StringUtilityClass.js',
+				'stringUtility.js',
+				'TestModuleElement.js',
+				'lazyload.js'
+			]);
+
+			expect(testModule.shadowRoot?.innerHTML).toBe(`<div>
+            Expect lower case: "value"
+            Expect upper case: "VALUE"
+            Expect lower case. "value"
+            Expect trimmed lower case: "value"
+            Import URL: https://localhost:8080/base/js/TestModuleElement.js
+            Resolved URL: https://localhost:8080/base/js/Resolved.js
+        </div><div>Lazy-loaded module: true</div>`);
+
+			expect(testModule.shadowRoot?.adoptedStyleSheets[0].cssRules[0].cssText).toBe(
+				'div { background: red; }'
+			);
+			expect(
+				window.getComputedStyle(<HTMLElement>testModule.shadowRoot?.querySelector('div'))
+					.backgroundColor
+			).toBe('red');
+		});
+
+		it('Handles loading of modules with import with custom URL resolver when "settings.module.urlResolver" is defined.', async () => {
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
+					fetch: {
+						virtualServers: [
+							{
+								url: 'https://localhost:8080/base/js/',
+								directory: './test/nodes/html-script-element/modules/'
+							}
+						]
+					},
+					module: {
+						urlResolver: ({ url }) => {
+							if (url === 'resolved-module') {
+								return 'https://localhost:8080/base/js/TestModuleElement.js';
+							}
+							return url;
+						}
+					}
+				},
+				console
+			});
+			const document = window.document;
+			const script = document.createElement('script');
+
+			script.type = 'module';
+			script.textContent = `import 'resolved-module';`;
+
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			const testModule = document.createElement('test-module');
+
+			document.body.appendChild(testModule);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(testModule.shadowRoot?.innerHTML).toBe(`<div>
+            Expect lower case: "value"
+            Expect upper case: "VALUE"
+            Expect lower case. "value"
+            Expect trimmed lower case: "value"
+            Import URL: https://localhost:8080/base/js/TestModuleElement.js
+            Resolved URL: https://localhost:8080/base/js/Resolved.js
+        </div><div>Lazy-loaded module: true</div>`);
+		});
+
+		it('Handles loading of modules dynamically with custom URL resolver when "settings.module.urlResolver" is defined.', async () => {
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
+					fetch: {
+						virtualServers: [
+							{
+								url: 'https://localhost:8080/base/js/',
+								directory: './test/nodes/html-script-element/modules/'
+							}
+						]
+					},
+					module: {
+						urlResolver: ({ url }) => {
+							if (url === 'resolved-module') {
+								return 'https://localhost:8080/base/js/TestModuleElement.js';
+							}
+							return url;
+						}
+					}
+				},
+				console
+			});
+			const document = window.document;
+			const script = document.createElement('script');
+
+			script.type = 'module';
+			script.textContent = `import('resolved-module');`;
+
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			const testModule = document.createElement('test-module');
+
+			document.body.appendChild(testModule);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(testModule.shadowRoot?.innerHTML).toBe(`<div>
+            Expect lower case: "value"
+            Expect upper case: "VALUE"
+            Expect lower case. "value"
+            Expect trimmed lower case: "value"
+            Import URL: https://localhost:8080/base/js/TestModuleElement.js
+            Resolved URL: https://localhost:8080/base/js/Resolved.js
+        </div><div>Lazy-loaded module: true</div>`);
+		});
+
+		it('Handles loading of Node module when "settings.module.resolveNodeModules" is defined.', async () => {
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
+					module: {
+						resolveNodeModules: {
+							url: 'https://localhost:8080/base/js/',
+							directory: './test/nodes/html-script-element/'
+						}
+					}
+				},
+				console
+			});
+			const document = window.document;
+			const script = document.createElement('script');
+
+			script.type = 'module';
+			script.textContent = `import 'modules';`;
+
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			const testModule = document.createElement('test-module');
+
+			document.body.appendChild(testModule);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(testModule.shadowRoot?.innerHTML).toBe(`<div>
+            Expect lower case: "value"
+            Expect upper case: "VALUE"
+            Expect lower case. "value"
+            Expect trimmed lower case: "value"
+            Import URL: https://localhost:8080/base/js/modules/TestModuleElement.js
+            Resolved URL: https://localhost:8080/base/js/modules/Resolved.js
+        </div><div>Lazy-loaded module: true</div>`);
+		});
+
+		it('Handles loading of modules dynamically by code from standard javascript.', async () => {
+			const requests: string[] = [];
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
+					fetch: {
+						interceptor: {
+							beforeAsyncRequest: async ({ request }) => {
+								requests.push(request.url);
+							}
+						},
+						virtualServers: [
+							{
+								url: 'https://localhost:8080/base/js/',
+								directory: './test/nodes/html-script-element/modules/'
+							}
+						]
+					}
+				},
+				console
+			});
+			const document = window.document;
+			const script = document.createElement('script');
+
+			script.textContent = `import('./js/TestModuleElement.js');`;
+
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			const testModule = document.createElement('test-module');
+
+			document.body.appendChild(testModule);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(requests).toEqual([
+				'https://localhost:8080/base/js/TestModuleElement.js',
+				'https://localhost:8080/base/js/utilities/StringUtilityClass.js',
+				'https://localhost:8080/base/js/utilities/stringUtility.js',
+				'https://localhost:8080/base/js/json/data.json',
+				'https://localhost:8080/base/js/css/style.css',
+				'https://localhost:8080/base/js/utilities/apostrophWrapper.js',
+				'https://localhost:8080/base/js/utilities/lazyload.js'
+			]);
+
+			expect((<any>window)['moduleLoadOrder']).toEqual([
+				'apostrophWrapper.js',
+				'StringUtilityClass.js',
+				'stringUtility.js',
+				'TestModuleElement.js',
+				'lazyload.js'
+			]);
+
+			expect(testModule.shadowRoot?.innerHTML).toBe(`<div>
+            Expect lower case: "value"
+            Expect upper case: "VALUE"
+            Expect lower case. "value"
+            Expect trimmed lower case: "value"
+            Import URL: https://localhost:8080/base/js/TestModuleElement.js
+            Resolved URL: https://localhost:8080/base/js/Resolved.js
         </div><div>Lazy-loaded module: true</div>`);
 
 			expect(testModule.shadowRoot?.adoptedStyleSheets[0].cssRules[0].cssText).toBe(
@@ -833,6 +1349,8 @@ describe('HTMLScriptElement', () => {
 			const window = new Window({
 				url: 'https://localhost:8080/base/',
 				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
 					fetch: {
 						interceptor: {
 							beforeAsyncRequest: async ({ request }) => {
@@ -907,7 +1425,7 @@ describe('HTMLScriptElement', () => {
 				'https://localhost:8080/base/js/utilities/lazyload.js'
 			]);
 
-			expect(window['moduleLoadOrder']).toEqual([
+			expect((<any>window)['moduleLoadOrder']).toEqual([
 				'apostrophWrapper.js',
 				'StringUtilityClass.js',
 				'stringUtility.js',
@@ -936,6 +1454,8 @@ describe('HTMLScriptElement', () => {
 			const window = new Window({
 				url: 'https://localhost:8080/base/',
 				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
 					fetch: {
 						virtualServers: [
 							{
@@ -972,14 +1492,19 @@ DOMException: Failed to perform request to "https://localhost:8080/base/js/utili
 		});
 
 		it('Dispatches "error" event on Window when compilation of module failed', async () => {
+			const directory = Path.resolve(
+				'./test/nodes/html-script-element/modules-with-compilation-error/'
+			);
 			const window = new Window({
 				url: 'https://localhost:8080/base/',
 				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
 					fetch: {
 						virtualServers: [
 							{
 								url: 'https://localhost:8080/base/js/',
-								directory: './test/nodes/html-script-element/modules-with-compilation-error/'
+								directory
 							}
 						]
 					}
@@ -1007,20 +1532,25 @@ DOMException: Failed to perform request to "https://localhost:8080/base/js/utili
 				window.happyDOM?.virtualConsolePrinter
 					.readAsString()
 					.startsWith(
-						`SyntaxError: Failed to parse module 'https://localhost:8080/base/js/utilities/stringUtility.js': Unexpected token 'export'`
+						`${directory}/utilities/stringUtility.js:8\nexport error { toUpperCase, trim };\n^^^^^^\n\nSyntaxError: Unexpected token 'export'`
 					)
 			).toBe(true);
 		});
 
 		it('Dispatches "error" event on Window when evaluation of module failed', async () => {
+			const directory = Path.resolve(
+				'./test/nodes/html-script-element/modules-with-evaluation-error/'
+			);
 			const window = new Window({
 				url: 'https://localhost:8080/base/',
 				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
 					fetch: {
 						virtualServers: [
 							{
 								url: 'https://localhost:8080/base/js/',
-								directory: './test/nodes/html-script-element/modules-with-evaluation-error/'
+								directory
 							}
 						]
 					}
@@ -1045,10 +1575,43 @@ DOMException: Failed to perform request to "https://localhost:8080/base/js/utili
 			expect((<ErrorEvent>(<unknown>errorEvent)).type).toBe('error');
 			expect((<ErrorEvent>(<unknown>errorEvent)).bubbles).toBe(false);
 			expect(
-				window.happyDOM?.virtualConsolePrinter.readAsString()
-					.startsWith(`ReferenceError: notFound is not defined
-    at eval (https://localhost:8080/base/js/utilities/stringUtility.js:12:14)`)
+				window.happyDOM?.virtualConsolePrinter
+					.readAsString()
+					.startsWith(
+						`ReferenceError: notFound is not defined\n    at ${directory}/utilities/stringUtility.js:9:14\n`
+					)
 			).toBe(true);
+		});
+
+		it('Handles circular module dependencies.', async () => {
+			const window = new Window({
+				url: 'https://localhost:8080/',
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
+					fetch: {
+						virtualServers: [
+							{
+								url: 'https://localhost:8080/base/js/',
+								directory: './test/nodes/html-script-element/modules-with-circular-dependency/'
+							}
+						]
+					}
+				}
+			});
+			const document = window.document;
+			const script = document.createElement('script');
+
+			script.type = 'module';
+			script.textContent = `
+                import { circularFunction } from './base/js/TopDependency.js';
+                console.log(circularFunction());
+            `;
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(window.happyDOM.virtualConsolePrinter.readAsString()).toBe('topFunction() called\n');
 		});
 	});
 

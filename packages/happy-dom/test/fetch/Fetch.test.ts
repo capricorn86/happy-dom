@@ -17,6 +17,7 @@ import { ReadableStream } from 'stream/web';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import FetchHTTPSCertificate from '../../src/fetch/certificate/FetchHTTPSCertificate.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
+import { fail } from 'assert';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -992,7 +993,7 @@ describe('Fetch', () => {
 			]);
 		});
 
-		it(`Doesn't forward the headers "cookie", "authorization" or "www-authenticate" if request credentials are set to "omit".`, async () => {
+		it(`Doesn't forward "cookie" headers if request credentials are set to "omit".`, async () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/some/path';
 
@@ -1018,7 +1019,9 @@ describe('Fetch', () => {
 							Connection: 'close',
 							Referer: 'https://localhost:8080/',
 							'User-Agent': window.navigator.userAgent,
-							'Accept-Encoding': 'gzip, deflate, br'
+							'Accept-Encoding': 'gzip, deflate, br',
+							authorization: 'authorization',
+							'www-authenticate': 'www-authenticate'
 						},
 						agent: false,
 						rejectUnauthorized: true,
@@ -1029,7 +1032,7 @@ describe('Fetch', () => {
 			]);
 		});
 
-		it('Does not forward the headers "cookie", "authorization" or "www-authenticate" if request credentials are set to "same-origin" and the request goes do a different origin than the document.', async () => {
+		it('Does not forward "cookie" headers if request credentials are set to "same-origin" and the request goes do a different origin than the document.', async () => {
 			const originURL = 'https://localhost:8080';
 			const window = new Window({ url: originURL });
 			const url = 'https://other.origin.com/some/path';
@@ -1082,7 +1085,9 @@ describe('Fetch', () => {
 							'User-Agent': window.navigator.userAgent,
 							'Accept-Encoding': 'gzip, deflate, br',
 							Origin: originURL,
-							Referer: originURL + '/'
+							Referer: originURL + '/',
+							authorization: 'authorization',
+							'www-authenticate': 'www-authenticate'
 						},
 						agent: false,
 						rejectUnauthorized: true,
@@ -1129,7 +1134,7 @@ describe('Fetch', () => {
 			});
 			const url = 'https://localhost:8080/some/path';
 
-			const network = mockNetwork('https', {
+			mockNetwork('https', {
 				beforeResponse() {
 					fail('No request should be made when beforeAsyncRequest returns a Response');
 				}
@@ -1198,7 +1203,7 @@ describe('Fetch', () => {
 			expect(await response.text()).toBe('intercepted text');
 		});
 
-		it('Should use original response when no response is given', async () => {
+		it('Should use original response when no response is returned from interceptor', async () => {
 			const originURL = 'https://localhost:8080/';
 			const responseText = 'some text';
 			const window = new Window({
@@ -1227,6 +1232,66 @@ describe('Fetch', () => {
 
 			expect(await response.text()).toBe(responseText);
 			expect(response.headers.get('x-test')).toBe('yes');
+		});
+
+		it('Should append request headers when "settings.fetch.requestHeaders" is defined', async () => {
+			const originURL = 'https://localhost:8080/';
+			const window = new Window({
+				url: originURL,
+				settings: {
+					fetch: {
+						requestHeaders: [
+							{
+								url: 'https://localhost:8080/some/path',
+								headers: {
+									'x-test-1': '1'
+								}
+							},
+							{
+								url: /\/some\/path/,
+								headers: {
+									'x-test-2': '2'
+								}
+							},
+							{
+								url: /\/not\/\/some\/path/,
+								headers: {
+									'x-test-3': '3'
+								}
+							}
+						]
+					}
+				}
+			});
+			const url = 'https://localhost:8080/some/path';
+
+			const network = mockNetwork('https', {
+				responseText: 'some text'
+			});
+
+			await window.fetch(url);
+
+			expect(network.requestHistory).toEqual([
+				{
+					url,
+					options: {
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							Referer: 'https://localhost:8080/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							'x-test-1': '1',
+							'x-test-2': '2'
+						},
+						agent: false,
+						rejectUnauthorized: true,
+						key: FetchHTTPSCertificate.key,
+						cert: FetchHTTPSCertificate.cert
+					}
+				}
+			]);
 		});
 
 		it('Forwards "cookie", "authorization" or "www-authenticate" if request credentials are set to "same-origin" and the request goes to the same origin as the document.', async () => {
@@ -2183,7 +2248,7 @@ describe('Fetch', () => {
 
 			setTimeout(() => {
 				abortController.abort(1);
-			}, 10);
+			}, 1);
 
 			let error: Error | null = null;
 
@@ -4699,30 +4764,43 @@ describe('Fetch', () => {
 
 			const response = await window.fetch('http://localhost:8080/path/to/virtual-server/gb/en/');
 
+			expect(response[PropertySymbol.virtualServerFile]).toBe(
+				Path.resolve('./test/fetch/virtual-server/index.html')
+			);
 			expect(await response.text()).toBe(htmlFileContent.toString());
 
 			const response2 = await window.fetch(
 				'http://localhost:8080/path/to/virtual-server/se/sv/index.html'
 			);
 
+			expect(response2[PropertySymbol.virtualServerFile]).toBe(
+				Path.resolve('./test/fetch/virtual-server/index.html')
+			);
 			expect(await response2.text()).toBe(htmlFileContent.toString());
 
 			const response3 = await window.fetch(
 				'http://localhost:8080/path/to/virtual-server/se/sv/index.html?query=value'
 			);
 
+			expect(response3[PropertySymbol.virtualServerFile]).toBe(
+				Path.resolve('./test/fetch/virtual-server/index.html')
+			);
 			expect(await response3.text()).toBe(htmlFileContent.toString());
 
 			const response4 = await window.fetch(
 				'http://localhost:8080/path/to/virtual-server/fi/fi/css/style.css'
 			);
 
+			expect(response4[PropertySymbol.virtualServerFile]).toBe(
+				Path.resolve('./test/fetch/virtual-server/css/style.css')
+			);
 			expect(await response4.text()).toBe(cssFileContent.toString());
 
 			const response5 = await window.fetch(
 				'http://localhost:8080/path/to/virtual-server/gb/en/not_found.js'
 			);
 
+			expect(response5[PropertySymbol.virtualServerFile]).toBe(null);
 			expect(response5.ok).toBe(false);
 			expect(response5.status).toBe(404);
 			expect(response5.statusText).toBe('Not Found');

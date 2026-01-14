@@ -156,7 +156,7 @@ export default class SVGLengthList {
 	/**
 	 * Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.
 	 */
-	public [Symbol.iterator](): IterableIterator<SVGLength> {
+	public [Symbol.iterator](): ArrayIterator<SVGLength> {
 		return this[PropertySymbol.getItemList]().values();
 	}
 

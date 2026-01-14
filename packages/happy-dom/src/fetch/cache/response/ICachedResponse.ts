@@ -1,5 +1,6 @@
 import CachedResponseStateEnum from './CachedResponseStateEnum.js';
 import Headers from '../../Headers.js';
+import * as PropertySymbol from '../../../PropertySymbol.js';
 
 export default interface ICachedResponse {
 	/** Response. */
@@ -11,6 +12,7 @@ export default interface ICachedResponse {
 		// We need to wait for the body to be populated if set to "true".
 		waitingForBody: boolean;
 		body: Buffer | null;
+		[PropertySymbol.virtualServerFile]?: string | null;
 	};
 	/** Request. */
 	request: {
@@ -33,4 +35,6 @@ export default interface ICachedResponse {
 	staleWhileRevalidate: boolean;
 	/** Used when "mustRevalidate" or "staleWhileRevalidate" is true. */
 	state: CachedResponseStateEnum;
+	/** Virtual server response */
+	virtual: boolean;
 }

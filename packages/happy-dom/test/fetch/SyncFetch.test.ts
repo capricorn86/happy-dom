@@ -16,6 +16,7 @@ import FS from 'fs';
 import Path from 'path';
 import '../types.d.js';
 import { fail } from 'node:assert';
+import { PropertySymbol } from '../../src/index.js';
 
 const PLATFORM =
 	'X11; ' +
@@ -522,6 +523,82 @@ describe('SyncFetch', () => {
 			expect(headers).toEqual({
 				'Content-Type': 'text/plain'
 			});
+		});
+
+		it('Should append request headers when "settings.fetch.requestHeaders" is defined', () => {
+			const url = 'https://localhost:8080/some/path';
+			const browser = new Browser({
+				settings: {
+					fetch: {
+						requestHeaders: [
+							{
+								url: 'https://localhost:8080/some/path',
+								headers: {
+									'x-test-1': '1'
+								}
+							},
+							{
+								url: /\/some\/path/,
+								headers: {
+									'x-test-2': '2'
+								}
+							},
+							{
+								url: /\/not\/\/some\/path/,
+								headers: {
+									'x-test-3': '3'
+								}
+							}
+						]
+					}
+				}
+			});
+			const page = browser.newPage();
+
+			const browserFrame = page.mainFrame;
+			const window = page.mainFrame.window;
+			browserFrame.url = 'https://localhost:8080/';
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					expect(args[1]).toBe(
+						SyncFetchScriptBuilder.getScript({
+							url: new URL('https://localhost:8080/some/path'),
+							method: 'GET',
+							headers: {
+								Accept: '*/*',
+								Connection: 'close',
+								'User-Agent': window.navigator.userAgent,
+								'Accept-Encoding': 'gzip, deflate, br',
+								Referer: 'https://localhost:8080/',
+								'x-test-1': '1',
+								'x-test-2': '2'
+							},
+							body: null
+						})
+					);
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							rawHeaders: [],
+							data: Buffer.from('test').toString('base64')
+						}
+					});
+				}
+			});
+
+			const response = new SyncFetch({
+				browserFrame,
+				window,
+				url,
+				init: {
+					method: 'GET'
+				}
+			}).send();
+
+			expect(response.body!.toString()).toBe('test');
 		});
 
 		it('Performs a request with a relative URL and adds the "Referer" header set to the window location.', () => {
@@ -1439,7 +1516,7 @@ describe('SyncFetch', () => {
 			);
 		});
 
-		it('Does\'nt forward the headers "cookie", "authorization" or "www-authenticate" if request credentials are set to "omit".', () => {
+		it('Does\'nt forward "cookie" headers if request credentials are set to "omit".', () => {
 			browserFrame.url = 'https://localhost:8080/';
 
 			const url = 'https://localhost:8080/some/path';
@@ -1484,14 +1561,16 @@ describe('SyncFetch', () => {
 						Connection: 'close',
 						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
-						'Accept-Encoding': 'gzip, deflate, br'
+						'Accept-Encoding': 'gzip, deflate, br',
+						authorization: 'authorization',
+						'www-authenticate': 'www-authenticate'
 					},
 					body: null
 				})
 			);
 		});
 
-		it('Does\'nt forward the headers "cookie", "authorization" or "www-authenticate" if request credentials are set to "same-origin" and the request goes do a different origin than the document.', () => {
+		it('Does\'nt forward "cookie" headers if request credentials are set to "same-origin" and the request goes do a different origin than the document.', () => {
 			const originURL = 'https://localhost:8080';
 
 			browserFrame.url = originURL;
@@ -1541,7 +1620,9 @@ describe('SyncFetch', () => {
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						Origin: originURL,
-						Referer: originURL + '/'
+						Referer: originURL + '/',
+						authorization: 'authorization',
+						'www-authenticate': 'www-authenticate'
 					},
 					body: null
 				})
@@ -3791,6 +3872,9 @@ describe('SyncFetch', () => {
 				url: 'https://example.com/gb/en/'
 			}).send();
 
+			expect(response[PropertySymbol.virtualServerFile]).toBe(
+				Path.resolve('./test/fetch/virtual-server/index.html')
+			);
 			expect(response.body!.toString()).toBe(htmlFileContent.toString());
 
 			const response2 = new SyncFetch({
@@ -3799,6 +3883,9 @@ describe('SyncFetch', () => {
 				url: 'https://example.com/se/sv/index.html'
 			}).send();
 
+			expect(response2[PropertySymbol.virtualServerFile]).toBe(
+				Path.resolve('./test/fetch/virtual-server/index.html')
+			);
 			expect(response2.body!.toString()).toBe(htmlFileContent.toString());
 
 			const response3 = new SyncFetch({
@@ -3807,6 +3894,9 @@ describe('SyncFetch', () => {
 				url: 'https://example.com/se/sv/index.html?query=value'
 			}).send();
 
+			expect(response3[PropertySymbol.virtualServerFile]).toBe(
+				Path.resolve('./test/fetch/virtual-server/index.html')
+			);
 			expect(response3.body!.toString()).toBe(htmlFileContent.toString());
 
 			const response4 = new SyncFetch({
@@ -3815,6 +3905,9 @@ describe('SyncFetch', () => {
 				url: 'https://example.com/fi/fi/css/style.css'
 			}).send();
 
+			expect(response4[PropertySymbol.virtualServerFile]).toBe(
+				Path.resolve('./test/fetch/virtual-server/css/style.css')
+			);
 			expect(response4.body!.toString()).toBe(cssFileContent.toString());
 
 			const response5 = new SyncFetch({
@@ -3823,6 +3916,7 @@ describe('SyncFetch', () => {
 				url: 'https://example.com/gb/en/not_found.js'
 			}).send();
 
+			expect(response5[PropertySymbol.virtualServerFile]).toBe(null);
 			expect(response5.ok).toBe(false);
 			expect(response5.status).toBe(404);
 			expect(response5.url).toBe('https://example.com/gb/en/not_found.js');

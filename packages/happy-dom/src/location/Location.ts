@@ -1,7 +1,7 @@
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import HashChangeEvent from '../event/events/HashChangeEvent.js';
+import HistoryScrollRestorationEnum from '../history/HistoryScrollRestorationEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import { URL } from 'url';
 
 /**
  * Location.
@@ -13,6 +13,8 @@ export default class Location {
 	// Private properties
 	#browserFrame: IBrowserFrame | null;
 	#url: URL;
+	#hashChangeTimeout: NodeJS.Timeout | null = null;
+	#hashChangeEvents: HashChangeEvent[] = [];
 
 	/**
 	 * Constructor.
@@ -43,18 +45,31 @@ export default class Location {
 	 * @param hash Value.
 	 */
 	public set hash(hash: string) {
-		if (!this.#browserFrame) {
+		const history = this.#browserFrame?.[PropertySymbol.history];
+
+		if (!history || !this.#browserFrame) {
 			return;
 		}
 
-		const oldURL = this.#url.href;
-		this.#url.hash = hash;
-		const newURL = this.#url.href;
-		if (newURL !== oldURL) {
-			this.#browserFrame.window?.dispatchEvent(
-				new HashChangeEvent('hashchange', { oldURL, newURL })
-			);
-			this.#browserFrame.window?.document?.[PropertySymbol.clearCache]();
+		const url = new URL(this.#url.href);
+		const oldHash = this.#url.hash;
+
+		url.hash = hash;
+
+		if (url.hash !== oldHash) {
+			history.currentItem.popState = true;
+
+			history.push({
+				title: '',
+				href: url.href,
+				state: history.currentItem.state,
+				popState: true,
+				scrollRestoration: HistoryScrollRestorationEnum.manual,
+				method: history.currentItem.method,
+				formData: history.currentItem.formData || null
+			});
+
+			this[PropertySymbol.setURL](this.#browserFrame, url.href);
 		}
 	}
 
@@ -114,7 +129,7 @@ export default class Location {
 		}
 
 		this.#browserFrame.goto(url).catch((error) => {
-			if (this.#browserFrame?.page.console) {
+			if (this.#browserFrame?.page?.console) {
 				this.#browserFrame.page.console.error(error);
 			} else {
 				throw error;
@@ -261,13 +276,35 @@ export default class Location {
 			throw new Error('Failed to set URL. Browser frame mismatch.');
 		}
 
+		const oldURL = this.#url.href;
+		const oldHash = this.#url.hash;
+
 		this.#url.href = url;
+
+		if (this.#url.hash !== oldHash) {
+			const newURL = this.#url.href;
+			this.#hashChangeEvents.push(new HashChangeEvent('hashchange', { oldURL, newURL }));
+			this.#browserFrame?.window?.document?.[PropertySymbol.clearCache]();
+			if (this.#hashChangeTimeout) {
+				this.#browserFrame.window?.clearTimeout(this.#hashChangeTimeout);
+			}
+			this.#hashChangeTimeout = this.#browserFrame.window?.setTimeout(() => {
+				const hashChangeEvents = this.#hashChangeEvents;
+				this.#hashChangeEvents = [];
+				for (const event of hashChangeEvents) {
+					this.#browserFrame?.window?.dispatchEvent(event);
+				}
+			});
+		}
 	}
 
 	/**
 	 * Destroys the location.
 	 */
 	public [PropertySymbol.destroy](): void {
+		if (this.#hashChangeTimeout) {
+			this.#browserFrame?.window?.clearTimeout(this.#hashChangeTimeout);
+		}
 		this.#browserFrame = null;
 	}
 
