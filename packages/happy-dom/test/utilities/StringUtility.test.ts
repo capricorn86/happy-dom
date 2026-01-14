@@ -16,7 +16,7 @@ describe('StringUtility', () => {
 		});
 
 		it('leaves non-ASCII characters unchanged.', () => {
-			expect(StringUtility.asciiLowerCase('HéLLÖ')).toBe('héllö');
+			expect(StringUtility.asciiLowerCase('HéLLÖ')).toBe('héllÖ');
 		});
 
 		it('handles empty strings.', () => {
@@ -42,7 +42,7 @@ describe('StringUtility', () => {
 		});
 
 		it('leaves non-ASCII characters unchanged.', () => {
-			expect(StringUtility.asciiUpperCase('hélLö')).toBe('HéLLÖ');
+			expect(StringUtility.asciiUpperCase('hélLö')).toBe('HéLLö');
 		});
 
 		it('handles empty strings.', () => {
