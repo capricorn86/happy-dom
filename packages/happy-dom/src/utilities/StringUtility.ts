@@ -1,5 +1,7 @@
 const ASCII_LOWER_CASE_CACHE: Map<string, string> = new Map();
 const ASCII_UPPER_CASE_CACHE: Map<string, string> = new Map();
+const ASCII_UPPER_CASE_REGEXP = /[A-Z]/g;
+const ASCII_LOWER_CASE_REGEXP = /[a-z]/g;
 
 /**
  * String utility.
@@ -17,15 +19,9 @@ export default class StringUtility {
 		if (cached) {
 			return cached;
 		}
-		let newText = '';
-		for (const char of text) {
-			const value = char.charCodeAt(0);
-			if (value >= 65 && value <= 90) {
-				newText += String.fromCharCode(value + 32);
-			} else {
-				newText += char;
-			}
-		}
+		const newText = text.replace(ASCII_UPPER_CASE_REGEXP, (char) =>
+			String.fromCharCode(char.charCodeAt(0) + 32)
+		);
 		ASCII_LOWER_CASE_CACHE.set(text, newText);
 		return newText;
 	}
@@ -42,15 +38,9 @@ export default class StringUtility {
 		if (cached) {
 			return cached;
 		}
-		let newText = '';
-		for (const char of text) {
-			const value = char.charCodeAt(0);
-			if (value >= 97 && value <= 122) {
-				newText += String.fromCharCode(value - 32);
-			} else {
-				newText += char;
-			}
-		}
+		const newText = text.replace(ASCII_LOWER_CASE_REGEXP, (char) =>
+			String.fromCharCode(char.charCodeAt(0) - 32)
+		);
 		ASCII_UPPER_CASE_CACHE.set(text, newText);
 		return newText;
 	}
