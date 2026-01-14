@@ -3,7 +3,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import BrowserWindow from '../../src/window/BrowserWindow.js';
 import Window from '../../src/window/Window.js';
-import DOMException from '../../src/exception/DOMException.js';
 
 describe('AbortSignal', () => {
 	let window: BrowserWindow;

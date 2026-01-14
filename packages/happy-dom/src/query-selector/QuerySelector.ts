@@ -115,7 +115,11 @@ export default class QuerySelector {
 			}
 		}
 
-		const groups = SelectorParser.getSelectorGroups(selector);
+		const scope =
+			node[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
+				? (<Document>node).documentElement
+				: node;
+		const groups = SelectorParser.getSelectorGroups(selector, { scope });
 		const items: Element[] = [];
 		const nodeList = new NodeList<Element>(PropertySymbol.illegalConstructor, items);
 		const matchesMap: Map<string, Element> = new Map();
@@ -229,10 +233,15 @@ export default class QuerySelector {
 
 		const cachedResult = node[PropertySymbol.cache].querySelector.get(selector);
 
-		if (cachedResult?.result) {
-			const result = cachedResult.result.deref();
-			if (result) {
-				return result;
+		if (cachedResult) {
+			if (cachedResult.result === false) {
+				return null;
+			}
+			if (cachedResult.result) {
+				const result = cachedResult.result.deref();
+				if (result) {
+					return result;
+				}
 			}
 		}
 
@@ -249,26 +258,32 @@ export default class QuerySelector {
 			(node[PropertySymbol.ownerDocument] || node)[PropertySymbol.affectsCache].push(cachedItem);
 		}
 
-		const matchesMap: Map<string, Element> = new Map();
-		const matchedPositions: string[] = [];
-		for (const items of SelectorParser.getSelectorGroups(selector)) {
+		let bestMatch: DocumentPositionAndElement | null = null;
+		const matchesMap: Map<string, boolean> = new Map();
+		const scope =
+			node[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
+				? (<Document>node).documentElement
+				: node;
+
+		for (const items of SelectorParser.getSelectorGroups(selector, { scope })) {
 			const match =
 				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
 					? this.findFirst(<Element>node, [<Element>node], items, cachedItem)
 					: this.findFirst(null, (<Element>node)[PropertySymbol.elementArray], items, cachedItem);
 
 			if (match && !matchesMap.has(match.documentPosition)) {
-				matchesMap.set(match.documentPosition, match.element);
-				matchedPositions.push(match.documentPosition);
+				matchesMap.set(match.documentPosition, true);
+				if (!bestMatch || match.documentPosition < bestMatch.documentPosition) {
+					bestMatch = match;
+				}
 			}
 		}
 
-		if (matchedPositions.length > 0) {
-			const keys = matchedPositions.sort();
-			return matchesMap.get(keys[0])!;
-		}
+		const element = bestMatch?.element || null;
 
-		return null;
+		cachedItem.result = element ? new WeakRef(element) : false;
+
+		return element;
 	}
 
 	/**
@@ -277,13 +292,14 @@ export default class QuerySelector {
 	 * @param element Element to match.
 	 * @param selector Selector to match with.
 	 * @param [options] Options.
+	 * @param [options.scope] Scope.
 	 * @param [options.ignoreErrors] Ignores errors.
 	 * @returns Result.
 	 */
 	public static matches(
 		element: Element,
 		selector: string,
-		options?: { ignoreErrors?: boolean }
+		options?: { scope?: Element | Document | DocumentFragment | null; ignoreErrors?: boolean }
 	): ISelectorMatch | null {
 		const ignoreErrors = options?.ignoreErrors;
 		const window = element[PropertySymbol.window];
@@ -349,7 +365,15 @@ export default class QuerySelector {
 			);
 		}
 
-		for (const items of SelectorParser.getSelectorGroups(selector, options)) {
+		const scopeOrElement = options?.scope || element;
+		const scope =
+			scopeOrElement[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
+				? (<Document>scopeOrElement).documentElement
+				: scopeOrElement;
+		for (const items of SelectorParser.getSelectorGroups(selector, {
+			...options,
+			scope
+		})) {
 			const result = this.matchSelector(element, items.reverse(), cachedItem);
 
 			if (result) {

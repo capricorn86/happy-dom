@@ -306,8 +306,20 @@ import DOMPoint from '../dom/DOMPoint.js';
 import SVGAnimatedLengthList from '../svg/SVGAnimatedLengthList.js';
 import CustomElementReactionStack from '../custom-element/CustomElementReactionStack.js';
 import IScrollToOptions from './IScrollToOptions.js';
-import IModule from '../module/IModule.js';
-import IModuleImportMap from '../module/IModuleImportMap.js';
+import IModule from '../module/types/IModule.js';
+import IModuleImportMap from '../module/types/IModuleImportMap.js';
+import StylePropertyMapReadOnly from '../css/style-property-map/StylePropertyMapReadOnly.js';
+import StylePropertyMap from '../css/style-property-map/StylePropertyMap.js';
+import MediaList from '../css/MediaList.js';
+import CSSKeywordValue from '../css/style-property-map/CSSKeywordValue.js';
+import CSSStyleValue from '../css/style-property-map/CSSStyleValue.js';
+import CSSConditionRule from '../css/rules/CSSConditionRule.js';
+import CSSGroupingRule from '../css/rules/CSSGroupingRule.js';
+import CSSScopeRule from '../css/rules/CSSScopeRule.js';
+import PopStateEvent from '../event/events/PopStateEvent.js';
+import ITimerLoopsLimit from './ITimerLoopsLimit.js';
+import CloseEvent from '../event/events/CloseEvent.js';
+import WebSocket from '../web-socket/WebSocket.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -320,6 +332,26 @@ const TIMER = {
 };
 
 const IS_NODE_JS_TIMEOUT_ENVIRONMENT = setTimeout.toString().includes('new Timeout');
+
+const IS_CODE_GENERATION_FROM_STRINGS_ENVIRONMENT = (() => {
+	try {
+		// eslint-disable-next-line no-new-func
+		new Function('return true;')();
+		return true;
+	} catch {
+		return false;
+	}
+})();
+
+const IS_UNFROZEN_INTRINSICS_ENVIRONMENT = (() => {
+	try {
+		(<any>globalThis.Function)['$UNFROZEN$'] = true;
+		delete (<any>globalThis.Function)['$UNFROZEN$'];
+		return true;
+	} catch {
+		return false;
+	}
+})();
 
 /**
  * Class for PerformanceObserverEntryList as it is only available as an interface from Node.js.
@@ -371,6 +403,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare readonly Comment: typeof Comment;
 	public declare readonly Image: typeof Image;
 	public declare readonly Audio: typeof Audio;
+	public declare readonly WebSocket: typeof WebSocket;
 
 	// HTML Element classes
 	public readonly HTMLAnchorElement = HTMLAnchorElement;
@@ -517,6 +550,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly Event = Event;
 	public readonly UIEvent = UIEvent;
 	public readonly CustomEvent = CustomEvent;
+	public readonly CloseEvent = CloseEvent;
 	public readonly AnimationEvent = AnimationEvent;
 	public readonly KeyboardEvent = KeyboardEvent;
 	public readonly MessageEvent = MessageEvent;
@@ -533,6 +567,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly HashChangeEvent = HashChangeEvent;
 	public readonly ClipboardEvent = ClipboardEvent;
 	public readonly TouchEvent = TouchEvent;
+	public readonly PopStateEvent = PopStateEvent;
 	public readonly Touch = Touch;
 
 	// Non-implemented event classes
@@ -540,7 +575,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly BeforeInputEvent = Event;
 	public readonly BeforeUnloadEvent = Event;
 	public readonly BlobEvent = Event;
-	public readonly CloseEvent = Event;
 	public readonly CompositionEvent = Event;
 	public readonly CSSFontFaceLoadEvent = Event;
 	public readonly DeviceLightEvent = Event;
@@ -559,7 +593,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly OverconstrainedError = Event;
 	public readonly PageTransitionEvent = Event;
 	public readonly PaymentRequestUpdateEvent = Event;
-	public readonly PopStateEvent = Event;
 	public readonly RelatedEvent = Event;
 	public readonly RTCDataChannelEvent = Event;
 	public readonly RTCIdentityErrorEvent = Event;
@@ -580,6 +613,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare readonly MessagePort: typeof MessagePort;
 	public declare readonly CSSStyleSheet: typeof CSSStyleSheet;
 	public declare readonly DOMException: typeof DOMException;
+	public declare readonly Headers: typeof Headers;
 	public declare readonly Request: typeof Request;
 	public declare readonly Response: typeof Response;
 	public declare readonly EventTarget: typeof EventTarget;
@@ -601,6 +635,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare readonly TextTrackList: typeof TextTrackList;
 	public declare readonly TextTrackCue: typeof TextTrackCue;
 	public declare readonly RemotePlayback: typeof RemotePlayback;
+	public declare readonly URL: typeof URL;
 
 	// Other classes that don't have to be bound to the Window context
 	public readonly Permissions = Permissions;
@@ -622,6 +657,9 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly CSSMediaRule = CSSMediaRule;
 	public readonly CSSStyleRule = CSSStyleRule;
 	public readonly CSSSupportsRule = CSSSupportsRule;
+	public readonly CSSConditionRule = CSSConditionRule;
+	public readonly CSSGroupingRule = CSSGroupingRule;
+	public readonly CSSScopeRule = CSSScopeRule;
 	public readonly DOMRect = DOMRect;
 	public readonly DOMRectReadOnly = DOMRectReadOnly;
 	public readonly Plugin = Plugin;
@@ -629,7 +667,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly Location = Location;
 	public readonly CustomElementRegistry = CustomElementRegistry;
 	public readonly ResizeObserver = ResizeObserver;
-	public readonly URL = URL;
 	public readonly Blob = Blob;
 	public readonly File = File;
 	public readonly Storage = Storage;
@@ -651,7 +688,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly DataTransfer = DataTransfer;
 	public readonly DataTransferItem = DataTransferItem;
 	public readonly DataTransferItemList = DataTransferItemList;
-	public readonly Headers = Headers;
 	public readonly XMLSerializer = XMLSerializer;
 	public readonly ClipboardItem = ClipboardItem;
 	public readonly Selection = Selection;
@@ -683,6 +719,11 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly SVGAnimatedLengthList = SVGAnimatedLengthList;
 	public readonly SVGUnitTypes = SVGUnitTypes;
 	public readonly DOMPoint = DOMPoint;
+	public readonly StylePropertyMap = StylePropertyMap;
+	public readonly StylePropertyMapReadOnly = StylePropertyMapReadOnly;
+	public readonly MediaList = MediaList;
+	public readonly CSSKeywordValue = CSSKeywordValue;
+	public readonly CSSStyleValue = CSSStyleValue;
 	public readonly Window = <typeof BrowserWindow>this.constructor;
 
 	// Node.js Classes
@@ -761,6 +802,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare encodeURI: typeof encodeURI;
 	public declare encodeURIComponent: typeof encodeURIComponent;
 	public declare eval: typeof eval;
+
 	/**
 	 * @deprecated
 	 */
@@ -783,7 +825,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	// Used for tracking capture event listeners to improve performance when they are not used.
 	// See EventTarget class.
 	public [PropertySymbol.mutationObservers]: MutationObserver[] = [];
-	public readonly [PropertySymbol.readyStateManager] = new DocumentReadyStateManager(this);
+	public readonly [PropertySymbol.readyStateManager]: DocumentReadyStateManager;
 	public [PropertySymbol.location]: Location;
 	public [PropertySymbol.history]: History;
 	public [PropertySymbol.navigator]: Navigator;
@@ -794,6 +836,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.top]: BrowserWindow | null = this;
 	public [PropertySymbol.parent]: BrowserWindow | null = this;
 	public [PropertySymbol.window]: BrowserWindow = this;
+	public [PropertySymbol.frames]: BrowserWindow = this;
 	public [PropertySymbol.internalId]: number = -1;
 	public [PropertySymbol.customElementReactionStack] = new CustomElementReactionStack(this);
 	public [PropertySymbol.modules]: {
@@ -806,6 +849,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		esm: new Map()
 	};
 	public [PropertySymbol.moduleImportMap]: IModuleImportMap | null = null;
+	public [PropertySymbol.openWebSockets]: WebSocket[] = [];
 
 	// Private properties
 	#browserFrame: IBrowserFrame;
@@ -816,6 +860,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	#devicePixelRatio: number | null = null;
 	#zeroDelayTimeout: { timeouts: Array<Timeout> | null } = { timeouts: null };
 	#timerLoopStacks: string[] = [];
+	#timerLoopLimits: ITimerLoopsLimit[] = [];
 
 	/**
 	 * Constructor.
@@ -829,14 +874,19 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 
 		this.#browserFrame = browserFrame;
 
+		this[PropertySymbol.validateJavaScriptExecutionEnvironment]();
+
 		this.console = browserFrame.page.console;
 
+		this[PropertySymbol.readyStateManager] = new DocumentReadyStateManager(browserFrame);
 		this[PropertySymbol.navigator] = new Navigator(this);
 		this[PropertySymbol.screen] = new Screen();
 		this[PropertySymbol.sessionStorage] = new Storage();
 		this[PropertySymbol.localStorage] = new Storage();
 		this[PropertySymbol.location] = new Location(this.#browserFrame, options?.url ?? 'about:blank');
 		this[PropertySymbol.history] = new History(this.#browserFrame, this);
+
+		browserFrame[PropertySymbol.history].currentItem.href = options?.url ?? 'about:blank';
 
 		WindowBrowserContext.setWindowBrowserFrameRelation(this, this.#browserFrame);
 
@@ -849,13 +899,18 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this.document[PropertySymbol.defaultView] = this;
 
 		// Ready state manager
+		const taskID = browserFrame[PropertySymbol.asyncTaskManager].startTask(() =>
+			this[PropertySymbol.readyStateManager].destroy()
+		);
 		this[PropertySymbol.readyStateManager].waitUntilComplete().then(() => {
+			browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
+
 			this.document[PropertySymbol.readyState] = DocumentReadyStateEnum.complete;
 			this.document.dispatchEvent(new Event('readystatechange'));
 
-			// Not sure why target is set to document here, but this is how it works in the browser
 			const loadEvent = new Event('load');
 
+			// Not sure why target is set to document here, but this is how it seem to work in the browser
 			loadEvent[PropertySymbol.currentTarget] = this;
 			loadEvent[PropertySymbol.target] = this.document;
 			loadEvent[PropertySymbol.eventPhase] = EventPhaseEnum.atTarget;
@@ -880,7 +935,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	}
 
 	/**
-	 * Returns self.
+	 * Sets self.
 	 *
 	 * @param self Self.
 	 */
@@ -907,12 +962,30 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	}
 
 	/**
-	 * Returns parent.
+	 * Sets parent.
 	 *
 	 * @param parent Parent.
 	 */
 	public set parent(parent: BrowserWindow | null) {
 		this[PropertySymbol.parent] = parent;
+	}
+
+	/**
+	 * Returns frames.
+	 *
+	 * @returns Frames.
+	 */
+	public get frames(): BrowserWindow {
+		return this[PropertySymbol.frames];
+	}
+
+	/**
+	 * Sets frames.
+	 *
+	 * @param frames Frames.
+	 */
+	public set frames(frames: BrowserWindow | null) {
+		this[PropertySymbol.parent] = frames;
 	}
 
 	/**
@@ -1301,10 +1374,25 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		if (settings.timer.preventTimerLoops) {
 			const stack = new Error().stack!;
 			const timerLoopStacks = this.#timerLoopStacks;
-			if (timerLoopStacks.includes(stack)) {
-				return <NodeJS.Timeout>{};
+			const timerLoopLimits = this.#timerLoopLimits;
+			const index = timerLoopStacks.indexOf(stack);
+			if (index !== -1) {
+				timerLoopLimits[index].timeout++;
+				if (
+					timerLoopLimits[index].timeout >=
+					(settings.timer.preventTimerLoops === true
+						? 1
+						: (settings.timer.preventTimerLoops.timeout ?? 1))
+				) {
+					return <NodeJS.Timeout>{};
+				}
+			} else {
+				timerLoopStacks.push(stack);
+				timerLoopLimits.push({
+					timeout: 0,
+					requestAnimationFrame: 0
+				});
 			}
-			timerLoopStacks.push(stack);
 		}
 
 		// We can group timeouts with a delay of 0 into one timeout to improve performance.
@@ -1491,10 +1579,25 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		if (settings.timer.preventTimerLoops) {
 			const stack = new Error().stack!;
 			const timerLoopStacks = this.#timerLoopStacks;
-			if (timerLoopStacks.includes(stack)) {
-				return <NodeJS.Immediate>{};
+			const timerLoopLimits = this.#timerLoopLimits;
+			const index = timerLoopStacks.indexOf(stack);
+			if (index !== -1) {
+				timerLoopLimits[index].requestAnimationFrame++;
+				if (
+					timerLoopLimits[index].requestAnimationFrame >=
+					(settings.timer.preventTimerLoops === true
+						? 1
+						: (settings.timer.preventTimerLoops.requestAnimationFrame ?? 1))
+				) {
+					return <NodeJS.Immediate>{};
+				}
+			} else {
+				timerLoopStacks.push(stack);
+				timerLoopLimits.push({
+					timeout: 0,
+					requestAnimationFrame: 0
+				});
 			}
-			timerLoopStacks.push(stack);
 		}
 
 		const useTryCatch =
@@ -1731,6 +1834,18 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	}
 
 	/**
+	 * Evaluates code in a VM context.
+	 *
+	 * @param code Code.
+	 * @param [options] Options.
+	 * @param [options.filename] Filename.
+	 * @returns any.
+	 */
+	public [PropertySymbol.evaluateScript](code: string, options?: { filename?: string }): any {
+		return new VM.Script(code, options).runInContext(this);
+	}
+
+	/**
 	 * Setup of VM context.
 	 */
 	protected [PropertySymbol.setupVMContext](): void {
@@ -1744,12 +1859,36 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	}
 
 	/**
+	 * Checks if the JavaScript execution environment is secure and outputs a warning if not.
+	 */
+	protected [PropertySymbol.validateJavaScriptExecutionEnvironment](): void {
+		const browserFrame = this.#browserFrame;
+		if (
+			(IS_CODE_GENERATION_FROM_STRINGS_ENVIRONMENT || IS_UNFROZEN_INTRINSICS_ENVIRONMENT) &&
+			browserFrame.page.context.browser.settings.enableJavaScriptEvaluation &&
+			!browserFrame.page.context.browser.settings.suppressInsecureJavaScriptEnvironmentWarning &&
+			!browserFrame.page.context.browser.settings.suppressCodeGenerationFromStringsWarning
+		) {
+			// eslint-disable-next-line no-console
+			console.warn(
+				'\nWarning! Happy DOM has JavaScript evaluation enabled and is running in an insecure environment.' +
+					'\n\nA VM Context is not an isolated environment, and if you run untrusted code you are at risk of RCE (Remote Code Execution) attacks. The attacker can escape the VM and run code at process level.' +
+					'\n\nIt is recommended to disable code generation and freeze all builtins at process level by running node with the flags "--disallow-code-generation-from-strings" and "--frozen-intrinsics".' +
+					' You can suppress this warning by setting "suppressInsecureJavaScriptEnvironmentWarning" to "true" at your own risk.' +
+					'\n\nFor more information, see https://github.com/capricorn86/happy-dom/wiki/JavaScript-Evaluation-Warning\n\n'
+			);
+		}
+	}
+
+	/**
 	 * Destroys the window.
 	 */
 	public [PropertySymbol.destroy](): void {
 		if (this.closed) {
 			return;
 		}
+
+		super[PropertySymbol.destroy]();
 
 		(<boolean>this.closed) = true;
 
@@ -1763,16 +1902,13 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 
 		this[PropertySymbol.mutationObservers] = [];
 
-		// Disconnects nodes from the document, so that they can be garbage collected.
-		const childNodes = this.document[PropertySymbol.nodeArray];
-
-		while (childNodes.length > 0) {
-			// Makes sure that something won't be triggered by the disconnect.
-			if ((<HTMLElement>childNodes[0]).disconnectedCallback) {
-				delete (<HTMLElement>childNodes[0]).disconnectedCallback;
-			}
-			this.document[PropertySymbol.removeChild](childNodes[0]);
+		for (const webSocket of this[PropertySymbol.openWebSockets]) {
+			webSocket[PropertySymbol.destroy]();
 		}
+
+		this[PropertySymbol.openWebSockets] = [];
+
+		this.document[PropertySymbol.destroy]();
 
 		// Create some empty elements for scripts that are still running.
 		const htmlElement = this.document.createElement('html');
@@ -1806,6 +1942,10 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this.document[PropertySymbol.nextActiveElement] = null;
 		this.document[PropertySymbol.currentScript] = null;
 		this.document[PropertySymbol.selection] = null;
+
+		// Clear parent/top references to break circular references
+		this[PropertySymbol.parent] = null;
+		this[PropertySymbol.top] = null;
 
 		WindowBrowserContext.removeWindowBrowserFrameRelation(this);
 	}

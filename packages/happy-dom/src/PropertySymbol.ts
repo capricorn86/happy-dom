@@ -391,3 +391,23 @@ export const dispatchError = Symbol('dispatchError');
 export const supports = Symbol('supports');
 export const reason = Symbol('reason');
 export const propertyEventListeners = Symbol('propertyEventListeners');
+export const cssRules = Symbol('cssRules');
+export const parentRule = Symbol('parentRule');
+export const parentStyleSheet = Symbol('parentStyleSheet');
+export const conditionText = Symbol('conditionText');
+export const keyText = Symbol('keyText');
+export const media = Symbol('media');
+export const styleMap = Symbol('styleMap');
+export const selectorText = Symbol('selectorText');
+export const cssParser = Symbol('cssParser');
+export const cssRule = Symbol('cssRule');
+export const rulePrefix = Symbol('rulePrefix');
+export const virtualServerFile = Symbol('virtualServerFile');
+export const frames = Symbol('frames');
+export const disableEvaluation = Symbol('disableEvaluation');
+export const validateJavaScriptExecutionEnvironment = Symbol(
+	'validateJavaScriptExecutionEnvironment'
+);
+export const currentNode = Symbol('currentNode');
+export const openWebSockets = Symbol('openWebSockets');
+export const webSocket = Symbol('webSocket');

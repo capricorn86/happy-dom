@@ -47,7 +47,10 @@ export default class HTMLTemplateElement extends HTMLElement {
 			content.removeChild(childNodes[0]);
 		}
 
-		new HTMLParser(this[PropertySymbol.window]).parse(html, this[PropertySymbol.content]);
+		new HTMLParser(this[PropertySymbol.window], { isTemplateDocumentFragment: true }).parse(
+			html,
+			this[PropertySymbol.content]
+		);
 	}
 
 	/**

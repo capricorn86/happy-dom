@@ -10,7 +10,6 @@ import Response from '../fetch/Response.js';
 import IReloadOptions from './types/IReloadOptions.js';
 import IBrowserPageViewport from './types/IBrowserPageViewport.js';
 import IOptionalBrowserPageViewport from './types/IOptionalBrowserPageViewport.js';
-import DefaultBrowserPageViewport from './DefaultBrowserPageViewport.js';
 import Event from '../event/Event.js';
 
 /**
@@ -21,7 +20,7 @@ export default class BrowserPage implements IBrowserPage {
 	public readonly mainFrame: BrowserFrame;
 	public readonly context: BrowserContext;
 	public readonly console: Console;
-	public readonly viewport: IBrowserPageViewport = Object.assign({}, DefaultBrowserPageViewport);
+	public readonly viewport: IBrowserPageViewport;
 	public readonly closed: boolean = false;
 
 	/**
@@ -33,6 +32,11 @@ export default class BrowserPage implements IBrowserPage {
 		this.context = context;
 		this.console = context.browser.console ?? new VirtualConsole(this.virtualConsolePrinter);
 		this.mainFrame = new BrowserFrame(this);
+		this.viewport = {
+			width: context.browser.settings.viewport.width,
+			height: context.browser.settings.viewport.height,
+			devicePixelRatio: context.browser.settings.viewport.devicePixelRatio
+		};
 	}
 
 	/**
@@ -112,6 +116,23 @@ export default class BrowserPage implements IBrowserPage {
 	 */
 	public evaluate(script: string | Script): any {
 		return this.mainFrame.evaluate(script);
+	}
+
+	/**
+	 * Evaluates a module in the page's context.
+	 *
+	 * @param options Options.
+	 * @param options.url URL.
+	 * @param options.type Module type.
+	 * @param options.code Code.
+	 * @returns Module exports.
+	 */
+	public evaluateModule(options: {
+		url?: string;
+		type?: 'esm' | 'css' | 'json';
+		code?: string;
+	}): Promise<Record<string, any>> {
+		return this.mainFrame.evaluateModule(options);
 	}
 
 	/**

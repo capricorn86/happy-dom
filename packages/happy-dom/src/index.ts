@@ -19,14 +19,22 @@ import VirtualConsoleLogTypeEnum from './console/enums/VirtualConsoleLogTypeEnum
 import CookieSameSiteEnum from './cookie/enums/CookieSameSiteEnum.js';
 import CSSRule from './css/CSSRule.js';
 import CSSStyleSheet from './css/CSSStyleSheet.js';
+import MediaList from './css/MediaList.js';
 import CSSStyleDeclaration from './css/declaration/CSSStyleDeclaration.js';
+import CSSConditionRule from './css/rules/CSSConditionRule.js';
 import CSSContainerRule from './css/rules/CSSContainerRule.js';
 import CSSFontFaceRule from './css/rules/CSSFontFaceRule.js';
+import CSSGroupingRule from './css/rules/CSSGroupingRule.js';
 import CSSKeyframeRule from './css/rules/CSSKeyframeRule.js';
 import CSSKeyframesRule from './css/rules/CSSKeyframesRule.js';
 import CSSMediaRule from './css/rules/CSSMediaRule.js';
+import CSSScopeRule from './css/rules/CSSScopeRule.js';
 import CSSStyleRule from './css/rules/CSSStyleRule.js';
 import CSSSupportsRule from './css/rules/CSSSupportsRule.js';
+import CSSKeywordValue from './css/style-property-map/CSSKeywordValue.js';
+import CSSStyleValue from './css/style-property-map/CSSStyleValue.js';
+import StylePropertyMap from './css/style-property-map/StylePropertyMap.js';
+import StylePropertyMapReadOnly from './css/style-property-map/StylePropertyMapReadOnly.js';
 import CustomElementRegistry from './custom-element/CustomElementRegistry.js';
 import DOMParser from './dom-parser/DOMParser.js';
 import DOMRect from './dom/DOMRect.js';
@@ -50,6 +58,7 @@ import KeyboardEvent from './event/events/KeyboardEvent.js';
 import MediaQueryListEvent from './event/events/MediaQueryListEvent.js';
 import MouseEvent from './event/events/MouseEvent.js';
 import PointerEvent from './event/events/PointerEvent.js';
+import PopStateEvent from './event/events/PopStateEvent.js';
 import ProgressEvent from './event/events/ProgressEvent.js';
 import SubmitEvent from './event/events/SubmitEvent.js';
 import TouchEvent from './event/events/TouchEvent.js';
@@ -67,6 +76,7 @@ import File from './file/File.js';
 import FileReader from './file/FileReader.js';
 import FormData from './form-data/FormData.js';
 import History from './history/History.js';
+import HTMLSerializer from './html-serializer/HTMLSerializer.js';
 import IntersectionObserver from './intersection-observer/IntersectionObserver.js';
 import IntersectionObserverEntry from './intersection-observer/IntersectionObserverEntry.js';
 import Location from './location/Location.js';
@@ -176,6 +186,7 @@ import NodeFilter from './tree-walker/NodeFilter.js';
 import NodeIterator from './tree-walker/NodeIterator.js';
 import TreeWalker from './tree-walker/TreeWalker.js';
 import URL from './url/URL.js';
+import WebSocket from './web-socket/WebSocket.js';
 import BrowserWindow from './window/BrowserWindow.js';
 import DetachedWindowAPI from './window/DetachedWindowAPI.js';
 import GlobalWindow from './window/GlobalWindow.js';
@@ -261,15 +272,20 @@ export {
 	ClipboardItem,
 	Comment,
 	CookieSameSiteEnum,
+	CSSConditionRule,
 	CSSContainerRule,
 	CSSFontFaceRule,
+	CSSGroupingRule,
 	CSSKeyframeRule,
 	CSSKeyframesRule,
+	CSSKeywordValue,
 	CSSMediaRule,
 	CSSRule,
+	CSSScopeRule,
 	CSSStyleDeclaration,
 	CSSStyleRule,
 	CSSStyleSheet,
+	CSSStyleValue,
 	CSSSupportsRule,
 	CustomElementRegistry,
 	CustomEvent,
@@ -353,6 +369,7 @@ export {
 	HTMLQuoteElement,
 	HTMLScriptElement,
 	HTMLSelectElement,
+	HTMLSerializer,
 	HTMLSlotElement,
 	HTMLSourceElement,
 	HTMLSpanElement,
@@ -377,6 +394,7 @@ export {
 	IntersectionObserverEntry,
 	KeyboardEvent,
 	Location,
+	MediaList,
 	MediaQueryListEvent,
 	MediaStream,
 	MediaStreamTrack,
@@ -389,6 +407,7 @@ export {
 	Permissions,
 	PermissionStatus,
 	PointerEvent,
+	PopStateEvent,
 	ProcessingInstruction,
 	ProgressEvent,
 	PropertySymbol,
@@ -401,6 +420,8 @@ export {
 	Selection,
 	ShadowRoot,
 	Storage,
+	StylePropertyMap,
+	StylePropertyMapReadOnly,
 	SubmitEvent,
 	SVGElement,
 	SVGGraphicsElement,
@@ -421,6 +442,7 @@ export {
 	VirtualConsoleLogTypeEnum,
 	VirtualConsolePrinter,
 	VTTCue,
+	WebSocket,
 	WheelEvent,
 	Window,
 	XMLDocument,

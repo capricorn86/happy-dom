@@ -138,7 +138,7 @@ export default class HTMLCanvasElement extends HTMLElement {
 	public getContext(
 		_contextType: '2d' | 'webgl' | 'webgl2' | 'webgpu' | 'bitmaprenderer',
 		_contextAttributes?: { [key: string]: any }
-	): null {
+	): any {
 		return null;
 	}
 

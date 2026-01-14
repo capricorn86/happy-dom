@@ -1,6 +1,6 @@
 import ICachedPreflightResponse from './ICachedPreflightResponse.js';
-import ICachablePreflightRequest from './ICachablePreflightRequest.js';
-import ICachablePreflightResponse from './ICachablePreflightResponse.js';
+import ICacheablePreflightRequest from './ICacheablePreflightRequest.js';
+import ICacheablePreflightResponse from './ICacheablePreflightResponse.js';
 
 /**
  * Fetch response cache.
@@ -12,7 +12,7 @@ export default interface IPreflightResponseCache {
 	 * @param request Request.
 	 * @returns Cached response.
 	 */
-	get(request: ICachablePreflightRequest): ICachedPreflightResponse | null;
+	get(request: ICacheablePreflightRequest): ICachedPreflightResponse | null;
 
 	/**
 	 * Adds a cached response.
@@ -22,8 +22,8 @@ export default interface IPreflightResponseCache {
 	 * @returns Cached response.
 	 */
 	add(
-		request: ICachablePreflightRequest,
-		response: ICachablePreflightResponse
+		request: ICacheablePreflightRequest,
+		response: ICacheablePreflightResponse
 	): ICachedPreflightResponse | null;
 
 	/**

@@ -46,7 +46,7 @@ describe('DetachedBrowser', () => {
 
 		it('Returns the settings with custom settings.', () => {
 			const settings = {
-				disableJavaScriptEvaluation: true,
+				enableJavaScriptEvaluation: true,
 				navigator: {
 					userAgent: 'test'
 				}

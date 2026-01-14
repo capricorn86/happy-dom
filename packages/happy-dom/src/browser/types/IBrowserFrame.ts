@@ -8,7 +8,7 @@ import IGoToOptions from './IGoToOptions.js';
 import { Script } from 'vm';
 import IReloadOptions from './IReloadOptions.js';
 import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
-import IHistoryItem from '../../history/IHistoryItem.js';
+import HistoryItemList from '../../history/HistoryItemList.js';
 
 /**
  * Browser frame.
@@ -22,7 +22,7 @@ export default interface IBrowserFrame {
 	readonly closed: boolean;
 	content: string;
 	url: string;
-	[PropertySymbol.history]: IHistoryItem[];
+	[PropertySymbol.history]: HistoryItemList;
 	[PropertySymbol.asyncTaskManager]: AsyncTaskManager;
 	[PropertySymbol.listeners]: { navigation: Array<() => void> };
 	[PropertySymbol.openerFrame]: IBrowserFrame | null;
@@ -50,6 +50,28 @@ export default interface IBrowserFrame {
 	 * @returns Result.
 	 */
 	evaluate(script: string | Script): any;
+
+	/**
+	 *
+	 * @param script Script.
+	 * @returns Result.
+	 */
+	evaluate(script: string | Script): any;
+
+	/**
+	 * Evaluates a module in the frame's context.
+	 *
+	 * @param options Options.
+	 * @param options.url URL.
+	 * @param options.type Module type.
+	 * @param options.code Code.
+	 * @returns Module exports.
+	 */
+	evaluateModule(options: {
+		url?: string;
+		type?: 'esm' | 'css' | 'json';
+		code?: string;
+	}): Promise<Record<string, any>>;
 
 	/**
 	 * Go to a page.
