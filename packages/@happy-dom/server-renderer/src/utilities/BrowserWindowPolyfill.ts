@@ -73,11 +73,12 @@ export default class BrowserWindowPolyfill {
 			bufferSubData: () => {},
 			drawElementsInstanced: () => {}
 		});
-		(<any>window).Worker = class {
+		(<any>window).Worker = class Worker {
 			public postMessage(): any {}
 			public terminate(): any {}
 		};
-		(<any>window).Path2D = class {
+
+		(<any>window).Path2D = class Path2D {
 			public addPath(): any {}
 			public addPath2D(): any {}
 			public closePath(): any {}

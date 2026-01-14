@@ -681,8 +681,6 @@ export default class SyncFetch {
 					(this.request.credentials === 'same-origin' &&
 						FetchCORSUtility.isCORS(this.#window.location.href, locationURL))
 				) {
-					headers.delete('authorization');
-					headers.delete('www-authenticate');
 					headers.delete('cookie');
 					headers.delete('cookie2');
 				}

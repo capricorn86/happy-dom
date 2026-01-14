@@ -5,6 +5,7 @@ import IServerRendererResult from './types/IServerRendererResult.js';
 import IServerRendererConfiguration from './types/IServerRendererConfiguration.js';
 import IOptionalServerRendererConfiguration from './types/IOptionalServerRendererConfiguration.js';
 import ServerRendererLogLevelEnum from './enums/ServerRendererLogLevelEnum.js';
+import ServerRendererModeEnum from './enums/ServerRendererModeEnum.js';
 
 export {
 	ServerRenderer,
@@ -13,5 +14,6 @@ export {
 	IServerRendererResult,
 	IServerRendererConfiguration,
 	IOptionalServerRendererConfiguration,
-	ServerRendererLogLevelEnum
+	ServerRendererLogLevelEnum,
+	ServerRendererModeEnum
 };

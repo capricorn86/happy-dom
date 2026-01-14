@@ -52,6 +52,28 @@ export default interface IBrowserFrame {
 	evaluate(script: string | Script): any;
 
 	/**
+	 *
+	 * @param script Script.
+	 * @returns Result.
+	 */
+	evaluate(script: string | Script): any;
+
+	/**
+	 * Evaluates a module in the frame's context.
+	 *
+	 * @param options Options.
+	 * @param options.url URL.
+	 * @param options.type Module type.
+	 * @param options.code Code.
+	 * @returns Module exports.
+	 */
+	evaluateModule(options: {
+		url?: string;
+		type?: 'esm' | 'css' | 'json';
+		code?: string;
+	}): Promise<Record<string, any>>;
+
+	/**
 	 * Go to a page.
 	 *
 	 * @param url URL.
