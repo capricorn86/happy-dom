@@ -6,6 +6,7 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import Event from '../../event/Event.js';
 import HTMLElementUtility from './HTMLElementUtility.js';
 import DOMStringMap from '../../dom/DOMStringMap.js';
+import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 import Attr from '../attr/Attr.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
@@ -716,11 +717,7 @@ export default class HTMLElement extends Element {
 	 * @param innerText Inner text.
 	 */
 	public set innerText(text: string) {
-		const childNodes = this[PropertySymbol.nodeArray];
-
-		while (childNodes.length) {
-			this.removeChild(childNodes[0]);
-		}
+		ParentNodeUtility.clearChildren(this);
 
 		const texts = text.split(/[\n\r]/);
 		const ownerDocument = this[PropertySymbol.ownerDocument];

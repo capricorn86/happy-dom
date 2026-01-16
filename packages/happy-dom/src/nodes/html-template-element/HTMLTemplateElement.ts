@@ -5,6 +5,7 @@ import Node from '../node/Node.js';
 import ShadowRoot from '../shadow-root/ShadowRoot.js';
 import HTMLSerializer from '../../html-serializer/HTMLSerializer.js';
 import HTMLParser from '../../html-parser/HTMLParser.js';
+import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 
 /**
  * HTML Template Element.
@@ -41,11 +42,8 @@ export default class HTMLTemplateElement extends HTMLElement {
 	 */
 	public override set innerHTML(html: string) {
 		const content = <DocumentFragment>this[PropertySymbol.content];
-		const childNodes = content[PropertySymbol.nodeArray];
 
-		while (childNodes.length) {
-			content.removeChild(childNodes[0]);
-		}
+		ParentNodeUtility.clearChildren(content);
 
 		new HTMLParser(this[PropertySymbol.window], { isTemplateDocumentFragment: true }).parse(
 			html,
