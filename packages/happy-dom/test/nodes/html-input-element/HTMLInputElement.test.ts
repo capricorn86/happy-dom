@@ -1294,11 +1294,44 @@ describe('HTMLInputElement', () => {
 			expect(element.value).toBe('1');
 		});
 
+		it('Steps up with step value.', () => {
+			element.type = 'number';
+			element.step = '2';
+			element.stepUp();
+			expect(element.value).toBe('2');
+		});
+
 		it('Steps up with defined increment value.', () => {
 			element.type = 'number';
 			element.value = '1';
 			element.stepUp(3);
 			expect(element.value).toBe('4');
+		});
+
+		it('Does not step up past max', () => {
+			element.type = 'number';
+			element.value = '1';
+			element.max = '3';
+			element.stepUp(3);
+			expect(element.value).toBe('3');
+		});
+
+		it('Steps up to exactly max if max is divisible by step', () => {
+			element.type = 'number';
+			element.value = '0';
+			element.max = '8';
+			element.step = '2';
+			element.stepUp(10);
+			expect(element.value).toBe('8');
+		});
+
+		it('Does not step up past max, respecting step attribute', () => {
+			element.type = 'number';
+			element.value = '0';
+			element.max = '7';
+			element.step = '2';
+			element.stepUp(10);
+			expect(element.value).toBe('6');
 		});
 
 		it('Throws exception when invalid type.', () => {
@@ -1309,17 +1342,50 @@ describe('HTMLInputElement', () => {
 	});
 
 	describe('stepDown()', () => {
-		it('Steps up with default value.', () => {
+		it('Steps down with default value.', () => {
 			element.type = 'number';
 			element.stepDown();
 			expect(element.value).toBe('-1');
 		});
 
-		it('Steps up with defined increment value.', () => {
+		it('Steps down with step value.', () => {
+			element.type = 'number';
+			element.step = '2';
+			element.stepDown();
+			expect(element.value).toBe('-2');
+		});
+
+		it('Steps down with defined increment value.', () => {
 			element.type = 'number';
 			element.value = '1';
 			element.stepDown(3);
 			expect(element.value).toBe('-2');
+		});
+
+		it('Does not step down past min', () => {
+			element.type = 'number';
+			element.value = '1';
+			element.min = '0';
+			element.stepDown(3);
+			expect(element.value).toBe('0');
+		});
+
+		it('Steps down to exactly min when min is divisible by step', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '2';
+			element.step = '2';
+			element.stepDown(9);
+			expect(element.value).toBe('2');
+		});
+
+		it('Does not step down past min, respecting step attribute', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '2';
+			element.stepDown(9);
+			expect(element.value).toBe('2');
 		});
 
 		it('Throws exception when invalid type.', () => {
