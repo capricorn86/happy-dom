@@ -122,7 +122,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		// If we're in loading state and have accumulated data, process it
 		if (
-			this.readyState === XMLHttpRequestReadyStateEnum.headersRecieved ||
+			this.readyState === XMLHttpRequestReadyStateEnum.headersReceived ||
 			this.readyState === XMLHttpRequestReadyStateEnum.loading
 		) {
 			return <string>this.#accumulatedData.toString() ?? '';
