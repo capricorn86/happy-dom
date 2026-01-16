@@ -123,8 +123,8 @@ export default class XMLEncodeUtility {
 			.replace(/&nbsp;/gu, String.fromCharCode(160))
 			.replace(/&quot;/gu, '"')
 			.replace(/&apos;/gu, "'")
-			.replace(/&#(\d+);/gu, (_match, dec) => String.fromCharCode(parseInt(dec, 10)))
-			.replace(/&#x([A-Fa-f\d]+);/gu, (_match, hex) => String.fromCharCode(parseInt(hex, 16)))
+			.replace(/&#(\d+);/gu, (_match, dec) => String.fromCodePoint(parseInt(dec, 10)))
+			.replace(/&#x([A-Fa-f\d]+);/gu, (_match, hex) => String.fromCodePoint(parseInt(hex, 16)))
 			.replace(/&amp;/gu, '&');
 	}
 
@@ -146,8 +146,8 @@ export default class XMLEncodeUtility {
 				// "&nbsp;" Should not be supported in XML.
 				.replace(/&quot;/gu, '"')
 				.replace(/&apos;/gu, "'")
-				.replace(/&#(\d+);/gu, (_match, dec) => String.fromCharCode(parseInt(dec, 10)))
-				.replace(/&#x([A-Fa-f\d]+);/gu, (_match, hex) => String.fromCharCode(parseInt(hex, 16)))
+				.replace(/&#(\d+);/gu, (_match, dec) => String.fromCodePoint(parseInt(dec, 10)))
+				.replace(/&#x([A-Fa-f\d]+);/gu, (_match, hex) => String.fromCodePoint(parseInt(hex, 16)))
 				.replace(/&amp;/gu, '&')
 		);
 	}

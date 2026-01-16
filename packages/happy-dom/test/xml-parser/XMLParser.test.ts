@@ -1138,5 +1138,38 @@ part2" data-testid="button"
 				.toBe(`<root><parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 3 at column 20: Comment not terminated
 </div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></root>`);
 		});
+
+		it('Decodes emoji XML entities correctly for #1978', () => {
+			// Test hexadecimal emoji entities (supplementary plane characters U+1F000-U+1FFFF)
+			const result = new XMLParser(window).parse(
+				'<root>&#x1F4CA; &#x1F600; &#x1F680;</root>'
+			);
+			const root = <Element>result.childNodes[0];
+
+			// &#x1F4CA; = 📊 (bar chart emoji)
+			// &#x1F600; = 😀 (grinning face emoji)
+			// &#x1F680; = 🚀 (rocket emoji)
+			expect(root.textContent).toBe('📊 😀 🚀');
+
+			// Test decimal emoji entities
+			const result2 = new XMLParser(window).parse(
+				'<root>&#128202; &#128512; &#128640;</root>'
+			);
+			const root2 = <Element>result2.childNodes[0];
+
+			// &#128202; = 📊 (0x1F4CA in decimal)
+			// &#128512; = 😀 (0x1F600 in decimal)
+			// &#128640; = 🚀 (0x1F680 in decimal)
+			expect(root2.textContent).toBe('📊 😀 🚀');
+
+			// Test mixed content with emoji entities
+			const result3 = new XMLParser(window).parse(
+				'<message>Hello &#x1F44B; World!</message>'
+			);
+			const message = <Element>result3.childNodes[0];
+
+			// &#x1F44B; = 👋 (waving hand emoji)
+			expect(message.textContent).toBe('Hello 👋 World!');
+		});
 	});
 });

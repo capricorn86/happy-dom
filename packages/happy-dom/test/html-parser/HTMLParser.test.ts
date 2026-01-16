@@ -1973,6 +1973,39 @@ describe('HTMLParser', () => {
 			);
 		});
 
+		it('Decodes emoji HTML entities correctly for #1978', () => {
+			// Test hexadecimal emoji entities (supplementary plane characters U+1F000-U+1FFFF)
+			const result = new HTMLParser(window).parse(
+				'<div>&#x1F4CA; &#x1F600; &#x1F680;</div>'
+			);
+			const div = result.childNodes[0];
+
+			// &#x1F4CA; = 📊 (bar chart emoji)
+			// &#x1F600; = 😀 (grinning face emoji)
+			// &#x1F680; = 🚀 (rocket emoji)
+			expect(div.textContent).toBe('📊 😀 🚀');
+
+			// Test decimal emoji entities
+			const result2 = new HTMLParser(window).parse(
+				'<div>&#128202; &#128512; &#128640;</div>'
+			);
+			const div2 = result2.childNodes[0];
+
+			// &#128202; = 📊 (0x1F4CA in decimal)
+			// &#128512; = 😀 (0x1F600 in decimal)
+			// &#128640; = 🚀 (0x1F680 in decimal)
+			expect(div2.textContent).toBe('📊 😀 🚀');
+
+			// Test mixed content with emoji entities
+			const result3 = new HTMLParser(window).parse(
+				'<p>Hello &#x1F44B; World!</p>'
+			);
+			const p = result3.childNodes[0];
+
+			// &#x1F44B; = 👋 (waving hand emoji)
+			expect(p.textContent).toBe('Hello 👋 World!');
+		});
+
 		it('Handles attributes with [] in the name for #1638', () => {
 			const result = new HTMLParser(window).parse(`<div [innerHTML]="'TEST'"></div>`);
 
