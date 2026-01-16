@@ -1975,9 +1975,7 @@ describe('HTMLParser', () => {
 
 		it('Decodes emoji HTML entities correctly for #1978', () => {
 			// Test hexadecimal emoji entities (supplementary plane characters U+1F000-U+1FFFF)
-			const result = new HTMLParser(window).parse(
-				'<div>&#x1F4CA; &#x1F600; &#x1F680;</div>'
-			);
+			const result = new HTMLParser(window).parse('<div>&#x1F4CA; &#x1F600; &#x1F680;</div>');
 			const div = result.childNodes[0];
 
 			// &#x1F4CA; = 📊 (bar chart emoji)
@@ -1986,9 +1984,7 @@ describe('HTMLParser', () => {
 			expect(div.textContent).toBe('📊 😀 🚀');
 
 			// Test decimal emoji entities
-			const result2 = new HTMLParser(window).parse(
-				'<div>&#128202; &#128512; &#128640;</div>'
-			);
+			const result2 = new HTMLParser(window).parse('<div>&#128202; &#128512; &#128640;</div>');
 			const div2 = result2.childNodes[0];
 
 			// &#128202; = 📊 (0x1F4CA in decimal)
@@ -1997,9 +1993,7 @@ describe('HTMLParser', () => {
 			expect(div2.textContent).toBe('📊 😀 🚀');
 
 			// Test mixed content with emoji entities
-			const result3 = new HTMLParser(window).parse(
-				'<p>Hello &#x1F44B; World!</p>'
-			);
+			const result3 = new HTMLParser(window).parse('<p>Hello &#x1F44B; World!</p>');
 			const p = result3.childNodes[0];
 
 			// &#x1F44B; = 👋 (waving hand emoji)

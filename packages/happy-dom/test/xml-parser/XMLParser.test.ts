@@ -1141,9 +1141,7 @@ part2" data-testid="button"
 
 		it('Decodes emoji XML entities correctly for #1978', () => {
 			// Test hexadecimal emoji entities (supplementary plane characters U+1F000-U+1FFFF)
-			const result = new XMLParser(window).parse(
-				'<root>&#x1F4CA; &#x1F600; &#x1F680;</root>'
-			);
+			const result = new XMLParser(window).parse('<root>&#x1F4CA; &#x1F600; &#x1F680;</root>');
 			const root = <Element>result.childNodes[0];
 
 			// &#x1F4CA; = 📊 (bar chart emoji)
@@ -1152,9 +1150,7 @@ part2" data-testid="button"
 			expect(root.textContent).toBe('📊 😀 🚀');
 
 			// Test decimal emoji entities
-			const result2 = new XMLParser(window).parse(
-				'<root>&#128202; &#128512; &#128640;</root>'
-			);
+			const result2 = new XMLParser(window).parse('<root>&#128202; &#128512; &#128640;</root>');
 			const root2 = <Element>result2.childNodes[0];
 
 			// &#128202; = 📊 (0x1F4CA in decimal)
@@ -1163,9 +1159,7 @@ part2" data-testid="button"
 			expect(root2.textContent).toBe('📊 😀 🚀');
 
 			// Test mixed content with emoji entities
-			const result3 = new XMLParser(window).parse(
-				'<message>Hello &#x1F44B; World!</message>'
-			);
+			const result3 = new XMLParser(window).parse('<message>Hello &#x1F44B; World!</message>');
 			const message = <Element>result3.childNodes[0];
 
 			// &#x1F44B; = 👋 (waving hand emoji)
