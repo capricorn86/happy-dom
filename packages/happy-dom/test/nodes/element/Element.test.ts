@@ -1318,6 +1318,31 @@ describe('Element', () => {
 			expect((<any>element.children)['div2'] === div).toBe(true);
 			expect((<any>element.children)['span'] === span).toBe(true);
 		});
+
+		it('should trigger slotchange when shadow root is added before the next animation frame', async () => {
+			const element = document.createElement('div');
+			element.attachShadow({ mode: 'open' });
+			element.textContent = 'Original';
+			document.body.appendChild(element);
+			const slot = document.createElement('slot');
+			slot.addEventListener('slotchange', () => element.textContent = 'Changed');
+			element.shadowRoot.appendChild(slot);
+			await new Promise((resolve) => window.requestAnimationFrame(resolve));
+			expect(element.textContent).toBe('Changed');
+		});
+
+		it('should not triggers slotchange when shadow root is added after the next animation frame', async () => {
+			const element = document.createElement('div');
+			element.attachShadow({ mode: 'open' });
+			element.textContent = 'Original';
+			document.body.appendChild(element);
+			await new Promise((resolve) => window.requestAnimationFrame(resolve));
+			const slot = document.createElement('slot');
+			slot.addEventListener('slotchange', () => (element.textContent = 'Changed'));
+			element.shadowRoot.appendChild(slot);
+			await new Promise((resolve) => window.requestAnimationFrame(resolve));
+			expect(element.textContent).toBe('Original');
+		});
 	});
 
 	describe('removeChild()', () => {

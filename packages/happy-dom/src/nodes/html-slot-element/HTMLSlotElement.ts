@@ -100,7 +100,7 @@ export default class HTMLSlotElement extends HTMLElement {
 	 * @returns Nodes.
 	 */
 	public assignedNodes(options?: { flatten?: boolean }): Node[] {
-		return this.#assignedNodes(this.name, options);
+		return this.#assignedNodes(options);
 	}
 
 	/**
@@ -111,7 +111,7 @@ export default class HTMLSlotElement extends HTMLElement {
 	 * @returns Nodes.
 	 */
 	public assignedElements(options?: { flatten?: boolean }): Element[] {
-		return this.#assignedElements(this.name, options);
+		return this.#assignedElements(options);
 	}
 
 	/**
@@ -133,18 +133,11 @@ export default class HTMLSlotElement extends HTMLElement {
 			attribute[PropertySymbol.name] === 'name' &&
 			attribute[PropertySymbol.value] !== replacedAttribute?.[PropertySymbol.value]
 		) {
-			const replacedAssignedNodes = this.#assignedNodes(replacedAttribute?.[PropertySymbol.value]);
-			const assignedNodes = this.#assignedNodes(attribute.value);
+			const shadowRoot = <ShadowRoot>this.getRootNode();
 
-			if (replacedAssignedNodes.length !== assignedNodes.length) {
-				this.dispatchEvent(new Event('slotchange', { bubbles: true }));
-			} else {
-				for (let i = 0, max = assignedNodes.length; i < max; i++) {
-					if (replacedAssignedNodes[i] !== assignedNodes[i]) {
-						this.dispatchEvent(new Event('slotchange', { bubbles: true }));
-						break;
-					}
-				}
+			if (shadowRoot?.host) {
+				shadowRoot.host[PropertySymbol.isShadowRootDirty] = true;
+				shadowRoot.host[PropertySymbol.updateShadowRoot]();
 			}
 		}
 	}
@@ -156,10 +149,14 @@ export default class HTMLSlotElement extends HTMLElement {
 		super[PropertySymbol.onRemoveAttribute](removedAttribute);
 		if (
 			removedAttribute[PropertySymbol.name] === 'name' &&
-			removedAttribute[PropertySymbol.value] &&
-			this.#assignedNodes(removedAttribute.value).length > 0
+			removedAttribute[PropertySymbol.value]
 		) {
-			this.dispatchEvent(new Event('slotchange', { bubbles: true }));
+			const shadowRoot = <ShadowRoot>this.getRootNode();
+
+			if (shadowRoot?.host) {
+				shadowRoot.host[PropertySymbol.isShadowRootDirty] = true;
+				shadowRoot.host[PropertySymbol.updateShadowRoot]();
+			}
 		}
 	}
 
@@ -171,7 +168,7 @@ export default class HTMLSlotElement extends HTMLElement {
 	 * @param [options.flatten] A boolean value indicating whether to return the assigned nodes of any available child <slot> elements (true) or not (false). Defaults to false.
 	 * @returns Nodes.
 	 */
-	#assignedNodes(name?: string | null, options?: { flatten?: boolean }): Node[] {
+	#assignedNodes(options?: { flatten?: boolean }): Node[] {
 		const shadowRoot = <ShadowRoot>this.getRootNode();
 
 		if (!shadowRoot?.host) {
@@ -182,20 +179,18 @@ export default class HTMLSlotElement extends HTMLElement {
 			return this[PropertySymbol.assignedNodes];
 		}
 
-		const host = shadowRoot.host;
+		shadowRoot.host[PropertySymbol.updateShadowRoot]();
+
 		const flatten = !!options?.flatten;
 		const assigned = [];
 
-		for (const slotNode of (<HTMLElement>host)[PropertySymbol.nodeArray]) {
-			const slotName = (<HTMLElement>slotNode).slot;
-			if ((name && slotName && slotName === name) || (!name && !slotName)) {
-				if (flatten && slotNode instanceof HTMLSlotElement) {
-					for (const slotChild of slotNode.assignedNodes(options)) {
-						assigned.push(slotChild);
-					}
-				} else {
-					assigned.push(slotNode);
+		for (const slotNode of this[PropertySymbol.assignedNodes]) {
+			if (flatten && slotNode instanceof HTMLSlotElement) {
+				for (const slotChild of slotNode.assignedNodes(options)) {
+					assigned.push(slotChild);
 				}
+			} else {
+				assigned.push(slotNode);
 			}
 		}
 
@@ -210,7 +205,7 @@ export default class HTMLSlotElement extends HTMLElement {
 	 * @param [options.flatten] A boolean value indicating whether to return the assigned elements of any available child <slot> elements (true) or not (false). Defaults to false.
 	 * @returns Nodes.
 	 */
-	#assignedElements(name?: string, options?: { flatten?: boolean }): Element[] {
+	#assignedElements(options?: { flatten?: boolean }): Element[] {
 		const shadowRoot = <ShadowRoot>this.getRootNode();
 
 		if (!shadowRoot?.host) {
@@ -227,13 +222,13 @@ export default class HTMLSlotElement extends HTMLElement {
 			return elements;
 		}
 
-		const host = shadowRoot.host;
+		shadowRoot.host[PropertySymbol.updateShadowRoot]();
+
 		const flatten = !!options?.flatten;
 		const assigned = [];
 
-		for (const slotElement of (<HTMLElement>host)[PropertySymbol.elementArray]) {
-			const slotName = slotElement.slot;
-			if ((name && slotName === name) || (!name && !slotName)) {
+		for (const slotElement of this[PropertySymbol.assignedNodes]) {
+			if (slotElement instanceof Element) {
 				if (flatten && slotElement instanceof HTMLSlotElement) {
 					for (const slotChild of slotElement.assignedElements(options)) {
 						assigned.push(slotChild);
