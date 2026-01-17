@@ -1,4 +1,76 @@
 /**
+ * Pre-compiled RegExp patterns for encoding/decoding.
+ * Using pre-compiled patterns avoids RegExp compilation on each call.
+ */
+
+// Encoding patterns
+const ENCODE_XML_ATTR_REGEXP = /[&"<>\t\n\r]/g;
+const ENCODE_HTML_ATTR_REGEXP = /[&"]/g;
+const ENCODE_TEXT_CONTENT_REGEXP = /[&\xA0<>]/g;
+
+// Decoding patterns
+const DECODE_XML_ATTR_REGEXP = /&(?:quot|lt|gt|amp|#x9|#xA|#xD);/g;
+const DECODE_HTML_ATTR_REGEXP = /&(?:quot|amp);/g;
+const DECODE_TEXT_CONTENT_REGEXP = /&(?:nbsp|lt|gt|amp);/g;
+const DECODE_HTML_ENTITIES_REGEXP = /&(?:lt|gt|nbsp|quot|apos|#(\d+)|#x([A-Fa-f\d]+)|amp);/g;
+const DECODE_XML_ENTITIES_REGEXP = /&(?:lt|gt|quot|apos|#(\d+)|#x([A-Fa-f\d]+)|amp);/g;
+
+// Encoding lookup tables
+const ENCODE_XML_ATTR_MAP: { [key: string]: string } = {
+	'&': '&amp;',
+	'"': '&quot;',
+	'<': '&lt;',
+	'>': '&gt;',
+	'\t': '&#x9;',
+	'\n': '&#xA;',
+	'\r': '&#xD;'
+};
+
+const ENCODE_HTML_ATTR_MAP: { [key: string]: string } = {
+	'&': '&amp;',
+	'"': '&quot;'
+};
+
+const ENCODE_TEXT_CONTENT_MAP: { [key: string]: string } = {
+	'&': '&amp;',
+	'\xA0': '&nbsp;',
+	'<': '&lt;',
+	'>': '&gt;'
+};
+
+// Decoding lookup tables
+const DECODE_XML_ATTR_MAP: { [key: string]: string } = {
+	'&quot;': '"',
+	'&lt;': '<',
+	'&gt;': '>',
+	'&#x9;': '\t',
+	'&#xA;': '\n',
+	'&#xD;': '\r',
+	'&amp;': '&'
+};
+
+const DECODE_HTML_ATTR_MAP: { [key: string]: string } = {
+	'&quot;': '"',
+	'&amp;': '&'
+};
+
+const DECODE_TEXT_CONTENT_MAP: { [key: string]: string } = {
+	'&nbsp;': String.fromCharCode(160),
+	'&lt;': '<',
+	'&gt;': '>',
+	'&amp;': '&'
+};
+
+const DECODE_ENTITIES_MAP: { [key: string]: string } = {
+	'&lt;': '<',
+	'&gt;': '>',
+	'&nbsp;': String.fromCharCode(160),
+	'&quot;': '"',
+	'&apos;': "'",
+	'&amp;': '&'
+};
+
+/**
  * Utility for encoding.
  */
 export default class XMLEncodeUtility {
@@ -12,14 +84,7 @@ export default class XMLEncodeUtility {
 		if (value === null) {
 			return '';
 		}
-		return value
-			.replace(/&/gu, '&amp;')
-			.replace(/"/gu, '&quot;')
-			.replace(/</gu, '&lt;')
-			.replace(/>/gu, '&gt;')
-			.replace(/\t/gu, '&#x9;')
-			.replace(/\n/gu, '&#xA;')
-			.replace(/\r/gu, '&#xD;');
+		return value.replace(ENCODE_XML_ATTR_REGEXP, (char) => ENCODE_XML_ATTR_MAP[char]);
 	}
 
 	/**
@@ -32,15 +97,7 @@ export default class XMLEncodeUtility {
 		if (value === null) {
 			return '';
 		}
-
-		return value
-			.replace(/&quot;/gu, '"')
-			.replace(/&lt;/gu, '<')
-			.replace(/&gt;/gu, '>')
-			.replace(/&#x9;/gu, '\t')
-			.replace(/&#xA;/gu, '\n')
-			.replace(/&#xD;/gu, '\r')
-			.replace(/&amp;/gu, '&');
+		return value.replace(DECODE_XML_ATTR_REGEXP, (entity) => DECODE_XML_ATTR_MAP[entity]);
 	}
 
 	/**
@@ -53,7 +110,7 @@ export default class XMLEncodeUtility {
 		if (value === null) {
 			return '';
 		}
-		return value.replace(/&/gu, '&amp;').replace(/"/gu, '&quot;');
+		return value.replace(ENCODE_HTML_ATTR_REGEXP, (char) => ENCODE_HTML_ATTR_MAP[char]);
 	}
 
 	/**
@@ -66,8 +123,7 @@ export default class XMLEncodeUtility {
 		if (value === null) {
 			return '';
 		}
-
-		return value.replace(/&quot;/gu, '"').replace(/&amp;/gu, '&');
+		return value.replace(DECODE_HTML_ATTR_REGEXP, (entity) => DECODE_HTML_ATTR_MAP[entity]);
 	}
 
 	/**
@@ -80,12 +136,7 @@ export default class XMLEncodeUtility {
 		if (text === null) {
 			return '';
 		}
-
-		return text
-			.replace(/&/gu, '&amp;')
-			.replace(/\xA0/gu, '&nbsp;')
-			.replace(/</gu, '&lt;')
-			.replace(/>/gu, '&gt;');
+		return text.replace(ENCODE_TEXT_CONTENT_REGEXP, (char) => ENCODE_TEXT_CONTENT_MAP[char]);
 	}
 
 	/**
@@ -98,12 +149,7 @@ export default class XMLEncodeUtility {
 		if (text === null) {
 			return '';
 		}
-
-		return text
-			.replace(/&nbsp;/gu, String.fromCharCode(160))
-			.replace(/&lt;/gu, '<')
-			.replace(/&gt;/gu, '>')
-			.replace(/&amp;/gu, '&');
+		return text.replace(DECODE_TEXT_CONTENT_REGEXP, (entity) => DECODE_TEXT_CONTENT_MAP[entity]);
 	}
 
 	/**
@@ -116,16 +162,15 @@ export default class XMLEncodeUtility {
 		if (value === null) {
 			return '';
 		}
-
-		return value
-			.replace(/&lt;/gu, '<')
-			.replace(/&gt;/gu, '>')
-			.replace(/&nbsp;/gu, String.fromCharCode(160))
-			.replace(/&quot;/gu, '"')
-			.replace(/&apos;/gu, "'")
-			.replace(/&#(\d+);/gu, (_match, dec) => String.fromCharCode(parseInt(dec, 10)))
-			.replace(/&#x([A-Fa-f\d]+);/gu, (_match, hex) => String.fromCharCode(parseInt(hex, 16)))
-			.replace(/&amp;/gu, '&');
+		return value.replace(DECODE_HTML_ENTITIES_REGEXP, (match, dec, hex) => {
+			if (dec !== undefined) {
+				return String.fromCharCode(parseInt(dec, 10));
+			}
+			if (hex !== undefined) {
+				return String.fromCharCode(parseInt(hex, 16));
+			}
+			return DECODE_ENTITIES_MAP[match];
+		});
 	}
 
 	/**
@@ -138,17 +183,15 @@ export default class XMLEncodeUtility {
 		if (value === null) {
 			return '';
 		}
-
-		return (
-			value
-				.replace(/&lt;/gu, '<')
-				.replace(/&gt;/gu, '>')
-				// "&nbsp;" Should not be supported in XML.
-				.replace(/&quot;/gu, '"')
-				.replace(/&apos;/gu, "'")
-				.replace(/&#(\d+);/gu, (_match, dec) => String.fromCharCode(parseInt(dec, 10)))
-				.replace(/&#x([A-Fa-f\d]+);/gu, (_match, hex) => String.fromCharCode(parseInt(hex, 16)))
-				.replace(/&amp;/gu, '&')
-		);
+		// Note: "&nbsp;" is not supported in XML
+		return value.replace(DECODE_XML_ENTITIES_REGEXP, (match, dec, hex) => {
+			if (dec !== undefined) {
+				return String.fromCharCode(parseInt(dec, 10));
+			}
+			if (hex !== undefined) {
+				return String.fromCharCode(parseInt(hex, 16));
+			}
+			return DECODE_ENTITIES_MAP[match];
+		});
 	}
 }
