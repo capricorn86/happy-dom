@@ -195,4 +195,59 @@ describe('NodeIterator', () => {
 			}
 		});
 	});
+
+	describe('referenceNode', () => {
+		it('Returns the root node initially.', () => {
+			const nodeIterator = document.createNodeIterator(document.body);
+			expect(nodeIterator.referenceNode).toBe(document.body);
+		});
+
+		it('Returns the current node after calling nextNode().', () => {
+			const nodeIterator = document.createNodeIterator(document.body, NodeFilter.SHOW_ELEMENT);
+			const firstNode = nodeIterator.nextNode();
+			expect(nodeIterator.referenceNode).toBe(firstNode);
+
+			const secondNode = nodeIterator.nextNode();
+			expect(nodeIterator.referenceNode).toBe(secondNode);
+		});
+
+		it('Returns the current node after calling previousNode().', () => {
+			const nodeIterator = document.createNodeIterator(document.body, NodeFilter.SHOW_ELEMENT);
+			nodeIterator.nextNode();
+			nodeIterator.nextNode();
+			const prevNode = nodeIterator.previousNode();
+			expect(nodeIterator.referenceNode).toBe(prevNode);
+		});
+	});
+
+	describe('pointerBeforeReferenceNode', () => {
+		it('Returns true initially.', () => {
+			const nodeIterator = document.createNodeIterator(document.body);
+			expect(nodeIterator.pointerBeforeReferenceNode).toBe(true);
+		});
+
+		it('Returns false after calling nextNode().', () => {
+			const nodeIterator = document.createNodeIterator(document.body);
+			nodeIterator.nextNode();
+			expect(nodeIterator.pointerBeforeReferenceNode).toBe(false);
+		});
+
+		it('Returns true after calling previousNode().', () => {
+			const nodeIterator = document.createNodeIterator(document.body, NodeFilter.SHOW_ELEMENT);
+			nodeIterator.nextNode();
+			nodeIterator.nextNode();
+			nodeIterator.previousNode();
+			expect(nodeIterator.pointerBeforeReferenceNode).toBe(true);
+		});
+	});
+
+	describe('detach()', () => {
+		it('Is a no-op method that exists for legacy compatibility.', () => {
+			const nodeIterator = document.createNodeIterator(document.body);
+			// Should not throw
+			expect(() => nodeIterator.detach()).not.toThrow();
+			// Iterator should still work after detach
+			expect(nodeIterator.nextNode()).toBe(document.body);
+		});
+	});
 });

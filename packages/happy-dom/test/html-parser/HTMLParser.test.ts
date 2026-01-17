@@ -780,6 +780,74 @@ describe('HTMLParser', () => {
 			);
 		});
 
+		it('Parses MathML elements.', () => {
+			const result = new HTMLParser(window).parse(
+				`<div>
+					<math>
+						<mi>x</mi>
+						<mo>+</mo>
+						<mn>1</mn>
+					</math>
+				</div>`
+			);
+
+			const div = result.children[0];
+			const math = div.children[0];
+
+			expect(div.namespaceURI).toBe(NamespaceURI.html);
+			expect(math.namespaceURI).toBe(NamespaceURI.mathML);
+			expect(math.tagName).toBe('math');
+			expect(math.children[0].namespaceURI).toBe(NamespaceURI.mathML);
+			expect(math.children[0].tagName).toBe('mi');
+			expect(math.children[1].namespaceURI).toBe(NamespaceURI.mathML);
+			expect(math.children[1].tagName).toBe('mo');
+			expect(math.children[2].namespaceURI).toBe(NamespaceURI.mathML);
+			expect(math.children[2].tagName).toBe('mn');
+		});
+
+		it('Parses nested MathML elements.', () => {
+			const result = new HTMLParser(window).parse(
+				`<div>
+					<math>
+						<mfrac>
+							<mi>x</mi>
+							<mn>2</mn>
+						</mfrac>
+					</math>
+				</div>`
+			);
+
+			const math = result.children[0].children[0];
+			const mfrac = math.children[0];
+
+			expect(math.namespaceURI).toBe(NamespaceURI.mathML);
+			expect(mfrac.namespaceURI).toBe(NamespaceURI.mathML);
+			expect(mfrac.tagName).toBe('mfrac');
+			expect(mfrac.children[0].tagName).toBe('mi');
+			expect(mfrac.children[1].tagName).toBe('mn');
+		});
+
+		it('Escapes MathML namespace in <mi> for non-MathML elements.', () => {
+			const result = new HTMLParser(window).parse(
+				`<div>
+					<math>
+						<mi>
+							<svg></svg>
+							<div></div>
+						</mi>
+					</math>
+				</div>`
+			);
+
+			const mi = result.children[0].children[0].children[0];
+			const svg = mi.children[0];
+			const div = mi.children[1];
+
+			expect(mi.namespaceURI).toBe(NamespaceURI.mathML);
+			expect(svg.namespaceURI).toBe(NamespaceURI.svg);
+			expect(div.namespaceURI).toBe(NamespaceURI.html);
+		});
+
 		it('Parses childless elements with start and end tag names in different case', () => {
 			const result = new HTMLParser(window).parse(
 				`

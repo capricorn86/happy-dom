@@ -9,6 +9,7 @@ import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import HTMLElementConfig from '../config/HTMLElementConfig.js';
 import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigContentModelEnum.js';
 import SVGElementConfig from '../config/SVGElementConfig.js';
+import MathMLElementConfig from '../config/MathMLElementConfig.js';
 import StringUtility from '../utilities/StringUtility.js';
 import BrowserWindow from '../window/BrowserWindow.js';
 import DocumentType from '../nodes/document-type/DocumentType.js';
@@ -831,6 +832,26 @@ export default class HTMLParser {
 
 		// NamespaceURI is inherited from the parent element.
 		const namespaceURI = (<Element>this.currentNode)[PropertySymbol.namespaceURI];
+
+		// NamespaceURI should be MathML when the tag name is "math".
+		if (lowerTagName === 'math') {
+			return this.rootDocument!.createElementNS(NamespaceURI.mathML, 'math');
+		}
+
+		// Handle MathML namespace
+		if (namespaceURI === NamespaceURI.mathML) {
+			// <mi> is a special case where children can escape the MathML namespace if not a known MathML element.
+			if (
+				(<Element>this.currentNode)[PropertySymbol.tagName] === 'mi' &&
+				!MathMLElementConfig[lowerTagName]
+			) {
+				if (lowerTagName === 'svg') {
+					return this.rootDocument!.createElementNS(NamespaceURI.svg, 'svg');
+				}
+				return this.rootDocument!.createElementNS(NamespaceURI.html, lowerTagName);
+			}
+			return this.rootDocument!.createElementNS(NamespaceURI.mathML, tagName);
+		}
 
 		// NamespaceURI should be SVG when the tag name is "svg" (even in XML mode).
 		if (lowerTagName === 'svg') {
