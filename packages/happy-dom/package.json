@@ -37,7 +37,7 @@
 		"ws": "^8.18.3",
 		"@types/ws": "^8.18.1",
 		"@types/whatwg-mimetype": "^3.0.2",
-		"@types/node": "^20.0.0"
+		"@types/node": ">=20.0.0"
 	},
 	"devDependencies": {
 		"@vitest/ui": "^3.2.3",
