@@ -1,6 +1,8 @@
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility.js';
+import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import HTMLSlotElement from '../../../src/nodes/html-slot-element/HTMLSlotElement.js';
 import NamespaceURI from '../../../src/config/NamespaceURI.js';
 import HTMLCollection from '../../../src/nodes/element/HTMLCollection.js';
 import { beforeEach, describe, it, expect } from 'vitest';
@@ -126,6 +128,85 @@ describe('ParentNodeUtility', () => {
 			).toBe(
 				'<span class="child5"></span><span class="child6"></span><span class="child7"></span>'
 			);
+		});
+	});
+
+	describe('clearChildren()', () => {
+		it('emits a single childList MutationRecord with all removed nodes per DOM spec', async () => {
+			const parent = document.createElement('div');
+			const a = document.createElement('a');
+			const b = document.createElement('b');
+			const c = document.createElement('c');
+			parent.append(a, b, c);
+
+			const records: any[][] = [];
+			const observer = new window.MutationObserver((r) => records.push(r));
+			observer.observe(parent, { childList: true });
+
+			ParentNodeUtility.clearChildren(parent);
+
+			await new Promise((r) => setTimeout(r, 1));
+
+			// Per DOM spec "replace all" algorithm, a single record is emitted with all removed nodes.
+			// @see https://dom.spec.whatwg.org/#concept-node-replace-all
+			expect(records.length).toBe(1);
+			const batch = records[0];
+			expect(batch.length).toBe(1);
+			expect(batch[0].removedNodes).toEqual([a, b, c]);
+			expect(batch[0].previousSibling).toBe(null);
+			expect(batch[0].nextSibling).toBe(null);
+		});
+
+		it('returns empty array and emits no mutation when parent has no children', async () => {
+			const parent = document.createElement('div');
+
+			const records: any[][] = [];
+			const observer = new window.MutationObserver((r) => records.push(r));
+			observer.observe(parent, { childList: true });
+
+			const result = ParentNodeUtility.clearChildren(parent);
+
+			await new Promise((r) => setTimeout(r, 1));
+
+			expect(result).toEqual([]);
+			expect(records.length).toBe(0);
+		});
+
+		it('dispatches slotchange for affected slots when clearing children', () => {
+			/**
+			 * Test element with shadow slots.
+			 */
+			class XEl extends HTMLElement {
+				/**
+				 * Constructor.
+				 */
+				constructor() {
+					super();
+					this.attachShadow({ mode: 'open' });
+					this.shadowRoot!.innerHTML = '<slot name="n"></slot><slot></slot>';
+				}
+			}
+			window.customElements.define('x-el', <any>XEl);
+			const host = <HTMLElement>(<any>document.createElement('x-el'));
+			document.body.appendChild(host);
+			const named = document.createElement('div');
+			named.setAttribute('slot', 'n');
+			const text = document.createTextNode('t');
+			const comment = document.createComment('ignore');
+			host.append(named, text, comment);
+
+			let namedChanged = 0;
+			let defaultChanged = 0;
+			const namedSlot = <HTMLSlotElement>host.shadowRoot!.querySelector('slot[name="n"]');
+			const defaultSlot = <HTMLSlotElement>host.shadowRoot!.querySelector('slot:not([name])');
+			namedSlot.addEventListener('slotchange', () => namedChanged++);
+			defaultSlot.addEventListener('slotchange', () => defaultChanged++);
+
+			ParentNodeUtility.clearChildren(host);
+
+			expect(namedChanged).toBe(1);
+			// Text counts, comment does not
+			expect(defaultChanged).toBe(1);
 		});
 	});
 
