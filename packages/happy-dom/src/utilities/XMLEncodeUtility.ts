@@ -1,3 +1,5 @@
+import { decodeHTML } from 'entities';
+
 /**
  * Pre-compiled RegExp patterns for encoding/decoding.
  * Using pre-compiled patterns avoids RegExp compilation on each call.
@@ -12,7 +14,6 @@ const ENCODE_TEXT_CONTENT_REGEXP = /[&\xA0<>]/g;
 const DECODE_XML_ATTR_REGEXP = /&(?:quot|lt|gt|amp|#x9|#xA|#xD);/g;
 const DECODE_HTML_ATTR_REGEXP = /&(?:quot|amp);/g;
 const DECODE_TEXT_CONTENT_REGEXP = /&(?:nbsp|lt|gt|amp);/g;
-const DECODE_HTML_ENTITIES_REGEXP = /&(?:lt|gt|nbsp|quot|apos|#(\d+)|#x([A-Fa-f\d]+)|amp);/g;
 const DECODE_XML_ENTITIES_REGEXP = /&(?:lt|gt|quot|apos|#(\d+)|#x([A-Fa-f\d]+)|amp);/g;
 
 // Encoding lookup tables
@@ -155,6 +156,8 @@ export default class XMLEncodeUtility {
 	/**
 	 * Decodes HTML entities.
 	 *
+	 * Uses the 'entities' library for comprehensive HTML5 named character reference support.
+	 *
 	 * @param value Value.
 	 * @returns Decoded value.
 	 */
@@ -162,15 +165,8 @@ export default class XMLEncodeUtility {
 		if (value === null) {
 			return '';
 		}
-		return value.replace(DECODE_HTML_ENTITIES_REGEXP, (match, dec, hex) => {
-			if (dec !== undefined) {
-				return String.fromCharCode(parseInt(dec, 10));
-			}
-			if (hex !== undefined) {
-				return String.fromCharCode(parseInt(hex, 16));
-			}
-			return DECODE_ENTITIES_MAP[match];
-		});
+
+		return decodeHTML(value);
 	}
 
 	/**
