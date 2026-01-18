@@ -408,6 +408,33 @@ describe('Node', () => {
 			const element = document.createElement('div');
 			expect(element.getRootNode() === element).toBe(true);
 		});
+
+		it('Returns ShadowRoot when element is inside a detached ShadowRoot.', () => {
+			const host = document.createElement('div');
+			const child = document.createElement('span');
+
+			const shadowRoot = host.attachShadow({ mode: 'open' });
+			shadowRoot.appendChild(child);
+
+			// Host is NOT attached to document
+			const rootNode = child.getRootNode({ composed: false });
+
+			expect(rootNode === shadowRoot).toBe(true);
+		});
+
+		it('Returns ShadowRoot when composed is true and ShadowRoot is detached.', () => {
+			const host = document.createElement('div');
+			const child = document.createElement('span');
+
+			const shadowRoot = host.attachShadow({ mode: 'open' });
+			shadowRoot.appendChild(child);
+
+			// Host is NOT attached to document - composed: true still returns the root of the detached tree
+			const rootNode = child.getRootNode({ composed: true });
+
+			// When detached, we can only traverse up to the ShadowRoot since there's no connection to document
+			expect(rootNode === shadowRoot).toBe(true);
+		});
 	});
 
 	describe('cloneNode()', () => {
