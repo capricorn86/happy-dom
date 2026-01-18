@@ -59,11 +59,11 @@ export default class WebSocket extends EventTarget {
 			);
 		}
 
-		if (parsedURL.pathname.length > 1) {
-			throw new window.DOMException(
-				`The URL contains a path name ('${parsedURL.pathname}'). Paths are not allowed in WebSocket URLs.`,
-				DOMExceptionNameEnum.syntaxError
-			);
+		// Note: WebSocket URLs can have paths (e.g., wss://example.com/chat/room1)
+		// The fragment (hash) should be removed per the spec, but paths are valid.
+		if (parsedURL.hash) {
+			// Remove fragment from URL as per WebSocket spec
+			parsedURL.hash = '';
 		}
 
 		const protocolSet = new Set<string>();
