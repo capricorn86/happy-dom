@@ -182,10 +182,10 @@ export default class XMLEncodeUtility {
 		// Note: "&nbsp;" is not supported in XML
 		return value.replace(DECODE_XML_ENTITIES_REGEXP, (match, dec, hex) => {
 			if (dec !== undefined) {
-				return String.fromCharCode(parseInt(dec, 10));
+				return String.fromCodePoint(parseInt(dec, 10));
 			}
 			if (hex !== undefined) {
-				return String.fromCharCode(parseInt(hex, 16));
+				return String.fromCodePoint(parseInt(hex, 16));
 			}
 			return DECODE_ENTITIES_MAP[match];
 		});
