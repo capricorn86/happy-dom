@@ -135,7 +135,15 @@ export default class FetchBodyUtility {
 			(<any>requestOrResponse.body)[PropertySymbol.nodeStream].pipe(stream1);
 			(<any>requestOrResponse.body)[PropertySymbol.nodeStream].pipe(stream2);
 			// Sets the body of the cloned request/response to the first pass through stream.
-			requestOrResponse.body = this.nodeToWebStream(stream1);
+			// Request uses [PropertySymbol.body] with a getter, Response uses public readonly body.
+			const newStream = this.nodeToWebStream(stream1);
+			if (PropertySymbol.body in requestOrResponse) {
+				// Request object - set the symbol property (getter will return it)
+				(<any>requestOrResponse)[PropertySymbol.body] = newStream;
+			} else {
+				// Response object - set the public property directly
+				(<ReadableStream | null>(<any>requestOrResponse).body) = newStream;
+			}
 			// Returns the clone.
 			return this.nodeToWebStream(stream2);
 		}
@@ -145,8 +153,14 @@ export default class FetchBodyUtility {
 		const [stream1, stream2] = requestOrResponse.body.tee();
 
 		// Sets the body of the cloned request to the first pass through stream.
-		// TODO: check id this is required as request should be read only object
-		requestOrResponse.body = stream1;
+		// Request uses [PropertySymbol.body] with a getter, Response uses public readonly body.
+		if (PropertySymbol.body in requestOrResponse) {
+			// Request object - set the symbol property (getter will return it)
+			(<any>requestOrResponse)[PropertySymbol.body] = stream1;
+		} else {
+			// Response object - set the public property directly
+			(<ReadableStream | null>(<any>requestOrResponse).body) = stream1;
+		}
 
 		// Returns the other stream as the clone
 		return stream2;

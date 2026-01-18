@@ -1973,6 +1973,25 @@ describe('HTMLParser', () => {
 			);
 		});
 
+		it('Decodes named HTML entities correctly for #1951', () => {
+			const div = document.createElement('div');
+			div.innerHTML = '<p>Hello test &ndash; end test</p>';
+
+			// The entity should be decoded to the actual character
+			expect(div.textContent).toBe('Hello test – end test');
+
+			// When serialized back, the character should remain as the actual character (not re-encoded as entity)
+			expect(div.innerHTML).toBe('<p>Hello test – end test</p>');
+		});
+
+		it('Decodes various named HTML entities for #1951', () => {
+			const div = document.createElement('div');
+			div.innerHTML = '<p>&mdash; &copy; &reg; &trade; &euro; &pound; &yen;</p>';
+
+			// All entities should be decoded
+			expect(div.textContent).toBe('— © ® ™ € £ ¥');
+		});
+
 		it('Handles attributes with [] in the name for #1638', () => {
 			const result = new HTMLParser(window).parse(`<div [innerHTML]="'TEST'"></div>`);
 

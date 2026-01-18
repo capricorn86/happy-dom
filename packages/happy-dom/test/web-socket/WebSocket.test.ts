@@ -95,6 +95,46 @@ describe('WebSocket', () => {
 	});
 
 	describe('constructor()', () => {
+		it('Connects to web socket with a path in the URL.', async () => {
+			const socket = new window.WebSocket('ws://echo.websocket.org/chat/room1');
+			const ws = <any>socket[PropertySymbol.webSocket];
+
+			expect(ws.internalInit).toEqual({
+				url: new URL('ws://echo.websocket.org/chat/room1'),
+				protocols: [],
+				options: {
+					headers: {
+						'user-agent': window.navigator.userAgent,
+						cookie: '',
+						origin: 'https://localhost:8080'
+					},
+					rejectUnauthorized: true
+				}
+			});
+
+			expect(socket.url).toBe('ws://echo.websocket.org/chat/room1');
+		});
+
+		it('Removes fragment from URL.', async () => {
+			const socket = new window.WebSocket('ws://echo.websocket.org/chat#section');
+			const ws = <any>socket[PropertySymbol.webSocket];
+
+			expect(ws.internalInit).toEqual({
+				url: new URL('ws://echo.websocket.org/chat'),
+				protocols: [],
+				options: {
+					headers: {
+						'user-agent': window.navigator.userAgent,
+						cookie: '',
+						origin: 'https://localhost:8080'
+					},
+					rejectUnauthorized: true
+				}
+			});
+
+			expect(socket.url).toBe('ws://echo.websocket.org/chat');
+		});
+
 		it('Connects to web socket and listens to "open" event.', async () => {
 			window.document.cookie = 'sessionId=abc123';
 

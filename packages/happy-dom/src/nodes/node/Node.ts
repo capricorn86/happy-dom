@@ -336,7 +336,10 @@ export default class Node extends EventTarget {
 		if (otherNode === undefined) {
 			return false;
 		}
-		return NodeUtility.isInclusiveAncestor(this, otherNode);
+		// HTMLFormElement and HTMLSelectElement return a Proxy from their constructor.
+		// We need to use the proxy for comparison to ensure correct behavior.
+		const self = this[PropertySymbol.proxy] || this;
+		return NodeUtility.isInclusiveAncestor(self, otherNode);
 	}
 
 	/**

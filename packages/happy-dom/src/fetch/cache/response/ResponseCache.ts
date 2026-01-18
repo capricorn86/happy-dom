@@ -154,7 +154,7 @@ export default class ResponseCache implements IResponseCache {
 				switch (key) {
 					case 'max-age':
 						cachedResponse.expires =
-							Date.now() + parseInt(value) * 1000 - (age ? parseInt(age) * 1000 : 0);
+							Date.now() + parseFloat(value) * 1000 - (age ? parseFloat(age) * 1000 : 0);
 						break;
 					case 'no-cache':
 					case 'no-store':
