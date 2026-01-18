@@ -355,6 +355,39 @@ describe('Node', () => {
 
 			expect(div.contains(<Node>(<unknown>undefined))).toBe(false);
 		});
+
+		it('Returns "true" for HTMLFormElement containing child elements (issue #1876).', () => {
+			const form = document.createElement('form');
+			const input = document.createElement('input');
+
+			form.appendChild(input);
+
+			expect(form.contains(input)).toBe(true);
+			expect(form.contains(form)).toBe(true);
+		});
+
+		it('Returns "true" for HTMLSelectElement containing child elements (issue #1876).', () => {
+			const select = document.createElement('select');
+			const option = document.createElement('option');
+
+			select.appendChild(option);
+
+			expect(select.contains(option)).toBe(true);
+			expect(select.contains(select)).toBe(true);
+		});
+
+		it('Returns "true" for nested elements within HTMLFormElement (issue #1876).', () => {
+			const form = document.createElement('form');
+			const div = document.createElement('div');
+			const input = document.createElement('input');
+
+			div.appendChild(input);
+			form.appendChild(div);
+
+			expect(form.contains(input)).toBe(true);
+			expect(form.contains(div)).toBe(true);
+			expect(div.contains(input)).toBe(true);
+		});
 	});
 
 	describe('getRootNode()', () => {
