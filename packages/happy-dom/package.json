@@ -33,11 +33,12 @@
 		"test:debug": "vitest run --inspect-brk --no-file-parallelism"
 	},
 	"dependencies": {
-		"whatwg-mimetype": "^3.0.0",
-		"ws": "^8.18.3",
-		"@types/ws": "^8.18.1",
+		"@types/node": "^20.0.0",
 		"@types/whatwg-mimetype": "^3.0.2",
-		"@types/node": "^20.0.0"
+		"@types/ws": "^8.18.1",
+		"entities": "^4.5.0",
+		"whatwg-mimetype": "^3.0.0",
+		"ws": "^8.18.3"
 	},
 	"devDependencies": {
 		"@vitest/ui": "^3.2.3",
