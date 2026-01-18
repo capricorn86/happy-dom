@@ -2240,7 +2240,7 @@ describe('BrowserWindow', () => {
 			const newWindow = <Window>window.open(`javascript:document.write('Test');`);
 			expect(newWindow).toBeInstanceOf(BrowserWindow);
 			expect(newWindow.location.href).toBe('about:blank');
-			await new Promise((resolve) => setTimeout(resolve, 1));
+			await browser.waitUntilComplete();
 			expect(newWindow.document.body.innerHTML).toBe('Test');
 		});
 
@@ -2250,7 +2250,7 @@ describe('BrowserWindow', () => {
 			newWindow.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
 			expect(newWindow).toBeInstanceOf(BrowserWindow);
 			expect(newWindow.location.href).toBe('about:blank');
-			await new Promise((resolve) => setTimeout(resolve, 20));
+			await browser.waitUntilComplete();
 			expect(String((<ErrorEvent>(<unknown>errorEvent)).error)).toBe(
 				'ReferenceError: test is not defined'
 			);

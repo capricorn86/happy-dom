@@ -54,7 +54,7 @@
 		"@jest/environment": "^30.0.0",
 		"@jest/fake-timers": "^30.0.0",
 		"@jest/types": "^30.0.0",
-		"@types/node": "^20.0.0",
+		"@types/node": ">=20.0.0",
 		"@types/jest": "^30.0.0",
 		"happy-dom": "^0.0.0",
 		"jest": "^30.0.0",

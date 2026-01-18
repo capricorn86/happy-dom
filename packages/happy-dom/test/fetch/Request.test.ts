@@ -842,6 +842,45 @@ describe('Request', () => {
 	});
 
 	describe('clone()', () => {
+		it('Clones request body stream without throwing when body has no buffer.', async () => {
+			// This test reproduces issue #1963: cloneBodyStream throws
+			// "Cannot set property body of #<Request> which has only a getter"
+			// when the request body is a ReadableStream without a buffer.
+			const stream = new ReadableStream({
+				start(controller) {
+					controller.enqueue(Buffer.from('Hello World'));
+					controller.close();
+				}
+			});
+
+			const request = new window.Request(TEST_URL, {
+				method: 'POST',
+				body: stream
+			});
+
+			// Clear the internal buffer to simulate a stream-only body
+			request[PropertySymbol.bodyBuffer] = null;
+
+			// This should not throw "Cannot set property body of #<Request> which has only a getter"
+			const clonedStream = FetchBodyUtility.cloneBodyStream(window, request);
+
+			expect(clonedStream).toBeInstanceOf(ReadableStream);
+
+			// Verify the original request body is still readable
+			const originalChunks: Buffer[] = [];
+			for await (const chunk of <ReadableStream>request.body) {
+				originalChunks.push(Buffer.from(chunk));
+			}
+			expect(Buffer.concat(originalChunks).toString()).toBe('Hello World');
+
+			// Verify the cloned stream is also readable
+			const clonedChunks: Buffer[] = [];
+			for await (const chunk of <ReadableStream>clonedStream) {
+				clonedChunks.push(Buffer.from(chunk));
+			}
+			expect(Buffer.concat(clonedChunks).toString()).toBe('Hello World');
+		});
+
 		it('Returns a clone.', async () => {
 			window.happyDOM?.setURL('https://example.com/other/path/');
 
