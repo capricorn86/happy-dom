@@ -319,29 +319,35 @@ export default class EventTarget {
 		}
 
 		if (event.eventPhase !== EventPhaseEnum.capturing) {
-			const onEventName = 'on' + event.type.toLowerCase();
-			const eventListener = (<any>this)[onEventName];
+			// Only call on* handlers if they are defined via propertyEventListeners (i.e., on DOM elements
+			// that explicitly define on* IDL attributes). Plain EventTarget instances should not have
+			// arbitrary on* properties called as event handlers. (issue #1895)
+			const propertyEventListeners = (<any>this)[PropertySymbol.propertyEventListeners];
+			if (propertyEventListeners) {
+				const onEventName = 'on' + event.type.toLowerCase();
+				const eventListener = propertyEventListeners.get(onEventName) ?? (<any>this)[onEventName];
 
-			if (typeof eventListener === 'function') {
-				// We can end up in a never ending loop if the listener for the error event on Window also throws an error.
-				if (
-					window &&
-					(this !== <EventTarget>window || event.type !== 'error') &&
-					!browserSettings?.disableErrorCapturing &&
-					browserSettings?.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
-				) {
-					let result: any;
-					try {
-						result = eventListener(event);
-					} catch (error) {
-						window[PropertySymbol.dispatchError](<Error>error);
-					}
+				if (typeof eventListener === 'function') {
+					// We can end up in a never ending loop if the listener for the error event on Window also throws an error.
+					if (
+						window &&
+						(this !== <EventTarget>window || event.type !== 'error') &&
+						!browserSettings?.disableErrorCapturing &&
+						browserSettings?.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
+					) {
+						let result: any;
+						try {
+							result = eventListener(event);
+						} catch (error) {
+							window[PropertySymbol.dispatchError](<Error>error);
+						}
 
-					if (result instanceof Promise) {
-						result.catch((error) => window[PropertySymbol.dispatchError](error));
+						if (result instanceof Promise) {
+							result.catch((error) => window[PropertySymbol.dispatchError](error));
+						}
+					} else {
+						eventListener(event);
 					}
-				} else {
-					eventListener(event);
 				}
 			}
 		}
