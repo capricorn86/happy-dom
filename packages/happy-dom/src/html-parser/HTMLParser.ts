@@ -173,7 +173,7 @@ export default class HTMLParser {
 		this.readState = <MarkupReadStateEnum>MarkupReadStateEnum.any;
 		this.documentStructure = null;
 		this.startTagIndex = 0;
-		this.markupRegExp = new RegExp(MARKUP_REGEXP, 'gm');
+		this.markupRegExp = new RegExp(MARKUP_REGEXP);
 
 		if (this.rootNode instanceof Document) {
 			const { doctype, documentElement, head, body } = <Document>this.rootNode;
@@ -397,7 +397,7 @@ export default class HTMLParser {
 				this.nextElement !== this.documentStructure.nodes.head ||
 				this.documentStructure.level < HTMLDocumentStructureLevelEnum.body)
 		) {
-			const attributeRegexp = new RegExp(ATTRIBUTE_REGEXP, 'gm');
+			const attributeRegexp = new RegExp(ATTRIBUTE_REGEXP);
 			let attributeMatch: RegExpExecArray | null;
 
 			while ((attributeMatch = attributeRegexp.exec(attributeString))) {
