@@ -82,7 +82,7 @@ export default class XMLEncodeUtility {
 		}
 
 		return text
-			.replace(/&/gu, '&amp;')
+			.replace(/&(?![a-zA-Z][a-zA-Z0-9]*;|#[0-9]+;|#x[0-9A-Fa-f]+;)/gu, '&amp;')
 			.replace(/\xA0/gu, '&nbsp;')
 			.replace(/</gu, '&lt;')
 			.replace(/>/gu, '&gt;');
