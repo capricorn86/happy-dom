@@ -1992,6 +1992,34 @@ describe('HTMLParser', () => {
 			expect(div.textContent).toBe('— © ® ™ € £ ¥');
 		});
 
+		it('Decodes emoji numeric entities (decimal) correctly for #1978', () => {
+			const div = document.createElement('div');
+			// Emoji in the supplementary Unicode plane (U+1F000-U+1FFFF)
+			div.innerHTML = '&#128512;&#128187;&#127873;&#128202;'; // 😀💻🎁📊
+
+			expect(div.textContent?.codePointAt(0)).toBe(0x1f600); // 😀
+			expect(div.textContent?.codePointAt(2)).toBe(0x1f4bb); // 💻
+			expect(div.textContent?.codePointAt(4)).toBe(0x1f381); // 🎁
+			expect(div.textContent?.codePointAt(6)).toBe(0x1f4ca); // 📊
+		});
+
+		it('Decodes emoji numeric entities (hexadecimal) correctly for #1978', () => {
+			const div = document.createElement('div');
+			div.innerHTML = '&#x1F600;&#x1F4BB;&#x1F381;&#x1F4CA;'; // 😀💻🎁📊
+
+			expect(div.textContent?.codePointAt(0)).toBe(0x1f600); // 😀
+			expect(div.textContent?.codePointAt(2)).toBe(0x1f4bb); // 💻
+			expect(div.textContent?.codePointAt(4)).toBe(0x1f381); // 🎁
+			expect(div.textContent?.codePointAt(6)).toBe(0x1f4ca); // 📊
+		});
+
+		it('Decodes emoji entities mixed with text for #1978', () => {
+			const div = document.createElement('div');
+			div.innerHTML = 'Hello &#128512; World';
+
+			expect(div.textContent).toBe('Hello 😀 World');
+		});
+
 		it('Handles attributes with [] in the name for #1638', () => {
 			const result = new HTMLParser(window).parse(`<div [innerHTML]="'TEST'"></div>`);
 
