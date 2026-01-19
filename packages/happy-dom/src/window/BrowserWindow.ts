@@ -175,6 +175,7 @@ import NodeList from '../nodes/node/NodeList.js';
 import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction.js';
 import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
 import SVGElement from '../nodes/svg-element/SVGElement.js';
+import MathMLElement from '../nodes/math-ml-element/MathMLElement.js';
 import Text from '../nodes/text/Text.js';
 import XMLDocument from '../nodes/xml-document/XMLDocument.js';
 import PermissionStatus from '../permissions/PermissionStatus.js';
@@ -539,6 +540,10 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 
 	// Abstract SVG Element classes
 	public readonly SVGElement = SVGElement;
+
+	// MathML Element classes
+	public readonly MathMLElement = MathMLElement;
+
 	public readonly SVGAnimationElement = SVGAnimationElement;
 	public readonly SVGComponentTransferFunctionElement = SVGComponentTransferFunctionElement;
 	public readonly SVGGeometryElement = SVGGeometryElement;

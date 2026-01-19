@@ -173,6 +173,7 @@ import ShadowRoot from './nodes/shadow-root/ShadowRoot.js';
 import SVGElement from './nodes/svg-element/SVGElement.js';
 import SVGGraphicsElement from './nodes/svg-graphics-element/SVGGraphicsElement.js';
 import SVGSVGElement from './nodes/svg-svg-element/SVGSVGElement.js';
+import MathMLElement from './nodes/math-ml-element/MathMLElement.js';
 import Text from './nodes/text/Text.js';
 import XMLDocument from './nodes/xml-document/XMLDocument.js';
 import PermissionStatus from './permissions/PermissionStatus.js';
@@ -426,6 +427,7 @@ export {
 	SVGElement,
 	SVGGraphicsElement,
 	SVGSVGElement,
+	MathMLElement,
 	Text,
 	TextTrack,
 	TextTrackCue,

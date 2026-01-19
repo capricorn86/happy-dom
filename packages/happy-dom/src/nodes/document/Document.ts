@@ -48,6 +48,8 @@ import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import NodeFactory from '../NodeFactory.js';
 import SVGElementConfig from '../../config/SVGElementConfig.js';
 import StringUtility from '../../utilities/StringUtility.js';
+import MathMLElement from '../math-ml-element/MathMLElement.js';
+import MathMLElementConfig from '../../config/MathMLElementConfig.js';
 import HTMLParser from '../../html-parser/HTMLParser.js';
 import PreloadEntry from '../../fetch/preload/PreloadEntry.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
@@ -1942,6 +1944,31 @@ export default class Document extends Node {
 				unknownElement[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
 
 				return unknownElement;
+			case NamespaceURI.mathML:
+				// Only create MathMLElement for known MathML elements
+				if (MathMLElementConfig[qualifiedName.toLowerCase()]) {
+					const mathMLElement = NodeFactory.createNode<MathMLElement>(this, window.MathMLElement);
+
+					mathMLElement[PropertySymbol.tagName] = qualifiedName;
+					mathMLElement[PropertySymbol.localName] = localName;
+					mathMLElement[PropertySymbol.prefix] = prefix;
+					mathMLElement[PropertySymbol.namespaceURI] = namespaceURI;
+					mathMLElement[PropertySymbol.isValue] = options && options.is ? String(options.is) : null;
+
+					return mathMLElement;
+				}
+
+				// Unknown MathML element - fall through to default
+				const unknownMathMLElement = NodeFactory.createNode<Element>(this, Element);
+
+				unknownMathMLElement[PropertySymbol.tagName] = qualifiedName;
+				unknownMathMLElement[PropertySymbol.localName] = localName;
+				unknownMathMLElement[PropertySymbol.prefix] = prefix;
+				unknownMathMLElement[PropertySymbol.namespaceURI] = namespaceURI;
+				unknownMathMLElement[PropertySymbol.isValue] =
+					options && options.is ? String(options.is) : null;
+
+				return unknownMathMLElement;
 			default:
 				const element = NodeFactory.createNode<Element>(this, Element);
 
