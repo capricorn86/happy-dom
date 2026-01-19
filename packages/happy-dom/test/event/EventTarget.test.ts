@@ -160,7 +160,9 @@ describe('EventTarget', () => {
 	});
 
 	describe('dispatchEvent()', () => {
-		it('Triggers listener properties with "on" as prefix.', () => {
+		it('Triggers listener properties with "on" as prefix on DOM elements.', () => {
+			// on* handlers should work on DOM elements (which have propertyEventListeners)
+			const element = window.document.createElement('div');
 			let recievedEvent: Event | null = null;
 			let recievedTarget: EventTarget | null = null;
 			let recievedCurrentTarget: EventTarget | null = null;
@@ -170,12 +172,12 @@ describe('EventTarget', () => {
 				recievedCurrentTarget = event.currentTarget;
 			};
 			const dispatchedEvent = new Event(EVENT_TYPE);
-			eventTarget[`on${EVENT_TYPE}`] = listener;
-			eventTarget.dispatchEvent(dispatchedEvent);
+			element[`on${EVENT_TYPE}`] = listener;
+			element.dispatchEvent(dispatchedEvent);
 			expect(recievedEvent).toBe(dispatchedEvent);
-			expect(recievedTarget).toBe(eventTarget);
-			expect(recievedCurrentTarget).toBe(eventTarget);
-			expect(dispatchedEvent.target).toBe(eventTarget);
+			expect(recievedTarget).toBe(element);
+			expect(recievedCurrentTarget).toBe(element);
+			expect(dispatchedEvent.target).toBe(element);
 			expect(dispatchedEvent.currentTarget).toBe(null);
 			expect(dispatchedEvent.defaultPrevented).toBe(false);
 			expect(dispatchedEvent[PropertySymbol.dispatching]).toBe(false);
@@ -286,6 +288,74 @@ describe('EventTarget', () => {
 			eventTarget.dispatchEvent(dispatchedEvent);
 
 			expect(count).toBe(0);
+		});
+	});
+
+	describe('dispatchEvent()', () => {
+		it('Does not call arbitrary on* properties set on EventTarget (issue #1895).', () => {
+			const calls: string[] = [];
+
+			(<any>eventTarget).onopen = () => calls.push('onopen property');
+			eventTarget.addEventListener('open', () => calls.push('open listener'));
+
+			eventTarget.dispatchEvent(new Event('open'));
+
+			expect(calls).toEqual(['open listener']);
+		});
+
+		it('Does not call on* properties that are not defined as event handlers.', () => {
+			const calls: string[] = [];
+
+			(<any>eventTarget).onclick = () => calls.push('onclick property');
+			eventTarget.addEventListener('click', () => calls.push('click listener'));
+
+			eventTarget.dispatchEvent(new Event('click'));
+
+			// EventTarget base class should not call on* properties
+			// Only DOM elements with defined on* IDL attributes should call them
+			expect(calls).toEqual(['click listener']);
+		});
+
+		it('Calls on* handlers on subclasses that define them as class properties.', () => {
+			// MediaQueryList defines onchange as a class property
+			const mediaQueryList = window.matchMedia('(min-width: 100px)');
+			let called = false;
+			mediaQueryList.onchange = () => {
+				called = true;
+			};
+			mediaQueryList.dispatchEvent(new Event('change'));
+			expect(called).toBe(true);
+		});
+
+		it('Calls on* handlers on MediaStream.', () => {
+			const mediaStream = new window.MediaStream();
+			let addTrackCalled = false;
+			let removeTrackCalled = false;
+
+			mediaStream.onaddtrack = () => {
+				addTrackCalled = true;
+			};
+			mediaStream.onremovetrack = () => {
+				removeTrackCalled = true;
+			};
+
+			mediaStream.dispatchEvent(new Event('addtrack'));
+			mediaStream.dispatchEvent(new Event('removetrack'));
+
+			expect(addTrackCalled).toBe(true);
+			expect(removeTrackCalled).toBe(true);
+		});
+
+		it('Calls onabort handler on AbortSignal.', () => {
+			const controller = new window.AbortController();
+			let called = false;
+
+			controller.signal.onabort = () => {
+				called = true;
+			};
+			controller.abort();
+
+			expect(called).toBe(true);
 		});
 	});
 });
