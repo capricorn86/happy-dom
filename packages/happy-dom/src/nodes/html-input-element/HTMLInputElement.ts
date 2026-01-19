@@ -18,8 +18,10 @@ import Document from '../document/Document.js';
 import ShadowRoot from '../shadow-root/ShadowRoot.js';
 import { URL } from 'url';
 import MouseEvent from '../../event/events/MouseEvent.js';
+import KeyboardEvent from '../../event/events/KeyboardEvent.js';
 import NodeList from '../node/NodeList.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
+import HTMLButtonElement from '../html-button-element/HTMLButtonElement.js';
 
 /**
  * HTML Input Element.
@@ -1402,6 +1404,16 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @override
 	 */
 	public override dispatchEvent(event: Event): boolean {
+		// Handle Enter key for implicit form submission
+		if (
+			event[PropertySymbol.type] === 'keydown' &&
+			event[PropertySymbol.eventPhase] === EventPhaseEnum.none &&
+			event instanceof KeyboardEvent &&
+			event.key === 'Enter'
+		) {
+			return this.#handleEnterKeySubmission(event);
+		}
+
 		if (
 			event[PropertySymbol.type] !== 'click' ||
 			event[PropertySymbol.eventPhase] !== EventPhaseEnum.none ||
@@ -1470,6 +1482,137 @@ export default class HTMLInputElement extends HTMLElement {
 		}
 
 		return returnValue;
+	}
+
+	/**
+	 * Handles Enter key submission for implicit form submission.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#implicit-submission
+	 * @param event Keyboard event.
+	 * @returns Whether the event was dispatched.
+	 */
+	#handleEnterKeySubmission(event: KeyboardEvent): boolean {
+		// Dispatch the keydown event first
+		const returnValue = super.dispatchEvent(event);
+
+		// If the input is disabled, don't trigger form submission
+		if (this.disabled) {
+			return returnValue;
+		}
+
+		// If preventDefault was called, don't trigger form submission
+		if (event[PropertySymbol.defaultPrevented]) {
+			return returnValue;
+		}
+
+		// Check if this input type supports implicit submission
+		// Per HTML spec, these input types trigger implicit submission on Enter
+		const type = this.type;
+		const implicitSubmissionTypes = [
+			'text',
+			'search',
+			'url',
+			'tel',
+			'email',
+			'password',
+			'date',
+			'month',
+			'week',
+			'time',
+			'datetime-local',
+			'number'
+		];
+
+		if (!implicitSubmissionTypes.includes(type)) {
+			return returnValue;
+		}
+
+		// Get the form
+		const form = this.form;
+		if (!form) {
+			return returnValue;
+		}
+
+		// Find the default submit button
+		// Per HTML spec: "A form element's default button is the first submit button in tree order
+		// whose form owner is that form element."
+		const defaultButton = this.#getDefaultSubmitButton(form);
+
+		// Per HTML spec: If the form has no submit button, implicit submission only happens
+		// if the form has exactly one field that blocks implicit submission
+		// (i.e., one text-like input). Otherwise, do nothing.
+		if (!defaultButton) {
+			const blockingElements = this.#getImplicitSubmissionBlockingElements(form);
+			if (blockingElements.length !== 1) {
+				return returnValue;
+			}
+		}
+
+		// Trigger form submission
+		if (defaultButton) {
+			// Click the default button to trigger submission
+			defaultButton.click();
+		} else {
+			// No default button, submit directly
+			form.requestSubmit();
+		}
+
+		return returnValue;
+	}
+
+	/**
+	 * Gets the default submit button for a form.
+	 *
+	 * @param form Form element.
+	 * @returns Default submit button or null.
+	 */
+	#getDefaultSubmitButton(form: HTMLFormElement): HTMLInputElement | HTMLButtonElement | null {
+		const elements = form.elements;
+		for (let i = 0; i < elements.length; i++) {
+			const element = elements[i];
+			if (element instanceof HTMLInputElement && element.type === 'submit') {
+				return element;
+			}
+			if (element instanceof HTMLButtonElement && element.type === 'submit') {
+				return element;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Gets elements that block implicit submission.
+	 * Per HTML spec, these are text-like input elements.
+	 *
+	 * @param form Form element.
+	 * @returns Array of blocking elements.
+	 */
+	#getImplicitSubmissionBlockingElements(form: HTMLFormElement): HTMLInputElement[] {
+		const blockingTypes = [
+			'text',
+			'search',
+			'url',
+			'tel',
+			'email',
+			'password',
+			'date',
+			'month',
+			'week',
+			'time',
+			'datetime-local',
+			'number'
+		];
+		const elements = form.elements;
+		const blockingElements: HTMLInputElement[] = [];
+
+		for (let i = 0; i < elements.length; i++) {
+			const element = elements[i];
+			if (element instanceof HTMLInputElement && blockingTypes.includes(element.type)) {
+				blockingElements.push(element);
+			}
+		}
+
+		return blockingElements;
 	}
 
 	/**
