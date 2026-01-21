@@ -301,7 +301,7 @@ export default class CSSRuleParser {
 	 * @param selectorText Selector text.
 	 * @returns True if valid, false otherwise.
 	 */
-	private validateSelectorText(selectorText: string): boolean {
+	public validateSelectorText(selectorText: string): boolean {
 		const window = this.#parentStyleSheet[PropertySymbol.window];
 		return (
 			new SelectorParser({
