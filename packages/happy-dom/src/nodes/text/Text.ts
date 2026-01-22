@@ -3,6 +3,7 @@ import CharacterData from '../character-data/CharacterData.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
+import NodeUtility from '../node/NodeUtility.js';
 import HTMLStyleElement from '../html-style-element/HTMLStyleElement.js';
 
 /**
@@ -21,6 +22,36 @@ export default class Text extends CharacterData {
 	 */
 	public get nodeName(): string {
 		return '#text';
+	}
+
+	/**
+	 * Returns the combined text of all logically adjacent Text nodes.
+	 *
+	 * @see https://dom.spec.whatwg.org/#dom-text-wholetext
+	 * @returns Combined text content.
+	 */
+	public get wholeText(): string {
+		if (!this[PropertySymbol.parentNode]) {
+			return this[PropertySymbol.data];
+		}
+
+		let text = '';
+
+		for (
+			let node = this.previousSibling;
+			NodeUtility.isTextNode(node);
+			node = node.previousSibling
+		) {
+			text = node[PropertySymbol.data] + text;
+		}
+
+		text += this[PropertySymbol.data];
+
+		for (let node = this.nextSibling; NodeUtility.isTextNode(node); node = node.nextSibling) {
+			text += node[PropertySymbol.data];
+		}
+
+		return text;
 	}
 
 	/**
