@@ -87,11 +87,22 @@ export default class HTMLDetailsElement extends HTMLElement {
 			const target = <Element | null>event[PropertySymbol.target];
 
 			if (target) {
-				const summaryElement =
-					target[PropertySymbol.localName] === 'summary' ? target : target.closest('summary');
-
-				if (summaryElement && summaryElement.parentElement === this) {
+				if (
+					target[PropertySymbol.localName] === 'summary' &&
+					target[PropertySymbol.parentNode] === this
+				) {
 					this.open = !this.open;
+				} else {
+					let summaryElement: Element | null = target;
+					for (const element of this[PropertySymbol.elementArray]) {
+						if (element[PropertySymbol.localName] === 'summary') {
+							summaryElement = element;
+							break;
+						}
+					}
+					if (summaryElement && summaryElement.contains(target)) {
+						this.open = !this.open;
+					}
 				}
 			}
 		}
