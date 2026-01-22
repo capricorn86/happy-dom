@@ -95,8 +95,10 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 
 		JestUtil.installCommonGlobals(<typeof globalThis>(<unknown>this.window), globals);
 
-		// For some reason Jest removes the global setImmediate, so we need to add it back.
+		// For some reason Jest removes the global setImmediate and clearImmediate, so we need to add them back.
+		// This is especially important for Jest 30+ where these are no longer available.
 		this.global.setImmediate = global.setImmediate;
+		this.global.clearImmediate = global.clearImmediate;
 
 		this.fakeTimers = new LegacyFakeTimers({
 			config: projectConfig,

@@ -22,7 +22,8 @@
 		"incremental": true,
 		"jsx": "react",
 		"types": [
-			"jest"
+			"jest",
+			"node"
 		],
 		"lib": [
 			"ES2022",
