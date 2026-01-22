@@ -241,7 +241,7 @@ export default class Node extends EventTarget {
 	public get previousSibling(): Node | null {
 		if (this[PropertySymbol.parentNode]) {
 			const nodeArray = this[PropertySymbol.parentNode][PropertySymbol.nodeArray];
-			const index = nodeArray.indexOf(this);
+			const index = nodeArray.indexOf(this[PropertySymbol.proxy] || this);
 			if (index > 0) {
 				return nodeArray[index - 1];
 			}
@@ -257,7 +257,7 @@ export default class Node extends EventTarget {
 	public get nextSibling(): Node | null {
 		if (this[PropertySymbol.parentNode]) {
 			const nodeArray = this[PropertySymbol.parentNode][PropertySymbol.nodeArray];
-			const index = nodeArray.indexOf(this);
+			const index = nodeArray.indexOf(this[PropertySymbol.proxy] || this);
 			if (index > -1 && index + 1 < nodeArray.length) {
 				return nodeArray[index + 1];
 			}
@@ -336,7 +336,10 @@ export default class Node extends EventTarget {
 		if (otherNode === undefined) {
 			return false;
 		}
-		return NodeUtility.isInclusiveAncestor(this, otherNode);
+		// HTMLFormElement and HTMLSelectElement return a Proxy from their constructor.
+		// We need to use the proxy for comparison to ensure correct behavior.
+		const self = this[PropertySymbol.proxy] || this;
+		return NodeUtility.isInclusiveAncestor(self, otherNode);
 	}
 
 	/**
@@ -347,15 +350,20 @@ export default class Node extends EventTarget {
 	 * @returns Node.
 	 */
 	public getRootNode(options?: { composed: boolean }): Node {
-		if (!this[PropertySymbol.isConnected]) {
-			return this;
+		if (this[PropertySymbol.isConnected]) {
+			if (this[PropertySymbol.rootNode] && !options?.composed) {
+				return this[PropertySymbol.rootNode];
+			}
+			return this[PropertySymbol.ownerDocument];
 		}
 
-		if (this[PropertySymbol.rootNode] && !options?.composed) {
-			return this[PropertySymbol.rootNode];
+		// For detached nodes, traverse up the parent chain to find the root
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		let root: Node = this;
+		while (root[PropertySymbol.parentNode]) {
+			root = root[PropertySymbol.parentNode];
 		}
-
-		return this[PropertySymbol.ownerDocument];
+		return root;
 	}
 
 	/**
@@ -1063,6 +1071,41 @@ export default class Node extends EventTarget {
 			// eslint-disable-next-line
 			(<any>this)[PropertySymbol.shadowRoot][PropertySymbol.disconnectedFromDocument]();
 		}
+	}
+
+	/**
+	 * Destroys the node.
+	 */
+	public [PropertySymbol.destroy](): void {
+		super[PropertySymbol.destroy]();
+
+		this[PropertySymbol.isConnected] = false;
+
+		while (this[PropertySymbol.nodeArray].length > 0) {
+			const node = this[PropertySymbol.nodeArray][this[PropertySymbol.nodeArray].length - 1];
+
+			// Makes sure that something won't be triggered by the disconnect.
+			if ((<any>node).disconnectedCallback) {
+				delete (<any>node).disconnectedCallback;
+			}
+
+			this[PropertySymbol.removeChild](node);
+			node[PropertySymbol.destroy]();
+		}
+
+		this[PropertySymbol.parentNode] = null;
+		this[PropertySymbol.rootNode] = null;
+		this[PropertySymbol.styleNode] = null;
+		this[PropertySymbol.textAreaNode] = null;
+		this[PropertySymbol.formNode] = null;
+		this[PropertySymbol.selectNode] = null;
+		this[PropertySymbol.mutationListeners] = [];
+		this[PropertySymbol.nodeArray] = [];
+		this[PropertySymbol.elementArray] = [];
+		this[PropertySymbol.childNodes] = null;
+		this[PropertySymbol.assignedToSlot] = null;
+
+		this[PropertySymbol.clearCache]();
 	}
 
 	/**

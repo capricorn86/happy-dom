@@ -19,7 +19,7 @@
 	},
 	"devDependencies": {
 		"@types/he": "^1.1.2",
-		"@types/node": "^20.0.0",
+		"@types/node": ">=20.0.0",
 		"@typescript-eslint/eslint-plugin": "^6.19.0",
 		"@typescript-eslint/parser": "^6.19.0",
 		"chalk": "^4.1.0",
@@ -36,7 +36,7 @@
 		"semver": "^7.3.5",
 		"turbo": "^2.5.4",
 		"typescript": "^5.8.3",
-		"vitest": "^3.2.2"
+		"vitest": "^4.0.16"
 	},
 	"happyLintChanged": {
 		"rules": [

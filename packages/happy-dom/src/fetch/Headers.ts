@@ -2,6 +2,7 @@ import DOMException from '../exception/DOMException.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import IHeadersInit from './types/IHeadersInit.js';
+import BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * Fetch headers.
@@ -9,6 +10,9 @@ import IHeadersInit from './types/IHeadersInit.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Headers
  */
 export default class Headers {
+	// Injected by WindowContextClassExtender
+	protected declare [PropertySymbol.window]: BrowserWindow;
+
 	public [PropertySymbol.entries]: { [k: string]: { name: string; value: string[] } } = {};
 
 	/**
@@ -115,10 +119,15 @@ export default class Headers {
 	 * Executes a callback function once per each key/value pair in the Headers object.
 	 *
 	 * @param callback Callback.
+	 * @param thisArg thisArg.
 	 */
-	public forEach(callback: (name: string, value: string, thisArg: Headers) => void): void {
+	public forEach(
+		callback: (value: string, name: string, parent: this) => void,
+		thisArg?: any
+	): void {
+		const thisArgValue = thisArg ?? this[PropertySymbol.window];
 		for (const header of Object.values(this[PropertySymbol.entries])) {
-			callback(header.value.join(', '), header.name, this);
+			callback.call(thisArgValue, header.value.join(', '), header.name, this);
 		}
 	}
 
@@ -127,7 +136,7 @@ export default class Headers {
 	 *
 	 * @returns Iterator.
 	 */
-	public *keys(): IterableIterator<string> {
+	public *keys(): ArrayIterator<string> {
 		for (const header of Object.values(this[PropertySymbol.entries])) {
 			yield header.name;
 		}
@@ -138,7 +147,7 @@ export default class Headers {
 	 *
 	 * @returns Iterator.
 	 */
-	public *values(): IterableIterator<string> {
+	public *values(): ArrayIterator<string> {
 		for (const header of Object.values(this[PropertySymbol.entries])) {
 			yield header.value.join(', ');
 		}
@@ -149,7 +158,7 @@ export default class Headers {
 	 *
 	 * @returns Iterator.
 	 */
-	public *entries(): IterableIterator<[string, string]> {
+	public *entries(): ArrayIterator<[string, string]> {
 		for (const header of Object.values(this[PropertySymbol.entries])) {
 			yield [header.name, header.value.join(', ')];
 		}
@@ -160,7 +169,7 @@ export default class Headers {
 	 *
 	 * @returns Iterator.
 	 */
-	public *[Symbol.iterator](): IterableIterator<[string, string]> {
+	public *[Symbol.iterator](): ArrayIterator<[string, string]> {
 		for (const header of Object.values(this[PropertySymbol.entries])) {
 			yield [header.name, header.value.join(', ')];
 		}

@@ -3,9 +3,13 @@ import ServerRendererLogLevelEnum from '../enums/ServerRendererLogLevelEnum.js';
 import type IServerRendererConfiguration from '../types/IServerRendererConfiguration.js';
 import OS from 'os';
 import { BrowserErrorCaptureEnum } from 'happy-dom';
+import ServerRendererModeEnum from '../enums/ServerRendererModeEnum.js';
 
 export default <IServerRendererConfiguration>{
-	browser: { ...DefaultBrowserSettings, errorCapture: BrowserErrorCaptureEnum.processLevel },
+	browser: {
+		...DefaultBrowserSettings,
+		errorCapture: BrowserErrorCaptureEnum.processLevel
+	},
 	outputDirectory: './happy-dom/render',
 	logLevel: ServerRendererLogLevelEnum.info,
 	debug: false,
@@ -27,9 +31,11 @@ export default <IServerRendererConfiguration>{
 		serializableShadowRoots: false,
 		allShadowRoots: false,
 		excludeShadowRootTags: null,
-		disablePolyfills: false
+		disablePolyfills: false,
+		setupScript: null,
+		mode: ServerRendererModeEnum.browser
 	},
-	urls: null,
+	renderItems: null,
 	server: {
 		start: false,
 		serverURL: 'https://localhost:3000',

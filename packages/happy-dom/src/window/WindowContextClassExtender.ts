@@ -13,6 +13,7 @@ import MutationObserverImplementation from '../mutation-observer/MutationObserve
 import MessagePortImplementation from '../event/MessagePort.js';
 import CSSStyleSheetImplementation from '../css/CSSStyleSheet.js';
 import DOMExceptionImplementation from '../exception/DOMException.js';
+import HeadersImplementation from '../fetch/Headers.js';
 import RequestImplementation from '../fetch/Request.js';
 import ResponseImplementation from '../fetch/Response.js';
 import EventTargetImplementation from '../event/EventTarget.js';
@@ -35,6 +36,7 @@ import MediaStreamImplementation from '../nodes/html-media-element/MediaStream.j
 import MediaStreamTrackImplementation from '../nodes/html-media-element/MediaStreamTrack.js';
 import CanvasCaptureMediaStreamTrackImplementation from '../nodes/html-canvas-element/CanvasCaptureMediaStreamTrack.js';
 import URLImplementation from '../url/URL.js';
+import WebSocketImplementation from '../web-socket/WebSocket.js';
 
 /**
  * Extends classes with a "window" property, so that they internally can access it's Window context.
@@ -108,6 +110,11 @@ export default class WindowContextClassExtender {
 		// DOMException
 		class DOMException extends DOMExceptionImplementation {}
 		(<typeof DOMException>window.DOMException) = DOMException;
+
+		// Headers
+		class Headers extends HeadersImplementation {}
+		Headers.prototype[PropertySymbol.window] = window;
+		(<typeof Headers>window.Headers) = Headers;
 
 		// Request
 		class Request extends RequestImplementation {}
@@ -222,6 +229,11 @@ export default class WindowContextClassExtender {
 		class URL extends URLImplementation {}
 		URL.prototype[PropertySymbol.window] = window;
 		(<typeof URL>window.URL) = URL;
+
+		// WebSocket
+		class WebSocket extends WebSocketImplementation {}
+		WebSocket.prototype[PropertySymbol.window] = window;
+		(<typeof WebSocket>window.WebSocket) = WebSocket;
 
 		/* eslint-enable jsdoc/require-jsdoc */
 	}

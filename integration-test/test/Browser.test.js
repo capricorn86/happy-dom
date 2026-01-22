@@ -7,6 +7,7 @@ describe('Browser', () => {
 		const browser = new Browser({
 			settings: {
 				errorCapture: BrowserErrorCaptureEnum.processLevel,
+				enableJavaScriptEvaluation: true,
 
 				// Github.com has a timer that is very long (hours) and a timer loop that never ends.
 				timer: {
@@ -47,7 +48,8 @@ describe('Browser', () => {
 	it('Goes to "npmjs.com".', async () => {
 		const browser = new Browser({
 			settings: {
-				errorCapture: BrowserErrorCaptureEnum.processLevel
+				errorCapture: BrowserErrorCaptureEnum.processLevel,
+				enableJavaScriptEvaluation: true
 			}
 		});
 		const page = browser.newPage();

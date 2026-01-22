@@ -9,10 +9,11 @@ import ResourceFetch from '../../fetch/ResourceFetch.js';
 import ECMAScriptModule from '../../module/ECMAScriptModule.js';
 import ModuleFactory from '../../module/ModuleFactory.js';
 import DOMTokenList from '../../dom/DOMTokenList.js';
-import IModuleImportMap from '../../module/IModuleImportMap.js';
+import IModuleImportMap from '../../module/types/IModuleImportMap.js';
 import IRequestReferrerPolicy from '../../fetch/types/IRequestReferrerPolicy.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 import IResourceFetchResponse from '../../fetch/types/IResourceFetchResponse.js';
+import JavaScriptCompiler from '../../javascript/JavaScriptCompiler.js';
 
 /**
  * HTML Script Element.
@@ -25,7 +26,7 @@ export default class HTMLScriptElement extends HTMLElement {
 	public declare cloneNode: (deep?: boolean) => HTMLScriptElement;
 
 	// Internal properties
-	public [PropertySymbol.evaluateScript] = true;
+	public [PropertySymbol.disableEvaluation] = false;
 	public [PropertySymbol.blocking]: DOMTokenList | null = null;
 
 	// Private properties
@@ -349,32 +350,34 @@ export default class HTMLScriptElement extends HTMLElement {
 
 		super[PropertySymbol.connectedToDocument]();
 
-		if (this[PropertySymbol.evaluateScript]) {
-			const src = this.getAttribute('src');
+		if (this[PropertySymbol.disableEvaluation]) {
+			return;
+		}
 
-			if (src !== null) {
-				if (this.getAttribute('type') === 'module') {
-					this.#loadModule(src);
-				} else {
-					this.#loadScript(src);
-				}
-			} else if (browserSettings && !browserSettings.disableJavaScriptEvaluation) {
-				const source = this.textContent;
-				const type = this.getAttribute('type');
+		const src = this.getAttribute('src');
 
-				if (source) {
-					if (type === 'module') {
-						this.#evaluateModule(source);
-					} else if (type === 'importmap') {
-						this.#evaluateImportMap(source);
-					} else if (
-						type === null ||
-						type === 'application/x-ecmascript' ||
-						type === 'application/x-javascript' ||
-						type.startsWith('text/javascript')
-					) {
-						this.#evaluateScript(source);
-					}
+		if (src !== null) {
+			if (this.getAttribute('type') === 'module') {
+				this.#loadModule(src);
+			} else {
+				this.#loadScript(src);
+			}
+		} else if (browserSettings && browserSettings.enableJavaScriptEvaluation) {
+			const source = this.textContent;
+			const type = this.getAttribute('type');
+
+			if (source) {
+				if (type === 'module') {
+					this.#evaluateModule(source);
+				} else if (type === 'importmap') {
+					this.#evaluateImportMap(source);
+				} else if (
+					type === null ||
+					type === 'application/x-ecmascript' ||
+					type === 'application/x-javascript' ||
+					type.startsWith('text/javascript')
+				) {
+					this.#evaluateScript(source);
 				}
 			}
 		}
@@ -407,31 +410,32 @@ export default class HTMLScriptElement extends HTMLElement {
 	 *
 	 * @param source Source.
 	 */
-	async #evaluateModule(source: string): Promise<void> {
+	#evaluateModule(source: string): void {
 		const url = this[PropertySymbol.ownerDocument].location;
 		const window = this[PropertySymbol.window];
 		const browserSettings = new WindowBrowserContext(window).getSettings();
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
 
-		if (!browserFrame || !browserSettings) {
+		if (!browserFrame || !browserSettings || !browserSettings.enableJavaScriptEvaluation) {
 			return;
 		}
 
-		const module = new ECMAScriptModule(window, url, source);
+		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = this;
+
+		const module = new ECMAScriptModule({ window, url, source });
 
 		if (
 			browserSettings.disableErrorCapturing ||
 			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
 		) {
-			await module.evaluate();
+			module.evaluate();
 		} else {
-			try {
-				await module.evaluate();
-			} catch (error) {
+			module.evaluate().catch((error) => {
 				window[PropertySymbol.dispatchError](<Error>error);
-				return;
-			}
+			});
 		}
+
+		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = null;
 
 		this.dispatchEvent(new Event('load'));
 	}
@@ -446,7 +450,12 @@ export default class HTMLScriptElement extends HTMLElement {
 		const browserSettings = new WindowBrowserContext(window).getSettings();
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
 
-		if (!browserFrame || !browserSettings || window[PropertySymbol.moduleImportMap]) {
+		if (
+			!browserFrame ||
+			!browserSettings ||
+			window[PropertySymbol.moduleImportMap] ||
+			!browserSettings.enableJavaScriptEvaluation
+		) {
 			return;
 		}
 
@@ -510,9 +519,9 @@ export default class HTMLScriptElement extends HTMLElement {
 	/**
 	 * Evaluates a script.
 	 *
-	 * @param source Source.
+	 * @param code Code.
 	 */
-	#evaluateScript(source: string): void {
+	#evaluateScript(code: string): void {
 		const window = this[PropertySymbol.window];
 		const browserSettings = new WindowBrowserContext(window).getSettings();
 
@@ -522,20 +531,14 @@ export default class HTMLScriptElement extends HTMLElement {
 
 		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = this;
 
-		const code = `${source}\n//# sourceURL=${this[PropertySymbol.ownerDocument].location.href}`;
+		const compiler = new JavaScriptCompiler(window);
+		const compiled = compiler.compile(window.location.href, code);
+		const moduleFactory = new ModuleFactory(window, window.location);
 
-		if (
-			browserSettings.disableErrorCapturing ||
-			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
-		) {
-			window.eval(code);
-		} else {
-			try {
-				window.eval(code);
-			} catch (error) {
-				window[PropertySymbol.dispatchError](<Error>error);
-			}
-		}
+		compiled.execute({
+			dynamicImport: moduleFactory.importModule.bind(moduleFactory),
+			dispatchError: window[PropertySymbol.dispatchError].bind(window)
+		});
 
 		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = null;
 	}
@@ -560,7 +563,7 @@ export default class HTMLScriptElement extends HTMLElement {
 
 		if (
 			browserSettings &&
-			(browserSettings.disableJavaScriptFileLoading || browserSettings.disableJavaScriptEvaluation)
+			(browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)
 		) {
 			if (browserSettings.handleDisabledFileLoadingAsSuccess) {
 				this.dispatchEvent(new Event('load'));
@@ -578,15 +581,17 @@ export default class HTMLScriptElement extends HTMLElement {
 		// TODO: What to do with "referrerPolicy" and "crossOrigin" for modules?
 		// @see https://github.com/w3c/webappsec-referrer-policy/issues/111
 
+		const moduleFactory = new ModuleFactory(window, window.location);
+
 		if (
 			browserSettings.disableErrorCapturing ||
 			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
 		) {
-			const module = await ModuleFactory.getModule(window, window.location, url);
+			const module = await moduleFactory.getModule(url);
 			await module.evaluate();
 		} else {
 			try {
-				const module = await ModuleFactory.getModule(window, window.location, url);
+				const module = await moduleFactory.getModule(url);
 				await module.evaluate();
 			} catch (error) {
 				browserFrame.page.console.error(error);
@@ -639,7 +644,7 @@ export default class HTMLScriptElement extends HTMLElement {
 
 		if (
 			browserSettings &&
-			(browserSettings.disableJavaScriptFileLoading || browserSettings.disableJavaScriptEvaluation)
+			(browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)
 		) {
 			if (browserSettings.handleDisabledFileLoadingAsSuccess) {
 				this.dispatchEvent(new Event('load'));
@@ -693,24 +698,17 @@ export default class HTMLScriptElement extends HTMLElement {
 
 		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = this;
 
-		const code = `${response.content}\n//# sourceURL=${
-			response.virtualServerFile || absoluteURLString
-		}`;
+		const compiler = new JavaScriptCompiler(window);
+		const compiled = compiler.compile(
+			response.virtualServerFile || absoluteURLString,
+			response.content
+		);
+		const moduleFactory = new ModuleFactory(window, window.location);
 
-		if (
-			browserSettings.disableErrorCapturing ||
-			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
-		) {
-			this[PropertySymbol.window].eval(code);
-		} else {
-			try {
-				this[PropertySymbol.window].eval(code);
-			} catch (error) {
-				this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = null;
-				window[PropertySymbol.dispatchError](<Error>error);
-				return;
-			}
-		}
+		compiled.execute({
+			dynamicImport: moduleFactory.importModule.bind(moduleFactory),
+			dispatchError: window[PropertySymbol.dispatchError].bind(window)
+		});
 
 		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = null;
 		this.dispatchEvent(new Event('load'));

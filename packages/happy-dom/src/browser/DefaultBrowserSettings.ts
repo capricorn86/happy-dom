@@ -5,6 +5,7 @@ import IBrowserSettings from './types/IBrowserSettings.js';
 
 export default <IBrowserSettings>{
 	disableJavaScriptEvaluation: false,
+	enableJavaScriptEvaluation: false,
 	disableJavaScriptFileLoading: false,
 	disableCSSFileLoading: false,
 	disableIframePageLoading: false,
@@ -13,6 +14,8 @@ export default <IBrowserSettings>{
 	disableErrorCapturing: false,
 	errorCapture: BrowserErrorCaptureEnum.tryAndCatch,
 	enableFileSystemHttpRequests: false,
+	suppressCodeGenerationFromStringsWarning: false,
+	suppressInsecureJavaScriptEnvironmentWarning: false,
 	timer: {
 		maxTimeout: -1,
 		maxIntervalTime: -1,
@@ -25,6 +28,10 @@ export default <IBrowserSettings>{
 		interceptor: null,
 		requestHeaders: null,
 		virtualServers: null
+	},
+	module: {
+		resolveNodeModules: null,
+		urlResolver: null
 	},
 	navigation: {
 		disableMainFrameNavigation: false,

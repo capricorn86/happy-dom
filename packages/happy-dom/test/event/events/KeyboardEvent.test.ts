@@ -2,6 +2,29 @@ import KeyboardEvent from '../../../src/event/events/KeyboardEvent.js';
 import { describe, it, expect } from 'vitest';
 
 describe('KeyboardEvent', () => {
+	describe('constructor()', () => {
+		it('Sets the "which" property from eventInit (issue #1897).', () => {
+			const event = new KeyboardEvent('keydown', { keyCode: 13, which: 13 });
+			expect(event.which).toBe(13);
+		});
+
+		it('Defaults "which" to keyCode when not specified.', () => {
+			const event = new KeyboardEvent('keydown', { keyCode: 65 });
+			expect(event.which).toBe(65);
+		});
+
+		it('Defaults "which" to 0 when neither which nor keyCode is specified.', () => {
+			const event = new KeyboardEvent('keydown', {});
+			expect(event.which).toBe(0);
+		});
+
+		it('Uses "which" value even when different from keyCode.', () => {
+			const event = new KeyboardEvent('keydown', { keyCode: 13, which: 65 });
+			expect(event.which).toBe(65);
+			expect(event.keyCode).toBe(13);
+		});
+	});
+
 	describe('getModifierState()', () => {
 		it('Returns true when Alt key is pressed', () => {
 			const event = new KeyboardEvent('keydown', { altKey: true });

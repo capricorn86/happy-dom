@@ -404,3 +404,10 @@ export const cssRule = Symbol('cssRule');
 export const rulePrefix = Symbol('rulePrefix');
 export const virtualServerFile = Symbol('virtualServerFile');
 export const frames = Symbol('frames');
+export const disableEvaluation = Symbol('disableEvaluation');
+export const validateJavaScriptExecutionEnvironment = Symbol(
+	'validateJavaScriptExecutionEnvironment'
+);
+export const currentNode = Symbol('currentNode');
+export const openWebSockets = Symbol('openWebSockets');
+export const webSocket = Symbol('webSocket');

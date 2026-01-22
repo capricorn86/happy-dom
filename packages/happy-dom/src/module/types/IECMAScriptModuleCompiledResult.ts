@@ -14,5 +14,6 @@ export default interface IECMAScriptModuleCompiledResult {
 		};
 		imports: Map<string, { [key: string]: any }>;
 		exports: { [key: string]: any };
+		addCircularImportResolver: (resolver: () => void) => void;
 	}) => Promise<void>;
 }

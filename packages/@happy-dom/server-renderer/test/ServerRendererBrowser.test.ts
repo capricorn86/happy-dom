@@ -18,7 +18,7 @@ describe('ServerRendererBrowser', () => {
 	});
 
 	describe('render()', () => {
-		it('Renders an item without output file.', async () => {
+		it('Renders an item URL without output file.', async () => {
 			const createdDirectories: string[] = [];
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async () => {
 				return <Response>{
@@ -33,10 +33,18 @@ describe('ServerRendererBrowser', () => {
 				createdDirectories.push(path);
 				return Promise.resolve();
 			});
-			const browser = new ServerRendererBrowser(
-				ServerRendererConfigurationFactory.createConfiguration()
+			vi.spyOn(FS.promises, 'readdir').mockImplementation(async (): Promise<any> => {
+				return Promise.reject(new Error('Directory does not exist'));
+			});
+			const browserRenderer = new ServerRendererBrowser(
+				ServerRendererConfigurationFactory.createConfiguration({
+					browser: {
+						enableJavaScriptEvaluation: true,
+						suppressInsecureJavaScriptEnvironmentWarning: true
+					}
+				})
 			);
-			const results = await browser.render([{ url: 'https://example.com/gb/en/' }]);
+			const results = await browserRenderer.render([{ url: 'https://example.com/gb/en/' }]);
 
 			expect(results).toEqual([
 				{
@@ -49,6 +57,43 @@ describe('ServerRendererBrowser', () => {
 					pageErrors: [],
 					status: 200,
 					statusText: 'OK'
+				}
+			]);
+			expect(createdDirectories).toEqual([]);
+		});
+
+		it('Renders an item HTML string without output file.', async () => {
+			const createdDirectories: string[] = [];
+			vi.spyOn(FS.promises, 'mkdir').mockImplementation(async (path: any): Promise<any> => {
+				createdDirectories.push(path);
+				return Promise.resolve();
+			});
+			vi.spyOn(FS.promises, 'readdir').mockImplementation(async (): Promise<any> => {
+				return Promise.reject(new Error('Directory does not exist'));
+			});
+			const browserRenderer = new ServerRendererBrowser(
+				ServerRendererConfigurationFactory.createConfiguration({
+					browser: {
+						enableJavaScriptEvaluation: true,
+						suppressInsecureJavaScriptEnvironmentWarning: true
+					}
+				})
+			);
+			const results = await browserRenderer.render([
+				{ html: MockedPageHTML, url: 'https://example.com/gb/en/' }
+			]);
+
+			expect(results).toEqual([
+				{
+					url: 'https://example.com/gb/en/',
+					content: MockedPageHTML.replace('<h1></h1>', '<h1>Path: /gb/en/</h1>'),
+					error: null,
+					headers: null,
+					outputFile: null,
+					pageConsole: '',
+					pageErrors: [],
+					status: null,
+					statusText: null
 				}
 			]);
 			expect(createdDirectories).toEqual([]);
@@ -69,10 +114,20 @@ describe('ServerRendererBrowser', () => {
 				createdDirectories.push(path);
 				return Promise.resolve();
 			});
-			const browser = new ServerRendererBrowser(
-				ServerRendererConfigurationFactory.createConfiguration()
+			vi.spyOn(FS.promises, 'readdir').mockImplementation(async (): Promise<any> => {
+				return Promise.reject(new Error('Directory does not exist'));
+			});
+			const browserRenderer = new ServerRendererBrowser(
+				ServerRendererConfigurationFactory.createConfiguration({
+					browser: {
+						enableJavaScriptEvaluation: true,
+						suppressInsecureJavaScriptEnvironmentWarning: true
+					}
+				})
 			);
-			const results = await browser.render(MockedURLList.slice(0, 15).map((url) => ({ url })));
+			const results = await browserRenderer.render(
+				MockedURLList.slice(0, 15).map((url) => ({ url }))
+			);
 
 			expect(results).toEqual(
 				MockedURLList.slice(0, 15).map((url) => ({
@@ -97,9 +152,9 @@ describe('ServerRendererBrowser', () => {
 			const writtenFiles: { filePath: string; content: string }[] = [];
 			const requestHeaders: Array<{ [key: string]: string }> = [];
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function (this: Fetch) {
 				const headers: { [key: string]: string } = {};
-				for (const [key, value] of this.request.headers) {
+				for (const [key, value] of (<any>this).request.headers) {
 					headers[key] = value;
 				}
 				requestHeaders.push(headers);
@@ -114,6 +169,9 @@ describe('ServerRendererBrowser', () => {
 			vi.spyOn(FS.promises, 'mkdir').mockImplementation(async (path: any): Promise<any> => {
 				createdDirectories.push(path);
 				return Promise.resolve();
+			});
+			vi.spyOn(FS.promises, 'readdir').mockImplementation(async (): Promise<any> => {
+				return Promise.reject(new Error('Directory does not exist'));
 			});
 			vi.spyOn(FS.promises, 'writeFile').mockImplementation(async (filePath: any, content: any) => {
 				writtenFiles.push({ filePath, content });
@@ -130,10 +188,15 @@ describe('ServerRendererBrowser', () => {
 				}
 			);
 
-			const browser = new ServerRendererBrowser(
-				ServerRendererConfigurationFactory.createConfiguration()
+			const browserRenderer = new ServerRendererBrowser(
+				ServerRendererConfigurationFactory.createConfiguration({
+					browser: {
+						enableJavaScriptEvaluation: true,
+						suppressInsecureJavaScriptEnvironmentWarning: true
+					}
+				})
 			);
-			const results = await browser.render(
+			const results = await browserRenderer.render(
 				MockedURLList.slice(0, 15).map((url, index) => ({
 					url,
 					outputFile: `./test-output/test-${index + 1}.html`,
@@ -192,10 +255,15 @@ describe('ServerRendererBrowser', () => {
 					text: async () => 'Error'
 				};
 			});
-			const browser = new ServerRendererBrowser(
-				ServerRendererConfigurationFactory.createConfiguration()
+			const browserRenderer = new ServerRendererBrowser(
+				ServerRendererConfigurationFactory.createConfiguration({
+					browser: {
+						enableJavaScriptEvaluation: true,
+						suppressInsecureJavaScriptEnvironmentWarning: true
+					}
+				})
 			);
-			const results = await browser.render([{ url: 'https://example.com/gb/en/' }]);
+			const results = await browserRenderer.render([{ url: 'https://example.com/gb/en/' }]);
 
 			expect(results).toEqual([
 				{
@@ -223,14 +291,18 @@ describe('ServerRendererBrowser', () => {
 				};
 			});
 
-			const browser = new ServerRendererBrowser(
+			const browserRenderer = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
+					browser: {
+						enableJavaScriptEvaluation: true,
+						suppressInsecureJavaScriptEnvironmentWarning: true
+					},
 					render: {
 						timeout: 100
 					}
 				})
 			);
-			const results = await browser.render([{ url: 'https://example.com/gb/en/' }]);
+			const results = await browserRenderer.render([{ url: 'https://example.com/gb/en/' }]);
 			(<any>results[0]).error = results[0]
 				.error!.replace(/\(.+\/happy-dom\/src\//gm, '(/')
 				.replace(/:[0-9]+:[0-9]+\)/gm, ':0:0)');
@@ -262,15 +334,19 @@ The page may contain scripts with timer loops that prevent it from completing. Y
 				};
 			});
 
-			const browser = new ServerRendererBrowser(
+			const browserRenderer = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
+					browser: {
+						enableJavaScriptEvaluation: true,
+						suppressInsecureJavaScriptEnvironmentWarning: true
+					},
 					render: {
 						timeout: 100
 					},
 					debug: true
 				})
 			);
-			const results = await browser.render([{ url: 'https://example.com/gb/en/' }]);
+			const results = await browserRenderer.render([{ url: 'https://example.com/gb/en/' }]);
 			(<any>results[0]).error = results[0]
 				.error!.replace(/\(.+\/happy-dom\/src\//gm, '(/')
 				.replace(/:[0-9]+:[0-9]+\)/gm, ':0:0)');
@@ -320,10 +396,15 @@ Timer #1
 				};
 			});
 
-			const browser = new ServerRendererBrowser(
-				ServerRendererConfigurationFactory.createConfiguration()
+			const browserRenderer = new ServerRendererBrowser(
+				ServerRendererConfigurationFactory.createConfiguration({
+					browser: {
+						enableJavaScriptEvaluation: true,
+						suppressInsecureJavaScriptEnvironmentWarning: true
+					}
+				})
 			);
-			const results = await browser.render([{ url: 'https://example.com/gb/en/' }]);
+			const results = await browserRenderer.render([{ url: 'https://example.com/gb/en/' }]);
 			(<any>results[0]).pageConsole = results[0].pageConsole
 				.replace(/\(.+\/happy-dom\/src\//gm, '(/')
 				.replace(/:[0-9]+:[0-9]+\)/gm, ':0:0)');
@@ -338,14 +419,14 @@ Timer #1
 					headers: { key1: 'value' },
 					outputFile: null,
 					pageConsole: `Error: Error
-    at eval (https://example.com/gb/en/:0:0)
+    at https://example.com/gb/en/:1:59
     at Timeout._onTimeout (/window/BrowserWindow.ts:0:0)
     at listOnTimeout (node:internal/timers:0:0)
     at processTimers (node:internal/timers:0:0)
 `,
 					pageErrors: [
 						`Error: Error
-    at eval (https://example.com/gb/en/:0:0)
+    at https://example.com/gb/en/:1:59
     at Timeout._onTimeout (/window/BrowserWindow.ts:0:0)
     at listOnTimeout (node:internal/timers:0:0)
     at processTimers (node:internal/timers:0:0)`
@@ -381,14 +462,18 @@ Timer #1
 				};
 			});
 
-			const browser = new ServerRendererBrowser(
+			const browserRenderer = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
+					browser: {
+						enableJavaScriptEvaluation: true,
+						suppressInsecureJavaScriptEnvironmentWarning: true
+					},
 					render: {
 						allShadowRoots: true
 					}
 				})
 			);
-			const results = await browser.render([{ url: 'https://example.com/gb/en/' }]);
+			const results = await browserRenderer.render([{ url: 'https://example.com/gb/en/' }]);
 			expect(results).toEqual([
 				{
 					url: 'https://example.com/gb/en/',
@@ -451,14 +536,18 @@ Timer #1
 				};
 			});
 
-			const browser = new ServerRendererBrowser(
+			const browserRenderer = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
+					browser: {
+						enableJavaScriptEvaluation: true,
+						suppressInsecureJavaScriptEnvironmentWarning: true
+					},
 					render: {
 						serializableShadowRoots: true
 					}
 				})
 			);
-			const results = await browser.render([{ url: 'https://example.com/gb/en/' }]);
+			const results = await browserRenderer.render([{ url: 'https://example.com/gb/en/' }]);
 			expect(results).toEqual([
 				{
 					url: 'https://example.com/gb/en/',
@@ -531,15 +620,19 @@ Timer #1
 				};
 			});
 
-			const browser = new ServerRendererBrowser(
+			const browserRenderer = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
+					browser: {
+						enableJavaScriptEvaluation: true,
+						suppressInsecureJavaScriptEnvironmentWarning: true
+					},
 					render: {
 						allShadowRoots: true,
 						excludeShadowRootTags: ['custom-element']
 					}
 				})
 			);
-			const results = await browser.render([{ url: 'https://example.com/gb/en/' }]);
+			const results = await browserRenderer.render([{ url: 'https://example.com/gb/en/' }]);
 			expect(results).toEqual([
 				{
 					url: 'https://example.com/gb/en/',
@@ -599,14 +692,18 @@ Timer #1
 					savedCacheDirectories.push(directory);
 				}
 			);
-			const browser = new ServerRendererBrowser(
+			const browserRenderer = new ServerRendererBrowser(
 				ServerRendererConfigurationFactory.createConfiguration({
+					browser: {
+						enableJavaScriptEvaluation: true,
+						suppressInsecureJavaScriptEnvironmentWarning: true
+					},
 					cache: {
 						disable: true
 					}
 				})
 			);
-			await browser.render([{ url: 'https://example.com/gb/en/' }]);
+			await browserRenderer.render([{ url: 'https://example.com/gb/en/' }]);
 			expect(loadedCacheDirectories).toEqual([]);
 			expect(savedCacheDirectories).toEqual([]);
 		});

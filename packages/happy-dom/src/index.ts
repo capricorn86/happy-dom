@@ -76,6 +76,7 @@ import File from './file/File.js';
 import FileReader from './file/FileReader.js';
 import FormData from './form-data/FormData.js';
 import History from './history/History.js';
+import HTMLSerializer from './html-serializer/HTMLSerializer.js';
 import IntersectionObserver from './intersection-observer/IntersectionObserver.js';
 import IntersectionObserverEntry from './intersection-observer/IntersectionObserverEntry.js';
 import Location from './location/Location.js';
@@ -185,6 +186,7 @@ import NodeFilter from './tree-walker/NodeFilter.js';
 import NodeIterator from './tree-walker/NodeIterator.js';
 import TreeWalker from './tree-walker/TreeWalker.js';
 import URL from './url/URL.js';
+import WebSocket from './web-socket/WebSocket.js';
 import BrowserWindow from './window/BrowserWindow.js';
 import DetachedWindowAPI from './window/DetachedWindowAPI.js';
 import GlobalWindow from './window/GlobalWindow.js';
@@ -367,6 +369,7 @@ export {
 	HTMLQuoteElement,
 	HTMLScriptElement,
 	HTMLSelectElement,
+	HTMLSerializer,
 	HTMLSlotElement,
 	HTMLSourceElement,
 	HTMLSpanElement,
@@ -439,6 +442,7 @@ export {
 	VirtualConsoleLogTypeEnum,
 	VirtualConsolePrinter,
 	VTTCue,
+	WebSocket,
 	WheelEvent,
 	Window,
 	XMLDocument,

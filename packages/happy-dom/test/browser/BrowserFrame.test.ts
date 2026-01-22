@@ -152,9 +152,9 @@ describe('BrowserFrame', () => {
 			frame1.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
 			frame2.evaluate('setTimeout(() => { globalThis.test = 3; }, 10);');
 			await page.waitUntilComplete();
-			expect(page.mainFrame.window['test']).toBe(1);
-			expect(frame1.window['test']).toBe(2);
-			expect(frame2.window['test']).toBe(3);
+			expect((<any>page.mainFrame.window)['test']).toBe(1);
+			expect((<any>frame1.window)['test']).toBe(2);
+			expect((<any>frame2.window)['test']).toBe(3);
 		});
 
 		it('Traces never ending timeout when calling waitUntilComplete() with the setting "debug.traceWaitUntilComplete" set to a time in ms.', async () => {
@@ -177,7 +177,7 @@ describe('BrowserFrame', () => {
 			try {
 				await page.waitUntilComplete();
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 			expect(error?.toString().replace(STACK_TRACE_REGEXP, '') + '> testFunction (test.js:1:1)\n')
 				.toBe(`Error: The maximum time was reached for "waitUntilComplete()".
@@ -210,7 +210,7 @@ Timer #1
 			try {
 				await page.waitUntilComplete();
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 			expect(error?.toString().replace(STACK_TRACE_REGEXP, '') + '> testFunction (test.js:1:1)\n')
 				.toBe(`Error: The maximum time was reached for "waitUntilComplete()".
@@ -272,9 +272,9 @@ Task #1
 			frame2.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
 			page.abort();
 			await new Promise((resolve) => setTimeout(resolve, 50));
-			expect(page.mainFrame.window['test']).toBeUndefined();
-			expect(frame1.window['test']).toBeUndefined();
-			expect(frame2.window['test']).toBeUndefined();
+			expect((<any>page.mainFrame.window)['test']).toBeUndefined();
+			expect((<any>frame1.window)['test']).toBeUndefined();
+			expect((<any>frame2.window)['test']).toBeUndefined();
 		});
 	});
 
@@ -283,22 +283,24 @@ Task #1
 			const browser = new Browser();
 			const page = browser.newPage();
 			expect(page.mainFrame.evaluate('globalThis.test = 1')).toBe(1);
-			expect(page.mainFrame.window['test']).toBe(1);
+			expect((<any>page.mainFrame.window)['test']).toBe(1);
 		});
 
 		it("Evaluates a VM script in the frame's context.", () => {
 			const browser = new Browser();
 			const page = browser.newPage();
 			expect(page.mainFrame.evaluate(new Script('globalThis.test = 1'))).toBe(1);
-			expect(page.mainFrame.window['test']).toBe(1);
+			expect((<any>page.mainFrame.window)['test']).toBe(1);
 		});
 	});
 
 	describe('goto()', () => {
 		it('Navigates to a URL.', async () => {
 			let request: Request | null = null;
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
-				request = this.request;
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (
+				this: Fetch
+			): Promise<Response> {
+				request = (<any>this).request;
 				return Promise.resolve(<Response>{
 					url: request?.url,
 					text: () =>
@@ -326,8 +328,10 @@ Task #1
 
 		it('Triggers "beforeContentCallback" before content is loaded into the document', async () => {
 			let request: Request | null = null;
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
-				request = this.request;
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (
+				this: Fetch
+			): Promise<Response> {
+				request = (<any>this).request;
 				return Promise.resolve(<Response>{
 					url: request?.url,
 					text: () =>
@@ -353,8 +357,10 @@ Task #1
 
 		it('Triggers "browser.settings.navigation.beforeContentCallback" before content is loaded into the document', async () => {
 			let request: Request | null = null;
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
-				request = this.request;
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (
+				this: Fetch
+			): Promise<Response> {
+				request = (<any>this).request;
 				return Promise.resolve(<Response>{
 					url: request?.url,
 					text: () =>
@@ -383,7 +389,12 @@ Task #1
 		});
 
 		it('Navigates to a URL with "javascript:" as protocol.', async () => {
-			const browser = new Browser();
+			const browser = new Browser({
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true
+				}
+			});
 			const page = browser.newPage();
 			const oldWindow = page.mainFrame.window;
 			const response = await page.mainFrame.goto('javascript:document.write("test");');
@@ -416,7 +427,7 @@ Task #1
 					timeout: 1
 				});
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -433,8 +444,10 @@ Task #1
 
 		it('Handles error status code in response.', async () => {
 			let request: Request | null = null;
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
-				request = this.request;
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (
+				this: Fetch
+			): Promise<Response> {
+				request = (<any>this).request;
 				return Promise.resolve(<Response>{
 					url: request?.url,
 					status: 404,
@@ -474,7 +487,7 @@ Task #1
 			try {
 				await page.mainFrame.goto('http://localhost:9999');
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(new Error('Error'));
@@ -919,6 +932,8 @@ Task #1
 		it('Navigates to a virtual server page.', async () => {
 			const browser = new Browser({
 				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
 					fetch: {
 						virtualServers: [
 							{
@@ -989,7 +1004,9 @@ Task #1
 
 	describe('goBack()', () => {
 		it('Navigates back in history.', async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (
+				this: Fetch
+			): Promise<Response> {
 				return Promise.resolve(<Response>{
 					status: 200,
 					text: () =>
@@ -997,7 +1014,7 @@ Task #1
 							setTimeout(
 								() =>
 									resolve(
-										this.request.url === 'http://localhost:3000/'
+										(<any>this).request.url === 'http://localhost:3000/'
 											? '<a href="http://localhost:3000/navigated/">'
 											: '<b>Navigated</b>'
 									),
@@ -1043,7 +1060,9 @@ Task #1
 
 	describe('goForward()', () => {
 		it('Navigates forward in history.', async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (
+				this: Fetch
+			): Promise<Response> {
 				return Promise.resolve(<Response>{
 					status: 200,
 					text: () =>
@@ -1051,7 +1070,7 @@ Task #1
 							setTimeout(
 								() =>
 									resolve(
-										this.request.url === 'http://localhost:3000/'
+										(<any>this).request.url === 'http://localhost:3000/'
 											? '<a href="http://localhost:3000/navigated/">'
 											: '<b>Navigated</b>'
 									),
@@ -1098,7 +1117,9 @@ Task #1
 
 	describe('goSteps()', () => {
 		it('Navigates a delta in history.', async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (
+				this: Fetch
+			): Promise<Response> {
 				return Promise.resolve(<Response>{
 					status: 200,
 					text: () =>
@@ -1106,7 +1127,7 @@ Task #1
 							setTimeout(
 								() =>
 									resolve(
-										this.request.url === 'http://localhost:3000/'
+										(<any>this).request.url === 'http://localhost:3000/'
 											? '<a href="http://localhost:3000/navigated/">'
 											: '<b>Navigated</b>'
 									),

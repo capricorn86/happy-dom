@@ -273,7 +273,7 @@ export default class Fetch {
 		}
 
 		if (cachedResponse.state === CachedResponseStateEnum.stale) {
-			const headers = new Headers(cachedResponse.request.headers);
+			const headers = new this.#window.Headers(cachedResponse.request.headers);
 
 			if (cachedResponse.etag) {
 				headers.set('If-None-Match', cachedResponse.etag);
@@ -395,8 +395,8 @@ export default class Fetch {
 		}
 
 		const body = new this.#window.ReadableStream({
-			start(controller) {
-				setTimeout(() => {
+			start: (controller) => {
+				this.#window.queueMicrotask(() => {
 					controller.enqueue(buffer);
 					controller.close();
 				});
@@ -475,7 +475,7 @@ export default class Fetch {
 			requestHeaders.push(header.toLowerCase());
 		}
 
-		const corsHeaders = new Headers({
+		const corsHeaders = new this.#window.Headers({
 			'Access-Control-Request-Method': this.request.method,
 			Origin: this.#window.location.origin
 		});
@@ -958,7 +958,7 @@ export default class Fetch {
 					return true;
 				}
 
-				const headers = new Headers(this.request.headers);
+				const headers = new this.#window.Headers(this.request.headers);
 				const requestInit: IRequestInit = {
 					method: this.request.method,
 					signal: this.request.signal,
@@ -974,8 +974,6 @@ export default class Fetch {
 					(this.request.credentials === 'same-origin' &&
 						FetchCORSUtility.isCORS(this.#window.location.href, locationURL))
 				) {
-					headers.delete('authorization');
-					headers.delete('www-authenticate');
 					headers.delete('cookie');
 					headers.delete('cookie2');
 				}

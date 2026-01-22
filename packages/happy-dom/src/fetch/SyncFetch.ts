@@ -149,7 +149,7 @@ export default class SyncFetch {
 				ok: true,
 				url: this.request.url,
 				redirected: false,
-				headers: new Headers({ 'Content-Type': result.type }),
+				headers: new this.#window.Headers({ 'Content-Type': result.type }),
 				body: result.buffer,
 				[PropertySymbol.virtualServerFile]: null
 			};
@@ -220,7 +220,7 @@ export default class SyncFetch {
 		}
 
 		if (cachedResponse.state === CachedResponseStateEnum.stale) {
-			const headers = new Headers(cachedResponse.request.headers);
+			const headers = new this.#window.Headers(cachedResponse.request.headers);
 
 			if (cachedResponse.etag) {
 				headers.set('If-None-Match', cachedResponse.etag);
@@ -408,7 +408,7 @@ export default class SyncFetch {
 			requestHeaders.push(header.toLowerCase());
 		}
 
-		const corsHeaders = new Headers({
+		const corsHeaders = new this.#window.Headers({
 			'Access-Control-Request-Method': this.request.method,
 			Origin: this.#window.location.origin
 		});
@@ -665,7 +665,7 @@ export default class SyncFetch {
 					);
 				}
 
-				const headers = new Headers(this.request.headers);
+				const headers = new this.#window.Headers(this.request.headers);
 				const requestInit: IRequestInit = {
 					method: this.request.method,
 					signal: this.request.signal,
@@ -681,8 +681,6 @@ export default class SyncFetch {
 					(this.request.credentials === 'same-origin' &&
 						FetchCORSUtility.isCORS(this.#window.location.href, locationURL))
 				) {
-					headers.delete('authorization');
-					headers.delete('www-authenticate');
 					headers.delete('cookie');
 					headers.delete('cookie2');
 				}

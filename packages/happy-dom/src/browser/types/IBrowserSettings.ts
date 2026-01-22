@@ -6,13 +6,28 @@ import IFetchRequestHeaders from '../../fetch/types/IFetchRequestHeaders.js';
 import IBrowserPageViewport from './IBrowserPageViewport.js';
 import IOptionalTimerLoopsLimit from '../../window/IOptionalTimerLoopsLimit.js';
 import BrowserWindow from '../../window/BrowserWindow.js';
+import IResolveNodeModules from '../../module/types/IResolveNodeModules.js';
 
 /**
  * Browser settings.
  */
 export default interface IBrowserSettings {
-	/** Disables JavaScript evaluation. */
+	/**
+	 * Disables JavaScript evaluation.
+	 *
+	 * @deprecated Javascript evaluation is now disabled by default. Use "enableJavaScriptEvaluation" if you want to enable it.
+	 */
 	disableJavaScriptEvaluation: boolean;
+
+	/**
+	 * Enables JavaScript evaluation.
+	 *
+	 * A VM Context is not an isolated environment, and if you run untrusted code you are at risk of RCE (Remote Code Execution) attacks.
+	 * It is recommended to disable code generation at process level by running node with the "--disallow-code-generation-from-strings" flag enabled to protect against these types of attacks.
+	 *
+	 * @see https://github.com/capricorn86/happy-dom/wiki/Code-Generation-From-Strings-Warning
+	 */
+	enableJavaScriptEvaluation: boolean;
 
 	/** Disables JavaScript file loading. */
 	disableJavaScriptFileLoading: boolean;
@@ -25,6 +40,16 @@ export default interface IBrowserSettings {
 
 	/** Handle disabled resource loading as success */
 	handleDisabledFileLoadingAsSuccess: boolean;
+
+	/**
+	 * Suppresses the warning that is printed when code generation from strings is enabled at process level.
+	 *
+	 * @deprecated Use "suppressInsecureJavaScriptEnvironmentWarning" instead.
+	 */
+	suppressCodeGenerationFromStringsWarning: boolean;
+
+	/** Suppresses the warning that is printed when the JavaScript execution environment is insecure. */
+	suppressInsecureJavaScriptEnvironmentWarning: boolean;
 
 	/**
 	 * Settings for timers
@@ -68,6 +93,17 @@ export default interface IBrowserSettings {
 		 * Virtual servers used for simulating a server that reads from the file system.
 		 */
 		virtualServers: IVirtualServer[] | null;
+	};
+
+	/**
+	 * Settings for modules
+	 */
+	module: {
+		/** Resolve node modules to the defined URL */
+		resolveNodeModules: IResolveNodeModules | null;
+		urlResolver:
+			| ((options: { url: string; parentURL: string; window: BrowserWindow }) => string)
+			| null;
 	};
 
 	/**

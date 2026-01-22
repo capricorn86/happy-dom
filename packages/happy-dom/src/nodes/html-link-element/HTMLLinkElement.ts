@@ -24,7 +24,7 @@ import IResourceFetchResponse from '../../fetch/types/IResourceFetchResponse.js'
 export default class HTMLLinkElement extends HTMLElement {
 	// Internal properties
 	public [PropertySymbol.sheet]: CSSStyleSheet | null = null;
-	public [PropertySymbol.evaluateCSS] = true;
+	public [PropertySymbol.disableEvaluation] = false;
 	public [PropertySymbol.relList]: DOMTokenList | null = null;
 	#loadedStyleSheetURL: string | null = null;
 
@@ -295,7 +295,6 @@ export default class HTMLLinkElement extends HTMLElement {
 	 * @param url URL.
 	 */
 	async #preloadModule(url: string): Promise<void> {
-		const absoluteURL = new URL(url, this[PropertySymbol.ownerDocument].location.href);
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
 		const browserSettings = new WindowBrowserContext(window).getSettings();
@@ -305,20 +304,22 @@ export default class HTMLLinkElement extends HTMLElement {
 			!browserSettings ||
 			!this[PropertySymbol.isConnected] ||
 			browserSettings.disableJavaScriptFileLoading ||
-			browserSettings.disableJavaScriptEvaluation
+			!browserSettings.enableJavaScriptEvaluation
 		) {
 			return;
 		}
+
+		const moduleFactory = new ModuleFactory(window, window.location);
 
 		if (
 			browserSettings.disableErrorCapturing ||
 			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
 		) {
-			const module = await ModuleFactory.getModule(window, absoluteURL, url);
+			const module = await moduleFactory.getModule(url);
 			await module.preload();
 		} else {
 			try {
-				const module = await ModuleFactory.getModule(window, absoluteURL, url);
+				const module = await moduleFactory.getModule(url);
 				await module.preload();
 			} catch (error) {
 				browserFrame.page.console.error(error);
@@ -351,7 +352,7 @@ export default class HTMLLinkElement extends HTMLElement {
 
 		if (
 			as === 'script' &&
-			(browserSettings.disableJavaScriptFileLoading || browserSettings.disableJavaScriptEvaluation)
+			(browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)
 		) {
 			return;
 		}
@@ -422,7 +423,7 @@ export default class HTMLLinkElement extends HTMLElement {
 
 		const browserSettings = browserFrame.page.context.browser.settings;
 
-		if (!this[PropertySymbol.evaluateCSS] || !this[PropertySymbol.isConnected]) {
+		if (this[PropertySymbol.disableEvaluation] || !this[PropertySymbol.isConnected]) {
 			return;
 		}
 

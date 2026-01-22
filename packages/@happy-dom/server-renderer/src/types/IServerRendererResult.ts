@@ -1,9 +1,9 @@
 export default interface IServerRendererResult {
-	url: string;
+	url: string | null;
 	content: string | null;
-	status: number;
-	statusText: string;
-	headers: { [key: string]: string };
+	status: number | null;
+	statusText: string | null;
+	headers: { [key: string]: string } | null;
 	outputFile: string | null;
 	error: string | null;
 	pageErrors: string[];

@@ -4,7 +4,10 @@ import ServerRendererLogLevelEnum from '../../src/enums/ServerRendererLogLevelEn
 
 export default <IServerRendererConfiguration>{
 	browser: {
-		disableJavaScriptEvaluation: true,
+		disableJavaScriptEvaluation: false,
+		enableJavaScriptEvaluation: false,
+		suppressCodeGenerationFromStringsWarning: false,
+		suppressInsecureJavaScriptEnvironmentWarning: true,
 		disableJavaScriptFileLoading: true,
 		disableCSSFileLoading: true,
 		disableIframePageLoading: false,
@@ -43,6 +46,10 @@ export default <IServerRendererConfiguration>{
 					directory: './virtual-server/path'
 				}
 			]
+		},
+		module: {
+			resolveNodeModules: null,
+			urlResolver: null
 		},
 		navigation: {
 			disableMainFrameNavigation: true,
@@ -92,9 +99,11 @@ export default <IServerRendererConfiguration>{
 		serializableShadowRoots: true,
 		allShadowRoots: true,
 		excludeShadowRootTags: ['STYLE', 'SCRIPT'],
-		disablePolyfills: true
+		disablePolyfills: true,
+		mode: 'browser',
+		setupScript: null
 	},
-	urls: [
+	renderItems: [
 		{ url: 'https://example.com/page1', outputFile: 'page1/index.html' },
 		{
 			url: 'https://example.com/page2',

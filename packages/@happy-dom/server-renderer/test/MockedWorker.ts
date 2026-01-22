@@ -2,13 +2,16 @@ import IServerRendererConfiguration from '../src/types/IServerRendererConfigurat
 import IServerRendererItem from '../src/types/IServerRendererItem';
 import IServerRendererResult from '../src/types/IServerRendererResult';
 
+type TEvent = 'message' | 'error' | 'exit';
+
 /**
- *
+ * Mocked worker.
  */
 export default class MockedWorker {
-	public static openWorkers: MockedWorker[] = [];
+	public static runningWorkers: MockedWorker[] = [];
 	public static terminatedWorkers: MockedWorker[] = [];
 	public scriptPath: string;
+	public execArgv: string[] = [];
 	public workerData: {
 		configuration: IServerRendererConfiguration;
 	};
@@ -25,15 +28,18 @@ export default class MockedWorker {
 	public isTerminated: boolean = false;
 
 	/**
+	 * Constructor.
 	 *
-	 * @param scriptPath
-	 * @param options
-	 * @param options.workerData
+	 * @param scriptPath Script path.
+	 * @param options Options.
+	 * @param options.execArgv Exec arguments.
+	 * @param options.workerData Worker data.
 	 */
-	constructor(scriptPath: string, options: { workerData: any }) {
+	constructor(scriptPath: string, options: { execArgv: string[]; workerData: any }) {
 		this.scriptPath = scriptPath;
+		this.execArgv = options.execArgv;
 		this.workerData = options.workerData;
-		(<typeof MockedWorker>this.constructor).openWorkers.push(this);
+		(<typeof MockedWorker>this.constructor).runningWorkers.push(this);
 	}
 
 	/**
@@ -41,7 +47,7 @@ export default class MockedWorker {
 	 * @param event
 	 * @param listener
 	 */
-	public on(event: string, listener: any): void {
+	public on(event: TEvent, listener: any): void {
 		this.listeners[event].push(listener);
 	}
 
@@ -50,7 +56,7 @@ export default class MockedWorker {
 	 * @param event
 	 * @param listener
 	 */
-	public off(event: string, listener: any): void {
+	public off(event: TEvent, listener: any): void {
 		const index = this.listeners[event].indexOf(listener);
 		this.listeners[event].splice(index, 1);
 	}
@@ -69,7 +75,7 @@ export default class MockedWorker {
 	public terminate(): void {
 		this.isTerminated = true;
 		(<typeof MockedWorker>this.constructor).terminatedWorkers.push(this);
-		const index = (<typeof MockedWorker>this.constructor).openWorkers.indexOf(this);
-		(<typeof MockedWorker>this.constructor).openWorkers.splice(index, 1);
+		const index = (<typeof MockedWorker>this.constructor).runningWorkers.indexOf(this);
+		(<typeof MockedWorker>this.constructor).runningWorkers.splice(index, 1);
 	}
 }

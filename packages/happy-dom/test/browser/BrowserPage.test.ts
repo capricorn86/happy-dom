@@ -184,6 +184,8 @@ describe('BrowserPage', () => {
 		it('Clears modules when closing.', async () => {
 			const browser = new Browser({
 				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
 					fetch: {
 						virtualServers: [
 							{
@@ -240,6 +242,48 @@ describe('BrowserPage', () => {
 			expect(mainFrameWindow[PropertySymbol.modules].css.size).toBe(0);
 			expect(mainFrameWindow[PropertySymbol.modules].json.size).toBe(0);
 		});
+
+		it('Clears event listeners of nodes when closing.', async () => {
+			const browser = new Browser({ console });
+			const page = browser.defaultContext.newPage();
+			const mainFrame = page.mainFrame;
+			const frame1 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+
+			const div1 = mainFrame.document.createElement('div');
+			const div2 = frame1.document.createElement('div');
+			const div3 = frame2.document.createElement('div');
+			let mainFrameDivClicked = false;
+			let frame1DivClicked = false;
+			let frame2DivClicked = false;
+
+			div1.addEventListener('click', () => {
+				mainFrameDivClicked = true;
+			});
+
+			div2.addEventListener('click', () => {
+				frame1DivClicked = true;
+			});
+
+			div3.addEventListener('click', () => {
+				frame2DivClicked = true;
+			});
+
+			mainFrame.document.body.appendChild(div1);
+			frame1.document.body.appendChild(div2);
+			frame2.document.body.appendChild(div3);
+
+			await page.close();
+
+			// Simulate clicks after page is closed
+			div1.dispatchEvent(new Event('click'));
+			div2.dispatchEvent(new Event('click'));
+			div3.dispatchEvent(new Event('click'));
+
+			expect(mainFrameDivClicked).toBe(false);
+			expect(frame1DivClicked).toBe(false);
+			expect(frame2DivClicked).toBe(false);
+		});
 	});
 
 	describe('waitUntilComplete()', () => {
@@ -251,8 +295,8 @@ describe('BrowserPage', () => {
 			frame1.evaluate('setTimeout(() => { globalThis.test = 1; }, 10);');
 			frame2.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
 			await page.waitUntilComplete();
-			expect(frame1.window['test']).toBe(1);
-			expect(frame2.window['test']).toBe(2);
+			expect((<any>frame1.window)['test']).toBe(1);
+			expect((<any>frame2.window)['test']).toBe(2);
 		});
 	});
 
@@ -283,8 +327,8 @@ describe('BrowserPage', () => {
 			frame2.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
 			page.abort();
 			await new Promise((resolve) => setTimeout(resolve, 50));
-			expect(frame1.window['test']).toBeUndefined();
-			expect(frame2.window['test']).toBeUndefined();
+			expect((<any>frame1.window)['test']).toBeUndefined();
+			expect((<any>frame2.window)['test']).toBeUndefined();
 		});
 	});
 

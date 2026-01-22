@@ -34,7 +34,7 @@
 	},
 	"dependencies": {
 		"happy-dom": "^0.0.0",
-		"@types/node": "^20.0.0"
+		"@types/node": ">=20.0.0"
 	},
 	"devDependencies": {
 		"typescript": "^5.8.3",
