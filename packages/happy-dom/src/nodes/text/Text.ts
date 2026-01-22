@@ -42,13 +42,13 @@ export default class Text extends CharacterData {
 			NodeUtility.isTextNode(node);
 			node = node.previousSibling
 		) {
-			text = node[PropertySymbol.data] + text;
+			text = node.data + text;
 		}
 
 		text += this[PropertySymbol.data];
 
 		for (let node = this.nextSibling; NodeUtility.isTextNode(node); node = node.nextSibling) {
-			text += node[PropertySymbol.data];
+			text += node.data;
 		}
 
 		return text;
