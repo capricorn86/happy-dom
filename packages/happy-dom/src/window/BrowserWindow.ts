@@ -611,6 +611,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	// Other classes that has to be bound to the Window context (populated by WindowContextClassExtender)
 	public declare readonly MutationObserver: typeof MutationObserver;
 	public declare readonly MessagePort: typeof MessagePort;
+	public declare readonly BroadcastChannel: typeof BroadcastChannel;
 	public declare readonly CSSStyleSheet: typeof CSSStyleSheet;
 	public declare readonly DOMException: typeof DOMException;
 	public declare readonly Headers: typeof Headers;
