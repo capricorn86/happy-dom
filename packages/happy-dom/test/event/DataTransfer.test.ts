@@ -103,6 +103,27 @@ describe('DataTransfer', () => {
 			expect(dataTransfer.getData('text/html')).toBe('test2');
 			expect(dataTransfer.getData('text/xml')).toBe('');
 		});
+
+		it('Normalizes format "text" to "text/plain".', () => {
+			dataTransfer.setData('text/plain', 'test1');
+
+			expect(dataTransfer.getData('text')).toBe('test1');
+			expect(dataTransfer.getData('TEXT')).toBe('test1');
+		});
+
+		it('Normalizes format "text" when set as item type.', () => {
+			dataTransfer.items.add('test1', 'text');
+
+			expect(dataTransfer.getData('text/plain')).toBe('test1');
+			expect(dataTransfer.getData('text')).toBe('test1');
+		});
+
+		it('Normalizes format "url" to "text/uri-list".', () => {
+			dataTransfer.setData('text/uri-list', 'https://example.com');
+
+			expect(dataTransfer.getData('url')).toBe('https://example.com');
+			expect(dataTransfer.getData('URL')).toBe('https://example.com');
+		});
 	});
 
 	describe('setDragImage()', () => {

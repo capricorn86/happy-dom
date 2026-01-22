@@ -47,6 +47,10 @@ export default <IServerRendererConfiguration>{
 				}
 			]
 		},
+		module: {
+			resolveNodeModules: null,
+			urlResolver: null
+		},
 		navigation: {
 			disableMainFrameNavigation: true,
 			disableChildFrameNavigation: true,
@@ -95,9 +99,11 @@ export default <IServerRendererConfiguration>{
 		serializableShadowRoots: true,
 		allShadowRoots: true,
 		excludeShadowRootTags: ['STYLE', 'SCRIPT'],
-		disablePolyfills: true
+		disablePolyfills: true,
+		mode: 'browser',
+		setupScript: null
 	},
-	urls: [
+	renderItems: [
 		{ url: 'https://example.com/page1', outputFile: 'page1/index.html' },
 		{
 			url: 'https://example.com/page2',

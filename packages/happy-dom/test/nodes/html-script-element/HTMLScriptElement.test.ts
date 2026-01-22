@@ -12,6 +12,7 @@ import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCapt
 import EventTarget from '../../../src/event/EventTarget.js';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import DOMTokenList from '../../../src/dom/DOMTokenList.js';
+import Path from 'path';
 
 describe('HTMLScriptElement', () => {
 	let window: Window;
@@ -853,14 +854,14 @@ describe('HTMLScriptElement', () => {
 			await window.happyDOM?.waitUntilComplete();
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe(
-				'Invalid regular expression: missing /'
+				`Failed to parse JavaScript in 'https://localhost:8080/base/path/to/script/': Invalid regular expression: missing /`
 			);
 
 			const consoleOutput = window.happyDOM?.virtualConsolePrinter.readAsString() || '';
 			expect(
 				consoleOutput.startsWith(`https://localhost:8080/base/path/to/script/:1
-globalThis.test = /;
-                  ^
+(function anonymous($happy_dom) {try {globalThis.test = /;} catch (error) { $happy_dom.dispatchError(error); }})
+                                                        ^
 
 SyntaxError: Invalid regular expression: missing /`)
 			).toBe(true);
@@ -882,14 +883,14 @@ SyntaxError: Invalid regular expression: missing /`)
 			document.body.appendChild(script);
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe(
-				'Invalid regular expression: missing /'
+				`Failed to parse JavaScript in 'https://localhost:8080/base/path/to/script/': Invalid regular expression: missing /`
 			);
 
 			const consoleOutput = window.happyDOM?.virtualConsolePrinter.readAsString() || '';
 			expect(
 				consoleOutput.startsWith(`https://localhost:8080/base/path/to/script/:1
-globalThis.test = /;
-                  ^
+(function anonymous($happy_dom) {try {globalThis.test = /;} catch (error) { $happy_dom.dispatchError(error); }})
+                                                        ^
 
 SyntaxError: Invalid regular expression: missing /`)
 			).toBe(true);
@@ -906,14 +907,14 @@ SyntaxError: Invalid regular expression: missing /`)
 			document.body.appendChild(element);
 
 			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe(
-				'Invalid regular expression: missing /'
+				`Failed to parse JavaScript in 'about:blank': Invalid regular expression: missing /`
 			);
 
 			const consoleOutput = window.happyDOM?.virtualConsolePrinter.readAsString() || '';
 			expect(
 				consoleOutput.startsWith(`about:blank:1
-globalThis.test = /;
-                  ^
+(function anonymous($happy_dom) {try {globalThis.test = /;} catch (error) { $happy_dom.dispatchError(error); }})
+                                                        ^
 
 SyntaxError: Invalid regular expression: missing /`)
 			).toBe(true);
@@ -935,7 +936,11 @@ SyntaxError: Invalid regular expression: missing /`)
 
 			expect(() => {
 				document.body.appendChild(element);
-			}).toThrow(new SyntaxError('Invalid regular expression: missing /'));
+			}).toThrow(
+				new SyntaxError(
+					`Failed to parse JavaScript in 'about:blank': Invalid regular expression: missing /`
+				)
+			);
 		});
 
 		it('Throws an exception when appending an element that contains invalid Javascript and the Happy DOM setting "errorCapture" is set to "disabled".', () => {
@@ -954,7 +959,11 @@ SyntaxError: Invalid regular expression: missing /`)
 
 			expect(() => {
 				document.body.appendChild(element);
-			}).toThrow(new SyntaxError('Invalid regular expression: missing /'));
+			}).toThrow(
+				new SyntaxError(
+					`Failed to parse JavaScript in 'about:blank': Invalid regular expression: missing /`
+				)
+			);
 		});
 
 		it('Handles loading of a modules with "src" attribute.', async () => {
@@ -1043,7 +1052,7 @@ SyntaxError: Invalid regular expression: missing /`)
 			).toBe('red');
 		});
 
-		it('Handles loading of a modules by code.', async () => {
+		it('Handles loading of modules dynamically by code from a module.', async () => {
 			const requests: string[] = [];
 			const window = new Window({
 				url: 'https://localhost:8080/base/',
@@ -1070,6 +1079,223 @@ SyntaxError: Invalid regular expression: missing /`)
 			const script = document.createElement('script');
 
 			script.type = 'module';
+			script.textContent = `import('./js/TestModuleElement.js');`;
+
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			const testModule = document.createElement('test-module');
+
+			document.body.appendChild(testModule);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(requests).toEqual([
+				'https://localhost:8080/base/js/TestModuleElement.js',
+				'https://localhost:8080/base/js/utilities/StringUtilityClass.js',
+				'https://localhost:8080/base/js/utilities/stringUtility.js',
+				'https://localhost:8080/base/js/json/data.json',
+				'https://localhost:8080/base/js/css/style.css',
+				'https://localhost:8080/base/js/utilities/apostrophWrapper.js',
+				'https://localhost:8080/base/js/utilities/lazyload.js'
+			]);
+
+			expect((<any>window)['moduleLoadOrder']).toEqual([
+				'apostrophWrapper.js',
+				'StringUtilityClass.js',
+				'stringUtility.js',
+				'TestModuleElement.js',
+				'lazyload.js'
+			]);
+
+			expect(testModule.shadowRoot?.innerHTML).toBe(`<div>
+            Expect lower case: "value"
+            Expect upper case: "VALUE"
+            Expect lower case. "value"
+            Expect trimmed lower case: "value"
+            Import URL: https://localhost:8080/base/js/TestModuleElement.js
+            Resolved URL: https://localhost:8080/base/js/Resolved.js
+        </div><div>Lazy-loaded module: true</div>`);
+
+			expect(testModule.shadowRoot?.adoptedStyleSheets[0].cssRules[0].cssText).toBe(
+				'div { background: red; }'
+			);
+			expect(
+				window.getComputedStyle(<HTMLElement>testModule.shadowRoot?.querySelector('div'))
+					.backgroundColor
+			).toBe('red');
+		});
+
+		it('Handles loading of modules with import with custom URL resolver when "settings.module.urlResolver" is defined.', async () => {
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
+					fetch: {
+						virtualServers: [
+							{
+								url: 'https://localhost:8080/base/js/',
+								directory: './test/nodes/html-script-element/modules/'
+							}
+						]
+					},
+					module: {
+						urlResolver: ({ url }) => {
+							if (url === 'resolved-module') {
+								return 'https://localhost:8080/base/js/TestModuleElement.js';
+							}
+							return url;
+						}
+					}
+				},
+				console
+			});
+			const document = window.document;
+			const script = document.createElement('script');
+
+			script.type = 'module';
+			script.textContent = `import 'resolved-module';`;
+
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			const testModule = document.createElement('test-module');
+
+			document.body.appendChild(testModule);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(testModule.shadowRoot?.innerHTML).toBe(`<div>
+            Expect lower case: "value"
+            Expect upper case: "VALUE"
+            Expect lower case. "value"
+            Expect trimmed lower case: "value"
+            Import URL: https://localhost:8080/base/js/TestModuleElement.js
+            Resolved URL: https://localhost:8080/base/js/Resolved.js
+        </div><div>Lazy-loaded module: true</div>`);
+		});
+
+		it('Handles loading of modules dynamically with custom URL resolver when "settings.module.urlResolver" is defined.', async () => {
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
+					fetch: {
+						virtualServers: [
+							{
+								url: 'https://localhost:8080/base/js/',
+								directory: './test/nodes/html-script-element/modules/'
+							}
+						]
+					},
+					module: {
+						urlResolver: ({ url }) => {
+							if (url === 'resolved-module') {
+								return 'https://localhost:8080/base/js/TestModuleElement.js';
+							}
+							return url;
+						}
+					}
+				},
+				console
+			});
+			const document = window.document;
+			const script = document.createElement('script');
+
+			script.type = 'module';
+			script.textContent = `import('resolved-module');`;
+
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			const testModule = document.createElement('test-module');
+
+			document.body.appendChild(testModule);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(testModule.shadowRoot?.innerHTML).toBe(`<div>
+            Expect lower case: "value"
+            Expect upper case: "VALUE"
+            Expect lower case. "value"
+            Expect trimmed lower case: "value"
+            Import URL: https://localhost:8080/base/js/TestModuleElement.js
+            Resolved URL: https://localhost:8080/base/js/Resolved.js
+        </div><div>Lazy-loaded module: true</div>`);
+		});
+
+		it('Handles loading of Node module when "settings.module.resolveNodeModules" is defined.', async () => {
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
+					module: {
+						resolveNodeModules: {
+							url: 'https://localhost:8080/base/js/',
+							directory: './test/nodes/html-script-element/'
+						}
+					}
+				},
+				console
+			});
+			const document = window.document;
+			const script = document.createElement('script');
+
+			script.type = 'module';
+			script.textContent = `import 'modules';`;
+
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			const testModule = document.createElement('test-module');
+
+			document.body.appendChild(testModule);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(testModule.shadowRoot?.innerHTML).toBe(`<div>
+            Expect lower case: "value"
+            Expect upper case: "VALUE"
+            Expect lower case. "value"
+            Expect trimmed lower case: "value"
+            Import URL: https://localhost:8080/base/js/modules/TestModuleElement.js
+            Resolved URL: https://localhost:8080/base/js/modules/Resolved.js
+        </div><div>Lazy-loaded module: true</div>`);
+		});
+
+		it('Handles loading of modules dynamically by code from standard javascript.', async () => {
+			const requests: string[] = [];
+			const window = new Window({
+				url: 'https://localhost:8080/base/',
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
+					fetch: {
+						interceptor: {
+							beforeAsyncRequest: async ({ request }) => {
+								requests.push(request.url);
+							}
+						},
+						virtualServers: [
+							{
+								url: 'https://localhost:8080/base/js/',
+								directory: './test/nodes/html-script-element/modules/'
+							}
+						]
+					}
+				},
+				console
+			});
+			const document = window.document;
+			const script = document.createElement('script');
+
 			script.textContent = `import('./js/TestModuleElement.js');`;
 
 			document.body.appendChild(script);
@@ -1266,6 +1492,9 @@ DOMException: Failed to perform request to "https://localhost:8080/base/js/utili
 		});
 
 		it('Dispatches "error" event on Window when compilation of module failed', async () => {
+			const directory = Path.resolve(
+				'./test/nodes/html-script-element/modules-with-compilation-error/'
+			);
 			const window = new Window({
 				url: 'https://localhost:8080/base/',
 				settings: {
@@ -1275,7 +1504,7 @@ DOMException: Failed to perform request to "https://localhost:8080/base/js/utili
 						virtualServers: [
 							{
 								url: 'https://localhost:8080/base/js/',
-								directory: './test/nodes/html-script-element/modules-with-compilation-error/'
+								directory
 							}
 						]
 					}
@@ -1303,12 +1532,15 @@ DOMException: Failed to perform request to "https://localhost:8080/base/js/utili
 				window.happyDOM?.virtualConsolePrinter
 					.readAsString()
 					.startsWith(
-						`SyntaxError: Failed to parse module 'https://localhost:8080/base/js/utilities/stringUtility.js': Unexpected token 'export'`
+						`${directory}/utilities/stringUtility.js:8\nexport error { toUpperCase, trim };\n^^^^^^\n\nSyntaxError: Unexpected token 'export'`
 					)
 			).toBe(true);
 		});
 
 		it('Dispatches "error" event on Window when evaluation of module failed', async () => {
+			const directory = Path.resolve(
+				'./test/nodes/html-script-element/modules-with-evaluation-error/'
+			);
 			const window = new Window({
 				url: 'https://localhost:8080/base/',
 				settings: {
@@ -1318,7 +1550,7 @@ DOMException: Failed to perform request to "https://localhost:8080/base/js/utili
 						virtualServers: [
 							{
 								url: 'https://localhost:8080/base/js/',
-								directory: './test/nodes/html-script-element/modules-with-evaluation-error/'
+								directory
 							}
 						]
 					}
@@ -1343,10 +1575,43 @@ DOMException: Failed to perform request to "https://localhost:8080/base/js/utili
 			expect((<ErrorEvent>(<unknown>errorEvent)).type).toBe('error');
 			expect((<ErrorEvent>(<unknown>errorEvent)).bubbles).toBe(false);
 			expect(
-				/^ReferenceError: notFound is not defined\n    at (.+?)\/nodes\/html-script-element\/modules-with-evaluation-error\/utilities\/stringUtility.js:10:14/.test(
-					window.happyDOM?.virtualConsolePrinter.readAsString()
-				)
+				window.happyDOM?.virtualConsolePrinter
+					.readAsString()
+					.startsWith(
+						`ReferenceError: notFound is not defined\n    at ${directory}/utilities/stringUtility.js:9:14\n`
+					)
 			).toBe(true);
+		});
+
+		it('Handles circular module dependencies.', async () => {
+			const window = new Window({
+				url: 'https://localhost:8080/',
+				settings: {
+					enableJavaScriptEvaluation: true,
+					suppressCodeGenerationFromStringsWarning: true,
+					fetch: {
+						virtualServers: [
+							{
+								url: 'https://localhost:8080/base/js/',
+								directory: './test/nodes/html-script-element/modules-with-circular-dependency/'
+							}
+						]
+					}
+				}
+			});
+			const document = window.document;
+			const script = document.createElement('script');
+
+			script.type = 'module';
+			script.textContent = `
+                import { circularFunction } from './base/js/TopDependency.js';
+                console.log(circularFunction());
+            `;
+			document.body.appendChild(script);
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(window.happyDOM.virtualConsolePrinter.readAsString()).toBe('topFunction() called\n');
 		});
 	});
 

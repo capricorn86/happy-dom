@@ -53,6 +53,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	#response: Response | ISyncResponse | null = null;
 	#responseType: XMLHttpResponseTypeEnum | '' = '';
 	#responseBody: ArrayBuffer | Blob | Document | object | string | null = null;
+	#accumulatedData: Buffer = Buffer.from([]);
 	#readyState: XMLHttpRequestReadyStateEnum = XMLHttpRequestReadyStateEnum.unsent;
 	#overriddenMimeType: string | null = null;
 
@@ -113,7 +114,21 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
-		return <string>this.#responseBody ?? '';
+
+		// If response is complete, use the final response body
+		if (this.#responseBody !== null) {
+			return <string>this.#responseBody;
+		}
+
+		// If we're in loading state and have accumulated data, process it
+		if (
+			this.readyState === XMLHttpRequestReadyStateEnum.headersReceived ||
+			this.readyState === XMLHttpRequestReadyStateEnum.loading
+		) {
+			return <string>this.#accumulatedData.toString() ?? '';
+		}
+
+		return '';
 	}
 
 	/**
@@ -216,6 +231,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#aborted = false;
 		this.#response = null;
 		this.#responseBody = null;
+		this.#accumulatedData = Buffer.from([]);
 		this.#abortController = new window.AbortController();
 		this.#request = new window.Request(url, {
 			method,
@@ -427,13 +443,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		const contentLengthNumber =
 			contentLength !== null && !isNaN(Number(contentLength)) ? Number(contentLength) : null;
 		let loaded = 0;
-		let data = Buffer.from([]);
 
 		if (this.#response.body) {
 			let eventError: Error;
 			try {
 				for await (const chunk of this.#response.body) {
-					data = Buffer.concat([data, typeof chunk === 'string' ? Buffer.from(chunk) : chunk]);
+					const chunkBuffer = typeof chunk === 'string' ? Buffer.from(chunk) : chunk;
+					this.#accumulatedData = Buffer.concat([this.#accumulatedData, chunkBuffer]);
 					loaded += chunk.length;
 					// We need to re-throw the error as we don't want it to be caught by the try/catch.
 					try {
@@ -461,13 +477,14 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#responseBody = XMLHttpRequestResponseDataParser.parse({
 			window: window,
 			responseType: this.#responseType,
-			data,
+			data: this.#accumulatedData,
 			contentType:
 				this.#overriddenMimeType ||
 				this.#response.headers.get('Content-Type') ||
 				this.#request!.headers.get('Content-Type')
 		});
 		this.#readyState = XMLHttpRequestReadyStateEnum.done;
+		this.#accumulatedData = Buffer.from([]);
 
 		asyncTaskManager.endTask(taskID);
 

@@ -1,9 +1,12 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
+    inputs:
+      author:
+        description: 'GitHub Author Username'
+        required: true
+        default: 'capricorn86'
 
 jobs:
   check-next-version:
@@ -152,7 +155,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Generate release notes
-        run: node ./node_modules/.bin/happy-release-notes --author=githubUsername > ./RELEASE_NOTES.md
+        run: node ./node_modules/.bin/happy-release-notes --authorUsername=${{ github.event.inputs.author }} > ./RELEASE_NOTES.md
 
       - name: Create release
         id: create_release

@@ -156,7 +156,7 @@ export default class SelectorParser {
 				} else if (match[5]) {
 					currentSelectorItem.attributes = currentSelectorItem.attributes || [];
 					currentSelectorItem.attributes.push({
-						name: match[5].toLowerCase(),
+						name: match[5],
 						operator: null,
 						value: null,
 						modifier: null,
@@ -165,7 +165,7 @@ export default class SelectorParser {
 				} else if (match[6] && match[8] !== undefined) {
 					currentSelectorItem.attributes = currentSelectorItem.attributes || [];
 					currentSelectorItem.attributes.push({
-						name: match[6].toLowerCase(),
+						name: match[6],
 						operator: match[7] || null,
 						value: match[8].replace(ESCAPED_CHARACTER_REGEXP, ''),
 						modifier: <'s'>match[9] || null,
@@ -178,7 +178,7 @@ export default class SelectorParser {
 				} else if (match[10] && match[12] !== undefined) {
 					currentSelectorItem.attributes = currentSelectorItem.attributes || [];
 					currentSelectorItem.attributes.push({
-						name: match[10].toLowerCase(),
+						name: match[10],
 						operator: match[11] || null,
 						value: match[12].replace(ESCAPED_CHARACTER_REGEXP, ''),
 						modifier: null,
