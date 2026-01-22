@@ -79,6 +79,7 @@ import PluginArray from '../navigator/PluginArray.js';
 import Attr from '../nodes/attr/Attr.js';
 import CharacterData from '../nodes/character-data/CharacterData.js';
 import Comment from '../nodes/comment/Comment.js';
+import CDATASection from '../nodes/cdata-section/CDATASection.js';
 import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import DocumentType from '../nodes/document-type/DocumentType.js';
 import Document from '../nodes/document/Document.js';
@@ -401,6 +402,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare readonly DocumentFragment: typeof DocumentFragment;
 	public declare readonly Text: typeof Text;
 	public declare readonly Comment: typeof Comment;
+	public declare readonly CDATASection: typeof CDATASection;
 	public declare readonly Image: typeof Image;
 	public declare readonly Audio: typeof Audio;
 	public declare readonly WebSocket: typeof WebSocket;

@@ -7,6 +7,7 @@ import XMLDocumentImplementation from '../nodes/xml-document/XMLDocument.js';
 import DocumentFragmentImplementation from '../nodes/document-fragment/DocumentFragment.js';
 import TextImplementation from '../nodes/text/Text.js';
 import CommentImplementation from '../nodes/comment/Comment.js';
+import CDATASectionImplementation from '../nodes/cdata-section/CDATASection.js';
 import ImageImplementation from '../nodes/html-image-element/Image.js';
 import AudioImplementation from '../nodes/html-audio-element/Audio.js';
 import MutationObserverImplementation from '../mutation-observer/MutationObserver.js';
@@ -81,6 +82,11 @@ export default class WindowContextClassExtender {
 		class Comment extends CommentImplementation {}
 		Comment.prototype[PropertySymbol.window] = window;
 		(<typeof Comment>window.Comment) = Comment;
+
+		// CDATASection
+		class CDATASection extends CDATASectionImplementation {}
+		CDATASection.prototype[PropertySymbol.window] = window;
+		(<typeof CDATASection>window.CDATASection) = CDATASection;
 
 		// Image
 		class Image extends ImageImplementation {}

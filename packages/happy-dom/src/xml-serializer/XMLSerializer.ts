@@ -106,6 +106,8 @@ export default class XMLSerializer {
 				return html;
 			case NodeTypeEnum.commentNode:
 				return `<!--${root.textContent}-->`;
+			case NodeTypeEnum.cdataSectionNode:
+				return `<![CDATA[${root.textContent}]]>`;
 			case NodeTypeEnum.processingInstructionNode:
 				return `<?${(<ProcessingInstruction>root).target} ${root.textContent}?>`;
 			case NodeTypeEnum.textNode:
