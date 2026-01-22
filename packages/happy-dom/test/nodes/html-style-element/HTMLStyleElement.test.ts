@@ -247,7 +247,7 @@ describe('HTMLStyleElement', () => {
             `;
 
 			expect(scopeCssSelectors(html, '.scope'))
-				.toEqual(`<style>.scope #document h1,.scope  #document h2 { background: red; }
+				.toEqual(`<style>.scope #document h1,.scope #document h2 { background: red; }
 .scope h3 { color: white; }</style>
                 
         

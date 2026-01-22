@@ -33,14 +33,16 @@
 		"test:debug": "vitest run --inspect-brk --no-file-parallelism"
 	},
 	"dependencies": {
-		"@types/whatwg-mimetype": "^3.0.2",
 		"@types/node": ">=20.0.0",
+		"@types/whatwg-mimetype": "^3.0.2",
 		"@types/ws": "^8.18.1",
+		"css-tree": "^3.1.0",
 		"entities": "^4.5.0",
 		"whatwg-mimetype": "^3.0.0",
 		"ws": "^8.18.3"
 	},
 	"devDependencies": {
+		"@types/css-tree": "^2.3.11",
 		"@vitest/ui": "^3.2.3",
 		"@webref/css": "6.6.2",
 		"typescript": "^5.8.3",
