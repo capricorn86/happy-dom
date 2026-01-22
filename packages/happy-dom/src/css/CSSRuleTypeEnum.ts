@@ -12,7 +12,9 @@ enum CSSRuleTypeEnum {
 	supportsRule = 12,
 	documentRule = 13,
 	fontFeatureValuesRule = 14,
-	regionStyleRule = 16
+	regionStyleRule = 16,
+	layerBlockRule = 17,
+	layerStatementRule = 18
 }
 
 export default CSSRuleTypeEnum;

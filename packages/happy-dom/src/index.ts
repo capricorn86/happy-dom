@@ -27,6 +27,8 @@ import CSSFontFaceRule from './css/rules/CSSFontFaceRule.js';
 import CSSGroupingRule from './css/rules/CSSGroupingRule.js';
 import CSSKeyframeRule from './css/rules/CSSKeyframeRule.js';
 import CSSKeyframesRule from './css/rules/CSSKeyframesRule.js';
+import CSSLayerBlockRule from './css/rules/CSSLayerBlockRule.js';
+import CSSLayerStatementRule from './css/rules/CSSLayerStatementRule.js';
 import CSSMediaRule from './css/rules/CSSMediaRule.js';
 import CSSScopeRule from './css/rules/CSSScopeRule.js';
 import CSSStyleRule from './css/rules/CSSStyleRule.js';
@@ -279,6 +281,8 @@ export {
 	CSSKeyframeRule,
 	CSSKeyframesRule,
 	CSSKeywordValue,
+	CSSLayerBlockRule,
+	CSSLayerStatementRule,
 	CSSMediaRule,
 	CSSRule,
 	CSSScopeRule,

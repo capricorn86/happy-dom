@@ -20,6 +20,8 @@ import CSSContainerRule from '../css/rules/CSSContainerRule.js';
 import CSSFontFaceRule from '../css/rules/CSSFontFaceRule.js';
 import CSSKeyframeRule from '../css/rules/CSSKeyframeRule.js';
 import CSSKeyframesRule from '../css/rules/CSSKeyframesRule.js';
+import CSSLayerBlockRule from '../css/rules/CSSLayerBlockRule.js';
+import CSSLayerStatementRule from '../css/rules/CSSLayerStatementRule.js';
 import CSSMediaRule from '../css/rules/CSSMediaRule.js';
 import CSSStyleRule from '../css/rules/CSSStyleRule.js';
 import CSSSupportsRule from '../css/rules/CSSSupportsRule.js';
@@ -654,6 +656,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly CSSFontFaceRule = CSSFontFaceRule;
 	public readonly CSSKeyframeRule = CSSKeyframeRule;
 	public readonly CSSKeyframesRule = CSSKeyframesRule;
+	public readonly CSSLayerBlockRule = CSSLayerBlockRule;
+	public readonly CSSLayerStatementRule = CSSLayerStatementRule;
 	public readonly CSSMediaRule = CSSMediaRule;
 	public readonly CSSStyleRule = CSSStyleRule;
 	public readonly CSSSupportsRule = CSSSupportsRule;
