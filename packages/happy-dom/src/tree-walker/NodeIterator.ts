@@ -15,7 +15,8 @@ export default class NodeIterator {
 	#whatToShow = -1;
 	#filter: INodeFilter | null = null;
 	#walker: TreeWalker;
-	#atRoot = true;
+	#referenceNode: Node;
+	#pointerBeforeReferenceNode = true;
 
 	/**
 	 * Constructor.
@@ -29,6 +30,7 @@ export default class NodeIterator {
 		this.#whatToShow = whatToShow;
 		this.#filter = filter;
 		this.#walker = new TreeWalker(root, whatToShow, filter);
+		this.#referenceNode = root;
 	}
 
 	/**
@@ -59,19 +61,45 @@ export default class NodeIterator {
 	}
 
 	/**
+	 * Returns the reference node.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/NodeIterator/referenceNode
+	 * @returns Reference node.
+	 */
+	public get referenceNode(): Node {
+		return this.#referenceNode;
+	}
+
+	/**
+	 * Returns whether the NodeIterator is anchored before the reference node.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/NodeIterator/pointerBeforeReferenceNode
+	 * @returns Pointer before reference node.
+	 */
+	public get pointerBeforeReferenceNode(): boolean {
+		return this.#pointerBeforeReferenceNode;
+	}
+
+	/**
 	 * Moves the current Node to the next visible node in the document order.
 	 *
 	 * @returns Current node.
 	 */
 	public nextNode(): Node | null {
-		if (this.#atRoot) {
-			this.#atRoot = false;
-			if (this.#walker[PropertySymbol.filterNode](this.#root) !== NodeFilter.FILTER_ACCEPT) {
-				return this.#walker.nextNode();
+		if (this.#pointerBeforeReferenceNode) {
+			this.#pointerBeforeReferenceNode = false;
+			if (
+				this.#walker[PropertySymbol.filterNode](this.#referenceNode) === NodeFilter.FILTER_ACCEPT
+			) {
+				return this.#referenceNode;
 			}
-			return this.#root;
 		}
-		return this.#walker.nextNode();
+
+		const node = this.#walker.nextNode();
+		if (node) {
+			this.#referenceNode = node;
+		}
+		return node;
 	}
 
 	/**
@@ -80,6 +108,31 @@ export default class NodeIterator {
 	 * @returns Current node.
 	 */
 	public previousNode(): Node | null {
-		return this.#walker.previousNode();
+		if (!this.#pointerBeforeReferenceNode) {
+			this.#pointerBeforeReferenceNode = true;
+			if (
+				this.#walker[PropertySymbol.filterNode](this.#referenceNode) === NodeFilter.FILTER_ACCEPT
+			) {
+				return this.#referenceNode;
+			}
+		}
+
+		const node = this.#walker.previousNode();
+		if (node) {
+			this.#referenceNode = node;
+		}
+		return node;
+	}
+
+	/**
+	 * This is a legacy method, and no longer has any effect.
+	 *
+	 * Previously it served to mark a NodeIterator as disposed, so it could be reclaimed by garbage collection.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/NodeIterator/detach
+	 * @deprecated
+	 */
+	public detach(): void {
+		// Do nothing as per the spec.
 	}
 }
