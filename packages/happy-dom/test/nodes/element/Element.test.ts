@@ -597,6 +597,8 @@ describe('Element', () => {
 			document.body.innerHTML =
 				'<div><custom-element key1="value1" key2="value2"><span>Slotted</span></custom-element></div>';
 
+			// With parse5, children are added before connectedCallback is called,
+			// so the children span shows the child nodes that were present at connection time
 			expect(document.body.getHTML({ serializableShadowRoots: true }).replace(/\s/g, '')).toBe(
 				`
                 <div>
@@ -620,7 +622,7 @@ describe('Element', () => {
                                 <span class="propKey">
                                     key1 is "value1" and key2 is "value2".
                                 </span>
-                                <span class="children"></span>
+                                <span class="children">#1SPANSlotted</span>
                                 <span>
                                     <slot></slot>
                                 </span>

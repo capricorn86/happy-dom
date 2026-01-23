@@ -217,8 +217,8 @@ describe('XMLSerializer', () => {
 `;
 			const expected = `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head>
 			<title>Title</title>
-		</head>
-		<body>
+		</head><body>
+		
 			<div class="class1 class2" id="id">
 				<!--Comment 1!-->
 				<!--?processing instruction?-->
@@ -276,8 +276,8 @@ describe('XMLSerializer', () => {
 `;
 			const expected = `<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head>
 			<title>Title</title>
-		</head>
-		<body>
+		</head><body>
+		
 			<div class="class1 class2" id="id">
 				<!--Comment 1!-->
 				<!--?processing instruction?-->

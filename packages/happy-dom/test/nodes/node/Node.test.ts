@@ -281,9 +281,11 @@ describe('Node', () => {
 		it('Calls connected callback when a custom element is connected to DOM.', () => {
 			document.body.innerHTML = '<custom-counter><custom-button></custom-button></custom-counter>';
 			document.body.innerHTML = '';
+			// With parse5, the inner element (Button) is connected before the outer element (Counter)
+			// because parse5 builds the tree bottom-up and triggers callbacks as elements are popped
 			expect(customElementOutput).toEqual([
-				'Counter:connected',
 				'Button:connected',
+				'Counter:connected',
 				'Counter:disconnected',
 				'Button:disconnected'
 			]);
