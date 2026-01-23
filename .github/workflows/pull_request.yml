@@ -1,0 +1,65 @@
+name: Pull request
+
+on:
+  pull_request
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 22, 24]
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        id: cache-node-modules
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ./node_modules
+            ./packages/*/node_modules
+          key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
+
+      - name: Cache turbo
+        uses: actions/cache@v4
+        id: cache-turbo
+        with:
+          path: .turbo
+          key: turbo-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ github.ref_name }}
+
+      - name: Restore turbo cache from master
+        if: steps.cache-turbo.outputs.cache-hit != 'true'
+        uses: actions/cache/restore@v3
+        with:
+          path: .turbo
+          key: turbo-master
+      
+      - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm ci --ignore-scripts
+  
+      - name: Compile package
+        run: npm run compile
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm run test

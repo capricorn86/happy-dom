@@ -1,0 +1,52 @@
+{
+	"name": "happy-dom",
+	"version": "0.0.0",
+	"license": "MIT",
+	"homepage": "https://github.com/capricorn86/happy-dom",
+	"repository": "https://github.com/capricorn86/happy-dom",
+	"author": "David Ortner",
+	"description": "Happy DOM is a JavaScript implementation of a web browser without its graphical user interface. It includes many web standards from WHATWG DOM and HTML.",
+	"main": "lib/index.js",
+	"type": "module",
+	"keywords": [
+		"jsdom",
+		"dom",
+		"browser",
+		"custom",
+		"elements",
+		"web",
+		"components",
+		"html",
+		"whatwg",
+		"w3c"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"compile": "tsc && npm run compile:build-version-file",
+		"compile:build-version-file": "node ./bin/build-version-file.cjs",
+		"watch": "tsc -w --preserveWatchOutput",
+		"test": "vitest run",
+		"test:ui": "vitest --ui",
+		"test:watch": "vitest",
+		"test:debug": "vitest run --inspect-brk --no-file-parallelism"
+	},
+	"dependencies": {
+		"@types/whatwg-mimetype": "^3.0.2",
+		"@types/node": ">=20.0.0",
+		"@types/ws": "^8.18.1",
+		"entities": "^4.5.0",
+		"whatwg-mimetype": "^3.0.0",
+		"ws": "^8.18.3"
+	},
+	"devDependencies": {
+		"@vitest/ui": "^4.0.16",
+		"@webref/css": "6.6.2",
+		"typescript": "^5.8.3",
+		"vitest": "^4.0.16"
+	},
+	"engines": {
+		"node": ">=20.0.0"
+	}
+}

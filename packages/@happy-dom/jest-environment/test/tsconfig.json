@@ -1,0 +1,39 @@
+{
+	"compilerOptions": {
+		"outDir": "../tmp",
+		"rootDir": ".",
+		"tsBuildInfoFile": "../tmp/.tsbuildinfo-test",
+		"target": "ES2022",
+		"declaration": true,
+		"module": "CommonJS",
+		"moduleResolution": "node",
+		"esModuleInterop": true,
+		"experimentalDecorators": true,
+		"allowSyntheticDefaultImports": true,
+		"resolveJsonModule": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"removeComments": false,
+		"preserveConstEnums": true,
+		"sourceMap": true,
+		"skipLibCheck": true,
+		"baseUrl": ".",
+		"composite": true,
+		"incremental": true,
+		"jsx": "react",
+		"types": [
+			"jest"
+		],
+		"lib": [
+			"ES2022",
+			"dom"
+		]
+	},
+	"include": [
+		"@types/node",
+		"@types/jest",
+        "@types/react",
+        "@types/react-dom",
+		"."
+	]
+}

@@ -1,0 +1,1 @@
+node ./node_modules/.bin/happy-validate-commit-message --commitFile=$1

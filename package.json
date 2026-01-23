@@ -1,0 +1,52 @@
+{
+	"name": "root",
+	"private": true,
+	"packageManager": "npm@10.9.2",
+	"workspaces": [
+		"packages/*",
+		"packages/@happy-dom/*",
+		"integration-test/*"
+	],
+	"scripts": {
+		"compile": "DO_NOT_TRACK=1 turbo run compile",
+		"watch": "DO_NOT_TRACK=1 turbo run watch --parallel",
+		"clean": "git clean -Xdfq",
+		"lint": "eslint --max-warnings 0 --cache --cache-location ./.turbo/eslint.turbo .",
+		"lint:fix": "eslint --max-warnings 0 --cache --cache-location ./.turbo/eslint.turbo --fix .",
+		"test": "DO_NOT_TRACK=1 turbo run test",
+		"test:watch": "DO_NOT_TRACK=1 turbo run test:watch --parallel",
+		"prepare": "husky"
+	},
+	"devDependencies": {
+		"@types/he": "^1.1.2",
+		"@types/node": ">=20.0.0",
+		"@typescript-eslint/eslint-plugin": "^6.19.0",
+		"@typescript-eslint/parser": "^6.19.0",
+		"chalk": "^4.1.0",
+		"eslint": "^8.56.0",
+		"eslint-config-prettier": "^9.1.0",
+		"eslint-plugin-filenames": "^1.3.2",
+		"eslint-plugin-import": "^2.29.1",
+		"eslint-plugin-jsdoc": "^48.0.2",
+		"eslint-plugin-json": "^3.1.0",
+		"eslint-plugin-prettier": "^5.1.3",
+		"happy-conventional-commit": "^0.1.1",
+		"husky": "^9.0.6",
+		"prettier": "3.3.3",
+		"semver": "^7.3.5",
+		"turbo": "^2.5.4",
+		"typescript": "^5.8.3",
+		"vitest": "^4.0.16"
+	},
+	"happyLintChanged": {
+		"rules": [
+			{
+				"command": "eslint --max-warnings 0 --cache --cache-location ./.turbo/eslint.turbo --fix",
+				"regexp": "^[a-zA-Z0-9_].*\\.(cjs|mjs|js|jsx|ts|tsx|json)$"
+			}
+		]
+	},
+	"engines": {
+		"node": ">=20.0.0"
+	}
+}

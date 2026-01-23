@@ -1,0 +1,112 @@
+import Event from '../../event/Event.js';
+import HTMLElement from '../html-element/HTMLElement.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
+import Attr from '../attr/Attr.js';
+import EventPhaseEnum from '../../event/EventPhaseEnum.js';
+import MouseEvent from '../../event/events/MouseEvent.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
+import Element from '../element/Element.js';
+
+/**
+ * HTMLDetailsElement
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLDetailsElement
+ */
+export default class HTMLDetailsElement extends HTMLElement {
+	// Events
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get ontoggle(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'ontoggle');
+	}
+
+	public set ontoggle(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ontoggle', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
+
+	/**
+	 * Returns the open attribute.
+	 */
+	public get open(): boolean {
+		return this.getAttribute('open') !== null;
+	}
+
+	/**
+	 * Sets the open attribute.
+	 *
+	 * @param open New value.
+	 */
+	public set open(open: boolean) {
+		if (open) {
+			this.setAttribute('open', '');
+		} else {
+			this.removeAttribute('open');
+		}
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.onSetAttribute](
+		attribute: Attr,
+		replacedAttribute: Attr | null
+	): void {
+		super[PropertySymbol.onSetAttribute](attribute, replacedAttribute);
+		if (attribute[PropertySymbol.name] === 'open') {
+			if (attribute[PropertySymbol.value] !== replacedAttribute?.[PropertySymbol.value]) {
+				this.dispatchEvent(new Event('toggle'));
+			}
+		}
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.onRemoveAttribute](removedAttribute: Attr): void {
+		super[PropertySymbol.onRemoveAttribute](removedAttribute);
+		if (removedAttribute && removedAttribute[PropertySymbol.name] === 'open') {
+			this.dispatchEvent(new Event('toggle'));
+		}
+	}
+
+	/**
+	 * @override
+	 */
+	public override dispatchEvent(event: Event): boolean {
+		const returnValue = super.dispatchEvent(event);
+
+		if (
+			!event[PropertySymbol.defaultPrevented] &&
+			event.type === 'click' &&
+			event.eventPhase === EventPhaseEnum.bubbling &&
+			event instanceof MouseEvent
+		) {
+			const target = <Element | null>event[PropertySymbol.target];
+
+			if (target) {
+				if (
+					target[PropertySymbol.localName] === 'summary' &&
+					target[PropertySymbol.parentNode] === this
+				) {
+					this.open = !this.open;
+				} else {
+					let summaryElement: Element | null = target;
+					for (const element of this[PropertySymbol.elementArray]) {
+						if (element[PropertySymbol.localName] === 'summary') {
+							summaryElement = element;
+							break;
+						}
+					}
+					if (summaryElement && summaryElement.contains(target)) {
+						this.open = !this.open;
+					}
+				}
+			}
+		}
+
+		return returnValue;
+	}
+}

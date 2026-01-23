@@ -1,0 +1,151 @@
+import HTMLDetailsElement from '../../../src/nodes/html-details-element/HTMLDetailsElement.js';
+import Window from '../../../src/window/Window.js';
+import Document from '../../../src/nodes/document/Document.js';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
+import Event from '../../../src/event/Event.js';
+import MouseEvent from '../../../src/event/events/MouseEvent.js';
+
+describe('HTMLDetailsElement', () => {
+	let window: Window;
+	let document: Document;
+	let element: HTMLDetailsElement;
+
+	beforeEach(() => {
+		window = new Window({
+			settings: { enableJavaScriptEvaluation: true, suppressCodeGenerationFromStringsWarning: true }
+		});
+		document = window.document;
+		element = document.createElement('details');
+	});
+
+	describe('constructor()', () => {
+		it('Should be an instanceof HTMLDetailsElement', () => {
+			expect(element instanceof HTMLDetailsElement).toBe(true);
+		});
+	});
+
+	for (const event of ['toggle']) {
+		describe(`get on${event}()`, () => {
+			it('Returns the event listener.', () => {
+				element.setAttribute(`on${event}`, 'window.test = 1');
+				expect((<any>element)[`on${event}`]).toBeTypeOf('function');
+				(<any>element)[`on${event}`](new Event(event));
+				expect((<any>window)['test']).toBe(1);
+			});
+		});
+
+		describe(`set on${event}()`, () => {
+			it('Sets the event listener.', () => {
+				(<any>element)[`on${event}`] = () => {
+					(<any>window)['test'] = 1;
+				};
+				element.dispatchEvent(new Event(event));
+				expect(element.getAttribute(`on${event}`)).toBe(null);
+				expect((<any>window)['test']).toBe(1);
+			});
+		});
+	}
+
+	describe('get open()', () => {
+		it('Should return false by default', () => {
+			expect(element.open).toBe(false);
+		});
+
+		it('Should return true if the "open" attribute has been set', () => {
+			element.setAttribute('open', '');
+			expect(element.open).toBe(true);
+		});
+	});
+
+	describe('set open()', () => {
+		it('Should set the "open" attribute', () => {
+			element.open = true;
+			expect(element.hasAttribute('open')).toBe(true);
+			element.open = false;
+			expect(element.hasAttribute('open')).toBe(false);
+		});
+	});
+
+	describe('dispatchEvent()', () => {
+		it('Should dispatch a "toggle" event when the "open" attribute is set', () => {
+			let triggeredEvent: Event | null = null;
+			element.addEventListener('toggle', (event) => (triggeredEvent = event));
+			element.open = true;
+			expect((<Event>(<unknown>triggeredEvent)).type).toBe('toggle');
+			triggeredEvent = null;
+			element.open = false;
+			expect((<Event>(<unknown>triggeredEvent)).type).toBe('toggle');
+		});
+
+		it('Should not toggle the open state when a click event is dispatched directly on the details element', () => {
+			element.dispatchEvent(new MouseEvent('click'));
+			expect(element.open).toBe(false);
+		});
+
+		it('Should toggle the "open" attribute when a click event is dispatched on a summary element, which is a child of the details element', () => {
+			const summary = document.createElement('summary');
+			element.appendChild(summary);
+
+			summary.click();
+			expect(element.open).toBe(true);
+
+			summary.click();
+			expect(element.open).toBe(false);
+		});
+
+		it('Should toggle the "open" attribute when a click event is dispatched on a child element of a summary element', () => {
+			const summary = document.createElement('summary');
+			const span = document.createElement('span');
+			span.textContent = 'Click me';
+			summary.appendChild(span);
+			element.appendChild(summary);
+
+			span.click();
+			expect(element.open).toBe(true);
+
+			span.click();
+			expect(element.open).toBe(false);
+		});
+
+		it('Should fire the "toggle" event when clicking on child elements of summary', () => {
+			let toggleEventFired = false;
+			element.addEventListener('toggle', () => {
+				toggleEventFired = true;
+			});
+
+			const summary = document.createElement('summary');
+			const span = document.createElement('span');
+			span.textContent = 'Click me';
+			summary.appendChild(span);
+			element.appendChild(summary);
+
+			span.click();
+			expect(toggleEventFired).toBe(true);
+			expect(element.open).toBe(true);
+		});
+
+		it('Should not toggle when clicking on elements outside of summary', () => {
+			const summary = document.createElement('summary');
+			const div = document.createElement('div');
+			div.textContent = 'Content';
+			element.appendChild(summary);
+			element.appendChild(div);
+
+			div.click();
+			expect(element.open).toBe(false);
+		});
+
+		it('Should not toggle when clicking on summary element that is not a direct child', () => {
+			const summary = document.createElement('summary');
+			const nestedDiv = document.createElement('div');
+			const nestedSummary = document.createElement('summary');
+
+			nestedDiv.appendChild(nestedSummary);
+			element.appendChild(summary);
+			element.appendChild(nestedDiv);
+
+			nestedSummary.click();
+			expect(element.open).toBe(false);
+		});
+	});
+});

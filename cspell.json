@@ -1,0 +1,32 @@
+{
+    "version": "0.2",
+    "ignorePaths": [],
+    "dictionaryDefinitions": [],
+    "dictionaries": [],
+    "words": [
+        "altgraph",
+        "antiquewhite",
+        "clonable",
+        "Contoso",
+        "darkmagenta",
+        "IECMA",
+        "Immediates",
+        "ISVG",
+        "oncompositionend",
+        "oncompositionstart",
+        "oncompositionupdate",
+        "oncontentvisibilityautostatechange",
+        "onpointerrawupdate",
+        "onscrollsnapchange",
+        "onscrollsnapchanging",
+        "onsearch",
+        "Registrator",
+        "steppable",
+        "unnestable",
+        "vmax",
+        "vmin",
+        "xlink"
+    ],
+    "ignoreWords": [],
+    "import": []
+}
