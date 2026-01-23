@@ -174,6 +174,7 @@ import SVGElement from './nodes/svg-element/SVGElement.js';
 import SVGGraphicsElement from './nodes/svg-graphics-element/SVGGraphicsElement.js';
 import SVGSVGElement from './nodes/svg-svg-element/SVGSVGElement.js';
 import Text from './nodes/text/Text.js';
+import CDATASection from './nodes/cdata-section/CDATASection.js';
 import XMLDocument from './nodes/xml-document/XMLDocument.js';
 import PermissionStatus from './permissions/PermissionStatus.js';
 import Permissions from './permissions/Permissions.js';
@@ -267,6 +268,7 @@ export {
 	BrowserNavigationCrossOriginPolicyEnum,
 	BrowserPage,
 	BrowserWindow,
+	CDATASection,
 	Clipboard,
 	ClipboardEvent,
 	ClipboardItem,
