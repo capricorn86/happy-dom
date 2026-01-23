@@ -182,6 +182,8 @@ import Permissions from '../permissions/Permissions.js';
 import Range from '../range/Range.js';
 import ResizeObserver from '../resize-observer/ResizeObserver.js';
 import Screen from '../screen/Screen.js';
+import ScreenDetails from '../screen/ScreenDetails.js';
+import ScreenDetailed from '../screen/ScreenDetailed.js';
 import Selection from '../selection/Selection.js';
 import Storage from '../storage/Storage.js';
 import NodeFilter from '../tree-walker/NodeFilter.js';
@@ -680,6 +682,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly RadioNodeList = RadioNodeList;
 	public readonly FileList = FileList;
 	public readonly Screen = Screen;
+	public readonly ScreenDetails = ScreenDetails;
+	public readonly ScreenDetailed = ScreenDetailed;
 	public readonly DOMMatrixReadOnly = DOMMatrixReadOnly;
 	public readonly DOMMatrix = DOMMatrix;
 	public readonly NamedNodeMap = NamedNodeMap;
@@ -1354,6 +1358,16 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 */
 	public matchMedia(mediaQueryString: string): MediaQueryList {
 		return new MediaQueryList({ window: this, media: mediaQueryString });
+	}
+
+	/**
+	 * Returns a promise that fulfills with a ScreenDetails object instance.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/getScreenDetails
+	 * @returns A Promise that fulfills with a ScreenDetails object instance.
+	 */
+	public getScreenDetails(): Promise<ScreenDetails> {
+		return Promise.resolve(new ScreenDetails());
 	}
 
 	/**
