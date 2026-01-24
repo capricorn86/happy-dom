@@ -9,11 +9,72 @@ import ElementEventAttributeUtility from '../element/ElementEventAttributeUtilit
 const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+ab12C3+1aBCdEf==';
 
 /**
+ * Canvas rendering adapter interface.
+ * Implement this to provide real canvas rendering (e.g., via node-canvas).
+ */
+export interface ICanvasAdapter {
+	/**
+	 * Creates a rendering context for the canvas.
+	 * @param canvas The canvas element.
+	 * @param contextType The context type ('2d', 'webgl', etc.).
+	 * @param contextAttributes Optional context attributes.
+	 * @returns The rendering context or null.
+	 */
+	getContext(
+		canvas: HTMLCanvasElement,
+		contextType: string,
+		contextAttributes?: { [key: string]: unknown }
+	): unknown | null;
+
+	/**
+	 * Returns a data URL of the canvas content.
+	 * @param canvas The canvas element.
+	 * @param type The image format (e.g., 'image/png').
+	 * @param encoderOptions Quality for lossy formats.
+	 * @returns The data URL string.
+	 */
+	toDataURL(canvas: HTMLCanvasElement, type?: string, encoderOptions?: unknown): string;
+
+	/**
+	 * Creates a Blob from the canvas content.
+	 * @param canvas The canvas element.
+	 * @param callback Callback receiving the blob.
+	 * @param type The image format.
+	 * @param quality Quality for lossy formats.
+	 */
+	toBlob(
+		canvas: HTMLCanvasElement,
+		callback: (blob: Blob | null) => void,
+		type?: string,
+		quality?: unknown
+	): void;
+}
+
+/**
  * HTMLCanvasElement
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement
  */
 export default class HTMLCanvasElement extends HTMLElement {
+	// Canvas adapter for real rendering support
+	private static canvasAdapter: ICanvasAdapter | null = null;
+
+	/**
+	 * Sets the canvas adapter for real rendering support.
+	 * @param adapter The adapter implementation (e.g., node-canvas adapter).
+	 */
+	public static setCanvasAdapter(adapter: ICanvasAdapter | null): void {
+		HTMLCanvasElement.canvasAdapter = adapter;
+	}
+
+	/**
+	 * Gets the current canvas adapter.
+	 * @returns The current adapter or null.
+	 */
+	public static getCanvasAdapter(): ICanvasAdapter | null {
+		return HTMLCanvasElement.canvasAdapter;
+	}
+
 	// Events
 
 	/* eslint-disable jsdoc/require-jsdoc */
@@ -131,25 +192,33 @@ export default class HTMLCanvasElement extends HTMLElement {
 	/**
 	 * Returns context.
 	 *
-	 * @param _contextType Context type.
-	 * @param [_contextAttributes] Context attributes.
+	 * @param contextType Context type.
+	 * @param [contextAttributes] Context attributes.
 	 * @returns Context.
 	 */
 	public getContext(
-		_contextType: '2d' | 'webgl' | 'webgl2' | 'webgpu' | 'bitmaprenderer',
-		_contextAttributes?: { [key: string]: any }
-	): any {
+		contextType: '2d' | 'webgl' | 'webgl2' | 'webgpu' | 'bitmaprenderer',
+		contextAttributes?: { [key: string]: unknown }
+	): unknown {
+		const adapter = HTMLCanvasElement.canvasAdapter;
+		if (adapter) {
+			return adapter.getContext(this, contextType, contextAttributes);
+		}
 		return null;
 	}
 
 	/**
 	 * Returns to data URL.
 	 *
-	 * @param [_type] Type.
-	 * @param [_encoderOptions] Quality.
+	 * @param [type] Type.
+	 * @param [encoderOptions] Quality.
 	 * @returns Data URL.
 	 */
-	public toDataURL(_type?: string, _encoderOptions?: any): string {
+	public toDataURL(type?: string, encoderOptions?: unknown): string {
+		const adapter = HTMLCanvasElement.canvasAdapter;
+		if (adapter) {
+			return adapter.toDataURL(this, type, encoderOptions);
+		}
 		return '';
 	}
 
@@ -157,10 +226,15 @@ export default class HTMLCanvasElement extends HTMLElement {
 	 * Returns to blob.
 	 *
 	 * @param callback Callback.
-	 * @param [_type] Type.
-	 * @param [_quality] Quality.
+	 * @param [type] Type.
+	 * @param [quality] Quality.
 	 */
-	public toBlob(callback: (blob: Blob) => void, _type?: string, _quality?: any): void {
+	public toBlob(callback: (blob: Blob | null) => void, type?: string, quality?: unknown): void {
+		const adapter = HTMLCanvasElement.canvasAdapter;
+		if (adapter) {
+			adapter.toBlob(this, callback, type, quality);
+			return;
+		}
 		callback(new Blob([]));
 	}
 
