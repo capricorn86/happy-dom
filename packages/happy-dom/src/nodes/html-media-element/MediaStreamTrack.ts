@@ -58,10 +58,8 @@ export default class MediaStreamTrack extends EventTarget {
 	public [PropertySymbol.label]: string = '';
 	public [PropertySymbol.kind]: 'audio' | 'video' = 'video';
 	public [PropertySymbol.constraints]: IMediaTrackConstraints = {};
-	public [PropertySymbol.capabilities]: IMediaTrackCapabilities = JSON.parse(
-		JSON.stringify(CAPABILITIES)
-	);
-	public [PropertySymbol.settings]: IMediaTrackSettings = JSON.parse(JSON.stringify(SETTINGS));
+	public [PropertySymbol.capabilities]: IMediaTrackCapabilities = structuredClone(CAPABILITIES);
+	public [PropertySymbol.settings]: IMediaTrackSettings = structuredClone(SETTINGS);
 
 	// Events
 	public onended: ((event: Event) => void) | null = null;
