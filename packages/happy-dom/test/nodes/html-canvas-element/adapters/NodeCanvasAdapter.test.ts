@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 // Check if node-canvas is available
 let nodeCanvasAvailable = false;
@@ -46,17 +46,17 @@ describe.skipIf(!nodeCanvasAvailable)('NodeCanvasAdapter', () => {
 	describe('getContext()', () => {
 		it('Should return CanvasRenderingContext2D for "2d" context.', () => {
 			const adapter = new NodeCanvasAdapter();
-			const mockCanvas = { width: 100, height: 100 } as any;
+			const mockCanvas = <any>{ width: 100, height: 100 };
 			const ctx = adapter.getContext(mockCanvas, '2d');
 
 			expect(ctx).not.toBe(null);
-			expect(typeof (ctx as any).fillRect).toBe('function');
-			expect(typeof (ctx as any).getImageData).toBe('function');
+			expect(typeof (<any>ctx).fillRect).toBe('function');
+			expect(typeof (<any>ctx).getImageData).toBe('function');
 		});
 
 		it('Should return null for "webgl" context.', () => {
 			const adapter = new NodeCanvasAdapter();
-			const mockCanvas = { width: 100, height: 100 } as any;
+			const mockCanvas = <any>{ width: 100, height: 100 };
 			const ctx = adapter.getContext(mockCanvas, 'webgl');
 
 			expect(ctx).toBe(null);
@@ -64,7 +64,7 @@ describe.skipIf(!nodeCanvasAvailable)('NodeCanvasAdapter', () => {
 
 		it('Should return null for "webgl2" context.', () => {
 			const adapter = new NodeCanvasAdapter();
-			const mockCanvas = { width: 100, height: 100 } as any;
+			const mockCanvas = <any>{ width: 100, height: 100 };
 			const ctx = adapter.getContext(mockCanvas, 'webgl2');
 
 			expect(ctx).toBe(null);
@@ -72,7 +72,7 @@ describe.skipIf(!nodeCanvasAvailable)('NodeCanvasAdapter', () => {
 
 		it('Should return same context for same canvas (caching).', () => {
 			const adapter = new NodeCanvasAdapter();
-			const mockCanvas = { width: 100, height: 100 } as any;
+			const mockCanvas = <any>{ width: 100, height: 100 };
 
 			const ctx1 = adapter.getContext(mockCanvas, '2d');
 			const ctx2 = adapter.getContext(mockCanvas, '2d');
@@ -82,8 +82,8 @@ describe.skipIf(!nodeCanvasAvailable)('NodeCanvasAdapter', () => {
 
 		it('Should return different context for different canvas.', () => {
 			const adapter = new NodeCanvasAdapter();
-			const mockCanvas1 = { width: 100, height: 100 } as any;
-			const mockCanvas2 = { width: 100, height: 100 } as any;
+			const mockCanvas1 = <any>{ width: 100, height: 100 };
+			const mockCanvas2 = <any>{ width: 100, height: 100 };
 
 			const ctx1 = adapter.getContext(mockCanvas1, '2d');
 			const ctx2 = adapter.getContext(mockCanvas2, '2d');
@@ -93,7 +93,7 @@ describe.skipIf(!nodeCanvasAvailable)('NodeCanvasAdapter', () => {
 
 		it('Should invalidate context cache when dimensions change.', () => {
 			const adapter = new NodeCanvasAdapter();
-			const mockCanvas = { width: 100, height: 100 } as any;
+			const mockCanvas = <any>{ width: 100, height: 100 };
 
 			const ctx1 = adapter.getContext(mockCanvas, '2d');
 
@@ -110,10 +110,10 @@ describe.skipIf(!nodeCanvasAvailable)('NodeCanvasAdapter', () => {
 	describe('toDataURL()', () => {
 		it('Should return PNG data URL by default.', () => {
 			const adapter = new NodeCanvasAdapter();
-			const mockCanvas = { width: 10, height: 10 } as any;
+			const mockCanvas = <any>{ width: 10, height: 10 };
 
 			// Draw something first
-			const ctx = adapter.getContext(mockCanvas, '2d') as CanvasRenderingContext2D;
+			const ctx = <CanvasRenderingContext2D>adapter.getContext(mockCanvas, '2d');
 			ctx.fillStyle = '#ff0000';
 			ctx.fillRect(0, 0, 10, 10);
 
@@ -124,9 +124,9 @@ describe.skipIf(!nodeCanvasAvailable)('NodeCanvasAdapter', () => {
 
 		it('Should return JPEG data URL when specified.', () => {
 			const adapter = new NodeCanvasAdapter();
-			const mockCanvas = { width: 10, height: 10 } as any;
+			const mockCanvas = <any>{ width: 10, height: 10 };
 
-			const ctx = adapter.getContext(mockCanvas, '2d') as CanvasRenderingContext2D;
+			const ctx = <CanvasRenderingContext2D>adapter.getContext(mockCanvas, '2d');
 			ctx.fillStyle = '#00ff00';
 			ctx.fillRect(0, 0, 10, 10);
 
@@ -137,9 +137,9 @@ describe.skipIf(!nodeCanvasAvailable)('NodeCanvasAdapter', () => {
 
 		it('Should handle "image/jpg" as JPEG.', () => {
 			const adapter = new NodeCanvasAdapter();
-			const mockCanvas = { width: 10, height: 10 } as any;
+			const mockCanvas = <any>{ width: 10, height: 10 };
 
-			const ctx = adapter.getContext(mockCanvas, '2d') as CanvasRenderingContext2D;
+			const ctx = <CanvasRenderingContext2D>adapter.getContext(mockCanvas, '2d');
 			ctx.fillStyle = '#0000ff';
 			ctx.fillRect(0, 0, 10, 10);
 
@@ -150,11 +150,11 @@ describe.skipIf(!nodeCanvasAvailable)('NodeCanvasAdapter', () => {
 
 		it('Should respect quality parameter for JPEG.', () => {
 			const adapter = new NodeCanvasAdapter();
-			const mockCanvas = { width: 100, height: 100 } as any;
+			const mockCanvas = <any>{ width: 100, height: 100 };
 
-			const ctx = adapter.getContext(mockCanvas, '2d') as CanvasRenderingContext2D;
+			const ctx = <CanvasRenderingContext2D>adapter.getContext(mockCanvas, '2d');
 
-			// Draw complex content (gradient + noise) to see quality difference
+			// Draw complex content (gradient + shapes) to see quality difference
 			const gradient = ctx.createLinearGradient(0, 0, 100, 100);
 			gradient.addColorStop(0, 'red');
 			gradient.addColorStop(0.5, 'green');
@@ -183,9 +183,9 @@ describe.skipIf(!nodeCanvasAvailable)('NodeCanvasAdapter', () => {
 	describe('toBlob()', () => {
 		it('Should create PNG blob by default.', async () => {
 			const adapter = new NodeCanvasAdapter();
-			const mockCanvas = { width: 10, height: 10 } as any;
+			const mockCanvas = <any>{ width: 10, height: 10 };
 
-			const ctx = adapter.getContext(mockCanvas, '2d') as CanvasRenderingContext2D;
+			const ctx = <CanvasRenderingContext2D>adapter.getContext(mockCanvas, '2d');
 			ctx.fillStyle = '#ff0000';
 			ctx.fillRect(0, 0, 10, 10);
 
@@ -200,9 +200,9 @@ describe.skipIf(!nodeCanvasAvailable)('NodeCanvasAdapter', () => {
 
 		it('Should create JPEG blob when specified.', async () => {
 			const adapter = new NodeCanvasAdapter();
-			const mockCanvas = { width: 10, height: 10 } as any;
+			const mockCanvas = <any>{ width: 10, height: 10 };
 
-			const ctx = adapter.getContext(mockCanvas, '2d') as CanvasRenderingContext2D;
+			const ctx = <CanvasRenderingContext2D>adapter.getContext(mockCanvas, '2d');
 			ctx.fillStyle = '#00ff00';
 			ctx.fillRect(0, 0, 10, 10);
 
@@ -216,9 +216,9 @@ describe.skipIf(!nodeCanvasAvailable)('NodeCanvasAdapter', () => {
 
 		it('Should accept quality parameter for JPEG blob.', async () => {
 			const adapter = new NodeCanvasAdapter();
-			const mockCanvas = { width: 100, height: 100 } as any;
+			const mockCanvas = <any>{ width: 100, height: 100 };
 
-			const ctx = adapter.getContext(mockCanvas, '2d') as CanvasRenderingContext2D;
+			const ctx = <CanvasRenderingContext2D>adapter.getContext(mockCanvas, '2d');
 
 			// Draw complex content
 			const gradient = ctx.createLinearGradient(0, 0, 100, 100);
@@ -249,9 +249,9 @@ describe.skipIf(!nodeCanvasAvailable)('NodeCanvasAdapter', () => {
 	describe('Real rendering tests', () => {
 		it('Should render gradient correctly.', () => {
 			const adapter = new NodeCanvasAdapter();
-			const mockCanvas = { width: 100, height: 100 } as any;
+			const mockCanvas = <any>{ width: 100, height: 100 };
 
-			const ctx = adapter.getContext(mockCanvas, '2d') as CanvasRenderingContext2D;
+			const ctx = <CanvasRenderingContext2D>adapter.getContext(mockCanvas, '2d');
 
 			const gradient = ctx.createLinearGradient(0, 0, 100, 0);
 			gradient.addColorStop(0, 'red');
@@ -273,9 +273,9 @@ describe.skipIf(!nodeCanvasAvailable)('NodeCanvasAdapter', () => {
 
 		it('Should render text.', () => {
 			const adapter = new NodeCanvasAdapter();
-			const mockCanvas = { width: 200, height: 50 } as any;
+			const mockCanvas = <any>{ width: 200, height: 50 };
 
-			const ctx = adapter.getContext(mockCanvas, '2d') as CanvasRenderingContext2D;
+			const ctx = <CanvasRenderingContext2D>adapter.getContext(mockCanvas, '2d');
 
 			ctx.fillStyle = 'white';
 			ctx.fillRect(0, 0, 200, 50);
@@ -304,9 +304,9 @@ describe.skipIf(!nodeCanvasAvailable)('NodeCanvasAdapter', () => {
 
 		it('Should handle arc drawing.', () => {
 			const adapter = new NodeCanvasAdapter();
-			const mockCanvas = { width: 100, height: 100 } as any;
+			const mockCanvas = <any>{ width: 100, height: 100 };
 
-			const ctx = adapter.getContext(mockCanvas, '2d') as CanvasRenderingContext2D;
+			const ctx = <CanvasRenderingContext2D>adapter.getContext(mockCanvas, '2d');
 
 			ctx.fillStyle = 'white';
 			ctx.fillRect(0, 0, 100, 100);
@@ -331,9 +331,9 @@ describe.skipIf(!nodeCanvasAvailable)('NodeCanvasAdapter', () => {
 
 		it('Should support image composition.', () => {
 			const adapter = new NodeCanvasAdapter();
-			const mockCanvas = { width: 100, height: 100 } as any;
+			const mockCanvas = <any>{ width: 100, height: 100 };
 
-			const ctx = adapter.getContext(mockCanvas, '2d') as CanvasRenderingContext2D;
+			const ctx = <CanvasRenderingContext2D>adapter.getContext(mockCanvas, '2d');
 
 			// Draw red rectangle
 			ctx.fillStyle = 'red';

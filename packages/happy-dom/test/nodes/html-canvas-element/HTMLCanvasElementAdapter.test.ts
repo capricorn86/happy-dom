@@ -113,8 +113,12 @@ describe('HTMLCanvasElement - Canvas Adapter', () => {
 		it('Should work with different context types.', () => {
 			const mockAdapter: ICanvasAdapter = {
 				getContext: vi.fn().mockImplementation((_canvas, type) => {
-					if (type === '2d') return { type: '2d' };
-					if (type === 'webgl') return { type: 'webgl' };
+					if (type === '2d') {
+						return { type: '2d' };
+					}
+					if (type === 'webgl') {
+						return { type: 'webgl' };
+					}
 					return null;
 				}),
 				toDataURL: vi.fn(),
@@ -131,7 +135,8 @@ describe('HTMLCanvasElement - Canvas Adapter', () => {
 
 	describe('toDataURL() with adapter', () => {
 		it('Should delegate to adapter.toDataURL() when adapter is set.', () => {
-			const dataURL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+			const dataURL =
+				'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 			const mockAdapter: ICanvasAdapter = {
 				getContext: vi.fn(),
 				toDataURL: vi.fn().mockReturnValue(dataURL),
@@ -308,7 +313,7 @@ describe.skipIf(!nodeCanvasAvailable)('HTMLCanvasElement - NodeCanvasAdapter Int
 		canvas.width = 100;
 		canvas.height = 100;
 
-		const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+		const ctx = <CanvasRenderingContext2D>canvas.getContext('2d');
 		expect(ctx).not.toBe(null);
 
 		// Draw red rectangle
@@ -335,7 +340,7 @@ describe.skipIf(!nodeCanvasAvailable)('HTMLCanvasElement - NodeCanvasAdapter Int
 		canvas.width = 10;
 		canvas.height = 10;
 
-		const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+		const ctx = <CanvasRenderingContext2D>canvas.getContext('2d');
 		ctx.fillStyle = '#00ff00';
 		ctx.fillRect(0, 0, 10, 10);
 
@@ -356,7 +361,7 @@ describe.skipIf(!nodeCanvasAvailable)('HTMLCanvasElement - NodeCanvasAdapter Int
 		canvas.width = 10;
 		canvas.height = 10;
 
-		const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+		const ctx = <CanvasRenderingContext2D>canvas.getContext('2d');
 		ctx.fillStyle = '#0000ff';
 		ctx.fillRect(0, 0, 10, 10);
 
@@ -376,7 +381,7 @@ describe.skipIf(!nodeCanvasAvailable)('HTMLCanvasElement - NodeCanvasAdapter Int
 		canvas.width = 10;
 		canvas.height = 10;
 
-		const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+		const ctx = <CanvasRenderingContext2D>canvas.getContext('2d');
 		ctx.fillStyle = '#ff00ff';
 		ctx.fillRect(0, 0, 10, 10);
 
@@ -402,7 +407,7 @@ describe.skipIf(!nodeCanvasAvailable)('HTMLCanvasElement - NodeCanvasAdapter Int
 		canvas.width = 50;
 		canvas.height = 50;
 
-		const ctx1 = canvas.getContext('2d') as CanvasRenderingContext2D;
+		const ctx1 = <CanvasRenderingContext2D>canvas.getContext('2d');
 		ctx1.fillStyle = '#ff0000';
 		ctx1.fillRect(0, 0, 50, 50);
 
@@ -411,7 +416,7 @@ describe.skipIf(!nodeCanvasAvailable)('HTMLCanvasElement - NodeCanvasAdapter Int
 		canvas.height = 100;
 
 		// Get context again - should be new context for new size
-		const ctx2 = canvas.getContext('2d') as CanvasRenderingContext2D;
+		const ctx2 = <CanvasRenderingContext2D>canvas.getContext('2d');
 
 		// Old content should be cleared after resize (standard canvas behavior)
 		const imageData = ctx2.getImageData(25, 25, 1, 1);

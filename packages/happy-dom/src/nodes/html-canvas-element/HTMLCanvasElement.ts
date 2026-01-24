@@ -15,6 +15,7 @@ const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+
 export interface ICanvasAdapter {
 	/**
 	 * Creates a rendering context for the canvas.
+	 *
 	 * @param canvas The canvas element.
 	 * @param contextType The context type ('2d', 'webgl', etc.).
 	 * @param contextAttributes Optional context attributes.
@@ -28,6 +29,7 @@ export interface ICanvasAdapter {
 
 	/**
 	 * Returns a data URL of the canvas content.
+	 *
 	 * @param canvas The canvas element.
 	 * @param type The image format (e.g., 'image/png').
 	 * @param encoderOptions Quality for lossy formats.
@@ -37,6 +39,7 @@ export interface ICanvasAdapter {
 
 	/**
 	 * Creates a Blob from the canvas content.
+	 *
 	 * @param canvas The canvas element.
 	 * @param callback Callback receiving the blob.
 	 * @param type The image format.
@@ -58,22 +61,6 @@ export interface ICanvasAdapter {
 export default class HTMLCanvasElement extends HTMLElement {
 	// Canvas adapter for real rendering support
 	private static canvasAdapter: ICanvasAdapter | null = null;
-
-	/**
-	 * Sets the canvas adapter for real rendering support.
-	 * @param adapter The adapter implementation (e.g., node-canvas adapter).
-	 */
-	public static setCanvasAdapter(adapter: ICanvasAdapter | null): void {
-		HTMLCanvasElement.canvasAdapter = adapter;
-	}
-
-	/**
-	 * Gets the current canvas adapter.
-	 * @returns The current adapter or null.
-	 */
-	public static getCanvasAdapter(): ICanvasAdapter | null {
-		return HTMLCanvasElement.canvasAdapter;
-	}
 
 	// Events
 
@@ -157,6 +144,24 @@ export default class HTMLCanvasElement extends HTMLElement {
 	 */
 	public set height(height: number) {
 		this.setAttribute('height', String(height));
+	}
+
+	/**
+	 * Sets the canvas adapter for real rendering support.
+	 *
+	 * @param adapter The adapter implementation (e.g., node-canvas adapter).
+	 */
+	public static setCanvasAdapter(adapter: ICanvasAdapter | null): void {
+		HTMLCanvasElement.canvasAdapter = adapter;
+	}
+
+	/**
+	 * Gets the current canvas adapter.
+	 *
+	 * @returns The current adapter or null.
+	 */
+	public static getCanvasAdapter(): ICanvasAdapter | null {
+		return HTMLCanvasElement.canvasAdapter;
 	}
 
 	/**
