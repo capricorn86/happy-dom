@@ -80,12 +80,31 @@ export default class HTMLDetailsElement extends HTMLElement {
 
 		if (
 			!event[PropertySymbol.defaultPrevented] &&
-			(<Element | null>event[PropertySymbol.target])?.[PropertySymbol.localName] === 'summary' &&
 			event.type === 'click' &&
 			event.eventPhase === EventPhaseEnum.bubbling &&
 			event instanceof MouseEvent
 		) {
-			this.open = !this.open;
+			const target = <Element | null>event[PropertySymbol.target];
+
+			if (target) {
+				if (
+					target[PropertySymbol.localName] === 'summary' &&
+					target[PropertySymbol.parentNode] === this
+				) {
+					this.open = !this.open;
+				} else {
+					let summaryElement: Element | null = target;
+					for (const element of this[PropertySymbol.elementArray]) {
+						if (element[PropertySymbol.localName] === 'summary') {
+							summaryElement = element;
+							break;
+						}
+					}
+					if (summaryElement && summaryElement.contains(target)) {
+						this.open = !this.open;
+					}
+				}
+			}
 		}
 
 		return returnValue;

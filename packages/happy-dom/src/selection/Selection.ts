@@ -127,7 +127,12 @@ export default class Selection {
 	 * @returns Node.
 	 */
 	public get focusNode(): Node | null {
-		return this.anchorNode;
+		if (!this.#range) {
+			return null;
+		}
+		return this.#direction === SelectionDirectionEnum.forwards
+			? this.#range.endContainer
+			: this.#range.startContainer;
 	}
 
 	/**
@@ -137,7 +142,12 @@ export default class Selection {
 	 * @returns Node.
 	 */
 	public get focusOffset(): number {
-		return this.anchorOffset;
+		if (!this.#range) {
+			return 0;
+		}
+		return this.#direction === SelectionDirectionEnum.forwards
+			? this.#range.endOffset
+			: this.#range.startOffset;
 	}
 
 	/**
@@ -256,7 +266,10 @@ export default class Selection {
 			);
 		}
 
-		if (node[PropertySymbol.ownerDocument] !== this.#ownerDocument) {
+		if (
+			node !== this.#ownerDocument &&
+			node[PropertySymbol.ownerDocument] !== this.#ownerDocument
+		) {
 			return;
 		}
 
@@ -378,7 +391,10 @@ export default class Selection {
 	 * @param offset Offset.
 	 */
 	public extend(node: Node, offset: number): void {
-		if (node[PropertySymbol.ownerDocument] !== this.#ownerDocument) {
+		if (
+			node !== this.#ownerDocument &&
+			node[PropertySymbol.ownerDocument] !== this.#ownerDocument
+		) {
 			return;
 		}
 
@@ -441,7 +457,10 @@ export default class Selection {
 			);
 		}
 
-		if (node[PropertySymbol.ownerDocument] !== this.#ownerDocument) {
+		if (
+			node !== this.#ownerDocument &&
+			node[PropertySymbol.ownerDocument] !== this.#ownerDocument
+		) {
 			return;
 		}
 
@@ -482,8 +501,10 @@ export default class Selection {
 		}
 
 		if (
-			anchorNode[PropertySymbol.ownerDocument] !== this.#ownerDocument ||
-			focusNode[PropertySymbol.ownerDocument] !== this.#ownerDocument
+			(anchorNode !== this.#ownerDocument &&
+				anchorNode[PropertySymbol.ownerDocument] !== this.#ownerDocument) ||
+			(focusNode !== this.#ownerDocument &&
+				focusNode[PropertySymbol.ownerDocument] !== this.#ownerDocument)
 		) {
 			return;
 		}

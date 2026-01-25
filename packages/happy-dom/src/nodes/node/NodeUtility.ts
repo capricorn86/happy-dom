@@ -74,6 +74,10 @@ export default class NodeUtility {
 				return true;
 			}
 
+			if (ancestorNode[PropertySymbol.parentNode] === parent[PropertySymbol.parentNode]) {
+				return false;
+			}
+
 			parent = parent[PropertySymbol.parentNode]
 				? parent[PropertySymbol.parentNode]
 				: includeShadowRoots && (<ShadowRoot>parent).host

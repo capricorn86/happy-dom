@@ -15,4 +15,9 @@ export default interface IKeyboardEventInit extends IUIEventInit {
 	 * @deprecated
 	 */
 	keyCode?: number;
+
+	/**
+	 * @deprecated
+	 */
+	which?: number;
 }

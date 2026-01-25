@@ -336,7 +336,10 @@ export default class Node extends EventTarget {
 		if (otherNode === undefined) {
 			return false;
 		}
-		return NodeUtility.isInclusiveAncestor(this, otherNode);
+		// HTMLFormElement and HTMLSelectElement return a Proxy from their constructor.
+		// We need to use the proxy for comparison to ensure correct behavior.
+		const self = this[PropertySymbol.proxy] || this;
+		return NodeUtility.isInclusiveAncestor(self, otherNode);
 	}
 
 	/**
@@ -347,15 +350,20 @@ export default class Node extends EventTarget {
 	 * @returns Node.
 	 */
 	public getRootNode(options?: { composed: boolean }): Node {
-		if (!this[PropertySymbol.isConnected]) {
-			return this;
+		if (this[PropertySymbol.isConnected]) {
+			if (this[PropertySymbol.rootNode] && !options?.composed) {
+				return this[PropertySymbol.rootNode];
+			}
+			return this[PropertySymbol.ownerDocument];
 		}
 
-		if (this[PropertySymbol.rootNode] && !options?.composed) {
-			return this[PropertySymbol.rootNode];
+		// For detached nodes, traverse up the parent chain to find the root
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		let root: Node = this;
+		while (root[PropertySymbol.parentNode]) {
+			root = root[PropertySymbol.parentNode];
 		}
-
-		return this[PropertySymbol.ownerDocument];
+		return root;
 	}
 
 	/**

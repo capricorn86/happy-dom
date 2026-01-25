@@ -258,10 +258,10 @@ Timer #1
 				const result = await pageRenderer.render(page, { url: 'https://example.com/gb/en/' });
 				(<any>result).pageConsole = result.pageConsole
 					.replace(/\(.+\/happy-dom\/src\//gm, '(/')
-					.replace(/:[0-9]+:[0-9]+\)/gm, ':0:0)');
+					.replace(/:[0-9]+:[0-9]+/gm, ':0:0');
 				(<any>result).pageErrors[0] = result.pageErrors[0]
 					.replace(/\(.+\/happy-dom\/src\//gm, '(/')
-					.replace(/:[0-9]+:[0-9]+\)/gm, ':0:0)');
+					.replace(/:[0-9]+:[0-9]+/gm, ':0:0');
 				expect(result).toEqual({
 					url: 'https://example.com/gb/en/',
 					content: html,
@@ -269,14 +269,14 @@ Timer #1
 					headers: { key1: 'value' },
 					outputFile: null,
 					pageConsole: `Error: Error
-    at https://example.com/gb/en/:1:64
+    at https://example.com/gb/en/:0:0
     at Timeout._onTimeout (/window/BrowserWindow.ts:0:0)
     at listOnTimeout (node:internal/timers:0:0)
     at processTimers (node:internal/timers:0:0)
 `,
 					pageErrors: [
 						`Error: Error
-    at https://example.com/gb/en/:1:64
+    at https://example.com/gb/en/:0:0
     at Timeout._onTimeout (/window/BrowserWindow.ts:0:0)
     at listOnTimeout (node:internal/timers:0:0)
     at processTimers (node:internal/timers:0:0)`
