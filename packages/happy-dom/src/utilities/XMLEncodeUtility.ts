@@ -34,6 +34,13 @@ const ENCODE_HTML_ATTR_MAP: { [key: string]: string } = {
 
 const ENCODE_TEXT_CONTENT_MAP: { [key: string]: string } = {
 	'&': '&amp;',
+	'\xA0': '&#160;',
+	'<': '&lt;',
+	'>': '&gt;'
+};
+
+const ENCODE_HTML_TEXT_CONTENT_MAP: { [key: string]: string } = {
+	'&': '&amp;',
 	'\xA0': '&nbsp;',
 	'<': '&lt;',
 	'>': '&gt;'
@@ -128,7 +135,7 @@ export default class XMLEncodeUtility {
 	}
 
 	/**
-	 * Encodes text content.
+	 * Encodes text content for XML.
 	 *
 	 * @param text Value.
 	 * @returns Escaped value.
@@ -138,6 +145,19 @@ export default class XMLEncodeUtility {
 			return '';
 		}
 		return text.replace(ENCODE_TEXT_CONTENT_REGEXP, (char) => ENCODE_TEXT_CONTENT_MAP[char]);
+	}
+
+	/**
+	 * Encodes text content for HTML.
+	 *
+	 * @param text Value.
+	 * @returns Escaped value.
+	 */
+	public static encodeHTMLTextContent(text: string | null): string {
+		if (text === null) {
+			return '';
+		}
+		return text.replace(ENCODE_TEXT_CONTENT_REGEXP, (char) => ENCODE_HTML_TEXT_CONTENT_MAP[char]);
 	}
 
 	/**

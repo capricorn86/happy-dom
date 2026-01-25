@@ -132,7 +132,7 @@ export default class HTMLSerializer {
 						return root.textContent;
 					}
 				}
-				return XMLEncodeUtility.encodeTextContent(root.textContent);
+				return XMLEncodeUtility.encodeHTMLTextContent(root.textContent);
 			case NodeTypeEnum.documentTypeNode:
 				const doctype = <DocumentType>root;
 				const identifier = doctype.publicId ? ' PUBLIC' : doctype.systemId ? ' SYSTEM' : '';
