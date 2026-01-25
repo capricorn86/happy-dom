@@ -1,5 +1,4 @@
 import { Buffer } from 'buffer';
-import { webcrypto } from 'crypto';
 import { TextEncoder, TextDecoder } from 'util';
 import Stream from 'stream';
 import { ReadableStream } from 'stream/web';
@@ -8,6 +7,7 @@ import VM from 'vm';
 import * as PropertySymbol from '../PropertySymbol.js';
 import Base64 from '../base64/Base64.js';
 import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
+import CryptoWrapper from '../crypto/CryptoWrapper.js';
 import IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import Clipboard from '../clipboard/Clipboard.js';
 import ClipboardItem from '../clipboard/ClipboardItem.js';
@@ -751,7 +751,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly screenTop: number = 0;
 	public readonly screenX: number = 0;
 	public readonly screenY: number = 0;
-	public readonly crypto: typeof webcrypto = webcrypto;
+	public readonly crypto: CryptoWrapper = new CryptoWrapper();
 	public readonly TextEncoder: typeof TextEncoder = TextEncoder;
 	public readonly TextDecoder: typeof TextDecoder = TextDecoder;
 	public readonly closed = false;
