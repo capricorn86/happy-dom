@@ -266,7 +266,10 @@ export default class Selection {
 			);
 		}
 
-		if (node[PropertySymbol.ownerDocument] !== this.#ownerDocument) {
+		if (
+			node !== this.#ownerDocument &&
+			node[PropertySymbol.ownerDocument] !== this.#ownerDocument
+		) {
 			return;
 		}
 
@@ -388,7 +391,10 @@ export default class Selection {
 	 * @param offset Offset.
 	 */
 	public extend(node: Node, offset: number): void {
-		if (node[PropertySymbol.ownerDocument] !== this.#ownerDocument) {
+		if (
+			node !== this.#ownerDocument &&
+			node[PropertySymbol.ownerDocument] !== this.#ownerDocument
+		) {
 			return;
 		}
 
@@ -451,7 +457,10 @@ export default class Selection {
 			);
 		}
 
-		if (node[PropertySymbol.ownerDocument] !== this.#ownerDocument) {
+		if (
+			node !== this.#ownerDocument &&
+			node[PropertySymbol.ownerDocument] !== this.#ownerDocument
+		) {
 			return;
 		}
 
@@ -492,8 +501,10 @@ export default class Selection {
 		}
 
 		if (
-			anchorNode[PropertySymbol.ownerDocument] !== this.#ownerDocument ||
-			focusNode[PropertySymbol.ownerDocument] !== this.#ownerDocument
+			(anchorNode !== this.#ownerDocument &&
+				anchorNode[PropertySymbol.ownerDocument] !== this.#ownerDocument) ||
+			(focusNode !== this.#ownerDocument &&
+				focusNode[PropertySymbol.ownerDocument] !== this.#ownerDocument)
 		) {
 			return;
 		}
