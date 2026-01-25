@@ -117,8 +117,18 @@ export default class HTMLSelectElement extends HTMLElement {
 				}
 				return true;
 			},
-			ownKeys(target): string[] {
-				return Object.keys(QuerySelector.querySelectorAll(target, 'option')[PropertySymbol.items]);
+			ownKeys(target): (string | symbol)[] {
+				const keys: (string | symbol)[] = Reflect.ownKeys(target);
+				const optionIndices = Object.keys(
+					QuerySelector.querySelectorAll(target, 'option')[PropertySymbol.items]
+				);
+				// Add option indices that aren't already in keys
+				for (const index of optionIndices) {
+					if (!keys.includes(index)) {
+						keys.unshift(index);
+					}
+				}
+				return keys;
 			},
 			has(target, property): boolean {
 				if (property in target) {
@@ -175,28 +185,26 @@ export default class HTMLSelectElement extends HTMLElement {
 				return true;
 			},
 			getOwnPropertyDescriptor(target, property): PropertyDescriptor | undefined {
-				if (property in target) {
+				if (typeof property === 'symbol') {
 					return Object.getOwnPropertyDescriptor(target, property);
 				}
 
 				const index = Number(property);
 
-				if (isNaN(index)) {
-					return;
+				if (!isNaN(index)) {
+					const options = QuerySelector.querySelectorAll(target, 'option')[PropertySymbol.items];
+
+					if (options[index]) {
+						return {
+							value: options[index],
+							writable: true,
+							enumerable: true,
+							configurable: true
+						};
+					}
 				}
 
-				const options = QuerySelector.querySelectorAll(target, 'option')[PropertySymbol.items];
-
-				if (!options[index]) {
-					return;
-				}
-
-				return {
-					value: options[index],
-					writable: true,
-					enumerable: true,
-					configurable: true
-				};
+				return Object.getOwnPropertyDescriptor(target, property);
 			}
 		});
 
