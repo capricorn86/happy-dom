@@ -127,7 +127,12 @@ export default class Selection {
 	 * @returns Node.
 	 */
 	public get focusNode(): Node | null {
-		return this.anchorNode;
+		if (!this.#range) {
+			return null;
+		}
+		return this.#direction === SelectionDirectionEnum.forwards
+			? this.#range.endContainer
+			: this.#range.startContainer;
 	}
 
 	/**
@@ -137,7 +142,12 @@ export default class Selection {
 	 * @returns Node.
 	 */
 	public get focusOffset(): number {
-		return this.anchorOffset;
+		if (!this.#range) {
+			return 0;
+		}
+		return this.#direction === SelectionDirectionEnum.forwards
+			? this.#range.endOffset
+			: this.#range.startOffset;
 	}
 
 	/**
