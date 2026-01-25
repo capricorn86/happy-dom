@@ -8,6 +8,7 @@ import SVGElement from '../svg-element/SVGElement.js';
 import Document from '../document/Document.js';
 import HTMLSerializer from '../../html-serializer/HTMLSerializer.js';
 import HTMLParser from '../../html-parser/HTMLParser.js';
+import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 
 /**
  * ShadowRoot.
@@ -146,11 +147,7 @@ export default class ShadowRoot extends DocumentFragment {
 	 * @param html HTML.
 	 */
 	public set innerHTML(html: string) {
-		const childNodes = this[PropertySymbol.nodeArray];
-
-		while (childNodes.length) {
-			this.removeChild(childNodes[0]);
-		}
+		ParentNodeUtility.clearChildren(this);
 
 		new HTMLParser(this[PropertySymbol.window]).parse(html, this);
 	}
@@ -218,11 +215,7 @@ export default class ShadowRoot extends DocumentFragment {
 	public setHTMLUnsafe(html: string): void {
 		// TODO: Implement support for declarative shadow roots
 
-		const childNodes = this[PropertySymbol.nodeArray];
-
-		while (childNodes.length) {
-			this.removeChild(childNodes[0]);
-		}
+		ParentNodeUtility.clearChildren(this);
 
 		new HTMLParser(this[PropertySymbol.window]).parse(html, this);
 	}

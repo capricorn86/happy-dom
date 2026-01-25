@@ -401,10 +401,7 @@ export default class Element
 	 * @param textContent Text content.
 	 */
 	public set textContent(textContent: string) {
-		const childNodes = this[PropertySymbol.nodeArray];
-		while (childNodes.length) {
-			this.removeChild(childNodes[0]);
-		}
+		ParentNodeUtility.clearChildren(this);
 		if (textContent) {
 			this.appendChild(this[PropertySymbol.ownerDocument].createTextNode(textContent));
 		}
@@ -425,11 +422,7 @@ export default class Element
 	 * @param html HTML.
 	 */
 	public set innerHTML(html: string) {
-		const childNodes = this[PropertySymbol.nodeArray];
-
-		while (childNodes.length) {
-			this.removeChild(childNodes[0]);
-		}
+		ParentNodeUtility.clearChildren(this);
 
 		new HTMLParser(this[PropertySymbol.window]).parse(html, this);
 	}

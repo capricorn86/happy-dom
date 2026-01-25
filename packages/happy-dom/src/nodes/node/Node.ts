@@ -453,9 +453,14 @@ export default class Node extends EventTarget {
 		// Document has childNodes directly when it is created
 		// We need to remove them
 		if (clone[PropertySymbol.nodeArray].length) {
-			const childNodes = clone[PropertySymbol.nodeArray];
-			while (childNodes.length) {
-				clone.removeChild(childNodes[0]);
+			// Fast-detach clone children using the same algorithm as ParentNodeUtility.clearChildren.
+			const children = clone[PropertySymbol.nodeArray].slice();
+			clone[PropertySymbol.nodeArray].length = 0;
+			clone[PropertySymbol.elementArray].length = 0;
+			for (const child of children) {
+				child[PropertySymbol.parentNode] = null;
+				child[PropertySymbol.clearCache]();
+				child[PropertySymbol.disconnectedFromNode]();
 			}
 		}
 
