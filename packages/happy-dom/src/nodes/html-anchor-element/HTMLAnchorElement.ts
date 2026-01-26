@@ -7,6 +7,26 @@ import HTMLHyperlinkElementUtility from '../html-hyperlink-element/HTMLHyperlink
 import IHTMLHyperlinkElement from '../html-hyperlink-element/IHTMLHyperlinkElement.js';
 import MouseEvent from '../../event/events/MouseEvent.js';
 
+// Used for caching the utility instance - module-scoped symbol to avoid prototype issues
+const HYPERLINK_UTILITY = Symbol('hyperlinkUtility');
+
+/**
+ * Returns the hyperlink utility for an element, creating it if necessary.
+ * Returns null if called on a non-instance (e.g., prototype).
+ *
+ * @param element The element to get the utility for.
+ * @returns The hyperlink utility or null.
+ */
+function getHyperlinkUtility(element: HTMLAnchorElement): HTMLHyperlinkElementUtility | null {
+	if (!(element instanceof HTMLAnchorElement)) {
+		return null;
+	}
+	if (!element[HYPERLINK_UTILITY]) {
+		element[HYPERLINK_UTILITY] = new HTMLHyperlinkElementUtility(element);
+	}
+	return element[HYPERLINK_UTILITY];
+}
+
 /**
  * HTML Anchor Element.
  *
@@ -15,7 +35,7 @@ import MouseEvent from '../../event/events/MouseEvent.js';
  */
 export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyperlinkElement {
 	public [PropertySymbol.relList]: DOMTokenList | null = null;
-	#htmlHyperlinkElementUtility = new HTMLHyperlinkElementUtility(this);
+	public declare [HYPERLINK_UTILITY]: HTMLHyperlinkElementUtility;
 
 	/**
 	 * Returns download.
@@ -41,7 +61,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Hash.
 	 */
 	public get hash(): string {
-		return this.#htmlHyperlinkElementUtility.getHash();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getHash() : '';
 	}
 
 	/**
@@ -50,7 +71,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @param hash Hash.
 	 */
 	public set hash(hash: string) {
-		this.#htmlHyperlinkElementUtility.setHash(hash);
+		const utility = getHyperlinkUtility(this);
+		utility?.setHash(hash);
 	}
 
 	/**
@@ -59,7 +81,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Href.
 	 */
 	public get href(): string {
-		return this.#htmlHyperlinkElementUtility.getHref();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getHref() : '';
 	}
 
 	/**
@@ -68,7 +91,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @param href Href.
 	 */
 	public set href(href: string) {
-		this.#htmlHyperlinkElementUtility.setHref(href);
+		const utility = getHyperlinkUtility(this);
+		utility?.setHref(href);
 	}
 
 	/**
@@ -95,7 +119,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Origin.
 	 */
 	public get origin(): string {
-		return this.#htmlHyperlinkElementUtility.getOrigin();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getOrigin() : '';
 	}
 
 	/**
@@ -122,7 +147,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Protocol.
 	 */
 	public get protocol(): string {
-		return this.#htmlHyperlinkElementUtility.getProtocol();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getProtocol() : '';
 	}
 
 	/**
@@ -131,7 +157,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @param protocol Protocol.
 	 */
 	public set protocol(protocol: string) {
-		this.#htmlHyperlinkElementUtility.setProtocol(protocol);
+		const utility = getHyperlinkUtility(this);
+		utility?.setProtocol(protocol);
 	}
 
 	/**
@@ -140,7 +167,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Username.
 	 */
 	public get username(): string {
-		return this.#htmlHyperlinkElementUtility.getUsername();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getUsername() : '';
 	}
 
 	/**
@@ -149,7 +177,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @param username Username.
 	 */
 	public set username(username: string) {
-		this.#htmlHyperlinkElementUtility.setUsername(username);
+		const utility = getHyperlinkUtility(this);
+		utility?.setUsername(username);
 	}
 
 	/**
@@ -158,7 +187,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Password.
 	 */
 	public get password(): string {
-		return this.#htmlHyperlinkElementUtility.getPassword();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getPassword() : '';
 	}
 
 	/**
@@ -167,7 +197,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @param password Password.
 	 */
 	public set password(password: string) {
-		this.#htmlHyperlinkElementUtility.setPassword(password);
+		const utility = getHyperlinkUtility(this);
+		utility?.setPassword(password);
 	}
 
 	/**
@@ -176,7 +207,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Pathname.
 	 */
 	public get pathname(): string {
-		return this.#htmlHyperlinkElementUtility.getPathname();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getPathname() : '';
 	}
 
 	/**
@@ -185,7 +217,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @param pathname Pathname.
 	 */
 	public set pathname(pathname: string) {
-		this.#htmlHyperlinkElementUtility.setPathname(pathname);
+		const utility = getHyperlinkUtility(this);
+		utility?.setPathname(pathname);
 	}
 
 	/**
@@ -194,7 +227,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Port.
 	 */
 	public get port(): string {
-		return this.#htmlHyperlinkElementUtility.getPort();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getPort() : '';
 	}
 
 	/**
@@ -203,7 +237,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @param port Port.
 	 */
 	public set port(port: string) {
-		this.#htmlHyperlinkElementUtility.setPort(port);
+		const utility = getHyperlinkUtility(this);
+		utility?.setPort(port);
 	}
 
 	/**
@@ -212,7 +247,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Host.
 	 */
 	public get host(): string {
-		return this.#htmlHyperlinkElementUtility.getHost();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getHost() : '';
 	}
 
 	/**
@@ -221,7 +257,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @param host Host.
 	 */
 	public set host(host: string) {
-		this.#htmlHyperlinkElementUtility.setHost(host);
+		const utility = getHyperlinkUtility(this);
+		utility?.setHost(host);
 	}
 
 	/**
@@ -230,7 +267,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Hostname.
 	 */
 	public get hostname(): string {
-		return this.#htmlHyperlinkElementUtility.getHostname();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getHostname() : '';
 	}
 
 	/**
@@ -239,7 +277,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @param hostname Hostname.
 	 */
 	public set hostname(hostname: string) {
-		this.#htmlHyperlinkElementUtility.setHostname(hostname);
+		const utility = getHyperlinkUtility(this);
+		utility?.setHostname(hostname);
 	}
 
 	/**
@@ -309,7 +348,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Search.
 	 */
 	public get search(): string {
-		return this.#htmlHyperlinkElementUtility.getSearch();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getSearch() : '';
 	}
 
 	/**
@@ -318,7 +358,8 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @param search Search.
 	 */
 	public set search(search: string) {
-		this.#htmlHyperlinkElementUtility.setSearch(search);
+		const utility = getHyperlinkUtility(this);
+		utility?.setSearch(search);
 	}
 
 	/**

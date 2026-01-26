@@ -7,6 +7,26 @@ import Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import MouseEvent from '../../event/events/MouseEvent.js';
 
+// Used for caching the utility instance - module-scoped symbol to avoid prototype issues
+const HYPERLINK_UTILITY = Symbol('hyperlinkUtility');
+
+/**
+ * Returns the hyperlink utility for an element, creating it if necessary.
+ * Returns null if called on a non-instance (e.g., prototype).
+ *
+ * @param element The element to get the utility for.
+ * @returns The hyperlink utility or null.
+ */
+function getHyperlinkUtility(element: HTMLAreaElement): HTMLHyperlinkElementUtility | null {
+	if (!(element instanceof HTMLAreaElement)) {
+		return null;
+	}
+	if (!element[HYPERLINK_UTILITY]) {
+		element[HYPERLINK_UTILITY] = new HTMLHyperlinkElementUtility(element);
+	}
+	return element[HYPERLINK_UTILITY];
+}
+
 /**
  * HTMLAreaElement
  *
@@ -14,7 +34,7 @@ import MouseEvent from '../../event/events/MouseEvent.js';
  */
 export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperlinkElement {
 	public [PropertySymbol.relList]: DOMTokenList | null = null;
-	#htmlHyperlinkElementUtility = new HTMLHyperlinkElementUtility(this);
+	public declare [HYPERLINK_UTILITY]: HTMLHyperlinkElementUtility;
 
 	/**
 	 * Returns alt.
@@ -191,7 +211,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @returns Origin.
 	 */
 	public get origin(): string {
-		return this.#htmlHyperlinkElementUtility.getOrigin();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getOrigin() : '';
 	}
 
 	/**
@@ -200,7 +221,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @returns Href.
 	 */
 	public get href(): string {
-		return this.#htmlHyperlinkElementUtility.getHref();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getHref() : '';
 	}
 
 	/**
@@ -209,7 +231,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @param href Href.
 	 */
 	public set href(href: string) {
-		this.#htmlHyperlinkElementUtility.setHref(href);
+		const utility = getHyperlinkUtility(this);
+		utility?.setHref(href);
 	}
 
 	/**
@@ -218,7 +241,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @returns Protocol.
 	 */
 	public get protocol(): string {
-		return this.#htmlHyperlinkElementUtility.getProtocol();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getProtocol() : '';
 	}
 
 	/**
@@ -227,7 +251,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @param protocol Protocol.
 	 */
 	public set protocol(protocol: string) {
-		this.#htmlHyperlinkElementUtility.setProtocol(protocol);
+		const utility = getHyperlinkUtility(this);
+		utility?.setProtocol(protocol);
 	}
 
 	/**
@@ -236,7 +261,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @returns Username.
 	 */
 	public get username(): string {
-		return this.#htmlHyperlinkElementUtility.getUsername();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getUsername() : '';
 	}
 
 	/**
@@ -245,7 +271,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @param username Username.
 	 */
 	public set username(username: string) {
-		this.#htmlHyperlinkElementUtility.setUsername(username);
+		const utility = getHyperlinkUtility(this);
+		utility?.setUsername(username);
 	}
 
 	/**
@@ -254,7 +281,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @returns Password.
 	 */
 	public get password(): string {
-		return this.#htmlHyperlinkElementUtility.getPassword();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getPassword() : '';
 	}
 
 	/**
@@ -263,7 +291,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @param password Password.
 	 */
 	public set password(password: string) {
-		this.#htmlHyperlinkElementUtility.setPassword(password);
+		const utility = getHyperlinkUtility(this);
+		utility?.setPassword(password);
 	}
 
 	/**
@@ -272,7 +301,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @returns Host.
 	 */
 	public get host(): string {
-		return this.#htmlHyperlinkElementUtility.getHost();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getHost() : '';
 	}
 
 	/**
@@ -281,7 +311,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @param host Host.
 	 */
 	public set host(host: string) {
-		this.#htmlHyperlinkElementUtility.setHost(host);
+		const utility = getHyperlinkUtility(this);
+		utility?.setHost(host);
 	}
 
 	/**
@@ -290,7 +321,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @returns Hostname.
 	 */
 	public get hostname(): string {
-		return this.#htmlHyperlinkElementUtility.getHostname();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getHostname() : '';
 	}
 
 	/**
@@ -299,7 +331,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @param hostname Hostname.
 	 */
 	public set hostname(hostname: string) {
-		this.#htmlHyperlinkElementUtility.setHostname(hostname);
+		const utility = getHyperlinkUtility(this);
+		utility?.setHostname(hostname);
 	}
 
 	/**
@@ -308,7 +341,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @returns Port.
 	 */
 	public get port(): string {
-		return this.#htmlHyperlinkElementUtility.getPort();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getPort() : '';
 	}
 
 	/**
@@ -317,7 +351,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @param port Port.
 	 */
 	public set port(port: string) {
-		this.#htmlHyperlinkElementUtility.setPort(port);
+		const utility = getHyperlinkUtility(this);
+		utility?.setPort(port);
 	}
 
 	/**
@@ -326,7 +361,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @returns Pathname.
 	 */
 	public get pathname(): string {
-		return this.#htmlHyperlinkElementUtility.getPathname();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getPathname() : '';
 	}
 
 	/**
@@ -335,7 +371,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @param pathname Pathname.
 	 */
 	public set pathname(pathname: string) {
-		this.#htmlHyperlinkElementUtility.setPathname(pathname);
+		const utility = getHyperlinkUtility(this);
+		utility?.setPathname(pathname);
 	}
 
 	/**
@@ -344,7 +381,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @returns Search.
 	 */
 	public get search(): string {
-		return this.#htmlHyperlinkElementUtility.getSearch();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getSearch() : '';
 	}
 
 	/**
@@ -353,7 +391,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @param search Search.
 	 */
 	public set search(search: string) {
-		this.#htmlHyperlinkElementUtility.setSearch(search);
+		const utility = getHyperlinkUtility(this);
+		utility?.setSearch(search);
 	}
 
 	/**
@@ -362,7 +401,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @returns Hash.
 	 */
 	public get hash(): string {
-		return this.#htmlHyperlinkElementUtility.getHash();
+		const utility = getHyperlinkUtility(this);
+		return utility ? utility.getHash() : '';
 	}
 
 	/**
@@ -371,7 +411,8 @@ export default class HTMLAreaElement extends HTMLElement implements IHTMLHyperli
 	 * @param hash Hash.
 	 */
 	public set hash(hash: string) {
-		this.#htmlHyperlinkElementUtility.setHash(hash);
+		const utility = getHyperlinkUtility(this);
+		utility?.setHash(hash);
 	}
 
 	/**
