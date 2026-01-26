@@ -17,6 +17,7 @@ import VirtualConsolePrinter from './console/VirtualConsolePrinter.js';
 import VirtualConsoleLogLevelEnum from './console/enums/VirtualConsoleLogLevelEnum.js';
 import VirtualConsoleLogTypeEnum from './console/enums/VirtualConsoleLogTypeEnum.js';
 import CookieSameSiteEnum from './cookie/enums/CookieSameSiteEnum.js';
+import CookieStore from './cookie-store/CookieStore.js';
 import CSSRule from './css/CSSRule.js';
 import CSSStyleSheet from './css/CSSStyleSheet.js';
 import MediaList from './css/MediaList.js';
@@ -202,6 +203,9 @@ import type IBrowserSettings from './browser/types/IBrowserSettings.js';
 import type IOptionalBrowserSettings from './browser/types/IOptionalBrowserSettings.js';
 import type ICookie from './cookie/ICookie.js';
 import type IOptionalCookie from './cookie/IOptionalCookie.js';
+import type ICookieStoreGetOptions from './cookie-store/ICookieStoreGetOptions.js';
+import type ICookieStoreSetOptions from './cookie-store/ICookieStoreSetOptions.js';
+import type ICookieStoreItem from './cookie-store/ICookieStoreItem.js';
 import type IEventInit from './event/IEventInit.js';
 import type ITouchInit from './event/ITouchInit.js';
 import type IUIEventInit from './event/IUIEventInit.js';
@@ -231,6 +235,9 @@ export type {
 	IBrowserSettings,
 	IClipboardEventInit,
 	ICookie,
+	ICookieStoreGetOptions,
+	ICookieStoreSetOptions,
+	ICookieStoreItem,
 	ICustomEventInit,
 	IErrorEventInit,
 	IEventInit,
@@ -272,6 +279,7 @@ export {
 	ClipboardItem,
 	Comment,
 	CookieSameSiteEnum,
+	CookieStore,
 	CSSConditionRule,
 	CSSContainerRule,
 	CSSFontFaceRule,
