@@ -955,9 +955,9 @@ Task #1
     <title>Virtual Server</title>
     <script src="js/async.js" async=""></script>
     <link rel="stylesheet" href="css/style.css">
-</head>
+</head><body>
 
-<body>
+
     <div id="async-1">true</div>
     <div id="async-2">true</div>
     <div id="sync">true</div>
