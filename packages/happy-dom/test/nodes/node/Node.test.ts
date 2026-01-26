@@ -636,6 +636,31 @@ describe('Node', () => {
 			expect(removed).toEqual(child);
 		});
 
+		it('Disconnects nested children when parent is removed from document.', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('span');
+			const grandchild = document.createElement('a');
+			const text = document.createTextNode('text');
+
+			parent.appendChild(child);
+			child.appendChild(grandchild);
+			grandchild.appendChild(text);
+
+			document.body.appendChild(parent);
+
+			expect(parent.isConnected).toBe(true);
+			expect(child.isConnected).toBe(true);
+			expect(grandchild.isConnected).toBe(true);
+			expect(text.isConnected).toBe(true);
+
+			document.body.removeChild(parent);
+
+			expect(parent.isConnected).toBe(false);
+			expect(child.isConnected).toBe(false);
+			expect(grandchild.isConnected).toBe(false);
+			expect(text.isConnected).toBe(false);
+		});
+
 		it('Supports Node.prototype.removeChild.call(element).', () => {
 			expect(Node.prototype.removeChild).toBe(HTMLElement.prototype.removeChild);
 
