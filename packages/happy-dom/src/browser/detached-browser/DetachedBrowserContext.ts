@@ -7,6 +7,8 @@ import ResponseCache from '../../fetch/cache/response/ResponseCache.js';
 import IResponseCache from '../../fetch/cache/response/IResponseCache.js';
 import IPreflightResponseCache from '../../fetch/cache/preflight/IPreflightResponseCache.js';
 import PreflightResponseCache from '../../fetch/cache/preflight/PreflightResponseCache.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
+import IECMAScriptModuleCachedResult from '../../module/types/IECMAScriptModuleCachedResult.js';
 
 /**
  * Detached browser context used when constructing a Window instance without a browser.
@@ -18,6 +20,8 @@ export default class DetachedBrowserContext implements IBrowserContext {
 	public readonly responseCache: IResponseCache = new ResponseCache();
 	public readonly preflightResponseCache: IPreflightResponseCache = new PreflightResponseCache();
 	public readonly closed: boolean = false;
+	public readonly [PropertySymbol.moduleCache]: Map<string, IECMAScriptModuleCachedResult> =
+		new Map();
 
 	/**
 	 * Constructor.

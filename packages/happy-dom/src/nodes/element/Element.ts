@@ -1529,6 +1529,37 @@ export default class Element
 	}
 
 	/**
+	 * @override
+	 */
+	public override [PropertySymbol.destroy](): void {
+		const id = this.getAttribute('id');
+		if (id) {
+			this.#removeIdentifierFromWindow(id);
+		}
+
+		this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
+			this,
+			'disconnectedCallback'
+		);
+
+		super[PropertySymbol.destroy]();
+
+		if (this[PropertySymbol.shadowRoot]) {
+			this[PropertySymbol.shadowRoot][PropertySymbol.destroy]();
+		}
+
+		this[PropertySymbol.classList] = null;
+		this[PropertySymbol.shadowRoot] = null;
+		this[PropertySymbol.attributesProxy] = null;
+		this[PropertySymbol.children] = null;
+		this[PropertySymbol.computedStyle] = null;
+		this[PropertySymbol.propertyEventListeners].clear();
+		this[PropertySymbol.attributes][PropertySymbol.itemsByNamespaceURI].clear();
+		this[PropertySymbol.attributes][PropertySymbol.itemsByName].clear();
+		this[PropertySymbol.attributes][PropertySymbol.items].clear();
+	}
+
+	/**
 	 * Adds identifier to the window object.
 	 *
 	 * @param id Identifier.

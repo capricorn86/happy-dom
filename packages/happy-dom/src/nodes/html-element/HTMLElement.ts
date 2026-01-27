@@ -1066,6 +1066,16 @@ export default class HTMLElement extends Element {
 	}
 
 	/**
+	 * @override
+	 */
+	public override [PropertySymbol.destroy](): void {
+		super[PropertySymbol.destroy]();
+
+		this[PropertySymbol.style] = null;
+		this[PropertySymbol.dataset] = null;
+	}
+
+	/**
 	 * Triggered when a custom element is connected to the DOM.
 	 */
 	#onCustomElementConnected(): void {

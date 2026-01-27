@@ -104,6 +104,8 @@ export default interface IBrowserSettings {
 		urlResolver:
 			| ((options: { url: string; parentURL: string; window: BrowserWindow }) => string)
 			| null;
+		/** Disables module compilation caching */
+		disableCache?: boolean;
 	};
 
 	/**

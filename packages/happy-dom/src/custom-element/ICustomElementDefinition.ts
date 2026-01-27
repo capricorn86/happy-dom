@@ -4,7 +4,7 @@ export default interface ICustomElementDefinition {
 	elementClass: typeof HTMLElement;
 	extends: string | null;
 	observedAttributes: Set<string>;
-	livecycleCallbacks: {
+	lifecycleCallbacks: {
 		connectedCallback?: () => void;
 		disconnectedCallback?: () => void;
 		attributeChangedCallback?: (

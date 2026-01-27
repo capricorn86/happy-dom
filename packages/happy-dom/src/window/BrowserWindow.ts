@@ -1881,9 +1881,9 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	}
 
 	/**
-	 * Destroys the window.
+	 * @override
 	 */
-	public [PropertySymbol.destroy](): void {
+	public override [PropertySymbol.destroy](): void {
 		if (this.closed) {
 			return;
 		}

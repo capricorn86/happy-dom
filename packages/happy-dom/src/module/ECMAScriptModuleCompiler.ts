@@ -152,10 +152,25 @@ export default class ECMAScriptModuleCompiler {
 		code: string,
 		sourceURL: string | null = null
 	): IECMAScriptModuleCompiledResult {
-		const browserSettings = new WindowBrowserContext(this.window).getSettings();
+		const browserContext = new WindowBrowserContext(this.window).getBrowserContext();
 
-		if (!browserSettings) {
+		if (!browserContext) {
 			return { imports: [], execute: async () => {} };
+		}
+
+		const browserSettings = browserContext.browser.settings;
+
+		// Only files has a "sourceURL" and we don't want to cache modules loaded from script tag strings
+		if (!browserSettings.module.disableCache && sourceURL) {
+			const cached = browserContext[PropertySymbol.moduleCache].get(moduleURL);
+			if (cached) {
+				return {
+					imports: cached.imports,
+					execute: this.window[PropertySymbol.evaluateScript](cached.code, {
+						filename: sourceURL
+					})
+				};
+			}
 		}
 
 		this.reset();
@@ -472,13 +487,11 @@ export default class ECMAScriptModuleCompiler {
 
 		newCode += '})';
 
+		let execute: () => Promise<void>;
 		try {
-			return {
-				imports,
-				execute: this.window[PropertySymbol.evaluateScript](newCode, {
-					filename: sourceURL || moduleURL
-				})
-			};
+			execute = this.window[PropertySymbol.evaluateScript](newCode, {
+				filename: sourceURL || moduleURL
+			});
 		} catch (e) {
 			const compileError = this.getError(moduleURL, code, sourceURL);
 			const error = compileError
@@ -502,6 +515,15 @@ export default class ECMAScriptModuleCompiler {
 				};
 			}
 		}
+
+		if (!browserSettings.module.disableCache && sourceURL) {
+			browserContext[PropertySymbol.moduleCache].set(moduleURL, {
+				imports,
+				code: newCode
+			});
+		}
+
+		return { imports, execute };
 	}
 
 	/**
