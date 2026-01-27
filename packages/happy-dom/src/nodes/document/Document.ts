@@ -42,7 +42,6 @@ import HTMLHtmlElement from '../html-html-element/HTMLHtmlElement.js';
 import HTMLBodyElement from '../html-body-element/HTMLBodyElement.js';
 import HTMLHeadElement from '../html-head-element/HTMLHeadElement.js';
 import HTMLBaseElement from '../html-base-element/HTMLBaseElement.js';
-import ICachedResult from '../node/ICachedResult.js';
 import HTMLTitleElement from '../html-title-element/HTMLTitleElement.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import NodeFactory from '../NodeFactory.js';
@@ -52,6 +51,7 @@ import HTMLParser from '../../html-parser/HTMLParser.js';
 import PreloadEntry from '../../fetch/preload/PreloadEntry.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import SVGScriptElement from '../svg-script-element/SVGScriptElement.js';
+import ICachedComputedStyleResult from '../node/ICachedComputedStyleResult.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -75,7 +75,7 @@ export default class Document extends Node {
 	public [PropertySymbol.referrer] = '';
 	public [PropertySymbol.defaultView]: BrowserWindow | null = null;
 	public [PropertySymbol.forms]: HTMLCollection<HTMLFormElement> | null = null;
-	public [PropertySymbol.affectsComputedStyleCache]: ICachedResult[] = [];
+	public [PropertySymbol.affectsComputedStyleCache]: ICachedComputedStyleResult[] = [];
 	public [PropertySymbol.ownerDocument]: Document = <Document>(<unknown>null);
 	public [PropertySymbol.elementIdMap]: Map<
 		string,
@@ -2202,6 +2202,27 @@ export default class Document extends Node {
 	 */
 	public elementFromPoint(_x: number, _y: number): Element | null {
 		return null;
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.destroy](): void {
+		super[PropertySymbol.destroy]();
+
+		this[PropertySymbol.children] = null;
+		this[PropertySymbol.activeElement] = null;
+		this[PropertySymbol.nextActiveElement] = null;
+		this[PropertySymbol.currentScript] = null;
+		this[PropertySymbol.defaultView] = null;
+		this[PropertySymbol.adoptedStyleSheets] = [];
+		this[PropertySymbol.forms] = null;
+		this[PropertySymbol.affectsComputedStyleCache] = [];
+		this[PropertySymbol.elementIdMap].clear();
+		this[PropertySymbol.xmlProcessingInstruction] = null;
+		this[PropertySymbol.preloads].clear();
+		this[PropertySymbol.propertyEventListeners].clear();
+		this[PropertySymbol.selection] = null;
 	}
 
 	/**

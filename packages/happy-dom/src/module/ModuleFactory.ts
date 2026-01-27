@@ -103,7 +103,7 @@ export default class ModuleFactory {
 					window,
 					url: absoluteURL,
 					source: response.content,
-					sourceURL: response.virtualServerFile
+					sourceURL: response.virtualServerFile || absoluteURLString
 				});
 				break;
 		}

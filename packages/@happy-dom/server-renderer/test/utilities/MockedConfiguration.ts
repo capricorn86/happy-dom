@@ -49,7 +49,8 @@ export default <IServerRendererConfiguration>{
 		},
 		module: {
 			resolveNodeModules: null,
-			urlResolver: null
+			urlResolver: null,
+			disableCache: false
 		},
 		navigation: {
 			disableMainFrameNavigation: true,
