@@ -68,7 +68,7 @@ describe('Selection', () => {
 		});
 	});
 
-	for (const property of ['anchorNode', 'baseNode', 'focusNode', 'extentNode']) {
+	for (const property of ['anchorNode', 'baseNode']) {
 		describe(`get ${property}()`, () => {
 			it('Returns null if no Range has been added.', () => {
 				expect(selection[property]).toBe(null);
@@ -91,7 +91,7 @@ describe('Selection', () => {
 				expect(range.endContainer === end).toBe(true);
 			});
 
-			it(`Returns end container of Range if direction is not "${SelectionDirectionEnum.forwards}".`, () => {
+			it(`Returns end container of Range if direction is "${SelectionDirectionEnum.backwards}".`, () => {
 				const range = document.createRange();
 				const extend = document.createElement('div');
 				const start = document.createElement('div');
@@ -113,7 +113,52 @@ describe('Selection', () => {
 		});
 	}
 
-	for (const property of ['anchorOffset', 'baseOffset', 'focusOffset', 'extentOffset']) {
+	for (const property of ['focusNode', 'extentNode']) {
+		describe(`get ${property}()`, () => {
+			it('Returns null if no Range has been added.', () => {
+				expect(selection[property]).toBe(null);
+			});
+
+			it(`Returns end container of Range if direction is "${SelectionDirectionEnum.forwards}".`, () => {
+				const range = document.createRange();
+				const start = document.createElement('div');
+				const end = document.createElement('div');
+
+				document.body.appendChild(start);
+				document.body.appendChild(end);
+
+				range.setStart(start, 0);
+				range.setEnd(end, 0);
+
+				selection.addRange(range);
+
+				expect(selection[property] === end).toBe(true);
+				expect(range.startContainer === start).toBe(true);
+			});
+
+			it(`Returns start container of Range if direction is "${SelectionDirectionEnum.backwards}".`, () => {
+				const range = document.createRange();
+				const extend = document.createElement('div');
+				const start = document.createElement('div');
+				const end = document.createElement('div');
+
+				document.body.appendChild(extend);
+				document.body.appendChild(start);
+				document.body.appendChild(end);
+
+				range.setStart(start, 0);
+				range.setEnd(end, 0);
+
+				selection.addRange(range);
+
+				selection.extend(extend, 0);
+
+				expect(selection[property] === selection.getRangeAt(0).startContainer).toBe(true);
+			});
+		});
+	}
+
+	for (const property of ['anchorOffset', 'baseOffset']) {
 		describe(`get ${property}()`, () => {
 			it('Returns 0 if no Range has been added.', () => {
 				expect(selection[property]).toBe(0);
@@ -136,7 +181,7 @@ describe('Selection', () => {
 				expect(range.endOffset === 2).toBe(true);
 			});
 
-			it(`Returns end offset of Range if direction is not "${SelectionDirectionEnum.forwards}".`, () => {
+			it(`Returns end offset of Range if direction is "${SelectionDirectionEnum.backwards}".`, () => {
 				const range = document.createRange();
 				const extend = document.createTextNode('extend');
 				const start = document.createTextNode('start');
@@ -154,6 +199,51 @@ describe('Selection', () => {
 				selection.extend(extend, 3);
 
 				expect(selection[property] === selection.getRangeAt(0).endOffset).toBe(true);
+			});
+		});
+	}
+
+	for (const property of ['focusOffset', 'extentOffset']) {
+		describe(`get ${property}()`, () => {
+			it('Returns 0 if no Range has been added.', () => {
+				expect(selection[property]).toBe(0);
+			});
+
+			it(`Returns end offset of Range if direction is "${SelectionDirectionEnum.forwards}".`, () => {
+				const range = document.createRange();
+				const start = document.createTextNode('start');
+				const end = document.createTextNode('end');
+
+				document.body.appendChild(start);
+				document.body.appendChild(end);
+
+				range.setStart(start, 1);
+				range.setEnd(end, 2);
+
+				selection.addRange(range);
+
+				expect(selection[property] === 2).toBe(true);
+				expect(range.startOffset === 1).toBe(true);
+			});
+
+			it(`Returns start offset of Range if direction is "${SelectionDirectionEnum.backwards}".`, () => {
+				const range = document.createRange();
+				const extend = document.createTextNode('extend');
+				const start = document.createTextNode('start');
+				const end = document.createTextNode('end');
+
+				document.body.appendChild(extend);
+				document.body.appendChild(start);
+				document.body.appendChild(end);
+
+				range.setStart(start, 1);
+				range.setEnd(end, 2);
+
+				selection.addRange(range);
+
+				selection.extend(extend, 3);
+
+				expect(selection[property] === selection.getRangeAt(0).startOffset).toBe(true);
 			});
 		});
 	}
@@ -328,6 +418,19 @@ describe('Selection', () => {
 
 				expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
 				expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
+			});
+
+			it('Accepts Document node.', () => {
+				selection[method](document, 0);
+
+				expect(selection.rangeCount).toBe(1);
+
+				const newRange = selection.getRangeAt(0);
+
+				expect(newRange.startContainer).toBe(document);
+				expect(newRange.startOffset).toBe(0);
+				expect(newRange.endContainer).toBe(document);
+				expect(newRange.endOffset).toBe(0);
 			});
 		});
 	}
@@ -569,6 +672,19 @@ describe('Selection', () => {
 			expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
 			expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 		});
+
+		it('Accepts Document node.', () => {
+			const text = document.createTextNode('text');
+
+			document.body.appendChild(text);
+
+			selection.collapse(text, 0);
+			selection.extend(document, 0);
+
+			expect(selection.rangeCount).toBe(1);
+			expect(selection.focusNode).toBe(document);
+			expect(selection.focusOffset).toBe(0);
+		});
 	});
 
 	describe('selectAllChildren()', () => {
@@ -590,6 +706,19 @@ describe('Selection', () => {
 			expect(newRange.startOffset).toBe(0);
 			expect(newRange.endContainer).toBe(container);
 			expect(newRange.endOffset).toBe(3);
+		});
+
+		it('Accepts Document node.', () => {
+			selection.selectAllChildren(document);
+
+			expect(selection.rangeCount).toBe(1);
+
+			const newRange = selection.getRangeAt(0);
+
+			expect(newRange.startContainer).toBe(document);
+			expect(newRange.startOffset).toBe(0);
+			expect(newRange.endContainer).toBe(document);
+			expect(newRange.endOffset).toBe(document.childNodes.length);
 		});
 
 		it(`Throws error if node type is ${NodeTypeEnum.documentTypeNode}.`, () => {
@@ -656,6 +785,21 @@ describe('Selection', () => {
 			expect(newRange.endOffset).toBe(2);
 
 			expect(selection.anchorNode).toBe(newRange.endContainer);
+		});
+
+		it('Accepts Document node as boundary point.', () => {
+			const text = document.createTextNode('text');
+
+			document.body.appendChild(text);
+
+			selection.setBaseAndExtent(document, 0, text, 2);
+
+			expect(selection.rangeCount).toBe(1);
+
+			const newRange = selection.getRangeAt(0);
+
+			expect(newRange.startContainer).toBe(document);
+			expect(newRange.endContainer).toBe(text);
 		});
 
 		it('Throws error if wrong offset.', () => {
