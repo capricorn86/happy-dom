@@ -114,6 +114,14 @@ export default class SVGStyleElement extends SVGElement {
 	}
 
 	/**
+	 * @override
+	 */
+	public override [PropertySymbol.destroy](): void {
+		super[PropertySymbol.destroy]();
+		this[PropertySymbol.sheet] = null;
+	}
+
+	/**
 	 * Updates the CSSStyleSheet with the text content.
 	 */
 	public [PropertySymbol.updateSheet](): void {

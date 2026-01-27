@@ -112,9 +112,9 @@ describe('CustomElementRegistry', () => {
 
 			const element = new CustomElement();
 
-			expect(definition.livecycleCallbacks.connectedCallback).toBe(element.connectedCallback);
-			expect(definition.livecycleCallbacks.disconnectedCallback).toBe(element.disconnectedCallback);
-			expect(definition.livecycleCallbacks.attributeChangedCallback).toBe(
+			expect(definition.lifecycleCallbacks.connectedCallback).toBe(element.connectedCallback);
+			expect(definition.lifecycleCallbacks.disconnectedCallback).toBe(element.disconnectedCallback);
+			expect(definition.lifecycleCallbacks.attributeChangedCallback).toBe(
 				element.attributeChangedCallback
 			);
 		});

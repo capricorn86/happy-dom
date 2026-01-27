@@ -3,6 +3,8 @@ import IResponseCache from '../../fetch/cache/response/IResponseCache.js';
 import IBrowser from './IBrowser.js';
 import IBrowserPage from './IBrowserPage.js';
 import IPreflightResponseCache from '../../fetch/cache/preflight/IPreflightResponseCache.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
+import IECMAScriptModuleCachedResult from '../../module/types/IECMAScriptModuleCachedResult.js';
 
 /**
  * Browser context.
@@ -14,6 +16,7 @@ export default interface IBrowserContext {
 	readonly responseCache: IResponseCache;
 	readonly preflightResponseCache: IPreflightResponseCache;
 	readonly closed: boolean;
+	readonly [PropertySymbol.moduleCache]: Map<string, IECMAScriptModuleCachedResult>;
 
 	/**
 	 * Aborts all ongoing operations and destroys the context.

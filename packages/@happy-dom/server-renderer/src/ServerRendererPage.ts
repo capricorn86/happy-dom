@@ -3,10 +3,11 @@ import FS from 'fs';
 import Path from 'path';
 import IServerRendererItem from './types/IServerRendererItem.js';
 import IServerRendererResult from './types/IServerRendererResult.js';
-import { ErrorEvent, IBrowserPage, Response } from 'happy-dom';
+import { BrowserWindow, ErrorEvent, IBrowserPage, Response } from 'happy-dom';
 import BrowserWindowPolyfill from './utilities/BrowserWindowPolyfill.js';
 import IServerRendererConfiguration from './types/IServerRendererConfiguration.js';
 import ServerRendererModeEnum from './enums/ServerRendererModeEnum.js';
+import * as PropertySymbol from 'happy-dom/lib/PropertySymbol.js';
 
 const SET_TIMEOUT = setTimeout;
 const CLEAR_TIMEOUT = clearTimeout;
@@ -17,7 +18,7 @@ const CLEAR_TIMEOUT = clearTimeout;
 export default class ServerRendererPage {
 	#configuration: IServerRendererConfiguration;
 	#createdDirectories: Set<string> = new Set();
-	#initialized: boolean = false;
+	#initialized: Map<BrowserWindow, boolean> = new Map();
 
 	/**
 	 * Constructor.
@@ -55,8 +56,8 @@ export default class ServerRendererPage {
 
 			page.mainFrame.window.addEventListener('error', errorListener);
 
-			if (!this.#initialized) {
-				this.#initialized = true;
+			if (!this.#initialized.has(page.mainFrame.window)) {
+				this.#initialized.set(page.mainFrame.window, true);
 
 				if (!configuration.render.disablePolyfills) {
 					BrowserWindowPolyfill.applyPolyfills(page.mainFrame.window);
@@ -103,9 +104,7 @@ export default class ServerRendererPage {
 			if (!response.ok) {
 				const pageConsole = page.virtualConsolePrinter.readAsString();
 
-				if (configuration.render.mode !== ServerRendererModeEnum.page) {
-					await page.close();
-				}
+				await this.closePage(page);
 
 				return {
 					url: item.url,
@@ -125,8 +124,8 @@ export default class ServerRendererPage {
 
 				page.mainFrame.window.addEventListener('error', errorListener);
 
-				if (!this.#initialized) {
-					this.#initialized = true;
+				if (!this.#initialized.has(page.mainFrame.window)) {
+					this.#initialized.set(page.mainFrame.window, true);
 					if (!configuration.render.disablePolyfills) {
 						BrowserWindowPolyfill.applyPolyfills(page.mainFrame.window);
 					}
@@ -142,9 +141,7 @@ export default class ServerRendererPage {
 		} else {
 			const pageConsole = page.virtualConsolePrinter.readAsString();
 
-			if (configuration.render.mode !== ServerRendererModeEnum.page) {
-				await page.close();
-			}
+			await this.closePage(page);
 
 			return {
 				url: null,
@@ -165,7 +162,7 @@ export default class ServerRendererPage {
 				? SET_TIMEOUT(() => {
 						timeoutError = `The page was not rendered within the defined time of ${configuration.render.timeout}ms and the operation was aborted. You can increase this value with the "render.timeout" setting.\n\nThe page may contain scripts with timer loops that prevent it from completing. You can debug open handles by setting "debug" to true, or prevent timer loops by setting "browser.timer.preventTimerLoops" to true. Read more about this in the documentation.`;
 						page.abort();
-					}, configuration.render.timeout)
+				  }, configuration.render.timeout)
 				: null;
 
 		try {
@@ -174,9 +171,7 @@ export default class ServerRendererPage {
 			const pageConsole = page.virtualConsolePrinter.readAsString();
 			const url = item.url || page.url;
 
-			if (configuration.render.mode !== ServerRendererModeEnum.page) {
-				await page.close();
-			}
+			await this.closePage(page);
 
 			return {
 				url,
@@ -205,9 +200,7 @@ export default class ServerRendererPage {
 		if (timeoutError) {
 			const url = item.url || page.url;
 
-			if (configuration.render.mode !== ServerRendererModeEnum.page) {
-				await page.close();
-			}
+			await this.closePage(page);
 
 			return {
 				url,
@@ -231,9 +224,7 @@ export default class ServerRendererPage {
 		const result = serializer.serializeToString(page.mainFrame.document);
 		const url = item.url || page.url;
 
-		if (configuration.render.mode !== ServerRendererModeEnum.page) {
-			await page.close();
-		}
+		await this.closePage(page);
 
 		if (!item.outputFile) {
 			return {
@@ -275,5 +266,40 @@ export default class ServerRendererPage {
 			pageConsole,
 			pageErrors
 		};
+	}
+
+	/**
+	 * Closes the page.
+	 *
+	 * @param page Browser page.
+	 */
+	private async closePage(page: IBrowserPage): Promise<void> {
+		if (this.#configuration.render.mode === ServerRendererModeEnum.page) {
+			const window = page.mainFrame.window;
+			const document = window.document;
+
+			(<any>window).document = new window.HTMLDocument();
+			window.document[PropertySymbol.defaultView] = window;
+
+			document[PropertySymbol.destroy]();
+
+			window[PropertySymbol.listeners].capturing.clear();
+			window[PropertySymbol.listeners].bubbling.clear();
+			window[PropertySymbol.listenerOptions].capturing.clear();
+			window[PropertySymbol.listenerOptions].bubbling.clear();
+
+			const mutationObservers = window[PropertySymbol.mutationObservers];
+
+			for (const mutationObserver of mutationObservers) {
+				if (mutationObserver[PropertySymbol.destroy]) {
+					mutationObserver[PropertySymbol.destroy]();
+				}
+			}
+
+			window[PropertySymbol.mutationObservers] = [];
+			document.open();
+		} else {
+			await page.close();
+		}
 	}
 }
