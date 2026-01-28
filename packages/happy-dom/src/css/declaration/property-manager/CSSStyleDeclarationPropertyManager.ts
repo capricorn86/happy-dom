@@ -539,7 +539,7 @@ export default class CSSStyleDeclarationPropertyManager {
 		const _class = <typeof CSSStyleDeclarationPropertyManager>this.constructor;
 		const clone: CSSStyleDeclarationPropertyManager = new _class();
 
-		clone.properties = JSON.parse(JSON.stringify(this.properties));
+		clone.properties = structuredClone(this.properties);
 		clone.definedPropertyNames = Object.assign({}, this.definedPropertyNames);
 
 		return clone;

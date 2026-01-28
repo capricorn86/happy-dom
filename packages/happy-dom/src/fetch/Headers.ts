@@ -23,7 +23,7 @@ export default class Headers {
 	constructor(init?: IHeadersInit | null) {
 		if (init) {
 			if (init instanceof Headers) {
-				this[PropertySymbol.entries] = JSON.parse(JSON.stringify(init[PropertySymbol.entries]));
+				this[PropertySymbol.entries] = structuredClone(init[PropertySymbol.entries]);
 			} else if (Array.isArray(init)) {
 				for (const entry of init) {
 					if (entry.length !== 2) {
