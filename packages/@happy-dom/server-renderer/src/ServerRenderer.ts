@@ -188,7 +188,7 @@ export default class ServerRenderer {
 	 *
 	 * @param items Items.
 	 */
-	async #runInWorker(items: IServerRendererItem[]): Promise<IServerRendererResult[]> {
+	#runInWorker(items: IServerRendererItem[]): Promise<IServerRendererResult[]> {
 		const configuration = this.#configuration;
 
 		if (configuration.worker.disable) {
@@ -202,11 +202,10 @@ export default class ServerRenderer {
 				this.#browser = new ServerRendererBrowser(configuration);
 			}
 
-			const results = await this.#browser.render(items);
-
-			this.outputResults(results);
-
-			return results;
+			return this.#browser.render(items).then((results) => {
+				this.outputResults(results);
+				return results;
+			});
 		}
 
 		return new Promise((resolve, reject) => {

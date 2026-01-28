@@ -31,7 +31,8 @@ export default <IBrowserSettings>{
 	},
 	module: {
 		resolveNodeModules: null,
-		urlResolver: null
+		urlResolver: null,
+		disableCache: false
 	},
 	navigation: {
 		disableMainFrameNavigation: false,

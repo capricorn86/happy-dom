@@ -86,7 +86,7 @@ export default class CustomElementRegistry {
 			elementClass,
 			extends: options && options.extends ? options.extends.toLowerCase() : null,
 			observedAttributes,
-			livecycleCallbacks: {
+			lifecycleCallbacks: {
 				connectedCallback: elementClass.prototype.connectedCallback,
 				disconnectedCallback: elementClass.prototype.disconnectedCallback,
 				attributeChangedCallback: elementClass.prototype.attributeChangedCallback

@@ -411,3 +411,4 @@ export const validateJavaScriptExecutionEnvironment = Symbol(
 export const currentNode = Symbol('currentNode');
 export const openWebSockets = Symbol('openWebSockets');
 export const webSocket = Symbol('webSocket');
+export const moduleCache = Symbol('moduleCache');

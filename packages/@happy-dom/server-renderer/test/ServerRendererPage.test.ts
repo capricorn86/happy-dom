@@ -78,7 +78,7 @@ describe('ServerRendererPage', () => {
 				});
 			});
 
-			it(`Executes setup script in ${mode} mode.`, async () => {
+			it(`Executes setup script in ${mode} mode with an item with URL.`, async () => {
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async () => {
 					return <Response>{
 						ok: true,
@@ -110,6 +110,40 @@ describe('ServerRendererPage', () => {
 					pageErrors: [],
 					status: 200,
 					statusText: 'OK'
+				});
+			});
+
+			it(`Executes setup script in ${mode} mode with an item with HTML string.`, async () => {
+				const pageRenderer = new ServerRendererPage(
+					ServerRendererConfigurationFactory.createConfiguration({
+						render: {
+							setupScript: `setTimeout(() => {
+                                document.querySelector('h1').textContent = 'Setup script executed';
+                            }, 50);`
+						}
+					})
+				);
+				// We need to verify that the initialization logic is executed once per BrowserWindow and not once per page render.
+				// This was a bugfix that caused issues when rendering multiple pages with setup scripts.
+				await pageRenderer.render(browser.newPage(), {
+					url: 'https://example.com/gb/en/',
+					html: MockedPageHTML
+				});
+				const result = await pageRenderer.render(page, {
+					url: 'https://example.com/gb/en/',
+					html: MockedPageHTML
+				});
+
+				expect(result).toEqual({
+					url: 'https://example.com/gb/en/',
+					content: MockedPageHTML.replace('<h1></h1>', '<h1>Setup script executed</h1>'),
+					error: null,
+					headers: null,
+					outputFile: null,
+					pageConsole: '',
+					pageErrors: [],
+					status: null,
+					statusText: null
 				});
 			});
 

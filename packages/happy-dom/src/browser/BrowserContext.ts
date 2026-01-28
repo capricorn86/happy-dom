@@ -7,6 +7,8 @@ import BrowserPage from './BrowserPage.js';
 import IBrowserContext from './types/IBrowserContext.js';
 import IPreflightResponseCache from '../fetch/cache/preflight/IPreflightResponseCache.js';
 import PreflightResponseCache from '../fetch/cache/preflight/PreflightResponseCache.js';
+import * as PropertySymbol from '../PropertySymbol.js';
+import IECMAScriptModuleCachedResult from '../module/types/IECMAScriptModuleCachedResult.js';
 
 /**
  * Browser context.
@@ -18,6 +20,8 @@ export default class BrowserContext implements IBrowserContext {
 	public readonly responseCache: IResponseCache = new ResponseCache();
 	public readonly preflightResponseCache: IPreflightResponseCache = new PreflightResponseCache();
 	public readonly closed: boolean = false;
+	public readonly [PropertySymbol.moduleCache]: Map<string, IECMAScriptModuleCachedResult> =
+		new Map();
 
 	/**
 	 * Constructor.

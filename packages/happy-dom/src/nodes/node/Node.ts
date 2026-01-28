@@ -1074,25 +1074,18 @@ export default class Node extends EventTarget {
 	}
 
 	/**
-	 * Destroys the node.
+	 * @override
 	 */
-	public [PropertySymbol.destroy](): void {
+	public override [PropertySymbol.destroy](): void {
 		super[PropertySymbol.destroy]();
 
 		this[PropertySymbol.isConnected] = false;
 
-		while (this[PropertySymbol.nodeArray].length > 0) {
-			const node = this[PropertySymbol.nodeArray][this[PropertySymbol.nodeArray].length - 1];
-
-			// Makes sure that something won't be triggered by the disconnect.
-			if ((<any>node).disconnectedCallback) {
-				delete (<any>node).disconnectedCallback;
-			}
-
-			this[PropertySymbol.removeChild](node);
-			node[PropertySymbol.destroy]();
+		for (let i = 0, max = this[PropertySymbol.nodeArray].length; i < max; i++) {
+			this[PropertySymbol.nodeArray][i][PropertySymbol.destroy]();
 		}
 
+		this[PropertySymbol.mutationListeners] = [];
 		this[PropertySymbol.parentNode] = null;
 		this[PropertySymbol.rootNode] = null;
 		this[PropertySymbol.styleNode] = null;
