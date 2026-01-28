@@ -502,6 +502,24 @@ describe('QuerySelector', () => {
 			expect(elements[1] === container.children[0].children[1].children[1]).toBe(true);
 		});
 
+		it('Returns elements with attribute values containing apostrophes using double quotes as delimiter.', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `<div data-value="it's a test">Content</div>`;
+
+			const elements = container.querySelectorAll('[data-value="it\'s a test"]');
+			expect(elements.length).toBe(1);
+			expect(elements[0] === container.children[0]).toBe(true);
+		});
+
+		it('Returns elements with attribute values containing double quotes using apostrophes as delimiter.', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `<div data-value='say "hello"'>Content</div>`;
+
+			const elements = container.querySelectorAll('[data-value=\'say "hello"\']');
+			expect(elements.length).toBe(1);
+			expect(elements[0] === container.children[0]).toBe(true);
+		});
+
 		it('Returns all elements with tag name and matching attributes using "span[_attr1]".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML.replace(/ attr1/gm, '_attr1');
