@@ -57,8 +57,8 @@ describe('DOMParser', () => {
 			expect(new HTMLSerializer().serializeToString(newDocument)).toBe(
 				`<html><head>
 						<title>Title</title>
-					</head>
-					<body>
+					</head><body>
+					
 						<span>Body</span>
 					
 				

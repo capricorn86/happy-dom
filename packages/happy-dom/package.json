@@ -33,10 +33,11 @@
 		"test:debug": "vitest run --inspect-brk --no-file-parallelism"
 	},
 	"dependencies": {
-		"@types/whatwg-mimetype": "^3.0.2",
 		"@types/node": ">=20.0.0",
+		"@types/whatwg-mimetype": "^3.0.2",
 		"@types/ws": "^8.18.1",
 		"entities": "^4.5.0",
+		"parse5": "^8.0.0",
 		"whatwg-mimetype": "^3.0.0",
 		"ws": "^8.18.3"
 	},
