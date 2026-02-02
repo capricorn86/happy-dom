@@ -1,8 +1,8 @@
-import BrowserWindow from '../window/BrowserWindow.js';
-import { URL } from 'url';
-import IModule from './types/IModule.js';
-import CSSStyleSheet from '../css/CSSStyleSheet.js';
-import IModuleInit from './types/IModuleInit.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
+import type { URL } from 'url';
+import type IModule from './types/IModule.js';
+import type CSSStyleSheet from '../css/CSSStyleSheet.js';
+import type IModuleInit from './types/IModuleInit.js';
 
 /**
  * CSS module.

@@ -1,6 +1,6 @@
-import MediaStreamTrack from '../../nodes/html-media-element/MediaStreamTrack.js';
+import type MediaStreamTrack from '../../nodes/html-media-element/MediaStreamTrack.js';
 import Event from '../Event.js';
-import IMediaQueryListEventInit from './IMediaQueryListEventInit.js';
+import type IMediaQueryListEventInit from './IMediaQueryListEventInit.js';
 
 /**
  * Media Stream Track Event.

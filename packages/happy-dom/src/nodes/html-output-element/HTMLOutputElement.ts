@@ -1,9 +1,9 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
+import type HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import ValidityState from '../../validity-state/ValidityState.js';
-import NodeList from '../node/NodeList.js';
-import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
+import type NodeList from '../node/NodeList.js';
+import type HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 
 /**

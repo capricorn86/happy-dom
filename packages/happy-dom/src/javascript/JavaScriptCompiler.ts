@@ -1,8 +1,8 @@
 import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import IJavaScriptCompiledResult from './IJavaScriptCompiledResult.js';
+import type IJavaScriptCompiledResult from './IJavaScriptCompiledResult.js';
 
 /**
  * Statement regexp.

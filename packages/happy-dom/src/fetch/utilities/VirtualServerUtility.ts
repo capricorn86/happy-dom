@@ -1,8 +1,8 @@
-import BrowserWindow from '../../window/BrowserWindow.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import Path from 'path';
-import Response from '../Response.js';
-import ISyncResponse from '../types/ISyncResponse.js';
+import type Response from '../Response.js';
+import type ISyncResponse from '../types/ISyncResponse.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 const NOT_FOUND_HTML =

@@ -3,9 +3,10 @@ import ServerRendererPage from '../src/ServerRendererPage.js';
 import ServerRendererConfigurationFactory from '../src/utilities/ServerRendererConfigurationFactory.js';
 import Fetch from 'happy-dom/lib/fetch/Fetch.js';
 import Headers from 'happy-dom/lib/fetch/Headers.js';
-import Response from 'happy-dom/lib/fetch/Response.js';
+import type Response from 'happy-dom/lib/fetch/Response.js';
 import MockedPageHTML from './MockedPageHTML.js';
-import { Browser, BrowserPage } from 'happy-dom';
+import type { BrowserPage } from 'happy-dom';
+import { Browser } from 'happy-dom';
 import ServerRendererModeEnum from '../src/enums/ServerRendererModeEnum.js';
 
 describe('ServerRendererPage', () => {

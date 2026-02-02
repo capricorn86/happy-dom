@@ -3,10 +3,10 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import PointerEvent from '../../event/events/PointerEvent.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
-import Event from '../../event/Event.js';
+import type Event from '../../event/Event.js';
 import HTMLElementUtility from './HTMLElementUtility.js';
 import DOMStringMap from '../../dom/DOMStringMap.js';
-import Attr from '../attr/Attr.js';
+import type Attr from '../attr/Attr.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**

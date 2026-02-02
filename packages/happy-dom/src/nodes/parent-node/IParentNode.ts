@@ -1,9 +1,9 @@
-import HTMLCollection from '../element/HTMLCollection.js';
-import Element from '../element/Element.js';
-import Node from '../node/Node.js';
-import NodeList from '../node/NodeList.js';
-import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
-import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
+import type HTMLCollection from '../element/HTMLCollection.js';
+import type Element from '../element/Element.js';
+import type Node from '../node/Node.js';
+import type NodeList from '../node/NodeList.js';
+import type IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
+import type ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 
 export default interface IParentNode extends Node {
 	readonly childElementCount: number;

@@ -30,7 +30,8 @@
 		"test": "vitest run",
 		"test:ui": "vitest --ui",
 		"test:watch": "vitest",
-		"test:debug": "vitest run --inspect-brk --no-file-parallelism"
+		"test:debug": "vitest run --inspect-brk --no-file-parallelism",
+		"test:circular-dependencies": "madge --circular --extensions js lib/index.js"
 	},
 	"dependencies": {
 		"@types/whatwg-mimetype": "^3.0.2",
@@ -44,7 +45,8 @@
 		"@vitest/ui": "^4.0.16",
 		"@webref/css": "6.6.2",
 		"typescript": "^5.8.3",
-		"vitest": "^4.0.16"
+		"vitest": "^4.0.16",
+		"madge": "^8.0.0"
 	},
 	"engines": {
 		"node": ">=20.0.0"

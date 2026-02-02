@@ -1,5 +1,5 @@
-import IBrowserFrame from '../types/IBrowserFrame.js';
-import IBrowserPage from '../types/IBrowserPage.js';
+import type IBrowserFrame from '../types/IBrowserFrame.js';
+import type IBrowserPage from '../types/IBrowserPage.js';
 import BrowserFrameFactory from './BrowserFrameFactory.js';
 
 /**

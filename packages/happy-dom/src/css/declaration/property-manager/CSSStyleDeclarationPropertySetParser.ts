@@ -1,5 +1,5 @@
 import CSSStyleDeclarationValueParser from './CSSStyleDeclarationValueParser.js';
-import ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyValue.js';
+import type ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyValue.js';
 
 const RECT_REGEXP = /^rect\((.*)\)$/i;
 const SPLIT_COMMA_SEPARATED_WITH_PARANTHESES_REGEXP = /,(?=(?:(?:(?!\))[\s\S])*\()|[^\(\)]*$)/; // Split on commas that are outside of parentheses

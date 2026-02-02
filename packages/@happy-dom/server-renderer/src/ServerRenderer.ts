@@ -1,9 +1,9 @@
-import IOptionalServerRendererConfiguration from './types/IOptionalServerRendererConfiguration.js';
-import IServerRendererItem from './types/IServerRendererItem.js';
+import type IOptionalServerRendererConfiguration from './types/IOptionalServerRendererConfiguration.js';
+import type IServerRendererItem from './types/IServerRendererItem.js';
 import { Worker } from 'worker_threads';
-import IServerRendererResult from './types/IServerRendererResult.js';
+import type IServerRendererResult from './types/IServerRendererResult.js';
 import ServerRendererLogLevelEnum from './enums/ServerRendererLogLevelEnum.js';
-import IServerRendererConfiguration from './types/IServerRendererConfiguration.js';
+import type IServerRendererConfiguration from './types/IServerRendererConfiguration.js';
 import ServerRendererConfigurationFactory from './utilities/ServerRendererConfigurationFactory.js';
 import Path from 'path';
 import Inspector from 'node:inspector';

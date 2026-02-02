@@ -1,5 +1,5 @@
-import IUIEventInit from '../IUIEventInit.js';
-import Touch from '../Touch.js';
+import type IUIEventInit from '../IUIEventInit.js';
+import type Touch from '../Touch.js';
 
 export default interface ITouchEventInit extends IUIEventInit {
 	touches?: Touch[] | null;

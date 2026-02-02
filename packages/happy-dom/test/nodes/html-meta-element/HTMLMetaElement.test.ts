@@ -1,6 +1,6 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
-import HTMLMetaElement from '../../../src/nodes/html-meta-element/HTMLMetaElement.js';
+import type Document from '../../../src/nodes/document/Document.js';
+import type HTMLMetaElement from '../../../src/nodes/html-meta-element/HTMLMetaElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLMetaElement', () => {

@@ -1,6 +1,6 @@
 import DocumentType from '../nodes/document-type/DocumentType.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import Document from '../nodes/document/Document.js';
+import type Document from '../nodes/document/Document.js';
 import NodeFactory from '../nodes/NodeFactory.js';
 
 /**

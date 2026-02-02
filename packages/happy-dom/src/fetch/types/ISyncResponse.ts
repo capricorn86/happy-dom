@@ -1,5 +1,5 @@
-import { PropertySymbol } from '../../index.js';
-import Headers from '../Headers.js';
+import type { PropertySymbol } from '../../index.js';
+import type Headers from '../Headers.js';
 
 /**
  * Fetch response.

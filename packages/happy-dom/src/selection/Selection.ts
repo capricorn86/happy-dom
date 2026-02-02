@@ -1,11 +1,11 @@
 import Event from '../event/Event.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
-import Document from '../nodes/document/Document.js';
-import Node from '../nodes/node/Node.js';
+import type Document from '../nodes/document/Document.js';
+import type Node from '../nodes/node/Node.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import NodeUtility from '../nodes/node/NodeUtility.js';
-import Range from '../range/Range.js';
+import type Range from '../range/Range.js';
 import RangeUtility from '../range/RangeUtility.js';
 import SelectionDirectionEnum from './SelectionDirectionEnum.js';
 

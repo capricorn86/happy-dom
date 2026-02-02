@@ -1,9 +1,9 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
 import CharacterData from '../character-data/CharacterData.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
-import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
+import type HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
-import HTMLStyleElement from '../html-style-element/HTMLStyleElement.js';
+import type HTMLStyleElement from '../html-style-element/HTMLStyleElement.js';
 
 /**
  * Text node.

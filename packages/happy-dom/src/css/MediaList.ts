@@ -1,4 +1,4 @@
-import CSSMediaRule from './rules/CSSMediaRule.js';
+import type CSSMediaRule from './rules/CSSMediaRule.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import ClassMethodBinder from '../utilities/ClassMethodBinder.js';
 

@@ -1,19 +1,19 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
-import HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement.js';
+import type Document from '../../../src/nodes/document/Document.js';
+import type HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement.js';
 import DOMException from '../../../src/exception/DOMException.js';
 import File from '../../../src/file/File.js';
 import Event from '../../../src/event/Event.js';
 import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum.js';
 import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum.js';
 import ValidityState from '../../../src/validity-state/ValidityState.js';
-import HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElement.js';
+import type HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElement.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
-import SubmitEvent from '../../../src/event/events/SubmitEvent.js';
+import type SubmitEvent from '../../../src/event/events/SubmitEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import PointerEvent from '../../../src/event/events/PointerEvent.js';
 import MouseEvent from '../../../src/event/events/MouseEvent.js';
-import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import type HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 
 describe('HTMLInputElement', () => {
 	let window: Window;

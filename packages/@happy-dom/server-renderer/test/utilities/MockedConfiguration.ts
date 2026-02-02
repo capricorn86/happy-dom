@@ -1,5 +1,5 @@
 import { BrowserErrorCaptureEnum, BrowserNavigationCrossOriginPolicyEnum } from 'happy-dom';
-import IServerRendererConfiguration from '../../src/types/IServerRendererConfiguration';
+import type IServerRendererConfiguration from '../../src/types/IServerRendererConfiguration';
 import ServerRendererLogLevelEnum from '../../src/enums/ServerRendererLogLevelEnum';
 
 export default <IServerRendererConfiguration>{

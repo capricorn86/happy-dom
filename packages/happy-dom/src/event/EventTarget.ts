@@ -1,13 +1,13 @@
 import * as PropertySymbol from '../PropertySymbol.js';
-import Event from './Event.js';
-import IEventListenerOptions from './IEventListenerOptions.js';
+import type Event from './Event.js';
+import type IEventListenerOptions from './IEventListenerOptions.js';
 import EventPhaseEnum from './EventPhaseEnum.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
-import TEventListener from './TEventListener.js';
-import TEventListenerObject from './TEventListenerObject.js';
-import TEventListenerFunction from './TEventListenerFunction.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type { TEventListener } from './TEventListener.js';
+import type { TEventListenerObject } from './TEventListenerObject.js';
+import type { TEventListenerFunction } from './TEventListenerFunction.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * Handles events.

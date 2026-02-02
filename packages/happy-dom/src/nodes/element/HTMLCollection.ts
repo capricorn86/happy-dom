@@ -1,6 +1,6 @@
 import ClassMethodBinder from '../../utilities/ClassMethodBinder.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import Element from './Element.js';
+import type Element from './Element.js';
 
 /**
  * HTMLCollection.

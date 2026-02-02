@@ -13,29 +13,22 @@
 		"resolveJsonModule": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
-        "noImplicitReturns": false,
-        "noImplicitAny" : true,
-        "removeComments": false,
+		"noImplicitReturns": false,
+		"noImplicitAny": true,
+		"removeComments": false,
 		"preserveConstEnums": true,
-        "strict": true,
+		"strict": true,
 		"sourceMap": true,
 		"skipLibCheck": true,
 		"baseUrl": ".",
 		"composite": true,
 		"incremental": true,
-        "tsBuildInfoFile": ".turbo/.tsbuildinfo",
-		"lib": [
-			"ES2022"
-		],
-		"types": [
-			"node"
-		]
+		"importsNotUsedAsValues": "remove",
+		"verbatimModuleSyntax": true,
+		"tsBuildInfoFile": ".turbo/.tsbuildinfo",
+		"lib": ["ES2022"],
+		"types": ["node"]
 	},
-	"include": [
-		"@types/node",
-		"src"
-	],
-	"exclude": [
-		"@types/dom"
-	]
+	"include": ["@types/node", "src"],
+	"exclude": ["@types/dom"]
 }
