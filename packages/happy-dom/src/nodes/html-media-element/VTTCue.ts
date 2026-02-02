@@ -1,6 +1,6 @@
-import DocumentFragment from '../document-fragment/DocumentFragment.js';
+import type DocumentFragment from '../document-fragment/DocumentFragment.js';
 import TextTrackCue from './TextTrackCue.js';
-import VTTRegion from './VTTRegion.js';
+import type VTTRegion from './VTTRegion.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**

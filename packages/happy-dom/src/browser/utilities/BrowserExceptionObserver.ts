@@ -1,4 +1,4 @@
-import BrowserWindow from '../../window/BrowserWindow.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
 
 /**
  * Listens for uncaught exceptions coming from Happy DOM on the running Node process and dispatches error events on the Window instance.

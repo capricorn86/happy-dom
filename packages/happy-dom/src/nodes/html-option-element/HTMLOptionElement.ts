@@ -1,9 +1,9 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
-import Attr from '../attr/Attr.js';
+import type Attr from '../attr/Attr.js';
 import HTMLElement from '../html-element/HTMLElement.js';
-import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
-import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
+import type HTMLFormElement from '../html-form-element/HTMLFormElement.js';
+import type HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
 
 /**
  * HTML Option Element.

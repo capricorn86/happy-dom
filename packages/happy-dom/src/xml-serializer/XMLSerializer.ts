@@ -1,13 +1,13 @@
-import Element from '../nodes/element/Element.js';
+import type Element from '../nodes/element/Element.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import Node from '../nodes/node/Node.js';
-import DocumentType from '../nodes/document-type/DocumentType.js';
-import HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement.js';
+import type DocumentType from '../nodes/document-type/DocumentType.js';
+import type HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
-import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
+import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import HTMLElementConfig from '../config/HTMLElementConfig.js';
 import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigContentModelEnum.js';
-import ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction.js';
+import type ProcessingInstruction from '../nodes/processing-instruction/ProcessingInstruction.js';
 import NamespaceURI from '../config/NamespaceURI.js';
 import XMLEncodeUtility from '../utilities/XMLEncodeUtility.js';
 

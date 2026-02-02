@@ -1,9 +1,9 @@
-import IBrowserSettings from './types/IBrowserSettings.js';
+import type IBrowserSettings from './types/IBrowserSettings.js';
 import BrowserContext from './BrowserContext.js';
-import IOptionalBrowserSettings from './types/IOptionalBrowserSettings.js';
+import type IOptionalBrowserSettings from './types/IOptionalBrowserSettings.js';
 import BrowserSettingsFactory from './BrowserSettingsFactory.js';
-import BrowserPage from './BrowserPage.js';
-import IBrowser from './types/IBrowser.js';
+import type BrowserPage from './BrowserPage.js';
+import type IBrowser from './types/IBrowser.js';
 import BrowserExceptionObserver from './utilities/BrowserExceptionObserver.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import BrowserErrorCaptureEnum from './enums/BrowserErrorCaptureEnum.js';

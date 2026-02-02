@@ -1,16 +1,16 @@
 import Event from '../../event/Event.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import BrowserWindow from '../../window/BrowserWindow.js';
-import Document from '../document/Document.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
+import type Document from '../document/Document.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
-import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
+import type IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import DOMTokenList from '../../dom/DOMTokenList.js';
-import Attr from '../attr/Attr.js';
+import type Attr from '../attr/Attr.js';
 import BrowserFrameFactory from '../../browser/utilities/BrowserFrameFactory.js';
 import BrowserFrameURL from '../../browser/utilities/BrowserFrameURL.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
-import IRequestReferrerPolicy from '../../fetch/types/IRequestReferrerPolicy.js';
+import type { TRequestReferrerPolicy } from '../../fetch/types/TRequestReferrerPolicy.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
@@ -433,7 +433,7 @@ export default class HTMLIFrameElement extends HTMLElement {
 		this.#iframe
 			.goto(targetURL.href, {
 				referrer: originURL.origin,
-				referrerPolicy: <IRequestReferrerPolicy>this.referrerPolicy
+				referrerPolicy: <TRequestReferrerPolicy>this.referrerPolicy
 			})
 			.then(() => this.dispatchEvent(new Event('load')))
 			.catch((error) => {

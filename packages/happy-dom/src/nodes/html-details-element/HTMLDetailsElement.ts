@@ -1,11 +1,11 @@
 import Event from '../../event/Event.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import Attr from '../attr/Attr.js';
+import type Attr from '../attr/Attr.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import MouseEvent from '../../event/events/MouseEvent.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
-import Element from '../element/Element.js';
+import type Element from '../element/Element.js';
 
 /**
  * HTMLDetailsElement

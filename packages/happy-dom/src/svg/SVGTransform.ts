@@ -1,5 +1,5 @@
 import * as PropertySymbol from '../PropertySymbol.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import SVGMatrix from './SVGMatrix.js';
 import SVGTransformTypeEnum from './SVGTransformTypeEnum.js';
 

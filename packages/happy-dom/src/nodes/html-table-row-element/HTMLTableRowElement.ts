@@ -1,11 +1,11 @@
 import HTMLCollection from '../element/HTMLCollection.js';
 import HTMLElement from '../html-element/HTMLElement.js';
-import HTMLTableCellElement from '../html-table-cell-element/HTMLTableCellElement.js';
+import type HTMLTableCellElement from '../html-table-cell-element/HTMLTableCellElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import HTMLTableSectionElement from '../html-table-section-element/HTMLTableSectionElement.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
-import Element from '../element/Element.js';
+import type Element from '../element/Element.js';
 
 /**
  * HTMLTableRowElement

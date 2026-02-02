@@ -1,6 +1,6 @@
-import IEventInit from '../IEventInit.js';
-import BrowserWindow from '../../window/BrowserWindow.js';
-import MessagePort from '../MessagePort.js';
+import type IEventInit from '../IEventInit.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
+import type MessagePort from '../MessagePort.js';
 
 export default interface IMessageEventInit extends IEventInit {
 	data?: unknown | null;

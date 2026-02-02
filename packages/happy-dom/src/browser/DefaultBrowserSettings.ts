@@ -1,7 +1,7 @@
 import PackageVersion from '../version.js';
 import BrowserErrorCaptureEnum from './enums/BrowserErrorCaptureEnum.js';
 import BrowserNavigationCrossOriginPolicyEnum from './enums/BrowserNavigationCrossOriginPolicyEnum.js';
-import IBrowserSettings from './types/IBrowserSettings.js';
+import type IBrowserSettings from './types/IBrowserSettings.js';
 
 export default <IBrowserSettings>{
 	disableJavaScriptEvaluation: false,

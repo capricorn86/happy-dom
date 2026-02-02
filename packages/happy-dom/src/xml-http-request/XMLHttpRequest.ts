@@ -2,26 +2,26 @@ import XMLHttpRequestEventTarget from './XMLHttpRequestEventTarget.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import XMLHttpRequestReadyStateEnum from './XMLHttpRequestReadyStateEnum.js';
 import Event from '../event/Event.js';
-import Document from '../nodes/document/Document.js';
-import Blob from '../file/Blob.js';
-import XMLHttpRequestUpload from './XMLHttpRequestUpload.js';
+import type Document from '../nodes/document/Document.js';
+import type Blob from '../file/Blob.js';
+import type XMLHttpRequestUpload from './XMLHttpRequestUpload.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import XMLHttpResponseTypeEnum from './XMLHttpResponseTypeEnum.js';
 import ErrorEvent from '../event/events/ErrorEvent.js';
 import Fetch from '../fetch/Fetch.js';
 import SyncFetch from '../fetch/SyncFetch.js';
-import Request from '../fetch/Request.js';
-import ISyncResponse from '../fetch/types/ISyncResponse.js';
-import AbortController from '../fetch/AbortController.js';
+import type Request from '../fetch/Request.js';
+import type ISyncResponse from '../fetch/types/ISyncResponse.js';
+import type AbortController from '../fetch/AbortController.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
-import IRequestBody from '../fetch/types/IRequestBody.js';
+import type { TRequestBody } from '../fetch/types/TRequestBody.js';
 import XMLHttpRequestResponseDataParser from './XMLHttpRequestResponseDataParser.js';
 import FetchRequestHeaderUtility from '../fetch/utilities/FetchRequestHeaderUtility.js';
-import Response from '../fetch/Response.js';
+import type Response from '../fetch/Response.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
 
 /**
@@ -305,7 +305,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 * @param body Optional data to send as request body.
 	 */
-	public send(body?: Document | IRequestBody): void {
+	public send(body?: Document | TRequestBody): void {
 		const window = this[PropertySymbol.window];
 
 		if (this.readyState != XMLHttpRequestReadyStateEnum.opened) {
@@ -325,11 +325,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		}
 
 		if (this.#async) {
-			this.#sendAsync(<IRequestBody>body).catch((error) => {
+			this.#sendAsync(<TRequestBody>body).catch((error) => {
 				throw error;
 			});
 		} else {
-			this.#sendSync(<IRequestBody>body);
+			this.#sendSync(<TRequestBody>body);
 		}
 	}
 
@@ -370,7 +370,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 * @param body Optional data to send as request body.
 	 */
-	async #sendAsync(body?: IRequestBody): Promise<void> {
+	async #sendAsync(body?: TRequestBody): Promise<void> {
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
 
@@ -498,7 +498,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 * @param body Optional data to send as request body.
 	 */
-	#sendSync(body?: IRequestBody): void {
+	#sendSync(body?: TRequestBody): void {
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
 

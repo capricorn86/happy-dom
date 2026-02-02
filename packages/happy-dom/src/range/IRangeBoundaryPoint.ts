@@ -1,4 +1,4 @@
-import Node from '../nodes/node/Node.js';
+import type Node from '../nodes/node/Node.js';
 
 /**
  * Range boundary point.

@@ -1,9 +1,9 @@
-import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
+import type IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import BrowserWindow from '../../window/BrowserWindow.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
 import CookieStringUtility from '../../cookie/urilities/CookieStringUtility.js';
-import Headers from '../Headers.js';
-import Request from '../Request.js';
+import type Headers from '../Headers.js';
+import type Request from '../Request.js';
 import FetchCORSUtility from './FetchCORSUtility.js';
 import { URL } from 'url';
 

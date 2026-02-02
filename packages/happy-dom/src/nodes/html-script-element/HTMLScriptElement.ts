@@ -3,16 +3,16 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import Event from '../../event/Event.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
-import Attr from '../attr/Attr.js';
+import type Attr from '../attr/Attr.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import ResourceFetch from '../../fetch/ResourceFetch.js';
 import ECMAScriptModule from '../../module/ECMAScriptModule.js';
 import ModuleFactory from '../../module/ModuleFactory.js';
 import DOMTokenList from '../../dom/DOMTokenList.js';
-import IModuleImportMap from '../../module/types/IModuleImportMap.js';
-import IRequestReferrerPolicy from '../../fetch/types/IRequestReferrerPolicy.js';
+import type IModuleImportMap from '../../module/types/IModuleImportMap.js';
+import type { TRequestReferrerPolicy } from '../../fetch/types/TRequestReferrerPolicy.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
-import IResourceFetchResponse from '../../fetch/types/IResourceFetchResponse.js';
+import type IResourceFetchResponse from '../../fetch/types/IResourceFetchResponse.js';
 import JavaScriptCompiler from '../../javascript/JavaScriptCompiler.js';
 
 /**
@@ -184,7 +184,7 @@ export default class HTMLScriptElement extends HTMLElement {
 	 *
 	 * @returns ReferrerPolicy.
 	 */
-	public get referrerPolicy(): IRequestReferrerPolicy {
+	public get referrerPolicy(): TRequestReferrerPolicy {
 		const referrerPolicy = this.getAttribute('referrerpolicy');
 		switch (referrerPolicy) {
 			case 'no-referrer':
@@ -422,7 +422,8 @@ export default class HTMLScriptElement extends HTMLElement {
 
 		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = this;
 
-		const module = new ECMAScriptModule({ window, url, source });
+		const factory = new ModuleFactory(window, url);
+		const module = new ECMAScriptModule({ window, url, source, factory });
 
 		if (
 			browserSettings.disableErrorCapturing ||

@@ -1,4 +1,4 @@
-import CSSStyleSheet from '../../css/CSSStyleSheet.js';
+import type CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import SVGElement from '../svg-element/SVGElement.js';
 

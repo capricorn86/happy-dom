@@ -13,7 +13,7 @@
 		"clean": "git clean -Xdfq",
 		"lint": "eslint --max-warnings 0 --cache --cache-location ./.turbo/eslint.turbo .",
 		"lint:fix": "eslint --max-warnings 0 --cache --cache-location ./.turbo/eslint.turbo --fix .",
-		"test": "DO_NOT_TRACK=1 turbo run test",
+		"test": "DO_NOT_TRACK=1 turbo run test && turbo run test:circular-dependencies",
 		"test:watch": "DO_NOT_TRACK=1 turbo run test:watch --parallel",
 		"prepare": "husky"
 	},

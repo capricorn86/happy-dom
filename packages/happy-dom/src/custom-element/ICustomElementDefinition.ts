@@ -1,4 +1,4 @@
-import HTMLElement from '../nodes/html-element/HTMLElement.js';
+import type HTMLElement from '../nodes/html-element/HTMLElement.js';
 
 export default interface ICustomElementDefinition {
 	elementClass: typeof HTMLElement;

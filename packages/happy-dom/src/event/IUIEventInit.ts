@@ -1,5 +1,5 @@
-import BrowserWindow from '../window/BrowserWindow.js';
-import IEventInit from './IEventInit.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
+import type IEventInit from './IEventInit.js';
 
 export default interface IUIEventInit extends IEventInit {
 	detail?: number;
