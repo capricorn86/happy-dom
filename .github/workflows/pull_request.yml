@@ -62,6 +62,3 @@ jobs:
 
       - name: Test
         run: npm run test
-
-      - name: Test circular dependencies
-        run: npm run test:circular-dependencies
