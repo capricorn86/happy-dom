@@ -1,6 +1,6 @@
 import Event from '../Event.js';
-import ISubmitEventInit from './ISubmitEventInit.js';
-import HTMLElement from '../../nodes/html-element/HTMLElement.js';
+import type ISubmitEventInit from './ISubmitEventInit.js';
+import type HTMLElement from '../../nodes/html-element/HTMLElement.js';
 
 /**
  * An event triggered by form submit buttons.

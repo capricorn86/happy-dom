@@ -1,10 +1,10 @@
 import Blob from '../file/Blob.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import File from '../file/File.js';
-import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
-import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
-import BrowserWindow from '../window/BrowserWindow.js';
-import HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js';
+import type HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
+import type HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
+import type HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 
 type FormDataEntry = {

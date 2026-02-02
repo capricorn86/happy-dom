@@ -1,5 +1,5 @@
 import Window from '../../src/window/Window.js';
-import Document from '../../src/nodes/document/Document.js';
+import type Document from '../../src/nodes/document/Document.js';
 import NodeFilter from '../../src/tree-walker/NodeFilter.js';
 import TreeWalker from '../../src/tree-walker/TreeWalker.js';
 import Element from '../../src/nodes/element/Element.js';

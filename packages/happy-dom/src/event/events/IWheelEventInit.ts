@@ -1,4 +1,4 @@
-import IUIEventInit from '../IUIEventInit.js';
+import type IUIEventInit from '../IUIEventInit.js';
 
 export default interface IWheelEventInit extends IUIEventInit {
 	deltaX?: number;

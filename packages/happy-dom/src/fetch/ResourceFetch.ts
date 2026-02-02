@@ -1,13 +1,13 @@
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import URL from '../url/URL.js';
 import Fetch from './Fetch.js';
 import SyncFetch from './SyncFetch.js';
-import IRequestCredentials from './types/IRequestCredentials.js';
+import type { TRequestCredentials } from './types/TRequestCredentials.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import PreloadUtility from './preload/PreloadUtility.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import IRequestReferrerPolicy from './types/IRequestReferrerPolicy.js';
-import IResourceFetchResponse from './types/IResourceFetchResponse.js';
+import type { TRequestReferrerPolicy } from './types/TRequestReferrerPolicy.js';
+import type IResourceFetchResponse from './types/IResourceFetchResponse.js';
 
 /**
  * Helper class for performing fetch of resources.
@@ -37,7 +37,7 @@ export default class ResourceFetch {
 	public async fetch(
 		url: string | URL,
 		destination: 'script' | 'style' | 'module',
-		options?: { credentials?: IRequestCredentials; referrerPolicy?: IRequestReferrerPolicy }
+		options?: { credentials?: TRequestCredentials; referrerPolicy?: TRequestReferrerPolicy }
 	): Promise<IResourceFetchResponse> {
 		const browserFrame = new WindowBrowserContext(this.window).getBrowserFrame();
 
@@ -119,7 +119,7 @@ export default class ResourceFetch {
 	public fetchSync(
 		url: string,
 		destination: 'script' | 'style' | 'module',
-		options?: { credentials?: IRequestCredentials; referrerPolicy?: IRequestReferrerPolicy }
+		options?: { credentials?: TRequestCredentials; referrerPolicy?: TRequestReferrerPolicy }
 	): IResourceFetchResponse {
 		const browserFrame = new WindowBrowserContext(this.window).getBrowserFrame();
 

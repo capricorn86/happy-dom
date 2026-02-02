@@ -1,5 +1,5 @@
 import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
-import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
+import type IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 
 /**
  * Document ready state manager.

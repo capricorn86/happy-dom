@@ -1,5 +1,5 @@
 import MediaStreamTrack from '../html-media-element/MediaStreamTrack.js';
-import HTMLCanvasElement from './HTMLCanvasElement.js';
+import type HTMLCanvasElement from './HTMLCanvasElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**

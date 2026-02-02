@@ -1,6 +1,6 @@
 import CookieSameSiteEnum from '../enums/CookieSameSiteEnum.js';
-import URL from '../../url/URL.js';
-import ICookie from '../ICookie.js';
+import type URL from '../../url/URL.js';
+import type ICookie from '../ICookie.js';
 
 /**
  * Cookie string.

@@ -1,18 +1,18 @@
-import Element from '../nodes/element/Element.js';
+import type Element from '../nodes/element/Element.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import SelectorItem from './SelectorItem.js';
+import type SelectorItem from './SelectorItem.js';
 import NodeList from '../nodes/node/NodeList.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
-import Document from '../nodes/document/Document.js';
-import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
+import type Document from '../nodes/document/Document.js';
+import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import SelectorParser from './SelectorParser.js';
-import ISelectorMatch from './ISelectorMatch.js';
-import IHTMLElementTagNameMap from '../config/IHTMLElementTagNameMap.js';
-import ISVGElementTagNameMap from '../config/ISVGElementTagNameMap.js';
-import ICachedQuerySelectorAllItem from '../nodes/node/ICachedQuerySelectorAllResult.js';
-import ICachedQuerySelectorItem from '../nodes/node/ICachedQuerySelectorResult.js';
-import ICachedMatchesItem from '../nodes/node/ICachedMatchesResult.js';
+import type ISelectorMatch from './ISelectorMatch.js';
+import type IHTMLElementTagNameMap from '../config/IHTMLElementTagNameMap.js';
+import type ISVGElementTagNameMap from '../config/ISVGElementTagNameMap.js';
+import type ICachedQuerySelectorAllItem from '../nodes/node/ICachedQuerySelectorAllResult.js';
+import type ICachedQuerySelectorItem from '../nodes/node/ICachedQuerySelectorResult.js';
+import type ICachedMatchesItem from '../nodes/node/ICachedMatchesResult.js';
 
 type DocumentPositionAndElement = {
 	documentPosition: string;

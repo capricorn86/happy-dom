@@ -1,17 +1,17 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
-import Event from '../../event/Event.js';
+import type HTMLFormElement from '../html-form-element/HTMLFormElement.js';
+import type Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
-import HTMLInputElement from '../html-input-element/HTMLInputElement.js';
-import Document from '../document/Document.js';
+import type HTMLInputElement from '../html-input-element/HTMLInputElement.js';
+import type Document from '../document/Document.js';
 import MouseEvent from '../../event/events/MouseEvent.js';
-import HTMLButtonElement from '../html-button-element/HTMLButtonElement.js';
-import HTMLMeterElement from '../html-meter-element/HTMLMeterElement.js';
-import HTMLOutputElement from '../html-output-element/HTMLOutputElement.js';
-import HTMLProgressElement from '../html-progress-element/HTMLProgressElement.js';
-import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
-import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
+import type HTMLButtonElement from '../html-button-element/HTMLButtonElement.js';
+import type HTMLMeterElement from '../html-meter-element/HTMLMeterElement.js';
+import type HTMLOutputElement from '../html-output-element/HTMLOutputElement.js';
+import type HTMLProgressElement from '../html-progress-element/HTMLProgressElement.js';
+import type HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
+import type HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
 
 /**
  * HTML Label Element.

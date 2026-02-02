@@ -1,16 +1,16 @@
 import Window from '../../../src/window/Window.js';
-import HTMLScriptElement from '../../../src/nodes/html-script-element/HTMLScriptElement.js';
-import Document from '../../../src/nodes/document/Document.js';
-import Response from '../../../src/fetch/Response.js';
+import type HTMLScriptElement from '../../../src/nodes/html-script-element/HTMLScriptElement.js';
+import type Document from '../../../src/nodes/document/Document.js';
+import type Response from '../../../src/fetch/Response.js';
 import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Event from '../../../src/event/Event.js';
-import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
-import BrowserWindow from '../../../src/window/BrowserWindow.js';
+import type ErrorEvent from '../../../src/event/events/ErrorEvent.js';
+import type BrowserWindow from '../../../src/window/BrowserWindow.js';
 import Fetch from '../../../src/fetch/Fetch.js';
 import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCaptureEnum.js';
-import EventTarget from '../../../src/event/EventTarget.js';
-import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import type EventTarget from '../../../src/event/EventTarget.js';
+import type HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import DOMTokenList from '../../../src/dom/DOMTokenList.js';
 import Path from 'path';
 

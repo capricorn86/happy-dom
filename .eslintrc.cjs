@@ -140,6 +140,21 @@ module.exports = {
 				'import/no-named-as-default': WARN,
 				'import/no-extraneous-dependencies': WARN,
 				'import/no-absolute-path': WARN,
+				'import/no-cycle': [
+					WARN,
+					{
+						maxDepth: 20,
+						ignoreExternal: true
+					}
+				],
+				'@typescript-eslint/consistent-type-imports': [
+					WARN,
+					{
+						prefer: 'type-imports',
+						fixStyle: 'separate-type-imports',
+						disallowTypeAnnotations: false
+					}
+				],
 				'@typescript-eslint/naming-convention': [
 					WARN,
 					{

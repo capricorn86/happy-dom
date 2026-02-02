@@ -1,24 +1,24 @@
 import * as PropertySymbol from '../PropertySymbol.js';
-import IRequestInit from './types/IRequestInit.js';
+import type IRequestInit from './types/IRequestInit.js';
 import { URL } from 'url';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
-import IRequestInfo from './types/IRequestInfo.js';
-import Headers from './Headers.js';
+import type { TRequestInfo } from './types/TRequestInfo.js';
+import type Headers from './Headers.js';
 import FetchBodyUtility from './utilities/FetchBodyUtility.js';
-import AbortSignal from './AbortSignal.js';
-import { ReadableStream } from 'stream/web';
+import type AbortSignal from './AbortSignal.js';
+import type { ReadableStream } from 'stream/web';
 import Blob from '../file/Blob.js';
 import FetchRequestValidationUtility from './utilities/FetchRequestValidationUtility.js';
-import IRequestReferrerPolicy from './types/IRequestReferrerPolicy.js';
-import IRequestRedirect from './types/IRequestRedirect.js';
+import type { TRequestReferrerPolicy } from './types/TRequestReferrerPolicy.js';
+import type { TRequestRedirect } from './types/TRequestRedirect.js';
 import FetchRequestReferrerUtility from './utilities/FetchRequestReferrerUtility.js';
 import FetchRequestHeaderUtility from './utilities/FetchRequestHeaderUtility.js';
-import IRequestCredentials from './types/IRequestCredentials.js';
-import FormData from '../form-data/FormData.js';
+import type { TRequestCredentials } from './types/TRequestCredentials.js';
+import type FormData from '../form-data/FormData.js';
 import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
-import IRequestMode from './types/IRequestMode.js';
+import type { TRequestMode } from './types/TRequestMode.js';
 
 /**
  * Fetch request.
@@ -35,13 +35,13 @@ export default class Request implements Request {
 	// Public properties
 	public [PropertySymbol.method]: string;
 	public [PropertySymbol.body]: ReadableStream | null;
-	public [PropertySymbol.mode]: IRequestMode = 'cors';
+	public [PropertySymbol.mode]: TRequestMode = 'cors';
 	public [PropertySymbol.headers]: Headers;
-	public [PropertySymbol.redirect]: IRequestRedirect;
-	public [PropertySymbol.referrerPolicy]: IRequestReferrerPolicy;
+	public [PropertySymbol.redirect]: TRequestRedirect;
+	public [PropertySymbol.referrerPolicy]: TRequestReferrerPolicy;
 	public [PropertySymbol.signal]: AbortSignal;
 	public [PropertySymbol.bodyUsed]: boolean = false;
-	public [PropertySymbol.credentials]: IRequestCredentials;
+	public [PropertySymbol.credentials]: TRequestCredentials;
 
 	// Internal properties
 	public [PropertySymbol.aborted]: boolean = false;
@@ -58,7 +58,7 @@ export default class Request implements Request {
 	 * @param input Input.
 	 * @param [init] Init.
 	 */
-	constructor(input: IRequestInfo, init?: IRequestInit) {
+	constructor(input: TRequestInfo, init?: IRequestInit) {
 		const window = this[PropertySymbol.window];
 
 		if (!window) {
@@ -69,7 +69,7 @@ export default class Request implements Request {
 
 		if (typeof input !== `string` && !input) {
 			throw new window.TypeError(
-				`Failed to contruct 'Request': 1 argument required, only 0 present.`
+				`Failed to construct 'Request': 1 argument required, only 0 present.`
 			);
 		}
 
@@ -130,7 +130,7 @@ export default class Request implements Request {
 		}
 
 		this[PropertySymbol.redirect] = init?.redirect || (<Request>input).redirect || 'follow';
-		this[PropertySymbol.referrerPolicy] = <IRequestReferrerPolicy>(
+		this[PropertySymbol.referrerPolicy] = <TRequestReferrerPolicy>(
 			(init?.referrerPolicy || (<Request>input).referrerPolicy || '').toLowerCase()
 		);
 		this[PropertySymbol.signal] =
@@ -195,7 +195,7 @@ export default class Request implements Request {
 	 *
 	 * @returns Mode.
 	 */
-	public get mode(): IRequestMode {
+	public get mode(): TRequestMode {
 		return this[PropertySymbol.mode];
 	}
 
@@ -213,7 +213,7 @@ export default class Request implements Request {
 	 *
 	 * @returns Redirect.
 	 */
-	public get redirect(): IRequestRedirect {
+	public get redirect(): TRequestRedirect {
 		return this[PropertySymbol.redirect];
 	}
 
@@ -222,7 +222,7 @@ export default class Request implements Request {
 	 *
 	 * @returns Referrer policy.
 	 */
-	public get referrerPolicy(): IRequestReferrerPolicy {
+	public get referrerPolicy(): TRequestReferrerPolicy {
 		return this[PropertySymbol.referrerPolicy];
 	}
 
@@ -249,7 +249,7 @@ export default class Request implements Request {
 	 *
 	 * @returns Credentials.
 	 */
-	public get credentials(): IRequestCredentials {
+	public get credentials(): TRequestCredentials {
 		return this[PropertySymbol.credentials];
 	}
 

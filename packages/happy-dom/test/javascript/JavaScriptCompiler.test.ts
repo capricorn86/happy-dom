@@ -1,6 +1,6 @@
 import { beforeEach, describe, it, expect } from 'vitest';
 import JavaScriptCompiler from '../../src/javascript/JavaScriptCompiler.js';
-import BrowserWindow from '../../src/window/BrowserWindow.js';
+import type BrowserWindow from '../../src/window/BrowserWindow.js';
 import Window from '../../src/window/Window.js';
 import BrowserErrorCaptureEnum from '../../src/browser/enums/BrowserErrorCaptureEnum.js';
 

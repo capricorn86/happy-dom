@@ -1,4 +1,4 @@
-import IECMAScriptModuleImport from './IECMAScriptModuleImport.js';
+import type IECMAScriptModuleImport from './IECMAScriptModuleImport.js';
 
 /**
  * ECMAScript module cached compilation result.

@@ -1,6 +1,6 @@
 import BrowserSettingsFactory from 'happy-dom/lib/browser/BrowserSettingsFactory.js';
-import IOptionalServerRendererConfiguration from '../types/IOptionalServerRendererConfiguration.js';
-import IServerRendererConfiguration from '../types/IServerRendererConfiguration.js';
+import type IOptionalServerRendererConfiguration from '../types/IOptionalServerRendererConfiguration.js';
+import type IServerRendererConfiguration from '../types/IServerRendererConfiguration.js';
 import DefaultServerRendererConfiguration from '../config/DefaultServerRendererConfiguration.js';
 import Path from 'path';
 
