@@ -141,6 +141,35 @@ describe('TreeWalker', () => {
 			]);
 		});
 
+		it('Traverses sibling nodes after deeply nested children (#1867).', () => {
+			const div = document.createElement('div');
+			div.innerHTML = `
+				<div>
+					<form>
+						<div>
+							<label>Label 1</label>
+						</div>
+					</form>
+					<div class="sibling">
+						<label>Label 2</label>
+					</div>
+				</div>
+			`;
+
+			const treeWalker = document.createTreeWalker(div, NodeFilter.SHOW_ELEMENT, {
+				acceptNode: () => NodeFilter.FILTER_ACCEPT
+			});
+
+			const tagNames: string[] = [];
+			while (treeWalker.nextNode()) {
+				const element = <Element>treeWalker.currentNode;
+				const className = element.className ? `.${element.className}` : '';
+				tagNames.push(`${element.tagName.toLowerCase()}${className}`);
+			}
+
+			expect(tagNames).toEqual(['div', 'form', 'div', 'label', 'div.sibling', 'label']);
+		});
+
 		it('Walks into each HTMLElement in the DOM tree when whatToShow is set to NodeFilter.SHOW_ELEMENT.', () => {
 			const treeWalker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
 			const html: string[] = [];
