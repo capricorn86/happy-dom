@@ -1,4 +1,5 @@
-import WhatwgMIMEType from 'whatwg-mimetype';
+// @ts-expect-error whatwg-mimetype v5 has no TypeScript declarations
+import WhatwgMIMEType from 'whatwg-mimetype/lib/mime-type.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';

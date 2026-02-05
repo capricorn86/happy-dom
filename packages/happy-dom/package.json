@@ -34,11 +34,10 @@
 		"test:circular-dependencies": "madge --circular --extensions js lib/index.js"
 	},
 	"dependencies": {
-		"@types/whatwg-mimetype": "^3.0.2",
 		"@types/node": ">=20.0.0",
 		"@types/ws": "^8.18.1",
 		"entities": "^4.5.0",
-		"whatwg-mimetype": "^3.0.0",
+		"whatwg-mimetype": "^5.0.0",
 		"ws": "^8.18.3"
 	},
 	"devDependencies": {
