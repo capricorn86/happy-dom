@@ -1,4 +1,4 @@
-import { decodeHTML } from 'entities';
+import { decodeHTML, decodeHTMLAttribute, decodeXML, escapeText } from 'entities';
 
 /**
  * Pre-compiled RegExp patterns for encoding/decoding.
@@ -8,13 +8,9 @@ import { decodeHTML } from 'entities';
 // Encoding patterns
 const ENCODE_XML_ATTR_REGEXP = /[&"<>\t\n\r]/g;
 const ENCODE_HTML_ATTR_REGEXP = /[&"]/g;
-const ENCODE_TEXT_CONTENT_REGEXP = /[&\xA0<>]/g;
 
 // Decoding patterns
-const DECODE_XML_ATTR_REGEXP = /&(?:quot|lt|gt|amp|#x9|#xA|#xD);/g;
-const DECODE_HTML_ATTR_REGEXP = /&(?:quot|amp);/g;
 const DECODE_TEXT_CONTENT_REGEXP = /&(?:nbsp|lt|gt|amp);/g;
-const DECODE_XML_ENTITIES_REGEXP = /&(?:lt|gt|quot|apos|#(\d+)|#x([A-Fa-f\d]+)|amp);/g;
 
 // Encoding lookup tables
 const ENCODE_XML_ATTR_MAP: { [key: string]: string } = {
@@ -32,42 +28,11 @@ const ENCODE_HTML_ATTR_MAP: { [key: string]: string } = {
 	'"': '&quot;'
 };
 
-const ENCODE_TEXT_CONTENT_MAP: { [key: string]: string } = {
-	'&': '&amp;',
-	'\xA0': '&nbsp;',
-	'<': '&lt;',
-	'>': '&gt;'
-};
-
 // Decoding lookup tables
-const DECODE_XML_ATTR_MAP: { [key: string]: string } = {
-	'&quot;': '"',
-	'&lt;': '<',
-	'&gt;': '>',
-	'&#x9;': '\t',
-	'&#xA;': '\n',
-	'&#xD;': '\r',
-	'&amp;': '&'
-};
-
-const DECODE_HTML_ATTR_MAP: { [key: string]: string } = {
-	'&quot;': '"',
-	'&amp;': '&'
-};
-
 const DECODE_TEXT_CONTENT_MAP: { [key: string]: string } = {
 	'&nbsp;': String.fromCharCode(160),
 	'&lt;': '<',
 	'&gt;': '>',
-	'&amp;': '&'
-};
-
-const DECODE_ENTITIES_MAP: { [key: string]: string } = {
-	'&lt;': '<',
-	'&gt;': '>',
-	'&nbsp;': String.fromCharCode(160),
-	'&quot;': '"',
-	'&apos;': "'",
 	'&amp;': '&'
 };
 
@@ -91,6 +56,8 @@ export default class XMLEncodeUtility {
 	/**
 	 * Decodes attribute value.
 	 *
+	 * Uses the 'entities' library for comprehensive XML character reference support.
+	 *
 	 * @param value Value.
 	 * @returns Decoded value.
 	 */
@@ -98,7 +65,7 @@ export default class XMLEncodeUtility {
 		if (value === null) {
 			return '';
 		}
-		return value.replace(DECODE_XML_ATTR_REGEXP, (entity) => DECODE_XML_ATTR_MAP[entity]);
+		return decodeXML(value);
 	}
 
 	/**
@@ -117,6 +84,10 @@ export default class XMLEncodeUtility {
 	/**
 	 * Decodes attribute value.
 	 *
+	 * Uses the 'entities' library for comprehensive HTML5 character reference support,
+	 * including named entities, decimal numeric references (&#34;), and
+	 * hexadecimal numeric references (&#x22;).
+	 *
 	 * @param value Value.
 	 * @returns Decoded value.
 	 */
@@ -124,11 +95,14 @@ export default class XMLEncodeUtility {
 		if (value === null) {
 			return '';
 		}
-		return value.replace(DECODE_HTML_ATTR_REGEXP, (entity) => DECODE_HTML_ATTR_MAP[entity]);
+		return decodeHTMLAttribute(value);
 	}
 
 	/**
 	 * Encodes text content.
+	 *
+	 * Uses the 'entities' library which follows the WHATWG HTML serialization spec.
+	 * Encodes &, <, >, and non-breaking space.
 	 *
 	 * @param text Value.
 	 * @returns Escaped value.
@@ -137,7 +111,7 @@ export default class XMLEncodeUtility {
 		if (text === null) {
 			return '';
 		}
-		return text.replace(ENCODE_TEXT_CONTENT_REGEXP, (char) => ENCODE_TEXT_CONTENT_MAP[char]);
+		return escapeText(text);
 	}
 
 	/**
@@ -172,6 +146,9 @@ export default class XMLEncodeUtility {
 	/**
 	 * Decodes XML entities.
 	 *
+	 * Uses the 'entities' library for comprehensive XML character reference support,
+	 * including named entities and numeric references.
+	 *
 	 * @param value Value.
 	 * @returns Decoded value.
 	 */
@@ -179,15 +156,6 @@ export default class XMLEncodeUtility {
 		if (value === null) {
 			return '';
 		}
-		// Note: "&nbsp;" is not supported in XML
-		return value.replace(DECODE_XML_ENTITIES_REGEXP, (match, dec, hex) => {
-			if (dec !== undefined) {
-				return String.fromCodePoint(parseInt(dec, 10));
-			}
-			if (hex !== undefined) {
-				return String.fromCodePoint(parseInt(hex, 16));
-			}
-			return DECODE_ENTITIES_MAP[match];
-		});
+		return decodeXML(value);
 	}
 }

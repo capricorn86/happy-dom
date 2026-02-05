@@ -1138,5 +1138,34 @@ part2" data-testid="button"
 				.toBe(`<root><parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 3 at column 20: Comment not terminated
 </div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></root>`);
 		});
+
+		it('Handles numeric character references in XML attribute values', () => {
+			// Decimal numeric character reference for double quote
+			const result1 = new XMLParser(window).parse(`<div data-foo="&#34;"></div>`);
+			expect((<Element>result1.children[0]).getAttribute('data-foo')).toBe('"');
+
+			// Hexadecimal numeric character reference for double quote
+			const result2 = new XMLParser(window).parse(`<div data-foo="&#x22;"></div>`);
+			expect((<Element>result2.children[0]).getAttribute('data-foo')).toBe('"');
+
+			// Decimal numeric character reference for apostrophe
+			const result3 = new XMLParser(window).parse(`<div data-foo="&#39;"></div>`);
+			expect((<Element>result3.children[0]).getAttribute('data-foo')).toBe("'");
+
+			// Hexadecimal numeric character reference for apostrophe
+			const result4 = new XMLParser(window).parse(`<div data-foo="&#x27;"></div>`);
+			expect((<Element>result4.children[0]).getAttribute('data-foo')).toBe("'");
+
+			// Named entity &apos; (valid in XML)
+			const result5 = new XMLParser(window).parse(`<div data-foo="&apos;"></div>`);
+			expect((<Element>result5.children[0]).getAttribute('data-foo')).toBe("'");
+
+			// Mixed: named, decimal, and hex references
+			const result6 = new XMLParser(window).parse(`<div data-foo="&quot;&#34;&#x22;"></div>`);
+			expect((<Element>result6.children[0]).getAttribute('data-foo')).toBe('"""');
+
+			// Verify serialization round-trip
+			expect(new XMLSerializer().serializeToString(result1)).toBe(`<div data-foo="&quot;"/>`);
+		});
 	});
 });
