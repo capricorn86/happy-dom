@@ -84,6 +84,18 @@ describe('CSSStyleDeclaration', () => {
 		});
 	});
 
+	describe('[Symbol.iterator]()', () => {
+		it('Returns an iterator for property names.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			element.setAttribute('style', 'color: red; font-size: 12px');
+
+			expect([...declaration]).toEqual(['color', 'font-size']);
+		});
+	});
+
 	describe('get border()', () => {
 		it('Returns style property.', () => {
 			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
