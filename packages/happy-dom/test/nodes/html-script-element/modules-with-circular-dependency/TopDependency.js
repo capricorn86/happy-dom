@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-cycle
 import { circularFunction } from './CircularDependency.js';
 
 export function topFunction() {

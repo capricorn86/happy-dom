@@ -1,6 +1,6 @@
-import Location from '../../location/Location.js';
-import BrowserWindow from '../../window/BrowserWindow.js';
-import { URL } from 'url';
+import type Location from '../../location/Location.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
+import type { URL } from 'url';
 
 /**
  * Module initialization options.

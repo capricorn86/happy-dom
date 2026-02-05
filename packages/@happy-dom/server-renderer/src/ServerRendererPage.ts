@@ -1,11 +1,11 @@
 import HTMLSerializer from 'happy-dom/lib/html-serializer/HTMLSerializer.js';
 import FS from 'fs';
 import Path from 'path';
-import IServerRendererItem from './types/IServerRendererItem.js';
-import IServerRendererResult from './types/IServerRendererResult.js';
-import { BrowserWindow, ErrorEvent, IBrowserPage, Response } from 'happy-dom';
+import type IServerRendererItem from './types/IServerRendererItem.js';
+import type IServerRendererResult from './types/IServerRendererResult.js';
+import type { BrowserWindow, ErrorEvent, IBrowserPage, Response } from 'happy-dom';
 import BrowserWindowPolyfill from './utilities/BrowserWindowPolyfill.js';
-import IServerRendererConfiguration from './types/IServerRendererConfiguration.js';
+import type IServerRendererConfiguration from './types/IServerRendererConfiguration.js';
 import ServerRendererModeEnum from './enums/ServerRendererModeEnum.js';
 import * as PropertySymbol from 'happy-dom/lib/PropertySymbol.js';
 

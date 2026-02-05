@@ -1,8 +1,8 @@
 import DOMException from '../exception/DOMException.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
-import IHeadersInit from './types/IHeadersInit.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type { THeadersInit } from './types/THeadersInit.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * Fetch headers.
@@ -20,7 +20,7 @@ export default class Headers {
 	 *
 	 * @param init Headers init.
 	 */
-	constructor(init?: IHeadersInit | null) {
+	constructor(init?: THeadersInit | null) {
 		if (init) {
 			if (init instanceof Headers) {
 				this[PropertySymbol.entries] = JSON.parse(JSON.stringify(init[PropertySymbol.entries]));

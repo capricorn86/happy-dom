@@ -1,6 +1,6 @@
 import HTMLDetailsElement from '../../../src/nodes/html-details-element/HTMLDetailsElement.js';
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 import Event from '../../../src/event/Event.js';
 import MouseEvent from '../../../src/event/events/MouseEvent.js';

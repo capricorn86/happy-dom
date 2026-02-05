@@ -1,13 +1,13 @@
 import Node from '../node/Node.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import CharacterDataUtility from './CharacterDataUtility.js';
-import Element from '../element/Element.js';
+import type Element from '../element/Element.js';
 import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtility.js';
 import ChildNodeUtility from '../child-node/ChildNodeUtility.js';
 import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
-import IChildNode from '../child-node/IChildNode.js';
-import INonDocumentTypeChildNode from '../child-node/INonDocumentTypeChildNode.js';
+import type IChildNode from '../child-node/IChildNode.js';
+import type INonDocumentTypeChildNode from '../child-node/INonDocumentTypeChildNode.js';
 
 /**
  * Character data base class.

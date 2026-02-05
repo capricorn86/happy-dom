@@ -1,10 +1,10 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import DOMTokenList from '../../dom/DOMTokenList.js';
-import Event from '../../event/Event.js';
+import type Event from '../../event/Event.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import HTMLHyperlinkElementUtility from '../html-hyperlink-element/HTMLHyperlinkElementUtility.js';
-import IHTMLHyperlinkElement from '../html-hyperlink-element/IHTMLHyperlinkElement.js';
+import type IHTMLHyperlinkElement from '../html-hyperlink-element/IHTMLHyperlinkElement.js';
 import MouseEvent from '../../event/events/MouseEvent.js';
 
 /**

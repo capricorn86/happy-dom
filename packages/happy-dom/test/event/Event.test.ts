@@ -1,9 +1,9 @@
 import Window from '../../src/window/Window.js';
-import Document from '../../src/nodes/document/Document.js';
+import type Document from '../../src/nodes/document/Document.js';
 import Event from '../../src/event/Event.js';
 import CustomElement from '../CustomElement.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
-import EventTarget from '../../src/event/EventTarget.js';
+import type EventTarget from '../../src/event/EventTarget.js';
 
 describe('Event', () => {
 	let window: Window;

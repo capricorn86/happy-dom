@@ -20,8 +20,7 @@
 			"dependsOn": ["happy-dom#compile"]
 		},
 		"happy-dom#test": {
-			"dependsOn": ["^compile"],
-			"inputs": ["vitest.config.ts", "package.json"],
+			"inputs": ["src/**", "test/**", "vitest.config.ts", "package.json"],
 			"outputs": ["node_modules/vitest/**"]
 		},
 		"global-registrator#test": {
@@ -35,7 +34,11 @@
 			"dependsOn": ["happy-dom#compile", "^compile"]
 		},
 		"test": {
-			"inputs": ["test/**"]
+			"inputs": ["src/**", "test/**"]
+		},
+		"test:circular-dependencies": {
+			"dependsOn": ["^compile"],
+			"inputs": ["lib/**"]
 		}
 	}
 }

@@ -1,8 +1,8 @@
 import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
-import IECMAScriptModuleCompiledResult from './types/IECMAScriptModuleCompiledResult.js';
-import IECMAScriptModuleImport from './types/IECMAScriptModuleImport.js';
+import type IECMAScriptModuleCompiledResult from './types/IECMAScriptModuleCompiledResult.js';
+import type IECMAScriptModuleImport from './types/IECMAScriptModuleImport.js';
 import ModuleURLUtility from './ModuleURLUtility.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 

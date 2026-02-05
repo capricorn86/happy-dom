@@ -1,4 +1,4 @@
-import IBrowserFrame from '../types/IBrowserFrame.js';
+import type IBrowserFrame from '../types/IBrowserFrame.js';
 import { URL } from 'url';
 import * as PropertySymbol from '../../PropertySymbol.js';
 

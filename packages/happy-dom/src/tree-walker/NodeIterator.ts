@@ -1,6 +1,6 @@
-import INodeFilter from './INodeFilter.js';
+import type { TNodeFilter } from './TNodeFilter.js';
 import TreeWalker from './TreeWalker.js';
-import Node from '../nodes/node/Node.js';
+import type Node from '../nodes/node/Node.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import NodeFilter from './NodeFilter.js';
 
@@ -13,7 +13,7 @@ import NodeFilter from './NodeFilter.js';
 export default class NodeIterator {
 	#root: Node;
 	#whatToShow = -1;
-	#filter: INodeFilter | null = null;
+	#filter: TNodeFilter | null = null;
 	#walker: TreeWalker;
 	#atRoot = true;
 
@@ -24,7 +24,7 @@ export default class NodeIterator {
 	 * @param [whatToShow] What to show.
 	 * @param [filter] Filter.
 	 */
-	constructor(root: Node, whatToShow = -1, filter: INodeFilter | null = null) {
+	constructor(root: Node, whatToShow = -1, filter: TNodeFilter | null = null) {
 		this.#root = root;
 		this.#whatToShow = whatToShow;
 		this.#filter = filter;
@@ -54,7 +54,7 @@ export default class NodeIterator {
 	 *
 	 * @returns Filter.
 	 */
-	public get filter(): INodeFilter | null {
+	public get filter(): TNodeFilter | null {
 		return this.#filter;
 	}
 

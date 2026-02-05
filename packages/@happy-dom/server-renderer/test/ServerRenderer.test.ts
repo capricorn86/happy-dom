@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach, vi, beforeEach } from 'vitest';
 import ServerRenderer from '../src/ServerRenderer.js';
 import MockedURLList from './MockedURLList.js';
-import IServerRendererResult from '../src/types/IServerRendererResult.js';
+import type IServerRendererResult from '../src/types/IServerRendererResult.js';
 import MockedWorker from './MockedWorker.js';
 import DefaultServerRendererConfiguration from '../src/config/DefaultServerRendererConfiguration.js';
 // eslint-disable-next-line import/no-named-as-default

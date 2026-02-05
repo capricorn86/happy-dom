@@ -1,10 +1,10 @@
-import IHeadersInit from './IHeadersInit.js';
+import type { THeadersInit } from './THeadersInit.js';
 
 /**
  * Response init.
  */
 export default interface IResponseInit {
-	headers?: IHeadersInit | undefined;
+	headers?: THeadersInit | undefined;
 	status?: number | undefined;
 	statusText?: string | undefined;
 }

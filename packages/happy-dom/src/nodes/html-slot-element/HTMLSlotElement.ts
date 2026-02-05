@@ -1,11 +1,11 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import ShadowRoot from '../shadow-root/ShadowRoot.js';
-import Text from '../text/Text.js';
+import type ShadowRoot from '../shadow-root/ShadowRoot.js';
+import type Text from '../text/Text.js';
 import Element from '../element/Element.js';
 import Node from '../node/Node.js';
 import Event from '../../event/Event.js';
-import Attr from '../attr/Attr.js';
+import type Attr from '../attr/Attr.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 

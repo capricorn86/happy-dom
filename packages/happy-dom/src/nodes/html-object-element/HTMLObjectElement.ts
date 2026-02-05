@@ -1,8 +1,8 @@
-import BrowserWindow from '../../window/BrowserWindow.js';
-import Document from '../document/Document.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
+import type Document from '../document/Document.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
+import type HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import ValidityState from '../../validity-state/ValidityState.js';
 
 /**

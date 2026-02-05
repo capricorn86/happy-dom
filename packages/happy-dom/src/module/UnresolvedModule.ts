@@ -1,6 +1,6 @@
-import BrowserWindow from '../window/BrowserWindow.js';
-import { URL } from 'url';
-import IModule from './types/IModule.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
+import type { URL } from 'url';
+import type IModule from './types/IModule.js';
 
 interface IUnresolvedModuleInit {
 	window: BrowserWindow;

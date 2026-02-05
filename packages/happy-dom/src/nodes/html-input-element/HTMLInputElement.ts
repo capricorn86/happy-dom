@@ -6,19 +6,19 @@ import Event from '../../event/Event.js';
 import HTMLInputElementValueSanitizer from './HTMLInputElementValueSanitizer.js';
 import HTMLInputElementSelectionModeEnum from './HTMLInputElementSelectionModeEnum.js';
 import HTMLInputElementSelectionDirectionEnum from './HTMLInputElementSelectionDirectionEnum.js';
-import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
+import type HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLInputElementValueStepping from './HTMLInputElementValueStepping.js';
 import FileList from './FileList.js';
-import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
+import type HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import HTMLInputElementDateUtility from './HTMLInputElementDateUtility.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
-import HTMLDataListElement from '../html-data-list-element/HTMLDataListElement.js';
-import Document from '../document/Document.js';
-import ShadowRoot from '../shadow-root/ShadowRoot.js';
+import type HTMLDataListElement from '../html-data-list-element/HTMLDataListElement.js';
+import type Document from '../document/Document.js';
+import type ShadowRoot from '../shadow-root/ShadowRoot.js';
 import { URL } from 'url';
 import MouseEvent from '../../event/events/MouseEvent.js';
-import NodeList from '../node/NodeList.js';
+import type NodeList from '../node/NodeList.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**

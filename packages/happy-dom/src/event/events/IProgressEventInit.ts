@@ -1,4 +1,4 @@
-import IEventInit from '../IEventInit.js';
+import type IEventInit from '../IEventInit.js';
 
 export default interface IProgressEventInit extends IEventInit {
 	lengthComputable?: boolean;

@@ -1,6 +1,6 @@
 import ClassMethodBinder from '../../utilities/ClassMethodBinder.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import Node from './Node.js';
+import type Node from './Node.js';
 
 /**
  * NodeList.

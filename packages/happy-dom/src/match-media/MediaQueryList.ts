@@ -1,10 +1,10 @@
 import EventTarget from '../event/EventTarget.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import Event from '../event/Event.js';
-import BrowserWindow from '../window/BrowserWindow.js';
-import TEventListener from '../event/TEventListener.js';
+import type Event from '../event/Event.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
+import type { TEventListener } from '../event/TEventListener.js';
 import MediaQueryListEvent from '../event/events/MediaQueryListEvent.js';
-import IMediaQueryItem from './MediaQueryItem.js';
+import type IMediaQueryItem from './MediaQueryItem.js';
 import MediaQueryParser from './MediaQueryParser.js';
 
 /**

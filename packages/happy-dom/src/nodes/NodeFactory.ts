@@ -1,5 +1,5 @@
-import Document from '../nodes/document/Document.js';
-import Node from './node/Node.js';
+import type Document from '../nodes/document/Document.js';
+import type Node from './node/Node.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 
 /**

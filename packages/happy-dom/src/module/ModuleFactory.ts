@@ -1,4 +1,4 @@
-import IModule from './types/IModule.js';
+import type IModule from './types/IModule.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import CSSModule from './CSSModule.js';
 import JSONModule from './JSONModule.js';
@@ -6,10 +6,10 @@ import UnresolvedModule from './UnresolvedModule.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import ResourceFetch from '../fetch/ResourceFetch.js';
 import ECMAScriptModule from './ECMAScriptModule.js';
-import BrowserWindow from '../window/BrowserWindow.js';
-import IResourceFetchResponse from '../fetch/types/IResourceFetchResponse.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
+import type IResourceFetchResponse from '../fetch/types/IResourceFetchResponse.js';
 import ModuleURLUtility from './ModuleURLUtility.js';
-import Location from '../location/Location.js';
+import type Location from '../location/Location.js';
 
 /**
  * Module factory.
@@ -103,7 +103,8 @@ export default class ModuleFactory {
 					window,
 					url: absoluteURL,
 					source: response.content,
-					sourceURL: response.virtualServerFile || absoluteURLString
+					sourceURL: response.virtualServerFile || absoluteURLString,
+					factory: new ModuleFactory(window, absoluteURL)
 				});
 				break;
 		}

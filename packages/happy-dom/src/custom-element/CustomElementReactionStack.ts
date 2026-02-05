@@ -1,7 +1,7 @@
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
-import Element from '../nodes/element/Element.js';
+import type Element from '../nodes/element/Element.js';
 
 /**
  * Custom element reaction stack.
