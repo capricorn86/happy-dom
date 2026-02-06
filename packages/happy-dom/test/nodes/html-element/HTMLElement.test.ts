@@ -310,6 +310,23 @@ describe('HTMLElement', () => {
 			element.innerHTML = '<div><span><svg>Test</svg></span>123<div>';
 			expect(element.innerText).toBe('123');
 		});
+
+		// Issue #1914: innerText should replace newlines in text nodes with spaces when connected
+		it('Replaces newlines in text nodes with spaces when element is connected to document.', () => {
+			const div = document.createElement('div');
+			div.replaceChildren(document.createTextNode('hello\nworld'));
+			document.body.replaceChildren(div);
+			// Firefox returns 'hello world' with a space replacing the newline
+			expect(document.body.innerText).toBe('hello world');
+		});
+
+		// Issue #1914: innerText should handle multiple newlines
+		it('Replaces multiple newlines and carriage returns with spaces when connected.', () => {
+			const div = document.createElement('div');
+			div.replaceChildren(document.createTextNode('hello\n\nworld\r\ntest'));
+			document.body.replaceChildren(div);
+			expect(document.body.innerText).toBe('hello  world test');
+		});
 	});
 
 	describe('set innerText()', () => {
@@ -328,6 +345,29 @@ describe('HTMLElement', () => {
 			expect(element.innerText).toBe(element.textContent);
 			expect(element.childNodes.length).toBe(1);
 			expect(element.childNodes[0].textContent).toBe('new_text');
+		});
+
+		// Issue #1914: Setting innerText to empty string should clear innerHTML
+		it('Clears innerHTML when set to empty string.', () => {
+			element.innerHTML = '<div><span>Hello</span></div>';
+			expect(element.innerHTML).toBe('<div><span>Hello</span></div>');
+			expect(element.childNodes.length).toBe(1);
+
+			element.innerText = '';
+
+			expect(element.innerHTML).toBe('');
+			expect(element.childNodes.length).toBe(0);
+		});
+
+		// Issue #1914: Setting innerText should replace all children
+		it('Replaces all children including nested elements.', () => {
+			element.innerHTML = '<div><span>Hello</span><p>World</p></div>';
+
+			element.innerText = 'New text';
+
+			expect(element.innerHTML).toBe('New text');
+			expect(element.childNodes.length).toBe(1);
+			expect(element.childNodes[0].textContent).toBe('New text');
 		});
 	});
 

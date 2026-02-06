@@ -702,7 +702,9 @@ export default class HTMLElement extends Element {
 					}
 				}
 			} else if (childNode[PropertySymbol.nodeType] === NodeTypeEnum.textNode) {
-				result += childNode.textContent.replace(/[\n\r]/, '');
+				// Replace newlines and carriage returns with spaces per spec
+				// Handle \r\n (Windows) as single line break, then individual \n or \r
+				result += childNode.textContent.replace(/\r\n|\n|\r/g, ' ');
 			}
 		}
 
@@ -720,6 +722,11 @@ export default class HTMLElement extends Element {
 
 		while (childNodes.length) {
 			this.removeChild(childNodes[0]);
+		}
+
+		// Empty string should clear all children without adding any nodes
+		if (text === '') {
+			return;
 		}
 
 		const texts = text.split(/[\n\r]/);
