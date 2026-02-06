@@ -12,7 +12,7 @@ const CALC_REGEXP = /^calc\([^^)]+\)$/;
 const CSS_VARIABLE_REGEXP = /^var\(\s*(--[^)\s]+)\)$/;
 const FIT_CONTENT_REGEXP = /^fit-content\([^^)]+\)$/;
 const GRADIENT_REGEXP =
-	/^((repeating-linear|linear|radial|repeating-radial|conic|repeating-conic)-gradient)\(([^)]+)\)$/;
+	/^((repeating-linear|linear|radial|repeating-radial|conic|repeating-conic)-gradient)\(((?:[^()]|\([^()]*\))*)\)$/;
 const GLOBALS = ['inherit', 'initial', 'unset', 'revert'];
 const COLORS = [
 	'none',
@@ -333,10 +333,33 @@ export default class CSSStyleDeclarationValueParser {
 	public static getGradient(value: string): string | null {
 		const match = value.match(GRADIENT_REGEXP);
 		if (match) {
-			return `${match[1]}(${match[3]
-				.trim()
-				.split(/\s*,\s*/)
-				.join(', ')})`;
+			const args = match[3].trim();
+			// Split on commas, but not commas inside parentheses
+			const parts: string[] = [];
+			let current = '';
+			let depth = 0;
+
+			for (let i = 0; i < args.length; i++) {
+				const char = args[i];
+				if (char === '(') {
+					depth++;
+					current += char;
+				} else if (char === ')') {
+					depth--;
+					current += char;
+				} else if (char === ',' && depth === 0) {
+					parts.push(current.trim());
+					current = '';
+				} else {
+					current += char;
+				}
+			}
+
+			if (current) {
+				parts.push(current.trim());
+			}
+
+			return `${match[1]}(${parts.join(', ')})`;
 		}
 		return null;
 	}
