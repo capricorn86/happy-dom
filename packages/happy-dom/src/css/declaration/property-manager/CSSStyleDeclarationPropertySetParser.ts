@@ -95,6 +95,76 @@ const TEXT_TRANSFORM = [
 const VISIBILITY = ['visible', 'hidden', 'collapse'];
 
 /**
+ * Splits by comma while respecting nested parentheses.
+ *
+ * @param value Value to split.
+ * @returns Array of parts.
+ */
+function splitByComma(value: string): string[] {
+	const parts: string[] = [];
+	let current = '';
+	let depth = 0;
+
+	for (let i = 0; i < value.length; i++) {
+		const char = value[i];
+
+		if (char === '(') {
+			depth++;
+		} else if (char === ')') {
+			depth--;
+		} else if (char === ',' && depth === 0) {
+			parts.push(current);
+			current = '';
+			continue;
+		}
+
+		current += char;
+	}
+
+	if (current) {
+		parts.push(current);
+	}
+
+	return parts;
+}
+
+/**
+ * Splits by space while respecting nested parentheses.
+ *
+ * @param value Value to split.
+ * @returns Array of parts.
+ */
+function splitBySpace(value: string): string[] {
+	const parts: string[] = [];
+	let current = '';
+	let depth = 0;
+
+	for (let i = 0; i < value.length; i++) {
+		const char = value[i];
+
+		if (char === '(') {
+			depth++;
+		} else if (char === ')') {
+			depth--;
+		} else if ((char === ' ' || char === '\t') && depth === 0) {
+			if (current) {
+				parts.push(current);
+				current = '';
+			}
+			continue;
+		}
+
+		current += char;
+	}
+
+	if (current) {
+		parts.push(current);
+	}
+
+	return parts;
+}
+
+/**
  * Computed style property parser.
  */
 export default class CSSStyleDeclarationPropertySetParser {
@@ -2300,10 +2370,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			...this.getBackgroundColor('initial', important)
 		};
 
-		const parts = value
-			.replace(/\s,\s/g, ',')
-			.replace(/\s\/\s/g, '/')
-			.split(SPLIT_SPACE_SEPARATED_WITH_PARANTHESES_REGEXP);
+		const parts = splitBySpace(value.replace(/\s,\s/g, ',').replace(/\s\/\s/g, '/'));
 
 		const backgroundPositions = [];
 
@@ -2811,7 +2878,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			return { 'background-image': { value: lowerValue, important } };
 		}
 
-		const parts = value.split(SPLIT_COMMA_SEPARATED_WITH_PARANTHESES_REGEXP);
+		const parts = splitByComma(value);
 		const parsed = [];
 
 		for (const part of parts) {
