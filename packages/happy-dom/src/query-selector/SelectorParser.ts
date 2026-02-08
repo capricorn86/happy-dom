@@ -1,9 +1,9 @@
 import SelectorItem from './SelectorItem.js';
 import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
 import DOMException from '../exception/DOMException.js';
-import ISelectorPseudo from './ISelectorPseudo.js';
-import Element from '../nodes/element/Element.js';
-import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
+import type ISelectorPseudo from './ISelectorPseudo.js';
+import type Element from '../nodes/element/Element.js';
+import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 
 /**
  * Selector RegExp.

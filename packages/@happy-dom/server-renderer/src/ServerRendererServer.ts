@@ -1,13 +1,13 @@
 import Http2 from 'http2';
-import IOptionalServerRendererConfiguration from './types/IOptionalServerRendererConfiguration.js';
-import IServerRendererConfiguration from './types/IServerRendererConfiguration.js';
+import type IOptionalServerRendererConfiguration from './types/IOptionalServerRendererConfiguration.js';
+import type IServerRendererConfiguration from './types/IServerRendererConfiguration.js';
 import ServerRendererConfigurationFactory from './utilities/ServerRendererConfigurationFactory.js';
 import ServerRenderer from './ServerRenderer.js';
 import FetchHTTPSCertificate from 'happy-dom/lib/fetch/certificate/FetchHTTPSCertificate.js';
 import ZLib from 'node:zlib';
 import Stream from 'node:stream/promises';
 import OS from 'node:os';
-import IServerRendererResult from './types/IServerRendererResult.js';
+import type IServerRendererResult from './types/IServerRendererResult.js';
 // eslint-disable-next-line import/no-named-as-default
 import Chalk from 'chalk';
 import ServerRendererLogLevelEnum from './enums/ServerRendererLogLevelEnum.js';

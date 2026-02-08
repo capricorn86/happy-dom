@@ -1,5 +1,5 @@
 import Window from '../../src/window/Window.js';
-import EventTarget from '../../src/event/EventTarget.js';
+import type EventTarget from '../../src/event/EventTarget.js';
 import Event from '../../src/event/Event.js';
 import CustomEvent from '../../src/event/events/CustomEvent.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';

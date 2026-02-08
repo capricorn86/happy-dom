@@ -4,10 +4,10 @@ import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Permissions from '../../src/permissions/Permissions.js';
 import Clipboard from '../../src/clipboard/Clipboard.js';
 import PackageVersion from '../../src/version.js';
-import Response from '../../src/fetch/Response.js';
-import Request from '../../src/fetch/Request.js';
+import type Response from '../../src/fetch/Response.js';
+import type Request from '../../src/fetch/Request.js';
 import Fetch from '../../src/fetch/Fetch.js';
-import Stream from 'stream';
+import type Stream from 'stream';
 
 const PLATFORM =
 	'X11; ' +

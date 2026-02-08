@@ -1,4 +1,4 @@
-import DOMRect from './DOMRect.js';
+import type DOMRect from './DOMRect.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 
 /**

@@ -1,5 +1,5 @@
 import Event from '../Event.js';
-import ICustomEventInit from './ICustomEventInit.js';
+import type ICustomEventInit from './ICustomEventInit.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**

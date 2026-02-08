@@ -1,12 +1,12 @@
-import IBrowserPageViewport from '../types/IBrowserPageViewport.js';
-import VirtualConsolePrinter from '../../console/VirtualConsolePrinter.js';
-import IBrowserFrame from './IBrowserFrame.js';
-import IBrowserContext from './IBrowserContext.js';
-import { Script } from 'vm';
-import IGoToOptions from './IGoToOptions.js';
-import Response from '../../fetch/Response.js';
-import IReloadOptions from './IReloadOptions.js';
-import IOptionalBrowserPageViewport from './IOptionalBrowserPageViewport.js';
+import type IBrowserPageViewport from '../types/IBrowserPageViewport.js';
+import type VirtualConsolePrinter from '../../console/VirtualConsolePrinter.js';
+import type IBrowserFrame from './IBrowserFrame.js';
+import type IBrowserContext from './IBrowserContext.js';
+import type { Script } from 'vm';
+import type IGoToOptions from './IGoToOptions.js';
+import type Response from '../../fetch/Response.js';
+import type IReloadOptions from './IReloadOptions.js';
+import type IOptionalBrowserPageViewport from './IOptionalBrowserPageViewport.js';
 
 /**
  * Browser page.

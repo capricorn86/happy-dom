@@ -1,7 +1,7 @@
-import BrowserWindow from '../../window/BrowserWindow.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
 import Event from '../Event.js';
-import MessagePort from '../MessagePort.js';
-import IMessageEventInit from './IMessageEventInit.js';
+import type MessagePort from '../MessagePort.js';
+import type IMessageEventInit from './IMessageEventInit.js';
 
 /**
  * Message event.

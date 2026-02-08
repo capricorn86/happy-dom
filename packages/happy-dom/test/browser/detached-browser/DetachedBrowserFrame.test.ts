@@ -2,8 +2,8 @@ import { Script } from 'vm';
 import DetachedBrowser from '../../../src/browser/detached-browser/DetachedBrowser';
 import Event from '../../../src/event/Event';
 import BrowserWindow from '../../../src/window/BrowserWindow';
-import Request from '../../../src/fetch/Request';
-import Response from '../../../src/fetch/Response';
+import type Request from '../../../src/fetch/Request';
+import type Response from '../../../src/fetch/Response';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import Fetch from '../../../src/fetch/Fetch';
 import DOMException from '../../../src/exception/DOMException';
@@ -13,7 +13,7 @@ import BrowserFrameFactory from '../../../src/browser/utilities/BrowserFrameFact
 import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCaptureEnum';
 import Headers from '../../../src/fetch/Headers';
 import * as PropertySymbol from '../../../src/PropertySymbol';
-import HashChangeEvent from '../../../src/event/events/HashChangeEvent';
+import type HashChangeEvent from '../../../src/event/events/HashChangeEvent';
 
 describe('DetachedBrowserFrame', () => {
 	afterEach(() => {

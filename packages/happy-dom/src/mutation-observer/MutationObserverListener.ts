@@ -1,9 +1,9 @@
-import IMutationObserverInit from './IMutationObserverInit.js';
-import MutationObserver from './MutationObserver.js';
-import MutationRecord from './MutationRecord.js';
-import Node from '../nodes/node/Node.js';
-import BrowserWindow from '../window/BrowserWindow.js';
-import IMutationListener from './IMutationListener.js';
+import type IMutationObserverInit from './IMutationObserverInit.js';
+import type MutationObserver from './MutationObserver.js';
+import type MutationRecord from './MutationRecord.js';
+import type Node from '../nodes/node/Node.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
+import type IMutationListener from './IMutationListener.js';
 
 /**
  * Mutation Observer Listener.

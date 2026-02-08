@@ -1,7 +1,7 @@
 import FocusEvent from '../../event/events/FocusEvent.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import HTMLElement from '../html-element/HTMLElement.js';
-import SVGElement from '../svg-element/SVGElement.js';
+import type HTMLElement from '../html-element/HTMLElement.js';
+import type SVGElement from '../svg-element/SVGElement.js';
 
 /**
  * HTMLElement utility.

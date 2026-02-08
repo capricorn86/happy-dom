@@ -1,7 +1,7 @@
-import Request from '../Request.js';
-import BrowserWindow from '../../window/BrowserWindow.js';
-import Response from '../Response.js';
-import ISyncResponse from './ISyncResponse.js';
+import type Request from '../Request.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
+import type Response from '../Response.js';
+import type ISyncResponse from './ISyncResponse.js';
 
 export default interface IFetchInterceptor {
 	/**

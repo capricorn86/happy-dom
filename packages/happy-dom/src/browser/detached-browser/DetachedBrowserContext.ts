@@ -1,12 +1,14 @@
-import DetachedBrowser from './DetachedBrowser.js';
+import type DetachedBrowser from './DetachedBrowser.js';
 import DetachedBrowserPage from './DetachedBrowserPage.js';
-import IBrowserContext from '../types/IBrowserContext.js';
-import ICookieContainer from '../../cookie/ICookieContainer.js';
+import type IBrowserContext from '../types/IBrowserContext.js';
+import type ICookieContainer from '../../cookie/ICookieContainer.js';
 import CookieContainer from '../../cookie/CookieContainer.js';
 import ResponseCache from '../../fetch/cache/response/ResponseCache.js';
-import IResponseCache from '../../fetch/cache/response/IResponseCache.js';
-import IPreflightResponseCache from '../../fetch/cache/preflight/IPreflightResponseCache.js';
+import type IResponseCache from '../../fetch/cache/response/IResponseCache.js';
+import type IPreflightResponseCache from '../../fetch/cache/preflight/IPreflightResponseCache.js';
 import PreflightResponseCache from '../../fetch/cache/preflight/PreflightResponseCache.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
+import type IECMAScriptModuleCachedResult from '../../module/types/IECMAScriptModuleCachedResult.js';
 
 /**
  * Detached browser context used when constructing a Window instance without a browser.
@@ -18,6 +20,8 @@ export default class DetachedBrowserContext implements IBrowserContext {
 	public readonly responseCache: IResponseCache = new ResponseCache();
 	public readonly preflightResponseCache: IPreflightResponseCache = new PreflightResponseCache();
 	public readonly closed: boolean = false;
+	public readonly [PropertySymbol.moduleCache]: Map<string, IECMAScriptModuleCachedResult> =
+		new Map();
 
 	/**
 	 * Constructor.

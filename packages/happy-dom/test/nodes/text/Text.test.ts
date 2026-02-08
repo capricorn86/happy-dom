@@ -1,5 +1,5 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import DOMException from '../../../src/exception/DOMException.js';
 import Text from '../../../src/nodes/text/Text.js';
 import { beforeEach, describe, it, expect } from 'vitest';

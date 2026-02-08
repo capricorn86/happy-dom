@@ -1,12 +1,12 @@
 import HTMLParser from '../../src/html-parser/HTMLParser.js';
 import Window from '../../src/window/Window.js';
-import Document from '../../src/nodes/document/Document.js';
+import type Document from '../../src/nodes/document/Document.js';
 import Node from '../../src/nodes/node/Node.js';
-import HTMLElement from '../../src/nodes/html-element/HTMLElement.js';
+import type HTMLElement from '../../src/nodes/html-element/HTMLElement.js';
 import NamespaceURI from '../../src/config/NamespaceURI.js';
-import DocumentType from '../../src/nodes/document-type/DocumentType.js';
+import type DocumentType from '../../src/nodes/document-type/DocumentType.js';
 import HTMLSerializer from '../../src/html-serializer/HTMLSerializer.js';
-import HTMLTemplateElement from '../../src/nodes/html-template-element/HTMLTemplateElement.js';
+import type HTMLTemplateElement from '../../src/nodes/html-template-element/HTMLTemplateElement.js';
 import NodeTypeEnum from '../../src/nodes/node/NodeTypeEnum.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import CustomElement from '../CustomElement.js';

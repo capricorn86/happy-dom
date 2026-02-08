@@ -1,14 +1,14 @@
 import PointerEvent from '../../../src/event/events/PointerEvent.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import HTMLElementUtility from '../../../src/nodes/html-element/HTMLElementUtility.js';
-import SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
+import type SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
 import Window from '../../../src/window/Window.js';
 import CustomElement from '../../CustomElement.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
-import CustomElementRegistry from '../../../src/custom-element/CustomElementRegistry.js';
+import type CustomElementRegistry from '../../../src/custom-element/CustomElementRegistry.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
-import EventTarget from '../../../src/event/EventTarget.js';
+import type EventTarget from '../../../src/event/EventTarget.js';
 import Event from '../../../src/event/Event.js';
 
 describe('HTMLElement', () => {

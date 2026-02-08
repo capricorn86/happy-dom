@@ -1,10 +1,10 @@
 import HTMLAreaElement from '../../../src/nodes/html-area-element/HTMLAreaElement.js';
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 import PointerEvent from '../../../src/event/events/PointerEvent.js';
-import Request from '../../../src/fetch/Request.js';
-import Response from '../../../src/fetch/Response.js';
+import type Request from '../../../src/fetch/Request.js';
+import type Response from '../../../src/fetch/Response.js';
 import Browser from '../../../src/browser/Browser.js';
 import Fetch from '../../../src/fetch/Fetch.js';
 import DOMTokenList from '../../../src/dom/DOMTokenList.js';

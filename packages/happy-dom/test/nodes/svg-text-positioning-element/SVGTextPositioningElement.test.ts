@@ -1,7 +1,7 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect } from 'vitest';
-import SVGTextPositioningElement from '../../../src/nodes/svg-text-positioning-element/SVGTextPositioningElement.js';
+import type SVGTextPositioningElement from '../../../src/nodes/svg-text-positioning-element/SVGTextPositioningElement.js';
 import SVGLength from '../../../src/svg/SVGLength.js';
 
 describe('SVGTextPositioningElement', () => {

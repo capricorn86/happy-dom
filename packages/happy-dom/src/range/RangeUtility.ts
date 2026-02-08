@@ -2,10 +2,10 @@ import DOMException from '../exception/DOMException.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
-import Node from '../nodes/node/Node.js';
+import type Node from '../nodes/node/Node.js';
 import NodeUtility from '../nodes/node/NodeUtility.js';
-import Range from './Range.js';
-import IRangeBoundaryPoint from './IRangeBoundaryPoint.js';
+import type Range from './Range.js';
+import type IRangeBoundaryPoint from './IRangeBoundaryPoint.js';
 
 /**
  * Range utility.

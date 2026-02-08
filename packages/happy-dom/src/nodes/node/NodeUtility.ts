@@ -1,13 +1,13 @@
-import Text from '../text/Text.js';
+import type Text from '../text/Text.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import Comment from '../comment/Comment.js';
-import Node from './Node.js';
+import type Comment from '../comment/Comment.js';
+import type Node from './Node.js';
 import NodeTypeEnum from './NodeTypeEnum.js';
-import Element from '../element/Element.js';
-import DocumentType from '../document-type/DocumentType.js';
-import Attr from '../attr/Attr.js';
-import ProcessingInstruction from '../processing-instruction/ProcessingInstruction.js';
-import ShadowRoot from '../shadow-root/ShadowRoot.js';
+import type Element from '../element/Element.js';
+import type DocumentType from '../document-type/DocumentType.js';
+import type Attr from '../attr/Attr.js';
+import type ProcessingInstruction from '../processing-instruction/ProcessingInstruction.js';
+import type ShadowRoot from '../shadow-root/ShadowRoot.js';
 
 /**
  * Node utility.
@@ -72,6 +72,10 @@ export default class NodeUtility {
 		while (parent) {
 			if (ancestorNode === parent) {
 				return true;
+			}
+
+			if (ancestorNode[PropertySymbol.parentNode] === parent[PropertySymbol.parentNode]) {
+				return false;
 			}
 
 			parent = parent[PropertySymbol.parentNode]

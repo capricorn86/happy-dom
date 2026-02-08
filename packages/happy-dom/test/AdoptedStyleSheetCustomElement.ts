@@ -1,4 +1,4 @@
-import ShadowRoot from '../src/nodes/shadow-root/ShadowRoot.js';
+import type ShadowRoot from '../src/nodes/shadow-root/ShadowRoot.js';
 import HTMLElement from '../src/nodes/html-element/HTMLElement.js';
 import CSSStyleSheet from '../src/css/CSSStyleSheet.js';
 

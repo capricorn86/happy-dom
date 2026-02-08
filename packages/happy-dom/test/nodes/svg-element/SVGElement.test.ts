@@ -1,9 +1,9 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
 import HTMLElementUtility from '../../../src/nodes/html-element/HTMLElementUtility.js';
 import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest';
-import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import type HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import Element from '../../../src/nodes/element/Element.js';
 import Event from '../../../src/event/Event.js';
 
