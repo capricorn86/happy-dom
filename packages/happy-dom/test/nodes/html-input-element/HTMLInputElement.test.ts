@@ -1334,6 +1334,69 @@ describe('HTMLInputElement', () => {
 			expect(element.value).toBe('6');
 		});
 
+		it('Steps to the closest valid step', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '2';
+			element.stepUp();
+			expect(element.value).toBe('11');
+		});
+
+		it('Steps decimals when step is 0.5', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '0.5';
+			element.stepUp();
+			expect(element.value).toBe('10.5');
+		});
+
+		it('Steps decimals when step is 1.2', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '1.2';
+			element.stepUp();
+			expect(element.value).toBe('10.6');
+		});
+
+		it('Handles increment set to 0', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '2';
+			element.stepUp(0);
+			expect(element.value).toBe('10');
+		});
+
+		it('Handles step set to 0', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '0';
+			element.stepUp(2);
+			expect(element.value).toBe('12');
+		});
+
+		it('Handles negative values', () => {
+			element.type = 'number';
+			element.value = '-4';
+			element.min = '-12';
+			element.step = '2';
+			element.stepUp(2);
+			expect(element.value).toBe('-2');
+		});
+
+		it('Steps to the closest valid step with negative values', () => {
+			element.type = 'number';
+			element.value = '-10';
+			element.min = '-11';
+			element.step = '2';
+			element.stepUp();
+			expect(element.value).toBe('-9');
+		});
+
 		it('Throws exception when invalid type.', () => {
 			expect(() => element.stepUp()).toThrowError(
 				new DOMException('This form element is not steppable.')
@@ -1385,7 +1448,70 @@ describe('HTMLInputElement', () => {
 			element.min = '1';
 			element.step = '2';
 			element.stepDown(9);
-			expect(element.value).toBe('2');
+			expect(element.value).toBe('1');
+		});
+
+		it('Steps to the closest valid step', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '2';
+			element.stepDown();
+			expect(element.value).toBe('9');
+		});
+
+		it('Steps decimals when step is 0.5', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '0.5';
+			element.stepDown();
+			expect(element.value).toBe('9.5');
+		});
+
+		it('Steps decimals when step is 1.2', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '1.2';
+			element.stepDown();
+			expect(element.value).toBe('9.4');
+		});
+
+		it('Handles increment set to 0', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '2';
+			element.stepDown(0);
+			expect(element.value).toBe('10');
+		});
+
+		it('Handles step set to 0', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '0';
+			element.stepDown(2);
+			expect(element.value).toBe('8');
+		});
+
+		it('Handles negative values', () => {
+			element.type = 'number';
+			element.value = '-4';
+			element.min = '-12';
+			element.step = '2';
+			element.stepDown(2);
+			expect(element.value).toBe('-6');
+		});
+
+		it('Steps to the closest valid step with negative values', () => {
+			element.type = 'number';
+			element.value = '-10';
+			element.min = '-11';
+			element.step = '2';
+			element.stepDown();
+			expect(element.value).toBe('-11');
 		});
 
 		it('Throws exception when invalid type.', () => {

@@ -1,62 +1,5 @@
 import DOMException from '../../exception/DOMException.js';
-
-export interface IStepConfig {
-	type: string;
-	value: string;
-	direction: -1 | 1;
-	increment?: number;
-	min?: number | string;
-	max?: number | string;
-	step?: number | string;
-}
-
-/**
- * Calculation to conform number input to HTML spec stepUp/stepDown behavior
- * @param resultConfig Calculation configuration.
- * @param resultConfig.result Initial result.
- * @param resultConfig.min Min.
- * @param resultConfig.max Max.
- * @param [resultConfig.step] Step.
- * @param resultConfig.direction
- * @see {@link https://html.spec.whatwg.org/multipage/input.html#dom-input-stepup|stepUp/stepDown spec}
- */
-function calculateSteppedValue({
-	result,
-	min,
-	max,
-	direction,
-	step
-}: {
-	result: number;
-	min: number;
-	max: number;
-	direction: -1 | 1;
-	step?: number;
-}): number {
-	if (isNaN(result)) {
-		return result;
-	}
-
-	let finalResult = Math.min(Math.max(result, min), max);
-	if (step === undefined) {
-		return finalResult;
-	}
-
-	const divisionRemainder = finalResult % step;
-	if (divisionRemainder === 0) {
-		return finalResult;
-	}
-
-	if (direction === -1) {
-		// result must not step lower than original result and must be divisble by step
-		finalResult = finalResult + step - divisionRemainder;
-		return finalResult;
-	}
-
-	// result must not step higher than original result and must be divisble by step
-	finalResult = finalResult - divisionRemainder;
-	return finalResult;
-}
+import HTMLInputElement from './HTMLInputElement.js';
 
 /**
  * HTML input element value stepping.
@@ -65,40 +8,20 @@ export default class HTMLInputElementValueStepping {
 	/**
 	 * Steps up or down.
 	 *
-	 * @param config Step configuration.
-	 * @param config.type Type.
-	 * @param config.value Value.
-	 * @param config.direction Direction.
-	 * @param config.increment Increment.
-	 * @param config.min Min.
-	 * @param config.max Max.
-	 * @param config.step Step.
+	 * @param input Input element.
+	 * @param direction Direction.
+	 * @param [increment] Increment.
 	 * @returns New value.
 	 */
-	public static step({
-		type,
-		value,
-		direction,
-		increment: incrementParam,
-		min: minParam,
-		max: maxParam,
-		step: stepParam
-	}: IStepConfig): string | null {
+	public static step(
+		input: HTMLInputElement,
+		direction: -1 | 1,
+		increment?: number
+	): string | null {
+		const type = input.type;
 		switch (type) {
 			case 'number':
-				const step = stepParam !== undefined && stepParam !== '' ? Number(stepParam) : undefined;
-				const increment = incrementParam ?? step ?? 1;
-				const min = minParam !== undefined && minParam !== '' ? Number(minParam) : -Infinity;
-				const max = maxParam !== undefined && maxParam !== '' ? Number(maxParam) : Infinity;
-				const calcResult = Number(value) + increment * direction;
-				const result = calculateSteppedValue({
-					result: calcResult,
-					min,
-					max,
-					direction,
-					step
-				});
-				return String(result);
+				return this.getNumberValue(input, direction, increment);
 			case 'date':
 			case 'month':
 			case 'week':
@@ -109,6 +32,61 @@ export default class HTMLInputElementValueStepping {
 				return null;
 			default:
 				throw new DOMException('This form element is not steppable.');
+		}
+	}
+
+	/**
+	 * Returns the stepped value for "number" input field.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/input.html#dom-input-stepup
+	 * @param input Input element.
+	 * @param direction Direction.
+	 * @param [increment] Increment.
+	 */
+	private static getNumberValue(
+		input: HTMLInputElement,
+		direction: -1 | 1,
+		increment?: number
+	): string {
+		const stepValue = input.step;
+		const minValue = input.min;
+		const maxValue = input.max;
+
+		const min = minValue !== '' ? Number(minValue) : null;
+		const max = maxValue !== '' ? Number(maxValue) : null;
+		let value = Number(input.value);
+		let step = stepValue !== '' ? Number(stepValue) : 1;
+
+		value = isNaN(value) ? 0 : value;
+		step = isNaN(step) || step === 0 ? 1 : step;
+
+		if (min !== null && !isNaN(min) && max !== null && !isNaN(max) && (min > max || max < min)) {
+			return input.value;
+		}
+
+		if (increment === 0) {
+			return input.value;
+		}
+
+		const validIncrementValue = increment !== undefined ? Math.ceil(increment / step) * step : step;
+		const candidate = value + validIncrementValue * direction;
+		const minOrZero = min !== null && !isNaN(min) ? min : 0;
+
+		switch (direction) {
+			// Step down
+			case -1:
+				if (min !== null && !isNaN(min) && candidate < min) {
+					return String(min);
+				}
+				// Previous valid step from value
+				return String(candidate + ((value - minOrZero) % step));
+			// Step up
+			case 1:
+				if (max !== null && !isNaN(max) && candidate > max) {
+					return String(minOrZero + Math.floor((max - minOrZero) / step) * step);
+				}
+				// Next valid step from value
+				return String(candidate - ((value - minOrZero) % step));
 		}
 	}
 }
