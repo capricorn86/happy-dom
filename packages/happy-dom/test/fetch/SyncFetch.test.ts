@@ -1,4 +1,4 @@
-import BrowserWindow from '../../src/window/BrowserWindow.js';
+import type BrowserWindow from '../../src/window/BrowserWindow.js';
 import Headers from '../../src/fetch/Headers.js';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
@@ -10,7 +10,7 @@ import { URLSearchParams } from 'url';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import SyncFetchScriptBuilder from '../../src/fetch/utilities/SyncFetchScriptBuilder.js';
 import SyncFetch from '../../src/fetch/SyncFetch.js';
-import IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
+import type IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
 import Browser from '../../src/browser/Browser.js';
 import FS from 'fs';
 import Path from 'path';
@@ -1516,7 +1516,7 @@ describe('SyncFetch', () => {
 			);
 		});
 
-		it('Does\'nt forward the headers "cookie", "authorization" or "www-authenticate" if request credentials are set to "omit".', () => {
+		it('Does\'nt forward "cookie" headers if request credentials are set to "omit".', () => {
 			browserFrame.url = 'https://localhost:8080/';
 
 			const url = 'https://localhost:8080/some/path';
@@ -1561,14 +1561,16 @@ describe('SyncFetch', () => {
 						Connection: 'close',
 						Referer: 'https://localhost:8080/',
 						'User-Agent': window.navigator.userAgent,
-						'Accept-Encoding': 'gzip, deflate, br'
+						'Accept-Encoding': 'gzip, deflate, br',
+						authorization: 'authorization',
+						'www-authenticate': 'www-authenticate'
 					},
 					body: null
 				})
 			);
 		});
 
-		it('Does\'nt forward the headers "cookie", "authorization" or "www-authenticate" if request credentials are set to "same-origin" and the request goes do a different origin than the document.', () => {
+		it('Does\'nt forward "cookie" headers if request credentials are set to "same-origin" and the request goes do a different origin than the document.', () => {
 			const originURL = 'https://localhost:8080';
 
 			browserFrame.url = originURL;
@@ -1618,7 +1620,9 @@ describe('SyncFetch', () => {
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
 						Origin: originURL,
-						Referer: originURL + '/'
+						Referer: originURL + '/',
+						authorization: 'authorization',
+						'www-authenticate': 'www-authenticate'
 					},
 					body: null
 				})

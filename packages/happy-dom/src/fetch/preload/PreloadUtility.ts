@@ -1,5 +1,5 @@
-import IRequestCredentials from '../types/IRequestCredentials.js';
-import IRequestMode from '../types/IRequestMode.js';
+import type { TRequestCredentials } from '../types/TRequestCredentials.js';
+import type { TRequestMode } from '../types/TRequestMode.js';
 
 /**
  * Utility for preloading resources.
@@ -20,8 +20,8 @@ export default class PreloadUtility {
 	public static getKey(options: {
 		url: string;
 		destination: string;
-		mode: IRequestMode;
-		credentialsMode: IRequestCredentials;
+		mode: TRequestMode;
+		credentialsMode: TRequestCredentials;
 	}): string {
 		return JSON.stringify({
 			url: options.url,

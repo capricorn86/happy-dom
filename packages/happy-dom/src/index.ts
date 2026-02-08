@@ -69,13 +69,12 @@ import AbortSignal from './fetch/AbortSignal.js';
 import Headers from './fetch/Headers.js';
 import Request from './fetch/Request.js';
 import Response from './fetch/Response.js';
-import IFetchInterceptor from './fetch/types/IFetchInterceptor.js';
-import ISyncResponse from './fetch/types/ISyncResponse.js';
 import Blob from './file/Blob.js';
 import File from './file/File.js';
 import FileReader from './file/FileReader.js';
 import FormData from './form-data/FormData.js';
 import History from './history/History.js';
+import HTMLSerializer from './html-serializer/HTMLSerializer.js';
 import IntersectionObserver from './intersection-observer/IntersectionObserver.js';
 import IntersectionObserverEntry from './intersection-observer/IntersectionObserverEntry.js';
 import Location from './location/Location.js';
@@ -185,6 +184,7 @@ import NodeFilter from './tree-walker/NodeFilter.js';
 import NodeIterator from './tree-walker/NodeIterator.js';
 import TreeWalker from './tree-walker/TreeWalker.js';
 import URL from './url/URL.js';
+import WebSocket from './web-socket/WebSocket.js';
 import BrowserWindow from './window/BrowserWindow.js';
 import DetachedWindowAPI from './window/DetachedWindowAPI.js';
 import GlobalWindow from './window/GlobalWindow.js';
@@ -203,7 +203,7 @@ import type IOptionalCookie from './cookie/IOptionalCookie.js';
 import type IEventInit from './event/IEventInit.js';
 import type ITouchInit from './event/ITouchInit.js';
 import type IUIEventInit from './event/IUIEventInit.js';
-import type TEventListener from './event/TEventListener.js';
+import type { TEventListener } from './event/TEventListener.js';
 import type IAnimationEventInit from './event/events/IAnimationEventInit.js';
 import type IClipboardEventInit from './event/events/IClipboardEventInit.js';
 import type ICustomEventInit from './event/events/ICustomEventInit.js';
@@ -218,6 +218,8 @@ import type IProgressEventInit from './event/events/IProgressEventInit.js';
 import type ISubmitEventInit from './event/events/ISubmitEventInit.js';
 import type ITouchEventInit from './event/events/ITouchEventInit.js';
 import type IWheelEventInit from './event/events/IWheelEventInit.js';
+import type IFetchInterceptor from './fetch/types/IFetchInterceptor.js';
+import type ISyncResponse from './fetch/types/ISyncResponse.js';
 import type IVirtualServer from './fetch/types/IVirtualServer.js';
 
 export type {
@@ -367,6 +369,7 @@ export {
 	HTMLQuoteElement,
 	HTMLScriptElement,
 	HTMLSelectElement,
+	HTMLSerializer,
 	HTMLSlotElement,
 	HTMLSourceElement,
 	HTMLSpanElement,
@@ -439,6 +442,7 @@ export {
 	VirtualConsoleLogTypeEnum,
 	VirtualConsolePrinter,
 	VTTCue,
+	WebSocket,
 	WheelEvent,
 	Window,
 	XMLDocument,

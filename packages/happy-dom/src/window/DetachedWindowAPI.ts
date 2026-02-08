@@ -1,7 +1,7 @@
-import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
-import IOptionalBrowserPageViewport from '../browser/types/IOptionalBrowserPageViewport.js';
-import IBrowserFrame from '../browser/types/IBrowserFrame.js';
-import IBrowserSettings from '../browser/types/IBrowserSettings.js';
+import type VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
+import type IOptionalBrowserPageViewport from '../browser/types/IOptionalBrowserPageViewport.js';
+import type IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import type IBrowserSettings from '../browser/types/IBrowserSettings.js';
 
 /**
  * API for detached windows to be able to access features of the browser.

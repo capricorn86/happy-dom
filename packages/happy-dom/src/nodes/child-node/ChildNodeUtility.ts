@@ -1,8 +1,8 @@
 import DOMException from '../../exception/DOMException.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Node from '../node/Node.js';
-import IParentNode from '../parent-node/IParentNode.js';
-import IChildNode from './IChildNode.js';
+import type IParentNode from '../parent-node/IParentNode.js';
+import type IChildNode from './IChildNode.js';
 
 /**
  * Child node utility.

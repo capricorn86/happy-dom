@@ -1,12 +1,12 @@
 import CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
 import CSSParser from '../../src/css/utilities/CSSParser.js';
-import CSSStyleRule from '../../src/css/rules/CSSStyleRule.js';
-import CSSMediaRule from '../../src/css/rules/CSSMediaRule.js';
+import type CSSStyleRule from '../../src/css/rules/CSSStyleRule.js';
+import type CSSMediaRule from '../../src/css/rules/CSSMediaRule.js';
 import CSSParserInput from './data/CSSParserInput.js';
-import CSSKeyframeRule from '../../src/css/rules/CSSKeyframeRule.js';
-import CSSKeyframesRule from '../../src/css/rules/CSSKeyframesRule.js';
-import CSSContainerRule from '../../src/css/rules/CSSContainerRule.js';
-import CSSSupportsRule from '../../src/css/rules/CSSSupportsRule.js';
+import type CSSKeyframeRule from '../../src/css/rules/CSSKeyframeRule.js';
+import type CSSKeyframesRule from '../../src/css/rules/CSSKeyframesRule.js';
+import type CSSContainerRule from '../../src/css/rules/CSSContainerRule.js';
+import type CSSSupportsRule from '../../src/css/rules/CSSSupportsRule.js';
 import { describe, it, expect } from 'vitest';
 
 describe('CSSParser', () => {

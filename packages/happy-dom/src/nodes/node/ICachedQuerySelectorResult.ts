@@ -1,6 +1,6 @@
-import Element from '../element/Element.js';
-import ICachedResult from './ICachedResult.js';
+import type Element from '../element/Element.js';
+import type ICachedResult from './ICachedResult.js';
 
 export default interface ICachedQuerySelectorResult extends ICachedResult {
-	result: WeakRef<Element> | null;
+	result: { element: WeakRef<Element> | null } | null;
 }

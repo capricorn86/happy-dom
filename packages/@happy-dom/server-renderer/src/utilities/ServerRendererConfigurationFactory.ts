@@ -1,6 +1,6 @@
 import BrowserSettingsFactory from 'happy-dom/lib/browser/BrowserSettingsFactory.js';
-import IOptionalServerRendererConfiguration from '../types/IOptionalServerRendererConfiguration.js';
-import IServerRendererConfiguration from '../types/IServerRendererConfiguration.js';
+import type IOptionalServerRendererConfiguration from '../types/IOptionalServerRendererConfiguration.js';
+import type IServerRendererConfiguration from '../types/IServerRendererConfiguration.js';
 import DefaultServerRendererConfiguration from '../config/DefaultServerRendererConfiguration.js';
 import Path from 'path';
 
@@ -40,7 +40,7 @@ export default class ServerRendererConfigurationFactory {
 				...DefaultServerRendererConfiguration.render,
 				...configuration?.render
 			},
-			urls: configuration?.urls || null,
+			renderItems: configuration?.renderItems || null,
 			server: {
 				...DefaultServerRendererConfiguration.server,
 				...configuration?.server

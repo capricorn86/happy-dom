@@ -1,13 +1,13 @@
 import Window from '../../src/window/Window.js';
-import Document from '../../src/nodes/document/Document.js';
+import type Document from '../../src/nodes/document/Document.js';
 import Request from '../../src/fetch/Request.js';
 import URL from '../../src/url/URL.js';
 import Headers from '../../src/fetch/Headers.js';
 import AbortSignal from '../../src/fetch/AbortSignal.js';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
-import IRequestReferrerPolicy from '../../src/fetch/types/IRequestReferrerPolicy.js';
-import IRequestRedirect from '../../src/fetch/types/IRequestRedirect.js';
+import type TRequestReferrerPolicy from '../../src/fetch/types/TRequestReferrerPolicy.js';
+import type TRequestRedirect from '../../src/fetch/types/TRequestRedirect.js';
 import FetchBodyUtility from '../../src/fetch/utilities/FetchBodyUtility.js';
 import Blob from '../../src/file/Blob.js';
 import FormData from '../../src/form-data/FormData.js';
@@ -468,7 +468,7 @@ describe('Request', () => {
 		it('Throws error when invalid referrer policy.', () => {
 			let error: Error | null = null;
 			try {
-				new window.Request(TEST_URL, { referrerPolicy: <IRequestReferrerPolicy>'invalid' });
+				new window.Request(TEST_URL, { referrerPolicy: <TRequestReferrerPolicy>'invalid' });
 			} catch (e) {
 				error = e;
 			}
@@ -481,7 +481,7 @@ describe('Request', () => {
 		it('Throws error when invalid referrer policy.', () => {
 			let error: Error | null = null;
 			try {
-				new window.Request(TEST_URL, { referrerPolicy: <IRequestReferrerPolicy>'invalid' });
+				new window.Request(TEST_URL, { referrerPolicy: <TRequestReferrerPolicy>'invalid' });
 			} catch (e) {
 				error = e;
 			}
@@ -494,7 +494,7 @@ describe('Request', () => {
 		it('Throws error when invalid referrer policy.', () => {
 			let error: Error | null = null;
 			try {
-				new window.Request(TEST_URL, { redirect: <IRequestRedirect>'invalid' });
+				new window.Request(TEST_URL, { redirect: <TRequestRedirect>'invalid' });
 			} catch (e) {
 				error = e;
 			}
@@ -842,6 +842,45 @@ describe('Request', () => {
 	});
 
 	describe('clone()', () => {
+		it('Clones request body stream without throwing when body has no buffer.', async () => {
+			// This test reproduces issue #1963: cloneBodyStream throws
+			// "Cannot set property body of #<Request> which has only a getter"
+			// when the request body is a ReadableStream without a buffer.
+			const stream = new ReadableStream({
+				start(controller) {
+					controller.enqueue(Buffer.from('Hello World'));
+					controller.close();
+				}
+			});
+
+			const request = new window.Request(TEST_URL, {
+				method: 'POST',
+				body: stream
+			});
+
+			// Clear the internal buffer to simulate a stream-only body
+			request[PropertySymbol.bodyBuffer] = null;
+
+			// This should not throw "Cannot set property body of #<Request> which has only a getter"
+			const clonedStream = FetchBodyUtility.cloneBodyStream(window, request);
+
+			expect(clonedStream).toBeInstanceOf(ReadableStream);
+
+			// Verify the original request body is still readable
+			const originalChunks: Buffer[] = [];
+			for await (const chunk of <ReadableStream>request.body) {
+				originalChunks.push(Buffer.from(chunk));
+			}
+			expect(Buffer.concat(originalChunks).toString()).toBe('Hello World');
+
+			// Verify the cloned stream is also readable
+			const clonedChunks: Buffer[] = [];
+			for await (const chunk of <ReadableStream>clonedStream) {
+				clonedChunks.push(Buffer.from(chunk));
+			}
+			expect(Buffer.concat(clonedChunks).toString()).toBe('Hello World');
+		});
+
 		it('Returns a clone.', async () => {
 			window.happyDOM?.setURL('https://example.com/other/path/');
 

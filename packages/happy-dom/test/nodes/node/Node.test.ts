@@ -1,17 +1,17 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import Node from '../../../src/nodes/node/Node.js';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
-import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
+import type HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
 import Event from '../../../src/event/Event.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
 import Text from '../../../src/nodes/text/Text.js';
 import EventPhaseEnum from '../../../src/event/EventPhaseEnum.js';
-import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
+import type ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
-import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
+import type ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
-import EventTarget from '../../../src/event/EventTarget.js';
+import type EventTarget from '../../../src/event/EventTarget.js';
 import NodeFactory from '../../../src/nodes/NodeFactory.js';
 
 describe('Node', () => {
@@ -355,6 +355,39 @@ describe('Node', () => {
 
 			expect(div.contains(<Node>(<unknown>undefined))).toBe(false);
 		});
+
+		it('Returns "true" for HTMLFormElement containing child elements (issue #1876).', () => {
+			const form = document.createElement('form');
+			const input = document.createElement('input');
+
+			form.appendChild(input);
+
+			expect(form.contains(input)).toBe(true);
+			expect(form.contains(form)).toBe(true);
+		});
+
+		it('Returns "true" for HTMLSelectElement containing child elements (issue #1876).', () => {
+			const select = document.createElement('select');
+			const option = document.createElement('option');
+
+			select.appendChild(option);
+
+			expect(select.contains(option)).toBe(true);
+			expect(select.contains(select)).toBe(true);
+		});
+
+		it('Returns "true" for nested elements within HTMLFormElement (issue #1876).', () => {
+			const form = document.createElement('form');
+			const div = document.createElement('div');
+			const input = document.createElement('input');
+
+			div.appendChild(input);
+			form.appendChild(div);
+
+			expect(form.contains(input)).toBe(true);
+			expect(form.contains(div)).toBe(true);
+			expect(div.contains(input)).toBe(true);
+		});
 	});
 
 	describe('getRootNode()', () => {
@@ -407,6 +440,33 @@ describe('Node', () => {
 		it('Returns self when element is not connected to DOM', () => {
 			const element = document.createElement('div');
 			expect(element.getRootNode() === element).toBe(true);
+		});
+
+		it('Returns ShadowRoot when element is inside a detached ShadowRoot.', () => {
+			const host = document.createElement('div');
+			const child = document.createElement('span');
+
+			const shadowRoot = host.attachShadow({ mode: 'open' });
+			shadowRoot.appendChild(child);
+
+			// Host is NOT attached to document
+			const rootNode = child.getRootNode({ composed: false });
+
+			expect(rootNode === shadowRoot).toBe(true);
+		});
+
+		it('Returns ShadowRoot when composed is true and ShadowRoot is detached.', () => {
+			const host = document.createElement('div');
+			const child = document.createElement('span');
+
+			const shadowRoot = host.attachShadow({ mode: 'open' });
+			shadowRoot.appendChild(child);
+
+			// Host is NOT attached to document - composed: true still returns the root of the detached tree
+			const rootNode = child.getRootNode({ composed: true });
+
+			// When detached, we can only traverse up to the ShadowRoot since there's no connection to document
+			expect(rootNode === shadowRoot).toBe(true);
 		});
 	});
 

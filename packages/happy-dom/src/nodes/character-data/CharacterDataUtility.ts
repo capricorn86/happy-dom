@@ -1,4 +1,4 @@
-import CharacterData from './CharacterData.js';
+import type CharacterData from './CharacterData.js';
 
 /**
  * Child node utility.

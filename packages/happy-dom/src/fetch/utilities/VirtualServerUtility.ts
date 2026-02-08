@@ -1,8 +1,8 @@
-import BrowserWindow from '../../window/BrowserWindow.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import Path from 'path';
-import Response from '../Response.js';
-import ISyncResponse from '../types/ISyncResponse.js';
+import type Response from '../Response.js';
+import type ISyncResponse from '../types/ISyncResponse.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 const NOT_FOUND_HTML =
@@ -20,35 +20,57 @@ export default class VirtualServerUtility {
 	 */
 	public static getFilepath(window: BrowserWindow, requestURL: string): string | null {
 		const browserSettings = new WindowBrowserContext(window).getSettings();
-		if (!browserSettings || !browserSettings.fetch.virtualServers) {
+		if (
+			!browserSettings ||
+			(!browserSettings.fetch.virtualServers && !browserSettings.module.resolveNodeModules)
+		) {
 			return null;
 		}
-		for (const virtualServer of browserSettings.fetch.virtualServers) {
-			let baseURL: URL | null = null;
-			if (typeof virtualServer.url === 'string') {
-				const url = new URL(
-					virtualServer.url[virtualServer.url.length - 1] === '/'
-						? virtualServer.url.slice(0, -1)
-						: virtualServer.url,
-					window.location.origin
-				);
-				if (requestURL.startsWith(url.href)) {
-					baseURL = url;
-				}
-			} else if (virtualServer.url instanceof RegExp) {
-				const match = requestURL.match(virtualServer.url);
-				if (match) {
-					baseURL = new URL(
-						match[0][match[0].length - 1] === '/' ? match[0].slice(0, -1) : match[0],
+
+		if (browserSettings.fetch.virtualServers) {
+			for (const virtualServer of browserSettings.fetch.virtualServers) {
+				let baseURL: URL | null = null;
+				if (typeof virtualServer.url === 'string') {
+					const url = new URL(
+						virtualServer.url[virtualServer.url.length - 1] === '/'
+							? virtualServer.url.slice(0, -1)
+							: virtualServer.url,
 						window.location.origin
 					);
+					if (requestURL.startsWith(url.href)) {
+						baseURL = url;
+					}
+				} else if (virtualServer.url instanceof RegExp) {
+					const match = requestURL.match(virtualServer.url);
+					if (match) {
+						baseURL = new URL(
+							match[0][match[0].length - 1] === '/' ? match[0].slice(0, -1) : match[0],
+							window.location.origin
+						);
+					}
+				}
+				if (baseURL) {
+					const path = requestURL.slice(baseURL.href.length).split('?')[0].split('#')[0];
+					return Path.join(Path.resolve(virtualServer.directory), path.replaceAll('/', Path.sep));
 				}
 			}
-			if (baseURL) {
-				const path = requestURL.slice(baseURL.href.length).split('?')[0].split('#')[0];
-				return Path.join(Path.resolve(virtualServer.directory), path.replaceAll('/', Path.sep));
+		}
+
+		if (browserSettings.module.resolveNodeModules) {
+			const moduleUrl = browserSettings.module.resolveNodeModules.url;
+			const url = new URL(
+				moduleUrl[moduleUrl.length - 1] === '/' ? moduleUrl.slice(0, -1) : moduleUrl,
+				window.location.origin
+			);
+			if (requestURL.startsWith(url.href)) {
+				const path = requestURL.slice(url.href.length).split('?')[0].split('#')[0];
+				return Path.join(
+					Path.resolve(browserSettings.module.resolveNodeModules.directory),
+					path.replaceAll('/', Path.sep)
+				);
 			}
 		}
+
 		return null;
 	}
 

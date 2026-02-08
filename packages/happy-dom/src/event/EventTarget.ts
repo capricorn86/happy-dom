@@ -1,13 +1,13 @@
 import * as PropertySymbol from '../PropertySymbol.js';
-import Event from './Event.js';
-import IEventListenerOptions from './IEventListenerOptions.js';
+import type Event from './Event.js';
+import type IEventListenerOptions from './IEventListenerOptions.js';
 import EventPhaseEnum from './EventPhaseEnum.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
-import TEventListener from './TEventListener.js';
-import TEventListenerObject from './TEventListenerObject.js';
-import TEventListenerFunction from './TEventListenerFunction.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type { TEventListener } from './TEventListener.js';
+import type { TEventListenerObject } from './TEventListenerObject.js';
+import type { TEventListenerFunction } from './TEventListenerFunction.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * Handles events.
@@ -319,29 +319,48 @@ export default class EventTarget {
 		}
 
 		if (event.eventPhase !== EventPhaseEnum.capturing) {
+			// Only call on* handlers if they are defined as part of the class interface (via
+			// propertyEventListeners or as an own property on a non-EventTarget class), not arbitrary
+			// properties assigned at runtime on plain EventTarget instances. (issue #1895)
 			const onEventName = 'on' + event.type.toLowerCase();
-			const eventListener = (<any>this)[onEventName];
+			const propertyEventListeners = (<any>this)[PropertySymbol.propertyEventListeners];
 
-			if (typeof eventListener === 'function') {
-				// We can end up in a never ending loop if the listener for the error event on Window also throws an error.
-				if (
-					window &&
-					(this !== <EventTarget>window || event.type !== 'error') &&
-					!browserSettings?.disableErrorCapturing &&
-					browserSettings?.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
-				) {
-					let result: any;
-					try {
-						result = eventListener(event);
-					} catch (error) {
-						window[PropertySymbol.dispatchError](<Error>error);
-					}
+			// Check if this on* handler is defined as part of the class interface:
+			// 1. Via propertyEventListeners Map (used by Element, Document, etc.)
+			//    For these classes, we always try to get the listener since the getter handles
+			//    lazy evaluation of attribute-based event listeners.
+			// 2. As an own property on a subclass of EventTarget that defines on* handlers
+			//    (used by MediaQueryList, AbortSignal, etc.)
+			//    Plain EventTarget instances should not have arbitrary on* properties called.
+			const hasClassDefinedHandler =
+				!propertyEventListeners &&
+				Object.hasOwn(this, onEventName) &&
+				this.constructor.name !== 'EventTarget';
 
-					if (result instanceof Promise) {
-						result.catch((error) => window[PropertySymbol.dispatchError](error));
+			if (propertyEventListeners || hasClassDefinedHandler) {
+				const eventListener = propertyEventListeners?.get(onEventName) ?? (<any>this)[onEventName];
+
+				if (typeof eventListener === 'function') {
+					// We can end up in a never ending loop if the listener for the error event on Window also throws an error.
+					if (
+						window &&
+						(this !== <EventTarget>window || event.type !== 'error') &&
+						!browserSettings?.disableErrorCapturing &&
+						browserSettings?.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
+					) {
+						let result: any;
+						try {
+							result = eventListener(event);
+						} catch (error) {
+							window[PropertySymbol.dispatchError](<Error>error);
+						}
+
+						if (result instanceof Promise) {
+							result.catch((error) => window[PropertySymbol.dispatchError](error));
+						}
+					} else {
+						eventListener(event);
 					}
-				} else {
-					eventListener(event);
 				}
 			}
 		}

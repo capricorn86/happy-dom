@@ -1,6 +1,6 @@
-import URL from '../url/URL.js';
-import ICookie from './ICookie.js';
-import IOptionalCookie from './IOptionalCookie.js';
+import type URL from '../url/URL.js';
+import type ICookie from './ICookie.js';
+import type IOptionalCookie from './IOptionalCookie.js';
 
 /**
  * Cookie Container.

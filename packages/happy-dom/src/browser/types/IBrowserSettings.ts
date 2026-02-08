@@ -1,11 +1,12 @@
-import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
-import BrowserNavigationCrossOriginPolicyEnum from '../enums/BrowserNavigationCrossOriginPolicyEnum.js';
-import IFetchInterceptor from '../../fetch/types/IFetchInterceptor.js';
-import IVirtualServer from '../../fetch/types/IVirtualServer.js';
-import IFetchRequestHeaders from '../../fetch/types/IFetchRequestHeaders.js';
-import IBrowserPageViewport from './IBrowserPageViewport.js';
-import IOptionalTimerLoopsLimit from '../../window/IOptionalTimerLoopsLimit.js';
-import BrowserWindow from '../../window/BrowserWindow.js';
+import type BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
+import type BrowserNavigationCrossOriginPolicyEnum from '../enums/BrowserNavigationCrossOriginPolicyEnum.js';
+import type IFetchInterceptor from '../../fetch/types/IFetchInterceptor.js';
+import type IVirtualServer from '../../fetch/types/IVirtualServer.js';
+import type IFetchRequestHeaders from '../../fetch/types/IFetchRequestHeaders.js';
+import type IBrowserPageViewport from './IBrowserPageViewport.js';
+import type IOptionalTimerLoopsLimit from '../../window/IOptionalTimerLoopsLimit.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
+import type IResolveNodeModules from '../../module/types/IResolveNodeModules.js';
 
 /**
  * Browser settings.
@@ -92,6 +93,19 @@ export default interface IBrowserSettings {
 		 * Virtual servers used for simulating a server that reads from the file system.
 		 */
 		virtualServers: IVirtualServer[] | null;
+	};
+
+	/**
+	 * Settings for modules
+	 */
+	module: {
+		/** Resolve node modules to the defined URL */
+		resolveNodeModules: IResolveNodeModules | null;
+		urlResolver:
+			| ((options: { url: string; parentURL: string; window: BrowserWindow }) => string)
+			| null;
+		/** Disables module compilation caching */
+		disableCache?: boolean;
 	};
 
 	/**

@@ -1,8 +1,8 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
+import type HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import ValidityState from '../../validity-state/ValidityState.js';
-import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
+import type HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import HTMLOptionElement from '../html-option-element/HTMLOptionElement.js';
 import HTMLOptionsCollection from './HTMLOptionsCollection.js';
 import Event from '../../event/Event.js';
@@ -10,13 +10,13 @@ import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtili
 import HTMLCollection from '../element/HTMLCollection.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
-import NodeList from '../node/NodeList.js';
+import type NodeList from '../node/NodeList.js';
 import ClassMethodBinder from '../../utilities/ClassMethodBinder.js';
 import Node from '../node/Node.js';
 import Element from '../element/Element.js';
 import EventTarget from '../../event/EventTarget.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
-import BrowserWindow from '../../window/BrowserWindow.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
 
 /**
  * HTML Select Element.

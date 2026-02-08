@@ -1,15 +1,15 @@
 import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
 import BrowserFrame from './BrowserFrame.js';
-import BrowserContext from './BrowserContext.js';
+import type BrowserContext from './BrowserContext.js';
 import VirtualConsole from '../console/VirtualConsole.js';
-import IBrowserPage from './types/IBrowserPage.js';
+import type IBrowserPage from './types/IBrowserPage.js';
 import BrowserPageUtility from './utilities/BrowserPageUtility.js';
-import { Script } from 'vm';
-import IGoToOptions from './types/IGoToOptions.js';
-import Response from '../fetch/Response.js';
-import IReloadOptions from './types/IReloadOptions.js';
-import IBrowserPageViewport from './types/IBrowserPageViewport.js';
-import IOptionalBrowserPageViewport from './types/IOptionalBrowserPageViewport.js';
+import type { Script } from 'vm';
+import type IGoToOptions from './types/IGoToOptions.js';
+import type Response from '../fetch/Response.js';
+import type IReloadOptions from './types/IReloadOptions.js';
+import type IBrowserPageViewport from './types/IBrowserPageViewport.js';
+import type IOptionalBrowserPageViewport from './types/IOptionalBrowserPageViewport.js';
 import Event from '../event/Event.js';
 
 /**
@@ -116,6 +116,23 @@ export default class BrowserPage implements IBrowserPage {
 	 */
 	public evaluate(script: string | Script): any {
 		return this.mainFrame.evaluate(script);
+	}
+
+	/**
+	 * Evaluates a module in the page's context.
+	 *
+	 * @param options Options.
+	 * @param options.url URL.
+	 * @param options.type Module type.
+	 * @param options.code Code.
+	 * @returns Module exports.
+	 */
+	public evaluateModule(options: {
+		url?: string;
+		type?: 'esm' | 'css' | 'json';
+		code?: string;
+	}): Promise<Record<string, any>> {
+		return this.mainFrame.evaluateModule(options);
 	}
 
 	/**

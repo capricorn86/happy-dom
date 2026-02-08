@@ -1,4 +1,4 @@
-import IUIEventInit from '../IUIEventInit.js';
+import type IUIEventInit from '../IUIEventInit.js';
 
 export default interface IKeyboardEventInit extends IUIEventInit {
 	key?: string;
@@ -15,4 +15,9 @@ export default interface IKeyboardEventInit extends IUIEventInit {
 	 * @deprecated
 	 */
 	keyCode?: number;
+
+	/**
+	 * @deprecated
+	 */
+	which?: number;
 }

@@ -1,4 +1,4 @@
-import ICookie from '../ICookie.js';
+import type ICookie from '../ICookie.js';
 
 /**
  * Cookie expire utility.

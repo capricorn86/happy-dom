@@ -3,8 +3,9 @@ import Response from '../../src/fetch/Response.js';
 import Headers from '../../src/fetch/Headers.js';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
-import HTTP, { ClientRequest } from 'http';
-import Net from 'net';
+import type { ClientRequest } from 'http';
+import type HTTP from 'http';
+import type Net from 'net';
 import Stream from 'stream';
 import Zlib from 'zlib';
 import { TextEncoder } from 'util';
@@ -993,7 +994,7 @@ describe('Fetch', () => {
 			]);
 		});
 
-		it(`Doesn't forward the headers "cookie", "authorization" or "www-authenticate" if request credentials are set to "omit".`, async () => {
+		it(`Doesn't forward "cookie" headers if request credentials are set to "omit".`, async () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/some/path';
 
@@ -1019,7 +1020,9 @@ describe('Fetch', () => {
 							Connection: 'close',
 							Referer: 'https://localhost:8080/',
 							'User-Agent': window.navigator.userAgent,
-							'Accept-Encoding': 'gzip, deflate, br'
+							'Accept-Encoding': 'gzip, deflate, br',
+							authorization: 'authorization',
+							'www-authenticate': 'www-authenticate'
 						},
 						agent: false,
 						rejectUnauthorized: true,
@@ -1030,7 +1033,7 @@ describe('Fetch', () => {
 			]);
 		});
 
-		it('Does not forward the headers "cookie", "authorization" or "www-authenticate" if request credentials are set to "same-origin" and the request goes do a different origin than the document.', async () => {
+		it('Does not forward "cookie" headers if request credentials are set to "same-origin" and the request goes do a different origin than the document.', async () => {
 			const originURL = 'https://localhost:8080';
 			const window = new Window({ url: originURL });
 			const url = 'https://other.origin.com/some/path';
@@ -1083,7 +1086,9 @@ describe('Fetch', () => {
 							'User-Agent': window.navigator.userAgent,
 							'Accept-Encoding': 'gzip, deflate, br',
 							Origin: originURL,
-							Referer: originURL + '/'
+							Referer: originURL + '/',
+							authorization: 'authorization',
+							'www-authenticate': 'www-authenticate'
 						},
 						agent: false,
 						rejectUnauthorized: true,

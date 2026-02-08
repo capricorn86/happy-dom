@@ -1,5 +1,5 @@
-import IBrowserSettings from './types/IBrowserSettings.js';
-import IOptionalBrowserSettings from './types/IOptionalBrowserSettings.js';
+import type IBrowserSettings from './types/IBrowserSettings.js';
+import type IOptionalBrowserSettings from './types/IOptionalBrowserSettings.js';
 import DefaultBrowserSettings from './DefaultBrowserSettings.js';
 
 /**
@@ -34,6 +34,10 @@ export default class BrowserSettingsFactory {
 			fetch: {
 				...DefaultBrowserSettings.fetch,
 				...settings?.fetch
+			},
+			module: {
+				...DefaultBrowserSettings.module,
+				...settings?.module
 			},
 			device: {
 				...DefaultBrowserSettings.device,

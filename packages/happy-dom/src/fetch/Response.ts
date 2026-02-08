@@ -1,17 +1,17 @@
 import * as PropertySymbol from '../PropertySymbol.js';
 import Blob from '../file/Blob.js';
-import IResponseInit from './types/IResponseInit.js';
-import IResponseBody from './types/IResponseBody.js';
-import Headers from './Headers.js';
+import type IResponseInit from './types/IResponseInit.js';
+import type { TResponseBody } from './types/TResponseBody.js';
+import type Headers from './Headers.js';
 import { URLSearchParams } from 'url';
 import URL from '../url/URL.js';
-import { ReadableStream } from 'stream/web';
-import FormData from '../form-data/FormData.js';
+import type { ReadableStream } from 'stream/web';
+import type FormData from '../form-data/FormData.js';
 import FetchBodyUtility from './utilities/FetchBodyUtility.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
-import BrowserWindow from '../window/BrowserWindow.js';
-import ICachedResponse from './cache/response/ICachedResponse.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
+import type ICachedResponse from './cache/response/ICachedResponse.js';
 import { Buffer } from 'buffer';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
 
@@ -53,7 +53,7 @@ export default class Response implements Response {
 	 * @param body Body.
 	 * @param [init] Init.
 	 */
-	constructor(body?: IResponseBody, init?: IResponseInit) {
+	constructor(body?: TResponseBody, init?: IResponseInit) {
 		if (!this[PropertySymbol.window]) {
 			throw new TypeError(
 				`Failed to construct '${this.constructor.name}': '${this.constructor.name}' was constructed outside a Window context.`

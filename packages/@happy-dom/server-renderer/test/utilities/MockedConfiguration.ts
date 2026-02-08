@@ -1,5 +1,5 @@
 import { BrowserErrorCaptureEnum, BrowserNavigationCrossOriginPolicyEnum } from 'happy-dom';
-import IServerRendererConfiguration from '../../src/types/IServerRendererConfiguration';
+import type IServerRendererConfiguration from '../../src/types/IServerRendererConfiguration';
 import ServerRendererLogLevelEnum from '../../src/enums/ServerRendererLogLevelEnum';
 
 export default <IServerRendererConfiguration>{
@@ -46,6 +46,11 @@ export default <IServerRendererConfiguration>{
 					directory: './virtual-server/path'
 				}
 			]
+		},
+		module: {
+			resolveNodeModules: null,
+			urlResolver: null,
+			disableCache: false
 		},
 		navigation: {
 			disableMainFrameNavigation: true,
@@ -95,9 +100,11 @@ export default <IServerRendererConfiguration>{
 		serializableShadowRoots: true,
 		allShadowRoots: true,
 		excludeShadowRootTags: ['STYLE', 'SCRIPT'],
-		disablePolyfills: true
+		disablePolyfills: true,
+		mode: 'browser',
+		setupScript: null
 	},
-	urls: [
+	renderItems: [
 		{ url: 'https://example.com/page1', outputFile: 'page1/index.html' },
 		{
 			url: 'https://example.com/page2',

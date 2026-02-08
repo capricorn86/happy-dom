@@ -1,16 +1,16 @@
-import XMLHttpRequest from '../../src/xml-http-request/XMLHttpRequest.js';
+import type XMLHttpRequest from '../../src/xml-http-request/XMLHttpRequest.js';
 import Window from '../../src/window/Window.js';
 import XMLHttpRequestReadyStateEnum from '../../src/xml-http-request/XMLHttpRequestReadyStateEnum.js';
 import XMLHttpResponseTypeEnum from '../../src/xml-http-request/XMLHttpResponseTypeEnum.js';
-import ProgressEvent from '../../src/event/events/ProgressEvent.js';
+import type ProgressEvent from '../../src/event/events/ProgressEvent.js';
 import Blob from '../../src/file/Blob.js';
-import Document from '../../src/nodes/document/Document.js';
+import type Document from '../../src/nodes/document/Document.js';
 import type { IncomingMessage } from 'http';
 import Stream from 'stream';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import SyncFetch from '../../src/fetch/SyncFetch.js';
-import Response from '../../src/fetch/Response.js';
-import ISyncResponse from '../../src/fetch/types/ISyncResponse.js';
+import type Response from '../../src/fetch/Response.js';
+import type ISyncResponse from '../../src/fetch/types/ISyncResponse.js';
 import Fetch from '../../src/fetch/Fetch.js';
 import Headers from '../../src/fetch/Headers.js';
 import DOMException from '../../src/exception/DOMException.js';
@@ -416,6 +416,51 @@ describe('XMLHttpRequest', () => {
 			expect(() => request.responseText).toThrowError(
 				`Failed to read the 'responseText' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'text' (was '${XMLHttpResponseTypeEnum.json}').`
 			);
+		});
+
+		it('Should return responseText with correct length during streaming in progress event', async () => {
+			await new Promise((resolve, reject) => {
+				const responseText = 'This is a streaming response';
+
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+					async () =>
+						<Response>{
+							headers: <Headers>new Headers({
+								'Content-Length': String(responseText.length)
+							}),
+							body: new ReadableStream({
+								start(controller) {
+									controller.enqueue(responseText);
+									controller.close();
+								}
+							})
+						}
+				);
+
+				request.open('GET', REQUEST_URL, true);
+
+				let progressTriggered = false;
+
+				request.addEventListener('progress', (event) => {
+					progressTriggered = true;
+					const progressEvent = <ProgressEvent>event;
+					try {
+						expect(request.responseText.length).toBe(progressEvent.loaded);
+						expect(request.responseText).toBe(responseText);
+						resolve(null);
+					} catch (error) {
+						reject(error);
+					}
+				});
+
+				request.addEventListener('load', () => {
+					if (!progressTriggered) {
+						reject(new Error('Progress event was never triggered'));
+					}
+				});
+
+				request.send();
+			});
 		});
 	});
 

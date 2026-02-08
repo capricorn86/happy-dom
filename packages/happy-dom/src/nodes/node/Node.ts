@@ -1,31 +1,31 @@
 import EventTarget from '../../event/EventTarget.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import Document from '../document/Document.js';
-import Element from '../element/Element.js';
+import type Document from '../document/Document.js';
+import type Element from '../element/Element.js';
 import NodeTypeEnum from './NodeTypeEnum.js';
 import NodeDocumentPositionEnum from './NodeDocumentPositionEnum.js';
 import NodeUtility from './NodeUtility.js';
-import Attr from '../attr/Attr.js';
+import type Attr from '../attr/Attr.js';
 import NodeList from './NodeList.js';
 import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
-import IMutationListener from '../../mutation-observer/IMutationListener.js';
-import ICachedQuerySelectorAllResult from './ICachedQuerySelectorAllResult.js';
-import ICachedQuerySelectorResult from './ICachedQuerySelectorResult.js';
-import ICachedMatchesResult from './ICachedMatchesResult.js';
-import ICachedElementsByTagNameResult from './ICachedElementsByTagNameResult.js';
-import ICachedElementByTagNameResult from './ICachedElementByTagNameResult.js';
-import ICachedComputedStyleResult from './ICachedComputedStyleResult.js';
-import ICachedResult from './ICachedResult.js';
-import ICachedElementByIdResult from './ICachedElementByIdResult.js';
-import HTMLStyleElement from '../html-style-element/HTMLStyleElement.js';
-import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
-import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
-import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
-import HTMLSlotElement from '../html-slot-element/HTMLSlotElement.js';
+import type IMutationListener from '../../mutation-observer/IMutationListener.js';
+import type ICachedQuerySelectorAllResult from './ICachedQuerySelectorAllResult.js';
+import type ICachedQuerySelectorResult from './ICachedQuerySelectorResult.js';
+import type ICachedMatchesResult from './ICachedMatchesResult.js';
+import type ICachedElementsByTagNameResult from './ICachedElementsByTagNameResult.js';
+import type ICachedElementByTagNameResult from './ICachedElementByTagNameResult.js';
+import type ICachedComputedStyleResult from './ICachedComputedStyleResult.js';
+import type ICachedResult from './ICachedResult.js';
+import type ICachedElementByIdResult from './ICachedElementByIdResult.js';
+import type HTMLStyleElement from '../html-style-element/HTMLStyleElement.js';
+import type HTMLFormElement from '../html-form-element/HTMLFormElement.js';
+import type HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
+import type HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
+import type HTMLSlotElement from '../html-slot-element/HTMLSlotElement.js';
 import NodeFactory from '../NodeFactory.js';
-import SVGStyleElement from '../svg-style-element/SVGStyleElement.js';
+import type SVGStyleElement from '../svg-style-element/SVGStyleElement.js';
 
 /**
  * Node.
@@ -336,7 +336,10 @@ export default class Node extends EventTarget {
 		if (otherNode === undefined) {
 			return false;
 		}
-		return NodeUtility.isInclusiveAncestor(this, otherNode);
+		// HTMLFormElement and HTMLSelectElement return a Proxy from their constructor.
+		// We need to use the proxy for comparison to ensure correct behavior.
+		const self = this[PropertySymbol.proxy] || this;
+		return NodeUtility.isInclusiveAncestor(self, otherNode);
 	}
 
 	/**
@@ -347,15 +350,20 @@ export default class Node extends EventTarget {
 	 * @returns Node.
 	 */
 	public getRootNode(options?: { composed: boolean }): Node {
-		if (!this[PropertySymbol.isConnected]) {
-			return this;
+		if (this[PropertySymbol.isConnected]) {
+			if (this[PropertySymbol.rootNode] && !options?.composed) {
+				return this[PropertySymbol.rootNode];
+			}
+			return this[PropertySymbol.ownerDocument];
 		}
 
-		if (this[PropertySymbol.rootNode] && !options?.composed) {
-			return this[PropertySymbol.rootNode];
+		// For detached nodes, traverse up the parent chain to find the root
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		let root: Node = this;
+		while (root[PropertySymbol.parentNode]) {
+			root = root[PropertySymbol.parentNode];
 		}
-
-		return this[PropertySymbol.ownerDocument];
+		return root;
 	}
 
 	/**
@@ -1066,25 +1074,18 @@ export default class Node extends EventTarget {
 	}
 
 	/**
-	 * Destroys the node.
+	 * @override
 	 */
-	public [PropertySymbol.destroy](): void {
+	public override [PropertySymbol.destroy](): void {
 		super[PropertySymbol.destroy]();
 
 		this[PropertySymbol.isConnected] = false;
 
-		while (this[PropertySymbol.nodeArray].length > 0) {
-			const node = this[PropertySymbol.nodeArray][this[PropertySymbol.nodeArray].length - 1];
-
-			// Makes sure that something won't be triggered by the disconnect.
-			if ((<any>node).disconnectedCallback) {
-				delete (<any>node).disconnectedCallback;
-			}
-
-			this[PropertySymbol.removeChild](node);
-			node[PropertySymbol.destroy]();
+		for (let i = 0, max = this[PropertySymbol.nodeArray].length; i < max; i++) {
+			this[PropertySymbol.nodeArray][i][PropertySymbol.destroy]();
 		}
 
+		this[PropertySymbol.mutationListeners] = [];
 		this[PropertySymbol.parentNode] = null;
 		this[PropertySymbol.rootNode] = null;
 		this[PropertySymbol.styleNode] = null;

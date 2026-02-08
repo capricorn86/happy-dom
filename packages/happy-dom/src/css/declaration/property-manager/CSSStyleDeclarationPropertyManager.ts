@@ -1,4 +1,4 @@
-import ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyValue.js';
+import type ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyValue.js';
 import CSSStyleDeclarationPropertySetParser from './CSSStyleDeclarationPropertySetParser.js';
 import CSSStyleDeclarationValueParser from './CSSStyleDeclarationValueParser.js';
 import CSSStyleDeclarationPropertyGetParser from './CSSStyleDeclarationPropertyGetParser.js';

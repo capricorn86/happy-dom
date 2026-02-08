@@ -1,6 +1,6 @@
-import CSSRule from '../CSSRule.js';
+import type CSSRule from '../CSSRule.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import CSSStyleSheet from '../CSSStyleSheet.js';
+import type CSSStyleSheet from '../CSSStyleSheet.js';
 import CSSStyleRule from '../rules/CSSStyleRule.js';
 import CSSKeyframeRule from '../rules/CSSKeyframeRule.js';
 import CSSKeyframesRule from '../rules/CSSKeyframesRule.js';
