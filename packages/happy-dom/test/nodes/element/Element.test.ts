@@ -1203,6 +1203,10 @@ describe('Element', () => {
 			element.replaceWith(node1, node2);
 			expect(isCalled).toBe(true);
 		});
+
+		it('Should not throw when there is no parent node.', () => {
+			document.createElement('div').replaceWith(document.createElement('div'));
+		});
 	});
 
 	describe('before()', () => {
