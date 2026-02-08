@@ -1,5 +1,5 @@
 import DOMException from '../../exception/DOMException.js';
-import HTMLInputElement from './HTMLInputElement.js';
+import type HTMLInputElement from './HTMLInputElement.js';
 
 /**
  * HTML input element value stepping.
