@@ -2256,6 +2256,21 @@ describe('HTMLParser', () => {
             `);
 		});
 
+		it('Handles numeric character references and &apos; in attribute values for #1947', () => {
+			const result = new HTMLParser(window).parse(`
+                <div>
+                    <span data-foo="&#34;"></span>
+                    <span data-foo="&#x22;"></span>
+                    <span data-foo="&apos;"></span>
+                </div>`);
+			expect(new HTMLSerializer().serializeToString(result)).toBe(`
+                <div>
+                    <span data-foo="&quot;"></span>
+                    <span data-foo="&quot;"></span>
+                    <span data-foo="'"></span>
+                </div>`);
+		});
+
 		it('Handles numeric character references in attribute values for #1947', () => {
 			// Decimal numeric character reference
 			const result1 = new HTMLParser(window).parse(`<div data-foo="&#34;"></div>`);
