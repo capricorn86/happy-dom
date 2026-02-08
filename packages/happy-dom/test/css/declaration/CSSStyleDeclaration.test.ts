@@ -1,7 +1,7 @@
 import CSSStyleDeclaration from '../../../src/css/declaration/CSSStyleDeclaration.js';
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
-import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import type Document from '../../../src/nodes/document/Document.js';
+import type HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 

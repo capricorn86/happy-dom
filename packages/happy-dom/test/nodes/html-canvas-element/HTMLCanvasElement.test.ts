@@ -1,6 +1,6 @@
 import HTMLCanvasElement from '../../../src/nodes/html-canvas-element/HTMLCanvasElement.js';
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import CanvasCaptureMediaStreamTrack from '../../../src/nodes/html-canvas-element/CanvasCaptureMediaStreamTrack.js';
 import Blob from '../../../src/file/Blob.js';

@@ -1,8 +1,8 @@
-import IBrowserContext from './IBrowserContext.js';
-import IBrowserPage from './IBrowserPage.js';
-import IBrowserSettings from './IBrowserSettings.js';
-import * as PropertySymbol from '../../PropertySymbol.js';
-import BrowserExceptionObserver from '../utilities/BrowserExceptionObserver.js';
+import type IBrowserContext from './IBrowserContext.js';
+import type IBrowserPage from './IBrowserPage.js';
+import type IBrowserSettings from './IBrowserSettings.js';
+import type * as PropertySymbol from '../../PropertySymbol.js';
+import type BrowserExceptionObserver from '../utilities/BrowserExceptionObserver.js';
 
 /**
  * Browser.

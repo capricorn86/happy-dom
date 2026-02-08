@@ -1,5 +1,5 @@
 import UIEvent from '../UIEvent.js';
-import IErrorEventInit from './IErrorEventInit.js';
+import type IErrorEventInit from './IErrorEventInit.js';
 
 /**
  *

@@ -1,13 +1,13 @@
 import URL from '../../url/URL.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import BrowserWindow from '../../window/BrowserWindow.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
 import { isIP } from 'net';
-import Headers from '../Headers.js';
-import IRequestReferrerPolicy from '../types/IRequestReferrerPolicy.js';
-import Request from '../Request.js';
+import type Headers from '../Headers.js';
+import type { TRequestReferrerPolicy } from '../types/TRequestReferrerPolicy.js';
+import type Request from '../Request.js';
 
 const REQUEST_REFERRER_UNSUPPORTED_PROTOCOL_REGEXP = /^(about|blob|data):$/;
-const REFERRER_POLICIES: IRequestReferrerPolicy[] = [
+const REFERRER_POLICIES: TRequestReferrerPolicy[] = [
 	'',
 	'no-referrer',
 	'no-referrer-when-downgrade',
@@ -70,7 +70,7 @@ export default class FetchRequestReferrerUtility {
 	 * @param headers Response headers
 	 * @returns Policy.
 	 */
-	public static getReferrerPolicyFromHeader(headers: Headers): IRequestReferrerPolicy {
+	public static getReferrerPolicyFromHeader(headers: Headers): TRequestReferrerPolicy {
 		const referrerPolicyHeader = headers.get('Referrer-Policy');
 
 		if (!referrerPolicyHeader) {
@@ -78,11 +78,11 @@ export default class FetchRequestReferrerUtility {
 		}
 
 		const policyTokens = referrerPolicyHeader.split(/[,\s]+/);
-		let policy: IRequestReferrerPolicy = '';
+		let policy: TRequestReferrerPolicy = '';
 
 		for (const token of policyTokens) {
-			if (token && REFERRER_POLICIES.includes(<IRequestReferrerPolicy>token)) {
-				policy = <IRequestReferrerPolicy>token;
+			if (token && REFERRER_POLICIES.includes(<TRequestReferrerPolicy>token)) {
+				policy = <TRequestReferrerPolicy>token;
 			}
 		}
 

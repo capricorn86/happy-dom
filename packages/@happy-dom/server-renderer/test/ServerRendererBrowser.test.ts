@@ -5,7 +5,7 @@ import ServerRendererBrowser from '../src/ServerRendererBrowser.js';
 import ServerRendererConfigurationFactory from '../src/utilities/ServerRendererConfigurationFactory.js';
 import Fetch from 'happy-dom/lib/fetch/Fetch.js';
 import Headers from 'happy-dom/lib/fetch/Headers.js';
-import Response from 'happy-dom/lib/fetch/Response.js';
+import type Response from 'happy-dom/lib/fetch/Response.js';
 import MockedPageHTML from './MockedPageHTML.js';
 import MockedURLList from './MockedURLList.js';
 import ResponseCacheFileSystem from 'happy-dom/lib/fetch/cache/response/ResponseCacheFileSystem.js';

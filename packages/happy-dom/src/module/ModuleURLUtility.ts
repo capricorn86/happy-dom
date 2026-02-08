@@ -1,11 +1,11 @@
 import { URL } from 'url';
 import * as PropertySymbol from '../PropertySymbol.js';
-import BrowserWindow from '../window/BrowserWindow.js';
-import Location from '../location/Location.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
+import type Location from '../location/Location.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import Path from 'path';
 import FS from 'fs';
-import IResolveNodeModules from './types/IResolveNodeModules.js';
+import type IResolveNodeModules from './types/IResolveNodeModules.js';
 
 const MAIN_FIELDS = ['module', 'main'];
 const EXTENSIONS = ['.js', '.mjs'];

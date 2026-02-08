@@ -1,8 +1,8 @@
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
-import CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
+import type CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
 import { beforeEach, describe, it, expect } from 'vitest';
-import BrowserWindow from '../../src/window/BrowserWindow.js';
+import type BrowserWindow from '../../src/window/BrowserWindow.js';
 import Window from '../../src/window/Window.js';
 
 describe('CSSStyleSheet', () => {

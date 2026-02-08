@@ -6,11 +6,11 @@ import FormData from '../../form-data/FormData.js';
 import Blob from '../../file/Blob.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
-import IRequestBody from '../types/IRequestBody.js';
-import IResponseBody from '../types/IResponseBody.js';
+import type { TRequestBody } from '../types/TRequestBody.js';
+import type { TResponseBody } from '../types/TResponseBody.js';
 import { Buffer } from 'buffer';
 import Stream from 'stream';
-import BrowserWindow from '../../window/BrowserWindow.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
 
 /**
  * Fetch body utility.
@@ -25,7 +25,7 @@ export default class FetchBodyUtility {
 	 * @param body Body.
 	 * @returns Stream and type.
 	 */
-	public static getBodyStream(body: IRequestBody | IResponseBody): {
+	public static getBodyStream(body: TRequestBody | TResponseBody): {
 		contentType: string | null;
 		contentLength: number | null;
 		stream: ReadableStream | null;

@@ -1,6 +1,6 @@
-import IntersectionObserverEntry from './IntersectionObserverEntry.js';
-import IIntersectionObserverInit from './IIntersectionObserverInit.js';
-import Element from '../nodes/element/Element.js';
+import type IntersectionObserverEntry from './IntersectionObserverEntry.js';
+import type IIntersectionObserverInit from './IIntersectionObserverInit.js';
+import type Element from '../nodes/element/Element.js';
 
 /**
  * The IntersectionObserver interface of the Intersection Observer API provides a way to asynchronously observe changes in the intersection of a target element with an ancestor element or with a top-level document's viewport.

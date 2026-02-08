@@ -1,8 +1,8 @@
 import EventTarget from '../event/EventTarget.js';
-import BrowserWindow from './BrowserWindow.js';
+import type BrowserWindow from './BrowserWindow.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
-import Location from '../location/Location.js';
+import type Location from '../location/Location.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 
 /**

@@ -1,18 +1,18 @@
-import Element from '../nodes/element/Element.js';
+import type Element from '../nodes/element/Element.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import SelectorItem from './SelectorItem.js';
+import type SelectorItem from './SelectorItem.js';
 import NodeList from '../nodes/node/NodeList.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
-import Document from '../nodes/document/Document.js';
-import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
+import type Document from '../nodes/document/Document.js';
+import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import SelectorParser from './SelectorParser.js';
-import ISelectorMatch from './ISelectorMatch.js';
-import IHTMLElementTagNameMap from '../config/IHTMLElementTagNameMap.js';
-import ISVGElementTagNameMap from '../config/ISVGElementTagNameMap.js';
-import ICachedQuerySelectorAllItem from '../nodes/node/ICachedQuerySelectorAllResult.js';
-import ICachedQuerySelectorItem from '../nodes/node/ICachedQuerySelectorResult.js';
-import ICachedMatchesItem from '../nodes/node/ICachedMatchesResult.js';
+import type ISelectorMatch from './ISelectorMatch.js';
+import type IHTMLElementTagNameMap from '../config/IHTMLElementTagNameMap.js';
+import type ISVGElementTagNameMap from '../config/ISVGElementTagNameMap.js';
+import type ICachedQuerySelectorAllItem from '../nodes/node/ICachedQuerySelectorAllResult.js';
+import type ICachedQuerySelectorItem from '../nodes/node/ICachedQuerySelectorResult.js';
+import type ICachedMatchesItem from '../nodes/node/ICachedMatchesResult.js';
 
 type DocumentPositionAndElement = {
 	documentPosition: string;
@@ -108,11 +108,14 @@ export default class QuerySelector {
 		const cache = node[PropertySymbol.cache].querySelectorAll;
 		const cachedResult = cache.get(selector);
 
-		if (cachedResult?.result) {
-			const result = cachedResult.result.deref();
-			if (result) {
-				return result;
+		if (cachedResult) {
+			if (cachedResult.result !== null) {
+				const result = cachedResult.result.deref();
+				if (result) {
+					return result;
+				}
 			}
+			cache.delete(selector);
 		}
 
 		const scope =
@@ -234,21 +237,20 @@ export default class QuerySelector {
 		const cachedResult = node[PropertySymbol.cache].querySelector.get(selector);
 
 		if (cachedResult) {
-			if (cachedResult.result === false) {
-				return null;
-			}
-			if (cachedResult.result) {
-				const result = cachedResult.result.deref();
+			if (cachedResult.result !== null) {
+				if (!cachedResult.result.element) {
+					return null;
+				}
+				const result = cachedResult.result.element.deref();
 				if (result) {
 					return result;
 				}
 			}
+			node[PropertySymbol.cache].querySelector.delete(selector);
 		}
 
 		const cachedItem: ICachedQuerySelectorItem = {
-			result: <WeakRef<any>>{
-				deref: () => null
-			}
+			result: { element: null }
 		};
 
 		node[PropertySymbol.cache].querySelector.set(selector, cachedItem);
@@ -281,7 +283,7 @@ export default class QuerySelector {
 
 		const element = bestMatch?.element || null;
 
-		cachedItem.result = element ? new WeakRef(element) : false;
+		cachedItem.result = { element: element ? new WeakRef(element) : null };
 
 		return element;
 	}
@@ -348,8 +350,11 @@ export default class QuerySelector {
 
 		const cachedResult = element[PropertySymbol.cache].matches.get(selector);
 
-		if (cachedResult?.result) {
-			return cachedResult.result.match;
+		if (cachedResult) {
+			if (cachedResult.result !== null) {
+				return cachedResult.result.match;
+			}
+			element[PropertySymbol.cache].matches.delete(selector);
 		}
 
 		const cachedItem: ICachedMatchesItem = {

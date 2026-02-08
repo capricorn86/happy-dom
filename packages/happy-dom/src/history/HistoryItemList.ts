@@ -1,5 +1,5 @@
 import HistoryScrollRestorationEnum from './HistoryScrollRestorationEnum.js';
-import IHistoryItem from './IHistoryItem.js';
+import type IHistoryItem from './IHistoryItem.js';
 
 /**
  * History item list.

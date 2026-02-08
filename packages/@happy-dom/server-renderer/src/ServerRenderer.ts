@@ -1,9 +1,9 @@
-import IOptionalServerRendererConfiguration from './types/IOptionalServerRendererConfiguration.js';
-import IServerRendererItem from './types/IServerRendererItem.js';
+import type IOptionalServerRendererConfiguration from './types/IOptionalServerRendererConfiguration.js';
+import type IServerRendererItem from './types/IServerRendererItem.js';
 import { Worker } from 'worker_threads';
-import IServerRendererResult from './types/IServerRendererResult.js';
+import type IServerRendererResult from './types/IServerRendererResult.js';
 import ServerRendererLogLevelEnum from './enums/ServerRendererLogLevelEnum.js';
-import IServerRendererConfiguration from './types/IServerRendererConfiguration.js';
+import type IServerRendererConfiguration from './types/IServerRendererConfiguration.js';
 import ServerRendererConfigurationFactory from './utilities/ServerRendererConfigurationFactory.js';
 import Path from 'path';
 import Inspector from 'node:inspector';
@@ -188,7 +188,7 @@ export default class ServerRenderer {
 	 *
 	 * @param items Items.
 	 */
-	async #runInWorker(items: IServerRendererItem[]): Promise<IServerRendererResult[]> {
+	#runInWorker(items: IServerRendererItem[]): Promise<IServerRendererResult[]> {
 		const configuration = this.#configuration;
 
 		if (configuration.worker.disable) {
@@ -202,11 +202,10 @@ export default class ServerRenderer {
 				this.#browser = new ServerRendererBrowser(configuration);
 			}
 
-			const results = await this.#browser.render(items);
-
-			this.outputResults(results);
-
-			return results;
+			return this.#browser.render(items).then((results) => {
+				this.outputResults(results);
+				return results;
+			});
 		}
 
 		return new Promise((resolve, reject) => {

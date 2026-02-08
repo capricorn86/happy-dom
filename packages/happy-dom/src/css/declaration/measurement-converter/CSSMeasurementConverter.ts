@@ -1,4 +1,4 @@
-import BrowserWindow from '../../../window/BrowserWindow.js';
+import type BrowserWindow from '../../../window/BrowserWindow.js';
 
 /**
  * CSS Measurement Converter.

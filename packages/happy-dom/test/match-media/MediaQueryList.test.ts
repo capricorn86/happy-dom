@@ -1,6 +1,6 @@
 import Window from '../../src/window/Window.js';
 import MediaQueryList from '../../src/match-media/MediaQueryList.js';
-import MediaQueryListEvent from '../../src/event/events/MediaQueryListEvent.js';
+import type MediaQueryListEvent from '../../src/event/events/MediaQueryListEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('MediaQueryList', () => {

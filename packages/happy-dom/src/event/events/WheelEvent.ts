@@ -1,5 +1,5 @@
 import UIEvent from '../UIEvent.js';
-import IWheelEventInit from './IWheelEventInit.js';
+import type IWheelEventInit from './IWheelEventInit.js';
 
 /**
  *

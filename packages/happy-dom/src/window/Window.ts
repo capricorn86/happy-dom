@@ -1,5 +1,5 @@
 import DetachedWindowAPI from './DetachedWindowAPI.js';
-import IOptionalBrowserSettings from '../browser/types/IOptionalBrowserSettings.js';
+import type IOptionalBrowserSettings from '../browser/types/IOptionalBrowserSettings.js';
 import BrowserWindow from './BrowserWindow.js';
 import DetachedBrowser from '../browser/detached-browser/DetachedBrowser.js';
 import * as PropertySymbol from '../PropertySymbol.js';

@@ -1,5 +1,5 @@
 import Event from '../Event.js';
-import ICloseEventInit from './ICloseEventInit.js';
+import type ICloseEventInit from './ICloseEventInit.js';
 
 /**
  *

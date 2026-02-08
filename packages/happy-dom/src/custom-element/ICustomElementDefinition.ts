@@ -1,10 +1,10 @@
-import HTMLElement from '../nodes/html-element/HTMLElement.js';
+import type HTMLElement from '../nodes/html-element/HTMLElement.js';
 
 export default interface ICustomElementDefinition {
 	elementClass: typeof HTMLElement;
 	extends: string | null;
 	observedAttributes: Set<string>;
-	livecycleCallbacks: {
+	lifecycleCallbacks: {
 		connectedCallback?: () => void;
 		disconnectedCallback?: () => void;
 		attributeChangedCallback?: (

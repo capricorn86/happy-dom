@@ -1,7 +1,7 @@
 import { parentPort, workerData } from 'worker_threads';
 import Inspector from 'node:inspector';
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
-import { Document, Window } from 'happy-dom';
+import type { Document, Window } from 'happy-dom';
 import WindowBrowserContext from 'happy-dom/lib/window/WindowBrowserContext.js';
 import ServerRendererPage from './ServerRendererPage.js';
 

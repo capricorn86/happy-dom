@@ -1,9 +1,9 @@
 import Window from '../../src/window/Window.js';
 import { beforeEach, describe, it, vi, expect } from 'vitest';
-import Event from '../../src/event/Event.js';
+import type Event from '../../src/event/Event.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
-import MessageEvent from '../../src/event/events/MessageEvent.js';
-import CloseEvent from '../../src/event/events/CloseEvent.js';
+import type MessageEvent from '../../src/event/events/MessageEvent.js';
+import type CloseEvent from '../../src/event/events/CloseEvent.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 
 vi.mock('ws', () => {
