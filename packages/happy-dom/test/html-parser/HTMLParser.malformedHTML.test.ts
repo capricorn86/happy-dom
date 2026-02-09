@@ -103,4 +103,162 @@ describe('HTMLParser - Malformed HTML handling (Issue #1949)', () => {
 			expect(new HTMLSerializer().serializeToString(result)).toBe('<p>first</p><p>second</p>');
 		});
 	});
+
+	/**
+	 * Test cases for GitHub issue #2052:
+	 * Incorrect DOM structure with <caption> elements
+	 *
+	 * Per the HTML spec, <caption> elements should contain flow content
+	 * (including inline and block elements), except table elements.
+	 *
+	 * @see https://github.com/capricorn86/happy-dom/issues/2052
+	 * @see https://html.spec.whatwg.org/multipage/tables.html#the-caption-element
+	 */
+	describe('Table caption element content model (Issue #2052)', () => {
+		it('Should preserve inline elements inside <caption> - original issue with <b>', () => {
+			const doc = new window.DOMParser().parseFromString(
+				`<table>
+					<caption>
+						This <b>is</b> a caption.
+					</caption>
+					<thead></thead>
+					<tbody></tbody>
+				</table>`,
+				'text/html'
+			);
+			const caption = doc.querySelector('caption');
+			const b = doc.querySelector('b');
+
+			// The <b> element should be inside the caption
+			expect(caption?.contains(b)).toBe(true);
+			expect(caption?.innerHTML.trim()).toBe('This <b>is</b> a caption.');
+		});
+
+		it('Should preserve nested inline elements inside <caption>', () => {
+			const doc = new window.DOMParser().parseFromString(
+				`<table>
+					<caption>
+						<small>This <b>is</b> a caption.</small>
+					</caption>
+					<tbody></tbody>
+				</table>`,
+				'text/html'
+			);
+			const caption = doc.querySelector('caption');
+			const small = doc.querySelector('small');
+			const b = doc.querySelector('b');
+
+			// Both elements should be inside the caption
+			expect(caption?.contains(small)).toBe(true);
+			expect(caption?.contains(b)).toBe(true);
+			expect(caption?.innerHTML.trim()).toBe('<small>This <b>is</b> a caption.</small>');
+		});
+
+		it('Should allow various inline elements in <caption>', () => {
+			const testCases = [
+				{
+					input: '<table><caption>Text with <strong>strong</strong></caption></table>',
+					selector: 'strong'
+				},
+				{
+					input: '<table><caption>Text with <em>emphasis</em></caption></table>',
+					selector: 'em'
+				},
+				{
+					input: '<table><caption>Text with <span>span</span></caption></table>',
+					selector: 'span'
+				},
+				{
+					input: '<table><caption>Text with <a href="#">link</a></caption></table>',
+					selector: 'a'
+				}
+			];
+
+			for (const { input, selector } of testCases) {
+				const doc = new window.DOMParser().parseFromString(input, 'text/html');
+				const caption = doc.querySelector('caption');
+				const element = doc.querySelector(selector);
+				expect(caption?.contains(element)).toBe(true);
+			}
+		});
+
+		it('Should allow block-level elements in <caption> (flow content)', () => {
+			const doc = new window.DOMParser().parseFromString(
+				`<table>
+					<caption>
+						<p>Paragraph in caption</p>
+						<div>Div in caption</div>
+					</caption>
+					<tbody></tbody>
+				</table>`,
+				'text/html'
+			);
+			const caption = doc.querySelector('caption');
+			const p = doc.querySelector('p');
+			const div = doc.querySelector('div');
+
+			// Block elements should be allowed inside caption
+			expect(caption?.contains(p)).toBe(true);
+			expect(caption?.contains(div)).toBe(true);
+		});
+
+		it('Should NOT allow <table> as direct child of <caption>', () => {
+			const doc = new window.DOMParser().parseFromString(
+				`<table>
+					<caption>
+						<table><tr><td>Nested table</td></tr></table>
+					</caption>
+					<tbody></tbody>
+				</table>`,
+				'text/html'
+			);
+			const caption = doc.querySelector('caption');
+			const nestedTable = doc.querySelectorAll('table')[1];
+
+			// The nested table should NOT be inside the caption
+			expect(caption?.contains(nestedTable)).toBe(false);
+		});
+
+		it('Should preserve caption content when serializing', () => {
+			const html =
+				'<table><caption>This <b>is</b> a <em>test</em>.</caption><tbody></tbody></table>';
+			const doc = new window.DOMParser().parseFromString(html, 'text/html');
+			const table = doc.querySelector('table');
+			const serialized = table?.outerHTML;
+
+			expect(serialized).toContain('<caption>This <b>is</b> a <em>test</em>.</caption>');
+		});
+
+		it('Should remove <caption> tag when parent is not <table>', () => {
+			const doc = new window.DOMParser().parseFromString(
+				'<div><caption>Wrong parent</caption></div>',
+				'text/html'
+			);
+			// The caption tag should be removed, leaving only the text content
+			expect(doc.body.innerHTML).toBe('<div>Wrong parent</div>');
+		});
+
+		it('Should remove <caption> tag when used standalone', () => {
+			const doc = new window.DOMParser().parseFromString(
+				'<caption>Standalone caption</caption>',
+				'text/html'
+			);
+			// The caption tag should be removed, leaving only the text content
+			expect(doc.body.innerHTML).toBe('Standalone caption');
+		});
+
+		it('Should preserve <caption> tag only when parent is <table>', () => {
+			const doc = new window.DOMParser().parseFromString(
+				'<table><caption>Correct parent</caption></table>',
+				'text/html'
+			);
+			const caption = doc.querySelector('caption');
+			const table = doc.querySelector('table');
+
+			// The caption should exist and be inside the table
+			expect(caption).not.toBeNull();
+			expect(table?.contains(caption)).toBe(true);
+			expect(doc.body.innerHTML).toContain('<caption>Correct parent</caption>');
+		});
+	});
 });
