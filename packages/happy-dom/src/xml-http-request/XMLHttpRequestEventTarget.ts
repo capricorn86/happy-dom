@@ -1,4 +1,4 @@
-import ProgressEvent from '../event/events/ProgressEvent.js';
+import type ProgressEvent from '../event/events/ProgressEvent.js';
 import EventTarget from '../event/EventTarget.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 

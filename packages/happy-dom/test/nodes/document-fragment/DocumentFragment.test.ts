@@ -1,13 +1,13 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import DocumentFragment from '../../../src/nodes/document-fragment/DocumentFragment.js';
 import Node from '../../../src/nodes/node/Node.js';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility.js';
 import QuerySelector from '../../../src/query-selector/QuerySelector.js';
-import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
-import Text from '../../../src/nodes/text/Text.js';
+import type HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
+import type Text from '../../../src/nodes/text/Text.js';
 import NodeList from '../../../src/nodes/node/NodeList.js';
-import Element from '../../../src/nodes/element/Element.js';
+import type Element from '../../../src/nodes/element/Element.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 

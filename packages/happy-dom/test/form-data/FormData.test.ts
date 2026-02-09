@@ -1,5 +1,5 @@
 import Window from '../../src/window/Window.js';
-import Document from '../../src/nodes/document/Document.js';
+import type Document from '../../src/nodes/document/Document.js';
 import File from '../../src/file/File.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Blob from '../../src/file/Blob.js';

@@ -1,9 +1,9 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import HTMLStyleElement from '../../../src/nodes/html-style-element/HTMLStyleElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
-import DOMImplementation from '../../../src/dom-implementation/DOMImplementation.js';
+import type DOMImplementation from '../../../src/dom-implementation/DOMImplementation.js';
 import CSSStyleRule from '../../../src/css/rules/CSSStyleRule.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 

@@ -13,7 +13,7 @@
 		"clean": "git clean -Xdfq",
 		"lint": "eslint --max-warnings 0 --cache --cache-location ./.turbo/eslint.turbo .",
 		"lint:fix": "eslint --max-warnings 0 --cache --cache-location ./.turbo/eslint.turbo --fix .",
-		"test": "DO_NOT_TRACK=1 turbo run test",
+		"test": "DO_NOT_TRACK=1 turbo run test && turbo run test:circular-dependencies",
 		"test:watch": "DO_NOT_TRACK=1 turbo run test:watch --parallel",
 		"prepare": "husky"
 	},
@@ -36,7 +36,7 @@
 		"semver": "^7.3.5",
 		"turbo": "^2.5.4",
 		"typescript": "^5.8.3",
-		"vitest": "^3.2.2"
+		"vitest": "^4.0.16"
 	},
 	"happyLintChanged": {
 		"rules": [

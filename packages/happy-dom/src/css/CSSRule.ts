@@ -1,8 +1,8 @@
-import CSSStyleSheet from './CSSStyleSheet.js';
+import type CSSStyleSheet from './CSSStyleSheet.js';
 import CSSRuleTypeEnum from './CSSRuleTypeEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import BrowserWindow from '../window/BrowserWindow.js';
-import CSSParser from './utilities/CSSParser.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
+import type CSSParser from './utilities/CSSParser.js';
 
 /**
  * CSSRule interface.

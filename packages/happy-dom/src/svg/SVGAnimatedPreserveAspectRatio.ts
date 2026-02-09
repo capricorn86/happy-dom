@@ -1,5 +1,5 @@
 import * as PropertySymbol from '../PropertySymbol.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import SVGPreserveAspectRatio from './SVGPreserveAspectRatio.js';
 
 /**

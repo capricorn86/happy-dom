@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import ProcessArgumentsParser from '../../src/utilities/ProcessArgumentsParser.js';
 import DefaultServerRendererConfiguration from '../../src/config/DefaultServerRendererConfiguration.js';
-import IServerRendererConfiguration from '../../src/types/IServerRendererConfiguration.js';
+import type IServerRendererConfiguration from '../../src/types/IServerRendererConfiguration.js';
 import MockedConfiguration from './MockedConfiguration.js';
 import Path from 'path';
 

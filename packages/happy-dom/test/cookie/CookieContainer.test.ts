@@ -1,7 +1,7 @@
 import CookieContainer from '../../src/cookie/CookieContainer.js';
 import CookieSameSiteEnum from '../../src/cookie/enums/CookieSameSiteEnum.js';
-import ICookie from '../../src/cookie/ICookie.js';
-import ICookieContainer from '../../src/cookie/ICookieContainer.js';
+import type ICookie from '../../src/cookie/ICookie.js';
+import type ICookieContainer from '../../src/cookie/ICookieContainer.js';
 import CookieStringUtility from '../../src/cookie/urilities/CookieStringUtility.js';
 import URL from '../../src/url/URL.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';

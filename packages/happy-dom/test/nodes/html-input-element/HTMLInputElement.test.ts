@@ -1,19 +1,19 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
-import HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement.js';
+import type Document from '../../../src/nodes/document/Document.js';
+import type HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement.js';
 import DOMException from '../../../src/exception/DOMException.js';
 import File from '../../../src/file/File.js';
 import Event from '../../../src/event/Event.js';
 import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum.js';
 import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum.js';
 import ValidityState from '../../../src/validity-state/ValidityState.js';
-import HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElement.js';
+import type HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElement.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
-import SubmitEvent from '../../../src/event/events/SubmitEvent.js';
+import type SubmitEvent from '../../../src/event/events/SubmitEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import PointerEvent from '../../../src/event/events/PointerEvent.js';
 import MouseEvent from '../../../src/event/events/MouseEvent.js';
-import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import type HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 
 describe('HTMLInputElement', () => {
 	let window: Window;
@@ -1294,11 +1294,107 @@ describe('HTMLInputElement', () => {
 			expect(element.value).toBe('1');
 		});
 
+		it('Steps up with step value.', () => {
+			element.type = 'number';
+			element.step = '2';
+			element.stepUp();
+			expect(element.value).toBe('2');
+		});
+
 		it('Steps up with defined increment value.', () => {
 			element.type = 'number';
 			element.value = '1';
 			element.stepUp(3);
 			expect(element.value).toBe('4');
+		});
+
+		it('Does not step up past max', () => {
+			element.type = 'number';
+			element.value = '1';
+			element.max = '3';
+			element.stepUp(3);
+			expect(element.value).toBe('3');
+		});
+
+		it('Steps up to exactly max if max is divisible by step', () => {
+			element.type = 'number';
+			element.value = '0';
+			element.max = '8';
+			element.step = '2';
+			element.stepUp(10);
+			expect(element.value).toBe('8');
+		});
+
+		it('Does not step up past max, respecting step attribute', () => {
+			element.type = 'number';
+			element.value = '0';
+			element.max = '7';
+			element.step = '2';
+			element.stepUp(10);
+			expect(element.value).toBe('6');
+		});
+
+		it('Steps to the closest valid step', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '2';
+			element.stepUp();
+			expect(element.value).toBe('11');
+		});
+
+		it('Steps decimals when step is 0.5', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '0.5';
+			element.stepUp();
+			expect(element.value).toBe('10.5');
+		});
+
+		it('Steps decimals when step is 1.2', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '1.2';
+			element.stepUp();
+			expect(element.value).toBe('10.6');
+		});
+
+		it('Handles increment set to 0', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '2';
+			element.stepUp(0);
+			expect(element.value).toBe('10');
+		});
+
+		it('Handles step set to 0', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '0';
+			element.stepUp(2);
+			expect(element.value).toBe('12');
+		});
+
+		it('Handles negative values', () => {
+			element.type = 'number';
+			element.value = '-4';
+			element.min = '-12';
+			element.step = '2';
+			element.stepUp(2);
+			expect(element.value).toBe('-2');
+		});
+
+		it('Steps to the closest valid step with negative values', () => {
+			element.type = 'number';
+			element.value = '-10';
+			element.min = '-11';
+			element.step = '2';
+			element.stepUp();
+			expect(element.value).toBe('-9');
 		});
 
 		it('Throws exception when invalid type.', () => {
@@ -1309,17 +1405,113 @@ describe('HTMLInputElement', () => {
 	});
 
 	describe('stepDown()', () => {
-		it('Steps up with default value.', () => {
+		it('Steps down with default value.', () => {
 			element.type = 'number';
 			element.stepDown();
 			expect(element.value).toBe('-1');
 		});
 
-		it('Steps up with defined increment value.', () => {
+		it('Steps down with step value.', () => {
+			element.type = 'number';
+			element.step = '2';
+			element.stepDown();
+			expect(element.value).toBe('-2');
+		});
+
+		it('Steps down with defined increment value.', () => {
 			element.type = 'number';
 			element.value = '1';
 			element.stepDown(3);
 			expect(element.value).toBe('-2');
+		});
+
+		it('Does not step down past min', () => {
+			element.type = 'number';
+			element.value = '1';
+			element.min = '0';
+			element.stepDown(3);
+			expect(element.value).toBe('0');
+		});
+
+		it('Steps down to exactly min when min is divisible by step', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '2';
+			element.step = '2';
+			element.stepDown(9);
+			expect(element.value).toBe('2');
+		});
+
+		it('Does not step down past min, respecting step attribute', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '2';
+			element.stepDown(9);
+			expect(element.value).toBe('1');
+		});
+
+		it('Steps to the closest valid step', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '2';
+			element.stepDown();
+			expect(element.value).toBe('9');
+		});
+
+		it('Steps decimals when step is 0.5', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '0.5';
+			element.stepDown();
+			expect(element.value).toBe('9.5');
+		});
+
+		it('Steps decimals when step is 1.2', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '1.2';
+			element.stepDown();
+			expect(element.value).toBe('9.4');
+		});
+
+		it('Handles increment set to 0', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '2';
+			element.stepDown(0);
+			expect(element.value).toBe('10');
+		});
+
+		it('Handles step set to 0', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '0';
+			element.stepDown(2);
+			expect(element.value).toBe('8');
+		});
+
+		it('Handles negative values', () => {
+			element.type = 'number';
+			element.value = '-4';
+			element.min = '-12';
+			element.step = '2';
+			element.stepDown(2);
+			expect(element.value).toBe('-6');
+		});
+
+		it('Steps to the closest valid step with negative values', () => {
+			element.type = 'number';
+			element.value = '-10';
+			element.min = '-11';
+			element.step = '2';
+			element.stepDown();
+			expect(element.value).toBe('-11');
 		});
 
 		it('Throws exception when invalid type.', () => {

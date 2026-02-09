@@ -1,16 +1,17 @@
 import { describe, it, expect, afterEach, vi, beforeEach } from 'vitest';
-import Http2, { Http2ServerRequest, Http2ServerResponse } from 'http2';
+import type { Http2ServerRequest, Http2ServerResponse } from 'http2';
+import Http2 from 'http2';
 import ServerRendererServer from '../src/ServerRendererServer.js';
 import ServerRendererConfigurationFactory from '../src/utilities/ServerRendererConfigurationFactory.js';
 import OS from 'node:os';
 import FetchHTTPSCertificate from 'happy-dom/lib/fetch/certificate/FetchHTTPSCertificate.js';
 import Headers from 'happy-dom/lib/fetch/Headers.js';
-import Response from 'happy-dom/lib/fetch/Response.js';
+import type Response from 'happy-dom/lib/fetch/Response.js';
 import ServerRenderer from '../src/ServerRenderer.js';
-import IServerRendererItem from '../src/types/IServerRendererItem.js';
-import IServerRendererResult from '../src/types/IServerRendererResult.js';
+import type IServerRendererItem from '../src/types/IServerRendererItem.js';
+import type IServerRendererResult from '../src/types/IServerRendererResult.js';
 import ZLib from 'node:zlib';
-import IOptionalServerRendererConfiguration from '../src/types/IOptionalServerRendererConfiguration.js';
+import type IOptionalServerRendererConfiguration from '../src/types/IOptionalServerRendererConfiguration.js';
 // eslint-disable-next-line import/no-named-as-default
 import Chalk from 'chalk';
 import PackageVersion from '../src/utilities/PackageVersion.js';

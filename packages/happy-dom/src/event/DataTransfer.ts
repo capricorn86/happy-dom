@@ -1,4 +1,4 @@
-import File from '../file/File.js';
+import type File from '../file/File.js';
 import DataTransferItem from './DataTransferItem.js';
 import DataTransferItemList from './DataTransferItemList.js';
 

@@ -1,6 +1,6 @@
-import Element from '../element/Element.js';
+import type Element from '../element/Element.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
-import INonDocumentTypeChildNode from './INonDocumentTypeChildNode.js';
+import type INonDocumentTypeChildNode from './INonDocumentTypeChildNode.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**

@@ -1,10 +1,10 @@
-import Document from '../document/Document.js';
-import HTMLElement from '../html-element/HTMLElement.js';
-import HTMLLabelElement from './HTMLLabelElement.js';
+import type Document from '../document/Document.js';
+import type HTMLElement from '../html-element/HTMLElement.js';
+import type HTMLLabelElement from './HTMLLabelElement.js';
 import NodeList from '../node/NodeList.js';
-import ShadowRoot from '../shadow-root/ShadowRoot.js';
+import type ShadowRoot from '../shadow-root/ShadowRoot.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import Element from '../element/Element.js';
+import type Element from '../element/Element.js';
 
 /**
  * Utility for finding labels associated with a form element.

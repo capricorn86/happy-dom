@@ -1,4 +1,4 @@
-import BrowserWindow from '../../src/window/BrowserWindow.js';
+import type BrowserWindow from '../../src/window/BrowserWindow.js';
 import Headers from '../../src/fetch/Headers.js';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
@@ -10,7 +10,7 @@ import { URLSearchParams } from 'url';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import SyncFetchScriptBuilder from '../../src/fetch/utilities/SyncFetchScriptBuilder.js';
 import SyncFetch from '../../src/fetch/SyncFetch.js';
-import IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
+import type IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
 import Browser from '../../src/browser/Browser.js';
 import FS from 'fs';
 import Path from 'path';

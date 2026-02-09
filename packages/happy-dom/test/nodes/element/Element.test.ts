@@ -3,19 +3,19 @@ import HTMLSerializer from '../../../src/html-serializer/HTMLSerializer.js';
 import HTMLParser from '../../../src/html-parser/HTMLParser.js';
 import CustomElement from '../../CustomElement.js';
 import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
-import Document from '../../../src/nodes/document/Document.js';
-import Text from '../../../src/nodes/text/Text.js';
+import type Document from '../../../src/nodes/document/Document.js';
+import type Text from '../../../src/nodes/text/Text.js';
 import DOMRect from '../../../src/dom/DOMRect.js';
 import NamespaceURI from '../../../src/config/NamespaceURI.js';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility.js';
 import QuerySelector from '../../../src/query-selector/QuerySelector.js';
 import ChildNodeUtility from '../../../src/nodes/child-node/ChildNodeUtility.js';
 import NonDocumentChildNodeUtility from '../../../src/nodes/child-node/NonDocumentChildNodeUtility.js';
-import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
+import type HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
 import Node from '../../../src/nodes/node/Node.js';
 import HTMLCollection from '../../../src/nodes/element/HTMLCollection.js';
 import Element from '../../../src/nodes/element/Element.js';
-import NodeList from '../../../src/nodes/node/NodeList.js';
+import type NodeList from '../../../src/nodes/node/NodeList.js';
 import Event from '../../../src/event/Event.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
@@ -1202,6 +1202,10 @@ describe('Element', () => {
 
 			element.replaceWith(node1, node2);
 			expect(isCalled).toBe(true);
+		});
+
+		it('Should not throw when there is no parent node.', () => {
+			document.createElement('div').replaceWith(document.createElement('div'));
 		});
 	});
 

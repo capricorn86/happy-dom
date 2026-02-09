@@ -1,4 +1,4 @@
-import IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import type IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import HashChangeEvent from '../event/events/HashChangeEvent.js';
 import HistoryScrollRestorationEnum from '../history/HistoryScrollRestorationEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';

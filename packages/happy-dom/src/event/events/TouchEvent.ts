@@ -1,6 +1,6 @@
-import ITouchEventInit from './ITouchEventInit.js';
+import type ITouchEventInit from './ITouchEventInit.js';
 import UIEvent from '../UIEvent.js';
-import Touch from '../Touch.js';
+import type Touch from '../Touch.js';
 
 /**
  *
