@@ -53,6 +53,8 @@ export default class HTMLSelectElement extends HTMLElement {
 			EventTarget
 		]);
 
+		const customProperties = new Set<string | symbol>();
+
 		const proxy = new Proxy(this, {
 			get: (target, property) => {
 				if (property in target || typeof property === 'symbol') {
@@ -68,14 +70,22 @@ export default class HTMLSelectElement extends HTMLElement {
 				methodBinder.bind(property);
 
 				if (typeof property === 'symbol') {
+					const isNew = !(property in target);
 					(<any>target)[property] = newValue;
+					if (isNew) {
+						customProperties.add(property);
+					}
 					return true;
 				}
 
 				const index = Number(property);
 
 				if (isNaN(index)) {
+					const isNew = !(property in target);
 					(<any>target)[property] = newValue;
+					if (isNew) {
+						customProperties.add(property);
+					}
 					return true;
 				}
 
@@ -109,16 +119,24 @@ export default class HTMLSelectElement extends HTMLElement {
 			deleteProperty(target, property): boolean {
 				if (typeof property === 'symbol') {
 					delete (<any>target)[property];
+					customProperties.delete(property);
 					return true;
 				}
 				const index = Number(property);
 				if (isNaN(index)) {
 					delete (<any>target)[property];
+					customProperties.delete(property);
 				}
 				return true;
 			},
-			ownKeys(target): string[] {
-				return Object.keys(QuerySelector.querySelectorAll(target, 'option')[PropertySymbol.items]);
+			ownKeys(target): (string | symbol)[] {
+				const keys: (string | symbol)[] = Object.keys(
+					QuerySelector.querySelectorAll(target, 'option')[PropertySymbol.items]
+				);
+				for (const property of customProperties) {
+					keys.push(property);
+				}
+				return keys;
 			},
 			has(target, property): boolean {
 				if (property in target) {
@@ -140,10 +158,23 @@ export default class HTMLSelectElement extends HTMLElement {
 			defineProperty(target, property, descriptor): boolean {
 				methodBinder.preventBinding(property);
 
+				if (typeof property === 'symbol') {
+					const isNew = !(property in target);
+					Object.defineProperty(target, property, descriptor);
+					if (isNew) {
+						customProperties.add(property);
+					}
+					return true;
+				}
+
 				const index = Number(property);
 
 				if (isNaN(index)) {
+					const isNew = !(property in target);
 					Object.defineProperty(target, property, descriptor);
+					if (isNew) {
+						customProperties.add(property);
+					}
 					return true;
 				}
 
@@ -175,28 +206,26 @@ export default class HTMLSelectElement extends HTMLElement {
 				return true;
 			},
 			getOwnPropertyDescriptor(target, property): PropertyDescriptor | undefined {
-				if (property in target) {
+				if (typeof property === 'symbol') {
 					return Object.getOwnPropertyDescriptor(target, property);
 				}
 
 				const index = Number(property);
 
-				if (isNaN(index)) {
-					return;
+				if (!isNaN(index)) {
+					const options = QuerySelector.querySelectorAll(target, 'option')[PropertySymbol.items];
+
+					if (options[index]) {
+						return {
+							value: options[index],
+							writable: true,
+							enumerable: true,
+							configurable: true
+						};
+					}
 				}
 
-				const options = QuerySelector.querySelectorAll(target, 'option')[PropertySymbol.items];
-
-				if (!options[index]) {
-					return;
-				}
-
-				return {
-					value: options[index],
-					writable: true,
-					enumerable: true,
-					configurable: true
-				};
+				return Object.getOwnPropertyDescriptor(target, property);
 			}
 		});
 
