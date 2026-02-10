@@ -2301,10 +2301,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			...this.getBackgroundColor('initial', important)
 		};
 
-		const parts = CSSStyleDeclarationValueUtility.splitBySpace(
-			value.replace(/\s,\s/g, ',').replace(/\s\/\s/g, '/')
-		);
-
+		const parts = CSSStyleDeclarationValueUtility.splitBySpace(value.replace(/\s+\/\s+/g, '/'));
 		const backgroundPositions = [];
 
 		for (const part of parts) {
