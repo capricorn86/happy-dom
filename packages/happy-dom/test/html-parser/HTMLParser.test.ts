@@ -2255,5 +2255,44 @@ describe('HTMLParser', () => {
                 </tr>
             `);
 		});
+
+		it('Handles numeric character references and &apos; in attribute values for #1947', () => {
+			const result = new HTMLParser(window).parse(`
+                <div>
+                    <span data-foo="&#34;"></span>
+                    <span data-foo="&#x22;"></span>
+                    <span data-foo="&apos;"></span>
+                </div>`);
+			expect(new HTMLSerializer().serializeToString(result)).toBe(`
+                <div>
+                    <span data-foo="&quot;"></span>
+                    <span data-foo="&quot;"></span>
+                    <span data-foo="'"></span>
+                </div>`);
+		});
+
+		it('Handles numeric character references in attribute values for #1947', () => {
+			// Decimal numeric character reference
+			const result1 = new HTMLParser(window).parse(`<div data-foo="&#34;"></div>`);
+			expect(new HTMLSerializer().serializeToString(result1)).toBe(`<div data-foo="&quot;"></div>`);
+
+			// Hexadecimal numeric character reference
+			const result2 = new HTMLParser(window).parse(`<div data-foo="&#x22;"></div>`);
+			expect(new HTMLSerializer().serializeToString(result2)).toBe(`<div data-foo="&quot;"></div>`);
+
+			// Mixed: named, decimal, and hex references
+			const result3 = new HTMLParser(window).parse(`<div data-foo="&quot;&#34;&#x22;"></div>`);
+			expect(new HTMLSerializer().serializeToString(result3)).toBe(
+				`<div data-foo="&quot;&quot;&quot;"></div>`
+			);
+
+			// Apostrophe via numeric reference
+			const result4 = new HTMLParser(window).parse(`<div data-foo="&#39;"></div>`);
+			expect(new HTMLSerializer().serializeToString(result4)).toBe(`<div data-foo="'"></div>`);
+
+			// &apos; named reference (should also work)
+			const result5 = new HTMLParser(window).parse(`<div data-foo="&apos;"></div>`);
+			expect(new HTMLSerializer().serializeToString(result5)).toBe(`<div data-foo="'"></div>`);
+		});
 	});
 });
