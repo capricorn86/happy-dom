@@ -179,6 +179,18 @@ describe('ParentNodeUtility', () => {
 			expect(elementByClassName[1]).toBe(element2);
 			expect(elementByClassName[2]).toBe(element3);
 		});
+
+		it('Returns element matching unicode class name', () => {
+			const div = document.createElement('div');
+			const unicodeClassName = 'class-😀';
+			const element = document.createElement('span');
+			element.className = unicodeClassName;
+			div.appendChild(element);
+			document.body.appendChild(div);
+
+			expect(div.getElementsByClassName(unicodeClassName)).toBe(element);
+			expect(document.getElementsByClassName(unicodeClassName)).toBe(element);
+		});
 	});
 
 	describe('getElementsByTagName()', () => {
