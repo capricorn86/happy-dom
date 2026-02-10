@@ -1,3 +1,5 @@
+import CSSStyleDeclarationValueUtility from './CSSStyleDeclarationValueUtility.js';
+
 const COLOR_REGEXP =
 	/^#([0-9a-fA-F]{3,4}){1,2}$|^rgb\(([^)]*)\)$|^rgba\(([^)]*)\)$|^hsla?\(\s*(-?\d+|-?\d*.\d+)\s*,\s*(-?\d+|-?\d*.\d+)%\s*,\s*(-?\d+|-?\d*.\d+)%\s*(,\s*(-?\d+|-?\d*.\d+)\s*)?\)|(?:(rgba?|hsla?)\((var\(\s*(--[^)\s]+)\))\))/;
 
@@ -334,31 +336,7 @@ export default class CSSStyleDeclarationValueParser {
 		const match = value.match(GRADIENT_REGEXP);
 		if (match) {
 			const args = match[3].trim();
-			// Split on commas, but not commas inside parentheses
-			const parts: string[] = [];
-			let current = '';
-			let depth = 0;
-
-			for (let i = 0; i < args.length; i++) {
-				const char = args[i];
-				if (char === '(') {
-					depth++;
-					current += char;
-				} else if (char === ')') {
-					depth--;
-					current += char;
-				} else if (char === ',' && depth === 0) {
-					parts.push(current.trim());
-					current = '';
-				} else {
-					current += char;
-				}
-			}
-
-			if (current) {
-				parts.push(current.trim());
-			}
-
+			const parts = CSSStyleDeclarationValueUtility.splitByComma(args);
 			return `${match[1]}(${parts.join(', ')})`;
 		}
 		return null;

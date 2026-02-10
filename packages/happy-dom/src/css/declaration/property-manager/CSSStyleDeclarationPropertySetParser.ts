@@ -1,4 +1,5 @@
 import CSSStyleDeclarationValueParser from './CSSStyleDeclarationValueParser.js';
+import CSSStyleDeclarationValueUtility from './CSSStyleDeclarationValueUtility.js';
 import type ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyValue.js';
 
 const RECT_REGEXP = /^rect\((.*)\)$/i;
@@ -93,76 +94,6 @@ const TEXT_TRANSFORM = [
 	'full-size-kana'
 ];
 const VISIBILITY = ['visible', 'hidden', 'collapse'];
-
-/**
- * Splits by comma while respecting nested parentheses.
- *
- * @param value Value to split.
- * @returns Array of parts.
- */
-function splitByComma(value: string): string[] {
-	const parts: string[] = [];
-	let current = '';
-	let depth = 0;
-
-	for (let i = 0; i < value.length; i++) {
-		const char = value[i];
-
-		if (char === '(') {
-			depth++;
-		} else if (char === ')') {
-			depth--;
-		} else if (char === ',' && depth === 0) {
-			parts.push(current);
-			current = '';
-			continue;
-		}
-
-		current += char;
-	}
-
-	if (current) {
-		parts.push(current);
-	}
-
-	return parts;
-}
-
-/**
- * Splits by space while respecting nested parentheses.
- *
- * @param value Value to split.
- * @returns Array of parts.
- */
-function splitBySpace(value: string): string[] {
-	const parts: string[] = [];
-	let current = '';
-	let depth = 0;
-
-	for (let i = 0; i < value.length; i++) {
-		const char = value[i];
-
-		if (char === '(') {
-			depth++;
-		} else if (char === ')') {
-			depth--;
-		} else if ((char === ' ' || char === '\t') && depth === 0) {
-			if (current) {
-				parts.push(current);
-				current = '';
-			}
-			continue;
-		}
-
-		current += char;
-	}
-
-	if (current) {
-		parts.push(current);
-	}
-
-	return parts;
-}
 
 /**
  * Computed style property parser.
@@ -2370,7 +2301,9 @@ export default class CSSStyleDeclarationPropertySetParser {
 			...this.getBackgroundColor('initial', important)
 		};
 
-		const parts = splitBySpace(value.replace(/\s,\s/g, ',').replace(/\s\/\s/g, '/'));
+		const parts = CSSStyleDeclarationValueUtility.splitBySpace(
+			value.replace(/\s,\s/g, ',').replace(/\s\/\s/g, '/')
+		);
 
 		const backgroundPositions = [];
 
@@ -2878,7 +2811,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			return { 'background-image': { value: lowerValue, important } };
 		}
 
-		const parts = splitByComma(value);
+		const parts = CSSStyleDeclarationValueUtility.splitByComma(value);
 		const parsed = [];
 
 		for (const part of parts) {
