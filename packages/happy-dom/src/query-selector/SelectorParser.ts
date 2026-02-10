@@ -27,7 +27,7 @@ import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.j
  * Group 17: Combinator.
  */
 const SELECTOR_REGEXP =
-	/(\*)|([a-zA-Z0-9-]+)|#((?:[a-zA-Z0-9-_«»]|\\.)+)|\.((?:[a-zA-Z0-9-_«»]|\\.)+)|\[([a-zA-Z0-9-_\\:]+)\]|\[([a-zA-Z0-9-_\\:]+)\s*([~|^$*]{0,1})\s*=\s*["']{1}([^"']*)["']{1}\s*(s|i){0,1}\]|\[([a-zA-Z0-9-_]+)\s*([~|^$*]{0,1})\s*=\s*([^\]]*)\]|:([a-zA-Z-]+)\s*\(((?:[^()]|\[[^\]]*\]|\([^()]*\))*)\){0,1}|:([a-zA-Z-]+)|::([a-zA-Z-]+)|([\s,+>~]*)/gm;
+	/(\*)|([a-zA-Z0-9\u00A0-\uFFFF-]+)|#((?:[a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\.((?:[a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\[([a-zA-Z0-9-_\\:]+)\]|\[([a-zA-Z0-9-_\\:]+)\s*([~|^$*]{0,1})\s*=\s*["']{1}([^"']*)["']{1}\s*(s|i){0,1}\]|\[([a-zA-Z0-9-_]+)\s*([~|^$*]{0,1})\s*=\s*([^\]]*)\]|:([a-zA-Z-]+)\s*\(((?:[^()]|\[[^\]]*\]|\([^()]*\))*)\){0,1}|:([a-zA-Z-]+)|::([a-zA-Z-]+)|([\s,+>~]*)/gm;
 
 /**
  * Escaped Character RegExp.
@@ -60,7 +60,8 @@ const SPACE_REGEXP = / /g;
  * Group 2: Class (e.g. ".classA.classB")
  * Group 3: ID (e.g. "#id")
  */
-const SIMPLE_SELECTOR_REGEXP = /(^[a-zA-Z0-9-]+$)|(^\.[a-zA-Z0-9-_.]+$)|(^#[a-zA-Z0-9-_]+$)/;
+const SIMPLE_SELECTOR_REGEXP =
+	/(^[a-zA-Z0-9\u00A0-\uFFFF-]+$)|(^\.[a-zA-Z0-9\u00A0-\uFFFF_.]+$)|(^#[a-zA-Z0-9\u00A0-\uFFFF_-]+$)/;
 
 /**
  * Utility for parsing a selection string.
