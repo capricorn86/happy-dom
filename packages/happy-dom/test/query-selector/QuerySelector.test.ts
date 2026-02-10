@@ -1863,6 +1863,16 @@ describe('QuerySelector', () => {
 		it('Return element for pseudo selector ":root"', () => {
 			expect(document.querySelectorAll(':root')[0]).toBe(document.documentElement);
 		});
+
+		it('Returns element matching unicode class name', () => {
+			const div = document.createElement('div');
+			const unicodeClassName = 'class-😀';
+			const element = document.createElement('span');
+			element.className = unicodeClassName;
+			div.appendChild(element);
+
+			expect(div.querySelector(`.${unicodeClassName}`)).toBe(element);
+		});
 	});
 
 	describe('matches()', () => {
