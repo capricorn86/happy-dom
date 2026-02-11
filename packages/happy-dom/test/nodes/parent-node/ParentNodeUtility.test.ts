@@ -188,8 +188,8 @@ describe('ParentNodeUtility', () => {
 			div.appendChild(element);
 			document.body.appendChild(div);
 
-			expect(div.getElementsByClassName(unicodeClassName)).toBe(element);
-			expect(document.getElementsByClassName(unicodeClassName)).toBe(element);
+			expect(div.getElementsByClassName(unicodeClassName)[0]).toBe(element);
+			expect(document.getElementsByClassName(unicodeClassName)[0]).toBe(element);
 		});
 	});
 

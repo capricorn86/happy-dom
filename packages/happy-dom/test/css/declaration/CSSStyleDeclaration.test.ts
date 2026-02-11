@@ -1997,6 +1997,71 @@ describe('CSSStyleDeclaration', () => {
 				'linear-gradient(to right, #111111 0%, #111111 0.5833333333333334rem, #dfdfdf 0.5833333333333334rem, #dfdfdf 100%)'
 			);
 		});
+
+		it('Supports linear-gradient with rgba() colors.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			element.style.background =
+				'linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%)';
+
+			expect(declaration.background).toBe(
+				'linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%)'
+			);
+		});
+
+		it('Supports linear-gradient with mixed color formats.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			element.style.background =
+				'linear-gradient(to right, rgba(255, 0, 0, 0.5), #00ff00, hsla(240, 100%, 50%, 0.8))';
+
+			expect(declaration.background).toBe(
+				'linear-gradient(to right, rgba(255, 0, 0, 0.5), #00ff00, hsla(240, 100%, 50%, 0.8))'
+			);
+		});
+
+		it('Supports radial-gradient with rgba() colors.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			element.style.background =
+				'radial-gradient(circle, rgba(255, 255, 255, 0), rgba(0, 0, 0, 1))';
+
+			expect(declaration.background).toBe(
+				'radial-gradient(circle, rgba(255, 255, 255, 0), rgba(0, 0, 0, 1))'
+			);
+		});
+
+		it('Supports repeating gradients with rgba() colors.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			element.style.background =
+				'repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.5) 0px, rgba(255, 255, 255, 0.5) 10px)';
+
+			expect(declaration.background).toBe(
+				'repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.5) 0px, rgba(255, 255, 255, 0.5) 10px)'
+			);
+		});
+
+		it('Supports conic-gradient with rgba() colors.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			element.style.background =
+				'conic-gradient(from 90deg, rgba(255, 0, 0, 1), rgba(0, 255, 0, 1), rgba(0, 0, 255, 1))';
+
+			expect(declaration.background).toBe(
+				'conic-gradient(from 90deg, rgba(255, 0, 0, 1), rgba(0, 255, 0, 1), rgba(0, 0, 255, 1))'
+			);
+		});
 	});
 
 	describe('get backgroundImage()', () => {
@@ -2032,6 +2097,45 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.backgroundImage).toBe(
 				'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=")'
+			);
+		});
+
+		it('Supports gradients with rgba() colors.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			element.style.backgroundImage =
+				'radial-gradient(circle, rgba(255, 255, 255, 0), rgba(0, 0, 0, 1))';
+
+			expect(declaration.backgroundImage).toBe(
+				'radial-gradient(circle, rgba(255, 255, 255, 0), rgba(0, 0, 0, 1))'
+			);
+		});
+
+		it('Supports multiple gradients with rgba() colors.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			element.style.backgroundImage =
+				'linear-gradient(to right, rgba(255, 0, 0, 0.5), rgba(0, 0, 255, 0.5)), radial-gradient(circle, rgba(0, 255, 0, 0.3), rgba(255, 255, 0, 0.3))';
+
+			expect(declaration.backgroundImage).toBe(
+				'linear-gradient(to right, rgba(255, 0, 0, 0.5), rgba(0, 0, 255, 0.5)), radial-gradient(circle, rgba(0, 255, 0, 0.3), rgba(255, 255, 0, 0.3))'
+			);
+		});
+
+		it('Supports URL and gradient combination with rgba() colors.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			element.style.backgroundImage =
+				'url("test.png"), linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.8))';
+
+			expect(declaration.backgroundImage).toBe(
+				'url("test.png"), linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.8))'
 			);
 		});
 	});
