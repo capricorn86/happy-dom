@@ -17,7 +17,7 @@ export default class Attr extends Node implements Attr {
 	public [PropertySymbol.name]: string | null = null;
 	public [PropertySymbol.localName]: string | null = null;
 	public [PropertySymbol.prefix]: string | null = null;
-	public [PropertySymbol.value]: string | null = null;
+	public [PropertySymbol.value]: string = '';
 	public [PropertySymbol.specified] = true;
 	public [PropertySymbol.ownerElement]: Element | null = null;
 
@@ -45,7 +45,7 @@ export default class Attr extends Node implements Attr {
 	 *
 	 * @returns Value.
 	 */
-	public get value(): string | null {
+	public get value(): string {
 		return this[PropertySymbol.value];
 	}
 
@@ -54,8 +54,8 @@ export default class Attr extends Node implements Attr {
 	 *
 	 * @param value Value.
 	 */
-	public set value(value: string) {
-		this[PropertySymbol.value] = value;
+	public set value(value: string | null) {
+		this[PropertySymbol.value] = value === null ? 'null' : String(value);
 	}
 
 	/**
