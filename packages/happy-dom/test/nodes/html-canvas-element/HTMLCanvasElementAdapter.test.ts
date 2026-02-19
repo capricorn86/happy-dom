@@ -1,8 +1,8 @@
 import HTMLCanvasElement from '../../../src/nodes/html-canvas-element/HTMLCanvasElement.js';
-import type { ICanvasAdapter } from '../../../src/nodes/html-canvas-element/HTMLCanvasElement.js';
+import ICanvasAdapter from '../../../src/nodes/html-canvas-element/ICanvasAdapter.js';
 import Window from '../../../src/window/Window.js';
 import Document from '../../../src/nodes/document/Document.js';
-import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import Blob from '../../../src/file/Blob.js';
 
 describe('HTMLCanvasElement - Canvas Adapter', () => {
@@ -14,55 +14,6 @@ describe('HTMLCanvasElement - Canvas Adapter', () => {
 		window = new Window();
 		document = window.document;
 		element = document.createElement('canvas');
-		// Reset adapter before each test
-		HTMLCanvasElement.setCanvasAdapter(null);
-	});
-
-	afterEach(() => {
-		// Clean up adapter after each test
-		HTMLCanvasElement.setCanvasAdapter(null);
-	});
-
-	describe('setCanvasAdapter()', () => {
-		it('Should set the canvas adapter.', () => {
-			const mockAdapter: ICanvasAdapter = {
-				getContext: vi.fn(),
-				toDataURL: vi.fn(),
-				toBlob: vi.fn()
-			};
-
-			HTMLCanvasElement.setCanvasAdapter(mockAdapter);
-			expect(HTMLCanvasElement.getCanvasAdapter()).toBe(mockAdapter);
-		});
-
-		it('Should allow setting adapter to null.', () => {
-			const mockAdapter: ICanvasAdapter = {
-				getContext: vi.fn(),
-				toDataURL: vi.fn(),
-				toBlob: vi.fn()
-			};
-
-			HTMLCanvasElement.setCanvasAdapter(mockAdapter);
-			HTMLCanvasElement.setCanvasAdapter(null);
-			expect(HTMLCanvasElement.getCanvasAdapter()).toBe(null);
-		});
-	});
-
-	describe('getCanvasAdapter()', () => {
-		it('Should return null when no adapter is set.', () => {
-			expect(HTMLCanvasElement.getCanvasAdapter()).toBe(null);
-		});
-
-		it('Should return the set adapter.', () => {
-			const mockAdapter: ICanvasAdapter = {
-				getContext: vi.fn(),
-				toDataURL: vi.fn(),
-				toBlob: vi.fn()
-			};
-
-			HTMLCanvasElement.setCanvasAdapter(mockAdapter);
-			expect(HTMLCanvasElement.getCanvasAdapter()).toBe(mockAdapter);
-		});
 	});
 
 	describe('getContext() with adapter', () => {
@@ -74,7 +25,10 @@ describe('HTMLCanvasElement - Canvas Adapter', () => {
 				toBlob: vi.fn()
 			};
 
-			HTMLCanvasElement.setCanvasAdapter(mockAdapter);
+			window = new Window({ settings: { canvasAdapter: mockAdapter } });
+			document = window.document;
+			element = document.createElement('canvas');
+
 			const ctx = element.getContext('2d');
 
 			expect(mockAdapter.getContext).toHaveBeenCalledWith(element, '2d', undefined);
@@ -89,7 +43,10 @@ describe('HTMLCanvasElement - Canvas Adapter', () => {
 			};
 			const attributes = { alpha: false, desynchronized: true };
 
-			HTMLCanvasElement.setCanvasAdapter(mockAdapter);
+			window = new Window({ settings: { canvasAdapter: mockAdapter } });
+			document = window.document;
+			element = document.createElement('canvas');
+
 			element.getContext('2d', attributes);
 
 			expect(mockAdapter.getContext).toHaveBeenCalledWith(element, '2d', attributes);
@@ -102,7 +59,10 @@ describe('HTMLCanvasElement - Canvas Adapter', () => {
 				toBlob: vi.fn()
 			};
 
-			HTMLCanvasElement.setCanvasAdapter(mockAdapter);
+			window = new Window({ settings: { canvasAdapter: mockAdapter } });
+			document = window.document;
+			element = document.createElement('canvas');
+
 			expect(element.getContext('webgl')).toBe(null);
 		});
 
@@ -125,7 +85,9 @@ describe('HTMLCanvasElement - Canvas Adapter', () => {
 				toBlob: vi.fn()
 			};
 
-			HTMLCanvasElement.setCanvasAdapter(mockAdapter);
+			window = new Window({ settings: { canvasAdapter: mockAdapter } });
+			document = window.document;
+			element = document.createElement('canvas');
 
 			expect(element.getContext('2d')).toEqual({ type: '2d' });
 			expect(element.getContext('webgl')).toEqual({ type: 'webgl' });
@@ -143,7 +105,10 @@ describe('HTMLCanvasElement - Canvas Adapter', () => {
 				toBlob: vi.fn()
 			};
 
-			HTMLCanvasElement.setCanvasAdapter(mockAdapter);
+			window = new Window({ settings: { canvasAdapter: mockAdapter } });
+			document = window.document;
+			element = document.createElement('canvas');
+
 			const result = element.toDataURL();
 
 			expect(mockAdapter.toDataURL).toHaveBeenCalledWith(element, undefined, undefined);
@@ -157,7 +122,10 @@ describe('HTMLCanvasElement - Canvas Adapter', () => {
 				toBlob: vi.fn()
 			};
 
-			HTMLCanvasElement.setCanvasAdapter(mockAdapter);
+			window = new Window({ settings: { canvasAdapter: mockAdapter } });
+			document = window.document;
+			element = document.createElement('canvas');
+
 			element.toDataURL('image/jpeg', 0.8);
 
 			expect(mockAdapter.toDataURL).toHaveBeenCalledWith(element, 'image/jpeg', 0.8);
@@ -179,7 +147,9 @@ describe('HTMLCanvasElement - Canvas Adapter', () => {
 				})
 			};
 
-			HTMLCanvasElement.setCanvasAdapter(mockAdapter);
+			window = new Window({ settings: { canvasAdapter: mockAdapter } });
+			document = window.document;
+			element = document.createElement('canvas');
 
 			let receivedBlob: Blob | null = null;
 			element.toBlob((blob) => {
@@ -199,7 +169,10 @@ describe('HTMLCanvasElement - Canvas Adapter', () => {
 				})
 			};
 
-			HTMLCanvasElement.setCanvasAdapter(mockAdapter);
+			window = new Window({ settings: { canvasAdapter: mockAdapter } });
+			document = window.document;
+			element = document.createElement('canvas');
+
 			element.toBlob(() => {}, 'image/jpeg', 0.9);
 
 			expect(mockAdapter.toBlob).toHaveBeenCalledWith(
@@ -230,10 +203,12 @@ describe('HTMLCanvasElement - Canvas Adapter', () => {
 				toBlob: vi.fn()
 			};
 
+			window = new Window({ settings: { canvasAdapter: mockAdapter } });
+			document = window.document;
+			element = document.createElement('canvas');
 			element.width = 800;
 			element.height = 600;
 
-			HTMLCanvasElement.setCanvasAdapter(mockAdapter);
 			const ctx = element.getContext('2d');
 
 			expect(ctx).toEqual({ width: 800, height: 600 });
@@ -248,192 +223,57 @@ describe('HTMLCanvasElement - Canvas Adapter', () => {
 				toBlob: vi.fn()
 			};
 
-			HTMLCanvasElement.setCanvasAdapter(mockAdapter);
+			window = new Window({ settings: { canvasAdapter: mockAdapter } });
+			document = window.document;
+			element = document.createElement('canvas');
+
 			const ctx = element.getContext('2d');
 
 			expect(ctx).toEqual({ width: 300, height: 150 });
 		});
 	});
 
-	describe('Adapter isolation between elements', () => {
-		it('Should use same adapter for all canvas elements.', () => {
-			const mockAdapter: ICanvasAdapter = {
-				getContext: vi.fn().mockReturnValue({ id: 'shared' }),
+	describe('Adapter isolation between windows', () => {
+		it('Should use different adapters for different windows.', () => {
+			const mockAdapter1: ICanvasAdapter = {
+				getContext: vi.fn().mockReturnValue({ id: 'window1' }),
+				toDataURL: vi.fn(),
+				toBlob: vi.fn()
+			};
+			const mockAdapter2: ICanvasAdapter = {
+				getContext: vi.fn().mockReturnValue({ id: 'window2' }),
 				toDataURL: vi.fn(),
 				toBlob: vi.fn()
 			};
 
-			HTMLCanvasElement.setCanvasAdapter(mockAdapter);
+			const window1 = new Window({ settings: { canvasAdapter: mockAdapter1 } });
+			const window2 = new Window({ settings: { canvasAdapter: mockAdapter2 } });
 
-			const canvas1 = document.createElement('canvas');
-			const canvas2 = document.createElement('canvas');
+			const canvas1 = window1.document.createElement('canvas');
+			const canvas2 = window2.document.createElement('canvas');
 
-			canvas1.getContext('2d');
-			canvas2.getContext('2d');
+			const ctx1 = canvas1.getContext('2d');
+			const ctx2 = canvas2.getContext('2d');
 
-			expect(mockAdapter.getContext).toHaveBeenCalledTimes(2);
-			expect(mockAdapter.getContext).toHaveBeenNthCalledWith(1, canvas1, '2d', undefined);
-			expect(mockAdapter.getContext).toHaveBeenNthCalledWith(2, canvas2, '2d', undefined);
+			expect(ctx1).toEqual({ id: 'window1' });
+			expect(ctx2).toEqual({ id: 'window2' });
 		});
-	});
-});
 
-// Check if node-canvas is available at module level
-let nodeCanvasAvailable = false;
-try {
-	require('canvas');
-	nodeCanvasAvailable = true;
-} catch {
-	nodeCanvasAvailable = false;
-}
+		it('Should return null when window has no adapter.', () => {
+			const mockAdapter: ICanvasAdapter = {
+				getContext: vi.fn().mockReturnValue({ id: 'with-adapter' }),
+				toDataURL: vi.fn(),
+				toBlob: vi.fn()
+			};
 
-describe.skipIf(!nodeCanvasAvailable)('HTMLCanvasElement - NodeCanvasAdapter Integration', () => {
-	let window: Window;
-	let document: Document;
+			const windowWithAdapter = new Window({ settings: { canvasAdapter: mockAdapter } });
+			const windowWithout = new Window();
 
-	beforeEach(() => {
-		window = new Window();
-		document = window.document;
-		HTMLCanvasElement.setCanvasAdapter(null);
-	});
+			const canvas1 = windowWithAdapter.document.createElement('canvas');
+			const canvas2 = windowWithout.document.createElement('canvas');
 
-	afterEach(() => {
-		HTMLCanvasElement.setCanvasAdapter(null);
-	});
-
-	it('Should render real pixels with NodeCanvasAdapter.', async () => {
-		const { NodeCanvasAdapter } = await import(
-			'../../../src/nodes/html-canvas-element/adapters/NodeCanvasAdapter.js'
-		);
-
-		const adapter = new NodeCanvasAdapter();
-		HTMLCanvasElement.setCanvasAdapter(adapter);
-
-		const canvas = document.createElement('canvas');
-		canvas.width = 100;
-		canvas.height = 100;
-
-		const ctx = <CanvasRenderingContext2D>canvas.getContext('2d');
-		expect(ctx).not.toBe(null);
-
-		// Draw red rectangle
-		ctx.fillStyle = '#ff0000';
-		ctx.fillRect(0, 0, 50, 50);
-
-		// Verify pixels were actually rendered
-		const imageData = ctx.getImageData(10, 10, 1, 1);
-		expect(imageData.data[0]).toBe(255); // R
-		expect(imageData.data[1]).toBe(0); // G
-		expect(imageData.data[2]).toBe(0); // B
-		expect(imageData.data[3]).toBe(255); // A
-	});
-
-	it('Should generate valid PNG data URL.', async () => {
-		const { NodeCanvasAdapter } = await import(
-			'../../../src/nodes/html-canvas-element/adapters/NodeCanvasAdapter.js'
-		);
-
-		const adapter = new NodeCanvasAdapter();
-		HTMLCanvasElement.setCanvasAdapter(adapter);
-
-		const canvas = document.createElement('canvas');
-		canvas.width = 10;
-		canvas.height = 10;
-
-		const ctx = <CanvasRenderingContext2D>canvas.getContext('2d');
-		ctx.fillStyle = '#00ff00';
-		ctx.fillRect(0, 0, 10, 10);
-
-		const dataURL = canvas.toDataURL();
-		expect(dataURL).toMatch(/^data:image\/png;base64,/);
-		expect(dataURL.length).toBeGreaterThan(50);
-	});
-
-	it('Should generate valid JPEG data URL.', async () => {
-		const { NodeCanvasAdapter } = await import(
-			'../../../src/nodes/html-canvas-element/adapters/NodeCanvasAdapter.js'
-		);
-
-		const adapter = new NodeCanvasAdapter();
-		HTMLCanvasElement.setCanvasAdapter(adapter);
-
-		const canvas = document.createElement('canvas');
-		canvas.width = 10;
-		canvas.height = 10;
-
-		const ctx = <CanvasRenderingContext2D>canvas.getContext('2d');
-		ctx.fillStyle = '#0000ff';
-		ctx.fillRect(0, 0, 10, 10);
-
-		const dataURL = canvas.toDataURL('image/jpeg', 0.8);
-		expect(dataURL).toMatch(/^data:image\/jpeg;base64,/);
-	});
-
-	it('Should create Blob from canvas content.', async () => {
-		const { NodeCanvasAdapter } = await import(
-			'../../../src/nodes/html-canvas-element/adapters/NodeCanvasAdapter.js'
-		);
-
-		const adapter = new NodeCanvasAdapter();
-		HTMLCanvasElement.setCanvasAdapter(adapter);
-
-		const canvas = document.createElement('canvas');
-		canvas.width = 10;
-		canvas.height = 10;
-
-		const ctx = <CanvasRenderingContext2D>canvas.getContext('2d');
-		ctx.fillStyle = '#ff00ff';
-		ctx.fillRect(0, 0, 10, 10);
-
-		await new Promise<void>((resolve) => {
-			canvas.toBlob((blob) => {
-				expect(blob).not.toBe(null);
-				expect(blob!.type).toBe('image/png');
-				expect(blob!.size).toBeGreaterThan(0);
-				resolve();
-			});
+			expect(canvas1.getContext('2d')).toEqual({ id: 'with-adapter' });
+			expect(canvas2.getContext('2d')).toBe(null);
 		});
-	});
-
-	it('Should handle canvas resize correctly.', async () => {
-		const { NodeCanvasAdapter } = await import(
-			'../../../src/nodes/html-canvas-element/adapters/NodeCanvasAdapter.js'
-		);
-
-		const adapter = new NodeCanvasAdapter();
-		HTMLCanvasElement.setCanvasAdapter(adapter);
-
-		const canvas = document.createElement('canvas');
-		canvas.width = 50;
-		canvas.height = 50;
-
-		const ctx1 = <CanvasRenderingContext2D>canvas.getContext('2d');
-		ctx1.fillStyle = '#ff0000';
-		ctx1.fillRect(0, 0, 50, 50);
-
-		// Resize canvas
-		canvas.width = 100;
-		canvas.height = 100;
-
-		// Get context again - should be new context for new size
-		const ctx2 = <CanvasRenderingContext2D>canvas.getContext('2d');
-
-		// Old content should be cleared after resize (standard canvas behavior)
-		const imageData = ctx2.getImageData(25, 25, 1, 1);
-		expect(imageData.data[0]).toBe(0); // Transparent/black after resize
-	});
-
-	it('Should return null for WebGL context (not supported by node-canvas).', async () => {
-		const { NodeCanvasAdapter } = await import(
-			'../../../src/nodes/html-canvas-element/adapters/NodeCanvasAdapter.js'
-		);
-
-		const adapter = new NodeCanvasAdapter();
-		HTMLCanvasElement.setCanvasAdapter(adapter);
-
-		const canvas = document.createElement('canvas');
-		const ctx = canvas.getContext('webgl');
-
-		expect(ctx).toBe(null);
 	});
 });

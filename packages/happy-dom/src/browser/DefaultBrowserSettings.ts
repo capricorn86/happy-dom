@@ -60,5 +60,6 @@ export default <IBrowserSettings>{
 		width: 1024,
 		height: 768,
 		devicePixelRatio: 1
-	}
+	},
+	canvasAdapter: null
 };
