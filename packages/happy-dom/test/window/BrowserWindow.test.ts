@@ -652,7 +652,7 @@ describe('BrowserWindow', () => {
 			);
 			const elementComputedStyle = window.getComputedStyle(element);
 
-			const styleSheet = new CSSStyleSheet();
+			const styleSheet = new window.CSSStyleSheet();
 			styleSheet.replaceSync(`
                 span {
 					color: green;
