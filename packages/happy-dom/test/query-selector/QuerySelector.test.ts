@@ -1378,11 +1378,6 @@ describe('QuerySelector', () => {
 				</div>
 			`;
 
-			// Test :not(:has(...)) with nested :not() - the regex must handle nested parentheses
-			// .parent:not(:has(> .child:not([data-keep]))) should match parents that do NOT have
-			// a direct child .child without data-keep attribute
-			// First parent has a .child without data-keep, so it should NOT match
-			// Second parent only has .child with data-keep, so it SHOULD match
 			const elements = container.querySelectorAll('.parent:not(:has(> .child:not([data-keep])))');
 
 			expect(elements.length).toBe(1);
