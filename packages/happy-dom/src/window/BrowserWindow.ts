@@ -46,6 +46,7 @@ import MessageEvent from '../event/events/MessageEvent.js';
 import MouseEvent from '../event/events/MouseEvent.js';
 import PointerEvent from '../event/events/PointerEvent.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
+import PromiseRejectionEvent from '../event/events/PromiseRejectionEvent.js';
 import StorageEvent from '../event/events/StorageEvent.js';
 import SubmitEvent from '../event/events/SubmitEvent.js';
 import TouchEvent from '../event/events/TouchEvent.js';
@@ -560,6 +561,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly StorageEvent = StorageEvent;
 	public readonly SubmitEvent = SubmitEvent;
 	public readonly ProgressEvent = ProgressEvent;
+	public readonly PromiseRejectionEvent = PromiseRejectionEvent;
 	public readonly MediaQueryListEvent = MediaQueryListEvent;
 	public readonly HashChangeEvent = HashChangeEvent;
 	public readonly ClipboardEvent = ClipboardEvent;
