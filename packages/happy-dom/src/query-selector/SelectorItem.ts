@@ -55,7 +55,7 @@ export default class SelectorItem {
 		this.attributes = options?.attributes || null;
 		this.pseudos = options?.pseudos || null;
 		this.isPseudoElement = options?.isPseudoElement || false;
-		this.combinator = options?.combinator || SelectorCombinatorEnum.descendant;
+		this.combinator = options?.combinator || SelectorCombinatorEnum.none;
 		this.ignoreErrors = options?.ignoreErrors || false;
 	}
 

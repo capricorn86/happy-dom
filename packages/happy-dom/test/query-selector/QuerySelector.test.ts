@@ -6,7 +6,6 @@ import QuerySelectorNthChildHTML from './data/QuerySelectorNthChildHTML.js';
 import type HTMLInputElement from '../../src/nodes/html-input-element/HTMLInputElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import QuerySelector from '../../src/query-selector/QuerySelector.js';
-import DOMException from '../../src/exception/DOMException.js';
 
 describe('QuerySelector', () => {
 	let window: Window;
@@ -295,9 +294,14 @@ describe('QuerySelector', () => {
 			container.appendChild(element1);
 			container.appendChild(element2);
 
-			const invalidSelectorElements = container.querySelectorAll('.before:');
+			// Invalid selector ".before:" should throw (colon without pseudo-class name)
+			expect(() => container.querySelectorAll('.before:')).toThrowError(
+				new SyntaxError(
+					`Failed to execute 'querySelectorAll' on 'Document': '.before:' is not a valid selector.`
+				)
+			);
+			// Valid selector with escaped colon should match
 			const validSelectorElements = container.querySelectorAll('.before\\:after');
-			expect(invalidSelectorElements.length).toBe(0);
 			expect(validSelectorElements.length).toBe(2);
 			expect(validSelectorElements[0] === element1).toBe(true);
 			expect(validSelectorElements[1] === element2).toBe(true);
@@ -329,9 +333,10 @@ describe('QuerySelector', () => {
 			container.appendChild(element1);
 			container.appendChild(element2);
 
-			const invalidSelectorElements = container.querySelectorAll('.before&after');
+			// Invalid selector ".before&after" should throw (& is not valid in CSS selectors)
+			expect(() => container.querySelectorAll('.before&after')).toThrow();
+			// Valid selector with escaped ampersand should match
 			const validSelectorElements = container.querySelectorAll('.before\\&after');
-			expect(invalidSelectorElements.length).toBe(0);
 			expect(validSelectorElements.length).toBe(2);
 			expect(validSelectorElements[0] === element1).toBe(true);
 			expect(validSelectorElements[1] === element2).toBe(true);
@@ -500,6 +505,24 @@ describe('QuerySelector', () => {
 			expect(elements.length).toBe(2);
 			expect(elements[0] === container.children[0].children[1].children[0]).toBe(true);
 			expect(elements[1] === container.children[0].children[1].children[1]).toBe(true);
+		});
+
+		it('Returns elements with attribute values containing apostrophes using double quotes as delimiter.', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `<div data-value="it's a test">Content</div>`;
+
+			const elements = container.querySelectorAll('[data-value="it\'s a test"]');
+			expect(elements.length).toBe(1);
+			expect(elements[0] === container.children[0]).toBe(true);
+		});
+
+		it('Returns elements with attribute values containing double quotes using apostrophes as delimiter.', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `<div data-value='say "hello"'>Content</div>`;
+
+			const elements = container.querySelectorAll('[data-value=\'say "hello"\']');
+			expect(elements.length).toBe(1);
+			expect(elements[0] === container.children[0]).toBe(true);
 		});
 
 		it('Returns all elements with tag name and matching attributes using "span[_attr1]".', () => {
@@ -912,26 +935,32 @@ describe('QuerySelector', () => {
 			expect(elements3[1] === container.children[0].children[1].children[2]).toBe(true);
 		});
 
-		it('Returns all elements matching the selector without ending parenthese "button:not([type]"', () => {
+		it('Throws error for selector without ending parenthesis "button:not([type]"', () => {
 			const container = document.createElement('div');
 			container.innerHTML = `
 				<button></button>
                 <button type="submit"></button>
                 <button></button>
 			`;
-			const elements = container.querySelectorAll('button:not([type]');
+			// Invalid selector (missing closing parenthesis) should throw
+			expect(() => container.querySelectorAll('button:not([type]')).toThrow();
+			// Valid selector should work
+			const elements = container.querySelectorAll('button:not([type])');
 			expect(elements.length).toBe(2);
 			expect(elements[0]).toBe(container.children[0]);
 			expect(elements[1]).toBe(container.children[2]);
 		});
 
-		it('Returns all elements matching the invalid selector "[q\\:shadowroot]"', () => {
+		it('Returns all elements matching the selector "[q\\:shadowroot]" with escaped colon', () => {
 			const container = document.createElement('div');
-			container.innerHTML = `
-				<span q\\:shadowroot></span>
-                <button></button>
-                <article></article>
-			`;
+			// Create element with attribute name containing colon
+			const span = document.createElement('span');
+			span.setAttribute('q:shadowroot', '');
+			container.appendChild(span);
+			container.appendChild(document.createElement('button'));
+			container.appendChild(document.createElement('article'));
+
+			// Selector [q\:shadowroot] looks for attribute "q:shadowroot" (colon is escaped)
 			const elements = container.querySelectorAll('[q\\:shadowroot]');
 			expect(elements.length).toBe(1);
 			expect(elements[0]).toBe(container.children[0]);
@@ -1290,6 +1319,76 @@ describe('QuerySelector', () => {
 			]);
 		});
 
+		it('Correctly parses complex CSS :has() expression with nested :not() (issue #1910)', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+				<table class="emXRrt">
+					<thead>
+						<tr>
+							<th>Header 1</th>
+							<th>Header 2</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>Cell 1</td>
+							<td>Cell 2</td>
+						</tr>
+						<tr data-ignore-row>
+							<td>Ignored 1</td>
+							<td>Ignored 2</td>
+						</tr>
+					</tbody>
+				</table>
+			`;
+
+			const elements = container.querySelectorAll(
+				'.emXRrt>tbody>tr>td:nth-child(2),.emXRrt:not(:has(> tbody > tr:not([data-ignore-row])))>thead>tr>th:nth-child(2)'
+			);
+
+			// Should only match the 2 td elements from the first selector part
+			expect(elements.length).toBe(2);
+			expect(elements[0].textContent).toBe('Cell 2');
+			expect(elements[1].textContent).toBe('Ignored 2');
+		});
+
+		it('Should throw error when ending with ","', () => {
+			const container = document.createElement('div');
+			expect(() => container.querySelectorAll('.test,.test-2,')).toThrowError(
+				new SyntaxError(
+					"Failed to execute 'querySelectorAll' on 'Element': '.test,.test-2,' is not a valid selector."
+				)
+			);
+			expect(() => container.querySelectorAll('.test.,,test-2')).toThrowError(
+				new SyntaxError(
+					"Failed to execute 'querySelectorAll' on 'Element': '.test,,.test-2' is not a valid selector."
+				)
+			);
+		});
+
+		it('Correctly parses :not() with nested :has() containing :not() (issue #1910)', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+				<div class="parent">
+					<div class="child" data-keep></div>
+					<div class="child"></div>
+				</div>
+				<div class="parent no-match">
+					<div class="child" data-keep></div>
+				</div>
+			`;
+
+			// Test :not(:has(...)) with nested :not() - the regex must handle nested parentheses
+			// .parent:not(:has(> .child:not([data-keep]))) should match parents that do NOT have
+			// a direct child .child without data-keep attribute
+			// First parent has a .child without data-keep, so it should NOT match
+			// Second parent only has .child with data-keep, so it SHOULD match
+			const elements = container.querySelectorAll('.parent:not(:has(> .child:not([data-keep])))');
+
+			expect(elements.length).toBe(1);
+			expect(elements[0].classList.contains('no-match')).toBe(true);
+		});
+
 		it('Returns all elements for subsequent sibling selector using ".a ~ .a"', () => {
 			const div = document.createElement('div');
 
@@ -1381,6 +1480,14 @@ describe('QuerySelector', () => {
 			const root = document.querySelectorAll(':root');
 			expect(root.length).toBe(1);
 			expect(root[0]).toBe(document.documentElement);
+		});
+
+		it('Matches XML query selector for #1912', () => {
+			const xml = '<root><child Name="John">Content</child></root>';
+			const parser = new window.DOMParser();
+			const xmlDoc = parser.parseFromString(xml, 'application/xml');
+
+			expect(xmlDoc.querySelectorAll('[Name]').length).toBe(1);
 		});
 	});
 
@@ -2153,6 +2260,23 @@ describe('QuerySelector', () => {
 			document.body.appendChild(div);
 
 			expect(div.matches(':root')).toBe(false);
+		});
+
+		it('Matches unicode characters for #2034', () => {
+			// Apostrophe in double-quoted attribute value
+			document.body.innerHTML = `
+            <label id="type d'activité-label">Type d'activité</label>
+            <input aria-labelledby="type d'activité-label" />
+            `;
+			expect(!!document.querySelector('[id="type d\'activité-label"]')).toBe(true);
+
+			// Test 2: Double quote in single-quoted attribute value
+			document.body.innerHTML = `<div id='say "hello"'></div>`;
+			expect(!!document.querySelector('[id=\'say "hello"\']')).toBe(true);
+
+			// Test 3: Simple ID (control test)
+			document.body.innerHTML = `<div id="simple"></div>`;
+			expect(!!document.querySelector('[id="simple"]')).toBe(true);
 		});
 	});
 });
