@@ -1,6 +1,5 @@
 import type ShadowRoot from '../src/nodes/shadow-root/ShadowRoot.js';
 import HTMLElement from '../src/nodes/html-element/HTMLElement.js';
-import CSSStyleSheet from '../src/css/CSSStyleSheet.js';
 
 /**
  * CustomElement test class.
@@ -23,7 +22,7 @@ export default class AdoptedStyleSheetCustomElement extends HTMLElement {
 		this.internalShadowRoot = this.attachShadow({
 			mode: AdoptedStyleSheetCustomElement.shadowRootMode
 		});
-		const styleSheet = new CSSStyleSheet();
+		const styleSheet = new this.ownerDocument.defaultView!.CSSStyleSheet();
 		styleSheet.replaceSync(`
             :host {
                 display: block;
@@ -72,7 +71,7 @@ export default class AdoptedStyleSheetCustomElement extends HTMLElement {
                 </span>
                 <span class="children">${Array.from(this.childNodes)
 									.map(
-										(child) =>
+										(child: any) =>
 											'#' + child['nodeType'] + (child['tagName'] || '') + child.textContent
 									)
 									.join(', ')}</span>

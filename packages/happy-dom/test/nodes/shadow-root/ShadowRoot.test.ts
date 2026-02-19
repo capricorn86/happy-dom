@@ -151,7 +151,7 @@ describe('ShadowRoot', () => {
 	describe('get adoptedStyleSheets()', () => {
 		it('Returns set adopted style sheets.', () => {
 			const shadowRoot = <ShadowRoot>document.createElement('custom-element').shadowRoot;
-			const styleSheet = new CSSStyleSheet();
+			const styleSheet = new window.CSSStyleSheet();
 			shadowRoot.adoptedStyleSheets = [styleSheet];
 			expect(shadowRoot.adoptedStyleSheets).toEqual([styleSheet]);
 		});
@@ -160,7 +160,7 @@ describe('ShadowRoot', () => {
 	describe('set adoptedStyleSheets()', () => {
 		it('Sets adopted style sheets.', () => {
 			const shadowRoot = <ShadowRoot>document.createElement('custom-element').shadowRoot;
-			const styleSheet = new CSSStyleSheet();
+			const styleSheet = new window.CSSStyleSheet();
 			shadowRoot.adoptedStyleSheets = [styleSheet];
 			expect(shadowRoot.adoptedStyleSheets).toEqual([styleSheet]);
 		});

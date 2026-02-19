@@ -47,7 +47,10 @@ export default class SelectorItem {
 		combinator?: SelectorCombinatorEnum;
 		ignoreErrors?: boolean;
 	}) {
-		this.root = options?.scope ? options.scope[PropertySymbol.ownerDocument].documentElement : null;
+		this.root =
+			options?.scope?.[PropertySymbol.ownerDocument]?.documentElement ||
+			options?.scope?.[PropertySymbol.window].document?.documentElement ||
+			null;
 		this.scope = options?.scope || null;
 		this.tagName = options?.tagName || null;
 		this.id = options?.id || null;
@@ -55,7 +58,7 @@ export default class SelectorItem {
 		this.attributes = options?.attributes || null;
 		this.pseudos = options?.pseudos || null;
 		this.isPseudoElement = options?.isPseudoElement || false;
-		this.combinator = options?.combinator || SelectorCombinatorEnum.descendant;
+		this.combinator = options?.combinator || SelectorCombinatorEnum.none;
 		this.ignoreErrors = options?.ignoreErrors || false;
 	}
 
