@@ -47,7 +47,10 @@ export default class SelectorItem {
 		combinator?: SelectorCombinatorEnum;
 		ignoreErrors?: boolean;
 	}) {
-		this.root = options?.scope ? options.scope[PropertySymbol.ownerDocument].documentElement : null;
+		this.root =
+			options?.scope?.[PropertySymbol.ownerDocument]?.documentElement ||
+			options?.scope?.[PropertySymbol.window].document?.documentElement ||
+			null;
 		this.scope = options?.scope || null;
 		this.tagName = options?.tagName || null;
 		this.id = options?.id || null;
