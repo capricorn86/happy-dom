@@ -221,6 +221,7 @@ import type ISubmitEventInit from './event/events/ISubmitEventInit.js';
 import type ITouchEventInit from './event/events/ITouchEventInit.js';
 import type IWheelEventInit from './event/events/IWheelEventInit.js';
 import type IVirtualServer from './fetch/types/IVirtualServer.js';
+import type ICanvasAdapter from './nodes/html-canvas-element/ICanvasAdapter.js';
 
 export type {
 	IAnimationEventInit,
@@ -229,6 +230,7 @@ export type {
 	IBrowserFrame,
 	IBrowserPage,
 	IBrowserSettings,
+	ICanvasAdapter,
 	IClipboardEventInit,
 	ICookie,
 	ICustomEventInit,
