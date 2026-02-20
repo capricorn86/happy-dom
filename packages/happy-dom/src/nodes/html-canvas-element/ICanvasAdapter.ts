@@ -1,4 +1,4 @@
-import Blob from '../../file/Blob.js';
+import type Blob from '../../file/Blob.js';
 
 /**
  * Interface for pluggable canvas rendering adapters.

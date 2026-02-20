@@ -1,7 +1,7 @@
-import HTMLCanvasElement from '../../../src/nodes/html-canvas-element/HTMLCanvasElement.js';
-import ICanvasAdapter from '../../../src/nodes/html-canvas-element/ICanvasAdapter.js';
+import type HTMLCanvasElement from '../../../src/nodes/html-canvas-element/HTMLCanvasElement.js';
+import type ICanvasAdapter from '../../../src/nodes/html-canvas-element/ICanvasAdapter.js';
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 import Blob from '../../../src/file/Blob.js';
 
