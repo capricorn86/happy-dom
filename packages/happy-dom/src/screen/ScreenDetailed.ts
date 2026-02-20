@@ -1,5 +1,4 @@
 import Screen from './Screen.js';
-import Event from '../event/Event.js';
 
 /**
  * ScreenDetailed.
@@ -15,7 +14,4 @@ export default class ScreenDetailed extends Screen {
 	public readonly isInternal: boolean = true;
 	public readonly devicePixelRatio: number = 1;
 	public readonly label: string = '';
-
-	// Event handler
-	public onchange: ((event: Event) => void) | null = null;
 }

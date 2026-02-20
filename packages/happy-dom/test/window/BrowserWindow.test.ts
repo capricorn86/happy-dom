@@ -435,6 +435,12 @@ describe('BrowserWindow', () => {
 		});
 	});
 
+	describe('get screen()', () => {
+		it('Returns the "Screen" object.', () => {
+			expect(window.screen).toBeInstanceOf(window.Screen);
+		});
+	});
+
 	describe('get localStorage()', () => {
 		it('Returns the "localStorage" object.', () => {
 			expect(window.localStorage).toBeInstanceOf(window.Storage);

@@ -2,6 +2,7 @@ import { beforeEach, describe, it, expect } from 'vitest';
 import Window from '../../src/window/Window.js';
 import ScreenDetails from '../../src/screen/ScreenDetails.js';
 import ScreenDetailed from '../../src/screen/ScreenDetailed.js';
+import Screen from '../../src/screen/Screen.js';
 
 describe('ScreenDetails', () => {
 	let window: Window;
@@ -20,6 +21,7 @@ describe('ScreenDetails', () => {
 
 		expect(screenDetails).toBeInstanceOf(ScreenDetails);
 		expect(screenDetails.currentScreen).toBeInstanceOf(ScreenDetailed);
+		expect(screenDetails.currentScreen).toBeInstanceOf(Screen);
 		expect(screenDetails.screens).toHaveLength(1);
 		expect(screenDetails.screens[0]).toBeInstanceOf(ScreenDetailed);
 
