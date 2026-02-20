@@ -7,7 +7,7 @@ import type IBrowserPageViewport from './IBrowserPageViewport.js';
 import type IOptionalTimerLoopsLimit from '../../window/IOptionalTimerLoopsLimit.js';
 import type BrowserWindow from '../../window/BrowserWindow.js';
 import type IResolveNodeModules from '../../module/types/IResolveNodeModules.js';
-import type ICanvasAdapter from '../nodes/html-canvas-element/ICanvasAdapter.js';
+import type ICanvasAdapter from '../../nodes/html-canvas-element/ICanvasAdapter.js';
 
 /**
  * Browser settings.

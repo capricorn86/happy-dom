@@ -176,7 +176,7 @@ export default class HTMLCanvasElement extends HTMLElement {
 	 * @param [_type] Type.
 	 * @param [_quality] Quality.
 	 */
-	public toBlob(callback: (blob: Blob) => void, _type?: string, _quality?: any): void {
+	public toBlob(callback: (blob: Blob | null) => void, _type?: string, _quality?: any): void {
 		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
 		if (browserFrame) {
 			const adapter = browserFrame.page.context.browser.settings.canvasAdapter;
