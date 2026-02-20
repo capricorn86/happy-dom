@@ -1,6 +1,6 @@
 import EventTarget from '../event/EventTarget.js';
 import ScreenDetailed from './ScreenDetailed.js';
-import Event from '../event/Event.js';
+import type Event from '../event/Event.js';
 
 /**
  * ScreenDetails.

@@ -1,4 +1,5 @@
 import EventTarget from '../event/EventTarget.js';
+import type Event from '../event/Event.js';
 
 /**
  * The Screen interface represents a screen, usually the one on which the current window is being rendered.
