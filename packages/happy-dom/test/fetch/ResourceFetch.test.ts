@@ -1,11 +1,11 @@
-import BrowserWindow from '../../src/window/BrowserWindow.js';
+import type BrowserWindow from '../../src/window/BrowserWindow.js';
 import ResourceFetch from '../../src/fetch/ResourceFetch.js';
-import Response from '../../src/fetch/Response.js';
+import type Response from '../../src/fetch/Response.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Browser from '../../src/browser/Browser.js';
 import Fetch from '../../src/fetch/Fetch.js';
 import SyncFetch from '../../src/fetch/SyncFetch.js';
-import ISyncResponse from '../../src/fetch/types/ISyncResponse.js';
+import type ISyncResponse from '../../src/fetch/types/ISyncResponse.js';
 import { PropertySymbol } from '../../src/index.js';
 import PreloadUtility from '../../src/fetch/preload/PreloadUtility.js';
 import PreloadEntry from '../../src/fetch/preload/PreloadEntry.js';

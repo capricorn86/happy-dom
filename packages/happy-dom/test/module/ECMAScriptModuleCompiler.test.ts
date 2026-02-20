@@ -1,8 +1,10 @@
 import { beforeEach, describe, it, expect } from 'vitest';
 import ECMAScriptModuleCompiler from '../../src/module/ECMAScriptModuleCompiler.js';
-import BrowserWindow from '../../src/window/BrowserWindow.js';
+import type BrowserWindow from '../../src/window/BrowserWindow.js';
 import Window from '../../src/window/Window.js';
 import BrowserErrorCaptureEnum from '../../src/browser/enums/BrowserErrorCaptureEnum.js';
+import Browser from '../../src/browser/Browser.js';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 
 describe('ECMAScriptModuleCompiler', () => {
 	let window: BrowserWindow;
@@ -62,6 +64,97 @@ $happy_dom.addCircularImportResolver(() => {
 StringUtility = $happy_dom.imports.get('http://localhost:8080/js/utilities/StringUtility.js')['default'];
 DefaultImageUtility = $happy_dom.imports.get('http://localhost:8080/js/utilities/ImageUtility.js')['default'];
 });}`);
+		});
+
+		it('Uses cached module compilation when compiling the same module again.', () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			const sourceURL = 'http://localhost:8080/js/app/main.js';
+
+			const code = `
+                import StringUtility from "../utilities/StringUtility.js";
+                export const variable = 'hello';
+            `;
+			const expectedResult1 = `async function anonymous($happy_dom) { try {let StringUtility = $happy_dom.imports.get('http://localhost:8080/js/utilities/StringUtility.js').default;
+                
+                const variable = 'hello';
+            
+$happy_dom.exports['variable'] = variable;
+$happy_dom.addCircularImportResolver(() => {
+StringUtility = $happy_dom.imports.get('http://localhost:8080/js/utilities/StringUtility.js')['default'];
+});} catch(e) { $happy_dom.dispatchError(e); }}`;
+			const expectedImports1 = [
+				{ url: 'http://localhost:8080/js/utilities/StringUtility.js', type: 'esm' }
+			];
+
+			const expectedResult2 = `async function anonymous($happy_dom) { console.log('Cached module'); }`;
+			const expectedImports2 = [
+				{ url: 'http://localhost:8080/js/utilities/StringUtility.js', type: 'esm' }
+			];
+
+			const compiler = new ECMAScriptModuleCompiler(page.mainFrame.window);
+			const result1 = compiler.compile(sourceURL, code, sourceURL);
+
+			expect(result1.imports).toEqual(expectedImports1);
+			expect(result1.execute.toString()).toBe(expectedResult1);
+
+			expect(browser.defaultContext[PropertySymbol.moduleCache].get(sourceURL)).toEqual({
+				imports: expectedImports1,
+				code: `(${expectedResult1})`
+			});
+
+			browser.defaultContext[PropertySymbol.moduleCache].set(sourceURL, {
+				imports: expectedImports2,
+				code: `(${expectedResult2})`
+			});
+
+			const result2 = compiler.compile(sourceURL, code, sourceURL);
+
+			expect(result2.imports).toEqual(expectedImports2);
+			expect(result2.execute.toString()).toBe(expectedResult2);
+		});
+
+		it("Doesn't use cached module compilation when module cache is disabled.", () => {
+			const browser = new Browser({
+				settings: {
+					module: {
+						disableCache: true
+					}
+				}
+			});
+			const page = browser.newPage();
+			const sourceURL = 'http://localhost:8080/js/app/main.js';
+
+			const code = `
+                import StringUtility from "../utilities/StringUtility.js";
+                export const variable = 'hello';
+            `;
+			const expectedResult = `async function anonymous($happy_dom) { try {let StringUtility = $happy_dom.imports.get('http://localhost:8080/js/utilities/StringUtility.js').default;
+                
+                const variable = 'hello';
+            
+$happy_dom.exports['variable'] = variable;
+$happy_dom.addCircularImportResolver(() => {
+StringUtility = $happy_dom.imports.get('http://localhost:8080/js/utilities/StringUtility.js')['default'];
+});} catch(e) { $happy_dom.dispatchError(e); }}`;
+			const expectedImports = [
+				{ url: 'http://localhost:8080/js/utilities/StringUtility.js', type: 'esm' }
+			];
+
+			const compiler = new ECMAScriptModuleCompiler(page.mainFrame.window);
+			const result1 = compiler.compile(sourceURL, code, sourceURL);
+
+			expect(result1.imports).toEqual(expectedImports);
+			expect(result1.execute.toString()).toBe(expectedResult);
+
+			browser.defaultContext[PropertySymbol.moduleCache].set(sourceURL, {
+				imports: [],
+				code: 'any value'
+			});
+
+			const result2 = compiler.compile(sourceURL, code, sourceURL);
+			expect(result2.imports).toEqual(expectedImports);
+			expect(result2.execute.toString()).toBe(expectedResult);
 		});
 
 		it('Handles the correct source URL in error stack', async () => {

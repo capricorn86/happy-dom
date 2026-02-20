@@ -1,6 +1,6 @@
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import Event from './Event.js';
-import IUIEventInit from './IUIEventInit.js';
+import type IUIEventInit from './IUIEventInit.js';
 
 /**
  *

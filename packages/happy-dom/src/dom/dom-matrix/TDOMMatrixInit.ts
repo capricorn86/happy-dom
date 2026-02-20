@@ -1,4 +1,8 @@
-import IDOMMatrixCompatibleObject from './IDOMMatrixCompatibleObject.js';
+import type IDOMMatrixCompatibleObject from './IDOMMatrixCompatibleObject.js';
 
-type TDOMMatrixInit = string | any[] | IDOMMatrixCompatibleObject | Float32Array | Float64Array;
-export default TDOMMatrixInit;
+export type TDOMMatrixInit =
+	| string
+	| any[]
+	| IDOMMatrixCompatibleObject
+	| Float32Array
+	| Float64Array;

@@ -1,4 +1,4 @@
-import IEventInit from '../IEventInit.js';
+import type IEventInit from '../IEventInit.js';
 export default interface IErrorEventInit extends IEventInit {
 	message?: string;
 	filename?: string;

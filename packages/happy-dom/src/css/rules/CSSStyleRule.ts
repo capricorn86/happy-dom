@@ -1,4 +1,4 @@
-import CSSRule from '../CSSRule.js';
+import type CSSRule from '../CSSRule.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration.js';
 import CSSRuleTypeEnum from '../CSSRuleTypeEnum.js';

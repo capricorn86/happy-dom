@@ -1,5 +1,6 @@
 import CSSStyleDeclarationValueParser from './CSSStyleDeclarationValueParser.js';
-import ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyValue.js';
+import CSSStyleDeclarationValueUtility from './CSSStyleDeclarationValueUtility.js';
+import type ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyValue.js';
 
 const RECT_REGEXP = /^rect\((.*)\)$/i;
 const SPLIT_COMMA_SEPARATED_WITH_PARANTHESES_REGEXP = /,(?=(?:(?:(?!\))[\s\S])*\()|[^\(\)]*$)/; // Split on commas that are outside of parentheses
@@ -2300,11 +2301,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			...this.getBackgroundColor('initial', important)
 		};
 
-		const parts = value
-			.replace(/\s,\s/g, ',')
-			.replace(/\s\/\s/g, '/')
-			.split(SPLIT_SPACE_SEPARATED_WITH_PARANTHESES_REGEXP);
-
+		const parts = CSSStyleDeclarationValueUtility.splitBySpace(value.replace(/\s+\/\s+/g, '/'));
 		const backgroundPositions = [];
 
 		for (const part of parts) {
@@ -2811,7 +2808,7 @@ export default class CSSStyleDeclarationPropertySetParser {
 			return { 'background-image': { value: lowerValue, important } };
 		}
 
-		const parts = value.split(SPLIT_COMMA_SEPARATED_WITH_PARANTHESES_REGEXP);
+		const parts = CSSStyleDeclarationValueUtility.splitByComma(value);
 		const parsed = [];
 
 		for (const part of parts) {

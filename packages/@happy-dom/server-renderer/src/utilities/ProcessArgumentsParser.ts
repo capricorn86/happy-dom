@@ -1,5 +1,5 @@
-import IServerRendererConfiguration from '../types/IServerRendererConfiguration.js';
-import IServerRendererItem from '../types/IServerRendererItem.js';
+import type IServerRendererConfiguration from '../types/IServerRendererConfiguration.js';
+import type IServerRendererItem from '../types/IServerRendererItem.js';
 import Path from 'path';
 import { BrowserNavigationCrossOriginPolicyEnum } from 'happy-dom';
 import ServerRendererLogLevelEnum from '../enums/ServerRendererLogLevelEnum.js';

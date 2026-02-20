@@ -1,6 +1,6 @@
-import PermissionStatus from './PermissionStatus.js';
+import type PermissionStatus from './PermissionStatus.js';
 import PermissionNameEnum from './PermissionNameEnum.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * Permissions API.

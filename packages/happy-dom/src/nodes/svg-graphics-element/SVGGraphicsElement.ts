@@ -4,7 +4,7 @@ import DOMMatrix from '../../dom/dom-matrix/DOMMatrix.js';
 import SVGStringList from '../../svg/SVGStringList.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import SVGAnimatedTransformList from '../../svg/SVGAnimatedTransformList.js';
-import Event from '../../event/Event.js';
+import type Event from '../../event/Event.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**

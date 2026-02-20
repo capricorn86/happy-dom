@@ -1,5 +1,5 @@
 import EventTarget from '../event/EventTarget.js';
-import Event from '../event/Event.js';
+import type Event from '../event/Event.js';
 
 /**
  * Permission status.

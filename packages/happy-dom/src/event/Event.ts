@@ -1,12 +1,12 @@
-import IEventInit from './IEventInit.js';
+import type IEventInit from './IEventInit.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import Node from '../nodes/node/Node.js';
-import BrowserWindow from '../window/BrowserWindow.js';
-import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
-import EventTarget from './EventTarget.js';
+import type Node from '../nodes/node/Node.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
+import type ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
+import type EventTarget from './EventTarget.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import EventPhaseEnum from './EventPhaseEnum.js';
-import Document from '../nodes/document/Document.js';
+import type Document from '../nodes/document/Document.js';
 
 /**
  * Event.

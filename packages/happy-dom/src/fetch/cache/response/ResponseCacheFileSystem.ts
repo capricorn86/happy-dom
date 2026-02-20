@@ -1,9 +1,9 @@
-import ICachedResponse from './ICachedResponse.js';
+import type ICachedResponse from './ICachedResponse.js';
 import Headers from '../../Headers.js';
 import FS from 'fs';
 import Path from 'path';
 import Crypto from 'crypto';
-import IResponseCacheFileSystem from './IResponseCacheFileSystem.js';
+import type IResponseCacheFileSystem from './IResponseCacheFileSystem.js';
 
 /**
  * Fetch response cache file system implementation.

@@ -1,5 +1,5 @@
-import BrowserWindow from '../window/BrowserWindow.js';
-import ClipboardItem from './ClipboardItem.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
+import type ClipboardItem from './ClipboardItem.js';
 import Blob from '../file/Blob.js';
 
 /**

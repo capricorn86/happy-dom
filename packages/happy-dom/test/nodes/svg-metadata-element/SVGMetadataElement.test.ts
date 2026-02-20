@@ -1,6 +1,6 @@
 import SVGMetadataElement from '../../../src/nodes/svg-metadata-element/SVGMetadataElement.js';
-import BrowserWindow from '../../../src/window/BrowserWindow.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type BrowserWindow from '../../../src/window/BrowserWindow.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
 import Window from '../../../src/window/Window.js';

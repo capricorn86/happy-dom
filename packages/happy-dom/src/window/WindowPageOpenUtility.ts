@@ -1,6 +1,6 @@
-import BrowserWindow from './BrowserWindow.js';
+import type BrowserWindow from './BrowserWindow.js';
 import CrossOriginBrowserWindow from './CrossOriginBrowserWindow.js';
-import IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import type IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import FetchCORSUtility from '../fetch/utilities/FetchCORSUtility.js';
 import BrowserFrameURL from '../browser/utilities/BrowserFrameURL.js';
 import { URL } from 'url';

@@ -1,7 +1,6 @@
-type THTMLCollectionListener<T> = (details: {
+export type THTMLCollectionListener<T> = (details: {
 	index?: number;
 	item?: T;
 	propertyName?: string;
 	propertyValue?: any;
 }) => void;
-export default THTMLCollectionListener;

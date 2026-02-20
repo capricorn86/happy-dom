@@ -1,5 +1,5 @@
 import ClassMethodBinder from '../utilities/ClassMethodBinder.js';
-import Element from '../nodes/element/Element.js';
+import type Element from '../nodes/element/Element.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 
 const ATTRIBUTE_SPLIT_REGEXP = /[\t\f\n\r ]+/;

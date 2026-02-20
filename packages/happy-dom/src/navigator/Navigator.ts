@@ -1,11 +1,11 @@
 import MimeTypeArray from './MimeTypeArray.js';
 import PluginArray from './PluginArray.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import Permissions from '../permissions/Permissions.js';
 import Clipboard from '../clipboard/Clipboard.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
-import Blob from '../file/Blob.js';
-import FormData from '../form-data/FormData.js';
+import type Blob from '../file/Blob.js';
+import type FormData from '../form-data/FormData.js';
 
 /**
  * Browser Navigator API.

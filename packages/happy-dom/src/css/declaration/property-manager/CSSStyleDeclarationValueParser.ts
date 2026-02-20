@@ -1,3 +1,5 @@
+import CSSStyleDeclarationValueUtility from './CSSStyleDeclarationValueUtility.js';
+
 const COLOR_REGEXP =
 	/^#([0-9a-fA-F]{3,4}){1,2}$|^rgb\(([^)]*)\)$|^rgba\(([^)]*)\)$|^hsla?\(\s*(-?\d+|-?\d*.\d+)\s*,\s*(-?\d+|-?\d*.\d+)%\s*,\s*(-?\d+|-?\d*.\d+)%\s*(,\s*(-?\d+|-?\d*.\d+)\s*)?\)|(?:(rgba?|hsla?)\((var\(\s*(--[^)\s]+)\))\))/;
 
@@ -12,7 +14,7 @@ const CALC_REGEXP = /^calc\([^^)]+\)$/;
 const CSS_VARIABLE_REGEXP = /^var\(\s*(--[^)\s]+)\)$/;
 const FIT_CONTENT_REGEXP = /^fit-content\([^^)]+\)$/;
 const GRADIENT_REGEXP =
-	/^((repeating-linear|linear|radial|repeating-radial|conic|repeating-conic)-gradient)\(([^)]+)\)$/;
+	/^((repeating-linear|linear|radial|repeating-radial|conic|repeating-conic)-gradient)\(((?:[^()]|\([^()]*\))*)\)$/;
 const GLOBALS = ['inherit', 'initial', 'unset', 'revert'];
 const COLORS = [
 	'none',
@@ -333,10 +335,9 @@ export default class CSSStyleDeclarationValueParser {
 	public static getGradient(value: string): string | null {
 		const match = value.match(GRADIENT_REGEXP);
 		if (match) {
-			return `${match[1]}(${match[3]
-				.trim()
-				.split(/\s*,\s*/)
-				.join(', ')})`;
+			const args = match[3].trim();
+			const parts = CSSStyleDeclarationValueUtility.splitByComma(args);
+			return `${match[1]}(${parts.join(', ')})`;
 		}
 		return null;
 	}

@@ -1,11 +1,11 @@
-import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
-import IBrowser from '../browser/types/IBrowser.js';
-import IBrowserContext from '../browser/types/IBrowserContext.js';
-import IBrowserFrame from '../browser/types/IBrowserFrame.js';
-import IBrowserPage from '../browser/types/IBrowserPage.js';
-import IBrowserSettings from '../browser/types/IBrowserSettings.js';
+import type AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
+import type IBrowser from '../browser/types/IBrowser.js';
+import type IBrowserContext from '../browser/types/IBrowserContext.js';
+import type IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import type IBrowserPage from '../browser/types/IBrowserPage.js';
+import type IBrowserSettings from '../browser/types/IBrowserSettings.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import BrowserWindow from './BrowserWindow.js';
+import type BrowserWindow from './BrowserWindow.js';
 
 /**
  * API for accessing the Browser in a Window context without exposing the Browser as accessible properties.

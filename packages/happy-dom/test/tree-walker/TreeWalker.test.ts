@@ -1,5 +1,5 @@
 import Window from '../../src/window/Window.js';
-import Document from '../../src/nodes/document/Document.js';
+import type Document from '../../src/nodes/document/Document.js';
 import NodeFilter from '../../src/tree-walker/NodeFilter.js';
 import TreeWalker from '../../src/tree-walker/TreeWalker.js';
 import Element from '../../src/nodes/element/Element.js';
@@ -139,6 +139,35 @@ describe('TreeWalker', () => {
 				'\n\t\t\t',
 				'\n\t\t\n\t'
 			]);
+		});
+
+		it('Traverses sibling nodes after deeply nested children (#1867).', () => {
+			const div = document.createElement('div');
+			div.innerHTML = `
+				<div>
+					<form>
+						<div>
+							<label>Label 1</label>
+						</div>
+					</form>
+					<div class="sibling">
+						<label>Label 2</label>
+					</div>
+				</div>
+			`;
+
+			const treeWalker = document.createTreeWalker(div, NodeFilter.SHOW_ELEMENT, {
+				acceptNode: () => NodeFilter.FILTER_ACCEPT
+			});
+
+			const tagNames: string[] = [];
+			while (treeWalker.nextNode()) {
+				const element = <Element>treeWalker.currentNode;
+				const className = element.className ? `.${element.className}` : '';
+				tagNames.push(`${element.tagName.toLowerCase()}${className}`);
+			}
+
+			expect(tagNames).toEqual(['div', 'form', 'div', 'label', 'div.sibling', 'label']);
 		});
 
 		it('Walks into each HTMLElement in the DOM tree when whatToShow is set to NodeFilter.SHOW_ELEMENT.', () => {

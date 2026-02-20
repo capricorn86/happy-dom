@@ -1,5 +1,5 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import SVGFEDisplacementMapElement from '../../../src/nodes/svg-fe-displacement-map-element/SVGFEDisplacementMapElement.js';
 import SVGLength from '../../../src/svg/SVGLength.js';

@@ -1,11 +1,11 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
-import HTMLTextAreaElement from '../../../src/nodes/html-text-area-element/HTMLTextAreaElement.js';
+import type Document from '../../../src/nodes/document/Document.js';
+import type HTMLTextAreaElement from '../../../src/nodes/html-text-area-element/HTMLTextAreaElement.js';
 import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum.js';
 import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum.js';
 import ValidityState from '../../../src/validity-state/ValidityState.js';
 import Event from '../../../src/event/Event.js';
-import Text from '../../../src/nodes/text/Text.js';
+import type Text from '../../../src/nodes/text/Text.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('HTMLTextAreaElement', () => {

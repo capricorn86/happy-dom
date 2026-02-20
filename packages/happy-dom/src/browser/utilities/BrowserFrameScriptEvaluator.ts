@@ -2,7 +2,7 @@ import CSSModule from '../../module/CSSModule.js';
 import ECMAScriptModule from '../../module/ECMAScriptModule.js';
 import JSONModule from '../../module/JSONModule.js';
 import ModuleFactory from '../../module/ModuleFactory.js';
-import IBrowserFrame from '../types/IBrowserFrame.js';
+import type IBrowserFrame from '../types/IBrowserFrame.js';
 import { Script } from 'vm';
 
 /**
@@ -50,7 +50,8 @@ export default class BrowserFrameScriptEvaluator {
 
 			switch (options?.type || 'esm') {
 				case 'esm':
-					return await new ECMAScriptModule({ window, url, source }).evaluate();
+					const factory = new ModuleFactory(window, url);
+					return await new ECMAScriptModule({ window, url, source, factory }).evaluate();
 				case 'json':
 					return await new JSONModule({ window, url, source }).evaluate();
 				case 'css':

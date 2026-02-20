@@ -1,7 +1,7 @@
-import ICachedResponse from './ICachedResponse.js';
-import ICacheableRequest from './ICacheableRequest.js';
-import ICacheableResponse from './ICacheableResponse.js';
-import IResponseCacheFileSystem from './IResponseCacheFileSystem.js';
+import type ICachedResponse from './ICachedResponse.js';
+import type ICacheableRequest from './ICacheableRequest.js';
+import type ICacheableResponse from './ICacheableResponse.js';
+import type IResponseCacheFileSystem from './IResponseCacheFileSystem.js';
 
 /**
  * Fetch response cache.

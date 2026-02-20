@@ -1,12 +1,12 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
-import HTMLSelectElement from '../../../src/nodes/html-select-element/HTMLSelectElement.js';
-import HTMLOptionElement from '../../../src/nodes/html-option-element/HTMLOptionElement.js';
+import type Document from '../../../src/nodes/document/Document.js';
+import type HTMLSelectElement from '../../../src/nodes/html-select-element/HTMLSelectElement.js';
+import type HTMLOptionElement from '../../../src/nodes/html-option-element/HTMLOptionElement.js';
 import ValidityState from '../../../src/validity-state/ValidityState.js';
 import Event from '../../../src/event/Event.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import HTMLCollection from '../../../src/nodes/element/HTMLCollection.js';
-import EventTarget from '../../../src/event/EventTarget.js';
+import type EventTarget from '../../../src/event/EventTarget.js';
 
 describe('HTMLSelectElement', () => {
 	let window: Window;

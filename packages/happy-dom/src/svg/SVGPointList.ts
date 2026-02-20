@@ -1,7 +1,7 @@
 import ClassMethodBinder from '../utilities/ClassMethodBinder.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import SVGPoint from './SVGPoint.js';
 
 const ATTRIBUTE_SEPARATOR_REGEXP = /[\t\f\n\r, ]+/;
