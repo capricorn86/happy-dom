@@ -1,19 +1,40 @@
 {
-  "name": "@happy-dom/node-canvas-adapter",
-  "version": "1.0.0",
-  "description": "node-canvas adapter for happy-dom",
-  "type": "module",
-  "exports": {
-    ".": {
-      "import": "./src/index.ts"
-    }
-  },
-  "peerDependencies": {
-    "canvas": ">=2.0.0",
-    "happy-dom": "*"
-  },
-  "devDependencies": {
-    "canvas": "^3.1.0"
-  },
-  "license": "MIT"
+	"name": "@happy-dom/node-canvas-adapter",
+	"version": "0.0.0",
+	"license": "MIT",
+	"homepage": "https://github.com/capricorn86/happy-dom/tree/master/packages/@happy-dom/node-canvas-adapter",
+	"repository": "https://github.com/capricorn86/happy-dom",
+	"author": "David Ortner",
+	"description": "Pluggable canvas adapter for happy-dom using node-canvas.",
+	"main": "lib/index.js",
+	"type": "module",
+	"keywords": [
+		"canvas",
+		"happy-dom",
+		"adapter",
+		"node-canvas",
+		"rendering"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"compile": "tsc",
+		"watch": "tsc -w --preserveWatchOutput",
+		"test": "vitest run"
+	},
+	"peerDependencies": {
+		"canvas": ">=2.0.0",
+		"happy-dom": "*"
+	},
+	"devDependencies": {
+		"@vitest/ui": "^4.0.16",
+		"canvas": "^3.2.1",
+		"happy-dom": "^0.0.0",
+		"typescript": "^5.8.3",
+		"vitest": "^4.0.16"
+	},
+	"engines": {
+		"node": ">=20.0.0"
+	}
 }

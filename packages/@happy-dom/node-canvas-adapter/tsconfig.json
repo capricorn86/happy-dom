@@ -6,9 +6,11 @@
 		"strict": true,
 		"declaration": true,
 		"outDir": "./lib",
-		"rootDir": "./src"
+		"rootDir": "./src",
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true
 	},
-	"include": [
-		"src"
-	]
+	"include": ["src"]
 }
