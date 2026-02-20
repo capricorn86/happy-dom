@@ -5,53 +5,9 @@ import OffscreenCanvas from './OffscreenCanvas.js';
 import Event from '../../event/Event.js';
 import MediaStream from '../html-media-element/MediaStream.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
+import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 
 const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+ab12C3+1aBCdEf==';
-
-/**
- * Canvas rendering adapter interface.
- * Implement this to provide real canvas rendering (e.g., via node-canvas).
- */
-export interface ICanvasAdapter {
-	/**
-	 * Creates a rendering context for the canvas.
-	 *
-	 * @param canvas The canvas element.
-	 * @param contextType The context type ('2d', 'webgl', etc.).
-	 * @param contextAttributes Optional context attributes.
-	 * @returns The rendering context or null.
-	 */
-	getContext(
-		canvas: HTMLCanvasElement,
-		contextType: string,
-		contextAttributes?: { [key: string]: unknown }
-	): unknown | null;
-
-	/**
-	 * Returns a data URL of the canvas content.
-	 *
-	 * @param canvas The canvas element.
-	 * @param type The image format (e.g., 'image/png').
-	 * @param encoderOptions Quality for lossy formats.
-	 * @returns The data URL string.
-	 */
-	toDataURL(canvas: HTMLCanvasElement, type?: string, encoderOptions?: unknown): string;
-
-	/**
-	 * Creates a Blob from the canvas content.
-	 *
-	 * @param canvas The canvas element.
-	 * @param callback Callback receiving the blob.
-	 * @param type The image format.
-	 * @param quality Quality for lossy formats.
-	 */
-	toBlob(
-		canvas: HTMLCanvasElement,
-		callback: (blob: Blob | null) => void,
-		type?: string,
-		quality?: unknown
-	): void;
-}
 
 /**
  * HTMLCanvasElement
@@ -59,11 +15,6 @@ export interface ICanvasAdapter {
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement
  */
 export default class HTMLCanvasElement extends HTMLElement {
-	// Canvas adapter for real rendering support
-	private static canvasAdapter: ICanvasAdapter | null = null;
-
-	// Events
-
 	/* eslint-disable jsdoc/require-jsdoc */
 
 	public get oncontextlost(): ((event: Event) => void) | null {
@@ -147,24 +98,6 @@ export default class HTMLCanvasElement extends HTMLElement {
 	}
 
 	/**
-	 * Sets the canvas adapter for real rendering support.
-	 *
-	 * @param adapter The adapter implementation (e.g., node-canvas adapter).
-	 */
-	public static setCanvasAdapter(adapter: ICanvasAdapter | null): void {
-		HTMLCanvasElement.canvasAdapter = adapter;
-	}
-
-	/**
-	 * Gets the current canvas adapter.
-	 *
-	 * @returns The current adapter or null.
-	 */
-	public static getCanvasAdapter(): ICanvasAdapter | null {
-		return HTMLCanvasElement.canvasAdapter;
-	}
-
-	/**
 	 * Returns capture stream.
 	 *
 	 * @param [frameRate] Frame rate.
@@ -195,49 +128,44 @@ export default class HTMLCanvasElement extends HTMLElement {
 	}
 
 	/**
-	 * Returns context.
 	 *
-	 * @param contextType Context type.
-	 * @param [contextAttributes] Context attributes.
-	 * @returns Context.
+	 * @param contextType
+	 * @param contextAttributes
 	 */
 	public getContext(
 		contextType: '2d' | 'webgl' | 'webgl2' | 'webgpu' | 'bitmaprenderer',
-		contextAttributes?: { [key: string]: unknown }
+		contextAttributes?: Record<string, unknown>
 	): unknown {
-		const adapter = HTMLCanvasElement.canvasAdapter;
-		if (adapter) {
-			return adapter.getContext(this, contextType, contextAttributes);
+		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
+		if (settings?.canvasAdapter != null) {
+			return settings.canvasAdapter.getContext(this, contextType, contextAttributes);
 		}
 		return null;
 	}
 
 	/**
-	 * Returns to data URL.
 	 *
-	 * @param [type] Type.
-	 * @param [encoderOptions] Quality.
-	 * @returns Data URL.
+	 * @param type
+	 * @param encoderOptions
 	 */
 	public toDataURL(type?: string, encoderOptions?: unknown): string {
-		const adapter = HTMLCanvasElement.canvasAdapter;
-		if (adapter) {
-			return adapter.toDataURL(this, type, encoderOptions);
+		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
+		if (settings?.canvasAdapter != null) {
+			return settings.canvasAdapter.toDataURL(this, type, encoderOptions);
 		}
 		return '';
 	}
 
 	/**
-	 * Returns to blob.
 	 *
-	 * @param callback Callback.
-	 * @param [type] Type.
-	 * @param [quality] Quality.
+	 * @param callback
+	 * @param type
+	 * @param quality
 	 */
 	public toBlob(callback: (blob: Blob | null) => void, type?: string, quality?: unknown): void {
-		const adapter = HTMLCanvasElement.canvasAdapter;
-		if (adapter) {
-			adapter.toBlob(this, callback, type, quality);
+		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
+		if (settings?.canvasAdapter != null) {
+			settings.canvasAdapter.toBlob(this, callback, type, quality);
 			return;
 		}
 		callback(new Blob([]));

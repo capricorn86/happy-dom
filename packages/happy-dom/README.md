@@ -16,6 +16,38 @@ A JavaScript implementation of a web browser without its graphical user interfac
 
 And much more..
 
+## Canvas Support
+
+Happy DOM provides a pluggable canvas adapter for real canvas rendering. By default, canvas operations return empty values to keep Happy DOM lightweight.
+
+To enable real canvas rendering, use the `@happy-dom/node-canvas-adapter` package:
+
+```bash
+npm install @happy-dom/node-canvas-adapter canvas
+```
+
+```typescript
+import { Window } from 'happy-dom';
+import { CanvasAdapter } from '@happy-dom/node-canvas-adapter';
+
+const window = new Window({
+  settings: {
+    canvasAdapter: new CanvasAdapter()
+  }
+});
+
+const canvas = window.document.createElement('canvas');
+const ctx = canvas.getContext('2d');
+
+// Now you can use canvas context
+ctx.fillStyle = 'red';
+ctx.fillRect(0, 0, 100, 100);
+
+const dataURL = canvas.toDataURL();
+```
+
+You can also create your own adapter by implementing the `ICanvasAdapter` interface.
+
 ## Documentation
 
 [Documentation](https://github.com/capricorn86/happy-dom/wiki/) | [Getting Started](https://github.com/capricorn86/happy-dom/wiki/Getting-started) | [Setup as Test Environment](https://github.com/capricorn86/happy-dom/wiki/Setup-as-Test-Environment) | [GitHub](https://github.com/capricorn86/happy-dom/)
