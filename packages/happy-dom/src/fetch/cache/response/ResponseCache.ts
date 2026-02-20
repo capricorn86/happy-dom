@@ -1,8 +1,8 @@
-import IResponseCache from './IResponseCache.js';
-import ICachedResponse from './ICachedResponse.js';
+import type IResponseCache from './IResponseCache.js';
+import type ICachedResponse from './ICachedResponse.js';
 import CachedResponseStateEnum from './CachedResponseStateEnum.js';
-import ICacheableRequest from './ICacheableRequest.js';
-import ICacheableResponse from './ICacheableResponse.js';
+import type ICacheableRequest from './ICacheableRequest.js';
+import type ICacheableResponse from './ICacheableResponse.js';
 import Headers from '../../Headers.js';
 import ResponseCacheFileSystem from './ResponseCacheFileSystem.js';
 

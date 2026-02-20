@@ -1,7 +1,7 @@
 import SVGElement from '../svg-element/SVGElement.js';
 import SVGStringList from '../../svg/SVGStringList.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import Event from '../../event/Event.js';
+import type Event from '../../event/Event.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**

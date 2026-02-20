@@ -1,13 +1,14 @@
 /* eslint-disable filenames/match-exported */
 
-import VM from 'vm';
+import type VM from 'vm';
 import * as JestUtil from 'jest-util';
 import { ModuleMocker } from 'jest-mock';
 import { LegacyFakeTimers, ModernFakeTimers } from '@jest/fake-timers';
-import { JestEnvironment, EnvironmentContext } from '@jest/environment';
-import { Window, BrowserErrorCaptureEnum, IOptionalBrowserSettings } from 'happy-dom';
-import { Script } from 'vm';
-import { Global, Config } from '@jest/types';
+import type { JestEnvironment, EnvironmentContext } from '@jest/environment';
+import type { IOptionalBrowserSettings } from 'happy-dom';
+import { Window, BrowserErrorCaptureEnum } from 'happy-dom';
+import type { Script } from 'vm';
+import type { Global, Config } from '@jest/types';
 
 /**
  * Happy DOM Jest Environment.

@@ -1,5 +1,5 @@
-import IMouseEventInit from './IMouseEventInit.js';
-import PointerEvent from './PointerEvent.js';
+import type IMouseEventInit from './IMouseEventInit.js';
+import type PointerEvent from './PointerEvent.js';
 
 export default interface IPointerEventInit extends IMouseEventInit {
 	pointerId?: number;

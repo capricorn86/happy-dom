@@ -2,8 +2,8 @@ import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Blob from '../../file/Blob.js';
 import OffscreenCanvas from './OffscreenCanvas.js';
-import Event from '../../event/Event.js';
-import MediaStream from '../html-media-element/MediaStream.js';
+import type Event from '../../event/Event.js';
+import type MediaStream from '../html-media-element/MediaStream.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 

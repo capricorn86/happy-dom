@@ -1,8 +1,8 @@
 import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import Event from '../../event/Event.js';
-import Element from './Element.js';
+import type Event from '../../event/Event.js';
+import type Element from './Element.js';
 
 /**
  * ECMAScript module compiler.

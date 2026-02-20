@@ -1,8 +1,8 @@
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import CSSParser from './utilities/CSSParser.js';
-import CSSRule from './CSSRule.js';
-import MediaList from './MediaList.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type CSSRule from './CSSRule.js';
+import type MediaList from './MediaList.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 
 /**

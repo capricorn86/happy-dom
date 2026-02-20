@@ -1,8 +1,8 @@
-import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import type HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import CustomElement from '../../CustomElement.js';
-import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
+import type ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import CSSStyleSheet from '../../../src/css/CSSStyleSheet.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
@@ -151,7 +151,7 @@ describe('ShadowRoot', () => {
 	describe('get adoptedStyleSheets()', () => {
 		it('Returns set adopted style sheets.', () => {
 			const shadowRoot = <ShadowRoot>document.createElement('custom-element').shadowRoot;
-			const styleSheet = new CSSStyleSheet();
+			const styleSheet = new window.CSSStyleSheet();
 			shadowRoot.adoptedStyleSheets = [styleSheet];
 			expect(shadowRoot.adoptedStyleSheets).toEqual([styleSheet]);
 		});
@@ -160,7 +160,7 @@ describe('ShadowRoot', () => {
 	describe('set adoptedStyleSheets()', () => {
 		it('Sets adopted style sheets.', () => {
 			const shadowRoot = <ShadowRoot>document.createElement('custom-element').shadowRoot;
-			const styleSheet = new CSSStyleSheet();
+			const styleSheet = new window.CSSStyleSheet();
 			shadowRoot.adoptedStyleSheets = [styleSheet];
 			expect(shadowRoot.adoptedStyleSheets).toEqual([styleSheet]);
 		});

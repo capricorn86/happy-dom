@@ -10,7 +10,7 @@ import FetchBodyUtility from '../../src/fetch/utilities/FetchBodyUtility.js';
 import Blob from '../../src/file/Blob.js';
 import File from '../../src/file/File.js';
 import FormData from '../../src/form-data/FormData.js';
-import Document from '../../src/nodes/document/Document.js';
+import type Document from '../../src/nodes/document/Document.js';
 import Window from '../../src/window/Window.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import { ReadableStream } from 'stream/web';

@@ -1,6 +1,6 @@
-import IServerRendererConfiguration from '../src/types/IServerRendererConfiguration';
-import IServerRendererItem from '../src/types/IServerRendererItem';
-import IServerRendererResult from '../src/types/IServerRendererResult';
+import type IServerRendererConfiguration from '../src/types/IServerRendererConfiguration';
+import type IServerRendererItem from '../src/types/IServerRendererItem';
+import type IServerRendererResult from '../src/types/IServerRendererResult';
 
 type TEvent = 'message' | 'error' | 'exit';
 

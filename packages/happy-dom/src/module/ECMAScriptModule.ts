@@ -1,12 +1,12 @@
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import { URL } from 'url';
-import IModule from './types/IModule.js';
+import type IModule from './types/IModule.js';
 import ECMAScriptModuleCompiler from './ECMAScriptModuleCompiler.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
-import IECMAScriptModuleCompiledResult from './types/IECMAScriptModuleCompiledResult.js';
-import ModuleFactory from './ModuleFactory.js';
-import IECMAScriptModuleInit from './types/IECMAScriptModuleInit.js';
+import type IECMAScriptModuleCompiledResult from './types/IECMAScriptModuleCompiledResult.js';
+import type ModuleFactory from './ModuleFactory.js';
+import type IECMAScriptModuleInit from './types/IECMAScriptModuleInit.js';
 
 const EMPTY_COMPILED_RESULT = { imports: [], execute: async () => {} };
 
@@ -22,6 +22,7 @@ export default class ECMAScriptModule implements IModule {
 	#compiled: IECMAScriptModuleCompiledResult | null = null;
 	#exports: { [k: string]: any } | null = null;
 	#evaluateQueue: Array<(value: { [key: string]: any }) => void> | null = null;
+	#factory: ModuleFactory;
 
 	/**
 	 * Constructor.
@@ -33,6 +34,7 @@ export default class ECMAScriptModule implements IModule {
 		this.url = <URL>init.url;
 		this.#source = init.source;
 		this.#sourceURL = init.sourceURL || null;
+		this.#factory = init.factory;
 	}
 
 	/**
@@ -68,7 +70,6 @@ export default class ECMAScriptModule implements IModule {
 		const modulePromises: Promise<IModule>[] = [];
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
-		const moduleFactory = new ModuleFactory(window, this.url);
 
 		if (!browserFrame) {
 			return {};
@@ -80,7 +81,7 @@ export default class ECMAScriptModule implements IModule {
 
 		for (const moduleImport of compiled.imports) {
 			modulePromises.push(
-				moduleFactory.getModule(moduleImport.url, {
+				this.#factory.getModule(moduleImport.url, {
 					with: { type: moduleImport.type }
 				})
 			);
@@ -113,7 +114,7 @@ export default class ECMAScriptModule implements IModule {
 
 		compiled.execute({
 			dispatchError: window[PropertySymbol.dispatchError].bind(window),
-			dynamicImport: moduleFactory.importModule.bind(moduleFactory),
+			dynamicImport: this.#factory.importModule.bind(this.#factory),
 			importMeta: {
 				url: href,
 				resolve: (url: string) => new URL(url, href).href
@@ -150,7 +151,6 @@ export default class ECMAScriptModule implements IModule {
 		const modulePromises: Promise<IModule>[] = [];
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
-		const moduleFactory = new ModuleFactory(window, this.url);
 
 		if (!browserFrame) {
 			return;
@@ -158,7 +158,7 @@ export default class ECMAScriptModule implements IModule {
 
 		for (const moduleImport of compiled.imports) {
 			modulePromises.push(
-				moduleFactory.getModule(moduleImport.url, {
+				this.#factory.getModule(moduleImport.url, {
 					with: { type: moduleImport.type }
 				})
 			);

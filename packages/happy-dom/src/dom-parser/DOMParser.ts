@@ -1,7 +1,7 @@
-import Document from '../nodes/document/Document.js';
+import type Document from '../nodes/document/Document.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import XMLParser from '../xml-parser/XMLParser.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import HTMLParser from '../html-parser/HTMLParser.js';
 
 /**

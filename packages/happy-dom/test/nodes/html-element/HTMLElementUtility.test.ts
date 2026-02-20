@@ -1,10 +1,10 @@
-import SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
-import FocusEvent from '../../../src/event/events/FocusEvent.js';
-import Document from '../../../src/nodes/document/Document.js';
-import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import type SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
+import type FocusEvent from '../../../src/event/events/FocusEvent.js';
+import type Document from '../../../src/nodes/document/Document.js';
+import type HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import Window from '../../../src/window/Window.js';
 import { beforeEach, describe, it, expect } from 'vitest';
-import EventTarget from '../../../src/event/EventTarget.js';
+import type EventTarget from '../../../src/event/EventTarget.js';
 
 describe('HTMLElementUtility', () => {
 	let window: Window;

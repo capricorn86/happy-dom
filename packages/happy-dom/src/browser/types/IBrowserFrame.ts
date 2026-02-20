@@ -1,14 +1,14 @@
-import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
-import * as PropertySymbol from '../../PropertySymbol.js';
-import BrowserWindow from '../../window/BrowserWindow.js';
-import Document from '../../nodes/document/Document.js';
-import IBrowserPage from './IBrowserPage.js';
-import Response from '../../fetch/Response.js';
-import IGoToOptions from './IGoToOptions.js';
-import { Script } from 'vm';
-import IReloadOptions from './IReloadOptions.js';
-import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
-import HistoryItemList from '../../history/HistoryItemList.js';
+import type AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
+import type * as PropertySymbol from '../../PropertySymbol.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
+import type Document from '../../nodes/document/Document.js';
+import type IBrowserPage from './IBrowserPage.js';
+import type Response from '../../fetch/Response.js';
+import type IGoToOptions from './IGoToOptions.js';
+import type { Script } from 'vm';
+import type IReloadOptions from './IReloadOptions.js';
+import type CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
+import type HistoryItemList from '../../history/HistoryItemList.js';
 
 /**
  * Browser frame.

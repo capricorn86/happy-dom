@@ -1,13 +1,12 @@
-import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
-import BrowserNavigationCrossOriginPolicyEnum from '../enums/BrowserNavigationCrossOriginPolicyEnum.js';
-import IFetchInterceptor from '../../fetch/types/IFetchInterceptor.js';
-import IVirtualServer from '../../fetch/types/IVirtualServer.js';
-import IFetchRequestHeaders from '../../fetch/types/IFetchRequestHeaders.js';
-import IBrowserPageViewport from './IBrowserPageViewport.js';
-import IOptionalTimerLoopsLimit from '../../window/IOptionalTimerLoopsLimit.js';
-import BrowserWindow from '../../window/BrowserWindow.js';
-import IResolveNodeModules from '../../module/types/IResolveNodeModules.js';
-import ICanvasAdapter from '../../nodes/html-canvas-element/ICanvasAdapter.js';
+import type BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
+import type BrowserNavigationCrossOriginPolicyEnum from '../enums/BrowserNavigationCrossOriginPolicyEnum.js';
+import type IFetchInterceptor from '../../fetch/types/IFetchInterceptor.js';
+import type IVirtualServer from '../../fetch/types/IVirtualServer.js';
+import type IFetchRequestHeaders from '../../fetch/types/IFetchRequestHeaders.js';
+import type IBrowserPageViewport from './IBrowserPageViewport.js';
+import type IOptionalTimerLoopsLimit from '../../window/IOptionalTimerLoopsLimit.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
+import type IResolveNodeModules from '../../module/types/IResolveNodeModules.js';
 
 /**
  * Browser settings.
@@ -105,6 +104,8 @@ export default interface IBrowserSettings {
 		urlResolver:
 			| ((options: { url: string; parentURL: string; window: BrowserWindow }) => string)
 			| null;
+		/** Disables module compilation caching */
+		disableCache?: boolean;
 	};
 
 	/**
@@ -181,14 +182,4 @@ export default interface IBrowserSettings {
 	 * Default page viewport.
 	 */
 	viewport: IBrowserPageViewport;
-
-	/**
-	 * Canvas rendering adapter.
-	 *
-	 * Provide a custom implementation to enable real canvas rendering.
-	 * When null, canvas operations return empty/default values.
-	 *
-	 * @see ICanvasAdapter
-	 */
-	canvasAdapter: ICanvasAdapter | null;
 }

@@ -1,9 +1,9 @@
 import * as PropertySymbol from '../PropertySymbol.js';
 import NamespaceURI from '../config/NamespaceURI.js';
-import Element from '../nodes/element/Element.js';
+import type Element from '../nodes/element/Element.js';
 import Node from '../nodes/node/Node.js';
-import BrowserWindow from '../window/BrowserWindow.js';
-import XMLDocument from '../nodes/xml-document/XMLDocument.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
+import type XMLDocument from '../nodes/xml-document/XMLDocument.js';
 import XMLEncodeUtility from '../utilities/XMLEncodeUtility.js';
 import NodeFactory from '../nodes/NodeFactory.js';
 

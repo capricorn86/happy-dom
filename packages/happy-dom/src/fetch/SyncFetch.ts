@@ -1,16 +1,16 @@
-import IRequestInit from './types/IRequestInit.js';
+import type IRequestInit from './types/IRequestInit.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import IRequestInfo from './types/IRequestInfo.js';
+import type { TRequestInfo } from './types/TRequestInfo.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import URL from '../url/URL.js';
 import FS from 'fs';
 import Path from 'path';
-import Request from './Request.js';
-import IBrowserFrame from '../browser/types/IBrowserFrame.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type Request from './Request.js';
+import type IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import ChildProcess from 'child_process';
-import ISyncResponse from './types/ISyncResponse.js';
-import Headers from './Headers.js';
+import type ISyncResponse from './types/ISyncResponse.js';
+import type Headers from './Headers.js';
 import CachedResponseStateEnum from './cache/response/CachedResponseStateEnum.js';
 import FetchRequestReferrerUtility from './utilities/FetchRequestReferrerUtility.js';
 import FetchRequestValidationUtility from './utilities/FetchRequestValidationUtility.js';
@@ -22,9 +22,9 @@ import Zlib from 'zlib';
 import FetchResponseRedirectUtility from './utilities/FetchResponseRedirectUtility.js';
 import FetchCORSUtility from './utilities/FetchCORSUtility.js';
 import Fetch from './Fetch.js';
-import IFetchInterceptor from './types/IFetchInterceptor.js';
+import type IFetchInterceptor from './types/IFetchInterceptor.js';
 import VirtualServerUtility from './utilities/VirtualServerUtility.js';
-import IFetchRequestHeaders from './types/IFetchRequestHeaders.js';
+import type IFetchRequestHeaders from './types/IFetchRequestHeaders.js';
 
 interface ISyncHTTPResponse {
 	error: string;
@@ -67,7 +67,7 @@ export default class SyncFetch {
 	constructor(options: {
 		browserFrame: IBrowserFrame;
 		window: BrowserWindow;
-		url: IRequestInfo;
+		url: TRequestInfo;
 		init?: IRequestInit;
 		redirectCount?: number;
 		contentType?: string | null;
@@ -710,7 +710,7 @@ export default class SyncFetch {
 				return fetch.send();
 			default:
 				throw new this.#window.DOMException(
-					`Redirect option '${this.request.redirect}' is not a valid value of IRequestRedirect`
+					`Redirect option '${this.request.redirect}' is not a valid value of TRequestRedirect`
 				);
 		}
 	}

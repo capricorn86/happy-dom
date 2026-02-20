@@ -1,7 +1,7 @@
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
-import HTMLTableRowElement from '../html-table-row-element/HTMLTableRowElement.js';
+import type HTMLTableRowElement from '../html-table-row-element/HTMLTableRowElement.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 /**
  * HTMLTableSectionElement

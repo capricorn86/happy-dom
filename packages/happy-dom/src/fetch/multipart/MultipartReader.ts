@@ -1,6 +1,6 @@
 import File from '../../file/File.js';
-import FormData from '../../form-data/FormData.js';
-import BrowserWindow from '../../window/BrowserWindow.js';
+import type FormData from '../../form-data/FormData.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
 
 enum MultipartParserStateEnum {
 	boundary = 0,

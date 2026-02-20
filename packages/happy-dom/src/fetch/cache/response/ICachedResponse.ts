@@ -1,6 +1,6 @@
-import CachedResponseStateEnum from './CachedResponseStateEnum.js';
-import Headers from '../../Headers.js';
-import * as PropertySymbol from '../../../PropertySymbol.js';
+import type CachedResponseStateEnum from './CachedResponseStateEnum.js';
+import type Headers from '../../Headers.js';
+import type * as PropertySymbol from '../../../PropertySymbol.js';
 
 export default interface ICachedResponse {
 	/** Response. */

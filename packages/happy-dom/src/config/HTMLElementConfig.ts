@@ -126,7 +126,9 @@ export default <
 	},
 	caption: {
 		className: 'HTMLTableCaptionElement',
-		contentModel: HTMLElementConfigContentModelEnum.textOrComments
+		contentModel: HTMLElementConfigContentModelEnum.noForbiddenFirstLevelDescendants,
+		forbiddenDescendants: ['table', 'tbody', 'thead', 'tfoot', 'tr', 'td', 'th', 'col', 'colgroup'],
+		permittedParents: ['table']
 	},
 	cite: {
 		className: 'HTMLElement',

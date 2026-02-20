@@ -1,11 +1,11 @@
 import DOMPoint from '../DOMPoint.js';
-import IDOMPointInit from '../IDOMPointInit.js';
+import type IDOMPointInit from '../IDOMPointInit.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import TDOMMatrixInit from './TDOMMatrixInit.js';
-import TDOMMatrix2DArray from './TDOMMatrix2DArray.js';
-import TDOMMatrix3DArray from './TDOMMatrix3DArray.js';
-import IDOMMatrixJSON from './IDOMMatrixJSON.js';
-import IDOMMatrixCompatibleObject from './IDOMMatrixCompatibleObject.js';
+import type { TDOMMatrixInit } from './TDOMMatrixInit.js';
+import type { TDOMMatrix2DArray } from './TDOMMatrix2DArray.js';
+import type { TDOMMatrix3DArray } from './TDOMMatrix3DArray.js';
+import type IDOMMatrixJSON from './IDOMMatrixJSON.js';
+import type IDOMMatrixCompatibleObject from './IDOMMatrixCompatibleObject.js';
 
 const DEFAULT_MATRIX_JSON: IDOMMatrixJSON = {
 	a: 1,

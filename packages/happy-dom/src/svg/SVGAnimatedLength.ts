@@ -1,6 +1,6 @@
 import * as PropertySymbol from '../PropertySymbol.js';
 import SVGLength from './SVGLength.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * SVG Animated Length.

@@ -1,6 +1,6 @@
 import * as PropertySymbol from '../PropertySymbol.js';
 import SVGLengthTypeEnum from './SVGLengthTypeEnum.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 
 const ATTRIBUTE_REGEXP = /^(\d+|\d+\.\d+)(px|em|ex|cm|mm|in|pt|pc|%|)$/;
 
