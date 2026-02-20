@@ -5,7 +5,6 @@ import OffscreenCanvas from './OffscreenCanvas.js';
 import type Event from '../../event/Event.js';
 import type MediaStream from '../html-media-element/MediaStream.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
-import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 
 const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+ab12C3+1aBCdEf==';
 
@@ -15,6 +14,8 @@ const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement
  */
 export default class HTMLCanvasElement extends HTMLElement {
+	// Events
+
 	/* eslint-disable jsdoc/require-jsdoc */
 
 	public get oncontextlost(): ((event: Event) => void) | null {
@@ -128,46 +129,38 @@ export default class HTMLCanvasElement extends HTMLElement {
 	}
 
 	/**
+	 * Returns context.
 	 *
-	 * @param contextType
-	 * @param contextAttributes
+	 * @param _contextType Context type.
+	 * @param [_contextAttributes] Context attributes.
+	 * @returns Context.
 	 */
 	public getContext(
-		contextType: '2d' | 'webgl' | 'webgl2' | 'webgpu' | 'bitmaprenderer',
-		contextAttributes?: Record<string, unknown>
-	): unknown {
-		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
-		if (settings?.canvasAdapter != null) {
-			return settings.canvasAdapter.getContext(this, contextType, contextAttributes);
-		}
+		_contextType: '2d' | 'webgl' | 'webgl2' | 'webgpu' | 'bitmaprenderer',
+		_contextAttributes?: { [key: string]: any }
+	): any {
 		return null;
 	}
 
 	/**
+	 * Returns to data URL.
 	 *
-	 * @param type
-	 * @param encoderOptions
+	 * @param [_type] Type.
+	 * @param [_encoderOptions] Quality.
+	 * @returns Data URL.
 	 */
-	public toDataURL(type?: string, encoderOptions?: unknown): string {
-		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
-		if (settings?.canvasAdapter != null) {
-			return settings.canvasAdapter.toDataURL(this, type, encoderOptions);
-		}
+	public toDataURL(_type?: string, _encoderOptions?: any): string {
 		return '';
 	}
 
 	/**
+	 * Returns to blob.
 	 *
-	 * @param callback
-	 * @param type
-	 * @param quality
+	 * @param callback Callback.
+	 * @param [_type] Type.
+	 * @param [_quality] Quality.
 	 */
-	public toBlob(callback: (blob: Blob | null) => void, type?: string, quality?: unknown): void {
-		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
-		if (settings?.canvasAdapter != null) {
-			settings.canvasAdapter.toBlob(this, callback, type, quality);
-			return;
-		}
+	public toBlob(callback: (blob: Blob) => void, _type?: string, _quality?: any): void {
 		callback(new Blob([]));
 	}
 

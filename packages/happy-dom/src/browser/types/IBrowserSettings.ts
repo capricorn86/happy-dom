@@ -7,7 +7,6 @@ import type IBrowserPageViewport from './IBrowserPageViewport.js';
 import type IOptionalTimerLoopsLimit from '../../window/IOptionalTimerLoopsLimit.js';
 import type BrowserWindow from '../../window/BrowserWindow.js';
 import type IResolveNodeModules from '../../module/types/IResolveNodeModules.js';
-import type ICanvasAdapter from '../../nodes/html-canvas-element/ICanvasAdapter.js';
 
 /**
  * Browser settings.
@@ -183,14 +182,4 @@ export default interface IBrowserSettings {
 	 * Default page viewport.
 	 */
 	viewport: IBrowserPageViewport;
-
-	/**
-	 * Canvas rendering adapter.
-	 *
-	 * Provide a custom implementation to enable real canvas rendering.
-	 * When null, canvas operations return empty/default values.
-	 *
-	 * @see ICanvasAdapter
-	 */
-	canvasAdapter: ICanvasAdapter | null;
 }

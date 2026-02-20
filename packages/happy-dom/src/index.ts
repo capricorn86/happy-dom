@@ -221,7 +221,6 @@ import type IWheelEventInit from './event/events/IWheelEventInit.js';
 import type IFetchInterceptor from './fetch/types/IFetchInterceptor.js';
 import type ISyncResponse from './fetch/types/ISyncResponse.js';
 import type IVirtualServer from './fetch/types/IVirtualServer.js';
-import type ICanvasAdapter from './nodes/html-canvas-element/ICanvasAdapter.js';
 
 export type {
 	IAnimationEventInit,
@@ -230,7 +229,6 @@ export type {
 	IBrowserFrame,
 	IBrowserPage,
 	IBrowserSettings,
-	ICanvasAdapter,
 	IClipboardEventInit,
 	ICookie,
 	ICustomEventInit,

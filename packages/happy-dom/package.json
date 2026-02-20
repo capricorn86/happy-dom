@@ -44,7 +44,6 @@
 	"devDependencies": {
 		"@vitest/ui": "^4.0.16",
 		"@webref/css": "6.6.2",
-		"canvas": "^3.2.1",
 		"typescript": "^5.8.3",
 		"vitest": "^4.0.16",
 		"madge": "^8.0.0"

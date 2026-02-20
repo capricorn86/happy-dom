@@ -48,8 +48,5 @@
 	},
 	"engines": {
 		"node": ">=20.0.0"
-	},
-	"dependencies": {
-		"canvas": "^3.2.1"
 	}
 }
