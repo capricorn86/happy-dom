@@ -1,8 +1,8 @@
-import IVirtualConsolePrinter from './IVirtualConsolePrinter.js';
+import type IVirtualConsolePrinter from './IVirtualConsolePrinter.js';
 import VirtualConsoleLogLevelEnum from './enums/VirtualConsoleLogLevelEnum.js';
 import VirtualConsoleLogTypeEnum from './enums/VirtualConsoleLogTypeEnum.js';
-import IVirtualConsoleLogGroup from './IVirtualConsoleLogGroup.js';
-import { ConsoleConstructor } from 'console';
+import type IVirtualConsoleLogGroup from './IVirtualConsoleLogGroup.js';
+import type { ConsoleConstructor } from 'console';
 
 /**
  * Virtual Console.

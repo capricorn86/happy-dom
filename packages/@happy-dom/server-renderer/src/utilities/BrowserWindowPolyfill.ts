@@ -1,4 +1,4 @@
-import { BrowserWindow } from 'happy-dom';
+import type { BrowserWindow } from 'happy-dom';
 
 /**
  * Browser window polyfill utility.

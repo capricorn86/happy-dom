@@ -1,6 +1,6 @@
 import HTMLOutputElement from '../../../src/nodes/html-output-element/HTMLOutputElement.js';
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import ValidityState from '../../../src/validity-state/ValidityState.js';
 

@@ -1,15 +1,15 @@
-import IBrowserSettings from '../types/IBrowserSettings.js';
+import type IBrowserSettings from '../types/IBrowserSettings.js';
 import DetachedBrowserContext from './DetachedBrowserContext.js';
-import IOptionalBrowserSettings from '../types/IOptionalBrowserSettings.js';
+import type IOptionalBrowserSettings from '../types/IOptionalBrowserSettings.js';
 import BrowserSettingsFactory from '../BrowserSettingsFactory.js';
-import DetachedBrowserPage from './DetachedBrowserPage.js';
-import IBrowser from '../types/IBrowser.js';
-import IBrowserFrame from '../types/IBrowserFrame.js';
-import BrowserWindow from '../../window/BrowserWindow.js';
+import type DetachedBrowserPage from './DetachedBrowserPage.js';
+import type IBrowser from '../types/IBrowser.js';
+import type IBrowserFrame from '../types/IBrowserFrame.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
 import BrowserExceptionObserver from '../utilities/BrowserExceptionObserver.js';
-import BrowserContext from '../BrowserContext.js';
+import type BrowserContext from '../BrowserContext.js';
 
 /**
  * Detached browser used when constructing a Window instance without a browser.

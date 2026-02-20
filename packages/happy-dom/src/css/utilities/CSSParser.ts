@@ -1,6 +1,6 @@
-import CSSRule from '../CSSRule.js';
+import type CSSRule from '../CSSRule.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import CSSStyleSheet from '../CSSStyleSheet.js';
+import type CSSStyleSheet from '../CSSStyleSheet.js';
 import CSSStyleRule from '../rules/CSSStyleRule.js';
 import CSSKeyframeRule from '../rules/CSSKeyframeRule.js';
 import CSSKeyframesRule from '../rules/CSSKeyframesRule.js';
@@ -301,11 +301,11 @@ export default class CSSParser {
 	 * @returns True if valid, false otherwise.
 	 */
 	private validateSelectorText(selectorText: string): boolean {
-		try {
-			SelectorParser.getSelectorGroups(selectorText);
-		} catch (e) {
-			return false;
-		}
-		return true;
+		const window = this.#parentStyleSheet[PropertySymbol.window];
+		return (
+			new SelectorParser({ window, scope: window.document, ignoreErrors: true }).getSelectorGroups(
+				selectorText
+			).length > 0
+		);
 	}
 }

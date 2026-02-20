@@ -1,13 +1,13 @@
-import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
-import BrowserNavigationCrossOriginPolicyEnum from '../enums/BrowserNavigationCrossOriginPolicyEnum.js';
-import IFetchInterceptor from '../../fetch/types/IFetchInterceptor.js';
-import IVirtualServer from '../../fetch/types/IVirtualServer.js';
-import IFetchRequestHeaders from '../../fetch/types/IFetchRequestHeaders.js';
-import IOptionalBrowserPageViewport from './IOptionalBrowserPageViewport.js';
-import IOptionalTimerLoopsLimit from '../../window/IOptionalTimerLoopsLimit.js';
-import BrowserWindow from '../../window/BrowserWindow.js';
-import IResolveNodeModules from '../../module/types/IResolveNodeModules.js';
-import ICanvasAdapter from '../../nodes/html-canvas-element/ICanvasAdapter.js';
+import type BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
+import type BrowserNavigationCrossOriginPolicyEnum from '../enums/BrowserNavigationCrossOriginPolicyEnum.js';
+import type IFetchInterceptor from '../../fetch/types/IFetchInterceptor.js';
+import type IVirtualServer from '../../fetch/types/IVirtualServer.js';
+import type IFetchRequestHeaders from '../../fetch/types/IFetchRequestHeaders.js';
+import type IOptionalBrowserPageViewport from './IOptionalBrowserPageViewport.js';
+import type IOptionalTimerLoopsLimit from '../../window/IOptionalTimerLoopsLimit.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
+import type IResolveNodeModules from '../../module/types/IResolveNodeModules.js';
+import type ICanvasAdapter from '../../nodes/html-canvas-element/ICanvasAdapter.js';
 
 export default interface IOptionalBrowserSettings {
 	/**
@@ -101,6 +101,8 @@ export default interface IOptionalBrowserSettings {
 		urlResolver?:
 			| ((options: { url: string; parentURL: string; window: BrowserWindow }) => string)
 			| null;
+		/** Disables module compilation caching */
+		disableCache?: boolean;
 	};
 
 	/**

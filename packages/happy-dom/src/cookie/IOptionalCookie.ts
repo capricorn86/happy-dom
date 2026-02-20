@@ -1,4 +1,4 @@
-import CookieSameSiteEnum from './enums/CookieSameSiteEnum.js';
+import type CookieSameSiteEnum from './enums/CookieSameSiteEnum.js';
 
 export default interface IOptionalCookie {
 	// Required

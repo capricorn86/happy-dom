@@ -1,8 +1,8 @@
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Element from '../element/Element.js';
-import SVGSVGElement from '../svg-svg-element/SVGSVGElement.js';
-import Event from '../../event/Event.js';
+import type SVGSVGElement from '../svg-svg-element/SVGSVGElement.js';
+import type Event from '../../event/Event.js';
 import HTMLElementUtility from '../html-element/HTMLElementUtility.js';
 import DOMStringMap from '../../dom/DOMStringMap.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';

@@ -1,7 +1,7 @@
 import type IBrowserSettings from 'happy-dom/lib/browser/types/IBrowserSettings.js';
-import ServerRendererLogLevelEnum from '../enums/ServerRendererLogLevelEnum.js';
-import IServerRendererItem from './IServerRendererItem.js';
-import ServerRendererModeEnum from '../enums/ServerRendererModeEnum.js';
+import type ServerRendererLogLevelEnum from '../enums/ServerRendererLogLevelEnum.js';
+import type IServerRendererItem from './IServerRendererItem.js';
+import type ServerRendererModeEnum from '../enums/ServerRendererModeEnum.js';
 
 export default interface IServerRendererConfiguration {
 	/**

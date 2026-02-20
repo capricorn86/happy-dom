@@ -1,7 +1,7 @@
 import Browser from 'happy-dom/lib/browser/Browser.js';
-import IServerRendererConfiguration from './types/IServerRendererConfiguration.js';
-import IServerRendererItem from './types/IServerRendererItem.js';
-import IServerRendererResult from './types/IServerRendererResult.js';
+import type IServerRendererConfiguration from './types/IServerRendererConfiguration.js';
+import type IServerRendererItem from './types/IServerRendererItem.js';
+import type IServerRendererResult from './types/IServerRendererResult.js';
 import ServerRendererPage from './ServerRendererPage.js';
 
 /**

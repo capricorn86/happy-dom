@@ -1,10 +1,10 @@
 import CSSStyleDeclaration from '../../src/css/declaration/CSSStyleDeclaration.js';
 import Document from '../../src/nodes/document/Document.js';
-import HTMLLinkElement from '../../src/nodes/html-link-element/HTMLLinkElement.js';
+import type HTMLLinkElement from '../../src/nodes/html-link-element/HTMLLinkElement.js';
 import HTMLElement from '../../src/nodes/html-element/HTMLElement.js';
 import ResourceFetch from '../../src/fetch/ResourceFetch.js';
-import HTMLScriptElement from '../../src/nodes/html-script-element/HTMLScriptElement.js';
-import Window from '../../src/window/Window.js';
+import type HTMLScriptElement from '../../src/nodes/html-script-element/HTMLScriptElement.js';
+import type Window from '../../src/window/Window.js';
 import BrowserWindow from '../../src/window/BrowserWindow.js';
 import Navigator from '../../src/navigator/Navigator.js';
 import Headers from '../../src/fetch/Headers.js';
@@ -15,27 +15,27 @@ import CustomElement from '../CustomElement.js';
 import Request from '../../src/fetch/Request.js';
 import Response from '../../src/fetch/Response.js';
 import Fetch from '../../src/fetch/Fetch.js';
-import MessageEvent from '../../src/event/events/MessageEvent.js';
-import Event from '../../src/event/Event.js';
-import ErrorEvent from '../../src/event/events/ErrorEvent.js';
+import type MessageEvent from '../../src/event/events/MessageEvent.js';
+import type Event from '../../src/event/Event.js';
+import type ErrorEvent from '../../src/event/events/ErrorEvent.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Permissions from '../../src/permissions/Permissions.js';
 import Clipboard from '../../src/clipboard/Clipboard.js';
 import PackageVersion from '../../src/version.js';
-import HTMLDialogElement from '../../src/nodes/html-dialog-element/HTMLDialogElement.js';
+import type HTMLDialogElement from '../../src/nodes/html-dialog-element/HTMLDialogElement.js';
 import Browser from '../../src/browser/Browser.js';
 import CrossOriginBrowserWindow from '../../src/window/CrossOriginBrowserWindow.js';
 import BrowserFrameFactory from '../../src/browser/utilities/BrowserFrameFactory.js';
-import IBrowser from '../../src/browser/types/IBrowser.js';
-import IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
-import IBrowserPage from '../../src/browser/types/IBrowserPage.js';
+import type IBrowser from '../../src/browser/types/IBrowser.js';
+import type IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
+import type IBrowserPage from '../../src/browser/types/IBrowserPage.js';
 import AdoptedStyleSheetCustomElement from '../AdoptedStyleSheetCustomElement.js';
 import CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
 import Location from '../../src/location/Location.js';
 import HTMLElementConfig from '../../src/config/HTMLElementConfig.js';
 
 import '../types.d.js';
-import EventTarget from '../../src/event/EventTarget.js';
+import type EventTarget from '../../src/event/EventTarget.js';
 import EventPhaseEnum from '../../src/event/EventPhaseEnum.js';
 import { PerformanceEntry, PerformanceObserver } from 'perf_hooks';
 import { URLSearchParams } from 'url';
@@ -652,7 +652,7 @@ describe('BrowserWindow', () => {
 			);
 			const elementComputedStyle = window.getComputedStyle(element);
 
-			const styleSheet = new CSSStyleSheet();
+			const styleSheet = new window.CSSStyleSheet();
 			styleSheet.replaceSync(`
                 span {
 					color: green;

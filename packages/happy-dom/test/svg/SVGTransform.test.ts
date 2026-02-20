@@ -1,10 +1,10 @@
 import { beforeEach, describe, it, expect } from 'vitest';
-import BrowserWindow from '../../src/window/BrowserWindow.js';
+import type BrowserWindow from '../../src/window/BrowserWindow.js';
 import Window from '../../src/window/Window.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import SVGTransform from '../../src/svg/SVGTransform.js';
 import SVGTransformTypeEnum from '../../src/svg/SVGTransformTypeEnum.js';
-import SVGMatrix from '../../src/svg/SVGMatrix.js';
+import type SVGMatrix from '../../src/svg/SVGMatrix.js';
 
 describe('SVGTransform', () => {
 	let window: BrowserWindow;

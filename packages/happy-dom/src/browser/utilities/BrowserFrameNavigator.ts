@@ -1,13 +1,13 @@
-import IBrowserFrame from '../types/IBrowserFrame.js';
+import type IBrowserFrame from '../types/IBrowserFrame.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IGoToOptions from '../types/IGoToOptions.js';
-import Response from '../../fetch/Response.js';
-import BrowserWindow from '../../window/BrowserWindow.js';
+import type IGoToOptions from '../types/IGoToOptions.js';
+import type Response from '../../fetch/Response.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
 import BrowserFrameFactory from './BrowserFrameFactory.js';
 import BrowserFrameURL from './BrowserFrameURL.js';
 import BrowserFrameValidator from './BrowserFrameValidator.js';
 import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
-import FormData from '../../form-data/FormData.js';
+import type FormData from '../../form-data/FormData.js';
 import HistoryScrollRestorationEnum from '../../history/HistoryScrollRestorationEnum.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import Fetch from '../../fetch/Fetch.js';

@@ -1,5 +1,5 @@
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
-import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
+import type ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
 
 /**
  * Custom element test class.

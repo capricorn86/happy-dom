@@ -1,7 +1,7 @@
-import Event from '../../src/event/Event.js';
+import type Event from '../../src/event/Event.js';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
-import BrowserWindow from '../../src/window/BrowserWindow.js';
+import type BrowserWindow from '../../src/window/BrowserWindow.js';
 import Window from '../../src/window/Window.js';
 
 describe('AbortSignal', () => {

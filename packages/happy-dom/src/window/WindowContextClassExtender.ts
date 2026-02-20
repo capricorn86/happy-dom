@@ -1,4 +1,4 @@
-import BrowserWindow from './BrowserWindow.js';
+import type BrowserWindow from './BrowserWindow.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 
 import DocumentImplementation from '../nodes/document/Document.js';

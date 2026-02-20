@@ -1,6 +1,6 @@
-import IBrowserFrame from '../types/IBrowserFrame.js';
+import type IBrowserFrame from '../types/IBrowserFrame.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import IBrowserPage from '../types/IBrowserPage.js';
+import type IBrowserPage from '../types/IBrowserPage.js';
 
 /**
  * Browser frame factory.

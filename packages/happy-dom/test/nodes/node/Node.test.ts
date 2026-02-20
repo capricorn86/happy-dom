@@ -1,17 +1,17 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import Node from '../../../src/nodes/node/Node.js';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
-import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
+import type HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
 import Event from '../../../src/event/Event.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
 import Text from '../../../src/nodes/text/Text.js';
 import EventPhaseEnum from '../../../src/event/EventPhaseEnum.js';
-import ErrorEvent from '../../../src/event/events/ErrorEvent.js';
+import type ErrorEvent from '../../../src/event/events/ErrorEvent.js';
 import { beforeEach, describe, it, expect } from 'vitest';
-import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
+import type ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
-import EventTarget from '../../../src/event/EventTarget.js';
+import type EventTarget from '../../../src/event/EventTarget.js';
 import NodeFactory from '../../../src/nodes/NodeFactory.js';
 
 describe('Node', () => {
