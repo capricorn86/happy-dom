@@ -925,6 +925,20 @@ describe('HTMLInputElement', () => {
 			element.setAttribute('type', 'date');
 			expect(element.type).toBe('date');
 		});
+
+		it('Returns "text" for invalid type attribute.', () => {
+			element.setAttribute('type', '123');
+			expect(element.type).toBe('text');
+
+			element.setAttribute('type', 'invalid');
+			expect(element.type).toBe('text');
+		});
+
+		it('Preserves the raw invalid value in the attribute itself.', () => {
+			element.setAttribute('type', '123');
+			expect(element.getAttribute('type')).toBe('123');
+			expect(element.type).toBe('text');
+		});
 	});
 
 	describe('set type()', () => {
