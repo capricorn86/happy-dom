@@ -112,6 +112,44 @@ describe('GlobalRegistrator', () => {
 
 			GlobalRegistrator.unregister();
 		});
+
+		it('Overrides global properties with throwing getters (Node 26+ localStorage scenario)', () => {
+			// Simulate Node 26+ behavior where localStorage throws SecurityError without --localstorage-file
+			// This was briefly in Node 25.2.0, reverted in 25.2.1, and planned for Node 26.0.0
+			// See: https://nodejs.org/en/blog/release/v25.2.1
+			const originalDescriptor = Object.getOwnPropertyDescriptor(
+				globalThis,
+				'testThrowingProperty'
+			);
+
+			Object.defineProperty(globalThis, 'testThrowingProperty', {
+				get: () => {
+					throw new Error('SecurityError: Cannot access without configuration');
+				},
+				configurable: true
+			});
+
+			try {
+				GlobalRegistrator.register();
+
+				// Verify localStorage works (happy-dom's implementation should override any throwing native)
+				assert.strictEqual(typeof globalThis.localStorage.getItem, 'function');
+				assert.strictEqual(globalThis.localStorage.getItem('nonexistent'), null);
+
+				// Test setItem/getItem roundtrip
+				globalThis.localStorage.setItem('testKey', 'testValue');
+				assert.strictEqual(globalThis.localStorage.getItem('testKey'), 'testValue');
+
+				GlobalRegistrator.unregister();
+			} finally {
+				// Clean up the test property
+				if (originalDescriptor) {
+					Object.defineProperty(globalThis, 'testThrowingProperty', originalDescriptor);
+				} else {
+					delete (<any>globalThis).testThrowingProperty;
+				}
+			}
+		});
 	});
 
 	describe('unregister()', () => {
@@ -128,13 +166,18 @@ describe('GlobalRegistrator', () => {
 				}
 			}
 
-			// In Node.js v21 and later, the navigator property is available.
-			if (!included.includes('navigator')) {
-				included.push('navigator');
-			}
+			// Different Node versions have different native globals:
+			// - Node 21+: navigator
+			// - Node 25+: localStorage, sessionStorage (as non-functional stubs)
+			// We verify that happy-dom properties were cleaned up and only native ones remain.
+			const nativeProperties = ['navigator', 'localStorage', 'sessionStorage'];
+			const nonNativeRemaining = included.filter((name) => !nativeProperties.includes(name));
 
-			assert.strictEqual(included.length, 1);
-			assert.strictEqual(included[0], 'navigator');
+			assert.strictEqual(
+				nonNativeRemaining.length,
+				0,
+				`Non-native properties should be removed after unregister, but found: ${nonNativeRemaining.join(', ')}`
+			);
 		});
 
 		it('Restores setTimeout after unregistering', () => {
