@@ -61,7 +61,15 @@ export default class Response implements Response {
 			);
 		}
 
-		this.status = init?.status !== undefined ? init.status : 200;
+		const status = init?.status !== undefined ? init.status : 200;
+
+		if (!init?.[PropertySymbol.skipStatusValidation] && (status < 200 || status > 599)) {
+			throw new RangeError(
+				`Failed to construct 'Response': The status provided (${status}) is outside the range [200, 599].`
+			);
+		}
+
+		this.status = status;
 		this.statusText = init?.statusText || '';
 		this.ok = this.status >= 200 && this.status < 300;
 		this.headers = new this[PropertySymbol.window].Headers(init?.headers);
@@ -343,7 +351,8 @@ export default class Response implements Response {
 		const response = new window.Response(body, {
 			status: this.status,
 			statusText: this.statusText,
-			headers: this.headers
+			headers: this.headers,
+			[PropertySymbol.skipStatusValidation]: true
 		});
 
 		response[PropertySymbol.cachedResponse] = this[PropertySymbol.cachedResponse];
@@ -403,7 +412,11 @@ export default class Response implements Response {
 	 * @returns Response.
 	 */
 	public static error(): Response {
-		const response = new this[PropertySymbol.window].Response(null, { status: 0, statusText: '' });
+		const response = new this[PropertySymbol.window].Response(null, {
+			status: 0,
+			statusText: '',
+			[PropertySymbol.skipStatusValidation]: true
+		});
 		(<string>response.type) = 'error';
 		return response;
 	}
