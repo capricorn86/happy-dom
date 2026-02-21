@@ -60,7 +60,15 @@ export default class Response implements Response {
 			);
 		}
 
-		this.status = init?.status !== undefined ? init.status : 200;
+		const status = init?.status !== undefined ? init.status : 200;
+
+		if (status < 200 || status > 599) {
+			throw new RangeError(
+				`Failed to construct 'Response': The status provided (${status}) is outside the range [200, 599].`
+			);
+		}
+
+		this.status = status;
 		this.statusText = init?.statusText || '';
 		this.ok = this.status >= 200 && this.status < 300;
 		this.headers = new this[PropertySymbol.window].Headers(init?.headers);
@@ -393,7 +401,9 @@ export default class Response implements Response {
 	 * @returns Response.
 	 */
 	public static error(): Response {
-		const response = new this[PropertySymbol.window].Response(null, { status: 0, statusText: '' });
+		const response = new this[PropertySymbol.window].Response(null);
+		(<number>response.status) = 0;
+		(<boolean>response.ok) = false;
 		(<string>response.type) = 'error';
 		return response;
 	}
