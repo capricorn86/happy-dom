@@ -1,5 +1,6 @@
 import * as PropertySymbol from '../PropertySymbol.js';
 import type Event from './Event.js';
+import HappyDOMEvent from './Event.js';
 import type IEventListenerOptions from './IEventListenerOptions.js';
 import EventPhaseEnum from './EventPhaseEnum.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
@@ -118,6 +119,25 @@ export default class EventTarget {
 	 * @returns The return value is false if event is cancelable and at least one of the event handlers which handled this event called Event.preventDefault().
 	 */
 	public dispatchEvent(event: Event): boolean {
+		// If the event is not a happy-dom Event (e.g. a native Event), copy standard properties
+		// to internal Symbol properties so the dispatch logic can read them.
+		if (event[PropertySymbol.type] === undefined) {
+			event[PropertySymbol.type] = event.type;
+			event[PropertySymbol.bubbles] = event.bubbles ?? false;
+			event[PropertySymbol.cancelable] = event.cancelable ?? false;
+			event[PropertySymbol.composed] = event.composed ?? false;
+			event[PropertySymbol.defaultPrevented] = event.defaultPrevented ?? false;
+			event[PropertySymbol.dispatching] = false;
+			event[PropertySymbol.propagationStopped] = false;
+			event[PropertySymbol.immediatePropagationStopped] = false;
+			event[PropertySymbol.target] = null;
+			event[PropertySymbol.currentTarget] = null;
+			event[PropertySymbol.isInPassiveEventListener] = false;
+			event[PropertySymbol.eventPhase] = EventPhaseEnum.none;
+			// Override composedPath() so it traverses happy-dom's DOM tree
+			event.composedPath = HappyDOMEvent.prototype.composedPath.bind(event);
+		}
+
 		// The "load" event is a special case. It should not bubble up to the window from the document.
 		if (
 			!event[PropertySymbol.dispatching] &&
@@ -244,14 +264,16 @@ export default class EventTarget {
 	#callDispatchEventListeners(event: Event): void {
 		const window = this[PropertySymbol.window];
 		const browserSettings = window ? new WindowBrowserContext(window).getSettings() : null;
-		const eventPhase = event.eventPhase === EventPhaseEnum.capturing ? 'capturing' : 'bubbling';
+		const eventPhase =
+			event[PropertySymbol.eventPhase] === EventPhaseEnum.capturing ? 'capturing' : 'bubbling';
 
 		// We need to clone the arrays because the listeners may remove themselves while we are iterating.
-		const listeners = this[PropertySymbol.listeners][eventPhase].get(event.type)?.slice();
+		const eventType = event[PropertySymbol.type] ?? event.type;
+		const listeners = this[PropertySymbol.listeners][eventPhase].get(eventType)?.slice();
 
 		if (listeners && listeners.length) {
 			const listenerOptions = this[PropertySymbol.listenerOptions][eventPhase]
-				.get(event.type)!
+				.get(eventType)!
 				.slice();
 
 			for (let i = 0, max = listeners.length; i < max; i++) {
