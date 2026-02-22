@@ -1,7 +1,23 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import CanvasAdapter from '../src/CanvasAdapter.js';
+
+let CanvasAdapter: typeof import('../src/CanvasAdapter.js').default;
+let isCanvasAvailable = false;
+
+try {
+	CanvasAdapter = (await import('../src/CanvasAdapter.js')).default;
+	isCanvasAvailable = true;
+} catch {
+	isCanvasAvailable = false;
+}
 
 describe('CanvasAdapter', () => {
+	if (!isCanvasAvailable) {
+		describe.skip('CanvasAdapter', () => {
+			it('skipped — canvas native bindings not available in this environment', () => {});
+		});
+		return;
+	}
+
 	let adapter: CanvasAdapter;
 
 	beforeEach(() => {
