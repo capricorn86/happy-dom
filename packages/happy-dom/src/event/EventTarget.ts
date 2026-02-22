@@ -10,6 +10,31 @@ import type { TEventListenerFunction } from './TEventListenerFunction.js';
 import type BrowserWindow from '../window/BrowserWindow.js';
 
 /**
+ * Ensures internal listener maps are initialized on the target.
+ *
+ * Class field initializers only run when the constructor is called. If an object
+ * inherits from EventTarget without calling super() (e.g. via Object.create()),
+ * the maps will be undefined. This lazily initializes them so that public
+ * methods never throw on an uninitialized map.
+ *
+ * @param target EventTarget instance.
+ */
+function ensureListenerMaps(target: EventTarget): void {
+	if (!target[PropertySymbol.listeners]) {
+		(<any>target)[PropertySymbol.listeners] = {
+			capturing: new Map(),
+			bubbling: new Map()
+		};
+	}
+	if (!target[PropertySymbol.listenerOptions]) {
+		(<any>target)[PropertySymbol.listenerOptions] = {
+			capturing: new Map(),
+			bubbling: new Map()
+		};
+	}
+}
+
+/**
  * Handles events.
  */
 export default class EventTarget {
@@ -52,6 +77,7 @@ export default class EventTarget {
 		listener: TEventListener,
 		options?: boolean | IEventListenerOptions
 	): void {
+		ensureListenerMaps(this);
 		options = typeof options === 'boolean' ? { capture: options } : options || {};
 		const eventPhase = options.capture ? 'capturing' : 'bubbling';
 
@@ -89,6 +115,7 @@ export default class EventTarget {
 	 * @param listener Listener.
 	 */
 	public removeEventListener(type: string, listener: TEventListener): void {
+		ensureListenerMaps(this);
 		const bubblingListeners = this[PropertySymbol.listeners].bubbling.get(type);
 		if (bubblingListeners) {
 			const index = bubblingListeners.indexOf(listener);
@@ -170,6 +197,9 @@ export default class EventTarget {
 	 * Destroys the node.
 	 */
 	public [PropertySymbol.destroy](): void {
+		if (!this[PropertySymbol.listeners]) {
+			return;
+		}
 		this[PropertySymbol.listeners].capturing.clear();
 		this[PropertySymbol.listeners].bubbling.clear();
 		this[PropertySymbol.listenerOptions].capturing.clear();
@@ -242,6 +272,7 @@ export default class EventTarget {
 	 * @param event Event.
 	 */
 	#callDispatchEventListeners(event: Event): void {
+		ensureListenerMaps(this);
 		const window = this[PropertySymbol.window];
 		const browserSettings = window ? new WindowBrowserContext(window).getSettings() : null;
 		const eventPhase = event.eventPhase === EventPhaseEnum.capturing ? 'capturing' : 'bubbling';
