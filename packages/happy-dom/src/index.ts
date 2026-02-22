@@ -178,6 +178,8 @@ import Permissions from './permissions/Permissions.js';
 import Range from './range/Range.js';
 import ResizeObserver from './resize-observer/ResizeObserver.js';
 import Screen from './screen/Screen.js';
+import ScreenDetails from './screen/ScreenDetails.js';
+import ScreenDetailed from './screen/ScreenDetailed.js';
 import Selection from './selection/Selection.js';
 import Storage from './storage/Storage.js';
 import NodeFilter from './tree-walker/NodeFilter.js';
@@ -417,6 +419,8 @@ export {
 	ResizeObserver,
 	Response,
 	Screen,
+	ScreenDetails,
+	ScreenDetailed,
 	Selection,
 	ShadowRoot,
 	Storage,
