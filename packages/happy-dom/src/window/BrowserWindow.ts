@@ -50,6 +50,7 @@ import StorageEvent from '../event/events/StorageEvent.js';
 import SubmitEvent from '../event/events/SubmitEvent.js';
 import TouchEvent from '../event/events/TouchEvent.js';
 import WheelEvent from '../event/events/WheelEvent.js';
+import PageTransitionEvent from '../event/events/PageTransitionEvent.js';
 import type DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import type AbortController from '../fetch/AbortController.js';
@@ -590,7 +591,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly MutationEvent = Event;
 	public readonly OfflineAudioCompletionEvent = Event;
 	public readonly OverconstrainedError = Event;
-	public readonly PageTransitionEvent = Event;
+	public readonly PageTransitionEvent = PageTransitionEvent;
 	public readonly PaymentRequestUpdateEvent = Event;
 	public readonly RelatedEvent = Event;
 	public readonly RTCDataChannelEvent = Event;

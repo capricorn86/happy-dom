@@ -57,6 +57,7 @@ import InputEvent from './event/events/InputEvent.js';
 import KeyboardEvent from './event/events/KeyboardEvent.js';
 import MediaQueryListEvent from './event/events/MediaQueryListEvent.js';
 import MouseEvent from './event/events/MouseEvent.js';
+import PageTransitionEvent from './event/events/PageTransitionEvent.js';
 import PointerEvent from './event/events/PointerEvent.js';
 import PopStateEvent from './event/events/PopStateEvent.js';
 import ProgressEvent from './event/events/ProgressEvent.js';
@@ -216,6 +217,7 @@ import type IInputEventInit from './event/events/IInputEventInit.js';
 import type IKeyboardEventInit from './event/events/IKeyboardEventInit.js';
 import type IMediaQueryListInit from './event/events/IMediaQueryListInit.js';
 import type IMouseEventInit from './event/events/IMouseEventInit.js';
+import type IPageTransitionEventInit from './event/events/IPageTransitionEventInit.js';
 import type IProgressEventInit from './event/events/IProgressEventInit.js';
 import type ISubmitEventInit from './event/events/ISubmitEventInit.js';
 import type ITouchEventInit from './event/events/ITouchEventInit.js';
@@ -243,6 +245,7 @@ export type {
 	IKeyboardEventInit,
 	IMediaQueryListInit,
 	IMouseEventInit,
+	IPageTransitionEventInit,
 	IOptionalBrowserSettings,
 	IOptionalCookie,
 	IProgressEventInit,
@@ -408,6 +411,7 @@ export {
 	NodeIterator,
 	Permissions,
 	PermissionStatus,
+	PageTransitionEvent,
 	PointerEvent,
 	PopStateEvent,
 	ProcessingInstruction,
