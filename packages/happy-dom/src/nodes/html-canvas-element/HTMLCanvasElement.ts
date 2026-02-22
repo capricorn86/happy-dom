@@ -5,6 +5,8 @@ import OffscreenCanvas from './OffscreenCanvas.js';
 import type Event from '../../event/Event.js';
 import type MediaStream from '../html-media-element/MediaStream.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
+import type ICanvasAdapter from './ICanvasAdapter.js';
+import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 
 const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+ab12C3+1aBCdEf==';
 
@@ -139,6 +141,13 @@ export default class HTMLCanvasElement extends HTMLElement {
 		_contextType: '2d' | 'webgl' | 'webgl2' | 'webgpu' | 'bitmaprenderer',
 		_contextAttributes?: { [key: string]: any }
 	): any {
+		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
+		if (browserFrame) {
+			const adapter = browserFrame.page.context.browser.settings.canvasAdapter;
+			if (adapter) {
+				return (<ICanvasAdapter>adapter).getContext(this, _contextType, _contextAttributes);
+			}
+		}
 		return null;
 	}
 
@@ -150,6 +159,13 @@ export default class HTMLCanvasElement extends HTMLElement {
 	 * @returns Data URL.
 	 */
 	public toDataURL(_type?: string, _encoderOptions?: any): string {
+		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
+		if (browserFrame) {
+			const adapter = browserFrame.page.context.browser.settings.canvasAdapter;
+			if (adapter) {
+				return (<ICanvasAdapter>adapter).toDataURL(this, _type, _encoderOptions);
+			}
+		}
 		return '';
 	}
 
@@ -160,7 +176,14 @@ export default class HTMLCanvasElement extends HTMLElement {
 	 * @param [_type] Type.
 	 * @param [_quality] Quality.
 	 */
-	public toBlob(callback: (blob: Blob) => void, _type?: string, _quality?: any): void {
+	public toBlob(callback: (blob: Blob | null) => void, _type?: string, _quality?: any): void {
+		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
+		if (browserFrame) {
+			const adapter = browserFrame.page.context.browser.settings.canvasAdapter;
+			if (adapter) {
+				return (<ICanvasAdapter>adapter).toBlob(this, callback, _type, _quality);
+			}
+		}
 		callback(new Blob([]));
 	}
 
