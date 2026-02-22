@@ -292,6 +292,36 @@ describe('EventTarget', () => {
 	});
 
 	describe('dispatchEvent()', () => {
+		it('Does not throw when listener maps are uninitialized (issue #2064).', () => {
+			// Simulate an object that inherits from EventTarget without the class
+			// field initializers having run, which leaves listeners/listenerOptions
+			// as undefined. This can happen when third-party libraries attach event
+			// listeners very early in their initialization process.
+			const target = new window.EventTarget();
+
+			// Forcibly clear the internal maps to simulate uninitialized state
+			(<any>target)[PropertySymbol.listeners] = undefined;
+			(<any>target)[PropertySymbol.listenerOptions] = undefined;
+
+			let called = false;
+
+			expect(() => {
+				target.addEventListener('test', () => {
+					called = true;
+				});
+			}).not.toThrow();
+
+			expect(() => {
+				target.dispatchEvent(new Event('test'));
+			}).not.toThrow();
+
+			expect(called).toBe(true);
+
+			expect(() => {
+				target.removeEventListener('test', () => {});
+			}).not.toThrow();
+		});
+
 		it('Does not call arbitrary on* properties set on EventTarget (issue #1895).', () => {
 			const calls: string[] = [];
 
