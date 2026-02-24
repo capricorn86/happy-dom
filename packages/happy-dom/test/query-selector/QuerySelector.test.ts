@@ -596,6 +596,40 @@ describe('QuerySelector', () => {
 			expect(elements[1] === container.children[0].children[1].children[1]).toBe(true);
 		});
 
+		it('Returns elements when attribute value contains CSS hex escape sequences.', () => {
+			const container = document.createElement('div');
+			container.innerHTML =
+				'<div class="toast" data-key="0abc"></div><div class="toast" data-key="other"></div>';
+
+			// CSS.escape('0abc') produces '\\30 abc' (hex escape for "0" followed by "abc")
+			const elements = container.querySelectorAll('[data-key="\\30 abc"]');
+
+			expect(elements.length).toBe(1);
+			expect(elements[0] === container.children[0]).toBe(true);
+		});
+
+		it('Returns elements when attribute value contains CSS character escape sequences.', () => {
+			const container = document.createElement('div');
+			container.innerHTML = '<div data-key="a:b"></div>';
+
+			// Backslash-escaped colon
+			const elements = container.querySelectorAll('[data-key="a\\:b"]');
+
+			expect(elements.length).toBe(1);
+			expect(elements[0] === container.children[0]).toBe(true);
+		});
+
+		it('Returns elements when using CSS.escape() with class selector and attribute value.', () => {
+			const container = document.createElement('div');
+			container.innerHTML = '<div class="toast" data-key="0abc"></div>';
+
+			const escaped = window.CSS.escape('0abc');
+			const elements = container.querySelectorAll(`.toast[data-key="${escaped}"]`);
+
+			expect(elements.length).toBe(1);
+			expect(elements[0] === container.children[0]).toBe(true);
+		});
+
 		it('Returns all elements with an attribute value containing a specified word using "[class~="class2"]".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;

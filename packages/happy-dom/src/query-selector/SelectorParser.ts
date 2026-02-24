@@ -58,6 +58,14 @@ const SELECTOR_PSEUDO_REGEXP = /:([a-zA-Z-]+)|([()])/gm;
 const ESCAPED_CHARACTER_REGEXP = /\\/g;
 
 /**
+ * CSS Escape RegExp.
+ *
+ * Matches CSS escape sequences: hex escapes (e.g. \30 , \0041) and character escapes (e.g. \:, \\).
+ * Hex escapes consist of 1-6 hex digits optionally followed by a single whitespace character.
+ */
+const CSS_UNESCAPE_REGEXP = /\\([0-9a-fA-F]{1,6})\s?|\\(.)/g;
+
+/**
  * Attribute Escape RegExp.
  */
 const ATTRIBUTE_ESCAPE_REGEXP = /[.*+?^${}()|[\]\\]/g;
@@ -349,28 +357,30 @@ export default class SelectorParser {
 				// Matches attributes with apostrophes, e.g. [attr='value'] or [attr="value"] or [attr='value' i]
 
 				const value = match[13] ?? match[14];
+				const unescapedValue = SelectorParser.cssUnescape(value);
 				selectorItem.attributes = selectorItem.attributes || [];
 				selectorItem.attributes.push({
 					name: match[9].replace(ESCAPED_CHARACTER_REGEXP, ''),
 					operator: match[11] || null,
-					value: value.replace(ESCAPED_CHARACTER_REGEXP, ''),
+					value: unescapedValue,
 					modifier: <'s'>match[15] || null,
 					regExp: this.getAttributeRegExp({
 						operator: match[11],
-						value,
+						value: unescapedValue,
 						modifier: match[15]
 					})
 				});
 			} else if (match[16] && match[19] !== undefined) {
 				// Matches attributes without apostrophes, e.g. [attr=value] or [attr=value i]
 
+				const unescapedValue = SelectorParser.cssUnescape(match[19]);
 				selectorItem.attributes = selectorItem.attributes || [];
 				selectorItem.attributes.push({
 					name: match[16].replace(ESCAPED_CHARACTER_REGEXP, ''),
 					operator: match[18] || null,
-					value: match[19].replace(ESCAPED_CHARACTER_REGEXP, ''),
+					value: unescapedValue,
 					modifier: null,
-					regExp: this.getAttributeRegExp({ operator: match[18], value: match[19] })
+					regExp: this.getAttributeRegExp({ operator: match[18], value: unescapedValue })
 				});
 			} else if (match[21]) {
 				// Matches pseudo selectors with arguments, e.g. ":nth-child(2n+1)" or ":not(.class)"
@@ -634,5 +644,23 @@ export default class SelectorParser {
 		}
 
 		return (n) => n > partB - 1;
+	}
+
+	/**
+	 * Unescapes CSS escape sequences in a string value.
+	 *
+	 * Handles hex escapes (e.g. "\30 " → "0", "\0041" → "A") and character escapes (e.g. "\:" → ":").
+	 *
+	 * @see https://www.w3.org/TR/css-syntax-3/#escape-a-character
+	 * @param value Escaped CSS value.
+	 * @returns Unescaped value.
+	 */
+	private static cssUnescape(value: string): string {
+		return value.replace(CSS_UNESCAPE_REGEXP, (_match, hex, char) => {
+			if (hex) {
+				return String.fromCodePoint(parseInt(hex, 16));
+			}
+			return char;
+		});
 	}
 }
