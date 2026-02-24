@@ -651,7 +651,7 @@ export default class SelectorParser {
 	 *
 	 * Handles hex escapes (e.g. "\30 " → "0", "\0041" → "A") and character escapes (e.g. "\:" → ":").
 	 *
-	 * @see https://www.w3.org/TR/css-syntax-3/#escape-a-character
+	 * @see https://www.w3.org/TR/css-syntax-3/#consume-escaped-code-point
 	 * @param value Escaped CSS value.
 	 * @returns Unescaped value.
 	 */
