@@ -691,6 +691,55 @@ describe('HTMLElement', () => {
 
 			expect(focusedElement === element).toBe(true);
 		});
+
+		it('Does not focus element when element is inert.', () => {
+			const input = document.createElement('input');
+			document.body.appendChild(input);
+			input.inert = true;
+
+			input.focus();
+
+			expect(document.activeElement).not.toBe(input);
+		});
+
+		it('Does not focus element when ancestor is inert.', () => {
+			const parent = document.createElement('div');
+			const input = document.createElement('input');
+			parent.appendChild(input);
+			document.body.appendChild(parent);
+			parent.inert = true;
+
+			input.focus();
+
+			expect(document.activeElement).not.toBe(input);
+		});
+
+		it('Allows focus when inert is removed.', () => {
+			const input = document.createElement('input');
+			document.body.appendChild(input);
+			input.inert = true;
+
+			input.focus();
+			expect(document.activeElement).not.toBe(input);
+
+			input.inert = false;
+			input.focus();
+			expect(document.activeElement).toBe(input);
+		});
+
+		it('Does not focus deeply nested element when ancestor is inert.', () => {
+			const grandparent = document.createElement('div');
+			const parent = document.createElement('div');
+			const input = document.createElement('input');
+			grandparent.appendChild(parent);
+			parent.appendChild(input);
+			document.body.appendChild(grandparent);
+			grandparent.inert = true;
+
+			input.focus();
+
+			expect(document.activeElement).not.toBe(input);
+		});
 	});
 
 	describe('setAttributeNode()', () => {
