@@ -564,104 +564,6 @@ describe('HTMLElement', () => {
 		});
 	});
 
-	describe('inert interaction blocking', () => {
-		it('Does not dispatch click event when element is inert.', () => {
-			const div = document.createElement('div');
-			document.body.appendChild(div);
-			div.inert = true;
-
-			let clicked = false;
-			div.addEventListener('click', () => {
-				clicked = true;
-			});
-			div.click();
-
-			expect(clicked).toBe(false);
-		});
-
-		it('Does not dispatch click event when ancestor is inert.', () => {
-			const parent = document.createElement('div');
-			const child = document.createElement('button');
-			parent.appendChild(child);
-			document.body.appendChild(parent);
-			parent.inert = true;
-
-			let clicked = false;
-			child.addEventListener('click', () => {
-				clicked = true;
-			});
-			child.click();
-
-			expect(clicked).toBe(false);
-		});
-
-		it('Does not focus element when element is inert.', () => {
-			const input = document.createElement('input');
-			document.body.appendChild(input);
-			input.inert = true;
-
-			input.focus();
-
-			expect(document.activeElement).not.toBe(input);
-		});
-
-		it('Does not focus element when ancestor is inert.', () => {
-			const parent = document.createElement('div');
-			const input = document.createElement('input');
-			parent.appendChild(input);
-			document.body.appendChild(parent);
-			parent.inert = true;
-
-			input.focus();
-
-			expect(document.activeElement).not.toBe(input);
-		});
-
-		it('Dispatches click event when inert is removed.', () => {
-			const div = document.createElement('div');
-			document.body.appendChild(div);
-			div.inert = true;
-
-			let clicked = false;
-			div.addEventListener('click', () => {
-				clicked = true;
-			});
-			div.click();
-			expect(clicked).toBe(false);
-
-			div.inert = false;
-			div.click();
-			expect(clicked).toBe(true);
-		});
-
-		it('Allows focus when inert is removed.', () => {
-			const input = document.createElement('input');
-			document.body.appendChild(input);
-			input.inert = true;
-
-			input.focus();
-			expect(document.activeElement).not.toBe(input);
-
-			input.inert = false;
-			input.focus();
-			expect(document.activeElement).toBe(input);
-		});
-
-		it('Does not focus deeply nested element when ancestor is inert.', () => {
-			const grandparent = document.createElement('div');
-			const parent = document.createElement('div');
-			const input = document.createElement('input');
-			grandparent.appendChild(parent);
-			parent.appendChild(input);
-			document.body.appendChild(grandparent);
-			grandparent.inert = true;
-
-			input.focus();
-
-			expect(document.activeElement).not.toBe(input);
-		});
-	});
-
 	describe('get popover()', () => {
 		it('Returns null by default', () => {
 			const div = document.createElement('div');
@@ -788,6 +690,55 @@ describe('HTMLElement', () => {
 			element.focus();
 
 			expect(focusedElement === element).toBe(true);
+		});
+
+		it('Does not focus element when element is inert.', () => {
+			const input = document.createElement('input');
+			document.body.appendChild(input);
+			input.inert = true;
+
+			input.focus();
+
+			expect(document.activeElement).not.toBe(input);
+		});
+
+		it('Does not focus element when ancestor is inert.', () => {
+			const parent = document.createElement('div');
+			const input = document.createElement('input');
+			parent.appendChild(input);
+			document.body.appendChild(parent);
+			parent.inert = true;
+
+			input.focus();
+
+			expect(document.activeElement).not.toBe(input);
+		});
+
+		it('Allows focus when inert is removed.', () => {
+			const input = document.createElement('input');
+			document.body.appendChild(input);
+			input.inert = true;
+
+			input.focus();
+			expect(document.activeElement).not.toBe(input);
+
+			input.inert = false;
+			input.focus();
+			expect(document.activeElement).toBe(input);
+		});
+
+		it('Does not focus deeply nested element when ancestor is inert.', () => {
+			const grandparent = document.createElement('div');
+			const parent = document.createElement('div');
+			const input = document.createElement('input');
+			grandparent.appendChild(parent);
+			parent.appendChild(input);
+			document.body.appendChild(grandparent);
+			grandparent.inert = true;
+
+			input.focus();
+
+			expect(document.activeElement).not.toBe(input);
 		});
 	});
 

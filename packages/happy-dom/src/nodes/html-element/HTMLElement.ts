@@ -947,9 +947,6 @@ export default class HTMLElement extends Element {
 	 * Triggers a click event.
 	 */
 	public click(): void {
-		if (HTMLElementUtility.isInert(this)) {
-			return;
-		}
 		this.dispatchEvent(
 			new PointerEvent('click', {
 				bubbles: true,
