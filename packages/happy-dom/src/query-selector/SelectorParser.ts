@@ -300,7 +300,7 @@ export default class SelectorParser {
 		}
 
 		if (selector === '*') {
-			return new SelectorItem({ scope, tagName: '*', ignoreErrors });
+			return new SelectorItem({ scope, tagName: '*', combinator, ignoreErrors });
 		}
 
 		const regexp = new RegExp(SELECTOR_REGEXP);

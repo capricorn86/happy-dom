@@ -390,6 +390,59 @@ describe('QuerySelector', () => {
 			expect(elements[1] === div.children[0].children[2]).toBe(true);
 		});
 
+		it('Returns only direct children for "#id > div > *" (child combinator with universal selector).', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+				<div id="root">
+					<div>
+						<span></span>
+						<p><em>deep</em></p>
+						<a href="#"></a>
+					</div>
+				</div>
+			`;
+			document.body.appendChild(container);
+			const elements = container.querySelectorAll('#root > div > *');
+			expect(elements.length).toBe(3);
+			expect(elements[0].tagName).toBe('SPAN');
+			expect(elements[1].tagName).toBe('P');
+			expect(elements[2].tagName).toBe('A');
+			container.remove();
+		});
+
+		it('Returns only direct children for document.querySelectorAll("#id > div > *").', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+				<div id="qsa-root">
+					<div>
+						<span></span>
+						<p><em>deep</em></p>
+					</div>
+				</div>
+			`;
+			document.body.appendChild(container);
+			const elements = document.querySelectorAll('#qsa-root > div > *');
+			expect(elements.length).toBe(2);
+			expect(elements[0].tagName).toBe('SPAN');
+			expect(elements[1].tagName).toBe('P');
+			container.remove();
+		});
+
+		it('Returns only direct children for "div > *" with nested structure.', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+				<div>
+					<span><b>nested</b></span>
+					<p><em>nested</em></p>
+				</div>
+			`;
+			const elements = container.querySelectorAll('div > *');
+			// Direct children of container's outer div: the inner div
+			// Direct children of the inner div: span, p
+			// Total: inner div + span + p = 3
+			expect(elements.length).toBe(3);
+		});
+
 		it('Returns all elements matching "div > div > .class1.class2".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
