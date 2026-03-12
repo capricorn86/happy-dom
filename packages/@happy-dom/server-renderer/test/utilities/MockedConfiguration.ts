@@ -4,6 +4,7 @@ import ServerRendererLogLevelEnum from '../../src/enums/ServerRendererLogLevelEn
 
 export default <IServerRendererConfiguration>{
 	browser: {
+		canvasAdapter: null,
 		disableJavaScriptEvaluation: false,
 		enableJavaScriptEvaluation: false,
 		suppressCodeGenerationFromStringsWarning: false,

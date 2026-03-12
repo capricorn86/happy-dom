@@ -7,6 +7,7 @@ import type IOptionalBrowserPageViewport from './IOptionalBrowserPageViewport.js
 import type IOptionalTimerLoopsLimit from '../../window/IOptionalTimerLoopsLimit.js';
 import type BrowserWindow from '../../window/BrowserWindow.js';
 import type IResolveNodeModules from '../../module/types/IResolveNodeModules.js';
+import type ICanvasAdapter from '../../nodes/html-canvas-element/ICanvasAdapter.js';
 
 export default interface IOptionalBrowserSettings {
 	/**
@@ -178,4 +179,9 @@ export default interface IOptionalBrowserSettings {
 	 * Default page viewport.
 	 */
 	viewport?: IOptionalBrowserPageViewport;
+
+	/**
+	 * Canvas adapter for pluggable rendering support.
+	 */
+	canvasAdapter?: ICanvasAdapter | null;
 }
