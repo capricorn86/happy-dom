@@ -2,7 +2,6 @@ import type IVirtualConsolePrinter from './IVirtualConsolePrinter.js';
 import VirtualConsoleLogLevelEnum from './enums/VirtualConsoleLogLevelEnum.js';
 import VirtualConsoleLogTypeEnum from './enums/VirtualConsoleLogTypeEnum.js';
 import type IVirtualConsoleLogGroup from './IVirtualConsoleLogGroup.js';
-import type { ConsoleConstructor } from 'console';
 
 /**
  * Virtual Console.
@@ -10,9 +9,11 @@ import type { ConsoleConstructor } from 'console';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Console
  */
 export default class VirtualConsole implements Console {
-	// This is needed as the interface for the NodeJS Console also have a reference to the ConsoleConstructor class as a property for some reason.
-	// This is not part of the browser specs.
-	public declare Console: ConsoleConstructor;
+	// The NodeJS Console interface includes a reference to ConsoleConstructor as a property.
+	// This is not part of the browser specs, but we need to declare it for type compatibility.
+	// Using an indexed access type avoids importing from the 'console' module, which can fail
+	// in consumer projects that don't resolve Node.js built-in module types.
+	public declare Console: Console['Console'];
 
 	#printer: IVirtualConsolePrinter;
 	#count: { [label: string]: number } = {};
