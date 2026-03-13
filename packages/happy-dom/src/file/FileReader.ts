@@ -1,4 +1,4 @@
-import WhatwgMIMEType from 'whatwg-mimetype';
+import { MIMEType as WhatwgMIMEType } from 'whatwg-mimetype';
 import * as PropertySymbol from '../PropertySymbol.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
