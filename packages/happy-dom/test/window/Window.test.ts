@@ -393,4 +393,34 @@ describe('Window', () => {
 			expect(included).toEqual(expected);
 		});
 	});
+
+	describe('BroadcastChannel', () => {
+		it('Exposes BroadcastChannel on the window object.', () => {
+			expect(window.BroadcastChannel).toBe(BroadcastChannel);
+		});
+
+		it('Can create a BroadcastChannel instance.', () => {
+			const channel = new window.BroadcastChannel('test-channel');
+			expect(channel).toBeInstanceOf(BroadcastChannel);
+			expect(channel.name).toBe('test-channel');
+			channel.close();
+		});
+
+		it('Can send and receive messages between channels.', async () => {
+			const channel1 = new window.BroadcastChannel('test-channel');
+			const channel2 = new window.BroadcastChannel('test-channel');
+
+			const receivedMessage = await new Promise<string>((resolve) => {
+				channel2.onmessage = (event) => {
+					resolve(event.data);
+				};
+				channel1.postMessage('hello');
+			});
+
+			expect(receivedMessage).toBe('hello');
+
+			channel1.close();
+			channel2.close();
+		});
+	});
 });
