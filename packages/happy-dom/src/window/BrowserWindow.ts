@@ -11,6 +11,7 @@ import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js
 import type IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import Clipboard from '../clipboard/Clipboard.js';
 import ClipboardItem from '../clipboard/ClipboardItem.js';
+import CookieStore from '../cookie-store/CookieStore.js';
 import CSS from '../css/CSS.js';
 import CSSRule from '../css/CSSRule.js';
 import type CSSStyleSheet from '../css/CSSStyleSheet.js';
@@ -35,6 +36,7 @@ import Touch from '../event/Touch.js';
 import UIEvent from '../event/UIEvent.js';
 import AnimationEvent from '../event/events/AnimationEvent.js';
 import ClipboardEvent from '../event/events/ClipboardEvent.js';
+import CookieChangeEvent from '../event/events/CookieChangeEvent.js';
 import CustomEvent from '../event/events/CustomEvent.js';
 import ErrorEvent from '../event/events/ErrorEvent.js';
 import FocusEvent from '../event/events/FocusEvent.js';
@@ -565,6 +567,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly MediaQueryListEvent = MediaQueryListEvent;
 	public readonly HashChangeEvent = HashChangeEvent;
 	public readonly ClipboardEvent = ClipboardEvent;
+	public readonly CookieChangeEvent = CookieChangeEvent;
 	public readonly TouchEvent = TouchEvent;
 	public readonly PopStateEvent = PopStateEvent;
 	public readonly Touch = Touch;
@@ -669,6 +672,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly Blob = Blob;
 	public readonly File = File;
 	public readonly Storage = Storage;
+	public readonly CookieStore = CookieStore;
 	public readonly MimeType = MimeType;
 	public readonly MimeTypeArray = MimeTypeArray;
 	public readonly NodeFilter = NodeFilter;
@@ -833,6 +837,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.screen]: Screen;
 	public [PropertySymbol.sessionStorage]: Storage;
 	public [PropertySymbol.localStorage]: Storage;
+	public [PropertySymbol.cookieStore]: CookieStore;
 	public [PropertySymbol.self]: BrowserWindow | null = this;
 	public [PropertySymbol.top]: BrowserWindow | null = this;
 	public [PropertySymbol.parent]: BrowserWindow | null = this;
@@ -884,6 +889,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this[PropertySymbol.screen] = new Screen();
 		this[PropertySymbol.sessionStorage] = new Storage();
 		this[PropertySymbol.localStorage] = new Storage();
+		this[PropertySymbol.cookieStore] = new CookieStore(this);
 		this[PropertySymbol.location] = new Location(this.#browserFrame, options?.url ?? 'about:blank');
 		this[PropertySymbol.history] = new History(this.#browserFrame, this);
 
@@ -1038,6 +1044,15 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 */
 	public get localStorage(): Storage {
 		return this[PropertySymbol.localStorage];
+	}
+
+	/**
+	 * Returns cookie store.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/cookieStore
+	 */
+	public get cookieStore(): CookieStore {
+		return this[PropertySymbol.cookieStore];
 	}
 
 	/**
