@@ -365,4 +365,37 @@ export default class VirtualConsole implements Console {
 			group: this.#groups[this.#groups.length - 1] || null
 		});
 	}
+
+	/**
+	 * Writes data to the console output without formatting.
+	 *
+	 * This is not part of the standard Console API but is required for compatibility with
+	 * runtimes that extend the Console interface (e.g. Bun).
+	 *
+	 * @param data Data to write.
+	 * @returns Number of bytes written.
+	 */
+	public write(...data: Array<string | ArrayBufferView | ArrayBuffer>): number {
+		this.#printer.print({
+			type: VirtualConsoleLogTypeEnum.log,
+			level: VirtualConsoleLogLevelEnum.log,
+			message: data,
+			group: this.#groups[this.#groups.length - 1] || null
+		});
+		return 0;
+	}
+
+	/**
+	 * Returns an async iterator.
+	 *
+	 * This is not part of the standard Console API but is required for compatibility with
+	 * runtimes that extend the Console interface (e.g. Bun).
+	 *
+	 * @returns Empty async iterator.
+	 */
+	public [Symbol.asyncIterator](): AsyncIterableIterator<string> {
+		return (async function* () {
+			// No-op: VirtualConsole has no stdin to iterate over.
+		})();
+	}
 }

@@ -290,4 +290,22 @@ describe('VirtualConsole', () => {
 			expect(virtualConsolePrinter.readAsString()).toBe('Test {"test":true}\n');
 		});
 	});
+
+	describe('write()', () => {
+		it('Should print data and return a number.', () => {
+			const result = virtualConsole.write('Hello', ' ', 'World');
+			expect(virtualConsolePrinter.readAsString()).toBe('Hello   World\n');
+			expect(typeof result).toBe('number');
+		});
+	});
+
+	describe('[Symbol.asyncIterator]()', () => {
+		it('Should return an empty async iterator.', async () => {
+			const results: string[] = [];
+			for await (const line of virtualConsole) {
+				results.push(line);
+			}
+			expect(results).toEqual([]);
+		});
+	});
 });
