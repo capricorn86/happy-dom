@@ -138,7 +138,7 @@ describe('XPathExpression', () => {
 			expect(result.snapshotLength).toBe(0);
 		});
 
-		it('Counts elements via snapshot (MDN example).', () => {
+		it('Counts elements via snapshot.', () => {
 			window.document.body.innerHTML = '<div>A</div><div>B</div><p>C</p>';
 			const evaluator = new window.XPathEvaluator();
 			const result = evaluator.evaluate(
@@ -150,7 +150,7 @@ describe('XPathExpression', () => {
 			expect(result.snapshotLength).toBe(2);
 		});
 
-		it('Uses createExpression for reusable queries (MDN example).', () => {
+		it('Reuses a compiled expression.', () => {
 			window.document.body.innerHTML = '<div>1</div><div>2</div><div>3</div>';
 			const evaluator = new window.XPathEvaluator();
 			const expression = evaluator.createExpression('//div');
