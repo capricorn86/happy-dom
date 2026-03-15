@@ -1,4 +1,5 @@
-import Window from '../../src/window/Window';
+import { beforeEach, describe, it, expect } from 'vitest';
+import Window from '../../src/window/Window.js';
 
 describe('XPathEvaluator', () => {
 	let window;
