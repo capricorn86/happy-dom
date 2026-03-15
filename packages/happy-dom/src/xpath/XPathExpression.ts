@@ -1,6 +1,5 @@
 import type Element from '../nodes/element/Element.js';
 import Node from '../nodes/node/Node.js';
-import type Attr from '../attribute/Attr.js';
 import XPathResult from './XPathResult.js';
 
 /**
@@ -155,7 +154,7 @@ export default class XPathExpression {
 			? subPredicate.split(' or ').map((s) => s.trim())
 			: [subPredicate.trim()];
 
-		for (const attr of <Attr[]>Object.values(element._attributes)) {
+		for (const attr of element.attributes) {
 			for (const part of parts) {
 				const startsWithMatch = part.match(/^starts-with\(\s*name\(\)\s*,\s*['"](.+)['"]\s*\)$/);
 				if (startsWithMatch && attr.name.startsWith(startsWithMatch[1])) {
