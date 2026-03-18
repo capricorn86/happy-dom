@@ -1,6 +1,7 @@
 import type IBrowserContext from './IBrowserContext.js';
 import type IBrowserPage from './IBrowserPage.js';
 import type IBrowserSettings from './IBrowserSettings.js';
+import type IVirtualConsole from '../../console/IVirtualConsole.js';
 import type * as PropertySymbol from '../../PropertySymbol.js';
 import type BrowserExceptionObserver from '../utilities/BrowserExceptionObserver.js';
 
@@ -13,7 +14,7 @@ export default interface IBrowser {
 	readonly defaultContext: IBrowserContext;
 	readonly contexts: IBrowserContext[];
 	readonly settings: IBrowserSettings;
-	readonly console: Console | null;
+	readonly console: IVirtualConsole | null;
 	readonly closed: boolean;
 	readonly [PropertySymbol.exceptionObserver]: BrowserExceptionObserver | null;
 

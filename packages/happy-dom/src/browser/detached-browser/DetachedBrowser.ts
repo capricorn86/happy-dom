@@ -5,6 +5,7 @@ import BrowserSettingsFactory from '../BrowserSettingsFactory.js';
 import type DetachedBrowserPage from './DetachedBrowserPage.js';
 import type IBrowser from '../types/IBrowser.js';
 import type IBrowserFrame from '../types/IBrowserFrame.js';
+import type IVirtualConsole from '../../console/IVirtualConsole.js';
 import type BrowserWindow from '../../window/BrowserWindow.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
@@ -17,7 +18,7 @@ import type BrowserContext from '../BrowserContext.js';
 export default class DetachedBrowser implements IBrowser {
 	public readonly contexts: DetachedBrowserContext[];
 	public readonly settings: IBrowserSettings;
-	public readonly console: Console | null;
+	public readonly console: IVirtualConsole | null;
 	public readonly windowClass: new (
 		browserFrame: IBrowserFrame,
 		options?: { url?: string; width?: number; height?: number }
@@ -37,7 +38,7 @@ export default class DetachedBrowser implements IBrowser {
 			browserFrame: IBrowserFrame,
 			options?: { url?: string; width?: number; height?: number }
 		) => BrowserWindow,
-		options?: { settings?: IOptionalBrowserSettings; console?: Console }
+		options?: { settings?: IOptionalBrowserSettings; console?: IVirtualConsole }
 	) {
 		this.windowClass = windowClass;
 		this.console = options?.console || null;

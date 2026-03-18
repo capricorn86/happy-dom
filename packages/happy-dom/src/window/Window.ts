@@ -1,5 +1,6 @@
 import DetachedWindowAPI from './DetachedWindowAPI.js';
 import type IOptionalBrowserSettings from '../browser/types/IOptionalBrowserSettings.js';
+import type IVirtualConsole from '../console/IVirtualConsole.js';
 import BrowserWindow from './BrowserWindow.js';
 import DetachedBrowser from '../browser/detached-browser/DetachedBrowser.js';
 import * as PropertySymbol from '../PropertySymbol.js';
@@ -34,7 +35,7 @@ export default class Window extends BrowserWindow {
 		/** @deprecated Replaced by the "height" property. */
 		innerHeight?: number;
 		url?: string;
-		console?: Console;
+		console?: IVirtualConsole;
 		settings?: IOptionalBrowserSettings;
 	}) {
 		const browser = new DetachedBrowser(BrowserWindow, {

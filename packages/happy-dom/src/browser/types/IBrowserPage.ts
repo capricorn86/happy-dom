@@ -1,4 +1,5 @@
 import type IBrowserPageViewport from '../types/IBrowserPageViewport.js';
+import type IVirtualConsole from '../../console/IVirtualConsole.js';
 import type VirtualConsolePrinter from '../../console/VirtualConsolePrinter.js';
 import type IBrowserFrame from './IBrowserFrame.js';
 import type IBrowserContext from './IBrowserContext.js';
@@ -15,7 +16,7 @@ export default interface IBrowserPage {
 	readonly virtualConsolePrinter: VirtualConsolePrinter;
 	readonly mainFrame: IBrowserFrame;
 	readonly context: IBrowserContext;
-	readonly console: Console;
+	readonly console: IVirtualConsole;
 	readonly frames: IBrowserFrame[];
 	readonly viewport: IBrowserPageViewport;
 	readonly closed: boolean;
