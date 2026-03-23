@@ -984,7 +984,7 @@ export default class Node extends EventTarget {
 			}
 		}
 
-		const childNodes = this[PropertySymbol.nodeArray];
+		const childNodes = this[PropertySymbol.nodeArray].slice();
 		for (let i = 0, max = childNodes.length; i < max; i++) {
 			childNodes[i][PropertySymbol.parentNode] = this;
 			childNodes[i][PropertySymbol.connectedToNode]();
@@ -1034,7 +1034,7 @@ export default class Node extends EventTarget {
 			this[PropertySymbol.disconnectedFromDocument]();
 		}
 
-		const childNodes = this[PropertySymbol.nodeArray];
+		const childNodes = this[PropertySymbol.nodeArray].slice();
 		for (let i = 0, max = childNodes.length; i < max; i++) {
 			childNodes[i][PropertySymbol.connectedToNode]();
 		}
