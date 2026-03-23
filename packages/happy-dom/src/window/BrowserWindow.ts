@@ -8,6 +8,7 @@ import VM from 'vm';
 import * as PropertySymbol from '../PropertySymbol.js';
 import Base64 from '../base64/Base64.js';
 import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
+import type IConsole from '../console/IConsole.js';
 import type IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import Clipboard from '../clipboard/Clipboard.js';
 import ClipboardItem from '../clipboard/ClipboardItem.js';
@@ -756,7 +757,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly TextEncoder: typeof TextEncoder = TextEncoder;
 	public readonly TextDecoder: typeof TextDecoder = TextDecoder;
 	public readonly closed = false;
-	public console: Console;
+	public console: IConsole;
 	public name = '';
 
 	// Node.js Globals (populated by VMGlobalPropertyScript)
