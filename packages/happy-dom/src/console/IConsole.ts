@@ -3,7 +3,7 @@
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Console
  */
-export default interface IVirtualConsole {
+export default interface IConsole {
 	/**
 	 * Writes an error message to the console if the assertion is false. If the assertion is true, nothing happens.
 	 *

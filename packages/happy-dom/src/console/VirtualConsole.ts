@@ -1,5 +1,5 @@
 import type IVirtualConsolePrinter from './IVirtualConsolePrinter.js';
-import type IVirtualConsole from './IVirtualConsole.js';
+import type IConsole from './IConsole.js';
 import VirtualConsoleLogLevelEnum from './enums/VirtualConsoleLogLevelEnum.js';
 import VirtualConsoleLogTypeEnum from './enums/VirtualConsoleLogTypeEnum.js';
 import type IVirtualConsoleLogGroup from './IVirtualConsoleLogGroup.js';
@@ -9,7 +9,7 @@ import type IVirtualConsoleLogGroup from './IVirtualConsoleLogGroup.js';
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Console
  */
-export default class VirtualConsole implements IVirtualConsole {
+export default class VirtualConsole implements IConsole {
 	#printer: IVirtualConsolePrinter;
 	#count: { [label: string]: number } = {};
 	#time: { [label: string]: number } = {};

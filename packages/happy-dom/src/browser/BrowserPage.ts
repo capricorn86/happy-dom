@@ -1,5 +1,5 @@
 import VirtualConsolePrinter from '../console/VirtualConsolePrinter.js';
-import type IVirtualConsole from '../console/IVirtualConsole.js';
+import type IConsole from '../console/IConsole.js';
 import BrowserFrame from './BrowserFrame.js';
 import type BrowserContext from './BrowserContext.js';
 import VirtualConsole from '../console/VirtualConsole.js';
@@ -20,7 +20,7 @@ export default class BrowserPage implements IBrowserPage {
 	public readonly virtualConsolePrinter = new VirtualConsolePrinter();
 	public readonly mainFrame: BrowserFrame;
 	public readonly context: BrowserContext;
-	public readonly console: IVirtualConsole;
+	public readonly console: IConsole;
 	public readonly viewport: IBrowserPageViewport;
 	public readonly closed: boolean = false;
 
