@@ -781,8 +781,7 @@ $happy_dom.exports['string6'] = string6;
 
 			expect(result.imports).toEqual([]);
 
-			expect(result.execute.toString())
-				.toBe(`async function anonymous($happy_dom) {$happy_dom.exports['require(child_process).execSync(id)'] = requirechild_processexecSyncid
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
 }`);
 		});
 
