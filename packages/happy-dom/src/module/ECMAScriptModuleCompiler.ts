@@ -57,6 +57,11 @@ const SYNTAX_REGEXP = /(\/)|(\(|\))|({|})|(\[|\])|(\${)|(`)|(')|(")|(\n)/gm;
 const IMPORT_REGEXP = /{([^}]+)}|\*\s+as\s+([a-zA-Z0-9-_$]+)|([a-zA-Z0-9-_$]+)/gm;
 
 /**
+ * Strip invalid variable name characters regexp.
+ */
+const STRIP_INVALID_VARIABLE_NAME_REGEXP = /[^a-zA-Z0-9_$]/g;
+
+/**
  * Valid preceding token before a statement.
  */
 const PRECEDING_STATEMENT_TOKEN_REGEXP = /['"`(){}\s;=><\[\]+-,:&]/;
@@ -378,7 +383,10 @@ export default class ECMAScriptModuleCompiler {
 					const exportName = (nameParts[1] || nameParts[0]).replace(/["']/g, '');
 					const importName = nameParts[0].replace(/["']/g, '');
 					if (exportName && importName) {
-						exportCode.push(`$happy_dom.exports['${exportName}'] = ${importName}`);
+						const parsedImportName = importName.replace(STRIP_INVALID_VARIABLE_NAME_REGEXP, '');
+						if (parsedImportName !== '') {
+							exportCode.push(`$happy_dom.exports['${exportName}'] = ${parsedImportName}`);
+						}
 					}
 				}
 				newCode += exportCode.join(';\n');
