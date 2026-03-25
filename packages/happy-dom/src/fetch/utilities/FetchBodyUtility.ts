@@ -37,7 +37,7 @@ export default class FetchBodyUtility {
 			const buffer = Buffer.from(body.toString());
 			return {
 				buffer,
-				stream: this.toReadableStream(buffer),
+				stream: null,
 				contentType: 'application/x-www-form-urlencoded;charset=UTF-8',
 				contentLength: buffer.length
 			};
@@ -45,14 +45,14 @@ export default class FetchBodyUtility {
 			const buffer = (<Blob>body)[PropertySymbol.buffer];
 			return {
 				buffer,
-				stream: this.toReadableStream(buffer),
+				stream: null,
 				contentType: body.type,
 				contentLength: body.size
 			};
 		} else if (Buffer.isBuffer(body)) {
 			return {
 				buffer: body,
-				stream: this.toReadableStream(body),
+				stream: null,
 				contentType: null,
 				contentLength: body.length
 			};
@@ -60,7 +60,7 @@ export default class FetchBodyUtility {
 			const buffer = Buffer.from(body);
 			return {
 				buffer,
-				stream: this.toReadableStream(buffer),
+				stream: null,
 				contentType: null,
 				contentLength: body.byteLength
 			};
@@ -68,7 +68,7 @@ export default class FetchBodyUtility {
 			const buffer = Buffer.from(body.buffer, body.byteOffset, body.byteLength);
 			return {
 				buffer,
-				stream: this.toReadableStream(buffer),
+				stream: null,
 				contentType: null,
 				contentLength: body.byteLength
 			};
@@ -86,7 +86,7 @@ export default class FetchBodyUtility {
 		const buffer = Buffer.from(String(body));
 		return {
 			buffer,
-			stream: this.toReadableStream(buffer),
+			stream: null,
 			contentType: 'text/plain;charset=UTF-8',
 			contentLength: buffer.length
 		};
@@ -119,13 +119,13 @@ export default class FetchBodyUtility {
 			);
 		}
 
-		if (requestOrResponse.body === null || requestOrResponse.body === undefined) {
-			return null;
-		}
-
-		// If a buffer is set, use it to create a new stream.
+		// If a buffer is set, create a new stream from the buffer without triggering the lazy body getter.
 		if (requestOrResponse[PropertySymbol.buffer]) {
 			return this.toReadableStream(requestOrResponse[PropertySymbol.buffer]);
+		}
+
+		if (requestOrResponse.body === null || requestOrResponse.body === undefined) {
+			return null;
 		}
 
 		// Pipe underlying node stream if it exists.
@@ -135,15 +135,8 @@ export default class FetchBodyUtility {
 			(<any>requestOrResponse.body)[PropertySymbol.nodeStream].pipe(stream1);
 			(<any>requestOrResponse.body)[PropertySymbol.nodeStream].pipe(stream2);
 			// Sets the body of the cloned request/response to the first pass through stream.
-			// Request uses [PropertySymbol.body] with a getter, Response uses public readonly body.
 			const newStream = this.nodeToWebStream(stream1);
-			if (PropertySymbol.body in requestOrResponse) {
-				// Request object - set the symbol property (getter will return it)
-				(<any>requestOrResponse)[PropertySymbol.body] = newStream;
-			} else {
-				// Response object - set the public property directly
-				(<ReadableStream | null>(<any>requestOrResponse).body) = newStream;
-			}
+			(<any>requestOrResponse)[PropertySymbol.body] = newStream;
 			// Returns the clone.
 			return this.nodeToWebStream(stream2);
 		}
@@ -152,15 +145,8 @@ export default class FetchBodyUtility {
 		// This requires the stream to be consumed in parallel which is not the case for the fetch API
 		const [stream1, stream2] = requestOrResponse.body.tee();
 
-		// Sets the body of the cloned request to the first pass through stream.
-		// Request uses [PropertySymbol.body] with a getter, Response uses public readonly body.
-		if (PropertySymbol.body in requestOrResponse) {
-			// Request object - set the symbol property (getter will return it)
-			(<any>requestOrResponse)[PropertySymbol.body] = stream1;
-		} else {
-			// Response object - set the public property directly
-			(<ReadableStream | null>(<any>requestOrResponse).body) = stream1;
-		}
+		// Sets the body of the cloned request/response to the first pass through stream.
+		(<any>requestOrResponse)[PropertySymbol.body] = stream1;
 
 		// Returns the other stream as the clone
 		return stream2;
