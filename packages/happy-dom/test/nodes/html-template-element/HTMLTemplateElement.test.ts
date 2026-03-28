@@ -2,6 +2,7 @@ import Window from '../../../src/window/Window.js';
 import type Document from '../../../src/nodes/document/Document.js';
 import type HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
 import HTMLSerializer from '../../../src/html-serializer/HTMLSerializer.js';
+import type MutationRecord from '../../../src/mutation-observer/MutationRecord.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import CustomElement from '../../CustomElement.js';
 
@@ -27,30 +28,8 @@ describe('HTMLTemplateElement', () => {
 		});
 	});
 
-	describe('get innerHTML()', () => {
-		it('Returns inner HTML of the "content" node.', () => {
-			const div = document.createElement('div');
-
-			div.innerHTML = 'Test';
-
-			expect(element.content.childNodes.length).toBe(0);
-			expect(element.innerHTML).toBe('');
-
-			element.appendChild(div);
-
-			expect(element.childNodes.length).toBe(0);
-			expect(element.innerHTML).toBe('<div>Test</div>');
-			expect(new HTMLSerializer().serializeToString(element.content)).toBe('<div>Test</div>');
-
-			element.removeChild(div);
-
-			expect(element.content.childNodes.length).toBe(0);
-			expect(element.innerHTML).toBe('');
-		});
-	});
-
-	describe('set innerHTML()', () => {
-		it('Serializes the HTML into nodes and appends them to the "content" node.', () => {
+	describe('get/set innerHTML()', () => {
+		it('Populates the "content" node, not direct children.', () => {
 			expect(element.content.childNodes.length).toBe(0);
 			expect(element.innerHTML).toBe('');
 
@@ -68,10 +47,7 @@ describe('HTMLTemplateElement', () => {
 	});
 
 	describe('get outerHTML()', () => {
-		it('Serializes the HTML into nodes and appends them to the "content" node.', () => {
-			expect(element.content.childNodes.length).toBe(0);
-			expect(element.innerHTML).toBe('');
-
+		it('Wraps content innerHTML in template tags.', () => {
 			element.innerHTML = '<div>Test</div>';
 
 			expect(element.childNodes.length).toBe(0);
@@ -98,46 +74,20 @@ describe('HTMLTemplateElement', () => {
 	});
 
 	describe('get firstChild()', () => {
-		it('Returns first child.', () => {
-			const div = document.createElement('div');
-			const span = document.createElement('span');
-			element.appendChild(div);
-			element.appendChild(span);
-			expect(element.firstChild).toBe(div);
+		it('Returns first child of content.', () => {
+			element.innerHTML = '<div></div><span></span>';
+			expect(element.firstChild?.nodeName).toBe('DIV');
 		});
 	});
 
 	describe('get lastChild()', () => {
-		it('Returns last child.', () => {
-			const div = document.createElement('div');
-			const span = document.createElement('span');
-			element.appendChild(div);
-			element.appendChild(span);
-			expect(element.lastChild).toBe(span);
+		it('Returns last child of content.', () => {
+			element.innerHTML = '<div></div><span></span>';
+			expect(element.lastChild?.nodeName).toBe('SPAN');
 		});
 	});
 
 	describe('getInnerHTML()', () => {
-		it('Returns inner HTML of the "content" node.', () => {
-			const div = document.createElement('div');
-
-			div.innerHTML = 'Test';
-
-			expect(element.content.childNodes.length).toBe(0);
-			expect(element.getInnerHTML()).toBe('');
-
-			element.appendChild(div);
-
-			expect(element.childNodes.length).toBe(0);
-			expect(element.getInnerHTML()).toBe('<div>Test</div>');
-			expect(new HTMLSerializer().serializeToString(element.content)).toBe('<div>Test</div>');
-
-			element.removeChild(div);
-
-			expect(element.content.childNodes.length).toBe(0);
-			expect(element.getInnerHTML()).toBe('');
-		});
-
 		it('Should ignore shadow roots, as they should not be included in HTMLTemplateElement.', () => {
 			window.customElements.define('custom-element', CustomElement);
 
@@ -150,26 +100,6 @@ describe('HTMLTemplateElement', () => {
 	});
 
 	describe('getHTML()', () => {
-		it('Returns HTML of children as a concatenated string.', () => {
-			const div = document.createElement('div');
-
-			div.innerHTML = 'Test';
-
-			expect(element.content.childNodes.length).toBe(0);
-			expect(element.getHTML()).toBe('');
-
-			element.appendChild(div);
-
-			expect(element.childNodes.length).toBe(0);
-			expect(element.getHTML()).toBe('<div>Test</div>');
-			expect(new HTMLSerializer().serializeToString(element.content)).toBe('<div>Test</div>');
-
-			element.removeChild(div);
-
-			expect(element.content.childNodes.length).toBe(0);
-			expect(element.getHTML()).toBe('');
-		});
-
 		it('Should ignore shadow roots, as they should not be included in HTMLTemplateElement.', () => {
 			CustomElement.serializable = true;
 
@@ -186,33 +116,59 @@ describe('HTMLTemplateElement', () => {
 	});
 
 	describe('appendChild()', () => {
-		it('Appends a node to the "content" node.', () => {
+		it('Appends a node as a direct child of the template element.', () => {
 			const div = document.createElement('div');
-
-			expect(element.childNodes.length).toBe(0);
-			expect(element.content.childNodes.length).toBe(0);
 
 			element.appendChild(div);
 
-			expect(element.childNodes.length).toBe(0);
-			expect(element.content.childNodes.length).toBe(1);
-			expect(element.content.childNodes[0] === div).toBe(true);
-
-			element.removeChild(div);
-
-			expect(element.childNodes.length).toBe(0);
+			expect(element.childNodes.length).toBe(1);
+			expect(element.childNodes[0]).toBe(div);
 			expect(element.content.childNodes.length).toBe(0);
+		});
+
+		it('Appends DocumentFragment children directly.', () => {
+			const fragment = document.createDocumentFragment();
+			const div = document.createElement('div');
+			const span = document.createElement('span');
+			fragment.appendChild(div);
+			fragment.appendChild(span);
+
+			element.appendChild(fragment);
+
+			expect(element.childNodes.length).toBe(2);
+			expect(element.childNodes[0]).toBe(div);
+			expect(element.childNodes[1]).toBe(span);
+			expect(fragment.childNodes.length).toBe(0);
+			expect(element.content.childNodes.length).toBe(0);
+		});
+
+		it('Triggers MutationObserver.', async () => {
+			let records: MutationRecord[] = [];
+			const observer = new window.MutationObserver((mutationRecords) => {
+				records = mutationRecords;
+			});
+			observer.observe(element, { childList: true });
+
+			const div = document.createElement('div');
+			element.appendChild(div);
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect(records.length).toBe(1);
+			expect(records[0].type).toBe('childList');
+			expect(records[0].addedNodes[0]).toBe(div);
+
+			observer.disconnect();
 		});
 	});
 
 	describe('removeChild()', () => {
-		it('Removes a node from the "content" node.', () => {
+		it('Removes a direct child from the template element.', () => {
 			const div = document.createElement('div');
 
 			element.appendChild(div);
 
-			expect(element.childNodes.length).toBe(0);
-			expect(element.content.childNodes.length).toBe(1);
+			expect(element.childNodes.length).toBe(1);
 
 			element.removeChild(div);
 
@@ -222,28 +178,87 @@ describe('HTMLTemplateElement', () => {
 	});
 
 	describe('insertBefore()', () => {
-		it('Inserts a node before another node in the "content" node.', () => {
+		it('Inserts a node as a direct child of the template element.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
-			const underline = document.createElement('u');
 			element.appendChild(div);
-			element.appendChild(span);
-			element.insertBefore(underline, span);
-			expect(element.innerHTML).toBe('<div></div><u></u><span></span>');
+			element.insertBefore(span, div);
+			expect(element.childNodes.length).toBe(2);
+			expect(element.childNodes[0]).toBe(span);
+			expect(element.childNodes[1]).toBe(div);
+			expect(element.content.childNodes.length).toBe(0);
+		});
+
+		it('Appends node when referenceNode is null.', () => {
+			const div = document.createElement('div');
+			const span = document.createElement('span');
+			element.insertBefore(div, null);
+			element.insertBefore(span, null);
+			expect(element.childNodes.length).toBe(2);
+			expect(element.childNodes[0]).toBe(div);
+			expect(element.childNodes[1]).toBe(span);
+		});
+
+		it('Inserts DocumentFragment children directly.', () => {
+			const existing = document.createElement('p');
+			element.appendChild(existing);
+
+			const fragment = document.createDocumentFragment();
+			const div = document.createElement('div');
+			const span = document.createElement('span');
+			fragment.appendChild(div);
+			fragment.appendChild(span);
+
+			element.insertBefore(fragment, existing);
+
+			expect(element.childNodes.length).toBe(3);
+			expect(element.childNodes[0]).toBe(div);
+			expect(element.childNodes[1]).toBe(span);
+			expect(element.childNodes[2]).toBe(existing);
+			expect(fragment.childNodes.length).toBe(0);
 		});
 	});
 
 	describe('replaceChild()', () => {
-		it('Removes a node from the "content" node.', () => {
+		it('Replaces a direct child of the template element.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
-			const underline = document.createElement('u');
-			const bold = document.createElement('b');
 			element.appendChild(div);
-			element.appendChild(underline);
+			element.replaceChild(span, div);
+			expect(element.childNodes.length).toBe(1);
+			expect(element.childNodes[0]).toBe(span);
+			expect(element.content.childNodes.length).toBe(0);
+		});
+
+		it('Replaces with DocumentFragment children.', () => {
+			const div = document.createElement('div');
+			element.appendChild(div);
+
+			const fragment = document.createDocumentFragment();
+			const a = document.createElement('a');
+			const b = document.createElement('b');
+			fragment.appendChild(a);
+			fragment.appendChild(b);
+
+			element.replaceChild(fragment, div);
+
+			expect(element.childNodes.length).toBe(2);
+			expect(element.childNodes[0]).toBe(a);
+			expect(element.childNodes[1]).toBe(b);
+			expect(div.parentNode).toBe(null);
+		});
+	});
+
+	describe('innerHTML and public methods are independent', () => {
+		it('innerHTML populates content while appendChild adds direct children.', () => {
+			element.innerHTML = '<div>from parser</div>';
+			const span = document.createElement('span');
 			element.appendChild(span);
-			element.replaceChild(bold, underline);
-			expect(element.innerHTML).toBe('<div></div><b></b><span></span>');
+
+			expect(element.content.childNodes.length).toBe(1);
+			expect(element.innerHTML).toBe('<div>from parser</div>');
+			expect(element.childNodes.length).toBe(1);
+			expect(element.childNodes[0]).toBe(span);
 		});
 	});
 
