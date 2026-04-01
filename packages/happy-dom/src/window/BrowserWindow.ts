@@ -839,7 +839,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.parent]: BrowserWindow | null = this;
 	public [PropertySymbol.window]: BrowserWindow = this;
 	public [PropertySymbol.frames]: BrowserWindow = this;
-	public [PropertySymbol.internalId]: number = -1;
 	public [PropertySymbol.customElementReactionStack] = new CustomElementReactionStack(this);
 	public [PropertySymbol.modules]: {
 		json: Map<string, IModule>;
