@@ -944,6 +944,45 @@ export default class HTMLElement extends Element {
 	}
 
 	/**
+	 * Returns translate.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/dom.html#the-translate-attribute
+	 * @returns Translate.
+	 */
+	public get translate(): boolean {
+		const translateAttr = this.getAttribute('translate');
+
+		if (translateAttr !== null) {
+			const translateAttrLower = translateAttr.toLowerCase();
+
+			if (translateAttrLower === '' || translateAttrLower === 'yes') {
+				return true;
+			}
+
+			if (translateAttrLower === 'no') {
+				return false;
+			}
+		}
+
+		// Inherit state: missing value default, invalid value default
+		if (this === this.ownerDocument.documentElement) {
+			return true;
+		}
+
+		return this.parentElement ? this.parentElement.translate : false;
+	}
+
+	/**
+	 * Sets translate.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/dom.html#the-translate-attribute
+	 * @param value Value.
+	 */
+	public set translate(value: boolean) {
+		this.setAttribute('translate', value ? 'yes' : 'no');
+	}
+
+	/**
 	 * Triggers a click event.
 	 */
 	public click(): void {
