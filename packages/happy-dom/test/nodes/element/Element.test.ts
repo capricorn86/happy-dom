@@ -2039,6 +2039,45 @@ describe('Element', () => {
 		});
 	});
 
+	describe('setPointerCapture()', () => {
+		it('Sets pointer capture for the given pointer ID.', () => {
+			element.setPointerCapture(1);
+			expect(element.hasPointerCapture(1)).toBe(true);
+		});
+
+		it('Can capture multiple pointer IDs.', () => {
+			element.setPointerCapture(1);
+			element.setPointerCapture(2);
+			expect(element.hasPointerCapture(1)).toBe(true);
+			expect(element.hasPointerCapture(2)).toBe(true);
+		});
+	});
+
+	describe('hasPointerCapture()', () => {
+		it('Returns false when no pointer capture is set.', () => {
+			expect(element.hasPointerCapture(1)).toBe(false);
+		});
+
+		it('Returns true after setPointerCapture() is called with the same pointer ID.', () => {
+			element.setPointerCapture(5);
+			expect(element.hasPointerCapture(5)).toBe(true);
+			expect(element.hasPointerCapture(6)).toBe(false);
+		});
+	});
+
+	describe('releasePointerCapture()', () => {
+		it('Releases pointer capture for the given pointer ID.', () => {
+			element.setPointerCapture(1);
+			expect(element.hasPointerCapture(1)).toBe(true);
+			element.releasePointerCapture(1);
+			expect(element.hasPointerCapture(1)).toBe(false);
+		});
+
+		it('Does not throw when releasing a pointer ID that was not captured.', () => {
+			expect(() => element.releasePointerCapture(999)).not.toThrow();
+		});
+	});
+
 	describe('cloneNode()', () => {
 		it('Clones the properties of the element when cloned.', () => {
 			const child = document.createElement('div');

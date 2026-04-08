@@ -63,7 +63,7 @@ export default class CookieContainer implements ICookieContainer {
 			if (
 				!CookieExpireUtility.hasExpired(cookie) &&
 				(!httpOnly || !cookie.httpOnly) &&
-				(!url || CookieURLUtility.cookieMatchesURL(cookie, url || cookie.originURL))
+				(!url || CookieURLUtility.cookieMatchesURL(cookie, url))
 			) {
 				cookies.push(cookie);
 			}

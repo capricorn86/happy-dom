@@ -222,6 +222,7 @@ import type ITouchEventInit from './event/events/ITouchEventInit.js';
 import type IWheelEventInit from './event/events/IWheelEventInit.js';
 import type IFetchInterceptor from './fetch/types/IFetchInterceptor.js';
 import type ISyncResponse from './fetch/types/ISyncResponse.js';
+import type IConsole from './console/IConsole.js';
 import type IVirtualServer from './fetch/types/IVirtualServer.js';
 
 export type {
@@ -251,6 +252,7 @@ export type {
 	ITouchEventInit,
 	ITouchInit,
 	IUIEventInit,
+	IConsole,
 	IVirtualServer,
 	IWheelEventInit,
 	TEventListener

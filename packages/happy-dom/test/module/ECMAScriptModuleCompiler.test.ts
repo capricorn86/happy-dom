@@ -773,6 +773,18 @@ $happy_dom.exports['string6'] = string6;
 }`);
 		});
 
+		it('Unsanitized export names are not interpolated as executable code (GHSA-6q6h-j7hj-3r64)', () => {
+			const code = `export { require('child_process').execSync('id') }`;
+
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
+
+			expect(result.imports).toEqual([]);
+
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
+}`);
+		});
+
 		it('Handles tabs as whitespace.', () => {
 			const code = `
                 function warn(...args) {

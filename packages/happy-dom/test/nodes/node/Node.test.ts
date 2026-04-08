@@ -609,6 +609,35 @@ describe('Node', () => {
 
 			expect(span.ownerDocument === document).toBe(true);
 		});
+
+		it('Handles modifying nodes in connectedCallback() when appending to a parent node.', () => {
+			/**
+			 *
+			 */
+			class CustomNodeMoveElement extends window.HTMLElement {
+				/**
+				 *
+				 */
+				public connectedCallback(): void {
+					this.parentNode?.removeChild(this.parentNode.firstChild!);
+				}
+			}
+
+			window.customElements.define('custom-node-move', CustomNodeMoveElement);
+
+			const div = document.createElement('div');
+			const span1 = document.createElement('span');
+			const span2 = document.createElement('span');
+			const customElement = document.createElement('custom-node-move');
+			div.appendChild(span1);
+			div.appendChild(customElement);
+			div.appendChild(span2);
+			document.body.appendChild(div);
+			expect(div.innerHTML).toBe('<custom-node-move></custom-node-move><span></span>');
+			expect(span1.isConnected).toBe(false);
+			expect(customElement.isConnected).toBe(true);
+			expect(span2.isConnected).toBe(true);
+		});
 	});
 
 	describe('removeChild()', () => {
