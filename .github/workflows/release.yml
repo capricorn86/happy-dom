@@ -118,7 +118,7 @@ jobs:
           git push origin --tags
 
       - name: Publish packages
-        run: npm publish --workspaces
+        run: npm publish --workspaces --provenance
 
   create-release:
     runs-on: ubuntu-latest
