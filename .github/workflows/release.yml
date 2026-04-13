@@ -9,8 +9,9 @@ on:
         default: 'capricorn86'
 
 permissions:
-  id-token: write # Required for OIDC
-  contents: read
+  contents: write
+  id-token: write
+  actions: write
 
 jobs:
   check-next-version:
