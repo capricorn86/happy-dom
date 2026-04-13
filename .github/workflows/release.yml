@@ -18,7 +18,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [22]
+        node-version: [24]
 
     outputs:
       next_version: ${{ steps.versionCheck.outputs.next_version }}
@@ -62,7 +62,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [22]
+        node-version: [24]
 
     steps:
       - uses: actions/checkout@v4
@@ -99,6 +99,9 @@ jobs:
           restore-keys: |
             turbo-master
 
+      - name: Install latest NPM
+        run: npm install -g npm@latest
+
       - name: Install dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
@@ -126,7 +129,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [22]
+        node-version: [24]
 
     steps:
       - uses: actions/checkout@v4
