@@ -2,6 +2,7 @@ import EventTarget from '../../event/EventTarget.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import type Document from '../document/Document.js';
 import type Element from '../element/Element.js';
+import type HTMLElement from '../html-element/HTMLElement.js';
 import NodeTypeEnum from './NodeTypeEnum.js';
 import NodeDocumentPositionEnum from './NodeDocumentPositionEnum.js';
 import NodeUtility from './NodeUtility.js';
@@ -292,16 +293,16 @@ export default class Node extends EventTarget {
 	}
 
 	/**
-	 * Returns parent element.
+	 * Returns parent HTMLElement.
 	 *
-	 * @returns Element.
+	 * @returns HTMLElement.
 	 */
-	public get parentElement(): Element | null {
+	public get parentElement(): HTMLElement | null {
 		let parent = this[PropertySymbol.parentNode];
 		while (parent && parent[PropertySymbol.nodeType] !== NodeTypeEnum.elementNode) {
 			parent = parent[PropertySymbol.parentNode];
 		}
-		return <Element>parent;
+		return <HTMLElement>parent;
 	}
 
 	/**
