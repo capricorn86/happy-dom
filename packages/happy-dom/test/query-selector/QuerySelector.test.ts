@@ -1777,6 +1777,38 @@ describe('QuerySelector', () => {
 			expect(div.querySelector('#\\:id\\:') === div2).toBe(true);
 		});
 
+		it('Returns an element by ID when using CSS.escape() on an ID starting with a digit.', () => {
+			const container = document.createElement('div');
+			const child = document.createElement('span');
+			const id = '97e356d3-601d-42ca-9c13-3446228274ac';
+			child.id = id;
+			container.appendChild(child);
+
+			const result = container.querySelector(`#${window.CSS.escape(id)}`);
+			expect(result === child).toBe(true);
+		});
+
+		it('Returns an element by ID with a hex escape sequence in the selector.', () => {
+			const container = document.createElement('div');
+			const child = document.createElement('span');
+			child.id = '0abc';
+			container.appendChild(child);
+
+			// CSS.escape('0abc') produces '\\30 abc'
+			const result = container.querySelector('#\\30 abc');
+			expect(result === child).toBe(true);
+		});
+
+		it('Returns an element by class name with a hex escape sequence in the selector.', () => {
+			const container = document.createElement('div');
+			const child = document.createElement('span');
+			child.className = '0abc';
+			container.appendChild(child);
+
+			const result = container.querySelector('.\\30 abc');
+			expect(result === child).toBe(true);
+		});
+
 		it('Does not find input with selector of input:not([list])[type="search"]', () => {
 			const div = document.createElement('div');
 			const input = document.createElement('input');
