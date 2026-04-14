@@ -8,6 +8,7 @@ export default <IBrowserSettings>{
 	enableJavaScriptEvaluation: false,
 	disableJavaScriptFileLoading: false,
 	disableCSSFileLoading: false,
+	enableImageFileLoading: false,
 	disableIframePageLoading: false,
 	disableComputedStyleRendering: false,
 	handleDisabledFileLoadingAsSuccess: false,

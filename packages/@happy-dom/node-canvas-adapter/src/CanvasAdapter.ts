@@ -1,9 +1,21 @@
-import { createCanvas } from 'canvas';
+import { createCanvas, createImageData, Image as CanvasImage } from 'canvas';
+// @ts-ignore
+import { SetSource } from 'canvas/lib/bindings.js';
+import {
+	HTMLCanvasElement,
+	HTMLImageElement,
+	ImageData,
+	PropertySymbol,
+	type ICanvasRenderingContext2D
+} from 'happy-dom';
+import OffscreenCanvas from 'happy-dom/lib/canvas/OffscreenCanvas';
 
 interface ICanvasShape {
 	width: number;
 	height: number;
 }
+
+const EXTENDED_SYMBOL = Symbol('extended');
 
 /**
  * Canvas adapter that delegates rendering to the `canvas` npm package.
@@ -22,7 +34,7 @@ interface ICanvasShape {
  * ```
  */
 export default class CanvasAdapter {
-	readonly #canvases = new WeakMap<object, ReturnType<typeof createCanvas>>();
+	readonly #canvases = new WeakMap<ICanvasShape, ReturnType<typeof createCanvas>>();
 
 	/**
 	 * Returns or creates a node-canvas instance bound to the given canvas element.
@@ -57,11 +69,120 @@ export default class CanvasAdapter {
 		canvas: ICanvasShape,
 		contextType: string,
 		contextAttributes?: Record<string, unknown>
-	): unknown | null {
+	): ICanvasRenderingContext2D | null {
 		if (contextType !== '2d') {
 			return null;
 		}
-		return this.#getNodeCanvas(canvas).getContext('2d', contextAttributes);
+		const context = this.#getNodeCanvas(canvas).getContext('2d', contextAttributes);
+
+		if (context === null) {
+			return null;
+		}
+
+		if ((<any>context)[EXTENDED_SYMBOL]) {
+			return <ICanvasRenderingContext2D>(<unknown>context);
+		}
+
+		(<any>context)[EXTENDED_SYMBOL] = true;
+
+		// drawImage()
+		const originalDrawImage = context.drawImage;
+		context.drawImage = (...args: any[]) => {
+			const shape = <ICanvasShape>args[0];
+			if (shape instanceof HTMLImageElement) {
+				const loadImage = (buffer: Buffer): void => {
+					const imageData = createImageData(
+						new Uint8ClampedArray(buffer),
+						shape.width,
+						shape.height
+					);
+					args[0] = imageData;
+					(<any>context.putImageData).apply(context, args);
+				};
+				if (shape[PropertySymbol.buffer]) {
+					loadImage(shape[PropertySymbol.buffer]);
+					return;
+				}
+				if (!shape.complete) {
+					shape.addEventListener('load', () => {
+						if (shape[PropertySymbol.buffer]) {
+							loadImage(shape[PropertySymbol.buffer]);
+						}
+					});
+				}
+				return;
+			}
+			if (shape instanceof HTMLVideoElement) {
+				// Not supported yet
+				return;
+			}
+			if (shape instanceof HTMLCanvasElement || shape instanceof OffscreenCanvas) {
+				const nodeCanvas = this.#getNodeCanvas(shape);
+				if (nodeCanvas) {
+					args[0] = nodeCanvas;
+					(<any>originalDrawImage).apply(context, args);
+				}
+				return;
+			}
+			if (shape instanceof ImageData) {
+				(<any>originalDrawImage).apply(context, args);
+				return;
+			}
+		};
+
+		// getImageData()
+		const originalGetImageData = context.getImageData;
+		context.getImageData = (...args: any[]) => {
+			const imageData = originalGetImageData.apply(context, <any>args);
+			return new ImageData(
+				new Uint8ClampedArray(imageData.data),
+				imageData.width,
+				imageData.height
+			);
+		};
+
+		// createImageData()
+		const originalCreateImageData = context.createImageData;
+		context.createImageData = (...args: any[]) => {
+			const imageData = originalCreateImageData.apply(context, <any>args);
+			return new ImageData(
+				new Uint8ClampedArray(imageData.data),
+				imageData.width,
+				imageData.height
+			);
+		};
+
+		// createPattern()
+		const originalCreatePattern = context.createPattern;
+		context.createPattern = (
+			shape: any,
+			repetition: '' | 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat'
+		): any => {
+			if (shape instanceof HTMLImageElement) {
+				if (!shape[PropertySymbol.buffer]) {
+					return null;
+				}
+
+				const canvasImage = new CanvasImage();
+				SetSource(canvasImage, shape[PropertySymbol.buffer]);
+				return originalCreatePattern(canvasImage, repetition);
+			}
+			if (shape instanceof HTMLCanvasElement || shape instanceof OffscreenCanvas) {
+				const nodeCanvas = this.#getNodeCanvas(shape);
+				if (nodeCanvas) {
+					return originalCreatePattern(nodeCanvas, repetition);
+				}
+				return null;
+			}
+			if (shape instanceof ImageData) {
+				const canvasImage = new CanvasImage();
+				SetSource(canvasImage, Buffer.from(shape.data.buffer));
+				return originalCreatePattern(canvasImage, repetition);
+			}
+			return null;
+		};
+
+		return <ICanvasRenderingContext2D>(<unknown>context);
 	}
 
 	/**

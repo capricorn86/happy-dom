@@ -37,6 +37,7 @@ import MediaStreamTrackImplementation from '../nodes/html-media-element/MediaStr
 import CanvasCaptureMediaStreamTrackImplementation from '../nodes/html-canvas-element/CanvasCaptureMediaStreamTrack.js';
 import URLImplementation from '../url/URL.js';
 import WebSocketImplementation from '../web-socket/WebSocket.js';
+import ImageDataImplementation from '../canvas/ImageData.js';
 
 /**
  * Extends classes with a "window" property, so that they internally can access it's Window context.
@@ -234,6 +235,11 @@ export default class WindowContextClassExtender {
 		class WebSocket extends WebSocketImplementation {}
 		WebSocket.prototype[PropertySymbol.window] = window;
 		(<typeof WebSocket>window.WebSocket) = WebSocket;
+
+		// ImageData
+		class ImageData extends ImageDataImplementation {}
+		ImageData.prototype[PropertySymbol.window] = window;
+		(<typeof ImageData>window.ImageData) = ImageData;
 
 		/* eslint-enable jsdoc/require-jsdoc */
 	}

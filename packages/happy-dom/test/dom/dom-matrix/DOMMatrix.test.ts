@@ -281,16 +281,16 @@ describe('DOMMatrix', () => {
 		describe(`get ${key}()`, () => {
 			it(`Returns the "${key}" property.`, () => {
 				const matrix = new DOMMatrix();
-				matrix[PropertySymbol[key]] = 10;
-				expect(matrix[key]).toBe(10);
+				(<any>matrix)[(<any>PropertySymbol)[key]] = 10;
+				expect((<any>matrix)[key]).toBe(10);
 			});
 		});
 
 		describe(`set ${key}()`, () => {
 			it(`Sets "${key}" property.`, () => {
 				const matrix = new DOMMatrix();
-				matrix[key] = 10;
-				expect(matrix[PropertySymbol[key]]).toBe(10);
+				(<any>matrix)[key] = 10;
+				expect((<any>matrix)[(<any>PropertySymbol)[key]]).toBe(10);
 			});
 		});
 	}
@@ -1446,6 +1446,21 @@ describe('DOMMatrix', () => {
 				is2D: false,
 				isIdentity: false
 			});
+		});
+	});
+
+	describe('preMultiplySelf()', () => {
+		it('Pre-multiplies a matrix.', () => {
+			const matrix = new DOMMatrix().translate(3, 22);
+			const otherMatrix = new DOMMatrix().translateSelf(15, 45);
+
+			expect(matrix.toString()).toBe('matrix(1, 0, 0, 1, 3, 22)');
+			expect(otherMatrix.toString()).toBe('matrix(1, 0, 0, 1, 15, 45)');
+
+			matrix.preMultiplySelf(otherMatrix);
+
+			expect(matrix.toString()).toBe('matrix(1, 0, 0, 1, 18, 67)');
+			expect(otherMatrix.toString()).toBe('matrix(1, 0, 0, 1, 15, 45)');
 		});
 	});
 });

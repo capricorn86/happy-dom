@@ -1,5 +1,12 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
+import type ICanvas from '../../canvas/ICanvas.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
+import type Event from '../../event/Event.js';
+import WindowBrowserContext from '../../window/WindowBrowserContext.js';
+import BufferImageSize from 'buffer-image-size';
+
+const DATA_URL_REGEX = /^\s*data:([^,]+)?,(.*)/;
 
 /**
  * HTML Image Element.
@@ -7,15 +14,38 @@ import * as PropertySymbol from '../../PropertySymbol.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement.
  */
-export default class HTMLImageElement extends HTMLElement {
+export default class HTMLImageElement extends HTMLElement implements ICanvas {
 	public [PropertySymbol.tagName] = 'IMG';
-	public [PropertySymbol.complete] = false;
+	public [PropertySymbol.complete] = true;
 	public [PropertySymbol.naturalHeight] = 0;
 	public [PropertySymbol.naturalWidth] = 0;
 	public [PropertySymbol.loading] = 'auto';
 	public [PropertySymbol.x] = 0;
 	public [PropertySymbol.y] = 0;
+	public [PropertySymbol.buffer]: Buffer | null = null;
 	public declare cloneNode: (deep?: boolean) => HTMLImageElement;
+
+	// Events
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get onload(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onload');
+	}
+
+	public set onload(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onload', value);
+	}
+
+	public get onerror(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onerror');
+	}
+
+	public set onerror(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onerror', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Returns complete.
@@ -149,7 +179,7 @@ export default class HTMLImageElement extends HTMLElement {
 	 */
 	public get width(): number {
 		const width = this.getAttribute('width');
-		return width !== null ? Number(width) : 0;
+		return width !== null ? Number(width) : this[PropertySymbol.naturalWidth];
 	}
 
 	/**
@@ -168,7 +198,7 @@ export default class HTMLImageElement extends HTMLElement {
 	 */
 	public get height(): number {
 		const height = this.getAttribute('height');
-		return height !== null ? Number(height) : 0;
+		return height !== null ? Number(height) : this[PropertySymbol.naturalHeight];
 	}
 
 	/**
@@ -248,12 +278,21 @@ export default class HTMLImageElement extends HTMLElement {
 			return '';
 		}
 
+		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
+
+		let href: string;
 		try {
-			return new URL(this.getAttribute('src')!, this[PropertySymbol.ownerDocument].location.href)
+			href = new URL(this.getAttribute('src')!, this[PropertySymbol.ownerDocument].location.href)
 				.href;
 		} catch (e) {
 			return this.getAttribute('src')!;
 		}
+
+		if (settings?.enableImageFileLoading) {
+			this.#loadImage(href);
+		}
+
+		return href;
 	}
 
 	/**
@@ -311,9 +350,69 @@ export default class HTMLImageElement extends HTMLElement {
 	}
 
 	/**
-	 * @override
+	 * Loads the image from the given source.
+	 *
+	 * @param src Source.
 	 */
-	public override [PropertySymbol.cloneNode](deep = false): HTMLImageElement {
-		return <HTMLImageElement>super[PropertySymbol.cloneNode](deep);
+	async #loadImage(src: string): Promise<void> {
+		const dataUrlMatch = src.match(DATA_URL_REGEX);
+
+		if (dataUrlMatch) {
+			const buffer = Buffer.from(dataUrlMatch[2], 'base64');
+			this[PropertySymbol.complete] = true;
+			this[PropertySymbol.buffer] = buffer;
+			try {
+				const dimensions = BufferImageSize(buffer);
+				this[PropertySymbol.naturalHeight] = dimensions.height;
+				this[PropertySymbol.naturalWidth] = dimensions.width;
+			} catch (e) {
+				this[PropertySymbol.naturalHeight] = 0;
+				this[PropertySymbol.naturalWidth] = 0;
+			}
+			this.dispatchEvent(new this[PropertySymbol.window].Event('load'));
+			return;
+		}
+
+		this[PropertySymbol.complete] = false;
+		this[PropertySymbol.naturalHeight] = 0;
+		this[PropertySymbol.naturalWidth] = 0;
+		this[PropertySymbol.buffer] = null;
+
+		const response = await this[PropertySymbol.window].fetch(src);
+
+		if (!response.ok) {
+			this[PropertySymbol.complete] = true;
+			this.dispatchEvent(new this[PropertySymbol.window].Event('error'));
+			this[PropertySymbol.window].console.error(
+				`GET ${src} ${response.status} (${response.statusText}).`
+			);
+			return;
+		}
+
+		let arrayBuffer: ArrayBuffer;
+
+		try {
+			arrayBuffer = await response.arrayBuffer();
+		} catch (e) {
+			this[PropertySymbol.complete] = true;
+			this.dispatchEvent(new this[PropertySymbol.window].Event('error'));
+			return;
+		}
+
+		const buffer = Buffer.from(arrayBuffer);
+
+		this[PropertySymbol.complete] = true;
+		this[PropertySymbol.buffer] = Buffer.from(buffer);
+
+		try {
+			const dimensions = BufferImageSize(buffer);
+			this[PropertySymbol.naturalHeight] = dimensions.height;
+			this[PropertySymbol.naturalWidth] = dimensions.width;
+		} catch (e) {
+			this[PropertySymbol.naturalHeight] = 0;
+			this[PropertySymbol.naturalWidth] = 0;
+		}
+
+		this.dispatchEvent(new this[PropertySymbol.window].Event('load'));
 	}
 }
