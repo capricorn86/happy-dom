@@ -1125,6 +1125,26 @@ describe('Document', () => {
 				html.replace(/[\s]/gm, '')
 			);
 		});
+
+		it('Removes both capturing and bubbling event listeners.', () => {
+			let captureCount = 0;
+			let bubbleCount = 0;
+			const captureListener = (): void => {
+				captureCount++;
+			};
+			const bubbleListener = (): void => {
+				bubbleCount++;
+			};
+
+			document.addEventListener('click', captureListener, true);
+			document.addEventListener('click', bubbleListener, false);
+
+			document.open();
+
+			document.dispatchEvent(new Event('click'));
+			expect(captureCount).toBe(0);
+			expect(bubbleCount).toBe(0);
+		});
 	});
 
 	describe('close()', () => {

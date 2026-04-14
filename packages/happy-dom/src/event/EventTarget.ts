@@ -77,34 +77,32 @@ export default class EventTarget {
 
 		if (options.signal && !options.signal.aborted) {
 			options.signal.addEventListener('abort', () => {
-				this.removeEventListener(type, listener);
+				this.removeEventListener(type, listener, options);
 			});
 		}
 	}
 
 	/**
-	 * Adds an event listener.
+	 * Removes an event listener.
 	 *
 	 * @param type Event type.
 	 * @param listener Listener.
+	 * @param options An object that specifies characteristics about the event listener, or a boolean indicating capture.
 	 */
-	public removeEventListener(type: string, listener: TEventListener): void {
-		const bubblingListeners = this[PropertySymbol.listeners].bubbling.get(type);
-		if (bubblingListeners) {
-			const index = bubblingListeners.indexOf(listener);
-			if (index !== -1) {
-				bubblingListeners.splice(index, 1);
-				this[PropertySymbol.listenerOptions].bubbling.get(type)!.splice(index, 1);
-				return;
-			}
-		}
+	public removeEventListener(
+		type: string,
+		listener: TEventListener,
+		options?: boolean | IEventListenerOptions
+	): void {
+		options = typeof options === 'boolean' ? { capture: options } : options || {};
+		const eventPhase = options.capture ? 'capturing' : 'bubbling';
 
-		const capturingListeners = this[PropertySymbol.listeners].capturing.get(type);
-		if (capturingListeners) {
-			const index = capturingListeners.indexOf(listener);
+		const listeners = this[PropertySymbol.listeners][eventPhase].get(type);
+		if (listeners) {
+			const index = listeners.indexOf(listener);
 			if (index !== -1) {
-				capturingListeners.splice(index, 1);
-				this[PropertySymbol.listenerOptions].capturing.get(type)!.splice(index, 1);
+				listeners.splice(index, 1);
+				this[PropertySymbol.listenerOptions][eventPhase].get(type)!.splice(index, 1);
 			}
 		}
 	}
@@ -313,7 +311,7 @@ export default class EventTarget {
 					// The value corresponding to the cloned array is not deleted. So we need to delete the value in the cloned array.
 					listeners.splice(i, 1);
 					listenerOptions.splice(i, 1);
-					this.removeEventListener(event.type, listener);
+					this.removeEventListener(event.type, listener, options);
 					i--;
 					max--;
 				}
