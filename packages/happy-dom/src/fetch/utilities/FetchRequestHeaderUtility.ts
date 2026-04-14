@@ -102,7 +102,7 @@ export default class FetchRequestHeaderUtility {
 			(options.request.credentials === 'same-origin' && !isCORS)
 		) {
 			const cookies = options.browserFrame.page.context.cookieContainer.getCookies(
-				originURL,
+				options.request[PropertySymbol.url],
 				false
 			);
 			if (cookies.length > 0) {

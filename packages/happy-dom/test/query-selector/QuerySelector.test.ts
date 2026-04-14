@@ -390,6 +390,59 @@ describe('QuerySelector', () => {
 			expect(elements[1] === div.children[0].children[2]).toBe(true);
 		});
 
+		it('Returns only direct children for "#id > div > *" (child combinator with universal selector).', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+				<div id="root">
+					<div>
+						<span></span>
+						<p><em>deep</em></p>
+						<a href="#"></a>
+					</div>
+				</div>
+			`;
+			document.body.appendChild(container);
+			const elements = container.querySelectorAll('#root > div > *');
+			expect(elements.length).toBe(3);
+			expect(elements[0].tagName).toBe('SPAN');
+			expect(elements[1].tagName).toBe('P');
+			expect(elements[2].tagName).toBe('A');
+			container.remove();
+		});
+
+		it('Returns only direct children for document.querySelectorAll("#id > div > *").', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+				<div id="qsa-root">
+					<div>
+						<span></span>
+						<p><em>deep</em></p>
+					</div>
+				</div>
+			`;
+			document.body.appendChild(container);
+			const elements = document.querySelectorAll('#qsa-root > div > *');
+			expect(elements.length).toBe(2);
+			expect(elements[0].tagName).toBe('SPAN');
+			expect(elements[1].tagName).toBe('P');
+			container.remove();
+		});
+
+		it('Returns only direct children for "div > *" with nested structure.', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+				<div>
+					<span><b>nested</b></span>
+					<p><em>nested</em></p>
+				</div>
+			`;
+			const elements = container.querySelectorAll('div > *');
+			// Direct children of container's outer div: the inner div
+			// Direct children of the inner div: span, p
+			// Total: inner div + span + p = 3
+			expect(elements.length).toBe(3);
+		});
+
 		it('Returns all elements matching "div > div > .class1.class2".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
@@ -594,6 +647,40 @@ describe('QuerySelector', () => {
 			expect(elements.length).toBe(2);
 			expect(elements[0] === container.children[0].children[1].children[0]).toBe(true);
 			expect(elements[1] === container.children[0].children[1].children[1]).toBe(true);
+		});
+
+		it('Returns elements when attribute value contains CSS hex escape sequences.', () => {
+			const container = document.createElement('div');
+			container.innerHTML =
+				'<div class="toast" data-key="0abc"></div><div class="toast" data-key="other"></div>';
+
+			// CSS.escape('0abc') produces '\\30 abc' (hex escape for "0" followed by "abc")
+			const elements = container.querySelectorAll('[data-key="\\30 abc"]');
+
+			expect(elements.length).toBe(1);
+			expect(elements[0] === container.children[0]).toBe(true);
+		});
+
+		it('Returns elements when attribute value contains CSS character escape sequences.', () => {
+			const container = document.createElement('div');
+			container.innerHTML = '<div data-key="a:b"></div>';
+
+			// Backslash-escaped colon
+			const elements = container.querySelectorAll('[data-key="a\\:b"]');
+
+			expect(elements.length).toBe(1);
+			expect(elements[0] === container.children[0]).toBe(true);
+		});
+
+		it('Returns elements when using CSS.escape() with class selector and attribute value.', () => {
+			const container = document.createElement('div');
+			container.innerHTML = '<div class="toast" data-key="0abc"></div>';
+
+			const escaped = window.CSS.escape('0abc');
+			const elements = container.querySelectorAll(`.toast[data-key="${escaped}"]`);
+
+			expect(elements.length).toBe(1);
+			expect(elements[0] === container.children[0]).toBe(true);
 		});
 
 		it('Returns all elements with an attribute value containing a specified word using "[class~="class2"]".', () => {

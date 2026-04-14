@@ -61,6 +61,7 @@ export default class Element
 	public [PropertySymbol.attributesProxy]: NamedNodeMap | null = null;
 	public [PropertySymbol.children]: HTMLCollection<Element> | null = null;
 	public [PropertySymbol.computedStyle]: CSSStyleDeclaration | null = null;
+	public [PropertySymbol.pointerCaptures]: Set<number> = new Set();
 	public [PropertySymbol.propertyEventListeners]: Map<string, ((event: Event) => void) | null> =
 		new Map();
 	public declare [PropertySymbol.tagName]: string | null;
@@ -976,6 +977,37 @@ export default class Element
 		const domRectList = new DOMRectList(PropertySymbol.illegalConstructor);
 		domRectList.push(this.getBoundingClientRect());
 		return domRectList;
+	}
+
+	/**
+	 * Designates a specific element as the capture target of future pointer events.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/setPointerCapture
+	 * @param pointerId Pointer ID.
+	 */
+	public setPointerCapture(pointerId: number): void {
+		this[PropertySymbol.pointerCaptures].add(pointerId);
+	}
+
+	/**
+	 * Returns whether the element on which it is invoked has pointer capture for the pointer identified by the given pointer ID.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/hasPointerCapture
+	 * @param pointerId Pointer ID.
+	 * @returns Whether the element has pointer capture.
+	 */
+	public hasPointerCapture(pointerId: number): boolean {
+		return this[PropertySymbol.pointerCaptures].has(pointerId);
+	}
+
+	/**
+	 * Releases pointer capture that was previously set for a specific pointer.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/releasePointerCapture
+	 * @param pointerId Pointer ID.
+	 */
+	public releasePointerCapture(pointerId: number): void {
+		this[PropertySymbol.pointerCaptures].delete(pointerId);
 	}
 
 	/**
