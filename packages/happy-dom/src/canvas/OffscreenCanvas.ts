@@ -1,19 +1,19 @@
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import type Blob from '../file/Blob.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
-import type ICanvas from './ICanvas.js';
 import type ICanvasAdapter from './ICanvasAdapter.js';
 import type ICanvasRenderingContext2D from './ICanvasRenderingContext2D.js';
 import ImageBitmap from './ImageBitmap.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import type BrowserWindow from '../window/BrowserWindow.js';
+import type ICanvasShape from './ICanvasShape.js';
 
 /**
  * The OffscreenCanvas interface provides a canvas that can be rendered off screen, decoupling the DOM and the Canvas API so that the <canvas> element is no longer entirely dependent on the DOM.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas/OffscreenCanvas
  */
-export default class OffscreenCanvas implements ICanvas {
+export default class OffscreenCanvas implements ICanvasShape {
 	// Injected by WindowContextClassExtender
 	protected declare [PropertySymbol.window]: BrowserWindow;
 

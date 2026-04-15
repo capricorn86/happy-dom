@@ -7,6 +7,7 @@ import type BrowserWindow from '../window/BrowserWindow.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import type IImageBitmapOptions from './IImageBitmapOptions.js';
 import type { TImageBitmapSource } from './TImageBitmapSource.js';
+import type ICanvasShape from './ICanvasShape.js';
 
 type TImageBitmapInternalSource = HTMLCanvasElement | OffscreenCanvas | HTMLImageElement;
 
@@ -15,7 +16,7 @@ type TImageBitmapInternalSource = HTMLCanvasElement | OffscreenCanvas | HTMLImag
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap
  */
-export default class ImageBitmap {
+export default class ImageBitmap implements ICanvasShape {
 	public [PropertySymbol.source]: TImageBitmapInternalSource | null = null;
 	public [PropertySymbol.x] = 0;
 	public [PropertySymbol.y] = 0;
@@ -108,6 +109,24 @@ export default class ImageBitmap {
 				`Failed to execute 'createImageBitmap' on 'Window': Overload resolution failed.`
 			);
 		}
+	}
+
+	/**
+	 * Returns width.
+	 *
+	 * @returns Width.
+	 */
+	public get width(): number {
+		return this[PropertySymbol.width];
+	}
+
+	/**
+	 * Returns height.
+	 *
+	 * @returns Height.
+	 */
+	public get height(): number {
+		return this[PropertySymbol.height];
 	}
 
 	/**

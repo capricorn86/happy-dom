@@ -1,20 +1,9 @@
 import type DOMMatrix from '../dom/dom-matrix/DOMMatrix.js';
-import type HTMLCanvasElement from '../nodes/html-canvas-element/HTMLCanvasElement.js';
-import type HTMLImageElement from '../nodes/html-image-element/HTMLImageElement.js';
-import type HTMLVideoElement from '../nodes/html-video-element/HTMLVideoElement.js';
 import type ICanvasGradient from './ICanvasGradient.js';
 import type ICanvasPattern from './ICanvasPattern.js';
-import type ImageBitmap from './ImageBitmap.js';
 import type ImageData from './ImageData.js';
 import type ITextMetrics from './ITextMetrics.js';
-import type OffscreenCanvas from './OffscreenCanvas.js';
-
-type TCanvas =
-	| HTMLCanvasElement
-	| OffscreenCanvas
-	| HTMLImageElement
-	| HTMLVideoElement
-	| ImageBitmap /* | VideoFrame */;
+import type { TCanvasImage } from './TCanvasImage.js';
 
 type TCanvasFillRule = 'evenodd' | 'nonzero';
 type TGlobalCompositeOperation =
@@ -86,13 +75,13 @@ export default interface ICanvasRenderingContext2D {
 	font: string;
 	textBaseline: TCanvasTextBaseline;
 	textAlign: TCanvasTextAlign;
-	canvas: TCanvas;
+	canvas: TCanvasImage;
 	direction: 'ltr' | 'rtl';
 	lang: string;
-	drawImage(image: TCanvas, dx: number, dy: number): void;
-	drawImage(image: TCanvas, dx: number, dy: number, dw: number, dh: number): void;
+	drawImage(image: TCanvasImage, dx: number, dy: number): void;
+	drawImage(image: TCanvasImage, dx: number, dy: number, dw: number, dh: number): void;
 	drawImage(
-		image: TCanvas,
+		image: TCanvasImage,
 		sx: number,
 		sy: number,
 		sw: number,
@@ -165,7 +154,7 @@ export default interface ICanvasRenderingContext2D {
 	setLineDash(segments: number[]): void;
 	getLineDash(): number[];
 	createPattern(
-		image: TCanvas,
+		image: TCanvasImage,
 		repetition: 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat' | '' | null
 	): ICanvasPattern;
 	createLinearGradient(x0: number, y0: number, x1: number, y1: number): ICanvasGradient;

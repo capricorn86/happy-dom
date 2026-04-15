@@ -203,7 +203,11 @@ import type IBrowserFrame from './browser/types/IBrowserFrame.js';
 import type IBrowserPage from './browser/types/IBrowserPage.js';
 import type IBrowserSettings from './browser/types/IBrowserSettings.js';
 import type IOptionalBrowserSettings from './browser/types/IOptionalBrowserSettings.js';
+import type ICanvasAdapter from './canvas/ICanvasAdapter.js';
+import type ICanvasAdapterCaller from './canvas/ICanvasAdapterCaller.js';
 import type ICanvasRenderingContext2D from './canvas/ICanvasRenderingContext2D.js';
+import type ICanvasShape from './canvas/ICanvasShape.js';
+import type { TCanvasImage } from './canvas/TCanvasImage.js';
 import type IConsole from './console/IConsole.js';
 import type ICookie from './cookie/ICookie.js';
 import type IOptionalCookie from './cookie/IOptionalCookie.js';
@@ -228,8 +232,6 @@ import type IWheelEventInit from './event/events/IWheelEventInit.js';
 import type IFetchInterceptor from './fetch/types/IFetchInterceptor.js';
 import type ISyncResponse from './fetch/types/ISyncResponse.js';
 import type IVirtualServer from './fetch/types/IVirtualServer.js';
-import type ICanvasAdapter from './canvas/ICanvasAdapter.js';
-import type ICanvasAdapterCaller from './canvas/ICanvasAdapterCaller.js';
 
 export type {
 	IAnimationEventInit,
@@ -241,6 +243,7 @@ export type {
 	ICanvasAdapter,
 	ICanvasAdapterCaller,
 	ICanvasRenderingContext2D,
+	ICanvasShape,
 	IClipboardEventInit,
 	IConsole,
 	ICookie,
@@ -264,6 +267,7 @@ export type {
 	IUIEventInit,
 	IVirtualServer,
 	IWheelEventInit,
+	TCanvasImage,
 	TEventListener
 };
 

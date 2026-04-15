@@ -8,13 +8,9 @@ import {
 	Blob,
 	type ICanvasAdapter,
 	type ICanvasRenderingContext2D,
-	type ICanvasAdapterCaller
+	type ICanvasAdapterCaller,
+	type ICanvasShape
 } from 'happy-dom';
-
-interface ICanvasShape {
-	width: number;
-	height: number;
-}
 
 const EXTENDED_SYMBOL = Symbol('extended');
 

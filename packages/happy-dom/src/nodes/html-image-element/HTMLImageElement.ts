@@ -1,6 +1,6 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import type ICanvas from '../../canvas/ICanvas.js';
+import type ICanvasShape from '../../canvas/ICanvasShape.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 import type Event from '../../event/Event.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
@@ -14,7 +14,7 @@ const DATA_URL_REGEX = /^\s*data:([^,]+)?,(.*)/;
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement.
  */
-export default class HTMLImageElement extends HTMLElement implements ICanvas {
+export default class HTMLImageElement extends HTMLElement implements ICanvasShape {
 	public [PropertySymbol.tagName] = 'IMG';
 	public [PropertySymbol.complete] = true;
 	public [PropertySymbol.naturalHeight] = 0;

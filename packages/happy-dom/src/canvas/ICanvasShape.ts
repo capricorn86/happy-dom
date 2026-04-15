@@ -1,7 +1,7 @@
 /**
  * Interface representing a canvas.
  */
-export default interface ICanvas {
+export default interface ICanvasShape {
 	width: number;
 	height: number;
 }

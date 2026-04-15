@@ -1,18 +1,19 @@
 import * as PropertySymbol from '../PropertySymbol.js';
 import type BrowserWindow from '../window/BrowserWindow.js';
+import type ICanvasShape from './ICanvasShape.js';
 
 /**
  * The ImageData interface represents the underlying pixel data of an area of a <canvas> element.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/ImageData
  */
-export default class ImageData {
+export default class ImageData implements ICanvasShape {
 	// Injected by WindowContextClassExtender
 	protected declare [PropertySymbol.window]: BrowserWindow;
 
-	public readonly data: Uint8ClampedArray;
-	public readonly height: number;
-	public readonly width: number;
+	public readonly [PropertySymbol.data]: Uint8ClampedArray;
+	public readonly [PropertySymbol.width]: number;
+	public readonly [PropertySymbol.height]: number;
 
 	/**
 	 * Constructor.
@@ -38,13 +39,42 @@ export default class ImageData {
 					`Failed to construct 'ImageData': The height argument must be a number.`
 				);
 			}
-			this.data = dataArray;
-			this.width = width;
-			this.height = height !== undefined ? height : dataArray.length / (width * 4);
+			this[PropertySymbol.data] = dataArray;
+			this[PropertySymbol.width] = width;
+			this[PropertySymbol.height] = height !== undefined ? height : dataArray.length / (width * 4);
 		} else {
-			this.data = new Uint8ClampedArray([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-			this.width = dataArray;
-			this.height = width;
+			this[PropertySymbol.data] = new Uint8ClampedArray([
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+			]);
+			this[PropertySymbol.width] = dataArray;
+			this[PropertySymbol.height] = width;
 		}
+	}
+
+	/**
+	 * Returns data.
+	 *
+	 * @returns Data.
+	 */
+	public get data(): Uint8ClampedArray {
+		return this[PropertySymbol.data];
+	}
+
+	/**
+	 * Returns width.
+	 *
+	 * @returns Width.
+	 */
+	public get width(): number {
+		return this[PropertySymbol.width];
+	}
+
+	/**
+	 * Returns height.
+	 *
+	 * @returns Height.
+	 */
+	public get height(): number {
+		return this[PropertySymbol.height];
 	}
 }

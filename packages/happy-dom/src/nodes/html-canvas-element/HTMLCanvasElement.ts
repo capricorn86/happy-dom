@@ -7,7 +7,7 @@ import type MediaStream from '../html-media-element/MediaStream.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 import type ICanvasAdapter from '../../canvas/ICanvasAdapter.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
-import type ICanvas from '../../canvas/ICanvas.js';
+import type ICanvas from '../../canvas/ICanvasShape.js';
 import type ICanvasRenderingContext2D from '../../canvas/ICanvasRenderingContext2D.js';
 
 const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+ab12C3+1aBCdEf==';
