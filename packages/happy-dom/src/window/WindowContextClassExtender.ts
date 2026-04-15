@@ -25,6 +25,9 @@ import FormDataImplementation from '../form-data/FormData.js';
 import PermissionStatusImplementation from '../permissions/PermissionStatus.js';
 import XMLHttpRequestImplementation from '../xml-http-request/XMLHttpRequest.js';
 import DOMParserImplementation from '../dom-parser/DOMParser.js';
+import XPathEvaluatorImplementation from '../xpath/XPathEvaluator.js';
+import XPathExpressionImplementation from '../xpath/XPathExpression.js';
+import XPathResultImplementation from '../xpath/XPathResult.js';
 import RangeImplementation from '../range/Range.js';
 import VTTCueImplementation from '../nodes/html-media-element/VTTCue.js';
 import TextTrackImplementation from '../nodes/html-media-element/TextTrack.js';
@@ -173,6 +176,11 @@ export default class WindowContextClassExtender {
 		class DOMParser extends DOMParserImplementation {}
 		DOMParser.prototype[PropertySymbol.window] = window;
 		(<typeof DOMParser>window.DOMParser) = DOMParser;
+
+		// XPath
+		(<typeof XPathEvaluatorImplementation>window.XPathEvaluator) = XPathEvaluatorImplementation;
+		(<typeof XPathExpressionImplementation>window.XPathExpression) = XPathExpressionImplementation;
+		(<typeof XPathResultImplementation>window.XPathResult) = XPathResultImplementation;
 
 		// Range
 		class Range extends RangeImplementation {}

@@ -37,6 +37,9 @@ import StylePropertyMap from './css/style-property-map/StylePropertyMap.js';
 import StylePropertyMapReadOnly from './css/style-property-map/StylePropertyMapReadOnly.js';
 import CustomElementRegistry from './custom-element/CustomElementRegistry.js';
 import DOMParser from './dom-parser/DOMParser.js';
+import XPathEvaluator from './xpath/XPathEvaluator.js';
+import XPathExpression from './xpath/XPathExpression.js';
+import XPathResult from './xpath/XPathResult.js';
 import DOMRect from './dom/DOMRect.js';
 import DOMRectReadOnly from './dom/DOMRectReadOnly.js';
 import DataTransfer from './event/DataTransfer.js';
@@ -306,6 +309,9 @@ export {
 	DocumentType,
 	DOMException,
 	DOMParser,
+	XPathEvaluator,
+	XPathExpression,
+	XPathResult,
 	DOMRect,
 	DOMRectReadOnly,
 	Element,
