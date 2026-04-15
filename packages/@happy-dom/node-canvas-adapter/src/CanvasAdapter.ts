@@ -1,5 +1,4 @@
 import { createCanvas, Image as CanvasImage } from 'canvas';
-// @ts-ignore
 import type { ICanvasAdapterCaller } from 'happy-dom';
 import {
 	HTMLCanvasElement,
