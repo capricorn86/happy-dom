@@ -1,14 +1,14 @@
 import { createCanvas, Image as CanvasImage } from 'canvas';
-import type { ICanvasAdapterCaller } from 'happy-dom';
 import {
 	HTMLCanvasElement,
 	HTMLImageElement,
 	OffscreenCanvas,
 	ImageData,
 	PropertySymbol,
+	Blob,
 	type ICanvasAdapter,
 	type ICanvasRenderingContext2D,
-	Blob
+	type ICanvasAdapterCaller
 } from 'happy-dom';
 
 interface ICanvasShape {
