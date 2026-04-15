@@ -743,13 +743,9 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly TransformStream = Stream.Transform;
 	public readonly PerformanceObserver = PerformanceObserver;
 	public readonly PerformanceEntry = PerformanceEntry;
-	public readonly PerformanceObserverEntryList: new () => IPerformanceObserverEntryList = <
-		new () => IPerformanceObserverEntryList
-	>PerformanceObserverEntryList;
-
-	// Events
-	public onload: ((event: Event) => void) | null = null;
-	public onerror: ((event: ErrorEvent) => void) | null = null;
+	public readonly PerformanceObserverEntryList = <new () => IPerformanceObserverEntryList>(
+		PerformanceObserverEntryList
+	);
 
 	// Public properties.
 	public readonly document: Document;
@@ -860,6 +856,10 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	};
 	public [PropertySymbol.moduleImportMap]: IModuleImportMap | null = null;
 	public [PropertySymbol.openWebSockets]: WebSocket[] = [];
+	public [PropertySymbol.propertyEventListeners]: Map<string, ((event: Event) => void) | null> =
+		new Map();
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	// Private properties
 	#browserFrame: IBrowserFrame;
@@ -934,6 +934,1014 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 
 		this[PropertySymbol.bindMethods]();
 	}
+
+	// Events
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get onsearch(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onsearch') ?? null;
+	}
+
+	public set onsearch(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onsearch', value);
+	}
+
+	public get onappinstalled(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onappinstalled') ?? null;
+	}
+
+	public set onappinstalled(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onappinstalled', value);
+	}
+
+	public get onbeforeinstallprompt(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onbeforeinstallprompt') ?? null;
+	}
+
+	public set onbeforeinstallprompt(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onbeforeinstallprompt', value);
+	}
+
+	public get onabort(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onabort') ?? null;
+	}
+
+	public set onabort(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onabort', value);
+	}
+
+	public get onbeforeinput(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onbeforeinput') ?? null;
+	}
+
+	public set onbeforeinput(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onbeforeinput', value);
+	}
+
+	public get onbeforematch(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onbeforematch') ?? null;
+	}
+
+	public set onbeforematch(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onbeforematch', value);
+	}
+
+	public get onbeforetoggle(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onbeforetoggle') ?? null;
+	}
+
+	public set onbeforetoggle(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onbeforetoggle', value);
+	}
+
+	public get onblur(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onblur') ?? null;
+	}
+
+	public set onblur(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onblur', value);
+	}
+
+	public get oncancel(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('oncancel') ?? null;
+	}
+
+	public set oncancel(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncancel', value);
+	}
+
+	public get oncanplay(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('oncanplay') ?? null;
+	}
+
+	public set oncanplay(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncanplay', value);
+	}
+
+	public get oncanplaythrough(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('oncanplaythrough') ?? null;
+	}
+
+	public set oncanplaythrough(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncanplaythrough', value);
+	}
+
+	public get onchange(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onchange') ?? null;
+	}
+
+	public set onchange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onchange', value);
+	}
+
+	public get onclick(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onclick') ?? null;
+	}
+
+	public set onclick(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onclick', value);
+	}
+
+	public get onclose(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onclose') ?? null;
+	}
+
+	public set onclose(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onclose', value);
+	}
+
+	public get oncommand(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('oncommand') ?? null;
+	}
+
+	public set oncommand(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncommand', value);
+	}
+
+	public get oncontentvisibilityautostatechange(): ((event: Event) => void) | null {
+		return (
+			this[PropertySymbol.propertyEventListeners].get('oncontentvisibilityautostatechange') ?? null
+		);
+	}
+
+	public set oncontentvisibilityautostatechange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncontentvisibilityautostatechange', value);
+	}
+
+	public get oncontextlost(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('oncontextlost') ?? null;
+	}
+
+	public set oncontextlost(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncontextlost', value);
+	}
+
+	public get oncontextmenu(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('oncontextmenu') ?? null;
+	}
+
+	public set oncontextmenu(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncontextmenu', value);
+	}
+
+	public get oncontextrestored(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('oncontextrestored') ?? null;
+	}
+
+	public set oncontextrestored(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncontextrestored', value);
+	}
+
+	public get oncuechange(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('oncuechange') ?? null;
+	}
+
+	public set oncuechange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oncuechange', value);
+	}
+
+	public get ondblclick(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ondblclick') ?? null;
+	}
+
+	public set ondblclick(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ondblclick', value);
+	}
+
+	public get ondrag(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ondrag') ?? null;
+	}
+
+	public set ondrag(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ondrag', value);
+	}
+
+	public get ondragend(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ondragend') ?? null;
+	}
+
+	public set ondragend(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ondragend', value);
+	}
+
+	public get ondragenter(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ondragenter') ?? null;
+	}
+
+	public set ondragenter(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ondragenter', value);
+	}
+
+	public get ondragleave(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ondragleave') ?? null;
+	}
+
+	public set ondragleave(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ondragleave', value);
+	}
+
+	public get ondragover(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ondragover') ?? null;
+	}
+
+	public set ondragover(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ondragover', value);
+	}
+
+	public get ondragstart(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ondragstart') ?? null;
+	}
+
+	public set ondragstart(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ondragstart', value);
+	}
+
+	public get ondrop(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ondrop') ?? null;
+	}
+
+	public set ondrop(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ondrop', value);
+	}
+
+	public get ondurationchange(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ondurationchange') ?? null;
+	}
+
+	public set ondurationchange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ondurationchange', value);
+	}
+
+	public get onemptied(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onemptied') ?? null;
+	}
+
+	public set onemptied(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onemptied', value);
+	}
+
+	public get onended(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onended') ?? null;
+	}
+
+	public set onended(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onended', value);
+	}
+
+	public get onerror(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onerror') ?? null;
+	}
+
+	public set onerror(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onerror', value);
+	}
+
+	public get onfocus(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onfocus') ?? null;
+	}
+
+	public set onfocus(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onfocus', value);
+	}
+
+	public get onformdata(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onformdata') ?? null;
+	}
+
+	public set onformdata(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onformdata', value);
+	}
+
+	public get oninput(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('oninput') ?? null;
+	}
+
+	public set oninput(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oninput', value);
+	}
+
+	public get oninvalid(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('oninvalid') ?? null;
+	}
+
+	public set oninvalid(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('oninvalid', value);
+	}
+
+	public get onkeydown(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onkeydown') ?? null;
+	}
+
+	public set onkeydown(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onkeydown', value);
+	}
+
+	public get onkeypress(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onkeypress') ?? null;
+	}
+
+	public set onkeypress(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onkeypress', value);
+	}
+
+	public get onkeyup(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onkeyup') ?? null;
+	}
+
+	public set onkeyup(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onkeyup', value);
+	}
+
+	public get onload(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onload') ?? null;
+	}
+
+	public set onload(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onload', value);
+	}
+
+	public get onloadeddata(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onloadeddata') ?? null;
+	}
+
+	public set onloadeddata(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onloadeddata', value);
+	}
+
+	public get onloadedmetadata(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onloadedmetadata') ?? null;
+	}
+
+	public set onloadedmetadata(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onloadedmetadata', value);
+	}
+
+	public get onloadstart(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onloadstart') ?? null;
+	}
+
+	public set onloadstart(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onloadstart', value);
+	}
+
+	public get onmousedown(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onmousedown') ?? null;
+	}
+
+	public set onmousedown(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onmousedown', value);
+	}
+
+	public get onmouseenter(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onmouseenter') ?? null;
+	}
+
+	public set onmouseenter(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onmouseenter', value);
+	}
+
+	public get onmouseleave(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onmouseleave') ?? null;
+	}
+
+	public set onmouseleave(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onmouseleave', value);
+	}
+
+	public get onmousemove(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onmousemove') ?? null;
+	}
+
+	public set onmousemove(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onmousemove', value);
+	}
+
+	public get onmouseout(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onmouseout') ?? null;
+	}
+
+	public set onmouseout(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onmouseout', value);
+	}
+
+	public get onmouseover(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onmouseover') ?? null;
+	}
+
+	public set onmouseover(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onmouseover', value);
+	}
+
+	public get onmouseup(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onmouseup') ?? null;
+	}
+
+	public set onmouseup(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onmouseup', value);
+	}
+
+	public get onmousewheel(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onmousewheel') ?? null;
+	}
+
+	public set onmousewheel(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onmousewheel', value);
+	}
+
+	public get onpause(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onpause') ?? null;
+	}
+
+	public set onpause(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpause', value);
+	}
+
+	public get onplay(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onplay') ?? null;
+	}
+
+	public set onplay(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onplay', value);
+	}
+
+	public get onplaying(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onplaying') ?? null;
+	}
+
+	public set onplaying(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onplaying', value);
+	}
+
+	public get onprogress(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onprogress') ?? null;
+	}
+
+	public set onprogress(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onprogress', value);
+	}
+
+	public get onratechange(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onratechange') ?? null;
+	}
+
+	public set onratechange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onratechange', value);
+	}
+
+	public get onreset(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onreset') ?? null;
+	}
+
+	public set onreset(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onreset', value);
+	}
+
+	public get onresize(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onresize') ?? null;
+	}
+
+	public set onresize(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onresize', value);
+	}
+
+	public get onscroll(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onscroll') ?? null;
+	}
+
+	public set onscroll(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onscroll', value);
+	}
+
+	public get onscrollend(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onscrollend') ?? null;
+	}
+
+	public set onscrollend(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onscrollend', value);
+	}
+
+	public get onsecuritypolicyviolation(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onsecuritypolicyviolation') ?? null;
+	}
+
+	public set onsecuritypolicyviolation(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onsecuritypolicyviolation', value);
+	}
+
+	public get onseeked(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onseeked') ?? null;
+	}
+
+	public set onseeked(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onseeked', value);
+	}
+
+	public get onseeking(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onseeking') ?? null;
+	}
+
+	public set onseeking(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onseeking', value);
+	}
+
+	public get onselect(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onselect') ?? null;
+	}
+
+	public set onselect(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onselect', value);
+	}
+
+	public get onslotchange(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onslotchange') ?? null;
+	}
+
+	public set onslotchange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onslotchange', value);
+	}
+
+	public get onstalled(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onstalled') ?? null;
+	}
+
+	public set onstalled(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onstalled', value);
+	}
+
+	public get onsubmit(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onsubmit') ?? null;
+	}
+
+	public set onsubmit(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onsubmit', value);
+	}
+
+	public get onsuspend(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onsuspend') ?? null;
+	}
+
+	public set onsuspend(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onsuspend', value);
+	}
+
+	public get ontimeupdate(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ontimeupdate') ?? null;
+	}
+
+	public set ontimeupdate(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ontimeupdate', value);
+	}
+
+	public get ontoggle(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ontoggle') ?? null;
+	}
+
+	public set ontoggle(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ontoggle', value);
+	}
+
+	public get onvolumechange(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onvolumechange') ?? null;
+	}
+
+	public set onvolumechange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onvolumechange', value);
+	}
+
+	public get onwaiting(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onwaiting') ?? null;
+	}
+
+	public set onwaiting(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onwaiting', value);
+	}
+
+	public get onwebkitanimationend(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onwebkitanimationend') ?? null;
+	}
+
+	public set onwebkitanimationend(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onwebkitanimationend', value);
+	}
+
+	public get onwebkitanimationiteration(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onwebkitanimationiteration') ?? null;
+	}
+
+	public set onwebkitanimationiteration(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onwebkitanimationiteration', value);
+	}
+
+	public get onwebkitanimationstart(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onwebkitanimationstart') ?? null;
+	}
+
+	public set onwebkitanimationstart(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onwebkitanimationstart', value);
+	}
+
+	public get onwebkittransitionend(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onwebkittransitionend') ?? null;
+	}
+
+	public set onwebkittransitionend(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onwebkittransitionend', value);
+	}
+
+	public get onwheel(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onwheel') ?? null;
+	}
+
+	public set onwheel(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onwheel', value);
+	}
+
+	public get onauxclick(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onauxclick') ?? null;
+	}
+
+	public set onauxclick(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onauxclick', value);
+	}
+
+	public get ongotpointercapture(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ongotpointercapture') ?? null;
+	}
+
+	public set ongotpointercapture(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ongotpointercapture', value);
+	}
+
+	public get onlostpointercapture(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onlostpointercapture') ?? null;
+	}
+
+	public set onlostpointercapture(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onlostpointercapture', value);
+	}
+
+	public get onpointerdown(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onpointerdown') ?? null;
+	}
+
+	public set onpointerdown(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpointerdown', value);
+	}
+
+	public get onpointermove(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onpointermove') ?? null;
+	}
+
+	public set onpointermove(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpointermove', value);
+	}
+
+	public get onpointerup(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onpointerup') ?? null;
+	}
+
+	public set onpointerup(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpointerup', value);
+	}
+
+	public get onpointercancel(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onpointercancel') ?? null;
+	}
+
+	public set onpointercancel(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpointercancel', value);
+	}
+
+	public get onpointerover(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onpointerover') ?? null;
+	}
+
+	public set onpointerover(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpointerover', value);
+	}
+
+	public get onpointerout(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onpointerout') ?? null;
+	}
+
+	public set onpointerout(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpointerout', value);
+	}
+
+	public get onpointerenter(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onpointerenter') ?? null;
+	}
+
+	public set onpointerenter(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpointerenter', value);
+	}
+
+	public get onpointerleave(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onpointerleave') ?? null;
+	}
+
+	public set onpointerleave(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpointerleave', value);
+	}
+
+	public get onselectstart(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onselectstart') ?? null;
+	}
+
+	public set onselectstart(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onselectstart', value);
+	}
+
+	public get onselectionchange(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onselectionchange') ?? null;
+	}
+
+	public set onselectionchange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onselectionchange', value);
+	}
+
+	public get onanimationcancel(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onanimationcancel') ?? null;
+	}
+
+	public set onanimationcancel(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onanimationcancel', value);
+	}
+
+	public get onanimationend(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onanimationend') ?? null;
+	}
+
+	public set onanimationend(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onanimationend', value);
+	}
+
+	public get onanimationiteration(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onanimationiteration') ?? null;
+	}
+
+	public set onanimationiteration(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onanimationiteration', value);
+	}
+
+	public get onanimationstart(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onanimationstart') ?? null;
+	}
+
+	public set onanimationstart(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onanimationstart', value);
+	}
+
+	public get ontransitionrun(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ontransitionrun') ?? null;
+	}
+
+	public set ontransitionrun(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ontransitionrun', value);
+	}
+
+	public get ontransitionstart(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ontransitionstart') ?? null;
+	}
+
+	public set ontransitionstart(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ontransitionstart', value);
+	}
+
+	public get ontransitionend(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ontransitionend') ?? null;
+	}
+
+	public set ontransitionend(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ontransitionend', value);
+	}
+
+	public get ontransitioncancel(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ontransitioncancel') ?? null;
+	}
+
+	public set ontransitioncancel(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ontransitioncancel', value);
+	}
+
+	public get onbeforexrselect(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onbeforexrselect') ?? null;
+	}
+
+	public set onbeforexrselect(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onbeforexrselect', value);
+	}
+
+	public get onafterprint(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onafterprint') ?? null;
+	}
+
+	public set onafterprint(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onafterprint', value);
+	}
+
+	public get onbeforeprint(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onbeforeprint') ?? null;
+	}
+
+	public set onbeforeprint(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onbeforeprint', value);
+	}
+
+	public get onbeforeunload(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onbeforeunload') ?? null;
+	}
+
+	public set onbeforeunload(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onbeforeunload', value);
+	}
+
+	public get onhashchange(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onhashchange') ?? null;
+	}
+
+	public set onhashchange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onhashchange', value);
+	}
+
+	public get onlanguagechange(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onlanguagechange') ?? null;
+	}
+
+	public set onlanguagechange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onlanguagechange', value);
+	}
+
+	public get onmessage(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onmessage') ?? null;
+	}
+
+	public set onmessage(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onmessage', value);
+	}
+
+	public get onmessageerror(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onmessageerror') ?? null;
+	}
+
+	public set onmessageerror(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onmessageerror', value);
+	}
+
+	public get onoffline(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onoffline') ?? null;
+	}
+
+	public set onoffline(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onoffline', value);
+	}
+
+	public get ononline(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ononline') ?? null;
+	}
+
+	public set ononline(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ononline', value);
+	}
+
+	public get onpagehide(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onpagehide') ?? null;
+	}
+
+	public set onpagehide(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpagehide', value);
+	}
+
+	public get onpageshow(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onpageshow') ?? null;
+	}
+
+	public set onpageshow(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpageshow', value);
+	}
+
+	public get onpopstate(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onpopstate') ?? null;
+	}
+
+	public set onpopstate(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpopstate', value);
+	}
+
+	public get onrejectionhandled(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onrejectionhandled') ?? null;
+	}
+
+	public set onrejectionhandled(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onrejectionhandled', value);
+	}
+
+	public get onstorage(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onstorage') ?? null;
+	}
+
+	public set onstorage(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onstorage', value);
+	}
+
+	public get onunhandledrejection(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onunhandledrejection') ?? null;
+	}
+
+	public set onunhandledrejection(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onunhandledrejection', value);
+	}
+
+	public get onunload(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onunload') ?? null;
+	}
+
+	public set onunload(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onunload', value);
+	}
+
+	public get ondevicemotion(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ondevicemotion') ?? null;
+	}
+
+	public set ondevicemotion(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ondevicemotion', value);
+	}
+
+	public get ondeviceorientation(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ondeviceorientation') ?? null;
+	}
+
+	public set ondeviceorientation(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ondeviceorientation', value);
+	}
+
+	public get ondeviceorientationabsolute(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ondeviceorientationabsolute') ?? null;
+	}
+
+	public set ondeviceorientationabsolute(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ondeviceorientationabsolute', value);
+	}
+
+	public get onpointerrawupdate(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onpointerrawupdate') ?? null;
+	}
+
+	public set onpointerrawupdate(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpointerrawupdate', value);
+	}
+
+	public get onpageswap(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onpageswap') ?? null;
+	}
+
+	public set onpageswap(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpageswap', value);
+	}
+
+	public get onpagereveal(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onpagereveal') ?? null;
+	}
+
+	public set onpagereveal(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onpagereveal', value);
+	}
+
+	public get onscrollsnapchange(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onscrollsnapchange') ?? null;
+	}
+
+	public set onscrollsnapchange(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onscrollsnapchange', value);
+	}
+
+	public get onscrollsnapchanging(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('onscrollsnapchanging') ?? null;
+	}
+
+	public set onscrollsnapchanging(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onscrollsnapchanging', value);
+	}
+
+	public get ongamepadconnected(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ongamepadconnected') ?? null;
+	}
+
+	public set ongamepadconnected(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ongamepadconnected', value);
+	}
+
+	public get ongamepaddisconnected(): ((event: Event) => void) | null {
+		return this[PropertySymbol.propertyEventListeners].get('ongamepaddisconnected') ?? null;
+	}
+
+	public set ongamepaddisconnected(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ongamepaddisconnected', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Returns self.
