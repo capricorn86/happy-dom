@@ -1,10 +1,14 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import Blob from '../../file/Blob.js';
-import OffscreenCanvas from './OffscreenCanvas.js';
+import type Blob from '../../file/Blob.js';
+import OffscreenCanvas from '../../canvas/OffscreenCanvas.js';
 import type Event from '../../event/Event.js';
 import type MediaStream from '../html-media-element/MediaStream.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
+import type ICanvasAdapter from '../../canvas/ICanvasAdapter.js';
+import WindowBrowserContext from '../../window/WindowBrowserContext.js';
+import type ICanvas from '../../canvas/ICanvasShape.js';
+import type ICanvasRenderingContext2D from '../../canvas/ICanvasRenderingContext2D.js';
 
 const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+ab12C3+1aBCdEf==';
 
@@ -13,7 +17,7 @@ const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement
  */
-export default class HTMLCanvasElement extends HTMLElement {
+export default class HTMLCanvasElement extends HTMLElement implements ICanvas {
 	// Events
 
 	/* eslint-disable jsdoc/require-jsdoc */
@@ -131,37 +135,101 @@ export default class HTMLCanvasElement extends HTMLElement {
 	/**
 	 * Returns context.
 	 *
-	 * @param _contextType Context type.
-	 * @param [_contextAttributes] Context attributes.
+	 * @param contextType Context type.
+	 * @param [contextAttributes] Context attributes.
 	 * @returns Context.
 	 */
 	public getContext(
-		_contextType: '2d' | 'webgl' | 'webgl2' | 'webgpu' | 'bitmaprenderer',
-		_contextAttributes?: { [key: string]: any }
-	): any {
-		return null;
+		contextType: '2d' | 'webgl' | 'webgl2' | 'webgpu' | 'bitmaprenderer',
+		contextAttributes?: { [key: string]: any }
+	): ICanvasRenderingContext2D | null {
+		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
+		if (!browserFrame) {
+			throw new this[PropertySymbol.window].Error(
+				`Failed to execute 'getContext' on 'HTMLCanvasElement': Browser frame is not available. This happens when the browser is closing.`
+			);
+		}
+		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
+		const adapter = settings?.canvasAdapter;
+		if (!adapter) {
+			throw new this[PropertySymbol.window].Error(
+				`Failed to execute 'getContext' on 'HTMLCanvasElement': No canvas adapter provided in Happy DOM browser settings.\n\nRead more: https://github.com/capricorn86/happy-dom/wiki/IOptionalBrowserSettings#properties`
+			);
+		}
+		return adapter.getContext(
+			{
+				browserFrame,
+				window: this[PropertySymbol.window],
+				canvas: this
+			},
+			contextType,
+			contextAttributes
+		);
 	}
 
 	/**
 	 * Returns to data URL.
 	 *
-	 * @param [_type] Type.
-	 * @param [_encoderOptions] Quality.
+	 * @param [type] Type.
+	 * @param [quality] Quality.
 	 * @returns Data URL.
 	 */
-	public toDataURL(_type?: string, _encoderOptions?: any): string {
-		return '';
+	public toDataURL(type?: string, quality?: number): string {
+		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
+		if (!browserFrame) {
+			throw new this[PropertySymbol.window].Error(
+				`Failed to execute 'toDataURL' on 'HTMLCanvasElement': Browser frame is not available. This happens when the browser is closing.`
+			);
+		}
+		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
+		const adapter = settings?.canvasAdapter;
+		if (!adapter) {
+			throw new this[PropertySymbol.window].Error(
+				`Failed to execute 'toDataURL' on 'HTMLCanvasElement': No canvas adapter provided in Happy DOM browser settings.\n\nRead more: https://github.com/capricorn86/happy-dom/wiki/IOptionalBrowserSettings#properties`
+			);
+		}
+		return (<ICanvasAdapter>adapter).toDataURL(
+			{
+				browserFrame,
+				window: this[PropertySymbol.window],
+				canvas: this
+			},
+			type,
+			quality
+		);
 	}
 
 	/**
 	 * Returns to blob.
 	 *
 	 * @param callback Callback.
-	 * @param [_type] Type.
-	 * @param [_quality] Quality.
+	 * @param [type] Type.
+	 * @param [quality] Quality.
 	 */
-	public toBlob(callback: (blob: Blob) => void, _type?: string, _quality?: any): void {
-		callback(new Blob([]));
+	public toBlob(callback: (blob: Blob | null) => void, type?: string, quality?: any): void {
+		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
+		if (!browserFrame) {
+			throw new this[PropertySymbol.window].Error(
+				`Failed to execute 'toBlob' on 'HTMLCanvasElement': Browser frame is not available. This happens when the browser is closing.`
+			);
+		}
+		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
+		const adapter = settings?.canvasAdapter;
+		if (!adapter) {
+			throw new this[PropertySymbol.window].Error(
+				`Failed to execute 'toBlob' on 'HTMLCanvasElement': No canvas adapter provided in Happy DOM browser settings.\n\nRead more: https://github.com/capricorn86/happy-dom/wiki/IOptionalBrowserSettings#properties`
+			);
+		}
+		return (<ICanvasAdapter>adapter).toBlob(
+			{
+				browserFrame,
+				window: this[PropertySymbol.window],
+				canvas: this
+			},
+			callback,
+			type,
+			quality
+		);
 	}
 
 	/**

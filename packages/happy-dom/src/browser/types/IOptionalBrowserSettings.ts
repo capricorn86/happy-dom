@@ -7,6 +7,7 @@ import type IOptionalBrowserPageViewport from './IOptionalBrowserPageViewport.js
 import type IOptionalTimerLoopsLimit from '../../window/IOptionalTimerLoopsLimit.js';
 import type BrowserWindow from '../../window/BrowserWindow.js';
 import type IResolveNodeModules from '../../module/types/IResolveNodeModules.js';
+import type ICanvasAdapter from '../../canvas/ICanvasAdapter.js';
 
 export default interface IOptionalBrowserSettings {
 	/**
@@ -31,6 +32,9 @@ export default interface IOptionalBrowserSettings {
 
 	/** Disables CSS file loading. */
 	disableCSSFileLoading?: boolean;
+
+	/** Enables image file loading */
+	enableImageFileLoading?: boolean;
 
 	/** Disables computed style rendering. */
 	disableComputedStyleRendering?: boolean;
@@ -178,4 +182,9 @@ export default interface IOptionalBrowserSettings {
 	 * Default page viewport.
 	 */
 	viewport?: IOptionalBrowserPageViewport;
+
+	/**
+	 * Canvas adapter for pluggable rendering support.
+	 */
+	canvasAdapter?: ICanvasAdapter | null;
 }

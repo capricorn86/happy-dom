@@ -320,6 +320,11 @@ import PopStateEvent from '../event/events/PopStateEvent.js';
 import type ITimerLoopsLimit from './ITimerLoopsLimit.js';
 import CloseEvent from '../event/events/CloseEvent.js';
 import type WebSocket from '../web-socket/WebSocket.js';
+import type { TImageBitmapSource } from '../canvas/TImageBitmapSource.js';
+import type IImageBitmapOptions from '../canvas/IImageBitmapOptions.js';
+import ImageBitmap from '../canvas/ImageBitmap.js';
+import type ImageData from '../canvas/ImageData.js';
+import type OffscreenCanvas from '../canvas/OffscreenCanvas.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -636,6 +641,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare readonly TextTrackCue: typeof TextTrackCue;
 	public declare readonly RemotePlayback: typeof RemotePlayback;
 	public declare readonly URL: typeof URL;
+	public declare readonly ImageData: typeof ImageData;
+	public declare readonly OffscreenCanvas: typeof OffscreenCanvas;
 
 	// Other classes that don't have to be bound to the Window context
 	public readonly Permissions = Permissions;
@@ -673,6 +680,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly MimeType = MimeType;
 	public readonly MimeTypeArray = MimeTypeArray;
 	public readonly NodeFilter = NodeFilter;
+	public readonly ImageBitmap = ImageBitmap;
 	public readonly HTMLCollection = HTMLCollection;
 	public readonly HTMLFormControlCollection = HTMLFormControlsCollection;
 	public readonly HTMLOptionsCollection = HTMLOptionsCollection;
@@ -2841,6 +2849,36 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 				height: viewport.height + height
 			});
 		}
+	}
+
+	/**
+	 * Creates a bitmap from a given source, optionally cropped to contain only a portion of that source.
+	 *
+	 * @param source Source.
+	 * @param [sx] X.
+	 * @param [sy] X.
+	 * @param [sw] Width.
+	 * @param [sh] Height.
+	 * @param [options] Options.
+	 */
+	public async createImageBitmap(
+		source: TImageBitmapSource,
+		sx?: number | IImageBitmapOptions,
+		sy?: number,
+		sw?: number,
+		sh?: number,
+		options?: IImageBitmapOptions
+	): Promise<ImageBitmap> {
+		return new ImageBitmap(
+			PropertySymbol.illegalConstructor,
+			this,
+			source,
+			sx,
+			sy,
+			sw,
+			sh,
+			options
+		);
 	}
 
 	/**

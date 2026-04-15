@@ -1,4 +1,6 @@
 import * as PropertySymbol from '../PropertySymbol.js';
+import DOMMatrixReadOnly from './dom-matrix/DOMMatrixReadOnly.js';
+import type { TDOMMatrixInit } from './dom-matrix/TDOMMatrixInit.js';
 import type IDOMPointInit from './IDOMPointInit.js';
 
 /**
@@ -93,5 +95,15 @@ export default class DOMPointReadOnly implements IDOMPointInit {
 			otherPoint.z ?? null,
 			otherPoint.w ?? null
 		);
+	}
+
+	/**
+	 * The matrixTransform() method of the DOMPointReadOnly interface applies a matrix transform specified as an object to the DOMPointReadOnly object, creating and returning a new DOMPointReadOnly object.
+	 *
+	 * @param [init] DOM Matrix init.
+	 * @returns DOMPointReadOnly object.
+	 */
+	public matrixTransform(init?: TDOMMatrixInit): DOMPointReadOnly {
+		return new DOMMatrixReadOnly(init).transformPoint(this);
 	}
 }
