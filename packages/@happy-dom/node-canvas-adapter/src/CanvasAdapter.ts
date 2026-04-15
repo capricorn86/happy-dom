@@ -1,14 +1,16 @@
-import { createCanvas, createImageData, Image as CanvasImage } from 'canvas';
+import { createCanvas, Image as CanvasImage } from 'canvas';
 // @ts-ignore
-import { SetSource } from 'canvas/lib/bindings.js';
+import type { ICanvasAdapterCaller } from 'happy-dom';
 import {
 	HTMLCanvasElement,
 	HTMLImageElement,
+	OffscreenCanvas,
 	ImageData,
 	PropertySymbol,
-	type ICanvasRenderingContext2D
+	type ICanvasAdapter,
+	type ICanvasRenderingContext2D,
+	Blob
 } from 'happy-dom';
-import OffscreenCanvas from 'happy-dom/lib/canvas/OffscreenCanvas';
 
 interface ICanvasShape {
 	width: number;
@@ -33,7 +35,7 @@ const EXTENDED_SYMBOL = Symbol('extended');
  * const ctx = canvas.getContext('2d');
  * ```
  */
-export default class CanvasAdapter {
+export default class CanvasAdapter implements ICanvasAdapter {
 	readonly #canvases = new WeakMap<ICanvasShape, ReturnType<typeof createCanvas>>();
 
 	/**
@@ -55,9 +57,12 @@ export default class CanvasAdapter {
 	/**
 	 * Creates a rendering context for the given canvas element.
 	 *
+	 * @param canvas.canvas
 	 * @param canvas The canvas element.
+	 * @param canvas.window Window.
 	 * @param contextType The context identifier ('2d', 'webgl', etc.).
 	 * @param contextAttributes Optional context creation attributes.
+	 * @param canvas.canvasType
 	 * @returns The rendering context, or null if the type is unsupported.
 	 *
 	 * @example
@@ -66,7 +71,7 @@ export default class CanvasAdapter {
 	 * ```
 	 */
 	public getContext(
-		canvas: ICanvasShape,
+		{ canvas, window }: ICanvasAdapterCaller,
 		contextType: string,
 		contextAttributes?: Record<string, unknown>
 	): ICanvasRenderingContext2D | null {
@@ -91,13 +96,12 @@ export default class CanvasAdapter {
 			const shape = <ICanvasShape>args[0];
 			if (shape instanceof HTMLImageElement) {
 				const loadImage = (buffer: Buffer): void => {
-					const imageData = createImageData(
-						new Uint8ClampedArray(buffer),
-						shape.width,
-						shape.height
-					);
-					args[0] = imageData;
-					(<any>context.putImageData).apply(context, args);
+					const canvasImage = new CanvasImage();
+					canvasImage.src = buffer;
+					canvasImage.width = shape.width;
+					canvasImage.height = shape.height;
+					args[0] = canvasImage;
+					(<any>originalDrawImage).apply(context, args);
 				};
 				if (shape[PropertySymbol.buffer]) {
 					loadImage(shape[PropertySymbol.buffer]);
@@ -130,26 +134,37 @@ export default class CanvasAdapter {
 			}
 		};
 
-		// getImageData()
-		const originalGetImageData = context.getImageData;
-		context.getImageData = (...args: any[]) => {
-			const imageData = originalGetImageData.apply(context, <any>args);
-			return new ImageData(
-				new Uint8ClampedArray(imageData.data),
-				imageData.width,
-				imageData.height
-			);
-		};
-
 		// createImageData()
 		const originalCreateImageData = context.createImageData;
 		context.createImageData = (...args: any[]) => {
 			const imageData = originalCreateImageData.apply(context, <any>args);
-			return new ImageData(
-				new Uint8ClampedArray(imageData.data),
+			return new ImageData(imageData.data, imageData.width, imageData.height);
+		};
+
+		// putImageData()
+		const originalPutImageData = context.putImageData;
+		context.putImageData = (...args: any[]) => {
+			const imageData = args[0];
+			if (!(imageData instanceof ImageData)) {
+				throw new window.TypeError(
+					`Failed to execute 'putImageData' on 'CanvasRenderingContext2D': parameter 1 is not of type 'ImageData'`
+				);
+			}
+			const canvasImageData = (<any>originalCreateImageData).call(
+				context,
 				imageData.width,
 				imageData.height
 			);
+			canvasImageData.data.set(imageData.data);
+			args[0] = canvasImageData;
+			(<any>originalPutImageData).apply(context, args);
+		};
+
+		// getImageData()
+		const originalGetImageData = context.getImageData;
+		context.getImageData = (...args: any[]) => {
+			const imageData = originalGetImageData.apply(context, <any>args);
+			return new ImageData(imageData.data, imageData.width, imageData.height);
 		};
 
 		// createPattern()
@@ -164,7 +179,9 @@ export default class CanvasAdapter {
 				}
 
 				const canvasImage = new CanvasImage();
-				SetSource(canvasImage, shape[PropertySymbol.buffer]);
+				canvasImage.src = shape[PropertySymbol.buffer];
+				canvasImage.width = shape.width;
+				canvasImage.height = shape.height;
 				return originalCreatePattern(canvasImage, repetition);
 			}
 			if (shape instanceof HTMLCanvasElement || shape instanceof OffscreenCanvas) {
@@ -176,7 +193,9 @@ export default class CanvasAdapter {
 			}
 			if (shape instanceof ImageData) {
 				const canvasImage = new CanvasImage();
-				SetSource(canvasImage, Buffer.from(shape.data.buffer));
+				canvasImage.src = Buffer.from(shape.data.buffer);
+				canvasImage.width = shape.width;
+				canvasImage.height = shape.height;
 				return originalCreatePattern(canvasImage, repetition);
 			}
 			return null;
@@ -186,9 +205,10 @@ export default class CanvasAdapter {
 	}
 
 	/**
-	 * Serialises the canvas content as a data URL.
+	 * Serialize the canvas content as a data URL.
 	 *
-	 * @param canvas The canvas element.
+	 * @param caller Information about the caller, including the canvas element and its associated window and browser frame.
+	 * @param caller.canvas Canvas.
 	 * @param type MIME type of the output image.
 	 * @param quality Encoder quality for lossy formats, in the range 0–1.
 	 * @returns A data URL string.
@@ -198,7 +218,7 @@ export default class CanvasAdapter {
 	 * const url = adapter.toDataURL(canvas, 'image/png');
 	 * ```
 	 */
-	public toDataURL(canvas: ICanvasShape, type?: string, quality?: unknown): string {
+	public toDataURL({ canvas }: ICanvasAdapterCaller, type?: string, quality?: unknown): string {
 		const nodeCanvas = this.#getNodeCanvas(canvas);
 		if (type === 'image/jpeg') {
 			return nodeCanvas.toDataURL('image/jpeg', <number>quality);
@@ -209,6 +229,8 @@ export default class CanvasAdapter {
 	/**
 	 * Creates a Blob from the canvas content and passes it to the callback.
 	 *
+	 * @param caller Information about the caller, including the canvas element and its associated window and browser frame.
+	 * @param caller.canvas Canvas.
 	 * @param canvas The canvas element.
 	 * @param callback Receives the resulting Blob, or null on failure.
 	 * @param type MIME type of the output image.
@@ -220,7 +242,7 @@ export default class CanvasAdapter {
 	 * ```
 	 */
 	public toBlob(
-		canvas: ICanvasShape,
+		{ canvas }: ICanvasAdapterCaller,
 		callback: (blob: Blob | null) => void,
 		type?: string,
 		quality?: unknown

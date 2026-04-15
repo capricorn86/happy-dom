@@ -38,6 +38,7 @@ import CanvasCaptureMediaStreamTrackImplementation from '../nodes/html-canvas-el
 import URLImplementation from '../url/URL.js';
 import WebSocketImplementation from '../web-socket/WebSocket.js';
 import ImageDataImplementation from '../canvas/ImageData.js';
+import OffscreenCanvasImplementation from '../canvas/OffscreenCanvas.js';
 
 /**
  * Extends classes with a "window" property, so that they internally can access it's Window context.
@@ -240,6 +241,11 @@ export default class WindowContextClassExtender {
 		class ImageData extends ImageDataImplementation {}
 		ImageData.prototype[PropertySymbol.window] = window;
 		(<typeof ImageData>window.ImageData) = ImageData;
+
+		// OffscreenCanvas
+		class OffscreenCanvas extends OffscreenCanvasImplementation {}
+		OffscreenCanvas.prototype[PropertySymbol.window] = window;
+		(<typeof OffscreenCanvas>window.OffscreenCanvas) = OffscreenCanvas;
 
 		/* eslint-enable jsdoc/require-jsdoc */
 	}

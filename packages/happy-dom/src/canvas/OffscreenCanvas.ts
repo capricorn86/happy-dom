@@ -56,11 +56,13 @@ export default class OffscreenCanvas implements ICanvas {
 			);
 		}
 		return new Promise((resolve, reject) => {
-			(<ICanvasAdapter>adapter).toBlob({
-				window: this[PropertySymbol.window],
-				browserFrame,
-				canvas: this,
-				callback: (blob) => {
+			(<ICanvasAdapter>adapter).toBlob(
+				{
+					window: this[PropertySymbol.window],
+					browserFrame,
+					canvas: this
+				},
+				(blob) => {
 					if (blob) {
 						resolve(blob);
 					} else {
@@ -72,9 +74,9 @@ export default class OffscreenCanvas implements ICanvas {
 						);
 					}
 				},
-				type: options?.type,
-				quality: options?.quality
-			});
+				options?.type,
+				options?.quality
+			);
 		});
 	}
 
@@ -139,13 +141,15 @@ export default class OffscreenCanvas implements ICanvas {
 				`Failed to execute 'getContext' on 'OffscreenCanvas': No canvas adapter provided in Happy DOM browser settings.\n\nRead more: https://github.com/capricorn86/happy-dom/wiki/IOptionalBrowserSettings#properties`
 			);
 		}
-		this[PropertySymbol.context] = (<ICanvasAdapter>adapter).getContext({
-			window: this[PropertySymbol.window],
-			browserFrame,
-			canvas: this,
+		this[PropertySymbol.context] = (<ICanvasAdapter>adapter).getContext(
+			{
+				window: this[PropertySymbol.window],
+				browserFrame,
+				canvas: this
+			},
 			contextType,
 			contextAttributes
-		});
+		);
 		return this[PropertySymbol.context];
 	}
 }

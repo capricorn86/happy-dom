@@ -324,6 +324,7 @@ import type { TImageBitmapSource } from '../canvas/TImageBitmapSource.js';
 import type IImageBitmapOptions from '../canvas/IImageBitmapOptions.js';
 import ImageBitmap from '../canvas/ImageBitmap.js';
 import type ImageData from '../canvas/ImageData.js';
+import type OffscreenCanvas from '../canvas/OffscreenCanvas.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -641,6 +642,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare readonly RemotePlayback: typeof RemotePlayback;
 	public declare readonly URL: typeof URL;
 	public declare readonly ImageData: typeof ImageData;
+	public declare readonly OffscreenCanvas: typeof OffscreenCanvas;
 
 	// Other classes that don't have to be bound to the Window context
 	public readonly Permissions = Permissions;

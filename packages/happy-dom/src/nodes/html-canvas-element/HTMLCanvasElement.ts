@@ -8,6 +8,7 @@ import ElementEventAttributeUtility from '../element/ElementEventAttributeUtilit
 import type ICanvasAdapter from '../../canvas/ICanvasAdapter.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import type ICanvas from '../../canvas/ICanvas.js';
+import type ICanvasRenderingContext2D from '../../canvas/ICanvasRenderingContext2D.js';
 
 const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+ab12C3+1aBCdEf==';
 
@@ -141,7 +142,7 @@ export default class HTMLCanvasElement extends HTMLElement implements ICanvas {
 	public getContext(
 		contextType: '2d' | 'webgl' | 'webgl2' | 'webgpu' | 'bitmaprenderer',
 		contextAttributes?: { [key: string]: any }
-	): any {
+	): ICanvasRenderingContext2D | null {
 		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
 		if (!browserFrame) {
 			throw new this[PropertySymbol.window].Error(
@@ -155,13 +156,15 @@ export default class HTMLCanvasElement extends HTMLElement implements ICanvas {
 				`Failed to execute 'getContext' on 'HTMLCanvasElement': No canvas adapter provided in Happy DOM browser settings.\n\nRead more: https://github.com/capricorn86/happy-dom/wiki/IOptionalBrowserSettings#properties`
 			);
 		}
-		return (<ICanvasAdapter>adapter).getContext({
-			browserFrame,
-			window: this[PropertySymbol.window],
-			canvas: this,
+		return adapter.getContext(
+			{
+				browserFrame,
+				window: this[PropertySymbol.window],
+				canvas: this
+			},
 			contextType,
 			contextAttributes
-		});
+		);
 	}
 
 	/**
@@ -185,13 +188,15 @@ export default class HTMLCanvasElement extends HTMLElement implements ICanvas {
 				`Failed to execute 'toDataURL' on 'HTMLCanvasElement': No canvas adapter provided in Happy DOM browser settings.\n\nRead more: https://github.com/capricorn86/happy-dom/wiki/IOptionalBrowserSettings#properties`
 			);
 		}
-		return (<ICanvasAdapter>adapter).toDataURL({
-			browserFrame,
-			window: this[PropertySymbol.window],
-			canvas: this,
+		return (<ICanvasAdapter>adapter).toDataURL(
+			{
+				browserFrame,
+				window: this[PropertySymbol.window],
+				canvas: this
+			},
 			type,
 			quality
-		});
+		);
 	}
 
 	/**
@@ -215,14 +220,16 @@ export default class HTMLCanvasElement extends HTMLElement implements ICanvas {
 				`Failed to execute 'toBlob' on 'HTMLCanvasElement': No canvas adapter provided in Happy DOM browser settings.\n\nRead more: https://github.com/capricorn86/happy-dom/wiki/IOptionalBrowserSettings#properties`
 			);
 		}
-		return (<ICanvasAdapter>adapter).toBlob({
-			browserFrame,
-			window: this[PropertySymbol.window],
-			canvas: this,
+		return (<ICanvasAdapter>adapter).toBlob(
+			{
+				browserFrame,
+				window: this[PropertySymbol.window],
+				canvas: this
+			},
 			callback,
 			type,
 			quality
-		});
+		);
 	}
 
 	/**

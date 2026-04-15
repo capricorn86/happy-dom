@@ -12,6 +12,7 @@ import BrowserErrorCaptureEnum from './browser/enums/BrowserErrorCaptureEnum.js'
 import BrowserNavigationCrossOriginPolicyEnum from './browser/enums/BrowserNavigationCrossOriginPolicyEnum.js';
 import ImageBitmap from './canvas/ImageBitmap.js';
 import ImageData from './canvas/ImageData.js';
+import OffscreenCanvas from './canvas/OffscreenCanvas.js';
 import Clipboard from './clipboard/Clipboard.js';
 import ClipboardItem from './clipboard/ClipboardItem.js';
 import VirtualConsole from './console/VirtualConsole.js';
@@ -203,6 +204,7 @@ import type IBrowserPage from './browser/types/IBrowserPage.js';
 import type IBrowserSettings from './browser/types/IBrowserSettings.js';
 import type IOptionalBrowserSettings from './browser/types/IOptionalBrowserSettings.js';
 import type ICanvasRenderingContext2D from './canvas/ICanvasRenderingContext2D.js';
+import type IConsole from './console/IConsole.js';
 import type ICookie from './cookie/ICookie.js';
 import type IOptionalCookie from './cookie/IOptionalCookie.js';
 import type IEventInit from './event/IEventInit.js';
@@ -225,8 +227,9 @@ import type ITouchEventInit from './event/events/ITouchEventInit.js';
 import type IWheelEventInit from './event/events/IWheelEventInit.js';
 import type IFetchInterceptor from './fetch/types/IFetchInterceptor.js';
 import type ISyncResponse from './fetch/types/ISyncResponse.js';
-import type IConsole from './console/IConsole.js';
 import type IVirtualServer from './fetch/types/IVirtualServer.js';
+import type ICanvasAdapter from './canvas/ICanvasAdapter.js';
+import type ICanvasAdapterCaller from './canvas/ICanvasAdapterCaller.js';
 
 export type {
 	IAnimationEventInit,
@@ -235,8 +238,11 @@ export type {
 	IBrowserFrame,
 	IBrowserPage,
 	IBrowserSettings,
+	ICanvasAdapter,
+	ICanvasAdapterCaller,
 	ICanvasRenderingContext2D,
 	IClipboardEventInit,
+	IConsole,
 	ICookie,
 	ICustomEventInit,
 	IErrorEventInit,
@@ -256,7 +262,6 @@ export type {
 	ITouchEventInit,
 	ITouchInit,
 	IUIEventInit,
-	IConsole,
 	IVirtualServer,
 	IWheelEventInit,
 	TEventListener
@@ -414,6 +419,7 @@ export {
 	Node,
 	NodeFilter,
 	NodeIterator,
+	OffscreenCanvas,
 	Permissions,
 	PermissionStatus,
 	PointerEvent,
