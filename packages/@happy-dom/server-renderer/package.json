@@ -42,7 +42,7 @@
 		"test:debug": "vitest run --inspect-brk --no-file-parallelism"
 	},
 	"dependencies": {
-		"happy-dom": "^0.0.0",
+		"happy-dom": "^20.8.9",
 		"@happy-dom/global-registrator": "^0.0.0",
 		"chalk": "^5.4.1"
 	},
