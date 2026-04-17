@@ -10,21 +10,21 @@ jobs:
         node-version: [20, 22, 24]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@v2
 
       - name: Cache node modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: cache-node-modules
         env:
           cache-name: cache-node-modules
@@ -35,7 +35,7 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
 
       - name: Cache turbo
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: cache-turbo
         with:
           path: .turbo
@@ -45,7 +45,7 @@ jobs:
 
       - name: Restore turbo cache from master
         if: steps.cache-turbo.outputs.cache-hit != 'true'
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v5
         with:
           path: .turbo
           key: turbo-master
