@@ -320,6 +320,7 @@ import PopStateEvent from '../event/events/PopStateEvent.js';
 import type ITimerLoopsLimit from './ITimerLoopsLimit.js';
 import CloseEvent from '../event/events/CloseEvent.js';
 import type WebSocket from '../web-socket/WebSocket.js';
+import type ISelectorItemSnapshot from '../query-selector/ISelectorItemSnapshot.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -849,6 +850,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.moduleImportMap]: IModuleImportMap | null = null;
 	public [PropertySymbol.openWebSockets]: WebSocket[] = [];
 	public [PropertySymbol.propertyEventListeners]: Map<string, ((event: Event) => void) | null> =
+		new Map();
+	public [PropertySymbol.selectorGroupsCache]: Map<string, Array<Array<ISelectorItemSnapshot>>> =
 		new Map();
 
 	/* eslint-enable jsdoc/require-jsdoc */
@@ -2966,6 +2969,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		// Clear parent/top references to break circular references
 		this[PropertySymbol.parent] = null;
 		this[PropertySymbol.top] = null;
+
+		this[PropertySymbol.selectorGroupsCache].clear();
 
 		WindowBrowserContext.removeWindowBrowserFrameRelation(this);
 	}
