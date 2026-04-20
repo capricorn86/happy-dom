@@ -3714,6 +3714,9 @@ describe('Fetch', () => {
 				url: string;
 				options: { method: string; headers: { [k: string]: string } };
 			}> = [];
+			let dateNowOffset = 0;
+			const originalDateNow = Date.now;
+			vi.spyOn(Date, 'now').mockImplementation(() => originalDateNow() + dateNowOffset);
 
 			mockModule('https', {
 				request: (url, options) => {
@@ -3753,7 +3756,7 @@ describe('Fetch', () => {
 										'content-length',
 										String(responseText.length),
 										'cache-control',
-										'max-age=0.0001',
+										'max-age=1',
 										'last-modified',
 										'Mon, 11 Dec 2023 01:00:00 GMT'
 									];
@@ -3774,7 +3777,8 @@ describe('Fetch', () => {
 			});
 			const text1 = await response1.text();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			// Advance time by 2 seconds to expire the cache (max-age=1)
+			dateNowOffset = 2000;
 
 			const response2 = await window.fetch(url);
 			const text2 = await response2.text();
@@ -3798,7 +3802,7 @@ describe('Fetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'cache-control': `max-age=0.0001`,
+				'cache-control': `max-age=1`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
 			});
 
@@ -3865,6 +3869,9 @@ describe('Fetch', () => {
 				url: string;
 				options: { method: string; headers: { [k: string]: string } };
 			}> = [];
+			let dateNowOffset = 0;
+			const originalDateNow = Date.now;
+			vi.spyOn(Date, 'now').mockImplementation(() => originalDateNow() + dateNowOffset);
 
 			mockModule('https', {
 				request: (url, options) => {
@@ -3912,7 +3919,7 @@ describe('Fetch', () => {
 										'content-length',
 										String(responseText1.length),
 										'cache-control',
-										'max-age=0.0001',
+										'max-age=1',
 										'last-modified',
 										'Mon, 11 Dec 2023 01:00:00 GMT'
 									];
@@ -3933,7 +3940,8 @@ describe('Fetch', () => {
 			});
 			const text1 = await response1.text();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			// Advance time by 2 seconds to expire the cache (max-age=1)
+			dateNowOffset = 2000;
 
 			const response2 = await window.fetch(url);
 			const text2 = await response2.text();
@@ -3965,7 +3973,7 @@ describe('Fetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText1.length),
-				'cache-control': `max-age=0.0001`,
+				'cache-control': `max-age=1`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
 			});
 
@@ -4041,6 +4049,9 @@ describe('Fetch', () => {
 				url: string;
 				options: { method: string; headers: { [k: string]: string } };
 			}> = [];
+			let dateNowOffset = 0;
+			const originalDateNow = Date.now;
+			vi.spyOn(Date, 'now').mockImplementation(() => originalDateNow() + dateNowOffset);
 
 			mockModule('https', {
 				request: (url, options) => {
@@ -4080,7 +4091,7 @@ describe('Fetch', () => {
 										'content-length',
 										String(responseText.length),
 										'cache-control',
-										'max-age=0.0001',
+										'max-age=1',
 										'last-modified',
 										'Mon, 11 Dec 2023 01:00:00 GMT',
 										'etag',
@@ -4104,7 +4115,8 @@ describe('Fetch', () => {
 			});
 			const text1 = await response1.text();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			// Advance time by 2 seconds to expire the cache (max-age=1)
+			dateNowOffset = 2000;
 
 			const response2 = await window.fetch(url, {
 				method: 'HEAD'
@@ -4130,7 +4142,7 @@ describe('Fetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'cache-control': `max-age=0.0001`,
+				'cache-control': `max-age=1`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
 				etag: etag1
 			});
@@ -4144,7 +4156,7 @@ describe('Fetch', () => {
 			expect(headers2).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'cache-control': `max-age=0.0001`,
+				'cache-control': `max-age=1`,
 				'Last-Modified': 'Mon, 11 Dec 2023 02:00:00 GMT',
 				ETag: etag2
 			});
@@ -4201,6 +4213,9 @@ describe('Fetch', () => {
 				url: string;
 				options: { method: string; headers: { [k: string]: string } };
 			}> = [];
+			let dateNowOffset = 0;
+			const originalDateNow = Date.now;
+			vi.spyOn(Date, 'now').mockImplementation(() => originalDateNow() + dateNowOffset);
 
 			mockModule('https', {
 				request: (url, options) => {
@@ -4250,7 +4265,7 @@ describe('Fetch', () => {
 										'content-length',
 										String(responseText1.length),
 										'cache-control',
-										'max-age=0.0001',
+										'max-age=1',
 										'last-modified',
 										'Mon, 11 Dec 2023 01:00:00 GMT',
 										'etag',
@@ -4273,7 +4288,8 @@ describe('Fetch', () => {
 			});
 			const text1 = await response1.text();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			// Advance time by 2 seconds to expire the cache (max-age=1)
+			dateNowOffset = 2000;
 
 			const response2 = await window.fetch(url);
 			const text2 = await response2.text();
@@ -4297,7 +4313,7 @@ describe('Fetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText1.length),
-				'cache-control': `max-age=0.0001`,
+				'cache-control': `max-age=1`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
 				etag: etag1
 			});

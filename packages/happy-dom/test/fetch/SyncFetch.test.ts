@@ -2924,12 +2924,15 @@ describe('SyncFetch', () => {
 			expect(requestCount).toBe(1);
 		});
 
-		it('Revalidates cache with a "If-Modified-Since" request for a GET response with "Cache-Control" set to a "max-age".', async () => {
+		it('Revalidates cache with a "If-Modified-Since" request for a GET response with "Cache-Control" set to a "max-age".', () => {
 			browserFrame.url = 'https://localhost:8080/';
 
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'some text';
 			const requestArgs: string[] = [];
+			let dateNowOffset = 0;
+			const originalDateNow = Date.now;
+			vi.spyOn(Date, 'now').mockImplementation(() => originalDateNow() + dateNowOffset);
 
 			mockModule('child_process', {
 				execFileSync: (_command: string, args: string[]) => {
@@ -2962,7 +2965,7 @@ describe('SyncFetch', () => {
 								'content-length',
 								String(responseText.length),
 								'cache-control',
-								'max-age=0.0001',
+								'max-age=1',
 								'last-modified',
 								'Mon, 11 Dec 2023 01:00:00 GMT'
 							],
@@ -2984,7 +2987,8 @@ describe('SyncFetch', () => {
 			}).send();
 			const text1 = response1.body!.toString();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			// Advance time by 2 seconds to expire the cache (max-age=1)
+			dateNowOffset = 2000;
 
 			const response2 = new SyncFetch({ browserFrame, window, url }).send();
 			const text2 = response2.body!.toString();
@@ -3008,7 +3012,7 @@ describe('SyncFetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'cache-control': `max-age=0.0001`,
+				'cache-control': `max-age=1`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
 			});
 
@@ -3056,13 +3060,16 @@ describe('SyncFetch', () => {
 			]);
 		});
 
-		it('Updates cache after a failed revalidation with a "If-Modified-Since" request for a GET response with "Cache-Control" set to a "max-age".', async () => {
+		it('Updates cache after a failed revalidation with a "If-Modified-Since" request for a GET response with "Cache-Control" set to a "max-age".', () => {
 			browserFrame.url = 'https://localhost:8080/';
 
 			const url = 'https://localhost:8080/some/path';
 			const responseText1 = 'some text';
 			const responseText2 = 'some new text';
 			const requestArgs: string[] = [];
+			let dateNowOffset = 0;
+			const originalDateNow = Date.now;
+			vi.spyOn(Date, 'now').mockImplementation(() => originalDateNow() + dateNowOffset);
 
 			mockModule('child_process', {
 				execFileSync: (_command: string, args: string[]) => {
@@ -3099,7 +3106,7 @@ describe('SyncFetch', () => {
 								'content-length',
 								String(responseText1.length),
 								'cache-control',
-								'max-age=0.0001',
+								'max-age=1',
 								'last-modified',
 								'Mon, 11 Dec 2023 01:00:00 GMT'
 							],
@@ -3121,7 +3128,8 @@ describe('SyncFetch', () => {
 			}).send();
 			const text1 = response1.body!.toString();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			// Advance time by 2 seconds to expire the cache (max-age=1)
+			dateNowOffset = 2000;
 
 			const response2 = new SyncFetch({ browserFrame, window, url }).send();
 			const text2 = response2.body!.toString();
@@ -3153,7 +3161,7 @@ describe('SyncFetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText1.length),
-				'cache-control': `max-age=0.0001`,
+				'cache-control': `max-age=1`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
 			});
 
@@ -3209,7 +3217,7 @@ describe('SyncFetch', () => {
 			]);
 		});
 
-		it('Revalidates cache with a "If-None-Match" request for a HEAD response with an "Etag" header.', async () => {
+		it('Revalidates cache with a "If-None-Match" request for a HEAD response with an "Etag" header.', () => {
 			browserFrame.url = 'https://localhost:8080/';
 
 			const url = 'https://localhost:8080/some/path';
@@ -3217,6 +3225,9 @@ describe('SyncFetch', () => {
 			const etag2 = '"etag2"';
 			const responseText = 'some text';
 			const requestArgs: string[] = [];
+			let dateNowOffset = 0;
+			const originalDateNow = Date.now;
+			vi.spyOn(Date, 'now').mockImplementation(() => originalDateNow() + dateNowOffset);
 
 			mockModule('child_process', {
 				execFileSync: (_command: string, args: string[]) => {
@@ -3244,7 +3255,7 @@ describe('SyncFetch', () => {
 								'content-length',
 								String(responseText.length),
 								'cache-control',
-								'max-age=0.0001',
+								'max-age=1',
 								'last-modified',
 								'Mon, 11 Dec 2023 01:00:00 GMT',
 								'etag',
@@ -3269,7 +3280,8 @@ describe('SyncFetch', () => {
 			}).send();
 			const text1 = response1.body!.toString();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			// Advance time by 2 seconds to expire the cache (max-age=1)
+			dateNowOffset = 2000;
 
 			const response2 = new SyncFetch({
 				browserFrame,
@@ -3300,7 +3312,7 @@ describe('SyncFetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'cache-control': `max-age=0.0001`,
+				'cache-control': `max-age=1`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
 				etag: etag1
 			});
@@ -3314,7 +3326,7 @@ describe('SyncFetch', () => {
 			expect(headers2).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'cache-control': `max-age=0.0001`,
+				'cache-control': `max-age=1`,
 				'Last-Modified': 'Mon, 11 Dec 2023 02:00:00 GMT',
 				ETag: etag2
 			});
@@ -3350,7 +3362,7 @@ describe('SyncFetch', () => {
 			]);
 		});
 
-		it('Updates cache after a failed revalidation with a "If-None-Match" request for a GET response with an "Etag" header.', async () => {
+		it('Updates cache after a failed revalidation with a "If-None-Match" request for a GET response with an "Etag" header.', () => {
 			browserFrame.url = 'https://localhost:8080/';
 
 			const url = 'https://localhost:8080/some/path';
@@ -3359,6 +3371,9 @@ describe('SyncFetch', () => {
 			const responseText1 = 'some text';
 			const responseText2 = 'some new text';
 			const requestArgs: string[] = [];
+			let dateNowOffset = 0;
+			const originalDateNow = Date.now;
+			vi.spyOn(Date, 'now').mockImplementation(() => originalDateNow() + dateNowOffset);
 
 			mockModule('child_process', {
 				execFileSync: (_command: string, args: string[]) => {
@@ -3397,7 +3412,7 @@ describe('SyncFetch', () => {
 								'content-length',
 								String(responseText1.length),
 								'cache-control',
-								'max-age=0.0001',
+								'max-age=1',
 								'last-modified',
 								'Mon, 11 Dec 2023 01:00:00 GMT',
 								'etag',
@@ -3421,7 +3436,8 @@ describe('SyncFetch', () => {
 			}).send();
 			const text1 = response1.body!.toString();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			// Advance time by 2 seconds to expire the cache (max-age=1)
+			dateNowOffset = 2000;
 
 			const response2 = new SyncFetch({ browserFrame, window, url }).send();
 			const text2 = response2.body!.toString();
@@ -3445,7 +3461,7 @@ describe('SyncFetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText1.length),
-				'cache-control': `max-age=0.0001`,
+				'cache-control': `max-age=1`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
 				etag: etag1
 			});
