@@ -1,10 +1,12 @@
 import SelectorItem from './SelectorItem.js';
 import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
+import type ISelectorItemSnapshot from './ISelectorItemSnapshot.js';
 import type ISelectorPseudo from './ISelectorPseudo.js';
 import type Element from '../nodes/element/Element.js';
 import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import type BrowserWindow from '../window/BrowserWindow.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 
 /**
  * Selector group RegExp.
@@ -85,6 +87,38 @@ const NTH_FUNCTION = {
 const SPACE_REGEXP = / /g;
 
 /**
+ * Maximum number of cached parsed selectors per window.
+ *
+ * Since the parsed selector cache isn't cleared until a window is destroyed,
+ * this limit ensures the cache doesn't grow indefinitely in long-running
+ * windows.
+ */
+const SELECTOR_GROUPS_CACHE_MAX_ENTRIES = 1024;
+
+/**
+ * Returns true if the parsed selector groups contain no nested SelectorItem
+ * references (via pseudos like `:not`, `:is`, `:where`, `:has`) and are
+ * therefore safe to cache.
+ *
+ * @param groups Parsed selector groups.
+ */
+function isSafeToCacheSelectorGroups(groups: Array<Array<SelectorItem>>): boolean {
+	for (const group of groups) {
+		for (const item of group) {
+			if (item.pseudos) {
+				for (const pseudo of item.pseudos) {
+					if (pseudo.selectorItems) {
+						return false;
+					}
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+/**
  * Utility for parsing a selection string.
  */
 export default class SelectorParser {
@@ -134,6 +168,31 @@ export default class SelectorParser {
 	 */
 	public getSelectorGroups(selector: string): Array<Array<SelectorItem>> {
 		selector = selector.trim();
+		const cached = this.getCachedSelectorGroups(selector);
+
+		if (cached) {
+			const { scope, ignoreErrors } = this;
+			const groups = [];
+
+			for (const snapshotGroup of cached) {
+				const group = [];
+
+				for (const snapshot of snapshotGroup) {
+					group.push(
+						new SelectorItem({
+							...snapshot,
+							ignoreErrors,
+							scope
+						})
+					);
+				}
+
+				groups.push(group);
+			}
+
+			return groups;
+		}
+
 		let currentGroup: Array<SelectorItem> = [];
 		const groups: Array<Array<SelectorItem>> = [currentGroup];
 		const regExp = new RegExp(SELECTOR_GROUP_REGEXP);
@@ -283,6 +342,30 @@ export default class SelectorParser {
 			groups.push([selectorItem]);
 		} else {
 			currentGroup.push(selectorItem);
+		}
+
+		if (isSafeToCacheSelectorGroups(groups)) {
+			const snapshot = [];
+
+			for (const group of groups) {
+				const snapshotGroup = [];
+
+				for (const item of group) {
+					snapshotGroup.push({
+						attributes: item.attributes ?? undefined,
+						classNames: item.classNames ?? undefined,
+						combinator: item.combinator,
+						id: item.id ?? undefined,
+						isPseudoElement: item.isPseudoElement,
+						pseudos: item.pseudos ?? undefined,
+						tagName: item.tagName ?? undefined
+					});
+				}
+
+				snapshot.push(snapshotGroup);
+			}
+
+			this.setCachedSelectorGroups(selector, snapshot);
 		}
 
 		return groups;
@@ -493,6 +576,24 @@ export default class SelectorParser {
 	}
 
 	/**
+	 * Returns cached parsed selector groups and refreshes recency when found.
+	 *
+	 * @param selector Selector name to look up.
+	 * @returns Cached selector group snapshots, or null if not found.
+	 */
+	private getCachedSelectorGroups(selector: string): Array<Array<ISelectorItemSnapshot>> | null {
+		const cache = this.window[PropertySymbol.selectorGroupsCache];
+		const groups = cache.get(selector) ?? null;
+
+		if (groups) {
+			cache.delete(selector);
+			cache.set(selector, groups);
+		}
+
+		return groups;
+	}
+
+	/**
 	 * Returns pseudo.
 	 *
 	 * @param name Pseudo name.
@@ -644,6 +745,34 @@ export default class SelectorParser {
 		}
 
 		return (n) => n > partB - 1;
+	}
+
+	/**
+	 * Stores parsed selector group snapshots in the cache and evicts the least
+	 * recently used entry if needed.
+	 *
+	 * @param selector Selector name to cache.
+	 * @param groups Parsed selector group snapshots to cache.
+	 */
+	private setCachedSelectorGroups(
+		selector: string,
+		groups: Array<Array<ISelectorItemSnapshot>>
+	): void {
+		const cache = this.window[PropertySymbol.selectorGroupsCache];
+
+		if (cache.has(selector)) {
+			cache.delete(selector);
+		}
+
+		cache.set(selector, groups);
+
+		if (cache.size > SELECTOR_GROUPS_CACHE_MAX_ENTRIES) {
+			const oldestSelector = cache.keys().next().value;
+
+			if (oldestSelector !== undefined) {
+				cache.delete(oldestSelector);
+			}
+		}
 	}
 
 	/**

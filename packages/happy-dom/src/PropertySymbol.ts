@@ -54,6 +54,7 @@ export const rootNode = Symbol('rootNode');
 export const selectNode = Symbol('selectNode');
 export const selectedness = Symbol('selectedness');
 export const selection = Symbol('selection');
+export const selectorGroupsCache = Symbol('selectorGroupsCache');
 export const setupVMContext = Symbol('setupVMContext');
 export const shadowRoot = Symbol('shadowRoot');
 export const start = Symbol('start');

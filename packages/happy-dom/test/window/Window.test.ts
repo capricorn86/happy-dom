@@ -236,6 +236,50 @@ describe('Window', () => {
 			expect(window.innerWidth).toBe(800);
 			expect(window.innerHeight).toBe(600);
 		});
+
+		it('Keeps selector parser caches isolated per window.', () => {
+			const window1 = new Window();
+			const window2 = new Window();
+
+			window1.document.body.innerHTML = '<div><span></span></div>';
+			window2.document.body.innerHTML = '<div><span></span></div>';
+
+			window1.document.querySelectorAll('span');
+			window2.document.querySelectorAll('div');
+
+			expect(window1[PropertySymbol.selectorGroupsCache]).not.toBe(
+				window2[PropertySymbol.selectorGroupsCache]
+			);
+			expect(window1[PropertySymbol.selectorGroupsCache].size).toBe(1);
+			expect(window2[PropertySymbol.selectorGroupsCache].size).toBe(1);
+			expect(window1[PropertySymbol.selectorGroupsCache].has('span')).toBe(true);
+			expect(window2[PropertySymbol.selectorGroupsCache].has('span')).toBe(false);
+		});
+
+		it('Bounds the selector parser cache size per window.', () => {
+			const cache = window[PropertySymbol.selectorGroupsCache];
+
+			for (let i = 0; i < 1100; i++) {
+				window.document.querySelectorAll(`:nth-child(${i + 1})`);
+			}
+
+			expect(cache.size).toBe(1024);
+			expect(cache.has(':nth-child(1)')).toBe(false);
+			expect(cache.has(':nth-child(1100)')).toBe(true);
+		});
+
+		it('Clears the selector parser cache when the window is destroyed.', () => {
+			const cache = window[PropertySymbol.selectorGroupsCache];
+
+			window.document.body.innerHTML = '<div><span></span></div>';
+			window.document.querySelectorAll('span');
+
+			expect(cache.size).toBe(1);
+
+			window[PropertySymbol.destroy]();
+
+			expect(cache.size).toBe(0);
+		});
 	});
 
 	describe('get happyDOM()', () => {

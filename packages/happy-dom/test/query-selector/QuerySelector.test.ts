@@ -6,6 +6,7 @@ import QuerySelectorNthChildHTML from './data/QuerySelectorNthChildHTML.js';
 import type HTMLInputElement from '../../src/nodes/html-input-element/HTMLInputElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import QuerySelector from '../../src/query-selector/QuerySelector.js';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 
 describe('QuerySelector', () => {
 	let window: Window;
@@ -77,6 +78,20 @@ describe('QuerySelector', () => {
 			expect(elements[0] === container.children[0].children[1].children[0]).toBe(true);
 			expect(elements[1] === container.children[0].children[1].children[1]).toBe(true);
 			expect(elements[2] === container.children[0].children[1].children[2]).toBe(true);
+		});
+
+		it('Caches safe selectors, but not selectors with nested selector pseudos.', () => {
+			const container = document.createElement('div');
+			const cache = window[PropertySymbol.selectorGroupsCache];
+			const nestedSelector = 'span:not([type=hidden])';
+
+			container.innerHTML = QuerySelectorHTML;
+
+			container.querySelectorAll('span');
+			expect(cache.size).toBe(1);
+
+			container.querySelectorAll(nestedSelector);
+			expect(cache.has(nestedSelector)).toBe(false);
 		});
 
 		it('Returns elements in document order.', () => {
