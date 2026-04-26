@@ -144,9 +144,7 @@ export default class SelectorParser {
 			singleApostrophe: 0
 		};
 		const name = this.scope.nodeType === NodeTypeEnum.documentNode ? 'Document' : 'Element';
-		const error = new this.window.SyntaxError(
-			`Failed to execute 'querySelectorAll' on '${name}': '${selector}' is not a valid selector.`
-		);
+		const errorMessage = `Failed to execute 'querySelectorAll' on '${name}': '${selector}' is not a valid selector.`;
 		let match: null | RegExpExecArray = null;
 		let lastIndex = 0;
 		let selectorItem: SelectorItem | null = null;
@@ -172,7 +170,7 @@ export default class SelectorParser {
 								if (this.ignoreErrors) {
 									return [];
 								}
-								throw error;
+								throw new this.window.SyntaxError(errorMessage);
 							}
 							currentGroup.push(selectorItem);
 							currentGroup = [];
@@ -185,7 +183,7 @@ export default class SelectorParser {
 								if (this.ignoreErrors) {
 									return [];
 								}
-								throw error;
+								throw new this.window.SyntaxError(errorMessage);
 							}
 							currentGroup.push(selectorItem);
 							combinator = SelectorCombinatorEnum.child;
@@ -196,7 +194,7 @@ export default class SelectorParser {
 								if (this.ignoreErrors) {
 									return [];
 								}
-								throw error;
+								throw new this.window.SyntaxError(errorMessage);
 							}
 							currentGroup.push(selectorItem);
 							combinator = SelectorCombinatorEnum.adjacentSibling;
@@ -207,7 +205,7 @@ export default class SelectorParser {
 								if (this.ignoreErrors) {
 									return [];
 								}
-								throw error;
+								throw new this.window.SyntaxError(errorMessage);
 							}
 							currentGroup.push(selectorItem);
 							combinator = SelectorCombinatorEnum.subsequentSibling;
@@ -218,7 +216,7 @@ export default class SelectorParser {
 								if (this.ignoreErrors) {
 									return [];
 								}
-								throw error;
+								throw new this.window.SyntaxError(errorMessage);
 							}
 							currentGroup.push(selectorItem);
 							combinator = SelectorCombinatorEnum.descendant;
@@ -276,7 +274,7 @@ export default class SelectorParser {
 			if (this.ignoreErrors) {
 				return [];
 			}
-			throw error;
+			throw new this.window.SyntaxError(errorMessage);
 		}
 
 		if (combinator === SelectorCombinatorEnum.none && currentGroup.length > 0) {
