@@ -31,7 +31,6 @@ export default class Response implements Response {
 	protected declare [PropertySymbol.window]: BrowserWindow;
 
 	// Public properties
-	public readonly body: ReadableStream | null = null;
 	public readonly bodyUsed = false;
 	public readonly redirected = false;
 	public readonly type: 'basic' | 'cors' | 'default' | 'error' | 'opaque' | 'opaqueredirect' =
@@ -43,6 +42,7 @@ export default class Response implements Response {
 	public readonly headers: Headers;
 	public [PropertySymbol.cachedResponse]: ICachedResponse | null = null;
 	public [PropertySymbol.buffer]: Buffer | null = null;
+	public [PropertySymbol.body]: ReadableStream | null = null;
 	public [PropertySymbol.virtualServerFile]: string | null = null;
 	public [PropertySymbol.aborted]: boolean = false;
 	public [PropertySymbol.error]: Error | null = null;
@@ -71,7 +71,7 @@ export default class Response implements Response {
 
 		if (body) {
 			const { stream, buffer, contentType } = FetchBodyUtility.getBodyStream(body);
-			this.body = stream;
+			this[PropertySymbol.body] = stream;
 
 			if (buffer) {
 				this[PropertySymbol.buffer] = buffer;
@@ -81,6 +81,18 @@ export default class Response implements Response {
 				this.headers.set('Content-Type', contentType);
 			}
 		}
+	}
+
+	/**
+	 * Returns body.
+	 *
+	 * @returns Body.
+	 */
+	public get body(): ReadableStream | null {
+		if (!this[PropertySymbol.body] && this[PropertySymbol.buffer]) {
+			this[PropertySymbol.body] = FetchBodyUtility.toReadableStream(this[PropertySymbol.buffer]);
+		}
+		return this[PropertySymbol.body];
 	}
 
 	/**

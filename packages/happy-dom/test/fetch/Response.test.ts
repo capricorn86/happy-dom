@@ -489,6 +489,47 @@ describe('Response', () => {
 		});
 	});
 
+	describe('body', () => {
+		it('Does not create a ReadableStream eagerly when constructed with a string body.', () => {
+			const response = new window.Response('Hello World');
+			// The internal body stream should not be created until the getter is accessed.
+			expect(response[PropertySymbol.body]).toBe(null);
+		});
+
+		it('Creates a ReadableStream lazily when the body getter is accessed.', async () => {
+			const response = new window.Response('Hello World');
+			expect(response[PropertySymbol.body]).toBe(null);
+
+			const body = response.body;
+			expect(body).toBeInstanceOf(ReadableStream);
+			expect(response[PropertySymbol.body]).toBe(body);
+		});
+
+		it('Does not create a ReadableStream when consuming body via text() without accessing body getter.', async () => {
+			const response = new window.Response('Hello World');
+			const text = await response.text();
+			expect(text).toBe('Hello World');
+			// body stream should not have been created since text() reads from buffer directly.
+			expect(response[PropertySymbol.body]).toBe(null);
+		});
+
+		it('Does not create a ReadableStream when consuming body via json() without accessing body getter.', async () => {
+			const response = new window.Response(JSON.stringify({ key: 'value' }), {
+				headers: { 'Content-Type': 'application/json' }
+			});
+			const json = await response.json();
+			expect(json).toEqual({ key: 'value' });
+			expect(response[PropertySymbol.body]).toBe(null);
+		});
+
+		it('Does not create a ReadableStream when consuming body via arrayBuffer() without accessing body getter.', async () => {
+			const response = new window.Response('Hello World');
+			const buffer = await response.arrayBuffer();
+			expect(Buffer.from(buffer).toString()).toBe('Hello World');
+			expect(response[PropertySymbol.body]).toBe(null);
+		});
+	});
+
 	describe('clone()', () => {
 		it('Returns a clone.', async () => {
 			const response = new window.Response('Hello World', {
@@ -522,6 +563,18 @@ describe('Response', () => {
 			expect(clone.status).toBe(404);
 			expect(clone.statusText).toBe('Not Found');
 			expect(clone.headers.get('Content-Type')).toBe('text/plain');
+		});
+
+		it('Can consume body from both original and clone without accessing body getter beforehand.', async () => {
+			const response = new window.Response('Hello World');
+
+			// Clone without accessing the body getter - should not create a ReadableStream.
+			const clone = response.clone();
+			expect(response[PropertySymbol.body]).toBe(null);
+
+			// Both original and clone should be independently consumable.
+			expect(await response.text()).toBe('Hello World');
+			expect(await clone.text()).toBe('Hello World');
 		});
 
 		it('Can clone Response with empty string as body.', async () => {

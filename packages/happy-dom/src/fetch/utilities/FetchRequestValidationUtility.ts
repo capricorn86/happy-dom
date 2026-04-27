@@ -58,7 +58,10 @@ export default class FetchRequestValidationUtility {
 	 * @param request Request.
 	 */
 	public static validateBody(request: Request): void {
-		if (request.body && (request.method === 'GET' || request.method === 'HEAD')) {
+		if (
+			(request[PropertySymbol.body] || request[PropertySymbol.bodyBuffer]) &&
+			(request.method === 'GET' || request.method === 'HEAD')
+		) {
 			throw new DOMException(
 				`Request with GET/HEAD method cannot have body.`,
 				DOMExceptionNameEnum.invalidStateError

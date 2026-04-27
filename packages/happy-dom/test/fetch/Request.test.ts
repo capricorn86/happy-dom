@@ -854,6 +854,28 @@ describe('Request', () => {
 		});
 	});
 
+	describe('body', () => {
+		it('Does not create a ReadableStream eagerly when constructed with a string body.', () => {
+			const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+			expect(request[PropertySymbol.body]).toBe(null);
+		});
+
+		it('Creates a ReadableStream lazily when the body getter is accessed.', () => {
+			const request = new window.Request(TEST_URL, { method: 'POST', body: 'Hello World' });
+			expect(request[PropertySymbol.body]).toBe(null);
+
+			const body = request.body;
+			expect(body).toBeInstanceOf(ReadableStream);
+			expect(request[PropertySymbol.body]).toBe(body);
+		});
+
+		it('Returns null for body when request has no body.', () => {
+			const request = new window.Request(TEST_URL);
+			expect(request.body).toBe(null);
+			expect(request[PropertySymbol.body]).toBe(null);
+		});
+	});
+
 	describe('clone()', () => {
 		it('Clones request body stream without throwing when body has no buffer.', async () => {
 			// This test reproduces issue #1963: cloneBodyStream throws

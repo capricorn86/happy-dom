@@ -116,7 +116,11 @@ export default class Request implements Request {
 
 		if (contentLength) {
 			this[PropertySymbol.contentLength] = contentLength;
-		} else if (!this.body && (this.method === 'POST' || this.method === 'PUT')) {
+		} else if (
+			!this[PropertySymbol.body] &&
+			!this[PropertySymbol.bodyBuffer] &&
+			(this.method === 'POST' || this.method === 'PUT')
+		) {
 			this[PropertySymbol.contentLength] = 0;
 		}
 
@@ -187,6 +191,11 @@ export default class Request implements Request {
 	 * @returns Body.
 	 */
 	public get body(): ReadableStream | null {
+		if (!this[PropertySymbol.body] && this[PropertySymbol.bodyBuffer]) {
+			this[PropertySymbol.body] = FetchBodyUtility.toReadableStream(
+				this[PropertySymbol.bodyBuffer]
+			);
+		}
 		return this[PropertySymbol.body];
 	}
 
