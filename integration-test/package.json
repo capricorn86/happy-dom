@@ -14,7 +14,7 @@
 		"test:debug": "cd ./test && ls | node --inspect-brk"
 	},
 	"devDependencies": {
-		"happy-dom": "^0.0.0",
+		"happy-dom": "^20.8.9",
 		"@types/node": ">=20.0.0",
 		"express": "^4.20.0"
 	},
