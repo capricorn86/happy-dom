@@ -1,7 +1,7 @@
-import IBrowserFrame from '../types/IBrowserFrame.js';
-import { URL } from 'url';
+import type IBrowserFrame from '../types/IBrowserFrame.js';
+import type { URL } from 'url';
 import BrowserNavigationCrossOriginPolicyEnum from '../enums/BrowserNavigationCrossOriginPolicyEnum.js';
-import DetachedBrowserFrame from '../detached-browser/DetachedBrowserFrame.js';
+import type DetachedBrowserFrame from '../detached-browser/DetachedBrowserFrame.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
@@ -57,8 +57,9 @@ export default class BrowserFrameValidator {
 		const settings = frame.page.context.browser.settings;
 
 		// When using the Window instance directly and not via the Browser API we should not navigate the browser frame.
+		// Only a detached browser has a windowClass property and we want to avoid a circular dependency.
 		if (
-			frame instanceof DetachedBrowserFrame &&
+			(<DetachedBrowserFrame>frame).page.context.browser.windowClass &&
 			frame.page.context === frame.page.context.browser.defaultContext &&
 			frame.page.context.pages[0] === frame.page &&
 			frame.page.mainFrame === frame

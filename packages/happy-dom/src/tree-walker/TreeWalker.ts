@@ -1,6 +1,6 @@
 import Node from '../nodes/node/Node.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import INodeFilter from './INodeFilter.js';
+import type { TNodeFilter } from './TNodeFilter.js';
 import NodeFilterMask from './NodeFilterMask.js';
 import DOMException from '../exception/DOMException.js';
 import NodeFilter from './NodeFilter.js';
@@ -24,7 +24,7 @@ enum TraverseSiblingsTypeEnum {
 export default class TreeWalker {
 	public root: Node;
 	public whatToShow = -1;
-	public filter: INodeFilter | null = null;
+	public filter: TNodeFilter | null = null;
 	#currentNode: Node | null = null;
 
 	/**
@@ -34,7 +34,7 @@ export default class TreeWalker {
 	 * @param [whatToShow] What to show.
 	 * @param [filter] Filter.
 	 */
-	constructor(root: Node, whatToShow = -1, filter: INodeFilter | null = null) {
+	constructor(root: Node, whatToShow = -1, filter: TNodeFilter | null = null) {
 		if (!(root instanceof Node)) {
 			throw new DOMException('Parameter 1 was not of type Node.');
 		}

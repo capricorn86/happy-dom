@@ -1,4 +1,4 @@
-import IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import type IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import HashChangeEvent from '../event/events/HashChangeEvent.js';
 import HistoryScrollRestorationEnum from '../history/HistoryScrollRestorationEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
@@ -284,6 +284,7 @@ export default class Location {
 		if (this.#url.hash !== oldHash) {
 			const newURL = this.#url.href;
 			this.#hashChangeEvents.push(new HashChangeEvent('hashchange', { oldURL, newURL }));
+			this.#browserFrame?.window?.document?.[PropertySymbol.clearCache]();
 			if (this.#hashChangeTimeout) {
 				this.#browserFrame.window?.clearTimeout(this.#hashChangeTimeout);
 			}
@@ -293,7 +294,6 @@ export default class Location {
 				for (const event of hashChangeEvents) {
 					this.#browserFrame?.window?.dispatchEvent(event);
 				}
-				this.#browserFrame?.window?.document?.[PropertySymbol.clearCache]();
 			});
 		}
 	}

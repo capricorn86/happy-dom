@@ -1,7 +1,7 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
 import DOMMatrixReadOnly from './DOMMatrixReadOnly.js';
-import IDOMMatrixCompatibleObject from './IDOMMatrixCompatibleObject.js';
-import TDOMMatrixInit from './TDOMMatrixInit.js';
+import type IDOMMatrixCompatibleObject from './IDOMMatrixCompatibleObject.js';
+import type { TDOMMatrixInit } from './TDOMMatrixInit.js';
 
 /**
  * DOM Matrix.

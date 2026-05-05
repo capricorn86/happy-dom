@@ -1,4 +1,4 @@
-import IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import type IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import AsyncTaskManagerDebugError from './AsyncTaskManagerDebugError.js';
 
 // We need to set this as a global constant, so that using fake timers in Jest and Vitest won't override this on the global object.

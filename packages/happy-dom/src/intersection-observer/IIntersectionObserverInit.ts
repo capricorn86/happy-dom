@@ -1,4 +1,4 @@
-import Element from '../nodes/element/Element.js';
+import type Element from '../nodes/element/Element.js';
 
 export default interface IIntersectionObserverInit {
 	/**

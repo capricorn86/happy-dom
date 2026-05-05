@@ -1,4 +1,4 @@
-import File from '../../file/File.js';
+import type File from '../../file/File.js';
 
 /**
  * FileList.

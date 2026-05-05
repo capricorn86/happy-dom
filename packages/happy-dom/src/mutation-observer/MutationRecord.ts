@@ -1,5 +1,5 @@
-import Node from '../nodes/node/Node.js';
-import MutationTypeEnum from './MutationTypeEnum.js';
+import type Node from '../nodes/node/Node.js';
+import type MutationTypeEnum from './MutationTypeEnum.js';
 
 /**
  * MutationRecord is a model for a mutation.

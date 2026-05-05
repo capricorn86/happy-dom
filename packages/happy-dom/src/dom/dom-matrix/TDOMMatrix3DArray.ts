@@ -1,5 +1,6 @@
 /** An array of 16 numbers representing a 3D matrix. */
-type TDOMMatrix3DArray = [
+
+export type TDOMMatrix3DArray = [
 	number,
 	number,
 	number,
@@ -17,4 +18,3 @@ type TDOMMatrix3DArray = [
 	number,
 	number
 ];
-export default TDOMMatrix3DArray;

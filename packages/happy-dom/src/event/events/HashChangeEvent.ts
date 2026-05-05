@@ -1,5 +1,5 @@
 import Event from '../Event.js';
-import IHashChangeEventInit from './IHashChangeEventInit.js';
+import type IHashChangeEventInit from './IHashChangeEventInit.js';
 
 /**
  * Hash change event.

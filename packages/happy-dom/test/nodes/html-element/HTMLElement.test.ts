@@ -1,14 +1,14 @@
 import PointerEvent from '../../../src/event/events/PointerEvent.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import HTMLElementUtility from '../../../src/nodes/html-element/HTMLElementUtility.js';
-import SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
+import type SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
 import Window from '../../../src/window/Window.js';
 import CustomElement from '../../CustomElement.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
-import CustomElementRegistry from '../../../src/custom-element/CustomElementRegistry.js';
+import type CustomElementRegistry from '../../../src/custom-element/CustomElementRegistry.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
-import EventTarget from '../../../src/event/EventTarget.js';
+import type EventTarget from '../../../src/event/EventTarget.js';
 import Event from '../../../src/event/Event.js';
 
 describe('HTMLElement', () => {
@@ -691,6 +691,55 @@ describe('HTMLElement', () => {
 
 			expect(focusedElement === element).toBe(true);
 		});
+
+		it('Does not focus element when element is inert.', () => {
+			const input = document.createElement('input');
+			document.body.appendChild(input);
+			input.inert = true;
+
+			input.focus();
+
+			expect(document.activeElement).not.toBe(input);
+		});
+
+		it('Does not focus element when ancestor is inert.', () => {
+			const parent = document.createElement('div');
+			const input = document.createElement('input');
+			parent.appendChild(input);
+			document.body.appendChild(parent);
+			parent.inert = true;
+
+			input.focus();
+
+			expect(document.activeElement).not.toBe(input);
+		});
+
+		it('Allows focus when inert is removed.', () => {
+			const input = document.createElement('input');
+			document.body.appendChild(input);
+			input.inert = true;
+
+			input.focus();
+			expect(document.activeElement).not.toBe(input);
+
+			input.inert = false;
+			input.focus();
+			expect(document.activeElement).toBe(input);
+		});
+
+		it('Does not focus deeply nested element when ancestor is inert.', () => {
+			const grandparent = document.createElement('div');
+			const parent = document.createElement('div');
+			const input = document.createElement('input');
+			grandparent.appendChild(parent);
+			parent.appendChild(input);
+			document.body.appendChild(grandparent);
+			grandparent.inert = true;
+
+			input.focus();
+
+			expect(document.activeElement).not.toBe(input);
+		});
 	});
 
 	describe('setAttributeNode()', () => {
@@ -715,11 +764,16 @@ describe('HTMLElement', () => {
 	});
 
 	describe('[PropertySymbol.connectNode]()', () => {
-		it('Waits for a custom element to be defined and replace it when it is.', () => {
+		it("Waits for a custom element to be defined and replace it when it's connected to document", () => {
 			const element = <HTMLElement>document.createElement('custom-element');
 			const parent = document.createElement('div');
 
 			parent.appendChild(element);
+
+			expect(parent.children[0] instanceof HTMLElement).toBe(true);
+			expect(Object.keys(window.customElements[PropertySymbol.callbacks]).length).toBe(0);
+
+			document.body.appendChild(parent);
 
 			expect(window.customElements[PropertySymbol.callbacks].get('custom-element')?.length).toBe(1);
 
@@ -729,15 +783,13 @@ describe('HTMLElement', () => {
 
 			parent.appendChild(element);
 
+			expect(window.customElements[PropertySymbol.callbacks].get('custom-element')?.length).toBe(1);
+
 			window.customElements.define('custom-element', CustomElement);
 
 			expect(parent.children.length).toBe(1);
 
 			expect(parent.children[0] instanceof CustomElement).toBe(true);
-			expect(parent.children[0].shadowRoot?.children.length).toBe(0);
-
-			document.body.appendChild(parent);
-
 			expect(parent.children[0].shadowRoot?.children.length).toBe(2);
 		});
 

@@ -1,5 +1,5 @@
 import Blob from './Blob.js';
-import { Buffer } from 'buffer';
+import type { Buffer } from 'buffer';
 
 /**
  * Reference:

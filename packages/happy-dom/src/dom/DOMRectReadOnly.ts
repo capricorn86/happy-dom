@@ -1,5 +1,5 @@
 import * as PropertySymbol from '../PropertySymbol.js';
-import IDOMRectInit from './IDOMRectInit.js';
+import type IDOMRectInit from './IDOMRectInit.js';
 
 /**
  * DOM Rect Readonly.

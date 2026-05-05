@@ -1,4 +1,4 @@
-import ICachedResponse from '../../../../src/fetch/cache/response/ICachedResponse';
+import type ICachedResponse from '../../../../src/fetch/cache/response/ICachedResponse';
 import ResponseCacheFileSystem from '../../../../src/fetch/cache/response/ResponseCacheFileSystem';
 import FS from 'fs';
 import Path from 'path';

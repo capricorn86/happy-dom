@@ -1,5 +1,5 @@
-import IHeadersInit from '../../fetch/types/IHeadersInit.js';
-import BrowserWindow from '../../window/BrowserWindow.js';
+import type { THeadersInit } from '../../fetch/types/THeadersInit.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
 
 /**
  * Reload options.
@@ -23,5 +23,5 @@ export default interface IReloadOptions {
 	/**
 	 * Request headers.
 	 */
-	headers?: IHeadersInit | null;
+	headers?: THeadersInit | null;
 }

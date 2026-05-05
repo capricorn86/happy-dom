@@ -1,7 +1,7 @@
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import Element from '../element/Element.js';
+import type Element from '../element/Element.js';
 
 /**
  * HTMLTableCellElement

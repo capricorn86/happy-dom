@@ -1,4 +1,4 @@
-import Response from '../Response.js';
+import type Response from '../Response.js';
 
 /**
  * Preload entry.

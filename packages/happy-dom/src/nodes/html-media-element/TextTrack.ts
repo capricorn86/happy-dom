@@ -1,6 +1,6 @@
 import EventTarget from '../../event/EventTarget.js';
-import Event from '../../event/Event.js';
-import TextTrackCue from './TextTrackCue.js';
+import type Event from '../../event/Event.js';
+import type TextTrackCue from './TextTrackCue.js';
 import TextTrackCueList from './TextTrackCueList.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import TextTrackKindEnum from './TextTrackKindEnum.js';

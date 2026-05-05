@@ -1,5 +1,5 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import SVGMarkerElement from '../../../src/nodes/svg-marker-element/SVGMarkerElement.js';
 import SVGElement from '../../../src/nodes/svg-element/SVGElement.js';

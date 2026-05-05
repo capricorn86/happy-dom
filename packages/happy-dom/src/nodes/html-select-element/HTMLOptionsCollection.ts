@@ -1,6 +1,6 @@
 import HTMLCollection from '../element/HTMLCollection.js';
-import HTMLSelectElement from './HTMLSelectElement.js';
-import HTMLOptionElement from '../html-option-element/HTMLOptionElement.js';
+import type HTMLSelectElement from './HTMLSelectElement.js';
+import type HTMLOptionElement from '../html-option-element/HTMLOptionElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 

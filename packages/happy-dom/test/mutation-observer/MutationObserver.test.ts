@@ -1,7 +1,7 @@
 import Window from '../../src/window/Window.js';
-import Document from '../../src/nodes/document/Document.js';
+import type Document from '../../src/nodes/document/Document.js';
 import MutationObserver from '../../src/mutation-observer/MutationObserver.js';
-import MutationRecord from '../../src/mutation-observer/MutationRecord.js';
+import type MutationRecord from '../../src/mutation-observer/MutationRecord.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('MutationObserver', () => {
@@ -385,6 +385,7 @@ describe('MutationObserver', () => {
 			]);
 
 			text.textContent = 'new3';
+			div.appendChild(span);
 			div.removeChild(span);
 			div.setAttribute('attr', 'value3');
 

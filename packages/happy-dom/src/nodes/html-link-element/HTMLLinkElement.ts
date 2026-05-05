@@ -1,9 +1,9 @@
-import CSSStyleSheet from '../../css/CSSStyleSheet.js';
+import type CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import Event from '../../event/Event.js';
 import DOMTokenList from '../../dom/DOMTokenList.js';
-import Attr from '../attr/Attr.js';
+import type Attr from '../attr/Attr.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import ResourceFetch from '../../fetch/ResourceFetch.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
@@ -13,7 +13,7 @@ import ModuleFactory from '../../module/ModuleFactory.js';
 import PreloadUtility from '../../fetch/preload/PreloadUtility.js';
 import PreloadEntry from '../../fetch/preload/PreloadEntry.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
-import IResourceFetchResponse from '../../fetch/types/IResourceFetchResponse.js';
+import type IResourceFetchResponse from '../../fetch/types/IResourceFetchResponse.js';
 
 /**
  * HTML Link Element.
@@ -309,17 +309,17 @@ export default class HTMLLinkElement extends HTMLElement {
 			return;
 		}
 
-		const absoluteURL = new URL(url, this[PropertySymbol.ownerDocument].location.href);
+		const moduleFactory = new ModuleFactory(window, window.location);
 
 		if (
 			browserSettings.disableErrorCapturing ||
 			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
 		) {
-			const module = await ModuleFactory.getModule(window, absoluteURL, url);
+			const module = await moduleFactory.getModule(url);
 			await module.preload();
 		} else {
 			try {
-				const module = await ModuleFactory.getModule(window, absoluteURL, url);
+				const module = await moduleFactory.getModule(url);
 				await module.preload();
 			} catch (error) {
 				browserFrame.page.console.error(error);

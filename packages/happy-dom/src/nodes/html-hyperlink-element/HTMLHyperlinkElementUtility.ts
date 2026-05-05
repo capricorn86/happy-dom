@@ -1,4 +1,4 @@
-import HTMLElement from '../html-element/HTMLElement.js';
+import type HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**

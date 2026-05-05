@@ -1,5 +1,5 @@
 import * as PropertySymbol from '../PropertySymbol.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import DOMMatrix from '../dom/dom-matrix/DOMMatrix.js';
 
 const TRANSFORM_REGEXP = /([a-zA-Z0-9]+)\(([^)]+)\)/;

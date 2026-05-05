@@ -1,6 +1,6 @@
-import DataTransfer from '../DataTransfer.js';
+import type DataTransfer from '../DataTransfer.js';
 import Event from '../Event.js';
-import IClipboardEventInit from './IClipboardEventInit.js';
+import type IClipboardEventInit from './IClipboardEventInit.js';
 
 /**
  *

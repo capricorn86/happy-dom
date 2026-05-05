@@ -1,6 +1,6 @@
-import HTMLInputElement from '../html-input-element/HTMLInputElement.js';
+import type HTMLInputElement from '../html-input-element/HTMLInputElement.js';
 import NodeList from '../node/NodeList.js';
-import THTMLFormControlElement from './THTMLFormControlElement.js';
+import type { THTMLFormControlElement } from './THTMLFormControlElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**

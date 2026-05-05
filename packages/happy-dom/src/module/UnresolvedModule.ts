@@ -1,6 +1,11 @@
-import BrowserWindow from '../window/BrowserWindow.js';
-import { URL } from 'url';
-import IModule from './IModule.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
+import type { URL } from 'url';
+import type IModule from './types/IModule.js';
+
+interface IUnresolvedModuleInit {
+	window: BrowserWindow;
+	url: URL;
+}
 
 /**
  * CSS module.
@@ -14,12 +19,11 @@ export default class UnresolvedModule implements IModule {
 	/**
 	 * Constructor.
 	 *
-	 * @param window Window.
-	 * @param url Module URL.
+	 * @param init Initialization options.
 	 */
-	constructor(window: BrowserWindow, url: URL) {
-		this.#window = window;
-		this.url = url;
+	constructor(init: IUnresolvedModuleInit) {
+		this.#window = init.window;
+		this.url = init.url;
 	}
 
 	/**

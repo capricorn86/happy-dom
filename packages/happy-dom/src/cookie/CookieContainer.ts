@@ -1,8 +1,8 @@
-import URL from '../url/URL.js';
+import type URL from '../url/URL.js';
 import DefaultCookie from './DefaultCookie.js';
-import ICookie from './ICookie.js';
-import ICookieContainer from './ICookieContainer.js';
-import IOptionalCookie from './IOptionalCookie.js';
+import type ICookie from './ICookie.js';
+import type ICookieContainer from './ICookieContainer.js';
+import type IOptionalCookie from './IOptionalCookie.js';
 import CookieExpireUtility from './urilities/CookieExpireUtility.js';
 import CookieURLUtility from './urilities/CookieURLUtility.js';
 
@@ -63,7 +63,7 @@ export default class CookieContainer implements ICookieContainer {
 			if (
 				!CookieExpireUtility.hasExpired(cookie) &&
 				(!httpOnly || !cookie.httpOnly) &&
-				(!url || CookieURLUtility.cookieMatchesURL(cookie, url || cookie.originURL))
+				(!url || CookieURLUtility.cookieMatchesURL(cookie, url))
 			) {
 				cookies.push(cookie);
 			}

@@ -1,17 +1,17 @@
-import BrowserPage from './BrowserPage.js';
+import type BrowserPage from './BrowserPage.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import AsyncTaskManager from '../async-task-manager/AsyncTaskManager.js';
-import IBrowserFrame from './types/IBrowserFrame.js';
+import type IBrowserFrame from './types/IBrowserFrame.js';
 import BrowserWindow from '../window/BrowserWindow.js';
-import CrossOriginBrowserWindow from '../window/CrossOriginBrowserWindow.js';
-import Response from '../fetch/Response.js';
-import IGoToOptions from './types/IGoToOptions.js';
-import { Script } from 'vm';
+import type CrossOriginBrowserWindow from '../window/CrossOriginBrowserWindow.js';
+import type Response from '../fetch/Response.js';
+import type IGoToOptions from './types/IGoToOptions.js';
+import type { Script } from 'vm';
 import BrowserFrameURL from './utilities/BrowserFrameURL.js';
 import BrowserFrameScriptEvaluator from './utilities/BrowserFrameScriptEvaluator.js';
 import BrowserFrameNavigator from './utilities/BrowserFrameNavigator.js';
-import IReloadOptions from './types/IReloadOptions.js';
-import Document from '../nodes/document/Document.js';
+import type IReloadOptions from './types/IReloadOptions.js';
+import type Document from '../nodes/document/Document.js';
 import HistoryItemList from '../history/HistoryItemList.js';
 
 /**
@@ -140,6 +140,23 @@ export default class BrowserFrame implements IBrowserFrame {
 	 */
 	public evaluate(script: string | Script): any {
 		return BrowserFrameScriptEvaluator.evaluate(this, script);
+	}
+
+	/**
+	 * Evaluates a module in the page's context.
+	 *
+	 * @param options Options.
+	 * @param options.url URL.
+	 * @param options.type Module type.
+	 * @param options.code Code.
+	 * @returns Module exports.
+	 */
+	public evaluateModule(options: {
+		url?: string;
+		type?: 'esm' | 'css' | 'json';
+		code?: string;
+	}): Promise<Record<string, any>> {
+		return BrowserFrameScriptEvaluator.evaluateModule(this, options);
 	}
 
 	/**

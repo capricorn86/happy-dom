@@ -1,7 +1,7 @@
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
-import Element from '../nodes/element/Element.js';
+import type Element from '../nodes/element/Element.js';
 
 /**
  * Custom element reaction stack.
@@ -48,8 +48,8 @@ export default class CustomElementReactionStack {
 
 		switch (callbackName) {
 			case 'connectedCallback':
-				if (definition.livecycleCallbacks.connectedCallback) {
-					const returnValue: any = definition.livecycleCallbacks.connectedCallback?.call(element);
+				if (definition.lifecycleCallbacks.connectedCallback) {
+					const returnValue: any = definition.lifecycleCallbacks.connectedCallback?.call(element);
 
 					/**
 					 * It is common to import dependencies in the connectedCallback() method of web components.
@@ -69,17 +69,17 @@ export default class CustomElementReactionStack {
 				}
 				break;
 			case 'disconnectedCallback':
-				if (definition.livecycleCallbacks.disconnectedCallback) {
-					definition.livecycleCallbacks.disconnectedCallback.call(element);
+				if (definition.lifecycleCallbacks.disconnectedCallback) {
+					definition.lifecycleCallbacks.disconnectedCallback.call(element);
 				}
 				break;
 			case 'attributeChangedCallback':
 				if (
-					definition.livecycleCallbacks.attributeChangedCallback &&
+					definition.lifecycleCallbacks.attributeChangedCallback &&
 					args?.length &&
 					definition.observedAttributes.has(args[0])
 				) {
-					definition.livecycleCallbacks.attributeChangedCallback.apply(element, <any>args);
+					definition.lifecycleCallbacks.attributeChangedCallback.apply(element, <any>args);
 				}
 				break;
 		}

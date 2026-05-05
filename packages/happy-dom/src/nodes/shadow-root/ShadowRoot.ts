@@ -1,11 +1,11 @@
 import DocumentFragment from '../document-fragment/DocumentFragment.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import Element from '../element/Element.js';
-import CSSStyleSheet from '../../css/CSSStyleSheet.js';
-import HTMLElement from '../../nodes/html-element/HTMLElement.js';
-import Event from '../../event/Event.js';
-import SVGElement from '../svg-element/SVGElement.js';
-import Document from '../document/Document.js';
+import type Element from '../element/Element.js';
+import type CSSStyleSheet from '../../css/CSSStyleSheet.js';
+import type HTMLElement from '../../nodes/html-element/HTMLElement.js';
+import type Event from '../../event/Event.js';
+import type SVGElement from '../svg-element/SVGElement.js';
+import type Document from '../document/Document.js';
 import HTMLSerializer from '../../html-serializer/HTMLSerializer.js';
 import HTMLParser from '../../html-parser/HTMLParser.js';
 

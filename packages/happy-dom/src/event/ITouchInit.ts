@@ -1,4 +1,4 @@
-import EventTarget from './EventTarget.js';
+import type EventTarget from './EventTarget.js';
 
 export default interface ITouchInit {
 	identifier: number;

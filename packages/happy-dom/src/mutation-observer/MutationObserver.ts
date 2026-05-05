@@ -1,9 +1,9 @@
 import * as PropertySymbol from '../PropertySymbol.js';
-import Node from '../nodes/node/Node.js';
-import BrowserWindow from '../window/BrowserWindow.js';
-import IMutationObserverInit from './IMutationObserverInit.js';
+import type Node from '../nodes/node/Node.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
+import type IMutationObserverInit from './IMutationObserverInit.js';
 import MutationObserverListener from './MutationObserverListener.js';
-import MutationRecord from './MutationRecord.js';
+import type MutationRecord from './MutationRecord.js';
 
 /**
  * The MutationObserver interface provides the ability to watch for changes being made to the DOM tree.

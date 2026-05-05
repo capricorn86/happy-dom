@@ -1,9 +1,9 @@
 import HTMLElement from '../html-element/HTMLElement.js';
-import TextTrack from '../html-media-element/TextTrack.js';
+import type TextTrack from '../html-media-element/TextTrack.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import TextTrackKindEnum from '../html-media-element/TextTrackKindEnum.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
-import Event from '../../event/Event.js';
+import type Event from '../../event/Event.js';
 
 /**
  * HTMLTrackElement

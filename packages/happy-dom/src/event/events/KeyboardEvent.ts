@@ -1,5 +1,5 @@
 import UIEvent from '../UIEvent.js';
-import IKeyboardEventInit from './IKeyboardEventInit.js';
+import type IKeyboardEventInit from './IKeyboardEventInit.js';
 
 /**
  *
@@ -25,6 +25,11 @@ export default class KeyboardEvent extends UIEvent {
 	public readonly keyCode: number;
 
 	/**
+	 * @deprecated
+	 */
+	public readonly which: number;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param type Event type.
@@ -43,6 +48,7 @@ export default class KeyboardEvent extends UIEvent {
 		this.repeat = eventInit?.repeat ?? false;
 		this.shiftKey = eventInit?.shiftKey ?? false;
 		this.keyCode = eventInit?.keyCode ?? 0;
+		this.which = eventInit?.which ?? eventInit?.keyCode ?? 0;
 	}
 
 	/**

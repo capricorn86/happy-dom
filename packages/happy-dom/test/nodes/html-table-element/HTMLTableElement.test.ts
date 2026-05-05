@@ -1,8 +1,8 @@
 import HTMLTableElement from '../../../src/nodes/html-table-element/HTMLTableElement.js';
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect } from 'vitest';
-import HTMLTableCaptionElement from '../../../src/nodes/html-table-caption-element/HTMLTableCaptionElement.js';
+import type HTMLTableCaptionElement from '../../../src/nodes/html-table-caption-element/HTMLTableCaptionElement.js';
 import HTMLCollection from '../../../src/nodes/element/HTMLCollection.js';
 
 describe('HTMLTableElement', () => {

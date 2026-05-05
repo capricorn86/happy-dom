@@ -1,6 +1,6 @@
 import { beforeEach, describe, it, expect } from 'vitest';
 import SVGPoint from '../../src/svg/SVGPoint.js';
-import BrowserWindow from '../../src/window/BrowserWindow.js';
+import type BrowserWindow from '../../src/window/BrowserWindow.js';
 import Window from '../../src/window/Window.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import SVGPointList from '../../src/svg/SVGPointList.js';

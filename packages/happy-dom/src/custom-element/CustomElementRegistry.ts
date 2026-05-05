@@ -1,11 +1,11 @@
 import * as PropertySymbol from '../PropertySymbol.js';
-import HTMLElement from '../nodes/html-element/HTMLElement.js';
-import Node from '../nodes/node/Node.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type HTMLElement from '../nodes/html-element/HTMLElement.js';
+import type Node from '../nodes/node/Node.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import NamespaceURI from '../config/NamespaceURI.js';
 import StringUtility from '../utilities/StringUtility.js';
 import CustomElementUtility from './CustomElementUtility.js';
-import ICustomElementDefinition from './ICustomElementDefinition.js';
+import type ICustomElementDefinition from './ICustomElementDefinition.js';
 
 /**
  * Custom elements registry.
@@ -86,7 +86,7 @@ export default class CustomElementRegistry {
 			elementClass,
 			extends: options && options.extends ? options.extends.toLowerCase() : null,
 			observedAttributes,
-			livecycleCallbacks: {
+			lifecycleCallbacks: {
 				connectedCallback: elementClass.prototype.connectedCallback,
 				disconnectedCallback: elementClass.prototype.disconnectedCallback,
 				attributeChangedCallback: elementClass.prototype.attributeChangedCallback

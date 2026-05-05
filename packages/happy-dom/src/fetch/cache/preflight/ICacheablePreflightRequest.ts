@@ -1,4 +1,4 @@
-import Headers from '../../Headers.js';
+import type Headers from '../../Headers.js';
 
 export default interface ICacheablePreflightRequest {
 	url: string;

@@ -1,16 +1,17 @@
 import { describe, it, expect, afterEach, vi, beforeEach } from 'vitest';
-import Http2, { Http2ServerRequest, Http2ServerResponse } from 'http2';
+import type { Http2ServerRequest, Http2ServerResponse } from 'http2';
+import Http2 from 'http2';
 import ServerRendererServer from '../src/ServerRendererServer.js';
 import ServerRendererConfigurationFactory from '../src/utilities/ServerRendererConfigurationFactory.js';
 import OS from 'node:os';
 import FetchHTTPSCertificate from 'happy-dom/lib/fetch/certificate/FetchHTTPSCertificate.js';
 import Headers from 'happy-dom/lib/fetch/Headers.js';
-import Response from 'happy-dom/lib/fetch/Response.js';
+import type Response from 'happy-dom/lib/fetch/Response.js';
 import ServerRenderer from '../src/ServerRenderer.js';
-import IServerRendererItem from '../src/types/IServerRendererItem.js';
-import IServerRendererResult from '../src/types/IServerRendererResult.js';
+import type IServerRendererItem from '../src/types/IServerRendererItem.js';
+import type IServerRendererResult from '../src/types/IServerRendererResult.js';
 import ZLib from 'node:zlib';
-import IOptionalServerRendererConfiguration from '../src/types/IOptionalServerRendererConfiguration.js';
+import type IOptionalServerRendererConfiguration from '../src/types/IOptionalServerRendererConfiguration.js';
 // eslint-disable-next-line import/no-named-as-default
 import Chalk from 'chalk';
 import PackageVersion from '../src/utilities/PackageVersion.js';
@@ -276,8 +277,7 @@ describe('ServerRendererServer', () => {
 						`${protocol}//example.com/`
 					)}\n\n  ${Chalk.green('➜')}  ${Chalk.bold('URL:')}     ${Chalk.cyan(
 						`${protocol}//localhost:3000/`
-					)}\n`,
-					Chalk.bold(`• Rendered ${protocol}//example.com/path/`)
+					)}\n`
 				]);
 				expect(consoleError).toEqual([]);
 			});
@@ -423,12 +423,11 @@ describe('ServerRendererServer', () => {
 									Chalk.bold(`• Waiting for ongoing rendering of ${protocol}//example.com/path/`)
 								)
 							: []),
-						Chalk.bold(`• Rendered ${protocol}//example.com/path/`),
 						...(cacheMode === 'enabled'
 							? Array(4).fill(
 									Chalk.bold(`• Using cached response for ${protocol}//example.com/path/`)
 								)
-							: Array(4).fill(Chalk.bold(`• Rendered ${protocol}//example.com/path/`)))
+							: [])
 					]);
 					expect(consoleError).toEqual([]);
 				});
@@ -572,10 +571,9 @@ describe('ServerRendererServer', () => {
 						)}\n\n  ${Chalk.green('➜')}  ${Chalk.bold('URL:')}     ${Chalk.cyan(
 							`${protocol}//localhost:3000/`
 						)}\n`,
-						Chalk.bold(`• Rendered ${protocol}//example.com/path/`),
 						...(cacheMode === 'enabled'
 							? [Chalk.bold(`• Using cached response for ${protocol}//example.com/path/`)]
-							: [Chalk.bold(`• Rendered ${protocol}//example.com/path/`)])
+							: [])
 					]);
 					expect(consoleError).toEqual([]);
 				});
@@ -698,7 +696,6 @@ describe('ServerRendererServer', () => {
 					)}\n\n  ${Chalk.green('➜')}  ${Chalk.bold('URL:')}     ${Chalk.cyan(
 						`${protocol}//localhost:3000/`
 					)}\n`,
-					Chalk.bold(`• Rendered ${protocol}//example.com/path/`),
 					Chalk.red(`\n✖ Failed to render ${protocol}//example.com/path/:\nError: Failure\n`)
 				]);
 				expect(consoleError).toEqual([]);

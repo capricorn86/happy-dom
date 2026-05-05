@@ -1,5 +1,5 @@
 import Event from '../Event.js';
-import IPopStateEventInit from './IPopStateEventInit.js';
+import type IPopStateEventInit from './IPopStateEventInit.js';
 
 /**
  *

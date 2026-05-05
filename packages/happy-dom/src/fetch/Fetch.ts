@@ -1,25 +1,26 @@
-import IRequestInit from './types/IRequestInit.js';
+import type IRequestInit from './types/IRequestInit.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import IRequestInfo from './types/IRequestInfo.js';
-import Headers from './Headers.js';
+import type { TRequestInfo } from './types/TRequestInfo.js';
+import type Headers from './Headers.js';
 import FetchRequestReferrerUtility from './utilities/FetchRequestReferrerUtility.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
-import HTTP, { IncomingMessage } from 'http';
+import type { IncomingMessage } from 'http';
+import HTTP from 'http';
 import HTTPS from 'https';
 import Zlib from 'zlib';
 import { URL } from 'url';
 import FS from 'fs';
 import Path from 'path';
-import { Socket } from 'net';
+import type { Socket } from 'net';
 import Stream from 'stream';
 import DataURIParser from './data-uri/DataURIParser.js';
 import FetchCORSUtility from './utilities/FetchCORSUtility.js';
 import Request from './Request.js';
 import Response from './Response.js';
-import Event from '../event/Event.js';
-import AbortSignal from './AbortSignal.js';
-import IBrowserFrame from '../browser/types/IBrowserFrame.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type Event from '../event/Event.js';
+import type AbortSignal from './AbortSignal.js';
+import type IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import CachedResponseStateEnum from './cache/response/CachedResponseStateEnum.js';
 import FetchRequestHeaderUtility from './utilities/FetchRequestHeaderUtility.js';
 import FetchRequestValidationUtility from './utilities/FetchRequestValidationUtility.js';
@@ -28,10 +29,10 @@ import FetchResponseHeaderUtility from './utilities/FetchResponseHeaderUtility.j
 import FetchHTTPSCertificate from './certificate/FetchHTTPSCertificate.js';
 import { Buffer } from 'buffer';
 import FetchBodyUtility from './utilities/FetchBodyUtility.js';
-import IFetchInterceptor from './types/IFetchInterceptor.js';
+import type IFetchInterceptor from './types/IFetchInterceptor.js';
 import VirtualServerUtility from './utilities/VirtualServerUtility.js';
 import PreloadUtility from './preload/PreloadUtility.js';
-import IFetchRequestHeaders from './types/IFetchRequestHeaders.js';
+import type IFetchRequestHeaders from './types/IFetchRequestHeaders.js';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -85,7 +86,7 @@ export default class Fetch {
 	constructor(options: {
 		browserFrame: IBrowserFrame;
 		window: BrowserWindow;
-		url: IRequestInfo;
+		url: TRequestInfo;
 		init?: IRequestInit;
 		redirectCount?: number;
 		contentType?: string | null;
@@ -395,8 +396,8 @@ export default class Fetch {
 		}
 
 		const body = new this.#window.ReadableStream({
-			start(controller) {
-				setTimeout(() => {
+			start: (controller) => {
+				this.#window.queueMicrotask(() => {
 					controller.enqueue(buffer);
 					controller.close();
 				});
@@ -974,8 +975,6 @@ export default class Fetch {
 					(this.request.credentials === 'same-origin' &&
 						FetchCORSUtility.isCORS(this.#window.location.href, locationURL))
 				) {
-					headers.delete('authorization');
-					headers.delete('www-authenticate');
 					headers.delete('cookie');
 					headers.delete('cookie2');
 				}
@@ -1018,7 +1017,7 @@ export default class Fetch {
 				this.finalizeRequest();
 				this.reject!(
 					new this.#window.DOMException(
-						`Redirect option '${this.request.redirect}' is not a valid value of IRequestRedirect`
+						`Redirect option '${this.request.redirect}' is not a valid value of TRequestRedirect`
 					)
 				);
 				return true;

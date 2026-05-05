@@ -1,5 +1,5 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import SVGCircleElement from '../../../src/nodes/svg-circle-element/SVGCircleElement.js';
 import SVGGeometryElement from '../../../src/nodes/svg-geometry-element/SVGGeometryElement.js';

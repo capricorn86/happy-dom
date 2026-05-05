@@ -1,4 +1,4 @@
-import Element from '../element/Element.js';
+import type Element from '../element/Element.js';
 import Node from '../node/Node.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';

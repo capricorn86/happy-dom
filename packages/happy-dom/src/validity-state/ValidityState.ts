@@ -1,12 +1,12 @@
-import HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js';
+import type HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
-import HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
-import HTMLSelectElement from '../nodes/html-select-element/HTMLSelectElement.js';
-import HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement.js';
-import ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
-import HTMLObjectElement from '../nodes/html-object-element/HTMLObjectElement.js';
-import HTMLOutputElement from '../nodes/html-output-element/HTMLOutputElement.js';
+import type HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
+import type HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
+import type HTMLSelectElement from '../nodes/html-select-element/HTMLSelectElement.js';
+import type HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement.js';
+import type ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
+import type HTMLObjectElement from '../nodes/html-object-element/HTMLObjectElement.js';
+import type HTMLOutputElement from '../nodes/html-output-element/HTMLOutputElement.js';
 
 const EMAIL_REGEXP =
 	/^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/;
@@ -54,10 +54,10 @@ export default class ValidityState {
 	 */
 	public get badInput(): boolean {
 		return (
-			this.element instanceof HTMLInputElement &&
+			this.element[PropertySymbol.localName] === 'input' &&
 			(this.element.type === 'number' || this.element.type === 'range') &&
-			this.element.value.length > 0 &&
-			!/^[-+]?(?:\d+|\d*[.,]\d+)$/.test(this.element.value)
+			(<HTMLInputElement>this.element).value.length > 0 &&
+			!/^[-+]?(?:\d+|\d*[.,]\d+)$/.test((<HTMLInputElement>this.element).value)
 		);
 	}
 
@@ -77,10 +77,13 @@ export default class ValidityState {
 	 */
 	public get patternMismatch(): boolean {
 		return (
-			this.element instanceof HTMLInputElement &&
+			this.element[PropertySymbol.localName] === 'input' &&
 			this.element.hasAttribute('pattern') &&
-			this.element.value.length > 0 &&
-			this.element.value.replace(new RegExp(this.element.getAttribute('pattern')!), '').length > 0
+			(<HTMLInputElement>this.element).value.length > 0 &&
+			(<HTMLInputElement>this.element).value.replace(
+				new RegExp(this.element.getAttribute('pattern')!),
+				''
+			).length > 0
 		);
 	}
 
@@ -91,11 +94,11 @@ export default class ValidityState {
 	 */
 	public get rangeOverflow(): boolean {
 		return (
-			this.element instanceof HTMLInputElement &&
+			this.element[PropertySymbol.localName] === 'input' &&
 			this.element.hasAttribute('max') &&
 			(this.element.type === 'number' || this.element.type === 'range') &&
-			this.element.value.length > 0 &&
-			Number(this.element.value) > Number(this.element.getAttribute('max'))
+			(<HTMLInputElement>this.element).value.length > 0 &&
+			Number((<HTMLInputElement>this.element).value) > Number(this.element.getAttribute('max'))
 		);
 	}
 
@@ -106,11 +109,11 @@ export default class ValidityState {
 	 */
 	public get rangeUnderflow(): boolean {
 		return (
-			this.element instanceof HTMLInputElement &&
+			this.element[PropertySymbol.localName] === 'input' &&
 			this.element.hasAttribute('min') &&
 			(this.element.type === 'number' || this.element.type === 'range') &&
-			this.element.value.length > 0 &&
-			Number(this.element.value) < Number(this.element.getAttribute('min'))
+			(<HTMLInputElement>this.element).value.length > 0 &&
+			Number((<HTMLInputElement>this.element).value) < Number(this.element.getAttribute('min'))
 		);
 	}
 
@@ -121,12 +124,15 @@ export default class ValidityState {
 	 */
 	public get stepMismatch(): boolean {
 		return (
-			this.element instanceof HTMLInputElement &&
+			this.element[PropertySymbol.localName] === 'input' &&
 			(this.element.type === 'number' || this.element.type === 'range') &&
 			((this.element.hasAttribute('step') &&
 				this.element.getAttribute('step') !== 'any' &&
-				Number(this.element.value) % Number(this.element.getAttribute('step')) !== 0) ||
-				(!this.element.hasAttribute('step') && Number(this.element.value) % 1 !== 0))
+				Number((<HTMLInputElement>this.element).value) %
+					Number(this.element.getAttribute('step')) !==
+					0) ||
+				(!this.element.hasAttribute('step') &&
+					Number((<HTMLInputElement>this.element).value) % 1 !== 0))
 		);
 	}
 
@@ -137,9 +143,10 @@ export default class ValidityState {
 	 */
 	public get tooLong(): boolean {
 		return (
-			(this.element instanceof HTMLInputElement || this.element instanceof HTMLTextAreaElement) &&
-			this.element.maxLength > 0 &&
-			this.element.value.length > this.element.maxLength
+			(this.element[PropertySymbol.localName] === 'input' ||
+				this.element[PropertySymbol.localName] === 'textarea') &&
+			(<HTMLInputElement>this.element).maxLength > 0 &&
+			(<HTMLInputElement>this.element).value.length > (<HTMLInputElement>this.element).maxLength
 		);
 	}
 
@@ -150,10 +157,11 @@ export default class ValidityState {
 	 */
 	public get tooShort(): boolean {
 		return (
-			(this.element instanceof HTMLInputElement || this.element instanceof HTMLTextAreaElement) &&
-			this.element.minLength > 0 &&
-			this.element.value.length > 0 &&
-			this.element.value.length < this.element.minLength
+			(this.element[PropertySymbol.localName] === 'input' ||
+				this.element[PropertySymbol.localName] === 'textarea') &&
+			(<HTMLInputElement>this.element).minLength > 0 &&
+			(<HTMLInputElement>this.element).value.length > 0 &&
+			(<HTMLInputElement>this.element).value.length < (<HTMLInputElement>this.element).minLength
 		);
 	}
 
@@ -164,10 +172,11 @@ export default class ValidityState {
 	 */
 	public get typeMismatch(): boolean {
 		return (
-			this.element instanceof HTMLInputElement &&
-			this.element.value.length > 0 &&
-			((this.element.type === 'email' && !EMAIL_REGEXP.test(this.element.value)) ||
-				(this.element.type === 'url' && !URL_REGEXP.test(this.element.value)))
+			this.element[PropertySymbol.localName] === 'input' &&
+			(<HTMLInputElement>this.element).value.length > 0 &&
+			((this.element.type === 'email' &&
+				!EMAIL_REGEXP.test((<HTMLInputElement>this.element).value)) ||
+				(this.element.type === 'url' && !URL_REGEXP.test((<HTMLInputElement>this.element).value)))
 		);
 	}
 
@@ -179,16 +188,16 @@ export default class ValidityState {
 	public get valueMissing(): boolean {
 		if (
 			!(<HTMLInputElement>this.element).required ||
-			this.element instanceof HTMLObjectElement ||
-			this.element instanceof HTMLOutputElement
+			this.element[PropertySymbol.localName] === 'object' ||
+			this.element[PropertySymbol.localName] === 'output'
 		) {
 			return false;
 		}
-		if (this.element instanceof HTMLInputElement) {
+		if (this.element[PropertySymbol.localName] === 'input') {
 			if (this.element.type === 'checkbox') {
-				return !this.element.checked;
+				return !(<HTMLInputElement>this.element).checked;
 			} else if (this.element.type === 'radio') {
-				if (this.element.checked) {
+				if ((<HTMLInputElement>this.element).checked) {
 					return false;
 				}
 				if (!this.element.name) {
@@ -200,7 +209,7 @@ export default class ValidityState {
 				return !root || !root.querySelector(`input[name="${this.element.name}"]:checked`);
 			}
 		}
-		return this.element.value.length === 0;
+		return (<HTMLInputElement>this.element).value.length === 0;
 	}
 
 	/**

@@ -2,26 +2,26 @@ import XMLHttpRequestEventTarget from './XMLHttpRequestEventTarget.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import XMLHttpRequestReadyStateEnum from './XMLHttpRequestReadyStateEnum.js';
 import Event from '../event/Event.js';
-import Document from '../nodes/document/Document.js';
-import Blob from '../file/Blob.js';
-import XMLHttpRequestUpload from './XMLHttpRequestUpload.js';
+import type Document from '../nodes/document/Document.js';
+import type Blob from '../file/Blob.js';
+import type XMLHttpRequestUpload from './XMLHttpRequestUpload.js';
 import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import XMLHttpResponseTypeEnum from './XMLHttpResponseTypeEnum.js';
 import ErrorEvent from '../event/events/ErrorEvent.js';
 import Fetch from '../fetch/Fetch.js';
 import SyncFetch from '../fetch/SyncFetch.js';
-import Request from '../fetch/Request.js';
-import ISyncResponse from '../fetch/types/ISyncResponse.js';
-import AbortController from '../fetch/AbortController.js';
+import type Request from '../fetch/Request.js';
+import type ISyncResponse from '../fetch/types/ISyncResponse.js';
+import type AbortController from '../fetch/AbortController.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
-import IRequestBody from '../fetch/types/IRequestBody.js';
+import type { TRequestBody } from '../fetch/types/TRequestBody.js';
 import XMLHttpRequestResponseDataParser from './XMLHttpRequestResponseDataParser.js';
 import FetchRequestHeaderUtility from '../fetch/utilities/FetchRequestHeaderUtility.js';
-import Response from '../fetch/Response.js';
+import type Response from '../fetch/Response.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
 
 /**
@@ -53,6 +53,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	#response: Response | ISyncResponse | null = null;
 	#responseType: XMLHttpResponseTypeEnum | '' = '';
 	#responseBody: ArrayBuffer | Blob | Document | object | string | null = null;
+	#accumulatedData: Buffer = Buffer.from([]);
 	#readyState: XMLHttpRequestReadyStateEnum = XMLHttpRequestReadyStateEnum.unsent;
 	#overriddenMimeType: string | null = null;
 
@@ -113,7 +114,21 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				DOMExceptionNameEnum.invalidStateError
 			);
 		}
-		return <string>this.#responseBody ?? '';
+
+		// If response is complete, use the final response body
+		if (this.#responseBody !== null) {
+			return <string>this.#responseBody;
+		}
+
+		// If we're in loading state and have accumulated data, process it
+		if (
+			this.readyState === XMLHttpRequestReadyStateEnum.headersReceived ||
+			this.readyState === XMLHttpRequestReadyStateEnum.loading
+		) {
+			return <string>this.#accumulatedData.toString() ?? '';
+		}
+
+		return '';
 	}
 
 	/**
@@ -216,6 +231,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#aborted = false;
 		this.#response = null;
 		this.#responseBody = null;
+		this.#accumulatedData = Buffer.from([]);
 		this.#abortController = new window.AbortController();
 		this.#request = new window.Request(url, {
 			method,
@@ -289,7 +305,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 * @param body Optional data to send as request body.
 	 */
-	public send(body?: Document | IRequestBody): void {
+	public send(body?: Document | TRequestBody): void {
 		const window = this[PropertySymbol.window];
 
 		if (this.readyState != XMLHttpRequestReadyStateEnum.opened) {
@@ -309,11 +325,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		}
 
 		if (this.#async) {
-			this.#sendAsync(<IRequestBody>body).catch((error) => {
+			this.#sendAsync(<TRequestBody>body).catch((error) => {
 				throw error;
 			});
 		} else {
-			this.#sendSync(<IRequestBody>body);
+			this.#sendSync(<TRequestBody>body);
 		}
 	}
 
@@ -354,7 +370,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 * @param body Optional data to send as request body.
 	 */
-	async #sendAsync(body?: IRequestBody): Promise<void> {
+	async #sendAsync(body?: TRequestBody): Promise<void> {
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
 
@@ -427,13 +443,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		const contentLengthNumber =
 			contentLength !== null && !isNaN(Number(contentLength)) ? Number(contentLength) : null;
 		let loaded = 0;
-		let data = Buffer.from([]);
 
 		if (this.#response.body) {
 			let eventError: Error;
 			try {
 				for await (const chunk of this.#response.body) {
-					data = Buffer.concat([data, typeof chunk === 'string' ? Buffer.from(chunk) : chunk]);
+					const chunkBuffer = typeof chunk === 'string' ? Buffer.from(chunk) : chunk;
+					this.#accumulatedData = Buffer.concat([this.#accumulatedData, chunkBuffer]);
 					loaded += chunk.length;
 					// We need to re-throw the error as we don't want it to be caught by the try/catch.
 					try {
@@ -461,13 +477,14 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#responseBody = XMLHttpRequestResponseDataParser.parse({
 			window: window,
 			responseType: this.#responseType,
-			data,
+			data: this.#accumulatedData,
 			contentType:
 				this.#overriddenMimeType ||
 				this.#response.headers.get('Content-Type') ||
 				this.#request!.headers.get('Content-Type')
 		});
 		this.#readyState = XMLHttpRequestReadyStateEnum.done;
+		this.#accumulatedData = Buffer.from([]);
 
 		asyncTaskManager.endTask(taskID);
 
@@ -481,7 +498,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 *
 	 * @param body Optional data to send as request body.
 	 */
-	#sendSync(body?: IRequestBody): void {
+	#sendSync(body?: TRequestBody): void {
 		const window = this[PropertySymbol.window];
 		const browserFrame = new WindowBrowserContext(window).getBrowserFrame();
 

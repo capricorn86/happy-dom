@@ -1,12 +1,12 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
-import DocumentFragment from '../document-fragment/DocumentFragment.js';
-import Document from '../document/Document.js';
-import Element from '../element/Element.js';
+import type DocumentFragment from '../document-fragment/DocumentFragment.js';
+import type Document from '../document/Document.js';
+import type Element from '../element/Element.js';
 import Node from '../node/Node.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
-import ICachedResult from '../node/ICachedResult.js';
+import type ICachedResult from '../node/ICachedResult.js';
 
 /**
  * Parent node utility.
@@ -284,8 +284,8 @@ export default class ParentNodeUtility {
 	): Element | null {
 		id = String(id);
 
-		if (parentNode instanceof Document) {
-			const entry = parentNode[PropertySymbol.elementIdMap].get(id);
+		if (parentNode[PropertySymbol.nodeType] === Node.DOCUMENT_NODE) {
+			const entry = (<Document>parentNode)[PropertySymbol.elementIdMap].get(id);
 			if (entry && entry.elements.length > 0) {
 				return entry.elements[0];
 			}

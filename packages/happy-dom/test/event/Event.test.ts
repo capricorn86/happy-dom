@@ -1,9 +1,10 @@
 import Window from '../../src/window/Window.js';
-import Document from '../../src/nodes/document/Document.js';
+import type Document from '../../src/nodes/document/Document.js';
 import Event from '../../src/event/Event.js';
 import CustomElement from '../CustomElement.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
-import EventTarget from '../../src/event/EventTarget.js';
+import type EventTarget from '../../src/event/EventTarget.js';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 
 describe('Event', () => {
 	let window: Window;
@@ -72,12 +73,36 @@ describe('Event', () => {
 	});
 
 	describe('initEvent()', () => {
-		it('Depracated way to init an event.', () => {
+		it('Deprecated way to init an event.', () => {
 			const event = new Event('click');
 			event.initEvent('newEventType', true, true);
 			expect(event.type).toBe('newEventType');
 			expect(event.bubbles).toBe(true);
 			expect(event.cancelable).toBe(true);
+		});
+
+		it('Sets "defaultPrevented" to "false" when initEvent() is called.', () => {
+			const event = new Event('click', { cancelable: true });
+			event.preventDefault();
+			expect(event.defaultPrevented).toBe(true);
+			event.initEvent('newEventType', true, true);
+			expect(event.defaultPrevented).toBe(false);
+		});
+
+		it('Sets "propagationStopped" to "false" when initEvent() is called.', () => {
+			const event = new Event('click');
+			event.stopPropagation();
+			expect(event.cancelBubble).toBe(true);
+			event.initEvent('newEventType', true, true);
+			expect(event.cancelBubble).toBe(false);
+		});
+
+		it('Sets "immediatePropagationStopped" to "false" when initEvent() is called.', () => {
+			const event = new Event('click');
+			event.stopImmediatePropagation();
+			expect(event[PropertySymbol.immediatePropagationStopped]).toBe(true);
+			event.initEvent('newEventType', true, true);
+			expect(event[PropertySymbol.immediatePropagationStopped]).toBe(false);
 		});
 	});
 

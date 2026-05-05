@@ -1,4 +1,4 @@
-import Event from '../../event/Event.js';
+import type Event from '../../event/Event.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';

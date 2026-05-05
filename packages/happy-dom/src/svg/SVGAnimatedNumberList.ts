@@ -1,6 +1,6 @@
 import SVGNumberList from './SVGNumberList.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * The SVGAnimatedNumberList interface is used for attributes which take a list of numbers and which can be animated.

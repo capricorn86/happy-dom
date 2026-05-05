@@ -1,8 +1,8 @@
 import CSSMeasurementConverter from '../css/declaration/measurement-converter/CSSMeasurementConverter.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
-import IMediaQueryRange from './IMediaQueryRange.js';
-import IMediaQueryRule from './IMediaQueryRule.js';
+import type IMediaQueryRange from './IMediaQueryRange.js';
+import type IMediaQueryRule from './IMediaQueryRule.js';
 import MediaQueryTypeEnum from './MediaQueryTypeEnum.js';
 
 /**

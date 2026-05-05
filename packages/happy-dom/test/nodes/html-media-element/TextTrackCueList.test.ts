@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import TextTrackCueList from '../../../src/nodes/html-media-element/TextTrackCueList.js';
-import BrowserWindow from '../../../src/window/BrowserWindow.js';
+import type BrowserWindow from '../../../src/window/BrowserWindow.js';
 import Window from '../../../src/window/Window.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 

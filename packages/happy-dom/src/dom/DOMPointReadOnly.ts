@@ -1,5 +1,5 @@
 import * as PropertySymbol from '../PropertySymbol.js';
-import IDOMPointInit from './IDOMPointInit.js';
+import type IDOMPointInit from './IDOMPointInit.js';
 
 /**
  * DOM Point Readonly.

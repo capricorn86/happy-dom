@@ -1,5 +1,5 @@
-import DOMRect from '../dom/DOMRect.js';
-import Node from '../nodes/node/Node.js';
+import type DOMRect from '../dom/DOMRect.js';
+import type Node from '../nodes/node/Node.js';
 
 /**
  * The IntersectionObserverEntry interface of the Intersection Observer API describes the intersection between the target element and its root container at a specific moment of transition.

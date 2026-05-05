@@ -1,7 +1,7 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
-import Element from '../../../src/nodes/element/Element.js';
-import Attr from '../../../src/nodes/attr/Attr.js';
+import type Document from '../../../src/nodes/document/Document.js';
+import type Element from '../../../src/nodes/element/Element.js';
+import type Attr from '../../../src/nodes/attr/Attr.js';
 import DOMException from '../../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
 import { beforeEach, describe, it, expect } from 'vitest';

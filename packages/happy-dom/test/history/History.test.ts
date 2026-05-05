@@ -1,12 +1,12 @@
-import IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
+import type IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
 import Browser from '../../src/browser/Browser.js';
 import HistoryScrollRestorationEnum from '../../src/history/HistoryScrollRestorationEnum.js';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import Fetch from '../../src/fetch/Fetch.js';
-import Request from '../../src/fetch/Request';
-import Response from '../../src/fetch/Response';
-import PopStateEvent from '../../src/event/events/PopStateEvent.js';
+import type Request from '../../src/fetch/Request';
+import type Response from '../../src/fetch/Response';
+import type PopStateEvent from '../../src/event/events/PopStateEvent.js';
 
 describe('History', () => {
 	let browserFrame: IBrowserFrame;

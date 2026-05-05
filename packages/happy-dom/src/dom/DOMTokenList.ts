@@ -1,5 +1,5 @@
 import ClassMethodBinder from '../utilities/ClassMethodBinder.js';
-import Element from '../nodes/element/Element.js';
+import type Element from '../nodes/element/Element.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 
 const ATTRIBUTE_SPLIT_REGEXP = /[\t\f\n\r ]+/;
@@ -254,10 +254,11 @@ export default class DOMTokenList {
 	 */
 	public add(...tokens: string[]): void {
 		const list = this[PropertySymbol.getTokenList]().slice();
+		const existingTokens = new Set(list);
 
 		for (const token of tokens) {
-			const index = list.indexOf(token);
-			if (index === -1) {
+			if (!existingTokens.has(token)) {
+				existingTokens.add(token);
 				list.push(token);
 			}
 		}
@@ -274,18 +275,13 @@ export default class DOMTokenList {
 	 * @param tokens Tokens.
 	 */
 	public remove(...tokens: string[]): void {
-		const list = this[PropertySymbol.getTokenList]().slice();
-
-		for (const token of tokens) {
-			const index = list.indexOf(token);
-			if (index !== -1) {
-				list.splice(index, 1);
-			}
-		}
+		const list = this[PropertySymbol.getTokenList]();
+		const tokensToRemove = new Set(tokens);
+		const newList = list.filter((item) => !tokensToRemove.has(item));
 
 		this[PropertySymbol.ownerElement].setAttribute(
 			this[PropertySymbol.attributeName],
-			list.join(' ')
+			newList.join(' ')
 		);
 	}
 

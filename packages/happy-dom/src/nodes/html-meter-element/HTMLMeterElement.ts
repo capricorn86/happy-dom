@@ -1,7 +1,7 @@
 import HTMLElement from '../html-element/HTMLElement.js';
-import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
+import type HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
-import NodeList from '../node/NodeList.js';
+import type NodeList from '../node/NodeList.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**

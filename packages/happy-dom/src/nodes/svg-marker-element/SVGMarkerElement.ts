@@ -4,7 +4,7 @@ import SVGAnimatedLength from '../../svg/SVGAnimatedLength.js';
 import SVGAnimatedAngle from '../../svg/SVGAnimatedAngle.js';
 import SVGAnimatedRect from '../../svg/SVGAnimatedRect.js';
 import SVGAnimatedPreserveAspectRatio from '../../svg/SVGAnimatedPreserveAspectRatio.js';
-import SVGAngle from '../../svg/SVGAngle.js';
+import type SVGAngle from '../../svg/SVGAngle.js';
 import SVGElement from '../svg-element/SVGElement.js';
 
 /**

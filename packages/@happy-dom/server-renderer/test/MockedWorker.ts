@@ -1,6 +1,6 @@
-import IServerRendererConfiguration from '../src/types/IServerRendererConfiguration';
-import IServerRendererItem from '../src/types/IServerRendererItem';
-import IServerRendererResult from '../src/types/IServerRendererResult';
+import type IServerRendererConfiguration from '../src/types/IServerRendererConfiguration';
+import type IServerRendererItem from '../src/types/IServerRendererItem';
+import type IServerRendererResult from '../src/types/IServerRendererResult';
 
 type TEvent = 'message' | 'error' | 'exit';
 
@@ -8,7 +8,7 @@ type TEvent = 'message' | 'error' | 'exit';
  * Mocked worker.
  */
 export default class MockedWorker {
-	public static openWorkers: MockedWorker[] = [];
+	public static runningWorkers: MockedWorker[] = [];
 	public static terminatedWorkers: MockedWorker[] = [];
 	public scriptPath: string;
 	public execArgv: string[] = [];
@@ -39,7 +39,7 @@ export default class MockedWorker {
 		this.scriptPath = scriptPath;
 		this.execArgv = options.execArgv;
 		this.workerData = options.workerData;
-		(<typeof MockedWorker>this.constructor).openWorkers.push(this);
+		(<typeof MockedWorker>this.constructor).runningWorkers.push(this);
 	}
 
 	/**
@@ -75,7 +75,7 @@ export default class MockedWorker {
 	public terminate(): void {
 		this.isTerminated = true;
 		(<typeof MockedWorker>this.constructor).terminatedWorkers.push(this);
-		const index = (<typeof MockedWorker>this.constructor).openWorkers.indexOf(this);
-		(<typeof MockedWorker>this.constructor).openWorkers.splice(index, 1);
+		const index = (<typeof MockedWorker>this.constructor).runningWorkers.indexOf(this);
+		(<typeof MockedWorker>this.constructor).runningWorkers.splice(index, 1);
 	}
 }

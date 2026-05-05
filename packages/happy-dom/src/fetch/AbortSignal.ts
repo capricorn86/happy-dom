@@ -2,7 +2,7 @@ import EventTarget from '../event/EventTarget.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import Event from '../event/Event.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * AbortSignal.

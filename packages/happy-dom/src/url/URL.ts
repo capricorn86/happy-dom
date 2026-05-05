@@ -2,7 +2,7 @@ import { URL as NodeJSURL } from 'url';
 import * as PropertySymbol from '../PropertySymbol.js';
 import { Blob as NodeJSBlob } from 'buffer';
 import Blob from '../file/Blob.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * URL.

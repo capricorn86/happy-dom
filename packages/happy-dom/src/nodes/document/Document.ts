@@ -1,57 +1,57 @@
 import Element from '../element/Element.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import BrowserWindow from '../../window/BrowserWindow.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
 import Node from '../node/Node.js';
 import NodeIterator from '../../tree-walker/NodeIterator.js';
 import TreeWalker from '../../tree-walker/TreeWalker.js';
-import DocumentFragment from '../document-fragment/DocumentFragment.js';
+import type DocumentFragment from '../document-fragment/DocumentFragment.js';
 import Event from '../../event/Event.js';
 import DOMImplementation from '../../dom-implementation/DOMImplementation.js';
-import INodeFilter from '../../tree-walker/INodeFilter.js';
+import type { TNodeFilter } from '../../tree-walker/TNodeFilter.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
 import DocumentType from '../document-type/DocumentType.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
-import CSSStyleSheet from '../../css/CSSStyleSheet.js';
-import HTMLScriptElement from '../html-script-element/HTMLScriptElement.js';
-import HTMLElement from '../html-element/HTMLElement.js';
-import Comment from '../comment/Comment.js';
-import Text from '../text/Text.js';
-import NodeList from '../node/NodeList.js';
+import type CSSStyleSheet from '../../css/CSSStyleSheet.js';
+import type HTMLScriptElement from '../html-script-element/HTMLScriptElement.js';
+import type HTMLElement from '../html-element/HTMLElement.js';
+import type Comment from '../comment/Comment.js';
+import type Text from '../text/Text.js';
+import type NodeList from '../node/NodeList.js';
 import HTMLCollection from '../element/HTMLCollection.js';
-import HTMLLinkElement from '../html-link-element/HTMLLinkElement.js';
-import HTMLStyleElement from '../html-style-element/HTMLStyleElement.js';
+import type HTMLLinkElement from '../html-link-element/HTMLLinkElement.js';
+import type HTMLStyleElement from '../html-style-element/HTMLStyleElement.js';
 import DocumentReadyStateEnum from './DocumentReadyStateEnum.js';
-import Location from '../../location/Location.js';
+import type Location from '../../location/Location.js';
 import Selection from '../../selection/Selection.js';
-import ShadowRoot from '../shadow-root/ShadowRoot.js';
-import Range from '../../range/Range.js';
-import Attr from '../attr/Attr.js';
-import ProcessingInstruction from '../processing-instruction/ProcessingInstruction.js';
+import type ShadowRoot from '../shadow-root/ShadowRoot.js';
+import type Range from '../../range/Range.js';
+import type Attr from '../attr/Attr.js';
+import type ProcessingInstruction from '../processing-instruction/ProcessingInstruction.js';
 import VisibilityStateEnum from './VisibilityStateEnum.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import CookieStringUtility from '../../cookie/urilities/CookieStringUtility.js';
-import { URL } from 'url';
-import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
-import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
-import SVGElement from '../svg-element/SVGElement.js';
-import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
-import HTMLAnchorElement from '../html-anchor-element/HTMLAnchorElement.js';
+import type { URL } from 'url';
+import type IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
+import type ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
+import type SVGElement from '../svg-element/SVGElement.js';
+import type HTMLFormElement from '../html-form-element/HTMLFormElement.js';
+import type HTMLAnchorElement from '../html-anchor-element/HTMLAnchorElement.js';
 import HTMLElementConfig from '../../config/HTMLElementConfig.js';
-import HTMLHtmlElement from '../html-html-element/HTMLHtmlElement.js';
-import HTMLBodyElement from '../html-body-element/HTMLBodyElement.js';
-import HTMLHeadElement from '../html-head-element/HTMLHeadElement.js';
-import HTMLBaseElement from '../html-base-element/HTMLBaseElement.js';
-import ICachedResult from '../node/ICachedResult.js';
-import HTMLTitleElement from '../html-title-element/HTMLTitleElement.js';
+import type HTMLHtmlElement from '../html-html-element/HTMLHtmlElement.js';
+import type HTMLBodyElement from '../html-body-element/HTMLBodyElement.js';
+import type HTMLHeadElement from '../html-head-element/HTMLHeadElement.js';
+import type HTMLBaseElement from '../html-base-element/HTMLBaseElement.js';
+import type HTMLTitleElement from '../html-title-element/HTMLTitleElement.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import NodeFactory from '../NodeFactory.js';
 import SVGElementConfig from '../../config/SVGElementConfig.js';
 import StringUtility from '../../utilities/StringUtility.js';
 import HTMLParser from '../../html-parser/HTMLParser.js';
-import PreloadEntry from '../../fetch/preload/PreloadEntry.js';
+import type PreloadEntry from '../../fetch/preload/PreloadEntry.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
-import SVGScriptElement from '../svg-script-element/SVGScriptElement.js';
+import type SVGScriptElement from '../svg-script-element/SVGScriptElement.js';
+import type ICachedComputedStyleResult from '../node/ICachedComputedStyleResult.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -75,7 +75,7 @@ export default class Document extends Node {
 	public [PropertySymbol.referrer] = '';
 	public [PropertySymbol.defaultView]: BrowserWindow | null = null;
 	public [PropertySymbol.forms]: HTMLCollection<HTMLFormElement> | null = null;
-	public [PropertySymbol.affectsComputedStyleCache]: ICachedResult[] = [];
+	public [PropertySymbol.affectsComputedStyleCache]: ICachedComputedStyleResult[] = [];
 	public [PropertySymbol.ownerDocument]: Document = <Document>(<unknown>null);
 	public [PropertySymbol.elementIdMap]: Map<
 		string,
@@ -1305,10 +1305,7 @@ export default class Document extends Node {
 			this[PropertySymbol.activeElement] = null;
 		}
 
-		if (
-			this[PropertySymbol.activeElement] &&
-			this[PropertySymbol.activeElement] instanceof Element
-		) {
+		if (this[PropertySymbol.activeElement]) {
 			let rootNode: ShadowRoot | Document = <ShadowRoot | Document>(
 				this[PropertySymbol.activeElement].getRootNode()
 			);
@@ -2009,7 +2006,7 @@ export default class Document extends Node {
 	public createNodeIterator(
 		root: Node,
 		whatToShow = -1,
-		filter: INodeFilter | null = null
+		filter: TNodeFilter | null = null
 	): NodeIterator {
 		return new NodeIterator(root, whatToShow, filter);
 	}
@@ -2024,7 +2021,7 @@ export default class Document extends Node {
 	public createTreeWalker(
 		root: Node,
 		whatToShow = -1,
-		filter: INodeFilter | null = null
+		filter: TNodeFilter | null = null
 	): TreeWalker {
 		return new TreeWalker(root, whatToShow, filter);
 	}
@@ -2202,6 +2199,27 @@ export default class Document extends Node {
 	 */
 	public elementFromPoint(_x: number, _y: number): Element | null {
 		return null;
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.destroy](): void {
+		super[PropertySymbol.destroy]();
+
+		this[PropertySymbol.children] = null;
+		this[PropertySymbol.activeElement] = null;
+		this[PropertySymbol.nextActiveElement] = null;
+		this[PropertySymbol.currentScript] = null;
+		this[PropertySymbol.defaultView] = null;
+		this[PropertySymbol.adoptedStyleSheets] = [];
+		this[PropertySymbol.forms] = null;
+		this[PropertySymbol.affectsComputedStyleCache] = [];
+		this[PropertySymbol.elementIdMap].clear();
+		this[PropertySymbol.xmlProcessingInstruction] = null;
+		this[PropertySymbol.preloads].clear();
+		this[PropertySymbol.propertyEventListeners].clear();
+		this[PropertySymbol.selection] = null;
 	}
 
 	/**

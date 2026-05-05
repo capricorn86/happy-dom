@@ -1,5 +1,5 @@
-import IModuleImportMapRule from './IModuleImportMapRule.js';
-import IModuleImportMapScope from './IModuleImportMapScope.js';
+import type IModuleImportMapRule from './IModuleImportMapRule.js';
+import type IModuleImportMapScope from './IModuleImportMapScope.js';
 
 /**
  * @see https://html.spec.whatwg.org/multipage/webappapis.html#import-map

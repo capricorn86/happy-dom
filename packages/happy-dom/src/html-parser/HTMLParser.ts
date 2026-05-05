@@ -1,24 +1,24 @@
-import Document from '../nodes/document/Document.js';
+import type Document from '../nodes/document/Document.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import NamespaceURI from '../config/NamespaceURI.js';
-import HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement.js';
-import Element from '../nodes/element/Element.js';
-import HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement.js';
-import Node from '../nodes/node/Node.js';
-import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
+import type HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement.js';
+import type Element from '../nodes/element/Element.js';
+import type HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement.js';
+import type Node from '../nodes/node/Node.js';
+import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import HTMLElementConfig from '../config/HTMLElementConfig.js';
 import HTMLElementConfigContentModelEnum from '../config/HTMLElementConfigContentModelEnum.js';
 import SVGElementConfig from '../config/SVGElementConfig.js';
 import StringUtility from '../utilities/StringUtility.js';
-import BrowserWindow from '../window/BrowserWindow.js';
-import DocumentType from '../nodes/document-type/DocumentType.js';
-import HTMLHeadElement from '../nodes/html-head-element/HTMLHeadElement.js';
-import HTMLBodyElement from '../nodes/html-body-element/HTMLBodyElement.js';
-import HTMLHtmlElement from '../nodes/html-html-element/HTMLHtmlElement.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
+import type DocumentType from '../nodes/document-type/DocumentType.js';
+import type HTMLHeadElement from '../nodes/html-head-element/HTMLHeadElement.js';
+import type HTMLBodyElement from '../nodes/html-body-element/HTMLBodyElement.js';
+import type HTMLHtmlElement from '../nodes/html-html-element/HTMLHtmlElement.js';
 import XMLEncodeUtility from '../utilities/XMLEncodeUtility.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import NodeFactory from '../nodes/NodeFactory.js';
-import Text from '../nodes/text/Text.js';
+import type Text from '../nodes/text/Text.js';
 
 /**
  * Markup RegExp.
@@ -166,16 +166,19 @@ export default class HTMLParser {
 		rootNode?: Element | DocumentFragment | Document
 	): Element | DocumentFragment | Document {
 		this.rootNode = rootNode || this.window.document.createDocumentFragment();
-		this.rootDocument = this.rootNode instanceof Document ? this.rootNode : this.window.document;
+		this.rootDocument =
+			this.rootNode[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
+				? <Document>this.rootNode
+				: this.window.document;
 		this.nodeStack = [this.rootNode];
 		this.tagNameStack = [null];
 		this.currentNode = this.rootNode;
 		this.readState = <MarkupReadStateEnum>MarkupReadStateEnum.any;
 		this.documentStructure = null;
 		this.startTagIndex = 0;
-		this.markupRegExp = new RegExp(MARKUP_REGEXP, 'gm');
+		this.markupRegExp = new RegExp(MARKUP_REGEXP);
 
-		if (this.rootNode instanceof Document) {
+		if (this.rootNode[PropertySymbol.nodeType] === NodeTypeEnum.documentNode) {
 			const { doctype, documentElement, head, body } = <Document>this.rootNode;
 
 			if (!documentElement || !head || !body) {
@@ -196,8 +199,8 @@ export default class HTMLParser {
 		}
 
 		if (this.rootNode instanceof this.window.HTMLHtmlElement) {
-			const head = this.rootDocument.createElement('head');
-			const body = this.rootDocument.createElement('body');
+			const head = this.rootDocument!.createElement('head');
+			const body = this.rootDocument!.createElement('body');
 			while (this.rootNode[PropertySymbol.nodeArray].length > 0) {
 				this.rootNode[PropertySymbol.removeChild](
 					this.rootNode[PropertySymbol.nodeArray][
@@ -397,7 +400,7 @@ export default class HTMLParser {
 				this.nextElement !== this.documentStructure.nodes.head ||
 				this.documentStructure.level < HTMLDocumentStructureLevelEnum.body)
 		) {
-			const attributeRegexp = new RegExp(ATTRIBUTE_REGEXP, 'gm');
+			const attributeRegexp = new RegExp(ATTRIBUTE_REGEXP);
 			let attributeMatch: RegExpExecArray | null;
 
 			while ((attributeMatch = attributeRegexp.exec(attributeString))) {

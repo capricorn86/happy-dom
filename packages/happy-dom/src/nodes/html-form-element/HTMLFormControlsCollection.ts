@@ -1,8 +1,8 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLCollection from '../element/HTMLCollection.js';
-import HTMLFormElement from './HTMLFormElement.js';
-import RadioNodeList from './RadioNodeList.js';
-import THTMLFormControlElement from './THTMLFormControlElement.js';
+import type HTMLFormElement from './HTMLFormElement.js';
+import type RadioNodeList from './RadioNodeList.js';
+import type { THTMLFormControlElement } from './THTMLFormControlElement.js';
 
 /**
  * HTMLFormControlsCollection.

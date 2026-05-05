@@ -1,10 +1,10 @@
 import DOMException from '../../exception/DOMException.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
-import IRequestReferrerPolicy from '../types/IRequestReferrerPolicy.js';
-import IRequestRedirect from '../types/IRequestRedirect.js';
-import URL from '../../url/URL.js';
-import Request from '../Request.js';
+import type { TRequestReferrerPolicy } from '../types/TRequestReferrerPolicy.js';
+import type { TRequestRedirect } from '../types/TRequestRedirect.js';
+import type URL from '../../url/URL.js';
+import type Request from '../Request.js';
 
 const VALID_REFERRER_POLICIES = [
 	'',
@@ -87,7 +87,7 @@ export default class FetchRequestValidationUtility {
 	 * @throws DOMException
 	 * @param referrerPolicy Referrer policy.
 	 */
-	public static validateReferrerPolicy(referrerPolicy: IRequestReferrerPolicy): void {
+	public static validateReferrerPolicy(referrerPolicy: TRequestReferrerPolicy): void {
 		if (!VALID_REFERRER_POLICIES.includes(referrerPolicy)) {
 			throw new DOMException(
 				`Invalid referrer policy "${referrerPolicy}".`,
@@ -102,7 +102,7 @@ export default class FetchRequestValidationUtility {
 	 * @throws DOMException
 	 * @param redirect Redirect.
 	 */
-	public static validateRedirect(redirect: IRequestRedirect): void {
+	public static validateRedirect(redirect: TRequestRedirect): void {
 		if (!VALID_REDIRECTS.includes(redirect)) {
 			throw new DOMException(`Invalid redirect "${redirect}".`, DOMExceptionNameEnum.syntaxError);
 		}

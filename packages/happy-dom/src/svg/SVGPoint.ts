@@ -1,5 +1,5 @@
 import * as PropertySymbol from '../PropertySymbol.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 
 const ATTRIBUTE_SEPARATOR_REGEXP = /[\t\f\n\r, ]+/;
 

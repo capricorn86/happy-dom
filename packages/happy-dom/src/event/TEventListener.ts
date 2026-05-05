@@ -1,6 +1,4 @@
-import TEventListenerFunction from './TEventListenerFunction.js';
-import TEventListenerObject from './TEventListenerObject.js';
+import type { TEventListenerFunction } from './TEventListenerFunction.js';
+import type { TEventListenerObject } from './TEventListenerObject.js';
 
-type TEventListener = TEventListenerFunction | TEventListenerObject;
-
-export default TEventListener;
+export type TEventListener = TEventListenerFunction | TEventListenerObject;

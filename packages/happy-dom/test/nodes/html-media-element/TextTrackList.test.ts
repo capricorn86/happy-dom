@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import TextTrackList from '../../../src/nodes/html-media-element/TextTrackList.js';
-import BrowserWindow from '../../../src/window/BrowserWindow.js';
+import type BrowserWindow from '../../../src/window/BrowserWindow.js';
 import Window from '../../../src/window/Window.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
-import TextTrack from '../../../src/nodes/html-media-element/TextTrack.js';
+import type TextTrack from '../../../src/nodes/html-media-element/TextTrack.js';
 import EventTarget from '../../../src/event/EventTarget.js';
 
 describe('TextTrackList', () => {

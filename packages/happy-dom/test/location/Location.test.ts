@@ -1,11 +1,11 @@
 import Browser from '../../src/browser/Browser.js';
 import BrowserFrame from '../../src/browser/BrowserFrame.js';
-import IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
-import IGoToOptions from '../../src/browser/types/IGoToOptions.js';
-import Response from '../../src/fetch/Response.js';
+import type IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
+import type IGoToOptions from '../../src/browser/types/IGoToOptions.js';
+import type Response from '../../src/fetch/Response.js';
 import Location from '../../src/location/Location.js';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
-import HashChangeEvent from '../../src/event/events/HashChangeEvent.js';
+import type HashChangeEvent from '../../src/event/events/HashChangeEvent.js';
 
 const HREF = 'https://google.com/some-path/?key=value&key2=value2#hash';
 

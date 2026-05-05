@@ -1,8 +1,10 @@
-import ICookieContainer from '../../cookie/ICookieContainer.js';
-import IResponseCache from '../../fetch/cache/response/IResponseCache.js';
-import IBrowser from './IBrowser.js';
-import IBrowserPage from './IBrowserPage.js';
-import IPreflightResponseCache from '../../fetch/cache/preflight/IPreflightResponseCache.js';
+import type ICookieContainer from '../../cookie/ICookieContainer.js';
+import type IResponseCache from '../../fetch/cache/response/IResponseCache.js';
+import type IBrowser from './IBrowser.js';
+import type IBrowserPage from './IBrowserPage.js';
+import type IPreflightResponseCache from '../../fetch/cache/preflight/IPreflightResponseCache.js';
+import type * as PropertySymbol from '../../PropertySymbol.js';
+import type IECMAScriptModuleCachedResult from '../../module/types/IECMAScriptModuleCachedResult.js';
 
 /**
  * Browser context.
@@ -14,6 +16,7 @@ export default interface IBrowserContext {
 	readonly responseCache: IResponseCache;
 	readonly preflightResponseCache: IPreflightResponseCache;
 	readonly closed: boolean;
+	readonly [PropertySymbol.moduleCache]: Map<string, IECMAScriptModuleCachedResult>;
 
 	/**
 	 * Aborts all ongoing operations and destroys the context.

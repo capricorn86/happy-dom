@@ -1,14 +1,14 @@
-import Document from '../../src/nodes/document/Document.js';
+import type Document from '../../src/nodes/document/Document.js';
 import Window from '../../src/window/Window.js';
 import Headers from '../../src/fetch/Headers.js';
 import CustomElement from '../../test/CustomElement.js';
-import Response from '../../src/fetch/Response.js';
+import type Response from '../../src/fetch/Response.js';
 import Fetch from '../../src/fetch/Fetch.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import VirtualConsole from '../../src/console/VirtualConsole.js';
 import VirtualConsolePrinter from '../../src/console/VirtualConsolePrinter.js';
 import PackageVersion from '../../src/version.js';
-import HTMLIFrameElement from '../../src/nodes/html-iframe-element/HTMLIFrameElement.js';
+import type HTMLIFrameElement from '../../src/nodes/html-iframe-element/HTMLIFrameElement.js';
 import DetachedWindowAPI from '../../src/window/DetachedWindowAPI.js';
 import '../types.d.js';
 import BrowserErrorCaptureEnum from '../../src/browser/enums/BrowserErrorCaptureEnum.js';

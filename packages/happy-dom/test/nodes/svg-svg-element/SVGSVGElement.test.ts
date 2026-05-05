@@ -1,6 +1,6 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
-import SVGSVGElement from '../../../src/nodes/svg-svg-element/SVGSVGElement.js';
+import type Document from '../../../src/nodes/document/Document.js';
+import type SVGSVGElement from '../../../src/nodes/svg-svg-element/SVGSVGElement.js';
 import SVGRect from '../../../src/svg/SVGRect.js';
 import SVGPoint from '../../../src/svg/SVGPoint.js';
 import SVGAnimatedRect from '../../../src/svg/SVGAnimatedRect.js';
@@ -14,7 +14,7 @@ import SVGPreserveAspectRatioMeetOrSliceEnum from '../../../src/svg/SVGPreserveA
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import HTMLCollection from '../../../src/nodes/element/HTMLCollection.js';
-import Element from '../../../src/nodes/element/Element.js';
+import type Element from '../../../src/nodes/element/Element.js';
 import NodeList from '../../../src/nodes/node/NodeList.js';
 import SVGMatrix from '../../../src/svg/SVGMatrix.js';
 import Event from '../../../src/event/Event.js';

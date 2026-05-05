@@ -1,11 +1,11 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLCollection from '../element/HTMLCollection.js';
-import HTMLInputElement from '../html-input-element/HTMLInputElement.js';
-import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
-import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
-import HTMLButtonElement from '../html-button-element/HTMLButtonElement.js';
-import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
+import type HTMLInputElement from '../html-input-element/HTMLInputElement.js';
+import type HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
+import type HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
+import type HTMLButtonElement from '../html-button-element/HTMLButtonElement.js';
+import type HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 
 type THTMLFieldSetElement =

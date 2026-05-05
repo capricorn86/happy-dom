@@ -1,6 +1,6 @@
 import Document from '../document/Document.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import Node from '../node/Node.js';
+import type Node from '../node/Node.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 
 /**

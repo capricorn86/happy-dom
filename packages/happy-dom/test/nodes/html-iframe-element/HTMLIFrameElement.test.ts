@@ -1,9 +1,9 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
-import HTMLIFrameElement from '../../../src/nodes/html-iframe-element/HTMLIFrameElement.js';
-import Response from '../../../src/fetch/Response.js';
+import type Document from '../../../src/nodes/document/Document.js';
+import type HTMLIFrameElement from '../../../src/nodes/html-iframe-element/HTMLIFrameElement.js';
+import type Response from '../../../src/fetch/Response.js';
 import CrossOriginBrowserWindow from '../../../src/window/CrossOriginBrowserWindow.js';
-import MessageEvent from '../../../src/event/events/MessageEvent.js';
+import type MessageEvent from '../../../src/event/events/MessageEvent.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
 import DOMException from '../../../src/exception/DOMException.js';
 import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest';

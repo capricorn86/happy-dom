@@ -1,9 +1,9 @@
 import CharacterDataUtility from '../../../src/nodes/character-data/CharacterDataUtility.js';
 import NonDocumentChildNodeUtility from '../../../src/nodes/child-node/NonDocumentChildNodeUtility.js';
 import ChildNodeUtility from '../../../src/nodes/child-node/ChildNodeUtility.js';
-import CharacterData from '../../../src/nodes/character-data/CharacterData.js';
+import type CharacterData from '../../../src/nodes/character-data/CharacterData.js';
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 
 describe('CharaterData', () => {

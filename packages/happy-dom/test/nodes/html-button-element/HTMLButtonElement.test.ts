@@ -1,10 +1,10 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
-import HTMLButtonElement from '../../../src/nodes/html-button-element/HTMLButtonElement.js';
-import Event from '../../../src/event/Event.js';
-import SubmitEvent from '../../../src/event/events/SubmitEvent';
-import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
-import HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElement.js';
+import type Document from '../../../src/nodes/document/Document.js';
+import type HTMLButtonElement from '../../../src/nodes/html-button-element/HTMLButtonElement.js';
+import type Event from '../../../src/event/Event.js';
+import type SubmitEvent from '../../../src/event/events/SubmitEvent';
+import type HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import type HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElement.js';
 import ValidityState from '../../../src/validity-state/ValidityState.js';
 import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 import MouseEvent from '../../../src/event/events/MouseEvent.js';

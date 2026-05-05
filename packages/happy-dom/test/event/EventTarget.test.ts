@@ -1,5 +1,5 @@
 import Window from '../../src/window/Window.js';
-import EventTarget from '../../src/event/EventTarget.js';
+import type EventTarget from '../../src/event/EventTarget.js';
 import Event from '../../src/event/Event.js';
 import CustomEvent from '../../src/event/events/CustomEvent.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
@@ -19,20 +19,20 @@ describe('EventTarget', () => {
 
 	describe('addEventListener()', () => {
 		it('Adds an event listener and triggers it when calling dispatchEvent().', () => {
-			let recievedEvent: Event | null = null;
-			let recievedTarget: EventTarget | null = null;
-			let recievedCurrentTarget: EventTarget | null = null;
+			let receivedEvent: Event | null = null;
+			let receivedTarget: EventTarget | null = null;
+			let receivedCurrentTarget: EventTarget | null = null;
 			const listener = (event: Event): void => {
-				recievedEvent = event;
-				recievedTarget = event.target;
-				recievedCurrentTarget = event.currentTarget;
+				receivedEvent = event;
+				receivedTarget = event.target;
+				receivedCurrentTarget = event.currentTarget;
 			};
 			const dispatchedEvent = new Event(EVENT_TYPE);
 			eventTarget.addEventListener(EVENT_TYPE, listener);
 			eventTarget.dispatchEvent(dispatchedEvent);
-			expect(recievedEvent).toBe(dispatchedEvent);
-			expect(recievedTarget).toBe(eventTarget);
-			expect(recievedCurrentTarget).toBe(eventTarget);
+			expect(receivedEvent).toBe(dispatchedEvent);
+			expect(receivedTarget).toBe(eventTarget);
+			expect(receivedCurrentTarget).toBe(eventTarget);
 		});
 
 		it('Adds an event listener and set options once', () => {
@@ -69,46 +69,46 @@ describe('EventTarget', () => {
 		});
 
 		it('Adds a custom event listener and triggers it when calling dispatchEvent().', () => {
-			let recievedEvent: CustomEvent | null = null;
-			let recievedTarget: EventTarget | null = null;
-			let recievedCurrentTarget: EventTarget | null = null;
+			let receivedEvent: CustomEvent | null = null;
+			let receivedTarget: EventTarget | null = null;
+			let receivedCurrentTarget: EventTarget | null = null;
 			const DETAIL = {};
-			const listener = (event): void => {
-				recievedEvent = <CustomEvent>event;
-				recievedTarget = event.target;
-				recievedCurrentTarget = event.currentTarget;
+			const listener = (event: Event): void => {
+				receivedEvent = <CustomEvent>event;
+				receivedTarget = event.target;
+				receivedCurrentTarget = event.currentTarget;
 			};
 			const dispatchedEvent = new CustomEvent(EVENT_TYPE, { detail: DETAIL });
 			eventTarget.addEventListener(EVENT_TYPE, listener);
 			eventTarget.dispatchEvent(dispatchedEvent);
-			expect(recievedEvent).toBe(dispatchedEvent);
-			expect((<CustomEvent>(<unknown>recievedEvent)).detail).toBe(DETAIL);
-			expect(recievedTarget).toBe(eventTarget);
-			expect(recievedCurrentTarget).toBe(eventTarget);
+			expect(receivedEvent).toBe(dispatchedEvent);
+			expect((<CustomEvent>(<unknown>receivedEvent)).detail).toBe(DETAIL);
+			expect(receivedTarget).toBe(eventTarget);
+			expect(receivedCurrentTarget).toBe(eventTarget);
 		});
 
 		it('Adds an event listener using object with handleEvent as property and triggers it when calling dispatchEvent().', () => {
-			let recievedEvent: CustomEvent | null = null;
-			let recievedTarget: EventTarget | null = null;
-			let recievedCurrentTarget: EventTarget | null = null;
+			let receivedEvent: CustomEvent | null = null;
+			let receivedTarget: EventTarget | null = null;
+			let receivedCurrentTarget: EventTarget | null = null;
 			const listener = {
 				handleEvent: (event: CustomEvent): void => {
-					recievedEvent = event;
-					recievedTarget = event.target;
-					recievedCurrentTarget = event.currentTarget;
+					receivedEvent = event;
+					receivedTarget = event.target;
+					receivedCurrentTarget = event.currentTarget;
 				}
 			};
 			const dispatchedEvent = new Event(EVENT_TYPE);
 			eventTarget.addEventListener(EVENT_TYPE, listener);
 			eventTarget.dispatchEvent(dispatchedEvent);
-			expect(recievedEvent).toBe(dispatchedEvent);
-			expect(recievedTarget).toBe(eventTarget);
-			expect(recievedCurrentTarget).toBe(eventTarget);
+			expect(receivedEvent).toBe(dispatchedEvent);
+			expect(receivedTarget).toBe(eventTarget);
+			expect(receivedCurrentTarget).toBe(eventTarget);
 		});
 
 		it('Event listener is called in the scope of the EventTarget when calling dispatchEvent().', () => {
-			let scope = null;
-			const listener = function (): void {
+			let scope: any = null;
+			const listener = function (this: any): void {
 				scope = this;
 			};
 			const dispatchedEvent = new Event(EVENT_TYPE);
@@ -147,58 +147,60 @@ describe('EventTarget', () => {
 
 	describe('removeEventListener()', () => {
 		it('Removes an event listener and does not call it when calling dispatchEvent().', () => {
-			let recievedEvent: Event | null = null;
+			let receivedEvent: Event | null = null;
 			const listener = (event: Event): void => {
-				recievedEvent = event;
+				receivedEvent = event;
 			};
 			const dispatchedEvent = new Event(EVENT_TYPE);
 			eventTarget.addEventListener(EVENT_TYPE, listener);
 			eventTarget.removeEventListener(EVENT_TYPE, listener);
 			eventTarget.dispatchEvent(dispatchedEvent);
-			expect(recievedEvent).toBe(null);
+			expect(receivedEvent).toBe(null);
 		});
 	});
 
 	describe('dispatchEvent()', () => {
-		it('Triggers listener properties with "on" as prefix.', () => {
-			let recievedEvent: Event | null = null;
-			let recievedTarget: EventTarget | null = null;
-			let recievedCurrentTarget: EventTarget | null = null;
+		it('Triggers listener properties with "on" as prefix on DOM elements.', () => {
+			// on* handlers should work on DOM elements (which have propertyEventListeners)
+			const element = window.document.createElement('div');
+			let receivedEvent: Event | null = null;
+			let receivedTarget: EventTarget | null = null;
+			let receivedCurrentTarget: EventTarget | null = null;
 			const listener = (event: Event): void => {
-				recievedEvent = event;
-				recievedTarget = event.target;
-				recievedCurrentTarget = event.currentTarget;
+				receivedEvent = event;
+				receivedTarget = event.target;
+				receivedCurrentTarget = event.currentTarget;
 			};
 			const dispatchedEvent = new Event(EVENT_TYPE);
-			eventTarget[`on${EVENT_TYPE}`] = listener;
-			eventTarget.dispatchEvent(dispatchedEvent);
-			expect(recievedEvent).toBe(dispatchedEvent);
-			expect(recievedTarget).toBe(eventTarget);
-			expect(recievedCurrentTarget).toBe(eventTarget);
-			expect(dispatchedEvent.target).toBe(eventTarget);
+			element[`on${EVENT_TYPE}`] = listener;
+			element.dispatchEvent(dispatchedEvent);
+			expect(receivedEvent).toBe(dispatchedEvent);
+			expect(receivedTarget).toBe(element);
+			expect(receivedCurrentTarget).toBe(element);
+			expect(dispatchedEvent.target).toBe(element);
 			expect(dispatchedEvent.currentTarget).toBe(null);
 			expect(dispatchedEvent.defaultPrevented).toBe(false);
 			expect(dispatchedEvent[PropertySymbol.dispatching]).toBe(false);
 		});
 
 		it('Triggers all listeners, even though listeners are removed while dispatching.', () => {
-			let recievedEvent1: Event | null = null;
-			let recievedTarget1: EventTarget | null = null;
-			let recievedCurrentTarget1: EventTarget | null = null;
-			let recievedEvent2: Event | null = null;
-			let recievedTarget2: EventTarget | null = null;
-			let recievedCurrentTarget2: EventTarget | null = null;
+			let receivedEvent1: Event | null = null;
+			let receivedTarget1: EventTarget | null = null;
+			let receivedCurrentTarget1: EventTarget | null = null;
+			let receivedEvent2: Event | null = null;
+			let receivedTarget2: EventTarget | null = null;
+			let receivedCurrentTarget2: EventTarget | null = null;
 
 			const listener1 = (event: Event): void => {
-				recievedEvent1 = event;
-				recievedTarget1 = event.target;
-				recievedCurrentTarget1 = event.currentTarget;
+				receivedEvent1 = event;
+				receivedTarget1 = event.target;
+				receivedCurrentTarget1 = event.currentTarget;
 				eventTarget.removeEventListener(EVENT_TYPE, listener1);
 			};
 			const listener2 = (event: Event): void => {
-				recievedEvent2 = event;
-				recievedTarget2 = event.target;
-				recievedCurrentTarget2 = event.currentTarget;
+				receivedEvent2 = event;
+				receivedTarget2 = event.target;
+				receivedCurrentTarget2 = event.currentTarget;
 				eventTarget.removeEventListener(EVENT_TYPE, listener2);
 			};
 			const dispatchedEvent = new Event(EVENT_TYPE);
@@ -208,52 +210,60 @@ describe('EventTarget', () => {
 
 			eventTarget.dispatchEvent(dispatchedEvent);
 
-			expect(recievedEvent1).toBe(dispatchedEvent);
-			expect(recievedEvent2).toBe(dispatchedEvent);
+			expect(receivedEvent1).toBe(dispatchedEvent);
+			expect(receivedEvent2).toBe(dispatchedEvent);
 
-			expect(recievedTarget1).toBe(eventTarget);
-			expect(recievedCurrentTarget1).toBe(eventTarget);
-			expect(recievedTarget2).toBe(eventTarget);
-			expect(recievedCurrentTarget2).toBe(eventTarget);
+			expect(receivedTarget1).toBe(eventTarget);
+			expect(receivedCurrentTarget1).toBe(eventTarget);
+			expect(receivedTarget2).toBe(eventTarget);
+			expect(receivedCurrentTarget2).toBe(eventTarget);
 
 			expect(dispatchedEvent.target).toBe(eventTarget);
 			expect(dispatchedEvent.currentTarget).toBe(null);
 			expect(dispatchedEvent.defaultPrevented).toBe(false);
 			expect(dispatchedEvent[PropertySymbol.dispatching]).toBe(false);
 		});
+
+		it('Throws a TypeError if the event is not an instance of Event.', () => {
+			expect(() => {
+				eventTarget.dispatchEvent(<Event>{});
+			}).toThrowError(
+				`Failed to execute 'dispatchEvent' on 'EventTarget': parameter 1 is not of type 'Event'.`
+			);
+		});
 	});
 
 	describe('attachEvent()', () => {
 		it('Adds an event listener in older browsers for backward compatibility.', () => {
-			let recievedEvent: Event | null = null;
-			let recievedTarget: EventTarget | null = null;
-			let recievedCurrentTarget: EventTarget | null = null;
+			let receivedEvent: Event | null = null;
+			let receivedTarget: EventTarget | null = null;
+			let receivedCurrentTarget: EventTarget | null = null;
 			const listener = (event: Event): void => {
-				recievedEvent = event;
-				recievedTarget = event.target;
-				recievedCurrentTarget = event.currentTarget;
+				receivedEvent = event;
+				receivedTarget = event.target;
+				receivedCurrentTarget = event.currentTarget;
 			};
 			const dispatchedEvent = new Event(EVENT_TYPE);
 			eventTarget.attachEvent(`on${EVENT_TYPE}`, listener);
 			eventTarget.dispatchEvent(dispatchedEvent);
-			expect(recievedEvent).toBe(dispatchedEvent);
-			expect((<Event>(<unknown>recievedEvent)).type).toBe(EVENT_TYPE);
-			expect(recievedTarget).toBe(eventTarget);
-			expect(recievedCurrentTarget).toBe(eventTarget);
+			expect(receivedEvent).toBe(dispatchedEvent);
+			expect((<Event>(<unknown>receivedEvent)).type).toBe(EVENT_TYPE);
+			expect(receivedTarget).toBe(eventTarget);
+			expect(receivedCurrentTarget).toBe(eventTarget);
 		});
 	});
 
 	describe('detachEvent()', () => {
 		it('Removes an event listener in older browsers for backward compatibility.', () => {
-			let recievedEvent: Event | null = null;
+			let receivedEvent: Event | null = null;
 			const listener = (event: Event): void => {
-				recievedEvent = event;
+				receivedEvent = event;
 			};
 			const dispatchedEvent = new Event('click');
 			eventTarget.attachEvent('onclick', listener);
 			eventTarget.detachEvent('onclick', listener);
 			eventTarget.dispatchEvent(dispatchedEvent);
-			expect(recievedEvent).toBe(null);
+			expect(receivedEvent).toBe(null);
 		});
 	});
 
@@ -262,6 +272,98 @@ describe('EventTarget', () => {
 			const description = 'EventTarget';
 
 			expect(eventTarget[Symbol.toStringTag]).toBe(description);
+		});
+	});
+
+	describe('[PropertySymbol.destroy]', () => {
+		it('Destroys the event target', () => {
+			let count = 0;
+			const listener = (): void => {
+				count++;
+			};
+			const dispatchedEvent = new Event(EVENT_TYPE);
+
+			eventTarget.addEventListener(EVENT_TYPE, listener);
+
+			eventTarget.dispatchEvent(dispatchedEvent);
+
+			expect(count).toBe(1);
+
+			count = 0;
+
+			eventTarget[PropertySymbol.destroy]();
+
+			eventTarget.dispatchEvent(dispatchedEvent);
+
+			expect(count).toBe(0);
+		});
+	});
+
+	describe('dispatchEvent()', () => {
+		it('Does not call arbitrary on* properties set on EventTarget (issue #1895).', () => {
+			const calls: string[] = [];
+
+			(<any>eventTarget).onopen = () => calls.push('onopen property');
+			eventTarget.addEventListener('open', () => calls.push('open listener'));
+
+			eventTarget.dispatchEvent(new Event('open'));
+
+			expect(calls).toEqual(['open listener']);
+		});
+
+		it('Does not call on* properties that are not defined as event handlers.', () => {
+			const calls: string[] = [];
+
+			(<any>eventTarget).onclick = () => calls.push('onclick property');
+			eventTarget.addEventListener('click', () => calls.push('click listener'));
+
+			eventTarget.dispatchEvent(new Event('click'));
+
+			// EventTarget base class should not call on* properties
+			// Only DOM elements with defined on* IDL attributes should call them
+			expect(calls).toEqual(['click listener']);
+		});
+
+		it('Calls on* handlers on subclasses that define them as class properties.', () => {
+			// MediaQueryList defines onchange as a class property
+			const mediaQueryList = window.matchMedia('(min-width: 100px)');
+			let called = false;
+			mediaQueryList.onchange = () => {
+				called = true;
+			};
+			mediaQueryList.dispatchEvent(new Event('change'));
+			expect(called).toBe(true);
+		});
+
+		it('Calls on* handlers on MediaStream.', () => {
+			const mediaStream = new window.MediaStream();
+			let addTrackCalled = false;
+			let removeTrackCalled = false;
+
+			mediaStream.onaddtrack = () => {
+				addTrackCalled = true;
+			};
+			mediaStream.onremovetrack = () => {
+				removeTrackCalled = true;
+			};
+
+			mediaStream.dispatchEvent(new Event('addtrack'));
+			mediaStream.dispatchEvent(new Event('removetrack'));
+
+			expect(addTrackCalled).toBe(true);
+			expect(removeTrackCalled).toBe(true);
+		});
+
+		it('Calls onabort handler on AbortSignal.', () => {
+			const controller = new window.AbortController();
+			let called = false;
+
+			controller.signal.onabort = () => {
+				called = true;
+			};
+			controller.abort();
+
+			expect(called).toBe(true);
 		});
 	});
 });

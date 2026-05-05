@@ -1,7 +1,7 @@
 import * as PropertySymbol from '../PropertySymbol.js';
 import SVGPreserveAspectRatioMeetOrSliceEnum from './SVGPreserveAspectRatioMeetOrSliceEnum.js';
 import SVGPreserveAspectRatioAlignEnum from './SVGPreserveAspectRatioAlignEnum.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 
 const ALIGN_KEYS = Object.values(SVGPreserveAspectRatioAlignEnum);
 ALIGN_KEYS.length = ALIGN_KEYS.indexOf(0);

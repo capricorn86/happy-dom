@@ -126,7 +126,9 @@ export default <
 	},
 	caption: {
 		className: 'HTMLTableCaptionElement',
-		contentModel: HTMLElementConfigContentModelEnum.textOrComments
+		contentModel: HTMLElementConfigContentModelEnum.noForbiddenFirstLevelDescendants,
+		forbiddenDescendants: ['table', 'tbody', 'thead', 'tfoot', 'tr', 'td', 'th', 'col', 'colgroup'],
+		permittedParents: ['table']
 	},
 	cite: {
 		className: 'HTMLElement',
@@ -331,7 +333,40 @@ export default <
 	},
 	p: {
 		className: 'HTMLParagraphElement',
-		contentModel: HTMLElementConfigContentModelEnum.anyDescendants
+		contentModel: HTMLElementConfigContentModelEnum.noForbiddenFirstLevelDescendants,
+		forbiddenDescendants: [
+			'address',
+			'article',
+			'aside',
+			'blockquote',
+			'details',
+			'dialog',
+			'div',
+			'dl',
+			'fieldset',
+			'figcaption',
+			'figure',
+			'footer',
+			'form',
+			'h1',
+			'h2',
+			'h3',
+			'h4',
+			'h5',
+			'h6',
+			'header',
+			'hgroup',
+			'hr',
+			'main',
+			'menu',
+			'nav',
+			'ol',
+			'p',
+			'pre',
+			'section',
+			'table',
+			'ul'
+		]
 	},
 	param: {
 		className: 'HTMLParamElement',

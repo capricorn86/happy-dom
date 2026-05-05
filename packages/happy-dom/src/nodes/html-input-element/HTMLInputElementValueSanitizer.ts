@@ -1,4 +1,4 @@
-import HTMLInputElement from './HTMLInputElement.js';
+import type HTMLInputElement from './HTMLInputElement.js';
 
 const NEW_LINES_REGEXP = /[\n\r]/gm;
 const parseInts = (a: string[]): number[] => a.map((v) => parseInt(v, 10));

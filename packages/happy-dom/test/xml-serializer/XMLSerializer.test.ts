@@ -1,11 +1,11 @@
 import XMLSerializer from '../../src/xml-serializer/XMLSerializer.js';
 import Window from '../../src/window/Window.js';
-import Document from '../../src/nodes/document/Document.js';
+import type Document from '../../src/nodes/document/Document.js';
 import CustomElement from '../CustomElement.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 import HTMLParser from '../../src/html-parser/HTMLParser.js';
-import DocumentType from '../../src/nodes/document-type/DocumentType.js';
+import type DocumentType from '../../src/nodes/document-type/DocumentType.js';
 import NamespaceURI from '../../src/config/NamespaceURI.js';
 import XMLParser from '../../src/xml-parser/XMLParser.js';
 

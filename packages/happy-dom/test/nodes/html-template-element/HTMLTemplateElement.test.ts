@@ -1,6 +1,6 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
-import HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
+import type Document from '../../../src/nodes/document/Document.js';
+import type HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
 import HTMLSerializer from '../../../src/html-serializer/HTMLSerializer.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import CustomElement from '../../CustomElement.js';

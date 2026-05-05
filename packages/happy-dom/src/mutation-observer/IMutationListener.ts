@@ -1,5 +1,5 @@
-import IMutationObserverInit from './IMutationObserverInit.js';
-import MutationRecord from './MutationRecord.js';
+import type IMutationObserverInit from './IMutationObserverInit.js';
+import type MutationRecord from './MutationRecord.js';
 
 export default interface IMutationListener {
 	options: IMutationObserverInit;

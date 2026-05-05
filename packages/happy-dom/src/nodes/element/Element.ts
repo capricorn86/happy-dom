@@ -1,6 +1,6 @@
 import Node from '../node/Node.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import ShadowRoot from '../shadow-root/ShadowRoot.js';
+import type ShadowRoot from '../shadow-root/ShadowRoot.js';
 import DOMRect from '../../dom/DOMRect.js';
 import DOMTokenList from '../../dom/DOMTokenList.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
@@ -8,27 +8,27 @@ import ChildNodeUtility from '../child-node/ChildNodeUtility.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtility.js';
 import HTMLCollection from './HTMLCollection.js';
-import Text from '../text/Text.js';
+import type Text from '../text/Text.js';
 import DOMRectList from '../../dom/DOMRectList.js';
-import Attr from '../attr/Attr.js';
+import type Attr from '../attr/Attr.js';
 import NamedNodeMap from './NamedNodeMap.js';
 import Event from '../../event/Event.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
-import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
-import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
-import IChildNode from '../child-node/IChildNode.js';
-import INonDocumentTypeChildNode from '../child-node/INonDocumentTypeChildNode.js';
-import IParentNode from '../parent-node/IParentNode.js';
+import type IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
+import type ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
+import type IChildNode from '../child-node/IChildNode.js';
+import type INonDocumentTypeChildNode from '../child-node/INonDocumentTypeChildNode.js';
+import type IParentNode from '../parent-node/IParentNode.js';
 import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
-import NodeList from '../node/NodeList.js';
-import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
+import type NodeList from '../node/NodeList.js';
+import type CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import NamedNodeMapProxyFactory from './NamedNodeMapProxyFactory.js';
 import NodeFactory from '../NodeFactory.js';
 import HTMLSerializer from '../../html-serializer/HTMLSerializer.js';
 import HTMLParser from '../../html-parser/HTMLParser.js';
-import IScrollToOptions from '../../window/IScrollToOptions.js';
+import type IScrollToOptions from '../../window/IScrollToOptions.js';
 import { AttributeUtility } from '../../utilities/AttributeUtility.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import ElementEventAttributeUtility from './ElementEventAttributeUtility.js';
@@ -63,6 +63,7 @@ export default class Element
 	public [PropertySymbol.attributesProxy]: NamedNodeMap | null = null;
 	public [PropertySymbol.children]: HTMLCollection<Element> | null = null;
 	public [PropertySymbol.computedStyle]: CSSStyleDeclaration | null = null;
+	public [PropertySymbol.pointerCaptures]: Set<number> = new Set();
 	public [PropertySymbol.propertyEventListeners]: Map<string, ((event: Event) => void) | null> =
 		new Map();
 	public declare [PropertySymbol.tagName]: string | null;
@@ -985,6 +986,37 @@ export default class Element
 	}
 
 	/**
+	 * Designates a specific element as the capture target of future pointer events.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/setPointerCapture
+	 * @param pointerId Pointer ID.
+	 */
+	public setPointerCapture(pointerId: number): void {
+		this[PropertySymbol.pointerCaptures].add(pointerId);
+	}
+
+	/**
+	 * Returns whether the element on which it is invoked has pointer capture for the pointer identified by the given pointer ID.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/hasPointerCapture
+	 * @param pointerId Pointer ID.
+	 * @returns Whether the element has pointer capture.
+	 */
+	public hasPointerCapture(pointerId: number): boolean {
+		return this[PropertySymbol.pointerCaptures].has(pointerId);
+	}
+
+	/**
+	 * Releases pointer capture that was previously set for a specific pointer.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/releasePointerCapture
+	 * @param pointerId Pointer ID.
+	 */
+	public releasePointerCapture(pointerId: number): void {
+		this[PropertySymbol.pointerCaptures].delete(pointerId);
+	}
+
+	/**
 	 * The matches() method checks to see if the Element would be selected by the provided selectorString.
 	 *
 	 * @param selector Selector.
@@ -1528,6 +1560,37 @@ export default class Element
 			this,
 			'disconnectedCallback'
 		);
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.destroy](): void {
+		const id = this.getAttribute('id');
+		if (id) {
+			this.#removeIdentifierFromWindow(id);
+		}
+
+		this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
+			this,
+			'disconnectedCallback'
+		);
+
+		super[PropertySymbol.destroy]();
+
+		if (this[PropertySymbol.shadowRoot]) {
+			this[PropertySymbol.shadowRoot][PropertySymbol.destroy]();
+		}
+
+		this[PropertySymbol.classList] = null;
+		this[PropertySymbol.shadowRoot] = null;
+		this[PropertySymbol.attributesProxy] = null;
+		this[PropertySymbol.children] = null;
+		this[PropertySymbol.computedStyle] = null;
+		this[PropertySymbol.propertyEventListeners].clear();
+		this[PropertySymbol.attributes][PropertySymbol.itemsByNamespaceURI].clear();
+		this[PropertySymbol.attributes][PropertySymbol.itemsByName].clear();
+		this[PropertySymbol.attributes][PropertySymbol.items].clear();
 	}
 
 	/**

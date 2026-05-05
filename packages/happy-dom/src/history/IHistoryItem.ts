@@ -1,5 +1,5 @@
-import FormData from '../form-data/FormData.js';
-import HistoryScrollRestorationEnum from './HistoryScrollRestorationEnum.js';
+import type FormData from '../form-data/FormData.js';
+import type HistoryScrollRestorationEnum from './HistoryScrollRestorationEnum.js';
 
 export default interface IHistoryItem {
 	title: string | null;

@@ -23,18 +23,20 @@ You will find the documentation in the [Happy DOM Wiki](https://github.com/capri
 
 See all available command line arguments in the [Command Line Documentation](https://github.com/capricorn86/happy-dom/wiki/Server-Renderer-CLI-Arguments).
 
+Note that JavaScript is disabled by default. To enable JavaScript, use the flag `--javascript`. A VM Context is not an isolated environment, and if you run untrusted JavaScript code you are at risk of RCE (Remote Code Execution) attacks. [Read more about risks and recommended security precautions here](https://github.com/capricorn86/happy-dom/wiki/JavaScript-Evaluation-Warning).
+
 **Example 1**
 
 Render to the file `./happy-dom/render/gb/en/index.html`.
 
 ```bash
-npx @happy-dom/server-renderer "https://example.com/gb/en/"
+npx @happy-dom/server-renderer --javascript "https://example.com/gb/en/"
 ```
 
 or if you have it installed
 
 ```bash
-happy-dom-sr "https://example.com/gb/en/"
+happy-dom-sr --javascript "https://example.com/gb/en/"
 ```
 
 **Example 2**
@@ -42,26 +44,54 @@ happy-dom-sr "https://example.com/gb/en/"
 Start proxy server.
 
 ```bash
-happy-dom-sr --server --server.targetOrigin="https://example.com"
+happy-dom-sr --javascript --server --server.targetOrigin="https://example.com"
 ```
 
 ### JavaScript
 
 See all available configuration options in the [Javascript API Documentation](https://github.com/capricorn86/happy-dom/wiki/ServerRenderer).
 
-**Example**
+Note that JavaScript is disabled by default. To enable JavaScript, set the configuration `browser.enableJavaScriptEvaluation` to true. A VM Context is not an isolated environment, and if you run untrusted JavaScript code you are at risk of RCE (Remote Code Execution) attacks. [Read more about risks and recommended security precautions here](https://github.com/capricorn86/happy-dom/wiki/JavaScript-Evaluation-Warning).
+
+**Example 1**
 
 ```javascript
 import { ServerRenderer } from '@happy-dom/server-renderer';
 
 const renderer = new ServerRenderer({
-  // Your configuration options
+   // Your configuration options
+   browser: {
+      enableJavaScriptEvaluation: true,
+   },
 });
 
 const result = await renderer.render(['https://example.com/gb/en/']);
 
-// The rendered HTML
+// URL of the rendered page
 console.log(result[0].url);
+
+// The rendered HTML
+console.log(result[0].content);
+```
+
+**Example 2**
+
+```javascript
+import { ServerRenderer } from '@happy-dom/server-renderer';
+
+const renderer = new ServerRenderer({
+   // Your configuration options
+   browser: {
+      enableJavaScriptEvaluation: true,
+   },
+});
+
+const result = await renderer.render([{ url: 'https://example.com/gb/en/', html: '<div id="app"></div><script>document.getElementById("app").innerHTML = "Hello World!";</script>' }]);
+
+// URL of the rendered page
+console.log(result[0].url);
+
+// The rendered HTML
 console.log(result[0].content);
 ```
 

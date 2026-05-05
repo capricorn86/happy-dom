@@ -1,5 +1,5 @@
-import IEventInit from '../IEventInit.js';
-import Storage from '../../storage/Storage.js';
+import type IEventInit from '../IEventInit.js';
+import type Storage from '../../storage/Storage.js';
 
 export default interface IStorageEventInit extends IEventInit {
 	key?: string;

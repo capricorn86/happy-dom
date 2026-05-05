@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import MediaStream from '../../../src/nodes/html-media-element/MediaStream.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
-import BrowserWindow from '../../../src/window/BrowserWindow.js';
+import type BrowserWindow from '../../../src/window/BrowserWindow.js';
 import Window from '../../../src/window/Window.js';
 
 describe('MediaStream', () => {

@@ -3,16 +3,17 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import Event from '../../event/Event.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import BrowserErrorCaptureEnum from '../../browser/enums/BrowserErrorCaptureEnum.js';
-import Attr from '../attr/Attr.js';
+import type Attr from '../attr/Attr.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import ResourceFetch from '../../fetch/ResourceFetch.js';
 import ECMAScriptModule from '../../module/ECMAScriptModule.js';
 import ModuleFactory from '../../module/ModuleFactory.js';
 import DOMTokenList from '../../dom/DOMTokenList.js';
-import IModuleImportMap from '../../module/IModuleImportMap.js';
-import IRequestReferrerPolicy from '../../fetch/types/IRequestReferrerPolicy.js';
+import type IModuleImportMap from '../../module/types/IModuleImportMap.js';
+import type { TRequestReferrerPolicy } from '../../fetch/types/TRequestReferrerPolicy.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
-import IResourceFetchResponse from '../../fetch/types/IResourceFetchResponse.js';
+import type IResourceFetchResponse from '../../fetch/types/IResourceFetchResponse.js';
+import JavaScriptCompiler from '../../javascript/JavaScriptCompiler.js';
 
 /**
  * HTML Script Element.
@@ -183,7 +184,7 @@ export default class HTMLScriptElement extends HTMLElement {
 	 *
 	 * @returns ReferrerPolicy.
 	 */
-	public get referrerPolicy(): IRequestReferrerPolicy {
+	public get referrerPolicy(): TRequestReferrerPolicy {
 		const referrerPolicy = this.getAttribute('referrerpolicy');
 		switch (referrerPolicy) {
 			case 'no-referrer':
@@ -409,7 +410,7 @@ export default class HTMLScriptElement extends HTMLElement {
 	 *
 	 * @param source Source.
 	 */
-	async #evaluateModule(source: string): Promise<void> {
+	#evaluateModule(source: string): void {
 		const url = this[PropertySymbol.ownerDocument].location;
 		const window = this[PropertySymbol.window];
 		const browserSettings = new WindowBrowserContext(window).getSettings();
@@ -419,21 +420,23 @@ export default class HTMLScriptElement extends HTMLElement {
 			return;
 		}
 
-		const module = new ECMAScriptModule(window, url, source);
+		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = this;
+
+		const factory = new ModuleFactory(window, url);
+		const module = new ECMAScriptModule({ window, url, source, factory });
 
 		if (
 			browserSettings.disableErrorCapturing ||
 			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
 		) {
-			await module.evaluate();
+			module.evaluate();
 		} else {
-			try {
-				await module.evaluate();
-			} catch (error) {
+			module.evaluate().catch((error) => {
 				window[PropertySymbol.dispatchError](<Error>error);
-				return;
-			}
+			});
 		}
+
+		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = null;
 
 		this.dispatchEvent(new Event('load'));
 	}
@@ -529,22 +532,14 @@ export default class HTMLScriptElement extends HTMLElement {
 
 		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = this;
 
-		if (
-			browserSettings.disableErrorCapturing ||
-			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
-		) {
-			window[PropertySymbol.evaluateScript](code, {
-				filename: this[PropertySymbol.ownerDocument].location.href
-			});
-		} else {
-			try {
-				window[PropertySymbol.evaluateScript](code, {
-					filename: this[PropertySymbol.ownerDocument].location.href
-				});
-			} catch (error) {
-				window[PropertySymbol.dispatchError](<Error>error);
-			}
-		}
+		const compiler = new JavaScriptCompiler(window);
+		const compiled = compiler.compile(window.location.href, code);
+		const moduleFactory = new ModuleFactory(window, window.location);
+
+		compiled.execute({
+			dynamicImport: moduleFactory.importModule.bind(moduleFactory),
+			dispatchError: window[PropertySymbol.dispatchError].bind(window)
+		});
 
 		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = null;
 	}
@@ -587,15 +582,17 @@ export default class HTMLScriptElement extends HTMLElement {
 		// TODO: What to do with "referrerPolicy" and "crossOrigin" for modules?
 		// @see https://github.com/w3c/webappsec-referrer-policy/issues/111
 
+		const moduleFactory = new ModuleFactory(window, window.location);
+
 		if (
 			browserSettings.disableErrorCapturing ||
 			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
 		) {
-			const module = await ModuleFactory.getModule(window, window.location, url);
+			const module = await moduleFactory.getModule(url);
 			await module.evaluate();
 		} else {
 			try {
-				const module = await ModuleFactory.getModule(window, window.location, url);
+				const module = await moduleFactory.getModule(url);
 				await module.evaluate();
 			} catch (error) {
 				browserFrame.page.console.error(error);
@@ -702,24 +699,17 @@ export default class HTMLScriptElement extends HTMLElement {
 
 		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = this;
 
-		if (
-			browserSettings.disableErrorCapturing ||
-			browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
-		) {
-			this[PropertySymbol.window][PropertySymbol.evaluateScript](response.content, {
-				filename: response.virtualServerFile || absoluteURLString
-			});
-		} else {
-			try {
-				this[PropertySymbol.window][PropertySymbol.evaluateScript](response.content, {
-					filename: response.virtualServerFile || absoluteURLString
-				});
-			} catch (error) {
-				this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = null;
-				window[PropertySymbol.dispatchError](<Error>error);
-				return;
-			}
-		}
+		const compiler = new JavaScriptCompiler(window);
+		const compiled = compiler.compile(
+			response.virtualServerFile || absoluteURLString,
+			response.content
+		);
+		const moduleFactory = new ModuleFactory(window, window.location);
+
+		compiled.execute({
+			dynamicImport: moduleFactory.importModule.bind(moduleFactory),
+			dispatchError: window[PropertySymbol.dispatchError].bind(window)
+		});
 
 		this[PropertySymbol.ownerDocument][PropertySymbol.currentScript] = null;
 		this.dispatchEvent(new Event('load'));

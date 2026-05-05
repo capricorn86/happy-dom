@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
-import BrowserWindow from '../../../src/window/BrowserWindow.js';
+import type BrowserWindow from '../../../src/window/BrowserWindow.js';
 import Window from '../../../src/window/Window.js';
 import CSSParser from '../../../src/css/utilities/CSSParser.js';
-import CSSStyleSheet from '../../../src/css/CSSStyleSheet.js';
+import type CSSStyleSheet from '../../../src/css/CSSStyleSheet.js';
 import CSSFontFaceRule from '../../../src/css/rules/CSSFontFaceRule.js';
 import CSSRuleTypeEnum from '../../../src/css/CSSRuleTypeEnum.js';
 

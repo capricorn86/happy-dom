@@ -1,12 +1,14 @@
 import CookieContainer from '../cookie/CookieContainer.js';
-import ICookieContainer from '../cookie/ICookieContainer.js';
-import IResponseCache from '../fetch/cache/response/IResponseCache.js';
+import type ICookieContainer from '../cookie/ICookieContainer.js';
+import type IResponseCache from '../fetch/cache/response/IResponseCache.js';
 import ResponseCache from '../fetch/cache/response/ResponseCache.js';
-import Browser from './Browser.js';
+import type Browser from './Browser.js';
 import BrowserPage from './BrowserPage.js';
-import IBrowserContext from './types/IBrowserContext.js';
-import IPreflightResponseCache from '../fetch/cache/preflight/IPreflightResponseCache.js';
+import type IBrowserContext from './types/IBrowserContext.js';
+import type IPreflightResponseCache from '../fetch/cache/preflight/IPreflightResponseCache.js';
 import PreflightResponseCache from '../fetch/cache/preflight/PreflightResponseCache.js';
+import * as PropertySymbol from '../PropertySymbol.js';
+import type IECMAScriptModuleCachedResult from '../module/types/IECMAScriptModuleCachedResult.js';
 
 /**
  * Browser context.
@@ -18,6 +20,8 @@ export default class BrowserContext implements IBrowserContext {
 	public readonly responseCache: IResponseCache = new ResponseCache();
 	public readonly preflightResponseCache: IPreflightResponseCache = new PreflightResponseCache();
 	public readonly closed: boolean = false;
+	public readonly [PropertySymbol.moduleCache]: Map<string, IECMAScriptModuleCachedResult> =
+		new Map();
 
 	/**
 	 * Constructor.

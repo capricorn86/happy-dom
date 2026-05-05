@@ -1,7 +1,7 @@
-import HTMLCollection from '../element/HTMLCollection.js';
+import type HTMLCollection from '../element/HTMLCollection.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import HTMLAreaElement from '../html-area-element/HTMLAreaElement.js';
+import type HTMLAreaElement from '../html-area-element/HTMLAreaElement.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 
 /**

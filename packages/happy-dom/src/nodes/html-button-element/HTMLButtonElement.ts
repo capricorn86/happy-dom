@@ -3,12 +3,12 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import ValidityState from '../../validity-state/ValidityState.js';
 import HTMLElement from '../html-element/HTMLElement.js';
-import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
+import type HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
-import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
+import type HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import { URL } from 'url';
 import MouseEvent from '../../event/events/MouseEvent.js';
-import NodeList from '../node/NodeList.js';
+import type NodeList from '../node/NodeList.js';
 
 const BUTTON_TYPES = ['submit', 'reset', 'button', 'menu'];
 

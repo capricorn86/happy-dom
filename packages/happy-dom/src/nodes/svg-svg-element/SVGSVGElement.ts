@@ -6,18 +6,18 @@ import SVGAngle from '../../svg/SVGAngle.js';
 import SVGNumber from '../../svg/SVGNumber.js';
 import SVGTransform from '../../svg/SVGTransform.js';
 import SVGAnimatedRect from '../../svg/SVGAnimatedRect.js';
-import Event from '../../event/Event.js';
+import type Event from '../../event/Event.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import SVGAnimatedPreserveAspectRatio from '../../svg/SVGAnimatedPreserveAspectRatio.js';
 import SVGAnimatedLength from '../../svg/SVGAnimatedLength.js';
-import Element from '../element/Element.js';
+import type Element from '../element/Element.js';
 import NodeList from '../node/NodeList.js';
-import SVGElement from '../svg-element/SVGElement.js';
+import type SVGElement from '../svg-element/SVGElement.js';
 import SVGMatrix from '../../svg/SVGMatrix.js';
-import HTMLCollection from '../element/HTMLCollection.js';
+import type HTMLCollection from '../element/HTMLCollection.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
-import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
-import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
+import type IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
+import type ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**

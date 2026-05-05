@@ -1,7 +1,7 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import File from '../../../src/file/File.js';
-import HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement.js';
+import type HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement.js';
 import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 
 describe('FileList', () => {

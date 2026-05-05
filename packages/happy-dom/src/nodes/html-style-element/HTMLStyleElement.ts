@@ -1,4 +1,4 @@
-import CSSStyleSheet from '../../css/CSSStyleSheet.js';
+import type CSSStyleSheet from '../../css/CSSStyleSheet.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLElement from '../html-element/HTMLElement.js';
 
@@ -92,6 +92,14 @@ export default class HTMLStyleElement extends HTMLElement {
 	 */
 	public override [PropertySymbol.disconnectedFromDocument](): void {
 		super[PropertySymbol.disconnectedFromDocument]();
+		this[PropertySymbol.sheet] = null;
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.destroy](): void {
+		super[PropertySymbol.destroy]();
 		this[PropertySymbol.sheet] = null;
 	}
 

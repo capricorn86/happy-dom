@@ -1,10 +1,10 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
-import HTMLAnchorElement from '../../../src/nodes/html-anchor-element/HTMLAnchorElement.js';
+import type Document from '../../../src/nodes/document/Document.js';
+import type HTMLAnchorElement from '../../../src/nodes/html-anchor-element/HTMLAnchorElement.js';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 import PointerEvent from '../../../src/event/events/PointerEvent.js';
-import Request from '../../../src/fetch/Request.js';
-import Response from '../../../src/fetch/Response.js';
+import type Request from '../../../src/fetch/Request.js';
+import type Response from '../../../src/fetch/Response.js';
 import Fetch from '../../../src/fetch/Fetch.js';
 import Browser from '../../../src/browser/Browser.js';
 import MouseEvent from '../../../src/event/events/MouseEvent.js';

@@ -1,4 +1,4 @@
-import CSSStyleDeclaration from '../declaration/CSSStyleDeclaration.js';
+import type CSSStyleDeclaration from '../declaration/CSSStyleDeclaration.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**

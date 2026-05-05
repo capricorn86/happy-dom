@@ -1,9 +1,17 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
+    inputs:
+      author:
+        description: 'GitHub Author Username'
+        required: true
+        default: 'capricorn86'
+
+permissions:
+  contents: write
+  id-token: write
+  actions: write
 
 jobs:
   check-next-version:
@@ -11,7 +19,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [22]
+        node-version: [24]
 
     outputs:
       next_version: ${{ steps.versionCheck.outputs.next_version }}
@@ -38,7 +46,7 @@ jobs:
             ./node_modules
             ./packages/*/node_modules
           key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
-      
+
       - name: Install dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
@@ -48,14 +56,14 @@ jobs:
           echo "next_version=$(node ./node_modules/.bin/happy-next-version)" >> $GITHUB_OUTPUT
           echo "current_version=$(node ./node_modules/.bin/happy-current-version)" >> $GITHUB_OUTPUT
 
-  publish: 
+  publish:
     runs-on: ubuntu-latest
     needs: [check-next-version]
     if: ${{ needs.check-next-version.outputs.next_version != '' }}
 
     strategy:
       matrix:
-        node-version: [22]
+        node-version: [24]
 
     steps:
       - uses: actions/checkout@v4
@@ -68,6 +76,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
@@ -90,7 +99,10 @@ jobs:
           key: turbo-master-${{ github.sha }}
           restore-keys: |
             turbo-master
-      
+
+      - name: Install latest NPM
+        run: npm install -g npm@latest
+
       - name: Install dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
@@ -109,13 +121,8 @@ jobs:
           git tag --force v${{ needs.check-next-version.outputs.next_version }} ${GITHUB_SHA}
           git push origin --tags
 
-      - name: Set .npmrc for publish
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_PUBLISH_TOKEN }}" > ./.npmrc
-          npm whoami
-
       - name: Publish packages
-        run: npm publish --workspaces
+        run: npm publish --workspaces --provenance
 
   create-release:
     runs-on: ubuntu-latest
@@ -123,7 +130,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [22]
+        node-version: [24]
 
     steps:
       - uses: actions/checkout@v4
@@ -146,13 +153,13 @@ jobs:
             ./node_modules
             ./packages/*/node_modules
           key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
-      
+
       - name: Install dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
 
       - name: Generate release notes
-        run: node ./node_modules/.bin/happy-release-notes --author=githubUsername > ./RELEASE_NOTES.md
+        run: node ./node_modules/.bin/happy-release-notes --authorUsername=${{ github.event.inputs.author }} > ./RELEASE_NOTES.md
 
       - name: Create release
         id: create_release

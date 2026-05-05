@@ -1,18 +1,18 @@
-import Node from '../nodes/node/Node.js';
+import type Node from '../nodes/node/Node.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import Document from '../nodes/document/Document.js';
-import DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
+import type Document from '../nodes/document/Document.js';
+import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import DOMRect from '../dom/DOMRect.js';
 import RangeHowEnum from './RangeHowEnum.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import RangeUtility from './RangeUtility.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import NodeUtility from '../nodes/node/NodeUtility.js';
-import Comment from '../nodes/comment/Comment.js';
-import Text from '../nodes/text/Text.js';
+import type Comment from '../nodes/comment/Comment.js';
+import type Text from '../nodes/text/Text.js';
 import DOMRectList from '../dom/DOMRectList.js';
-import IRangeBoundaryPoint from './IRangeBoundaryPoint.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type IRangeBoundaryPoint from './IRangeBoundaryPoint.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 import HTMLParser from '../html-parser/HTMLParser.js';
 
 /**

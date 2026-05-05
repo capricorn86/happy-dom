@@ -1,5 +1,5 @@
 import Blob from '../../src/file/Blob.js';
-import FileReader from '../../src/file/FileReader.js';
+import type FileReader from '../../src/file/FileReader.js';
 import Window from '../../src/window/Window.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 

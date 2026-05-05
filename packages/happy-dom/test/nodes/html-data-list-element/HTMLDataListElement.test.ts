@@ -1,6 +1,6 @@
 import HTMLDataListElement from '../../../src/nodes/html-data-list-element/HTMLDataListElement.js';
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import HTMLCollection from '../../../src/nodes/element/HTMLCollection.js';
 

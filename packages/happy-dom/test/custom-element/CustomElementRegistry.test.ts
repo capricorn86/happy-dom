@@ -1,11 +1,11 @@
 import CustomElement from '../CustomElement.js';
 import CustomElementRegistry from '../../src/custom-element/CustomElementRegistry.js';
 import Window from '../../src/window/Window.js';
-import Document from '../../src/nodes/document/Document.js';
+import type Document from '../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import NamespaceURI from '../../src/config/NamespaceURI.js';
-import ICustomElementDefinition from '../../src/custom-element/ICustomElementDefinition.js';
+import type ICustomElementDefinition from '../../src/custom-element/ICustomElementDefinition.js';
 
 describe('CustomElementRegistry', () => {
 	let customElements;
@@ -112,9 +112,9 @@ describe('CustomElementRegistry', () => {
 
 			const element = new CustomElement();
 
-			expect(definition.livecycleCallbacks.connectedCallback).toBe(element.connectedCallback);
-			expect(definition.livecycleCallbacks.disconnectedCallback).toBe(element.disconnectedCallback);
-			expect(definition.livecycleCallbacks.attributeChangedCallback).toBe(
+			expect(definition.lifecycleCallbacks.connectedCallback).toBe(element.connectedCallback);
+			expect(definition.lifecycleCallbacks.disconnectedCallback).toBe(element.disconnectedCallback);
+			expect(definition.lifecycleCallbacks.attributeChangedCallback).toBe(
 				element.attributeChangedCallback
 			);
 		});

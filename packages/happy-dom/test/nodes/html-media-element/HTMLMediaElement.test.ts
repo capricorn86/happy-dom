@@ -1,6 +1,6 @@
 import Window from '../../../src/window/Window.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import HTMLMediaElement from '../../../src/nodes/html-media-element/HTMLMediaElement.js';
 import Event from '../../../src/event/Event.js';
 import { beforeEach, describe, it, expect } from 'vitest';

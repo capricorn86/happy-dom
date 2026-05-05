@@ -1,5 +1,5 @@
 import MouseEvent from './MouseEvent.js';
-import IPointerEventInit from './IPointerEventInit.js';
+import type IPointerEventInit from './IPointerEventInit.js';
 
 /**
  *

@@ -1,9 +1,9 @@
-import IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import type IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import HistoryScrollRestorationEnum from './HistoryScrollRestorationEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import BrowserFrameURL from '../browser/utilities/BrowserFrameURL.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
-import BrowserWindow from '../window/BrowserWindow.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
 
 /**
  * History API.

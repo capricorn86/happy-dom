@@ -1,5 +1,5 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility.js';
 import NamespaceURI from '../../../src/config/NamespaceURI.js';
 import HTMLCollection from '../../../src/nodes/element/HTMLCollection.js';
@@ -178,6 +178,18 @@ describe('ParentNodeUtility', () => {
 			expect(elementByClassName[0]).toBe(element1);
 			expect(elementByClassName[1]).toBe(element2);
 			expect(elementByClassName[2]).toBe(element3);
+		});
+
+		it('Returns element matching unicode class name', () => {
+			const div = document.createElement('div');
+			const unicodeClassName = 'class-😀';
+			const element = document.createElement('span');
+			element.className = unicodeClassName;
+			div.appendChild(element);
+			document.body.appendChild(div);
+
+			expect(div.getElementsByClassName(unicodeClassName)[0]).toBe(element);
+			expect(document.getElementsByClassName(unicodeClassName)[0]).toBe(element);
 		});
 	});
 

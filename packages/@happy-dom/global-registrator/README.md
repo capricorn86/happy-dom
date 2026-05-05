@@ -23,10 +23,23 @@ GlobalRegistrator.register({ url: 'http://localhost:3000', width: 1920, height: 
 
 document.body.innerHTML = `<button>My button</button>`;
 
-const button = document.querySelector('button');
+// Outputs: "My button"
+console.log(document.querySelector('button').innerText);
+```
+
+or register on import with default settings:
+
+```javascript
+import '@happy-dom/global-registrator/register.js';
+
+// Settings can be accessed and modified via the global "happyDOM" object
+window.happyDOM.setURL('http://localhost:3000');
+window.happyDOM.settings.happyDOM.settings.navigator.maxTouchPoints = 0;
+
+document.body.innerHTML = `<button>My button</button>`;
 
 // Outputs: "My button"
-console.log(button.innerText);
+console.log(document.querySelector('button').innerText);
 ```
 
 #### Unregister

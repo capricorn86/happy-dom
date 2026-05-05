@@ -1,7 +1,7 @@
 import HTMLElement from '../html-element/HTMLElement.js';
-import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
+import type HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLFieldSetElement from '../html-field-set-element/HTMLFieldSetElement.js';
-import Node from '../node/Node.js';
+import type Node from '../node/Node.js';
 
 /**
  * HTMLLegendElement

@@ -1,5 +1,5 @@
 import FetchHTTPSCertificate from '../certificate/FetchHTTPSCertificate.js';
-import { Buffer } from 'buffer';
+import type { Buffer } from 'buffer';
 
 /**
  * Synchronous fetch script builder.

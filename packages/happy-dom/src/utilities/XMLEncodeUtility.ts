@@ -1,3 +1,41 @@
+import { decodeHTML, decodeHTMLAttribute, decodeXML, escapeText } from 'entities';
+
+/**
+ * Pre-compiled RegExp patterns for encoding/decoding.
+ * Using pre-compiled patterns avoids RegExp compilation on each call.
+ */
+
+// Encoding patterns
+const ENCODE_XML_ATTR_REGEXP = /[&"<>\t\n\r]/g;
+const ENCODE_HTML_ATTR_REGEXP = /[&"]/g;
+
+// Decoding patterns
+const DECODE_TEXT_CONTENT_REGEXP = /&(?:nbsp|lt|gt|amp);/g;
+
+// Encoding lookup tables
+const ENCODE_XML_ATTR_MAP: { [key: string]: string } = {
+	'&': '&amp;',
+	'"': '&quot;',
+	'<': '&lt;',
+	'>': '&gt;',
+	'\t': '&#x9;',
+	'\n': '&#xA;',
+	'\r': '&#xD;'
+};
+
+const ENCODE_HTML_ATTR_MAP: { [key: string]: string } = {
+	'&': '&amp;',
+	'"': '&quot;'
+};
+
+// Decoding lookup tables
+const DECODE_TEXT_CONTENT_MAP: { [key: string]: string } = {
+	'&nbsp;': String.fromCharCode(160),
+	'&lt;': '<',
+	'&gt;': '>',
+	'&amp;': '&'
+};
+
 /**
  * Utility for encoding.
  */
@@ -12,18 +50,13 @@ export default class XMLEncodeUtility {
 		if (value === null) {
 			return '';
 		}
-		return value
-			.replace(/&/gu, '&amp;')
-			.replace(/"/gu, '&quot;')
-			.replace(/</gu, '&lt;')
-			.replace(/>/gu, '&gt;')
-			.replace(/\t/gu, '&#x9;')
-			.replace(/\n/gu, '&#xA;')
-			.replace(/\r/gu, '&#xD;');
+		return value.replace(ENCODE_XML_ATTR_REGEXP, (char) => ENCODE_XML_ATTR_MAP[char]);
 	}
 
 	/**
 	 * Decodes attribute value.
+	 *
+	 * Uses the 'entities' library for comprehensive XML character reference support.
 	 *
 	 * @param value Value.
 	 * @returns Decoded value.
@@ -32,15 +65,7 @@ export default class XMLEncodeUtility {
 		if (value === null) {
 			return '';
 		}
-
-		return value
-			.replace(/&quot;/gu, '"')
-			.replace(/&lt;/gu, '<')
-			.replace(/&gt;/gu, '>')
-			.replace(/&#x9;/gu, '\t')
-			.replace(/&#xA;/gu, '\n')
-			.replace(/&#xD;/gu, '\r')
-			.replace(/&amp;/gu, '&');
+		return decodeXML(value);
 	}
 
 	/**
@@ -53,11 +78,15 @@ export default class XMLEncodeUtility {
 		if (value === null) {
 			return '';
 		}
-		return value.replace(/&/gu, '&amp;').replace(/"/gu, '&quot;');
+		return value.replace(ENCODE_HTML_ATTR_REGEXP, (char) => ENCODE_HTML_ATTR_MAP[char]);
 	}
 
 	/**
 	 * Decodes attribute value.
+	 *
+	 * Uses the 'entities' library for comprehensive HTML5 character reference support,
+	 * including named entities, decimal numeric references (&#34;), and
+	 * hexadecimal numeric references (&#x22;).
 	 *
 	 * @param value Value.
 	 * @returns Decoded value.
@@ -66,12 +95,14 @@ export default class XMLEncodeUtility {
 		if (value === null) {
 			return '';
 		}
-
-		return value.replace(/&quot;/gu, '"').replace(/&amp;/gu, '&');
+		return decodeHTMLAttribute(value);
 	}
 
 	/**
 	 * Encodes text content.
+	 *
+	 * Uses the 'entities' library which follows the WHATWG HTML serialization spec.
+	 * Encodes &, <, >, and non-breaking space.
 	 *
 	 * @param text Value.
 	 * @returns Escaped value.
@@ -80,12 +111,7 @@ export default class XMLEncodeUtility {
 		if (text === null) {
 			return '';
 		}
-
-		return text
-			.replace(/&/gu, '&amp;')
-			.replace(/\xA0/gu, '&nbsp;')
-			.replace(/</gu, '&lt;')
-			.replace(/>/gu, '&gt;');
+		return escapeText(text);
 	}
 
 	/**
@@ -98,16 +124,13 @@ export default class XMLEncodeUtility {
 		if (text === null) {
 			return '';
 		}
-
-		return text
-			.replace(/&nbsp;/gu, String.fromCharCode(160))
-			.replace(/&lt;/gu, '<')
-			.replace(/&gt;/gu, '>')
-			.replace(/&amp;/gu, '&');
+		return text.replace(DECODE_TEXT_CONTENT_REGEXP, (entity) => DECODE_TEXT_CONTENT_MAP[entity]);
 	}
 
 	/**
 	 * Decodes HTML entities.
+	 *
+	 * Uses the 'entities' library for comprehensive HTML5 named character reference support.
 	 *
 	 * @param value Value.
 	 * @returns Decoded value.
@@ -117,19 +140,14 @@ export default class XMLEncodeUtility {
 			return '';
 		}
 
-		return value
-			.replace(/&lt;/gu, '<')
-			.replace(/&gt;/gu, '>')
-			.replace(/&nbsp;/gu, String.fromCharCode(160))
-			.replace(/&quot;/gu, '"')
-			.replace(/&apos;/gu, "'")
-			.replace(/&#(\d+);/gu, (_match, dec) => String.fromCharCode(parseInt(dec, 10)))
-			.replace(/&#x([A-Fa-f\d]+);/gu, (_match, hex) => String.fromCharCode(parseInt(hex, 16)))
-			.replace(/&amp;/gu, '&');
+		return decodeHTML(value);
 	}
 
 	/**
 	 * Decodes XML entities.
+	 *
+	 * Uses the 'entities' library for comprehensive XML character reference support,
+	 * including named entities and numeric references.
 	 *
 	 * @param value Value.
 	 * @returns Decoded value.
@@ -138,17 +156,6 @@ export default class XMLEncodeUtility {
 		if (value === null) {
 			return '';
 		}
-
-		return (
-			value
-				.replace(/&lt;/gu, '<')
-				.replace(/&gt;/gu, '>')
-				// "&nbsp;" Should not be supported in XML.
-				.replace(/&quot;/gu, '"')
-				.replace(/&apos;/gu, "'")
-				.replace(/&#(\d+);/gu, (_match, dec) => String.fromCharCode(parseInt(dec, 10)))
-				.replace(/&#x([A-Fa-f\d]+);/gu, (_match, hex) => String.fromCharCode(parseInt(hex, 16)))
-				.replace(/&amp;/gu, '&')
-		);
+		return decodeXML(value);
 	}
 }

@@ -1,5 +1,5 @@
 import Event from '../Event.js';
-import IAnimationEventInit from './IAnimationEventInit.js';
+import type IAnimationEventInit from './IAnimationEventInit.js';
 
 /**
  *

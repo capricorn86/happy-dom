@@ -3,10 +3,10 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import PointerEvent from '../../event/events/PointerEvent.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
-import Event from '../../event/Event.js';
+import type Event from '../../event/Event.js';
 import HTMLElementUtility from './HTMLElementUtility.js';
 import DOMStringMap from '../../dom/DOMStringMap.js';
-import Attr from '../attr/Attr.js';
+import type Attr from '../attr/Attr.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**
@@ -985,7 +985,7 @@ export default class HTMLElement extends Element {
 	 * @override
 	 * @see https://html.spec.whatwg.org/multipage/dom.html#htmlelement
 	 */
-	public override [PropertySymbol.connectedToNode](): void {
+	public override [PropertySymbol.connectedToDocument](): void {
 		const window = this[PropertySymbol.window];
 		const localName = this[PropertySymbol.localName]!;
 		const allCallbacks = window.customElements[PropertySymbol.callbacks];
@@ -1005,13 +1005,13 @@ export default class HTMLElement extends Element {
 			}
 		}
 
-		super[PropertySymbol.connectedToNode]();
+		super[PropertySymbol.connectedToDocument]();
 	}
 
 	/**
 	 * @override
 	 */
-	public override [PropertySymbol.disconnectedFromNode](): void {
+	public override [PropertySymbol.disconnectedFromDocument](): void {
 		const window = this[PropertySymbol.window];
 		const localName = this[PropertySymbol.localName]!;
 		const allCallbacks = window.customElements[PropertySymbol.callbacks];
@@ -1033,7 +1033,7 @@ export default class HTMLElement extends Element {
 			}
 		}
 
-		super[PropertySymbol.disconnectedFromNode]();
+		super[PropertySymbol.disconnectedFromDocument]();
 	}
 
 	/**
@@ -1063,6 +1063,16 @@ export default class HTMLElement extends Element {
 			'attributeChangedCallback',
 			[removedAttribute.name, removedAttribute.value, null]
 		);
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.destroy](): void {
+		super[PropertySymbol.destroy]();
+
+		this[PropertySymbol.style] = null;
+		this[PropertySymbol.dataset] = null;
 	}
 
 	/**

@@ -1,12 +1,12 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
-import HTMLSlotElement from '../../../src/nodes/html-slot-element/HTMLSlotElement.js';
+import type Document from '../../../src/nodes/document/Document.js';
+import type HTMLSlotElement from '../../../src/nodes/html-slot-element/HTMLSlotElement.js';
 import CustomElementWithNamedSlots from './CustomElementWithNamedSlots.js';
 import CustomElementWithSlot from './CustomElementWithSlot.js';
 import Event from '../../../src/event/Event.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
-import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
+import type ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
 
 describe('HTMLSlotElement', () => {
 	let window: Window;

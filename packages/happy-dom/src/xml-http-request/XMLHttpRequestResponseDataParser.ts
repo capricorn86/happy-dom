@@ -1,8 +1,8 @@
 import XMLHttpResponseTypeEnum from './XMLHttpResponseTypeEnum.js';
-import BrowserWindow from '../window/BrowserWindow.js';
-import Blob from '../file/Blob.js';
-import Document from '../nodes/document/Document.js';
-import { Buffer } from 'buffer';
+import type BrowserWindow from '../window/BrowserWindow.js';
+import type Blob from '../file/Blob.js';
+import type Document from '../nodes/document/Document.js';
+import type { Buffer } from 'buffer';
 
 /**
  *

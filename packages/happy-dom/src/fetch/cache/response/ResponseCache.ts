@@ -1,8 +1,8 @@
-import IResponseCache from './IResponseCache.js';
-import ICachedResponse from './ICachedResponse.js';
+import type IResponseCache from './IResponseCache.js';
+import type ICachedResponse from './ICachedResponse.js';
 import CachedResponseStateEnum from './CachedResponseStateEnum.js';
-import ICacheableRequest from './ICacheableRequest.js';
-import ICacheableResponse from './ICacheableResponse.js';
+import type ICacheableRequest from './ICacheableRequest.js';
+import type ICacheableResponse from './ICacheableResponse.js';
 import Headers from '../../Headers.js';
 import ResponseCacheFileSystem from './ResponseCacheFileSystem.js';
 
@@ -154,7 +154,7 @@ export default class ResponseCache implements IResponseCache {
 				switch (key) {
 					case 'max-age':
 						cachedResponse.expires =
-							Date.now() + parseInt(value) * 1000 - (age ? parseInt(age) * 1000 : 0);
+							Date.now() + parseFloat(value) * 1000 - (age ? parseFloat(age) * 1000 : 0);
 						break;
 					case 'no-cache':
 					case 'no-store':

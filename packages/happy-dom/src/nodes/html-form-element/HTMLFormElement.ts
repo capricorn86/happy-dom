@@ -3,13 +3,13 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import Event from '../../event/Event.js';
 import SubmitEvent from '../../event/events/SubmitEvent.js';
 import HTMLFormControlsCollection from './HTMLFormControlsCollection.js';
-import HTMLInputElement from '../html-input-element/HTMLInputElement.js';
-import HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
-import HTMLButtonElement from '../html-button-element/HTMLButtonElement.js';
-import IBrowserFrame from '../../browser/types/IBrowserFrame.js';
+import type HTMLInputElement from '../html-input-element/HTMLInputElement.js';
+import type HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
+import type HTMLButtonElement from '../html-button-element/HTMLButtonElement.js';
+import type IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import BrowserFrameNavigator from '../../browser/utilities/BrowserFrameNavigator.js';
-import BrowserWindow from '../../window/BrowserWindow.js';
-import THTMLFormControlElement from './THTMLFormControlElement.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
+import type { THTMLFormControlElement } from './THTMLFormControlElement.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import RadioNodeList from './RadioNodeList.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
@@ -17,10 +17,10 @@ import ClassMethodBinder from '../../utilities/ClassMethodBinder.js';
 import Node from '../node/Node.js';
 import Element from '../element/Element.js';
 import EventTarget from '../../event/EventTarget.js';
-import HTMLDialogElement from '../html-dialog-element/HTMLDialogElement.js';
+import type HTMLDialogElement from '../html-dialog-element/HTMLDialogElement.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
-import HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
-import HTMLOutputElement from '../html-output-element/HTMLOutputElement.js';
+import type HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
+import type HTMLOutputElement from '../html-output-element/HTMLOutputElement.js';
 
 /**
  * HTML Form Element.

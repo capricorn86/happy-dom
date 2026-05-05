@@ -1,7 +1,7 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import HTMLCollection from '../element/HTMLCollection.js';
-import HTMLOptionElement from '../html-option-element/HTMLOptionElement.js';
+import type HTMLCollection from '../element/HTMLCollection.js';
+import type HTMLOptionElement from '../html-option-element/HTMLOptionElement.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 
 /**

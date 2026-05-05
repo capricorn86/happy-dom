@@ -1,12 +1,13 @@
-import IBrowserPageViewport from '../types/IBrowserPageViewport.js';
-import VirtualConsolePrinter from '../../console/VirtualConsolePrinter.js';
-import IBrowserFrame from './IBrowserFrame.js';
-import IBrowserContext from './IBrowserContext.js';
-import { Script } from 'vm';
-import IGoToOptions from './IGoToOptions.js';
-import Response from '../../fetch/Response.js';
-import IReloadOptions from './IReloadOptions.js';
-import IOptionalBrowserPageViewport from './IOptionalBrowserPageViewport.js';
+import type IBrowserPageViewport from '../types/IBrowserPageViewport.js';
+import type IConsole from '../../console/IConsole.js';
+import type VirtualConsolePrinter from '../../console/VirtualConsolePrinter.js';
+import type IBrowserFrame from './IBrowserFrame.js';
+import type IBrowserContext from './IBrowserContext.js';
+import type { Script } from 'vm';
+import type IGoToOptions from './IGoToOptions.js';
+import type Response from '../../fetch/Response.js';
+import type IReloadOptions from './IReloadOptions.js';
+import type IOptionalBrowserPageViewport from './IOptionalBrowserPageViewport.js';
 
 /**
  * Browser page.
@@ -15,7 +16,7 @@ export default interface IBrowserPage {
 	readonly virtualConsolePrinter: VirtualConsolePrinter;
 	readonly mainFrame: IBrowserFrame;
 	readonly context: IBrowserContext;
-	readonly console: Console;
+	readonly console: IConsole;
 	readonly frames: IBrowserFrame[];
 	readonly viewport: IBrowserPageViewport;
 	readonly closed: boolean;
@@ -46,6 +47,21 @@ export default interface IBrowserPage {
 	 * Evaluates code or a VM Script in the page's context.
 	 */
 	evaluate(script: string | Script): any;
+
+	/**
+	 * Evaluates a module in the page's context.
+	 *
+	 * @param options Options.
+	 * @param options.url URL.
+	 * @param options.type Module type.
+	 * @param options.code Code.
+	 * @returns Module exports.
+	 */
+	evaluateModule(options: {
+		url?: string;
+		type?: 'esm' | 'css' | 'json';
+		code?: string;
+	}): Promise<Record<string, any>>;
 
 	/**
 	 * Sets the viewport.

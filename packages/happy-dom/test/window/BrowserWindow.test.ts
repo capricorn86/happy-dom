@@ -1,10 +1,10 @@
 import CSSStyleDeclaration from '../../src/css/declaration/CSSStyleDeclaration.js';
 import Document from '../../src/nodes/document/Document.js';
-import HTMLLinkElement from '../../src/nodes/html-link-element/HTMLLinkElement.js';
+import type HTMLLinkElement from '../../src/nodes/html-link-element/HTMLLinkElement.js';
 import HTMLElement from '../../src/nodes/html-element/HTMLElement.js';
 import ResourceFetch from '../../src/fetch/ResourceFetch.js';
-import HTMLScriptElement from '../../src/nodes/html-script-element/HTMLScriptElement.js';
-import Window from '../../src/window/Window.js';
+import type HTMLScriptElement from '../../src/nodes/html-script-element/HTMLScriptElement.js';
+import type Window from '../../src/window/Window.js';
 import BrowserWindow from '../../src/window/BrowserWindow.js';
 import Navigator from '../../src/navigator/Navigator.js';
 import Headers from '../../src/fetch/Headers.js';
@@ -15,27 +15,26 @@ import CustomElement from '../CustomElement.js';
 import Request from '../../src/fetch/Request.js';
 import Response from '../../src/fetch/Response.js';
 import Fetch from '../../src/fetch/Fetch.js';
-import MessageEvent from '../../src/event/events/MessageEvent.js';
+import type MessageEvent from '../../src/event/events/MessageEvent.js';
 import Event from '../../src/event/Event.js';
-import ErrorEvent from '../../src/event/events/ErrorEvent.js';
+import type ErrorEvent from '../../src/event/events/ErrorEvent.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Permissions from '../../src/permissions/Permissions.js';
 import Clipboard from '../../src/clipboard/Clipboard.js';
 import PackageVersion from '../../src/version.js';
-import HTMLDialogElement from '../../src/nodes/html-dialog-element/HTMLDialogElement.js';
+import type HTMLDialogElement from '../../src/nodes/html-dialog-element/HTMLDialogElement.js';
 import Browser from '../../src/browser/Browser.js';
 import CrossOriginBrowserWindow from '../../src/window/CrossOriginBrowserWindow.js';
 import BrowserFrameFactory from '../../src/browser/utilities/BrowserFrameFactory.js';
-import IBrowser from '../../src/browser/types/IBrowser.js';
-import IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
-import IBrowserPage from '../../src/browser/types/IBrowserPage.js';
+import type IBrowser from '../../src/browser/types/IBrowser.js';
+import type IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
+import type IBrowserPage from '../../src/browser/types/IBrowserPage.js';
 import AdoptedStyleSheetCustomElement from '../AdoptedStyleSheetCustomElement.js';
-import CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
 import Location from '../../src/location/Location.js';
 import HTMLElementConfig from '../../src/config/HTMLElementConfig.js';
 
 import '../types.d.js';
-import EventTarget from '../../src/event/EventTarget.js';
+import type EventTarget from '../../src/event/EventTarget.js';
 import EventPhaseEnum from '../../src/event/EventPhaseEnum.js';
 import { PerformanceEntry, PerformanceObserver } from 'perf_hooks';
 import { URLSearchParams } from 'url';
@@ -49,6 +48,134 @@ const PLATFORM =
 	process.platform.slice(1) +
 	' ' +
 	process.arch;
+
+const PROPERTY_EVENTS = [
+	'onsearch',
+	'onappinstalled',
+	'onbeforeinstallprompt',
+	'onabort',
+	'onbeforeinput',
+	'onbeforematch',
+	'onbeforetoggle',
+	'onblur',
+	'oncancel',
+	'oncanplay',
+	'oncanplaythrough',
+	'onchange',
+	'onclick',
+	'onclose',
+	'oncommand',
+	'oncontentvisibilityautostatechange',
+	'oncontextlost',
+	'oncontextmenu',
+	'oncontextrestored',
+	'oncuechange',
+	'ondblclick',
+	'ondrag',
+	'ondragend',
+	'ondragenter',
+	'ondragleave',
+	'ondragover',
+	'ondragstart',
+	'ondrop',
+	'ondurationchange',
+	'onemptied',
+	'onended',
+	'onerror',
+	'onfocus',
+	'onformdata',
+	'oninput',
+	'oninvalid',
+	'onkeydown',
+	'onkeypress',
+	'onkeyup',
+	'onload',
+	'onloadeddata',
+	'onloadedmetadata',
+	'onloadstart',
+	'onmousedown',
+	'onmouseenter',
+	'onmouseleave',
+	'onmousemove',
+	'onmouseout',
+	'onmouseover',
+	'onmouseup',
+	'onmousewheel',
+	'onpause',
+	'onplay',
+	'onplaying',
+	'onprogress',
+	'onratechange',
+	'onreset',
+	'onresize',
+	'onscroll',
+	'onscrollend',
+	'onsecuritypolicyviolation',
+	'onseeked',
+	'onseeking',
+	'onselect',
+	'onslotchange',
+	'onstalled',
+	'onsubmit',
+	'onsuspend',
+	'ontimeupdate',
+	'ontoggle',
+	'onvolumechange',
+	'onwaiting',
+	'onwebkitanimationend',
+	'onwebkitanimationiteration',
+	'onwebkitanimationstart',
+	'onwebkittransitionend',
+	'onwheel',
+	'onauxclick',
+	'ongotpointercapture',
+	'onlostpointercapture',
+	'onpointerdown',
+	'onpointermove',
+	'onpointerup',
+	'onpointercancel',
+	'onpointerover',
+	'onpointerout',
+	'onpointerenter',
+	'onpointerleave',
+	'onselectstart',
+	'onselectionchange',
+	'onanimationcancel',
+	'onanimationend',
+	'onanimationiteration',
+	'onanimationstart',
+	'ontransitionrun',
+	'ontransitionstart',
+	'ontransitionend',
+	'ontransitioncancel',
+	'onbeforexrselect',
+	'onafterprint',
+	'onbeforeprint',
+	'onbeforeunload',
+	'onhashchange',
+	'onlanguagechange',
+	'onmessage',
+	'onmessageerror',
+	'onoffline',
+	'ononline',
+	'onpagehide',
+	'onpageshow',
+	'onpopstate',
+	'onrejectionhandled',
+	'onstorage',
+	'onunhandledrejection',
+	'onunload',
+	'ondevicemotion',
+	'ondeviceorientation',
+	'ondeviceorientationabsolute',
+	'onpointerrawupdate',
+	'onpageswap',
+	'onpagereveal',
+	'onscrollsnapchange',
+	'onscrollsnapchanging',
+	'ongamepadconnected',
+	'ongamepaddisconnected'
+];
 
 describe('BrowserWindow', () => {
 	let browser: IBrowser;
@@ -141,6 +268,31 @@ describe('BrowserWindow', () => {
 
 			expect(consoleWarn.length).toBe(0);
 		});
+	});
+
+	describe('get on{event}()', () => {
+		for (const event of PROPERTY_EVENTS) {
+			it(`Returns null for "${event}" by default.`, () => {
+				for (const event of PROPERTY_EVENTS) {
+					expect((<any>window)[event]).toBeNull();
+				}
+			});
+
+			it(`Sets and gets event handler for "${event}".`, () => {
+				let isTriggered = false;
+				const handler = (): boolean => (isTriggered = true);
+				(<any>window)[event] = handler;
+				expect((<any>window)[event]).toBe(handler);
+
+				// Special case for "onload" event, as it is triggered during the initialization of the window.
+				if (event !== 'onload') {
+					const div = document.createElement('div');
+					window.document.body.appendChild(div);
+					div.dispatchEvent(new Event(event.slice(2), { bubbles: true }));
+					expect(isTriggered).toBe(true);
+				}
+			});
+		}
 	});
 
 	describe('get happyDOM()', () => {
@@ -435,6 +587,12 @@ describe('BrowserWindow', () => {
 		});
 	});
 
+	describe('get screen()', () => {
+		it('Returns the "Screen" object.', () => {
+			expect(window.screen).toBeInstanceOf(window.Screen);
+		});
+	});
+
 	describe('get localStorage()', () => {
 		it('Returns the "localStorage" object.', () => {
 			expect(window.localStorage).toBeInstanceOf(window.Storage);
@@ -652,7 +810,7 @@ describe('BrowserWindow', () => {
 			);
 			const elementComputedStyle = window.getComputedStyle(element);
 
-			const styleSheet = new CSSStyleSheet();
+			const styleSheet = new window.CSSStyleSheet();
 			styleSheet.replaceSync(`
                 span {
 					color: green;
@@ -2240,7 +2398,7 @@ describe('BrowserWindow', () => {
 			const newWindow = <Window>window.open(`javascript:document.write('Test');`);
 			expect(newWindow).toBeInstanceOf(BrowserWindow);
 			expect(newWindow.location.href).toBe('about:blank');
-			await new Promise((resolve) => setTimeout(resolve, 1));
+			await browser.waitUntilComplete();
 			expect(newWindow.document.body.innerHTML).toBe('Test');
 		});
 
@@ -2250,7 +2408,7 @@ describe('BrowserWindow', () => {
 			newWindow.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
 			expect(newWindow).toBeInstanceOf(BrowserWindow);
 			expect(newWindow.location.href).toBe('about:blank');
-			await new Promise((resolve) => setTimeout(resolve, 20));
+			await browser.waitUntilComplete();
 			expect(String((<ErrorEvent>(<unknown>errorEvent)).error)).toBe(
 				'ReferenceError: test is not defined'
 			);

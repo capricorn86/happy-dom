@@ -1,7 +1,5 @@
-import Event from './Event.js';
+import type Event from './Event.js';
 
-type TEventListenerObject = {
+export type TEventListenerObject = {
 	handleEvent(event: Event): void;
 };
-
-export default TEventListenerObject;

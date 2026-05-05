@@ -1,4 +1,4 @@
-import SelectorItem from './SelectorItem.js';
+import type SelectorItem from './SelectorItem.js';
 
 export default interface ISelectorPseudo {
 	name: string;

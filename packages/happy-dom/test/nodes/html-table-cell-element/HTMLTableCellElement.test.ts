@@ -1,6 +1,6 @@
 import HTMLTableCellElement from '../../../src/nodes/html-table-cell-element/HTMLTableCellElement.js';
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import DOMTokenList from '../../../src/dom/DOMTokenList.js';
 

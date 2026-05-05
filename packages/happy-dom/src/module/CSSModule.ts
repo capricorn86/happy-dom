@@ -1,7 +1,8 @@
-import BrowserWindow from '../window/BrowserWindow.js';
-import { URL } from 'url';
-import IModule from './IModule.js';
-import CSSStyleSheet from '../css/CSSStyleSheet.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
+import type { URL } from 'url';
+import type IModule from './types/IModule.js';
+import type CSSStyleSheet from '../css/CSSStyleSheet.js';
+import type IModuleInit from './types/IModuleInit.js';
 
 /**
  * CSS module.
@@ -15,14 +16,12 @@ export default class CSSModule implements IModule {
 	/**
 	 * Constructor.
 	 *
-	 * @param window Window.
-	 * @param url Module URL.
-	 * @param source Source code.
+	 * @param init Initialization options.
 	 */
-	constructor(window: BrowserWindow, url: URL, source: string) {
-		this.#window = window;
-		this.url = url;
-		this.#source = source;
+	constructor(init: IModuleInit) {
+		this.#window = init.window;
+		this.url = <URL>init.url;
+		this.#source = init.source;
 	}
 
 	/**

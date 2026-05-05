@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import TextTrack from '../../../src/nodes/html-media-element/TextTrack.js';
 import TextTrackKindEnum from '../../../src/nodes/html-media-element/TextTrackKindEnum.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
-import BrowserWindow from '../../../src/window/BrowserWindow.js';
+import type BrowserWindow from '../../../src/window/BrowserWindow.js';
 import Window from '../../../src/window/Window.js';
 import EventTarget from '../../../src/event/EventTarget.js';
 

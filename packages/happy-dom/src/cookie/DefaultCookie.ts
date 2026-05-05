@@ -1,5 +1,5 @@
 import CookieSameSiteEnum from './enums/CookieSameSiteEnum.js';
-import ICookie from './ICookie.js';
+import type ICookie from './ICookie.js';
 
 export default <ICookie>{
 	// Required

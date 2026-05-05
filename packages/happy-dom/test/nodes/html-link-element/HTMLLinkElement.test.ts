@@ -1,10 +1,10 @@
 import Window from '../../../src/window/Window.js';
-import BrowserWindow from '../../../src/window/BrowserWindow.js';
-import Document from '../../../src/nodes/document/Document.js';
+import type BrowserWindow from '../../../src/window/BrowserWindow.js';
+import type Document from '../../../src/nodes/document/Document.js';
 import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
 import Event from '../../../src/event/Event.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
-import EventTarget from '../../../src/event/EventTarget.js';
+import type EventTarget from '../../../src/event/EventTarget.js';
 import BrowserErrorCaptureEnum from '../../../src/browser/enums/BrowserErrorCaptureEnum.js';
 import DOMTokenList from '../../../src/dom/DOMTokenList.js';
 

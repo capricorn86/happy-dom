@@ -6,11 +6,11 @@ import FormData from '../../form-data/FormData.js';
 import Blob from '../../file/Blob.js';
 import DOMException from '../../exception/DOMException.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
-import IRequestBody from '../types/IRequestBody.js';
-import IResponseBody from '../types/IResponseBody.js';
+import type { TRequestBody } from '../types/TRequestBody.js';
+import type { TResponseBody } from '../types/TResponseBody.js';
 import { Buffer } from 'buffer';
 import Stream from 'stream';
-import BrowserWindow from '../../window/BrowserWindow.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
 
 /**
  * Fetch body utility.
@@ -25,7 +25,7 @@ export default class FetchBodyUtility {
 	 * @param body Body.
 	 * @returns Stream and type.
 	 */
-	public static getBodyStream(body: IRequestBody | IResponseBody): {
+	public static getBodyStream(body: TRequestBody | TResponseBody): {
 		contentType: string | null;
 		contentLength: number | null;
 		stream: ReadableStream | null;
@@ -135,7 +135,15 @@ export default class FetchBodyUtility {
 			(<any>requestOrResponse.body)[PropertySymbol.nodeStream].pipe(stream1);
 			(<any>requestOrResponse.body)[PropertySymbol.nodeStream].pipe(stream2);
 			// Sets the body of the cloned request/response to the first pass through stream.
-			requestOrResponse.body = this.nodeToWebStream(stream1);
+			// Request uses [PropertySymbol.body] with a getter, Response uses public readonly body.
+			const newStream = this.nodeToWebStream(stream1);
+			if (PropertySymbol.body in requestOrResponse) {
+				// Request object - set the symbol property (getter will return it)
+				(<any>requestOrResponse)[PropertySymbol.body] = newStream;
+			} else {
+				// Response object - set the public property directly
+				(<ReadableStream | null>(<any>requestOrResponse).body) = newStream;
+			}
 			// Returns the clone.
 			return this.nodeToWebStream(stream2);
 		}
@@ -145,8 +153,14 @@ export default class FetchBodyUtility {
 		const [stream1, stream2] = requestOrResponse.body.tee();
 
 		// Sets the body of the cloned request to the first pass through stream.
-		// TODO: check id this is required as request should be read only object
-		requestOrResponse.body = stream1;
+		// Request uses [PropertySymbol.body] with a getter, Response uses public readonly body.
+		if (PropertySymbol.body in requestOrResponse) {
+			// Request object - set the symbol property (getter will return it)
+			(<any>requestOrResponse)[PropertySymbol.body] = stream1;
+		} else {
+			// Response object - set the public property directly
+			(<ReadableStream | null>(<any>requestOrResponse).body) = stream1;
+		}
 
 		// Returns the other stream as the clone
 		return stream2;

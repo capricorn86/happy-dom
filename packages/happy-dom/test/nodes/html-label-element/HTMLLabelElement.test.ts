@@ -1,7 +1,7 @@
 import Window from '../../../src/window/Window.js';
-import Document from '../../../src/nodes/document/Document.js';
-import HTMLLabelElement from '../../../src/nodes/html-label-element/HTMLLabelElement.js';
-import HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement.js';
+import type Document from '../../../src/nodes/document/Document.js';
+import type HTMLLabelElement from '../../../src/nodes/html-label-element/HTMLLabelElement.js';
+import type HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import MouseEvent from '../../../src/event/events/MouseEvent.js';
 

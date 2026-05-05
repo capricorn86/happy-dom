@@ -3,9 +3,9 @@ import BrowserFrame from '../../src/browser/BrowserFrame';
 import BrowserWindow from '../../src/window/BrowserWindow';
 import VirtualConsolePrinter from '../../src/console/VirtualConsolePrinter';
 import VirtualConsole from '../../src/console/VirtualConsole';
-import Response from '../../src/fetch/Response';
+import type Response from '../../src/fetch/Response';
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import IGoToOptions from '../../src/browser/types/IGoToOptions';
+import type IGoToOptions from '../../src/browser/types/IGoToOptions';
 import BrowserFrameFactory from '../../src/browser/utilities/BrowserFrameFactory';
 import Event from '../../src/event/Event';
 import * as PropertySymbol from '../../src/PropertySymbol';
@@ -241,6 +241,48 @@ describe('BrowserPage', () => {
 			expect(mainFrameWindow[PropertySymbol.modules].esm.size).toBe(0);
 			expect(mainFrameWindow[PropertySymbol.modules].css.size).toBe(0);
 			expect(mainFrameWindow[PropertySymbol.modules].json.size).toBe(0);
+		});
+
+		it('Clears event listeners of nodes when closing.', async () => {
+			const browser = new Browser({ console });
+			const page = browser.defaultContext.newPage();
+			const mainFrame = page.mainFrame;
+			const frame1 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+
+			const div1 = mainFrame.document.createElement('div');
+			const div2 = frame1.document.createElement('div');
+			const div3 = frame2.document.createElement('div');
+			let mainFrameDivClicked = false;
+			let frame1DivClicked = false;
+			let frame2DivClicked = false;
+
+			div1.addEventListener('click', () => {
+				mainFrameDivClicked = true;
+			});
+
+			div2.addEventListener('click', () => {
+				frame1DivClicked = true;
+			});
+
+			div3.addEventListener('click', () => {
+				frame2DivClicked = true;
+			});
+
+			mainFrame.document.body.appendChild(div1);
+			frame1.document.body.appendChild(div2);
+			frame2.document.body.appendChild(div3);
+
+			await page.close();
+
+			// Simulate clicks after page is closed
+			div1.dispatchEvent(new Event('click'));
+			div2.dispatchEvent(new Event('click'));
+			div3.dispatchEvent(new Event('click'));
+
+			expect(mainFrameDivClicked).toBe(false);
+			expect(frame1DivClicked).toBe(false);
+			expect(frame2DivClicked).toBe(false);
 		});
 	});
 

@@ -1,13 +1,13 @@
 import Node from '../node/Node.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import Element from '../element/Element.js';
+import type Element from '../element/Element.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
-import IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
-import ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
-import NodeList from '../node/NodeList.js';
+import type IHTMLElementTagNameMap from '../../config/IHTMLElementTagNameMap.js';
+import type ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
+import type NodeList from '../node/NodeList.js';
 
 /**
  * DocumentFragment.

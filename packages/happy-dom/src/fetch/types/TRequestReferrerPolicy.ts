@@ -1,4 +1,4 @@
-type IRequestReferrerPolicy =
+export type TRequestReferrerPolicy =
 	| ''
 	| 'no-referrer'
 	| 'no-referrer-when-downgrade'
@@ -8,4 +8,3 @@ type IRequestReferrerPolicy =
 	| 'origin-when-cross-origin'
 	| 'strict-origin-when-cross-origin'
 	| 'unsafe-url';
-export default IRequestReferrerPolicy;

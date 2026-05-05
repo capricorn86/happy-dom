@@ -2,13 +2,13 @@ import Event from '../../event/Event.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import HTMLElement from '../html-element/HTMLElement.js';
-import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
+import type HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLInputElementSelectionDirectionEnum from '../html-input-element/HTMLInputElementSelectionDirectionEnum.js';
 import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputElementSelectionModeEnum.js';
 import ValidityState from '../../validity-state/ValidityState.js';
-import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
+import type HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
-import NodeList from '../node/NodeList.js';
+import type NodeList from '../node/NodeList.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**

@@ -73,6 +73,7 @@ export const windowResizeListener = Symbol('windowResizeListener');
 export const mutationObservers = Symbol('mutationObservers');
 export const openerFrame = Symbol('openerFrame');
 export const openerWindow = Symbol('openerWindow');
+export const pointerCaptures = Symbol('pointerCaptures');
 export const popup = Symbol('popup');
 export const isConnected = Symbol('isConnected');
 export const parentNode = Symbol('parentNode');
@@ -411,3 +412,6 @@ export const validateJavaScriptExecutionEnvironment = Symbol(
 	'validateJavaScriptExecutionEnvironment'
 );
 export const currentNode = Symbol('currentNode');
+export const openWebSockets = Symbol('openWebSockets');
+export const webSocket = Symbol('webSocket');
+export const moduleCache = Symbol('moduleCache');

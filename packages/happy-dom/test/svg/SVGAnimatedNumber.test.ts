@@ -1,5 +1,5 @@
 import { beforeEach, describe, it, expect } from 'vitest';
-import BrowserWindow from '../../src/window/BrowserWindow.js';
+import type BrowserWindow from '../../src/window/BrowserWindow.js';
 import Window from '../../src/window/Window.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import SVGAnimatedNumber from '../../src/svg/SVGAnimatedNumber.js';

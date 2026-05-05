@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
-import BrowserWindow from '../../src/window/BrowserWindow.js';
+import type BrowserWindow from '../../src/window/BrowserWindow.js';
 import Window from '../../src/window/Window.js';
 import CSSParser from '../../src/css/utilities/CSSParser.js';
-import CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
+import type CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
 import CSSMediaRule from '../../src/css/rules/CSSMediaRule.js';
 
 describe('MediaList', () => {

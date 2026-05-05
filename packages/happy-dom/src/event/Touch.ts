@@ -1,5 +1,5 @@
-import EventTarget from './EventTarget.js';
-import ITouchInit from './ITouchInit.js';
+import type EventTarget from './EventTarget.js';
+import type ITouchInit from './ITouchInit.js';
 
 /**
  *

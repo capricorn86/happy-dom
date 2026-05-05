@@ -1,7 +1,7 @@
-import IPreflightResponseCache from './IPreflightResponseCache.js';
-import ICacheablePreflightRequest from './ICacheablePreflightRequest.js';
-import ICachedPreflightResponse from './ICachedPreflightResponse.js';
-import ICacheablePreflightResponse from './ICacheablePreflightResponse.js';
+import type IPreflightResponseCache from './IPreflightResponseCache.js';
+import type ICacheablePreflightRequest from './ICacheablePreflightRequest.js';
+import type ICachedPreflightResponse from './ICachedPreflightResponse.js';
+import type ICacheablePreflightResponse from './ICacheablePreflightResponse.js';
 
 /**
  * Fetch preflight response cache.

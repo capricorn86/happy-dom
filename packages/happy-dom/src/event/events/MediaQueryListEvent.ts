@@ -1,5 +1,5 @@
 import Event from '../Event.js';
-import IMediaQueryListInit from './IMediaQueryListInit.js';
+import type IMediaQueryListInit from './IMediaQueryListInit.js';
 
 /**
  *

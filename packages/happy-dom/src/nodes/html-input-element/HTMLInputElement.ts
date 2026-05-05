@@ -6,20 +6,47 @@ import Event from '../../event/Event.js';
 import HTMLInputElementValueSanitizer from './HTMLInputElementValueSanitizer.js';
 import HTMLInputElementSelectionModeEnum from './HTMLInputElementSelectionModeEnum.js';
 import HTMLInputElementSelectionDirectionEnum from './HTMLInputElementSelectionDirectionEnum.js';
-import HTMLFormElement from '../html-form-element/HTMLFormElement.js';
+import type HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLInputElementValueStepping from './HTMLInputElementValueStepping.js';
 import FileList from './FileList.js';
-import HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
+import type HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import HTMLInputElementDateUtility from './HTMLInputElementDateUtility.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
-import HTMLDataListElement from '../html-data-list-element/HTMLDataListElement.js';
-import Document from '../document/Document.js';
-import ShadowRoot from '../shadow-root/ShadowRoot.js';
+import type HTMLDataListElement from '../html-data-list-element/HTMLDataListElement.js';
+import type Document from '../document/Document.js';
+import type ShadowRoot from '../shadow-root/ShadowRoot.js';
 import { URL } from 'url';
 import MouseEvent from '../../event/events/MouseEvent.js';
-import NodeList from '../node/NodeList.js';
+import type NodeList from '../node/NodeList.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
+
+// Valid input type states per HTML spec:
+// https://html.spec.whatwg.org/multipage/input.html#attr-input-type
+const INPUT_TYPE_STATES = new Set([
+	'hidden',
+	'text',
+	'search',
+	'tel',
+	'url',
+	'email',
+	'password',
+	'date',
+	'month',
+	'week',
+	'time',
+	'datetime-local',
+	'number',
+	'range',
+	'color',
+	'checkbox',
+	'radio',
+	'file',
+	'submit',
+	'image',
+	'reset',
+	'button'
+]);
 
 /**
  * HTML Input Element.
@@ -370,7 +397,8 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @returns Type. Defaults to "text".
 	 */
 	public get type(): string {
-		return this.getAttribute('type') || 'text';
+		const value = (this.getAttribute('type') ?? '').toLowerCase();
+		return INPUT_TYPE_STATES.has(value) ? value : 'text';
 	}
 
 	/**
@@ -1365,7 +1393,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @param [increment] Increment.
 	 */
 	public stepUp(increment?: number): void {
-		const newValue = HTMLInputElementValueStepping.step(this.type, this.value, 1, increment);
+		const newValue = HTMLInputElementValueStepping.step(this, 1, increment);
 		if (newValue !== null) {
 			this.value = newValue;
 		}
@@ -1377,7 +1405,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @param [increment] Increment.
 	 */
 	public stepDown(increment?: number): void {
-		const newValue = HTMLInputElementValueStepping.step(this.type, this.value, -1, increment);
+		const newValue = HTMLInputElementValueStepping.step(this, -1, increment);
 		if (newValue !== null) {
 			this.value = newValue;
 		}

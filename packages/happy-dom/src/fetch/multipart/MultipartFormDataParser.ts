@@ -1,10 +1,10 @@
-import FormData from '../../form-data/FormData.js';
+import type FormData from '../../form-data/FormData.js';
 import { ReadableStream } from 'stream/web';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import MultipartReader from './MultipartReader.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import { Buffer } from 'buffer';
-import BrowserWindow from '../../window/BrowserWindow.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
 
 /**
  * Multipart form data factory.

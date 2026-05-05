@@ -1,4 +1,4 @@
-import TextTrackCue from './TextTrackCue.js';
+import type TextTrackCue from './TextTrackCue.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**

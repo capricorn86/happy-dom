@@ -1,4 +1,4 @@
-import BrowserWindow from './BrowserWindow.js';
+import type BrowserWindow from './BrowserWindow.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 
 import DocumentImplementation from '../nodes/document/Document.js';
@@ -36,6 +36,7 @@ import MediaStreamImplementation from '../nodes/html-media-element/MediaStream.j
 import MediaStreamTrackImplementation from '../nodes/html-media-element/MediaStreamTrack.js';
 import CanvasCaptureMediaStreamTrackImplementation from '../nodes/html-canvas-element/CanvasCaptureMediaStreamTrack.js';
 import URLImplementation from '../url/URL.js';
+import WebSocketImplementation from '../web-socket/WebSocket.js';
 
 /**
  * Extends classes with a "window" property, so that they internally can access it's Window context.
@@ -228,6 +229,11 @@ export default class WindowContextClassExtender {
 		class URL extends URLImplementation {}
 		URL.prototype[PropertySymbol.window] = window;
 		(<typeof URL>window.URL) = URL;
+
+		// WebSocket
+		class WebSocket extends WebSocketImplementation {}
+		WebSocket.prototype[PropertySymbol.window] = window;
+		(<typeof WebSocket>window.WebSocket) = WebSocket;
 
 		/* eslint-enable jsdoc/require-jsdoc */
 	}

@@ -126,15 +126,15 @@ export default [
 		'1'
 	],
 	[
-		'--browser.disableJavaScriptEvaluation',
-		'',
+		'--browser.enableJavaScriptEvaluation',
+		'--javaScript, --javascript, -j',
 		'boolean',
-		'Disables JavaScript evaluation.',
+		'Enables JavaScript evaluation.',
 		'false'
 	],
 	[
 		'--browser.suppressInsecureJavaScriptEnvironmentWarning',
-		'',
+		'--suppressJavaScriptWarning, -sj',
 		'boolean',
 		'Suppresses the warning that is printed when code generation from strings is enabled at process level',
 		'false'
@@ -196,6 +196,27 @@ export default [
 		'--browser.fetch.virtualServer, -vs',
 		'string',
 		'Setup a virtual server. E.g. -vs="^https://e.com/[a-z]{2}/|./build"',
+		''
+	],
+	[
+		'--browser.module.resolveNodeModules.directory=<path>',
+		'',
+		'string',
+		'Directory to resolve node modules from.',
+		''
+	],
+	[
+		'--browser.module.resolveNodeModules.url=<url>',
+		'',
+		'string',
+		'URL to resolve node modules to.',
+		''
+	],
+	[
+		'--browser.module.resolveNodeModules.mainFields=<fields>',
+		'',
+		'string[]',
+		'Comma-separated list of main fields to use when resolving node modules.',
 		''
 	],
 	[

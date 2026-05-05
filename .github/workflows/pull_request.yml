@@ -1,7 +1,6 @@
 name: Pull request
 
-on:
-  pull_request
+on: pull_request
 
 jobs:
   build:
@@ -50,11 +49,11 @@ jobs:
         with:
           path: .turbo
           key: turbo-master
-      
+
       - name: Install dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
-  
+
       - name: Compile package
         run: npm run compile
 
