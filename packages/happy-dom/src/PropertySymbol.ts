@@ -413,5 +413,4 @@ export const currentNode = Symbol('currentNode');
 export const openWebSockets = Symbol('openWebSockets');
 export const webSocket = Symbol('webSocket');
 export const moduleCache = Symbol('moduleCache');
-export const source = Symbol('source');
 export const context = Symbol('context');

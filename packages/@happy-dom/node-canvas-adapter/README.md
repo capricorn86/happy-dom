@@ -1,9 +1,6 @@
-# @happy-dom/node-canvas-adapter
+![Happy DOM Logo](https://github.com/capricorn86/happy-dom/raw/master/docs/happy-dom-logo.jpg)
 
-[![npm version](https://badge.fury.io/js/@happy-dom%2Fnode-canvas-adapter.svg)](https://www.npmjs.com/package/@happy-dom/node-canvas-adapter)
-[![License](https://img.shields.io/github/license/capricorn86/happy-dom.svg)](https://github.com/capricorn86/happy-dom/blob/master/LICENSE)
-
-Pluggable canvas adapter for [happy-dom](https://github.com/capricorn86/happy-dom) using [node-canvas](https://github.com/Automattic/node-canvas).
+Pluggable canvas adapter for [Happy DOM](https://github.com/capricorn86/happy-dom) using [node-canvas](https://github.com/Automattic/node-canvas).
 
 ## Installation
 
@@ -13,44 +10,52 @@ npm install @happy-dom/node-canvas-adapter canvas
 
 ## Usage
 
+![Happy DOM Logo](https://github.com/capricorn86/happy-dom/raw/master/docs/happy-dom-logo.jpg)
+
+This package makes it possible to use [Happy DOM](https://github.com/capricorn86/happy-dom) with [Jest](https://jestjs.io/).
+
+## Installation
+
+```bash
+npm install canvas @happy-dom/node-canvas-adapter
+```
+
+## Documentation
+
+You will find the documentation in the [Happy DOM Wiki](https://github.com/capricorn86/happy-dom/wiki) under [Node Canvas Adapter](https://github.com/capricorn86/happy-dom/wiki/Node-Canvas-Adapter).
+
+## Usage
+
+
 ```typescript
 import { Window } from 'happy-dom';
 import { CanvasAdapter } from '@happy-dom/node-canvas-adapter';
 
 const window = new Window({
   settings: {
-    canvasAdapter: new CanvasAdapter()
+    canvasAdapter: new CanvasAdapter(),
+    // Optionally, enable image file loading
+    enableImageFileLoading: true
   }
 });
 
 const canvas = window.document.createElement('canvas');
 const ctx = canvas.getContext('2d');
 
+canvas.width = 200;
+canvas.height = 200;
+
 // Now you can use canvas context
 ctx.fillStyle = 'red';
 ctx.fillRect(0, 0, 100, 100);
 
 // Get data URL
-const dataURL = canvas.toDataURL();
+const dataUrl = canvas.toDataURL();
 
-// Get blob
-canvas.toBlob((blob) => {
-  console.log(blob);
-});
+// Output the data URL
+console.log(dataUrl);
 ```
 
-## API
+## Happy DOM
 
-### CanvasAdapter
-
-The `CanvasAdapter` class implements the `ICanvasAdapter` interface and delegates rendering to the `canvas` npm package.
-
-#### Methods
-
-- `getContext(canvas, contextType, contextAttributes)` - Creates a rendering context for the given canvas element.
-- `toDataURL(canvas, type, quality)` - Serializes the canvas content as a data URL.
-- `toBlob(canvas, callback, type, quality)` - Creates a Blob from the canvas content.
-
-## License
-
-MIT License - see [LICENSE](https://github.com/capricorn86/happy-dom/blob/master/LICENSE) for details.
+[Documentation](https://github.com/capricorn86/happy-dom/wiki/) | [Getting Started](https://github.com/capricorn86/happy-dom/wiki/Getting-started) | [Setup as Test Environment](https://github.com/capricorn86/happy-dom/wiki/Setup-as-Test-Environment) | [GitHub](https://github.com/capricorn86/happy-dom/)

@@ -22,7 +22,7 @@ export default class ImageData implements ICanvasShape {
 	 * @param width The width of the ImageData, in pixels.
 	 * @param height The height of the ImageData, in pixels. If not specified, it is calculated as `dataArray.length / (sw * 4)`.
 	 */
-	constructor(dataArray: Uint8ClampedArray, width: number, height?: number) {
+	constructor(dataArray: Uint8ClampedArray | number, width: number, height?: number) {
 		if (arguments.length < 2) {
 			new this[PropertySymbol.window].TypeError(
 				`Failed to construct 'ImageData': 2 arguments required, but only ${arguments.length} present.`
@@ -43,8 +43,14 @@ export default class ImageData implements ICanvasShape {
 			this[PropertySymbol.width] = width;
 			this[PropertySymbol.height] = height !== undefined ? height : dataArray.length / (width * 4);
 		} else {
+			if (typeof width !== 'number') {
+				throw new this[PropertySymbol.window].TypeError(
+					`Failed to construct 'ImageData': The height argument must be a number.`
+				);
+			}
 			this[PropertySymbol.data] = new Uint8ClampedArray([
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+				// Based on width and height
+				...new Array(dataArray * width * 4).fill(0)
 			]);
 			this[PropertySymbol.width] = dataArray;
 			this[PropertySymbol.height] = width;

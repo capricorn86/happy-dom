@@ -96,23 +96,13 @@ export default class OffscreenCanvas implements ICanvasShape {
 			);
 		}
 
-		const width = this.width;
-		const height = this.height;
-		const imageData = context.getImageData(0, 0, width, height);
-		const image = new this[PropertySymbol.window].Image();
-
-		image[PropertySymbol.buffer] = Buffer.from(imageData.data);
-		image[PropertySymbol.complete] = true;
-		image[PropertySymbol.naturalWidth] = width;
-		image[PropertySymbol.naturalHeight] = height;
-
 		const imageBitmap = new ImageBitmap(
 			PropertySymbol.illegalConstructor,
 			this[PropertySymbol.window],
-			image
+			this
 		);
 
-		context.clearRect(0, 0, width, height);
+		context.clearRect(0, 0, this.width, this.height);
 
 		return imageBitmap;
 	}

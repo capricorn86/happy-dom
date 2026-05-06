@@ -152,9 +152,7 @@ export default class HTMLCanvasElement extends HTMLElement implements ICanvas {
 		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
 		const adapter = settings?.canvasAdapter;
 		if (!adapter) {
-			throw new this[PropertySymbol.window].Error(
-				`Failed to execute 'getContext' on 'HTMLCanvasElement': No canvas adapter provided in Happy DOM browser settings.\n\nRead more: https://github.com/capricorn86/happy-dom/wiki/IOptionalBrowserSettings#properties`
-			);
+			return null;
 		}
 		return adapter.getContext(
 			{

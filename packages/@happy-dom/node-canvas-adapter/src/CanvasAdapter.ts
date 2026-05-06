@@ -5,11 +5,13 @@ import {
 	OffscreenCanvas,
 	ImageData,
 	PropertySymbol,
-	Blob,
 	type ICanvasAdapter,
 	type ICanvasRenderingContext2D,
 	type ICanvasAdapterCaller,
-	type ICanvasShape
+	type ICanvasShape,
+	type Blob,
+	HTMLVideoElement,
+	ImageBitmap
 } from 'happy-dom';
 
 const EXTENDED_SYMBOL = Symbol('extended');
@@ -89,23 +91,23 @@ export default class CanvasAdapter implements ICanvasAdapter {
 		const originalDrawImage = context.drawImage;
 		context.drawImage = (...args: any[]) => {
 			const shape = <ICanvasShape>args[0];
+			const drawImageBuffer = (buffer: Buffer): void => {
+				const canvasImage = new CanvasImage();
+				canvasImage.src = buffer;
+				canvasImage.width = shape.width;
+				canvasImage.height = shape.height;
+				args[0] = canvasImage;
+				(<any>originalDrawImage).apply(context, args);
+			};
 			if (shape instanceof HTMLImageElement) {
-				const loadImage = (buffer: Buffer): void => {
-					const canvasImage = new CanvasImage();
-					canvasImage.src = buffer;
-					canvasImage.width = shape.width;
-					canvasImage.height = shape.height;
-					args[0] = canvasImage;
-					(<any>originalDrawImage).apply(context, args);
-				};
 				if (shape[PropertySymbol.buffer]) {
-					loadImage(shape[PropertySymbol.buffer]);
+					drawImageBuffer(shape[PropertySymbol.buffer]);
 					return;
 				}
 				if (!shape.complete) {
 					shape.addEventListener('load', () => {
 						if (shape[PropertySymbol.buffer]) {
-							loadImage(shape[PropertySymbol.buffer]);
+							drawImageBuffer(shape[PropertySymbol.buffer]);
 						}
 					});
 				}
@@ -115,16 +117,18 @@ export default class CanvasAdapter implements ICanvasAdapter {
 				// Not supported yet
 				return;
 			}
-			if (shape instanceof HTMLCanvasElement || shape instanceof OffscreenCanvas) {
-				const nodeCanvas = this.#getNodeCanvas(shape);
+			if (
+				shape instanceof ImageBitmap ||
+				shape instanceof HTMLCanvasElement ||
+				shape instanceof OffscreenCanvas
+			) {
+				const nodeCanvas = this.#getNodeCanvas(
+					(<ImageBitmap>shape)[PropertySymbol.canvas] || shape
+				);
 				if (nodeCanvas) {
 					args[0] = nodeCanvas;
 					(<any>originalDrawImage).apply(context, args);
 				}
-				return;
-			}
-			if (shape instanceof ImageData) {
-				(<any>originalDrawImage).apply(context, args);
 				return;
 			}
 		};
@@ -177,21 +181,23 @@ export default class CanvasAdapter implements ICanvasAdapter {
 				canvasImage.src = shape[PropertySymbol.buffer];
 				canvasImage.width = shape.width;
 				canvasImage.height = shape.height;
-				return originalCreatePattern(canvasImage, repetition);
+				return originalCreatePattern.call(context, canvasImage, repetition);
 			}
-			if (shape instanceof HTMLCanvasElement || shape instanceof OffscreenCanvas) {
-				const nodeCanvas = this.#getNodeCanvas(shape);
-				if (nodeCanvas) {
-					return originalCreatePattern(nodeCanvas, repetition);
-				}
+			if (shape instanceof HTMLVideoElement) {
+				// Not supported yet
 				return null;
 			}
-			if (shape instanceof ImageData) {
-				const canvasImage = new CanvasImage();
-				canvasImage.src = Buffer.from(shape.data.buffer);
-				canvasImage.width = shape.width;
-				canvasImage.height = shape.height;
-				return originalCreatePattern(canvasImage, repetition);
+			if (
+				shape instanceof ImageBitmap ||
+				shape instanceof HTMLCanvasElement ||
+				shape instanceof OffscreenCanvas
+			) {
+				const nodeCanvas = this.#getNodeCanvas(
+					(<ImageBitmap>shape)[PropertySymbol.canvas] || shape
+				);
+				if (nodeCanvas) {
+					return originalCreatePattern.call(context, nodeCanvas, repetition);
+				}
 			}
 			return null;
 		};
@@ -226,6 +232,7 @@ export default class CanvasAdapter implements ICanvasAdapter {
 	 *
 	 * @param caller Information about the caller, including the canvas element and its associated window and browser frame.
 	 * @param caller.canvas Canvas.
+	 * @param caller.window Window.
 	 * @param canvas The canvas element.
 	 * @param callback Receives the resulting Blob, or null on failure.
 	 * @param type MIME type of the output image.
@@ -237,7 +244,7 @@ export default class CanvasAdapter implements ICanvasAdapter {
 	 * ```
 	 */
 	public toBlob(
-		{ canvas }: ICanvasAdapterCaller,
+		{ canvas, window }: ICanvasAdapterCaller,
 		callback: (blob: Blob | null) => void,
 		type?: string,
 		quality?: unknown
@@ -250,7 +257,7 @@ export default class CanvasAdapter implements ICanvasAdapter {
 						callback(null);
 						return;
 					}
-					callback(new Blob([new Uint8Array(buffer)], { type: 'image/jpeg' }));
+					callback(new window.Blob([new Uint8Array(buffer)], { type: 'image/jpeg' }));
 				},
 				'image/jpeg',
 				{ quality: <number>quality }
@@ -262,7 +269,7 @@ export default class CanvasAdapter implements ICanvasAdapter {
 				callback(null);
 				return;
 			}
-			callback(new Blob([new Uint8Array(buffer)], { type: type ?? 'image/png' }));
+			callback(new window.Blob([new Uint8Array(buffer)], { type: type ?? 'image/png' }));
 		});
 	}
 }

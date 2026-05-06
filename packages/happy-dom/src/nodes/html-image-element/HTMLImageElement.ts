@@ -5,6 +5,7 @@ import ElementEventAttributeUtility from '../element/ElementEventAttributeUtilit
 import type Event from '../../event/Event.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import BufferImageSize from 'buffer-image-size';
+import type Response from '../../fetch/Response.js';
 
 const DATA_URL_REGEX = /^\s*data:([^,]+)?,(.*)/;
 
@@ -274,25 +275,13 @@ export default class HTMLImageElement extends HTMLElement implements ICanvasShap
 	 * @returns Source.
 	 */
 	public get src(): string {
-		if (!this.hasAttribute('src')) {
+		const href = this.getAttribute('src');
+
+		if (!href) {
 			return '';
 		}
 
-		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
-
-		let href: string;
-		try {
-			href = new URL(this.getAttribute('src')!, this[PropertySymbol.ownerDocument].location.href)
-				.href;
-		} catch (e) {
-			return this.getAttribute('src')!;
-		}
-
-		if (settings?.enableImageFileLoading) {
-			this.#loadImage(href);
-		}
-
-		return href;
+		return this.#parseUrl(href) || this.getAttribute('src') || '';
 	}
 
 	/**
@@ -302,6 +291,25 @@ export default class HTMLImageElement extends HTMLElement implements ICanvasShap
 	 */
 	public set src(src: string) {
 		this.setAttribute('src', src);
+
+		const url = this.#parseUrl(src);
+
+		if (!url) {
+			this[PropertySymbol.complete] = true;
+			this[PropertySymbol.naturalHeight] = 0;
+			this[PropertySymbol.naturalWidth] = 0;
+			this.dispatchEvent(new this[PropertySymbol.window].Event('error'));
+			return;
+		}
+
+		if (this.#loadDataUrl(url)) {
+			return;
+		}
+
+		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
+		if (settings?.enableImageFileLoading) {
+			this.#loadUrlSource(this.src);
+		}
 	}
 
 	/**
@@ -350,11 +358,30 @@ export default class HTMLImageElement extends HTMLElement implements ICanvasShap
 	}
 
 	/**
-	 * Loads the image from the given source.
+	 * Parses the given source URL.
 	 *
 	 * @param src Source.
+	 * @returns Parsed URL or null if the URL is invalid.
 	 */
-	async #loadImage(src: string): Promise<void> {
+	#parseUrl(src: string | null): string | null {
+		if (src === null) {
+			return null;
+		}
+		try {
+			return new URL(src, this[PropertySymbol.ownerDocument].location.href).href;
+		} catch {
+			// Ignore
+		}
+		return null;
+	}
+
+	/**
+	 * Loads the image from the given data URL.
+	 *
+	 * @param src Source.
+	 * @returns True if the image was loaded, false otherwise.
+	 */
+	#loadDataUrl(src: string): boolean {
 		const dataUrlMatch = src.match(DATA_URL_REGEX);
 
 		if (dataUrlMatch) {
@@ -370,39 +397,55 @@ export default class HTMLImageElement extends HTMLElement implements ICanvasShap
 				this[PropertySymbol.naturalWidth] = 0;
 			}
 			this.dispatchEvent(new this[PropertySymbol.window].Event('load'));
-			return;
+			return true;
 		}
+		return false;
+	}
 
+	/**
+	 * Loads the image from the given source.
+	 *
+	 * @param src Source.
+	 */
+	async #loadUrlSource(src: string): Promise<void> {
 		this[PropertySymbol.complete] = false;
 		this[PropertySymbol.naturalHeight] = 0;
 		this[PropertySymbol.naturalWidth] = 0;
 		this[PropertySymbol.buffer] = null;
 
-		const response = await this[PropertySymbol.window].fetch(src);
+		let response: Response | null = null;
+		let error: Error | null = null;
+		try {
+			response = await this[PropertySymbol.window].fetch(src);
+		} catch (e) {
+			error = <Error>e;
+		}
 
-		if (!response.ok) {
+		if (error || !response?.ok) {
 			this[PropertySymbol.complete] = true;
 			this.dispatchEvent(new this[PropertySymbol.window].Event('error'));
-			this[PropertySymbol.window].console.error(
-				`GET ${src} ${response.status} (${response.statusText}).`
-			);
+			if (response) {
+				this[PropertySymbol.window].console.error(
+					`GET ${src} ${response.status} (${response.statusText}).`
+				);
+			} else if (error) {
+				this[PropertySymbol.window].console.error(error);
+			}
 			return;
 		}
 
-		let arrayBuffer: ArrayBuffer;
+		let buffer: Buffer;
 
 		try {
-			arrayBuffer = await response.arrayBuffer();
+			buffer = await response.buffer();
 		} catch (e) {
 			this[PropertySymbol.complete] = true;
 			this.dispatchEvent(new this[PropertySymbol.window].Event('error'));
 			return;
 		}
 
-		const buffer = Buffer.from(arrayBuffer);
-
 		this[PropertySymbol.complete] = true;
-		this[PropertySymbol.buffer] = Buffer.from(buffer);
+		this[PropertySymbol.buffer] = buffer;
 
 		try {
 			const dimensions = BufferImageSize(buffer);

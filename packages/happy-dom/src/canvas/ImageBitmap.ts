@@ -8,8 +8,7 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import type IImageBitmapOptions from './IImageBitmapOptions.js';
 import type { TImageBitmapSource } from './TImageBitmapSource.js';
 import type ICanvasShape from './ICanvasShape.js';
-
-type TImageBitmapInternalSource = HTMLCanvasElement | OffscreenCanvas | HTMLImageElement;
+import WindowBrowserContext from '../window/WindowBrowserContext.js';
 
 /**
  * Image Bitmap.
@@ -17,9 +16,7 @@ type TImageBitmapInternalSource = HTMLCanvasElement | OffscreenCanvas | HTMLImag
  * @see https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap
  */
 export default class ImageBitmap implements ICanvasShape {
-	public [PropertySymbol.source]: TImageBitmapInternalSource | null = null;
-	public [PropertySymbol.x] = 0;
-	public [PropertySymbol.y] = 0;
+	public [PropertySymbol.canvas]: OffscreenCanvas | null = null;
 	public [PropertySymbol.width] = 0;
 	public [PropertySymbol.height] = 0;
 	public [PropertySymbol.options]: IImageBitmapOptions | null = null;
@@ -50,14 +47,15 @@ export default class ImageBitmap implements ICanvasShape {
 			throw new TypeError('Illegal constructor');
 		}
 
-		while (source instanceof ImageBitmap) {
-			if (source[PropertySymbol.source] === null) {
+		let validSource: TImageBitmapSource | null = null;
+		if (source instanceof ImageBitmap) {
+			if (source[PropertySymbol.canvas] === null) {
 				throw new window.DOMException(
 					"Failed to execute 'createImageBitmap' on 'Window': The image source is not usable.",
 					DOMExceptionNameEnum.invalidStateError
 				);
 			}
-			source = source[PropertySymbol.source];
+			validSource = source;
 		}
 
 		if (source instanceof HTMLImageElement) {
@@ -67,24 +65,27 @@ export default class ImageBitmap implements ICanvasShape {
 					DOMExceptionNameEnum.invalidStateError
 				);
 			}
-			this[PropertySymbol.source] = source;
+			validSource = source;
 		} else if (source instanceof HTMLVideoElement) {
 			throw new window.DOMException(
 				"Failed to execute 'createImageBitmap' on 'Window': HTMLVideoElement is not supported as an image source yet in Happy DOM.",
 				DOMExceptionNameEnum.invalidStateError
 			);
 		} else if (source instanceof HTMLCanvasElement || source instanceof OffscreenCanvas) {
-			this[PropertySymbol.source] = source;
+			validSource = source;
 		}
 
-		if (this[PropertySymbol.source] === null) {
+		if (validSource === null) {
 			throw new window.TypeError(
 				`Failed to execute 'createImageBitmap' on 'Window': The provided value is not of type '(Blob or HTMLCanvasElement or HTMLImageElement or HTMLVideoElement or ImageBitmap or ImageData or OffscreenCanvas or SVGImageElement or VideoFrame)'.`
 			);
 		}
 
-		this[PropertySymbol.width] = this[PropertySymbol.source].width;
-		this[PropertySymbol.height] = this[PropertySymbol.source].height;
+		this[PropertySymbol.width] = validSource.width;
+		this[PropertySymbol.height] = validSource.height;
+
+		let x = 0;
+		let y = 0;
 
 		if (
 			typeof sx === 'number' &&
@@ -92,22 +93,33 @@ export default class ImageBitmap implements ICanvasShape {
 			typeof sw === 'number' &&
 			typeof sh === 'number'
 		) {
-			this[PropertySymbol.x] = sx;
-			this[PropertySymbol.y] = sy;
+			x = sx;
+			y = sy;
 			this[PropertySymbol.width] = sw;
 			this[PropertySymbol.height] = sh;
 
-			if (typeof options !== 'object') {
+			if (options !== undefined && typeof options !== 'object') {
 				throw new window.TypeError(`The provided value is not of type 'ImageBitmapOptions'.`);
 			}
 
-			this[PropertySymbol.options] = options;
+			this[PropertySymbol.options] = options || null;
 		} else if (typeof sx === 'object') {
 			this[PropertySymbol.options] = <IImageBitmapOptions>sx;
 		} else if (sx !== undefined) {
 			throw new window.TypeError(
 				`Failed to execute 'createImageBitmap' on 'Window': Overload resolution failed.`
 			);
+		}
+
+		const settings = new WindowBrowserContext(window).getSettings();
+		const canvas = new window.OffscreenCanvas(
+			this[PropertySymbol.width],
+			this[PropertySymbol.height]
+		);
+		if (settings?.canvasAdapter) {
+			const context = canvas.getContext('2d')!;
+			context.drawImage(validSource, -x, -y, validSource.width, validSource.height);
+			this[PropertySymbol.canvas] = canvas;
 		}
 	}
 
@@ -133,6 +145,9 @@ export default class ImageBitmap implements ICanvasShape {
 	 * Disposes of all graphical resources associated with an ImageBitmap.
 	 */
 	public close(): void {
-		this[PropertySymbol.source] = null;
+		this[PropertySymbol.canvas] = null;
+		this[PropertySymbol.options] = null;
+		this[PropertySymbol.width] = 0;
+		this[PropertySymbol.height] = 0;
 	}
 }

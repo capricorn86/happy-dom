@@ -21,7 +21,8 @@
 	"scripts": {
 		"compile": "tsc",
 		"watch": "tsc -w --preserveWatchOutput",
-		"test": "vitest run"
+		"test": "vitest run",
+		"test:debug": "vitest run --inspect-brk --no-file-parallelism"
 	},
 	"peerDependencies": {
 		"canvas": ">=2.0.0",
