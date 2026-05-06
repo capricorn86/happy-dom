@@ -1,5 +1,13 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
+import type ICanvasShape from '../../canvas/ICanvasShape.js';
+import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
+import type Event from '../../event/Event.js';
+import WindowBrowserContext from '../../window/WindowBrowserContext.js';
+import BufferImageSize from 'buffer-image-size';
+import type Response from '../../fetch/Response.js';
+
+const DATA_URL_REGEX = /^\s*data:([^,]+)?,(.*)/;
 
 /**
  * HTML Image Element.
@@ -7,15 +15,38 @@ import * as PropertySymbol from '../../PropertySymbol.js';
  * Reference:
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement.
  */
-export default class HTMLImageElement extends HTMLElement {
+export default class HTMLImageElement extends HTMLElement implements ICanvasShape {
 	public [PropertySymbol.tagName] = 'IMG';
-	public [PropertySymbol.complete] = false;
+	public [PropertySymbol.complete] = true;
 	public [PropertySymbol.naturalHeight] = 0;
 	public [PropertySymbol.naturalWidth] = 0;
 	public [PropertySymbol.loading] = 'auto';
 	public [PropertySymbol.x] = 0;
 	public [PropertySymbol.y] = 0;
+	public [PropertySymbol.buffer]: Buffer | null = null;
 	public declare cloneNode: (deep?: boolean) => HTMLImageElement;
+
+	// Events
+
+	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get onload(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onload');
+	}
+
+	public set onload(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onload', value);
+	}
+
+	public get onerror(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onerror');
+	}
+
+	public set onerror(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onerror', value);
+	}
+
+	/* eslint-enable jsdoc/require-jsdoc */
 
 	/**
 	 * Returns complete.
@@ -149,7 +180,7 @@ export default class HTMLImageElement extends HTMLElement {
 	 */
 	public get width(): number {
 		const width = this.getAttribute('width');
-		return width !== null ? Number(width) : 0;
+		return width !== null ? Number(width) : this[PropertySymbol.naturalWidth];
 	}
 
 	/**
@@ -168,7 +199,7 @@ export default class HTMLImageElement extends HTMLElement {
 	 */
 	public get height(): number {
 		const height = this.getAttribute('height');
-		return height !== null ? Number(height) : 0;
+		return height !== null ? Number(height) : this[PropertySymbol.naturalHeight];
 	}
 
 	/**
@@ -244,16 +275,13 @@ export default class HTMLImageElement extends HTMLElement {
 	 * @returns Source.
 	 */
 	public get src(): string {
-		if (!this.hasAttribute('src')) {
+		const href = this.getAttribute('src');
+
+		if (!href) {
 			return '';
 		}
 
-		try {
-			return new URL(this.getAttribute('src')!, this[PropertySymbol.ownerDocument].location.href)
-				.href;
-		} catch (e) {
-			return this.getAttribute('src')!;
-		}
+		return this.#parseUrl(href) || this.getAttribute('src') || '';
 	}
 
 	/**
@@ -263,6 +291,25 @@ export default class HTMLImageElement extends HTMLElement {
 	 */
 	public set src(src: string) {
 		this.setAttribute('src', src);
+
+		const url = this.#parseUrl(src);
+
+		if (!url) {
+			this[PropertySymbol.complete] = true;
+			this[PropertySymbol.naturalHeight] = 0;
+			this[PropertySymbol.naturalWidth] = 0;
+			this.dispatchEvent(new this[PropertySymbol.window].Event('error'));
+			return;
+		}
+
+		if (this.#loadDataUrl(url)) {
+			return;
+		}
+
+		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
+		if (settings?.enableImageFileLoading) {
+			this.#loadUrlSource(this.src);
+		}
 	}
 
 	/**
@@ -311,9 +358,104 @@ export default class HTMLImageElement extends HTMLElement {
 	}
 
 	/**
-	 * @override
+	 * Parses the given source URL.
+	 *
+	 * @param src Source.
+	 * @returns Parsed URL or null if the URL is invalid.
 	 */
-	public override [PropertySymbol.cloneNode](deep = false): HTMLImageElement {
-		return <HTMLImageElement>super[PropertySymbol.cloneNode](deep);
+	#parseUrl(src: string | null): string | null {
+		if (src === null) {
+			return null;
+		}
+		try {
+			return new URL(src, this[PropertySymbol.ownerDocument].location.href).href;
+		} catch {
+			// Ignore
+		}
+		return null;
+	}
+
+	/**
+	 * Loads the image from the given data URL.
+	 *
+	 * @param src Source.
+	 * @returns True if the image was loaded, false otherwise.
+	 */
+	#loadDataUrl(src: string): boolean {
+		const dataUrlMatch = src.match(DATA_URL_REGEX);
+
+		if (dataUrlMatch) {
+			const buffer = Buffer.from(dataUrlMatch[2], 'base64');
+			this[PropertySymbol.complete] = true;
+			this[PropertySymbol.buffer] = buffer;
+			try {
+				const dimensions = BufferImageSize(buffer);
+				this[PropertySymbol.naturalHeight] = dimensions.height;
+				this[PropertySymbol.naturalWidth] = dimensions.width;
+			} catch (e) {
+				this[PropertySymbol.naturalHeight] = 0;
+				this[PropertySymbol.naturalWidth] = 0;
+			}
+			this.dispatchEvent(new this[PropertySymbol.window].Event('load'));
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Loads the image from the given source.
+	 *
+	 * @param src Source.
+	 */
+	async #loadUrlSource(src: string): Promise<void> {
+		this[PropertySymbol.complete] = false;
+		this[PropertySymbol.naturalHeight] = 0;
+		this[PropertySymbol.naturalWidth] = 0;
+		this[PropertySymbol.buffer] = null;
+
+		let response: Response | null = null;
+		let error: Error | null = null;
+		try {
+			response = await this[PropertySymbol.window].fetch(src);
+		} catch (e) {
+			error = <Error>e;
+		}
+
+		if (error || !response?.ok) {
+			this[PropertySymbol.complete] = true;
+			this.dispatchEvent(new this[PropertySymbol.window].Event('error'));
+			if (response) {
+				this[PropertySymbol.window].console.error(
+					`GET ${src} ${response.status} (${response.statusText}).`
+				);
+			} else if (error) {
+				this[PropertySymbol.window].console.error(error);
+			}
+			return;
+		}
+
+		let buffer: Buffer;
+
+		try {
+			buffer = await response.buffer();
+		} catch (e) {
+			this[PropertySymbol.complete] = true;
+			this.dispatchEvent(new this[PropertySymbol.window].Event('error'));
+			return;
+		}
+
+		this[PropertySymbol.complete] = true;
+		this[PropertySymbol.buffer] = buffer;
+
+		try {
+			const dimensions = BufferImageSize(buffer);
+			this[PropertySymbol.naturalHeight] = dimensions.height;
+			this[PropertySymbol.naturalWidth] = dimensions.width;
+		} catch (e) {
+			this[PropertySymbol.naturalHeight] = 0;
+			this[PropertySymbol.naturalWidth] = 0;
+		}
+
+		this.dispatchEvent(new this[PropertySymbol.window].Event('load'));
 	}
 }

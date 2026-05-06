@@ -8,6 +8,7 @@ export default <IBrowserSettings>{
 	enableJavaScriptEvaluation: false,
 	disableJavaScriptFileLoading: false,
 	disableCSSFileLoading: false,
+	enableImageFileLoading: false,
 	disableIframePageLoading: false,
 	disableComputedStyleRendering: false,
 	handleDisabledFileLoadingAsSuccess: false,
@@ -61,5 +62,6 @@ export default <IBrowserSettings>{
 		width: 1024,
 		height: 768,
 		devicePixelRatio: 1
-	}
+	},
+	canvasAdapter: null
 };

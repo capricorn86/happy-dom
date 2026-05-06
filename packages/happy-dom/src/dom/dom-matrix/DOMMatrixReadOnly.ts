@@ -376,9 +376,11 @@ export default class DOMMatrixReadOnly {
 	 * @param secondMatrix DOMMatrix
 	 * @returns A new DOMMatrix object.
 	 */
-	public multiply(secondMatrix: IDOMMatrixCompatibleObject): DOMMatrixReadOnly {
+	public multiply(secondMatrix?: IDOMMatrixCompatibleObject): DOMMatrixReadOnly {
 		const matrix = new (<typeof DOMMatrixReadOnly>this.constructor)(this);
-		matrix[PropertySymbol.multiplySelf](secondMatrix);
+		if (secondMatrix) {
+			matrix[PropertySymbol.multiplySelf](secondMatrix);
+		}
 		return matrix;
 	}
 
@@ -546,11 +548,11 @@ export default class DOMMatrixReadOnly {
 	 * @param domPoint DOM point compatible object.
 	 * @returns A new DOMPoint object.
 	 */
-	public transformPoint(domPoint: IDOMPointInit): DOMPoint {
-		const xPoint = domPoint.x ?? 0;
-		const yPoint = domPoint.y ?? 0;
-		const zPoint = domPoint.z ?? 0;
-		const wPoint = domPoint.w ?? 1;
+	public transformPoint(domPoint?: IDOMPointInit): DOMPoint {
+		const xPoint = domPoint?.x ?? 0;
+		const yPoint = domPoint?.y ?? 0;
+		const zPoint = domPoint?.z ?? 0;
+		const wPoint = domPoint?.w ?? 1;
 
 		const x =
 			this[PropertySymbol.m11] * xPoint +
@@ -628,7 +630,11 @@ export default class DOMMatrixReadOnly {
 	 *
 	 * @param matrixCompatibleObject Second matrix.
 	 */
-	public [PropertySymbol.multiplySelf](matrixCompatibleObject: IDOMMatrixCompatibleObject): void {
+	public [PropertySymbol.multiplySelf](matrixCompatibleObject?: IDOMMatrixCompatibleObject): void {
+		if (!matrixCompatibleObject) {
+			return;
+		}
+
 		let matrix: IDOMMatrixJSON = <IDOMMatrixJSON>matrixCompatibleObject;
 
 		if (!(matrix instanceof DOMMatrixReadOnly)) {
