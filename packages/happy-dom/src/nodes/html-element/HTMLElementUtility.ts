@@ -1,5 +1,7 @@
 import FocusEvent from '../../event/events/FocusEvent.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
+import NodeFilter from '../../tree-walker/NodeFilter.js';
+import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import type HTMLElement from '../html-element/HTMLElement.js';
 import type SVGElement from '../svg-element/SVGElement.js';
 
@@ -96,6 +98,40 @@ export default class HTMLElementUtility {
 				composed: true
 			})
 		);
+
+		if ((<HTMLElement>target).isContentEditable) {
+			const firstText = HTMLElementUtility.findFirstEditableTextNode(<HTMLElement>target);
+			const sel = target[PropertySymbol.ownerDocument].getSelection();
+			if (firstText) {
+				sel?.collapse(firstText, 0);
+			} else {
+				sel?.collapse(<HTMLElement>target, 0);
+			}
+		}
+	}
+
+	/**
+	 * Returns the first Text node that is not inside a contenteditable=false subtree.
+	 *
+	 * @param root Root element to search within.
+	 * @returns First editable Text node, or null if none exists.
+	 */
+	private static findFirstEditableTextNode(root: HTMLElement): Text | null {
+		const walker = root[PropertySymbol.ownerDocument].createTreeWalker(root, NodeFilter.SHOW_ALL, {
+			acceptNode(node: Node): number {
+				if (
+					node !== root &&
+					node.nodeType === NodeTypeEnum.elementNode &&
+					(<Element>node).contentEditable === 'false'
+				) {
+					return NodeFilter.FILTER_REJECT;
+				}
+				return node.nodeType === NodeTypeEnum.textNode
+					? NodeFilter.FILTER_ACCEPT
+					: NodeFilter.FILTER_SKIP;
+			}
+		});
+		return <Text | null>walker.nextNode();
 	}
 
 	/**
