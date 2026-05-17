@@ -1,5 +1,6 @@
 import type DataTransfer from '../DataTransfer.js';
 import UIEvent from '../UIEvent.js';
+import type StaticRange from '../../range/StaticRange.js';
 import type IInputEventInit from './IInputEventInit.js';
 
 /**
@@ -10,6 +11,7 @@ export default class InputEvent extends UIEvent {
 	public readonly dataTransfer: DataTransfer | null;
 	public readonly inputType: string;
 	public readonly isComposing: boolean;
+	readonly #targetRanges: StaticRange[];
 
 	/**
 	 * Constructor.
@@ -24,5 +26,15 @@ export default class InputEvent extends UIEvent {
 		this.dataTransfer = eventInit?.dataTransfer ?? null;
 		this.inputType = eventInit?.inputType ?? '';
 		this.isComposing = eventInit?.isComposing ?? false;
+		this.#targetRanges = eventInit?.targetRanges ?? [];
+	}
+
+	/**
+	 * Returns the target ranges for this input event.
+	 *
+	 * @returns A copy of the target ranges array.
+	 */
+	public getTargetRanges(): StaticRange[] {
+		return this.#targetRanges.slice();
 	}
 }
