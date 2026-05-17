@@ -181,6 +181,7 @@ import type XMLDocument from '../nodes/xml-document/XMLDocument.js';
 import type PermissionStatus from '../permissions/PermissionStatus.js';
 import Permissions from '../permissions/Permissions.js';
 import type Range from '../range/Range.js';
+import StaticRange from '../range/StaticRange.js';
 import ResizeObserver from '../resize-observer/ResizeObserver.js';
 import Screen from '../screen/Screen.js';
 import ScreenDetails from '../screen/ScreenDetails.js';
@@ -626,6 +627,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare readonly XMLHttpRequest: typeof XMLHttpRequest;
 	public declare readonly DOMParser: typeof DOMParser;
 	public declare readonly Range: typeof Range;
+	public readonly StaticRange = StaticRange;
 	public declare readonly VTTCue: typeof VTTCue;
 	public declare readonly FileReader: typeof FileReader;
 	public declare readonly MediaStream: typeof MediaStream;
