@@ -48,10 +48,7 @@ export default class ImageData implements ICanvasShape {
 					`Failed to construct 'ImageData': The height argument must be a number.`
 				);
 			}
-			this[PropertySymbol.data] = new Uint8ClampedArray([
-				// Based on width and height
-				...new Array(dataArray * width * 4).fill(0)
-			]);
+			this[PropertySymbol.data] = new Uint8ClampedArray(new Array(dataArray * width * 4).fill(0));
 			this[PropertySymbol.width] = dataArray;
 			this[PropertySymbol.height] = width;
 		}

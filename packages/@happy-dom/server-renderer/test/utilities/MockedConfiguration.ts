@@ -7,6 +7,7 @@ export default <IServerRendererConfiguration>{
 		canvasAdapter: null,
 		disableJavaScriptEvaluation: false,
 		enableJavaScriptEvaluation: false,
+		enableImageFileLoading: true,
 		suppressCodeGenerationFromStringsWarning: false,
 		suppressInsecureJavaScriptEnvironmentWarning: true,
 		disableJavaScriptFileLoading: true,

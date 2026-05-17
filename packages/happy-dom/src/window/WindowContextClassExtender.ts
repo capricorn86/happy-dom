@@ -39,6 +39,10 @@ import URLImplementation from '../url/URL.js';
 import WebSocketImplementation from '../web-socket/WebSocket.js';
 import ImageDataImplementation from '../canvas/ImageData.js';
 import OffscreenCanvasImplementation from '../canvas/OffscreenCanvas.js';
+import DOMMatrixReadOnlyImplementation from '../dom/dom-matrix/DOMMatrixReadOnly.js';
+import DOMMatrixImplementation from '../dom/dom-matrix/DOMMatrix.js';
+import DOMPointReadOnlyImplementation from '../dom/DOMPointReadOnly.js';
+import DOMPointImplementation from '../dom/DOMPoint.js';
 
 /**
  * Extends classes with a "window" property, so that they internally can access it's Window context.
@@ -246,6 +250,26 @@ export default class WindowContextClassExtender {
 		class OffscreenCanvas extends OffscreenCanvasImplementation {}
 		OffscreenCanvas.prototype[PropertySymbol.window] = window;
 		(<typeof OffscreenCanvas>window.OffscreenCanvas) = OffscreenCanvas;
+
+		// DOMMatrixReadOnly
+		class DOMMatrixReadOnly extends DOMMatrixReadOnlyImplementation {}
+		DOMMatrixReadOnly.prototype[PropertySymbol.window] = window;
+		(<typeof DOMMatrixReadOnly>window.DOMMatrixReadOnly) = DOMMatrixReadOnly;
+
+		// DOMMatrix
+		class DOMMatrix extends DOMMatrixImplementation {}
+		DOMMatrix.prototype[PropertySymbol.window] = window;
+		(<typeof DOMMatrix>window.DOMMatrix) = DOMMatrix;
+
+		// DOMPointReadOnly
+		class DOMPointReadOnly extends DOMPointReadOnlyImplementation {}
+		DOMPointReadOnly.prototype[PropertySymbol.window] = window;
+		(<typeof DOMPointReadOnly>window.DOMPointReadOnly) = DOMPointReadOnly;
+
+		// DOMPoint
+		class DOMPoint extends DOMPointImplementation {}
+		DOMPoint.prototype[PropertySymbol.window] = window;
+		(<typeof DOMPoint>window.DOMPoint) = DOMPoint;
 
 		/* eslint-enable jsdoc/require-jsdoc */
 	}

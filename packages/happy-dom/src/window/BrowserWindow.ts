@@ -275,8 +275,10 @@ import SVGComponentTransferFunctionElement from '../nodes/svg-component-transfer
 import SVGGeometryElement from '../nodes/svg-geometry-element/SVGGeometryElement.js';
 import SVGGradientElement from '../nodes/svg-gradient-element/SVGGradientElement.js';
 import SVGTextPositioningElement from '../nodes/svg-text-positioning-element/SVGTextPositioningElement.js';
-import DOMMatrixReadOnly from '../dom/dom-matrix/DOMMatrixReadOnly.js';
-import DOMMatrix from '../dom/dom-matrix/DOMMatrix.js';
+import type DOMMatrixReadOnly from '../dom/dom-matrix/DOMMatrixReadOnly.js';
+import type DOMMatrix from '../dom/dom-matrix/DOMMatrix.js';
+import type DOMPointReadOnly from '../dom/DOMPointReadOnly.js';
+import type DOMPoint from '../dom/DOMPoint.js';
 import SVGAngle from '../svg/SVGAngle.js';
 import SVGAnimatedAngle from '../svg/SVGAnimatedAngle.js';
 import SVGAnimatedBoolean from '../svg/SVGAnimatedBoolean.js';
@@ -302,7 +304,6 @@ import SVGStringList from '../svg/SVGStringList.js';
 import SVGTransform from '../svg/SVGTransform.js';
 import SVGTransformList from '../svg/SVGTransformList.js';
 import SVGUnitTypes from '../svg/SVGUnitTypes.js';
-import DOMPoint from '../dom/DOMPoint.js';
 import SVGAnimatedLengthList from '../svg/SVGAnimatedLengthList.js';
 import CustomElementReactionStack from '../custom-element/CustomElementReactionStack.js';
 import type IScrollToOptions from './IScrollToOptions.js';
@@ -643,6 +644,10 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare readonly URL: typeof URL;
 	public declare readonly ImageData: typeof ImageData;
 	public declare readonly OffscreenCanvas: typeof OffscreenCanvas;
+	public declare readonly DOMMatrixReadOnly: typeof DOMMatrixReadOnly;
+	public declare readonly DOMMatrix: typeof DOMMatrix;
+	public declare readonly DOMPointReadOnly: typeof DOMPointReadOnly;
+	public declare readonly DOMPoint: typeof DOMPoint;
 
 	// Other classes that don't have to be bound to the Window context
 	public readonly Permissions = Permissions;
@@ -690,8 +695,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly Screen = Screen;
 	public readonly ScreenDetails = ScreenDetails;
 	public readonly ScreenDetailed = ScreenDetailed;
-	public readonly DOMMatrixReadOnly = DOMMatrixReadOnly;
-	public readonly DOMMatrix = DOMMatrix;
 	public readonly NamedNodeMap = NamedNodeMap;
 	public readonly TreeWalker = TreeWalker;
 	public readonly NodeIterator = NodeIterator;
@@ -728,7 +731,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly SVGTransformList = SVGTransformList;
 	public readonly SVGAnimatedLengthList = SVGAnimatedLengthList;
 	public readonly SVGUnitTypes = SVGUnitTypes;
-	public readonly DOMPoint = DOMPoint;
 	public readonly StylePropertyMap = StylePropertyMap;
 	public readonly StylePropertyMapReadOnly = StylePropertyMapReadOnly;
 	public readonly MediaList = MediaList;

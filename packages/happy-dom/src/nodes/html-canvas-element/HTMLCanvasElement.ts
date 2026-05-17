@@ -1,6 +1,6 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import type Blob from '../../file/Blob.js';
+import Blob from '../../file/Blob.js';
 import OffscreenCanvas from '../../canvas/OffscreenCanvas.js';
 import type Event from '../../event/Event.js';
 import type MediaStream from '../html-media-element/MediaStream.js';
@@ -9,8 +9,15 @@ import type ICanvasAdapter from '../../canvas/ICanvasAdapter.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import type ICanvas from '../../canvas/ICanvasShape.js';
 import type ICanvasRenderingContext2D from '../../canvas/ICanvasRenderingContext2D.js';
+import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 
 const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+ab12C3+1aBCdEf==';
+
+enum CanvasModeEnum {
+	none = 'none',
+	context = 'context',
+	offscreen = 'offscreen'
+}
 
 /**
  * HTMLCanvasElement
@@ -18,6 +25,10 @@ const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement
  */
 export default class HTMLCanvasElement extends HTMLElement implements ICanvas {
+	// Private properties
+	#mode: CanvasModeEnum = CanvasModeEnum.none;
+	#offscreenCanvas: OffscreenCanvas | null = null;
+
 	// Events
 
 	/* eslint-disable jsdoc/require-jsdoc */
@@ -71,7 +82,11 @@ export default class HTMLCanvasElement extends HTMLElement implements ICanvas {
 	 */
 	public get width(): number {
 		const width = this.getAttribute('width');
-		return width !== null ? Number(width) : 300;
+		if (width === null) {
+			return 300;
+		}
+		const parsed = parseInt(width, 10);
+		return isNaN(parsed) ? 300 : parsed;
 	}
 
 	/**
@@ -90,7 +105,11 @@ export default class HTMLCanvasElement extends HTMLElement implements ICanvas {
 	 */
 	public get height(): number {
 		const height = this.getAttribute('height');
-		return height !== null ? Number(height) : 150;
+		if (height === null) {
+			return 150;
+		}
+		const parsed = parseInt(height, 10);
+		return isNaN(parsed) ? 150 : parsed;
 	}
 
 	/**
@@ -143,6 +162,13 @@ export default class HTMLCanvasElement extends HTMLElement implements ICanvas {
 		contextType: '2d' | 'webgl' | 'webgl2' | 'webgpu' | 'bitmaprenderer',
 		contextAttributes?: { [key: string]: any }
 	): ICanvasRenderingContext2D | null {
+		if (this.#mode === CanvasModeEnum.offscreen) {
+			throw new this[PropertySymbol.window].DOMException(
+				`Failed to execute 'getContext' on 'HTMLCanvasElement': Cannot get context from a canvas that has transferred its control to offscreen.`,
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+		this.#mode = CanvasModeEnum.context;
 		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
 		if (!browserFrame) {
 			throw new this[PropertySymbol.window].Error(
@@ -182,8 +208,17 @@ export default class HTMLCanvasElement extends HTMLElement implements ICanvas {
 		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
 		const adapter = settings?.canvasAdapter;
 		if (!adapter) {
-			throw new this[PropertySymbol.window].Error(
-				`Failed to execute 'toDataURL' on 'HTMLCanvasElement': No canvas adapter provided in Happy DOM browser settings.\n\nRead more: https://github.com/capricorn86/happy-dom/wiki/IOptionalBrowserSettings#properties`
+			return `data:${type || 'image/png'};base64,${Buffer.from([]).toString('base64')}`;
+		}
+		if (this.#offscreenCanvas) {
+			return (<ICanvasAdapter>adapter).toDataURL(
+				{
+					browserFrame,
+					window: this[PropertySymbol.window],
+					canvas: this.#offscreenCanvas
+				},
+				type,
+				quality
 			);
 		}
 		return (<ICanvasAdapter>adapter).toDataURL(
@@ -214,11 +249,25 @@ export default class HTMLCanvasElement extends HTMLElement implements ICanvas {
 		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
 		const adapter = settings?.canvasAdapter;
 		if (!adapter) {
-			throw new this[PropertySymbol.window].Error(
-				`Failed to execute 'toBlob' on 'HTMLCanvasElement': No canvas adapter provided in Happy DOM browser settings.\n\nRead more: https://github.com/capricorn86/happy-dom/wiki/IOptionalBrowserSettings#properties`
+			this[PropertySymbol.window].requestAnimationFrame(() =>
+				callback(new Blob([], { type: type || 'image/png' }))
 			);
+			return;
 		}
-		return (<ICanvasAdapter>adapter).toBlob(
+		if (this.#offscreenCanvas) {
+			(<ICanvasAdapter>adapter).toBlob(
+				{
+					browserFrame,
+					window: this[PropertySymbol.window],
+					canvas: this.#offscreenCanvas
+				},
+				callback,
+				type,
+				quality
+			);
+			return;
+		}
+		(<ICanvasAdapter>adapter).toBlob(
 			{
 				browserFrame,
 				window: this[PropertySymbol.window],
@@ -236,6 +285,20 @@ export default class HTMLCanvasElement extends HTMLElement implements ICanvas {
 	 * @returns Offscreen canvas.
 	 */
 	public transferControlToOffscreen(): OffscreenCanvas {
-		return new OffscreenCanvas(this.width, this.height);
+		if (this.#mode === CanvasModeEnum.context) {
+			throw new this[PropertySymbol.window].DOMException(
+				`Failed to execute 'transferControlToOffscreen' on 'HTMLCanvasElement': Cannot transfer control from a canvas that has a rendering context.`,
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+		if (this.#mode === CanvasModeEnum.offscreen) {
+			throw new this[PropertySymbol.window].DOMException(
+				`Failed to execute 'transferControlToOffscreen' on 'HTMLCanvasElement': Cannot transfer control from a canvas for more than one time.`,
+				DOMExceptionNameEnum.invalidStateError
+			);
+		}
+		this.#mode = CanvasModeEnum.offscreen;
+		this.#offscreenCanvas = new OffscreenCanvas(this.width, this.height);
+		return this.#offscreenCanvas;
 	}
 }

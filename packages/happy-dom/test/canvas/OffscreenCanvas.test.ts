@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import OffscreenCanvas from '../../../src/nodes/html-canvas-element/OffscreenCanvas.js';
 import ImageBitmap from '../../../src/nodes/html-canvas-element/ImageBitmap.js';
-import Blob from '../../../src/file/Blob.js';
+import Blob from '../../src/file/Blob.js';
 
 describe('OffscreenCanvas', () => {
 	describe('get width()', () => {

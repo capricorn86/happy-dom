@@ -1,18 +1,26 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import DOMMatrix from '../../../src/dom/dom-matrix/DOMMatrix.js';
 import DOMMatrixReadOnly from '../../../src/dom/dom-matrix/DOMMatrixReadOnly.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
+import type BrowserWindow from '../../../src/window/BrowserWindow.js';
+import Window from '../../../src/window/Window.js';
 
 describe('DOMMatrix', () => {
+	let window: BrowserWindow;
+
+	beforeEach(() => {
+		window = new Window();
+	});
+
 	describe('constructor()', () => {
 		it('Creates a new DOMMatrix.', () => {
-			const matrix = new DOMMatrix();
+			const matrix = new window.DOMMatrix();
 			expect(matrix).toBeInstanceOf(DOMMatrix);
 			expect(matrix).toBeInstanceOf(DOMMatrixReadOnly);
 		});
 
 		it('Creates a new DOMMatrix from a DOMMatrix instance.', () => {
-			const matrix = new DOMMatrix(new DOMMatrix('matrix(10, 20, 30, 40, 50, 60)'));
+			const matrix = new window.DOMMatrix(new window.DOMMatrix('matrix(10, 20, 30, 40, 50, 60)'));
 
 			expect(matrix.a).toBe(10);
 			expect(matrix.b).toBe(20);
@@ -39,7 +47,7 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Creates a new DOMMatrix from a DOMMatrixReadOnly instance.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				new DOMMatrixReadOnly('matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)')
 			);
 
@@ -68,7 +76,7 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Creates a new DOMMatrix from a DOM Matrix compatible object.', () => {
-			const matrix = new DOMMatrix({
+			const matrix = new window.DOMMatrix({
 				a: 10,
 				b: 20,
 				c: 30,
@@ -103,7 +111,7 @@ describe('DOMMatrix', () => {
 
 		it('Creates a new DOMMatrix from an array.', () => {
 			// prettier-ignore
-			const matrix = new DOMMatrix([
+			const matrix = new window.DOMMatrix([
                 1, 2, 3, 4,
                 5, 6, 7, 8,
                 9, 10, 11, 12,
@@ -135,7 +143,7 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Creates a new DOMMatrix from a "matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)" string.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
 			);
 
@@ -166,7 +174,7 @@ describe('DOMMatrix', () => {
 
 	describe('get a()', () => {
 		it('Returns "m11" property.', () => {
-			const matrix = new DOMMatrix();
+			const matrix = new window.DOMMatrix();
 			matrix[PropertySymbol.m11] = 10;
 			expect(matrix.a).toBe(10);
 		});
@@ -174,7 +182,7 @@ describe('DOMMatrix', () => {
 
 	describe('set a()', () => {
 		it('Sets "m11" property.', () => {
-			const matrix = new DOMMatrix();
+			const matrix = new window.DOMMatrix();
 			matrix.a = 10;
 			expect(matrix[PropertySymbol.m11]).toBe(10);
 		});
@@ -182,7 +190,7 @@ describe('DOMMatrix', () => {
 
 	describe('get b()', () => {
 		it('Returns "m12" property.', () => {
-			const matrix = new DOMMatrix();
+			const matrix = new window.DOMMatrix();
 			matrix[PropertySymbol.m12] = 10;
 			expect(matrix.b).toBe(10);
 		});
@@ -190,7 +198,7 @@ describe('DOMMatrix', () => {
 
 	describe('set b()', () => {
 		it('Sets "m12" property.', () => {
-			const matrix = new DOMMatrix();
+			const matrix = new window.DOMMatrix();
 			matrix.b = 10;
 			expect(matrix[PropertySymbol.m12]).toBe(10);
 		});
@@ -198,7 +206,7 @@ describe('DOMMatrix', () => {
 
 	describe('get c()', () => {
 		it('Returns "m21" property.', () => {
-			const matrix = new DOMMatrix();
+			const matrix = new window.DOMMatrix();
 			matrix[PropertySymbol.m21] = 10;
 			expect(matrix.c).toBe(10);
 		});
@@ -206,7 +214,7 @@ describe('DOMMatrix', () => {
 
 	describe('set c()', () => {
 		it('Sets "m21" property.', () => {
-			const matrix = new DOMMatrix();
+			const matrix = new window.DOMMatrix();
 			matrix.c = 10;
 			expect(matrix[PropertySymbol.m21]).toBe(10);
 		});
@@ -214,7 +222,7 @@ describe('DOMMatrix', () => {
 
 	describe('get d()', () => {
 		it('Returns "m22" property.', () => {
-			const matrix = new DOMMatrix();
+			const matrix = new window.DOMMatrix();
 			matrix[PropertySymbol.m22] = 10;
 			expect(matrix.d).toBe(10);
 		});
@@ -222,7 +230,7 @@ describe('DOMMatrix', () => {
 
 	describe('set d()', () => {
 		it('Sets "m22" property.', () => {
-			const matrix = new DOMMatrix();
+			const matrix = new window.DOMMatrix();
 			matrix.d = 10;
 			expect(matrix[PropertySymbol.m22]).toBe(10);
 		});
@@ -230,7 +238,7 @@ describe('DOMMatrix', () => {
 
 	describe('get e()', () => {
 		it('Returns "m41" property.', () => {
-			const matrix = new DOMMatrix();
+			const matrix = new window.DOMMatrix();
 			matrix[PropertySymbol.m41] = 10;
 			expect(matrix.e).toBe(10);
 		});
@@ -238,7 +246,7 @@ describe('DOMMatrix', () => {
 
 	describe('set e()', () => {
 		it('Sets "m41" property.', () => {
-			const matrix = new DOMMatrix();
+			const matrix = new window.DOMMatrix();
 			matrix.e = 10;
 			expect(matrix[PropertySymbol.m41]).toBe(10);
 		});
@@ -246,7 +254,7 @@ describe('DOMMatrix', () => {
 
 	describe('get f()', () => {
 		it('Returns "m42" property.', () => {
-			const matrix = new DOMMatrix();
+			const matrix = new window.DOMMatrix();
 			matrix[PropertySymbol.m42] = 10;
 			expect(matrix.f).toBe(10);
 		});
@@ -254,7 +262,7 @@ describe('DOMMatrix', () => {
 
 	describe('set f()', () => {
 		it('Sets "m42" property.', () => {
-			const matrix = new DOMMatrix();
+			const matrix = new window.DOMMatrix();
 			matrix.f = 10;
 			expect(matrix[PropertySymbol.m42]).toBe(10);
 		});
@@ -280,7 +288,7 @@ describe('DOMMatrix', () => {
 	]) {
 		describe(`get ${key}()`, () => {
 			it(`Returns the "${key}" property.`, () => {
-				const matrix = new DOMMatrix();
+				const matrix = new window.DOMMatrix();
 				(<any>matrix)[(<any>PropertySymbol)[key]] = 10;
 				expect((<any>matrix)[key]).toBe(10);
 			});
@@ -288,7 +296,7 @@ describe('DOMMatrix', () => {
 
 		describe(`set ${key}()`, () => {
 			it(`Sets "${key}" property.`, () => {
-				const matrix = new DOMMatrix();
+				const matrix = new window.DOMMatrix();
 				(<any>matrix)[key] = 10;
 				expect((<any>matrix)[(<any>PropertySymbol)[key]]).toBe(10);
 			});
@@ -297,8 +305,8 @@ describe('DOMMatrix', () => {
 
 	describe('multiplySelf()', () => {
 		it('Multiplies two 2d matrices.', () => {
-			const matrix1 = new DOMMatrix('matrix(2, 3, 4, 5, 6, 7)');
-			const matrix2 = new DOMMatrix('matrix(2, 3, 4, 5, 6, 7)');
+			const matrix1 = new window.DOMMatrix('matrix(2, 3, 4, 5, 6, 7)');
+			const matrix2 = new window.DOMMatrix('matrix(2, 3, 4, 5, 6, 7)');
 			expect(matrix1.multiplySelf(matrix2)).toBe(matrix1);
 
 			expect(matrix1.m11).toBe(16);
@@ -327,10 +335,10 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Multiplies two 3d matrices.', () => {
-			const matrix1 = new DOMMatrix(
+			const matrix1 = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
 			);
-			const matrix2 = new DOMMatrix(
+			const matrix2 = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
 			);
 			matrix1.multiplySelf(matrix2);
@@ -363,7 +371,7 @@ describe('DOMMatrix', () => {
 
 	describe('translateSelf()', () => {
 		it('Translates a 2D matrix.', () => {
-			const matrix = new DOMMatrix('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrix('matrix(10, 20, 30, 40, 50, 60)');
 			expect(matrix.translateSelf(10, 20)).toBe(matrix);
 
 			expect(matrix.toJSON()).toEqual({
@@ -395,7 +403,7 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Translates a 3D matrix.', () => {
-			const matrix1 = new DOMMatrix(
+			const matrix1 = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
 			);
 			matrix1.translateSelf(10, 20, 30);
@@ -426,7 +434,9 @@ describe('DOMMatrix', () => {
 				is2D: false,
 				isIdentity: false
 			});
-			const matrix2 = new DOMMatrix('matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 30, 1)');
+			const matrix2 = new window.DOMMatrix(
+				'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 30, 1)'
+			);
 			matrix2.translateSelf(5, 6, 7);
 
 			expect(matrix2.toJSON()).toEqual({
@@ -460,7 +470,7 @@ describe('DOMMatrix', () => {
 
 	describe('scaleSelf()', () => {
 		it('Scales a 2D matrix.', () => {
-			const matrix = new DOMMatrix('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrix('matrix(10, 20, 30, 40, 50, 60)');
 			expect(matrix.scaleSelf(2, 3)).toBe(matrix);
 
 			expect(matrix.toJSON()).toEqual({
@@ -492,7 +502,7 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Scales a 3D matrix.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
 			);
 			matrix.scaleSelf(2, 3, 4);
@@ -526,7 +536,9 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Scales a 3D matrix with a point.', () => {
-			const matrix = new DOMMatrix('matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 30, 1)');
+			const matrix = new window.DOMMatrix(
+				'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 30, 1)'
+			);
 			matrix.scaleSelf(2, 3, 4, 5, 6, 7);
 
 			expect(matrix.toJSON()).toEqual({
@@ -560,7 +572,7 @@ describe('DOMMatrix', () => {
 
 	describe('scale3dSelf()', () => {
 		it('Scales a 3D matrix.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
 			);
 			expect(matrix.scale3dSelf(2)).toBe(matrix);
@@ -594,7 +606,9 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Scales a 3D matrix with a point.', () => {
-			const matrix = new DOMMatrix('matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 30, 1)');
+			const matrix = new window.DOMMatrix(
+				'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 30, 1)'
+			);
 			matrix.scale3dSelf(2, 5, 6, 7);
 
 			expect(matrix.toJSON()).toEqual({
@@ -628,7 +642,7 @@ describe('DOMMatrix', () => {
 
 	describe('scaleNonUniformSelf()', () => {
 		it('Scales a 2D matrix.', () => {
-			const matrix = new DOMMatrix('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrix('matrix(10, 20, 30, 40, 50, 60)');
 
 			expect(matrix.scaleNonUniformSelf(2, 3)).toBe(matrix);
 
@@ -661,7 +675,7 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Scales a 3D matrix.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
 			);
 			matrix.scaleNonUniformSelf(2, 3);
@@ -697,7 +711,7 @@ describe('DOMMatrix', () => {
 
 	describe('rotateAxisAngleSelf()', () => {
 		it('Rotates a 3D matrix around an axis with parameters 1, 0, 0, 90.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			expect(matrix.rotateAxisAngleSelf(1, 0, 0, 90)).toBe(matrix);
@@ -731,7 +745,7 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Rotates a 3D matrix around an axis with parameters 0, 1, 0, 90.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			matrix.rotateAxisAngleSelf(0, 1, 0, 90);
@@ -765,7 +779,7 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Rotates a 3D matrix around an axis with parameters 0, 0, 1, 90.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			matrix.rotateAxisAngleSelf(0, 0, 1, 90);
@@ -799,7 +813,7 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Rotates a 3D matrix around an axis with parameters 1, 1, 1, 90.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			matrix.rotateAxisAngleSelf(1, 1, 1, 100);
@@ -833,7 +847,7 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Rotates a 3D matrix around an axis with parameters 2, 2, 2, 90.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			matrix.rotateAxisAngleSelf(2, 2, 2, 90);
@@ -867,7 +881,7 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Rotates a 3D matrix around an axis with parameters 0, 0, 1, 360 + 90.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			matrix.rotateAxisAngleSelf(0, 0, 1, 360 + 90);
@@ -901,7 +915,7 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Rotates a 3D matrix around an axis with parameters 0, 0, 1, -90.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			matrix.rotateAxisAngleSelf(0, 0, 1, -90);
@@ -937,7 +951,7 @@ describe('DOMMatrix', () => {
 
 	describe('rotateSelf()', () => {
 		it('Rotates a 3D matrix with x defined.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			expect(matrix.rotateSelf(90)).toBe(matrix);
@@ -971,7 +985,7 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Rotates a 3D matrix with x and y defined.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			matrix.rotateSelf(90, 90);
@@ -1005,7 +1019,7 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Rotates a 3D matrix with x, y and z defined.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			matrix.rotateSelf(90, 90, 90);
@@ -1041,7 +1055,7 @@ describe('DOMMatrix', () => {
 
 	describe('rotateFromVectorSelf()', () => {
 		it('Rotates a 3D matrix with x defined.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			expect(matrix.rotateFromVectorSelf(90)).toBe(matrix);
@@ -1075,7 +1089,7 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Rotates a 3D matrix with x and y defined.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			matrix.rotateFromVectorSelf(90, 90);
@@ -1111,7 +1125,7 @@ describe('DOMMatrix', () => {
 
 	describe('skewXSelf()', () => {
 		it('Skews a 2D matrix.', () => {
-			const matrix = new DOMMatrix('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrix('matrix(10, 20, 30, 40, 50, 60)');
 			expect(matrix.skewXSelf(10)).toBe(matrix);
 
 			expect(matrix.toJSON()).toEqual({
@@ -1143,7 +1157,7 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Skews a 3D matrix.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			matrix.skewXSelf(10);
@@ -1179,7 +1193,7 @@ describe('DOMMatrix', () => {
 
 	describe('skewYSelf()', () => {
 		it('Skews a 2D matrix.', () => {
-			const matrix = new DOMMatrix('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrix('matrix(10, 20, 30, 40, 50, 60)');
 			expect(matrix.skewYSelf(10)).toBe(matrix);
 
 			expect(matrix.toJSON()).toEqual({
@@ -1211,7 +1225,7 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Skews a 3D matrix.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			matrix.skewYSelf(10);
@@ -1247,7 +1261,7 @@ describe('DOMMatrix', () => {
 
 	describe('flipXSelf()', () => {
 		it('Flips a 2D matrix.', () => {
-			const matrix = new DOMMatrix('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrix('matrix(10, 20, 30, 40, 50, 60)');
 			expect(matrix.flipXSelf()).toBe(matrix);
 
 			expect(matrix.toJSON()).toEqual({
@@ -1279,7 +1293,7 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Flips a 3D matrix.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			matrix.flipXSelf();
@@ -1315,7 +1329,7 @@ describe('DOMMatrix', () => {
 
 	describe('flipYSelf()', () => {
 		it('Flips a 2D matrix.', () => {
-			const matrix = new DOMMatrix('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrix('matrix(10, 20, 30, 40, 50, 60)');
 			expect(matrix.flipYSelf()).toBe(matrix);
 
 			expect(matrix.toJSON()).toEqual({
@@ -1347,7 +1361,7 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Flips a 3D matrix.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			matrix.flipYSelf();
@@ -1383,7 +1397,7 @@ describe('DOMMatrix', () => {
 
 	describe('invertSelf()', () => {
 		it('Inverses a 2D matrix.', () => {
-			const matrix = new DOMMatrix('matrix(1, 2, 3, 4, 5, 6)');
+			const matrix = new window.DOMMatrix('matrix(1, 2, 3, 4, 5, 6)');
 			expect(matrix.invertSelf()).toBe(matrix);
 
 			expect(matrix.toJSON()).toEqual({
@@ -1415,7 +1429,7 @@ describe('DOMMatrix', () => {
 		});
 
 		it('Inverses a 3D matrix.', () => {
-			const matrix = new DOMMatrix(
+			const matrix = new window.DOMMatrix(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			matrix.invertSelf();
@@ -1451,8 +1465,8 @@ describe('DOMMatrix', () => {
 
 	describe('preMultiplySelf()', () => {
 		it('Pre-multiplies a matrix.', () => {
-			const matrix = new DOMMatrix().translate(3, 22);
-			const otherMatrix = new DOMMatrix().translateSelf(15, 45);
+			const matrix = new window.DOMMatrix().translate(3, 22);
+			const otherMatrix = new window.DOMMatrix().translateSelf(15, 45);
 
 			expect(matrix.toString()).toBe('matrix(1, 0, 0, 1, 3, 22)');
 			expect(otherMatrix.toString()).toBe('matrix(1, 0, 0, 1, 15, 45)');
