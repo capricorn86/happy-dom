@@ -742,6 +742,76 @@ describe('HTMLElement', () => {
 		});
 	});
 
+	describe('focus() on contenteditable', () => {
+		it('Places a collapsed selection at the first editable text node.', () => {
+			const div = <HTMLElement>document.createElement('div');
+			div.contentEditable = 'true';
+			div.textContent = 'hello';
+			document.body.appendChild(div);
+
+			div.focus();
+
+			const sel = document.getSelection();
+			expect(sel?.isCollapsed).toBe(true);
+			expect(sel?.anchorNode).toBe(div.firstChild);
+			expect(sel?.anchorOffset).toBe(0);
+		});
+
+		it('Skips contenteditable=false subtrees when finding the first text node.', () => {
+			const div = <HTMLElement>document.createElement('div');
+			div.contentEditable = 'true';
+			const inner = document.createElement('span');
+			inner.contentEditable = 'false';
+			inner.textContent = 'non-editable';
+			const editable = document.createElement('span');
+			editable.textContent = 'editable';
+			div.appendChild(inner);
+			div.appendChild(editable);
+			document.body.appendChild(div);
+
+			div.focus();
+
+			const sel = document.getSelection();
+			expect(sel?.anchorNode).toBe(editable.firstChild);
+		});
+
+		it('Collapses to the element itself when no text nodes exist.', () => {
+			const div = <HTMLElement>document.createElement('div');
+			div.contentEditable = 'true';
+			document.body.appendChild(div);
+
+			div.focus();
+
+			const sel = document.getSelection();
+			expect(sel?.isCollapsed).toBe(true);
+			expect(sel?.anchorNode).toBe(div);
+		});
+
+		it('Does not throw on an empty contenteditable element.', () => {
+			const div = <HTMLElement>document.createElement('div');
+			div.contentEditable = 'true';
+			document.body.appendChild(div);
+
+			expect(() => div.focus()).not.toThrow();
+		});
+
+		it('Fires selectionchange when focusing a contenteditable element.', () => {
+			const div = <HTMLElement>document.createElement('div');
+			div.contentEditable = 'true';
+			div.textContent = 'hello';
+			document.body.appendChild(div);
+
+			let fired = false;
+			document.addEventListener('selectionchange', () => {
+				fired = true;
+			});
+
+			div.focus();
+
+			expect(fired).toBe(true);
+		});
+	});
+
 	describe('setAttributeNode()', () => {
 		it('Sets css text of existing CSSStyleDeclaration.', () => {
 			element.style.background = 'green';
