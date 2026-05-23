@@ -133,7 +133,7 @@ export default class TreeWalker {
 			let sibling = node?.previousSibling || null;
 
 			while (sibling !== null) {
-				let node = sibling;
+				node = sibling;
 				let result = this[PropertySymbol.filterNode](node);
 
 				while (result !== NodeFilter.FILTER_REJECT && node[PropertySymbol.nodeArray].length) {

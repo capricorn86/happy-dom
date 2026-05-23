@@ -284,6 +284,29 @@ describe('TreeWalker', () => {
 				expectedPreviousNode = currentNode;
 			}
 		});
+
+		it('Returns correct previous node when previous sibling has FILTER_SKIP children.', () => {
+			const root = document.createElement('div');
+			root.innerHTML = `
+				<button>Bold</button>
+				<button>Italic</button>
+			`;
+			document.body.appendChild(root);
+
+			const buttons = root.querySelectorAll('button');
+			const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
+				acceptNode: (node: Node) =>
+					(<Element>node).tagName === 'BUTTON' ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP
+			});
+
+			walker.currentNode = <Node>buttons[1];
+
+			const previous = walker.previousNode();
+
+			expect(previous).toBe(buttons[0]);
+
+			document.body.removeChild(root);
+		});
 	});
 
 	describe('parentNode()', () => {
