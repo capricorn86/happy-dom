@@ -296,9 +296,7 @@ describe('TreeWalker', () => {
 			const buttons = root.querySelectorAll('button');
 			const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
 				acceptNode: (node: Node) =>
-					(<Element>node).tagName === 'BUTTON'
-						? NodeFilter.FILTER_ACCEPT
-						: NodeFilter.FILTER_SKIP
+					(<Element>node).tagName === 'BUTTON' ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP
 			});
 
 			walker.currentNode = <Node>buttons[1];
