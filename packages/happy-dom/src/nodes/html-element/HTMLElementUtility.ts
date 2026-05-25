@@ -3,7 +3,9 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import NodeFilter from '../../tree-walker/NodeFilter.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import type HTMLElement from '../html-element/HTMLElement.js';
+import type Node from '../node/Node.js';
 import type SVGElement from '../svg-element/SVGElement.js';
+import type Text from '../text/Text.js';
 
 /**
  * HTMLElement utility.

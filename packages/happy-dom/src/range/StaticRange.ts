@@ -1,3 +1,5 @@
+import type Node from '../nodes/node/Node.js';
+
 /**
  * Range object that does not update when the node tree mutates.
  *
