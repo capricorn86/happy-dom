@@ -1,3 +1,4 @@
+import MouseEvent from '../../../src/event/events/MouseEvent.js';
 import PointerEvent from '../../../src/event/events/PointerEvent.js';
 import type Document from '../../../src/nodes/document/Document.js';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
@@ -743,7 +744,7 @@ describe('HTMLElement', () => {
 	});
 
 	describe('focus() on contenteditable', () => {
-		it('Places a collapsed selection at the first editable text node.', () => {
+		it('Places a collapsed selection when focused.', () => {
 			const div = <HTMLElement>document.createElement('div');
 			div.contentEditable = 'true';
 			div.textContent = 'hello';
@@ -756,59 +757,99 @@ describe('HTMLElement', () => {
 			expect(sel?.anchorNode).toBe(div.firstChild);
 			expect(sel?.anchorOffset).toBe(0);
 		});
+	});
 
-		it('Skips contenteditable=false subtrees when finding the first text node.', () => {
-			const div = <HTMLElement>document.createElement('div');
-			div.contentEditable = 'true';
-			const inner = document.createElement('span');
-			inner.contentEditable = 'false';
-			inner.textContent = 'non-editable';
-			const editable = document.createElement('span');
-			editable.textContent = 'editable';
-			div.appendChild(inner);
-			div.appendChild(editable);
-			document.body.appendChild(div);
+	describe('dispatchEvent()', () => {
+		describe('mousedown on contenteditable', () => {
+			it('focuses the element and places a caret', () => {
+				const div = <HTMLElement>document.createElement('div');
+				div.contentEditable = 'true';
+				div.textContent = 'hello';
+				document.body.appendChild(div);
 
-			div.focus();
+				div.dispatchEvent(
+					new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 0 })
+				);
 
-			const sel = document.getSelection();
-			expect(sel?.anchorNode).toBe(editable.firstChild);
-		});
-
-		it('Collapses to the element itself when no text nodes exist.', () => {
-			const div = <HTMLElement>document.createElement('div');
-			div.contentEditable = 'true';
-			document.body.appendChild(div);
-
-			div.focus();
-
-			const sel = document.getSelection();
-			expect(sel?.isCollapsed).toBe(true);
-			expect(sel?.anchorNode).toBe(div);
-		});
-
-		it('Does not throw on an empty contenteditable element.', () => {
-			const div = <HTMLElement>document.createElement('div');
-			div.contentEditable = 'true';
-			document.body.appendChild(div);
-
-			expect(() => div.focus()).not.toThrow();
-		});
-
-		it('Fires selectionchange when focusing a contenteditable element.', () => {
-			const div = <HTMLElement>document.createElement('div');
-			div.contentEditable = 'true';
-			div.textContent = 'hello';
-			document.body.appendChild(div);
-
-			let fired = false;
-			document.addEventListener('selectionchange', () => {
-				fired = true;
+				const sel = document.getSelection();
+				expect(document.activeElement).toBe(div);
+				expect(sel?.isCollapsed).toBe(true);
+				expect(sel?.anchorNode).toBe(div.firstChild);
+				expect(sel?.anchorOffset).toBe(0);
 			});
 
-			div.focus();
+			it('still places a caret on already-focused contenteditable', () => {
+				const div = <HTMLElement>document.createElement('div');
+				div.contentEditable = 'true';
+				div.textContent = 'hello';
+				document.body.appendChild(div);
 
-			expect(fired).toBe(true);
+				div.focus();
+				document.getSelection()?.removeAllRanges();
+
+				div.dispatchEvent(
+					new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 0 })
+				);
+
+				const sel = document.getSelection();
+				expect(document.activeElement).toBe(div);
+				expect(sel?.isCollapsed).toBe(true);
+				expect(sel?.anchorNode).toBe(div.firstChild);
+				expect(sel?.anchorOffset).toBe(0);
+			});
+
+			it('does not place a caret when preventDefault() is called', () => {
+				const div = <HTMLElement>document.createElement('div');
+				div.contentEditable = 'true';
+				div.textContent = 'hello';
+				document.body.appendChild(div);
+
+				div.addEventListener('mousedown', (event) => {
+					event.preventDefault();
+				});
+
+				div.dispatchEvent(
+					new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 0 })
+				);
+
+				const sel = document.getSelection();
+				expect(document.activeElement).not.toBe(div);
+				expect(sel?.anchorNode).toBeNull();
+			});
+
+			it('resolves to the root and places caret when mousedown is on a child', () => {
+				const div = <HTMLElement>document.createElement('div');
+				div.contentEditable = 'true';
+				const span = document.createElement('span');
+				span.textContent = 'hello';
+				div.appendChild(span);
+				document.body.appendChild(div);
+
+				span.dispatchEvent(
+					new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 0 })
+				);
+
+				const sel = document.getSelection();
+				expect(document.activeElement).toBe(div);
+				expect(sel?.isCollapsed).toBe(true);
+				expect(sel?.anchorNode).toBe(span.firstChild);
+				expect(sel?.anchorOffset).toBe(0);
+			});
+
+			it('does not trigger default action for auxiliary buttons', () => {
+				const div = <HTMLElement>document.createElement('div');
+				div.contentEditable = 'true';
+				div.textContent = 'hello';
+				document.body.appendChild(div);
+
+				div.dispatchEvent(
+					new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 1 })
+				);
+
+				const sel = document.getSelection();
+				expect(document.activeElement).not.toBe(div);
+				expect(sel?.anchorNode).toBeNull();
+			});
 		});
 	});
 

@@ -102,14 +102,42 @@ export default class HTMLElementUtility {
 		);
 
 		if ((<HTMLElement>target).isContentEditable) {
-			const firstText = HTMLElementUtility.findFirstEditableTextNode(<HTMLElement>target);
-			const sel = target[PropertySymbol.ownerDocument].getSelection();
-			if (firstText) {
-				sel?.collapse(firstText, 0);
-			} else {
-				sel?.collapse(<HTMLElement>target, 0);
-			}
+			HTMLElementUtility.placeCaretInContentEditable(<HTMLElement>target);
 		}
+	}
+
+	/**
+	 * Places a collapsed selection at the first editable text node in a contenteditable root.
+	 *
+	 * @param root Contenteditable root element.
+	 */
+	public static placeCaretInContentEditable(root: HTMLElement): void {
+		const firstText = HTMLElementUtility.findFirstEditableTextNode(root);
+		const sel = root[PropertySymbol.ownerDocument].getSelection();
+		if (firstText) {
+			sel?.collapse(firstText, 0);
+		} else {
+			sel?.collapse(root, 0);
+		}
+	}
+
+	/**
+	 * Returns the outermost contenteditable root for a node.
+	 *
+	 * @param node Node.
+	 * @returns Contenteditable root element, or null if none exists.
+	 */
+	public static getContentEditableRoot(node: Node): HTMLElement | null {
+		let current: Node | null = node;
+		let root: HTMLElement | null = null;
+		while (current && current.nodeType === NodeTypeEnum.elementNode) {
+			const el = <HTMLElement>current;
+			if (el.isContentEditable) {
+				root = el;
+			}
+			current = el[PropertySymbol.parentNode];
+		}
+		return root;
 	}
 
 	/**
@@ -124,7 +152,7 @@ export default class HTMLElementUtility {
 				if (
 					node !== root &&
 					node.nodeType === NodeTypeEnum.elementNode &&
-					(<Element>node).contentEditable === 'false'
+					(<HTMLElement>node).contentEditable === 'false'
 				) {
 					return NodeFilter.FILTER_REJECT;
 				}
