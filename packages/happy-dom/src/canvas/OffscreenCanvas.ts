@@ -1,5 +1,5 @@
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
-import type Blob from '../file/Blob.js';
+import Blob from '../file/Blob.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import type ICanvasAdapter from './ICanvasAdapter.js';
 import type ICanvasRenderingContext2D from './ICanvasRenderingContext2D.js';
@@ -34,6 +34,40 @@ export default class OffscreenCanvas implements ICanvasShape {
 	}
 
 	/**
+	 * Returns context.
+	 *
+	 * @param contextType Context type.
+	 * @param [contextAttributes] Context attributes.
+	 * @returns Context.
+	 */
+	public getContext(
+		contextType: '2d' | 'webgl' | 'webgl2' | 'webgpu' | 'bitmaprenderer',
+		contextAttributes?: { [key: string]: any }
+	): ICanvasRenderingContext2D | null {
+		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
+		if (!browserFrame) {
+			throw new this[PropertySymbol.window].Error(
+				`Failed to execute 'getContext' on 'OffscreenCanvas': Browser frame is not available. This happens when the browser is closing.`
+			);
+		}
+		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
+		const adapter = settings?.canvasAdapter;
+		if (!adapter) {
+			return null;
+		}
+		this[PropertySymbol.context] = (<ICanvasAdapter>adapter).getContext(
+			{
+				window: this[PropertySymbol.window],
+				browserFrame,
+				canvas: this
+			},
+			contextType,
+			contextAttributes
+		);
+		return this[PropertySymbol.context];
+	}
+
+	/**
 	 * Converts the canvas to a Blob.
 	 *
 	 * @param options Options.
@@ -51,9 +85,9 @@ export default class OffscreenCanvas implements ICanvasShape {
 		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
 		const adapter = settings?.canvasAdapter;
 		if (!adapter) {
-			throw new this[PropertySymbol.window].Error(
-				`Failed to execute 'convertToBlob' on 'OffscreenCanvas': No canvas adapter provided in Happy DOM browser settings.\n\nRead more: https://github.com/capricorn86/happy-dom/wiki/IOptionalBrowserSettings#properties`
-			);
+			return new Promise((resolve) => {
+				this[PropertySymbol.window].requestAnimationFrame(() => resolve(new Blob([], options)));
+			});
 		}
 		return new Promise((resolve, reject) => {
 			(<ICanvasAdapter>adapter).toBlob(
@@ -88,6 +122,20 @@ export default class OffscreenCanvas implements ICanvasShape {
 	 * @returns ImageBitmap.
 	 */
 	public transferToImageBitmap(): ImageBitmap {
+		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
+		if (!browserFrame) {
+			throw new this[PropertySymbol.window].Error(
+				`Failed to execute 'getContext' on 'OffscreenCanvas': Browser frame is not available. This happens when the browser is closing.`
+			);
+		}
+
+		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
+		const adapter = settings?.canvasAdapter;
+
+		if (!adapter) {
+			return new ImageBitmap(PropertySymbol.illegalConstructor, this[PropertySymbol.window], this);
+		}
+
 		const context = this[PropertySymbol.context];
 
 		if (!context) {
@@ -105,41 +153,5 @@ export default class OffscreenCanvas implements ICanvasShape {
 		context.clearRect(0, 0, this.width, this.height);
 
 		return imageBitmap;
-	}
-
-	/**
-	 * Returns context.
-	 *
-	 * @param contextType Context type.
-	 * @param [contextAttributes] Context attributes.
-	 * @returns Context.
-	 */
-	public getContext(
-		contextType: '2d' | 'webgl' | 'webgl2' | 'webgpu' | 'bitmaprenderer',
-		contextAttributes?: { [key: string]: any }
-	): ICanvasRenderingContext2D | null {
-		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
-		if (!browserFrame) {
-			throw new this[PropertySymbol.window].Error(
-				`Failed to execute 'getContext' on 'OffscreenCanvas': Browser frame is not available. This happens when the browser is closing.`
-			);
-		}
-		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
-		const adapter = settings?.canvasAdapter;
-		if (!adapter) {
-			throw new this[PropertySymbol.window].Error(
-				`Failed to execute 'getContext' on 'OffscreenCanvas': No canvas adapter provided in Happy DOM browser settings.\n\nRead more: https://github.com/capricorn86/happy-dom/wiki/IOptionalBrowserSettings#properties`
-			);
-		}
-		this[PropertySymbol.context] = (<ICanvasAdapter>adapter).getContext(
-			{
-				window: this[PropertySymbol.window],
-				browserFrame,
-				canvas: this
-			},
-			contextType,
-			contextAttributes
-		);
-		return this[PropertySymbol.context];
 	}
 }

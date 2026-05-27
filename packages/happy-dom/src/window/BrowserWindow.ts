@@ -2867,7 +2867,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		source: TImageBitmapSource,
 		sx?: number | IImageBitmapOptions,
 		sy?: number,
-		sw?: number,
+		sw?: number | IImageBitmapOptions,
 		sh?: number,
 		options?: IImageBitmapOptions
 	): Promise<ImageBitmap> {

@@ -23,7 +23,7 @@ describe('CanvasAdapter', () => {
 					virtualServers: [
 						{
 							url: 'https://example.com/images',
-							directory: './test/'
+							directory: './test/data'
 						}
 					]
 				}

@@ -6,6 +6,7 @@ import type Event from '../../event/Event.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import BufferImageSize from 'buffer-image-size';
 import type Response from '../../fetch/Response.js';
+import type Attr from '../attr/Attr.js';
 
 const DATA_URL_REGEX = /^\s*data:([^,]+)?,(.*)/;
 
@@ -180,7 +181,11 @@ export default class HTMLImageElement extends HTMLElement implements ICanvasShap
 	 */
 	public get width(): number {
 		const width = this.getAttribute('width');
-		return width !== null ? Number(width) : this[PropertySymbol.naturalWidth];
+		if (width === null) {
+			return this[PropertySymbol.naturalWidth];
+		}
+		const parsed = parseInt(width, 10);
+		return isNaN(parsed) || parsed <= 0 ? this[PropertySymbol.naturalWidth] : parsed;
 	}
 
 	/**
@@ -199,7 +204,11 @@ export default class HTMLImageElement extends HTMLElement implements ICanvasShap
 	 */
 	public get height(): number {
 		const height = this.getAttribute('height');
-		return height !== null ? Number(height) : this[PropertySymbol.naturalHeight];
+		if (height === null) {
+			return this[PropertySymbol.naturalHeight];
+		}
+		const parsed = parseInt(height, 10);
+		return isNaN(parsed) || parsed <= 0 ? this[PropertySymbol.naturalHeight] : parsed;
 	}
 
 	/**
@@ -291,25 +300,6 @@ export default class HTMLImageElement extends HTMLElement implements ICanvasShap
 	 */
 	public set src(src: string) {
 		this.setAttribute('src', src);
-
-		const url = this.#parseUrl(src);
-
-		if (!url) {
-			this[PropertySymbol.complete] = true;
-			this[PropertySymbol.naturalHeight] = 0;
-			this[PropertySymbol.naturalWidth] = 0;
-			this.dispatchEvent(new this[PropertySymbol.window].Event('error'));
-			return;
-		}
-
-		if (this.#loadDataUrl(url)) {
-			return;
-		}
-
-		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
-		if (settings?.enableImageFileLoading) {
-			this.#loadUrlSource(this.src);
-		}
 	}
 
 	/**
@@ -358,6 +348,51 @@ export default class HTMLImageElement extends HTMLElement implements ICanvasShap
 	}
 
 	/**
+	 * @override
+	 */
+	public override [PropertySymbol.onSetAttribute](
+		attribute: Attr,
+		replacedAttribute: Attr | null
+	): void {
+		super[PropertySymbol.onSetAttribute](attribute, replacedAttribute);
+
+		if (attribute[PropertySymbol.name] === 'src') {
+			const url = this.#parseUrl(attribute[PropertySymbol.value]);
+
+			if (!url) {
+				this[PropertySymbol.complete] = true;
+				this[PropertySymbol.naturalHeight] = 0;
+				this[PropertySymbol.naturalWidth] = 0;
+				this.dispatchEvent(new this[PropertySymbol.window].Event('error'));
+				return;
+			}
+
+			if (this.#loadDataUrl(url)) {
+				return;
+			}
+
+			const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
+			if (settings?.enableImageFileLoading) {
+				this.#loadUrlSource(this.src);
+			}
+		}
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.onRemoveAttribute](removedAttribute: Attr): void {
+		super[PropertySymbol.onRemoveAttribute](removedAttribute);
+
+		if (removedAttribute[PropertySymbol.name] === 'src') {
+			this[PropertySymbol.complete] = true;
+			this[PropertySymbol.naturalHeight] = 0;
+			this[PropertySymbol.naturalWidth] = 0;
+			this[PropertySymbol.buffer] = null;
+		}
+	}
+
+	/**
 	 * Parses the given source URL.
 	 *
 	 * @param src Source.
@@ -367,6 +402,7 @@ export default class HTMLImageElement extends HTMLElement implements ICanvasShap
 		if (src === null) {
 			return null;
 		}
+
 		try {
 			return new URL(src, this[PropertySymbol.ownerDocument].location.href).href;
 		} catch {

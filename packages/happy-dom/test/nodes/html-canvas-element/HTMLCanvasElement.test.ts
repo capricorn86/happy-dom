@@ -9,7 +9,6 @@ import OffscreenCanvas from '../../../src/canvas/OffscreenCanvas.js';
 import MediaStream from '../../../src/nodes/html-media-element/MediaStream.js';
 import Event from '../../../src/event/Event.js';
 import type ICanvasAdapter from '../../../src/canvas/ICanvasAdapter.js';
-import DOMException from '../../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
 
 const DEVICE_ID = 'S3F/aBCdEfGHIjKlMnOpQRStUvWxYz1234567890+1AbC2DEf2GHi3jK34le+ab12C3+1aBCdEf==';
@@ -144,7 +143,7 @@ describe('HTMLCanvasElement', () => {
 	});
 
 	describe('getContext()', () => {
-		it('Returns null (not implemented yet).', () => {
+		it('Returns null when no adapter has been set.', () => {
 			for (const type of ['2d', 'webgl', 'webgl2', 'webgpu', 'bitmaprenderer']) {
 				expect(element.getContext(<'2d'>type)).toBe(null);
 				expect(element.getContext(<'2d'>type, {})).toBe(null);
@@ -163,9 +162,8 @@ describe('HTMLCanvasElement', () => {
 			const page = browser.newPage();
 			const browserFrame = page.mainFrame;
 			const window = browserFrame.window;
-
-			document = window.document;
-			element = document.createElement('canvas');
+			const document = window.document;
+			const element = document.createElement('canvas');
 
 			const ctx = element.getContext('2d');
 
@@ -193,9 +191,8 @@ describe('HTMLCanvasElement', () => {
 			const page = browser.newPage();
 			const browserFrame = page.mainFrame;
 			const window = browserFrame.window;
-
-			document = window.document;
-			element = document.createElement('canvas');
+			const document = window.document;
+			const element = document.createElement('canvas');
 
 			element.getContext('2d', attributes);
 
@@ -217,15 +214,11 @@ describe('HTMLCanvasElement', () => {
 				toBlob: vi.fn()
 			};
 
-			window = new Window({ settings: { canvasAdapter: mockAdapter } });
-			document = window.document;
-			element = document.createElement('canvas');
+			const window = new Window({ settings: { canvasAdapter: mockAdapter } });
+			const document = window.document;
+			const element = document.createElement('canvas');
 
 			expect(element.getContext('webgl')).toBe(null);
-		});
-
-		it('Should return null when no adapter is set.', () => {
-			expect(element.getContext('2d')).toBe(null);
 		});
 
 		it('Should work with different context types.', () => {
@@ -243,9 +236,9 @@ describe('HTMLCanvasElement', () => {
 				toBlob: vi.fn()
 			};
 
-			window = new Window({ settings: { canvasAdapter: mockAdapter } });
-			document = window.document;
-			element = document.createElement('canvas');
+			const window = new Window({ settings: { canvasAdapter: mockAdapter } });
+			const document = window.document;
+			const element = document.createElement('canvas');
 
 			expect(element.getContext('2d')).toEqual({ type: '2d' });
 			expect(element.getContext('webgl')).toEqual({ type: 'webgl' });
@@ -261,9 +254,9 @@ describe('HTMLCanvasElement', () => {
 				toBlob: vi.fn()
 			};
 
-			window = new Window({ settings: { canvasAdapter: mockAdapter } });
-			document = window.document;
-			element = document.createElement('canvas');
+			const window = new Window({ settings: { canvasAdapter: mockAdapter } });
+			const document = window.document;
+			const element = document.createElement('canvas');
 			element.width = 800;
 			element.height = 600;
 
@@ -281,9 +274,9 @@ describe('HTMLCanvasElement', () => {
 				toBlob: vi.fn()
 			};
 
-			window = new Window({ settings: { canvasAdapter: mockAdapter } });
-			document = window.document;
-			element = document.createElement('canvas');
+			const window = new Window({ settings: { canvasAdapter: mockAdapter } });
+			const document = window.document;
+			const element = document.createElement('canvas');
 
 			const ctx = element.getContext('2d');
 
@@ -354,9 +347,8 @@ describe('HTMLCanvasElement', () => {
 			const page = browser.newPage();
 			const browserFrame = page.mainFrame;
 			const window = browserFrame.window;
-
-			document = window.document;
-			element = document.createElement('canvas');
+			const document = window.document;
+			const element = document.createElement('canvas');
 
 			const result = element.toDataURL();
 
@@ -383,9 +375,8 @@ describe('HTMLCanvasElement', () => {
 			const page = browser.newPage();
 			const browserFrame = page.mainFrame;
 			const window = browserFrame.window;
-
-			document = window.document;
-			element = document.createElement('canvas');
+			const document = window.document;
+			const element = document.createElement('canvas');
 
 			element.toDataURL('image/jpeg', 0.8);
 
@@ -411,9 +402,9 @@ describe('HTMLCanvasElement', () => {
 			const page = browser.newPage();
 			const browserFrame = page.mainFrame;
 			const window = browserFrame.window;
+			const document = window.document;
+			const element = document.createElement('canvas');
 
-			document = window.document;
-			element = document.createElement('canvas');
 			element.width = 800;
 			element.height = 600;
 
@@ -463,9 +454,9 @@ describe('HTMLCanvasElement', () => {
 				})
 			};
 
-			window = new Window({ settings: { canvasAdapter: mockAdapter } });
-			document = window.document;
-			element = document.createElement('canvas');
+			const window = new Window({ settings: { canvasAdapter: mockAdapter } });
+			const document = window.document;
+			const element = document.createElement('canvas');
 
 			let receivedBlob: Blob | null = null;
 			element.toBlob((blob) => {
@@ -489,9 +480,8 @@ describe('HTMLCanvasElement', () => {
 			const page = browser.newPage();
 			const browserFrame = page.mainFrame;
 			const window = browserFrame.window;
-
-			document = window.document;
-			element = document.createElement('canvas');
+			const document = window.document;
+			const element = document.createElement('canvas');
 
 			element.toBlob(() => {}, 'image/jpeg', 0.9);
 
@@ -521,9 +511,9 @@ describe('HTMLCanvasElement', () => {
 			const page = browser.newPage();
 			const browserFrame = page.mainFrame;
 			const window = browserFrame.window;
+			const document = window.document;
+			const element = document.createElement('canvas');
 
-			document = window.document;
-			element = document.createElement('canvas');
 			element.width = 800;
 			element.height = 600;
 

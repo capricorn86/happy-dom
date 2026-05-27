@@ -39,7 +39,7 @@ export default class ImageBitmap implements ICanvasShape {
 		source: TImageBitmapSource,
 		sx?: number | IImageBitmapOptions,
 		sy?: number,
-		sw?: number,
+		sw?: number | IImageBitmapOptions,
 		sh?: number,
 		options?: IImageBitmapOptions
 	) {
@@ -103,8 +103,17 @@ export default class ImageBitmap implements ICanvasShape {
 			}
 
 			this[PropertySymbol.options] = options || null;
+		} else if (typeof sx === 'number' && typeof sy === 'number') {
+			this[PropertySymbol.width] = sx;
+			this[PropertySymbol.height] = sy;
+
+			if (sw !== undefined && typeof sw !== 'object') {
+				throw new window.TypeError(`The provided value is not of type 'ImageBitmapOptions'.`);
+			}
+
+			this[PropertySymbol.options] = sw || null;
 		} else if (typeof sx === 'object') {
-			this[PropertySymbol.options] = <IImageBitmapOptions>sx;
+			this[PropertySymbol.options] = sx;
 		} else if (sx !== undefined) {
 			throw new window.TypeError(
 				`Failed to execute 'createImageBitmap' on 'Window': Overload resolution failed.`
