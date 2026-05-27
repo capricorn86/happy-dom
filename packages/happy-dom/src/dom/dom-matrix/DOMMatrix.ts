@@ -13,6 +13,32 @@ import type { TDOMMatrixInit } from './TDOMMatrixInit.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/DOMMatrix
  */
 export default class DOMMatrix extends DOMMatrixReadOnly {
+	public declare multiply: (secondMatrix?: IDOMMatrixCompatibleObject) => DOMMatrix;
+	public declare translate: (x?: number, y?: number, z?: number) => DOMMatrix;
+	public declare scale: (
+		scaleX?: number,
+		scaleY?: number,
+		scaleZ?: number,
+		originX?: number,
+		originY?: number,
+		originZ?: number
+	) => DOMMatrix;
+	public declare scale3d: (
+		scale?: number,
+		originX?: number,
+		originY?: number,
+		originZ?: number
+	) => DOMMatrix;
+	public declare scaleNonUniform: (scaleX?: number, scaleY?: number) => DOMMatrix;
+	public declare rotateAxisAngle: (x?: number, y?: number, z?: number, angle?: number) => DOMMatrix;
+	public declare rotate: (x?: number, y?: number, z?: number) => DOMMatrix;
+	public declare rotateFromVector: (x?: number, y?: number) => DOMMatrix;
+	public declare skewX: (angle: number) => DOMMatrix;
+	public declare skewY: (angle: number) => DOMMatrix;
+	public declare flipX: () => DOMMatrix;
+	public declare flipY: () => DOMMatrix;
+	public declare inverse: () => DOMMatrix;
+
 	/**
 	 * Returns the `a` value of the matrix.
 	 */
@@ -338,7 +364,7 @@ export default class DOMMatrix extends DOMMatrixReadOnly {
 	 * @param secondMatrix DOMMatrix
 	 * @returns Self.
 	 */
-	public multiplySelf(secondMatrix: IDOMMatrixCompatibleObject): DOMMatrix {
+	public multiplySelf(secondMatrix?: IDOMMatrixCompatibleObject): DOMMatrix {
 		this[PropertySymbol.multiplySelf](secondMatrix);
 		return this;
 	}
@@ -414,7 +440,7 @@ export default class DOMMatrix extends DOMMatrixReadOnly {
 	 * @param [angle] Angle of rotation about the axis vector, in degrees.
 	 * @returns Self.
 	 */
-	public rotateAxisAngleSelf(x = 0, y = 0, z = 0, angle = 0): DOMMatrixReadOnly {
+	public rotateAxisAngleSelf(x = 0, y = 0, z = 0, angle = 0): DOMMatrix {
 		this[PropertySymbol.rotateAxisAngleSelf](x, y, z, angle);
 		return this;
 	}
@@ -427,7 +453,7 @@ export default class DOMMatrix extends DOMMatrixReadOnly {
 	 * @param [z] Z component of the rotation value.
 	 * @returns Self.
 	 */
-	public rotateSelf(x = 0, y?: number, z?: number): DOMMatrixReadOnly {
+	public rotateSelf(x = 0, y?: number, z?: number): DOMMatrix {
 		this[PropertySymbol.rotateSelf](x, y, z);
 		return this;
 	}
@@ -438,7 +464,7 @@ export default class DOMMatrix extends DOMMatrixReadOnly {
 	 * @param [x] X-Axis skew.
 	 * @param [y] Y-Axis skew.
 	 */
-	public rotateFromVectorSelf(x = 0, y = 0): DOMMatrixReadOnly {
+	public rotateFromVectorSelf(x = 0, y = 0): DOMMatrix {
 		this[PropertySymbol.rotateFromVectorSelf](x, y);
 		return this;
 	}
@@ -449,7 +475,7 @@ export default class DOMMatrix extends DOMMatrixReadOnly {
 	 * @param angle Angle amount in degrees to skew.
 	 * @returns Self.
 	 */
-	public skewXSelf(angle: number): DOMMatrixReadOnly {
+	public skewXSelf(angle: number): DOMMatrix {
 		this[PropertySymbol.skewXSelf](angle);
 		return this;
 	}
@@ -460,7 +486,7 @@ export default class DOMMatrix extends DOMMatrixReadOnly {
 	 * @param angle Angle amount in degrees to skew.
 	 * @returns Self.
 	 */
-	public skewYSelf(angle: number): DOMMatrixReadOnly {
+	public skewYSelf(angle: number): DOMMatrix {
 		this[PropertySymbol.skewYSelf](angle);
 		return this;
 	}
@@ -468,7 +494,7 @@ export default class DOMMatrix extends DOMMatrixReadOnly {
 	/**
 	 * Set self to be specified as matrix flipped on X-axis.
 	 */
-	public flipXSelf(): DOMMatrixReadOnly {
+	public flipXSelf(): DOMMatrix {
 		this[PropertySymbol.flipXSelf]();
 		return this;
 	}
@@ -476,7 +502,7 @@ export default class DOMMatrix extends DOMMatrixReadOnly {
 	/**
 	 * Set self to be specified as matrix flipped on Y-axis.
 	 */
-	public flipYSelf(): DOMMatrixReadOnly {
+	public flipYSelf(): DOMMatrix {
 		this[PropertySymbol.flipYSelf]();
 		return this;
 	}
@@ -484,8 +510,17 @@ export default class DOMMatrix extends DOMMatrixReadOnly {
 	/**
 	 * Set self to be specified as matrix inverted.
 	 */
-	public invertSelf(): DOMMatrixReadOnly {
+	public invertSelf(): DOMMatrix {
 		this[PropertySymbol.invertSelf]();
+		return this;
+	}
+
+	/**
+	 *
+	 * @param otherMatrix
+	 */
+	public preMultiplySelf(otherMatrix?: IDOMMatrixCompatibleObject): DOMMatrix {
+		this[PropertySymbol.multiplySelf](otherMatrix);
 		return this;
 	}
 }

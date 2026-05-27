@@ -29,6 +29,12 @@
 		"lib": ["ES2022"],
 		"types": ["node"]
 	},
-	"include": ["@types/node", "src"],
+	"include": [
+		"@types/node",
+		"src",
+		"test/canvas/HTMLCanvasElementAdapter.test.ts",
+		"test/canvas/ImageBitmap.test.ts",
+		"test/canvas/OffscreenCanvas.test.ts"
+	],
 	"exclude": ["@types/dom"]
 }
