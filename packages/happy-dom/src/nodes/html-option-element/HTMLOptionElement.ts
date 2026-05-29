@@ -59,6 +59,28 @@ export default class HTMLOptionElement extends HTMLElement {
 	}
 
 	/**
+	 * Returns default selected.
+	 *
+	 * @returns Default selected.
+	 */
+	public get defaultSelected(): boolean {
+		return this.getAttribute('selected') !== null;
+	}
+
+	/**
+	 * Sets default selected.
+	 *
+	 * @param defaultSelected Default selected.
+	 */
+	public set defaultSelected(defaultSelected: boolean) {
+		if (!defaultSelected) {
+			this.removeAttribute('selected');
+		} else {
+			this.setAttribute('selected', '');
+		}
+	}
+
+	/**
 	 * Returns selected.
 	 *
 	 * @returns Selected.
