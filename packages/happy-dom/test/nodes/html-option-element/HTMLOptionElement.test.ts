@@ -61,6 +61,46 @@ describe('HTMLOptionElement', () => {
 		});
 	});
 
+	describe('get defaultSelected()', () => {
+		it('Returns false when "selected" attribute is absent.', () => {
+			expect(element.defaultSelected).toBe(false);
+		});
+
+		it('Returns true when "selected" attribute is set.', () => {
+			element.setAttribute('selected', '');
+			expect(element.defaultSelected).toBe(true);
+		});
+	});
+
+	describe('set defaultSelected()', () => {
+		it('Sets the "selected" attribute when set to true.', () => {
+			element.defaultSelected = true;
+			expect(element.getAttribute('selected')).toBe('');
+		});
+
+		it('Removes the "selected" attribute when set to false.', () => {
+			element.setAttribute('selected', '');
+			element.defaultSelected = false;
+			expect(element.getAttribute('selected')).toBe(null);
+		});
+
+		it('Reflects default selection but does not affect dirty selected state.', () => {
+			const select = <HTMLSelectElement>document.createElement('select');
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
+
+			select.appendChild(option1);
+			select.appendChild(option2);
+
+			option2.selected = true;
+			expect(option2.selected).toBe(true);
+
+			option2.defaultSelected = false;
+			expect(option2.defaultSelected).toBe(false);
+			expect(option2.selected).toBe(true);
+		});
+	});
+
 	describe('get selected()', () => {
 		it('Returns the selected state of the option.', () => {
 			const select = <HTMLSelectElement>document.createElement('select');
