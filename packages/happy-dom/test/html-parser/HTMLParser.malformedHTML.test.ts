@@ -266,16 +266,16 @@ describe('HTMLParser - Malformed HTML handling (Issue #1949)', () => {
 		it('Should treat "<" followed by a digit as text, not a tag', () => {
 			const container = window.document.createElement('div');
 			container.innerHTML = '<p>text <3 more</p>';
-			const p = container.childNodes[0] as HTMLElement;
+			const p = <HTMLElement>container.childNodes[0];
 			expect(p.childNodes.length).toBe(1);
 			expect(p.childNodes[0].nodeType).toBe(3);
-			expect((p.childNodes[0] as Text).data).toBe('text <3 more');
+			expect((<Text>p.childNodes[0]).data).toBe('text <3 more');
 		});
 
 		it('Should not create element for "<" followed by a digit', () => {
 			const container = window.document.createElement('div');
 			container.innerHTML = '<p>I love you <3</p>';
-			const p = container.childNodes[0] as HTMLElement;
+			const p = <HTMLElement>container.childNodes[0];
 			expect(p.children.length).toBe(0);
 			expect(p.childNodes.length).toBe(1);
 			expect(p.childNodes[0].nodeType).toBe(3);
