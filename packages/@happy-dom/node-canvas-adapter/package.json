@@ -26,7 +26,7 @@
 	},
 	"peerDependencies": {
 		"canvas": "^3.2.3",
-		"happy-dom": ">=20.8.0"
+		"happy-dom": ">=20.10.0"
 	},
 	"devDependencies": {
 		"@vitest/ui": "^4.0.16",
