@@ -15,24 +15,14 @@ jobs:
           fetch-depth: 0
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
-
-      - name: Cache node modules
-        uses: actions/cache@v4
-        id: cache-node-modules
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: |
-            ./node_modules
-            ./packages/*/node_modules
-          key: ${{ runner.os }}-${{ matrix.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('./packages/*/package-lock.json') }}-${{ hashFiles('./package-lock.json') }}
 
       - name: Cache turbo
         uses: actions/cache@v4
@@ -51,7 +41,6 @@ jobs:
           key: turbo-master
 
       - name: Install dependencies
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Compile package
