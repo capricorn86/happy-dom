@@ -1,2 +1,2 @@
 export {};
-//# sourceMappingURL=ImageBitmap.test.d.ts.map
+// # sourceMappingURL=ImageBitmap.test.d.ts.map

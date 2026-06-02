@@ -1,2 +1,2 @@
 export {};
-//# sourceMappingURL=OffscreenCanvas.test.d.ts.map
+// # sourceMappingURL=OffscreenCanvas.test.d.ts.map
