@@ -5,18 +5,6 @@ Pluggable canvas adapter for [Happy DOM](https://github.com/capricorn86/happy-do
 ## Installation
 
 ```bash
-npm install @happy-dom/node-canvas-adapter canvas
-```
-
-## Usage
-
-![Happy DOM Logo](https://github.com/capricorn86/happy-dom/raw/master/docs/happy-dom-logo.jpg)
-
-This package makes it possible to use [Happy DOM](https://github.com/capricorn86/happy-dom) with [Jest](https://jestjs.io/).
-
-## Installation
-
-```bash
 npm install canvas @happy-dom/node-canvas-adapter
 ```
 
@@ -26,7 +14,6 @@ You will find the documentation in the [Happy DOM Wiki](https://github.com/capri
 
 ## Usage
 
-
 ```typescript
 import { Window } from 'happy-dom';
 import { CanvasAdapter } from '@happy-dom/node-canvas-adapter';
@@ -34,20 +21,20 @@ import { CanvasAdapter } from '@happy-dom/node-canvas-adapter';
 const window = new Window({
   settings: {
     canvasAdapter: new CanvasAdapter(),
-    // Optionally, enable image file loading
+    // Optionally, enable image file loading (e.g. for <img> elements)
     enableImageFileLoading: true
   }
 });
 
 const canvas = window.document.createElement('canvas');
-const ctx = canvas.getContext('2d');
+const context = canvas.getContext('2d');
 
 canvas.width = 200;
 canvas.height = 200;
 
 // Now you can use canvas context
-ctx.fillStyle = 'red';
-ctx.fillRect(0, 0, 100, 100);
+context.fillStyle = 'red';
+context.fillRect(0, 0, 100, 100);
 
 // Get data URL
 const dataUrl = canvas.toDataURL();

@@ -3,7 +3,7 @@ import Blob from '../file/Blob.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import type ICanvasAdapter from './ICanvasAdapter.js';
 import type ICanvasRenderingContext2D from './ICanvasRenderingContext2D.js';
-import ImageBitmap from './ImageBitmap.js';
+import type ImageBitmap from './ImageBitmap.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import type BrowserWindow from '../window/BrowserWindow.js';
 import type ICanvasShape from './ICanvasShape.js';
@@ -129,11 +129,16 @@ export default class OffscreenCanvas implements ICanvasShape {
 			);
 		}
 
-		const settings = new WindowBrowserContext(this[PropertySymbol.window]).getSettings();
+		const window = this[PropertySymbol.window];
+		const settings = new WindowBrowserContext(window).getSettings();
 		const adapter = settings?.canvasAdapter;
 
 		if (!adapter) {
-			return new ImageBitmap(PropertySymbol.illegalConstructor, this[PropertySymbol.window], this);
+			return new window.ImageBitmap(
+				PropertySymbol.illegalConstructor,
+				this[PropertySymbol.window],
+				this
+			);
 		}
 
 		const context = this[PropertySymbol.context];
@@ -144,7 +149,7 @@ export default class OffscreenCanvas implements ICanvasShape {
 			);
 		}
 
-		const imageBitmap = new ImageBitmap(
+		const imageBitmap = new window.ImageBitmap(
 			PropertySymbol.illegalConstructor,
 			this[PropertySymbol.window],
 			this

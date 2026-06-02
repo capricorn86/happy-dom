@@ -49,15 +49,6 @@ type TCanvasTextAlign = 'center' | 'end' | 'left' | 'right' | 'start';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D
  */
 export default interface ICanvasRenderingContext2D {
-	/** Non-standard - Returned by "node-canvas-adapter":
-	 * - patternQuality: 'fast' | 'good' | 'best' | 'nearest' | 'bilinear';
-	 * - antialias: 'default' | 'gray' | 'none' | 'subpixel';
-	 * - textDrawingMode: 'path' | 'glyph';
-	 * - quality: 'fast' | 'good' | 'best' | 'nearest' | 'bilinear';
-	 * - currentTransform: DOMMatrix;
-	 * - addPage(width?: number, height?: number): void;
-	 */
-
 	imageSmoothingEnabled: boolean;
 	globalCompositeOperation: TGlobalCompositeOperation;
 	globalAlpha: number;

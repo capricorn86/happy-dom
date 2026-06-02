@@ -60,7 +60,7 @@ export default class ServerRendererPage {
 				this.#initialized.set(page.mainFrame.window, true);
 
 				if (!configuration.render.disablePolyfills) {
-					BrowserWindowPolyfill.applyPolyfills(page.mainFrame.window);
+					BrowserWindowPolyfill.applyPolyfills(page.mainFrame.window, configuration.browser);
 				}
 
 				if (configuration.render.setupScript) {
@@ -85,7 +85,7 @@ export default class ServerRendererPage {
 						window.addEventListener('error', errorListener);
 
 						if (!configuration.render.disablePolyfills) {
-							BrowserWindowPolyfill.applyPolyfills(window);
+							BrowserWindowPolyfill.applyPolyfills(window, configuration.browser);
 						}
 
 						if (configuration.render.setupScript) {
@@ -127,7 +127,7 @@ export default class ServerRendererPage {
 				if (!this.#initialized.has(page.mainFrame.window)) {
 					this.#initialized.set(page.mainFrame.window, true);
 					if (!configuration.render.disablePolyfills) {
-						BrowserWindowPolyfill.applyPolyfills(page.mainFrame.window);
+						BrowserWindowPolyfill.applyPolyfills(page.mainFrame.window, configuration.browser);
 					}
 
 					if (configuration.render.setupScript) {
@@ -162,7 +162,7 @@ export default class ServerRendererPage {
 				? SET_TIMEOUT(() => {
 						timeoutError = `The page was not rendered within the defined time of ${configuration.render.timeout}ms and the operation was aborted. You can increase this value with the "render.timeout" setting.\n\nThe page may contain scripts with timer loops that prevent it from completing. You can debug open handles by setting "debug" to true, or prevent timer loops by setting "browser.timer.preventTimerLoops" to true. Read more about this in the documentation.`;
 						page.abort();
-					}, configuration.render.timeout)
+				  }, configuration.render.timeout)
 				: null;
 
 		try {
