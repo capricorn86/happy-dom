@@ -56,7 +56,6 @@
 		"@jest/types": "^30.0.0",
 		"@types/node": ">=20.0.0",
 		"@types/jest": "^30.0.0",
-		"happy-dom": "^0.0.0",
 		"jest": "^30.0.0",
 		"jest-mock": "^30.0.0",
 		"jest-util": "^30.0.0",
