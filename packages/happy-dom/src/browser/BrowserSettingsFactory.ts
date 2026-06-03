@@ -50,7 +50,8 @@ export default class BrowserSettingsFactory {
 			viewport: {
 				...DefaultBrowserSettings.viewport,
 				...settings?.viewport
-			}
+			},
+			canvasAdapter: settings?.canvasAdapter ?? DefaultBrowserSettings.canvasAdapter
 		};
 	}
 
