@@ -111,7 +111,7 @@ jobs:
           git push origin --tags
 
       - name: Publish packages
-        run: npm publish --workspaces --provenance
+        run: NPM_CONFIG_PROVENANCE=false npm publish --workspaces
 
   create-release:
     runs-on: ubuntu-latest
