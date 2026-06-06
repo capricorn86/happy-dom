@@ -100,6 +100,9 @@ export default class FormData implements Iterable<[string, string | File]> {
 						break;
 					case 'TEXTAREA':
 					case 'SELECT':
+						if ((<HTMLInputElement>item).disabled) {
+							break;
+						}
 						this.append(name, (<HTMLInputElement>item).value);
 						break;
 				}
