@@ -14,10 +14,10 @@ describe('ImageBitmap', () => {
 	});
 	describe('constructor()', () => {
 		it('Throws error if constructor is called directly.', () => {
-			expect(() => new window.ImageBitmap()).toThrowError('Illegal constructor');
+			expect(() => new window.ImageBitmap()).toThrow('Illegal constructor');
 		});
 		it('Throws error if source is not valid.', async () => {
-			await expect(() => window.createImageBitmap({})).rejects.toThrowError(
+			await expect(() => window.createImageBitmap({})).rejects.toThrow(
 				new TypeError(
 					`Failed to execute 'createImageBitmap' on 'Window': The provided value is not of type '(Blob or HTMLCanvasElement or HTMLImageElement or HTMLVideoElement or ImageBitmap or ImageData or OffscreenCanvas or SVGImageElement or VideoFrame)'.`
 				)
@@ -25,7 +25,7 @@ describe('ImageBitmap', () => {
 		});
 		it('Throws error if source is an HTMLVideoElement.', async () => {
 			const video = document.createElement('video');
-			await expect(() => window.createImageBitmap(video)).rejects.toThrowError(
+			await expect(() => window.createImageBitmap(video)).rejects.toThrow(
 				new window.DOMException(
 					"Failed to execute 'createImageBitmap' on 'Window': HTMLVideoElement is not supported as an image source yet in Happy DOM.",
 					DOMExceptionNameEnum.invalidStateError

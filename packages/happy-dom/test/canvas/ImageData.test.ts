@@ -11,30 +11,30 @@ describe('ImageData', () => {
 
 	describe('constructor()', () => {
 		it('Throws error if arguments length is less than 2', () => {
-			expect(() => new (<any>window).ImageData()).toThrowError(
+			expect(() => new (<any>window).ImageData()).toThrow(
 				new TypeError(`Failed to construct 'ImageData': 2 arguments required, but only 0 present.`)
 			);
-			expect(() => new (<any>window).ImageData(800)).toThrowError(
+			expect(() => new (<any>window).ImageData(800)).toThrow(
 				new TypeError(`Failed to construct 'ImageData': 2 arguments required, but only 1 present.`)
 			);
 		});
 
 		it('Throws error if width argument is not a number when dataArray is Uint8ClampedArray', () => {
 			const dataArray = new Uint8ClampedArray(800 * 600 * 4);
-			expect(() => new (<any>window).ImageData(dataArray)).toThrowError(
+			expect(() => new (<any>window).ImageData(dataArray, <number>(<unknown>'100'))).toThrow(
 				new TypeError(`Failed to construct 'ImageData': The width argument must be a number.`)
 			);
 		});
 
 		it('Throws error if height argument is not a number when dataArray is Uint8ClampedArray', () => {
 			const dataArray = new Uint8ClampedArray(800 * 600 * 4);
-			expect(() => new window.ImageData(dataArray, 800, <any>'600')).toThrowError(
+			expect(() => new window.ImageData(dataArray, 800, <any>'600')).toThrow(
 				new TypeError(`Failed to construct 'ImageData': The height argument must be a number.`)
 			);
 		});
 
 		it('Throws error if height argument is not a number when dataArray is number', () => {
-			expect(() => new window.ImageData(800, <any>'600')).toThrowError(
+			expect(() => new window.ImageData(800, <any>'600')).toThrow(
 				new TypeError(`Failed to construct 'ImageData': The height argument must be a number.`)
 			);
 		});

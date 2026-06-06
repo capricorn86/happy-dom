@@ -218,7 +218,7 @@ describe('OffscreenCanvas', () => {
 			};
 			const window = new Window({ settings: { canvasAdapter: mockAdapter } });
 			const offscreenCanvas = new window.OffscreenCanvas(800, 600);
-			await expect(offscreenCanvas.convertToBlob()).rejects.toThrowError(
+			await expect(offscreenCanvas.convertToBlob()).rejects.toThrow(
 				new window.DOMException(
 					`Failed to execute 'convertToBlob' on 'OffscreenCanvas': The canvas could not be converted to a Blob.`,
 					DOMExceptionNameEnum.encodingError
@@ -242,7 +242,7 @@ describe('OffscreenCanvas', () => {
 			};
 			const window = new Window({ settings: { canvasAdapter: mockAdapter } });
 			const offscreenCanvas = new window.OffscreenCanvas(800, 600);
-			expect(() => offscreenCanvas.transferToImageBitmap()).toThrowError(
+			expect(() => offscreenCanvas.transferToImageBitmap()).toThrow(
 				new TypeError(
 					`Failed to execute 'transferToImageBitmap' on 'OffscreenCanvas': Cannot transfer an ImageBitmap from an OffscreenCanvas with no context`
 				)

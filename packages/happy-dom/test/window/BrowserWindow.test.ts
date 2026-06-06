@@ -2254,7 +2254,7 @@ describe('BrowserWindow', () => {
 			expect(() => {
 				const data = '😄 hello my happy dom! 🐛';
 				window.atob(data);
-			}).toThrowError(
+			}).toThrow(
 				new DOMException(
 					"Failed to execute 'atob' on 'Window': The string to be decoded contains characters outside of the Latin1 range.",
 					DOMExceptionNameEnum.invalidCharacterError
@@ -2266,7 +2266,7 @@ describe('BrowserWindow', () => {
 			expect(() => {
 				const data = '\x11GVsbG8gbXkgaGFwcHkgZG9tIQ==';
 				window.atob(data);
-			}).toThrowError(
+			}).toThrow(
 				new DOMException(
 					"Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded.",
 					DOMExceptionNameEnum.invalidCharacterError
@@ -2277,7 +2277,7 @@ describe('BrowserWindow', () => {
 			expect(() => {
 				const data = 'aGVsbG8gbXkgaGFwcHkgZG9tI';
 				window.atob(data);
-			}).toThrowError(
+			}).toThrow(
 				new DOMException(
 					"Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded.",
 					DOMExceptionNameEnum.invalidCharacterError
@@ -2297,7 +2297,7 @@ describe('BrowserWindow', () => {
 			expect(() => {
 				const data = '😄 hello my happy dom! 🐛';
 				window.btoa(data);
-			}).toThrowError(
+			}).toThrow(
 				new DOMException(
 					"Failed to execute 'btoa' on 'Window': The string to be encoded contains characters outside of the Latin1 range.",
 					DOMExceptionNameEnum.invalidCharacterError
@@ -2363,7 +2363,7 @@ describe('BrowserWindow', () => {
 		});
 
 		it("Throws an exception if the provided object can't be serialized.", function () {
-			expect(() => window.postMessage(window)).toThrowError(
+			expect(() => window.postMessage(window)).toThrow(
 				new window.DOMException(
 					`Failed to execute 'postMessage' on 'Window': The provided message cannot be serialized.`,
 					DOMExceptionNameEnum.invalidStateError
@@ -2378,7 +2378,7 @@ describe('BrowserWindow', () => {
 
 			browserFrame.url = documentOrigin;
 
-			expect(() => window.postMessage(message, targetOrigin)).toThrowError(
+			expect(() => window.postMessage(message, targetOrigin)).toThrow(
 				new window.DOMException(
 					`Failed to execute 'postMessage' on 'Window': The target origin provided ('${targetOrigin}') does not match the recipient window\'s origin ('${documentOrigin}').`,
 					DOMExceptionNameEnum.securityError
