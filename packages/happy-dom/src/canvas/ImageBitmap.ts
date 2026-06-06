@@ -34,7 +34,7 @@ export default class ImageBitmap implements ICanvasShape {
 	 * @param [options] Options.
 	 */
 	constructor(
-		illegalConstructorSymbol: Symbol,
+		illegalConstructorSymbol: symbol,
 		window: BrowserWindow,
 		source: TImageBitmapSource,
 		sx?: number | IImageBitmapOptions,

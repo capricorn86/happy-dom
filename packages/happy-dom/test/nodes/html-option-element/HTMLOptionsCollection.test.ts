@@ -94,7 +94,7 @@ describe('HTMLOptionsCollection', () => {
 
 			const option2 = <HTMLOptionElement>document.createElement('option');
 			const optionThatDoesntExist = <HTMLOptionElement>document.createElement('option');
-			expect(() => select.options.add(option2, optionThatDoesntExist)).toThrowError(DOMException);
+			expect(() => select.options.add(option2, optionThatDoesntExist)).toThrow(DOMException);
 		});
 
 		it('Adds item to defined index.', () => {

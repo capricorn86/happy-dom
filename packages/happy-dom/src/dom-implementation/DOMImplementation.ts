@@ -24,15 +24,22 @@ export default class DOMImplementation {
 	 * TODO: Not fully implemented.
 	 *
 	 * @param _namespaceURI Namespace URI.
-	 * @param _qualifiedName Qualified name.
+	 * @param qualifiedName Qualified name.
 	 * @param [_docType] Document type.
 	 */
-	public createDocument(
-		_namespaceURI: string,
-		_qualifiedName: string,
-		_docType?: string
-	): Document {
-		return new this.#document[PropertySymbol.window].HTMLDocument();
+	public createDocument(_namespaceURI: string, qualifiedName: string, _docType?: string): Document {
+		if (arguments.length < 2) {
+			throw new this.#document[PropertySymbol.window].TypeError(
+				`Failed to execute 'createDocument' on 'DOMImplementation': 2 arguments required, but only ${arguments.length} present.`
+			);
+		}
+		switch (qualifiedName.split(':').pop()) {
+			case 'svg':
+			case 'xml':
+				return new this.#document[PropertySymbol.window].XMLDocument();
+			default:
+				return new this.#document[PropertySymbol.window].HTMLDocument();
+		}
 	}
 
 	/**

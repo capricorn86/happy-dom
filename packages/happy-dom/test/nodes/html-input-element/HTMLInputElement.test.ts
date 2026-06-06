@@ -348,7 +348,7 @@ describe('HTMLInputElement', () => {
 				'url'
 			])('Of type %s.', (type) => {
 				element.type = type;
-				expect(() => (element.valueAsNumber = 0)).toThrowError(
+				expect(() => (element.valueAsNumber = 0)).toThrow(
 					new window.DOMException(
 						"Failed to set the 'valueAsNumber' property on 'HTMLInputElement': This input element does not support Number values.",
 						DOMExceptionNameEnum.invalidStateError
@@ -1412,7 +1412,7 @@ describe('HTMLInputElement', () => {
 		});
 
 		it('Throws exception when invalid type.', () => {
-			expect(() => element.stepUp()).toThrowError(
+			expect(() => element.stepUp()).toThrow(
 				new DOMException('This form element is not steppable.')
 			);
 		});
@@ -1529,7 +1529,7 @@ describe('HTMLInputElement', () => {
 		});
 
 		it('Throws exception when invalid type.', () => {
-			expect(() => element.stepDown()).toThrowError(
+			expect(() => element.stepDown()).toThrow(
 				new DOMException('This form element is not steppable.')
 			);
 		});
