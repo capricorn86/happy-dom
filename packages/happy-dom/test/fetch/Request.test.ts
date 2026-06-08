@@ -729,6 +729,19 @@ describe('Request', () => {
 			expect(formDataResponse.get('some')).toBe('test');
 		});
 
+		it('Returns FormData for string body with explicit Content-Type header.', async () => {
+			const request = new window.Request(TEST_URL, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				body: 'key1=value1&key2=value2&key3=value3'
+			});
+			const formDataResponse = await request.formData();
+
+			expect(formDataResponse.get('key1')).toBe('value1');
+			expect(formDataResponse.get('key2')).toBe('value2');
+			expect(formDataResponse.get('key3')).toBe('value3');
+		});
+
 		it('Returns FormData for "application/x-www-form-urlencoded" content.', async () => {
 			const urlSearchParams = new URLSearchParams();
 

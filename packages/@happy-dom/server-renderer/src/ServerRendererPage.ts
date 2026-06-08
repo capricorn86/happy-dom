@@ -60,7 +60,7 @@ export default class ServerRendererPage {
 				this.#initialized.set(page.mainFrame.window, true);
 
 				if (!configuration.render.disablePolyfills) {
-					BrowserWindowPolyfill.applyPolyfills(page.mainFrame.window);
+					BrowserWindowPolyfill.applyPolyfills(page.mainFrame.window, configuration.browser);
 				}
 
 				if (configuration.render.setupScript) {
@@ -85,7 +85,7 @@ export default class ServerRendererPage {
 						window.addEventListener('error', errorListener);
 
 						if (!configuration.render.disablePolyfills) {
-							BrowserWindowPolyfill.applyPolyfills(window);
+							BrowserWindowPolyfill.applyPolyfills(window, configuration.browser);
 						}
 
 						if (configuration.render.setupScript) {
@@ -127,7 +127,7 @@ export default class ServerRendererPage {
 				if (!this.#initialized.has(page.mainFrame.window)) {
 					this.#initialized.set(page.mainFrame.window, true);
 					if (!configuration.render.disablePolyfills) {
-						BrowserWindowPolyfill.applyPolyfills(page.mainFrame.window);
+						BrowserWindowPolyfill.applyPolyfills(page.mainFrame.window, configuration.browser);
 					}
 
 					if (configuration.render.setupScript) {

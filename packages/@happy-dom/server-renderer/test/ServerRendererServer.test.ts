@@ -108,7 +108,7 @@ describe('ServerRendererServer', () => {
 					}
 				})
 			);
-			await expect(() => server.start()).rejects.toThrowError(
+			await expect(() => server.start()).rejects.toThrow(
 				'Failed to start server. The setting "server.serverURL" is not a valid URL.'
 			);
 		});
@@ -117,7 +117,7 @@ describe('ServerRendererServer', () => {
 			const server = new ServerRendererServer(
 				ServerRendererConfigurationFactory.createConfiguration({})
 			);
-			await expect(() => server.start()).rejects.toThrowError(
+			await expect(() => server.start()).rejects.toThrow(
 				'Failed to start server. The setting "server.targetOrigin" is not set.'
 			);
 		});
@@ -130,7 +130,7 @@ describe('ServerRendererServer', () => {
 					}
 				})
 			);
-			await expect(() => server.start()).rejects.toThrowError(
+			await expect(() => server.start()).rejects.toThrow(
 				'Failed to start server. The setting "server.targetOrigin" is not a valid URL.'
 			);
 		});
@@ -144,7 +144,7 @@ describe('ServerRendererServer', () => {
 					}
 				})
 			);
-			await expect(() => server.start()).rejects.toThrowError(
+			await expect(() => server.start()).rejects.toThrow(
 				'Unsupported protocol "ftp:". Only "http:" and "https:" are supported.'
 			);
 		});

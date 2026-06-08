@@ -1717,20 +1717,31 @@ describe('SyncFetch', () => {
 
 		it('Forwards "cookie", "authorization" or "www-authenticate" if request credentials are set to "include".', () => {
 			const originURL = 'https://localhost:8080';
+			const targetURL = 'https://other.origin.com/some/path';
 
 			browserFrame.url = originURL;
 
-			const url = 'https://other.origin.com/some/path';
-			const cookies = 'key1=value1; key2=value2';
-			let requestArgs: string | null = null;
+			const sameOriginCookie = 'key1=value1';
+			const crossOriginCookie = 'key2=value2';
+			const requestArgs: string[] = [];
 
-			for (const cookie of cookies.split(';')) {
-				window.document.cookie = cookie.trim();
-			}
+			window.document.cookie = sameOriginCookie;
+
+			browserFrame.page.context.cookieContainer.addCookies([
+				{
+					key: 'key2',
+					originURL: new URL(targetURL),
+					value: 'value2',
+					domain: 'other.origin.com',
+					path: '/',
+					httpOnly: true,
+					secure: true
+				}
+			]);
 
 			mockModule('child_process', {
 				execFileSync: (_command: string, args: string[]) => {
-					requestArgs = args[1];
+					requestArgs.push(args[1]);
 					return JSON.stringify({
 						error: null,
 						incomingMessage: {
@@ -1748,19 +1759,34 @@ describe('SyncFetch', () => {
 			new SyncFetch({
 				browserFrame,
 				window,
-				url,
+				url: targetURL,
 				init: {
+					credentials: 'include',
 					headers: {
 						authorization: 'authorization',
 						'www-authenticate': 'www-authenticate'
-					},
-					credentials: 'include'
+					}
 				}
 			}).send();
 
-			expect(requestArgs).toBe(
+			expect(requestArgs).toEqual([
 				SyncFetchScriptBuilder.getScript({
-					url: new URL(url),
+					url: new URL(targetURL),
+					method: 'OPTIONS',
+					headers: {
+						Accept: '*/*',
+						'Accept-Encoding': 'gzip, deflate, br',
+						'Access-Control-Request-Method': 'GET',
+						'Access-Control-Request-Headers': 'authorization,www-authenticate',
+						Connection: 'close',
+						Origin: originURL,
+						Referer: originURL + '/',
+						'User-Agent': window.navigator.userAgent
+					},
+					body: null
+				}),
+				SyncFetchScriptBuilder.getScript({
+					url: new URL(targetURL),
 					method: 'GET',
 					headers: {
 						Accept: '*/*',
@@ -1769,16 +1795,16 @@ describe('SyncFetch', () => {
 						'Accept-Encoding': 'gzip, deflate, br',
 						Origin: originURL,
 						Referer: originURL + '/',
-						Cookie: cookies,
+						Cookie: crossOriginCookie,
 						authorization: 'authorization',
 						'www-authenticate': 'www-authenticate'
 					},
 					body: null
 				})
-			);
+			]);
 		});
 
-		it('Sets document cookie string if the response contains a "Set-Cookie" header if request cridentials are set to "include".', () => {
+		it('Sets document cookie string if the response contains a "Set-Cookie" header if request credentials are set to "include".', () => {
 			browserFrame.url = 'https://localhost:8080/';
 
 			mockModule('child_process', {

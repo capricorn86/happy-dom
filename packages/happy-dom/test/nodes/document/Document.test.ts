@@ -811,7 +811,7 @@ describe('Document', () => {
 		});
 		it('Throws an error if the command is not passed.', () => {
 			// @ts-ignore - Intentionally testing without parameters.
-			expect(() => document.queryCommandSupported()).toThrowError(
+			expect(() => document.queryCommandSupported()).toThrow(
 				new TypeError(
 					"Failed to execute 'queryCommandSupported' on 'Document': 1 argument required, but only 0 present."
 				)

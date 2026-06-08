@@ -432,7 +432,7 @@ export default class Request implements Request {
 		const window = this[PropertySymbol.window];
 		const asyncTaskManager = new WindowBrowserContext(window).getAsyncTaskManager()!;
 
-		const contentType = this[PropertySymbol.contentType];
+		const contentType = this.headers.get('Content-Type') ?? this[PropertySymbol.contentType];
 
 		if (this.body && contentType && /multipart/i.test(contentType)) {
 			if (this[PropertySymbol.bodyUsed]) {

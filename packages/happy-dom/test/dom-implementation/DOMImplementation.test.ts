@@ -1,6 +1,4 @@
 import HTMLDocument from '../../src/nodes/html-document/HTMLDocument';
-import XMLDocument from '../../src/nodes/xml-document/XMLDocument';
-import Window from '../../src/window/Window';
 import Window from '../../src/window/Window';
 import { beforeEach, describe, it, expect } from 'vitest';
 
@@ -12,10 +10,48 @@ describe('DOMImplementation', () => {
 	});
 
 	describe('createDocument()', () => {
-		it('Returns a new XMLDocument.', () => {
-			const document = window.document.implementation.createDocument();
-			expect(document instanceof HTMLDocument).toBe(true);
+		it('Returns a new HTMLDocument for "html".', () => {
+			const document = window.document.implementation.createDocument(
+				'http://www.w3.org/1999/xhtml',
+				'html'
+			);
+			expect(document instanceof window.HTMLDocument).toBe(true);
 			expect(document.defaultView).toBe(null);
+		});
+
+		it('Returns a new XMLDocument for "svg".', () => {
+			const document = window.document.implementation.createDocument(
+				'http://www.w3.org/2000/svg',
+				'svg'
+			);
+			expect(document instanceof window.XMLDocument).toBe(true);
+			expect(document.defaultView).toBe(null);
+		});
+
+		it('Returns a new XMLDocument for "xml".', () => {
+			const document = window.document.implementation.createDocument(
+				'http://www.w3.org/2000/svg',
+				'svg'
+			);
+			expect(document instanceof window.XMLDocument).toBe(true);
+			expect(document.defaultView).toBe(null);
+		});
+
+		it('Throws error if arguments length is less than 2', () => {
+			// @ts-expect-error
+			expect(() => window.document.implementation.createDocument()).toThrow(
+				new TypeError(
+					`Failed to execute 'createDocument' on 'DOMImplementation': 2 arguments required, but only 0 present.`
+				)
+			);
+			expect(() =>
+				// @ts-expect-error
+				window.document.implementation.createDocument('http://www.w3.org/1999/xhtml')
+			).toThrow(
+				new TypeError(
+					`Failed to execute 'createDocument' on 'DOMImplementation': 2 arguments required, but only 1 present.`
+				)
+			);
 		});
 	});
 
