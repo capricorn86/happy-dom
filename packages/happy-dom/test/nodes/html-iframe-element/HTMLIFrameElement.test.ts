@@ -544,7 +544,7 @@ describe('HTMLIFrameElement', () => {
 					let triggeredEvent: MessageEvent | null = null;
 					expect(fetchedURL).toBe(iframeSrc);
 					expect(element.contentWindow instanceof CrossOriginBrowserWindow).toBe(true);
-					expect(() => element.contentWindow?.location.href).toThrowError(
+					expect(() => element.contentWindow?.location.href).toThrow(
 						new DOMException(
 							`Blocked a frame with origin "${documentOrigin}" from accessing a cross-origin frame.`,
 							DOMExceptionNameEnum.securityError

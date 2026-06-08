@@ -144,7 +144,7 @@ export default class SelectorParser {
 			singleApostrophe: 0
 		};
 		const name = this.scope.nodeType === NodeTypeEnum.documentNode ? 'Document' : 'Element';
-		const error = new this.window.SyntaxError(
+		const error = new this.window.DOMException(
 			`Failed to execute 'querySelectorAll' on '${name}': '${selector}' is not a valid selector.`
 		);
 		let match: null | RegExpExecArray = null;
