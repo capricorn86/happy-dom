@@ -362,6 +362,26 @@ describe('HTMLSelectElement', () => {
 			element.setCustomValidity('Error message');
 			expect(element.validationMessage).toBe('Error message');
 		});
+
+		it('Returns default message for built-in constraint violations.', () => {
+			element.required = true;
+			expect(element.validationMessage).toBe('Constraints not satisfied');
+		});
+
+		it('Returns empty string when valid.', () => {
+			element.required = true;
+			const option = document.createElement('option');
+			option.value = 'test';
+			element.appendChild(option);
+			element.value = 'test';
+			expect(element.validationMessage).toBe('');
+		});
+
+		it('Returns empty string for disabled elements.', () => {
+			element.required = true;
+			element.disabled = true;
+			expect(element.validationMessage).toBe('');
+		});
 	});
 
 	describe('get tabIndex()', () => {
