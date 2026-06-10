@@ -118,7 +118,7 @@ export default class HTMLLabelElement extends HTMLElement {
 			event instanceof MouseEvent
 		) {
 			const control = this.control;
-			if (control && event.target !== control) {
+			if (control && !control.disabled && event.target !== control) {
 				control.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
 			}
 		}

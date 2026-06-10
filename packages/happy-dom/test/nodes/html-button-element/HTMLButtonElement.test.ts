@@ -536,5 +536,48 @@ describe('HTMLButtonElement', () => {
 
 			expect(resetTriggeredCount).toBe(1);
 		});
+
+		it('Runs click listeners on disabled button when using dispatchEvent.', () => {
+			const button = <HTMLButtonElement>document.createElement('button');
+			button.disabled = true;
+			let clicks = 0;
+			button.addEventListener('click', () => clicks++);
+			document.body.appendChild(button);
+
+			const returned = button.dispatchEvent(
+				new MouseEvent('click', { bubbles: true, cancelable: true })
+			);
+
+			expect(clicks).toBe(1);
+			expect(returned).toBe(true);
+		});
+
+		it('Does not submit form when disabled button receives dispatched click.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			const button = <HTMLButtonElement>document.createElement('button');
+			button.type = 'submit';
+			button.disabled = true;
+			document.body.appendChild(form);
+			form.appendChild(button);
+
+			let submitCount = 0;
+			form.addEventListener('submit', () => submitCount++);
+
+			button.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+			expect(submitCount).toBe(0);
+		});
+
+		it('Does not dispatch click event on disabled button via click().', () => {
+			const button = <HTMLButtonElement>document.createElement('button');
+			button.disabled = true;
+			let clicks = 0;
+			button.addEventListener('click', () => clicks++);
+			document.body.appendChild(button);
+
+			button.click();
+
+			expect(clicks).toBe(0);
+		});
 	});
 });
