@@ -474,7 +474,7 @@ export default class SelectorParser {
 		switch (attribute.operator) {
 			// [attribute~="value"] - Contains a specified word.
 			case '~':
-				return new RegExp(`[- ]${escapedValue}|${escapedValue}[- ]|^${escapedValue}$`, modifier);
+				return new RegExp(`(^|\\s)${escapedValue}(\\s|$)`, modifier);
 			// [attribute|="value"] - Starts with the specified word.
 			case '|':
 				return new RegExp(`^${escapedValue}[- ]|^${escapedValue}$`, modifier);
