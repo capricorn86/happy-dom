@@ -10,6 +10,27 @@ import type CustomElementRegistry from '../../../src/custom-element/CustomElemen
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import type EventTarget from '../../../src/event/EventTarget.js';
 import Event from '../../../src/event/Event.js';
+import V8 from 'vm';
+import { setFlagsFromString } from 'v8';
+
+/**
+ * Returns a function that forces a garbage collection, or null if it can not be exposed.
+ *
+ * Vitest does not run workers with "--expose-gc", so we expose it at runtime for the
+ * memory regression test below. Returns null if exposing it is not possible.
+ */
+function getGarbageCollector(): (() => void) | null {
+	if (typeof globalThis.gc === 'function') {
+		return globalThis.gc;
+	}
+	try {
+		setFlagsFromString('--expose-gc');
+		const gc = V8.runInNewContext('gc');
+		return typeof gc === 'function' ? gc : null;
+	} catch {
+		return null;
+	}
+}
 
 describe('HTMLElement', () => {
 	let window: Window;
@@ -791,6 +812,34 @@ describe('HTMLElement', () => {
 
 			expect(parent.children[0] instanceof CustomElement).toBe(true);
 			expect(parent.children[0].shadowRoot?.children.length).toBe(2);
+		});
+
+		it('Does not retain detached documents that contain undefined custom elements (#404 regression).', async () => {
+			// An undefined custom element registers an upgrade callback in the window-lifetime
+			// CustomElementRegistry. The callback must hold the element weakly, otherwise every
+			// document parsed on a long-lived window (e.g. via DOMParser) is retained forever.
+			const gc = getGarbageCollector();
+			if (!gc) {
+				return;
+			}
+
+			const html = '<html><body><undefined-element></undefined-element></body></html>';
+			const collected: number[] = [];
+			const registry = new FinalizationRegistry((id: number) => collected.push(id));
+
+			for (let i = 0; i < 25; i++) {
+				let parsed: Document | null = new window.DOMParser().parseFromString(html, 'text/html');
+				registry.register(parsed, i);
+				expect(parsed.body.children.length).toBe(1);
+				parsed = null;
+			}
+
+			for (let i = 0; i < 20 && collected.length < 25; i++) {
+				await new Promise((resolve) => setTimeout(resolve, 5));
+				gc();
+			}
+
+			expect(collected.length).toBe(25);
 		});
 
 		it('Copies all properties from the unknown element to the new instance.', () => {
