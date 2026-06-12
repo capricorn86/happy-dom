@@ -706,6 +706,22 @@ describe('QuerySelector', () => {
 			expect(elements[1] === container.children[0].children[1].children[1]).toBe(true);
 		});
 
+		it('Does not match hyphenated substrings with "~=" selector.', () => {
+			const container = document.createElement('div');
+			container.innerHTML =
+				'<div data-controller="modal"><div data-controller="modal-auto-close"></div></div>';
+			const parent = container.children[0];
+			const child = container.children[0].children[0];
+
+			expect(parent.matches('[data-controller~="modal"]')).toBe(true);
+			expect(child.matches('[data-controller~="modal"]')).toBe(false);
+			expect(child.matches('[data-controller~="modal-auto"]')).toBe(false);
+			expect(child.matches('[data-controller~="auto"]')).toBe(false);
+			expect(child.matches('[data-controller~="odal"]')).toBe(false);
+			expect(child.matches('[data-controller~="modal-auto-close"]')).toBe(true);
+			expect(container.querySelector('[data-controller~="modal"]')).toBe(parent);
+		});
+
 		it('Returns all elements with an attribute value starting with the specified word using "[class|="class1"]".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
