@@ -108,6 +108,9 @@ export default class WindowContextClassExtender {
 		MessagePort.prototype[PropertySymbol.window] = window;
 		(<typeof MessagePort>window.MessagePort) = MessagePort;
 
+		// BroadcastChannel (use Node.js native implementation)
+		(<typeof BroadcastChannel>window.BroadcastChannel) = BroadcastChannel;
+
 		// CSSStyleSheet
 		class CSSStyleSheet extends CSSStyleSheetImplementation {}
 		CSSStyleSheet.prototype[PropertySymbol.window] = window;
