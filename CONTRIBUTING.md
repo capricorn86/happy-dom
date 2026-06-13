@@ -1,51 +1,47 @@
-# Contributing Guide
+# Setup
 
-We are very happy that you would like to contribute. In this guide you will find instructions on how to setup the repo locally.
+## Install
 
-## Setup
-
-### Install
-
-#### 1. Install Bun
+### 1. Install Bun
 
 To be able to run all tests in the "./packages/global-registrator" package, you need to install [Bun](https://bun.sh/).
 
 <details>
   <summary>Linux & MacOS</summary>
 
-    ```bash
-    curl -fsSL https://bun.sh/install | bash
-    ```
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
 
 </details>
 <details>
   <summary>Windows</summary>
 
-    ```bash
-    powershell -c "irm bun.sh/install.ps1 | iex"
-    ```
+```bash
+powershell -c "irm bun.sh/install.ps1 | iex"
+```
 
 </details>
 
-#### 2. Install dependencies
+### 2. Install dependencies
 
 ```bash
 npm install
 ```
 
-### Compile
+## Compile
 
 ```bash
 npm run compile
 ```
 
-### Watch
+## Watch
 
 ```bash
 npm run watch
 ```
 
-### Test
+## Test
 
 **Run tests**
 
@@ -59,7 +55,7 @@ npm test
 npm run test:watch
 ```
 
-### Debug
+## Debug
 
 1. Go to the package you wish to test and debug in the terminal (e.g. `cd ./packages/happy-dom`)
 2. Write "debugger;" at the place you want to place a breakpoint in the code
