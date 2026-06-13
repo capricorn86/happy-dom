@@ -191,6 +191,16 @@ export default class Request implements Request {
 	}
 
 	/**
+	 * Returns destination.
+	 *
+	 * @see https://fetch.spec.whatwg.org/#concept-request-destination
+	 * @returns Destination.
+	 */
+	public get destination(): '' {
+		return '';
+	}
+
+	/**
 	 * Returns mode.
 	 *
 	 * @returns Mode.
