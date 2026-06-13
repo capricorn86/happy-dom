@@ -307,6 +307,37 @@ describe('FormData', () => {
 			expect(formData.getAll('radioInput')).toEqual([]);
 			expect(formData.getAll('checkboxInput')).toEqual([]);
 		});
+
+		it('Excludes disabled select and textarea elements.', () => {
+			const form = document.createElement('form');
+
+			const select = document.createElement('select');
+			select.name = 'sel';
+			select.disabled = true;
+			const option = document.createElement('option');
+			option.value = 'x';
+			option.selected = true;
+			select.appendChild(option);
+
+			const textarea = document.createElement('textarea');
+			textarea.name = 'ta';
+			textarea.disabled = true;
+			textarea.value = 'hello';
+
+			const input = document.createElement('input');
+			input.type = 'text';
+			input.name = 'in';
+			input.value = 'i';
+			input.disabled = true;
+
+			form.appendChild(select);
+			form.appendChild(textarea);
+			form.appendChild(input);
+
+			const formData = new window.FormData(form);
+
+			expect([...formData.keys()]).toEqual([]);
+		});
 	});
 
 	describe('forEach()', () => {
