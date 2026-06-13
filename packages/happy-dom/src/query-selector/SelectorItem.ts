@@ -263,17 +263,37 @@ export default class SelectorItem {
 				return { priorityWeight: 10 };
 			case 'nth-child':
 				let nthChildIndex = -1;
-				if (pseudo.selectorItems?.[0] && !pseudo.selectorItems[0].match(element)) {
-					return null;
-				}
-				for (let i = 0, max = parentChildren.length; i < max; i++) {
-					if (!pseudo.selectorItems?.[0] || pseudo.selectorItems![0].match(parentChildren[i])) {
-						nthChildIndex++;
+				if (pseudo.selectorItems?.[0]) {
+					// Cache match results to avoid repeated calls on the same elements
+					const matchCache = new Map<Element, boolean>();
+					const selectorItem = pseudo.selectorItems[0];
+					const elementMatches = !!selectorItem.match(element);
+					matchCache.set(element, elementMatches);
+					if (!elementMatches) {
+						return null;
 					}
-					if (parentChildren[i] === element) {
-						return nthChildIndex !== -1 && pseudo.nthFunction!(nthChildIndex + 1)
-							? { priorityWeight: 10 }
-							: null;
+					for (let i = 0, max = parentChildren.length; i < max; i++) {
+						const child = parentChildren[i];
+						let childMatches = matchCache.get(child);
+						if (childMatches === undefined) {
+							childMatches = !!selectorItem.match(child);
+							matchCache.set(child, childMatches);
+						}
+						if (childMatches) {
+							nthChildIndex++;
+						}
+						if (child === element) {
+							return nthChildIndex !== -1 && pseudo.nthFunction!(nthChildIndex + 1)
+								? { priorityWeight: 10 }
+								: null;
+						}
+					}
+				} else {
+					for (let i = 0, max = parentChildren.length; i < max; i++) {
+						nthChildIndex++;
+						if (parentChildren[i] === element) {
+							return pseudo.nthFunction!(nthChildIndex + 1) ? { priorityWeight: 10 } : null;
+						}
 					}
 				}
 				return null;
@@ -292,17 +312,37 @@ export default class SelectorItem {
 				return null;
 			case 'nth-last-child':
 				let nthLastChildIndex = -1;
-				if (pseudo.selectorItems?.[0] && !pseudo.selectorItems[0].match(element)) {
-					return null;
-				}
-				for (let i = parentChildren.length - 1; i >= 0; i--) {
-					if (!pseudo.selectorItems?.[0] || pseudo.selectorItems![0].match(parentChildren[i])) {
-						nthLastChildIndex++;
+				if (pseudo.selectorItems?.[0]) {
+					// Cache match results to avoid repeated calls on the same elements
+					const matchCache = new Map<Element, boolean>();
+					const selectorItem = pseudo.selectorItems[0];
+					const elementMatches = !!selectorItem.match(element);
+					matchCache.set(element, elementMatches);
+					if (!elementMatches) {
+						return null;
 					}
-					if (parentChildren[i] === element) {
-						return nthLastChildIndex !== -1 && pseudo.nthFunction!(nthLastChildIndex + 1)
-							? { priorityWeight: 10 }
-							: null;
+					for (let i = parentChildren.length - 1; i >= 0; i--) {
+						const child = parentChildren[i];
+						let childMatches = matchCache.get(child);
+						if (childMatches === undefined) {
+							childMatches = !!selectorItem.match(child);
+							matchCache.set(child, childMatches);
+						}
+						if (childMatches) {
+							nthLastChildIndex++;
+						}
+						if (child === element) {
+							return nthLastChildIndex !== -1 && pseudo.nthFunction!(nthLastChildIndex + 1)
+								? { priorityWeight: 10 }
+								: null;
+						}
+					}
+				} else {
+					for (let i = parentChildren.length - 1; i >= 0; i--) {
+						nthLastChildIndex++;
+						if (parentChildren[i] === element) {
+							return pseudo.nthFunction!(nthLastChildIndex + 1) ? { priorityWeight: 10 } : null;
+						}
 					}
 				}
 				return null;
