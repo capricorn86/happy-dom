@@ -16,6 +16,10 @@ export default class HTMLBaseElement extends HTMLElement {
 	 * @returns Href.
 	 */
 	public get href(): string {
+		// Return empty string if called on prototype (e.g., during util.inspect)
+		if (!(this instanceof HTMLBaseElement)) {
+			return '';
+		}
 		if (!this.hasAttribute('href')) {
 			return this[PropertySymbol.ownerDocument].location.href;
 		}

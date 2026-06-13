@@ -125,6 +125,10 @@ export default class HTMLLinkElement extends HTMLElement {
 	 * @returns Href.
 	 */
 	public get href(): string {
+		// Return empty string if called on prototype (e.g., during util.inspect)
+		if (!(this instanceof HTMLLinkElement)) {
+			return '';
+		}
 		if (!this.hasAttribute('href')) {
 			return '';
 		}
