@@ -12,15 +12,19 @@ To be able to run all tests in the "./packages/global-registrator" package, you 
 
 <details>
   <summary>Linux & MacOS</summary>
+
     ```bash
     curl -fsSL https://bun.sh/install | bash
     ```
+
 </details>
 <details>
   <summary>Windows</summary>
+
     ```bash
     powershell -c "irm bun.sh/install.ps1 | iex"
     ```
+
 </details>
 
 #### 2. Install dependencies
