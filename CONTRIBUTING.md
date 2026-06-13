@@ -72,7 +72,7 @@ npm run test:watch
 
 # Pull Request Guidelines
 
-Checkout a topic branch from a base branch, e.g. main, and merge back against that branch.
+Checkout a topic branch from a base branch, e.g. "master", and merge back against that branch.
 
 ## Title
 
