@@ -61,6 +61,45 @@ describe('VirtualConsolePrinter', () => {
 
 			expect(virtualConsolePrinter.read()).toEqual([]);
 		});
+
+		it('Caps the number of buffered log entries so an unread buffer does not grow without bound.', () => {
+			for (let i = 0; i < 1500; i++) {
+				virtualConsolePrinter.print({
+					type: VirtualConsoleLogTypeEnum.log,
+					level: VirtualConsoleLogLevelEnum.log,
+					message: [`Test ${i}`],
+					group: null
+				});
+			}
+
+			const entries = virtualConsolePrinter.read();
+
+			// Buffer is capped and keeps the most recent entries.
+			expect(entries.length).toBe(1000);
+			expect(entries[0].message[0]).toBe('Test 500');
+			expect(entries[entries.length - 1].message[0]).toBe('Test 1499');
+		});
+
+		it('Materializes the stack of logged errors so they do not retain their structured stack trace.', () => {
+			let stackReads = 0;
+			const error = new Error('test');
+			Object.defineProperty(error, 'stack', {
+				configurable: true,
+				get() {
+					stackReads++;
+					return 'stack';
+				}
+			});
+
+			virtualConsolePrinter.print({
+				type: VirtualConsoleLogTypeEnum.error,
+				level: VirtualConsoleLogLevelEnum.error,
+				message: [error],
+				group: null
+			});
+
+			expect(stackReads).toBe(1);
+		});
 	});
 
 	describe('clear()', () => {
