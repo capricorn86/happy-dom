@@ -154,6 +154,25 @@ describe('Node', () => {
 		it('Returns emptry string.', () => {
 			expect(NodeFactory.createNode(document, Node).nodeName).toBe('');
 		});
+
+		it('Returns correct value when getter is extracted from Node.prototype and called on subclasses.', () => {
+			const nodeProtoGetter = Object.getOwnPropertyDescriptor(Node.prototype, 'nodeName')!.get!;
+
+			const div = document.createElement('div');
+			expect(nodeProtoGetter.call(div)).toBe('DIV');
+
+			const text = document.createTextNode('hello');
+			expect(nodeProtoGetter.call(text)).toBe('#text');
+
+			const comment = document.createComment('test');
+			expect(nodeProtoGetter.call(comment)).toBe('#comment');
+
+			expect(nodeProtoGetter.call(document)).toBe('#document');
+
+			if (document.doctype) {
+				expect(nodeProtoGetter.call(document.doctype)).toBe('html');
+			}
+		});
 	});
 
 	describe('get previousSibling()', () => {
