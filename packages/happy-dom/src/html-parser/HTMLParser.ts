@@ -32,7 +32,8 @@ import type Text from '../nodes/text/Text.js';
  * Group 7: End of self closing start tag (e.g. "/>" in "<img/>").
  * Group 8: End of start tag or comment tag (e.g. ">" in "<div>").
  */
-const MARKUP_REGEXP = /<([^\s/!>?]+)|<\/([^\s/!>?]+)\s*>|(<!--)|(-->|--!>)|(<!)|(<\?)|(\/>)|(>)/gm;
+const MARKUP_REGEXP =
+	/<([a-zA-Z][^\s/!>?]*)|<\/([a-zA-Z][^\s/!>?]*)\s*>|(<!--)|(-->|--!>)|(<!)|(<\?)|(\/>)|(>)/gm;
 
 /**
  * Attribute RegExp.
