@@ -31,9 +31,15 @@ describe('DOMImplementation', () => {
 		it('Returns a new XMLDocument for "xml".', () => {
 			const document = window.document.implementation.createDocument(
 				'http://www.w3.org/2000/svg',
-				'svg'
+				'xml'
 			);
 			expect(document instanceof window.XMLDocument).toBe(true);
+			expect(document.defaultView).toBe(null);
+		});
+
+		it('Returns a new HTMLDocument when "qualifiedName" is null.', () => {
+			const document = window.document.implementation.createDocument(null, null, null);
+			expect(document instanceof window.HTMLDocument).toBe(true);
 			expect(document.defaultView).toBe(null);
 		});
 
