@@ -354,19 +354,18 @@ export default class HTMLButtonElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public override dispatchEvent(event: Event): boolean {
-		if (
-			event.type === 'click' &&
-			event instanceof MouseEvent &&
-			event.eventPhase === EventPhaseEnum.none &&
-			this.disabled
-		) {
-			return false;
+	public override click(): void {
+		if (this.disabled) {
+			return;
 		}
+		super.click();
+	}
 
+	public override dispatchEvent(event: Event): boolean {
 		const returnValue = super.dispatchEvent(event);
 
 		if (
+			!this.disabled &&
 			!event[PropertySymbol.defaultPrevented] &&
 			event.type === 'click' &&
 			event.eventPhase === EventPhaseEnum.none &&

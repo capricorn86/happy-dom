@@ -1429,6 +1429,13 @@ export default class HTMLInputElement extends HTMLElement {
 	/**
 	 * @override
 	 */
+	public override click(): void {
+		if (this.disabled) {
+			return;
+		}
+		super.click();
+	}
+
 	public override dispatchEvent(event: Event): boolean {
 		if (
 			event[PropertySymbol.type] !== 'click' ||
@@ -1438,11 +1445,6 @@ export default class HTMLInputElement extends HTMLElement {
 			return super.dispatchEvent(event);
 		}
 
-		// Do nothing if the input element is disabled and the event is a click event.
-		if (this.disabled) {
-			return false;
-		}
-
 		let previousCheckedValue: boolean | null = null;
 		let previousIndeterminateValue: boolean = this[PropertySymbol.indeterminate];
 
@@ -1450,7 +1452,7 @@ export default class HTMLInputElement extends HTMLElement {
 		// However, the value has to be restored if preventDefault() is called on the click event.
 		const type = this.type;
 
-		if (type === 'checkbox' || type === 'radio') {
+		if (!this.disabled && (type === 'checkbox' || type === 'radio')) {
 			previousCheckedValue = this.checked;
 			this.#setChecked(type === 'checkbox' ? !previousCheckedValue : true);
 			if (type === 'checkbox') {
@@ -1462,7 +1464,7 @@ export default class HTMLInputElement extends HTMLElement {
 		// Dispatches the event
 		const returnValue = super.dispatchEvent(event);
 
-		if (
+		if (this.disabled ||
 			event[PropertySymbol.type] !== 'click' ||
 			event[PropertySymbol.eventPhase] !== EventPhaseEnum.none ||
 			!(event instanceof MouseEvent)
