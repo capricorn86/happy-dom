@@ -203,7 +203,7 @@ export default class SelectorParser {
 			singleApostrophe: 0
 		};
 		const name = this.scope.nodeType === NodeTypeEnum.documentNode ? 'Document' : 'Element';
-		const error = new this.window.SyntaxError(
+		const error = new this.window.DOMException(
 			`Failed to execute 'querySelectorAll' on '${name}': '${selector}' is not a valid selector.`
 		);
 		let match: null | RegExpExecArray = null;
@@ -557,7 +557,7 @@ export default class SelectorParser {
 		switch (attribute.operator) {
 			// [attribute~="value"] - Contains a specified word.
 			case '~':
-				return new RegExp(`[- ]${escapedValue}|${escapedValue}[- ]|^${escapedValue}$`, modifier);
+				return new RegExp(`(^|\\s)${escapedValue}(\\s|$)`, modifier);
 			// [attribute|="value"] - Starts with the specified word.
 			case '|':
 				return new RegExp(`^${escapedValue}[- ]|^${escapedValue}$`, modifier);

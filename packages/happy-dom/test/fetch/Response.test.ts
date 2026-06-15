@@ -634,8 +634,8 @@ describe('Response', () => {
 			);
 			await expect(originalResponse.text()).resolves.toBe('Hello World');
 
-			expect(() => originalResponse.clone()).toThrowError(DOMException);
-			expect(() => originalResponse.clone()).toThrowError(
+			expect(() => originalResponse.clone()).toThrow(DOMException);
+			expect(() => originalResponse.clone()).toThrow(
 				'Failed to clone body stream of request: Request body is already used.'
 			);
 		});

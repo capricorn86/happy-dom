@@ -27,7 +27,7 @@ describe('QuerySelector', () => {
 			);
 			expect(() => container.querySelectorAll(<string>(<unknown>(() => {})))).toThrow(
 				new window.DOMException(
-					`Failed to execute 'querySelectorAll' on 'HTMLDivElement': '() => {\n      }' is not a valid selector.`
+					`Failed to execute 'querySelectorAll' on 'HTMLDivElement': '() => {}' is not a valid selector.`
 				)
 			);
 			expect(() => container.querySelectorAll(<string>(<unknown>Symbol('test')))).toThrow(
@@ -310,9 +310,9 @@ describe('QuerySelector', () => {
 			container.appendChild(element2);
 
 			// Invalid selector ".before:" should throw (colon without pseudo-class name)
-			expect(() => container.querySelectorAll('.before:')).toThrowError(
-				new SyntaxError(
-					`Failed to execute 'querySelectorAll' on 'Document': '.before:' is not a valid selector.`
+			expect(() => container.querySelectorAll('.before:')).toThrow(
+				new window.DOMException(
+					`Failed to execute 'querySelectorAll' on 'Element': '.before:' is not a valid selector.`
 				)
 			);
 			// Valid selector with escaped colon should match
@@ -719,6 +719,22 @@ describe('QuerySelector', () => {
 			expect(elements.length).toBe(2);
 			expect(elements[0] === container.children[0].children[1].children[0]).toBe(true);
 			expect(elements[1] === container.children[0].children[1].children[1]).toBe(true);
+		});
+
+		it('Does not match hyphenated substrings with "~=" selector.', () => {
+			const container = document.createElement('div');
+			container.innerHTML =
+				'<div data-controller="modal"><div data-controller="modal-auto-close"></div></div>';
+			const parent = container.children[0];
+			const child = container.children[0].children[0];
+
+			expect(parent.matches('[data-controller~="modal"]')).toBe(true);
+			expect(child.matches('[data-controller~="modal"]')).toBe(false);
+			expect(child.matches('[data-controller~="modal-auto"]')).toBe(false);
+			expect(child.matches('[data-controller~="auto"]')).toBe(false);
+			expect(child.matches('[data-controller~="odal"]')).toBe(false);
+			expect(child.matches('[data-controller~="modal-auto-close"]')).toBe(true);
+			expect(container.querySelector('[data-controller~="modal"]')).toBe(parent);
 		});
 
 		it('Returns all elements with an attribute value starting with the specified word using "[class|="class1"]".', () => {
@@ -1355,22 +1371,22 @@ describe('QuerySelector', () => {
 
 		it('Throws an error when providing an invalid selector', () => {
 			const div = document.createElement('div');
-			expect(() => div.querySelectorAll('1')).toThrowError(
+			expect(() => div.querySelectorAll('1')).toThrow(
 				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': '1' is not a valid selector."
 			);
-			expect(() => div.querySelectorAll('[1')).toThrowError(
+			expect(() => div.querySelectorAll('[1')).toThrow(
 				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': '[1' is not a valid selector."
 			);
-			expect(() => div.querySelectorAll('.1')).toThrowError(
+			expect(() => div.querySelectorAll('.1')).toThrow(
 				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': '.1' is not a valid selector."
 			);
-			expect(() => div.querySelectorAll('#1')).toThrowError(
+			expect(() => div.querySelectorAll('#1')).toThrow(
 				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': '#1' is not a valid selector."
 			);
-			expect(() => div.querySelectorAll('a.')).toThrowError(
+			expect(() => div.querySelectorAll('a.')).toThrow(
 				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': 'a.' is not a valid selector."
 			);
-			expect(() => div.querySelectorAll('a#')).toThrowError(
+			expect(() => div.querySelectorAll('a#')).toThrow(
 				"Failed to execute 'querySelectorAll' on 'HTMLDivElement': 'a#' is not a valid selector."
 			);
 		});
@@ -1456,14 +1472,14 @@ describe('QuerySelector', () => {
 
 		it('Should throw error when ending with ","', () => {
 			const container = document.createElement('div');
-			expect(() => container.querySelectorAll('.test,.test-2,')).toThrowError(
-				new SyntaxError(
+			expect(() => container.querySelectorAll('.test,.test-2,')).toThrow(
+				new window.DOMException(
 					"Failed to execute 'querySelectorAll' on 'Element': '.test,.test-2,' is not a valid selector."
 				)
 			);
-			expect(() => container.querySelectorAll('.test.,,test-2')).toThrowError(
-				new SyntaxError(
-					"Failed to execute 'querySelectorAll' on 'Element': '.test,,.test-2' is not a valid selector."
+			expect(() => container.querySelectorAll('.test.,,test-2')).toThrow(
+				new window.DOMException(
+					"Failed to execute 'querySelectorAll' on 'Element': '.test.,,test-2' is not a valid selector."
 				)
 			);
 		});
@@ -1598,7 +1614,7 @@ describe('QuerySelector', () => {
 			);
 			expect(() => container.querySelector(<string>(<unknown>(() => {})))).toThrow(
 				new window.DOMException(
-					`Failed to execute 'querySelector' on 'HTMLDivElement': '() => {\n      }' is not a valid selector.`
+					`Failed to execute 'querySelector' on 'HTMLDivElement': '() => {}' is not a valid selector.`
 				)
 			);
 			expect(() => container.querySelector(<string>(<unknown>Symbol('test')))).toThrow(
@@ -1842,22 +1858,22 @@ describe('QuerySelector', () => {
 
 		it('Throws an error when providing an invalid selector', () => {
 			const div = document.createElement('div');
-			expect(() => div.querySelector('1')).toThrowError(
+			expect(() => div.querySelector('1')).toThrow(
 				"Failed to execute 'querySelector' on 'HTMLDivElement': '1' is not a valid selector."
 			);
-			expect(() => div.querySelector('[1')).toThrowError(
+			expect(() => div.querySelector('[1')).toThrow(
 				"Failed to execute 'querySelector' on 'HTMLDivElement': '[1' is not a valid selector."
 			);
-			expect(() => div.querySelector('.1')).toThrowError(
+			expect(() => div.querySelector('.1')).toThrow(
 				"Failed to execute 'querySelector' on 'HTMLDivElement': '.1' is not a valid selector."
 			);
-			expect(() => div.querySelector('#1')).toThrowError(
+			expect(() => div.querySelector('#1')).toThrow(
 				"Failed to execute 'querySelector' on 'HTMLDivElement': '#1' is not a valid selector."
 			);
-			expect(() => div.querySelector('a.')).toThrowError(
+			expect(() => div.querySelector('a.')).toThrow(
 				"Failed to execute 'querySelector' on 'HTMLDivElement': 'a.' is not a valid selector."
 			);
-			expect(() => div.querySelector('a#')).toThrowError(
+			expect(() => div.querySelector('a#')).toThrow(
 				"Failed to execute 'querySelector' on 'HTMLDivElement': 'a#' is not a valid selector."
 			);
 		});
@@ -2089,11 +2105,11 @@ describe('QuerySelector', () => {
 			);
 			expect(() => container.matches(<string>(<unknown>(() => {})))).toThrow(
 				new window.DOMException(
-					`Failed to execute 'matches' on 'HTMLDivElement': '() => {\n      }' is not a valid selector.`
+					`Failed to execute 'matches' on 'HTMLDivElement': '() => {}' is not a valid selector.`
 				)
 			);
 			expect(() => container.matches(<string>(<unknown>Symbol('test')))).toThrow(
-				new SyntaxError(`Cannot convert a Symbol value to a string`)
+				new TypeError(`Cannot convert a Symbol value to a string`)
 			);
 			expect(() => container.matches(<string>(<unknown>true))).not.toThrow();
 		});

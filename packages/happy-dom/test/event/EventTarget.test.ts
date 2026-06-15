@@ -227,7 +227,7 @@ describe('EventTarget', () => {
 		it('Throws a TypeError if the event is not an instance of Event.', () => {
 			expect(() => {
 				eventTarget.dispatchEvent(<Event>{});
-			}).toThrowError(
+			}).toThrow(
 				`Failed to execute 'dispatchEvent' on 'EventTarget': parameter 1 is not of type 'Event'.`
 			);
 		});

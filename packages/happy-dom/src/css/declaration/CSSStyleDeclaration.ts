@@ -39,7 +39,7 @@ export default class CSSStyleDeclaration {
 	 * @param [options.computed] Computed.
 	 */
 	constructor(
-		illegalConstructorSymbol: Symbol,
+		illegalConstructorSymbol: symbol,
 		window: BrowserWindow,
 		options?: {
 			element?: Element;

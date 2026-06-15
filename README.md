@@ -64,7 +64,7 @@ And much more..
 
 ## Contributing
 
-See [Contributing Guide](https://github.com/capricorn86/happy-dom/blob/master/docs/contributing.md).
+See [Contributing Guide](https://github.com/capricorn86/happy-dom/blob/master/CONTRIBUTING.md).
 
 ## License
 

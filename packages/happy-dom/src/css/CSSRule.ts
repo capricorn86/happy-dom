@@ -41,7 +41,7 @@ export default abstract class CSSRule {
 	 * @param window Window.
 	 * @param cssParser CSS parser.
 	 */
-	constructor(illegalConstructorSymbol: Symbol, window: BrowserWindow, cssParser: CSSParser) {
+	constructor(illegalConstructorSymbol: symbol, window: BrowserWindow, cssParser: CSSParser) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}
