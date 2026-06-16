@@ -5,6 +5,7 @@ import type Element from '../nodes/element/Element.js';
 import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import type BrowserWindow from '../window/BrowserWindow.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 
 /**
  * Selector group RegExp.
@@ -42,7 +43,7 @@ const SELECTOR_GROUP_REGEXP = /(\s*[\s,+>~]\s*)|([\[\]\(\)"'])/gm;
  * Group 23: Pseudo element (e.g. "::after", "::-webkit-inner-spin-button").
  */
 const SELECTOR_REGEXP =
-	/(\*)|([a-zA-Z0-9\u00A0-\uFFFF-]+)|#(([a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\.(([a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\[(([a-zA-Z0-9-_]|\\.)+)\]|\[(([a-zA-Z0-9-_]|\\.)+)\s*([~|^$*]{0,1})\s*=\s*("([^"]*)"|'([^']*)')\s*(s|i){0,1}\]|\[(([a-zA-Z0-9-_]|\\.)+)\s*([~|^$*]{0,1})\s*=\s*(([a-zA-Z0-9\u00A0-\uFFFF_¤£-]|\\.)+)\]|:([a-zA-Z-]+)\s*\(.+\)|:([a-zA-Z-]+)|::([a-zA-Z-]+)/gm;
+	/(\*)|([a-zA-Z0-9\u00A0-\uFFFF-]+)|#(([a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\.(([a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\[(([a-zA-Z0-9-_]|\\.)+)\]|\[(([a-zA-Z0-9-_]|\\.)+)\s*([~|^$*]{0,1})\s*=\s*("([^"]*)"|'([^']*)')\s*(s|i){0,1}\]|\[(([a-zA-Z0-9-_]|\\.)+)\s*([~|^$*]{0,1})\s*=\s*(([a-zA-Z0-9\u00A0-\uFFFF_¤£-]|\\.)+)\]|:([a-zA-Z-]+)\s*\(.+\)|:([a-zA-Z-]+)|::([a-zA-Z-]+)/g;
 
 /**
  * Selector pseudo RegExp.
@@ -93,6 +94,7 @@ export default class SelectorParser {
 	private ignoreErrors: boolean;
 
 	/**
+	 * Constructor.
 	 *
 	 * @param options
 	 * @param options.window
@@ -111,11 +113,7 @@ export default class SelectorParser {
 	/**
 	 * Parses a selector string and returns an instance of SelectorItem.
 	 *
-	 * @param window Window.
 	 * @param selector Selector.
-	 * @param options Options.
-	 * @param [options.scope] Scope.
-	 * @param [options.ignoreErrors] Ignores errors.
 	 * @returns Selector item.
 	 */
 	public getSelectorItem(selector: string): SelectorItem {
@@ -125,15 +123,32 @@ export default class SelectorParser {
 	/**
 	 * Parses a selector string and returns instances of SelectorItem.
 	 *
-	 * @param window Window.
 	 * @param selector Selector.
-	 * @param options Options.
-	 * @param [options.scope] Scope.
-	 * @param [options.ignoreErrors] Ignores errors.
 	 * @returns Selector groups.
 	 */
 	public getSelectorGroups(selector: string): Array<Array<SelectorItem>> {
 		selector = selector.trim();
+
+		const cached = this.window[PropertySymbol.querySelectorCache].get(selector);
+
+		if (cached) {
+			return cached;
+		}
+
+		const groups = this.getSelectorGroupsUncached(selector);
+
+		this.window[PropertySymbol.querySelectorCache].set(selector, groups);
+
+		return groups;
+	}
+
+	/**
+	 * Parses a selector string and returns instances of SelectorItem without using cache.
+	 *
+	 * @param selector Selector.
+	 * @returns Selector groups.
+	 */
+	private getSelectorGroupsUncached(selector: string): Array<Array<SelectorItem>> {
 		let currentGroup: Array<SelectorItem> = [];
 		const groups: Array<Array<SelectorItem>> = [currentGroup];
 		const regExp = new RegExp(SELECTOR_GROUP_REGEXP);
@@ -300,22 +315,17 @@ export default class SelectorParser {
 		combinator: SelectorCombinatorEnum
 	): SelectorItem | null {
 		selector = selector.trim();
-		const ignoreErrors = this.ignoreErrors;
-		const scope = this.scope;
-
 		if (!selector) {
 			return null;
 		}
 
 		if (selector === '*') {
-			return new SelectorItem({ scope, tagName: '*', combinator, ignoreErrors });
+			return new SelectorItem({ tagName: '*', combinator });
 		}
 
 		const regexp = new RegExp(SELECTOR_REGEXP);
 		const selectorItem: SelectorItem = new SelectorItem({
-			scope,
-			combinator,
-			ignoreErrors
+			combinator
 		});
 		let match;
 		let lastIndex = 0;
