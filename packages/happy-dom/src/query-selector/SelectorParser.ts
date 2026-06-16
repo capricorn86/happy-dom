@@ -13,7 +13,7 @@ import * as PropertySymbol from '../PropertySymbol.js';
  * Group 1: Combinator (" ", ",", "+", ">", "̣~")
  * Group 2: Parentheses or brackets.
  */
-const SELECTOR_GROUP_REGEXP = /(\s*[\s,+>~]\s*)|([\[\]\(\)"'])/gm;
+const SELECTOR_GROUP_REGEXP = /(\s*[\s,+>~]\s*)|([\[\]\(\)"'])/g;
 
 /**
  * Selector RegExp.
@@ -51,7 +51,7 @@ const SELECTOR_REGEXP =
  * Group 1: Pseudo name (e.g. "nth-child")
  * Group 2: Parentheses or brackets.
  */
-const SELECTOR_PSEUDO_REGEXP = /:([a-zA-Z-]+)|([()])/gm;
+const SELECTOR_PSEUDO_REGEXP = /:([a-zA-Z-]+)|([()])/g;
 
 /**
  * Escaped Character RegExp.
