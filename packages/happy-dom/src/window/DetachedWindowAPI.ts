@@ -46,6 +46,15 @@ export default class DetachedWindowAPI {
 	}
 
 	/**
+	 * Returns a promise that is resolved when the frame has navigated and the response HTML has been written to the document.
+	 *
+	 * @returns Promise.
+	 */
+	public waitForNavigation(): Promise<void> {
+		return this.#browserFrame.waitForNavigation();
+	}
+
+	/**
 	 * Waits for all async tasks to complete.
 	 *
 	 * @deprecated Use waitUntilComplete() instead.
