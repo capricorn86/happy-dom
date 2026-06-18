@@ -1715,7 +1715,7 @@ export default class Document extends Node {
 			const listeners = this[PropertySymbol.listeners].capturing.get(eventType);
 			if (listeners) {
 				for (const listener of listeners) {
-					this.removeEventListener(eventType, listener);
+					this.removeEventListener(eventType, listener, { capture: true });
 				}
 			}
 		}
