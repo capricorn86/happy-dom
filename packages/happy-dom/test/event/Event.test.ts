@@ -354,4 +354,61 @@ describe('Event', () => {
 			expect((<EventTarget[]>(<unknown>composedPath))[4] === window).toBe(true);
 		});
 	});
+
+	describe('get isTrusted()', () => {
+		it('Returns false for programmatically created events.', () => {
+			const event = new Event('click');
+			expect(event.isTrusted).toBe(false);
+		});
+
+		it('Returns false for events dispatched via dispatchEvent.', () => {
+			const div = document.createElement('div');
+			let trusted: boolean | undefined;
+			div.addEventListener('click', (e: Event) => {
+				trusted = e.isTrusted;
+			});
+			div.dispatchEvent(new Event('click'));
+			expect(trusted).toBe(false);
+		});
+
+		it('Cannot be overwritten by assignment.', () => {
+			const event = new Event('click');
+			expect(() => {
+				(<any>event).isTrusted = true;
+			}).toThrow();
+			expect(event.isTrusted).toBe(false);
+		});
+
+		it('Cannot be redefined via Object.defineProperty.', () => {
+			const event = new Event('click');
+			expect(() => {
+				Object.defineProperty(event, 'isTrusted', {
+					value: true,
+					configurable: true
+				});
+			}).toThrow();
+			expect(event.isTrusted).toBe(false);
+		});
+
+		it('Has correct property descriptor.', () => {
+			const event = new Event('click');
+			const descriptor = Object.getOwnPropertyDescriptor(event, 'isTrusted');
+			expect(descriptor).toBeDefined();
+			expect(descriptor!.value).toBe(false);
+			expect(descriptor!.writable).toBe(false);
+			expect(descriptor!.configurable).toBe(false);
+			expect(descriptor!.enumerable).toBe(true);
+		});
+
+		it('Subclass getter is shadowed by instance property.', () => {
+			class SubclassedEvent extends Event {
+				public override get isTrusted(): boolean {
+					return true;
+				}
+			}
+			const event = new SubclassedEvent('click');
+			// The instance property defined in Event constructor shadows the subclass getter
+			expect(event.isTrusted).toBe(false);
+		});
+	});
 });
