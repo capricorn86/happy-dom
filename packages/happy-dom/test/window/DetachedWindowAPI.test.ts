@@ -183,96 +183,88 @@ describe('DetachedWindowAPI', () => {
 
 	describe('abort()', () => {
 		it('Cancels all ongoing asynchrounous tasks.', async () => {
-			await new Promise((resolve) => {
-				const responseText = '{ "test": "test" }';
-				mockModule('https', {
-					request: () => {
-						return {
-							end: () => {},
-							on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-								if (event === 'response') {
-									async function* generate(): AsyncGenerator<string> {
-										yield responseText;
-									}
-
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-									response.statusCode = 200;
-									response.statusMessage = '';
-									response.headers = {
-										'content-length': '0'
-									};
-									response.rawHeaders = ['content-length', '0'];
-
-									setTimeout(() => callback(response));
+			const responseText = '{ "test": "test" }';
+			mockModule('https', {
+				request: () => {
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText;
 								}
-							},
-							setTimeout: () => {}
-						};
-					}
-				});
-				window.location.href = 'https://localhost:8080';
-				let isFirstWhenAsyncCompleteCalled = false;
-				window.happyDOM?.waitUntilComplete().then(() => {
-					isFirstWhenAsyncCompleteCalled = true;
-				});
-				let tasksDone = 0;
-				const intervalID = window.setInterval(() => {
-					tasksDone++;
-				});
-				window.clearInterval(intervalID);
-				window.setTimeout(() => {
-					tasksDone++;
-				});
-				window.setTimeout(() => {
-					tasksDone++;
-				});
-				window.requestAnimationFrame(() => {
-					tasksDone++;
-				});
-				window.requestAnimationFrame(() => {
-					tasksDone++;
-				});
 
-				window
-					.fetch('/url/')
-					.then((response) =>
-						response
-							.json()
-							.then(() => {
-								tasksDone++;
-							})
-							.catch(() => {})
-					)
-					.catch(() => {});
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-				window
-					.fetch('/url/')
-					.then((response) =>
-						response
-							.json()
-							.then(() => {
-								tasksDone++;
-							})
-							.catch(() => {})
-					)
-					.catch(() => {});
+								response.statusCode = 200;
+								response.statusMessage = '';
+								response.headers = {
+									'content-length': '0'
+								};
+								response.rawHeaders = ['content-length', '0'];
 
-				let isSecondWhenAsyncCompleteCalled = false;
-				window.happyDOM?.waitUntilComplete().then(() => {
-					isSecondWhenAsyncCompleteCalled = true;
-				});
-
-				window.happyDOM?.abort();
-
-				expect(tasksDone).toBe(0);
-
-				setTimeout(() => {
-					expect(isFirstWhenAsyncCompleteCalled).toBe(true);
-					expect(isSecondWhenAsyncCompleteCalled).toBe(true);
-					resolve(null);
-				}, 10);
+								setTimeout(() => callback(response));
+							}
+						},
+						setTimeout: () => {}
+					};
+				}
 			});
+			window.location.href = 'https://localhost:8080';
+
+			const firstWaitPromise = window.happyDOM?.waitUntilComplete();
+
+			let tasksDone = 0;
+			const intervalID = window.setInterval(() => {
+				tasksDone++;
+			});
+			window.clearInterval(intervalID);
+			window.setTimeout(() => {
+				tasksDone++;
+			});
+			window.setTimeout(() => {
+				tasksDone++;
+			});
+			window.requestAnimationFrame(() => {
+				tasksDone++;
+			});
+			window.requestAnimationFrame(() => {
+				tasksDone++;
+			});
+
+			window
+				.fetch('/url/')
+				.then((response) =>
+					response
+						.json()
+						.then(() => {
+							tasksDone++;
+						})
+						.catch(() => {})
+				)
+				.catch(() => {});
+
+			window
+				.fetch('/url/')
+				.then((response) =>
+					response
+						.json()
+						.then(() => {
+							tasksDone++;
+						})
+						.catch(() => {})
+				)
+				.catch(() => {});
+
+			const secondWaitPromise = window.happyDOM?.waitUntilComplete();
+
+			window.happyDOM?.abort();
+
+			// Tasks should not have run yet since abort was called synchronously
+			expect(tasksDone).toBe(0);
+
+			// Both waitUntilComplete() promises should resolve after abort()
+			await Promise.all([firstWaitPromise, secondWaitPromise]);
 		});
 	});
 
