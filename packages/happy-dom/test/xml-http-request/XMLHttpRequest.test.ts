@@ -63,6 +63,25 @@ describe('XMLHttpRequest', () => {
 		vi.restoreAllMocks();
 	});
 
+	describe('readyState constants', () => {
+		it('Exposes readyState enums as instance properties.', () => {
+			expect(request.UNSENT).toBe(0);
+			expect(request.OPENED).toBe(1);
+			expect(request.HEADERS_RECEIVED).toBe(2);
+			expect(request.LOADING).toBe(3);
+			expect(request.DONE).toBe(4);
+		});
+
+		it('Instance constants match the static constants.', () => {
+			const XMLHttpRequest = window.XMLHttpRequest;
+			expect(request.UNSENT).toBe(XMLHttpRequest.UNSENT);
+			expect(request.OPENED).toBe(XMLHttpRequest.OPENED);
+			expect(request.HEADERS_RECEIVED).toBe(XMLHttpRequest.HEADERS_RECEIVED);
+			expect(request.LOADING).toBe(XMLHttpRequest.LOADING);
+			expect(request.DONE).toBe(XMLHttpRequest.DONE);
+		});
+	});
+
 	describe('get status()', () => {
 		it('Returns status for synchronous requests.', () => {
 			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(
