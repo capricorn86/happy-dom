@@ -227,10 +227,28 @@ export default class Node extends EventTarget {
 	/**
 	 * Node name.
 	 *
+	 * Returns the correct node name based on the node type.
+	 * This is important for anti-clobbering: security libraries like DOMPurify
+	 * read nodeName through the un-clobberable Node.prototype getter rather
+	 * than via the (clobberable) instance property.
+	 *
 	 * @returns Node name.
 	 */
 	public get nodeName(): string {
-		return '';
+		switch (this[PropertySymbol.nodeType]) {
+			case NodeTypeEnum.elementNode:
+				return (<any>this)[PropertySymbol.tagName] || '';
+			case NodeTypeEnum.textNode:
+				return '#text';
+			case NodeTypeEnum.commentNode:
+				return '#comment';
+			case NodeTypeEnum.documentNode:
+				return '#document';
+			case NodeTypeEnum.documentTypeNode:
+				return (<any>this)[PropertySymbol.name] || '';
+			default:
+				return '';
+		}
 	}
 
 	/**
