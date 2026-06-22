@@ -1428,7 +1428,7 @@ export default class Element
 			) {
 				return false;
 			}
-			parent = <Element>parent[PropertySymbol.parentNode];
+			parent = <Element>parent.parentElement;
 		}
 		return true;
 	}

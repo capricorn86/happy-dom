@@ -2230,6 +2230,11 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * @returns CSS style declaration.
 	 */
 	public getComputedStyle(element: Element): CSSStyleDeclaration {
+		if (!(element instanceof Element)) {
+			throw new this.TypeError(
+				"Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'."
+			);
+		}
 		element[PropertySymbol.computedStyle] =
 			element[PropertySymbol.computedStyle] ||
 			new CSSStyleDeclaration(PropertySymbol.illegalConstructor, this, { element, computed: true });
