@@ -5,6 +5,7 @@ import CustomElement from '../../CustomElement.js';
 import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
 import type Document from '../../../src/nodes/document/Document.js';
 import type Text from '../../../src/nodes/text/Text.js';
+import type HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import DOMRect from '../../../src/dom/DOMRect.js';
 import NamespaceURI from '../../../src/config/NamespaceURI.js';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility.js';
@@ -2023,6 +2024,23 @@ describe('Element', () => {
 				inline: 'start',
 				behavior: 'auto'
 			});
+		});
+	});
+
+	describe('checkVisibility()', () => {
+		it('Returns false if the element is not connected to DOM.', () => {
+			expect(element.checkVisibility()).toBe(false);
+		});
+
+		it('Returns true if the element is visible.', () => {
+			document.body.appendChild(element);
+			expect(element.checkVisibility()).toBe(true);
+		});
+
+		it('Returns false if display is none.', () => {
+			document.body.appendChild(element);
+			(<HTMLElement>element).style.display = 'none';
+			expect(element.checkVisibility()).toBe(true);
 		});
 	});
 

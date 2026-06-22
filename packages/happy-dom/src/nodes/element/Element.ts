@@ -1397,6 +1397,9 @@ export default class Element
 		/** @deprecated Use "visibilityProperty" */
 		checkVisibilityCSS?: boolean;
 	}): boolean {
+		if (!this[PropertySymbol.isConnected]) {
+			return false;
+		}
 		let parent: Element | null = this;
 		while (parent) {
 			const computedStyle = this[PropertySymbol.window].getComputedStyle(parent);
@@ -1429,6 +1432,7 @@ export default class Element
 		}
 		return true;
 	}
+
 	/**
 	 * @override
 	 */
