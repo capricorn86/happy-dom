@@ -22,6 +22,7 @@ export default class Event {
 	public AT_TARGET = Event.AT_TARGET;
 	public BUBBLING_PHASE = Event.BUBBLING_PHASE;
 
+	public readonly isTrusted: boolean;
 	public [PropertySymbol.composed] = false;
 	public [PropertySymbol.bubbles] = false;
 	public [PropertySymbol.cancelable] = false;
@@ -48,6 +49,13 @@ export default class Event {
 		this[PropertySymbol.bubbles] = eventInit?.bubbles ?? false;
 		this[PropertySymbol.cancelable] = eventInit?.cancelable ?? false;
 		this[PropertySymbol.composed] = eventInit?.composed ?? false;
+
+		Object.defineProperty(this, 'isTrusted', {
+			value: false,
+			writable: false,
+			configurable: false,
+			enumerable: true
+		});
 	}
 
 	/**
