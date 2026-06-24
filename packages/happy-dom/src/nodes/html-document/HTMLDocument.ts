@@ -70,7 +70,8 @@ export default class HTMLDocument extends Document {
 
 		if (
 			newNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
-			this[PropertySymbol.elementArray].length !== 0
+			this[PropertySymbol.elementArray].length !== 0 &&
+			referenceNode?.[PropertySymbol.nodeType] !== NodeTypeEnum.elementNode
 		) {
 			throw new this[PropertySymbol.window].Error(
 				`Failed to execute 'insertBefore' on 'Node': Only one element on document allowed.`
