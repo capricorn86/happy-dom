@@ -366,4 +366,49 @@ describe('EventTarget', () => {
 			expect(called).toBe(true);
 		});
 	});
+
+	describe('Async event listeners', () => {
+		it('Does not cause RangeError when async listener rejects.', async () => {
+			// Per the DOM spec (§2.9), event listener return values should be ignored.
+			// Previously, happy-dom wrapped async listener return values with .catch()
+			// calling dispatchError, which caused infinite recursion when async
+			// listeners rejected and the error dispatch triggered more async listeners.
+			//
+			// Simulate the reka-ui DismissableLayer pattern: async handlers on
+			// pointerdown and focusin that reject, plus an error handler that also
+			// rejects (async). This previously caused RangeError: Maximum call stack
+			// size exceeded.
+			let handlerCalls = 0;
+
+			window.document.addEventListener('pointerdown', async () => {
+				handlerCalls++;
+				throw new Error('pointerdown failure');
+			});
+
+			window.document.addEventListener('focusin', async () => {
+				handlerCalls++;
+				throw new Error('focus failure');
+			});
+
+			window.addEventListener('error', async () => {
+				handlerCalls++;
+				throw new Error('error handler failure');
+			});
+
+			// Should not throw RangeError: Maximum call stack size exceeded
+			expect(() => {
+				window.document.dispatchEvent(new Event('pointerdown'));
+			}).not.toThrow();
+
+			expect(() => {
+				window.document.dispatchEvent(new Event('focusin'));
+			}).not.toThrow();
+
+			// Give any pending promises time to settle (for unhandled rejection detection)
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			// Handlers were called but without infinite recursion
+			expect(handlerCalls).toBe(2);
+		});
+	});
 });

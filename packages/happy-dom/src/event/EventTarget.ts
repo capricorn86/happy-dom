@@ -276,27 +276,19 @@ export default class EventTarget {
 					browserSettings?.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
 				) {
 					if ((<TEventListenerObject>listener).handleEvent) {
-						let result: any;
 						try {
-							result = (<TEventListenerObject>listener).handleEvent.call(listener, event);
+							(<TEventListenerObject>listener).handleEvent.call(listener, event);
 						} catch (error) {
 							window[PropertySymbol.dispatchError](<Error>error);
 						}
 
-						if (result instanceof Promise) {
-							result.catch((error) => window[PropertySymbol.dispatchError](error));
-						}
 					} else {
-						let result: any;
 						try {
-							result = (<TEventListenerFunction>listener).call(this, event);
+							(<TEventListenerFunction>listener).call(this, event);
 						} catch (error) {
 							window[PropertySymbol.dispatchError](<Error>error);
 						}
 
-						if (result instanceof Promise) {
-							result.catch((error) => window[PropertySymbol.dispatchError](error));
-						}
 					}
 				} else {
 					if ((<TEventListenerObject>listener).handleEvent) {
@@ -354,16 +346,12 @@ export default class EventTarget {
 						!browserSettings?.disableErrorCapturing &&
 						browserSettings?.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
 					) {
-						let result: any;
 						try {
-							result = eventListener(event);
+							eventListener(event);
 						} catch (error) {
 							window[PropertySymbol.dispatchError](<Error>error);
 						}
 
-						if (result instanceof Promise) {
-							result.catch((error) => window[PropertySymbol.dispatchError](error));
-						}
 					} else {
 						eventListener(event);
 					}
