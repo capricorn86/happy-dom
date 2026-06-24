@@ -1879,5 +1879,36 @@ describe('HTMLInputElement', () => {
 
 			expect(resetTriggeredCount).toBe(1);
 		});
+
+		it('Runs click listeners on disabled checkbox when using dispatchEvent.', () => {
+			const input = <HTMLInputElement>document.createElement('input');
+			input.type = 'checkbox';
+			input.disabled = true;
+			let clicks = 0;
+			input.addEventListener('click', () => clicks++);
+			document.body.appendChild(input);
+
+			const returned = input.dispatchEvent(
+				new MouseEvent('click', { bubbles: true, cancelable: true })
+			);
+
+			expect(clicks).toBe(1);
+			expect(returned).toBe(true);
+			expect(input.checked).toBe(false);
+		});
+
+		it('Does not dispatch click event on disabled input via click().', () => {
+			const input = <HTMLInputElement>document.createElement('input');
+			input.type = 'checkbox';
+			input.disabled = true;
+			let clicks = 0;
+			input.addEventListener('click', () => clicks++);
+			document.body.appendChild(input);
+
+			input.click();
+
+			expect(clicks).toBe(0);
+			expect(input.checked).toBe(false);
+		});
 	});
 });
