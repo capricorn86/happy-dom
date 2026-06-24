@@ -1833,7 +1833,8 @@ describe('BrowserWindow', () => {
 		it('Requests an animation frame.', async () => {
 			await new Promise((resolve) => {
 				const timeoutId = window.requestAnimationFrame(resolve);
-				expect(timeoutId.constructor.name).toBe('Immediate');
+				expect(typeof timeoutId).toBe('number');
+				expect(timeoutId).toBeGreaterThan(0);
 			});
 		});
 
@@ -1937,6 +1938,34 @@ describe('BrowserWindow', () => {
 
 			expect(loopCount).toBe(5);
 		});
+
+		it('Runs all callbacks registered for the same frame with a single shared timestamp.', async () => {
+			const timestamps: number[] = [];
+			await new Promise((resolve) => {
+				window.requestAnimationFrame((t) => timestamps.push(t));
+				window.requestAnimationFrame((t) => {
+					timestamps.push(t);
+					resolve(null);
+				});
+			});
+			expect(timestamps).toHaveLength(2);
+			expect(timestamps[0]).toBe(timestamps[1]);
+		});
+
+		it('Defers a callback registered during the frame to the next frame.', async () => {
+			const order: string[] = [];
+			await new Promise((resolve) => {
+				window.requestAnimationFrame(() => {
+					order.push('a');
+					window.requestAnimationFrame(() => {
+						order.push('c');
+						resolve(null);
+					});
+				});
+				window.requestAnimationFrame(() => order.push('b'));
+			});
+			expect(order).toEqual(['a', 'b', 'c']);
+		});
 	});
 
 	describe('cancelAnimationFrame()', () => {
@@ -1948,7 +1977,7 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Supports number values.', () => {
-			window.cancelAnimationFrame(<NodeJS.Immediate>(<unknown>-1));
+			window.cancelAnimationFrame(-1);
 		});
 	});
 
