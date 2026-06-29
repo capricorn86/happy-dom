@@ -326,6 +326,7 @@ import type IImageBitmapOptions from '../canvas/IImageBitmapOptions.js';
 import ImageBitmap from '../canvas/ImageBitmap.js';
 import type ImageData from '../canvas/ImageData.js';
 import type OffscreenCanvas from '../canvas/OffscreenCanvas.js';
+import type SelectorItem from '../query-selector/SelectorItem.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -860,6 +861,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.openWebSockets]: WebSocket[] = [];
 	public [PropertySymbol.propertyEventListeners]: Map<string, ((event: Event) => void) | null> =
 		new Map();
+	public [PropertySymbol.querySelectorCache]: Map<string, Array<Array<SelectorItem>>> = new Map();
 
 	/* eslint-enable jsdoc/require-jsdoc */
 
@@ -2228,6 +2230,11 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * @returns CSS style declaration.
 	 */
 	public getComputedStyle(element: Element): CSSStyleDeclaration {
+		if (!(element instanceof Element)) {
+			throw new this.TypeError(
+				"Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'."
+			);
+		}
 		element[PropertySymbol.computedStyle] =
 			element[PropertySymbol.computedStyle] ||
 			new CSSStyleDeclaration(PropertySymbol.illegalConstructor, this, { element, computed: true });
@@ -2991,6 +2998,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		if (this.history[PropertySymbol.destroy]) {
 			this.history[PropertySymbol.destroy]();
 		}
+
+		this[PropertySymbol.querySelectorCache].clear();
 
 		this[PropertySymbol.modules].json.clear();
 		this[PropertySymbol.modules].css.clear();

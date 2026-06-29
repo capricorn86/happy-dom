@@ -45,7 +45,7 @@ describe('DataTransferItemList', () => {
 		});
 
 		it('Throws an error if the first parameter is not a File and the second parameter is not a string.', () => {
-			expect(() => dataTransferItemList.add('test1')).toThrowError(
+			expect(() => dataTransferItemList.add('test1')).toThrow(
 				"Failed to execute 'add' on 'DataTransferItemList': parameter 1 is not of type 'File'."
 			);
 		});

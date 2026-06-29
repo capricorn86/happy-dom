@@ -24,7 +24,7 @@ export default class ImageData implements ICanvasShape {
 	 */
 	constructor(dataArray: Uint8ClampedArray | number, width: number, height?: number) {
 		if (arguments.length < 2) {
-			new this[PropertySymbol.window].TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to construct 'ImageData': 2 arguments required, but only ${arguments.length} present.`
 			);
 		}

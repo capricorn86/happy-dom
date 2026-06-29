@@ -127,6 +127,13 @@ module.exports = {
 				'@typescript-eslint/no-empty-function': OFF,
 				'@typescript-eslint/no-use-before-define': OFF,
 				'@typescript-eslint/no-this-alias': OFF,
+				'@typescript-eslint/no-unsafe-function-type': OFF,
+				'@typescript-eslint/no-empty-object-type': [
+					ERROR,
+					{
+						allowObjectTypes: 'always'
+					}
+				],
 				'@typescript-eslint/explicit-function-return-type': [ERROR, { allowExpressions: true }],
 				'@typescript-eslint/member-ordering': [
 					WARN,

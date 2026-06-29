@@ -33,7 +33,7 @@ describe('CSSStyleSheet', () => {
 			expect(() => {
 				// @ts-expect-error
 				cssStyleSheet.insertRule();
-			}).toThrowError(
+			}).toThrow(
 				new TypeError(
 					`Failed to execute 'insertRule' on 'CSSStyleSheet': 1 argument required, but only 0 present.`
 				)
@@ -43,7 +43,7 @@ describe('CSSStyleSheet', () => {
 		it('Throws error when a rule with invalid CSS is inserted.', () => {
 			expect(() => {
 				cssStyleSheet.insertRule('background-color: green');
-			}).toThrowError(
+			}).toThrow(
 				new window.DOMException(
 					`Failed to execute 'insertRule' on 'CSSStyleSheet': Failed to parse the rule 'background-color: green'.`,
 					DOMExceptionNameEnum.syntaxError
@@ -56,7 +56,7 @@ describe('CSSStyleSheet', () => {
 				cssStyleSheet.insertRule(
 					'div { background-color: green } span { background-color: green }'
 				);
-			}).toThrowError(
+			}).toThrow(
 				new window.DOMException(
 					`Failed to execute 'insertRule' on 'CSSStyleSheet': Failed to parse the rule 'div { background-color: green } span { background-color: green }'.`,
 					DOMExceptionNameEnum.syntaxError
@@ -69,7 +69,7 @@ describe('CSSStyleSheet', () => {
 
 			expect(() => {
 				cssStyleSheet.insertRule('button { background-color: green }', 2);
-			}).toThrowError(
+			}).toThrow(
 				new window.DOMException(
 					`Failed to execute 'insertRule' on 'CSSStyleSheet': The index provided (2) is larger than the maximum index (0).`,
 					DOMExceptionNameEnum.indexSizeError
@@ -93,7 +93,7 @@ describe('CSSStyleSheet', () => {
 			expect(() => {
 				// @ts-expect-error
 				cssStyleSheet.deleteRule();
-			}).toThrowError(
+			}).toThrow(
 				new TypeError(
 					`Failed to execute 'deleteRule' on 'CSSStyleSheet': 1 argument required, but only 0 present.`
 				)
@@ -144,7 +144,7 @@ describe('CSSStyleSheet', () => {
 			expect(() => {
 				// @ts-expect-error
 				cssStyleSheet.replaceSync();
-			}).toThrowError(
+			}).toThrow(
 				new TypeError(
 					`Failed to execute 'replaceSync' on 'CSSStyleSheet': 1 argument required, but only 0 present.`
 				)

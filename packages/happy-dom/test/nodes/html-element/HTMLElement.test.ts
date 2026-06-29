@@ -195,7 +195,7 @@ describe('HTMLElement', () => {
 			const div = document.createElement('div');
 			expect(() => {
 				div.contentEditable = 'invalid';
-			}).toThrowError(
+			}).toThrow(
 				new SyntaxError(
 					`Failed to set the 'contentEditable' property on 'HTMLElement': The value provided ('invalid') is not one of 'true', 'false', 'plaintext-only', or 'inherit'.`
 				)
