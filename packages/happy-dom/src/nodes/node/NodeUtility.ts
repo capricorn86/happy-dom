@@ -67,14 +67,27 @@ export default class NodeUtility {
 			return true;
 		}
 
+		// HTMLFormElement and HTMLSelectElement return a Proxy from their constructor, but the
+		// parent chain may hold either the proxy or the underlying node. Compare nodes by their
+		// canonical identity (the proxy when one exists) so a proxied ancestor still matches the
+		// raw node stored in the tree. Without this, contains() wrongly returns false for a
+		// proxied <form>/<select> ancestor when the subtree is assembled detached and then
+		// attached to the document (the React render order). See #2170.
+		const canonical = (node: Node | null): Node | null =>
+			node && node[PropertySymbol.proxy] ? node[PropertySymbol.proxy] : node;
+		const canonicalAncestor = canonical(ancestorNode);
+
 		let parent: Node | null = referenceNode[PropertySymbol.parentNode];
 
 		while (parent) {
-			if (ancestorNode === parent) {
+			if (canonicalAncestor === canonical(parent)) {
 				return true;
 			}
 
-			if (ancestorNode[PropertySymbol.parentNode] === parent[PropertySymbol.parentNode]) {
+			if (
+				canonical(ancestorNode[PropertySymbol.parentNode]) ===
+				canonical(parent[PropertySymbol.parentNode])
+			) {
 				return false;
 			}
 
