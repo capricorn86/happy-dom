@@ -15,7 +15,7 @@ import Path from 'path';
 import { URLSearchParams } from 'url';
 import '../types.d.js';
 import { ReadableStream } from 'stream/web';
-import { afterEach, describe, it, expect, vi } from 'vitest';
+import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import FetchHTTPSCertificate from '../../src/fetch/certificate/FetchHTTPSCertificate.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import { fail } from 'assert';
@@ -43,6 +43,8 @@ interface IMockNetwork {
 }
 
 describe('Fetch', () => {
+	let dateNow: number;
+
 	function mockNetwork(
 		schema: 'http' | 'https',
 		specification?: {
@@ -93,6 +95,12 @@ describe('Fetch', () => {
 			}
 		};
 	}
+
+	beforeEach(() => {
+		// Mock the clock so cache-expiry tests are deterministic instead of racing real time.
+		dateNow = Date.now();
+		vi.spyOn(Date, 'now').mockImplementation(() => dateNow);
+	});
 
 	afterEach(() => {
 		resetMockedModules();
@@ -3774,7 +3782,8 @@ describe('Fetch', () => {
 			});
 			const text1 = await response1.text();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			// Advance the mocked clock past the cached response's max-age so it becomes stale.
+			dateNow += 100;
 
 			const response2 = await window.fetch(url);
 			const text2 = await response2.text();
@@ -3933,7 +3942,8 @@ describe('Fetch', () => {
 			});
 			const text1 = await response1.text();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			// Advance the mocked clock past the cached response's max-age so it becomes stale.
+			dateNow += 100;
 
 			const response2 = await window.fetch(url);
 			const text2 = await response2.text();
@@ -4104,7 +4114,8 @@ describe('Fetch', () => {
 			});
 			const text1 = await response1.text();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			// Advance the mocked clock past the cached response's max-age so it becomes stale.
+			dateNow += 100;
 
 			const response2 = await window.fetch(url, {
 				method: 'HEAD'
@@ -4273,7 +4284,8 @@ describe('Fetch', () => {
 			});
 			const text1 = await response1.text();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			// Advance the mocked clock past the cached response's max-age so it becomes stale.
+			dateNow += 100;
 
 			const response2 = await window.fetch(url);
 			const text2 = await response2.text();

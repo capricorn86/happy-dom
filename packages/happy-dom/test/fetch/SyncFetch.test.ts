@@ -28,6 +28,7 @@ const PLATFORM =
 describe('SyncFetch', () => {
 	let browserFrame: IBrowserFrame;
 	let window: BrowserWindow;
+	let dateNow: number;
 
 	beforeEach(() => {
 		const browser = new Browser();
@@ -35,6 +36,10 @@ describe('SyncFetch', () => {
 
 		browserFrame = page.mainFrame;
 		window = page.mainFrame.window;
+
+		// Mock the clock so cache-expiry tests are deterministic instead of racing real time.
+		dateNow = Date.now();
+		vi.spyOn(Date, 'now').mockImplementation(() => dateNow);
 	});
 
 	afterEach(() => {
@@ -2984,7 +2989,8 @@ describe('SyncFetch', () => {
 			}).send();
 			const text1 = response1.body!.toString();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			// Advance the mocked clock past the cached response's max-age so it becomes stale.
+			dateNow += 100;
 
 			const response2 = new SyncFetch({ browserFrame, window, url }).send();
 			const text2 = response2.body!.toString();
@@ -3121,7 +3127,8 @@ describe('SyncFetch', () => {
 			}).send();
 			const text1 = response1.body!.toString();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			// Advance the mocked clock past the cached response's max-age so it becomes stale.
+			dateNow += 100;
 
 			const response2 = new SyncFetch({ browserFrame, window, url }).send();
 			const text2 = response2.body!.toString();
@@ -3269,7 +3276,8 @@ describe('SyncFetch', () => {
 			}).send();
 			const text1 = response1.body!.toString();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			// Advance the mocked clock past the cached response's max-age so it becomes stale.
+			dateNow += 100;
 
 			const response2 = new SyncFetch({
 				browserFrame,
@@ -3421,7 +3429,8 @@ describe('SyncFetch', () => {
 			}).send();
 			const text1 = response1.body!.toString();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			// Advance the mocked clock past the cached response's max-age so it becomes stale.
+			dateNow += 100;
 
 			const response2 = new SyncFetch({ browserFrame, window, url }).send();
 			const text2 = response2.body!.toString();
