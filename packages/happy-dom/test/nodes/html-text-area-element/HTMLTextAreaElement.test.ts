@@ -59,6 +59,32 @@ describe('HTMLTextAreaElement', () => {
 			element.value = 'TEST_VALUE';
 			expect(element.value).toBe('TEST_VALUE');
 		});
+
+		it('Ignores text nested inside element children, only counting direct text node children.', () => {
+			// Element children can reach a textarea via DOM APIs, bypassing the RCDATA parser.
+			const div = document.createElement('div');
+			div.textContent = 'NESTED_VALUE';
+			element.appendChild(div);
+			expect(element.value).toBe('');
+		});
+
+		it('Includes only direct text node children when mixed with element children.', () => {
+			element.appendChild(document.createTextNode('DIRECT_VALUE'));
+			const span = document.createElement('span');
+			span.textContent = 'NESTED_VALUE';
+			element.appendChild(span);
+			expect(element.value).toBe('DIRECT_VALUE');
+		});
+	});
+
+	describe('get defaultValue()', () => {
+		it('Returns only direct text node children, ignoring text nested in element children.', () => {
+			element.appendChild(document.createTextNode('DIRECT_VALUE'));
+			const span = document.createElement('span');
+			span.textContent = 'NESTED_VALUE';
+			element.appendChild(span);
+			expect(element.defaultValue).toBe('DIRECT_VALUE');
+		});
 	});
 
 	describe('set value()', () => {
