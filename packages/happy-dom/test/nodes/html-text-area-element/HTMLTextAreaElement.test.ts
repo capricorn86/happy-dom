@@ -59,6 +59,25 @@ describe('HTMLTextAreaElement', () => {
 			element.value = 'TEST_VALUE';
 			expect(element.value).toBe('TEST_VALUE');
 		});
+
+		it('Ignores text nested inside element children, only counting direct text node children.', () => {
+			// A textarea's content model only permits text, but element children can still
+			// end up inside one via DOM APIs (e.g. appendChild()), bypassing the parser
+			// restriction that would otherwise apply. Only direct Text node children should
+			// count towards the value in that case.
+			const div = document.createElement('div');
+			div.textContent = 'NESTED_VALUE';
+			element.appendChild(div);
+			expect(element.value).toBe('');
+		});
+
+		it('Includes only direct text node children when mixed with element children.', () => {
+			element.appendChild(document.createTextNode('DIRECT_VALUE'));
+			const span = document.createElement('span');
+			span.textContent = 'NESTED_VALUE';
+			element.appendChild(span);
+			expect(element.value).toBe('DIRECT_VALUE');
+		});
 	});
 
 	describe('set value()', () => {
