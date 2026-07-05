@@ -52,8 +52,8 @@ describe('NamedNodeMap', () => {
 		});
 
 		it('Returns iterator using the same local name with different prefix.', () => {
-			element.setAttribute('ns1:key', 'value1');
-			element.setAttribute('ns2:key', 'value1');
+			element.setAttributeNS('namespace', 'ns1:key', 'value1');
+			element.setAttributeNS('namespace2', 'ns2:key', 'value1');
 			element.setAttribute('key1', 'value1');
 			element.setAttribute('key2', '');
 
@@ -112,8 +112,8 @@ describe('NamedNodeMap', () => {
 		});
 
 		it('Returns item by index using the same local name with different prefix.', () => {
-			element.setAttribute('ns1:key', 'value1');
-			element.setAttribute('ns2:key', 'value1');
+			element.setAttributeNS('namespace', 'ns1:key', 'value1');
+			element.setAttributeNS('namespace2', 'ns2:key', 'value1');
 			element.setAttribute('key1', 'value1');
 			element.setAttribute('key2', '');
 

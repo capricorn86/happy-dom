@@ -1867,9 +1867,9 @@ describe('Element', () => {
 			expect(element.getAttributeNames()).toEqual(['global:local1', 'key1', 'key2']);
 		});
 
-		it('Returns attribute names using the same local name with different prefix.', () => {
-			element.setAttribute('ns1:key', 'value1');
-			element.setAttribute('ns2:key', 'value1');
+		it('Returns attribute names using the same local name with different prefix and namespace.', () => {
+			element.setAttributeNS(NAMESPACE_URI, 'ns1:key', 'value1');
+			element.setAttributeNS(NAMESPACE_URI + '2', 'ns2:key', 'value1');
 			element.setAttribute('key1', 'value1');
 			element.setAttribute('key2', '');
 			expect(element.getAttributeNames()).toEqual(['ns1:key', 'ns2:key', 'key1', 'key2']);
