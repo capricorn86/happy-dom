@@ -2050,12 +2050,13 @@ export default class Document extends Node {
 		// We should use the NodeFactory and not the class constructor, so that owner document will be this document
 		const attribute = NodeFactory.createNode(this, this[PropertySymbol.window].Attr);
 
+		// Per spec, createAttribute() (unlike createAttributeNS()) never derives a namespace
+		// prefix from the qualified name — the name is kept whole even if it contains a colon.
 		const name = StringUtility.asciiLowerCase(qualifiedName);
-		const parts = name.split(':');
 
 		attribute[PropertySymbol.name] = name;
-		attribute[PropertySymbol.localName] = parts[1] ?? name;
-		attribute[PropertySymbol.prefix] = parts[1] ? parts[0] : null;
+		attribute[PropertySymbol.localName] = name;
+		attribute[PropertySymbol.prefix] = null;
 
 		return attribute;
 	}

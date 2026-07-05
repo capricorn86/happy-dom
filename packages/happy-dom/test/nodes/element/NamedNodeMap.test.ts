@@ -196,6 +196,17 @@ describe('NamedNodeMap', () => {
 			expect(element.getAttribute('key')).toBe('value2');
 		});
 
+		it('Replaces an attribute whose name contains a colon but has no namespace.', () => {
+			// Regression test: names like "hx-on:click" aren't namespaced (no prefix is
+			// registered for "hx-on"), so re-setting them must still replace the previous
+			// value instead of accumulating stale duplicates.
+			element.setAttribute('hx-on:click', 'value1');
+			element.setAttribute('hx-on:click', 'value2');
+
+			expect(element.getAttribute('hx-on:click')).toBe('value2');
+			expect(element.getAttributeNames()).toEqual(['hx-on:click']);
+		});
+
 		it("Doesn't replace item with different namespace.", () => {
 			element.setAttribute('key', 'value1');
 			const attr = document.createAttributeNS('namespace', 'key');

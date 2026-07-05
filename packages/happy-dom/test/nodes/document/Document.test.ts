@@ -1284,6 +1284,17 @@ describe('Document', () => {
 			expect(attribute.ownerElement === null).toBe(true);
 			expect(attribute.ownerDocument === document).toBe(true);
 		});
+
+		it('Does not derive a namespace prefix from a colon in the qualified name.', () => {
+			// Unlike createAttributeNS(), createAttribute() must keep the qualified name whole,
+			// even if it contains a colon (e.g. custom attributes like "hx-on:click").
+			const attribute = document.createAttribute('foo:bar');
+
+			expect(attribute.name).toBe('foo:bar');
+			expect(attribute.localName).toBe('foo:bar');
+			expect(attribute.prefix).toBe(null);
+			expect(attribute.namespaceURI).toBe(null);
+		});
 	});
 
 	describe('createAttributeNS()', () => {
