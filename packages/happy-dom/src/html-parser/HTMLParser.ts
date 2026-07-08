@@ -597,8 +597,15 @@ export default class HTMLParser {
 
 			// Raw text elements (e.g. <script>) should be appended after the raw text has been added as content to the element.
 			// <html>, <head> and <body> are special elements with context constraints. They are already available in the document.
+			// Self-closed foreign (SVG) raw text elements (e.g. "<style/>") never reach
+			// `parseRawTextElementContent` - they are closed immediately below via the
+			// `isSelfClosed && namespaceURI === svg` branch - so deferring their append to that
+			// function, as is correct for ordinary non-self-closed raw text elements, would mean
+			// they are silently never appended at all. Append them here instead.
 			if (
-				(!config || config.contentModel !== HTMLElementConfigContentModelEnum.rawText) &&
+				(!config ||
+					config.contentModel !== HTMLElementConfigContentModelEnum.rawText ||
+					(isSelfClosed && this.nextElement![PropertySymbol.namespaceURI] === NamespaceURI.svg)) &&
 				this.nextElement !== documentElement &&
 				this.nextElement !== head &&
 				this.nextElement !== body
