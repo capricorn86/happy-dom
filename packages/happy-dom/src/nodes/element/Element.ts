@@ -1512,10 +1512,13 @@ export default class Element
 			}
 		}
 
+		// Check the cheap "on" prefix before reading the property. Reading the property
+		// (e.g. "href", "src" or "action") can be expensive as some getters resolve URLs,
+		// and this branch only cares about event handler properties such as "onclick".
 		if (
-			this[<'constructor'>attribute[PropertySymbol.name]] !== undefined &&
 			attribute[PropertySymbol.name][0] === 'o' &&
-			attribute[PropertySymbol.name][1] === 'n'
+			attribute[PropertySymbol.name][1] === 'n' &&
+			this[<'constructor'>attribute[PropertySymbol.name]] !== undefined
 		) {
 			this[PropertySymbol.propertyEventListeners].delete(attribute[PropertySymbol.name]);
 		}

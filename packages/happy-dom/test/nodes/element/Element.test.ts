@@ -1638,6 +1638,26 @@ describe('Element', () => {
 			expect((<any>element).attributes['key2'].ownerDocument === document).toBe(true);
 		});
 
+		it('Does not read the matching property getter when setting an attribute.', () => {
+			// "onSetAttribute" clears property event listeners for attributes such as "onclick".
+			// It must check the cheap "on" prefix before reading the property, otherwise getters
+			// with side effects (e.g. "href", which resolves a URL) run on every attribute set.
+			const anchor = document.createElement('a');
+			let hrefReads = 0;
+			Object.defineProperty(anchor, 'href', {
+				configurable: true,
+				get() {
+					hrefReads++;
+					return '';
+				}
+			});
+
+			anchor.setAttribute('href', '/path');
+			anchor.setAttribute('class', 'link');
+
+			expect(hrefReads).toBe(0);
+		});
+
 		it('Sets valid attribute names', () => {
 			// ✅ Basic letters (lowercase & uppercase)
 			element.setAttribute(`abc`, '1');
