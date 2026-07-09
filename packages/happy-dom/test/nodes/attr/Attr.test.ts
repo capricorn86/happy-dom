@@ -60,6 +60,36 @@ describe('Attr', () => {
 		});
 	});
 
+	describe('get nodeValue()', () => {
+		it('Returns the attribute value.', () => {
+			const attr = document.createAttribute('test');
+			attr[PropertySymbol.value] = 'value';
+			expect(attr.nodeValue).toBe('value');
+		});
+
+		it('Returns an empty string when set to an empty string.', () => {
+			const attr = document.createAttribute('test');
+			attr[PropertySymbol.value] = '';
+			expect(attr.nodeValue).toBe('');
+		});
+	});
+
+	describe('set nodeValue()', () => {
+		it('Sets the attribute value.', () => {
+			const attr = document.createAttribute('test');
+			attr.nodeValue = 'value';
+			expect(attr.value).toBe('value');
+			expect(attr[PropertySymbol.value]).toBe('value');
+		});
+
+		it('Treats null as an empty string.', () => {
+			const attr = document.createAttribute('test');
+			attr[PropertySymbol.value] = 'value';
+			(<{ nodeValue: string | null }>(<unknown>attr)).nodeValue = null;
+			expect(attr.value).toBe('');
+		});
+	});
+
 	describe('get specified()', () => {
 		it('Returns specified.', () => {
 			const attr = document.createAttribute('test');
