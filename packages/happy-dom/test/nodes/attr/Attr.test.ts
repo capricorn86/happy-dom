@@ -58,6 +58,25 @@ describe('Attr', () => {
 			attr[PropertySymbol.value] = 'value';
 			expect(attr.value).toBe('value');
 		});
+
+		it('Returns empty string by default per DOM spec.', () => {
+			const attr = document.createAttribute('test');
+			expect(attr.value).toBe('');
+		});
+	});
+
+	describe('set value()', () => {
+		it('Sets value.', () => {
+			const attr = document.createAttribute('test');
+			attr.value = 'newValue';
+			expect(attr.value).toBe('newValue');
+		});
+
+		it('Converts null to string "null" per browser behavior.', () => {
+			const attr = document.createAttribute('test');
+			attr.value = <string>(<unknown>null);
+			expect(attr.value).toBe('null');
+		});
 	});
 
 	describe('get specified()', () => {

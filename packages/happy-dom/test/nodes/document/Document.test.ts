@@ -1277,7 +1277,7 @@ describe('Document', () => {
 
 			expect(attribute instanceof window.Attr).toBe(true);
 
-			expect(attribute.value).toBe(null);
+			expect(attribute.value).toBe('');
 			expect(attribute.name).toBe('key1');
 			expect(attribute.namespaceURI).toBe(null);
 			expect(attribute.specified).toBe(true);
@@ -1292,7 +1292,7 @@ describe('Document', () => {
 
 			expect(attribute instanceof Attr).toBe(true);
 
-			expect(attribute.value).toBe(null);
+			expect(attribute.value).toBe('');
 			expect(attribute.name).toBe('KEY1');
 			expect(attribute.namespaceURI).toBe(NamespaceURI.html);
 			expect(attribute.specified).toBe(true);
@@ -1304,7 +1304,7 @@ describe('Document', () => {
 			const attribute = document.createAttributeNS(NamespaceURI.svg, 'KEY1');
 			expect(attribute instanceof Attr).toBe(true);
 
-			expect(attribute.value).toBe(null);
+			expect(attribute.value).toBe('');
 			expect(attribute.name).toBe('KEY1');
 			expect(attribute.namespaceURI).toBe(NamespaceURI.svg);
 			expect(attribute.specified).toBe(true);
