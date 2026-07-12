@@ -318,6 +318,34 @@ describe('Element', () => {
 
 			expect(element.childNodes.length).toBe(0);
 		});
+
+		it('Removes all child nodes if textContent is set to null or undefined.', () => {
+			const textNode = document.createTextNode('text1');
+
+			element.appendChild(textNode);
+
+			element.textContent = <string>(<unknown>null);
+
+			expect(element.childNodes.length).toBe(0);
+
+			element.appendChild(textNode);
+
+			element.textContent = <string>(<unknown>undefined);
+
+			expect(element.childNodes.length).toBe(0);
+		});
+
+		it('Stringifies the value instead of treating falsy non-string values as empty.', () => {
+			element.textContent = <string>(<unknown>0);
+			expect(element.textContent).toBe('0');
+			expect(element.childNodes.length).toBe(1);
+
+			element.textContent = <string>(<unknown>false);
+			expect(element.textContent).toBe('false');
+
+			element.textContent = <string>(<unknown>NaN);
+			expect(element.textContent).toBe('NaN');
+		});
 	});
 
 	describe('get innerHTML()', () => {
