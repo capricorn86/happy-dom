@@ -88,8 +88,9 @@ export default class DocumentFragment extends Node {
 		while (childNodes.length) {
 			this.removeChild(childNodes[0]);
 		}
-		if (textContent) {
-			this.appendChild(this[PropertySymbol.ownerDocument].createTextNode(textContent));
+		const text = textContent === null || textContent === undefined ? '' : String(textContent);
+		if (text) {
+			this.appendChild(this[PropertySymbol.ownerDocument].createTextNode(text));
 		}
 	}
 
