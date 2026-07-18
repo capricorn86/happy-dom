@@ -101,6 +101,34 @@ describe('ResponseCache', () => {
 			dateNow += 100;
 			expect(responseCache.get(request)).toBeNull();
 		});
+
+		it('Keeps an already-expired response that has a "Last-Modified" header so it can be revalidated.', () => {
+			const request = {
+				url: 'http://localhost:8080',
+				method: 'GET',
+				headers: new Headers()
+			};
+			const response = {
+				status: 200,
+				statusText: 'OK',
+				url: 'http://localhost:8080',
+				headers: new Headers({
+					'Content-Type': 'text/html',
+					// "Age" exceeds "max-age", so the response is already expired when added — but with a
+					// "Last-Modified" date it must still be cached as stale (not evicted) so a later
+					// request can revalidate it with an "If-Modified-Since" header.
+					'Cache-Control': 'max-age=60',
+					Age: '120',
+					'Last-Modified': LAST_MODIFIED_DATE
+				}),
+				body: Buffer.from('test'),
+				waitingForBody: false
+			};
+			responseCache.add(request, response);
+			const cachedResponse = responseCache.get(request);
+			expect(cachedResponse?.state).toBe(CachedResponseStateEnum.stale);
+			expect(cachedResponse?.lastModified).toBe(LAST_MODIFIED_MILLISECONDS);
+		});
 	});
 
 	describe('add()', () => {

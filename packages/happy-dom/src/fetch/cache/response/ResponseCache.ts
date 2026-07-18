@@ -201,8 +201,16 @@ export default class ResponseCache implements IResponseCache {
 			}
 		}
 
-		// Cache is invalid if it has expired and doesn't have an ETag.
-		if (!cachedResponse.etag && (!cachedResponse.expires || cachedResponse.expires < Date.now())) {
+		// Don't cache a response that has no freshness lifetime, or that has already expired and
+		// cannot be revalidated. An expired response that has an ETag or a "Last-Modified" date is
+		// still kept, because get() serves it as stale and revalidates it (see the matching logic in
+		// get()). Without this, a response with a very short max-age could expire between being
+		// computed above and this check, evicting an entry that should have remained revalidatable.
+		if (
+			!cachedResponse.etag &&
+			(!cachedResponse.expires ||
+				(cachedResponse.expires < Date.now() && !cachedResponse.lastModified))
+		) {
 			const entries = this.#entries.get(url);
 			if (entries) {
 				const index = entries.indexOf(cachedResponse);
