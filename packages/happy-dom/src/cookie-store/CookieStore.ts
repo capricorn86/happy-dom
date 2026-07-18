@@ -27,7 +27,7 @@ export default class CookieStore extends EventTarget {
 	 * @param illegalConstructorSymbol Illegal constructor symbol.
 	 * @param window Window.
 	 */
-	constructor(illegalConstructorSymbol: Symbol, window: BrowserWindow) {
+	constructor(illegalConstructorSymbol: symbol, window: BrowserWindow) {
 		super();
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
