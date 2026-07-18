@@ -61,6 +61,7 @@ export default class Element
 	public [PropertySymbol.attributesProxy]: NamedNodeMap | null = null;
 	public [PropertySymbol.children]: HTMLCollection<Element> | null = null;
 	public [PropertySymbol.computedStyle]: CSSStyleDeclaration | null = null;
+	public [PropertySymbol.pointerCaptures]: Set<number> = new Set();
 	public [PropertySymbol.propertyEventListeners]: Map<string, ((event: Event) => void) | null> =
 		new Map();
 	public declare [PropertySymbol.tagName]: string | null;
@@ -979,6 +980,37 @@ export default class Element
 	}
 
 	/**
+	 * Designates a specific element as the capture target of future pointer events.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/setPointerCapture
+	 * @param pointerId Pointer ID.
+	 */
+	public setPointerCapture(pointerId: number): void {
+		this[PropertySymbol.pointerCaptures].add(pointerId);
+	}
+
+	/**
+	 * Returns whether the element on which it is invoked has pointer capture for the pointer identified by the given pointer ID.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/hasPointerCapture
+	 * @param pointerId Pointer ID.
+	 * @returns Whether the element has pointer capture.
+	 */
+	public hasPointerCapture(pointerId: number): boolean {
+		return this[PropertySymbol.pointerCaptures].has(pointerId);
+	}
+
+	/**
+	 * Releases pointer capture that was previously set for a specific pointer.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/releasePointerCapture
+	 * @param pointerId Pointer ID.
+	 */
+	public releasePointerCapture(pointerId: number): void {
+		this[PropertySymbol.pointerCaptures].delete(pointerId);
+	}
+
+	/**
 	 * The matches() method checks to see if the Element would be selected by the provided selectorString.
 	 *
 	 * @param selector Selector.
@@ -1344,6 +1376,61 @@ export default class Element
 			  }
 	): void {
 		// Do nothing
+	}
+
+	/**
+	 * Checks if the element is visible.
+	 *
+	 * @param [options] Options.
+	 * @param [options.contentVisibilityAuto] Set to "true" to check "content-visibility: auto".
+	 * @param [options.opacityProperty] Set to "true" to check "opacity" property.
+	 * @param [options.visibilityProperty] Set to "true" to check "visibility" property.
+	 * @param [options.checkOpacity] A historic alias for opacityProperty.
+	 * @param [options.checkVisibilityCSS] A historic alias for visibilityProperty.
+	 */
+	public checkVisibility(options?: {
+		contentVisibilityAuto?: boolean;
+		opacityProperty?: boolean;
+		visibilityProperty?: boolean;
+		/** @deprecated Use "opacityProperty" */
+		checkOpacity?: boolean;
+		/** @deprecated Use "visibilityProperty" */
+		checkVisibilityCSS?: boolean;
+	}): boolean {
+		if (!this[PropertySymbol.isConnected]) {
+			return false;
+		}
+		let parent: Element | null = this;
+		while (parent) {
+			const computedStyle = this[PropertySymbol.window].getComputedStyle(parent);
+			if (computedStyle.display === 'none') {
+				return false;
+			}
+			if (computedStyle.display === 'contents') {
+				let isChildVisible = false;
+				for (const child of parent[PropertySymbol.elementArray]) {
+					const childComputedStyle = this[PropertySymbol.window].getComputedStyle(child);
+					if (childComputedStyle.display !== 'none') {
+						isChildVisible = true;
+						break;
+					}
+				}
+				if (!isChildVisible) {
+					return false;
+				}
+			}
+			if ((options?.opacityProperty || options?.checkOpacity) && computedStyle.opacity === '0') {
+				return false;
+			}
+			if (
+				(options?.visibilityProperty || options?.checkVisibilityCSS) &&
+				computedStyle.visibility === 'hidden'
+			) {
+				return false;
+			}
+			parent = <Element>parent.parentElement;
+		}
+		return true;
 	}
 
 	/**

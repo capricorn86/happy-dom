@@ -1,5 +1,6 @@
 import DOMPointReadOnly from './DOMPointReadOnly.js';
 import * as PropertySymbol from '../PropertySymbol.js';
+import type { TDOMMatrixInit } from './dom-matrix/TDOMMatrixInit.js';
 
 /**
  * DOM Point.
@@ -7,6 +8,8 @@ import * as PropertySymbol from '../PropertySymbol.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/DOMPoint
  */
 export default class DOMPoint extends DOMPointReadOnly {
+	public declare matrixTransform: (init?: TDOMMatrixInit) => DOMPoint;
+
 	/**
 	 * Sets x.
 	 *

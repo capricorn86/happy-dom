@@ -1,5 +1,5 @@
 import * as PropertySymbol from '../PropertySymbol.js';
-import type Event from './Event.js';
+import Event from './Event.js';
 import type IEventListenerOptions from './IEventListenerOptions.js';
 import EventPhaseEnum from './EventPhaseEnum.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
@@ -118,6 +118,12 @@ export default class EventTarget {
 	 * @returns The return value is false if event is cancelable and at least one of the event handlers which handled this event called Event.preventDefault().
 	 */
 	public dispatchEvent(event: Event): boolean {
+		if (!(event instanceof Event)) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'dispatchEvent' on 'EventTarget': parameter 1 is not of type 'Event'.`
+			);
+		}
+
 		// The "load" event is a special case. It should not bubble up to the window from the document.
 		if (
 			!event[PropertySymbol.dispatching] &&

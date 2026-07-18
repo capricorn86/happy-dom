@@ -1,4 +1,4 @@
-import TextTrack from './TextTrack.js';
+import type TextTrack from './TextTrack.js';
 import EventTarget from '../../event/EventTarget.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import ClassMethodBinder from '../../utilities/ClassMethodBinder.js';

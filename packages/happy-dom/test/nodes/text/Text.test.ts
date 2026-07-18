@@ -61,4 +61,42 @@ describe('Text', () => {
 			expect(() => node.splitText(5)).toThrow(DOMException);
 		});
 	});
+
+	describe('get wholeText()', () => {
+		it('Returns the text content when the node has no parent.', () => {
+			const node = document.createTextNode('test');
+			expect(node.wholeText).toBe('test');
+		});
+
+		it('Returns the text content when the node is the only child.', () => {
+			const node = document.createTextNode('test');
+			document.body.appendChild(node);
+			expect(node.wholeText).toBe('test');
+		});
+
+		it('Returns combined text of adjacent text nodes.', () => {
+			const node1 = document.createTextNode('Hello');
+			const node2 = document.createTextNode(' ');
+			const node3 = document.createTextNode('World');
+			document.body.appendChild(node1);
+			document.body.appendChild(node2);
+			document.body.appendChild(node3);
+
+			expect(node1.wholeText).toBe('Hello World');
+			expect(node2.wholeText).toBe('Hello World');
+			expect(node3.wholeText).toBe('Hello World');
+		});
+
+		it('Stops at element boundaries.', () => {
+			const node1 = document.createTextNode('Before');
+			const span = document.createElement('span');
+			const node2 = document.createTextNode('After');
+			document.body.appendChild(node1);
+			document.body.appendChild(span);
+			document.body.appendChild(node2);
+
+			expect(node1.wholeText).toBe('Before');
+			expect(node2.wholeText).toBe('After');
+		});
+	});
 });

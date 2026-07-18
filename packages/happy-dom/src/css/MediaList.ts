@@ -16,7 +16,7 @@ export default class MediaList {
 	 * @param illegalConstructorSymbol
 	 * @param cssRule
 	 */
-	constructor(illegalConstructorSymbol: Symbol, cssRule: CSSMediaRule) {
+	constructor(illegalConstructorSymbol: symbol, cssRule: CSSMediaRule) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}

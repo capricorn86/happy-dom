@@ -1,4 +1,3 @@
-import DOMException from '../../exception/DOMException.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Node from '../node/Node.js';
 import type IParentNode from '../parent-node/IParentNode.js';
@@ -29,7 +28,7 @@ export default class ChildNodeUtility {
 		const parent = <IParentNode>childNode[PropertySymbol.parentNode];
 
 		if (!parent) {
-			throw new DOMException('This element has no parent node.');
+			return;
 		}
 
 		for (const node of nodes) {

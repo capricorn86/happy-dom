@@ -5,6 +5,7 @@ import CustomElement from '../../CustomElement.js';
 import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
 import type Document from '../../../src/nodes/document/Document.js';
 import type Text from '../../../src/nodes/text/Text.js';
+import type HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import DOMRect from '../../../src/dom/DOMRect.js';
 import NamespaceURI from '../../../src/config/NamespaceURI.js';
 import ParentNodeUtility from '../../../src/nodes/parent-node/ParentNodeUtility.js';
@@ -1203,6 +1204,10 @@ describe('Element', () => {
 			element.replaceWith(node1, node2);
 			expect(isCalled).toBe(true);
 		});
+
+		it('Should not throw when there is no parent node.', () => {
+			document.createElement('div').replaceWith(document.createElement('div'));
+		});
 	});
 
 	describe('before()', () => {
@@ -2022,6 +2027,142 @@ describe('Element', () => {
 		});
 	});
 
+	describe('checkVisibility()', () => {
+		it('Returns false if the element is not connected to DOM.', () => {
+			expect(element.checkVisibility()).toBe(false);
+		});
+
+		it('Returns true if the element is visible.', () => {
+			document.body.appendChild(element);
+			expect(element.checkVisibility()).toBe(true);
+		});
+
+		it('Returns false if display is none.', () => {
+			document.body.appendChild(element);
+			(<HTMLElement>element).style.display = 'none';
+			expect(element.checkVisibility()).toBe(false);
+		});
+
+		it('Returns false if parent element display is none.', () => {
+			const parent = document.createElement('div');
+			const parent2 = document.createElement('div');
+			parent.style.display = 'none';
+			parent.appendChild(parent2);
+			parent2.appendChild(element);
+			document.body.appendChild(parent);
+			expect(element.checkVisibility()).toBe(false);
+		});
+
+		it('Returns false if all children are hidden and display is contents.', () => {
+			const parent = document.createElement('div');
+			parent.style.display = 'contents';
+			const child1 = document.createElement('div');
+			child1.style.display = 'none';
+			const child2 = document.createElement('div');
+			child2.style.display = 'none';
+			parent.appendChild(child1);
+			parent.appendChild(child2);
+			document.body.appendChild(parent);
+			expect(parent.checkVisibility()).toBe(false);
+		});
+
+		it('Returns true if one child is visible and display is contents.', () => {
+			const parent = document.createElement('div');
+			parent.style.display = 'contents';
+			const child1 = document.createElement('div');
+			child1.style.display = 'none';
+			const child2 = document.createElement('div');
+			child2.style.display = 'block';
+			parent.appendChild(child1);
+			parent.appendChild(child2);
+			document.body.appendChild(parent);
+			expect(parent.checkVisibility()).toBe(true);
+		});
+
+		it('Returns true if parent is display contents and children are visible.', () => {
+			const parent = document.createElement('div');
+			parent.style.display = 'contents';
+			const child1 = document.createElement('div');
+			child1.style.display = 'none';
+			const child2 = document.createElement('div');
+			child2.style.display = 'block';
+			parent.appendChild(child1);
+			parent.appendChild(child2);
+			document.body.appendChild(parent);
+			expect(child2.checkVisibility()).toBe(true);
+		});
+
+		it('Returns true if visibility is hidden by default', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('div');
+			parent.appendChild(child);
+			parent.style.visibility = 'hidden';
+			document.body.appendChild(parent);
+			expect(child.checkVisibility()).toBe(true);
+		});
+
+		it('Returns false if visibility is hidden and option "visibilityProperty" is set to true', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('div');
+			parent.appendChild(child);
+			parent.style.visibility = 'hidden';
+			document.body.appendChild(parent);
+			expect(child.checkVisibility({ visibilityProperty: true })).toBe(false);
+		});
+
+		it('Returns false if visibility is hidden and option "checkVisibilityCSS" is set to true', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('div');
+			parent.appendChild(child);
+			parent.style.visibility = 'hidden';
+			document.body.appendChild(parent);
+			expect(child.checkVisibility({ checkVisibilityCSS: true })).toBe(false);
+		});
+
+		it('Returns true if opacity is 0 by default', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('div');
+			parent.appendChild(child);
+			parent.style.opacity = '0';
+			document.body.appendChild(parent);
+			expect(child.checkVisibility()).toBe(true);
+		});
+
+		it('Returns false if opacity is 0 and option "opacityProperty" is set to true', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('div');
+			parent.appendChild(child);
+			parent.style.opacity = '0';
+			document.body.appendChild(parent);
+			expect(child.checkVisibility({ checkOpacity: true })).toBe(false);
+		});
+
+		it('Returns false if opacity is 0 and option "checkOpacity" is set to true', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('div');
+			parent.appendChild(child);
+			parent.style.opacity = '0';
+			document.body.appendChild(parent);
+			expect(child.checkVisibility({ checkOpacity: true })).toBe(false);
+		});
+
+		it('Returns false if opacity is 0 using stylesheet and option "opacityProperty" is set to true', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('div');
+			const style = document.createElement('style');
+			parent.className = 'parent';
+			style.textContent = `
+                .parent {
+                    opacity: 0;
+                }
+            `;
+			document.head.appendChild(style);
+			parent.appendChild(child);
+			document.body.appendChild(parent);
+			expect(child.checkVisibility({ checkOpacity: true })).toBe(false);
+		});
+	});
+
 	describe('toString()', () => {
 		it('Returns the same as outerHTML.', () => {
 			expect(element.toString()).toBe(element.outerHTML);
@@ -2032,6 +2173,45 @@ describe('Element', () => {
 		it('Returns an instance of DOMRect.', () => {
 			const domRect = element.getBoundingClientRect();
 			expect(domRect instanceof DOMRect).toBe(true);
+		});
+	});
+
+	describe('setPointerCapture()', () => {
+		it('Sets pointer capture for the given pointer ID.', () => {
+			element.setPointerCapture(1);
+			expect(element.hasPointerCapture(1)).toBe(true);
+		});
+
+		it('Can capture multiple pointer IDs.', () => {
+			element.setPointerCapture(1);
+			element.setPointerCapture(2);
+			expect(element.hasPointerCapture(1)).toBe(true);
+			expect(element.hasPointerCapture(2)).toBe(true);
+		});
+	});
+
+	describe('hasPointerCapture()', () => {
+		it('Returns false when no pointer capture is set.', () => {
+			expect(element.hasPointerCapture(1)).toBe(false);
+		});
+
+		it('Returns true after setPointerCapture() is called with the same pointer ID.', () => {
+			element.setPointerCapture(5);
+			expect(element.hasPointerCapture(5)).toBe(true);
+			expect(element.hasPointerCapture(6)).toBe(false);
+		});
+	});
+
+	describe('releasePointerCapture()', () => {
+		it('Releases pointer capture for the given pointer ID.', () => {
+			element.setPointerCapture(1);
+			expect(element.hasPointerCapture(1)).toBe(true);
+			element.releasePointerCapture(1);
+			expect(element.hasPointerCapture(1)).toBe(false);
+		});
+
+		it('Does not throw when releasing a pointer ID that was not captured.', () => {
+			expect(() => element.releasePointerCapture(999)).not.toThrow();
 		});
 	});
 

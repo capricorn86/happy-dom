@@ -10,6 +10,9 @@ import DetachedBrowserFrame from './browser/detached-browser/DetachedBrowserFram
 import DetachedBrowserPage from './browser/detached-browser/DetachedBrowserPage.js';
 import BrowserErrorCaptureEnum from './browser/enums/BrowserErrorCaptureEnum.js';
 import BrowserNavigationCrossOriginPolicyEnum from './browser/enums/BrowserNavigationCrossOriginPolicyEnum.js';
+import ImageBitmap from './canvas/ImageBitmap.js';
+import ImageData from './canvas/ImageData.js';
+import OffscreenCanvas from './canvas/OffscreenCanvas.js';
 import Clipboard from './clipboard/Clipboard.js';
 import ClipboardItem from './clipboard/ClipboardItem.js';
 import VirtualConsole from './console/VirtualConsole.js';
@@ -180,6 +183,8 @@ import Permissions from './permissions/Permissions.js';
 import Range from './range/Range.js';
 import ResizeObserver from './resize-observer/ResizeObserver.js';
 import Screen from './screen/Screen.js';
+import ScreenDetailed from './screen/ScreenDetailed.js';
+import ScreenDetails from './screen/ScreenDetails.js';
 import Selection from './selection/Selection.js';
 import Storage from './storage/Storage.js';
 import NodeFilter from './tree-walker/NodeFilter.js';
@@ -200,6 +205,12 @@ import type IBrowserFrame from './browser/types/IBrowserFrame.js';
 import type IBrowserPage from './browser/types/IBrowserPage.js';
 import type IBrowserSettings from './browser/types/IBrowserSettings.js';
 import type IOptionalBrowserSettings from './browser/types/IOptionalBrowserSettings.js';
+import type ICanvasAdapter from './canvas/ICanvasAdapter.js';
+import type ICanvasAdapterCaller from './canvas/ICanvasAdapterCaller.js';
+import type ICanvasRenderingContext2D from './canvas/ICanvasRenderingContext2D.js';
+import type ICanvasShape from './canvas/ICanvasShape.js';
+import type { TCanvasImage } from './canvas/TCanvasImage.js';
+import type IConsole from './console/IConsole.js';
 import type ICookie from './cookie/ICookie.js';
 import type IOptionalCookie from './cookie/IOptionalCookie.js';
 import type ICookieStoreGetOptions from './cookie-store/ICookieStoreGetOptions.js';
@@ -236,8 +247,13 @@ export type {
 	IBrowserFrame,
 	IBrowserPage,
 	IBrowserSettings,
+	ICanvasAdapter,
+	ICanvasAdapterCaller,
+	ICanvasRenderingContext2D,
+	ICanvasShape,
 	IClipboardEventInit,
 	ICookieChangeEventInit,
+	IConsole,
 	ICookie,
 	ICookieStoreGetOptions,
 	ICookieStoreSetOptions,
@@ -263,6 +279,7 @@ export type {
 	IUIEventInit,
 	IVirtualServer,
 	IWheelEventInit,
+	TCanvasImage,
 	TEventListener
 };
 
@@ -403,6 +420,8 @@ export {
 	HTMLUnknownElement,
 	HTMLVideoElement,
 	Image,
+	ImageBitmap,
+	ImageData,
 	InputEvent,
 	IntersectionObserver,
 	IntersectionObserverEntry,
@@ -418,6 +437,7 @@ export {
 	Node,
 	NodeFilter,
 	NodeIterator,
+	OffscreenCanvas,
 	Permissions,
 	PermissionStatus,
 	PointerEvent,
@@ -431,6 +451,8 @@ export {
 	ResizeObserver,
 	Response,
 	Screen,
+	ScreenDetailed,
+	ScreenDetails,
 	Selection,
 	ShadowRoot,
 	Storage,

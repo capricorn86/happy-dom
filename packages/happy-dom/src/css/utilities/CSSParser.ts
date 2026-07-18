@@ -301,11 +301,11 @@ export default class CSSParser {
 	 * @returns True if valid, false otherwise.
 	 */
 	private validateSelectorText(selectorText: string): boolean {
-		try {
-			SelectorParser.getSelectorGroups(selectorText);
-		} catch (e) {
-			return false;
-		}
-		return true;
+		const window = this.#parentStyleSheet[PropertySymbol.window];
+		return (
+			new SelectorParser({ window, scope: window.document, ignoreErrors: true }).getSelectorGroups(
+				selectorText
+			).length > 0
+		);
 	}
 }

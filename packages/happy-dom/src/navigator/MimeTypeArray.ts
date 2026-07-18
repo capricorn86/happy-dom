@@ -1,4 +1,4 @@
-import MimeType from './MimeType.js';
+import type MimeType from './MimeType.js';
 
 /**
  * MimeTypeArray.

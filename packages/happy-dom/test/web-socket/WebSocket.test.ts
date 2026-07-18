@@ -563,7 +563,7 @@ describe('WebSocket', () => {
 			const socket = new window.WebSocket('ws://echo.websocket.org');
 			expect(() => {
 				socket.send('Hello World');
-			}).toThrowError(
+			}).toThrow(
 				new window.DOMException(
 					'Still in CONNECTING state.',
 					DOMExceptionNameEnum.invalidStateError
