@@ -3,6 +3,8 @@ import Window from '../../src/window/Window.js';
 import type BrowserWindow from '../../src/window/BrowserWindow.js';
 import CookieStore from '../../src/cookie-store/CookieStore.js';
 import CookieChangeEvent from '../../src/event/events/CookieChangeEvent.js';
+import DOMException from '../../src/exception/DOMException.js';
+import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 
 describe('CookieStore', () => {
 	let window: Window;
@@ -11,13 +13,11 @@ describe('CookieStore', () => {
 		window = new Window({ url: 'https://example.com/' });
 	});
 
-	afterEach(() => {
-		window.close();
-	});
-
 	describe('constructor', () => {
-		it('Throws TypeError when called without window.', () => {
-			expect(() => new CookieStore(<BrowserWindow>(<unknown>null))).toThrow(TypeError);
+		it('Throws "Illegal constructor" error when constructed.', () => {
+			expect(() => new CookieStore(Symbol('test'), <BrowserWindow>(<unknown>null))).toThrow(
+				new TypeError('Illegal constructor')
+			);
 		});
 
 		it('Is exposed on window.', () => {
@@ -118,8 +118,20 @@ describe('CookieStore', () => {
 		});
 
 		it('Throws TypeError for invalid arguments.', async () => {
-			await expect(window.cookieStore.set({ name: '', value: 'test' })).rejects.toThrow(TypeError);
-			await expect(window.cookieStore.set('testCookie')).rejects.toThrow(TypeError);
+			await expect(window.cookieStore.set({ name: '', value: 'test' })).rejects.toThrow(
+				new TypeError('')
+			);
+			await expect(window.cookieStore.set('testCookie')).rejects.toThrow(new TypeError(''));
+		});
+
+		it('Cookies are shared between cookieStore and document.cookie.', async () => {
+			await window.cookieStore.set('storeCookie', 'storeValue');
+			expect(window.document.cookie).toContain('storeCookie=storeValue');
+
+			window.document.cookie = 'docCookie=docValue';
+			const cookie = await window.cookieStore.get('docCookie');
+			expect(cookie?.name).toBe('docCookie');
+			expect(cookie?.value).toBe('docValue');
 		});
 	});
 
@@ -157,7 +169,10 @@ describe('CookieStore', () => {
 
 		it('Throws on cross-origin url option.', async () => {
 			await expect(window.cookieStore.getAll({ url: 'https://other.com/' })).rejects.toThrow(
-				'URL must match the document origin'
+				new window.DOMException(
+					`Failed to execute 'getAll' on 'CookieStore': URL must match the document origin`,
+					DOMExceptionNameEnum.securityError
+				)
 			);
 		});
 	});
@@ -178,7 +193,7 @@ describe('CookieStore', () => {
 		});
 	});
 
-	describe('change event', () => {
+	describe('addEventListener()', () => {
 		it('Fires a change event with changed array when a cookie is set.', async () => {
 			let event: CookieChangeEvent | null = null;
 			window.cookieStore.addEventListener('change', (e) => {
@@ -207,18 +222,6 @@ describe('CookieStore', () => {
 
 		it('Is exposed on window as CookieChangeEvent.', () => {
 			expect(window.CookieChangeEvent).toBe(CookieChangeEvent);
-		});
-	});
-
-	describe('integration with document.cookie', () => {
-		it('Cookies are shared between cookieStore and document.cookie.', async () => {
-			await window.cookieStore.set('storeCookie', 'storeValue');
-			expect(window.document.cookie).toContain('storeCookie=storeValue');
-
-			window.document.cookie = 'docCookie=docValue';
-			const cookie = await window.cookieStore.get('docCookie');
-			expect(cookie?.name).toBe('docCookie');
-			expect(cookie?.value).toBe('docValue');
 		});
 	});
 });

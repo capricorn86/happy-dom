@@ -4,13 +4,13 @@ import type ICookieStoreGetOptions from './ICookieStoreGetOptions.js';
 import type ICookieStoreSetOptions from './ICookieStoreSetOptions.js';
 import type ICookieStoreDeleteOptions from './ICookieStoreDeleteOptions.js';
 import type ICookieStoreItem from './ICookieStoreItem.js';
-import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import CookieSameSiteEnum from '../cookie/enums/CookieSameSiteEnum.js';
 import CookieChangeEvent from '../event/events/CookieChangeEvent.js';
 import type ICookie from '../cookie/ICookie.js';
 import URL from '../url/URL.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
+import * as PropertySymbol from '../PropertySymbol.js';
 
 /**
  * CookieStore.
@@ -24,12 +24,13 @@ export default class CookieStore extends EventTarget {
 	/**
 	 * Constructor.
 	 *
+	 * @param illegalConstructorSymbol Illegal constructor symbol.
 	 * @param window Window.
 	 */
-	constructor(window: BrowserWindow) {
+	constructor(illegalConstructorSymbol: Symbol, window: BrowserWindow) {
 		super();
-		if (!window) {
-			throw new TypeError('Invalid constructor');
+		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
+			throw new TypeError('Illegal constructor');
 		}
 		this.#window = window;
 	}
@@ -69,8 +70,8 @@ export default class CookieStore extends EventTarget {
 			targetURL = new URL(options.url, this.#window.location.href);
 			// In a document context, only the current URL is valid
 			if (targetURL.origin !== this.#window.location.origin) {
-				throw new DOMException(
-					`CookieStore.getAll(): URL must match the document origin.`,
+				throw new this.#window.DOMException(
+					`Failed to execute 'getAll' on 'CookieStore': URL must match the document origin`,
 					DOMExceptionNameEnum.securityError
 				);
 			}
@@ -82,11 +83,9 @@ export default class CookieStore extends EventTarget {
 		const result: ICookieStoreItem[] = [];
 
 		for (const cookie of internalCookies) {
-			if (options.name && cookie.key !== options.name) {
-				continue;
+			if (!options.name || cookie.key === options.name) {
+				result.push(this.#convertToStoreItem(cookie));
 			}
-
-			result.push(this.#convertToStoreItem(cookie));
 		}
 
 		return result;
@@ -108,7 +107,7 @@ export default class CookieStore extends EventTarget {
 		let options: ICookieStoreSetOptions;
 		if (typeof nameOrOptions === 'string') {
 			if (value === undefined) {
-				throw new TypeError(
+				throw new this.#window.TypeError(
 					`Failed to execute 'set' on 'CookieStore': Value is required when name is provided as a string.`
 				);
 			}
@@ -118,7 +117,7 @@ export default class CookieStore extends EventTarget {
 		}
 
 		if (!options.name) {
-			throw new TypeError(
+			throw new this.#window.TypeError(
 				`Failed to execute 'set' on 'CookieStore': Required member name is undefined.`
 			);
 		}
@@ -160,27 +159,15 @@ export default class CookieStore extends EventTarget {
 		};
 
 		const cookieContainer = browserFrame.page.context.cookieContainer;
-		const existingCookie = cookieContainer
-			.getCookies(originURL, true)
-			.find((c) => c.key === cookie.key && c.domain === cookie.domain && c.path === cookie.path);
+		const changedCookies = cookieContainer.addCookies([cookie]);
 
-		cookieContainer.addCookies([cookie]);
-
-		// Determine whether this was a set or a delete and dispatch change event
-		const isExpired = expires !== null && expires.getTime() <= Date.now();
-		const changed: ICookieStoreItem[] = [];
-		const deleted: ICookieStoreItem[] = [];
-
-		if (isExpired) {
-			if (existingCookie) {
-				deleted.push(this.#convertToStoreItem(existingCookie));
-			}
-		} else {
-			changed.push(this.#convertToStoreItem(cookie));
-		}
-
-		if (changed.length > 0 || deleted.length > 0) {
-			this.dispatchEvent(new CookieChangeEvent('change', { changed, deleted }));
+		if (changedCookies.changed.length > 0 || changedCookies.deleted.length > 0) {
+			this.dispatchEvent(
+				new CookieChangeEvent('change', {
+					changed: changedCookies.changed.map((cookie) => this.#convertToStoreItem(cookie)),
+					deleted: changedCookies.deleted.map((cookie) => this.#convertToStoreItem(cookie))
+				})
+			);
 		}
 	}
 

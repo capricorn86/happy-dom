@@ -885,7 +885,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this[PropertySymbol.screen] = new Screen();
 		this[PropertySymbol.sessionStorage] = new Storage();
 		this[PropertySymbol.localStorage] = new Storage();
-		this[PropertySymbol.cookieStore] = new CookieStore(this);
+		this[PropertySymbol.cookieStore] = new CookieStore(PropertySymbol.illegalConstructor, this);
 		this[PropertySymbol.location] = new Location(this.#browserFrame, options?.url ?? 'about:blank');
 		this[PropertySymbol.history] = new History(this.#browserFrame, this);
 
