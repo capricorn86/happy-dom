@@ -1240,7 +1240,7 @@ describe('SyncFetch', () => {
 			expect(tryCount).toBe(20 + 1);
 		});
 
-		it('Should support "manual" redirect mode.', () => {
+		it('Should return an opaque-redirect response for "manual" redirect mode.', () => {
 			browserFrame.url = 'https://localhost:8080/';
 
 			const url = 'https://localhost:8080/test/';
@@ -1268,11 +1268,18 @@ describe('SyncFetch', () => {
 				}
 			}).send();
 
-			expect(response.status).toBe(301);
-			expect(response.headers.get('location')).toBe(redirectURL);
+			expect(response.type).toBe('opaqueredirect');
+			expect(response.status).toBe(0);
+			expect(response.statusText).toBe('');
+			expect(response.ok).toBe(false);
+			expect(response.redirected).toBe(false);
+			expect(response.url).toBe(url);
+			expect(response.headers.get('location')).toBe(null);
+			expect([...response.headers]).toEqual([]);
+			expect(response.body).toBe(null);
 		});
 
-		it('Should support "manual" redirect mode with broken location header.', () => {
+		it('Should mask a broken location header in "manual" redirect mode.', () => {
 			browserFrame.url = 'https://localhost:8080/';
 
 			const url = 'https://localhost:8080/test/';
@@ -1300,11 +1307,12 @@ describe('SyncFetch', () => {
 				}
 			}).send();
 
-			expect(response.status).toBe(301);
-			expect(response.headers.get('location')).toBe(redirectURL);
+			expect(response.type).toBe('opaqueredirect');
+			expect(response.status).toBe(0);
+			expect(response.headers.get('location')).toBe(null);
 		});
 
-		it('Should support "manual" redirect mode to other host.', () => {
+		it('Should return an opaque-redirect response for cross-host "manual" redirect mode.', () => {
 			browserFrame.url = 'https://localhost:8080/';
 
 			const url = 'https://localhost:8080/test/';
@@ -1332,11 +1340,13 @@ describe('SyncFetch', () => {
 				}
 			}).send();
 
-			expect(response.status).toBe(301);
-			expect(response.headers.get('location')).toBe(redirectURL);
+			expect(response.type).toBe('opaqueredirect');
+			expect(response.status).toBe(0);
+			expect(response.url).toBe(url);
+			expect(response.headers.get('location')).toBe(null);
 		});
 
-		it('Should treat missing location header as a normal response (manual).', () => {
+		it('Should return an opaque-redirect response for "manual" redirect mode even without a location header.', () => {
 			browserFrame.url = 'https://localhost:8080/';
 
 			const url = 'https://localhost:8080/test/';
@@ -1363,7 +1373,8 @@ describe('SyncFetch', () => {
 				}
 			}).send();
 
-			expect(response.status).toBe(301);
+			expect(response.type).toBe('opaqueredirect');
+			expect(response.status).toBe(0);
 		});
 
 		it('Should support "error" redirect.', () => {
