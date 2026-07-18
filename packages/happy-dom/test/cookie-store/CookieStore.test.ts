@@ -119,9 +119,15 @@ describe('CookieStore', () => {
 
 		it('Throws TypeError for invalid arguments.', async () => {
 			await expect(window.cookieStore.set({ name: '', value: 'test' })).rejects.toThrow(
-				new TypeError('')
+				new TypeError(
+					`Failed to execute 'set' on 'CookieStore': Required member name is undefined.`
+				)
 			);
-			await expect(window.cookieStore.set('testCookie')).rejects.toThrow(new TypeError(''));
+			await expect(window.cookieStore.set('testCookie')).rejects.toThrow(
+				new TypeError(
+					`Failed to execute 'set' on 'CookieStore': Value is required when name is provided as a string.`
+				)
+			);
 		});
 
 		it('Cookies are shared between cookieStore and document.cookie.', async () => {
