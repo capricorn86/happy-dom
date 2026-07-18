@@ -1377,6 +1377,50 @@ describe('SyncFetch', () => {
 			expect(response.status).toBe(0);
 		});
 
+		it('Should not cache an opaque-redirect response even when the redirect has cache headers (manual).', () => {
+			browserFrame.url = 'https://localhost:8080/';
+
+			const url = 'https://localhost:8080/test/';
+			const redirectURL = 'https://localhost:8080/redirect/';
+			let callCount = 0;
+
+			mockModule('child_process', {
+				execFileSync: () => {
+					callCount++;
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: 301,
+							statusMessage: 'Moved Permanently',
+							rawHeaders: ['Location', redirectURL, 'Cache-Control', 'max-age=60'],
+							data: ''
+						}
+					});
+				}
+			});
+
+			const first = new SyncFetch({
+				browserFrame,
+				window,
+				url,
+				init: { redirect: 'manual' }
+			}).send();
+
+			const second = new SyncFetch({
+				browserFrame,
+				window,
+				url,
+				init: { redirect: 'manual' }
+			}).send();
+
+			expect(first.type).toBe('opaqueredirect');
+			expect(second.type).toBe('opaqueredirect');
+			expect(second.status).toBe(0);
+			// Both requests must reach the network; a cached opaque-redirect would
+			// have served the second request without a second execFileSync call.
+			expect(callCount).toBe(2);
+		});
+
 		it('Should support "error" redirect.', () => {
 			browserFrame.url = 'https://localhost:8080/';
 

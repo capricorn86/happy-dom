@@ -555,6 +555,7 @@ export default class Fetch {
 				if (
 					!this.disableCache &&
 					response instanceof Response &&
+					response.type !== 'opaqueredirect' &&
 					this.#browserFrame.page &&
 					this.#browserFrame.page.context
 				) {
@@ -579,7 +580,11 @@ export default class Fetch {
 					interceptedResponse instanceof Response ? interceptedResponse : response;
 
 				// The browser outputs errors to the console when the response is not ok.
-				if (returnResponse instanceof Response && !returnResponse.ok) {
+				if (
+					returnResponse instanceof Response &&
+					!returnResponse.ok &&
+					returnResponse.type !== 'opaqueredirect'
+				) {
 					this.#browserFrame.page.console.error(
 						`${this.request.method} ${this.request.url} ${returnResponse.status} (${returnResponse.statusText})`
 					);

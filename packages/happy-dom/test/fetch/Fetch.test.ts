@@ -896,6 +896,30 @@ describe('Fetch', () => {
 			expect(response.status).toBe(0);
 		});
 
+		it('Should not cache an opaque-redirect response even when the redirect has cache headers (manual).', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
+			const url = 'https://localhost:8080/test/';
+			const redirectURL = 'https://localhost:8080/redirect/';
+
+			const network = mockNetwork('https', {
+				responseProperties: {
+					statusCode: 301,
+					statusMessage: 'Moved Permanently',
+					rawHeaders: ['Location', redirectURL, 'Cache-Control', 'max-age=60']
+				}
+			});
+
+			const first = await window.fetch(url, { method: 'GET', redirect: 'manual' });
+			const second = await window.fetch(url, { method: 'GET', redirect: 'manual' });
+
+			expect(first.type).toBe('opaqueredirect');
+			expect(second.type).toBe('opaqueredirect');
+			expect(second.status).toBe(0);
+			// Both requests must reach the network; a cached opaque-redirect would
+			// have served the second request without a second network call.
+			expect(network.requestHistory.length).toBe(2);
+		});
+
 		it('Should support "error" redirect.', async () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';

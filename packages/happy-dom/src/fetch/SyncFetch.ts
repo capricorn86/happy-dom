@@ -561,7 +561,7 @@ export default class SyncFetch {
 			: undefined;
 		const returnResponse =
 			typeof interceptedResponse === 'object' ? interceptedResponse : redirectedResponse;
-		if (!returnResponse.ok) {
+		if (!returnResponse.ok && returnResponse.type !== 'opaqueredirect') {
 			this.#browserFrame.page.console.error(
 				`${this.request.method} ${this.request.url} ${returnResponse.status} (${returnResponse.statusText})`
 			);
