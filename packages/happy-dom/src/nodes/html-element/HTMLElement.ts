@@ -994,7 +994,18 @@ export default class HTMLElement extends Element {
 		// Therefore we need to register a callback for when it is defined in CustomElementRegistry and replace it with the registered element (see #404)
 		if (this.constructor === window.HTMLElement && localName.includes('-') && allCallbacks) {
 			if (!this.#customElementDefineCallback) {
-				const callback = this.#onCustomElementConnected.bind(this);
+				// The callback is stored in the window-lifetime CustomElementRegistry until the
+				// element is either disconnected or its custom element is defined. We hold the
+				// element through a WeakRef so that a detached document (e.g. created via DOMParser
+				// or document.write() and then dropped) can be garbage collected instead of being
+				// retained for the lifetime of the window (see #404 and the leak it introduced).
+				const reference = new WeakRef(this);
+				const callback = (): void => {
+					const element = reference.deref();
+					if (element) {
+						element.#onCustomElementConnected();
+					}
+				};
 				const callbacks = allCallbacks.get(localName);
 				if (callbacks) {
 					callbacks.unshift(callback);
