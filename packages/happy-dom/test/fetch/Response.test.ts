@@ -84,7 +84,10 @@ describe('Response', () => {
 			}
 
 			expect(headers === response.headers).toBe(false);
-			expect(headerEntries).toEqual(headerValues);
+			expect(headerEntries).toEqual({
+				'content-type': 'text/plain',
+				'content-length': '123'
+			});
 		});
 
 		it('Sets body from init object.', async () => {
