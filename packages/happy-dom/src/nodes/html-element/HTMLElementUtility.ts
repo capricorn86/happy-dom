@@ -1,7 +1,11 @@
 import FocusEvent from '../../event/events/FocusEvent.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
+import NodeFilter from '../../tree-walker/NodeFilter.js';
+import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import type HTMLElement from '../html-element/HTMLElement.js';
+import type Node from '../node/Node.js';
 import type SVGElement from '../svg-element/SVGElement.js';
+import type Text from '../text/Text.js';
 
 /**
  * HTMLElement utility.
@@ -96,6 +100,68 @@ export default class HTMLElementUtility {
 				composed: true
 			})
 		);
+
+		if ((<HTMLElement>target).isContentEditable) {
+			HTMLElementUtility.placeCaretInContentEditable(<HTMLElement>target);
+		}
+	}
+
+	/**
+	 * Places a collapsed selection at the first editable text node in a contenteditable root.
+	 *
+	 * @param root Contenteditable root element.
+	 */
+	public static placeCaretInContentEditable(root: HTMLElement): void {
+		const firstText = HTMLElementUtility.findFirstEditableTextNode(root);
+		const sel = root[PropertySymbol.ownerDocument].getSelection();
+		if (firstText) {
+			sel?.collapse(firstText, 0);
+		} else {
+			sel?.collapse(root, 0);
+		}
+	}
+
+	/**
+	 * Returns the outermost contenteditable root for a node.
+	 *
+	 * @param node Node.
+	 * @returns Contenteditable root element, or null if none exists.
+	 */
+	public static getContentEditableRoot(node: Node): HTMLElement | null {
+		let current: Node | null = node;
+		let root: HTMLElement | null = null;
+		while (current && current.nodeType === NodeTypeEnum.elementNode) {
+			const el = <HTMLElement>current;
+			if (el.isContentEditable) {
+				root = el;
+			}
+			current = el[PropertySymbol.parentNode];
+		}
+		return root;
+	}
+
+	/**
+	 * Returns the first Text node that is not inside a contenteditable=false subtree.
+	 *
+	 * @param root Root element to search within.
+	 * @returns First editable Text node, or null if none exists.
+	 */
+	private static findFirstEditableTextNode(root: HTMLElement): Text | null {
+		const walker = root[PropertySymbol.ownerDocument].createTreeWalker(root, NodeFilter.SHOW_ALL, {
+			acceptNode(node: Node): number {
+				if (
+					node !== root &&
+					node.nodeType === NodeTypeEnum.elementNode &&
+					(<HTMLElement>node).contentEditable === 'false'
+				) {
+					return NodeFilter.FILTER_REJECT;
+				}
+				return node.nodeType === NodeTypeEnum.textNode
+					? NodeFilter.FILTER_ACCEPT
+					: NodeFilter.FILTER_SKIP;
+			}
+		});
+		return <Text | null>walker.nextNode();
 	}
 
 	/**

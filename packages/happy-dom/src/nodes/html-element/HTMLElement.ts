@@ -2,6 +2,8 @@ import Element from '../element/Element.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import PointerEvent from '../../event/events/PointerEvent.js';
+import MouseEvent from '../../event/events/MouseEvent.js';
+import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import type Event from '../../event/Event.js';
 import HTMLElementUtility from './HTMLElementUtility.js';
@@ -968,6 +970,36 @@ export default class HTMLElement extends Element {
 	 */
 	public focus(): void {
 		HTMLElementUtility.focus(this);
+	}
+
+	/**
+	 * @override
+	 */
+	public override dispatchEvent(event: Event): boolean {
+		const returnValue = super.dispatchEvent(event);
+
+		if (
+			event[PropertySymbol.defaultPrevented] ||
+			event.type !== 'mousedown' ||
+			event[PropertySymbol.eventPhase] !== EventPhaseEnum.none ||
+			!(event instanceof MouseEvent) ||
+			event.button !== 0
+		) {
+			return returnValue;
+		}
+
+		const root = HTMLElementUtility.getContentEditableRoot(this);
+		if (!root) {
+			return returnValue;
+		}
+
+		const document = root[PropertySymbol.ownerDocument];
+		if (document[PropertySymbol.activeElement] !== root) {
+			HTMLElementUtility.focus(root);
+		}
+		HTMLElementUtility.placeCaretInContentEditable(root);
+
+		return returnValue;
 	}
 
 	/**

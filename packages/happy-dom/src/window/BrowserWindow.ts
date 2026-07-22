@@ -183,6 +183,7 @@ import type XMLDocument from '../nodes/xml-document/XMLDocument.js';
 import type PermissionStatus from '../permissions/PermissionStatus.js';
 import Permissions from '../permissions/Permissions.js';
 import type Range from '../range/Range.js';
+import StaticRange from '../range/StaticRange.js';
 import ResizeObserver from '../resize-observer/ResizeObserver.js';
 import Screen from '../screen/Screen.js';
 import ScreenDetails from '../screen/ScreenDetails.js';
@@ -709,6 +710,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly XMLSerializer = XMLSerializer;
 	public readonly ClipboardItem = ClipboardItem;
 	public readonly Selection = Selection;
+	public readonly StaticRange = StaticRange;
 	public readonly CSSUnitValue = CSSUnitValue;
 	public readonly SVGAngle = SVGAngle;
 	public readonly SVGAnimatedAngle = SVGAnimatedAngle;

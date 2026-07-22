@@ -181,6 +181,7 @@ import XMLDocument from './nodes/xml-document/XMLDocument.js';
 import PermissionStatus from './permissions/PermissionStatus.js';
 import Permissions from './permissions/Permissions.js';
 import Range from './range/Range.js';
+import StaticRange from './range/StaticRange.js';
 import ResizeObserver from './resize-observer/ResizeObserver.js';
 import Screen from './screen/Screen.js';
 import ScreenDetailed from './screen/ScreenDetailed.js';
@@ -446,6 +447,7 @@ export {
 	ProgressEvent,
 	PropertySymbol,
 	Range,
+	StaticRange,
 	RemotePlayback,
 	Request,
 	ResizeObserver,
