@@ -10,6 +10,7 @@ import type HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import type NodeList from '../node/NodeList.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
+import NodeTypeEnum from '../node/NodeTypeEnum.js';
 
 /**
  * HTML Text Area Element.
@@ -75,12 +76,34 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	}
 
 	/**
+	 * Returns the "child text content" of the element: the concatenation of the data
+	 * of its direct Text node children, in tree order.
+	 *
+	 * A textarea's content model only permits text, so this is normally the same as
+	 * `textContent`. However, element children can still end up inside a textarea via
+	 * DOM APIs (e.g. `appendChild()`), bypassing the parser restriction. Per spec, only
+	 * direct Text node children count towards the value in that case.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/dom.html#child-text-content
+	 * @returns Child text content.
+	 */
+	get #childTextContent(): string {
+		let text = '';
+		for (const child of this[PropertySymbol.nodeArray]) {
+			if (child[PropertySymbol.nodeType] === NodeTypeEnum.textNode) {
+				text += child.textContent;
+			}
+		}
+		return text;
+	}
+
+	/**
 	 * Returns the default value.
 	 *
 	 * @returns Default value.
 	 */
 	public get defaultValue(): string {
-		return this.textContent;
+		return this.#childTextContent;
 	}
 
 	/**
@@ -339,7 +362,7 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 */
 	public get value(): string {
 		if (this[PropertySymbol.value] === null) {
-			return this.textContent;
+			return this.#childTextContent;
 		}
 
 		return this[PropertySymbol.value];
