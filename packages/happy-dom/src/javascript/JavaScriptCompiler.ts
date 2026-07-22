@@ -81,17 +81,18 @@ export default class JavaScriptCompiler {
 
 		const regExp = new RegExp(STATEMENT_REGEXP);
 		const count = this.count;
-		let newCode = '(function anonymous($happy_dom) {';
+		let newCode = '';
 		let match: RegExpExecArray | null = null;
 		let precedingToken: string;
 		let textBetweenStatements: string;
 		let lastIndex = 0;
 		const importStartIndex = -1;
 
-		if (
+		const useTryCatch =
 			!browserSettings.disableErrorCapturing &&
-			browserSettings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
-		) {
+			browserSettings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch;
+
+		if (useTryCatch) {
 			newCode += 'try {';
 		}
 
@@ -136,36 +137,40 @@ export default class JavaScriptCompiler {
 			newCode += code.substring(lastIndex);
 		}
 
-		if (
-			!browserSettings.disableErrorCapturing &&
-			browserSettings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch
-		) {
+		if (useTryCatch) {
 			newCode += '} catch (error) { $happy_dom.dispatchError(error); }';
 		}
 
-		newCode += '})';
-
-		try {
-			return {
-				execute: this.window[PropertySymbol.evaluateScript](newCode, {
-					filename: sourceURL
-				})
-			};
-		} catch (error) {
-			(<Error>error).message =
-				`Failed to parse JavaScript in '${sourceURL}': ${(<Error>error).message}`;
-			if (
-				browserSettings.disableErrorCapturing ||
-				browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
-			) {
-				throw error;
-			} else {
-				this.window[PropertySymbol.dispatchError](<Error>error);
-				return {
-					execute: () => {}
-				};
+		return {
+			execute: (happyDom): void => {
+				// $happy_dom is bound as a temporary global instead of a function
+				// parameter so that top-level "var"/function declarations in
+				// classic scripts reach the global object, like a real browser.
+				// Wrapping the code in a function (as happy-dom used to) traps
+				// those declarations in that function's own scope instead.
+				const window = <any>this.window;
+				// eslint-disable-next-line camelcase
+				window.$happy_dom = happyDom;
+				try {
+					this.window[PropertySymbol.evaluateScript](newCode, {
+						filename: sourceURL
+					});
+				} catch (error) {
+					(<Error>error).message =
+						`Failed to parse JavaScript in '${sourceURL}': ${(<Error>error).message}`;
+					if (
+						browserSettings.disableErrorCapturing ||
+						browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
+					) {
+						throw error;
+					} else {
+						this.window[PropertySymbol.dispatchError](<Error>error);
+					}
+				} finally {
+					delete window.$happy_dom;
+				}
 			}
-		}
+		};
 	}
 
 	/**

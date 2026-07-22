@@ -860,8 +860,8 @@ describe('HTMLScriptElement', () => {
 			const consoleOutput = window.happyDOM?.virtualConsolePrinter.readAsString() || '';
 			expect(
 				consoleOutput.startsWith(`https://localhost:8080/base/path/to/script/:1
-(function anonymous($happy_dom) {try {globalThis.test = /;} catch (error) { $happy_dom.dispatchError(error); }})
-                                                        ^
+try {globalThis.test = /;} catch (error) { $happy_dom.dispatchError(error); }
+                       ^
 
 SyntaxError: Invalid regular expression: missing /`)
 			).toBe(true);
@@ -889,8 +889,8 @@ SyntaxError: Invalid regular expression: missing /`)
 			const consoleOutput = window.happyDOM?.virtualConsolePrinter.readAsString() || '';
 			expect(
 				consoleOutput.startsWith(`https://localhost:8080/base/path/to/script/:1
-(function anonymous($happy_dom) {try {globalThis.test = /;} catch (error) { $happy_dom.dispatchError(error); }})
-                                                        ^
+try {globalThis.test = /;} catch (error) { $happy_dom.dispatchError(error); }
+                       ^
 
 SyntaxError: Invalid regular expression: missing /`)
 			).toBe(true);
@@ -913,8 +913,8 @@ SyntaxError: Invalid regular expression: missing /`)
 			const consoleOutput = window.happyDOM?.virtualConsolePrinter.readAsString() || '';
 			expect(
 				consoleOutput.startsWith(`about:blank:1
-(function anonymous($happy_dom) {try {globalThis.test = /;} catch (error) { $happy_dom.dispatchError(error); }})
-                                                        ^
+try {globalThis.test = /;} catch (error) { $happy_dom.dispatchError(error); }
+                       ^
 
 SyntaxError: Invalid regular expression: missing /`)
 			).toBe(true);
