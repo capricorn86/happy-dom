@@ -589,6 +589,12 @@ export default class HTMLParser {
 			}
 		}
 
+		// Elements in the SVG namespace can be self-closed (e.g. "/>"), which immediately closes
+		// them below without ever reaching `parseRawTextElementContent`. "/>" is ignored in the
+		// HTML namespace, so only foreign (SVG) elements are affected.
+		const isSelfClosedForeignElement =
+			isSelfClosed && this.nextElement![PropertySymbol.namespaceURI] === NamespaceURI.svg;
+
 		// Appends the new element to its parent
 		if (this.documentStructure) {
 			const { documentElement, head, body } = this.documentStructure.nodes;
@@ -597,8 +603,15 @@ export default class HTMLParser {
 
 			// Raw text elements (e.g. <script>) should be appended after the raw text has been added as content to the element.
 			// <html>, <head> and <body> are special elements with context constraints. They are already available in the document.
+			// Self-closed foreign raw text elements (e.g. "<style/>") never reach
+			// `parseRawTextElementContent` - they are closed immediately below via
+			// `isSelfClosedForeignElement` - so deferring their append to that function, as is
+			// correct for ordinary non-self-closed raw text elements, would mean they are silently
+			// never appended at all. Append them here instead.
 			if (
-				(!config || config.contentModel !== HTMLElementConfigContentModelEnum.rawText) &&
+				(!config ||
+					config.contentModel !== HTMLElementConfigContentModelEnum.rawText ||
+					isSelfClosedForeignElement) &&
 				this.nextElement !== documentElement &&
 				this.nextElement !== head &&
 				this.nextElement !== body
@@ -638,12 +651,9 @@ export default class HTMLParser {
 			}
 
 			// Check if the tag is a void element and should be closed immediately.
-			// Elements in the SVG namespace can be self-closed (e.g. "/>").
-			// "/>" will be ignored in the HTML namespace.
 			if (
 				config?.contentModel === HTMLElementConfigContentModelEnum.noDescendants ||
-				(isSelfClosed &&
-					(<Element>this.currentNode)[PropertySymbol.namespaceURI] === NamespaceURI.svg)
+				isSelfClosedForeignElement
 			) {
 				this.nodeStack.pop();
 				this.tagNameStack.pop();
