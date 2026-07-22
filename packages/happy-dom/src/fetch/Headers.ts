@@ -126,8 +126,8 @@ export default class Headers {
 		thisArg?: any
 	): void {
 		const thisArgValue = thisArg ?? this[PropertySymbol.window];
-		for (const header of Object.values(this[PropertySymbol.entries])) {
-			callback.call(thisArgValue, header.value.join(', '), header.name, this);
+		for (const name of Object.keys(this[PropertySymbol.entries]).sort()) {
+			callback.call(thisArgValue, this[PropertySymbol.entries][name].value.join(', '), name, this);
 		}
 	}
 
@@ -137,8 +137,8 @@ export default class Headers {
 	 * @returns Iterator.
 	 */
 	public *keys(): ArrayIterator<string> {
-		for (const header of Object.values(this[PropertySymbol.entries])) {
-			yield header.name;
+		for (const name of Object.keys(this[PropertySymbol.entries]).sort()) {
+			yield name;
 		}
 	}
 
@@ -148,8 +148,8 @@ export default class Headers {
 	 * @returns Iterator.
 	 */
 	public *values(): ArrayIterator<string> {
-		for (const header of Object.values(this[PropertySymbol.entries])) {
-			yield header.value.join(', ');
+		for (const name of Object.keys(this[PropertySymbol.entries]).sort()) {
+			yield this[PropertySymbol.entries][name].value.join(', ');
 		}
 	}
 
@@ -159,8 +159,8 @@ export default class Headers {
 	 * @returns Iterator.
 	 */
 	public *entries(): ArrayIterator<[string, string]> {
-		for (const header of Object.values(this[PropertySymbol.entries])) {
-			yield [header.name, header.value.join(', ')];
+		for (const name of Object.keys(this[PropertySymbol.entries]).sort()) {
+			yield [name, this[PropertySymbol.entries][name].value.join(', ')];
 		}
 	}
 
@@ -170,8 +170,8 @@ export default class Headers {
 	 * @returns Iterator.
 	 */
 	public *[Symbol.iterator](): ArrayIterator<[string, string]> {
-		for (const header of Object.values(this[PropertySymbol.entries])) {
-			yield [header.name, header.value.join(', ')];
+		for (const name of Object.keys(this[PropertySymbol.entries]).sort()) {
+			yield [name, this[PropertySymbol.entries][name].value.join(', ')];
 		}
 	}
 }

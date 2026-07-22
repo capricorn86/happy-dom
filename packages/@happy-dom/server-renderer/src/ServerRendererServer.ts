@@ -271,8 +271,8 @@ export default class ServerRendererServer {
 		response.statusCode = fetchResponse.status;
 
 		if (fetchResponse.headers.get('Content-Encoding')) {
-			response.setHeader('Content-Encoding', 'gzip');
-			response.removeHeader('Content-Length');
+			response.setHeader('content-encoding', 'gzip');
+			response.removeHeader('content-length');
 			try {
 				await Stream.pipeline(fetchResponse.body!, ZLib.createGzip(), response);
 			} catch (error) {
