@@ -26,6 +26,8 @@ import type HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElem
 import type HTMLSlotElement from '../html-slot-element/HTMLSlotElement.js';
 import NodeFactory from '../NodeFactory.js';
 import type SVGStyleElement from '../svg-style-element/SVGStyleElement.js';
+import type ProcessingInstruction from '../processing-instruction/ProcessingInstruction.js';
+import type DocumentType from '../document-type/DocumentType.js';
 
 /**
  * Node.
@@ -230,7 +232,26 @@ export default class Node extends EventTarget {
 	 * @returns Node name.
 	 */
 	public get nodeName(): string {
-		return '';
+		switch (this[PropertySymbol.nodeType]) {
+			case NodeTypeEnum.elementNode:
+				return (<Element>(<unknown>this))[PropertySymbol.tagName] ?? '';
+			case NodeTypeEnum.textNode:
+				return '#text';
+			case NodeTypeEnum.cdataSectionNode:
+				return '#cdata-section';
+			case NodeTypeEnum.processingInstructionNode:
+				return (<ProcessingInstruction>(<unknown>this))[PropertySymbol.target];
+			case NodeTypeEnum.commentNode:
+				return '#comment';
+			case NodeTypeEnum.documentNode:
+				return '#document';
+			case NodeTypeEnum.documentTypeNode:
+				return (<DocumentType>(<unknown>this)).name;
+			case NodeTypeEnum.documentFragmentNode:
+				return '#document-fragment';
+			default:
+				return '';
+		}
 	}
 
 	/**
