@@ -1020,6 +1020,20 @@ describe('Document', () => {
 		});
 	});
 
+	describe('replaceWith()', () => {
+		it('Replaces documentElement with another element.', () => {
+			const newHtml = document.createElement('html');
+			const newBody = document.createElement('body');
+			newHtml.appendChild(newBody);
+
+			const oldHtml = document.documentElement;
+			oldHtml.replaceWith(newHtml);
+
+			expect(document.documentElement).toBe(newHtml);
+			expect(oldHtml.parentNode).toBeNull();
+		});
+	});
+
 	describe('write()', () => {
 		it('Replaces the content of documentElement with new content the first time it is called and writes the body part to the body the second time.', () => {
 			const html = `
