@@ -2120,6 +2120,22 @@ describe('QuerySelector', () => {
 
 			expect(div.querySelector(`.${unicodeClassName}`)).toBe(element);
 		});
+
+		it('Throws consistently for invalid selectors that pass the quick-check regex.', () => {
+			const container = document.createElement('div');
+			// The selector '[' passes INVALID_SELECTOR_REGEXP check but fails actual CSS parsing
+			expect(() => container.querySelector('[')).toThrow(
+				new window.DOMException(
+					`Failed to execute 'querySelectorAll' on 'Element': '[' is not a valid selector.`
+				)
+			);
+			// Second call should also throw — cached null result must not suppress the error
+			expect(() => container.querySelector('[')).toThrow(
+				new window.DOMException(
+					`Failed to execute 'querySelectorAll' on 'Element': '[' is not a valid selector.`
+				)
+			);
+		});
 	});
 
 	describe('matches()', () => {
