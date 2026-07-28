@@ -264,35 +264,40 @@ export default class QuerySelector {
 			(node[PropertySymbol.ownerDocument] || node)[PropertySymbol.affectsCache].push(cachedItem);
 		}
 
-		let bestMatch: DocumentPositionAndElement | null = null;
-		const matchesMap: Map<string, boolean> = new Map();
-		const scope =
-			node[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
-				? (<Document>node).documentElement
-				: node;
+		try {
+			let bestMatch: DocumentPositionAndElement | null = null;
+			const matchesMap: Map<string, boolean> = new Map();
+			const scope =
+				node[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
+					? (<Document>node).documentElement
+					: node;
 
-		for (const selectorItems of new SelectorParser({ window, scope }).getSelectorGroups(selector)) {
-			const rootElement =
-				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode ? <Element>node : null;
-			const children =
-				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
-					? [<Element>node]
-					: (<Element>node)[PropertySymbol.elementArray];
-			const match = this.findFirst({ scope, rootElement, children, selectorItems, cachedItem });
+			for (const selectorItems of new SelectorParser({ window, scope }).getSelectorGroups(selector)) {
+				const rootElement =
+					node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode ? <Element>node : null;
+				const children =
+					node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
+						? [<Element>node]
+						: (<Element>node)[PropertySymbol.elementArray];
+				const match = this.findFirst({ scope, rootElement, children, selectorItems, cachedItem });
 
-			if (match && !matchesMap.has(match.documentPosition)) {
-				matchesMap.set(match.documentPosition, true);
-				if (!bestMatch || match.documentPosition < bestMatch.documentPosition) {
-					bestMatch = match;
+				if (match && !matchesMap.has(match.documentPosition)) {
+					matchesMap.set(match.documentPosition, true);
+					if (!bestMatch || match.documentPosition < bestMatch.documentPosition) {
+						bestMatch = match;
+					}
 				}
 			}
+
+			const element = bestMatch?.element || null;
+
+			cachedItem.result = { element: element ? new WeakRef(element) : null };
+
+			return element;
+		} catch (error) {
+			node[PropertySymbol.cache].querySelector.delete(selector);
+			throw error;
 		}
-
-		const element = bestMatch?.element || null;
-
-		cachedItem.result = { element: element ? new WeakRef(element) : null };
-
-		return element;
 	}
 
 	/**
