@@ -487,6 +487,22 @@ describe('HTMLSelectElement', () => {
 			expect(element.options[1] === option3).toBe(true);
 			expect(element.options[2] === option2).toBe(true);
 		});
+
+		it('Treats out-of-range numeric index as null (appends) per HTML spec.', () => {
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
+			const option3 = <HTMLOptionElement>document.createElement('option');
+
+			element.add(option1);
+			element.add(option2);
+			// Index 5 is out of range (> current length of 2) — should append
+			element.add(option3, 5);
+
+			expect(element.length).toBe(3);
+			expect(element[0] === option1).toBe(true);
+			expect(element[1] === option2).toBe(true);
+			expect(element[2] === option3).toBe(true);
+		});
 	});
 
 	describe(`item()`, () => {

@@ -574,6 +574,12 @@ export default class HTMLSelectElement extends HTMLElement {
 	public add(element: HTMLOptionElement, before?: number | HTMLOptionElement): void {
 		const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
 
+		// Per spec: out-of-range numeric index is treated as null (append)
+		// https://html.spec.whatwg.org/multipage/common-dom-interfaces.html#dom-htmloptionscollection-add
+		if (typeof before === 'number' && before >= options.length) {
+			before = undefined;
+		}
+
 		if (!before && before !== 0) {
 			const childNodes = this[PropertySymbol.nodeArray];
 
