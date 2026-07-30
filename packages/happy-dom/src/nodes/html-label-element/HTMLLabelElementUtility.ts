@@ -24,9 +24,11 @@ export default class HTMLLabelElementUtility {
 			const rootNode =
 				<Document | ShadowRoot>element[PropertySymbol.rootNode] ||
 				element[PropertySymbol.ownerDocument];
-			labels = <HTMLLabelElement[]>(
-				rootNode.querySelectorAll(`label[for="${id}"]`)[PropertySymbol.items]
-			);
+			labels = [
+				...(<HTMLLabelElement[]>(
+					rootNode.querySelectorAll(`label[for="${id}"]`)[PropertySymbol.items]
+				))
+			];
 		} else {
 			labels = [];
 		}
