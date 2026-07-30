@@ -288,6 +288,12 @@ describe('DetachedWindowAPI', () => {
 		});
 	});
 
+	describe('waitForNavigation()', () => {
+		it('Exposes waitForNavigation() from the browser frame.', () => {
+			expect(typeof window.happyDOM?.waitForNavigation).toBe('function');
+		});
+	});
+
 	describe('setURL()', () => {
 		it('Sets URL.', () => {
 			window.happyDOM?.setURL('https://localhost:8080');
