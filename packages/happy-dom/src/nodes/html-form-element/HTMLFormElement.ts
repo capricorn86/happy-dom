@@ -449,19 +449,18 @@ export default class HTMLFormElement extends HTMLElement {
 						PropertySymbol.defaultValue
 					];
 					break;
-				case 'SELECT':
-					let hasSelectedAttribute = false;
-					for (const option of (<HTMLSelectElement>element).options) {
-						if (option.hasAttribute('selected')) {
-							hasSelectedAttribute = true;
-							option.selected = true;
-							break;
-						}
+				case 'SELECT': {
+					const selectElement = <HTMLSelectElement>element;
+					// HTML reset algorithm for select: reset each option's selectedness to
+					// its "selected" content attribute, clear its dirtiness, then let the
+					// selectedness-setting algorithm apply display-size / disabled / last-wins.
+					for (const option of selectElement.options) {
+						option[PropertySymbol.selectedness] = option.hasAttributeNS(null, 'selected');
+						option[PropertySymbol.dirtyness] = false;
 					}
-					if (!hasSelectedAttribute && (<HTMLSelectElement>element).options.length > 0) {
-						(<HTMLSelectElement>element).options[0].selected = true;
-					}
+					selectElement[PropertySymbol.updateSelectedness]();
 					break;
+				}
 			}
 		}
 
