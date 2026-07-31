@@ -3856,6 +3856,76 @@ describe('Fetch', () => {
 			]);
 		});
 
+		it('Keeps an already-expired "Last-Modified" response in the cache so the next request revalidates it with "If-Modified-Since" (no "ETag", no "max-age").', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
+			const url = 'https://localhost:8080/some/path';
+			const responseText = 'some text';
+			const requestArgs: Array<{
+				url: string;
+				options: { method: string; headers: { [k: string]: string } };
+			}> = [];
+
+			mockModule('https', {
+				request: (url, options) => {
+					requestArgs.push({ url, options });
+
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								if (options.headers['If-Modified-Since']) {
+									const response = <HTTP.IncomingMessage>Stream.Readable.from([]);
+
+									response.statusCode = 304;
+									response.statusMessage = 'Not Modified';
+									response.headers = {};
+									response.rawHeaders = ['last-modified', 'Mon, 11 Dec 2023 02:00:00 GMT'];
+
+									callback(response);
+								} else {
+									async function* generate(): AsyncGenerator<string> {
+										yield responseText;
+									}
+
+									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+									response.statusCode = 200;
+									response.statusMessage = 'OK';
+									response.headers = {};
+									// Already stale (Expires in the past) but revalidatable via Last-Modified, no ETag, no Cache-Control.
+									response.rawHeaders = [
+										'content-type',
+										'text/html',
+										'content-length',
+										String(responseText.length),
+										'last-modified',
+										'Mon, 11 Dec 2023 01:00:00 GMT',
+										'expires',
+										'Wed, 21 Oct 2015 07:28:00 GMT'
+									];
+
+									callback(response);
+								}
+							}
+						},
+						setTimeout: () => {}
+					};
+				}
+			});
+
+			await (await window.fetch(url)).text();
+
+			const response2 = await window.fetch(url);
+			await response2.text();
+
+			expect(requestArgs.length).toBe(2);
+			expect(requestArgs[1].options.headers['If-Modified-Since']).toBe(
+				'Mon, 11 Dec 2023 01:00:00 GMT'
+			);
+			expect(response2.status).toBe(200);
+			expect(response2.headers.get('Last-Modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
+		});
+
 		it('Updates cache after a failed revalidation with a "If-Modified-Since" request for a GET response with "Cache-Control" set to a "max-age".', async () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = '/some/path';
