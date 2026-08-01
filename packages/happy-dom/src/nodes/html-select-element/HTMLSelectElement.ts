@@ -424,11 +424,11 @@ export default class HTMLSelectElement extends HTMLElement {
 		for (let i = 0, max = options.length; i < max; i++) {
 			const option = <HTMLOptionElement>options[i];
 			if (option.value === value) {
-				option[PropertySymbol.selectedness] = true;
+				option[PropertySymbol.setSelectedness](true);
 				option[PropertySymbol.dirtyness] = true;
 				this[PropertySymbol.selectedIndex] = i;
 			} else {
-				option[PropertySymbol.selectedness] = false;
+				option[PropertySymbol.setSelectedness](false);
 			}
 		}
 	}
@@ -460,12 +460,12 @@ export default class HTMLSelectElement extends HTMLElement {
 
 		if (typeof selectedIndex === 'number' && !isNaN(selectedIndex)) {
 			for (let i = 0, max = options.length; i < max; i++) {
-				(<HTMLOptionElement>options[i])[PropertySymbol.selectedness] = false;
+				(<HTMLOptionElement>options[i])[PropertySymbol.setSelectedness](false);
 			}
 
 			const selectedOption = <HTMLOptionElement>options[selectedIndex];
 			if (selectedOption) {
-				selectedOption[PropertySymbol.selectedness] = true;
+				selectedOption[PropertySymbol.setSelectedness](true);
 				selectedOption[PropertySymbol.dirtyness] = true;
 				this[PropertySymbol.selectedIndex] = selectedIndex;
 			}
@@ -712,7 +712,7 @@ export default class HTMLSelectElement extends HTMLElement {
 				const option = <HTMLOptionElement>options[i];
 
 				if (selectedOption) {
-					option[PropertySymbol.selectedness] = option === selectedOption;
+					option[PropertySymbol.setSelectedness](option === selectedOption);
 
 					if (option === selectedOption) {
 						this[PropertySymbol.selectedIndex] = i;
@@ -744,7 +744,7 @@ export default class HTMLSelectElement extends HTMLElement {
 				}
 
 				if (!disabled) {
-					option[PropertySymbol.selectedness] = true;
+					option[PropertySymbol.setSelectedness](true);
 					this[PropertySymbol.selectedIndex] = i;
 					break;
 				}
@@ -753,7 +753,7 @@ export default class HTMLSelectElement extends HTMLElement {
 			this[PropertySymbol.selectedIndex] = -1;
 
 			for (let i = 0, max = options.length; i < max; i++) {
-				(<HTMLOptionElement>options[i])[PropertySymbol.selectedness] = i === selected.length - 1;
+				(<HTMLOptionElement>options[i])[PropertySymbol.setSelectedness](i === selected.length - 1);
 
 				if (i === selected.length - 1) {
 					this[PropertySymbol.selectedIndex] = i;
