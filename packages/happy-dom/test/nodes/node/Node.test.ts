@@ -1420,4 +1420,44 @@ describe('Node', () => {
 			expect(div1.isSameNode(div2)).toBe(false);
 		});
 	});
+
+	describe('[PropertySymbol.cache]', () => {
+		it('Is not allocated until it is accessed.', () => {
+			document.body.innerHTML = '<div><span>text</span><!--comment--></div>';
+
+			const div = <HTMLElement>document.body.children[0];
+
+			// Text and comment nodes can never be the receiver of a query.
+			for (const node of div.childNodes) {
+				expect(node[PropertySymbol.cacheStore]).toBe(null);
+			}
+
+			expect(div[PropertySymbol.cacheStore]).toBe(null);
+
+			expect(div.querySelectorAll('span').length).toBe(1);
+
+			expect(div[PropertySymbol.cacheStore]?.querySelectorAll.size).toBe(1);
+		});
+
+		it('Is transferred to the new element when a custom element is upgraded.', () => {
+			document.body.innerHTML = '<custom-upgrade><div></div></custom-upgrade>';
+
+			const element = <HTMLElement>document.body.children[0];
+
+			// Populates the cache of the element created before the custom element was defined.
+			expect(element.querySelectorAll('div').length).toBe(1);
+
+			const cache = element[PropertySymbol.cache];
+
+			expect(cache.querySelectorAll.size).toBe(1);
+
+			window.customElements.define('custom-upgrade', class extends window.HTMLElement {});
+
+			const upgradedElement = <HTMLElement>document.body.children[0];
+
+			expect(upgradedElement === element).toBe(false);
+			expect(upgradedElement[PropertySymbol.cache] === cache).toBe(true);
+			expect(element[PropertySymbol.cache].querySelectorAll.size).toBe(0);
+		});
+	});
 });

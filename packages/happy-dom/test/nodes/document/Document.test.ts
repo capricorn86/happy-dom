@@ -1125,6 +1125,22 @@ describe('Document', () => {
 				html.replace(/[\s]/gm, '')
 			);
 		});
+
+		it('Removes event listeners.', () => {
+			let count = 0;
+
+			document.addEventListener('click', () => count++);
+			document.open();
+			document.dispatchEvent(new Event('click'));
+
+			expect(count).toBe(0);
+		});
+
+		it('Does not allocate the listeners of a document that has none.', () => {
+			document.open();
+
+			expect(document[PropertySymbol.listenersStore]).toBe(null);
+		});
 	});
 
 	describe('close()', () => {
