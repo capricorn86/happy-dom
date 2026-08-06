@@ -1958,9 +1958,15 @@ export default class Document extends Node {
 					options && options.is ? String(options.is) : qualifiedName
 				);
 
+				const isXMLDocument =
+					this[PropertySymbol.contentType] === 'application/xml' ||
+					this[PropertySymbol.contentType] === 'text/xml';
+
 				if (customElementDefinition) {
 					const element = new customElementDefinition.elementClass();
-					element[PropertySymbol.tagName] = StringUtility.asciiUpperCase(qualifiedName);
+					element[PropertySymbol.tagName] = isXMLDocument
+						? qualifiedName
+						: StringUtility.asciiUpperCase(qualifiedName);
 					element[PropertySymbol.localName] = localName;
 					element[PropertySymbol.prefix] = prefix;
 					element[PropertySymbol.namespaceURI] = namespaceURI;
@@ -1976,7 +1982,9 @@ export default class Document extends Node {
 				if (elementClass) {
 					const element = NodeFactory.createNode<Element>(this, elementClass);
 
-					element[PropertySymbol.tagName] = StringUtility.asciiUpperCase(qualifiedName);
+					element[PropertySymbol.tagName] = isXMLDocument
+						? qualifiedName
+						: StringUtility.asciiUpperCase(qualifiedName);
 					element[PropertySymbol.localName] = localName;
 					element[PropertySymbol.prefix] = prefix;
 					element[PropertySymbol.namespaceURI] = namespaceURI;
@@ -1992,7 +2000,9 @@ export default class Document extends Node {
 
 				const unknownElement = NodeFactory.createNode<Element>(this, unknownElementClass);
 
-				unknownElement[PropertySymbol.tagName] = StringUtility.asciiUpperCase(qualifiedName);
+				unknownElement[PropertySymbol.tagName] = isXMLDocument
+					? qualifiedName
+					: StringUtility.asciiUpperCase(qualifiedName);
 				unknownElement[PropertySymbol.localName] = localName;
 				unknownElement[PropertySymbol.prefix] = prefix;
 				unknownElement[PropertySymbol.namespaceURI] = namespaceURI;
