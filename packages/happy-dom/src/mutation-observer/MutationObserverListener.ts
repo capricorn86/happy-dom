@@ -12,13 +12,13 @@ export default class MutationObserverListener {
 	public target: Node;
 	public options: IMutationObserverInit;
 	public mutationListener: IMutationListener;
+	public reportCallback: (record: MutationRecord) => void;
 	#window: BrowserWindow;
 	#observer: MutationObserver;
 	#callback: (record: MutationRecord[], observer: MutationObserver) => void;
 	#records: MutationRecord[] = [];
 	#destroyed = false;
 	#microtaskQueued = false;
-	#listenerCallback: (record: MutationRecord) => void;
 
 	/**
 	 * Constructor.
@@ -39,10 +39,10 @@ export default class MutationObserverListener {
 	}) {
 		this.options = init.options;
 		this.target = init.target;
-		this.#listenerCallback = (record: MutationRecord) => this.report(record);
+		this.reportCallback = (record: MutationRecord) => this.report(record);
 		this.mutationListener = {
 			options: init.options,
-			callback: new WeakRef(this.#listenerCallback)
+			callback: new WeakRef(this.reportCallback)
 		};
 		this.#window = init.window;
 		this.#observer = init.observer;
@@ -105,7 +105,7 @@ export default class MutationObserverListener {
 		this.#destroyed = true;
 		this.options = null!;
 		this.target = null!;
-		this.#listenerCallback = null!;
+		this.reportCallback = null!;
 		this.mutationListener = null!;
 		this.#window = null!;
 		this.#observer = null!;
