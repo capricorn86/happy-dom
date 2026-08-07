@@ -533,6 +533,18 @@ describe('Document', () => {
 		});
 	});
 
+	describe('get compatMode()', () => {
+		it('Returns "CSS1Compat" when document has a doctype.', () => {
+			document.write('<!DOCTYPE html>');
+			expect(document.compatMode).toBe('CSS1Compat');
+		});
+
+		it('Returns "BackCompat" when document has no doctype.', () => {
+			const window = new Window();
+			expect(window.document.compatMode).toBe('BackCompat');
+		});
+	});
+
 	describe('get styleSheets()', () => {
 		it('Returns all stylesheets loaded to the document.', async () => {
 			await new Promise((resolve) => {

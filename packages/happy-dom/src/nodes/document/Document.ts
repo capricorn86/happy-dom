@@ -1301,6 +1301,23 @@ export default class Document extends Node {
 	}
 
 	/**
+	 * Returns "CSS1Compat" for standards mode or "BackCompat" for quirks mode.
+	 *
+	 * @returns Compat mode.
+	 */
+	public get compatMode(): string {
+		if (this[PropertySymbol.contentType] === 'application/xml') {
+			return 'CSS1Compat';
+		}
+		for (const node of this[PropertySymbol.nodeArray]) {
+			if (node instanceof DocumentType) {
+				return 'CSS1Compat';
+			}
+		}
+		return 'BackCompat';
+	}
+
+	/**
 	 * Returns <body> element.
 	 *
 	 * @returns Element.
