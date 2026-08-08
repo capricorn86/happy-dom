@@ -429,10 +429,32 @@ export default class CSSStyleDeclarationValueParser {
 	 * @returns Parsed value.
 	 */
 	public static getVariable(value: string): string | null {
+		// Fast path: simple var(--name) without fallback
 		const cssVariableMatch = value.match(CSS_VARIABLE_REGEXP);
 		if (cssVariableMatch) {
 			return `var(${cssVariableMatch[1]})`;
 		}
+
+		// Slow path: var() with fallback or nested parens in value (e.g. var(--x, 10px), var(--x, rgb(0,0,0)))
+		if (value.startsWith('var(')) {
+			let depth = 0;
+			for (let i = 0; i < value.length; i++) {
+				if (value[i] === '(') {
+					depth++;
+				} else if (value[i] === ')') {
+					depth--;
+					if (depth === 0) {
+						// Verify there's a valid variable name between 'var(' and ',' or ')'
+						const inner = value.slice(4, i);
+						if (/^\s*--[^),]/.test(inner)) {
+							return value.slice(0, i + 1);
+						}
+						return null;
+					}
+				}
+			}
+		}
+
 		return null;
 	}
 

@@ -3112,6 +3112,25 @@ describe('CSSStyleDeclaration', () => {
 				}).getPropertyValue('--test-key')
 			).toBe('value');
 		});
+		it('Preserves var() with fallback value in a CSS property.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			declaration.setProperty('width', 'var(--x, 10px)');
+
+			expect(declaration.getPropertyValue('width')).toBe('var(--x, 10px)');
+		});
+
+		it('Preserves var() with nested fallback value (e.g. rgb()) in a CSS property.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			declaration.setProperty('color', 'var(--primary, rgb(255, 0, 0))');
+
+			expect(declaration.getPropertyValue('color')).toBe('var(--primary, rgb(255, 0, 0))');
+		});
 	});
 
 	describe('removeProperty()', () => {
