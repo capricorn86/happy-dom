@@ -380,6 +380,10 @@ export default class SyncFetch {
 			return true;
 		}
 
+		if (!FetchCORSUtility.isPreflightRequired(this.request)) {
+			return true;
+		}
+
 		const cachedPreflightResponse = this.#browserFrame.page.context.preflightResponseCache.get(
 			this.request
 		);
@@ -467,6 +471,29 @@ export default class SyncFetch {
 	}
 
 	/**
+	 * Checks if the response complies with the Cross-Origin policy.
+	 *
+	 * Only simple requests are validated here, as requests that require a preflight have already had
+	 * their origin validated by the preflight response.
+	 *
+	 * @param responseHeaders Response headers.
+	 * @returns True if it complies with the policy.
+	 */
+	private compliesWithCrossOriginResponsePolicy(responseHeaders: Headers): boolean {
+		if (
+			this.disableSameOriginPolicy ||
+			!FetchCORSUtility.isCORS(this.#window.location.href, this.request[PropertySymbol.url]) ||
+			FetchCORSUtility.isPreflightRequired(this.request)
+		) {
+			return true;
+		}
+
+		const allowOrigin = responseHeaders.get('Access-Control-Allow-Origin');
+
+		return allowOrigin === '*' || allowOrigin === this.#window.location.origin;
+	}
+
+	/**
 	 * Sends request.
 	 *
 	 * @returns Response.
@@ -535,7 +562,24 @@ export default class SyncFetch {
 			})
 		};
 
-		const redirectedResponse = this.handleRedirectResponse(response) || response;
+		const followedRedirectResponse = this.handleRedirectResponse(response);
+
+		// A redirect that was followed has already been validated by the SyncFetch instance that
+		// performed it, so only responses read directly off the wire are validated here.
+		if (
+			!followedRedirectResponse &&
+			!this.compliesWithCrossOriginResponsePolicy(response.headers)
+		) {
+			this.#window.console.warn(
+				`Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at "${this.request.url}".`
+			);
+			throw new this.#window.DOMException(
+				`Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at "${this.request.url}".`,
+				DOMExceptionNameEnum.networkError
+			);
+		}
+
+		const redirectedResponse = followedRedirectResponse || response;
 
 		if (!this.disableCache && !redirectedResponse.redirected) {
 			this.#browserFrame.page.context.responseCache.add(this.request, {
