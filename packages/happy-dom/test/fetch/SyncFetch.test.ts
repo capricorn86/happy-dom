@@ -17,6 +17,7 @@ import Path from 'path';
 import '../types.d.js';
 import { fail } from 'node:assert';
 import { PropertySymbol } from '../../src/index.js';
+import type IRequestInit from '../../src/fetch/types/IRequestInit.js';
 
 const PLATFORM =
 	'X11; ' +
@@ -927,6 +928,222 @@ describe('SyncFetch', () => {
 					body: Buffer.from(body)
 				})
 			);
+		});
+
+		it('Does not preflight a cross-origin simple GET request.', () => {
+			const originURL = 'http://localhost:8080';
+			browserFrame.url = originURL;
+			const url = 'http://other.origin.com/some/path';
+			const requestArgs: string[] = [];
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					requestArgs.push(args[1]);
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							rawHeaders: ['Access-Control-Allow-Origin', '*'],
+							data: ''
+						}
+					});
+				}
+			});
+
+			new SyncFetch({ browserFrame, window, url }).send();
+
+			expect(requestArgs).toEqual([
+				SyncFetchScriptBuilder.getScript({
+					url: new URL(url),
+					method: 'GET',
+					headers: {
+						Accept: '*/*',
+						Connection: 'close',
+						'User-Agent': window.navigator.userAgent,
+						'Accept-Encoding': 'gzip, deflate, br',
+						Origin: originURL,
+						Referer: originURL + '/'
+					}
+				})
+			]);
+		});
+
+		it.each<{
+			description: string;
+			init: IRequestInit;
+			method: string;
+		}>([
+			{ description: 'HEAD', init: { method: 'HEAD' }, method: 'HEAD' },
+			{
+				description: 'text/plain POST',
+				init: { method: 'POST', body: 'Hello world' },
+				method: 'POST'
+			},
+			{
+				description: 'application/x-www-form-urlencoded POST',
+				init: {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+					body: 'name=Happy+DOM'
+				},
+				method: 'POST'
+			},
+			{
+				description: 'multipart/form-data POST',
+				init: {
+					method: 'POST',
+					headers: { 'Content-Type': 'multipart/form-data; boundary=boundary' },
+					body: '--boundary--'
+				},
+				method: 'POST'
+			}
+		])('Does not preflight a cross-origin simple $description request.', (testCase) => {
+			browserFrame.url = 'http://localhost:8080';
+			const url = 'http://other.origin.com/some/path';
+			const requestArgs: string[] = [];
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					requestArgs.push(args[1]);
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							rawHeaders: ['Access-Control-Allow-Origin', '*'],
+							data: ''
+						}
+					});
+				}
+			});
+
+			new SyncFetch({ browserFrame, window, url, init: testCase.init }).send();
+
+			expect(requestArgs).toHaveLength(1);
+			expect(requestArgs[0]).toContain(`"method": "${testCase.method}"`);
+		});
+
+		it('Rejects a cross-origin simple GET response without Access-Control-Allow-Origin.', () => {
+			browserFrame.url = 'http://localhost:8080';
+			const url = 'http://other.origin.com/some/path';
+			const requestArgs: string[] = [];
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					requestArgs.push(args[1]);
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							rawHeaders: [],
+							data: ''
+						}
+					});
+				}
+			});
+
+			expect(() => new SyncFetch({ browserFrame, window, url }).send()).toThrow(
+				'Cross-Origin Request Blocked'
+			);
+			expect(requestArgs).toHaveLength(1);
+		});
+
+		it('Does not cache a rejected cross-origin simple GET response.', () => {
+			browserFrame.url = 'http://localhost:8080';
+			const url = 'http://other.origin.com/some/path';
+			let allowsOrigin = false;
+			const requestArgs: string[] = [];
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					requestArgs.push(args[1]);
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							rawHeaders: [
+								'Cache-Control',
+								'max-age=600',
+								...(allowsOrigin ? ['Access-Control-Allow-Origin', '*'] : [])
+							],
+							data: ''
+						}
+					});
+				}
+			});
+
+			expect(() => new SyncFetch({ browserFrame, window, url }).send()).toThrow(
+				'Cross-Origin Request Blocked'
+			);
+
+			allowsOrigin = true;
+			new SyncFetch({ browserFrame, window, url }).send();
+
+			expect(requestArgs).toHaveLength(2);
+		});
+
+		it('Allows a cross-origin simple GET request that redirects to a same-origin URL.', () => {
+			const originURL = 'http://localhost:8080';
+			browserFrame.url = originURL;
+			const url = 'http://other.origin.com/some/path';
+			const redirectURL = `${originURL}/redirected/path`;
+			const requestedURLs: string[] = [];
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					const isFirstRequest = requestedURLs.length === 0;
+					requestedURLs.push(isFirstRequest ? url : redirectURL);
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: isFirstRequest ? 302 : 200,
+							statusMessage: 'OK',
+							rawHeaders: isFirstRequest
+								? ['Location', redirectURL, 'Access-Control-Allow-Origin', '*']
+								: [],
+							data: ''
+						}
+					});
+				}
+			});
+
+			const response = new SyncFetch({ browserFrame, window, url }).send();
+
+			expect(response.status).toBe(200);
+			expect(requestedURLs).toEqual([url, redirectURL]);
+		});
+
+		it('Rejects a cross-origin simple GET request that redirects without Access-Control-Allow-Origin.', () => {
+			browserFrame.url = 'http://localhost:8080';
+			const url = 'http://other.origin.com/some/path';
+			const redirectURL = 'http://other.origin.com/redirected/path';
+			const requestedURLs: string[] = [];
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					const isFirstRequest = requestedURLs.length === 0;
+					requestedURLs.push(isFirstRequest ? url : redirectURL);
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: isFirstRequest ? 302 : 200,
+							statusMessage: 'OK',
+							rawHeaders: isFirstRequest
+								? ['Location', redirectURL, 'Access-Control-Allow-Origin', '*']
+								: [],
+							data: ''
+						}
+					});
+				}
+			});
+
+			expect(() => new SyncFetch({ browserFrame, window, url }).send()).toThrow(
+				'Cross-Origin Request Blocked'
+			);
+			expect(requestedURLs).toEqual([url, redirectURL]);
 		});
 
 		it('Allows cross-origin request if "Browser.settings.fetch.disableSameOriginPolicy" is set to "true".', async () => {
