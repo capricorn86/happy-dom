@@ -227,6 +227,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			headers.set('Authorization', 'Basic ' + authBuffer.toString('base64'));
 		}
 
+		// Replace the controller before aborting the previous request so that it is terminated silently.
+		const previousAbortController = this.#abortController;
+
 		this.#async = async;
 		this.#aborted = false;
 		this.#response = null;
@@ -241,6 +244,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		});
 
 		this.#readyState = XMLHttpRequestReadyStateEnum.opened;
+
+		previousAbortController?.abort();
 	}
 
 	/**
@@ -378,25 +383,29 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			return;
 		}
 
-		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
-		const taskID = asyncTaskManager.startTask(() => this.abort());
-
-		this.#readyState = XMLHttpRequestReadyStateEnum.loading;
-
-		this.#dispatchEvent(new Event('readystatechange'));
-		this.#dispatchEvent(new Event('loadstart'));
-
+		const abortController = this.#abortController!;
+		const isCurrent = (): boolean => this.#abortController === abortController;
+		let request = this.#request!;
 		if (body) {
-			this.#request = new window.Request(this.#request!.url, {
-				method: this.#request!.method,
-				headers: this.#request!.headers,
-				signal: this.#abortController!.signal,
-				credentials: this.#request!.credentials,
+			request = new window.Request(request.url, {
+				method: request.method,
+				headers: request.headers,
+				signal: abortController.signal,
+				credentials: request.credentials,
 				body
 			});
+			this.#request = request;
 		}
 
-		this.#abortController!.signal.addEventListener('abort', () => {
+		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
+		const taskID = asyncTaskManager.startTask(() => abortController.abort());
+
+		abortController.signal.addEventListener('abort', () => {
+			if (!isCurrent()) {
+				// Terminated by open() - stay silent, but still release the async task.
+				asyncTaskManager.endTask(taskID);
+				return;
+			}
 			this.#aborted = true;
 			this.#readyState = XMLHttpRequestReadyStateEnum.unsent;
 			this.#dispatchEvent(new Event('abort'));
@@ -405,7 +414,20 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			asyncTaskManager.endTask(taskID);
 		});
 
+		this.#readyState = XMLHttpRequestReadyStateEnum.loading;
+
+		this.#dispatchEvent(new Event('readystatechange'));
+		this.#dispatchEvent(new Event('loadstart'));
+
+		if (!isCurrent()) {
+			return;
+		}
+
 		const onError = (error: Error): void => {
+			if (!isCurrent()) {
+				// Already handled and the async task already released by the abort listener above.
+				return;
+			}
 			if (error instanceof DOMException && error.name === DOMExceptionNameEnum.abortError) {
 				if (this.#aborted) {
 					return;
@@ -424,32 +446,46 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		const fetch = new Fetch({
 			browserFrame: browserFrame,
 			window: window,
-			url: this.#request!.url,
-			init: this.#request!
+			url: request.url,
+			init: request
 		});
 
+		let response: Response;
 		try {
-			this.#response = await fetch.send();
+			response = await fetch.send();
 		} catch (error) {
 			onError(<Error>error);
 			return;
 		}
 
+		if (!isCurrent()) {
+			return;
+		}
+
+		this.#response = response;
 		this.#readyState = XMLHttpRequestReadyStateEnum.headersReceived;
 
 		this.#dispatchEvent(new Event('readystatechange'));
+		if (!isCurrent()) {
+			return;
+		}
 
-		const contentLength = this.#response.headers.get('Content-Length');
+		const contentLength = response.headers.get('Content-Length');
 		const contentLengthNumber =
 			contentLength !== null && !isNaN(Number(contentLength)) ? Number(contentLength) : null;
 		let loaded = 0;
+		let accumulatedData = Buffer.from([]);
 
-		if (this.#response.body) {
+		if (response.body) {
 			let eventError: Error;
 			try {
-				for await (const chunk of this.#response.body) {
+				for await (const chunk of response.body) {
+					if (!isCurrent()) {
+						return;
+					}
 					const chunkBuffer = typeof chunk === 'string' ? Buffer.from(chunk) : chunk;
-					this.#accumulatedData = Buffer.concat([this.#accumulatedData, chunkBuffer]);
+					accumulatedData = Buffer.concat([accumulatedData, chunkBuffer]);
+					this.#accumulatedData = accumulatedData;
 					loaded += chunk.length;
 					// We need to re-throw the error as we don't want it to be caught by the try/catch.
 					try {
@@ -474,14 +510,18 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			}
 		}
 
+		if (!isCurrent()) {
+			return;
+		}
+
 		this.#responseBody = XMLHttpRequestResponseDataParser.parse({
 			window: window,
 			responseType: this.#responseType,
-			data: this.#accumulatedData,
+			data: accumulatedData,
 			contentType:
 				this.#overriddenMimeType ||
-				this.#response.headers.get('Content-Type') ||
-				this.#request!.headers.get('Content-Type')
+				response.headers.get('Content-Type') ||
+				request.headers.get('Content-Type')
 		});
 		this.#readyState = XMLHttpRequestReadyStateEnum.done;
 		this.#accumulatedData = Buffer.from([]);
