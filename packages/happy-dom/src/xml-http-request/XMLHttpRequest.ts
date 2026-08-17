@@ -56,6 +56,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	#accumulatedData: Buffer = Buffer.from([]);
 	#readyState: XMLHttpRequestReadyStateEnum = XMLHttpRequestReadyStateEnum.unsent;
 	#overriddenMimeType: string | null = null;
+	#uploadComplete = true;
+	#uploadListener = false;
+	#uploadTransmitted = 0;
 
 	/**
 	 * Constructor.
@@ -232,6 +235,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#response = null;
 		this.#responseBody = null;
 		this.#accumulatedData = Buffer.from([]);
+		this.#uploadComplete = true;
+		this.#uploadListener = false;
+		this.#uploadTransmitted = 0;
 		this.#abortController = new window.AbortController();
 		this.#request = new window.Request(url, {
 			method,
@@ -315,6 +321,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			);
 		}
 
+		if (this.#request!.method === 'GET' || this.#request!.method === 'HEAD') {
+			body = undefined;
+		}
+
 		// When body is a Document, serialize it to a string.
 		if (
 			typeof body === 'object' &&
@@ -381,12 +391,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		const asyncTaskManager = browserFrame[PropertySymbol.asyncTaskManager];
 		const taskID = asyncTaskManager.startTask(() => this.abort());
 
-		this.#readyState = XMLHttpRequestReadyStateEnum.loading;
-
-		this.#dispatchEvent(new Event('readystatechange'));
-		this.#dispatchEvent(new Event('loadstart'));
-
-		if (body) {
+		if (body !== undefined && body !== null) {
 			this.#request = new window.Request(this.#request!.url, {
 				method: this.#request!.method,
 				headers: this.#request!.headers,
@@ -396,9 +401,16 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			});
 		}
 
+		const requestBodyLength = this.#request![PropertySymbol.contentLength] ?? 0;
+
+		// The upload listener flag is captured here, as listeners registered after send() must not be notified.
+		this.#uploadComplete = this.#request![PropertySymbol.body] === null;
+		this.#uploadListener = this.#hasUploadListeners();
+
 		this.#abortController!.signal.addEventListener('abort', () => {
 			this.#aborted = true;
 			this.#readyState = XMLHttpRequestReadyStateEnum.unsent;
+			this.#dispatchUploadRequestError('abort');
 			this.#dispatchEvent(new Event('abort'));
 			this.#dispatchEvent(new Event('loadend'));
 			this.#dispatchEvent(new Event('readystatechange'));
@@ -411,9 +423,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 					return;
 				}
 				this.#readyState = XMLHttpRequestReadyStateEnum.unsent;
+				this.#dispatchUploadRequestError('abort');
 				this.#dispatchEvent(new Event('abort'));
 			} else {
 				this.#readyState = XMLHttpRequestReadyStateEnum.done;
+				this.#dispatchUploadRequestError('error');
 				this.#dispatchEvent(new ErrorEvent('error', { error, message: error.message }));
 			}
 			this.#dispatchEvent(new Event('loadend'));
@@ -421,17 +435,66 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			asyncTaskManager.endTask(taskID);
 		};
 
+		this.#readyState = XMLHttpRequestReadyStateEnum.loading;
+
+		this.#dispatchEvent(new Event('readystatechange'));
+		this.#dispatchEvent(new Event('loadstart'));
+
+		if (this.#aborted) {
+			return;
+		}
+
+		if (!this.#uploadComplete && this.#uploadListener) {
+			this.#dispatchEvent(
+				new ProgressEvent('loadstart', {
+					lengthComputable: requestBodyLength !== 0,
+					loaded: 0,
+					total: requestBodyLength
+				}),
+				this.upload
+			);
+		}
+
+		if (this.#aborted) {
+			return;
+		}
+
+		const reportsUploadProgress = !this.#uploadComplete && this.#uploadListener;
+
 		const fetch = new Fetch({
 			browserFrame: browserFrame,
 			window: window,
 			url: this.#request!.url,
-			init: this.#request!
+			init: this.#request!,
+			onRequestProgress: reportsUploadProgress
+				? (transmitted: number) => {
+						if (this.#uploadComplete) {
+							return;
+						}
+						this.#uploadTransmitted = transmitted;
+						this.#dispatchEvent(
+							new ProgressEvent('progress', {
+								lengthComputable: requestBodyLength !== 0,
+								loaded: transmitted,
+								total: requestBodyLength
+							}),
+							this.upload
+						);
+					}
+				: undefined,
+			onRequestEnd: reportsUploadProgress
+				? (transmitted: number) => this.#dispatchUploadComplete(requestBodyLength, transmitted)
+				: undefined
 		});
 
 		try {
 			this.#response = await fetch.send();
 		} catch (error) {
 			onError(<Error>error);
+			return;
+		}
+
+		if (this.#aborted) {
 			return;
 		}
 
@@ -557,13 +620,88 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Returns "true" if the upload object had any event listener registered when send() was called.
+	 *
+	 * @returns "true" if the upload object has listeners.
+	 */
+	#hasUploadListeners(): boolean {
+		for (const listener of this.upload[PropertySymbol.propertyEventListeners].values()) {
+			if (listener) {
+				return true;
+			}
+		}
+		for (const listeners of this.upload[PropertySymbol.listeners].bubbling.values()) {
+			if (listeners.length > 0) {
+				return true;
+			}
+		}
+		for (const listeners of this.upload[PropertySymbol.listeners].capturing.values()) {
+			if (listeners.length > 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Dispatches the events indicating that the request body has been fully transmitted.
+	 *
+	 * @param requestBodyLength Length of the request body.
+	 * @param transmitted Number of transmitted bytes.
+	 */
+	#dispatchUploadComplete(requestBodyLength: number, transmitted: number): void {
+		if (this.#uploadComplete) {
+			return;
+		}
+
+		this.#uploadComplete = true;
+
+		if (!this.#uploadListener) {
+			return;
+		}
+
+		this.#uploadTransmitted = transmitted;
+
+		const eventInit = {
+			lengthComputable: requestBodyLength !== 0,
+			loaded: this.#uploadTransmitted,
+			total: requestBodyLength
+		};
+
+		this.#dispatchEvent(new ProgressEvent('progress', eventInit), this.upload);
+		this.#dispatchEvent(new ProgressEvent('load', eventInit), this.upload);
+		this.#dispatchEvent(new ProgressEvent('loadend', eventInit), this.upload);
+	}
+
+	/**
+	 * Dispatches an abort or error event on the upload object for a request that failed mid-upload.
+	 *
+	 * @param type Event type.
+	 */
+	#dispatchUploadRequestError(type: string): void {
+		if (this.#uploadComplete) {
+			return;
+		}
+
+		this.#uploadComplete = true;
+
+		if (!this.#uploadListener) {
+			return;
+		}
+
+		this.#dispatchEvent(new ProgressEvent(type), this.upload);
+		this.#dispatchEvent(new ProgressEvent('loadend'), this.upload);
+	}
+
+	/**
 	 * Dispatches an event with try/catch.
 	 *
 	 * This is necessary to prevent errors from setting XMLHttpRequest in an invalid state.
 	 *
 	 * @param event Event.
+	 * @param [target] Target to dispatch the event at. Defaults to the XMLHttpRequest object.
 	 */
-	#dispatchEvent(event: Event): void {
+	#dispatchEvent(event: Event, target: XMLHttpRequestEventTarget = this): void {
 		const browserFrame = new WindowBrowserContext(this[PropertySymbol.window]).getBrowserFrame();
 		if (!browserFrame?.page?.context?.browser?.settings?.errorCapture) {
 			return;
@@ -571,7 +709,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		const settings = browserFrame.page.context.browser.settings;
 		const errorCapture = settings.errorCapture;
 		settings.errorCapture = BrowserErrorCaptureEnum.tryAndCatch;
-		this.dispatchEvent(event);
+		target.dispatchEvent(event);
 		settings.errorCapture = errorCapture;
 	}
 }

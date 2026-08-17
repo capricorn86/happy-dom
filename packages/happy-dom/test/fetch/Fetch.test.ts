@@ -20,6 +20,8 @@ import FetchHTTPSCertificate from '../../src/fetch/certificate/FetchHTTPSCertifi
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import { fail } from 'assert';
 import Browser from '../../src/browser/Browser.js';
+import Fetch from '../../src/fetch/Fetch.js';
+import WindowBrowserContext from '../../src/window/WindowBrowserContext.js';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -100,6 +102,51 @@ describe('Fetch', () => {
 	});
 
 	describe('send()', () => {
+		it('Reports request body progress in chunks and signals the end of the upload.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
+			const body = 'x'.repeat(65536 * 2 + 1);
+			const progress: number[] = [];
+			let requestEnd = 0;
+
+			mockModule('https', {
+				request: () => {
+					const nodeRequest = new Stream.Writable({
+						write(_chunk, _encoding, callback) {
+							callback();
+						}
+					});
+					(<ClientRequest>nodeRequest).setTimeout = () => nodeRequest;
+
+					nodeRequest.on('finish', () => {
+						const response = <HTTP.IncomingMessage>Stream.Readable.from([]);
+						response.statusCode = 200;
+						response.statusMessage = 'OK';
+						response.headers = {};
+						response.rawHeaders = [];
+						nodeRequest.emit('response', response);
+					});
+
+					return nodeRequest;
+				}
+			});
+
+			const fetch = new Fetch({
+				browserFrame: new WindowBrowserContext(window).getBrowserFrame()!,
+				window,
+				url: '/upload',
+				init: { method: 'POST', body },
+				onRequestProgress: (transmitted) => progress.push(transmitted),
+				onRequestEnd: (transmitted) => {
+					requestEnd = transmitted;
+				}
+			});
+
+			await fetch.send();
+
+			expect(progress).toEqual([65536, 65536 * 2, body.length]);
+			expect(requestEnd).toBe(body.length);
+		});
+
 		it('Rejects with error if url is protocol relative.', async () => {
 			const window = new Window();
 			const url = '//example.com/';
