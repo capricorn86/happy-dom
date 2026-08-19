@@ -37,6 +37,7 @@ import type ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 import type SVGElement from '../svg-element/SVGElement.js';
 import type HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import type HTMLAnchorElement from '../html-anchor-element/HTMLAnchorElement.js';
+import type HTMLAreaElement from '../html-area-element/HTMLAreaElement.js';
 import HTMLElementConfig from '../../config/HTMLElementConfig.js';
 import type HTMLHtmlElement from '../html-html-element/HTMLHtmlElement.js';
 import type HTMLBodyElement from '../html-body-element/HTMLBodyElement.js';
@@ -75,6 +76,7 @@ export default class Document extends Node {
 	public [PropertySymbol.referrer] = '';
 	public [PropertySymbol.defaultView]: BrowserWindow | null = null;
 	public [PropertySymbol.forms]: HTMLCollection<HTMLFormElement> | null = null;
+	public [PropertySymbol.links]: HTMLCollection<HTMLAnchorElement | HTMLAreaElement> | null = null;
 	public [PropertySymbol.affectsComputedStyleCache]: ICachedComputedStyleResult[] = [];
 	public [PropertySymbol.ownerDocument]: Document = <Document>(<unknown>null);
 	public [PropertySymbol.elementIdMap]: Map<
@@ -1139,8 +1141,17 @@ export default class Document extends Node {
 	/**
 	 * Returns a collection of all area elements and a elements in a document with a value for the href attribute.
 	 */
-	public get links(): NodeList<HTMLAnchorElement | HTMLElement> {
-		return <NodeList<HTMLElement>>QuerySelector.querySelectorAll(this, 'a[href],area[href]');
+	public get links(): HTMLCollection<HTMLAnchorElement | HTMLAreaElement> {
+		if (!this[PropertySymbol.links]) {
+			this[PropertySymbol.links] = new HTMLCollection<HTMLAnchorElement | HTMLAreaElement>(
+				PropertySymbol.illegalConstructor,
+				() =>
+					<(HTMLAnchorElement | HTMLAreaElement)[]>(
+						QuerySelector.querySelectorAll(this, 'a[href],area[href]')[PropertySymbol.items]
+					)
+			);
+		}
+		return this[PropertySymbol.links];
 	}
 
 	/**
@@ -2214,6 +2225,7 @@ export default class Document extends Node {
 		this[PropertySymbol.defaultView] = null;
 		this[PropertySymbol.adoptedStyleSheets] = [];
 		this[PropertySymbol.forms] = null;
+		this[PropertySymbol.links] = null;
 		this[PropertySymbol.affectsComputedStyleCache] = [];
 		this[PropertySymbol.elementIdMap].clear();
 		this[PropertySymbol.xmlProcessingInstruction] = null;
