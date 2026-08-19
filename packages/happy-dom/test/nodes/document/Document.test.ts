@@ -244,13 +244,14 @@ describe('Document', () => {
 			document.body.appendChild(link1);
 			document.body.appendChild(link2);
 
-			let links = document.links;
+			const links = document.links;
 
+			expect(links).toBeInstanceOf(HTMLCollection);
 			expect(links.length).toBe(1);
 			expect(links[0]).toBe(link1);
 
 			link2.setAttribute('href', '');
-			links = document.links;
+			expect(document.links).toBe(links);
 			expect(links.length).toBe(2);
 			expect(links[0]).toBe(link1);
 			expect(links[1]).toBe(link2);
