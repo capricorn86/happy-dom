@@ -11,6 +11,8 @@ import CSSFontFaceRule from '../rules/CSSFontFaceRule.js';
 import SelectorParser from '../../query-selector/SelectorParser.js';
 import CSSRuleTypeEnum from '../CSSRuleTypeEnum.js';
 import CSSScopeRule from '../rules/CSSScopeRule.js';
+import CSSLayerBlockRule from '../rules/CSSLayerBlockRule.js';
+import CSSLayerStatementRule from '../rules/CSSLayerStatementRule.js';
 
 const COMMENT_REGEXP = /\/\*[\s\S]*?\*\//gm;
 
@@ -39,13 +41,76 @@ export default class CSSParser {
 		const window = parentStyleSheet[PropertySymbol.window];
 		const css = cssText.replace(COMMENT_REGEXP, '');
 		const cssRules = [];
-		const regExp = /{|}/gm;
+		const regExp = /{|}|;/gm;
 		const stack: CSSRule[] = [];
 		let parentRule: CSSRule | null = null;
 		let lastIndex = 0;
 		let match: RegExpMatchArray | null;
 
 		while ((match = regExp.exec(css))) {
+			if (match[0] === ';') {
+				// A semicolon inside a declaration block belongs to a declaration and is read
+				// when the block closes.
+				if (
+					parentRule &&
+					(parentRule.type === CSSRuleTypeEnum.styleRule ||
+						parentRule.type === CSSRuleTypeEnum.fontFaceRule ||
+						parentRule.type === CSSRuleTypeEnum.keyframeRule)
+				) {
+					continue;
+				}
+
+				const statementText = css.substring(lastIndex, match.index).trim();
+
+				// Only an at-rule ends at a semicolon. A stray semicolon stays part of the
+				// next rule's selector, which makes that selector invalid.
+				if (statementText[0] !== '@') {
+					continue;
+				}
+
+				lastIndex = match.index! + 1;
+
+				if (statementText.split(/\s+/)[0] !== '@layer') {
+					// Another statement at-rule. Its text is consumed so that it does not
+					// become part of the next rule's selector, but no rule is created for it.
+					continue;
+				}
+
+				const names = statementText
+					.slice('@layer'.length)
+					.split(',')
+					.map((name) => name.trim())
+					.filter((name) => !!name);
+
+				if (!names.length) {
+					continue;
+				}
+
+				const statementRule = new CSSLayerStatementRule(
+					PropertySymbol.illegalConstructor,
+					window,
+					this
+				);
+
+				statementRule[PropertySymbol.nameList] = names;
+				statementRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
+
+				if (parentRule) {
+					if (
+						parentRule.type === CSSRuleTypeEnum.mediaRule ||
+						parentRule.type === CSSRuleTypeEnum.containerRule ||
+						parentRule.type === CSSRuleTypeEnum.supportsRule
+					) {
+						statementRule[PropertySymbol.parentRule] = parentRule;
+						(<CSSMediaRule>parentRule).cssRules.push(statementRule);
+					}
+				} else {
+					cssRules.push(statementRule);
+				}
+
+				continue;
+			}
+
 			if (match[0] === '{') {
 				const selectorText = css.substring(lastIndex, match.index).trim();
 
@@ -213,6 +278,31 @@ export default class CSSParser {
 								cssRules.push(scopeRule);
 							}
 							parentRule = scopeRule;
+							break;
+						case '@layer':
+							const layerRule = new CSSLayerBlockRule(
+								PropertySymbol.illegalConstructor,
+								window,
+								this
+							);
+
+							layerRule[PropertySymbol.name] = ruleParameters;
+							layerRule[PropertySymbol.parentStyleSheet] = parentStyleSheet;
+
+							if (parentRule) {
+								if (
+									parentRule.type === CSSRuleTypeEnum.mediaRule ||
+									parentRule.type === CSSRuleTypeEnum.containerRule ||
+									parentRule.type === CSSRuleTypeEnum.supportsRule
+								) {
+									layerRule[PropertySymbol.parentRule] = parentRule;
+									(<CSSMediaRule>parentRule).cssRules.push(layerRule);
+								}
+							} else {
+								cssRules.push(layerRule);
+							}
+
+							parentRule = layerRule;
 							break;
 						default:
 							// Unknown rule.

@@ -32,6 +32,8 @@ import CSSGroupingRule from './css/rules/CSSGroupingRule.js';
 import CSSKeyframeRule from './css/rules/CSSKeyframeRule.js';
 import CSSKeyframesRule from './css/rules/CSSKeyframesRule.js';
 import CSSMediaRule from './css/rules/CSSMediaRule.js';
+import CSSLayerBlockRule from './css/rules/CSSLayerBlockRule.js';
+import CSSLayerStatementRule from './css/rules/CSSLayerStatementRule.js';
 import CSSScopeRule from './css/rules/CSSScopeRule.js';
 import CSSStyleRule from './css/rules/CSSStyleRule.js';
 import CSSSupportsRule from './css/rules/CSSSupportsRule.js';
@@ -312,6 +314,8 @@ export {
 	CSSKeywordValue,
 	CSSMediaRule,
 	CSSRule,
+	CSSLayerBlockRule,
+	CSSLayerStatementRule,
 	CSSScopeRule,
 	CSSStyleDeclaration,
 	CSSStyleRule,

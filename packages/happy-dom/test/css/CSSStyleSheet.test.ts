@@ -29,6 +29,18 @@ describe('CSSStyleSheet', () => {
 			expect(cssStyleSheet.insertRule('span { background-color: green }')).toBe(1);
 		});
 
+		it('Inserts a cascade layer block rule.', () => {
+			expect(cssStyleSheet.insertRule('@layer base { div { background-color: green } }')).toBe(0);
+			expect(cssStyleSheet.cssRules[0].cssText).toBe(
+				'@layer base {\n  div { background-color: green; }\n}'
+			);
+		});
+
+		it('Inserts a cascade layer statement rule.', () => {
+			expect(cssStyleSheet.insertRule('@layer base, theme;')).toBe(0);
+			expect(cssStyleSheet.cssRules[0].cssText).toBe('@layer base, theme;');
+		});
+
 		it('Throws an error when there are 0 arguments.', () => {
 			expect(() => {
 				// @ts-expect-error

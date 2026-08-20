@@ -1492,6 +1492,152 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.color).toBe('green');
 		});
 
+		it('Handles CSS in a cascade layer (@layer).', () => {
+			const div = document.createElement('div');
+			const style = document.createElement('style');
+
+			style.textContent = `
+              @layer base {
+                div {
+                  color: red;
+                }
+              }
+            `;
+
+			document.head.appendChild(style);
+			document.body.appendChild(div);
+
+			expect(window.getComputedStyle(div).color).toBe('red');
+		});
+
+		it('Handles an unlayered rule taking precedence over a layered rule (@layer).', () => {
+			const div = document.createElement('div');
+			const style = document.createElement('style');
+
+			style.textContent = `
+              div {
+                color: green;
+              }
+
+              @layer base {
+                div.class1 {
+                  color: red;
+                }
+              }
+            `;
+
+			div.className = 'class1';
+
+			document.head.appendChild(style);
+			document.body.appendChild(div);
+
+			expect(window.getComputedStyle(div).color).toBe('green');
+		});
+
+		it('Handles the order that cascade layers are declared in (@layer).', () => {
+			const div = document.createElement('div');
+			const style = document.createElement('style');
+
+			style.textContent = `
+              @layer base {
+                div.class1 {
+                  color: red;
+                }
+              }
+
+              @layer theme {
+                div {
+                  color: green;
+                }
+              }
+            `;
+
+			div.className = 'class1';
+
+			document.head.appendChild(style);
+			document.body.appendChild(div);
+
+			expect(window.getComputedStyle(div).color).toBe('green');
+		});
+
+		it('Handles cascade layers declared by a statement rule (@layer).', () => {
+			const div = document.createElement('div');
+			const style = document.createElement('style');
+
+			style.textContent = `
+              @layer theme, base;
+
+              @layer base {
+                div {
+                  color: red;
+                }
+              }
+
+              @layer theme {
+                div {
+                  color: green;
+                }
+              }
+            `;
+
+			document.head.appendChild(style);
+			document.body.appendChild(div);
+
+			expect(window.getComputedStyle(div).color).toBe('red');
+		});
+
+		it('Handles a cascade layer taking precedence over its own sublayer (@layer).', () => {
+			const div = document.createElement('div');
+			const style = document.createElement('style');
+
+			style.textContent = `
+              @layer base {
+                div {
+                  color: green;
+                }
+
+                @layer reset {
+                  div.class1 {
+                    color: red;
+                  }
+                }
+              }
+            `;
+
+			div.className = 'class1';
+
+			document.head.appendChild(style);
+			document.body.appendChild(div);
+
+			expect(window.getComputedStyle(div).color).toBe('green');
+		});
+
+		it('Handles "!important" reversing the cascade layer order (@layer).', () => {
+			const div = document.createElement('div');
+			const style = document.createElement('style');
+
+			style.textContent = `
+              @layer base {
+                div {
+                  color: green !important;
+                }
+              }
+
+              @layer theme {
+                div.class1 {
+                  color: red !important;
+                }
+              }
+            `;
+
+			div.className = 'class1';
+
+			document.head.appendChild(style);
+			document.body.appendChild(div);
+
+			expect(window.getComputedStyle(div).color).toBe('green');
+		});
+
 		for (const measurement of [
 			{ value: '100vw', result: '1024px' },
 			{ value: '100vh', result: '768px' },

@@ -20,6 +20,8 @@ import MediaQueryList from '../../../match-media/MediaQueryList.js';
 import WindowBrowserContext from '../../../window/WindowBrowserContext.js';
 import type CSSSupportsRule from '../../rules/CSSSupportsRule.js';
 import CSSScopeRule from '../../rules/CSSScopeRule.js';
+import CSSLayerBlockRule from '../../rules/CSSLayerBlockRule.js';
+import CSSLayerStatementRule from '../../rules/CSSLayerStatementRule.js';
 import type CSSStyleSheet from '../../CSSStyleSheet.js';
 
 const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
@@ -27,9 +29,14 @@ const HOST_REGEXP = /:host\s*\(([^)]+)\)|:host-context\s*\(([^)]+)\)/;
 const SINGLE_CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+)\)/;
 const CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+), *([^), ]+)\)/;
 
+type ICascadeLayer = {
+	children: Map<string, ICascadeLayer>;
+	index: number;
+};
+
 type IStyleAndElement = {
 	element: Element | ShadowRoot | Document | null;
-	cssTexts: Array<{ cssText: string; priorityWeight: number }>;
+	cssTexts: Array<{ cssText: string; priorityWeight: number; layer: ICascadeLayer }>;
 };
 
 /**
@@ -37,6 +44,13 @@ type IStyleAndElement = {
  */
 export default class CSSStyleDeclarationComputedStyle {
 	private element: Element;
+
+	// Root of the cascade layer tree. Its children are the layers in the order they are
+	// first declared, and it holds the unlayered rules itself, which is why it is numbered
+	// last: the rules of a layer rank before the rules of its parent.
+	private layerRoot: ICascadeLayer = { children: new Map(), index: 0 };
+	private anonymousLayers: WeakMap<CSSLayerBlockRule, ICascadeLayer> = new WeakMap();
+	private anonymousLayerCount: number = 0;
 
 	/**
 	 * Constructor.
@@ -157,6 +171,8 @@ export default class CSSStyleDeclarationComputedStyle {
 			}
 		}
 
+		this.assignLayerIndexes(this.layerRoot, 0);
+
 		// Concatenates all parent element CSS to one string.
 		const targetElement = parentElements[parentElements.length - 1];
 		const propertyManager = new CSSStyleDeclarationPropertyManager();
@@ -165,7 +181,9 @@ export default class CSSStyleDeclarationComputedStyle {
 		let parentFontSize: string | number = 16;
 
 		for (const parentElement of parentElements) {
-			parentElement.cssTexts.sort((a, b) => a.priorityWeight - b.priorityWeight);
+			parentElement.cssTexts.sort(
+				(a, b) => a.layer.index - b.layer.index || a.priorityWeight - b.priorityWeight
+			);
 
 			const defaultCSS = (<any>CSSStyleDeclarationElementDefaultCSS)[
 				(<Element>parentElement.element)[PropertySymbol.tagName]!
@@ -198,6 +216,36 @@ export default class CSSStyleDeclarationComputedStyle {
 			const rules = rulesAndProperties.rules;
 
 			Object.assign(cssProperties, rulesAndProperties.properties);
+
+			// An important declaration in an earlier layer beats one in a later layer, which
+			// is the opposite of the order the rules above were applied in. The important
+			// declarations are therefore applied a second time in the opposite layer order.
+			// The style attribute is appended again as it outranks every author rule.
+			const importantCSSTexts = parentElement.cssTexts.filter((cssText) =>
+				cssText.cssText.includes('!important')
+			);
+
+			if (importantCSSTexts.length > 1) {
+				importantCSSTexts.sort(
+					(a, b) => b.layer.index - a.layer.index || a.priorityWeight - b.priorityWeight
+				);
+
+				let importantCSSText = '';
+
+				for (const cssText of importantCSSTexts) {
+					importantCSSText += cssText.cssText;
+				}
+
+				if (elementStyleAttribute) {
+					importantCSSText += elementStyleAttribute;
+				}
+
+				for (const rule of CSSStyleDeclarationCSSParser.parse(importantCSSText).rules) {
+					if (rule.important) {
+						rules.push(rule);
+					}
+				}
+			}
 
 			for (const { name, value, important } of rules) {
 				if (
@@ -293,12 +341,14 @@ export default class CSSStyleDeclarationComputedStyle {
 	 * @param options.cssRules CSS rules.
 	 * @param [options.hostElement] Host element.
 	 * @param [options.scopeElement] Scope element.
+	 * @param [options.layer] Cascade layer the rules belong to.
 	 */
 	private parseCSSRules(options: {
 		cssRules: CSSRule[];
 		elements: IStyleAndElement[];
 		hostElement?: IStyleAndElement | null;
 		scopeElement?: IStyleAndElement | null;
+		layer?: ICascadeLayer | null;
 	}): void {
 		if (!options.hostElement && !options.elements.length) {
 			return;
@@ -343,7 +393,8 @@ export default class CSSStyleDeclarationComputedStyle {
 												if (match) {
 													element.cssTexts.push({
 														cssText: (<CSSStyleRule>rule)[PropertySymbol.cssText],
-														priorityWeight: 10 + match.priorityWeight
+														priorityWeight: 10 + match.priorityWeight,
+														layer: options.layer || this.layerRoot
 													});
 												}
 											}
@@ -357,7 +408,8 @@ export default class CSSStyleDeclarationComputedStyle {
 							if (isTargetHost) {
 								options.hostElement.cssTexts.push({
 									cssText: (<CSSStyleRule>rule)[PropertySymbol.cssText],
-									priorityWeight: 10
+									priorityWeight: 10,
+									layer: options.layer || this.layerRoot
 								});
 							}
 						}
@@ -370,7 +422,8 @@ export default class CSSStyleDeclarationComputedStyle {
 							if (match) {
 								element.cssTexts.push({
 									cssText: (<CSSStyleRule>rule)[PropertySymbol.cssText],
-									priorityWeight: match.priorityWeight
+									priorityWeight: match.priorityWeight,
+									layer: options.layer || this.layerRoot
 								});
 							}
 						}
@@ -389,7 +442,8 @@ export default class CSSStyleDeclarationComputedStyle {
 					elements: options.elements,
 					cssRules: (<CSSMediaRule>rule).cssRules,
 					hostElement: options.hostElement,
-					scopeElement: options.scopeElement
+					scopeElement: options.scopeElement,
+					layer: options.layer
 				});
 			} else if (rule.type === CSSRuleTypeEnum.supportsRule) {
 				if (window.CSS.supports((<CSSSupportsRule>rule).conditionText)) {
@@ -397,11 +451,27 @@ export default class CSSStyleDeclarationComputedStyle {
 						elements: options.elements,
 						cssRules: (<CSSSupportsRule>rule).cssRules,
 						hostElement: options.hostElement,
-						scopeElement: options.scopeElement
+						scopeElement: options.scopeElement,
+						layer: options.layer
 					});
 				}
 			} else if (rule.type === CSSRuleTypeEnum.containerRule) {
-				if (rule instanceof CSSScopeRule) {
+				if (rule instanceof CSSLayerStatementRule) {
+					// The statement only declares layers, which fixes their place in the order.
+					for (const name of rule.nameList) {
+						this.registerLayer(options.layer || this.layerRoot, name);
+					}
+				} else if (rule instanceof CSSLayerBlockRule) {
+					this.parseCSSRules({
+						elements: options.elements,
+						cssRules: rule.cssRules,
+						hostElement: options.hostElement,
+						scopeElement: options.scopeElement,
+						layer: rule.name
+							? this.registerLayer(options.layer || this.layerRoot, rule.name)
+							: this.registerAnonymousLayer(options.layer || this.layerRoot, rule)
+					});
+				} else if (rule instanceof CSSScopeRule) {
 					const scopedElements: IStyleAndElement[] = [];
 					let scope: IStyleAndElement | null = null;
 
@@ -441,13 +511,80 @@ export default class CSSStyleDeclarationComputedStyle {
 							elements: scopedElements,
 							cssRules: (<CSSScopeRule>rule).cssRules,
 							hostElement: options.hostElement,
-							scopeElement: scope
+							scopeElement: scope,
+							layer: options.layer
 						});
 					}
 				}
 				// TODO: Add support for CSSContainerRule, which would require element sizes to be measured.
 			}
 		}
+	}
+
+	/**
+	 * Returns the layer a name refers to, creating it in declaration order if it is new.
+	 *
+	 * @param parent Parent layer.
+	 * @param name Layer name, which may be a path (e.g. "framework.base").
+	 * @returns Layer.
+	 */
+	private registerLayer(parent: ICascadeLayer, name: string): ICascadeLayer {
+		let layer = parent;
+
+		for (const part of name.split('.')) {
+			let child = layer.children.get(part);
+
+			if (!child) {
+				child = { children: new Map(), index: 0 };
+				layer.children.set(part, child);
+			}
+
+			layer = child;
+		}
+
+		return layer;
+	}
+
+	/**
+	 * Returns the layer an unnamed block refers to. Each block is a layer of its own that
+	 * nothing can refer to, so it is keyed by the rule rather than by a name.
+	 *
+	 * @param parent Parent layer.
+	 * @param rule Layer block rule.
+	 * @returns Layer.
+	 */
+	private registerAnonymousLayer(parent: ICascadeLayer, rule: CSSLayerBlockRule): ICascadeLayer {
+		let layer = this.anonymousLayers.get(rule);
+
+		if (!layer) {
+			layer = { children: new Map(), index: 0 };
+			this.anonymousLayers.set(rule, layer);
+			// A CSS identifier cannot contain a null character, so the key cannot collide
+			// with a layer name.
+			parent.children.set(`\u0000${this.anonymousLayerCount++}`, layer);
+		}
+
+		return layer;
+	}
+
+	/**
+	 * Numbers the layers in cascade order. A layer's own rules rank after the rules of its
+	 * sublayers, so a layer is numbered once its children are.
+	 *
+	 * @param layer Layer.
+	 * @param index Next index.
+	 * @returns Next index.
+	 */
+	private assignLayerIndexes(layer: ICascadeLayer, index: number): number {
+		let next = index;
+
+		for (const child of layer.children.values()) {
+			next = this.assignLayerIndexes(child, next);
+		}
+
+		layer.index = next;
+
+		return next + 1;
 	}
 
 	/**
