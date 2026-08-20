@@ -1713,20 +1713,26 @@ export default class Document extends Node {
 	public open(): Document {
 		this[PropertySymbol.isFirstWriteAfterOpen] = true;
 
-		for (const eventType of this[PropertySymbol.listeners].bubbling.keys()) {
-			const listeners = this[PropertySymbol.listeners].bubbling.get(eventType);
-			if (listeners) {
-				for (const listener of listeners) {
-					this.removeEventListener(eventType, listener);
+		// Reads the store and not the accessor, as there is nothing to remove when no listener has
+		// been added, and the accessor would allocate the listener maps just to iterate them empty.
+		const listenerStore = this[PropertySymbol.listenersStore];
+
+		if (listenerStore) {
+			for (const eventType of listenerStore.bubbling.keys()) {
+				const listeners = listenerStore.bubbling.get(eventType);
+				if (listeners) {
+					for (const listener of listeners) {
+						this.removeEventListener(eventType, listener);
+					}
 				}
 			}
-		}
 
-		for (const eventType of this[PropertySymbol.listeners].capturing.keys()) {
-			const listeners = this[PropertySymbol.listeners].capturing.get(eventType);
-			if (listeners) {
-				for (const listener of listeners) {
-					this.removeEventListener(eventType, listener);
+			for (const eventType of listenerStore.capturing.keys()) {
+				const listeners = listenerStore.capturing.get(eventType);
+				if (listeners) {
+					for (const listener of listeners) {
+						this.removeEventListener(eventType, listener);
+					}
 				}
 			}
 		}

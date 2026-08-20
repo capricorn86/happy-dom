@@ -16,26 +16,54 @@ export default class EventTarget {
 	// Injected by WindowContextClassExtender
 	protected declare [PropertySymbol.window]: BrowserWindow;
 
-	public readonly [PropertySymbol.listeners]: {
+	// Back the accessors below, which allocate on first use. Every DOM node is an EventTarget, but
+	// only a small fraction of the nodes in a document ever get a listener, so allocating the four
+	// maps in the constructor would be wasted work. Read these directly, and not through the
+	// accessors, when only inspecting the listeners.
+	public [PropertySymbol.listenersStore]: {
 		capturing: Map<string, TEventListener[]>;
 		bubbling: Map<string, TEventListener[]>;
-	} = {
-		capturing: new Map(),
-		bubbling: new Map()
-	};
-	public readonly [PropertySymbol.listenerOptions]: {
+	} | null = null;
+	public [PropertySymbol.listenerOptionsStore]: {
 		capturing: Map<string, IEventListenerOptions[]>;
 		bubbling: Map<string, IEventListenerOptions[]>;
-	} = {
-		capturing: new Map(),
-		bubbling: new Map()
-	};
+	} | null = null;
 
 	/**
 	 * Return a default description for the EventTarget class.
 	 */
 	public get [Symbol.toStringTag](): string {
 		return 'EventTarget';
+	}
+
+	/**
+	 * Returns the event listeners, allocating them on first access.
+	 *
+	 * @returns Event listeners.
+	 */
+	public get [PropertySymbol.listeners](): {
+		capturing: Map<string, TEventListener[]>;
+		bubbling: Map<string, TEventListener[]>;
+	} {
+		if (!this[PropertySymbol.listenersStore]) {
+			this[PropertySymbol.listenersStore] = { capturing: new Map(), bubbling: new Map() };
+		}
+		return this[PropertySymbol.listenersStore];
+	}
+
+	/**
+	 * Returns the event listener options, allocating them on first access.
+	 *
+	 * @returns Event listener options.
+	 */
+	public get [PropertySymbol.listenerOptions](): {
+		capturing: Map<string, IEventListenerOptions[]>;
+		bubbling: Map<string, IEventListenerOptions[]>;
+	} {
+		if (!this[PropertySymbol.listenerOptionsStore]) {
+			this[PropertySymbol.listenerOptionsStore] = { capturing: new Map(), bubbling: new Map() };
+		}
+		return this[PropertySymbol.listenerOptionsStore];
 	}
 
 	/**
@@ -89,7 +117,12 @@ export default class EventTarget {
 	 * @param listener Listener.
 	 */
 	public removeEventListener(type: string, listener: TEventListener): void {
-		const bubblingListeners = this[PropertySymbol.listeners].bubbling.get(type);
+		// A target that has never had a listener added has nothing to remove.
+		if (!this[PropertySymbol.listenersStore]) {
+			return;
+		}
+
+		const bubblingListeners = this[PropertySymbol.listenersStore].bubbling.get(type);
 		if (bubblingListeners) {
 			const index = bubblingListeners.indexOf(listener);
 			if (index !== -1) {
@@ -99,7 +132,7 @@ export default class EventTarget {
 			}
 		}
 
-		const capturingListeners = this[PropertySymbol.listeners].capturing.get(type);
+		const capturingListeners = this[PropertySymbol.listenersStore].capturing.get(type);
 		if (capturingListeners) {
 			const index = capturingListeners.indexOf(listener);
 			if (index !== -1) {
@@ -176,10 +209,16 @@ export default class EventTarget {
 	 * Destroys the node.
 	 */
 	public [PropertySymbol.destroy](): void {
-		this[PropertySymbol.listeners].capturing.clear();
-		this[PropertySymbol.listeners].bubbling.clear();
-		this[PropertySymbol.listenerOptions].capturing.clear();
-		this[PropertySymbol.listenerOptions].bubbling.clear();
+		// Node destruction recurses over the whole subtree, so going through the accessors here would
+		// allocate for every node the maps that were never needed in the first place.
+		if (this[PropertySymbol.listenersStore]) {
+			this[PropertySymbol.listenersStore].capturing.clear();
+			this[PropertySymbol.listenersStore].bubbling.clear();
+		}
+		if (this[PropertySymbol.listenerOptionsStore]) {
+			this[PropertySymbol.listenerOptionsStore].capturing.clear();
+			this[PropertySymbol.listenerOptionsStore].bubbling.clear();
+		}
 	}
 
 	/**
@@ -253,7 +292,9 @@ export default class EventTarget {
 		const eventPhase = event.eventPhase === EventPhaseEnum.capturing ? 'capturing' : 'bubbling';
 
 		// We need to clone the arrays because the listeners may remove themselves while we are iterating.
-		const listeners = this[PropertySymbol.listeners][eventPhase].get(event.type)?.slice();
+		// A target with no listener maps has no listeners to call, but we must not return early here,
+		// as the "on" prefixed handler properties are handled further down.
+		const listeners = this[PropertySymbol.listenersStore]?.[eventPhase].get(event.type)?.slice();
 
 		if (listeners && listeners.length) {
 			const listenerOptions = this[PropertySymbol.listenerOptions][eventPhase]

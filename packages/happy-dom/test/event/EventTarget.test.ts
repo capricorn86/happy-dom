@@ -145,6 +145,36 @@ describe('EventTarget', () => {
 		});
 	});
 
+	describe('[PropertySymbol.listeners]', () => {
+		it('Is not allocated until a listener is added.', () => {
+			let count = 0;
+			const listener = (): void => {
+				count++;
+			};
+			const element = window.document.createElement('div');
+
+			expect(element[PropertySymbol.listenersStore]).toBe(null);
+			expect(element[PropertySymbol.listenerOptionsStore]).toBe(null);
+
+			// Neither dispatching, which walks every target in the path, nor removing a listener that
+			// was never added, has anything to look up on a target without listeners.
+			element.dispatchEvent(new Event(EVENT_TYPE));
+			element.removeEventListener(EVENT_TYPE, listener);
+
+			expect(element[PropertySymbol.listenersStore]).toBe(null);
+			expect(element[PropertySymbol.listenerOptionsStore]).toBe(null);
+
+			element.addEventListener(EVENT_TYPE, listener);
+
+			expect(element[PropertySymbol.listenersStore]?.bubbling.size).toBe(1);
+			expect(element[PropertySymbol.listenerOptionsStore]?.bubbling.size).toBe(1);
+
+			element.dispatchEvent(new Event(EVENT_TYPE));
+
+			expect(count).toBe(1);
+		});
+	});
+
 	describe('removeEventListener()', () => {
 		it('Removes an event listener and does not call it when calling dispatchEvent().', () => {
 			let receivedEvent: Event | null = null;
@@ -296,6 +326,15 @@ describe('EventTarget', () => {
 			eventTarget.dispatchEvent(dispatchedEvent);
 
 			expect(count).toBe(0);
+		});
+
+		it('Does not allocate the listeners of a target that has none.', () => {
+			// Destruction recurses over the whole subtree, so it must not allocate per node what was
+			// never needed in the first place.
+			eventTarget[PropertySymbol.destroy]();
+
+			expect(eventTarget[PropertySymbol.listenersStore]).toBe(null);
+			expect(eventTarget[PropertySymbol.listenerOptionsStore]).toBe(null);
 		});
 	});
 
