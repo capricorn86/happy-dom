@@ -22,7 +22,10 @@ describe('QuerySelector', () => {
 
 			for (const attempt of [1, 2, 3]) {
 				expect(() => document.querySelector('['), `querySelector attempt ${attempt}`).toThrow();
-				expect(() => document.querySelectorAll('['), `querySelectorAll attempt ${attempt}`).toThrow();
+				expect(
+					() => document.querySelectorAll('['),
+					`querySelectorAll attempt ${attempt}`
+				).toThrow();
 				expect(() => element.matches('['), `matches attempt ${attempt}`).toThrow();
 				expect(() => element.closest('['), `closest attempt ${attempt}`).toThrow();
 			}
