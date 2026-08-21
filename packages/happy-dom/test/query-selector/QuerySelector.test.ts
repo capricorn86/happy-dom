@@ -16,6 +16,19 @@ describe('QuerySelector', () => {
 		document = window.document;
 	});
 
+	describe('Invalid selector caching', () => {
+		it('Keeps throwing for an invalid selector on every call.', () => {
+			const element = document.createElement('div');
+
+			for (const attempt of [1, 2, 3]) {
+				expect(() => document.querySelector('['), `querySelector attempt ${attempt}`).toThrow();
+				expect(() => document.querySelectorAll('['), `querySelectorAll attempt ${attempt}`).toThrow();
+				expect(() => element.matches('['), `matches attempt ${attempt}`).toThrow();
+				expect(() => element.closest('['), `closest attempt ${attempt}`).toThrow();
+			}
+		});
+	});
+
 	describe('querySelectorAll()', () => {
 		it('Throws an error for invalid selectors.', () => {
 			const container = document.createElement('div');
