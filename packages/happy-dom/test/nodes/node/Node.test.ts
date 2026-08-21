@@ -874,6 +874,21 @@ describe('Node', () => {
 	});
 
 	describe('replaceChild()', () => {
+		it('Replaces the document element.', () => {
+			const parsed = new window.DOMParser().parseFromString(
+				'<html><body>replaced</body></html>',
+				'text/html'
+			);
+
+			document.replaceChild(
+				document.importNode(parsed.documentElement, true),
+				document.documentElement
+			);
+
+			expect(document.body.textContent).toBe('replaced');
+			expect(document.documentElement.parentNode).toBe(document);
+		});
+
 		it('Inserts a Node before another reference Node.', () => {
 			const child1 = document.createElement('span');
 			const child2 = document.createElement('span');
