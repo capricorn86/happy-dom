@@ -337,11 +337,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	 * Aborts a request.
 	 */
 	public abort(): void {
-		if (this.#aborted) {
+		if (this.#aborted || !this.#abortController) {
 			return;
 		}
 		this.#aborted = true;
-		this.#abortController!.abort();
+		this.#abortController.abort();
 	}
 
 	/**
