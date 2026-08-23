@@ -24,6 +24,7 @@ import FetchCORSUtility from './utilities/FetchCORSUtility.js';
 import Fetch from './Fetch.js';
 import type IFetchInterceptor from './types/IFetchInterceptor.js';
 import VirtualServerUtility from './utilities/VirtualServerUtility.js';
+import type ICacheablePreflightRequest from './cache/preflight/ICacheablePreflightRequest.js';
 import type IFetchRequestHeaders from './types/IFetchRequestHeaders.js';
 
 interface ISyncHTTPResponse {
@@ -380,25 +381,16 @@ export default class SyncFetch {
 			return true;
 		}
 
-		const cachedPreflightResponse = this.#browserFrame.page.context.preflightResponseCache.get(
-			this.request
-		);
+		const preflightResponseCache = this.#browserFrame.page.context.preflightResponseCache;
+		const cacheableRequest: ICacheablePreflightRequest = {
+			url: this.request.url,
+			method: this.request.method,
+			origin: this.#window.location.origin,
+			credentials: this.request.credentials,
+			headers: this.request.headers
+		};
 
-		if (cachedPreflightResponse) {
-			if (
-				cachedPreflightResponse.allowOrigin !== '*' &&
-				cachedPreflightResponse.allowOrigin !== this.#window.location.origin
-			) {
-				return false;
-			}
-
-			if (
-				cachedPreflightResponse.allowMethods.length !== 0 &&
-				!cachedPreflightResponse.allowMethods.includes(this.request.method)
-			) {
-				return false;
-			}
-
+		if (preflightResponseCache.matches(cacheableRequest)) {
 			return true;
 		}
 
@@ -462,6 +454,12 @@ export default class SyncFetch {
 		}
 
 		// TODO: Add support for more Access-Control-Allow-* headers.
+
+		preflightResponseCache.add(cacheableRequest, {
+			status: response.status,
+			url: response.url,
+			headers: response.headers
+		});
 
 		return true;
 	}
