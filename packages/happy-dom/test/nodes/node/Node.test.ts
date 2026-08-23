@@ -388,6 +388,38 @@ describe('Node', () => {
 			expect(form.contains(div)).toBe(true);
 			expect(div.contains(input)).toBe(true);
 		});
+
+		it('Returns "true" for a descendant when a proxied <form> subtree is assembled detached and then attached to the document (issue #2170).', () => {
+			const form = document.createElement('form');
+			const div = document.createElement('div');
+			const input = document.createElement('input');
+
+			// Assemble the subtree while detached, then attach it (React render order).
+			div.appendChild(input);
+			form.appendChild(div);
+			document.body.appendChild(form);
+
+			expect(form.contains(input)).toBe(true);
+			expect(form.contains(div)).toBe(true);
+			// A non-descendant sibling must still report false (no false positive).
+			const sibling = document.createElement('input');
+			document.body.appendChild(sibling);
+			expect(form.contains(sibling)).toBe(false);
+		});
+
+		it('Returns "true" for a descendant when a proxied <select> subtree is assembled detached and then attached to the document (issue #2170).', () => {
+			const select = document.createElement('select');
+			const optgroup = document.createElement('optgroup');
+			const option = document.createElement('option');
+
+			option.setAttribute('value', '1');
+			optgroup.appendChild(option);
+			select.appendChild(optgroup);
+			document.body.appendChild(select);
+
+			expect(select.contains(option)).toBe(true);
+			expect(select.contains(optgroup)).toBe(true);
+		});
 	});
 
 	describe('getRootNode()', () => {
