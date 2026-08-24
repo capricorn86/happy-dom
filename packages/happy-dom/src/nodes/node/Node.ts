@@ -11,14 +11,8 @@ import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import type IMutationListener from '../../mutation-observer/IMutationListener.js';
-import type ICachedQuerySelectorAllResult from './ICachedQuerySelectorAllResult.js';
-import type ICachedQuerySelectorResult from './ICachedQuerySelectorResult.js';
-import type ICachedMatchesResult from './ICachedMatchesResult.js';
-import type ICachedElementsByTagNameResult from './ICachedElementsByTagNameResult.js';
-import type ICachedElementByTagNameResult from './ICachedElementByTagNameResult.js';
-import type ICachedComputedStyleResult from './ICachedComputedStyleResult.js';
 import type ICachedResult from './ICachedResult.js';
-import type ICachedElementByIdResult from './ICachedElementByIdResult.js';
+import type INodeCache from './INodeCache.js';
 import type HTMLStyleElement from '../html-style-element/HTMLStyleElement.js';
 import type HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import type HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
@@ -82,25 +76,10 @@ export default class Node extends EventTarget {
 	public [PropertySymbol.elementArray]: Element[] = [];
 	public [PropertySymbol.childNodes]: NodeList<Node> | null = null;
 	public [PropertySymbol.assignedToSlot]: HTMLSlotElement | null = null;
-	public [PropertySymbol.cache]: {
-		querySelector: Map<string, ICachedQuerySelectorResult>;
-		querySelectorAll: Map<string, ICachedQuerySelectorAllResult>;
-		matches: Map<string, ICachedMatchesResult>;
-		elementsByTagName: Map<string, ICachedElementsByTagNameResult>;
-		elementsByTagNameNS: Map<string, ICachedElementsByTagNameResult>;
-		elementByTagName: Map<string, ICachedElementByTagNameResult>;
-		elementById: Map<string, ICachedElementByIdResult>;
-		computedStyle: ICachedComputedStyleResult | null;
-	} = {
-		querySelector: new Map(),
-		querySelectorAll: new Map(),
-		matches: new Map(),
-		elementsByTagName: new Map(),
-		elementsByTagNameNS: new Map(),
-		elementByTagName: new Map(),
-		elementById: new Map(),
-		computedStyle: null
-	};
+	// The query caches are allocated lazily on first access (see the "cache" getter). Most nodes
+	// (text, comments, attributes and elements that are never queried) never need them, so eagerly
+	// allocating the eight maps here would waste a lot of memory and allocation time while parsing.
+	#cache: INodeCache | null = null;
 	public [PropertySymbol.affectsCache]: ICachedResult[] = [];
 
 	// Needs to be implemented by the sub-class
@@ -126,6 +105,39 @@ export default class Node extends EventTarget {
 			this[PropertySymbol.ownerDocument] = ownerDocument;
 			this[PropertySymbol.window] = ownerDocument[PropertySymbol.window];
 		}
+	}
+
+	/**
+	 * Returns the query selector cache, creating it on first access.
+	 *
+	 * Most nodes are never queried, so the cache (eight maps) is allocated lazily to avoid wasting
+	 * memory and allocation time — e.g. while parsing, where attributes and text nodes never need it.
+	 *
+	 * @returns Cache.
+	 */
+	public get [PropertySymbol.cache](): INodeCache {
+		if (this.#cache === null) {
+			this.#cache = {
+				querySelector: new Map(),
+				querySelectorAll: new Map(),
+				matches: new Map(),
+				elementsByTagName: new Map(),
+				elementsByTagNameNS: new Map(),
+				elementByTagName: new Map(),
+				elementById: new Map(),
+				computedStyle: null
+			};
+		}
+		return this.#cache;
+	}
+
+	/**
+	 * Sets the query selector cache.
+	 *
+	 * @param cache Cache.
+	 */
+	public set [PropertySymbol.cache](cache: INodeCache) {
+		this.#cache = cache;
 	}
 
 	/**
@@ -854,69 +866,75 @@ export default class Node extends EventTarget {
 	 * Clears query selector cache.
 	 */
 	public [PropertySymbol.clearCache](): void {
-		const cache = this[PropertySymbol.cache];
+		// Nodes that have never been queried have no query cache to clear. Avoid allocating one here
+		// (the "cache" getter would), since clearCache() is called for every node as it is inserted
+		// into or removed from a tree. The "affectsCache" and computed style invalidation below must
+		// still run regardless.
+		const cache = this.#cache;
 
-		if (cache.querySelector.size) {
-			for (const item of cache.querySelector.values()) {
-				if (item.result) {
-					item.result = null;
+		if (cache) {
+			if (cache.querySelector.size) {
+				for (const item of cache.querySelector.values()) {
+					if (item.result) {
+						item.result = null;
+					}
 				}
+				cache.querySelector = new Map();
 			}
-			cache.querySelector = new Map();
-		}
 
-		if (cache.querySelectorAll.size) {
-			for (const item of cache.querySelectorAll.values()) {
-				if (item.result) {
-					item.result = null;
+			if (cache.querySelectorAll.size) {
+				for (const item of cache.querySelectorAll.values()) {
+					if (item.result) {
+						item.result = null;
+					}
 				}
+				cache.querySelectorAll = new Map();
 			}
-			cache.querySelectorAll = new Map();
-		}
 
-		if (cache.matches.size) {
-			for (const item of cache.matches.values()) {
-				if (item.result) {
-					item.result = null;
+			if (cache.matches.size) {
+				for (const item of cache.matches.values()) {
+					if (item.result) {
+						item.result = null;
+					}
 				}
+				cache.matches = new Map();
 			}
-			cache.matches = new Map();
-		}
 
-		if (cache.elementsByTagName.size) {
-			for (const item of cache.elementsByTagName.values()) {
-				if (item.result) {
-					item.result = null;
+			if (cache.elementsByTagName.size) {
+				for (const item of cache.elementsByTagName.values()) {
+					if (item.result) {
+						item.result = null;
+					}
 				}
+				cache.elementsByTagName = new Map();
 			}
-			cache.elementsByTagName = new Map();
-		}
 
-		if (cache.elementsByTagNameNS.size) {
-			for (const item of cache.elementsByTagNameNS.values()) {
-				if (item.result) {
-					item.result = null;
+			if (cache.elementsByTagNameNS.size) {
+				for (const item of cache.elementsByTagNameNS.values()) {
+					if (item.result) {
+						item.result = null;
+					}
 				}
+				cache.elementsByTagNameNS = new Map();
 			}
-			cache.elementsByTagNameNS = new Map();
-		}
 
-		if (cache.elementByTagName.size) {
-			for (const item of cache.elementByTagName.values()) {
-				if (item.result) {
-					item.result = null;
+			if (cache.elementByTagName.size) {
+				for (const item of cache.elementByTagName.values()) {
+					if (item.result) {
+						item.result = null;
+					}
 				}
+				cache.elementByTagName = new Map();
 			}
-			cache.elementByTagName = new Map();
-		}
 
-		if (cache.elementById.size) {
-			for (const item of cache.elementById.values()) {
-				if (item.result) {
-					item.result = null;
+			if (cache.elementById.size) {
+				for (const item of cache.elementById.values()) {
+					if (item.result) {
+						item.result = null;
+					}
 				}
+				cache.elementById = new Map();
 			}
-			cache.elementById = new Map();
 		}
 
 		const affectsCache = this[PropertySymbol.affectsCache];

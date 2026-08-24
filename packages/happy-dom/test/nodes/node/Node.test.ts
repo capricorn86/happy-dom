@@ -1420,4 +1420,33 @@ describe('Node', () => {
 			expect(div1.isSameNode(div2)).toBe(false);
 		});
 	});
+
+	describe('[PropertySymbol.cache]', () => {
+		it('Is allocated lazily and shared across reads.', () => {
+			const div = document.createElement('div');
+
+			// The same cache object is returned on every read (created on first access).
+			const cache = div[PropertySymbol.cache];
+			expect(cache).toBe(div[PropertySymbol.cache]);
+			expect(cache.querySelector).toBeInstanceOf(Map);
+			expect(cache.computedStyle).toBe(null);
+		});
+
+		it('Still invalidates cached query results when the subtree mutates.', () => {
+			document.body.innerHTML = '<div><span></span></div>';
+
+			// Populate the querySelectorAll cache.
+			expect(document.body.querySelectorAll('span').length).toBe(1);
+
+			// A mutation must invalidate the cache so the next query reflects the new tree.
+			const span = document.createElement('span');
+			document.body.querySelector('div')!.appendChild(span);
+
+			expect(document.body.querySelectorAll('span').length).toBe(2);
+
+			span.remove();
+
+			expect(document.body.querySelectorAll('span').length).toBe(1);
+		});
+	});
 });
