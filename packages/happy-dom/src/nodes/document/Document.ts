@@ -1034,6 +1034,18 @@ export default class Document extends Node {
 	 * @param value Adopted style sheets.
 	 */
 	public set adoptedStyleSheets(value: CSSStyleSheet[]) {
+		if (!Array.isArray(value)) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to set the 'adoptedStyleSheets' property on 'Document': The provided value cannot be converted to a sequence.`
+			);
+		}
+		for (const sheet of value) {
+			if (!(sheet instanceof this[PropertySymbol.window].CSSStyleSheet)) {
+				throw new this[PropertySymbol.window].TypeError(
+					`Failed to set the 'adoptedStyleSheets' property on 'Document': Failed to convert value to 'CSSStyleSheet'.`
+				);
+			}
+		}
 		this[PropertySymbol.adoptedStyleSheets] = value;
 	}
 

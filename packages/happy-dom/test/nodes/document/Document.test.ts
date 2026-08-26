@@ -570,6 +570,44 @@ describe('Document', () => {
 		});
 	});
 
+	describe('get adoptedStyleSheets()', () => {
+		it('Returns set adopted style sheets.', () => {
+			const styleSheet = new window.CSSStyleSheet();
+			document.adoptedStyleSheets = [styleSheet];
+			expect(document.adoptedStyleSheets).toEqual([styleSheet]);
+		});
+	});
+
+	describe('set adoptedStyleSheets()', () => {
+		it('Sets adopted style sheets.', () => {
+			const styleSheet = new window.CSSStyleSheet();
+			document.adoptedStyleSheets = [styleSheet];
+			expect(document.adoptedStyleSheets).toEqual([styleSheet]);
+		});
+
+		it('Throws an error when setting adopted style sheets with a non-array value.', () => {
+			expect(() => {
+				// @ts-expect-error Testing invalid input
+				document.adoptedStyleSheets = 'invalid-value';
+			}).toThrow(
+				new TypeError(
+					`Failed to set the 'adoptedStyleSheets' property on 'Document': The provided value cannot be converted to a sequence.`
+				)
+			);
+		});
+
+		it('Throws an error when setting adopted style sheets with a non-CSSStyleSheet object.', () => {
+			expect(() => {
+				// @ts-expect-error Testing invalid input
+				document.adoptedStyleSheets = [{}];
+			}).toThrow(
+				new TypeError(
+					`Failed to set the 'adoptedStyleSheets' property on 'Document': Failed to convert value to 'CSSStyleSheet'.`
+				)
+			);
+		});
+	});
+
 	describe('get activeElement()', () => {
 		it('Returns the currently active element.', () => {
 			const div = document.createElement('div');

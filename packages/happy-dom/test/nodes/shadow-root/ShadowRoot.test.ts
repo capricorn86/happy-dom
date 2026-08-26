@@ -164,6 +164,30 @@ describe('ShadowRoot', () => {
 			shadowRoot.adoptedStyleSheets = [styleSheet];
 			expect(shadowRoot.adoptedStyleSheets).toEqual([styleSheet]);
 		});
+
+		it('Throws an error when setting adopted style sheets with a non-array value.', () => {
+			const shadowRoot = <ShadowRoot>document.createElement('custom-element').shadowRoot;
+			expect(() => {
+				// @ts-expect-error Testing invalid input
+				shadowRoot.adoptedStyleSheets = 'invalid-value';
+			}).toThrow(
+				new TypeError(
+					`Failed to set the 'adoptedStyleSheets' property on 'ShadowRoot': The provided value cannot be converted to a sequence.`
+				)
+			);
+		});
+
+		it('Throws an error when setting adopted style sheets with a non-CSSStyleSheet object.', () => {
+			const shadowRoot = <ShadowRoot>document.createElement('custom-element').shadowRoot;
+			expect(() => {
+				// @ts-expect-error Testing invalid input
+				shadowRoot.adoptedStyleSheets = [{}];
+			}).toThrow(
+				new TypeError(
+					`Failed to set the 'adoptedStyleSheets' property on 'ShadowRoot': Failed to convert value to 'CSSStyleSheet'.`
+				)
+			);
+		});
 	});
 
 	describe('get activeElement()', () => {
