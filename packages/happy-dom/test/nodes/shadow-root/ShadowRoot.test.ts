@@ -155,6 +155,32 @@ describe('ShadowRoot', () => {
 			shadowRoot.adoptedStyleSheets = [styleSheet];
 			expect(shadowRoot.adoptedStyleSheets).toEqual([styleSheet]);
 		});
+
+		it('Returns an empty array when no adopted style sheets are set.', () => {
+			const shadowRoot = <ShadowRoot>document.createElement('custom-element').shadowRoot;
+			expect(shadowRoot.adoptedStyleSheets).toEqual([]);
+		});
+
+		it('Validates array assignments by using a Proxy', () => {
+			const shadowRoot = <ShadowRoot>document.createElement('custom-element').shadowRoot;
+			const styleSheet = new window.CSSStyleSheet();
+			shadowRoot.adoptedStyleSheets = [styleSheet];
+
+			expect(() => {
+				// @ts-expect-error Testing invalid input
+				shadowRoot.adoptedStyleSheets[0] = {};
+			}).toThrow(new TypeError(`Failed to convert value to 'CSSStyleSheet'.`));
+
+			expect(() => {
+				// @ts-expect-error Testing invalid input
+				shadowRoot.adoptedStyleSheets.push({});
+			}).toThrow(new TypeError(`Failed to convert value to 'CSSStyleSheet'.`));
+
+			expect(() => {
+				// @ts-expect-error Testing invalid input
+				shadowRoot.adoptedStyleSheets.unshift({});
+			}).toThrow(new TypeError(`Failed to convert value to 'CSSStyleSheet'.`));
+		});
 	});
 
 	describe('set adoptedStyleSheets()', () => {

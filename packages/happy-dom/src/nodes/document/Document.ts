@@ -1025,7 +1025,33 @@ export default class Document extends Node {
 	 * @returns Adopted style sheets.
 	 */
 	public get adoptedStyleSheets(): CSSStyleSheet[] {
-		return this[PropertySymbol.adoptedStyleSheets];
+		const window = this[PropertySymbol.window];
+		return new Proxy(this[PropertySymbol.adoptedStyleSheets], {
+			set(target, property, value, receiver) {
+				if (typeof property === 'string' && String(Number(property)) === property) {
+					if (!(value instanceof window.CSSStyleSheet)) {
+						throw new window.TypeError(`Failed to convert value to 'CSSStyleSheet'.`);
+					}
+				}
+				return Reflect.set(target, property, value, receiver);
+			},
+			get(target, property, receiver) {
+				if (typeof property === 'string' && String(Number(property)) === property) {
+					return Reflect.get(target, property, receiver);
+				}
+				if (property === 'push' || property === 'unshift') {
+					return (...args: any[]) => {
+						for (const arg of args) {
+							if (!(arg instanceof window.CSSStyleSheet)) {
+								throw new window.TypeError(`Failed to convert value to 'CSSStyleSheet'.`);
+							}
+						}
+						return Array.prototype[property].apply(target, args);
+					};
+				}
+				return Reflect.get(target, property, receiver);
+			}
+		});
 	}
 
 	/**

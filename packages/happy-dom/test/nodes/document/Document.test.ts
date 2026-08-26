@@ -576,6 +576,30 @@ describe('Document', () => {
 			document.adoptedStyleSheets = [styleSheet];
 			expect(document.adoptedStyleSheets).toEqual([styleSheet]);
 		});
+
+		it('Returns an empty array when no adopted style sheets are set.', () => {
+			expect(document.adoptedStyleSheets).toEqual([]);
+		});
+
+		it('Validates array assignments by using a Proxy', () => {
+			const styleSheet = new window.CSSStyleSheet();
+			document.adoptedStyleSheets = [styleSheet];
+
+			expect(() => {
+				// @ts-expect-error Testing invalid input
+				document.adoptedStyleSheets[0] = {};
+			}).toThrow(new TypeError(`Failed to convert value to 'CSSStyleSheet'.`));
+
+			expect(() => {
+				// @ts-expect-error Testing invalid input
+				document.adoptedStyleSheets.push({});
+			}).toThrow(new TypeError(`Failed to convert value to 'CSSStyleSheet'.`));
+
+			expect(() => {
+				// @ts-expect-error Testing invalid input
+				document.adoptedStyleSheets.unshift({});
+			}).toThrow(new TypeError(`Failed to convert value to 'CSSStyleSheet'.`));
+		});
 	});
 
 	describe('set adoptedStyleSheets()', () => {
