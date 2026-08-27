@@ -1040,8 +1040,14 @@ export default class Node extends EventTarget {
 		}
 
 		const childNodes = this[PropertySymbol.nodeArray].slice();
+		const self = this[PropertySymbol.proxy] || this;
 		for (let i = 0, max = childNodes.length; i < max; i++) {
-			childNodes[i][PropertySymbol.connectedToNode]();
+			const child = childNodes[i];
+			// Additional check to ensure that the child is still connected to this node before calling connectedToNode
+			if (child[PropertySymbol.parentNode] === self) {
+				// We call connectedToNode() to update the child's connection state and trigger any necessary callbacks
+				child[PropertySymbol.connectedToNode]();
+			}
 		}
 
 		// eslint-disable-next-line
