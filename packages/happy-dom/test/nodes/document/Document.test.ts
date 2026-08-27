@@ -244,13 +244,14 @@ describe('Document', () => {
 			document.body.appendChild(link1);
 			document.body.appendChild(link2);
 
-			let links = document.links;
+			const links = document.links;
 
+			expect(links).toBeInstanceOf(HTMLCollection);
 			expect(links.length).toBe(1);
 			expect(links[0]).toBe(link1);
 
 			link2.setAttribute('href', '');
-			links = document.links;
+			expect(document.links).toBe(links);
 			expect(links.length).toBe(2);
 			expect(links[0]).toBe(link1);
 			expect(links[1]).toBe(link2);
@@ -566,6 +567,68 @@ describe('Document', () => {
 					resolve(null);
 				}, 0);
 			});
+		});
+	});
+
+	describe('get adoptedStyleSheets()', () => {
+		it('Returns set adopted style sheets.', () => {
+			const styleSheet = new window.CSSStyleSheet();
+			document.adoptedStyleSheets = [styleSheet];
+			expect(document.adoptedStyleSheets).toEqual([styleSheet]);
+		});
+
+		it('Returns an empty array when no adopted style sheets are set.', () => {
+			expect(document.adoptedStyleSheets).toEqual([]);
+		});
+
+		it('Validates array assignments by using a Proxy', () => {
+			const styleSheet = new window.CSSStyleSheet();
+			document.adoptedStyleSheets = [styleSheet];
+
+			expect(() => {
+				// @ts-expect-error Testing invalid input
+				document.adoptedStyleSheets[0] = {};
+			}).toThrow(new TypeError(`Failed to convert value to 'CSSStyleSheet'.`));
+
+			expect(() => {
+				// @ts-expect-error Testing invalid input
+				document.adoptedStyleSheets.push({});
+			}).toThrow(new TypeError(`Failed to convert value to 'CSSStyleSheet'.`));
+
+			expect(() => {
+				// @ts-expect-error Testing invalid input
+				document.adoptedStyleSheets.unshift({});
+			}).toThrow(new TypeError(`Failed to convert value to 'CSSStyleSheet'.`));
+		});
+	});
+
+	describe('set adoptedStyleSheets()', () => {
+		it('Sets adopted style sheets.', () => {
+			const styleSheet = new window.CSSStyleSheet();
+			document.adoptedStyleSheets = [styleSheet];
+			expect(document.adoptedStyleSheets).toEqual([styleSheet]);
+		});
+
+		it('Throws an error when setting adopted style sheets with a non-array value.', () => {
+			expect(() => {
+				// @ts-expect-error Testing invalid input
+				document.adoptedStyleSheets = 'invalid-value';
+			}).toThrow(
+				new TypeError(
+					`Failed to set the 'adoptedStyleSheets' property on 'Document': The provided value cannot be converted to a sequence.`
+				)
+			);
+		});
+
+		it('Throws an error when setting adopted style sheets with a non-CSSStyleSheet object.', () => {
+			expect(() => {
+				// @ts-expect-error Testing invalid input
+				document.adoptedStyleSheets = [{}];
+			}).toThrow(
+				new TypeError(
+					`Failed to set the 'adoptedStyleSheets' property on 'Document': Failed to convert value to 'CSSStyleSheet'.`
+				)
+			);
 		});
 	});
 
