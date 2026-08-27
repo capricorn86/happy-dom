@@ -994,6 +994,64 @@ describe('HTMLInputElement', () => {
 			element.setCustomValidity('Error message');
 			expect(element.validationMessage).toBe('Error message');
 		});
+
+		it('Returns default message for built-in constraint violations.', () => {
+			element.required = true;
+			element.value = '';
+			expect(element.validationMessage).toBe('Constraints not satisfied');
+		});
+
+		it('Returns empty string when valid.', () => {
+			element.required = true;
+			element.value = 'test';
+			expect(element.validationMessage).toBe('');
+		});
+
+		it('Returns custom message over built-in violation.', () => {
+			element.required = true;
+			element.value = '';
+			element.setCustomValidity('Custom error');
+			expect(element.validationMessage).toBe('Custom error');
+		});
+
+		it('Returns empty string for disabled elements.', () => {
+			element.required = true;
+			element.disabled = true;
+			element.value = '';
+			expect(element.validationMessage).toBe('');
+		});
+	});
+
+	describe('get willValidate()', () => {
+		it('Returns true if the element is not disabled.', () => {
+			element.disabled = false;
+			expect(element.willValidate).toBe(true);
+		});
+
+		it('Returns false if the element is disabled.', () => {
+			element.disabled = true;
+			expect(element.willValidate).toBe(false);
+		});
+
+		it('Returns false if the element is readonly.', () => {
+			element.readOnly = true;
+			expect(element.willValidate).toBe(false);
+		});
+
+		it('Returns false if type is hidden.', () => {
+			element.type = 'hidden';
+			expect(element.willValidate).toBe(false);
+		});
+
+		it('Returns false if type is reset.', () => {
+			element.type = 'reset';
+			expect(element.willValidate).toBe(false);
+		});
+
+		it('Returns false if type is button.', () => {
+			element.type = 'button';
+			expect(element.willValidate).toBe(false);
+		});
 	});
 
 	describe(`get labels()`, () => {

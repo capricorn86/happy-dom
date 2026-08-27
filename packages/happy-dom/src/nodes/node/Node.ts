@@ -984,9 +984,14 @@ export default class Node extends EventTarget {
 			}
 		}
 
+		// HTMLFormElement and HTMLSelectElement return a Proxy from their constructor.
+		// The proxy is the identity handed out by the public API, so it has to be stored
+		// as the parent of the child nodes, the same way as in appendChild() and insertBefore().
+		const self = this[PropertySymbol.proxy] || this;
+
 		const childNodes = this[PropertySymbol.nodeArray].slice();
 		for (let i = 0, max = childNodes.length; i < max; i++) {
-			childNodes[i][PropertySymbol.parentNode] = this;
+			childNodes[i][PropertySymbol.parentNode] = self;
 			childNodes[i][PropertySymbol.connectedToNode]();
 		}
 
@@ -1035,8 +1040,14 @@ export default class Node extends EventTarget {
 		}
 
 		const childNodes = this[PropertySymbol.nodeArray].slice();
+		const self = this[PropertySymbol.proxy] || this;
 		for (let i = 0, max = childNodes.length; i < max; i++) {
-			childNodes[i][PropertySymbol.connectedToNode]();
+			const child = childNodes[i];
+			// Additional check to ensure that the child is still connected to this node before calling connectedToNode
+			if (child[PropertySymbol.parentNode] === self) {
+				// We call connectedToNode() to update the child's connection state and trigger any necessary callbacks
+				child[PropertySymbol.connectedToNode]();
+			}
 		}
 
 		// eslint-disable-next-line
