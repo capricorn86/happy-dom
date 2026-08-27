@@ -384,6 +384,17 @@ describe('HTMLSelectElement', () => {
 		});
 	});
 
+	describe('get willValidate()', () => {
+		it('Returns "true" if it is enabled.', () => {
+			expect(element.willValidate).toBe(true);
+		});
+
+		it('Returns "false" if it is disabled.', () => {
+			element.disabled = true;
+			expect(element.willValidate).toBe(false);
+		});
+	});
+
 	describe('get tabIndex()', () => {
 		it('Returns "0" by default.', () => {
 			const element = document.createElement('select');

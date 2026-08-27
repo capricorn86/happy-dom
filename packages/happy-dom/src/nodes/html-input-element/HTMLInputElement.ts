@@ -977,7 +977,7 @@ export default class HTMLInputElement extends HTMLElement {
 			this.type !== 'reset' &&
 			this.type !== 'button' &&
 			!this.disabled &&
-			!this['readOnly']
+			!this.readOnly
 		);
 	}
 

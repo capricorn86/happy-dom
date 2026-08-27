@@ -1022,6 +1022,38 @@ describe('HTMLInputElement', () => {
 		});
 	});
 
+	describe('get willValidate()', () => {
+		it('Returns true if the element is not disabled.', () => {
+			element.disabled = false;
+			expect(element.willValidate).toBe(true);
+		});
+
+		it('Returns false if the element is disabled.', () => {
+			element.disabled = true;
+			expect(element.willValidate).toBe(false);
+		});
+
+		it('Returns false if the element is readonly.', () => {
+			element.readOnly = true;
+			expect(element.willValidate).toBe(false);
+		});
+
+		it('Returns false if type is hidden.', () => {
+			element.type = 'hidden';
+			expect(element.willValidate).toBe(false);
+		});
+
+		it('Returns false if type is reset.', () => {
+			element.type = 'reset';
+			expect(element.willValidate).toBe(false);
+		});
+
+		it('Returns false if type is button.', () => {
+			element.type = 'button';
+			expect(element.willValidate).toBe(false);
+		});
+	});
+
 	describe(`get labels()`, () => {
 		it('Returns associated labels', () => {
 			const label1 = document.createElement('label');

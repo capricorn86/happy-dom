@@ -158,9 +158,6 @@ export default class HTMLObjectElement extends HTMLElement {
 		if (customMessage) {
 			return customMessage;
 		}
-		if (this.willValidate && !this.validity.valid) {
-			return 'Constraints not satisfied';
-		}
 		return '';
 	}
 

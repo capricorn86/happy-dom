@@ -539,9 +539,7 @@ export default class HTMLSelectElement extends HTMLElement {
 	 * @returns "true" if it will validate.
 	 */
 	public get willValidate(): boolean {
-		return (
-			this.type !== 'hidden' && this.type !== 'reset' && this.type !== 'button' && !this.disabled
-		);
+		return !this.disabled;
 	}
 
 	/**

@@ -41,6 +41,15 @@ export default class HTMLButtonElement extends HTMLElement {
 	}
 
 	/**
+	 * Returns "true" if it will validate.
+	 *
+	 * @returns "true" if it will validate.
+	 */
+	public get willValidate(): boolean {
+		return !this.disabled;
+	}
+
+	/**
 	 * Returns validity.
 	 *
 	 * @returns Validity.
