@@ -154,11 +154,7 @@ export default class HTMLObjectElement extends HTMLElement {
 	 * @returns Validation message.
 	 */
 	public get validationMessage(): string {
-		const customMessage = this[PropertySymbol.validationMessage];
-		if (customMessage) {
-			return customMessage;
-		}
-		return '';
+		return this[PropertySymbol.validationMessage];
 	}
 
 	/**
