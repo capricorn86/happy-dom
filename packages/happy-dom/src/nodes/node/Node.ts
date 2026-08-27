@@ -1036,7 +1036,7 @@ export default class Node extends EventTarget {
 
 		const childNodes = this[PropertySymbol.nodeArray].slice();
 		for (let i = 0, max = childNodes.length; i < max; i++) {
-			childNodes[i][PropertySymbol.connectedToNode]();
+			childNodes[i][PropertySymbol.disconnectedFromNode]();
 		}
 
 		// eslint-disable-next-line
