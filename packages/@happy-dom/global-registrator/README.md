@@ -34,7 +34,7 @@ import '@happy-dom/global-registrator/register.js';
 
 // Settings can be accessed and modified via the global "happyDOM" object
 window.happyDOM.setURL('http://localhost:3000');
-window.happyDOM.settings.happyDOM.settings.navigator.maxTouchPoints = 0;
+window.happyDOM.settings.navigator.maxTouchPoints = 0;
 
 document.body.innerHTML = `<button>My button</button>`;
 

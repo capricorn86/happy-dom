@@ -1089,7 +1089,7 @@ export default class Element
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): NodeList<Element>;
+	public querySelectorAll<E extends Element = Element>(selector: string): NodeList<E>;
 
 	/**
 	 * Query CSS selector to find matching elements.
@@ -1127,7 +1127,7 @@ export default class Element
 	 * @param selector CSS selector.
 	 * @returns Matching element.
 	 */
-	public querySelector(selector: string): Element | null;
+	public querySelector<E extends Element = Element>(selector: string): E | null;
 
 	/**
 	 * Query CSS Selector to find matching node.

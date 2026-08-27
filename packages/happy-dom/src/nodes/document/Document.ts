@@ -37,6 +37,7 @@ import type ISVGElementTagNameMap from '../../config/ISVGElementTagNameMap.js';
 import type SVGElement from '../svg-element/SVGElement.js';
 import type HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import type HTMLAnchorElement from '../html-anchor-element/HTMLAnchorElement.js';
+import type HTMLAreaElement from '../html-area-element/HTMLAreaElement.js';
 import HTMLElementConfig from '../../config/HTMLElementConfig.js';
 import type HTMLHtmlElement from '../html-html-element/HTMLHtmlElement.js';
 import type HTMLBodyElement from '../html-body-element/HTMLBodyElement.js';
@@ -75,6 +76,7 @@ export default class Document extends Node {
 	public [PropertySymbol.referrer] = '';
 	public [PropertySymbol.defaultView]: BrowserWindow | null = null;
 	public [PropertySymbol.forms]: HTMLCollection<HTMLFormElement> | null = null;
+	public [PropertySymbol.links]: HTMLCollection<HTMLAnchorElement | HTMLAreaElement> | null = null;
 	public [PropertySymbol.affectsComputedStyleCache]: ICachedComputedStyleResult[] = [];
 	public [PropertySymbol.ownerDocument]: Document = <Document>(<unknown>null);
 	public [PropertySymbol.elementIdMap]: Map<
@@ -1023,7 +1025,33 @@ export default class Document extends Node {
 	 * @returns Adopted style sheets.
 	 */
 	public get adoptedStyleSheets(): CSSStyleSheet[] {
-		return this[PropertySymbol.adoptedStyleSheets];
+		const window = this[PropertySymbol.window];
+		return new Proxy(this[PropertySymbol.adoptedStyleSheets], {
+			set(target, property, value, receiver) {
+				if (typeof property === 'string' && String(Number(property)) === property) {
+					if (!(value instanceof window.CSSStyleSheet)) {
+						throw new window.TypeError(`Failed to convert value to 'CSSStyleSheet'.`);
+					}
+				}
+				return Reflect.set(target, property, value, receiver);
+			},
+			get(target, property, receiver) {
+				if (typeof property === 'string' && String(Number(property)) === property) {
+					return Reflect.get(target, property, receiver);
+				}
+				if (property === 'push' || property === 'unshift') {
+					return (...args: any[]) => {
+						for (const arg of args) {
+							if (!(arg instanceof window.CSSStyleSheet)) {
+								throw new window.TypeError(`Failed to convert value to 'CSSStyleSheet'.`);
+							}
+						}
+						return Array.prototype[property].apply(target, args);
+					};
+				}
+				return Reflect.get(target, property, receiver);
+			}
+		});
 	}
 
 	/**
@@ -1032,6 +1060,18 @@ export default class Document extends Node {
 	 * @param value Adopted style sheets.
 	 */
 	public set adoptedStyleSheets(value: CSSStyleSheet[]) {
+		if (!Array.isArray(value)) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to set the 'adoptedStyleSheets' property on 'Document': The provided value cannot be converted to a sequence.`
+			);
+		}
+		for (const sheet of value) {
+			if (!(sheet instanceof this[PropertySymbol.window].CSSStyleSheet)) {
+				throw new this[PropertySymbol.window].TypeError(
+					`Failed to set the 'adoptedStyleSheets' property on 'Document': Failed to convert value to 'CSSStyleSheet'.`
+				);
+			}
+		}
 		this[PropertySymbol.adoptedStyleSheets] = value;
 	}
 
@@ -1139,8 +1179,17 @@ export default class Document extends Node {
 	/**
 	 * Returns a collection of all area elements and a elements in a document with a value for the href attribute.
 	 */
-	public get links(): NodeList<HTMLAnchorElement | HTMLElement> {
-		return <NodeList<HTMLElement>>QuerySelector.querySelectorAll(this, 'a[href],area[href]');
+	public get links(): HTMLCollection<HTMLAnchorElement | HTMLAreaElement> {
+		if (!this[PropertySymbol.links]) {
+			this[PropertySymbol.links] = new HTMLCollection<HTMLAnchorElement | HTMLAreaElement>(
+				PropertySymbol.illegalConstructor,
+				() =>
+					<(HTMLAnchorElement | HTMLAreaElement)[]>(
+						QuerySelector.querySelectorAll(this, 'a[href],area[href]')[PropertySymbol.items]
+					)
+			);
+		}
+		return this[PropertySymbol.links];
 	}
 
 	/**
@@ -1484,7 +1533,7 @@ export default class Document extends Node {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): NodeList<Element>;
+	public querySelectorAll<E extends Element = Element>(selector: string): NodeList<E>;
 
 	/**
 	 * Query CSS selector to find matching elements.
@@ -1522,7 +1571,7 @@ export default class Document extends Node {
 	 * @param selector CSS selector.
 	 * @returns Matching element.
 	 */
-	public querySelector(selector: string): Element | null;
+	public querySelector<E extends Element = Element>(selector: string): E | null;
 
 	/**
 	 * Query CSS Selector to find matching node.
@@ -2214,6 +2263,7 @@ export default class Document extends Node {
 		this[PropertySymbol.defaultView] = null;
 		this[PropertySymbol.adoptedStyleSheets] = [];
 		this[PropertySymbol.forms] = null;
+		this[PropertySymbol.links] = null;
 		this[PropertySymbol.affectsComputedStyleCache] = [];
 		this[PropertySymbol.elementIdMap].clear();
 		this[PropertySymbol.xmlProcessingInstruction] = null;

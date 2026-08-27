@@ -61,10 +61,10 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @returns HTML elements.
 	 */
-	public static querySelectorAll(
+	public static querySelectorAll<E extends Element = Element>(
 		node: Element | Document | DocumentFragment,
 		selector: string
-	): NodeList<Element>;
+	): NodeList<E>;
 
 	/**
 	 * Finds elements based on a query selector.
@@ -194,10 +194,10 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @returns HTML element.
 	 */
-	public static querySelector(
+	public static querySelector<E extends Element = Element>(
 		node: Element | Document | DocumentFragment,
 		selector: string
-	): Element | null;
+	): E | null;
 
 	/**
 	 * Finds an element based on a query selector.

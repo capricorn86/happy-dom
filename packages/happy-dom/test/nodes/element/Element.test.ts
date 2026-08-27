@@ -1081,6 +1081,28 @@ describe('Element', () => {
 			expect(b.closest('div .span b') === b).toBe(true);
 			expect(b.closest('div .span article b') === b).toBe(true);
 		});
+
+		it('Finds the closest HTMLFormElement when it is inserted after its child nodes have been appended (issue #2253).', () => {
+			const form = document.createElement('form');
+			const div = document.createElement('div');
+			const input = document.createElement('input');
+
+			form.appendChild(div);
+			div.appendChild(input);
+			document.body.appendChild(form);
+
+			expect(input.closest('form') === form).toBe(true);
+		});
+
+		it('Finds the closest HTMLSelectElement when it is inserted after its child nodes have been appended (issue #2253).', () => {
+			const select = document.createElement('select');
+			const option = document.createElement('option');
+
+			select.appendChild(option);
+			document.body.appendChild(select);
+
+			expect(option.closest('select') === select).toBe(true);
+		});
 	});
 
 	describe('querySelectorAll()', () => {

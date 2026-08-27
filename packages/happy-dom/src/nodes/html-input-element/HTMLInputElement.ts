@@ -275,7 +275,14 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @returns Validation message.
 	 */
 	public get validationMessage(): string {
-		return this[PropertySymbol.validationMessage];
+		const customMessage = this[PropertySymbol.validationMessage];
+		if (customMessage) {
+			return customMessage;
+		}
+		if (this.willValidate && !this.validity.valid) {
+			return 'Constraints not satisfied';
+		}
+		return '';
 	}
 
 	/**
@@ -970,7 +977,7 @@ export default class HTMLInputElement extends HTMLElement {
 			this.type !== 'reset' &&
 			this.type !== 'button' &&
 			!this.disabled &&
-			!this['readOnly']
+			!this.readOnly
 		);
 	}
 
