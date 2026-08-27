@@ -987,7 +987,7 @@ export default class Node extends EventTarget {
 		// HTMLFormElement and HTMLSelectElement return a Proxy from their constructor.
 		// The proxy is the identity handed out by the public API, so it has to be stored
 		// as the parent of the child nodes, the same way as in appendChild() and insertBefore().
-		const self = (<any>this)[PropertySymbol.proxy] || this;
+		const self = this[PropertySymbol.proxy] || this;
 
 		const childNodes = this[PropertySymbol.nodeArray].slice();
 		for (let i = 0, max = childNodes.length; i < max; i++) {
