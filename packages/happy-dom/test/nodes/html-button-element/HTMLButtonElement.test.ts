@@ -449,6 +449,66 @@ describe('HTMLButtonElement', () => {
 	}
 
 	describe('dispatchEvent()', () => {
+		it('Dispatches a "click" event to its listeners even if the button is disabled.', () => {
+			const button = <HTMLButtonElement>document.createElement('button');
+
+			let clickCount = 0;
+
+			button.disabled = true;
+			button.addEventListener('click', () => clickCount++);
+
+			document.body.appendChild(button);
+
+			const returnValue = button.dispatchEvent(
+				new MouseEvent('click', { bubbles: true, cancelable: true })
+			);
+
+			expect(clickCount).toBe(1);
+			expect(returnValue).toBe(true);
+		});
+
+		it('Doesn\'t submit form if type is "submit" and the button is disabled.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			const button = <HTMLButtonElement>document.createElement('button');
+
+			let submitTriggeredCount = 0;
+			let clickCount = 0;
+
+			button.disabled = true;
+			button.addEventListener('click', () => clickCount++);
+
+			form.appendChild(button);
+
+			document.body.appendChild(form);
+
+			form.addEventListener('submit', () => submitTriggeredCount++);
+
+			button.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+			expect(clickCount).toBe(1);
+			expect(submitTriggeredCount).toBe(0);
+		});
+
+		it('Doesn\'t reset form if type is "reset" and the button is disabled.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			const button = <HTMLButtonElement>document.createElement('button');
+
+			let resetTriggeredCount = 0;
+
+			button.type = 'reset';
+			button.disabled = true;
+
+			form.appendChild(button);
+
+			document.body.appendChild(form);
+
+			form.addEventListener('reset', () => resetTriggeredCount++);
+
+			button.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+			expect(resetTriggeredCount).toBe(0);
+		});
+
 		it('Submits form if type is "submit" and is a "click" event.', () => {
 			const form = <HTMLFormElement>document.createElement('form');
 			const button = <HTMLButtonElement>document.createElement('button');
@@ -535,6 +595,30 @@ describe('HTMLButtonElement', () => {
 			button.click();
 
 			expect(resetTriggeredCount).toBe(1);
+		});
+	});
+
+	describe('click()', () => {
+		it('Doesn\'t dispatch a "click" event if the button is disabled.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			const button = <HTMLButtonElement>document.createElement('button');
+
+			let submitTriggeredCount = 0;
+			let clickCount = 0;
+
+			button.disabled = true;
+			button.addEventListener('click', () => clickCount++);
+
+			form.appendChild(button);
+
+			document.body.appendChild(form);
+
+			form.addEventListener('submit', () => submitTriggeredCount++);
+
+			button.click();
+
+			expect(clickCount).toBe(0);
+			expect(submitTriggeredCount).toBe(0);
 		});
 	});
 });

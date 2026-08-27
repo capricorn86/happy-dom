@@ -10,6 +10,20 @@ import type Attr from '../attr/Attr.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 /**
+ * Tag names of form controls that don't dispatch a click event when the click() method is called on a disabled element.
+ *
+ * Note that "fieldset" is not part of the list, as browsers dispatch the event for a disabled fieldset element.
+ */
+const DISABLEABLE_FORM_CONTROLS = new Set([
+	'BUTTON',
+	'INPUT',
+	'OPTGROUP',
+	'OPTION',
+	'SELECT',
+	'TEXTAREA'
+]);
+
+/**
  * HTML Element.
  *
  * Reference:
@@ -945,8 +959,20 @@ export default class HTMLElement extends Element {
 
 	/**
 	 * Triggers a click event.
+	 *
+	 * A disabled form control doesn't dispatch a click event when this method is called.
+	 * Note that a click event dispatched using dispatchEvent() is not affected by this, as it is only the synthetic click that is suppressed.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/interaction.html#dom-click
 	 */
 	public click(): void {
+		if (
+			DISABLEABLE_FORM_CONTROLS.has(<string>this[PropertySymbol.tagName]) &&
+			(<HTMLElement & { disabled?: boolean }>this).disabled
+		) {
+			return;
+		}
+
 		this.dispatchEvent(
 			new PointerEvent('click', {
 				bubbles: true,
