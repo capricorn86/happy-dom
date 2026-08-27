@@ -14,6 +14,7 @@ import type BrowserWindow from '../window/BrowserWindow.js';
 import type ICachedResponse from './cache/response/ICachedResponse.js';
 import { Buffer } from 'buffer';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
+import type { ReadableStreamWrapper } from './ReadableStreamWrapper.js';
 
 const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308];
 
@@ -31,7 +32,6 @@ export default class Response implements Response {
 	protected declare [PropertySymbol.window]: BrowserWindow;
 
 	// Public properties
-	public readonly body: ReadableStream | null = null;
 	public readonly bodyUsed = false;
 	public readonly redirected = false;
 	public readonly type: 'basic' | 'cors' | 'default' | 'error' | 'opaque' | 'opaqueredirect' =
@@ -46,6 +46,7 @@ export default class Response implements Response {
 	public [PropertySymbol.virtualServerFile]: string | null = null;
 	public [PropertySymbol.aborted]: boolean = false;
 	public [PropertySymbol.error]: Error | null = null;
+	public [PropertySymbol.body]: ReadableStreamWrapper | null = null;
 
 	/**
 	 * Constructor.
@@ -71,7 +72,7 @@ export default class Response implements Response {
 
 		if (body) {
 			const { stream, buffer, contentType } = FetchBodyUtility.getBodyStream(body);
-			this.body = stream;
+			this[PropertySymbol.body] = stream;
 
 			if (buffer) {
 				this[PropertySymbol.buffer] = buffer;
@@ -90,6 +91,15 @@ export default class Response implements Response {
 	 */
 	public get [Symbol.toStringTag](): string {
 		return 'Response';
+	}
+
+	/**
+	 * Returns body stream.
+	 *
+	 * @returns Body stream.
+	 */
+	public get body(): ReadableStream | null {
+		return this[PropertySymbol.body]?.readableStream || null;
 	}
 
 	/**

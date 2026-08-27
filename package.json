@@ -48,5 +48,8 @@
 	},
 	"engines": {
 		"node": ">=20.0.0"
+	},
+	"allowScripts": {
+		"canvas@3.2.3": true
 	}
 }

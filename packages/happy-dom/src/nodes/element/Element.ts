@@ -1089,7 +1089,7 @@ export default class Element
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	public querySelectorAll(selector: string): NodeList<Element>;
+	public querySelectorAll<E extends Element = Element>(selector: string): NodeList<E>;
 
 	/**
 	 * Query CSS selector to find matching elements.
@@ -1127,7 +1127,7 @@ export default class Element
 	 * @param selector CSS selector.
 	 * @returns Matching element.
 	 */
-	public querySelector(selector: string): Element | null;
+	public querySelector<E extends Element = Element>(selector: string): E | null;
 
 	/**
 	 * Query CSS Selector to find matching node.
@@ -1376,6 +1376,61 @@ export default class Element
 			  }
 	): void {
 		// Do nothing
+	}
+
+	/**
+	 * Checks if the element is visible.
+	 *
+	 * @param [options] Options.
+	 * @param [options.contentVisibilityAuto] Set to "true" to check "content-visibility: auto".
+	 * @param [options.opacityProperty] Set to "true" to check "opacity" property.
+	 * @param [options.visibilityProperty] Set to "true" to check "visibility" property.
+	 * @param [options.checkOpacity] A historic alias for opacityProperty.
+	 * @param [options.checkVisibilityCSS] A historic alias for visibilityProperty.
+	 */
+	public checkVisibility(options?: {
+		contentVisibilityAuto?: boolean;
+		opacityProperty?: boolean;
+		visibilityProperty?: boolean;
+		/** @deprecated Use "opacityProperty" */
+		checkOpacity?: boolean;
+		/** @deprecated Use "visibilityProperty" */
+		checkVisibilityCSS?: boolean;
+	}): boolean {
+		if (!this[PropertySymbol.isConnected]) {
+			return false;
+		}
+		let parent: Element | null = this;
+		while (parent) {
+			const computedStyle = this[PropertySymbol.window].getComputedStyle(parent);
+			if (computedStyle.display === 'none') {
+				return false;
+			}
+			if (computedStyle.display === 'contents') {
+				let isChildVisible = false;
+				for (const child of parent[PropertySymbol.elementArray]) {
+					const childComputedStyle = this[PropertySymbol.window].getComputedStyle(child);
+					if (childComputedStyle.display !== 'none') {
+						isChildVisible = true;
+						break;
+					}
+				}
+				if (!isChildVisible) {
+					return false;
+				}
+			}
+			if ((options?.opacityProperty || options?.checkOpacity) && computedStyle.opacity === '0') {
+				return false;
+			}
+			if (
+				(options?.visibilityProperty || options?.checkVisibilityCSS) &&
+				computedStyle.visibility === 'hidden'
+			) {
+				return false;
+			}
+			parent = <Element>parent.parentElement;
+		}
+		return true;
 	}
 
 	/**

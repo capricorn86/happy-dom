@@ -19,6 +19,7 @@ import MultipartFormDataParser from './multipart/MultipartFormDataParser.js';
 import type BrowserWindow from '../window/BrowserWindow.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import type { TRequestMode } from './types/TRequestMode.js';
+import type { ReadableStreamWrapper } from './ReadableStreamWrapper.js';
 
 /**
  * Fetch request.
@@ -34,7 +35,7 @@ export default class Request implements Request {
 
 	// Public properties
 	public [PropertySymbol.method]: string;
-	public [PropertySymbol.body]: ReadableStream | null;
+	public [PropertySymbol.body]: ReadableStreamWrapper | null;
 	public [PropertySymbol.mode]: TRequestMode = 'cors';
 	public [PropertySymbol.headers]: Headers;
 	public [PropertySymbol.redirect]: TRequestRedirect;
@@ -187,7 +188,7 @@ export default class Request implements Request {
 	 * @returns Body.
 	 */
 	public get body(): ReadableStream | null {
-		return this[PropertySymbol.body];
+		return this[PropertySymbol.body]?.readableStream || null;
 	}
 
 	/**

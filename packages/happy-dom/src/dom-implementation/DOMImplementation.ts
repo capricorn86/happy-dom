@@ -27,12 +27,21 @@ export default class DOMImplementation {
 	 * @param qualifiedName Qualified name.
 	 * @param [_docType] Document type.
 	 */
-	public createDocument(_namespaceURI: string, qualifiedName: string, _docType?: string): Document {
+	public createDocument(
+		_namespaceURI: string | null,
+		qualifiedName: string | null,
+		_docType?: string | null
+	): Document {
 		if (arguments.length < 2) {
 			throw new this.#document[PropertySymbol.window].TypeError(
 				`Failed to execute 'createDocument' on 'DOMImplementation': 2 arguments required, but only ${arguments.length} present.`
 			);
 		}
+
+		// The spec declares "qualifiedName" as "[LegacyNullToEmptyString] DOMString",
+		// so "null" is coerced to an empty string instead of being rejected.
+		qualifiedName = qualifiedName === null ? '' : String(qualifiedName);
+
 		switch (qualifiedName.split(':').pop()) {
 			case 'svg':
 			case 'xml':

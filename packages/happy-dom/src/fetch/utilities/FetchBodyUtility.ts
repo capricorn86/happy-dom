@@ -11,6 +11,7 @@ import type { TResponseBody } from '../types/TResponseBody.js';
 import { Buffer } from 'buffer';
 import Stream from 'stream';
 import type BrowserWindow from '../../window/BrowserWindow.js';
+import { ReadableStreamWrapper } from '../ReadableStreamWrapper.js';
 
 /**
  * Fetch body utility.
@@ -28,7 +29,7 @@ export default class FetchBodyUtility {
 	public static getBodyStream(body: TRequestBody | TResponseBody): {
 		contentType: string | null;
 		contentLength: number | null;
-		stream: ReadableStream | null;
+		stream: ReadableStreamWrapper | null;
 		buffer: Buffer | null;
 	} {
 		if (body === null || body === undefined) {
@@ -37,7 +38,7 @@ export default class FetchBodyUtility {
 			const buffer = Buffer.from(body.toString());
 			return {
 				buffer,
-				stream: this.toReadableStream(buffer),
+				stream: this.getReadableStream(buffer),
 				contentType: 'application/x-www-form-urlencoded;charset=UTF-8',
 				contentLength: buffer.length
 			};
@@ -45,14 +46,14 @@ export default class FetchBodyUtility {
 			const buffer = (<Blob>body)[PropertySymbol.buffer];
 			return {
 				buffer,
-				stream: this.toReadableStream(buffer),
+				stream: this.getReadableStream(buffer),
 				contentType: body.type,
 				contentLength: body.size
 			};
 		} else if (Buffer.isBuffer(body)) {
 			return {
 				buffer: body,
-				stream: this.toReadableStream(body),
+				stream: this.getReadableStream(body),
 				contentType: null,
 				contentLength: body.length
 			};
@@ -60,7 +61,7 @@ export default class FetchBodyUtility {
 			const buffer = Buffer.from(body);
 			return {
 				buffer,
-				stream: this.toReadableStream(buffer),
+				stream: this.getReadableStream(buffer),
 				contentType: null,
 				contentLength: body.byteLength
 			};
@@ -68,14 +69,14 @@ export default class FetchBodyUtility {
 			const buffer = Buffer.from(body.buffer, body.byteOffset, body.byteLength);
 			return {
 				buffer,
-				stream: this.toReadableStream(buffer),
+				stream: this.getReadableStream(buffer),
 				contentType: null,
 				contentLength: body.byteLength
 			};
 		} else if (body instanceof ReadableStream) {
 			return {
 				buffer: null,
-				stream: body,
+				stream: new ReadableStreamWrapper(() => body),
 				contentType: null,
 				contentLength: null
 			};
@@ -86,7 +87,7 @@ export default class FetchBodyUtility {
 		const buffer = Buffer.from(String(body));
 		return {
 			buffer,
-			stream: this.toReadableStream(buffer),
+			stream: this.getReadableStream(buffer),
 			contentType: 'text/plain;charset=UTF-8',
 			contentLength: buffer.length
 		};
@@ -108,6 +109,7 @@ export default class FetchBodyUtility {
 		window: BrowserWindow,
 		requestOrResponse: {
 			[PropertySymbol.buffer]?: Buffer | null;
+			[PropertySymbol.body]?: ReadableStreamWrapper | null;
 			body: ReadableStream | null;
 			bodyUsed: boolean;
 		}
@@ -125,7 +127,7 @@ export default class FetchBodyUtility {
 
 		// If a buffer is set, use it to create a new stream.
 		if (requestOrResponse[PropertySymbol.buffer]) {
-			return this.toReadableStream(requestOrResponse[PropertySymbol.buffer]);
+			return this.getReadableStream(requestOrResponse[PropertySymbol.buffer]).readableStream;
 		}
 
 		// Pipe underlying node stream if it exists.
@@ -135,15 +137,10 @@ export default class FetchBodyUtility {
 			(<any>requestOrResponse.body)[PropertySymbol.nodeStream].pipe(stream1);
 			(<any>requestOrResponse.body)[PropertySymbol.nodeStream].pipe(stream2);
 			// Sets the body of the cloned request/response to the first pass through stream.
-			// Request uses [PropertySymbol.body] with a getter, Response uses public readonly body.
-			const newStream = this.nodeToWebStream(stream1);
-			if (PropertySymbol.body in requestOrResponse) {
-				// Request object - set the symbol property (getter will return it)
-				(<any>requestOrResponse)[PropertySymbol.body] = newStream;
-			} else {
-				// Response object - set the public property directly
-				(<ReadableStream | null>(<any>requestOrResponse).body) = newStream;
-			}
+			// Sets the body of the original request/response
+			requestOrResponse[PropertySymbol.body] = new ReadableStreamWrapper(() =>
+				this.nodeToWebStream(stream1)
+			);
 			// Returns the clone.
 			return this.nodeToWebStream(stream2);
 		}
@@ -152,15 +149,8 @@ export default class FetchBodyUtility {
 		// This requires the stream to be consumed in parallel which is not the case for the fetch API
 		const [stream1, stream2] = requestOrResponse.body.tee();
 
-		// Sets the body of the cloned request to the first pass through stream.
-		// Request uses [PropertySymbol.body] with a getter, Response uses public readonly body.
-		if (PropertySymbol.body in requestOrResponse) {
-			// Request object - set the symbol property (getter will return it)
-			(<any>requestOrResponse)[PropertySymbol.body] = stream1;
-		} else {
-			// Response object - set the public property directly
-			(<ReadableStream | null>(<any>requestOrResponse).body) = stream1;
-		}
+		// Sets the body of the original request/response
+		requestOrResponse[PropertySymbol.body] = new ReadableStreamWrapper(() => stream1);
 
 		// Returns the other stream as the clone
 		return stream2;
@@ -241,23 +231,6 @@ export default class FetchBodyUtility {
 			);
 		}
 	}
-	/**
-	 * Wraps a given value in a browser ReadableStream.
-	 *
-	 * This method creates a ReadableStream and immediately enqueues and closes it
-	 * with the provided value, useful for stream API compatibility.
-	 *
-	 * @param value The value to be wrapped in a ReadableStream.
-	 * @returns ReadableStream
-	 */
-	public static toReadableStream(value: any): ReadableStream {
-		return new ReadableStream({
-			start(controller) {
-				controller.enqueue(value);
-				controller.close();
-			}
-		});
-	}
 
 	/**
 	 * Wraps a Node.js stream into a browser-compatible ReadableStream.
@@ -286,5 +259,26 @@ export default class FetchBodyUtility {
 		});
 		(<any>readableStream)[PropertySymbol.nodeStream] = nodeStream;
 		return readableStream;
+	}
+
+	/**
+	 * Wraps a given value in a browser ReadableStream.
+	 *
+	 * This method creates a ReadableStream and immediately enqueues and closes it
+	 * with the provided value, useful for stream API compatibility.
+	 *
+	 * @param value The value to be wrapped in a ReadableStream.
+	 * @returns ReadableStream
+	 */
+	private static getReadableStream(value: any): ReadableStreamWrapper {
+		return new ReadableStreamWrapper(
+			() =>
+				new ReadableStream({
+					start(controller) {
+						controller.enqueue(value);
+						controller.close();
+					}
+				})
+		);
 	}
 }
