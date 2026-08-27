@@ -307,6 +307,78 @@ describe('FormData', () => {
 			expect(formData.getAll('radioInput')).toEqual([]);
 			expect(formData.getAll('checkboxInput')).toEqual([]);
 		});
+
+		it('Supports disabled select and textarea elements.', () => {
+			const form = document.createElement('form');
+
+			const disabledSelect = document.createElement('select');
+			const disabledSelectOption = document.createElement('option');
+			const disabledTextarea = document.createElement('textarea');
+			const select = document.createElement('select');
+			const selectOption = document.createElement('option');
+			const textarea = document.createElement('textarea');
+
+			disabledSelect.name = 'disabledSelect';
+			disabledSelect.disabled = true;
+			disabledSelectOption.value = 'disabled select value';
+			disabledSelect.appendChild(disabledSelectOption);
+
+			disabledTextarea.name = 'disabledTextarea';
+			disabledTextarea.value = 'disabled textarea value';
+			disabledTextarea.disabled = true;
+
+			select.name = 'select';
+			selectOption.value = 'select value';
+			select.appendChild(selectOption);
+
+			textarea.name = 'textarea';
+			textarea.value = 'textarea value';
+
+			form.appendChild(disabledSelect);
+			form.appendChild(disabledTextarea);
+			form.appendChild(select);
+			form.appendChild(textarea);
+
+			const formData = new window.FormData(form);
+
+			expect(formData.get('disabledSelect')).toBe(null);
+			expect(formData.get('disabledTextarea')).toBe(null);
+			expect(formData.get('select')).toBe('select value');
+			expect(formData.get('textarea')).toBe('textarea value');
+			expect([...formData.keys()]).toEqual(['select', 'textarea']);
+		});
+
+		it('Supports disabled submitters.', () => {
+			const form = document.createElement('form');
+			const textInput = document.createElement('input');
+			const button = document.createElement('button');
+			const inputButton = document.createElement('input');
+
+			textInput.type = 'text';
+			textInput.name = 'textInput';
+			textInput.value = 'text value';
+
+			button.type = 'submit';
+			button.name = 'button';
+			button.value = 'button value';
+			button.disabled = true;
+
+			inputButton.type = 'submit';
+			inputButton.name = 'inputButton';
+			inputButton.value = 'input button value';
+			inputButton.disabled = true;
+
+			form.appendChild(textInput);
+			form.appendChild(button);
+			form.appendChild(inputButton);
+
+			expect([...new window.FormData(form, button).entries()]).toEqual([
+				['textInput', 'text value']
+			]);
+			expect([...new window.FormData(form, inputButton).entries()]).toEqual([
+				['textInput', 'text value']
+			]);
+		});
 	});
 
 	describe('forEach()', () => {
