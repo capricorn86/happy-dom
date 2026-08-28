@@ -1,6 +1,5 @@
 import Element from '../element/Element.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import NodeFactory from '../NodeFactory.js';
 import CSSStyleDeclaration from '../../css/declaration/CSSStyleDeclaration.js';
 import PointerEvent from '../../event/events/PointerEvent.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
@@ -22,20 +21,49 @@ export default class HTMLElement extends Element {
 	public static observedAttributes?: string[];
 
 	// Internal properties
-	public [PropertySymbol.accessKey] = '';
-	public [PropertySymbol.offsetHeight] = 0;
-	public [PropertySymbol.offsetWidth] = 0;
-	public [PropertySymbol.offsetLeft] = 0;
-	public [PropertySymbol.offsetTop] = 0;
-	public [PropertySymbol.clientHeight] = 0;
-	public [PropertySymbol.clientWidth] = 0;
-	public [PropertySymbol.clientLeft] = 0;
-	public [PropertySymbol.clientTop] = 0;
-	public [PropertySymbol.style]: CSSStyleDeclaration | null = null;
-	public [PropertySymbol.dataset]: DOMStringMap | null = null;
+	public declare [PropertySymbol.accessKey]: string;
+	public declare [PropertySymbol.offsetHeight]: number;
+	public declare [PropertySymbol.offsetWidth]: number;
+	public declare [PropertySymbol.offsetLeft]: number;
+	public declare [PropertySymbol.offsetTop]: number;
+	public declare [PropertySymbol.clientHeight]: number;
+	public declare [PropertySymbol.clientWidth]: number;
+	public declare [PropertySymbol.clientLeft]: number;
+	public declare [PropertySymbol.clientTop]: number;
+	public declare [PropertySymbol.style]: CSSStyleDeclaration | null;
+	public declare [PropertySymbol.dataset]: DOMStringMap | null;
+	public declare [PropertySymbol.customElementDefineCallback]: (() => void) | null;
 
-	// Properties used for custom element upgrade tracking
-	public [PropertySymbol.customElementDefineCallback]: (() => void) | null = null;
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+
+		// When upgrading a custom element in-place, constructor() returns the existing
+		// element. This propagates through the entire super() chain so the custom element's
+		// constructor runs with `this` = the existing element (same mechanism real browsers use)
+		//
+		// It's also important to not initialize properties
+		if ((<typeof HTMLElement>this.constructor)[PropertySymbol.customElementUpgradeTarget]) {
+			return <HTMLElement>(
+				(<typeof HTMLElement>this.constructor)[PropertySymbol.customElementUpgradeTarget]
+			);
+		}
+
+		this[PropertySymbol.accessKey] = '';
+		this[PropertySymbol.offsetHeight] = 0;
+		this[PropertySymbol.offsetWidth] = 0;
+		this[PropertySymbol.offsetLeft] = 0;
+		this[PropertySymbol.offsetTop] = 0;
+		this[PropertySymbol.clientHeight] = 0;
+		this[PropertySymbol.clientWidth] = 0;
+		this[PropertySymbol.clientLeft] = 0;
+		this[PropertySymbol.clientTop] = 0;
+		this[PropertySymbol.style] = null;
+		this[PropertySymbol.dataset] = null;
+		this[PropertySymbol.customElementDefineCallback] = null;
+	}
 
 	// Events
 
@@ -1098,13 +1126,13 @@ export default class HTMLElement extends Element {
 		Object.setPrototypeOf(this, definition.elementClass.prototype);
 
 		// NodeFactory.upgradeTarget causes Element.constructor() to return this element
-		NodeFactory.upgradeTarget = this;
+		definition.elementClass[PropertySymbol.customElementUpgradeTarget] = this;
 
 		// Call the constructor of the custom element class, which will run with `this` set to the existing element when super() is called
 		try {
 			new definition.elementClass();
 		} finally {
-			NodeFactory.upgradeTarget = null;
+			definition.elementClass[PropertySymbol.customElementUpgradeTarget] = null;
 		}
 
 		this[PropertySymbol.customElementDefineCallback] = null;

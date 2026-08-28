@@ -48,22 +48,24 @@ export default class Element
 	public declare cloneNode: (deep?: boolean) => Element;
 
 	// Internal properties
-	public [PropertySymbol.classList]: DOMTokenList | null = null;
-	public [PropertySymbol.isValue]: string | null = null;
-	public [PropertySymbol.nodeType] = NodeTypeEnum.elementNode;
-	public [PropertySymbol.prefix]: string | null = null;
-	public [PropertySymbol.shadowRoot]: ShadowRoot | null = null;
-	public [PropertySymbol.scrollHeight] = 0;
-	public [PropertySymbol.scrollWidth] = 0;
-	public [PropertySymbol.scrollTop] = 0;
-	public [PropertySymbol.scrollLeft] = 0;
-	public [PropertySymbol.attributes] = new NamedNodeMap(this);
-	public [PropertySymbol.attributesProxy]: NamedNodeMap | null = null;
-	public [PropertySymbol.children]: HTMLCollection<Element> | null = null;
-	public [PropertySymbol.computedStyle]: CSSStyleDeclaration | null = null;
-	public [PropertySymbol.pointerCaptures]: Set<number> = new Set();
-	public [PropertySymbol.propertyEventListeners]: Map<string, ((event: Event) => void) | null> =
-		new Map();
+	public declare [PropertySymbol.classList]: DOMTokenList | null;
+	public declare [PropertySymbol.isValue]: string | null;
+	public declare [PropertySymbol.nodeType]: NodeTypeEnum;
+	public declare [PropertySymbol.prefix]: string | null;
+	public declare [PropertySymbol.shadowRoot]: ShadowRoot | null;
+	public declare [PropertySymbol.scrollHeight]: number;
+	public declare [PropertySymbol.scrollWidth]: number;
+	public declare [PropertySymbol.scrollTop]: number;
+	public declare [PropertySymbol.scrollLeft]: number;
+	public declare [PropertySymbol.attributes]: NamedNodeMap;
+	public declare [PropertySymbol.attributesProxy]: NamedNodeMap | null;
+	public declare [PropertySymbol.children]: HTMLCollection<Element> | null;
+	public declare [PropertySymbol.computedStyle]: CSSStyleDeclaration | null;
+	public declare [PropertySymbol.pointerCaptures]: Set<number>;
+	public declare [PropertySymbol.propertyEventListeners]: Map<
+		string,
+		((event: Event) => void) | null
+	>;
 	public declare [PropertySymbol.tagName]: string | null;
 	public declare [PropertySymbol.localName]: string | null;
 	public declare [PropertySymbol.namespaceURI]: string | null;
@@ -72,21 +74,32 @@ export default class Element
 	 * Constructor.
 	 */
 	constructor() {
-		// When upgrading a custom element in-place, Node.constructor() returns the existing
+		super();
+
+		// When upgrading a custom element in-place, constructor() returns the existing
 		// element. This propagates through the entire super() chain so the custom element's
-		// constructor runs with `this` = the existing element (same mechanism real browsers use).
+		// constructor runs with `this` = the existing element (same mechanism real browsers use)
 		//
-		// IMPORTANT: clear upgradeTarget immediately on first use. The constructor body of
-		// the custom element may call document.createElement() or similar, which also reaches
-		// Node.constructor(). Those nested creations must produce fresh elements, not the
-		// upgrade target.
-		if (NodeFactory.upgradeTarget !== null) {
-			const upgradeTarget = NodeFactory.upgradeTarget;
-			NodeFactory.upgradeTarget = null;
-			return <this>(<unknown>upgradeTarget);
+		// It's also important to not initialize properties
+		if ((<typeof Element>this.constructor)[PropertySymbol.customElementUpgradeTarget]) {
+			return <Element>(<typeof Element>this.constructor)[PropertySymbol.customElementUpgradeTarget];
 		}
 
-		super();
+		this[PropertySymbol.classList] = null;
+		this[PropertySymbol.isValue] = null;
+		this[PropertySymbol.nodeType] = NodeTypeEnum.elementNode;
+		this[PropertySymbol.prefix] = null;
+		this[PropertySymbol.shadowRoot] = null;
+		this[PropertySymbol.scrollHeight] = 0;
+		this[PropertySymbol.scrollWidth] = 0;
+		this[PropertySymbol.scrollTop] = 0;
+		this[PropertySymbol.scrollLeft] = 0;
+		this[PropertySymbol.attributes] = new NamedNodeMap(this);
+		this[PropertySymbol.attributesProxy] = null;
+		this[PropertySymbol.children] = null;
+		this[PropertySymbol.computedStyle] = null;
+		this[PropertySymbol.pointerCaptures] = new Set();
+		this[PropertySymbol.propertyEventListeners] = new Map();
 
 		// CustomElementRegistry will populate the properties upon calling "CustomElementRegistry.define()".
 		// Elements that can be constructed with the "new" keyword (without using "Document.createElement()") will also populate the properties.
