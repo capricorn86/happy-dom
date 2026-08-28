@@ -72,6 +72,20 @@ export default class Element
 	 * Constructor.
 	 */
 	constructor() {
+		// When upgrading a custom element in-place, Node.constructor() returns the existing
+		// element. This propagates through the entire super() chain so the custom element's
+		// constructor runs with `this` = the existing element (same mechanism real browsers use).
+		//
+		// IMPORTANT: clear upgradeTarget immediately on first use. The constructor body of
+		// the custom element may call document.createElement() or similar, which also reaches
+		// Node.constructor(). Those nested creations must produce fresh elements, not the
+		// upgrade target.
+		if (NodeFactory.upgradeTarget !== null) {
+			const upgradeTarget = NodeFactory.upgradeTarget;
+			NodeFactory.upgradeTarget = null;
+			return <this>(<unknown>upgradeTarget);
+		}
+
 		super();
 
 		// CustomElementRegistry will populate the properties upon calling "CustomElementRegistry.define()".
@@ -1438,7 +1452,7 @@ export default class Element
 	 */
 	public override [PropertySymbol.appendChild](node: Node, disableValidations = false): Node {
 		const returnValue = super[PropertySymbol.appendChild](node, disableValidations);
-		this.#onSlotChange(node);
+		this[PropertySymbol.onSlotChange](node);
 		return returnValue;
 	}
 
@@ -1447,7 +1461,7 @@ export default class Element
 	 */
 	public override [PropertySymbol.removeChild](node: Node): Node {
 		const returnValue = super[PropertySymbol.removeChild](node);
-		this.#onSlotChange(node);
+		this[PropertySymbol.onSlotChange](node);
 		return returnValue;
 	}
 
@@ -1464,7 +1478,7 @@ export default class Element
 			referenceNode,
 			disableValidations
 		);
-		this.#onSlotChange(newNode);
+		this[PropertySymbol.onSlotChange](newNode);
 		return returnValue;
 	}
 
@@ -1522,9 +1536,9 @@ export default class Element
 
 		if (attribute[PropertySymbol.name] === 'id' && this[PropertySymbol.isConnected]) {
 			if (replacedAttribute?.[PropertySymbol.value]) {
-				this.#removeIdentifierFromWindow(replacedAttribute[PropertySymbol.value]);
+				this[PropertySymbol.removeIdentifierFromWindow](replacedAttribute[PropertySymbol.value]);
 			}
-			this.#addIdentifierToWindow(attribute[PropertySymbol.value]);
+			this[PropertySymbol.addIdentifierToWindow](attribute[PropertySymbol.value]);
 		}
 
 		this[PropertySymbol.reportMutation](
@@ -1562,7 +1576,7 @@ export default class Element
 		}
 
 		if (removedAttribute[PropertySymbol.name] === 'id' && this[PropertySymbol.isConnected]) {
-			this.#removeIdentifierFromWindow(removedAttribute[PropertySymbol.value]);
+			this[PropertySymbol.removeIdentifierFromWindow](removedAttribute[PropertySymbol.value]);
 		}
 
 		this[PropertySymbol.reportMutation](
@@ -1581,7 +1595,7 @@ export default class Element
 	public override [PropertySymbol.connectedToDocument](): void {
 		const id = this.getAttribute('id');
 		if (id) {
-			this.#addIdentifierToWindow(id);
+			this[PropertySymbol.addIdentifierToWindow](id);
 		}
 
 		super[PropertySymbol.connectedToDocument]();
@@ -1593,7 +1607,7 @@ export default class Element
 
 		if (this[PropertySymbol.shadowRoot]) {
 			for (const childNode of this[PropertySymbol.nodeArray]) {
-				this.#onSlotChange(childNode);
+				this[PropertySymbol.onSlotChange](childNode);
 			}
 		}
 	}
@@ -1606,7 +1620,7 @@ export default class Element
 
 		const id = this.getAttribute('id');
 		if (id) {
-			this.#removeIdentifierFromWindow(id);
+			this[PropertySymbol.removeIdentifierFromWindow](id);
 		}
 
 		this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
@@ -1621,7 +1635,7 @@ export default class Element
 	public override [PropertySymbol.destroy](): void {
 		const id = this.getAttribute('id');
 		if (id) {
-			this.#removeIdentifierFromWindow(id);
+			this[PropertySymbol.removeIdentifierFromWindow](id);
 		}
 
 		this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
@@ -1651,7 +1665,7 @@ export default class Element
 	 *
 	 * @param id Identifier.
 	 */
-	#addIdentifierToWindow(id: string | null): void {
+	public [PropertySymbol.addIdentifierToWindow](id: string | null): void {
 		if (!id) {
 			return;
 		}
@@ -1704,7 +1718,7 @@ export default class Element
 	 *
 	 * @param id Identifier.
 	 */
-	#removeIdentifierFromWindow(id: string | null): void {
+	public [PropertySymbol.removeIdentifierFromWindow](id: string | null): void {
 		if (!id) {
 			return;
 		}
@@ -1752,7 +1766,7 @@ export default class Element
 	 *
 	 * @param addedOrRemovedNode Changed node.
 	 */
-	#onSlotChange(addedOrRemovedNode: Node): void {
+	public [PropertySymbol.onSlotChange](addedOrRemovedNode: Node): void {
 		const shadowRoot = this[PropertySymbol.shadowRoot];
 
 		if (!shadowRoot || !this[PropertySymbol.isConnected]) {

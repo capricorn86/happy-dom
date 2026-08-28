@@ -9,6 +9,17 @@ export default class NodeFactory {
 	public static ownerDocuments: Document[] = [];
 
 	/**
+	 * When set, HTMLElement.constructor() returns this element instead of creating a new one.
+	 * Used by HTMLElement.[PropertySymbol.onCustomElementConnected]() to upgrade an existing
+	 * element in-place: the custom element's constructor runs with `this` = the existing
+	 * element, mirroring real browser upgrade-in-place behaviour (spec §4.13.5 "upgrades").
+	 * By intercepting in HTMLElement (not Node), the base-class field initialisers
+	 * (Element.isValue, Node.nodeArray, etc.) run on a temporary throwaway object and
+	 * never corrupt the real element's state.
+	 */
+	public static upgradeTarget: Node | null = null;
+
+	/**
 	 * Creates a node instance with the given owner document.
 	 *
 	 * @param ownerDocument Owner document.
