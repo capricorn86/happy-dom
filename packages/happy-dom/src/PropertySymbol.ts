@@ -422,3 +422,4 @@ export const moduleCache = Symbol('moduleCache');
 export const cookieStore = Symbol('cookieStore');
 export const context = Symbol('context');
 export const querySelectorCache = Symbol('querySelectorCache');
+export const customElementUpgradeTarget = Symbol('customElementUpgradeTarget');
