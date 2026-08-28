@@ -1108,6 +1108,9 @@ export default class HTMLElement extends Element {
 			this[PropertySymbol.attributes][PropertySymbol.itemsByName];
 		newElement[PropertySymbol.attributes][PropertySymbol.items] =
 			this[PropertySymbol.attributes][PropertySymbol.items];
+		newElement[PropertySymbol.propertyEventListeners] = this[PropertySymbol.propertyEventListeners];
+		(<any>newElement)[PropertySymbol.listeners] = this[PropertySymbol.listeners];
+		(<any>newElement)[PropertySymbol.listenerOptions] = this[PropertySymbol.listenerOptions];
 
 		for (const attr of newElement[PropertySymbol.attributes][PropertySymbol.items].values()) {
 			attr[PropertySymbol.ownerElement] = newElement;
@@ -1133,6 +1136,12 @@ export default class HTMLElement extends Element {
 		this[PropertySymbol.attributes][PropertySymbol.itemsByNamespaceURI] = new Map();
 		this[PropertySymbol.attributes][PropertySymbol.itemsByName] = new Map();
 		this[PropertySymbol.attributes][PropertySymbol.items] = new Map();
+		this[PropertySymbol.propertyEventListeners] = new Map();
+		(<any>this)[PropertySymbol.listeners] = { bubbling: new Map(), capturing: new Map() };
+		(<any>this)[PropertySymbol.listenerOptions] = {
+			bubbling: new Map(),
+			capturing: new Map()
+		};
 
 		for (const node of newElement[PropertySymbol.nodeArray]) {
 			node[PropertySymbol.parentNode] = newElement;
