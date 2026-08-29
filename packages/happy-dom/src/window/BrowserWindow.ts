@@ -886,6 +886,9 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	#outerHeight: number | null = null;
 	#devicePixelRatio: number | null = null;
 	#zeroDelayTimeout: { timeouts: Array<Timeout> | null } = { timeouts: null };
+	#animationFrameCallbacks: Map<number, (timestamp: number) => void> = new Map();
+	#animationFrameHandle: number = 0;
+	#animationFrameImmediate: NodeJS.Immediate | null = null;
 	#timerLoopStacks: string[] = [];
 	#timerLoopLimits: ITimerLoopsLimit[] = [];
 
@@ -2627,12 +2630,13 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	/**
 	 * Mock animation frames with timeouts.
 	 *
+	 * @see https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-animationframeprovider-requestanimationframe
 	 * @param callback Callback.
-	 * @returns ID.
+	 * @returns Handle that can be sent to cancelAnimationFrame().
 	 */
-	public requestAnimationFrame(callback: (timestamp: number) => void): NodeJS.Immediate {
+	public requestAnimationFrame(callback: (timestamp: number) => void): number {
 		if (this.closed) {
-			return <NodeJS.Immediate>{};
+			return 0;
 		}
 		const settings = this.#browserFrame.page.context.browser.settings;
 
@@ -2649,7 +2653,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 						? 1
 						: (settings.timer.preventTimerLoops.requestAnimationFrame ?? 1))
 				) {
-					return <NodeJS.Immediate>{};
+					return 0;
 				}
 			} else {
 				timerLoopStacks.push(stack);
@@ -2660,44 +2664,71 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			}
 		}
 
-		const useTryCatch =
-			!settings ||
-			(!settings.disableErrorCapturing &&
-				settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch);
-		const id = TIMER.setImmediate(() => {
-			// We need to call endImmediate() before the callback as the callback might throw an error.
-			this.#browserFrame[PropertySymbol.asyncTaskManager].endImmediate(id);
-			if (useTryCatch) {
-				let result: any;
-				try {
-					result = callback(this.performance.now());
-				} catch (error) {
-					this[PropertySymbol.dispatchError](<Error>error);
+		// All callbacks registered for the same frame are grouped into one immediate, as the specification
+		// requires "run the animation frame callbacks" to invoke every callback of a frame in one task.
+		// Grouping the callbacks also improves the performance of the async task manager.
+		// @see https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#run-the-animation-frame-callbacks
+		if (!this.#animationFrameImmediate) {
+			const animationFrameCallbacks = this.#animationFrameCallbacks;
+			const useTryCatch =
+				!settings ||
+				(!settings.disableErrorCapturing &&
+					settings.errorCapture === BrowserErrorCaptureEnum.tryAndCatch);
+
+			const id = TIMER.setImmediate(() => {
+				// We need to call endImmediate() before the callbacks as a callback might throw an error.
+				this.#browserFrame[PropertySymbol.asyncTaskManager].endImmediate(id);
+				this.#animationFrameImmediate = null;
+
+				// The specification requires all callbacks of a frame to be invoked with the same timestamp.
+				const timestamp = this.performance.now();
+
+				// The handles are read before the callbacks are invoked, so that a callback registered during
+				// the frame is invoked in the next frame instead of the current one.
+				for (const handle of [...animationFrameCallbacks.keys()]) {
+					const animationFrameCallback = animationFrameCallbacks.get(handle);
+
+					// The callback may have been canceled by an earlier callback in the same frame.
+					if (!animationFrameCallback) {
+						continue;
+					}
+
+					animationFrameCallbacks.delete(handle);
+
+					if (useTryCatch) {
+						let result: any;
+						try {
+							result = animationFrameCallback(timestamp);
+						} catch (error) {
+							this[PropertySymbol.dispatchError](<Error>error);
+						}
+						if (result instanceof Promise) {
+							result.catch((error: Error) => this[PropertySymbol.dispatchError](error));
+						}
+					} else {
+						animationFrameCallback(timestamp);
+					}
 				}
-				if (result instanceof Promise) {
-					result.catch((error: Error) => this[PropertySymbol.dispatchError](error));
-				}
-			} else {
-				callback(this.performance.now());
-			}
-		});
-		this.#browserFrame[PropertySymbol.asyncTaskManager].startImmediate(id);
-		return id;
+			});
+
+			this.#animationFrameImmediate = id;
+			this.#browserFrame[PropertySymbol.asyncTaskManager].startImmediate(id);
+		}
+
+		this.#animationFrameHandle++;
+		this.#animationFrameCallbacks.set(this.#animationFrameHandle, callback);
+
+		return this.#animationFrameHandle;
 	}
 
 	/**
 	 * Mock animation frames with timeouts.
 	 *
-	 * @param id ID.
+	 * @see https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-animationframeprovider-cancelanimationframe
+	 * @param handle Handle returned by requestAnimationFrame().
 	 */
-	public cancelAnimationFrame(id: NodeJS.Immediate): void {
-		// We need to make sure that the ID is an Immediate object, otherwise Node.js might throw an error.
-		// This is only necessary if we are in a Node.js environment.
-		if (IS_NODE_JS_TIMEOUT_ENVIRONMENT && (!id || id.constructor.name !== 'Immediate')) {
-			return;
-		}
-		TIMER.clearImmediate(id);
-		this.#browserFrame[PropertySymbol.asyncTaskManager].endImmediate(id);
+	public cancelAnimationFrame(handle: number): void {
+		this.#animationFrameCallbacks.delete(handle);
 	}
 
 	/**

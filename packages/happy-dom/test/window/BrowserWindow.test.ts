@@ -1832,9 +1832,20 @@ describe('BrowserWindow', () => {
 	describe('requestAnimationFrame()', () => {
 		it('Requests an animation frame.', async () => {
 			await new Promise((resolve) => {
-				const timeoutId = window.requestAnimationFrame(resolve);
-				expect(timeoutId.constructor.name).toBe('Immediate');
+				const handle = window.requestAnimationFrame(resolve);
+				expect(typeof handle).toBe('number');
+				expect(handle).toBeGreaterThan(0);
 			});
+		});
+
+		it('Returns a new handle for each request.', () => {
+			const first = window.requestAnimationFrame(() => {});
+			const second = window.requestAnimationFrame(() => {});
+
+			expect(second).not.toBe(first);
+
+			window.cancelAnimationFrame(first);
+			window.cancelAnimationFrame(second);
 		});
 
 		it('Calls passed callback with current time', async () => {
@@ -1844,6 +1855,84 @@ describe('BrowserWindow', () => {
 					resolve(null);
 				});
 			});
+		});
+
+		it('Calls all callbacks registered for the same frame with the same timestamp.', async () => {
+			const timestamps: number[] = [];
+
+			await new Promise((resolve) => {
+				window.requestAnimationFrame((timestamp) => timestamps.push(timestamp));
+				window.requestAnimationFrame((timestamp) => {
+					timestamps.push(timestamp);
+					resolve(null);
+				});
+			});
+
+			expect(timestamps.length).toBe(2);
+			expect(timestamps[0]).toBe(timestamps[1]);
+		});
+
+		it('Calls all callbacks registered for the same frame in the same task.', async () => {
+			const order: string[] = [];
+
+			await new Promise((resolve) => {
+				window.requestAnimationFrame(() => {
+					order.push('first');
+					// A task queued during the frame can't be executed until the frame is complete.
+					window.setTimeout(() => order.push('timeout'), 0);
+				});
+				window.requestAnimationFrame(() => {
+					order.push('second');
+					window.setTimeout(() => resolve(null), 10);
+				});
+			});
+
+			expect(order).toEqual(['first', 'second', 'timeout']);
+		});
+
+		it('Calls a callback registered during a frame in the next frame.', async () => {
+			const order: string[] = [];
+			const timestamps: number[] = [];
+
+			await new Promise((resolve) => {
+				window.requestAnimationFrame((timestamp) => {
+					order.push('first');
+					timestamps.push(timestamp);
+					window.requestAnimationFrame((nextTimestamp) => {
+						order.push('third');
+						timestamps.push(nextTimestamp);
+						resolve(null);
+					});
+				});
+				window.requestAnimationFrame((timestamp) => {
+					order.push('second');
+					timestamps.push(timestamp);
+				});
+			});
+
+			expect(order).toEqual(['first', 'second', 'third']);
+			expect(timestamps[1]).toBe(timestamps[0]);
+			expect(timestamps[2]).toBeGreaterThan(timestamps[1]);
+		});
+
+		it('Calls the remaining callbacks of a frame when a callback throws an error.', async () => {
+			const order: string[] = [];
+			let errorEvent: ErrorEvent | null = null;
+
+			window.addEventListener('error', (event) => (errorEvent = <ErrorEvent>event));
+
+			await new Promise((resolve) => {
+				window.requestAnimationFrame(() => {
+					throw new window.Error('Test error');
+				});
+				window.requestAnimationFrame(() => {
+					order.push('second');
+					resolve(null);
+				});
+			});
+
+			expect(order).toEqual(['second']);
+			expect((<ErrorEvent>(<unknown>errorEvent)).error?.message).toBe('Test error');
 		});
 
 		it('Catches errors thrown in the callback.', async () => {
@@ -1941,14 +2030,50 @@ describe('BrowserWindow', () => {
 
 	describe('cancelAnimationFrame()', () => {
 		it('Cancels an animation frame.', () => {
-			const timeoutId = window.requestAnimationFrame(() => {
-				throw new Error('This timeout should have been canceled.');
+			const handle = window.requestAnimationFrame(() => {
+				throw new Error('This animation frame should have been canceled.');
 			});
-			window.cancelAnimationFrame(timeoutId);
+			window.cancelAnimationFrame(handle);
 		});
 
-		it('Supports number values.', () => {
-			window.cancelAnimationFrame(<NodeJS.Immediate>(<unknown>-1));
+		it('Cancels an animation frame without canceling the other callbacks of the frame.', async () => {
+			const order: string[] = [];
+
+			await new Promise((resolve) => {
+				const handle = window.requestAnimationFrame(() => {
+					throw new Error('This animation frame should have been canceled.');
+				});
+				window.requestAnimationFrame(() => {
+					order.push('second');
+					resolve(null);
+				});
+				window.cancelAnimationFrame(handle);
+			});
+
+			expect(order).toEqual(['second']);
+		});
+
+		it('Cancels an animation frame from a callback in the same frame.', async () => {
+			const order: string[] = [];
+
+			let handle = 0;
+
+			await new Promise((resolve) => {
+				window.requestAnimationFrame(() => {
+					order.push('first');
+					window.cancelAnimationFrame(handle);
+					window.requestAnimationFrame(() => resolve(null));
+				});
+				handle = window.requestAnimationFrame(() => {
+					throw new Error('This animation frame should have been canceled.');
+				});
+			});
+
+			expect(order).toEqual(['first']);
+		});
+
+		it('Ignores unknown handles.', () => {
+			window.cancelAnimationFrame(-1);
 		});
 	});
 
