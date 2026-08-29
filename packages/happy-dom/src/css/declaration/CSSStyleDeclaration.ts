@@ -4862,7 +4862,7 @@ export default class CSSStyleDeclaration {
 	 * @param value Value. Must not contain "!important" as that should be set using the priority parameter.
 	 * @param [priority] Can be "important", or an empty string.
 	 */
-	public setProperty(name: string, value: string, priority?: 'important' | '' | undefined): void {
+	public setProperty(name: string, value: string | null, priority?: 'important' | '' | null | undefined): void {
 		if (this.#computed) {
 			throw new this[PropertySymbol.window].DOMException(
 				`Failed to execute 'setProperty' on 'CSSStyleDeclaration': These styles are computed, and therefore the '${name}' property is read-only.`,
@@ -4870,11 +4870,12 @@ export default class CSSStyleDeclaration {
 			);
 		}
 
-		if (priority !== '' && priority !== undefined && priority !== 'important') {
+		if (priority !== '' && priority !== undefined && priority !== null && priority !== 'important') {
 			return;
 		}
 
-		const stringValue = String(value).trim();
+		// Per MDN spec: null value is treated the same as empty string
+		const stringValue = String(value ?? '').trim();
 		const propertyManager = this.#getPropertyManager();
 
 		if (stringValue) {
