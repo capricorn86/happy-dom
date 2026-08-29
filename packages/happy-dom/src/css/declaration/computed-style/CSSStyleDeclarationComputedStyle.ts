@@ -199,12 +199,17 @@ export default class CSSStyleDeclarationComputedStyle {
 
 			Object.assign(cssProperties, rulesAndProperties.properties);
 
+			const resolvedCSSVariables = this.resolveCSSVariables(cssProperties);
+
 			for (const { name, value, important } of rules) {
 				if (
 					(<any>CSSStyleDeclarationElementInheritedProperties)[name] ||
 					parentElement === targetElement
 				) {
-					const parsedValue = this.parseCSSVariablesInValue(value.trim(), cssProperties);
+					// CSS variables have already been resolved, which is important as a variable taking part in a cyclic reference is invalid and therefore not allowed to use its fallback value.
+					const parsedValue = name.startsWith('--')
+						? resolvedCSSVariables[name]
+						: this.parseCSSVariablesInValue(value.trim(), resolvedCSSVariables);
 
 					if (parsedValue && (!propertyManager.get(name)?.important || important)) {
 						propertyManager.set(name, parsedValue, important);
@@ -451,10 +456,117 @@ export default class CSSStyleDeclarationComputedStyle {
 	}
 
 	/**
+	 * Resolves CSS variables, so that they can be used for substitution without having to resolve references while parsing values.
+	 *
+	 * Cyclic references are resolved to an empty value, as the CSS specification defines the computed value of custom properties taking part in a cycle as invalid.
+	 *
+	 * @param cssVariables CSS variables.
+	 * @returns Resolved CSS variables.
+	 */
+	private resolveCSSVariables(cssVariables: { [k: string]: string }): { [k: string]: string } {
+		const resolvedCSSVariables: { [k: string]: string } = {};
+
+		for (const name of Object.keys(cssVariables)) {
+			this.resolveCSSVariable({
+				name,
+				cssVariables,
+				resolvedCSSVariables,
+				referenceChain: new Set(),
+				cycleStarts: new Set()
+			});
+		}
+
+		return resolvedCSSVariables;
+	}
+
+	/**
+	 * Resolves a CSS variable and the variables it references.
+	 *
+	 * The reference chain contains the variables currently being resolved. A variable referencing a variable in the chain closes a cycle, which makes all variables in the chain from that variable and onwards invalid. A variable that is used multiple times in the same value is not a cyclic reference, as it is removed from the chain once it has been resolved (e.g. "var(--zero) var(--zero)").
+	 *
+	 * @param options Options.
+	 * @param options.name Name.
+	 * @param options.cssVariables CSS variables.
+	 * @param options.resolvedCSSVariables Resolved CSS variables.
+	 * @param options.referenceChain Names of the variables currently being resolved.
+	 * @param options.cycleStarts Names of the variables that cycles have been closed at, which haven't been resolved yet.
+	 * @returns Resolved value.
+	 */
+	private resolveCSSVariable(options: {
+		name: string;
+		cssVariables: { [k: string]: string };
+		resolvedCSSVariables: { [k: string]: string };
+		referenceChain: Set<string>;
+		cycleStarts: Set<string>;
+	}): string {
+		const { name, cssVariables, resolvedCSSVariables, referenceChain, cycleStarts } = options;
+
+		if (resolvedCSSVariables[name] !== undefined) {
+			return resolvedCSSVariables[name];
+		}
+
+		let newValue = cssVariables[name] ?? '';
+		let match: RegExpMatchArray | null;
+		let isCyclic = false;
+
+		referenceChain.add(name);
+
+		// Without fallback value - E.g. var(--my-var)
+		while ((match = newValue.match(SINGLE_CSS_VARIABLE_REGEXP)) !== null) {
+			// Cyclic reference - E.g. --a: var(--b); --b: var(--a);
+			if (referenceChain.has(match[1])) {
+				cycleStarts.add(match[1]);
+				isCyclic = true;
+				break;
+			}
+
+			const referenceValue = this.resolveCSSVariable({ ...options, name: match[1] });
+
+			// The reference took part in a cycle that hasn't been closed yet, which makes this variable part of the cycle as well.
+			if (cycleStarts.size) {
+				isCyclic = true;
+				break;
+			}
+
+			newValue = newValue.replace(match[0], referenceValue);
+		}
+
+		// Fallback value - E.g. var(--my-var, #FFFFFF)
+		while (!isCyclic && (match = newValue.match(CSS_VARIABLE_REGEXP)) !== null) {
+			// Cyclic reference - E.g. --a: var(--b, red); --b: var(--a, blue);
+			if (referenceChain.has(match[1])) {
+				cycleStarts.add(match[1]);
+				isCyclic = true;
+				break;
+			}
+
+			const referenceValue = this.resolveCSSVariable({ ...options, name: match[1] });
+
+			if (cycleStarts.size) {
+				isCyclic = true;
+				break;
+			}
+
+			// The fallback value is used when the variable isn't defined.
+			newValue = newValue.replace(match[0], referenceValue || match[2]);
+		}
+
+		referenceChain.delete(name);
+		cycleStarts.delete(name);
+
+		// The CSS specification defines the computed value of a custom property taking part in a cycle as invalid, so the fallback value is not used.
+		resolvedCSSVariables[name] = isCyclic ? '' : newValue;
+
+		return resolvedCSSVariables[name];
+	}
+
+	/**
 	 * Parses CSS variables in a value.
 	 *
+	 * The CSS variables are expected to be resolved by resolveCSSVariables(), as the substituted values then can't introduce new references.
+	 *
 	 * @param value Value.
-	 * @param cssVariables CSS variables.
+	 * @param cssVariables Resolved CSS variables.
 	 * @returns CSS value.
 	 */
 	private parseCSSVariablesInValue(value: string, cssVariables: { [k: string]: string }): string {
