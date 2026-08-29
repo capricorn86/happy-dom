@@ -11,6 +11,7 @@ import type { Buffer } from 'buffer';
 export default class File extends Blob {
 	public readonly lastModified: number;
 	public readonly name: string;
+	public readonly webkitRelativePath: string = '';
 
 	/**
 	 * Constructor.

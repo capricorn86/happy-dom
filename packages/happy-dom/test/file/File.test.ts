@@ -27,4 +27,11 @@ describe('File', () => {
 			expect(file.lastModified).toBe(NOW);
 		});
 	});
+
+	describe('get webkitRelativePath()', () => {
+		it('Returns an empty string by default.', () => {
+			const file = new File(['TEST'], 'filename.jpg');
+			expect(file.webkitRelativePath).toBe('');
+		});
+	});
 });
