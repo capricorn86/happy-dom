@@ -49,6 +49,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	#async = true;
 	#abortController: AbortController | null = null;
 	#aborted = false;
+	#timeout = 0;
+	#timedOut = false;
+	#timeoutTimer: NodeJS.Timeout | null = null;
 	#request: Request | null = null;
 	#response: Response | ISyncResponse | null = null;
 	#responseType: XMLHttpResponseTypeEnum | '' = '';
@@ -203,6 +206,32 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	}
 
 	/**
+	 * Returns the number of milliseconds a request can take before automatically being terminated. A value of 0 means there is no timeout.
+	 *
+	 * @returns Timeout in milliseconds.
+	 */
+	public get timeout(): number {
+		return this.#timeout;
+	}
+
+	/**
+	 * Sets the number of milliseconds a request can take before automatically being terminated. A value of 0 means there is no timeout.
+	 *
+	 * @param value Timeout in milliseconds.
+	 * @throws {DOMException} If the request is synchronous.
+	 */
+	public set timeout(value: number) {
+		if (!this.#async) {
+			throw new this[PropertySymbol.window].DOMException(
+				`Failed to set the 'timeout' property on 'XMLHttpRequest': Timeouts cannot be set for synchronous requests made from a document.`,
+				DOMExceptionNameEnum.invalidAccessError
+			);
+		}
+		// Converts the value according to Web IDL "unsigned long" conversion rules (e.g. NaN becomes 0).
+		this.#timeout = Number(value) >>> 0;
+	}
+
+	/**
 	 * Opens the connection.
 	 *
 	 * @param method Connection method (eg GET, POST).
@@ -221,6 +250,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			);
 		}
 
+		if (!async && this.#timeout !== 0) {
+			throw new window.DOMException(
+				`Failed to execute 'open' on 'XMLHttpRequest': Synchronous requests from a document must not set a timeout.`,
+				DOMExceptionNameEnum.invalidAccessError
+			);
+		}
+
 		const headers = new this[PropertySymbol.window].Headers();
 		if (user) {
 			const authBuffer = Buffer.from(`${user}:${password || ''}`);
@@ -229,6 +265,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		this.#async = async;
 		this.#aborted = false;
+		this.#timedOut = false;
+		this.#clearTimeoutTimer();
 		this.#response = null;
 		this.#responseBody = null;
 		this.#accumulatedData = Buffer.from([]);
@@ -396,7 +434,25 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			});
 		}
 
+		if (this.#timeout !== 0) {
+			this.#timeoutTimer = window.setTimeout(() => {
+				this.#timedOut = true;
+				this.#abortController!.abort();
+			}, this.#timeout);
+		}
+
 		this.#abortController!.signal.addEventListener('abort', () => {
+			this.#clearTimeoutTimer();
+
+			if (this.#timedOut) {
+				this.#readyState = XMLHttpRequestReadyStateEnum.done;
+				this.#dispatchEvent(new Event('readystatechange'));
+				this.#dispatchEvent(new ProgressEvent('timeout'));
+				this.#dispatchEvent(new Event('loadend'));
+				asyncTaskManager.endTask(taskID);
+				return;
+			}
+
 			this.#aborted = true;
 			this.#readyState = XMLHttpRequestReadyStateEnum.unsent;
 			this.#dispatchEvent(new Event('abort'));
@@ -406,6 +462,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		});
 
 		const onError = (error: Error): void => {
+			this.#clearTimeoutTimer();
+			// The "timeout" event has already been dispatched by the abort signal listener when the request has timed out.
+			if (this.#timedOut) {
+				return;
+			}
 			if (error instanceof DOMException && error.name === DOMExceptionNameEnum.abortError) {
 				if (this.#aborted) {
 					return;
@@ -486,6 +547,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#readyState = XMLHttpRequestReadyStateEnum.done;
 		this.#accumulatedData = Buffer.from([]);
 
+		this.#clearTimeoutTimer();
+
 		asyncTaskManager.endTask(taskID);
 
 		this.#dispatchEvent(new Event('readystatechange'));
@@ -554,6 +617,16 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#dispatchEvent(new Event('readystatechange'));
 		this.#dispatchEvent(new Event('load'));
 		this.#dispatchEvent(new Event('loadend'));
+	}
+
+	/**
+	 * Clears the timer used for detecting when the request has timed out.
+	 */
+	#clearTimeoutTimer(): void {
+		if (this.#timeoutTimer !== null) {
+			this[PropertySymbol.window].clearTimeout(this.#timeoutTimer);
+			this.#timeoutTimer = null;
+		}
 	}
 
 	/**
