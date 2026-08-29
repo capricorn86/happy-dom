@@ -34,12 +34,19 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 	// Injected by WindowContextClassExtender
 	protected declare [PropertySymbol.window]: BrowserWindow;
 
-	// Constants
+	// Static constants
 	public static UNSENT = XMLHttpRequestReadyStateEnum.unsent;
 	public static OPENED = XMLHttpRequestReadyStateEnum.opened;
 	public static HEADERS_RECEIVED = XMLHttpRequestReadyStateEnum.headersReceived;
 	public static LOADING = XMLHttpRequestReadyStateEnum.loading;
 	public static DONE = XMLHttpRequestReadyStateEnum.done;
+
+	// Instance-level constants (mirrors of the static ones, per the XMLHttpRequest spec)
+	public readonly UNSENT = XMLHttpRequestReadyStateEnum.unsent;
+	public readonly OPENED = XMLHttpRequestReadyStateEnum.opened;
+	public readonly HEADERS_RECEIVED = XMLHttpRequestReadyStateEnum.headersReceived;
+	public readonly LOADING = XMLHttpRequestReadyStateEnum.loading;
+	public readonly DONE = XMLHttpRequestReadyStateEnum.done;
 
 	// Public properties
 	public upload: XMLHttpRequestUpload = new this[PropertySymbol.window].XMLHttpRequestUpload();
