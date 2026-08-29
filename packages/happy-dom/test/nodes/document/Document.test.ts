@@ -1,9 +1,6 @@
 import Window from '../../../src/window/Window.js';
 import CustomElement from '../../CustomElement.js';
 import HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
-import Text from '../../../src/nodes/text/Text.js';
-import Comment from '../../../src/nodes/comment/Comment.js';
-import DocumentFragment from '../../../src/nodes/document-fragment/DocumentFragment.js';
 import NodeIterator from '../../../src/tree-walker/NodeIterator.js';
 import TreeWalker from '../../../src/tree-walker/TreeWalker.js';
 import Node from '../../../src/nodes/node/Node.js';
@@ -175,22 +172,22 @@ describe('Document', () => {
 	]) {
 		describe(`get on${event}()`, () => {
 			it('Returns the event listener.', () => {
-				document[`on${event}`] = () => {
-					window['test'] = 1;
+				(<any>document)[`on${event}`] = () => {
+					(<any>window)['test'] = 1;
 				};
-				expect(document[`on${event}`]).toBeTypeOf('function');
-				document[`on${event}`](new Event(event));
-				expect(window['test']).toBe(1);
+				expect((<any>document)[`on${event}`]).toBeTypeOf('function');
+				(<any>document)[`on${event}`](new Event(event));
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 
 		describe(`set on${event}()`, () => {
 			it('Sets the event listener.', () => {
-				document[`on${event}`] = () => {
-					window['test'] = 1;
+				(<any>document)[`on${event}`] = () => {
+					(<any>window)['test'] = 1;
 				};
-				document.dispatchEvent(new Event(event));
-				expect(window['test']).toBe(1);
+				(<any>document).dispatchEvent(new Event(event));
+				expect((<any>window)['test']).toBe(1);
 			});
 		});
 	}
@@ -204,7 +201,7 @@ describe('Document', () => {
 
 				document.head.appendChild(meta);
 
-				expect(document[property]).toBe('windows-1252');
+				expect((<any>document)[property]).toBe('windows-1252');
 			});
 		});
 	}
@@ -218,6 +215,16 @@ describe('Document', () => {
 	describe('get nodeName()', () => {
 		it('Returns "#document".', () => {
 			expect(document.nodeName).toBe('#document');
+		});
+	});
+
+	describe('get timeline()', () => {
+		it('Returns the document timeline.', () => {
+			const timeline = document.timeline;
+
+			expect(timeline).toBeInstanceOf(window.DocumentTimeline);
+			expect(document.timeline).toBe(timeline);
+			expect(timeline.currentTime).toBeTypeOf('number');
 		});
 	});
 
@@ -539,7 +546,7 @@ describe('Document', () => {
 				link.rel = 'stylesheet';
 				link.href = 'https://localhost:8080/path/to/file.css';
 
-				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function () {
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (this: any) {
 					fetchedUrl = this.request.url;
 					return <Promise<Response>>Promise.resolve({
 						text: () => Promise.resolve('button { background-color: red }'),
@@ -1447,8 +1454,8 @@ describe('Document', () => {
 			const root = document.createElement('div');
 			const whatToShow = 1;
 			const filter = {
-				acceptNode(node) {
-					if (node === Node.ELEMENT_NODE) {
+				acceptNode(node: Node) {
+					if (node.nodeType === Node.ELEMENT_NODE) {
 						return NodeFilter.FILTER_ACCEPT;
 					}
 					return NodeFilter.FILTER_REJECT;
@@ -1467,8 +1474,8 @@ describe('Document', () => {
 			const root = document.createElement('div');
 			const whatToShow = 1;
 			const filter = {
-				acceptNode: (node) => {
-					if (node === Node.ELEMENT_NODE) {
+				acceptNode: (node: Node) => {
+					if (node.nodeType === Node.ELEMENT_NODE) {
 						return NodeFilter.FILTER_ACCEPT;
 					}
 					return NodeFilter.FILTER_REJECT;
@@ -1623,6 +1630,7 @@ describe('Document', () => {
 				let currentTarget: EventTarget | null = null;
 
 				vi.spyOn(ResourceFetch.prototype, 'fetch').mockImplementation(async function (
+					this: any,
 					url: string | URL
 				) {
 					if ((<string>url).endsWith('.css')) {
@@ -1667,9 +1675,9 @@ describe('Document', () => {
 					expect(document.styleSheets.length).toBe(1);
 					expect(document.styleSheets[0].cssRules[0].cssText).toBe(cssResponse);
 
-					expect(window['test']).toBe('test');
+					expect((<any>window)['test']).toBe('test');
 
-					delete window['test'];
+					delete (<any>window)['test'];
 
 					resolve(null);
 				}, 10);
@@ -1767,12 +1775,12 @@ describe('Document', () => {
 			const script1 = document.createElement('script');
 			script1.textContent = 'window.test = document.currentScript;';
 			document.body.appendChild(script1);
-			expect(window['test']).toBe(script1);
+			expect((<any>window)['test']).toBe(script1);
 			expect(document.currentScript).toBe(null);
 			const script2 = document.createElement('script');
 			script2.textContent = 'window.test = document.currentScript;';
 			document.body.appendChild(script2);
-			expect(window['test']).toBe(script2);
+			expect((<any>window)['test']).toBe(script2);
 			expect(document.currentScript).toBe(null);
 		});
 	});

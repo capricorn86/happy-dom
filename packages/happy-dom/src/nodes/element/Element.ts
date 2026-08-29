@@ -32,6 +32,12 @@ import type IScrollToOptions from '../../window/IScrollToOptions.js';
 import { AttributeUtility } from '../../utilities/AttributeUtility.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import ElementEventAttributeUtility from './ElementEventAttributeUtility.js';
+import type Animation from '../../animation/Animation.js';
+import type {
+	IKeyframe,
+	IKeyframeEffectOptions,
+	IPropertyIndexedKeyframes
+} from '../../animation/KeyframeEffect.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -69,6 +75,7 @@ export default class Element
 	public declare [PropertySymbol.tagName]: string | null;
 	public declare [PropertySymbol.localName]: string | null;
 	public declare [PropertySymbol.namespaceURI]: string | null;
+	public declare [PropertySymbol.animations]: Animation[];
 
 	/**
 	 * Constructor.
@@ -100,6 +107,7 @@ export default class Element
 		this[PropertySymbol.computedStyle] = null;
 		this[PropertySymbol.pointerCaptures] = new Set();
 		this[PropertySymbol.propertyEventListeners] = new Map();
+		this[PropertySymbol.animations] = [];
 
 		// CustomElementRegistry will populate the properties upon calling "CustomElementRegistry.define()".
 		// Elements that can be constructed with the "new" keyword (without using "Document.createElement()") will also populate the properties.
@@ -1458,6 +1466,36 @@ export default class Element
 			parent = <Element>parent.parentElement;
 		}
 		return true;
+	}
+
+	/**
+	 * Creates and starts an animation for the element.
+	 *
+	 * @param keyframes Keyframes.
+	 * @param options Timing options.
+	 * @returns Animation.
+	 */
+	public animate(
+		keyframes: IKeyframe[] | IPropertyIndexedKeyframes | null,
+		options: number | IKeyframeEffectOptions = {}
+	): Animation {
+		const effect = new this[PropertySymbol.window].KeyframeEffect(this, keyframes, options);
+		const animation = new this[PropertySymbol.window].Animation(
+			effect,
+			this[PropertySymbol.ownerDocument].timeline
+		);
+		this[PropertySymbol.animations].push(animation);
+		animation.play();
+		return animation;
+	}
+
+	/**
+	 * Returns animations affecting the element.
+	 *
+	 * @returns Animations.
+	 */
+	public getAnimations(): Animation[] {
+		return this[PropertySymbol.animations].filter((animation) => animation.playState !== 'idle');
 	}
 
 	/**

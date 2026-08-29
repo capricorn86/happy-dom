@@ -1,6 +1,7 @@
 import Element from '../element/Element.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import type BrowserWindow from '../../window/BrowserWindow.js';
+import DocumentTimeline from '../../animation/DocumentTimeline.js';
 import Node from '../node/Node.js';
 import NodeIterator from '../../tree-walker/NodeIterator.js';
 import TreeWalker from '../../tree-walker/TreeWalker.js';
@@ -89,6 +90,7 @@ export default class Document extends Node {
 	public [PropertySymbol.propertyEventListeners]: Map<string, ((event: Event) => void) | null> =
 		new Map();
 	public [PropertySymbol.selection]: Selection | null = null;
+	public [PropertySymbol.timeline]: DocumentTimeline = new DocumentTimeline();
 	public declare cloneNode: (deep?: boolean) => Document;
 
 	// Events
@@ -1478,6 +1480,15 @@ export default class Document extends Node {
 	 */
 	public get contentType(): string {
 		return this[PropertySymbol.contentType];
+	}
+
+	/**
+	 * Returns the timeline associated with the document.
+	 *
+	 * @returns The timeline associated with the document.
+	 */
+	public get timeline(): DocumentTimeline {
+		return this[PropertySymbol.timeline];
 	}
 
 	/**
