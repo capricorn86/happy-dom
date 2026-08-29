@@ -93,6 +93,20 @@ export default class Attr extends Node implements Attr {
 	}
 
 	/**
+	 * @override
+	 */
+	public override get nodeValue(): string | null {
+		return this[PropertySymbol.value];
+	}
+
+	/**
+	 * @override
+	 */
+	public override set nodeValue(value: string | null) {
+		this[PropertySymbol.value] = value === null ? '' : String(value);
+	}
+
+	/**
 	 * Returns namespace URI.
 	 *
 	 * @returns Namespace URI.
