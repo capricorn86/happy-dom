@@ -323,6 +323,8 @@ import CSSStyleValue from '../css/style-property-map/CSSStyleValue.js';
 import CSSConditionRule from '../css/rules/CSSConditionRule.js';
 import CSSGroupingRule from '../css/rules/CSSGroupingRule.js';
 import CSSScopeRule from '../css/rules/CSSScopeRule.js';
+import CSSLayerBlockRule from '../css/rules/CSSLayerBlockRule.js';
+import CSSLayerStatementRule from '../css/rules/CSSLayerStatementRule.js';
 import PopStateEvent from '../event/events/PopStateEvent.js';
 import type ITimerLoopsLimit from './ITimerLoopsLimit.js';
 import CloseEvent from '../event/events/CloseEvent.js';
@@ -684,6 +686,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly CSSConditionRule = CSSConditionRule;
 	public readonly CSSGroupingRule = CSSGroupingRule;
 	public readonly CSSScopeRule = CSSScopeRule;
+	public readonly CSSLayerBlockRule = CSSLayerBlockRule;
+	public readonly CSSLayerStatementRule = CSSLayerStatementRule;
 	public readonly DOMRect = DOMRect;
 	public readonly DOMRectReadOnly = DOMRectReadOnly;
 	public readonly Plugin = Plugin;

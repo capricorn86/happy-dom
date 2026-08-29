@@ -7,6 +7,8 @@ import type CSSKeyframeRule from '../../src/css/rules/CSSKeyframeRule.js';
 import type CSSKeyframesRule from '../../src/css/rules/CSSKeyframesRule.js';
 import type CSSContainerRule from '../../src/css/rules/CSSContainerRule.js';
 import type CSSSupportsRule from '../../src/css/rules/CSSSupportsRule.js';
+import type CSSLayerBlockRule from '../../src/css/rules/CSSLayerBlockRule.js';
+import type CSSLayerStatementRule from '../../src/css/rules/CSSLayerStatementRule.js';
 import { describe, it, expect, beforeEach } from 'vitest';
 import type BrowserWindow from '../../src/window/BrowserWindow.js';
 import Window from '../../src/window/Window.js';
@@ -553,6 +555,124 @@ describe('CSSParser', () => {
 
 			expect(cssRules.length).toBe(1);
 			expect((<CSSKeyframesRule>cssRules[0]).cssText).toBe('@keyframes keyframes1 { \n}');
+		});
+		it('Supports @layer rule', () => {
+			const cssStyleSheet = new window.CSSStyleSheet();
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(`
+                @layer base {
+                    .foo { color: red; }
+                }
+            `);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSLayerBlockRule>cssRules[0]).name).toBe('base');
+			expect((<CSSLayerBlockRule>cssRules[0]).parentRule).toBe(null);
+			expect((<CSSLayerBlockRule>cssRules[0]).parentStyleSheet).toBe(cssStyleSheet);
+			expect((<CSSLayerBlockRule>cssRules[0]).cssRules.length).toBe(1);
+			expect((<CSSStyleRule>(<CSSLayerBlockRule>cssRules[0]).cssRules[0]).selectorText).toBe(
+				'.foo'
+			);
+			expect((<CSSLayerBlockRule>cssRules[0]).cssText).toBe(
+				'@layer base {\n  .foo { color: red; }\n}'
+			);
+		});
+
+		it('Supports @layer rule without a name', () => {
+			const cssStyleSheet = new window.CSSStyleSheet();
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(`
+                @layer {
+                    .foo { color: red; }
+                }
+            `);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSLayerBlockRule>cssRules[0]).name).toBe('');
+			expect((<CSSLayerBlockRule>cssRules[0]).cssText).toBe('@layer {\n  .foo { color: red; }\n}');
+		});
+
+		it('Supports @layer rule inside a @layer rule', () => {
+			const cssStyleSheet = new window.CSSStyleSheet();
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(`
+                @layer base {
+                    @layer reset {
+                        .foo { color: red; }
+                    }
+                }
+            `);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSLayerBlockRule>cssRules[0]).cssRules.length).toBe(1);
+			expect((<CSSLayerBlockRule>(<CSSLayerBlockRule>cssRules[0]).cssRules[0]).name).toBe('reset');
+			expect((<CSSLayerBlockRule>cssRules[0]).cssText).toBe(
+				'@layer base {\n  @layer reset {\n  .foo { color: red; }\n}\n}'
+			);
+		});
+
+		it('Supports @layer rule inside a @media rule', () => {
+			const cssStyleSheet = new window.CSSStyleSheet();
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(`
+                @media screen {
+                    @layer base {
+                        .foo { color: red; }
+                    }
+                }
+            `);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSMediaRule>cssRules[0]).cssText).toBe(
+				'@media screen {\n  @layer base {\n  .foo { color: red; }\n}\n}'
+			);
+		});
+
+		it('Ignores @layer rule inside a @keyframes rule', () => {
+			const cssStyleSheet = new window.CSSStyleSheet();
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(`
+                @keyframes keyframes1 {
+                    @layer base {
+                        .foo { color: red; }
+                    }
+                }
+            `);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSKeyframesRule>cssRules[0]).cssText).toBe('@keyframes keyframes1 { \n}');
+		});
+
+		it('Supports @layer statement rule', () => {
+			const cssStyleSheet = new window.CSSStyleSheet();
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(`
+                @layer base, theme;
+            `);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSLayerStatementRule>cssRules[0]).nameList).toEqual(['base', 'theme']);
+			expect((<CSSLayerStatementRule>cssRules[0]).parentStyleSheet).toBe(cssStyleSheet);
+			expect((<CSSLayerStatementRule>cssRules[0]).cssText).toBe('@layer base, theme;');
+		});
+
+		it('Supports @layer statement rule written over several lines', () => {
+			const cssStyleSheet = new window.CSSStyleSheet();
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(`
+                @layer
+                    base,
+                    theme;
+            `);
+
+			expect(cssRules.length).toBe(1);
+			expect((<CSSLayerStatementRule>cssRules[0]).nameList).toEqual(['base', 'theme']);
+			expect((<CSSLayerStatementRule>cssRules[0]).cssText).toBe('@layer base, theme;');
+		});
+
+		it('Parses the rule following a statement at-rule', () => {
+			const cssStyleSheet = new window.CSSStyleSheet();
+			const cssRules = new CSSParser(cssStyleSheet).parseFromString(`
+                @layer base, theme;
+                .foo { color: red; }
+            `);
+
+			expect(cssRules.length).toBe(2);
+			expect((<CSSStyleRule>cssRules[1]).selectorText).toBe('.foo');
+			expect((<CSSStyleRule>cssRules[1]).style.color).toBe('red');
 		});
 	});
 });

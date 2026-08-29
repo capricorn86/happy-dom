@@ -97,6 +97,7 @@ export const clientWidth = Symbol('clientWidth');
 export const clientLeft = Symbol('clientLeft');
 export const clientTop = Symbol('clientTop');
 export const name = Symbol('name');
+export const nameList = Symbol('nameList');
 export const specified = Symbol('specified');
 export const adoptedStyleSheets = Symbol('adoptedStyleSheets');
 export const implementation = Symbol('implementation');
