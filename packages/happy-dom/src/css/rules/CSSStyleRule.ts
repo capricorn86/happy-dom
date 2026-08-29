@@ -55,6 +55,16 @@ export default class CSSStyleRule extends CSSGroupingRule {
 	}
 
 	/**
+	 * Sets selector text.
+	 *
+	 * @see https://drafts.csswg.org/cssom/#dom-cssstylerule-selectortext
+	 * @param selectorText Selector text.
+	 */
+	public set selectorText(selectorText: string) {
+		this[PropertySymbol.selectorText] = selectorText;
+	}
+
+	/**
 	 * Returns style.
 	 *
 	 * @returns Style.
