@@ -2310,6 +2310,81 @@ describe('Element', () => {
 			const domRect = element.getBoundingClientRect();
 			expect(domRect instanceof DOMRect).toBe(true);
 		});
+
+		it('Returns the width and height defined in a stylesheet.', () => {
+			document.body.innerHTML =
+				'<style>.test-div { width: 100px; height: 80px; }</style><div class="test-div">test</div>';
+			const domRect = document.body.querySelector('.test-div')!.getBoundingClientRect();
+			expect(domRect.x).toBe(0);
+			expect(domRect.y).toBe(0);
+			expect(domRect.width).toBe(100);
+			expect(domRect.height).toBe(80);
+		});
+
+		it('Returns the width and height defined in the style attribute.', () => {
+			document.body.innerHTML = '<div style="width: 100px; height: 80px;">test</div>';
+			const domRect = document.body.querySelector('div')!.getBoundingClientRect();
+			expect(domRect.width).toBe(100);
+			expect(domRect.height).toBe(80);
+		});
+
+		it('Converts font relative units to pixels.', () => {
+			document.body.innerHTML = '<div style="width: 10rem; height: 5em;">test</div>';
+			const domRect = document.body.querySelector('div')!.getBoundingClientRect();
+			expect(domRect.width).toBe(160);
+			expect(domRect.height).toBe(80);
+		});
+
+		it('Adds padding and border to the size when box-sizing is "content-box".', () => {
+			document.body.innerHTML =
+				'<div style="width: 70px; height: 60px; padding: 5px 10px; border: 2px solid green;">test</div>';
+			const domRect = document.body.querySelector('div')!.getBoundingClientRect();
+			expect(domRect.width).toBe(94);
+			expect(domRect.height).toBe(74);
+		});
+
+		it('Does not add padding and border to the size when box-sizing is "border-box".', () => {
+			document.body.innerHTML =
+				'<div style="box-sizing: border-box; width: 70px; height: 60px; padding: 5px 10px; border: 2px solid green;">test</div>';
+			const domRect = document.body.querySelector('div')!.getBoundingClientRect();
+			expect(domRect.width).toBe(70);
+			expect(domRect.height).toBe(60);
+		});
+
+		it('Returns a zero rect when the element is not connected to the document.', () => {
+			const div = document.createElement('div');
+			div.style.width = '100px';
+			div.style.height = '80px';
+			const domRect = div.getBoundingClientRect();
+			expect(domRect.width).toBe(0);
+			expect(domRect.height).toBe(0);
+		});
+
+		it('Returns a zero rect when the display is "none".', () => {
+			document.body.innerHTML =
+				'<div style="display: none; width: 100px; height: 80px;">test</div>';
+			const domRect = document.body.querySelector('div')!.getBoundingClientRect();
+			expect(domRect.width).toBe(0);
+			expect(domRect.height).toBe(0);
+		});
+
+		it('Returns 0 for sizes that can\'t be calculated without a layout engine (e.g. percentages or "fit-content").', () => {
+			document.body.innerHTML = '<div style="width: 50%; height: fit-content;">test</div>';
+			const domRect = document.body.querySelector('div')!.getBoundingClientRect();
+			expect(domRect.width).toBe(0);
+			expect(domRect.height).toBe(0);
+		});
+	});
+
+	describe('getClientRects()', () => {
+		it('Returns a DOMRectList containing the bounding client rect.', () => {
+			document.body.innerHTML =
+				'<style>.test-div { width: 100px; height: 80px; }</style><div class="test-div">test</div>';
+			const clientRects = document.body.querySelector('.test-div')!.getClientRects();
+			expect(clientRects.length).toBe(1);
+			expect(clientRects[0].width).toBe(100);
+			expect(clientRects.item(0)!.height).toBe(80);
+		});
 	});
 
 	describe('setPointerCapture()', () => {

@@ -994,11 +994,36 @@ export default class Element
 	/**
 	 * Returns the size of an element and its position relative to the viewport.
 	 *
+	 * Happy DOM doesn't have a layout engine, so the position is always 0 and the size is based on the computed style of the element. Sizes that depend on the layout of other elements (such as percentages, "auto" or "fit-content") can't be calculated and are treated as 0.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
 	 * @returns DOM rect.
 	 */
 	public getBoundingClientRect(): DOMRect {
-		// TODO: Not full implementation
-		return new DOMRect();
+		const computedStyle = this[PropertySymbol.window].getComputedStyle(this);
+
+		if (!this[PropertySymbol.isConnected] || computedStyle.display === 'none') {
+			return new DOMRect();
+		}
+
+		let width = this.#getComputedPixelValue(computedStyle.width);
+		let height = this.#getComputedPixelValue(computedStyle.height);
+
+		// The bounding client rect is the size of the border box. When box-sizing is "content-box" (the default), padding and border are not part of "width" and "height" and need to be added.
+		if (computedStyle.boxSizing !== 'border-box') {
+			width +=
+				this.#getComputedPixelValue(computedStyle.paddingLeft) +
+				this.#getComputedPixelValue(computedStyle.paddingRight) +
+				this.#getComputedPixelValue(computedStyle.borderLeftWidth) +
+				this.#getComputedPixelValue(computedStyle.borderRightWidth);
+			height +=
+				this.#getComputedPixelValue(computedStyle.paddingTop) +
+				this.#getComputedPixelValue(computedStyle.paddingBottom) +
+				this.#getComputedPixelValue(computedStyle.borderTopWidth) +
+				this.#getComputedPixelValue(computedStyle.borderBottomWidth);
+		}
+
+		return new DOMRect(0, 0, width, height);
 	}
 
 	/**
@@ -1709,6 +1734,16 @@ export default class Element
 		this[PropertySymbol.attributes][PropertySymbol.itemsByNamespaceURI].clear();
 		this[PropertySymbol.attributes][PropertySymbol.itemsByName].clear();
 		this[PropertySymbol.attributes][PropertySymbol.items].clear();
+	}
+
+	/**
+	 * Returns a computed style value in pixels. Values that haven't been resolved to pixels (such as percentages) can't be calculated without a layout engine and are treated as 0.
+	 *
+	 * @param value Computed style value.
+	 * @returns Value in pixels.
+	 */
+	#getComputedPixelValue(value: string): number {
+		return value.endsWith('px') ? parseFloat(value) || 0 : 0;
 	}
 
 	/**
