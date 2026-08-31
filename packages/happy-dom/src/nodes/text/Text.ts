@@ -4,6 +4,8 @@ import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import type HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
 import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import NodeUtility from '../node/NodeUtility.js';
+import type HTMLSlotElement from '../html-slot-element/HTMLSlotElement.js';
+import SlottableUtility from '../slottable/SlottableUtility.js';
 import type HTMLStyleElement from '../html-style-element/HTMLStyleElement.js';
 
 /**
@@ -22,6 +24,15 @@ export default class Text extends CharacterData {
 	 */
 	public get nodeName(): string {
 		return '#text';
+	}
+
+	/**
+	 * Returns the slot the text node is assigned to.
+	 *
+	 * @returns Slot element or null.
+	 */
+	public get assignedSlot(): HTMLSlotElement | null {
+		return SlottableUtility.getAssignedSlot(this);
 	}
 
 	/**
