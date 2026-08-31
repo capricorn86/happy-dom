@@ -25,7 +25,8 @@ import type CSSStyleSheet from '../../CSSStyleSheet.js';
 const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
 const HOST_REGEXP = /:host\s*\(([^)]+)\)|:host-context\s*\(([^)]+)\)/;
 const SINGLE_CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+)\)/;
-const CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+), *([^), ]+)\)/;
+const CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+), *([^)]+)([\) ]+)/;
+const CSS_VARIABLE_SPACE_REGEXP = / /g;
 
 type IStyleAndElement = {
 	element: Element | ShadowRoot | Document | null;
@@ -461,14 +462,15 @@ export default class CSSStyleDeclarationComputedStyle {
 		let newValue = value;
 		let match: RegExpMatchArray | null;
 
+		// Without fallback value - E.g. var(--my-var)
 		while ((match = newValue.match(SINGLE_CSS_VARIABLE_REGEXP)) != null) {
-			// Without fallback value - E.g. var(--my-var)
 			newValue = newValue.replace(match[0], cssVariables[match[1]] || '');
 		}
 
+		// Fallback value - E.g. var(--my-var, #FFFFFF)
 		while ((match = newValue.match(CSS_VARIABLE_REGEXP)) !== null) {
-			// Fallback value - E.g. var(--my-var, #FFFFFF)
-			newValue = newValue.replace(match[0], cssVariables[match[1]] || match[2]);
+			const parentheses = match[3].replace(CSS_VARIABLE_SPACE_REGEXP, '').slice(1);
+			newValue = newValue.replace(match[0], (cssVariables[match[1]] || match[2]) + parentheses);
 		}
 
 		return newValue;
