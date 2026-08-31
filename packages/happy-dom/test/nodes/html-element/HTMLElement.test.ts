@@ -807,6 +807,11 @@ describe('HTMLElement', () => {
 			attribute1.value = 'test';
 			element.attributes.setNamedItem(attribute1);
 
+			let isEventListenerCalled = false;
+			const listener = (): boolean => (isEventListenerCalled = true);
+			element.addEventListener('test', listener);
+			element.onclick = listener;
+
 			const rootNode = (element[PropertySymbol.rootNode] = document.createElement('div'));
 			const formNode = (element[PropertySymbol.formNode] = document.createElement('form'));
 			const selectNode = (element[PropertySymbol.selectNode] = document.createElement('select'));
@@ -844,6 +849,14 @@ describe('HTMLElement', () => {
 			expect(customElement[PropertySymbol.isValue] === isValue).toBe(true);
 			expect(customElement.attributes.length).toBe(1);
 			expect(customElement.attributes[0] === attribute1).toBe(true);
+
+			customElement.dispatchEvent(new Event('test'));
+			expect(isEventListenerCalled).toBe(true);
+
+			isEventListenerCalled = false;
+
+			customElement.click();
+			expect(isEventListenerCalled).toBe(true);
 		});
 
 		it('Renders child component inside the new instance of the custom element.', () => {

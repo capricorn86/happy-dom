@@ -73,6 +73,120 @@ describe('Element', () => {
 		});
 	}
 
+	describe('animate()', () => {
+		it('Creates and plays an animation on the document timeline.', () => {
+			const animation = element.animate(
+				[{ opacity: 0 }, { offset: 0.25, opacity: 0.5 }, { opacity: 1 }],
+				{ duration: 10000, fill: 'forwards' }
+			);
+
+			expect(animation).toBeInstanceOf(window.Animation);
+			expect(animation.effect).toBeInstanceOf(window.KeyframeEffect);
+			expect(animation.effect?.target).toBe(element);
+			expect(animation.timeline).toBe(document.timeline);
+			expect(animation.playState).toBe('running');
+			expect(element.getAnimations()).toEqual([animation]);
+			expect(animation.effect?.getKeyframes()).toEqual([
+				{
+					offset: null,
+					easing: 'linear',
+					composite: 'auto',
+					opacity: '0',
+					computedOffset: 0
+				},
+				{
+					offset: 0.25,
+					easing: 'linear',
+					composite: 'auto',
+					opacity: '0.5',
+					computedOffset: 0.25
+				},
+				{
+					offset: null,
+					easing: 'linear',
+					composite: 'auto',
+					opacity: '1',
+					computedOffset: 1
+				}
+			]);
+			expect(animation.effect?.getTiming()).toMatchObject({
+				delay: 0,
+				direction: 'normal',
+				duration: 10000,
+				easing: 'linear',
+				endDelay: 0,
+				fill: 'forwards',
+				iterationStart: 0,
+				iterations: 1
+			});
+
+			animation.cancel();
+			animation.finished.catch(() => {});
+
+			expect(animation.playState).toBe('idle');
+		});
+
+		it('Supports numeric duration options and property-indexed keyframes.', () => {
+			const animation = element.animate({ opacity: [0, 0.5, 1] }, 10000);
+
+			expect(animation.effect?.getTiming().duration).toBe(10000);
+			expect(animation.effect?.getKeyframes()).toEqual([
+				{
+					offset: null,
+					easing: 'linear',
+					composite: 'auto',
+					opacity: '0',
+					computedOffset: 0
+				},
+				{
+					offset: null,
+					easing: 'linear',
+					composite: 'auto',
+					opacity: '0.5',
+					computedOffset: 0.5
+				},
+				{
+					offset: null,
+					easing: 'linear',
+					composite: 'auto',
+					opacity: '1',
+					computedOffset: 1
+				}
+			]);
+
+			animation.cancel();
+			animation.finished.catch(() => {});
+		});
+
+		it('Pauses, resumes and finishes an animation.', async () => {
+			const animation = element.animate([{ opacity: 0 }, { opacity: 1 }], 10000);
+			const finished = animation.finished;
+
+			animation.pause();
+			expect(animation.playState).toBe('paused');
+
+			animation.play();
+			expect(animation.playState).toBe('running');
+
+			animation.finish();
+			expect(animation.playState).toBe('finished');
+			expect(animation.currentTime).toBe(10000);
+			await expect(finished).resolves.toBe(animation);
+		});
+
+		it('Cancels an animation and removes it from getAnimations().', async () => {
+			const animation = element.animate([{ opacity: 0 }, { opacity: 1 }], 10000);
+			const finished = animation.finished;
+
+			animation.cancel();
+
+			expect(animation.playState).toBe('idle');
+			expect(animation.currentTime).toBe(null);
+			expect(element.getAnimations()).toEqual([]);
+			await expect(finished).rejects.toMatchObject({ name: 'AbortError' });
+		});
+	});
+
 	describe('get children()', () => {
 		it('Returns nodes of type Element.', () => {
 			const div1 = document.createElement('div');
@@ -1080,6 +1194,28 @@ describe('Element', () => {
 			expect(b.closest('div .span') === span).toBe(true);
 			expect(b.closest('div .span b') === b).toBe(true);
 			expect(b.closest('div .span article b') === b).toBe(true);
+		});
+
+		it('Finds the closest HTMLFormElement when it is inserted after its child nodes have been appended (issue #2253).', () => {
+			const form = document.createElement('form');
+			const div = document.createElement('div');
+			const input = document.createElement('input');
+
+			form.appendChild(div);
+			div.appendChild(input);
+			document.body.appendChild(form);
+
+			expect(input.closest('form') === form).toBe(true);
+		});
+
+		it('Finds the closest HTMLSelectElement when it is inserted after its child nodes have been appended (issue #2253).', () => {
+			const select = document.createElement('select');
+			const option = document.createElement('option');
+
+			select.appendChild(option);
+			document.body.appendChild(select);
+
+			expect(option.closest('select') === select).toBe(true);
 		});
 	});
 
