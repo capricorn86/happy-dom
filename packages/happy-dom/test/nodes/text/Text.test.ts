@@ -13,6 +13,57 @@ describe('Text', () => {
 		document = window.document;
 	});
 
+	describe('get assignedSlot()', () => {
+		it('Returns the default slot the text node is assigned to.', () => {
+			const host = document.createElement('div');
+			const shadowRoot = host.attachShadow({ mode: 'open' });
+			shadowRoot.innerHTML = '<slot name="slot1"></slot><slot></slot>';
+			const text = document.createTextNode('text');
+
+			host.appendChild(text);
+			document.body.appendChild(host);
+
+			expect(text.assignedSlot === shadowRoot.querySelector('slot:not([name])')).toBe(true);
+		});
+
+		it('Returns null when the shadow root has no default slot.', () => {
+			const host = document.createElement('div');
+			const shadowRoot = host.attachShadow({ mode: 'open' });
+			shadowRoot.innerHTML = '<slot name="slot1"></slot>';
+			const text = document.createTextNode('text');
+
+			host.appendChild(text);
+			document.body.appendChild(host);
+
+			expect(text.assignedSlot).toBe(null);
+		});
+
+		it('Returns null when the shadow root is closed.', () => {
+			const host = document.createElement('div');
+			const shadowRoot = host.attachShadow({ mode: 'closed' });
+			shadowRoot.innerHTML = '<slot></slot>';
+			const text = document.createTextNode('text');
+
+			host.appendChild(text);
+			document.body.appendChild(host);
+
+			expect(text.assignedSlot).toBe(null);
+		});
+
+		it('Returns null when the parent element has no shadow root.', () => {
+			const parent = document.createElement('div');
+			const text = document.createTextNode('text');
+
+			parent.appendChild(text);
+
+			expect(text.assignedSlot).toBe(null);
+		});
+
+		it('Returns null for a text node that has no parent node.', () => {
+			expect(document.createTextNode('text').assignedSlot).toBe(null);
+		});
+	});
+
 	describe('constructor()', () => {
 		it('Creates a new Text node.', () => {
 			const node = new window.Text('test');
