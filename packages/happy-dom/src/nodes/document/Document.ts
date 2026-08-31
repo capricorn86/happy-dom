@@ -1,6 +1,7 @@
 import Element from '../element/Element.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import type BrowserWindow from '../../window/BrowserWindow.js';
+import DocumentTimeline from '../../animation/DocumentTimeline.js';
 import Node from '../node/Node.js';
 import NodeIterator from '../../tree-walker/NodeIterator.js';
 import TreeWalker from '../../tree-walker/TreeWalker.js';
@@ -89,6 +90,7 @@ export default class Document extends Node {
 	public [PropertySymbol.propertyEventListeners]: Map<string, ((event: Event) => void) | null> =
 		new Map();
 	public [PropertySymbol.selection]: Selection | null = null;
+	public [PropertySymbol.timeline]: DocumentTimeline = new DocumentTimeline();
 	public declare cloneNode: (deep?: boolean) => Document;
 
 	// Events
@@ -1025,7 +1027,33 @@ export default class Document extends Node {
 	 * @returns Adopted style sheets.
 	 */
 	public get adoptedStyleSheets(): CSSStyleSheet[] {
-		return this[PropertySymbol.adoptedStyleSheets];
+		const window = this[PropertySymbol.window];
+		return new Proxy(this[PropertySymbol.adoptedStyleSheets], {
+			set(target, property, value, receiver) {
+				if (typeof property === 'string' && String(Number(property)) === property) {
+					if (!(value instanceof window.CSSStyleSheet)) {
+						throw new window.TypeError(`Failed to convert value to 'CSSStyleSheet'.`);
+					}
+				}
+				return Reflect.set(target, property, value, receiver);
+			},
+			get(target, property, receiver) {
+				if (typeof property === 'string' && String(Number(property)) === property) {
+					return Reflect.get(target, property, receiver);
+				}
+				if (property === 'push' || property === 'unshift') {
+					return (...args: any[]) => {
+						for (const arg of args) {
+							if (!(arg instanceof window.CSSStyleSheet)) {
+								throw new window.TypeError(`Failed to convert value to 'CSSStyleSheet'.`);
+							}
+						}
+						return Array.prototype[property].apply(target, args);
+					};
+				}
+				return Reflect.get(target, property, receiver);
+			}
+		});
 	}
 
 	/**
@@ -1034,6 +1062,18 @@ export default class Document extends Node {
 	 * @param value Adopted style sheets.
 	 */
 	public set adoptedStyleSheets(value: CSSStyleSheet[]) {
+		if (!Array.isArray(value)) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to set the 'adoptedStyleSheets' property on 'Document': The provided value cannot be converted to a sequence.`
+			);
+		}
+		for (const sheet of value) {
+			if (!(sheet instanceof this[PropertySymbol.window].CSSStyleSheet)) {
+				throw new this[PropertySymbol.window].TypeError(
+					`Failed to set the 'adoptedStyleSheets' property on 'Document': Failed to convert value to 'CSSStyleSheet'.`
+				);
+			}
+		}
 		this[PropertySymbol.adoptedStyleSheets] = value;
 	}
 
@@ -1440,6 +1480,15 @@ export default class Document extends Node {
 	 */
 	public get contentType(): string {
 		return this[PropertySymbol.contentType];
+	}
+
+	/**
+	 * Returns the timeline associated with the document.
+	 *
+	 * @returns The timeline associated with the document.
+	 */
+	public get timeline(): DocumentTimeline {
+		return this[PropertySymbol.timeline];
 	}
 
 	/**

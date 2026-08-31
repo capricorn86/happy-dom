@@ -255,6 +255,40 @@ describe('Node', () => {
 			expect(htmlElement.parentNode).toBe(document);
 			expect(htmlElement.parentElement).toBe(null);
 		});
+
+		it('Returns HTMLFormElement when it is inserted with child nodes already appended to it (issue #2253).', () => {
+			const form = document.createElement('form');
+			const div = document.createElement('div');
+
+			form.appendChild(div);
+			document.body.appendChild(form);
+
+			expect(div.parentNode).toBe(form);
+			expect(div.parentElement).toBe(form);
+		});
+
+		it('Returns HTMLSelectElement when it is inserted with child nodes already appended to it (issue #2253).', () => {
+			const select = document.createElement('select');
+			const option = document.createElement('option');
+
+			select.appendChild(option);
+			document.body.appendChild(select);
+
+			expect(option.parentNode).toBe(select);
+			expect(option.parentElement).toBe(select);
+		});
+
+		it('Returns HTMLFormElement when it is inserted into a node that is not connected to the document (issue #2253).', () => {
+			const parent = document.createElement('div');
+			const form = document.createElement('form');
+			const div = document.createElement('div');
+
+			form.appendChild(div);
+			parent.appendChild(form);
+
+			expect(div.parentNode).toBe(form);
+			expect(div.parentElement).toBe(form);
+		});
 	});
 
 	describe('get baseURI()', () => {
@@ -387,6 +421,44 @@ describe('Node', () => {
 			expect(form.contains(input)).toBe(true);
 			expect(form.contains(div)).toBe(true);
 			expect(div.contains(input)).toBe(true);
+		});
+
+		it('Returns "true" for nested elements within an HTMLFormElement that is inserted after its child nodes have been appended (issue #2253).', () => {
+			const form = document.createElement('form');
+			const div = document.createElement('div');
+			const input = document.createElement('input');
+
+			form.appendChild(div);
+			div.appendChild(input);
+			document.body.appendChild(form);
+
+			expect(form.contains(input)).toBe(true);
+			expect(form.contains(div)).toBe(true);
+		});
+
+		it('Returns "true" for nested elements within an HTMLSelectElement that is inserted after its child nodes have been appended (issue #2253).', () => {
+			const select = document.createElement('select');
+			const optgroup = document.createElement('optgroup');
+			const option = document.createElement('option');
+
+			select.appendChild(optgroup);
+			optgroup.appendChild(option);
+			document.body.appendChild(select);
+
+			expect(select.contains(option)).toBe(true);
+			expect(select.contains(optgroup)).toBe(true);
+		});
+
+		it('Returns "false" for a node that is not a descendant of an inserted HTMLFormElement (issue #2253).', () => {
+			const form = document.createElement('form');
+			const div = document.createElement('div');
+			const sibling = document.createElement('input');
+
+			form.appendChild(div);
+			document.body.appendChild(form);
+			document.body.appendChild(sibling);
+
+			expect(form.contains(sibling)).toBe(false);
 		});
 	});
 
@@ -1280,6 +1352,27 @@ describe('Node', () => {
 				'c:DIV'
 			]);
 		});
+
+		it('Dispatches an event that bubbles to an HTMLFormElement that is inserted after its child nodes have been appended (issue #2253).', () => {
+			const form = document.createElement('form');
+			const input = document.createElement('input');
+			const event = new Event('click', { bubbles: true });
+			let formEventTarget: EventTarget | null = null;
+			let formEventCurrentTarget: EventTarget | null = null;
+
+			form.appendChild(input);
+			document.body.appendChild(form);
+
+			form.addEventListener('click', (event) => {
+				formEventTarget = event.target;
+				formEventCurrentTarget = event.currentTarget;
+			});
+
+			expect(input.dispatchEvent(event)).toBe(true);
+
+			expect(formEventTarget).toBe(input);
+			expect(formEventCurrentTarget).toBe(form);
+		});
 	});
 
 	describe('compareDocumentPosition()', () => {
@@ -1360,6 +1453,17 @@ describe('Node', () => {
 				.getElementById('child')
 				?.compareDocumentPosition(<Node>document.getElementById('parent'));
 			expect(position).toEqual(10);
+		});
+
+		it('Returns 20 if a is an HTMLFormElement that is inserted after its child nodes have been appended (issue #2253)', () => {
+			const form = document.createElement('form');
+			const input = document.createElement('input');
+
+			form.appendChild(input);
+			document.body.appendChild(form);
+
+			expect(form.compareDocumentPosition(input)).toEqual(20);
+			expect(input.compareDocumentPosition(form)).toEqual(10);
 		});
 	});
 
