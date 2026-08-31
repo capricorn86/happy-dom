@@ -6,12 +6,13 @@ import NodeTypeEnum from '../node/NodeTypeEnum.js';
 import NodeUtility from '../node/NodeUtility.js';
 import type HTMLSlotElement from '../html-slot-element/HTMLSlotElement.js';
 import SlottableUtility from '../slottable/SlottableUtility.js';
+import type ISlottable from '../slottable/ISlottable.js';
 import type HTMLStyleElement from '../html-style-element/HTMLStyleElement.js';
 
 /**
  * Text node.
  */
-export default class Text extends CharacterData {
+export default class Text extends CharacterData implements ISlottable {
 	public declare cloneNode: (deep?: boolean) => Text;
 	public override [PropertySymbol.nodeType] = NodeTypeEnum.textNode;
 	public override [PropertySymbol.textAreaNode]: HTMLTextAreaElement | null = null;
@@ -32,7 +33,8 @@ export default class Text extends CharacterData {
 	 * @returns Slot element or null.
 	 */
 	public get assignedSlot(): HTMLSlotElement | null {
-		return SlottableUtility.getAssignedSlot(this);
+		// A text node carries no slot name, so only a default slot can take it.
+		return SlottableUtility.getAssignedSlot(this, '');
 	}
 
 	/**

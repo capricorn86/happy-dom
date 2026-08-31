@@ -11,6 +11,7 @@ import HTMLCollection from './HTMLCollection.js';
 import type Text from '../text/Text.js';
 import type HTMLSlotElement from '../html-slot-element/HTMLSlotElement.js';
 import SlottableUtility from '../slottable/SlottableUtility.js';
+import type ISlottable from '../slottable/ISlottable.js';
 import DOMRectList from '../../dom/DOMRectList.js';
 import type Attr from '../attr/Attr.js';
 import NamedNodeMap from './NamedNodeMap.js';
@@ -48,7 +49,7 @@ type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afte
  */
 export default class Element
 	extends Node
-	implements IChildNode, INonDocumentTypeChildNode, IParentNode
+	implements IChildNode, INonDocumentTypeChildNode, IParentNode, ISlottable
 {
 	public static [PropertySymbol.tagName]: string | null = null;
 	public static [PropertySymbol.localName]: string | null = null;
@@ -545,7 +546,7 @@ export default class Element
 	 * @returns Slot element or null.
 	 */
 	public get assignedSlot(): HTMLSlotElement | null {
-		return SlottableUtility.getAssignedSlot(this);
+		return SlottableUtility.getAssignedSlot(this, this.slot);
 	}
 
 	/**
