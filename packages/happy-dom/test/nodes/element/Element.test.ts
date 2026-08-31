@@ -443,6 +443,9 @@ describe('Element', () => {
 			expect(element.assignedSlot === slot).toBe(true);
 		});
 
+		// Chromium returns the detached slot here while reporting an empty
+		// assignedNodes() for it. "Find a slot" step 5 asks for a slot in the
+		// shadow root's descendants, which a removed one is not.
 		it('Returns null when the manually assigned slot has been removed from the shadow root.', () => {
 			const host = createHost('<slot></slot>', 'open', 'manual');
 			const slot = <HTMLSlotElement>host.shadowRoot?.querySelector('slot');
