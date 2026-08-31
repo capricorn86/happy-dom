@@ -11,7 +11,7 @@ const URL_REGEXP = /^url\(\s*([^)]*)\s*\)$/;
 const INTEGER_REGEXP = /^[0-9]+$/;
 const FLOAT_REGEXP = /^[0-9.]+$/;
 const CALC_REGEXP = /^calc\([^^)]+\)$/;
-const CSS_VARIABLE_REGEXP = /^var\(\s*(--[^)\s]+)\)$/;
+const CSS_VARIABLE_REGEXP = /^var\(\s*(--[a-zA-Z0-9_-]+)[^)]*[)\s]+$/;
 const FIT_CONTENT_REGEXP = /^fit-content\([^^)]+\)$/;
 const GRADIENT_REGEXP =
 	/^((repeating-linear|linear|radial|repeating-radial|conic|repeating-conic)-gradient)\(((?:[^()]|\([^()]*\))*)\)$/;
