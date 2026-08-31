@@ -1,5 +1,9 @@
 import { URLSearchParams } from 'url';
 import * as PropertySymbol from './PropertySymbol.js';
+import Animation from './animation/Animation.js';
+import AnimationTimeline from './animation/AnimationTimeline.js';
+import DocumentTimeline from './animation/DocumentTimeline.js';
+import KeyframeEffect from './animation/KeyframeEffect.js';
 import Browser from './browser/Browser.js';
 import BrowserContext from './browser/BrowserContext.js';
 import BrowserFrame from './browser/BrowserFrame.js';
@@ -286,7 +290,9 @@ export type {
 export {
 	AbortController,
 	AbortSignal,
+	Animation,
 	AnimationEvent,
+	AnimationTimeline,
 	Attr,
 	Blob,
 	Browser,
@@ -331,6 +337,7 @@ export {
 	Document,
 	DocumentFragment,
 	DocumentType,
+	DocumentTimeline,
 	DOMException,
 	DOMParser,
 	DOMRect,
@@ -426,6 +433,7 @@ export {
 	IntersectionObserver,
 	IntersectionObserverEntry,
 	KeyboardEvent,
+	KeyframeEffect,
 	Location,
 	MediaList,
 	MediaQueryListEvent,
