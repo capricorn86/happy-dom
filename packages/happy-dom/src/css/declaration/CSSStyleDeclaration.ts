@@ -1,10 +1,10 @@
 import type Element from '../../nodes/element/Element.js';
 import type CSSRule from '../CSSRule.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
-import CSSStyleDeclarationPropertyManager from './property-manager/CSSStyleDeclarationPropertyManager.js';
+import CSSPropertyManager from './property-manager/CSSPropertyManager.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import type BrowserWindow from '../../window/BrowserWindow.js';
-import CSSStyleDeclarationComputedStyle from './computed-style/CSSStyleDeclarationComputedStyle.js';
+import CSSComputedStyle from './computed-style/CSSComputedStyle.js';
 
 /**
  * CSS Style Declaration.
@@ -23,7 +23,7 @@ export default class CSSStyleDeclaration {
 	#computed: boolean;
 	#cache: {
 		attributeValue: string | null;
-		propertyManager: CSSStyleDeclarationPropertyManager | null;
+		propertyManager: CSSPropertyManager | null;
 	} = {
 		attributeValue: null,
 		propertyManager: null
@@ -4837,11 +4837,11 @@ export default class CSSStyleDeclaration {
 		}
 
 		if (this.#element) {
-			this.#cache.propertyManager = new CSSStyleDeclarationPropertyManager({ cssText });
+			this.#cache.propertyManager = new CSSPropertyManager({ cssText });
 			this.#cache.attributeValue = cssText;
 			this.#element.setAttribute('style', this.#cache.propertyManager.toString());
 		} else {
-			this.#cache.propertyManager = new CSSStyleDeclarationPropertyManager({ cssText });
+			this.#cache.propertyManager = new CSSPropertyManager({ cssText });
 		}
 	}
 
@@ -4948,27 +4948,27 @@ export default class CSSStyleDeclaration {
 	 *
 	 * @returns Property manager.
 	 */
-	#getPropertyManager(): CSSStyleDeclarationPropertyManager {
+	#getPropertyManager(): CSSPropertyManager {
 		const element = this.#element;
 		const cache = this.#cache;
 
 		if (!element) {
 			if (!cache.propertyManager) {
-				cache.propertyManager = new CSSStyleDeclarationPropertyManager();
+				cache.propertyManager = new CSSPropertyManager();
 			}
 			return cache.propertyManager;
 		}
 
 		if (this.#computed) {
-			return new CSSStyleDeclarationComputedStyle(element).getComputedStyle();
+			return new CSSComputedStyle(element).getComputedStyle();
 		}
 
 		const attributeValue = element.getAttribute('style') || '';
 
 		if (cache.attributeValue !== attributeValue) {
-			cache.propertyManager = new CSSStyleDeclarationPropertyManager({ cssText: attributeValue });
+			cache.propertyManager = new CSSPropertyManager({ cssText: attributeValue });
 		}
 
-		return <CSSStyleDeclarationPropertyManager>cache.propertyManager;
+		return <CSSPropertyManager>cache.propertyManager;
 	}
 }

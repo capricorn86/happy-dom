@@ -1,8 +1,6 @@
-import CSSStyleDeclarationValueUtility from './CSSStyleDeclarationValueUtility.js';
+import CSSStringUtility from './CSSStringUtility.js';
 
-const COLOR_REGEXP =
-	/^#([0-9a-fA-F]{3,4}){1,2}$|^rgb\(([^)]*)\)$|^rgba\(([^)]*)\)$|^hsla?\(\s*(-?\d+|-?\d*.\d+)\s*,\s*(-?\d+|-?\d*.\d+)%\s*,\s*(-?\d+|-?\d*.\d+)%\s*(,\s*(-?\d+|-?\d*.\d+)\s*)?\)|(?:(rgba?|hsla?)\((var\(\s*(--[^)\s]+)\))\))/;
-
+const COLOR_REGEXP = /^#([0-9a-fA-F]{3,4}){1,2}$|^(rgba?|hsla?)\((.*)\)$/;
 const LENGTH_REGEXP =
 	/^(0|[-+]?[0-9]*\.?[0-9]+)(in|cm|em|mm|pt|pc|px|ex|rem|vh|vw|ch|vw|vh|vmin|vmax|Q)$/;
 const PERCENTAGE_REGEXP = /^[-+]?[0-9]*\.?[0-9]+%$/;
@@ -10,8 +8,7 @@ const DEGREE_REGEXP = /^[0-9]+deg$/;
 const URL_REGEXP = /^url\(\s*([^)]*)\s*\)$/;
 const INTEGER_REGEXP = /^[0-9]+$/;
 const FLOAT_REGEXP = /^[0-9.]+$/;
-const CALC_REGEXP = /^calc\([^^)]+\)$/;
-const CSS_VARIABLE_REGEXP = /^var\(\s*(--[a-zA-Z0-9_-]+)[^)]*[)\s]+$/;
+const CALC_REGEXP = /^calc\(.+\)$/;
 const FIT_CONTENT_REGEXP = /^fit-content\([^^)]+\)$/;
 const GRADIENT_REGEXP =
 	/^((repeating-linear|linear|radial|repeating-radial|conic|repeating-conic)-gradient)\(((?:[^()]|\([^()]*\))*)\)$/;
@@ -173,7 +170,7 @@ const COLORS = [
 /**
  * Style declaration value parser.
  */
-export default class CSSStyleDeclarationValueParser {
+export default class CSSValueFormatter {
 	/**
 	 * Returns length.
 	 *
@@ -336,7 +333,7 @@ export default class CSSStyleDeclarationValueParser {
 		const match = value.match(GRADIENT_REGEXP);
 		if (match) {
 			const args = match[3].trim();
-			const parts = CSSStyleDeclarationValueUtility.splitByComma(args);
+			const parts = CSSStringUtility.splitByComma(args);
 			return `${match[1]}(${parts.join(', ')})`;
 		}
 		return null;
@@ -353,8 +350,12 @@ export default class CSSStyleDeclarationValueParser {
 		if (COLORS.includes(lowerValue)) {
 			return lowerValue;
 		}
-		if (COLOR_REGEXP.test(value)) {
-			return value.replace(/,([^ ])/g, ', $1');
+		const match = value.match(COLOR_REGEXP);
+		if (match) {
+			if (match[2] && match[3]) {
+				return `${match[2]}(${match[3].replace(/\s+/g, ' ').replace(/,([^ ])/g, ', $1')})`;
+			}
+			return value;
 		}
 		return null;
 	}
@@ -420,20 +421,6 @@ export default class CSSStyleDeclarationValueParser {
 	 */
 	public static getInitial(value: string): string | null {
 		return value.toLowerCase() === 'initial' ? 'initial' : null;
-	}
-
-	/**
-	 * Returns CSS variable.
-	 *
-	 * @param value Value.
-	 * @returns Parsed value.
-	 */
-	public static getVariable(value: string): string | null {
-		const cssVariableMatch = value.match(CSS_VARIABLE_REGEXP);
-		if (cssVariableMatch) {
-			return `var(${cssVariableMatch[1]})`;
-		}
-		return null;
 	}
 
 	/**

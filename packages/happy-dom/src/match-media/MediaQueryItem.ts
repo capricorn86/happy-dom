@@ -1,4 +1,4 @@
-import CSSMeasurementConverter from '../css/declaration/measurement-converter/CSSMeasurementConverter.js';
+import CSSMeasurementConverter from '../css/declaration/utilties/CSSMeasurementConverter.js';
 import type BrowserWindow from '../window/BrowserWindow.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import type IMediaQueryRange from './IMediaQueryRange.js';

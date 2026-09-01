@@ -17,7 +17,7 @@ const COMMENT_REGEXP = /\/\*[\s\S]*?\*\//gm;
 /**
  * CSS parser.
  */
-export default class CSSParser {
+export default class CSSRuleParser {
 	#parentStyleSheet: CSSStyleSheet;
 
 	/**
