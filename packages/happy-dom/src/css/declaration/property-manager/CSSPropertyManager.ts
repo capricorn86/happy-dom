@@ -2,7 +2,7 @@ import type ICSSPropertyValue from './types/ICSSPropertyValue.js';
 import CSSPropertySetParser from './parsers/CSSPropertySetParser.js';
 import CSSValueFormatter from './utilities/CSSValueFormatter.js';
 import CSSPropertyGetParser from './parsers/CSSPropertyGetParser.js';
-import CSSTextParser from '../utilties/CSSTextParser.js';
+import CSSTextParser from '../utilities/CSSTextParser.js';
 import type ICSSPropertyMap from './types/ICSSPropertyMap.js';
 import CSSVariableFormatter from './utilities/CSSVariableFormatter.js';
 
@@ -16,14 +16,14 @@ const TO_STRING_SHORTHAND_PROPERTIES = [
 ];
 
 /**
- * Computed this.properties property parser.
+ * CSS property manager.
  */
 export default class CSSPropertyManager {
 	public properties: ICSSPropertyMap = {};
 	private definedPropertyNames: { [k: string]: boolean } = {};
 
 	/**
-	 * Class construtor.
+	 * Constructor.
 	 *
 	 * @param [options] Options.
 	 * @param [options.cssText] CSS string.
@@ -535,7 +535,7 @@ export default class CSSPropertyManager {
 		const _class = <typeof CSSPropertyManager>this.constructor;
 		const clone: CSSPropertyManager = new _class();
 
-		clone.properties = JSON.parse(JSON.stringify(this.properties));
+		clone.properties = structuredClone(this.properties);
 		clone.definedPropertyNames = Object.assign({}, this.definedPropertyNames);
 
 		return clone;
