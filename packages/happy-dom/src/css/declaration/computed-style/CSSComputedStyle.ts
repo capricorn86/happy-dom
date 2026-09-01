@@ -21,12 +21,10 @@ import WindowBrowserContext from '../../../window/WindowBrowserContext.js';
 import type CSSSupportsRule from '../../rules/CSSSupportsRule.js';
 import CSSScopeRule from '../../rules/CSSScopeRule.js';
 import type CSSStyleSheet from '../../CSSStyleSheet.js';
+import CSSVariableFormatter from '../property-manager/utilities/CSSVariableFormatter.js';
 
 const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
 const HOST_REGEXP = /:host\s*\(([^)]+)\)|:host-context\s*\(([^)]+)\)/;
-const SINGLE_CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+)\)/;
-const CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+), *([^)]+)([\) ]+)/;
-const CSS_VARIABLE_SPACE_REGEXP = / /g;
 
 type IStyleAndElement = {
 	element: Element | ShadowRoot | Document | null;
@@ -202,7 +200,7 @@ export default class CSSComputedStyle {
 
 			for (const { name, value, important } of rules) {
 				if ((<any>CSSComputedStyleInheritedProperties)[name] || parentElement === targetElement) {
-					const parsedValue = this.parseCSSVariablesInValue(value.trim(), cssVariables);
+					const parsedValue = CSSVariableFormatter.resolveVariables(value.trim(), cssVariables);
 
 					if (parsedValue && (!propertyManager.get(name)?.important || important)) {
 						propertyManager.set(name, parsedValue, important);
@@ -446,31 +444,6 @@ export default class CSSComputedStyle {
 				// TODO: Add support for CSSContainerRule, which would require element sizes to be measured.
 			}
 		}
-	}
-
-	/**
-	 * Parses CSS variables in a value.
-	 *
-	 * @param value Value.
-	 * @param cssVariables CSS variables.
-	 * @returns CSS value.
-	 */
-	private parseCSSVariablesInValue(value: string, cssVariables: { [k: string]: string }): string {
-		let newValue = value;
-		let match: RegExpMatchArray | null;
-
-		// Without fallback value - E.g. var(--my-var)
-		while ((match = newValue.match(SINGLE_CSS_VARIABLE_REGEXP)) != null) {
-			newValue = newValue.replace(match[0], cssVariables[match[1]] || '');
-		}
-
-		// Fallback value - E.g. var(--my-var, #FFFFFF)
-		while ((match = newValue.match(CSS_VARIABLE_REGEXP)) !== null) {
-			const parentheses = match[3].replace(CSS_VARIABLE_SPACE_REGEXP, '').slice(1);
-			newValue = newValue.replace(match[0], (cssVariables[match[1]] || match[2]) + parentheses);
-		}
-
-		return newValue;
 	}
 
 	/**

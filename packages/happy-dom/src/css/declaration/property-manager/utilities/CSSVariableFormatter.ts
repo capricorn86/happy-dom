@@ -1,6 +1,6 @@
-const SIMPLE_VARIABLE_REGEXP = /^var\(\s*(--[a-zA-Z0-9-_]+)\)$/;
-const FALLBACK_VARIABLE_REGEXP = /^var\(\s*(--[a-zA-Z0-9-_]+),\s*([^)]+)([)\s]+)$/;
-const SPACE_REGEXP = /\s/g;
+const GET_SIMPLE_VARIABLE_REGEXP = /^var\(\s*(--[a-zA-Z0-9-_]+)\s*\)$/;
+const GET_FALLBACK_VARIABLE_REGEXP = /^var\(\s*(--[a-zA-Z0-9-_]+),\s*(.+)\)$/;
+const RESOLVE_REGEXP = /var\(\s*(--[a-zA-Z0-9-_]+),?|(\()|(\))/;
 
 /**
  * CSS variable formatter.
@@ -13,18 +13,17 @@ export default class CSSVariableFormatter {
 	 * @returns Parsed value.
 	 */
 	public static getVariable(value: string): string | null {
-		const simpleVariableMatch = value.match(SIMPLE_VARIABLE_REGEXP);
+		const simpleVariableMatch = value.match(GET_SIMPLE_VARIABLE_REGEXP);
 
 		if (simpleVariableMatch) {
 			return `var(${simpleVariableMatch[1]})`;
 		}
 
-		const variableMatch = value.match(FALLBACK_VARIABLE_REGEXP);
+		const variableMatch = value.match(GET_FALLBACK_VARIABLE_REGEXP);
 
 		if (variableMatch) {
 			const fallbackValue = variableMatch[2].trim();
-			const parentheses = variableMatch[3].replace(SPACE_REGEXP, '').slice(1);
-			return `var(${variableMatch[1]}, ${this.getVariable(fallbackValue + parentheses) || fallbackValue})`;
+			return `var(${variableMatch[1]}, ${this.getVariable(fallbackValue) || fallbackValue})`;
 		}
 
 		return null;
@@ -38,20 +37,39 @@ export default class CSSVariableFormatter {
 	 * @returns Parsed value.
 	 */
 	public static resolveVariables(value: string, cssVariables: { [k: string]: string }): string {
-		let newValue = value;
+		const regexp = new RegExp(RESOLVE_REGEXP, 'g');
 		let match: RegExpMatchArray | null;
+		let variable: {
+			parentheses: number;
+			name: string;
+			index: number;
+			fallbackIndex: number;
+		} | null = null;
+		let parentheses = 0;
 
-		// Without fallback value - E.g. var(--my-var)
-		while ((match = newValue.match(SIMPLE_VARIABLE_REGEXP)) != null) {
-			newValue = newValue.replace(match[0], cssVariables[match[1]] || '');
+		while ((match = regexp.exec(value)) != null) {
+			if (match[1] && !variable) {
+				variable = {
+					parentheses,
+					name: match[1],
+					index: match.index!,
+					fallbackIndex: match.index! + match[0].length
+				};
+			}
+
+			if (match[1] || match[2]) {
+				parentheses++;
+			} else if (match[3]) {
+				parentheses--;
+			}
+
+			if (variable && variable.parentheses === parentheses) {
+				const fallbackValue = value.substring(variable.fallbackIndex, match.index).trim();
+				const variableValue = cssVariables[variable.name];
+				return `${value.substring(0, variable.index)}${this.resolveVariables(variableValue || fallbackValue, cssVariables)}${value.substring(match.index! + match[0].length)}`;
+			}
 		}
 
-		// Fallback value - E.g. var(--my-var, #FFFFFF)
-		while ((match = newValue.match(FALLBACK_VARIABLE_REGEXP)) !== null) {
-			const parentheses = match[3].replace(SPACE_REGEXP, '').slice(1);
-			newValue = newValue.replace(match[0], (cssVariables[match[1]] || match[2]) + parentheses);
-		}
-
-		return newValue;
+		return value;
 	}
 }

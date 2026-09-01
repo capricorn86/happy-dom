@@ -24,8 +24,9 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "tsc && npm run compile:build-version-file",
+		"compile": "tsc && npm run compile:build-version-file && npm run compile:build-css-properties",
 		"compile:build-version-file": "node ./bin/build-version-file.cjs",
+		"compile:build-css-properties": "node ./bin/build-css-properties.cjs",
 		"watch": "tsc -w --preserveWatchOutput",
 		"test": "vitest run",
 		"test:ui": "vitest --ui",
@@ -47,7 +48,9 @@
 		"@webref/css": "6.6.2",
 		"typescript": "^5.8.3",
 		"vitest": "^4.0.16",
-		"madge": "^8.0.0"
+		"madge": "^8.0.0",
+		"prettier": "3.3.3",
+		"chalk": "^5.4.1"
 	},
 	"engines": {
 		"node": ">=20.0.0"

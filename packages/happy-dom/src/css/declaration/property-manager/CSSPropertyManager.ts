@@ -1,10 +1,9 @@
 import type ICSSPropertyValue from './types/ICSSPropertyValue.js';
 import CSSPropertySetParser from './parsers/CSSPropertySetParser.js';
-import CSSValueFormatter from './utilities/CSSValueFormatter.js';
 import CSSPropertyGetParser from './parsers/CSSPropertyGetParser.js';
 import CSSTextParser from '../utilities/CSSTextParser.js';
 import type ICSSPropertyMap from './types/ICSSPropertyMap.js';
-import CSSVariableFormatter from './utilities/CSSVariableFormatter.js';
+import CSSPropertyList from '../CSSPropertyList.js';
 
 const TO_STRING_SHORTHAND_PROPERTIES = [
 	['margin'],
@@ -507,7 +506,10 @@ export default class CSSPropertyManager {
 				properties = CSSPropertySetParser.getAspectRatio(value, important);
 				break;
 			default:
-				properties = CSSPropertySetParser.getDefault(name, value, important);
+				//  If the property name starts with '--', it's a CSS variable
+				if ((name[0] === '-' && name[1] === '-') || CSSPropertyList.kebabCase[<'color'>name]) {
+					properties = CSSPropertySetParser.getDefault(name, value, important);
+				}
 				break;
 		}
 
