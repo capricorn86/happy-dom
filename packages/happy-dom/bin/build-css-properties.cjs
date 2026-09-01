@@ -5,7 +5,7 @@ const FS = require('fs/promises');
 const packageJson = require('../package.json');
 const Prettier = require('prettier');
 const PrettierConfig = require('../../../.prettierrc.cjs');
-const Chalk = require('chalk');
+const Chalk = require('chalk').default;
 
 const CSS_PROPERTIES_URL =
 	'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/core/css/css_properties.json5?format=TEXT';
