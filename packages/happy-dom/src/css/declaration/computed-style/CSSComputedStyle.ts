@@ -4,28 +4,27 @@ import type Element from '../../../nodes/element/Element.js';
 import type Document from '../../../nodes/document/Document.js';
 import type HTMLStyleElement from '../../../nodes/html-style-element/HTMLStyleElement.js';
 import type NodeList from '../../../nodes/node/NodeList.js';
-import CSSStyleDeclarationPropertyManager from '../property-manager/CSSStyleDeclarationPropertyManager.js';
+import CSSPropertyManager from '../property-manager/CSSPropertyManager.js';
 import NodeTypeEnum from '../../../nodes/node/NodeTypeEnum.js';
 import CSSRuleTypeEnum from '../../CSSRuleTypeEnum.js';
 import type CSSMediaRule from '../../rules/CSSMediaRule.js';
 import type CSSRule from '../../CSSRule.js';
 import type CSSStyleRule from '../../rules/CSSStyleRule.js';
-import CSSStyleDeclarationElementDefaultCSS from './config/CSSStyleDeclarationElementDefaultCSS.js';
-import CSSStyleDeclarationElementInheritedProperties from './config/CSSStyleDeclarationElementInheritedProperties.js';
-import CSSStyleDeclarationElementMeasurementProperties from './config/CSSStyleDeclarationElementMeasurementProperties.js';
-import CSSStyleDeclarationCSSParser from '../css-parser/CSSStyleDeclarationCSSParser.js';
+import CSSComputedStyleElementDefault from './config/CSSComputedStyleElementDefault.js';
+import CSSComputedStyleInheritedProperties from './config/CSSComputedStyleInheritedProperties.js';
+import CSSComputedStyleMeasurementProperties from './config/CSSComputedStyleMeasurementProperties.js';
+import CSSTextParser from '../utilities/CSSTextParser.js';
 import QuerySelector from '../../../query-selector/QuerySelector.js';
-import CSSMeasurementConverter from '../measurement-converter/CSSMeasurementConverter.js';
+import CSSMeasurementConverter from '../utilities/CSSMeasurementConverter.js';
 import MediaQueryList from '../../../match-media/MediaQueryList.js';
 import WindowBrowserContext from '../../../window/WindowBrowserContext.js';
 import type CSSSupportsRule from '../../rules/CSSSupportsRule.js';
 import CSSScopeRule from '../../rules/CSSScopeRule.js';
 import type CSSStyleSheet from '../../CSSStyleSheet.js';
+import CSSVariableFormatter from '../property-manager/utilities/CSSVariableFormatter.js';
 
 const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
 const HOST_REGEXP = /:host\s*\(([^)]+)\)|:host-context\s*\(([^)]+)\)/;
-const SINGLE_CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+)\)/;
-const CSS_VARIABLE_REGEXP = /var\( *(--[^), ]+), *([^), ]+)\)/;
 
 type IStyleAndElement = {
 	element: Element | ShadowRoot | Document | null;
@@ -35,7 +34,7 @@ type IStyleAndElement = {
 /**
  * CSS Style Declaration utility
  */
-export default class CSSStyleDeclarationComputedStyle {
+export default class CSSComputedStyle {
 	private element: Element;
 
 	/**
@@ -54,7 +53,7 @@ export default class CSSStyleDeclarationComputedStyle {
 	 * @param element Element.
 	 * @returns Style sheets.
 	 */
-	public getComputedStyle(): CSSStyleDeclarationPropertyManager {
+	public getComputedStyle(): CSSPropertyManager {
 		const documentElements: Array<IStyleAndElement> = [];
 		const parentElements: Array<IStyleAndElement> = [];
 		let styleAndElement: IStyleAndElement = {
@@ -65,7 +64,7 @@ export default class CSSStyleDeclarationComputedStyle {
 		let customElements: IStyleAndElement[] = [];
 
 		if (!this.element[PropertySymbol.isConnected]) {
-			return new CSSStyleDeclarationPropertyManager();
+			return new CSSPropertyManager();
 		}
 
 		const cacheResult = this.element[PropertySymbol.cache].computedStyle;
@@ -159,15 +158,15 @@ export default class CSSStyleDeclarationComputedStyle {
 
 		// Concatenates all parent element CSS to one string.
 		const targetElement = parentElements[parentElements.length - 1];
-		const propertyManager = new CSSStyleDeclarationPropertyManager();
-		const cssProperties: { [k: string]: string } = {};
+		const propertyManager = new CSSPropertyManager();
+		const cssVariables: { [k: string]: string } = {};
 		let rootFontSize: string | number = 16;
 		let parentFontSize: string | number = 16;
 
 		for (const parentElement of parentElements) {
 			parentElement.cssTexts.sort((a, b) => a.priorityWeight - b.priorityWeight);
 
-			const defaultCSS = (<any>CSSStyleDeclarationElementDefaultCSS)[
+			const defaultCSS = (<any>CSSComputedStyleElementDefault)[
 				(<Element>parentElement.element)[PropertySymbol.tagName]!
 			];
 			let elementCSSText = '';
@@ -194,17 +193,14 @@ export default class CSSStyleDeclarationComputedStyle {
 				elementCSSText += elementStyleAttribute;
 			}
 
-			const rulesAndProperties = CSSStyleDeclarationCSSParser.parse(elementCSSText);
-			const rules = rulesAndProperties.rules;
+			const rulesAndVariables = CSSTextParser.parse(elementCSSText);
+			const rules = rulesAndVariables.rules;
 
-			Object.assign(cssProperties, rulesAndProperties.properties);
+			Object.assign(cssVariables, rulesAndVariables.variables);
 
 			for (const { name, value, important } of rules) {
-				if (
-					(<any>CSSStyleDeclarationElementInheritedProperties)[name] ||
-					parentElement === targetElement
-				) {
-					const parsedValue = this.parseCSSVariablesInValue(value.trim(), cssProperties);
+				if ((<any>CSSComputedStyleInheritedProperties)[name] || parentElement === targetElement) {
+					const parsedValue = CSSVariableFormatter.resolveVariables(value.trim(), cssVariables);
 
 					if (parsedValue && (!propertyManager.get(name)?.important || important)) {
 						propertyManager.set(name, parsedValue, important);
@@ -230,7 +226,7 @@ export default class CSSStyleDeclarationComputedStyle {
 			}
 		}
 
-		for (const name of CSSStyleDeclarationElementMeasurementProperties) {
+		for (const name of CSSComputedStyleMeasurementProperties) {
 			const property = propertyManager.properties[name];
 			if (property) {
 				property.value = this.parseMeasurementsInValue({
@@ -448,30 +444,6 @@ export default class CSSStyleDeclarationComputedStyle {
 				// TODO: Add support for CSSContainerRule, which would require element sizes to be measured.
 			}
 		}
-	}
-
-	/**
-	 * Parses CSS variables in a value.
-	 *
-	 * @param value Value.
-	 * @param cssVariables CSS variables.
-	 * @returns CSS value.
-	 */
-	private parseCSSVariablesInValue(value: string, cssVariables: { [k: string]: string }): string {
-		let newValue = value;
-		let match: RegExpMatchArray | null;
-
-		while ((match = newValue.match(SINGLE_CSS_VARIABLE_REGEXP)) != null) {
-			// Without fallback value - E.g. var(--my-var)
-			newValue = newValue.replace(match[0], cssVariables[match[1]] || '');
-		}
-
-		while ((match = newValue.match(CSS_VARIABLE_REGEXP)) !== null) {
-			// Fallback value - E.g. var(--my-var, #FFFFFF)
-			newValue = newValue.replace(match[0], cssVariables[match[1]] || match[2]);
-		}
-
-		return newValue;
 	}
 
 	/**
