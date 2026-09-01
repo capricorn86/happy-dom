@@ -104,6 +104,24 @@ export default class CSSPropertySetParser {
 	/**
 	 * Returns border collapse.
 	 *
+	 * @param name Name.
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getDefault(
+		name: string,
+		value: string,
+		important: boolean
+	): ICSSPropertyMap | null {
+		const parsedValue =
+			CSSVariableFormatter.getVariable(value) || CSSValueFormatter.getGlobal(value) || value;
+		return parsedValue ? { [name]: { value: parsedValue, important } } : null;
+	}
+
+	/**
+	 * Returns border collapse.
+	 *
 	 * @param value Value.
 	 * @param important Important.
 	 * @returns Property values

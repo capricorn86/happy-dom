@@ -507,16 +507,7 @@ export default class CSSPropertyManager {
 				properties = CSSPropertySetParser.getAspectRatio(value, important);
 				break;
 			default:
-				const trimmedValue = value.trim();
-				if (trimmedValue) {
-					const parsed =
-						CSSVariableFormatter.getVariable(trimmedValue) ||
-						CSSValueFormatter.getGlobal(trimmedValue) ||
-						trimmedValue;
-					properties = {
-						[name]: { value: parsed || trimmedValue, important }
-					};
-				}
+				properties = CSSPropertySetParser.getDefault(name, value, important);
 				break;
 		}
 
