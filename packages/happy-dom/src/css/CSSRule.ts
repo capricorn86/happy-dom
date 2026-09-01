@@ -2,7 +2,7 @@ import type CSSStyleSheet from './CSSStyleSheet.js';
 import CSSRuleTypeEnum from './CSSRuleTypeEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import type BrowserWindow from '../window/BrowserWindow.js';
-import type CSSParser from './utilities/CSSParser.js';
+import type CSSParser from './utilities/CSSRuleParser.js';
 
 /**
  * CSSRule interface.
@@ -41,7 +41,7 @@ export default abstract class CSSRule {
 	 * @param window Window.
 	 * @param cssParser CSS parser.
 	 */
-	constructor(illegalConstructorSymbol: Symbol, window: BrowserWindow, cssParser: CSSParser) {
+	constructor(illegalConstructorSymbol: symbol, window: BrowserWindow, cssParser: CSSParser) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}

@@ -1,4 +1,6 @@
 import * as PropertySymbol from '../PropertySymbol.js';
+import type BrowserWindow from '../window/BrowserWindow.js';
+import type { TDOMMatrixInit } from './dom-matrix/TDOMMatrixInit.js';
 import type IDOMPointInit from './IDOMPointInit.js';
 
 /**
@@ -7,6 +9,9 @@ import type IDOMPointInit from './IDOMPointInit.js';
  * @see https://developer.mozilla.org/en-US/docs/Web/API/DOMPointReadOnly
  */
 export default class DOMPointReadOnly implements IDOMPointInit {
+	// Injected by WindowContextClassExtender
+	protected declare [PropertySymbol.window]: BrowserWindow;
+
 	protected [PropertySymbol.x]: number = 0;
 	protected [PropertySymbol.y]: number = 0;
 	protected [PropertySymbol.z]: number = 0;
@@ -93,5 +98,20 @@ export default class DOMPointReadOnly implements IDOMPointInit {
 			otherPoint.z ?? null,
 			otherPoint.w ?? null
 		);
+	}
+
+	/**
+	 * The matrixTransform() method of the DOMPointReadOnly interface applies a matrix transform specified as an object to the DOMPointReadOnly object, creating and returning a new DOMPointReadOnly object.
+	 *
+	 * @param [init] DOM Matrix init.
+	 * @returns DOMPointReadOnly object.
+	 */
+	public matrixTransform(init?: TDOMMatrixInit): DOMPointReadOnly {
+		const matrix = new this[PropertySymbol.window].DOMMatrixReadOnly(init);
+		const x = this.x * matrix.m11 + this.y * matrix.m21 + this.z * matrix.m31 + this.w * matrix.m41;
+		const y = this.x * matrix.m12 + this.y * matrix.m22 + this.z * matrix.m32 + this.w * matrix.m42;
+		const z = this.x * matrix.m13 + this.y * matrix.m23 + this.z * matrix.m33 + this.w * matrix.m43;
+		const w = this.x * matrix.m14 + this.y * matrix.m24 + this.z * matrix.m34 + this.w * matrix.m44;
+		return new (<typeof DOMPointReadOnly>this.constructor)(x, y, z, w);
 	}
 }

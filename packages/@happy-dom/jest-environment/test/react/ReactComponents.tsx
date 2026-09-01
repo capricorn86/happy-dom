@@ -44,11 +44,8 @@ export class ReactSelectComponent extends React.Component<
 		return (
 			<select
 				value={this.props.value}
-				onChange={
-					this.props.onChange
-						? (event: React.ChangeEvent) =>
-								this.props.onChange((event.target as HTMLSelectElement).value)
-						: undefined
+				onChange={(event: React.ChangeEvent) =>
+					this.props.onChange?.((event.target as HTMLSelectElement).value)
 				}
 			>
 				{OPTIONS.map((option) => (

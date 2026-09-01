@@ -6,6 +6,10 @@ on:
 jobs:
   auto-assign:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
     steps:
       - name: Set build URL to commit status
         run: |

@@ -1,5 +1,5 @@
 import * as PropertySymbol from '../PropertySymbol.js';
-import type Event from './Event.js';
+import Event from './Event.js';
 import type IEventListenerOptions from './IEventListenerOptions.js';
 import EventPhaseEnum from './EventPhaseEnum.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
@@ -13,23 +13,45 @@ import type BrowserWindow from '../window/BrowserWindow.js';
  * Handles events.
  */
 export default class EventTarget {
+	// Used by HTMLElement to upgrade an existing element in-place when a custom element is defined.
+	public declare static [PropertySymbol.customElementUpgradeTarget]: EventTarget | null;
+
 	// Injected by WindowContextClassExtender
 	protected declare [PropertySymbol.window]: BrowserWindow;
 
-	public readonly [PropertySymbol.listeners]: {
+	public declare readonly [PropertySymbol.listeners]: {
 		capturing: Map<string, TEventListener[]>;
 		bubbling: Map<string, TEventListener[]>;
-	} = {
-		capturing: new Map(),
-		bubbling: new Map()
 	};
-	public readonly [PropertySymbol.listenerOptions]: {
+	public declare readonly [PropertySymbol.listenerOptions]: {
 		capturing: Map<string, IEventListenerOptions[]>;
 		bubbling: Map<string, IEventListenerOptions[]>;
-	} = {
-		capturing: new Map(),
-		bubbling: new Map()
 	};
+
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		// When upgrading a custom element in-place, constructor() returns the existing
+		// element. This propagates through the entire super() chain so the custom element's
+		// constructor runs with `this` = the existing element (same mechanism real browsers use)
+		//
+		// It's also important to not initialize properties
+		if ((<typeof EventTarget>this.constructor)[PropertySymbol.customElementUpgradeTarget]) {
+			return <EventTarget>(
+				(<typeof EventTarget>this.constructor)[PropertySymbol.customElementUpgradeTarget]
+			);
+		}
+
+		this[PropertySymbol.listeners] = {
+			bubbling: new Map(),
+			capturing: new Map()
+		};
+		this[PropertySymbol.listenerOptions] = {
+			bubbling: new Map(),
+			capturing: new Map()
+		};
+	}
 
 	/**
 	 * Return a default description for the EventTarget class.
@@ -118,6 +140,12 @@ export default class EventTarget {
 	 * @returns The return value is false if event is cancelable and at least one of the event handlers which handled this event called Event.preventDefault().
 	 */
 	public dispatchEvent(event: Event): boolean {
+		if (!(event instanceof Event)) {
+			throw new this[PropertySymbol.window].TypeError(
+				`Failed to execute 'dispatchEvent' on 'EventTarget': parameter 1 is not of type 'Event'.`
+			);
+		}
+
 		// The "load" event is a special case. It should not bubble up to the window from the document.
 		if (
 			!event[PropertySymbol.dispatching] &&

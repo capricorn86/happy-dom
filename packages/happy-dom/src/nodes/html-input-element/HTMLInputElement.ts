@@ -21,6 +21,33 @@ import MouseEvent from '../../event/events/MouseEvent.js';
 import type NodeList from '../node/NodeList.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
+// Valid input type states per HTML spec:
+// https://html.spec.whatwg.org/multipage/input.html#attr-input-type
+const INPUT_TYPE_STATES = new Set([
+	'hidden',
+	'text',
+	'search',
+	'tel',
+	'url',
+	'email',
+	'password',
+	'date',
+	'month',
+	'week',
+	'time',
+	'datetime-local',
+	'number',
+	'range',
+	'color',
+	'checkbox',
+	'radio',
+	'file',
+	'submit',
+	'image',
+	'reset',
+	'button'
+]);
+
 /**
  * HTML Input Element.
  *
@@ -248,7 +275,14 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @returns Validation message.
 	 */
 	public get validationMessage(): string {
-		return this[PropertySymbol.validationMessage];
+		const customMessage = this[PropertySymbol.validationMessage];
+		if (customMessage) {
+			return customMessage;
+		}
+		if (this.willValidate && !this.validity.valid) {
+			return 'Constraints not satisfied';
+		}
+		return '';
 	}
 
 	/**
@@ -370,7 +404,8 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @returns Type. Defaults to "text".
 	 */
 	public get type(): string {
-		return this.getAttribute('type') || 'text';
+		const value = (this.getAttribute('type') ?? '').toLowerCase();
+		return INPUT_TYPE_STATES.has(value) ? value : 'text';
 	}
 
 	/**
@@ -942,7 +977,7 @@ export default class HTMLInputElement extends HTMLElement {
 			this.type !== 'reset' &&
 			this.type !== 'button' &&
 			!this.disabled &&
-			!this['readOnly']
+			!this.readOnly
 		);
 	}
 

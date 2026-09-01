@@ -13,6 +13,11 @@
 		"jest-environment#compile": {
 			"dependsOn": ["happy-dom#compile"]
 		},
+		"node-canvas-adapter#compile": {
+			"dependsOn": ["^compile"],
+			"inputs": ["src/**", "tsconfig.json", "package.json"],
+			"outputs": ["lib/**", "tmp/**"]
+		},
 		"integration-test#compile": {
 			"dependsOn": ["happy-dom#compile"]
 		},
@@ -28,6 +33,9 @@
 			"outputs": ["tmp/**"]
 		},
 		"jest-environment#test": {
+			"dependsOn": ["happy-dom#compile", "^compile"]
+		},
+		"node-canvas-adapter#test": {
 			"dependsOn": ["happy-dom#compile", "^compile"]
 		},
 		"integration-test#test": {

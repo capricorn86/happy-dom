@@ -348,7 +348,7 @@ describe('HTMLInputElement', () => {
 				'url'
 			])('Of type %s.', (type) => {
 				element.type = type;
-				expect(() => (element.valueAsNumber = 0)).toThrowError(
+				expect(() => (element.valueAsNumber = 0)).toThrow(
 					new window.DOMException(
 						"Failed to set the 'valueAsNumber' property on 'HTMLInputElement': This input element does not support Number values.",
 						DOMExceptionNameEnum.invalidStateError
@@ -925,6 +925,20 @@ describe('HTMLInputElement', () => {
 			element.setAttribute('type', 'date');
 			expect(element.type).toBe('date');
 		});
+
+		it('Returns "text" for invalid type attribute.', () => {
+			element.setAttribute('type', '123');
+			expect(element.type).toBe('text');
+
+			element.setAttribute('type', 'invalid');
+			expect(element.type).toBe('text');
+		});
+
+		it('Preserves the raw invalid value in the attribute itself.', () => {
+			element.setAttribute('type', '123');
+			expect(element.getAttribute('type')).toBe('123');
+			expect(element.type).toBe('text');
+		});
 	});
 
 	describe('set type()', () => {
@@ -979,6 +993,64 @@ describe('HTMLInputElement', () => {
 		it('Returns validation message.', () => {
 			element.setCustomValidity('Error message');
 			expect(element.validationMessage).toBe('Error message');
+		});
+
+		it('Returns default message for built-in constraint violations.', () => {
+			element.required = true;
+			element.value = '';
+			expect(element.validationMessage).toBe('Constraints not satisfied');
+		});
+
+		it('Returns empty string when valid.', () => {
+			element.required = true;
+			element.value = 'test';
+			expect(element.validationMessage).toBe('');
+		});
+
+		it('Returns custom message over built-in violation.', () => {
+			element.required = true;
+			element.value = '';
+			element.setCustomValidity('Custom error');
+			expect(element.validationMessage).toBe('Custom error');
+		});
+
+		it('Returns empty string for disabled elements.', () => {
+			element.required = true;
+			element.disabled = true;
+			element.value = '';
+			expect(element.validationMessage).toBe('');
+		});
+	});
+
+	describe('get willValidate()', () => {
+		it('Returns true if the element is not disabled.', () => {
+			element.disabled = false;
+			expect(element.willValidate).toBe(true);
+		});
+
+		it('Returns false if the element is disabled.', () => {
+			element.disabled = true;
+			expect(element.willValidate).toBe(false);
+		});
+
+		it('Returns false if the element is readonly.', () => {
+			element.readOnly = true;
+			expect(element.willValidate).toBe(false);
+		});
+
+		it('Returns false if type is hidden.', () => {
+			element.type = 'hidden';
+			expect(element.willValidate).toBe(false);
+		});
+
+		it('Returns false if type is reset.', () => {
+			element.type = 'reset';
+			expect(element.willValidate).toBe(false);
+		});
+
+		it('Returns false if type is button.', () => {
+			element.type = 'button';
+			expect(element.willValidate).toBe(false);
 		});
 	});
 
@@ -1398,7 +1470,7 @@ describe('HTMLInputElement', () => {
 		});
 
 		it('Throws exception when invalid type.', () => {
-			expect(() => element.stepUp()).toThrowError(
+			expect(() => element.stepUp()).toThrow(
 				new DOMException('This form element is not steppable.')
 			);
 		});
@@ -1515,7 +1587,7 @@ describe('HTMLInputElement', () => {
 		});
 
 		it('Throws exception when invalid type.', () => {
-			expect(() => element.stepDown()).toThrowError(
+			expect(() => element.stepDown()).toThrow(
 				new DOMException('This form element is not steppable.')
 			);
 		});

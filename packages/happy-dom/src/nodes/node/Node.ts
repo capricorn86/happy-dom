@@ -70,19 +70,19 @@ export default class Node extends EventTarget {
 	public declare readonly DOCUMENT_POSITION_PRECEDING: NodeDocumentPositionEnum;
 
 	// Internal properties
-	public [PropertySymbol.isConnected] = false;
-	public [PropertySymbol.parentNode]: Node | null = null;
-	public [PropertySymbol.rootNode]: Node | null = null;
-	public [PropertySymbol.styleNode]: HTMLStyleElement | SVGStyleElement | null = null;
-	public [PropertySymbol.textAreaNode]: HTMLTextAreaElement | null = null;
-	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
-	public [PropertySymbol.selectNode]: HTMLSelectElement | null = null;
-	public [PropertySymbol.mutationListeners]: IMutationListener[] = [];
-	public [PropertySymbol.nodeArray]: Node[] = [];
-	public [PropertySymbol.elementArray]: Element[] = [];
-	public [PropertySymbol.childNodes]: NodeList<Node> | null = null;
-	public [PropertySymbol.assignedToSlot]: HTMLSlotElement | null = null;
-	public [PropertySymbol.cache]: {
+	public declare [PropertySymbol.isConnected]: boolean;
+	public declare [PropertySymbol.parentNode]: Node | null;
+	public declare [PropertySymbol.rootNode]: Node | null;
+	public declare [PropertySymbol.styleNode]: HTMLStyleElement | SVGStyleElement | null;
+	public declare [PropertySymbol.textAreaNode]: HTMLTextAreaElement | null;
+	public declare [PropertySymbol.formNode]: HTMLFormElement | null;
+	public declare [PropertySymbol.selectNode]: HTMLSelectElement | null;
+	public declare [PropertySymbol.mutationListeners]: IMutationListener[];
+	public declare [PropertySymbol.nodeArray]: Node[];
+	public declare [PropertySymbol.elementArray]: Element[];
+	public declare [PropertySymbol.childNodes]: NodeList<Node> | null;
+	public declare [PropertySymbol.assignedToSlot]: HTMLSlotElement | null;
+	public declare [PropertySymbol.cache]: {
 		querySelector: Map<string, ICachedQuerySelectorResult>;
 		querySelectorAll: Map<string, ICachedQuerySelectorAllResult>;
 		matches: Map<string, ICachedMatchesResult>;
@@ -91,17 +91,8 @@ export default class Node extends EventTarget {
 		elementByTagName: Map<string, ICachedElementByTagNameResult>;
 		elementById: Map<string, ICachedElementByIdResult>;
 		computedStyle: ICachedComputedStyleResult | null;
-	} = {
-		querySelector: new Map(),
-		querySelectorAll: new Map(),
-		matches: new Map(),
-		elementsByTagName: new Map(),
-		elementsByTagNameNS: new Map(),
-		elementByTagName: new Map(),
-		elementById: new Map(),
-		computedStyle: null
 	};
-	public [PropertySymbol.affectsCache]: ICachedResult[] = [];
+	public declare [PropertySymbol.affectsCache]: ICachedResult[];
 
 	// Needs to be implemented by the sub-class
 	public declare [PropertySymbol.proxy]: Element | null;
@@ -112,6 +103,40 @@ export default class Node extends EventTarget {
 	 */
 	constructor() {
 		super();
+
+		// When upgrading a custom element in-place, constructor() returns the existing
+		// element. This propagates through the entire super() chain so the custom element's
+		// constructor runs with `this` = the existing element (same mechanism real browsers use)
+		//
+		// It's also important to not initialize properties
+		if ((<typeof Node>this.constructor)[PropertySymbol.customElementUpgradeTarget]) {
+			return <Node>(<typeof Node>this.constructor)[PropertySymbol.customElementUpgradeTarget];
+		}
+
+		// We only want to initialize properties when not upgrading a custom element
+		this[PropertySymbol.isConnected] = false;
+		this[PropertySymbol.parentNode] = null;
+		this[PropertySymbol.rootNode] = null;
+		this[PropertySymbol.styleNode] = null;
+		this[PropertySymbol.textAreaNode] = null;
+		this[PropertySymbol.formNode] = null;
+		this[PropertySymbol.selectNode] = null;
+		this[PropertySymbol.mutationListeners] = [];
+		this[PropertySymbol.nodeArray] = [];
+		this[PropertySymbol.elementArray] = [];
+		this[PropertySymbol.childNodes] = null;
+		this[PropertySymbol.assignedToSlot] = null;
+		this[PropertySymbol.cache] = {
+			querySelector: new Map(),
+			querySelectorAll: new Map(),
+			matches: new Map(),
+			elementsByTagName: new Map(),
+			elementsByTagNameNS: new Map(),
+			elementByTagName: new Map(),
+			elementById: new Map(),
+			computedStyle: null
+		};
+		this[PropertySymbol.affectsCache] = [];
 
 		// Window injected by WindowContextClassExtender (used when the Node can be created using "new" keyword)
 		if (this[PropertySymbol.window]) {
@@ -984,9 +1009,14 @@ export default class Node extends EventTarget {
 			}
 		}
 
-		const childNodes = this[PropertySymbol.nodeArray];
+		// HTMLFormElement and HTMLSelectElement return a Proxy from their constructor.
+		// The proxy is the identity handed out by the public API, so it has to be stored
+		// as the parent of the child nodes, the same way as in appendChild() and insertBefore().
+		const self = this[PropertySymbol.proxy] || this;
+
+		const childNodes = this[PropertySymbol.nodeArray].slice();
 		for (let i = 0, max = childNodes.length; i < max; i++) {
-			childNodes[i][PropertySymbol.parentNode] = this;
+			childNodes[i][PropertySymbol.parentNode] = self;
 			childNodes[i][PropertySymbol.connectedToNode]();
 		}
 
@@ -1034,9 +1064,15 @@ export default class Node extends EventTarget {
 			this[PropertySymbol.disconnectedFromDocument]();
 		}
 
-		const childNodes = this[PropertySymbol.nodeArray];
+		const childNodes = this[PropertySymbol.nodeArray].slice();
+		const self = this[PropertySymbol.proxy] || this;
 		for (let i = 0, max = childNodes.length; i < max; i++) {
-			childNodes[i][PropertySymbol.connectedToNode]();
+			const child = childNodes[i];
+			// Additional check to ensure that the child is still connected to this node before calling connectedToNode
+			if (child[PropertySymbol.parentNode] === self) {
+				// We call connectedToNode() to update the child's connection state and trigger any necessary callbacks
+				child[PropertySymbol.connectedToNode]();
+			}
 		}
 
 		// eslint-disable-next-line

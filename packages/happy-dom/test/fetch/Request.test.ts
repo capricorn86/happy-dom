@@ -6,8 +6,8 @@ import Headers from '../../src/fetch/Headers.js';
 import AbortSignal from '../../src/fetch/AbortSignal.js';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
-import type TRequestReferrerPolicy from '../../src/fetch/types/TRequestReferrerPolicy.js';
-import type TRequestRedirect from '../../src/fetch/types/TRequestRedirect.js';
+import type { TRequestReferrerPolicy } from '../../src/fetch/types/TRequestReferrerPolicy.js';
+import type { TRequestRedirect } from '../../src/fetch/types/TRequestRedirect.js';
 import FetchBodyUtility from '../../src/fetch/utilities/FetchBodyUtility.js';
 import Blob from '../../src/file/Blob.js';
 import FormData from '../../src/form-data/FormData.js';
@@ -93,7 +93,7 @@ describe('Request', () => {
 			try {
 				new window.Request('/path/');
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -194,7 +194,7 @@ describe('Request', () => {
 
 			const otherRequest = new window.Request(TEST_URL, { headers });
 			const request = new window.Request(otherRequest);
-			const headerEntries = {};
+			const headerEntries: Record<string, string> = {};
 
 			for (const [key, value] of request.headers) {
 				headerEntries[key] = value;
@@ -215,7 +215,7 @@ describe('Request', () => {
 			headers.set('X-Test-2', 'Hello World 2');
 
 			const request = new window.Request(TEST_URL, { headers });
-			const headerEntries = {};
+			const headerEntries: Record<string, string> = {};
 
 			for (const [key, value] of request.headers) {
 				headerEntries[key] = value;
@@ -256,7 +256,7 @@ describe('Request', () => {
 			};
 
 			const request = new window.Request(TEST_URL, { headers });
-			const headerEntries = {};
+			const headerEntries: Record<string, string> = {};
 
 			for (const [key, value] of request.headers) {
 				headerEntries[key] = value;
@@ -406,7 +406,7 @@ describe('Request', () => {
 			try {
 				new window.Request(TEST_URL, { body: 'Hello world' });
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -422,7 +422,7 @@ describe('Request', () => {
 			try {
 				new window.Request(TEST_URL, { body: 'Hello world', method: 'HEAD' });
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -438,7 +438,7 @@ describe('Request', () => {
 			try {
 				new window.Request('https://user@example.com');
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -454,7 +454,7 @@ describe('Request', () => {
 			try {
 				new window.Request('https://user:pass@example.com');
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -470,7 +470,7 @@ describe('Request', () => {
 			try {
 				new window.Request(TEST_URL, { referrerPolicy: <TRequestReferrerPolicy>'invalid' });
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -483,7 +483,7 @@ describe('Request', () => {
 			try {
 				new window.Request(TEST_URL, { referrerPolicy: <TRequestReferrerPolicy>'invalid' });
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -496,7 +496,7 @@ describe('Request', () => {
 			try {
 				new window.Request(TEST_URL, { redirect: <TRequestRedirect>'invalid' });
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -729,6 +729,19 @@ describe('Request', () => {
 			expect(formDataResponse.get('some')).toBe('test');
 		});
 
+		it('Returns FormData for string body with explicit Content-Type header.', async () => {
+			const request = new window.Request(TEST_URL, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				body: 'key1=value1&key2=value2&key3=value3'
+			});
+			const formDataResponse = await request.formData();
+
+			expect(formDataResponse.get('key1')).toBe('value1');
+			expect(formDataResponse.get('key2')).toBe('value2');
+			expect(formDataResponse.get('key3')).toBe('value3');
+		});
+
 		it('Returns FormData for "application/x-www-form-urlencoded" content.', async () => {
 			const urlSearchParams = new URLSearchParams();
 
@@ -820,7 +833,7 @@ describe('Request', () => {
 				let isAsyncComplete = false;
 
 				vi.spyOn(MultipartFormDataParser, 'streamToFormData').mockImplementation(
-					(): Promise<{ formData; buffer: Buffer }> =>
+					(): Promise<{ formData: FormData; buffer: Buffer }> =>
 						new Promise((resolve) =>
 							setTimeout(() => resolve({ formData, buffer: Buffer.from([]) }), 10)
 						)

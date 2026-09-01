@@ -77,7 +77,7 @@ describe('Response', () => {
 			const headers = new Headers(headerValues);
 			const response = new window.Response(null, { headers });
 
-			const headerEntries = {};
+			const headerEntries: Record<string, string> = {};
 
 			for (const [key, value] of response.headers) {
 				headerEntries[key] = value;
@@ -601,7 +601,7 @@ describe('Response', () => {
 				}
 			});
 			// Simulating that there is an underlying node stream
-			readableStream[PropertySymbol.nodeStream] = nodeStream;
+			(<any>readableStream)[PropertySymbol.nodeStream] = nodeStream;
 			const originalResponse = new window.Response(readableStream, {
 				status: 200,
 				statusText: 'OK',
@@ -634,8 +634,8 @@ describe('Response', () => {
 			);
 			await expect(originalResponse.text()).resolves.toBe('Hello World');
 
-			expect(() => originalResponse.clone()).toThrowError(DOMException);
-			expect(() => originalResponse.clone()).toThrowError(
+			expect(() => originalResponse.clone()).toThrow(DOMException);
+			expect(() => originalResponse.clone()).toThrow(
 				'Failed to clone body stream of request: Request body is already used.'
 			);
 		});
@@ -662,7 +662,7 @@ describe('Response', () => {
 			try {
 				window.Response.redirect('https://example.com', 200);
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(

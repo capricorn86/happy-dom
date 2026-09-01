@@ -4,6 +4,7 @@ import type IOptionalBrowserSettings from './types/IOptionalBrowserSettings.js';
 import BrowserSettingsFactory from './BrowserSettingsFactory.js';
 import type BrowserPage from './BrowserPage.js';
 import type IBrowser from './types/IBrowser.js';
+import type IConsole from '../console/IConsole.js';
 import BrowserExceptionObserver from './utilities/BrowserExceptionObserver.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import BrowserErrorCaptureEnum from './enums/BrowserErrorCaptureEnum.js';
@@ -14,7 +15,7 @@ import BrowserErrorCaptureEnum from './enums/BrowserErrorCaptureEnum.js';
 export default class Browser implements IBrowser {
 	public readonly contexts: BrowserContext[];
 	public readonly settings: IBrowserSettings;
-	public readonly console: Console | null;
+	public readonly console: IConsole | null;
 	public [PropertySymbol.exceptionObserver]: BrowserExceptionObserver | null = null;
 
 	/**
@@ -24,7 +25,7 @@ export default class Browser implements IBrowser {
 	 * @param [options.settings] Browser settings.
 	 * @param [options.console] Console.
 	 */
-	constructor(options?: { settings?: IOptionalBrowserSettings; console?: Console }) {
+	constructor(options?: { settings?: IOptionalBrowserSettings; console?: IConsole }) {
 		this.console = options?.console || null;
 		this.settings = BrowserSettingsFactory.createSettings(options?.settings);
 		if (this.settings.errorCapture === BrowserErrorCaptureEnum.processLevel) {

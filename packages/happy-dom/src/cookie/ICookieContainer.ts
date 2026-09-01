@@ -10,20 +10,21 @@ import type IOptionalCookie from './IOptionalCookie.js';
  */
 export default interface ICookieContainer {
 	/**
-	 * Adds cookies.
+	 * Adds or replaces cookies.
 	 *
 	 * @param cookies Cookies.
+	 * @returns Changed cookies.
 	 */
-	addCookies(cookies: IOptionalCookie[]): void;
+	addCookies(cookies: IOptionalCookie[]): { changed: ICookie[]; deleted: ICookie[] };
 
 	/**
 	 * Returns cookies.
 	 *
 	 * @param [url] URL.
-	 * @param [httpOnly] "true" if only http cookies should be returned.
+	 * @param [clientSide] "true" if "httpOnly" cookies should be filtered out.
 	 * @returns Cookies.
 	 */
-	getCookies(url?: URL | null, httpOnly?: boolean): ICookie[];
+	getCookies(url?: URL | null, clientSide?: boolean): ICookie[];
 
 	/**
 	 * Clears all cookies.

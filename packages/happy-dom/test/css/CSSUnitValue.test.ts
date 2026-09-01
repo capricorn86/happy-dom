@@ -10,9 +10,7 @@ describe('CSSUnitValue', () => {
 		});
 
 		it('Throws exception when invalid unit.', () => {
-			expect(() => new CSSUnitValue(5, 'invalid')).toThrowError(
-				new TypeError('Invalid unit: invalid')
-			);
+			expect(() => new CSSUnitValue(5, 'invalid')).toThrow(new TypeError('Invalid unit: invalid'));
 		});
 	});
 });

@@ -17,7 +17,7 @@ export default class CSSStyleValue {
 	 * @param style Style.
 	 * @param property Property.
 	 */
-	constructor(illegalConstructorSymbol: Symbol, style: CSSStyleDeclaration, property: string) {
+	constructor(illegalConstructorSymbol: symbol, style: CSSStyleDeclaration, property: string) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}

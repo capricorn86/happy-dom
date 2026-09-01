@@ -16,7 +16,7 @@ import Request from '../../src/fetch/Request.js';
 import Response from '../../src/fetch/Response.js';
 import Fetch from '../../src/fetch/Fetch.js';
 import type MessageEvent from '../../src/event/events/MessageEvent.js';
-import type Event from '../../src/event/Event.js';
+import Event from '../../src/event/Event.js';
 import type ErrorEvent from '../../src/event/events/ErrorEvent.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Permissions from '../../src/permissions/Permissions.js';
@@ -30,7 +30,6 @@ import type IBrowser from '../../src/browser/types/IBrowser.js';
 import type IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
 import type IBrowserPage from '../../src/browser/types/IBrowserPage.js';
 import AdoptedStyleSheetCustomElement from '../AdoptedStyleSheetCustomElement.js';
-import CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
 import Location from '../../src/location/Location.js';
 import HTMLElementConfig from '../../src/config/HTMLElementConfig.js';
 
@@ -49,6 +48,134 @@ const PLATFORM =
 	process.platform.slice(1) +
 	' ' +
 	process.arch;
+
+const PROPERTY_EVENTS = [
+	'onsearch',
+	'onappinstalled',
+	'onbeforeinstallprompt',
+	'onabort',
+	'onbeforeinput',
+	'onbeforematch',
+	'onbeforetoggle',
+	'onblur',
+	'oncancel',
+	'oncanplay',
+	'oncanplaythrough',
+	'onchange',
+	'onclick',
+	'onclose',
+	'oncommand',
+	'oncontentvisibilityautostatechange',
+	'oncontextlost',
+	'oncontextmenu',
+	'oncontextrestored',
+	'oncuechange',
+	'ondblclick',
+	'ondrag',
+	'ondragend',
+	'ondragenter',
+	'ondragleave',
+	'ondragover',
+	'ondragstart',
+	'ondrop',
+	'ondurationchange',
+	'onemptied',
+	'onended',
+	'onerror',
+	'onfocus',
+	'onformdata',
+	'oninput',
+	'oninvalid',
+	'onkeydown',
+	'onkeypress',
+	'onkeyup',
+	'onload',
+	'onloadeddata',
+	'onloadedmetadata',
+	'onloadstart',
+	'onmousedown',
+	'onmouseenter',
+	'onmouseleave',
+	'onmousemove',
+	'onmouseout',
+	'onmouseover',
+	'onmouseup',
+	'onmousewheel',
+	'onpause',
+	'onplay',
+	'onplaying',
+	'onprogress',
+	'onratechange',
+	'onreset',
+	'onresize',
+	'onscroll',
+	'onscrollend',
+	'onsecuritypolicyviolation',
+	'onseeked',
+	'onseeking',
+	'onselect',
+	'onslotchange',
+	'onstalled',
+	'onsubmit',
+	'onsuspend',
+	'ontimeupdate',
+	'ontoggle',
+	'onvolumechange',
+	'onwaiting',
+	'onwebkitanimationend',
+	'onwebkitanimationiteration',
+	'onwebkitanimationstart',
+	'onwebkittransitionend',
+	'onwheel',
+	'onauxclick',
+	'ongotpointercapture',
+	'onlostpointercapture',
+	'onpointerdown',
+	'onpointermove',
+	'onpointerup',
+	'onpointercancel',
+	'onpointerover',
+	'onpointerout',
+	'onpointerenter',
+	'onpointerleave',
+	'onselectstart',
+	'onselectionchange',
+	'onanimationcancel',
+	'onanimationend',
+	'onanimationiteration',
+	'onanimationstart',
+	'ontransitionrun',
+	'ontransitionstart',
+	'ontransitionend',
+	'ontransitioncancel',
+	'onbeforexrselect',
+	'onafterprint',
+	'onbeforeprint',
+	'onbeforeunload',
+	'onhashchange',
+	'onlanguagechange',
+	'onmessage',
+	'onmessageerror',
+	'onoffline',
+	'ononline',
+	'onpagehide',
+	'onpageshow',
+	'onpopstate',
+	'onrejectionhandled',
+	'onstorage',
+	'onunhandledrejection',
+	'onunload',
+	'ondevicemotion',
+	'ondeviceorientation',
+	'ondeviceorientationabsolute',
+	'onpointerrawupdate',
+	'onpageswap',
+	'onpagereveal',
+	'onscrollsnapchange',
+	'onscrollsnapchanging',
+	'ongamepadconnected',
+	'ongamepaddisconnected'
+];
 
 describe('BrowserWindow', () => {
 	let browser: IBrowser;
@@ -141,6 +268,31 @@ describe('BrowserWindow', () => {
 
 			expect(consoleWarn.length).toBe(0);
 		});
+	});
+
+	describe('get on{event}()', () => {
+		for (const event of PROPERTY_EVENTS) {
+			it(`Returns null for "${event}" by default.`, () => {
+				for (const event of PROPERTY_EVENTS) {
+					expect((<any>window)[event]).toBeNull();
+				}
+			});
+
+			it(`Sets and gets event handler for "${event}".`, () => {
+				let isTriggered = false;
+				const handler = (): boolean => (isTriggered = true);
+				(<any>window)[event] = handler;
+				expect((<any>window)[event]).toBe(handler);
+
+				// Special case for "onload" event, as it is triggered during the initialization of the window.
+				if (event !== 'onload') {
+					const div = document.createElement('div');
+					window.document.body.appendChild(div);
+					div.dispatchEvent(new Event(event.slice(2), { bubbles: true }));
+					expect(isTriggered).toBe(true);
+				}
+			});
+		}
 	});
 
 	describe('get happyDOM()', () => {
@@ -435,6 +587,12 @@ describe('BrowserWindow', () => {
 		});
 	});
 
+	describe('get screen()', () => {
+		it('Returns the "Screen" object.', () => {
+			expect(window.screen).toBeInstanceOf(window.Screen);
+		});
+	});
+
 	describe('get localStorage()', () => {
 		it('Returns the "localStorage" object.', () => {
 			expect(window.localStorage).toBeInstanceOf(window.Storage);
@@ -652,7 +810,7 @@ describe('BrowserWindow', () => {
 			);
 			const elementComputedStyle = window.getComputedStyle(element);
 
-			const styleSheet = new CSSStyleSheet();
+			const styleSheet = new window.CSSStyleSheet();
 			styleSheet.replaceSync(`
                 span {
 					color: green;
@@ -2096,7 +2254,7 @@ describe('BrowserWindow', () => {
 			expect(() => {
 				const data = '😄 hello my happy dom! 🐛';
 				window.atob(data);
-			}).toThrowError(
+			}).toThrow(
 				new DOMException(
 					"Failed to execute 'atob' on 'Window': The string to be decoded contains characters outside of the Latin1 range.",
 					DOMExceptionNameEnum.invalidCharacterError
@@ -2108,7 +2266,7 @@ describe('BrowserWindow', () => {
 			expect(() => {
 				const data = '\x11GVsbG8gbXkgaGFwcHkgZG9tIQ==';
 				window.atob(data);
-			}).toThrowError(
+			}).toThrow(
 				new DOMException(
 					"Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded.",
 					DOMExceptionNameEnum.invalidCharacterError
@@ -2119,7 +2277,7 @@ describe('BrowserWindow', () => {
 			expect(() => {
 				const data = 'aGVsbG8gbXkgaGFwcHkgZG9tI';
 				window.atob(data);
-			}).toThrowError(
+			}).toThrow(
 				new DOMException(
 					"Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded.",
 					DOMExceptionNameEnum.invalidCharacterError
@@ -2139,7 +2297,7 @@ describe('BrowserWindow', () => {
 			expect(() => {
 				const data = '😄 hello my happy dom! 🐛';
 				window.btoa(data);
-			}).toThrowError(
+			}).toThrow(
 				new DOMException(
 					"Failed to execute 'btoa' on 'Window': The string to be encoded contains characters outside of the Latin1 range.",
 					DOMExceptionNameEnum.invalidCharacterError
@@ -2205,7 +2363,7 @@ describe('BrowserWindow', () => {
 		});
 
 		it("Throws an exception if the provided object can't be serialized.", function () {
-			expect(() => window.postMessage(window)).toThrowError(
+			expect(() => window.postMessage(window)).toThrow(
 				new window.DOMException(
 					`Failed to execute 'postMessage' on 'Window': The provided message cannot be serialized.`,
 					DOMExceptionNameEnum.invalidStateError
@@ -2220,7 +2378,7 @@ describe('BrowserWindow', () => {
 
 			browserFrame.url = documentOrigin;
 
-			expect(() => window.postMessage(message, targetOrigin)).toThrowError(
+			expect(() => window.postMessage(message, targetOrigin)).toThrow(
 				new window.DOMException(
 					`Failed to execute 'postMessage' on 'Window': The target origin provided ('${targetOrigin}') does not match the recipient window\'s origin ('${documentOrigin}').`,
 					DOMExceptionNameEnum.securityError

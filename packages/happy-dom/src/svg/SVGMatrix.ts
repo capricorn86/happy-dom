@@ -327,22 +327,23 @@ export default class SVGMatrix {
 		const attribute = this[PropertySymbol.getAttribute]
 			? this[PropertySymbol.getAttribute]()
 			: this[PropertySymbol.attributeValue];
+		const window = this[PropertySymbol.window];
 
 		if (!attribute) {
-			return new DOMMatrix();
+			return new window.DOMMatrix();
 		}
 
 		const match = attribute.match(TRANSFORM_REGEXP);
 
 		if (!match) {
-			return new DOMMatrix();
+			return new window.DOMMatrix();
 		}
 		const parameters: number[] = [];
 
 		for (const parameter of match[2].trim().split(TRANSFORM_PARAMETER_SPLIT_REGEXP)) {
 			const value = Number(parameter);
 			if (isNaN(value)) {
-				throw new this[PropertySymbol.window].TypeError(
+				throw new window.TypeError(
 					`Failed to parse transform attribute: Expected number, but got "${parameter}" in "${attribute}".`
 				);
 			}
@@ -352,7 +353,7 @@ export default class SVGMatrix {
 		switch (match[1]) {
 			case 'matrix':
 				if (parameters.length !== 6) {
-					throw new this[PropertySymbol.window].TypeError(
+					throw new window.TypeError(
 						`Failed to parse transform attribute: Expected 6 parameters in "${attribute}".`
 					);
 				}
@@ -360,7 +361,7 @@ export default class SVGMatrix {
 			case 'scale':
 			case 'translate':
 				if (parameters.length !== 1 && parameters.length !== 2) {
-					throw new this[PropertySymbol.window].TypeError(
+					throw new window.TypeError(
 						`Failed to parse transform attribute: Expected 1 or 2 parameters in "${attribute}".`
 					);
 				}
@@ -368,16 +369,16 @@ export default class SVGMatrix {
 			case 'skewY':
 			case 'skewX':
 				if (parameters.length !== 1) {
-					throw new this[PropertySymbol.window].TypeError(
+					throw new window.TypeError(
 						`Failed to parse transform attribute: Expected 1 parameter in "${attribute}".`
 					);
 				}
 				return <DOMMatrix>DOMMatrix[PropertySymbol.fromString](attribute);
 			case 'rotate':
-				const domMatrix = new DOMMatrix();
+				const domMatrix = new window.DOMMatrix();
 
 				if (parameters.length !== 1 && parameters.length !== 3) {
-					throw new this[PropertySymbol.window].TypeError(
+					throw new window.TypeError(
 						`Failed to parse transform attribute: Expected 1 or 3 parameters in "${attribute}".`
 					);
 				}
@@ -395,7 +396,7 @@ export default class SVGMatrix {
 				 **/
 				domMatrix.multiplySelf(
 					// prettier-ignore
-					new DOMMatrix([
+					new window.DOMMatrix([
 						Math.cos(radian), Math.sin(radian), -Math.sin(radian),
 						Math.cos(radian), 0,                 0
 					])

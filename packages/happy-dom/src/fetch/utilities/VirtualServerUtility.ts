@@ -35,7 +35,7 @@ export default class VirtualServerUtility {
 						virtualServer.url[virtualServer.url.length - 1] === '/'
 							? virtualServer.url.slice(0, -1)
 							: virtualServer.url,
-						window.location.origin
+						window.location.origin !== 'null' ? window.location.origin : undefined
 					);
 					if (requestURL.startsWith(url.href)) {
 						baseURL = url;

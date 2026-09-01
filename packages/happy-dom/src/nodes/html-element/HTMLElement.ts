@@ -21,20 +21,49 @@ export default class HTMLElement extends Element {
 	public static observedAttributes?: string[];
 
 	// Internal properties
-	public [PropertySymbol.accessKey] = '';
-	public [PropertySymbol.offsetHeight] = 0;
-	public [PropertySymbol.offsetWidth] = 0;
-	public [PropertySymbol.offsetLeft] = 0;
-	public [PropertySymbol.offsetTop] = 0;
-	public [PropertySymbol.clientHeight] = 0;
-	public [PropertySymbol.clientWidth] = 0;
-	public [PropertySymbol.clientLeft] = 0;
-	public [PropertySymbol.clientTop] = 0;
-	public [PropertySymbol.style]: CSSStyleDeclaration | null = null;
-	public [PropertySymbol.dataset]: DOMStringMap | null = null;
+	public declare [PropertySymbol.accessKey]: string;
+	public declare [PropertySymbol.offsetHeight]: number;
+	public declare [PropertySymbol.offsetWidth]: number;
+	public declare [PropertySymbol.offsetLeft]: number;
+	public declare [PropertySymbol.offsetTop]: number;
+	public declare [PropertySymbol.clientHeight]: number;
+	public declare [PropertySymbol.clientWidth]: number;
+	public declare [PropertySymbol.clientLeft]: number;
+	public declare [PropertySymbol.clientTop]: number;
+	public declare [PropertySymbol.style]: CSSStyleDeclaration | null;
+	public declare [PropertySymbol.dataset]: DOMStringMap | null;
+	public declare [PropertySymbol.customElementDefineCallback]: (() => void) | null;
 
-	// Private properties
-	#customElementDefineCallback: (() => void) | null = null;
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		super();
+
+		// When upgrading a custom element in-place, constructor() returns the existing
+		// element. This propagates through the entire super() chain so the custom element's
+		// constructor runs with `this` = the existing element (same mechanism real browsers use)
+		//
+		// It's also important to not initialize properties
+		if ((<typeof HTMLElement>this.constructor)[PropertySymbol.customElementUpgradeTarget]) {
+			return <HTMLElement>(
+				(<typeof HTMLElement>this.constructor)[PropertySymbol.customElementUpgradeTarget]
+			);
+		}
+
+		this[PropertySymbol.accessKey] = '';
+		this[PropertySymbol.offsetHeight] = 0;
+		this[PropertySymbol.offsetWidth] = 0;
+		this[PropertySymbol.offsetLeft] = 0;
+		this[PropertySymbol.offsetTop] = 0;
+		this[PropertySymbol.clientHeight] = 0;
+		this[PropertySymbol.clientWidth] = 0;
+		this[PropertySymbol.clientLeft] = 0;
+		this[PropertySymbol.clientTop] = 0;
+		this[PropertySymbol.style] = null;
+		this[PropertySymbol.dataset] = null;
+		this[PropertySymbol.customElementDefineCallback] = null;
+	}
 
 	// Events
 
@@ -993,15 +1022,15 @@ export default class HTMLElement extends Element {
 		// This element can potentially be a custom element that has not been defined yet
 		// Therefore we need to register a callback for when it is defined in CustomElementRegistry and replace it with the registered element (see #404)
 		if (this.constructor === window.HTMLElement && localName.includes('-') && allCallbacks) {
-			if (!this.#customElementDefineCallback) {
-				const callback = this.#onCustomElementConnected.bind(this);
+			if (!this[PropertySymbol.customElementDefineCallback]) {
+				const callback = this[PropertySymbol.onCustomElementConnected].bind(this);
 				const callbacks = allCallbacks.get(localName);
 				if (callbacks) {
 					callbacks.unshift(callback);
 				} else {
 					allCallbacks.set(localName, [callback]);
 				}
-				this.#customElementDefineCallback = callback;
+				this[PropertySymbol.customElementDefineCallback] = callback;
 			}
 		}
 
@@ -1021,15 +1050,15 @@ export default class HTMLElement extends Element {
 		if (this.constructor === window.HTMLElement && localName.includes('-') && allCallbacks) {
 			const callbacks = allCallbacks.get(localName);
 
-			if (callbacks && this.#customElementDefineCallback) {
-				const index = callbacks.indexOf(this.#customElementDefineCallback);
+			if (callbacks && this[PropertySymbol.customElementDefineCallback]) {
+				const index = callbacks.indexOf(this[PropertySymbol.customElementDefineCallback]);
 				if (index !== -1) {
 					callbacks.splice(index, 1);
 				}
 				if (!callbacks.length) {
 					allCallbacks.delete(localName);
 				}
-				this.#customElementDefineCallback = null;
+				this[PropertySymbol.customElementDefineCallback] = null;
 			}
 		}
 
@@ -1078,94 +1107,41 @@ export default class HTMLElement extends Element {
 	/**
 	 * Triggered when a custom element is connected to the DOM.
 	 */
-	#onCustomElementConnected(): void {
+	public [PropertySymbol.onCustomElementConnected](): void {
 		if (!this[PropertySymbol.parentNode]) {
 			return;
 		}
 
 		const window = this[PropertySymbol.window];
 		const localName = this[PropertySymbol.localName]!;
-		const newElement = <HTMLElement>this[PropertySymbol.ownerDocument].createElement(localName);
-		const newCache = newElement[PropertySymbol.cache];
+		const definition = window.customElements[PropertySymbol.registry]?.get(localName);
 
-		newElement[PropertySymbol.nodeArray] = this[PropertySymbol.nodeArray];
-		newElement[PropertySymbol.elementArray] = this[PropertySymbol.elementArray];
-		newElement[PropertySymbol.childNodes] = null;
-		newElement[PropertySymbol.children] = null;
-		newElement[PropertySymbol.isConnected] = this[PropertySymbol.isConnected];
-		newElement[PropertySymbol.rootNode] = this[PropertySymbol.rootNode];
-		newElement[PropertySymbol.formNode] = this[PropertySymbol.formNode];
-		newElement[PropertySymbol.parentNode] = this[PropertySymbol.parentNode];
-		newElement[PropertySymbol.selectNode] = this[PropertySymbol.selectNode];
-		newElement[PropertySymbol.textAreaNode] = this[PropertySymbol.textAreaNode];
-		newElement[PropertySymbol.mutationListeners] = this[PropertySymbol.mutationListeners];
-		newElement[PropertySymbol.isValue] = this[PropertySymbol.isValue];
-		newElement[PropertySymbol.cache] = this[PropertySymbol.cache];
-		newElement[PropertySymbol.affectsCache] = this[PropertySymbol.affectsCache];
-		newElement[PropertySymbol.attributes][PropertySymbol.itemsByNamespaceURI] =
-			this[PropertySymbol.attributes][PropertySymbol.itemsByNamespaceURI];
-		newElement[PropertySymbol.attributes][PropertySymbol.itemsByName] =
-			this[PropertySymbol.attributes][PropertySymbol.itemsByName];
-		newElement[PropertySymbol.attributes][PropertySymbol.items] =
-			this[PropertySymbol.attributes][PropertySymbol.items];
-
-		for (const attr of newElement[PropertySymbol.attributes][PropertySymbol.items].values()) {
-			attr[PropertySymbol.ownerElement] = newElement;
+		if (!definition) {
+			return;
 		}
 
-		this[PropertySymbol.clearCache]();
+		// Upgrade in place, mirroring the browser upgrade algorithm (HTML spec §4.13.5):
+		//
+		// Change the prototype so the element IS the registered class
+		Object.setPrototypeOf(this, definition.elementClass.prototype);
 
-		this[PropertySymbol.nodeArray] = [];
-		this[PropertySymbol.elementArray] = [];
-		this[PropertySymbol.childNodes] = null;
-		this[PropertySymbol.children] = null;
+		// NodeFactory.upgradeTarget causes Element.constructor() to return this element
+		definition.elementClass[PropertySymbol.customElementUpgradeTarget] = this;
 
-		this[PropertySymbol.parentNode] = null;
-		this[PropertySymbol.rootNode] = null;
-		this[PropertySymbol.formNode] = null;
-		this[PropertySymbol.selectNode] = null;
-		this[PropertySymbol.textAreaNode] = null;
-
-		this[PropertySymbol.mutationListeners] = [];
-		this[PropertySymbol.isValue] = null;
-		this[PropertySymbol.cache] = newCache;
-		this[PropertySymbol.affectsCache] = [];
-		this[PropertySymbol.attributes][PropertySymbol.itemsByNamespaceURI] = new Map();
-		this[PropertySymbol.attributes][PropertySymbol.itemsByName] = new Map();
-		this[PropertySymbol.attributes][PropertySymbol.items] = new Map();
-
-		for (const node of newElement[PropertySymbol.nodeArray]) {
-			node[PropertySymbol.parentNode] = newElement;
+		// Call the constructor of the custom element class, which will run with `this` set to the existing element when super() is called
+		try {
+			new definition.elementClass();
+		} finally {
+			definition.elementClass[PropertySymbol.customElementUpgradeTarget] = null;
 		}
 
-		const parentChildNodes = newElement[PropertySymbol.parentNode][PropertySymbol.nodeArray];
-		const parentChildElements = newElement[PropertySymbol.parentNode][PropertySymbol.elementArray];
+		this[PropertySymbol.customElementDefineCallback] = null;
 
-		parentChildNodes[parentChildNodes.indexOf(this)] = newElement;
-		parentChildElements[parentChildElements.indexOf(this)] = newElement;
-
-		const allCallbacks = window.customElements[PropertySymbol.callbacks];
-		const callbacks = allCallbacks.get(localName);
-
-		if (callbacks && this.#customElementDefineCallback) {
-			const index = callbacks.indexOf(this.#customElementDefineCallback);
-
-			if (index !== -1) {
-				callbacks.splice(index, 1);
+		if (this[PropertySymbol.isConnected]) {
+			if (this[PropertySymbol.shadowRoot]) {
+				this[PropertySymbol.shadowRoot][PropertySymbol.isConnected] = true;
 			}
-
-			if (!callbacks.length) {
-				allCallbacks.delete(localName);
-			}
-
-			this.#customElementDefineCallback = null;
-		}
-
-		if (newElement[PropertySymbol.isConnected]) {
-			if (newElement[PropertySymbol.shadowRoot]) {
-				newElement[PropertySymbol.shadowRoot][PropertySymbol.isConnected] = true;
-			}
-			newElement[PropertySymbol.connectedToDocument]();
+			this[PropertySymbol.connectedToDocument]();
 		}
 	}
 }

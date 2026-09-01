@@ -17,7 +17,7 @@ describe('URL', () => {
 			try {
 				new window.URL('invalid-url');
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 			expect(error).toEqual(new TypeError('Invalid URL'));
 			expect(error!.constructor).toBe(window.TypeError);

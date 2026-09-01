@@ -5,6 +5,7 @@ import MultipartReader from './MultipartReader.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import { Buffer } from 'buffer';
 import type BrowserWindow from '../../window/BrowserWindow.js';
+import { ReadableStreamWrapper } from '../ReadableStreamWrapper.js';
 
 /**
  * Multipart form data factory.
@@ -106,7 +107,7 @@ export default class MultipartFormDataParser {
 		contentType: string;
 		contentLength: number;
 		buffer: Buffer;
-		stream: ReadableStream;
+		stream: ReadableStreamWrapper;
 	} {
 		const boundary = '----HappyDOMFormDataBoundary' + Math.random().toString(36);
 		const chunks: Buffer[] = [];
@@ -145,12 +146,15 @@ export default class MultipartFormDataParser {
 			contentType: `multipart/form-data; boundary=${boundary}`,
 			contentLength: buffer.length,
 			buffer,
-			stream: new ReadableStream({
-				start(controller) {
-					controller.enqueue(buffer);
-					controller.close();
-				}
-			})
+			stream: new ReadableStreamWrapper(
+				() =>
+					new ReadableStream({
+						start(controller) {
+							controller.enqueue(buffer);
+							controller.close();
+						}
+					})
+			)
 		};
 	}
 

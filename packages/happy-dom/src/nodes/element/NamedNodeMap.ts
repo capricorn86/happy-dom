@@ -1,5 +1,5 @@
 import * as PropertySymbol from '../../PropertySymbol.js';
-import Attr from '../attr/Attr.js';
+import type Attr from '../attr/Attr.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import type Element from './Element.js';
 import NamespaceURI from '../../config/NamespaceURI.js';

@@ -192,6 +192,9 @@ export default class Event {
 		this[PropertySymbol.type] = type;
 		this[PropertySymbol.bubbles] = bubbles;
 		this[PropertySymbol.cancelable] = cancelable;
+		this[PropertySymbol.propagationStopped] = false;
+		this[PropertySymbol.immediatePropagationStopped] = false;
+		this[PropertySymbol.defaultPrevented] = false;
 	}
 
 	/**

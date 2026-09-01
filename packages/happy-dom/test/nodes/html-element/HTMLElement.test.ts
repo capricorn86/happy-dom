@@ -195,7 +195,7 @@ describe('HTMLElement', () => {
 			const div = document.createElement('div');
 			expect(() => {
 				div.contentEditable = 'invalid';
-			}).toThrowError(
+			}).toThrow(
 				new SyntaxError(
 					`Failed to set the 'contentEditable' property on 'HTMLElement': The value provided ('invalid') is not one of 'true', 'false', 'plaintext-only', or 'inherit'.`
 				)
@@ -691,6 +691,55 @@ describe('HTMLElement', () => {
 
 			expect(focusedElement === element).toBe(true);
 		});
+
+		it('Does not focus element when element is inert.', () => {
+			const input = document.createElement('input');
+			document.body.appendChild(input);
+			input.inert = true;
+
+			input.focus();
+
+			expect(document.activeElement).not.toBe(input);
+		});
+
+		it('Does not focus element when ancestor is inert.', () => {
+			const parent = document.createElement('div');
+			const input = document.createElement('input');
+			parent.appendChild(input);
+			document.body.appendChild(parent);
+			parent.inert = true;
+
+			input.focus();
+
+			expect(document.activeElement).not.toBe(input);
+		});
+
+		it('Allows focus when inert is removed.', () => {
+			const input = document.createElement('input');
+			document.body.appendChild(input);
+			input.inert = true;
+
+			input.focus();
+			expect(document.activeElement).not.toBe(input);
+
+			input.inert = false;
+			input.focus();
+			expect(document.activeElement).toBe(input);
+		});
+
+		it('Does not focus deeply nested element when ancestor is inert.', () => {
+			const grandparent = document.createElement('div');
+			const parent = document.createElement('div');
+			const input = document.createElement('input');
+			grandparent.appendChild(parent);
+			parent.appendChild(input);
+			document.body.appendChild(grandparent);
+			grandparent.inert = true;
+
+			input.focus();
+
+			expect(document.activeElement).not.toBe(input);
+		});
 	});
 
 	describe('setAttributeNode()', () => {
@@ -758,6 +807,11 @@ describe('HTMLElement', () => {
 			attribute1.value = 'test';
 			element.attributes.setNamedItem(attribute1);
 
+			let isEventListenerCalled = false;
+			const listener = (): boolean => (isEventListenerCalled = true);
+			element.addEventListener('test', listener);
+			element.onclick = listener;
+
 			const rootNode = (element[PropertySymbol.rootNode] = document.createElement('div'));
 			const formNode = (element[PropertySymbol.formNode] = document.createElement('form'));
 			const selectNode = (element[PropertySymbol.selectNode] = document.createElement('select'));
@@ -795,6 +849,14 @@ describe('HTMLElement', () => {
 			expect(customElement[PropertySymbol.isValue] === isValue).toBe(true);
 			expect(customElement.attributes.length).toBe(1);
 			expect(customElement.attributes[0] === attribute1).toBe(true);
+
+			customElement.dispatchEvent(new Event('test'));
+			expect(isEventListenerCalled).toBe(true);
+
+			isEventListenerCalled = false;
+
+			customElement.click();
+			expect(isEventListenerCalled).toBe(true);
 		});
 
 		it('Renders child component inside the new instance of the custom element.', () => {
