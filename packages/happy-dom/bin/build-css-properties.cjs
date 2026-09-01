@@ -13,6 +13,11 @@ const CSS_PROPERTIES_URL =
 const DEPRECATED_PROPERTIES = ['css-float'];
 
 async function main() {
+	if (process.env.CI === 'true') {
+		console.log(Chalk.bold('Skipping CSS properties download in CI environment'));
+		return;
+	}
+
 	console.log(Chalk.bold('Downloading CSS properties from Chromium...'));
 	const response = await fetch(CSS_PROPERTIES_URL);
 
