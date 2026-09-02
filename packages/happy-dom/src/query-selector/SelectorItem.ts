@@ -6,6 +6,8 @@ import type ISelectorAttribute from './ISelectorAttribute.js';
 import type ISelectorMatch from './ISelectorMatch.js';
 import type ISelectorPseudo from './ISelectorPseudo.js';
 import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
+import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
+import type ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
 
 /**
  * Selector item.
@@ -60,12 +62,22 @@ export default class SelectorItem {
 	 */
 	public match(
 		scope: Element | DocumentFragment | null,
-		element: Element,
+		element: Element | ShadowRoot,
 		ignoreErrors?: boolean
 	): ISelectorMatch | null {
 		let priorityWeight = 0;
 
 		if (this.isPseudoElement) {
+			return null;
+		}
+
+		element = <Element>(
+			(element[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode
+				? (<ShadowRoot>element).host!
+				: element)
+		);
+
+		if (!element) {
 			return null;
 		}
 
@@ -265,6 +277,8 @@ export default class SelectorItem {
 					: null;
 			case 'root':
 				return root && element === root ? { priorityWeight: 10 } : null;
+			case 'host':
+				return element.shadowRoot ? { priorityWeight: 10 } : null;
 			case 'not':
 				for (const selectorItem of pseudo.selectorItems!) {
 					if (selectorItem.match(scope, element)) {
