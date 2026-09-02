@@ -7,6 +7,7 @@ import type BrowserWindow from '../window/BrowserWindow.js';
 import type DOMException from '../exception/DOMException.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
+import type { TGlobalMatchFunction } from './TGlobalMatchFunction.js';
 
 /**
  * Selector group RegExp.
@@ -92,6 +93,7 @@ const SPACE_REGEXP = / /g;
 export default class SelectorParser {
 	private window: BrowserWindow;
 	private scope: Element | DocumentFragment;
+	private globalMatchFunction: TGlobalMatchFunction;
 	private ignoreErrors: boolean;
 
 	/**
@@ -101,14 +103,17 @@ export default class SelectorParser {
 	 * @param options.window
 	 * @param options.scope
 	 * @param options.ignoreErrors
+	 * @param options.globalMatchFunction
 	 */
 	constructor(options: {
 		window: BrowserWindow;
 		scope: Element | DocumentFragment;
+		globalMatchFunction: TGlobalMatchFunction;
 		ignoreErrors?: boolean;
 	}) {
 		this.window = options.window;
 		this.scope = options.scope;
+		this.globalMatchFunction = options.globalMatchFunction;
 		this.ignoreErrors = options.ignoreErrors ?? false;
 	}
 	/**
@@ -333,11 +338,16 @@ export default class SelectorParser {
 		}
 
 		if (selector === '*') {
-			return new SelectorItem({ tagName: '*', combinator });
+			return new SelectorItem({
+				globalMatchFunction: this.globalMatchFunction,
+				tagName: '*',
+				combinator
+			});
 		}
 
 		const regexp = new RegExp(SELECTOR_REGEXP);
 		const selectorItem: SelectorItem = new SelectorItem({
+			globalMatchFunction: this.globalMatchFunction,
 			combinator
 		});
 		let match;
