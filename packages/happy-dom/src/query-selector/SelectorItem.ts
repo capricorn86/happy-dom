@@ -8,6 +8,7 @@ import type ISelectorPseudo from './ISelectorPseudo.js';
 import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import type ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
+import type { TGlobalMatchFunction } from './TGlobalMatchFunction.js';
 
 /**
  * Selector item.
@@ -20,11 +21,13 @@ export default class SelectorItem {
 	public pseudos: ISelectorPseudo[] | null;
 	public isPseudoElement: boolean;
 	public combinator: SelectorCombinatorEnum;
+	public globalMatchFunction: TGlobalMatchFunction;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param [options] Options.
+	 * @param options Options.
+	 * @param options.globalMatchFunction Global match function.
 	 * @param [options.combinator] Combinator.
 	 * @param [options.tagName] Tag name.
 	 * @param [options.id] ID.
@@ -34,7 +37,8 @@ export default class SelectorItem {
 	 * @param [options.isPseudoElement] Is pseudo element.
 	 * @param [options.ignoreErrors] Ignore errors.
 	 */
-	constructor(options?: {
+	constructor(options: {
+		globalMatchFunction: TGlobalMatchFunction;
 		tagName?: string;
 		id?: string;
 		classNames?: string[];
@@ -43,6 +47,7 @@ export default class SelectorItem {
 		isPseudoElement?: boolean;
 		combinator?: SelectorCombinatorEnum;
 	}) {
+		this.globalMatchFunction = options!.globalMatchFunction;
 		this.tagName = options?.tagName || null;
 		this.id = options?.id || null;
 		this.classNames = options?.classNames || null;
@@ -161,6 +166,7 @@ export default class SelectorItem {
 				case 'nth-last-of-type':
 				case 'is':
 				case 'where':
+				case 'host-context':
 					if (!pseudo.arguments) {
 						if (ignoreErrors) {
 							return null;
@@ -278,7 +284,18 @@ export default class SelectorItem {
 			case 'root':
 				return root && element === root ? { priorityWeight: 10 } : null;
 			case 'host':
+				if (pseudo.arguments) {
+					return element.shadowRoot &&
+						this.globalMatchFunction(element, pseudo.arguments, { ignoreErrors: ignoreErrors })
+						? { priorityWeight: 10 }
+						: null;
+				}
 				return element.shadowRoot ? { priorityWeight: 10 } : null;
+			case 'host-context':
+				return element.shadowRoot &&
+					this.globalMatchFunction(element, pseudo.arguments!, { ignoreErrors: ignoreErrors })
+					? { priorityWeight: 10 }
+					: null;
 			case 'not':
 				for (const selectorItem of pseudo.selectorItems!) {
 					if (selectorItem.match(scope, element)) {

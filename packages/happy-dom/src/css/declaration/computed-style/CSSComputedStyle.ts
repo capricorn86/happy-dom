@@ -22,9 +22,9 @@ import type CSSSupportsRule from '../../rules/CSSSupportsRule.js';
 import CSSScopeRule from '../../rules/CSSScopeRule.js';
 import type CSSStyleSheet from '../../CSSStyleSheet.js';
 import CSSVariableFormatter from '../property-manager/utilities/CSSVariableFormatter.js';
+import type HTMLElement from '../../../nodes/html-element/HTMLElement.js';
 
 const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
-const HOST_REGEXP = /:host\s*\(([^)]+)\)|:host-context\s*\(([^)]+)\)/;
 
 type IStyleAndElement = {
 	element: Element | ShadowRoot | Document | null;
@@ -61,7 +61,6 @@ export default class CSSComputedStyle {
 			cssTexts: []
 		};
 		let shadowRootElements: Array<IStyleAndElement> = [];
-		let customElements: IStyleAndElement[] = [];
 
 		if (!this.element[PropertySymbol.isConnected]) {
 			return new CSSPropertyManager();
@@ -85,9 +84,6 @@ export default class CSSComputedStyle {
 				} else {
 					shadowRootElements.unshift(styleAndElement);
 				}
-				if ((<Element>styleAndElement.element).shadowRoot) {
-					customElements.push(styleAndElement);
-				}
 				parentElements.unshift(styleAndElement);
 			}
 
@@ -100,19 +96,6 @@ export default class CSSComputedStyle {
 						cssRules: styleSheet.cssRules
 					});
 				}
-
-				// We need to parse ":host" and ":host-context" rules for custom elements.
-				for (const customElement of customElements) {
-					const styleSheets = this.getStyleSheets((<Element>customElement.element).shadowRoot);
-					for (const styleSheet of styleSheets) {
-						this.parseCSSRules({
-							elements: [],
-							cssRules: styleSheet.cssRules,
-							hostElement: customElement
-						});
-					}
-				}
-
 				styleAndElement = { element: null, cssTexts: [] };
 			} else if (
 				styleAndElement.element[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode &&
@@ -129,25 +112,28 @@ export default class CSSComputedStyle {
 				for (const styleSheet of styleSheets) {
 					this.parseCSSRules({
 						elements: shadowRootElements,
-						cssRules: styleSheet.cssRules,
-						hostElement: styleAndElement
+						cssRules: styleSheet.cssRules
 					});
 				}
 
-				// We need to parse ":host" and ":host-context" rules for custom elements.
-				for (const customElement of customElements) {
-					const styleSheets = this.getStyleSheets((<Element>customElement.element).shadowRoot);
-					for (const styleSheet of styleSheets) {
-						this.parseCSSRules({
-							elements: [],
-							cssRules: styleSheet.cssRules,
-							hostElement: customElement
-						});
-					}
-				}
-
-				customElements = [];
 				shadowRootElements = [];
+			} else if (
+				styleAndElement.element[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
+				(<HTMLElement>styleAndElement.element).shadowRoot
+			) {
+				const shadowRoot = (<HTMLElement>styleAndElement.element).shadowRoot!;
+				const styleSheets = this.getStyleSheets(shadowRoot);
+
+				for (const styleSheet of styleSheets) {
+					this.parseCSSRules({
+						elements: [styleAndElement],
+						cssRules: styleSheet.cssRules
+					});
+				}
+				styleAndElement = {
+					element: <Element>styleAndElement.element[PropertySymbol.parentNode],
+					cssTexts: []
+				};
 			} else {
 				styleAndElement = {
 					element: <Element>styleAndElement.element[PropertySymbol.parentNode],
@@ -310,69 +296,16 @@ export default class CSSComputedStyle {
 			if (rule.type === CSSRuleTypeEnum.styleRule) {
 				const selectorText: string = (<CSSStyleRule>rule).selectorText;
 				if (selectorText) {
-					if (selectorText[0] === ':' && selectorText.startsWith(':host')) {
-						if (options.hostElement) {
-							let isTargetHost = true;
-
-							if (selectorText !== ':host') {
-								const selectorMatch = selectorText.match(HOST_REGEXP);
-								if (selectorMatch) {
-									const match = QuerySelector.matches(
-										<Element>options.hostElement.element,
-										selectorMatch[1] || selectorMatch[2],
-										{
-											ignoreErrors: true,
-											scope: options.scopeElement?.element
-										}
-									);
-									if (match) {
-										const hostContextSelectorText = selectorText?.replace(HOST_REGEXP, '').trim();
-
-										if (hostContextSelectorText && hostContextSelectorText[0] !== ':') {
-											isTargetHost = false;
-
-											for (const element of options.elements) {
-												const match = QuerySelector.matches(
-													<Element>element.element,
-													hostContextSelectorText,
-													{
-														ignoreErrors: true,
-														scope: options.scopeElement?.element
-													}
-												);
-												if (match) {
-													element.cssTexts.push({
-														cssText: (<CSSStyleRule>rule)[PropertySymbol.cssText],
-														priorityWeight: 10 + match.priorityWeight
-													});
-												}
-											}
-										}
-									} else {
-										isTargetHost = false;
-									}
-								}
-							}
-
-							if (isTargetHost) {
-								options.hostElement.cssTexts.push({
-									cssText: (<CSSStyleRule>rule)[PropertySymbol.cssText],
-									priorityWeight: 10
-								});
-							}
-						}
-					} else {
-						for (const element of options.elements) {
-							const match = QuerySelector.matches(<Element>element.element, selectorText, {
-								ignoreErrors: true,
-								scope: options.scopeElement?.element
+					for (const element of options.elements) {
+						const match = QuerySelector.matches(<Element>element.element, selectorText, {
+							ignoreErrors: true,
+							scope: options.scopeElement?.element
+						});
+						if (match) {
+							element.cssTexts.push({
+								cssText: (<CSSStyleRule>rule)[PropertySymbol.cssText],
+								priorityWeight: match.priorityWeight
 							});
-							if (match) {
-								element.cssTexts.push({
-									cssText: (<CSSStyleRule>rule)[PropertySymbol.cssText],
-									priorityWeight: match.priorityWeight
-								});
-							}
 						}
 					}
 				}
