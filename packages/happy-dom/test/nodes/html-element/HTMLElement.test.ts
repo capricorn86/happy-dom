@@ -659,6 +659,49 @@ describe('HTMLElement', () => {
 			expect(target).toBe(element);
 			expect(currentTarget).toBe(element);
 		});
+
+		it('Doesn\'t dispatch a "click" event on a disabled form control.', () => {
+			for (const tagName of ['button', 'input', 'optgroup', 'option', 'select', 'textarea']) {
+				const control = <HTMLElement & { disabled: boolean }>document.createElement(tagName);
+
+				let clickCount = 0;
+
+				control.disabled = true;
+				control.addEventListener('click', () => clickCount++);
+
+				document.body.appendChild(control);
+
+				control.click();
+
+				expect(clickCount).toBe(0);
+
+				control.disabled = false;
+
+				control.click();
+
+				expect(clickCount).toBe(1);
+			}
+		});
+
+		it('Dispatches a "click" event on a disabled element that is not a form control.', () => {
+			// Browsers dispatch the event for a disabled "fieldset" and "style" element.
+			for (const tagName of ['fieldset', 'style']) {
+				const disabledElement = <HTMLElement & { disabled: boolean }>(
+					document.createElement(tagName)
+				);
+
+				let clickCount = 0;
+
+				disabledElement.disabled = true;
+				disabledElement.addEventListener('click', () => clickCount++);
+
+				document.body.appendChild(disabledElement);
+
+				disabledElement.click();
+
+				expect(clickCount).toBe(1);
+			}
+		});
 	});
 
 	describe('blur()', () => {
