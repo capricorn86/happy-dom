@@ -1492,6 +1492,34 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.color).toBe('green');
 		});
 
+		it('Uses inherited color when color is set to "inherit".', () => {
+			const parent = document.createElement('div');
+			const element = document.createElement('span');
+			const computedStyle = window.getComputedStyle(element);
+			const parentStyle = document.createElement('style');
+			const elementStyle = document.createElement('style');
+
+			parentStyle.innerHTML = `
+                div {
+                    color: red;
+                }
+            `;
+
+			elementStyle.innerHTML = `
+                span {
+                    color: inherit;
+                }
+            `;
+
+			parent.appendChild(elementStyle);
+			parent.appendChild(element);
+
+			document.body.appendChild(parentStyle);
+			document.body.appendChild(parent);
+
+			expect(computedStyle.color).toBe('red');
+		});
+
 		for (const measurement of [
 			{ value: '100vw', result: '1024px' },
 			{ value: '100vh', result: '768px' },

@@ -202,7 +202,11 @@ export default class CSSComputedStyle {
 				if ((<any>CSSComputedStyleInheritedProperties)[name] || parentElement === targetElement) {
 					const parsedValue = CSSVariableFormatter.resolveVariables(value.trim(), cssVariables);
 
-					if (parsedValue && (!propertyManager.get(name)?.important || important)) {
+					if (
+						parsedValue &&
+						parsedValue !== 'inherit' &&
+						(!propertyManager.get(name)?.important || important)
+					) {
 						propertyManager.set(name, parsedValue, important);
 
 						if (name === 'font' || name === 'font-size') {
