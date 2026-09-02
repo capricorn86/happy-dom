@@ -1022,7 +1022,9 @@ export default class HTMLElement extends Element {
 		// This element can potentially be a custom element that has not been defined yet
 		// Therefore we need to register a callback for when it is defined in CustomElementRegistry and replace it with the registered element (see #404)
 		if (this.constructor === window.HTMLElement && localName.includes('-') && allCallbacks) {
-			if (!this[PropertySymbol.customElementDefineCallback]) {
+			if (window.customElements.get(localName)) {
+				this[PropertySymbol.onCustomElementConnected]();
+			} else if (!this[PropertySymbol.customElementDefineCallback]) {
 				const callback = this[PropertySymbol.onCustomElementConnected].bind(this);
 				const callbacks = allCallbacks.get(localName);
 				if (callbacks) {
