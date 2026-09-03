@@ -19,6 +19,15 @@ export default class DocumentFragment extends Node {
 	public declare cloneNode: (deep?: boolean) => DocumentFragment;
 
 	/**
+	 * Node name.
+	 *
+	 * @returns Node name.
+	 */
+	public get nodeName(): string {
+		return '#document-fragment';
+	}
+
+	/**
 	 * Returns the document fragment children.
 	 */
 	public get children(): HTMLCollection<Element> {
