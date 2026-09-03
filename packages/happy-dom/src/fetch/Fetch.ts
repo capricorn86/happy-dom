@@ -35,6 +35,7 @@ import PreloadUtility from './preload/PreloadUtility.js';
 import type IFetchRequestHeaders from './types/IFetchRequestHeaders.js';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
+const REQUEST_BODY_CHUNK_SIZE = 65536;
 
 /**
  * Handles fetch requests.
@@ -64,6 +65,8 @@ export default class Fetch {
 	private disableCache: boolean;
 	private disableSameOriginPolicy: boolean;
 	private disablePreload: boolean;
+	private onRequestProgress: ((transmitted: number) => void) | null;
+	private onRequestEnd: ((transmitted: number) => void) | null;
 	#browserFrame: IBrowserFrame;
 	#window: BrowserWindow;
 	#unfilteredHeaders: Headers | null = null;
@@ -82,6 +85,8 @@ export default class Fetch {
 	 * @param [options.disableSameOriginPolicy] Disables the Same-Origin policy.
 	 * @param [options.unfilteredHeaders] Unfiltered headers - necessary for preflight requests.
 	 * @param [options.disablePreload] Disables the use of preloaded responses.
+	 * @param [options.onRequestProgress] Callback invoked with the number of request body bytes transmitted so far.
+	 * @param [options.onRequestEnd] Callback invoked when the request body has been fully transmitted.
 	 */
 	constructor(options: {
 		browserFrame: IBrowserFrame;
@@ -94,6 +99,8 @@ export default class Fetch {
 		disableSameOriginPolicy?: boolean;
 		unfilteredHeaders?: Headers;
 		disablePreload?: boolean;
+		onRequestProgress?: (transmitted: number) => void;
+		onRequestEnd?: (transmitted: number) => void;
 	}) {
 		this.#browserFrame = options.browserFrame;
 		this.#window = options.window;
@@ -114,6 +121,8 @@ export default class Fetch {
 		this.interceptor = this.#browserFrame.page.context.browser.settings.fetch.interceptor;
 		this.requestHeaders = this.#browserFrame.page.context.browser.settings.fetch.requestHeaders;
 		this.disablePreload = options.disablePreload ?? false;
+		this.onRequestProgress = options.onRequestProgress ?? null;
+		this.onRequestEnd = options.onRequestEnd ?? null;
 	}
 
 	/**
@@ -154,6 +163,7 @@ export default class Fetch {
 			});
 			this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 			if (response instanceof Response) {
+				this.completeRequestBodyWithoutNetwork();
 				return response;
 			}
 		}
@@ -182,6 +192,7 @@ export default class Fetch {
 						request: this.request
 					})
 				: undefined;
+			this.completeRequestBodyWithoutNetwork();
 			return interceptedResponse instanceof Response ? interceptedResponse : this.response;
 		}
 
@@ -204,6 +215,7 @@ export default class Fetch {
 			const cachedResponse = await this.getCachedResponse();
 
 			if (cachedResponse) {
+				this.completeRequestBodyWithoutNetwork();
 				return cachedResponse;
 			}
 		}
@@ -222,6 +234,7 @@ export default class Fetch {
 				this.#window.document[PropertySymbol.preloads].delete(preloadKey);
 
 				if (preloadEntry.response) {
+					this.completeRequestBodyWithoutNetwork();
 					return preloadEntry.response;
 				}
 
@@ -230,6 +243,7 @@ export default class Fetch {
 
 				this.#browserFrame[PropertySymbol.asyncTaskManager].endTask(taskID);
 
+				this.completeRequestBodyWithoutNetwork();
 				return response;
 			}
 		}
@@ -237,6 +251,7 @@ export default class Fetch {
 		const virtualServerResponse = await this.getVirtualServerResponse();
 
 		if (virtualServerResponse) {
+			this.completeRequestBodyWithoutNetwork();
 			return virtualServerResponse;
 		}
 
@@ -620,16 +635,50 @@ export default class Fetch {
 			this.nodeRequest.on('socket', this.onSocket.bind(this));
 			this.nodeRequest.on('response', this.onResponse.bind(this));
 
+			const onPipelineComplete = (error: NodeJS.ErrnoException | null): void => {
+				if (error) {
+					this.onError(error);
+				}
+			};
+
 			if (this.request.body === null) {
 				this.nodeRequest.end();
-			} else {
-				Stream.pipeline(this.request.body, this.nodeRequest, (error) => {
-					if (error) {
-						this.onError(error);
+			} else if (this.onRequestProgress || this.onRequestEnd) {
+				const onRequestProgress = this.onRequestProgress;
+				let transmitted = 0;
+				this.nodeRequest.once('finish', () => this.onRequestEnd?.(transmitted));
+
+				// The body is split into socket sized chunks, so that progress is reported while it is transmitted.
+				const counter = new Stream.Transform({
+					transform(chunk: Buffer, _encoding, callback) {
+						for (let offset = 0; offset < chunk.length; offset += REQUEST_BODY_CHUNK_SIZE) {
+							this.push(chunk.subarray(offset, offset + REQUEST_BODY_CHUNK_SIZE));
+						}
+						callback();
 					}
 				});
+
+				counter.on('data', (chunk: Buffer) => {
+					transmitted += chunk.length;
+					if (onRequestProgress) {
+						onRequestProgress(transmitted);
+					}
+				});
+
+				Stream.pipeline(this.request.body, counter, this.nodeRequest, onPipelineComplete);
+			} else {
+				Stream.pipeline(this.request.body, this.nodeRequest, onPipelineComplete);
 			}
 		});
+	}
+
+	/**
+	 * Signals that a request body was handled by a fetch path that did not use the network.
+	 */
+	private completeRequestBodyWithoutNetwork(): void {
+		if (this.request.body !== null) {
+			this.onRequestEnd?.(this.request[PropertySymbol.contentLength] ?? 0);
+		}
 	}
 
 	/**
@@ -1004,7 +1053,9 @@ export default class Fetch {
 					init: requestInit,
 					redirectCount: this.redirectCount + 1,
 					disableSameOriginPolicy: this.disableSameOriginPolicy,
-					contentType: !shouldBecomeGetRequest ? this.request[PropertySymbol.contentType] : null
+					contentType: !shouldBecomeGetRequest ? this.request[PropertySymbol.contentType] : null,
+					onRequestProgress: this.onRequestProgress ?? undefined,
+					onRequestEnd: this.onRequestEnd ?? undefined
 				});
 
 				this.finalizeRequest();

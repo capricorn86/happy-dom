@@ -48,6 +48,11 @@ const FORBIDDEN_REQUEST_HEADERS = [
 	'via'
 ];
 
+interface IFetchUploadCallbacks {
+	onRequestProgress: ((transmitted: number) => void) | null;
+	onRequestEnd?: ((transmitted: number) => void) | null;
+}
+
 describe('XMLHttpRequest', () => {
 	let window: Window;
 	let request: XMLHttpRequest;
@@ -716,6 +721,177 @@ describe('XMLHttpRequest', () => {
 			expect(() => request.send()).toThrow(
 				`Failed to execute 'send' on 'XMLHttpRequest': Connection must be opened before send() is called.`
 			);
+		});
+
+		it('Dispatches upload progress events while the request body is transmitted.', async () => {
+			let resolveResponse: (response: Response) => void;
+			let fetchUploadCallbacks: IFetchUploadCallbacks;
+			const events: Array<{
+				type: string;
+				lengthComputable: boolean;
+				loaded: number;
+				total: number;
+			}> = [];
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function () {
+				fetchUploadCallbacks = <IFetchUploadCallbacks>(<unknown>this);
+				return new Promise((resolve) => {
+					resolveResponse = resolve;
+				});
+			});
+
+			for (const type of ['loadstart', 'progress', 'load', 'loadend']) {
+				request.upload.addEventListener(type, (event) => {
+					const progressEvent = <ProgressEvent>event;
+					events.push({
+						type,
+						lengthComputable: progressEvent.lengthComputable,
+						loaded: progressEvent.loaded,
+						total: progressEvent.total
+					});
+				});
+			}
+
+			request.open('POST', REQUEST_URL, true);
+			request.send('test');
+
+			fetchUploadCallbacks!.onRequestProgress!(2);
+			fetchUploadCallbacks!.onRequestEnd?.(4);
+
+			const eventsBeforeResponse = events.slice();
+
+			resolveResponse!(<Response>{ headers: <Headers>new Headers() });
+			await window.happyDOM?.waitUntilComplete();
+
+			const expectedEvents = [
+				{ type: 'loadstart', lengthComputable: true, loaded: 0, total: 4 },
+				{ type: 'progress', lengthComputable: true, loaded: 2, total: 4 },
+				{ type: 'progress', lengthComputable: true, loaded: 4, total: 4 },
+				{ type: 'load', lengthComputable: true, loaded: 4, total: 4 },
+				{ type: 'loadend', lengthComputable: true, loaded: 4, total: 4 }
+			];
+
+			expect(eventsBeforeResponse).toEqual(expectedEvents);
+			expect(events).toEqual(expectedEvents);
+		});
+
+		it('Does not dispatch upload events to listeners added after send().', async () => {
+			let resolveResponse: (response: Response) => void;
+			const events: string[] = [];
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+				() =>
+					new Promise((resolve) => {
+						resolveResponse = resolve;
+					})
+			);
+
+			request.open('POST', REQUEST_URL, true);
+			request.send('test');
+
+			for (const type of ['loadstart', 'progress', 'load', 'loadend']) {
+				request.upload.addEventListener(type, () => events.push(type));
+			}
+
+			resolveResponse!(<Response>{ headers: <Headers>new Headers() });
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(events).toEqual([]);
+		});
+
+		it('Does not dispatch upload events when a body is passed to a GET request.', async () => {
+			const events: string[] = [];
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+				expect(this.request.body).toBeNull();
+				return <Response>{ headers: <Headers>new Headers() };
+			});
+
+			request.upload.addEventListener('loadstart', () => events.push('loadstart'));
+			request.upload.addEventListener('progress', () => events.push('progress'));
+			request.upload.addEventListener('load', () => events.push('load'));
+			request.upload.addEventListener('loadend', () => events.push('loadend'));
+
+			request.open('GET', REQUEST_URL, true);
+			request.send('test');
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(events).toEqual([]);
+		});
+
+		it('Does not count a removed upload listener when send() captures the listener flag.', async () => {
+			let resolveResponse: (response: Response) => void;
+			const events: string[] = [];
+			const removedListener = (): void => {};
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(
+				() =>
+					new Promise((resolve) => {
+						resolveResponse = resolve;
+					})
+			);
+
+			request.upload.addEventListener('progress', removedListener);
+			request.upload.removeEventListener('progress', removedListener);
+			request.open('POST', REQUEST_URL, true);
+			request.send('test');
+			request.upload.addEventListener('progress', () => events.push('progress'));
+
+			resolveResponse!(<Response>{ headers: <Headers>new Headers() });
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(events).toEqual([]);
+		});
+
+		it('Dispatches error and loadend when a request fails before the upload completes.', async () => {
+			const events: Array<{ type: string; loaded: number; total: number }> = [];
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+				(<IFetchUploadCallbacks>(<unknown>this)).onRequestProgress!(2);
+				throw new Error('Request failed.');
+			});
+
+			for (const type of ['loadstart', 'progress', 'error', 'loadend']) {
+				request.upload.addEventListener(type, (event) => {
+					const progressEvent = <ProgressEvent>event;
+					events.push({ type, loaded: progressEvent.loaded, total: progressEvent.total });
+				});
+			}
+
+			request.open('POST', REQUEST_URL, true);
+			request.send('test');
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(events).toEqual([
+				{ type: 'loadstart', loaded: 0, total: 4 },
+				{ type: 'progress', loaded: 2, total: 4 },
+				{ type: 'error', loaded: 0, total: 0 },
+				{ type: 'loadend', loaded: 0, total: 0 }
+			]);
+		});
+
+		it('Aborts the upload when abort() is called from the upload loadstart listener.', async () => {
+			const events: string[] = [];
+			const fetchSpy = vi
+				.spyOn(Fetch.prototype, 'send')
+				.mockResolvedValue(<Response>{ headers: <Headers>new Headers() });
+
+			request.upload.onloadstart = () => {
+				events.push('loadstart');
+				request.abort();
+			};
+			request.upload.onabort = () => events.push('abort');
+			request.upload.onloadend = () => events.push('loadend');
+
+			request.open('POST', REQUEST_URL, true);
+			request.send('test');
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			expect(events).toEqual(['loadstart', 'abort', 'loadend']);
+			expect(fetchSpy).not.toHaveBeenCalled();
 		});
 
 		it('Performs a synchronous GET request with the HTTP protocol.', () => {
