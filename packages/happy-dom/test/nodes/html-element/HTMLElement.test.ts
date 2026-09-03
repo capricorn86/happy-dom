@@ -616,6 +616,153 @@ describe('HTMLElement', () => {
 		});
 	});
 
+	describe('get translate()', () => {
+		it('Returns true when the attribute "translate" is set to "yes".', () => {
+			const element = document.createElement('div');
+			element.setAttribute('translate', 'yes');
+			expect(element.translate).toBe(true);
+		});
+
+		it('Returns true when the attribute "translate" is set to "YES" (case-insensitive).', () => {
+			const element = document.createElement('div');
+			element.setAttribute('translate', 'YES');
+			expect(element.translate).toBe(true);
+		});
+
+		it('Returns true when the attribute "translate" is set to empty string.', () => {
+			const element = document.createElement('div');
+			element.setAttribute('translate', '');
+			expect(element.translate).toBe(true);
+		});
+
+		it('Returns false when the attribute "translate" is set to "no".', () => {
+			const element = document.createElement('div');
+			element.setAttribute('translate', 'no');
+			expect(element.translate).toBe(false);
+		});
+
+		it('Returns false when the attribute "translate" is set to "NO" (case-insensitive).', () => {
+			const element = document.createElement('div');
+			element.setAttribute('translate', 'NO');
+			expect(element.translate).toBe(false);
+		});
+
+		it('Returns true for document element when the attribute "translate" is missing.', () => {
+			expect(document.documentElement.translate).toBe(true);
+		});
+
+		it('Returns false for document element when the attribute "translate" is set to "no".', () => {
+			document.documentElement.translate = false;
+			expect(document.documentElement.translate).toBe(false);
+			document.documentElement.removeAttribute('translate');
+		});
+
+		it('Returns true when the attribute "translate" is missing and parent translate is true.', () => {
+			const parent = document.createElement('div');
+			parent.setAttribute('translate', 'yes');
+			const child = document.createElement('div');
+			parent.appendChild(child);
+			document.body.appendChild(parent);
+			expect(child.translate).toBe(true);
+			parent.remove();
+		});
+
+		it('Returns false when the attribute "translate" is missing and parent translate is false.', () => {
+			const parent = document.createElement('div');
+			parent.setAttribute('translate', 'no');
+			const child = document.createElement('div');
+			parent.appendChild(child);
+			document.body.appendChild(parent);
+			expect(child.translate).toBe(false);
+			parent.remove();
+		});
+
+		it('Returns false when the attribute "translate" is missing and parent translate is inherited as false.', () => {
+			const grandparent = document.createElement('div');
+			grandparent.setAttribute('translate', 'no');
+			const parent = document.createElement('div');
+			const child = document.createElement('div');
+			grandparent.appendChild(parent);
+			parent.appendChild(child);
+			document.body.appendChild(grandparent);
+			expect(child.translate).toBe(false);
+			grandparent.remove();
+		});
+
+		it('Returns false when the attribute "translate" is missing and the element has no parent.', () => {
+			const element = document.createElement('div');
+			expect(element.translate).toBe(false);
+		});
+
+		it('Returns false when the attribute "translate" is set to an invalid value and the element has no parent.', () => {
+			const element = document.createElement('div');
+			element.setAttribute('translate', 'invalid');
+			expect(element.translate).toBe(false);
+		});
+
+		it('Returns false when the attribute "translate" is set to "no" and overrides parent translate true.', () => {
+			const parent = document.createElement('div');
+			parent.setAttribute('translate', 'yes');
+			const child = document.createElement('div');
+			child.setAttribute('translate', 'no');
+			parent.appendChild(child);
+			document.body.appendChild(parent);
+			expect(child.translate).toBe(false);
+			parent.remove();
+		});
+
+		it('Returns true when the attribute "translate" is set to "yes" and overrides parent translate false.', () => {
+			const parent = document.createElement('div');
+			parent.setAttribute('translate', 'no');
+			const child = document.createElement('div');
+			child.setAttribute('translate', 'yes');
+			parent.appendChild(child);
+			document.body.appendChild(parent);
+			expect(child.translate).toBe(true);
+			parent.remove();
+		});
+	});
+
+	describe('set translate()', () => {
+		it('Sets the attribute "translate" to "yes" when set to true.', () => {
+			const element = document.createElement('div');
+			element.translate = true;
+			expect(element.getAttribute('translate')).toBe('yes');
+		});
+
+		it('Sets the attribute "translate" to "no" when set to false.', () => {
+			const element = document.createElement('div');
+			element.translate = false;
+			expect(element.getAttribute('translate')).toBe('no');
+		});
+
+		it('Sets the attribute "translate" to "yes" when the existing attribute is "no".', () => {
+			const element = document.createElement('div');
+			element.setAttribute('translate', 'no');
+			element.translate = true;
+			expect(element.getAttribute('translate')).toBe('yes');
+		});
+
+		it('Sets the attribute "translate" to "no" when the existing attribute is "yes".', () => {
+			const element = document.createElement('div');
+			element.setAttribute('translate', 'yes');
+			element.translate = false;
+			expect(element.getAttribute('translate')).toBe('no');
+		});
+
+		it('Returns true from get translate() after setting to true.', () => {
+			const element = document.createElement('div');
+			element.translate = true;
+			expect(element.translate).toBe(true);
+		});
+
+		it('Returns false from get translate() after setting to false.', () => {
+			const element = document.createElement('div');
+			element.translate = false;
+			expect(element.translate).toBe(false);
+		});
+	});
+
 	for (const property of ['lang', 'title']) {
 		describe(`get ${property}`, () => {
 			it(`Returns the attribute "${property}".`, () => {
