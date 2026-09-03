@@ -23,12 +23,14 @@ import CSSScopeRule from '../../rules/CSSScopeRule.js';
 import type CSSStyleSheet from '../../CSSStyleSheet.js';
 import CSSVariableFormatter from '../property-manager/utilities/CSSVariableFormatter.js';
 import type HTMLElement from '../../../nodes/html-element/HTMLElement.js';
+import type Node from '../../../nodes/node/Node.js';
 
 const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
 
 type IStyleAndElement = {
 	element: Element | ShadowRoot | Document | null;
 	cssTexts: Array<{ cssText: string; priorityWeight: number }>;
+	propertyManager: CSSPropertyManager | null;
 };
 
 /**
@@ -55,137 +57,177 @@ export default class CSSComputedStyle {
 	 */
 	public getComputedStyle(): CSSPropertyManager {
 		const documentElements: Array<IStyleAndElement> = [];
+		const allDocumentElements: Array<IStyleAndElement> = [];
 		const parentElements: Array<IStyleAndElement> = [];
 		let styleAndElement: IStyleAndElement = {
 			element: <Element | ShadowRoot | Document>this.element,
-			cssTexts: []
+			cssTexts: [],
+			propertyManager: null
 		};
+		const processedCustomElements: Array<IStyleAndElement> = [];
 		let shadowRootElements: Array<IStyleAndElement> = [];
+		let allShadowRootElements: Array<IStyleAndElement> = [];
 
 		if (!this.element[PropertySymbol.isConnected]) {
 			return new CSSPropertyManager();
 		}
 
-		const cacheResult = this.element[PropertySymbol.cache].computedStyle;
+		const cacheResult = this.getCachedPropertyManager(this.element);
 
-		if (cacheResult?.result) {
-			const result = cacheResult.result.deref();
-			if (result) {
-				return result;
-			}
+		if (cacheResult) {
+			return cacheResult;
 		}
+
+		const settings = new WindowBrowserContext(this.element[PropertySymbol.window]).getSettings();
 
 		// Walks through all parent elements and stores them in an array with element and matching CSS text.
 		while (styleAndElement.element) {
 			if (styleAndElement.element[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
 				const rootNode = styleAndElement.element.getRootNode();
 				if (rootNode[PropertySymbol.nodeType] === NodeTypeEnum.documentNode) {
-					documentElements.unshift(styleAndElement);
+					if (!styleAndElement.propertyManager) {
+						documentElements.unshift(styleAndElement);
+					}
+					allDocumentElements.unshift(styleAndElement);
 				} else {
-					shadowRootElements.unshift(styleAndElement);
+					if (!styleAndElement.propertyManager) {
+						shadowRootElements.unshift(styleAndElement);
+					}
+					allShadowRootElements.unshift(styleAndElement);
 				}
 				parentElements.unshift(styleAndElement);
 			}
 
 			if (styleAndElement.element === this.element[PropertySymbol.ownerDocument]) {
-				const styleSheets = this.getStyleSheets(this.element[PropertySymbol.ownerDocument]);
+				if (documentElements.length > 0) {
+					const styleSheets = this.getStyleSheets(this.element[PropertySymbol.ownerDocument]);
 
-				for (const styleSheet of styleSheets) {
-					this.parseCSSRules({
-						elements: documentElements,
-						cssRules: styleSheet.cssRules
-					});
+					for (const styleSheet of styleSheets) {
+						this.parseCSSRules({
+							elements: documentElements,
+							scopeElements: allDocumentElements,
+							cssRules: styleSheet.cssRules
+						});
+					}
 				}
-				styleAndElement = { element: null, cssTexts: [] };
+				styleAndElement = { element: null, cssTexts: [], propertyManager: null };
 			} else if (
 				styleAndElement.element[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode &&
 				(<ShadowRoot>styleAndElement.element).host
 			) {
 				const shadowRoot = <ShadowRoot>styleAndElement.element;
-				const styleSheets = this.getStyleSheets(shadowRoot);
 
 				styleAndElement = {
 					element: <Element>shadowRoot.host,
-					cssTexts: []
+					cssTexts: [],
+					propertyManager: this.getCachedPropertyManager(shadowRoot.host)
 				};
 
+				processedCustomElements.push(styleAndElement);
+				shadowRootElements.unshift(styleAndElement);
+				allShadowRootElements.unshift(styleAndElement);
+
+				const styleSheets = this.getStyleSheets(shadowRoot);
 				for (const styleSheet of styleSheets) {
 					this.parseCSSRules({
 						elements: shadowRootElements,
+						scopeElements: allShadowRootElements,
 						cssRules: styleSheet.cssRules
 					});
 				}
 
 				shadowRootElements = [];
-			} else if (
-				styleAndElement.element[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
-				(<HTMLElement>styleAndElement.element).shadowRoot
-			) {
-				const shadowRoot = (<HTMLElement>styleAndElement.element).shadowRoot!;
-				const styleSheets = this.getStyleSheets(shadowRoot);
+				allShadowRootElements = [];
+			} else {
+				// We need to process any ":host" or ":host-context" selectors within the shadow DOM.
+				// We can skip this if the element has already been processed as a custom element before
+				if (
+					styleAndElement.element[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
+					(<HTMLElement>styleAndElement.element).shadowRoot &&
+					!processedCustomElements.includes(styleAndElement)
+				) {
+					const shadowRoot = (<HTMLElement>styleAndElement.element).shadowRoot!;
+					if (!styleAndElement.propertyManager) {
+						const styleSheets = this.getStyleSheets(shadowRoot);
 
-				for (const styleSheet of styleSheets) {
-					this.parseCSSRules({
-						elements: [styleAndElement],
-						cssRules: styleSheet.cssRules
-					});
+						for (const styleSheet of styleSheets) {
+							this.parseCSSRules({
+								elements: [styleAndElement],
+								cssRules: styleSheet.cssRules
+							});
+						}
+					}
 				}
 				styleAndElement = {
 					element: <Element>styleAndElement.element[PropertySymbol.parentNode],
-					cssTexts: []
-				};
-			} else {
-				styleAndElement = {
-					element: <Element>styleAndElement.element[PropertySymbol.parentNode],
-					cssTexts: []
+					cssTexts: [],
+					propertyManager: this.getCachedPropertyManager(
+						styleAndElement.element[PropertySymbol.parentNode]
+					)
 				};
 			}
 		}
 
 		// Concatenates all parent element CSS to one string.
-		const targetElement = parentElements[parentElements.length - 1];
-		const propertyManager = new CSSPropertyManager();
+		const inheritedPropertyManager = new CSSPropertyManager();
+		let propertyManager = parentElements[0].propertyManager ?? new CSSPropertyManager();
 		const cssVariables: { [k: string]: string } = {};
 		let rootFontSize: string | number = 16;
 		let parentFontSize: string | number = 16;
+		let previousParent: IStyleAndElement | null = null;
 
 		for (const parentElement of parentElements) {
-			parentElement.cssTexts.sort((a, b) => a.priorityWeight - b.priorityWeight);
+			if (parentElement.propertyManager) {
+				if (parentElement.element === this.element) {
+					return parentElement.propertyManager;
+				}
+				for (const name of Object.keys(parentElement.propertyManager.properties)) {
+					if ((<any>CSSComputedStyleInheritedProperties)[name]) {
+						inheritedPropertyManager.set(
+							name,
+							parentElement.propertyManager.get(name)!.value,
+							parentElement.propertyManager.get(name)!.important
+						);
+					}
+				}
+				Object.assign(cssVariables, parentElement.propertyManager.getVariables());
+				propertyManager = inheritedPropertyManager.clone();
+			} else {
+				parentElement.cssTexts.sort((a, b) => a.priorityWeight - b.priorityWeight);
 
-			const defaultCSS = (<any>CSSComputedStyleElementDefault)[
-				(<Element>parentElement.element)[PropertySymbol.tagName]!
-			];
-			let elementCSSText = '';
+				const defaultCSS = (<any>CSSComputedStyleElementDefault)[
+					(<Element>parentElement.element)[PropertySymbol.tagName]!
+				];
+				let elementCSSText = '';
 
-			if (defaultCSS) {
-				if (typeof defaultCSS === 'string') {
-					elementCSSText += defaultCSS;
-				} else {
-					for (const key of Object.keys(defaultCSS)) {
-						if (key === 'default' || !!(<any>parentElement.element)[key]) {
-							elementCSSText += defaultCSS[key];
+				if (defaultCSS) {
+					if (typeof defaultCSS === 'string') {
+						elementCSSText += defaultCSS;
+					} else {
+						for (const key of Object.keys(defaultCSS)) {
+							if (key === 'default' || !!(<any>parentElement.element)[key]) {
+								elementCSSText += defaultCSS[key];
+							}
 						}
 					}
 				}
-			}
 
-			for (const cssText of parentElement.cssTexts) {
-				elementCSSText += cssText.cssText;
-			}
+				for (const cssText of parentElement.cssTexts) {
+					elementCSSText += cssText.cssText;
+				}
 
-			const elementStyleAttribute = (<Element>parentElement.element).getAttribute('style');
+				const elementStyleAttribute = (<Element>parentElement.element).getAttribute('style');
 
-			if (elementStyleAttribute) {
-				elementCSSText += elementStyleAttribute;
-			}
+				if (elementStyleAttribute) {
+					elementCSSText += elementStyleAttribute;
+				}
 
-			const rulesAndVariables = CSSTextParser.parse(elementCSSText);
-			const rules = rulesAndVariables.rules;
+				const rulesAndVariables = CSSTextParser.parse(elementCSSText);
+				const rules = rulesAndVariables.rules;
 
-			Object.assign(cssVariables, rulesAndVariables.variables);
+				Object.assign(cssVariables, rulesAndVariables.variables);
 
-			for (const { name, value, important } of rules) {
-				if ((<any>CSSComputedStyleInheritedProperties)[name] || parentElement === targetElement) {
+				for (const { name, value, important } of rules) {
 					const parsedValue = CSSVariableFormatter.resolveVariables(value.trim(), cssVariables);
 
 					if (
@@ -193,11 +235,15 @@ export default class CSSComputedStyle {
 						parsedValue !== 'inherit' &&
 						(!propertyManager.get(name)?.important || important)
 					) {
-						propertyManager.set(name, parsedValue, important);
+						const affectedKeys = propertyManager.set(name, parsedValue, important);
 
-						if (name === 'font' || name === 'font-size') {
-							const fontSize = propertyManager.properties['font-size'];
-							if (fontSize !== null) {
+						if ((<any>CSSComputedStyleInheritedProperties)[name]) {
+							inheritedPropertyManager.set(name, parsedValue, important);
+						}
+
+						if (!settings?.disableComputedStyleRendering) {
+							if (affectedKeys.includes('font-size')) {
+								const fontSize = propertyManager.properties['font-size'];
 								const parsedValue = this.parseMeasurementsInValue({
 									value: fontSize.value,
 									rootFontSize,
@@ -206,38 +252,50 @@ export default class CSSComputedStyle {
 								});
 								if ((<Element>parentElement.element)[PropertySymbol.tagName] === 'HTML') {
 									rootFontSize = parsedValue;
-								} else if (parentElement !== targetElement) {
+								} else {
 									parentFontSize = parsedValue;
+								}
+							}
+							for (const key of affectedKeys) {
+								if ((<any>CSSComputedStyleMeasurementProperties)[key]) {
+									const property = propertyManager.properties[key];
+									if (property) {
+										property.value = this.parseMeasurementsInValue({
+											value: property.value,
+											rootFontSize,
+											parentFontSize,
+
+											// TODO: Only "font-size" is supported when using percentage values. Add support for other properties.
+											parentSize: key === 'font-size' ? parentFontSize : null
+										});
+									}
 								}
 							}
 						}
 					}
 				}
+
+				const cachedResult = {
+					result: new WeakRef(propertyManager)
+				};
+				parentElement.element![PropertySymbol.cache].computedStyle = cachedResult;
+				parentElement.element![PropertySymbol.ownerDocument][
+					PropertySymbol.affectsComputedStyleCache
+				].push(cachedResult);
+				previousParent?.element![PropertySymbol.affectsCache].push(cachedResult);
+				if ((<Element>previousParent?.element)?.shadowRoot) {
+					(<Element>previousParent!.element).shadowRoot![PropertySymbol.affectsCache].push(
+						cachedResult
+					);
+				}
+				if (parentElement.element === this.element) {
+					return propertyManager;
+				}
 			}
+
+			previousParent = parentElement;
+			propertyManager = inheritedPropertyManager.clone();
 		}
-
-		for (const name of CSSComputedStyleMeasurementProperties) {
-			const property = propertyManager.properties[name];
-			if (property) {
-				property.value = this.parseMeasurementsInValue({
-					value: property.value,
-					rootFontSize,
-					parentFontSize,
-
-					// TODO: Only "font-size" is supported when using percentage values. Add support for other properties.
-					parentSize: name === 'font-size' ? parentFontSize : null
-				});
-			}
-		}
-
-		const cachedResult = {
-			result: new WeakRef(propertyManager)
-		};
-
-		this.element[PropertySymbol.cache].computedStyle = cachedResult;
-		this.element[PropertySymbol.ownerDocument][PropertySymbol.affectsComputedStyleCache].push(
-			cachedResult
-		);
 
 		return propertyManager;
 	}
@@ -277,12 +335,14 @@ export default class CSSComputedStyle {
 	 * @param options Options.
 	 * @param options.elements Elements.
 	 * @param options.cssRules CSS rules.
-	 * @param [options.hostElement] Host element.
+	 * @param [options.scopeElements] Scope elements.
 	 * @param [options.scopeElement] Scope element.
+	 * @param [options.hostElement] Host element.
 	 */
 	private parseCSSRules(options: {
 		cssRules: CSSRule[];
 		elements: IStyleAndElement[];
+		scopeElements?: IStyleAndElement[];
 		hostElement?: IStyleAndElement | null;
 		scopeElement?: IStyleAndElement | null;
 	}): void {
@@ -338,7 +398,7 @@ export default class CSSComputedStyle {
 					const scopedElements: IStyleAndElement[] = [];
 					let scope: IStyleAndElement | null = null;
 
-					for (const element of options.elements) {
+					for (const element of options.scopeElements || options.elements) {
 						if (scope) {
 							if (rule[PropertySymbol.end]) {
 								const match = QuerySelector.matches(
@@ -399,13 +459,6 @@ export default class CSSComputedStyle {
 		parentFontSize: string | number;
 		parentSize: string | number | null;
 	}): string {
-		if (
-			new WindowBrowserContext(this.element[PropertySymbol.window]).getSettings()
-				?.disableComputedStyleRendering
-		) {
-			return options.value;
-		}
-
 		const regexp = new RegExp(CSS_MEASUREMENT_REGEXP);
 		let newValue = options.value;
 		let match;
@@ -427,5 +480,18 @@ export default class CSSComputedStyle {
 		}
 
 		return newValue;
+	}
+
+	/**
+	 * Gets the cached property manager for a node.
+	 *
+	 * @param node Node.
+	 * @returns CSS property manager or null if not available.
+	 */
+	private getCachedPropertyManager(node: Node | null): CSSPropertyManager | null {
+		if (!node) {
+			return null;
+		}
+		return node[PropertySymbol.cache].computedStyle?.result?.deref() || null;
 	}
 }

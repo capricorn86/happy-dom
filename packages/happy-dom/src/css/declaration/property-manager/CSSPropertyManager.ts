@@ -243,11 +243,12 @@ export default class CSSPropertyManager {
 	 * @param name Name.
 	 * @param value Value.
 	 * @param important Important.
+	 * @returns Array of property names that were set.
 	 */
-	public set(name: string, value: string, important: boolean): void {
+	public set(name: string, value: string, important: boolean): string[] {
 		if (value === null) {
 			this.remove(name);
-			return;
+			return [];
 		}
 
 		let properties = null;
@@ -513,10 +514,12 @@ export default class CSSPropertyManager {
 				break;
 		}
 
-		if (properties !== null && Object.keys(properties).length > 0) {
+		const keys = properties !== null ? Object.keys(properties) : [];
+		if (keys?.length > 0) {
 			this.definedPropertyNames[name] = true;
 			Object.assign(this.properties, properties);
 		}
+		return keys;
 	}
 
 	/**
@@ -532,6 +535,19 @@ export default class CSSPropertyManager {
 		clone.definedPropertyNames = Object.assign({}, this.definedPropertyNames);
 
 		return clone;
+	}
+
+	/**
+	 * Returns all CSS variables defined in this property manager.
+	 */
+	public getVariables(): { [k: string]: string } {
+		const variables: { [k: string]: string } = {};
+		for (const name of Object.keys(this.properties)) {
+			if (name[0] === '-' && name[1] === '-') {
+				variables[name] = this.properties[name].value;
+			}
+		}
+		return variables;
 	}
 
 	/**
