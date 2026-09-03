@@ -9,6 +9,9 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 export type TAnimationPlayState = 'finished' | 'idle' | 'paused' | 'running';
 export type TAnimationReplaceState = 'active' | 'persisted' | 'removed';
 
+// Reused no-op rejection handler so each finished promise doesn't allocate a fresh closure.
+const noop = (): void => {};
+
 /**
  * Animation.
  *
@@ -130,7 +133,7 @@ export default class Animation extends EventTarget {
 	 * Starts or resumes playback.
 	 */
 	public play(): void {
-		if (this.#playState === 'finished' || this.#playState === 'idle') {
+		if (this.#playState === 'finished') {
 			this.finished = this.#createFinishedPromise();
 		}
 		const currentTime = this.#currentTime ?? (this.playbackRate < 0 ? this.#getEndTime() : 0);
@@ -198,6 +201,7 @@ export default class Animation extends EventTarget {
 				DOMExceptionNameEnum.abortError
 			)
 		);
+		this.finished = this.#createFinishedPromise();
 		this.dispatchEvent(new this[PropertySymbol.window].Event('cancel'));
 	}
 
@@ -234,10 +238,14 @@ export default class Animation extends EventTarget {
 	 * @returns Finished promise.
 	 */
 	#createFinishedPromise(): Promise<this> {
-		return new Promise<this>((resolve, reject) => {
+		const promise = new Promise<this>((resolve, reject) => {
 			this.#resolveFinished = resolve;
 			this.#rejectFinished = reject;
 		});
+		// JavaScript cannot set [[PromiseIsHandled]] directly, so attach a no-op rejection
+		// handler before exposing the promise. cancel() is its only rejection path.
+		promise.catch(noop);
+		return promise;
 	}
 
 	/**

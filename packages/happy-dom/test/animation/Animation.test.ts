@@ -99,19 +99,34 @@ describe('Animation', () => {
 	});
 
 	describe('cancel()', () => {
-		it('Cancels the animation, rejects finished and dispatches an event.', async () => {
+		it('Cancels the animation, replaces finished and dispatches an event.', async () => {
 			const listener = vi.fn();
 			animation.oncancel = listener;
 			animation.play();
 			const finished = animation.finished;
 
 			animation.cancel();
+			const nextFinished = animation.finished;
 
 			expect(animation.playState).toBe('idle');
 			expect(animation.currentTime).toBe(null);
 			expect(animation.startTime).toBe(null);
 			expect(listener).toHaveBeenCalledOnce();
+			expect(nextFinished).not.toBe(finished);
 			await expect(finished).rejects.toMatchObject({ name: 'AbortError' });
+
+			animation.play();
+			expect(animation.finished).toBe(nextFinished);
+			animation.finish();
+			await expect(nextFinished).resolves.toBe(animation);
+		});
+
+		it('Does not report an unhandled rejection when finished is unobserved.', async () => {
+			animation.play();
+			animation.cancel();
+
+			// Cross one event-loop turn so Vitest can report an unhandled rejection.
+			await new Promise<void>((resolve) => setImmediate(resolve));
 		});
 	});
 
