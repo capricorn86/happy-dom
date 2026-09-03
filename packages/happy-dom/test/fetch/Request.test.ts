@@ -203,8 +203,8 @@ describe('Request', () => {
 			expect(otherRequest.headers === headers).toBe(false);
 			expect(request.headers === headers).toBe(false);
 			expect(headerEntries).toEqual({
-				'X-Test': 'Hello World',
-				'X-Test-2': 'Hello World 2'
+				'x-test': 'Hello World',
+				'x-test-2': 'Hello World 2'
 			});
 		});
 
@@ -223,8 +223,8 @@ describe('Request', () => {
 
 			expect(request.headers === headers).toBe(false);
 			expect(headerEntries).toEqual({
-				'X-Test': 'Hello World',
-				'X-Test-2': 'Hello World 2'
+				'x-test': 'Hello World',
+				'x-test-2': 'Hello World 2'
 			});
 		});
 

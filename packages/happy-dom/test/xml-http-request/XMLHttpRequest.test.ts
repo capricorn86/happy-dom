@@ -697,7 +697,7 @@ describe('XMLHttpRequest', () => {
 
 				request.addEventListener('load', () => {
 					expect(request.getAllResponseHeaders()).toBe(
-						'Content-Length: 4\r\nkey1: value1\r\nkey2: value2'
+						'content-length: 4\r\nkey1: value1\r\nkey2: value2'
 					);
 					resolve(null);
 				});

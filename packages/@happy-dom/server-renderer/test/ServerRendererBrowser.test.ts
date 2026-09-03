@@ -160,7 +160,7 @@ describe('ServerRendererBrowser', () => {
 				requestHeaders.push(headers);
 				return <Response>{
 					ok: true,
-					headers: new Headers({ key1: 'value', 'Cache-Control': 'max-age=3600' }),
+					headers: new Headers({ key1: 'value', 'cache-control': 'max-age=3600' }),
 					status: 200,
 					statusText: 'OK',
 					text: async () => MockedPageHTML
@@ -209,7 +209,7 @@ describe('ServerRendererBrowser', () => {
 					url,
 					content: null,
 					error: null,
-					headers: { key1: 'value', 'Cache-Control': 'max-age=3600' },
+					headers: { key1: 'value', 'cache-control': 'max-age=3600' },
 					outputFile: `./test-output/test-${index + 1}.html`,
 					pageConsole: '',
 					pageErrors: [],
@@ -219,7 +219,7 @@ describe('ServerRendererBrowser', () => {
 			);
 			expect(requestHeaders).toEqual([
 				{},
-				{ 'Request-Header-1': 'Value1', 'Request-Header-2': 'Value2' },
+				{ 'request-header-1': 'Value1', 'request-header-2': 'Value2' },
 				{},
 				{},
 				{},
@@ -676,7 +676,7 @@ Timer #1
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async () => {
 				return <Response>{
 					ok: true,
-					headers: new Headers({ key1: 'value', 'Cache-Control': 'max-age=3600' }),
+					headers: new Headers({ key1: 'value', 'cache-control': 'max-age=3600' }),
 					status: 200,
 					statusText: 'OK',
 					text: async () => MockedPageHTML
