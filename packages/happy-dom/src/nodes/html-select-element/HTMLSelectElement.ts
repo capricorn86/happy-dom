@@ -573,46 +573,36 @@ export default class HTMLSelectElement extends HTMLElement {
 	/**
 	 * Adds new option to options collection.
 	 *
+	 * @see https://html.spec.whatwg.org/multipage/common-dom-interfaces.html#dom-htmloptionscollection-add
 	 * @param element HTMLOptionElement to add.
 	 * @param before HTMLOptionElement or index number.
 	 */
 	public add(element: HTMLOptionElement, before?: number | HTMLOptionElement): void {
 		const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
-
-		if (!before && before !== 0) {
-			const childNodes = this[PropertySymbol.nodeArray];
-
-			while (childNodes.length) {
-				this[PropertySymbol.removeChild](childNodes[0]);
-			}
-
-			for (const option of options) {
-				this[PropertySymbol.appendChild](option);
-			}
-
-			this[PropertySymbol.appendChild](element);
-
-			return;
-		}
-
 		const window = this[PropertySymbol.window];
 
-		if (typeof before !== 'number') {
-			if (!(before instanceof HTMLOptionElement)) {
-				throw new window.DOMException(
-					"Failed to execute 'add' on 'HTMLFormElement': The node before which the new node is to be inserted before is not an 'HTMLOptionElement'."
-				);
+		// An index of -1 means that the element should be appended at the end.
+		let referenceIndex = -1;
+
+		if (before || before === 0) {
+			if (typeof before !== 'number') {
+				if (!(before instanceof HTMLOptionElement)) {
+					throw new window.DOMException(
+						"Failed to execute 'add' on 'HTMLFormElement': The node before which the new node is to be inserted before is not an 'HTMLOptionElement'."
+					);
+				}
+
+				referenceIndex = options.indexOf(<HTMLOptionElement>before);
+
+				if (referenceIndex === -1) {
+					throw new window.DOMException(
+						"Failed to execute 'add' on 'HTMLFormElement': The node before which the new node is to be inserted before is not a child of this node."
+					);
+				}
+			} else if (options[before]) {
+				// An index that doesn't match an option is treated as "null", which appends the element.
+				referenceIndex = before;
 			}
-
-			before = options.indexOf(<HTMLOptionElement>before);
-		}
-
-		const optionsElement = options[before];
-
-		if (!optionsElement) {
-			throw new window.DOMException(
-				"Failed to execute 'add' on 'HTMLFormElement': The node before which the new node is to be inserted before is not a child of this node."
-			);
 		}
 
 		const childNodes = this[PropertySymbol.nodeArray];
@@ -622,10 +612,14 @@ export default class HTMLSelectElement extends HTMLElement {
 		}
 
 		for (let i = 0, max = options.length; i < max; i++) {
-			if (i === before) {
+			if (i === referenceIndex) {
 				this[PropertySymbol.appendChild](element);
 			}
 			this[PropertySymbol.appendChild](options[i]);
+		}
+
+		if (referenceIndex === -1) {
+			this[PropertySymbol.appendChild](element);
 		}
 	}
 
