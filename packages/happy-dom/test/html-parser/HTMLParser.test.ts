@@ -436,6 +436,22 @@ describe('HTMLParser', () => {
 			);
 		});
 
+		it('Does not lose a self-closed <style> or <script> element inside an SVG.', () => {
+			const result = new HTMLParser(window).parse(
+				`<div>
+					<svg xmlns="${NamespaceURI.svg}">
+						<style/>
+						<g><rect x="1" y="2" width="3" height="4"></rect></g>
+					</svg>
+				</div>`
+			);
+			const svg = result.children[0].children[0];
+
+			expect(svg.children.length).toBe(2);
+			expect(svg.children[0].tagName).toBe('style');
+			expect(svg.children[1].tagName).toBe('g');
+		});
+
 		it('Handles unclosed regular elements.', () => {
 			const result = new HTMLParser(window).parse(`<div>test`);
 
