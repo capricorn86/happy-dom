@@ -546,6 +546,46 @@ describe('Fetch', () => {
 			]);
 		});
 
+		it('Caches the preflight response so that only one preflight request is sent for multiple cross-origin requests.', async () => {
+			const originURL = 'http://localhost:8080';
+			const window = new Window({ url: originURL });
+			const url = 'http://other.origin.com/some/path';
+
+			const network = mockNetwork('http', {
+				beforeResponse({ request, response }) {
+					response.rawHeaders =
+						request.options.method === 'OPTIONS'
+							? [
+									'Access-Control-Allow-Origin',
+									'*',
+									'Access-Control-Allow-Methods',
+									'POST',
+									'Access-Control-Allow-Headers',
+									'content-type',
+									'Access-Control-Max-Age',
+									'600'
+								]
+							: [];
+				}
+			});
+
+			for (let i = 0; i < 2; i++) {
+				await window.fetch(url, {
+					method: 'POST',
+					body: '{"foo": "bar"}',
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				});
+			}
+
+			expect(network.requestHistory.map((entry) => entry.options.method)).toEqual([
+				'OPTIONS',
+				'POST',
+				'POST'
+			]);
+		});
+
 		it('Allows cross-origin request if "Browser.settings.fetch.disableSameOriginPolicy" is set to "true".', async () => {
 			const originURL = 'http://localhost:8080';
 			const window = new Window({ url: originURL });
