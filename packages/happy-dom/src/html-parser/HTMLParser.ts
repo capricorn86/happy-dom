@@ -779,7 +779,14 @@ export default class HTMLParser {
 	private parseRawTextElementContent(tagName: string, text: string): void {
 		const upperTagName = StringUtility.asciiUpperCase(tagName);
 
-		if (upperTagName !== (<Element>this.currentNode)[PropertySymbol.tagName]) {
+		// SVG (and other foreign-content) elements preserve their original tag name case (e.g.
+		// "style"), unlike HTML elements whose tagName is always upper-cased. Comparing both sides
+		// upper-cased keeps foreign raw text elements matching their own closing tag, instead of
+		// never matching and silently absorbing the rest of the document.
+		if (
+			upperTagName !==
+			StringUtility.asciiUpperCase((<Element>this.currentNode)[PropertySymbol.tagName] ?? '')
+		) {
 			return;
 		}
 
