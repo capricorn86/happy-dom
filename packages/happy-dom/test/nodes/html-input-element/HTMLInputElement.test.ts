@@ -3,6 +3,7 @@ import type Document from '../../../src/nodes/document/Document.js';
 import type HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement.js';
 import DOMException from '../../../src/exception/DOMException.js';
 import File from '../../../src/file/File.js';
+import FileList from '../../../src/nodes/html-input-element/FileList.js';
 import Event from '../../../src/event/Event.js';
 import HTMLInputElementSelectionModeEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionModeEnum.js';
 import HTMLInputElementSelectionDirectionEnum from '../../../src/nodes/html-input-element/HTMLInputElementSelectionDirectionEnum.js';
@@ -93,6 +94,31 @@ describe('HTMLInputElement', () => {
 			element.type = 'file';
 			element.files.push(file);
 			expect(element.value).toBe('/fake/path/filename.jpg');
+		});
+	});
+
+	describe('set files()', () => {
+		it('Ignores null.', () => {
+			element.type = 'file';
+			element.files = <FileList>(<unknown>null);
+			expect(element.files.length).toBe(0);
+			expect(element.value).toBe('');
+		});
+
+		it('Ignores undefined.', () => {
+			element.type = 'file';
+			element.files = <FileList>(<unknown>undefined);
+			expect(element.files.length).toBe(0);
+			expect(element.value).toBe('');
+		});
+
+		it('Ignores setting files when type is not "file".', () => {
+			const file = new File(['TEST'], 'filename.jpg');
+			element.type = 'file';
+			element.files.push(file);
+			element.type = 'text';
+			element.files = <FileList>(<unknown>new FileList());
+			expect(element.files.length).toBe(1);
 		});
 	});
 
