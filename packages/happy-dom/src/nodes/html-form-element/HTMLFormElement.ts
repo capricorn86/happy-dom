@@ -15,6 +15,7 @@ import RadioNodeList from './RadioNodeList.js';
 import WindowBrowserContext from '../../window/WindowBrowserContext.js';
 import ClassMethodBinder from '../../utilities/ClassMethodBinder.js';
 import Node from '../node/Node.js';
+import type Document from '../document/Document.js';
 import Element from '../element/Element.js';
 import EventTarget from '../../event/EventTarget.js';
 import type HTMLDialogElement from '../html-dialog-element/HTMLDialogElement.js';
@@ -521,6 +522,27 @@ export default class HTMLFormElement extends HTMLElement {
 			].slice()
 		);
 
+		// Form-associated custom elements are "listed" per spec, but aren't matched by the fixed
+		// tag-name selector above (their tag name isn't known ahead of time) - find them by the
+		// [formAssociated] flag CustomElementRegistry.define() sets instead.
+		const addFormAssociatedCustomElements = (
+			root: HTMLFormElement | Document,
+			selector: string
+		): void => {
+			for (const element of <THTMLFormControlElement[]>(
+				QuerySelector.querySelectorAll(root, selector)[PropertySymbol.items]
+			)) {
+				if (
+					(<HTMLElement>(<unknown>element))[PropertySymbol.formAssociated] &&
+					!elements.includes(element)
+				) {
+					elements.push(element);
+				}
+			}
+		};
+
+		addFormAssociatedCustomElements(this, '*');
+
 		if (this[PropertySymbol.isConnected]) {
 			const id = this.getAttribute('id');
 			if (id) {
@@ -534,6 +556,8 @@ export default class HTMLFormElement extends HTMLElement {
 						elements.push(element);
 					}
 				}
+
+				addFormAssociatedCustomElements(this[PropertySymbol.ownerDocument], `*[form="${id}"]`);
 			}
 		}
 

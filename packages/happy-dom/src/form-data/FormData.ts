@@ -5,6 +5,7 @@ import type HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.
 import type HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
 import type BrowserWindow from '../window/BrowserWindow.js';
 import type HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js';
+import type HTMLElement from '../nodes/html-element/HTMLElement.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 
 type FormDataEntry = {
@@ -56,6 +57,26 @@ export default class FormData implements Iterable<[string, string | File]> {
 		const items = form[PropertySymbol.getFormControlItems]();
 
 		for (const item of items) {
+			const htmlElement = <HTMLElement>(<unknown>item);
+
+			// Form-associated custom elements have no `name` IDL property - read the attribute.
+			if (htmlElement[PropertySymbol.formAssociated]) {
+				const elementName = item.name || item.getAttribute('name');
+				const value = htmlElement[PropertySymbol.internalsFormValue];
+
+				// A disabled element is barred from validation and left out of the entry list.
+				if (elementName && value != null && !htmlElement.hasAttribute('disabled')) {
+					if (value instanceof FormData) {
+						for (const [entryName, entryValue] of value) {
+							this.append(entryName, entryValue);
+						}
+					} else {
+						this.append(elementName, value);
+					}
+				}
+				continue;
+			}
+
 			const name = item.name;
 
 			if (name) {

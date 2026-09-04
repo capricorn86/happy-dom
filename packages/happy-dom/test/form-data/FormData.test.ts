@@ -307,6 +307,88 @@ describe('FormData', () => {
 			expect(formData.getAll('radioInput')).toEqual([]);
 			expect(formData.getAll('checkboxInput')).toEqual([]);
 		});
+
+		it('Supports a form-associated custom element that called setFormValue().', () => {
+			/* eslint-disable jsdoc/require-jsdoc */
+			class FormAssociatedElement extends window.HTMLElement {
+				public static formAssociated = true;
+				private internals = this.attachInternals();
+
+				public setValue(value: string): void {
+					this.internals.setFormValue(value);
+				}
+			}
+			/* eslint-enable jsdoc/require-jsdoc */
+
+			window.customElements.define('form-associated-element', FormAssociatedElement);
+
+			const form = document.createElement('form');
+			const customElement = <FormAssociatedElement>(
+				document.createElement('form-associated-element')
+			);
+			customElement.setAttribute('name', 'customElement');
+			customElement.setValue('custom value');
+
+			form.appendChild(customElement);
+
+			const formData = new window.FormData(form);
+
+			expect(formData.get('customElement')).toBe('custom value');
+		});
+
+		it('Omits a form-associated custom element whose value was reset to null via setFormValue().', () => {
+			/* eslint-disable jsdoc/require-jsdoc */
+			class FormAssociatedElement extends window.HTMLElement {
+				public static formAssociated = true;
+				private internals = this.attachInternals();
+
+				public setValue(value: string | null): void {
+					this.internals.setFormValue(value);
+				}
+			}
+			/* eslint-enable jsdoc/require-jsdoc */
+
+			window.customElements.define('form-associated-element', FormAssociatedElement);
+
+			const form = document.createElement('form');
+			const customElement = <FormAssociatedElement>(
+				document.createElement('form-associated-element')
+			);
+			customElement.setAttribute('name', 'customElement');
+			customElement.setValue('custom value');
+			customElement.setValue(null);
+
+			form.appendChild(customElement);
+
+			expect(new window.FormData(form).has('customElement')).toBe(false);
+		});
+
+		it('Omits a disabled form-associated custom element.', () => {
+			/* eslint-disable jsdoc/require-jsdoc */
+			class FormAssociatedElement extends window.HTMLElement {
+				public static formAssociated = true;
+				private internals = this.attachInternals();
+
+				public setValue(value: string): void {
+					this.internals.setFormValue(value);
+				}
+			}
+			/* eslint-enable jsdoc/require-jsdoc */
+
+			window.customElements.define('form-associated-element', FormAssociatedElement);
+
+			const form = document.createElement('form');
+			const customElement = <FormAssociatedElement>(
+				document.createElement('form-associated-element')
+			);
+			customElement.setAttribute('name', 'customElement');
+			customElement.setAttribute('disabled', '');
+			customElement.setValue('custom value');
+
+			form.appendChild(customElement);
+
+			expect(new window.FormData(form).has('customElement')).toBe(false);
+		});
 	});
 
 	describe('forEach()', () => {
