@@ -201,8 +201,12 @@ export default class ResponseCache implements IResponseCache {
 			}
 		}
 
-		// Cache is invalid if it has expired and doesn't have an ETag.
-		if (!cachedResponse.etag && (!cachedResponse.expires || cachedResponse.expires < Date.now())) {
+		// Cache is invalid if it has expired and doesn't have an ETag or a Last-Modified date to revalidate against.
+		if (
+			!cachedResponse.etag &&
+			!cachedResponse.lastModified &&
+			(!cachedResponse.expires || cachedResponse.expires < Date.now())
+		) {
 			const entries = this.#entries.get(url);
 			if (entries) {
 				const index = entries.indexOf(cachedResponse);
