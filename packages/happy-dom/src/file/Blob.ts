@@ -134,7 +134,7 @@ export default class Blob {
 	 * @returns Text.
 	 */
 	public async text(): Promise<string> {
-		return this[PropertySymbol.buffer].toString();
+		return new TextDecoder().decode(this[PropertySymbol.buffer]);
 	}
 
 	/**
