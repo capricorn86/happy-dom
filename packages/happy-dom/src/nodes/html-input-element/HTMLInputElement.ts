@@ -145,6 +145,9 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @param files Files.
 	 */
 	public set files(files: FileList) {
+		if (files === null || files === undefined || this.type !== 'file') {
+			return;
+		}
 		this[PropertySymbol.files] = files;
 	}
 
