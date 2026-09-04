@@ -1529,6 +1529,10 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @param checked Checked.
 	 */
 	#setChecked(checked: boolean): void {
+		if (this[PropertySymbol.checked] === checked) {
+			return;
+		}
+
 		this[PropertySymbol.checked] = checked;
 		this[PropertySymbol.clearCache]();
 
@@ -1542,7 +1546,7 @@ export default class HTMLInputElement extends HTMLElement {
 
 			for (const radioButton of radioButtons) {
 				if (radioButton !== this) {
-					radioButton[PropertySymbol.checked] = false;
+					radioButton.#setChecked(false);
 				}
 			}
 		}

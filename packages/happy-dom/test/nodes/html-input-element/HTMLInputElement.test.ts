@@ -888,6 +888,30 @@ describe('HTMLInputElement', () => {
 			expect(radio3.checked).toBe(false);
 		});
 
+		it('Keeps a cached ":checked" query fresh when a radio button unchecks its siblings.', () => {
+			const form = document.createElement('form');
+			const radio1 = <HTMLInputElement>document.createElement('input');
+			const radio2 = <HTMLInputElement>document.createElement('input');
+
+			radio1.type = 'radio';
+			radio2.type = 'radio';
+			radio1.name = 'radio';
+			radio2.name = 'radio';
+
+			form.appendChild(radio1);
+			form.appendChild(radio2);
+			document.body.appendChild(form);
+
+			radio1.checked = true;
+
+			expect(document.querySelectorAll('input[name="radio"]:checked').length).toBe(1);
+
+			radio2.checked = true;
+
+			expect(document.querySelectorAll('input[name="radio"]:checked').length).toBe(1);
+			expect(document.querySelectorAll('input[name="radio"]:checked')[0]).toBe(radio2);
+		});
+
 		it('Unchecks other radio buttons with the same name outside of a form', () => {
 			const radio1 = <HTMLInputElement>document.createElement('input');
 			const radio2 = <HTMLInputElement>document.createElement('input');
