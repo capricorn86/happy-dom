@@ -1,7 +1,7 @@
 import Window from '../../src/window/Window.js';
 import type Document from '../../src/nodes/document/Document.js';
 import type HTMLInputElement from '../../src/nodes/html-input-element/HTMLInputElement.js';
-import { beforeEach, describe, it, test, expect } from 'vitest';
+import { beforeEach, describe, it, expect } from 'vitest';
 
 describe('ValidityState', () => {
 	let window: Window;
@@ -143,7 +143,7 @@ describe('ValidityState', () => {
 
 	describe('get stepMismatch()', () => {
 		describe.each(['number', 'range'])('"%s" input step bases', (type) => {
-			test.each([
+			it.each([
 				['the value attribute', '', '1.01', '', '1.01'],
 				['increments from the value attribute', '', '1.01', '', '2.01'],
 				['increments from min', '1', '', '2', '3'],
@@ -168,7 +168,7 @@ describe('ValidityState', () => {
 			});
 		});
 
-		test.each(['', 'invalid', '+1', ' 1', '1\n', '1\r', '1.', '0x1', 'Infinity', '1e309'])(
+		it.each(['', 'invalid', '+1', ' 1', '1\n', '1\r', '1.', '0x1', 'Infinity', '1e309'])(
 			'Falls back to the value attribute when min="%s" is not a valid number.',
 			(min) => {
 				// Arrange
@@ -185,7 +185,7 @@ describe('ValidityState', () => {
 			}
 		);
 
-		test.each(['', 'invalid', '+1', ' 1', '1\n', '1\r', '1.', '0x1', 'Infinity', '1e309'])(
+		it.each(['', 'invalid', '+1', ' 1', '1\n', '1\r', '1.', '0x1', 'Infinity', '1e309'])(
 			'Uses a zero base when value="%s" is not a valid number.',
 			(defaultValue) => {
 				// Arrange
@@ -202,7 +202,7 @@ describe('ValidityState', () => {
 			}
 		);
 
-		test.each(['', '0', '-2', 'invalid', '2x', ' 2', '2\n', '2\r', '0x2'])(
+		it.each(['', '0', '-2', 'invalid', '2x', ' 2', '2\n', '2\r', '0x2'])(
 			'Uses the default step when step="%s" does not specify a positive number.',
 			(step) => {
 				// Arrange
@@ -218,7 +218,7 @@ describe('ValidityState', () => {
 			}
 		);
 
-		test.each(['any', 'ANY', 'Any'])('Allows fractional values with step="%s".', (step) => {
+		it.each(['any', 'ANY', 'Any'])('Allows fractional values with step="%s".', (step) => {
 			// Arrange
 			const input = document.createElement('input');
 			input.type = 'number';
@@ -231,7 +231,7 @@ describe('ValidityState', () => {
 			expect(input.validity.stepMismatch).toBe(false);
 		});
 
-		test('Does not apply a fractional step base to an empty number input.', () => {
+		it('Does not apply a fractional step base to an empty number input.', () => {
 			// Arrange
 			const input = document.createElement('input');
 			input.type = 'number';
@@ -244,7 +244,7 @@ describe('ValidityState', () => {
 			expect(input.validity.stepMismatch).toBe(false);
 		});
 
-		test.each(['0.11', '0.30001'])(
+		it.each(['0.11', '0.30001'])(
 			'Rejects %s when it is not aligned with the fractional value-attribute base.',
 			(value) => {
 				// Arrange
