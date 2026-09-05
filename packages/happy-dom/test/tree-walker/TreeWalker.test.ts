@@ -284,6 +284,64 @@ describe('TreeWalker', () => {
 				expectedPreviousNode = currentNode;
 			}
 		});
+
+		it('Returns the previous accepted sibling when an intervening sibling is FILTER_SKIP and contains a text node.', () => {
+			// Regression: when a FILTER_SKIP sibling contains a text child and whatToShow=SHOW_ELEMENT,
+			// previousNode() was descending into the text node via nodeArray and then taking
+			// textNode.previousSibling (null) instead of span.previousSibling, causing it to lose
+			// its position and return null instead of the accepted element before the skipped one.
+			const div = document.createElement('div');
+			div.innerHTML =
+				'<span class="accept">A</span><span class="skip">:</span><span class="accept">B</span>';
+
+			const filter = {
+				acceptNode: (node: Element): number =>
+					node.classList.contains('accept') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP
+			};
+
+			const walker = document.createTreeWalker(div, NodeFilter.SHOW_ELEMENT, filter);
+
+			// Forward: a → b
+			expect((<Element>walker.nextNode()).id).toBe('');
+			expect((<Element>walker.nextNode()).textContent).toBe('B');
+
+			// Backward from b: must find a, not null
+			const prev = walker.previousNode();
+			expect(prev).not.toBeNull();
+			expect((<Element>prev).textContent).toBe('A');
+		});
+
+		it('Returns the previous accepted sibling when currentNode is set directly and an intervening sibling is FILTER_SKIP with a text child.', () => {
+			const div = document.createElement('div');
+
+			const a = document.createElement('span');
+			a.className = 'accept';
+			a.textContent = 'A';
+
+			const skip = document.createElement('span');
+			skip.className = 'skip';
+			skip.textContent = ':';
+
+			const b = document.createElement('span');
+			b.className = 'accept';
+			b.textContent = 'B';
+
+			div.appendChild(a);
+			div.appendChild(skip);
+			div.appendChild(b);
+
+			const filter = {
+				acceptNode: (node: Element): number =>
+					node.classList.contains('accept') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP
+			};
+
+			const walker = document.createTreeWalker(div, NodeFilter.SHOW_ELEMENT, filter);
+			walker.currentNode = <Node>(<unknown>b);
+
+			const prev = walker.previousNode();
+			expect(prev).not.toBeNull();
+			expect((<Element>prev).textContent).toBe('A');
+		});
 	});
 
 	describe('parentNode()', () => {
