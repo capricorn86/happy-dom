@@ -1,4 +1,3 @@
-import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 import type CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
 import { beforeEach, describe, it, expect } from 'vitest';
@@ -119,7 +118,7 @@ describe('CSSStyleSheet', () => {
 				// @ts-expect-error
 				await cssStyleSheet.replace();
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error!).toBeInstanceOf(window.TypeError);

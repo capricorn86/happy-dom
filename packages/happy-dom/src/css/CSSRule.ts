@@ -2,7 +2,7 @@ import type CSSStyleSheet from './CSSStyleSheet.js';
 import CSSRuleTypeEnum from './CSSRuleTypeEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import type BrowserWindow from '../window/BrowserWindow.js';
-import type CSSParser from './utilities/CSSParser.js';
+import type CSSParser from './utilities/CSSRuleParser.js';
 
 /**
  * CSSRule interface.
