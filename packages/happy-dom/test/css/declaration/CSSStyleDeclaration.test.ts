@@ -3082,6 +3082,24 @@ describe('CSSStyleDeclaration', () => {
 			expect(element.getAttribute('style')).toBe('top: 0px;');
 		});
 
+		it('Sets many custom properties.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+			const count = 2000;
+
+			for (let i = 0; i < count; i++) {
+				declaration.setProperty(`--variable-${i}`, `${i}px`);
+			}
+
+			expect(declaration.length).toBe(count);
+			expect(declaration.getPropertyValue('--variable-0')).toBe('0px');
+			expect(declaration.getPropertyValue(`--variable-${count - 1}`)).toBe(`${count - 1}px`);
+			expect(
+				element.getAttribute('style')?.startsWith('--variable-0: 0px; --variable-1: 1px;')
+			).toBe(true);
+		});
+
 		it('Removes style attribute on element if empty value is sent', () => {
 			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
 				element
