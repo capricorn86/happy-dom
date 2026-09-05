@@ -1075,6 +1075,7 @@ export default class Document extends Node {
 			}
 		}
 		this[PropertySymbol.adoptedStyleSheets] = value;
+		this[PropertySymbol.clearComputedStyleCache]();
 	}
 
 	/**
@@ -2262,10 +2263,22 @@ export default class Document extends Node {
 	}
 
 	/**
+	 * Clears the computed style cache for the document.
+	 */
+	public [PropertySymbol.clearComputedStyleCache](): void {
+		for (const item of this[PropertySymbol.affectsComputedStyleCache]) {
+			item.result = null;
+		}
+		this[PropertySymbol.affectsComputedStyleCache] = [];
+	}
+
+	/**
 	 * @override
 	 */
 	public override [PropertySymbol.destroy](): void {
 		super[PropertySymbol.destroy]();
+
+		this[PropertySymbol.clearComputedStyleCache]();
 
 		this[PropertySymbol.children] = null;
 		this[PropertySymbol.activeElement] = null;
@@ -2275,7 +2288,6 @@ export default class Document extends Node {
 		this[PropertySymbol.adoptedStyleSheets] = [];
 		this[PropertySymbol.forms] = null;
 		this[PropertySymbol.links] = null;
-		this[PropertySymbol.affectsComputedStyleCache] = [];
 		this[PropertySymbol.elementIdMap].clear();
 		this[PropertySymbol.xmlProcessingInstruction] = null;
 		this[PropertySymbol.preloads].clear();

@@ -953,6 +953,10 @@ export default class Node extends EventTarget {
 			cache.elementById = new Map();
 		}
 
+		if (cache.computedStyle?.result) {
+			cache.computedStyle.result = null;
+		}
+
 		const affectsCache = this[PropertySymbol.affectsCache];
 
 		if (affectsCache.length) {
@@ -960,16 +964,6 @@ export default class Node extends EventTarget {
 				item.result = null;
 			}
 			this[PropertySymbol.affectsCache] = [];
-		}
-
-		// Computed style cache is affected by all mutations.
-		const document = this[PropertySymbol.ownerDocument];
-
-		if (document && document[PropertySymbol.affectsComputedStyleCache].length) {
-			for (const item of document[PropertySymbol.affectsComputedStyleCache]) {
-				item.result = null;
-			}
-			document[PropertySymbol.affectsComputedStyleCache] = [];
 		}
 	}
 

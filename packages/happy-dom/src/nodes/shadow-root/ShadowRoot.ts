@@ -209,6 +209,7 @@ export default class ShadowRoot extends DocumentFragment {
 			}
 		}
 		this[PropertySymbol.adoptedStyleSheets] = value;
+		this[PropertySymbol.ownerDocument][PropertySymbol.clearComputedStyleCache]();
 	}
 
 	/**
