@@ -1,8 +1,9 @@
-import type ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyValue.js';
-import CSSStyleDeclarationPropertySetParser from './CSSStyleDeclarationPropertySetParser.js';
-import CSSStyleDeclarationValueParser from './CSSStyleDeclarationValueParser.js';
-import CSSStyleDeclarationPropertyGetParser from './CSSStyleDeclarationPropertyGetParser.js';
-import CSSStyleDeclarationCSSParser from '../css-parser/CSSStyleDeclarationCSSParser.js';
+import type ICSSPropertyValue from './types/ICSSPropertyValue.js';
+import CSSPropertySetParser from './parsers/CSSPropertySetParser.js';
+import CSSPropertyGetParser from './parsers/CSSPropertyGetParser.js';
+import CSSTextParser from '../utilities/CSSTextParser.js';
+import type ICSSPropertyMap from './types/ICSSPropertyMap.js';
+import CSSPropertyList from '../CSSPropertyList.js';
 
 const TO_STRING_SHORTHAND_PROPERTIES = [
 	['margin'],
@@ -14,23 +15,21 @@ const TO_STRING_SHORTHAND_PROPERTIES = [
 ];
 
 /**
- * Computed this.properties property parser.
+ * CSS property manager.
  */
-export default class CSSStyleDeclarationPropertyManager {
-	public properties: {
-		[k: string]: ICSSStyleDeclarationPropertyValue;
-	} = {};
+export default class CSSPropertyManager {
+	public properties: ICSSPropertyMap = {};
 	private definedPropertyNames: { [k: string]: boolean } = {};
 
 	/**
-	 * Class construtor.
+	 * Constructor.
 	 *
 	 * @param [options] Options.
 	 * @param [options.cssText] CSS string.
 	 */
 	constructor(options?: { cssText?: string }) {
 		if (options?.cssText) {
-			const { rules } = CSSStyleDeclarationCSSParser.parse(options.cssText);
+			const { rules } = CSSTextParser.parse(options.cssText);
 			for (const rule of rules) {
 				if (rule.important || !this.get(rule.name)?.important) {
 					this.set(rule.name, rule.value, rule.important);
@@ -45,45 +44,45 @@ export default class CSSStyleDeclarationPropertyManager {
 	 * @param name Property name.
 	 * @returns Property value.
 	 */
-	public get(name: string): ICSSStyleDeclarationPropertyValue | null {
+	public get(name: string): ICSSPropertyValue | null {
 		if (this.properties[name]) {
 			return this.properties[name];
 		}
 		switch (name) {
 			case 'margin':
-				return CSSStyleDeclarationPropertyGetParser.getMargin(this.properties);
+				return CSSPropertyGetParser.getMargin(this.properties);
 			case 'padding':
-				return CSSStyleDeclarationPropertyGetParser.getPadding(this.properties);
+				return CSSPropertyGetParser.getPadding(this.properties);
 			case 'border':
-				return CSSStyleDeclarationPropertyGetParser.getBorder(this.properties);
+				return CSSPropertyGetParser.getBorder(this.properties);
 			case 'border-top':
-				return CSSStyleDeclarationPropertyGetParser.getBorderTop(this.properties);
+				return CSSPropertyGetParser.getBorderTop(this.properties);
 			case 'border-right':
-				return CSSStyleDeclarationPropertyGetParser.getBorderRight(this.properties);
+				return CSSPropertyGetParser.getBorderRight(this.properties);
 			case 'border-bottom':
-				return CSSStyleDeclarationPropertyGetParser.getBorderBottom(this.properties);
+				return CSSPropertyGetParser.getBorderBottom(this.properties);
 			case 'border-left':
-				return CSSStyleDeclarationPropertyGetParser.getBorderLeft(this.properties);
+				return CSSPropertyGetParser.getBorderLeft(this.properties);
 			case 'border-color':
-				return CSSStyleDeclarationPropertyGetParser.getBorderColor(this.properties);
+				return CSSPropertyGetParser.getBorderColor(this.properties);
 			case 'border-style':
-				return CSSStyleDeclarationPropertyGetParser.getBorderStyle(this.properties);
+				return CSSPropertyGetParser.getBorderStyle(this.properties);
 			case 'border-width':
-				return CSSStyleDeclarationPropertyGetParser.getBorderWidth(this.properties);
+				return CSSPropertyGetParser.getBorderWidth(this.properties);
 			case 'border-radius':
-				return CSSStyleDeclarationPropertyGetParser.getBorderRadius(this.properties);
+				return CSSPropertyGetParser.getBorderRadius(this.properties);
 			case 'border-image':
-				return CSSStyleDeclarationPropertyGetParser.getBorderImage(this.properties);
+				return CSSPropertyGetParser.getBorderImage(this.properties);
 			case 'outline':
-				return CSSStyleDeclarationPropertyGetParser.getOutline(this.properties);
+				return CSSPropertyGetParser.getOutline(this.properties);
 			case 'background':
-				return CSSStyleDeclarationPropertyGetParser.getBackground(this.properties);
+				return CSSPropertyGetParser.getBackground(this.properties);
 			case 'background-position':
-				return CSSStyleDeclarationPropertyGetParser.getBackgroundPosition(this.properties);
+				return CSSPropertyGetParser.getBackgroundPosition(this.properties);
 			case 'flex':
-				return CSSStyleDeclarationPropertyGetParser.getFlex(this.properties);
+				return CSSPropertyGetParser.getFlex(this.properties);
 			case 'font':
-				return CSSStyleDeclarationPropertyGetParser.getFont(this.properties);
+				return CSSPropertyGetParser.getFont(this.properties);
 		}
 
 		return this.properties[name] || null;
@@ -244,290 +243,283 @@ export default class CSSStyleDeclarationPropertyManager {
 	 * @param name Name.
 	 * @param value Value.
 	 * @param important Important.
+	 * @returns Array of property names that were set.
 	 */
-	public set(name: string, value: string, important: boolean): void {
+	public set(name: string, value: string, important: boolean): string[] {
 		if (value === null) {
 			this.remove(name);
-			return;
+			return [];
 		}
 
 		let properties = null;
 
 		switch (name) {
 			case 'border':
-				properties = CSSStyleDeclarationPropertySetParser.getBorder(value, important);
+				properties = CSSPropertySetParser.getBorder(value, important);
 				break;
 			case 'border-top':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderTop(value, important);
+				properties = CSSPropertySetParser.getBorderTop(value, important);
 				break;
 			case 'border-right':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderRight(value, important);
+				properties = CSSPropertySetParser.getBorderRight(value, important);
 				break;
 			case 'border-bottom':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderBottom(value, important);
+				properties = CSSPropertySetParser.getBorderBottom(value, important);
 				break;
 			case 'border-left':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderLeft(value, important);
+				properties = CSSPropertySetParser.getBorderLeft(value, important);
 				break;
 			case 'border-width':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderWidth(value, important);
+				properties = CSSPropertySetParser.getBorderWidth(value, important);
 				break;
 			case 'border-style':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderStyle(value, important);
+				properties = CSSPropertySetParser.getBorderStyle(value, important);
 				break;
 			case 'border-color':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderColor(value, important);
+				properties = CSSPropertySetParser.getBorderColor(value, important);
 				break;
 			case 'border-image':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderImage(value, important);
+				properties = CSSPropertySetParser.getBorderImage(value, important);
 				break;
 			case 'border-image-source':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderImageSource(value, important);
+				properties = CSSPropertySetParser.getBorderImageSource(value, important);
 				break;
 			case 'border-image-slice':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderImageSlice(value, important);
+				properties = CSSPropertySetParser.getBorderImageSlice(value, important);
 				break;
 			case 'border-image-width':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderImageWidth(value, important);
+				properties = CSSPropertySetParser.getBorderImageWidth(value, important);
 				break;
 			case 'border-image-outset':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderImageOutset(value, important);
+				properties = CSSPropertySetParser.getBorderImageOutset(value, important);
 				break;
 			case 'border-image-repeat':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderImageRepeat(value, important);
+				properties = CSSPropertySetParser.getBorderImageRepeat(value, important);
 				break;
 			case 'border-top-width':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderTopWidth(value, important);
+				properties = CSSPropertySetParser.getBorderTopWidth(value, important);
 				break;
 			case 'border-right-width':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderRightWidth(value, important);
+				properties = CSSPropertySetParser.getBorderRightWidth(value, important);
 				break;
 			case 'border-bottom-width':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderBottomWidth(value, important);
+				properties = CSSPropertySetParser.getBorderBottomWidth(value, important);
 				break;
 			case 'border-left-width':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderLeftWidth(value, important);
+				properties = CSSPropertySetParser.getBorderLeftWidth(value, important);
 				break;
 			case 'border-top-color':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderTopColor(value, important);
+				properties = CSSPropertySetParser.getBorderTopColor(value, important);
 				break;
 			case 'border-right-color':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderRightColor(value, important);
+				properties = CSSPropertySetParser.getBorderRightColor(value, important);
 				break;
 			case 'border-bottom-color':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderBottomColor(value, important);
+				properties = CSSPropertySetParser.getBorderBottomColor(value, important);
 				break;
 			case 'border-left-color':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderLeftColor(value, important);
+				properties = CSSPropertySetParser.getBorderLeftColor(value, important);
 				break;
 			case 'border-top-style':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderTopStyle(value, important);
+				properties = CSSPropertySetParser.getBorderTopStyle(value, important);
 				break;
 			case 'border-right-style':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderRightStyle(value, important);
+				properties = CSSPropertySetParser.getBorderRightStyle(value, important);
 				break;
 			case 'border-bottom-style':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderBottomStyle(value, important);
+				properties = CSSPropertySetParser.getBorderBottomStyle(value, important);
 				break;
 			case 'border-left-style':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderLeftStyle(value, important);
+				properties = CSSPropertySetParser.getBorderLeftStyle(value, important);
 				break;
 			case 'border-radius':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderRadius(value, important);
+				properties = CSSPropertySetParser.getBorderRadius(value, important);
 				break;
 			case 'border-top-left-radius':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderTopLeftRadius(value, important);
+				properties = CSSPropertySetParser.getBorderTopLeftRadius(value, important);
 				break;
 			case 'border-top-right-radius':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderTopRightRadius(value, important);
+				properties = CSSPropertySetParser.getBorderTopRightRadius(value, important);
 				break;
 			case 'border-bottom-right-radius':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderBottomRightRadius(
-					value,
-					important
-				);
+				properties = CSSPropertySetParser.getBorderBottomRightRadius(value, important);
 				break;
 			case 'border-bottom-left-radius':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderBottomLeftRadius(
-					value,
-					important
-				);
+				properties = CSSPropertySetParser.getBorderBottomLeftRadius(value, important);
 				break;
 			case 'border-collapse':
-				properties = CSSStyleDeclarationPropertySetParser.getBorderCollapse(value, important);
+				properties = CSSPropertySetParser.getBorderCollapse(value, important);
 				break;
 			case 'outline':
-				properties = CSSStyleDeclarationPropertySetParser.getOutline(value, important);
+				properties = CSSPropertySetParser.getOutline(value, important);
 				break;
 			case 'outline-width':
-				properties = CSSStyleDeclarationPropertySetParser.getOutlineWidth(value, important);
+				properties = CSSPropertySetParser.getOutlineWidth(value, important);
 				break;
 			case 'outline-style':
-				properties = CSSStyleDeclarationPropertySetParser.getOutlineStyle(value, important);
+				properties = CSSPropertySetParser.getOutlineStyle(value, important);
 				break;
 			case 'outline-color':
-				properties = CSSStyleDeclarationPropertySetParser.getOutlineColor(value, important);
+				properties = CSSPropertySetParser.getOutlineColor(value, important);
 				break;
 			case 'letter-spacing':
-				properties = CSSStyleDeclarationPropertySetParser.getLetterSpacing(value, important);
+				properties = CSSPropertySetParser.getLetterSpacing(value, important);
 				break;
 			case 'word-spacing':
-				properties = CSSStyleDeclarationPropertySetParser.getWordSpacing(value, important);
+				properties = CSSPropertySetParser.getWordSpacing(value, important);
 				break;
 			case 'clear':
-				properties = CSSStyleDeclarationPropertySetParser.getClear(value, important);
+				properties = CSSPropertySetParser.getClear(value, important);
 				break;
 			case 'clip':
-				properties = CSSStyleDeclarationPropertySetParser.getClip(value, important);
+				properties = CSSPropertySetParser.getClip(value, important);
 				break;
 			case 'css-float':
-				properties = CSSStyleDeclarationPropertySetParser.getCSSFloat(value, important);
+				properties = CSSPropertySetParser.getCSSFloat(value, important);
 				break;
 			case 'float':
-				properties = CSSStyleDeclarationPropertySetParser.getFloat(value, important);
+				properties = CSSPropertySetParser.getFloat(value, important);
 				break;
 			case 'display':
-				properties = CSSStyleDeclarationPropertySetParser.getDisplay(value, important);
+				properties = CSSPropertySetParser.getDisplay(value, important);
 				break;
 			case 'direction':
-				properties = CSSStyleDeclarationPropertySetParser.getDirection(value, important);
+				properties = CSSPropertySetParser.getDirection(value, important);
 				break;
 			case 'flex':
-				properties = CSSStyleDeclarationPropertySetParser.getFlex(value, important);
+				properties = CSSPropertySetParser.getFlex(value, important);
 				break;
 			case 'flex-shrink':
-				properties = CSSStyleDeclarationPropertySetParser.getFlexShrink(value, important);
+				properties = CSSPropertySetParser.getFlexShrink(value, important);
 				break;
 			case 'flex-grow':
-				properties = CSSStyleDeclarationPropertySetParser.getFlexGrow(value, important);
+				properties = CSSPropertySetParser.getFlexGrow(value, important);
 				break;
 			case 'flex-basis':
-				properties = CSSStyleDeclarationPropertySetParser.getFlexBasis(value, important);
+				properties = CSSPropertySetParser.getFlexBasis(value, important);
 				break;
 			case 'padding':
-				properties = CSSStyleDeclarationPropertySetParser.getPadding(value, important);
+				properties = CSSPropertySetParser.getPadding(value, important);
 				break;
 			case 'padding-top':
-				properties = CSSStyleDeclarationPropertySetParser.getPaddingTop(value, important);
+				properties = CSSPropertySetParser.getPaddingTop(value, important);
 				break;
 			case 'padding-right':
-				properties = CSSStyleDeclarationPropertySetParser.getPaddingRight(value, important);
+				properties = CSSPropertySetParser.getPaddingRight(value, important);
 				break;
 			case 'padding-bottom':
-				properties = CSSStyleDeclarationPropertySetParser.getPaddingBottom(value, important);
+				properties = CSSPropertySetParser.getPaddingBottom(value, important);
 				break;
 			case 'padding-left':
-				properties = CSSStyleDeclarationPropertySetParser.getPaddingLeft(value, important);
+				properties = CSSPropertySetParser.getPaddingLeft(value, important);
 				break;
 			case 'margin':
-				properties = CSSStyleDeclarationPropertySetParser.getMargin(value, important);
+				properties = CSSPropertySetParser.getMargin(value, important);
 				break;
 			case 'margin-top':
-				properties = CSSStyleDeclarationPropertySetParser.getMarginTop(value, important);
+				properties = CSSPropertySetParser.getMarginTop(value, important);
 				break;
 			case 'margin-right':
-				properties = CSSStyleDeclarationPropertySetParser.getMarginRight(value, important);
+				properties = CSSPropertySetParser.getMarginRight(value, important);
 				break;
 			case 'margin-bottom':
-				properties = CSSStyleDeclarationPropertySetParser.getMarginBottom(value, important);
+				properties = CSSPropertySetParser.getMarginBottom(value, important);
 				break;
 			case 'margin-left':
-				properties = CSSStyleDeclarationPropertySetParser.getMarginLeft(value, important);
+				properties = CSSPropertySetParser.getMarginLeft(value, important);
 				break;
 			case 'background':
-				properties = CSSStyleDeclarationPropertySetParser.getBackground(value, important);
+				properties = CSSPropertySetParser.getBackground(value, important);
 				break;
 			case 'background-image':
-				properties = CSSStyleDeclarationPropertySetParser.getBackgroundImage(value, important);
+				properties = CSSPropertySetParser.getBackgroundImage(value, important);
 				break;
 			case 'background-color':
-				properties = CSSStyleDeclarationPropertySetParser.getBackgroundColor(value, important);
+				properties = CSSPropertySetParser.getBackgroundColor(value, important);
 				break;
 			case 'background-repeat':
-				properties = CSSStyleDeclarationPropertySetParser.getBackgroundRepeat(value, important);
+				properties = CSSPropertySetParser.getBackgroundRepeat(value, important);
 				break;
 			case 'background-attachment':
-				properties = CSSStyleDeclarationPropertySetParser.getBackgroundAttachment(value, important);
+				properties = CSSPropertySetParser.getBackgroundAttachment(value, important);
 				break;
 			case 'background-position':
-				properties = CSSStyleDeclarationPropertySetParser.getBackgroundPosition(value, important);
+				properties = CSSPropertySetParser.getBackgroundPosition(value, important);
 				break;
 			case 'width':
-				properties = CSSStyleDeclarationPropertySetParser.getWidth(value, important);
+				properties = CSSPropertySetParser.getWidth(value, important);
 				break;
 			case 'height':
-				properties = CSSStyleDeclarationPropertySetParser.getHeight(value, important);
+				properties = CSSPropertySetParser.getHeight(value, important);
 				break;
 			case 'top':
-				properties = CSSStyleDeclarationPropertySetParser.getTop(value, important);
+				properties = CSSPropertySetParser.getTop(value, important);
 				break;
 			case 'right':
-				properties = CSSStyleDeclarationPropertySetParser.getRight(value, important);
+				properties = CSSPropertySetParser.getRight(value, important);
 				break;
 			case 'bottom':
-				properties = CSSStyleDeclarationPropertySetParser.getBottom(value, important);
+				properties = CSSPropertySetParser.getBottom(value, important);
 				break;
 			case 'left':
-				properties = CSSStyleDeclarationPropertySetParser.getLeft(value, important);
+				properties = CSSPropertySetParser.getLeft(value, important);
 				break;
 			case 'font':
-				properties = CSSStyleDeclarationPropertySetParser.getFont(value, important);
+				properties = CSSPropertySetParser.getFont(value, important);
 				break;
 			case 'font-style':
-				properties = CSSStyleDeclarationPropertySetParser.getFontStyle(value, important);
+				properties = CSSPropertySetParser.getFontStyle(value, important);
 				break;
 			case 'font-variant':
-				properties = CSSStyleDeclarationPropertySetParser.getFontVariant(value, important);
+				properties = CSSPropertySetParser.getFontVariant(value, important);
 				break;
 			case 'font-weight':
-				properties = CSSStyleDeclarationPropertySetParser.getFontWeight(value, important);
+				properties = CSSPropertySetParser.getFontWeight(value, important);
 				break;
 			case 'font-stretch':
-				properties = CSSStyleDeclarationPropertySetParser.getFontStretch(value, important);
+				properties = CSSPropertySetParser.getFontStretch(value, important);
 				break;
 			case 'font-size':
-				properties = CSSStyleDeclarationPropertySetParser.getFontSize(value, important);
+				properties = CSSPropertySetParser.getFontSize(value, important);
 				break;
 			case 'line-height':
-				properties = CSSStyleDeclarationPropertySetParser.getLineHeight(value, important);
+				properties = CSSPropertySetParser.getLineHeight(value, important);
 				break;
 			case 'text-indent':
-				properties = CSSStyleDeclarationPropertySetParser.getTextIndent(value, important);
+				properties = CSSPropertySetParser.getTextIndent(value, important);
 				break;
 			case 'font-family':
-				properties = CSSStyleDeclarationPropertySetParser.getFontFamily(value, important);
+				properties = CSSPropertySetParser.getFontFamily(value, important);
 				break;
 			case 'color':
-				properties = CSSStyleDeclarationPropertySetParser.getColor(value, important);
+				properties = CSSPropertySetParser.getColor(value, important);
 				break;
 			case 'flood-color':
-				properties = CSSStyleDeclarationPropertySetParser.getFloodColor(value, important);
+				properties = CSSPropertySetParser.getFloodColor(value, important);
 				break;
 			case 'text-transform':
-				properties = CSSStyleDeclarationPropertySetParser.getTextTransform(value, important);
+				properties = CSSPropertySetParser.getTextTransform(value, important);
 				break;
 			case 'visibility':
-				properties = CSSStyleDeclarationPropertySetParser.getVisibility(value, important);
+				properties = CSSPropertySetParser.getVisibility(value, important);
 				break;
 			case 'aspect-ratio':
-				properties = CSSStyleDeclarationPropertySetParser.getAspectRatio(value, important);
+				properties = CSSPropertySetParser.getAspectRatio(value, important);
 				break;
-
 			default:
-				const trimmedValue = value.trim();
-				if (trimmedValue) {
-					const globalValue = CSSStyleDeclarationValueParser.getGlobal(trimmedValue);
-					properties = {
-						[name]: { value: globalValue || trimmedValue, important }
-					};
+				//  If the property name starts with '--', it's a CSS variable
+				if ((name[0] === '-' && name[1] === '-') || CSSPropertyList.kebabCase[<'color'>name]) {
+					properties = CSSPropertySetParser.getDefault(name, value, important);
 				}
 				break;
 		}
 
-		if (properties !== null && Object.keys(properties).length > 0) {
+		const keys = properties !== null ? Object.keys(properties) : [];
+		if (keys?.length > 0) {
 			this.definedPropertyNames[name] = true;
 			Object.assign(this.properties, properties);
 		}
+		return keys;
 	}
 
 	/**
@@ -535,14 +527,27 @@ export default class CSSStyleDeclarationPropertyManager {
 	 *
 	 * @returns Clone.
 	 */
-	public clone(): CSSStyleDeclarationPropertyManager {
-		const _class = <typeof CSSStyleDeclarationPropertyManager>this.constructor;
-		const clone: CSSStyleDeclarationPropertyManager = new _class();
+	public clone(): CSSPropertyManager {
+		const _class = <typeof CSSPropertyManager>this.constructor;
+		const clone: CSSPropertyManager = new _class();
 
-		clone.properties = JSON.parse(JSON.stringify(this.properties));
+		clone.properties = structuredClone(this.properties);
 		clone.definedPropertyNames = Object.assign({}, this.definedPropertyNames);
 
 		return clone;
+	}
+
+	/**
+	 * Returns all CSS variables defined in this property manager.
+	 */
+	public getVariables(): { [k: string]: string } {
+		const variables: { [k: string]: string } = {};
+		for (const name of Object.keys(this.properties)) {
+			if (name[0] === '-' && name[1] === '-') {
+				variables[name] = this.properties[name].value;
+			}
+		}
+		return variables;
 	}
 
 	/**
@@ -572,7 +577,7 @@ export default class CSSStyleDeclarationPropertyManager {
 	public toString(): string {
 		const result = [];
 		const clone = this.clone();
-		const properties: { [k: string]: ICSSStyleDeclarationPropertyValue } = {};
+		const properties: { [k: string]: ICSSPropertyValue } = {};
 
 		for (const shorthandPropertyGroup of TO_STRING_SHORTHAND_PROPERTIES) {
 			for (const shorthandProperty of shorthandPropertyGroup) {

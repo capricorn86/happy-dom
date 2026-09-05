@@ -425,3 +425,7 @@ export const context = Symbol('context');
 export const querySelectorCache = Symbol('querySelectorCache');
 export const customElementUpgradeTarget = Symbol('customElementUpgradeTarget');
 export const timeline = Symbol('timeline');
+export const element = Symbol('element');
+export const computed = Symbol('computed');
+export const getPropertyManager = Symbol('getPropertyManager');
+export const clearComputedStyleCache = Symbol('clearComputedStyleCache');

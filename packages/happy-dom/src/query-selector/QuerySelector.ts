@@ -13,6 +13,8 @@ import type ISVGElementTagNameMap from '../config/ISVGElementTagNameMap.js';
 import type ICachedQuerySelectorAllItem from '../nodes/node/ICachedQuerySelectorAllResult.js';
 import type ICachedQuerySelectorItem from '../nodes/node/ICachedQuerySelectorResult.js';
 import type ICachedMatchesItem from '../nodes/node/ICachedMatchesResult.js';
+import type ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
+import type { TGlobalMatchFunction } from './TGlobalMatchFunction.js';
 
 type DocumentPositionAndElement = {
 	documentPosition: string;
@@ -30,6 +32,8 @@ const INVALID_SELECTOR_REGEXP = /^[.#\[]?\d|[.#]$/;
  * @class QuerySelector
  */
 export default class QuerySelector {
+	public static globalMatchFunction: TGlobalMatchFunction = this.matches.bind(this);
+
 	/**
 	 * Finds elements based on a query selector.
 	 *
@@ -122,7 +126,10 @@ export default class QuerySelector {
 			node[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
 				? (<Document>node).documentElement
 				: node;
-		const groups = new SelectorParser({ window, scope }).getSelectorGroups(selector);
+		const globalMatchFunction = this.globalMatchFunction;
+		const groups = new SelectorParser({ window, scope, globalMatchFunction }).getSelectorGroups(
+			selector
+		);
 		const items: Element[] = [];
 		const nodeList = new NodeList<Element>(PropertySymbol.illegalConstructor, items);
 		const matchesMap: Map<string, Element> = new Map();
@@ -135,15 +142,18 @@ export default class QuerySelector {
 		if (node[PropertySymbol.isConnected]) {
 			// Document is affected for the ":target" selector
 			(node[PropertySymbol.ownerDocument] || node)[PropertySymbol.affectsCache].push(cachedItem);
+			if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode && (<any>node).host) {
+				(<any>node).host[PropertySymbol.affectsCache].push(cachedItem);
+			}
 		}
 
 		for (const selectorItems of groups) {
 			const rootElement =
-				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode ? <Element>node : null;
-			const children =
-				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
-					? [<Element>node]
-					: (<Element>node)[PropertySymbol.elementArray];
+				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode ||
+				(node[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode && (<any>node).host)
+					? <Element>node
+					: null;
+			const children = rootElement ? [<Element>node] : (<Element>node)[PropertySymbol.elementArray];
 			const matches = this.findAll({ scope, rootElement, children, selectorItems, cachedItem });
 
 			for (const match of matches) {
@@ -260,7 +270,10 @@ export default class QuerySelector {
 
 		// Parsed before the cache entry is added, so that an invalid selector throws on every call
 		// instead of leaving an entry behind that later calls read as a match of nothing.
-		const groups = new SelectorParser({ window, scope }).getSelectorGroups(selector);
+		const globalMatchFunction = this.globalMatchFunction;
+		const groups = new SelectorParser({ window, scope, globalMatchFunction }).getSelectorGroups(
+			selector
+		);
 
 		const cachedItem: ICachedQuerySelectorItem = {
 			result: { element: null }
@@ -271,6 +284,9 @@ export default class QuerySelector {
 		if (node[PropertySymbol.isConnected]) {
 			// Document is affected for the ":target" selector
 			(node[PropertySymbol.ownerDocument] || node)[PropertySymbol.affectsCache].push(cachedItem);
+			if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode && (<any>node).host) {
+				(<any>node).host[PropertySymbol.affectsCache].push(cachedItem);
+			}
 		}
 
 		let bestMatch: DocumentPositionAndElement | null = null;
@@ -278,11 +294,11 @@ export default class QuerySelector {
 
 		for (const selectorItems of groups) {
 			const rootElement =
-				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode ? <Element>node : null;
-			const children =
-				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
-					? [<Element>node]
-					: (<Element>node)[PropertySymbol.elementArray];
+				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode ||
+				(node[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode && (<any>node).host)
+					? <Element>node
+					: null;
+			const children = rootElement ? [<Element>node] : (<Element>node)[PropertySymbol.elementArray];
 			const match = this.findFirst({ scope, rootElement, children, selectorItems, cachedItem });
 
 			if (match && !matchesMap.has(match.documentPosition)) {
@@ -377,10 +393,12 @@ export default class QuerySelector {
 
 		// Parsed before the cache entry is added, so that an invalid selector throws on every call
 		// instead of leaving an entry behind that later calls read as a result of not matching.
+		const globalMatchFunction = this.globalMatchFunction;
 		const groups = new SelectorParser({
 			ignoreErrors: options?.ignoreErrors,
 			window,
-			scope
+			scope,
+			globalMatchFunction
 		}).getSelectorGroups(selector);
 
 		const cachedItem: ICachedMatchesItem = {
@@ -394,6 +412,12 @@ export default class QuerySelector {
 			(element[PropertySymbol.ownerDocument] || element)[PropertySymbol.affectsCache].push(
 				cachedItem
 			);
+			if (
+				element[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode &&
+				(<any>element).host
+			) {
+				(<any>element).host[PropertySymbol.affectsCache].push(cachedItem);
+			}
 		}
 
 		for (const items of groups) {
@@ -431,7 +455,7 @@ export default class QuerySelector {
 	private static matchSelector(
 		options: {
 			scope: Element | Document | DocumentFragment | null;
-			element: Element;
+			element: Element | ShadowRoot;
 			selectorItems: SelectorItem[];
 			cachedItem: ICachedMatchesItem;
 			ignoreErrors?: boolean;
@@ -457,9 +481,9 @@ export default class QuerySelector {
 
 			switch (selectorItem.combinator) {
 				case SelectorCombinatorEnum.adjacentSibling:
-					const previousElementSibling = element.previousElementSibling;
+					const previousElementSibling = (<Element>element).previousElementSibling;
 					if (previousElementSibling) {
-						previousElementSibling[PropertySymbol.affectsCache].push(cachedItem);
+						this.affectsCache(previousElementSibling, cachedItem);
 
 						const match = this.matchSelector(
 							{
@@ -481,14 +505,14 @@ export default class QuerySelector {
 				case SelectorCombinatorEnum.none:
 				case SelectorCombinatorEnum.child:
 				case SelectorCombinatorEnum.descendant:
-					const parentElement = element.parentElement;
-					if (parentElement) {
-						parentElement[PropertySymbol.affectsCache].push(cachedItem);
+					const parentElement = element.parentNode;
+					if (parentElement && parentElement !== element[PropertySymbol.ownerDocument]) {
+						this.affectsCache(<Element>parentElement, cachedItem);
 
 						const match = this.matchSelector(
 							{
 								scope,
-								element: parentElement,
+								element: <Element>parentElement,
 								selectorItems: selectorItems.slice(1),
 								cachedItem: cachedItem,
 								ignoreErrors
@@ -503,12 +527,15 @@ export default class QuerySelector {
 					}
 					break;
 				case SelectorCombinatorEnum.subsequentSibling:
-					const siblingParentElement = element.parentElement;
-					if (siblingParentElement) {
+					const siblingParentElement = element.parentNode;
+					if (
+						siblingParentElement &&
+						siblingParentElement !== element[PropertySymbol.ownerDocument]
+					) {
 						const siblings = siblingParentElement[PropertySymbol.elementArray];
-						const index = siblings.indexOf(element);
+						const index = siblings.indexOf(<Element>element);
 
-						siblingParentElement[PropertySymbol.affectsCache].push(cachedItem);
+						this.affectsCache(<Element>siblingParentElement, cachedItem);
 
 						for (let i = index - 1; i >= 0; i--) {
 							const sibling = siblings[i];
@@ -540,12 +567,12 @@ export default class QuerySelector {
 			previousSelectorItem?.combinator === SelectorCombinatorEnum.none ||
 			previousSelectorItem?.combinator === SelectorCombinatorEnum.descendant
 		) {
-			const parentElement = element.parentElement;
-			if (parentElement) {
+			const parentElement = element.parentNode;
+			if (parentElement && parentElement !== element[PropertySymbol.ownerDocument]) {
 				return this.matchSelector(
 					{
 						scope,
-						element: parentElement,
+						element: <Element>parentElement,
 						selectorItems: selectorItems,
 						cachedItem: cachedItem,
 						ignoreErrors
@@ -574,7 +601,7 @@ export default class QuerySelector {
 	private static findAll(
 		options: {
 			scope: Element | Document | DocumentFragment | null;
-			rootElement: Element | null;
+			rootElement: Element | ShadowRoot | null;
 			children: Element[];
 			selectorItems: SelectorItem[];
 			cachedItem: ICachedQuerySelectorAllItem;
@@ -595,7 +622,7 @@ export default class QuerySelector {
 			const childrenOfChild = (<Element>child)[PropertySymbol.elementArray];
 			const position = (documentPosition ? documentPosition + '>' : '') + String.fromCharCode(i);
 
-			child[PropertySymbol.affectsCache].push(cachedItem);
+			this.affectsCache(child, cachedItem);
 
 			if (selectorItem.match(scope, child)) {
 				if (!nextSelectorItem) {
@@ -700,7 +727,7 @@ export default class QuerySelector {
 	private static findFirst(
 		options: {
 			scope: Element | Document | DocumentFragment | null;
-			rootElement: Element | null;
+			rootElement: Element | ShadowRoot | null;
 			children: Element[];
 			selectorItems: SelectorItem[];
 			cachedItem: ICachedQuerySelectorItem;
@@ -720,7 +747,7 @@ export default class QuerySelector {
 			const childrenOfChild = (<Element>child)[PropertySymbol.elementArray];
 			const position = (documentPosition ? documentPosition + '>' : '') + String.fromCharCode(i);
 
-			child[PropertySymbol.affectsCache].push(cachedItem);
+			this.affectsCache(child, cachedItem);
 
 			if (selectorItem.match(scope, child)) {
 				if (!nextSelectorItem) {
@@ -810,5 +837,21 @@ export default class QuerySelector {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Adds the cached item to the element's affectsCache and, if the element is a shadow root, also to its host's affectsCache.
+	 *
+	 * @param element Element.
+	 * @param cachedItem Cached item.
+	 */
+	private static affectsCache(element: Element | DocumentFragment, cachedItem: any): void {
+		element[PropertySymbol.affectsCache].push(cachedItem);
+		if (
+			element[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode &&
+			(<any>element).host
+		) {
+			(<any>element).host[PropertySymbol.affectsCache].push(cachedItem);
+		}
 	}
 }
