@@ -765,8 +765,17 @@ export default class Node extends EventTarget {
 	 * @returns Replaced node.
 	 */
 	public [PropertySymbol.replaceChild](newChild: Node, oldChild: Node): Node {
-		this.insertBefore(newChild, oldChild);
+		// The old child is removed before the new one is inserted, as "replace a child with node
+		// within parent" does. Inserting first makes the tree hold both at once, which fails the
+		// checks that only allow a single element on a document.
+		let referenceChild = oldChild.nextSibling;
+
+		if (referenceChild === newChild) {
+			referenceChild = newChild.nextSibling;
+		}
+
 		this.removeChild(oldChild);
+		this.insertBefore(newChild, referenceChild);
 
 		return oldChild;
 	}
