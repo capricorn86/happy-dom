@@ -16,7 +16,7 @@ import type File from '../../../src/file/File.js';
 import type HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import type HTMLIFrameElement from '../../../src/nodes/html-iframe-element/HTMLIFrameElement.js';
 import type BrowserWindow from '../../../src/window/BrowserWindow.js';
-import { beforeEach, describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, test, expect, vi } from 'vitest';
 import type THTMLFormControlElement from '../../../src/nodes/html-form-element/THTMLFormControlElement.js';
 import type HTMLOutputElement from '../../../src/nodes/html-output-element/HTMLOutputElement.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
@@ -1034,6 +1034,27 @@ describe('HTMLFormElement', () => {
 	});
 
 	describe('requestSubmit()', () => {
+		test('Submits a decimal number after its value attribute is synchronized with an edit.', () => {
+			// Arrange
+			const input = document.createElement('input');
+			input.type = 'number';
+			input.defaultValue = '1';
+			input.name = 'quantity';
+			element.appendChild(input);
+			document.body.appendChild(element);
+			const submitListener = vi.fn((event: Event) => event.preventDefault());
+			element.addEventListener('submit', submitListener);
+
+			// Act
+			input.value = '1.01';
+			input.defaultValue = input.value;
+			element.requestSubmit();
+
+			// Assert
+			expect(submitListener).toHaveBeenCalledTimes(1);
+			expect(new window.FormData(element).get('quantity')).toBe('1.01');
+		});
+
 		it('Validates form and triggers a "submit" event when valid.', () => {
 			element.innerHTML = `
                 <div>
