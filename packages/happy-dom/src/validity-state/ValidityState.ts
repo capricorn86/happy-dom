@@ -8,6 +8,8 @@ import type ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
 import type HTMLObjectElement from '../nodes/html-object-element/HTMLObjectElement.js';
 import type HTMLOutputElement from '../nodes/html-output-element/HTMLOutputElement.js';
 
+// Match the entire attribute, including rejecting trailing line breaks.
+const FLOATING_POINT_NUMBER_REGEXP = /^-?(?:\d+|\d*\.\d+)(?:[eE][+-]?\d+)?(?![\s\S])/;
 const EMAIL_REGEXP =
 	/^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/;
 const URL_REGEXP =
@@ -118,22 +120,49 @@ export default class ValidityState {
 	}
 
 	/**
-	 * Returns validity.
+	 * Checks number and range increments when {@link HTMLInputElement} validates a field.
 	 *
-	 * @returns "true" if valid.
+	 * @see https://html.spec.whatwg.org/multipage/input.html#concept-input-step-base
+	 * @returns Whether the value is outside the permitted step increments.
+	 * @example input.min = '0.2'; input.value = '1.2'; input.validity.stepMismatch; // false
 	 */
 	public get stepMismatch(): boolean {
-		return (
-			this.element[PropertySymbol.localName] === 'input' &&
-			(this.element.type === 'number' || this.element.type === 'range') &&
-			((this.element.hasAttribute('step') &&
-				this.element.getAttribute('step') !== 'any' &&
-				Number((<HTMLInputElement>this.element).value) %
-					Number(this.element.getAttribute('step')) !==
-					0) ||
-				(!this.element.hasAttribute('step') &&
-					Number((<HTMLInputElement>this.element).value) % 1 !== 0))
-		);
+		if (
+			this.element[PropertySymbol.localName] !== 'input' ||
+			(this.element.type !== 'number' && this.element.type !== 'range')
+		) {
+			return false;
+		}
+
+		const input = <HTMLInputElement>this.element;
+		const stepAttribute = input.step;
+		const value = Number(input.value);
+
+		if (input.value === '' || !Number.isFinite(value) || stepAttribute.toLowerCase() === 'any') {
+			return false;
+		}
+
+		const minimum = FLOATING_POINT_NUMBER_REGEXP.test(input.min) ? Number(input.min) : NaN;
+		const valueAttribute = input.getAttribute('value') || '';
+		const defaultValue = FLOATING_POINT_NUMBER_REGEXP.test(valueAttribute)
+			? Number(valueAttribute)
+			: NaN;
+		const parsedStep = FLOATING_POINT_NUMBER_REGEXP.test(stepAttribute)
+			? Number(stepAttribute)
+			: NaN;
+		const step = Number.isFinite(parsedStep) && parsedStep > 0 ? parsedStep : 1;
+
+		// A valid min takes precedence over the initial value, including when min is zero.
+		const stepBase = Number.isFinite(minimum)
+			? minimum
+			: Number.isFinite(defaultValue)
+				? defaultValue
+				: 0;
+		const nearestValue = stepBase + Math.round((value - stepBase) / step) * step;
+
+		// Allow floating-point rounding when comparing with the nearest permitted value.
+		const tolerance = Number.EPSILON * Math.max(Math.abs(value), Math.abs(stepBase), step);
+		return Math.abs(value - nearestValue) > tolerance;
 	}
 
 	/**
