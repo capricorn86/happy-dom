@@ -1,5 +1,6 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import HTMLElementUtility from '../html-element/HTMLElementUtility.js';
+import HTMLFormControlElementUtility from '../html-element/HTMLFormControlElementUtility.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Event from '../../event/Event.js';
 import SubmitEvent from '../../event/events/SubmitEvent.js';
@@ -517,25 +518,29 @@ export default class HTMLFormElement extends HTMLElement {
 	 * @returns Form control items.
 	 */
 	public [PropertySymbol.getFormControlItems](): THTMLFormControlElement[] {
+		// A descendant carrying `form="other"` is owned by that other form, not this one; a
+		// `form="thisId"` control elsewhere in the same tree is owned by this one. getFormOwner()
+		// is the single source of truth for both, so `.elements` matches every control's `.form`.
+		const owner = this[PropertySymbol.proxy] || this;
 		const elements = <THTMLFormControlElement[]>(
 			QuerySelector.querySelectorAll(this, 'input,select,textarea,button,fieldset,object,output')[
 				PropertySymbol.items
-			].slice()
+			].filter(
+				(element) => HTMLFormControlElementUtility.getFormOwner(<HTMLElement>element) === owner
+			)
 		);
 
 		// Form-associated custom elements are "listed" per spec, but aren't matched by the fixed
 		// tag-name selector above (their tag name isn't known ahead of time) - find them by the
 		// [formAssociated] flag CustomElementRegistry.define() sets instead.
-		const addFormAssociatedCustomElements = (
-			root: HTMLFormElement | Document,
-			selector: string
-		): void => {
+		const addFormAssociatedCustomElements = (root: Element | Document, selector: string): void => {
 			for (const element of <THTMLFormControlElement[]>(
 				QuerySelector.querySelectorAll(root, selector)[PropertySymbol.items]
 			)) {
 				if (
 					HTMLElementUtility.isFormAssociatedCustomElement(<HTMLElement>element) &&
-					!elements.includes(element)
+					!elements.includes(element) &&
+					HTMLFormControlElementUtility.getFormOwner(<HTMLElement>element) === owner
 				) {
 					elements.push(element);
 				}
@@ -544,22 +549,24 @@ export default class HTMLFormElement extends HTMLElement {
 
 		addFormAssociatedCustomElements(this, '*');
 
-		if (this[PropertySymbol.isConnected]) {
-			const id = this.getAttribute('id');
-			if (id) {
-				for (const element of <THTMLFormControlElement[]>(
-					QuerySelector.querySelectorAll(
-						this[PropertySymbol.ownerDocument],
-						`input[form="${id}"],select[form="${id}"],textarea[form="${id}"],button[form="${id}"],fieldset[form="${id}"],object[form="${id}"],output[form="${id}"]`
-					)[PropertySymbol.items]
-				)) {
-					if (!elements.includes(element)) {
-						elements.push(element);
-					}
+		const id = this.getAttribute('id');
+		if (id) {
+			const root = <Element>(<unknown>this.getRootNode());
+			for (const element of <THTMLFormControlElement[]>(
+				QuerySelector.querySelectorAll(
+					root,
+					`input[form="${id}"],select[form="${id}"],textarea[form="${id}"],button[form="${id}"],fieldset[form="${id}"],object[form="${id}"],output[form="${id}"]`
+				)[PropertySymbol.items]
+			)) {
+				if (
+					!elements.includes(element) &&
+					HTMLFormControlElementUtility.getFormOwner(<HTMLElement>element) === owner
+				) {
+					elements.push(element);
 				}
-
-				addFormAssociatedCustomElements(this[PropertySymbol.ownerDocument], `*[form="${id}"]`);
 			}
+
+			addFormAssociatedCustomElements(root, `*[form="${id}"]`);
 		}
 
 		return elements;

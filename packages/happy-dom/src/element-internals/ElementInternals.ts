@@ -1,6 +1,7 @@
 import * as PropertySymbol from '../PropertySymbol.js';
 import type HTMLElement from '../nodes/html-element/HTMLElement.js';
 import type HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
+import HTMLFormControlElementUtility from '../nodes/html-element/HTMLFormControlElementUtility.js';
 import type NodeList from '../nodes/node/NodeList.js';
 import type HTMLLabelElement from '../nodes/html-label-element/HTMLLabelElement.js';
 import HTMLLabelElementUtility from '../nodes/html-label-element/HTMLLabelElementUtility.js';
@@ -38,15 +39,7 @@ export default class ElementInternals {
 	 * @returns Form.
 	 */
 	public get form(): HTMLFormElement | null {
-		const id = this.#element.getAttribute('form');
-		if (id) {
-			if (!this.#element[PropertySymbol.isConnected]) {
-				return null;
-			}
-			const form = this.#element[PropertySymbol.ownerDocument].getElementById(id);
-			return form?.[PropertySymbol.tagName] === 'FORM' ? <HTMLFormElement>form : null;
-		}
-		return this.#element[PropertySymbol.formNode] ?? null;
+		return HTMLFormControlElementUtility.getFormOwner(this.#element);
 	}
 
 	/**
