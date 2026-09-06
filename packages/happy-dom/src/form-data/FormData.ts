@@ -6,6 +6,7 @@ import type HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js'
 import type BrowserWindow from '../window/BrowserWindow.js';
 import type HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js';
 import type HTMLElement from '../nodes/html-element/HTMLElement.js';
+import HTMLElementUtility from '../nodes/html-element/HTMLElementUtility.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 
 type FormDataEntry = {
@@ -57,10 +58,10 @@ export default class FormData implements Iterable<[string, string | File]> {
 		const items = form[PropertySymbol.getFormControlItems]();
 
 		for (const item of items) {
-			const htmlElement = <HTMLElement>(<unknown>item);
+			const htmlElement = <HTMLElement>item;
 
 			// Form-associated custom elements have no `name` IDL property - read the attribute.
-			if (htmlElement[PropertySymbol.formAssociated]) {
+			if (HTMLElementUtility.isFormAssociatedCustomElement(htmlElement)) {
 				const elementName = item.name || item.getAttribute('name');
 				const value = htmlElement[PropertySymbol.internalsFormValue];
 

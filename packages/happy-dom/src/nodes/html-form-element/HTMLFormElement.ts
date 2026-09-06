@@ -1,4 +1,5 @@
 import HTMLElement from '../html-element/HTMLElement.js';
+import HTMLElementUtility from '../html-element/HTMLElementUtility.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import Event from '../../event/Event.js';
 import SubmitEvent from '../../event/events/SubmitEvent.js';
@@ -533,7 +534,7 @@ export default class HTMLFormElement extends HTMLElement {
 				QuerySelector.querySelectorAll(root, selector)[PropertySymbol.items]
 			)) {
 				if (
-					(<HTMLElement>(<unknown>element))[PropertySymbol.formAssociated] &&
+					HTMLElementUtility.isFormAssociatedCustomElement(<HTMLElement>element) &&
 					!elements.includes(element)
 				) {
 					elements.push(element);
