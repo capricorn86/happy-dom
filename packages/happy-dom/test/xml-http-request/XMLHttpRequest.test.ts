@@ -495,6 +495,26 @@ describe('XMLHttpRequest', () => {
 		});
 	});
 
+	describe('get timeout()', () => {
+		it('Returns "0" by default.', () => {
+			expect(request.timeout).toBe(0);
+		});
+	});
+
+	describe('set timeout()', () => {
+		it('Sets the timeout.', () => {
+			request.timeout = 100;
+			expect(request.timeout).toBe(100);
+		});
+
+		it(`Throws an exception if the request is synchronous.`, () => {
+			request.open('GET', REQUEST_URL, false);
+			expect(() => (request.timeout = 100)).toThrow(
+				`Failed to set the 'timeout' property on 'XMLHttpRequest': Timeouts cannot be set for synchronous requests made from a document.`
+			);
+		});
+	});
+
 	describe('open()', () => {
 		it('Opens a request.', () => {
 			request.open('GET', REQUEST_URL, true);
@@ -513,6 +533,13 @@ describe('XMLHttpRequest', () => {
 			request.responseType = XMLHttpResponseTypeEnum.json;
 			expect(() => request.open('GET', REQUEST_URL, false)).toThrow(
 				`Failed to execute 'open' on 'XMLHttpRequest': Synchronous requests from a document must not set a response type.`
+			);
+		});
+
+		it(`Throws an exception if the request is set to be synchronous and timeout is set.`, () => {
+			request.timeout = 100;
+			expect(() => request.open('GET', REQUEST_URL, false)).toThrow(
+				`Failed to execute 'open' on 'XMLHttpRequest': Synchronous requests from a document must not set a timeout.`
 			);
 		});
 	});
@@ -1314,6 +1341,92 @@ describe('XMLHttpRequest', () => {
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
 			expect(triggeredEvents).toBe(8);
+		});
+
+		it('Terminates the request and dispatches a "timeout" event when the request takes longer than the "timeout" property.', async () => {
+			await new Promise((resolve) => {
+				let isAborted = false;
+
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+					return new Promise((resolveResponse, reject) => {
+						const timer = setTimeout(() => {
+							resolveResponse(<Response>{ headers: <Headers>new Headers() });
+						}, 1000);
+						this.request.signal.addEventListener('abort', () => {
+							isAborted = true;
+							clearTimeout(timer);
+							reject(
+								new DOMException('The operation was aborted.', DOMExceptionNameEnum.abortError)
+							);
+						});
+					});
+				});
+
+				let timeoutEvent: ProgressEvent | null = null;
+				let isAbortTriggered = false;
+				let isErrorTriggered = false;
+				let isLoadEndTriggered = false;
+
+				request.open('GET', REQUEST_URL, true);
+				request.timeout = 10;
+				request.ontimeout = (event) => {
+					timeoutEvent = <ProgressEvent>event;
+				};
+				request.addEventListener('abort', () => {
+					isAbortTriggered = true;
+				});
+				request.addEventListener('error', () => {
+					isErrorTriggered = true;
+				});
+				request.addEventListener('loadend', () => {
+					isLoadEndTriggered = true;
+				});
+				request.send();
+
+				setTimeout(() => {
+					expect(isAborted).toBe(true);
+					expect(timeoutEvent!.type).toBe('timeout');
+					expect(isAbortTriggered).toBe(false);
+					expect(isErrorTriggered).toBe(false);
+					expect(isLoadEndTriggered).toBe(true);
+					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
+					expect(request.status).toBe(0);
+					expect(request.responseText).toBe('');
+
+					resolve(null);
+				}, 100);
+			});
+		});
+
+		it('Does not dispatch a "timeout" event when the request completes within the "timeout" property.', async () => {
+			const responseText = 'responseText';
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+				return <Response>{
+					headers: <Headers>new Headers(),
+					body: new ReadableStream({
+						start(controller) {
+							controller.enqueue(responseText);
+							controller.close();
+						}
+					})
+				};
+			});
+
+			let isTimeoutTriggered = false;
+
+			request.open('GET', REQUEST_URL, true);
+			request.timeout = 500;
+			request.addEventListener('timeout', () => {
+				isTimeoutTriggered = true;
+			});
+			request.send();
+
+			await window.happyDOM?.waitUntilComplete();
+
+			expect(isTimeoutTriggered).toBe(false);
+			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
+			expect(request.responseText).toBe(responseText);
 		});
 	});
 
