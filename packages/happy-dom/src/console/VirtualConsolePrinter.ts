@@ -14,6 +14,9 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 		clear: Array<(event: Event) => void>;
 	} = { print: [], clear: [] };
 	#closed = false;
+	// Maximum number of buffered log entries kept when nothing reads the buffer. Prevents an
+	// unbounded buffer (and the objects its entries retain) from leaking on a long-lived Window.
+	#maxLogEntries = 1000;
 
 	/**
 	 * Returns closed state.
@@ -33,6 +36,26 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 		if (this.#closed) {
 			return;
 		}
+
+		// On V8, an Error keeps its structured stack trace (an array of call sites) alive until
+		// ".stack" is first read, and each call site retains its frame's receiver. When an exception
+		// thrown from an event listener is caught and logged here, that receiver is the listening
+		// element, so the buffered Error pins the element - and through it the document. The buffer
+		// is rarely read, so the trace would otherwise never be released. Materialize ".stack" now to
+		// drop the structured trace (and the receivers it holds) while keeping the formatted string.
+		for (const message of logEntry.message) {
+			if (message instanceof Error) {
+				void message.stack;
+			}
+		}
+
+		// Log entries are buffered until read(). When nothing reads them (the default when a Window
+		// is used without inspecting its console) the buffer grows without bound, so cap it and drop
+		// the oldest entries, matching how a real console keeps only a limited scrollback.
+		if (this.#logEntries.length >= this.#maxLogEntries) {
+			this.#logEntries.splice(0, this.#logEntries.length - this.#maxLogEntries + 1);
+		}
+
 		this.#logEntries.push(logEntry);
 		this.dispatchEvent(new Event('print'));
 	}
