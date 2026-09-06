@@ -22,6 +22,7 @@ export default class Selection {
 	readonly #ownerDocument: Document;
 	#range: Range | null = null;
 	#direction: SelectionDirectionEnum = SelectionDirectionEnum.directionless;
+	#hasScheduledSelectionChangeEvent = false;
 
 	/**
 	 * Constructor.
@@ -549,8 +550,28 @@ export default class Selection {
 			range === null ? SelectionDirectionEnum.directionless : SelectionDirectionEnum.forwards;
 
 		if (oldRange !== this.#range) {
-			// https://w3c.github.io/selection-api/#selectionchange-event
-			this.#ownerDocument.dispatchEvent(new Event('selectionchange'));
+			this.#scheduleSelectionChangeEvent();
 		}
+	}
+
+	/**
+	 * Queues a task that dispatches a "selectionchange" event on the owner document.
+	 *
+	 * The task is only queued when there is no task queued already, so that multiple selection changes made within the same task are coalesced into a single event.
+	 *
+	 * @see https://w3c.github.io/selection-api/#scheduling-selectionchange-event
+	 */
+	#scheduleSelectionChangeEvent(): void {
+		if (this.#hasScheduledSelectionChangeEvent) {
+			return;
+		}
+
+		this.#hasScheduledSelectionChangeEvent = true;
+
+		this.#ownerDocument[PropertySymbol.window].setTimeout(() => {
+			// https://w3c.github.io/selection-api/#firing-selectionchange-event
+			this.#hasScheduledSelectionChangeEvent = false;
+			this.#ownerDocument.dispatchEvent(new Event('selectionchange'));
+		});
 	}
 }
