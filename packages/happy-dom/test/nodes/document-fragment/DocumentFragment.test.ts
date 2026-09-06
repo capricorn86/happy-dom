@@ -122,6 +122,34 @@ describe('DocumentFragment', () => {
 
 			expect(documentFragment.childNodes.length).toBe(0);
 		});
+
+		it('Removes all child nodes if textContent is set to null or undefined.', () => {
+			const textNode = document.createTextNode('text1');
+
+			documentFragment.appendChild(textNode);
+
+			documentFragment.textContent = <string>(<unknown>null);
+
+			expect(documentFragment.childNodes.length).toBe(0);
+
+			documentFragment.appendChild(textNode);
+
+			documentFragment.textContent = <string>(<unknown>undefined);
+
+			expect(documentFragment.childNodes.length).toBe(0);
+		});
+
+		it('Stringifies the value instead of treating falsy non-string values as empty.', () => {
+			documentFragment.textContent = <string>(<unknown>0);
+			expect(documentFragment.textContent).toBe('0');
+			expect(documentFragment.childNodes.length).toBe(1);
+
+			documentFragment.textContent = <string>(<unknown>false);
+			expect(documentFragment.textContent).toBe('false');
+
+			documentFragment.textContent = <string>(<unknown>NaN);
+			expect(documentFragment.textContent).toBe('NaN');
+		});
 	});
 
 	describe('append()', () => {
