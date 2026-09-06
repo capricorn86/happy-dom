@@ -63,6 +63,18 @@ describe('ElementInternals', () => {
 		});
 	});
 
+	describe('setFormValue()', () => {
+		it('Accepts an optional "state" argument (ignored) without affecting the submission value.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			element.setAttribute('name', 'field');
+			form.appendChild(element);
+
+			internals.setFormValue('submitted', 'restore-state');
+
+			expect(new window.FormData(form).get('field')).toBe('submitted');
+		});
+	});
+
 	describe('get willValidate()', () => {
 		it('Returns "true" when the element is not disabled.', () => {
 			expect(internals.willValidate).toBe(true);

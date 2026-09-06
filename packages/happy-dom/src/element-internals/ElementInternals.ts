@@ -106,8 +106,12 @@ export default class ElementInternals {
 	 * `state` is accepted for API compatibility but not yet persisted/restored.
 	 *
 	 * @param value Submission value. `null` means "not submitted".
+	 * @param [_state] Restoration state for form-history navigation. Accepted but ignored.
 	 */
-	public setFormValue(value: File | string | FormData | null): void {
+	public setFormValue(
+		value: File | string | FormData | null,
+		_state?: File | string | FormData | null
+	): void {
 		this.#element[PropertySymbol.internalsFormValue] = value;
 	}
 
