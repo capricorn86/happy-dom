@@ -700,6 +700,13 @@ export default class HTMLSelectElement extends HTMLElement {
 	 */
 	public [PropertySymbol.updateSelectedness](selectedOption?: HTMLOptionElement | null): void {
 		const isMultiple = this.hasAttribute('multiple');
+
+		// Callers on the connect/disconnect path (HTMLOptionElement) run before Node.appendChild()
+		// / removeChild() report the mutation that invalidates this cache, so the option list read
+		// below can still be missing (or still contain) the option whose connection triggered the
+		// call. Refresh it here, where the "must see a current option list" invariant lives.
+		this[PropertySymbol.clearCache]();
+
 		const options = QuerySelector.querySelectorAll(this, 'option')[PropertySymbol.items];
 		const selected: HTMLOptionElement[] = [];
 
