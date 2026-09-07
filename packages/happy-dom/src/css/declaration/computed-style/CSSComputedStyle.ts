@@ -24,6 +24,7 @@ import type CSSStyleSheet from '../../CSSStyleSheet.js';
 import CSSVariableFormatter from '../property-manager/utilities/CSSVariableFormatter.js';
 import type HTMLElement from '../../../nodes/html-element/HTMLElement.js';
 import type Node from '../../../nodes/node/Node.js';
+import type ICachedComputedStyleResult from '../../../nodes/node/ICachedComputedStyleResult.js';
 
 const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
 
@@ -275,8 +276,11 @@ export default class CSSComputedStyle {
 					}
 				}
 
-				const cachedResult = {
-					result: new WeakRef(propertyManager)
+				const cachedResult: ICachedComputedStyleResult = {
+					result: new WeakRef(propertyManager),
+					parent: previousParent
+						? previousParent.element![PropertySymbol.cache].computedStyle
+						: null
 				};
 				parentElement.element![PropertySymbol.cache].computedStyle = cachedResult;
 				parentElement.element![PropertySymbol.ownerDocument][
@@ -492,6 +496,24 @@ export default class CSSComputedStyle {
 		if (!node) {
 			return null;
 		}
-		return node[PropertySymbol.cache].computedStyle?.result?.deref() || null;
+
+		const cachedResult = node[PropertySymbol.cache].computedStyle;
+
+		if (!cachedResult?.result) {
+			return null;
+		}
+
+		// A computed style contains the inherited properties of every ancestor it was computed from,
+		// so it goes stale as soon as any of those ancestors is invalidated.
+		let ancestor = cachedResult.parent;
+
+		while (ancestor) {
+			if (!ancestor.result) {
+				return null;
+			}
+			ancestor = ancestor.parent;
+		}
+
+		return cachedResult.result.deref() || null;
 	}
 }
