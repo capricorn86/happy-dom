@@ -48,19 +48,21 @@ export default class HTMLInputElementValueStepping {
 		direction: -1 | 1,
 		increment?: number
 	): string {
-		const stepValue = input.step;
 		const minValue = input.min;
 		const maxValue = input.max;
+		const stepValue = input.step;
 
-		const min = minValue !== '' ? Number(minValue) : null;
-		const max = maxValue !== '' ? Number(maxValue) : null;
-		let value = Number(input.value);
+		let min = minValue !== '' ? Number(minValue) : null;
+		let max = maxValue !== '' ? Number(maxValue) : null;
 		let step = stepValue !== '' ? Number(stepValue) : 1;
+		let value = Number(input.value);
 
-		value = isNaN(value) ? 0 : value;
-		step = isNaN(step) || step === 0 ? 1 : step;
+		min = min === null || Number.isNaN(min) ? null : min;
+		max = max === null || Number.isNaN(max) ? null : max;
+		step = Number.isNaN(step) || step === 0 ? 1 : step;
+		value = Number.isNaN(value) ? 0 : value;
 
-		if (min !== null && !isNaN(min) && max !== null && !isNaN(max) && (min > max || max < min)) {
+		if (min !== null && max !== null && (min > max || max < min)) {
 			return input.value;
 		}
 
@@ -70,19 +72,19 @@ export default class HTMLInputElementValueStepping {
 
 		const validIncrementValue = increment !== undefined ? Math.ceil(increment / step) * step : step;
 		const candidate = value + validIncrementValue * direction;
-		const minOrZero = min !== null && !isNaN(min) ? min : 0;
+		const minOrZero = min !== null ? min : 0;
 
 		switch (direction) {
 			// Step down
 			case -1:
-				if (min !== null && !isNaN(min) && candidate < min) {
+				if (min !== null && candidate < min) {
 					return String(min);
 				}
 				// Previous valid step from value
 				return String(candidate + ((value - minOrZero) % step));
 			// Step up
 			case 1:
-				if (max !== null && !isNaN(max) && candidate > max) {
+				if (max !== null && candidate > max) {
 					return String(minOrZero + Math.floor((max - minOrZero) / step) * step);
 				}
 				// Next valid step from value
