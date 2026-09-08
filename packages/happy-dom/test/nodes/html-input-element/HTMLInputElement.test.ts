@@ -917,6 +917,81 @@ describe('HTMLInputElement', () => {
 			expect(radio2.checked).toBe(true);
 			expect(radio3.checked).toBe(false);
 		});
+
+		it('Unchecks other radio buttons with the same name when the "checked" content attribute is set directly.', () => {
+			const form = document.createElement('form');
+			const radio1 = <HTMLInputElement>document.createElement('input');
+			const radio2 = <HTMLInputElement>document.createElement('input');
+
+			radio1.type = 'radio';
+			radio2.type = 'radio';
+			radio1.name = 'radio';
+			radio2.name = 'radio';
+
+			form.appendChild(radio1);
+			form.appendChild(radio2);
+
+			radio1.checked = true;
+
+			expect(radio1.checked).toBe(true);
+			expect(radio2.checked).toBe(false);
+
+			radio2.setAttribute('checked', '');
+
+			expect(radio1.checked).toBe(false);
+			expect(radio2.checked).toBe(true);
+		});
+
+		it('Keeps a cached ":checked" query fresh when a radio button unchecks its siblings.', () => {
+			const form = document.createElement('form');
+			const radio1 = <HTMLInputElement>document.createElement('input');
+			const radio2 = <HTMLInputElement>document.createElement('input');
+
+			radio1.type = 'radio';
+			radio2.type = 'radio';
+			radio1.name = 'radio';
+			radio2.name = 'radio';
+
+			form.appendChild(radio1);
+			form.appendChild(radio2);
+			document.body.appendChild(form);
+
+			radio1.checked = true;
+
+			expect(document.querySelectorAll('input[name="radio"]:checked').length).toBe(1);
+
+			radio2.checked = true;
+
+			expect(document.querySelectorAll('input[name="radio"]:checked').length).toBe(1);
+			expect(document.querySelectorAll('input[name="radio"]:checked')[0]).toBe(radio2);
+		});
+
+		it('Does not re-check a radio unchecked by mutual exclusion when its "checked" attribute is re-set.', () => {
+			document.body.innerHTML =
+				'<input type="radio" name="x" checked id="a"><input type="radio" name="x" id="b">';
+			const a = <HTMLInputElement>document.getElementById('a');
+			const b = <HTMLInputElement>document.getElementById('b');
+
+			expect(a.checked).toBe(true);
+
+			b.checked = true;
+
+			expect(a.checked).toBe(false);
+			expect(b.checked).toBe(true);
+
+			// Attribute already present → no-op.
+			a.setAttribute('checked', '');
+
+			expect(a.checked).toBe(false);
+			expect(b.checked).toBe(true);
+
+			// Even re-adding it: "a" is now overridden, so the attribute no longer drives it.
+			a.removeAttribute('checked');
+			a.setAttribute('checked', '');
+
+			expect(a.checked).toBe(false);
+			expect(b.checked).toBe(true);
+		});
 	});
 
 	describe('get type()', () => {

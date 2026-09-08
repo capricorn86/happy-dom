@@ -13,6 +13,7 @@ import QuerySelector from '../../../src/query-selector/QuerySelector.js';
 import ChildNodeUtility from '../../../src/nodes/child-node/ChildNodeUtility.js';
 import NonDocumentChildNodeUtility from '../../../src/nodes/child-node/NonDocumentChildNodeUtility.js';
 import type HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
+import type HTMLInputElement from '../../../src/nodes/html-input-element/HTMLInputElement.js';
 import Node from '../../../src/nodes/node/Node.js';
 import HTMLCollection from '../../../src/nodes/element/HTMLCollection.js';
 import Element from '../../../src/nodes/element/Element.js';
@@ -950,6 +951,25 @@ describe('Element', () => {
 			expect(document.body.childNodes[0] === parent).toBe(true);
 			expect((<Element>document.body.childNodes[1]).outerHTML).toEqual(markup);
 			expect(document.body.childNodes[2] === sibling).toBe(true);
+		});
+
+		it('Unchecks an already checked radio button elsewhere in the form when the inserted markup has a radio button checked in the same group.', () => {
+			const form = document.createElement('form');
+			const existingRadio = document.createElement('input');
+
+			existingRadio.type = 'radio';
+			existingRadio.name = 'g';
+			existingRadio.checked = true;
+
+			form.appendChild(existingRadio);
+			document.body.appendChild(form);
+
+			form.insertAdjacentHTML('beforeend', '<input type="radio" name="g" checked>');
+
+			const newRadio = <HTMLInputElement>form.lastChild;
+
+			expect(existingRadio.checked).toBe(false);
+			expect(newRadio.checked).toBe(true);
 		});
 	});
 
