@@ -1449,14 +1449,14 @@ export default class HTMLInputElement extends HTMLElement {
 		// IDL property overrides it; re-setting an already-present attribute is a no-op, like browsers.
 		if (name === 'checked' && replacedAttribute === null && this[PropertySymbol.checked] === null) {
 			this[PropertySymbol.clearCache]();
-			this.#uncheckOtherRadioButtonsInGroup();
+			this.#reconcileRadioButtonGroup();
 			return;
 		}
 
 		// "type" and "name" can be parsed in any order relative to "checked" within a start tag,
 		// so re-run mutual exclusion once this element reads as a checked radio button.
 		if (name === 'type' || name === 'name') {
-			this.#uncheckOtherRadioButtonsInGroup();
+			this.#reconcileRadioButtonGroup();
 		}
 	}
 
@@ -1469,7 +1469,7 @@ export default class HTMLInputElement extends HTMLElement {
 		// A checked radio button parsed into a detached fragment (insertAdjacentHTML(),
 		// DocumentFragment, shadow root) only reconciles against the rest of its group once it
 		// joins the tree.
-		this.#uncheckOtherRadioButtonsInGroup();
+		this.#reconcileRadioButtonGroup();
 	}
 
 	/**
@@ -1571,19 +1571,25 @@ export default class HTMLInputElement extends HTMLElement {
 		this[PropertySymbol.checked] = checked;
 		this[PropertySymbol.clearCache]();
 
-		this.#uncheckOtherRadioButtonsInGroup();
+		this.#reconcileRadioButtonGroup();
 	}
 
 	/**
+	 * Enforces radio button group mutual exclusion for this checked radio button: unchecks the
+	 * other checked members of its group (same "name", same form owner, or same root otherwise).
+	 *
 	 * A radio button unchecked here has its checkedness overridden, so its "checked" content
 	 * attribute stops driving it until a form reset — matching browsers.
 	 *
 	 * @see https://html.spec.whatwg.org/multipage/input.html#radio-button-state-(type=radio)
 	 */
-	#uncheckOtherRadioButtonsInGroup(): void {
+	#reconcileRadioButtonGroup(): void {
 		if (this.type !== 'radio' || !this.name || !this.checked) {
 			return;
 		}
+
+		// This radio just became checked — its own ":checked" match changed.
+		this[PropertySymbol.clearCache]();
 
 		const root = <HTMLElement>(
 			(<HTMLFormElement>this[PropertySymbol.formNode] || this.getRootNode())
