@@ -1466,10 +1466,29 @@ export default class HTMLInputElement extends HTMLElement {
 	public override [PropertySymbol.connectedToNode](): void {
 		super[PropertySymbol.connectedToNode]();
 
-		// A radio button can enter a group already checked — its subtree attached via
-		// insertAdjacentHTML()/appendChild(), or moved between containers — with no attribute or
-		// IDL setter firing. This is the hook that reconciles it against the group in that case.
-		this.#reconcileRadioButtonGroup();
+		if (this.type !== 'radio' || !this.name || !this.checked) {
+			return;
+		}
+
+		// A radio can join a group already checked with no attribute or IDL setter firing. When
+		// several arrive checked at once the last in tree order wins, so this one yields to a
+		// checked sibling below it that is still mid-insertion (isConnected === false).
+		this[PropertySymbol.clearCache]();
+
+		let passedSelf = false;
+		for (const radioButton of this.#getRadioButtonGroup()) {
+			if (radioButton === this) {
+				passedSelf = true;
+			} else if (radioButton.checked) {
+				if (passedSelf && !radioButton[PropertySymbol.isConnected]) {
+					this[PropertySymbol.checked] = false;
+					this[PropertySymbol.clearCache]();
+					return;
+				}
+				radioButton[PropertySymbol.checked] = false;
+				radioButton[PropertySymbol.clearCache]();
+			}
+		}
 	}
 
 	/**
@@ -1591,18 +1610,26 @@ export default class HTMLInputElement extends HTMLElement {
 		// This radio just became checked — its own ":checked" match changed.
 		this[PropertySymbol.clearCache]();
 
-		const root = <HTMLElement>(
-			(<HTMLFormElement>this[PropertySymbol.formNode] || this.getRootNode())
-		);
-		const radioButtons = <NodeList<HTMLInputElement>>(
-			root.querySelectorAll(`input[type="radio"][name="${this.name}"]`)
-		);
-
-		for (const radioButton of radioButtons) {
+		for (const radioButton of this.#getRadioButtonGroup()) {
 			if (radioButton !== this && radioButton.checked) {
 				radioButton[PropertySymbol.checked] = false;
 				radioButton[PropertySymbol.clearCache]();
 			}
 		}
+	}
+
+	/**
+	 * Returns this radio button's group: the radio buttons with the same "name" under its form
+	 * owner, or under its root when it has no form owner.
+	 *
+	 * @returns Radio buttons in tree order.
+	 */
+	#getRadioButtonGroup(): NodeList<HTMLInputElement> {
+		const root = <HTMLElement>(
+			(<HTMLFormElement>this[PropertySymbol.formNode] || this.getRootNode())
+		);
+		return <NodeList<HTMLInputElement>>(
+			root.querySelectorAll(`input[type="radio"][name="${this.name}"]`)
+		);
 	}
 }

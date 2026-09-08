@@ -14,6 +14,7 @@ import { beforeEach, describe, it, expect } from 'vitest';
 import PointerEvent from '../../../src/event/events/PointerEvent.js';
 import MouseEvent from '../../../src/event/events/MouseEvent.js';
 import type HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import type HTMLTemplateElement from '../../../src/nodes/html-template-element/HTMLTemplateElement.js';
 
 describe('HTMLInputElement', () => {
 	let window: Window;
@@ -991,6 +992,42 @@ describe('HTMLInputElement', () => {
 
 			expect(a.checked).toBe(false);
 			expect(b.checked).toBe(true);
+		});
+
+		it('Keeps the last checked radio button when a subtree with several checked members of a group is connected.', () => {
+			const template = <HTMLTemplateElement>document.createElement('template');
+
+			template.innerHTML =
+				'<div><input type="radio" name="g" checked><input type="radio" name="g" checked><input type="radio" name="g" checked></div>';
+
+			const fragment = document.importNode(template.content, true);
+
+			document.body.appendChild(fragment);
+
+			const radios = <HTMLInputElement[]>Array.from(document.body.querySelectorAll('input'));
+
+			expect(radios.map((radio) => radio.checked)).toEqual([false, false, true]);
+		});
+
+		it('Lets a checked radio button inserted before an already checked one in a connected group win.', () => {
+			const form = document.createElement('form');
+			const existing = <HTMLInputElement>document.createElement('input');
+
+			existing.type = 'radio';
+			existing.name = 'g';
+			existing.checked = true;
+			form.appendChild(existing);
+			document.body.appendChild(form);
+
+			const template = <HTMLTemplateElement>document.createElement('template');
+
+			template.innerHTML = '<input type="radio" name="g" checked>';
+			const inserted = <HTMLInputElement>template.content.firstElementChild;
+
+			form.insertBefore(inserted, existing);
+
+			expect(inserted.checked).toBe(true);
+			expect(existing.checked).toBe(false);
 		});
 	});
 
