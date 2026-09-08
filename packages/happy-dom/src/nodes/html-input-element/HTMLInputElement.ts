@@ -1466,9 +1466,9 @@ export default class HTMLInputElement extends HTMLElement {
 	public override [PropertySymbol.connectedToNode](): void {
 		super[PropertySymbol.connectedToNode]();
 
-		// A checked radio button parsed into a detached fragment (insertAdjacentHTML(),
-		// DocumentFragment, shadow root) only reconciles against the rest of its group once it
-		// joins the tree.
+		// A radio button can enter a group already checked — its subtree attached via
+		// insertAdjacentHTML()/appendChild(), or moved between containers — with no attribute or
+		// IDL setter firing. This is the hook that reconciles it against the group in that case.
 		this.#reconcileRadioButtonGroup();
 	}
 
