@@ -9,9 +9,6 @@ import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 export type TAnimationPlayState = 'finished' | 'idle' | 'paused' | 'running';
 export type TAnimationReplaceState = 'active' | 'persisted' | 'removed';
 
-// Reused no-op rejection handler so each finished promise doesn't allocate a fresh closure.
-const noop = (): void => {};
-
 /**
  * Animation.
  *
@@ -242,9 +239,8 @@ export default class Animation extends EventTarget {
 			this.#resolveFinished = resolve;
 			this.#rejectFinished = reject;
 		});
-		// JavaScript cannot set [[PromiseIsHandled]] directly, so attach a no-op rejection
-		// handler before exposing the promise. cancel() is its only rejection path.
-		promise.catch(noop);
+		// Mark as handled for cancel(), which must still reject the original promise with AbortError.
+		promise.catch(() => {});
 		return promise;
 	}
 
