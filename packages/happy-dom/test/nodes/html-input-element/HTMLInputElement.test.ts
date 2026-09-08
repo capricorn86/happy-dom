@@ -1029,6 +1029,31 @@ describe('HTMLInputElement', () => {
 			expect(inserted.checked).toBe(true);
 			expect(existing.checked).toBe(false);
 		});
+
+		it('Scopes a radio button group to its shadow root, independent of same-name radio buttons in the light DOM.', () => {
+			const host = document.createElement('div');
+
+			document.body.appendChild(host);
+
+			const shadowRoot = host.attachShadow({ mode: 'open' });
+
+			shadowRoot.innerHTML =
+				'<input type="radio" name="g" checked><input type="radio" name="g" checked>';
+
+			const shadowRadios = <HTMLInputElement[]>Array.from(shadowRoot.querySelectorAll('input'));
+
+			expect(shadowRadios.map((radio) => radio.checked)).toEqual([false, true]);
+
+			const lightRadio = <HTMLInputElement>document.createElement('input');
+
+			lightRadio.type = 'radio';
+			lightRadio.name = 'g';
+			lightRadio.checked = true;
+			document.body.appendChild(lightRadio);
+
+			expect(lightRadio.checked).toBe(true);
+			expect(shadowRadios.map((radio) => radio.checked)).toEqual([false, true]);
+		});
 	});
 
 	describe('get type()', () => {
