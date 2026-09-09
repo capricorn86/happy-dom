@@ -24,7 +24,6 @@ import type CSSStyleSheet from '../../CSSStyleSheet.js';
 import CSSVariableFormatter from '../property-manager/utilities/CSSVariableFormatter.js';
 import type HTMLElement from '../../../nodes/html-element/HTMLElement.js';
 import type Node from '../../../nodes/node/Node.js';
-import type ICachedComputedStyleResult from '../../../nodes/node/ICachedComputedStyleResult.js';
 
 const CSS_MEASUREMENT_REGEXP = /[0-9.]+(px|rem|em|vw|vh|%|vmin|vmax|cm|mm|in|pt|pc|Q)/g;
 
@@ -175,9 +174,9 @@ export default class CSSComputedStyle {
 		const cssVariables: { [k: string]: string } = {};
 		let rootFontSize: string | number = 16;
 		let parentFontSize: string | number = 16;
-		let previousParent: IStyleAndElement | null = null;
 
-		for (const parentElement of parentElements) {
+		for (let i = 0, max = parentElements.length; i < max; i++) {
+			const parentElement = parentElements[i];
 			if (parentElement.propertyManager) {
 				if (parentElement.element === this.element) {
 					return parentElement.propertyManager;
@@ -276,28 +275,30 @@ export default class CSSComputedStyle {
 					}
 				}
 
-				const cachedResult: ICachedComputedStyleResult = {
-					result: new WeakRef(propertyManager),
-					parent: previousParent
-						? previousParent.element![PropertySymbol.cache].computedStyle
-						: null
+				const cachedResult = {
+					result: new WeakRef(propertyManager)
 				};
 				parentElement.element![PropertySymbol.cache].computedStyle = cachedResult;
 				parentElement.element![PropertySymbol.ownerDocument][
 					PropertySymbol.affectsComputedStyleCache
 				].push(cachedResult);
-				previousParent?.element![PropertySymbol.affectsCache].push(cachedResult);
-				if ((<Element>previousParent?.element)?.shadowRoot) {
-					(<Element>previousParent!.element).shadowRoot![PropertySymbol.affectsCache].push(
-						cachedResult
-					);
+
+				// All parents of current element affects cache
+				for (let a = 0; a < i; a++) {
+					const previousParent = parentElements[a];
+					previousParent.element![PropertySymbol.affectsCache].push(cachedResult);
+					if ((<Element>previousParent.element)?.shadowRoot) {
+						(<Element>previousParent!.element).shadowRoot![PropertySymbol.affectsCache].push(
+							cachedResult
+						);
+					}
 				}
+
 				if (parentElement.element === this.element) {
 					return propertyManager;
 				}
 			}
 
-			previousParent = parentElement;
 			propertyManager = inheritedPropertyManager.clone();
 		}
 
@@ -496,24 +497,6 @@ export default class CSSComputedStyle {
 		if (!node) {
 			return null;
 		}
-
-		const cachedResult = node[PropertySymbol.cache].computedStyle;
-
-		if (!cachedResult?.result) {
-			return null;
-		}
-
-		// A computed style contains the inherited properties of every ancestor it was computed from,
-		// so it goes stale as soon as any of those ancestors is invalidated.
-		let ancestor = cachedResult.parent;
-
-		while (ancestor) {
-			if (!ancestor.result) {
-				return null;
-			}
-			ancestor = ancestor.parent;
-		}
-
-		return cachedResult.result.deref() || null;
+		return node[PropertySymbol.cache].computedStyle?.result?.deref() || null;
 	}
 }

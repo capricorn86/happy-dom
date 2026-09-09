@@ -3,5 +3,4 @@ import type ICachedResult from './ICachedResult.js';
 
 export default interface ICachedComputedStyleResult extends ICachedResult {
 	result: WeakRef<CSSPropertyManager> | null;
-	parent: ICachedComputedStyleResult | null;
 }

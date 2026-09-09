@@ -716,7 +716,7 @@ describe('BrowserWindow', () => {
 
 			const ids = ['d0', 'd1', 'd2', 'd3', 'd4'];
 			const color = (id: string): string =>
-				window.getComputedStyle(<Element>document.getElementById(id)).color;
+				window.getComputedStyle(document.getElementById(id)!).color;
 
 			expect(ids.map(color)).toEqual([
 				'rgb(255, 0, 0)',
@@ -726,7 +726,7 @@ describe('BrowserWindow', () => {
 				'rgb(255, 0, 0)'
 			]);
 
-			(<Element>document.getElementById('d0')).classList.remove('red');
+			document.getElementById('d0')!.classList.remove('red');
 
 			expect(ids.map(color)).toEqual(['', '', '', '', '']);
 
