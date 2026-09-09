@@ -1476,6 +1476,24 @@ describe('HTMLInputElement', () => {
 			expect(element.value).toBe('11');
 		});
 
+		it('Steps decimals when step is 0.01', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '0.01';
+			element.stepUp();
+			expect(element.value).toBe('10.01');
+		});
+
+		it('Steps decimals when step is 0.1', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '0.1';
+			element.stepUp();
+			expect(element.value).toBe('10.1');
+		});
+
 		it('Steps decimals when step is 0.5', () => {
 			element.type = 'number';
 			element.value = '10';
@@ -1492,6 +1510,15 @@ describe('HTMLInputElement', () => {
 			element.step = '1.2';
 			element.stepUp();
 			expect(element.value).toBe('10.6');
+		});
+
+		it('Steps up to the closest valid step below a decimal max', () => {
+			element.type = 'number';
+			element.value = '0.3';
+			element.max = '0.3';
+			element.step = '0.1';
+			element.stepUp();
+			expect(element.value).toBe('0.3');
 		});
 
 		it('Handles increment set to 0', () => {
@@ -1654,6 +1681,24 @@ describe('HTMLInputElement', () => {
 			expect(element.value).toBe('9');
 		});
 
+		it('Steps decimals when step is 0.01', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '0.01';
+			element.stepDown();
+			expect(element.value).toBe('9.99');
+		});
+
+		it('Steps decimals when step is 0.1', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.min = '1';
+			element.step = '0.1';
+			element.stepDown();
+			expect(element.value).toBe('9.9');
+		});
+
 		it('Steps decimals when step is 0.5', () => {
 			element.type = 'number';
 			element.value = '10';
@@ -1670,6 +1715,15 @@ describe('HTMLInputElement', () => {
 			element.step = '1.2';
 			element.stepDown();
 			expect(element.value).toBe('9.4');
+		});
+
+		it('Steps down to the closest valid step above a decimal min', () => {
+			element.type = 'number';
+			element.value = '-0.3';
+			element.min = '-0.3';
+			element.step = '0.1';
+			element.stepDown();
+			expect(element.value).toBe('-0.3');
 		});
 
 		it('Handles increment set to 0', () => {

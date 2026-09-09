@@ -1,3 +1,4 @@
+import { Decimal } from 'decimal.js';
 import DOMException from '../../exception/DOMException.js';
 import type HTMLInputElement from './HTMLInputElement.js';
 
@@ -87,38 +88,40 @@ export default class HTMLInputElementValueStepping {
 			}
 		}
 
+		const current = new Decimal(value);
+
 		let candidate = increment
-			? value + Math.ceil(increment / step) * step * direction
-			: value + step * direction;
+			? current.plus(Math.ceil(increment / step) * step * direction)
+			: current.plus(step * direction);
 
 		const base = min ?? 0;
 
 		switch (direction) {
 			// Step down
 			case -1:
-				if (max !== null && value >= max) {
-					candidate = max;
+				if (max !== null && current.greaterThanOrEqualTo(max)) {
+					candidate = new Decimal(max);
 					break;
 				}
-				if (min !== null && candidate < min) {
-					candidate = min;
+				if (min !== null && candidate.lessThan(min)) {
+					candidate = new Decimal(min);
 					break;
 				}
 
 			// Step up
 			case 1:
-				if (min !== null && value <= min) {
-					candidate = min;
+				if (min !== null && current.lessThanOrEqualTo(min)) {
+					candidate = new Decimal(min);
 					break;
 				}
-				if (max !== null && candidate > max) {
-					candidate = base + Math.floor((max - base) / step) * step;
+				if (max !== null && candidate.greaterThan(max)) {
+					candidate = new Decimal(max).minus(base).toNearest(step, Decimal.ROUND_FLOOR).add(base);
 					break;
 				}
 
 			// Previous or next valid step from value
 			default:
-				candidate = candidate - ((value - base) % step) * direction;
+				candidate = candidate.minus(current.minus(base).mod(step).mul(direction));
 				break;
 		}
 

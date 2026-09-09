@@ -39,6 +39,7 @@
 		"@types/whatwg-mimetype": "^3.0.2",
 		"@types/ws": "^8.18.1",
 		"buffer-image-size": "^0.6.4",
+		"decimal.js": "^10.6.0",
 		"entities": "^7.0.1",
 		"whatwg-mimetype": "^3.0.0",
 		"ws": "^8.21.0"
