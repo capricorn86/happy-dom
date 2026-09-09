@@ -55,7 +55,7 @@ export default class HTMLInputElementValueStepping {
 		let min = minValue !== '' ? Number(minValue) : null;
 		let max = maxValue !== '' ? Number(maxValue) : null;
 		let step = stepValue !== '' ? Number(stepValue) : 1;
-		let value = Number(input.value);
+		let value = input.valueAsNumber;
 
 		min = min === null || Number.isNaN(min) ? null : min;
 		max = max === null || Number.isNaN(max) ? null : max;
