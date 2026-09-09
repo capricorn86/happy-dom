@@ -66,7 +66,8 @@ export default class CSSVariableFormatter {
 			if (variable && variable.parentheses === parentheses) {
 				const fallbackValue = value.substring(variable.fallbackIndex, match.index).trim();
 				const variableValue = cssVariables[variable.name];
-				return `${value.substring(0, variable.index)}${this.resolveVariables(variableValue || fallbackValue, cssVariables)}${value.substring(match.index! + match[0].length)}`;
+				// The rest of the value may hold further var() references (e.g. "calc(var(--a) + var(--b))").
+				return `${value.substring(0, variable.index)}${this.resolveVariables(variableValue || fallbackValue, cssVariables)}${this.resolveVariables(value.substring(match.index! + match[0].length), cssVariables)}`;
 			}
 		}
 
