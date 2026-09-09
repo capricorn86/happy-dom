@@ -1416,6 +1416,14 @@ describe('HTMLInputElement', () => {
 			expect(element.value).toBe('3');
 		});
 
+		it('Does not step up when already past max', () => {
+			element.type = 'number';
+			element.value = '3';
+			element.max = '1';
+			element.stepUp();
+			expect(element.value).toBe('3');
+		});
+
 		it('Does not step up past max with defined increment value', () => {
 			element.type = 'number';
 			element.value = '1';
@@ -1576,6 +1584,14 @@ describe('HTMLInputElement', () => {
 			element.min = '3';
 			element.stepDown();
 			expect(element.value).toBe('3');
+		});
+
+		it('Does not step down when already past min', () => {
+			element.type = 'number';
+			element.value = '1';
+			element.min = '3';
+			element.stepDown();
+			expect(element.value).toBe('1');
 		});
 
 		it('Does not step down past min with defined increment value', () => {
