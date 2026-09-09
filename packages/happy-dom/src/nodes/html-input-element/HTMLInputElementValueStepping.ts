@@ -60,7 +60,6 @@ export default class HTMLInputElementValueStepping {
 		min = min === null || Number.isNaN(min) ? null : min;
 		max = max === null || Number.isNaN(max) ? null : max;
 		step = Number.isNaN(step) || step === 0 ? 1 : step;
-		value = Number.isNaN(value) ? 0 : value;
 
 		if (min !== null && max !== null && min > max) {
 			return input.value;
@@ -68,6 +67,22 @@ export default class HTMLInputElementValueStepping {
 
 		if (increment === 0) {
 			return input.value;
+		}
+
+		if (Number.isNaN(value)) {
+			value = 0;
+
+			// Default value when min is above zero
+			// (Chromium behaviour, WebKit preserves value on step down)
+			if (min !== null && min > 0) {
+				return minValue;
+			}
+
+			// Default value when max is below zero
+			// (Chromium behaviour, WebKit preserves value on step up)
+			if (max !== null && max < 0) {
+				return maxValue;
+			}
 		}
 
 		let candidate = increment
