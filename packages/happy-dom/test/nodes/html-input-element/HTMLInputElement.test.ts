@@ -1366,6 +1366,14 @@ describe('HTMLInputElement', () => {
 			expect(element.value).toBe('1');
 		});
 
+		it('Steps up to min when the value is below min', () => {
+			element.type = 'number';
+			element.value = '0';
+			element.min = '5';
+			element.stepUp();
+			expect(element.value).toBe('5');
+		});
+
 		it('Steps up to min when there is no value.', () => {
 			element.type = 'number';
 			element.min = '5';

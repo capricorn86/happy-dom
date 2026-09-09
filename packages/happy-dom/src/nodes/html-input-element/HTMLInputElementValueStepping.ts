@@ -103,6 +103,10 @@ export default class HTMLInputElementValueStepping {
 
 			// Step up
 			case 1:
+				if (min !== null && value <= min) {
+					candidate = min;
+					break;
+				}
 				if (max !== null && candidate > max) {
 					candidate = base + Math.floor((max - base) / step) * step;
 					break;
