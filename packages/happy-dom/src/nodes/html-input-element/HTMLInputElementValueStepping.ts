@@ -96,6 +96,10 @@ export default class HTMLInputElementValueStepping {
 		switch (direction) {
 			// Step down
 			case -1:
+				if (max !== null && value >= max) {
+					candidate = max;
+					break;
+				}
 				if (min !== null && candidate < min) {
 					candidate = min;
 					break;
