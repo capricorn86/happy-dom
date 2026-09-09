@@ -11,18 +11,14 @@ export default class HTMLInputElementValueStepping {
 	 *
 	 * @param input Input element.
 	 * @param direction Direction.
-	 * @param [increment] Increment.
+	 * @param [n] Number of times to step.
 	 * @returns New value.
 	 */
-	public static step(
-		input: HTMLInputElement,
-		direction: -1 | 1,
-		increment?: number
-	): string | null {
+	public static step(input: HTMLInputElement, direction: -1 | 1, n?: number): string | null {
 		const type = input.type;
 		switch (type) {
 			case 'number':
-				return this.getNumberValue(input, direction, increment);
+				return this.getNumberValue(input, direction, n);
 			case 'date':
 			case 'month':
 			case 'week':
@@ -42,13 +38,9 @@ export default class HTMLInputElementValueStepping {
 	 * @see https://html.spec.whatwg.org/multipage/input.html#dom-input-stepup
 	 * @param input Input element.
 	 * @param direction Direction.
-	 * @param [increment] Increment.
+	 * @param [n] Number of times to step.
 	 */
-	private static getNumberValue(
-		input: HTMLInputElement,
-		direction: -1 | 1,
-		increment?: number
-	): string {
+	private static getNumberValue(input: HTMLInputElement, direction: -1 | 1, n?: number): string {
 		const minValue = input.min;
 		const maxValue = input.max;
 		const stepValue = input.step;
@@ -56,7 +48,7 @@ export default class HTMLInputElementValueStepping {
 		let min = minValue !== '' ? Number(minValue) : null;
 		let max = maxValue !== '' ? Number(maxValue) : null;
 		let step = stepValue !== '' ? Number(stepValue) : 1;
-		let value = input.valueAsNumber;
+		let valueBeforeStepping = input.valueAsNumber;
 
 		min = min === null || Number.isNaN(min) ? null : min;
 		max = max === null || Number.isNaN(max) ? null : max;
@@ -64,16 +56,16 @@ export default class HTMLInputElementValueStepping {
 
 		// Preserve value when out of bounds
 		if (
-			increment === 0 ||
-			(direction === -1 && min !== null && value <= min) ||
-			(direction === 1 && max !== null && value >= max) ||
+			n === 0 ||
+			(direction === -1 && min !== null && valueBeforeStepping <= min) ||
+			(direction === 1 && max !== null && valueBeforeStepping >= max) ||
 			(min !== null && max !== null && min > max)
 		) {
 			return input.value;
 		}
 
-		if (Number.isNaN(value)) {
-			value = 0;
+		if (Number.isNaN(valueBeforeStepping)) {
+			valueBeforeStepping = 0;
 
 			// Default value when min is above zero
 			// (Chromium behaviour, WebKit preserves value on step down)
@@ -88,10 +80,10 @@ export default class HTMLInputElementValueStepping {
 			}
 		}
 
-		const current = new Decimal(value);
+		const current = new Decimal(valueBeforeStepping);
 
-		let candidate = increment
-			? current.plus(Math.ceil(increment / step) * step * direction)
+		let value = n
+			? current.plus(Math.ceil(n / step) * step * direction)
 			: current.plus(step * direction);
 
 		const base = min ?? 0;
@@ -100,31 +92,31 @@ export default class HTMLInputElementValueStepping {
 			// Step down
 			case -1:
 				if (max !== null && current.greaterThanOrEqualTo(max)) {
-					candidate = new Decimal(max);
+					value = new Decimal(max);
 					break;
 				}
-				if (min !== null && candidate.lessThan(min)) {
-					candidate = new Decimal(min);
+				if (min !== null && value.lessThan(min)) {
+					value = new Decimal(min);
 					break;
 				}
 
 			// Step up
 			case 1:
 				if (min !== null && current.lessThanOrEqualTo(min)) {
-					candidate = new Decimal(min);
+					value = new Decimal(min);
 					break;
 				}
-				if (max !== null && candidate.greaterThan(max)) {
-					candidate = new Decimal(max).minus(base).toNearest(step, Decimal.ROUND_FLOOR).add(base);
+				if (max !== null && value.greaterThan(max)) {
+					value = new Decimal(max).minus(base).toNearest(step, Decimal.ROUND_FLOOR).add(base);
 					break;
 				}
 
 			// Previous or next valid step from value
 			default:
-				candidate = candidate.minus(current.minus(base).mod(step).mul(direction));
+				value = value.minus(current.minus(base).mod(step).mul(direction));
 				break;
 		}
 
-		return String(candidate);
+		return String(value);
 	}
 }

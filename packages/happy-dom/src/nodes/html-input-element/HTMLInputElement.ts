@@ -1397,10 +1397,10 @@ export default class HTMLInputElement extends HTMLElement {
 	/**
 	 * Steps up.
 	 *
-	 * @param [increment] Increment.
+	 * @param [n] Number of times to step up.
 	 */
-	public stepUp(increment?: number): void {
-		const newValue = HTMLInputElementValueStepping.step(this, 1, increment);
+	public stepUp(n?: number): void {
+		const newValue = HTMLInputElementValueStepping.step(this, 1, n);
 		if (newValue !== null) {
 			this.value = newValue;
 		}
@@ -1409,10 +1409,10 @@ export default class HTMLInputElement extends HTMLElement {
 	/**
 	 * Steps down.
 	 *
-	 * @param [increment] Increment.
+	 * @param [n] Number of times to step down.
 	 */
-	public stepDown(increment?: number): void {
-		const newValue = HTMLInputElementValueStepping.step(this, -1, increment);
+	public stepDown(n?: number): void {
+		const newValue = HTMLInputElementValueStepping.step(this, -1, n);
 		if (newValue !== null) {
 			this.value = newValue;
 		}
