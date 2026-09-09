@@ -3,6 +3,7 @@ import Window from '../../src/window/Window.js';
 import type Document from '../../src/nodes/document/Document.js';
 import Node from '../../src/nodes/node/Node.js';
 import type HTMLElement from '../../src/nodes/html-element/HTMLElement.js';
+import type HTMLSelectElement from '../../src/nodes/html-select-element/HTMLSelectElement.js';
 import NamespaceURI from '../../src/config/NamespaceURI.js';
 import type DocumentType from '../../src/nodes/document-type/DocumentType.js';
 import HTMLSerializer from '../../src/html-serializer/HTMLSerializer.js';
@@ -1227,6 +1228,32 @@ describe('HTMLParser', () => {
 			);
 
 			expect(new HTMLSerializer().serializeToString(result)).toBe('<div>Test</div>');
+		});
+
+		it('Syncs <select>.selectedIndex for a parser-set <option selected> during a full document parse.', () => {
+			const result = <Document>(
+				new HTMLParser(window).parse(
+					'<html><body><select id="s"><option value="a" selected>a</option><option value="b">b</option></select></body></html>',
+					document.implementation.createHTMLDocument()
+				)
+			);
+			const select = <HTMLSelectElement>result.querySelector('#s');
+
+			expect(select.value).toBe('a');
+			expect(select.selectedIndex).toBe(0);
+		});
+
+		it('Selects the parser-set <option selected> when it sits at index >= 2 in a single-selection <select>.', () => {
+			const result = <Document>(
+				new HTMLParser(window).parse(
+					'<html><body><select id="s"><option value="a">a</option><option value="b">b</option><option value="c" selected>c</option></select></body></html>',
+					document.implementation.createHTMLDocument()
+				)
+			);
+			const select = <HTMLSelectElement>result.querySelector('#s');
+
+			expect(select.value).toBe('c');
+			expect(select.selectedIndex).toBe(2);
 		});
 
 		it('Handles multiple <!DOCTYPE>.', () => {

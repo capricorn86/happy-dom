@@ -210,6 +210,29 @@ describe('HTMLSelectElement', () => {
 
 			expect(element.selectedIndex).toBe(0);
 		});
+
+		it('Stays up to date when an <option selected> is appended after "options" was read and its cache warmed.', () => {
+			document.body.appendChild(element);
+
+			const option1 = document.createElement('option');
+			const option2 = document.createElement('option');
+			const option3 = document.createElement('option');
+
+			option1.textContent = 'a';
+			option2.textContent = 'b';
+			option3.textContent = 'c';
+			option3.setAttribute('selected', '');
+
+			element.appendChild(option1);
+			// Reading "options" warms the select's querySelectorAll('option') cache.
+			void element.options.length;
+			element.appendChild(option2);
+			void element.options.length;
+			element.appendChild(option3);
+
+			expect(element.selectedIndex).toBe(2);
+			expect(element.value).toBe('c');
+		});
 	});
 
 	describe(`get selectedOptions()`, () => {
