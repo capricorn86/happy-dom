@@ -98,6 +98,32 @@ describe('CSSComputedStyle', () => {
 			expect(propertyManager.get('background-color')?.value).toBe('rgb(255, 219, 0)');
 		});
 
+		it('Resolves every var() in a value, not only the first one.', () => {
+			document.body.appendChild(element);
+			element.setAttribute(
+				'style',
+				`--box: 20px; --gap: 2px; width: calc(5 * var(--box) + 6 * var(--gap)); height: calc(var(--gap) + var(--gap));`
+			);
+
+			const computedStyle = new CSSComputedStyle(element);
+			const propertyManager = computedStyle.getComputedStyle();
+
+			expect(propertyManager.get('width')?.value).toBe('calc(5 * 20px + 6 * 2px)');
+			expect(propertyManager.get('height')?.value).toBe('calc(2px + 2px)');
+		});
+
+		it('Resolves var() with fallback after an earlier var() in a shorthand value.', () => {
+			document.body.appendChild(element);
+			element.setAttribute('style', `--x: 16px; margin: var(--x) var(--x, 4px) var(--y, 8px);`);
+
+			const computedStyle = new CSSComputedStyle(element);
+			const propertyManager = computedStyle.getComputedStyle();
+
+			expect(propertyManager.get('margin-top')?.value).toBe('16px');
+			expect(propertyManager.get('margin-right')?.value).toBe('16px');
+			expect(propertyManager.get('margin-bottom')?.value).toBe('8px');
+		});
+
 		it('Ignores invalid CSS variable fallback value.', () => {
 			document.body.appendChild(element);
 			element.setAttribute('style', `width: var(--my-width, invalid);`);

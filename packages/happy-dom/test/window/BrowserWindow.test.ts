@@ -709,6 +709,38 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.color).toBe('green');
 		});
 
+		it('Updates inherited values in the whole subtree when an ancestor is changed.', () => {
+			document.head.innerHTML = '<style>.red { color: rgb(255, 0, 0); }</style>';
+			document.body.innerHTML =
+				'<div id="d0" class="red"><div id="d1"><div id="d2"><div id="d3"><span id="d4">Test</span></div></div></div></div>';
+
+			const ids = ['d0', 'd1', 'd2', 'd3', 'd4'];
+			const color = (id: string): string =>
+				window.getComputedStyle(document.getElementById(id)!).color;
+
+			expect(ids.map(color)).toEqual([
+				'rgb(255, 0, 0)',
+				'rgb(255, 0, 0)',
+				'rgb(255, 0, 0)',
+				'rgb(255, 0, 0)',
+				'rgb(255, 0, 0)'
+			]);
+
+			document.getElementById('d0')!.classList.remove('red');
+
+			expect(ids.map(color)).toEqual(['', '', '', '', '']);
+
+			(<HTMLElement>document.getElementById('d2')).style.color = 'rgb(0, 128, 0)';
+
+			expect(ids.map(color)).toEqual([
+				'',
+				'',
+				'rgb(0, 128, 0)',
+				'rgb(0, 128, 0)',
+				'rgb(0, 128, 0)'
+			]);
+		});
+
 		it('Returns a CSSStyleDeclaration object with computed styles from style sheets.', () => {
 			const parent = document.createElement('div');
 			const element = document.createElement('span');
