@@ -88,35 +88,19 @@ export default class HTMLInputElementValueStepping {
 
 		const base = min ?? 0;
 
-		switch (direction) {
-			// Step down
-			case -1:
-				if (max !== null && current.greaterThanOrEqualTo(max)) {
-					value = new Decimal(max);
-					break;
-				}
-				if (min !== null && value.lessThan(min)) {
-					value = new Decimal(min);
-					break;
-				}
+		// Previous or next valid step from value
+		value = value.minus(current.minus(base).mod(step).mul(direction));
 
-			// Step up
-			case 1:
-				if (min !== null && current.lessThanOrEqualTo(min)) {
-					value = new Decimal(min);
-					break;
-				}
-				if (max !== null && value.greaterThan(max)) {
-					value = new Decimal(max).minus(base).toNearest(step, Decimal.ROUND_FLOOR).add(base);
-					break;
-				}
-
-			// Previous or next valid step from value
-			default:
-				value = value.minus(current.minus(base).mod(step).mul(direction));
-				break;
+		// Clamp to min
+		if (min !== null && value.lessThan(min)) {
+			value = new Decimal(min);
 		}
 
-		return String(value);
+		// Clamp to max
+		if (max !== null && value.greaterThan(max)) {
+			value = new Decimal(max).minus(base).toNearest(step, Decimal.ROUND_FLOOR).add(base);
+		}
+
+		return value.toString();
 	}
 }
