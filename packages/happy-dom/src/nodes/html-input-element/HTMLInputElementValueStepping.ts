@@ -80,16 +80,15 @@ export default class HTMLInputElementValueStepping {
 			}
 		}
 
-		const current = new Decimal(valueBeforeStepping);
-
-		let value = n
-			? current.plus(Math.ceil(n / step) * step * direction)
-			: current.plus(step * direction);
-
 		const base = min ?? 0;
+		const rounding = direction === 1 ? Decimal.ROUND_FLOOR : Decimal.ROUND_CEIL;
 
 		// Previous or next valid step from value
-		value = value.minus(current.minus(base).mod(step).mul(direction));
+		let value = new Decimal(valueBeforeStepping)
+			.minus(base)
+			.toNearest(step, rounding)
+			.add(base)
+			.add(step * (n ?? 1) * direction);
 
 		// Clamp to min
 		if (min !== null && value.lessThan(min)) {

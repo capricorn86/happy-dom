@@ -1416,6 +1416,22 @@ describe('HTMLInputElement', () => {
 			expect(element.value).toBe('4');
 		});
 
+		it('Steps up with step value and defined increment value.', () => {
+			element.type = 'number';
+			element.value = '2';
+			element.step = '2';
+			element.stepUp(3);
+			expect(element.value).toBe('8');
+		});
+
+		it('Steps up with step value and defined increment value, respecting step intervals.', () => {
+			element.type = 'number';
+			element.value = '1';
+			element.step = '2';
+			element.stepUp(3);
+			expect(element.value).toBe('6');
+		});
+
 		it('Does not step up past max', () => {
 			element.type = 'number';
 			element.value = '3';
@@ -1449,7 +1465,7 @@ describe('HTMLInputElement', () => {
 			expect(element.value).toBe('8');
 		});
 
-		it('Does not step up past max, respecting step attribute', () => {
+		it('Does not step up past max, respecting step intervals', () => {
 			element.type = 'number';
 			element.value = '0';
 			element.max = '7';
@@ -1467,7 +1483,7 @@ describe('HTMLInputElement', () => {
 			expect(element.value).toBe('4');
 		});
 
-		it('Steps to the closest valid step', () => {
+		it('Steps to the closest step interval', () => {
 			element.type = 'number';
 			element.value = '10';
 			element.min = '1';
@@ -1544,11 +1560,20 @@ describe('HTMLInputElement', () => {
 			element.value = '-4';
 			element.min = '-12';
 			element.step = '2';
-			element.stepUp(2);
+			element.stepUp();
 			expect(element.value).toBe('-2');
 		});
 
-		it('Steps to the closest valid step with negative values', () => {
+		it('Handles negative values with defined increment value', () => {
+			element.type = 'number';
+			element.value = '-4';
+			element.min = '-12';
+			element.step = '2';
+			element.stepUp(2);
+			expect(element.value).toBe('0');
+		});
+
+		it('Steps to the closest step interval with negative values', () => {
 			element.type = 'number';
 			element.value = '-10';
 			element.min = '-11';
@@ -1593,6 +1618,14 @@ describe('HTMLInputElement', () => {
 			expect(element.value).toBe('-5');
 		});
 
+		it('Steps down to max when the value is above max', () => {
+			element.type = 'number';
+			element.value = '10';
+			element.max = '3';
+			element.stepDown();
+			expect(element.value).toBe('3');
+		});
+
 		it('Steps down to -1 when there is no value and max is above zero', () => {
 			element.type = 'number';
 			element.max = '5';
@@ -1619,6 +1652,22 @@ describe('HTMLInputElement', () => {
 			element.value = '1';
 			element.stepDown(3);
 			expect(element.value).toBe('-2');
+		});
+
+		it('Steps down with step value and defined increment value.', () => {
+			element.type = 'number';
+			element.value = '2';
+			element.step = '2';
+			element.stepDown(3);
+			expect(element.value).toBe('-4');
+		});
+
+		it('Steps down with step value and defined increment value, respecting step intervals.', () => {
+			element.type = 'number';
+			element.value = '1';
+			element.step = '2';
+			element.stepDown(3);
+			expect(element.value).toBe('-4');
 		});
 
 		it('Does not step down past min', () => {
@@ -1663,16 +1712,16 @@ describe('HTMLInputElement', () => {
 			expect(element.value).toBe('2');
 		});
 
-		it('Does not step down past min, respecting step attribute', () => {
+		it('Does not step down past min, respecting step intervals', () => {
 			element.type = 'number';
 			element.value = '10';
-			element.min = '1';
+			element.min = '3';
 			element.step = '2';
-			element.stepDown(9);
-			expect(element.value).toBe('1');
+			element.stepDown(10);
+			expect(element.value).toBe('3');
 		});
 
-		it('Steps to the closest valid step', () => {
+		it('Steps to the closest step interval', () => {
 			element.type = 'number';
 			element.value = '10';
 			element.min = '1';
@@ -1749,11 +1798,20 @@ describe('HTMLInputElement', () => {
 			element.value = '-4';
 			element.min = '-12';
 			element.step = '2';
-			element.stepDown(2);
+			element.stepDown();
 			expect(element.value).toBe('-6');
 		});
 
-		it('Steps to the closest valid step with negative values', () => {
+		it('Handles negative values with defined increment value', () => {
+			element.type = 'number';
+			element.value = '-4';
+			element.min = '-12';
+			element.step = '2';
+			element.stepDown(2);
+			expect(element.value).toBe('-8');
+		});
+
+		it('Steps to the closest step interval with negative values', () => {
 			element.type = 'number';
 			element.value = '-10';
 			element.min = '-11';
