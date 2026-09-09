@@ -1406,6 +1406,15 @@ describe('HTMLInputElement', () => {
 			expect(element.value).toBe('6');
 		});
 
+		it('Does not step up when min is greater than max', () => {
+			element.type = 'number';
+			element.value = '4';
+			element.min = '5';
+			element.max = '3';
+			element.stepUp();
+			expect(element.value).toBe('4');
+		});
+
 		it('Steps to the closest valid step', () => {
 			element.type = 'number';
 			element.value = '10';
@@ -1503,6 +1512,15 @@ describe('HTMLInputElement', () => {
 			element.min = '0';
 			element.stepDown(3);
 			expect(element.value).toBe('0');
+		});
+
+		it('Does not step down when min is greater than max', () => {
+			element.type = 'number';
+			element.value = '4';
+			element.min = '5';
+			element.max = '3';
+			element.stepDown();
+			expect(element.value).toBe('4');
 		});
 
 		it('Steps down to exactly min when min is divisible by step', () => {

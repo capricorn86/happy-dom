@@ -62,7 +62,7 @@ export default class HTMLInputElementValueStepping {
 		step = Number.isNaN(step) || step === 0 ? 1 : step;
 		value = Number.isNaN(value) ? 0 : value;
 
-		if (min !== null && max !== null && (min > max || max < min)) {
+		if (min !== null && max !== null && min > max) {
 			return input.value;
 		}
 
