@@ -231,6 +231,51 @@ describe('EventTarget', () => {
 				`Failed to execute 'dispatchEvent' on 'EventTarget': parameter 1 is not of type 'Event'.`
 			);
 		});
+
+		it('Sets window.event to the dispatched event for the duration of the dispatch, then restores it.', () => {
+			let eventDuringDispatch: Event | null = null;
+			const dispatchedEvent = new Event(EVENT_TYPE);
+
+			eventTarget.addEventListener(EVENT_TYPE, () => {
+				eventDuringDispatch = window.event;
+			});
+
+			expect(window.event).toBe(undefined);
+
+			eventTarget.dispatchEvent(dispatchedEvent);
+
+			expect(eventDuringDispatch).toBe(dispatchedEvent);
+			expect(window.event).toBe(undefined);
+		});
+
+		it('Restores the previous window.event when a nested dispatchEvent() call returns.', () => {
+			const outerEvent = new Event('outer');
+			const innerEvent = new Event('inner');
+			let windowEventAfterInnerDispatch: Event | null = null;
+
+			eventTarget.addEventListener('inner', () => {
+				windowEventAfterInnerDispatch = window.event;
+			});
+			eventTarget.addEventListener('outer', () => {
+				eventTarget.dispatchEvent(innerEvent);
+				windowEventAfterInnerDispatch = window.event;
+			});
+
+			eventTarget.dispatchEvent(outerEvent);
+
+			expect(windowEventAfterInnerDispatch).toBe(outerEvent);
+		});
+
+		it('Restores the previous window.event even if a listener throws.', () => {
+			window.happyDOM.settings.errorCapture = BrowserErrorCaptureEnum.disabled;
+
+			eventTarget.addEventListener(EVENT_TYPE, () => {
+				throw new Error('Test error');
+			});
+
+			expect(() => eventTarget.dispatchEvent(new Event(EVENT_TYPE))).toThrow();
+			expect(window.event).toBe(undefined);
+		});
 	});
 
 	describe('attachEvent()', () => {
