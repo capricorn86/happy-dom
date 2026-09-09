@@ -70,25 +70,33 @@ export default class HTMLInputElementValueStepping {
 			return input.value;
 		}
 
-		const validIncrementValue = increment !== undefined ? Math.ceil(increment / step) * step : step;
-		const candidate = value + validIncrementValue * direction;
-		const minOrZero = min !== null ? min : 0;
+		let candidate = increment
+			? value + Math.ceil(increment / step) * step * direction
+			: value + step * direction;
+
+		const base = min ?? 0;
 
 		switch (direction) {
 			// Step down
 			case -1:
 				if (min !== null && candidate < min) {
-					return String(min);
+					candidate = min;
+					break;
 				}
-				// Previous valid step from value
-				return String(candidate + ((value - minOrZero) % step));
+
 			// Step up
 			case 1:
 				if (max !== null && candidate > max) {
-					return String(minOrZero + Math.floor((max - minOrZero) / step) * step);
+					candidate = base + Math.floor((max - base) / step) * step;
+					break;
 				}
-				// Next valid step from value
-				return String(candidate - ((value - minOrZero) % step));
+
+			// Previous or next valid step from value
+			default:
+				candidate = candidate - ((value - base) % step) * direction;
+				break;
 		}
+
+		return String(candidate);
 	}
 }
