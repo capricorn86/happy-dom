@@ -287,7 +287,19 @@ export default class ParentNodeUtility {
 		if (parentNode[PropertySymbol.nodeType] === Node.DOCUMENT_NODE) {
 			const entry = (<Document>parentNode)[PropertySymbol.elementIdMap].get(id);
 			if (entry && entry.elements.length > 0) {
-				return entry.elements[0];
+				// entry.elements is in insertion order, not tree order, so duplicate ids need a
+				// tree-order comparison to match spec/real-browser getElementById behavior.
+				if (entry.elements.length === 1) {
+					return entry.elements[0];
+				}
+				let first = entry.elements[0];
+				for (let i = 1; i < entry.elements.length; i++) {
+					const element = entry.elements[i];
+					if (first.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_PRECEDING) {
+						first = element;
+					}
+				}
+				return first;
 			}
 			return null;
 		}
