@@ -24,6 +24,24 @@ export default class NodeUtility {
 	}
 
 	/**
+	 * Returns the child text content of a node: the concatenated data of its direct
+	 * Text node children, in tree order.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/dom.html#child-text-content
+	 * @param node Node.
+	 * @returns Child text content.
+	 */
+	public static getChildTextContent(node: Node): string {
+		let text = '';
+		for (const child of node[PropertySymbol.nodeArray]) {
+			if (this.isTextNode(child)) {
+				text += child.data;
+			}
+		}
+		return text;
+	}
+
+	/**
 	 * Returns boolean indicating if "ancestorNode" is an inclusive ancestor of "referenceNode".
 	 *
 	 * Based on:

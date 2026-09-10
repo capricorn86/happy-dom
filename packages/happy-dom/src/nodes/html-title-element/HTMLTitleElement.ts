@@ -1,6 +1,5 @@
 import HTMLElement from '../html-element/HTMLElement.js';
-import NodeTypeEnum from '../node/NodeTypeEnum.js';
-import * as PropertySymbol from '../../PropertySymbol.js';
+import NodeUtility from '../node/NodeUtility.js';
 
 /**
  * HTMLTitleElement
@@ -14,13 +13,7 @@ export default class HTMLTitleElement extends HTMLElement {
 	 * @returns Text.
 	 */
 	public get text(): string {
-		let text = '';
-		for (const child of this[PropertySymbol.nodeArray]) {
-			if (child[PropertySymbol.nodeType] === NodeTypeEnum.textNode) {
-				text += child.textContent;
-			}
-		}
-		return text;
+		return NodeUtility.getChildTextContent(this);
 	}
 
 	/**
