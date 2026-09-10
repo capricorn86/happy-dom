@@ -798,7 +798,7 @@ describe('BrowserWindow', () => {
 			document.body.appendChild(parent);
 
 			expect(computedStyle.font).toBe('14px / 1.5 "Helvetica Neue", Helvetica, Arial, sans-serif');
-			expect(computedStyle.border).toBe('1px solid #000');
+			expect(computedStyle.border).toBe('1px solid rgb(0, 0, 0)');
 			expect(computedStyle.borderRadius).toBe('1px');
 			expect(computedStyle.color).toBe('red');
 			expect(computedStyle.cursor).toBe('default');
@@ -902,7 +902,7 @@ describe('BrowserWindow', () => {
 			document.body.appendChild(parentStyle);
 			document.body.appendChild(parent);
 
-			expect(computedStyle.border).toBe('1px solid #000');
+			expect(computedStyle.border).toBe('1px solid rgb(0, 0, 0)');
 			expect(computedStyle.font).toBe('14px Tahoma');
 			expect(computedStyle.color).toBe('');
 		});
@@ -941,7 +941,7 @@ describe('BrowserWindow', () => {
 			document.body.appendChild(parentStyle);
 			document.body.appendChild(parent);
 
-			expect(computedStyle.border).toBe('1px solid #000');
+			expect(computedStyle.border).toBe('1px solid rgb(0, 0, 0)');
 			expect(computedStyle.font).toBe('14px Tahoma');
 			expect(computedStyle.color).toBe('');
 		});
