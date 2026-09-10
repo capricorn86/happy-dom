@@ -2294,5 +2294,16 @@ describe('HTMLParser', () => {
 			const result5 = new HTMLParser(window).parse(`<div data-foo="&apos;"></div>`);
 			expect(new HTMLSerializer().serializeToString(result5)).toBe(`<div data-foo="'"></div>`);
 		});
+
+		it('Does not decode character references in comment data.', () => {
+			const result = new HTMLParser(window).parse('<div><!--&lt;3 &#60;3 &#x3C;3 --&gt; --></div>');
+			const comment = result.childNodes[0].childNodes[0];
+
+			expect(comment.nodeType).toBe(NodeTypeEnum.commentNode);
+			expect(comment.textContent).toBe('&lt;3 &#60;3 &#x3C;3 --&gt; ');
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				'<div><!--&lt;3 &#60;3 &#x3C;3 --&gt; --></div>'
+			);
+		});
 	});
 });
