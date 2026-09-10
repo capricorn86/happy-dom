@@ -273,10 +273,30 @@ export default class SelectorItem {
 				return element[PropertySymbol.tagName] === 'INPUT' && (<HTMLInputElement>element).checked
 					? { priorityWeight: 10 }
 					: null;
-			case 'disabled':
-				return 'disabled' in element && element.hasAttribute('disabled')
-					? { priorityWeight: 10 }
-					: null;
+			case 'disabled': {
+				if (!('disabled' in element)) {
+					return null;
+				}
+				if (element.hasAttribute('disabled')) {
+					return { priorityWeight: 10 };
+				}
+				// A form control is also disabled while inside a disabled <fieldset>, unless it
+				// sits within that fieldset's first <legend> child.
+				let ancestor = element.parentElement;
+				while (ancestor) {
+					if (
+						ancestor[PropertySymbol.tagName] === 'FIELDSET' &&
+						ancestor.hasAttribute('disabled')
+					) {
+						const legend = ancestor[PropertySymbol.elementArray].find(
+							(child) => child[PropertySymbol.tagName] === 'LEGEND'
+						);
+						return !legend || !legend.contains(element) ? { priorityWeight: 10 } : null;
+					}
+					ancestor = ancestor.parentElement;
+				}
+				return null;
+			}
 			case 'empty':
 				return !(<Element>element)[PropertySymbol.elementArray].length
 					? { priorityWeight: 10 }
