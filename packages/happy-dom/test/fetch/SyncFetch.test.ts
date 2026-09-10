@@ -3056,6 +3056,61 @@ describe('SyncFetch', () => {
 			]);
 		});
 
+		it('Keeps an already-expired "Last-Modified" response in the cache so the next request revalidates it with "If-Modified-Since" (no "ETag", no "max-age").', async () => {
+			browserFrame.url = 'https://localhost:8080/';
+
+			const url = 'https://localhost:8080/some/path';
+			const responseText = 'some text';
+			const requestArgs: string[] = [];
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					requestArgs.push(args[1]);
+
+					if (args[1].includes('If-Modified-Since')) {
+						return JSON.stringify({
+							error: null,
+							incomingMessage: {
+								statusCode: 304,
+								statusMessage: 'Not Modified',
+								rawHeaders: ['last-modified', 'Mon, 11 Dec 2023 02:00:00 GMT'],
+								data: ''
+							}
+						});
+					}
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							// Already stale (Expires in the past) but revalidatable via Last-Modified, no ETag, no Cache-Control.
+							rawHeaders: [
+								'content-type',
+								'text/html',
+								'content-length',
+								String(responseText.length),
+								'last-modified',
+								'Mon, 11 Dec 2023 01:00:00 GMT',
+								'expires',
+								'Wed, 21 Oct 2015 07:28:00 GMT'
+							],
+							data: Buffer.from(responseText).toString('base64')
+						}
+					});
+				}
+			});
+
+			new SyncFetch({ browserFrame, window, url }).send();
+
+			const response2 = new SyncFetch({ browserFrame, window, url }).send();
+
+			expect(requestArgs.length).toBe(2);
+			expect(requestArgs[1]).toContain('If-Modified-Since');
+			expect(requestArgs[1]).toContain('Mon, 11 Dec 2023 01:00:00 GMT');
+			expect(response2.status).toBe(200);
+			expect(response2.headers.get('Last-Modified')).toBe('Mon, 11 Dec 2023 02:00:00 GMT');
+		});
+
 		it('Updates cache after a failed revalidation with a "If-Modified-Since" request for a GET response with "Cache-Control" set to a "max-age".', async () => {
 			browserFrame.url = 'https://localhost:8080/';
 
