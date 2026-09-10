@@ -3,6 +3,8 @@ import Window from '../../src/window/Window.js';
 import type Document from '../../src/nodes/document/Document.js';
 import Node from '../../src/nodes/node/Node.js';
 import type HTMLElement from '../../src/nodes/html-element/HTMLElement.js';
+import type Element from '../../src/nodes/element/Element.js';
+import type HTMLInputElement from '../../src/nodes/html-input-element/HTMLInputElement.js';
 import NamespaceURI from '../../src/config/NamespaceURI.js';
 import type DocumentType from '../../src/nodes/document-type/DocumentType.js';
 import HTMLSerializer from '../../src/html-serializer/HTMLSerializer.js';
@@ -2293,6 +2295,54 @@ describe('HTMLParser', () => {
 			// &apos; named reference (should also work)
 			const result5 = new HTMLParser(window).parse(`<div data-foo="&apos;"></div>`);
 			expect(new HTMLSerializer().serializeToString(result5)).toBe(`<div data-foo="'"></div>`);
+		});
+
+		it('Keeps only the last checked radio button within a name group.', () => {
+			const result = new HTMLParser(window).parse(
+				'<input type="radio" name="g" checked><input type="radio" name="g" checked>'
+			);
+			const radios = <HTMLInputElement[]>(<Element>result).querySelectorAll('input');
+			expect(radios[0].checked).toBe(false);
+			expect(radios[1].checked).toBe(true);
+		});
+
+		it('Does not affect radio buttons in different name groups.', () => {
+			const result = new HTMLParser(window).parse(
+				'<input type="radio" name="a" checked><input type="radio" name="b" checked>'
+			);
+			const radios = <HTMLInputElement[]>(<Element>result).querySelectorAll('input');
+			expect(radios[0].checked).toBe(true);
+			expect(radios[1].checked).toBe(true);
+		});
+
+		it('Scopes radio button groups per form.', () => {
+			const result = new HTMLParser(window).parse(
+				`<form>
+					<input type="radio" name="g" checked>
+				</form>
+				<form>
+					<input type="radio" name="g" checked>
+				</form>`
+			);
+			const radios = <HTMLInputElement[]>(<Element>result).querySelectorAll('input');
+			expect(radios[0].checked).toBe(true);
+			expect(radios[1].checked).toBe(true);
+		});
+
+		it('Unchecks an already checked radio button elsewhere in the form when parsing into a live container (e.g. innerHTML).', () => {
+			const form = <Element>new HTMLParser(window).parse(
+				`<form>
+					<input type="radio" name="g" checked>
+					<div></div>
+				</form>`
+			);
+			const container = <Element>form.querySelector('div');
+
+			new HTMLParser(window).parse('<input type="radio" name="g" checked>', container);
+
+			const radios = <HTMLInputElement[]>form.querySelectorAll('input');
+			expect(radios[0].checked).toBe(false);
+			expect(radios[1].checked).toBe(true);
 		});
 	});
 });
