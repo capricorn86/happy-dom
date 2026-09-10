@@ -31,18 +31,23 @@ export default class ChildNodeUtility {
 			return;
 		}
 
-		for (const node of nodes) {
-			if (node instanceof Node) {
-				parent.insertBefore(node, childNode);
-			} else {
-				parent.insertBefore(
-					parent[PropertySymbol.ownerDocument].createTextNode(String(node)),
-					childNode
-				);
-			}
+		const document = parent[PropertySymbol.ownerDocument];
+
+		// A single node is replaced directly, so that the tree never holds the old and the new one
+		// at the same time. Inserting first fails the checks that only allow one element on a
+		// document.
+		if (nodes.length === 1 && nodes[0] instanceof Node) {
+			parent.replaceChild(<Node>nodes[0], <Node>(<unknown>childNode));
+			return;
 		}
 
-		parent.removeChild(childNode);
+		const fragment = document.createDocumentFragment();
+
+		for (const node of nodes) {
+			fragment.appendChild(node instanceof Node ? node : document.createTextNode(String(node)));
+		}
+
+		parent.replaceChild(fragment, <Node>(<unknown>childNode));
 	}
 
 	/**
