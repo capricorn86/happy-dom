@@ -292,6 +292,9 @@ export default class HTMLParser {
 
 					if (match[4]) {
 						this.parseComment(html.substring(this.startTagIndex, match.index));
+					} else if (match[3]) {
+						// The "--" can be part of the end tag (e.g. "<!-->").
+						this.markupRegExp.lastIndex -= 2;
 					}
 					break;
 				case MarkupReadStateEnum.documentType:
