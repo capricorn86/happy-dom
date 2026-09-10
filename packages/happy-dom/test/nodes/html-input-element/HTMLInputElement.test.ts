@@ -689,6 +689,85 @@ describe('HTMLInputElement', () => {
 			expect(element.form).toBe(form);
 			expect(Array.from(form.elements).includes(element)).toBe(true);
 		});
+
+		it('Lets the "form" attribute win over an ancestor form.', () => {
+			const ancestor = <HTMLFormElement>document.createElement('form');
+			ancestor.id = 'ancestor';
+			const owner = <HTMLFormElement>document.createElement('form');
+			owner.id = 'owner';
+			ancestor.appendChild(element);
+			element.setAttribute('form', 'owner');
+			document.body.appendChild(ancestor);
+			document.body.appendChild(owner);
+			expect(element.form).toBe(owner);
+			expect(Array.from(ancestor.elements).includes(element)).toBe(false);
+			expect(Array.from(owner.elements).filter((item) => item === element).length).toBe(1);
+		});
+
+		it('Returns null when the "form" attribute points at a missing id or a non-form element.', () => {
+			const ancestor = <HTMLFormElement>document.createElement('form');
+			const notAForm = document.createElement('div');
+			notAForm.id = 'not-a-form';
+			ancestor.appendChild(element);
+			document.body.appendChild(ancestor);
+			document.body.appendChild(notAForm);
+
+			element.setAttribute('form', 'missing');
+			expect(element.form).toBe(null);
+
+			element.setAttribute('form', 'not-a-form');
+			expect(element.form).toBe(null);
+		});
+
+		it('Returns the ancestor form when the "form" attribute points at that same ancestor.', () => {
+			const ancestor = <HTMLFormElement>document.createElement('form');
+			ancestor.id = 'ancestor';
+			ancestor.appendChild(element);
+			element.setAttribute('form', 'ancestor');
+			document.body.appendChild(ancestor);
+			expect(element.form).toBe(ancestor);
+			expect(Array.from(ancestor.elements).filter((item) => item === element).length).toBe(1);
+		});
+
+		it('Resolves the "form" attribute within a disconnected tree, like a browser.', () => {
+			const root = document.createElement('div');
+			const ancestor = <HTMLFormElement>document.createElement('form');
+			const owner = <HTMLFormElement>document.createElement('form');
+			owner.id = 'owner';
+			ancestor.appendChild(element);
+			element.setAttribute('form', 'owner');
+			root.appendChild(ancestor);
+			root.appendChild(owner);
+
+			expect(element.form).toBe(owner);
+			expect(Array.from(ancestor.elements).includes(element)).toBe(false);
+			expect(Array.from(owner.elements).filter((item) => item === element).length).toBe(1);
+		});
+
+		it('Returns null when the "form" target is in a different tree than the element.', () => {
+			const owner = <HTMLFormElement>document.createElement('form');
+			owner.id = 'owner';
+			document.body.appendChild(owner);
+			element.setAttribute('form', 'owner');
+			expect(element.form).toBe(null);
+		});
+
+		it('Re-resolves the owner when the "form" attribute is added, changed and removed.', () => {
+			const ancestor = <HTMLFormElement>document.createElement('form');
+			const other = <HTMLFormElement>document.createElement('form');
+			other.id = 'other';
+			ancestor.appendChild(element);
+			document.body.appendChild(ancestor);
+			document.body.appendChild(other);
+
+			expect(element.form).toBe(ancestor);
+			element.setAttribute('form', 'other');
+			expect(element.form).toBe(other);
+			element.setAttribute('form', 'missing');
+			expect(element.form).toBe(null);
+			element.removeAttribute('form');
+			expect(element.form).toBe(ancestor);
+		});
 	});
 
 	describe('get list()', () => {

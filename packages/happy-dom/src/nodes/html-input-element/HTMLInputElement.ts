@@ -1,4 +1,5 @@
 import HTMLElement from '../html-element/HTMLElement.js';
+import HTMLFormControlElementUtility from '../html-element/HTMLFormControlElementUtility.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import ValidityState from '../../validity-state/ValidityState.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
@@ -259,14 +260,7 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @returns Form.
 	 */
 	public get form(): HTMLFormElement | null {
-		if (this[PropertySymbol.formNode]) {
-			return this[PropertySymbol.formNode];
-		}
-		const id = this.getAttribute('form');
-		if (!id || !this[PropertySymbol.isConnected]) {
-			return null;
-		}
-		return <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(id);
+		return HTMLFormControlElementUtility.getFormOwner(this);
 	}
 
 	/**
@@ -1534,7 +1528,7 @@ export default class HTMLInputElement extends HTMLElement {
 
 		if (checked && this.type === 'radio' && this.name) {
 			const root = <HTMLElement>(
-				(<HTMLFormElement>this[PropertySymbol.formNode] || this.getRootNode())
+				(HTMLFormControlElementUtility.getFormOwner(this) || this.getRootNode())
 			);
 			const radioButtons = <NodeList<HTMLInputElement>>(
 				root.querySelectorAll(`input[type="radio"][name="${this.name}"]`)
