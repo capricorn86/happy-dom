@@ -555,6 +555,7 @@ export default class Fetch {
 				if (
 					!this.disableCache &&
 					response instanceof Response &&
+					response.type !== 'opaqueredirect' &&
 					this.#browserFrame.page &&
 					this.#browserFrame.page.context
 				) {
@@ -579,7 +580,11 @@ export default class Fetch {
 					interceptedResponse instanceof Response ? interceptedResponse : response;
 
 				// The browser outputs errors to the console when the response is not ok.
-				if (returnResponse instanceof Response && !returnResponse.ok) {
+				if (
+					returnResponse instanceof Response &&
+					!returnResponse.ok &&
+					returnResponse.type !== 'opaqueredirect'
+				) {
 					this.#browserFrame.page.console.error(
 						`${this.request.method} ${this.request.url} ${returnResponse.status} (${returnResponse.statusText})`
 					);
@@ -918,9 +923,18 @@ export default class Fetch {
 					)
 				);
 				return true;
-			case 'manual':
-				// Nothing to do
-				return false;
+			case 'manual': {
+				// A "manual" redirect produces an opaque-redirect filtered response:
+				// status 0, empty status text, empty headers and a null body. Only the
+				// URL list is preserved, so "url" still reflects the requested URL.
+				// @see https://fetch.spec.whatwg.org/#concept-filtered-response-opaque-redirect
+				this.finalizeRequest();
+				this.response = new this.#window.Response(null, { status: 0 });
+				(<string>this.response.type) = 'opaqueredirect';
+				(<string>this.response.url) = this.request.url;
+				this.resolve!(this.response);
+				return true;
+			}
 			case 'follow':
 				const locationHeader = responseHeaders.get('Location');
 				const shouldBecomeGetRequest =

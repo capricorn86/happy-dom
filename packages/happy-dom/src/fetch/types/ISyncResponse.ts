@@ -12,6 +12,7 @@ export default interface ISyncResponse {
 	ok: boolean;
 	url: string;
 	redirected: boolean;
+	type?: 'basic' | 'cors' | 'default' | 'error' | 'opaque' | 'opaqueredirect';
 	headers: Headers;
 	body: Buffer | null;
 	[PropertySymbol.virtualServerFile]?: string | null;

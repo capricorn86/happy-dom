@@ -537,7 +537,11 @@ export default class SyncFetch {
 
 		const redirectedResponse = this.handleRedirectResponse(response) || response;
 
-		if (!this.disableCache && !redirectedResponse.redirected) {
+		if (
+			!this.disableCache &&
+			!redirectedResponse.redirected &&
+			redirectedResponse.type !== 'opaqueredirect'
+		) {
 			this.#browserFrame.page.context.responseCache.add(this.request, {
 				status: <number>redirectedResponse.status,
 				statusText: <string>redirectedResponse.statusText,
@@ -557,7 +561,7 @@ export default class SyncFetch {
 			: undefined;
 		const returnResponse =
 			typeof interceptedResponse === 'object' ? interceptedResponse : redirectedResponse;
-		if (!returnResponse.ok) {
+		if (!returnResponse.ok && returnResponse.type !== 'opaqueredirect') {
 			this.#browserFrame.page.console.error(
 				`${this.request.method} ${this.request.url} ${returnResponse.status} (${returnResponse.statusText})`
 			);
@@ -635,7 +639,20 @@ export default class SyncFetch {
 					DOMExceptionNameEnum.abortError
 				);
 			case 'manual':
-				return null;
+				// A "manual" redirect produces an opaque-redirect filtered response:
+				// status 0, empty status text, empty headers and a null body. Only the
+				// URL list is preserved, so "url" still reflects the requested URL.
+				// @see https://fetch.spec.whatwg.org/#concept-filtered-response-opaque-redirect
+				return {
+					status: 0,
+					statusText: '',
+					ok: false,
+					url: this.request.url,
+					redirected: false,
+					type: 'opaqueredirect',
+					headers: new this.#window.Headers(),
+					body: null
+				};
 			case 'follow':
 				const locationHeader = response.headers.get('Location');
 				const shouldBecomeGetRequest =
