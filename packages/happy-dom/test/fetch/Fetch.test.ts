@@ -3811,8 +3811,8 @@ describe('Fetch', () => {
 			expect(headers2).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'Cache-Control': 'max-age=1',
-				'Last-Modified': 'Mon, 11 Dec 2023 02:00:00 GMT'
+				'cache-control': 'max-age=1',
+				'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT'
 			});
 
 			expect(requestArgs).toEqual([
@@ -4145,8 +4145,8 @@ describe('Fetch', () => {
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
 				'cache-control': `max-age=0.0001`,
-				'Last-Modified': 'Mon, 11 Dec 2023 02:00:00 GMT',
-				ETag: etag2
+				'last-modified': 'Mon, 11 Dec 2023 02:00:00 GMT',
+				etag: etag2
 			});
 
 			expect(requestArgs).toEqual([

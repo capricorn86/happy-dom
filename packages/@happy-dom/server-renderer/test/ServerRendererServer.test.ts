@@ -794,9 +794,9 @@ describe('ServerRendererServer', () => {
 				expect(responseStatusCode).toBe(200);
 
 				expect(responseHeaders).toEqual({
-					'Content-Encoding': 'gzip',
-					'Content-Type': 'image/png',
-					'X-Happy-DOM': 'true'
+					'content-encoding': 'gzip',
+					'content-type': 'image/png',
+					'x-happy-dom': 'true'
 				});
 
 				expect(await GZIP_TO_STRING(responseBody)).toBe('chunk1chunk2chunk3');
@@ -894,8 +894,8 @@ describe('ServerRendererServer', () => {
 				expect(responseStatusCode).toBe(200);
 
 				expect(responseHeaders).toEqual({
-					'Content-Type': 'image/png',
-					'X-Happy-DOM': 'true'
+					'content-type': 'image/png',
+					'x-happy-dom': 'true'
 				});
 
 				let string = '';
