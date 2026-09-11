@@ -6,13 +6,14 @@ import type ISelectorAttribute from './ISelectorAttribute.js';
 import type ISelectorMatch from './ISelectorMatch.js';
 import type ISelectorPseudo from './ISelectorPseudo.js';
 import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
+import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
+import type ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
+import type { TGlobalMatchFunction } from './TGlobalMatchFunction.js';
 
 /**
  * Selector item.
  */
 export default class SelectorItem {
-	public root: Element | DocumentFragment | null;
-	public scope: Element | DocumentFragment | null;
 	public tagName: string | null;
 	public id: string | null;
 	public classNames: string[] | null;
@@ -20,13 +21,13 @@ export default class SelectorItem {
 	public pseudos: ISelectorPseudo[] | null;
 	public isPseudoElement: boolean;
 	public combinator: SelectorCombinatorEnum;
-	public ignoreErrors: boolean;
+	public globalMatchFunction: TGlobalMatchFunction;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param [options] Options.
-	 * @param [options.scope] Scope.
+	 * @param options Options.
+	 * @param options.globalMatchFunction Global match function.
 	 * @param [options.combinator] Combinator.
 	 * @param [options.tagName] Tag name.
 	 * @param [options.id] ID.
@@ -36,8 +37,8 @@ export default class SelectorItem {
 	 * @param [options.isPseudoElement] Is pseudo element.
 	 * @param [options.ignoreErrors] Ignore errors.
 	 */
-	constructor(options?: {
-		scope?: Element | DocumentFragment;
+	constructor(options: {
+		globalMatchFunction: TGlobalMatchFunction;
 		tagName?: string;
 		id?: string;
 		classNames?: string[];
@@ -45,13 +46,8 @@ export default class SelectorItem {
 		pseudos?: ISelectorPseudo[];
 		isPseudoElement?: boolean;
 		combinator?: SelectorCombinatorEnum;
-		ignoreErrors?: boolean;
 	}) {
-		this.root =
-			options?.scope?.[PropertySymbol.ownerDocument]?.documentElement ||
-			options?.scope?.[PropertySymbol.window].document?.documentElement ||
-			null;
-		this.scope = options?.scope || null;
+		this.globalMatchFunction = options!.globalMatchFunction;
 		this.tagName = options?.tagName || null;
 		this.id = options?.id || null;
 		this.classNames = options?.classNames || null;
@@ -59,19 +55,34 @@ export default class SelectorItem {
 		this.pseudos = options?.pseudos || null;
 		this.isPseudoElement = options?.isPseudoElement || false;
 		this.combinator = options?.combinator || SelectorCombinatorEnum.none;
-		this.ignoreErrors = options?.ignoreErrors || false;
 	}
 
 	/**
 	 * Matches a selector against an element.
 	 *
+	 * @param scope Scope.
 	 * @param element HTML element.
+	 * @param [ignoreErrors] Ignores errors.
 	 * @returns Result.
 	 */
-	public match(element: Element): ISelectorMatch | null {
+	public match(
+		scope: Element | DocumentFragment | null,
+		element: Element | ShadowRoot,
+		ignoreErrors?: boolean
+	): ISelectorMatch | null {
 		let priorityWeight = 0;
 
 		if (this.isPseudoElement) {
+			return null;
+		}
+
+		element = <Element>(
+			(element[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode
+				? (<ShadowRoot>element).host!
+				: element)
+		);
+
+		if (!element) {
 			return null;
 		}
 
@@ -111,7 +122,7 @@ export default class SelectorItem {
 
 		// Pseudo match
 		if (this.pseudos) {
-			const result = this.matchPseudo(element);
+			const result = this.matchPseudo(scope, element, ignoreErrors);
 			if (!result) {
 				return null;
 			}
@@ -124,10 +135,16 @@ export default class SelectorItem {
 	/**
 	 * Matches a pseudo selector.
 	 *
+	 * @param scope Scope.
 	 * @param element Element.
+	 * @param [ignoreErrors] Ignores errors.
 	 * @returns Result.
 	 */
-	private matchPseudo(element: Element): ISelectorMatch | null {
+	private matchPseudo(
+		scope: Element | DocumentFragment | null,
+		element: Element,
+		ignoreErrors?: boolean
+	): ISelectorMatch | null {
 		const parent = <Element>element[PropertySymbol.parentNode];
 		const parentChildren = element[PropertySymbol.parentNode]
 			? (<Element>element[PropertySymbol.parentNode])[PropertySymbol.elementArray]
@@ -149,8 +166,9 @@ export default class SelectorItem {
 				case 'nth-last-of-type':
 				case 'is':
 				case 'where':
+				case 'host-context':
 					if (!pseudo.arguments) {
-						if (this.ignoreErrors) {
+						if (ignoreErrors) {
 							return null;
 						}
 						throw new element[PropertySymbol.window].DOMException(
@@ -179,7 +197,13 @@ export default class SelectorItem {
 				}
 			}
 
-			const selectorMatch = this.matchPseudoItem(element, parentChildren, pseudo);
+			const selectorMatch = this.matchPseudoItem(
+				scope,
+				element,
+				parentChildren,
+				pseudo,
+				ignoreErrors
+			);
 
 			if (!selectorMatch) {
 				return null;
@@ -194,15 +218,20 @@ export default class SelectorItem {
 	/**
 	 * Matches a pseudo selector.
 	 *
+	 * @param scope Scope.
 	 * @param element Element.
 	 * @param parentChildren Parent children.
 	 * @param pseudo Pseudo.
+	 * @param [ignoreErrors] Ignores errors.
 	 */
 	private matchPseudoItem(
+		scope: Element | DocumentFragment | null,
 		element: Element,
 		parentChildren: Element[],
-		pseudo: ISelectorPseudo
+		pseudo: ISelectorPseudo,
+		ignoreErrors?: boolean
 	): ISelectorMatch | null {
+		const root = this.getRootElement(scope);
 		switch (pseudo.name) {
 			case 'first-child':
 				return parentChildren[0] === element ? { priorityWeight: 10 } : null;
@@ -253,21 +282,37 @@ export default class SelectorItem {
 					? { priorityWeight: 10 }
 					: null;
 			case 'root':
-				return this.root && element === this.root ? { priorityWeight: 10 } : null;
+				return root && element === root ? { priorityWeight: 10 } : null;
+			case 'host':
+				if (pseudo.arguments) {
+					return element.shadowRoot &&
+						this.globalMatchFunction(element, pseudo.arguments, { ignoreErrors: ignoreErrors })
+						? { priorityWeight: 10 }
+						: null;
+				}
+				return element.shadowRoot ? { priorityWeight: 10 } : null;
+			case 'host-context':
+				return element.shadowRoot &&
+					this.globalMatchFunction(element, pseudo.arguments!, { ignoreErrors: ignoreErrors })
+					? { priorityWeight: 10 }
+					: null;
 			case 'not':
 				for (const selectorItem of pseudo.selectorItems!) {
-					if (selectorItem.match(element)) {
+					if (selectorItem.match(scope, element)) {
 						return null;
 					}
 				}
 				return { priorityWeight: 10 };
 			case 'nth-child':
 				let nthChildIndex = -1;
-				if (pseudo.selectorItems?.[0] && !pseudo.selectorItems[0].match(element)) {
+				if (pseudo.selectorItems?.[0] && !pseudo.selectorItems[0].match(scope, element)) {
 					return null;
 				}
 				for (let i = 0, max = parentChildren.length; i < max; i++) {
-					if (!pseudo.selectorItems?.[0] || pseudo.selectorItems![0].match(parentChildren[i])) {
+					if (
+						!pseudo.selectorItems?.[0] ||
+						pseudo.selectorItems![0].match(scope, parentChildren[i])
+					) {
 						nthChildIndex++;
 					}
 					if (parentChildren[i] === element) {
@@ -292,11 +337,14 @@ export default class SelectorItem {
 				return null;
 			case 'nth-last-child':
 				let nthLastChildIndex = -1;
-				if (pseudo.selectorItems?.[0] && !pseudo.selectorItems[0].match(element)) {
+				if (pseudo.selectorItems?.[0] && !pseudo.selectorItems[0].match(scope, element)) {
 					return null;
 				}
 				for (let i = parentChildren.length - 1; i >= 0; i--) {
-					if (!pseudo.selectorItems?.[0] || pseudo.selectorItems![0].match(parentChildren[i])) {
+					if (
+						!pseudo.selectorItems?.[0] ||
+						pseudo.selectorItems![0].match(scope, parentChildren[i])
+					) {
 						nthLastChildIndex++;
 					}
 					if (parentChildren[i] === element) {
@@ -331,7 +379,7 @@ export default class SelectorItem {
 					return null;
 				}
 				for (const selectorItem of pseudo.selectorItems) {
-					const match = selectorItem.match(element);
+					const match = selectorItem.match(scope, element);
 					if (match && priorityWeightForIs < match.priorityWeight) {
 						priorityWeightForIs = match.priorityWeight;
 					}
@@ -342,7 +390,7 @@ export default class SelectorItem {
 					return null;
 				}
 				for (const selectorItem of pseudo.selectorItems) {
-					if (selectorItem.match(element)) {
+					if (selectorItem.match(scope, element)) {
 						return { priorityWeight: 0 };
 					}
 				}
@@ -356,7 +404,7 @@ export default class SelectorItem {
 							return null;
 						}
 						for (const selectorItem of pseudo.selectorItems) {
-							const match = selectorItem.match(nextSibling);
+							const match = selectorItem.match(scope, nextSibling);
 							if (match && priorityWeightForHas < match.priorityWeight) {
 								priorityWeightForHas = match.priorityWeight;
 							}
@@ -364,7 +412,7 @@ export default class SelectorItem {
 					} else if (pseudo.arguments[0] === '>') {
 						for (const selectorItem of pseudo.selectorItems) {
 							for (const child of element[PropertySymbol.elementArray]) {
-								const match = selectorItem.match(child);
+								const match = selectorItem.match(scope, child);
 								if (match && priorityWeightForHas < match.priorityWeight) {
 									priorityWeightForHas = match.priorityWeight;
 									break;
@@ -373,7 +421,7 @@ export default class SelectorItem {
 						}
 					} else {
 						for (const selectorItem of pseudo.selectorItems) {
-							const match = this.matchChildOfElement(selectorItem, element);
+							const match = this.matchChildOfElement(scope, selectorItem, element, ignoreErrors);
 							if (match && priorityWeightForHas < match.priorityWeight) {
 								priorityWeightForHas = match.priorityWeight;
 							}
@@ -387,7 +435,7 @@ export default class SelectorItem {
 					? { priorityWeight: 10 }
 					: null;
 			case 'scope':
-				return this.scope && this.scope === element ? { priorityWeight: 10 } : null;
+				return scope && scope === element ? { priorityWeight: 10 } : null;
 			default:
 				return null;
 		}
@@ -456,20 +504,24 @@ export default class SelectorItem {
 	/**
 	 * Matches a selector item against children of an element.
 	 *
+	 * @param scope Scope.
 	 * @param selectorItem Selector item.
 	 * @param element Element.
+	 * @param [ignoreErrors] Ignores errors.
 	 * @returns Result.
 	 */
 	private matchChildOfElement(
+		scope: Element | DocumentFragment | null,
 		selectorItem: SelectorItem,
-		element: Element
+		element: Element,
+		ignoreErrors?: boolean
 	): { priorityWeight: number } | null {
 		for (const child of element[PropertySymbol.elementArray]) {
-			const match = selectorItem.match(child);
+			const match = selectorItem.match(scope, child, ignoreErrors);
 			if (match) {
 				return match;
 			}
-			const childMatch = this.matchChildOfElement(selectorItem, child);
+			const childMatch = this.matchChildOfElement(scope, selectorItem, child, ignoreErrors);
 			if (childMatch) {
 				return childMatch;
 			}
@@ -503,5 +555,21 @@ export default class SelectorItem {
 						.join('')
 				: ''
 		}`;
+	}
+
+	/**
+	 * Returns the root element.
+	 *
+	 * @param scope Scope.
+	 * @returns Root element.
+	 */
+	private getRootElement(
+		scope: Element | DocumentFragment | null
+	): Element | DocumentFragment | null {
+		return (
+			scope?.[PropertySymbol.ownerDocument]?.documentElement ||
+			scope?.[PropertySymbol.window].document?.documentElement ||
+			null
+		);
 	}
 }

@@ -413,7 +413,7 @@ describe('XMLHttpRequest', () => {
 
 		it(`Throws an exception if responseType is not empty string or "${XMLHttpResponseTypeEnum.text}".`, () => {
 			request.responseType = XMLHttpResponseTypeEnum.json;
-			expect(() => request.responseText).toThrowError(
+			expect(() => request.responseText).toThrow(
 				`Failed to read the 'responseText' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'text' (was '${XMLHttpResponseTypeEnum.json}').`
 			);
 		});
@@ -478,7 +478,7 @@ describe('XMLHttpRequest', () => {
 
 				request.open('GET', REQUEST_URL, true);
 				request.addEventListener('progress', () => {
-					expect(() => (request.responseType = XMLHttpResponseTypeEnum.json)).toThrowError(
+					expect(() => (request.responseType = XMLHttpResponseTypeEnum.json)).toThrow(
 						`Failed to set the 'responseType' property on 'XMLHttpRequest': The object's state must be OPENED or UNSENT.`
 					);
 				});
@@ -489,7 +489,7 @@ describe('XMLHttpRequest', () => {
 
 		it(`Throws an exception if the request is synchronous.`, () => {
 			request.open('GET', REQUEST_URL, false);
-			expect(() => (request.responseType = XMLHttpResponseTypeEnum.json)).toThrowError(
+			expect(() => (request.responseType = XMLHttpResponseTypeEnum.json)).toThrow(
 				`Failed to set the 'responseType' property on 'XMLHttpRequest': The response type cannot be changed for synchronous requests made from a document.`
 			);
 		});
@@ -503,7 +503,7 @@ describe('XMLHttpRequest', () => {
 
 		it('Throws an exception for forbidden request methods.', () => {
 			for (const forbiddenMethod of FORBIDDEN_REQUEST_METHODS) {
-				expect(() => request.open(forbiddenMethod, REQUEST_URL, true)).toThrowError(
+				expect(() => request.open(forbiddenMethod, REQUEST_URL, true)).toThrow(
 					`'${forbiddenMethod}' is not a valid HTTP method.`
 				);
 			}
@@ -511,7 +511,7 @@ describe('XMLHttpRequest', () => {
 
 		it(`Throws an exception if the request is set to be synchronous and responseType is not ${XMLHttpResponseTypeEnum.text}.`, () => {
 			request.responseType = XMLHttpResponseTypeEnum.json;
-			expect(() => request.open('GET', REQUEST_URL, false)).toThrowError(
+			expect(() => request.open('GET', REQUEST_URL, false)).toThrow(
 				`Failed to execute 'open' on 'XMLHttpRequest': Synchronous requests from a document must not set a response type.`
 			);
 		});
@@ -605,7 +605,7 @@ describe('XMLHttpRequest', () => {
 		});
 
 		it(`Throws an exception if ready state is not "opened".`, () => {
-			expect(() => request.setRequestHeader('key', 'value')).toThrowError(
+			expect(() => request.setRequestHeader('key', 'value')).toThrow(
 				`Failed to execute 'setRequestHeader' on 'XMLHttpRequest': The object's state must be OPENED.`
 			);
 		});
@@ -713,7 +713,7 @@ describe('XMLHttpRequest', () => {
 
 	describe('send()', () => {
 		it('Throws an exception if the request has not been opened.', () => {
-			expect(() => request.send()).toThrowError(
+			expect(() => request.send()).toThrow(
 				`Failed to execute 'send' on 'XMLHttpRequest': Connection must be opened before send() is called.`
 			);
 		});
@@ -1474,7 +1474,7 @@ describe('XMLHttpRequest', () => {
 
 			request.open('GET', REQUEST_URL, true);
 			request.addEventListener('progress', () => {
-				expect(() => request.overrideMimeType('application/xml')).toThrowError(
+				expect(() => request.overrideMimeType('application/xml')).toThrow(
 					new DOMException(
 						`Failed to execute 'overrideMimeType' on 'XMLHttpRequest': MIME type cannot be overridden when the request state is LOADING or DONE.`,
 						DOMExceptionNameEnum.invalidStateError
@@ -1496,7 +1496,7 @@ describe('XMLHttpRequest', () => {
 
 			await window.happyDOM?.waitUntilComplete();
 
-			expect(() => request.overrideMimeType('application/xml')).toThrowError(
+			expect(() => request.overrideMimeType('application/xml')).toThrow(
 				new window.DOMException(
 					`Failed to execute 'overrideMimeType' on 'XMLHttpRequest': MIME type cannot be overridden when the request state is LOADING or DONE.`,
 					DOMExceptionNameEnum.invalidStateError

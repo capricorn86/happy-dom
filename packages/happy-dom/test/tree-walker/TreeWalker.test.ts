@@ -42,19 +42,19 @@ describe('TreeWalker', () => {
 			expect(() => {
 				// @ts-ignore
 				document.createTreeWalker(123);
-			}).toThrowError('Parameter 1 was not of type Node.');
+			}).toThrow('Parameter 1 was not of type Node.');
 			expect(() => {
 				// @ts-ignore
 				document.createTreeWalker('string');
-			}).toThrowError('Parameter 1 was not of type Node.');
+			}).toThrow('Parameter 1 was not of type Node.');
 			expect(() => {
 				// @ts-ignore
 				document.createTreeWalker({});
-			}).toThrowError('Parameter 1 was not of type Node.');
+			}).toThrow('Parameter 1 was not of type Node.');
 			expect(() => {
 				// @ts-ignore
 				document.createTreeWalker(null);
-			}).toThrowError('Parameter 1 was not of type Node.');
+			}).toThrow('Parameter 1 was not of type Node.');
 		});
 	});
 
@@ -79,25 +79,25 @@ describe('TreeWalker', () => {
 			expect(() => {
 				// @ts-ignore
 				treeWalker.currentNode = 123;
-			}).toThrowError(
+			}).toThrow(
 				"Failed to set the 'currentNode' property on 'TreeWalker': Failed to convert value to 'Node'."
 			);
 			expect(() => {
 				// @ts-ignore
 				treeWalker.currentNode = undefined;
-			}).toThrowError(
+			}).toThrow(
 				"Failed to set the 'currentNode' property on 'TreeWalker': Failed to convert value to 'Node'."
 			);
 			expect(() => {
 				// @ts-ignore
 				treeWalker.currentNode = null;
-			}).toThrowError(
+			}).toThrow(
 				"Failed to set the 'currentNode' property on 'TreeWalker': Failed to convert value to 'Node'."
 			);
 			expect(() => {
 				// @ts-ignore
 				treeWalker.currentNode = {};
-			}).toThrowError(
+			}).toThrow(
 				"Failed to set the 'currentNode' property on 'TreeWalker': Failed to convert value to 'Node'."
 			);
 		});

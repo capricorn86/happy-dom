@@ -17,22 +17,12 @@
 		"preserveConstEnums": true,
 		"sourceMap": true,
 		"skipLibCheck": true,
-		"baseUrl": ".",
 		"composite": true,
 		"incremental": true,
 		"jsx": "react",
-        "tsBuildInfoFile": "../.turbo/.tsbuildinfo",
-		"types": [
-			"node"
-		],
-		"lib": [
-			"es2015",
-			"es2016",
-			"es2017"
-		]
+		"tsBuildInfoFile": "../.turbo/.tsbuildinfo",
+		"types": ["node"],
+		"lib": ["es2015", "es2016", "es2017"]
 	},
-	"include": [
-		"@types/node",
-		"src"
-	]
+	"include": ["@types/node", "src"]
 }

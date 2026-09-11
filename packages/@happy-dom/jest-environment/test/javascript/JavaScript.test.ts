@@ -14,7 +14,7 @@ describe('JavaScript', () => {
 	});
 
 	it('Can perform a real fetch()', async () => {
-		location.href = 'http://localhost:3000/';
+		location.href = 'http://localhost:3001/';
 
 		const express = Express();
 
@@ -23,8 +23,8 @@ describe('JavaScript', () => {
 			res.send('{ "key1": "value1" }');
 		});
 
-		const server = express.listen(3000);
-		const response = await fetch('http://localhost:3000/get/json');
+		const server = express.listen(3001);
+		const response = await fetch('http://localhost:3001/get/json');
 
 		server.close();
 
@@ -32,7 +32,7 @@ describe('JavaScript', () => {
 		expect(response.ok).toBe(true);
 		expect(response.status).toBe(200);
 		expect(response.statusText).toBe('OK');
-		expect(response.url).toBe('http://localhost:3000/get/json');
+		expect(response.url).toBe('http://localhost:3001/get/json');
 		expect(response.redirected).toBe(false);
 
 		const json = await response.json();
@@ -41,7 +41,7 @@ describe('JavaScript', () => {
 	});
 
 	it('Can perform a real FormData post request using fetch()', async () => {
-		location.href = 'http://localhost:3000/';
+		location.href = 'http://localhost:3002/';
 
 		const express = Express();
 
@@ -56,13 +56,13 @@ describe('JavaScript', () => {
 			});
 		});
 
-		const server = express.listen(3000);
+		const server = express.listen(3002);
 		const requestFormData = new FormData();
 
 		requestFormData.append('key1', 'value1');
 		requestFormData.append('key2', 'value2');
 
-		const response = await fetch('http://localhost:3000/post/formdata', {
+		const response = await fetch('http://localhost:3002/post/formdata', {
 			method: 'POST',
 			body: requestFormData
 		});
@@ -71,7 +71,7 @@ describe('JavaScript', () => {
 		expect(response.ok).toBe(true);
 		expect(response.status).toBe(200);
 		expect(response.statusText).toBe('OK');
-		expect(response.url).toBe('http://localhost:3000/post/formdata');
+		expect(response.url).toBe('http://localhost:3002/post/formdata');
 		expect(response.redirected).toBe(false);
 
 		const text = await response.text();
@@ -89,7 +89,7 @@ describe('JavaScript', () => {
 	});
 
 	it('Can perform a real asynchronous XMLHttpRequest request', (done) => {
-		location.href = 'http://localhost:3000/';
+		location.href = 'http://localhost:3003/';
 
 		const express = Express();
 
@@ -98,17 +98,17 @@ describe('JavaScript', () => {
 			res.send('{ "key1": "value1" }');
 		});
 
-		const server = express.listen(3000);
+		const server = express.listen(3003);
 		const request = new XMLHttpRequest();
 
-		request.open('GET', 'http://localhost:3000/get/json', true);
+		request.open('GET', 'http://localhost:3003/get/json', true);
 
 		request.addEventListener('load', () => {
 			expect(request.getResponseHeader('content-type')).toBe('application/json; charset=utf-8');
 			expect(request.responseText).toBe('{ "key1": "value1" }');
 			expect(request.status).toBe(200);
 			expect(request.statusText).toBe('OK');
-			expect(request.responseURL).toBe('http://localhost:3000/get/json');
+			expect(request.responseURL).toBe('http://localhost:3003/get/json');
 
 			server.close();
 

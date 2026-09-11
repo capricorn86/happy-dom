@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import type BrowserWindow from '../../src/window/BrowserWindow.js';
 import Window from '../../src/window/Window.js';
-import CSSParser from '../../src/css/utilities/CSSParser.js';
+import CSSRuleParser from '../../src/css/utilities/CSSRuleParser.js';
 import type CSSStyleSheet from '../../src/css/CSSStyleSheet.js';
 import CSSRuleTypeEnum from '../../src/css/CSSRuleTypeEnum.js';
 import CSSStyleRule from '../../src/css/rules/CSSStyleRule.js';
@@ -11,12 +11,12 @@ import CSSRule from '../../src/css/CSSRule.js';
 describe('CSSRule', () => {
 	let window: BrowserWindow;
 	let styleSheet: CSSStyleSheet;
-	let cssParser: CSSParser;
+	let cssParser: CSSRuleParser;
 
 	beforeEach(() => {
 		window = new Window();
 		styleSheet = new window.CSSStyleSheet();
-		cssParser = new CSSParser(styleSheet);
+		cssParser = new CSSRuleParser(styleSheet);
 	});
 
 	for (const property of [
@@ -37,7 +37,7 @@ describe('CSSRule', () => {
 	]) {
 		describe(`static get ${property}()`, () => {
 			it(`Should have property ${property}`, () => {
-				expect(CSSRule[property[0]]).toBe(property[1]);
+				expect((<any>CSSRule)[property[0]]).toBe(property[1]);
 			});
 		});
 	}

@@ -83,7 +83,7 @@ describe('KeyboardEvent', () => {
 		it('Throws an error when no arguments are passed', () => {
 			const event = new KeyboardEvent('keydown');
 			// @ts-expect-error
-			expect(() => event.getModifierState()).toThrowError(
+			expect(() => event.getModifierState()).toThrow(
 				new TypeError(
 					"Failed to execute 'getModifierState' on 'KeyboardEvent': 1 argument required, but only 0 present."
 				)

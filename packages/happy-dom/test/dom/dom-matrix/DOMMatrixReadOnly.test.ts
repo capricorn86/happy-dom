@@ -1,18 +1,26 @@
 import { beforeEach, describe, it, expect } from 'vitest';
 import DOMMatrixReadOnly from '../../../src/dom/dom-matrix/DOMMatrixReadOnly.js';
-import DOMMatrix from '../../../src/dom/dom-matrix/DOMMatrix.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
-import DOMPoint from '../../../src/dom/DOMPoint.js';
+import type BrowserWindow from '../../../src/window/BrowserWindow.js';
+import Window from '../../../src/window/Window.js';
 
 describe('DOMMatrixReadOnly', () => {
+	let window: BrowserWindow;
+
+	beforeEach(() => {
+		window = new Window();
+	});
+
 	describe('constructor()', () => {
 		it('Creates a new DOMMatrixReadOnly.', () => {
-			const matrix = new DOMMatrixReadOnly();
+			const matrix = new window.DOMMatrixReadOnly();
 			expect(matrix).toBeInstanceOf(DOMMatrixReadOnly);
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a DOMMatrix instance.', () => {
-			const matrix = new DOMMatrixReadOnly(new DOMMatrix('matrix(10, 20, 30, 40, 50, 60)'));
+			const matrix = new window.DOMMatrixReadOnly(
+				new window.DOMMatrix('matrix(10, 20, 30, 40, 50, 60)')
+			);
 
 			expect(matrix.a).toBe(10);
 			expect(matrix.b).toBe(20);
@@ -39,8 +47,10 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a DOMMatrixReadOnly instance.', () => {
-			const matrix = new DOMMatrixReadOnly(
-				new DOMMatrixReadOnly('matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)')
+			const matrix = new window.DOMMatrixReadOnly(
+				new window.DOMMatrixReadOnly(
+					'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
+				)
 			);
 
 			expect(matrix.a).toBe(1);
@@ -68,7 +78,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a DOM Matrix compatible object.', () => {
-			const matrix = new DOMMatrixReadOnly({
+			const matrix = new window.DOMMatrixReadOnly({
 				a: 10,
 				b: 20,
 				c: 30,
@@ -100,7 +110,7 @@ describe('DOMMatrixReadOnly', () => {
 			expect(matrix.m43).toBe(0);
 			expect(matrix.m44).toBe(1);
 
-			const matrix2 = new DOMMatrixReadOnly({
+			const matrix2 = new window.DOMMatrixReadOnly({
 				m11: 1,
 				m12: 2,
 				m13: 3,
@@ -141,7 +151,7 @@ describe('DOMMatrixReadOnly', () => {
 			expect(matrix2.m42).toBe(14);
 			expect(matrix2.m43).toBe(15);
 
-			const matrix3 = new DOMMatrixReadOnly({
+			const matrix3 = new window.DOMMatrixReadOnly({
 				m11: 1,
 				m12: 2,
 				m13: 3,
@@ -173,7 +183,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from an 2D array.', () => {
-			const matrix = new DOMMatrixReadOnly([10, 20, 30, 40, 50, 60]);
+			const matrix = new window.DOMMatrixReadOnly([10, 20, 30, 40, 50, 60]);
 
 			expect(matrix.a).toBe(10);
 			expect(matrix.b).toBe(20);
@@ -201,7 +211,7 @@ describe('DOMMatrixReadOnly', () => {
 
 		it('Creates a new DOMMatrixReadOnly from an 3D array.', () => {
 			// prettier-ignore
-			const matrix = new DOMMatrixReadOnly([
+			const matrix = new window.DOMMatrixReadOnly([
                 1, 2, 3, 4,
                 5, 6, 7, 8,
                 9, 10, 11, 12,
@@ -233,7 +243,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "matrix(10, 20, 30, 40, 50, 60)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
 
 			expect(matrix.a).toBe(10);
 			expect(matrix.b).toBe(20);
@@ -260,7 +270,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)" string.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
 			);
 
@@ -289,7 +299,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "perspective(none)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('perspective(none)');
+			const matrix = new window.DOMMatrixReadOnly('perspective(none)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 1,
@@ -318,11 +328,11 @@ describe('DOMMatrixReadOnly', () => {
 				isIdentity: true
 			});
 
-			expect(matrix.toJSON()).toEqual(new DOMMatrixReadOnly('perspective(0)').toJSON());
+			expect(matrix.toJSON()).toEqual(new window.DOMMatrixReadOnly('perspective(0)').toJSON());
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "perspective(100px)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('perspective(100px)');
+			const matrix = new window.DOMMatrixReadOnly('perspective(100px)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 1,
@@ -353,7 +363,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "perspective(10cm)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('perspective(10cm)');
+			const matrix = new window.DOMMatrixReadOnly('perspective(10cm)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 1,
@@ -384,7 +394,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "perspective(100mm)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('perspective(100mm)');
+			const matrix = new window.DOMMatrixReadOnly('perspective(100mm)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 1,
@@ -415,7 +425,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "perspective(10in)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('perspective(10in)');
+			const matrix = new window.DOMMatrixReadOnly('perspective(10in)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 1,
@@ -446,7 +456,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "perspective(10pt)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('perspective(10pt)');
+			const matrix = new window.DOMMatrixReadOnly('perspective(10pt)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 1,
@@ -477,7 +487,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "perspective(10pc)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('perspective(10pc)');
+			const matrix = new window.DOMMatrixReadOnly('perspective(10pc)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 1,
@@ -508,7 +518,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "perspective(10Q)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('perspective(10Q)');
+			const matrix = new window.DOMMatrixReadOnly('perspective(10Q)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 1,
@@ -539,7 +549,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "translate(10px, 20px)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('translate(10px, 20px)');
+			const matrix = new window.DOMMatrixReadOnly('translate(10px, 20px)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 1,
@@ -570,7 +580,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "translate3d(10px, 20px, 30px)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('translate3d(10px, 20px, 30px)');
+			const matrix = new window.DOMMatrixReadOnly('translate3d(10px, 20px, 30px)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 1,
@@ -601,7 +611,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "translateX(10px)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('translateX(10px)');
+			const matrix = new window.DOMMatrixReadOnly('translateX(10px)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 1,
@@ -632,7 +642,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "translateY(10px)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('translateY(10px)');
+			const matrix = new window.DOMMatrixReadOnly('translateY(10px)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 1,
@@ -663,7 +673,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "translateZ(10px)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('translateZ(10px)');
+			const matrix = new window.DOMMatrixReadOnly('translateZ(10px)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 1,
@@ -694,7 +704,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "rotate(10rad)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('rotate(10rad)');
+			const matrix = new window.DOMMatrixReadOnly('rotate(10rad)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: -0.839071529076452,
@@ -723,11 +733,11 @@ describe('DOMMatrixReadOnly', () => {
 				m44: 1
 			});
 
-			expect(matrix.toJSON()).toEqual(new DOMMatrixReadOnly('rotateZ(10rad)').toJSON());
+			expect(matrix.toJSON()).toEqual(new window.DOMMatrixReadOnly('rotateZ(10rad)').toJSON());
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "rotateX(10deg)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('rotateX(10deg)');
+			const matrix = new window.DOMMatrixReadOnly('rotateX(10deg)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 1,
@@ -758,7 +768,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "rotateY(10deg)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('rotateY(10deg)');
+			const matrix = new window.DOMMatrixReadOnly('rotateY(10deg)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 0.984807753012208,
@@ -789,7 +799,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "rotateZ(10deg)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('rotateZ(10deg)');
+			const matrix = new window.DOMMatrixReadOnly('rotateZ(10deg)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 0.984807753012208,
@@ -820,7 +830,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "rotate3d(1, 1, 1, 45deg)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('rotate3d(1, 1, 1, 45deg)');
+			const matrix = new window.DOMMatrixReadOnly('rotate3d(1, 1, 1, 45deg)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 0.804737854124365,
@@ -851,7 +861,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "scale(10)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('scale(10)');
+			const matrix = new window.DOMMatrixReadOnly('scale(10)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 10,
@@ -882,7 +892,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "scale(10, 20)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('scale(10, 20)');
+			const matrix = new window.DOMMatrixReadOnly('scale(10, 20)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 10,
@@ -913,7 +923,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "scale3d(10, 20, 30)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('scale3d(10, 20, 30)');
+			const matrix = new window.DOMMatrixReadOnly('scale3d(10, 20, 30)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 10,
@@ -944,7 +954,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "scaleX(10)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('scaleX(10)');
+			const matrix = new window.DOMMatrixReadOnly('scaleX(10)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 10,
@@ -975,7 +985,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "scaleY(10)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('scaleY(10)');
+			const matrix = new window.DOMMatrixReadOnly('scaleY(10)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 1,
@@ -1006,7 +1016,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "scaleZ(10)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('scaleZ(10)');
+			const matrix = new window.DOMMatrixReadOnly('scaleZ(10)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 1,
@@ -1037,7 +1047,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "skew(10deg)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('skew(10deg)');
+			const matrix = new window.DOMMatrixReadOnly('skew(10deg)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 1,
@@ -1068,7 +1078,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "skew(10deg, 20deg)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('skew(10deg, 20deg)');
+			const matrix = new window.DOMMatrixReadOnly('skew(10deg, 20deg)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 1.064177772475912,
@@ -1099,7 +1109,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "skewX(10deg)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('skewX(10deg)');
+			const matrix = new window.DOMMatrixReadOnly('skewX(10deg)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 1,
@@ -1130,7 +1140,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Creates a new DOMMatrixReadOnly from a "skewY(10deg)" string.', () => {
-			const matrix = new DOMMatrixReadOnly('skewY(10deg)');
+			const matrix = new window.DOMMatrixReadOnly('skewY(10deg)');
 
 			expect(matrix.toJSON()).toEqual({
 				a: 1,
@@ -1162,38 +1172,38 @@ describe('DOMMatrixReadOnly', () => {
 
 		it('Throws an error when trying to use a relative length', () => {
 			expect(() => {
-				new DOMMatrixReadOnly('perspective(10%)');
+				new window.DOMMatrixReadOnly('perspective(10%)');
 			}).toThrow("Failed to construct 'DOMMatrixReadOnly': Lengths must be absolute, not relative");
 
 			expect(() => {
-				new DOMMatrixReadOnly('perspective(10vw)');
+				new window.DOMMatrixReadOnly('perspective(10vw)');
 			}).toThrow("Failed to construct 'DOMMatrixReadOnly': Lengths must be absolute, not relative");
 
 			expect(() => {
-				new DOMMatrixReadOnly('perspective(10vh)');
+				new window.DOMMatrixReadOnly('perspective(10vh)');
 			}).toThrow("Failed to construct 'DOMMatrixReadOnly': Lengths must be absolute, not relative");
 
 			expect(() => {
-				new DOMMatrixReadOnly('perspective(10vmin)');
+				new window.DOMMatrixReadOnly('perspective(10vmin)');
 			}).toThrow("Failed to construct 'DOMMatrixReadOnly': Lengths must be absolute, not relative");
 
 			expect(() => {
-				new DOMMatrixReadOnly('perspective(10vmax)');
+				new window.DOMMatrixReadOnly('perspective(10vmax)');
 			}).toThrow("Failed to construct 'DOMMatrixReadOnly': Lengths must be absolute, not relative");
 
 			expect(() => {
-				new DOMMatrixReadOnly('perspective(10em)');
+				new window.DOMMatrixReadOnly('perspective(10em)');
 			}).toThrow("Failed to construct 'DOMMatrixReadOnly': Lengths must be absolute, not relative");
 
 			expect(() => {
-				new DOMMatrixReadOnly('perspective(10rem)');
+				new window.DOMMatrixReadOnly('perspective(10rem)');
 			}).toThrow("Failed to construct 'DOMMatrixReadOnly': Lengths must be absolute, not relative");
 		});
 	});
 
 	describe('get a()', () => {
 		it('Returns "m11" property.', () => {
-			const matrix = new DOMMatrixReadOnly();
+			const matrix = new window.DOMMatrixReadOnly();
 			matrix[PropertySymbol.m11] = 10;
 			expect(matrix.a).toBe(10);
 		});
@@ -1201,7 +1211,7 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('get b()', () => {
 		it('Returns "m12" property.', () => {
-			const matrix = new DOMMatrixReadOnly();
+			const matrix = new window.DOMMatrixReadOnly();
 			matrix[PropertySymbol.m12] = 10;
 			expect(matrix.b).toBe(10);
 		});
@@ -1209,7 +1219,7 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('get c()', () => {
 		it('Returns "m21" property.', () => {
-			const matrix = new DOMMatrixReadOnly();
+			const matrix = new window.DOMMatrixReadOnly();
 			matrix[PropertySymbol.m21] = 10;
 			expect(matrix.c).toBe(10);
 		});
@@ -1217,7 +1227,7 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('get d()', () => {
 		it('Returns "m22" property.', () => {
-			const matrix = new DOMMatrixReadOnly();
+			const matrix = new window.DOMMatrixReadOnly();
 			matrix[PropertySymbol.m22] = 10;
 			expect(matrix.d).toBe(10);
 		});
@@ -1225,7 +1235,7 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('get e()', () => {
 		it('Returns "m41" property.', () => {
-			const matrix = new DOMMatrixReadOnly();
+			const matrix = new window.DOMMatrixReadOnly();
 			matrix[PropertySymbol.m41] = 10;
 			expect(matrix.e).toBe(10);
 		});
@@ -1233,7 +1243,7 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('get f()', () => {
 		it('Returns "m42" property.', () => {
-			const matrix = new DOMMatrixReadOnly();
+			const matrix = new window.DOMMatrixReadOnly();
 			matrix[PropertySymbol.m42] = 10;
 			expect(matrix.f).toBe(10);
 		});
@@ -1259,33 +1269,33 @@ describe('DOMMatrixReadOnly', () => {
 	]) {
 		describe(`get ${key}()`, () => {
 			it(`Returns the "${key}" property.`, () => {
-				const matrix = new DOMMatrixReadOnly();
-				matrix[PropertySymbol[key]] = 10;
-				expect(matrix[key]).toBe(10);
+				const matrix = new window.DOMMatrixReadOnly();
+				(<any>matrix)[(<any>PropertySymbol)[key]] = 10;
+				expect((<any>matrix)[key]).toBe(10);
 			});
 		});
 	}
 
 	describe('get isIdentity()', () => {
 		it('Returns true if the matrix is an identity matrix.', () => {
-			const matrix = new DOMMatrixReadOnly();
+			const matrix = new window.DOMMatrixReadOnly();
 			expect(matrix.isIdentity).toBe(true);
 		});
 
 		it('Returns false if the matrix is not an identity matrix.', () => {
-			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
 			expect(matrix.isIdentity).toBe(false);
 		});
 	});
 
 	describe('get is2D()', () => {
 		it('Returns true if the matrix is a 2D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly();
+			const matrix = new window.DOMMatrixReadOnly();
 			expect(matrix.is2D).toBe(true);
 		});
 
 		it('Returns false if the matrix is a 3D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
 			);
 			expect(matrix.is2D).toBe(false);
@@ -1294,7 +1304,7 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('toFloat32Array()', () => {
 		it('Returns a Float32Array with the matrix values when "is2D" is not set.', () => {
-			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
 			const array = matrix.toFloat32Array();
 
 			expect(array).toBeInstanceOf(Float32Array);
@@ -1318,7 +1328,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Returns a Float32Array with the matrix values when "is2D" is set.', () => {
-			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
 			const array = matrix.toFloat32Array(true);
 
 			expect(array).toBeInstanceOf(Float32Array);
@@ -1334,7 +1344,7 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('toFloat64Array()', () => {
 		it('Returns a Float64Array with the matrix values when "is2D" is not set.', () => {
-			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
 			const array = matrix.toFloat64Array();
 
 			expect(array).toBeInstanceOf(Float64Array);
@@ -1358,7 +1368,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Returns a Float64Array with the matrix values when "is2D" is set.', () => {
-			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
 			const array = matrix.toFloat64Array(true);
 
 			expect(array).toBeInstanceOf(Float64Array);
@@ -1374,12 +1384,12 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('toString()', () => {
 		it('Returns a string representation of a 2D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
 			expect(matrix.toString()).toBe('matrix(10, 20, 30, 40, 50, 60)');
 		});
 
 		it('Returns a string representation of a 3D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
 			);
 			expect(matrix.toString()).toBe(
@@ -1390,7 +1400,7 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('toJSON()', () => {
 		it('Returns a JSON representation of a 2D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
 			expect(matrix.toJSON()).toEqual({
 				a: 10,
 				b: 20,
@@ -1420,7 +1430,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Returns a JSON representation of a 3D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
 			);
 			expect(matrix.toJSON()).toEqual({
@@ -1454,8 +1464,8 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('multiply()', () => {
 		it('Multiplies two 2d matrices.', () => {
-			const matrix1 = new DOMMatrixReadOnly('matrix(2, 3, 4, 5, 6, 7)');
-			const matrix2 = new DOMMatrixReadOnly('matrix(2, 3, 4, 5, 6, 7)');
+			const matrix1 = new window.DOMMatrixReadOnly('matrix(2, 3, 4, 5, 6, 7)');
+			const matrix2 = new window.DOMMatrixReadOnly('matrix(2, 3, 4, 5, 6, 7)');
 			const result = matrix1.multiply(matrix2);
 
 			expect(result.m11).toBe(16);
@@ -1484,10 +1494,10 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Multiplies two 3d matrices.', () => {
-			const matrix1 = new DOMMatrixReadOnly(
+			const matrix1 = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
 			);
-			const matrix2 = new DOMMatrixReadOnly(
+			const matrix2 = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
 			);
 			const result = matrix1.multiply(matrix2);
@@ -1520,7 +1530,7 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('translate()', () => {
 		it('Translates a 2D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
 			const result = matrix.translate(10, 20);
 
 			expect(result.toJSON()).toEqual({
@@ -1552,7 +1562,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Translates a 3D matrix.', () => {
-			const matrix1 = new DOMMatrixReadOnly(
+			const matrix1 = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
 			);
 			const result1 = matrix1.translate(10, 20, 30);
@@ -1583,7 +1593,7 @@ describe('DOMMatrixReadOnly', () => {
 				is2D: false,
 				isIdentity: false
 			});
-			const matrix2 = new DOMMatrixReadOnly(
+			const matrix2 = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 30, 1)'
 			);
 			const result2 = matrix2.translate(5, 6, 7);
@@ -1619,7 +1629,7 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('scale()', () => {
 		it('Scales a 2D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
 			const result = matrix.scale(2, 3);
 
 			expect(result.toJSON()).toEqual({
@@ -1651,7 +1661,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Scales a 3D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
 			);
 			const result = matrix.scale(2, 3, 4);
@@ -1685,7 +1695,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Scales a 3D matrix with a point.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 30, 1)'
 			);
 			const result = matrix.scale(2, 3, 4, 5, 6, 7);
@@ -1721,7 +1731,7 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('scale3d()', () => {
 		it('Scales a 3D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
 			);
 			const result = matrix.scale3d(2);
@@ -1755,7 +1765,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Scales a 3D matrix with a point.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 30, 1)'
 			);
 			const result = matrix.scale3d(2, 5, 6, 7);
@@ -1791,7 +1801,7 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('scaleNonUniform()', () => {
 		it('Scales a 2D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
 			const result = matrix.scaleNonUniform(2, 3);
 
 			expect(result.toJSON()).toEqual({
@@ -1823,7 +1833,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Scales a 3D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)'
 			);
 			const result = matrix.scaleNonUniform(2, 3);
@@ -1859,7 +1869,7 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('rotateAxisAngle()', () => {
 		it('Rotates a 3D matrix around an axis with parameters 1, 0, 0, 90.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			const result = matrix.rotateAxisAngle(1, 0, 0, 90);
@@ -1893,7 +1903,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Rotates a 3D matrix around an axis with parameters 0, 1, 0, 90.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			const result = matrix.rotateAxisAngle(0, 1, 0, 90);
@@ -1927,7 +1937,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Rotates a 3D matrix around an axis with parameters 0, 0, 1, 90.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			const result = matrix.rotateAxisAngle(0, 0, 1, 90);
@@ -1961,7 +1971,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Rotates a 3D matrix around an axis with parameters 1, 1, 1, 90.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			const result = matrix.rotateAxisAngle(1, 1, 1, 100);
@@ -1995,7 +2005,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Rotates a 3D matrix around an axis with parameters 2, 2, 2, 90.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			const result = matrix.rotateAxisAngle(2, 2, 2, 90);
@@ -2029,7 +2039,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Rotates a 3D matrix around an axis with parameters 0, 0, 1, 360 + 90.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			const result = matrix.rotateAxisAngle(0, 0, 1, 360 + 90);
@@ -2063,7 +2073,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Rotates a 3D matrix around an axis with parameters 0, 0, 1, -90.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			const result = matrix.rotateAxisAngle(0, 0, 1, -90);
@@ -2099,7 +2109,7 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('rotate()', () => {
 		it('Rotates a 3D matrix with x defined.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			const result = matrix.rotate(90);
@@ -2133,7 +2143,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Rotates a 3D matrix with x and y defined.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			const result = matrix.rotate(90, 90);
@@ -2167,7 +2177,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Rotates a 3D matrix with x, y and z defined.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			const result = matrix.rotate(90, 90, 90);
@@ -2203,7 +2213,7 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('rotateFromVector()', () => {
 		it('Rotates a 2D matrix with x and y defined.', () => {
-			const matrix = new DOMMatrixReadOnly('matrix(1, 2, 3, 4, 5, 6)');
+			const matrix = new window.DOMMatrixReadOnly('matrix(1, 2, 3, 4, 5, 6)');
 			const result = matrix.rotateFromVector(1, 7);
 
 			expect(result.toJSON()).toEqual({
@@ -2235,7 +2245,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Rotates a 3D matrix with x defined.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			const result = matrix.rotateFromVector(90);
@@ -2269,7 +2279,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Rotates a 3D matrix with x and y defined.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			const result = matrix.rotateFromVector(90, 90);
@@ -2305,7 +2315,7 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('skewX()', () => {
 		it('Skews a 2D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
 			const result = matrix.skewX(10);
 
 			expect(result.toJSON()).toEqual({
@@ -2337,7 +2347,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Skews a 3D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			const result = matrix.skewX(10);
@@ -2373,7 +2383,7 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('skewY()', () => {
 		it('Skews a 2D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
 			const result = matrix.skewY(10);
 
 			expect(result.toJSON()).toEqual({
@@ -2405,7 +2415,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Skews a 3D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			const result = matrix.skewY(10);
@@ -2441,7 +2451,7 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('flipX()', () => {
 		it('Flips a 2D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
 			const result = matrix.flipX();
 
 			expect(result.toJSON()).toEqual({
@@ -2473,7 +2483,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Flips a 3D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			const result = matrix.flipX();
@@ -2509,7 +2519,7 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('flipY()', () => {
 		it('Flips a 2D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
+			const matrix = new window.DOMMatrixReadOnly('matrix(10, 20, 30, 40, 50, 60)');
 			const result = matrix.flipY();
 
 			expect(result.toJSON()).toEqual({
@@ -2541,7 +2551,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Flips a 3D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			const result = matrix.flipY();
@@ -2577,7 +2587,7 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('inverse()', () => {
 		it('Inverses a 2D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly('matrix(1, 2, 3, 4, 5, 6)');
+			const matrix = new window.DOMMatrixReadOnly('matrix(1, 2, 3, 4, 5, 6)');
 			const result = matrix.inverse();
 
 			expect(result.toJSON()).toEqual({
@@ -2609,7 +2619,7 @@ describe('DOMMatrixReadOnly', () => {
 		});
 
 		it('Inverses a 3D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			const result = matrix.inverse();
@@ -2645,19 +2655,19 @@ describe('DOMMatrixReadOnly', () => {
 
 	describe('transformPoint()', () => {
 		it('Transforms a point with a 2D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly('matrix(1, 2, 3, 4, 5, 6)');
+			const matrix = new window.DOMMatrixReadOnly('matrix(1, 2, 3, 4, 5, 6)');
 			const result = matrix.transformPoint({ x: 10, y: 20 });
 
-			expect(result).toEqual(new DOMPoint(75, 106, 0, 1));
+			expect(result).toEqual(new window.DOMPoint(75, 106, 0, 1));
 		});
 
 		it('Transforms a point with a 3D matrix.', () => {
-			const matrix = new DOMMatrixReadOnly(
+			const matrix = new window.DOMMatrixReadOnly(
 				'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 1)'
 			);
 			const result = matrix.transformPoint({ x: 10, y: 20 });
 
-			expect(result).toEqual(new DOMPoint(150, 190, 230, 201));
+			expect(result).toEqual(new window.DOMPoint(150, 190, 230, 201));
 		});
 	});
 });

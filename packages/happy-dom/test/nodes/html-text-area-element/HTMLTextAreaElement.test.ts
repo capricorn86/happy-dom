@@ -226,6 +226,55 @@ describe('HTMLTextAreaElement', () => {
 		});
 	});
 
+	describe('get validationMessage()', () => {
+		it('Returns validation message.', () => {
+			element.setCustomValidity('Error message');
+			expect(element.validationMessage).toBe('Error message');
+		});
+
+		it('Returns default message for built-in constraint violations.', () => {
+			element.required = true;
+			element.value = '';
+			expect(element.validationMessage).toBe('Constraints not satisfied');
+		});
+
+		it('Returns empty string when valid.', () => {
+			element.required = true;
+			element.value = 'test';
+			expect(element.validationMessage).toBe('');
+		});
+
+		it('Returns custom message over built-in violation.', () => {
+			element.required = true;
+			element.value = '';
+			element.setCustomValidity('Custom error');
+			expect(element.validationMessage).toBe('Custom error');
+		});
+
+		it('Returns empty string for disabled elements.', () => {
+			element.required = true;
+			element.disabled = true;
+			element.value = '';
+			expect(element.validationMessage).toBe('');
+		});
+	});
+
+	describe('get willValidate()', () => {
+		it('Returns "true" if it will validate.', () => {
+			expect(element.willValidate).toBe(true);
+		});
+
+		it('Returns "false" if it is disabled.', () => {
+			element.disabled = true;
+			expect(element.willValidate).toBe(false);
+		});
+
+		it('Returns "false" if it is readOnly.', () => {
+			element.readOnly = true;
+			expect(element.willValidate).toBe(false);
+		});
+	});
+
 	describe(`get labels()`, () => {
 		it('Returns associated labels', () => {
 			const label1 = document.createElement('label');

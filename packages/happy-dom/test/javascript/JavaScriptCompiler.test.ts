@@ -97,7 +97,7 @@ describe('JavaScriptCompiler', () => {
 			const compiler = new JavaScriptCompiler(window);
 			expect(() => {
 				compiler.compile('http://localhost:8080/js/app/main.js', code);
-			}).toThrowError(
+			}).toThrow(
 				`Failed to parse JavaScript in 'http://localhost:8080/js/app/main.js': await is only valid in async functions and the top level bodies of modules`
 			);
 		});

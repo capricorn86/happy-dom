@@ -2,9 +2,9 @@
  * Node utility.
  */
 export default class ClassMethodBinder {
-	private target: Object;
+	private target: object;
 	private classes: any[];
-	private cache = new Map<string | symbol, Boolean>();
+	private cache = new Map<string | symbol, boolean>();
 
 	/**
 	 * Constructor.
@@ -12,7 +12,7 @@ export default class ClassMethodBinder {
 	 * @param target Target.
 	 * @param classes Classes.
 	 */
-	constructor(target: Object, classes: any[]) {
+	constructor(target: object, classes: any[]) {
 		this.target = target;
 		this.classes = classes;
 	}

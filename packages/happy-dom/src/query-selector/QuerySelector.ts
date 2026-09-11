@@ -13,6 +13,8 @@ import type ISVGElementTagNameMap from '../config/ISVGElementTagNameMap.js';
 import type ICachedQuerySelectorAllItem from '../nodes/node/ICachedQuerySelectorAllResult.js';
 import type ICachedQuerySelectorItem from '../nodes/node/ICachedQuerySelectorResult.js';
 import type ICachedMatchesItem from '../nodes/node/ICachedMatchesResult.js';
+import type ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
+import type { TGlobalMatchFunction } from './TGlobalMatchFunction.js';
 
 type DocumentPositionAndElement = {
 	documentPosition: string;
@@ -30,6 +32,8 @@ const INVALID_SELECTOR_REGEXP = /^[.#\[]?\d|[.#]$/;
  * @class QuerySelector
  */
 export default class QuerySelector {
+	public static globalMatchFunction: TGlobalMatchFunction = this.matches.bind(this);
+
 	/**
 	 * Finds elements based on a query selector.
 	 *
@@ -61,10 +65,10 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @returns HTML elements.
 	 */
-	public static querySelectorAll(
+	public static querySelectorAll<E extends Element = Element>(
 		node: Element | Document | DocumentFragment,
 		selector: string
-	): NodeList<Element>;
+	): NodeList<E>;
 
 	/**
 	 * Finds elements based on a query selector.
@@ -122,7 +126,10 @@ export default class QuerySelector {
 			node[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
 				? (<Document>node).documentElement
 				: node;
-		const groups = new SelectorParser({ window, scope }).getSelectorGroups(selector);
+		const globalMatchFunction = this.globalMatchFunction;
+		const groups = new SelectorParser({ window, scope, globalMatchFunction }).getSelectorGroups(
+			selector
+		);
 		const items: Element[] = [];
 		const nodeList = new NodeList<Element>(PropertySymbol.illegalConstructor, items);
 		const matchesMap: Map<string, Element> = new Map();
@@ -135,13 +142,20 @@ export default class QuerySelector {
 		if (node[PropertySymbol.isConnected]) {
 			// Document is affected for the ":target" selector
 			(node[PropertySymbol.ownerDocument] || node)[PropertySymbol.affectsCache].push(cachedItem);
+			if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode && (<any>node).host) {
+				(<any>node).host[PropertySymbol.affectsCache].push(cachedItem);
+			}
 		}
 
-		for (const items of groups) {
-			const matches =
-				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
-					? this.findAll(<Element>node, [<Element>node], items, cachedItem)
-					: this.findAll(null, (<Element>node)[PropertySymbol.elementArray], items, cachedItem);
+		for (const selectorItems of groups) {
+			const rootElement =
+				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode ||
+				(node[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode && (<any>node).host)
+					? <Element>node
+					: null;
+			const children = rootElement ? [<Element>node] : (<Element>node)[PropertySymbol.elementArray];
+			const matches = this.findAll({ scope, rootElement, children, selectorItems, cachedItem });
+
 			for (const match of matches) {
 				if (!matchesMap.has(match.documentPosition)) {
 					matchesMap.set(match.documentPosition, match.element);
@@ -190,10 +204,10 @@ export default class QuerySelector {
 	 * @param selector Selector.
 	 * @returns HTML element.
 	 */
-	public static querySelector(
+	public static querySelector<E extends Element = Element>(
 		node: Element | Document | DocumentFragment,
 		selector: string
-	): Element | null;
+	): E | null;
 
 	/**
 	 * Finds an element based on a query selector.
@@ -258,6 +272,9 @@ export default class QuerySelector {
 		if (node[PropertySymbol.isConnected]) {
 			// Document is affected for the ":target" selector
 			(node[PropertySymbol.ownerDocument] || node)[PropertySymbol.affectsCache].push(cachedItem);
+			if (node[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode && (<any>node).host) {
+				(<any>node).host[PropertySymbol.affectsCache].push(cachedItem);
+			}
 		}
 
 		let bestMatch: DocumentPositionAndElement | null = null;
@@ -266,12 +283,20 @@ export default class QuerySelector {
 			node[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
 				? (<Document>node).documentElement
 				: node;
+		const globalMatchFunction = this.globalMatchFunction;
 
-		for (const items of new SelectorParser({ window, scope }).getSelectorGroups(selector)) {
-			const match =
-				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
-					? this.findFirst(<Element>node, [<Element>node], items, cachedItem)
-					: this.findFirst(null, (<Element>node)[PropertySymbol.elementArray], items, cachedItem);
+		for (const selectorItems of new SelectorParser({
+			window,
+			scope,
+			globalMatchFunction
+		}).getSelectorGroups(selector)) {
+			const rootElement =
+				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode ||
+				(node[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode && (<any>node).host)
+					? <Element>node
+					: null;
+			const children = rootElement ? [<Element>node] : (<Element>node)[PropertySymbol.elementArray];
+			const match = this.findFirst({ scope, rootElement, children, selectorItems, cachedItem });
 
 			if (match && !matchesMap.has(match.documentPosition)) {
 				matchesMap.set(match.documentPosition, true);
@@ -368,6 +393,12 @@ export default class QuerySelector {
 			(element[PropertySymbol.ownerDocument] || element)[PropertySymbol.affectsCache].push(
 				cachedItem
 			);
+			if (
+				element[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode &&
+				(<any>element).host
+			) {
+				(<any>element).host[PropertySymbol.affectsCache].push(cachedItem);
+			}
 		}
 
 		const scopeOrElement = options?.scope || element;
@@ -375,12 +406,20 @@ export default class QuerySelector {
 			scopeOrElement[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
 				? (<Document>scopeOrElement).documentElement
 				: scopeOrElement;
+		const globalMatchFunction = this.globalMatchFunction;
 		for (const items of new SelectorParser({
 			ignoreErrors: options?.ignoreErrors,
 			window,
-			scope
+			scope,
+			globalMatchFunction
 		}).getSelectorGroups(selector)) {
-			const result = this.matchSelector(element, items.reverse(), cachedItem);
+			const result = this.matchSelector({
+				scope,
+				element,
+				selectorItems: items.slice().reverse(),
+				cachedItem,
+				ignoreErrors
+			});
 
 			if (result) {
 				cachedItem.result!.match = result;
@@ -394,28 +433,36 @@ export default class QuerySelector {
 	/**
 	 * Checks if a node matches a selector.
 	 *
-	 * @param element Target element.
-	 * @param currentElement
-	 * @param selectorItems Selector items.
-	 * @param cachedItem Cached item.
+	 * @param options Options.
+	 * @param options.scope Scope.
+	 * @param options.element Target element.
+	 * @param options.currentElement
+	 * @param options.selectorItems Selector items.
+	 * @param options.cachedItem Cached item.
+	 * @param [options.ignoreErrors] Ignores errors.
 	 * @param [previousSelectorItem] Previous selector item.
 	 * @param [priorityWeight] Priority weight.
 	 * @returns Result.
 	 */
 	private static matchSelector(
-		element: Element,
-		selectorItems: SelectorItem[],
-		cachedItem: ICachedMatchesItem,
+		options: {
+			scope: Element | Document | DocumentFragment | null;
+			element: Element | ShadowRoot;
+			selectorItems: SelectorItem[];
+			cachedItem: ICachedMatchesItem;
+			ignoreErrors?: boolean;
+		},
 		previousSelectorItem: SelectorItem | null = null,
 		priorityWeight = 0
 	): ISelectorMatch | null {
+		const { scope, element, selectorItems, cachedItem, ignoreErrors } = options;
 		const selectorItem = selectorItems[0];
 
 		if (!selectorItem) {
 			return null;
 		}
 
-		const result = selectorItem.match(element);
+		const result = selectorItem.match(scope, element, ignoreErrors);
 
 		if (result) {
 			if (selectorItems.length === 1) {
@@ -426,14 +473,18 @@ export default class QuerySelector {
 
 			switch (selectorItem.combinator) {
 				case SelectorCombinatorEnum.adjacentSibling:
-					const previousElementSibling = element.previousElementSibling;
+					const previousElementSibling = (<Element>element).previousElementSibling;
 					if (previousElementSibling) {
-						previousElementSibling[PropertySymbol.affectsCache].push(cachedItem);
+						this.affectsCache(previousElementSibling, cachedItem);
 
 						const match = this.matchSelector(
-							previousElementSibling,
-							selectorItems.slice(1),
-							cachedItem,
+							{
+								scope,
+								element: previousElementSibling,
+								selectorItems: selectorItems.slice(1),
+								cachedItem: cachedItem,
+								ignoreErrors
+							},
 							selectorItem,
 							priorityWeight + result.priorityWeight
 						);
@@ -446,14 +497,18 @@ export default class QuerySelector {
 				case SelectorCombinatorEnum.none:
 				case SelectorCombinatorEnum.child:
 				case SelectorCombinatorEnum.descendant:
-					const parentElement = element.parentElement;
-					if (parentElement) {
-						parentElement[PropertySymbol.affectsCache].push(cachedItem);
+					const parentElement = element.parentNode;
+					if (parentElement && parentElement !== element[PropertySymbol.ownerDocument]) {
+						this.affectsCache(<Element>parentElement, cachedItem);
 
 						const match = this.matchSelector(
-							parentElement,
-							selectorItems.slice(1),
-							cachedItem,
+							{
+								scope,
+								element: <Element>parentElement,
+								selectorItems: selectorItems.slice(1),
+								cachedItem: cachedItem,
+								ignoreErrors
+							},
 							selectorItem,
 							priorityWeight + result.priorityWeight
 						);
@@ -464,12 +519,15 @@ export default class QuerySelector {
 					}
 					break;
 				case SelectorCombinatorEnum.subsequentSibling:
-					const siblingParentElement = element.parentElement;
-					if (siblingParentElement) {
+					const siblingParentElement = element.parentNode;
+					if (
+						siblingParentElement &&
+						siblingParentElement !== element[PropertySymbol.ownerDocument]
+					) {
 						const siblings = siblingParentElement[PropertySymbol.elementArray];
-						const index = siblings.indexOf(element);
+						const index = siblings.indexOf(<Element>element);
 
-						siblingParentElement[PropertySymbol.affectsCache].push(cachedItem);
+						this.affectsCache(<Element>siblingParentElement, cachedItem);
 
 						for (let i = index - 1; i >= 0; i--) {
 							const sibling = siblings[i];
@@ -477,9 +535,13 @@ export default class QuerySelector {
 							sibling[PropertySymbol.affectsCache].push(cachedItem);
 
 							const match = this.matchSelector(
-								sibling,
-								selectorItems.slice(1),
-								cachedItem,
+								{
+									scope,
+									element: sibling,
+									selectorItems: selectorItems.slice(1),
+									cachedItem: cachedItem,
+									ignoreErrors
+								},
 								selectorItem,
 								priorityWeight + result.priorityWeight
 							);
@@ -497,12 +559,16 @@ export default class QuerySelector {
 			previousSelectorItem?.combinator === SelectorCombinatorEnum.none ||
 			previousSelectorItem?.combinator === SelectorCombinatorEnum.descendant
 		) {
-			const parentElement = element.parentElement;
-			if (parentElement) {
+			const parentElement = element.parentNode;
+			if (parentElement && parentElement !== element[PropertySymbol.ownerDocument]) {
 				return this.matchSelector(
-					parentElement,
-					selectorItems,
-					cachedItem,
+					{
+						scope,
+						element: <Element>parentElement,
+						selectorItems: selectorItems,
+						cachedItem: cachedItem,
+						ignoreErrors
+					},
 					previousSelectorItem,
 					priorityWeight
 				);
@@ -515,20 +581,26 @@ export default class QuerySelector {
 	/**
 	 * Finds elements based on a query selector for a part of a list of selectors separated with comma.
 	 *
-	 * @param rootElement Root element.
-	 * @param children Child elements.
-	 * @param selectorItems Selector items.
-	 * @param cachedItem Cached item.
+	 * @param options Options.
+	 * @param options.scope Scope.
+	 * @param options.rootElement Root element.
+	 * @param options.children Child elements.
+	 * @param options.selectorItems Selector items.
+	 * @param options.cachedItem Cached item.
 	 * @param [documentPosition] Document position of the element.
 	 * @returns Document position and element map.
 	 */
 	private static findAll(
-		rootElement: Element | null,
-		children: Element[],
-		selectorItems: SelectorItem[],
-		cachedItem: ICachedQuerySelectorAllItem,
+		options: {
+			scope: Element | Document | DocumentFragment | null;
+			rootElement: Element | ShadowRoot | null;
+			children: Element[];
+			selectorItems: SelectorItem[];
+			cachedItem: ICachedQuerySelectorAllItem;
+		},
 		documentPosition?: string
 	): DocumentPositionAndElement[] {
+		const { scope, rootElement, children, selectorItems, cachedItem } = options;
 		const selectorItem = selectorItems[0];
 		const nextSelectorItem = selectorItems[1];
 		let matched: DocumentPositionAndElement[] = [];
@@ -542,9 +614,9 @@ export default class QuerySelector {
 			const childrenOfChild = (<Element>child)[PropertySymbol.elementArray];
 			const position = (documentPosition ? documentPosition + '>' : '') + String.fromCharCode(i);
 
-			child[PropertySymbol.affectsCache].push(cachedItem);
+			this.affectsCache(child, cachedItem);
 
-			if (selectorItem.match(child)) {
+			if (selectorItem.match(scope, child)) {
 				if (!nextSelectorItem) {
 					if (rootElement !== child) {
 						matched.push({
@@ -559,10 +631,13 @@ export default class QuerySelector {
 							if (nextElementSibling) {
 								matched = matched.concat(
 									this.findAll(
-										rootElement,
-										[nextElementSibling],
-										selectorItems.slice(1),
-										cachedItem,
+										{
+											scope,
+											rootElement,
+											children: [nextElementSibling],
+											selectorItems: selectorItems.slice(1),
+											cachedItem: cachedItem
+										},
 										position
 									)
 								);
@@ -573,10 +648,13 @@ export default class QuerySelector {
 						case SelectorCombinatorEnum.child:
 							matched = matched.concat(
 								this.findAll(
-									rootElement,
-									childrenOfChild,
-									selectorItems.slice(1),
-									cachedItem,
+									{
+										scope,
+										rootElement,
+										children: childrenOfChild,
+										selectorItems: selectorItems.slice(1),
+										cachedItem
+									},
 									position
 								)
 							);
@@ -586,7 +664,16 @@ export default class QuerySelector {
 							for (let j = index + 1; j < children.length; j++) {
 								const sibling = children[j];
 								matched = matched.concat(
-									this.findAll(rootElement, [sibling], selectorItems.slice(1), cachedItem, position)
+									this.findAll(
+										{
+											scope,
+											rootElement,
+											children: [sibling],
+											selectorItems: selectorItems.slice(1),
+											cachedItem
+										},
+										position
+									)
 								);
 							}
 							break;
@@ -600,7 +687,16 @@ export default class QuerySelector {
 				childrenOfChild.length
 			) {
 				matched = matched.concat(
-					this.findAll(rootElement, childrenOfChild, selectorItems, cachedItem, position)
+					this.findAll(
+						{
+							scope,
+							rootElement,
+							children: childrenOfChild,
+							selectorItems: selectorItems,
+							cachedItem
+						},
+						position
+					)
 				);
 			}
 		}
@@ -611,20 +707,26 @@ export default class QuerySelector {
 	/**
 	 * Finds an element based on a query selector for a part of a list of selectors separated with comma.
 	 *
-	 * @param rootElement Root element.
-	 * @param children Child elements.
-	 * @param selectorItems Selector items.
-	 * @param cachedItem Cached item.
+	 * @param options Options.
+	 * @param options.scope Scope.
+	 * @param options.rootElement Root element.
+	 * @param options.children Child elements.
+	 * @param options.selectorItems Selector items.
+	 * @param options.cachedItem Cached item.
 	 * @param [documentPosition] Document position of the element.
 	 * @returns Document position and element map.
 	 */
 	private static findFirst(
-		rootElement: Element | null,
-		children: Element[],
-		selectorItems: SelectorItem[],
-		cachedItem: ICachedQuerySelectorItem,
+		options: {
+			scope: Element | Document | DocumentFragment | null;
+			rootElement: Element | ShadowRoot | null;
+			children: Element[];
+			selectorItems: SelectorItem[];
+			cachedItem: ICachedQuerySelectorItem;
+		},
 		documentPosition?: string
 	): DocumentPositionAndElement | null {
+		const { scope, rootElement, children, selectorItems, cachedItem } = options;
 		const selectorItem = selectorItems[0];
 		const nextSelectorItem = selectorItems[1];
 
@@ -637,9 +739,9 @@ export default class QuerySelector {
 			const childrenOfChild = (<Element>child)[PropertySymbol.elementArray];
 			const position = (documentPosition ? documentPosition + '>' : '') + String.fromCharCode(i);
 
-			child[PropertySymbol.affectsCache].push(cachedItem);
+			this.affectsCache(child, cachedItem);
 
-			if (selectorItem.match(child)) {
+			if (selectorItem.match(scope, child)) {
 				if (!nextSelectorItem) {
 					if (rootElement !== child) {
 						return { documentPosition: position, element: child };
@@ -650,10 +752,13 @@ export default class QuerySelector {
 							const nextElementSibling = child.nextElementSibling;
 							if (nextElementSibling) {
 								const match = this.findFirst(
-									rootElement,
-									[nextElementSibling],
-									selectorItems.slice(1),
-									cachedItem,
+									{
+										scope,
+										rootElement,
+										children: [nextElementSibling],
+										selectorItems: selectorItems.slice(1),
+										cachedItem
+									},
 									position
 								);
 								if (match) {
@@ -665,10 +770,13 @@ export default class QuerySelector {
 						case SelectorCombinatorEnum.descendant:
 						case SelectorCombinatorEnum.child:
 							const match = this.findFirst(
-								rootElement,
-								childrenOfChild,
-								selectorItems.slice(1),
-								cachedItem,
+								{
+									scope,
+									rootElement,
+									children: childrenOfChild,
+									selectorItems: selectorItems.slice(1),
+									cachedItem
+								},
 								position
 							);
 							if (match) {
@@ -680,10 +788,13 @@ export default class QuerySelector {
 							for (let i = index + 1; i < children.length; i++) {
 								const sibling = children[i];
 								const match = this.findFirst(
-									rootElement,
-									[sibling],
-									selectorItems.slice(1),
-									cachedItem,
+									{
+										scope,
+										rootElement,
+										children: [sibling],
+										selectorItems: selectorItems.slice(1),
+										cachedItem
+									},
 									position
 								);
 								if (match) {
@@ -701,10 +812,13 @@ export default class QuerySelector {
 				childrenOfChild.length
 			) {
 				const match = this.findFirst(
-					rootElement,
-					childrenOfChild,
-					selectorItems,
-					cachedItem,
+					{
+						scope,
+						rootElement,
+						children: childrenOfChild,
+						selectorItems,
+						cachedItem
+					},
 					position
 				);
 
@@ -715,5 +829,21 @@ export default class QuerySelector {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Adds the cached item to the element's affectsCache and, if the element is a shadow root, also to its host's affectsCache.
+	 *
+	 * @param element Element.
+	 * @param cachedItem Cached item.
+	 */
+	private static affectsCache(element: Element | DocumentFragment, cachedItem: any): void {
+		element[PropertySymbol.affectsCache].push(cachedItem);
+		if (
+			element[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode &&
+			(<any>element).host
+		) {
+			(<any>element).host[PropertySymbol.affectsCache].push(cachedItem);
+		}
 	}
 }

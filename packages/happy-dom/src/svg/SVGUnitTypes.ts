@@ -18,7 +18,7 @@ export default class SVGUnitTypes {
 	 *
 	 * @param illegalConstructorSymbol Illegal constructor symbol.
 	 */
-	constructor(illegalConstructorSymbol: Symbol) {
+	constructor(illegalConstructorSymbol: symbol) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}

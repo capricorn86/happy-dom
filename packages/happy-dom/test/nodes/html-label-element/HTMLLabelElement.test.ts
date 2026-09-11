@@ -209,5 +209,31 @@ describe('HTMLLabelElement', () => {
 			expect(changeFiredCount).toBe(1);
 			expect(div.querySelector('input')?.checked).toBe(true);
 		});
+
+		describe('get labels()', () => {
+			it('Does not duplicate entries on repeated reads.', () => {
+				const input = document.createElement('input');
+				input.id = 'test-input';
+				document.body.appendChild(input);
+
+				const label = document.createElement('label');
+				label.htmlFor = 'test-input';
+				document.body.appendChild(label);
+
+				expect(input.labels.length).toBe(1);
+				expect(input.labels.length).toBe(1);
+				expect(input.labels.length).toBe(1);
+			});
+
+			it('Returns the enclosing label element.', () => {
+				const label = document.createElement('label');
+				const input = document.createElement('input');
+				label.appendChild(input);
+				document.body.appendChild(label);
+
+				expect(input.labels.length).toBe(1);
+				expect(input.labels[0] === label).toBe(true);
+			});
+		});
 	});
 });

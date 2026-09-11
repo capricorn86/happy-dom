@@ -4,7 +4,10 @@ import type ISelectorPseudo from './ISelectorPseudo.js';
 import type Element from '../nodes/element/Element.js';
 import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import type BrowserWindow from '../window/BrowserWindow.js';
+import type DOMException from '../exception/DOMException.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
+import * as PropertySymbol from '../PropertySymbol.js';
+import type { TGlobalMatchFunction } from './TGlobalMatchFunction.js';
 
 /**
  * Selector group RegExp.
@@ -12,7 +15,7 @@ import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
  * Group 1: Combinator (" ", ",", "+", ">", "̣~")
  * Group 2: Parentheses or brackets.
  */
-const SELECTOR_GROUP_REGEXP = /(\s*[\s,+>~]\s*)|([\[\]\(\)"'])/gm;
+const SELECTOR_GROUP_REGEXP = /(\s*[\s,+>~]\s*)|([\[\]\(\)"'])/g;
 
 /**
  * Selector RegExp.
@@ -42,7 +45,7 @@ const SELECTOR_GROUP_REGEXP = /(\s*[\s,+>~]\s*)|([\[\]\(\)"'])/gm;
  * Group 23: Pseudo element (e.g. "::after", "::-webkit-inner-spin-button").
  */
 const SELECTOR_REGEXP =
-	/(\*)|([a-zA-Z0-9\u00A0-\uFFFF-]+)|#(([a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\.(([a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\[(([a-zA-Z0-9-_]|\\.)+)\]|\[(([a-zA-Z0-9-_]|\\.)+)\s*([~|^$*]{0,1})\s*=\s*("([^"]*)"|'([^']*)')\s*(s|i){0,1}\]|\[(([a-zA-Z0-9-_]|\\.)+)\s*([~|^$*]{0,1})\s*=\s*(([a-zA-Z0-9\u00A0-\uFFFF_¤£-]|\\.)+)\]|:([a-zA-Z-]+)\s*\(.+\)|:([a-zA-Z-]+)|::([a-zA-Z-]+)/gm;
+	/(\*)|([a-zA-Z0-9\u00A0-\uFFFF-]+)|#(([a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\.(([a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\[(([a-zA-Z0-9-_]|\\.)+)\]|\[(([a-zA-Z0-9-_]|\\.)+)\s*([~|^$*]{0,1})\s*=\s*("([^"]*)"|'([^']*)')\s*(s|i){0,1}\]|\[(([a-zA-Z0-9-_]|\\.)+)\s*([~|^$*]{0,1})\s*=\s*(([a-zA-Z0-9\u00A0-\uFFFF_¤£-]|\\.)+)\]|:([a-zA-Z-]+)\s*\(.+\)|:([a-zA-Z-]+)|::([a-zA-Z-]+)/g;
 
 /**
  * Selector pseudo RegExp.
@@ -50,7 +53,7 @@ const SELECTOR_REGEXP =
  * Group 1: Pseudo name (e.g. "nth-child")
  * Group 2: Parentheses or brackets.
  */
-const SELECTOR_PSEUDO_REGEXP = /:([a-zA-Z-]+)|([()])/gm;
+const SELECTOR_PSEUDO_REGEXP = /:([a-zA-Z-]+)|([()])/g;
 
 /**
  * Escaped Character RegExp.
@@ -90,32 +93,33 @@ const SPACE_REGEXP = / /g;
 export default class SelectorParser {
 	private window: BrowserWindow;
 	private scope: Element | DocumentFragment;
+	private globalMatchFunction: TGlobalMatchFunction;
 	private ignoreErrors: boolean;
 
 	/**
+	 * Constructor.
 	 *
 	 * @param options
 	 * @param options.window
 	 * @param options.scope
 	 * @param options.ignoreErrors
+	 * @param options.globalMatchFunction
 	 */
 	constructor(options: {
 		window: BrowserWindow;
 		scope: Element | DocumentFragment;
+		globalMatchFunction: TGlobalMatchFunction;
 		ignoreErrors?: boolean;
 	}) {
 		this.window = options.window;
 		this.scope = options.scope;
+		this.globalMatchFunction = options.globalMatchFunction;
 		this.ignoreErrors = options.ignoreErrors ?? false;
 	}
 	/**
 	 * Parses a selector string and returns an instance of SelectorItem.
 	 *
-	 * @param window Window.
 	 * @param selector Selector.
-	 * @param options Options.
-	 * @param [options.scope] Scope.
-	 * @param [options.ignoreErrors] Ignores errors.
 	 * @returns Selector item.
 	 */
 	public getSelectorItem(selector: string): SelectorItem {
@@ -125,15 +129,48 @@ export default class SelectorParser {
 	/**
 	 * Parses a selector string and returns instances of SelectorItem.
 	 *
-	 * @param window Window.
 	 * @param selector Selector.
-	 * @param options Options.
-	 * @param [options.scope] Scope.
-	 * @param [options.ignoreErrors] Ignores errors.
 	 * @returns Selector groups.
 	 */
 	public getSelectorGroups(selector: string): Array<Array<SelectorItem>> {
 		selector = selector.trim();
+
+		const cached = this.window[PropertySymbol.querySelectorCache].get(selector);
+
+		if (cached) {
+			return cached;
+		}
+
+		const groups = this.getSelectorGroupsUncached(selector);
+
+		this.window[PropertySymbol.querySelectorCache].set(selector, groups);
+
+		return groups;
+	}
+
+	/**
+	 * Returns an error for an invalid selector.
+	 *
+	 * Constructed lazily, as creating a DOMException captures the current stack trace, which is
+	 * expensive on hot paths such as Element.matches() and getComputedStyle() during rendering.
+	 *
+	 * @param selector Selector.
+	 * @returns Error.
+	 */
+	private getInvalidSelectorError(selector: string): DOMException {
+		const name = this.scope.nodeType === NodeTypeEnum.documentNode ? 'Document' : 'Element';
+		return new this.window.DOMException(
+			`Failed to execute 'querySelectorAll' on '${name}': '${selector}' is not a valid selector.`
+		);
+	}
+
+	/**
+	 * Parses a selector string and returns instances of SelectorItem without using cache.
+	 *
+	 * @param selector Selector.
+	 * @returns Selector groups.
+	 */
+	private getSelectorGroupsUncached(selector: string): Array<Array<SelectorItem>> {
 		let currentGroup: Array<SelectorItem> = [];
 		const groups: Array<Array<SelectorItem>> = [currentGroup];
 		const regExp = new RegExp(SELECTOR_GROUP_REGEXP);
@@ -143,10 +180,6 @@ export default class SelectorParser {
 			doubleApostrophe: 0,
 			singleApostrophe: 0
 		};
-		const name = this.scope.nodeType === NodeTypeEnum.documentNode ? 'Document' : 'Element';
-		const error = new this.window.SyntaxError(
-			`Failed to execute 'querySelectorAll' on '${name}': '${selector}' is not a valid selector.`
-		);
 		let match: null | RegExpExecArray = null;
 		let lastIndex = 0;
 		let selectorItem: SelectorItem | null = null;
@@ -172,7 +205,7 @@ export default class SelectorParser {
 								if (this.ignoreErrors) {
 									return [];
 								}
-								throw error;
+								throw this.getInvalidSelectorError(selector);
 							}
 							currentGroup.push(selectorItem);
 							currentGroup = [];
@@ -185,7 +218,7 @@ export default class SelectorParser {
 								if (this.ignoreErrors) {
 									return [];
 								}
-								throw error;
+								throw this.getInvalidSelectorError(selector);
 							}
 							currentGroup.push(selectorItem);
 							combinator = SelectorCombinatorEnum.child;
@@ -196,7 +229,7 @@ export default class SelectorParser {
 								if (this.ignoreErrors) {
 									return [];
 								}
-								throw error;
+								throw this.getInvalidSelectorError(selector);
 							}
 							currentGroup.push(selectorItem);
 							combinator = SelectorCombinatorEnum.adjacentSibling;
@@ -207,7 +240,7 @@ export default class SelectorParser {
 								if (this.ignoreErrors) {
 									return [];
 								}
-								throw error;
+								throw this.getInvalidSelectorError(selector);
 							}
 							currentGroup.push(selectorItem);
 							combinator = SelectorCombinatorEnum.subsequentSibling;
@@ -218,7 +251,7 @@ export default class SelectorParser {
 								if (this.ignoreErrors) {
 									return [];
 								}
-								throw error;
+								throw this.getInvalidSelectorError(selector);
 							}
 							currentGroup.push(selectorItem);
 							combinator = SelectorCombinatorEnum.descendant;
@@ -276,7 +309,7 @@ export default class SelectorParser {
 			if (this.ignoreErrors) {
 				return [];
 			}
-			throw error;
+			throw this.getInvalidSelectorError(selector);
 		}
 
 		if (combinator === SelectorCombinatorEnum.none && currentGroup.length > 0) {
@@ -300,22 +333,22 @@ export default class SelectorParser {
 		combinator: SelectorCombinatorEnum
 	): SelectorItem | null {
 		selector = selector.trim();
-		const ignoreErrors = this.ignoreErrors;
-		const scope = this.scope;
-
 		if (!selector) {
 			return null;
 		}
 
 		if (selector === '*') {
-			return new SelectorItem({ scope, tagName: '*', combinator, ignoreErrors });
+			return new SelectorItem({
+				globalMatchFunction: this.globalMatchFunction,
+				tagName: '*',
+				combinator
+			});
 		}
 
 		const regexp = new RegExp(SELECTOR_REGEXP);
 		const selectorItem: SelectorItem = new SelectorItem({
-			scope,
-			combinator,
-			ignoreErrors
+			globalMatchFunction: this.globalMatchFunction,
+			combinator
 		});
 		let match;
 		let lastIndex = 0;
@@ -474,7 +507,7 @@ export default class SelectorParser {
 		switch (attribute.operator) {
 			// [attribute~="value"] - Contains a specified word.
 			case '~':
-				return new RegExp(`[- ]${escapedValue}|${escapedValue}[- ]|^${escapedValue}$`, modifier);
+				return new RegExp(`(^|\\s)${escapedValue}(\\s|$)`, modifier);
 			// [attribute|="value"] - Starts with the specified word.
 			case '|':
 				return new RegExp(`^${escapedValue}[- ]|^${escapedValue}$`, modifier);

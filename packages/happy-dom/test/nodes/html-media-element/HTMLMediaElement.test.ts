@@ -363,7 +363,7 @@ describe('HTMLMediaElement', () => {
 		it('Throws an error if the value is not a MediaStream object', () => {
 			expect(() => {
 				element.srcObject = <MediaStream>{};
-			}).toThrowError(
+			}).toThrow(
 				new TypeError(
 					`Failed to set the 'srcObject' property on 'HTMLMediaElement': The provided value is not of type 'MediaStream'.`
 				)
@@ -449,7 +449,7 @@ describe('HTMLMediaElement', () => {
 		it('Throw type error if volume is not a number', () => {
 			expect(() => {
 				element.volume = 'zeropointfive';
-			}).toThrowError(
+			}).toThrow(
 				new TypeError(
 					`Failed to set the 'volume' property on 'HTMLMediaElement': The provided double value is non-finite.`
 				)
@@ -460,7 +460,7 @@ describe('HTMLMediaElement', () => {
 			it(`Throw error if out of range: ${volume}`, () => {
 				expect(() => {
 					element.volume = volume;
-				}).toThrowError(
+				}).toThrow(
 					new window.DOMException(
 						`Failed to set the 'volume' property on 'HTMLMediaElement': The volume provided (${volume}) is outside the range [0, 1].`,
 						DOMExceptionNameEnum.indexSizeError
@@ -524,7 +524,7 @@ describe('HTMLMediaElement', () => {
 		it('Throw type error if currentTime is not a number', () => {
 			expect(() => {
 				element.currentTime = 'zeropointfive';
-			}).toThrowError(
+			}).toThrow(
 				new TypeError(
 					`Failed to set the 'currentTime' property on 'HTMLMediaElement': The provided double value is non-finite.`
 				)
@@ -556,7 +556,7 @@ describe('HTMLMediaElement', () => {
 		it('Throw type error if playbackRate is not a number', () => {
 			expect(() => {
 				element.playbackRate = 'zeropointfive';
-			}).toThrowError(
+			}).toThrow(
 				new TypeError(
 					`Failed to set the 'playbackRate' property on 'HTMLMediaElement': The provided double value is non-finite.`
 				)
@@ -589,7 +589,7 @@ describe('HTMLMediaElement', () => {
 		it('Throw type error if defaultPlaybackRate is not a number', () => {
 			expect(() => {
 				element.defaultPlaybackRate = 'zeropointfive';
-			}).toThrowError(
+			}).toThrow(
 				new TypeError(
 					`Failed to set the 'defaultPlaybackRate' property on 'HTMLMediaElement': The provided double value is non-finite.`
 				)
@@ -675,7 +675,7 @@ describe('HTMLMediaElement', () => {
 			expect(() => {
 				// @ts-ignore
 				element.addTextTrack();
-			}).toThrowError(
+			}).toThrow(
 				new TypeError(
 					`Failed to execute 'addTextTrack' on 'HTMLMediaElement': 1 argument required, but only 0 present.`
 				)
@@ -686,7 +686,7 @@ describe('HTMLMediaElement', () => {
 			expect(() => {
 				// @ts-ignore
 				element.addTextTrack('invalid');
-			}).toThrowError(
+			}).toThrow(
 				new TypeError(
 					`Failed to execute 'addTextTrack' on 'HTMLMediaElement': The provided value 'invalid' is not a valid enum value of type TextTrackKind.`
 				)

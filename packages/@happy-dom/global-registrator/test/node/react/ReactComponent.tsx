@@ -4,7 +4,7 @@ import React from 'react';
  *
  */
 export default class ReactComponent extends React.Component<{}, {}> {
-	public $props = {};
+	public $props: any = {};
 
 	/**
 	 * @override

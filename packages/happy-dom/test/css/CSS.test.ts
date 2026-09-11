@@ -13,7 +13,7 @@ describe('CSS', () => {
 	for (const property of CSSUnits) {
 		describe(`${property}()`, () => {
 			it('Returns an instance of CSSUnitValue.', () => {
-				const cssUnitValue: CSSUnitValue = css[property](100);
+				const cssUnitValue: CSSUnitValue = (<any>css)[property](100);
 				expect(cssUnitValue.unit).toBe(property);
 				expect(cssUnitValue.value).toBe(100);
 			});

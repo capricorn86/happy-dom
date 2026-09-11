@@ -1,4 +1,4 @@
-import DOMPoint from '../DOMPoint.js';
+import type DOMPoint from '../DOMPoint.js';
 import type IDOMPointInit from '../IDOMPointInit.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import type { TDOMMatrixInit } from './TDOMMatrixInit.js';
@@ -6,6 +6,7 @@ import type { TDOMMatrix2DArray } from './TDOMMatrix2DArray.js';
 import type { TDOMMatrix3DArray } from './TDOMMatrix3DArray.js';
 import type IDOMMatrixJSON from './IDOMMatrixJSON.js';
 import type IDOMMatrixCompatibleObject from './IDOMMatrixCompatibleObject.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
 
 const DEFAULT_MATRIX_JSON: IDOMMatrixJSON = {
 	a: 1,
@@ -67,6 +68,9 @@ const TRANSFORM_PARAMETER_SPLIT_REGEXP = /[\s,]+/;
  * @see https://developer.mozilla.org/en-US/docs/Web/API/DOMMatrixReadOnly
  */
 export default class DOMMatrixReadOnly {
+	// Injected by WindowContextClassExtender
+	protected declare [PropertySymbol.window]: BrowserWindow;
+
 	public [PropertySymbol.m11]: number = 1;
 	public [PropertySymbol.m12]: number = 0;
 	public [PropertySymbol.m13]: number = 0;
@@ -376,9 +380,11 @@ export default class DOMMatrixReadOnly {
 	 * @param secondMatrix DOMMatrix
 	 * @returns A new DOMMatrix object.
 	 */
-	public multiply(secondMatrix: IDOMMatrixCompatibleObject): DOMMatrixReadOnly {
+	public multiply(secondMatrix?: IDOMMatrixCompatibleObject): DOMMatrixReadOnly {
 		const matrix = new (<typeof DOMMatrixReadOnly>this.constructor)(this);
-		matrix[PropertySymbol.multiplySelf](secondMatrix);
+		if (secondMatrix) {
+			matrix[PropertySymbol.multiplySelf](secondMatrix);
+		}
 		return matrix;
 	}
 
@@ -546,11 +552,11 @@ export default class DOMMatrixReadOnly {
 	 * @param domPoint DOM point compatible object.
 	 * @returns A new DOMPoint object.
 	 */
-	public transformPoint(domPoint: IDOMPointInit): DOMPoint {
-		const xPoint = domPoint.x ?? 0;
-		const yPoint = domPoint.y ?? 0;
-		const zPoint = domPoint.z ?? 0;
-		const wPoint = domPoint.w ?? 1;
+	public transformPoint(domPoint?: IDOMPointInit): DOMPoint {
+		const xPoint = domPoint?.x ?? 0;
+		const yPoint = domPoint?.y ?? 0;
+		const zPoint = domPoint?.z ?? 0;
+		const wPoint = domPoint?.w ?? 1;
 
 		const x =
 			this[PropertySymbol.m11] * xPoint +
@@ -573,7 +579,7 @@ export default class DOMMatrixReadOnly {
 			this[PropertySymbol.m34] * zPoint +
 			this[PropertySymbol.m44] * wPoint;
 
-		return new DOMPoint(x, y, z, w);
+		return new this[PropertySymbol.window].DOMPoint(x, y, z, w);
 	}
 
 	/**
@@ -628,7 +634,11 @@ export default class DOMMatrixReadOnly {
 	 *
 	 * @param matrixCompatibleObject Second matrix.
 	 */
-	public [PropertySymbol.multiplySelf](matrixCompatibleObject: IDOMMatrixCompatibleObject): void {
+	public [PropertySymbol.multiplySelf](matrixCompatibleObject?: IDOMMatrixCompatibleObject): void {
+		if (!matrixCompatibleObject) {
+			return;
+		}
+
 		let matrix: IDOMMatrixJSON = <IDOMMatrixJSON>matrixCompatibleObject;
 
 		if (!(matrix instanceof DOMMatrixReadOnly)) {
@@ -890,7 +900,7 @@ export default class DOMMatrixReadOnly {
 		angle = Number(angle);
 
 		if (isNaN(x) || isNaN(y) || isNaN(z) || isNaN(angle)) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'rotateAxisAngleSelf' on 'DOMMatrix': The arguments must be numbers.`
 			);
 		}
@@ -969,7 +979,7 @@ export default class DOMMatrixReadOnly {
 		z = Number(z);
 
 		if (isNaN(x) || isNaN(y) || isNaN(z)) {
-			throw new TypeError(
+			throw new this[PropertySymbol.window].TypeError(
 				`Failed to execute 'rotateSelf' on 'DOMMatrix': The arguments must be numbers.`
 			);
 		}

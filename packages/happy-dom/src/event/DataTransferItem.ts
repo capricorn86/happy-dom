@@ -40,7 +40,7 @@ export default class DataTransferItem {
 	 */
 	public getAsString(callback: (text: string) => void): void {
 		if (this.kind === 'file') {
-			callback;
+			callback('');
 		}
 		callback(<string>this.#item);
 	}

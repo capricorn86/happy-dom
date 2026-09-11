@@ -62,7 +62,23 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 * @returns Validation message.
 	 */
 	public get validationMessage(): string {
-		return this[PropertySymbol.validationMessage];
+		const customMessage = this[PropertySymbol.validationMessage];
+		if (customMessage) {
+			return customMessage;
+		}
+		if (this.willValidate && !this.validity.valid) {
+			return 'Constraints not satisfied';
+		}
+		return '';
+	}
+
+	/**
+	 * Returns "true" if it will validate.
+	 *
+	 * @returns "true" if it will validate.
+	 */
+	public get willValidate(): boolean {
+		return !this.disabled && !this.readOnly;
 	}
 
 	/**

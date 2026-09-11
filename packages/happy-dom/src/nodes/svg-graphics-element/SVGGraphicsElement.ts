@@ -1,6 +1,6 @@
 import SVGElement from '../svg-element/SVGElement.js';
 import DOMRect from '../../dom/DOMRect.js';
-import DOMMatrix from '../../dom/dom-matrix/DOMMatrix.js';
+import type DOMMatrix from '../../dom/dom-matrix/DOMMatrix.js';
 import SVGStringList from '../../svg/SVGStringList.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import SVGAnimatedTransformList from '../../svg/SVGAnimatedTransformList.js';
@@ -120,7 +120,7 @@ export default class SVGGraphicsElement extends SVGElement {
 	 * @returns CTM.
 	 */
 	public getCTM(): DOMMatrix {
-		return new DOMMatrix();
+		return new this[PropertySymbol.window].DOMMatrix();
 	}
 
 	/**
@@ -129,6 +129,6 @@ export default class SVGGraphicsElement extends SVGElement {
 	 * @returns Screen CTM.
 	 */
 	public getScreenCTM(): DOMMatrix {
-		return new DOMMatrix();
+		return new this[PropertySymbol.window].DOMMatrix();
 	}
 }

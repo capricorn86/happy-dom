@@ -17,7 +17,7 @@ export default class StylePropertyMapReadOnly {
 	 * @param illegalConstructorSymbol Illegal constructor symbol.
 	 * @param style Style.
 	 */
-	constructor(illegalConstructorSymbol: Symbol, style: CSSStyleDeclaration) {
+	constructor(illegalConstructorSymbol: symbol, style: CSSStyleDeclaration) {
 		if (illegalConstructorSymbol !== PropertySymbol.illegalConstructor) {
 			throw new TypeError('Illegal constructor');
 		}

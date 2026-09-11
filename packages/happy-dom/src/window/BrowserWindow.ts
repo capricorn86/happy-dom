@@ -6,12 +6,17 @@ import { ReadableStream } from 'stream/web';
 import { URLSearchParams } from 'url';
 import VM from 'vm';
 import * as PropertySymbol from '../PropertySymbol.js';
+import type Animation from '../animation/Animation.js';
+import AnimationTimeline from '../animation/AnimationTimeline.js';
+import DocumentTimeline from '../animation/DocumentTimeline.js';
+import type KeyframeEffect from '../animation/KeyframeEffect.js';
 import Base64 from '../base64/Base64.js';
 import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
 import type IConsole from '../console/IConsole.js';
 import type IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import Clipboard from '../clipboard/Clipboard.js';
 import ClipboardItem from '../clipboard/ClipboardItem.js';
+import CookieStore from '../cookie-store/CookieStore.js';
 import CSS from '../css/CSS.js';
 import CSSRule from '../css/CSSRule.js';
 import type CSSStyleSheet from '../css/CSSStyleSheet.js';
@@ -36,6 +41,7 @@ import Touch from '../event/Touch.js';
 import UIEvent from '../event/UIEvent.js';
 import AnimationEvent from '../event/events/AnimationEvent.js';
 import ClipboardEvent from '../event/events/ClipboardEvent.js';
+import CookieChangeEvent from '../event/events/CookieChangeEvent.js';
 import CustomEvent from '../event/events/CustomEvent.js';
 import ErrorEvent from '../event/events/ErrorEvent.js';
 import FocusEvent from '../event/events/FocusEvent.js';
@@ -275,8 +281,10 @@ import SVGComponentTransferFunctionElement from '../nodes/svg-component-transfer
 import SVGGeometryElement from '../nodes/svg-geometry-element/SVGGeometryElement.js';
 import SVGGradientElement from '../nodes/svg-gradient-element/SVGGradientElement.js';
 import SVGTextPositioningElement from '../nodes/svg-text-positioning-element/SVGTextPositioningElement.js';
-import DOMMatrixReadOnly from '../dom/dom-matrix/DOMMatrixReadOnly.js';
-import DOMMatrix from '../dom/dom-matrix/DOMMatrix.js';
+import type DOMMatrixReadOnly from '../dom/dom-matrix/DOMMatrixReadOnly.js';
+import type DOMMatrix from '../dom/dom-matrix/DOMMatrix.js';
+import type DOMPointReadOnly from '../dom/DOMPointReadOnly.js';
+import type DOMPoint from '../dom/DOMPoint.js';
 import SVGAngle from '../svg/SVGAngle.js';
 import SVGAnimatedAngle from '../svg/SVGAnimatedAngle.js';
 import SVGAnimatedBoolean from '../svg/SVGAnimatedBoolean.js';
@@ -302,7 +310,6 @@ import SVGStringList from '../svg/SVGStringList.js';
 import SVGTransform from '../svg/SVGTransform.js';
 import SVGTransformList from '../svg/SVGTransformList.js';
 import SVGUnitTypes from '../svg/SVGUnitTypes.js';
-import DOMPoint from '../dom/DOMPoint.js';
 import SVGAnimatedLengthList from '../svg/SVGAnimatedLengthList.js';
 import CustomElementReactionStack from '../custom-element/CustomElementReactionStack.js';
 import type IScrollToOptions from './IScrollToOptions.js';
@@ -320,6 +327,12 @@ import PopStateEvent from '../event/events/PopStateEvent.js';
 import type ITimerLoopsLimit from './ITimerLoopsLimit.js';
 import CloseEvent from '../event/events/CloseEvent.js';
 import type WebSocket from '../web-socket/WebSocket.js';
+import type { TImageBitmapSource } from '../canvas/TImageBitmapSource.js';
+import type IImageBitmapOptions from '../canvas/IImageBitmapOptions.js';
+import ImageBitmap from '../canvas/ImageBitmap.js';
+import type ImageData from '../canvas/ImageData.js';
+import type OffscreenCanvas from '../canvas/OffscreenCanvas.js';
+import type SelectorItem from '../query-selector/SelectorItem.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -393,6 +406,10 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly Element = Element;
 	public readonly CharacterData = CharacterData;
 	public readonly DocumentType = DocumentType;
+	public declare readonly Animation: typeof Animation;
+	public readonly AnimationTimeline = AnimationTimeline;
+	public readonly DocumentTimeline = DocumentTimeline;
+	public declare readonly KeyframeEffect: typeof KeyframeEffect;
 
 	// Nodes that can be created using "new" keyword (populated by WindowContextClassExtender)
 	public declare readonly Document: typeof Document;
@@ -566,6 +583,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly MediaQueryListEvent = MediaQueryListEvent;
 	public readonly HashChangeEvent = HashChangeEvent;
 	public readonly ClipboardEvent = ClipboardEvent;
+	public readonly CookieChangeEvent = CookieChangeEvent;
 	public readonly TouchEvent = TouchEvent;
 	public readonly PopStateEvent = PopStateEvent;
 	public readonly Touch = Touch;
@@ -636,6 +654,12 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare readonly TextTrackCue: typeof TextTrackCue;
 	public declare readonly RemotePlayback: typeof RemotePlayback;
 	public declare readonly URL: typeof URL;
+	public declare readonly ImageData: typeof ImageData;
+	public declare readonly OffscreenCanvas: typeof OffscreenCanvas;
+	public declare readonly DOMMatrixReadOnly: typeof DOMMatrixReadOnly;
+	public declare readonly DOMMatrix: typeof DOMMatrix;
+	public declare readonly DOMPointReadOnly: typeof DOMPointReadOnly;
+	public declare readonly DOMPoint: typeof DOMPoint;
 
 	// Other classes that don't have to be bound to the Window context
 	public readonly Permissions = Permissions;
@@ -670,9 +694,11 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly Blob = Blob;
 	public readonly File = File;
 	public readonly Storage = Storage;
+	public readonly CookieStore = CookieStore;
 	public readonly MimeType = MimeType;
 	public readonly MimeTypeArray = MimeTypeArray;
 	public readonly NodeFilter = NodeFilter;
+	public readonly ImageBitmap = ImageBitmap;
 	public readonly HTMLCollection = HTMLCollection;
 	public readonly HTMLFormControlCollection = HTMLFormControlsCollection;
 	public readonly HTMLOptionsCollection = HTMLOptionsCollection;
@@ -682,8 +708,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly Screen = Screen;
 	public readonly ScreenDetails = ScreenDetails;
 	public readonly ScreenDetailed = ScreenDetailed;
-	public readonly DOMMatrixReadOnly = DOMMatrixReadOnly;
-	public readonly DOMMatrix = DOMMatrix;
 	public readonly NamedNodeMap = NamedNodeMap;
 	public readonly TreeWalker = TreeWalker;
 	public readonly NodeIterator = NodeIterator;
@@ -720,7 +744,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly SVGTransformList = SVGTransformList;
 	public readonly SVGAnimatedLengthList = SVGAnimatedLengthList;
 	public readonly SVGUnitTypes = SVGUnitTypes;
-	public readonly DOMPoint = DOMPoint;
 	public readonly StylePropertyMap = StylePropertyMap;
 	public readonly StylePropertyMapReadOnly = StylePropertyMapReadOnly;
 	public readonly MediaList = MediaList;
@@ -830,6 +853,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.screen]: Screen;
 	public [PropertySymbol.sessionStorage]: Storage;
 	public [PropertySymbol.localStorage]: Storage;
+	public [PropertySymbol.cookieStore]: CookieStore;
 	public [PropertySymbol.self]: BrowserWindow | null = this;
 	public [PropertySymbol.top]: BrowserWindow | null = this;
 	public [PropertySymbol.parent]: BrowserWindow | null = this;
@@ -849,6 +873,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.openWebSockets]: WebSocket[] = [];
 	public [PropertySymbol.propertyEventListeners]: Map<string, ((event: Event) => void) | null> =
 		new Map();
+	public [PropertySymbol.querySelectorCache]: Map<string, Array<Array<SelectorItem>>> = new Map();
 
 	/* eslint-enable jsdoc/require-jsdoc */
 
@@ -884,6 +909,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this[PropertySymbol.screen] = new Screen();
 		this[PropertySymbol.sessionStorage] = new Storage();
 		this[PropertySymbol.localStorage] = new Storage();
+		this[PropertySymbol.cookieStore] = new CookieStore(PropertySymbol.illegalConstructor, this);
 		this[PropertySymbol.location] = new Location(this.#browserFrame, options?.url ?? 'about:blank');
 		this[PropertySymbol.history] = new History(this.#browserFrame, this);
 
@@ -2049,6 +2075,15 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	}
 
 	/**
+	 * Returns cookie store.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/cookieStore
+	 */
+	public get cookieStore(): CookieStore {
+		return this[PropertySymbol.cookieStore];
+	}
+
+	/**
 	 * Returns opener.
 	 *
 	 * @returns Opener.
@@ -2217,6 +2252,11 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * @returns CSS style declaration.
 	 */
 	public getComputedStyle(element: Element): CSSStyleDeclaration {
+		if (!(element instanceof Element)) {
+			throw new this.TypeError(
+				"Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'."
+			);
+		}
 		element[PropertySymbol.computedStyle] =
 			element[PropertySymbol.computedStyle] ||
 			new CSSStyleDeclaration(PropertySymbol.illegalConstructor, this, { element, computed: true });
@@ -2843,6 +2883,36 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	}
 
 	/**
+	 * Creates a bitmap from a given source, optionally cropped to contain only a portion of that source.
+	 *
+	 * @param source Source.
+	 * @param [sx] X.
+	 * @param [sy] X.
+	 * @param [sw] Width.
+	 * @param [sh] Height.
+	 * @param [options] Options.
+	 */
+	public async createImageBitmap(
+		source: TImageBitmapSource,
+		sx?: number | IImageBitmapOptions,
+		sy?: number,
+		sw?: number | IImageBitmapOptions,
+		sh?: number,
+		options?: IImageBitmapOptions
+	): Promise<ImageBitmap> {
+		return new ImageBitmap(
+			PropertySymbol.illegalConstructor,
+			this,
+			source,
+			sx,
+			sy,
+			sw,
+			sh,
+			options
+		);
+	}
+
+	/**
 	 * Dispatches an error event and outputs the error to the console.
 	 *
 	 * @param error Error.
@@ -2950,6 +3020,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		if (this.history[PropertySymbol.destroy]) {
 			this.history[PropertySymbol.destroy]();
 		}
+
+		this[PropertySymbol.querySelectorCache].clear();
 
 		this[PropertySymbol.modules].json.clear();
 		this[PropertySymbol.modules].css.clear();

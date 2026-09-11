@@ -20,7 +20,6 @@
 		"strict": true,
 		"sourceMap": true,
 		"skipLibCheck": true,
-		"baseUrl": ".",
 		"composite": true,
 		"incremental": true,
 		"importsNotUsedAsValues": "remove",

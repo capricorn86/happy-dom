@@ -709,6 +709,38 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.color).toBe('green');
 		});
 
+		it('Updates inherited values in the whole subtree when an ancestor is changed.', () => {
+			document.head.innerHTML = '<style>.red { color: rgb(255, 0, 0); }</style>';
+			document.body.innerHTML =
+				'<div id="d0" class="red"><div id="d1"><div id="d2"><div id="d3"><span id="d4">Test</span></div></div></div></div>';
+
+			const ids = ['d0', 'd1', 'd2', 'd3', 'd4'];
+			const color = (id: string): string =>
+				window.getComputedStyle(document.getElementById(id)!).color;
+
+			expect(ids.map(color)).toEqual([
+				'rgb(255, 0, 0)',
+				'rgb(255, 0, 0)',
+				'rgb(255, 0, 0)',
+				'rgb(255, 0, 0)',
+				'rgb(255, 0, 0)'
+			]);
+
+			document.getElementById('d0')!.classList.remove('red');
+
+			expect(ids.map(color)).toEqual(['', '', '', '', '']);
+
+			(<HTMLElement>document.getElementById('d2')).style.color = 'rgb(0, 128, 0)';
+
+			expect(ids.map(color)).toEqual([
+				'',
+				'',
+				'rgb(0, 128, 0)',
+				'rgb(0, 128, 0)',
+				'rgb(0, 128, 0)'
+			]);
+		});
+
 		it('Returns a CSSStyleDeclaration object with computed styles from style sheets.', () => {
 			const parent = document.createElement('div');
 			const element = document.createElement('span');
@@ -1492,6 +1524,34 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.color).toBe('green');
 		});
 
+		it('Uses inherited color when color is set to "inherit".', () => {
+			const parent = document.createElement('div');
+			const element = document.createElement('span');
+			const computedStyle = window.getComputedStyle(element);
+			const parentStyle = document.createElement('style');
+			const elementStyle = document.createElement('style');
+
+			parentStyle.innerHTML = `
+                div {
+                    color: red;
+                }
+            `;
+
+			elementStyle.innerHTML = `
+                span {
+                    color: inherit;
+                }
+            `;
+
+			parent.appendChild(elementStyle);
+			parent.appendChild(element);
+
+			document.body.appendChild(parentStyle);
+			document.body.appendChild(parent);
+
+			expect(computedStyle.color).toBe('red');
+		});
+
 		for (const measurement of [
 			{ value: '100vw', result: '1024px' },
 			{ value: '100vh', result: '768px' },
@@ -2254,7 +2314,7 @@ describe('BrowserWindow', () => {
 			expect(() => {
 				const data = '😄 hello my happy dom! 🐛';
 				window.atob(data);
-			}).toThrowError(
+			}).toThrow(
 				new DOMException(
 					"Failed to execute 'atob' on 'Window': The string to be decoded contains characters outside of the Latin1 range.",
 					DOMExceptionNameEnum.invalidCharacterError
@@ -2266,7 +2326,7 @@ describe('BrowserWindow', () => {
 			expect(() => {
 				const data = '\x11GVsbG8gbXkgaGFwcHkgZG9tIQ==';
 				window.atob(data);
-			}).toThrowError(
+			}).toThrow(
 				new DOMException(
 					"Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded.",
 					DOMExceptionNameEnum.invalidCharacterError
@@ -2277,7 +2337,7 @@ describe('BrowserWindow', () => {
 			expect(() => {
 				const data = 'aGVsbG8gbXkgaGFwcHkgZG9tI';
 				window.atob(data);
-			}).toThrowError(
+			}).toThrow(
 				new DOMException(
 					"Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded.",
 					DOMExceptionNameEnum.invalidCharacterError
@@ -2297,7 +2357,7 @@ describe('BrowserWindow', () => {
 			expect(() => {
 				const data = '😄 hello my happy dom! 🐛';
 				window.btoa(data);
-			}).toThrowError(
+			}).toThrow(
 				new DOMException(
 					"Failed to execute 'btoa' on 'Window': The string to be encoded contains characters outside of the Latin1 range.",
 					DOMExceptionNameEnum.invalidCharacterError
@@ -2363,7 +2423,7 @@ describe('BrowserWindow', () => {
 		});
 
 		it("Throws an exception if the provided object can't be serialized.", function () {
-			expect(() => window.postMessage(window)).toThrowError(
+			expect(() => window.postMessage(window)).toThrow(
 				new window.DOMException(
 					`Failed to execute 'postMessage' on 'Window': The provided message cannot be serialized.`,
 					DOMExceptionNameEnum.invalidStateError
@@ -2378,7 +2438,7 @@ describe('BrowserWindow', () => {
 
 			browserFrame.url = documentOrigin;
 
-			expect(() => window.postMessage(message, targetOrigin)).toThrowError(
+			expect(() => window.postMessage(message, targetOrigin)).toThrow(
 				new window.DOMException(
 					`Failed to execute 'postMessage' on 'Window': The target origin provided ('${targetOrigin}') does not match the recipient window\'s origin ('${documentOrigin}').`,
 					DOMExceptionNameEnum.securityError

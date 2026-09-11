@@ -16,53 +16,63 @@ export default class CookieContainer implements ICookieContainer {
 	#cookies: ICookie[] = [];
 
 	/**
-	 * Adds cookies.
+	 * Adds or replaces cookies.
 	 *
 	 * @param cookies Cookies.
+	 * @returns Changed cookies.
 	 */
-	public addCookies(cookies: IOptionalCookie[]): void {
-		const indexMap: Map<string, number> = new Map();
-		const getKey = (cookie: ICookie): string =>
-			`${cookie.key}-${cookie.originURL.hostname}-${cookie.path}-${typeof cookie.value}`;
-
-		// Creates a map of cookie key, domain, path and value to index.
-		for (let i = 0, max = this.#cookies.length; i < max; i++) {
-			indexMap.set(getKey(this.#cookies[i]), i);
-		}
-
+	public addCookies(cookies: IOptionalCookie[]): { changed: ICookie[]; deleted: ICookie[] } {
+		const changedCookies: { changed: ICookie[]; deleted: ICookie[] } = {
+			changed: [],
+			deleted: []
+		};
+		const allCookies = this.#cookies;
 		for (const cookie of cookies) {
 			const newCookie = Object.assign({}, DefaultCookie, cookie);
 
 			if (newCookie && newCookie.key && newCookie.originURL) {
-				// Remove existing cookie with same name, domain and path.
-				const index = indexMap.get(getKey(newCookie));
+				const hasExpired = CookieExpireUtility.hasExpired(newCookie);
 
-				if (index !== undefined) {
-					this.#cookies.splice(index, 1);
+				// Checks if the cookie already exists and removes it.
+				for (let i = 0, max = allCookies.length; i < max; i++) {
+					const existingCookie = allCookies[i];
+					if (
+						existingCookie.key === newCookie.key &&
+						existingCookie.originURL.hostname === newCookie.originURL.hostname &&
+						existingCookie.path === newCookie.path &&
+						typeof existingCookie.value === typeof newCookie.value
+					) {
+						if (hasExpired) {
+							changedCookies.deleted.push(existingCookie);
+						}
+						allCookies.splice(i, 1);
+						break;
+					}
 				}
 
-				if (!CookieExpireUtility.hasExpired(newCookie)) {
-					indexMap.set(getKey(newCookie), this.#cookies.length);
-					this.#cookies.push(newCookie);
+				if (!hasExpired) {
+					allCookies.push(newCookie);
+					changedCookies.changed.push(newCookie);
 				}
 			}
 		}
+		return changedCookies;
 	}
 
 	/**
 	 * Returns cookies.
 	 *
 	 * @param [url] URL.
-	 * @param [httpOnly] "true" if only http cookies should be returned.
+	 * @param [clientSide] "true" if "httpOnly" cookies should be filtered out.
 	 * @returns Cookies.
 	 */
-	public getCookies(url: URL | null = null, httpOnly = false): ICookie[] {
+	public getCookies(url: URL | null = null, clientSide = false): ICookie[] {
 		const cookies = [];
 
 		for (const cookie of this.#cookies) {
 			if (
 				!CookieExpireUtility.hasExpired(cookie) &&
-				(!httpOnly || !cookie.httpOnly) &&
+				(!clientSide || !cookie.httpOnly) &&
 				(!url || CookieURLUtility.cookieMatchesURL(cookie, url))
 			) {
 				cookies.push(cookie);

@@ -992,7 +992,7 @@ describe('SyncFetch', () => {
 		});
 
 		it('Disables validation of certificates if "Browser.settings.fetch.disableStrictSSL" is set to "true".', async () => {
-			const originURL = 'https://localhost:8080';
+			const originURL = 'https://localhost';
 
 			browserFrame.url = originURL;
 			browserFrame.page.context.browser.settings.fetch.disableStrictSSL = true;

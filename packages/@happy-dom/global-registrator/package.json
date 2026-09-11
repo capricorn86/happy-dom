@@ -40,7 +40,11 @@
 		"typescript": "^5.8.3",
 		"lit": "^3.3.0",
 		"react": "^18.2.0",
-		"react-dom": "^18.2.0"
+		"react-dom": "^18.2.0",
+		"@angular/common": "^22.0.0",
+		"@angular/compiler": "^22.0.0",
+		"@angular/core": "^22.0.0",
+		"@angular/platform-browser": "^22.0.0"
 	},
 	"engines": {
 		"node": ">=20.0.0"

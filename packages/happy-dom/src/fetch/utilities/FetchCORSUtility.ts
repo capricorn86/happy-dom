@@ -18,10 +18,6 @@ export default class FetchCORSUtility {
 			return false;
 		}
 
-		return (
-			(originURL.hostname !== targetURL.hostname &&
-				!originURL.hostname.endsWith(targetURL.hostname)) ||
-			originURL.protocol !== targetURL.protocol
-		);
+		return originURL.origin !== targetURL.origin;
 	}
 }
