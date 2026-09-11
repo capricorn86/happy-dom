@@ -84,6 +84,41 @@ describe('CSSStyleDeclaration', () => {
 		});
 	});
 
+	describe('[Symbol.iterator]()', () => {
+		it('Returns an iterator for property names.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			element.setAttribute('style', 'color: red; font-size: 12px');
+
+			expect([...declaration]).toEqual(['color', 'font-size']);
+		});
+
+		it('Returns an empty iterator when no styles are set.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			expect([...declaration]).toEqual([]);
+		});
+
+		it('Iterates expanded shorthand properties.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			element.setAttribute('style', 'margin: 10px');
+
+			const keys = [...declaration];
+
+			expect(keys).toContain('margin-top');
+			expect(keys).toContain('margin-right');
+			expect(keys).toContain('margin-bottom');
+			expect(keys).toContain('margin-left');
+		});
+	});
+
 	describe('get border()', () => {
 		it('Returns style property.', () => {
 			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
