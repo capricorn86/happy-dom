@@ -501,6 +501,59 @@ describe('XMLHttpRequest', () => {
 			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.opened);
 		});
 
+		it('Silently terminates a previously started request.', async () => {
+			let resolveFirstRequest: (response: Response) => void;
+			let resolveSecondRequest: (response: Response) => void;
+			let firstRequestSignal: AbortSignal | null = null;
+
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function () {
+				return new Promise<Response>((resolve) => {
+					if (this.request.url.endsWith('/first')) {
+						firstRequestSignal = this.request.signal;
+						resolveFirstRequest = resolve;
+					} else {
+						resolveSecondRequest = resolve;
+					}
+				});
+			});
+
+			const events: string[] = [];
+			for (const type of ['abort', 'error', 'load', 'loadend']) {
+				request.addEventListener(type, () => events.push(type));
+			}
+
+			request.open('GET', '/first');
+			request.send();
+			request.open('GET', '/second');
+			request.send();
+
+			expect(firstRequestSignal?.aborted).toBe(true);
+
+			resolveSecondRequest!(<Response>{
+				headers: new Headers(),
+				status: 201,
+				body: new ReadableStream({
+					start(controller) {
+						controller.enqueue('second response');
+						controller.close();
+					}
+				})
+			});
+
+			await window.happyDOM.waitUntilComplete();
+
+			expect(request.status).toBe(201);
+			expect(request.responseText).toBe('second response');
+			expect(events).toEqual(['load', 'loadend']);
+
+			resolveFirstRequest!(<Response>{ headers: new Headers(), status: 418 });
+			await Promise.resolve();
+
+			expect(request.status).toBe(201);
+			expect(request.responseText).toBe('second response');
+			expect(events).toEqual(['load', 'loadend']);
+		});
+
 		it('Throws an exception for forbidden request methods.', () => {
 			for (const forbiddenMethod of FORBIDDEN_REQUEST_METHODS) {
 				expect(() => request.open(forbiddenMethod, REQUEST_URL, true)).toThrow(
