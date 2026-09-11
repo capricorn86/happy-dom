@@ -394,12 +394,13 @@ export default class CSSValueFormatter {
 	private static getColorAlpha(alpha: number): string {
 		const value = alpha / 255;
 		for (let decimals = 1; decimals <= 3; decimals++) {
-			const rounded = Number(value.toFixed(decimals));
+			const factor = 10 ** decimals;
+			const rounded = Math.round(value * factor) / factor;
 			if (Math.round(rounded * 255) === alpha) {
 				return String(rounded);
 			}
 		}
-		return String(Number(value.toFixed(3)));
+		return String(Math.round(value * 1000) / 1000);
 	}
 
 	/**
