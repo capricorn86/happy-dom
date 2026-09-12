@@ -1,3 +1,4 @@
+import { Decimal } from 'decimal.js';
 import DOMException from '../../exception/DOMException.js';
 import type HTMLInputElement from './HTMLInputElement.js';
 
@@ -10,18 +11,14 @@ export default class HTMLInputElementValueStepping {
 	 *
 	 * @param input Input element.
 	 * @param direction Direction.
-	 * @param [increment] Increment.
+	 * @param [n] Number of times to step.
 	 * @returns New value.
 	 */
-	public static step(
-		input: HTMLInputElement,
-		direction: -1 | 1,
-		increment?: number
-	): string | null {
+	public static step(input: HTMLInputElement, direction: -1 | 1, n?: number): string | null {
 		const type = input.type;
 		switch (type) {
 			case 'number':
-				return this.getNumberValue(input, direction, increment);
+				return this.getNumberValue(input, direction, n);
 			case 'date':
 			case 'month':
 			case 'week':
@@ -41,52 +38,68 @@ export default class HTMLInputElementValueStepping {
 	 * @see https://html.spec.whatwg.org/multipage/input.html#dom-input-stepup
 	 * @param input Input element.
 	 * @param direction Direction.
-	 * @param [increment] Increment.
+	 * @param [n] Number of times to step.
 	 */
-	private static getNumberValue(
-		input: HTMLInputElement,
-		direction: -1 | 1,
-		increment?: number
-	): string {
-		const stepValue = input.step;
+	private static getNumberValue(input: HTMLInputElement, direction: -1 | 1, n?: number): string {
 		const minValue = input.min;
 		const maxValue = input.max;
+		const stepValue = input.step;
 
-		const min = minValue !== '' ? Number(minValue) : null;
-		const max = maxValue !== '' ? Number(maxValue) : null;
-		let value = Number(input.value);
+		let min = minValue !== '' ? Number(minValue) : null;
+		let max = maxValue !== '' ? Number(maxValue) : null;
 		let step = stepValue !== '' ? Number(stepValue) : 1;
+		let valueBeforeStepping = input.valueAsNumber;
 
-		value = isNaN(value) ? 0 : value;
-		step = isNaN(step) || step === 0 ? 1 : step;
+		min = min === null || Number.isNaN(min) ? null : min;
+		max = max === null || Number.isNaN(max) ? null : max;
+		step = Number.isNaN(step) || step === 0 ? 1 : step;
 
-		if (min !== null && !isNaN(min) && max !== null && !isNaN(max) && (min > max || max < min)) {
+		// Preserve value when out of bounds
+		if (
+			n === 0 ||
+			(direction === -1 && min !== null && valueBeforeStepping <= min) ||
+			(direction === 1 && max !== null && valueBeforeStepping >= max) ||
+			(min !== null && max !== null && min > max)
+		) {
 			return input.value;
 		}
 
-		if (increment === 0) {
-			return input.value;
+		if (Number.isNaN(valueBeforeStepping)) {
+			valueBeforeStepping = 0;
+
+			// Default value when min is above zero
+			// (Chromium behaviour, WebKit preserves value on step down)
+			if (min !== null && min > 0) {
+				return minValue;
+			}
+
+			// Default value when max is below zero
+			// (Chromium behaviour, WebKit preserves value on step up)
+			if (max !== null && max < 0) {
+				return maxValue;
+			}
 		}
 
-		const validIncrementValue = increment !== undefined ? Math.ceil(increment / step) * step : step;
-		const candidate = value + validIncrementValue * direction;
-		const minOrZero = min !== null && !isNaN(min) ? min : 0;
+		const base = min ?? 0;
+		const rounding = direction === 1 ? Decimal.ROUND_FLOOR : Decimal.ROUND_CEIL;
 
-		switch (direction) {
-			// Step down
-			case -1:
-				if (min !== null && !isNaN(min) && candidate < min) {
-					return String(min);
-				}
-				// Previous valid step from value
-				return String(candidate + ((value - minOrZero) % step));
-			// Step up
-			case 1:
-				if (max !== null && !isNaN(max) && candidate > max) {
-					return String(minOrZero + Math.floor((max - minOrZero) / step) * step);
-				}
-				// Next valid step from value
-				return String(candidate - ((value - minOrZero) % step));
+		// Previous or next valid step from value
+		let value = new Decimal(valueBeforeStepping)
+			.minus(base)
+			.toNearest(step, rounding)
+			.add(base)
+			.add(step * (n ?? 1) * direction);
+
+		// Clamp to min
+		if (min !== null && value.lessThan(min)) {
+			value = new Decimal(min);
 		}
+
+		// Clamp to max
+		if (max !== null && value.greaterThan(max)) {
+			value = new Decimal(max).minus(base).toNearest(step, Decimal.ROUND_FLOOR).add(base);
+		}
+
+		return value.toString();
 	}
 }
