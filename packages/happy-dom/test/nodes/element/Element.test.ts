@@ -5,6 +5,7 @@ import CustomElement from '../../CustomElement.js';
 import ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
 import type Document from '../../../src/nodes/document/Document.js';
 import type Text from '../../../src/nodes/text/Text.js';
+import type HTMLSlotElement from '../../../src/nodes/html-slot-element/HTMLSlotElement.js';
 import type HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import DOMRect from '../../../src/dom/DOMRect.js';
 import NamespaceURI from '../../../src/config/NamespaceURI.js';
@@ -287,6 +288,177 @@ describe('Element', () => {
 		it('Returns the element "slot" attribute.', () => {
 			element.setAttribute('slot', 'slot');
 			expect(element.slot).toBe('slot');
+		});
+	});
+
+	describe('get assignedSlot()', () => {
+		/**
+		 * Attaches an open shadow root containing the given markup.
+		 *
+		 * @param html Shadow root markup.
+		 * @param [mode] Shadow root mode.
+		 * @param [slotAssignment] Slot assignment mode.
+		 * @returns Host element.
+		 */
+		const createHost = (
+			html: string,
+			mode: 'open' | 'closed' = 'open',
+			slotAssignment?: 'named' | 'manual'
+		): Element => {
+			const host = document.createElement('div');
+			const shadowRoot = host.attachShadow({ mode, slotAssignment });
+			shadowRoot.innerHTML = html;
+			document.body.appendChild(host);
+			return host;
+		};
+
+		it('Returns the named slot the element is assigned to.', () => {
+			const host = createHost('<slot name="slot1"></slot>');
+			const element = document.createElement('div');
+			element.setAttribute('slot', 'slot1');
+
+			host.appendChild(element);
+
+			expect(element.assignedSlot === host.shadowRoot?.querySelector('slot')).toBe(true);
+		});
+
+		it('Returns the default slot for an element without a slot name.', () => {
+			const host = createHost('<slot name="slot1"></slot><slot></slot>');
+			const element = document.createElement('div');
+
+			host.appendChild(element);
+
+			expect(element.assignedSlot === host.shadowRoot?.querySelector('slot:not([name])')).toBe(
+				true
+			);
+		});
+
+		it('Returns the default slot for an element with an empty slot name.', () => {
+			const host = createHost('<slot name="slot1"></slot><slot></slot>');
+			const element = document.createElement('div');
+			element.setAttribute('slot', '');
+
+			host.appendChild(element);
+
+			expect(element.assignedSlot === host.shadowRoot?.querySelector('slot:not([name])')).toBe(
+				true
+			);
+		});
+
+		it('Returns the first slot in tree order when two slots share a name.', () => {
+			const host = createHost(
+				'<slot name="slot1" id="first"></slot><slot name="slot1" id="second"></slot>'
+			);
+			const element = document.createElement('div');
+			element.setAttribute('slot', 'slot1');
+
+			host.appendChild(element);
+
+			expect(element.assignedSlot === host.shadowRoot?.querySelector('#first')).toBe(true);
+		});
+
+		it('Returns a slot nested inside the shadow tree.', () => {
+			const host = createHost('<div><span><slot name="slot1"></slot></span></div>');
+			const element = document.createElement('div');
+			element.setAttribute('slot', 'slot1');
+
+			host.appendChild(element);
+
+			expect(element.assignedSlot === host.shadowRoot?.querySelector('slot')).toBe(true);
+		});
+
+		it('Returns the slot a slot element in the light DOM is assigned to.', () => {
+			const host = createHost('<slot name="slot1"></slot>');
+			const element = document.createElement('slot');
+			element.setAttribute('slot', 'slot1');
+
+			host.appendChild(element);
+
+			expect(element.assignedSlot === host.shadowRoot?.querySelector('slot[name="slot1"]')).toBe(
+				true
+			);
+		});
+
+		it('Returns null when the shadow root is closed.', () => {
+			const host = createHost('<slot name="slot1"></slot>', 'closed');
+			const element = document.createElement('div');
+			element.setAttribute('slot', 'slot1');
+
+			host.appendChild(element);
+
+			expect(element.assignedSlot).toBe(null);
+		});
+
+		it('Returns null when no slot matches the slot name.', () => {
+			const host = createHost('<slot name="slot1"></slot>');
+			const element = document.createElement('div');
+			element.setAttribute('slot', 'unknown');
+
+			host.appendChild(element);
+
+			expect(element.assignedSlot).toBe(null);
+		});
+
+		it('Returns null when the parent element has no shadow root.', () => {
+			const parent = document.createElement('div');
+			const element = document.createElement('div');
+
+			parent.appendChild(element);
+
+			expect(element.assignedSlot).toBe(null);
+		});
+
+		it('Returns null for an element that has no parent node.', () => {
+			expect(document.createElement('div').assignedSlot).toBe(null);
+		});
+
+		it('Returns null for an element inside the shadow root.', () => {
+			const host = createHost('<slot name="slot1"></slot>');
+
+			expect(host.shadowRoot?.querySelector('slot')?.assignedSlot).toBe(null);
+		});
+
+		it('Returns null after the element has been removed from the host.', () => {
+			const host = createHost('<slot name="slot1"></slot>');
+			const element = document.createElement('div');
+			element.setAttribute('slot', 'slot1');
+
+			host.appendChild(element);
+			expect(element.assignedSlot).not.toBe(null);
+
+			element.remove();
+			expect(element.assignedSlot).toBe(null);
+		});
+
+		it('Returns the manually assigned slot when slot assignment is "manual".', () => {
+			const host = createHost('<slot></slot>', 'open', 'manual');
+			const slot = <HTMLSlotElement>host.shadowRoot?.querySelector('slot');
+			const element = document.createElement('div');
+
+			host.appendChild(element);
+			expect(element.assignedSlot).toBe(null);
+
+			slot.assign(element);
+
+			expect(element.assignedSlot === slot).toBe(true);
+		});
+
+		// Firefox and WebKit return null here, matching "find a slot" step 5,
+		// which asks for a slot in the shadow root's descendants. Chromium
+		// returns the detached slot while reporting an empty assignedNodes()
+		// for that same slot.
+		it('Returns null when the manually assigned slot has been removed from the shadow root.', () => {
+			const host = createHost('<slot></slot>', 'open', 'manual');
+			const slot = <HTMLSlotElement>host.shadowRoot?.querySelector('slot');
+			const element = document.createElement('div');
+
+			host.appendChild(element);
+			slot.assign(element);
+			expect(element.assignedSlot === slot).toBe(true);
+
+			slot.remove();
+
+			expect(element.assignedSlot).toBe(null);
 		});
 	});
 
