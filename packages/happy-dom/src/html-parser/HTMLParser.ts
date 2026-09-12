@@ -693,9 +693,7 @@ export default class HTMLParser {
 	 * @param comment Comment.
 	 */
 	private parseComment(comment: string): void {
-		const commentNode = this.rootDocument!.createComment(
-			XMLEncodeUtility.decodeHTMLEntities(comment)
-		);
+		const commentNode = this.rootDocument!.createComment(comment);
 
 		if (this.documentStructure) {
 			const level = this.documentStructure.level;
