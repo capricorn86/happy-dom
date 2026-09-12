@@ -2,6 +2,7 @@ import type SVGElement from '../../../src/nodes/svg-element/SVGElement.js';
 import type FocusEvent from '../../../src/event/events/FocusEvent.js';
 import type Document from '../../../src/nodes/document/Document.js';
 import type HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
+import HTMLElementUtility from '../../../src/nodes/html-element/HTMLElementUtility.js';
 import Window from '../../../src/window/Window.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import type EventTarget from '../../../src/event/EventTarget.js';
@@ -299,6 +300,52 @@ describe('HTMLElementUtility', () => {
 				expect((<FocusEvent>(<unknown>triggeredFocusOutEvent)).type).toBe('focusout');
 				expect((<FocusEvent>(<unknown>triggeredFocusOutEvent)).relatedTarget).toBeNull();
 			}
+		});
+	});
+
+	describe('placeCaretInContentEditable()', () => {
+		it('Places a collapsed selection at the first editable text node.', () => {
+			const div = <HTMLElement>document.createElement('div');
+			div.contentEditable = 'true';
+			div.textContent = 'hello';
+			document.body.appendChild(div);
+
+			HTMLElementUtility.placeCaretInContentEditable(div);
+
+			const sel = document.getSelection();
+			expect(sel?.isCollapsed).toBe(true);
+			expect(sel?.anchorNode).toBe(div.firstChild);
+			expect(sel?.anchorOffset).toBe(0);
+		});
+
+		it('Skips contenteditable=false subtrees when finding the first text node.', () => {
+			const div = <HTMLElement>document.createElement('div');
+			div.contentEditable = 'true';
+			const inner = document.createElement('span');
+			inner.contentEditable = 'false';
+			inner.textContent = 'non-editable';
+			const editable = document.createElement('span');
+			editable.textContent = 'editable';
+			div.appendChild(inner);
+			div.appendChild(editable);
+			document.body.appendChild(div);
+
+			HTMLElementUtility.placeCaretInContentEditable(div);
+
+			const sel = document.getSelection();
+			expect(sel?.anchorNode).toBe(editable.firstChild);
+		});
+
+		it('Collapses to the element itself when no text nodes exist.', () => {
+			const div = <HTMLElement>document.createElement('div');
+			div.contentEditable = 'true';
+			document.body.appendChild(div);
+
+			HTMLElementUtility.placeCaretInContentEditable(div);
+
+			const sel = document.getSelection();
+			expect(sel?.isCollapsed).toBe(true);
+			expect(sel?.anchorNode).toBe(div);
 		});
 	});
 });
