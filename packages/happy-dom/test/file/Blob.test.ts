@@ -56,6 +56,18 @@ describe('Blob', () => {
 		});
 	});
 
+	describe('text()', () => {
+		it('Returns the text content of the blob.', async () => {
+			const blob = new Blob(['TEST']);
+			expect(await blob.text()).toBe('TEST');
+		});
+
+		it('Strips a leading BOM.', async () => {
+			const blob = new Blob(['\uFEFFState,Name']);
+			expect(await blob.text()).toBe('State,Name');
+		});
+	});
+
 	describe('toString()', () => {
 		it('Returns "[object Blob]".', () => {
 			const blob = new Blob(['TEST']);
