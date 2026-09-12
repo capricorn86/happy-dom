@@ -371,22 +371,16 @@ export default class HTMLButtonElement extends HTMLElement {
 	 * @override
 	 */
 	public override dispatchEvent(event: Event): boolean {
-		if (
-			event.type === 'click' &&
-			event instanceof MouseEvent &&
-			event.eventPhase === EventPhaseEnum.none &&
-			this.disabled
-		) {
-			return false;
-		}
-
 		const returnValue = super.dispatchEvent(event);
 
+		// A disabled button has no activation behavior, but its event listeners are still called.
+		// @see https://html.spec.whatwg.org/multipage/form-elements.html#the-button-element
 		if (
 			!event[PropertySymbol.defaultPrevented] &&
 			event.type === 'click' &&
 			event.eventPhase === EventPhaseEnum.none &&
-			event instanceof MouseEvent
+			event instanceof MouseEvent &&
+			!this.disabled
 		) {
 			const type = this.type;
 			if (type === 'submit' || type === 'reset') {

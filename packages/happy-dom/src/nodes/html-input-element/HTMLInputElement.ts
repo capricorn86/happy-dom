@@ -1445,11 +1445,6 @@ export default class HTMLInputElement extends HTMLElement {
 			return super.dispatchEvent(event);
 		}
 
-		// Do nothing if the input element is disabled and the event is a click event.
-		if (this.disabled) {
-			return false;
-		}
-
 		let previousCheckedValue: boolean | null = null;
 		let previousIndeterminateValue: boolean = this[PropertySymbol.indeterminate];
 
@@ -1492,7 +1487,9 @@ export default class HTMLInputElement extends HTMLElement {
 			} else if (type === 'radio' && !previousCheckedValue && this[PropertySymbol.isConnected]) {
 				this.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
 				this.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
-			} else if (type === 'submit' || type === 'reset') {
+			} else if ((type === 'submit' || type === 'reset') && !this.disabled) {
+				// A disabled submit or reset button has no activation behavior, but its event listeners are still called.
+				// @see https://html.spec.whatwg.org/multipage/input.html#submit-button-state-(type=submit)
 				const form = this.form;
 				if (form) {
 					if (type === 'submit' && this[PropertySymbol.isConnected]) {
