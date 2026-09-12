@@ -13,8 +13,8 @@ import type BrowserWindow from './BrowserWindow.js';
  * The Browser should never be exposed to scripts, as the scripts could then manipulate it, which would lead to security issues.
  */
 export default class WindowBrowserContext {
-	private static [PropertySymbol.browserFrames]: Map<number, IBrowserFrame> = new Map();
-	private static [PropertySymbol.windowInternalId] = 0;
+	private static [PropertySymbol.browserFrames]: WeakMap<BrowserWindow, IBrowserFrame> =
+		new WeakMap();
 	#window: BrowserWindow;
 
 	/**
@@ -73,7 +73,7 @@ export default class WindowBrowserContext {
 		}
 		return (
 			(<typeof WindowBrowserContext>this.constructor)[PropertySymbol.browserFrames].get(
-				this.#window[PropertySymbol.internalId]
+				this.#window
 			) || null
 		);
 	}
@@ -97,12 +97,7 @@ export default class WindowBrowserContext {
 		window: BrowserWindow,
 		browserFrame: IBrowserFrame
 	): void {
-		const browserFrames = this[PropertySymbol.browserFrames];
-		if (window[PropertySymbol.internalId] === -1) {
-			window[PropertySymbol.internalId] = this[PropertySymbol.windowInternalId];
-			this[PropertySymbol.windowInternalId]++;
-		}
-		browserFrames.set(window[PropertySymbol.internalId], browserFrame);
+		this[PropertySymbol.browserFrames].set(window, browserFrame);
 	}
 
 	/**
@@ -112,6 +107,6 @@ export default class WindowBrowserContext {
 	 * @param browserFrame Browser frame.
 	 */
 	public static removeWindowBrowserFrameRelation(window: BrowserWindow): void {
-		this[PropertySymbol.browserFrames].delete(window[PropertySymbol.internalId]);
+		this[PropertySymbol.browserFrames].delete(window);
 	}
 }
