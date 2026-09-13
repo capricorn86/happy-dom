@@ -19,6 +19,7 @@ import type ShadowRoot from '../shadow-root/ShadowRoot.js';
 import { URL } from 'url';
 import MouseEvent from '../../event/events/MouseEvent.js';
 import type NodeList from '../node/NodeList.js';
+import type Attr from '../attr/Attr.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
 // Valid input type states per HTML spec:
@@ -1436,6 +1437,63 @@ export default class HTMLInputElement extends HTMLElement {
 	/**
 	 * @override
 	 */
+	public override [PropertySymbol.onSetAttribute](
+		attribute: Attr,
+		replacedAttribute: Attr | null
+	): void {
+		super[PropertySymbol.onSetAttribute](attribute, replacedAttribute);
+
+		const name = attribute[PropertySymbol.name];
+
+		// "checked" drives checkedness only on the absent→present transition and only until the
+		// IDL property overrides it; re-setting an already-present attribute is a no-op, like browsers.
+		if (name === 'checked' && replacedAttribute === null && this[PropertySymbol.checked] === null) {
+			this[PropertySymbol.clearCache]();
+			this.#reconcileRadioButtonGroup();
+			return;
+		}
+
+		// "type" and "name" can be parsed in any order relative to "checked" within a start tag,
+		// so re-run mutual exclusion once this element reads as a checked radio button.
+		if (name === 'type' || name === 'name') {
+			this.#reconcileRadioButtonGroup();
+		}
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.connectedToNode](): void {
+		super[PropertySymbol.connectedToNode]();
+
+		if (this.type !== 'radio' || !this.name || !this.checked) {
+			return;
+		}
+
+		// A radio can join a group already checked with no attribute or IDL setter firing. When
+		// several arrive checked at once the last in tree order wins, so this one yields to a
+		// checked sibling below it that is still mid-insertion (isConnected === false).
+		this[PropertySymbol.clearCache]();
+
+		let passedSelf = false;
+		for (const radioButton of this.#getRadioButtonGroup()) {
+			if (radioButton === this) {
+				passedSelf = true;
+			} else if (radioButton.checked) {
+				if (passedSelf && !radioButton[PropertySymbol.isConnected]) {
+					this[PropertySymbol.checked] = false;
+					this[PropertySymbol.clearCache]();
+					return;
+				}
+				radioButton[PropertySymbol.checked] = false;
+				radioButton[PropertySymbol.clearCache]();
+			}
+		}
+	}
+
+	/**
+	 * @override
+	 */
 	public override dispatchEvent(event: Event): boolean {
 		if (
 			event[PropertySymbol.type] !== 'click' ||
@@ -1532,19 +1590,46 @@ export default class HTMLInputElement extends HTMLElement {
 		this[PropertySymbol.checked] = checked;
 		this[PropertySymbol.clearCache]();
 
-		if (checked && this.type === 'radio' && this.name) {
-			const root = <HTMLElement>(
-				(<HTMLFormElement>this[PropertySymbol.formNode] || this.getRootNode())
-			);
-			const radioButtons = <NodeList<HTMLInputElement>>(
-				root.querySelectorAll(`input[type="radio"][name="${this.name}"]`)
-			);
+		this.#reconcileRadioButtonGroup();
+	}
 
-			for (const radioButton of radioButtons) {
-				if (radioButton !== this) {
-					radioButton[PropertySymbol.checked] = false;
-				}
+	/**
+	 * Enforces radio button group mutual exclusion for this checked radio button: unchecks the
+	 * other checked members of its group (same "name", same form owner, or same root otherwise).
+	 *
+	 * A radio button unchecked here has its checkedness overridden, so its "checked" content
+	 * attribute stops driving it until a form reset — matching browsers.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/input.html#radio-button-state-(type=radio)
+	 */
+	#reconcileRadioButtonGroup(): void {
+		if (this.type !== 'radio' || !this.name || !this.checked) {
+			return;
+		}
+
+		// This radio just became checked — its own ":checked" match changed.
+		this[PropertySymbol.clearCache]();
+
+		for (const radioButton of this.#getRadioButtonGroup()) {
+			if (radioButton !== this && radioButton.checked) {
+				radioButton[PropertySymbol.checked] = false;
+				radioButton[PropertySymbol.clearCache]();
 			}
 		}
+	}
+
+	/**
+	 * Returns this radio button's group: the radio buttons with the same "name" under its form
+	 * owner, or under its root when it has no form owner.
+	 *
+	 * @returns Radio buttons in tree order.
+	 */
+	#getRadioButtonGroup(): NodeList<HTMLInputElement> {
+		const root = <HTMLElement>(
+			(<HTMLFormElement>this[PropertySymbol.formNode] || this.getRootNode())
+		);
+		return <NodeList<HTMLInputElement>>(
+			root.querySelectorAll(`input[type="radio"][name="${this.name}"]`)
+		);
 	}
 }
