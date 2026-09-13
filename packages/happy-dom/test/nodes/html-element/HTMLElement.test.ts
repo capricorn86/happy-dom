@@ -534,6 +534,29 @@ describe('HTMLElement', () => {
 			div.setAttribute('hidden', '');
 			expect(div.hidden).toBe(true);
 		});
+
+		it('Returns false when the attribute is missing.', () => {
+			const div = <HTMLElement>document.createElement('div');
+			expect(div.hidden).toBe(false);
+		});
+
+		it('Returns "until-found" for the hidden-until-found state.', () => {
+			const div = <HTMLElement>document.createElement('div');
+			div.setAttribute('hidden', 'until-found');
+			expect(div.hidden).toBe('until-found');
+		});
+
+		it('Is case-insensitive when detecting the "until-found" keyword.', () => {
+			const div = <HTMLElement>document.createElement('div');
+			div.setAttribute('hidden', 'UNTIL-FOUND');
+			expect(div.hidden).toBe('until-found');
+		});
+
+		it('Returns true for any other attribute value.', () => {
+			const div = <HTMLElement>document.createElement('div');
+			div.setAttribute('hidden', 'true');
+			expect(div.hidden).toBe(true);
+		});
 	});
 
 	describe('set hidden()', () => {
@@ -543,6 +566,26 @@ describe('HTMLElement', () => {
 			expect(div.getAttribute('hidden')).toBe('');
 			div.hidden = false;
 			expect(div.getAttribute('hidden')).toBe(null);
+		});
+
+		it('Sets the "until-found" state.', () => {
+			const div = <HTMLElement>document.createElement('div');
+			div.hidden = 'until-found';
+			expect(div.getAttribute('hidden')).toBe('until-found');
+			expect(div.hidden).toBe('until-found');
+		});
+
+		it('Removes the attribute for falsy values, including the empty string.', () => {
+			const div = <HTMLElement>document.createElement('div');
+			div.hidden = true;
+			div.hidden = '';
+			expect(div.getAttribute('hidden')).toBe(null);
+		});
+
+		it('Sets the plain hidden state for non-"until-found" strings.', () => {
+			const div = <HTMLElement>document.createElement('div');
+			div.hidden = 'foo';
+			expect(div.getAttribute('hidden')).toBe('');
 		});
 	});
 
