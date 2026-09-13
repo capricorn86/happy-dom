@@ -750,12 +750,19 @@ export default class HTMLSelectElement extends HTMLElement {
 				}
 			}
 		} else if (selected.length >= 2) {
+			// Single-selection <select>: per spec the last option in tree order with selectedness
+			// stays selected; `selected` is built in tree order, so that is its last entry.
+			const lastSelected = selected[selected.length - 1];
+
 			this[PropertySymbol.selectedIndex] = -1;
 
 			for (let i = 0, max = options.length; i < max; i++) {
-				(<HTMLOptionElement>options[i])[PropertySymbol.selectedness] = i === selected.length - 1;
+				const option = <HTMLOptionElement>options[i];
+				const isSelected = option === lastSelected;
 
-				if (i === selected.length - 1) {
+				option[PropertySymbol.selectedness] = isSelected;
+
+				if (isSelected) {
 					this[PropertySymbol.selectedIndex] = i;
 				}
 			}
