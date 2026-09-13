@@ -330,7 +330,8 @@ The page may contain scripts with timer loops that prevent it from completing. Y
 					headers: new Headers({ key1: 'value' }),
 					status: 200,
 					statusText: 'OK',
-					text: async () => `<script>function t(){ setTimeout(t, 10) } t()</script>`
+					text: async () =>
+						`<script>window.addEventListener('load', () => { function t(){ setTimeout(t, 10) } t() })</script>`
 				};
 			});
 
