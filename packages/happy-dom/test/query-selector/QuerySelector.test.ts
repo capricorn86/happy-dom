@@ -1009,6 +1009,24 @@ describe('QuerySelector', () => {
 			expect(elements2[4] === container.children[0].children[5]).toBe(true);
 		});
 
+		it('Returns all elements matching ":invalid" and ":valid".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+				<input id="a" required>
+				<input id="b" required value="filled">
+				<input id="c" required disabled>
+				<div id="d"></div>
+			`;
+
+			const invalid = container.querySelectorAll(':invalid');
+			const valid = container.querySelectorAll(':valid');
+
+			expect(invalid.length).toBe(1);
+			expect(invalid[0].id).toBe('a');
+			expect(valid.length).toBe(1);
+			expect(valid[0].id).toBe('b');
+		});
+
 		it('Returns all elements matching "span:not([type=hidden])".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;

@@ -277,6 +277,15 @@ export default class SelectorItem {
 				return 'disabled' in element && element.hasAttribute('disabled')
 					? { priorityWeight: 10 }
 					: null;
+			case 'invalid':
+			case 'valid': {
+				// :valid / :invalid only apply to elements that are candidates for constraint validation.
+				if (!('willValidate' in element) || !(<HTMLInputElement>element).willValidate) {
+					return null;
+				}
+				const isValid = (<HTMLInputElement>element).checkValidity();
+				return (pseudo.name === 'invalid' ? !isValid : isValid) ? { priorityWeight: 10 } : null;
+			}
 			case 'empty':
 				return !(<Element>element)[PropertySymbol.elementArray].length
 					? { priorityWeight: 10 }
