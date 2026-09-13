@@ -6,6 +6,7 @@ import type Response from '../../src/fetch/Response.js';
 import Location from '../../src/location/Location.js';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 import type HashChangeEvent from '../../src/event/events/HashChangeEvent.js';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 
 const HREF = 'https://google.com/some-path/?key=value&key2=value2#hash';
 
@@ -67,6 +68,34 @@ describe('Location', () => {
 			expect(events[1].newURL).toBe(
 				'https://localhost:8080/some-path/?key=value&key2=value2#new-hash2'
 			);
+		});
+
+		it('Resets history.state to null, even if the previous entry had a non-null state.', () => {
+			const location = new Location(
+				browserFrame,
+				'https://localhost:8080/some-path/?key=value&key2=value2'
+			);
+
+			browserFrame[PropertySymbol.history].currentItem.state = { key: 'value' };
+
+			location.hash = '#new-hash';
+
+			expect(browserFrame.window.history.state).toBe(null);
+		});
+
+		it('Does not reset a state set through history.pushState() (only hash navigation clears it).', () => {
+			const location = new Location(
+				browserFrame,
+				'https://localhost:8080/some-path/?key=value&key2=value2'
+			);
+
+			browserFrame.window.history.pushState({ key: 'value' }, '', '#pushed');
+
+			expect(browserFrame.window.history.state).toEqual({ key: 'value' });
+
+			location.hash = '#navigated';
+
+			expect(browserFrame.window.history.state).toBe(null);
 		});
 	});
 
