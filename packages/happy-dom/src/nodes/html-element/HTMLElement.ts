@@ -33,6 +33,7 @@ export default class HTMLElement extends Element {
 	public declare [PropertySymbol.style]: CSSStyleDeclaration | null;
 	public declare [PropertySymbol.dataset]: DOMStringMap | null;
 	public declare [PropertySymbol.customElementDefineCallback]: (() => void) | null;
+	public declare [PropertySymbol.clickInProgress]: boolean;
 
 	/**
 	 * Constructor.
@@ -63,6 +64,7 @@ export default class HTMLElement extends Element {
 		this[PropertySymbol.style] = null;
 		this[PropertySymbol.dataset] = null;
 		this[PropertySymbol.customElementDefineCallback] = null;
+		this[PropertySymbol.clickInProgress] = false;
 	}
 
 	// Events
@@ -974,15 +976,27 @@ export default class HTMLElement extends Element {
 
 	/**
 	 * Triggers a click event.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/interaction.html#dom-click
 	 */
 	public click(): void {
-		this.dispatchEvent(
-			new PointerEvent('click', {
-				bubbles: true,
-				composed: true,
-				cancelable: true
-			})
-		);
+		if (this[PropertySymbol.clickInProgress]) {
+			return;
+		}
+
+		this[PropertySymbol.clickInProgress] = true;
+
+		try {
+			this.dispatchEvent(
+				new PointerEvent('click', {
+					bubbles: true,
+					composed: true,
+					cancelable: true
+				})
+			);
+		} finally {
+			this[PropertySymbol.clickInProgress] = false;
+		}
 	}
 
 	/**
