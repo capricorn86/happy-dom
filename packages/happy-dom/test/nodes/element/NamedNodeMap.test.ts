@@ -291,4 +291,150 @@ describe('NamedNodeMap', () => {
 			);
 		});
 	});
+
+	describe('Object.keys()', () => {
+		it('Returns only the indices as enumerable own properties.', () => {
+			element.setAttribute('href', '/x');
+			element.setAttribute('title', 't');
+
+			expect(Object.keys(element.attributes)).toEqual(['0', '1']);
+		});
+
+		it('Returns only attributes in Object.values().', () => {
+			element.setAttribute('href', '/x');
+			element.setAttributeNS('namespace', 'ns1:key', 'value');
+
+			const values = Object.values(element.attributes);
+
+			expect(values.length).toBe(2);
+			expect(values[0] === element.attributes.getNamedItem('href')).toBe(true);
+			expect(values[1] === element.attributes.getNamedItem('ns1:key')).toBe(true);
+		});
+	});
+
+	describe('Object.getOwnPropertyNames()', () => {
+		it('Returns indices followed by attribute names.', () => {
+			element.setAttribute('href', '/x');
+			element.setAttribute('title', 't');
+			element.setAttributeNS('namespace', 'ns1:key', 'value');
+
+			expect(Object.getOwnPropertyNames(element.attributes)).toEqual([
+				'0',
+				'1',
+				'2',
+				'href',
+				'title',
+				'ns1:key'
+			]);
+		});
+
+		it('Excludes duplicated qualified names.', () => {
+			element.setAttributeNS('namespace1', 'ns:key', 'value1');
+			element.setAttributeNS('namespace2', 'ns:key', 'value2');
+
+			expect(Object.getOwnPropertyNames(element.attributes)).toEqual(['0', '1', 'ns:key']);
+		});
+
+		it('Excludes names with uppercase letters for HTML elements in an HTML document.', () => {
+			element.setAttributeNS(null, 'UPPER', 'value');
+			element.setAttribute('lower', 'value');
+
+			expect(Object.getOwnPropertyNames(element.attributes)).toEqual(['0', '1', 'lower']);
+		});
+
+		it('Includes names with uppercase letters for elements not in the HTML namespace.', () => {
+			const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+			svg.setAttribute('viewBox', '0 0 1 1');
+
+			expect(Object.getOwnPropertyNames(svg.attributes)).toEqual(['0', 'viewBox']);
+			expect(Object.keys(svg.attributes)).toEqual(['0']);
+		});
+	});
+
+	describe('Object.getOwnPropertyDescriptor()', () => {
+		it('Returns a non-enumerable descriptor for attribute names.', () => {
+			element.setAttribute('href', '/x');
+
+			const descriptor = Object.getOwnPropertyDescriptor(element.attributes, 'href');
+
+			expect(descriptor?.value === element.attributes.getNamedItem('href')).toBe(true);
+			expect(descriptor?.enumerable).toBe(false);
+			expect(descriptor?.writable).toBe(false);
+			expect(descriptor?.configurable).toBe(true);
+		});
+
+		it('Returns an enumerable descriptor for indices.', () => {
+			element.setAttribute('href', '/x');
+
+			const descriptor = Object.getOwnPropertyDescriptor(element.attributes, '0');
+
+			expect(descriptor?.value === element.attributes.item(0)).toBe(true);
+			expect(descriptor?.enumerable).toBe(true);
+		});
+
+		it('Returns undefined for internal keys and unsupported names.', () => {
+			element.setAttribute('href', '/x');
+			element.setAttributeNS(null, 'UPPER', 'value');
+
+			expect(Object.getOwnPropertyDescriptor(element.attributes, ':href')).toBeUndefined();
+			expect(Object.getOwnPropertyDescriptor(element.attributes, 'UPPER')).toBeUndefined();
+			expect(Object.getOwnPropertyDescriptor(element.attributes, '2')).toBeUndefined();
+		});
+	});
+
+	describe('in operator', () => {
+		it('Returns true for attribute names and indices.', () => {
+			element.setAttribute('href', '/x');
+			element.setAttributeNS('namespace', 'ns1:key', 'value');
+
+			expect('href' in element.attributes).toBe(true);
+			expect('ns1:key' in element.attributes).toBe(true);
+			expect('0' in element.attributes).toBe(true);
+			expect('1' in element.attributes).toBe(true);
+			expect('length' in element.attributes).toBe(true);
+		});
+
+		it('Returns false for internal keys and unsupported names.', () => {
+			element.setAttribute('href', '/x');
+			element.setAttributeNS('namespace', 'ns1:key', 'value');
+			element.setAttributeNS(null, 'UPPER', 'value');
+
+			expect(':href' in element.attributes).toBe(false);
+			expect('namespace:ns1:key' in element.attributes).toBe(false);
+			expect('key' in element.attributes).toBe(false);
+			expect('HREF' in element.attributes).toBe(false);
+			expect('UPPER' in element.attributes).toBe(false);
+			expect('3' in element.attributes).toBe(false);
+		});
+	});
+
+	describe('Property access', () => {
+		it('Returns attributes by name and index.', () => {
+			element.setAttribute('href', '/x');
+			element.setAttributeNS('namespace', 'ns1:key', 'value');
+
+			const attributes = <{ [key: string]: Attr }>(<unknown>element.attributes);
+
+			expect(attributes['href'] === element.attributes.getNamedItem('href')).toBe(true);
+			expect(attributes['ns1:key'] === element.attributes.getNamedItem('ns1:key')).toBe(true);
+			expect(attributes['0'] === element.attributes.item(0)).toBe(true);
+			expect(attributes['1'] === element.attributes.item(1)).toBe(true);
+			expect(attributes[':href']).toBeUndefined();
+			expect(attributes['2']).toBeUndefined();
+		});
+
+		it('Supports mapping Object.values() to entries.', () => {
+			element.setAttribute('href', '/x');
+			element.setAttribute('title', 't');
+
+			expect(
+				Object.fromEntries(
+					Object.values(element.attributes).map((attr) => [
+						attr.name,
+						element.getAttribute(attr.name)
+					])
+				)
+			).toEqual({ href: '/x', title: 't' });
+		});
+	});
 });
