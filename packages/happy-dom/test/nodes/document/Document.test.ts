@@ -1465,6 +1465,8 @@ describe('Document', () => {
 			expect(nodeIterator.root).toBe(root);
 			expect(nodeIterator.whatToShow).toBe(whatToShow);
 			expect(nodeIterator.filter).toBe(filter);
+			expect(nodeIterator.referenceNode).toBe(root);
+			expect(nodeIterator.pointerBeforeReferenceNode).toBe(true);
 			expect(nodeIterator).toBeInstanceOf(NodeIterator);
 		});
 	});

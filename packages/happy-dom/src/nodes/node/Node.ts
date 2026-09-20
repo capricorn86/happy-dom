@@ -594,6 +594,15 @@ export default class Node extends EventTarget {
 
 		const previousSibling = node.previousSibling;
 		const nextSibling = node.nextSibling;
+		const nodeDocument =
+			node[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
+				? <Document>node
+				: node[PropertySymbol.ownerDocument];
+
+		// DOM NodeIterator pre-removing steps must run while parent/siblings are intact.
+		if (nodeDocument?.[PropertySymbol.nodeIterators]?.size) {
+			nodeDocument[PropertySymbol.nodeIteratorPreRemove](node);
+		}
 
 		node[PropertySymbol.parentNode] = null;
 

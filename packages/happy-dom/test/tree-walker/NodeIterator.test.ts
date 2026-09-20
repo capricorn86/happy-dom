@@ -195,4 +195,155 @@ describe('NodeIterator', () => {
 			}
 		});
 	});
+
+	describe('referenceNode and pointerBeforeReferenceNode', () => {
+		it('Starts at the root with the pointer before the reference node.', () => {
+			const nodeIterator = document.createNodeIterator(document.body, NodeFilter.SHOW_ELEMENT);
+
+			expect(nodeIterator.referenceNode).toBe(document.body);
+			expect(nodeIterator.pointerBeforeReferenceNode).toBe(true);
+
+			expect(nodeIterator.nextNode()).toBe(document.body);
+			expect(nodeIterator.referenceNode).toBe(document.body);
+			expect(nodeIterator.pointerBeforeReferenceNode).toBe(false);
+		});
+	});
+
+	describe('detach()', () => {
+		it('Is a no-op that does not stop iteration.', () => {
+			const nodeIterator = document.createNodeIterator(document.body, NodeFilter.SHOW_ELEMENT);
+
+			expect(nodeIterator.detach()).toBe(undefined);
+			expect(nodeIterator.nextNode()).toBe(document.body);
+		});
+	});
+
+	describe('pre-removing steps', () => {
+		it('Continues after the current node is removed when its children were inserted after it.', () => {
+			document.body.innerHTML =
+				'<div id="outer"><div id="inner"><strong id="leaf">x</strong></div></div>';
+
+			const iterator = document.createNodeIterator(document.body, NodeFilter.SHOW_ELEMENT);
+			const visited: string[] = [];
+			let node;
+
+			while ((node = iterator.nextNode())) {
+				visited.push((<Element>node).id || node.nodeName);
+				if ((<Element>node).id === 'outer') {
+					const children = [...node.childNodes];
+					for (let i = children.length - 1; i >= 0; --i) {
+						node.parentNode!.insertBefore(children[i], node.nextSibling);
+					}
+					node.parentNode!.removeChild(node);
+				}
+			}
+
+			expect(visited).toEqual(['BODY', 'outer', 'inner', 'leaf']);
+		});
+
+		it('Continues to following siblings after the current node is removed.', () => {
+			document.body.innerHTML = '<div id="a"></div><div id="b"></div><div id="c"></div>';
+
+			const iterator = document.createNodeIterator(document.body, NodeFilter.SHOW_ELEMENT);
+			const visited: string[] = [];
+			let node;
+
+			while ((node = iterator.nextNode())) {
+				visited.push((<Element>node).id || node.nodeName);
+				if ((<Element>node).id === 'a') {
+					node.parentNode!.removeChild(node);
+				}
+			}
+
+			expect(visited).toEqual(['BODY', 'a', 'b', 'c']);
+		});
+
+		it('Continues after an ancestor of the reference node is removed.', () => {
+			document.body.innerHTML =
+				'<div id="wrap"><div id="a"></div><div id="b"></div></div><div id="after"></div>';
+
+			const iterator = document.createNodeIterator(document.body, NodeFilter.SHOW_ELEMENT);
+			const visited: string[] = [];
+			let node;
+
+			while ((node = iterator.nextNode())) {
+				visited.push((<Element>node).id || node.nodeName);
+				if ((<Element>node).id === 'a') {
+					document.getElementById('wrap')!.remove();
+				}
+			}
+
+			expect(visited).toEqual(['BODY', 'wrap', 'a', 'after']);
+		});
+
+		it('Does not visit children hoisted before the removed node.', () => {
+			document.body.innerHTML =
+				'<div id="outer"><div id="inner"><strong id="leaf">x</strong></div></div>';
+
+			const iterator = document.createNodeIterator(document.body, NodeFilter.SHOW_ELEMENT);
+			const visited: string[] = [];
+			let node;
+
+			while ((node = iterator.nextNode())) {
+				visited.push((<Element>node).id || node.nodeName);
+				if ((<Element>node).id === 'outer') {
+					const children = [...node.childNodes];
+					for (let i = 0; i < children.length; i++) {
+						node.parentNode!.insertBefore(children[i], node);
+					}
+					node.parentNode!.removeChild(node);
+				}
+			}
+
+			expect(visited).toEqual(['BODY', 'outer']);
+		});
+
+		it('Continues after replaceChild() removes the current node.', () => {
+			document.body.innerHTML = '<div id="a"></div><div id="b"></div>';
+
+			const iterator = document.createNodeIterator(document.body, NodeFilter.SHOW_ELEMENT);
+			const visited: string[] = [];
+			let node;
+
+			while ((node = iterator.nextNode())) {
+				visited.push((<Element>node).id || node.nodeName);
+				if ((<Element>node).id === 'a') {
+					const replacement = document.createElement('div');
+					replacement.id = 'replacement';
+					node.parentNode!.replaceChild(replacement, node);
+				}
+			}
+
+			// replaceChild inserts the replacement before the old node, so it stays behind
+			// the iterator. Pre-removing must still advance past the removed node to "b".
+			expect(visited).toEqual(['BODY', 'a', 'b']);
+		});
+
+		it('Moves the reference past a removed ancestor when the pointer is before the reference.', () => {
+			document.body.innerHTML =
+				'<div id="a"><span id="a1"></span></div><div id="b"><span id="b1"></span></div><div id="c"></div>';
+
+			const iterator = document.createNodeIterator(document.body, NodeFilter.SHOW_ELEMENT);
+			const nodes: Record<string, Element> = {};
+			for (const id of ['a', 'a1', 'b', 'b1', 'c']) {
+				nodes[id] = document.getElementById(id)!;
+			}
+
+			while (iterator.nextNode() !== nodes.b1) {
+				// Advance until b1 is the reference.
+			}
+
+			expect(iterator.referenceNode).toBe(nodes.b1);
+			expect(iterator.pointerBeforeReferenceNode).toBe(false);
+
+			expect(iterator.previousNode()).toBe(nodes.b1);
+			expect(iterator.pointerBeforeReferenceNode).toBe(true);
+
+			nodes.b.remove();
+
+			expect(iterator.referenceNode).toBe(nodes.c);
+			expect(iterator.pointerBeforeReferenceNode).toBe(true);
+			expect(iterator.nextNode()).toBe(nodes.c);
+		});
+	});
 });

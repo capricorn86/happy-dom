@@ -91,6 +91,7 @@ export default class Document extends Node {
 		new Map();
 	public [PropertySymbol.selection]: Selection | null = null;
 	public [PropertySymbol.timeline]: DocumentTimeline = new DocumentTimeline();
+	public [PropertySymbol.nodeIterators]: Set<WeakRef<NodeIterator>> = new Set();
 	public declare cloneNode: (deep?: boolean) => Document;
 
 	// Events
@@ -2293,6 +2294,26 @@ export default class Document extends Node {
 		this[PropertySymbol.preloads].clear();
 		this[PropertySymbol.propertyEventListeners].clear();
 		this[PropertySymbol.selection] = null;
+		this[PropertySymbol.nodeIterators].clear();
+	}
+
+	/**
+	 * Runs NodeIterator pre-removing steps for live iterators of this document.
+	 *
+	 * @see https://dom.spec.whatwg.org/#nodeiterator-pre-removing-steps
+	 * @param toBeRemovedNode Node that is about to be removed.
+	 */
+	public [PropertySymbol.nodeIteratorPreRemove](toBeRemovedNode: Node): void {
+		const iterators = this[PropertySymbol.nodeIterators];
+
+		for (const ref of iterators) {
+			const iterator = ref.deref();
+			if (!iterator) {
+				iterators.delete(ref);
+				continue;
+			}
+			iterator[PropertySymbol.nodeIteratorPreRemove](toBeRemovedNode);
+		}
 	}
 
 	/**
