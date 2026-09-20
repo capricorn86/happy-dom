@@ -121,6 +121,14 @@ describe('DOMParser', () => {
 			expect(newDocument.body.innerHTML).toBe('<example></example>Example Text');
 		});
 
+		it('Outputs parsererror for unescaped standalone "&" or "<" in XML character data (#2338).', () => {
+			const src = '<root>foo & bar < baz</root>';
+			const newDocument = domParser.parseFromString(src, 'text/xml');
+
+			expect(newDocument.querySelector('parsererror')).not.toBeNull();
+			expect(newDocument.documentElement?.textContent).not.toBe('foo & bar < baz');
+		});
+
 		it('Parses basic XML', () => {
 			const newDocument = domParser.parseFromString(
 				`<?xml version="1.0" encoding="UTF-8"?>

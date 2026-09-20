@@ -63,6 +63,26 @@ const SPACE_REGEXP = /\s+/;
 const NEW_LINE_REGEXP = /\n/g;
 
 /**
+ * XML 1.0 predefined general entity names.
+ */
+const XML_PREDEFINED_ENTITIES = new Set(['amp', 'lt', 'gt', 'apos', 'quot']);
+
+/**
+ * Named entity reference after "&" (name and optional semicolon).
+ */
+const XML_ENTITY_REF_REGEXP = /^([A-Za-z_:][A-Za-z0-9._:-]*)(;?)/;
+
+/**
+ * Hexadecimal character reference after "&".
+ */
+const XML_CHAR_REF_HEX_REGEXP = /^#x[0-9a-fA-F]+;/i;
+
+/**
+ * Decimal character reference after "&".
+ */
+const XML_CHAR_REF_DEC_REGEXP = /^#[0-9]+;/;
+
+/**
  * Markup read state (which state the parser is in).
  */
 enum MarkupReadStateEnum {
@@ -254,6 +274,11 @@ export default class XMLParser {
 			this.parsePlainText(xml.substring(this.lastIndex));
 		}
 
+		if (this.readState === MarkupReadStateEnum.error) {
+			this.parseError(xml.slice(0, this.errorIndex), this.errorMessage);
+			return this.rootNode;
+		}
+
 		// Missing end tag.
 		if (this.nodeStack.length !== 1) {
 			this.parseError(
@@ -281,16 +306,83 @@ export default class XMLParser {
 				this.errorIndex = this.lastIndex;
 				this.readState = MarkupReadStateEnum.error;
 			}
-		} else if (text.includes('&nbsp;')) {
-			this.errorMessage = `Entity 'nbsp' not defined\n`;
-			this.errorIndex = this.lastIndex + text.indexOf('&nbsp;') + 6;
-			this.readState = MarkupReadStateEnum.error;
 		} else {
+			const wellFormedError = this.getCharacterDataWellFormedError(text);
+
+			if (wellFormedError) {
+				this.errorMessage = wellFormedError.message;
+				this.errorIndex = this.lastIndex + wellFormedError.index;
+				this.readState = MarkupReadStateEnum.error;
+				return;
+			}
+
 			this.currentNode![PropertySymbol.appendChild](
 				this.rootNode!.createTextNode(XMLEncodeUtility.decodeXMLEntities(text)),
 				true
 			);
 		}
+	}
+
+	/**
+	 * Returns the first well-formedness error in XML character data.
+	 *
+	 * XML 1.0 forbids unescaped "&" and "<" in CharData. "&" must start a
+	 * predefined entity or a character reference.
+	 *
+	 * @param text Character data.
+	 * @returns Error message and index into `text`, or null if well-formed.
+	 */
+	private getCharacterDataWellFormedError(text: string): { message: string; index: number } | null {
+		for (let i = 0; i < text.length; i++) {
+			const char = text[i];
+
+			if (char === '<') {
+				return { message: 'StartTag: invalid element name\n', index: i };
+			}
+
+			if (char !== '&') {
+				continue;
+			}
+
+			const rest = text.substring(i + 1);
+
+			if (rest[0] === '#') {
+				if (rest[1] === 'x' || rest[1] === 'X') {
+					const match = rest.match(XML_CHAR_REF_HEX_REGEXP);
+					if (match) {
+						i += match[0].length;
+						continue;
+					}
+					return { message: 'xmlParseCharRef: invalid hexadecimal value\n', index: i };
+				}
+
+				const match = rest.match(XML_CHAR_REF_DEC_REGEXP);
+				if (match) {
+					i += match[0].length;
+					continue;
+				}
+				return { message: 'xmlParseCharRef: invalid decimal value\n', index: i };
+			}
+
+			const entityMatch = rest.match(XML_ENTITY_REF_REGEXP);
+			if (!entityMatch) {
+				return { message: 'xmlParseEntityRef: no name\n', index: i };
+			}
+			if (entityMatch[2] !== ';') {
+				return { message: `xmlParseEntityRef: expecting ';'\n`, index: i };
+			}
+			if (!XML_PREDEFINED_ENTITIES.has(entityMatch[1])) {
+				// Point after the entity, matching the existing "&nbsp;" column.
+				return {
+					message: `Entity '${entityMatch[1]}' not defined\n`,
+					index: i + entityMatch[0].length + 1
+				};
+			}
+
+			i += entityMatch[0].length;
+		}
+
+		return null;
 	}
 
 	/**

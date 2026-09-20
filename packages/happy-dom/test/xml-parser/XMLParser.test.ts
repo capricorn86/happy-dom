@@ -1045,6 +1045,54 @@ part2" data-testid="button"
 </div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></div>`);
 		});
 
+		it('Outputs error for unescaped standalone "&" or "<" in character data (#2338).', () => {
+			const src = '<root>foo & bar < baz</root>';
+			const result = new XMLParser(window).parse(src);
+
+			expect(result.querySelector('parsererror')).not.toBeNull();
+			expect(result.documentElement?.textContent).not.toBe('foo & bar < baz');
+			expect(new XMLSerializer().serializeToString(result)).toBe(
+				`<root><parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 1 at column 11: xmlParseEntityRef: no name
+</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></root>`
+			);
+		});
+
+		it('Outputs error for unescaped standalone "&" in character data.', () => {
+			const result = new XMLParser(window).parse('<root>foo & bar</root>');
+
+			expect(result.querySelector('parsererror')).not.toBeNull();
+			expect(new XMLSerializer().serializeToString(result)).toBe(
+				`<root><parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 1 at column 11: xmlParseEntityRef: no name
+</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></root>`
+			);
+		});
+
+		it('Outputs error for unescaped standalone "<" in character data.', () => {
+			const result = new XMLParser(window).parse('<root>foo < baz</root>');
+
+			expect(result.querySelector('parsererror')).not.toBeNull();
+			expect(new XMLSerializer().serializeToString(result)).toBe(
+				`<root><parsererror xmlns="http://www.w3.org/1999/xhtml" style="display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"><h3>This page contains the following errors:</h3><div style="font-family:monospace;font-size:12px">error on line 1 at column 11: StartTag: invalid element name
+</div><h3>Below is a rendering of the page up to the first error.</h3></parsererror></root>`
+			);
+		});
+
+		it('Outputs error for entity reference missing a semicolon.', () => {
+			const result = new XMLParser(window).parse('<root>foo&amp bar</root>');
+
+			expect(result.querySelector('parsererror')).not.toBeNull();
+			expect(new XMLSerializer().serializeToString(result)).toContain(
+				"xmlParseEntityRef: expecting ';'"
+			);
+		});
+
+		it('Parses well-formed escaped entities and allows ">" in character data.', () => {
+			const result = new XMLParser(window).parse('<root>foo &amp; bar &lt; baz &gt; qux</root>');
+
+			expect(result.querySelector('parsererror')).toBeNull();
+			expect(result.documentElement.textContent).toBe('foo & bar < baz > qux');
+		});
+
 		it('Handles XML in #282', () => {
 			const result = new XMLParser(window).parse(
 				`<?xml version="1.0" encoding="UTF-8"?>
