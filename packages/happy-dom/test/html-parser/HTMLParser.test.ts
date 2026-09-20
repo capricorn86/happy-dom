@@ -2341,5 +2341,25 @@ describe('HTMLParser', () => {
 				'<div><!--&lt;3 &#60;3 &#x3C;3 --&gt; --></div>'
 			);
 		});
+
+		it('Treats "<" followed by a digit as text, not a start tag, for #2156', () => {
+			const container = document.createElement('div');
+			container.innerHTML = '<p>text <3 more</p>';
+			const p = <HTMLElement>container.childNodes[0];
+
+			expect(p.tagName).toBe('P');
+			expect(p.childNodes.length).toBe(1);
+			expect(p.childNodes[0].nodeType).toBe(NodeTypeEnum.textNode);
+			expect(p.childNodes[0].textContent).toBe('text <3 more');
+		});
+
+		it('Treats "<" followed by punctuation as text, not a start tag, for #2156', () => {
+			const container = document.createElement('div');
+			container.innerHTML = '<p>a <> b</p>';
+			const p = <HTMLElement>container.childNodes[0];
+
+			expect(p.children.length).toBe(0);
+			expect(p.textContent).toBe('a <> b');
+		});
 	});
 });
