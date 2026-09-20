@@ -1,4 +1,5 @@
 import FS from 'fs';
+import HTTP from 'http';
 import Path from 'path';
 import Stream from 'stream';
 import { URLSearchParams } from 'url';
@@ -12,7 +13,6 @@ import File from '../../src/file/File.js';
 import FormData from '../../src/form-data/FormData.js';
 import type Document from '../../src/nodes/document/Document.js';
 import Window from '../../src/window/Window.js';
-import * as PropertySymbol from '../../src/PropertySymbol.js';
 import { ReadableStream } from 'stream/web';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 
@@ -594,14 +594,8 @@ describe('Response', () => {
 				});
 			}
 			const nodeStream = Stream.Readable.from(generate());
-			const readableStream = new ReadableStream({
-				start(controller) {
-					controller.enqueue('Hello World');
-					controller.close();
-				}
-			});
-			// Simulating that there is an underlying node stream
-			(<any>readableStream)[PropertySymbol.nodeStream] = nodeStream;
+			// Same construction Fetch uses for socket-backed responses.
+			const readableStream = FetchBodyUtility.nodeToWebStream(nodeStream);
 			const originalResponse = new window.Response(readableStream, {
 				status: 200,
 				statusText: 'OK',
@@ -616,6 +610,78 @@ describe('Response', () => {
 			expect(originalResponseText).toBe('chunk1chunk2chunk3');
 			expect(clonedResponseText).toBe('chunk1chunk2chunk3');
 			expect(clonedResponseText2).toBe('chunk1chunk2chunk3');
+		});
+
+		it('Can use the body of the cloned Response independently after a socket-backed stream has already drained.', async () => {
+			const payload = Buffer.from(JSON.stringify({ test: 'socket' }));
+			const nodeStream = Stream.Readable.from([payload]);
+			const readableStream = FetchBodyUtility.nodeToWebStream(nodeStream);
+			const originalResponse = new window.Response(readableStream, {
+				status: 200,
+				statusText: 'OK',
+				headers: { 'Content-Type': 'application/json' }
+			});
+
+			await new Promise<void>((resolve, reject) => {
+				if (nodeStream.readableEnded) {
+					resolve();
+					return;
+				}
+				nodeStream.once('end', () => resolve());
+				nodeStream.once('error', reject);
+			});
+
+			const clonedResponse = originalResponse.clone();
+			const clonedText = await clonedResponse.text();
+			const originalText = await originalResponse.text();
+
+			expect(clonedText).toBe(payload.toString());
+			expect(originalText).toBe(payload.toString());
+			expect(JSON.parse(clonedText)).toEqual({ test: 'socket' });
+			expect(JSON.parse(originalText)).toEqual({ test: 'socket' });
+		});
+
+		it('Clones a real network fetch Response so original and clone both retain body bytes.', async () => {
+			const payload = JSON.stringify({ test: 'network' });
+			const server = HTTP.createServer((_request, response) => {
+				response.writeHead(200, {
+					'Content-Type': 'application/json',
+					'Content-Length': String(Buffer.byteLength(payload))
+				});
+				response.end(payload);
+			});
+
+			await new Promise<void>((resolve) => {
+				server.listen(0, '127.0.0.1', resolve);
+			});
+
+			const address = server.address();
+			if (!address || typeof address === 'string') {
+				throw new Error('Failed to bind HTTP server');
+			}
+
+			const origin = `http://127.0.0.1:${address.port}`;
+			const browserWindow = new Window({ url: `${origin}/` });
+
+			try {
+				const real = await browserWindow.fetch(`${origin}/data.json`);
+
+				// Small local responses drain within 1–2 ticks. Wait so clone cannot
+				// rely on replaying a Node stream that is already in flowing mode.
+				await new Promise((resolve) => setTimeout(resolve, 25));
+
+				const clonedReal = real.clone();
+				const clonedJson = await clonedReal.json();
+				const originalJson = await real.json();
+
+				expect(clonedJson).toEqual({ test: 'network' });
+				expect(originalJson).toEqual({ test: 'network' });
+			} finally {
+				await browserWindow.happyDOM.close();
+				await new Promise<void>((resolve, reject) => {
+					server.close((error) => (error ? reject(error) : resolve()));
+				});
+			}
 		});
 
 		it('Fails if the body of the original Response is already used.', async () => {

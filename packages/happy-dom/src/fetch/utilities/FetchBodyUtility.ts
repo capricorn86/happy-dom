@@ -9,7 +9,7 @@ import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import type { TRequestBody } from '../types/TRequestBody.js';
 import type { TResponseBody } from '../types/TResponseBody.js';
 import { Buffer } from 'buffer';
-import Stream from 'stream';
+import type Stream from 'stream';
 import type BrowserWindow from '../../window/BrowserWindow.js';
 import { ReadableStreamWrapper } from '../ReadableStreamWrapper.js';
 
@@ -94,10 +94,12 @@ export default class FetchBodyUtility {
 	}
 
 	/**
-	 * Clones a request or body body stream.
+	 * Clones a request or response body stream.
 	 *
-	 * It is actually not cloning the stream.
-	 * It creates a pass through stream and pipes the original stream to it.
+	 * Buffer-backed bodies are recreated from the stored buffer.
+	 * Stream-backed bodies (including socket-backed fetch responses) are cloned with tee().
+	 * Re-piping an underlying Node stream is unsafe: nodeToWebStream() already attached
+	 * 'data' listeners, so the Node stream is in flowing mode and will not replay bytes.
 	 *
 	 * @param window Window.
 	 * @param requestOrResponse Request or Response.
@@ -130,23 +132,10 @@ export default class FetchBodyUtility {
 			return this.getReadableStream(requestOrResponse[PropertySymbol.buffer]).readableStream;
 		}
 
-		// Pipe underlying node stream if it exists.
-		if ((<any>requestOrResponse.body)[PropertySymbol.nodeStream]) {
-			const stream1 = new Stream.PassThrough();
-			const stream2 = new Stream.PassThrough();
-			(<any>requestOrResponse.body)[PropertySymbol.nodeStream].pipe(stream1);
-			(<any>requestOrResponse.body)[PropertySymbol.nodeStream].pipe(stream2);
-			// Sets the body of the cloned request/response to the first pass through stream.
-			// Sets the body of the original request/response
-			requestOrResponse[PropertySymbol.body] = new ReadableStreamWrapper(() =>
-				this.nodeToWebStream(stream1)
-			);
-			// Returns the clone.
-			return this.nodeToWebStream(stream2);
-		}
-
-		// Uses the tee() method to clone the ReadableStream
-		// This requires the stream to be consumed in parallel which is not the case for the fetch API
+		// Uses the tee() method to clone the ReadableStream.
+		// This also covers socket-backed bodies: the Web stream already owns the Node
+		// stream via nodeToWebStream(), so tee() splits queued and future bytes without
+		// replaying a Node stream that may already be in flowing mode.
 		const [stream1, stream2] = requestOrResponse.body.tee();
 
 		// Sets the body of the original request/response
