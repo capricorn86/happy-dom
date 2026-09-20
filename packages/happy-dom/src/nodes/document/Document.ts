@@ -1853,6 +1853,18 @@ export default class Document extends Node {
 	 * @returns Element.
 	 */
 	public createElement(qualifiedName: string, options?: { is?: string }): HTMLElement {
+		const contentType = this[PropertySymbol.contentType];
+
+		// XML documents are case-sensitive and create elements in the null namespace.
+		// https://dom.spec.whatwg.org/#dom-document-createelement
+		if (
+			contentType === 'text/xml' ||
+			contentType === 'application/xml' ||
+			contentType === 'image/svg+xml'
+		) {
+			return <HTMLElement>this.createElementNS(null, String(qualifiedName), options);
+		}
+
 		return <HTMLElement>(
 			this.createElementNS(
 				NamespaceURI.html,

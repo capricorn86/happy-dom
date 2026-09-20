@@ -1213,6 +1213,14 @@ describe('Document', () => {
 			expect(element instanceof HTMLElement).toBe(true);
 		});
 
+		it('Uppercases nodeName and tagName for HTML documents.', () => {
+			const element = document.createElement('myNode');
+			expect(element.nodeName).toBe('MYNODE');
+			expect(element.tagName).toBe('MYNODE');
+			expect(element.localName).toBe('mynode');
+			expect(element.namespaceURI).toBe(NamespaceURI.html);
+		});
+
 		it('Creates an HTMLUnknownElement if not a custom element and is not matching any known tag.', () => {
 			const element = document.createElement('unknown');
 			expect(element instanceof HTMLUnknownElement).toBe(true);
