@@ -133,5 +133,22 @@ describe('CSSComputedStyle', () => {
 
 			expect(propertyManager.get('width')).toBe(null);
 		});
+
+		it('Normalizes font-weight keywords to numeric values.', () => {
+			document.body.appendChild(element);
+			element.style.fontWeight = 'bold';
+
+			const computedStyle = new CSSComputedStyle(element);
+			const propertyManager = computedStyle.getComputedStyle();
+
+			expect(propertyManager.get('font-weight')?.value).toBe('700');
+			expect(window.getComputedStyle(element).fontWeight).toBe('700');
+
+			element.style.fontWeight = 'normal';
+			expect(window.getComputedStyle(element).fontWeight).toBe('400');
+
+			// Specified style keeps the author keyword.
+			expect(element.style.fontWeight).toBe('normal');
+		});
 	});
 });

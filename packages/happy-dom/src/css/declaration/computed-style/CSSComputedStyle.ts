@@ -295,6 +295,7 @@ export default class CSSComputedStyle {
 				}
 
 				if (parentElement.element === this.element) {
+					this.normalizeComputedFontWeight(propertyManager);
 					return propertyManager;
 				}
 			}
@@ -302,7 +303,28 @@ export default class CSSComputedStyle {
 			propertyManager = inheritedPropertyManager.clone();
 		}
 
+		this.normalizeComputedFontWeight(propertyManager);
 		return propertyManager;
+	}
+
+
+	/**
+	 * Normalizes font-weight keywords to numeric values for computed style.
+	 * Browsers return e.g. "700" for "bold" and "400" for "normal".
+	 *
+	 * @param propertyManager Property manager.
+	 */
+	private normalizeComputedFontWeight(propertyManager: CSSPropertyManager): void {
+		const fontWeight = propertyManager.properties['font-weight'];
+		if (!fontWeight?.value) {
+			return;
+		}
+		const value = fontWeight.value.toLowerCase();
+		if (value === 'normal') {
+			fontWeight.value = '400';
+		} else if (value === 'bold') {
+			fontWeight.value = '700';
+		}
 	}
 
 	/**
