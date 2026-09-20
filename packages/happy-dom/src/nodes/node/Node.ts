@@ -6,6 +6,8 @@ import NodeTypeEnum from './NodeTypeEnum.js';
 import NodeDocumentPositionEnum from './NodeDocumentPositionEnum.js';
 import NodeUtility from './NodeUtility.js';
 import type Attr from '../attr/Attr.js';
+import type DocumentType from '../document-type/DocumentType.js';
+import type ProcessingInstruction from '../processing-instruction/ProcessingInstruction.js';
 import NodeList from './NodeList.js';
 import MutationRecord from '../../mutation-observer/MutationRecord.js';
 import MutationTypeEnum from '../../mutation-observer/MutationTypeEnum.js';
@@ -252,10 +254,32 @@ export default class Node extends EventTarget {
 	/**
 	 * Node name.
 	 *
+	 * @see https://dom.spec.whatwg.org/#dom-node-nodename
 	 * @returns Node name.
 	 */
 	public get nodeName(): string {
-		return '';
+		switch (this[PropertySymbol.nodeType]) {
+			case NodeTypeEnum.elementNode:
+				return (<Element>(<unknown>this))[PropertySymbol.tagName] ?? '';
+			case NodeTypeEnum.attributeNode:
+				return (<Attr>(<unknown>this))[PropertySymbol.name] ?? '';
+			case NodeTypeEnum.textNode:
+				return '#text';
+			case NodeTypeEnum.cdataSectionNode:
+				return '#cdata-section';
+			case NodeTypeEnum.processingInstructionNode:
+				return (<ProcessingInstruction>(<unknown>this))[PropertySymbol.target];
+			case NodeTypeEnum.commentNode:
+				return '#comment';
+			case NodeTypeEnum.documentNode:
+				return '#document';
+			case NodeTypeEnum.documentTypeNode:
+				return (<DocumentType>(<unknown>this))[PropertySymbol.name];
+			case NodeTypeEnum.documentFragmentNode:
+				return '#document-fragment';
+			default:
+				return '';
+		}
 	}
 
 	/**

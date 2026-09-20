@@ -154,6 +154,44 @@ describe('Node', () => {
 		it('Returns emptry string.', () => {
 			expect(NodeFactory.createNode(document, Node).nodeName).toBe('');
 		});
+
+		it('Returns the real name when the getter is extracted from Node.prototype and called on subclass instances.', () => {
+			const nodeProtoGetter = Object.getOwnPropertyDescriptor(
+				window.Node.prototype,
+				'nodeName'
+			)!.get!;
+
+			const element = document.createElement('p');
+			expect(element.nodeName).toBe('P');
+			expect(nodeProtoGetter.call(element)).toBe('P');
+
+			const text = document.createTextNode('hello');
+			expect(text.nodeName).toBe('#text');
+			expect(nodeProtoGetter.call(text)).toBe('#text');
+
+			const comment = document.createComment('test');
+			expect(comment.nodeName).toBe('#comment');
+			expect(nodeProtoGetter.call(comment)).toBe('#comment');
+
+			expect(document.nodeName).toBe('#document');
+			expect(nodeProtoGetter.call(document)).toBe('#document');
+
+			const fragment = document.createDocumentFragment();
+			expect(fragment.nodeName).toBe('#document-fragment');
+			expect(nodeProtoGetter.call(fragment)).toBe('#document-fragment');
+
+			const doctype = document.implementation.createDocumentType('html', '', '');
+			expect(doctype.nodeName).toBe('html');
+			expect(nodeProtoGetter.call(doctype)).toBe('html');
+
+			const instruction = document.createProcessingInstruction('xml-stylesheet', 'href="x.css"');
+			expect(instruction.nodeName).toBe('xml-stylesheet');
+			expect(nodeProtoGetter.call(instruction)).toBe('xml-stylesheet');
+
+			const attr = document.createAttribute('id');
+			expect(attr.nodeName).toBe('id');
+			expect(nodeProtoGetter.call(attr)).toBe('id');
+		});
 	});
 
 	describe('get previousSibling()', () => {
