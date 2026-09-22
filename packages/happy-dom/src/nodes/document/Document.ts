@@ -54,6 +54,7 @@ import type PreloadEntry from '../../fetch/preload/PreloadEntry.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import type SVGScriptElement from '../svg-script-element/SVGScriptElement.js';
 import type ICachedComputedStyleResult from '../node/ICachedComputedStyleResult.js';
+import StyleSheetList from '../../style-sheet/StyleSheetList.js';
 
 const PROCESSING_INSTRUCTION_TARGET_REGEXP = /^[a-z][a-z0-9-]+$/;
 
@@ -1330,11 +1331,11 @@ export default class Document extends Node {
 	 *
 	 * @returns CSS style sheets.
 	 */
-	public get styleSheets(): CSSStyleSheet[] {
+	public get styleSheets(): StyleSheetList {
 		const styles = <NodeList<HTMLLinkElement | HTMLStyleElement>>(
 			QuerySelector.querySelectorAll(this, 'link[rel="stylesheet"][href],style')
 		);
-		const styleSheets = [];
+		const styleSheets = new StyleSheetList();
 		for (const style of styles) {
 			const sheet = style.sheet;
 			if (sheet) {
