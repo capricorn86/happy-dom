@@ -53,6 +53,54 @@ describe('CSSStyleRule', () => {
 		});
 	});
 
+	describe('set selectorText()', () => {
+		it('Sets selector text', () => {
+			const cssRule = new CSSStyleRule(PropertySymbol.illegalConstructor, window, cssParser);
+			cssRule[PropertySymbol.selectorText] = 'div';
+			cssRule.style.setProperty('color', 'red');
+
+			expect(cssRule.selectorText).toBe('div');
+			expect(cssRule.cssText).toBe('div { color: red; }');
+
+			cssRule.selectorText = '.scoped div';
+
+			expect(cssRule.selectorText).toBe('.scoped div');
+			expect(cssRule.cssText).toBe('.scoped div { color: red; }');
+		});
+
+		it('Allows scoping selectors via CSSOM as described in issue #1913', () => {
+			const document = window.document;
+			const styleElement = document.createElement('style');
+			styleElement.textContent = `
+				#document h1, #document h2 {
+					background: red;
+				}
+				h3 {
+					color: white;
+				}
+			`;
+			document.body.appendChild(styleElement);
+
+			const sheet = styleElement.sheet;
+			expect(sheet).toBeTruthy();
+			expect(sheet!.cssRules.length).toBe(2);
+
+			const rule1 = <CSSStyleRule>sheet!.cssRules[0];
+			const rule2 = <CSSStyleRule>sheet!.cssRules[1];
+
+			// Scope the selectors
+			rule1.selectorText = rule1.selectorText
+				.split(',')
+				.map((selector) => `.scope ${selector.trim()}`)
+				.join(', ');
+
+			rule2.selectorText = `.scope ${rule2.selectorText}`;
+
+			expect(rule1.selectorText).toBe('.scope #document h1, .scope #document h2');
+			expect(rule2.selectorText).toBe('.scope h3');
+		});
+	});
+
 	describe('get cssText()', () => {
 		it('Returns css text', () => {
 			const cssRule = new CSSStyleRule(PropertySymbol.illegalConstructor, window, cssParser);
