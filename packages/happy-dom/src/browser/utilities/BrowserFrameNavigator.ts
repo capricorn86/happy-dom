@@ -128,6 +128,20 @@ export default class BrowserFrameNavigator {
 
 		if (!BrowserFrameValidator.validateFrameNavigation(frame)) {
 			if (!frame.page.context.browser.settings.navigation.disableFallbackToSetURL) {
+				if (!disableHistory) {
+					const history = frame[PropertySymbol.history];
+
+					history.push({
+						title: '',
+						href: targetURL.href,
+						state: null,
+						popState: false,
+						scrollRestoration: HistoryScrollRestorationEnum.auto,
+						method: method || (formData ? 'POST' : 'GET'),
+						formData: formData || null
+					});
+				}
+
 				frame.window.location[PropertySymbol.setURL](frame, targetURL.href);
 			}
 
