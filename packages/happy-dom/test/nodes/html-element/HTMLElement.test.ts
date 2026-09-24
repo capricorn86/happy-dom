@@ -310,6 +310,14 @@ describe('HTMLElement', () => {
 			element.innerHTML = '<div><span><svg>Test</svg></span>123<div>';
 			expect(element.innerText).toBe('123');
 		});
+
+		// Issue #1914: innerText should replace newlines with spaces when connected
+		it('Replaces newlines and carriage returns with spaces when connected.', () => {
+			const div = document.createElement('div');
+			div.replaceChildren(document.createTextNode('hello\n\nworld\r\ntest'));
+			document.body.replaceChildren(div);
+			expect(document.body.innerText).toBe('hello  world test');
+		});
 	});
 
 	describe('set innerText()', () => {
@@ -328,6 +336,14 @@ describe('HTMLElement', () => {
 			expect(element.innerText).toBe(element.textContent);
 			expect(element.childNodes.length).toBe(1);
 			expect(element.childNodes[0].textContent).toBe('new_text');
+		});
+
+		// Issue #1914: Setting innerText to empty string should clear all children
+		it('Clears all children when set to empty string.', () => {
+			element.innerHTML = '<div><span>Hello</span></div>';
+			element.innerText = '';
+			expect(element.innerHTML).toBe('');
+			expect(element.childNodes.length).toBe(0);
 		});
 	});
 
