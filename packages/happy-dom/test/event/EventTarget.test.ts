@@ -47,6 +47,37 @@ describe('EventTarget', () => {
 			expect(count).toBe(1);
 		});
 
+		it('Once auto-removal does not remove a listener in the other phase.', () => {
+			let count = 0;
+			const listener = (): void => {
+				count++;
+			};
+			eventTarget.addEventListener(EVENT_TYPE, listener, {});
+			eventTarget.addEventListener(EVENT_TYPE, listener, { capture: true, once: true });
+			eventTarget.dispatchEvent(new Event(EVENT_TYPE));
+			expect(count).toBe(2);
+			eventTarget.dispatchEvent(new Event(EVENT_TYPE));
+			expect(count).toBe(3);
+		});
+
+		it('Signal abort removes listener from the correct phase only.', () => {
+			let count = 0;
+			const listener = (): void => {
+				count++;
+			};
+			const controller = new window.AbortController();
+			eventTarget.addEventListener(EVENT_TYPE, listener, {});
+			eventTarget.addEventListener(EVENT_TYPE, listener, {
+				capture: true,
+				signal: controller.signal
+			});
+			eventTarget.dispatchEvent(new Event(EVENT_TYPE));
+			expect(count).toBe(2);
+			controller.abort();
+			eventTarget.dispatchEvent(new Event(EVENT_TYPE));
+			expect(count).toBe(3);
+		});
+
 		it('Adds an event listener and set options once and bind the same event multiple times', () => {
 			let count = 0;
 			const listener = (): void => {
@@ -156,6 +187,88 @@ describe('EventTarget', () => {
 			eventTarget.removeEventListener(EVENT_TYPE, listener);
 			eventTarget.dispatchEvent(dispatchedEvent);
 			expect(receivedEvent).toBe(null);
+		});
+
+		it('Does not remove a capture listener when removeEventListener is called without capture.', () => {
+			let count = 0;
+			const listener = (): void => {
+				count++;
+			};
+			eventTarget.addEventListener(EVENT_TYPE, listener, true);
+			eventTarget.removeEventListener(EVENT_TYPE, listener, false);
+			eventTarget.dispatchEvent(new Event(EVENT_TYPE));
+			expect(count).toBe(1);
+		});
+
+		it('Does not remove a non-capture listener when removeEventListener is called with capture.', () => {
+			let count = 0;
+			const listener = (): void => {
+				count++;
+			};
+			eventTarget.addEventListener(EVENT_TYPE, listener, false);
+			eventTarget.removeEventListener(EVENT_TYPE, listener, true);
+			eventTarget.dispatchEvent(new Event(EVENT_TYPE));
+			expect(count).toBe(1);
+		});
+
+		it('Removes a capture listener when removeEventListener is called with capture.', () => {
+			let count = 0;
+			const listener = (): void => {
+				count++;
+			};
+			eventTarget.addEventListener(EVENT_TYPE, listener, true);
+			eventTarget.removeEventListener(EVENT_TYPE, listener, true);
+			eventTarget.dispatchEvent(new Event(EVENT_TYPE));
+			expect(count).toBe(0);
+		});
+
+		it('Accepts options object for the capture parameter.', () => {
+			let count = 0;
+			const listener = (): void => {
+				count++;
+			};
+			eventTarget.addEventListener(EVENT_TYPE, listener, { capture: true });
+			eventTarget.removeEventListener(EVENT_TYPE, listener, { capture: false });
+			eventTarget.dispatchEvent(new Event(EVENT_TYPE));
+			expect(count).toBe(1);
+		});
+
+		it('Defaults to non-capture removal when called without third argument.', () => {
+			let count = 0;
+			const listener = (): void => {
+				count++;
+			};
+			eventTarget.addEventListener(EVENT_TYPE, listener, true);
+			eventTarget.removeEventListener(EVENT_TYPE, listener);
+			eventTarget.dispatchEvent(new Event(EVENT_TYPE));
+			expect(count).toBe(1);
+		});
+
+		it('Removes capture listener on a DOM element without affecting the bubbling listener.', () => {
+			const parent = window.document.createElement('div');
+			const child = window.document.createElement('span');
+			parent.appendChild(child);
+			window.document.body.appendChild(parent);
+
+			const calls: string[] = [];
+			const captureListener = (): void => {
+				calls.push('capture');
+			};
+			const bubbleListener = (): void => {
+				calls.push('bubble');
+			};
+
+			parent.addEventListener(EVENT_TYPE, captureListener, true);
+			parent.addEventListener(EVENT_TYPE, bubbleListener, false);
+
+			child.dispatchEvent(new Event(EVENT_TYPE, { bubbles: true }));
+			expect(calls).toEqual(['capture', 'bubble']);
+
+			calls.length = 0;
+			parent.removeEventListener(EVENT_TYPE, captureListener, true);
+
+			child.dispatchEvent(new Event(EVENT_TYPE, { bubbles: true }));
+			expect(calls).toEqual(['bubble']);
 		});
 	});
 
