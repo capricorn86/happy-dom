@@ -1365,6 +1365,11 @@ describe('XMLHttpRequest', () => {
 			});
 		});
 
+		it('Does nothing if the request has not been opened.', () => {
+			expect(() => request.abort()).not.toThrow();
+			expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.unsent);
+		});
+
 		it('Waits for ongoing Happy DOM asynchronous task.', async () => {
 			const responseText = 'responseText';
 
