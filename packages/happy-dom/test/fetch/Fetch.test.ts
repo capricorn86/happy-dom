@@ -4,7 +4,8 @@ import Headers from '../../src/fetch/Headers.js';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 import type { ClientRequest } from 'http';
-import type HTTP from 'http';
+import HTTP from 'http';
+import HTTPS from 'https';
 import type Net from 'net';
 import Stream from 'stream';
 import Zlib from 'zlib';
@@ -13,7 +14,6 @@ import Blob from '../../src/file/Blob.js';
 import FS from 'fs';
 import Path from 'path';
 import { URLSearchParams } from 'url';
-import '../types.d.js';
 import { ReadableStream } from 'stream/web';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import FetchHTTPSCertificate from '../../src/fetch/certificate/FetchHTTPSCertificate.js';
@@ -52,41 +52,43 @@ describe('Fetch', () => {
 		}
 	): IMockNetwork {
 		const requestHistory: IRequestHistoryEntry[] = [];
-		mockModule(schema, {
-			request: (url: string, options: HTTP.RequestOptions) => {
-				const request = { url, options };
-				requestHistory.push(request);
-				return {
-					end: () => {},
-					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-						async function* generate(): AsyncGenerator<string> {
-							if (typeof specification?.responseText === 'string') {
-								yield specification?.responseText;
-							} else if (Array.isArray(specification?.responseText)) {
-								for (const text of specification?.responseText) {
-									yield text;
-								}
+		const targetModule = schema === 'https' ? HTTPS : HTTP;
+		vi.spyOn(targetModule, 'request').mockImplementation(<any>((
+			url: string,
+			options: HTTP.RequestOptions
+		) => {
+			const request = { url, options };
+			requestHistory.push(request);
+			return {
+				end: () => {},
+				on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+					async function* generate(): AsyncGenerator<string> {
+						if (typeof specification?.responseText === 'string') {
+							yield specification?.responseText;
+						} else if (Array.isArray(specification?.responseText)) {
+							for (const text of specification?.responseText) {
+								yield text;
 							}
 						}
+					}
 
-						const response = Object.assign(
-							<HTTP.IncomingMessage>Stream.Readable.from(generate()),
-							{ statusCode: 200, statusMessage: 'OK', headers: {}, rawHeaders: [] },
-							specification?.responseProperties ?? {}
-						);
+					const response = Object.assign(
+						<HTTP.IncomingMessage>Stream.Readable.from(generate()),
+						{ statusCode: 200, statusMessage: 'OK', headers: {}, rawHeaders: [] },
+						specification?.responseProperties ?? {}
+					);
 
-						if (event === 'response') {
-							if (specification?.beforeResponse) {
-								specification.beforeResponse({ request, response });
-							}
-							callback(response);
+					if (event === 'response') {
+						if (specification?.beforeResponse) {
+							specification.beforeResponse({ request, response });
 						}
-					},
-					setTimeout: () => {},
-					destroy: () => {}
-				};
-			}
-		});
+						callback(response);
+					}
+				},
+				setTimeout: () => {},
+				destroy: () => {}
+			};
+		}));
 		return {
 			get requestHistory() {
 				return requestHistory;
@@ -95,7 +97,6 @@ describe('Fetch', () => {
 	}
 
 	afterEach(() => {
-		resetMockedModules();
 		vi.restoreAllMocks();
 	});
 
@@ -637,51 +638,49 @@ describe('Fetch', () => {
 					let destroyCount = 0;
 					let writtenBodyData = '';
 
-					mockModule('https', {
-						request: (url, options) => {
-							requestArgs.push({ url, options });
+					vi.spyOn(HTTPS, 'request').mockImplementation(<any>((url, options) => {
+						requestArgs.push({ url, options });
 
-							const request = <HTTP.ClientRequest>new Stream.Writable();
+						const request = <HTTP.ClientRequest>new Stream.Writable();
 
-							request._write = (chunk, _encoding, callback) => {
-								writtenBodyData += chunk.toString();
-								callback();
-							};
-							(<unknown>request.on) = (
-								event: string,
-								callback: (response: HTTP.IncomingMessage) => void
-							) => {
-								if (event === 'response') {
-									setTimeout(() => {
-										async function* generate(): AsyncGenerator<string> {
-											yield requestArgs.length < 3 ? '' : responseText;
-										}
+						request._write = (chunk, _encoding, callback) => {
+							writtenBodyData += chunk.toString();
+							callback();
+						};
+						(<unknown>request.on) = (
+							event: string,
+							callback: (response: HTTP.IncomingMessage) => void
+						) => {
+							if (event === 'response') {
+								setTimeout(() => {
+									async function* generate(): AsyncGenerator<string> {
+										yield requestArgs.length < 3 ? '' : responseText;
+									}
 
-										const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-										response.headers = {};
+									response.headers = {};
 
-										if (requestArgs.length === 1) {
-											response.statusCode = httpCode;
-											response.rawHeaders = ['Location', redirectURL2];
-										} else if (requestArgs.length === 2) {
-											response.statusCode = httpCode;
-											response.rawHeaders = ['Location', targetPath];
-										} else {
-											response.statusCode = 200;
-											response.rawHeaders = [];
-										}
+									if (requestArgs.length === 1) {
+										response.statusCode = httpCode;
+										response.rawHeaders = ['Location', redirectURL2];
+									} else if (requestArgs.length === 2) {
+										response.statusCode = httpCode;
+										response.rawHeaders = ['Location', targetPath];
+									} else {
+										response.statusCode = 200;
+										response.rawHeaders = [];
+									}
 
-										callback(response);
-									});
-								}
-							};
-							(<unknown>request.setTimeout) = () => {};
-							request.destroy = () => <ClientRequest>(destroyCount++ && {});
+									callback(response);
+								});
+							}
+						};
+						(<unknown>request.setTimeout) = () => {};
+						request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
-							return request;
-						}
-					});
+						return request;
+					}));
 
 					const response = await window.fetch(redirectURL, {
 						method,
@@ -1510,20 +1509,18 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/some/path';
 			let error: Error | null = null;
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: Error) => void) => {
-							if (event === 'error') {
-								callback(new Error('connect ECONNREFUSED ::1:8080'));
-							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: Error) => void) => {
+						if (event === 'error') {
+							callback(new Error('connect ECONNREFUSED ::1:8080'));
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}));
 
 			try {
 				await window.fetch(url);
@@ -1544,56 +1541,51 @@ describe('Fetch', () => {
 			const responseText = 'some response text';
 			const removedListeners: string[] = [];
 
-			mockModule('https', {
-				request: () => {
-					let requestCloseListener: (() => void) | null = null;
-					let socketCloseListener: (() => void) | null = null;
-					const socket = <Net.Socket>(<unknown>{
-						prependListener: (event: string, listener: () => void) => {
-							if (event === 'close') {
-								socketCloseListener = listener;
-							}
-						},
-						on: (event: string, listener: (chunk: Buffer) => void) => {
-							if (event === 'data') {
-								listener(Buffer.from(responseText));
-							}
-						},
-						removeListener: (event: string) => {
-							removedListeners.push(event);
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				let requestCloseListener: (() => void) | null = null;
+				let socketCloseListener: (() => void) | null = null;
+				const socket = <Net.Socket>(<unknown>{
+					prependListener: (event: string, listener: () => void) => {
+						if (event === 'close') {
+							socketCloseListener = listener;
 						}
-					});
+					},
+					on: (event: string, listener: (chunk: Buffer) => void) => {
+						if (event === 'data') {
+							listener(Buffer.from(responseText));
+						}
+					},
+					removeListener: (event: string) => {
+						removedListeners.push(event);
+					}
+				});
 
-					return {
-						end: () => {
-							(<() => void>requestCloseListener)();
-						},
-						on: (
-							event: string,
-							callback: (response: HTTP.IncomingMessage | Net.Socket) => void
-						) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {
-									yield responseText;
-								}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = {};
-								response.rawHeaders = [];
-
-								callback(response);
-
-								(<() => void>socketCloseListener)();
-							} else if (event === 'socket') {
-								callback(socket);
-							} else if (event === 'close') {
-								requestCloseListener = <() => void>callback;
+				return {
+					end: () => {
+						(<() => void>requestCloseListener)();
+					},
+					on: (event: string, callback: (response: HTTP.IncomingMessage | Net.Socket) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<string> {
+								yield responseText;
 							}
-						},
-						setTimeout: () => {}
-					};
-				}
-			});
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.headers = {};
+							response.rawHeaders = [];
+
+							callback(response);
+
+							(<() => void>socketCloseListener)();
+						} else if (event === 'socket') {
+							callback(socket);
+						} else if (event === 'close') {
+							requestCloseListener = <() => void>callback;
+						}
+					},
+					setTimeout: () => {}
+				};
+			}));
 
 			const response = await window.fetch('https://localhost:8080/some/path');
 			const text = await response.text();
@@ -1606,71 +1598,66 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
 
-			mockModule('https', {
-				request: () => {
-					let requestCloseListener: (() => void) | null = null;
-					let socketCloseListener: (() => void) | null = null;
-					let socketDataListener: ((chunk: Buffer) => void) | null = null;
-					const socket = <Net.Socket>(<unknown>{
-						prependListener: (event: string, listener: () => void) => {
-							if (event === 'close') {
-								socketCloseListener = listener;
-							}
-						},
-						on: (event: string, listener: (chunk: Buffer) => void) => {
-							if (event === 'data') {
-								socketDataListener = listener;
-							}
-						},
-						removeListener: () => {}
-					});
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				let requestCloseListener: (() => void) | null = null;
+				let socketCloseListener: (() => void) | null = null;
+				let socketDataListener: ((chunk: Buffer) => void) | null = null;
+				const socket = <Net.Socket>(<unknown>{
+					prependListener: (event: string, listener: () => void) => {
+						if (event === 'close') {
+							socketCloseListener = listener;
+						}
+					},
+					on: (event: string, listener: (chunk: Buffer) => void) => {
+						if (event === 'data') {
+							socketDataListener = listener;
+						}
+					},
+					removeListener: () => {}
+				});
 
-					return {
-						end: () => {
-							(<() => void>requestCloseListener)();
-						},
-						on: (
-							event: string,
-							callback: (response: HTTP.IncomingMessage | Net.Socket) => void
-						) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {
-									yield await new Promise((resolve) => {
-										setTimeout(() => {
-											(<(chunk: Buffer) => void>socketDataListener)(Buffer.from(chunks[0]));
-											resolve(Buffer.from(chunks[0]));
-										}, 10);
-									});
-									yield await new Promise((resolve) => {
-										setTimeout(() => {
-											(<(chunk: Buffer) => void>socketDataListener)(Buffer.from(chunks[1]));
-											resolve(Buffer.from(chunks[1]));
-										}, 10);
-									});
-									yield await new Promise((resolve) => {
-										(<() => void>socketCloseListener)();
-										setTimeout(() => {
-											(<(chunk: Buffer) => void>socketDataListener)(Buffer.from(chunks[2]));
-											resolve(Buffer.from(chunks[2]));
-										}, 10);
-									});
-								}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.headers = { 'transfer-encoding': 'chunked' };
-								response.rawHeaders = ['Transfer-Encoding', 'chunked'];
-
-								callback(response);
-							} else if (event === 'socket') {
-								callback(socket);
-							} else if (event === 'close') {
-								requestCloseListener = <() => void>callback;
+				return {
+					end: () => {
+						(<() => void>requestCloseListener)();
+					},
+					on: (event: string, callback: (response: HTTP.IncomingMessage | Net.Socket) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<Buffer> {
+								yield await new Promise((resolve) => {
+									setTimeout(() => {
+										(<(chunk: Buffer) => void>socketDataListener)(Buffer.from(chunks[0]));
+										resolve(Buffer.from(chunks[0]));
+									}, 10);
+								});
+								yield await new Promise((resolve) => {
+									setTimeout(() => {
+										(<(chunk: Buffer) => void>socketDataListener)(Buffer.from(chunks[1]));
+										resolve(Buffer.from(chunks[1]));
+									}, 10);
+								});
+								yield await new Promise((resolve) => {
+									(<() => void>socketCloseListener)();
+									setTimeout(() => {
+										(<(chunk: Buffer) => void>socketDataListener)(Buffer.from(chunks[2]));
+										resolve(Buffer.from(chunks[2]));
+									}, 10);
+								});
 							}
-						},
-						setTimeout: () => {}
-					};
-				}
-			});
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.headers = { 'transfer-encoding': 'chunked' };
+							response.rawHeaders = ['Transfer-Encoding', 'chunked'];
+
+							callback(response);
+						} else if (event === 'socket') {
+							callback(socket);
+						} else if (event === 'close') {
+							requestCloseListener = <() => void>callback;
+						}
+					},
+					setTimeout: () => {}
+				};
+			}));
 
 			const response = await window.fetch('https://localhost:8080/some/path');
 			let error: Error | null = null;
@@ -1691,43 +1678,41 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {
-									yield await new Promise((resolve) => {
-										setTimeout(() => {
-											resolve(Buffer.from(chunks[0]));
-										}, 10);
-									});
-									yield await new Promise((_resolve, reject) => {
-										setTimeout(() => {
-											reject(new Error('Error'));
-										}, 10);
-									});
-									yield await new Promise((resolve) => {
-										setTimeout(() => {
-											resolve(Buffer.from(chunks[2]));
-										}, 10);
-									});
-								}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.headers = {};
-								response.rawHeaders = [];
-
-								callback(response);
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<Buffer> {
+								yield await new Promise((resolve) => {
+									setTimeout(() => {
+										resolve(Buffer.from(chunks[0]));
+									}, 10);
+								});
+								yield await new Promise((_resolve, reject) => {
+									setTimeout(() => {
+										reject(new Error('Error'));
+									}, 10);
+								});
+								yield await new Promise((resolve) => {
+									setTimeout(() => {
+										resolve(Buffer.from(chunks[2]));
+									}, 10);
+								});
 							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = [];
+
+							callback(response);
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}));
 
 			const response = await window.fetch(url, { method: 'GET' });
 			let error: Error | null = null;
@@ -1752,71 +1737,66 @@ describe('Fetch', () => {
 			const url2 = 'https://localhost:8080/test2/';
 			const chunks = ['chunk1'];
 
-			mockModule('https', {
-				request: (requestURL) => {
-					let requestCloseListener: (() => void) | null = null;
-					let socketCloseListener: (() => void) | null = null;
-					let socketDataListener: ((chunk: Buffer) => void) | null = null;
-					const socket = <Net.Socket>(<unknown>{
-						prependListener: (event: string, listener: () => void) => {
-							if (event === 'close') {
-								socketCloseListener = listener;
-							}
-						},
-						on: (event: string, listener: (chunk: Buffer) => void) => {
-							if (event === 'data') {
-								socketDataListener = listener;
-							}
-						},
-						removeListener: () => {}
-					});
-					return {
-						end: () => {},
-						on: (
-							event: string,
-							callback: (response: HTTP.IncomingMessage | Net.Socket) => void
-						) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {}
-								async function* generate2(): AsyncGenerator<Buffer> {
-									yield await new Promise((resolve) => {
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>((requestURL) => {
+				let requestCloseListener: (() => void) | null = null;
+				let socketCloseListener: (() => void) | null = null;
+				let socketDataListener: ((chunk: Buffer) => void) | null = null;
+				const socket = <Net.Socket>(<unknown>{
+					prependListener: (event: string, listener: () => void) => {
+						if (event === 'close') {
+							socketCloseListener = listener;
+						}
+					},
+					on: (event: string, listener: (chunk: Buffer) => void) => {
+						if (event === 'data') {
+							socketDataListener = listener;
+						}
+					},
+					removeListener: () => {}
+				});
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage | Net.Socket) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<Buffer> {}
+							async function* generate2(): AsyncGenerator<Buffer> {
+								yield await new Promise((resolve) => {
+									setTimeout(() => {
+										(<(chunk: Buffer) => void>socketDataListener)(
+											Buffer.concat([Buffer.from(chunks[0]), LAST_CHUNK])
+										);
+										resolve(Buffer.from(chunks[0]));
 										setTimeout(() => {
-											(<(chunk: Buffer) => void>socketDataListener)(
-												Buffer.concat([Buffer.from(chunks[0]), LAST_CHUNK])
-											);
-											resolve(Buffer.from(chunks[0]));
-											setTimeout(() => {
-												(<() => void>socketCloseListener)();
-												(<() => void>requestCloseListener)();
-											}, 10);
+											(<() => void>socketCloseListener)();
+											(<() => void>requestCloseListener)();
 										}, 10);
-									});
-								}
-								const response = <HTTP.IncomingMessage>(
-									Stream.Readable.from(requestURL === url1 ? generate() : generate2())
-								);
-
-								response.statusCode = 200;
-								response.headers = { 'transfer-encoding': 'chunked' };
-								response.rawHeaders = ['Transfer-Encoding', 'chunked'];
-
-								if (requestURL === url1) {
-									response.statusCode = 302;
-									response.rawHeaders.push('Location', url2);
-								}
-
-								callback(response);
-							} else if (event === 'socket') {
-								callback(socket);
-							} else if (event === 'close') {
-								requestCloseListener = <() => void>callback;
+									}, 10);
+								});
 							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+							const response = <HTTP.IncomingMessage>(
+								Stream.Readable.from(requestURL === url1 ? generate() : generate2())
+							);
+
+							response.statusCode = 200;
+							response.headers = { 'transfer-encoding': 'chunked' };
+							response.rawHeaders = ['Transfer-Encoding', 'chunked'];
+
+							if (requestURL === url1) {
+								response.statusCode = 302;
+								response.rawHeaders.push('Location', url2);
+							}
+
+							callback(response);
+						} else if (event === 'socket') {
+							callback(socket);
+						} else if (event === 'close') {
+							requestCloseListener = <() => void>callback;
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}));
 
 			const response = await window.fetch(url1, { method: 'GET' });
 			const text = await response.text();
@@ -1839,37 +1819,35 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {
-									yield await new Promise((resolve) => {
-										Zlib.gzip(Buffer.from(chunks[0]), (_error, result) => resolve(result));
-									});
-									yield await new Promise((resolve) => {
-										Zlib.gzip(Buffer.from(chunks[1]), (_error, result) => resolve(result));
-									});
-									yield await new Promise((resolve) => {
-										Zlib.gzip(Buffer.from(chunks[2]), (_error, result) => resolve(result));
-									});
-								}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.headers = {};
-								response.rawHeaders = ['Content-Encoding', 'gzip'];
-
-								callback(response);
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<Buffer> {
+								yield await new Promise((resolve) => {
+									Zlib.gzip(Buffer.from(chunks[0]), (_error, result) => resolve(result));
+								});
+								yield await new Promise((resolve) => {
+									Zlib.gzip(Buffer.from(chunks[1]), (_error, result) => resolve(result));
+								});
+								yield await new Promise((resolve) => {
+									Zlib.gzip(Buffer.from(chunks[2]), (_error, result) => resolve(result));
+								});
 							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = ['Content-Encoding', 'gzip'];
+
+							callback(response);
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}));
 
 			const response = await window.fetch(url, { method: 'GET' });
 			const text = await response.text();
@@ -1881,34 +1859,32 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const responseText = 'some response text';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {
-									yield await new Promise((resolve) => {
-										Zlib.gzip(Buffer.from(responseText), (_error, result) =>
-											// Truncate the CRC checksum and size check at the end of the stream
-											resolve(result.slice(0, -8))
-										);
-									});
-								}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.headers = {};
-								response.rawHeaders = ['Content-Encoding', 'gzip'];
-
-								callback(response);
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<Buffer> {
+								yield await new Promise((resolve) => {
+									Zlib.gzip(Buffer.from(responseText), (_error, result) =>
+										// Truncate the CRC checksum and size check at the end of the stream
+										resolve(result.slice(0, -8))
+									);
+								});
 							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = ['Content-Encoding', 'gzip'];
+
+							callback(response);
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}));
 
 			const response = await window.fetch(url, { method: 'GET' });
 			const text = await response.text();
@@ -1919,27 +1895,25 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<Buffer> {}
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-								response.statusCode = 204;
-								response.headers = {};
-								response.rawHeaders = ['Content-Encoding', 'gzip'];
+							response.statusCode = 204;
+							response.headers = {};
+							response.rawHeaders = ['Content-Encoding', 'gzip'];
 
-								callback(response);
-							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+							callback(response);
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}));
 
 			const response = await window.fetch(url, { method: 'GET' });
 			expect(response.status).toBe(204);
@@ -1950,31 +1924,29 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const responseText = 'some response text';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {
-									yield await new Promise((resolve) => {
-										Zlib.deflate(Buffer.from(responseText), (_error, result) => resolve(result));
-									});
-								}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.headers = {};
-								response.rawHeaders = ['Content-Encoding', 'deflate'];
-
-								callback(response);
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<Buffer> {
+								yield await new Promise((resolve) => {
+									Zlib.deflate(Buffer.from(responseText), (_error, result) => resolve(result));
+								});
 							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = ['Content-Encoding', 'deflate'];
+
+							callback(response);
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}));
 
 			const response = await window.fetch(url, { method: 'GET' });
 			const text = await response.text();
@@ -2001,31 +1973,29 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const responseText = 'some response text';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {
-									yield await new Promise((resolve) => {
-										Zlib.deflateRaw(Buffer.from(responseText), (_error, result) => resolve(result));
-									});
-								}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.headers = {};
-								response.rawHeaders = ['Content-Encoding', 'deflate'];
-
-								callback(response);
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<Buffer> {
+								yield await new Promise((resolve) => {
+									Zlib.deflateRaw(Buffer.from(responseText), (_error, result) => resolve(result));
+								});
 							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = ['Content-Encoding', 'deflate'];
+
+							callback(response);
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}));
 
 			const response = await window.fetch(url, { method: 'GET' });
 			const text = await response.text();
@@ -2037,33 +2007,31 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const responseText = 'some response text';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {
-									yield await new Promise((resolve) => {
-										Zlib.brotliCompress(Buffer.from(responseText), (_error, result) =>
-											resolve(result)
-										);
-									});
-								}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.headers = {};
-								response.rawHeaders = ['Content-Encoding', 'br'];
-
-								callback(response);
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<Buffer> {
+								yield await new Promise((resolve) => {
+									Zlib.brotliCompress(Buffer.from(responseText), (_error, result) =>
+										resolve(result)
+									);
+								});
 							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = ['Content-Encoding', 'br'];
+
+							callback(response);
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}));
 
 			const response = await window.fetch(url, { method: 'GET' });
 			const text = await response.text();
@@ -2074,27 +2042,25 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<Buffer> {}
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-								response.statusCode = 204;
-								response.headers = {};
-								response.rawHeaders = ['Content-Encoding', 'br'];
+							response.statusCode = 204;
+							response.headers = {};
+							response.rawHeaders = ['Content-Encoding', 'br'];
 
-								callback(response);
-							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+							callback(response);
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}));
 
 			const response = await window.fetch(url, { method: 'GET' });
 			expect(response.status).toBe(204);
@@ -2105,29 +2071,27 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const responseText = 'some response text';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {
-									yield Buffer.from(responseText);
-								}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.headers = {};
-								response.rawHeaders = ['Content-Encoding', 'unsupported-encoding'];
-
-								callback(response);
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<Buffer> {
+								yield Buffer.from(responseText);
 							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = ['Content-Encoding', 'unsupported-encoding'];
+
+							callback(response);
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}));
 
 			const response = await window.fetch(url, { method: 'GET' });
 			const text = await response.text();
@@ -2138,29 +2102,27 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {
-									yield Buffer.from('invalid');
-								}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.headers = {};
-								response.rawHeaders = ['Content-Encoding', 'gzip'];
-
-								callback(response);
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<Buffer> {
+								yield Buffer.from('invalid');
 							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = ['Content-Encoding', 'gzip'];
+
+							callback(response);
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}));
 
 			const response = await window.fetch(url, { method: 'GET' });
 			let error: Error | null = null;
@@ -2183,16 +2145,14 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: () => {},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				return {
+					end: () => {},
+					on: () => {},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}));
 
 			const abortController = new window.AbortController();
 			const abortSignal = abortController.signal;
@@ -2216,16 +2176,14 @@ describe('Fetch', () => {
 		it('Supports aborting a request using AbortSignal.timeout()', async () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: () => {},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				return {
+					end: () => {},
+					on: () => {},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}));
 
 			const signal = window.AbortSignal.timeout(10);
 
@@ -2287,35 +2245,33 @@ describe('Fetch', () => {
 			const url2 = 'https://localhost:8080/redirect2/';
 			const url3 = 'https://localhost:8080/target/';
 
-			mockModule('https', {
-				request: (requestURL) => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								setTimeout(() => {
-									async function* generate(): AsyncGenerator<Buffer> {}
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>((requestURL) => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							setTimeout(() => {
+								async function* generate(): AsyncGenerator<Buffer> {}
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-									response.statusCode = requestURL === url3 ? 200 : 302;
-									response.headers = {};
-									response.rawHeaders = [];
+								response.statusCode = requestURL === url3 ? 200 : 302;
+								response.headers = {};
+								response.rawHeaders = [];
 
-									if (requestURL === url1) {
-										response.rawHeaders = ['Location', url2];
-									} else if (requestURL === url2) {
-										response.rawHeaders = ['Location', url3];
-									}
+								if (requestURL === url1) {
+									response.rawHeaders = ['Location', url2];
+								} else if (requestURL === url2) {
+									response.rawHeaders = ['Location', url3];
+								}
 
-									callback(response);
-								}, 10);
-							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+								callback(response);
+							}, 10);
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}));
 
 			const abortController = new window.AbortController();
 			const abortSignal = abortController.signal;
@@ -2341,31 +2297,29 @@ describe('Fetch', () => {
 				const url = 'https://localhost:8080/test/';
 				const responseText = 'some response text';
 
-				mockModule('https', {
-					request: () => {
-						return {
-							end: () => {},
-							on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-								if (event === 'response') {
-									setTimeout(() => {
-										async function* generate(): AsyncGenerator<Buffer> {
-											yield Buffer.from(responseText);
-										}
-										const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+				vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								setTimeout(() => {
+									async function* generate(): AsyncGenerator<Buffer> {
+										yield Buffer.from(responseText);
+									}
+									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-										response.statusCode = 200;
-										response.headers = {};
-										response.rawHeaders = [];
+									response.statusCode = 200;
+									response.headers = {};
+									response.rawHeaders = [];
 
-										callback(response);
-									}, 20);
-								}
-							},
-							setTimeout: () => {},
-							destroy: () => {}
-						};
-					}
-				});
+									callback(response);
+								}, 20);
+							}
+						},
+						setTimeout: () => {},
+						destroy: () => {}
+					};
+				}));
 
 				const abortController = new window.AbortController();
 				const abortSignal = abortController.signal;
@@ -2431,30 +2385,28 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const chunks = ['chunk1', 'chunk2'];
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {
-									yield Buffer.from(chunks[0]);
-									yield Buffer.from(chunks[1]);
-								}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.headers = {};
-								response.rawHeaders = [];
-
-								callback(response);
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<Buffer> {
+								yield Buffer.from(chunks[0]);
+								yield Buffer.from(chunks[1]);
 							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = [];
+
+							callback(response);
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}));
 
 			const abortController = new window.AbortController();
 			const abortSignal = abortController.signal;
@@ -2482,43 +2434,41 @@ describe('Fetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {
-									yield await new Promise((resolve) => {
-										setTimeout(() => {
-											resolve(Buffer.from(chunks[0]));
-										}, 10);
-									});
-									yield await new Promise((resolve) => {
-										setTimeout(() => {
-											resolve(Buffer.from(chunks[1]));
-										}, 10);
-									});
-									yield await new Promise((resolve) => {
-										setTimeout(() => {
-											resolve(Buffer.from(chunks[2]));
-										}, 10);
-									});
-								}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.headers = {};
-								response.rawHeaders = [];
-
-								callback(response);
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<Buffer> {
+								yield await new Promise((resolve) => {
+									setTimeout(() => {
+										resolve(Buffer.from(chunks[0]));
+									}, 10);
+								});
+								yield await new Promise((resolve) => {
+									setTimeout(() => {
+										resolve(Buffer.from(chunks[1]));
+									}, 10);
+								});
+								yield await new Promise((resolve) => {
+									setTimeout(() => {
+										resolve(Buffer.from(chunks[2]));
+									}, 10);
+								});
 							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = [];
+
+							callback(response);
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}));
 
 			const abortController = new window.AbortController();
 			const abortSignal = abortController.signal;
@@ -2562,37 +2512,35 @@ describe('Fetch', () => {
 				}
 			});
 
-			mockModule('https', {
-				request: () => {
-					const request = <HTTP.ClientRequest>new Stream.Writable();
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				const request = <HTTP.ClientRequest>new Stream.Writable();
 
-					request._write = (_chunk, _encoding, callback) => {
-						callback();
-					};
-					(<unknown>request.on) = (
-						event: string,
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						if (event === 'response') {
-							setTimeout(() => {
-								async function* generate(): AsyncGenerator<string> {}
+				request._write = (_chunk, _encoding, callback) => {
+					callback();
+				};
+				(<unknown>request.on) = (
+					event: string,
+					callback: (response: HTTP.IncomingMessage) => void
+				) => {
+					if (event === 'response') {
+						setTimeout(() => {
+							async function* generate(): AsyncGenerator<string> {}
 
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-								response.headers = {};
-								response.rawHeaders = [];
-								response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = [];
+							response.statusCode = 200;
 
-								callback(response);
-							}, 40);
-						}
-					};
-					(<unknown>request.setTimeout) = () => {};
-					request.destroy = () => <ClientRequest>{};
+							callback(response);
+						}, 40);
+					}
+				};
+				(<unknown>request.setTimeout) = () => {};
+				request.destroy = () => <ClientRequest>{};
 
-					return request;
-				}
-			});
+				return request;
+			}));
 
 			const abortController = new window.AbortController();
 			const abortSignal = abortController.signal;
@@ -2617,27 +2565,25 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
 
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<Buffer> {}
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<Buffer> {}
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-								response.statusCode = 200;
-								response.headers = {};
-								response.rawHeaders = [];
+							response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = [];
 
-								callback(response);
-							}
-						},
-						setTimeout: () => {},
-						destroy: () => {}
-					};
-				}
-			});
+							callback(response);
+						}
+					},
+					setTimeout: () => {},
+					destroy: () => {}
+				};
+			}));
 
 			const abortController = new window.AbortController();
 			const abortSignal = abortController.signal;
@@ -2660,40 +2606,38 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>((url, options) => {
+				requestArgs = { url, options };
 
-					const request = <HTTP.ClientRequest>new Stream.Writable();
+				const request = <HTTP.ClientRequest>new Stream.Writable();
 
-					request._write = (chunk, _encoding, callback) => {
-						writtenBodyData += chunk.toString();
-						callback();
-					};
-					(<unknown>request.on) = (
-						event: string,
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						if (event === 'response') {
-							setTimeout(() => {
-								async function* generate(): AsyncGenerator<string> {}
+				request._write = (chunk, _encoding, callback) => {
+					writtenBodyData += chunk.toString();
+					callback();
+				};
+				(<unknown>request.on) = (
+					event: string,
+					callback: (response: HTTP.IncomingMessage) => void
+				) => {
+					if (event === 'response') {
+						setTimeout(() => {
+							async function* generate(): AsyncGenerator<string> {}
 
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-								response.headers = {};
-								response.rawHeaders = [];
-								response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = [];
+							response.statusCode = 200;
 
-								callback(response);
-							});
-						}
-					};
-					(<unknown>request.setTimeout) = () => {};
-					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+							callback(response);
+						});
+					}
+				};
+				(<unknown>request.setTimeout) = () => {};
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
-					return request;
-				}
-			});
+				return request;
+			}));
 
 			const response = await window.fetch('https://localhost:8080/test/', {
 				method: 'POST',
@@ -2736,40 +2680,38 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>((url, options) => {
+				requestArgs = { url, options };
 
-					const request = <HTTP.ClientRequest>new Stream.Writable();
+				const request = <HTTP.ClientRequest>new Stream.Writable();
 
-					request._write = (chunk, _encoding, callback) => {
-						writtenBodyData += chunk.toString();
-						callback();
-					};
-					(<unknown>request.on) = (
-						event: string,
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						if (event === 'response') {
-							setTimeout(() => {
-								async function* generate(): AsyncGenerator<string> {}
+				request._write = (chunk, _encoding, callback) => {
+					writtenBodyData += chunk.toString();
+					callback();
+				};
+				(<unknown>request.on) = (
+					event: string,
+					callback: (response: HTTP.IncomingMessage) => void
+				) => {
+					if (event === 'response') {
+						setTimeout(() => {
+							async function* generate(): AsyncGenerator<string> {}
 
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-								response.headers = {};
-								response.rawHeaders = [];
-								response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = [];
+							response.statusCode = 200;
 
-								callback(response);
-							});
-						}
-					};
-					(<unknown>request.setTimeout) = () => {};
-					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+							callback(response);
+						});
+					}
+				};
+				(<unknown>request.setTimeout) = () => {};
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
-					return request;
-				}
-			});
+				return request;
+			}));
 
 			const response = await window.fetch('https://localhost:8080/test/', {
 				method: 'POST',
@@ -2812,40 +2754,38 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>((url, options) => {
+				requestArgs = { url, options };
 
-					const request = <HTTP.ClientRequest>new Stream.Writable();
+				const request = <HTTP.ClientRequest>new Stream.Writable();
 
-					request._write = (chunk, _encoding, callback) => {
-						writtenBodyData += chunk.toString();
-						callback();
-					};
-					(<unknown>request.on) = (
-						event: string,
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						if (event === 'response') {
-							setTimeout(() => {
-								async function* generate(): AsyncGenerator<string> {}
+				request._write = (chunk, _encoding, callback) => {
+					writtenBodyData += chunk.toString();
+					callback();
+				};
+				(<unknown>request.on) = (
+					event: string,
+					callback: (response: HTTP.IncomingMessage) => void
+				) => {
+					if (event === 'response') {
+						setTimeout(() => {
+							async function* generate(): AsyncGenerator<string> {}
 
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-								response.headers = {};
-								response.rawHeaders = [];
-								response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = [];
+							response.statusCode = 200;
 
-								callback(response);
-							});
-						}
-					};
-					(<unknown>request.setTimeout) = () => {};
-					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+							callback(response);
+						});
+					}
+				};
+				(<unknown>request.setTimeout) = () => {};
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
-					return request;
-				}
-			});
+				return request;
+			}));
 
 			const response = await window.fetch('https://localhost:8080/test/', {
 				method: 'POST',
@@ -2886,40 +2826,38 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>((url, options) => {
+				requestArgs = { url, options };
 
-					const request = <HTTP.ClientRequest>new Stream.Writable();
+				const request = <HTTP.ClientRequest>new Stream.Writable();
 
-					request._write = (chunk, _encoding, callback) => {
-						writtenBodyData += chunk.toString();
-						callback();
-					};
-					(<unknown>request.on) = (
-						event: string,
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						if (event === 'response') {
-							setTimeout(() => {
-								async function* generate(): AsyncGenerator<string> {}
+				request._write = (chunk, _encoding, callback) => {
+					writtenBodyData += chunk.toString();
+					callback();
+				};
+				(<unknown>request.on) = (
+					event: string,
+					callback: (response: HTTP.IncomingMessage) => void
+				) => {
+					if (event === 'response') {
+						setTimeout(() => {
+							async function* generate(): AsyncGenerator<string> {}
 
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-								response.headers = {};
-								response.rawHeaders = [];
-								response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = [];
+							response.statusCode = 200;
 
-								callback(response);
-							});
-						}
-					};
-					(<unknown>request.setTimeout) = () => {};
-					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+							callback(response);
+						});
+					}
+				};
+				(<unknown>request.setTimeout) = () => {};
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
-					return request;
-				}
-			});
+				return request;
+			}));
 
 			const response = await window.fetch('https://localhost:8080/test/', {
 				method: 'POST',
@@ -2960,40 +2898,38 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>((url, options) => {
+				requestArgs = { url, options };
 
-					const request = <HTTP.ClientRequest>new Stream.Writable();
+				const request = <HTTP.ClientRequest>new Stream.Writable();
 
-					request._write = (chunk, _encoding, callback) => {
-						writtenBodyData += chunk.toString();
-						callback();
-					};
-					(<unknown>request.on) = (
-						event: string,
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						if (event === 'response') {
-							setTimeout(() => {
-								async function* generate(): AsyncGenerator<string> {}
+				request._write = (chunk, _encoding, callback) => {
+					writtenBodyData += chunk.toString();
+					callback();
+				};
+				(<unknown>request.on) = (
+					event: string,
+					callback: (response: HTTP.IncomingMessage) => void
+				) => {
+					if (event === 'response') {
+						setTimeout(() => {
+							async function* generate(): AsyncGenerator<string> {}
 
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-								response.headers = {};
-								response.rawHeaders = [];
-								response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = [];
+							response.statusCode = 200;
 
-								callback(response);
-							});
-						}
-					};
-					(<unknown>request.setTimeout) = () => {};
-					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+							callback(response);
+						});
+					}
+				};
+				(<unknown>request.setTimeout) = () => {};
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
-					return request;
-				}
-			});
+				return request;
+			}));
 
 			const response = await window.fetch('https://localhost:8080/test/', {
 				method: 'POST',
@@ -3034,40 +2970,38 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>((url, options) => {
+				requestArgs = { url, options };
 
-					const request = <HTTP.ClientRequest>new Stream.Writable();
+				const request = <HTTP.ClientRequest>new Stream.Writable();
 
-					request._write = (chunk, _encoding, callback) => {
-						writtenBodyData += chunk.toString();
-						callback();
-					};
-					(<unknown>request.on) = (
-						event: string,
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						if (event === 'response') {
-							setTimeout(() => {
-								async function* generate(): AsyncGenerator<string> {}
+				request._write = (chunk, _encoding, callback) => {
+					writtenBodyData += chunk.toString();
+					callback();
+				};
+				(<unknown>request.on) = (
+					event: string,
+					callback: (response: HTTP.IncomingMessage) => void
+				) => {
+					if (event === 'response') {
+						setTimeout(() => {
+							async function* generate(): AsyncGenerator<string> {}
 
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-								response.headers = {};
-								response.rawHeaders = [];
-								response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = [];
+							response.statusCode = 200;
 
-								callback(response);
-							});
-						}
-					};
-					(<unknown>request.setTimeout) = () => {};
-					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+							callback(response);
+						});
+					}
+				};
+				(<unknown>request.setTimeout) = () => {};
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
-					return request;
-				}
-			});
+				return request;
+			}));
 
 			const response = await window.fetch('https://localhost:8080/test/', {
 				method: 'POST',
@@ -3108,40 +3042,38 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>((url, options) => {
+				requestArgs = { url, options };
 
-					const request = <HTTP.ClientRequest>new Stream.Writable();
+				const request = <HTTP.ClientRequest>new Stream.Writable();
 
-					request._write = (chunk, _encoding, callback) => {
-						writtenBodyData += chunk.toString();
-						callback();
-					};
-					(<unknown>request.on) = (
-						event: string,
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						if (event === 'response') {
-							setTimeout(() => {
-								async function* generate(): AsyncGenerator<string> {}
+				request._write = (chunk, _encoding, callback) => {
+					writtenBodyData += chunk.toString();
+					callback();
+				};
+				(<unknown>request.on) = (
+					event: string,
+					callback: (response: HTTP.IncomingMessage) => void
+				) => {
+					if (event === 'response') {
+						setTimeout(() => {
+							async function* generate(): AsyncGenerator<string> {}
 
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-								response.headers = {};
-								response.rawHeaders = [];
-								response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = [];
+							response.statusCode = 200;
 
-								callback(response);
-							});
-						}
-					};
-					(<unknown>request.setTimeout) = () => {};
-					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+							callback(response);
+						});
+					}
+				};
+				(<unknown>request.setTimeout) = () => {};
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
-					return request;
-				}
-			});
+				return request;
+			}));
 
 			const response = await window.fetch('https://localhost:8080/test/', {
 				method: 'POST',
@@ -3182,40 +3114,38 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>((url, options) => {
+				requestArgs = { url, options };
 
-					const request = <HTTP.ClientRequest>new Stream.Writable();
+				const request = <HTTP.ClientRequest>new Stream.Writable();
 
-					request._write = (chunk, _encoding, callback) => {
-						writtenBodyData += chunk.toString();
-						callback();
-					};
-					(<unknown>request.on) = (
-						event: string,
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						if (event === 'response') {
-							setTimeout(() => {
-								async function* generate(): AsyncGenerator<string> {}
+				request._write = (chunk, _encoding, callback) => {
+					writtenBodyData += chunk.toString();
+					callback();
+				};
+				(<unknown>request.on) = (
+					event: string,
+					callback: (response: HTTP.IncomingMessage) => void
+				) => {
+					if (event === 'response') {
+						setTimeout(() => {
+							async function* generate(): AsyncGenerator<string> {}
 
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-								response.headers = {};
-								response.rawHeaders = [];
-								response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = [];
+							response.statusCode = 200;
 
-								callback(response);
-							});
-						}
-					};
-					(<unknown>request.setTimeout) = () => {};
-					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+							callback(response);
+						});
+					}
+				};
+				(<unknown>request.setTimeout) = () => {};
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
-					return request;
-				}
-			});
+				return request;
+			}));
 
 			const response = await window.fetch('https://localhost:8080/test/', {
 				method: 'POST',
@@ -3259,40 +3189,38 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>((url, options) => {
+				requestArgs = { url, options };
 
-					const request = <HTTP.ClientRequest>new Stream.Writable();
+				const request = <HTTP.ClientRequest>new Stream.Writable();
 
-					request._write = (chunk, _encoding, callback) => {
-						writtenBodyData += chunk.toString();
-						callback();
-					};
-					(<unknown>request.on) = (
-						event: string,
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						if (event === 'response') {
-							setTimeout(() => {
-								async function* generate(): AsyncGenerator<string> {}
+				request._write = (chunk, _encoding, callback) => {
+					writtenBodyData += chunk.toString();
+					callback();
+				};
+				(<unknown>request.on) = (
+					event: string,
+					callback: (response: HTTP.IncomingMessage) => void
+				) => {
+					if (event === 'response') {
+						setTimeout(() => {
+							async function* generate(): AsyncGenerator<string> {}
 
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-								response.headers = {};
-								response.rawHeaders = [];
-								response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = [];
+							response.statusCode = 200;
 
-								callback(response);
-							}, 100);
-						}
-					};
-					(<unknown>request.setTimeout) = () => {};
-					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+							callback(response);
+						}, 100);
+					}
+				};
+				(<unknown>request.setTimeout) = () => {};
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
-					return request;
-				}
-			});
+				return request;
+			}));
 
 			const response = await window.fetch('https://localhost:8080/test/', {
 				method: 'POST',
@@ -3338,37 +3266,35 @@ describe('Fetch', () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const chunks = ['chunk1', 'chunk2', 'chunk3'];
 
-			mockModule('https', {
-				request: () => {
-					const request = <HTTP.ClientRequest>new Stream.Writable();
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				const request = <HTTP.ClientRequest>new Stream.Writable();
 
-					request._write = (_chunk, _encoding, callback) => {
-						callback();
-					};
-					(<unknown>request.on) = (
-						event: string,
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						if (event === 'response') {
-							setTimeout(() => {
-								async function* generate(): AsyncGenerator<string> {}
+				request._write = (_chunk, _encoding, callback) => {
+					callback();
+				};
+				(<unknown>request.on) = (
+					event: string,
+					callback: (response: HTTP.IncomingMessage) => void
+				) => {
+					if (event === 'response') {
+						setTimeout(() => {
+							async function* generate(): AsyncGenerator<string> {}
 
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-								response.headers = {};
-								response.rawHeaders = [];
-								response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = [];
+							response.statusCode = 200;
 
-								callback(response);
-							}, 40);
-						}
-					};
-					(<unknown>request.setTimeout) = () => {};
-					request.destroy = () => <ClientRequest>{};
+							callback(response);
+						}, 40);
+					}
+				};
+				(<unknown>request.setTimeout) = () => {};
+				request.destroy = () => <ClientRequest>{};
 
-					return request;
-				}
-			});
+				return request;
+			}));
 
 			let error: Error | null = null;
 			try {
@@ -3413,40 +3339,38 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>((url, options) => {
+				requestArgs = { url, options };
 
-					const request = <HTTP.ClientRequest>new Stream.Writable();
+				const request = <HTTP.ClientRequest>new Stream.Writable();
 
-					request._write = (chunk, _encoding, callback) => {
-						writtenBodyData += chunk.toString();
-						callback();
-					};
-					(<unknown>request.on) = (
-						event: string,
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						if (event === 'response') {
-							setTimeout(() => {
-								async function* generate(): AsyncGenerator<string> {}
+				request._write = (chunk, _encoding, callback) => {
+					writtenBodyData += chunk.toString();
+					callback();
+				};
+				(<unknown>request.on) = (
+					event: string,
+					callback: (response: HTTP.IncomingMessage) => void
+				) => {
+					if (event === 'response') {
+						setTimeout(() => {
+							async function* generate(): AsyncGenerator<string> {}
 
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-								response.headers = {};
-								response.rawHeaders = [];
-								response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = [];
+							response.statusCode = 200;
 
-								callback(response);
-							}, 10);
-						}
-					};
-					(<unknown>request.setTimeout) = () => {};
-					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+							callback(response);
+						}, 10);
+					}
+				};
+				(<unknown>request.setTimeout) = () => {};
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
-					return request;
-				}
-			});
+				return request;
+			}));
 
 			const response = await window.fetch('https://localhost:8080/test/', {
 				method: 'POST',
@@ -3494,40 +3418,38 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			} | null = null;
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs = { url, options };
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>((url, options) => {
+				requestArgs = { url, options };
 
-					const request = <HTTP.ClientRequest>new Stream.Writable();
+				const request = <HTTP.ClientRequest>new Stream.Writable();
 
-					request._write = (chunk, _encoding, callback) => {
-						writtenBodyData += chunk.toString();
-						callback();
-					};
-					(<unknown>request.on) = (
-						event: string,
-						callback: (response: HTTP.IncomingMessage) => void
-					) => {
-						if (event === 'response') {
-							setTimeout(() => {
-								async function* generate(): AsyncGenerator<string> {}
+				request._write = (chunk, _encoding, callback) => {
+					writtenBodyData += chunk.toString();
+					callback();
+				};
+				(<unknown>request.on) = (
+					event: string,
+					callback: (response: HTTP.IncomingMessage) => void
+				) => {
+					if (event === 'response') {
+						setTimeout(() => {
+							async function* generate(): AsyncGenerator<string> {}
 
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-								response.headers = {};
-								response.rawHeaders = [];
-								response.statusCode = 200;
+							response.headers = {};
+							response.rawHeaders = [];
+							response.statusCode = 200;
 
-								callback(response);
-							});
-						}
-					};
-					(<unknown>request.setTimeout) = () => {};
-					request.destroy = () => <ClientRequest>(destroyCount++ && {});
+							callback(response);
+						});
+					}
+				};
+				(<unknown>request.setTimeout) = () => {};
+				request.destroy = () => <ClientRequest>(destroyCount++ && {});
 
-					return request;
-				}
-			});
+				return request;
+			}));
 
 			const response = await window.fetch('https://localhost:8080/test/', {
 				method: 'POST',
@@ -3564,37 +3486,35 @@ describe('Fetch', () => {
 				const chunks = ['chunk1', 'chunk2', 'chunk3'];
 				let isAsyncComplete = false;
 
-				mockModule('https', {
-					request: () => {
-						const request = <HTTP.ClientRequest>new Stream.Writable();
+				vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+					const request = <HTTP.ClientRequest>new Stream.Writable();
 
-						request._write = (_chunk, _encoding, callback) => {
-							callback();
-						};
-						(<unknown>request.on) = (
-							event: string,
-							callback: (response: HTTP.IncomingMessage) => void
-						) => {
-							if (event === 'response') {
-								setTimeout(() => {
-									async function* generate(): AsyncGenerator<string> {}
+					request._write = (_chunk, _encoding, callback) => {
+						callback();
+					};
+					(<unknown>request.on) = (
+						event: string,
+						callback: (response: HTTP.IncomingMessage) => void
+					) => {
+						if (event === 'response') {
+							setTimeout(() => {
+								async function* generate(): AsyncGenerator<string> {}
 
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
 
-									response.headers = {};
-									response.rawHeaders = [];
-									response.statusCode = 200;
+								response.headers = {};
+								response.rawHeaders = [];
+								response.statusCode = 200;
 
-									callback(response);
-								}, 100);
-							}
-						};
-						(<unknown>request.setTimeout) = () => {};
-						request.destroy = () => <ClientRequest>{};
+								callback(response);
+							}, 100);
+						}
+					};
+					(<unknown>request.setTimeout) = () => {};
+					request.destroy = () => <ClientRequest>{};
 
-						return request;
-					}
-				});
+					return request;
+				}));
 
 				window.happyDOM?.waitUntilComplete().then(() => (isAsyncComplete = true));
 
@@ -3633,39 +3553,37 @@ describe('Fetch', () => {
 			const responseText = 'some text';
 			let requestCount = 0;
 
-			mockModule('https', {
-				request: () => {
-					requestCount++;
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				requestCount++;
 
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {
-									yield responseText;
-								}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.statusMessage = 'OK';
-								response.headers = {};
-								response.rawHeaders = [
-									'content-type',
-									'text/html',
-									'content-length',
-									String(responseText.length),
-									'cache-control',
-									`max-age=60`
-								];
-
-								callback(response);
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<string> {
+								yield responseText;
 							}
-						},
-						setTimeout: () => {}
-					};
-				}
-			});
+
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.statusCode = 200;
+							response.statusMessage = 'OK';
+							response.headers = {};
+							response.rawHeaders = [
+								'content-type',
+								'text/html',
+								'content-length',
+								String(responseText.length),
+								'cache-control',
+								`max-age=60`
+							];
+
+							callback(response);
+						}
+					},
+					setTimeout: () => {}
+				};
+			}));
 
 			const response1 = await window.fetch(url);
 			const text1 = await response1.text();
@@ -3715,57 +3633,55 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			}> = [];
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs.push({ url, options });
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>((url, options) => {
+				requestArgs.push({ url, options });
 
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								if (options.headers['If-Modified-Since']) {
-									const response = <HTTP.IncomingMessage>Stream.Readable.from([]);
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							if (options.headers['If-Modified-Since']) {
+								const response = <HTTP.IncomingMessage>Stream.Readable.from([]);
 
-									response.statusCode = 304;
-									response.statusMessage = 'Not Modified';
-									response.headers = {};
-									response.rawHeaders = [
-										'last-modified',
-										'Mon, 11 Dec 2023 02:00:00 GMT',
-										'cache-control',
-										'max-age=1'
-									];
+								response.statusCode = 304;
+								response.statusMessage = 'Not Modified';
+								response.headers = {};
+								response.rawHeaders = [
+									'last-modified',
+									'Mon, 11 Dec 2023 02:00:00 GMT',
+									'cache-control',
+									'max-age=1'
+								];
 
-									callback(response);
-								} else {
-									async function* generate(): AsyncGenerator<string> {
-										yield responseText;
-									}
-
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-									response.statusCode = 200;
-									response.statusMessage = 'OK';
-									response.headers = {};
-									response.rawHeaders = [
-										'content-type',
-										'text/html',
-										'content-length',
-										String(responseText.length),
-										'cache-control',
-										'max-age=0.0001',
-										'last-modified',
-										'Mon, 11 Dec 2023 01:00:00 GMT'
-									];
-
-									callback(response);
+								callback(response);
+							} else {
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText;
 								}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.statusCode = 200;
+								response.statusMessage = 'OK';
+								response.headers = {};
+								response.rawHeaders = [
+									'content-type',
+									'text/html',
+									'content-length',
+									String(responseText.length),
+									'cache-control',
+									'max-age=0.0001',
+									'last-modified',
+									'Mon, 11 Dec 2023 01:00:00 GMT'
+								];
+
+								callback(response);
 							}
-						},
-						setTimeout: () => {}
-					};
-				}
-			});
+						}
+					},
+					setTimeout: () => {}
+				};
+			}));
 
 			const response1 = await window.fetch(url, {
 				headers: {
@@ -3866,65 +3782,63 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			}> = [];
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs.push({ url, options });
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>((url, options) => {
+				requestArgs.push({ url, options });
 
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								if (options.headers['If-Modified-Since']) {
-									async function* generate(): AsyncGenerator<string> {
-										yield responseText2;
-									}
-
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-									response.statusCode = 200;
-									response.statusMessage = 'OK';
-									response.headers = {};
-									response.rawHeaders = [
-										'content-type',
-										'text/html',
-										'content-length',
-										String(responseText2.length),
-										'cache-control',
-										'max-age=1',
-										'last-modified',
-										'Mon, 11 Dec 2023 02:00:00 GMT'
-									];
-
-									callback(response);
-								} else {
-									async function* generate(): AsyncGenerator<string> {
-										yield responseText1;
-									}
-
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-									response.statusCode = 200;
-									response.statusMessage = 'OK';
-									response.headers = {};
-									response.rawHeaders = [
-										'content-type',
-										'text/html',
-										'content-length',
-										String(responseText1.length),
-										'cache-control',
-										'max-age=0.0001',
-										'last-modified',
-										'Mon, 11 Dec 2023 01:00:00 GMT'
-									];
-
-									callback(response);
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							if (options.headers['If-Modified-Since']) {
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText2;
 								}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.statusCode = 200;
+								response.statusMessage = 'OK';
+								response.headers = {};
+								response.rawHeaders = [
+									'content-type',
+									'text/html',
+									'content-length',
+									String(responseText2.length),
+									'cache-control',
+									'max-age=1',
+									'last-modified',
+									'Mon, 11 Dec 2023 02:00:00 GMT'
+								];
+
+								callback(response);
+							} else {
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText1;
+								}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.statusCode = 200;
+								response.statusMessage = 'OK';
+								response.headers = {};
+								response.rawHeaders = [
+									'content-type',
+									'text/html',
+									'content-length',
+									String(responseText1.length),
+									'cache-control',
+									'max-age=0.0001',
+									'last-modified',
+									'Mon, 11 Dec 2023 01:00:00 GMT'
+								];
+
+								callback(response);
 							}
-						},
-						setTimeout: () => {}
-					};
-				}
-			});
+						}
+					},
+					setTimeout: () => {}
+				};
+			}));
 
 			const response1 = await window.fetch(url, {
 				headers: {
@@ -4042,59 +3956,57 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			}> = [];
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs.push({ url, options });
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>((url, options) => {
+				requestArgs.push({ url, options });
 
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								if (options.headers['If-None-Match']) {
-									const response = <HTTP.IncomingMessage>Stream.Readable.from([]);
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							if (options.headers['If-None-Match']) {
+								const response = <HTTP.IncomingMessage>Stream.Readable.from([]);
 
-									response.statusCode = 304;
-									response.statusMessage = 'Not Modified';
-									response.headers = {};
-									response.rawHeaders = [
-										'etag',
-										etag2,
-										'last-modified',
-										'Mon, 11 Dec 2023 02:00:00 GMT'
-									];
+								response.statusCode = 304;
+								response.statusMessage = 'Not Modified';
+								response.headers = {};
+								response.rawHeaders = [
+									'etag',
+									etag2,
+									'last-modified',
+									'Mon, 11 Dec 2023 02:00:00 GMT'
+								];
 
-									callback(response);
-								} else {
-									async function* generate(): AsyncGenerator<string> {
-										yield responseText;
-									}
-
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-									response.statusCode = 200;
-									response.statusMessage = 'OK';
-									response.headers = {};
-									response.rawHeaders = [
-										'content-type',
-										'text/html',
-										'content-length',
-										String(responseText.length),
-										'cache-control',
-										'max-age=0.0001',
-										'last-modified',
-										'Mon, 11 Dec 2023 01:00:00 GMT',
-										'etag',
-										etag1
-									];
-
-									callback(response);
+								callback(response);
+							} else {
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText;
 								}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.statusCode = 200;
+								response.statusMessage = 'OK';
+								response.headers = {};
+								response.rawHeaders = [
+									'content-type',
+									'text/html',
+									'content-length',
+									String(responseText.length),
+									'cache-control',
+									'max-age=0.0001',
+									'last-modified',
+									'Mon, 11 Dec 2023 01:00:00 GMT',
+									'etag',
+									etag1
+								];
+
+								callback(response);
 							}
-						},
-						setTimeout: () => {}
-					};
-				}
-			});
+						}
+					},
+					setTimeout: () => {}
+				};
+			}));
 
 			const response1 = await window.fetch(url, {
 				method: 'HEAD',
@@ -4202,69 +4114,67 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			}> = [];
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs.push({ url, options });
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>((url, options) => {
+				requestArgs.push({ url, options });
 
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								if (options.headers['If-None-Match']) {
-									async function* generate(): AsyncGenerator<string> {
-										yield responseText2;
-									}
-
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-									response.statusCode = 200;
-									response.statusMessage = 'OK';
-									response.headers = {};
-									response.rawHeaders = [
-										'content-type',
-										'text/html',
-										'content-length',
-										String(responseText2.length),
-										'cache-control',
-										'max-age=1',
-										'last-modified',
-										'Mon, 11 Dec 2023 02:00:00 GMT',
-										'etag',
-										etag2
-									];
-
-									callback(response);
-								} else {
-									async function* generate(): AsyncGenerator<string> {
-										yield responseText1;
-									}
-
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-									response.statusCode = 200;
-									response.statusMessage = 'OK';
-									response.headers = {};
-									response.rawHeaders = [
-										'content-type',
-										'text/html',
-										'content-length',
-										String(responseText1.length),
-										'cache-control',
-										'max-age=0.0001',
-										'last-modified',
-										'Mon, 11 Dec 2023 01:00:00 GMT',
-										'etag',
-										etag1
-									];
-
-									callback(response);
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							if (options.headers['If-None-Match']) {
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText2;
 								}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.statusCode = 200;
+								response.statusMessage = 'OK';
+								response.headers = {};
+								response.rawHeaders = [
+									'content-type',
+									'text/html',
+									'content-length',
+									String(responseText2.length),
+									'cache-control',
+									'max-age=1',
+									'last-modified',
+									'Mon, 11 Dec 2023 02:00:00 GMT',
+									'etag',
+									etag2
+								];
+
+								callback(response);
+							} else {
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText1;
+								}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.statusCode = 200;
+								response.statusMessage = 'OK';
+								response.headers = {};
+								response.rawHeaders = [
+									'content-type',
+									'text/html',
+									'content-length',
+									String(responseText1.length),
+									'cache-control',
+									'max-age=0.0001',
+									'last-modified',
+									'Mon, 11 Dec 2023 01:00:00 GMT',
+									'etag',
+									etag1
+								];
+
+								callback(response);
 							}
-						},
-						setTimeout: () => {}
-					};
-				}
-			});
+						}
+					},
+					setTimeout: () => {}
+				};
+			}));
 
 			const response1 = await window.fetch(url, {
 				headers: {
@@ -4367,69 +4277,67 @@ describe('Fetch', () => {
 				options: { method: string; headers: { [k: string]: string } };
 			}> = [];
 
-			mockModule('https', {
-				request: (url, options) => {
-					requestArgs.push({ url, options });
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>((url, options) => {
+				requestArgs.push({ url, options });
 
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								if (options.headers['vary-header'] === 'vary1') {
-									async function* generate(): AsyncGenerator<string> {
-										yield responseText1;
-									}
-
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-									response.statusCode = 200;
-									response.statusMessage = 'OK';
-									response.headers = {};
-									response.rawHeaders = [
-										'content-type',
-										'text/html',
-										'content-length',
-										String(responseText1.length),
-										'cache-control',
-										'max-age=60',
-										'last-modified',
-										'Mon, 11 Dec 2023 01:00:00 GMT',
-										'vary',
-										'vary-header'
-									];
-
-									callback(response);
-								} else if (options.headers['vary-header'] === 'vary2') {
-									async function* generate(): AsyncGenerator<string> {
-										yield responseText2;
-									}
-
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-									response.statusCode = 200;
-									response.statusMessage = 'OK';
-									response.headers = {};
-									response.rawHeaders = [
-										'content-type',
-										'text/html',
-										'content-length',
-										String(responseText2.length),
-										'cache-control',
-										'max-age=60',
-										'last-modified',
-										'Mon, 11 Dec 2023 02:00:00 GMT',
-										'vary',
-										'vary-header'
-									];
-
-									callback(response);
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							if (options.headers['vary-header'] === 'vary1') {
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText1;
 								}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.statusCode = 200;
+								response.statusMessage = 'OK';
+								response.headers = {};
+								response.rawHeaders = [
+									'content-type',
+									'text/html',
+									'content-length',
+									String(responseText1.length),
+									'cache-control',
+									'max-age=60',
+									'last-modified',
+									'Mon, 11 Dec 2023 01:00:00 GMT',
+									'vary',
+									'vary-header'
+								];
+
+								callback(response);
+							} else if (options.headers['vary-header'] === 'vary2') {
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText2;
+								}
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.statusCode = 200;
+								response.statusMessage = 'OK';
+								response.headers = {};
+								response.rawHeaders = [
+									'content-type',
+									'text/html',
+									'content-length',
+									String(responseText2.length),
+									'cache-control',
+									'max-age=60',
+									'last-modified',
+									'Mon, 11 Dec 2023 02:00:00 GMT',
+									'vary',
+									'vary-header'
+								];
+
+								callback(response);
 							}
-						},
-						setTimeout: () => {}
-					};
-				}
-			});
+						}
+					},
+					setTimeout: () => {}
+				};
+			}));
 
 			const response1 = await window.fetch(url, {
 				headers: {
