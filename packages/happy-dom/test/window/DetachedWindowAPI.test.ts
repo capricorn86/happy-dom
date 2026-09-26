@@ -1,11 +1,11 @@
 import Window from '../../src/window/Window.js';
 import type HTTP from 'http';
+import HTTPS from 'https';
 import Stream from 'stream';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import type DetachedWindowAPI from '../../src/window/DetachedWindowAPI.js';
 import VirtualConsolePrinter from '../../src/console/VirtualConsolePrinter.js';
 import DefaultBrowserSettings from '../../src/browser/DefaultBrowserSettings.js';
-import '../types.d.js';
 
 describe('DetachedWindowAPI', () => {
 	let window: Window;
@@ -16,7 +16,6 @@ describe('DetachedWindowAPI', () => {
 
 	afterEach(() => {
 		vi.clearAllMocks();
-		resetMockedModules();
 	});
 
 	describe('get settings()', () => {
@@ -50,32 +49,30 @@ describe('DetachedWindowAPI', () => {
 	describe('waitUntilComplete()', () => {
 		it('Resolves the Promise when all async tasks has been completed.', async () => {
 			const responseText = '{ "test": "test" }';
-			mockModule('https', {
-				request: () => {
-					return {
-						end: () => {},
-						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-							if (event === 'response') {
-								async function* generate(): AsyncGenerator<string> {
-									yield responseText;
-								}
-
-								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-								response.statusCode = 200;
-								response.statusMessage = '';
-								response.headers = {
-									'content-length': '0'
-								};
-								response.rawHeaders = ['content-length', '0'];
-
-								setTimeout(() => callback(response), 20);
+			vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+				return {
+					end: () => {},
+					on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+						if (event === 'response') {
+							async function* generate(): AsyncGenerator<string> {
+								yield responseText;
 							}
-						},
-						setTimeout: () => {}
-					};
-				}
-			});
+
+							const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+							response.statusCode = 200;
+							response.statusMessage = '';
+							response.headers = {
+								'content-length': '0'
+							};
+							response.rawHeaders = ['content-length', '0'];
+
+							setTimeout(() => callback(response), 20);
+						}
+					},
+					setTimeout: () => {}
+				};
+			}));
 
 			window.location.href = 'https://localhost:8080';
 			let isFirstWhenAsyncCompleteCalled = false;
@@ -185,32 +182,30 @@ describe('DetachedWindowAPI', () => {
 		it('Cancels all ongoing asynchrounous tasks.', async () => {
 			await new Promise((resolve) => {
 				const responseText = '{ "test": "test" }';
-				mockModule('https', {
-					request: () => {
-						return {
-							end: () => {},
-							on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
-								if (event === 'response') {
-									async function* generate(): AsyncGenerator<string> {
-										yield responseText;
-									}
-
-									const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
-
-									response.statusCode = 200;
-									response.statusMessage = '';
-									response.headers = {
-										'content-length': '0'
-									};
-									response.rawHeaders = ['content-length', '0'];
-
-									setTimeout(() => callback(response));
+				vi.spyOn(HTTPS, 'request').mockImplementation(<any>(() => {
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								async function* generate(): AsyncGenerator<string> {
+									yield responseText;
 								}
-							},
-							setTimeout: () => {}
-						};
-					}
-				});
+
+								const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+								response.statusCode = 200;
+								response.statusMessage = '';
+								response.headers = {
+									'content-length': '0'
+								};
+								response.rawHeaders = ['content-length', '0'];
+
+								setTimeout(() => callback(response));
+							}
+						},
+						setTimeout: () => {}
+					};
+				}));
 				window.location.href = 'https://localhost:8080';
 				let isFirstWhenAsyncCompleteCalled = false;
 				window.happyDOM?.waitUntilComplete().then(() => {

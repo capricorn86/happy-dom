@@ -33,7 +33,6 @@ import AdoptedStyleSheetCustomElement from '../AdoptedStyleSheetCustomElement.js
 import Location from '../../src/location/Location.js';
 import HTMLElementConfig from '../../src/config/HTMLElementConfig.js';
 
-import '../types.d.js';
 import type EventTarget from '../../src/event/EventTarget.js';
 import EventPhaseEnum from '../../src/event/EventPhaseEnum.js';
 import { PerformanceEntry, PerformanceObserver } from 'perf_hooks';
@@ -200,7 +199,6 @@ describe('BrowserWindow', () => {
 	});
 
 	afterEach(() => {
-		resetMockedModules();
 		vi.restoreAllMocks();
 	});
 
@@ -343,8 +341,8 @@ describe('BrowserWindow', () => {
 			expect(window.Function('return (() => {}).constructor === window.Function')()).toBe(true);
 		});
 
-		it('Does not execute unsafe code using import', () => {
-			expect(() => window.Function('return import("process")')()).rejects.toThrow();
+		it('Does not execute unsafe code using import', async () => {
+			await expect(() => window.Function('return import("process")')()).rejects.toThrow();
 		});
 	});
 
