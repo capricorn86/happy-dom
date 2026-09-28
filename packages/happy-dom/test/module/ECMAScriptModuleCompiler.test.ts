@@ -773,6 +773,36 @@ $happy_dom.exports['string6'] = string6;
 }`);
 		});
 
+		it('Handles "import.meta", dynamic import and RegExp after operators.', () => {
+			const code = `
+                const url = import.meta.resolve ? import.meta.resolve('./a.js') : new URL('./a.js', import.meta.url).href;
+                const isProduction = !import.meta.env.DEV;
+                const baseURL = window.baseURL || import.meta.url;
+                const offset = window.offset - import.meta.offset;
+                const module = condition?import('./b.js'):null;
+                const isQuote = condition?/'/.test(value):import.meta.url;
+                const isNotQuote = !/"/.test(value);
+                const hasQuote = value||/'/.test(value);
+            `;
+
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
+
+			expect(result.imports).toEqual([]);
+
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
+                const url = $happy_dom.importMeta.resolve ? $happy_dom.importMeta.resolve('./a.js') : new URL('./a.js', $happy_dom.importMeta.url).href;
+                const isProduction = !$happy_dom.importMeta.env.DEV;
+                const baseURL = window.baseURL || $happy_dom.importMeta.url;
+                const offset = window.offset - $happy_dom.importMeta.offset;
+                const module = condition?$happy_dom.dynamicImport('./b.js'):null;
+                const isQuote = condition?/'/.test(value):$happy_dom.importMeta.url;
+                const isNotQuote = !/"/.test(value);
+                const hasQuote = value||/'/.test(value);
+            
+}`);
+		});
+
 		it('Unsanitized export names are not interpolated as executable code (GHSA-6q6h-j7hj-3r64)', () => {
 			const code = `export { require('child_process').execSync('id') }`;
 

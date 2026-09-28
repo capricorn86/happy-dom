@@ -76,6 +76,22 @@ describe('JavaScriptCompiler', () => {
             }`);
 		});
 
+		it('Handles dynamic import and RegExp after operators.', () => {
+			const code = `
+                const module = condition?import('./a.js'):null;
+                const module2 = !condition||import('./b.js');
+                const module3 = condition?/'/.test(value):import('./c.js');
+            `;
+			const compiler = new JavaScriptCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
+
+			expect(result.execute.toString()).toBe(`function anonymous($happy_dom) {
+                const module = condition?$happy_dom.dynamicImport('./a.js'):null;
+                const module2 = !condition||$happy_dom.dynamicImport('./b.js');
+                const module3 = condition?/'/.test(value):$happy_dom.dynamicImport('./c.js');
+            }`);
+		});
+
 		it('Adds try and catch statement if settings.errorCapture is set to "tryAndCatch".', () => {
 			const window = new Window();
 
