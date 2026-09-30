@@ -576,8 +576,10 @@ export default class CSSPropertyManager {
 	 */
 	public toString(): string {
 		const result = [];
-		const clone = this.clone();
 		const properties: { [k: string]: ICSSPropertyValue } = {};
+		// Cloning is only needed when a shorthand matches, as remove() mutates the properties.
+		// Skipping it keeps toString() cheap for declarations with many custom properties.
+		let clone: CSSPropertyManager = this;
 
 		for (const shorthandPropertyGroup of TO_STRING_SHORTHAND_PROPERTIES) {
 			for (const shorthandProperty of shorthandPropertyGroup) {
@@ -587,6 +589,9 @@ export default class CSSPropertyManager {
 						const property = clone.get(childShorthandProperty);
 						if (property) {
 							properties[childShorthandProperty] = property;
+							if (clone === this) {
+								clone = this.clone();
+							}
 							clone.remove(childShorthandProperty);
 							isMatch = true;
 						}
@@ -598,6 +603,9 @@ export default class CSSPropertyManager {
 					const property = clone.get(shorthandProperty);
 					if (property) {
 						properties[shorthandProperty] = property;
+						if (clone === this) {
+							clone = this.clone();
+						}
 						clone.remove(shorthandProperty);
 						break;
 					}

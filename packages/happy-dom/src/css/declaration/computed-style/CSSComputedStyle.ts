@@ -174,9 +174,9 @@ export default class CSSComputedStyle {
 		const cssVariables: { [k: string]: string } = {};
 		let rootFontSize: string | number = 16;
 		let parentFontSize: string | number = 16;
-		let previousParent: IStyleAndElement | null = null;
 
-		for (const parentElement of parentElements) {
+		for (let i = 0, max = parentElements.length; i < max; i++) {
+			const parentElement = parentElements[i];
 			if (parentElement.propertyManager) {
 				if (parentElement.element === this.element) {
 					return parentElement.propertyManager;
@@ -282,18 +282,23 @@ export default class CSSComputedStyle {
 				parentElement.element![PropertySymbol.ownerDocument][
 					PropertySymbol.affectsComputedStyleCache
 				].push(cachedResult);
-				previousParent?.element![PropertySymbol.affectsCache].push(cachedResult);
-				if ((<Element>previousParent?.element)?.shadowRoot) {
-					(<Element>previousParent!.element).shadowRoot![PropertySymbol.affectsCache].push(
-						cachedResult
-					);
+
+				// All parents of current element affects cache
+				for (let a = 0; a < i; a++) {
+					const previousParent = parentElements[a];
+					previousParent.element![PropertySymbol.affectsCache].push(cachedResult);
+					if ((<Element>previousParent.element)?.shadowRoot) {
+						(<Element>previousParent!.element).shadowRoot![PropertySymbol.affectsCache].push(
+							cachedResult
+						);
+					}
 				}
+
 				if (parentElement.element === this.element) {
 					return propertyManager;
 				}
 			}
 
-			previousParent = parentElement;
 			propertyManager = inheritedPropertyManager.clone();
 		}
 
