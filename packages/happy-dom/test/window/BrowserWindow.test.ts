@@ -1552,6 +1552,48 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.color).toBe('red');
 		});
 
+		it('Uses inherited color when "inherit" wins the cascade over an earlier color.', () => {
+			document.head.innerHTML = `
+                <style>
+                    .a { color: red; }
+                    .b { color: inherit; }
+                    .c { color: red; color: inherit; }
+                </style>
+            `;
+			document.body.innerHTML = `
+                <div style="color: rgb(1, 2, 3)">
+                    <span class="a b"></span>
+                    <span class="c"><b></b></span>
+                </div>
+            `;
+
+			const twoRules = <HTMLElement>document.querySelector('.a');
+			const oneBlock = <HTMLElement>document.querySelector('.c');
+			const child = <HTMLElement>document.querySelector('.c b');
+
+			expect(window.getComputedStyle(twoRules).color).toBe('rgb(1, 2, 3)');
+			expect(window.getComputedStyle(oneBlock).color).toBe('rgb(1, 2, 3)');
+			expect(window.getComputedStyle(child).color).toBe('rgb(1, 2, 3)');
+		});
+
+		it('Keeps an important color when a later "inherit" is not important.', () => {
+			document.head.innerHTML = `
+                <style>
+                    .a { color: red !important; }
+                    .b { color: inherit; }
+                </style>
+            `;
+			document.body.innerHTML = `
+                <div style="color: rgb(1, 2, 3)">
+                    <span class="a b"></span>
+                </div>
+            `;
+
+			const element = <HTMLElement>document.querySelector('span');
+
+			expect(window.getComputedStyle(element).color).toBe('red');
+		});
+
 		for (const measurement of [
 			{ value: '100vw', result: '1024px' },
 			{ value: '100vh', result: '768px' },
