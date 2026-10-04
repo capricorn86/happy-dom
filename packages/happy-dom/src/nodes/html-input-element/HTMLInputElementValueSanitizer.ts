@@ -203,7 +203,11 @@ export default class HTMLInputElementValueSanitizer {
 			return '';
 		}
 		if (ms === 0) {
-			return `${match[1]}:${match[2]}`;
+			const hasExplicitSeconds = match[3] !== undefined;
+			const hasFractionalSeconds = match[4] !== undefined;
+			return hasExplicitSeconds && !hasFractionalSeconds
+				? `${match[1]}:${match[2]}:${match[3]}`
+				: `${match[1]}:${match[2]}`;
 		} else {
 			return `${match[1]}:${match[2]}${ms >= 10000 ? `:${ms / 1000}` : `:0${ms / 1000}`}`;
 		}
