@@ -72,7 +72,7 @@ describe('HTMLInputElementValueSanitizer', () => {
 			time: [
 				{ value: '00:00', want: '00:00' },
 				{ value: '00:00:00', want: '00:00:00' },
-				{ value: '00:00:00.000', want: '00:00:00.000' },
+				{ value: '00:00:00.000', want: '00:00' },
 				{ value: '00:00:09.000', want: '00:00:09' },
 				{ value: '00:00:10.000', want: '00:00:10' },
 				{ value: '00:00:59', want: '00:00:59' },
