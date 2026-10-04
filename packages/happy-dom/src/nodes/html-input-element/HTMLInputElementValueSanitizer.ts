@@ -203,7 +203,7 @@ export default class HTMLInputElementValueSanitizer {
 			return '';
 		}
 		if (ms === 0) {
-			return `${match[1]}:${match[2]}`;
+			return match[3] === undefined ? `${match[1]}:${match[2]}` : value;
 		} else {
 			return `${match[1]}:${match[2]}${ms >= 10000 ? `:${ms / 1000}` : `:0${ms / 1000}`}`;
 		}
