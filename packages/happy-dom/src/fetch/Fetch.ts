@@ -592,6 +592,12 @@ export default class Fetch {
 				reject(error);
 			};
 
+			// The signal can be aborted while send() awaits, before the listener below is added.
+			if (this.request.signal[PropertySymbol.aborted]) {
+				this.abort(this.request.signal[PropertySymbol.reason]);
+				return;
+			}
+
 			this.request.signal.addEventListener('abort', this.listeners.onSignalAbort);
 
 			const send = (this.request[PropertySymbol.url].protocol === 'https:' ? HTTPS : HTTP).request;
