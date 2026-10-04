@@ -2426,6 +2426,112 @@ describe('Fetch', () => {
 			);
 		});
 
+		it('Rejects if the signal is aborted in the same tick as the fetch() call.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
+			const url = 'https://localhost:8080/test/';
+
+			mockNetwork('https', { responseText: 'ok' });
+
+			const abortController = new window.AbortController();
+			const promise = window.fetch(url, { method: 'GET', signal: abortController.signal });
+
+			abortController.abort();
+
+			let error: Error | null = null;
+			try {
+				await promise;
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error).toEqual(
+				new window.DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
+			);
+		});
+
+		it('Rejects if the signal is aborted in a microtask after the fetch() call.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
+			const url = 'https://localhost:8080/test/';
+
+			mockNetwork('https', { responseText: 'ok' });
+
+			const abortController = new window.AbortController();
+			const promise = window.fetch(url, { method: 'GET', signal: abortController.signal });
+
+			queueMicrotask(() => abortController.abort('Some reason'));
+
+			let error: unknown = null;
+			try {
+				await promise;
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error).toBe('Some reason');
+		});
+
+		it('Does not throw when the Node.js response stream ends after the response body has been cancelled.', async () => {
+			const window = new Window({ url: 'https://localhost:8080/' });
+			const url = 'https://localhost:8080/test/';
+			const nodeResponse = new Stream.PassThrough();
+			const listenerErrors: Error[] = [];
+			const emit = Stream.PassThrough.prototype.emit;
+
+			// Errors thrown by "data", "end" and "error" listeners are otherwise uncaught.
+			// The response body is a PassThrough that is piped from the Node.js response.
+			vi.spyOn(Stream.PassThrough.prototype, 'emit').mockImplementation(function (
+				this: Stream.PassThrough,
+				...args: Parameters<Stream.PassThrough['emit']>
+			): boolean {
+				try {
+					return emit.apply(this, args);
+				} catch (e) {
+					listenerErrors.push(e);
+					return false;
+				}
+			});
+
+			mockModule('https', {
+				request: () => {
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+							if (event === 'response') {
+								callback(
+									Object.assign(<HTTP.IncomingMessage>(<unknown>nodeResponse), {
+										statusCode: 200,
+										statusMessage: 'OK',
+										headers: {},
+										rawHeaders: []
+									})
+								);
+							}
+						},
+						setTimeout: () => {},
+						destroy: () => {}
+					};
+				}
+			});
+
+			const response = await window.fetch(url);
+			const reader = response.body!.getReader();
+
+			nodeResponse.write(Buffer.from('chunk1'));
+
+			const { value } = await reader.read();
+
+			expect(Buffer.from(value!).toString()).toBe('chunk1');
+
+			await reader.cancel();
+
+			nodeResponse.write(Buffer.from('chunk2'));
+			nodeResponse.end();
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(listenerErrors).toEqual([]);
+		});
+
 		it('Supports aborting the read of the response body using AbortController and AbortSignal when aborted before the reading has started.', async () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';
