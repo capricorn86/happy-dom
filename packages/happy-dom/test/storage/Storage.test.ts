@@ -209,5 +209,47 @@ describe('Storage', () => {
 
 			expect(storage.getItem('key1')).toBe('mocked');
 		});
+
+		it('Should be able to spy on prototype methods after they have been accessed.', () => {
+			storage.setItem('key1', 'value1');
+			storage.getItem('key1');
+			storage.removeItem('key2');
+			storage.key(0);
+			storage.clear();
+
+			const getItem = vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('mocked');
+			const setItem = vi.spyOn(Storage.prototype, 'setItem');
+			const removeItem = vi.spyOn(Storage.prototype, 'removeItem');
+			const key = vi.spyOn(Storage.prototype, 'key');
+			const clear = vi.spyOn(Storage.prototype, 'clear');
+
+			expect(storage.getItem('key1')).toBe('mocked');
+			storage.setItem('key1', 'value1');
+			storage.removeItem('key1');
+			storage.key(0);
+			storage.clear();
+
+			expect(getItem).toHaveBeenCalledWith('key1');
+			expect(setItem).toHaveBeenCalledWith('key1', 'value1');
+			expect(removeItem).toHaveBeenCalledWith('key1');
+			expect(key).toHaveBeenCalledWith(0);
+			expect(clear).toHaveBeenCalled();
+		});
+
+		it('Should restore prototype methods when a prototype spy is restored.', () => {
+			storage.setItem('key1', 'value1');
+
+			vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('mocked');
+
+			expect(storage.getItem('key1')).toBe('mocked');
+
+			vi.restoreAllMocks();
+
+			expect(storage.getItem('key1')).toBe('value1');
+
+			vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('mocked2');
+
+			expect(storage.getItem('key1')).toBe('mocked2');
+		});
 	});
 });
