@@ -13,6 +13,8 @@ describe('DOMException', () => {
 		it('Returns 0 for a name with no entry in the table.', () => {
 			expect(new DOMException('Unknown.', DOMExceptionNameEnum.unknownError).code).toBe(0);
 			expect(new DOMException('Something.', 'NotAName').code).toBe(0);
+			expect(new DOMException('Something.', 'toString').code).toBe(0);
+			expect(new DOMException('Something.', 'constructor').code).toBe(0);
 		});
 
 		it('Returns 0 when no name is given.', () => {

@@ -29,6 +29,6 @@ export default class DOMException extends Error {
 	 * @returns Legacy code.
 	 */
 	public get code(): number {
-		return DOMExceptionLegacyCode[this.name] ?? 0;
+		return Object.hasOwn(DOMExceptionLegacyCode, this.name) ? DOMExceptionLegacyCode[this.name] : 0;
 	}
 }
