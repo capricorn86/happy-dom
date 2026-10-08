@@ -384,7 +384,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#readyState = XMLHttpRequestReadyStateEnum.loading;
 
 		this.#dispatchEvent(new Event('readystatechange'));
-		this.#dispatchEvent(new Event('loadstart'));
+		this.#dispatchEvent(new ProgressEvent('loadstart'));
 
 		if (body) {
 			this.#request = new window.Request(this.#request!.url, {
@@ -399,8 +399,8 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		this.#abortController!.signal.addEventListener('abort', () => {
 			this.#aborted = true;
 			this.#readyState = XMLHttpRequestReadyStateEnum.unsent;
-			this.#dispatchEvent(new Event('abort'));
-			this.#dispatchEvent(new Event('loadend'));
+			this.#dispatchEvent(new ProgressEvent('abort'));
+			this.#dispatchEvent(new ProgressEvent('loadend'));
 			this.#dispatchEvent(new Event('readystatechange'));
 			asyncTaskManager.endTask(taskID);
 		});
@@ -411,12 +411,12 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 					return;
 				}
 				this.#readyState = XMLHttpRequestReadyStateEnum.unsent;
-				this.#dispatchEvent(new Event('abort'));
+				this.#dispatchEvent(new ProgressEvent('abort'));
 			} else {
 				this.#readyState = XMLHttpRequestReadyStateEnum.done;
 				this.#dispatchEvent(new ErrorEvent('error', { error, message: error.message }));
 			}
-			this.#dispatchEvent(new Event('loadend'));
+			this.#dispatchEvent(new ProgressEvent('loadend'));
 			this.#dispatchEvent(new Event('readystatechange'));
 			asyncTaskManager.endTask(taskID);
 		};
@@ -488,9 +488,15 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		asyncTaskManager.endTask(taskID);
 
+		const eventInit = {
+			lengthComputable: contentLengthNumber !== null,
+			loaded,
+			total: contentLengthNumber ?? 0
+		};
+
 		this.#dispatchEvent(new Event('readystatechange'));
-		this.#dispatchEvent(new Event('load'));
-		this.#dispatchEvent(new Event('loadend'));
+		this.#dispatchEvent(new ProgressEvent('load', eventInit));
+		this.#dispatchEvent(new ProgressEvent('loadend', eventInit));
 	}
 
 	/**
@@ -532,7 +538,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.#dispatchEvent(
 				new ErrorEvent('error', { error: <Error>error, message: (<Error>error).message })
 			);
-			this.#dispatchEvent(new Event('loadend'));
+			this.#dispatchEvent(new ProgressEvent('loadend'));
 			this.#dispatchEvent(new Event('readystatechange'));
 			return;
 		}
@@ -551,9 +557,18 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		this.#readyState = XMLHttpRequestReadyStateEnum.done;
 
+		const contentLength = this.#response.headers.get('Content-Length');
+		const contentLengthNumber =
+			contentLength !== null && !isNaN(Number(contentLength)) ? Number(contentLength) : null;
+		const eventInit = {
+			lengthComputable: contentLengthNumber !== null,
+			loaded: this.#response.body?.length ?? 0,
+			total: contentLengthNumber ?? 0
+		};
+
 		this.#dispatchEvent(new Event('readystatechange'));
-		this.#dispatchEvent(new Event('load'));
-		this.#dispatchEvent(new Event('loadend'));
+		this.#dispatchEvent(new ProgressEvent('load', eventInit));
+		this.#dispatchEvent(new ProgressEvent('loadend', eventInit));
 	}
 
 	/**
