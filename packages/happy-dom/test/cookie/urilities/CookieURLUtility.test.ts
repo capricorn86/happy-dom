@@ -6,6 +6,32 @@ import { describe, it, expect } from 'vitest';
 
 describe('CookieURLUtility', () => {
 	describe('cookieMatchesURL()', () => {
+		it.each([
+			['', 'https://example.com/', true],
+			['', 'https://sub.example.com/', false],
+			['', 'https://attacker.net/', false],
+			['example.com', 'https://example.com/', true],
+			['example.com', 'https://sub.example.com/', true],
+			['example.com', 'https://notexample.com/', false],
+			['example.com', 'https://example.com.attacker.net/', false],
+			['0.1', 'https://127.0.0.1/', false]
+		])('Scopes Domain="%s" at %s independently of SameSite.', (domain, target, matches) => {
+			for (const sameSite of Object.values(CookieSameSiteEnum)) {
+				const cookie: ICookie = {
+					key: 'session',
+					value: 'secret',
+					originURL: new URL('https://example.com/'),
+					domain,
+					path: '/',
+					expires: null,
+					httpOnly: true,
+					secure: true,
+					sameSite
+				};
+				expect(CookieURLUtility.cookieMatchesURL(cookie, new URL(target))).toBe(matches);
+			}
+		});
+
 		it('Returns true for matching cookie and URL.', () => {
 			const originURL = new URL('https://example.com/path/');
 			const cookie: ICookie = {
