@@ -9,6 +9,7 @@ import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.j
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import type ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
 import type { TGlobalMatchFunction } from './TGlobalMatchFunction.js';
+import type HTMLElement from '../nodes/html-element/HTMLElement.js';
 
 /**
  * Selector item.
@@ -434,6 +435,8 @@ export default class SelectorItem {
 				return element[PropertySymbol.ownerDocument].activeElement === element
 					? { priorityWeight: 10 }
 					: null;
+			case 'popover-open':
+				return (<HTMLElement>element)[PropertySymbol.popoverOpen] ? { priorityWeight: 10 } : null;
 			case 'scope':
 				return scope && scope === element ? { priorityWeight: 10 } : null;
 			default:
