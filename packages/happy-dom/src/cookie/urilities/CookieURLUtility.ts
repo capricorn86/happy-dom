@@ -1,4 +1,4 @@
-import CookieSameSiteEnum from '../enums/CookieSameSiteEnum.js';
+import CookieDomainUtility from './CookieDomainUtility.js';
 import type URL from '../../url/URL.js';
 import type ICookie from '../ICookie.js';
 
@@ -15,13 +15,21 @@ export default class CookieURLUtility {
 	 */
 	public static cookieMatchesURL(cookie: ICookie, url: URL): boolean {
 		const isLocalhost = url.hostname === 'localhost' || url.hostname?.endsWith('.localhost');
+		const cookiePath = cookie.path;
+		const requestPath = url.pathname;
+		const pathMatches =
+			!cookiePath ||
+			(!!requestPath &&
+				(requestPath === cookiePath ||
+					(requestPath.startsWith(cookiePath) &&
+						(cookiePath.endsWith('/') || requestPath[cookiePath.length] === '/'))));
 		return (
+			!!cookie.originURL &&
 			(!cookie.secure || url.protocol === 'https:' || isLocalhost) &&
-			(!cookie.domain || url.hostname?.endsWith(cookie.domain)) &&
-			(!cookie.path || url.pathname?.startsWith(cookie.path)) &&
-			// @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#samesitesamesite-value
-			((cookie.sameSite === CookieSameSiteEnum.none && cookie.secure) ||
-				cookie.originURL?.hostname === url.hostname)
+			(cookie.domain
+				? CookieDomainUtility.domainMatches(url.hostname, cookie.domain)
+				: cookie.originURL.hostname === url.hostname) &&
+			pathMatches
 		);
 	}
 }
