@@ -79,9 +79,9 @@ export default class FetchRequestHeaderUtility {
 		baseHeaders?: Headers | null;
 	}): { [key: string]: string } {
 		const headers = new options.window.Headers(options.baseHeaders);
-		options.request.headers.forEach((value, key) => {
-			headers.set(key, value);
-		});
+		for (const header of Object.values(options.request.headers[PropertySymbol.entries])) {
+			headers.set(header.name, header.value.join(', '));
+		}
 
 		const originURL = new URL(options.window.location.href);
 		const isCORS = FetchCORSUtility.isCORS(originURL, options.request[PropertySymbol.url]);

@@ -1,4 +1,5 @@
 import type ICachedResponse from './ICachedResponse.js';
+import * as PropertySymbol from '../../../PropertySymbol.js';
 import Headers from '../../Headers.js';
 import FS from 'fs';
 import Path from 'path';
@@ -126,12 +127,16 @@ export default class ResponseCacheFileSystem implements IResponseCacheFileSystem
 					const responseHeaders: { [k: string]: string } = {};
 					const requestHeaders: { [k: string]: string } = {};
 
-					for (const [key, value] of cachedResponse.response.headers.entries()) {
-						responseHeaders[key] = value;
+					for (const header of Object.values(
+						cachedResponse.response.headers[PropertySymbol.entries]
+					)) {
+						responseHeaders[header.name] = header.value.join(', ');
 					}
 
-					for (const [key, value] of cachedResponse.request.headers.entries()) {
-						requestHeaders[key] = value;
+					for (const header of Object.values(
+						cachedResponse.request.headers[PropertySymbol.entries]
+					)) {
+						requestHeaders[header.name] = header.value.join(', ');
 					}
 
 					const cacheableEntry = {
