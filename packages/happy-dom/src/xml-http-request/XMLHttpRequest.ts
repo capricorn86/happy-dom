@@ -398,10 +398,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		this.#abortController!.signal.addEventListener('abort', () => {
 			this.#aborted = true;
+			this.#readyState = XMLHttpRequestReadyStateEnum.done;
+			this.#dispatchRequestError(new Event('abort'));
 			this.#readyState = XMLHttpRequestReadyStateEnum.unsent;
-			this.#dispatchEvent(new Event('abort'));
-			this.#dispatchEvent(new Event('loadend'));
-			this.#dispatchEvent(new Event('readystatechange'));
 			asyncTaskManager.endTask(taskID);
 		});
 
@@ -410,14 +409,13 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				if (this.#aborted) {
 					return;
 				}
+				this.#readyState = XMLHttpRequestReadyStateEnum.done;
+				this.#dispatchRequestError(new Event('abort'));
 				this.#readyState = XMLHttpRequestReadyStateEnum.unsent;
-				this.#dispatchEvent(new Event('abort'));
 			} else {
 				this.#readyState = XMLHttpRequestReadyStateEnum.done;
-				this.#dispatchEvent(new ErrorEvent('error', { error, message: error.message }));
+				this.#dispatchRequestError(new ErrorEvent('error', { error, message: error.message }));
 			}
-			this.#dispatchEvent(new Event('loadend'));
-			this.#dispatchEvent(new Event('readystatechange'));
 			asyncTaskManager.endTask(taskID);
 		};
 
@@ -439,6 +437,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		this.#dispatchEvent(new Event('readystatechange'));
 
+		// A "readystatechange" listener may have called abort() synchronously, discarding the response.
+		if (this.#response === null) {
+			return;
+		}
+
 		const contentLength = this.#response.headers.get('Content-Length');
 		const contentLengthNumber =
 			contentLength !== null && !isNaN(Number(contentLength)) ? Number(contentLength) : null;
@@ -448,6 +451,10 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			let eventError: Error;
 			try {
 				for await (const chunk of this.#response.body) {
+					// A "progress" listener may have called abort() synchronously.
+					if (this.#response === null) {
+						return;
+					}
 					const chunkBuffer = typeof chunk === 'string' ? Buffer.from(chunk) : chunk;
 					this.#accumulatedData = Buffer.concat([this.#accumulatedData, chunkBuffer]);
 					loaded += chunk.length;
@@ -472,6 +479,11 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 				onError(<Error>error);
 				return;
 			}
+		}
+
+		// A "progress" listener may have called abort() synchronously during the last iteration.
+		if (this.#response === null) {
+			return;
 		}
 
 		this.#responseBody = XMLHttpRequestResponseDataParser.parse({
@@ -529,11 +541,9 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 			this.#response = fetch.send();
 		} catch (error) {
 			this.#readyState = XMLHttpRequestReadyStateEnum.done;
-			this.#dispatchEvent(
+			this.#dispatchRequestError(
 				new ErrorEvent('error', { error: <Error>error, message: (<Error>error).message })
 			);
-			this.#dispatchEvent(new Event('loadend'));
-			this.#dispatchEvent(new Event('readystatechange'));
 			return;
 		}
 
@@ -553,6 +563,23 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
 		this.#dispatchEvent(new Event('readystatechange'));
 		this.#dispatchEvent(new Event('load'));
+		this.#dispatchEvent(new Event('loadend'));
+	}
+
+	/**
+	 * Runs the request error steps: discards the response, then dispatches
+	 * "readystatechange" followed by the given event and finally "loadend".
+	 *
+	 * @see https://xhr.spec.whatwg.org/#request-error-steps
+	 * @param event Event to dispatch, e.g. an "abort" Event or an "error" ErrorEvent.
+	 */
+	#dispatchRequestError(event: Event): void {
+		this.#response = null;
+		this.#responseBody = null;
+		this.#accumulatedData = Buffer.from([]);
+
+		this.#dispatchEvent(new Event('readystatechange'));
+		this.#dispatchEvent(event);
 		this.#dispatchEvent(new Event('loadend'));
 	}
 
