@@ -15,13 +15,21 @@ export default class CookieURLUtility {
 	 */
 	public static cookieMatchesURL(cookie: ICookie, url: URL): boolean {
 		const isLocalhost = url.hostname === 'localhost' || url.hostname?.endsWith('.localhost');
+		const cookiePath = cookie.path;
+		const requestPath = url.pathname;
+		const pathMatches =
+			!cookiePath ||
+			(!!requestPath &&
+				(requestPath === cookiePath ||
+					(requestPath.startsWith(cookiePath) &&
+						(cookiePath.endsWith('/') || requestPath[cookiePath.length] === '/'))));
 		return (
 			!!cookie.originURL &&
 			(!cookie.secure || url.protocol === 'https:' || isLocalhost) &&
 			(cookie.domain
 				? CookieDomainUtility.domainMatches(url.hostname, cookie.domain)
 				: cookie.originURL.hostname === url.hostname) &&
-			(!cookie.path || url.pathname?.startsWith(cookie.path))
+			pathMatches
 		);
 	}
 }
