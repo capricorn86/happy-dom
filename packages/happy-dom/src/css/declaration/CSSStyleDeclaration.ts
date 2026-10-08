@@ -66,6 +66,11 @@ export default class CSSStyleDeclaration {
 		this[PropertySymbol.computed] = options?.element ? !!options?.computed : false;
 
 		const methodBinder = new ClassMethodBinder(this, [CSSStyleDeclaration]);
+		const isExpando = (property: string | symbol): boolean =>
+			typeof property === 'symbol' ||
+			(!CSSPropertyList.kebabCase[<'color'>property] &&
+				!CSSPropertyList.camelCase[<'color'>property] &&
+				isNaN(Number(property)));
 
 		return new Proxy(this, {
 			get: (target, property) => {
@@ -97,6 +102,9 @@ export default class CSSStyleDeclaration {
 				if (CSSPropertyList.camelCase[<'color'>property]) {
 					target.setProperty(CSSPropertyList.camelCase[<'color'>property], newValue);
 					return true;
+				}
+				if (isExpando(property)) {
+					(<any>target)[property] = newValue;
 				}
 				return true;
 			},
@@ -133,7 +141,7 @@ export default class CSSStyleDeclaration {
 			defineProperty(target, property, descriptor): boolean {
 				methodBinder.preventBinding(property);
 
-				if (property in target) {
+				if (property in target || isExpando(property)) {
 					Object.defineProperty(target, property, descriptor);
 					return true;
 				}

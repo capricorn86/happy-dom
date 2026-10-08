@@ -3232,6 +3232,44 @@ describe('CSSStyleDeclaration', () => {
 		});
 	});
 
+	describe('Expando properties', () => {
+		it('Keeps a property that is not a CSS property as a plain property on the object.', () => {
+			element.style['--custom'] = '10px';
+			(<any>element.style).foo = 'bar';
+
+			expect(element.style['--custom']).toBe('10px');
+			expect((<any>element.style).foo).toBe('bar');
+			expect(element.style.getPropertyValue('--custom')).toBe('');
+			expect(element.getAttribute('style')).toBe(null);
+		});
+
+		it('Supports Object.defineProperty() for a property that is not a CSS property.', () => {
+			const computedStyle = window.getComputedStyle(element);
+
+			Object.defineProperty(element.style, 'foo', { value: 'bar', configurable: true });
+			Object.defineProperty(computedStyle, 'foo', { value: 'baz', configurable: true });
+
+			expect((<any>element.style).foo).toBe('bar');
+			expect((<any>computedStyle).foo).toBe('baz');
+		});
+
+		it('Ignores a numeric index set on the object.', () => {
+			element.style.color = 'red';
+			(<any>element.style)[0] = 'width';
+
+			expect(element.style[0]).toBe('color');
+			expect(element.style.length).toBe(1);
+		});
+
+		it('Still throws when defining a CSS property on a computed style.', () => {
+			const computedStyle = window.getComputedStyle(element);
+
+			expect(() => Object.defineProperty(computedStyle, 'lineHeight', { value: '18px' })).toThrow(
+				TypeError
+			);
+		});
+	});
+
 	describe('getPropertyValue()', () => {
 		it('Returns a CSS property value when using element.', () => {
 			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
