@@ -414,19 +414,19 @@ export default class HTMLFormElement extends HTMLElement {
 	 *
 	 * @param [submitter] Submitter.
 	 */
-	public requestSubmit(submitter?: HTMLInputElement | HTMLButtonElement): void {
+	public requestSubmit(submitter?: HTMLInputElement | HTMLButtonElement | null): void {
 		const noValidate = submitter?.formNoValidate || this.noValidate;
 		if (noValidate || this.checkValidity()) {
 			const event = new SubmitEvent('submit', {
 				bubbles: true,
 				cancelable: true,
-				submitter: submitter || this[PropertySymbol.proxy]
+				submitter: submitter ?? undefined
 			});
 
 			this.dispatchEvent(event);
 
 			if (!event.defaultPrevented) {
-				this.#submit(submitter);
+				this.#submit(submitter ?? undefined);
 			}
 		}
 	}
