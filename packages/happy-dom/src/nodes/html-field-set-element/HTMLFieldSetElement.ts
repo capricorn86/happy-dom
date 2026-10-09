@@ -1,4 +1,5 @@
 import HTMLElement from '../html-element/HTMLElement.js';
+import HTMLFormControlElementUtility from '../html-element/HTMLFormControlElementUtility.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLCollection from '../element/HTMLCollection.js';
 import type HTMLInputElement from '../html-input-element/HTMLInputElement.js';
@@ -53,14 +54,7 @@ export default class HTMLFieldSetElement extends HTMLElement {
 	 * @returns Form.
 	 */
 	public get form(): HTMLFormElement | null {
-		if (this[PropertySymbol.formNode]) {
-			return this[PropertySymbol.formNode];
-		}
-		const id = this.getAttribute('form');
-		if (!id || !this[PropertySymbol.isConnected]) {
-			return null;
-		}
-		return <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(id);
+		return HTMLFormControlElementUtility.getFormOwner(this);
 	}
 
 	/**
