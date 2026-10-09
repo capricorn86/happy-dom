@@ -64,12 +64,12 @@ const VALID_VARIABLE_NAME_REGEXP = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/;
 /**
  * Valid preceding token before a statement.
  */
-const PRECEDING_STATEMENT_TOKEN_REGEXP = /['"`(){}\s;=><\[\]+-,:&]/;
+const PRECEDING_STATEMENT_TOKEN_REGEXP = /['"`(){}\s;=><\[\]+\-,:&?!|]/;
 
 /**
  * Valid preceding token before a regexp.
  */
-const PRECEDING_REGEXP_TOKEN_REGEXP = /['"`({};=><\[+-,:&]/;
+const PRECEDING_REGEXP_TOKEN_REGEXP = /['"`({};=><\[+\-,:&?!|]/;
 
 /**
  * Multiline comment regexp.
