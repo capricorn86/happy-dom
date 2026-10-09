@@ -67,6 +67,15 @@ describe('HTMLLabelElement', () => {
 			element.appendChild(input);
 			expect(element.control).toBe(null);
 		});
+
+		it('Returns null if no element has the id in the "for" attribute.', () => {
+			const input = document.createElement('input');
+			input.id = 'name';
+			element.htmlFor = 'missing';
+			element.appendChild(input);
+			document.body.appendChild(element);
+			expect(element.control).toBe(null);
+		});
 	});
 
 	describe('get form()', () => {
@@ -233,6 +242,48 @@ describe('HTMLLabelElement', () => {
 
 				expect(input.labels.length).toBe(1);
 				expect(input.labels[0] === label).toBe(true);
+			});
+
+			it("Doesn't return an enclosing label that labels another element.", () => {
+				document.body.innerHTML =
+					'<label>Website <input type="text"> <button type="button">Use</button></label>';
+				const label = document.querySelector('label');
+
+				expect(document.querySelector('button').labels.length).toBe(0);
+				expect(document.querySelector('input').labels.length).toBe(1);
+				expect(document.querySelector('input').labels[0] === label).toBe(true);
+			});
+
+			it('Doesn\'t return an enclosing label with a "for" attribute pointing to another element.', () => {
+				document.body.innerHTML =
+					'<input id="email"><label for="email">Email <button type="button">Clear</button></label>';
+				const label = document.querySelector('label');
+
+				expect(document.querySelector('button').labels.length).toBe(0);
+				expect(document.querySelector('input').labels.length).toBe(1);
+				expect(document.querySelector('input').labels[0] === label).toBe(true);
+			});
+
+			it('Doesn\'t return an enclosing label with a "for" attribute matching no element.', () => {
+				document.body.innerHTML = '<label for="missing">Name <input id="name"></label>';
+
+				expect(document.querySelector('input').labels.length).toBe(0);
+			});
+
+			it('Returns an enclosing label with a "for" attribute pointing to the element once.', () => {
+				document.body.innerHTML = '<label for="name">Name <input id="name"></label>';
+				const label = document.querySelector('label');
+
+				expect(document.querySelector('input').labels.length).toBe(1);
+				expect(document.querySelector('input').labels[0] === label).toBe(true);
+			});
+
+			it('Returns the enclosing label of a select element.', () => {
+				document.body.innerHTML = '<label>Pick <select></select></label>';
+				const label = document.querySelector('label');
+
+				expect(document.querySelector('select').labels.length).toBe(1);
+				expect(document.querySelector('select').labels[0] === label).toBe(true);
 			});
 		});
 	});

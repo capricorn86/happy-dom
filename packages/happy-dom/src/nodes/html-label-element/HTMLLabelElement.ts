@@ -82,6 +82,7 @@ export default class HTMLLabelElement extends HTMLElement {
 						return null;
 				}
 			}
+			return null;
 		}
 		return <HTMLInputElement | null>(
 			this.querySelector('button,input:not([type="hidden"]),meter,output,progress,select,textarea')

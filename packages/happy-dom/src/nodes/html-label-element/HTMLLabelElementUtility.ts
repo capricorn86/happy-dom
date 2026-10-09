@@ -34,7 +34,15 @@ export default class HTMLLabelElementUtility {
 		let parent = element[PropertySymbol.parentNode];
 		while (parent) {
 			if ((<Element>parent)['tagName'] === 'LABEL') {
-				labels.push(<HTMLLabelElement>parent);
+				// An enclosing label only labels its labeled control ("for" target or first labelable descendant).
+				const control = (<HTMLLabelElement>parent).control;
+				if (
+					control &&
+					control === (element[PropertySymbol.proxy] || element) &&
+					!labels.includes(<HTMLLabelElement>parent)
+				) {
+					labels.push(<HTMLLabelElement>parent);
+				}
 				break;
 			}
 			parent = parent[PropertySymbol.parentNode];
