@@ -155,7 +155,7 @@ export default class History {
 			formData: history.currentItem.formData || null
 		});
 
-		location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.href);
+		location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.href, false);
 	}
 
 	/**
@@ -205,7 +205,7 @@ export default class History {
 		});
 
 		if (url) {
-			location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.href);
+			location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.href, false);
 		}
 	}
 

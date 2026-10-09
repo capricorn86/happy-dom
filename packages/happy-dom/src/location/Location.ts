@@ -266,8 +266,13 @@ export default class Location {
 	 *
 	 * @param browserFrame Browser frame that must match the current one as validation.
 	 * @param url URL.
+	 * @param [dispatchHashChange] Dispatches a "hashchange" event if the hash changes. History.pushState() and History.replaceState() should not dispatch it.
 	 */
-	public [PropertySymbol.setURL](browserFrame: IBrowserFrame, url: string): void {
+	public [PropertySymbol.setURL](
+		browserFrame: IBrowserFrame,
+		url: string,
+		dispatchHashChange = true
+	): void {
 		if (!this.#browserFrame) {
 			return;
 		}
@@ -282,9 +287,12 @@ export default class Location {
 		this.#url.href = url;
 
 		if (this.#url.hash !== oldHash) {
+			this.#browserFrame?.window?.document?.[PropertySymbol.clearCache]();
+			if (!dispatchHashChange) {
+				return;
+			}
 			const newURL = this.#url.href;
 			this.#hashChangeEvents.push(new HashChangeEvent('hashchange', { oldURL, newURL }));
-			this.#browserFrame?.window?.document?.[PropertySymbol.clearCache]();
 			if (this.#hashChangeTimeout) {
 				this.#browserFrame.window?.clearTimeout(this.#hashChangeTimeout);
 			}
