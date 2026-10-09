@@ -432,6 +432,40 @@ describe('HTMLParser', () => {
 			);
 		});
 
+		it('Ends script and style elements at their end tag when "<" and other characters come right before it.', () => {
+			const result = new HTMLParser(window).parse(
+				'<div><script>x=a<b;</script ><style>a<<b</STYLE><p></p></div>'
+			);
+			const div = result.children[0];
+
+			expect(div.children.length).toBe(3);
+			expect(div.children[0].tagName).toBe('SCRIPT');
+			expect(div.children[0].textContent).toBe('x=a<b;');
+			expect(div.children[1].tagName).toBe('STYLE');
+			expect(div.children[1].textContent).toBe('a<<b');
+			expect(div.children[2].tagName).toBe('P');
+
+			const result2 = <Document>(
+				new HTMLParser(window).parse(
+					'<script>a<Z</script><p id="after"></p>',
+					document.implementation.createHTMLDocument()
+				)
+			);
+
+			expect(result2.querySelector('script')?.textContent).toBe('a<Z');
+			expect(result2.getElementById('after')).not.toBe(null);
+
+			// Text that only looks like the end tag doesn't end the element.
+			const result3 = new HTMLParser(window).parse(
+				'<script>a<b</scriptx</script><script>a<b< /script></script><style>a<b</script></style>'
+			);
+
+			expect(result3.children.length).toBe(3);
+			expect(result3.children[0].textContent).toBe('a<b</scriptx');
+			expect(result3.children[1].textContent).toBe('a<b< /script>');
+			expect(result3.children[2].textContent).toBe('a<b</script>');
+		});
+
 		it('Does not parse the content of script and style elements.', () => {
 			const result = new HTMLParser(window).parse(
 				`<div>

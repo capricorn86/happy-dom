@@ -322,6 +322,10 @@ export default class HTMLParser {
 							match[2],
 							html.substring(this.startTagIndex, match.index)
 						);
+					} else if (match[1]?.endsWith('<')) {
+						// Start tags are not parsed in raw text, but the start tag pattern can run over the "<" of the end tag (e.g. "<b<" in "a<b</script>").
+						// The tag name stops before "/", so we only need to step back one character to be able to match the end tag.
+						this.markupRegExp.lastIndex--;
 					}
 					break;
 			}
