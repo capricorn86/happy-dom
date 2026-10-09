@@ -210,6 +210,73 @@ describe('HTMLLabelElement', () => {
 			expect(div.querySelector('input')?.checked).toBe(true);
 		});
 
+		it("Doesn't click the control when clicking an interactive content descendant of the label.", () => {
+			const div = document.createElement('div');
+			div.innerHTML = `
+                <label>
+                  <input type="checkbox">
+                  <button type="button">Help</button>
+                </label>
+            `;
+			let inputClickCount = 0;
+
+			document.body.appendChild(div);
+
+			div.querySelector('input')?.addEventListener('click', () => inputClickCount++);
+
+			div.querySelector('button')?.click();
+
+			expect(inputClickCount).toBe(0);
+			expect(div.querySelector('input')?.checked).toBe(false);
+		});
+
+		it("Doesn't click the control when clicking inside an interactive content descendant of the label.", () => {
+			const div = document.createElement('div');
+			div.innerHTML = `
+                <label>
+                  <input type="checkbox">
+                  <a href="#terms"><span>Terms</span></a>
+                </label>
+            `;
+			let inputClickCount = 0;
+
+			document.body.appendChild(div);
+
+			div.querySelector('input')?.addEventListener('click', () => inputClickCount++);
+
+			div.querySelector('span')?.click();
+
+			expect(inputClickCount).toBe(0);
+			expect(div.querySelector('input')?.checked).toBe(false);
+		});
+
+		it("Doesn't forward a click that a labelled button sends to an input inside the label.", () => {
+			const div = document.createElement('div');
+			div.innerHTML = `
+                <label for="checkbox">
+                  <button id="checkbox" type="button"></button>
+                  <input type="checkbox">
+                  <span>Accept</span>
+                </label>
+            `;
+			let buttonClickCount = 0;
+
+			document.body.appendChild(div);
+
+			const input = <HTMLInputElement>div.querySelector('input');
+
+			// A custom checkbox clicks its native input to keep it in sync.
+			div.querySelector('button')?.addEventListener('click', () => {
+				buttonClickCount++;
+				input.click();
+			});
+
+			div.querySelector('button')?.click();
+
+			expect(buttonClickCount).toBe(1);
+			expect(input.checked).toBe(true);
+		});
+
 		describe('get labels()', () => {
 			it('Does not duplicate entries on repeated reads.', () => {
 				const input = document.createElement('input');

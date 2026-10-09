@@ -6,6 +6,9 @@ import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import type HTMLInputElement from '../html-input-element/HTMLInputElement.js';
 import type Document from '../document/Document.js';
 import MouseEvent from '../../event/events/MouseEvent.js';
+import type Node from '../node/Node.js';
+import NodeTypeEnum from '../node/NodeTypeEnum.js';
+import type Element from '../element/Element.js';
 import type HTMLButtonElement from '../html-button-element/HTMLButtonElement.js';
 import type HTMLMeterElement from '../html-meter-element/HTMLMeterElement.js';
 import type HTMLOutputElement from '../html-output-element/HTMLOutputElement.js';
@@ -118,11 +121,68 @@ export default class HTMLLabelElement extends HTMLElement {
 			event instanceof MouseEvent
 		) {
 			const control = this.control;
-			if (control && event.target !== control) {
+			if (
+				control &&
+				event.target !== control &&
+				!this.#isInInteractiveContent(<Node>event.target)
+			) {
 				control.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
 			}
 		}
 
 		return returnValue;
+	}
+
+	/**
+	 * Returns "true" if the node is, or is inside, an interactive content descendant of the label.
+	 *
+	 * Clicks on interactive content inside a label do not activate the label's control.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/forms.html#the-label-element
+	 * @param node Node.
+	 * @returns "true" if the node is in interactive content.
+	 */
+	#isInInteractiveContent(node: Node | null): boolean {
+		while (node && node !== this) {
+			if (
+				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
+				this.#isInteractiveContent(<Element>node)
+			) {
+				return true;
+			}
+			node = node[PropertySymbol.parentNode];
+		}
+		return false;
+	}
+
+	/**
+	 * Returns "true" if the element is interactive content.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/dom.html#interactive-content
+	 * @param element Element.
+	 * @returns "true" if the element is interactive content.
+	 */
+	#isInteractiveContent(element: Element): boolean {
+		switch (element[PropertySymbol.tagName]) {
+			case 'BUTTON':
+			case 'DETAILS':
+			case 'EMBED':
+			case 'IFRAME':
+			case 'LABEL':
+			case 'SELECT':
+			case 'TEXTAREA':
+				return true;
+			case 'A':
+				return element.hasAttribute('href');
+			case 'AUDIO':
+			case 'VIDEO':
+				return element.hasAttribute('controls');
+			case 'IMG':
+				return element.hasAttribute('usemap');
+			case 'INPUT':
+				return (<HTMLInputElement>element).type !== 'hidden';
+			default:
+				return false;
+		}
 	}
 }
