@@ -47,4 +47,13 @@ describe('IntersectionObserver', () => {
 			expect(observer.takeRecords()).toEqual([]);
 		});
 	});
+
+	describe('prototype', () => {
+		it('Has enumerable members.', () => {
+			expect(window.IntersectionObserver.prototype.propertyIsEnumerable('observe')).toBe(true);
+			expect(window.IntersectionObserver.prototype.propertyIsEnumerable('unobserve')).toBe(true);
+			expect(window.IntersectionObserver.prototype.propertyIsEnumerable('disconnect')).toBe(true);
+			expect(window.IntersectionObserver.prototype.propertyIsEnumerable('takeRecords')).toBe(true);
+		});
+	});
 });
