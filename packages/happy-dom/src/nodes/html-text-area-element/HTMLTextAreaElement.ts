@@ -11,6 +11,53 @@ import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtili
 import type NodeList from '../node/NodeList.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 
+const DEFAULT_COLS = 20;
+const DEFAULT_ROWS = 2;
+const MAX_POSITIVE_INTEGER = 2147483647;
+
+/**
+ * Returns the value of an attribute that is limited to only positive numbers with fallback.
+ *
+ * @see https://html.spec.whatwg.org/multipage/common-dom-interfaces.html#limited-to-only-non-negative-numbers-greater-than-zero-with-fallback
+ * @param element Element.
+ * @param name Attribute name.
+ * @param defaultValue Default value.
+ * @returns Attribute value as a positive integer, or the default value if it is missing or invalid.
+ */
+function getPositiveIntegerAttribute(
+	element: HTMLTextAreaElement,
+	name: string,
+	defaultValue: number
+): number {
+	const attribute = element.getAttribute(name);
+	if (attribute === null) {
+		return defaultValue;
+	}
+	const value = parseInt(attribute, 10);
+	return value > 0 && value <= MAX_POSITIVE_INTEGER ? value : defaultValue;
+}
+
+/**
+ * Sets an attribute that is limited to only positive numbers with fallback.
+ *
+ * @param element Element.
+ * @param name Attribute name.
+ * @param value Value.
+ * @param defaultValue Default value.
+ */
+function setPositiveIntegerAttribute(
+	element: HTMLTextAreaElement,
+	name: string,
+	value: number,
+	defaultValue: number
+): void {
+	const integer = Math.trunc(Number(value));
+	element.setAttribute(
+		name,
+		String(integer > 0 && integer <= MAX_POSITIVE_INTEGER ? integer : defaultValue)
+	);
+}
+
 /**
  * HTML Text Area Element.
  *
@@ -211,8 +258,8 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 *
 	 * @returns Cols.
 	 */
-	public get cols(): string {
-		return this.getAttribute('cols') || '';
+	public get cols(): number {
+		return getPositiveIntegerAttribute(this, 'cols', DEFAULT_COLS);
 	}
 
 	/**
@@ -220,8 +267,8 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 *
 	 * @param cols Cols.
 	 */
-	public set cols(cols: string) {
-		this.setAttribute('cols', cols);
+	public set cols(cols: number) {
+		setPositiveIntegerAttribute(this, 'cols', cols, DEFAULT_COLS);
 	}
 
 	/**
@@ -229,8 +276,8 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 *
 	 * @returns Rows.
 	 */
-	public get rows(): string {
-		return this.getAttribute('rows') || '';
+	public get rows(): number {
+		return getPositiveIntegerAttribute(this, 'rows', DEFAULT_ROWS);
 	}
 
 	/**
@@ -238,8 +285,8 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 *
 	 * @param rows Rows.
 	 */
-	public set rows(rows: string) {
-		this.setAttribute('rows', rows);
+	public set rows(rows: number) {
+		setPositiveIntegerAttribute(this, 'rows', rows, DEFAULT_ROWS);
 	}
 
 	/**
