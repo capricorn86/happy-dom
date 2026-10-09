@@ -278,7 +278,7 @@ export default class SelectorItem {
 					? { priorityWeight: 10 }
 					: null;
 			case 'empty':
-				return !(<Element>element)[PropertySymbol.elementArray].length
+				return !(<Element>element)[PropertySymbol.elementArray].length && !element.textContent
 					? { priorityWeight: 10 }
 					: null;
 			case 'root':
