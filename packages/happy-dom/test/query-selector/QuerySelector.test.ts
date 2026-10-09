@@ -1541,6 +1541,53 @@ describe('QuerySelector', () => {
 			expect(normalLinks.length).toBe(1);
 		});
 
+		it('Returns all elements for a pseudo selector with round brackets inside quoted attribute values (issue #2077)', () => {
+			const div = document.createElement('div');
+
+			div.innerHTML = `
+				<span id="a" attr2="other" attr3="(val3)"></span>
+				<span id="b" attr2="val2" attr3="(val3)"></span>
+				<span id="c" attr2="other" attr3="val3"></span>
+				<span id="d" class="x" title="x)"></span>
+				<span id="e" class="y" title="x)"></span>
+				<span id="f" class="z" title="x)"></span>
+				<span id="g" data-a=")" class="k"></span>
+				<span id="h" data-a=")"></span>
+			`;
+
+			const ids = (selector: string): string[] =>
+				Array.from(div.querySelectorAll(selector)).map((element) => element.id);
+
+			// The selector from the issue.
+			expect(ids(':not([attr2="val2"])[attr3="(val3)"]')).toEqual(['a']);
+			expect(ids(":not([attr2='val2'])[attr3='(val3)']")).toEqual(['a']);
+
+			// Quoted round brackets before the pseudo selector.
+			expect(ids('[data-a=")"]:not(.k)')).toEqual(['h']);
+			expect(ids("[data-a=')']:not(.k)")).toEqual(['h']);
+
+			// Quoted round brackets after a pseudo selector with a selector list.
+			expect(ids(':is(.x, .y)[title="x)"]')).toEqual(['d', 'e']);
+
+			// Quoted round brackets inside the pseudo selector arguments.
+			expect(ids(':not([data-a=")"])[title="x)"]')).toEqual(['d', 'e', 'f']);
+			expect(ids(':not([attr3="(val3)"]):not([attr3="val3"])[attr2]')).toEqual([]);
+			expect(ids(':not([attr3="(val3)"])[attr3]')).toEqual(['c']);
+
+			// Nested pseudo selectors.
+			expect(ids(':not(:is(.x, [data-a=")"]))[title="x)"]')).toEqual(['e', 'f']);
+			expect(ids('span:not(:is(.x, .y)):not([attr3="(val3)"])[title="x)"]')).toEqual(['f']);
+		});
+
+		it('Throws an error for a pseudo selector with a missing end parenthesis after a quoted round bracket', () => {
+			const div = document.createElement('div');
+
+			expect(() => div.querySelectorAll(':not([data-a=")"]')).toThrow();
+			expect(() => div.querySelectorAll(':not([data-a="("]')).toThrow();
+			expect(() => div.querySelectorAll(':not([data-a=")"])[title="x"]:is(')).toThrow();
+			expect(() => div.querySelectorAll(':not()')).toThrow();
+		});
+
 		it('Returns all elements for pseudo selector ":scope"', () => {
 			const div = document.createElement('div');
 

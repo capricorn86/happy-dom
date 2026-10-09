@@ -40,20 +40,12 @@ const SELECTOR_GROUP_REGEXP = /(\s*[\s,+>~]\s*)|([\[\]\(\)"'])/g;
  * Group 18: Attribute operator when not using apostrophe (e.g. "~")
  * Group 19: Attribute value when not using apostrophe (e.g. "value1")
  * Group 20: Attribute value capture characters (e.g. "s") (should be ignored)
- * Group 21: Pseudo name when arguments (e.g. "nth-child")
+ * Group 21: Pseudo name when arguments (e.g. "nth-child"). Only the name and the opening parenthesis are matched. The arguments are read using getClosingParenthesisIndex().
  * Group 22: Pseudo name when no arguments (e.g. "empty")
  * Group 23: Pseudo element (e.g. "::after", "::-webkit-inner-spin-button").
  */
 const SELECTOR_REGEXP =
-	/(\*)|([a-zA-Z0-9\u00A0-\uFFFF-]+)|#(([a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\.(([a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\[(([a-zA-Z0-9-_]|\\.)+)\]|\[(([a-zA-Z0-9-_]|\\.)+)\s*([~|^$*]{0,1})\s*=\s*("([^"]*)"|'([^']*)')\s*(s|i){0,1}\]|\[(([a-zA-Z0-9-_]|\\.)+)\s*([~|^$*]{0,1})\s*=\s*(([a-zA-Z0-9\u00A0-\uFFFF_¤£-]|\\.)+)\]|:([a-zA-Z-]+)\s*\(.+\)|:([a-zA-Z-]+)|::([a-zA-Z-]+)/g;
-
-/**
- * Selector pseudo RegExp.
- *
- * Group 1: Pseudo name (e.g. "nth-child")
- * Group 2: Parentheses or brackets.
- */
-const SELECTOR_PSEUDO_REGEXP = /:([a-zA-Z-]+)|([()])/g;
+	/(\*)|([a-zA-Z0-9\u00A0-\uFFFF-]+)|#(([a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\.(([a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\[(([a-zA-Z0-9-_]|\\.)+)\]|\[(([a-zA-Z0-9-_]|\\.)+)\s*([~|^$*]{0,1})\s*=\s*("([^"]*)"|'([^']*)')\s*(s|i){0,1}\]|\[(([a-zA-Z0-9-_]|\\.)+)\s*([~|^$*]{0,1})\s*=\s*(([a-zA-Z0-9\u00A0-\uFFFF_¤£-]|\\.)+)\]|:([a-zA-Z-]+)\s*\(|:([a-zA-Z-]+)|::([a-zA-Z-]+)/g;
 
 /**
  * Escaped Character RegExp.
@@ -418,47 +410,23 @@ export default class SelectorParser {
 			} else if (match[21]) {
 				// Matches pseudo selectors with arguments, e.g. ":nth-child(2n+1)" or ":not(.class)"
 
-				const pseudoRegExp = new RegExp(SELECTOR_PSEUDO_REGEXP);
-				let pseudoMatch: null | RegExpExecArray = null;
-				let name: string | null = null;
-				let depth = 0;
-				let pseudoStartIndex = -1;
+				const argumentsStartIndex = regexp.lastIndex;
+				const closingIndex = SelectorParser.getClosingParenthesisIndex(
+					selector,
+					argumentsStartIndex
+				);
 
-				while ((pseudoMatch = pseudoRegExp.exec(match[0]))) {
-					if (pseudoMatch[1]) {
-						if (depth === 0) {
-							name = pseudoMatch[1];
-						}
-					} else if (pseudoMatch[2]) {
-						if (pseudoMatch[2] === '(') {
-							if (depth === 0) {
-								pseudoStartIndex = pseudoRegExp.lastIndex;
-							}
-							depth++;
-						} else if (pseudoMatch[2] === ')') {
-							depth--;
-
-							if (depth < 0) {
-								// More closing parentheses than opening parentheses, invalid selector
-								return null;
-							}
-
-							if (depth === 0) {
-								// Missing start parenthesis or name for pseudo selector, invalid selector
-								if (pseudoStartIndex === -1 || !name) {
-									return null;
-								}
-
-								selectorItem.pseudos = selectorItem.pseudos || [];
-								selectorItem.pseudos.push(
-									this.getPseudo(name, match[0].substring(pseudoStartIndex, pseudoMatch.index))
-								);
-								name = null;
-								pseudoStartIndex = -1;
-							}
-						}
-					}
+				// Missing end parenthesis or empty arguments, invalid selector
+				if (closingIndex === -1 || closingIndex === argumentsStartIndex) {
+					return null;
 				}
+
+				selectorItem.pseudos = selectorItem.pseudos || [];
+				selectorItem.pseudos.push(
+					this.getPseudo(match[21], selector.substring(argumentsStartIndex, closingIndex))
+				);
+
+				regexp.lastIndex = closingIndex + 1;
 			} else if (match[22]) {
 				// Matches pseudo selectors without arguments, e.g. ":empty" or ":checked"
 
@@ -677,6 +645,41 @@ export default class SelectorParser {
 		}
 
 		return (n) => n > partB - 1;
+	}
+
+	/**
+	 * Returns the index of the parenthesis closing the arguments of a pseudo selector.
+	 *
+	 * Parentheses inside quoted strings (e.g. '[attr="(value)"]') and escaped characters are ignored.
+	 *
+	 * @param selector Selector.
+	 * @param argumentsStartIndex Index of the first character after the opening parenthesis.
+	 * @returns Index of the closing parenthesis, or -1 if there is none.
+	 */
+	private static getClosingParenthesisIndex(selector: string, argumentsStartIndex: number): number {
+		let depth = 1;
+		let quote: string | null = null;
+
+		for (let i = argumentsStartIndex; i < selector.length; i++) {
+			const char = selector[i];
+
+			if (char === '\\') {
+				// Skips the escaped character.
+				i++;
+			} else if (quote) {
+				if (char === quote) {
+					quote = null;
+				}
+			} else if (char === '"' || char === "'") {
+				quote = char;
+			} else if (char === '(') {
+				depth++;
+			} else if (char === ')' && --depth === 0) {
+				return i;
+			}
+		}
+
+		return -1;
 	}
 
 	/**
