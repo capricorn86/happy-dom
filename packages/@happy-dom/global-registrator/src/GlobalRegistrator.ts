@@ -4,6 +4,43 @@ import type { IOptionalBrowserSettings } from 'happy-dom';
 const IGNORE_LIST = ['constructor', 'undefined', 'NaN', 'global', 'globalThis'];
 
 /**
+ * Safely gets a property value from a descriptor, handling getters that may throw.
+ *
+ * This is needed for forward compatibility with Node 26+ where localStorage/sessionStorage
+ * will throw SecurityError when accessed without the --localstorage-file flag.
+ *
+ * Background:
+ * - Node 25.2.0 introduced spec-compliant throwing behavior for localStorage
+ * - Node 25.2.1 reverted this due to ecosystem impact (too breaking for semver-minor)
+ * - The throwing behavior is planned to return in Node 26.0.0
+ *
+ * @see https://nodejs.org/en/blog/release/v25.2.1
+ * @see https://github.com/capricorn86/happy-dom/issues/1950
+ * @param descriptor Property descriptor.
+ * @returns Object with value and whether accessing it threw an error.
+ */
+function safeGetPropertyValue(descriptor: PropertyDescriptor | undefined): {
+	value: unknown;
+	threw: boolean;
+} {
+	if (!descriptor) {
+		return { value: undefined, threw: false };
+	}
+
+	// If it has a getter, try to invoke it safely
+	if (descriptor.get) {
+		try {
+			return { value: descriptor.get.call(globalThis), threw: false };
+		} catch {
+			// Getter threw (e.g., Node 26+ localStorage without --localstorage-file)
+			return { value: undefined, threw: true };
+		}
+	}
+
+	return { value: descriptor.value, threw: false };
+}
+
+/**
  *
  */
 export default class GlobalRegistrator {
@@ -48,10 +85,15 @@ export default class GlobalRegistrator {
 			if (!IGNORE_LIST.includes(key)) {
 				const windowPropertyDescriptor = propertyDescriptors[key];
 				const globalPropertyDescriptor = Object.getOwnPropertyDescriptor(globalThis, key);
+				const { value: globalValue, threw: globalThrew } =
+					safeGetPropertyValue(globalPropertyDescriptor);
 
+				// Override if: no global value, values differ, OR accessing global threw an error
+				// (e.g., Node 26+ localStorage/sessionStorage without --localstorage-file)
 				if (
-					globalPropertyDescriptor?.value === undefined ||
-					globalPropertyDescriptor?.value !== windowPropertyDescriptor.value
+					globalValue === undefined ||
+					globalThrew ||
+					globalValue !== windowPropertyDescriptor.value
 				) {
 					this.#registered[key] = globalPropertyDescriptor || null;
 
