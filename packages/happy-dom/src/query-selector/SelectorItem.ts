@@ -1,6 +1,7 @@
 import * as PropertySymbol from '../PropertySymbol.js';
 import type Element from '../nodes/element/Element.js';
 import type HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
+import type HTMLOptionElement from '../nodes/html-option-element/HTMLOptionElement.js';
 import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
 import type ISelectorAttribute from './ISelectorAttribute.js';
 import type ISelectorMatch from './ISelectorMatch.js';
@@ -270,9 +271,13 @@ export default class SelectorItem {
 				}
 				return isFound ? { priorityWeight: 10 } : null;
 			case 'checked':
-				return element[PropertySymbol.tagName] === 'INPUT' && (<HTMLInputElement>element).checked
-					? { priorityWeight: 10 }
-					: null;
+				if (element[PropertySymbol.tagName] === 'INPUT') {
+					return (<HTMLInputElement>element).checked ? { priorityWeight: 10 } : null;
+				}
+				if (element[PropertySymbol.tagName] === 'OPTION') {
+					return (<HTMLOptionElement>element).selected ? { priorityWeight: 10 } : null;
+				}
+				return null;
 			case 'disabled':
 				return 'disabled' in element && element.hasAttribute('disabled')
 					? { priorityWeight: 10 }
