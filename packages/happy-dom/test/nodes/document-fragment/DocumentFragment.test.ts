@@ -26,6 +26,12 @@ describe('DocumentFragment', () => {
 		vi.restoreAllMocks();
 	});
 
+	describe('get nodeName()', () => {
+		it('Returns "#document-fragment".', () => {
+			expect(documentFragment.nodeName).toBe('#document-fragment');
+		});
+	});
+
 	describe('get children()', () => {
 		it('Returns Element child nodes.', () => {
 			const div = document.createElement('div');
