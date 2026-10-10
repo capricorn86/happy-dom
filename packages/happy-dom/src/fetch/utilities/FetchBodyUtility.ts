@@ -242,19 +242,32 @@ export default class FetchBodyUtility {
 	 * @returns ReadableStream
 	 */
 	public static nodeToWebStream(nodeStream: Stream): ReadableStream {
+		// The web stream can be cancelled before the Node.js stream has ended.
+		let isDone = false;
 		const readableStream = new ReadableStream({
 			start(controller) {
 				nodeStream.on('data', (chunk) => {
-					controller.enqueue(chunk);
+					if (!isDone) {
+						controller.enqueue(chunk);
+					}
 				});
 
 				nodeStream.on('end', () => {
-					controller.close();
+					if (!isDone) {
+						isDone = true;
+						controller.close();
+					}
 				});
 
 				nodeStream.on('error', (err) => {
-					controller.error(err);
+					if (!isDone) {
+						isDone = true;
+						controller.error(err);
+					}
 				});
+			},
+			cancel() {
+				isDone = true;
 			}
 		});
 		(<any>readableStream)[PropertySymbol.nodeStream] = nodeStream;
