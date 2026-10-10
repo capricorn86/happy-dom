@@ -1034,6 +1034,27 @@ describe('HTMLFormElement', () => {
 	});
 
 	describe('requestSubmit()', () => {
+		it('Submits a decimal number after its value attribute is synchronized with an edit.', () => {
+			// Arrange
+			const input = document.createElement('input');
+			input.type = 'number';
+			input.defaultValue = '1';
+			input.name = 'quantity';
+			element.appendChild(input);
+			document.body.appendChild(element);
+			const submitListener = vi.fn((event: Event) => event.preventDefault());
+			element.addEventListener('submit', submitListener);
+
+			// Act
+			input.value = '1.01';
+			input.defaultValue = input.value;
+			element.requestSubmit();
+
+			// Assert
+			expect(submitListener).toHaveBeenCalledTimes(1);
+			expect(new window.FormData(element).get('quantity')).toBe('1.01');
+		});
+
 		it('Validates form and triggers a "submit" event when valid.', () => {
 			element.innerHTML = `
                 <div>

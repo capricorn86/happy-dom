@@ -142,6 +142,125 @@ describe('ValidityState', () => {
 	});
 
 	describe('get stepMismatch()', () => {
+		describe.each(['number', 'range'])('"%s" input step bases', (type) => {
+			it.each([
+				['the value attribute', '', '1.01', '', '1.01'],
+				['increments from the value attribute', '', '1.01', '', '2.01'],
+				['increments from min', '1', '', '2', '3'],
+				['min before the value attribute', '1', '0', '2', '3'],
+				['a zero min before the value attribute', '0', '1', '2', '2'],
+				['fractional increments from min', '1', '', '0.1', '1.1'],
+				['fractional increments from the value attribute', '', '0.1', '0.2', '0.3'],
+				['a scientific-notation base', '', '1e-2', '0.1', '0.11']
+			])('Accepts values aligned with %s.', (_description, min, defaultValue, step, value) => {
+				// Arrange
+				const input = document.createElement('input');
+				input.type = type;
+				input.min = min;
+				input.defaultValue = defaultValue;
+				input.step = step;
+
+				// Act
+				input.value = value;
+
+				// Assert
+				expect(input.validity.stepMismatch).toBe(false);
+			});
+		});
+
+		it.each(['', 'invalid', '+1', ' 1', '1\n', '1\r', '1.', '0x1', 'Infinity', '1e309'])(
+			'Falls back to the value attribute when min="%s" is not a valid number.',
+			(min) => {
+				// Arrange
+				const input = document.createElement('input');
+				input.type = 'number';
+				input.min = min;
+				input.defaultValue = '1.5';
+
+				// Act
+				input.value = '2.5';
+
+				// Assert
+				expect(input.validity.stepMismatch).toBe(false);
+			}
+		);
+
+		it.each(['', 'invalid', '+1', ' 1', '1\n', '1\r', '1.', '0x1', 'Infinity', '1e309'])(
+			'Uses a zero base when value="%s" is not a valid number.',
+			(defaultValue) => {
+				// Arrange
+				const input = document.createElement('input');
+				input.type = 'number';
+				input.defaultValue = defaultValue;
+				input.step = '2';
+
+				// Act
+				input.value = '2';
+
+				// Assert
+				expect(input.validity.stepMismatch).toBe(false);
+			}
+		);
+
+		it.each(['', '0', '-2', 'invalid', '2x', ' 2', '2\n', '2\r', '0x2'])(
+			'Uses the default step when step="%s" does not specify a positive number.',
+			(step) => {
+				// Arrange
+				const input = document.createElement('input');
+				input.type = 'number';
+				input.step = step;
+
+				// Act
+				input.value = '3';
+
+				// Assert
+				expect(input.validity.stepMismatch).toBe(false);
+			}
+		);
+
+		it.each(['any', 'ANY', 'Any'])('Allows fractional values with step="%s".', (step) => {
+			// Arrange
+			const input = document.createElement('input');
+			input.type = 'number';
+			input.step = step;
+
+			// Act
+			input.value = '1.01';
+
+			// Assert
+			expect(input.validity.stepMismatch).toBe(false);
+		});
+
+		it('Does not apply a fractional step base to an empty number input.', () => {
+			// Arrange
+			const input = document.createElement('input');
+			input.type = 'number';
+			input.min = '0.5';
+
+			// Act
+			input.value = '';
+
+			// Assert
+			expect(input.validity.stepMismatch).toBe(false);
+		});
+
+		it.each(['0.11', '0.30001'])(
+			'Rejects %s when it is not aligned with the fractional value-attribute base.',
+			(value) => {
+				// Arrange
+				const input = document.createElement('input');
+				input.type = 'number';
+				input.defaultValue = '0.1';
+				input.step = '0.2';
+
+				// Act
+				input.value = value;
+
+				// Assert
+				expect(input.validity.stepMismatch).toBe(true);
+			}
+		);
+
 		it('Returns "true" if a "number" input field has "step" set to a non-steppable value.', () => {
 			const input = <HTMLInputElement>document.createElement('input');
 
