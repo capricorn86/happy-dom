@@ -29,6 +29,44 @@ describe('CSSValueFormatter', () => {
 				expect(parsedColor).toStrictEqual(namedColor);
 			});
 		}
+
+		it('Converts hexadecimal colors to rgb().', () => {
+			expect(CSSValueFormatter.getColor('#000')).toBe('rgb(0, 0, 0)');
+			expect(CSSValueFormatter.getColor('#abc')).toBe('rgb(170, 187, 204)');
+			expect(CSSValueFormatter.getColor('#ffffff')).toBe('rgb(255, 255, 255)');
+			expect(CSSValueFormatter.getColor('#ffa015')).toBe('rgb(255, 160, 21)');
+			expect(CSSValueFormatter.getColor('#32a1ce')).toBe('rgb(50, 161, 206)');
+		});
+
+		it('Converts uppercase hexadecimal colors to rgb().', () => {
+			expect(CSSValueFormatter.getColor('#ABCDEF')).toBe('rgb(171, 205, 239)');
+		});
+
+		it('Converts hexadecimal colors with an alpha channel to rgba().', () => {
+			expect(CSSValueFormatter.getColor('#0000')).toBe('rgba(0, 0, 0, 0)');
+			expect(CSSValueFormatter.getColor('#0f08')).toBe('rgba(0, 255, 0, 0.533)');
+			expect(CSSValueFormatter.getColor('#abcd')).toBe('rgba(170, 187, 204, 0.867)');
+			expect(CSSValueFormatter.getColor('#00000080')).toBe('rgba(0, 0, 0, 0.5)');
+			expect(CSSValueFormatter.getColor('#12345678')).toBe('rgba(18, 52, 86, 0.47)');
+		});
+
+		it('Drops a fully opaque alpha channel and serializes as rgb().', () => {
+			expect(CSSValueFormatter.getColor('#0f0f')).toBe('rgb(0, 255, 0)');
+			expect(CSSValueFormatter.getColor('#000000ff')).toBe('rgb(0, 0, 0)');
+		});
+
+		it('Normalizes whitespace in rgb()/rgba()/hsl()/hsla() colors.', () => {
+			expect(CSSValueFormatter.getColor('rgb(135,200,150)')).toBe('rgb(135, 200, 150)');
+			expect(CSSValueFormatter.getColor('rgba(135,200,150,0.5)')).toBe('rgba(135, 200, 150, 0.5)');
+			expect(CSSValueFormatter.getColor('hsla(240,100%,50%,0.8)')).toBe(
+				'hsla(240, 100%, 50%, 0.8)'
+			);
+		});
+
+		it('Returns null for invalid colors.', () => {
+			expect(CSSValueFormatter.getColor('#12345')).toBe(null);
+			expect(CSSValueFormatter.getColor('not-a-color')).toBe(null);
+		});
 	});
 
 	describe('getGradient()', () => {
