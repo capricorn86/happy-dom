@@ -58,13 +58,11 @@ export default class FormData implements Iterable<[string, string | File]> {
 		for (const item of items) {
 			const name = item.name;
 
-			if (name) {
+			// Disabled form controls are never part of the entry list, no matter their type.
+			// @see https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#constructing-the-form-data-set
+			if (name && !(<HTMLInputElement>item).disabled) {
 				switch (item[PropertySymbol.tagName]) {
 					case 'INPUT':
-						if ((<HTMLInputElement>item).disabled) {
-							break;
-						}
-
 						switch ((<HTMLInputElement>item).type) {
 							case 'file':
 								if ((<HTMLInputElement>item)[PropertySymbol.files].length === 0) {
