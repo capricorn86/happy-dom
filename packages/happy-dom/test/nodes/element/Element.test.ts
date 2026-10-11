@@ -22,6 +22,9 @@ import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import DOMExceptionNameEnum from '../../../src/exception/DOMExceptionNameEnum.js';
 import DOMTokenList from '../../../src/dom/DOMTokenList.js';
+import Fetch from '../../../src/fetch/Fetch.js';
+import ResourceFetch from '../../../src/fetch/ResourceFetch.js';
+import type IOptionalBrowserSettings from '../../../src/browser/types/IOptionalBrowserSettings.js';
 
 const NAMESPACE_URI = 'https://test.test';
 

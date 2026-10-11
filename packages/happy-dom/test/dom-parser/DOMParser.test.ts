@@ -2,10 +2,13 @@ import Window from '../../src/window/Window.js';
 import HTMLSerializer from '../../src/html-serializer/HTMLSerializer.js';
 import type DOMParser from '../../src/dom-parser/DOMParser.js';
 import DOMParserHTML from './data/DOMParserHTML.js';
-import { beforeEach, describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import XMLSerializer from '../../src/xml-serializer/XMLSerializer.js';
 import HTMLElement from '../../src/nodes/html-element/HTMLElement.js';
 import type Document from '../../src/nodes/document/Document.js';
+import Fetch from '../../src/fetch/Fetch.js';
+import ResourceFetch from '../../src/fetch/ResourceFetch.js';
+import type IOptionalBrowserSettings from '../../src/browser/types/IOptionalBrowserSettings.js';
 
 describe('DOMParser', () => {
 	let domParser: DOMParser;

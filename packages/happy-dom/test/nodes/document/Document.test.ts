@@ -535,6 +535,7 @@ describe('Document', () => {
 
 	describe('get styleSheets()', () => {
 		it('Returns all stylesheets loaded to the document.', async () => {
+			window.happyDOM.settings.enableCSSFileLoading = true;
 			await new Promise((resolve) => {
 				const textNode = document.createTextNode(
 					'body { background-color: red }\ndiv { background-color: green }'
@@ -1616,6 +1617,7 @@ describe('Document', () => {
 		});
 
 		it('Triggers "readystatechange" event when all resources have been loaded.', async () => {
+			window.happyDOM.settings.enableCSSFileLoading = true;
 			await new Promise((resolve) => {
 				const cssURL = 'https://localhost:8080/path/to/file.css';
 				const jsURL = 'https://localhost:8080/path/to/file.js';
