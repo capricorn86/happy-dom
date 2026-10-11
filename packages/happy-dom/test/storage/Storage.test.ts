@@ -185,6 +185,38 @@ describe('Storage', () => {
 		});
 	});
 
+	describe('delete', () => {
+		it('Deletes a stored item.', () => {
+			storage.setItem('key1', 'value1');
+			storage['key2'] = 'value2';
+			expect(delete storage['key1']).toBe(true);
+			expect(Reflect.deleteProperty(storage, 'key2')).toBe(true);
+			expect(storage.length).toBe(0);
+			expect(storage.getItem('key1')).toBe(null);
+			expect(storage.getItem('key2')).toBe(null);
+			expect('key1' in storage).toBe(false);
+			expect(Object.keys(storage)).toEqual([]);
+		});
+
+		it('Deletes a method defined on the storage, so that the method of the prototype is used again.', () => {
+			storage.setItem('key1', 'value1');
+			storage.setItem('getItem', 'value2');
+
+			Object.defineProperty(storage, 'getItem', {
+				configurable: true,
+				writable: true,
+				value: () => 'own'
+			});
+
+			expect(storage.getItem('key1')).toBe('own');
+			expect(Reflect.deleteProperty(storage, 'getItem')).toBe(true);
+			expect(storage.getItem).toBe(Storage.prototype.getItem);
+			expect(storage.getItem('key1')).toBe('value1');
+			expect(storage.getItem('getItem')).toBe('value2');
+			expect(storage.length).toBe(2);
+		});
+	});
+
 	describe('vi.spyOn()', () => {
 		it('Should spy on a method.', () => {
 			const spy = vi.spyOn(storage, 'getItem');
@@ -208,6 +240,41 @@ describe('Storage', () => {
 			vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => 'mocked');
 
 			expect(storage.getItem('key1')).toBe('mocked');
+		});
+
+		it('Should be able to spy on prototype methods that have already been used on the storage.', () => {
+			storage.setItem('key1', 'value1');
+			expect(storage.getItem('key1')).toBe('value1');
+			expect(storage.length).toBe(1);
+
+			vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+				throw new Error('error');
+			});
+			vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => 'mocked');
+			vi.spyOn(Storage.prototype, 'length', 'get').mockReturnValue(10);
+
+			expect(() => storage.setItem('key1', 'value2')).toThrow('error');
+			expect(storage.getItem('key1')).toBe('mocked');
+			expect(storage.length).toBe(10);
+
+			vi.restoreAllMocks();
+
+			storage.setItem('key1', 'value2');
+			expect(storage.getItem('key1')).toBe('value2');
+			expect(storage.length).toBe(1);
+		});
+
+		it('Should restore a method spied on the storage.', () => {
+			storage.setItem('key1', 'value1');
+
+			const spy = vi.spyOn(storage, 'getItem').mockImplementation(() => 'mocked');
+
+			expect(storage.getItem('key1')).toBe('mocked');
+
+			spy.mockRestore();
+
+			expect(storage.getItem).toBe(Storage.prototype.getItem);
+			expect(storage.getItem('key1')).toBe('value1');
 		});
 	});
 });

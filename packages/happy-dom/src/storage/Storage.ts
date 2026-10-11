@@ -1,4 +1,3 @@
-import ClassMethodBinder from '../utilities/ClassMethodBinder.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 
 /**
@@ -15,12 +14,10 @@ export default class Storage {
 	constructor() {
 		const data = this[PropertySymbol.data];
 
-		const methodBinder = new ClassMethodBinder(this, [Storage]);
-
+		// Methods are not bound to the instance, so that they are looked up on Storage.prototype on every call.
 		return new Proxy(this, {
 			get: (target, property) => {
 				if (property in target || typeof property === 'symbol') {
-					methodBinder.bind(property);
 					return (<any>target)[property];
 				}
 				if (property in data) {
@@ -28,8 +25,6 @@ export default class Storage {
 				}
 			},
 			set(target, property, newValue): boolean {
-				methodBinder.bind(property);
-
 				if (property in target || typeof property === 'symbol') {
 					return true;
 				}
@@ -37,7 +32,11 @@ export default class Storage {
 				data[String(property)] = String(newValue);
 				return true;
 			},
-			deleteProperty(_target, property): boolean {
+			deleteProperty(target, property): boolean {
+				// Properties defined on the instance (e.g. by vi.spyOn(localStorage, 'getItem')) are not stored items.
+				if (typeof property === 'string' && Object.hasOwn(target, property)) {
+					return Reflect.deleteProperty(target, property);
+				}
 				if (property in data) {
 					delete data[String(property)];
 					return true;
@@ -55,8 +54,6 @@ export default class Storage {
 				return false;
 			},
 			defineProperty(target, property, descriptor): boolean {
-				methodBinder.preventBinding(property);
-
 				if (property in target) {
 					Object.defineProperty(target, property, descriptor);
 					return true;
