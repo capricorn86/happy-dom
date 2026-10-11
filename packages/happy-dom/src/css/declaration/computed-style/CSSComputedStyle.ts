@@ -225,10 +225,28 @@ export default class CSSComputedStyle {
 				const rulesAndVariables = CSSTextParser.parse(elementCSSText);
 				const rules = rulesAndVariables.rules;
 
-				Object.assign(cssVariables, rulesAndVariables.variables);
+				// Custom properties are computed on the element that declares them, so that
+				// the values inherited by its children are already substituted.
+				const declaredVariables: { [k: string]: string } = {};
+				const importantVariables = new Set<string>();
+				for (const { name, value, important } of rules) {
+					if (name[0] === '-' && name[1] === '-' && (important || !importantVariables.has(name))) {
+						declaredVariables[name] = value;
+						if (important) {
+							importantVariables.add(name);
+						}
+					}
+				}
+				Object.assign(
+					cssVariables,
+					CSSVariableFormatter.resolveCustomProperties(declaredVariables, cssVariables)
+				);
 
 				for (const { name, value, important } of rules) {
-					const parsedValue = CSSVariableFormatter.resolveVariables(value.trim(), cssVariables);
+					const parsedValue =
+						name[0] === '-' && name[1] === '-'
+							? cssVariables[name]
+							: CSSVariableFormatter.resolveVariables(value.trim(), cssVariables);
 
 					if (
 						parsedValue &&

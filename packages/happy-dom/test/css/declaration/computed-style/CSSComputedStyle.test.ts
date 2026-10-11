@@ -133,5 +133,70 @@ describe('CSSComputedStyle', () => {
 
 			expect(propertyManager.get('width')).toBe(null);
 		});
+
+		it('Resolves a var() chain whose links are declared on different elements.', () => {
+			document.documentElement.style.setProperty('--font-sans', 'Inter');
+			document.body.innerHTML = `
+				<div style="--snap: var(--font-sans)">
+					<div id="inner" style="--font-sans: var(--snap); font-family: var(--font-sans)">text</div>
+				</div>`;
+
+			const inner = <HTMLElement>document.getElementById('inner');
+			const computedStyle = window.getComputedStyle(inner);
+
+			expect(computedStyle.fontFamily).toBe('Inter');
+			expect(computedStyle.getPropertyValue('--font-sans')).toBe('Inter');
+		});
+
+		it('Substitutes var() in a custom property on the element that declares it.', () => {
+			document.documentElement.setAttribute('style', '--size: 1px; --width: var(--size);');
+			document.body.appendChild(element);
+			element.setAttribute('style', '--size: 2px; width: var(--width); height: var(--size);');
+
+			const computedStyle = window.getComputedStyle(element);
+
+			// --width is computed on <html>, where --size is 1px, and inherited as "1px".
+			expect(computedStyle.width).toBe('1px');
+			expect(computedStyle.height).toBe('2px');
+		});
+
+		it('Resolves custom properties declared later on the same element.', () => {
+			document.body.appendChild(element);
+			element.setAttribute(
+				'style',
+				'--a: var(--b) solid; --b: 3px; border: var(--a) var(--c, red); --c: green;'
+			);
+
+			const computedStyle = window.getComputedStyle(element);
+
+			expect(computedStyle.getPropertyValue('--a')).toBe('3px solid');
+			expect(computedStyle.border).toBe('3px solid green');
+		});
+
+		it('Lets an important custom property win over a later declaration.', () => {
+			document.body.appendChild(element);
+			element.setAttribute('style', '--x: 1px !important; --x: 2px; width: var(--x);');
+
+			const computedStyle = window.getComputedStyle(element);
+
+			expect(computedStyle.getPropertyValue('--x')).toBe('1px');
+			expect(computedStyle.width).toBe('1px');
+		});
+
+		it('Treats custom properties in a reference cycle as invalid.', () => {
+			document.body.appendChild(element);
+			element.setAttribute(
+				'style',
+				'--a: var(--b); --b: var(--a); --c: var(--a, 4px); --d: var(--c); width: var(--a, 5px); height: var(--d);'
+			);
+
+			const computedStyle = window.getComputedStyle(element);
+
+			expect(computedStyle.getPropertyValue('--a')).toBe('');
+			expect(computedStyle.getPropertyValue('--b')).toBe('');
+			expect(computedStyle.getPropertyValue('--c')).toBe('4px');
+			expect(computedStyle.width).toBe('5px');
+			expect(computedStyle.height).toBe('4px');
+		});
 	});
 });
