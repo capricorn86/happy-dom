@@ -418,6 +418,21 @@ describe('ProcessArgumentsParser', () => {
 			);
 		});
 
+		for (const setting of <const>['enableCSSFileLoading', 'enableIframePageLoading']) {
+			it(`Returns configuration with "${setting}" enabled.`, async () => {
+				expect(
+					await ProcessArgumentsParser.getConfiguration([
+						'node',
+						'script.js',
+						`--browser.${setting}`
+					])
+				).toEqual({
+					...DEFAULT_CONFIGURATION,
+					browser: { ...DEFAULT_CONFIGURATION.browser, [setting]: true }
+				});
+			});
+		}
+
 		it('Returns configuration for all options.', async () => {
 			const specialArguments = [
 				// Deprecated

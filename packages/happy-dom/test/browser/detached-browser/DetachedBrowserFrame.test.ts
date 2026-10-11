@@ -1021,6 +1021,7 @@ describe('DetachedBrowserFrame', () => {
 			const browser = new DetachedBrowser(BrowserWindow, {
 				settings: {
 					enableJavaScriptEvaluation: true,
+					enableCSSFileLoading: true,
 					suppressCodeGenerationFromStringsWarning: true,
 					fetch: {
 						virtualServers: [
