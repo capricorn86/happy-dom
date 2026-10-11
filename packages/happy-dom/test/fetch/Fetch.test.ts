@@ -1503,6 +1503,29 @@ describe('Fetch', () => {
 			expect(window.document.cookie).toBe('key1=value1; key2=value2');
 		});
 
+		it('Removes a document cookie at once if the response contains a "Set-Cookie" header with "Max-Age=0".', async () => {
+			const now = Date.now();
+
+			vi.spyOn(Date, 'now').mockImplementation(() => now);
+
+			const window = new Window({ url: 'https://localhost:8080' });
+
+			window.document.cookie = 'key1=value1';
+			window.document.cookie = 'key2=value2';
+
+			mockNetwork('https', {
+				responseProperties: {
+					rawHeaders: ['Set-Cookie', 'key1=; Max-Age=0']
+				}
+			});
+
+			await window.fetch('https://localhost:8080/some/path', {
+				credentials: 'include'
+			});
+
+			expect(window.document.cookie).toBe('key2=value2');
+		});
+
 		it('Allows setting the headers "User-Agent" and "Accept".', async () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = 'https://localhost:8080/test/';

@@ -264,6 +264,100 @@ describe('CookieContainer', () => {
 			).toBe('key3=value3; key7=value7; key8=value8; key9=value9; key11=hello=world');
 		});
 
+		it.each(['0', '-0', '-1', '-99999999999999999999'])(
+			'Deletes an existing cookie at once if Max-Age=%s, even if the time has not changed.',
+			(maxAge) => {
+				const originURL = new URL('https://example.com/');
+				const now = Date.now();
+
+				vi.spyOn(Date, 'now').mockImplementation(() => now);
+
+				cookieContainer.addCookies([
+					<ICookie>CookieStringUtility.stringToCookie(originURL, 'key=value; Path=/; Max-Age=60')
+				]);
+
+				const cookie = <ICookie>(
+					CookieStringUtility.stringToCookie(originURL, `key=; Path=/; Max-Age=${maxAge}`)
+				);
+
+				// The earliest representable date and time (RFC 6265, section 5.2.2).
+				expect(cookie.expires?.getTime()).toBe(-8640000000000000);
+				expect(cookieContainer.addCookies([cookie])).toEqual({
+					changed: [],
+					deleted: [expect.objectContaining({ key: 'key', value: 'value' })]
+				});
+				expect(cookieContainer.getCookies(originURL)).toEqual([]);
+			}
+		);
+
+		it('Expires a cookie when the time from a positive Max-Age has passed.', () => {
+			const originURL = new URL('https://example.com/');
+			const now = Date.now();
+			const dateNow = vi.spyOn(Date, 'now').mockImplementation(() => now);
+			const cookie = <ICookie>(
+				CookieStringUtility.stringToCookie(originURL, 'key=value; Max-Age=60')
+			);
+
+			expect(cookie.expires?.getTime()).toBe(now + 60000);
+
+			cookieContainer.addCookies([cookie]);
+
+			dateNow.mockImplementation(() => now + 59999);
+			expect(CookieStringUtility.cookiesToString(cookieContainer.getCookies(originURL))).toBe(
+				'key=value'
+			);
+
+			dateNow.mockImplementation(() => now + 60000);
+			expect(cookieContainer.getCookies(originURL)).toEqual([]);
+		});
+
+		it.each(['', 'abc', '+60', '1.5', '60s', '6 0', '-', '--1'])(
+			'Ignores Max-Age=%s as it is not an integer.',
+			(maxAge) => {
+				const originURL = new URL('https://example.com/');
+				const now = Date.now();
+
+				vi.spyOn(Date, 'now').mockImplementation(() => now);
+
+				expect(
+					CookieStringUtility.stringToCookie(originURL, `key=value; Max-Age=${maxAge}`)?.expires
+				).toBe(null);
+				expect(
+					CookieStringUtility.stringToCookie(
+						originURL,
+						`key=value; Max-Age=60; Max-Age=${maxAge}`
+					)?.expires?.getTime()
+				).toBe(now + 60000);
+				expect(
+					CookieStringUtility.stringToCookie(
+						originURL,
+						`key=value; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=${maxAge}`
+					)?.expires?.getTime()
+				).toBe(0);
+			}
+		);
+
+		it('Deletes an existing cookie if Expires is the current time, even if the time has not changed.', () => {
+			const originURL = new URL('https://example.com/');
+			const now = new Date('2026-01-01T00:00:00.000Z').getTime();
+
+			vi.spyOn(Date, 'now').mockImplementation(() => now);
+
+			cookieContainer.addCookies([
+				<ICookie>CookieStringUtility.stringToCookie(originURL, 'key=value; Path=/')
+			]);
+			cookieContainer.addCookies([
+				<ICookie>(
+					CookieStringUtility.stringToCookie(
+						originURL,
+						`key=; Path=/; Expires=${new Date(now).toUTCString()}`
+					)
+				)
+			]);
+
+			expect(cookieContainer.getCookies(originURL)).toEqual([]);
+		});
+
 		it('Validates secure cookie keys.', () => {
 			const originURL = new URL('https://example.com/path/to/page/');
 			const targetURL = new URL('https://example.com/path/to/page/');

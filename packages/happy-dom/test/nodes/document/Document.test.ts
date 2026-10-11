@@ -439,6 +439,32 @@ describe('Document', () => {
 			document.cookie = 'name; expires=Thu, 01 Jan 1970 00:00:01 GMT';
 			expect(document.cookie).toBe('');
 		});
+
+		it('Removes a previously defined cookie at once if "max-age" is zero or negative, even if the time has not changed.', () => {
+			const now = Date.now();
+
+			vi.spyOn(Date, 'now').mockImplementation(() => now);
+
+			window.location.href = 'http://localhost/';
+
+			for (const maxAge of ['0', '-1']) {
+				document.cookie = 'name=value1; path=/';
+				expect(document.cookie).toBe('name=value1');
+				document.cookie = `name=; path=/; max-age=${maxAge}`;
+				expect(document.cookie).toBe('');
+			}
+		});
+
+		it('Sets a cookie until the time from a positive "max-age" has passed.', () => {
+			const now = Date.now();
+			const dateNow = vi.spyOn(Date, 'now').mockImplementation(() => now);
+
+			document.cookie = 'name=value1; max-age=60';
+			expect(document.cookie).toBe('name=value1');
+
+			dateNow.mockImplementation(() => now + 60000);
+			expect(document.cookie).toBe('');
+		});
 	});
 
 	describe('get title()', () => {

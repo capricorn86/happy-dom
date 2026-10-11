@@ -1,4 +1,4 @@
-import { beforeEach, afterEach, describe, it, expect } from 'vitest';
+import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Window from '../../src/window/Window.js';
 import type BrowserWindow from '../../src/window/BrowserWindow.js';
 import CookieStore from '../../src/cookie-store/CookieStore.js';
@@ -12,6 +12,10 @@ describe('CookieStore', () => {
 
 	beforeEach(() => {
 		window = new Window({ url: 'https://example.com/' });
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	describe('constructor', () => {
@@ -154,6 +158,16 @@ describe('CookieStore', () => {
 			});
 			const cookie = await window.cookieStore.get('expiredCookie');
 			expect(cookie).toBeNull();
+		});
+
+		it('Deletes an existing cookie if expires is the current time, even if the time has not changed.', async () => {
+			const now = Date.now();
+
+			vi.spyOn(Date, 'now').mockImplementation(() => now);
+
+			await window.cookieStore.set('expiresNow', 'val');
+			await window.cookieStore.set({ name: 'expiresNow', value: '', expires: now });
+			expect(await window.cookieStore.get('expiresNow')).toBeNull();
 		});
 
 		it('Overwrites an existing cookie with the same name.', async () => {

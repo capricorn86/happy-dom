@@ -50,7 +50,13 @@ export default class CookieStringUtility {
 					cookie.expires = new Date(value);
 					break;
 				case 'max-age':
-					cookie.expires = new Date(parseInt(value, 10) * 1000 + Date.now());
+					// Max-Age is ignored unless it is an integer (RFC 6265, section 5.2.2).
+					if (/^-?[0-9]+$/.test(value)) {
+						const maxAge = parseInt(value, 10);
+						// Zero or less expires the cookie at once by using the earliest representable date.
+						cookie.expires =
+							maxAge > 0 ? new Date(maxAge * 1000 + Date.now()) : new Date(-8640000000000000);
+					}
 					break;
 				case 'domain':
 					cookie.domain = value;
