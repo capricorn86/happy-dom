@@ -2498,5 +2498,102 @@ describe('QuerySelector', () => {
 			expect(shadowSpan?.matches(':host .shadow-span')).toBe(true);
 			expect(shadowSpan?.matches(':host([my-attr=value]) .shadow-span')).toBe(true);
 		});
+
+		it('Updates the cached result for a descendant combinator when an attribute of an ancestor above the parent is changed (#2489).', () => {
+			document.body.innerHTML = '<section><header><div><span></span></div></header></section>';
+
+			const section = <HTMLElement>document.querySelector('section');
+			const header = <HTMLElement>document.querySelector('header');
+			const span = <HTMLElement>document.querySelector('span');
+
+			expect(span.matches('[data-stage] span')).toBe(false);
+			expect(span.matches('[data-stage="lean"] span')).toBe(false);
+
+			// Grandparent
+			header.setAttribute('data-stage', 'lean');
+
+			expect(span.matches('[data-stage] span')).toBe(true);
+			expect(span.matches('[data-stage="lean"] span')).toBe(true);
+
+			header.setAttribute('data-stage', 'full');
+
+			expect(span.matches('[data-stage] span')).toBe(true);
+			expect(span.matches('[data-stage="lean"] span')).toBe(false);
+
+			header.removeAttribute('data-stage');
+
+			expect(span.matches('[data-stage] span')).toBe(false);
+			expect(span.matches('[data-stage="lean"] span')).toBe(false);
+
+			// Great-grandparent
+			section.setAttribute('data-stage', 'lean');
+
+			expect(span.matches('[data-stage] span')).toBe(true);
+			expect(span.matches('[data-stage="lean"] span')).toBe(true);
+
+			section.removeAttribute('data-stage');
+
+			expect(span.matches('[data-stage] span')).toBe(false);
+			expect(span.matches('[data-stage="lean"] span')).toBe(false);
+		});
+
+		it('Updates the cached result for a selector mixing child and descendant combinators when an attribute of an ancestor above the parent is changed (#2489).', () => {
+			document.body.innerHTML = '<section><header><div><span></span></div></header></section>';
+
+			const section = <HTMLElement>document.querySelector('section');
+			const header = <HTMLElement>document.querySelector('header');
+			const span = <HTMLElement>document.querySelector('span');
+
+			expect(span.matches('section > [data-stage] span')).toBe(false);
+			expect(span.matches('[data-stage] div > span')).toBe(false);
+
+			// Grandparent
+			header.setAttribute('data-stage', '');
+
+			expect(span.matches('section > [data-stage] span')).toBe(true);
+			expect(span.matches('[data-stage] div > span')).toBe(true);
+
+			header.removeAttribute('data-stage');
+
+			expect(span.matches('section > [data-stage] span')).toBe(false);
+			expect(span.matches('[data-stage] div > span')).toBe(false);
+
+			// Great-grandparent
+			section.setAttribute('data-stage', '');
+
+			expect(span.matches('section > [data-stage] span')).toBe(false);
+			expect(span.matches('[data-stage] div > span')).toBe(true);
+
+			section.removeAttribute('data-stage');
+
+			expect(span.matches('section > [data-stage] span')).toBe(false);
+			expect(span.matches('[data-stage] div > span')).toBe(false);
+		});
+
+		it('Updates the cached result for an attribute selector inside ":not()" when an attribute of an ancestor above the parent is changed (#2489).', () => {
+			document.body.innerHTML =
+				'<div class="tabs"><div><div><button class="help"></button></div></div></div>';
+
+			const tabs = <HTMLElement>document.querySelector('.tabs');
+			const help = <HTMLElement>document.querySelector('.help');
+
+			expect(help.matches(".tabs:not([data-stage='full']) .help")).toBe(true);
+			expect(help.matches('.tabs:not([data-stage]) div .help')).toBe(true);
+
+			tabs.setAttribute('data-stage', 'full');
+
+			expect(help.matches(".tabs:not([data-stage='full']) .help")).toBe(false);
+			expect(help.matches('.tabs:not([data-stage]) div .help')).toBe(false);
+
+			tabs.setAttribute('data-stage', 'lean');
+
+			expect(help.matches(".tabs:not([data-stage='full']) .help")).toBe(true);
+			expect(help.matches('.tabs:not([data-stage]) div .help')).toBe(false);
+
+			tabs.removeAttribute('data-stage');
+
+			expect(help.matches(".tabs:not([data-stage='full']) .help")).toBe(true);
+			expect(help.matches('.tabs:not([data-stage]) div .help')).toBe(true);
+		});
 	});
 });

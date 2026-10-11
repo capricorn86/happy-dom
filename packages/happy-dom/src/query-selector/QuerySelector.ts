@@ -561,6 +561,9 @@ export default class QuerySelector {
 		) {
 			const parentElement = element.parentNode;
 			if (parentElement && parentElement !== element[PropertySymbol.ownerDocument]) {
+				// Every ancestor that is tested for a descendant combinator affects the result
+				this.affectsCache(<Element>parentElement, cachedItem);
+
 				return this.matchSelector(
 					{
 						scope,

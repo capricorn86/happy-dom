@@ -741,6 +741,44 @@ describe('BrowserWindow', () => {
 			]);
 		});
 
+		it('Updates styles from rules matching an attribute of an ancestor above the parent when the attribute is changed (#2489).', () => {
+			document.head.innerHTML = `
+				<style>
+					.tabs:not([data-stage='full']) .help { display: none; }
+					[data-stage='full'] .help { color: rgb(0, 128, 0); }
+				</style>
+			`;
+			document.body.innerHTML =
+				'<div class="tabs"><div><div><button class="help">Help</button></div></div></div>';
+
+			const tabs = <HTMLElement>document.querySelector('.tabs');
+			const help = <HTMLElement>document.querySelector('.help');
+
+			expect(window.getComputedStyle(help).display).toBe('none');
+			expect(window.getComputedStyle(help).color).toBe('');
+
+			tabs.setAttribute('data-stage', 'full');
+
+			expect(window.getComputedStyle(help).display).toBe('inline-block');
+			expect(window.getComputedStyle(help).color).toBe('rgb(0, 128, 0)');
+
+			tabs.removeAttribute('data-stage');
+
+			expect(window.getComputedStyle(help).display).toBe('none');
+			expect(window.getComputedStyle(help).color).toBe('');
+
+			// Ancestor further up
+			document.body.setAttribute('data-stage', 'full');
+
+			expect(window.getComputedStyle(help).display).toBe('none');
+			expect(window.getComputedStyle(help).color).toBe('rgb(0, 128, 0)');
+
+			document.body.removeAttribute('data-stage');
+
+			expect(window.getComputedStyle(help).display).toBe('none');
+			expect(window.getComputedStyle(help).color).toBe('');
+		});
+
 		it('Returns a CSSStyleDeclaration object with computed styles from style sheets.', () => {
 			const parent = document.createElement('div');
 			const element = document.createElement('span');
