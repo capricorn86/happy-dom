@@ -43,6 +43,7 @@ export default class Request implements Request {
 	public [PropertySymbol.signal]: AbortSignal;
 	public [PropertySymbol.bodyUsed]: boolean = false;
 	public [PropertySymbol.credentials]: TRequestCredentials;
+	public keepalive: boolean = false;
 
 	// Internal properties
 	public [PropertySymbol.aborted]: boolean = false;
@@ -75,6 +76,8 @@ export default class Request implements Request {
 		}
 
 		this[PropertySymbol.method] = (init?.method || (<Request>input).method || 'GET').toUpperCase();
+		this.keepalive =
+			(<(IRequestInit & { keepalive?: boolean }) | undefined>init)?.keepalive ?? false;
 
 		if (init?.mode) {
 			switch (init.mode) {
