@@ -84,9 +84,13 @@ export default class ProcessArgumentsParser {
 					config.browser.suppressInsecureJavaScriptEnvironmentWarning = true;
 				} else if (arg === '--browser.disableJavaScriptFileLoading') {
 					config.browser.disableJavaScriptFileLoading = true;
-				} else if (arg === '--browser.enableCSSFileLoading') {
+				} else if (arg === '--browser.enableCSSFileLoading' || arg === '--css' || arg === '-c') {
 					config.browser.enableCSSFileLoading = true;
-				} else if (arg === '--browser.enableIframePageLoading') {
+				} else if (
+					arg === '--browser.enableIframePageLoading' ||
+					arg === '--iframe' ||
+					arg === '-if'
+				) {
 					config.browser.enableIframePageLoading = true;
 				} else if (arg === '--browser.disableComputedStyleRendering') {
 					config.browser.disableComputedStyleRendering = true;

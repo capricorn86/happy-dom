@@ -383,9 +383,6 @@ describe('ProcessArgumentsParser', () => {
 			expect(
 				await ProcessArgumentsParser.getConfiguration(['node', 'script.js', '--javaScript'])
 			).toEqual(expectedConfig);
-			expect(
-				await ProcessArgumentsParser.getConfiguration(['node', 'script.js', '--javascript'])
-			).toEqual(expectedConfig);
 			expect(await ProcessArgumentsParser.getConfiguration(['node', 'script.js', '-j'])).toEqual(
 				expectedConfig
 			);
@@ -418,20 +415,51 @@ describe('ProcessArgumentsParser', () => {
 			);
 		});
 
-		for (const setting of <const>['enableCSSFileLoading', 'enableIframePageLoading']) {
-			it(`Returns configuration with "${setting}" enabled.`, async () => {
-				expect(
-					await ProcessArgumentsParser.getConfiguration([
-						'node',
-						'script.js',
-						`--browser.${setting}`
-					])
-				).toEqual({
-					...DEFAULT_CONFIGURATION,
-					browser: { ...DEFAULT_CONFIGURATION.browser, [setting]: true }
-				});
-			});
-		}
+		it('Returns configuration with "enableCSSFileLoading" enabled.', async () => {
+			const expectedConfig = {
+				...DEFAULT_CONFIGURATION,
+				browser: {
+					...DEFAULT_CONFIGURATION.browser,
+					enableCSSFileLoading: true
+				}
+			};
+			expect(
+				await ProcessArgumentsParser.getConfiguration([
+					'node',
+					'script.js',
+					'--browser.enableCSSFileLoading'
+				])
+			).toEqual(expectedConfig);
+			expect(await ProcessArgumentsParser.getConfiguration(['node', 'script.js', '--css'])).toEqual(
+				expectedConfig
+			);
+			expect(await ProcessArgumentsParser.getConfiguration(['node', 'script.js', '-c'])).toEqual(
+				expectedConfig
+			);
+		});
+
+		it('Returns configuration with "enableIframePageLoading" enabled.', async () => {
+			const expectedConfig = {
+				...DEFAULT_CONFIGURATION,
+				browser: {
+					...DEFAULT_CONFIGURATION.browser,
+					enableIframePageLoading: true
+				}
+			};
+			expect(
+				await ProcessArgumentsParser.getConfiguration([
+					'node',
+					'script.js',
+					'--browser.enableIframePageLoading'
+				])
+			).toEqual(expectedConfig);
+			expect(
+				await ProcessArgumentsParser.getConfiguration(['node', 'script.js', '--iframe'])
+			).toEqual(expectedConfig);
+			expect(await ProcessArgumentsParser.getConfiguration(['node', 'script.js', '-if'])).toEqual(
+				expectedConfig
+			);
+		});
 
 		it('Returns configuration for all options.', async () => {
 			const specialArguments = [
