@@ -146,8 +146,14 @@ export default [
 		'Disables JavaScript file loading.',
 		'false'
 	],
-	['--browser.enableCSSFileLoading', '', 'boolean', 'Enables CSS file loading.', 'false'],
-	['--browser.enableIframePageLoading', '', 'boolean', 'Enables iframe page loading.', 'false'],
+	['--browser.enableCSSFileLoading', '--css, -c', 'boolean', 'Enables CSS file loading.', 'false'],
+	[
+		'--browser.enableIframePageLoading',
+		'--iframe, -if',
+		'boolean',
+		'Enables iframe page loading.',
+		'false'
+	],
 	[
 		'--browser.disableComputedStyleRendering',
 		'',
