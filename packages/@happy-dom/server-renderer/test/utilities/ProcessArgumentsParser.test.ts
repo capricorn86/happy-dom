@@ -381,6 +381,9 @@ describe('ProcessArgumentsParser', () => {
 				])
 			).toEqual(expectedConfig);
 			expect(
+				await ProcessArgumentsParser.getConfiguration(['node', 'script.js', '--javascript'])
+			).toEqual(expectedConfig);
+			expect(
 				await ProcessArgumentsParser.getConfiguration(['node', 'script.js', '--javaScript'])
 			).toEqual(expectedConfig);
 			expect(await ProcessArgumentsParser.getConfiguration(['node', 'script.js', '-j'])).toEqual(
