@@ -81,7 +81,7 @@ export default class JavaScriptCompiler {
 
 		const regExp = new RegExp(STATEMENT_REGEXP);
 		const count = this.count;
-		let newCode = '(function anonymous($happy_dom) {';
+		let newCode = '';
 		let match: RegExpExecArray | null = null;
 		let precedingToken: string;
 		let textBetweenStatements: string;
@@ -143,29 +143,34 @@ export default class JavaScriptCompiler {
 			newCode += '} catch (error) { $happy_dom.dispatchError(error); }';
 		}
 
-		newCode += '})';
-
-		try {
-			return {
-				execute: this.window[PropertySymbol.evaluateScript](newCode, {
-					filename: sourceURL
-				})
-			};
-		} catch (error) {
-			(<Error>error).message =
-				`Failed to parse JavaScript in '${sourceURL}': ${(<Error>error).message}`;
-			if (
-				browserSettings.disableErrorCapturing ||
-				browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
-			) {
-				throw error;
-			} else {
-				this.window[PropertySymbol.dispatchError](<Error>error);
-				return {
-					execute: () => {}
-				};
+		return {
+			execute: (happyDom): void => {
+				// $happy_dom must be a global (not a function parameter), so top-level
+				// var/function declarations in the script reach the real global scope
+				// instead of being trapped in a wrapper function's scope.
+				Object.defineProperty(this.window, '$happy_dom', {
+					value: happyDom,
+					enumerable: false,
+					configurable: true
+				});
+				try {
+					this.window[PropertySymbol.evaluateScript](newCode, {
+						filename: sourceURL
+					});
+				} catch (error) {
+					(<Error>error).message =
+						`Failed to parse JavaScript in '${sourceURL}': ${(<Error>error).message}`;
+					if (
+						browserSettings.disableErrorCapturing ||
+						browserSettings.errorCapture !== BrowserErrorCaptureEnum.tryAndCatch
+					) {
+						throw error;
+					} else {
+						this.window[PropertySymbol.dispatchError](<Error>error);
+					}
+				}
 			}
-		}
+		};
 	}
 
 	/**
