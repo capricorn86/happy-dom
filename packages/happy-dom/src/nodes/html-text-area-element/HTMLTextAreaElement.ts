@@ -2,6 +2,7 @@ import Event from '../../event/Event.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import HTMLElement from '../html-element/HTMLElement.js';
+import HTMLFormControlElementUtility from '../html-element/HTMLFormControlElementUtility.js';
 import type HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLInputElementSelectionDirectionEnum from '../html-input-element/HTMLInputElementSelectionDirectionEnum.js';
 import HTMLInputElementSelectionModeEnum from '../html-input-element/HTMLInputElementSelectionModeEnum.js';
@@ -445,14 +446,7 @@ export default class HTMLTextAreaElement extends HTMLElement {
 	 * @returns Form.
 	 */
 	public get form(): HTMLFormElement | null {
-		if (this[PropertySymbol.formNode]) {
-			return this[PropertySymbol.formNode];
-		}
-		const id = this.getAttribute('form');
-		if (!id || !this[PropertySymbol.isConnected]) {
-			return null;
-		}
-		return <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(id);
+		return HTMLFormControlElementUtility.getFormOwner(this);
 	}
 
 	/**
