@@ -1,8 +1,9 @@
 import Window from '../../../src/window/Window.js';
 import type Document from '../../../src/nodes/document/Document.js';
-import type HTMLOptionElement from '../../../src/nodes/html-option-element/HTMLOptionElement.js';
+import HTMLOptionElement from '../../../src/nodes/html-option-element/HTMLOptionElement.js';
 import type HTMLSelectElement from '../../../src/nodes/html-select-element/HTMLSelectElement.js';
-import { beforeEach, describe, it, expect } from 'vitest';
+import * as PropertySymbol from '../../../src/PropertySymbol.js';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 
 describe('HTMLOptionElement', () => {
 	let window: Window;
@@ -119,6 +120,27 @@ describe('HTMLOptionElement', () => {
 			option2.selected = false;
 
 			expect(select.selectedIndex).toBe(0);
+		});
+
+		it('Clears the query selector cache when selectedness actually changes, but not otherwise.', () => {
+			const option = <HTMLOptionElement>document.createElement('option');
+			const clearCache = vi.spyOn(<any>HTMLOptionElement.prototype, <any>PropertySymbol.clearCache);
+
+			option.selected = false;
+
+			expect(clearCache).not.toHaveBeenCalled();
+
+			option.selected = true;
+
+			expect(clearCache).toHaveBeenCalledTimes(1);
+
+			option.selected = true;
+
+			expect(clearCache).toHaveBeenCalledTimes(1);
+
+			option.selected = false;
+
+			expect(clearCache).toHaveBeenCalledTimes(2);
 		});
 	});
 });

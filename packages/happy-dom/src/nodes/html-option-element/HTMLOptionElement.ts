@@ -12,6 +12,7 @@ import type HTMLSelectElement from '../html-select-element/HTMLSelectElement.js'
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptionElement.
  */
 export default class HTMLOptionElement extends HTMLElement {
+	// Assign only via [PropertySymbol.setSelectedness]() — raw writes skip query selector cache invalidation.
 	public [PropertySymbol.selectedness] = false;
 	public [PropertySymbol.dirtyness] = false;
 	public [PropertySymbol.selectNode]: HTMLSelectElement | null = null;
@@ -76,7 +77,7 @@ export default class HTMLOptionElement extends HTMLElement {
 		const selectNode = <HTMLSelectElement>this[PropertySymbol.selectNode];
 
 		this[PropertySymbol.dirtyness] = true;
-		this[PropertySymbol.selectedness] = Boolean(selected);
+		this[PropertySymbol.setSelectedness](Boolean(selected));
 
 		if (selectNode) {
 			selectNode[PropertySymbol.updateSelectedness](
@@ -140,7 +141,7 @@ export default class HTMLOptionElement extends HTMLElement {
 		) {
 			const selectNode = <HTMLSelectElement>this[PropertySymbol.selectNode];
 
-			this[PropertySymbol.selectedness] = true;
+			this[PropertySymbol.setSelectedness](true);
 
 			if (selectNode) {
 				selectNode[PropertySymbol.updateSelectedness](this);
@@ -160,11 +161,28 @@ export default class HTMLOptionElement extends HTMLElement {
 		) {
 			const selectNode = <HTMLSelectElement>this[PropertySymbol.selectNode];
 
-			this[PropertySymbol.selectedness] = false;
+			this[PropertySymbol.setSelectedness](false);
 
 			if (selectNode) {
 				selectNode[PropertySymbol.updateSelectedness]();
 			}
+		}
+	}
+
+	/**
+	 * Sets selectedness, clearing the query selector cache when it actually changes.
+	 *
+	 * Selectedness is normally read through the `:checked` pseudo-class, but it's mutated
+	 * directly here (and from HTMLSelectElement's value/selectedIndex setters and
+	 * updateSelectedness()'s sibling-deselection loop), bypassing the attribute pipeline that
+	 * would otherwise trigger cache invalidation via reportMutation().
+	 *
+	 * @param selected Selected.
+	 */
+	public [PropertySymbol.setSelectedness](selected: boolean): void {
+		if (this[PropertySymbol.selectedness] !== selected) {
+			this[PropertySymbol.selectedness] = selected;
+			this[PropertySymbol.clearCache]();
 		}
 	}
 
