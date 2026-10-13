@@ -929,6 +929,57 @@ describe('SyncFetch', () => {
 			);
 		});
 
+		it('Caches the preflight response so that only one preflight request is sent for multiple cross-origin requests.', () => {
+			const originURL = 'http://localhost:8080';
+			browserFrame.url = originURL;
+			const url = 'http://other.origin.com/some/path';
+
+			const requestArgs: string[] = [];
+
+			mockModule('child_process', {
+				execFileSync: (_command: string, args: string[]) => {
+					requestArgs.push(args[1]);
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: 200,
+							statusMessage: 'OK',
+							rawHeaders: args[1].includes('"method": "OPTIONS"')
+								? [
+										'Access-Control-Allow-Origin',
+										'*',
+										'Access-Control-Allow-Methods',
+										'POST',
+										'Access-Control-Allow-Headers',
+										'content-type',
+										'Access-Control-Max-Age',
+										'600'
+									]
+								: [],
+							data: ''
+						}
+					});
+				}
+			});
+
+			for (let i = 0; i < 2; i++) {
+				new SyncFetch({
+					browserFrame,
+					window,
+					url,
+					init: {
+						method: 'POST',
+						body: '{"foo": "bar"}',
+						headers: {
+							'Content-Type': 'application/json'
+						}
+					}
+				}).send();
+			}
+
+			expect(requestArgs.length, 'preflight + 2 post requests').toBe(3);
+		});
+
 		it('Allows cross-origin request if "Browser.settings.fetch.disableSameOriginPolicy" is set to "true".', async () => {
 			const originURL = 'http://localhost:8080';
 
