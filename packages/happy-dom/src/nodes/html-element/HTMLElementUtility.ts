@@ -99,6 +99,17 @@ export default class HTMLElementUtility {
 	}
 
 	/**
+	 * Returns whether an element is a form-associated custom element (its class declared
+	 * `static formAssociated = true`, recorded by CustomElementRegistry.define()).
+	 *
+	 * @param element Element to check.
+	 * @returns True if the element is a form-associated custom element.
+	 */
+	public static isFormAssociatedCustomElement(element: HTMLElement): boolean {
+		return !!element[PropertySymbol.formAssociated];
+	}
+
+	/**
 	 * Returns whether an element or any of its ancestors has the inert attribute.
 	 *
 	 * @param element Element to check.

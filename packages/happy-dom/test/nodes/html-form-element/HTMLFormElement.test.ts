@@ -540,6 +540,49 @@ describe('HTMLFormElement', () => {
 			expect(element.length).toBe(0);
 			expect(elements.length).toBe(0);
 		});
+
+		it('Includes a form-associated custom element among the descendants, exactly once.', () => {
+			/* eslint-disable jsdoc/require-jsdoc */
+			class FormAssociatedElement extends (<typeof HTMLElement>window.HTMLElement) {
+				public static formAssociated = true;
+			}
+			/* eslint-enable jsdoc/require-jsdoc */
+
+			window.customElements.define('form-associated-element-3', FormAssociatedElement);
+
+			element.innerHTML = `
+                <div>
+                    <input type="text" name="text1" value="value1">
+                    <form-associated-element-3 id="custom1"></form-associated-element-3>
+                </div>
+            `;
+
+			const custom = <HTMLElement>element.querySelector('#custom1');
+
+			expect(element.length).toBe(2);
+			expect(Array.from(<any>element.elements)).toEqual([element[0], custom]);
+		});
+
+		it('Includes a form-associated custom element referenced by "form" attribute.', () => {
+			/* eslint-disable jsdoc/require-jsdoc */
+			class FormAssociatedElement extends (<typeof HTMLElement>window.HTMLElement) {
+				public static formAssociated = true;
+			}
+			/* eslint-enable jsdoc/require-jsdoc */
+
+			window.customElements.define('form-associated-element-4', FormAssociatedElement);
+
+			const div = document.createElement('div');
+			div.innerHTML = `<form-associated-element-4 form="testForm" id="custom2"></form-associated-element-4>`;
+			element.id = 'testForm';
+			document.body.appendChild(element);
+			document.body.appendChild(div);
+
+			const custom = <HTMLElement>document.getElementById('custom2');
+
+			expect(element.length).toBe(1);
+			expect(Array.from(<any>element.elements)).toEqual([custom]);
+		});
 	});
 
 	describe('get previousSibling()', () => {
