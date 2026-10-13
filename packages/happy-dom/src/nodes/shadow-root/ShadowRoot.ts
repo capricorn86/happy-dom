@@ -267,15 +267,6 @@ export default class ShadowRoot extends DocumentFragment {
 	}
 
 	/**
-	 * Converts to string.
-	 *
-	 * @returns String.
-	 */
-	public toString(): string {
-		return this.innerHTML;
-	}
-
-	/**
 	 * @override
 	 */
 	public override [PropertySymbol.cloneNode](deep = false): ShadowRoot {
