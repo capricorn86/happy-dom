@@ -18,6 +18,7 @@ enum DOMExceptionNameEnum {
 	encodingError = 'EncodingError',
 	uriMismatchError = 'URIMismatchError',
 	inUseAttributeError = 'InUseAttributeError',
-	namespaceError = 'NamespaceError'
+	namespaceError = 'NamespaceError',
+	noModificationAllowedError = 'NoModificationAllowedError'
 }
 export default DOMExceptionNameEnum;
