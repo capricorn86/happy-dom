@@ -1120,9 +1120,9 @@ describe('QuerySelector', () => {
 			expect(document.querySelectorAll('r > :not(c):first-child').length).toBe(0);
 
 			// Nested functional + simple + functional
-			expect(document.querySelectorAll('r > :not(:nth-child(1)):first-child:nth-child(2)').length).toBe(
-				0
-			);
+			expect(
+				document.querySelectorAll('r > :not(:nth-child(1)):first-child:nth-child(2)').length
+			).toBe(0);
 			expect(document.querySelectorAll('r > :is(d):first-child:nth-child(2)').length).toBe(0);
 			expect(document.querySelectorAll('r > :is(d):nth-child(2)').length).toBe(1);
 		});
