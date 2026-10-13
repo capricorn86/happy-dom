@@ -2303,8 +2303,8 @@ describe('Element', () => {
 	});
 
 	describe('toString()', () => {
-		it('Returns the same as outerHTML.', () => {
-			expect(element.toString()).toBe(element.outerHTML);
+		it('Returns "[object HTMLDivElement]".', () => {
+			expect(element.toString()).toBe('[object HTMLDivElement]');
 		});
 	});
 

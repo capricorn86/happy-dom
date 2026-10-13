@@ -983,15 +983,6 @@ export default class Element
 	}
 
 	/**
-	 * Converts to string.
-	 *
-	 * @returns String.
-	 */
-	public toString(): string {
-		return this.outerHTML;
-	}
-
-	/**
 	 * Returns the size of an element and its position relative to the viewport.
 	 *
 	 * @returns DOM rect.
