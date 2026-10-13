@@ -311,11 +311,9 @@ describe('ShadowRoot', () => {
 	});
 
 	describe('toString()', () => {
-		it('Returns the innerHTML of the shadow root.', () => {
-			const html = '<div attr1="value1" attr2="value2"><span>Test</span></div>';
+		it('Returns "[object ShadowRoot]".', () => {
 			const shadowRoot = <ShadowRoot>document.createElement('custom-element').shadowRoot;
-			shadowRoot.innerHTML = html;
-			expect(shadowRoot.toString()).toBe(html);
+			expect(shadowRoot.toString()).toBe('[object ShadowRoot]');
 		});
 	});
 
