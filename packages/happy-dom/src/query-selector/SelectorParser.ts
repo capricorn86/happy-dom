@@ -417,6 +417,9 @@ export default class SelectorParser {
 				});
 			} else if (match[21]) {
 				// Matches pseudo selectors with arguments, e.g. ":nth-child(2n+1)" or ":not(.class)"
+				// The SELECTOR_REGEXP group is greedy up to the last ")", so a simple
+				// pseudo between two functional ones (e.g. ":not(c):first-child:nth-child(2)")
+				// is included in this match and must be recorded when its name is replaced.
 
 				const pseudoRegExp = new RegExp(SELECTOR_PSEUDO_REGEXP);
 				let pseudoMatch: null | RegExpExecArray = null;
@@ -427,6 +430,11 @@ export default class SelectorParser {
 				while ((pseudoMatch = pseudoRegExp.exec(match[0]))) {
 					if (pseudoMatch[1]) {
 						if (depth === 0) {
+							// Previous name without "(" is a simple pseudo-class
+							if (name) {
+								selectorItem.pseudos = selectorItem.pseudos || [];
+								selectorItem.pseudos.push(this.getPseudo(name, null));
+							}
 							name = pseudoMatch[1];
 						}
 					} else if (pseudoMatch[2]) {
@@ -458,6 +466,14 @@ export default class SelectorParser {
 							}
 						}
 					}
+				}
+
+				// Trailing simple pseudo after the last functional one in this match
+				if (name && depth === 0) {
+					selectorItem.pseudos = selectorItem.pseudos || [];
+					selectorItem.pseudos.push(this.getPseudo(name, null));
+				} else if (depth !== 0) {
+					return null;
 				}
 			} else if (match[22]) {
 				// Matches pseudo selectors without arguments, e.g. ":empty" or ":checked"

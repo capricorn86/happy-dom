@@ -1110,6 +1110,23 @@ describe('QuerySelector', () => {
 			expect(lastItem.length).toBe(1);
 		});
 
+		// https://github.com/capricorn86/happy-dom/issues/2507
+		it('Does not drop a simple pseudo-class between two functional ones.', () => {
+			document.body.innerHTML = '<r><c></c><d></d><e></e></r>';
+
+			expect(document.querySelectorAll('r > :not(c):first-child:nth-child(2)').length).toBe(0);
+			expect(document.querySelectorAll('r > :first-child:nth-child(2)').length).toBe(0);
+			expect(document.querySelectorAll('r > :not(c):nth-child(2)').length).toBe(1);
+			expect(document.querySelectorAll('r > :not(c):first-child').length).toBe(0);
+
+			// Nested functional + simple + functional
+			expect(document.querySelectorAll('r > :not(:nth-child(1)):first-child:nth-child(2)').length).toBe(
+				0
+			);
+			expect(document.querySelectorAll('r > :is(d):first-child:nth-child(2)').length).toBe(0);
+			expect(document.querySelectorAll('r > :is(d):nth-child(2)').length).toBe(1);
+		});
+
 		it('Returns all elements matching ".bar:not(.foo)".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = `
