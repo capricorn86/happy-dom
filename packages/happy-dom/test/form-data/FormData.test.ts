@@ -1,5 +1,7 @@
 import Window from '../../src/window/Window.js';
 import type Document from '../../src/nodes/document/Document.js';
+import type HTMLSelectElement from '../../src/nodes/html-select-element/HTMLSelectElement.js';
+import type HTMLOptionElement from '../../src/nodes/html-option-element/HTMLOptionElement.js';
 import File from '../../src/file/File.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Blob from '../../src/file/Blob.js';
@@ -108,6 +110,51 @@ describe('FormData', () => {
 			expect(formData.get('button2')).toBe(null);
 			expect(formData.get('button3')).toBe(null);
 			expect(formData.get('button4')).toBe(null);
+		});
+
+		it('Sends one entry per selected option for a <select multiple>.', () => {
+			const form = document.createElement('form');
+			const select = <HTMLSelectElement>document.createElement('select');
+			const optionA = <HTMLOptionElement>document.createElement('option');
+			const optionB = <HTMLOptionElement>document.createElement('option');
+			const optionC = <HTMLOptionElement>document.createElement('option');
+
+			select.name = 's';
+			select.multiple = true;
+			optionA.value = 'a';
+			optionA.selected = true;
+			optionB.value = 'b';
+			optionB.selected = true;
+			optionC.value = 'c';
+
+			select.appendChild(optionA);
+			select.appendChild(optionB);
+			select.appendChild(optionC);
+			form.appendChild(select);
+
+			const formData = new window.FormData(form);
+
+			expect(formData.getAll('s')).toEqual(['a', 'b']);
+		});
+
+		it('Sends only the selected value for a <select> without "multiple".', () => {
+			const form = document.createElement('form');
+			const select = <HTMLSelectElement>document.createElement('select');
+			const optionA = <HTMLOptionElement>document.createElement('option');
+			const optionB = <HTMLOptionElement>document.createElement('option');
+
+			select.name = 's';
+			optionA.value = 'a';
+			optionB.value = 'b';
+			optionB.selected = true;
+
+			select.appendChild(optionA);
+			select.appendChild(optionB);
+			form.appendChild(select);
+
+			const formData = new window.FormData(form);
+
+			expect(formData.getAll('s')).toEqual(['b']);
 		});
 
 		it('Supports sending in an HTMLFormElement and a submitter to the constructor.', () => {
