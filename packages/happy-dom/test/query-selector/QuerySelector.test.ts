@@ -512,6 +512,46 @@ describe('QuerySelector', () => {
 			expect(elements[1] === container.children[0].children[1].children[1]).toBe(true);
 		});
 
+		it('Returns no elements for "[attr1^=\"\"]" with empty value (issue #2506).', () => {
+			const container = document.createElement('div');
+			container.innerHTML = '<i attr1=""></i><i attr1="-x"></i>';
+			const elements = container.querySelectorAll('[attr1^=""]');
+
+			expect(elements.length).toBe(0);
+		});
+
+		it('Returns no elements for "[attr1$=\"\"]" with empty value (issue #2506).', () => {
+			const container = document.createElement('div');
+			container.innerHTML = '<i attr1=""></i><i attr1="-x"></i>';
+			const elements = container.querySelectorAll('[attr1$=""]');
+
+			expect(elements.length).toBe(0);
+		});
+
+		it('Returns no elements for "[attr1~=\"\"]" with empty value (issue #2506).', () => {
+			const container = document.createElement('div');
+			container.innerHTML = '<i attr1=""></i><i attr1="-x"></i>';
+			const elements = container.querySelectorAll('[attr1~=""]');
+
+			expect(elements.length).toBe(0);
+		});
+
+		it('Returns no elements for "[attr1*=\"\"]" with empty value (issue #2506).', () => {
+			const container = document.createElement('div');
+			container.innerHTML = '<i attr1=""></i><i attr1="-x"></i>';
+			const elements = container.querySelectorAll('[attr1*=""]');
+
+			expect(elements.length).toBe(0);
+		});
+
+		it('Returns matching elements for "[attr1|=\"\"]" with empty value (issue #2506).', () => {
+			const container = document.createElement('div');
+			container.innerHTML = '<i attr1=""></i><i attr1="-x"></i><i attr1="y"></i>';
+			const elements = container.querySelectorAll('[attr1|=""]');
+
+			expect(elements.length).toBe(2);
+		});
+
 		it('Returns all elements with matching attributes using "[attr1="word1.word2"]".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
