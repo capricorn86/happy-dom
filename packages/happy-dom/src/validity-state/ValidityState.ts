@@ -93,12 +93,16 @@ export default class ValidityState {
 	 * @returns "true" if valid.
 	 */
 	public get rangeOverflow(): boolean {
+		const maxAttr = this.element.getAttribute('max');
+		// Per HTML spec, an empty or unparseable max attribute is ignored (no maximum).
+		// Number('') is 0, but '' is not a valid floating-point number.
+		const max = maxAttr !== null && maxAttr.trim() !== '' && !isNaN(Number(maxAttr)) ? Number(maxAttr) : null;
 		return (
 			this.element[PropertySymbol.localName] === 'input' &&
-			this.element.hasAttribute('max') &&
+			max !== null &&
 			(this.element.type === 'number' || this.element.type === 'range') &&
 			(<HTMLInputElement>this.element).value.length > 0 &&
-			Number((<HTMLInputElement>this.element).value) > Number(this.element.getAttribute('max'))
+			Number((<HTMLInputElement>this.element).value) > max
 		);
 	}
 
@@ -108,12 +112,15 @@ export default class ValidityState {
 	 * @returns "true" if valid.
 	 */
 	public get rangeUnderflow(): boolean {
+		const minAttr = this.element.getAttribute('min');
+		// Per HTML spec, an empty or unparseable min attribute is ignored (no minimum).
+		const min = minAttr !== null && minAttr.trim() !== '' && !isNaN(Number(minAttr)) ? Number(minAttr) : null;
 		return (
 			this.element[PropertySymbol.localName] === 'input' &&
-			this.element.hasAttribute('min') &&
+			min !== null &&
 			(this.element.type === 'number' || this.element.type === 'range') &&
 			(<HTMLInputElement>this.element).value.length > 0 &&
-			Number((<HTMLInputElement>this.element).value) < Number(this.element.getAttribute('min'))
+			Number((<HTMLInputElement>this.element).value) < min
 		);
 	}
 
@@ -123,17 +130,28 @@ export default class ValidityState {
 	 * @returns "true" if valid.
 	 */
 	public get stepMismatch(): boolean {
-		return (
-			this.element[PropertySymbol.localName] === 'input' &&
-			(this.element.type === 'number' || this.element.type === 'range') &&
-			((this.element.hasAttribute('step') &&
-				this.element.getAttribute('step') !== 'any' &&
-				Number((<HTMLInputElement>this.element).value) %
-					Number(this.element.getAttribute('step')) !==
-					0) ||
-				(!this.element.hasAttribute('step') &&
-					Number((<HTMLInputElement>this.element).value) % 1 !== 0))
-		);
+		if (
+			this.element[PropertySymbol.localName] !== 'input' ||
+			(this.element.type !== 'number' && this.element.type !== 'range')
+		) {
+			return false;
+		}
+		const stepAttr = this.element.getAttribute('step');
+		// Per HTML spec, 'any' means no step constraint.
+		if (stepAttr === 'any') {
+			return false;
+		}
+		// Per HTML spec, if step is absent, empty, unparseable, zero or negative,
+		// the default step (1) applies.
+		let step: number | null = null;
+		if (stepAttr !== null && stepAttr.trim() !== '') {
+			const parsed = Number(stepAttr);
+			if (!isNaN(parsed) && parsed > 0) {
+				step = parsed;
+			}
+		}
+		const effectiveStep = step ?? 1;
+		return Number((<HTMLInputElement>this.element).value) % effectiveStep !== 0;
 	}
 
 	/**

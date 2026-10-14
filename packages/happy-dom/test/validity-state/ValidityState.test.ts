@@ -109,6 +109,17 @@ describe('ValidityState', () => {
 
 			expect(input.validity.rangeOverflow).toBe(false);
 		});
+
+		it('Returns "false" when "max" is empty (issue #2484).', () => {
+			const input = <HTMLInputElement>document.createElement('input');
+
+			input.value = '5';
+			input.setAttribute('max', '');
+			input.type = 'number';
+
+			expect(input.validity.rangeOverflow).toBe(false);
+			expect(input.validity.valid).toBe(true);
+		});
 	});
 
 	describe('get rangeUnderflow()', () => {
@@ -139,6 +150,17 @@ describe('ValidityState', () => {
 
 			expect(input.validity.rangeUnderflow).toBe(false);
 		});
+
+		it('Returns "false" when "min" is empty (issue #2484).', () => {
+			const input = <HTMLInputElement>document.createElement('input');
+
+			input.value = '-5';
+			input.setAttribute('min', '');
+			input.type = 'number';
+
+			expect(input.validity.rangeUnderflow).toBe(false);
+			expect(input.validity.valid).toBe(true);
+		});
 	});
 
 	describe('get stepMismatch()', () => {
@@ -168,6 +190,28 @@ describe('ValidityState', () => {
 			input.value = '10';
 
 			expect(input.validity.stepMismatch).toBe(false);
+		});
+
+		it('Returns "false" when "step" is empty and value matches default step (issue #2484).', () => {
+			const input = <HTMLInputElement>document.createElement('input');
+
+			input.value = '5';
+			input.setAttribute('step', '');
+			input.type = 'number';
+
+			expect(input.validity.stepMismatch).toBe(false);
+			expect(input.validity.valid).toBe(true);
+		});
+
+		it('Returns "true" when "step" is empty and value does not match default step (issue #2484).', () => {
+			const input = <HTMLInputElement>document.createElement('input');
+
+			input.value = '0.5';
+			input.setAttribute('step', '');
+			input.type = 'number';
+
+			expect(input.validity.stepMismatch).toBe(true);
+			expect(input.validity.valid).toBe(false);
 		});
 	});
 
