@@ -225,16 +225,34 @@ export default class CSSComputedStyle {
 				const rulesAndVariables = CSSTextParser.parse(elementCSSText);
 				const rules = rulesAndVariables.rules;
 
+				// The values inherited from the parent, taken before this element's rules change them, so a winning "inherit" can restore them.
+				const parentPropertyManager = elementCSSText.includes('inherit')
+					? inheritedPropertyManager.clone()
+					: null;
+
 				Object.assign(cssVariables, rulesAndVariables.variables);
 
 				for (const { name, value, important } of rules) {
-					const parsedValue = CSSVariableFormatter.resolveVariables(value.trim(), cssVariables);
+					let parsedValue = CSSVariableFormatter.resolveVariables(value.trim(), cssVariables);
 
-					if (
-						parsedValue &&
-						parsedValue !== 'inherit' &&
-						(!propertyManager.get(name)?.important || important)
-					) {
+					if (parsedValue === 'inherit') {
+						if (propertyManager.get(name)?.important && !important) {
+							continue;
+						}
+
+						const parentValue = parentPropertyManager?.get(name)?.value;
+
+						// "inherit" overrides any earlier declaration, also when the parent has no value to inherit.
+						if (!parentValue) {
+							propertyManager.remove(name);
+							inheritedPropertyManager.remove(name);
+							continue;
+						}
+
+						parsedValue = parentValue;
+					}
+
+					if (parsedValue && (!propertyManager.get(name)?.important || important)) {
 						const affectedKeys = propertyManager.set(name, parsedValue, important);
 
 						if ((<any>CSSComputedStyleInheritedProperties)[name]) {
