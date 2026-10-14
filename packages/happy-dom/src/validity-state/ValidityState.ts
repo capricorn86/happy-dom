@@ -96,7 +96,8 @@ export default class ValidityState {
 		const maxAttr = this.element.getAttribute('max');
 		// Per HTML spec, an empty or unparseable max attribute is ignored (no maximum).
 		// Number('') is 0, but '' is not a valid floating-point number.
-		const max = maxAttr !== null && maxAttr.trim() !== '' && !isNaN(Number(maxAttr)) ? Number(maxAttr) : null;
+		const max =
+			maxAttr !== null && maxAttr.trim() !== '' && !isNaN(Number(maxAttr)) ? Number(maxAttr) : null;
 		return (
 			this.element[PropertySymbol.localName] === 'input' &&
 			max !== null &&
@@ -114,7 +115,8 @@ export default class ValidityState {
 	public get rangeUnderflow(): boolean {
 		const minAttr = this.element.getAttribute('min');
 		// Per HTML spec, an empty or unparseable min attribute is ignored (no minimum).
-		const min = minAttr !== null && minAttr.trim() !== '' && !isNaN(Number(minAttr)) ? Number(minAttr) : null;
+		const min =
+			minAttr !== null && minAttr.trim() !== '' && !isNaN(Number(minAttr)) ? Number(minAttr) : null;
 		return (
 			this.element[PropertySymbol.localName] === 'input' &&
 			min !== null &&
