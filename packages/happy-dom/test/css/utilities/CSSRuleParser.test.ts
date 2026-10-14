@@ -17,11 +17,13 @@ describe('CSSRuleParser', () => {
 	});
 
 	describe('parseFromString()', () => {
-		it('Parses CSS into an Array of CSSRule.', () => {
+		it('Parses CSS into a CSSRuleList.', () => {
 			const cssStyleSheet = new window.CSSStyleSheet();
 			const cssRules = new CSSRuleParser(cssStyleSheet).parseFromString(CSSRuleParserMock);
 
 			expect(cssRules.length).toBe(11);
+			expect(cssRules.item(0)).not.toBeNull();
+			expect(cssRules.item(11)).toBeNull();
 
 			// CSSStyleRule
 			expect((<CSSStyleRule>cssRules[0]).parentRule).toBe(null);

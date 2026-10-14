@@ -1,5 +1,6 @@
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import CSSParser from './utilities/CSSRuleParser.js';
+import CSSRuleList from './CSSRuleList.js';
 import type CSSRule from './CSSRule.js';
 import type MediaList from './MediaList.js';
 import type BrowserWindow from '../window/BrowserWindow.js';
@@ -15,7 +16,7 @@ export default class CSSStyleSheet {
 	// Injected by WindowContextClassExtender
 	protected declare [PropertySymbol.window]: BrowserWindow;
 
-	public readonly cssRules: CSSRule[] = [];
+	public readonly cssRules: CSSRuleList;
 
 	// TODO: MediaList is not fully implemented.
 	public media: MediaList | string;
@@ -43,6 +44,7 @@ export default class CSSStyleSheet {
 		this.title = options && options.title ? options.title : '';
 		this.alternate = options && options.alternate ? options.alternate : false;
 		this.disabled = options && options.disabled ? options.disabled : false;
+		this.cssRules = new CSSRuleList();
 	}
 
 	/**

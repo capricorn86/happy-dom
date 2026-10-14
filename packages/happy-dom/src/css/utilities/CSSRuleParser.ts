@@ -1,3 +1,4 @@
+import CSSRuleList from '../CSSRuleList.js';
 import type CSSRule from '../CSSRule.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import type CSSStyleSheet from '../CSSStyleSheet.js';
@@ -35,11 +36,11 @@ export default class CSSRuleParser {
 	 * @param cssText CSS code.
 	 * @returns CSS rules.
 	 */
-	public parseFromString(cssText: string): CSSRule[] {
+	public parseFromString(cssText: string): CSSRuleList {
 		const parentStyleSheet = this.#parentStyleSheet;
 		const window = parentStyleSheet[PropertySymbol.window];
 		const css = cssText.replace(COMMENT_REGEXP, '');
-		const cssRules = [];
+		const cssRules = new CSSRuleList();
 		const regExp = /{|}/gm;
 		const stack: CSSRule[] = [];
 		let parentRule: CSSRule | null = null;
