@@ -149,6 +149,101 @@ describe('ServerRendererServer', () => {
 			);
 		});
 
+		it('Rejects requests and redirects to a different origin.', async () => {
+			const fetchMock = vi.spyOn(global, 'fetch').mockImplementation((url: any): any => {
+				if (url === 'http://example.com/cross-origin-redirect') {
+					return Promise.resolve(<Response>{
+						headers: new Headers({
+							Location: 'http://127.0.0.1:1234/secret'
+						}),
+						status: 302,
+						body: null
+					});
+				}
+				if (url === 'http://example.com/same-origin-redirect') {
+					return Promise.resolve(<Response>{
+						headers: new Headers({ Location: '/final' }),
+						status: 302,
+						body: null
+					});
+				}
+				return Promise.resolve(<Response>{
+					headers: new Headers({ 'Content-Type': 'text/plain' }),
+					status: 200,
+					body: null
+				});
+			});
+			const server = new ServerRendererServer(
+				ServerRendererConfigurationFactory.createConfiguration({
+					server: {
+						serverURL: 'http://localhost:3000',
+						targetOrigin: 'http://example.com'
+					}
+				})
+			);
+			await server.start();
+
+			const sendRequest = (
+				url: string
+			): Promise<{
+				statusCode: number;
+				headers: { [name: string]: string };
+				body: string[];
+			}> =>
+				new Promise((resolve) => {
+					const result = {
+						statusCode: 0,
+						headers: {},
+						body: []
+					};
+					requestHandler!(
+						<any>{
+							url,
+							headers: {
+								':path': url,
+								':method': 'GET',
+								Host: 'localhost:3000'
+							}
+						},
+						<Http2ServerResponse>(<unknown>{
+							set statusCode(value: number) {
+								result.statusCode = value;
+							},
+							setHeader: (name: string, value: string): void => {
+								result.headers[name.toLowerCase()] = value;
+							},
+							write: (chunk: Buffer): void => {
+								result.body.push(chunk.toString());
+							},
+							end: (chunk?: string | Buffer): void => {
+								if (chunk) {
+									result.body.push(chunk.toString());
+								}
+								resolve(result);
+							}
+						})
+					);
+				});
+
+			const directRequest = await sendRequest('//127.0.0.1:1234/secret');
+			expect(directRequest.statusCode).toBe(400);
+			expect(directRequest.body).toEqual(['Bad Request']);
+			expect(fetchMock).not.toHaveBeenCalled();
+
+			const crossOriginRedirect = await sendRequest('/cross-origin-redirect');
+			expect(crossOriginRedirect.statusCode).toBe(302);
+			expect(crossOriginRedirect.headers.location).toBe('http://127.0.0.1:1234/secret');
+			expect(fetchMock).toHaveBeenCalledTimes(1);
+
+			const sameOriginRedirect = await sendRequest('/same-origin-redirect');
+			expect(sameOriginRedirect.statusCode).toBe(200);
+			expect(fetchMock).toHaveBeenCalledTimes(3);
+			expect(fetchMock).toHaveBeenLastCalledWith('http://example.com/final', {
+				headers: { Host: 'localhost:3000' },
+				redirect: 'manual'
+			});
+		});
+
 		for (const protocol of ['http:', 'https:']) {
 			it(`Starts server and handles incoming request for HTML page (${protocol}).`, async () => {
 				vi.spyOn(global, 'fetch').mockImplementation((url: any, options?: any): any => {
@@ -157,7 +252,8 @@ describe('ServerRendererServer', () => {
 							headers: {
 								Host: 'localhost:3000',
 								'X-Test-Request': 'true'
-							}
+							},
+							redirect: 'manual'
 						});
 						return Promise.resolve(<Response>{
 							headers: new Headers({ 'Content-Type': 'text/html' }),
@@ -290,7 +386,8 @@ describe('ServerRendererServer', () => {
 								headers: {
 									Host: 'localhost:8080',
 									'X-Test-Request': 'true'
-								}
+								},
+								redirect: 'manual'
 							});
 							return Promise.resolve(<Response>{
 								headers: new Headers({ 'Content-Type': 'text/html' }),
@@ -586,7 +683,8 @@ describe('ServerRendererServer', () => {
 							headers: {
 								Host: 'localhost:3000',
 								'X-Test-Request': 'true'
-							}
+							},
+							redirect: 'manual'
 						});
 						return Promise.resolve(<Response>{
 							headers: new Headers({ 'Content-Type': 'text/html' }),
