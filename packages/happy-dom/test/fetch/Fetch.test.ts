@@ -840,6 +840,94 @@ describe('Fetch', () => {
 			}
 		}
 
+		for (const credentials of <const>[undefined, 'omit', 'same-origin', 'include']) {
+			for (const status of [301, 302, 303, 307, 308]) {
+				it.each([
+					{
+						name: 'hostname change',
+						pageURL: 'https://example.com/',
+						urls: ['https://example.com/start', 'https://other.example/target'],
+						preserve: false
+					},
+					{
+						name: 'port change',
+						pageURL: 'https://example.com/',
+						urls: ['https://example.com/start', 'https://example.com:8080/target'],
+						preserve: false
+					},
+					{
+						name: 'scheme change',
+						pageURL: 'http://example.com/',
+						urls: ['http://example.com/start', 'https://example.com/target'],
+						preserve: false
+					},
+					{
+						name: 'same-origin relative redirect',
+						pageURL: 'https://example.com/',
+						urls: ['https://example.com/start', '/target'],
+						preserve: true
+					},
+					{
+						name: 'same-origin redirect with a cross-origin page',
+						pageURL: 'https://other.example/',
+						urls: ['https://example.com/start', 'https://example.com:443/target'],
+						preserve: true
+					},
+					{
+						name: 'cross-origin redirect back to the page origin',
+						pageURL: 'https://other.example/',
+						urls: ['https://example.com/start', 'https://other.example/target'],
+						preserve: false
+					},
+					{
+						name: 'cross-origin redirect chain returning to the initial origin',
+						pageURL: 'https://example.com/',
+						urls: [
+							'https://example.com/start',
+							'https://other.example/target',
+							'https://example.com/end'
+						],
+						preserve: false
+					}
+				])(
+					`Handles Authorization on $name (${status}, credentials: ${credentials}).`,
+					async ({ pageURL, urls, preserve }) => {
+						const window = new Window({ url: pageURL });
+						const requests: IRequestHistoryEntry[] = [];
+						const beforeResponse: IBeforeResponse = ({ request, response }) => {
+							response.rawHeaders = ['Access-Control-Allow-Origin', '*'];
+							if (request.options.method === 'OPTIONS') {
+								return;
+							}
+							requests.push(request);
+							const location = urls[requests.length];
+							if (location) {
+								response.statusCode = status;
+								response.rawHeaders.push('Location', location);
+							}
+						};
+						mockNetwork('http', { beforeResponse });
+						mockNetwork('https', { beforeResponse });
+
+						const response = await window.fetch(urls[0], {
+							credentials,
+							headers: { aUtHoRiZaTiOn: 'Bearer test-token' }
+						});
+
+						expect(response.status).toBe(200);
+						expect(requests).toHaveLength(urls.length);
+						for (const [index, request] of requests.entries()) {
+							const authorization = Object.entries(request.options.headers ?? {}).find(
+								([name]) => name.toLowerCase() === 'authorization'
+							)?.[1];
+							expect(authorization).toBe(index === 0 || preserve ? 'Bearer test-token' : undefined);
+						}
+						await window.happyDOM.close();
+					}
+				);
+			}
+		}
+
 		it('Should cancel a redirect loop after 20 tries.', async () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url1 = 'https://localhost:8080/test/';
