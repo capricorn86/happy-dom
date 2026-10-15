@@ -7,6 +7,7 @@ import Fetch from '../../src/fetch/Fetch.js';
 import type Request from '../../src/fetch/Request';
 import type Response from '../../src/fetch/Response';
 import type PopStateEvent from '../../src/event/events/PopStateEvent.js';
+import type HashChangeEvent from '../../src/event/events/HashChangeEvent.js';
 
 describe('History', () => {
 	let browserFrame: IBrowserFrame;
@@ -399,6 +400,42 @@ describe('History', () => {
 				}
 			]);
 		});
+
+		it("Doesn't dispatch 'hashchange' when the hash changes.", async () => {
+			const events: HashChangeEvent[] = [];
+
+			browserFrame.url = 'https://www.example.com/';
+			browserFrame.window.addEventListener('hashchange', (event) => {
+				events.push(<HashChangeEvent>event);
+			});
+
+			browserFrame.window.history.pushState(null, '', '#test');
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(browserFrame.window.location.href).toBe('https://www.example.com/#test');
+			expect(events.length).toBe(0);
+		});
+
+		it("Dispatches 'hashchange' when navigating back to an entry with a different hash.", async () => {
+			const events: HashChangeEvent[] = [];
+
+			browserFrame.url = 'https://www.example.com/';
+			browserFrame.window.addEventListener('hashchange', (event) => {
+				events.push(<HashChangeEvent>event);
+			});
+
+			browserFrame.window.history.pushState(null, '', '#test1');
+			browserFrame.window.history.pushState(null, '', '#test2');
+			browserFrame.window.history.back();
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(browserFrame.window.location.href).toBe('https://www.example.com/#test1');
+			expect(events.length).toBe(1);
+			expect(events[0].oldURL).toBe('https://www.example.com/#test2');
+			expect(events[0].newURL).toBe('https://www.example.com/#test1');
+		});
 	});
 
 	describe('replaceState()', () => {
@@ -452,6 +489,22 @@ describe('History', () => {
 					formData: null
 				}
 			]);
+		});
+
+		it("Doesn't dispatch 'hashchange' when the hash changes.", async () => {
+			const events: HashChangeEvent[] = [];
+
+			browserFrame.url = 'https://www.example.com/';
+			browserFrame.window.addEventListener('hashchange', (event) => {
+				events.push(<HashChangeEvent>event);
+			});
+
+			browserFrame.window.history.replaceState(null, '', '#test');
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(browserFrame.window.location.href).toBe('https://www.example.com/#test');
+			expect(events.length).toBe(0);
 		});
 	});
 });
