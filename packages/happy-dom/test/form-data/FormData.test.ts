@@ -348,6 +348,29 @@ describe('FormData', () => {
 			expect(formData.getAll('key3')).toEqual([file]);
 		});
 
+		it('Uses the filename when appending a Blob or a File.', async () => {
+			const formData = new window.FormData();
+			const blob = new Blob(['blobContent'], { type: 'image/png' });
+			const file = new File(['fileContent'], 'original.txt', { type: 'text/plain' });
+
+			formData.append('key1', blob, 'picture.png');
+			formData.append('key2', file, 'renamed.txt');
+			formData.append('key3', blob, '');
+
+			const value1 = <File>formData.get('key1');
+			const value2 = <File>formData.get('key2');
+			const value3 = <File>formData.get('key3');
+
+			expect(value1).toBeInstanceOf(File);
+			expect(value1.name).toBe('picture.png');
+			expect(value1.type).toBe('image/png');
+			expect(await value1.text()).toBe('blobContent');
+			expect(value2.name).toBe('renamed.txt');
+			expect(value2.type).toBe('text/plain');
+			expect(await value2.text()).toBe('fileContent');
+			expect(value3.name).toBe('');
+		});
+
 		it('Throws an error if a filename is provided and the value is not an instance of a Blob.', () => {
 			const formData = new window.FormData();
 			expect(() => formData.append('key1', 'value1', 'filename')).toThrow(
@@ -426,6 +449,27 @@ describe('FormData', () => {
 
 			expect(formData.getAll('key1')).toEqual(['value2']);
 			expect(formData.getAll('key2')).toEqual(['value3']);
+		});
+
+		it('Uses the filename when setting a Blob or a File.', async () => {
+			const formData = new window.FormData();
+			const blob = new Blob(['blobContent'], { type: 'image/png' });
+			const file = new File(['fileContent'], 'original.txt', { type: 'text/plain' });
+
+			formData.set('key1', blob, 'picture.png');
+			formData.set('key2', file, 'renamed.txt');
+			formData.set('key3', 'value');
+			formData.set('key3', blob, 'replaced.png');
+
+			const value1 = <File>formData.get('key1');
+			const value2 = <File>formData.get('key2');
+			const value3 = <File>formData.get('key3');
+
+			expect(value1.name).toBe('picture.png');
+			expect(await value1.text()).toBe('blobContent');
+			expect(value2.name).toBe('renamed.txt');
+			expect(await value2.text()).toBe('fileContent');
+			expect(value3.name).toBe('replaced.png');
 		});
 	});
 
