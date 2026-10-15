@@ -1171,6 +1171,107 @@ describe('SyncFetch', () => {
 			}
 		}
 
+		for (const credentials of <const>[undefined, 'omit', 'same-origin', 'include']) {
+			for (const status of [301, 302, 303, 307, 308]) {
+				it.each([
+					{
+						name: 'hostname change',
+						pageURL: 'https://example.com/',
+						urls: ['https://example.com/start', 'https://other.example/target'],
+						preserve: false
+					},
+					{
+						name: 'port change',
+						pageURL: 'https://example.com/',
+						urls: ['https://example.com/start', 'https://example.com:8080/target'],
+						preserve: false
+					},
+					{
+						name: 'scheme change',
+						pageURL: 'http://example.com/',
+						urls: ['http://example.com/start', 'https://example.com/target'],
+						preserve: false
+					},
+					{
+						name: 'same-origin relative redirect',
+						pageURL: 'https://example.com/',
+						urls: ['https://example.com/start', '/target'],
+						preserve: true
+					},
+					{
+						name: 'same-origin redirect with a cross-origin page',
+						pageURL: 'https://other.example/',
+						urls: ['https://example.com/start', 'https://example.com:443/target'],
+						preserve: true
+					},
+					{
+						name: 'cross-origin redirect back to the page origin',
+						pageURL: 'https://other.example/',
+						urls: ['https://example.com/start', 'https://other.example/target'],
+						preserve: false
+					},
+					{
+						name: 'cross-origin redirect chain returning to the initial origin',
+						pageURL: 'https://example.com/',
+						urls: [
+							'https://example.com/start',
+							'https://other.example/target',
+							'https://example.com/end'
+						],
+						preserve: false
+					}
+				])(
+					`Handles Authorization on $name (${status}, credentials: ${credentials}).`,
+					({ pageURL, urls, preserve }) => {
+						browserFrame.url = pageURL;
+						const scriptBuilder = vi.spyOn(SyncFetchScriptBuilder, 'getScript');
+						const requests: Parameters<typeof SyncFetchScriptBuilder.getScript>[0][] = [];
+						mockModule('child_process', {
+							execFileSync: () => {
+								const request = scriptBuilder.mock.calls.at(-1)![0];
+								let location: string | undefined;
+								if (request.method !== 'OPTIONS') {
+									requests.push(request);
+									location = urls[requests.length];
+								}
+								return JSON.stringify({
+									error: null,
+									incomingMessage: {
+										statusCode: location ? status : 200,
+										rawHeaders: [
+											'Access-Control-Allow-Origin',
+											'*',
+											...(location ? ['Location', location] : [])
+										],
+										data: ''
+									}
+								});
+							}
+						});
+
+						const response = new SyncFetch({
+							browserFrame,
+							window,
+							url: urls[0],
+							init: {
+								credentials,
+								headers: { aUtHoRiZaTiOn: 'Bearer test-token' }
+							}
+						}).send();
+
+						expect(response.status).toBe(200);
+						expect(requests).toHaveLength(urls.length);
+						for (const [index, request] of requests.entries()) {
+							const authorization = Object.entries(request.headers).find(
+								([name]) => name.toLowerCase() === 'authorization'
+							)?.[1];
+							expect(authorization).toBe(index === 0 || preserve ? 'Bearer test-token' : undefined);
+						}
+					}
+				);
+			}
+		}
+
 		it('Should cancel a redirect loop after 20 tries.', () => {
 			browserFrame.url = 'https://localhost:8080/';
 
