@@ -807,7 +807,7 @@ describe('HTMLFormElement', () => {
 				});
 			});
 
-			const browser = new Browser();
+			const browser = new Browser({ settings: { enableIframePageLoading: true } });
 			const page = browser.newPage();
 			const oldWindow = page.mainFrame.window;
 
@@ -865,7 +865,7 @@ describe('HTMLFormElement', () => {
 				});
 			});
 
-			const browser = new Browser();
+			const browser = new Browser({ settings: { enableIframePageLoading: true } });
 			const page = browser.newPage();
 			const oldWindow = page.mainFrame.window;
 

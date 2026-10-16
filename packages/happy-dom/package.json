@@ -24,7 +24,8 @@
 		"access": "public"
 	},
 	"scripts": {
-		"compile": "npm run compile:build-css-properties && tsc && npm run compile:build-version-file",
+		"compile": "npm run compile:build-css-properties && npm run compile:build-public-suffix-list && tsc && npm run compile:build-version-file",
+		"compile:build-public-suffix-list": "node ./bin/build-public-suffix-list.cjs",
 		"compile:build-version-file": "node ./bin/build-version-file.cjs",
 		"compile:build-css-properties": "node ./bin/build-css-properties.cjs",
 		"watch": "tsc -w --preserveWatchOutput",

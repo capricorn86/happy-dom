@@ -363,6 +363,8 @@ export default interface ICSSStyleDeclaration {
 	'lighting-color': string;
 	lineHeight: string;
 	'line-height': string;
+	linkParameters: string;
+	'link-parameters': string;
 	listStyleImage: string;
 	'list-style-image': string;
 	listStylePosition: string;

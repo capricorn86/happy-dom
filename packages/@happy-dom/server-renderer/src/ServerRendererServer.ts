@@ -131,7 +131,28 @@ export default class ServerRendererServer {
 		request: Http2.Http2ServerRequest,
 		response: Http2.Http2ServerResponse
 	): Promise<void> {
-		const url = new URL(request.url, this.#configuration.server.targetOrigin!);
+		let targetOrigin: URL;
+		let url: URL;
+		try {
+			targetOrigin = new URL(this.#configuration.server.targetOrigin!);
+			if (!request.url) {
+				throw new TypeError('Request URL is missing.');
+			}
+			url = new URL(request.url, targetOrigin);
+		} catch {
+			response.statusCode = 400;
+			response.setHeader('Content-Type', 'text/plain; charset=utf-8');
+			response.end('Bad Request');
+			return;
+		}
+
+		if (url.origin !== targetOrigin.origin) {
+			response.statusCode = 400;
+			response.setHeader('Content-Type', 'text/plain; charset=utf-8');
+			response.end('Bad Request');
+			return;
+		}
+
 		const headers: { [name: string]: string } = {};
 
 		for (const name of Object.keys(request.headers)) {
@@ -142,7 +163,26 @@ export default class ServerRendererServer {
 			}
 		}
 
-		const fetchResponse = await fetch(url.href, { headers });
+		let fetchURL = url;
+		let fetchResponse = await fetch(fetchURL.href, { headers, redirect: 'manual' });
+		let redirectCount = 0;
+		while ([301, 302, 303, 307, 308].includes(fetchResponse.status)) {
+			const location = fetchResponse.headers.get('location');
+			if (!location) {
+				break;
+			}
+			const redirectURL = new URL(location, fetchURL);
+			if (redirectURL.origin !== targetOrigin.origin) {
+				break;
+			}
+			if (redirectCount >= 20) {
+				throw new TypeError('Failed to fetch. Maximum redirect count exceeded.');
+			}
+			fetchURL = redirectURL;
+			fetchResponse = await fetch(fetchURL.href, { headers, redirect: 'manual' });
+			redirectCount++;
+		}
+
 		const isCacheEnabled =
 			!this.#configuration.server.disableCache && this.#configuration.server.cacheTime > 0;
 		const isCacheQueueEnabled = isCacheEnabled && !this.#configuration.server.disableCacheQueue;

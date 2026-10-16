@@ -411,7 +411,10 @@ export default class HTMLIFrameElement extends HTMLElement {
 			return;
 		}
 
-		if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+		if (
+			browserFrame.page.context.browser.settings.disableIframePageLoading ||
+			!browserFrame.page.context.browser.settings.enableIframePageLoading
+		) {
 			const error = new window.DOMException(
 				`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`,
 				DOMExceptionNameEnum.notSupportedError

@@ -2,7 +2,6 @@
 
 const Path = require('path');
 const FS = require('fs/promises');
-const packageJson = require('../package.json');
 const Prettier = require('prettier');
 const PrettierConfig = require('../../../.prettierrc.cjs');
 const Chalk = require('chalk').default;
