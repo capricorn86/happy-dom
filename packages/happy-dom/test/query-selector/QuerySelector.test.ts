@@ -2457,6 +2457,30 @@ describe('QuerySelector', () => {
 			expect(div.matches(':root')).toBe(false);
 		});
 
+		it('Matches element for pseudo selector ":empty" for #2443', () => {
+			const div = document.createElement('div');
+
+			div.innerHTML = `
+                <span></span>
+                <span><!-- Comment --></span>
+                <span>Text</span>
+                <span> </span>
+                <span><b></b></span>
+            `;
+
+			expect(div.children[0].matches(':empty')).toBe(true);
+			expect(div.children[1].matches(':empty')).toBe(true);
+			expect(div.children[2].matches(':empty')).toBe(false);
+			expect(div.children[3].matches(':empty')).toBe(false);
+			expect(div.children[4].matches(':empty')).toBe(false);
+
+			const span = document.createElement('span');
+
+			span.appendChild(document.createTextNode(''));
+
+			expect(span.matches(':empty')).toBe(true);
+		});
+
 		it('Matches unicode characters for #2034', () => {
 			// Apostrophe in double-quoted attribute value
 			document.body.innerHTML = `
