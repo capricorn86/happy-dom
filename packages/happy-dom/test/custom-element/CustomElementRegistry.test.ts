@@ -53,6 +53,18 @@ describe('CustomElementRegistry', () => {
 			expect(container.innerHTML).toBe('<custom-element></custom-element>');
 		});
 
+		it('Upgrades an undefined custom element when it is defined while connected.', () => {
+			const customElement = document.createElement('custom-element');
+			document.body.appendChild(customElement);
+
+			window.customElements.define('custom-element', CustomElement);
+
+			expect(customElement).toBeInstanceOf(CustomElement);
+			expect(customElement.shadowRoot?.querySelector('.propKey')?.textContent).toContain(
+				'key1 is "null" and key2 is "null".'
+			);
+		});
+
 		it('Throws an error if tag name does not contain "-".', () => {
 			expect(() => customElements.define('element', CustomElement)).toThrow(
 				new window.DOMException(

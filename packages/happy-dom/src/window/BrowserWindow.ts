@@ -6,6 +6,10 @@ import { ReadableStream } from 'stream/web';
 import { URLSearchParams } from 'url';
 import VM from 'vm';
 import * as PropertySymbol from '../PropertySymbol.js';
+import type Animation from '../animation/Animation.js';
+import AnimationTimeline from '../animation/AnimationTimeline.js';
+import DocumentTimeline from '../animation/DocumentTimeline.js';
+import type KeyframeEffect from '../animation/KeyframeEffect.js';
 import Base64 from '../base64/Base64.js';
 import BrowserErrorCaptureEnum from '../browser/enums/BrowserErrorCaptureEnum.js';
 import type IConsole from '../console/IConsole.js';
@@ -402,6 +406,10 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly Element = Element;
 	public readonly CharacterData = CharacterData;
 	public readonly DocumentType = DocumentType;
+	public declare readonly Animation: typeof Animation;
+	public readonly AnimationTimeline = AnimationTimeline;
+	public readonly DocumentTimeline = DocumentTimeline;
+	public declare readonly KeyframeEffect: typeof KeyframeEffect;
 
 	// Nodes that can be created using "new" keyword (populated by WindowContextClassExtender)
 	public declare readonly Document: typeof Document;

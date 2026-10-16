@@ -20,7 +20,11 @@ describe('HTMLIFrameElement', () => {
 
 	beforeEach(() => {
 		window = new Window({
-			settings: { enableJavaScriptEvaluation: true, suppressCodeGenerationFromStringsWarning: true }
+			settings: {
+				enableJavaScriptEvaluation: true,
+				enableIframePageLoading: true,
+				suppressCodeGenerationFromStringsWarning: true
+			}
 		});
 		document = window.document;
 		element = <HTMLIFrameElement>document.createElement('iframe');
@@ -207,7 +211,7 @@ describe('HTMLIFrameElement', () => {
 		});
 
 		it('Resolve the value of the src attribute when the srcdoc attribute has been removed', async () => {
-			const browser = new Browser();
+			const browser = new Browser({ settings: { enableIframePageLoading: true } });
 			const page = browser.newPage();
 			const window = page.mainFrame.window;
 			const document = window.document;
@@ -294,7 +298,22 @@ describe('HTMLIFrameElement', () => {
 		});
 
 		it(`Doesn't load anything if the Happy DOM setting "disableIframePageLoading" is set to true.`, () => {
-			const browser = new Browser({ settings: { disableIframePageLoading: true } });
+			const browser = new Browser({
+				settings: { enableIframePageLoading: true, disableIframePageLoading: true }
+			});
+			const page = browser.newPage();
+			const window = page.mainFrame.window;
+			const document = window.document;
+			const element = <HTMLIFrameElement>document.createElement('iframe');
+
+			element.src = 'https://localhost:8080/iframe.html';
+			document.body.appendChild(element);
+			expect(element.contentWindow === null).toBe(true);
+			expect(element.contentDocument === null).toBe(true);
+		});
+
+		it(`Doesn't load anything if the Happy DOM setting "enableIframePageLoading" is set to false.`, () => {
+			const browser = new Browser();
 			const page = browser.newPage();
 			const window = page.mainFrame.window;
 			const document = window.document;
@@ -478,7 +497,7 @@ describe('HTMLIFrameElement', () => {
 		});
 
 		it('Returns content window for URL without protocol.', async () => {
-			const browser = new Browser();
+			const browser = new Browser({ settings: { enableIframePageLoading: true } });
 			const page = browser.newPage();
 			const window = page.mainFrame.window;
 			const document = window.document;
@@ -510,7 +529,7 @@ describe('HTMLIFrameElement', () => {
 
 		it('Returns instance of CrossOriginBrowserWindow for URL with different origin.', async () => {
 			await new Promise((resolve) => {
-				const browser = new Browser();
+				const browser = new Browser({ settings: { enableIframePageLoading: true } });
 				const page = browser.newPage();
 				const window = page.mainFrame.window;
 				const document = window.document;
@@ -601,7 +620,7 @@ describe('HTMLIFrameElement', () => {
 		});
 
 		it('Remain at the initial about:blank page when none of the srcdoc/src attributes are set', async () => {
-			const browser = new Browser();
+			const browser = new Browser({ settings: { enableIframePageLoading: true } });
 			const page = browser.newPage();
 			const window = page.mainFrame.window;
 			const document = window.document;

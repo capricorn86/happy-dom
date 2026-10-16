@@ -108,9 +108,18 @@ export default class SVGStyleElement extends SVGElement {
 	/**
 	 * @override
 	 */
+	public override [PropertySymbol.connectedToDocument](): void {
+		super[PropertySymbol.connectedToDocument]();
+		this[PropertySymbol.ownerDocument][PropertySymbol.clearComputedStyleCache]();
+	}
+
+	/**
+	 * @override
+	 */
 	public override [PropertySymbol.disconnectedFromDocument](): void {
 		super[PropertySymbol.disconnectedFromDocument]();
 		this[PropertySymbol.sheet] = null;
+		this[PropertySymbol.ownerDocument][PropertySymbol.clearComputedStyleCache]();
 	}
 
 	/**
@@ -128,5 +137,7 @@ export default class SVGStyleElement extends SVGElement {
 		if (this[PropertySymbol.sheet]) {
 			this[PropertySymbol.sheet].replaceSync(this.textContent);
 		}
+
+		this[PropertySymbol.ownerDocument][PropertySymbol.clearComputedStyleCache]();
 	}
 }

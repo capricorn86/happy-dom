@@ -18,6 +18,122 @@ describe('CookieContainer', () => {
 	});
 
 	describe('addCookies()', () => {
+		it.each([
+			['https://127.0.0.1/', 'localhost'],
+			['https://attacker.com/', 'victim.com'],
+			['https://notexample.com/', 'example.com'],
+			['https://attacker.com/', 'com'],
+			['https://attacker.co.uk/', 'co.uk'],
+			['https://attacker.github.io/', 'github.io'],
+			['https://127.0.0.1/', '0.1'],
+			['https://example.com/', 'example.com.'],
+			['https://example.com/', '..example.com'],
+			['https://example.com/', 'example.com/path']
+		])(
+			'Rejects cookies from %s with Domain=%s before storing or deleting cookies.',
+			(origin, domain) => {
+				const victimURL = new URL(
+					`https://${domain === 'localhost' ? 'localhost' : 'victim.com'}/`
+				);
+				cookieContainer.addCookies([{ key: 'session', value: 'original', originURL: victimURL }]);
+				for (const expires of [null, new Date(0)]) {
+					expect(
+						cookieContainer.addCookies([
+							{
+								key: 'session',
+								value: 'forged',
+								originURL: new URL(origin),
+								domain,
+								secure: true,
+								sameSite: CookieSameSiteEnum.none,
+								expires
+							}
+						])
+					).toEqual({ changed: [], deleted: [] });
+					expect(cookieContainer.getCookies()).toHaveLength(1);
+					expect(cookieContainer.getCookies(victimURL)[0].value).toBe('original');
+				}
+			}
+		);
+
+		it('Normalizes domain cookies and permits valid subdomains for all SameSite values.', () => {
+			for (const sameSite of Object.values(CookieSameSiteEnum)) {
+				cookieContainer.clearCookies();
+				cookieContainer.addCookies([
+					{
+						key: 'session',
+						value: 'value',
+						originURL: new URL('https://sub.example.com/'),
+						domain: '.EXAMPLE.COM',
+						secure: true,
+						sameSite
+					}
+				]);
+				expect(cookieContainer.getCookies()[0].domain).toBe('example.com');
+				for (const host of ['example.com', 'sub.example.com', 'other.example.com']) {
+					expect(cookieContainer.getCookies(new URL(`https://${host}/`))).toHaveLength(1);
+				}
+				expect(cookieContainer.getCookies(new URL('https://notexample.com/'))).toEqual([]);
+			}
+		});
+
+		it('Uses the effective domain when replacing and deleting cookies.', () => {
+			cookieContainer.addCookies([
+				{
+					key: 'session',
+					value: 'parent',
+					originURL: new URL('https://a.example.com/'),
+					domain: 'example.com'
+				},
+				{
+					key: 'session',
+					value: 'host-only',
+					originURL: new URL('https://a.example.com/')
+				}
+			]);
+			cookieContainer.addCookies([
+				{
+					key: 'session',
+					value: 'replacement',
+					originURL: new URL('https://b.example.com/'),
+					domain: '.EXAMPLE.COM'
+				}
+			]);
+			expect(cookieContainer.getCookies().map((cookie) => cookie.value)).toEqual([
+				'host-only',
+				'replacement'
+			]);
+			const result = cookieContainer.addCookies([
+				{
+					key: 'session',
+					value: '',
+					originURL: new URL('https://example.com/'),
+					domain: 'example.com',
+					expires: new Date(0)
+				}
+			]);
+			expect(result.deleted.map((cookie) => cookie.value)).toEqual(['replacement']);
+			expect(cookieContainer.getCookies().map((cookie) => cookie.value)).toEqual(['host-only']);
+		});
+
+		it.each(['localhost', 'com', 'co.uk', 'github.io'])(
+			'Treats a public suffix Domain=%s set by itself as host-only.',
+			(host) => {
+				cookieContainer.addCookies([
+					{
+						key: 'session',
+						originURL: new URL(`https://${host}/`),
+						domain: host,
+						secure: true,
+						sameSite: CookieSameSiteEnum.none
+					}
+				]);
+				expect(cookieContainer.getCookies()[0].domain).toBe('');
+				expect(cookieContainer.getCookies(new URL(`https://${host}/`))).toHaveLength(1);
+				expect(cookieContainer.getCookies(new URL(`https://sub.${host}/`))).toEqual([]);
+			}
+		);
+
 		it('Adds cookie string.', () => {
 			const expires = 60 * 1000 + Date.now();
 			const originURL = new URL('https://example.com/path/to/page/');
@@ -85,7 +201,7 @@ describe('CookieContainer', () => {
 				CookieStringUtility.cookiesToString(
 					cookieContainer.getCookies(new URL('https://other.com/path/to/page/'), false)
 				)
-			).toBe('key6=value6; key10=value10');
+			).toBe('');
 
 			cookieContainer.addCookies([
 				<ICookie>CookieStringUtility.stringToCookie(originURL, `key10=newValue10`)
@@ -103,7 +219,7 @@ describe('CookieContainer', () => {
 				CookieStringUtility.cookiesToString(
 					cookieContainer.getCookies(new URL('https://other.com/path/to/page/'), false)
 				)
-			).toBe('key6=value6');
+			).toBe('');
 
 			vi.spyOn(Date, 'now').mockImplementation(() => expires + 1000);
 

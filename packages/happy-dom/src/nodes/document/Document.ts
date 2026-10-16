@@ -1,6 +1,7 @@
 import Element from '../element/Element.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import type BrowserWindow from '../../window/BrowserWindow.js';
+import DocumentTimeline from '../../animation/DocumentTimeline.js';
 import Node from '../node/Node.js';
 import NodeIterator from '../../tree-walker/NodeIterator.js';
 import TreeWalker from '../../tree-walker/TreeWalker.js';
@@ -89,6 +90,7 @@ export default class Document extends Node {
 	public [PropertySymbol.propertyEventListeners]: Map<string, ((event: Event) => void) | null> =
 		new Map();
 	public [PropertySymbol.selection]: Selection | null = null;
+	public [PropertySymbol.timeline]: DocumentTimeline = new DocumentTimeline();
 	public declare cloneNode: (deep?: boolean) => Document;
 
 	// Events
@@ -1073,6 +1075,7 @@ export default class Document extends Node {
 			}
 		}
 		this[PropertySymbol.adoptedStyleSheets] = value;
+		this[PropertySymbol.clearComputedStyleCache]();
 	}
 
 	/**
@@ -1478,6 +1481,15 @@ export default class Document extends Node {
 	 */
 	public get contentType(): string {
 		return this[PropertySymbol.contentType];
+	}
+
+	/**
+	 * Returns the timeline associated with the document.
+	 *
+	 * @returns The timeline associated with the document.
+	 */
+	public get timeline(): DocumentTimeline {
+		return this[PropertySymbol.timeline];
 	}
 
 	/**
@@ -2251,10 +2263,22 @@ export default class Document extends Node {
 	}
 
 	/**
+	 * Clears the computed style cache for the document.
+	 */
+	public [PropertySymbol.clearComputedStyleCache](): void {
+		for (const item of this[PropertySymbol.affectsComputedStyleCache]) {
+			item.result = null;
+		}
+		this[PropertySymbol.affectsComputedStyleCache] = [];
+	}
+
+	/**
 	 * @override
 	 */
 	public override [PropertySymbol.destroy](): void {
 		super[PropertySymbol.destroy]();
+
+		this[PropertySymbol.clearComputedStyleCache]();
 
 		this[PropertySymbol.children] = null;
 		this[PropertySymbol.activeElement] = null;
@@ -2264,7 +2288,6 @@ export default class Document extends Node {
 		this[PropertySymbol.adoptedStyleSheets] = [];
 		this[PropertySymbol.forms] = null;
 		this[PropertySymbol.links] = null;
-		this[PropertySymbol.affectsComputedStyleCache] = [];
 		this[PropertySymbol.elementIdMap].clear();
 		this[PropertySymbol.xmlProcessingInstruction] = null;
 		this[PropertySymbol.preloads].clear();

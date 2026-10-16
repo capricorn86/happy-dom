@@ -32,6 +32,12 @@ import type IScrollToOptions from '../../window/IScrollToOptions.js';
 import { AttributeUtility } from '../../utilities/AttributeUtility.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import ElementEventAttributeUtility from './ElementEventAttributeUtility.js';
+import type Animation from '../../animation/Animation.js';
+import type {
+	IKeyframe,
+	IKeyframeEffectOptions,
+	IPropertyIndexedKeyframes
+} from '../../animation/KeyframeEffect.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
 
@@ -48,31 +54,60 @@ export default class Element
 	public declare cloneNode: (deep?: boolean) => Element;
 
 	// Internal properties
-	public [PropertySymbol.classList]: DOMTokenList | null = null;
-	public [PropertySymbol.isValue]: string | null = null;
-	public [PropertySymbol.nodeType] = NodeTypeEnum.elementNode;
-	public [PropertySymbol.prefix]: string | null = null;
-	public [PropertySymbol.shadowRoot]: ShadowRoot | null = null;
-	public [PropertySymbol.scrollHeight] = 0;
-	public [PropertySymbol.scrollWidth] = 0;
-	public [PropertySymbol.scrollTop] = 0;
-	public [PropertySymbol.scrollLeft] = 0;
-	public [PropertySymbol.attributes] = new NamedNodeMap(this);
-	public [PropertySymbol.attributesProxy]: NamedNodeMap | null = null;
-	public [PropertySymbol.children]: HTMLCollection<Element> | null = null;
-	public [PropertySymbol.computedStyle]: CSSStyleDeclaration | null = null;
-	public [PropertySymbol.pointerCaptures]: Set<number> = new Set();
-	public [PropertySymbol.propertyEventListeners]: Map<string, ((event: Event) => void) | null> =
-		new Map();
+	public declare [PropertySymbol.classList]: DOMTokenList | null;
+	public declare [PropertySymbol.isValue]: string | null;
+	public declare [PropertySymbol.nodeType]: NodeTypeEnum;
+	public declare [PropertySymbol.prefix]: string | null;
+	public declare [PropertySymbol.shadowRoot]: ShadowRoot | null;
+	public declare [PropertySymbol.scrollHeight]: number;
+	public declare [PropertySymbol.scrollWidth]: number;
+	public declare [PropertySymbol.scrollTop]: number;
+	public declare [PropertySymbol.scrollLeft]: number;
+	public declare [PropertySymbol.attributes]: NamedNodeMap;
+	public declare [PropertySymbol.attributesProxy]: NamedNodeMap | null;
+	public declare [PropertySymbol.children]: HTMLCollection<Element> | null;
+	public declare [PropertySymbol.computedStyle]: CSSStyleDeclaration | null;
+	public declare [PropertySymbol.pointerCaptures]: Set<number>;
+	public declare [PropertySymbol.propertyEventListeners]: Map<
+		string,
+		((event: Event) => void) | null
+	>;
 	public declare [PropertySymbol.tagName]: string | null;
 	public declare [PropertySymbol.localName]: string | null;
 	public declare [PropertySymbol.namespaceURI]: string | null;
+	public declare [PropertySymbol.animations]: Animation[];
 
 	/**
 	 * Constructor.
 	 */
 	constructor() {
 		super();
+
+		// When upgrading a custom element in-place, constructor() returns the existing
+		// element. This propagates through the entire super() chain so the custom element's
+		// constructor runs with `this` = the existing element (same mechanism real browsers use)
+		//
+		// It's also important to not initialize properties
+		if ((<typeof Element>this.constructor)[PropertySymbol.customElementUpgradeTarget]) {
+			return <Element>(<typeof Element>this.constructor)[PropertySymbol.customElementUpgradeTarget];
+		}
+
+		this[PropertySymbol.classList] = null;
+		this[PropertySymbol.isValue] = null;
+		this[PropertySymbol.nodeType] = NodeTypeEnum.elementNode;
+		this[PropertySymbol.prefix] = null;
+		this[PropertySymbol.shadowRoot] = null;
+		this[PropertySymbol.scrollHeight] = 0;
+		this[PropertySymbol.scrollWidth] = 0;
+		this[PropertySymbol.scrollTop] = 0;
+		this[PropertySymbol.scrollLeft] = 0;
+		this[PropertySymbol.attributes] = new NamedNodeMap(this);
+		this[PropertySymbol.attributesProxy] = null;
+		this[PropertySymbol.children] = null;
+		this[PropertySymbol.computedStyle] = null;
+		this[PropertySymbol.pointerCaptures] = new Set();
+		this[PropertySymbol.propertyEventListeners] = new Map();
+		this[PropertySymbol.animations] = [];
 
 		// CustomElementRegistry will populate the properties upon calling "CustomElementRegistry.define()".
 		// Elements that can be constructed with the "new" keyword (without using "Document.createElement()") will also populate the properties.
@@ -1434,11 +1469,41 @@ export default class Element
 	}
 
 	/**
+	 * Creates and starts an animation for the element.
+	 *
+	 * @param keyframes Keyframes.
+	 * @param options Timing options.
+	 * @returns Animation.
+	 */
+	public animate(
+		keyframes: IKeyframe[] | IPropertyIndexedKeyframes | null,
+		options: number | IKeyframeEffectOptions = {}
+	): Animation {
+		const effect = new this[PropertySymbol.window].KeyframeEffect(this, keyframes, options);
+		const animation = new this[PropertySymbol.window].Animation(
+			effect,
+			this[PropertySymbol.ownerDocument].timeline
+		);
+		this[PropertySymbol.animations].push(animation);
+		animation.play();
+		return animation;
+	}
+
+	/**
+	 * Returns animations affecting the element.
+	 *
+	 * @returns Animations.
+	 */
+	public getAnimations(): Animation[] {
+		return this[PropertySymbol.animations].filter((animation) => animation.playState !== 'idle');
+	}
+
+	/**
 	 * @override
 	 */
 	public override [PropertySymbol.appendChild](node: Node, disableValidations = false): Node {
 		const returnValue = super[PropertySymbol.appendChild](node, disableValidations);
-		this.#onSlotChange(node);
+		this[PropertySymbol.onSlotChange](node);
 		return returnValue;
 	}
 
@@ -1447,7 +1512,7 @@ export default class Element
 	 */
 	public override [PropertySymbol.removeChild](node: Node): Node {
 		const returnValue = super[PropertySymbol.removeChild](node);
-		this.#onSlotChange(node);
+		this[PropertySymbol.onSlotChange](node);
 		return returnValue;
 	}
 
@@ -1464,7 +1529,7 @@ export default class Element
 			referenceNode,
 			disableValidations
 		);
-		this.#onSlotChange(newNode);
+		this[PropertySymbol.onSlotChange](newNode);
 		return returnValue;
 	}
 
@@ -1522,9 +1587,9 @@ export default class Element
 
 		if (attribute[PropertySymbol.name] === 'id' && this[PropertySymbol.isConnected]) {
 			if (replacedAttribute?.[PropertySymbol.value]) {
-				this.#removeIdentifierFromWindow(replacedAttribute[PropertySymbol.value]);
+				this[PropertySymbol.removeIdentifierFromWindow](replacedAttribute[PropertySymbol.value]);
 			}
-			this.#addIdentifierToWindow(attribute[PropertySymbol.value]);
+			this[PropertySymbol.addIdentifierToWindow](attribute[PropertySymbol.value]);
 		}
 
 		this[PropertySymbol.reportMutation](
@@ -1562,7 +1627,7 @@ export default class Element
 		}
 
 		if (removedAttribute[PropertySymbol.name] === 'id' && this[PropertySymbol.isConnected]) {
-			this.#removeIdentifierFromWindow(removedAttribute[PropertySymbol.value]);
+			this[PropertySymbol.removeIdentifierFromWindow](removedAttribute[PropertySymbol.value]);
 		}
 
 		this[PropertySymbol.reportMutation](
@@ -1581,7 +1646,7 @@ export default class Element
 	public override [PropertySymbol.connectedToDocument](): void {
 		const id = this.getAttribute('id');
 		if (id) {
-			this.#addIdentifierToWindow(id);
+			this[PropertySymbol.addIdentifierToWindow](id);
 		}
 
 		super[PropertySymbol.connectedToDocument]();
@@ -1593,7 +1658,7 @@ export default class Element
 
 		if (this[PropertySymbol.shadowRoot]) {
 			for (const childNode of this[PropertySymbol.nodeArray]) {
-				this.#onSlotChange(childNode);
+				this[PropertySymbol.onSlotChange](childNode);
 			}
 		}
 	}
@@ -1606,7 +1671,7 @@ export default class Element
 
 		const id = this.getAttribute('id');
 		if (id) {
-			this.#removeIdentifierFromWindow(id);
+			this[PropertySymbol.removeIdentifierFromWindow](id);
 		}
 
 		this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
@@ -1621,7 +1686,7 @@ export default class Element
 	public override [PropertySymbol.destroy](): void {
 		const id = this.getAttribute('id');
 		if (id) {
-			this.#removeIdentifierFromWindow(id);
+			this[PropertySymbol.removeIdentifierFromWindow](id);
 		}
 
 		this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
@@ -1651,7 +1716,7 @@ export default class Element
 	 *
 	 * @param id Identifier.
 	 */
-	#addIdentifierToWindow(id: string | null): void {
+	public [PropertySymbol.addIdentifierToWindow](id: string | null): void {
 		if (!id) {
 			return;
 		}
@@ -1704,7 +1769,7 @@ export default class Element
 	 *
 	 * @param id Identifier.
 	 */
-	#removeIdentifierFromWindow(id: string | null): void {
+	public [PropertySymbol.removeIdentifierFromWindow](id: string | null): void {
 		if (!id) {
 			return;
 		}
@@ -1752,7 +1817,7 @@ export default class Element
 	 *
 	 * @param addedOrRemovedNode Changed node.
 	 */
-	#onSlotChange(addedOrRemovedNode: Node): void {
+	public [PropertySymbol.onSlotChange](addedOrRemovedNode: Node): void {
 		const shadowRoot = this[PropertySymbol.shadowRoot];
 
 		if (!shadowRoot || !this[PropertySymbol.isConnected]) {

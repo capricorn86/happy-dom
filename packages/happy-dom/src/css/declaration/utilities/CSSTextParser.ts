@@ -9,7 +9,7 @@ const SPLIT_RULES_REGEXP =
 /**
  * CSS parser.
  */
-export default class CSSStyleDeclarationCSSParser {
+export default class CSSTextParser {
 	/**
 	 * Class construtor.
 	 *
@@ -18,9 +18,9 @@ export default class CSSStyleDeclarationCSSParser {
 	 */
 	public static parse(cssText: string): {
 		rules: Array<{ name: string; value: string; important: boolean }>;
-		properties: { [name: string]: string };
+		variables: { [name: string]: string };
 	} {
-		const properties: { [name: string]: string } = {};
+		const variables: { [name: string]: string } = {};
 		const rules: Array<{ name: string; value: string; important: boolean }> = [];
 		const regexp = new RegExp(SPLIT_RULES_REGEXP);
 		let match;
@@ -32,13 +32,13 @@ export default class CSSStyleDeclarationCSSParser {
 
 			if (name && value) {
 				if (name.startsWith('--')) {
-					properties[name] = value;
+					variables[name] = value;
 				}
 
 				rules.push({ name, value, important });
 			}
 		}
 
-		return { rules, properties };
+		return { rules, variables };
 	}
 }

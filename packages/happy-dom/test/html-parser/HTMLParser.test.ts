@@ -123,6 +123,42 @@ describe('HTMLParser', () => {
 			expect((<HTMLElement>result.childNodes[0]).id).toBe('æøåÆØÅ');
 		});
 
+		it('Parses comments containing "<!--" in their data.', () => {
+			const result = new HTMLParser(window).parse(
+				'<!--[if !mso]><!--><div>hello</div><!--<![endif]-->'
+			);
+
+			expect(result.childNodes.length).toBe(3);
+			expect(result.childNodes[0].nodeType).toBe(NodeTypeEnum.commentNode);
+			expect(result.childNodes[0].textContent).toBe('[if !mso]><!');
+			expect((<HTMLElement>result.childNodes[1]).tagName).toBe('DIV');
+			expect(result.childNodes[1].textContent).toBe('hello');
+			expect(result.childNodes[2].nodeType).toBe(NodeTypeEnum.commentNode);
+			expect(result.childNodes[2].textContent).toBe('<![endif]');
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				'<!--[if !mso]><!--><div>hello</div><!--<![endif]-->'
+			);
+		});
+
+		it('Ends comments at the first comment close sequence.', () => {
+			const result = new HTMLParser(window).parse('<!--a<!--b-->c');
+
+			expect(result.childNodes.length).toBe(2);
+			expect(result.childNodes[0].nodeType).toBe(NodeTypeEnum.commentNode);
+			expect(result.childNodes[0].textContent).toBe('a<!--b');
+			expect(result.childNodes[1].textContent).toBe('c');
+		});
+
+		it('Ends comments at "--!>" when it overlaps a comment start tag.', () => {
+			const result = new HTMLParser(window).parse('<!--a<!--!>b');
+
+			expect(result.childNodes.length).toBe(2);
+			expect(result.childNodes[0].nodeType).toBe(NodeTypeEnum.commentNode);
+			expect(result.childNodes[0].textContent).toBe('a<!');
+			expect(result.childNodes[1].textContent).toBe('b');
+		});
+
 		it('Parses an entire HTML page.', () => {
 			const html = `
 	<!DOCTYPE html>
@@ -2293,6 +2329,17 @@ describe('HTMLParser', () => {
 			// &apos; named reference (should also work)
 			const result5 = new HTMLParser(window).parse(`<div data-foo="&apos;"></div>`);
 			expect(new HTMLSerializer().serializeToString(result5)).toBe(`<div data-foo="'"></div>`);
+		});
+
+		it('Does not decode character references in comment data.', () => {
+			const result = new HTMLParser(window).parse('<div><!--&lt;3 &#60;3 &#x3C;3 --&gt; --></div>');
+			const comment = result.childNodes[0].childNodes[0];
+
+			expect(comment.nodeType).toBe(NodeTypeEnum.commentNode);
+			expect(comment.textContent).toBe('&lt;3 &#60;3 &#x3C;3 --&gt; ');
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				'<div><!--&lt;3 &#60;3 &#x3C;3 --&gt; --></div>'
+			);
 		});
 	});
 });

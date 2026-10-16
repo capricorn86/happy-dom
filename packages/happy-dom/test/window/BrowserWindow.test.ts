@@ -709,6 +709,38 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.color).toBe('green');
 		});
 
+		it('Updates inherited values in the whole subtree when an ancestor is changed.', () => {
+			document.head.innerHTML = '<style>.red { color: rgb(255, 0, 0); }</style>';
+			document.body.innerHTML =
+				'<div id="d0" class="red"><div id="d1"><div id="d2"><div id="d3"><span id="d4">Test</span></div></div></div></div>';
+
+			const ids = ['d0', 'd1', 'd2', 'd3', 'd4'];
+			const color = (id: string): string =>
+				window.getComputedStyle(document.getElementById(id)!).color;
+
+			expect(ids.map(color)).toEqual([
+				'rgb(255, 0, 0)',
+				'rgb(255, 0, 0)',
+				'rgb(255, 0, 0)',
+				'rgb(255, 0, 0)',
+				'rgb(255, 0, 0)'
+			]);
+
+			document.getElementById('d0')!.classList.remove('red');
+
+			expect(ids.map(color)).toEqual(['', '', '', '', '']);
+
+			(<HTMLElement>document.getElementById('d2')).style.color = 'rgb(0, 128, 0)';
+
+			expect(ids.map(color)).toEqual([
+				'',
+				'',
+				'rgb(0, 128, 0)',
+				'rgb(0, 128, 0)',
+				'rgb(0, 128, 0)'
+			]);
+		});
+
 		it('Returns a CSSStyleDeclaration object with computed styles from style sheets.', () => {
 			const parent = document.createElement('div');
 			const element = document.createElement('span');
@@ -1492,6 +1524,34 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.color).toBe('green');
 		});
 
+		it('Uses inherited color when color is set to "inherit".', () => {
+			const parent = document.createElement('div');
+			const element = document.createElement('span');
+			const computedStyle = window.getComputedStyle(element);
+			const parentStyle = document.createElement('style');
+			const elementStyle = document.createElement('style');
+
+			parentStyle.innerHTML = `
+                div {
+                    color: red;
+                }
+            `;
+
+			elementStyle.innerHTML = `
+                span {
+                    color: inherit;
+                }
+            `;
+
+			parent.appendChild(elementStyle);
+			parent.appendChild(element);
+
+			document.body.appendChild(parentStyle);
+			document.body.appendChild(parent);
+
+			expect(computedStyle.color).toBe('red');
+		});
+
 		for (const measurement of [
 			{ value: '100vw', result: '1024px' },
 			{ value: '100vh', result: '768px' },
@@ -2148,6 +2208,7 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Triggers "load" event when all resources have been loaded.', async () => {
+			browser.settings.enableCSSFileLoading = true;
 			await new Promise((resolve) => {
 				const cssURL = 'https://localhost:8080/path/to/file.css';
 				const jsURL = 'https://localhost:8080/path/to/file.js';

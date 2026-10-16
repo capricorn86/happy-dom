@@ -11,13 +11,14 @@ import CSSFontFaceRule from '../rules/CSSFontFaceRule.js';
 import SelectorParser from '../../query-selector/SelectorParser.js';
 import CSSRuleTypeEnum from '../CSSRuleTypeEnum.js';
 import CSSScopeRule from '../rules/CSSScopeRule.js';
+import QuerySelector from '../../query-selector/QuerySelector.js';
 
 const COMMENT_REGEXP = /\/\*[\s\S]*?\*\//gm;
 
 /**
  * CSS parser.
  */
-export default class CSSParser {
+export default class CSSRuleParser {
 	#parentStyleSheet: CSSStyleSheet;
 
 	/**
@@ -303,9 +304,12 @@ export default class CSSParser {
 	private validateSelectorText(selectorText: string): boolean {
 		const window = this.#parentStyleSheet[PropertySymbol.window];
 		return (
-			new SelectorParser({ window, scope: window.document, ignoreErrors: true }).getSelectorGroups(
-				selectorText
-			).length > 0
+			new SelectorParser({
+				window,
+				scope: window.document,
+				ignoreErrors: true,
+				globalMatchFunction: QuerySelector.globalMatchFunction
+			}).getSelectorGroups(selectorText).length > 0
 		);
 	}
 }

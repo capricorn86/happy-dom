@@ -20,6 +20,7 @@ import FetchHTTPSCertificate from '../../src/fetch/certificate/FetchHTTPSCertifi
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 import { fail } from 'assert';
 import Browser from '../../src/browser/Browser.js';
+import CookieSameSiteEnum from '../../src/cookie/enums/CookieSameSiteEnum.js';
 
 const LAST_CHUNK = Buffer.from('0\r\n\r\n');
 
@@ -100,6 +101,62 @@ describe('Fetch', () => {
 	});
 
 	describe('send()', () => {
+		it('Rejects attacker response cookies scoped to the victim before a subsequent fetch.', async () => {
+			const browser = new Browser();
+			const page = await browser.newPage();
+			page.mainFrame.url = 'http://localhost:8080/';
+			const window = page.mainFrame.window;
+			const network = mockNetwork('http', {
+				beforeResponse({ request, response }) {
+					response.rawHeaders = [
+						'Access-Control-Allow-Origin',
+						'*',
+						...(request.options.method !== 'OPTIONS' &&
+						request.url === 'http://127.0.0.1:8081/plant'
+							? ['Set-Cookie', 'session=FORGED; Domain=localhost; Path=/; SameSite=None; Secure']
+							: [])
+					];
+				}
+			});
+			await window.fetch('http://127.0.0.1:8081/plant', { credentials: 'include' });
+			await window.fetch('http://localhost:8080/account');
+			expect(page.context.cookieContainer.getCookies()).toEqual([]);
+			expect(network.requestHistory.at(-1)?.options.headers).not.toHaveProperty('Cookie');
+			await browser.close();
+		});
+
+		it.each([
+			['', 'https://attacker.net/'],
+			['', 'https://sub.example.com/'],
+			['example.com', 'https://notexample.com/']
+		])(
+			'Does not send Domain="%s" cookies to %s with credentials included.',
+			async (domain, target) => {
+				const browser = new Browser();
+				const page = await browser.newPage();
+				page.mainFrame.url = 'https://example.com/';
+				page.context.cookieContainer.addCookies([
+					{
+						key: 'session',
+						value: 'VICTIM_SECRET',
+						originURL: new URL('https://example.com/'),
+						domain,
+						httpOnly: true,
+						secure: true,
+						sameSite: CookieSameSiteEnum.none
+					}
+				]);
+				const network = mockNetwork('https', {
+					beforeResponse({ response }) {
+						response.rawHeaders = ['Access-Control-Allow-Origin', '*'];
+					}
+				});
+				await page.mainFrame.window.fetch(target, { credentials: 'include' });
+				expect(network.requestHistory.at(-1)?.options.headers).not.toHaveProperty('Cookie');
+				await browser.close();
+			}
+		);
+
 		it('Rejects with error if url is protocol relative.', async () => {
 			const window = new Window();
 			const url = '//example.com/';
@@ -780,6 +837,94 @@ describe('Fetch', () => {
 
 					expect(result).toEqual(JSON.parse(responseText));
 				});
+			}
+		}
+
+		for (const credentials of <const>[undefined, 'omit', 'same-origin', 'include']) {
+			for (const status of [301, 302, 303, 307, 308]) {
+				it.each([
+					{
+						name: 'hostname change',
+						pageURL: 'https://example.com/',
+						urls: ['https://example.com/start', 'https://other.example/target'],
+						preserve: false
+					},
+					{
+						name: 'port change',
+						pageURL: 'https://example.com/',
+						urls: ['https://example.com/start', 'https://example.com:8080/target'],
+						preserve: false
+					},
+					{
+						name: 'scheme change',
+						pageURL: 'http://example.com/',
+						urls: ['http://example.com/start', 'https://example.com/target'],
+						preserve: false
+					},
+					{
+						name: 'same-origin relative redirect',
+						pageURL: 'https://example.com/',
+						urls: ['https://example.com/start', '/target'],
+						preserve: true
+					},
+					{
+						name: 'same-origin redirect with a cross-origin page',
+						pageURL: 'https://other.example/',
+						urls: ['https://example.com/start', 'https://example.com:443/target'],
+						preserve: true
+					},
+					{
+						name: 'cross-origin redirect back to the page origin',
+						pageURL: 'https://other.example/',
+						urls: ['https://example.com/start', 'https://other.example/target'],
+						preserve: false
+					},
+					{
+						name: 'cross-origin redirect chain returning to the initial origin',
+						pageURL: 'https://example.com/',
+						urls: [
+							'https://example.com/start',
+							'https://other.example/target',
+							'https://example.com/end'
+						],
+						preserve: false
+					}
+				])(
+					`Handles Authorization on $name (${status}, credentials: ${credentials}).`,
+					async ({ pageURL, urls, preserve }) => {
+						const window = new Window({ url: pageURL });
+						const requests: IRequestHistoryEntry[] = [];
+						const beforeResponse: IBeforeResponse = ({ request, response }) => {
+							response.rawHeaders = ['Access-Control-Allow-Origin', '*'];
+							if (request.options.method === 'OPTIONS') {
+								return;
+							}
+							requests.push(request);
+							const location = urls[requests.length];
+							if (location) {
+								response.statusCode = status;
+								response.rawHeaders.push('Location', location);
+							}
+						};
+						mockNetwork('http', { beforeResponse });
+						mockNetwork('https', { beforeResponse });
+
+						const response = await window.fetch(urls[0], {
+							credentials,
+							headers: { aUtHoRiZaTiOn: 'Bearer test-token' }
+						});
+
+						expect(response.status).toBe(200);
+						expect(requests).toHaveLength(urls.length);
+						for (const [index, request] of requests.entries()) {
+							const authorization = Object.entries(request.options.headers ?? {}).find(
+								([name]) => name.toLowerCase() === 'authorization'
+							)?.[1];
+							expect(authorization).toBe(index === 0 || preserve ? 'Bearer test-token' : undefined);
+						}
+						await window.happyDOM.close();
+					}
+				);
 			}
 		}
 
@@ -3774,7 +3919,7 @@ describe('Fetch', () => {
 			});
 			const text1 = await response1.text();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			await new Promise((resolve) => setTimeout(resolve, 300));
 
 			const response2 = await window.fetch(url);
 			const text2 = await response2.text();
@@ -3933,7 +4078,7 @@ describe('Fetch', () => {
 			});
 			const text1 = await response1.text();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			await new Promise((resolve) => setTimeout(resolve, 300));
 
 			const response2 = await window.fetch(url);
 			const text2 = await response2.text();
@@ -4104,7 +4249,7 @@ describe('Fetch', () => {
 			});
 			const text1 = await response1.text();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			await new Promise((resolve) => setTimeout(resolve, 300));
 
 			const response2 = await window.fetch(url, {
 				method: 'HEAD'
@@ -4273,7 +4418,7 @@ describe('Fetch', () => {
 			});
 			const text1 = await response1.text();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			await new Promise((resolve) => setTimeout(resolve, 300));
 
 			const response2 = await window.fetch(url);
 			const text2 = await response2.text();

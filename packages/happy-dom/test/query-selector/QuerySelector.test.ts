@@ -1588,6 +1588,33 @@ describe('QuerySelector', () => {
 			expect(xmlDoc.querySelectorAll('[Name]').length).toBe(1);
 		});
 
+		it('Matches an element inside a shadow root of a custom element', () => {
+			/** */
+			class MyElement extends window.HTMLElement {
+				/** */
+				constructor() {
+					super();
+					const shadowRoot = this.attachShadow({ mode: 'open' });
+					const span = document.createElement('span');
+					span.className = 'shadow-span';
+					shadowRoot.appendChild(span);
+				}
+			}
+
+			window.customElements.define('my-element', MyElement);
+
+			const myElement = document.createElement('my-element');
+			myElement.setAttribute('my-attr', 'value');
+			document.body.appendChild(myElement);
+
+			const shadowSpan = myElement.shadowRoot?.querySelector('.shadow-span');
+
+			expect(myElement.shadowRoot!.querySelectorAll(':host .shadow-span')[0]).toBe(shadowSpan);
+			expect(myElement.shadowRoot!.querySelectorAll(':host([my-attr=value]) .shadow-span')[0]).toBe(
+				shadowSpan
+			);
+		});
+
 		describe('Issue #1912: CSS attribute selector with capital letters', () => {
 			it('Should match attribute selectors case-insensitively for HTML elements.', () => {
 				const container = document.createElement('div');
@@ -2120,6 +2147,33 @@ describe('QuerySelector', () => {
 
 			expect(div.querySelector(`.${unicodeClassName}`)).toBe(element);
 		});
+
+		it('Matches an element inside a shadow root of a custom element', () => {
+			/** */
+			class MyElement extends window.HTMLElement {
+				/** */
+				constructor() {
+					super();
+					const shadowRoot = this.attachShadow({ mode: 'open' });
+					const span = document.createElement('span');
+					span.className = 'shadow-span';
+					shadowRoot.appendChild(span);
+				}
+			}
+
+			window.customElements.define('my-element', MyElement);
+
+			const myElement = document.createElement('my-element');
+			myElement.setAttribute('my-attr', 'value');
+			document.body.appendChild(myElement);
+
+			const shadowSpan = myElement.shadowRoot?.querySelector('.shadow-span');
+
+			expect(myElement.shadowRoot!.querySelector(':host .shadow-span')).toBe(shadowSpan);
+			expect(myElement.shadowRoot!.querySelector(':host([my-attr=value]) .shadow-span')).toBe(
+				shadowSpan
+			);
+		});
 	});
 
 	describe('matches()', () => {
@@ -2174,6 +2228,7 @@ describe('QuerySelector', () => {
 		it('Returns true for the selector "div.class1 .class2 span"', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
+			document.body.appendChild(container);
 			const element = container.children[0].children[1].children[0];
 			expect(element.matches('div.class1 .class2 span')).toBe(true);
 			expect(element.matches('div.class1 .class3 span')).toBe(false);
@@ -2417,6 +2472,31 @@ describe('QuerySelector', () => {
 			// Test 3: Simple ID (control test)
 			document.body.innerHTML = `<div id="simple"></div>`;
 			expect(!!document.querySelector('[id="simple"]')).toBe(true);
+		});
+
+		it('Matches an element inside a shadow root of a custom element', () => {
+			/** */
+			class MyElement extends window.HTMLElement {
+				/** */
+				constructor() {
+					super();
+					const shadowRoot = this.attachShadow({ mode: 'open' });
+					const span = document.createElement('span');
+					span.className = 'shadow-span';
+					shadowRoot.appendChild(span);
+				}
+			}
+
+			window.customElements.define('my-element', MyElement);
+
+			const myElement = document.createElement('my-element');
+			myElement.setAttribute('my-attr', 'value');
+			document.body.appendChild(myElement);
+
+			const shadowSpan = myElement.shadowRoot?.querySelector('.shadow-span');
+
+			expect(shadowSpan?.matches(':host .shadow-span')).toBe(true);
+			expect(shadowSpan?.matches(':host([my-attr=value]) .shadow-span')).toBe(true);
 		});
 	});
 });

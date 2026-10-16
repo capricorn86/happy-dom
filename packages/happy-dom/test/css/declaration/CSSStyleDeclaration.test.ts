@@ -2366,6 +2366,24 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.width).toBe('calc(10% - 1px)');
 		});
+
+		it('Preserves fallback values', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			element.style.cssText = 'width: calc(100% - 1px)';
+			expect(declaration.width).toBe('calc(100% - 1px)');
+
+			element.style.cssText = 'width: var(--x)';
+			expect(declaration.width).toBe('var(--x)');
+
+			element.style.cssText = 'width: var(--x, 10px)';
+			expect(declaration.width).toBe('var(--x, 10px)');
+
+			element.style.cssText = 'width: calc(var(--x) - 1px)';
+			expect(declaration.width).toBe('calc(var(--x) - 1px)');
+		});
 	});
 
 	describe('get height()', () => {
