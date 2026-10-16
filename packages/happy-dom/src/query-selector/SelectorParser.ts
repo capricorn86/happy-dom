@@ -497,7 +497,32 @@ export default class SelectorParser {
 	}): RegExp | null {
 		const modifier = attribute.modifier === 'i' ? 'i' : '';
 
-		if (!attribute.operator || !attribute.value) {
+		if (!attribute.operator) {
+			return null;
+		}
+
+		// Per CSS spec, attribute selectors with an empty value:
+		// - ^=, $=, *=, ~= match nothing (empty string is not a valid value to match against)
+		// - |= falls through to normal handling (matches "" exactly and "-x" via prefix)
+		// - = (exact match) returns null to preserve exact-equality fallback
+		if (attribute.value === '') {
+			switch (attribute.operator) {
+				case '~':
+				case '^':
+				case '$':
+				case '*':
+					return /(?!)/; // Regex that never matches
+				case '|':
+					// Fall through to normal regex below - handled separately
+					break;
+				default:
+					return null;
+			}
+			// For '|' with empty value, continue to normal regex generation
+			if (attribute.operator !== '|') {
+				return null;
+			}
+		} else if (!attribute.value) {
 			return null;
 		}
 
