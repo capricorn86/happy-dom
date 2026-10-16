@@ -185,7 +185,7 @@ describe('HTMLTextAreaElement', () => {
 		});
 	}
 
-	for (const property of ['name', 'autocomplete', 'cols', 'rows', 'placeholder', 'inputMode']) {
+	for (const property of ['name', 'autocomplete', 'placeholder', 'inputMode']) {
 		describe(`get ${property}()`, () => {
 			it('Returns attribute value.', () => {
 				expect((<any>element)[property]).toBe('');
@@ -198,6 +198,47 @@ describe('HTMLTextAreaElement', () => {
 			it('Sets attribute value.', () => {
 				(<any>element)[property] = 'value';
 				expect(element.getAttribute(property)).toBe('value');
+			});
+		});
+	}
+
+	const positiveIntegerProperties: Array<[string, number]> = [
+		['cols', 20],
+		['rows', 2]
+	];
+	for (const [property, defaultValue] of positiveIntegerProperties) {
+		describe(`get ${property}()`, () => {
+			it('Returns the default value as a number when the attribute is missing.', () => {
+				expect((<any>element)[property]).toBe(defaultValue);
+			});
+
+			it('Returns the attribute value as a number.', () => {
+				element.setAttribute(property, '50');
+				expect((<any>element)[property]).toBe(50);
+				element.setAttribute(property, ' 7abc');
+				expect((<any>element)[property]).toBe(7);
+			});
+
+			it('Returns the default value when the attribute is invalid.', () => {
+				for (const value of ['', 'value', '0', '-5', '2147483648']) {
+					element.setAttribute(property, value);
+					expect((<any>element)[property]).toBe(defaultValue);
+				}
+			});
+		});
+
+		describe(`set ${property}()`, () => {
+			it('Sets attribute value.', () => {
+				(<any>element)[property] = 60;
+				expect(element.getAttribute(property)).toBe('60');
+				expect((<any>element)[property]).toBe(60);
+			});
+
+			it('Sets the default value when the value is 0, negative or too large.', () => {
+				for (const value of [0, -1, 2147483648, NaN]) {
+					(<any>element)[property] = value;
+					expect(element.getAttribute(property)).toBe(String(defaultValue));
+				}
 			});
 		});
 	}
