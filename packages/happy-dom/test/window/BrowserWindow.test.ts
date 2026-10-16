@@ -690,6 +690,29 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.display).toBe('none');
 		});
 
+		it('Handles default property "display" on elements with the "hidden" attribute.', () => {
+			const element = document.createElement('div');
+			const untilFoundElement = document.createElement('div');
+			const styledElement = document.createElement('div');
+
+			document.body.appendChild(element);
+			document.body.appendChild(untilFoundElement);
+			document.body.appendChild(styledElement);
+
+			element.hidden = true;
+			untilFoundElement.setAttribute('hidden', 'until-found');
+			styledElement.setAttribute('hidden', '');
+			styledElement.setAttribute('style', 'display: flex;');
+
+			expect(window.getComputedStyle(element).display).toBe('none');
+			expect(window.getComputedStyle(untilFoundElement).display).toBe('block');
+			expect(window.getComputedStyle(styledElement).display).toBe('flex');
+
+			element.hidden = false;
+
+			expect(window.getComputedStyle(element).display).toBe('block');
+		});
+
 		it('Returns a CSSStyleDeclaration object with computed styles that are live updated whenever the element styles are changed.', () => {
 			const element = document.createElement('div');
 			const computedStyle = window.getComputedStyle(element);
