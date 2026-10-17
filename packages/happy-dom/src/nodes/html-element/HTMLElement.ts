@@ -731,7 +731,8 @@ export default class HTMLElement extends Element {
 					}
 				}
 			} else if (childNode[PropertySymbol.nodeType] === NodeTypeEnum.textNode) {
-				result += childNode.textContent.replace(/[\n\r]/, '');
+				// Replace newlines with spaces per spec (\r\n matched first as single break)
+				result += childNode.textContent.replace(/\r\n|\n|\r/g, ' ');
 			}
 		}
 
@@ -751,7 +752,12 @@ export default class HTMLElement extends Element {
 			this.removeChild(childNodes[0]);
 		}
 
-		const texts = text.split(/[\n\r]/);
+		// Empty string should clear all children without adding any nodes
+		if (text === '') {
+			return;
+		}
+
+		const texts = text.split(/\r\n|\n|\r/);
 		const ownerDocument = this[PropertySymbol.ownerDocument];
 
 		for (let i = 0, max = texts.length; i < max; i++) {
@@ -785,7 +791,7 @@ export default class HTMLElement extends Element {
 			);
 		}
 
-		const texts = text.split(/[\n\r]/);
+		const texts = text.split(/\r\n|\n|\r/);
 
 		for (let i = 0, max = texts.length; i < max; i++) {
 			if (i !== 0) {
