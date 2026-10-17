@@ -225,11 +225,8 @@ export default class CSSStyleDeclaration {
 	 *
 	 * @returns Iterator.
 	 */
-	public *[Symbol.iterator](): IterableIterator<string> {
-		const propertyManager = this.#getPropertyManager();
-		for (const key in propertyManager.properties) {
-			yield key;
-		}
+	public [Symbol.iterator](): IterableIterator<string> {
+		return Object.keys(this[PropertySymbol.getPropertyManager]().properties)[Symbol.iterator]();
 	}
 
 	/**
