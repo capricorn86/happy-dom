@@ -1,5 +1,6 @@
 import type IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
 import Browser from '../../src/browser/Browser.js';
+import Window from '../../src/window/Window.js';
 import HistoryScrollRestorationEnum from '../../src/history/HistoryScrollRestorationEnum.js';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
@@ -39,6 +40,19 @@ describe('History', () => {
 
 			// 3 as the first item is added as "about:blank" in the constructor.
 			expect(browserFrame.window.history.length).toBe(3);
+		});
+
+		it('Increases when navigating with location.href.', async () => {
+			const window = new Window({ url: 'https://www.example.com/' });
+
+			expect(window.history.length).toBe(1);
+
+			window.location.href = 'https://www.example.com/page2';
+
+			// location.href setter calls goto() which is async
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(window.history.length).toBe(2);
 		});
 	});
 
