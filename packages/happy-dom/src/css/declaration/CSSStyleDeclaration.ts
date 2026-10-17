@@ -221,6 +221,15 @@ export default class CSSStyleDeclaration {
 	}
 
 	/**
+	 * Returns an iterator, allowing you to go through all property names contained in this object.
+	 *
+	 * @returns Iterator.
+	 */
+	public [Symbol.iterator](): IterableIterator<string> {
+		return Object.keys(this[PropertySymbol.getPropertyManager]().properties)[Symbol.iterator]();
+	}
+
+	/**
 	 * Returns item.
 	 *
 	 * @param index Index.
