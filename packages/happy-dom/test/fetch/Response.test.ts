@@ -52,17 +52,44 @@ describe('Response', () => {
 			expect(response.status).toBe(404);
 		});
 
+		it('Throws RangeError for status below 200.', () => {
+			expect(() => new window.Response(null, { status: 0 })).toThrow(
+				new RangeError(
+					"Failed to construct 'Response': The status provided (0) is outside the range [200, 599]."
+				)
+			);
+			expect(() => new window.Response(null, { status: 199 })).toThrow(
+				new RangeError(
+					"Failed to construct 'Response': The status provided (199) is outside the range [200, 599]."
+				)
+			);
+		});
+
+		it('Throws RangeError for status above 599.', () => {
+			expect(() => new window.Response(null, { status: 600 })).toThrow(
+				new RangeError(
+					"Failed to construct 'Response': The status provided (600) is outside the range [200, 599]."
+				)
+			);
+		});
+
+		it('Accepts status codes at the boundaries of the valid range.', () => {
+			const response200 = new window.Response(null, { status: 200 });
+			expect(response200.status).toBe(200);
+
+			const response599 = new window.Response(null, { status: 599 });
+			expect(response599.status).toBe(599);
+		});
+
 		it('Sets status text from init object.', () => {
 			const response = new window.Response(null, { statusText: 'test' });
 			expect(response.statusText).toBe('test');
 		});
 
 		it('Sets ok state correctly based on status code.', () => {
-			const response199 = new window.Response(null, { status: 199 });
 			const response200 = new window.Response(null, { status: 200 });
 			const response299 = new window.Response(null, { status: 299 });
 			const response300 = new window.Response(null, { status: 300 });
-			expect(response199.ok).toBe(false);
 			expect(response200.ok).toBe(true);
 			expect(response299.ok).toBe(true);
 			expect(response300.ok).toBe(false);
