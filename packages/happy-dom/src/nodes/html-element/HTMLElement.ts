@@ -1025,7 +1025,15 @@ export default class HTMLElement extends Element {
 			if (window.customElements.get(localName)) {
 				this[PropertySymbol.onCustomElementConnected]();
 			} else if (!this[PropertySymbol.customElementDefineCallback]) {
-				const callback = this[PropertySymbol.onCustomElementConnected].bind(this);
+				// The callback is stored in the window-lifetime CustomElementRegistry until the
+				// element is either disconnected or its custom element is defined. We hold the
+				// element through a WeakRef so that a detached document (e.g. created via DOMParser
+				// or document.write() and then dropped) can be garbage collected instead of being
+				// retained for the lifetime of the window (see #404 and the leak it introduced).
+				const reference = new WeakRef(this);
+				const callback = (): void => {
+					reference.deref()?.[PropertySymbol.onCustomElementConnected]();
+				};
 				const callbacks = allCallbacks.get(localName);
 				if (callbacks) {
 					callbacks.unshift(callback);
