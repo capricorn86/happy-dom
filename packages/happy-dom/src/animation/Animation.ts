@@ -130,7 +130,7 @@ export default class Animation extends EventTarget {
 	 * Starts or resumes playback.
 	 */
 	public play(): void {
-		if (this.#playState === 'finished' || this.#playState === 'idle') {
+		if (this.#playState === 'finished') {
 			this.finished = this.#createFinishedPromise();
 		}
 		const currentTime = this.#currentTime ?? (this.playbackRate < 0 ? this.#getEndTime() : 0);
@@ -198,6 +198,7 @@ export default class Animation extends EventTarget {
 				DOMExceptionNameEnum.abortError
 			)
 		);
+		this.finished = this.#createFinishedPromise();
 		this.dispatchEvent(new this[PropertySymbol.window].Event('cancel'));
 	}
 
@@ -234,10 +235,13 @@ export default class Animation extends EventTarget {
 	 * @returns Finished promise.
 	 */
 	#createFinishedPromise(): Promise<this> {
-		return new Promise<this>((resolve, reject) => {
+		const promise = new Promise<this>((resolve, reject) => {
 			this.#resolveFinished = resolve;
 			this.#rejectFinished = reject;
 		});
+		// Mark as handled for cancel(), which must still reject the original promise with AbortError.
+		promise.catch(() => {});
+		return promise;
 	}
 
 	/**
