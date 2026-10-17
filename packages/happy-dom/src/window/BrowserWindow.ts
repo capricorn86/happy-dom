@@ -333,6 +333,7 @@ import ImageBitmap from '../canvas/ImageBitmap.js';
 import type ImageData from '../canvas/ImageData.js';
 import type OffscreenCanvas from '../canvas/OffscreenCanvas.js';
 import type SelectorItem from '../query-selector/SelectorItem.js';
+import ToggleEvent from '../event/events/ToggleEvent.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -584,6 +585,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly HashChangeEvent = HashChangeEvent;
 	public readonly ClipboardEvent = ClipboardEvent;
 	public readonly CookieChangeEvent = CookieChangeEvent;
+	public readonly ToggleEvent = ToggleEvent;
 	public readonly TouchEvent = TouchEvent;
 	public readonly PopStateEvent = PopStateEvent;
 	public readonly Touch = Touch;

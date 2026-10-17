@@ -11,6 +11,7 @@ import type CSSMediaRule from '../../rules/CSSMediaRule.js';
 import type CSSRule from '../../CSSRule.js';
 import type CSSStyleRule from '../../rules/CSSStyleRule.js';
 import CSSComputedStyleElementDefault from './config/CSSComputedStyleElementDefault.js';
+import CSSComputedStyleUserAgent from './config/CSSComputedStyleUserAgent.js';
 import CSSComputedStyleInheritedProperties from './config/CSSComputedStyleInheritedProperties.js';
 import CSSComputedStyleMeasurementProperties from './config/CSSComputedStyleMeasurementProperties.js';
 import CSSTextParser from '../utilities/CSSTextParser.js';
@@ -199,6 +200,7 @@ export default class CSSComputedStyle {
 					(<Element>parentElement.element)[PropertySymbol.tagName]!
 				];
 				let elementCSSText = '';
+				let importantUserAgentCSSText = '';
 
 				if (defaultCSS) {
 					if (typeof defaultCSS === 'string') {
@@ -212,6 +214,20 @@ export default class CSSComputedStyle {
 					}
 				}
 
+				for (const userAgentRule of CSSComputedStyleUserAgent) {
+					if (
+						QuerySelector.matches(<Element>parentElement.element, userAgentRule.selector, {
+							ignoreErrors: true
+						})
+					) {
+						if (userAgentRule.cssText.includes('!important')) {
+							importantUserAgentCSSText += userAgentRule.cssText;
+						} else {
+							elementCSSText += userAgentRule.cssText;
+						}
+					}
+				}
+
 				for (const cssText of parentElement.cssTexts) {
 					elementCSSText += cssText.cssText;
 				}
@@ -220,6 +236,10 @@ export default class CSSComputedStyle {
 
 				if (elementStyleAttribute) {
 					elementCSSText += elementStyleAttribute;
+				}
+
+				if (importantUserAgentCSSText) {
+					elementCSSText += importantUserAgentCSSText;
 				}
 
 				const rulesAndVariables = CSSTextParser.parse(elementCSSText);

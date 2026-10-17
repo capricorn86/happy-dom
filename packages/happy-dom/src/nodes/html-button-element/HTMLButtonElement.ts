@@ -9,6 +9,7 @@ import type HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
 import { URL } from 'url';
 import MouseEvent from '../../event/events/MouseEvent.js';
 import type NodeList from '../node/NodeList.js';
+import HTMLElementUtility from '../html-element/HTMLElementUtility.js';
 
 const BUTTON_TYPES = ['submit', 'reset', 'button', 'menu'];
 
@@ -274,7 +275,17 @@ export default class HTMLButtonElement extends HTMLElement {
 	 * @returns Popover target element.
 	 */
 	public get popoverTargetElement(): HTMLElement | null {
-		return this[PropertySymbol.popoverTargetElement];
+		if (this[PropertySymbol.popoverTargetElement] !== null) {
+			return this[PropertySymbol.popoverTargetElement];
+		}
+		const id = this.getAttribute('popovertarget');
+		if (!id) {
+			return null;
+		}
+		return <HTMLElement>(
+			((this[PropertySymbol.ownerDocument] || <any>this.getRootNode())?.getElementById?.(id) ??
+				null)
+		);
 	}
 
 	/**
@@ -285,7 +296,7 @@ export default class HTMLButtonElement extends HTMLElement {
 	public set popoverTargetElement(popoverTargetElement: HTMLElement | null) {
 		if (popoverTargetElement !== null && !(popoverTargetElement instanceof HTMLElement)) {
 			throw new this[PropertySymbol.window].TypeError(
-				`Failed to set the 'popoverTargetElement' property on 'HTMLInputElement': Failed to convert value to 'Element'.`
+				`Failed to set the 'popoverTargetElement' property on 'HTMLButtonElement': Failed to convert value to 'Element'.`
 			);
 		}
 		this[PropertySymbol.popoverTargetElement] = popoverTargetElement;
@@ -398,6 +409,11 @@ export default class HTMLButtonElement extends HTMLElement {
 						form.reset();
 					}
 				}
+			}
+
+			const popover = this.popoverTargetElement;
+			if (popover) {
+				HTMLElementUtility.handlePopoverTargetAction(popover, this.popoverTargetAction, this);
 			}
 		}
 

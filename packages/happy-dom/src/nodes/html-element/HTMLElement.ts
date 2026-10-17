@@ -8,6 +8,7 @@ import HTMLElementUtility from './HTMLElementUtility.js';
 import DOMStringMap from '../../dom/DOMStringMap.js';
 import type Attr from '../attr/Attr.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
+import ToggleEvent from '../../event/events/ToggleEvent.js';
 
 /**
  * HTML Element.
@@ -33,6 +34,7 @@ export default class HTMLElement extends Element {
 	public declare [PropertySymbol.style]: CSSStyleDeclaration | null;
 	public declare [PropertySymbol.dataset]: DOMStringMap | null;
 	public declare [PropertySymbol.customElementDefineCallback]: (() => void) | null;
+	public declare [PropertySymbol.popoverOpen]: boolean;
 
 	/**
 	 * Constructor.
@@ -63,11 +65,20 @@ export default class HTMLElement extends Element {
 		this[PropertySymbol.style] = null;
 		this[PropertySymbol.dataset] = null;
 		this[PropertySymbol.customElementDefineCallback] = null;
+		this[PropertySymbol.popoverOpen] = false;
 	}
 
 	// Events
 
 	/* eslint-disable jsdoc/require-jsdoc */
+
+	public get onbeforetoggle(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'onbeforetoggle');
+	}
+
+	public set onbeforetoggle(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('onbeforetoggle', value);
+	}
 
 	public get oncancel(): ((event: Event) => void) | null {
 		return ElementEventAttributeUtility.getEventListener(this, 'oncancel');
@@ -75,6 +86,14 @@ export default class HTMLElement extends Element {
 
 	public set oncancel(value: ((event: Event) => void) | null) {
 		this[PropertySymbol.propertyEventListeners].set('oncancel', value);
+	}
+
+	public get ontoggle(): ((event: Event) => void) | null {
+		return ElementEventAttributeUtility.getEventListener(this, 'ontoggle');
+	}
+
+	public set ontoggle(value: ((event: Event) => void) | null) {
+		this[PropertySymbol.propertyEventListeners].set('ontoggle', value);
 	}
 
 	public get onerror(): ((event: Event) => void) | null {
@@ -952,8 +971,6 @@ export default class HTMLElement extends Element {
 			case '':
 			case 'auto':
 				return 'auto';
-			case 'manual':
-				return 'manual';
 			default:
 				return 'manual';
 		}
@@ -970,6 +987,128 @@ export default class HTMLElement extends Element {
 			return;
 		}
 		this.setAttribute('popover', value);
+	}
+
+	/**
+	 * Hides a popover element (i.e., one that has a valid popover attribute).
+	 */
+	public hidePopover(): void {
+		if (this.popover === null) {
+			return;
+		}
+
+		if (!this[PropertySymbol.popoverOpen]) {
+			throw new DOMException('Popover already hidden', 'InvalidStateError');
+		}
+
+		if (
+			!this.dispatchEvent(
+				new ToggleEvent('beforetoggle', {
+					bubbles: false,
+					composed: false,
+					cancelable: true,
+					oldState: 'open',
+					newState: 'closed'
+				})
+			)
+		) {
+			return;
+		}
+
+		this[PropertySymbol.popoverOpen] = false;
+		this[PropertySymbol.clearCache]();
+
+		this.dispatchEvent(
+			new ToggleEvent('toggle', {
+				bubbles: false,
+				composed: false,
+				cancelable: false,
+				oldState: 'open',
+				newState: 'closed'
+			})
+		);
+	}
+
+	/**
+	 * Shows a popover element (i.e., one that has a valid popover attribute).
+	 *
+	 * @param options
+	 * @param options.source
+	 */
+	public showPopover(options?: { source?: HTMLElement | null }): void {
+		if (this.popover === null) {
+			return;
+		}
+
+		if (this[PropertySymbol.popoverOpen]) {
+			throw new DOMException('Popover already open', 'InvalidStateError');
+		}
+
+		if (
+			!this.dispatchEvent(
+				new ToggleEvent('beforetoggle', {
+					bubbles: false,
+					composed: false,
+					cancelable: true,
+					oldState: 'closed',
+					newState: 'open',
+					source: options?.source ?? null
+				})
+			)
+		) {
+			return;
+		}
+
+		HTMLElementUtility.maybeCloseOtherAutoPopovers(this);
+
+		this[PropertySymbol.popoverOpen] = true;
+		this[PropertySymbol.clearCache]();
+
+		this.dispatchEvent(
+			new ToggleEvent('toggle', {
+				bubbles: false,
+				composed: false,
+				cancelable: false,
+				oldState: 'closed',
+				newState: 'open'
+			})
+		);
+	}
+
+	/**
+	 * Toggles a popover element (i.e., one that has a valid popover attribute)
+	 * between the hidden and showing states.
+	 *
+	 * @param options If a boolean, true to show the popover and false to hide it.
+	 * If an object, the force property can be used to force the popover to show
+	 * or hide regardless of its current state, and the source property can be
+	 * used to specify the source element that triggered the toggle.
+	 * @returns True if the popover is showing, false otherwise.
+	 */
+	public togglePopover(
+		options?: boolean | { force?: boolean; source?: HTMLElement | null }
+	): boolean {
+		if (this.popover === null) {
+			return false;
+		}
+
+		const shouldOpen =
+			typeof options === 'boolean'
+				? options
+				: typeof options === 'object' && options?.force !== undefined
+					? options.force
+					: !this[PropertySymbol.popoverOpen];
+		if (shouldOpen) {
+			if (!this[PropertySymbol.popoverOpen]) {
+				this.showPopover({ source: typeof options === 'object' ? options.source : undefined });
+			}
+		} else {
+			if (this[PropertySymbol.popoverOpen]) {
+				this.hidePopover();
+			}
+		}
+
+		return this[PropertySymbol.popoverOpen];
 	}
 
 	/**
@@ -1088,6 +1227,13 @@ export default class HTMLElement extends Element {
 	 */
 	public override [PropertySymbol.onRemoveAttribute](removedAttribute: Attr): void {
 		super[PropertySymbol.onRemoveAttribute](removedAttribute);
+
+		if (removedAttribute[PropertySymbol.name] === 'popover') {
+			if (this[PropertySymbol.popoverOpen]) {
+				this[PropertySymbol.popoverOpen] = false;
+				this[PropertySymbol.clearCache]();
+			}
+		}
 
 		this[PropertySymbol.window][PropertySymbol.customElementReactionStack].enqueueReaction(
 			this,
