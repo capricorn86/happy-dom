@@ -5,6 +5,7 @@ import CookieStore from '../../src/cookie-store/CookieStore.js';
 import CookieChangeEvent from '../../src/event/events/CookieChangeEvent.js';
 import DOMException from '../../src/exception/DOMException.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
+import WindowBrowserContext from '../../src/window/WindowBrowserContext.js';
 
 describe('CookieStore', () => {
 	let window: Window;
@@ -27,6 +28,53 @@ describe('CookieStore', () => {
 	});
 
 	describe('set()', () => {
+		it.each([
+			['https://attacker.co.uk/', 'co.uk'],
+			['https://attacker.github.io/', 'github.io'],
+			['https://notexample.com/', 'example.com']
+		])(
+			'Rejects cookies from %s with Domain=%s through document.cookie and Cookie Store.',
+			async (origin, domain) => {
+				window.happyDOM.setURL(origin);
+				const cookieContainer = new WindowBrowserContext(window).getBrowserContext()!
+					.cookieContainer;
+				window.document.cookie = `session=forged; Domain=${domain}; SameSite=None; Secure`;
+				expect(cookieContainer.getCookies()).toEqual([]);
+				await expect(
+					window.cookieStore.set({ name: 'session', value: 'forged', domain })
+				).rejects.toThrow(window.TypeError);
+				await expect(window.cookieStore.delete({ name: 'session', domain })).rejects.toThrow(
+					window.TypeError
+				);
+				expect(cookieContainer.getCookies()).toEqual([]);
+			}
+		);
+
+		it.each(['other.com', 'com', '.example.com', 'example.com.'])(
+			'Rejects invalid domain "%s" without storing cookies or emitting change events.',
+			async (domain) => {
+				let changes = 0;
+				window.cookieStore.addEventListener('change', () => changes++);
+				await expect(
+					window.cookieStore.set({ name: 'session', value: 'forged', domain })
+				).rejects.toThrow(window.TypeError);
+				expect(
+					new WindowBrowserContext(window).getBrowserContext()!.cookieContainer.getCookies()
+				).toEqual([]);
+				expect(changes).toBe(0);
+			}
+		);
+
+		it('Preserves host-only scope when the document navigates.', async () => {
+			await window.cookieStore.set({ name: 'session', value: 'secret', sameSite: 'none' });
+			window.document.cookie = 'documentSession=secret; SameSite=None; Secure';
+			window.happyDOM.setURL('https://attacker.net/');
+			expect(await window.cookieStore.getAll()).toEqual([]);
+			expect(window.document.cookie).toBe('');
+			window.happyDOM.setURL('https://example.com/');
+			expect(await window.cookieStore.getAll()).toHaveLength(2);
+		});
+
 		it('Sets a cookie with name and value.', async () => {
 			await window.cookieStore.set('testCookie', 'testValue');
 			const cookie = await window.cookieStore.get('testCookie');

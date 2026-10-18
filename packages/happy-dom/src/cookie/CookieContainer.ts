@@ -1,10 +1,11 @@
-import type URL from '../url/URL.js';
+import URL from '../url/URL.js';
 import DefaultCookie from './DefaultCookie.js';
 import type ICookie from './ICookie.js';
 import type ICookieContainer from './ICookieContainer.js';
 import type IOptionalCookie from './IOptionalCookie.js';
 import CookieExpireUtility from './urilities/CookieExpireUtility.js';
 import CookieURLUtility from './urilities/CookieURLUtility.js';
+import CookieDomainUtility from './urilities/CookieDomainUtility.js';
 
 /**
  * Cookie Container.
@@ -31,6 +32,16 @@ export default class CookieContainer implements ICookieContainer {
 			const newCookie = Object.assign({}, DefaultCookie, cookie);
 
 			if (newCookie && newCookie.key && newCookie.originURL) {
+				const domain = CookieDomainUtility.validateDomain(
+					newCookie.domain,
+					newCookie.originURL.hostname
+				);
+				if (domain === null) {
+					continue;
+				}
+				newCookie.domain = domain;
+				// Location objects are mutable; cookie scope must survive navigation.
+				newCookie.originURL = new URL(newCookie.originURL.href);
 				const hasExpired = CookieExpireUtility.hasExpired(newCookie);
 
 				// Checks if the cookie already exists and removes it.
@@ -38,7 +49,8 @@ export default class CookieContainer implements ICookieContainer {
 					const existingCookie = allCookies[i];
 					if (
 						existingCookie.key === newCookie.key &&
-						existingCookie.originURL.hostname === newCookie.originURL.hostname &&
+						(existingCookie.domain || existingCookie.originURL.hostname) ===
+							(newCookie.domain || newCookie.originURL.hostname) &&
 						existingCookie.path === newCookie.path &&
 						typeof existingCookie.value === typeof newCookie.value
 					) {

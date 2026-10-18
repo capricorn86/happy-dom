@@ -367,7 +367,10 @@ export default class HTMLLinkElement extends HTMLElement {
 			return;
 		}
 
-		if (as === 'style' && browserSettings.disableCSSFileLoading) {
+		if (
+			as === 'style' &&
+			(browserSettings.disableCSSFileLoading || !browserSettings.enableCSSFileLoading)
+		) {
 			return;
 		}
 
@@ -448,7 +451,10 @@ export default class HTMLLinkElement extends HTMLElement {
 			return;
 		}
 
-		if (browserSettings && browserSettings.disableCSSFileLoading) {
+		if (
+			browserSettings &&
+			(browserSettings.disableCSSFileLoading || !browserSettings.enableCSSFileLoading)
+		) {
 			if (browserSettings.handleDisabledFileLoadingAsSuccess) {
 				this.dispatchEvent(new Event('load'));
 			} else {

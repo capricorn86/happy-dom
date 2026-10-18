@@ -14,7 +14,11 @@ describe('HTMLLinkElement', () => {
 
 	beforeEach(() => {
 		window = new Window({
-			settings: { enableJavaScriptEvaluation: true, suppressCodeGenerationFromStringsWarning: true }
+			settings: {
+				enableJavaScriptEvaluation: true,
+				enableCSSFileLoading: true,
+				suppressCodeGenerationFromStringsWarning: true
+			}
 		});
 		document = window.document;
 	});
@@ -309,7 +313,7 @@ describe('HTMLLinkElement', () => {
 
 		it('Triggers an error event when the Happy DOM setting "disableCSSFileLoading" is set to "true".', async () => {
 			window = new Window({
-				settings: { disableCSSFileLoading: true }
+				settings: { enableCSSFileLoading: true, disableCSSFileLoading: true }
 			});
 			document = window.document;
 
@@ -335,9 +339,37 @@ describe('HTMLLinkElement', () => {
 			).toBe(true);
 		});
 
-		it('Triggers a load event when the Happy DOM setting "disableCSSFileLoading" and "handleDisabledFileLoadingAsSuccess" is set to "true".', async () => {
+		it('Triggers an error event when the Happy DOM setting "enableCSSFileLoading" is set to "false".', async () => {
+			window = new Window();
+			document = window.document;
+
+			const element = document.createElement('link');
+			let errorEvent: Event | null = null;
+
+			element.rel = 'stylesheet';
+			element.href = 'https://localhost:8080/test/path/file.css';
+			element.addEventListener('error', (event) => (errorEvent = <Event>event));
+
+			document.body.appendChild(element);
+
+			expect(element.sheet).toBe(null);
+
+			expect((<Event>(<unknown>errorEvent)).type).toBe('error');
+
+			expect(
+				window.happyDOM?.virtualConsolePrinter
+					.readAsString()
+					.startsWith(
+						'NotSupportedError: Failed to load external stylesheet "https://localhost:8080/test/path/file.css". CSS file loading is disabled.'
+					)
+			).toBe(true);
+		});
+
+		it('Triggers a load event when the Happy DOM setting "enableCSSFileLoading" is set to "false" and "handleDisabledFileLoadingAsSuccess" is set to "true".', async () => {
 			window = new Window({
-				settings: { disableCSSFileLoading: true, handleDisabledFileLoadingAsSuccess: true }
+				settings: {
+					handleDisabledFileLoadingAsSuccess: true
+				}
 			});
 			document = window.document;
 
@@ -461,6 +493,7 @@ describe('HTMLLinkElement', () => {
 				url: 'https://localhost:8080/',
 				settings: {
 					enableJavaScriptEvaluation: true,
+					enableCSSFileLoading: true,
 					suppressCodeGenerationFromStringsWarning: true,
 					errorCapture: BrowserErrorCaptureEnum.disabled,
 					fetch: {
@@ -542,6 +575,7 @@ describe('HTMLLinkElement', () => {
 				url: 'https://localhost:8080/',
 				settings: {
 					enableJavaScriptEvaluation: true,
+					enableCSSFileLoading: true,
 					suppressCodeGenerationFromStringsWarning: true,
 					errorCapture: BrowserErrorCaptureEnum.disabled,
 					fetch: {
