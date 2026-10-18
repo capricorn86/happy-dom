@@ -416,7 +416,8 @@ export default class QuerySelector {
 			const result = this.matchSelector({
 				scope,
 				element,
-				selectorItems: items.slice().reverse(),
+				selectorItems: items,
+				selectorIndex: items.length - 1,
 				cachedItem,
 				ignoreErrors
 			});
@@ -438,6 +439,7 @@ export default class QuerySelector {
 	 * @param options.element Target element.
 	 * @param options.currentElement
 	 * @param options.selectorItems Selector items.
+	 * @param options.selectorIndex Index of the selector item to match.
 	 * @param options.cachedItem Cached item.
 	 * @param [options.ignoreErrors] Ignores errors.
 	 * @param [previousSelectorItem] Previous selector item.
@@ -449,14 +451,15 @@ export default class QuerySelector {
 			scope: Element | Document | DocumentFragment | null;
 			element: Element | ShadowRoot;
 			selectorItems: SelectorItem[];
+			selectorIndex: number;
 			cachedItem: ICachedMatchesItem;
 			ignoreErrors?: boolean;
 		},
 		previousSelectorItem: SelectorItem | null = null,
 		priorityWeight = 0
 	): ISelectorMatch | null {
-		const { scope, element, selectorItems, cachedItem, ignoreErrors } = options;
-		const selectorItem = selectorItems[0];
+		const { scope, element, selectorItems, selectorIndex, cachedItem, ignoreErrors } = options;
+		const selectorItem = selectorItems[selectorIndex];
 
 		if (!selectorItem) {
 			return null;
@@ -465,7 +468,7 @@ export default class QuerySelector {
 		const result = selectorItem.match(scope, element, ignoreErrors);
 
 		if (result) {
-			if (selectorItems.length === 1) {
+			if (selectorIndex === 0) {
 				return {
 					priorityWeight: priorityWeight + result.priorityWeight
 				};
@@ -481,7 +484,8 @@ export default class QuerySelector {
 							{
 								scope,
 								element: previousElementSibling,
-								selectorItems: selectorItems.slice(1),
+								selectorItems,
+								selectorIndex: selectorIndex - 1,
 								cachedItem: cachedItem,
 								ignoreErrors
 							},
@@ -505,7 +509,8 @@ export default class QuerySelector {
 							{
 								scope,
 								element: <Element>parentElement,
-								selectorItems: selectorItems.slice(1),
+								selectorItems,
+								selectorIndex: selectorIndex - 1,
 								cachedItem: cachedItem,
 								ignoreErrors
 							},
@@ -538,7 +543,8 @@ export default class QuerySelector {
 								{
 									scope,
 									element: sibling,
-									selectorItems: selectorItems.slice(1),
+									selectorItems,
+									selectorIndex: selectorIndex - 1,
 									cachedItem: cachedItem,
 									ignoreErrors
 								},
@@ -565,7 +571,8 @@ export default class QuerySelector {
 					{
 						scope,
 						element: <Element>parentElement,
-						selectorItems: selectorItems,
+						selectorItems,
+						selectorIndex,
 						cachedItem: cachedItem,
 						ignoreErrors
 					},
@@ -586,7 +593,9 @@ export default class QuerySelector {
 	 * @param options.rootElement Root element.
 	 * @param options.children Child elements.
 	 * @param options.selectorItems Selector items.
+	 * @param [options.selectorIndex] Index of the selector item to match.
 	 * @param options.cachedItem Cached item.
+	 * @param [options.matched] Array to add matches to.
 	 * @param [documentPosition] Document position of the element.
 	 * @returns Document position and element map.
 	 */
@@ -596,17 +605,26 @@ export default class QuerySelector {
 			rootElement: Element | ShadowRoot | null;
 			children: Element[];
 			selectorItems: SelectorItem[];
+			selectorIndex?: number;
 			cachedItem: ICachedQuerySelectorAllItem;
+			matched?: DocumentPositionAndElement[];
 		},
 		documentPosition?: string
 	): DocumentPositionAndElement[] {
-		const { scope, rootElement, children, selectorItems, cachedItem } = options;
-		const selectorItem = selectorItems[0];
-		const nextSelectorItem = selectorItems[1];
-		let matched: DocumentPositionAndElement[] = [];
+		const {
+			scope,
+			rootElement,
+			children,
+			selectorItems,
+			selectorIndex = 0,
+			cachedItem,
+			matched = []
+		} = options;
+		const selectorItem = selectorItems[selectorIndex];
+		const nextSelectorItem = selectorItems[selectorIndex + 1];
 
 		if (!selectorItem) {
-			return [];
+			return matched;
 		}
 
 		for (let i = 0, max = children.length; i < max; i++) {
@@ -629,51 +647,50 @@ export default class QuerySelector {
 						case SelectorCombinatorEnum.adjacentSibling:
 							const nextElementSibling = child.nextElementSibling;
 							if (nextElementSibling) {
-								matched = matched.concat(
-									this.findAll(
-										{
-											scope,
-											rootElement,
-											children: [nextElementSibling],
-											selectorItems: selectorItems.slice(1),
-											cachedItem: cachedItem
-										},
-										position
-									)
+								this.findAll(
+									{
+										scope,
+										rootElement,
+										children: [nextElementSibling],
+										selectorItems,
+										selectorIndex: selectorIndex + 1,
+										cachedItem,
+										matched
+									},
+									position
 								);
 							}
 							break;
 						case SelectorCombinatorEnum.none:
 						case SelectorCombinatorEnum.descendant:
 						case SelectorCombinatorEnum.child:
-							matched = matched.concat(
+							this.findAll(
+								{
+									scope,
+									rootElement,
+									children: childrenOfChild,
+									selectorItems,
+									selectorIndex: selectorIndex + 1,
+									cachedItem,
+									matched
+								},
+								position
+							);
+							break;
+						case SelectorCombinatorEnum.subsequentSibling:
+							for (let j = i + 1; j < max; j++) {
+								const sibling = children[j];
 								this.findAll(
 									{
 										scope,
 										rootElement,
-										children: childrenOfChild,
-										selectorItems: selectorItems.slice(1),
-										cachedItem
+										children: [sibling],
+										selectorItems,
+										selectorIndex: selectorIndex + 1,
+										cachedItem,
+										matched
 									},
 									position
-								)
-							);
-							break;
-						case SelectorCombinatorEnum.subsequentSibling:
-							const index = children.indexOf(child);
-							for (let j = index + 1; j < children.length; j++) {
-								const sibling = children[j];
-								matched = matched.concat(
-									this.findAll(
-										{
-											scope,
-											rootElement,
-											children: [sibling],
-											selectorItems: selectorItems.slice(1),
-											cachedItem
-										},
-										position
-									)
 								);
 							}
 							break;
@@ -686,17 +703,17 @@ export default class QuerySelector {
 					selectorItem.combinator === SelectorCombinatorEnum.descendant) &&
 				childrenOfChild.length
 			) {
-				matched = matched.concat(
-					this.findAll(
-						{
-							scope,
-							rootElement,
-							children: childrenOfChild,
-							selectorItems: selectorItems,
-							cachedItem
-						},
-						position
-					)
+				this.findAll(
+					{
+						scope,
+						rootElement,
+						children: childrenOfChild,
+						selectorItems,
+						selectorIndex,
+						cachedItem,
+						matched
+					},
+					position
 				);
 			}
 		}
@@ -712,6 +729,7 @@ export default class QuerySelector {
 	 * @param options.rootElement Root element.
 	 * @param options.children Child elements.
 	 * @param options.selectorItems Selector items.
+	 * @param [options.selectorIndex] Index of the selector item to match.
 	 * @param options.cachedItem Cached item.
 	 * @param [documentPosition] Document position of the element.
 	 * @returns Document position and element map.
@@ -722,13 +740,14 @@ export default class QuerySelector {
 			rootElement: Element | ShadowRoot | null;
 			children: Element[];
 			selectorItems: SelectorItem[];
+			selectorIndex?: number;
 			cachedItem: ICachedQuerySelectorItem;
 		},
 		documentPosition?: string
 	): DocumentPositionAndElement | null {
-		const { scope, rootElement, children, selectorItems, cachedItem } = options;
-		const selectorItem = selectorItems[0];
-		const nextSelectorItem = selectorItems[1];
+		const { scope, rootElement, children, selectorItems, selectorIndex = 0, cachedItem } = options;
+		const selectorItem = selectorItems[selectorIndex];
+		const nextSelectorItem = selectorItems[selectorIndex + 1];
 
 		if (!selectorItem) {
 			return null;
@@ -756,7 +775,8 @@ export default class QuerySelector {
 										scope,
 										rootElement,
 										children: [nextElementSibling],
-										selectorItems: selectorItems.slice(1),
+										selectorItems,
+										selectorIndex: selectorIndex + 1,
 										cachedItem
 									},
 									position
@@ -774,7 +794,8 @@ export default class QuerySelector {
 									scope,
 									rootElement,
 									children: childrenOfChild,
-									selectorItems: selectorItems.slice(1),
+									selectorItems,
+									selectorIndex: selectorIndex + 1,
 									cachedItem
 								},
 								position
@@ -784,15 +805,15 @@ export default class QuerySelector {
 							}
 							break;
 						case SelectorCombinatorEnum.subsequentSibling:
-							const index = children.indexOf(child);
-							for (let i = index + 1; i < children.length; i++) {
-								const sibling = children[i];
+							for (let j = i + 1; j < max; j++) {
+								const sibling = children[j];
 								const match = this.findFirst(
 									{
 										scope,
 										rootElement,
 										children: [sibling],
-										selectorItems: selectorItems.slice(1),
+										selectorItems,
+										selectorIndex: selectorIndex + 1,
 										cachedItem
 									},
 									position
@@ -817,6 +838,7 @@ export default class QuerySelector {
 						rootElement,
 						children: childrenOfChild,
 						selectorItems,
+						selectorIndex,
 						cachedItem
 					},
 					position
