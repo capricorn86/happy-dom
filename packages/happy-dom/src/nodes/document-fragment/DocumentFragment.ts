@@ -84,10 +84,7 @@ export default class DocumentFragment extends Node {
 	 * @param textContent Text content.
 	 */
 	public set textContent(textContent: string) {
-		const childNodes = this[PropertySymbol.nodeArray];
-		while (childNodes.length) {
-			this.removeChild(childNodes[0]);
-		}
+		this[PropertySymbol.clearChildren]();
 		if (textContent) {
 			this.appendChild(this[PropertySymbol.ownerDocument].createTextNode(textContent));
 		}

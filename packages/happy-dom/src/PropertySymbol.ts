@@ -152,6 +152,7 @@ export const sandbox = Symbol('sandbox');
 export const cloneNode = Symbol('cloneNode');
 export const appendChild = Symbol('appendChild');
 export const removeChild = Symbol('removeChild');
+export const clearChildren = Symbol('clearChildren');
 export const insertBefore = Symbol('insertBefore');
 export const replaceChild = Symbol('replaceChild');
 export const tracks = Symbol('tracks');

@@ -745,11 +745,7 @@ export default class HTMLElement extends Element {
 	 * @param innerText Inner text.
 	 */
 	public set innerText(text: string) {
-		const childNodes = this[PropertySymbol.nodeArray];
-
-		while (childNodes.length) {
-			this.removeChild(childNodes[0]);
-		}
+		this[PropertySymbol.clearChildren]();
 
 		const texts = text.split(/[\n\r]/);
 		const ownerDocument = this[PropertySymbol.ownerDocument];
