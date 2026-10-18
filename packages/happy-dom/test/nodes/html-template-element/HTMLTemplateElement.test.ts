@@ -4,6 +4,7 @@ import type HTMLTemplateElement from '../../../src/nodes/html-template-element/H
 import HTMLSerializer from '../../../src/html-serializer/HTMLSerializer.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import CustomElement from '../../CustomElement.js';
+import type Element from '../../../src/nodes/element/Element.js';
 
 describe('HTMLTemplateElement', () => {
 	let window: Window;
@@ -27,6 +28,36 @@ describe('HTMLTemplateElement', () => {
 		});
 	});
 
+	describe('get content()', () => {
+		it('Contains the children of a parsed <template>.', () => {
+			document.body.innerHTML =
+				'<template><div>Test</div><template><b>Nested</b></template></template>';
+
+			const template = <HTMLTemplateElement>document.body.children[0];
+			const nested = <HTMLTemplateElement>template.content.children[1];
+
+			expect(template.childNodes.length).toBe(0);
+			expect(template.content.childNodes.length).toBe(2);
+			expect(nested.childNodes.length).toBe(0);
+			expect(nested.content.children[0].outerHTML).toBe('<b>Nested</b>');
+			expect(document.body.innerHTML).toBe(
+				'<template><div>Test</div><template><b>Nested</b></template></template>'
+			);
+		});
+
+		it('Contains the children of a <template> parsed as XHTML.', () => {
+			const xhtml = new window.DOMParser().parseFromString(
+				'<html xmlns="http://www.w3.org/1999/xhtml"><body><template><p>Test</p></template></body></html>',
+				'application/xhtml+xml'
+			);
+			const template = <HTMLTemplateElement>xhtml.querySelector('template');
+
+			expect(template.childNodes.length).toBe(0);
+			expect(template.content.childNodes.length).toBe(1);
+			expect((<Element>template.content.childNodes[0]).localName).toBe('p');
+		});
+	});
+
 	describe('get innerHTML()', () => {
 		it('Returns inner HTML of the "content" node.', () => {
 			const div = document.createElement('div');
@@ -36,13 +67,13 @@ describe('HTMLTemplateElement', () => {
 			expect(element.content.childNodes.length).toBe(0);
 			expect(element.innerHTML).toBe('');
 
-			element.appendChild(div);
+			element.content.appendChild(div);
 
 			expect(element.childNodes.length).toBe(0);
 			expect(element.innerHTML).toBe('<div>Test</div>');
 			expect(new HTMLSerializer().serializeToString(element.content)).toBe('<div>Test</div>');
 
-			element.removeChild(div);
+			element.content.removeChild(div);
 
 			expect(element.content.childNodes.length).toBe(0);
 			expect(element.innerHTML).toBe('');
@@ -105,6 +136,11 @@ describe('HTMLTemplateElement', () => {
 			element.appendChild(span);
 			expect(element.firstChild).toBe(div);
 		});
+
+		it('Ignores the children of the "content" node.', () => {
+			element.innerHTML = '<div></div>';
+			expect(element.firstChild).toBe(null);
+		});
 	});
 
 	describe('get lastChild()', () => {
@@ -114,6 +150,11 @@ describe('HTMLTemplateElement', () => {
 			element.appendChild(div);
 			element.appendChild(span);
 			expect(element.lastChild).toBe(span);
+		});
+
+		it('Ignores the children of the "content" node.', () => {
+			element.innerHTML = '<div></div>';
+			expect(element.lastChild).toBe(null);
 		});
 	});
 
@@ -126,13 +167,13 @@ describe('HTMLTemplateElement', () => {
 			expect(element.content.childNodes.length).toBe(0);
 			expect(element.getInnerHTML()).toBe('');
 
-			element.appendChild(div);
+			element.content.appendChild(div);
 
 			expect(element.childNodes.length).toBe(0);
 			expect(element.getInnerHTML()).toBe('<div>Test</div>');
 			expect(new HTMLSerializer().serializeToString(element.content)).toBe('<div>Test</div>');
 
-			element.removeChild(div);
+			element.content.removeChild(div);
 
 			expect(element.content.childNodes.length).toBe(0);
 			expect(element.getInnerHTML()).toBe('');
@@ -158,13 +199,13 @@ describe('HTMLTemplateElement', () => {
 			expect(element.content.childNodes.length).toBe(0);
 			expect(element.getHTML()).toBe('');
 
-			element.appendChild(div);
+			element.content.appendChild(div);
 
 			expect(element.childNodes.length).toBe(0);
 			expect(element.getHTML()).toBe('<div>Test</div>');
 			expect(new HTMLSerializer().serializeToString(element.content)).toBe('<div>Test</div>');
 
-			element.removeChild(div);
+			element.content.removeChild(div);
 
 			expect(element.content.childNodes.length).toBe(0);
 			expect(element.getHTML()).toBe('');
@@ -186,55 +227,44 @@ describe('HTMLTemplateElement', () => {
 	});
 
 	describe('appendChild()', () => {
-		it('Appends a node to the "content" node.', () => {
+		it('Appends a node to the element and not to the "content" node.', () => {
 			const div = document.createElement('div');
-
-			expect(element.childNodes.length).toBe(0);
-			expect(element.content.childNodes.length).toBe(0);
 
 			element.appendChild(div);
 
-			expect(element.childNodes.length).toBe(0);
-			expect(element.content.childNodes.length).toBe(1);
-			expect(element.content.childNodes[0] === div).toBe(true);
-
-			element.removeChild(div);
-
-			expect(element.childNodes.length).toBe(0);
+			expect(element.childNodes.length).toBe(1);
+			expect(element.childNodes[0]).toBe(div);
 			expect(element.content.childNodes.length).toBe(0);
+			expect(element.outerHTML).toBe('<template></template>');
 		});
 	});
 
 	describe('removeChild()', () => {
-		it('Removes a node from the "content" node.', () => {
+		it('Removes a node from the element.', () => {
 			const div = document.createElement('div');
 
 			element.appendChild(div);
-
-			expect(element.childNodes.length).toBe(0);
-			expect(element.content.childNodes.length).toBe(1);
-
 			element.removeChild(div);
 
 			expect(element.childNodes.length).toBe(0);
-			expect(element.content.childNodes.length).toBe(0);
 		});
 	});
 
 	describe('insertBefore()', () => {
-		it('Inserts a node before another node in the "content" node.', () => {
+		it('Inserts a node before another node in the element.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 			const underline = document.createElement('u');
 			element.appendChild(div);
 			element.appendChild(span);
 			element.insertBefore(underline, span);
-			expect(element.innerHTML).toBe('<div></div><u></u><span></span>');
+			expect(Array.from(element.childNodes)).toEqual([div, underline, span]);
+			expect(element.content.childNodes.length).toBe(0);
 		});
 	});
 
 	describe('replaceChild()', () => {
-		it('Removes a node from the "content" node.', () => {
+		it('Replaces a node in the element.', () => {
 			const div = document.createElement('div');
 			const span = document.createElement('span');
 			const underline = document.createElement('u');
@@ -243,7 +273,8 @@ describe('HTMLTemplateElement', () => {
 			element.appendChild(underline);
 			element.appendChild(span);
 			element.replaceChild(bold, underline);
-			expect(element.innerHTML).toBe('<div></div><b></b><span></span>');
+			expect(Array.from(element.childNodes)).toEqual([div, bold, span]);
+			expect(element.content.childNodes.length).toBe(0);
 		});
 	});
 
