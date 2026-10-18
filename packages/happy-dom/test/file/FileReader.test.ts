@@ -26,6 +26,21 @@ describe('FileReader', () => {
 			expect(result).toBe('data:text/plain;charset=utf-8;base64,VEVTVA==');
 		});
 
+		it('Normalizes the MIME type and falls back to "application/octet-stream" if it is invalid.', async () => {
+			const results: string[] = [];
+			for (const type of ['Text/Plain; Charset="UTF-8"', 'invalid', '']) {
+				const fileReader = new window.FileReader();
+				fileReader.addEventListener('load', () => results.push(<string>fileReader.result));
+				fileReader.readAsDataURL(new Blob(['TEST'], { type }));
+			}
+			await window.happyDOM?.waitUntilComplete();
+			expect(results).toEqual([
+				'data:text/plain;charset=utf-8;base64,VEVTVA==',
+				'data:application/octet-stream;base64,VEVTVA==',
+				'data:application/octet-stream;base64,VEVTVA=='
+			]);
+		});
+
 		it('Reads Blob as data URL passing invalid parameter.', () => {
 			expect(() => {
 				fileReader.readAsDataURL(<any>'invalid');

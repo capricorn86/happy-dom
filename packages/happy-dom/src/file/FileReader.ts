@@ -1,4 +1,3 @@
-import WhatwgMIMEType from 'whatwg-mimetype';
 import * as PropertySymbol from '../PropertySymbol.js';
 import ProgressEvent from '../event/events/ProgressEvent.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
@@ -8,6 +7,7 @@ import FileReaderFormatEnum from './FileReaderFormatEnum.js';
 import EventTarget from '../event/EventTarget.js';
 import FileReaderEventTypeEnum from './FileReaderEventTypeEnum.js';
 import { Buffer } from 'buffer';
+import { MIMEType } from 'util';
 
 /**
  * Reference:
@@ -190,7 +190,12 @@ export default class FileReader extends EventTarget {
 					}
 					case FileReaderFormatEnum.dataURL: {
 						// Spec seems very unclear here; see https://github.com/w3c/FileAPI/issues/104.
-						const contentType = WhatwgMIMEType.parse(blob.type) || 'application/octet-stream';
+						let contentType = 'application/octet-stream';
+						try {
+							contentType = new MIMEType(blob.type).toString();
+						} catch {
+							// Invalid or empty MIME types fall back to "application/octet-stream".
+						}
 						(<Buffer | ArrayBuffer | string>this.result) =
 							`data:${contentType};base64,${data.toString('base64')}`;
 						break;
