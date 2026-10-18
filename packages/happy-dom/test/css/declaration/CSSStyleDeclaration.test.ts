@@ -2890,6 +2890,25 @@ describe('CSSStyleDeclaration', () => {
 		});
 	});
 
+	describe('get WebkitTextFillColor()', () => {
+		it('Returns style property.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			element.setAttribute('style', '-webkit-text-fill-color: rgb(9, 9, 9)');
+
+			expect(declaration.WebkitTextFillColor).toBe('rgb(9, 9, 9)');
+			expect(declaration.getPropertyValue('-webkit-text-fill-color')).toBe('rgb(9, 9, 9)');
+
+			document.body.appendChild(element);
+
+			expect(window.getComputedStyle(element).getPropertyValue('-webkit-text-fill-color')).toBe(
+				'rgb(9, 9, 9)'
+			);
+		});
+	});
+
 	describe('get length()', () => {
 		it('Returns length when of styles on element.', () => {
 			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
