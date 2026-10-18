@@ -1,3 +1,4 @@
+import util from 'node:util';
 import URL from '../../src/url/URL.js';
 import Blob from '../../src/file/Blob.js';
 import type BrowserWindow from '../../src/window/BrowserWindow.js';
@@ -9,6 +10,21 @@ describe('URL', () => {
 	let window: BrowserWindow;
 	beforeEach(() => {
 		window = new Window();
+	});
+
+	describe('get href()', () => {
+		it('Returns href.', () => {
+			const url = new window.URL('https://example.com/path?query=1#hash');
+			expect(url.href).toBe('https://example.com/path?query=1#hash');
+			url.href = 'https://example.org/';
+			expect(url.href).toBe('https://example.org/');
+		});
+
+		it("Returns an empty string when called on the prototype, as Node's util.inspect() does (#1938).", () => {
+			expect(Reflect.get(window.URL.prototype, 'href')).toBe('');
+			expect(Reflect.get(URL.prototype, 'href')).toBe('');
+			expect(() => util.inspect(window.URL, { showHidden: true })).not.toThrow();
+		});
 	});
 
 	describe('constructor()', () => {

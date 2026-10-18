@@ -30,6 +30,29 @@ export default class URL extends NodeJSURL {
 	}
 
 	/**
+	 * Returns href.
+	 *
+	 * Node's util.inspect() calls this getter on the prototype when checking for URLs, which throws in Node's URL getter for subclasses (#1938).
+	 *
+	 * @returns Href.
+	 */
+	public override get href(): string {
+		if (Object.hasOwn(this, 'constructor')) {
+			return '';
+		}
+		return super.href;
+	}
+
+	/**
+	 * Sets href.
+	 *
+	 * @param href Href.
+	 */
+	public override set href(href: string) {
+		super.href = href;
+	}
+
+	/**
 	 * Creates a string containing a URL representing the object given in the parameter.
 	 *
 	 * @param object Object.

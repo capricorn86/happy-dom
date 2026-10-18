@@ -1,3 +1,4 @@
+import util from 'node:util';
 import Window from '../../../src/window/Window.js';
 import type BrowserWindow from '../../../src/window/BrowserWindow.js';
 import type Document from '../../../src/nodes/document/Document.js';
@@ -111,6 +112,13 @@ describe('HTMLLinkElement', () => {
 	});
 
 	describe('get href()', () => {
+		it("Returns an empty string when called on the prototype, as Node's util.inspect() does (#1938).", () => {
+			expect(Reflect.get(window.HTMLLinkElement.prototype, 'href')).toBe('');
+			expect(() =>
+				util.inspect(window.HTMLLinkElement.prototype, { showHidden: true })
+			).not.toThrow();
+		});
+
 		it('Returns the "href" attribute.', () => {
 			const element = document.createElement('link');
 			element.setAttribute('href', 'test');
