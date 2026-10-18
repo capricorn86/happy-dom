@@ -327,6 +327,7 @@ import PopStateEvent from '../event/events/PopStateEvent.js';
 import type ITimerLoopsLimit from './ITimerLoopsLimit.js';
 import CloseEvent from '../event/events/CloseEvent.js';
 import type WebSocket from '../web-socket/WebSocket.js';
+import type BroadcastChannel from '../broadcast-channel/BroadcastChannel.js';
 import type { TImageBitmapSource } from '../canvas/TImageBitmapSource.js';
 import type IImageBitmapOptions from '../canvas/IImageBitmapOptions.js';
 import ImageBitmap from '../canvas/ImageBitmap.js';
@@ -421,6 +422,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public declare readonly Image: typeof Image;
 	public declare readonly Audio: typeof Audio;
 	public declare readonly WebSocket: typeof WebSocket;
+	public declare readonly BroadcastChannel: typeof BroadcastChannel;
 
 	// HTML Element classes
 	public readonly HTMLAnchorElement = HTMLAnchorElement;
@@ -872,6 +874,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	};
 	public [PropertySymbol.moduleImportMap]: IModuleImportMap | null = null;
 	public [PropertySymbol.openWebSockets]: WebSocket[] = [];
+	public [PropertySymbol.openBroadcastChannels]: Set<BroadcastChannel> = new Set();
 	public [PropertySymbol.propertyEventListeners]: Map<string, ((event: Event) => void) | null> =
 		new Map();
 	public [PropertySymbol.querySelectorCache]: Map<string, Array<Array<SelectorItem>>> = new Map();
@@ -2997,6 +3000,12 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		}
 
 		this[PropertySymbol.openWebSockets] = [];
+
+		for (const broadcastChannel of this[PropertySymbol.openBroadcastChannels]) {
+			broadcastChannel[PropertySymbol.destroy]();
+		}
+
+		this[PropertySymbol.openBroadcastChannels].clear();
 
 		this.document[PropertySymbol.destroy]();
 
