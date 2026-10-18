@@ -116,7 +116,7 @@ export default class XMLSerializer {
 						return root.textContent;
 					}
 				}
-				return XMLEncodeUtility.encodeTextContent(root.textContent);
+				return XMLEncodeUtility.encodeXMLTextContent(root.textContent);
 			case NodeTypeEnum.documentTypeNode:
 				const doctype = <DocumentType>root;
 				const identifier = doctype.publicId ? ' PUBLIC' : doctype.systemId ? ' SYSTEM' : '';

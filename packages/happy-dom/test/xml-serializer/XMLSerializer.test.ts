@@ -168,6 +168,16 @@ describe('XMLSerializer', () => {
 			);
 		});
 
+		it('Doesn\'t encode non-breaking spaces as "&nbsp;", which isn\'t defined in XML.', () => {
+			const div = document.createElement('div');
+
+			div.textContent = 'a\u00A0&\u00A0b';
+			expect(xmlSerializer.serializeToString(div)).toBe(
+				'<div xmlns="http://www.w3.org/1999/xhtml">a\u00A0&amp;\u00A0b</div>'
+			);
+			expect(div.innerHTML).toBe('a&nbsp;&amp;&nbsp;b');
+		});
+
 		it('Serializes attributes to prevent injection attacks.', () => {
 			const a = document.createElement('a');
 
