@@ -33,6 +33,7 @@ export default class CSSStyleSheet {
 	 * @param [options.title] Title.
 	 * @param [options.alternate] Alternate.
 	 * @param [options.disabled] Disabled.
+	 * @param [options.href] Href.
 	 */
 	constructor(options?: {
 		media?: MediaList | string;
