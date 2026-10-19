@@ -429,3 +429,4 @@ export const element = Symbol('element');
 export const computed = Symbol('computed');
 export const getPropertyManager = Symbol('getPropertyManager');
 export const clearComputedStyleCache = Symbol('clearComputedStyleCache');
+export const zeroDelayTimeout = Symbol('zeroDelayTimeout');

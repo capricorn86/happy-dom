@@ -885,7 +885,9 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	#outerWidth: number | null = null;
 	#outerHeight: number | null = null;
 	#devicePixelRatio: number | null = null;
-	#zeroDelayTimeout: { timeouts: Array<Timeout> | null } = { timeouts: null };
+	public [PropertySymbol.zeroDelayTimeout]: { timeouts: Array<Timeout> | null; timer?: NodeJS.Timeout } = {
+		timeouts: null
+	};
 	#timerLoopStacks: string[] = [];
 	#timerLoopLimits: ITimerLoopsLimit[] = [];
 
@@ -2459,7 +2461,18 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		// Grouping timeouts will also improve the performance of the async task manager.
 		// It also makes the async task manager more stable as many timeouts may cause waitUntilComplete() to be resolved too early.
 		if (!delay) {
-			const zeroDelayTimeout = this.#zeroDelayTimeout;
+			const zeroDelayTimeout = this[PropertySymbol.zeroDelayTimeout];
+
+			// A batch whose backing timer was cancelled from the outside (e.g. a test
+			// runner switching off fake timers) can never flush; start a new batch so
+			// later zero-delay timeouts still run.
+			if (
+				zeroDelayTimeout.timeouts &&
+				zeroDelayTimeout.timer &&
+				(<{ _destroyed?: boolean }>(<unknown>zeroDelayTimeout.timer))._destroyed === true
+			) {
+				zeroDelayTimeout.timeouts = null;
+			}
 
 			if (!zeroDelayTimeout.timeouts) {
 				const useTryCatch =
@@ -2470,7 +2483,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 				const id = TIMER.setTimeout(() => {
 					// We need to call endTimer() before the callback as the callback might throw an error.
 					this.#browserFrame[PropertySymbol.asyncTaskManager].endTimer(id);
-					const timeouts = zeroDelayTimeout.timeouts!;
+					const timeouts = zeroDelayTimeout.timeouts ?? [];
 					zeroDelayTimeout.timeouts = null;
 					for (const timeout of timeouts) {
 						if (useTryCatch) {
@@ -2490,6 +2503,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 				}, 0);
 
 				zeroDelayTimeout.timeouts = [];
+				zeroDelayTimeout.timer = id;
 				this.#browserFrame[PropertySymbol.asyncTaskManager].startTimer(id);
 			}
 
@@ -2538,7 +2552,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 */
 	public clearTimeout(id: NodeJS.Timeout): void {
 		if (id && id instanceof Timeout) {
-			const zeroDelayTimeout = this.#zeroDelayTimeout;
+			const zeroDelayTimeout = this[PropertySymbol.zeroDelayTimeout];
 			if (!zeroDelayTimeout.timeouts) {
 				return;
 			}

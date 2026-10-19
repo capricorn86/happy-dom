@@ -19,6 +19,7 @@ import type MessageEvent from '../../src/event/events/MessageEvent.js';
 import Event from '../../src/event/Event.js';
 import ErrorEvent from '../../src/event/events/ErrorEvent.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 import Permissions from '../../src/permissions/Permissions.js';
 import Clipboard from '../../src/clipboard/Clipboard.js';
 import PackageVersion from '../../src/version.js';
@@ -2371,6 +2372,27 @@ describe('BrowserWindow', () => {
 			expect(event).toBeInstanceOf(ErrorEvent);
 			expect((<ErrorEvent>(<unknown>event)).message).toBe('');
 			expect((<ErrorEvent>(<unknown>event)).error).toBe('A string failure.');
+		});
+	});
+
+	describe('setTimeout()', () => {
+		it('Starts a new zero-delay batch when the backing batch timer was cancelled from the outside.', async () => {
+			const calls: string[] = [];
+
+			window.setTimeout(() => calls.push('a'), 0);
+
+			// Simulate a test runner cancelling the pending batch timer behind the
+			// window's back (e.g. fake timers being switched off).
+			const batch = window[PropertySymbol.zeroDelayTimeout];
+			expect(batch.timeouts!.length).toBe(1);
+			clearTimeout(batch.timer!);
+			(<{ _destroyed: boolean }>(<unknown>batch.timer))._destroyed = true;
+
+			window.setTimeout(() => calls.push('b'), 0);
+
+			await new Promise((resolve) => setTimeout(resolve, 20));
+
+			expect(calls).toContain('b');
 		});
 	});
 
