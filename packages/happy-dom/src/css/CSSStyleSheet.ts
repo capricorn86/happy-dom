@@ -22,6 +22,7 @@ export default class CSSStyleSheet {
 	public title: string;
 	public alternate: boolean;
 	public disabled: boolean;
+	public href: string | null;
 	#currentText: string | null = null;
 
 	/**
@@ -38,11 +39,13 @@ export default class CSSStyleSheet {
 		title?: string;
 		alternate?: boolean;
 		disabled?: boolean;
+		href?: string;
 	}) {
 		this.media = options && options.media ? options.media : '';
 		this.title = options && options.title ? options.title : '';
 		this.alternate = options && options.alternate ? options.alternate : false;
 		this.disabled = options && options.disabled ? options.disabled : false;
+		this.href = options && options.href ? options.href : null;
 	}
 
 	/**
