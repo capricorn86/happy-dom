@@ -6,6 +6,7 @@ import Clipboard from '../clipboard/Clipboard.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import type Blob from '../file/Blob.js';
 import type FormData from '../form-data/FormData.js';
+import type IRequestInit from '../fetch/types/IRequestInit.js';
 
 /**
  * Browser Navigator API.
@@ -229,10 +230,12 @@ export default class Navigator {
 		url: string,
 		data: string | Blob | ArrayBuffer | ArrayBufferView | FormData
 	): boolean {
-		this.#window.fetch(url, {
+		const init: IRequestInit & { keepalive: boolean } = {
 			method: 'POST',
-			body: data
-		});
+			body: data,
+			keepalive: true
+		};
+		void this.#window.fetch(url, init).catch(() => {});
 		return true;
 	}
 

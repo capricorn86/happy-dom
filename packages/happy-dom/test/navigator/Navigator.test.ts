@@ -98,6 +98,18 @@ describe('Window', () => {
 
 			expect(Buffer.concat(chunks).toString()).toBe('test-data');
 			expect((<Request>(<unknown>request)).url).toBe(expectedURL);
+			expect((<Request>(<unknown>request)).keepalive).toBe(true);
+		});
+
+		it('Handles request failures.', async () => {
+			const fetchPromise = Promise.reject(new Error('Network error'));
+			const catchSpy = vi.spyOn(fetchPromise, 'catch');
+			vi.spyOn(window, 'fetch').mockReturnValue(fetchPromise);
+
+			window.navigator.sendBeacon('https://localhost:8080/path/', 'test-data');
+
+			expect(catchSpy).toHaveBeenCalledOnce();
+			await fetchPromise.catch(() => undefined);
 		});
 	});
 });
