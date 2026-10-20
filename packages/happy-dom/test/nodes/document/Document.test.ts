@@ -431,6 +431,23 @@ describe('Document', () => {
 			expect(document.cookie).toBe('');
 		});
 
+		it('Removes a previously defined cookie if "max-age" is zero.', () => {
+			document.cookie = 'name=value1';
+			document.cookie = 'name=; max-age=0';
+			expect(document.cookie).toBe('');
+		});
+
+		it('Removes a previously defined cookie if "max-age" is negative.', () => {
+			document.cookie = 'name=value1';
+			document.cookie = 'name=; max-age=-1';
+			expect(document.cookie).toBe('');
+		});
+
+		it('Does not set cookie if "max-age" is zero.', () => {
+			document.cookie = 'name=value1; max-age=0';
+			expect(document.cookie).toBe('');
+		});
+
 		it('Removes a previously defined cookie if "expires" is in the past, but treats cookies with no value set differently from cookies with a value.', () => {
 			document.cookie = 'name=value1';
 			document.cookie = 'name';
