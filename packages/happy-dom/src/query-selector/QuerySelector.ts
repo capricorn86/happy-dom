@@ -263,6 +263,18 @@ export default class QuerySelector {
 			node[PropertySymbol.cache].querySelector.delete(selector);
 		}
 
+		const scope =
+			node[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
+				? (<Document>node).documentElement
+				: node;
+
+		// Parsed before the cache entry is added, so that an invalid selector throws on every call
+		// instead of leaving an entry behind that later calls read as a match of nothing.
+		const globalMatchFunction = this.globalMatchFunction;
+		const groups = new SelectorParser({ window, scope, globalMatchFunction }).getSelectorGroups(
+			selector
+		);
+
 		const cachedItem: ICachedQuerySelectorItem = {
 			result: { element: null }
 		};
@@ -279,17 +291,8 @@ export default class QuerySelector {
 
 		let bestMatch: DocumentPositionAndElement | null = null;
 		const matchesMap: Map<string, boolean> = new Map();
-		const scope =
-			node[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
-				? (<Document>node).documentElement
-				: node;
-		const globalMatchFunction = this.globalMatchFunction;
 
-		for (const selectorItems of new SelectorParser({
-			window,
-			scope,
-			globalMatchFunction
-		}).getSelectorGroups(selector)) {
+		for (const selectorItems of groups) {
 			const rootElement =
 				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode ||
 				(node[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode && (<any>node).host)
@@ -382,6 +385,22 @@ export default class QuerySelector {
 			element[PropertySymbol.cache].matches.delete(selector);
 		}
 
+		const scopeOrElement = options?.scope || element;
+		const scope =
+			scopeOrElement[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
+				? (<Document>scopeOrElement).documentElement
+				: scopeOrElement;
+
+		// Parsed before the cache entry is added, so that an invalid selector throws on every call
+		// instead of leaving an entry behind that later calls read as a result of not matching.
+		const globalMatchFunction = this.globalMatchFunction;
+		const groups = new SelectorParser({
+			ignoreErrors: options?.ignoreErrors,
+			window,
+			scope,
+			globalMatchFunction
+		}).getSelectorGroups(selector);
+
 		const cachedItem: ICachedMatchesItem = {
 			result: { match: null }
 		};
@@ -401,18 +420,7 @@ export default class QuerySelector {
 			}
 		}
 
-		const scopeOrElement = options?.scope || element;
-		const scope =
-			scopeOrElement[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
-				? (<Document>scopeOrElement).documentElement
-				: scopeOrElement;
-		const globalMatchFunction = this.globalMatchFunction;
-		for (const items of new SelectorParser({
-			ignoreErrors: options?.ignoreErrors,
-			window,
-			scope,
-			globalMatchFunction
-		}).getSelectorGroups(selector)) {
+		for (const items of groups) {
 			const result = this.matchSelector({
 				scope,
 				element,
