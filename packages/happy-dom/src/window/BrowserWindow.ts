@@ -885,7 +885,10 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	#outerWidth: number | null = null;
 	#outerHeight: number | null = null;
 	#devicePixelRatio: number | null = null;
-	public [PropertySymbol.zeroDelayTimeout]: { timeouts: Array<Timeout> | null; timer?: NodeJS.Timeout } = {
+	public [PropertySymbol.zeroDelayTimeout]: {
+		timeouts: Array<Timeout> | null;
+		timer?: NodeJS.Timeout;
+	} = {
 		timeouts: null
 	};
 	#timerLoopStacks: string[] = [];
