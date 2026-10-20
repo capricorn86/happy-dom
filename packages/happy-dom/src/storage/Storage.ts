@@ -1,4 +1,3 @@
-import ClassMethodBinder from '../utilities/ClassMethodBinder.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 
 /**
@@ -15,12 +14,10 @@ export default class Storage {
 	constructor() {
 		const data = this[PropertySymbol.data];
 
-		const methodBinder = new ClassMethodBinder(this, [Storage]);
-
+		// Methods are not bound to the instance, so that they are resolved from Storage.prototype on every call (as in browsers). This makes it possible to spy on and restore Storage.prototype methods at any time.
 		return new Proxy(this, {
 			get: (target, property) => {
 				if (property in target || typeof property === 'symbol') {
-					methodBinder.bind(property);
 					return (<any>target)[property];
 				}
 				if (property in data) {
@@ -28,8 +25,6 @@ export default class Storage {
 				}
 			},
 			set(target, property, newValue): boolean {
-				methodBinder.bind(property);
-
 				if (property in target || typeof property === 'symbol') {
 					return true;
 				}
@@ -55,8 +50,6 @@ export default class Storage {
 				return false;
 			},
 			defineProperty(target, property, descriptor): boolean {
-				methodBinder.preventBinding(property);
-
 				if (property in target) {
 					Object.defineProperty(target, property, descriptor);
 					return true;
