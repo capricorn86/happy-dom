@@ -17,8 +17,9 @@ import Response from '../../src/fetch/Response.js';
 import Fetch from '../../src/fetch/Fetch.js';
 import type MessageEvent from '../../src/event/events/MessageEvent.js';
 import Event from '../../src/event/Event.js';
-import type ErrorEvent from '../../src/event/events/ErrorEvent.js';
+import ErrorEvent from '../../src/event/events/ErrorEvent.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 import Permissions from '../../src/permissions/Permissions.js';
 import Clipboard from '../../src/clipboard/Clipboard.js';
 import PackageVersion from '../../src/version.js';
@@ -2344,6 +2345,54 @@ describe('BrowserWindow', () => {
 					DOMExceptionNameEnum.invalidCharacterError
 				)
 			);
+		});
+	});
+
+	describe('reportError()', () => {
+		it('Dispatches an "error" event with the error and its message.', () => {
+			const error = new Error('Something went wrong.');
+			let event: ErrorEvent | null = null;
+
+			window.addEventListener('error', (e: Event) => (event = <ErrorEvent>e));
+
+			window.reportError(error);
+
+			expect(event).toBeInstanceOf(ErrorEvent);
+			expect((<ErrorEvent>(<unknown>event)).message).toBe('Something went wrong.');
+			expect((<ErrorEvent>(<unknown>event)).error).toBe(error);
+		});
+
+		it('Dispatches an "error" event for a non-Error value.', () => {
+			let event: ErrorEvent | null = null;
+
+			window.addEventListener('error', (e: Event) => (event = <ErrorEvent>e));
+
+			window.reportError('A string failure.');
+
+			expect(event).toBeInstanceOf(ErrorEvent);
+			expect((<ErrorEvent>(<unknown>event)).message).toBe('');
+			expect((<ErrorEvent>(<unknown>event)).error).toBe('A string failure.');
+		});
+	});
+
+	describe('setTimeout()', () => {
+		it('Starts a new zero-delay batch when the backing batch timer was cancelled from the outside.', async () => {
+			const calls: string[] = [];
+
+			window.setTimeout(() => calls.push('a'), 0);
+
+			// Simulate a test runner cancelling the pending batch timer behind the
+			// window's back (e.g. fake timers being switched off).
+			const batch = window[PropertySymbol.zeroDelayTimeout];
+			expect(batch.timeouts!.length).toBe(1);
+			clearTimeout(batch.timer!);
+			(<{ _destroyed: boolean }>(<unknown>batch.timer))._destroyed = true;
+
+			window.setTimeout(() => calls.push('b'), 0);
+
+			await new Promise((resolve) => setTimeout(resolve, 20));
+
+			expect(calls).toContain('b');
 		});
 	});
 
