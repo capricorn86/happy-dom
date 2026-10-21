@@ -116,4 +116,71 @@ export default class HTMLElementUtility {
 		}
 		return false;
 	}
+
+	/**
+	 * Closes other auto popovers when a new auto popover is opened.  If the new
+	 * popover is not an auto popover, this function does nothing.
+	 *
+	 * @param targetPopover The popover that was opened.
+	 */
+	public static maybeCloseOtherAutoPopovers(targetPopover: HTMLElement): void {
+		if (targetPopover.popover !== 'auto') {
+			return;
+		}
+
+		const document = targetPopover.ownerDocument;
+		if (!document) {
+			return;
+		}
+
+		// Find all popover elements in the document that are currently open.
+		const openElements = document.querySelectorAll('[popover]');
+
+		for (const el of openElements) {
+			const htmlEl = <HTMLElement>el;
+
+			// Skip if it's the target element itself.
+			if (htmlEl === targetPopover) {
+				continue;
+			}
+
+			// Skip manual popovers - only auto popovers light-dismiss.
+			if (htmlEl.popover !== 'auto') {
+				continue;
+			}
+
+			// Skip if the open popover is an ancestor of the newly opened popover.
+			if (htmlEl.contains(targetPopover)) {
+				continue;
+			}
+
+			// Close the other auto popover if it is open.
+			if (htmlEl[PropertySymbol.popoverOpen]) {
+				htmlEl.hidePopover();
+			}
+		}
+	}
+
+	/**
+	 * Acts upon a popover element based on the action specified.
+	 *
+	 * @param popover The popover to act upon.
+	 * @param action The action to perform on the popover.
+	 * @param [source] The element that triggered the action.
+	 */
+	public static handlePopoverTargetAction(
+		popover: HTMLElement,
+		action: string,
+		source?: HTMLElement
+	): void {
+		if (popover) {
+			if (action === 'show' && !popover[PropertySymbol.popoverOpen]) {
+				popover.showPopover({ source });
+			} else if (action === 'hide' && popover[PropertySymbol.popoverOpen]) {
+				popover.hidePopover();
+			} else if (action === 'toggle') {
+				popover.togglePopover({ source });
+			}
+		}
+	}
 }

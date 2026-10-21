@@ -44,6 +44,7 @@ export const observeMutations = Symbol('observeMutations');
 export const mutationListeners = Symbol('mutationListeners');
 export const ownerDocument = Symbol('ownerDocument');
 export const ownerElement = Symbol('ownerElement');
+export const popoverOpen = Symbol('popoverOpen');
 export const propagationStopped = Symbol('propagationStopped');
 export const readyStateManager = Symbol('readyStateManager');
 export const referrer = Symbol('referrer');

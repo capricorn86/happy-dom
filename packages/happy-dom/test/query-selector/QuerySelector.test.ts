@@ -105,7 +105,7 @@ describe('QuerySelector', () => {
                         <div class="baa"></div>
                         <div class="bab"></div>
                         <div class="bac"></div>
-                    </div> 
+                    </div>
                     <div class="bb">
                         <div class="bba"></div>
                         <div class="bbb"></div>
@@ -1531,7 +1531,7 @@ describe('QuerySelector', () => {
 
 			div.innerHTML = `
 				<span>loremipsum</span>
-				<a href="/123">normal link</a>                        
+				<a href="/123">normal link</a>
 				<a href="javascript:void(0)">void</a>
 			`;
 
@@ -1547,7 +1547,7 @@ describe('QuerySelector', () => {
 			div.innerHTML = `
                 <span>Span 1</span>
                 <span>Span 2</span>
-                <a>Link 1</a>                        
+                <a>Link 1</a>
                 <a>Link 2</a>
             `;
 
@@ -1888,11 +1888,11 @@ describe('QuerySelector', () => {
 
 		it('Returns SVG elements', () => {
 			document.body.innerHTML = `<svg width="3955.829" height="880" viewBox="0 0 3955.829 880" xmlns="http://www.w3.org/2000/svg" id="id_svg_model">
-                <g id="svgGroup" stroke-linecap="round" fill-rule="evenodd" font-size="9pt" 
+                <g id="svgGroup" stroke-linecap="round" fill-rule="evenodd" font-size="9pt"
                     stroke="#000" stroke-width="0.25mm" fill="none" style="stroke:#000;stroke-width:0.25mm;fill:none"
                 >
-                    <path d="M 0 0 L 0 880 L 1272.697 880 A 80 80 0 0 0 1350.647 817.996 L 1416.442 533.006 A 120 120 0 0 1 1533.367 440 L 1977.914 440 L 2422.462 440 A 120 120 0 0 1 2539.386 533.006 
-                        L 2605.182 817.996 A 80 80 0 0 0 2683.131 880 L 3955.829 880 L 3955.829 0" 
+                    <path d="M 0 0 L 0 880 L 1272.697 880 A 80 80 0 0 0 1350.647 817.996 L 1416.442 533.006 A 120 120 0 0 1 1533.367 440 L 1977.914 440 L 2422.462 440 A 120 120 0 0 1 2539.386 533.006
+                        L 2605.182 817.996 A 80 80 0 0 0 2683.131 880 L 3955.829 880 L 3955.829 0"
                         vector-effect="non-scaling-stroke">
                     </path>
                     <unknown></unknown>
@@ -2123,7 +2123,7 @@ describe('QuerySelector', () => {
 			div.innerHTML = `
                 <span>Span 1</span>
                 <span>Span 2</span>
-                <a>Link 1</a>                        
+                <a>Link 1</a>
                 <a>Link 2</a>
             `;
 
@@ -2436,7 +2436,7 @@ describe('QuerySelector', () => {
 			div.innerHTML = `
                 <span>Span 1</span>
                 <span>Span 2</span>
-                <a>Link 1</a>                        
+                <a>Link 1</a>
                 <a>Link 2</a>
             `;
 
@@ -2472,6 +2472,21 @@ describe('QuerySelector', () => {
 			// Test 3: Simple ID (control test)
 			document.body.innerHTML = `<div id="simple"></div>`;
 			expect(!!document.querySelector('[id="simple"]')).toBe(true);
+		});
+
+		it('Matches an open popover', () => {
+			const container = document.createElement('div');
+			container.popover = 'auto';
+
+			expect(container.matches(':popover-open')).toBe(false);
+
+			container.showPopover();
+
+			expect(container.matches(':popover-open')).toBe(true);
+
+			container.hidePopover();
+
+			expect(container.matches(':popover-open')).toBe(false);
 		});
 
 		it('Matches an element inside a shadow root of a custom element', () => {
