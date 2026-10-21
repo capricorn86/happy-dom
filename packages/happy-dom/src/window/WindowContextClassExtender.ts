@@ -61,7 +61,15 @@ export default class WindowContextClassExtender {
 		/* eslint-disable jsdoc/require-jsdoc */
 
 		// Document
-		class Document extends DocumentImplementation {}
+		// HTMLDocument and XMLDocument extend the implementation classes, not this class, so instanceof is matched on the window instead.
+		class Document extends DocumentImplementation {
+			public static [Symbol.hasInstance](value: unknown): boolean {
+				if (this !== Document) {
+					return Function.prototype[Symbol.hasInstance].call(this, value);
+				}
+				return value instanceof DocumentImplementation && value[PropertySymbol.window] === window;
+			}
+		}
 		Document.prototype[PropertySymbol.window] = window;
 		(<typeof Document>window.Document) = Document;
 
@@ -76,7 +84,17 @@ export default class WindowContextClassExtender {
 		(<typeof XMLDocument>window.XMLDocument) = XMLDocument;
 
 		// DocumentFragment
-		class DocumentFragment extends DocumentFragmentImplementation {}
+		// ShadowRoot extends the implementation class, so instanceof is matched on the window instead.
+		class DocumentFragment extends DocumentFragmentImplementation {
+			public static [Symbol.hasInstance](value: unknown): boolean {
+				if (this !== DocumentFragment) {
+					return Function.prototype[Symbol.hasInstance].call(this, value);
+				}
+				return (
+					value instanceof DocumentFragmentImplementation && value[PropertySymbol.window] === window
+				);
+			}
+		}
 		DocumentFragment.prototype[PropertySymbol.window] = window;
 		(<typeof DocumentFragment>window.DocumentFragment) = DocumentFragment;
 

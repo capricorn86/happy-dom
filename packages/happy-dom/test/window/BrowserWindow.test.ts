@@ -320,6 +320,46 @@ describe('BrowserWindow', () => {
 			expect(window.document.body.isConnected).toBe(true);
 			expect(window.document.body.getRootNode()).toBe(window.document);
 		});
+
+		it("Is an instance of the window Document class, but not of another window's.", () => {
+			const otherWindow = new Browser().newPage().mainFrame.window;
+
+			expect(window.document instanceof window.Document).toBe(true);
+			expect(window.document instanceof window.HTMLDocument).toBe(true);
+			expect(
+				new window.DOMParser().parseFromString('<a/>', 'text/xml') instanceof window.Document
+			).toBe(true);
+			expect(window.document instanceof otherWindow.Document).toBe(false);
+			expect(window.document.createElement('div') instanceof window.Document).toBe(false);
+		});
+
+		it('Does not make subclasses of the window Document class match every document.', () => {
+			class SubDocument extends window.Document {}
+
+			expect(window.document instanceof SubDocument).toBe(false);
+			expect(new SubDocument() instanceof SubDocument).toBe(true);
+		});
+	});
+
+	describe('get DocumentFragment()', () => {
+		it('Matches document fragments and shadow roots created by the window.', () => {
+			const otherWindow = new Browser().newPage().mainFrame.window;
+			const shadowRoot = document.createElement('div').attachShadow({ mode: 'open' });
+
+			expect(document.createDocumentFragment() instanceof window.DocumentFragment).toBe(true);
+			expect(shadowRoot instanceof window.DocumentFragment).toBe(true);
+			expect(shadowRoot instanceof window.ShadowRoot).toBe(true);
+			expect(shadowRoot instanceof otherWindow.DocumentFragment).toBe(false);
+			expect(document instanceof window.DocumentFragment).toBe(false);
+		});
+
+		it('Does not make subclasses of the window DocumentFragment class match every fragment.', () => {
+			class SubFragment extends window.DocumentFragment {}
+			const shadowRoot = document.createElement('div').attachShadow({ mode: 'open' });
+
+			expect(document.createDocumentFragment() instanceof SubFragment).toBe(false);
+			expect(shadowRoot instanceof SubFragment).toBe(false);
+		});
 	});
 
 	describe('get Object()', () => {
