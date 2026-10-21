@@ -308,7 +308,8 @@ export default class Fetch {
 					const response = new this.#window.Response(body, {
 						status: validateResponse.status,
 						statusText: validateResponse.statusText,
-						headers: validateResponse.headers
+						headers: validateResponse.headers,
+						[PropertySymbol.skipStatusValidation]: true
 					});
 					(<string>response.url) = validateResponse.url;
 					response[PropertySymbol.cachedResponse] = cachedResponse;
@@ -335,7 +336,8 @@ export default class Fetch {
 		const response = new this.#window.Response(cachedResponse.response.body, {
 			status: cachedResponse.response.status,
 			statusText: cachedResponse.response.statusText,
-			headers: cachedResponse.response.headers
+			headers: cachedResponse.response.headers,
+			[PropertySymbol.skipStatusValidation]: true
 		});
 		(<string>response.url) = cachedResponse.response.url;
 		response[PropertySymbol.cachedResponse] = cachedResponse;
@@ -775,7 +777,8 @@ export default class Fetch {
 		const responseOptions = {
 			status: nodeResponse.statusCode,
 			statusText: nodeResponse.statusMessage,
-			headers: this.responseHeaders
+			headers: this.responseHeaders,
+			[PropertySymbol.skipStatusValidation]: true
 		};
 
 		const contentEncodingHeader = this.responseHeaders.get('Content-Encoding');

@@ -4778,6 +4778,26 @@ describe('Fetch', () => {
 			expect(await response6.text()).toBe('404 not found');
 		});
 
+		it('Accepts status codes from the server that the Response constructor rejects.', async () => {
+			const window = new Window({ url: 'http://localhost:8080/' });
+
+			mockNetwork('http', {
+				responseText: 'test',
+				responseProperties: {
+					statusCode: 999,
+					statusMessage: 'Unknown'
+				}
+			});
+
+			const response = await window.fetch('http://localhost:8080/');
+
+			expect(response.ok).toBe(false);
+			expect(response.status).toBe(999);
+			expect(response.statusText).toBe('Unknown');
+			expect(response.clone().status).toBe(999);
+			expect(await response.text()).toBe('test');
+		});
+
 		it('Handles relative virtual server defined as a string without origin', async () => {
 			const window = new Window({
 				url: 'http://localhost:8080/',
