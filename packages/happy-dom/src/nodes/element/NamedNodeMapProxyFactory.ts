@@ -3,6 +3,7 @@
 import ClassMethodBinder from '../../utilities/ClassMethodBinder.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import NamedNodeMap from './NamedNodeMap.js';
+import NamespaceURI from '../../config/NamespaceURI.js';
 
 /**
  * Named Node Map.
@@ -29,7 +30,7 @@ export default class NamedNodeMapProxyFactory {
 				}
 				const index = Number(property);
 				if (!isNaN(index)) {
-					return target.item(index);
+					return target.item(index) || undefined;
 				}
 				return target.getNamedItem(<string>property) || undefined;
 			},
@@ -56,19 +57,22 @@ export default class NamedNodeMapProxyFactory {
 				}
 				return true;
 			},
-			ownKeys(): string[] {
-				const keys = Array.from(namedNodeMap[PropertySymbol.items].keys());
+			ownKeys: (): string[] => {
+				const keys: string[] = [];
 				for (let i = 0, max = namedNodeMap[PropertySymbol.items].size; i < max; i++) {
 					keys.push(String(i));
 				}
+				for (const name of this.getSupportedPropertyNames(namedNodeMap)) {
+					keys.push(name);
+				}
 				return keys;
 			},
-			has(target, property): boolean {
+			has: (target, property): boolean => {
 				if (typeof property === 'symbol') {
 					return false;
 				}
 
-				if (property in target || namedNodeMap[PropertySymbol.items].has(property)) {
+				if (property in target || this.getSupportedPropertyNames(namedNodeMap).includes(property)) {
 					return true;
 				}
 
@@ -90,7 +94,7 @@ export default class NamedNodeMapProxyFactory {
 
 				return false;
 			},
-			getOwnPropertyDescriptor(target, property): PropertyDescriptor | undefined {
+			getOwnPropertyDescriptor: (target, property): PropertyDescriptor | undefined => {
 				if (property in target || typeof property === 'symbol') {
 					return;
 				}
@@ -111,17 +115,48 @@ export default class NamedNodeMapProxyFactory {
 					return;
 				}
 
-				const items = namedNodeMap[PropertySymbol.items].get(<string>property);
+				if (!this.getSupportedPropertyNames(namedNodeMap).includes(property)) {
+					return;
+				}
 
-				if (items) {
+				const item = target.getNamedItem(property);
+
+				if (item) {
+					// Named properties are not enumerable, as NamedNodeMap has [LegacyUnenumerableNamedProperties].
 					return {
-						value: items,
+						value: item,
 						writable: false,
-						enumerable: true,
+						enumerable: false,
 						configurable: true
 					};
 				}
 			}
 		});
+	}
+
+	/**
+	 * Returns the supported property names (the qualified names of the attributes).
+	 *
+	 * Duplicates are excluded. Names containing ASCII upper alpha are excluded for elements in the HTML namespace in an HTML document, as they can't be retrieved with getNamedItem().
+	 *
+	 * @see https://dom.spec.whatwg.org/#ref-for-dfn-supported-property-names
+	 * @param namedNodeMap Named node map.
+	 * @returns Supported property names.
+	 */
+	private static getSupportedPropertyNames(namedNodeMap: NamedNodeMap): string[] {
+		const ownerElement = namedNodeMap[PropertySymbol.ownerElement];
+		const excludeUpperCase =
+			ownerElement[PropertySymbol.namespaceURI] === NamespaceURI.html &&
+			ownerElement[PropertySymbol.ownerDocument][PropertySymbol.contentType] === 'text/html';
+		const names: Set<string> = new Set();
+
+		for (const item of namedNodeMap[PropertySymbol.items].values()) {
+			const name = item[PropertySymbol.name]!;
+			if (!excludeUpperCase || !/[A-Z]/.test(name)) {
+				names.add(name);
+			}
+		}
+
+		return Array.from(names);
 	}
 }
