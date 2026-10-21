@@ -334,6 +334,9 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Does not make subclasses of the window Document class match every document.', () => {
+			/**
+			 * Subclass of the window Document class.
+			 */
 			class SubDocument extends window.Document {}
 
 			expect(window.document instanceof SubDocument).toBe(false);
@@ -354,6 +357,9 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Does not make subclasses of the window DocumentFragment class match every fragment.', () => {
+			/**
+			 * Subclass of the window DocumentFragment class.
+			 */
 			class SubFragment extends window.DocumentFragment {}
 			const shadowRoot = document.createElement('div').attachShadow({ mode: 'open' });
 
