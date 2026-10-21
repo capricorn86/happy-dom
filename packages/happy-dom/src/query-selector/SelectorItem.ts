@@ -9,6 +9,7 @@ import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.j
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import type ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
 import type { TGlobalMatchFunction } from './TGlobalMatchFunction.js';
+import HTMLElementUtility from '../nodes/html-element/HTMLElementUtility.js';
 
 /**
  * Selector item.
@@ -274,7 +275,7 @@ export default class SelectorItem {
 					? { priorityWeight: 10 }
 					: null;
 			case 'disabled':
-				return 'disabled' in element && element.hasAttribute('disabled')
+				return 'disabled' in element && HTMLElementUtility.isEffectivelyDisabled(element)
 					? { priorityWeight: 10 }
 					: null;
 			case 'empty':
