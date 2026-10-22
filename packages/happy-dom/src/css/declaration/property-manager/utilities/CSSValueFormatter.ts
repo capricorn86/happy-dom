@@ -355,9 +355,52 @@ export default class CSSValueFormatter {
 			if (match[2] && match[3]) {
 				return `${match[2]}(${match[3].replace(/\s+/g, ' ').replace(/,([^ ])/g, ', $1')})`;
 			}
-			return value;
+			return this.getHexColorAsRGB(value);
 		}
 		return null;
+	}
+
+	/**
+	 * Converts a hexadecimal color (e.g. "#ffa015") to its rgb()/rgba() serialization,
+	 * as required by the CSSOM specification.
+	 *
+	 * @param value Hexadecimal color value.
+	 * @returns Parsed value.
+	 */
+	private static getHexColorAsRGB(value: string): string {
+		let hex = value.slice(1);
+		if (hex.length <= 4) {
+			hex = hex.replace(/./g, (character) => character + character);
+		}
+		const red = parseInt(hex.slice(0, 2), 16);
+		const green = parseInt(hex.slice(2, 4), 16);
+		const blue = parseInt(hex.slice(4, 6), 16);
+		if (hex.length === 8) {
+			const alpha = parseInt(hex.slice(6, 8), 16);
+			if (alpha !== 255) {
+				return `rgba(${red}, ${green}, ${blue}, ${this.getColorAlpha(alpha)})`;
+			}
+		}
+		return `rgb(${red}, ${green}, ${blue})`;
+	}
+
+	/**
+	 * Serializes an alpha byte (0-255) the same way browsers do, using the shortest
+	 * decimal that rounds back to the same byte.
+	 *
+	 * @param alpha Alpha component as a byte (0-255).
+	 * @returns Serialized alpha.
+	 */
+	private static getColorAlpha(alpha: number): string {
+		const value = alpha / 255;
+		for (let decimals = 1; decimals <= 3; decimals++) {
+			const factor = 10 ** decimals;
+			const rounded = Math.round(value * factor) / factor;
+			if (Math.round(rounded * 255) === alpha) {
+				return String(rounded);
+			}
+		}
+		return String(Math.round(value * 1000) / 1000);
 	}
 
 	/**
