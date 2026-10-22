@@ -506,7 +506,11 @@ export default class SelectorParser {
 
 		switch (attribute.operator) {
 			// [attribute~="value"] - Contains a specified word.
+			// CSS Selectors: if "val" contains whitespace, it never represents anything.
 			case '~':
+				if (/\s/.test(attribute.value)) {
+					return /(?!)/;
+				}
 				return new RegExp(`(^|\\s)${escapedValue}(\\s|$)`, modifier);
 			// [attribute|="value"] - Starts with the specified word.
 			case '|':

@@ -722,6 +722,17 @@ describe('QuerySelector', () => {
 			expect(container.querySelector('[data-controller~="modal"]')).toBe(parent);
 		});
 
+		it('Does not match when ~= value contains whitespace (CSS Selectors).', () => {
+			const container = document.createElement('div');
+			container.innerHTML = '<i p="a b"></i><i p="a"></i>';
+			document.body.appendChild(container);
+
+			expect(container.querySelectorAll('[p~="a b"]').length).toBe(0);
+			// Both <i p="a b"> and <i p="a"> contain the word "a".
+			expect(container.querySelectorAll('[p~="a"]').length).toBe(2);
+			expect(container.querySelector('[p~="a b"]')).toBeNull();
+		});
+
 		it('Returns all elements with an attribute value starting with the specified word using "[class|="class1"]".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
