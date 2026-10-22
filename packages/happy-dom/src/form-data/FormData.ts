@@ -5,6 +5,7 @@ import type HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.
 import type HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
 import type BrowserWindow from '../window/BrowserWindow.js';
 import type HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js';
+import type HTMLSelectElement from '../nodes/html-select-element/HTMLSelectElement.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 
 type FormDataEntry = {
@@ -99,8 +100,16 @@ export default class FormData implements Iterable<[string, string | File]> {
 						}
 						break;
 					case 'TEXTAREA':
-					case 'SELECT':
 						this.append(name, (<HTMLInputElement>item).value);
+						break;
+					case 'SELECT':
+						if ((<HTMLSelectElement>item).multiple) {
+							for (const option of (<HTMLSelectElement>item).selectedOptions) {
+								this.append(name, option.value);
+							}
+						} else {
+							this.append(name, (<HTMLSelectElement>item).value);
+						}
 						break;
 				}
 			}
