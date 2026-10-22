@@ -1307,6 +1307,25 @@ describe('HTMLFormElement', () => {
 			expect((<HTMLOutputElement>root.children[9]).value).toBe('Default value');
 			expect((<HTMLOutputElement>root.children[9]).textContent).toBe('Default value');
 		});
+
+		it('Restores a radio button unchecked by mutual exclusion from its "checked" content attribute.', () => {
+			element.innerHTML =
+				'<input type="radio" name="x" checked id="a"><input type="radio" name="x" id="b">';
+			document.body.appendChild(element);
+
+			const a = <HTMLInputElement>element.querySelector('#a');
+			const b = <HTMLInputElement>element.querySelector('#b');
+
+			b.checked = true;
+
+			expect(a.checked).toBe(false);
+			expect(b.checked).toBe(true);
+
+			element.reset();
+
+			expect(a.checked).toBe(true);
+			expect(b.checked).toBe(false);
+		});
 	});
 
 	describe('appendChild()', () => {
