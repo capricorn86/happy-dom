@@ -32,8 +32,8 @@ describe('GlobalWindow', () => {
 			expect(window.Function('return (() => {}).constructor === globalThis.Function')()).toBe(true);
 		});
 
-		it('Does not execute unsafe code using import', () => {
-			expect(() => window.Function('return import("process")')()).rejects.toThrow();
+		it('Does not execute unsafe code using import', async () => {
+			await expect(() => window.Function('return import("process")')()).rejects.toThrow();
 		});
 	});
 
