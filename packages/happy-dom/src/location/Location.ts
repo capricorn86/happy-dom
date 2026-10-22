@@ -62,7 +62,9 @@ export default class Location {
 			history.push({
 				title: '',
 				href: url.href,
-				state: history.currentItem.state,
+				// A hash navigation starts a fresh session-history entry with no
+				// serialized state; only pushState/replaceState carry a state value.
+				state: null,
 				popState: true,
 				scrollRestoration: HistoryScrollRestorationEnum.manual,
 				method: history.currentItem.method,
