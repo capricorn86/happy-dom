@@ -477,12 +477,7 @@ export default class Node extends EventTarget {
 
 		// Document has childNodes directly when it is created
 		// We need to remove them
-		if (clone[PropertySymbol.nodeArray].length) {
-			const childNodes = clone[PropertySymbol.nodeArray];
-			while (childNodes.length) {
-				clone.removeChild(childNodes[0]);
-			}
-		}
+		clone[PropertySymbol.clearChildren]();
 
 		if (deep) {
 			for (const childNode of this[PropertySymbol.nodeArray]) {
@@ -636,6 +631,55 @@ export default class Node extends EventTarget {
 		);
 
 		return node;
+	}
+
+	/**
+	 * Removes all child nodes in a single pass, reporting one mutation record.
+	 *
+	 * @see https://dom.spec.whatwg.org/#concept-node-replace-all
+	 */
+	public [PropertySymbol.clearChildren](): void {
+		const nodeArray = this[PropertySymbol.nodeArray];
+
+		if (!nodeArray.length) {
+			return;
+		}
+
+		const removedNodes = nodeArray.slice();
+
+		nodeArray.length = 0;
+		this[PropertySymbol.elementArray].length = 0;
+
+		for (const node of removedNodes) {
+			node[PropertySymbol.parentNode] = null;
+
+			node[PropertySymbol.clearCache]();
+
+			if (node[PropertySymbol.assignedToSlot]) {
+				const index =
+					node[PropertySymbol.assignedToSlot][PropertySymbol.assignedNodes].indexOf(node);
+				if (index !== -1) {
+					node[PropertySymbol.assignedToSlot][PropertySymbol.assignedNodes].splice(index, 1);
+				}
+				node[PropertySymbol.assignedToSlot] = null;
+			}
+
+			node[PropertySymbol.disconnectedFromNode]();
+
+			for (const mutationListener of this[PropertySymbol.mutationListeners]) {
+				if (mutationListener.options?.subtree && mutationListener.callback.deref()) {
+					node[PropertySymbol.unobserveMutations](mutationListener);
+				}
+			}
+		}
+
+		this[PropertySymbol.reportMutation](
+			new MutationRecord({
+				target: this[PropertySymbol.proxy] || this,
+				type: MutationTypeEnum.childList,
+				removedNodes
+			})
+		);
 	}
 
 	/**

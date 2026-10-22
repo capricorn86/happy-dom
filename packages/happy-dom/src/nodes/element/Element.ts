@@ -437,10 +437,7 @@ export default class Element
 	 * @param textContent Text content.
 	 */
 	public set textContent(textContent: string) {
-		const childNodes = this[PropertySymbol.nodeArray];
-		while (childNodes.length) {
-			this.removeChild(childNodes[0]);
-		}
+		this[PropertySymbol.clearChildren]();
 		if (textContent) {
 			this.appendChild(this[PropertySymbol.ownerDocument].createTextNode(textContent));
 		}
@@ -461,11 +458,7 @@ export default class Element
 	 * @param html HTML.
 	 */
 	public set innerHTML(html: string) {
-		const childNodes = this[PropertySymbol.nodeArray];
-
-		while (childNodes.length) {
-			this.removeChild(childNodes[0]);
-		}
+		this[PropertySymbol.clearChildren]();
 
 		new HTMLParser(this[PropertySymbol.window]).parse(html, this);
 	}
@@ -1514,6 +1507,36 @@ export default class Element
 		const returnValue = super[PropertySymbol.removeChild](node);
 		this[PropertySymbol.onSlotChange](node);
 		return returnValue;
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.clearChildren](): void {
+		if (!this[PropertySymbol.shadowRoot] || !this[PropertySymbol.isConnected]) {
+			super[PropertySymbol.clearChildren]();
+			return;
+		}
+
+		const removedNodes = this[PropertySymbol.nodeArray].slice();
+
+		super[PropertySymbol.clearChildren]();
+
+		// Dispatches "slotchange" once per affected slot instead of once per removed node.
+		const slotNames = new Set<string>();
+		for (const node of removedNodes) {
+			if (node[PropertySymbol.nodeType] === NodeTypeEnum.commentNode) {
+				continue;
+			}
+			const slotName =
+				node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode
+					? (<Element>node).getAttribute('slot') || ''
+					: '';
+			if (!slotNames.has(slotName)) {
+				slotNames.add(slotName);
+				this[PropertySymbol.onSlotChange](node);
+			}
+		}
 	}
 
 	/**
