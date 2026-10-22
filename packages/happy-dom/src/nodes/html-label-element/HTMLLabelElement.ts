@@ -117,8 +117,10 @@ export default class HTMLLabelElement extends HTMLElement {
 				event.eventPhase === EventPhaseEnum.bubbling) &&
 			event instanceof MouseEvent
 		) {
-			const control = this.control;
-			if (control && event.target !== control) {
+			// A disabled form control is not activated when its label is clicked.
+			// @see https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#attr-fe-disabled
+			const control = <HTMLInputElement | null>this.control;
+			if (control && event.target !== control && !control.disabled) {
 				control.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
 			}
 		}

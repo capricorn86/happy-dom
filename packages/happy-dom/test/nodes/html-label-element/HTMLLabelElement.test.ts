@@ -123,6 +123,26 @@ describe('HTMLLabelElement', () => {
 			expect(inputClickCount).toBe(1);
 		});
 
+		it("Doesn't dispatch a click event on the control element if it is disabled.", () => {
+			const input = <HTMLInputElement>document.createElement('input');
+			const span = document.createElement('span');
+
+			input.type = 'checkbox';
+			input.disabled = true;
+
+			span.appendChild(input);
+			element.appendChild(span);
+
+			let inputClickCount = 0;
+
+			input.addEventListener('click', () => inputClickCount++);
+
+			element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+			expect(inputClickCount).toBe(0);
+			expect(input.checked).toBe(false);
+		});
+
 		it('Supports MouseEvent.', () => {
 			const input = <HTMLInputElement>document.createElement('input');
 			const span = document.createElement('span');
