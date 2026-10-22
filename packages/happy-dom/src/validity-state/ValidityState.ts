@@ -1,6 +1,7 @@
 import type HTMLButtonElement from '../nodes/html-button-element/HTMLButtonElement.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import type HTMLFormElement from '../nodes/html-form-element/HTMLFormElement.js';
+import HTMLFormControlElementUtility from '../nodes/html-element/HTMLFormControlElementUtility.js';
+import type HTMLElement from '../nodes/html-element/HTMLElement.js';
 import type HTMLInputElement from '../nodes/html-input-element/HTMLInputElement.js';
 import type HTMLSelectElement from '../nodes/html-select-element/HTMLSelectElement.js';
 import type HTMLTextAreaElement from '../nodes/html-text-area-element/HTMLTextAreaElement.js';
@@ -204,7 +205,7 @@ export default class ValidityState {
 					return true;
 				}
 				const root =
-					<HTMLFormElement>this.element[PropertySymbol.formNode] ||
+					HTMLFormControlElementUtility.getFormOwner(<HTMLElement>this.element) ||
 					<ShadowRoot>this.element.getRootNode();
 				return !root || !root.querySelector(`input[name="${this.element.name}"]:checked`);
 			}
