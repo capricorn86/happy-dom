@@ -4,6 +4,7 @@ import NamespaceURI from '../config/NamespaceURI.js';
 import type HTMLScriptElement from '../nodes/html-script-element/HTMLScriptElement.js';
 import type Element from '../nodes/element/Element.js';
 import type HTMLLinkElement from '../nodes/html-link-element/HTMLLinkElement.js';
+import type HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement.js';
 import type Node from '../nodes/node/Node.js';
 import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import HTMLElementConfig from '../config/HTMLElementConfig.js';
@@ -381,12 +382,12 @@ export default class HTMLParser {
 						body[PropertySymbol.appendChild](textNode, true);
 					}
 				} else {
-					this.currentNode![PropertySymbol.appendChild](textNode, true);
+					this.getInsertionParent()[PropertySymbol.appendChild](textNode, true);
 				}
 			}
 		} else {
 			const textNode = this.rootDocument!.createTextNode(XMLEncodeUtility.decodeHTMLEntities(text));
-			this.currentNode![PropertySymbol.appendChild](textNode, true);
+			this.getInsertionParent()[PropertySymbol.appendChild](textNode, true);
 		}
 	}
 
@@ -583,7 +584,7 @@ export default class HTMLParser {
 
 				const permittedParent = this.rootDocument!.createElement(config.addPermittedParent);
 
-				this.currentNode![PropertySymbol.appendChild](permittedParent, true);
+				this.getInsertionParent()[PropertySymbol.appendChild](permittedParent, true);
 				this.nodeStack.push(permittedParent);
 				this.tagNameStack.push(permittedParent[PropertySymbol.tagName]);
 				this.currentNode = permittedParent;
@@ -618,11 +619,11 @@ export default class HTMLParser {
 					}
 					body[PropertySymbol.appendChild](this.nextElement!, true);
 				} else {
-					this.currentNode![PropertySymbol.appendChild](this.nextElement!, true);
+					this.getInsertionParent()[PropertySymbol.appendChild](this.nextElement!, true);
 				}
 			}
 		} else {
-			this.currentNode![PropertySymbol.appendChild](this.nextElement!, true);
+			this.getInsertionParent()[PropertySymbol.appendChild](this.nextElement!, true);
 		}
 
 		// Sets the new element as the current node.
@@ -715,9 +716,9 @@ export default class HTMLParser {
 				beforeNode = body;
 			}
 
-			this.currentNode![PropertySymbol.insertBefore](commentNode, beforeNode, true);
+			this.getInsertionParent()[PropertySymbol.insertBefore](commentNode, beforeNode, true);
 		} else {
-			this.currentNode![PropertySymbol.appendChild](commentNode, true);
+			this.getInsertionParent()[PropertySymbol.appendChild](commentNode, true);
 		}
 
 		this.readState = MarkupReadStateEnum.any;
@@ -818,10 +819,10 @@ export default class HTMLParser {
 			) {
 				body[PropertySymbol.appendChild](rawTextElement!, true);
 			} else {
-				this.currentNode[PropertySymbol.appendChild](rawTextElement!, true);
+				this.getInsertionParent()[PropertySymbol.appendChild](rawTextElement!, true);
 			}
 		} else {
-			this.currentNode[PropertySymbol.appendChild](rawTextElement!, true);
+			this.getInsertionParent()[PropertySymbol.appendChild](rawTextElement!, true);
 		}
 	}
 
@@ -916,5 +917,16 @@ export default class HTMLParser {
 			publicId,
 			systemId
 		};
+	}
+
+	/**
+	 * Returns the node that parsed children should be inserted into.
+	 *
+	 * Children of <template> are inserted into its content fragment.
+	 *
+	 * @returns Node.
+	 */
+	private getInsertionParent(): Node {
+		return (<HTMLTemplateElement>this.currentNode)[PropertySymbol.content] ?? this.currentNode!;
 	}
 }
