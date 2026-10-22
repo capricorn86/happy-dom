@@ -133,6 +133,7 @@ export default class QuerySelector {
 		const items: Element[] = [];
 		const nodeList = new NodeList<Element>(PropertySymbol.illegalConstructor, items);
 		const matchesMap: Map<string, Element> = new Map();
+		const matchedElements: Set<Element> = new Set();
 		const matchedPositions: string[] = [];
 		const cachedItem = {
 			result: new WeakRef(nodeList)
@@ -157,7 +158,10 @@ export default class QuerySelector {
 			const matches = this.findAll({ scope, rootElement, children, selectorItems, cachedItem });
 
 			for (const match of matches) {
-				if (!matchesMap.has(match.documentPosition)) {
+				// Deduplicate by element: chained subsequent-sibling selectors (~) can reach
+				// the same element via multiple left-hand matches with different positions.
+				if (!matchedElements.has(match.element)) {
+					matchedElements.add(match.element);
 					matchesMap.set(match.documentPosition, match.element);
 					matchedPositions.push(match.documentPosition);
 				}
@@ -661,14 +665,16 @@ export default class QuerySelector {
 							break;
 						case SelectorCombinatorEnum.subsequentSibling:
 							const index = children.indexOf(child);
-							for (let j = index + 1; j < children.length; j++) {
-								const sibling = children[j];
+							// Pass all following siblings together so chained ~ selectors
+							// (e.g. "a ~ * ~ *") can still see later siblings, and so each
+							// sibling gets a unique documentPosition index.
+							if (index < children.length - 1) {
 								matched = matched.concat(
 									this.findAll(
 										{
 											scope,
 											rootElement,
-											children: [sibling],
+											children: children.slice(index + 1),
 											selectorItems: selectorItems.slice(1),
 											cachedItem
 										},
@@ -785,13 +791,12 @@ export default class QuerySelector {
 							break;
 						case SelectorCombinatorEnum.subsequentSibling:
 							const index = children.indexOf(child);
-							for (let i = index + 1; i < children.length; i++) {
-								const sibling = children[i];
+							if (index < children.length - 1) {
 								const match = this.findFirst(
 									{
 										scope,
 										rootElement,
-										children: [sibling],
+										children: children.slice(index + 1),
 										selectorItems: selectorItems.slice(1),
 										cachedItem
 									},
