@@ -1,8 +1,17 @@
+import util from 'node:util';
 import Headers from '../../src/fetch/Headers.js';
 import { describe, it, expect } from 'vitest';
 import Window from '../../src/window/Window.js';
 
 describe('Headers', () => {
+	describe('util.inspect()', () => {
+		it("Doesn't throw when inspected with hidden properties (#1938).", () => {
+			const window = new Window({ url: 'https://example.com' });
+			const headers = new window.Headers({ 'Content-Type': 'text/plain' });
+			expect(() => util.inspect(headers, true)).not.toThrow();
+		});
+	});
+
 	describe('constructor()', () => {
 		it('Supports sending in an instance of Headers as argument.', () => {
 			const headers1 = new Headers();

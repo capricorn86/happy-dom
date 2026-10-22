@@ -1,3 +1,4 @@
+import util from 'node:util';
 import HTMLAreaElement from '../../../src/nodes/html-area-element/HTMLAreaElement.js';
 import Window from '../../../src/window/Window.js';
 import type Document from '../../../src/nodes/document/Document.js';
@@ -81,6 +82,13 @@ describe('HTMLAreaElement', () => {
 	});
 
 	describe('get href()', () => {
+		it("Returns an empty string when called on the prototype, as Node's util.inspect() does (#1938).", () => {
+			expect(Reflect.get(window.HTMLAreaElement.prototype, 'href')).toBe('');
+			expect(() =>
+				util.inspect(window.HTMLAreaElement.prototype, { showHidden: true })
+			).not.toThrow();
+		});
+
 		it('Returns the "href" attribute.', () => {
 			const element = document.createElement('area');
 			element.setAttribute('href', 'test');
