@@ -310,6 +310,29 @@ describe('HTMLElement', () => {
 			element.innerHTML = '<div><span><svg>Test</svg></span>123<div>';
 			expect(element.innerText).toBe('123');
 		});
+
+		it('Collapses whitespace, including line breaks, to a single space if element is connected to the document.', () => {
+			const div = document.createElement('div');
+			div.replaceChildren(document.createTextNode('hello\n\nworld\r\n  test\tagain'));
+			document.body.replaceChildren(div);
+			expect(document.body.innerText).toBe('hello world test again');
+		});
+
+		it('Preserves whitespace according to the "white-space" CSS property if element is connected to the document.', () => {
+			document.body.appendChild(element);
+
+			element.innerHTML = '<pre>hello\n  world</pre>';
+			expect(element.innerText).toBe('hello\n  world');
+
+			element.innerHTML = '<div style="white-space: pre-wrap">hello\r\n  world</div>';
+			expect(element.innerText).toBe('hello\n  world');
+
+			element.innerHTML = '<div style="white-space: pre-line">hello  \n  world  again</div>';
+			expect(element.innerText).toBe('hello\nworld again');
+
+			element.innerHTML = '<div style="white-space: nowrap">hello\n  world</div>';
+			expect(element.innerText).toBe('hello world');
+		});
 	});
 
 	describe('set innerText()', () => {
@@ -328,6 +351,36 @@ describe('HTMLElement', () => {
 			expect(element.innerText).toBe(element.textContent);
 			expect(element.childNodes.length).toBe(1);
 			expect(element.childNodes[0].textContent).toBe('new_text');
+		});
+
+		it('Clears all children when set to empty string.', () => {
+			element.innerHTML = '<div><span>Hello</span></div>';
+			element.innerText = '';
+			expect(element.innerHTML).toBe('');
+			expect(element.childNodes.length).toBe(0);
+		});
+
+		it('Replaces line breaks with <br> elements without adding empty text nodes.', () => {
+			element.innerText = 'a\r\n\nb\rc\n';
+			expect(element.innerHTML).toBe('a<br><br>b<br>c<br>');
+			expect(element.childNodes.length).toBe(7);
+		});
+	});
+
+	describe('set outerText()', () => {
+		it('Replaces the element with text and <br> elements.', () => {
+			const parent = document.createElement('div');
+			parent.appendChild(element);
+			element.outerText = 'a\r\nb\n';
+			expect(parent.innerHTML).toBe('a<br>b<br>');
+		});
+
+		it('Replaces the element with an empty text node when set to empty string.', () => {
+			const parent = document.createElement('div');
+			parent.appendChild(element);
+			element.outerText = '';
+			expect(parent.childNodes.length).toBe(1);
+			expect(parent.childNodes[0].textContent).toBe('');
 		});
 	});
 
