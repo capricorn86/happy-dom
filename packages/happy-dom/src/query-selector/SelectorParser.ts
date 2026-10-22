@@ -40,12 +40,13 @@ const SELECTOR_GROUP_REGEXP = /(\s*[\s,+>~]\s*)|([\[\]\(\)"'])/g;
  * Group 18: Attribute operator when not using apostrophe (e.g. "~")
  * Group 19: Attribute value when not using apostrophe (e.g. "value1")
  * Group 20: Attribute value capture characters (e.g. "s") (should be ignored)
- * Group 21: Pseudo name when arguments (e.g. "nth-child")
- * Group 22: Pseudo name when no arguments (e.g. "empty")
- * Group 23: Pseudo element (e.g. "::after", "::-webkit-inner-spin-button").
+ * Group 21: Attribute modifier when not using apostrophe (e.g. "i" or "s")
+ * Group 22: Pseudo name when arguments (e.g. "nth-child")
+ * Group 23: Pseudo name when no arguments (e.g. "empty")
+ * Group 24: Pseudo element (e.g. "::after", "::-webkit-inner-spin-button").
  */
 const SELECTOR_REGEXP =
-	/(\*)|([a-zA-Z0-9\u00A0-\uFFFF-]+)|#(([a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\.(([a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\[(([a-zA-Z0-9-_]|\\.)+)\]|\[(([a-zA-Z0-9-_]|\\.)+)\s*([~|^$*]{0,1})\s*=\s*("([^"]*)"|'([^']*)')\s*(s|i){0,1}\]|\[(([a-zA-Z0-9-_]|\\.)+)\s*([~|^$*]{0,1})\s*=\s*(([a-zA-Z0-9\u00A0-\uFFFF_¤£-]|\\.)+)\]|:([a-zA-Z-]+)\s*\(.+\)|:([a-zA-Z-]+)|::([a-zA-Z-]+)/g;
+	/(\*)|([a-zA-Z0-9\u00A0-\uFFFF-]+)|#(([a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\.(([a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\[(([a-zA-Z0-9-_]|\\.)+)\]|\[(([a-zA-Z0-9-_]|\\.)+)\s*([~|^$*]{0,1})\s*=\s*("([^"]*)"|'([^']*)')\s*([sSiI])?\]|\[(([a-zA-Z0-9-_]|\\.)+)\s*([~|^$*]{0,1})\s*=\s*(([a-zA-Z0-9\u00A0-\uFFFF_¤£-]|\\.)+)(?:\s+([sSiI]))?\s*\]|:([a-zA-Z-]+)\s*\(.+\)|:([a-zA-Z-]+)|::([a-zA-Z-]+)/g;
 
 /**
  * Selector pseudo RegExp.
@@ -396,11 +397,11 @@ export default class SelectorParser {
 					name: match[9].replace(ESCAPED_CHARACTER_REGEXP, ''),
 					operator: match[11] || null,
 					value: unescapedValue,
-					modifier: <'s'>match[15] || null,
+					modifier: <'s' | 'i'>match[15]?.toLowerCase() || null,
 					regExp: this.getAttributeRegExp({
 						operator: match[11],
 						value: unescapedValue,
-						modifier: match[15]
+						modifier: match[15]?.toLowerCase()
 					})
 				});
 			} else if (match[16] && match[19] !== undefined) {
@@ -412,10 +413,14 @@ export default class SelectorParser {
 					name: match[16].replace(ESCAPED_CHARACTER_REGEXP, ''),
 					operator: match[18] || null,
 					value: unescapedValue,
-					modifier: null,
-					regExp: this.getAttributeRegExp({ operator: match[18], value: unescapedValue })
+					modifier: <'s' | 'i'>match[21]?.toLowerCase() || null,
+					regExp: this.getAttributeRegExp({
+						operator: match[18],
+						value: unescapedValue,
+						modifier: match[21]?.toLowerCase()
+					})
 				});
-			} else if (match[21]) {
+			} else if (match[22]) {
 				// Matches pseudo selectors with arguments, e.g. ":nth-child(2n+1)" or ":not(.class)"
 
 				const pseudoRegExp = new RegExp(SELECTOR_PSEUDO_REGEXP);
@@ -459,12 +464,12 @@ export default class SelectorParser {
 						}
 					}
 				}
-			} else if (match[22]) {
+			} else if (match[23]) {
 				// Matches pseudo selectors without arguments, e.g. ":empty" or ":checked"
 
 				selectorItem.pseudos = selectorItem.pseudos || [];
-				selectorItem.pseudos.push(this.getPseudo(match[22], null));
-			} else if (match[23]) {
+				selectorItem.pseudos.push(this.getPseudo(match[23], null));
+			} else if (match[24]) {
 				// Matches pseudo elements, e.g. "::after" or "::-webkit-inner-spin-button"
 
 				selectorItem.isPseudoElement = true;
@@ -497,7 +502,7 @@ export default class SelectorParser {
 	}): RegExp | null {
 		const modifier = attribute.modifier === 'i' ? 'i' : '';
 
-		if (!attribute.operator || !attribute.value) {
+		if (!attribute.value) {
 			return null;
 		}
 
@@ -520,8 +525,9 @@ export default class SelectorParser {
 			// [attribute*="value"] - Contains a specified value.
 			case '*':
 				return new RegExp(`${escapedValue}`, modifier);
+			// [attribute="value" i] - Equals the specified value, ignoring case.
 			default:
-				return null;
+				return modifier ? new RegExp(`^${escapedValue}$`, modifier) : null;
 		}
 	}
 
