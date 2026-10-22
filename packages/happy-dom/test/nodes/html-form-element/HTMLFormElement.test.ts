@@ -1307,6 +1307,107 @@ describe('HTMLFormElement', () => {
 			expect((<HTMLOutputElement>root.children[9]).value).toBe('Default value');
 			expect((<HTMLOutputElement>root.children[9]).textContent).toBe('Default value');
 		});
+
+		it('Deselects all options in a multiple select with no "selected" option on reset.', () => {
+			element.innerHTML = `
+                <select multiple>
+                    <option value="value1"></option>
+                    <option value="value2"></option>
+                    <option value="value3"></option>
+                </select>
+            `;
+
+			const select = <HTMLSelectElement>element.children[0];
+
+			select.options[0].selected = true;
+			select.options[2].selected = true;
+
+			element.reset();
+
+			expect(select.options[0].selected).toBe(false);
+			expect(select.options[1].selected).toBe(false);
+			expect(select.options[2].selected).toBe(false);
+		});
+
+		it('Keeps all options with a "selected" attribute selected in a multiple select on reset.', () => {
+			element.innerHTML = `
+                <select multiple>
+                    <option value="value1" selected></option>
+                    <option value="value2"></option>
+                    <option value="value3" selected></option>
+                </select>
+            `;
+
+			const select = <HTMLSelectElement>element.children[0];
+
+			select.options[0].selected = false;
+			select.options[1].selected = true;
+			select.options[2].selected = false;
+
+			element.reset();
+
+			expect(select.options[0].selected).toBe(true);
+			expect(select.options[1].selected).toBe(false);
+			expect(select.options[2].selected).toBe(true);
+		});
+
+		it('Selects only the last option with a "selected" attribute in a non-multiple select on reset.', () => {
+			element.innerHTML = `
+                <select>
+                    <option value="value1" selected></option>
+                    <option value="value2"></option>
+                    <option value="value3" selected></option>
+                </select>
+            `;
+
+			const select = <HTMLSelectElement>element.children[0];
+
+			select.value = 'value2';
+
+			element.reset();
+
+			expect(select.options[0].selected).toBe(false);
+			expect(select.options[1].selected).toBe(false);
+			expect(select.options[2].selected).toBe(true);
+		});
+
+		it('Does not force-select an option in a non-multiple select with a display size above 1 on reset.', () => {
+			element.innerHTML = `
+                <select size="2">
+                    <option value="value1"></option>
+                    <option value="value2"></option>
+                </select>
+            `;
+
+			const select = <HTMLSelectElement>element.children[0];
+
+			select.options[1].selected = true;
+
+			element.reset();
+
+			expect(select.options[0].selected).toBe(false);
+			expect(select.options[1].selected).toBe(false);
+		});
+
+		it('Clears each option\'s dirtiness on reset so the "selected" attribute governs again.', () => {
+			element.innerHTML = `
+                <select>
+                    <option value="value1"></option>
+                    <option value="value2"></option>
+                </select>
+            `;
+
+			const select = <HTMLSelectElement>element.children[0];
+
+			select.options[1].selected = true;
+
+			element.reset();
+
+			select.options[1].setAttribute('selected', '');
+
+			expect(select.options[0].selected).toBe(false);
+			expect(select.options[1].selected).toBe(true);
+		});
 	});
 
 	describe('appendChild()', () => {
