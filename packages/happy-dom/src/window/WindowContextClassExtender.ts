@@ -37,6 +37,7 @@ import MediaStreamTrackImplementation from '../nodes/html-media-element/MediaStr
 import CanvasCaptureMediaStreamTrackImplementation from '../nodes/html-canvas-element/CanvasCaptureMediaStreamTrack.js';
 import URLImplementation from '../url/URL.js';
 import WebSocketImplementation from '../web-socket/WebSocket.js';
+import BroadcastChannelImplementation from '../broadcast-channel/BroadcastChannel.js';
 import ImageDataImplementation from '../canvas/ImageData.js';
 import OffscreenCanvasImplementation from '../canvas/OffscreenCanvas.js';
 import DOMMatrixReadOnlyImplementation from '../dom/dom-matrix/DOMMatrixReadOnly.js';
@@ -242,6 +243,11 @@ export default class WindowContextClassExtender {
 		class WebSocket extends WebSocketImplementation {}
 		WebSocket.prototype[PropertySymbol.window] = window;
 		(<typeof WebSocket>window.WebSocket) = WebSocket;
+
+		// BroadcastChannel
+		class BroadcastChannel extends BroadcastChannelImplementation {}
+		BroadcastChannel.prototype[PropertySymbol.window] = window;
+		(<typeof BroadcastChannel>window.BroadcastChannel) = BroadcastChannel;
 
 		// ImageData
 		class ImageData extends ImageDataImplementation {}
