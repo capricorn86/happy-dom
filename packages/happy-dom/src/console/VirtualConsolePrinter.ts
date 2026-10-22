@@ -33,6 +33,19 @@ export default class VirtualConsolePrinter implements IVirtualConsolePrinter {
 		if (this.#closed) {
 			return;
 		}
+
+		// On V8, an Error keeps its structured stack trace (an array of call sites) alive until
+		// ".stack" is first read, and each call site retains its frame's receiver. When an exception
+		// thrown from an event listener is caught and logged here, that receiver is the listening
+		// element, so the buffered Error pins the element - and through it the document. The buffer
+		// is rarely read, so the trace would otherwise never be released. Materialize ".stack" now to
+		// drop the structured trace (and the receivers it holds) while keeping the formatted string.
+		for (const message of logEntry.message) {
+			if (message instanceof Error) {
+				void message.stack;
+			}
+		}
+
 		this.#logEntries.push(logEntry);
 		this.dispatchEvent(new Event('print'));
 	}

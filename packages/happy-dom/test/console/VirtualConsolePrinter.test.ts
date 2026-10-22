@@ -61,6 +61,27 @@ describe('VirtualConsolePrinter', () => {
 
 			expect(virtualConsolePrinter.read()).toEqual([]);
 		});
+
+		it('Materializes the stack of logged errors so they do not retain their structured stack trace.', () => {
+			let stackReads = 0;
+			const error = new Error('test');
+			Object.defineProperty(error, 'stack', {
+				configurable: true,
+				get() {
+					stackReads++;
+					return 'stack';
+				}
+			});
+
+			virtualConsolePrinter.print({
+				type: VirtualConsoleLogTypeEnum.error,
+				level: VirtualConsoleLogLevelEnum.error,
+				message: [error],
+				group: null
+			});
+
+			expect(stackReads).toBe(1);
+		});
 	});
 
 	describe('clear()', () => {
