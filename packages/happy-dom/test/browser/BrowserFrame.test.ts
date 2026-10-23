@@ -7,12 +7,14 @@ import type Response from '../../src/fetch/Response';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import Fetch from '../../src/fetch/Fetch';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum';
+import DOMException from '../../src/exception/DOMException';
 import BrowserNavigationCrossOriginPolicyEnum from '../../src/browser/enums/BrowserNavigationCrossOriginPolicyEnum';
 import BrowserFrameFactory from '../../src/browser/utilities/BrowserFrameFactory';
 import BrowserErrorCaptureEnum from '../../src/browser/enums/BrowserErrorCaptureEnum';
 import Headers from '../../src/fetch/Headers';
 import * as PropertySymbol from '../../src/PropertySymbol';
 import type HashChangeEvent from '../../src/event/events/HashChangeEvent';
+import CrossOriginBrowserWindow from '../../src/window/CrossOriginBrowserWindow';
 
 const STACK_TRACE_REGEXP = />.+$\s*/gm;
 
@@ -295,6 +297,230 @@ Task #1
 	});
 
 	describe('goto()', () => {
+		describe('Ancestor windows', () => {
+			const mockFetch = (window: BrowserWindow, finalURL?: string): void => {
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(() => {
+					const response = new window.Response('<body>Child</body>');
+					if (finalURL) {
+						Object.defineProperty(response, 'url', { value: finalURL });
+					}
+					return Promise.resolve(response);
+				});
+			};
+
+			it.each([
+				// [parent URL, child URL, parent accessible, top accessible]
+				['https://parent.example/', 'https://parent.example/child', true, false],
+				['https://parent.example/', 'https://top.example/child', false, true],
+				['https://parent.example/', 'https://other.example/', false, false],
+				['https://parent.example/', 'about:blank', true, false],
+				['about:blank', 'https://top.example/child', true, true],
+				['about:blank', 'https://other.example/', false, false]
+			])(
+				'Restricts parent and top independently for parent "%s" and child "%s".',
+				async (parentURL, childURL, isParentAccessible, isTopAccessible) => {
+					const browser = new Browser();
+					const page = browser.newPage();
+					page.mainFrame.url = 'https://top.example/';
+					const parentFrame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+					parentFrame.url = parentURL;
+					const frame = BrowserFrameFactory.createChildFrame(parentFrame);
+					mockFetch(page.mainFrame.window);
+
+					await frame.goto(childURL);
+
+					if (isParentAccessible) {
+						expect(frame.window.parent).toBe(parentFrame.window);
+					} else {
+						expect(frame.window.parent).toBeInstanceOf(CrossOriginBrowserWindow);
+						expect(frame.window.parent.document).toBeUndefined();
+					}
+
+					if (isTopAccessible) {
+						expect(frame.window.top).toBe(page.mainFrame.window);
+					} else {
+						expect(frame.window.top).toBeInstanceOf(CrossOriginBrowserWindow);
+						expect(frame.window.top.document).toBeUndefined();
+					}
+
+					await browser.close();
+				}
+			);
+
+			it('Restricts the ancestors when navigating a cross-origin frame to another origin and back.', async () => {
+				const browser = new Browser();
+				const page = browser.newPage();
+				page.mainFrame.url = 'https://parent.example/';
+				const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+				mockFetch(page.mainFrame.window);
+
+				await frame.goto('https://child.example/');
+				expect(frame.window.parent).toBeInstanceOf(CrossOriginBrowserWindow);
+				expect(frame.window.top).toBeInstanceOf(CrossOriginBrowserWindow);
+
+				await frame.goto('https://another.example/');
+				expect(frame.window.parent).toBeInstanceOf(CrossOriginBrowserWindow);
+				expect(frame.window.top).toBeInstanceOf(CrossOriginBrowserWindow);
+
+				await frame.goto('https://parent.example/other');
+				expect(frame.window.parent).toBe(page.mainFrame.window);
+				expect(frame.window.top).toBe(page.mainFrame.window);
+
+				await browser.close();
+			});
+
+			it('Restricts the ancestors before the content is written when a redirect changes the origin.', async () => {
+				const browser = new Browser();
+				const page = browser.newPage();
+				page.mainFrame.url = 'https://parent.example/';
+				const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+				let parentInBeforeContentCallback: unknown = null;
+				mockFetch(page.mainFrame.window, 'https://other.example/');
+
+				await frame.goto('https://parent.example/redirect', {
+					beforeContentCallback: (window) => {
+						parentInBeforeContentCallback = window.parent;
+					}
+				});
+
+				expect(parentInBeforeContentCallback).toBeInstanceOf(CrossOriginBrowserWindow);
+				expect(frame.window.parent).toBeInstanceOf(CrossOriginBrowserWindow);
+				expect(frame.window.top).toBeInstanceOf(CrossOriginBrowserWindow);
+
+				await browser.close();
+			});
+
+			it('Allows the ancestors when a redirect changes the origin to the origin of the ancestors.', async () => {
+				const browser = new Browser();
+				const page = browser.newPage();
+				page.mainFrame.url = 'https://parent.example/';
+				const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+				mockFetch(page.mainFrame.window, 'https://parent.example/final');
+
+				await frame.goto('https://other.example/redirect');
+
+				expect(frame.window.parent).toBe(page.mainFrame.window);
+				expect(frame.window.top).toBe(page.mainFrame.window);
+
+				await browser.close();
+			});
+
+			it('Throws a security error when a cross-origin frame accesses the location of its ancestors.', async () => {
+				const browser = new Browser();
+				const page = browser.newPage();
+				page.mainFrame.url = 'https://parent.example/';
+				const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+				mockFetch(page.mainFrame.window);
+
+				await frame.goto('https://child.example/');
+
+				for (const ancestor of [frame.window.parent, frame.window.top]) {
+					expect(() => ancestor.location.href).toThrow(
+						new DOMException(
+							'Blocked a frame from accessing a cross-origin frame.',
+							DOMExceptionNameEnum.securityError
+						)
+					);
+				}
+
+				await browser.close();
+			});
+
+			it('Does not give a cross-origin frame the origin of its parent when it navigates itself to "about:blank" and then to a "javascript:" URL.', async () => {
+				const browser = new Browser({ settings: { enableJavaScriptEvaluation: true } });
+				const page = browser.newPage();
+				page.mainFrame.url = 'https://parent.example/';
+				const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+				mockFetch(page.mainFrame.window);
+
+				await frame.goto('https://child.example/');
+				await frame.goto('about:blank');
+				await frame.goto(
+					'javascript:document.body.textContent = String([parent.document, top.document].join())'
+				);
+
+				expect(frame.window.document.body.textContent).toBe(',');
+
+				await browser.close();
+			});
+
+			it('Gives an "about:blank" document the origin of the frame that initiated the navigation.', async () => {
+				const browser = new Browser();
+				const page = browser.newPage();
+				page.mainFrame.url = 'https://parent.example/';
+				const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+				mockFetch(page.mainFrame.window);
+
+				await frame.goto('https://child.example/');
+
+				await frame.goto('about:blank', { initiatorFrame: page.mainFrame });
+				expect(frame.window.parent).toBe(page.mainFrame.window);
+				expect(frame.window.top).toBe(page.mainFrame.window);
+
+				await frame.goto('https://child.example/');
+				await frame.goto('about:blank');
+				expect(frame.window.parent).toBeInstanceOf(CrossOriginBrowserWindow);
+
+				await browser.close();
+			});
+
+			it('Keeps the origin of the document when a frame navigates to "about:blank".', async () => {
+				const browser = new Browser();
+				const page = browser.newPage();
+				page.mainFrame.url = 'https://parent.example/';
+				const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+				mockFetch(page.mainFrame.window);
+
+				await frame.goto('https://child.example/');
+				await frame.goto('about:blank');
+
+				expect(frame.window.parent).toBeInstanceOf(CrossOriginBrowserWindow);
+				expect(frame.window.top).toBeInstanceOf(CrossOriginBrowserWindow);
+
+				await browser.close();
+			});
+
+			it('Keeps the opaque origin of a "data:" document when a frame navigates to "about:blank".', async () => {
+				const browser = new Browser();
+				const page = browser.newPage();
+				page.mainFrame.url = 'https://parent.example/';
+				const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+				mockFetch(page.mainFrame.window);
+
+				await frame.goto('data:text/html,<body>Child</body>', {
+					referrer: 'https://parent.example'
+				});
+				await frame.goto('about:blank');
+
+				expect(frame.window.parent).toBeInstanceOf(CrossOriginBrowserWindow);
+				expect(frame.window.top).toBeInstanceOf(CrossOriginBrowserWindow);
+
+				await browser.close();
+			});
+
+			it('Does not give a cross-origin frame access to its ancestors when navigating to a "javascript:" URL.', async () => {
+				const browser = new Browser({ settings: { enableJavaScriptEvaluation: true } });
+				const page = browser.newPage();
+				page.mainFrame.url = 'https://parent.example/';
+				const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+				mockFetch(page.mainFrame.window);
+
+				await frame.goto('https://child.example/');
+				const window = frame.window;
+
+				await frame.goto(
+					'javascript:document.body.textContent = String([parent.document, top.document].join())'
+				);
+
+				expect(frame.window).toBe(window);
+				expect(frame.window.document.body.textContent).toBe(',');
+				expect(frame.window.parent).toBeInstanceOf(CrossOriginBrowserWindow);
+				expect(frame.window.top).toBeInstanceOf(CrossOriginBrowserWindow);
+
+				await browser.close();
+			});
+		});
+
 		it('Navigates to a URL.', async () => {
 			let request: Request | null = null;
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (

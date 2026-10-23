@@ -58,6 +58,7 @@ export default class WindowPageOpenUtility {
 
 		targetFrame
 			.goto(targetURL.href, {
+				initiatorFrame: browserFrame,
 				referrer: features.noreferrer ? undefined : browserFrame.window.location.origin,
 				referrerPolicy: features.noreferrer ? 'no-referrer' : undefined
 			})

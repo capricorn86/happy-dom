@@ -3,7 +3,7 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import type BrowserWindow from '../../window/BrowserWindow.js';
 import type Document from '../document/Document.js';
 import HTMLElement from '../html-element/HTMLElement.js';
-import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
+import type CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import type IBrowserFrame from '../../browser/types/IBrowserFrame.js';
 import DOMTokenList from '../../dom/DOMTokenList.js';
 import type Attr from '../attr/Attr.js';
@@ -44,9 +44,6 @@ export default class HTMLIFrameElement extends HTMLElement {
 	public [PropertySymbol.sandbox]: DOMTokenList | null = null;
 
 	// Private properties
-	#contentWindowContainer: { window: BrowserWindow | CrossOriginBrowserWindow | null } = {
-		window: null
-	};
 	#iframe: IBrowserFrame | null = null;
 	#loadedSrcdoc: string | null = null;
 
@@ -234,7 +231,7 @@ export default class HTMLIFrameElement extends HTMLElement {
 	 * @returns Content document.
 	 */
 	public get contentDocument(): Document | null {
-		return (<BrowserWindow>this.#contentWindowContainer.window)?.document ?? null;
+		return (<BrowserWindow>this.contentWindow)?.document ?? null;
 	}
 
 	/**
@@ -243,7 +240,8 @@ export default class HTMLIFrameElement extends HTMLElement {
 	 * @returns Content window.
 	 */
 	public get contentWindow(): BrowserWindow | CrossOriginBrowserWindow | null {
-		return this.#contentWindowContainer.window;
+		// The navigator restricts the window when the origin is different. The frame hasn't navigated before the window is created for the initial "about:blank" page and for "srcdoc".
+		return this.#iframe?.[PropertySymbol.contentWindow] ?? this.#iframe?.window ?? null;
 	}
 
 	/**
@@ -383,14 +381,7 @@ export default class HTMLIFrameElement extends HTMLElement {
 
 			this.#iframe = BrowserFrameFactory.createChildFrame(browserFrame);
 			this.#iframe.url = 'about:srcdoc';
-
-			this.#contentWindowContainer.window = this.#iframe.window;
-
-			this.#iframe.window[PropertySymbol.top] = browserFrame.window.top;
-			this.#iframe.window[PropertySymbol.parent] = browserFrame.window;
-
-			this.#iframe.window.document.open();
-			this.#iframe.window.document.write(srcdoc);
+			this.#iframe.content = srcdoc;
 
 			this.#loadedSrcdoc = srcdoc;
 
@@ -424,17 +415,11 @@ export default class HTMLIFrameElement extends HTMLElement {
 			return;
 		}
 
-		// Iframes has a special rule for CORS and doesn't allow access between frames when the origin is different.
-		const isSameOrigin = BrowserFrameURL.isSameOrigin(originURL, targetURL);
-		const parentWindow = isSameOrigin ? window : new CrossOriginBrowserWindow(window);
-
 		this.#iframe = this.#iframe ?? BrowserFrameFactory.createChildFrame(browserFrame);
-
-		this.#iframe.window[PropertySymbol.top] = <BrowserWindow>parentWindow;
-		this.#iframe.window[PropertySymbol.parent] = <BrowserWindow>parentWindow;
 
 		this.#iframe
 			.goto(targetURL.href, {
+				initiatorFrame: browserFrame,
 				referrer: originURL.origin,
 				referrerPolicy: <TRequestReferrerPolicy>this.referrerPolicy
 			})
@@ -443,10 +428,6 @@ export default class HTMLIFrameElement extends HTMLElement {
 				browserFrame.page.console.error(error);
 				this.dispatchEvent(new Event('error'));
 			});
-
-		this.#contentWindowContainer.window = isSameOrigin
-			? this.#iframe.window
-			: new CrossOriginBrowserWindow(this.#iframe.window, window);
 	}
 
 	/**
@@ -457,7 +438,6 @@ export default class HTMLIFrameElement extends HTMLElement {
 			BrowserFrameFactory.destroyFrame(this.#iframe);
 			this.#iframe = null;
 		}
-		this.#contentWindowContainer.window = null;
 		this.#loadedSrcdoc = null;
 	}
 }

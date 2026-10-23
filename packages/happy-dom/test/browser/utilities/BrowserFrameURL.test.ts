@@ -1,11 +1,113 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import Browser from '../../../src/browser/Browser';
+import BrowserFrameFactory from '../../../src/browser/utilities/BrowserFrameFactory';
+import Fetch from '../../../src/fetch/Fetch';
 import BrowserFrameURL from '../../../src/browser/utilities/BrowserFrameURL';
 import * as PropertySymbol from '../../../src/PropertySymbol';
 
 describe('BrowserFrameURL', () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
+	});
+
+	describe('getOrigin()', () => {
+		it('Returns the origin of the document URL.', () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			page.mainFrame.url = 'https://example.com/path';
+
+			expect(BrowserFrameURL.getOrigin(page.mainFrame)).toBe('https://example.com');
+
+			browser.close();
+		});
+
+		it('Returns the window as an opaque origin for a "data:" document.', async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			page.mainFrame.url = 'https://parent.example/';
+			const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(() =>
+				Promise.resolve(new page.mainFrame.window.Response('<body>Child</body>'))
+			);
+
+			await frame.goto('data:text/html,<body>Child</body>', { referrer: 'https://parent.example' });
+
+			expect(BrowserFrameURL.getOrigin(frame)).toBe(frame.window);
+
+			await browser.close();
+		});
+
+		it('Returns the origin of the parent frame for an "about:blank" document without an initiator.', () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			page.mainFrame.url = 'https://parent.example/';
+			const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			frame.url = 'about:blank';
+
+			expect(BrowserFrameURL.getOrigin(frame)).toBe('https://parent.example');
+
+			browser.close();
+		});
+
+		it('Returns the inherited origin for an "about:blank" document.', () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			page.mainFrame.url = 'https://parent.example/';
+			const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			frame.url = 'about:blank';
+			frame[PropertySymbol.inheritedOrigin] = 'https://initiator.example';
+
+			expect(BrowserFrameURL.getOrigin(frame)).toBe('https://initiator.example');
+
+			browser.close();
+		});
+	});
+
+	describe('isSameOrigin()', () => {
+		it('Returns true for frames with the same origin.', () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			page.mainFrame.url = 'https://example.com/a';
+			const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			frame.url = 'https://example.com/b';
+
+			expect(BrowserFrameURL.isSameOrigin(page.mainFrame, frame)).toBe(true);
+
+			browser.close();
+		});
+
+		it('Returns false for frames with different origins.', () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			page.mainFrame.url = 'https://example.com/';
+			const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			frame.url = 'https://other.example/';
+
+			expect(BrowserFrameURL.isSameOrigin(page.mainFrame, frame)).toBe(false);
+
+			browser.close();
+		});
+
+		it('Treats two "data:" documents as different origins.', async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			page.mainFrame.url = 'https://parent.example/';
+			const frame1 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const frame2 = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(() =>
+				Promise.resolve(new page.mainFrame.window.Response('<body>Child</body>'))
+			);
+
+			await Promise.all([
+				frame1.goto('data:text/html,<body>1</body>', { referrer: 'https://parent.example' }),
+				frame2.goto('data:text/html,<body>2</body>', { referrer: 'https://parent.example' })
+			]);
+
+			expect(BrowserFrameURL.isSameOrigin(frame1, frame2)).toBe(false);
+			expect(BrowserFrameURL.isSameOrigin(frame1, frame1)).toBe(true);
+
+			await browser.close();
+		});
 	});
 
 	describe('getRelativeURL()', () => {

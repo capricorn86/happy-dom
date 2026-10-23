@@ -1,33 +1,43 @@
 import type IBrowserFrame from '../types/IBrowserFrame.js';
 import { URL } from 'url';
 import * as PropertySymbol from '../../PropertySymbol.js';
+import type BrowserWindow from '../../window/BrowserWindow.js';
 
 /**
  * Browser frame URL utility.
  */
 export default class BrowserFrameURL {
 	/**
-	 * Returns whether a target URL has the same origin as the origin URL.
+	 * Returns the origin of the document in a frame.
 	 *
-	 * @param originURL Origin URL.
-	 * @param targetURL Target URL.
-	 * @returns Whether the URLs have the same origin.
+	 * "about:blank", "about:srcdoc" and "javascript:" documents inherit their origin.
+	 * Other documents with the origin "null" (such as "data:") have an opaque origin, which is represented by their window.
+	 *
+	 * @param frame Frame.
+	 * @returns Origin.
 	 */
-	public static isSameOrigin(originURL: Pick<URL, 'origin'>, targetURL: URL): boolean {
-		return (
-			this.hasInheritedOrigin(targetURL) ||
-			(targetURL.origin !== 'null' && originURL.origin === targetURL.origin)
-		);
+	public static getOrigin(frame: IBrowserFrame): string | BrowserWindow {
+		const url = new URL(frame.window[PropertySymbol.location].href);
+
+		if (this.hasInheritedOrigin(url)) {
+			return (
+				frame[PropertySymbol.inheritedOrigin] ??
+				(frame.parentFrame ? this.getOrigin(frame.parentFrame) : frame.window)
+			);
+		}
+
+		return url.origin === 'null' ? frame.window : url.origin;
 	}
 
 	/**
-	 * Returns whether a target URL has an opaque origin instead of an inherited origin.
+	 * Returns whether the documents in two frames have the same origin.
 	 *
-	 * @param targetURL Target URL.
-	 * @returns Whether the URL has an opaque origin.
+	 * @param frame Frame.
+	 * @param otherFrame Other frame.
+	 * @returns True if they have the same origin.
 	 */
-	public static hasOpaqueOrigin(targetURL: URL): boolean {
-		return targetURL.origin === 'null' && !this.hasInheritedOrigin(targetURL);
+	public static isSameOrigin(frame: IBrowserFrame, otherFrame: IBrowserFrame): boolean {
+		return this.getOrigin(frame) === this.getOrigin(otherFrame);
 	}
 
 	/**
@@ -53,7 +63,7 @@ export default class BrowserFrameURL {
 	}
 
 	/**
-	 * Returns whether a target URL has an inherited origin.
+	 * Returns whether a document with the URL inherits its origin.
 	 *
 	 * @param targetURL Target URL.
 	 * @returns Whether the URL has an inherited origin.
