@@ -434,6 +434,10 @@ export default class SelectorItem {
 				return element[PropertySymbol.ownerDocument].activeElement === element
 					? { priorityWeight: 10 }
 					: null;
+			case 'focus-within':
+				return element.contains(element[PropertySymbol.ownerDocument].activeElement)
+					? { priorityWeight: 10 }
+					: null;
 			case 'scope':
 				return scope && scope === element ? { priorityWeight: 10 } : null;
 			default:
