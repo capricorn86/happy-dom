@@ -9,6 +9,12 @@ const TO_STRING_SHORTHAND_PROPERTIES = [
 	['margin'],
 	['padding'],
 	['border', ['border-width', 'border-style', 'border-color', 'border-image']],
+	['border-top'],
+	['border-right'],
+	['border-bottom'],
+	['border-left'],
+	['outline'],
+	['flex'],
 	['border-radius'],
 	['background', 'background-position'],
 	['font']
