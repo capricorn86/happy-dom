@@ -28,6 +28,8 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	public [PropertySymbol.asyncTaskManager]: AsyncTaskManager = new AsyncTaskManager(this);
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
 	public [PropertySymbol.openerFrame]: IBrowserFrame | null = null;
+	public [PropertySymbol.inheritedOrigin]: string | BrowserWindow | null = null;
+	public [PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
 	public [PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
 	public [PropertySymbol.popup] = false;
 	public [PropertySymbol.history] = new HistoryItemList();
