@@ -328,6 +328,31 @@ describe('Element', () => {
 		});
 	});
 
+	describe('ARIA reflection properties', () => {
+		it('Returns the attribute value or null for "ariaLabel".', () => {
+			expect(element.ariaLabel).toBe(null);
+			element.setAttribute('aria-label', 'Save draft');
+			expect(element.ariaLabel).toBe('Save draft');
+		});
+
+		it('Sets the attribute and removes it when set to null.', () => {
+			element.ariaPressed = 'true';
+			expect(element.getAttribute('aria-pressed')).toBe('true');
+			element.ariaPressed = null;
+			expect(element.hasAttribute('aria-pressed')).toBe(false);
+		});
+
+		it('Maps multi-word properties to lowercase attribute names.', () => {
+			element.ariaHasPopup = 'menu';
+			element.ariaKeyShortcuts = 'Alt+S';
+			element.ariaValueNow = '5';
+			expect(element.getAttribute('aria-haspopup')).toBe('menu');
+			expect(element.getAttribute('aria-keyshortcuts')).toBe('Alt+S');
+			expect(element.getAttribute('aria-valuenow')).toBe('5');
+			expect(element.ariaValueNow).toBe('5');
+		});
+	});
+
 	describe('get classList()', () => {
 		it('Returns a DOMTokenList object.', () => {
 			element.setAttribute('class', 'value1 value2');
