@@ -785,6 +785,36 @@ $happy_dom.exports['string6'] = string6;
 }`);
 		});
 
+		it('Unsanitized import aliases are not interpolated as executable code.', async () => {
+			const code = `
+				import {
+					missing as injected = globalThis.__HAPPY_DOM_PWNED__ = 1337
+				} from './dep.json' with { type: 'json' };
+				import { other = globalThis.__HAPPY_DOM_PWNED__ = 1337 } from './dep.json' with { type: 'json' };
+				import { valid as ünicode$1 } from './dep.json' with { type: 'json' };
+			`;
+
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
+
+			expect(result.execute.toString()).not.toContain('__HAPPY_DOM_PWNED__');
+			expect(result.execute.toString()).toContain('let {"valid": ünicode$1}');
+
+			await result.execute({
+				dispatchError: () => {},
+				dynamicImport: () => Promise.resolve({}),
+				importMeta: {
+					url: '',
+					resolve: () => ''
+				},
+				imports: new Map([['http://localhost:8080/js/app/dep.json', {}]]),
+				exports: {},
+				addCircularImportResolver: () => {}
+			});
+
+			expect((<any>globalThis).__HAPPY_DOM_PWNED__).toBeUndefined();
+		});
+
 		it('Handles tabs as whitespace.', () => {
 			const code = `
                 function warn(...args) {
