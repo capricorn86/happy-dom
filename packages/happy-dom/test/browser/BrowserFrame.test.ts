@@ -88,6 +88,21 @@ describe('BrowserFrame', () => {
 		});
 	});
 
+	describe('BrowserFrameFactory.destroyFrame()', () => {
+		it('Clears the inherited origin and content window to not keep windows reachable.', async () => {
+			const browser = new Browser();
+			const page = browser.defaultContext.newPage();
+			const childFrame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			childFrame[PropertySymbol.inheritedOriginWindow] = page.mainFrame.window;
+			childFrame[PropertySymbol.contentWindow] = childFrame.window;
+
+			await BrowserFrameFactory.destroyFrame(childFrame);
+
+			expect(childFrame[PropertySymbol.inheritedOriginWindow]).toBe(null);
+			expect(childFrame[PropertySymbol.contentWindow]).toBe(null);
+		});
+	});
+
 	describe('set content()', () => {
 		it('Sets the document HTML content.', () => {
 			const browser = new Browser();
@@ -141,6 +156,24 @@ describe('BrowserFrame', () => {
 			const page = browser.defaultContext.newPage();
 			page.mainFrame.url = <string>(<unknown>{ toString: () => 'http://localhost:3000' });
 			expect(page.mainFrame.window.location.href).toBe('http://localhost:3000/');
+		});
+
+		it('Restricts the access between a child frame and its ancestors when the origin changes.', () => {
+			const browser = new Browser();
+			const page = browser.defaultContext.newPage();
+			page.mainFrame.url = 'https://top.example/';
+			const childFrame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+
+			expect(childFrame.window.parent === page.mainFrame.window).toBe(true);
+			expect(childFrame[PropertySymbol.contentWindow]).toBe(null);
+
+			childFrame.url = 'https://other.example/';
+
+			expect(childFrame.window.parent instanceof CrossOriginBrowserWindow).toBe(true);
+			expect(childFrame.window.top instanceof CrossOriginBrowserWindow).toBe(true);
+			expect(childFrame[PropertySymbol.contentWindow] instanceof CrossOriginBrowserWindow).toBe(
+				true
+			);
 		});
 	});
 

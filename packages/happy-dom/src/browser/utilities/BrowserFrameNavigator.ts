@@ -130,6 +130,8 @@ export default class BrowserFrameNavigator {
 		if (!BrowserFrameValidator.validateFrameNavigation(frame)) {
 			if (!frame.page.context.browser.settings.navigation.disableFallbackToSetURL) {
 				frame.window.location[PropertySymbol.setURL](frame, targetURL.href);
+				// The origin may have changed without creating a new window.
+				this.updateCrossOriginIsolation(frame);
 			}
 
 			return null;
@@ -156,7 +158,7 @@ export default class BrowserFrameNavigator {
 		const width = previousWindow.innerWidth;
 		const height = previousWindow.innerHeight;
 		const devicePixelRatio = previousWindow.devicePixelRatio;
-		const initiatorOrigin = BrowserFrameURL.getOrigin(goToOptions?.initiatorFrame ?? frame);
+		const initiatorOrigin = BrowserFrameURL.getOriginWindow(goToOptions?.initiatorFrame ?? frame);
 
 		// Create new Window
 		frame[PropertySymbol.asyncTaskManager] = new AsyncTaskManager(frame);
@@ -164,8 +166,8 @@ export default class BrowserFrameNavigator {
 		(<number>frame.window.devicePixelRatio) = devicePixelRatio;
 
 		// Documents with the URL "about:blank" and "about:srcdoc" inherit the origin of the document that initiated the navigation.
-		frame[PropertySymbol.inheritedOrigin] = initiatorOrigin;
-		this.setWindowAccess(frame);
+		frame[PropertySymbol.inheritedOriginWindow] = initiatorOrigin;
+		this.updateCrossOriginIsolation(frame);
 
 		if (exceptionObserver) {
 			exceptionObserver.observe(frame.window);
@@ -260,7 +262,11 @@ export default class BrowserFrameNavigator {
 			// Handles the "X-Frame-Options" header for child frames.
 			if (frame.parentFrame) {
 				const xFrameOptions = response.headers?.get('X-Frame-Options')?.toLowerCase();
-				const isSameOrigin = BrowserFrameURL.isSameOrigin(frame, frame.parentFrame);
+				// The final URL after redirects decides the origin of the response.
+				const responseOrigin = new URL(response.url || targetURL.href).origin;
+				const isSameOrigin =
+					responseOrigin !== 'null' &&
+					responseOrigin === BrowserFrameURL.getOriginWindow(frame.parentFrame).location.origin;
 
 				if (xFrameOptions === 'deny' || (xFrameOptions === 'sameorigin' && !isSameOrigin)) {
 					throw new Error(
@@ -285,7 +291,7 @@ export default class BrowserFrameNavigator {
 			frame.window[PropertySymbol.location][PropertySymbol.setURL](frame, response.url);
 			// The origin may have changed due to a redirect.
 			if (isRedirected) {
-				this.setWindowAccess(frame);
+				this.updateCrossOriginIsolation(frame);
 			}
 		}
 
@@ -327,14 +333,13 @@ export default class BrowserFrameNavigator {
 	}
 
 	/**
-	 * Restricts access between the frame and its ancestors when they have different origins.
+	 * Updates the cross-origin isolation between a frame and its ancestors.
 	 *
-	 * Sets "parent" and "top" of the frame's window, and the window that the parent frame gets access to.
-	 * Windows with a different origin are restricted with a CrossOriginBrowserWindow.
+	 * Sets "parent" and "top" of the frame's window, and the "contentWindow" that the parent frame gets access to.
 	 *
 	 * @param frame Frame.
 	 */
-	private static setWindowAccess(frame: IBrowserFrame): void {
+	public static updateCrossOriginIsolation(frame: IBrowserFrame): void {
 		const parentFrame = frame.parentFrame ?? frame;
 		const topFrame = frame.page.mainFrame;
 		const isSameOriginAsParent = BrowserFrameURL.isSameOrigin(frame, parentFrame);

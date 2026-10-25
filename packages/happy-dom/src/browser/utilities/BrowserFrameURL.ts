@@ -2,6 +2,7 @@ import type IBrowserFrame from '../types/IBrowserFrame.js';
 import { URL } from 'url';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import type BrowserWindow from '../../window/BrowserWindow.js';
+import type Location from '../../location/Location.js';
 
 /**
  * Browser frame URL utility.
@@ -10,23 +11,25 @@ export default class BrowserFrameURL {
 	/**
 	 * Returns the origin of the document in a frame.
 	 *
-	 * "about:blank", "about:srcdoc" and "javascript:" documents inherit their origin.
+	 * "about:blank", "about:srcdoc" and "javascript:" documents inherit the origin that was set when the frame was created or navigated.
 	 * Other documents with the origin "null" (such as "data:") have an opaque origin, which is represented by their window.
 	 *
 	 * @param frame Frame.
 	 * @returns Origin.
 	 */
-	public static getOrigin(frame: IBrowserFrame): string | BrowserWindow {
-		const url = new URL(frame.window[PropertySymbol.location].href);
+	public static getOriginWindow(frame: IBrowserFrame): BrowserWindow {
+		const location = frame.window[PropertySymbol.location];
 
-		if (this.hasInheritedOrigin(url)) {
-			return (
-				frame[PropertySymbol.inheritedOrigin] ??
-				(frame.parentFrame ? this.getOrigin(frame.parentFrame) : frame.window)
-			);
+		// A destroyed frame doesn't have a document, so it can't share its origin with any other frame.
+		if (!location) {
+			return frame.window;
 		}
 
-		return url.origin === 'null' ? frame.window : url.origin;
+		if (this.hasInheritedOrigin(location)) {
+			return frame[PropertySymbol.inheritedOriginWindow] ?? frame.window;
+		}
+
+		return frame.window;
 	}
 
 	/**
@@ -37,7 +40,7 @@ export default class BrowserFrameURL {
 	 * @returns True if they have the same origin.
 	 */
 	public static isSameOrigin(frame: IBrowserFrame, otherFrame: IBrowserFrame): boolean {
-		return this.getOrigin(frame) === this.getOrigin(otherFrame);
+		return this.getOriginWindow(frame) === this.getOriginWindow(otherFrame);
 	}
 
 	/**
@@ -68,7 +71,7 @@ export default class BrowserFrameURL {
 	 * @param targetURL Target URL.
 	 * @returns Whether the URL has an inherited origin.
 	 */
-	private static hasInheritedOrigin(targetURL: URL): boolean {
+	private static hasInheritedOrigin(targetURL: URL | Location): boolean {
 		return (
 			targetURL.protocol === 'javascript:' ||
 			(targetURL.protocol === 'about:' &&

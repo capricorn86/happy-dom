@@ -439,6 +439,45 @@ describe('HTMLIFrameElement', () => {
 			);
 		});
 
+		it('Dispatches an error event if "x-frame-options" is "sameorigin" and a same-origin URL redirects to another origin.', async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>(<unknown>{
+					text: () => Promise.resolve('<html></html>'),
+					ok: true,
+					url: 'https://other.example/iframe.html',
+					headers: new Headers({ 'x-frame-options': 'sameorigin' })
+				}));
+			});
+
+			window.happyDOM?.setURL('https://localhost:8080');
+			element.src = 'https://localhost:8080/redirect.html';
+
+			const errorPromise = new Promise((resolve) => element.addEventListener('error', resolve));
+			document.body.appendChild(element);
+			await errorPromise;
+		});
+
+		it('Restricts the content window when the navigation is replaced by setting the URL because child frame navigation is disabled.', async () => {
+			const browser = new Browser({
+				settings: {
+					enableIframePageLoading: true,
+					navigation: { disableChildFrameNavigation: true }
+				}
+			});
+			const page = browser.newPage();
+			page.mainFrame.url = 'https://localhost:8080/';
+			const iframe = <HTMLIFrameElement>page.mainFrame.window.document.createElement('iframe');
+			iframe.src = 'https://other.example/iframe.html';
+			page.mainFrame.window.document.body.appendChild(iframe);
+
+			await page.waitUntilComplete();
+
+			expect(iframe.contentWindow instanceof CrossOriginBrowserWindow).toBe(true);
+			expect(iframe.contentDocument).toBe(null);
+
+			await browser.close();
+		});
+
 		it('Returns content window for URL with same origin.', async () => {
 			const responseHTML = '<html><head></head><body>Test</body></html>';
 			let fetchedURL: string | null = null;

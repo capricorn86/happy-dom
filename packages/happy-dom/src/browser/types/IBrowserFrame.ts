@@ -26,7 +26,7 @@ export default interface IBrowserFrame {
 	[PropertySymbol.asyncTaskManager]: AsyncTaskManager;
 	[PropertySymbol.listeners]: { navigation: Array<() => void> };
 	[PropertySymbol.openerFrame]: IBrowserFrame | null;
-	[PropertySymbol.inheritedOrigin]: string | BrowserWindow | null;
+	[PropertySymbol.inheritedOriginWindow]: BrowserWindow | null;
 	[PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null;
 	[PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null;
 	[PropertySymbol.popup]: boolean;

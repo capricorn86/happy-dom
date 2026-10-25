@@ -10,13 +10,13 @@ describe('BrowserFrameURL', () => {
 		vi.restoreAllMocks();
 	});
 
-	describe('getOrigin()', () => {
+	describe('getOriginWindow()', () => {
 		it('Returns the origin of the document URL.', () => {
 			const browser = new Browser();
 			const page = browser.newPage();
 			page.mainFrame.url = 'https://example.com/path';
 
-			expect(BrowserFrameURL.getOrigin(page.mainFrame)).toBe('https://example.com');
+			expect(BrowserFrameURL.getOriginWindow(page.mainFrame)).toBe('https://example.com');
 
 			browser.close();
 		});
@@ -32,7 +32,7 @@ describe('BrowserFrameURL', () => {
 
 			await frame.goto('data:text/html,<body>Child</body>', { referrer: 'https://parent.example' });
 
-			expect(BrowserFrameURL.getOrigin(frame)).toBe(frame.window);
+			expect(BrowserFrameURL.getOriginWindow(frame)).toBe(frame.window);
 
 			await browser.close();
 		});
@@ -44,9 +44,22 @@ describe('BrowserFrameURL', () => {
 			const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
 			frame.url = 'about:blank';
 
-			expect(BrowserFrameURL.getOrigin(frame)).toBe('https://parent.example');
+			expect(BrowserFrameURL.getOriginWindow(frame)).toBe('https://parent.example');
 
 			browser.close();
+		});
+
+		it('Returns the window as an opaque origin for a destroyed frame.', async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+
+			await BrowserFrameFactory.destroyFrame(frame);
+
+			expect(BrowserFrameURL.getOriginWindow(frame)).toBe(frame.window);
+			expect(BrowserFrameURL.isSameOrigin(frame, page.mainFrame)).toBe(false);
+
+			await browser.close();
 		});
 
 		it('Returns the inherited origin for an "about:blank" document.', () => {
@@ -55,9 +68,9 @@ describe('BrowserFrameURL', () => {
 			page.mainFrame.url = 'https://parent.example/';
 			const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
 			frame.url = 'about:blank';
-			frame[PropertySymbol.inheritedOrigin] = 'https://initiator.example';
+			frame[PropertySymbol.inheritedOriginWindow] = 'https://initiator.example';
 
-			expect(BrowserFrameURL.getOrigin(frame)).toBe('https://initiator.example');
+			expect(BrowserFrameURL.getOriginWindow(frame)).toBe('https://initiator.example');
 
 			browser.close();
 		});
