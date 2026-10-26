@@ -1745,6 +1745,12 @@ export default class Element
 
 		entry.elements.push(element);
 
+		// Only elements in the window's own document are exposed as named properties on the window
+		// Documents created by DOMParser or DOMImplementation share the window, but should not add properties to it
+		if (document !== window.document) {
+			return;
+		}
+
 		if (entry.elements.length > 1) {
 			if (!entry.htmlCollection) {
 				entry.htmlCollection = new HTMLCollection<Element>(

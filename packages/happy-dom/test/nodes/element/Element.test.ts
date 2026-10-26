@@ -284,6 +284,63 @@ describe('Element', () => {
 			element.id = 'opener';
 			expect((<any>window)['opener']).toBe(null);
 		});
+
+		it(`Doesn't add the "id" attribute as a property to Window when the element is in a document created by DOMParser.`, () => {
+			const parsedDocument = new window.DOMParser().parseFromString(
+				'<div id="parsedElement1"></div>',
+				'text/html'
+			);
+			const parsedElement1 = parsedDocument.getElementById('parsedElement1');
+
+			expect(parsedElement1).not.toBe(null);
+			expect('parsedElement1' in window).toBe(false);
+
+			const parsedElement2 = parsedDocument.createElement('div');
+			parsedElement2.id = 'parsedElement2';
+			parsedDocument.body.appendChild(parsedElement2);
+
+			expect(parsedDocument.getElementById('parsedElement2')).toBe(parsedElement2);
+			expect('parsedElement2' in window).toBe(false);
+
+			parsedElement2.id = 'parsedElement3';
+
+			expect(parsedDocument.getElementById('parsedElement3')).toBe(parsedElement2);
+			expect('parsedElement3' in window).toBe(false);
+		});
+
+		it(`Doesn't add the "id" attribute as a property to Window when the element is in a document created by DOMImplementation.createHTMLDocument().`, () => {
+			const createdDocument = document.implementation.createHTMLDocument();
+			const createdElement = createdDocument.createElement('div');
+			createdElement.id = 'createdElement';
+			createdDocument.body.appendChild(createdElement);
+
+			expect(createdDocument.getElementById('createdElement')).toBe(createdElement);
+			expect('createdElement' in window).toBe(false);
+		});
+
+		it('Keeps the "id" attribute of an element in the window document as a property to Window when another document has an element with the same "id".', () => {
+			element.id = 'sharedId';
+			document.body.appendChild(element);
+
+			const parsedDocument = new window.DOMParser().parseFromString(
+				'<div id="sharedId"></div>',
+				'text/html'
+			);
+			const parsedElement = parsedDocument.getElementById('sharedId');
+
+			expect(parsedElement).not.toBe(null);
+			expect(parsedElement).not.toBe(element);
+			expect((<any>window)['sharedId']).toBe(element);
+
+			parsedElement!.remove();
+
+			expect(parsedDocument.getElementById('sharedId')).toBe(null);
+			expect((<any>window)['sharedId']).toBe(element);
+
+			document.body.removeChild(element);
+
+			expect((<any>window)['sharedId']).toBeUndefined();
+		});
 	});
 
 	describe('get slot()', () => {
