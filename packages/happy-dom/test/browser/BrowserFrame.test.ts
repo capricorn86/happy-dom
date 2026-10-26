@@ -93,12 +93,15 @@ describe('BrowserFrame', () => {
 			const browser = new Browser();
 			const page = browser.defaultContext.newPage();
 			const childFrame = BrowserFrameFactory.createChildFrame(page.mainFrame);
-			childFrame[PropertySymbol.inheritedOriginWindow] = page.mainFrame.window;
+			childFrame[PropertySymbol.inheritedOrigin] = {
+				origin: 'null',
+				window: page.mainFrame.window
+			};
 			childFrame[PropertySymbol.contentWindow] = childFrame.window;
 
 			await BrowserFrameFactory.destroyFrame(childFrame);
 
-			expect(childFrame[PropertySymbol.inheritedOriginWindow]).toBe(null);
+			expect(childFrame[PropertySymbol.inheritedOrigin]).toBe(null);
 			expect(childFrame[PropertySymbol.contentWindow]).toBe(null);
 		});
 	});

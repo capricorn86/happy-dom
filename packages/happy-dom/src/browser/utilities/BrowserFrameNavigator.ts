@@ -158,7 +158,9 @@ export default class BrowserFrameNavigator {
 		const width = previousWindow.innerWidth;
 		const height = previousWindow.innerHeight;
 		const devicePixelRatio = previousWindow.devicePixelRatio;
-		const initiatorOrigin = BrowserFrameURL.getOriginWindow(goToOptions?.initiatorFrame ?? frame);
+		const initiatorOrigin = BrowserFrameURL.getInheritedOrigin(
+			goToOptions?.initiatorFrame ?? frame
+		);
 
 		// Create new Window
 		frame[PropertySymbol.asyncTaskManager] = new AsyncTaskManager(frame);
@@ -166,7 +168,7 @@ export default class BrowserFrameNavigator {
 		(<number>frame.window.devicePixelRatio) = devicePixelRatio;
 
 		// Documents with the URL "about:blank" and "about:srcdoc" inherit the origin of the document that initiated the navigation.
-		frame[PropertySymbol.inheritedOriginWindow] = initiatorOrigin;
+		frame[PropertySymbol.inheritedOrigin] = initiatorOrigin;
 		this.updateCrossOriginIsolation(frame);
 
 		if (exceptionObserver) {
@@ -266,7 +268,7 @@ export default class BrowserFrameNavigator {
 				const responseOrigin = new URL(response.url || targetURL.href).origin;
 				const isSameOrigin =
 					responseOrigin !== 'null' &&
-					responseOrigin === BrowserFrameURL.getOriginWindow(frame.parentFrame).location.origin;
+					responseOrigin === BrowserFrameURL.getInheritedOrigin(frame.parentFrame).origin;
 
 				if (xFrameOptions === 'deny' || (xFrameOptions === 'sameorigin' && !isSameOrigin)) {
 					throw new Error(

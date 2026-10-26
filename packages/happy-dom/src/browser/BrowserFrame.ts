@@ -6,6 +6,7 @@ import BrowserWindow from '../window/BrowserWindow.js';
 import type CrossOriginBrowserWindow from '../window/CrossOriginBrowserWindow.js';
 import type Response from '../fetch/Response.js';
 import type IGoToOptions from './types/IGoToOptions.js';
+import type IInheritedOrigin from './types/IInheritedOrigin.js';
 import type { Script } from 'vm';
 import BrowserFrameURL from './utilities/BrowserFrameURL.js';
 import BrowserFrameScriptEvaluator from './utilities/BrowserFrameScriptEvaluator.js';
@@ -26,7 +27,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	public [PropertySymbol.asyncTaskManager]: AsyncTaskManager = new AsyncTaskManager(this);
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
 	public [PropertySymbol.openerFrame]: IBrowserFrame | null = null;
-	public [PropertySymbol.inheritedOriginWindow]: BrowserWindow | null = null;
+	public [PropertySymbol.inheritedOrigin]: IInheritedOrigin | null = null;
 	public [PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
 	public [PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
 	public [PropertySymbol.popup] = false;

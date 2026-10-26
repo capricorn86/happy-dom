@@ -1,7 +1,7 @@
 import type IBrowserFrame from '../types/IBrowserFrame.js';
 import { URL } from 'url';
 import * as PropertySymbol from '../../PropertySymbol.js';
-import type BrowserWindow from '../../window/BrowserWindow.js';
+import type IInheritedOrigin from '../types/IInheritedOrigin.js';
 import type Location from '../../location/Location.js';
 
 /**
@@ -11,36 +11,48 @@ export default class BrowserFrameURL {
 	/**
 	 * Returns the origin of the document in a frame.
 	 *
-	 * "about:blank", "about:srcdoc" and "javascript:" documents inherit the origin that was set when the frame was created or navigated.
-	 * Other documents with the origin "null" (such as "data:") have an opaque origin, which is represented by their window.
+	 * "about:blank", "about:srcdoc" and "javascript:" documents inherit the origin that the initiator had when the document was created.
+	 * The inherited origin is a snapshot, so it isn't affected if the URL of the initiator changes afterwards.
 	 *
 	 * @param frame Frame.
-	 * @returns Origin.
+	 * @returns Inherited origin.
 	 */
-	public static getOriginWindow(frame: IBrowserFrame): BrowserWindow {
+	public static getInheritedOrigin(frame: IBrowserFrame): IInheritedOrigin {
+		// Use internal PropertySymbol.location to avoid being affected by mocks on window.location
 		const location = frame.window[PropertySymbol.location];
 
-		// A destroyed frame doesn't have a document, so it can't share its origin with any other frame.
+		// A destroyed frame doesn't have a document.
 		if (!location) {
-			return frame.window;
+			return { origin: 'null', window: frame.window };
 		}
 
-		if (this.hasInheritedOrigin(location)) {
-			return frame[PropertySymbol.inheritedOriginWindow] ?? frame.window;
+		if (this.hasInheritedOrigin(location) && frame[PropertySymbol.inheritedOrigin]) {
+			return frame[PropertySymbol.inheritedOrigin];
 		}
 
-		return frame.window;
+		return {
+			origin: location.origin,
+			window: location.origin === 'null' ? frame.window : null
+		};
 	}
 
 	/**
 	 * Returns whether the documents in two frames have the same origin.
+	 *
+	 * An opaque origin ("null") is only the same origin as itself.
 	 *
 	 * @param frame Frame.
 	 * @param otherFrame Other frame.
 	 * @returns True if they have the same origin.
 	 */
 	public static isSameOrigin(frame: IBrowserFrame, otherFrame: IBrowserFrame): boolean {
-		return this.getOriginWindow(frame) === this.getOriginWindow(otherFrame);
+		const origin = this.getInheritedOrigin(frame);
+		const otherOrigin = this.getInheritedOrigin(otherFrame);
+
+		return (
+			origin.origin === otherOrigin.origin &&
+			(origin.origin !== 'null' || origin.window === otherOrigin.window)
+		);
 	}
 
 	/**

@@ -10,13 +10,16 @@ describe('BrowserFrameURL', () => {
 		vi.restoreAllMocks();
 	});
 
-	describe('getOriginWindow()', () => {
-		it('Returns the origin of the document URL.', () => {
+	describe('getInheritedOrigin()', () => {
+		it('Returns the origin without a window for a document with an origin.', () => {
 			const browser = new Browser();
 			const page = browser.newPage();
 			page.mainFrame.url = 'https://example.com/path';
 
-			expect(BrowserFrameURL.getOriginWindow(page.mainFrame)).toBe('https://example.com');
+			expect(BrowserFrameURL.getInheritedOrigin(page.mainFrame)).toEqual({
+				origin: 'https://example.com',
+				window: null
+			});
 
 			browser.close();
 		});
@@ -32,7 +35,10 @@ describe('BrowserFrameURL', () => {
 
 			await frame.goto('data:text/html,<body>Child</body>', { referrer: 'https://parent.example' });
 
-			expect(BrowserFrameURL.getOriginWindow(frame)).toBe(frame.window);
+			const origin = BrowserFrameURL.getInheritedOrigin(frame);
+
+			expect(origin.origin).toBe('null');
+			expect(origin.window).toBe(frame.window);
 
 			await browser.close();
 		});
@@ -44,7 +50,48 @@ describe('BrowserFrameURL', () => {
 			const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
 			frame.url = 'about:blank';
 
-			expect(BrowserFrameURL.getOriginWindow(frame)).toBe('https://parent.example');
+			expect(BrowserFrameURL.getInheritedOrigin(frame)).toEqual({
+				origin: 'https://parent.example',
+				window: null
+			});
+
+			browser.close();
+		});
+
+		it('Returns the window of the parent frame for an "about:blank" document when the parent has an opaque origin.', () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			frame.url = 'about:blank';
+
+			expect(BrowserFrameURL.getInheritedOrigin(frame).window).toBe(page.mainFrame.window);
+
+			browser.close();
+		});
+
+		it('Returns the inherited origin for an "about:blank" document.', () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			const inheritedOrigin = { origin: 'https://initiator.example', window: null };
+			frame.url = 'about:blank';
+			frame[PropertySymbol.inheritedOrigin] = inheritedOrigin;
+
+			expect(BrowserFrameURL.getInheritedOrigin(frame)).toBe(inheritedOrigin);
+
+			browser.close();
+		});
+
+		it('Keeps the inherited origin of an "about:blank" document when the URL of the frame that it inherited from is changed.', () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			page.mainFrame.url = 'https://parent.example/';
+			const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			frame.url = 'about:blank';
+
+			page.mainFrame.url = 'https://other.example/';
+
+			expect(BrowserFrameURL.getInheritedOrigin(frame).origin).toBe('https://parent.example');
 
 			browser.close();
 		});
@@ -56,23 +103,13 @@ describe('BrowserFrameURL', () => {
 
 			await BrowserFrameFactory.destroyFrame(frame);
 
-			expect(BrowserFrameURL.getOriginWindow(frame)).toBe(frame.window);
+			const origin = BrowserFrameURL.getInheritedOrigin(frame);
+
+			expect(origin.origin).toBe('null');
+			expect(origin.window).toBe(frame.window);
 			expect(BrowserFrameURL.isSameOrigin(frame, page.mainFrame)).toBe(false);
 
 			await browser.close();
-		});
-
-		it('Returns the inherited origin for an "about:blank" document.', () => {
-			const browser = new Browser();
-			const page = browser.newPage();
-			page.mainFrame.url = 'https://parent.example/';
-			const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
-			frame.url = 'about:blank';
-			frame[PropertySymbol.inheritedOriginWindow] = 'https://initiator.example';
-
-			expect(BrowserFrameURL.getOriginWindow(frame)).toBe('https://initiator.example');
-
-			browser.close();
 		});
 	});
 
@@ -99,6 +136,63 @@ describe('BrowserFrameURL', () => {
 			expect(BrowserFrameURL.isSameOrigin(page.mainFrame, frame)).toBe(false);
 
 			browser.close();
+		});
+
+		it('Returns false for an "about:blank" document when the URL of the frame that it inherited from is changed.', () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			page.mainFrame.url = 'https://parent.example/';
+			const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			frame.url = 'about:blank';
+
+			expect(BrowserFrameURL.isSameOrigin(frame, page.mainFrame)).toBe(true);
+
+			page.mainFrame.url = 'https://other.example/';
+
+			expect(BrowserFrameURL.isSameOrigin(frame, page.mainFrame)).toBe(false);
+
+			browser.close();
+		});
+
+		it('Returns false for an "about:blank" document with an opaque origin when the URL of the frame that it inherited from is changed.', () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			frame.url = 'about:blank';
+
+			expect(BrowserFrameURL.isSameOrigin(frame, page.mainFrame)).toBe(true);
+
+			page.mainFrame.url = 'https://other.example/';
+
+			expect(BrowserFrameURL.isSameOrigin(frame, page.mainFrame)).toBe(false);
+
+			browser.close();
+		});
+
+		it('Returns true for an "about:blank" popup when the opener navigates to a new document with the same origin, and false when the origin is different.', async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			page.mainFrame.url = 'https://opener.example/';
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(() =>
+				Promise.resolve(new page.mainFrame.window.Response('<body>Opener</body>'))
+			);
+
+			page.mainFrame.window.open('about:blank');
+			await page.waitUntilComplete();
+
+			const popupFrame = page.context.pages[1].mainFrame;
+
+			expect(BrowserFrameURL.isSameOrigin(popupFrame, page.mainFrame)).toBe(true);
+
+			await page.mainFrame.goto('https://opener.example/other');
+
+			expect(BrowserFrameURL.isSameOrigin(popupFrame, page.mainFrame)).toBe(true);
+
+			await page.mainFrame.goto('https://other.example/');
+
+			expect(BrowserFrameURL.isSameOrigin(popupFrame, page.mainFrame)).toBe(false);
+
+			await browser.close();
 		});
 
 		it('Treats two "data:" documents as different origins.', async () => {

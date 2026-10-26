@@ -5,6 +5,7 @@ import type Document from '../../nodes/document/Document.js';
 import type IBrowserPage from './IBrowserPage.js';
 import type Response from '../../fetch/Response.js';
 import type IGoToOptions from './IGoToOptions.js';
+import type IInheritedOrigin from './IInheritedOrigin.js';
 import type { Script } from 'vm';
 import type IReloadOptions from './IReloadOptions.js';
 import type CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
@@ -26,7 +27,7 @@ export default interface IBrowserFrame {
 	[PropertySymbol.asyncTaskManager]: AsyncTaskManager;
 	[PropertySymbol.listeners]: { navigation: Array<() => void> };
 	[PropertySymbol.openerFrame]: IBrowserFrame | null;
-	[PropertySymbol.inheritedOriginWindow]: BrowserWindow | null;
+	[PropertySymbol.inheritedOrigin]: IInheritedOrigin | null;
 	[PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null;
 	[PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null;
 	[PropertySymbol.popup]: boolean;
