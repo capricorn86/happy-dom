@@ -77,6 +77,50 @@ export default class Element
 	public declare [PropertySymbol.namespaceURI]: string | null;
 	public declare [PropertySymbol.animations]: Animation[];
 
+	// ARIA reflection properties (ARIAMixin). Defined on the prototype below the class.
+	public declare ariaAtomic: string | null;
+	public declare ariaAutoComplete: string | null;
+	public declare ariaBrailleLabel: string | null;
+	public declare ariaBrailleRoleDescription: string | null;
+	public declare ariaBusy: string | null;
+	public declare ariaChecked: string | null;
+	public declare ariaColCount: string | null;
+	public declare ariaColIndex: string | null;
+	public declare ariaColIndexText: string | null;
+	public declare ariaColSpan: string | null;
+	public declare ariaCurrent: string | null;
+	public declare ariaDescription: string | null;
+	public declare ariaDisabled: string | null;
+	public declare ariaExpanded: string | null;
+	public declare ariaHasPopup: string | null;
+	public declare ariaHidden: string | null;
+	public declare ariaInvalid: string | null;
+	public declare ariaKeyShortcuts: string | null;
+	public declare ariaLabel: string | null;
+	public declare ariaLevel: string | null;
+	public declare ariaLive: string | null;
+	public declare ariaModal: string | null;
+	public declare ariaMultiLine: string | null;
+	public declare ariaMultiSelectable: string | null;
+	public declare ariaOrientation: string | null;
+	public declare ariaPlaceholder: string | null;
+	public declare ariaPosInSet: string | null;
+	public declare ariaPressed: string | null;
+	public declare ariaReadOnly: string | null;
+	public declare ariaRequired: string | null;
+	public declare ariaRoleDescription: string | null;
+	public declare ariaRowCount: string | null;
+	public declare ariaRowIndex: string | null;
+	public declare ariaRowIndexText: string | null;
+	public declare ariaRowSpan: string | null;
+	public declare ariaSelected: string | null;
+	public declare ariaSetSize: string | null;
+	public declare ariaSort: string | null;
+	public declare ariaValueMax: string | null;
+	public declare ariaValueMin: string | null;
+	public declare ariaValueNow: string | null;
+	public declare ariaValueText: string | null;
+
 	/**
 	 * Constructor.
 	 */
@@ -1839,4 +1883,70 @@ export default class Element
 			}
 		}
 	}
+}
+
+/**
+ * ARIA reflection properties (ARIAMixin). Each property reflects the "aria-*" attribute with the same name.
+ *
+ * @see https://w3c.github.io/aria/#ARIAMixin
+ */
+for (const property of [
+	'ariaAtomic',
+	'ariaAutoComplete',
+	'ariaBrailleLabel',
+	'ariaBrailleRoleDescription',
+	'ariaBusy',
+	'ariaChecked',
+	'ariaColCount',
+	'ariaColIndex',
+	'ariaColIndexText',
+	'ariaColSpan',
+	'ariaCurrent',
+	'ariaDescription',
+	'ariaDisabled',
+	'ariaExpanded',
+	'ariaHasPopup',
+	'ariaHidden',
+	'ariaInvalid',
+	'ariaKeyShortcuts',
+	'ariaLabel',
+	'ariaLevel',
+	'ariaLive',
+	'ariaModal',
+	'ariaMultiLine',
+	'ariaMultiSelectable',
+	'ariaOrientation',
+	'ariaPlaceholder',
+	'ariaPosInSet',
+	'ariaPressed',
+	'ariaReadOnly',
+	'ariaRequired',
+	'ariaRoleDescription',
+	'ariaRowCount',
+	'ariaRowIndex',
+	'ariaRowIndexText',
+	'ariaRowSpan',
+	'ariaSelected',
+	'ariaSetSize',
+	'ariaSort',
+	'ariaValueMax',
+	'ariaValueMin',
+	'ariaValueNow',
+	'ariaValueText'
+]) {
+	const attributeName = 'aria-' + property.slice(4).toLowerCase();
+	Object.defineProperty(Element.prototype, property, {
+		enumerable: true,
+		configurable: true,
+		get(this: Element): string | null {
+			return this.getAttribute(attributeName);
+		},
+		set(this: Element, value: string | null) {
+			if (value === null || value === undefined) {
+				this.removeAttribute(attributeName);
+			} else {
+				this.setAttribute(attributeName, String(value));
+			}
+		}
+	});
 }
