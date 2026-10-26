@@ -10,6 +10,7 @@ import type CustomElementRegistry from '../../../src/custom-element/CustomElemen
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import type EventTarget from '../../../src/event/EventTarget.js';
 import Event from '../../../src/event/Event.js';
+import type ToggleEvent from '../../../src/event/events/ToggleEvent.js';
 
 describe('HTMLElement', () => {
 	let window: Window;
@@ -903,6 +904,314 @@ describe('HTMLElement', () => {
 			expect(() => {
 				parent.appendChild(element);
 			}).not.toThrow();
+		});
+	});
+
+	describe('Popover API', () => {
+		it('Requires popover attribute.', () => {
+			const popover = <HTMLElement>document.createElement('div');
+			document.body.appendChild(popover);
+
+			popover.hidePopover();
+
+			expect(window.getComputedStyle(popover).display).toBe('block');
+
+			popover.style.display = 'none';
+			popover.showPopover();
+
+			expect(window.getComputedStyle(popover).display).toBe('none');
+		});
+
+		it('Throws if showing an already visible popover.', () => {
+			const popover = <HTMLElement>document.createElement('div');
+			document.body.appendChild(popover);
+			popover.popover = 'auto';
+
+			popover.showPopover();
+
+			expect(() => {
+				popover.showPopover();
+			}).toThrow();
+		});
+
+		it('Throws if hiding an already hidden popover.', () => {
+			const popover = <HTMLElement>document.createElement('div');
+			document.body.appendChild(popover);
+			popover.popover = 'auto';
+
+			expect(() => {
+				popover.hidePopover();
+			}).toThrow();
+		});
+
+		it('showPopover() is cancelable.', () => {
+			const popover = <HTMLElement>document.createElement('div');
+			document.body.appendChild(popover);
+			popover.popover = 'auto';
+			popover.addEventListener('beforetoggle', (event) => {
+				event.preventDefault();
+			});
+
+			expect(window.getComputedStyle(popover).display).toBe('none');
+
+			popover.showPopover();
+
+			expect(window.getComputedStyle(popover).display).toBe('none');
+		});
+
+		it('hidePopover() is cancelable.', () => {
+			const popover = <HTMLElement>document.createElement('div');
+			document.body.appendChild(popover);
+			popover.popover = 'auto';
+			popover.showPopover();
+
+			expect(window.getComputedStyle(popover).display).toBe('block');
+
+			popover.addEventListener('beforetoggle', (event) => {
+				event.preventDefault();
+			});
+
+			popover.hidePopover();
+
+			expect(window.getComputedStyle(popover).display).toBe('block');
+		});
+	});
+
+	describe('Popups', () => {
+		it('Are hidden by default.', () => {
+			const popover1 = <HTMLElement>document.createElement('div');
+			const popover2 = <HTMLElement>document.createElement('div');
+			const popover3 = <HTMLElement>document.createElement('div');
+			document.body.appendChild(popover1);
+			document.body.appendChild(popover2);
+			document.body.appendChild(popover3);
+
+			expect(window.getComputedStyle(popover1).display).toBe('block');
+			expect(window.getComputedStyle(popover2).display).toBe('block');
+			expect(window.getComputedStyle(popover3).display).toBe('block');
+
+			popover1.popover = '';
+			popover2.popover = 'auto';
+			popover3.popover = 'manual';
+
+			expect(window.getComputedStyle(popover1).display).toBe('none');
+			expect(window.getComputedStyle(popover2).display).toBe('none');
+			expect(window.getComputedStyle(popover3).display).toBe('none');
+		});
+
+		it('Fire toggle events.', () => {
+			const popover1 = <HTMLElement>document.createElement('div');
+			document.body.appendChild(popover1);
+			popover1.popover = 'auto';
+
+			let count = 0;
+
+			popover1.addEventListener(
+				'toggle',
+				(event) => {
+					expect(event.type).toBe('toggle');
+					expect(event.target).toBe(popover1);
+
+					const tevent = <ToggleEvent>event;
+					expect(tevent.newState).toBe('open');
+					expect(tevent.oldState).toBe('closed');
+					++count;
+				},
+				{ once: true }
+			);
+			popover1.showPopover();
+
+			popover1.addEventListener(
+				'toggle',
+				(event) => {
+					expect(event.type).toBe('toggle');
+					expect(event.target).toBe(popover1);
+
+					const tevent = <ToggleEvent>event;
+					expect(tevent.newState).toBe('closed');
+					expect(tevent.oldState).toBe('open');
+					++count;
+				},
+				{ once: true }
+			);
+			popover1.hidePopover();
+
+			expect(count).toBe(2);
+		});
+	});
+
+	describe('Auto popover', () => {
+		it('Is hidden when a new auto popover is opened.', () => {
+			const popover1 = <HTMLElement>document.createElement('div');
+			const popover2 = <HTMLElement>document.createElement('div');
+
+			popover1.setAttribute('popover', 'auto');
+			popover2.setAttribute('popover', 'auto');
+
+			document.body.appendChild(popover1);
+			document.body.appendChild(popover2);
+
+			expect(window.getComputedStyle(popover1).display).toBe('none');
+			expect(window.getComputedStyle(popover2).display).toBe('none');
+
+			popover1.showPopover();
+
+			expect(window.getComputedStyle(popover1).display).toBe('block');
+			expect(window.getComputedStyle(popover2).display).toBe('none');
+
+			popover2.showPopover();
+
+			expect(window.getComputedStyle(popover1).display).toBe('none');
+			expect(window.getComputedStyle(popover2).display).toBe('block');
+		});
+
+		it('Does not affect manual popovers.', () => {
+			const popover1 = <HTMLElement>document.createElement('div');
+			const popover2 = <HTMLElement>document.createElement('div');
+
+			popover1.setAttribute('popover', 'manual');
+			popover2.setAttribute('popover', 'auto');
+
+			document.body.appendChild(popover1);
+			document.body.appendChild(popover2);
+
+			expect(window.getComputedStyle(popover1).display).toBe('none');
+			expect(window.getComputedStyle(popover2).display).toBe('none');
+
+			popover1.showPopover();
+
+			expect(window.getComputedStyle(popover1).display).toBe('block');
+			expect(window.getComputedStyle(popover2).display).toBe('none');
+
+			popover2.showPopover();
+
+			expect(window.getComputedStyle(popover1).display).toBe('block');
+			expect(window.getComputedStyle(popover2).display).toBe('block');
+		});
+
+		it('Is not affected by manual popovers.', () => {
+			const popover1 = <HTMLElement>document.createElement('div');
+			const popover2 = <HTMLElement>document.createElement('div');
+
+			popover1.setAttribute('popover', 'auto');
+			popover2.setAttribute('popover', 'manual');
+
+			document.body.appendChild(popover1);
+			document.body.appendChild(popover2);
+
+			expect(window.getComputedStyle(popover1).display).toBe('none');
+			expect(window.getComputedStyle(popover2).display).toBe('none');
+
+			popover1.showPopover();
+
+			expect(window.getComputedStyle(popover1).display).toBe('block');
+			expect(window.getComputedStyle(popover2).display).toBe('none');
+
+			popover2.showPopover();
+
+			expect(window.getComputedStyle(popover1).display).toBe('block');
+			expect(window.getComputedStyle(popover2).display).toBe('block');
+		});
+
+		it('Does not modify inline style.display when showing or hiding popover.', () => {
+			const popover = <HTMLElement>document.createElement('div');
+			popover.setAttribute('popover', 'auto');
+			document.body.appendChild(popover);
+
+			expect(popover.style.display).toBe('');
+			expect(window.getComputedStyle(popover).display).toBe('none');
+
+			popover.showPopover();
+			expect(popover.style.display).toBe('');
+			expect(window.getComputedStyle(popover).display).toBe('block');
+
+			popover.hidePopover();
+			expect(popover.style.display).toBe('');
+			expect(window.getComputedStyle(popover).display).toBe('none');
+		});
+
+		it('Preserves custom inline display style when popover is open.', () => {
+			const popover = <HTMLElement>document.createElement('div');
+			popover.setAttribute('popover', 'auto');
+			popover.style.display = 'flex';
+			document.body.appendChild(popover);
+
+			expect(window.getComputedStyle(popover).display).toBe('none');
+
+			popover.showPopover();
+			expect(popover.style.display).toBe('flex');
+			expect(window.getComputedStyle(popover).display).toBe('flex');
+
+			popover.hidePopover();
+			expect(popover.style.display).toBe('flex');
+			expect(window.getComputedStyle(popover).display).toBe('none');
+		});
+
+		it('Restores normal display style when popover attribute is removed.', () => {
+			const popover = <HTMLElement>document.createElement('div');
+			popover.setAttribute('popover', 'auto');
+			document.body.appendChild(popover);
+
+			expect(window.getComputedStyle(popover).display).toBe('none');
+
+			popover.removeAttribute('popover');
+			expect(window.getComputedStyle(popover).display).toBe('block');
+
+			popover.popover = 'auto';
+			expect(window.getComputedStyle(popover).display).toBe('none');
+
+			popover.popover = null;
+			expect(window.getComputedStyle(popover).display).toBe('block');
+		});
+
+		it('togglePopover() supports options object with source and without force.', () => {
+			const popover = <HTMLElement>document.createElement('div');
+			popover.setAttribute('popover', 'auto');
+			document.body.appendChild(popover);
+
+			const sourceBtn = document.createElement('button');
+			document.body.appendChild(sourceBtn);
+
+			let sourceReceived: EventTarget | null = null;
+			popover.addEventListener('beforetoggle', (event) => {
+				sourceReceived = (<ToggleEvent>event).source;
+			});
+
+			const opened = popover.togglePopover({ source: sourceBtn });
+			expect(opened).toBe(true);
+			expect(popover.matches(':popover-open')).toBe(true);
+			expect(sourceReceived).toBe(sourceBtn);
+
+			const closed = popover.togglePopover({ source: sourceBtn });
+			expect(closed).toBe(false);
+			expect(popover.matches(':popover-open')).toBe(false);
+		});
+
+		it('Supports onbeforetoggle and ontoggle event properties.', () => {
+			const popover = <HTMLElement>document.createElement('div');
+			popover.setAttribute('popover', 'auto');
+			document.body.appendChild(popover);
+
+			let beforeToggleCalls = 0;
+			let toggleCalls = 0;
+
+			popover.onbeforetoggle = () => {
+				beforeToggleCalls++;
+			};
+			popover.ontoggle = () => {
+				toggleCalls++;
+			};
+
+			expect(popover.onbeforetoggle).toBeDefined();
+			expect(popover.ontoggle).toBeDefined();
+
+			popover.showPopover();
+			expect(beforeToggleCalls).toBe(1);
+			expect(toggleCalls).toBe(1);
+
+			popover.hidePopover();
+			expect(beforeToggleCalls).toBe(2);
+			expect(toggleCalls).toBe(2);
 		});
 	});
 });

@@ -330,6 +330,16 @@ describe('HTMLButtonElement', () => {
 			element.popoverTargetElement = target;
 			expect(element.popoverTargetElement).toBe(target);
 		});
+
+		it('Returns the element targeted by the popovertarget attribute', () => {
+			const target = document.createElement('div');
+			target.id = 'my-popover';
+			document.body.appendChild(target);
+			document.body.appendChild(element);
+
+			element.setAttribute('popovertarget', 'my-popover');
+			expect(element.popoverTargetElement).toBe(target);
+		});
 	});
 
 	describe('set popoverTargetElement()', () => {
@@ -344,7 +354,7 @@ describe('HTMLButtonElement', () => {
 				element.popoverTargetElement = <HTMLElement>(<unknown>'test');
 			}).toThrow(
 				new TypeError(
-					`Failed to set the 'popoverTargetElement' property on 'HTMLInputElement': Failed to convert value to 'Element'.`
+					`Failed to set the 'popoverTargetElement' property on 'HTMLButtonElement': Failed to convert value to 'Element'.`
 				)
 			);
 		});
@@ -552,6 +562,121 @@ describe('HTMLButtonElement', () => {
 			button.click();
 
 			expect(resetTriggeredCount).toBe(1);
+		});
+
+		it('Opens popover if popovertargetaction is show.', () => {
+			const popover = <HTMLElement>document.createElement('div');
+			popover.id = 'popover';
+			popover.setAttribute('popover', 'auto');
+			document.body.appendChild(popover);
+			expect(popover.matches(':popover-open')).toBe(false);
+
+			element.setAttribute('popovertarget', 'popover');
+			element.setAttribute('popovertargetaction', 'show');
+			element.click();
+			expect(popover.matches(':popover-open')).toBe(true);
+
+			// Clicking the button again should do nothing and not throw an error.
+			element.click();
+			expect(popover.matches(':popover-open')).toBe(true);
+		});
+
+		it('Hides popover if popovertargetaction is hide.', () => {
+			const popover = <HTMLElement>document.createElement('div');
+			popover.id = 'popover';
+			popover.setAttribute('popover', 'auto');
+			document.body.appendChild(popover);
+			expect(popover.matches(':popover-open')).toBe(false);
+
+			popover.showPopover();
+			expect(popover.matches(':popover-open')).toBe(true);
+
+			element.setAttribute('popovertarget', 'popover');
+			element.setAttribute('popovertargetaction', 'hide');
+			element.click();
+			expect(popover.matches(':popover-open')).toBe(false);
+
+			// Clicking the button again should do nothing and not throw an error.
+			element.click();
+			expect(popover.matches(':popover-open')).toBe(false);
+		});
+
+		it('Toggles popover if popovertargetaction is toggle.', () => {
+			const popover = <HTMLElement>document.createElement('div');
+			popover.id = 'popover';
+			popover.setAttribute('popover', 'auto');
+			document.body.appendChild(popover);
+			expect(popover.matches(':popover-open')).toBe(false);
+
+			element.setAttribute('popovertarget', 'popover');
+			element.setAttribute('popovertargetaction', 'toggle');
+			element.click();
+			expect(popover.matches(':popover-open')).toBe(true);
+
+			element.click();
+			expect(popover.matches(':popover-open')).toBe(false);
+		});
+
+		it('Default action is toggle.', () => {
+			const popover = <HTMLElement>document.createElement('div');
+			popover.id = 'popover';
+			popover.setAttribute('popover', 'auto');
+			document.body.appendChild(popover);
+			expect(popover.matches(':popover-open')).toBe(false);
+
+			element.setAttribute('popovertarget', 'popover');
+			// popovertargetaction attribute is not set.
+			element.click();
+			expect(popover.matches(':popover-open')).toBe(true);
+
+			element.click();
+			expect(popover.matches(':popover-open')).toBe(false);
+		});
+
+		it('Works with type="button".', () => {
+			const popover = <HTMLElement>document.createElement('div');
+			popover.id = 'popover';
+			popover.setAttribute('popover', 'auto');
+			document.body.appendChild(popover);
+
+			element.type = 'button';
+			element.setAttribute('popovertarget', 'popover');
+			element.click();
+			expect(popover.matches(':popover-open')).toBe(true);
+
+			element.click();
+			expect(popover.matches(':popover-open')).toBe(false);
+		});
+
+		it('Works with type="reset".', () => {
+			const popover = <HTMLElement>document.createElement('div');
+			popover.id = 'popover';
+			popover.setAttribute('popover', 'auto');
+			document.body.appendChild(popover);
+
+			element.type = 'reset';
+			element.setAttribute('popovertarget', 'popover');
+			element.click();
+			expect(popover.matches(':popover-open')).toBe(true);
+
+			element.click();
+			expect(popover.matches(':popover-open')).toBe(false);
+		});
+
+		it('Passes button as source to beforetoggle event.', () => {
+			const popover = <HTMLElement>document.createElement('div');
+			popover.id = 'popover';
+			popover.setAttribute('popover', 'auto');
+			document.body.appendChild(popover);
+
+			let sourceReceived: EventTarget | null = null;
+			popover.addEventListener('beforetoggle', (event) => {
+				sourceReceived = (<ToggleEvent>event).source;
+			});
+
+			element.setAttribute('popovertarget', 'popover');
+			element.click();
+			expect(sourceReceived).toBe(element);
 		});
 	});
 });

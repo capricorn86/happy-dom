@@ -20,6 +20,7 @@ import { URL } from 'url';
 import MouseEvent from '../../event/events/MouseEvent.js';
 import type NodeList from '../node/NodeList.js';
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
+import HTMLElementUtility from '../html-element/HTMLElementUtility.js';
 
 // Valid input type states per HTML spec:
 // https://html.spec.whatwg.org/multipage/input.html#attr-input-type
@@ -1182,7 +1183,17 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @returns Popover target element.
 	 */
 	public get popoverTargetElement(): HTMLElement | null {
-		return this[PropertySymbol.popoverTargetElement];
+		if (this[PropertySymbol.popoverTargetElement] !== null) {
+			return this[PropertySymbol.popoverTargetElement];
+		}
+		const id = this.getAttribute('popovertarget');
+		if (!id) {
+			return null;
+		}
+		return <HTMLElement>(
+			((this[PropertySymbol.ownerDocument] || <any>this.getRootNode())?.getElementById?.(id) ??
+				null)
+		);
 	}
 
 	/**
@@ -1500,6 +1511,11 @@ export default class HTMLInputElement extends HTMLElement {
 					} else if (type === 'reset') {
 						form.reset();
 					}
+				}
+			} else if (type === 'button') {
+				const popover = this.popoverTargetElement;
+				if (popover) {
+					HTMLElementUtility.handlePopoverTargetAction(popover, this.popoverTargetAction, this);
 				}
 			}
 		}

@@ -70,6 +70,7 @@ import PointerEvent from './event/events/PointerEvent.js';
 import PopStateEvent from './event/events/PopStateEvent.js';
 import ProgressEvent from './event/events/ProgressEvent.js';
 import SubmitEvent from './event/events/SubmitEvent.js';
+import ToggleEvent from './event/events/ToggleEvent.js';
 import TouchEvent from './event/events/TouchEvent.js';
 import WheelEvent from './event/events/WheelEvent.js';
 import DOMException from './exception/DOMException.js';
@@ -238,6 +239,7 @@ import type IMediaQueryListInit from './event/events/IMediaQueryListInit.js';
 import type IMouseEventInit from './event/events/IMouseEventInit.js';
 import type IProgressEventInit from './event/events/IProgressEventInit.js';
 import type ISubmitEventInit from './event/events/ISubmitEventInit.js';
+import type IToggleEventInit from './event/events/IToggleEventInit.js';
 import type ITouchEventInit from './event/events/ITouchEventInit.js';
 import type IWheelEventInit from './event/events/IWheelEventInit.js';
 import type IFetchInterceptor from './fetch/types/IFetchInterceptor.js';
@@ -278,6 +280,7 @@ export type {
 	IProgressEventInit,
 	ISubmitEventInit,
 	ISyncResponse,
+	IToggleEventInit,
 	ITouchEventInit,
 	ITouchInit,
 	IUIEventInit,
@@ -475,6 +478,7 @@ export {
 	TextTrackCue,
 	TextTrackCueList,
 	TextTrackList,
+	ToggleEvent,
 	Touch,
 	TouchEvent,
 	TreeWalker,
