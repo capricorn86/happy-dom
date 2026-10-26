@@ -1745,8 +1745,7 @@ export default class Element
 
 		entry.elements.push(element);
 
-		// Only elements in the window's own document are exposed as named properties on the window
-		// Documents created by DOMParser or DOMImplementation share the window, but should not add properties to it
+		// We should not add the identifier when the element is in another document than the window's
 		if (document !== window.document) {
 			return;
 		}
