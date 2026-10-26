@@ -1274,6 +1274,23 @@ describe('QuerySelector', () => {
 			expect(elements[0] === container.children[1]).toBe(true);
 		});
 
+		it('Returns all elements matching attribute selectors with the "i" modifier.', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `<span data-kind="CheckBox"></span><span data-kind="checkbox"></span><span data-kind="text"></span>`;
+			const indexes = (selector: string): number[] =>
+				Array.from(container.querySelectorAll(selector)).map((element) =>
+					Array.from(container.children).indexOf(element)
+				);
+
+			expect(indexes('[data-kind="checkbox" i]')).toEqual([0, 1]);
+			expect(indexes("[data-kind='CHECKBOX' i]")).toEqual([0, 1]);
+			expect(indexes('[data-kind="checkbox"i]')).toEqual([0, 1]);
+			expect(indexes('[data-kind="checkbox" I]')).toEqual([0, 1]);
+			expect(indexes('[data-kind=checkbox i]')).toEqual([0, 1]);
+			expect(indexes('[data-kind="checkbox"]')).toEqual([1]);
+			expect(indexes('span:not([data-kind="CHECKBOX" i])')).toEqual([2]);
+		});
+
 		it('Returns all elements matching ":nth-child(odd)".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorNthChildHTML;
