@@ -12,16 +12,16 @@ describe('Headers', () => {
 
 			const headers2 = new Headers(headers1);
 
-			const entries: Record<string, string> = {};
+			const entries: Array<[string, string]> = [];
 
 			for (const [key, value] of headers2) {
-				entries[key] = value;
+				entries.push([key, value]);
 			}
 
-			expect(entries).toEqual({
-				'Content-Type': 'application/json',
-				'Content-Encoding': 'gzip'
-			});
+			expect(entries).toEqual([
+				['content-encoding', 'gzip'],
+				['content-type', 'application/json']
+			]);
 		});
 	});
 
@@ -40,8 +40,8 @@ describe('Headers', () => {
 			}
 
 			expect(entries).toEqual({
-				'Content-Type': 'application/json, x-www-form-urlencoded',
-				'Content-Encoding': 'gzip'
+				'content-type': 'application/json, x-www-form-urlencoded',
+				'content-encoding': 'gzip'
 			});
 		});
 	});
@@ -63,7 +63,7 @@ describe('Headers', () => {
 			}
 
 			expect(entries).toEqual({
-				'Content-Encoding': 'gzip'
+				'content-encoding': 'gzip'
 			});
 		});
 
@@ -102,8 +102,8 @@ describe('Headers', () => {
 				}
 
 				expect(entries).toEqual({
-					'Content-Type': 'x-www-form-urlencoded',
-					'Content-Encoding': 'gzip'
+					'content-type': 'x-www-form-urlencoded',
+					'content-encoding': 'gzip'
 				});
 			});
 		});
@@ -191,25 +191,25 @@ describe('Headers', () => {
 				expect(thisArgs[0]).toBe(window);
 				expect(thisArgs[1]).toBe(window);
 			});
-			it('Calls a callback for each entry.', () => {
+			it('Calls a callback for each entry with lowercase header names in sorted order.', () => {
 				const headers = new Headers();
 
 				headers.append('Content-Type', 'application/json');
 				headers.append('Content-Type', 'x-www-form-urlencoded');
 				headers.append('Content-Encoding', 'gzip');
 
-				const entries: Record<string, string> = {};
+				const entries: Array<[string, string]> = [];
 				const thisArg = {};
 				headers.forEach(function (this: Headers, value, key, parent) {
 					expect(this).toBe(thisArg);
 					expect(parent).toBe(headers);
-					entries[key] = value;
+					entries.push([key, value]);
 				}, thisArg);
 
-				expect(entries).toEqual({
-					'Content-Type': 'application/json, x-www-form-urlencoded',
-					'Content-Encoding': 'gzip'
-				});
+				expect(entries).toEqual([
+					['content-encoding', 'gzip'],
+					['content-type', 'application/json, x-www-form-urlencoded']
+				]);
 			});
 		});
 
@@ -227,7 +227,16 @@ describe('Headers', () => {
 					keys.push(key);
 				}
 
-				expect(keys).toEqual(['Content-Type', 'Content-Encoding']);
+				expect(keys).toEqual(['content-encoding', 'content-type']);
+			});
+
+			it('Returns lowercase header names sorted lexicographically.', () => {
+				const headers = new Headers({
+					'X-Custom-Header': 'value',
+					Authorization: 'Bearer token'
+				});
+
+				expect([...headers.keys()]).toEqual(['authorization', 'x-custom-header']);
 			});
 		});
 
@@ -245,49 +254,49 @@ describe('Headers', () => {
 					values.push(value);
 				}
 
-				expect(values).toEqual(['application/json, x-www-form-urlencoded', 'gzip']);
+				expect(values).toEqual(['gzip', 'application/json, x-www-form-urlencoded']);
 			});
 		});
 
 		describe('*entries()', () => {
-			it('Returns an iterator for keys and values.', () => {
+			it('Returns an iterator for keys and values with lowercase header names in sorted order.', () => {
 				const headers = new Headers();
 
 				headers.set('Content-Type', 'application/json');
 				headers.set('Content-Type', 'x-www-form-urlencoded');
 				headers.set('Content-Encoding', 'gzip');
 
-				const entries: Record<string, string> = {};
+				const entries: Array<[string, string]> = [];
 
 				for (const [key, value] of headers.entries()) {
-					entries[key] = value;
+					entries.push([key, value]);
 				}
 
-				expect(entries).toEqual({
-					'Content-Type': 'x-www-form-urlencoded',
-					'Content-Encoding': 'gzip'
-				});
+				expect(entries).toEqual([
+					['content-encoding', 'gzip'],
+					['content-type', 'x-www-form-urlencoded']
+				]);
 			});
 		});
 
 		describe('*[Symbol.iterator]()', () => {
-			it('Returns an iterator for keys and values.', () => {
+			it('Returns an iterator for keys and values with lowercase header names in sorted order.', () => {
 				const headers = new Headers();
 
 				headers.set('Content-Type', 'application/json');
 				headers.set('Content-Type', 'x-www-form-urlencoded');
 				headers.set('Content-Encoding', 'gzip');
 
-				const entries: Record<string, string> = {};
+				const entries: Array<[string, string]> = [];
 
 				for (const [key, value] of headers) {
-					entries[key] = value;
+					entries.push([key, value]);
 				}
 
-				expect(entries).toEqual({
-					'Content-Type': 'x-www-form-urlencoded',
-					'Content-Encoding': 'gzip'
-				});
+				expect(entries).toEqual([
+					['content-encoding', 'gzip'],
+					['content-type', 'x-www-form-urlencoded']
+				]);
 			});
 		});
 	});
