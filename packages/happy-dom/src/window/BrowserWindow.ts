@@ -754,7 +754,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	// Node.js Classes
 	public readonly URLSearchParams = URLSearchParams;
 	public readonly WritableStream = Stream.Writable;
-	public readonly ReadableStream = ReadableStream;
+	public readonly ReadableStream: typeof ReadableStream = ReadableStream;
 	public readonly TransformStream = Stream.Transform;
 	public readonly PerformanceObserver = PerformanceObserver;
 	public readonly PerformanceEntry = PerformanceEntry;
