@@ -1745,6 +1745,11 @@ export default class Element
 
 		entry.elements.push(element);
 
+		// We should not add the identifier when the element is in another document than the window's
+		if (document !== window.document) {
+			return;
+		}
+
 		if (entry.elements.length > 1) {
 			if (!entry.htmlCollection) {
 				entry.htmlCollection = new HTMLCollection<Element>(
