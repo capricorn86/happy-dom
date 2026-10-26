@@ -2939,6 +2939,45 @@ describe('CSSStyleDeclaration', () => {
 				'border: 2px solid green; border-radius: 2px; font-size: 12px;'
 			);
 		});
+
+		it('Serializes border side shorthands, outline and flex as shorthands.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			element.setAttribute('style', 'border-top: 1px solid red');
+			expect(declaration.cssText).toBe('border-top: 1px solid red;');
+
+			element.setAttribute('style', 'border-right: 1px solid red');
+			expect(declaration.cssText).toBe('border-right: 1px solid red;');
+
+			element.setAttribute('style', 'border-bottom: 1px solid red');
+			expect(declaration.cssText).toBe('border-bottom: 1px solid red;');
+
+			element.setAttribute('style', 'border-left: 1px solid red');
+			expect(declaration.cssText).toBe('border-left: 1px solid red;');
+
+			element.setAttribute('style', 'outline: 1px solid red');
+			expect(declaration.cssText).toBe('outline: red solid 1px;');
+
+			element.setAttribute('style', 'flex: 1 1 0px');
+			expect(declaration.cssText).toBe('flex: 1 1 0px;');
+
+			element.setAttribute('style', 'border-bottom: 1px solid red; border-bottom-color: blue');
+			expect(declaration.cssText).toBe('border-bottom: 1px solid blue;');
+
+			element.setAttribute('style', 'border-top: 1px solid red; border-bottom: 2px solid blue');
+			expect(declaration.cssText).toBe('border-top: 1px solid red; border-bottom: 2px solid blue;');
+
+			element.setAttribute('style', 'border-bottom-width: 2px');
+			expect(declaration.cssText).toBe('border-bottom-width: 2px;');
+
+			element.setAttribute('style', 'flex-grow: 2');
+			expect(declaration.cssText).toBe('flex-grow: 2;');
+
+			element.setAttribute('style', 'border: 1px solid red');
+			expect(declaration.cssText).toBe('border: 1px solid red;');
+		});
 	});
 
 	describe('set cssText()', () => {
