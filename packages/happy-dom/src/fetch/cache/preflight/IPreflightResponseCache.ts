@@ -1,30 +1,25 @@
-import type ICachedPreflightResponse from './ICachedPreflightResponse.js';
 import type ICacheablePreflightRequest from './ICacheablePreflightRequest.js';
 import type ICacheablePreflightResponse from './ICacheablePreflightResponse.js';
 
 /**
- * Fetch response cache.
+ * CORS-preflight response cache.
  */
 export default interface IPreflightResponseCache {
 	/**
-	 * Returns cached response.
+	 * Returns whether the cache contains entries that allow the preflight request to be skipped.
 	 *
 	 * @param request Request.
-	 * @returns Cached response.
+	 * @returns "true" if the preflight request can be skipped.
 	 */
-	get(request: ICacheablePreflightRequest): ICachedPreflightResponse | null;
+	matches(request: ICacheablePreflightRequest): boolean;
 
 	/**
-	 * Adds a cached response.
+	 * Adds cache entries based on a successful preflight response.
 	 *
 	 * @param request Request.
-	 * @param response Response.
-	 * @returns Cached response.
+	 * @param response Preflight response.
 	 */
-	add(
-		request: ICacheablePreflightRequest,
-		response: ICacheablePreflightResponse
-	): ICachedPreflightResponse | null;
+	add(request: ICacheablePreflightRequest, response: ICacheablePreflightResponse): void;
 
 	/**
 	 * Clears the cache.
