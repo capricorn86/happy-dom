@@ -2208,6 +2208,7 @@ describe('BrowserWindow', () => {
 		});
 
 		it('Triggers "load" event when all resources have been loaded.', async () => {
+			browser.settings.enableCSSFileLoading = true;
 			await new Promise((resolve) => {
 				const cssURL = 'https://localhost:8080/path/to/file.css';
 				const jsURL = 'https://localhost:8080/path/to/file.js';

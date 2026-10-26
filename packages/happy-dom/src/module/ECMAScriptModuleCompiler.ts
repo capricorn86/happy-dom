@@ -62,6 +62,11 @@ const IMPORT_REGEXP = /{([^}]+)}|\*\s+as\s+([a-zA-Z0-9-_$]+)|([a-zA-Z0-9-_$]+)/g
 const VALID_VARIABLE_NAME_REGEXP = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/;
 
 /**
+ * Valid local binding identifier regexp (supports Unicode identifiers).
+ */
+const VALID_BINDING_NAME_REGEXP = /^[\p{ID_Start}_$][\p{ID_Continue}$\u200c\u200d]*$/u;
+
+/**
  * Valid preceding token before a statement.
  */
 const PRECEDING_STATEMENT_TOKEN_REGEXP = /['"`(){}\s;=><\[\]+-,:&]/;
@@ -274,8 +279,8 @@ export default class ECMAScriptModuleCompiler {
 						for (const part of parts) {
 							const nameParts = part.trim().split(/\s+as\s+/);
 							const alias = (nameParts[1] || nameParts[0]).replace(/["']/g, '');
-							const name = nameParts[0].replace(/["']/g, '');
-							if (alias && name) {
+							const name = nameParts[0].replace(/["'\\\r\n\u2028\u2029]/g, '');
+							if (alias && name && VALID_BINDING_NAME_REGEXP.test(alias)) {
 								if (name === alias) {
 									properties.push({ name });
 								} else {
@@ -286,7 +291,7 @@ export default class ECMAScriptModuleCompiler {
 						if (!match[7] || match[7] === 'esm') {
 							resolvableCircularImports.push({ url, properties });
 						}
-						newCodeStart += `let {${properties.map((property) => (property.alias ? `"${property.name}": ${property.alias}` : property.name)).join(', ')}} = $happy_dom.imports.get('${url}')${match[8]}`;
+						newCodeStart += `let {${properties.map((property) => (property.alias ? `${JSON.stringify(property.name)}: ${property.alias}` : property.name)).join(', ')}} = $happy_dom.imports.get('${url}')${match[8]}`;
 					} else if (importMatch[2]) {
 						// Import all as
 						newCodeStart += `const ${importMatch[2]} = $happy_dom.imports.get('${url}')${match[8]}`;

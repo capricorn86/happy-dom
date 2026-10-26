@@ -11,6 +11,7 @@ import type ICookie from '../cookie/ICookie.js';
 import URL from '../url/URL.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
 import * as PropertySymbol from '../PropertySymbol.js';
+import CookieDomainUtility from '../cookie/urilities/CookieDomainUtility.js';
 
 /**
  * CookieStore.
@@ -123,6 +124,16 @@ export default class CookieStore extends EventTarget {
 		}
 
 		const originURL = <URL>(<unknown>this.#window.location);
+		if (
+			options.domain !== undefined &&
+			options.domain !== null &&
+			(options.domain.startsWith('.') ||
+				CookieDomainUtility.validateDomain(options.domain, originURL.hostname) === null)
+		) {
+			throw new this.#window.TypeError(
+				`Failed to execute 'set' on 'CookieStore': Domain must match the document host and must not start with a dot.`
+			);
+		}
 
 		// Convert expires to Date if it's a number (Unix timestamp in milliseconds)
 		let expires: Date | null = null;
