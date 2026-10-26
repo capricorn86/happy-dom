@@ -43,6 +43,12 @@ And much more..
 
 ## Sponsors
 
+<p align="center"><b>Gold Sponsors</b></p>
+
+<p align="center">
+    <a href="https://www.cloudflare.com"><img alt="Cloudflare" width="100px" src="https://avatars.githubusercontent.com/u/314135?s=200&v=4"></a>
+</p>
+
 <p align="center"><b>Sponsors</b></p>
 
 <p align="center">
