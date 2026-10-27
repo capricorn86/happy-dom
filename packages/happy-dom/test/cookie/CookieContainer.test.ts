@@ -116,6 +116,30 @@ describe('CookieContainer', () => {
 			expect(cookieContainer.getCookies().map((cookie) => cookie.value)).toEqual(['host-only']);
 		});
 
+		it.each(['0', '-1'])('Deletes a cookie immediately when "Max-Age" is %s.', (maxAge) => {
+			vi.spyOn(Date, 'now').mockImplementation(() => 1000000);
+			const originURL = new URL('https://example.com/');
+			cookieContainer.addCookies([
+				<ICookie>CookieStringUtility.stringToCookie(originURL, 'key=value; Path=/;')
+			]);
+			expect(cookieContainer.getCookies(originURL)).toHaveLength(1);
+
+			const result = cookieContainer.addCookies([
+				<ICookie>CookieStringUtility.stringToCookie(originURL, `key=; Path=/; Max-Age=${maxAge};`)
+			]);
+
+			expect(result.deleted.map((cookie) => cookie.key)).toEqual(['key']);
+			expect(cookieContainer.getCookies(originURL)).toEqual([]);
+		});
+
+		it.each(['0', '-1'])('Uses an already-expired date for "Max-Age" %s.', (maxAge) => {
+			const cookie = CookieStringUtility.stringToCookie(
+				new URL('https://example.com/'),
+				`key=value; Max-Age=${maxAge};`
+			);
+			expect(cookie?.expires).toEqual(new Date(0));
+		});
+
 		it.each(['localhost', 'com', 'co.uk', 'github.io'])(
 			'Treats a public suffix Domain=%s set by itself as host-only.',
 			(host) => {
