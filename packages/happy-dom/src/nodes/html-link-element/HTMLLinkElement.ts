@@ -495,7 +495,7 @@ export default class HTMLLinkElement extends HTMLElement {
 		} else {
 			const styleSheet = new this[PropertySymbol.ownerDocument][
 				PropertySymbol.window
-			].CSSStyleSheet();
+			].CSSStyleSheet({ href: absoluteURL });
 			styleSheet.replaceSync(response!.content);
 			this[PropertySymbol.sheet] = styleSheet;
 
