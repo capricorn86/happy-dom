@@ -270,11 +270,17 @@ describe('Selection', () => {
 			expect(selection.rangeCount).toBe(0);
 		});
 
-		it('Triggers a "selectionchange" event.', () => {
+		it('Triggers a "selectionchange" event.', async () => {
 			let triggeredEvent: Event | null = null;
 			document.addEventListener('selectionchange', (event) => (triggeredEvent = event));
 			const range = document.createRange();
 			selection.addRange(range);
+
+			expect(triggeredEvent).toBe(null);
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect((<Event>(<unknown>triggeredEvent)).type).toBe('selectionchange');
 			expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
 			expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 		});
@@ -328,12 +334,21 @@ describe('Selection', () => {
 			);
 		});
 
-		it('Triggers a "selectionchange" event.', () => {
+		it('Triggers a "selectionchange" event.', async () => {
 			let triggeredEvent: Event | null = null;
 			const range = document.createRange();
 			selection.addRange(range);
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
 			document.addEventListener('selectionchange', (event) => (triggeredEvent = event));
 			selection.removeRange(range);
+
+			expect(triggeredEvent).toBe(null);
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect((<Event>(<unknown>triggeredEvent)).type).toBe('selectionchange');
 			expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
 			expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 		});
@@ -348,12 +363,21 @@ describe('Selection', () => {
 				expect(selection.rangeCount).toBe(0);
 			});
 
-			it('Triggers a "selectionchange" event.', () => {
+			it('Triggers a "selectionchange" event.', async () => {
 				let triggeredEvent: Event | null = null;
 				const range = document.createRange();
 				selection.addRange(range);
+
+				await new Promise((resolve) => setTimeout(resolve, 1));
+
 				document.addEventListener('selectionchange', (event) => (triggeredEvent = event));
 				selection[method]();
+
+				expect(triggeredEvent).toBe(null);
+
+				await new Promise((resolve) => setTimeout(resolve, 1));
+
+				expect((<Event>(<unknown>triggeredEvent)).type).toBe('selectionchange');
 				expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
 				expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 			});
@@ -405,17 +429,24 @@ describe('Selection', () => {
 				expect(newRange.endOffset).toBe(2);
 			});
 
-			it('Triggers a "selectionchange" event.', () => {
+			it('Triggers a "selectionchange" event.', async () => {
 				const range = document.createRange();
 				const text = document.createTextNode('Text');
 				let triggeredEvent: Event | null = null;
 
 				selection.addRange(range);
 
+				await new Promise((resolve) => setTimeout(resolve, 1));
+
 				document.addEventListener('selectionchange', (event) => (triggeredEvent = event));
 
 				selection[method](text, 2);
 
+				expect(triggeredEvent).toBe(null);
+
+				await new Promise((resolve) => setTimeout(resolve, 1));
+
+				expect((<Event>(<unknown>triggeredEvent)).type).toBe('selectionchange');
 				expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
 				expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 			});
@@ -468,16 +499,23 @@ describe('Selection', () => {
 			);
 		});
 
-		it('Triggers a "selectionchange" event.', () => {
+		it('Triggers a "selectionchange" event.', async () => {
 			const range = document.createRange();
 			let triggeredEvent: Event | null = null;
 
 			selection.addRange(range);
 
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
 			document.addEventListener('selectionchange', (event) => (triggeredEvent = event));
 
 			selection.collapseToEnd();
 
+			expect(triggeredEvent).toBe(null);
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect((<Event>(<unknown>triggeredEvent)).type).toBe('selectionchange');
 			expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
 			expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 		});
@@ -516,16 +554,23 @@ describe('Selection', () => {
 			);
 		});
 
-		it('Triggers a "selectionchange" event.', () => {
+		it('Triggers a "selectionchange" event.', async () => {
 			const range = document.createRange();
 			let triggeredEvent: Event | null = null;
 
 			selection.addRange(range);
 
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
 			document.addEventListener('selectionchange', (event) => (triggeredEvent = event));
 
 			selection.collapseToStart();
 
+			expect(triggeredEvent).toBe(null);
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect((<Event>(<unknown>triggeredEvent)).type).toBe('selectionchange');
 			expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
 			expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 		});
@@ -649,7 +694,7 @@ describe('Selection', () => {
 			);
 		});
 
-		it('Triggers a "selectionchange" event.', () => {
+		it('Triggers a "selectionchange" event.', async () => {
 			const range = document.createRange();
 			const start = document.createTextNode('start');
 			const end = document.createTextNode('end');
@@ -665,10 +710,17 @@ describe('Selection', () => {
 
 			selection.addRange(range);
 
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
 			document.addEventListener('selectionchange', (event) => (triggeredEvent = event));
 
 			selection.extend(after, 3);
 
+			expect(triggeredEvent).toBe(null);
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect((<Event>(<unknown>triggeredEvent)).type).toBe('selectionchange');
 			expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
 			expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 		});
@@ -732,7 +784,7 @@ describe('Selection', () => {
 			);
 		});
 
-		it('Triggers a "selectionchange" event.', () => {
+		it('Triggers a "selectionchange" event.', async () => {
 			const container = document.createElement('div');
 			const child = document.createTextNode('child');
 			let triggeredEvent: Event | null = null;
@@ -743,6 +795,11 @@ describe('Selection', () => {
 
 			selection.selectAllChildren(container);
 
+			expect(triggeredEvent).toBe(null);
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect((<Event>(<unknown>triggeredEvent)).type).toBe('selectionchange');
 			expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
 			expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 		});
@@ -824,7 +881,7 @@ describe('Selection', () => {
 			);
 		});
 
-		it('Triggers a "selectionchange" event.', () => {
+		it('Triggers a "selectionchange" event.', async () => {
 			const start = document.createTextNode('start');
 			const end = document.createTextNode('end');
 			let triggeredEvent: Event | null = null;
@@ -836,6 +893,11 @@ describe('Selection', () => {
 
 			selection.setBaseAndExtent(start, 1, end, 2);
 
+			expect(triggeredEvent).toBe(null);
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect((<Event>(<unknown>triggeredEvent)).type).toBe('selectionchange');
 			expect((<Event>(<unknown>triggeredEvent)).bubbles).toBe(false);
 			expect((<Event>(<unknown>triggeredEvent)).cancelable).toBe(false);
 		});
@@ -864,6 +926,133 @@ describe('Selection', () => {
 			selection.addRange(range);
 
 			expect(selection.toString()).toBe('tarten');
+		});
+	});
+
+	describe('selectionchange event', () => {
+		it('Queues the event as a task instead of dispatching it synchronously.', async () => {
+			const isDispatchedAfterCurrentTask: boolean[] = [];
+			let isCurrentTaskDone = false;
+
+			document.addEventListener('selectionchange', () =>
+				isDispatchedAfterCurrentTask.push(isCurrentTaskDone)
+			);
+
+			selection.addRange(document.createRange());
+
+			isCurrentTaskDone = true;
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(isDispatchedAfterCurrentTask).toEqual([true]);
+		});
+
+		it('Dispatches the event at the document.', async () => {
+			let target: unknown = null;
+
+			document.addEventListener('selectionchange', (event) => (target = event.target));
+
+			selection.addRange(document.createRange());
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(target).toBe(document);
+		});
+
+		it('Coalesces multiple selection changes made within the same task into a single event.', async () => {
+			const range = document.createRange();
+			let eventCount = 0;
+
+			document.addEventListener('selectionchange', () => eventCount++);
+
+			selection.addRange(range);
+			selection.removeAllRanges();
+			selection.addRange(range);
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(eventCount).toBe(1);
+		});
+
+		it('Dispatches one event for each task that changes the selection.', async () => {
+			const range = document.createRange();
+			let eventCount = 0;
+
+			document.addEventListener('selectionchange', () => eventCount++);
+
+			selection.addRange(range);
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(eventCount).toBe(1);
+
+			selection.removeAllRanges();
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(eventCount).toBe(2);
+		});
+
+		it('Does not dispatch the event when the selection is unchanged.', async () => {
+			const range = document.createRange();
+			let eventCount = 0;
+
+			document.addEventListener('selectionchange', () => eventCount++);
+
+			// There is no range to remove.
+			selection.removeAllRanges();
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(eventCount).toBe(0);
+
+			selection.addRange(range);
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(eventCount).toBe(1);
+
+			// The range is already added.
+			selection.addRange(range);
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(eventCount).toBe(1);
+		});
+
+		it('Queues a new event when a listener changes the selection.', async () => {
+			const range = document.createRange();
+			let eventCount = 0;
+
+			document.addEventListener('selectionchange', () => {
+				eventCount++;
+				if (eventCount < 3) {
+					if (selection.rangeCount) {
+						selection.removeAllRanges();
+					} else {
+						selection.addRange(range);
+					}
+				}
+			});
+
+			selection.addRange(range);
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(eventCount).toBe(3);
+		});
+
+		it('Does not dispatch the event after the window has been closed.', async () => {
+			let eventCount = 0;
+
+			document.addEventListener('selectionchange', () => eventCount++);
+
+			selection.addRange(document.createRange());
+
+			await window.happyDOM.close();
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(eventCount).toBe(0);
 		});
 	});
 });
