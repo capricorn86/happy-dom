@@ -659,6 +659,48 @@ describe('HTMLElement', () => {
 			expect(target).toBe(element);
 			expect(currentTarget).toBe(element);
 		});
+
+		it("Ignores a click event triggered from within the element's own click event listener.", () => {
+			let clickCount = 0;
+
+			element.addEventListener('click', () => {
+				clickCount++;
+				element.click();
+			});
+
+			element.click();
+
+			expect(clickCount).toBe(1);
+		});
+
+		it('Triggers a click event once when a parent element listener triggers a click on its child.', () => {
+			const parent = <HTMLElement>document.createElement('div');
+			const child = <HTMLElement>document.createElement('input');
+			let clickCount = 0;
+
+			parent.appendChild(child);
+			document.body.appendChild(parent);
+
+			parent.addEventListener('click', () => {
+				clickCount++;
+				child.click();
+			});
+
+			child.click();
+
+			expect(clickCount).toBe(1);
+		});
+
+		it('Triggers a new click event when the previous one has finished.', () => {
+			let clickCount = 0;
+
+			element.addEventListener('click', () => clickCount++);
+
+			element.click();
+			element.click();
+
+			expect(clickCount).toBe(2);
+		});
 	});
 
 	describe('blur()', () => {
