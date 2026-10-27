@@ -1,4 +1,5 @@
 import type ShadowRoot from '../../../nodes/shadow-root/ShadowRoot.js';
+import type ICachedComputedStyleResult from '../../../nodes/node/ICachedComputedStyleResult.js';
 import * as PropertySymbol from '../../../PropertySymbol.js';
 import type Element from '../../../nodes/element/Element.js';
 import type Document from '../../../nodes/document/Document.js';
@@ -171,7 +172,7 @@ export default class CSSComputedStyle {
 		// Concatenates all parent element CSS to one string.
 		const inheritedPropertyManager = new CSSPropertyManager();
 		let propertyManager = parentElements[0].propertyManager ?? new CSSPropertyManager();
-		const cssVariables: { [k: string]: string } = {};
+		let cssVariables: { [k: string]: string } = {};
 		let rootFontSize: string | number = 16;
 		let parentFontSize: string | number = 16;
 
@@ -190,7 +191,14 @@ export default class CSSComputedStyle {
 						);
 					}
 				}
-				Object.assign(cssVariables, parentElement.propertyManager.getVariables());
+				// The cache holds all custom properties computed on the element, including the
+				// inherited and the invalid ones, so it replaces what its ancestors contributed.
+				const cachedVariables = this.getCachedCSSVariables(parentElement.element);
+				if (cachedVariables) {
+					cssVariables = Object.assign({}, cachedVariables);
+				} else {
+					Object.assign(cssVariables, parentElement.propertyManager.getVariables());
+				}
 				propertyManager = inheritedPropertyManager.clone();
 			} else {
 				parentElement.cssTexts.sort((a, b) => a.priorityWeight - b.priorityWeight);
@@ -225,10 +233,28 @@ export default class CSSComputedStyle {
 				const rulesAndVariables = CSSTextParser.parse(elementCSSText);
 				const rules = rulesAndVariables.rules;
 
-				Object.assign(cssVariables, rulesAndVariables.variables);
+				// Custom properties are computed on the element that declares them, so that
+				// the values inherited by its children are already substituted.
+				const declaredVariables: { [k: string]: string } = {};
+				const importantVariables = new Set<string>();
+				for (const { name, value, important } of rules) {
+					if (name[0] === '-' && name[1] === '-' && (important || !importantVariables.has(name))) {
+						declaredVariables[name] = value;
+						if (important) {
+							importantVariables.add(name);
+						}
+					}
+				}
+				Object.assign(
+					cssVariables,
+					CSSVariableFormatter.resolveCustomProperties(declaredVariables, cssVariables)
+				);
 
 				for (const { name, value, important } of rules) {
-					const parsedValue = CSSVariableFormatter.resolveVariables(value.trim(), cssVariables);
+					const parsedValue =
+						name[0] === '-' && name[1] === '-'
+							? cssVariables[name]
+							: CSSVariableFormatter.resolveVariables(value.trim(), cssVariables);
 
 					if (
 						parsedValue &&
@@ -275,8 +301,9 @@ export default class CSSComputedStyle {
 					}
 				}
 
-				const cachedResult = {
-					result: new WeakRef(propertyManager)
+				const cachedResult: ICachedComputedStyleResult = {
+					result: new WeakRef(propertyManager),
+					cssVariables: Object.assign({}, cssVariables)
 				};
 				parentElement.element![PropertySymbol.cache].computedStyle = cachedResult;
 				parentElement.element![PropertySymbol.ownerDocument][
@@ -498,5 +525,18 @@ export default class CSSComputedStyle {
 			return null;
 		}
 		return node[PropertySymbol.cache].computedStyle?.result?.deref() || null;
+	}
+
+	/**
+	 * Returns the custom properties computed on a node whose computed style is cached.
+	 *
+	 * @param node Node.
+	 * @returns Custom properties, or null if the node has none cached.
+	 */
+	private getCachedCSSVariables(node: Node | null): { [k: string]: string } | null {
+		if (!node || !this.getCachedPropertyManager(node)) {
+			return null;
+		}
+		return node[PropertySymbol.cache].computedStyle?.cssVariables ?? null;
 	}
 }
