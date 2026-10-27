@@ -1395,6 +1395,37 @@ describe('QuerySelector', () => {
 			expect(document.querySelectorAll(':focus-visible')[0]).toBe(div);
 		});
 
+		it('Returns elements for selector with CSS pseudo ":focus-within"', () => {
+			document.body.innerHTML = QuerySelectorHTML;
+			const outerDiv = <HTMLElement>document.querySelector('div.class1');
+			const innerDiv = <HTMLElement>document.querySelector('div.class1 > div.class1');
+			const span = <HTMLElement>document.querySelector('span.class1');
+
+			expect(Array.from(document.querySelectorAll(':focus-within'))).toEqual([
+				document.documentElement,
+				document.body
+			]);
+
+			span.focus();
+
+			expect(Array.from(document.querySelectorAll(':focus-within'))).toEqual([
+				document.documentElement,
+				document.body,
+				outerDiv,
+				innerDiv,
+				span
+			]);
+
+			innerDiv.focus();
+
+			expect(Array.from(document.querySelectorAll(':focus-within'))).toEqual([
+				document.documentElement,
+				document.body,
+				outerDiv,
+				innerDiv
+			]);
+		});
+
 		it('Returns element matching selector with CSS pseudo ":has()"', () => {
 			const container = document.createElement('div');
 			container.innerHTML = `
@@ -2071,6 +2102,20 @@ describe('QuerySelector', () => {
 			expect(document.querySelector(':focus-visible')).toBe(div);
 		});
 
+		it('Returns element for selector with CSS pseudo ":focus-within"', () => {
+			document.body.innerHTML = QuerySelectorHTML;
+			const span = <HTMLElement>document.querySelector('span.class1');
+
+			expect(document.querySelector('span:focus-within')).toBe(null);
+
+			span.focus();
+
+			expect(document.querySelector(':focus-within')).toBe(document.documentElement);
+			expect(document.querySelector('div:focus-within')).toBe(document.querySelector('div.class1'));
+			expect(document.querySelector('span:focus-within')).toBe(span);
+			expect(document.querySelector('h1:focus-within')).toBe(null);
+		});
+
 		it('Handles class names with line breaks', () => {
 			const div = document.createElement('div');
 			div.innerHTML = `
@@ -2313,6 +2358,47 @@ describe('QuerySelector', () => {
 			expect(span.matches(':focus-visible')).toBe(false);
 			expect(div.matches(':focus')).toBe(true);
 			expect(div.matches(':focus-visible')).toBe(true);
+		});
+
+		it('Returns true for selector with CSS pseudo ":focus-within"', () => {
+			document.body.innerHTML = QuerySelectorHTML;
+			const outerDiv = <HTMLElement>document.querySelector('div.class1');
+			const innerDiv = <HTMLElement>document.querySelector('div.class1 > div.class1');
+			const spans = <HTMLElement[]>Array.from(document.querySelectorAll('span.class1'));
+			const heading = <HTMLElement>document.querySelector('h1');
+
+			expect(outerDiv.matches(':focus-within')).toBe(false);
+			expect(spans[0].matches(':focus-within')).toBe(false);
+
+			spans[0].focus();
+
+			expect(spans[0].matches(':focus-within')).toBe(true);
+			expect(innerDiv.matches(':focus-within')).toBe(true);
+			expect(outerDiv.matches(':focus-within')).toBe(true);
+			expect(outerDiv.matches('div:focus-within > div:focus-within')).toBe(false);
+			expect(innerDiv.matches('div:focus-within > div:focus-within')).toBe(true);
+			expect(spans[1].matches(':focus-within')).toBe(false);
+			expect(heading.matches(':focus-within')).toBe(false);
+
+			spans[0].blur();
+
+			expect(spans[0].matches(':focus-within')).toBe(false);
+			expect(outerDiv.matches(':focus-within')).toBe(false);
+		});
+
+		it('Returns true for selector with CSS pseudo ":focus-within" on ancestors of a shadow host with focus inside its shadow root', () => {
+			const host = document.createElement('div');
+			const button = document.createElement('button');
+
+			host.attachShadow({ mode: 'open' }).appendChild(button);
+			document.body.appendChild(host);
+
+			expect(host.matches(':focus-within')).toBe(false);
+
+			button.focus();
+
+			expect(host.matches(':focus-within')).toBe(true);
+			expect(document.body.matches(':focus-within')).toBe(true);
 		});
 
 		it('Throws an error when providing an invalid selector', () => {
