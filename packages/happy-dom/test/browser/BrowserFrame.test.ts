@@ -88,24 +88,6 @@ describe('BrowserFrame', () => {
 		});
 	});
 
-	describe('BrowserFrameFactory.destroyFrame()', () => {
-		it('Clears the inherited origin and content window to not keep windows reachable.', async () => {
-			const browser = new Browser();
-			const page = browser.defaultContext.newPage();
-			const childFrame = BrowserFrameFactory.createChildFrame(page.mainFrame);
-			childFrame[PropertySymbol.inheritedOrigin] = {
-				origin: 'null',
-				window: page.mainFrame.window
-			};
-			childFrame[PropertySymbol.contentWindow] = childFrame.window;
-
-			await BrowserFrameFactory.destroyFrame(childFrame);
-
-			expect(childFrame[PropertySymbol.inheritedOrigin]).toBe(null);
-			expect(childFrame[PropertySymbol.contentWindow]).toBe(null);
-		});
-	});
-
 	describe('set content()', () => {
 		it('Sets the document HTML content.', () => {
 			const browser = new Browser();

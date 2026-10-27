@@ -4,6 +4,9 @@ import type BrowserWindow from '../../window/BrowserWindow.js';
  * Origin of a document.
  *
  * "about:blank", "about:srcdoc" and "javascript:" documents inherit the origin of the document that created them.
+ * "data:" documents get a new opaque origin.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy#inherited_origins
  */
 export default interface IInheritedOrigin {
 	/**

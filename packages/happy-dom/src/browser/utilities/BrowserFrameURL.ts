@@ -14,6 +14,7 @@ export default class BrowserFrameURL {
 	 * "about:blank", "about:srcdoc" and "javascript:" documents inherit the origin that the initiator had when the document was created.
 	 * The inherited origin is a snapshot, so it isn't affected if the URL of the initiator changes afterwards.
 	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy#inherited_origins
 	 * @param frame Frame.
 	 * @returns Inherited origin.
 	 */

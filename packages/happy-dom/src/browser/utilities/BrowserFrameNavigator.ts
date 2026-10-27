@@ -338,7 +338,10 @@ export default class BrowserFrameNavigator {
 	 * Updates the cross-origin isolation between a frame and its ancestors.
 	 *
 	 * Sets "parent" and "top" of the frame's window, and the "contentWindow" that the parent frame gets access to.
+	 * Windows with a different origin are only given the limited access of a cross-origin window.
 	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy#cross-origin_script_api_access
+	 * @see https://html.spec.whatwg.org/multipage/browsers.html#cross-origin-objects
 	 * @param frame Frame.
 	 */
 	public static updateCrossOriginIsolation(frame: IBrowserFrame): void {
