@@ -2914,6 +2914,24 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	}
 
 	/**
+	 * Reports an error: outputs it to the console and dispatches an "error"
+	 * event at the global object, the same way as an unhandled exception.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/webappapis.html#dom-reporterror
+	 * @param error Error.
+	 */
+	public reportError(error: unknown): void {
+		this.#browserFrame.page.console.error(error);
+		this.dispatchEvent(
+			new ErrorEvent('error', {
+				message: error instanceof Error ? error.message : '',
+				// Browsers report any value thrown, not only Error instances.
+				error: <Error>error
+			})
+		);
+	}
+
+	/**
 	 * Dispatches an error event and outputs the error to the console.
 	 *
 	 * @param error Error.
