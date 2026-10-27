@@ -10,9 +10,6 @@ export default class BrowserFrameFactory {
 	/**
 	 * Creates a new frame.
 	 *
-	 * The initial "about:blank" document of the frame inherits the origin of the parent frame.
-	 * The BrowserFrameNavigator restricts "parent" and "top" if the frame is navigated to a document with another origin.
-	 *
 	 * @param parentFrame Parent frame.
 	 * @returns Frame.
 	 */
@@ -23,6 +20,7 @@ export default class BrowserFrameFactory {
 		(<IBrowserFrame>frame.parentFrame) = parentFrame;
 		parentFrame.childFrames.push(frame);
 		frame[PropertySymbol.inheritedOrigin] = BrowserFrameURL.getInheritedOrigin(parentFrame);
+		frame[PropertySymbol.contentWindow] = frame.window;
 		frame.window[PropertySymbol.parent] = parentFrame.window;
 		frame.window[PropertySymbol.top] = parentFrame.window.top;
 		return frame;

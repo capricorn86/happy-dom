@@ -168,7 +168,7 @@ describe('BrowserFrame', () => {
 			const childFrame = BrowserFrameFactory.createChildFrame(page.mainFrame);
 
 			expect(childFrame.window.parent === page.mainFrame.window).toBe(true);
-			expect(childFrame[PropertySymbol.contentWindow]).toBe(null);
+			expect(childFrame[PropertySymbol.contentWindow] === childFrame.window).toBe(true);
 
 			childFrame.url = 'https://other.example/';
 

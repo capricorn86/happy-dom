@@ -240,8 +240,7 @@ export default class HTMLIFrameElement extends HTMLElement {
 	 * @returns Content window.
 	 */
 	public get contentWindow(): BrowserWindow | CrossOriginBrowserWindow | null {
-		// The navigator restricts the window when the origin is different. The frame hasn't navigated before the window is created for the initial "about:blank" page and for "srcdoc".
-		return this.#iframe?.[PropertySymbol.contentWindow] ?? this.#iframe?.window ?? null;
+		return this.#iframe?.[PropertySymbol.contentWindow] ?? null;
 	}
 
 	/**
