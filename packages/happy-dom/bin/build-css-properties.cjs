@@ -52,7 +52,7 @@ async function writePropertyList(rules) {
 	};
 
 	for (const rule of rules) {
-		if (rule[0] !== '-') {
+		if (isSupportedProperty(rule)) {
 			const camelCaseRule = kebabToCamelCase(rule);
 			ruleMap.kebabCase[rule] = camelCaseRule;
 			ruleMap.camelCase[camelCaseRule] = rule;
@@ -76,6 +76,12 @@ async function writePropertyList(rules) {
 	);
 }
 
+function isSupportedProperty(rule) {
+	// Chromium lists its "-internal-", "-alternative-" and "-epub-" properties
+	// next to the "-webkit-" ones that pages can actually use.
+	return rule[0] !== '-' || rule.startsWith('-webkit-');
+}
+
 function kebabToCamelCase(text) {
 	const parts = text.split('-');
 	for (let i = 0, max = parts.length; i < max; i++) {
@@ -95,7 +101,7 @@ async function writInterface(rules) {
 
 	for (let i = 0; i < rules.length; i++) {
 		const rule = rules[i];
-		if (rule[0] !== '-') {
+		if (isSupportedProperty(rule)) {
 			interfaceString += `\t${kebabToCamelCase(rule)}: string;\n`;
 			if (rule.includes('-')) {
 				interfaceString += `\t'${rule}': string;\n`;
