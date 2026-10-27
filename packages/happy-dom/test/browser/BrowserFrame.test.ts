@@ -15,6 +15,8 @@ import Headers from '../../src/fetch/Headers';
 import * as PropertySymbol from '../../src/PropertySymbol';
 import type HashChangeEvent from '../../src/event/events/HashChangeEvent';
 import CrossOriginBrowserWindow from '../../src/window/CrossOriginBrowserWindow';
+import type BrowserPage from '../../src/browser/BrowserPage';
+import type IBrowserFrame from '../../src/browser/types/IBrowserFrame';
 
 const STACK_TRACE_REGEXP = />.+$\s*/gm;
 
@@ -326,44 +328,107 @@ Task #1
 				});
 			};
 
-			it.each([
-				// [parent URL, child URL, parent accessible, top accessible]
-				['https://parent.example/', 'https://parent.example/child', true, false],
-				['https://parent.example/', 'https://top.example/child', false, true],
-				['https://parent.example/', 'https://other.example/', false, false],
-				['https://parent.example/', 'about:blank', true, false],
-				['about:blank', 'https://top.example/child', true, true],
-				['about:blank', 'https://other.example/', false, false]
-			])(
-				'Restricts parent and top independently for parent "%s" and child "%s".',
-				async (parentURL, childURL, isParentAccessible, isTopAccessible) => {
-					const browser = new Browser();
-					const page = browser.newPage();
-					page.mainFrame.url = 'https://top.example/';
-					const parentFrame = BrowserFrameFactory.createChildFrame(page.mainFrame);
-					parentFrame.url = parentURL;
-					const frame = BrowserFrameFactory.createChildFrame(parentFrame);
-					mockFetch(page.mainFrame.window);
+			const navigateChildFrame = async (
+				parentURL: string,
+				childURL: string
+			): Promise<{
+				browser: Browser;
+				page: BrowserPage;
+				parentFrame: IBrowserFrame;
+				frame: IBrowserFrame;
+			}> => {
+				const browser = new Browser();
+				const page = browser.newPage();
+				page.mainFrame.url = 'https://top.example/';
+				const parentFrame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+				parentFrame.url = parentURL;
+				const frame = BrowserFrameFactory.createChildFrame(parentFrame);
+				mockFetch(page.mainFrame.window);
 
-					await frame.goto(childURL);
+				await frame.goto(childURL);
 
-					if (isParentAccessible) {
-						expect(frame.window.parent).toBe(parentFrame.window);
-					} else {
-						expect(frame.window.parent).toBeInstanceOf(CrossOriginBrowserWindow);
-						expect(frame.window.parent.document).toBeUndefined();
-					}
+				return { browser, page, parentFrame, frame };
+			};
 
-					if (isTopAccessible) {
-						expect(frame.window.top).toBe(page.mainFrame.window);
-					} else {
-						expect(frame.window.top).toBeInstanceOf(CrossOriginBrowserWindow);
-						expect(frame.window.top.document).toBeUndefined();
-					}
+			it('Restricts the top window but not the parent window when the child has the same origin as the parent.', async () => {
+				const { browser, page, parentFrame, frame } = await navigateChildFrame(
+					'https://parent.example/',
+					'https://parent.example/child'
+				);
 
-					await browser.close();
-				}
-			);
+				expect(frame.window.parent).toBe(parentFrame.window);
+				expect(frame.window.top).toBeInstanceOf(CrossOriginBrowserWindow);
+				expect(frame.window.top.document).toBeUndefined();
+				expect(frame.window.top).not.toBe(page.mainFrame.window);
+
+				await browser.close();
+			});
+
+			it('Restricts the parent window but not the top window when the child has the same origin as the top.', async () => {
+				const { browser, page, frame } = await navigateChildFrame(
+					'https://parent.example/',
+					'https://top.example/child'
+				);
+
+				expect(frame.window.parent).toBeInstanceOf(CrossOriginBrowserWindow);
+				expect(frame.window.parent.document).toBeUndefined();
+				expect(frame.window.top).toBe(page.mainFrame.window);
+
+				await browser.close();
+			});
+
+			it('Restricts both the parent and top window when the child has a different origin than both.', async () => {
+				const { browser, frame } = await navigateChildFrame(
+					'https://parent.example/',
+					'https://other.example/'
+				);
+
+				expect(frame.window.parent).toBeInstanceOf(CrossOriginBrowserWindow);
+				expect(frame.window.parent.document).toBeUndefined();
+				expect(frame.window.top).toBeInstanceOf(CrossOriginBrowserWindow);
+				expect(frame.window.top.document).toBeUndefined();
+
+				await browser.close();
+			});
+
+			it('Restricts the top window but not the parent window when the child navigates to "about:blank" and the parent has another origin than the top.', async () => {
+				const { browser, parentFrame, frame } = await navigateChildFrame(
+					'https://parent.example/',
+					'about:blank'
+				);
+
+				expect(frame.window.parent).toBe(parentFrame.window);
+				expect(frame.window.top).toBeInstanceOf(CrossOriginBrowserWindow);
+				expect(frame.window.top.document).toBeUndefined();
+
+				await browser.close();
+			});
+
+			it('Does not restrict the parent and top window when the parent is "about:blank" and the child has the same origin as the top.', async () => {
+				const { browser, page, parentFrame, frame } = await navigateChildFrame(
+					'about:blank',
+					'https://top.example/child'
+				);
+
+				expect(frame.window.parent).toBe(parentFrame.window);
+				expect(frame.window.top).toBe(page.mainFrame.window);
+
+				await browser.close();
+			});
+
+			it('Restricts both the parent and top window when the parent is "about:blank" and the child has a different origin.', async () => {
+				const { browser, frame } = await navigateChildFrame(
+					'about:blank',
+					'https://other.example/'
+				);
+
+				expect(frame.window.parent).toBeInstanceOf(CrossOriginBrowserWindow);
+				expect(frame.window.parent.document).toBeUndefined();
+				expect(frame.window.top).toBeInstanceOf(CrossOriginBrowserWindow);
+				expect(frame.window.top.document).toBeUndefined();
+
+				await browser.close();
+			});
 
 			it('Restricts the ancestors when navigating a cross-origin frame to another origin and back.', async () => {
 				const browser = new Browser();
