@@ -17,7 +17,7 @@ import Response from '../../src/fetch/Response.js';
 import Fetch from '../../src/fetch/Fetch.js';
 import type MessageEvent from '../../src/event/events/MessageEvent.js';
 import Event from '../../src/event/Event.js';
-import type ErrorEvent from '../../src/event/events/ErrorEvent.js';
+import ErrorEvent from '../../src/event/events/ErrorEvent.js';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import Permissions from '../../src/permissions/Permissions.js';
 import Clipboard from '../../src/clipboard/Clipboard.js';
@@ -2344,6 +2344,33 @@ describe('BrowserWindow', () => {
 					DOMExceptionNameEnum.invalidCharacterError
 				)
 			);
+		});
+	});
+
+	describe('reportError()', () => {
+		it('Dispatches an "error" event with the error and its message.', () => {
+			const error = new Error('Something went wrong.');
+			let event: ErrorEvent | null = null;
+
+			window.addEventListener('error', (e: Event) => (event = <ErrorEvent>e));
+
+			window.reportError(error);
+
+			expect(event).toBeInstanceOf(ErrorEvent);
+			expect((<ErrorEvent>(<unknown>event)).message).toBe('Something went wrong.');
+			expect((<ErrorEvent>(<unknown>event)).error).toBe(error);
+		});
+
+		it('Dispatches an "error" event for a non-Error value.', () => {
+			let event: ErrorEvent | null = null;
+
+			window.addEventListener('error', (e: Event) => (event = <ErrorEvent>e));
+
+			window.reportError('A string failure.');
+
+			expect(event).toBeInstanceOf(ErrorEvent);
+			expect((<ErrorEvent>(<unknown>event)).message).toBe('');
+			expect((<ErrorEvent>(<unknown>event)).error).toBe('A string failure.');
 		});
 	});
 
