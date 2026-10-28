@@ -1,6 +1,6 @@
 import EventTarget from '../event/EventTarget.js';
 import type BrowserWindow from './BrowserWindow.js';
-import DOMException from '../exception/DOMException.js';
+import type DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import type Location from '../location/Location.js';
 import * as PropertySymbol from '../PropertySymbol.js';
@@ -153,7 +153,7 @@ export default class CrossOriginBrowserWindow
 		// The parent is the wrapper itself when it wraps an ancestor of the accessing frame, which has no accessible origin to report.
 		const parent = this.parent;
 		const origin = parent === this ? null : (<BrowserWindow>parent).location.origin;
-		return new DOMException(
+		return new this.#targetWindow.DOMException(
 			origin !== null
 				? `Blocked a frame with origin "${origin}" from accessing a cross-origin frame.`
 				: 'Blocked a frame from accessing a cross-origin frame.',
