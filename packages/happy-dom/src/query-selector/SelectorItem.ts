@@ -76,6 +76,13 @@ export default class SelectorItem {
 			return null;
 		}
 
+		if (
+			element[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode &&
+			!this.isHostSelector()
+		) {
+			return null;
+		}
+
 		element = <Element>(
 			(element[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode
 				? (<ShadowRoot>element).host!
@@ -130,6 +137,18 @@ export default class SelectorItem {
 		}
 
 		return { priorityWeight };
+	}
+
+	/** A shadow host is featureless inside its shadow tree, so only :host and :host-context() match it. */
+	private isHostSelector(): boolean {
+		return (
+			!this.tagName &&
+			!this.id &&
+			!this.classNames &&
+			!this.attributes &&
+			!!this.pseudos &&
+			this.pseudos.every((pseudo) => pseudo.name === 'host' || pseudo.name === 'host-context')
+		);
 	}
 
 	/**
