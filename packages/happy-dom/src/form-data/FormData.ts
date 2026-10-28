@@ -216,7 +216,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 				return;
 			}
 		}
-		this.append(name, value);
+		this.append(name, value, filename);
 	}
 
 	/**
@@ -272,7 +272,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 	 */
 	#parseValue(value: string | Blob | File, filename?: string): string | File {
 		if (value instanceof File) {
-			if (filename) {
+			if (filename !== undefined) {
 				const file = new File([], filename, { type: value.type, lastModified: value.lastModified });
 				file[PropertySymbol.buffer] = value[PropertySymbol.buffer];
 				return file;
@@ -281,7 +281,7 @@ export default class FormData implements Iterable<[string, string | File]> {
 		}
 
 		if (value instanceof Blob) {
-			const file = new File([], 'blob', { type: value.type });
+			const file = new File([], filename !== undefined ? filename : 'blob', { type: value.type });
 			file[PropertySymbol.buffer] = value[PropertySymbol.buffer];
 			return file;
 		}
