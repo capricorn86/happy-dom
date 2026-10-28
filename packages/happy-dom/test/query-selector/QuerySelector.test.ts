@@ -1526,6 +1526,29 @@ describe('QuerySelector', () => {
 			expect(subsequentSiblings3[1].textContent).toBe('a3');
 		});
 
+		// https://github.com/capricorn86/happy-dom/issues/2505
+		it('Returns every subsequent sibling for "a ~ b" and chains "a ~ * ~ *".', () => {
+			document.body.innerHTML = '<a></a><b></b><c></c><b></b>';
+
+			const bSiblings = document.querySelectorAll('a ~ b');
+			expect(bSiblings.length).toBe(2);
+			expect(bSiblings[0].tagName).toBe('B');
+			expect(bSiblings[1].tagName).toBe('B');
+
+			const allSiblings = document.querySelectorAll('a ~ *');
+			expect(allSiblings.length).toBe(3);
+			expect(allSiblings[0].tagName).toBe('B');
+			expect(allSiblings[1].tagName).toBe('C');
+			expect(allSiblings[2].tagName).toBe('B');
+
+			const chained = document.querySelectorAll('a ~ * ~ *');
+			expect(chained.length).toBe(2);
+			expect(chained[0].tagName).toBe('C');
+			expect(chained[1].tagName).toBe('B');
+
+			expect(document.querySelector('a ~ * ~ *')?.tagName).toBe('C');
+		});
+
 		it('Returns all elements for attribute selector with round brackets within', () => {
 			const div = document.createElement('div');
 
