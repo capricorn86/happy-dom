@@ -1615,6 +1615,28 @@ describe('QuerySelector', () => {
 			);
 		});
 
+		it("Doesn't match the shadow host of a shadow root with selectors other than :host (#2554)", () => {
+			const outer = document.createElement('section');
+			outer.className = 'outer';
+			const host = document.createElement('div');
+			host.id = 'host';
+			host.setAttribute('my-attr', 'value');
+			outer.appendChild(host);
+			document.body.appendChild(outer);
+			const shadowRoot = host.attachShadow({ mode: 'open' });
+			const span = document.createElement('span');
+			span.className = 'shadow-span';
+			shadowRoot.appendChild(span);
+
+			expect(shadowRoot.querySelectorAll('#host .shadow-span').length).toBe(0);
+			expect(shadowRoot.querySelectorAll('div .shadow-span').length).toBe(0);
+			expect(shadowRoot.querySelectorAll('[my-attr] .shadow-span').length).toBe(0);
+			expect(shadowRoot.querySelectorAll('.outer .shadow-span').length).toBe(0);
+			expect(shadowRoot.querySelectorAll('div:host .shadow-span').length).toBe(0);
+			expect(shadowRoot.querySelectorAll(':host > .shadow-span')[0]).toBe(span);
+			expect(shadowRoot.querySelectorAll(':host-context(#host) .shadow-span')[0]).toBe(span);
+		});
+
 		describe('Issue #1912: CSS attribute selector with capital letters', () => {
 			it('Should match attribute selectors case-insensitively for HTML elements.', () => {
 				const container = document.createElement('div');
@@ -2174,6 +2196,19 @@ describe('QuerySelector', () => {
 				shadowSpan
 			);
 		});
+
+		it("Doesn't match the shadow host of a shadow root with selectors other than :host (#2554)", () => {
+			const host = document.createElement('div');
+			host.id = 'host';
+			document.body.appendChild(host);
+			const shadowRoot = host.attachShadow({ mode: 'open' });
+			const span = document.createElement('span');
+			span.className = 'shadow-span';
+			shadowRoot.appendChild(span);
+
+			expect(shadowRoot.querySelector('#host .shadow-span')).toBe(null);
+			expect(shadowRoot.querySelector(':host .shadow-span')).toBe(span);
+		});
 	});
 
 	describe('matches()', () => {
@@ -2497,6 +2532,19 @@ describe('QuerySelector', () => {
 
 			expect(shadowSpan?.matches(':host .shadow-span')).toBe(true);
 			expect(shadowSpan?.matches(':host([my-attr=value]) .shadow-span')).toBe(true);
+		});
+
+		it("Doesn't match the shadow host of a shadow root with selectors other than :host (#2554)", () => {
+			const host = document.createElement('div');
+			host.id = 'host';
+			document.body.appendChild(host);
+			const shadowRoot = host.attachShadow({ mode: 'open' });
+			const span = document.createElement('span');
+			span.className = 'shadow-span';
+			shadowRoot.appendChild(span);
+
+			expect(span.matches('#host .shadow-span')).toBe(false);
+			expect(span.matches(':host .shadow-span')).toBe(true);
 		});
 	});
 });
