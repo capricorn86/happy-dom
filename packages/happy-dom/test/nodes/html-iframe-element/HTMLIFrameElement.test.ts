@@ -478,6 +478,38 @@ describe('HTMLIFrameElement', () => {
 			await browser.close();
 		});
 
+		it('Does not give a nested "about:blank" iframe the origin of the top window when a "data:" iframe changes its URL to "about:blank" with history.replaceState().', async () => {
+			const browser = new Browser({ settings: { enableIframePageLoading: true } });
+			const page = browser.newPage();
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(() =>
+				Promise.resolve(new page.mainFrame.window.Response('<html><body></body></html>'))
+			);
+			page.mainFrame.url = 'https://localhost:8080/';
+			const iframe = <HTMLIFrameElement>page.mainFrame.window.document.createElement('iframe');
+			iframe.src = 'data:text/html,<body></body>';
+			page.mainFrame.window.document.body.appendChild(iframe);
+
+			await page.waitUntilComplete();
+
+			const dataFrame = page.mainFrame.childFrames[0];
+
+			dataFrame.window.history.replaceState(null, '', 'about:blank');
+
+			const nestedIframe = <HTMLIFrameElement>dataFrame.window.document.createElement('iframe');
+			nestedIframe.src = 'about:blank';
+			dataFrame.window.document.body.appendChild(nestedIframe);
+
+			await page.waitUntilComplete();
+
+			const nestedWindow = <BrowserWindow>dataFrame.childFrames[0].window;
+
+			expect(nestedWindow.top).toBeInstanceOf(CrossOriginBrowserWindow);
+			expect(nestedWindow.top.document).toBeUndefined();
+			expect(nestedWindow.parent).toBe(dataFrame.window);
+
+			await browser.close();
+		});
+
 		it('Returns content window for URL with same origin.', async () => {
 			const responseHTML = '<html><head></head><body>Test</body></html>';
 			let fetchedURL: string | null = null;

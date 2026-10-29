@@ -82,6 +82,29 @@ describe('BrowserFrameURL', () => {
 			browser.close();
 		});
 
+		it('Keeps the opaque origin of a "data:" document when the URL of the document is changed to "about:blank".', async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			page.mainFrame.url = 'https://parent.example/';
+			const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(() =>
+				Promise.resolve(new page.mainFrame.window.Response('<body>Child</body>'))
+			);
+
+			await frame.goto('data:text/html,<body>Child</body>', { referrer: 'https://parent.example' });
+
+			frame.window.history.replaceState(null, '', 'about:blank');
+
+			const origin = BrowserFrameURL.getInheritedOrigin(frame);
+
+			expect(frame.url).toBe('about:blank');
+			expect(origin.origin).toBe('null');
+			expect(origin.window).toBe(frame.window);
+			expect(BrowserFrameURL.isSameOrigin(frame, page.mainFrame)).toBe(false);
+
+			await browser.close();
+		});
+
 		it('Keeps the inherited origin of an "about:blank" document when the URL of the frame that it inherited from is changed.', () => {
 			const browser = new Browser();
 			const page = browser.newPage();

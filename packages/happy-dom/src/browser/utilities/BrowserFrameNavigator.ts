@@ -158,16 +158,17 @@ export default class BrowserFrameNavigator {
 		const width = previousWindow.innerWidth;
 		const height = previousWindow.innerHeight;
 		const devicePixelRatio = previousWindow.devicePixelRatio;
-		const initiatorOrigin = BrowserFrameURL.getInheritedOrigin(
-			goToOptions?.initiatorFrame ?? frame
-		);
+		// Documents with the URL "about:blank" and "about:srcdoc" inherit the origin of the document that initiated the navigation.
+		// Other documents get their origin from their own URL. The initiator origin must not be kept for them, as it would be used if the URL of the document is later changed to an inheriting URL (e.g. with history.replaceState()).
+		const initiatorOrigin = BrowserFrameURL.hasInheritedOrigin(targetURL)
+			? BrowserFrameURL.getInheritedOrigin(goToOptions?.initiatorFrame ?? frame)
+			: null;
 
 		// Create new Window
 		frame[PropertySymbol.asyncTaskManager] = new AsyncTaskManager(frame);
 		(<BrowserWindow>frame.window) = new windowClass(frame, { url: targetURL.href, width, height });
 		(<number>frame.window.devicePixelRatio) = devicePixelRatio;
 
-		// Documents with the URL "about:blank" and "about:srcdoc" inherit the origin of the document that initiated the navigation.
 		frame[PropertySymbol.inheritedOrigin] = initiatorOrigin;
 		this.updateCrossOriginIsolation(frame);
 

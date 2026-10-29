@@ -84,7 +84,7 @@ export default class BrowserFrameURL {
 	 * @param targetURL Target URL.
 	 * @returns Whether the URL has an inherited origin.
 	 */
-	private static hasInheritedOrigin(targetURL: URL | Location): boolean {
+	public static hasInheritedOrigin(targetURL: URL | Location): boolean {
 		return (
 			targetURL.protocol === 'javascript:' ||
 			(targetURL.protocol === 'about:' &&
