@@ -157,6 +157,36 @@ describe('BrowserFrame', () => {
 			expect((<any>frame2.window)['test']).toBe(3);
 		});
 
+		it('Starts the debug deadline when waiting for completion, even if timers started earlier.', async () => {
+			const browser = new Browser({ settings: { debug: { traceWaitUntilComplete: 20 } } });
+			const page = browser.newPage();
+			page.mainFrame.evaluate('function t() { setTimeout(t, 5); } t();');
+
+			try {
+				await new Promise((resolve) => setTimeout(resolve, 60));
+				await expect(page.waitUntilComplete()).rejects.toThrow(
+					'The maximum time was reached for "waitUntilComplete()".'
+				);
+			} finally {
+				await browser.close();
+			}
+		});
+
+		it('Restarts the debug deadline after an earlier completion wait.', async () => {
+			const browser = new Browser({ settings: { debug: { traceWaitUntilComplete: 20 } } });
+			const page = browser.newPage();
+
+			try {
+				await page.waitUntilComplete();
+				page.mainFrame.evaluate('function t() { setTimeout(t, 5); } t();');
+				await expect(page.waitUntilComplete()).rejects.toThrow(
+					'The maximum time was reached for "waitUntilComplete()".'
+				);
+			} finally {
+				await browser.close();
+			}
+		});
+
 		it('Traces never ending timeout when calling waitUntilComplete() with the setting "debug.traceWaitUntilComplete" set to a time in ms.', async () => {
 			const browser = new Browser({
 				settings: {

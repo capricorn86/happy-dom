@@ -3026,6 +3026,8 @@ describe('SyncFetch', () => {
 		});
 
 		it('Revalidates cache with a "If-Modified-Since" request for a GET response with "Cache-Control" set to a "max-age".', async () => {
+			let now = Date.now();
+			vi.spyOn(Date, 'now').mockImplementation(() => now);
 			browserFrame.url = 'https://localhost:8080/';
 
 			const url = 'https://localhost:8080/some/path';
@@ -3063,7 +3065,7 @@ describe('SyncFetch', () => {
 								'content-length',
 								String(responseText.length),
 								'cache-control',
-								'max-age=0.0001',
+								'max-age=60',
 								'last-modified',
 								'Mon, 11 Dec 2023 01:00:00 GMT'
 							],
@@ -3085,7 +3087,7 @@ describe('SyncFetch', () => {
 			}).send();
 			const text1 = response1.body!.toString();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			now += 61000;
 
 			const response2 = new SyncFetch({ browserFrame, window, url }).send();
 			const text2 = response2.body!.toString();
@@ -3109,7 +3111,7 @@ describe('SyncFetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'cache-control': `max-age=0.0001`,
+				'cache-control': `max-age=60`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
 			});
 
@@ -3158,6 +3160,8 @@ describe('SyncFetch', () => {
 		});
 
 		it('Updates cache after a failed revalidation with a "If-Modified-Since" request for a GET response with "Cache-Control" set to a "max-age".', async () => {
+			let now = Date.now();
+			vi.spyOn(Date, 'now').mockImplementation(() => now);
 			browserFrame.url = 'https://localhost:8080/';
 
 			const url = 'https://localhost:8080/some/path';
@@ -3200,7 +3204,7 @@ describe('SyncFetch', () => {
 								'content-length',
 								String(responseText1.length),
 								'cache-control',
-								'max-age=0.0001',
+								'max-age=60',
 								'last-modified',
 								'Mon, 11 Dec 2023 01:00:00 GMT'
 							],
@@ -3222,7 +3226,7 @@ describe('SyncFetch', () => {
 			}).send();
 			const text1 = response1.body!.toString();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			now += 61000;
 
 			const response2 = new SyncFetch({ browserFrame, window, url }).send();
 			const text2 = response2.body!.toString();
@@ -3254,7 +3258,7 @@ describe('SyncFetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText1.length),
-				'cache-control': `max-age=0.0001`,
+				'cache-control': `max-age=60`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT'
 			});
 
@@ -3311,6 +3315,8 @@ describe('SyncFetch', () => {
 		});
 
 		it('Revalidates cache with a "If-None-Match" request for a HEAD response with an "Etag" header.', async () => {
+			let now = Date.now();
+			vi.spyOn(Date, 'now').mockImplementation(() => now);
 			browserFrame.url = 'https://localhost:8080/';
 
 			const url = 'https://localhost:8080/some/path';
@@ -3345,7 +3351,7 @@ describe('SyncFetch', () => {
 								'content-length',
 								String(responseText.length),
 								'cache-control',
-								'max-age=0.0001',
+								'max-age=60',
 								'last-modified',
 								'Mon, 11 Dec 2023 01:00:00 GMT',
 								'etag',
@@ -3370,7 +3376,7 @@ describe('SyncFetch', () => {
 			}).send();
 			const text1 = response1.body!.toString();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			now += 61000;
 
 			const response2 = new SyncFetch({
 				browserFrame,
@@ -3401,7 +3407,7 @@ describe('SyncFetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'cache-control': `max-age=0.0001`,
+				'cache-control': `max-age=60`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
 				etag: etag1
 			});
@@ -3415,7 +3421,7 @@ describe('SyncFetch', () => {
 			expect(headers2).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText.length),
-				'cache-control': `max-age=0.0001`,
+				'cache-control': `max-age=60`,
 				'Last-Modified': 'Mon, 11 Dec 2023 02:00:00 GMT',
 				ETag: etag2
 			});
@@ -3452,6 +3458,8 @@ describe('SyncFetch', () => {
 		});
 
 		it('Updates cache after a failed revalidation with a "If-None-Match" request for a GET response with an "Etag" header.', async () => {
+			let now = Date.now();
+			vi.spyOn(Date, 'now').mockImplementation(() => now);
 			browserFrame.url = 'https://localhost:8080/';
 
 			const url = 'https://localhost:8080/some/path';
@@ -3498,7 +3506,7 @@ describe('SyncFetch', () => {
 								'content-length',
 								String(responseText1.length),
 								'cache-control',
-								'max-age=0.0001',
+								'max-age=60',
 								'last-modified',
 								'Mon, 11 Dec 2023 01:00:00 GMT',
 								'etag',
@@ -3522,7 +3530,7 @@ describe('SyncFetch', () => {
 			}).send();
 			const text1 = response1.body!.toString();
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			now += 61000;
 
 			const response2 = new SyncFetch({ browserFrame, window, url }).send();
 			const text2 = response2.body!.toString();
@@ -3546,7 +3554,7 @@ describe('SyncFetch', () => {
 			expect(headers1).toEqual({
 				'content-type': 'text/html',
 				'content-length': String(responseText1.length),
-				'cache-control': `max-age=0.0001`,
+				'cache-control': `max-age=60`,
 				'last-modified': 'Mon, 11 Dec 2023 01:00:00 GMT',
 				etag: etag1
 			});

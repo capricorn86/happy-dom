@@ -243,6 +243,7 @@ export default class AsyncTaskManager {
 			if (!this.runningTaskCount && !this.runningTimers.length && !this.runningImmediates.length) {
 				if (this.#debugTimeout) {
 					TIMER.clearTimeout(this.#debugTimeout);
+					this.#debugTimeout = null;
 				}
 				const resolvers = this.waitUntilCompleteResolvers;
 				this.waitUntilCompleteResolvers = [];
@@ -260,6 +261,9 @@ export default class AsyncTaskManager {
 	 * Applies debugging.
 	 */
 	private applyDebugging(): void {
+		if (!this.waitUntilCompleteResolvers.length) {
+			return;
+		}
 		const debug = this.#browserFrame.page.context.browser.settings.debug;
 		if (!debug?.traceWaitUntilComplete || debug.traceWaitUntilComplete < 1) {
 			return;

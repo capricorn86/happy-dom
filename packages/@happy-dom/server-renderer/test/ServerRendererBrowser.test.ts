@@ -6,6 +6,8 @@ import ServerRendererConfigurationFactory from '../src/utilities/ServerRendererC
 import Fetch from 'happy-dom/lib/fetch/Fetch.js';
 import Headers from 'happy-dom/lib/fetch/Headers.js';
 import type Response from 'happy-dom/lib/fetch/Response.js';
+import BrowserPage from 'happy-dom/lib/browser/BrowserPage.js';
+import { Window } from 'happy-dom';
 import MockedPageHTML from './MockedPageHTML.js';
 import MockedURLList from './MockedURLList.js';
 import ResponseCacheFileSystem from 'happy-dom/lib/fetch/cache/response/ResponseCacheFileSystem.js';
@@ -321,6 +323,61 @@ The page may contain scripts with timer loops that prevent it from completing. Y
 					statusText: 'OK'
 				}
 			]);
+		});
+
+		it('Enforces a zero render timeout when debugging.', async () => {
+			const browserRenderer = new ServerRendererBrowser(
+				ServerRendererConfigurationFactory.createConfiguration({
+					browser: {
+						enableJavaScriptEvaluation: true,
+						suppressInsecureJavaScriptEnvironmentWarning: true
+					},
+					render: { timeout: 0 },
+					debug: true
+				})
+			);
+			try {
+				const [result] = await browserRenderer.render([
+					{ html: '<script>setTimeout(() => {}, 20)</script>' }
+				]);
+				expect(result.error).toContain('The page was not rendered within the defined time of 0ms');
+				expect(result.content).toBeNull();
+			} finally {
+				await browserRenderer.close();
+			}
+		});
+
+		it('Preserves the debug error when rendering resumes after the navigation deadline.', async () => {
+			const window = new Window();
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(async () => {
+				return new window.Response('<script>function t(){ setTimeout(t, 10) } t()</script>');
+			});
+			const goto = BrowserPage.prototype.goto;
+			vi.spyOn(BrowserPage.prototype, 'goto').mockImplementation(async function (url, options) {
+				const response = await goto.call(this, url, options);
+				await new Promise((resolve) => setTimeout(resolve, 150));
+				return response;
+			});
+			const browserRenderer = new ServerRendererBrowser(
+				ServerRendererConfigurationFactory.createConfiguration({
+					browser: {
+						enableJavaScriptEvaluation: true,
+						suppressInsecureJavaScriptEnvironmentWarning: true
+					},
+					render: { timeout: 100 },
+					debug: true
+				})
+			);
+
+			try {
+				const [result] = await browserRenderer.render([{ url: 'https://example.com/gb/en/' }]);
+				expect(result.error).toContain('The maximum time was reached for "waitUntilComplete()".');
+				expect(result.error).toContain('1 task did not end in time.');
+				expect(result.content).toBeNull();
+			} finally {
+				await browserRenderer.close();
+				await window.happyDOM.close();
+			}
 		});
 
 		it('Handles debug error caused while waiting for the page to complete.', async () => {
