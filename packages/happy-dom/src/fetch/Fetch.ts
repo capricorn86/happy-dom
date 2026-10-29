@@ -448,6 +448,10 @@ export default class Fetch {
 			return true;
 		}
 
+		if (!FetchCORSUtility.isPreflightRequired(this.request)) {
+			return true;
+		}
+
 		const cachedPreflightResponse = this.#browserFrame.page.context.preflightResponseCache.get(
 			this.request
 		);
@@ -532,6 +536,29 @@ export default class Fetch {
 		// TODO: Add support for more Access-Control-Allow-* headers.
 
 		return true;
+	}
+
+	/**
+	 * Checks if the response complies with the Cross-Origin policy.
+	 *
+	 * Only simple requests are validated here, as requests that require a preflight have already had
+	 * their origin validated by the preflight response.
+	 *
+	 * @param responseHeaders Response headers.
+	 * @returns True if it complies with the policy.
+	 */
+	private compliesWithCrossOriginResponsePolicy(responseHeaders: Headers): boolean {
+		if (
+			this.disableSameOriginPolicy ||
+			!FetchCORSUtility.isCORS(this.#window.location.href, this.request[PropertySymbol.url]) ||
+			FetchCORSUtility.isPreflightRequired(this.request)
+		) {
+			return true;
+		}
+
+		const allowOrigin = responseHeaders.get('Access-Control-Allow-Origin');
+
+		return allowOrigin === '*' || allowOrigin === this.#window.location.origin;
 	}
 
 	/**
@@ -759,6 +786,22 @@ export default class Fetch {
 		});
 
 		if (this.handleRedirectResponse(nodeResponse, this.responseHeaders)) {
+			return;
+		}
+
+		// A redirect that was followed has already been validated by the Fetch instance that performed
+		// it, so only responses read directly off the wire are validated here.
+		if (!this.compliesWithCrossOriginResponsePolicy(this.responseHeaders)) {
+			this.finalizeRequest();
+			this.#browserFrame.page.console.warn(
+				`Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at "${this.request.url}".`
+			);
+			this.reject!(
+				new this.#window.DOMException(
+					`Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at "${this.request.url}".`,
+					DOMExceptionNameEnum.networkError
+				)
+			);
 			return;
 		}
 
