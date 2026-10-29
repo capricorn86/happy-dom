@@ -91,6 +91,7 @@ export default class Document extends Node {
 		new Map();
 	public [PropertySymbol.selection]: Selection | null = null;
 	public [PropertySymbol.timeline]: DocumentTimeline = new DocumentTimeline();
+	public [PropertySymbol.nodeIterators]: Set<WeakRef<NodeIterator>> = new Set();
 	public declare cloneNode: (deep?: boolean) => Document;
 
 	// Events
@@ -2293,6 +2294,7 @@ export default class Document extends Node {
 		this[PropertySymbol.preloads].clear();
 		this[PropertySymbol.propertyEventListeners].clear();
 		this[PropertySymbol.selection] = null;
+		this[PropertySymbol.nodeIterators].clear();
 	}
 
 	/**
