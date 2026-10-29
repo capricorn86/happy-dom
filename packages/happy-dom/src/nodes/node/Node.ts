@@ -592,6 +592,21 @@ export default class Node extends EventTarget {
 			);
 		}
 
+		const nodeIterators = (node[PropertySymbol.ownerDocument] || <Document>node)[
+			PropertySymbol.nodeIterators
+		];
+
+		if (nodeIterators.size) {
+			for (const nodeIteratorRef of nodeIterators) {
+				const nodeIterator = nodeIteratorRef.deref();
+				if (nodeIterator) {
+					nodeIterator[PropertySymbol.preRemovingSteps](node);
+				} else {
+					nodeIterators.delete(nodeIteratorRef);
+				}
+			}
+		}
+
 		const previousSibling = node.previousSibling;
 		const nextSibling = node.nextSibling;
 
@@ -975,7 +990,24 @@ export default class Node extends EventTarget {
 			isDisconnected = true;
 		}
 
-		this[PropertySymbol.ownerDocument] = parent[PropertySymbol.ownerDocument] || <Document>parent;
+		const ownerDocument = parent[PropertySymbol.ownerDocument] || <Document>parent;
+		const previousOwnerDocument = this[PropertySymbol.ownerDocument] || <Document>(<unknown>this);
+		const nodeIterators = previousOwnerDocument[PropertySymbol.nodeIterators];
+
+		// Node iterators are registered with the document of their root, so they have to follow the root when it is moved to another document.
+		if (nodeIterators.size && ownerDocument !== previousOwnerDocument) {
+			for (const nodeIteratorRef of nodeIterators) {
+				const nodeIterator = nodeIteratorRef.deref();
+				if (!nodeIterator) {
+					nodeIterators.delete(nodeIteratorRef);
+				} else if (nodeIterator.root === (this[PropertySymbol.proxy] || this)) {
+					nodeIterators.delete(nodeIteratorRef);
+					ownerDocument[PropertySymbol.nodeIterators].add(nodeIteratorRef);
+				}
+			}
+		}
+
+		this[PropertySymbol.ownerDocument] = ownerDocument;
 		this[PropertySymbol.window] =
 			parent[PropertySymbol.window] || parent[PropertySymbol.defaultView];
 
