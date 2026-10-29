@@ -195,9 +195,14 @@ export default class CSSComputedStyle {
 			} else {
 				parentElement.cssTexts.sort((a, b) => a.priorityWeight - b.priorityWeight);
 
-				const defaultCSS = (<any>CSSComputedStyleElementDefault)[
+				let defaultCSS = (<any>CSSComputedStyleElementDefault)[
 					(<Element>parentElement.element)[PropertySymbol.tagName]!
 				];
+				// Empty string entries mean "use the UA default" (display: inline).
+				// A truthy check would skip them and leave display as "".
+				if (defaultCSS === undefined || defaultCSS === '') {
+					defaultCSS = CSSComputedStyleElementDefault.default;
+				}
 				let elementCSSText = '';
 
 				if (defaultCSS) {
