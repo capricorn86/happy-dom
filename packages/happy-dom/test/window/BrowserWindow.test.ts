@@ -671,6 +671,22 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.display).toBe('block');
 		});
 
+		it('Returns "inline" for elements whose UA default display is inline.', () => {
+			document.body.innerHTML =
+				'<span>x</span><a href="#">x</a><b>x</b><label>x</label><img alt=""><br><div>x</div><button>x</button>';
+
+			expect(window.getComputedStyle(document.querySelector('span')!).display).toBe('inline');
+			expect(window.getComputedStyle(document.querySelector('a')!).display).toBe('inline');
+			expect(window.getComputedStyle(document.querySelector('b')!).display).toBe('inline');
+			expect(window.getComputedStyle(document.querySelector('label')!).display).toBe('inline');
+			expect(window.getComputedStyle(document.querySelector('img')!).display).toBe('inline');
+			expect(window.getComputedStyle(document.querySelector('br')!).display).toBe('inline');
+			expect(window.getComputedStyle(document.querySelector('div')!).display).toBe('block');
+			expect(window.getComputedStyle(document.querySelector('button')!).display).toBe(
+				'inline-block'
+			);
+		});
+
 		it('Handles default properties "display" on a dialog element.', () => {
 			const element = <HTMLDialogElement>document.createElement('dialog');
 			const computedStyle = window.getComputedStyle(element);
