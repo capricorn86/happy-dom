@@ -1,7 +1,6 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import type DocumentFragment from '../document-fragment/DocumentFragment.js';
-import type Node from '../node/Node.js';
 import type ShadowRoot from '../shadow-root/ShadowRoot.js';
 import HTMLSerializer from '../../html-serializer/HTMLSerializer.js';
 import HTMLParser from '../../html-parser/HTMLParser.js';
@@ -54,20 +53,6 @@ export default class HTMLTemplateElement extends HTMLElement {
 	}
 
 	/**
-	 * @override
-	 */
-	public override get firstChild(): Node | null {
-		return this[PropertySymbol.content].firstChild;
-	}
-
-	/**
-	 * @override
-	 */
-	public override get lastChild(): Node | null {
-		return this[PropertySymbol.content].lastChild;
-	}
-
-	/**
 	 * @deprecated
 	 * @override
 	 */
@@ -105,42 +90,6 @@ export default class HTMLTemplateElement extends HTMLElement {
 		}
 
 		return html;
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.appendChild](node: Node, disableValidations = false): Node {
-		return this[PropertySymbol.content][PropertySymbol.appendChild](node, disableValidations);
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.removeChild](node: Node): Node {
-		return this[PropertySymbol.content][PropertySymbol.removeChild](node);
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.insertBefore](
-		newNode: Node,
-		referenceNode: Node,
-		disableValidations = false
-	): Node {
-		return this[PropertySymbol.content][PropertySymbol.insertBefore](
-			newNode,
-			referenceNode,
-			disableValidations
-		);
-	}
-
-	/**
-	 * @override
-	 */
-	public override [PropertySymbol.replaceChild](newChild: Node, oldChild: Node): Node {
-		return this[PropertySymbol.content][PropertySymbol.replaceChild](newChild, oldChild);
 	}
 
 	/**

@@ -1,6 +1,7 @@
 import * as PropertySymbol from '../PropertySymbol.js';
 import NamespaceURI from '../config/NamespaceURI.js';
 import type Element from '../nodes/element/Element.js';
+import type HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement.js';
 import Node from '../nodes/node/Node.js';
 import type BrowserWindow from '../window/BrowserWindow.js';
 import type XMLDocument from '../nodes/xml-document/XMLDocument.js';
@@ -286,7 +287,7 @@ export default class XMLParser {
 			this.errorIndex = this.lastIndex + text.indexOf('&nbsp;') + 6;
 			this.readState = MarkupReadStateEnum.error;
 		} else {
-			this.currentNode![PropertySymbol.appendChild](
+			this.getInsertionParent()[PropertySymbol.appendChild](
 				this.rootNode!.createTextNode(XMLEncodeUtility.decodeXMLEntities(text)),
 				true
 			);
@@ -345,7 +346,7 @@ export default class XMLParser {
 				const name = parts[0];
 				// We need to remove the ending "?".
 				const content = parts.slice(1).join(' ').slice(0, -1);
-				this.currentNode![PropertySymbol.appendChild](
+				this.getInsertionParent()[PropertySymbol.appendChild](
 					this.rootNode!.createProcessingInstruction(name, content),
 					true
 				);
@@ -362,7 +363,7 @@ export default class XMLParser {
 	private parseComment(comment: string): void {
 		// Comments are not allowed in the root when parsing XML.
 		if (this.currentNode !== this.rootNode) {
-			this.currentNode![PropertySymbol.appendChild](
+			this.getInsertionParent()[PropertySymbol.appendChild](
 				this.rootNode!.createComment(XMLEncodeUtility.decodeXMLEntities(comment)),
 				true
 			);
@@ -616,7 +617,7 @@ export default class XMLParser {
 			return;
 		}
 
-		this.currentNode![PropertySymbol.appendChild](this.nextElement!, true);
+		this.getInsertionParent()[PropertySymbol.appendChild](this.nextElement!, true);
 
 		// Sets the new element as the current node.
 		// XML nodes can be self closed using "/>"
@@ -699,8 +700,9 @@ export default class XMLParser {
 	 */
 	private removeOverflowingTextNodes(): void {
 		if (this.currentNode && this.currentNode !== this.rootNode) {
-			while (this.currentNode.lastChild?.[PropertySymbol.nodeType] === Node.TEXT_NODE) {
-				this.currentNode.removeChild(this.currentNode.lastChild);
+			const parent = this.getInsertionParent();
+			while (parent.lastChild?.[PropertySymbol.nodeType] === Node.TEXT_NODE) {
+				parent.removeChild(parent.lastChild);
 			}
 		}
 	}
@@ -740,5 +742,16 @@ export default class XMLParser {
 			publicId,
 			systemId
 		};
+	}
+
+	/**
+	 * Returns the node that parsed children should be inserted into.
+	 *
+	 * Children of <template> are inserted into its content fragment.
+	 *
+	 * @returns Node.
+	 */
+	private getInsertionParent(): Node {
+		return (<HTMLTemplateElement>this.currentNode)[PropertySymbol.content] ?? this.currentNode!;
 	}
 }
