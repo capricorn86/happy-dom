@@ -444,8 +444,8 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', 'border-color: #000 #ffffff rgba(135,200,150,0.5) blue');
 
-			expect(declaration.borderTopColor).toBe('#000');
-			expect(declaration.borderRightColor).toBe('#ffffff');
+			expect(declaration.borderTopColor).toBe('rgb(0, 0, 0)');
+			expect(declaration.borderRightColor).toBe('rgb(255, 255, 255)');
 			expect(declaration.borderBottomColor).toBe('rgba(135, 200, 150, 0.5)');
 			expect(declaration.borderLeftColor).toBe('blue');
 
@@ -1133,7 +1133,7 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', 'outline: thick double #32a1ce');
 
-			expect(declaration.outlineColor).toBe('#32a1ce');
+			expect(declaration.outlineColor).toBe('rgb(50, 161, 206)');
 			expect(declaration.outlineWidth).toBe('thick');
 			expect(declaration.outlineStyle).toBe('double');
 		});
@@ -1155,7 +1155,7 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', 'outline-color: #32a1ce');
 
-			expect(declaration.outlineColor).toBe('#32a1ce');
+			expect(declaration.outlineColor).toBe('rgb(50, 161, 206)');
 		});
 	});
 
@@ -2769,15 +2769,15 @@ describe('CSSStyleDeclaration', () => {
 				element
 			});
 
-			for (const property of [
-				'inherit',
-				'var(--test-variable)',
-				'red',
-				'rgb(255, 0, 0)',
-				'#ff0000'
+			for (const [property, expected] of [
+				['inherit', 'inherit'],
+				['var(--test-variable)', 'var(--test-variable)'],
+				['red', 'red'],
+				['rgb(255, 0, 0)', 'rgb(255, 0, 0)'],
+				['#ff0000', 'rgb(255, 0, 0)']
 			]) {
 				element.setAttribute('style', `color: ${property}`);
-				expect(declaration.color).toBe(property);
+				expect(declaration.color).toBe(expected);
 			}
 		});
 	});
@@ -2788,15 +2788,15 @@ describe('CSSStyleDeclaration', () => {
 				element
 			});
 
-			for (const property of [
-				'inherit',
-				'var(--test-variable)',
-				'red',
-				'rgb(255, 0, 0)',
-				'#ff0000'
+			for (const [property, expected] of [
+				['inherit', 'inherit'],
+				['var(--test-variable)', 'var(--test-variable)'],
+				['red', 'red'],
+				['rgb(255, 0, 0)', 'rgb(255, 0, 0)'],
+				['#ff0000', 'rgb(255, 0, 0)']
 			]) {
 				element.setAttribute('style', `flood-color: ${property}`);
-				expect(declaration.floodColor).toBe(property);
+				expect(declaration.floodColor).toBe(expected);
 			}
 		});
 	});
