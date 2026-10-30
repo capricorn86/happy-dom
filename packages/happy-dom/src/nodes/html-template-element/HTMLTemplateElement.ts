@@ -40,12 +40,7 @@ export default class HTMLTemplateElement extends HTMLElement {
 	 * @override
 	 */
 	public override set innerHTML(html: string) {
-		const content = <DocumentFragment>this[PropertySymbol.content];
-		const childNodes = content[PropertySymbol.nodeArray];
-
-		while (childNodes.length) {
-			content.removeChild(childNodes[0]);
-		}
+		this[PropertySymbol.clearChildren]();
 
 		new HTMLParser(this[PropertySymbol.window], { isTemplateDocumentFragment: true }).parse(
 			html,
@@ -119,6 +114,13 @@ export default class HTMLTemplateElement extends HTMLElement {
 	 */
 	public override [PropertySymbol.removeChild](node: Node): Node {
 		return this[PropertySymbol.content][PropertySymbol.removeChild](node);
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.clearChildren](): void {
+		this[PropertySymbol.content][PropertySymbol.clearChildren]();
 	}
 
 	/**

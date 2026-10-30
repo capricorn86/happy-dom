@@ -63,11 +63,7 @@ export default class ParentNodeUtility {
 		parentNode: Element | Document | DocumentFragment,
 		...nodes: (string | Node)[]
 	): void {
-		const childNodes = (<DocumentFragment>parentNode)[PropertySymbol.nodeArray];
-
-		while (childNodes.length) {
-			parentNode.removeChild(childNodes[0]);
-		}
+		parentNode[PropertySymbol.clearChildren]();
 
 		this.append(parentNode, ...nodes);
 	}

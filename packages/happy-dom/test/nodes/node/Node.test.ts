@@ -13,6 +13,7 @@ import type ShadowRoot from '../../../src/nodes/shadow-root/ShadowRoot.js';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import type EventTarget from '../../../src/event/EventTarget.js';
 import NodeFactory from '../../../src/nodes/NodeFactory.js';
+import type MutationRecord from '../../../src/mutation-observer/MutationRecord.js';
 
 describe('Node', () => {
 	let window: Window;
@@ -747,6 +748,109 @@ describe('Node', () => {
 			Node.prototype.removeChild.call(parent, child);
 
 			expect(parent.childNodes.length).toBe(0);
+		});
+	});
+
+	describe('[PropertySymbol.clearChildren]()', () => {
+		it('Removes all child nodes and disconnects them.', () => {
+			const parent = document.createElement('div');
+			const childNodes = parent.childNodes;
+			const children = parent.children;
+
+			parent.innerHTML = 'text<span></span><!-- comment --><custom-button></custom-button>';
+			document.body.appendChild(parent);
+
+			const removedNodes = Array.from(parent.childNodes);
+
+			parent[PropertySymbol.clearChildren]();
+
+			expect(parent.childNodes).toBe(childNodes);
+			expect(parent.children).toBe(children);
+			expect(childNodes.length).toBe(0);
+			expect(children.length).toBe(0);
+			expect(parent.firstChild).toBe(null);
+			for (const node of removedNodes) {
+				expect(node.parentNode).toBe(null);
+				expect(node.isConnected).toBe(false);
+			}
+			expect(customElementOutput).toEqual(['Button:connected', 'Button:disconnected']);
+		});
+
+		it('Reports a single mutation record with all removed nodes.', async () => {
+			const parent = document.createElement('div');
+			const records: MutationRecord[] = [];
+
+			parent.innerHTML = '<span></span>text<b></b>';
+
+			const removedNodes = Array.from(parent.childNodes);
+			const observer = new window.MutationObserver((mutationRecords) =>
+				records.push(...mutationRecords)
+			);
+
+			observer.observe(parent, { childList: true });
+			parent[PropertySymbol.clearChildren]();
+			parent[PropertySymbol.clearChildren]();
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect(records.length).toBe(1);
+			expect(records[0].target).toBe(parent);
+			expect(Array.from(records[0].removedNodes)).toEqual(removedNodes);
+			expect(records[0].addedNodes.length).toBe(0);
+			expect(records[0].previousSibling).toBe(null);
+			expect(records[0].nextSibling).toBe(null);
+		});
+
+		it('Stops observing removed subtrees.', async () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('span');
+			const records: MutationRecord[] = [];
+
+			parent.appendChild(child);
+
+			const observer = new window.MutationObserver((mutationRecords) =>
+				records.push(...mutationRecords)
+			);
+
+			observer.observe(parent, { childList: true, subtree: true });
+			parent[PropertySymbol.clearChildren]();
+			child.appendChild(document.createElement('b'));
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect(records.length).toBe(1);
+			expect(Array.from(records[0].removedNodes)).toEqual([child]);
+		});
+
+		it('Dispatches "slotchange" once per affected slot.', () => {
+			const host = document.createElement('div');
+			const shadowRoot = host.attachShadow({ mode: 'open' });
+			const events: string[] = [];
+
+			shadowRoot.innerHTML = '<slot></slot><slot name="a"></slot><slot name="b"></slot>';
+			host.innerHTML =
+				'text<span></span><span slot="a"></span><span slot="a"></span><!-- comment -->';
+			document.body.appendChild(host);
+
+			for (const slot of shadowRoot.querySelectorAll('slot')) {
+				slot.addEventListener('slotchange', () =>
+					events.push(slot.getAttribute('name') || 'default')
+				);
+			}
+
+			host[PropertySymbol.clearChildren]();
+
+			expect(events).toEqual(['default', 'a']);
+		});
+
+		it('Clears the content of a template element.', () => {
+			const template = <HTMLTemplateElement>document.createElement('template');
+
+			template.innerHTML = '<span></span><b></b>';
+			template[PropertySymbol.clearChildren]();
+
+			expect(template.content.childNodes.length).toBe(0);
+			expect(template.innerHTML).toBe('');
 		});
 	});
 

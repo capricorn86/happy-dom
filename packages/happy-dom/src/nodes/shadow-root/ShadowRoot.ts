@@ -146,11 +146,7 @@ export default class ShadowRoot extends DocumentFragment {
 	 * @param html HTML.
 	 */
 	public set innerHTML(html: string) {
-		const childNodes = this[PropertySymbol.nodeArray];
-
-		while (childNodes.length) {
-			this.removeChild(childNodes[0]);
-		}
+		this[PropertySymbol.clearChildren]();
 
 		new HTMLParser(this[PropertySymbol.window]).parse(html, this);
 	}
@@ -257,11 +253,7 @@ export default class ShadowRoot extends DocumentFragment {
 	public setHTMLUnsafe(html: string): void {
 		// TODO: Implement support for declarative shadow roots
 
-		const childNodes = this[PropertySymbol.nodeArray];
-
-		while (childNodes.length) {
-			this.removeChild(childNodes[0]);
-		}
+		this[PropertySymbol.clearChildren]();
 
 		new HTMLParser(this[PropertySymbol.window]).parse(html, this);
 	}
