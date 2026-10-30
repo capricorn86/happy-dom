@@ -163,6 +163,30 @@ describe('HTMLSelectElement', () => {
 		});
 	}
 
+	describe('get size()', () => {
+		it('Returns 0 when attribute is absent.', () => {
+			expect(element.size).toBe(0);
+		});
+
+		it('Returns numeric attribute value.', () => {
+			element.setAttribute('size', '3');
+			expect(element.size).toBe(3);
+		});
+
+		it('Returns 0 for invalid attribute value.', () => {
+			element.setAttribute('size', 'invalid');
+			expect(element.size).toBe(0);
+		});
+	});
+
+	describe('set size()', () => {
+		it('Sets attribute value.', () => {
+			element.size = 3;
+			expect(element.getAttribute('size')).toBe('3');
+			expect(element.size).toBe(3);
+		});
+	});
+
 	describe(`get name()`, () => {
 		it('Returns attribute value.', () => {
 			expect(element.name).toBe('');
