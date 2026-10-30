@@ -1,5 +1,6 @@
 import type IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
 import Browser from '../../src/browser/Browser.js';
+import Window from '../../src/window/Window.js';
 import HistoryScrollRestorationEnum from '../../src/history/HistoryScrollRestorationEnum.js';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
@@ -39,6 +40,17 @@ describe('History', () => {
 
 			// 3 as the first item is added as "about:blank" in the constructor.
 			expect(browserFrame.window.history.length).toBe(3);
+		});
+
+		it('Increases when navigating with location.href in a detached window.', () => {
+			const window = new Window({ url: 'https://www.example.com/' });
+
+			expect(window.history.length).toBe(1);
+
+			window.location.href = 'https://www.example.com/page2';
+
+			expect(window.history.length).toBe(2);
+			expect(window.history.state).toBe(null);
 		});
 	});
 
@@ -224,6 +236,19 @@ describe('History', () => {
 			expect(popStates[2].state).toEqual({ test: 'value' });
 			expect(popStates[3].url).toBe('https://www.example.com/');
 			expect(popStates[3].state).toBe(null);
+		});
+
+		it('Navigates back after navigating with location.href in a detached window', async () => {
+			const window = new Window({ url: 'https://www.example.com/a' });
+
+			window.history.pushState({ index: 1 }, '', '/b');
+			window.location.href = 'https://www.example.com/c';
+
+			window.history.back();
+			await window.happyDOM.waitUntilComplete();
+
+			expect(window.location.href).toBe('https://www.example.com/b');
+			expect(window.history.state).toEqual({ index: 1 });
 		});
 	});
 
