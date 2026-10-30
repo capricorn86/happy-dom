@@ -335,6 +335,51 @@ describe('CookieContainer', () => {
 
 			expect(cookieContainer.getCookies(originURL)).toEqual([]);
 		});
+
+		describe('Max-Age precedence and validation (#2553)', () => {
+			const originURL = new URL('https://example.com/path/to/page/');
+			const past = 'Thu, 01 Jan 1970 00:00:00 GMT';
+			const future = 'Fri, 01 Jan 2100 00:00:00 GMT';
+
+			const setCookieString = (cookieString: string): void => {
+				cookieContainer.addCookies([
+					<ICookie>CookieStringUtility.stringToCookie(originURL, cookieString)
+				]);
+			};
+
+			const cookieString = (): string =>
+				CookieStringUtility.cookiesToString(
+					cookieContainer.getCookies(new URL('https://example.com/path/to/page/'), false)
+				);
+
+			it('Lets Max-Age win over an earlier Expires.', () => {
+				setCookieString(`a=1; Max-Age=3600; Expires=${past}`);
+				expect(cookieString()).toBe('a=1');
+			});
+
+			it('Lets Max-Age win over a later Expires.', () => {
+				setCookieString(`a=1; Expires=${past}; Max-Age=3600`);
+				expect(cookieString()).toBe('a=1');
+			});
+
+			it('Lets Max-Age=-1 delete a cookie regardless of a future Expires.', () => {
+				setCookieString(`b=1; Max-Age=-1; Expires=${future}`);
+				expect(cookieString()).toBe('');
+			});
+
+			it('Ignores an invalid Max-Age and falls back to Expires.', () => {
+				setCookieString(`c=1; Expires=${past}; Max-Age=abc`);
+				expect(cookieString()).toBe('');
+			});
+
+			it.each(['0.5', '1e3'])(
+				'Ignores invalid Max-Age %s and keeps the cookie as a session cookie.',
+				(maxAge) => {
+					setCookieString(`d=1; Max-Age=${maxAge}`);
+					expect(cookieString()).toBe('d=1');
+				}
+			);
+		});
 	});
 
 	describe('getCookies()', () => {

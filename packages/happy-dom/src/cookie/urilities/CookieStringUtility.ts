@@ -39,6 +39,9 @@ export default class CookieStringUtility {
 			return null;
 		}
 
+		let expires: Date | null = null;
+		let maxAge: string | null = null;
+
 		for (const part of parts) {
 			const index = part.indexOf('=');
 			const key =
@@ -47,10 +50,12 @@ export default class CookieStringUtility {
 
 			switch (key) {
 				case 'expires':
-					cookie.expires = new Date(value);
+					expires = new Date(value);
 					break;
 				case 'max-age':
-					cookie.expires = new Date(parseInt(value, 10) * 1000 + Date.now());
+					if (/^-?\d+$/.test(value)) {
+						maxAge = value;
+					}
 					break;
 				case 'domain':
 					cookie.domain = value;
@@ -77,6 +82,12 @@ export default class CookieStringUtility {
 					}
 					break;
 			}
+		}
+
+		if (maxAge !== null) {
+			cookie.expires = new Date(parseInt(maxAge, 10) * 1000 + Date.now());
+		} else {
+			cookie.expires = expires;
 		}
 
 		const lowerKey = cookie.key.toLowerCase();
