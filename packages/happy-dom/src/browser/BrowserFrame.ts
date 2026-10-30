@@ -6,7 +6,6 @@ import BrowserWindow from '../window/BrowserWindow.js';
 import type CrossOriginBrowserWindow from '../window/CrossOriginBrowserWindow.js';
 import type Response from '../fetch/Response.js';
 import type IGoToOptions from './types/IGoToOptions.js';
-import type IInheritedOrigin from './types/IInheritedOrigin.js';
 import type { Script } from 'vm';
 import BrowserFrameURL from './utilities/BrowserFrameURL.js';
 import BrowserFrameScriptEvaluator from './utilities/BrowserFrameScriptEvaluator.js';
@@ -27,9 +26,8 @@ export default class BrowserFrame implements IBrowserFrame {
 	public [PropertySymbol.asyncTaskManager]: AsyncTaskManager = new AsyncTaskManager(this);
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
 	public [PropertySymbol.openerFrame]: IBrowserFrame | null = null;
-	public [PropertySymbol.inheritedOrigin]: IInheritedOrigin | null = null;
-	public [PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
 	public [PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
+	public [PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
 	public [PropertySymbol.popup] = false;
 	public [PropertySymbol.history] = new HistoryItemList();
 
@@ -79,20 +77,27 @@ export default class BrowserFrame implements IBrowserFrame {
 	}
 
 	/**
-	 * Sets the content.
+	 * Sets the URL.
 	 *
 	 * @param url URL.
 	 */
 	public set url(url) {
-		this.window[PropertySymbol.location][PropertySymbol.setURL](
-			this,
-			BrowserFrameURL.getRelativeURL(this, url).href
-		);
+		const relativeURL = BrowserFrameURL.getRelativeURL(this, url).href;
 
-		// The origin may have changed without creating a new window.
-		if (this.parentFrame) {
-			BrowserFrameNavigator.updateCrossOriginIsolation(this);
-		}
+		this.window[PropertySymbol.location][PropertySymbol.setURL](this, relativeURL);
+		this[PropertySymbol.history].currentItem.url = relativeURL;
+		this[PropertySymbol.history].currentItem.sourceURL = relativeURL;
+
+		BrowserFrameNavigator.updateCrossOriginIsolation(this);
+	}
+
+	/**
+	 * Returns the loaded source URL.
+	 *
+	 * @returns URL.
+	 */
+	public get sourceURL(): string | null {
+		return this[PropertySymbol.history].currentItem.sourceURL;
 	}
 
 	/**

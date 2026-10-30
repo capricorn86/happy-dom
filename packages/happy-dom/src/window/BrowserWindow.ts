@@ -914,7 +914,9 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this[PropertySymbol.location] = new Location(this.#browserFrame, options?.url ?? 'about:blank');
 		this[PropertySymbol.history] = new History(this.#browserFrame, this);
 
-		browserFrame[PropertySymbol.history].currentItem.href = options?.url ?? 'about:blank';
+		if (options?.url) {
+			browserFrame[PropertySymbol.history].currentItem.url = options?.url;
+		}
 
 		WindowBrowserContext.setWindowBrowserFrameRelation(this, this.#browserFrame);
 

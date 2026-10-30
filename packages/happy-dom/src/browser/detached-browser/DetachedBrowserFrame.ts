@@ -4,7 +4,6 @@ import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
 import type IBrowserFrame from '../types/IBrowserFrame.js';
 import type Response from '../../fetch/Response.js';
 import type IGoToOptions from '../types/IGoToOptions.js';
-import type IInheritedOrigin from '../types/IInheritedOrigin.js';
 import type { Script } from 'vm';
 import BrowserFrameURL from '../utilities/BrowserFrameURL.js';
 import BrowserFrameScriptEvaluator from '../utilities/BrowserFrameScriptEvaluator.js';
@@ -29,9 +28,8 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	public [PropertySymbol.asyncTaskManager]: AsyncTaskManager = new AsyncTaskManager(this);
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
 	public [PropertySymbol.openerFrame]: IBrowserFrame | null = null;
-	public [PropertySymbol.inheritedOrigin]: IInheritedOrigin | null = null;
-	public [PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
 	public [PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
+	public [PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
 	public [PropertySymbol.popup] = false;
 	public [PropertySymbol.history] = new HistoryItemList();
 
@@ -111,6 +109,15 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 		if (this.parentFrame) {
 			BrowserFrameNavigator.updateCrossOriginIsolation(this);
 		}
+	}
+
+	/**
+	 * Returns the loaded source URL.
+	 *
+	 * @returns URL.
+	 */
+	public get sourceURL(): string | null {
+		return this[PropertySymbol.history].currentItem.sourceURL;
 	}
 
 	/**

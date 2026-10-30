@@ -418,7 +418,6 @@ export default class HTMLIFrameElement extends HTMLElement {
 
 		this.#iframe
 			.goto(targetURL.href, {
-				initiatorFrame: browserFrame,
 				referrer: originURL.origin,
 				referrerPolicy: <TRequestReferrerPolicy>this.referrerPolicy
 			})

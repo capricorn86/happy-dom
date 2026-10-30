@@ -74,7 +74,8 @@ export default class BrowserFrameNavigator {
 
 				history.push({
 					title: '',
-					href: targetURL.href,
+					url: targetURL.href,
+					sourceURL: history.currentItem.sourceURL,
 					state: null,
 					popState: true,
 					scrollRestoration: HistoryScrollRestorationEnum.manual,
@@ -143,7 +144,8 @@ export default class BrowserFrameNavigator {
 
 			history.push({
 				title: '',
-				href: targetURL.href,
+				url: targetURL.href,
+				sourceURL: targetURL.href,
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -158,18 +160,12 @@ export default class BrowserFrameNavigator {
 		const width = previousWindow.innerWidth;
 		const height = previousWindow.innerHeight;
 		const devicePixelRatio = previousWindow.devicePixelRatio;
-		// Documents with the URL "about:blank" and "about:srcdoc" inherit the origin of the document that initiated the navigation.
-		// Other documents get their origin from their own URL. The initiator origin must not be kept for them, as it would be used if the URL of the document is later changed to an inheriting URL (e.g. with history.replaceState()).
-		const initiatorOrigin = BrowserFrameURL.hasInheritedOrigin(targetURL)
-			? BrowserFrameURL.getInheritedOrigin(goToOptions?.initiatorFrame ?? frame)
-			: null;
 
 		// Create new Window
 		frame[PropertySymbol.asyncTaskManager] = new AsyncTaskManager(frame);
 		(<BrowserWindow>frame.window) = new windowClass(frame, { url: targetURL.href, width, height });
 		(<number>frame.window.devicePixelRatio) = devicePixelRatio;
 
-		frame[PropertySymbol.inheritedOrigin] = initiatorOrigin;
 		this.updateCrossOriginIsolation(frame);
 
 		if (exceptionObserver) {
@@ -261,15 +257,13 @@ export default class BrowserFrameNavigator {
 
 		try {
 			response = await fetch.send();
+			const responseURL = new URL(response.url || targetURL.href);
 
 			// Handles the "X-Frame-Options" header for child frames.
 			if (frame.parentFrame) {
 				const xFrameOptions = response.headers?.get('X-Frame-Options')?.toLowerCase();
-				// The final URL after redirects decides the origin of the response.
-				const responseOrigin = new URL(response.url || targetURL.href).origin;
 				const isSameOrigin =
-					responseOrigin !== 'null' &&
-					responseOrigin === BrowserFrameURL.getInheritedOrigin(frame.parentFrame).origin;
+					responseURL.origin === frame.parentFrame.window[PropertySymbol.location].origin;
 
 				if (xFrameOptions === 'deny' || (xFrameOptions === 'sameorigin' && !isSameOrigin)) {
 					throw new Error(
@@ -289,13 +283,12 @@ export default class BrowserFrameNavigator {
 			return null;
 		}
 
-		if (response.url) {
-			const isRedirected = response.url !== frame.window[PropertySymbol.location].href;
+		// The URL may have changed due to a redirect.
+		if (response.url && response.url !== frame[PropertySymbol.history].currentItem.url) {
 			frame.window[PropertySymbol.location][PropertySymbol.setURL](frame, response.url);
-			// The origin may have changed due to a redirect.
-			if (isRedirected) {
-				this.updateCrossOriginIsolation(frame);
-			}
+			frame[PropertySymbol.history].currentItem.url = response.url;
+			frame[PropertySymbol.history].currentItem.sourceURL = response.url;
+			this.updateCrossOriginIsolation(frame);
 		}
 
 		if (!response.ok) {
@@ -346,27 +339,67 @@ export default class BrowserFrameNavigator {
 	 * @param frame Frame.
 	 */
 	public static updateCrossOriginIsolation(frame: IBrowserFrame): void {
-		const parentFrame = frame.parentFrame ?? frame;
-		const topFrame = frame.page.mainFrame;
-		const isSameOriginAsParent = BrowserFrameURL.isSameOrigin(frame, parentFrame);
-		const parentWindow = isSameOriginAsParent
-			? parentFrame.window
-			: new CrossOriginBrowserWindow(parentFrame.window);
+		frame.window[PropertySymbol.parent] = frame.window;
+		frame.window[PropertySymbol.top] = frame.window;
+		frame[PropertySymbol.contentWindow] = null;
+		frame[PropertySymbol.openerWindow] = null;
+
+		// Popup (opened frame) handling.
+
+		if (frame[PropertySymbol.openerFrame]) {
+			// If the frame has no source URL, use the inherited origin from the opener frame.
+			// see https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy#inherited_origins
+			const currentURL = frame.sourceURL
+				? new URL(frame.sourceURL)
+				: frame[PropertySymbol.openerFrame].sourceURL
+					? new URL(frame[PropertySymbol.openerFrame].sourceURL)
+					: new URL(frame.url);
+			const openerURL =
+				frame[PropertySymbol.openerFrame]?.sourceURL || frame[PropertySymbol.openerFrame]?.url;
+
+			if (currentURL.origin === new URL(openerURL).origin) {
+				frame[PropertySymbol.openerWindow] = frame[PropertySymbol.openerFrame].window;
+			} else {
+				frame[PropertySymbol.openerWindow] = new CrossOriginBrowserWindow(
+					frame[PropertySymbol.openerFrame].window
+				);
+			}
+			return;
+		}
+
+		if (!frame.parentFrame) {
+			return;
+		}
+
+		// Child frame (e.g. iframe) handling.
+
+		// If the frame has no source URL, use the inherited origin from the parent frame.
+		// see https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy#inherited_origins
+		const currentURL = frame.sourceURL
+			? new URL(frame.sourceURL)
+			: frame.parentFrame.sourceURL
+				? new URL(frame.parentFrame.sourceURL)
+				: new URL(frame.url);
+		const parentURL = frame.parentFrame.sourceURL || frame.parentFrame.url;
+		const topURL = frame.page.mainFrame.sourceURL || frame.page.mainFrame.url;
+
+		const parentWindow =
+			currentURL.origin === new URL(parentURL).origin
+				? frame.parentFrame.window
+				: new CrossOriginBrowserWindow(frame.parentFrame.window);
 		const topWindow =
-			topFrame === parentFrame
+			frame.page.mainFrame === frame.parentFrame
 				? parentWindow
-				: BrowserFrameURL.isSameOrigin(frame, topFrame)
-					? topFrame.window
-					: new CrossOriginBrowserWindow(topFrame.window);
+				: currentURL.origin === new URL(topURL).origin
+					? frame.page.mainFrame.window
+					: new CrossOriginBrowserWindow(frame.page.mainFrame.window);
 
 		frame.window[PropertySymbol.parent] = <BrowserWindow>parentWindow;
 		frame.window[PropertySymbol.top] = <BrowserWindow>topWindow;
-
-		if (frame.parentFrame) {
-			frame[PropertySymbol.contentWindow] = isSameOriginAsParent
+		frame[PropertySymbol.contentWindow] =
+			currentURL.origin === new URL(parentURL).origin
 				? frame.window
-				: new CrossOriginBrowserWindow(frame.window, frame.parentFrame.window);
-		}
+				: new CrossOriginBrowserWindow(frame.window);
 	}
 
 	/**
@@ -402,8 +435,8 @@ export default class BrowserFrameNavigator {
 			});
 		}
 
-		const fromOrigin = new URL(history.currentItem.href).origin;
-		const toOrigin = new URL(historyItem.href).origin;
+		const fromOrigin = new URL(history.currentItem.url).origin;
+		const toOrigin = new URL(historyItem.url).origin;
 
 		history.currentItem = historyItem;
 
@@ -415,14 +448,14 @@ export default class BrowserFrameNavigator {
 					...goToOptions,
 					referrer: frame.url
 				},
-				url: historyItem.href,
+				url: historyItem.url,
 				method: historyItem.method,
 				formData: historyItem.formData,
 				disableHistory: true
 			});
 		}
 
-		frame.window.location[PropertySymbol.setURL](frame, historyItem.href);
+		frame.window.location[PropertySymbol.setURL](frame, historyItem.url);
 
 		frame.window.dispatchEvent(
 			new frame.window.PopStateEvent('popstate', {
@@ -467,8 +500,8 @@ export default class BrowserFrameNavigator {
 			});
 		}
 
-		const fromOrigin = new URL(history.currentItem.href).origin;
-		const toOrigin = new URL(historyItem.href).origin;
+		const fromOrigin = new URL(history.currentItem.url).origin;
+		const toOrigin = new URL(historyItem.url).origin;
 
 		history.currentItem = historyItem;
 
@@ -480,14 +513,14 @@ export default class BrowserFrameNavigator {
 					...goToOptions,
 					referrer: frame.url
 				},
-				url: historyItem.href,
+				url: historyItem.url,
 				method: historyItem.method,
 				formData: historyItem.formData,
 				disableHistory: true
 			});
 		}
 
-		frame.window.location[PropertySymbol.setURL](frame, historyItem.href);
+		frame.window.location[PropertySymbol.setURL](frame, historyItem.url);
 
 		frame.window.dispatchEvent(
 			new frame.window.PopStateEvent('popstate', {
@@ -540,19 +573,19 @@ export default class BrowserFrameNavigator {
 			});
 		}
 
-		const fromOrigin = new URL(history.currentItem.href).origin;
+		const fromOrigin = new URL(history.currentItem.url).origin;
 		let isPopState = true;
 
 		if (steps < 0) {
 			for (let i = fromIndex; i > toIndex; i--) {
-				if (!history.items[i].popState || fromOrigin !== new URL(history.items[i].href).origin) {
+				if (!history.items[i].popState || fromOrigin !== new URL(history.items[i].url).origin) {
 					isPopState = false;
 					break;
 				}
 			}
 		} else {
 			for (let i = fromIndex; i < toIndex; i++) {
-				if (!history.items[i].popState || fromOrigin !== new URL(history.items[i].href).origin) {
+				if (!history.items[i].popState || fromOrigin !== new URL(history.items[i].url).origin) {
 					isPopState = false;
 					break;
 				}
@@ -569,14 +602,14 @@ export default class BrowserFrameNavigator {
 					...goToOptions,
 					referrer: frame.url
 				},
-				url: historyItem.href,
+				url: historyItem.url,
 				method: historyItem.method,
 				formData: historyItem.formData,
 				disableHistory: true
 			});
 		}
 
-		frame.window.location[PropertySymbol.setURL](frame, historyItem.href);
+		frame.window.location[PropertySymbol.setURL](frame, historyItem.url);
 
 		frame.window.dispatchEvent(
 			new frame.window.PopStateEvent('popstate', {
@@ -614,7 +647,7 @@ export default class BrowserFrameNavigator {
 				...goToOptions,
 				referrer: frame.url
 			},
-			url: history.currentItem.href,
+			url: history.currentItem.url,
 			method: history.currentItem.method,
 			formData: history.currentItem.formData,
 			disableHistory: true

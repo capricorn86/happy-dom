@@ -7,7 +7,8 @@ import type IHistoryItem from './IHistoryItem.js';
 export default class HistoryItemList {
 	public currentItem: IHistoryItem = {
 		title: '',
-		href: 'about:blank',
+		url: 'about:blank',
+		sourceURL: null,
 		state: null,
 		popState: false,
 		scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -34,8 +35,9 @@ export default class HistoryItemList {
 	}
 
 	/**
+	 * Replaces the current history item with the provided one.
 	 *
-	 * @param historyItem
+	 * @param historyItem History item to replace the current one with.
 	 */
 	public replace(historyItem: IHistoryItem): void {
 		const index = this.items.indexOf(this.currentItem);
@@ -60,7 +62,8 @@ export default class HistoryItemList {
 		this.items.length = 0;
 		this.currentItem = {
 			title: '',
-			href: 'about:blank',
+			url: 'about:blank',
+			sourceURL: null,
 			state: null,
 			popState: false,
 			scrollRestoration: HistoryScrollRestorationEnum.auto,
