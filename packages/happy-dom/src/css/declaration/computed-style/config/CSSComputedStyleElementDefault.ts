@@ -96,7 +96,7 @@ export default {
 	P: 'display: block;',
 	PARAM: 'display: none;',
 	PICTURE: '',
-	PRE: 'display: block;',
+	PRE: 'display: block; white-space: pre;',
 	PROGRESS: 'display: inline-block;',
 	Q: '',
 	RB: '',

@@ -692,6 +692,7 @@ export default class HTMLElement extends Element {
 		}
 
 		let result = '';
+		let whiteSpace: string | null = null;
 
 		for (const childNode of this[PropertySymbol.nodeArray]) {
 			if (childNode[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
@@ -731,7 +732,22 @@ export default class HTMLElement extends Element {
 					}
 				}
 			} else if (childNode[PropertySymbol.nodeType] === NodeTypeEnum.textNode) {
-				result += childNode.textContent.replace(/[\n\r]/, '');
+				whiteSpace ??= this[PropertySymbol.window].getComputedStyle(this).whiteSpace;
+				const text = childNode.textContent.replace(/\r\n?/g, '\n');
+
+				switch (whiteSpace) {
+					case 'pre':
+					case 'pre-wrap':
+					case 'break-spaces':
+						result += text;
+						break;
+					case 'pre-line':
+						result += text.replace(/[ \t]*\n[ \t]*/g, '\n').replace(/[ \t]+/g, ' ');
+						break;
+					default:
+						result += text.replace(/[ \t\n\f]+/g, ' ');
+						break;
+				}
 			}
 		}
 
@@ -751,14 +767,16 @@ export default class HTMLElement extends Element {
 			this.removeChild(childNodes[0]);
 		}
 
-		const texts = text.split(/[\n\r]/);
+		const texts = text.split(/\r\n|\n|\r/);
 		const ownerDocument = this[PropertySymbol.ownerDocument];
 
 		for (let i = 0, max = texts.length; i < max; i++) {
 			if (i !== 0) {
 				this.appendChild(ownerDocument.createElement('br'));
 			}
-			this.appendChild(ownerDocument.createTextNode(texts[i]));
+			if (texts[i]) {
+				this.appendChild(ownerDocument.createTextNode(texts[i]));
+			}
 		}
 	}
 
@@ -785,7 +803,7 @@ export default class HTMLElement extends Element {
 			);
 		}
 
-		const texts = text.split(/[\n\r]/);
+		const texts = text.split(/\r\n|\n|\r/);
 
 		for (let i = 0, max = texts.length; i < max; i++) {
 			if (i !== 0) {
@@ -794,10 +812,12 @@ export default class HTMLElement extends Element {
 					this
 				);
 			}
-			this[PropertySymbol.parentNode].insertBefore(
-				this[PropertySymbol.ownerDocument].createTextNode(texts[i]),
-				this
-			);
+			if (texts[i] || max === 1) {
+				this[PropertySymbol.parentNode].insertBefore(
+					this[PropertySymbol.ownerDocument].createTextNode(texts[i]),
+					this
+				);
+			}
 		}
 
 		this[PropertySymbol.parentNode].removeChild(this);
