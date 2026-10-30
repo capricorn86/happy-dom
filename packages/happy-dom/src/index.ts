@@ -196,6 +196,7 @@ import NodeIterator from './tree-walker/NodeIterator.js';
 import TreeWalker from './tree-walker/TreeWalker.js';
 import URL from './url/URL.js';
 import WebSocket from './web-socket/WebSocket.js';
+import BroadcastChannel from './broadcast-channel/BroadcastChannel.js';
 import BrowserWindow from './window/BrowserWindow.js';
 import DetachedWindowAPI from './window/DetachedWindowAPI.js';
 import GlobalWindow from './window/GlobalWindow.js';
@@ -487,6 +488,7 @@ export {
 	VirtualConsolePrinter,
 	VTTCue,
 	WebSocket,
+	BroadcastChannel,
 	WheelEvent,
 	Window,
 	XMLDocument,
