@@ -1656,6 +1656,54 @@ describe('QuerySelector', () => {
 				expect(xmlDoc.querySelectorAll('[name="jane"]').length).toBe(1);
 			});
 		});
+
+		describe('Issue #2550: Escaped characters in tag names', () => {
+			it('Matches an element whose tag name contains an escaped colon.', () => {
+				const container = document.createElement('div');
+				container.innerHTML =
+					'<q:template><span id="inner"></span></q:template><span id="outer"></span>';
+
+				expect(container.querySelector('q\\:template')).not.toBeNull();
+				expect(container.querySelector('q\\:template')!.tagName).toBe('Q:TEMPLATE');
+				expect(container.querySelectorAll('q\\:template')[0]).not.toBeNull();
+			});
+
+			it('Supports closest() with an escaped character in the tag name.', () => {
+				const container = document.createElement('div');
+				container.innerHTML =
+					'<q:template><span id="inner"></span></q:template><span id="outer"></span>';
+
+				expect(container.querySelector('#inner')!.closest('q\\:template')).not.toBeNull();
+				expect(container.querySelector('#inner')!.closest('q\\:template')!.tagName).toBe(
+					'Q:TEMPLATE'
+				);
+				expect(container.querySelector('#outer')!.closest('q\\:template')).toBeNull();
+			});
+
+			it('Supports descendant selectors when the tag name is escaped.', () => {
+				const container = document.createElement('div');
+				container.innerHTML =
+					'<q:template><span id="inner"></span></q:template><span id="outer"></span>';
+
+				expect(container.querySelectorAll('q\\:template span').length).toBe(1);
+			});
+
+			it('Matches escaped regular tag names.', () => {
+				const container = document.createElement('div');
+				container.innerHTML = '<div class="test"><span></span></div>';
+
+				expect(container.querySelector('di\\v')).not.toBeNull();
+				expect(container.querySelector('di\\v')!.className).toBe('test');
+			});
+
+			it('Matches escaped namespaced tag names such as svg:rect.', () => {
+				const container = document.createElement('div');
+				container.innerHTML = '<svg:rect></svg:rect>';
+
+				expect(container.querySelector('svg\\:rect')).not.toBeNull();
+				expect(container.querySelector('svg\\:rect')!.tagName).toBe('SVG:RECT');
+			});
+		});
 	});
 
 	describe('querySelector()', () => {
