@@ -8,6 +8,7 @@ import { decodeHTML, decodeHTMLAttribute, decodeXML, escapeText } from 'entities
 // Encoding patterns
 const ENCODE_XML_ATTR_REGEXP = /[&"<>\t\n\r]/g;
 const ENCODE_HTML_ATTR_REGEXP = /[&"]/g;
+const ENCODE_XML_TEXT_REGEXP = /[&<>]/g;
 
 // Decoding patterns
 const DECODE_TEXT_CONTENT_REGEXP = /&(?:nbsp|lt|gt|amp);/g;
@@ -26,6 +27,12 @@ const ENCODE_XML_ATTR_MAP: { [key: string]: string } = {
 const ENCODE_HTML_ATTR_MAP: { [key: string]: string } = {
 	'&': '&amp;',
 	'"': '&quot;'
+};
+
+const ENCODE_XML_TEXT_MAP: { [key: string]: string } = {
+	'&': '&amp;',
+	'<': '&lt;',
+	'>': '&gt;'
 };
 
 // Decoding lookup tables
@@ -112,6 +119,22 @@ export default class XMLEncodeUtility {
 			return '';
 		}
 		return escapeText(text);
+	}
+
+	/**
+	 * Encodes text content for XML serialization.
+	 *
+	 * Unlike HTML serialization, this leaves non-breaking spaces as is, since "&nbsp;" isn't defined in XML.
+	 *
+	 * @see https://w3c.github.io/DOM-Parsing/#xml-serializing-a-text-node
+	 * @param text Value.
+	 * @returns Escaped value.
+	 */
+	public static encodeXMLTextContent(text: string | null): string {
+		if (text === null) {
+			return '';
+		}
+		return text.replace(ENCODE_XML_TEXT_REGEXP, (char) => ENCODE_XML_TEXT_MAP[char]);
 	}
 
 	/**
