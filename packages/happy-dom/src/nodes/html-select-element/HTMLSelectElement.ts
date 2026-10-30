@@ -341,6 +341,30 @@ export default class HTMLSelectElement extends HTMLElement {
 	}
 
 	/**
+	 * Returns size.
+	 *
+	 * @returns Size.
+	 */
+	public get size(): number {
+		const size = this.getAttribute('size');
+		if (size === null) {
+			return 0;
+		}
+		const parsed = parseInt(size, 10);
+		return isNaN(parsed) || parsed < 0 ? 0 : parsed;
+	}
+
+	/**
+	 * Sets size.
+	 *
+	 * @param size Size.
+	 */
+	public set size(size: number) {
+		const value = Math.trunc(Number(size));
+		this.setAttribute('size', String(isNaN(value) ? 0 : Math.max(0, value)));
+	}
+
+	/**
 	 * Returns autofocus.
 	 *
 	 * @returns Autofocus.
