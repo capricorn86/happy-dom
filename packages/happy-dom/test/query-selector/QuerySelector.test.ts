@@ -578,6 +578,35 @@ describe('QuerySelector', () => {
 			expect(elements[0] === container.children[0]).toBe(true);
 		});
 
+		it('Returns elements with escaped double quotes inside a quoted attribute value.', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `<div data-value='say "hi"'>Content</div>`;
+
+			const elements = container.querySelectorAll('[data-value="say \\"hi\\""]');
+			expect(elements.length).toBe(1);
+			expect(elements[0] === container.children[0]).toBe(true);
+		});
+
+		it('Returns elements with escaped single quotes inside a quoted attribute value.', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `<div data-value="say 'hi'">Content</div>`;
+
+			const elements = container.querySelectorAll("[data-value='say \\'hi\\'']");
+			expect(elements.length).toBe(1);
+			expect(elements[0] === container.children[0]).toBe(true);
+		});
+
+		it('Returns elements with escaped quotes inside a quoted attribute value without matching unescaped values.', () => {
+			const container = document.createElement('div');
+			container.innerHTML =
+				`<div id="a" data-value='say "hi"'>Content</div>` +
+				`<div id="b" data-value='say hi'>Content</div>`;
+
+			const elements = container.querySelectorAll('[data-value="say \\"hi\\""]');
+			expect(elements.length).toBe(1);
+			expect(elements[0] === container.children[0]).toBe(true);
+		});
+
 		it('Returns all elements with tag name and matching attributes using "span[_attr1]".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML.replace(/ attr1/gm, '_attr1');
