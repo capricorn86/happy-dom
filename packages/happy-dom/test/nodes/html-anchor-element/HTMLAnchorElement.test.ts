@@ -1,3 +1,4 @@
+import util from 'node:util';
 import Window from '../../../src/window/Window.js';
 import type Document from '../../../src/nodes/document/Document.js';
 import type HTMLAnchorElement from '../../../src/nodes/html-anchor-element/HTMLAnchorElement.js';
@@ -54,6 +55,13 @@ describe('HTMLAnchorElement', () => {
 	}
 
 	describe('get href()', () => {
+		it("Returns an empty string when called on the prototype, as Node's util.inspect() does (#1938).", () => {
+			expect(Reflect.get(window.HTMLAnchorElement.prototype, 'href')).toBe('');
+			expect(() =>
+				util.inspect(window.HTMLAnchorElement.prototype, { showHidden: true })
+			).not.toThrow();
+		});
+
 		it('Returns the "href" attribute.', () => {
 			const element = document.createElement('a');
 			element.setAttribute('href', 'test');

@@ -16,6 +16,10 @@ export default class HTMLBaseElement extends HTMLElement {
 	 * @returns Href.
 	 */
 	public get href(): string {
+		// Node's util.inspect() calls this getter on the prototype when checking for URLs (#1938).
+		if (!this[PropertySymbol.attributes]) {
+			return '';
+		}
 		if (!this.hasAttribute('href')) {
 			return this[PropertySymbol.ownerDocument].location.href;
 		}

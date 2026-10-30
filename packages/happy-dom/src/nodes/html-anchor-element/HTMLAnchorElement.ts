@@ -59,6 +59,10 @@ export default class HTMLAnchorElement extends HTMLElement implements IHTMLHyper
 	 * @returns Href.
 	 */
 	public get href(): string {
+		// Node's util.inspect() calls this getter on the prototype when checking for URLs (#1938).
+		if (!(#htmlHyperlinkElementUtility in this)) {
+			return '';
+		}
 		return this.#htmlHyperlinkElementUtility.getHref();
 	}
 
