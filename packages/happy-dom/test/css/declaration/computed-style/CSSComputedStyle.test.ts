@@ -29,6 +29,26 @@ describe('CSSComputedStyle', () => {
 			expect(computedStyle.getComputedStyle()).not.toBe(propertyManager);
 		});
 
+		it('Returns the correct "display" for inline, unknown and table elements.', () => {
+			document.body.innerHTML =
+				'<table><thead><tr><th>h</th></tr></thead><tbody><tr><td>x</td></tr></tbody></table><span>s</span><x-foo>c</x-foo>';
+
+			const expected = {
+				td: 'table-cell',
+				th: 'table-cell',
+				tbody: 'table-row-group',
+				thead: 'table-header-group',
+				span: 'inline',
+				'x-foo': 'inline'
+			};
+
+			for (const selector of Object.keys(expected)) {
+				expect(window.getComputedStyle(document.querySelector(selector)!).display).toBe(
+					(<any>expected)[selector]
+				);
+			}
+		});
+
 		it('Parses variables correctly.', () => {
 			document.body.appendChild(element);
 			element.setAttribute(

@@ -198,7 +198,8 @@ export default class CSSComputedStyle {
 				const defaultCSS = (<any>CSSComputedStyleElementDefault)[
 					(<Element>parentElement.element)[PropertySymbol.tagName]!
 				];
-				let elementCSSText = '';
+				// The initial value of "display" is "inline" for elements without a default.
+				let elementCSSText = 'display: inline;';
 
 				if (defaultCSS) {
 					if (typeof defaultCSS === 'string') {
