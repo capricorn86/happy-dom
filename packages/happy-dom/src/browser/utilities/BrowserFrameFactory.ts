@@ -18,6 +18,8 @@ export default class BrowserFrameFactory {
 		);
 		(<IBrowserFrame>frame.parentFrame) = parentFrame;
 		parentFrame.childFrames.push(frame);
+		frame.window[PropertySymbol.parent] = parentFrame.window;
+		frame.window[PropertySymbol.top] = parentFrame.window.top;
 		return frame;
 	}
 
@@ -60,6 +62,7 @@ export default class BrowserFrameFactory {
 						(<object>frame.window) = { closed: true };
 						frame[PropertySymbol.openerFrame] = null;
 						frame[PropertySymbol.openerWindow] = null;
+						frame[PropertySymbol.contentWindow] = null;
 
 						// Clear navigation listeners
 						if (frame[PropertySymbol.listeners]) {
@@ -87,6 +90,7 @@ export default class BrowserFrameFactory {
 							(<object>frame.window) = { closed: true };
 							frame[PropertySymbol.openerFrame] = null;
 							frame[PropertySymbol.openerWindow] = null;
+							frame[PropertySymbol.contentWindow] = null;
 
 							// Clear navigation listeners
 							if (frame[PropertySymbol.listeners]) {

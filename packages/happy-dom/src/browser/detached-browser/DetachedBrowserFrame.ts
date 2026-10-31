@@ -13,6 +13,7 @@ import type IReloadOptions from '../types/IReloadOptions.js';
 import type Document from '../../nodes/document/Document.js';
 import type CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import HistoryItemList from '../../history/HistoryItemList.js';
+import BrowserFrameCrossOriginIsolation from '../utilities/BrowserFrameCrossOriginIsolation.js';
 
 /**
  * Browser frame used when constructing a Window instance without a browser.
@@ -29,6 +30,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
 	public [PropertySymbol.openerFrame]: IBrowserFrame | null = null;
 	public [PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
+	public [PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
 	public [PropertySymbol.popup] = false;
 	public [PropertySymbol.history] = new HistoryItemList();
 
@@ -99,10 +101,25 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 		if (!this.window) {
 			throw new Error('The frame has been destroyed, the "window" property is not set.');
 		}
-		this.window[PropertySymbol.location][PropertySymbol.setURL](
-			this,
-			BrowserFrameURL.getRelativeURL(this, url).href
-		);
+
+		const relativeURL = BrowserFrameURL.getRelativeURL(this, url);
+		const relativeURLHref = relativeURL.href;
+
+		this.window[PropertySymbol.location][PropertySymbol.setURL](this, relativeURLHref);
+		this[PropertySymbol.history].currentItem.url = relativeURLHref;
+		this[PropertySymbol.history].currentItem.sourceURL =
+			relativeURL.origin !== 'null' ? relativeURLHref : '';
+
+		BrowserFrameCrossOriginIsolation.isolate(this);
+	}
+
+	/**
+	 * Returns the loaded source URL.
+	 *
+	 * @returns URL.
+	 */
+	public get sourceURL(): string | null {
+		return this[PropertySymbol.history].currentItem.sourceURL;
 	}
 
 	/**

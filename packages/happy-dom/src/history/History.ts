@@ -134,7 +134,7 @@ export default class History {
 		const location = this.#window[PropertySymbol.location];
 		const newURL = url ? BrowserFrameURL.getRelativeURL(this.#browserFrame, url) : location;
 
-		if (url && newURL.origin !== location.origin) {
+		if (url && newURL.origin !== 'null' && newURL.origin !== location.origin) {
 			throw new this.#window.DOMException(
 				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${
 					location.origin
@@ -147,7 +147,8 @@ export default class History {
 
 		history.push({
 			title: this.#window.document.title,
-			href: newURL.href,
+			url: newURL.href,
+			sourceURL: history.currentItem.sourceURL,
 			state,
 			popState: true,
 			scrollRestoration: history.currentItem.scrollRestoration,
@@ -155,7 +156,7 @@ export default class History {
 			formData: history.currentItem.formData || null
 		});
 
-		location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.href);
+		location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.url);
 	}
 
 	/**
@@ -185,7 +186,7 @@ export default class History {
 		const location = this.#window[PropertySymbol.location];
 		const newURL = url ? BrowserFrameURL.getRelativeURL(this.#browserFrame, url) : location;
 
-		if (url && newURL.origin !== location.origin) {
+		if (url && newURL.origin !== 'null' && newURL.origin !== location.origin) {
 			throw new this.#window.DOMException(
 				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${
 					location.origin
@@ -196,7 +197,8 @@ export default class History {
 
 		history.replace({
 			title: this.#window.document.title,
-			href: newURL.href,
+			url: newURL.href,
+			sourceURL: history.currentItem.sourceURL,
 			state,
 			popState: history.currentItem.popState,
 			scrollRestoration: history.currentItem.scrollRestoration,
@@ -205,7 +207,7 @@ export default class History {
 		});
 
 		if (url) {
-			location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.href);
+			location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.url);
 		}
 	}
 

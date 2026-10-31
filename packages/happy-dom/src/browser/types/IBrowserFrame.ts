@@ -22,11 +22,13 @@ export default interface IBrowserFrame {
 	readonly closed: boolean;
 	content: string;
 	url: string;
+	sourceURL: string | null;
 	[PropertySymbol.history]: HistoryItemList;
 	[PropertySymbol.asyncTaskManager]: AsyncTaskManager;
 	[PropertySymbol.listeners]: { navigation: Array<() => void> };
 	[PropertySymbol.openerFrame]: IBrowserFrame | null;
 	[PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null;
+	[PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null;
 	[PropertySymbol.popup]: boolean;
 
 	/**

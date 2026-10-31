@@ -14,7 +14,11 @@ export default class FetchCORSUtility {
 		originURL = typeof originURL === 'string' ? new URL(<string>originURL) : <URL>originURL;
 		targetURL = typeof targetURL === 'string' ? new URL(<string>targetURL) : <URL>targetURL;
 
-		if (targetURL.protocol === 'about:' || targetURL.protocol === 'javascript:') {
+		if (
+			(targetURL.protocol === 'about:' &&
+				(targetURL.pathname === 'blank' || targetURL.pathname === 'srcdoc')) ||
+			targetURL.protocol === 'javascript:'
+		) {
 			return false;
 		}
 

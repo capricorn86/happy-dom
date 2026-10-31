@@ -10106,6 +10106,7 @@ export default {
 		'aivencloud.com',
 		'compute.estate',
 		'alces.network',
+		'ztna-dingtalk.com',
 		'compute.amazonaws.com.cn',
 		'compute.amazonaws.com',
 		'compute-1.amazonaws.com',

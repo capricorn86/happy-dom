@@ -7,30 +7,6 @@ import * as PropertySymbol from '../../PropertySymbol.js';
  */
 export default class BrowserFrameURL {
 	/**
-	 * Returns whether a target URL has the same origin as the origin URL.
-	 *
-	 * @param originURL Origin URL.
-	 * @param targetURL Target URL.
-	 * @returns Whether the URLs have the same origin.
-	 */
-	public static isSameOrigin(originURL: Pick<URL, 'origin'>, targetURL: URL): boolean {
-		return (
-			this.hasInheritedOrigin(targetURL) ||
-			(targetURL.origin !== 'null' && originURL.origin === targetURL.origin)
-		);
-	}
-
-	/**
-	 * Returns whether a target URL has an opaque origin instead of an inherited origin.
-	 *
-	 * @param targetURL Target URL.
-	 * @returns Whether the URL has an opaque origin.
-	 */
-	public static hasOpaqueOrigin(targetURL: URL): boolean {
-		return targetURL.origin === 'null' && !this.hasInheritedOrigin(targetURL);
-	}
-
-	/**
 	 * Returns relative URL.
 	 *
 	 * @param frame Frame.
@@ -53,16 +29,52 @@ export default class BrowserFrameURL {
 	}
 
 	/**
-	 * Returns whether a target URL has an inherited origin.
+	 * Checks if the child frame is same-origin with the parent frame.
 	 *
-	 * @param targetURL Target URL.
-	 * @returns Whether the URL has an inherited origin.
+	 * @param parentFrame
+	 * @param childFrame
 	 */
-	private static hasInheritedOrigin(targetURL: URL): boolean {
+	public static isSameOrigin(parentFrame: IBrowserFrame, childFrame: IBrowserFrame): boolean {
+		const parentURL = this.getInheritedFrameURL(parentFrame);
+		const childURL = this.getInheritedFrameURL(childFrame);
 		return (
-			targetURL.protocol === 'javascript:' ||
-			(targetURL.protocol === 'about:' &&
-				(targetURL.pathname === 'blank' || targetURL.pathname === 'srcdoc'))
+			!this.isDataHTMLURL(childFrame.url) &&
+			(parentURL === null || childURL === null || parentURL.origin === childURL.origin)
 		);
+	}
+	/**
+	 * Returns the frame URL or the inherited frame URL if the frame has no source URL.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy#inherited_origins
+	 * @param frame Frame.
+	 * @returns Frame URL or inherited frame URL, or null if opaque origin.
+	 */
+	private static getInheritedFrameURL(frame: IBrowserFrame): URL | null {
+		// Popup frame
+		if (frame[PropertySymbol.openerFrame]) {
+			if (frame.sourceURL) {
+				return new URL(frame.sourceURL);
+			}
+			return this.getInheritedFrameURL(frame[PropertySymbol.openerFrame]);
+		}
+		// Child frame (e.g. iframe)
+		if (frame.parentFrame) {
+			if (frame.sourceURL) {
+				return new URL(frame.sourceURL);
+			}
+			return this.getInheritedFrameURL(frame.parentFrame);
+		}
+		return null;
+	}
+
+	/**
+	 * Returns whether the URL is a data URL containing HTML content.
+	 *
+	 * @param url URL.
+	 * @returns True if the URL is a data URL containing HTML content, false otherwise.
+	 */
+	private static isDataHTMLURL(url: string): boolean {
+		const targetURL = new URL(url);
+		return targetURL.protocol === 'data:' && targetURL.pathname.startsWith('text/html');
 	}
 }
