@@ -84,6 +84,19 @@ const DISPLAY = [
 	/* Other values */
 	'table',
 	'table-row',
+	'table-cell',
+	'table-row-group',
+	'table-header-group',
+	'table-footer-group',
+	'table-column',
+	'table-column-group',
+	'table-caption',
+	'inline-table',
+	'ruby',
+	'ruby-base',
+	'ruby-text',
+	'ruby-base-container',
+	'ruby-text-container',
 	'list-item'
 ];
 const BORDER_IMAGE_REPEAT = ['stretch', 'repeat', 'round', 'space'];
