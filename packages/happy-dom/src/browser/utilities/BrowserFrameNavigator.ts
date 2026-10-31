@@ -11,7 +11,7 @@ import type FormData from '../../form-data/FormData.js';
 import HistoryScrollRestorationEnum from '../../history/HistoryScrollRestorationEnum.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import Fetch from '../../fetch/Fetch.js';
-import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
+import BrowserFrameCrossOriginIsolation from './BrowserFrameCrossOriginIsolation.js';
 
 /**
  * Browser frame navigation utility.
@@ -131,8 +131,10 @@ export default class BrowserFrameNavigator {
 		if (!BrowserFrameValidator.validateFrameNavigation(frame)) {
 			if (!frame.page.context.browser.settings.navigation.disableFallbackToSetURL) {
 				frame.window.location[PropertySymbol.setURL](frame, targetURL.href);
-				// The origin may have changed without creating a new window.
-				this.updateCrossOriginIsolation(frame);
+				frame[PropertySymbol.history].currentItem.url = targetURL.href;
+				frame[PropertySymbol.history].currentItem.sourceURL =
+					targetURL.origin !== 'null' ? targetURL.href : '';
+				BrowserFrameCrossOriginIsolation.isolate(frame);
 			}
 
 			return null;
@@ -145,7 +147,7 @@ export default class BrowserFrameNavigator {
 			history.push({
 				title: '',
 				url: targetURL.href,
-				sourceURL: targetURL.href,
+				sourceURL: targetURL.origin !== 'null' ? targetURL.href : '',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -166,7 +168,7 @@ export default class BrowserFrameNavigator {
 		(<BrowserWindow>frame.window) = new windowClass(frame, { url: targetURL.href, width, height });
 		(<number>frame.window.devicePixelRatio) = devicePixelRatio;
 
-		this.updateCrossOriginIsolation(frame);
+		BrowserFrameCrossOriginIsolation.isolate(frame);
 
 		if (exceptionObserver) {
 			exceptionObserver.observe(frame.window);
@@ -197,8 +199,8 @@ export default class BrowserFrameNavigator {
 			destroyWindowAndAsyncTaskManager();
 		}
 
-		// About protocol
-		if (targetURL.protocol === 'about:') {
+		// Handle about protocol URL
+		if (targetURL.protocol === 'about') {
 			if (goToOptions?.beforeContentCallback) {
 				goToOptions.beforeContentCallback(frame.window);
 			}
@@ -288,7 +290,7 @@ export default class BrowserFrameNavigator {
 			frame.window[PropertySymbol.location][PropertySymbol.setURL](frame, response.url);
 			frame[PropertySymbol.history].currentItem.url = response.url;
 			frame[PropertySymbol.history].currentItem.sourceURL = response.url;
-			this.updateCrossOriginIsolation(frame);
+			BrowserFrameCrossOriginIsolation.isolate(frame);
 		}
 
 		if (!response.ok) {
@@ -326,80 +328,6 @@ export default class BrowserFrameNavigator {
 		finalize();
 
 		return response;
-	}
-
-	/**
-	 * Updates the cross-origin isolation between a frame and its ancestors.
-	 *
-	 * Sets "parent" and "top" of the frame's window, and the "contentWindow" that the parent frame gets access to.
-	 * Windows with a different origin are only given the limited access of a cross-origin window.
-	 *
-	 * @see https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy#cross-origin_script_api_access
-	 * @see https://html.spec.whatwg.org/multipage/browsers.html#cross-origin-objects
-	 * @param frame Frame.
-	 */
-	public static updateCrossOriginIsolation(frame: IBrowserFrame): void {
-		frame.window[PropertySymbol.parent] = frame.window;
-		frame.window[PropertySymbol.top] = frame.window;
-		frame[PropertySymbol.contentWindow] = null;
-		frame[PropertySymbol.openerWindow] = null;
-
-		// Popup (opened frame) handling.
-
-		if (frame[PropertySymbol.openerFrame]) {
-			// If the frame has no source URL, use the inherited origin from the opener frame.
-			// see https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy#inherited_origins
-			const currentURL = frame.sourceURL
-				? new URL(frame.sourceURL)
-				: frame[PropertySymbol.openerFrame].sourceURL
-					? new URL(frame[PropertySymbol.openerFrame].sourceURL)
-					: new URL(frame.url);
-			const openerURL =
-				frame[PropertySymbol.openerFrame]?.sourceURL || frame[PropertySymbol.openerFrame]?.url;
-
-			if (currentURL.origin === new URL(openerURL).origin) {
-				frame[PropertySymbol.openerWindow] = frame[PropertySymbol.openerFrame].window;
-			} else {
-				frame[PropertySymbol.openerWindow] = new CrossOriginBrowserWindow(
-					frame[PropertySymbol.openerFrame].window
-				);
-			}
-			return;
-		}
-
-		if (!frame.parentFrame) {
-			return;
-		}
-
-		// Child frame (e.g. iframe) handling.
-
-		// If the frame has no source URL, use the inherited origin from the parent frame.
-		// see https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy#inherited_origins
-		const currentURL = frame.sourceURL
-			? new URL(frame.sourceURL)
-			: frame.parentFrame.sourceURL
-				? new URL(frame.parentFrame.sourceURL)
-				: new URL(frame.url);
-		const parentURL = frame.parentFrame.sourceURL || frame.parentFrame.url;
-		const topURL = frame.page.mainFrame.sourceURL || frame.page.mainFrame.url;
-
-		const parentWindow =
-			currentURL.origin === new URL(parentURL).origin
-				? frame.parentFrame.window
-				: new CrossOriginBrowserWindow(frame.parentFrame.window);
-		const topWindow =
-			frame.page.mainFrame === frame.parentFrame
-				? parentWindow
-				: currentURL.origin === new URL(topURL).origin
-					? frame.page.mainFrame.window
-					: new CrossOriginBrowserWindow(frame.page.mainFrame.window);
-
-		frame.window[PropertySymbol.parent] = <BrowserWindow>parentWindow;
-		frame.window[PropertySymbol.top] = <BrowserWindow>topWindow;
-		frame[PropertySymbol.contentWindow] =
-			currentURL.origin === new URL(parentURL).origin
-				? frame.window
-				: new CrossOriginBrowserWindow(frame.window);
 	}
 
 	/**

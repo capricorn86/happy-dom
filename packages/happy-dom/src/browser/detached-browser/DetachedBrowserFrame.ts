@@ -13,6 +13,7 @@ import type IReloadOptions from '../types/IReloadOptions.js';
 import type Document from '../../nodes/document/Document.js';
 import type CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import HistoryItemList from '../../history/HistoryItemList.js';
+import BrowserFrameCrossOriginIsolation from '../utilities/BrowserFrameCrossOriginIsolation.js';
 
 /**
  * Browser frame used when constructing a Window instance without a browser.
@@ -100,15 +101,16 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 		if (!this.window) {
 			throw new Error('The frame has been destroyed, the "window" property is not set.');
 		}
-		this.window[PropertySymbol.location][PropertySymbol.setURL](
-			this,
-			BrowserFrameURL.getRelativeURL(this, url).href
-		);
 
-		// The origin may have changed without creating a new window.
-		if (this.parentFrame) {
-			BrowserFrameNavigator.updateCrossOriginIsolation(this);
-		}
+		const relativeURL = BrowserFrameURL.getRelativeURL(this, url);
+		const relativeURLHref = relativeURL.href;
+
+		this.window[PropertySymbol.location][PropertySymbol.setURL](this, relativeURLHref);
+		this[PropertySymbol.history].currentItem.url = relativeURLHref;
+		this[PropertySymbol.history].currentItem.sourceURL =
+			relativeURL.origin !== 'null' ? relativeURLHref : '';
+
+		BrowserFrameCrossOriginIsolation.isolate(this);
 	}
 
 	/**

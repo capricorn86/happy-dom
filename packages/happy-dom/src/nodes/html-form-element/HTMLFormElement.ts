@@ -635,8 +635,15 @@ export default class HTMLFormElement extends HTMLElement {
 				break;
 		}
 
+		const url = new URL(action);
+
+		if (url.protocol === 'data:') {
+			throw new this[PropertySymbol.window].Error(
+				'Not allowed to navigate top frame to data URL: ' + url
+			);
+		}
+
 		if (method === 'get') {
-			const url = new URL(action);
 			url.search = '';
 
 			for (const [key, value] of formData) {

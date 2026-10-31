@@ -17,8 +17,7 @@ export default class FetchCORSUtility {
 		if (
 			(targetURL.protocol === 'about:' &&
 				(targetURL.pathname === 'blank' || targetURL.pathname === 'srcdoc')) ||
-			targetURL.protocol === 'javascript:' ||
-			targetURL.protocol === 'data:'
+			targetURL.protocol === 'javascript:'
 		) {
 			return false;
 		}

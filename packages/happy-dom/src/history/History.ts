@@ -134,7 +134,7 @@ export default class History {
 		const location = this.#window[PropertySymbol.location];
 		const newURL = url ? BrowserFrameURL.getRelativeURL(this.#browserFrame, url) : location;
 
-		if (url && newURL.origin !== location.origin) {
+		if (url && newURL.origin !== 'null' && newURL.origin !== location.origin) {
 			throw new this.#window.DOMException(
 				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${
 					location.origin
@@ -186,7 +186,7 @@ export default class History {
 		const location = this.#window[PropertySymbol.location];
 		const newURL = url ? BrowserFrameURL.getRelativeURL(this.#browserFrame, url) : location;
 
-		if (url && newURL.origin !== location.origin) {
+		if (url && newURL.origin !== 'null' && newURL.origin !== location.origin) {
 			throw new this.#window.DOMException(
 				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${
 					location.origin

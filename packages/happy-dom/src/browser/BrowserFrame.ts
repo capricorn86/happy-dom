@@ -13,6 +13,7 @@ import BrowserFrameNavigator from './utilities/BrowserFrameNavigator.js';
 import type IReloadOptions from './types/IReloadOptions.js';
 import type Document from '../nodes/document/Document.js';
 import HistoryItemList from '../history/HistoryItemList.js';
+import BrowserFrameCrossOriginIsolation from './utilities/BrowserFrameCrossOriginIsolation.js';
 
 /**
  * Browser frame.
@@ -82,13 +83,19 @@ export default class BrowserFrame implements IBrowserFrame {
 	 * @param url URL.
 	 */
 	public set url(url) {
-		const relativeURL = BrowserFrameURL.getRelativeURL(this, url).href;
+		if (!this.window) {
+			throw new Error('The frame has been destroyed, the "window" property is not set.');
+		}
 
-		this.window[PropertySymbol.location][PropertySymbol.setURL](this, relativeURL);
-		this[PropertySymbol.history].currentItem.url = relativeURL;
-		this[PropertySymbol.history].currentItem.sourceURL = relativeURL;
+		const relativeURL = BrowserFrameURL.getRelativeURL(this, url);
+		const relativeURLHref = relativeURL.href;
 
-		BrowserFrameNavigator.updateCrossOriginIsolation(this);
+		this.window[PropertySymbol.location][PropertySymbol.setURL](this, relativeURLHref);
+		this[PropertySymbol.history].currentItem.url = relativeURLHref;
+		this[PropertySymbol.history].currentItem.sourceURL =
+			relativeURL.origin !== 'null' ? relativeURLHref : '';
+
+		BrowserFrameCrossOriginIsolation.isolate(this);
 	}
 
 	/**
