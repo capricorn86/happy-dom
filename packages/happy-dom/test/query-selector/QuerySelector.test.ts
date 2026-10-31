@@ -1615,6 +1615,35 @@ describe('QuerySelector', () => {
 			);
 		});
 
+		it('Supports line breaks and tabs as whitespace inside the arguments of a pseudo selector.', () => {
+			const container = document.createElement('div');
+			container.innerHTML =
+				'<div class="a"><span class="b"></span><span class="c"></span><span class="d"></span></div>';
+
+			const classNames = (selector: string): Array<string> =>
+				Array.from(container.querySelectorAll(selector)).map((element) => element.className);
+
+			for (const whitespace of ['\n', '\r\n', '\t']) {
+				expect(classNames(`.a > :not(${whitespace}.b,${whitespace}.c${whitespace})`)).toEqual([
+					'd'
+				]);
+				expect(classNames(`.a > :is(${whitespace}.b,${whitespace}.d${whitespace})`)).toEqual([
+					'b',
+					'd'
+				]);
+				expect(classNames(`.a > :where(${whitespace}.c${whitespace})`)).toEqual(['c']);
+				expect(classNames(`:has(${whitespace}>${whitespace}.d${whitespace})`)).toEqual(['a']);
+				expect(
+					classNames(`.a > :nth-child(${whitespace}2n${whitespace}+${whitespace}1${whitespace})`)
+				).toEqual(['b', 'd']);
+				expect(
+					classNames(
+						`.a > :nth-child(${whitespace}n${whitespace}+${whitespace}1${whitespace}of${whitespace}.c)`
+					)
+				).toEqual(['c']);
+			}
+		});
+
 		describe('Issue #1912: CSS attribute selector with capital letters', () => {
 			it('Should match attribute selectors case-insensitively for HTML elements.', () => {
 				const container = document.createElement('div');
