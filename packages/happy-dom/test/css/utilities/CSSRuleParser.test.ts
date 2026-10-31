@@ -553,5 +553,29 @@ describe('CSSRuleParser', () => {
 			expect(cssRules.length).toBe(1);
 			expect((<CSSKeyframesRule>cssRules[0]).cssText).toBe('@keyframes keyframes1 { \n}');
 		});
+
+		it('Keeps rules where a line break or tab is used as whitespace inside the arguments of a pseudo selector.', () => {
+			const selectors = [
+				'.a:not(.b,\n.c) .d',
+				'.a:not(\r\n.b,\r\n.c\r\n) .d',
+				'.a:is(\t.b,\t.c\t) .d',
+				'.a:where(\n.b\n) .d',
+				'.a:has(>\n.d)',
+				'.a:nth-child(\n2n\n+\n1\n)',
+				'.a:nth-child(2n\n+ 1\nof\n.b)',
+				'.a:nth-child(\t2n\t+\t1\t)'
+			];
+
+			for (const selector of selectors) {
+				const cssStyleSheet = new window.CSSStyleSheet();
+				const cssRules = new CSSRuleParser(cssStyleSheet).parseFromString(
+					`${selector} {\n  display: none;\n}`
+				);
+
+				expect(cssRules.length).toBe(1);
+				expect((<CSSStyleRule>cssRules[0]).selectorText).toBe(selector);
+				expect((<CSSStyleRule>cssRules[0]).style.display).toBe('none');
+			}
+		});
 	});
 });
