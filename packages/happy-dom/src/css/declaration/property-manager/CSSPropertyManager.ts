@@ -234,6 +234,10 @@ export default class CSSPropertyManager {
 				delete this.properties['margin-bottom'];
 				delete this.properties['margin-left'];
 				break;
+			case 'overflow':
+				delete this.properties['overflow-x'];
+				delete this.properties['overflow-y'];
+				break;
 		}
 	}
 
@@ -506,6 +510,15 @@ export default class CSSPropertyManager {
 			case 'aspect-ratio':
 				properties = CSSPropertySetParser.getAspectRatio(value, important);
 				break;
+			case 'overflow':
+				properties = CSSPropertySetParser.getOverflow(value, important);
+				break;
+			case 'overflow-x':
+				properties = CSSPropertySetParser.getOverflowX(value, important);
+				break;
+			case 'overflow-y':
+				properties = CSSPropertySetParser.getOverflowY(value, important);
+				break;
 			default:
 				//  If the property name starts with '--', it's a CSS variable
 				if ((name[0] === '-' && name[1] === '-') || CSSPropertyList.kebabCase[<'color'>name]) {
@@ -520,6 +533,45 @@ export default class CSSPropertyManager {
 			Object.assign(this.properties, properties);
 		}
 		return keys;
+	}
+
+	/**
+	 * Applies CSS Overflow computed-value rules for overflow-x/overflow-y.
+	 *
+	 * @see https://drafts.csswg.org/css-overflow-3/#overflow-properties
+	 */
+	public applyOverflowComputedValues(): void {
+		const specifiedX = this.properties['overflow-x']?.value || 'visible';
+		const specifiedY = this.properties['overflow-y']?.value || 'visible';
+
+		this.properties['overflow-x'] = {
+			value: this.resolveOverflowCrossAxis(specifiedX, specifiedY),
+			important: this.properties['overflow-x']?.important || false
+		};
+		this.properties['overflow-y'] = {
+			value: this.resolveOverflowCrossAxis(specifiedY, specifiedX),
+			important: this.properties['overflow-y']?.important || false
+		};
+	}
+
+	/**
+	 * Resolves one overflow axis against its peer per the CSS Overflow cross-axis rule.
+	 *
+	 * @param axis Axis value.
+	 * @param other Other axis value.
+	 * @returns Computed axis value.
+	 */
+	private resolveOverflowCrossAxis(axis: string, other: string): string {
+		if (other === 'visible' || other === 'clip') {
+			return axis;
+		}
+		if (axis === 'visible') {
+			return 'auto';
+		}
+		if (axis === 'clip') {
+			return 'hidden';
+		}
+		return axis;
 	}
 
 	/**

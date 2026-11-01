@@ -671,6 +671,25 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.display).toBe('block');
 		});
 
+		it('Resolves overflow shorthand and cross-axis computed values for overflowX/overflowY.', () => {
+			// https://github.com/capricorn86/happy-dom/issues/2535
+			const element = document.createElement('div');
+			window.document.body.appendChild(element);
+
+			const cases: Array<[string, [string, string]]> = [
+				['overflow:auto', ['auto', 'auto']],
+				['overflow-x:hidden', ['hidden', 'auto']],
+				['overflow:clip scroll', ['hidden', 'scroll']],
+				['overflow-y:scroll', ['auto', 'scroll']]
+			];
+
+			for (const [css, expected] of cases) {
+				element.style.cssText = css;
+				const style = window.getComputedStyle(element);
+				expect([style.overflowX, style.overflowY]).toEqual(expected);
+			}
+		});
+
 		it('Handles default properties "display" on a dialog element.', () => {
 			const element = <HTMLDialogElement>document.createElement('dialog');
 			const computedStyle = window.getComputedStyle(element);
