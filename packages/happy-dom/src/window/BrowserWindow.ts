@@ -41,6 +41,7 @@ import Touch from '../event/Touch.js';
 import UIEvent from '../event/UIEvent.js';
 import AnimationEvent from '../event/events/AnimationEvent.js';
 import ClipboardEvent from '../event/events/ClipboardEvent.js';
+import CompositionEvent from '../event/events/CompositionEvent.js';
 import CookieChangeEvent from '../event/events/CookieChangeEvent.js';
 import CustomEvent from '../event/events/CustomEvent.js';
 import ErrorEvent from '../event/events/ErrorEvent.js';
@@ -583,6 +584,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly MediaQueryListEvent = MediaQueryListEvent;
 	public readonly HashChangeEvent = HashChangeEvent;
 	public readonly ClipboardEvent = ClipboardEvent;
+	public readonly CompositionEvent = CompositionEvent;
 	public readonly CookieChangeEvent = CookieChangeEvent;
 	public readonly TouchEvent = TouchEvent;
 	public readonly PopStateEvent = PopStateEvent;
@@ -593,7 +595,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly BeforeInputEvent = Event;
 	public readonly BeforeUnloadEvent = Event;
 	public readonly BlobEvent = Event;
-	public readonly CompositionEvent = Event;
 	public readonly CSSFontFaceLoadEvent = Event;
 	public readonly DeviceLightEvent = Event;
 	public readonly DeviceMotionEvent = Event;
