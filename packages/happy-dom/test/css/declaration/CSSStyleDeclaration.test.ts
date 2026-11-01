@@ -2760,6 +2760,21 @@ describe('CSSStyleDeclaration', () => {
 
 			element.setAttribute('style', 'font-family: Fira "Sans, sans-serif');
 			expect(declaration.fontFamily).toBe('');
+
+			// Quoted family names: preserve apostrophe, escape embedded quotes, keep commas inside the name.
+			// https://github.com/capricorn86/happy-dom/issues/2565
+			element.style.fontFamily = `"Font's Name", serif`;
+			expect(element.style.fontFamily).toBe(`"Font's Name", serif`);
+
+			element.style.fontFamily = `'Font"s Name', serif`;
+			expect(element.style.fontFamily).toBe(`"Font\\"s Name", serif`);
+
+			element.style.fontFamily = `"Acme, Inc", serif`;
+			expect(element.style.fontFamily).toBe(`"Acme, Inc", serif`);
+
+			element.setAttribute('style', `font-family: "Font's Name", serif`);
+			element.style.setProperty('color', 'red');
+			expect(element.getAttribute('style')).toBe(`font-family: "Font's Name", serif; color: red;`);
 		});
 	});
 

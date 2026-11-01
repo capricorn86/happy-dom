@@ -46,6 +46,17 @@ export default class CSSStringUtility {
 	}
 
 	/**
+	 * Serializes a string per CSSOM "serialize a string".
+	 *
+	 * @see https://drafts.csswg.org/cssom/#serialize-a-string
+	 * @param value Unescaped string content.
+	 * @returns Double-quoted CSS string with `\` and `"` escaped.
+	 */
+	public static serializeString(value: string): string {
+		return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+	}
+
+	/**
 	 * Splits by space while respecting nested parentheses.
 	 *
 	 * @param value Value to split.
