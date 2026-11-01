@@ -32,6 +32,7 @@ const FLOAT = ['none', 'left', 'right', 'inline-start', 'inline-end'];
 const SYSTEM_FONT = ['caption', 'icon', 'menu', 'message-box', 'small-caption', 'status-bar'];
 const FONT_WEIGHT = ['normal', 'bold', 'bolder', 'lighter'];
 const FONT_STYLE = ['normal', 'italic', 'oblique'];
+const OVERFLOW = ['visible', 'hidden', 'clip', 'scroll', 'auto'];
 const FONT_SIZE = [
 	'xx-small',
 	'x-small',
@@ -2951,5 +2952,93 @@ export default class CSSPropertySetParser {
 		}
 
 		return { 'aspect-ratio': { value: `${width} / ${height}`, important } };
+	}
+
+	/**
+	 * Returns overflow shorthand properties.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getOverflow(value: string, important: boolean): ICSSPropertyMap | null {
+		const variable = CSSVariableFormatter.getVariable(value);
+		if (variable) {
+			return { overflow: { value: variable, important } };
+		}
+
+		const globalValue = CSSValueFormatter.getGlobal(value);
+		if (globalValue) {
+			return {
+				'overflow-x': { value: globalValue, important },
+				'overflow-y': { value: globalValue, important }
+			};
+		}
+
+		const parts = value.trim().toLowerCase().split(SPLIT_SPACE_SEPARATED_WITH_PARANTHESES_REGEXP);
+		if (parts.length === 0 || parts.length > 2) {
+			return null;
+		}
+
+		const x = this.getOverflowAxis(parts[0], important, 'overflow-x');
+		const y = this.getOverflowAxis(parts[1] || parts[0], important, 'overflow-y');
+		if (!x || !y) {
+			return null;
+		}
+
+		return { ...x, ...y };
+	}
+
+	/**
+	 * Returns overflow-x.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getOverflowX(value: string, important: boolean): ICSSPropertyMap | null {
+		return this.getOverflowAxis(value, important, 'overflow-x');
+	}
+
+	/**
+	 * Returns overflow-y.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property values
+	 */
+	public static getOverflowY(value: string, important: boolean): ICSSPropertyMap | null {
+		return this.getOverflowAxis(value, important, 'overflow-y');
+	}
+
+	/**
+	 * Returns one overflow axis longhand.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @param name Property name.
+	 * @returns Property values
+	 */
+	private static getOverflowAxis(
+		value: string,
+		important: boolean,
+		name: 'overflow-x' | 'overflow-y'
+	): ICSSPropertyMap | null {
+		const variable = CSSVariableFormatter.getVariable(value);
+		if (variable) {
+			return { [name]: { value: variable, important } };
+		}
+
+		const lowerValue = value.toLowerCase();
+		const globalValue = CSSValueFormatter.getGlobal(lowerValue);
+		if (globalValue) {
+			return { [name]: { value: globalValue, important } };
+		}
+
+		if (!OVERFLOW.includes(lowerValue)) {
+			return null;
+		}
+
+		return { [name]: { value: lowerValue, important } };
 	}
 }

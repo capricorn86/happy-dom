@@ -275,6 +275,8 @@ export default class CSSComputedStyle {
 					}
 				}
 
+				propertyManager.applyOverflowComputedValues();
+
 				const cachedResult = {
 					result: new WeakRef(propertyManager)
 				};
@@ -302,6 +304,7 @@ export default class CSSComputedStyle {
 			propertyManager = inheritedPropertyManager.clone();
 		}
 
+		propertyManager.applyOverflowComputedValues();
 		return propertyManager;
 	}
 
