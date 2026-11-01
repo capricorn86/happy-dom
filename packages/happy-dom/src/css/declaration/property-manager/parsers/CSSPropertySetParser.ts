@@ -2803,51 +2803,151 @@ export default class CSSPropertySetParser {
 			return { 'font-family': { value: globalValue, important } };
 		}
 
-		const parts = value.split(',');
-		let parsedValue = '';
-		let endWithApostroph = false;
-
-		for (let i = 0, max = parts.length; i < max; i++) {
-			let trimmedPart = parts[i].trim().replace(/'/g, '"');
-
-			if (!trimmedPart) {
-				return null;
-			}
-
-			if (trimmedPart.includes(' ')) {
-				const apostrophCount = (trimmedPart.match(/"/g) || []).length;
-				if ((trimmedPart[0] !== '"' || i !== 0) && apostrophCount !== 2 && apostrophCount !== 0) {
-					return null;
-				}
-				if (trimmedPart[0] === '"' && trimmedPart[trimmedPart.length - 1] !== '"') {
-					endWithApostroph = true;
-				} else if (trimmedPart[0] !== '"' && trimmedPart[trimmedPart.length - 1] !== '"') {
-					trimmedPart = `"${trimmedPart}"`;
-				}
-			} else {
-				trimmedPart = trimmedPart.replace(/"/g, '');
-			}
-
-			if (i > 0) {
-				parsedValue += ', ';
-			}
-
-			parsedValue += trimmedPart;
-		}
-
-		if (endWithApostroph) {
-			parsedValue += '"';
-		}
-
-		if (!parsedValue) {
+		const families = this.parseFontFamilyList(value);
+		if (!families) {
 			return null;
 		}
 
 		return {
 			'font-family': {
 				important,
-				value: parsedValue
+				value: families.join(', ')
 			}
+		};
+	}
+
+	/**
+	 * Parses a font-family list, respecting quotes and commas inside quoted names.
+	 *
+	 * @param value Value.
+	 * @returns Serialized family names, or null if invalid.
+	 */
+	private static parseFontFamilyList(value: string): string[] | null {
+		const families: string[] = [];
+		let index = 0;
+
+		while (index < value.length) {
+			index = this.skipCSSWhitespace(value, index);
+			if (index >= value.length) {
+				break;
+			}
+
+			const parsed =
+				value[index] === '"' || value[index] === "'"
+					? this.parseQuotedFontFamily(value, index)
+					: this.parseUnquotedFontFamily(value, index);
+
+			if (!parsed) {
+				return null;
+			}
+
+			families.push(parsed.family);
+			index = parsed.index;
+
+			index = this.skipCSSWhitespace(value, index);
+			if (index >= value.length) {
+				break;
+			}
+
+			const afterComma = this.consumeFontFamilyComma(value, index);
+			if (afterComma === null) {
+				return null;
+			}
+			index = afterComma;
+		}
+
+		return families.length ? families : null;
+	}
+
+	/**
+	 * @param value Value.
+	 * @param index Start index.
+	 * @returns Index after whitespace.
+	 */
+	private static skipCSSWhitespace(value: string, index: number): number {
+		while (index < value.length && /\s/.test(value[index])) {
+			index++;
+		}
+		return index;
+	}
+
+	/**
+	 * Consumes a comma separator between font families.
+	 *
+	 * @param value Value.
+	 * @param index Index at the comma or invalid trailing content.
+	 * @returns Index of the next family, or null if invalid.
+	 */
+	private static consumeFontFamilyComma(value: string, index: number): number | null {
+		if (value[index] !== ',') {
+			return null;
+		}
+		index = this.skipCSSWhitespace(value, index + 1);
+		return index < value.length ? index : null;
+	}
+
+	/**
+	 * Parses a quoted font-family name.
+	 *
+	 * @param value Value.
+	 * @param index Index of the opening quote.
+	 * @returns Serialized family and next index, or null if invalid.
+	 */
+	private static parseQuotedFontFamily(
+		value: string,
+		index: number
+	): { family: string; index: number } | null {
+		const quote = value[index];
+		index++;
+		let content = '';
+
+		while (index < value.length) {
+			const character = value[index];
+			if (character === '\\' && index + 1 < value.length) {
+				content += value[index + 1];
+				index += 2;
+				continue;
+			}
+			if (character === quote) {
+				index++;
+				break;
+			}
+			content += character;
+			index++;
+		}
+
+		return { family: CSSStringUtility.serializeString(content), index };
+	}
+
+	/**
+	 * Parses an unquoted font-family name.
+	 *
+	 * @param value Value.
+	 * @param index Start index.
+	 * @returns Serialized family and next index, or null if invalid.
+	 */
+	private static parseUnquotedFontFamily(
+		value: string,
+		index: number
+	): { family: string; index: number } | null {
+		let unquoted = '';
+
+		while (index < value.length && value[index] !== ',') {
+			if (value[index] === '"' || value[index] === "'") {
+				return null;
+			}
+			unquoted += value[index];
+			index++;
+		}
+
+		const trimmed = unquoted.trim();
+		if (!trimmed) {
+			return null;
+		}
+
+		return {
+			family: /\s/.test(trimmed) ? CSSStringUtility.serializeString(trimmed) : trimmed,
+			index
 		};
 	}
 
