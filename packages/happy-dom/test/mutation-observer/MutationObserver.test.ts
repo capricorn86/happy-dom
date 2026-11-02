@@ -450,4 +450,12 @@ describe('MutationObserver', () => {
 			expect(records).toEqual([]);
 		});
 	});
+
+	describe('prototype', () => {
+		it('Has enumerable members.', () => {
+			expect(window.MutationObserver.prototype.propertyIsEnumerable('observe')).toBe(true);
+			expect(window.MutationObserver.prototype.propertyIsEnumerable('disconnect')).toBe(true);
+			expect(window.MutationObserver.prototype.propertyIsEnumerable('takeRecords')).toBe(true);
+		});
+	});
 });
