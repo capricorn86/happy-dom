@@ -741,6 +741,36 @@ describe('BrowserWindow', () => {
 			]);
 		});
 
+		it('Updates computed styles of following siblings when a previous sibling is changed.', () => {
+			document.head.innerHTML = `<style>
+				.input.focus + .next { display: none; }
+				.input.focus ~ .later { display: none; }
+				.input.focus ~ .later span { color: rgb(255, 0, 0); }
+			</style>`;
+			document.body.innerHTML =
+				'<div class="input"></div><p class="next"></p><p class="later"><span>Test</span></p>';
+
+			const input = <HTMLElement>document.querySelector('.input');
+			const next = <HTMLElement>document.querySelector('.next');
+			const later = <HTMLElement>document.querySelector('.later');
+			const span = <HTMLElement>document.querySelector('.later span');
+			const read = (): string[] => [
+				window.getComputedStyle(next).display,
+				window.getComputedStyle(later).display,
+				window.getComputedStyle(span).color
+			];
+
+			expect(read()).toEqual(['block', 'block', '']);
+
+			input.classList.add('focus');
+
+			expect(read()).toEqual(['none', 'none', 'rgb(255, 0, 0)']);
+
+			input.classList.remove('focus');
+
+			expect(read()).toEqual(['block', 'block', '']);
+		});
+
 		it('Returns a CSSStyleDeclaration object with computed styles from style sheets.', () => {
 			const parent = document.createElement('div');
 			const element = document.createElement('span');

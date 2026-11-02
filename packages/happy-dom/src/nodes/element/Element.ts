@@ -1600,6 +1600,8 @@ export default class Element
 				oldValue
 			})
 		);
+
+		this[PropertySymbol.clearCacheOfFollowingSiblings]();
 	}
 
 	/**
@@ -1638,6 +1640,35 @@ export default class Element
 				oldValue: removedAttribute[PropertySymbol.value]
 			})
 		);
+
+		this[PropertySymbol.clearCacheOfFollowingSiblings]();
+	}
+
+	/**
+	 * Clears the cache of the following element siblings.
+	 *
+	 * Selectors with a sibling combinator ("+" or "~") make the computed style of an element depend on the attributes of its previous siblings.
+	 */
+	public [PropertySymbol.clearCacheOfFollowingSiblings](): void {
+		const parentNode = <Element | null>this[PropertySymbol.parentNode];
+
+		if (
+			!parentNode ||
+			!this[PropertySymbol.ownerDocument][PropertySymbol.computedStyleDependsOnSiblings]
+		) {
+			return;
+		}
+
+		const siblings = parentNode[PropertySymbol.elementArray];
+		const index = siblings.indexOf(this);
+
+		if (index === -1) {
+			return;
+		}
+
+		for (let i = index + 1, max = siblings.length; i < max; i++) {
+			siblings[i][PropertySymbol.clearCache]();
+		}
 	}
 
 	/**
