@@ -956,6 +956,27 @@ export default class Node extends EventTarget {
 			}
 			this[PropertySymbol.affectsCache] = [];
 		}
+
+		// Sibling combinators (+ and ~) match following siblings. Their computed
+		// styles are not registered on this node's affectsCache (only ancestors
+		// are), so clear following element siblings' computed style caches too.
+		let sibling = this.nextSibling;
+		while (sibling) {
+			if (sibling[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
+				const siblingCache = sibling[PropertySymbol.cache];
+				if (siblingCache.computedStyle?.result) {
+					siblingCache.computedStyle.result = null;
+				}
+				const siblingAffectsCache = sibling[PropertySymbol.affectsCache];
+				if (siblingAffectsCache.length) {
+					for (const item of siblingAffectsCache) {
+						item.result = null;
+					}
+					sibling[PropertySymbol.affectsCache] = [];
+				}
+			}
+			sibling = sibling.nextSibling;
+		}
 	}
 
 	/**
