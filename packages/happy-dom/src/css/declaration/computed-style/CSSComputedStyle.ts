@@ -361,6 +361,15 @@ export default class CSSComputedStyle {
 			if (rule.type === CSSRuleTypeEnum.styleRule) {
 				const selectorText: string = (<CSSStyleRule>rule).selectorText;
 				if (selectorText) {
+					const document = this.element[PropertySymbol.ownerDocument];
+					// Selectors with a sibling combinator ("+" or "~") make the computed style depend on previous siblings.
+					// Other uses of the characters (e.g. ":nth-child(2n+1)") only cause unnecessary cache invalidation.
+					if (
+						!document[PropertySymbol.computedStyleDependsOnSiblings] &&
+						(selectorText.includes('+') || selectorText.includes('~'))
+					) {
+						document[PropertySymbol.computedStyleDependsOnSiblings] = true;
+					}
 					for (const element of options.elements) {
 						const match = QuerySelector.matches(<Element>element.element, selectorText, {
 							ignoreErrors: true,

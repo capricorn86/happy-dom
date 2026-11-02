@@ -79,6 +79,7 @@ export default class Document extends Node {
 	public [PropertySymbol.forms]: HTMLCollection<HTMLFormElement> | null = null;
 	public [PropertySymbol.links]: HTMLCollection<HTMLAnchorElement | HTMLAreaElement> | null = null;
 	public [PropertySymbol.affectsComputedStyleCache]: ICachedComputedStyleResult[] = [];
+	public [PropertySymbol.computedStyleDependsOnSiblings] = false;
 	public [PropertySymbol.ownerDocument]: Document = <Document>(<unknown>null);
 	public [PropertySymbol.elementIdMap]: Map<
 		string,
@@ -2270,6 +2271,7 @@ export default class Document extends Node {
 			item.result = null;
 		}
 		this[PropertySymbol.affectsComputedStyleCache] = [];
+		this[PropertySymbol.computedStyleDependsOnSiblings] = false;
 	}
 
 	/**
