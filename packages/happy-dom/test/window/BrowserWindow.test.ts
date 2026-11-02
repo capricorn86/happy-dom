@@ -741,6 +741,31 @@ describe('BrowserWindow', () => {
 			]);
 		});
 
+		it('Invalidates cached computed styles for following siblings matched with + or ~ (#2518).', () => {
+			document.head.innerHTML = `<style>
+				.input.focus + .next { display: none; }
+				.input.focus ~ .later { display: none; }
+			</style>`;
+			document.body.innerHTML =
+				'<div class="input"></div><p class="next"></p><p class="later"></p>';
+
+			const input = document.querySelector('.input')!;
+			const next = document.querySelector('.next')!;
+			const later = document.querySelector('.later')!;
+
+			expect(window.getComputedStyle(next).display).toBe('block');
+			expect(window.getComputedStyle(later).display).toBe('block');
+			expect(next.matches('.input.focus + .next')).toBe(false);
+			expect(later.matches('.input.focus ~ .later')).toBe(false);
+
+			input.classList.add('focus');
+
+			expect(next.matches('.input.focus + .next')).toBe(true);
+			expect(later.matches('.input.focus ~ .later')).toBe(true);
+			expect(window.getComputedStyle(next).display).toBe('none');
+			expect(window.getComputedStyle(later).display).toBe('none');
+		});
+
 		it('Returns a CSSStyleDeclaration object with computed styles from style sheets.', () => {
 			const parent = document.createElement('div');
 			const element = document.createElement('span');
