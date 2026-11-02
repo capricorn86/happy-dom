@@ -188,7 +188,7 @@ export default class History {
 
 		if (url && newURL.origin !== 'null' && newURL.origin !== location.origin) {
 			throw new this.#window.DOMException(
-				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${
+				`Failed to execute 'replaceState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${
 					location.origin
 				}' and URL '${location.href}'.`,
 				DOMExceptionNameEnum.securityError

@@ -89,7 +89,7 @@ export default class BrowserFrameNavigator {
 			return null;
 		}
 
-		// Javascript protocol
+		// Handle "javascript" protocol
 		if (targetURL.protocol === 'javascript:') {
 			if (frame && frame.page.context.browser.settings.enableJavaScriptEvaluation) {
 				const readyStateManager = frame.window[PropertySymbol.readyStateManager];
@@ -199,8 +199,8 @@ export default class BrowserFrameNavigator {
 			destroyWindowAndAsyncTaskManager();
 		}
 
-		// Handle about protocol URL
-		if (targetURL.protocol === 'about') {
+		// Handle "about" protocol URL
+		if (targetURL.protocol === 'about:') {
 			if (goToOptions?.beforeContentCallback) {
 				goToOptions.beforeContentCallback(frame.window);
 			}
@@ -304,6 +304,8 @@ export default class BrowserFrameNavigator {
 		if (frame.page.context.browser.settings.navigation.beforeContentCallback) {
 			frame.page.context.browser.settings.navigation.beforeContentCallback(frame.window);
 		}
+
+		// Set the frame content
 
 		// Fixes issue where evaluating the response can throw an error.
 		// By using requestAnimationFrame() the error will not reject the promise.

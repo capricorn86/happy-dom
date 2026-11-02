@@ -29,19 +29,23 @@ export default class BrowserFrameURL {
 	}
 
 	/**
-	 * Checks if the child frame is same-origin with the parent frame.
+	 * Checks if the child frame is same-origin as the parent frame.
 	 *
-	 * @param parentFrame
-	 * @param childFrame
+	 * @param parentFrame Parent frame.
+	 * @param childFrame Child frame.
+	 * @returns True if same-origin.
 	 */
 	public static isSameOrigin(parentFrame: IBrowserFrame, childFrame: IBrowserFrame): boolean {
 		const parentURL = this.getInheritedFrameURL(parentFrame);
 		const childURL = this.getInheritedFrameURL(childFrame);
+		// Data URLs are treated as unique opaque origins by modern browsers, rather than inheriting the origin of the settings object responsible for the navigation.
+		// @see https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Schemes/data
 		return (
-			!this.isDataHTMLURL(childFrame.url) &&
+			new URL(childFrame.url).protocol !== 'data:' &&
 			(parentURL === null || childURL === null || parentURL.origin === childURL.origin)
 		);
 	}
+
 	/**
 	 * Returns the frame URL or the inherited frame URL if the frame has no source URL.
 	 *
@@ -52,6 +56,7 @@ export default class BrowserFrameURL {
 	private static getInheritedFrameURL(frame: IBrowserFrame): URL | null {
 		// Popup frame
 		if (frame[PropertySymbol.openerFrame]) {
+			// We use the fetched source URL if available, otherwise we inherit from the opener frame.
 			if (frame.sourceURL) {
 				return new URL(frame.sourceURL);
 			}
@@ -59,22 +64,12 @@ export default class BrowserFrameURL {
 		}
 		// Child frame (e.g. iframe)
 		if (frame.parentFrame) {
+			// We use the fetched source URL if available, otherwise we inherit from the parent frame.
 			if (frame.sourceURL) {
 				return new URL(frame.sourceURL);
 			}
 			return this.getInheritedFrameURL(frame.parentFrame);
 		}
 		return null;
-	}
-
-	/**
-	 * Returns whether the URL is a data URL containing HTML content.
-	 *
-	 * @param url URL.
-	 * @returns True if the URL is a data URL containing HTML content, false otherwise.
-	 */
-	private static isDataHTMLURL(url: string): boolean {
-		const targetURL = new URL(url);
-		return targetURL.protocol === 'data:' && targetURL.pathname.startsWith('text/html');
 	}
 }

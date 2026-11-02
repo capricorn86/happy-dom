@@ -93,7 +93,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	}
 
 	/**
-	 * Sets the content.
+	 * Sets the URL, which includes updating the current history item.
 	 *
 	 * @param url URL.
 	 */

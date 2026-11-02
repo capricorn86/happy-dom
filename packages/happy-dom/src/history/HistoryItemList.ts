@@ -23,6 +23,12 @@ export default class HistoryItemList {
 	 * @param historyItem History item.
 	 */
 	public push(historyItem: IHistoryItem): void {
+		if (historyItem.sourceURL !== null && new URL(historyItem.url).origin === 'null') {
+			throw new Error(
+				`Failed to execute "push" on "HistoryItemList": An history item with an opaque URL cannot have a fetched source URL.`
+			);
+		}
+
 		const index = this.items.indexOf(this.currentItem);
 
 		// If the current item is not the last one, remove all items after it.
@@ -40,6 +46,12 @@ export default class HistoryItemList {
 	 * @param historyItem History item to replace the current one with.
 	 */
 	public replace(historyItem: IHistoryItem): void {
+		if (historyItem.sourceURL !== null && new URL(historyItem.url).origin === 'null') {
+			throw new Error(
+				`Failed to execute "replace" on "HistoryItemList": An history item with an opaque URL cannot have a fetched source URL.`
+			);
+		}
+
 		const index = this.items.indexOf(this.currentItem);
 
 		// If the current item is not the last one, remove all items after it.
