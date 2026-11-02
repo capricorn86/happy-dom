@@ -45,6 +45,8 @@ import DOMPointReadOnlyImplementation from '../dom/DOMPointReadOnly.js';
 import DOMPointImplementation from '../dom/DOMPoint.js';
 import AnimationImplementation from '../animation/Animation.js';
 import KeyframeEffectImplementation from '../animation/KeyframeEffect.js';
+import IntersectionObserverImplementation from '../intersection-observer/IntersectionObserver.js';
+import ClassPrototypeEnumerability from '../utilities/ClassPrototypeEnumerability.js';
 
 /**
  * Extends classes with a "window" property, so that they internally can access it's Window context.
@@ -282,6 +284,62 @@ export default class WindowContextClassExtender {
 		class KeyframeEffect extends KeyframeEffectImplementation {}
 		KeyframeEffect.prototype[PropertySymbol.window] = window;
 		(<typeof KeyframeEffect>window.KeyframeEffect) = KeyframeEffect;
+
+		// Makes interface members enumerable, as they are in browsers.
+		//
+		// In browsers, IDL members are enumerable on the prototype (e.g.
+		// "MutationObserver.prototype.propertyIsEnumerable('observe')" returns true). ES class methods
+		// and accessors are non-enumerable, which breaks libraries such as zone.js that enumerate
+		// prototype members to forward calls through proxies.
+		for (const [_class, _implementation] of <Array<[any, any]>>[
+			[Document, DocumentImplementation],
+			[HTMLDocument, HTMLDocumentImplementation],
+			[XMLDocument, XMLDocumentImplementation],
+			[DocumentFragment, DocumentFragmentImplementation],
+			[Text, TextImplementation],
+			[Comment, CommentImplementation],
+			[Image, ImageImplementation],
+			[Audio, AudioImplementation],
+			[MutationObserver, MutationObserverImplementation],
+			[MessagePort, MessagePortImplementation],
+			[CSSStyleSheet, CSSStyleSheetImplementation],
+			[DOMException, DOMExceptionImplementation],
+			[Headers, HeadersImplementation],
+			[Request, RequestImplementation],
+			[Response, ResponseImplementation],
+			[EventTarget, EventTargetImplementation],
+			[XMLHttpRequestUpload, XMLHttpRequestUploadImplementation],
+			[XMLHttpRequestEventTarget, XMLHttpRequestEventTargetImplementation],
+			[AbortController, AbortControllerImplementation],
+			[AbortSignal, AbortSignalImplementation],
+			[FormData, FormDataImplementation],
+			[PermissionStatus, PermissionStatusImplementation],
+			[XMLHttpRequest, XMLHttpRequestImplementation],
+			[DOMParser, DOMParserImplementation],
+			[Range, RangeImplementation],
+			[VTTCue, VTTCueImplementation],
+			[TextTrack, TextTrackImplementation],
+			[TextTrackList, TextTrackListImplementation],
+			[TextTrackCue, TextTrackCueImplementation],
+			[RemotePlayback, RemotePlaybackImplementation],
+			[FileReader, FileReaderImplementation],
+			[MediaStream, MediaStreamImplementation],
+			[MediaStreamTrack, MediaStreamTrackImplementation],
+			[CanvasCaptureMediaStreamTrack, CanvasCaptureMediaStreamTrackImplementation],
+			[URL, URLImplementation],
+			[WebSocket, WebSocketImplementation],
+			[ImageData, ImageDataImplementation],
+			[OffscreenCanvas, OffscreenCanvasImplementation],
+			[DOMMatrixReadOnly, DOMMatrixReadOnlyImplementation],
+			[DOMMatrix, DOMMatrixImplementation],
+			[DOMPointReadOnly, DOMPointReadOnlyImplementation],
+			[DOMPoint, DOMPointImplementation],
+			[Animation, AnimationImplementation],
+			[KeyframeEffect, KeyframeEffectImplementation],
+			[IntersectionObserverImplementation, IntersectionObserverImplementation]
+		]) {
+			ClassPrototypeEnumerability.makeEnumerable(_class, _implementation);
+		}
 
 		/* eslint-enable jsdoc/require-jsdoc */
 	}

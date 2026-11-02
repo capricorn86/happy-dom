@@ -103,4 +103,13 @@ describe('FileReader', () => {
 			);
 		});
 	});
+
+	describe('prototype', () => {
+		it('Has enumerable members.', () => {
+			expect(window.FileReader.prototype.propertyIsEnumerable('readAsText')).toBe(true);
+			expect(window.FileReader.prototype.propertyIsEnumerable('readAsDataURL')).toBe(true);
+			expect(window.FileReader.prototype.propertyIsEnumerable('readAsArrayBuffer')).toBe(true);
+			expect(window.FileReader.prototype.propertyIsEnumerable('abort')).toBe(true);
+		});
+	});
 });
