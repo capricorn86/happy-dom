@@ -37,8 +37,12 @@ export default class CustomElementReactionStack {
 			return;
 		}
 
+		// We need to make sure that the element has been upgraded, otherwise we should not invoke the callback.
 		// If the element is not connected to the main document, we should not invoke the callback.
-		if (element[PropertySymbol.ownerDocument] !== this.window.document) {
+		if (
+			!(element instanceof definition.elementClass) ||
+			element[PropertySymbol.ownerDocument] !== this.window.document
+		) {
 			return;
 		}
 

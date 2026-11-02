@@ -25,7 +25,7 @@ export default class HTMLLabelElementUtility {
 				<Document | ShadowRoot>element[PropertySymbol.rootNode] ||
 				element[PropertySymbol.ownerDocument];
 			labels = <HTMLLabelElement[]>(
-				rootNode.querySelectorAll(`label[for="${id}"]`)[PropertySymbol.items]
+				rootNode.querySelectorAll(`label[for="${id}"]`)[PropertySymbol.items].slice()
 			);
 		} else {
 			labels = [];

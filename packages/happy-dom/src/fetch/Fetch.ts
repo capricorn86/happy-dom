@@ -960,6 +960,10 @@ export default class Fetch {
 				}
 
 				const headers = new this.#window.Headers(this.request.headers);
+				// Fetch requires stripping Authorization on cross-origin redirects in every credentials mode.
+				if (FetchCORSUtility.isCORS(this.request.url, locationURL)) {
+					headers.delete('authorization');
+				}
 				const requestInit: IRequestInit = {
 					method: this.request.method,
 					signal: this.request.signal,

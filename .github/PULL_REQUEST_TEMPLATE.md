@@ -21,3 +21,7 @@ Resolves #issue-number
 
 - [ ] The title of the pull request should be in the format of "type: [#issue] description". The type can be `feat`, `fix`, `chore` or `BREAKING CHANGE`. The issue is optional and can be omitted if the pull request does not relate to an issue.
 - [ ] The title should be concise and descriptive. The title will be used when generating release notes. Make sure that the title is easily understood by users of the library.
+
+### AI tools
+
+- [ ] Please disclose in the PR description that you used AI tools to generate code. This is important for transparency and to ensure that the generated code meets the quality standards of the project.

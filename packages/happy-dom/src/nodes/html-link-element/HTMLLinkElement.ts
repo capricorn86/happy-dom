@@ -258,6 +258,16 @@ export default class HTMLLinkElement extends HTMLElement {
 					break;
 			}
 		}
+
+		this[PropertySymbol.ownerDocument][PropertySymbol.clearComputedStyleCache]();
+	}
+
+	/**
+	 * @override
+	 */
+	public override [PropertySymbol.disconnectedFromDocument](): void {
+		super[PropertySymbol.disconnectedFromDocument]();
+		this[PropertySymbol.ownerDocument][PropertySymbol.clearComputedStyleCache]();
 	}
 
 	/**
@@ -357,7 +367,10 @@ export default class HTMLLinkElement extends HTMLElement {
 			return;
 		}
 
-		if (as === 'style' && browserSettings.disableCSSFileLoading) {
+		if (
+			as === 'style' &&
+			(browserSettings.disableCSSFileLoading || !browserSettings.enableCSSFileLoading)
+		) {
 			return;
 		}
 
@@ -438,7 +451,10 @@ export default class HTMLLinkElement extends HTMLElement {
 			return;
 		}
 
-		if (browserSettings && browserSettings.disableCSSFileLoading) {
+		if (
+			browserSettings &&
+			(browserSettings.disableCSSFileLoading || !browserSettings.enableCSSFileLoading)
+		) {
 			if (browserSettings.handleDisabledFileLoadingAsSuccess) {
 				this.dispatchEvent(new Event('load'));
 			} else {
@@ -483,14 +499,7 @@ export default class HTMLLinkElement extends HTMLElement {
 			styleSheet.replaceSync(response!.content);
 			this[PropertySymbol.sheet] = styleSheet;
 
-			// Computed style cache is affected by all mutations.
-			const document = this[PropertySymbol.ownerDocument];
-			if (document) {
-				for (const item of document[PropertySymbol.affectsComputedStyleCache]) {
-					item.result = null;
-				}
-				document[PropertySymbol.affectsComputedStyleCache] = [];
-			}
+			this[PropertySymbol.ownerDocument][PropertySymbol.clearComputedStyleCache]();
 
 			this.dispatchEvent(new Event('load'));
 		}

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import * as PropertySymbol from '../../../src/PropertySymbol.js';
 import type BrowserWindow from '../../../src/window/BrowserWindow.js';
 import Window from '../../../src/window/Window.js';
-import CSSParser from '../../../src/css/utilities/CSSParser.js';
+import CSSRuleParser from '../../../src/css/utilities/CSSRuleParser.js';
 import type CSSStyleSheet from '../../../src/css/CSSStyleSheet.js';
 import CSSRuleTypeEnum from '../../../src/css/CSSRuleTypeEnum.js';
 import CSSMediaRule from '../../../src/css/rules/CSSMediaRule.js';
@@ -11,12 +11,12 @@ import MediaList from '../../../src/css/MediaList.js';
 describe('CSSMediaRule', () => {
 	let window: BrowserWindow;
 	let styleSheet: CSSStyleSheet;
-	let cssParser: CSSParser;
+	let cssParser: CSSRuleParser;
 
 	beforeEach(() => {
 		window = new Window();
 		styleSheet = new window.CSSStyleSheet();
-		cssParser = new CSSParser(styleSheet);
+		cssParser = new CSSRuleParser(styleSheet);
 	});
 
 	describe('get type()', () => {

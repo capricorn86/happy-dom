@@ -11,6 +11,7 @@ import type FormData from '../../form-data/FormData.js';
 import HistoryScrollRestorationEnum from '../../history/HistoryScrollRestorationEnum.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import Fetch from '../../fetch/Fetch.js';
+import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 
 /**
  * Browser frame navigation utility.
@@ -161,9 +162,20 @@ export default class BrowserFrameNavigator {
 		// Create new Window
 		frame[PropertySymbol.asyncTaskManager] = new AsyncTaskManager(frame);
 		(<BrowserWindow>frame.window) = new windowClass(frame, { url: targetURL.href, width, height });
-		frame.window[PropertySymbol.parent] = parentWindow;
-		frame.window[PropertySymbol.top] = topWindow;
 		(<number>frame.window.devicePixelRatio) = devicePixelRatio;
+
+		if (BrowserFrameURL.hasOpaqueOrigin(targetURL)) {
+			const opaqueOriginParentWindow = new CrossOriginBrowserWindow(parentWindow);
+			const opaqueOriginTopWindow =
+				parentWindow === topWindow
+					? opaqueOriginParentWindow
+					: new CrossOriginBrowserWindow(topWindow);
+			frame.window[PropertySymbol.parent] = <BrowserWindow>(<unknown>opaqueOriginParentWindow);
+			frame.window[PropertySymbol.top] = <BrowserWindow>(<unknown>opaqueOriginTopWindow);
+		} else {
+			frame.window[PropertySymbol.parent] = parentWindow;
+			frame.window[PropertySymbol.top] = topWindow;
+		}
 
 		if (exceptionObserver) {
 			exceptionObserver.observe(frame.window);
@@ -259,7 +271,7 @@ export default class BrowserFrameNavigator {
 			if (frame.parentFrame) {
 				const originURL = frame.parentFrame.window.location;
 				const xFrameOptions = response.headers?.get('X-Frame-Options')?.toLowerCase();
-				const isSameOrigin = originURL.origin === targetURL.origin || targetURL.origin === 'null';
+				const isSameOrigin = BrowserFrameURL.isSameOrigin(originURL, targetURL);
 
 				if (xFrameOptions === 'deny' || (xFrameOptions === 'sameorigin' && !isSameOrigin)) {
 					throw new Error(

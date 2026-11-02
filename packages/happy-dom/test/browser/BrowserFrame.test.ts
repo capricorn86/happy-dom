@@ -933,6 +933,7 @@ Task #1
 			const browser = new Browser({
 				settings: {
 					enableJavaScriptEvaluation: true,
+					enableCSSFileLoading: true,
 					suppressCodeGenerationFromStringsWarning: true,
 					fetch: {
 						virtualServers: [

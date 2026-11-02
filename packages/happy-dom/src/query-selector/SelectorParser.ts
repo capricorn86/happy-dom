@@ -4,8 +4,10 @@ import type ISelectorPseudo from './ISelectorPseudo.js';
 import type Element from '../nodes/element/Element.js';
 import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import type BrowserWindow from '../window/BrowserWindow.js';
+import type DOMException from '../exception/DOMException.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
+import type { TGlobalMatchFunction } from './TGlobalMatchFunction.js';
 
 /**
  * Selector group RegExp.
@@ -91,6 +93,7 @@ const SPACE_REGEXP = / /g;
 export default class SelectorParser {
 	private window: BrowserWindow;
 	private scope: Element | DocumentFragment;
+	private globalMatchFunction: TGlobalMatchFunction;
 	private ignoreErrors: boolean;
 
 	/**
@@ -100,14 +103,17 @@ export default class SelectorParser {
 	 * @param options.window
 	 * @param options.scope
 	 * @param options.ignoreErrors
+	 * @param options.globalMatchFunction
 	 */
 	constructor(options: {
 		window: BrowserWindow;
 		scope: Element | DocumentFragment;
+		globalMatchFunction: TGlobalMatchFunction;
 		ignoreErrors?: boolean;
 	}) {
 		this.window = options.window;
 		this.scope = options.scope;
+		this.globalMatchFunction = options.globalMatchFunction;
 		this.ignoreErrors = options.ignoreErrors ?? false;
 	}
 	/**
@@ -143,6 +149,22 @@ export default class SelectorParser {
 	}
 
 	/**
+	 * Returns an error for an invalid selector.
+	 *
+	 * Constructed lazily, as creating a DOMException captures the current stack trace, which is
+	 * expensive on hot paths such as Element.matches() and getComputedStyle() during rendering.
+	 *
+	 * @param selector Selector.
+	 * @returns Error.
+	 */
+	private getInvalidSelectorError(selector: string): DOMException {
+		const name = this.scope.nodeType === NodeTypeEnum.documentNode ? 'Document' : 'Element';
+		return new this.window.DOMException(
+			`Failed to execute 'querySelectorAll' on '${name}': '${selector}' is not a valid selector.`
+		);
+	}
+
+	/**
 	 * Parses a selector string and returns instances of SelectorItem without using cache.
 	 *
 	 * @param selector Selector.
@@ -158,10 +180,6 @@ export default class SelectorParser {
 			doubleApostrophe: 0,
 			singleApostrophe: 0
 		};
-		const name = this.scope.nodeType === NodeTypeEnum.documentNode ? 'Document' : 'Element';
-		const error = new this.window.DOMException(
-			`Failed to execute 'querySelectorAll' on '${name}': '${selector}' is not a valid selector.`
-		);
 		let match: null | RegExpExecArray = null;
 		let lastIndex = 0;
 		let selectorItem: SelectorItem | null = null;
@@ -187,7 +205,7 @@ export default class SelectorParser {
 								if (this.ignoreErrors) {
 									return [];
 								}
-								throw error;
+								throw this.getInvalidSelectorError(selector);
 							}
 							currentGroup.push(selectorItem);
 							currentGroup = [];
@@ -200,7 +218,7 @@ export default class SelectorParser {
 								if (this.ignoreErrors) {
 									return [];
 								}
-								throw error;
+								throw this.getInvalidSelectorError(selector);
 							}
 							currentGroup.push(selectorItem);
 							combinator = SelectorCombinatorEnum.child;
@@ -211,7 +229,7 @@ export default class SelectorParser {
 								if (this.ignoreErrors) {
 									return [];
 								}
-								throw error;
+								throw this.getInvalidSelectorError(selector);
 							}
 							currentGroup.push(selectorItem);
 							combinator = SelectorCombinatorEnum.adjacentSibling;
@@ -222,7 +240,7 @@ export default class SelectorParser {
 								if (this.ignoreErrors) {
 									return [];
 								}
-								throw error;
+								throw this.getInvalidSelectorError(selector);
 							}
 							currentGroup.push(selectorItem);
 							combinator = SelectorCombinatorEnum.subsequentSibling;
@@ -233,7 +251,7 @@ export default class SelectorParser {
 								if (this.ignoreErrors) {
 									return [];
 								}
-								throw error;
+								throw this.getInvalidSelectorError(selector);
 							}
 							currentGroup.push(selectorItem);
 							combinator = SelectorCombinatorEnum.descendant;
@@ -291,7 +309,7 @@ export default class SelectorParser {
 			if (this.ignoreErrors) {
 				return [];
 			}
-			throw error;
+			throw this.getInvalidSelectorError(selector);
 		}
 
 		if (combinator === SelectorCombinatorEnum.none && currentGroup.length > 0) {
@@ -320,11 +338,16 @@ export default class SelectorParser {
 		}
 
 		if (selector === '*') {
-			return new SelectorItem({ tagName: '*', combinator });
+			return new SelectorItem({
+				globalMatchFunction: this.globalMatchFunction,
+				tagName: '*',
+				combinator
+			});
 		}
 
 		const regexp = new RegExp(SELECTOR_REGEXP);
 		const selectorItem: SelectorItem = new SelectorItem({
+			globalMatchFunction: this.globalMatchFunction,
 			combinator
 		});
 		let match;

@@ -1,6 +1,6 @@
 import Window from '../../src/window/Window.js';
 import type Document from '../../src/nodes/document/Document.js';
-import MutationObserver from '../../src/mutation-observer/MutationObserver.js';
+import type MutationObserver from '../../src/mutation-observer/MutationObserver.js';
 import type MutationRecord from '../../src/mutation-observer/MutationRecord.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 
@@ -327,6 +327,25 @@ describe('MutationObserver', () => {
 					type: 'attributes'
 				}
 			]);
+		});
+
+		it('Continues delivering mutations after the listener closure is no longer externally referenced.', async () => {
+			const records: MutationRecord[] = [];
+			const div = document.createElement('div');
+			let observer: MutationObserver | null = new window.MutationObserver((mutationRecords) =>
+				records.push(...mutationRecords)
+			);
+			observer.observe(div, { attributes: true });
+			// Dereference observer — only internal MutationObserverListener holds the callback
+			observer = null;
+			div.setAttribute('attr1', 'value1');
+			div.setAttribute('attr2', 'value2');
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+
+			expect(records.length).toBe(2);
+			expect(records[0].attributeName).toBe('attr1');
+			expect(records[1].attributeName).toBe('attr2');
 		});
 	});
 

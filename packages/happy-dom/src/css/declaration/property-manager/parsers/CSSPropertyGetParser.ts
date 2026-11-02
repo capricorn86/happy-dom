@@ -1,19 +1,18 @@
-import CSSStyleDeclarationValueParser from './CSSStyleDeclarationValueParser.js';
-import type ICSSStyleDeclarationPropertyValue from './ICSSStyleDeclarationPropertyValue.js';
+import CSSValueFormatter from '../utilities/CSSValueFormatter.js';
+import type ICSSPropertyValue from '../types/ICSSPropertyValue.js';
+import type ICSSPropertyMap from '../types/ICSSPropertyMap.js';
 
 /**
  * Computed style property parser.
  */
-export default class CSSStyleDeclarationPropertyGetParser {
+export default class CSSPropertyGetParser {
 	/**
 	 * Returns margin.
 	 *
 	 * @param properties Properties.
 	 * @returns Property value
 	 */
-	public static getMargin(properties: {
-		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue | null {
+	public static getMargin(properties: ICSSPropertyMap): ICSSPropertyValue | null {
 		return this.getPaddingLikeProperty(
 			['margin-top', 'margin-right', 'margin-bottom', 'margin-left'],
 			properties
@@ -26,9 +25,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 * @param properties Properties.
 	 * @returns Property value
 	 */
-	public static getPadding(properties: {
-		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue | null {
+	public static getPadding(properties: ICSSPropertyMap): ICSSPropertyValue | null {
 		return this.getPaddingLikeProperty(
 			['padding-top', 'padding-right', 'padding-bottom', 'padding-left'],
 			properties
@@ -41,9 +38,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 * @param properties Properties.
 	 * @returns Property value
 	 */
-	public static getOutline(properties: {
-		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue | null {
+	public static getOutline(properties: ICSSPropertyMap): ICSSPropertyValue | null {
 		if (
 			!properties['outline-color']?.value ||
 			!properties['outline-style']?.value ||
@@ -58,7 +53,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 			properties['outline-width'].important;
 
 		if (
-			CSSStyleDeclarationValueParser.getGlobalExceptInitial(properties['outline-width'].value) &&
+			CSSValueFormatter.getGlobalExceptInitial(properties['outline-width'].value) &&
 			properties['outline-width'].value === properties['outline-style'].value &&
 			properties['outline-width'].value === properties['outline-color'].value
 		) {
@@ -70,13 +65,13 @@ export default class CSSStyleDeclarationPropertyGetParser {
 
 		const values = [];
 
-		if (!CSSStyleDeclarationValueParser.getInitial(properties['outline-color']?.value)) {
+		if (!CSSValueFormatter.getInitial(properties['outline-color']?.value)) {
 			values.push(properties['outline-color'].value);
 		}
-		if (!CSSStyleDeclarationValueParser.getInitial(properties['outline-style']?.value)) {
+		if (!CSSValueFormatter.getInitial(properties['outline-style']?.value)) {
 			values.push(properties['outline-style'].value);
 		}
-		if (!CSSStyleDeclarationValueParser.getInitial(properties['outline-width'].value)) {
+		if (!CSSValueFormatter.getInitial(properties['outline-width'].value)) {
 			values.push(properties['outline-width'].value);
 		}
 
@@ -92,9 +87,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 * @param properties Properties.
 	 * @returns Property value
 	 */
-	public static getBorder(properties: {
-		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue | null {
+	public static getBorder(properties: ICSSPropertyMap): ICSSPropertyValue | null {
 		if (
 			!properties['border-top-width']?.value ||
 			properties['border-top-width']?.value !== properties['border-right-width']?.value ||
@@ -137,22 +130,14 @@ export default class CSSStyleDeclarationPropertyGetParser {
 			properties['border-image-repeat'].important;
 
 		if (
-			CSSStyleDeclarationValueParser.getGlobalExceptInitial(properties['border-top-width'].value) ||
-			CSSStyleDeclarationValueParser.getGlobalExceptInitial(properties['border-top-style'].value) ||
-			CSSStyleDeclarationValueParser.getGlobalExceptInitial(properties['border-top-color'].value) ||
-			CSSStyleDeclarationValueParser.getGlobalExceptInitial(
-				properties['border-image-source'].value
-			) ||
-			CSSStyleDeclarationValueParser.getGlobalExceptInitial(
-				properties['border-image-slice'].value
-			) ||
-			CSSStyleDeclarationValueParser.getGlobalExceptInitial(
-				properties['border-image-width'].value
-			) ||
-			CSSStyleDeclarationValueParser.getGlobalExceptInitial(
-				properties['border-image-outset'].value
-			) ||
-			CSSStyleDeclarationValueParser.getGlobalExceptInitial(properties['border-image-repeat'].value)
+			CSSValueFormatter.getGlobalExceptInitial(properties['border-top-width'].value) ||
+			CSSValueFormatter.getGlobalExceptInitial(properties['border-top-style'].value) ||
+			CSSValueFormatter.getGlobalExceptInitial(properties['border-top-color'].value) ||
+			CSSValueFormatter.getGlobalExceptInitial(properties['border-image-source'].value) ||
+			CSSValueFormatter.getGlobalExceptInitial(properties['border-image-slice'].value) ||
+			CSSValueFormatter.getGlobalExceptInitial(properties['border-image-width'].value) ||
+			CSSValueFormatter.getGlobalExceptInitial(properties['border-image-outset'].value) ||
+			CSSValueFormatter.getGlobalExceptInitial(properties['border-image-repeat'].value)
 		) {
 			if (
 				properties['border-top-width'].value !== properties['border-top-style'].value ||
@@ -174,15 +159,15 @@ export default class CSSStyleDeclarationPropertyGetParser {
 
 		const values = [];
 
-		if (!CSSStyleDeclarationValueParser.getInitial(properties['border-top-width'].value)) {
+		if (!CSSValueFormatter.getInitial(properties['border-top-width'].value)) {
 			values.push(properties['border-top-width'].value);
 		}
 
-		if (!CSSStyleDeclarationValueParser.getInitial(properties['border-top-style'].value)) {
+		if (!CSSValueFormatter.getInitial(properties['border-top-style'].value)) {
 			values.push(properties['border-top-style'].value);
 		}
 
-		if (!CSSStyleDeclarationValueParser.getInitial(properties['border-top-color'].value)) {
+		if (!CSSValueFormatter.getInitial(properties['border-top-color'].value)) {
 			values.push(properties['border-top-color'].value);
 		}
 
@@ -198,9 +183,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 * @param properties Properties.
 	 * @returns Property value
 	 */
-	public static getBorderTop(properties: {
-		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue | null {
+	public static getBorderTop(properties: ICSSPropertyMap): ICSSPropertyValue | null {
 		return this.getBorderTopRightBottomLeft('top', properties);
 	}
 
@@ -210,9 +193,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 * @param properties Properties.
 	 * @returns Property value
 	 */
-	public static getBorderRight(properties: {
-		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue | null {
+	public static getBorderRight(properties: ICSSPropertyMap): ICSSPropertyValue | null {
 		return this.getBorderTopRightBottomLeft('right', properties);
 	}
 
@@ -222,9 +203,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 * @param properties Properties.
 	 * @returns Property value
 	 */
-	public static getBorderBottom(properties: {
-		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue | null {
+	public static getBorderBottom(properties: ICSSPropertyMap): ICSSPropertyValue | null {
 		return this.getBorderTopRightBottomLeft('bottom', properties);
 	}
 
@@ -234,9 +213,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 * @param properties Properties.
 	 * @returns Property value
 	 */
-	public static getBorderLeft(properties: {
-		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue | null {
+	public static getBorderLeft(properties: ICSSPropertyMap): ICSSPropertyValue | null {
 		return this.getBorderTopRightBottomLeft('left', properties);
 	}
 
@@ -246,9 +223,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 * @param properties Properties.
 	 * @returns Property value
 	 */
-	public static getBorderColor(properties: {
-		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue | null {
+	public static getBorderColor(properties: ICSSPropertyMap): ICSSPropertyValue | null {
 		return this.getPaddingLikeProperty(
 			['border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color'],
 			properties
@@ -261,9 +236,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 * @param properties Properties.
 	 * @returns Property value
 	 */
-	public static getBorderWidth(properties: {
-		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue | null {
+	public static getBorderWidth(properties: ICSSPropertyMap): ICSSPropertyValue | null {
 		return this.getPaddingLikeProperty(
 			['border-top-width', 'border-right-width', 'border-bottom-width', 'border-left-width'],
 			properties
@@ -276,9 +249,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 * @param properties Properties.
 	 * @returns Property value
 	 */
-	public static getBorderStyle(properties: {
-		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue | null {
+	public static getBorderStyle(properties: ICSSPropertyMap): ICSSPropertyValue | null {
 		return this.getPaddingLikeProperty(
 			['border-top-style', 'border-right-style', 'border-bottom-style', 'border-left-style'],
 			properties
@@ -291,9 +262,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 * @param properties Properties.
 	 * @returns Property value
 	 */
-	public static getBorderRadius(properties: {
-		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue | null {
+	public static getBorderRadius(properties: ICSSPropertyMap): ICSSPropertyValue | null {
 		return this.getPaddingLikeProperty(
 			[
 				'border-top-left-radius',
@@ -311,9 +280,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 * @param properties Properties.
 	 * @returns Property value
 	 */
-	public static getBorderImage(properties: {
-		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue | null {
+	public static getBorderImage(properties: ICSSPropertyMap): ICSSPropertyValue | null {
 		if (
 			!properties['border-image-source']?.value ||
 			!properties['border-image-slice']?.value ||
@@ -332,11 +299,11 @@ export default class CSSStyleDeclarationPropertyGetParser {
 			properties['border-image-repeat'].important;
 
 		if (
-			CSSStyleDeclarationValueParser.getGlobal(properties['border-image-source'].value) ||
-			CSSStyleDeclarationValueParser.getGlobal(properties['border-image-slice'].value) ||
-			CSSStyleDeclarationValueParser.getGlobal(properties['border-image-width'].value) ||
-			CSSStyleDeclarationValueParser.getGlobal(properties['border-image-outset'].value) ||
-			CSSStyleDeclarationValueParser.getGlobal(properties['border-image-repeat'].value)
+			CSSValueFormatter.getGlobal(properties['border-image-source'].value) ||
+			CSSValueFormatter.getGlobal(properties['border-image-slice'].value) ||
+			CSSValueFormatter.getGlobal(properties['border-image-width'].value) ||
+			CSSValueFormatter.getGlobal(properties['border-image-outset'].value) ||
+			CSSValueFormatter.getGlobal(properties['border-image-repeat'].value)
 		) {
 			if (
 				properties['border-image-source'].value !== properties['border-image-slice'].value ||
@@ -364,9 +331,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 * @param properties Properties.
 	 * @returns Property value
 	 */
-	public static getBackground(properties: {
-		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue | null {
+	public static getBackground(properties: ICSSPropertyMap): ICSSPropertyValue | null {
 		if (
 			!properties['background-image']?.value ||
 			!properties['background-repeat']?.value ||
@@ -393,25 +358,15 @@ export default class CSSStyleDeclarationPropertyGetParser {
 			properties['background-clip'].important;
 
 		if (
-			CSSStyleDeclarationValueParser.getGlobalExceptInitial(properties['background-image'].value) ||
-			CSSStyleDeclarationValueParser.getGlobalExceptInitial(
-				properties['background-repeat'].value
-			) ||
-			CSSStyleDeclarationValueParser.getGlobalExceptInitial(
-				properties['background-attachment'].value
-			) ||
-			CSSStyleDeclarationValueParser.getGlobalExceptInitial(
-				properties['background-position-x'].value
-			) ||
-			CSSStyleDeclarationValueParser.getGlobalExceptInitial(
-				properties['background-position-y'].value
-			) ||
-			CSSStyleDeclarationValueParser.getGlobalExceptInitial(properties['background-color'].value) ||
-			CSSStyleDeclarationValueParser.getGlobalExceptInitial(properties['background-size'].value) ||
-			CSSStyleDeclarationValueParser.getGlobalExceptInitial(
-				properties['background-origin'].value
-			) ||
-			CSSStyleDeclarationValueParser.getGlobalExceptInitial(properties['background-clip'].value)
+			CSSValueFormatter.getGlobalExceptInitial(properties['background-image'].value) ||
+			CSSValueFormatter.getGlobalExceptInitial(properties['background-repeat'].value) ||
+			CSSValueFormatter.getGlobalExceptInitial(properties['background-attachment'].value) ||
+			CSSValueFormatter.getGlobalExceptInitial(properties['background-position-x'].value) ||
+			CSSValueFormatter.getGlobalExceptInitial(properties['background-position-y'].value) ||
+			CSSValueFormatter.getGlobalExceptInitial(properties['background-color'].value) ||
+			CSSValueFormatter.getGlobalExceptInitial(properties['background-size'].value) ||
+			CSSValueFormatter.getGlobalExceptInitial(properties['background-origin'].value) ||
+			CSSValueFormatter.getGlobalExceptInitial(properties['background-clip'].value)
 		) {
 			if (
 				properties['background-image'].value !== properties['background-repeat'].value ||
@@ -434,44 +389,44 @@ export default class CSSStyleDeclarationPropertyGetParser {
 
 		const values = [];
 
-		if (!CSSStyleDeclarationValueParser.getInitial(properties['background-image'].value)) {
+		if (!CSSValueFormatter.getInitial(properties['background-image'].value)) {
 			values.push(properties['background-image'].value);
 		}
 
 		if (
-			!CSSStyleDeclarationValueParser.getInitial(properties['background-position-x'].value) &&
-			!CSSStyleDeclarationValueParser.getInitial(properties['background-position-y'].value) &&
-			!CSSStyleDeclarationValueParser.getInitial(properties['background-size'].value)
+			!CSSValueFormatter.getInitial(properties['background-position-x'].value) &&
+			!CSSValueFormatter.getInitial(properties['background-position-y'].value) &&
+			!CSSValueFormatter.getInitial(properties['background-size'].value)
 		) {
 			values.push(
 				`${properties['background-position-x'].value} ${properties['background-position-y'].value} / ${properties['background-size'].value}`
 			);
 		} else if (
-			!CSSStyleDeclarationValueParser.getInitial(properties['background-position-x'].value) &&
-			!CSSStyleDeclarationValueParser.getInitial(properties['background-position-y'].value)
+			!CSSValueFormatter.getInitial(properties['background-position-x'].value) &&
+			!CSSValueFormatter.getInitial(properties['background-position-y'].value)
 		) {
 			values.push(
 				`${properties['background-position-x'].value} ${properties['background-position-y'].value}`
 			);
 		}
 
-		if (!CSSStyleDeclarationValueParser.getInitial(properties['background-repeat'].value)) {
+		if (!CSSValueFormatter.getInitial(properties['background-repeat'].value)) {
 			values.push(properties['background-repeat'].value);
 		}
 
-		if (!CSSStyleDeclarationValueParser.getInitial(properties['background-attachment'].value)) {
+		if (!CSSValueFormatter.getInitial(properties['background-attachment'].value)) {
 			values.push(properties['background-attachment'].value);
 		}
 
-		if (!CSSStyleDeclarationValueParser.getInitial(properties['background-origin'].value)) {
+		if (!CSSValueFormatter.getInitial(properties['background-origin'].value)) {
 			values.push(properties['background-origin'].value);
 		}
 
-		if (!CSSStyleDeclarationValueParser.getInitial(properties['background-clip'].value)) {
+		if (!CSSValueFormatter.getInitial(properties['background-clip'].value)) {
 			values.push(properties['background-clip'].value);
 		}
 
-		if (!CSSStyleDeclarationValueParser.getInitial(properties['background-color'].value)) {
+		if (!CSSValueFormatter.getInitial(properties['background-color'].value)) {
 			values.push(properties['background-color'].value);
 		}
 
@@ -487,9 +442,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 * @param properties Properties.
 	 * @returns Property value
 	 */
-	public static getBackgroundPosition(properties: {
-		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue | null {
+	public static getBackgroundPosition(properties: ICSSPropertyMap): ICSSPropertyValue | null {
 		if (
 			!properties['background-position-x']?.value ||
 			!properties['background-position-y']?.value
@@ -501,8 +454,8 @@ export default class CSSStyleDeclarationPropertyGetParser {
 			properties['background-position-x'].important &&
 			properties['background-position-y'].important;
 		if (
-			CSSStyleDeclarationValueParser.getGlobal(properties['background-position-x'].value) ||
-			CSSStyleDeclarationValueParser.getGlobal(properties['background-position-y'].value)
+			CSSValueFormatter.getGlobal(properties['background-position-x'].value) ||
+			CSSValueFormatter.getGlobal(properties['background-position-y'].value)
 		) {
 			if (properties['background-position-x'].value !== properties['background-position-y'].value) {
 				return null;
@@ -534,9 +487,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 * @param properties Properties.
 	 * @returns Property value
 	 */
-	public static getFlex(properties: {
-		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue | null {
+	public static getFlex(properties: { [k: string]: ICSSPropertyValue }): ICSSPropertyValue | null {
 		if (
 			!properties['flex-grow']?.value ||
 			!properties['flex-shrink']?.value ||
@@ -551,9 +502,9 @@ export default class CSSStyleDeclarationPropertyGetParser {
 			properties['flex-basis'].important;
 
 		if (
-			CSSStyleDeclarationValueParser.getGlobal(properties['flex-grow'].value) ||
-			CSSStyleDeclarationValueParser.getGlobal(properties['flex-shrink'].value) ||
-			CSSStyleDeclarationValueParser.getGlobal(properties['flex-basis'].value)
+			CSSValueFormatter.getGlobal(properties['flex-grow'].value) ||
+			CSSValueFormatter.getGlobal(properties['flex-shrink'].value) ||
+			CSSValueFormatter.getGlobal(properties['flex-basis'].value)
 		) {
 			if (
 				properties['flex-grow'].value !== properties['flex-shrink'].value ||
@@ -580,9 +531,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	 * @param properties Properties.
 	 * @returns Property value
 	 */
-	public static getFont(properties: {
-		[k: string]: ICSSStyleDeclarationPropertyValue;
-	}): ICSSStyleDeclarationPropertyValue | null {
+	public static getFont(properties: { [k: string]: ICSSPropertyValue }): ICSSPropertyValue | null {
 		if (
 			!properties['font-size']?.value ||
 			!properties['font-family']?.value ||
@@ -605,13 +554,13 @@ export default class CSSStyleDeclarationPropertyGetParser {
 			properties['line-height'].important;
 
 		if (
-			CSSStyleDeclarationValueParser.getGlobal(properties['font-size'].value) ||
-			CSSStyleDeclarationValueParser.getGlobal(properties['font-family'].value) ||
-			CSSStyleDeclarationValueParser.getGlobal(properties['font-weight'].value) ||
-			CSSStyleDeclarationValueParser.getGlobal(properties['font-style'].value) ||
-			CSSStyleDeclarationValueParser.getGlobal(properties['font-variant'].value) ||
-			CSSStyleDeclarationValueParser.getGlobal(properties['font-stretch'].value) ||
-			CSSStyleDeclarationValueParser.getGlobal(properties['line-height'].value)
+			CSSValueFormatter.getGlobal(properties['font-size'].value) ||
+			CSSValueFormatter.getGlobal(properties['font-family'].value) ||
+			CSSValueFormatter.getGlobal(properties['font-weight'].value) ||
+			CSSValueFormatter.getGlobal(properties['font-style'].value) ||
+			CSSValueFormatter.getGlobal(properties['font-variant'].value) ||
+			CSSValueFormatter.getGlobal(properties['font-stretch'].value) ||
+			CSSValueFormatter.getGlobal(properties['line-height'].value)
 		) {
 			if (
 				properties['font-size'].value !== properties['font-family'].value ||
@@ -669,9 +618,9 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	private static getBorderTopRightBottomLeft(
 		position: 'top' | 'right' | 'bottom' | 'left',
 		properties: {
-			[k: string]: ICSSStyleDeclarationPropertyValue;
+			[k: string]: ICSSPropertyValue;
 		}
-	): ICSSStyleDeclarationPropertyValue | null {
+	): ICSSPropertyValue | null {
 		if (
 			!properties[`border-${position}-width`]?.value ||
 			!properties[`border-${position}-style`]?.value ||
@@ -686,9 +635,7 @@ export default class CSSStyleDeclarationPropertyGetParser {
 			properties[`border-${position}-color`].important;
 
 		if (
-			CSSStyleDeclarationValueParser.getGlobalExceptInitial(
-				properties[`border-${position}-width`].value
-			) &&
+			CSSValueFormatter.getGlobalExceptInitial(properties[`border-${position}-width`].value) &&
 			properties[`border-${position}-width`].value ===
 				properties[`border-${position}-style`].value &&
 			properties[`border-${position}-width`].value === properties[`border-${position}-color`].value
@@ -701,13 +648,13 @@ export default class CSSStyleDeclarationPropertyGetParser {
 
 		const values = [];
 
-		if (!CSSStyleDeclarationValueParser.getInitial(properties[`border-${position}-width`].value)) {
+		if (!CSSValueFormatter.getInitial(properties[`border-${position}-width`].value)) {
 			values.push(properties[`border-${position}-width`].value);
 		}
-		if (!CSSStyleDeclarationValueParser.getInitial(properties[`border-${position}-style`]?.value)) {
+		if (!CSSValueFormatter.getInitial(properties[`border-${position}-style`]?.value)) {
 			values.push(properties[`border-${position}-style`].value);
 		}
-		if (!CSSStyleDeclarationValueParser.getInitial(properties[`border-${position}-color`]?.value)) {
+		if (!CSSValueFormatter.getInitial(properties[`border-${position}-color`]?.value)) {
 			values.push(properties[`border-${position}-color`].value);
 		}
 
@@ -728,9 +675,9 @@ export default class CSSStyleDeclarationPropertyGetParser {
 	private static getPaddingLikeProperty(
 		propertyNames: [string, string, string, string],
 		properties: {
-			[k: string]: ICSSStyleDeclarationPropertyValue;
+			[k: string]: ICSSPropertyValue;
 		}
-	): ICSSStyleDeclarationPropertyValue | null {
+	): ICSSPropertyValue | null {
 		if (
 			!properties[propertyNames[0]]?.value ||
 			!properties[propertyNames[1]]?.value ||
@@ -747,10 +694,10 @@ export default class CSSStyleDeclarationPropertyGetParser {
 			properties[propertyNames[3]].important;
 
 		if (
-			CSSStyleDeclarationValueParser.getGlobal(properties[propertyNames[0]].value) ||
-			CSSStyleDeclarationValueParser.getGlobal(properties[propertyNames[1]].value) ||
-			CSSStyleDeclarationValueParser.getGlobal(properties[propertyNames[2]].value) ||
-			CSSStyleDeclarationValueParser.getGlobal(properties[propertyNames[3]].value)
+			CSSValueFormatter.getGlobal(properties[propertyNames[0]].value) ||
+			CSSValueFormatter.getGlobal(properties[propertyNames[1]].value) ||
+			CSSValueFormatter.getGlobal(properties[propertyNames[2]].value) ||
+			CSSValueFormatter.getGlobal(properties[propertyNames[3]].value)
 		) {
 			if (
 				properties[propertyNames[0]].value !== properties[propertyNames[1]].value ||

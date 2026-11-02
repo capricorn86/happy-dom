@@ -43,6 +43,8 @@ import DOMMatrixReadOnlyImplementation from '../dom/dom-matrix/DOMMatrixReadOnly
 import DOMMatrixImplementation from '../dom/dom-matrix/DOMMatrix.js';
 import DOMPointReadOnlyImplementation from '../dom/DOMPointReadOnly.js';
 import DOMPointImplementation from '../dom/DOMPoint.js';
+import AnimationImplementation from '../animation/Animation.js';
+import KeyframeEffectImplementation from '../animation/KeyframeEffect.js';
 
 /**
  * Extends classes with a "window" property, so that they internally can access it's Window context.
@@ -270,6 +272,16 @@ export default class WindowContextClassExtender {
 		class DOMPoint extends DOMPointImplementation {}
 		DOMPoint.prototype[PropertySymbol.window] = window;
 		(<typeof DOMPoint>window.DOMPoint) = DOMPoint;
+
+		// Animation
+		class Animation extends AnimationImplementation {}
+		Animation.prototype[PropertySymbol.window] = window;
+		(<typeof Animation>window.Animation) = Animation;
+
+		// KeyframeEffect
+		class KeyframeEffect extends KeyframeEffectImplementation {}
+		KeyframeEffect.prototype[PropertySymbol.window] = window;
+		(<typeof KeyframeEffect>window.KeyframeEffect) = KeyframeEffect;
 
 		/* eslint-enable jsdoc/require-jsdoc */
 	}

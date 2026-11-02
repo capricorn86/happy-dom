@@ -37,7 +37,7 @@ export default interface IParentNode extends Node {
 	querySelector<K extends keyof ISVGElementTagNameMap>(
 		selector: K
 	): ISVGElementTagNameMap[K] | null;
-	querySelector(selector: string): Element | null;
+	querySelector<E extends Element = Element>(selector: string): E | null;
 
 	/**
 	 * Query CSS selector to find matching nodes.
@@ -51,7 +51,7 @@ export default interface IParentNode extends Node {
 	querySelectorAll<K extends keyof ISVGElementTagNameMap>(
 		selector: K
 	): NodeList<ISVGElementTagNameMap[K]>;
-	querySelectorAll(selector: string): NodeList<Element>;
+	querySelectorAll<E extends Element = Element>(selector: string): NodeList<E>;
 
 	/**
 	 * Query CSS selector to find matching nodes.
@@ -59,7 +59,7 @@ export default interface IParentNode extends Node {
 	 * @param selector CSS selector.
 	 * @returns Matching elements.
 	 */
-	querySelectorAll(selector: string): NodeList<Element>;
+	querySelectorAll<E extends Element = Element>(selector: string): NodeList<E>;
 
 	/**
 	 * Returns an elements by class name.

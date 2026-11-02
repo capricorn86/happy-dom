@@ -237,7 +237,9 @@ export default class WebSocket extends EventTarget {
 		}
 
 		const originURL = new URL(window.location.href);
-		const cookies = browserContext.cookieContainer.getCookies(originURL, false);
+		const cookieURL = new URL(url.href);
+		cookieURL.protocol = url.protocol === 'wss:' ? 'https:' : 'http:';
+		const cookies = browserContext.cookieContainer.getCookies(cookieURL, false);
 
 		this.#readyState = WebSocketReadyStateEnum.connecting;
 
@@ -265,7 +267,7 @@ export default class WebSocket extends EventTarget {
 					? headers['set-cookie']
 					: [headers['set-cookie']];
 				for (const cookieString of cookieStrings) {
-					const cookie = CookieStringUtility.stringToCookie(originURL, cookieString);
+					const cookie = CookieStringUtility.stringToCookie(cookieURL, cookieString);
 					if (cookie) {
 						browserContext.cookieContainer.addCookies([cookie]);
 					}

@@ -5,6 +5,14 @@ import * as PropertySymbol from '../../src/PropertySymbol.js';
 import type MessageEvent from '../../src/event/events/MessageEvent.js';
 import type CloseEvent from '../../src/event/events/CloseEvent.js';
 import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
+import WindowBrowserContext from '../../src/window/WindowBrowserContext.js';
+import type WebSocket from '../../src/web-socket/WebSocket.js';
+import URL from '../../src/url/URL.js';
+
+type WebSocketMock = NonNullable<WebSocket[typeof PropertySymbol.webSocket]> & {
+	internalInit: { options: { headers: Record<string, string> } };
+	internalListeners: Record<string, ((event: { headers: { 'set-cookie': string[] } }) => void)[]>;
+};
 
 vi.mock('ws', () => {
 	/* eslint-disable jsdoc/require-jsdoc */
@@ -138,11 +146,11 @@ describe('WebSocket', () => {
 		it('Connects to web socket and listens to "open" event.', async () => {
 			window.document.cookie = 'sessionId=abc123';
 
-			const socket = new window.WebSocket('ws://echo.websocket.org');
+			const socket = new window.WebSocket('ws://localhost:8080');
 			const ws = <any>socket[PropertySymbol.webSocket];
 
 			expect(ws.internalInit).toEqual({
-				url: new URL('ws://echo.websocket.org'),
+				url: new URL('ws://localhost:8080'),
 				protocols: [],
 				options: {
 					headers: {
@@ -177,7 +185,7 @@ describe('WebSocket', () => {
 				options: {
 					headers: {
 						'user-agent': window.navigator.userAgent,
-						cookie: 'sessionId=abc123',
+						cookie: '',
 						origin: 'https://localhost:8080'
 					},
 					rejectUnauthorized: true
@@ -197,7 +205,7 @@ describe('WebSocket', () => {
 				options: {
 					headers: {
 						'user-agent': window.navigator.userAgent,
-						cookie: 'sessionId=abc123',
+						cookie: '',
 						origin: 'https://localhost:8080'
 					},
 					rejectUnauthorized: true
@@ -315,7 +323,7 @@ describe('WebSocket', () => {
 		});
 
 		it('Connects to web socket and listens to "upgrade" event with headers as string.', async () => {
-			const socket = new window.WebSocket('ws://echo.websocket.org');
+			const socket = new window.WebSocket('ws://localhost:8080');
 			const ws = <any>socket[PropertySymbol.webSocket];
 
 			expect(window[PropertySymbol.openWebSockets].includes(socket)).toBe(true);
@@ -328,7 +336,7 @@ describe('WebSocket', () => {
 		});
 
 		it('Connects to web socket and listens to "upgrade" event with headers as array.', async () => {
-			const socket = new window.WebSocket('ws://echo.websocket.org');
+			const socket = new window.WebSocket('ws://localhost:8080');
 			const ws = <any>socket[PropertySymbol.webSocket];
 
 			expect(window[PropertySymbol.openWebSockets].includes(socket)).toBe(true);
@@ -339,6 +347,42 @@ describe('WebSocket', () => {
 
 			expect(window.document.cookie).toBe('id1=123; id2=456');
 		});
+
+		it.each(['ws:', 'wss:'])(
+			'Scopes outgoing cookies and handshake cookies to the %s endpoint.',
+			(protocol) => {
+				window.happyDOM.setURL('https://victim.example/');
+				window.document.cookie = 'session=VICTIM_SECRET';
+				const cookieContainer = new WindowBrowserContext(window).getBrowserContext()!
+					.cookieContainer;
+				const endpointURL = new URL('https://attacker.example/');
+				cookieContainer.addCookies([
+					{ key: 'endpoint', value: 'own', originURL: endpointURL },
+					{ key: 'secureEndpoint', value: 'own', originURL: endpointURL, secure: true }
+				]);
+				const socket = new window.WebSocket(`${protocol}//attacker.example/`);
+				const ws = <WebSocketMock>socket[PropertySymbol.webSocket];
+				expect(ws.internalInit.options.headers.cookie).toBe(
+					protocol === 'wss:' ? 'endpoint=own; secureEndpoint=own' : 'endpoint=own'
+				);
+				expect(ws.internalInit.options.headers.origin).toBe('https://victim.example');
+				ws.internalListeners.upgrade[0]({
+					headers: {
+						'set-cookie': [
+							'planted=ATTACKER',
+							'session=FORGED; Domain=victim.example; SameSite=None; Secure'
+						]
+					}
+				});
+				expect(window.document.cookie).toBe('session=VICTIM_SECRET');
+				expect(cookieContainer.getCookies()).toHaveLength(4);
+				expect(cookieContainer.getCookies(endpointURL).map((cookie) => cookie.key)).toEqual([
+					'endpoint',
+					'secureEndpoint',
+					'planted'
+				]);
+			}
+		);
 
 		it('Connects to web socket and listens to "error" event.', async () => {
 			const socket = new window.WebSocket('ws://echo.websocket.org');

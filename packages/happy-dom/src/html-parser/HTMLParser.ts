@@ -292,6 +292,9 @@ export default class HTMLParser {
 
 					if (match[4]) {
 						this.parseComment(html.substring(this.startTagIndex, match.index));
+					} else if (match[3]) {
+						// The "--" can be part of the end tag (e.g. "<!-->").
+						this.markupRegExp.lastIndex -= 2;
 					}
 					break;
 				case MarkupReadStateEnum.documentType:
@@ -690,9 +693,7 @@ export default class HTMLParser {
 	 * @param comment Comment.
 	 */
 	private parseComment(comment: string): void {
-		const commentNode = this.rootDocument!.createComment(
-			XMLEncodeUtility.decodeHTMLEntities(comment)
-		);
+		const commentNode = this.rootDocument!.createComment(comment);
 
 		if (this.documentStructure) {
 			const level = this.documentStructure.level;

@@ -1,5 +1,9 @@
 import { URLSearchParams } from 'url';
 import * as PropertySymbol from './PropertySymbol.js';
+import Animation from './animation/Animation.js';
+import AnimationTimeline from './animation/AnimationTimeline.js';
+import DocumentTimeline from './animation/DocumentTimeline.js';
+import KeyframeEffect from './animation/KeyframeEffect.js';
 import Browser from './browser/Browser.js';
 import BrowserContext from './browser/BrowserContext.js';
 import BrowserFrame from './browser/BrowserFrame.js';
@@ -20,6 +24,7 @@ import VirtualConsolePrinter from './console/VirtualConsolePrinter.js';
 import VirtualConsoleLogLevelEnum from './console/enums/VirtualConsoleLogLevelEnum.js';
 import VirtualConsoleLogTypeEnum from './console/enums/VirtualConsoleLogTypeEnum.js';
 import CookieSameSiteEnum from './cookie/enums/CookieSameSiteEnum.js';
+import CookieStore from './cookie-store/CookieStore.js';
 import CSSRule from './css/CSSRule.js';
 import CSSStyleSheet from './css/CSSStyleSheet.js';
 import MediaList from './css/MediaList.js';
@@ -52,6 +57,7 @@ import Touch from './event/Touch.js';
 import UIEvent from './event/UIEvent.js';
 import AnimationEvent from './event/events/AnimationEvent.js';
 import ClipboardEvent from './event/events/ClipboardEvent.js';
+import CookieChangeEvent from './event/events/CookieChangeEvent.js';
 import CustomEvent from './event/events/CustomEvent.js';
 import ErrorEvent from './event/events/ErrorEvent.js';
 import FocusEvent from './event/events/FocusEvent.js';
@@ -211,12 +217,17 @@ import type { TCanvasImage } from './canvas/TCanvasImage.js';
 import type IConsole from './console/IConsole.js';
 import type ICookie from './cookie/ICookie.js';
 import type IOptionalCookie from './cookie/IOptionalCookie.js';
+import type ICookieStoreGetOptions from './cookie-store/ICookieStoreGetOptions.js';
+import type ICookieStoreSetOptions from './cookie-store/ICookieStoreSetOptions.js';
+import type ICookieStoreDeleteOptions from './cookie-store/ICookieStoreDeleteOptions.js';
+import type ICookieStoreItem from './cookie-store/ICookieStoreItem.js';
 import type IEventInit from './event/IEventInit.js';
 import type ITouchInit from './event/ITouchInit.js';
 import type IUIEventInit from './event/IUIEventInit.js';
 import type { TEventListener } from './event/TEventListener.js';
 import type IAnimationEventInit from './event/events/IAnimationEventInit.js';
 import type IClipboardEventInit from './event/events/IClipboardEventInit.js';
+import type ICookieChangeEventInit from './event/events/ICookieChangeEventInit.js';
 import type ICustomEventInit from './event/events/ICustomEventInit.js';
 import type IErrorEventInit from './event/events/IErrorEventInit.js';
 import type IFocusEventInit from './event/events/IFocusEventInit.js';
@@ -245,8 +256,13 @@ export type {
 	ICanvasRenderingContext2D,
 	ICanvasShape,
 	IClipboardEventInit,
+	ICookieChangeEventInit,
 	IConsole,
 	ICookie,
+	ICookieStoreGetOptions,
+	ICookieStoreSetOptions,
+	ICookieStoreDeleteOptions,
+	ICookieStoreItem,
 	ICustomEventInit,
 	IErrorEventInit,
 	IEventInit,
@@ -274,7 +290,9 @@ export type {
 export {
 	AbortController,
 	AbortSignal,
+	Animation,
 	AnimationEvent,
+	AnimationTimeline,
 	Attr,
 	Blob,
 	Browser,
@@ -288,7 +306,9 @@ export {
 	ClipboardEvent,
 	ClipboardItem,
 	Comment,
+	CookieChangeEvent,
 	CookieSameSiteEnum,
+	CookieStore,
 	CSSConditionRule,
 	CSSContainerRule,
 	CSSFontFaceRule,
@@ -317,6 +337,7 @@ export {
 	Document,
 	DocumentFragment,
 	DocumentType,
+	DocumentTimeline,
 	DOMException,
 	DOMParser,
 	DOMRect,
@@ -412,6 +433,7 @@ export {
 	IntersectionObserver,
 	IntersectionObserverEntry,
 	KeyboardEvent,
+	KeyframeEffect,
 	Location,
 	MediaList,
 	MediaQueryListEvent,

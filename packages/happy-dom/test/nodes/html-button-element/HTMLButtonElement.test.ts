@@ -276,6 +276,23 @@ describe('HTMLButtonElement', () => {
 			element.setCustomValidity('Error message');
 			expect(element.validationMessage).toBe('Error message');
 		});
+
+		it('Returns empty string for disabled buttons.', () => {
+			element.disabled = true;
+			expect(element.validationMessage).toBe('');
+		});
+	});
+
+	describe('get willValidate()', () => {
+		it('Returns "false" for disabled buttons.', () => {
+			element.disabled = true;
+			expect(element.willValidate).toBe(false);
+		});
+
+		it('Returns "true" for enabled buttons.', () => {
+			element.disabled = false;
+			expect(element.willValidate).toBe(true);
+		});
 	});
 
 	describe(`get labels()`, () => {

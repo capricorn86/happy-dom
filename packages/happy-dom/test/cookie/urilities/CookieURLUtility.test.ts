@@ -6,6 +6,32 @@ import { describe, it, expect } from 'vitest';
 
 describe('CookieURLUtility', () => {
 	describe('cookieMatchesURL()', () => {
+		it.each([
+			['', 'https://example.com/', true],
+			['', 'https://sub.example.com/', false],
+			['', 'https://attacker.net/', false],
+			['example.com', 'https://example.com/', true],
+			['example.com', 'https://sub.example.com/', true],
+			['example.com', 'https://notexample.com/', false],
+			['example.com', 'https://example.com.attacker.net/', false],
+			['0.1', 'https://127.0.0.1/', false]
+		])('Scopes Domain="%s" at %s independently of SameSite.', (domain, target, matches) => {
+			for (const sameSite of Object.values(CookieSameSiteEnum)) {
+				const cookie: ICookie = {
+					key: 'session',
+					value: 'secret',
+					originURL: new URL('https://example.com/'),
+					domain,
+					path: '/',
+					expires: null,
+					httpOnly: true,
+					secure: true,
+					sameSite
+				};
+				expect(CookieURLUtility.cookieMatchesURL(cookie, new URL(target))).toBe(matches);
+			}
+		});
+
 		it('Returns true for matching cookie and URL.', () => {
 			const originURL = new URL('https://example.com/path/');
 			const cookie: ICookie = {
@@ -58,6 +84,35 @@ describe('CookieURLUtility', () => {
 
 			expect(CookieURLUtility.cookieMatchesURL(cookie, targetURL)).toBe(false);
 		});
+
+		it.each([
+			['/foo', '/foo', true],
+			['/foo', '/foo/bar', true],
+			['/foo', '/foobar', false],
+			['/foo/', '/foo/bar', true],
+			['/foo/', '/foo', false],
+			['/', '/foo', true]
+		])(
+			'Matches cookie path "%s" against request path "%s".',
+			(cookiePath, requestPath, matches) => {
+				const originURL = new URL('https://example.com/');
+				const cookie: ICookie = {
+					key: 'test',
+					value: 'value',
+					originURL,
+					domain: 'example.com',
+					path: cookiePath,
+					expires: null,
+					httpOnly: false,
+					secure: false,
+					sameSite: CookieSameSiteEnum.lax
+				};
+
+				expect(
+					CookieURLUtility.cookieMatchesURL(cookie, new URL(`https://example.com${requestPath}`))
+				).toBe(matches);
+			}
+		);
 
 		it('Handles URL with undefined hostname without throwing.', () => {
 			const originURL = new URL('https://example.com/path/');

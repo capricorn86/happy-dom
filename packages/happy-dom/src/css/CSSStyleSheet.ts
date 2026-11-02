@@ -1,5 +1,5 @@
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
-import CSSParser from './utilities/CSSParser.js';
+import CSSParser from './utilities/CSSRuleParser.js';
 import type CSSRule from './CSSRule.js';
 import type MediaList from './MediaList.js';
 import type BrowserWindow from '../window/BrowserWindow.js';

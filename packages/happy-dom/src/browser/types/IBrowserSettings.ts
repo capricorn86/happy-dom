@@ -33,8 +33,15 @@ export default interface IBrowserSettings {
 	/** Disables JavaScript file loading. */
 	disableJavaScriptFileLoading: boolean;
 
-	/** Disables CSS file loading. */
+	/**
+	 * Disables CSS file loading.
+	 *
+	 * @deprecated CSS file loading is disabled by default. Use "enableCSSFileLoading" to enable it.
+	 */
 	disableCSSFileLoading: boolean;
+
+	/** Enables external stylesheet loading and style preloading. Disabled by default. */
+	enableCSSFileLoading: boolean;
 
 	/** Enables image file loading */
 	enableImageFileLoading: boolean;
@@ -130,9 +137,14 @@ export default interface IBrowserSettings {
 	enableFileSystemHttpRequests: boolean;
 
 	/**
-	 * @deprecated Use navigation.disableChildFrameNavigation instead.
+	 * Disables iframe page loading.
+	 *
+	 * @deprecated Iframe page loading is disabled by default. Use "enableIframePageLoading" to enable it.
 	 */
 	disableIframePageLoading: boolean;
+
+	/** Enables iframe page loading. Disabled by default. Does not affect srcdoc. */
+	enableIframePageLoading: boolean;
 
 	/**
 	 * Settings for the browser's navigation (when following links or opening windows).

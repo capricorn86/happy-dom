@@ -4,7 +4,7 @@ const SPLIT_BY_SPACE_REGEXP = /[()]|\s+/gm;
 /**
  * Style declaration value parser.
  */
-export default class CSSStyleDeclarationValueUtility {
+export default class CSSStringUtility {
 	/**
 	 * Splits by comma while respecting nested parentheses.
 	 *

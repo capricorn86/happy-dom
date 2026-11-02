@@ -174,6 +174,8 @@ describe('Window', () => {
 			expect(windowWithOptions.happyDOM?.settings.disableJavaScriptFileLoading).toBe(false);
 			expect(windowWithOptions.happyDOM?.settings.disableCSSFileLoading).toBe(false);
 			expect(windowWithOptions.happyDOM?.settings.disableIframePageLoading).toBe(false);
+			expect(windowWithOptions.happyDOM?.settings.enableCSSFileLoading).toBe(false);
+			expect(windowWithOptions.happyDOM?.settings.enableIframePageLoading).toBe(false);
 			expect(windowWithOptions.happyDOM?.settings.disableErrorCapturing).toBe(false);
 			expect(windowWithOptions.happyDOM?.settings.errorCapture).toBe(
 				BrowserErrorCaptureEnum.tryAndCatch
@@ -197,6 +199,8 @@ describe('Window', () => {
 			expect(windowWithoutOptions.happyDOM?.settings.disableJavaScriptFileLoading).toBe(false);
 			expect(windowWithoutOptions.happyDOM?.settings.disableCSSFileLoading).toBe(false);
 			expect(windowWithoutOptions.happyDOM?.settings.disableIframePageLoading).toBe(false);
+			expect(windowWithoutOptions.happyDOM?.settings.enableCSSFileLoading).toBe(false);
+			expect(windowWithoutOptions.happyDOM?.settings.enableIframePageLoading).toBe(false);
 			expect(windowWithoutOptions.happyDOM?.settings.disableErrorCapturing).toBe(false);
 			expect(windowWithoutOptions.happyDOM?.settings.errorCapture).toBe(
 				BrowserErrorCaptureEnum.tryAndCatch
@@ -244,6 +248,7 @@ describe('Window', () => {
 		});
 
 		it('Returns "undefined" when navigating an iframe for security reasons. The page loaded can potentially contain malicious code.', async () => {
+			window.happyDOM.settings.enableIframePageLoading = true;
 			await new Promise((resolve) => {
 				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 					return Promise.resolve(<Response>(<unknown>{
@@ -306,6 +311,7 @@ describe('Window', () => {
 		});
 
 		it(`Navigates the "_top" frame of a detached browser.`, async () => {
+			window.happyDOM.settings.enableIframePageLoading = true;
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				return Promise.resolve(<Response>{
 					text: () => Promise.resolve('<html><body>Test</body></html>')
@@ -334,6 +340,7 @@ describe('Window', () => {
 		});
 
 		it(`Navigates the "_parent" frame of a detached browser.`, async () => {
+			window.happyDOM.settings.enableIframePageLoading = true;
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
 				return Promise.resolve(<Response>{
 					text: () => Promise.resolve('<html><body>Test</body></html>')

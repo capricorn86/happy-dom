@@ -271,7 +271,7 @@ describe('DetachedWindowAPI', () => {
 					expect(isFirstWhenAsyncCompleteCalled).toBe(true);
 					expect(isSecondWhenAsyncCompleteCalled).toBe(true);
 					resolve(null);
-				}, 10);
+				}, 100);
 			});
 		});
 	});

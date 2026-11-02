@@ -411,7 +411,10 @@ export default class HTMLIFrameElement extends HTMLElement {
 			return;
 		}
 
-		if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+		if (
+			browserFrame.page.context.browser.settings.disableIframePageLoading ||
+			!browserFrame.page.context.browser.settings.enableIframePageLoading
+		) {
 			const error = new window.DOMException(
 				`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`,
 				DOMExceptionNameEnum.notSupportedError
@@ -422,7 +425,7 @@ export default class HTMLIFrameElement extends HTMLElement {
 		}
 
 		// Iframes has a special rule for CORS and doesn't allow access between frames when the origin is different.
-		const isSameOrigin = originURL.origin === targetURL.origin || targetURL.origin === 'null';
+		const isSameOrigin = BrowserFrameURL.isSameOrigin(originURL, targetURL);
 		const parentWindow = isSameOrigin ? window : new CrossOriginBrowserWindow(window);
 
 		this.#iframe = this.#iframe ?? BrowserFrameFactory.createChildFrame(browserFrame);
