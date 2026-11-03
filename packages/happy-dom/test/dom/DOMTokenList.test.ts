@@ -152,6 +152,16 @@ describe('DOMTokenList', () => {
 			expect(classList.toggle('class2', false)).toBe(false);
 			expect(element.className).toBe('');
 		});
+
+		it("Doesn't change the attribute when force matches what the list holds.", () => {
+			element.className = 'class1';
+			const observer = new window.MutationObserver(() => {});
+			observer.observe(element, { attributes: true });
+			expect(classList.toggle('class1', true)).toBe(true);
+			expect(classList.toggle('class2', false)).toBe(false);
+			expect(classList.toggle('class2', <any>null)).toBe(false);
+			expect(observer.takeRecords()).toEqual([]);
+		});
 	});
 
 	describe('values()', () => {

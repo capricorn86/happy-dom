@@ -303,12 +303,13 @@ export default class DOMTokenList {
 	 * @returns A boolean value, `true` or `false`, indicating whether class name is in the list after the call or not.
 	 */
 	public toggle(token: string, force?: boolean): boolean {
-		let shouldAdd: boolean;
+		const contains = this.contains(token);
+		const shouldAdd = force !== undefined ? !!force : !contains;
 
-		if (force !== undefined) {
-			shouldAdd = force;
-		} else {
-			shouldAdd = !this.contains(token);
+		// The attribute is left untouched when the token set doesn't change.
+		// @see https://dom.spec.whatwg.org/#dom-domtokenlist-toggle
+		if (shouldAdd === contains) {
+			return contains;
 		}
 
 		if (shouldAdd) {
