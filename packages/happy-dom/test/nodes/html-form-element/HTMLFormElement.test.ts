@@ -1034,6 +1034,45 @@ describe('HTMLFormElement', () => {
 	});
 
 	describe('requestSubmit()', () => {
+		it.each(['omitted', 'undefined', 'null', 'button', 'input'])(
+			'Exposes a FormData-compatible submitter when the argument is %s.',
+			(scenario) => {
+				element.innerHTML =
+					'<input name="value" value="example"><button name="intent" value="button">Send</button><input type="submit" name="intent" value="input">';
+				document.body.appendChild(element);
+				const submitter =
+					scenario === 'button'
+						? <HTMLButtonElement>element.querySelector('button')
+						: scenario === 'input'
+							? <HTMLInputElement>element.querySelector('input[type="submit"]')
+							: null;
+				let submitEvent: SubmitEvent | null = null;
+				element.addEventListener('submit', (event) => {
+					event.preventDefault();
+					submitEvent = <SubmitEvent>event;
+				});
+
+				if (scenario === 'omitted') {
+					element.requestSubmit();
+				} else {
+					element.requestSubmit(scenario === 'undefined' ? undefined : submitter);
+				}
+
+				expect(submitEvent).toBeInstanceOf(SubmitEvent);
+				expect((<SubmitEvent>(<unknown>submitEvent)).submitter).toBe(submitter);
+				expect([
+					...new window.FormData(element, (<SubmitEvent>(<unknown>submitEvent)).submitter)
+				]).toEqual(
+					submitter
+						? [
+								['value', 'example'],
+								['intent', scenario]
+							]
+						: [['value', 'example']]
+				);
+			}
+		);
+
 		it('Validates form and triggers a "submit" event when valid.', () => {
 			element.innerHTML = `
                 <div>
@@ -1062,7 +1101,7 @@ describe('HTMLFormElement', () => {
 
 			expect(submitEvent).toBeInstanceOf(SubmitEvent);
 			expect((<SubmitEvent>(<unknown>submitEvent)).type).toBe('submit');
-			expect((<SubmitEvent>(<unknown>submitEvent)).submitter === element).toBe(true);
+			expect((<SubmitEvent>(<unknown>submitEvent)).submitter).toBe(null);
 
 			submitEvent = null;
 
