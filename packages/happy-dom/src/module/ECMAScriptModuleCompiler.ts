@@ -69,12 +69,12 @@ const VALID_BINDING_NAME_REGEXP = /^[\p{ID_Start}_$][\p{ID_Continue}$\u200c\u200
 /**
  * Valid preceding token before a statement.
  */
-const PRECEDING_STATEMENT_TOKEN_REGEXP = /['"`(){}\s;=><\[\]+-,:&]/;
+const PRECEDING_STATEMENT_TOKEN_REGEXP = /['"`(){}\s;=><\[\]+\-,:&?!|]/;
 
 /**
  * Valid preceding token before a regexp.
  */
-const PRECEDING_REGEXP_TOKEN_REGEXP = /['"`({};=><\[+-,:&]/;
+const PRECEDING_REGEXP_TOKEN_REGEXP = /['"`({};=><\[+\-,:&?!|]/;
 
 /**
  * Multiline comment regexp.
