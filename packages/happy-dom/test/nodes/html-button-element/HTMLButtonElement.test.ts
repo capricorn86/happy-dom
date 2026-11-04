@@ -553,5 +553,204 @@ describe('HTMLButtonElement', () => {
 
 			expect(resetTriggeredCount).toBe(1);
 		});
+
+		it('Submits form when a "click" event is dispatched on a descendant of the button.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			form.innerHTML = '<button><span>Send</span></button>';
+			document.body.appendChild(form);
+
+			const button = <HTMLButtonElement>form.querySelector('button');
+			const span = <HTMLElement>form.querySelector('span');
+			const submitters: Array<HTMLElement | null> = [];
+
+			form.addEventListener('submit', (event) => submitters.push((<SubmitEvent>event).submitter));
+
+			span.click();
+			span.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+			expect(submitters).toEqual([button, button]);
+		});
+
+		it('Resets form when a "click" event is dispatched on a descendant of the button.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			form.innerHTML = '<button type="reset"><span>Reset</span></button>';
+			document.body.appendChild(form);
+
+			let resetTriggeredCount = 0;
+
+			form.addEventListener('reset', () => resetTriggeredCount++);
+
+			(<HTMLElement>form.querySelector('span')).click();
+
+			expect(resetTriggeredCount).toBe(1);
+		});
+
+		it('Submits form when propagation of the "click" event is stopped by a descendant.', () => {
+			for (const method of ['stopPropagation', 'stopImmediatePropagation']) {
+				const form = <HTMLFormElement>document.createElement('form');
+				form.innerHTML = '<button><span>Send</span></button>';
+				document.body.appendChild(form);
+
+				const span = <HTMLElement>form.querySelector('span');
+				let submitTriggeredCount = 0;
+
+				form.addEventListener('submit', () => submitTriggeredCount++);
+				span.addEventListener('click', (event) => event[method]());
+
+				span.click();
+
+				expect(submitTriggeredCount).toBe(1);
+			}
+		});
+
+		it('Does not submit form when the "click" event is cancelled during any phase.', () => {
+			for (const listenerTarget of ['span', 'button', 'documentCapture', 'documentBubble']) {
+				const form = <HTMLFormElement>document.createElement('form');
+				form.innerHTML = '<button><span>Send</span></button>';
+				document.body.appendChild(form);
+
+				const span = <HTMLElement>form.querySelector('span');
+				const target = {
+					span,
+					button: <HTMLButtonElement>form.querySelector('button'),
+					documentCapture: document,
+					documentBubble: document
+				}[listenerTarget];
+				const listener = (event: Event): void => event.preventDefault();
+				const capture = listenerTarget === 'documentCapture';
+				let submitTriggeredCount = 0;
+
+				form.addEventListener('submit', () => submitTriggeredCount++);
+				target.addEventListener('click', listener, { capture });
+
+				expect(
+					span.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+				).toBe(false);
+				expect(submitTriggeredCount).toBe(0);
+
+				target.removeEventListener('click', listener, { capture });
+			}
+		});
+
+		it('Does not submit form for a non-bubbling "click" event on a descendant.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			form.innerHTML = '<button><span>Send</span></button>';
+			document.body.appendChild(form);
+
+			let submitTriggeredCount = 0;
+
+			form.addEventListener('submit', () => submitTriggeredCount++);
+
+			(<HTMLElement>form.querySelector('span')).dispatchEvent(new MouseEvent('click'));
+
+			expect(submitTriggeredCount).toBe(0);
+		});
+
+		it('Does not submit form for a "click" event that is not a MouseEvent.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			form.innerHTML = '<button><span>Send</span></button>';
+			document.body.appendChild(form);
+
+			let submitTriggeredCount = 0;
+
+			form.addEventListener('submit', () => submitTriggeredCount++);
+
+			(<HTMLElement>form.querySelector('span')).dispatchEvent(
+				new window.Event('click', { bubbles: true, cancelable: true })
+			);
+
+			expect(submitTriggeredCount).toBe(0);
+		});
+
+		it('Does not submit form when a descendant of a disabled button is clicked.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			form.innerHTML = '<button disabled><span>Send</span></button>';
+			document.body.appendChild(form);
+
+			let submitTriggeredCount = 0;
+
+			form.addEventListener('submit', () => submitTriggeredCount++);
+
+			(<HTMLElement>form.querySelector('span')).click();
+
+			expect(submitTriggeredCount).toBe(0);
+		});
+
+		it('Does not submit form when the button is a descendant of a disabled fieldset.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			form.innerHTML =
+				'<fieldset disabled><div><button><span>Send</span></button></div></fieldset>';
+			document.body.appendChild(form);
+
+			let submitTriggeredCount = 0;
+
+			form.addEventListener('submit', () => submitTriggeredCount++);
+
+			(<HTMLButtonElement>form.querySelector('button')).click();
+			(<HTMLElement>form.querySelector('span')).click();
+
+			expect(submitTriggeredCount).toBe(0);
+		});
+
+		it('Submits form when the button is in the first legend of a disabled fieldset.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			form.innerHTML =
+				'<fieldset disabled><legend><button><span>Send</span></button></legend><legend></legend></fieldset>';
+			document.body.appendChild(form);
+
+			let submitTriggeredCount = 0;
+
+			form.addEventListener('submit', () => submitTriggeredCount++);
+
+			(<HTMLButtonElement>form.querySelector('button')).click();
+			(<HTMLElement>form.querySelector('span')).click();
+
+			expect(submitTriggeredCount).toBe(2);
+		});
+
+		it('Does not submit form when the button is in a legend that is not the first legend of a disabled fieldset.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			form.innerHTML =
+				'<fieldset disabled><legend></legend><legend><button>Send</button></legend></fieldset>';
+			document.body.appendChild(form);
+
+			let submitTriggeredCount = 0;
+
+			form.addEventListener('submit', () => submitTriggeredCount++);
+
+			(<HTMLButtonElement>form.querySelector('button')).click();
+
+			expect(submitTriggeredCount).toBe(0);
+		});
+
+		it('Does not submit form when the button is in the first legend of a fieldset inside another disabled fieldset.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			form.innerHTML =
+				'<fieldset disabled><fieldset><legend><button>Send</button></legend></fieldset></fieldset>';
+			document.body.appendChild(form);
+
+			let submitTriggeredCount = 0;
+
+			form.addEventListener('submit', () => submitTriggeredCount++);
+
+			(<HTMLButtonElement>form.querySelector('button')).click();
+
+			expect(submitTriggeredCount).toBe(0);
+		});
+
+		it('Submits form when the fieldset is enabled again.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			form.innerHTML = '<fieldset disabled><button>Send</button></fieldset>';
+			document.body.appendChild(form);
+
+			let submitTriggeredCount = 0;
+
+			form.addEventListener('submit', () => submitTriggeredCount++);
+
+			(<HTMLElement>form.querySelector('fieldset')).removeAttribute('disabled');
+			(<HTMLButtonElement>form.querySelector('button')).click();
+
+			expect(submitTriggeredCount).toBe(1);
+		});
 	});
 });
