@@ -116,4 +116,38 @@ export default class HTMLElementUtility {
 		}
 		return false;
 	}
+
+	/**
+	 * Returns "true" if a form control is disabled.
+	 *
+	 * A form control is disabled if it has the "disabled" attribute, or if it is a descendant of a disabled <fieldset> and not a descendant of the first <legend> child of that <fieldset>.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#concept-fe-disabled
+	 * @param element Element.
+	 * @returns "true" if disabled.
+	 */
+	public static isFormControlDisabled(element: HTMLElement): boolean {
+		if (element.hasAttribute('disabled')) {
+			return true;
+		}
+
+		let ancestor = element[PropertySymbol.parentNode];
+
+		while (ancestor) {
+			if (
+				(<HTMLElement>ancestor)[PropertySymbol.tagName] === 'FIELDSET' &&
+				(<HTMLElement>ancestor).hasAttribute('disabled')
+			) {
+				const legend = (<HTMLElement>ancestor)[PropertySymbol.elementArray].find(
+					(child) => child[PropertySymbol.tagName] === 'LEGEND'
+				);
+				if (!legend || !legend.contains(element)) {
+					return true;
+				}
+			}
+			ancestor = ancestor[PropertySymbol.parentNode];
+		}
+
+		return false;
+	}
 }

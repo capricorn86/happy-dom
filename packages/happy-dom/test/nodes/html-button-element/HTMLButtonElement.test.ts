@@ -675,5 +675,82 @@ describe('HTMLButtonElement', () => {
 
 			expect(submitTriggeredCount).toBe(0);
 		});
+
+		it('Does not submit form when the button is a descendant of a disabled fieldset.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			form.innerHTML =
+				'<fieldset disabled><div><button><span>Send</span></button></div></fieldset>';
+			document.body.appendChild(form);
+
+			let submitTriggeredCount = 0;
+
+			form.addEventListener('submit', () => submitTriggeredCount++);
+
+			(<HTMLButtonElement>form.querySelector('button')).click();
+			(<HTMLElement>form.querySelector('span')).click();
+
+			expect(submitTriggeredCount).toBe(0);
+		});
+
+		it('Submits form when the button is in the first legend of a disabled fieldset.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			form.innerHTML =
+				'<fieldset disabled><legend><button><span>Send</span></button></legend><legend></legend></fieldset>';
+			document.body.appendChild(form);
+
+			let submitTriggeredCount = 0;
+
+			form.addEventListener('submit', () => submitTriggeredCount++);
+
+			(<HTMLButtonElement>form.querySelector('button')).click();
+			(<HTMLElement>form.querySelector('span')).click();
+
+			expect(submitTriggeredCount).toBe(2);
+		});
+
+		it('Does not submit form when the button is in a legend that is not the first legend of a disabled fieldset.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			form.innerHTML =
+				'<fieldset disabled><legend></legend><legend><button>Send</button></legend></fieldset>';
+			document.body.appendChild(form);
+
+			let submitTriggeredCount = 0;
+
+			form.addEventListener('submit', () => submitTriggeredCount++);
+
+			(<HTMLButtonElement>form.querySelector('button')).click();
+
+			expect(submitTriggeredCount).toBe(0);
+		});
+
+		it('Does not submit form when the button is in the first legend of a fieldset inside another disabled fieldset.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			form.innerHTML =
+				'<fieldset disabled><fieldset><legend><button>Send</button></legend></fieldset></fieldset>';
+			document.body.appendChild(form);
+
+			let submitTriggeredCount = 0;
+
+			form.addEventListener('submit', () => submitTriggeredCount++);
+
+			(<HTMLButtonElement>form.querySelector('button')).click();
+
+			expect(submitTriggeredCount).toBe(0);
+		});
+
+		it('Submits form when the fieldset is enabled again.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			form.innerHTML = '<fieldset disabled><button>Send</button></fieldset>';
+			document.body.appendChild(form);
+
+			let submitTriggeredCount = 0;
+
+			form.addEventListener('submit', () => submitTriggeredCount++);
+
+			(<HTMLElement>form.querySelector('fieldset')).removeAttribute('disabled');
+			(<HTMLButtonElement>form.querySelector('button')).click();
+
+			expect(submitTriggeredCount).toBe(1);
+		});
 	});
 });
