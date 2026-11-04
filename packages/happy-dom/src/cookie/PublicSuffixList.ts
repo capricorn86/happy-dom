@@ -6245,7 +6245,6 @@ export default {
 		'health',
 		'healthcare',
 		'help',
-		'helsinki',
 		'here',
 		'hermes',
 		'hiphop',

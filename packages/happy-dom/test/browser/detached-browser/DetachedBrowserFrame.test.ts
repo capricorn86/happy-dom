@@ -558,7 +558,7 @@ describe('DetachedBrowserFrame', () => {
 			);
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -590,7 +590,7 @@ describe('DetachedBrowserFrame', () => {
 			);
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -648,7 +648,7 @@ describe('DetachedBrowserFrame', () => {
 			);
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'http://github.com';
@@ -679,7 +679,7 @@ describe('DetachedBrowserFrame', () => {
 			);
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -710,7 +710,7 @@ describe('DetachedBrowserFrame', () => {
 			);
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			await childPage.mainFrame.goto('http://github.com/capricorn86/happy-dom');
@@ -739,7 +739,7 @@ describe('DetachedBrowserFrame', () => {
 			);
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -854,7 +854,7 @@ describe('DetachedBrowserFrame', () => {
 			);
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			await childPage.mainFrame.goto('http://localhost:9999');
@@ -881,7 +881,7 @@ describe('DetachedBrowserFrame', () => {
 			);
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			const response = await childPage.mainFrame.goto('http://localhost:9999');

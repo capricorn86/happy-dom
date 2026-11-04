@@ -36,6 +36,10 @@ export default class BrowserFrameURL {
 	 * @returns True if same-origin.
 	 */
 	public static isSameOrigin(parentFrame: IBrowserFrame, childFrame: IBrowserFrame): boolean {
+		if (parentFrame === childFrame) {
+			return true;
+		}
+
 		const parentURL = this.getInheritedFrameURL(parentFrame);
 		const childURL = this.getInheritedFrameURL(childFrame);
 		// Data URLs are treated as unique opaque origins by modern browsers, rather than inheriting the origin of the settings object responsible for the navigation.
@@ -55,12 +59,12 @@ export default class BrowserFrameURL {
 	 */
 	private static getInheritedFrameURL(frame: IBrowserFrame): URL | null {
 		// Popup frame
-		if (frame[PropertySymbol.openerFrame]) {
+		if (frame[PropertySymbol.opener]?.frame) {
 			// We use the fetched source URL if available, otherwise we inherit from the opener frame.
 			if (frame.sourceURL) {
 				return new URL(frame.sourceURL);
 			}
-			return this.getInheritedFrameURL(frame[PropertySymbol.openerFrame]);
+			return this.getInheritedFrameURL(frame[PropertySymbol.opener].frame);
 		}
 		// Child frame (e.g. iframe)
 		if (frame.parentFrame) {
@@ -70,6 +74,7 @@ export default class BrowserFrameURL {
 			}
 			return this.getInheritedFrameURL(frame.parentFrame);
 		}
-		return null;
+
+		return frame.sourceURL ? new URL(frame.sourceURL) : null;
 	}
 }

@@ -133,7 +133,7 @@ export default class BrowserFrameNavigator {
 				frame.window.location[PropertySymbol.setURL](frame, targetURL.href);
 				frame[PropertySymbol.history].currentItem.url = targetURL.href;
 				frame[PropertySymbol.history].currentItem.sourceURL =
-					targetURL.origin !== 'null' ? targetURL.href : '';
+					targetURL.origin !== 'null' || targetURL.protocol === 'data:' ? targetURL.href : null;
 				BrowserFrameCrossOriginIsolation.isolate(frame);
 			}
 
@@ -147,7 +147,8 @@ export default class BrowserFrameNavigator {
 			history.push({
 				title: '',
 				url: targetURL.href,
-				sourceURL: targetURL.origin !== 'null' ? targetURL.href : '',
+				sourceURL:
+					targetURL.origin !== 'null' || targetURL.protocol === 'data:' ? targetURL.href : null,
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -198,6 +199,16 @@ export default class BrowserFrameNavigator {
 		} else {
 			destroyWindowAndAsyncTaskManager();
 		}
+
+		// Popups should loose their opener references
+		for (const popup of frame.openedPages) {
+			if (popup.mainFrame[PropertySymbol.opener]) {
+				popup.mainFrame[PropertySymbol.opener].window = null;
+				popup.mainFrame[PropertySymbol.opener].frame = null;
+			}
+			BrowserFrameCrossOriginIsolation.isolate(popup.mainFrame);
+		}
+		frame.openedPages.length = 0;
 
 		// Handle "about" protocol URL
 		if (targetURL.protocol === 'about:') {

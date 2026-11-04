@@ -1,6 +1,7 @@
 import type IBrowserFrame from '../types/IBrowserFrame.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import type IBrowserPage from '../types/IBrowserPage.js';
+import BrowserFrameCrossOriginIsolation from './BrowserFrameCrossOriginIsolation.js';
 
 /**
  * Browser frame factory.
@@ -20,6 +21,7 @@ export default class BrowserFrameFactory {
 		parentFrame.childFrames.push(frame);
 		frame.window[PropertySymbol.parent] = parentFrame.window;
 		frame.window[PropertySymbol.top] = parentFrame.window.top;
+		frame[PropertySymbol.contentWindow] = frame.window;
 		return frame;
 	}
 
@@ -51,6 +53,13 @@ export default class BrowserFrameFactory {
 				}
 			}
 
+			if (frame[PropertySymbol.opener]?.frame) {
+				const index = frame[PropertySymbol.opener].frame.openedPages.indexOf(frame.page);
+				if (index !== -1) {
+					frame[PropertySymbol.opener].frame.openedPages.splice(index, 1);
+				}
+			}
+
 			if (!frame.childFrames.length) {
 				frame[PropertySymbol.asyncTaskManager]
 					.destroy()
@@ -60,14 +69,21 @@ export default class BrowserFrameFactory {
 						}
 
 						(<object>frame.window) = { closed: true };
-						frame[PropertySymbol.openerFrame] = null;
-						frame[PropertySymbol.openerWindow] = null;
+						frame[PropertySymbol.opener] = null;
 						frame[PropertySymbol.contentWindow] = null;
 
 						// Clear navigation listeners
 						if (frame[PropertySymbol.listeners]) {
 							frame[PropertySymbol.listeners].navigation = [];
 						}
+
+						for (const popup of frame.openedPages) {
+							popup.mainFrame[PropertySymbol.opener] = null;
+							BrowserFrameCrossOriginIsolation.isolate(popup.mainFrame);
+						}
+
+						frame.childFrames.length = 0;
+						frame.openedPages.length = 0;
 
 						resolve();
 					})
@@ -88,14 +104,21 @@ export default class BrowserFrameFactory {
 							}
 
 							(<object>frame.window) = { closed: true };
-							frame[PropertySymbol.openerFrame] = null;
-							frame[PropertySymbol.openerWindow] = null;
+							frame[PropertySymbol.opener] = null;
 							frame[PropertySymbol.contentWindow] = null;
 
 							// Clear navigation listeners
 							if (frame[PropertySymbol.listeners]) {
 								frame[PropertySymbol.listeners].navigation = [];
 							}
+
+							for (const popup of frame.openedPages) {
+								popup.mainFrame[PropertySymbol.opener] = null;
+								BrowserFrameCrossOriginIsolation.isolate(popup.mainFrame);
+							}
+
+							frame.childFrames.length = 0;
+							frame.openedPages.length = 0;
 
 							resolve();
 						})

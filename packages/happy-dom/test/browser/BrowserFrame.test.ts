@@ -872,7 +872,7 @@ Task #1
 			});
 			const page = browser.newPage();
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -901,7 +901,7 @@ Task #1
 			});
 			const page = browser.newPage();
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -953,7 +953,7 @@ Task #1
 			});
 			const page = browser.newPage();
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'http://github.com';
@@ -981,7 +981,7 @@ Task #1
 			});
 			const page = browser.newPage();
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -1009,7 +1009,7 @@ Task #1
 			});
 			const page = browser.newPage();
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			await childPage.mainFrame.goto('http://github.com/capricorn86/happy-dom');
@@ -1035,7 +1035,7 @@ Task #1
 			});
 			const page = browser.newPage();
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -1138,7 +1138,7 @@ Task #1
 			});
 			const page = browser.newPage();
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			await childPage.mainFrame.goto('http://localhost:9999');
@@ -1162,7 +1162,7 @@ Task #1
 			});
 			const page = browser.newPage();
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.openerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
 			const oldWindow = childPage.mainFrame.window;
 
 			const response = await childPage.mainFrame.goto('http://localhost:9999');

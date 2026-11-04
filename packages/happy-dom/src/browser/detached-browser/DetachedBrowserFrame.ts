@@ -14,6 +14,7 @@ import type Document from '../../nodes/document/Document.js';
 import type CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import HistoryItemList from '../../history/HistoryItemList.js';
 import BrowserFrameCrossOriginIsolation from '../utilities/BrowserFrameCrossOriginIsolation.js';
+import type IBrowserFrameOpener from '../types/IBrowserFrameOpener.js';
 
 /**
  * Browser frame used when constructing a Window instance without a browser.
@@ -23,15 +24,15 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	public declare window: BrowserWindow;
 
 	public readonly childFrames: DetachedBrowserFrame[] = [];
+	public readonly openedPages: DetachedBrowserPage[] = [];
 	public readonly parentFrame: DetachedBrowserFrame | null = null;
 	public readonly page: DetachedBrowserPage;
 	public readonly closed: boolean = false;
 	public [PropertySymbol.asyncTaskManager]: AsyncTaskManager = new AsyncTaskManager(this);
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
-	public [PropertySymbol.openerFrame]: IBrowserFrame | null = null;
-	public [PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
 	public [PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
-	public [PropertySymbol.popup] = false;
+	public [PropertySymbol.opener]: IBrowserFrameOpener | null = null;
+	public [PropertySymbol.popup]: boolean = false;
 	public [PropertySymbol.history] = new HistoryItemList();
 
 	/**

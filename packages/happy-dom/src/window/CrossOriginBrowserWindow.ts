@@ -1,6 +1,5 @@
 import EventTarget from '../event/EventTarget.js';
 import type BrowserWindow from './BrowserWindow.js';
-import type DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import type Location from '../location/Location.js';
 import * as PropertySymbol from '../PropertySymbol.js';
@@ -27,22 +26,30 @@ export default class CrossOriginBrowserWindow
 	 * Constructor.
 	 *
 	 * @param target Target window.
-	 * @param [parent] Parent window.
+	 * @param [options] Options.
+	 * @param [options.parent] Parent window.
+	 * @param [options.top] Top window.
 	 */
-	constructor(target: BrowserWindow, parent?: BrowserWindow) {
+	constructor(target: BrowserWindow, options?: { parent: BrowserWindow; top: BrowserWindow }) {
 		super();
 
-		this[PropertySymbol.parent] = parent ?? this;
-		this[PropertySymbol.top] = parent ?? this;
+		this[PropertySymbol.parent] = options?.parent ?? this;
+		this[PropertySymbol.top] = options?.top ?? this;
 
 		this.location = <Location>new Proxy(
 			{},
 			{
 				get: () => {
-					throw this.#getBlockedException();
+					throw new this.#targetWindow.DOMException(
+						`Blocked a frame with origin "${this.parent.location.origin}" from accessing a cross-origin frame.`,
+						DOMExceptionNameEnum.securityError
+					);
 				},
 				set: () => {
-					throw this.#getBlockedException();
+					throw new this.#targetWindow.DOMException(
+						`Blocked a frame with origin "${this.parent.location.origin}" from accessing a cross-origin frame.`,
+						DOMExceptionNameEnum.securityError
+					);
 				}
 			}
 		);
@@ -142,22 +149,5 @@ export default class CrossOriginBrowserWindow
 	 */
 	public postMessage(message: unknown, targetOrigin = '*', transfer?: unknown[]): void {
 		this.#targetWindow.postMessage(message, targetOrigin, transfer);
-	}
-
-	/**
-	 * Returns the exception thrown when accessing a blocked property.
-	 *
-	 * @returns Exception.
-	 */
-	#getBlockedException(): DOMException {
-		// The parent is the wrapper itself when it wraps an ancestor of the accessing frame, which has no accessible origin to report.
-		const parent = this.parent;
-		const origin = parent === this ? null : (<BrowserWindow>parent).location.origin;
-		return new this.#targetWindow.DOMException(
-			origin !== null
-				? `Blocked a frame with origin "${origin}" from accessing a cross-origin frame.`
-				: 'Blocked a frame from accessing a cross-origin frame.',
-			DOMExceptionNameEnum.securityError
-		);
 	}
 }

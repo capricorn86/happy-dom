@@ -52,9 +52,15 @@ export default class WindowPageOpenUtility {
 			default:
 				const newPage = browserFrame.page.context.newPage();
 				targetFrame = newPage.mainFrame;
+				targetFrame[PropertySymbol.opener] = {
+					frame: null,
+					window: null
+				};
 				if (!features.noopener && !features.noreferrer) {
-					targetFrame[PropertySymbol.openerFrame] = browserFrame;
+					targetFrame[PropertySymbol.opener].frame = browserFrame;
+					targetFrame[PropertySymbol.opener].window = browserFrame.window;
 				}
+				browserFrame.openedPages.push(newPage);
 				break;
 		}
 

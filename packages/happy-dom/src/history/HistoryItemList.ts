@@ -23,10 +23,14 @@ export default class HistoryItemList {
 	 * @param historyItem History item.
 	 */
 	public push(historyItem: IHistoryItem): void {
-		if (historyItem.sourceURL !== null && new URL(historyItem.url).origin === 'null') {
-			throw new Error(
-				`Failed to execute "push" on "HistoryItemList": An history item with an opaque URL cannot have a fetched source URL.`
-			);
+		if (historyItem.sourceURL) {
+			const url = new URL(historyItem.sourceURL);
+			// Data URLs are considered a data source
+			if (url.origin === 'null' && url.protocol !== 'data:') {
+				throw new Error(
+					`Failed to execute "push" on "HistoryItemList": An history item should not have an opaque URL as its source.`
+				);
+			}
 		}
 
 		const index = this.items.indexOf(this.currentItem);
@@ -46,10 +50,14 @@ export default class HistoryItemList {
 	 * @param historyItem History item to replace the current one with.
 	 */
 	public replace(historyItem: IHistoryItem): void {
-		if (historyItem.sourceURL !== null && new URL(historyItem.url).origin === 'null') {
-			throw new Error(
-				`Failed to execute "replace" on "HistoryItemList": An history item with an opaque URL cannot have a fetched source URL.`
-			);
+		if (historyItem.sourceURL) {
+			// Data URLs are considered a data source.
+			const url = new URL(historyItem.sourceURL);
+			if (url.origin === 'null' && url.protocol !== 'data:') {
+				throw new Error(
+					`Failed to execute "replace" on "HistoryItemList": An history item should not have an opaque URL as its source.`
+				);
+			}
 		}
 
 		const index = this.items.indexOf(this.currentItem);

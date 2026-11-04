@@ -23,15 +23,18 @@ export default class BrowserFrameCrossOriginIsolation {
 		frame.window[PropertySymbol.parent] = frame.window;
 		frame.window[PropertySymbol.top] = frame.window;
 		frame[PropertySymbol.contentWindow] = null;
-		frame[PropertySymbol.openerWindow] = null;
+
+		if (frame[PropertySymbol.opener]) {
+			frame[PropertySymbol.opener].window = null;
+		}
 
 		// Popup frame
-		if (frame[PropertySymbol.openerFrame]) {
-			if (BrowserFrameURL.isSameOrigin(frame[PropertySymbol.openerFrame], frame)) {
-				frame[PropertySymbol.openerWindow] = frame[PropertySymbol.openerFrame].window;
+		if (frame[PropertySymbol.opener]?.frame) {
+			if (BrowserFrameURL.isSameOrigin(frame[PropertySymbol.opener].frame, frame)) {
+				frame[PropertySymbol.opener].window = frame[PropertySymbol.opener].frame.window;
 			} else {
-				frame[PropertySymbol.openerWindow] = new CrossOriginBrowserWindow(
-					frame[PropertySymbol.openerFrame].window
+				frame[PropertySymbol.opener].window = new CrossOriginBrowserWindow(
+					frame[PropertySymbol.opener].frame.window
 				);
 			}
 			this.isolateChildFrames(frame);
@@ -57,9 +60,14 @@ export default class BrowserFrameCrossOriginIsolation {
 
 		frame.window[PropertySymbol.parent] = <BrowserWindow>parentWindow;
 		frame.window[PropertySymbol.top] = <BrowserWindow>topWindow;
+
+		// HTMLIFrameElement.contentWindow is accessed by the parent frame, and should have access to itself as parent and whatever top access it has.
 		frame[PropertySymbol.contentWindow] = BrowserFrameURL.isSameOrigin(frame.parentFrame, frame)
 			? frame.window
-			: new CrossOriginBrowserWindow(frame.window);
+			: new CrossOriginBrowserWindow(frame.window, {
+					parent: frame.parentFrame.window,
+					top: frame.parentFrame.window.top
+				});
 
 		this.isolateChildFrames(frame);
 	}

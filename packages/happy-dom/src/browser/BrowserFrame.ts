@@ -14,22 +14,23 @@ import type IReloadOptions from './types/IReloadOptions.js';
 import type Document from '../nodes/document/Document.js';
 import HistoryItemList from '../history/HistoryItemList.js';
 import BrowserFrameCrossOriginIsolation from './utilities/BrowserFrameCrossOriginIsolation.js';
+import type IBrowserFrameOpener from './types/IBrowserFrameOpener.js';
 
 /**
  * Browser frame.
  */
 export default class BrowserFrame implements IBrowserFrame {
 	public readonly childFrames: BrowserFrame[] = [];
+	public readonly openedPages: BrowserPage[] = [];
 	public readonly parentFrame: BrowserFrame | null = null;
 	public readonly page: BrowserPage;
 	public readonly window: BrowserWindow;
 	public readonly closed: boolean = false;
 	public [PropertySymbol.asyncTaskManager]: AsyncTaskManager = new AsyncTaskManager(this);
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
-	public [PropertySymbol.openerFrame]: IBrowserFrame | null = null;
-	public [PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
 	public [PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
-	public [PropertySymbol.popup] = false;
+	public [PropertySymbol.opener]: IBrowserFrameOpener | null = null;
+	public [PropertySymbol.popup]: boolean = false;
 	public [PropertySymbol.history] = new HistoryItemList();
 
 	/**
